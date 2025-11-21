@@ -25,7 +25,7 @@ Thumbs.db
 *.pdf
 *.ps
 
-# Tangled / woven output (generated)
+# Tangled / woven output (generated code)
 *.c
 *.h
 *.cpp
@@ -38,7 +38,7 @@ bin/
 obj/
 out/
 
-# --- Python Tooling (if used for compiler or utilities) ---
+# --- Python Tooling ---
 __pycache__/
 *.pyc
 *.pyo
