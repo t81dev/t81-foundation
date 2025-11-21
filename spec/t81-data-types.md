@@ -13,18 +13,6 @@ nav:
 
 [← Back to Spec Index](t81-overview.md)
 
-
-Here is the **full v0.2 T81 Data Types Specification**, written as a **formal, normative, standards-track document**.
-It replaces the lightweight v0.1 draft with a complete, detailed, precise, and implementation-ready specification.
-
-This is **drop-in ready** for:
-
-```
-spec/t81-data-types.md
-```
-
-If you'd like, I can also generate a **CHANGELOG**, **RFC update**, or **diff vs v0.1**.
-
 ---
 
 # **T81 Data Types Specification — Version 0.2 (Normative)**
