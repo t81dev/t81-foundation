@@ -12,3 +12,31 @@ nav:
 ---
 
 [← Back to Spec Index](t81-overview.md)
+
+# T81Lang Specification
+Version 0.1 — Draft
+
+A high-level, deterministic, strongly typed programming language.
+
+---
+
+## 1. Language Properties
+- Explicit mutability  
+- Pure by default  
+- No undefined behavior  
+- Deterministic concurrency  
+
+## 2. Grammar
+UTF-8, strict tokenization, mandatory type annotations.
+
+## 3. Type System
+- Affine ownership  
+- No implicit conversions  
+- Canonical representation rules  
+
+## 4. Error Model
+`Result[T, E]` and `Option[T]` instead of exceptions.
+
+## 5. Compilation Pipeline
+Source → AST → Semantic Analysis → IR → Axion → TISC  
+
