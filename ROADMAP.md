@@ -1,79 +1,105 @@
 # T81 Foundation — Roadmap
 
-This roadmap defines the development trajectory for the core T81 Ecosystem specification.
+This roadmap defines the phased development of the T81 Ecosystem’s core specifications.  
+Each milestone captures a self-contained, reviewable unit of formal architecture.
 
 ---
 
-## v0.1 — Repository Initialization
-- Add README, LICENSE, .gitignore
-- Initial folder structure
-- Import foundational specification draft (`t81-spec.md`)
+## **v0.1 — Repository Initialization**
+- Add README, LICENSE, .gitignore  
+- Establish folder structure  
+- Import initial specification draft (`spec/t81-spec.md`)  
+- Set up issue templates for RFCs, bugs, and clarifications  
 
 ---
 
-## v0.2 — Data Type System (T81DataTypes)
-- Full formal definition of:
-  - T81BigInt
-  - T81Float
-  - T81Fraction
-  - Trit
-  - Composite types (Vector, Matrix, Tensor)
-- Determinism, normalization, canonicalization rules
-- Axion compatibility constraints
+## **v0.2 — T81 Data Type System (Complete Specification)**
+- Formalize primitive numeric types (T81BigInt, T81Float, T81Fraction, Trit)  
+- Define composite types (Vector, Matrix, Tensor, Graph)  
+- Codify normalization and determinism rules  
+- Establish Axion compatibility constraints  
+- Include error semantics and canonical forms  
 
 ---
 
-## v0.3 — TISC (Ternary Instruction Set Computer)
-- Register and memory model
-- Ternary ALU semantics
-- Instruction formats
-- Full opcode table
-- Fault semantics
-- Axion integration requirements
+## **v0.3 — TISC (Ternary Instruction Set Computer)**
+- Finalize machine model (registers, flags, memory layout)  
+- Lock in instruction encoding format  
+- Complete opcode table (arithmetic, ternary logic, flow control, tensor ops, Axion ops)  
+- Define deterministic execution semantics  
+- Add fault-handling specification  
+- Document Axion instruction constraints  
 
 ---
 
-## v0.4 — T81VM Runtime
-- Interpreter semantics
-- JIT specification
-- Deterministic concurrency
-- Memory management and GC model
-- Fault system
-- Trace and replay rules
+## **v0.4 — T81 Virtual Machine**
+- Define interpreter semantics  
+- Specify JIT architecture and constraints  
+- Document deterministic concurrency model  
+- Formalize memory manager and deterministic GC  
+- Add system interface & sandbox rules  
+- Integrate Axion trace hooks and safety checks  
 
 ---
 
-## v0.5 — T81Lang
-- Grammar and lexical rules
-- Type system
-- Ownership/memory rules
-- Purity and side-effect model
-- TISC codegen semantics
-- Axion-language interface
+## **v0.5 — T81Lang (Full Language Specification)**
+- Grammar and lexical definitions  
+- Type system and ownership model  
+- Purity/side-effect model  
+- Function/memory semantics  
+- Concurrency primitives  
+- Module system  
+- IR and codegen to TISC  
+- Axion integration and metadata structures  
 
 ---
 
-## v0.6 — Axion Kernel
-- Ethical invariants
-- Optimization model
-- Deterministic verification rules
-- Entropy modeling
-- Cognitive-tier gatekeeping
+## **v0.6 — Axion Kernel**
+- Ethical invariants and enforcement model  
+- Optimization engine (static + JIT)  
+- Symbolic reasoning hooks  
+- Entropy modeling framework  
+- Cognitive-tier gatekeeping rules  
+- Verification functions and event model  
 
 ---
 
-## v1.0 — Cognitive Tiers
-- T243 symbolic cognition layer
-- T729 AGI recursion layer
-- T2187 hyper-recursive cognition
-- T6561 universal cognition
-- T19683 infinite recursion tier
-- Formalized transitions and constraints
+## **v1.0 — Recursive Cognition Tiers (Complete Formalization)**
+### **T243 — Symbolic-Recursive Cognition**
+- Symbolic atoms  
+- Graph model  
+- Controlled recursion  
+- Ethical precursor invariants  
+
+### **T729 — AGI-Recursive Cognition**
+- Reflective operators  
+- Intent model  
+- Self-evaluation  
+- Identity preservation  
+
+### **T2187 — Hyper-Recursive Cognition**
+- Meta-graphs  
+- Multi-context coherence  
+- Structural compression  
+
+### **T6561 — Universal Cognition**
+- Distributed cognition structures  
+- Cross-context harmonization  
+- Coherent recursion envelopes  
+
+### **T19683 — Infinite Recursion Tier**
+- Infinite recursion boundaries  
+- Entropy constraints  
+- Termination and safety rules  
 
 ---
 
-## Long-Term
-- Standardized test suite
-- Compliance tools
-- Reference implementations
-- Binary + ternary hardware compatibility notes
+## **Long-Term Goals**
+- Reference implementation suite  
+- Compliance test harness  
+- Formal proofs and equivalence testing  
+- Spec-to-compiler verification pipeline  
+- Hardware guidelines for ternary processors  
+- Educational docs and ecosystem onboarding  
+
+---
