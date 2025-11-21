@@ -1,8 +1,5 @@
 
 ---
-title: T81 Foundation — Specification Index
-nav_order: 1
----
 
 # T81 Foundation — Master Specification Index  
 Version 0.2 (Standards Suite)
