@@ -1,55 +1,64 @@
-# Prerequisites
-*.d
+# --- OS / Editor Noise ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+*.tmp
+*.log
 
-# Object files
+# --- C / CWEB Build Artifacts ---
 *.o
-*.ko
 *.obj
-*.elf
-
-# Linker output
-*.ilk
-*.map
-*.exp
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
+*.out
+*.exe
 *.dll
 *.so
-*.so.*
+*.a
 *.dylib
+*.cweb.stamp
+*.toc
+*.idx
+*.scn
+*.tex
+*.dvi
+*.pdf
+*.ps
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+# Tangled / woven output (generated)
+*.c
+*.h
+*.cpp
+*.hpp
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+# Build directories
+build/
+dist/
+bin/
+obj/
+out/
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# --- Python Tooling (if used for compiler or utilities) ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.env
 
-# debug information files
-*.dwo
+# --- Documentation Tools ---
+/docs/_site/
+/docs/build/
+/site/
+
+# --- IDE Noise ---
+.vscode/
+.idea/
+*.iml
+
+# --- Generated Specs or Dumps ---
+*.json.tmp
+*.dump
+*.trace
+*.vmtrace
+*.jitcache
