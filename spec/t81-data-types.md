@@ -14,80 +14,442 @@ nav:
 [← Back to Spec Index](t81-overview.md)
 
 
-# T81 Data Types Specification
-Version 0.1 — Draft
+Here is the **full v0.2 T81 Data Types Specification**, written as a **formal, normative, standards-track document**.
+It replaces the lightweight v0.1 draft with a complete, detailed, precise, and implementation-ready specification.
 
-The T81 Data Types define the core numerical and structural primitives of the ecosystem.
+This is **drop-in ready** for:
 
----
+```
+spec/t81-data-types.md
+```
 
-## 1. Design Goals
-
-- Base-81 numeric semantics  
-- Deterministic normalization  
-- Zero undefined behavior  
-- Axion-visible structure  
-- Portable across all layers  
+If you'd like, I can also generate a **CHANGELOG**, **RFC update**, or **diff vs v0.1**.
 
 ---
 
-## 2. Primitive Types
+# **T81 Data Types Specification — Version 0.2 (Normative)**
 
-### **T81BigInt**
-- Arbitrary-precision base-81 integer  
-- No leading zeroes  
-- Canonical sign format  
-- Supports all TISC arithmetic ops  
-
-### **T81Float**
-- Deterministic, reproducible floating-point format  
-- Base-81 mantissa and exponent  
-- Guaranteed round-trip conversions  
-
-### **T81Fraction**
-- Exact rational type  
-- Stored as reduced numerator/denominator BigInts  
-
-### **Trit**
-Balanced ternary digit:  
-`−1, 0, +1`
+**Status:** Draft → Standards Track
+**Applies To:** T81Lang, TISC, T81VM, Axion, Cognitive Tiers
+**Supersedes:** v0.1 Draft
+**Purpose:** Define deterministic, canonical, base-81 type semantics for the T81 ecosystem.
 
 ---
 
-## 3. Composite Types
+# 0. Scope
 
-### **Vectors / Matrices / Tensors**
-- Multidimensional arrays  
-- Deterministic layout  
-- Base-81 aligned memory rules  
-- Valid operands for TISC tensor ops  
+This document defines:
 
-### **Graphs**
-- Node/edge lists  
-- Axion-verifiable metadata  
+* primitive numeric types
+* composite structural types
+* canonical representation rules
+* deterministic arithmetic semantics
+* Axion visibility invariants
+* VM and ISA interoperability rules
 
----
-
-## 4. Structural Types
-
-- Arrays  
-- Records  
-- Structs  
-- Enums  
-
-All structural types must have:
-
-- deterministic iteration order  
-- explicit memory layout  
-- no implicit coercions  
+It is **normative** for all runtime, compilation, and cognitive layers.
 
 ---
 
-## 5. Normalization Rules
+# 1. Design Goals (Normative)
 
-- All values must have exactly one canonical form.  
-- No NaN, no infinities, no undefined states.  
-- T81Fraction must always remain reduced.
+All T81 data types MUST satisfy:
+
+1. **Deterministic Semantics**
+
+   * no nondeterministic outcomes
+   * all arithmetic, comparisons, and structural operations MUST produce identical results across implementations
+
+2. **Canonical Representation**
+
+   * each representable value MUST have exactly one canonical encoding
+   * no alternative or redundant forms permitted
+
+3. **Base-81 Numeric Foundation**
+
+   * all numeric types MUST use balanced-ternary or base-81 semantics
+   * internal binary shortcuts are permitted but MUST NOT affect observable behavior
+
+4. **Zero Undefined Behavior**
+
+   * every operation MUST define behavior for all inputs
+   * errors MUST resolve to deterministic fault states or `Result[T, E]` representations
+
+5. **Axion Visibility**
+
+   * all canonical forms must be introspectable by the Axion kernel
+   * all normalization steps MUST emit metadata hooks
+
+---
+
+# 2. Primitive Numeric Types
+
+Primitive types form the base of all T81 computation.
+
+## 2.1 Trit
+
+### Definition
+
+A trit is the fundamental balanced-ternary digit:
+
+```
+−1 → T̄  
+ 0 → T0  
++1 → T1
+```
+
+### Representation
+
+Canonical 2-bit balanced encoding (implementation detail, nondeterministic allowed internally).
+
+### Operations
+
+* unary negation
+* comparison
+* trit-wise logic (AND, OR, XOR, XNOR)
+
+All MUST be deterministic.
+
+---
+
+## 2.2 T81BigInt
+
+### Definition
+
+An arbitrary-precision **base-81 integer** with the following constraints:
+
+* digits are base-81 symbols: `0–80`
+* sign is stored separately and canonically
+* no leading zero digits unless value is exactly zero
+
+### Canonical Form
+
+A value MUST satisfy:
+
+```
+- Zero encoded as: [+] [0]
+- Nonzero MUST NOT contain leading zeros
+- Negative: sign bit set, magnitude canonical
+```
+
+### Arithmetic
+
+All operations MUST be:
+
+* deterministic
+* exact
+* overflow-free
+* producing canonical normalized output
+
+Operations:
+
+* add
+* sub
+* mul
+* div (trunc / floor modes)
+* mod
+* pow
+* gcd
+* compare
+
+### Implementation
+
+VM MAY implement long arithmetic, Karatsuba, FFT-based, or hardware-accelerated multiplication **as long as results remain identical**.
+
+---
+
+## 2.3 T81Float
+
+### Definition
+
+A reproducible floating-point format using:
+
+* **base-81 mantissa**
+* **base-81 exponent**
+* **balanced rounding rules**
+
+### Requirements (Normative)
+
+1. Representations MUST round deterministically.
+2. No NaN, no infinities.
+3. All invalid states MUST map to a deterministic error code.
+4. Round-trip encoding MUST be stable:
+
+   ```
+   encode(decode(x)) = x
+   ```
+
+### Components
+
+* `mantissa`: T81BigInt
+* `exponent`: T81BigInt
+* `sign`: 1 trit
+
+### Note
+
+Floating points are **never silently lossy**; any precision loss MUST be made explicit via a `Result[T, E]`.
+
+---
+
+## 2.4 T81Fraction
+
+### Definition
+
+A rational number represented as:
+
+```
+numerator:   T81BigInt  
+denominator: T81BigInt (non-zero)
+```
+
+### Canonicalization Rules
+
+1. Fraction MUST always be in lowest terms.
+2. Denominator MUST always be positive (+ sign).
+3. Zero MUST be encoded as `0/1`.
+4. GCD MUST be computed deterministically.
+
+### Arithmetic
+
+Exact and deterministic:
+
+* add
+* sub
+* mul
+* div
+* invert
+
+No floating approximations allowed.
+
+---
+
+# 3. Composite Types
+
+## 3.1 Arrays
+
+### Properties
+
+* Fixed size or dynamically sized
+* Deterministic iteration order
+* Memory representation MUST follow:
+
+```
+[header][length][canonical elements...]
+```
+
+### Allowed element types
+
+Any T81 type.
+
+---
+
+## 3.2 Vectors, Matrices, Tensors
+
+### Canonical rules
+
+* Shape MUST be immutable once constructed
+* Dimensions MUST be ≥ 1
+* All values MUST be normalized
+* Out-of-bounds MUST be deterministic fault
+
+### Operations
+
+* reshape (dimensionally consistent only)
+* transpose
+* tensor contraction
+* elementwise ops
+* norm
+* dot products
+
+All MUST produce deterministic and canonical results.
+
+---
+
+## 3.3 Graphs
+
+### Structure
+
+A deterministic graph consists of:
+
+```
+nodes: array of canonical nodes  
+edges: array of (nodeA, nodeB, metadata)
+```
+
+### Requirements
+
+* node ordering MUST be preserved
+* edge ordering MUST be preserved
+* adjacency queries MUST be deterministic
+* metadata MUST be Axion-visible
+
+---
+
+# 4. Structural Types
+
+## 4.1 Records (Structs)
+
+### Requirements
+
+* fields MUST have a fixed global ordering
+* no implicit reordering
+* field names MUST be unique
+* all fields MUST be canonical and Axion-visible
+
+---
+
+## 4.2 Enums
+
+### Requirements
+
+* variants MUST be globally distinct
+* variant ordering MUST be preserved
+* payloads MUST be canonicalized
+
+---
+
+## 4.3 Optional and Result Types
+
+### Option[T]
+
+* MUST be either `Some(value)` or `None`
+* MUST NOT allow null references
+
+### Result[T, E]
+
+* deterministic error propagation
+* MUST NOT support exceptions
+* MUST encode domain errors as canonical `E`
+
+---
+
+# 5. Canonicalization Rules (Critical Normative Section)
+
+This is the most important part of the entire spec.
+
+Canonicalization MUST occur after:
+
+* creation
+* arithmetic operations
+* parsing
+* loading from VM memory
+* serialization
+* Axion inspection
+
+## 5.1 Invariants for All Types
+
+1. **No redundant forms**
+
+   * fractions reduce
+   * integers strip leading zeros
+   * floats normalize mantissa/exponent
+
+2. **Deterministic ordering**
+
+   * arrays, structs, enums all follow strict order rules
+
+3. **Deterministic hashing**
+
+   * MUST depend only on canonical form
+
+4. **Axion visibility**
+
+   * Axion MUST be able to inspect normalized representation
+
+---
+
+# 6. Interoperability Rules
+
+## 6.1 With TISC (Instruction Set)
+
+* TISC immediates MUST encode canonical forms
+* registers MUST contain normalized values only
+* decoding MUST fail deterministically for non-canonical inputs
+
+## 6.2 With T81VM
+
+* GC MUST preserve canonical representations
+* runtime MUST reject malformed structural types
+* VM serialization MUST preserve canonical form exactly
+
+## 6.3 With T81Lang
+
+* static type checking MUST enforce canonical invariants
+* semantic analyzer MUST normalize literals
+* IR must mark all values with canonical metadata
+
+## 6.4 With Axion
+
+* Axion MUST receive metadata on:
+
+  * normalization
+  * overflow attempts
+  * uncanonical construction
+  * drift in recursive structures
+
+## 6.5 With Cognitive Tiers
+
+Higher tiers depend on deterministic and canonical types for:
+
+* symbolic graphs
+* tensor recursion
+* cognitive state transitions
+
+---
+
+# 7. Error Model (Normative)
+
+All errors MUST be represented via:
+
+```
+Result[T, E]
+```
+
+### Errors include:
+
+* division by zero
+* non-canonical input
+* malformed tensor shape
+* overflow in intermediate BigInt
+* invalid Fractions (0 denominator)
+* invalid enumeration variants
+* recursion depth failures
+
+No exceptions or traps allowed.
+
+---
+
+# 8. Serialization
+
+All serialized forms MUST:
+
+* encode canonical representations only
+* be round-trip stable
+* be fully deterministic
+* be Axion-inspectable
+* never encode invalid states
+
+Binary and textual variants allowed; semantics identical.
+
+---
+
+# 9. Future Extensions (Non-Normative)
+
+Future type extensions MAY include:
+
+* symbolic algebra types
+* holotensor types for high-tier cognition
+* ternary complex numbers
+* probabilistic bounded distributions
+* canonical semantic graphs
+
+All MUST follow determinism and canonicalization invariants.
+
+---
+
+# 10. Status
+
+Pending review, discussion, and approval as v0.2 of the T81 Data Types Standard.
 
 ---
 
