@@ -16,8 +16,6 @@ RFCs complement the main specification suite by capturing:
 
 All RFCs follow the standard structure:
 
-```
-
 RFC-NNNN — Title
 Version — Draft/Proposal/Accepted
 Applies To — affected layers
@@ -28,8 +26,6 @@ Rationale
 Backwards Compatibility
 Security Considerations
 Open Questions
-
-```
 
 ---
 
