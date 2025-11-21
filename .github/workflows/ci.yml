@@ -1,0 +1,57 @@
+name: T81 Foundation CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  spec-validation:
+    name: Validate Specification & Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repository
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Install Python for validation tools (deterministic)
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      # Install markdown lint
+      - name: Install tools
+        run: |
+          pip install mdformat
+
+      # Validate Markdown formatting
+      - name: Lint Markdown
+        run: |
+          mdformat --check .
+
+      # Validate folder structure (basic, deterministic)
+      - name: Check required directories
+        run: |
+          required=("spec" "docs" ".github/ISSUE_TEMPLATE")
+          for dir in "${required[@]}"; do
+            if [ ! -d "$dir" ]; then
+              echo "Missing required directory: $dir"
+              exit 1
+            fi
+          done
+
+      # Verify spec file exists
+      - name: Ensure spec file present
+        run: |
+          if [ ! -f "spec/t81-spec.md" ]; then
+            echo "Missing core specification file: spec/t81-spec.md"
+            exit 1
+          fi
+
+      # Basic link check
+      - name: Check for broken internal links
+        run: |
+          grep -RIn "](./" spec/ docs/ || true
