@@ -1,0 +1,28 @@
+name: Build PDFs
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Tectonic
+      run: sudo apt-get install -y tectonic
+
+    - name: Install Pandoc
+      run: sudo apt-get install -y pandoc
+
+    - name: Build PDFs
+      run: bash pdf/build.sh
+
+    - name: Upload PDF artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: t81-pdfs
+        path: pdf/output/**
