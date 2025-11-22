@@ -1,6 +1,3 @@
-Here is the **perfect, canonical README.md** for your current `t81-foundation` repository — written for November 22, 2025, and 100% faithful to what you actually have on disk right now.
-
-```markdown
 # t81-foundation — The Sovereign Ternary Computing Stack  
 **v1.0.0-SOVEREIGN — November 22, 2025**
 
