@@ -1,0 +1,41 @@
+title: T81 Foundation
+description: Deterministic Ternary Computing Architecture
+theme: minima
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+exclude:
+  - pdf/
+  - scripts/
+  - tests/
+
+collections:
+  spec:
+    output: true
+  rfcs:
+    output: true
+  guides:
+    output: true
+
+defaults:
+  - scope:
+      path: ""
+      type: spec
+    values:
+      layout: spec
+  - scope:
+      path: ""
+      type: rfcs
+    values:
+      layout: page
+  - scope:
+      path: ""
+      type: guides
+    values:
+      layout: page
