@@ -1,3 +1,5 @@
+![T81 Foundation Banner](assets/img/banner.png)
+
 # T81 Foundation  
 Deterministic Ternary Computing Architecture
 
