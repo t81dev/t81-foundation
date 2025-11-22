@@ -1,4 +1,4 @@
-![T81 Foundation Banner](assets/img/banner.png)
+![T81 Foundation Banner](/docs/assets/img/banner.png)
 
 # t81-foundation
 
