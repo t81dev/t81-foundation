@@ -1,6 +1,6 @@
 ![T81 Foundation Banner](/docs/assets/img/banner.png)
 
-# t81-foundation
+# T81-Foundation
 
 The core specification and architectural baseline for the T81 Ecosystem—a deterministic, ternary-native computing stack built around base-81 arithmetic, the TISC instruction set, the T81 Virtual Machine, the T81Lang programming language, and the Axion optimization and ethical layer.
 
