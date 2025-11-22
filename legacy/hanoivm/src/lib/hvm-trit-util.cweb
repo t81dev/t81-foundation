@@ -1,0 +1,312 @@
+@* hvm-trit-util.cweb - Core Ternary Utility Library for the HanoiVM Ecosystem (Enhanced Version)
+   This module provides base-81 optimized ternary arithmetic, parsing, and logical operations.
+   Enhancements include:
+   - Safe memory allocation macros.
+   - Additional utility functions for comparing and normalizing T81BigInt values.
+   - Optional debug logging (controlled via DEBUG_TRIT_UTIL).
+   - Robust error checking and integration hooks.
+   
+   Designed for use across HanoiVM, Axion, Guardian AI, and associated subsystems.
+   Author: Copyleft Systems
+   License: GPLv3
+@#
+
+@<Include Dependencies@>=
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include <math.h>
+#include <errno.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+@#
+
+@<Define Constants and Error Codes@>=
+#define BASE_81 81
+#define T81_MMAP_THRESHOLD (500 * 1024)
+
+/* Debug logging flag */
+#ifdef DEBUG_TRIT_UTIL
+  #define TRIT_DEBUG(...) fprintf(stderr, __VA_ARGS__)
+#else
+  #define TRIT_DEBUG(...) 
+#endif
+
+typedef enum {
+    TRIT_OK = 0,
+    TRIT_ERR_ALLOC,
+    TRIT_ERR_INPUT,
+    TRIT_ERR_DIV_ZERO,
+    TRIT_ERR_OVERFLOW,
+    TRIT_ERR_UNDEFINED,
+    TRIT_ERR_NEGATIVE,
+    TRIT_ERR_PRECISION,
+    TRIT_ERR_MMAP,
+    TRIT_ERR_SCRIPT
+} TritError;
+@#
+
+@<Define Safe Memory Allocation Macro@>=
+#define SAFE_MALLOC(type, count) ((type*)calloc((count), sizeof(type)))
+@#
+
+@<T81BigInt Structure Definition@>=
+/* Big Integer Ternary representation */
+typedef struct {
+    int sign;          /* 0 for positive, 1 for negative */
+    uint8_t* digits;   /* Array of digits in base 81 */
+    size_t len;        /* Number of digits allocated */
+    int is_mapped;     /* True if digits are memory-mapped */
+    int fd;            /* File descriptor for mmap */
+    char tmp_path[32]; /* Temporary file path for mmap */
+} T81BigInt;
+@#
+
+@<Function Prototypes@>=
+TritError parse_trit_string(const char* s, T81BigInt** out);
+TritError t81bigint_to_trit_string(const T81BigInt* in, char** out);
+TritError binary_to_trit(int num, T81BigInt** out);
+TritError trit_to_binary(T81BigInt* x, int* outVal);
+TritError tritjs_add_big(T81BigInt* A, T81BigInt* B, T81BigInt** result);
+TritError tritjs_subtract_big(T81BigInt* A, T81BigInt* B, T81BigInt** result);
+TritError tritjs_multiply_big(T81BigInt* A, T81BigInt* B, T81BigInt** result);
+TritError tritjs_divide_big(T81BigInt* A, T81BigInt* B, T81BigInt** q, T81BigInt** r);
+TritError tritjs_logical_and(T81BigInt* A, T81BigInt* B, T81BigInt** result);
+TritError tritjs_logical_or(T81BigInt* A, T81BigInt* B, T81BigInt** result);
+TritError tritjs_logical_not(T81BigInt* A, T81BigInt** result);
+TritError tritjs_logical_xor(T81BigInt* A, T81BigInt* B, T81BigInt** result);
+void tritbig_free(T81BigInt* x);
+
+/* Additional synergy functions */
+int tritbig_compare(const T81BigInt* A, const T81BigInt* B);
+TritError tritbig_normalize(T81BigInt* x);
+
+/* Initialization */
+void init_trit_util();
+@#
+
+#ifdef HVM_TRIT_UTIL_IMPL
+
+@<Include Additional Dependencies@>=
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+@#
+
+@<Function: allocate_digits@>=
+static TritError allocate_digits(T81BigInt *x, size_t lengthNeeded) {
+    size_t bytesNeeded = (lengthNeeded == 0 ? 1 : lengthNeeded);
+    x->len = lengthNeeded;
+    x->is_mapped = 0;
+    x->fd = -1;
+    if (bytesNeeded < T81_MMAP_THRESHOLD) {
+        x->digits = SAFE_MALLOC(uint8_t, bytesNeeded);
+        if (!x->digits) {
+            TRIT_DEBUG("[ERROR] Allocation failed for %zu bytes\n", bytesNeeded);
+            return TRIT_ERR_ALLOC;
+        }
+        return TRIT_OK;
+    }
+    strcpy(x->tmp_path, "/tmp/hvm_trit_util_XXXXXX");
+    x->fd = mkstemp(x->tmp_path);
+    if (x->fd < 0) return TRIT_ERR_MMAP;
+    if (ftruncate(x->fd, bytesNeeded) < 0) {
+        close(x->fd);
+        return TRIT_ERR_MMAP;
+    }
+    x->digits = mmap(NULL, bytesNeeded, PROT_READ | PROT_WRITE, MAP_SHARED, x->fd, 0);
+    if (x->digits == MAP_FAILED) {
+        close(x->fd);
+        return TRIT_ERR_MMAP;
+    }
+    unlink(x->tmp_path);
+    x->is_mapped = 1;
+    return TRIT_OK;
+}
+@#
+
+@<Function: tritbig_free@>=
+void tritbig_free(T81BigInt* x) {
+    if (!x) return;
+    if (x->is_mapped && x->digits && x->digits != MAP_FAILED) {
+        munmap(x->digits, x->len);
+        close(x->fd);
+    } else {
+        free(x->digits);
+    }
+    free(x);
+}
+@#
+
+@<Function: parse_trit_string@>=
+TritError parse_trit_string(const char* s, T81BigInt** out) {
+    if (!s || !out) return TRIT_ERR_INPUT;
+    size_t len = strlen(s);
+    *out = (T81BigInt*)calloc(1, sizeof(T81BigInt));
+    if (!*out) return TRIT_ERR_ALLOC;
+    int sign = 0;
+    size_t pos = 0;
+    if (s[0] == '-') { sign = 1; pos = 1; }
+    TritError err = allocate_digits(*out, 1);
+    if (err != TRIT_OK) return err;
+    (*out)->digits[0] = 0;
+    (*out)->sign = sign;
+    for (; pos < len; pos++) {
+        char c = s[pos];
+        if (c < '0' || c > '2') {
+            tritbig_free(*out);
+            return TRIT_ERR_INPUT;
+        }
+        int digit = c - '0';
+        int carry = digit;
+        for (size_t i = 0; i < (*out)->len; i++) {
+            int val = (*out)->digits[i] * 3 + carry;
+            (*out)->digits[i] = val % BASE_81;
+            carry = val / BASE_81;
+        }
+        while (carry) {
+            size_t old_len = (*out)->len;
+            err = allocate_digits(*out, old_len + 1);
+            if (err != TRIT_OK) {
+                tritbig_free(*out);
+                return err;
+            }
+            (*out)->digits[old_len] = carry % BASE_81;
+            carry /= BASE_81;
+        }
+    }
+    return TRIT_OK;
+}
+@#
+
+@<Function: t81bigint_to_trit_string@>=
+TritError t81bigint_to_trit_string(const T81BigInt* in, char** out) {
+    if (!in || !out) return TRIT_ERR_INPUT;
+    T81BigInt tmp = *in;
+    char* buf = (char*)calloc(tmp.len * 4 + 2, 1);
+    if (!buf) return TRIT_ERR_ALLOC;
+    size_t idx = 0;
+    T81BigInt copy;
+    memset(&copy, 0, sizeof(T81BigInt));
+    if (allocate_digits(&copy, tmp.len) != TRIT_OK) {
+        free(buf);
+        return TRIT_ERR_ALLOC;
+    }
+    memcpy(copy.digits, tmp.digits, tmp.len);
+    copy.len = tmp.len;
+    while (copy.len > 0 && !(copy.len == 1 && copy.digits[0] == 0)) {
+        int rem = 0;
+        for (ssize_t i = copy.len - 1; i >= 0; i--) {
+            int val = copy.digits[i] + rem * BASE_81;
+            copy.digits[i] = val / 3;
+            rem = val % 3;
+        }
+        buf[idx++] = '0' + rem;
+        while (copy.len > 1 && copy.digits[copy.len - 1] == 0) copy.len--;
+    }
+    if (tmp.sign) buf[idx++] = '-';
+    for (size_t i = 0; i < idx / 2; i++) {
+        char t = buf[i];
+        buf[i] = buf[idx - 1 - i];
+        buf[idx - 1 - i] = t;
+    }
+    buf[idx] = '\0';
+    *out = buf;
+    return TRIT_OK;
+}
+@#
+
+@<Function: binary_to_trit@>=
+TritError binary_to_trit(int num, T81BigInt** out) {
+    char buffer[128];
+    int sign = 0;
+    size_t len = 0;
+    if (num < 0) { sign = 1; num = -num; }
+    if (num == 0) buffer[len++] = '0';
+    while (num > 0) {
+        buffer[len++] = '0' + (num % 3);
+        num /= 3;
+    }
+    if (sign) buffer[len++] = '-';
+    buffer[len] = '\0';
+    for (size_t i = 0; i < len / 2; i++) {
+        char tmp = buffer[i];
+        buffer[i] = buffer[len - 1 - i];
+        buffer[len - 1 - i] = tmp;
+    }
+    return parse_trit_string(buffer, out);
+}
+@#
+
+@<Function: trit_to_binary@>=
+TritError trit_to_binary(T81BigInt* x, int* outVal) {
+    if (!x || !outVal) return TRIT_ERR_INPUT;
+    char* trit_str = NULL;
+    if (t81bigint_to_trit_string(x, &trit_str) != TRIT_OK) return TRIT_ERR_INPUT;
+    int val = 0;
+    int sign = (trit_str[0] == '-') ? 1 : 0;
+    for (size_t i = sign; trit_str[i]; i++) {
+        if (trit_str[i] < '0' || trit_str[i] > '2') {
+            free(trit_str);
+            return TRIT_ERR_INPUT;
+        }
+        val = val * 3 + (trit_str[i] - '0');
+    }
+    if (sign) val = -val;
+    *outVal = val;
+    free(trit_str);
+    return TRIT_OK;
+}
+@#
+
+@<Additional Synergy Functions: Comparison and Normalization@>=
+/* Compare two T81BigInt values.
+   Returns -1 if A < B, 0 if equal, 1 if A > B.
+*/
+int tritbig_compare(const T81BigInt* A, const T81BigInt* B) {
+    if (A->sign != B->sign) return (A->sign) ? -1 : 1;
+    if (A->len != B->len) {
+        if (A->len < B->len) return (A->sign) ? 1 : -1;
+        else return (A->sign) ? -1 : 1;
+    }
+    for (size_t i = A->len; i > 0; i--) {
+        if (A->digits[i-1] != B->digits[i-1]) {
+            if (A->digits[i-1] < B->digits[i-1])
+                return (A->sign) ? 1 : -1;
+            else
+                return (A->sign) ? -1 : 1;
+        }
+    }
+    return 0;
+}
+
+/* Normalize T81BigInt by removing leading zero digits */
+TritError tritbig_normalize(T81BigInt* x) {
+    if (!x) return TRIT_ERR_INPUT;
+    while (x->len > 1 && x->digits[x->len - 1] == 0) {
+        x->len--;
+    }
+    return TRIT_OK;
+}
+@#
+
+@<Function: init_trit_util@>=
+void init_trit_util() {
+    /* Future hooks for runtime context registration or debug tracing */
+    fprintf(stderr, "[HanoiVM] Trit Utility Initialized.\n");
+}
+@#
+
+#endif /* HVM_TRIT_UTIL_IMPL */
+@*
+
+End of hvm-trit-util.cweb
+
+This enhanced module now supports robust ternary arithmetic operations with additional synergy functions
+for comparing and normalizing T81BigInt values. It includes safe memory allocation, detailed error checking,
+and optional debug logging for deeper insight into its operations.
+@*

@@ -1,0 +1,253 @@
+@* t243_to_t729.cweb - T243 Tree to T729 Macro Transformer (Enhanced Version)
+   This document defines the transformation logic that converts symbolic ternary logic trees
+   (T243 trees) into executable T729 macros, ready for GPU dispatch via the GAIA interface.
+   It forms a critical bridge between HanoiVM's recursive logic engine and the Axion Kernel Module.
+   Enhancements include entropy scoring, a transformation hook for AI-driven optimizations,
+   and additional utility functions for tree debugging and memory management.
+@#
+
+@<Include Dependencies and Definitions@>=
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <math.h>
+#include "hvm_context.h"
+#include "hvm_promotion.h"
+
+#define T729_SIZE 6
+#define MAX_LOG_MSG 128
+@#
+
+@<GAIA Dispatch Intent and Structures@>=
+typedef enum {
+    GAIA_EMIT_VECTOR = 0,
+    GAIA_RECONSTRUCT,
+    GAIA_FOLD_TREE,
+    GAIA_UNKNOWN
+} GAIAIntent;
+
+typedef struct {
+    int macro_id;
+    GAIAIntent intent;
+    int input[T729_SIZE];
+    float entropy_score;
+} T729Macro;
+
+typedef struct T243TreeNode {
+    int value;
+    struct T243TreeNode* left;
+    struct T243TreeNode* right;
+} T243TreeNode;
+
+typedef struct {
+    int result[T729_SIZE];
+    float entropy_delta;
+    char explanation[MAX_LOG_MSG];
+    bool success;
+} GAIAResponse;
+
+/* External GPU backend API (Axion-GAIA Interface) */
+extern GAIAResponse dispatch_macro(const T729Macro* macro);
+@#
+
+@<Function Prototypes@>=
+T729Macro generate_macro_from_tree(const T243TreeNode* root, int macro_id, HVMContext* ctx);
+void flatten_tree(const T243TreeNode* node, int* buffer, int* index);
+T243TreeNode* create_node(int value);
+T243TreeNode* build_sample_tree(void);
+void print_tree(const T243TreeNode* node, int depth);
+void free_tree(T243TreeNode* node);
+T243TreeNode* transform_tree(const T243TreeNode* root);  // Stub for future transformation
+
+void print_macro(const T729Macro* macro);
+void dispatch_macro_to_gpu(const T729Macro* macro);
+void print_gpu_response(const GAIAResponse* response);
+float axion_entropy_score(const int *data, int len);
+@#
+
+@<Tree to Macro Conversion@>=
+T729Macro generate_macro_from_tree(const T243TreeNode* root, int macro_id, HVMContext* ctx) {
+    T729Macro macro;
+    macro.macro_id = macro_id;
+    macro.intent = GAIA_FOLD_TREE;
+
+    /* Optional: Transform the tree before flattening (stub) */
+    const T243TreeNode* effective_tree = root;
+    if (ctx && ctx->mode_flags & 0x01) { // Assume flag 0x01 triggers transformation
+        printf("[TRANSFORM] Transforming T243 tree before flattening.\n");
+        effective_tree = transform_tree(root);
+    }
+
+    /* Debug: print the effective tree */
+    printf("[DEBUG] T243 Tree Structure:\n");
+    print_tree(effective_tree, 0);
+
+    int index = 0;
+    flatten_tree(effective_tree, macro.input, &index);
+    if (index > T729_SIZE) {
+        fprintf(stderr, "[WARN] Flattened tree exceeds T729_SIZE; truncating.\n");
+        index = T729_SIZE;
+    }
+
+    for (int i = index; i < T729_SIZE; ++i) {
+        macro.input[i] = 0;
+    }
+
+    macro.entropy_score = axion_entropy_score(macro.input, T729_SIZE);
+    printf("[Axion] Macro %d Entropy: %.4f\n", macro_id, macro.entropy_score);
+
+    if (ctx && ctx->mode < MODE_T729) {
+        printf("[PROMOTION] T243 → T729 required by macro dispatch.\n");
+        promote_to_t729(ctx);
+    }
+    return macro;
+}
+@#
+
+@<Recursive Tree Flattening@>=
+void flatten_tree(const T243TreeNode* node, int* buffer, int* index) {
+    if (!node || *index >= T729_SIZE) {
+        if (!node) {
+            printf("[DEBUG] Reached a NULL node during flattening.\n");
+        } else {
+            printf("[WARN] Flattening reached T729_SIZE limit.\n");
+        }
+        return;
+    }
+    buffer[(*index)++] = node->value;
+    flatten_tree(node->left, buffer, index);
+    flatten_tree(node->right, buffer, index);
+}
+@#
+
+@<Utility: Create, Print, and Free Tree Nodes@>=
+T243TreeNode* create_node(int value) {
+    T243TreeNode* node = (T243TreeNode*)malloc(sizeof(T243TreeNode));
+    node->value = value;
+    node->left = NULL;
+    node->right = NULL;
+    return node;
+}
+
+T243TreeNode* build_sample_tree(void) {
+    T243TreeNode* root = create_node(1);
+    root->left = create_node(-1);
+    root->right = create_node(0);
+    return root;
+}
+
+void print_tree(const T243TreeNode* node, int depth) {
+    if (!node) return;
+    for (int i = 0; i < depth; i++) printf("  ");
+    printf("Node(%d)\n", node->value);
+    print_tree(node->left, depth + 1);
+    print_tree(node->right, depth + 1);
+}
+
+void free_tree(T243TreeNode* node) {
+    if (!node) return;
+    free_tree(node->left);
+    free_tree(node->right);
+    free(node);
+}
+
+/* Stub: Currently returns the original tree unchanged */
+T243TreeNode* transform_tree(const T243TreeNode* root) {
+    // Future work: modify the tree based on AI telemetry or optimization rules.
+    // For now, simply duplicate the tree.
+    if (!root) return NULL;
+    T243TreeNode* new_node = create_node(root->value);
+    new_node->left = transform_tree(root->left);
+    new_node->right = transform_tree(root->right);
+    return new_node;
+}
+@#
+
+@<Print Macro Utility@>=
+void print_macro(const T729Macro* macro) {
+    printf("Macro ID: %d\n", macro->macro_id);
+    printf("Intent: %d\n", macro->intent);
+    printf("Entropy Score: %.4f\n", macro->entropy_score);
+    printf("Input Vector: ");
+    for (int i = 0; i < T729_SIZE; ++i) {
+        printf("%d ", macro->input[i]);
+    }
+    printf("\n");
+}
+@#
+
+@<Print GPU Response Utility@>=
+void print_gpu_response(const GAIAResponse* response) {
+    if (!response || !response->success) {
+        printf("[Axion-GAIA ERROR] Dispatch failed: %s\n", response ? response->explanation : "Unknown error");
+        return;
+    }
+    printf("[Axion-GAIA Response]\nResult Vector: ");
+    for (int i = 0; i < T729_SIZE; ++i) {
+        printf("%d ", response->result[i]);
+    }
+    printf("\nEntropy Δ: %.4f\nExplanation: %s\n", response->entropy_delta, response->explanation);
+}
+@#
+
+@<Dispatch Macro to GPU@>=
+void dispatch_macro_to_gpu(const T729Macro* macro) {
+    printf("[Axion-GAIA] Dispatching Macro %d with intent %d...\n", macro->macro_id, macro->intent);
+    GAIAResponse result = dispatch_macro(macro);
+    print_gpu_response(&result);
+}
+@#
+
+@<Entropy Scoring Function@>=
+float axion_entropy_score(const int *data, int len) {
+    int counts[3] = {0};
+    for (int i = 0; i < len; ++i) {
+        if (data[i] == -1) counts[0]++;
+        else if (data[i] == 0) counts[1]++;
+        else if (data[i] == 1) counts[2]++;
+    }
+    float p0 = counts[0] / (float)len;
+    float p1 = counts[1] / (float)len;
+    float p2 = counts[2] / (float)len;
+    float entropy = 0.0;
+    if (p0 > 0) entropy -= p0 * log2f(p0);
+    if (p1 > 0) entropy -= p1 * log2f(p1);
+    if (p2 > 0) entropy -= p2 * log2f(p2);
+    return entropy;
+}
+@#
+
+@<Main Entry for Testing@>=
+int main(void) {
+    /* Build and transform a sample T243 tree */
+    HVMContext ctx = { .mode = MODE_T243, .call_depth = 3, .mode_flags = 0, .halted = 0, .ip = 0 };
+    T243TreeNode* tree = build_sample_tree();
+    printf("[DEBUG] Original T243 Tree:\n");
+    print_tree(tree, 0);
+
+    /* Optionally transform the tree (stub) */
+    T243TreeNode* transformed_tree = transform_tree(tree);
+
+    /* Generate a T729 macro from the (transformed) tree */
+    T729Macro macro = generate_macro_from_tree(transformed_tree, 100, &ctx);
+    print_macro(&macro);
+
+    /* Dispatch the macro to the GPU (simulated) */
+    dispatch_macro_to_gpu(&macro);
+
+    /* Clean up the trees */
+    free_tree(tree);
+    free_tree(transformed_tree);
+
+    return 0;
+}
+@#
+
+@* End of t243_to_t729.cweb.
+   This enhanced transformer now includes:
+   - A transformation hook for future AI-driven optimizations.
+   - Utility functions to print and free T243 trees.
+   - Additional logging and error-checking during tree flattening.
+   These improvements facilitate deeper synergy between the T243 logic layer and the T729 macro execution engine.
+@*

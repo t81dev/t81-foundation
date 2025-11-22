@@ -1,0 +1,256 @@
+@* t729tensor.cweb: T729Tensor — Tensor Operations over Base-729 (Enhanced Version)
+   This module defines tensor memory management and operations under Base-729.
+   It leverages flat memory layouts to support reshape, contract, transpose, and slice operations.
+   Additional utilities include tensor cloning and printing for debugging.
+@#
+
+@<Include Dependencies@>=
+#include "ternary_base.h"  // Assumed to define BASE_729 and TernaryHandle
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+@#
+
+@<Define Verbose Logging Macro@>=
+#ifndef VERBOSE_T729TENSOR
+  #define VERBOSE_T729TENSOR 0
+#endif
+#if VERBOSE_T729TENSOR
+  #define VPRINT(fmt, ...) printf("[T729Tensor DEBUG] " fmt, ##__VA_ARGS__)
+#else
+  #define VPRINT(fmt, ...) 
+#endif
+@#
+
+@<Define T729Tensor struct@>=
+typedef struct {
+    int rank;
+    int* shape;
+    float* data; // Flat tensor storage
+} T729Tensor;
+@#
+
+@<Compute Tensor Size@>=
+static size_t t729tensor_size(const T729Tensor* t) {
+    if (!t || !t->shape) return 0;
+    size_t size = 1;
+    for (int i = 0; i < t->rank; ++i)
+        size *= t->shape[i];
+    VPRINT("Computed tensor size: %zu\n", size);
+    return size;
+}
+@#
+
+@<Tensor Allocation@>=
+TernaryHandle t729tensor_new(int rank, const int* shape) {
+    T729Tensor* tensor = (T729Tensor*)malloc(sizeof(T729Tensor));
+    if (!tensor) {
+        fprintf(stderr, "Error: Memory allocation failed for T729Tensor\n");
+        exit(1);
+    }
+    tensor->rank = rank;
+    tensor->shape = (int*)malloc(sizeof(int) * rank);
+    if (!tensor->shape) {
+        fprintf(stderr, "Error: Memory allocation failed for tensor shape\n");
+        free(tensor);
+        exit(1);
+    }
+    memcpy(tensor->shape, shape, sizeof(int) * rank);
+
+    size_t size = t729tensor_size(tensor);
+    tensor->data = (float*)calloc(size, sizeof(float));
+    if (!tensor->data) {
+        fprintf(stderr, "Error: Memory allocation failed for tensor data\n");
+        free(tensor->shape);
+        free(tensor);
+        exit(1);
+    }
+    VPRINT("Allocated new tensor: rank %d, total elements %zu\n", rank, size);
+
+    TernaryHandle h = { .base = BASE_729, .data = tensor };
+    return h;
+}
+@#
+
+@<Contract Two Rank-1 Tensors@>=
+int t729tensor_contract(TernaryHandle a, TernaryHandle b, TernaryHandle* result) {
+    T729Tensor* A = (T729Tensor*)a.data;
+    T729Tensor* B = (T729Tensor*)b.data;
+    if (A->rank != 1 || B->rank != 1 || A->shape[0] != B->shape[0])
+        return -1;
+
+    float dot = 0.0f;
+    for (int i = 0; i < A->shape[0]; ++i)
+        dot += A->data[i] * B->data[i];
+
+    T729Tensor* out = (T729Tensor*)malloc(sizeof(T729Tensor));
+    if (!out) return -1;
+    out->rank = 1;
+    out->shape = (int*)malloc(sizeof(int));
+    if (!out->shape) { free(out); return -1; }
+    out->shape[0] = 1;
+    out->data = (float*)malloc(sizeof(float));
+    if (!out->data) { free(out->shape); free(out); return -1; }
+    out->data[0] = dot;
+
+    result->base = BASE_729;
+    result->data = out;
+    VPRINT("Contracted two rank-1 tensors; dot product: %.3f\n", dot);
+    return 0;
+}
+@#
+
+@<Transpose Rank-2 Tensor@>=
+int t729tensor_transpose(TernaryHandle h, TernaryHandle* result) {
+    T729Tensor* t = (T729Tensor*)h.data;
+    if (!t || t->rank != 2) return -1;
+
+    int rows = t->shape[0];
+    int cols = t->shape[1];
+
+    T729Tensor* out = (T729Tensor*)malloc(sizeof(T729Tensor));
+    if (!out) return -1;
+    out->rank = 2;
+    out->shape = (int*)malloc(sizeof(int) * 2);
+    if (!out->shape) { free(out); return -1; }
+    out->shape[0] = cols;
+    out->shape[1] = rows;
+    out->data = (float*)malloc(sizeof(float) * rows * cols);
+    if (!out->data) { free(out->shape); free(out); return -1; }
+
+    for (int i = 0; i < rows; ++i)
+        for (int j = 0; j < cols; ++j)
+            out->data[j * rows + i] = t->data[i * cols + j];
+
+    result->base = BASE_729;
+    result->data = out;
+    VPRINT("Transposed tensor from [%d x %d] to [%d x %d]\n", rows, cols, cols, rows);
+    return 0;
+}
+@#
+
+@<Reshape Tensor with Validation@>=
+int t729tensor_reshape(TernaryHandle h, int new_rank, const int* new_shape, TernaryHandle* result) {
+    T729Tensor* t = (T729Tensor*)h.data;
+    size_t original_size = t729tensor_size(t);
+
+    size_t new_size = 1;
+    for (int i = 0; i < new_rank; ++i)
+        new_size *= new_shape[i];
+
+    if (new_size != original_size) {
+        VPRINT("Reshape failed: original size %zu != new size %zu\n", original_size, new_size);
+        return -1;
+    }
+
+    T729Tensor* reshaped = (T729Tensor*)malloc(sizeof(T729Tensor));
+    if (!reshaped) return -1;
+    reshaped->rank = new_rank;
+    reshaped->shape = (int*)malloc(sizeof(int) * new_rank);
+    if (!reshaped->shape) { free(reshaped); return -1; }
+    memcpy(reshaped->shape, new_shape, sizeof(int) * new_rank);
+
+    reshaped->data = (float*)malloc(sizeof(float) * new_size);
+    if (!reshaped->data) { free(reshaped->shape); free(reshaped); return -1; }
+    memcpy(reshaped->data, t->data, sizeof(float) * new_size);
+
+    result->base = BASE_729;
+    result->data = reshaped;
+    VPRINT("Reshaped tensor successfully\n");
+    return 0;
+}
+@#
+
+@<Slice Tensor by Dimension and Range@>=
+int t729tensor_slice(TernaryHandle h, int dim, int start, int end, TernaryHandle* result) {
+    T729Tensor* t = (T729Tensor*)h.data;
+    if (!t || dim >= t->rank || start < 0 || end > t->shape[dim] || start >= end)
+        return -1;
+
+    int* new_shape = (int*)malloc(sizeof(int) * t->rank);
+    if (!new_shape) return -1;
+    memcpy(new_shape, t->shape, sizeof(int) * t->rank);
+    new_shape[dim] = end - start;
+
+    size_t stride = 1;
+    for (int i = dim + 1; i < t->rank; ++i)
+        stride *= t->shape[i];
+
+    size_t slice_size = (end - start) * stride;
+    float* new_data = (float*)malloc(sizeof(float) * slice_size);
+    if (!new_data) { free(new_shape); return -1; }
+    memcpy(new_data, t->data + start * stride, sizeof(float) * slice_size);
+
+    T729Tensor* sliced = (T729Tensor*)malloc(sizeof(T729Tensor));
+    if (!sliced) { free(new_data); free(new_shape); return -1; }
+    sliced->rank = t->rank;
+    sliced->shape = new_shape;
+    sliced->data = new_data;
+
+    result->base = BASE_729;
+    result->data = sliced;
+    VPRINT("Sliced tensor along dim %d from %d to %d\n", dim, start, end);
+    return 0;
+}
+@#
+
+@<Tensor Cloning Function@>=
+/* Creates a deep copy of a T729Tensor and returns it as a TernaryHandle */
+TernaryHandle t729tensor_clone(TernaryHandle h) {
+    T729Tensor* src = (T729Tensor*)h.data;
+    T729Tensor* clone = (T729Tensor*)malloc(sizeof(T729Tensor));
+    if (!clone) {
+        fprintf(stderr, "Error: Memory allocation failed in t729tensor_clone\n");
+        exit(1);
+    }
+    clone->rank = src->rank;
+    clone->shape = (int*)malloc(sizeof(int) * src->rank);
+    if (!clone->shape) { free(clone); exit(1); }
+    memcpy(clone->shape, src->shape, sizeof(int) * src->rank);
+    size_t size = t729tensor_size(src);
+    clone->data = (float*)malloc(sizeof(float) * size);
+    if (!clone->data) { free(clone->shape); free(clone); exit(1); }
+    memcpy(clone->data, src->data, sizeof(float) * size);
+    TernaryHandle result = { .base = BASE_729, .data = clone };
+    VPRINT("Cloned tensor successfully\n");
+    return result;
+}
+@#
+
+@<Tensor Print Function@>=
+/* Prints the tensor's rank, shape, and data to stdout */
+void t729tensor_print(TernaryHandle h) {
+    T729Tensor* t = (T729Tensor*)h.data;
+    if (!t) {
+        printf("Tensor is NULL\n");
+        return;
+    }
+    printf("T729Tensor: rank = %d, shape = [", t->rank);
+    for (int i = 0; i < t->rank; i++) {
+        printf("%d%s", t->shape[i], (i < t->rank - 1) ? ", " : "");
+    }
+    printf("]\nData: ");
+    size_t size = t729tensor_size(t);
+    for (size_t i = 0; i < size; i++) {
+        printf("%.3f ", t->data[i]);
+    }
+    printf("\n");
+}
+@#
+
+@<Free Tensor@>=
+void t729tensor_free(TernaryHandle h) {
+    T729Tensor* tensor = (T729Tensor*)h.data;
+    if (tensor) {
+        free(tensor->shape);
+        free(tensor->data);
+        free(tensor);
+    }
+}
+@#
+
+@* End of t729tensor.cweb
+   This module now supports robust tensor operations in Base-729, including memory management,
+   reshape, contract, transpose, slice, cloning, and printing. Future enhancements might include
+   element-wise operations and broadcasting capabilities.
+@*

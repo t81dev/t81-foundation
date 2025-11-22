@@ -1,0 +1,140 @@
+@* libt243.cweb: T243 Logic Tree Builder, Optimizer, and Analyzer
+This module constructs, manipulates, and optimizes ternary logic trees based on Base-243 units.
+Each T243Digit encodes 5 trits (3^5 = 243) and represents mid-tier logical constructs such as branch
+conditions, AI flow structures, or function abstractions.
+
+Enhancements in this version:
+ - New optimization methods to simplify redundant branches.
+ - A transformation method to apply a function to every node.
+ - Complexity analysis for tree evaluation.
+ - Hooks for potential AI-driven dynamic reconfiguration.
+@c
+use crate::libt81::{T81Digit, T81Number}; // T81 must be implemented first
+use std::fmt;
+@#
+
+@<T243 Digit and Node Definitions@>=
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct T243Digit(pub u8);
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum T243Node {
+    Operand(T243Digit),                   // Atomic value
+    Branch(Box<T243Node>, Box<T243Node>, Box<T243Node>), // Ternary branch (if-zero, if-one, if-two)
+    Call(String, Vec<T243Node>),            // Symbolic function call
+}
+@#
+
+@<T243 Logic Tree Definition@>=
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct T243LogicTree {
+    pub root: T243Node,
+    pub name: Option<String>,
+}
+@#
+
+@<Implementations for T243Digit@>=
+impl T243Digit {
+    /// Creates a new valid T243 digit.
+    pub fn new(val: u8) -> Option<T243Digit> {
+        if val < 243 {
+            Some(T243Digit(val))
+        } else {
+            None
+        }
+    }
+
+    /// Converts a T81 group (of 2+ digits) into a T243 digit.
+    pub fn from_t81_pair(a: &T81Digit, b: &T81Digit) -> T243Digit {
+        let combined = a.0 as u16 + (b.0 as u16 * 81);
+        T243Digit((combined % 243) as u8)
+    }
+
+    /// Displays the value in base-3 as a symbolic trit group.
+    pub fn to_trits(&self) -> [u8; 5] {
+        let mut value = self.0;
+        let mut trits = [0; 5];
+        for i in 0..5 {
+            trits[i] = value % 3;
+            value /= 3;
+        }
+        trits
+    }
+}
+@#
+
+@<Display Implementation for T243LogicTree@>=
+impl fmt::Display for T243LogicTree {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "LogicTree: {}\n", self.name.clone().unwrap_or("anonymous".to_string()))?;
+        self.render_node(&self.root, f, 0)
+    }
+}
+
+impl T243LogicTree {
+    /// Render tree node recursively with indentation.
+    fn render_node(&self, node: &T243Node, f: &mut fmt::Formatter, depth: usize) -> fmt::Result {
+        let indent = "  ".repeat(depth);
+        match node {
+            T243Node::Operand(d) => writeln!(f, "{}Operand({})", indent, d.0),
+            T243Node::Branch(z, o, t) => {
+                writeln!(f, "{}Branch:", indent)?;
+                self.render_node(z, f, depth + 1)?;
+                self.render_node(o, f, depth + 1)?;
+                self.render_node(t, f, depth + 1)
+            }
+            T243Node::Call(name, args) => {
+                writeln!(f, "{}Call: {}", indent, name)?;
+                for arg in args {
+                    self.render_node(arg, f, depth + 1)?;
+                }
+                Ok(())
+            }
+        }
+    }
+
+    /// Evaluate a logic tree (dummy evaluator — will evolve with AI integration).
+    pub fn evaluate(&self) -> T81Number {
+        self.eval_node(&self.root)
+    }
+
+    fn eval_node(&self, node: &T243Node) -> T81Number {
+        match node {
+            T243Node::Operand(d) => {
+                T81Number::from_digits(vec![T81Digit(d.0 % 81)], false)
+            }
+            T243Node::Branch(z, o, t) => {
+                let selector = dtrit_sum(z); // Pseudo-decision based on first branch.
+                match selector % 3 {
+                    0 => self.eval_node(z),
+                    1 => self.eval_node(o),
+                    2 => self.eval_node(t),
+                    _ => T81Number::zero(),
+                }
+            }
+            T243Node::Call(_, args) => {
+                args.iter().map(|arg| self.eval_node(arg)).fold(T81Number::zero(), |a, b| a + b)
+            }
+        }
+    }
+}
+@#
+
+@<Optimization and Transformation Methods@>=
+impl T243LogicTree {
+    /// Optimize the logic tree by simplifying redundant branches.
+    /// For example, if all branches of a Branch node are identical, replace with a single branch.
+    pub fn optimize(&mut self) {
+        self.root = T243LogicTree::optimize_node(self.root.clone());
+    }
+
+    fn optimize_node(node: T243Node) -> T243Node {
+        match node {
+            T243Node::Branch(box ref z, box ref o, box ref t) => {
+                let opt_z = T243LogicTree::optimize_node(z.clone());
+                let opt_o = T243LogicTree::optimize_node(o.clone());
+                let opt_t = T243LogicTree::optimize_node(t.clone());
+                if opt_z == opt_o && opt_o == opt_t {
+                    opt_z // Simplify redundant branch.
+                } else {
+                    T243Node::Branch(Box::new(opt_z), Box::new(opt_o), Box::new(opt_t))

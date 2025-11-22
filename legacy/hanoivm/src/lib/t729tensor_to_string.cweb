@@ -1,0 +1,102 @@
+@* t729tensor_to_string.cweb — Converts a T729Tensor to a printable string (Enhanced Version)
+   This module converts a T729Tensor into a printable string. The output includes the tensor's rank,
+   shape, and values. The buffer is dynamically resized if needed, ensuring that even large tensors are
+   handled gracefully. The caller is responsible for freeing the returned string.
+@#
+
+@<Include Dependencies@>=
+#include "t729tensor.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+@#
+
+@<Helper Function: ensure_capacity@>=
+/*
+   ensure_capacity:
+   Ensures that the buffer has enough space for additional bytes.
+   If not, it doubles the buffer size until the required capacity is met.
+*/
+static void ensure_capacity(char** buffer, size_t* bufsize, size_t additional) {
+    size_t current_len = strlen(*buffer);
+    size_t required = current_len + additional + 1; // +1 for null terminator
+    if (required > *bufsize) {
+        while (*bufsize < required) {
+            *bufsize *= 2;
+        }
+        *buffer = realloc(*buffer, *bufsize);
+        if (!*buffer) {
+            fprintf(stderr, "Memory allocation error in ensure_capacity\n");
+            exit(1);
+        }
+    }
+}
+@#
+
+@<Tensor String Serialization@>=
+int t729tensor_to_string(TernaryHandle h, char** out) {
+    T729Tensor* t = (T729Tensor*)h.data;
+    if (!t || !out) return -1;
+
+    size_t bufsize = 1024;
+    char* buffer = malloc(bufsize);
+    if (!buffer) return -1;
+    buffer[0] = '\0';
+    size_t offset = 0;
+    int n = 0;
+
+    @<Build shape string@>
+    @<Build values string@>
+
+    *out = buffer;
+    return 0;
+}
+@#
+
+@<Build shape string@>=
+{
+    char temp[256];
+    n = snprintf(temp, sizeof(temp), "T729Tensor rank=%d shape=", t->rank);
+    ensure_capacity(&buffer, &bufsize, n);
+    strcat(buffer, temp);
+    offset += n;
+
+    strcat(buffer, "[");
+    offset += 1;
+    for (int i = 0; i < t->rank; ++i) {
+        n = snprintf(temp, sizeof(temp), "%s%d", (i == 0 ? "" : ","), t->shape[i]);
+        ensure_capacity(&buffer, &bufsize, n);
+        strcat(buffer, temp);
+        offset += n;
+    }
+    n = snprintf(temp, sizeof(temp), "]\nvalues=[");
+    ensure_capacity(&buffer, &bufsize, n);
+    strcat(buffer, temp);
+    offset += n;
+}
+@#
+
+@<Build values string@>=
+{
+    size_t size = 1;
+    for (int i = 0; i < t->rank; ++i)
+        size *= t->shape[i];
+
+    char temp[256];
+    for (size_t i = 0; i < size; ++i) {
+        n = snprintf(temp, sizeof(temp), "%s%.3f", (i == 0 ? "" : ","), t->data[i]);
+        ensure_capacity(&buffer, &bufsize, n);
+        strcat(buffer, temp);
+        offset += n;
+    }
+    n = snprintf(temp, sizeof(temp), "]\n");
+    ensure_capacity(&buffer, &bufsize, n);
+    strcat(buffer, temp);
+    offset += n;
+}
+@#
+
+@* End of t729tensor_to_string.cweb
+   This module converts a T729Tensor to a printable string, including its rank, shape, and values.
+   The output buffer is dynamically resized as necessary. The caller is responsible for freeing the string.
+@*

@@ -1,0 +1,46 @@
+@* t729tensor_loader.cweb — Defines example T729 tensors for VM test programs *@
+
+@<Include Dependencies@>=
+#include "t729tensor.h"
+#include <stdio.h>
+
+@<Define 2x3 Test Tensor@>=
+TernaryHandle make_test_tensor_2x3() {
+    int shape[2] = {2, 3};
+    TernaryHandle h = t729tensor_new(2, shape);
+    T729Tensor* t = (T729Tensor*)h.data;
+
+    // Fill with values 1.0 to 6.0 row-major
+    for (int i = 0; i < 6; ++i) {
+        t->data[i] = 1.0f + (float)i;
+    }
+
+    return h;
+}
+
+@<Print Tensor@>=
+void print_tensor(TernaryHandle h) {
+    char* out = NULL;
+    if (t729tensor_to_string(h, &out) == 0 && out) {
+        printf("%s", out);
+        free(out);
+    } else {
+        printf("[T729] <unprintable tensor>\n");
+    }
+}
+
+@<Test Entry Point@>=
+int main() {
+    // Create test tensor
+    TernaryHandle tensor = make_test_tensor_2x3();
+
+    // Simulate loading into VM stack
+    extern void stack_push(TernaryHandle);
+    stack_push(tensor);
+
+    // Simulate execution of VM sequence
+    extern void execute_vm(void);
+    execute_vm();
+
+    return 0;
+}

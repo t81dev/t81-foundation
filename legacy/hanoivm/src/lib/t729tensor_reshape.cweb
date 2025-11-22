@@ -1,0 +1,109 @@
+@* t729tensor_reshape.cweb — Reshapes a T729Tensor into a new shape if valid (Enhanced Version)
+   This module reshapes a T729Tensor by verifying that the total number of elements remains
+   constant. It performs bounds checking on the new shape, allocates new memory for the reshaped
+   tensor, and copies the data accordingly. Optional debug logging is included.
+@#
+
+@<Include Dependencies@>=
+#include "t729tensor.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>  /* For debug logging */
+@#
+
+@<Define Debug Macro@>=
+#ifndef VERBOSE_TENSOR_RESHAPE
+  #define VERBOSE_TENSOR_RESHAPE 0
+#endif
+#if VERBOSE_TENSOR_RESHAPE
+  #define DEBUG_PRINT(fmt, ...) fprintf(stderr, "[t729tensor_reshape DEBUG] " fmt, ##__VA_ARGS__)
+#else
+  #define DEBUG_PRINT(fmt, ...) 
+#endif
+@#
+
+@<Compute Flat Size@>=
+static size_t t729tensor_flat_size(const T729Tensor* t) {
+    size_t size = 1;
+    for (int i = 0; i < t->rank; ++i)
+        size *= t->shape[i];
+    return size;
+}
+@#
+
+@<Reshape Tensor Implementation@>=
+int t729tensor_reshape(TernaryHandle h, int new_rank, const int* new_shape, TernaryHandle* result) {
+    if (new_rank <= 0 || new_shape == NULL || result == NULL) {
+        DEBUG_PRINT("Invalid new_rank or new_shape pointer\n");
+        return -1;
+    }
+
+    T729Tensor* t = (T729Tensor*)h.data;
+    size_t original_size = t729tensor_flat_size(t);
+
+    size_t new_size = 1;
+    for (int i = 0; i < new_rank; ++i) {
+        if (new_shape[i] <= 0) {
+            DEBUG_PRINT("Invalid new_shape element at index %d: %d\n", i, new_shape[i]);
+            return -1;
+        }
+        new_size *= new_shape[i];
+    }
+
+    if (new_size != original_size) {
+        DEBUG_PRINT("Reshape failed: new size %zu != original size %zu\n", new_size, original_size);
+        return -1;
+    }
+
+    /* If the new shape is identical to the current shape, return the original handle */
+    int same_shape = (new_rank == t->rank);
+    if (same_shape) {
+        for (int i = 0; i < new_rank; i++) {
+            if (new_shape[i] != t->shape[i]) {
+                same_shape = 0;
+                break;
+            }
+        }
+    }
+    if (same_shape) {
+        DEBUG_PRINT("New shape is identical to the current shape; returning original tensor\n");
+        result->base = h.base;
+        result->data = t;
+        return 0;
+    }
+
+    T729Tensor* reshaped = (T729Tensor*)malloc(sizeof(T729Tensor));
+    if (!reshaped) {
+        DEBUG_PRINT("Memory allocation failed for reshaped tensor\n");
+        return -1;
+    }
+    reshaped->rank = new_rank;
+    reshaped->shape = (int*)malloc(sizeof(int) * new_rank);
+    if (!reshaped->shape) {
+        free(reshaped);
+        DEBUG_PRINT("Memory allocation failed for new shape array\n");
+        return -1;
+    }
+    memcpy(reshaped->shape, new_shape, sizeof(int) * new_rank);
+
+    reshaped->data = (float*)malloc(sizeof(float) * new_size);
+    if (!reshaped->data) {
+        free(reshaped->shape);
+        free(reshaped);
+        DEBUG_PRINT("Memory allocation failed for reshaped data\n");
+        return -1;
+    }
+    memcpy(reshaped->data, t->data, sizeof(float) * new_size);
+
+    result->base = BASE_729;  /* Assume BASE_729 is defined elsewhere */
+    result->data = reshaped;
+    DEBUG_PRINT("Reshaping successful: new rank %d, new size %zu\n", new_rank, new_size);
+    return 0;
+}
+@#
+
+@* End of t729tensor_reshape.cweb
+   This module now robustly reshapes a T729 tensor by verifying the total element count,
+   checking for valid new shape values, and performing safe memory allocations with optional
+   debug logging for easier integration and troubleshooting.
+@*

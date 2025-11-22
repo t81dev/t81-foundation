@@ -1,0 +1,252 @@
+@* nist_encryption.cweb - A NIST-approved encryption library with AES-NI support (Enhanced Version)
+   This module provides AES, RSA, and SHA encryption/hashing functions with robust error checking,
+   key generation utilities, and support for multiple AES modes. It is designed for integration into
+   the Axion AI runtime and HanoiVM ecosystem.
+   
+   Enhancements:
+   - Multiple AES modes (CBC and ECB) via the EVP interface.
+   - Comprehensive error checking and resource cleanup.
+   - Hybrid RSA keypair generation that concatenates keys with a delimiter.
+   - Unified secure random byte generator.
+   - Detailed inline documentation for future enhancements (e.g., JSON/CBOR key storage).
+   
+   Author: Copyleft Systems
+   License: GPLv3
+@#
+
+@<Include Dependencies@>=
+#include <openssl/aes.h>    // For AES encryption
+#include <openssl/rsa.h>    // For RSA encryption
+#include <openssl/sha.h>    // For SHA hashing
+#include <openssl/pem.h>    // For reading/writing RSA keys
+#include <openssl/evp.h>    // For AES-NI support and EVP interface
+#include <openssl/rand.h>   // For secure random number generation
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+@#
+
+@<AES Encryption/Decryption Functions@>=
+/* AES_Encrypt:
+   Encrypts plaintext using the provided key and IV.
+   mode == 1: CBC mode; otherwise, ECB mode.
+   Returns a dynamically allocated ciphertext and sets ciphertext_len.
+*/
+char* AES_Encrypt(const unsigned char* plaintext, int plaintext_len, 
+                  const unsigned char* key, const unsigned char* iv, int mode, int* ciphertext_len) {
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) { perror("EVP_CIPHER_CTX_new"); return NULL; }
+    
+    const EVP_CIPHER* cipher = (mode == 1) ? EVP_aes_128_cbc() : EVP_aes_128_ecb();
+    if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, key, iv)) {
+        EVP_CIPHER_CTX_free(ctx);
+        return NULL;
+    }
+    
+    int block_size = EVP_CIPHER_block_size(cipher);
+    int buf_len = plaintext_len + block_size;
+    char* ciphertext = (char*)malloc(buf_len);
+    if (!ciphertext) { EVP_CIPHER_CTX_free(ctx); return NULL; }
+    
+    int len;
+    if (1 != EVP_EncryptUpdate(ctx, (unsigned char*)ciphertext, &len, plaintext, plaintext_len)) {
+        free(ciphertext);
+        EVP_CIPHER_CTX_free(ctx);
+        return NULL;
+    }
+    int total_len = len;
+    if (1 != EVP_EncryptFinal_ex(ctx, (unsigned char*)ciphertext + len, &len)) {
+        free(ciphertext);
+        EVP_CIPHER_CTX_free(ctx);
+        return NULL;
+    }
+    total_len += len;
+    *ciphertext_len = total_len;
+    EVP_CIPHER_CTX_free(ctx);
+    return ciphertext;
+}
+
+/* AES_Decrypt:
+   Decrypts ciphertext using the provided key and IV.
+   mode == 1: CBC mode; otherwise, ECB mode.
+   Returns a dynamically allocated plaintext and sets plaintext_len.
+*/
+char* AES_Decrypt(const unsigned char* ciphertext, int ciphertext_len, 
+                  const unsigned char* key, const unsigned char* iv, int mode, int* plaintext_len) {
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) { perror("EVP_CIPHER_CTX_new"); return NULL; }
+    
+    const EVP_CIPHER* cipher = (mode == 1) ? EVP_aes_128_cbc() : EVP_aes_128_ecb();
+    if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, key, iv)) {
+        EVP_CIPHER_CTX_free(ctx);
+        return NULL;
+    }
+    
+    int buf_len = ciphertext_len;
+    char* plaintext = (char*)malloc(buf_len);
+    if (!plaintext) { EVP_CIPHER_CTX_free(ctx); return NULL; }
+    
+    int len;
+    if (1 != EVP_DecryptUpdate(ctx, (unsigned char*)plaintext, &len, ciphertext, ciphertext_len)) {
+        free(plaintext);
+        EVP_CIPHER_CTX_free(ctx);
+        return NULL;
+    }
+    int total_len = len;
+    if (1 != EVP_DecryptFinal_ex(ctx, (unsigned char*)plaintext + len, &len)) {
+        free(plaintext);
+        EVP_CIPHER_CTX_free(ctx);
+        return NULL;
+    }
+    total_len += len;
+    *plaintext_len = total_len;
+    EVP_CIPHER_CTX_free(ctx);
+    return plaintext;
+}
+@#
+
+@<RSA Encryption/Decryption Functions@>=
+/* RSA_Encrypt:
+   Encrypts plaintext using an RSA public key from the given PEM file.
+   Returns a dynamically allocated ciphertext and sets out_len.
+*/
+char* RSA_Encrypt(const unsigned char* plaintext, int plaintext_len, const char* pubkey_file, int* out_len) {
+    FILE* fp = fopen(pubkey_file, "r");
+    if (!fp) { perror("fopen RSA public key"); return NULL; }
+    RSA* rsa = PEM_read_RSA_PUBKEY(fp, NULL, NULL, NULL);
+    fclose(fp);
+    if (!rsa) { fprintf(stderr, "Failed to read RSA public key\n"); return NULL; }
+    
+    int rsa_size = RSA_size(rsa);
+    char* ciphertext = (char*)malloc(rsa_size);
+    if (!ciphertext) { RSA_free(rsa); return NULL; }
+    
+    int len = RSA_public_encrypt(plaintext_len, plaintext, (unsigned char*)ciphertext, rsa, RSA_PKCS1_PADDING);
+    RSA_free(rsa);
+    if (len == -1) { free(ciphertext); return NULL; }
+    *out_len = len;
+    return ciphertext;
+}
+
+/* RSA_Decrypt:
+   Decrypts ciphertext using an RSA private key from the given PEM file.
+   Returns a dynamically allocated plaintext and sets out_len.
+*/
+char* RSA_Decrypt(const unsigned char* ciphertext, int ciphertext_len, const char* privkey_file, int* out_len) {
+    FILE* fp = fopen(privkey_file, "r");
+    if (!fp) { perror("fopen RSA private key"); return NULL; }
+    RSA* rsa = PEM_read_RSAPrivateKey(fp, NULL, NULL, NULL);
+    fclose(fp);
+    if (!rsa) { fprintf(stderr, "Failed to read RSA private key\n"); return NULL; }
+    
+    int rsa_size = RSA_size(rsa);
+    char* plaintext = (char*)malloc(rsa_size);
+    if (!plaintext) { RSA_free(rsa); return NULL; }
+    
+    int len = RSA_private_decrypt(ciphertext_len, ciphertext, (unsigned char*)plaintext, rsa, RSA_PKCS1_PADDING);
+    RSA_free(rsa);
+    if (len == -1) { free(plaintext); return NULL; }
+    *out_len = len;
+    return plaintext;
+}
+@#
+
+@<SHA256 Hashing Function@>=
+char* SHA256_Hash(const unsigned char* message, size_t message_len) {
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256_CTX sha256;
+    if (!SHA256_Init(&sha256))
+        return NULL;
+    if (!SHA256_Update(&sha256, message, message_len))
+        return NULL;
+    if (!SHA256_Final(hash, &sha256))
+        return NULL;
+    
+    char* output = (char*)malloc(SHA256_DIGEST_LENGTH*2 + 1);
+    if (!output) return NULL;
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+        sprintf(output + (i * 2), "%02x", hash[i]);
+    output[SHA256_DIGEST_LENGTH*2] = '\0';
+    return output;
+}
+@#
+
+@<Key Generation and Random Bytes Functions@>=
+/* random_bytes:
+   Generates secure random data of the specified length.
+*/
+char* random_bytes(int length) {
+    char* buffer = (char*)malloc(length);
+    if (!buffer) return NULL;
+    if (RAND_bytes((unsigned char*)buffer, length) != 1) {
+        free(buffer);
+        return NULL;
+    }
+    return buffer;
+}
+
+/* Generate_AES_Key:
+   Generates a random AES key.
+*/
+char* Generate_AES_Key() {
+    return random_bytes(AES_BLOCK_SIZE);
+}
+
+/* Generate_RSA_Keypair:
+   Generates an RSA keypair with the specified number of bits.
+   Returns a string containing both the public and private keys in PEM format,
+   separated by a delimiter.
+*/
+char* Generate_RSA_Keypair(int bits) {
+    RSA* rsa = RSA_generate_key(bits, RSA_F4, NULL, NULL);
+    if (!rsa) return NULL;
+    BIO* bio_pub = BIO_new(BIO_s_mem());
+    BIO* bio_priv = BIO_new(BIO_s_mem());
+    if (!bio_pub || !bio_priv) {
+        RSA_free(rsa);
+        return NULL;
+    }
+    if (!PEM_write_bio_RSA_PUBKEY(bio_pub, rsa) ||
+        !PEM_write_bio_RSAPrivateKey(bio_priv, rsa, NULL, NULL, 0, NULL, NULL)) {
+        BIO_free_all(bio_pub);
+        BIO_free_all(bio_priv);
+        RSA_free(rsa);
+        return NULL;
+    }
+    size_t pub_len = BIO_pending(bio_pub);
+    size_t priv_len = BIO_pending(bio_priv);
+    char* pub_key = (char*)malloc(pub_len + 1);
+    char* priv_key = (char*)malloc(priv_len + 1);
+    if (!pub_key || !priv_key) {
+        free(pub_key); free(priv_key);
+        BIO_free_all(bio_pub);
+        BIO_free_all(bio_priv);
+        RSA_free(rsa);
+        return NULL;
+    }
+    BIO_read(bio_pub, pub_key, pub_len);
+    BIO_read(bio_priv, priv_key, priv_len);
+    pub_key[pub_len] = '\0';
+    priv_key[priv_len] = '\0';
+    BIO_free_all(bio_pub);
+    BIO_free_all(bio_priv);
+    RSA_free(rsa);
+
+    /* Concatenate keys with a delimiter, e.g., "\n---\n" */
+    size_t total_len = pub_len + priv_len + 10;
+    char* keypair = (char*)malloc(total_len);
+    if (!keypair) { free(pub_key); free(priv_key); return NULL; }
+    snprintf(keypair, total_len, "%s\n---\n%s", pub_key, priv_key);
+    free(pub_key);
+    free(priv_key);
+    return keypair;
+}
+@#
+
+@* End of nist_encryption.cweb
+   This enhanced module provides robust AES, RSA, and SHA encryption utilities,
+   along with secure key generation and random byte generation functions. It supports
+   multiple AES modes, comprehensive error checking, and a unified interface for cryptographic
+   operations within the Axion and HanoiVM ecosystems.
+@*

@@ -1,0 +1,155 @@
+@* libt729.cweb: T729 Macro-Instruction & JIT Optimizer Layer (Enhanced Version)
+   This module encodes the deepest recursive layer of HanoiVM. T729Digits represent
+   compressed logic sequences or symbolic expressions to be interpreted by Axion AI
+   or dynamically JIT-compiled into T243 or T81 sequences.
+
+   Each T729 unit encodes 6 trits (3^6 = 729), representing high-dimensional logic
+   macros, reusable symbolic blocks, or even small compiled decision graphs.
+
+   Enhancements in this version:
+     - Macro unregistration and update functions.
+     - Registry inspection for debugging.
+     - Optional execution performance logging.
+     - Default fallback behavior in execute().
+@#
+
+@<Include Dependencies@>=
+use crate::libt243::{T243Digit, T243LogicTree, T243Node};
+use crate::libt81::{T81Digit, T81Number};
+
+use std::collections::HashMap;
+use std::fmt;
+use std::time::{Instant};
+@#
+
+@<T729 Digit and Macro Definitions@>=
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct T729Digit(pub u16); // Valid values: 0–728 inclusive
+
+#[derive(Clone, Debug)]
+pub enum T729Macro {
+    CompressedTree(T243LogicTree),
+    InlineOp(fn(Vec<T81Number>) -> T81Number),
+    StaticLiteral(T81Number),
+}
+
+pub struct T729MacroEngine {
+    pub registry: HashMap<T729Digit, T729Macro>,
+}
+@#
+
+@<Implementations for T729Digit@>=
+impl T729Digit {
+    /// Creates a new valid T729 digit
+    pub fn new(val: u16) -> Option<T729Digit> {
+        if val < 729 {
+            Some(T729Digit(val))
+        } else {
+            None
+        }
+    }
+
+    /// Converts a sequence of three T243 digits into a T729Digit (mod 729)
+    pub fn from_t243_sequence(a: &T243Digit, b: &T243Digit, c: &T243Digit) -> T729Digit {
+        let index = a.0 as u32 + (b.0 as u32 * 243) + (c.0 as u32 * 243 * 243);
+        T729Digit((index % 729) as u16)
+    }
+
+    /// Returns the raw index.
+    pub fn index(&self) -> usize {
+        self.0 as usize
+    }
+}
+
+impl fmt::Display for T729Digit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut value = self.0;
+        let mut trits = [0; 6];
+        for i in 0..6 {
+            trits[i] = value % 3;
+            value /= 3;
+        }
+        write!(f, "T729({}): [{}]", self.0, trits.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" "))
+    }
+}
+@#
+
+@<Implementations for T729MacroEngine@>=
+impl T729MacroEngine {
+    /// Creates a new macro engine.
+    pub fn new() -> Self {
+        T729MacroEngine {
+            registry: HashMap::new(),
+        }
+    }
+
+    /// Registers a static mapping of digit to macro instruction.
+    pub fn register_literal(&mut self, digit: T729Digit, value: T81Number) {
+        self.registry.insert(digit, T729Macro::StaticLiteral(value));
+    }
+
+    /// Registers a compressed T243 logic tree.
+    pub fn register_tree(&mut self, digit: T729Digit, tree: T243LogicTree) {
+        self.registry.insert(digit, T729Macro::CompressedTree(tree));
+    }
+
+    /// Registers a compiled inline function.
+    pub fn register_inline_op(&mut self, digit: T729Digit, op: fn(Vec<T81Number>) -> T81Number) {
+        self.registry.insert(digit, T729Macro::InlineOp(op));
+    }
+
+    /// Unregisters a macro for the given digit.
+    pub fn unregister_macro(&mut self, digit: T729Digit) -> bool {
+        self.registry.remove(&digit).is_some()
+    }
+
+    /// Updates an existing macro entry.
+    pub fn update_macro(&mut self, digit: T729Digit, new_macro: T729Macro) -> bool {
+        if self.registry.contains_key(&digit) {
+            self.registry.insert(digit, new_macro);
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Lists all registered macros as a formatted string.
+    pub fn list_macros(&self) -> String {
+        let mut output = String::new();
+        for (digit, mac) in &self.registry {
+            let mac_desc = match mac {
+                T729Macro::StaticLiteral(n) => format!("StaticLiteral({})", n),
+                T729Macro::CompressedTree(tree) => format!("CompressedTree({})", tree),
+                T729Macro::InlineOp(_) => String::from("InlineOp(fn)"),
+            };
+            output.push_str(&format!("{} => {}\n", digit, mac_desc));
+        }
+        output
+    }
+
+    /// Executes a T729Digit symbolically.
+    /// If the macro is not found, returns a default T81Number (zero).
+    /// Optionally logs execution time if VERBOSE_T729 is defined.
+    pub fn execute(&self, digit: T729Digit, inputs: Vec<T81Number>) -> Option<T81Number> {
+        let start_time = Instant::now();
+        let result = match self.registry.get(&digit) {
+            Some(T729Macro::StaticLiteral(n)) => Some(n.clone()),
+            Some(T729Macro::CompressedTree(tree)) => Some(tree.evaluate()),
+            Some(T729Macro::InlineOp(f)) => Some(f(inputs)),
+            None => {
+                eprintln!("[T729MacroEngine] Warning: Macro for digit {} not found. Returning zero.", digit);
+                Some(T81Number::zero())
+            }
+        };
+        #[cfg(feature = "verbose_t729")]
+        {
+            let duration = start_time.elapsed();
+            println!("[T729MacroEngine] Execution time for digit {}: {:?}", digit, duration);
+        }
+        result
+    }
+}
+@#
+
+@* End of libt729.cweb
+   This module now enables

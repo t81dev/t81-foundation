@@ -1,0 +1,143 @@
+@* T243BigInt: Arbitrary precision integers in Base-243.
+
+This module implements base-243 arithmetic for use in the HanoiVM and TernaryHandle system.
+Supports addition with normalization logic, conversion from string, and string serialization.
+
+@<Include dependencies@>=
+#include "ternary_base.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+@<Define T243BigInt struct@>=
+typedef struct {
+    size_t length;
+    uint8_t* digits; // Base-243 digits, LSB first
+} T243BigInt;
+
+@<New T243BigInt from string@>=
+TernaryHandle t243bigint_new_from_string(const char* str) {
+    size_t len = strlen(str);
+    T243BigInt* bigint = (T243BigInt*)malloc(sizeof(T243BigInt));
+    bigint->length = len;
+    bigint->digits = (uint8_t*)calloc(len, sizeof(uint8_t));
+
+    for (size_t i = 0; i < len; ++i) {
+        bigint->digits[i] = (uint8_t)(str[i] % 243); // basic stub logic
+    }
+
+    TernaryHandle h = { .base = BASE_243, .data = bigint };
+    return h;
+}
+
+@<Normalize T243 digits@>=
+void t243bigint_normalize(T243BigInt* num) {
+    for (size_t i = 0; i < num->length; ++i) {
+        if (num->digits[i] >= 243) {
+            if (i + 1 >= num->length) {
+                num->digits = (uint8_t*)realloc(num->digits, ++num->length);
+                num->digits[i + 1] = 0;
+            }
+            num->digits[i + 1] += num->digits[i] / 243;
+            num->digits[i] %= 243;
+        }
+    }
+}
+
+@<Add two T243BigInts@>=
+int t243bigint_add(TernaryHandle a, TernaryHandle b, TernaryHandle* result) {
+    T243BigInt *A = (T243BigInt*)a.data;
+    T243BigInt *B = (T243BigInt*)b.data;
+
+    size_t max_len = (A->length > B->length) ? A->length : B->length;
+    T243BigInt* R = (T243BigInt*)malloc(sizeof(T243BigInt));
+    R->length = max_len;
+    R->digits = (uint8_t*)calloc(max_len + 1, sizeof(uint8_t));
+
+    for (size_t i = 0; i < max_len; ++i) {
+        if (i < A->length) R->digits[i] += A->digits[i];
+        if (i < B->length) R->digits[i] += B->digits[i];
+    }
+
+    t243bigint_normalize(R);
+    result->base = BASE_243;
+    result->data = R;
+    return 0;
+}
+
+@<Multiply two T243BigInts@>=
+int t243bigint_mul(TernaryHandle a, TernaryHandle b, TernaryHandle* result) {
+    T243BigInt *A = (T243BigInt*)a.data;
+    T243BigInt *B = (T243BigInt*)b.data;
+
+    T243BigInt* R = (T243BigInt*)calloc(1, sizeof(T243BigInt));
+    R->length = A->length + B->length;
+    R->digits = (uint8_t*)calloc(R->length, sizeof(uint8_t));
+
+    for (size_t i = 0; i < A->length; ++i) {
+        for (size_t j = 0; j < B->length; ++j) {
+            R->digits[i + j] += A->digits[i] * B->digits[j];
+        }
+    }
+
+    t243bigint_normalize(R);
+    result->base = BASE_243;
+    result->data = R;
+    return 0;
+}
+
+@<Convert T243BigInt to string@>=
+int t243bigint_to_string(TernaryHandle h, char** out) {
+    T243BigInt* bigint = (T243BigInt*)h.data;
+    size_t len = bigint->length * 4 + 2; // generous buffer
+    char* buffer = (char*)malloc(len);
+    char* ptr = buffer;
+
+    for (ssize_t i = bigint->length - 1; i >= 0; --i)
+        ptr += sprintf(ptr, "%03u", bigint->digits[i]);
+
+    *out = buffer;
+    return 0;
+}
+
+@<Free T243BigInt@>=
+void t243bigint_free(TernaryHandle h) {
+    T243BigInt* bigint = (T243BigInt*)h.data;
+    if (bigint) {
+        free(bigint->digits);
+        free(bigint);
+    }
+}
+
+@* T243BigInt Test Harness.
+
+@<Run test case for T243BigInt@>=
+#ifdef TEST_T243BIGINT
+int main() {
+    TernaryHandle A = t243bigint_new_from_string("hello");
+    TernaryHandle B = t243bigint_new_from_string("world");
+
+    TernaryHandle sum, product;
+    t243bigint_add(A, B, &sum);
+    t243bigint_mul(A, B, &product);
+
+    char *a_str, *b_str, *sum_str, *prod_str;
+    t243bigint_to_string(A, &a_str);
+    t243bigint_to_string(B, &b_str);
+    t243bigint_to_string(sum, &sum_str);
+    t243bigint_to_string(product, &prod_str);
+
+    printf("A     : %s\n", a_str);
+    printf("B     : %s\n", b_str);
+    printf("A + B : %s\n", sum_str);
+    printf("A * B : %s\n", prod_str);
+
+    free(a_str); free(b_str); free(sum_str); free(prod_str);
+    t243bigint_free(A);
+    t243bigint_free(B);
+    t243bigint_free(sum);
+    t243bigint_free(product);
+
+    return 0;
+}
+#endif

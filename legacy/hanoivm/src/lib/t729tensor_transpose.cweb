@@ -1,0 +1,100 @@
+@* t729tensor_transpose.cweb — Transposes a 2D T729Tensor (Enhanced Version)
+   This module transposes a T729Tensor by swapping its rows and columns.
+   Enhancements include robust memory allocation checking, error reporting,
+   and optional verbose debug logging.
+@#
+
+@<Include Dependencies@>=
+#include "t729tensor.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>  /* For debug logging */
+@#
+
+@<Define Operation Code and Verbose Flag@>=
+#define OP_T729_TRANS 0xE3
+#ifndef VERBOSE_TRANSPOSE
+  #define VERBOSE_TRANSPOSE 0
+#endif
+#if VERBOSE_TRANSPOSE
+  #define DEBUG_PRINT(fmt, ...) fprintf(stderr, "[TRANSPOSE DEBUG] " fmt, ##__VA_ARGS__)
+#else
+  #define DEBUG_PRINT(fmt, ...) 
+#endif
+@#
+
+@<Transpose Tensor Implementation@>=
+int t729tensor_transpose(TernaryHandle h, TernaryHandle* result) {
+    T729Tensor* t = (T729Tensor*)h.data;
+    if (!t) {
+        DEBUG_PRINT("Input tensor is NULL\n");
+        return -1;
+    }
+    if (t->rank != 2) {
+        DEBUG_PRINT("Transpose only supported for 2D tensors (rank=2), got rank %d\n", t->rank);
+        return -1;
+    }
+
+    int rows = t->shape[0];
+    int cols = t->shape[1];
+    DEBUG_PRINT("Transposing tensor of shape [%d x %d]\n", rows, cols);
+
+    T729Tensor* out = (T729Tensor*)malloc(sizeof(T729Tensor));
+    if (!out) {
+        DEBUG_PRINT("Failed to allocate memory for output tensor\n");
+        return -1;
+    }
+    out->rank = 2;
+    out->shape = (int*)malloc(sizeof(int) * 2);
+    if (!out->shape) {
+        free(out);
+        DEBUG_PRINT("Failed to allocate memory for output shape array\n");
+        return -1;
+    }
+    out->shape[0] = cols;
+    out->shape[1] = rows;
+
+    size_t total_elements = (size_t)rows * cols;
+    out->data = (float*)malloc(sizeof(float) * total_elements);
+    if (!out->data) {
+        free(out->shape);
+        free(out);
+        DEBUG_PRINT("Failed to allocate memory for output tensor data\n");
+        return -1;
+    }
+
+    @<Transpose Loop@>=
+
+    result->base = BASE_729;  /* Assumes BASE_729 is defined elsewhere */
+    result->data = out;
+    DEBUG_PRINT("Transpose successful: new shape [%d x %d]\n", out->shape[0], out->shape[1]);
+    return 0;
+}
+
+@<Transpose Loop@>=
+for (int i = 0; i < rows; ++i) {
+    for (int j = 0; j < cols; ++j) {
+        out->data[j * rows + i] = t->data[i * cols + j];
+    }
+}
+@#
+
+@* Transpose Operation Case (to be used in a larger dispatch loop)
+   For example, in the VM dispatcher:
+@code
+case OP_T729_TRANS: {
+    TernaryHandle a = stack_pop();
+    TernaryHandle r;
+    if(t729tensor_transpose(a, &r) != 0) {
+        fprintf(stderr, "Tensor transpose failed\n");
+    }
+    stack_push(r);
+    break;
+}
+@endcode
+@*
+
+@* End of t729tensor_transpose.cweb
+   This module now robustly transposes a 2D T729 tensor with enhanced error checking and debug logging.
+   Future improvements may include in-place transpose for square matrices and dynamic logging features.
+@*

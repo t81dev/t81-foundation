@@ -1,0 +1,99 @@
+@* t729tensor_slice.cweb — Extracts a subrange from a given dimension of a T729Tensor
+   This module implements tensor slicing for T729 tensors. It extracts a subrange along
+   a specified dimension, creating a new tensor with an updated shape and copied data.
+   Enhancements include detailed bounds checking, dynamic memory allocation verification,
+   and clear modular macros for each stage.
+@#
+
+@<Include Dependencies@>=
+#include "t729tensor.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>  /* For fprintf, if needed for error logging */
+@#
+
+@<Define Operation Code@>=
+#define OP_T729_SLICE 0xE4
+@#
+
+@<Slice Operation Case@>=
+/* This case is part of a larger switch (not fully shown here) */
+case OP_T729_SLICE: {
+    /* For now, using fixed parameters: dim = 0, start = 0, end = 2 */
+    TernaryHandle a = stack_pop();
+    TernaryHandle r;
+    if (t729tensor_slice(a, 0, 0, 2, &r) != 0) {
+        fprintf(stderr, "Tensor slice failed\n");
+    }
+    stack_push(r);
+    break;
+}
+@#
+
+@<Tensor Slice Function@>=
+int t729tensor_slice(TernaryHandle h, int dim, int start, int end, TernaryHandle* result) {
+    /* Get the tensor from the handle */
+    T729Tensor* t = (T729Tensor*)h.data;
+
+    @<Bounds Check@>=
+
+    @<Compute Slice Shape and Size@>=
+
+    @<Allocate and Copy Slice Data@>=
+
+    /* Allocate new tensor and populate fields */
+    T729Tensor* sliced = (T729Tensor*)malloc(sizeof(T729Tensor));
+    if (!sliced) return -1;  /* Memory allocation failed */
+    sliced->rank = t->rank;
+    sliced->shape = new_shape;
+    sliced->data = new_data;
+
+    /* Setup the result handle */
+    result->base = BASE_729;  /* Assume BASE_729 is defined elsewhere */
+    result->data = sliced;
+    return 0;
+}
+@#
+
+@<Bounds Check@>=
+if (!t || dim >= t->rank || start < 0 || end > t->shape[dim] || start >= end)
+    return -1;
+@#
+
+@<Compute Slice Shape and Size@>=
+/* Allocate new shape array and copy original dimensions */
+int* new_shape = (int*)malloc(sizeof(int) * t->rank);
+if (!new_shape) return -1;
+memcpy(new_shape, t->shape, sizeof(int) * t->rank);
+/* Update the dimension being sliced */
+new_shape[dim] = end - start;
+
+/* Calculate the stride: product of dimensions after the slicing dimension */
+size_t stride = 1;
+for (int i = dim + 1; i < t->rank; ++i) {
+    stride *= t->shape[i];
+}
+
+/* Calculate the total number of elements in the slice */
+size_t slice_size = (end - start) * stride;
+@#
+
+@<Allocate and Copy Slice Data@>=
+/* Allocate new data buffer for the slice */
+float* new_data = (float*)malloc(sizeof(float) * slice_size);
+if (!new_data) {
+    free(new_shape);
+    return -1;
+}
+/* Copy the data from the original tensor.
+   We assume that the data is stored in row-major order.
+   Adjust pointer arithmetic accordingly.
+*/
+memcpy(new_data, t->data + start * stride, sizeof(float) * slice_size);
+@#
+
+@* End of t729tensor_slice.cweb
+   This module now robustly extracts a subrange from a T729 tensor.
+   Future improvements may include dynamic parameter parsing for arbitrary slices,
+   additional logging, and integration with higher-level tensor operations.
+@*

@@ -1,0 +1,133 @@
+/* t81_types_support.cweb
+ * Dispatch and handler integration layer for HanoiVM to support all advanced T81 types.
+ */
+
+@c
+
+#define OP_TFADD    0xC0
+#define OP_TFSUB    0xC1
+#define OP_TFLADD   0xC2
+#define OP_TFCOS    0xC3
+#define OP_TMMUL    0xC4
+#define OP_TVDOT    0xC5
+#define OP_TQMUL    0xC6
+#define OP_TPMUL    0xC7
+#define OP_TTCON    0xC8
+#define OP_TGBFS    0xC9
+#include "t81.h"
+#include "hanoivm_stack.h"
+#include "hanoivm_opcode.h"
+#include "t81_types_support.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+static HanoiVM vm_core;
+
+void t81_vm_init(void) {
+    register_t81_type_opcodes(&vm_core);
+    // Additional future opcode domains can also be registered here
+}
+
+// === FRACTION OPERATIONS ===
+void op_tfadd(HanoiVM *vm) {
+    T81FractionHandle a = hanoivm_stack_pop(vm);
+    T81FractionHandle b = hanoivm_stack_pop(vm);
+    T81FractionHandle result;
+    t81fraction_add(a, b, &result);
+    hanoivm_stack_push(vm, result);
+}
+
+void op_tfsub(HanoiVM *vm) {
+    T81FractionHandle a = hanoivm_stack_pop(vm);
+    T81FractionHandle b = hanoivm_stack_pop(vm);
+    T81FractionHandle result;
+    t81fraction_subtract(a, b, &result);
+    hanoivm_stack_push(vm, result);
+}
+
+// === FLOAT OPERATIONS ===
+void op_tfladd(HanoiVM *vm) {
+    T81FloatHandle a = hanoivm_stack_pop(vm);
+    T81FloatHandle b = hanoivm_stack_pop(vm);
+    T81FloatHandle result;
+    t81float_add(a, b, &result);
+    hanoivm_stack_push(vm, result);
+}
+
+void op_tfcos(HanoiVM *vm) {
+    T81FloatHandle a = hanoivm_stack_pop(vm);
+    T81FloatHandle result;
+    t81float_cos(a, &result);
+    hanoivm_stack_push(vm, result);
+}
+
+// === MATRIX OPERATIONS ===
+void op_tmmul(HanoiVM *vm) {
+    T81MatrixHandle a = hanoivm_stack_pop(vm);
+    T81MatrixHandle b = hanoivm_stack_pop(vm);
+    T81MatrixHandle result;
+    t81matrix_multiply(a, b, &result);
+    hanoivm_stack_push(vm, result);
+}
+
+// === VECTOR OPERATIONS ===
+void op_tvdot(HanoiVM *vm) {
+    T81VectorHandle a = hanoivm_stack_pop(vm);
+    T81VectorHandle b = hanoivm_stack_pop(vm);
+    T81BigIntHandle result;
+    t81vector_dot(a, b, &result);
+    hanoivm_stack_push(vm, result);
+}
+
+// === QUATERNION OPERATIONS ===
+void op_tqmul(HanoiVM *vm) {
+    T81QuaternionHandle a = hanoivm_stack_pop(vm);
+    T81QuaternionHandle b = hanoivm_stack_pop(vm);
+    T81QuaternionHandle result;
+    t81quaternion_multiply(a, b, &result);
+    hanoivm_stack_push(vm, result);
+}
+
+// === POLYNOMIAL OPERATIONS ===
+void op_tpmul(HanoiVM *vm) {
+    T81PolynomialHandle a = hanoivm_stack_pop(vm);
+    T81PolynomialHandle b = hanoivm_stack_pop(vm);
+    T81PolynomialHandle result;
+    t81polynomial_multiply(a, b, &result);
+    hanoivm_stack_push(vm, result);
+}
+
+// === TENSOR OPERATIONS ===
+void op_ttcontract(HanoiVM *vm) {
+    int axisA = hanoivm_stack_pop_int(vm);
+    int axisB = hanoivm_stack_pop_int(vm);
+    T81TensorHandle a = hanoivm_stack_pop(vm);
+    T81TensorHandle b = hanoivm_stack_pop(vm);
+    T81TensorHandle result;
+    t81tensor_contract(a, axisA, b, axisB, &result);
+    hanoivm_stack_push(vm, result);
+}
+
+// === GRAPH OPERATIONS ===
+void op_tgbfs(HanoiVM *vm) {
+    int startNode = hanoivm_stack_pop_int(vm);
+    T81GraphHandle g = hanoivm_stack_pop(vm);
+    int *visited = malloc(sizeof(int) * 1024); // TEMP: assume max 1024 nodes
+    t81graph_bfs(g, startNode, visited);
+    // TODO: Push visited array to VM state/log
+    free(visited);
+}
+
+// === DISPATCH TABLE EXTENSION ===
+void register_t81_type_opcodes(HanoiVM *vm) {
+    hanoivm_register_opcode(vm, "TFADD", op_tfadd);
+    hanoivm_register_opcode(vm, "TFSUB", op_tfsub);
+    hanoivm_register_opcode(vm, "TFLADD", op_tfladd);
+    hanoivm_register_opcode(vm, "TFCOS", op_tfcos);
+    hanoivm_register_opcode(vm, "TMMUL", op_tmmul);
+    hanoivm_register_opcode(vm, "TVDOT", op_tvdot);
+    hanoivm_register_opcode(vm, "TQMUL", op_tqmul);
+    hanoivm_register_opcode(vm, "TPMUL", op_tpmul);
+    hanoivm_register_opcode(vm, "TTCON", op_ttcontract);
+    hanoivm_register_opcode(vm, "TGBFS", op_tgbfs);
+}
