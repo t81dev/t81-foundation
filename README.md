@@ -1,5 +1,5 @@
 ![T81 Foundation Banner](/docs/assets/img/banner.png)
-# T81-Foundation — The T81 Ecosystem  
+# T81-Foundation — Formal Specificiatons for the T81 Ecosystem 
 **v1.0.0-SOVEREIGN — November 22, 2025**
 
 **T81 is complete.**  
