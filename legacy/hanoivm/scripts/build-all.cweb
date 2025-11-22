@@ -1,0 +1,71 @@
+@* build-all.cweb | Unified Axion + HanoiVM Kernel Module & Compiler Builder (Enhanced v0.9)
+   This literate Makefile builds all tangled kernel modules for the Axion AI runtime,
+   HanoiVM subsystem, and T81Lang compiler pipeline. It assumes all `.cweb` sources
+   are tangled into `.c` files and available in the working directory.
+
+   Enhancements:
+   - T81Lang compiler toolchain build (t81lang_*.c)
+   - "run" target to compile and run `.t81` test programs
+   - Extended install/uninstall/package support
+   - Verbose logging and modular integration
+@#
+
+@<Unified Kernel Module Build Rules@>=
+# Kernel module sources
+obj-m += axion-ai.o hanoivm_vm.o hanoivm-core.o axion-gaia-interface.o \
+         t243bigint.o t729tensor_ops.o project_looking_glass.o
+
+# Kernel headers and working directory
+KDIR := /lib/modules/$(shell uname -r)/build
+PWD  := $(shell pwd)
+MODULES := $(PWD)/*.ko
+
+# Compiler/Interpreter objects
+COMPILER_SRCS := t81lang_parser.c t81lang_semantic.c t81lang_irgen.c emit_hvm.c \
+                 t81lang_compiler.c hvm_interpreter.c
+COMPILER_BIN := t81lang_compiler hvm_interpreter
+
+all:
+	@echo "[build-all] Compiling kernel modules and compiler toolchain..."
+	$(MAKE) -C $(KDIR) M=$(PWD) modules
+	gcc -o t81lang_parser t81lang_parser.c
+	gcc -o t81lang_semantic t81lang_semantic.c
+	gcc -o t81lang_irgen t81lang_irgen.c
+	gcc -o emit_hvm emit_hvm.c
+	gcc -o t81lang_compiler t81lang_compiler.c
+	gcc -o hvm_interpreter hvm_interpreter.c
+
+run: all
+	@echo "[build-all] Running compiler pipeline on test.t81..."
+	./t81lang_compiler test.t81 --emit-hvm
+	./hvm_interpreter output.hvm
+
+install: all
+	@echo "[build-all] Installing kernel modules..."
+	@for mod in $(MODULES); do \
+		echo "Installing $$mod"; \
+		sudo insmod $$mod || true; \
+	done
+
+uninstall:
+	@echo "[build-all] Uninstalling kernel modules..."
+	@for mod in $(MODULES); do \
+		echo "Removing $$mod"; \
+		sudo rmmod $$(basename $$mod .ko) || true; \
+	done
+
+package: all
+	@echo "[build-all] Packaging all binaries and modules into axion_hanoivm_bundle.tar.gz..."
+	tar czvf axion_hanoivm_bundle.tar.gz $(MODULES) $(COMPILER_BIN)
+
+clean:
+	@echo "[build-all] Cleaning build artifacts..."
+	$(MAKE) -C $(KDIR) M=$(PWD) clean
+	-rm -f axion_hanoivm_modules.tar.gz axion_hanoivm_bundle.tar.gz
+	-rm -f $(COMPILER_BIN) *.o *.ko *.mod.c *.symvers *.order *.c~ *.h~
+@#
+
+@* End of build-all.cweb
+   This enhanced Makefile supports building, running, installing, and packaging
+   kernel modules and the full T81Lang + HanoiVM compiler-execution pipeline.
+@*
