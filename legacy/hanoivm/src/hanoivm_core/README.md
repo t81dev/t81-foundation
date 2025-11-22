@@ -4,6 +4,10 @@
 [![Rust](https://img.shields.io/badge/Language-Rust-blue.svg)](https://www.rust-lang.org/)
 [![Ternary Computing](https://img.shields.io/badge/Paradigm-Ternary%20Logic-red.svg)](https://en.wikipedia.org/wiki/Balanced_ternary)
 [![Axion AI Integration](https://img.shields.io/badge/AI-Axion%20Hooks-green.svg)](https://github.com/t81dev/axion-ai)
+[![Ternary Computing](https://img.shields.io/badge/Paradigm-Ternary%20Logic-red.svg)](https://en.wikipedia.org/wiki/Ternary_computer)
+[![Balanced Ternary](https://img.shields.io/badge/Base-Balanced%20Ternary-critical)](https://en.wikipedia.org/wiki/Balanced_ternary)
+[![CWEB Literate](https://img.shields.io/badge/Literate-CWEB-blue.svg)](https://www-cs-faculty.stanford.edu/~knuth/cweb.html)
+[![License: MIT / GPL Dual](https://img.shields.io/badge/License-MIT%20%2F%20GPL-green.svg)]()
 
 **HanoiVM Core** is the high-level runtime execution engine for the HanoiVM (Hanoi Virtual Machine), a recursively self-promoting, AI-augmented ternary computing platform. This module, part of the legacy HanoiVM implementation in the [T81 Foundation](https://github.com/t81dev/t81-foundation), provides a Rust-based abstraction layer for symbolic ternary computation across T81, T243, and T729 tiers. It bridges low-level C interpreters with advanced AI-driven optimizations via the Axion ecosystem, enabling dynamic tier promotion, macro execution, and entropy-aware processing.
 
