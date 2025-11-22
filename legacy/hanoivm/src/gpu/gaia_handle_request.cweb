@@ -1,0 +1,108 @@
+@* GAIA Recursive Symbolic Logic Handler (ROCm / HIP)
+
+This module defines the ROCm (HIP) backend of the Axion ↔ GAIA symbolic GPU interface.
+It implements symbolic ternary transformation for TBIN macros using AMD GPUs, and mirrors
+the functionality provided by `cuda_handle_request.cu`.
+
+GAIA is the AMD counterpart to CUDA, using HIP as a cross-platform backend. This ensures
+Axion logic can be dispatched on either GPU vendor backend transparently.
+
+@c
+#include <hip/hip_runtime.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+extern "C" {
+    #include "axion-gaia-interface.h"
+}
+
+@* Device-Side HIP Logic for Ternary Symbolic Operations
+
+The HIP kernel transforms ternary macros and calculates entropy shift.
+It mirrors CUDA logic but uses HIP syntax and includes ROCm-specific instructions.
+
+@c
+__device__ int32_t gaia_entropy_delta(const uint8_t* tbin, size_t len) {
+    int delta = 0;
+    for (size_t i = 0; i < len; ++i) {
+        delta += (tbin[i] % 3) - 1;
+    }
+    return delta;
+}
+
+__global__ void gaia_transform_kernel(const uint8_t* tbin, size_t len,
+                                      uint8_t* out_macro, int32_t* entropy_out,
+                                      uint8_t intent) {
+    if (threadIdx.x == 0 && blockIdx.x == 0) {
+        *entropy_out = gaia_entropy_delta(tbin, len);
+
+        for (int i = 0; i < 243; ++i) {
+            if (i < len) {
+                switch (intent) {
+                    case GAIA_ANALYZE:
+                        out_macro[i] = (tbin[i] & 0x3F); break;
+                    case GAIA_TRANSFORM:
+                        out_macro[i] = (tbin[i] ^ 0x5A); break;
+                    case GAIA_RECONSTRUCT:
+                        out_macro[i] = (tbin[i] << 2) | (tbin[i] >> 6); break;
+                    case GAIA_EMIT_VECTOR:
+                        out_macro[i] = (tbin[i] % 81); break;
+                    default:
+                        out_macro[i] = tbin[i]; break;
+                }
+            } else {
+                out_macro[i] = 0x00;
+            }
+        }
+    }
+}
+
+@* Host-Side GAIA Handler for ROCm
+
+This function wraps the kernel dispatch and memory copy for ROCm/HIP devices.
+It accepts a `GaiaRequest` and returns a `GaiaResponse`, just like CUDA.
+
+@c
+extern "C"
+GaiaResponse gaia_handle_request(GaiaRequest request) {
+    GaiaResponse response = {0};
+
+    uint8_t* d_tbin = nullptr;
+    uint8_t* d_out_macro = nullptr;
+    int32_t* d_entropy = nullptr;
+
+    hipMalloc((void**)&d_tbin, request.tbin_len);
+    hipMalloc((void**)&d_out_macro, 243);
+    hipMalloc((void**)&d_entropy, sizeof(int32_t));
+
+    hipMemcpy(d_tbin, request.tbin, request.tbin_len, hipMemcpyHostToDevice);
+
+    gaia_transform_kernel<<<1, 1>>>(d_tbin, request.tbin_len, d_out_macro, d_entropy, request.intent);
+
+    hipMemcpy(response.updated_macro, d_out_macro, 243, hipMemcpyDeviceToHost);
+    hipMemcpy(&response.entropy_delta, d_entropy, sizeof(int32_t), hipMemcpyDeviceToHost);
+
+    response.symbolic_status = 0;
+
+    hipFree(d_tbin);
+    hipFree(d_out_macro);
+    hipFree(d_entropy);
+
+    return response;
+}
+
+@* Notes on ROCm Compatibility
+
+This module compiles using `hipcc` and runs on AMD GPUs. It mirrors `cuda_handle_request.cu`
+and supports HIP's optional CUDA backend.
+
+You can switch between ROCm and CUDA at runtime using Axion's `use_cuda` flag or via IOCTL
+control by writing to `/sys/axion_debug/gpu_request`.
+
+@* Future Enhancements
+- Use hipGraphLaunch for macro graphs
+- Add HIP kernel scheduling via Axion entropy
+- Mirror Axion AI feedback through ROCm tracing
+
+@* End of `gaia_handle_request.cweb`

@@ -1,0 +1,235 @@
+@* HanoiVM PCIe Linux Driver (Character Device with MMIO Mapping and IOCTL Support)
+This driver provides access to the HanoiVM accelerator via PCIe.
+Enhancements include an IOCTL interface for device reset and status query,
+synchronization for file operations, and improved logging.
+@c
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/pci.h>
+#include <linux/fs.h>
+#include <linux/uaccess.h>
+#include <linux/cdev.h>
+#include <linux/io.h>
+#include <linux/ioctl.h>
+#include <linux/mutex.h>
+
+#define VENDOR_ID 0x1ABC
+#define DEVICE_ID 0x1DEF
+#define HVM_BAR    0  // PCI BAR 0
+
+/* Define custom IOCTL commands */
+#define HVM_IOCTL_RESET   _IO('h', 1)
+#define HVM_IOCTL_STATUS  _IOR('h', 2, uint8_t)
+
+static void __iomem *bar_addr;
+static struct pci_device_id hvm_ids[] = {
+    { PCI_DEVICE(VENDOR_ID, DEVICE_ID), },
+    { 0, }
+};
+
+MODULE_DEVICE_TABLE(pci, hvm_ids);
+
+static struct pci_dev *pdev;
+static struct cdev hvm_cdev;
+static dev_t dev_num;
+static struct class *hvm_class;
+static DEFINE_MUTEX(hvm_mutex);  /* Protects file operations */
+
+/* Forward declaration of file operations */
+static int hvm_open(struct inode *inode, struct file *file);
+static int hvm_release(struct inode *inode, struct file *file);
+static long hvm_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
+
+/* File operations: open, release, read, write, ioctl */
+static struct file_operations fops = {
+    .owner = THIS_MODULE,
+    .open = hvm_open,
+    .release = hvm_release,
+    .read = hvm_read,
+    .write = hvm_write,
+    .unlocked_ioctl = hvm_ioctl,
+};
+
+@* PCI probe function for detecting HanoiVM accelerator.
+Sets up MMIO mapping and character device registration.
+@c
+static int hvm_probe(struct pci_dev *dev, const struct pci_device_id *id) {
+    int err;
+
+    pdev = dev;
+    err = pci_enable_device(dev);
+    if (err) {
+        dev_err(&dev->dev, "Failed to enable PCI device\n");
+        return err;
+    }
+
+    err = pci_request_region(dev, HVM_BAR, "hvm_bar");
+    if (err) {
+        dev_err(&dev->dev, "Failed to request BAR region\n");
+        pci_disable_device(dev);
+        return err;
+    }
+
+    bar_addr = pci_iomap(dev, HVM_BAR, pci_resource_len(dev, HVM_BAR));
+    if (!bar_addr) {
+        dev_err(&dev->dev, "Failed to iomap BAR region\n");
+        pci_release_region(dev, HVM_BAR);
+        pci_disable_device(dev);
+        return -ENOMEM;
+    }
+
+    err = alloc_chrdev_region(&dev_num, 0, 1, "hvmdev");
+    if (err < 0) {
+        dev_err(&dev->dev, "Failed to allocate chrdev region\n");
+        pci_iounmap(dev, bar_addr);
+        pci_release_region(dev, HVM_BAR);
+        pci_disable_device(dev);
+        return err;
+    }
+
+    cdev_init(&hvm_cdev, &fops);
+    err = cdev_add(&hvm_cdev, dev_num, 1);
+    if (err < 0) {
+        dev_err(&dev->dev, "Failed to add cdev\n");
+        unregister_chrdev_region(dev_num, 1);
+        pci_iounmap(dev, bar_addr);
+        pci_release_region(dev, HVM_BAR);
+        pci_disable_device(dev);
+        return err;
+    }
+
+    hvm_class = class_create(THIS_MODULE, "hvm");
+    if (IS_ERR(hvm_class)) {
+        dev_err(&dev->dev, "Failed to create device class\n");
+        cdev_del(&hvm_cdev);
+        unregister_chrdev_region(dev_num, 1);
+        pci_iounmap(dev, bar_addr);
+        pci_release_region(dev, HVM_BAR);
+        pci_disable_device(dev);
+        return PTR_ERR(hvm_class);
+    }
+
+    device_create(hvm_class, NULL, dev_num, NULL, "hvm0");
+    dev_info(&dev->dev, "HanoiVM accelerator detected and registered\n");
+    return 0;
+}
+
+@* PCI remove function to clean up.
+@c
+static void hvm_remove(struct pci_dev *dev) {
+    device_destroy(hvm_class, dev_num);
+    class_destroy(hvm_class);
+    cdev_del(&hvm_cdev);
+    unregister_chrdev_region(dev_num, 1);
+    pci_iounmap(dev, bar_addr);
+    pci_release_region(dev, HVM_BAR);
+    pci_disable_device(dev);
+    dev_info(&dev->dev, "HanoiVM accelerator removed\n");
+}
+
+@* File open: Acquire mutex and log access.
+@c
+static int hvm_open(struct inode *inode, struct file *file) {
+    if (!mutex_trylock(&hvm_mutex)) {
+        pr_err("hvm: Device busy\n");
+        return -EBUSY;
+    }
+    pr_info("hvm: Device opened\n");
+    return 0;
+}
+
+@* File release: Release mutex.
+@c
+static int hvm_release(struct inode *inode, struct file *file) {
+    pr_info("hvm: Device closed\n");
+    mutex_unlock(&hvm_mutex);
+    return 0;
+}
+
+@* File write: Write opcode and operand, then trigger execution.
+@c
+static ssize_t hvm_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos) {
+    uint8_t opcode;
+    uint81_t operand;  /* Custom type, defined elsewhere */
+    if (copy_from_user(&opcode, buf, 1))
+        return -EFAULT;
+    if (copy_from_user(&operand, buf + 1, sizeof(uint81_t)))
+        return -EFAULT;
+
+    /* Write opcode to command register */
+    iowrite8(opcode, bar_addr + 0x0000);
+    /* Write operand to MMIO space */
+    memcpy_toio(bar_addr + 0x1000, &operand, sizeof(uint81_t));
+    /* Trigger execution via control register */
+    iowrite8(1, bar_addr + 0x3000);
+    pr_info("hvm: Write completed (opcode: 0x%02X)\n", opcode);
+    return count;
+}
+
+@* File read: Read result if device indicates completion.
+@c
+static ssize_t hvm_read(struct file *file, char __user *buf, size_t count, loff_t *ppos) {
+    uint8_t status = ioread8(bar_addr + 0x3001);
+    if (status != 1)
+        return -EAGAIN;
+    uint81_t result;
+    memcpy_fromio(&result, bar_addr + 0x2000, sizeof(uint81_t));
+    if (copy_to_user(buf, &result, sizeof(uint81_t)))
+        return -EFAULT;
+    pr_info("hvm: Read result successful\n");
+    return sizeof(uint81_t);
+}
+
+@* IOCTL: Handle reset and status queries.
+@c
+static long hvm_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
+    uint8_t status;
+    switch (cmd) {
+        case HVM_IOCTL_RESET:
+            /* Reset device by writing a specific value to control register */
+            iowrite8(0, bar_addr + 0x3000);
+            pr_info("hvm: Device reset via IOCTL\n");
+            break;
+        case HVM_IOCTL_STATUS:
+            status = ioread8(bar_addr + 0x3001);
+            if (copy_to_user((uint8_t __user *)arg, &status, sizeof(uint8_t)))
+                return -EFAULT;
+            pr_info("hvm: IOCTL status query, status: %d\n", status);
+            break;
+        default:
+            pr_err("hvm: Unknown IOCTL command\n");
+            return -EINVAL;
+    }
+    return 0;
+}
+
+@* PCI driver registration.
+@c
+static struct pci_driver hvm_driver = {
+    .name = "hanoivm",
+    .id_table = hvm_ids,
+    .probe = hvm_probe,
+    .remove = hvm_remove,
+};
+
+@* Module initialization and exit.
+@c
+static int __init hvm_init(void) {
+    int ret = pci_register_driver(&hvm_driver);
+    if (ret < 0)
+        pr_err("hvm: PCI driver registration failed\n");
+    else
+        pr_info("hvm: PCI driver registered successfully\n");
+    return ret;
+}
+
+static void __exit hvm_exit(void) {
+    pci_unregister_driver(&hvm_driver);
+    pr_info("hvm: PCI driver unregistered\n");
+}
+
+module_init(hvm_init);
+module_exit(hvm_exit);
+MODULE_LICENSE("MIT");
+MODULE_AUTHOR("copyl-sys");
+MODULE_DESCRIPTION("HanoiVM PCIe Ternary Accelerator Driver with IOCTL Support");
