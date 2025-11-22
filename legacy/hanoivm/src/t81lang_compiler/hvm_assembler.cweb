@@ -1,0 +1,170 @@
+@* hvm_assembler.cweb - Assembles Ternary VM Assembly into .hvm Bytecode (Enhanced Version)
+   This module converts human-readable `.asm` source code for the HanoiVM into binary `.hvm` bytecode.
+   Supported instructions include:
+     - NOP, PUSH, POP, ADD, RECURSE_FACT, RECURSE_FIB, etc.
+   Enhancements in this version:
+     - Verbose debugging (via VERBOSE_ASM environment variable)
+     - Robust error checking on token parsing and file writes.
+     - Placeholder comments for label support and extended instructions.
+@#
+
+@<Include Dependencies@>=
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <errno.h>
+@#
+
+@<Opcode Enum and Translator@>=
+typedef enum {
+    OP_NOP   = 0x00,
+    OP_PUSH  = 0x01,
+    OP_POP   = 0x02,
+    OP_ADD   = 0x03,
+    OP_SUB   = 0x04,
+    OP_MOD   = 0x05,
+    OP_NEG   = 0x06,
+    OP_DUP   = 0x07,
+    OP_SWAP  = 0x08,
+    OP_DROP  = 0x09,
+    /* Extended opcodes for recursion */
+    OP_RECURSE_FACT = 0xF1,
+    OP_RECURSE_FIB  = 0xF2,
+    OP_HALT  = 0xFF
+} Opcode;
+
+uint8_t parse_opcode(const char* mnemonic) {
+    if (strcmp(mnemonic, "NOP") == 0) return OP_NOP;
+    if (strcmp(mnemonic, "PUSH") == 0) return OP_PUSH;
+    if (strcmp(mnemonic, "POP") == 0) return OP_POP;
+    if (strcmp(mnemonic, "ADD") == 0) return OP_ADD;
+    if (strcmp(mnemonic, "SUB") == 0) return OP_SUB;
+    if (strcmp(mnemonic, "MOD") == 0) return OP_MOD;
+    if (strcmp(mnemonic, "NEG") == 0) return OP_NEG;
+    if (strcmp(mnemonic, "DUP") == 0) return OP_DUP;
+    if (strcmp(mnemonic, "SWAP") == 0) return OP_SWAP;
+    if (strcmp(mnemonic, "DROP") == 0) return OP_DROP;
+    if (strcmp(mnemonic, "RECURSE_FACT") == 0) return OP_RECURSE_FACT;
+    if (strcmp(mnemonic, "RECURSE_FIB") == 0) return OP_RECURSE_FIB;
+    if (strcmp(mnemonic, "HALT") == 0) return OP_HALT;
+    return 0xFF; // Unknown opcode
+}
+@#
+
+@<Global Constants and Variables@>=
+#define MAX_LINE 128
+#define MAX_CODE_SIZE 8192
+
+static uint8_t code[MAX_CODE_SIZE];
+size_t code_size = 0;
+
+/* Verbose flag (set via environment variable VERBOSE_ASM; nonzero means verbose) */
+static int verbose = 0;
+@#
+
+@<Verbose Print Macro@>=
+#define VPRINT(fmt, ...) do { if (verbose) fprintf(stderr, fmt, ##__VA_ARGS__); } while(0)
+@#
+
+@<Assembler Parser@>=
+/* Parses one line of assembly and emits its opcode(s) into the code buffer.
+   Future work: handle labels (lines starting with ':') and extended instructions.
+*/
+void assemble_line(char* line) {
+    /* Skip comments and blank lines */
+    if (line[0] == '#' || strlen(line) < 2) return;
+    
+    /* Future hook: if (line[0] == ':') then it's a label definition; handle it */
+    
+    char mnemonic[16];
+    uint32_t a = 0, b = 0, c = 0;
+    int num_tokens = sscanf(line, "%15s %u %u %u", mnemonic, &a, &b, &c);
+    
+    uint8_t opcode = parse_opcode(mnemonic);
+    if (opcode == 0xFF) {
+        fprintf(stderr, "[T81ASM] Error: Unknown instruction: %s\n", mnemonic);
+        return;
+    }
+    if (code_size + 1 > MAX_CODE_SIZE) {
+        fprintf(stderr, "[T81ASM] Error: Code buffer overflow\n");
+        exit(1);
+    }
+    code[code_size++] = opcode;
+    VPRINT("[T81ASM] Parsed opcode: %s (0x%02X)\n", mnemonic, opcode);
+    
+    /* For PUSH opcode, expect 3 operands */
+    if (opcode == OP_PUSH) {
+        if (num_tokens != 4) {
+            fprintf(stderr, "[T81ASM] Error: PUSH requires 3 operands\n");
+            exit(1);
+        }
+        if (code_size + 12 > MAX_CODE_SIZE) {
+            fprintf(stderr, "[T81ASM] Error: Code buffer overflow during PUSH operand write\n");
+            exit(1);
+        }
+        /* Write operand a, b, c as 4 bytes each */
+        fwrite(&a, 4, 1, stdout); // for debugging; remove these writes to stdout in production
+        /* Instead, copy bytes to our code buffer */
+        memcpy(code + code_size, &a, 4);
+        code_size += 4;
+        memcpy(code + code_size, &b, 4);
+        code_size += 4;
+        memcpy(code + code_size, &c, 4);
+        code_size += 4;
+        VPRINT("[T81ASM] PUSH operands: %u %u %u\n", a, b, c);
+    }
+}
+@#
+
+@<HVM Output File Writer@>=
+void write_hvm_file(const char* out_path) {
+    FILE* fout = fopen(out_path, "wb");
+    if (!fout) {
+        fprintf(stderr, "[T81ASM] Error opening output file %s: %s\n", out_path, strerror(errno));
+        exit(1);
+    }
+    size_t written = fwrite(code, 1, code_size, fout);
+    if (written != code_size) {
+        fprintf(stderr, "[T81ASM] Error: Only wrote %zu bytes out of %zu\n", written, code_size);
+        fclose(fout);
+        exit(1);
+    }
+    fclose(fout);
+    printf("[T81ASM] Assembled %zu bytes → %s\n", code_size, out_path);
+}
+@#
+
+@<Main Function@>=
+int main(int argc, char* argv[]) {
+    /* Check for verbose flag via environment variable */
+    char* v = getenv("VERBOSE_ASM");
+    if (v) verbose = atoi(v);
+    
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s <input.asm> <output.hvm>\n", argv[0]);
+        exit(1);
+    }
+    
+    FILE* fin = fopen(argv[1], "r");
+    if (!fin) {
+        fprintf(stderr, "[T81ASM] Error opening input file %s: %s\n", argv[1], strerror(errno));
+        exit(1);
+    }
+    
+    char line[MAX_LINE];
+    while (fgets(line, sizeof(line), fin)) {
+        assemble_line(line);
+    }
+    fclose(fin);
+    
+    write_hvm_file(argv[2]);
+    return 0;
+}
+@#
+
+@* End of hvm_assembler.cweb
+   This enhanced assembler converts Ternary VM assembly code into .hvm bytecode.
+   It includes robust error checking, verbose debug logging (enabled via VERBOSE_ASM),
+   and placeholders for future extensions (e.g., label resolution).
+@*

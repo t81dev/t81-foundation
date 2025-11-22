@@ -1,0 +1,129 @@
+@* TISC Intermediate Representation for HanoiVM (Enhanced Version) *@
+
+@c
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include "t81types.h"
+
+@<TISC Opcode Set@>=
+typedef enum {
+    TISC_OP_NOP = 0x00,
+    TISC_OP_PUSH,
+    TISC_OP_POP,
+    TISC_OP_T81ADD,
+    TISC_OP_T81SUB,
+    TISC_OP_T81MUL,
+    TISC_OP_T81DIV,
+    TISC_OP_T81MOD,
+    TISC_OP_TNN,
+    TISC_OP_T81MATMUL,
+    TISC_OP_FACT,
+    TISC_OP_FIB,
+    TISC_OP_TOWER,
+    TISC_OP_BACKTRACK,
+    TISC_OP_ACK,
+    TISC_OP_BP,
+    TISC_OP_HALT,
+    TISC_OP_DEBUG  // New opcode for internal debugging
+} TISCOpcode;
+
+@<TISC Instruction Format@>=
+typedef struct {
+    TISCOpcode op;
+    int operand_count;
+    uint81_t operands[3];
+    int depth_hint;         // Optional: used for recursive awareness
+    char annotation[64];    // Optional human-readable annotation for debugging
+} TISCInstruction;
+
+@<TISC Program Buffer@>=
+typedef struct {
+    TISCInstruction* instructions;
+    int length;
+    int capacity;
+} TISCProgram;
+
+@<Function Prototypes@>=
+void tisc_program_init(TISCProgram* prog);
+void tisc_emit(TISCProgram* prog, TISCOpcode op, int operand_count, uint81_t* operands, int depth_hint, const char* annotation);
+void tisc_program_free(TISCProgram* prog);
+void tisc_program_disassemble(const TISCProgram* prog);
+@#
+
+@* Implementation
+@c
+/* Initialize a new TISC program buffer with a default capacity */
+void tisc_program_init(TISCProgram* prog) {
+    assert(prog);
+    prog->length = 0;
+    prog->capacity = 16; // initial capacity
+    prog->instructions = (TISCInstruction*)malloc(prog->capacity * sizeof(TISCInstruction));
+    if (!prog->instructions) {
+        fprintf(stderr, "Failed to allocate TISC program buffer\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+/* Resize the program buffer by doubling its capacity */
+static void tisc_program_resize(TISCProgram* prog) {
+    prog->capacity *= 2;
+    TISCInstruction* new_instr = (TISCInstruction*)realloc(prog->instructions, prog->capacity * sizeof(TISCInstruction));
+    if (!new_instr) {
+        fprintf(stderr, "Failed to resize TISC program buffer\n");
+        free(prog->instructions);
+        exit(EXIT_FAILURE);
+    }
+    prog->instructions = new_instr;
+}
+
+/* Emit a new instruction into the TISC program buffer */
+void tisc_emit(TISCProgram* prog, TISCOpcode op, int operand_count, uint81_t* operands, int depth_hint, const char* annotation) {
+    assert(prog);
+    if (prog->length >= prog->capacity) {
+        tisc_program_resize(prog);
+    }
+    TISCInstruction* instr = &prog->instructions[prog->length++];
+    instr->op = op;
+    instr->operand_count = operand_count;
+    instr->depth_hint = depth_hint;
+    if (operands) {
+        memcpy(instr->operands, operands, operand_count * sizeof(uint81_t));
+    }
+    if (annotation) {
+        strncpy(instr->annotation, annotation, sizeof(instr->annotation) - 1);
+        instr->annotation[sizeof(instr->annotation) - 1] = '\0';
+    } else {
+        instr->annotation[0] = '\0';
+    }
+}
+
+/* Free the TISC program buffer */
+void tisc_program_free(TISCProgram* prog) {
+    if (prog && prog->instructions) {
+        free(prog->instructions);
+        prog->instructions = NULL;
+        prog->length = 0;
+        prog->capacity = 0;
+    }
+}
+
+/* Disassemble and print the TISC program */
+void tisc_program_disassemble(const TISCProgram* prog) {
+    if (!prog || !prog->instructions) {
+        printf("No TISC program to disassemble.\n");
+        return;
+    }
+    for (int i = 0; i < prog->length; i++) {
+        const TISCInstruction* instr = &prog->instructions[i];
+        printf("[%03d] Opcode: 0x%02X, Operands: %d, Depth: %d", 
+               i, instr->op, instr->operand_count, instr->depth_hint);
+        if (instr->annotation[0] != '\0') {
+            printf(", Annotation: %s", instr->annotation);
+        }
+        printf("\n");
+    }
+}
+@#

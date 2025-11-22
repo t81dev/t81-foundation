@@ -1,0 +1,118 @@
+// t81_codegen.cweb - LLVM Backend Integration for HanoiVM
+
+@* T81 LLVM Backend: Codegen Entrypoints.
+This document defines the components needed for the LLVM backend integration
+of the T81 (HanoiVM) ternary architecture. It includes instruction selection,
+target lowering, DAG selection, register and type support, and assembly output.
+
+@<1. Includes@>
+@<2. T81TargetMachine.cpp@>
+@<3. T81ISelLowering.cpp@>
+@<4. T81DAGISel.cpp@>
+@<5. T81InstrPatterns.td@>
+@<6. T81AsmPrinter.cpp@>
+@<7. T81MCInstLower.cpp@>
+@<8. T81TargetInfo.cpp@>
+@<9. T81.td@>
+@<10. T81ValueTypes.td@>
+@<11. CMakeLists.txt@>
+
+@*1 Includes.
+@<1. Includes@>=
+#include "T81.h"
+#include "T81TargetMachine.h"
+#include "T81ISelLowering.h"
+#include "T81DAGISel.h"
+#include "T81AsmPrinter.h"
+#include "T81MCInstLower.h"
+#include "llvm/CodeGen/TargetPassConfig.h"
+#include "llvm/IR/LegacyPassManager.h"
+#include "llvm/Target/TargetMachine.h"
+#include "llvm/Target/TargetOptions.h"
+
+using namespace llvm;
+
+@*2 T81TargetMachine.cpp.
+@<2. T81TargetMachine.cpp@>=
+namespace llvm {
+
+T81TargetMachine::T81TargetMachine(const Target &T, const Triple &TT,
+                                   StringRef CPU, StringRef FS,
+                                   const TargetOptions &Options,
+                                   Optional<Reloc::Model> RM,
+                                   Optional<CodeModel::Model> CM,
+                                   CodeGenOpt::Level OL, bool JIT)
+    : LLVMTargetMachine(T, "e-p:81:81-i81:81:81-n81:81-S81", TT, CPU, FS, Options,
+                        getEffectiveRelocModel(RM),
+                        getEffectiveCodeModel(CM, CodeModel::Small), OL),
+      Subtarget(TT, CPU, FS, *this) {
+  initAsmInfo();
+}
+
+TargetPassConfig *T81TargetMachine::createPassConfig(PassManagerBase &PM) {
+  return new TargetPassConfig(*this, PM);
+}
+
+} // namespace llvm
+
+@*3 T81ISelLowering.cpp.
+@<3. T81ISelLowering.cpp@>=
+#include "T81ISelLowering.h"
+#include "T81.h"
+#include "T81TargetMachine.h"
+#include "llvm/CodeGen/SelectionDAGISel.h"
+
+using namespace llvm;
+
+namespace llvm {
+
+T81TargetLowering::T81TargetLowering(const TargetMachine &TM,
+                                     const T81Subtarget &STI)
+    : TargetLowering(TM) {
+
+  addRegisterClass(MVT::i32, &T81::T81GPRRegClass);
+  addRegisterClass(MVT::i81, &T81::T81GPRRegClass);
+
+  setOperationAction(ISD::ADD, MVT::i32, Legal);
+  setOperationAction(ISD::SUB, MVT::i32, Legal);
+  setOperationAction(ISD::MUL, MVT::i32, Legal);
+  setOperationAction(ISD::LOAD, MVT::i32, Legal);
+  setOperationAction(ISD::STORE, MVT::i32, Legal);
+
+  setOperationAction(ISD::ADD, MVT::i81, Legal);
+  setOperationAction(ISD::SUB, MVT::i81, Legal);
+  setOperationAction(ISD::MUL, MVT::i81, Legal);
+  setOperationAction(ISD::LOAD, MVT::i81, Legal);
+  setOperationAction(ISD::STORE, MVT::i81, Legal);
+
+  setOperationAction(ISD::BR_CC, MVT::i32, Expand);
+  setOperationAction(ISD::BR_CC, MVT::i81, Expand);
+  setOperationAction(ISD::BR, MVT::Other, Legal);
+  setOperationAction(ISD::SELECT, MVT::i32, Legal);
+  setOperationAction(ISD::SELECT, MVT::i81, Legal);
+  setOperationAction(ISD::PHI, MVT::i32, Expand);
+  setOperationAction(ISD::PHI, MVT::i81, Expand);
+}
+
+SDValue T81TargetLowering::LowerOperation(SDValue Op, SelectionDAG &DAG) const {
+  return SDValue();
+}
+
+} // namespace llvm
+
+@*4 T81DAGISel.cpp - Instruction Selector.
+@<4. T81DAGISel.cpp@>=
+@*5 T81InstrPatterns.td - Instruction Selection Patterns.
+@<5. T81InstrPatterns.td@>=
+@*6 T81AsmPrinter.cpp - Assembly Output Support.
+@<6. T81AsmPrinter.cpp@>=
+@*7 T81MCInstLower.cpp - Convert MachineInstr to MCInst.
+@<7. T81MCInstLower.cpp@>=
+@*8 T81TargetInfo.cpp - Target Triple Registration.
+@<8. T81TargetInfo.cpp@>=
+@*9 T81.td - Top-Level Target Definition.
+@<9. T81.td@>=
+@*10 T81ValueTypes.td - Custom Value Types.
+@<10. T81ValueTypes.td@>=
+@*11 CMakeLists.txt - LLVM Target Build Rules.
+@<11. CMakeLists.txt@>=

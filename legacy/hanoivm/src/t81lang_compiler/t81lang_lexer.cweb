@@ -1,0 +1,141 @@
+@* T81Lang Lexer (t81lang_lexer.cweb) *@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_TOKEN_LEN 256
+
+// Token Types
+typedef enum {
+    TOKEN_EOF,
+    TOKEN_IDENTIFIER,
+    TOKEN_INTEGER_LITERAL,
+    TOKEN_FLOAT_LITERAL,
+    TOKEN_TERNARY_LITERAL,
+    TOKEN_STRING_LITERAL,
+    TOKEN_KEYWORD,
+    TOKEN_OPERATOR,
+    TOKEN_SYMBOL
+} TokenType;
+
+// Token Structure
+typedef struct {
+    TokenType type;
+    char lexeme[MAX_TOKEN_LEN];
+    int line;
+    int column;
+} Token;
+
+// Keywords Table
+const char* keywords[] = {
+    "fn", "let", "const", "return", "if", "else", "for", "in", "while"
+};
+
+int is_keyword(const char* word) {
+    for (int i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++) {
+        if (strcmp(word, keywords[i]) == 0) return 1;
+    }
+    return 0;
+}
+
+// Lexer State
+static const char* src;
+static int pos = 0, line = 1, col = 1;
+
+char peek() {
+    return src[pos];
+}
+
+char advance() {
+    char c = src[pos++];
+    if (c == '\n') { line++; col = 1; } else col++;
+    return c;
+}
+
+int match(char expected) {
+    if (peek() == expected) {
+        advance();
+        return 1;
+    }
+    return 0;
+}
+
+Token make_token(TokenType type, const char* start, int length) {
+    Token token;
+    token.type = type;
+    strncpy(token.lexeme, start, length);
+    token.lexeme[length] = '\0';
+    token.line = line;
+    token.column = col - length;
+    return token;
+}
+
+Token next_token() {
+    while (isspace(peek())) advance();
+
+    char c = peek();
+    if (c == '\0') return make_token(TOKEN_EOF, "", 0);
+
+    const char* start = &src[pos];
+
+    if (isalpha(c) || c == '_') {
+        while (isalnum(peek()) || peek() == '_') advance();
+        int length = &src[pos] - start;
+        if (is_keyword(start)) return make_token(TOKEN_KEYWORD, start, length);
+        return make_token(TOKEN_IDENTIFIER, start, length);
+    }
+
+    if (isdigit(c)) {
+        while (isdigit(peek())) advance();
+        if (peek() == '.') {
+            advance();
+            while (isdigit(peek())) advance();
+            if (match('t') && match('8') && match('1')) {
+                return make_token(TOKEN_FLOAT_LITERAL, start, &src[pos] - start);
+            }
+        } else if (match('t') && match('8') && match('1')) {
+            return make_token(TOKEN_INTEGER_LITERAL, start, &src[pos] - start);
+        }
+    }
+
+    if (c == '"') {
+        advance();
+        while (peek() != '"' && peek() != '\0') advance();
+        if (peek() == '"') advance();
+        return make_token(TOKEN_STRING_LITERAL, start, &src[pos] - start);
+    }
+
+    if (c == '+' || c == '-' || c == '0' || c == '1' || c == '2') {
+        advance();
+        return make_token(TOKEN_TERNARY_LITERAL, start, 1);
+    }
+
+    // Operators and symbols
+    advance();
+    return make_token(TOKEN_OPERATOR, start, 1);
+}
+
+void set_source(const char* code) {
+    src = code;
+    pos = 0;
+    line = 1;
+    col = 1;
+}
+
+void print_token(Token token) {
+    printf("[%d:%d] %d -> '%s'\n", token.line, token.column, token.type, token.lexeme);
+}
+
+// Example usage
+int main() {
+    const char* code = "fn main() -> T81BigInt { let x: T81BigInt = 123t81; }";
+    set_source(code);
+    Token tok;
+    do {
+        tok = next_token();
+        print_token(tok);
+    } while (tok.type != TOKEN_EOF);
+    return 0;
+}

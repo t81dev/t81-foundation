@@ -1,0 +1,154 @@
+@* TISC Compiler Backend for HanoiVM | Full Recursive, AI, and Opcode Tier Integration (Enhanced Version)
+   This module transforms HVM bytecode into TISC IR. TISCDigits, representing symbolic
+   operations and recursive macros, are assembled from HVM opcodes. The module integrates
+   AI telemetry (via entropy scoring) and depth tracking for dynamic optimization.
+@#
+
+@<Include Dependencies and Header Files@>=
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "tisc_ir.h"
+#include "disassembler.h"
+#include "t81_patterns.h"
+#include "tyrnary_entropy.h"  /* Provides calculate_entropy_score() */
+@#
+
+@<Optional Verbose Logging Macro@>=
+#ifndef VERBOSE_TISC
+  #define VERBOSE_TISC 0
+#endif
+#if VERBOSE_TISC
+  #define TISC_DEBUG(fmt, ...) printf("[TISC DEBUG] " fmt, ##__VA_ARGS__)
+#else
+  #define TISC_DEBUG(fmt, ...) 
+#endif
+@#
+
+@<Helper Function: Safe Read Operand@>=
+/* Reads an operand of given size from file, and returns 0 on success, -1 on error */
+static int safe_fread(void* ptr, size_t size, size_t count, FILE* file) {
+    size_t n = fread(ptr, size, count, file);
+    if (n != count) {
+        fprintf(stderr, "[TISC] Error: Expected to read %zu items but got %zu\n", count, n);
+        return -1;
+    }
+    return 0;
+}
+@#
+
+@<TISC Instruction Emission@>=
+void tisc_emit(TISCProgram* prog, TISCOpcode op, int operand_count, uint81_t* operands, int depth_hint) {
+    if (prog->length >= prog->capacity) {
+        prog->capacity *= 2;
+        TISCInstruction* new_instr = realloc(prog->instructions, sizeof(TISCInstruction) * prog->capacity);
+        if (!new_instr) {
+            fprintf(stderr, "[TISC] Error: Failed to resize instruction buffer\n");
+            exit(EXIT_FAILURE);
+        }
+        prog->instructions = new_instr;
+    }
+    TISCInstruction* instr = &prog->instructions[prog->length++];
+    instr->op = op;
+    instr->operand_count = operand_count;
+    for (int i = 0; i < operand_count; i++) {
+        instr->operands[i] = operands[i];
+    }
+    instr->depth_hint = depth_hint;
+    instr->entropy_score = calculate_entropy_score(instr->operands, operand_count);
+    TISC_DEBUG("Emitted opcode 0x%02X with %d operand(s), depth %d, entropy %.4f\n", op, operand_count, depth_hint, instr->entropy_score);
+}
+@#
+
+@<TISC Program Initialization and Freeing@>=
+void tisc_program_init(TISCProgram* prog) {
+    prog->length = 0;
+    prog->capacity = 32;
+    prog->instructions = malloc(sizeof(TISCInstruction) * prog->capacity);
+    if (!prog->instructions) {
+        fprintf(stderr, "[TISC] Error: Failed to allocate instruction buffer\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void tisc_program_free(TISCProgram* prog) {
+    free(prog->instructions);
+    prog->instructions = NULL;
+    prog->length = prog->capacity = 0;
+}
+@#
+
+@<TISC Compile from HVM Bytecode@>=
+int tisc_compile_from_hvm(const char* filename, TISCProgram* prog) {
+    FILE* in = fopen(filename, "rb");
+    if (!in) {
+        fprintf(stderr, "[TISC] Error: Cannot open file %s\n", filename);
+        return -1;
+    }
+
+    uint8_t opcode;
+    while (fread(&opcode, 1, 1, in) == 1) {
+        uint81_t args[3] = {0};
+        int depth = 0;
+        TISC_DEBUG("Reading opcode 0x%02X at file offset %ld\n", opcode, ftell(in)-1);
+
+        switch (opcode) {
+            case OP_PUSH:
+                if (safe_fread(&args[0], sizeof(uint81_t), 1, in) != 0) break;
+                tisc_emit(prog, TISC_OP_PUSH, 1, args, depth);
+                break;
+            case OP_ADD:
+                tisc_emit(prog, TISC_OP_T81ADD, 0, args, depth);
+                break;
+            case OP_SUB:
+                tisc_emit(prog, TISC_OP_T81SUB, 0, args, depth);
+                break;
+            case OP_MUL:
+                tisc_emit(prog, TISC_OP_T81MUL, 0, args, depth);
+                break;
+            case OP_DIV:
+                tisc_emit(prog, TISC_OP_T81DIV, 0, args, depth);
+                break;
+            case OP_CALL:
+                depth = detect_call_depth(in);
+                if (detect_hanoi_pattern(in)) {
+                    tisc_emit(prog, TISC_OP_TOWER, 0, args, depth);
+                } else {
+                    tisc_emit(prog, TISC_OP_CALL, 0, args, depth);
+                }
+                break;
+            case OP_RET:
+                tisc_emit(prog, TISC_OP_RET, 0, args, 0);
+                break;
+            case OP_HALT:
+                tisc_emit(prog, TISC_OP_HALT, 0, args, 0);
+                break;
+            case OP_TNN_ACCUM:
+                if (safe_fread(&args[0], sizeof(uint81_t), 1, in) != 0) break;
+                if (safe_fread(&args[1], sizeof(uint81_t), 1, in) != 0) break;
+                tisc_emit(prog, TISC_OP_TNN, 2, args, 0);
+                break;
+            case OP_T81_MATMUL:
+                if (safe_fread(&args[0], sizeof(uint81_t), 1, in) != 0) break;
+                if (safe_fread(&args[1], sizeof(uint81_t), 1, in) != 0) break;
+                tisc_emit(prog, TISC_OP_MATMUL, 2, args, 0);
+                break;
+            case OP_JMP:
+                if (safe_fread(&args[0], sizeof(uint81_t), 1, in) != 0) break;
+                tisc_emit(prog, TISC_OP_JMP, 1, args, 0);
+                break;
+            default:
+                fprintf(stderr, "[TISC WARN] Unhandled HVM opcode 0x%02X\n", opcode);
+                break;
+        }
+    }
+    fclose(in);
+    return 0;
+}
+@#
+
+@* End of tisc_backend.cweb
+   This enhanced module transforms HVM bytecode into TISC IR with robust error checking,
+   verbose debug logging, and modular helper functions. It serves as the bridge between
+   HanoiVM's bytecode and the AI-driven TISC macro engine.
+@*

@@ -1,0 +1,123 @@
+@* TISC Compiler Backend for HanoiVM (Enhanced Version) *@
+
+@c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "tisc_ir.h"
+#include "disassembler.h"
+#include "t81_patterns.h"
+
+/* Optionally enable post-compilation disassembly */
+#ifdef ENABLE_DISASSEMBLE_AFTER_COMPILE
+#include "disassembler.h"
+#endif
+
+/* Enhanced emitter: now accepts an annotation string */
+void tisc_emit_ex(TISCProgram* prog, TISCOpcode op, int operand_count, uint81_t* operands, int depth_hint, const char* annotation) {
+    if (prog->length >= prog->capacity) {
+        prog->capacity *= 2;
+        TISCInstruction* new_instr = realloc(prog->instructions, sizeof(TISCInstruction) * prog->capacity);
+        if (!new_instr) {
+            fprintf(stderr, "Failed to resize TISC program buffer\n");
+            free(prog->instructions);
+            exit(EXIT_FAILURE);
+        }
+        prog->instructions = new_instr;
+    }
+    TISCInstruction* instr = &prog->instructions[prog->length++];
+    instr->op = op;
+    instr->operand_count = operand_count;
+    for (int i = 0; i < operand_count; i++) {
+        instr->operands[i] = operands[i];
+    }
+    instr->depth_hint = depth_hint;
+    if (annotation) {
+        strncpy(instr->annotation, annotation, sizeof(instr->annotation)-1);
+        instr->annotation[sizeof(instr->annotation)-1] = '\0';
+    } else {
+        instr->annotation[0] = '\0';
+    }
+}
+
+/* Wrapper emitter that calls the enhanced emitter without annotation */
+void tisc_emit(TISCProgram* prog, TISCOpcode op, int operand_count, uint81_t* operands, int depth_hint) {
+    tisc_emit_ex(prog, op, operand_count, operands, depth_hint, NULL);
+}
+
+/* Initialize Program Structure */
+void tisc_program_init(TISCProgram* prog) {
+    prog->length = 0;
+    prog->capacity = 16;
+    prog->instructions = malloc(sizeof(TISCInstruction) * prog->capacity);
+    if (!prog->instructions) {
+        fprintf(stderr, "Failed to allocate TISC program buffer\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+/* Free Memory */
+void tisc_program_free(TISCProgram* prog) {
+    free(prog->instructions);
+    prog->instructions = NULL;
+    prog->length = prog->capacity = 0;
+}
+
+/* Compile from HVM Disassembly to TISC IR */
+int tisc_compile_from_hvm(const char* filename, TISCProgram* prog) {
+    FILE* in = fopen(filename, "rb");
+    if (!in) {
+        fprintf(stderr, "[ERROR] Could not open file %s\n", filename);
+        return -1;
+    }
+
+    uint8_t opcode;
+    while (fread(&opcode, 1, 1, in) == 1) {
+        uint81_t args[3] = {0};
+        switch (opcode) {
+            case OP_PUSH:
+                if (fread(&args[0], sizeof(uint81_t), 1, in) != 1) {
+                    fprintf(stderr, "[WARN] Unexpected end-of-file while reading operand for OP_PUSH\n");
+                    goto cleanup;
+                }
+                tisc_emit_ex(prog, TISC_OP_PUSH, 1, args, 0, "Push operand");
+                break;
+            case OP_ADD:
+                tisc_emit_ex(prog, TISC_OP_T81ADD, 0, args, 0, "Addition");
+                break;
+            case OP_MUL:
+                tisc_emit_ex(prog, TISC_OP_T81MUL, 0, args, 0, "Multiplication");
+                break;
+            case OP_CALL:
+                if (detect_hanoi_pattern(in)) {
+                    tisc_emit_ex(prog, TISC_OP_TOWER, 0, args, 3, "Tower call pattern");
+                } else {
+                    /* Assuming TISC_OP_CALL exists; if not, map to another opcode */
+                    tisc_emit_ex(prog, TISC_OP_BP, 0, args, 1, "Standard call");
+                }
+                break;
+            case OP_RET:
+                /* Assuming TISC_OP_RET exists; if not, adjust accordingly */
+                tisc_emit_ex(prog, TISC_OP_BACKTRACK, 0, args, 0, "Return from call");
+                break;
+            case OP_HALT:
+                tisc_emit_ex(prog, TISC_OP_HALT, 0, args, 0, "Halt execution");
+                break;
+            default:
+                fprintf(stderr, "[WARN] Unhandled HVM opcode 0x%02X\n", opcode);
+                break;
+        }
+    }
+
+cleanup:
+    fclose(in);
+
+#ifdef ENABLE_DISASSEMBLE_AFTER_COMPILE
+    /* Optionally disassemble the compiled TISC IR */
+    printf("=== Disassembled TISC Program ===\n");
+    tisc_program_disassemble(prog);
+#endif
+
+    return 0;
+}
+@#

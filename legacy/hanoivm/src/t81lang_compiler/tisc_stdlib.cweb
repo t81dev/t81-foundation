@@ -1,0 +1,100 @@
+@* TISC Stdlib — Canonical Symbolic Macros for Recursive Ternary Programs (Enhanced)
+   This file defines common symbolic macros as part of the TISC standard library.
+   These include patterns for AI, recursion, ternary matrix operations, combinatorics,
+   and debugging support.
+   They are callable from T81Lang programs or directly injected into HanoiVM.
+@#
+
+@<Include Dependencies@>=
+#include "tisc_ir.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+@#
+
+@<Define New Opcodes for Synergy@>=
+/* 
+   Note: TISC_OP_DEBUG is defined in tisc_ir.cweb.
+   We also define a no-operation opcode (TISC_OP_NOP) for identity purposes.
+*/
+#ifndef TISC_OP_NOP
+#define TISC_OP_NOP 0x00
+#endif
+@#
+
+@<Stdlib TISC Macro: Fibonacci Tail-Recursive (TISC_OP_FIB)@>=
+void stdlib_fib_macro(TISCProgram* prog) {
+    uint81_t dummy[1] = {{0}};
+    tisc_emit(prog, TISC_OP_FIB, 0, dummy, 3);
+}
+@#
+
+@<Stdlib TISC Macro: Factorial (TISC_OP_FACT)@>=
+void stdlib_fact_macro(TISCProgram* prog) {
+    uint81_t dummy[1] = {{0}};
+    tisc_emit(prog, TISC_OP_FACT, 0, dummy, 3);
+}
+@#
+
+@<Stdlib TISC Macro: Tower of Hanoi (TISC_OP_TOWER)@>=
+void stdlib_tower_macro(TISCProgram* prog) {
+    uint81_t dummy[1] = {{0}};
+    tisc_emit(prog, TISC_OP_TOWER, 0, dummy, 4);
+}
+@#
+
+@<Stdlib TISC Macro: Matrix Multiply (T81)@>=
+void stdlib_matmul_macro(TISCProgram* prog, uint81_t a, uint81_t b) {
+    uint81_t args[2] = { a, b };
+    tisc_emit(prog, TISC_OP_MATMUL, 2, args, 1);
+}
+@#
+
+@<Stdlib TISC Macro: TNN Accumulate (AI Weighted Layer)@>=
+void stdlib_tnn_macro(TISCProgram* prog, uint81_t act, uint81_t weight) {
+    uint81_t args[2] = { act, weight };
+    tisc_emit(prog, TISC_OP_TNN, 2, args, 2);
+}
+@#
+
+@<Stdlib TISC Macro: Debug Marker (TISC_OP_DEBUG)@>=
+/*
+   Emits a debug marker that can be used for tracing execution flow within a TISC program.
+   Additionally, prints the debug message to stdout.
+*/
+void stdlib_debug_macro(TISCProgram* prog, const char* message) {
+    uint81_t dummy[1] = {{0}};
+    tisc_emit(prog, TISC_OP_DEBUG, 0, dummy, 0);
+    printf("[TISC DEBUG] %s\n", message);
+}
+@#
+
+@<Stdlib TISC Macro: Identity (No-Op)@>=
+/*
+   Emits a no-operation (NOP) instruction. This can serve as a placeholder in macro chaining.
+*/
+void stdlib_identity_macro(TISCProgram* prog) {
+    uint81_t dummy[1] = {{0}};
+    tisc_emit(prog, TISC_OP_NOP, 0, dummy, 0);
+}
+@#
+
+@<TISC Stdlib Entry Points@>=
+void tisc_stdlib_init(TISCProgram* prog) {
+    stdlib_fib_macro(prog);
+    stdlib_fact_macro(prog);
+    stdlib_tower_macro(prog);
+    /* Additional debugging marker */
+    stdlib_debug_macro(prog, "Debug marker inserted");
+    /* Identity macro as a no-op placeholder */
+    stdlib_identity_macro(prog);
+}
+@#
+
+@* End of tisc_stdlib.cweb
+   This enhanced standard library now includes not only the core macros for Fibonacci,
+   Factorial, Tower of Hanoi, Matrix Multiply, and TNN Accumulate, but also additional
+   macros for debug tracing and identity (no-op) operations.
+   These additions facilitate advanced program composition, runtime diagnostics,
+   and potential AI-driven macro optimization.
+@*

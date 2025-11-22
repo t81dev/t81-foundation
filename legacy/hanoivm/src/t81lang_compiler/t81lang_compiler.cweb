@@ -1,0 +1,126 @@
+@* T81Lang Compiler Entry Point (t81lang_compiler.cweb) *@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+@d External Modules
+extern void set_source(const char* code);
+extern void advance_token();
+extern struct ASTNode* parse_program();
+extern void analyze_program(struct ASTNode* root);
+extern void generate_program(struct ASTNode* root);
+extern void print_ir();
+extern void export_ir(const char* filename);
+extern void emit_hvm(const char* ir_file, const char* out_file);
+
+@d ASTNodeType Reference
+typedef enum {
+    AST_PROGRAM,
+    AST_FUNCTION,
+    AST_STATEMENT,
+    AST_RETURN,
+    AST_ASSIGNMENT,
+    AST_IDENTIFIER,
+    AST_LITERAL,
+    AST_BINARY_EXPR,
+    AST_CALL,
+    AST_TYPE,
+    AST_PARAM,
+    AST_TYPE_ANNOTATION,
+    AST_IF,
+    AST_WHILE,
+    AST_ELSE
+} ASTNodeType;
+
+@d ASTNode Struct Reference
+typedef struct ASTNode {
+    ASTNodeType type;
+    char name[64];
+    struct ASTNode* left;
+    struct ASTNode* right;
+    struct ASTNode* body;
+    struct ASTNode* next;
+} ASTNode;
+
+@d Emit Banner
+void print_banner(const char* stage) {
+    printf("\n===== %s =====\n", stage);
+}
+
+@d Emit Timestamp
+void print_timestamp() {
+    time_t now = time(NULL);
+    char buf[64];
+    strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", localtime(&now));
+    printf("[Timestamp] %s\n", buf);
+}
+
+@d Compiler Pipeline
+int main(int argc, char** argv) {
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <source-file.t81> [--emit-ir] [--no-analysis] [--emit-hvm]\n", argv[0]);
+        return 1;
+    }
+
+    int emit_ir_flag = 0;
+    int skip_analysis = 0;
+    int emit_hvm_flag = 0;
+
+    for (int i = 2; i < argc; ++i) {
+        if (strcmp(argv[i], "--emit-ir") == 0) emit_ir_flag = 1;
+        if (strcmp(argv[i], "--no-analysis") == 0) skip_analysis = 1;
+        if (strcmp(argv[i], "--emit-hvm") == 0) emit_hvm_flag = 1;
+    }
+
+    FILE* f = fopen(argv[1], "r");
+    if (!f) {
+        perror("Error opening file");
+        return 1;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long len = ftell(f);
+    rewind(f);
+
+    char* code = malloc(len + 1);
+    fread(code, 1, len, f);
+    code[len] = '\0';
+    fclose(f);
+
+    print_banner("T81Lang Compiler");
+    print_timestamp();
+
+    set_source(code);
+    advance_token();
+    ASTNode* ast = parse_program();
+
+    if (!skip_analysis) {
+        print_banner("Semantic Analysis");
+        analyze_program(ast);
+    } else {
+        printf("[Skip] Semantic analysis disabled via CLI.\n");
+    }
+
+    print_banner("IR Generation");
+    generate_program(ast);
+
+    if (emit_ir_flag) {
+        print_banner("IR Output");
+        print_ir();
+    }
+
+    export_ir("output.ir");
+    printf("[Output] IR written to output.ir\n");
+
+    if (emit_hvm_flag) {
+        print_banner("HanoiVM Emission");
+        emit_hvm("output.ir", "output.hvm");
+        printf("[Output] HVM bytecode written to output.hvm\n");
+    }
+
+    print_timestamp();
+    free(code);
+    return 0;
+}

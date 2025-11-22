@@ -1,0 +1,168 @@
+@* T81Lang Grammar Specification *@
+
+\section T81Lang Grammar Specification
+
+\subsection Program Structure
+
+The program consists of functions, where each function has a name, a list of parameters, and a return type. The body of the function consists of statements.
+
+@* Grammar for program structure *@
+
+\begin{grammar}
+<program> ::= {<function>}*
+
+<function> ::= "fn" <identifier> "(" <parameter>* ")" "->" <type> "{" <statement>* "}"
+
+<parameter> ::= <identifier> ":" <type>
+
+<statement> ::= <assignment>
+            | <return>
+            | <control_flow>
+            | <expression>
+
+<assignment> ::= "let" <identifier> ":" <type> "=" <expression> ";"
+             | "const" <identifier> ":" <type> "=" <expression> ";"
+
+<return> ::= "return" <expression> ";"
+
+<control_flow> ::= <if_statement>
+               | <loop_statement>
+
+<if_statement> ::= "if" <expression> "{" <statement>* "}" [ "else" "{" <statement>* "}" ]
+
+<loop_statement> ::= "for" <identifier> "in" <expression> ".." <expression> "{" <statement>* "}"
+                 | "while" <expression> "{" <statement>* "}"
+\end{grammar}
+
+\subsection Expressions
+
+Expressions include literals, identifiers, binary operations, unary operations, function calls, and ternary expressions.
+
+@* Grammar for expressions *@
+
+\begin{grammar}
+<expression> ::= <literal>
+             | <identifier>
+             | <binary_operation>
+             | <unary_operation>
+             | <function_call>
+             | <ternary_expression>
+             | "(" <expression> ")"
+
+<binary_operation> ::= <expression> <binary_operator> <expression>
+
+<binary_operator> ::= "+" | "-" | "*" | "/" | "%" | "==" | "!=" | "<" | ">" | "<=" | ">="
+
+<unary_operation> ::= <unary_operator> <expression>
+
+<unary_operator> ::= "!" | "-" 
+
+<ternary_expression> ::= <expression> "?" <expression> ":" <expression>
+
+<function_call> ::= <identifier> "(" <expression>* ")"
+\end{grammar}
+
+\subsection Literals
+
+Literals can be integers, floats, ternary values, or strings. Ternary literals have a `t81` suffix.
+
+@* Grammar for literals *@
+
+\begin{grammar}
+<literal> ::= <integer_literal> 
+          | <float_literal> 
+          | <ternary_literal> 
+          | <string_literal>
+
+<integer_literal> ::= <digit>+ "t81"  // Base-81 literal
+<float_literal> ::= <digit>+ "." <digit>+ "t81"
+
+<ternary_literal> ::= <digit> | "+" | "-"
+
+<string_literal> ::= "\"" <char>* "\""
+\end{grammar}
+
+\subsection Types
+
+The T81Lang type system includes primitive types like `T81BigInt`, `T81Float`, `T81Fraction`, and advanced types like `T81Matrix`, `T81Tensor`, `T81Graph`, etc.
+
+@* Grammar for types *@
+
+\begin{grammar}
+<type> ::= "T81BigInt" 
+        | "T81Float" 
+        | "T81Fraction"
+        | "T81Matrix"
+        | "T81Tensor"
+        | "T81Graph"
+        | "T81Vector"
+        | "T81Socket"
+        | "T81Protocol"
+        | "T81Config"
+        | "T81Map"
+        | "T81String"
+        | "T81Hash"
+        | "T81BigIntList"
+        | "T81VectorList"
+        | "T81TensorList"
+        | "T81MatrixList"
+        | "T81GraphList"
+\end{grammar}
+
+\subsection Collections and Structures
+
+Data structures like vectors, matrices, tensors, graphs, and lists are represented as collections of elements.
+
+@* Grammar for collection types *@
+
+\begin{grammar}
+<T81Vector> ::= "[" <expression> {"," <expression>}* "]"  // Vector, list of expressions (e.g., `[1t81, 2t81]`)
+
+<T81Matrix> ::= "[" <T81Vector> {"," <T81Vector>}* "]"  // Matrix, list of T81Vectors (e.g., `[[1t81, 2t81], [3t81, 4t81]]`)
+
+<T81Tensor> ::= "[" <T81Matrix> {"," <T81Matrix>}* "]"  // Tensor, list of T81Matrices (e.g., `[[[1t81, 2t81], [3t81, 4t81]], [[5t81, 6t81], [7t81, 8t81]]]`)
+
+<T81Graph> ::= "[" <T81Map> {"," <T81Map>}* "]"  // Graph represented as a list of T81Maps (e.g., `[{"A": "B"}, {"B": "C"}]`)
+
+<T81Socket> ::= "T81Socket"  // Network Socket type for networking operations (e.g., socket creation, data transmission)
+
+<T81Protocol> ::= "T81Protocol"  // Protocol definition used in networking communication
+
+<T81Config> ::= "T81Config"  // Configuration objects for defining protocol parameters
+
+<T81Map> ::= "T81Map"  // Key-value pairs for custom mappings (e.g., `{ "key": "value" }`)
+
+<T81String> ::= "T81String"  // String literals (used for network or textual data handling)
+
+<T81Hash> ::= "T81Hash"  // For hashing algorithms like SHA-3 (used in cryptographic operations)
+
+<T81BigIntList> ::= "[" <T81BigInt> {"," <T81BigInt>}* "]"  // List of T81BigInt values
+
+<T81VectorList> ::= "[" <T81Vector> {"," <T81Vector>}* "]"  // List of T81Vector objects
+
+<T81TensorList> ::= "[" <T81Tensor> {"," <T81Tensor>}* "]"  // List of T81Tensor objects
+
+<T81MatrixList> ::= "[" <T81Matrix> {"," <T81Matrix>}* "]"  // List of T81Matrix objects
+
+<T81GraphList> ::= "[" <T81Graph> {"," <T81Graph>}* "]"  // List of T81Graph objects
+\end{grammar}
+
+\subsection Identifiers and Syntax Rules
+
+Identifiers are composed of letters and digits. They follow typical programming conventions with some restrictions.
+
+@* Grammar for identifiers and syntax rules *@
+
+\begin{grammar}
+<identifier> ::= <letter> {<letter> | <digit>}*
+
+<letter> ::= "a".."z" | "A".."Z" | "_"
+
+<digit> ::= "0".."9"
+
+<char> ::= <letter> | <digit> | " " | "!" | "\"" | "#" | "$" | "%" | "&" | "'" | "(" | ")" | "*" | "+" | "," | "-" | "." | "/" | ":" | ";" | "<" | "=" | ">" | "?" | "@" | "[" | "\\" | "]" | "^" | "_" | "`" | "{" | "|" | "}" | "~"
+\end{grammar}
+
+\section Conclusion
+
+The T81Lang grammar supports a variety of primitive and advanced data types, control flow constructs, and mathematical operations, allowing for flexible programming with ternary arithmetic and base-81 operations.

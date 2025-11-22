@@ -1,0 +1,461 @@
+@* t81_to_hvm.cweb | T81Lang → HVM Bytecode Compiler with Enhanced Robustness *@
+
+@c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <ctype.h>
+#include "t81types.h"  /* Assumed to define uint81_t */
+@#
+
+@<Define Constants and Tags@>=
+#define OP_HALT 0xFF
+#define OP_PUSH 0x01
+
+#define T81_TAG_BIGINT     0x01
+#define T81_TAG_FRACTION   0x02
+#define T81_TAG_FLOAT      0x03
+#define T81_TAG_MATRIX     0x04
+#define T81_TAG_VECTOR     0x05
+#define T81_TAG_TENSOR     0x06
+#define T81_TAG_POLYNOMIAL 0x07
+#define T81_TAG_GRAPH      0x08
+#define T81_TAG_QUATERNION 0x09
+#define T81_TAG_OPCODE     0x0A
+@#
+
+@<Opcode Map@>=
+typedef struct {
+    const char* keyword;
+    uint8_t opcode;
+} OpEntry;
+
+static OpEntry opmap[] = {
+    {"push",  0x01},
+    {"pop",   0x02},
+    {"add",   0x03},
+    {"sub",   0x04},
+    {"mul",   0x05},
+    {"div",   0x06},
+    {"mod",   0x07},
+    {"neg",   0x08},
+    {"abs",   0x09},
+    {"cmp3",  0x0A},
+    {"jmp",   0x10},
+    {"jz",    0x11},
+    {"jnz",   0x12},
+    {"call",  0x13},
+    {"ret",   0x14},
+    {"tnn_accum", 0x20},
+    {"matmul", 0x21},
+    {"fact",  0x30},
+    {"fib",   0x31},
+    {"tower", 0x32},
+    {"ack",   0x33},
+    {"bp",    0x34},
+    {"halt",  0xFF},
+    {"push_vector", 0x35},
+    {"push_polynomial", 0x36},
+    {"push_graph", 0x37},
+    {"push_quaternion", 0x38},
+    {"push_opcode", 0x39},
+    {NULL,     0x00}
+};
+@#
+
+@<Utility: Match Opcode@>=
+uint8_t lookup_opcode(const char* token) {
+    for (int i = 0; opmap[i].keyword != NULL; i++) {
+        if (strcmp(opmap[i].keyword, token) == 0) {
+            return opmap[i].opcode;
+        }
+    }
+    return 0x00;
+}
+@#
+
+@<Operand Parser: Base-81 Encoding Stub@>=
+uint81_t parse_uint81(const char* str) {
+    uint81_t result = {0, 0, 0};
+    sscanf(str, "%u:%u:%u", &result.a, &result.b, &result.c);
+    return result;
+}
+@#
+
+@<Write Fraction Operand@>=
+void write_fraction(FILE* out, const char* num, const char* denom) {
+    fputc(OP_PUSH, out);
+    fputc(T81_TAG_FRACTION, out);
+    uint8_t len_num = (uint8_t)strlen(num);
+    fputc(len_num, out);
+    for (int i = 0; i < len_num; i++) {
+        fputc(num[i] - '0', out);
+    }
+    uint8_t len_denom = (uint8_t)strlen(denom);
+    fputc(len_denom, out);
+    for (int i = 0; i < len_denom; i++) {
+        fputc(denom[i] - '0', out);
+    }
+}
+@#
+
+@<Write Float Operand@>=
+void write_float(FILE* out, const char* mantissa, int8_t exponent) {
+    fputc(OP_PUSH, out);
+    fputc(T81_TAG_FLOAT, out);
+    uint8_t len = (uint8_t)strlen(mantissa);
+    fputc(len, out);
+    for (int i = 0; i < len; i++) {
+        fputc(mantissa[i] - '0', out);
+    }
+    fwrite(&exponent, sizeof(int8_t), 1, out);
+}
+@#
+
+@<Write Matrix Operand@>=
+void write_matrix(FILE* out, int rows, int cols, char** values) {
+    fputc(OP_PUSH, out);
+    fputc(T81_TAG_MATRIX, out);
+    fputc((uint8_t)rows, out);
+    fputc((uint8_t)cols, out);
+    for (int i = 0; i < rows * cols; i++) {
+        fputc(T81_TAG_BIGINT, out);
+        uint8_t len = (uint8_t)strlen(values[i]);
+        fputc(len, out);
+        for (int j = 0; j < len; j++) {
+            fputc(values[i][j] - '0', out);
+        }
+    }
+}
+@#
+
+@<Write Tensor Operand@>=
+void write_tensor(FILE* out, int dims, char** tags_and_vals) {
+    fputc(OP_PUSH, out);
+    fputc(T81_TAG_TENSOR, out);
+    fputc((uint8_t)dims, out);
+    int cursor = 0;
+    for (int i = 0; i < dims; i++) {
+        char* depth_token = tags_and_vals[cursor++];
+        int depth = atoi(depth_token);
+        fputc((uint8_t)depth, out);
+        for (int j = 0; j < depth; j++) {
+            uint8_t tag = (uint8_t)atoi(tags_and_vals[cursor++]);
+            fputc(tag, out);
+            char* val = tags_and_vals[cursor++];
+            uint8_t len = (uint8_t)strlen(val);
+            fputc(len, out);
+            for (int k = 0; k < len; k++) {
+                fputc(val[k] - '0', out);
+            }
+        }
+    }
+}
+@#
+
+@<Write Vector Operand@>=
+void write_vector(FILE* out, int len, char** values) {
+    fputc(OP_PUSH, out);
+    fputc(T81_TAG_VECTOR, out);
+    fputc((uint8_t)len, out);
+    for (int i = 0; i < len; i++) {
+        fputc(T81_TAG_BIGINT, out);
+        uint8_t len_elem = (uint8_t)strlen(values[i]);
+        fputc(len_elem, out);
+        for (int j = 0; j < len_elem; j++) {
+            fputc(values[i][j] - '0', out);
+        }
+    }
+}
+@#
+
+@<Write Polynomial Operand@>=
+void write_polynomial(FILE* out, int degree, char** coeffs) {
+    fputc(OP_PUSH, out);
+    fputc(T81_TAG_POLYNOMIAL, out);
+    fputc((uint8_t)degree, out);
+    for (int i = 0; i < degree; i++) {
+        fputc(T81_TAG_BIGINT, out);
+        uint8_t len = (uint8_t)strlen(coeffs[i]);
+        fputc(len, out);
+        for (int j = 0; j < len; j++) {
+            fputc(coeffs[i][j] - '0', out);
+        }
+    }
+}
+@#
+
+@<Write Graph Operand@>=
+void write_graph(FILE* out, int nodes, int edges, char** connections) {
+    fputc(OP_PUSH, out);
+    fputc(T81_TAG_GRAPH, out);
+    fputc((uint8_t)nodes, out);
+    fputc((uint8_t)edges, out);
+    for (int i = 0; i < edges; i++) {
+        uint8_t from = (uint8_t)atoi(connections[i * 2]);
+        uint8_t to = (uint8_t)atoi(connections[i * 2 + 1]);
+        fputc(from, out);
+        fputc(to, out);
+    }
+}
+@#
+
+@<Write Quaternion Operand@>=
+void write_quaternion(FILE* out, const char* x, const char* y, const char* z, const char* w) {
+    fputc(OP_PUSH, out);
+    fputc(T81_TAG_QUATERNION, out);
+    uint8_t len_x = (uint8_t)strlen(x);
+    fputc(len_x, out);
+    for (int i = 0; i < len_x; i++) {
+        fputc(x[i] - '0', out);
+    }
+    uint8_t len_y = (uint8_t)strlen(y);
+    fputc(len_y, out);
+    for (int i = 0; i < len_y; i++) {
+        fputc(y[i] - '0', out);
+    }
+    uint8_t len_z = (uint8_t)strlen(z);
+    fputc(len_z, out);
+    for (int i = 0; i < len_z; i++) {
+        fputc(z[i] - '0', out);
+    }
+    uint8_t len_w = (uint8_t)strlen(w);
+    fputc(len_w, out);
+    for (int i = 0; i < len_w; i++) {
+        fputc(w[i] - '0', out);
+    }
+}
+@#
+
+@<Write Opcode Operand@>=
+void write_opcode(FILE* out, uint8_t opcode) {
+    fputc(OP_PUSH, out);
+    fputc(T81_TAG_OPCODE, out);
+    fputc(opcode, out);
+}
+@#
+
+@<Main Entry@>=
+int main(int argc, char** argv) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s <input.t81> <output.hvm>\n", argv[0]);
+        return 1;
+    }
+
+    FILE* in = fopen(argv[1], "r");
+    FILE* out = fopen(argv[2], "wb");
+    if (!in || !out) {
+        perror("fopen");
+        return 1;
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), in)) {
+        char* token = strtok(line, " \t\n");
+        if (!token || token[0] == '#') continue;
+
+        if (strcmp(token, "push_fraction") == 0) {
+            char* num = strtok(NULL, " \t\n");
+            char* denom = strtok(NULL, " \t\n");
+            if (num && denom)
+                write_fraction(out, num, denom);
+            else
+                fprintf(stderr, "[WARN] push_fraction missing operands\n");
+            continue;
+        }
+        if (strcmp(token, "push_float") == 0) {
+            char* mantissa = strtok(NULL, " \t\n");
+            char* expstr = strtok(NULL, " \t\n");
+            if (mantissa && expstr) {
+                int8_t exp = (int8_t)atoi(expstr);
+                write_float(out, mantissa, exp);
+            } else {
+                fprintf(stderr, "[WARN] push_float missing operands\n");
+            }
+            continue;
+        }
+        if (strcmp(token, "push_matrix") == 0) {
+            char* rowstr = strtok(NULL, " \t\n");
+            char* colstr = strtok(NULL, " \t\n");
+            if (!rowstr || !colstr) {
+                fprintf(stderr, "[WARN] push_matrix missing row/col values\n");
+                continue;
+            }
+            int rows = atoi(rowstr), cols = atoi(colstr);
+            char** values = malloc(sizeof(char*) * rows * cols);
+            if (!values) {
+                fprintf(stderr, "Memory allocation failed for matrix values\n");
+                continue;
+            }
+            for (int i = 0; i < rows * cols; i++) {
+                char* val = strtok(NULL, " \t\n");
+                if (!val) {
+                    fprintf(stderr, "[WARN] push_matrix: insufficient matrix values\n");
+                    break;
+                }
+                values[i] = strdup(val);
+            }
+            write_matrix(out, rows, cols, values);
+            for (int i = 0; i < rows * cols; i++) {
+                free(values[i]);
+            }
+            free(values);
+            continue;
+        }
+        if (strcmp(token, "push_tensor") == 0) {
+            char* dimstr = strtok(NULL, " \t\n");
+            if (!dimstr) {
+                fprintf(stderr, "[WARN] push_tensor missing dimensions\n");
+                continue;
+            }
+            int dims = atoi(dimstr);
+            char** tv = NULL;
+            int count = 0;
+            for (int i = 0; i < dims; i++) {
+                char* depth_token = strtok(NULL, " \t\n");
+                if (!depth_token) {
+                    fprintf(stderr, "[WARN] push_tensor: insufficient depth token\n");
+                    break;
+                }
+                tv = realloc(tv, sizeof(char*) * (count + 1));
+                tv[count++] = strdup(depth_token);
+                int depth = atoi(depth_token);
+                for (int j = 0; j < depth; j++) {
+                    char* token_val = strtok(NULL, " \t\n");
+                    if (!token_val) {
+                        fprintf(stderr, "[WARN] push_tensor: insufficient tensor values\n");
+                        break;
+                    }
+                    tv = realloc(tv, sizeof(char*) * (count + 1));
+                    tv[count++] = strdup(token_val);
+                }
+            }
+            write_tensor(out, dims, tv);
+            for (int i = 0; i < count; i++) {
+                free(tv[i]);
+            }
+            free(tv);
+            continue;
+        }
+        if (strcmp(token, "push_vector") == 0) {
+            char* lenstr = strtok(NULL, " \t\n");
+            if (!lenstr) {
+                fprintf(stderr, "[WARN] push_vector missing length\n");
+                continue;
+            }
+            int len = atoi(lenstr);
+            char** values = malloc(sizeof(char*) * len);
+            if (!values) {
+                fprintf(stderr, "Memory allocation failed for vector values\n");
+                continue;
+            }
+            for (int i = 0; i < len; i++) {
+                char* val = strtok(NULL, " \t\n");
+                if (!val) {
+                    fprintf(stderr, "[WARN] push_vector: insufficient values\n");
+                    break;
+                }
+                values[i] = strdup(val);
+            }
+            write_vector(out, len, values);
+            for (int i = 0; i < len; i++) {
+                free(values[i]);
+            }
+            free(values);
+            continue;
+        }
+        if (strcmp(token, "push_polynomial") == 0) {
+            char* degstr = strtok(NULL, " \t\n");
+            if (!degstr) {
+                fprintf(stderr, "[WARN] push_polynomial missing degree\n");
+                continue;
+            }
+            int degree = atoi(degstr);
+            char** coeffs = malloc(sizeof(char*) * degree);
+            if (!coeffs) {
+                fprintf(stderr, "Memory allocation failed for polynomial coefficients\n");
+                continue;
+            }
+            for (int i = 0; i < degree; i++) {
+                char* coeff = strtok(NULL, " \t\n");
+                if (!coeff) {
+                    fprintf(stderr, "[WARN] push_polynomial: insufficient coefficients\n");
+                    break;
+                }
+                coeffs[i] = strdup(coeff);
+            }
+            write_polynomial(out, degree, coeffs);
+            for (int i = 0; i < degree; i++) {
+                free(coeffs[i]);
+            }
+            free(coeffs);
+            continue;
+        }
+        if (strcmp(token, "push_graph") == 0) {
+            char* nodestr = strtok(NULL, " \t\n");
+            char* edgestr = strtok(NULL, " \t\n");
+            if (!nodestr || !edgestr) {
+                fprintf(stderr, "[WARN] push_graph missing nodes or edges\n");
+                continue;
+            }
+            int nodes = atoi(nodestr), edges = atoi(edgestr);
+            char** connections = malloc(sizeof(char*) * edges * 2);
+            if (!connections) {
+                fprintf(stderr, "Memory allocation failed for graph connections\n");
+                continue;
+            }
+            for (int i = 0; i < edges; i++) {
+                char* from = strtok(NULL, " \t\n");
+                char* to = strtok(NULL, " \t\n");
+                if (!from || !to) {
+                    fprintf(stderr, "[WARN] push_graph: insufficient connection tokens\n");
+                    break;
+                }
+                connections[i * 2] = strdup(from);
+                connections[i * 2 + 1] = strdup(to);
+            }
+            write_graph(out, nodes, edges, connections);
+            for (int i = 0; i < edges * 2; i++) {
+                free(connections[i]);
+            }
+            free(connections);
+            continue;
+        }
+        if (strcmp(token, "push_quaternion") == 0) {
+            char* x = strtok(NULL, " \t\n");
+            char* y = strtok(NULL, " \t\n");
+            char* z = strtok(NULL, " \t\n");
+            char* w = strtok(NULL, " \t\n");
+            if (x && y && z && w)
+                write_quaternion(out, x, y, z, w);
+            else
+                fprintf(stderr, "[WARN] push_quaternion missing components\n");
+            continue;
+        }
+        if (strcmp(token, "push_opcode") == 0) {
+            char* op_token = strtok(NULL, " \t\n");
+            if (!op_token) {
+                fprintf(stderr, "[WARN] push_opcode missing opcode token\n");
+                continue;
+            }
+            uint8_t opcode = lookup_opcode(op_token);
+            write_opcode(out, opcode);
+            continue;
+        }
+        /* If no specific token is matched, try to interpret as a generic opcode */
+        uint8_t op = lookup_opcode(token);
+        if (op != 0x00) {
+            fputc(OP_PUSH, out);
+            fputc(T81_TAG_OPCODE, out);
+            fputc(op, out);
+        } else {
+            fprintf(stderr, "[WARN] Unrecognized token: %s\n", token);
+        }
+    }
+
+    fclose(in);
+    fclose(out);
+    return 0;
+}
+@#

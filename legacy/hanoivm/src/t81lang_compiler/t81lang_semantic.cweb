@@ -1,0 +1,219 @@
+@* T81Lang Semantic Analyzer (t81lang_semantic.cweb) *@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_SYMBOLS 1024
+#define MAX_NAME_LEN 64
+
+@d Symbol Types
+typedef enum {
+    SYMBOL_VAR,
+    SYMBOL_FUNC,
+    SYMBOL_PARAM
+} SymbolType;
+
+@d Symbol Table Entry
+typedef struct {
+    char name[MAX_NAME_LEN];
+    char type[MAX_NAME_LEN];
+    SymbolType kind;
+    int scope_level;
+} Symbol;
+
+@d Symbol Table
+typedef struct {
+    Symbol symbols[MAX_SYMBOLS];
+    int count;
+    int scope_level;
+} SymbolTable;
+
+@d AST Forward Declaration
+struct ASTNode;
+
+@d Type Check Result
+typedef enum {
+    TYPE_MATCH,
+    TYPE_MISMATCH,
+    TYPE_UNDEFINED
+} TypeCheckResult;
+
+@d ASTNodeType (reused)
+typedef enum {
+    AST_PROGRAM,
+    AST_FUNCTION,
+    AST_STATEMENT,
+    AST_RETURN,
+    AST_ASSIGNMENT,
+    AST_IDENTIFIER,
+    AST_LITERAL,
+    AST_BINARY_EXPR,
+    AST_CALL,
+    AST_TYPE,
+    AST_PARAM,
+    AST_TYPE_ANNOTATION,
+    AST_IF,
+    AST_WHILE,
+    AST_ELSE
+} ASTNodeType;
+
+@d AST Node Definition
+typedef struct ASTNode {
+    ASTNodeType type;
+    char name[MAX_NAME_LEN];
+    struct ASTNode* left;
+    struct ASTNode* right;
+    struct ASTNode* body;
+    struct ASTNode* next;
+} ASTNode;
+
+@d Initialize Symbol Table
+void init_symbol_table(SymbolTable* table) {
+    table->count = 0;
+    table->scope_level = 0;
+}
+
+@d Enter New Scope
+void enter_scope(SymbolTable* table) {
+    table->scope_level++;
+}
+
+@d Exit Current Scope
+void exit_scope(SymbolTable* table) {
+    for (int i = table->count - 1; i >= 0; --i) {
+        if (table->symbols[i].scope_level < table->scope_level) break;
+        table->count--;
+    }
+    table->scope_level--;
+}
+
+@d Add Symbol to Table
+void add_symbol(SymbolTable* table, const char* name, const char* type, SymbolType kind) {
+    if (table->count < MAX_SYMBOLS) {
+        strncpy(table->symbols[table->count].name, name, MAX_NAME_LEN);
+        strncpy(table->symbols[table->count].type, type, MAX_NAME_LEN);
+        table->symbols[table->count].kind = kind;
+        table->symbols[table->count].scope_level = table->scope_level;
+        table->count++;
+    }
+}
+
+@d Lookup Symbol
+const char* lookup_symbol(SymbolTable* table, const char* name) {
+    for (int i = table->count - 1; i >= 0; --i) {
+        if (strcmp(table->symbols[i].name, name) == 0) {
+            return table->symbols[i].type;
+        }
+    }
+    return NULL;
+}
+
+@d Type Check Binary Expression
+TypeCheckResult check_types(const char* left, const char* right) {
+    if (!left || !right) return TYPE_UNDEFINED;
+    if (strcmp(left, right) == 0) return TYPE_MATCH;
+    return TYPE_MISMATCH;
+}
+
+@d Type Checking Engine
+const char* analyze_expression(ASTNode* expr, SymbolTable* table);
+
+void analyze_statement(ASTNode* stmt, SymbolTable* table) {
+    if (!stmt) return;
+
+    switch (stmt->type) {
+        case AST_ASSIGNMENT: {
+            const char* var_name = stmt->left->name;
+            const char* type_name = stmt->body ? stmt->body->name : NULL;
+            const char* value_type = analyze_expression(stmt->right, table);
+            if (check_types(type_name, value_type) != TYPE_MATCH) {
+                printf("[TypeError] Cannot assign '%s' to variable '%s' of type '%s'\n", value_type, var_name, type_name);
+            }
+            add_symbol(table, var_name, type_name, SYMBOL_VAR);
+            break;
+        }
+        case AST_RETURN: {
+            const char* ret_type = analyze_expression(stmt->left, table);
+            printf("[Return] Type: %s\n", ret_type);
+            break;
+        }
+        case AST_IF:
+        case AST_WHILE: {
+            analyze_expression(stmt->left, table);
+            enter_scope(table);
+            ASTNode* body = stmt->right;
+            while (body) {
+                analyze_statement(body, table);
+                body = body->next;
+            }
+            exit_scope(table);
+            if (stmt->next && stmt->next->type == AST_ELSE) {
+                enter_scope(table);
+                ASTNode* else_body = stmt->next->body;
+                while (else_body) {
+                    analyze_statement(else_body, table);
+                    else_body = else_body->next;
+                }
+                exit_scope(table);
+            }
+            break;
+        }
+        default:
+            analyze_expression(stmt, table);
+            break;
+    }
+}
+
+const char* analyze_expression(ASTNode* expr, SymbolTable* table) {
+    if (!expr) return NULL;
+
+    switch (expr->type) {
+        case AST_LITERAL:
+            if (strchr(expr->name, '.')) return "T81Float";
+            if (strstr(expr->name, "t81")) return "T81BigInt";
+            return "Unknown";
+        case AST_IDENTIFIER:
+            return lookup_symbol(table, expr->name);
+        case AST_BINARY_EXPR: {
+            const char* left_type = analyze_expression(expr->left, table);
+            const char* right_type = analyze_expression(expr->right, table);
+            if (check_types(left_type, right_type) == TYPE_MATCH) return left_type;
+            return "TypeError";
+        }
+        default:
+            return "Unknown";
+    }
+}
+
+@d Semantic Pass for Function
+void analyze_function(ASTNode* fn) {
+    SymbolTable table;
+    init_symbol_table(&table);
+
+    ASTNode* params = fn->left;
+    while (params) {
+        add_symbol(&table, params->left->name, params->right->name, SYMBOL_PARAM);
+        params = params->next;
+    }
+
+    enter_scope(&table);
+    ASTNode* body = fn->body;
+    while (body) {
+        analyze_statement(body, &table);
+        body = body->next;
+    }
+    exit_scope(&table);
+}
+
+@d Entry Point
+void analyze_program(ASTNode* root) {
+    ASTNode* fn = root->body;
+    while (fn) {
+        if (fn->type == AST_FUNCTION) {
+            printf("Analyzing function: %s\n", fn->name);
+            analyze_function(fn);
+        }
+        fn = fn->next;
+    }
+}

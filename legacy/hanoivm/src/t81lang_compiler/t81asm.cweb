@@ -1,0 +1,195 @@
+@* HanoiVM | T81 Assembler (`.t81` → `.hvm`) (Enhanced Version)
+   This CWEB document implements the assembler for the HanoiVM virtual machine.
+   It reads human-readable `.t81` source code and emits binary `.hvm` bytecode files
+   that can be executed by the HanoiVM runtime (see hanoivm_vm.cweb).
+
+   Supported Instructions:
+   push <int> ; push an immediate value
+   add       ; add top two stack values
+   sub       ; subtract top two values
+   mod       ; modulo (a % b)
+   neg       ; negate top value
+   dup       ; duplicate top value
+   swap      ; swap top two values
+   drop      ; remove top value
+   halt      ; stop VM
+
+   Future enhancements: 
+   - Label and branch resolution.
+   - Extended instruction set for control flow and I/O.
+@#
+
+@<Include Dependencies@>=
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <errno.h>
+@#
+
+@<Opcode Enum@>=
+typedef enum {
+    OP_NOP   = 0x00,
+    OP_PUSH  = 0x01,
+    OP_ADD   = 0x02,
+    OP_SUB   = 0x03,
+    OP_MOD   = 0x04,
+    OP_NEG   = 0x05,
+    OP_DUP   = 0x06,
+    OP_SWAP  = 0x07,
+    OP_DROP  = 0x08,
+    OP_HALT  = 0xFF
+} Opcode;
+@#
+
+@<T81ASM Constants@>=
+#define MAX_CODE_SIZE 8192
+#define HVM_MAGIC "\x48\x56\x4D\x01"  // "HVM" + version byte
+
+/* Verbose mode flag (set to 1 to enable debug logging) */
+#ifndef VERBOSE_ASM
+#define VERBOSE_ASM 0
+#endif
+@#
+
+@<T81ASM Globals@>=
+uint8_t code[MAX_CODE_SIZE];
+size_t code_size = 0;
+@#
+
+@<Error Reporting Helper@>=
+void asm_error(const char* msg) {
+    fprintf(stderr, "[T81ASM] Error: %s\n", msg);
+    exit(1);
+}
+@#
+
+@<T81ASM API@>=
+void assemble_line(char* line);
+void write_hvm_file(const char* out_path);
+@#
+
+@<Main Assembler Function@>=
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s <input.t81> <output.hvm>\n", argv[0]);
+        return 1;
+    }
+
+    FILE* in = fopen(argv[1], "r");
+    if (!in) {
+        perror("Input file");
+        return 1;
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), in)) {
+        assemble_line(line);
+    }
+    fclose(in);
+    write_hvm_file(argv[2]);
+
+    printf("[T81ASM] Assembled %zu bytes → %s\n", code_size, argv[2]);
+    return 0;
+}
+@#
+
+@* Assembler Line Parser
+   This function parses one line of `.t81` source and emits its opcode(s) into the bytecode buffer.
+@<Assembler Parser@>=
+void assemble_line(char* line) {
+    char* tok = strtok(line, " \t\r\n");
+    if (!tok || tok[0] == '#') return;
+
+    if (strcmp(tok, "push") == 0) {
+        char* val_str = strtok(NULL, " \t\r\n");
+        if (!val_str) {
+            asm_error("Missing operand for push");
+        }
+        int val = atoi(val_str);
+        if (code_size + 2 > MAX_CODE_SIZE) {
+            asm_error("Code size exceeds maximum capacity");
+        }
+        code[code_size++] = OP_PUSH;
+        code[code_size++] = (uint8_t)val;
+        if (VERBOSE_ASM) {
+            fprintf(stderr, "[DEBUG] push %d\n", val);
+        }
+    }
+    else if (strcmp(tok, "add") == 0) {
+        if (code_size + 1 > MAX_CODE_SIZE) asm_error("Code size exceeds maximum capacity");
+        code[code_size++] = OP_ADD;
+        if (VERBOSE_ASM) fprintf(stderr, "[DEBUG] add\n");
+    }
+    else if (strcmp(tok, "sub") == 0) {
+        if (code_size + 1 > MAX_CODE_SIZE) asm_error("Code size exceeds maximum capacity");
+        code[code_size++] = OP_SUB;
+        if (VERBOSE_ASM) fprintf(stderr, "[DEBUG] sub\n");
+    }
+    else if (strcmp(tok, "mod") == 0) {
+        if (code_size + 1 > MAX_CODE_SIZE) asm_error("Code size exceeds maximum capacity");
+        code[code_size++] = OP_MOD;
+        if (VERBOSE_ASM) fprintf(stderr, "[DEBUG] mod\n");
+    }
+    else if (strcmp(tok, "neg") == 0) {
+        if (code_size + 1 > MAX_CODE_SIZE) asm_error("Code size exceeds maximum capacity");
+        code[code_size++] = OP_NEG;
+        if (VERBOSE_ASM) fprintf(stderr, "[DEBUG] neg\n");
+    }
+    else if (strcmp(tok, "dup") == 0) {
+        if (code_size + 1 > MAX_CODE_SIZE) asm_error("Code size exceeds maximum capacity");
+        code[code_size++] = OP_DUP;
+        if (VERBOSE_ASM) fprintf(stderr, "[DEBUG] dup\n");
+    }
+    else if (strcmp(tok, "swap") == 0) {
+        if (code_size + 1 > MAX_CODE_SIZE) asm_error("Code size exceeds maximum capacity");
+        code[code_size++] = OP_SWAP;
+        if (VERBOSE_ASM) fprintf(stderr, "[DEBUG] swap\n");
+    }
+    else if (strcmp(tok, "drop") == 0) {
+        if (code_size + 1 > MAX_CODE_SIZE) asm_error("Code size exceeds maximum capacity");
+        code[code_size++] = OP_DROP;
+        if (VERBOSE_ASM) fprintf(stderr, "[DEBUG] drop\n");
+    }
+    else if (strcmp(tok, "halt") == 0) {
+        if (code_size + 1 > MAX_CODE_SIZE) asm_error("Code size exceeds maximum capacity");
+        code[code_size++] = OP_HALT;
+        if (VERBOSE_ASM) fprintf(stderr, "[DEBUG] halt\n");
+    }
+    else {
+        char error_msg[128];
+        snprintf(error_msg, sizeof(error_msg), "Unknown instruction: %s", tok);
+        asm_error(error_msg);
+    }
+}
+@#
+
+@* HVM Output File Writer
+   This function writes the final `.hvm` binary file, including a magic header,
+   the code length, and the assembled code section.
+@<HVM Writer@>=
+void write_hvm_file(const char* out_path) {
+    FILE* out = fopen(out_path, "wb");
+    if (!out) {
+        perror("[T81ASM] Output file");
+        exit(1);
+    }
+    /* Write magic header */
+    fwrite(HVM_MAGIC, 1, 4, out);
+    /* Write code length */
+    uint32_t len = (uint32_t)code_size;
+    fwrite(&len, sizeof(uint32_t), 1, out);
+    /* Write code section */
+    fwrite(code, 1, code_size, out);
+    fclose(out);
+}
+@#
+
+@* Future Work:
+   - Add support for symbolic labels and branch resolution.
+   - Extend the instruction set with additional operations.
+   - Provide a verbose mode controlled via a command-line option.
+@*
+
+@h
+@<T81ASM API@>
