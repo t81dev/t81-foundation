@@ -1,74 +1,141 @@
-// T81Lang Grammar Specification
+// T81Lang Grammar (v1.0 draft, NewBook‑aligned)
+// Notes:
+//  - EBNF style; terminals in quotes; [...] optional; {...} zero or more; (...) grouping; | alternation.
+//  - This version aligns with examples (modules, @axion blocks, vectors/matrices, base‑81 numerics,
+//    ternary literals, const/let/var, deterministic I/O).
+//  - The exact Base‑81 digit alphabet is target‑defined and referenced as <base81_digit>.
 
-// Basic Syntax for T81Lang
+<program>           ::= [<attribute_block>*] [<module_decl>*] {<top_level_decl>}*
 
-<program> ::= {<function>}*
+// Attributes / metadata (e.g., Axion). May precede a module, function, or const decl.
+<attribute_block>   ::= "@" <identifier> <attr_body>
+<attr_body>         ::= "{" {<attr_entry>}* "}"
+<attr_entry>        ::= <identifier> ":" <attr_value> ";"
+<attr_value>        ::= <string_literal> | <integer_literal> | <float_literal> | <bool_literal>
 
-<function> ::= "fn" <identifier> "(" <parameter>* ")" "->" <type> "{" <statement>* "}"
+// Modules
+<module_decl>       ::= "module" <identifier> "{" {<top_level_decl>}* "}"
 
-<parameter> ::= <identifier> ":" <type>
+// Top‑level declarations
+<top_level_decl>    ::= <type_alias>
+                      | <const_decl>
+                      | <func_decl>
 
-<statement> ::= <assignment>
-            | <return>
-            | <control_flow>
-            | <expression>
+// Types
+<type>              ::= <simple_type>
+                      | <generic_type>
+                      | <user_type>
 
-<assignment> ::= "let" <identifier> ":" <type> "=" <expression> ";"
-             | "const" <identifier> ":" <type> "=" <expression> ";"
+<simple_type>       ::= "void" | "bool" | "i32" | "i16" | "i8" | "i2" | "T81BigInt" | "T81Float" | "T81Fraction"
 
-<return> ::= "return" <expression> ";"
+// Generics for math types
+<generic_type>      ::= "vector" "<" <type> "," <expr_const> ">"
+                      | "matrix" "<" <type> "," <expr_const> "," <expr_const> ">"
+                      | "tensor" "<" <type> "," <dim_list> ">"
+                      | "graph"  "<" <type> ">"
 
-<control_flow> ::= <if_statement>
-               | <loop_statement>
+<dim_list>          ::= <expr_const> {"," <expr_const>}*
+<expr_const>        ::= <integer_literal> | <identifier>    // compile‑time constants only
 
-<if_statement> ::= "if" <expression> "{" <statement>* "}" [ "else" "{" <statement>* "}" ]
+<user_type>         ::= <identifier>
 
-<loop_statement> ::= "for" <identifier> "in" <expression> ".." <expression> "{" <statement>* "}"
-                 | "while" <expression> "{" <statement>* "}"
+// Type alias
+<type_alias>        ::= "type" <identifier> ":" <type> ";"
 
-<expression> ::= <literal>
-             | <identifier>
-             | <binary_operation>
-             | <unary_operation>
-             | <function_call>
-             | <ternary_expression>
-             | "(" <expression> ")"
+// Constants
+<const_decl>        ::= "const" <identifier> ":" <type> "=" <constant_expression> ";"
+<constant_expression>::= <literal> | <aggregate_literal> | <unary_op> | <binary_op> | <identifier>
 
-<binary_operation> ::= <expression> <binary_operator> <expression>
+// Functions
+<func_decl>         ::= ["export"] [<attribute_block>*] "fn" <identifier> "(" [<param_list>] ")"
+                         ["->" <type>] "{" {<statement>}* "}"
+<param_list>        ::= <param> {"," <param>}* [","]
+<param>             ::= <identifier> ":" <type>
 
-<binary_operator> ::= "+" | "-" | "*" | "/" | "%" | "==" | "!=" | "<" | ">" | "<=" | ">="
+// Statements
+<statement>         ::= <var_decl>
+                      | <assignment>
+                      | <return_stmt>
+                      | <control_flow>
+                      | <expr_stmt>
 
-<unary_operation> ::= <unary_operator> <expression>
+<var_decl>          ::= ("let" | "var") <identifier> ":" <type> "=" <expression> ";"
+<assignment>        ::= <identifier> "=" <expression> ";"
+<return_stmt>       ::= "return" [<expression>] ";"
+<expr_stmt>         ::= <expression> ";"
 
-<unary_operator> ::= "!" | "-" 
+<control_flow>      ::= <if_stmt> | <for_stmt> | <while_stmt> | <break_stmt> | <continue_stmt>
+<if_stmt>           ::= "if" <paren_expr> <block> ["else" (<block> | <if_stmt>)]
+<for_stmt>          ::= "for" <identifier> "in" <expression> ".." <expression> <block>
+<while_stmt>        ::= "while" <paren_expr> <block>
+<break_stmt>        ::= "break" ";"
+<continue_stmt>     ::= "continue" ";"
 
-<ternary_expression> ::= <expression> "?" <expression> ":" <expression>
+<block>             ::= "{" {<statement>}* "}"
+<paren_expr>        ::= "(" <expression> ")"
 
-<function_call> ::= <identifier> "(" <expression>* ")"
+// Expressions
+<expression>        ::= <literal>
+                      | <aggregate_literal>
+                      | <identifier>
+                      | <call_expr>
+                      | <index_expr>
+                      | <unary_op>
+                      | <binary_op>
+                      | <ternary_cond>
+                      | <group_expr>
 
-<literal> ::= <integer_literal> 
-          | <float_literal> 
-          | <ternary_literal> 
-          | <string_literal>
+<group_expr>        ::= "(" <expression> ")"
 
-<integer_literal> ::= <digit>+ "t81"  // Base-81 literal
-<float_literal> ::= <digit>+ "." <digit>+ "t81"
+<call_expr>         ::= <identifier> "(" [<arg_list>] ")"
+<arg_list>          ::= <expression> {"," <expression>}* [","]
 
-<ternary_literal> ::= <digit> | "+" | "-"
+<index_expr>        ::= <identifier> "[" <expression> "]"           // vector/matrix indexing
+                      | <identifier> "[" <expression> "," <expression> "]"
 
-<string_literal> ::= "\"" <char>* "\""
+// Operators
+<unary_op>          ::= <unary_operator> <expression>
+<unary_operator>    ::= "-" | "!"
 
-<type> ::= "T81BigInt" 
-        | "T81Float" 
-        | "T81Fraction"
-        | "T81Matrix"
-        | "T81Tensor"
-        | "T81Graph"
+<binary_op>         ::= <expression> <binary_operator> <expression>
+<binary_operator>   ::= "+" | "-" | "*" | "/" | "%"
+                      | "==" | "!=" | "<" | "<=" | ">" | ">="
+                      | "&&" | "||"                             // logical
+                      | "&"  | "|"  | "^"                      // bitwise/ternary‑logic ops
 
-<identifier> ::= <letter> {<letter> | <digit>}*
+<ternary_cond>      ::= <expression> "?" <expression> ":" <expression>
 
-<letter> ::= "a".."z" | "A".."Z" | "_"
+// Literals
+<literal>           ::= <integer_literal> | <float_literal> | <ternary_literal> | <bool_literal> | <string_literal>
+<bool_literal>      ::= "true" | "false"
 
-<digit> ::= "0".."9"
+// Base‑10 ints
+<integer_literal>   ::= <digit> {<digit>}*
 
-<char> ::= <letter> | <digit> | " " | "!" | "\"" | "#" | "$" | "%" | "&" | "'" | "(" | ")" | "*" | "+" | "," | "-" | "." | "/" | ":" | ";" | "<" | "=" | ">" | "?" | "@" | "[" | "\\" | "]" | "^" | "_" | "`" | "{" | "|" | "}" | "~"
+// Base‑81 numerics (target‑defined alphabet). Either suffix or prefix forms allowed.
+<base81_integer>    ::= (<base81_digit> {<base81_digit>}* "t81") | ("0t81" {<base81_digit>}+)
+<base81_float>      ::= (<base81_digit> {<base81_digit>}* "." {<base81_digit>}+ "t81")
+
+<float_literal>     ::= (<digit> {<digit>}* "." {<digit>}*) | <base81_float>
+
+// Ternary scalar: one of −1, 0, +1 (spelled with optional plus sign)
+<ternary_literal>   ::= "-1" | "0" | "+1"
+
+<string_literal>    ::= '"' {<char>}* '"'
+
+// Aggregates (vectors/matrices/tensors) using bracket syntax
+<aggregate_literal> ::= "[" [<expr_list>] "]"
+<expr_list>         ::= <expression> {"," <expression>}* [","]
+
+// Lexical elements
+<identifier>        ::= <letter> {<letter> | <digit>}*
+<letter>            ::= "_" | "a".."z" | "A".."Z"
+<digit>             ::= "0".."9"
+<char>              ::= /* any printable Unicode except unescaped quote */
+
+// Implementation‑defined: Base‑81 alphabet
+<base81_digit>      ::= /* one of the 81‑symbol alphabet selected by the target/toolchain */
+
+// Comments and whitespace (lexical layer)
+<comment>           ::= "//" {<char>}* \n | "/*" {<char>}* "*/"
+<ws>                ::= { ' ' | '\t' | '\r' | '\n' }
