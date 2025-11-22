@@ -110,7 +110,9 @@ You may use, study, extend — but you may not violate the Nine Principles.
 > The ternary age has begun — irreversibly.”
 
 For compiler engineers → see /spec
+
 For VM developers → see legacy/hanoivm/src/hanoivm_core
+
 For AI/kernel developers → see legacy/hanoivm/src/axion_ai
 
 **Tag:** `v1.0.0-SOVEREIGN`  
