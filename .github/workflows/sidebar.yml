@@ -1,0 +1,21 @@
+name: Generate Sidebar
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Generate sidebar
+      run: python3 scripts/generate_sidebar.py
+    - name: Commit changes
+      run: |
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git add docs/_includes/sidebar.html
+        git commit -m "Auto-update sidebar" || echo "No changes"
+        git push
