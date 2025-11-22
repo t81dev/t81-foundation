@@ -1,84 +1,158 @@
-@* T81Lang HVM Emitter (emit_hvm.cweb) *@
+@* T81Lang → HanoiVM Binary Emitter (emit_hvm.cweb) — Corrected & Enhanced *@
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
-@d IRType Codes
-#define IR_NOP      0
-#define IR_LOAD     1
-#define IR_STORE    2
-#define IR_ADD      3
-#define IR_SUB      4
-#define IR_MUL      5
-#define IR_DIV      6
-#define IR_RETURN   7
-#define IR_LABEL    8
-#define IR_JUMP     9
-#define IR_JUMP_IF 10
+@d HVM Binary Format
+#define HVM_MAGIC       "\x48\x56\x4D\x81"      // "HVM" + 0x81 (T81 signature)
+#define HVM_VERSION     0x01
 
-@d Emit HVM Binary Format
+@d HanoiVM Opcodes (Stack Machine)
+#define OP_PUSH         0x01
+#define OP_ADD          0x02
+#define OP_SUB          0x03
+#define OP_MUL          0x04
+#define OP_DIV          0x05
+#define OP_NEG          0x06
+#define OP_DUP          0x07
+#define OP_SWAP         0x08
+#define OP_DROP         0x09
+#define OP_JUMP         0x10
+#define OP_JUMP_IF_ZERO 0x11
+#define OP_HALT         0xFF
+
+@d IR to HVM Mapping
+static uint8_t ir_to_hvm_opcode(int ir_op) {
+    switch (ir_op) {
+        case 3:  return OP_ADD;
+        case 4:  return OP_SUB;
+        case 5:  return OP_MUL;
+        case 6:  return OP_DIV;
+        case 9:  return OP_JUMP;
+        case 10: return OP_JUMP_IF_ZERO;
+        default: return 0x00; // Unknown → NOP
+    }
+}
+
+@d Write uint81_t (3×27-trit = 81-trit integer)
+void write_uint81(FILE* out, const char* str) {
+    // Parse base-81 literal: "123t81" → value
+    // For now: support decimal fallback and direct t81 suffix
+    uint64_t value = 0;
+    if (strstr(str, "t81")) {
+        // Remove "t81" suffix and parse as base-81
+        char* cleaned = strdup(str);
+        char* t = strstr(cleaned, "t81");
+        if (t) *t = '\0';
+        // Simplified: treat digits as base-10 for demo
+        value = strtoull(cleaned, NULL, 10);
+        free(cleaned);
+    } else {
+        value = strtoull(str, NULL, 10);
+    }
+    // Write as little-endian 64-bit (HanoiVM uses 64-bit subset for now)
+    uint8_t bytes[8];
+    for (int i = 0; i < 8; i++) {
+        bytes[i] = (value >> (i * 8)) & 0xFF;
+    }
+    fwrite(bytes, 1, 8, out);
+}
+
+@d Emit True Binary .hvm
 void emit_hvm(const char* ir_file, const char* out_file) {
     FILE* in = fopen(ir_file, "r");
-    FILE* out = fopen(out_file, "w");
-    if (!in || !out) {
-        fprintf(stderr, "[Error] Could not open IR or HVM output file.\n");
+    if (!in) {
+        fprintf(stderr, "[emit_hvm] Error: Cannot open IR file: %s\n", ir_file);
         return;
     }
 
-    char line[256];
+    FILE* out = fopen(out_file, "wb");
+    if (!out) {
+        fprintf(stderr, "[emit_hvm] Error: Cannot create output: %s\n", out_file);
+        fclose(in);
+        return;
+    }
+
+    // Write HVM header
+    fwrite(HVM_MAGIC, 1, 4, out);
+    fputc(HVM_VERSION, out);
+    uint32_t code_start = 9; // after header
+    uint32_t placeholder = 0;
+    fwrite(&placeholder, 4, 1, out); // code length placeholder (patched later)
+
+    size_t code_size = 0;
+    char line[512];
+
     while (fgets(line, sizeof(line), in)) {
         int opcode;
         char arg1[64] = {0}, arg2[64] = {0}, result[64] = {0};
-        if (sscanf(line, "%d %63s %63s -> %63s", &opcode, arg1, arg2, result) >= 1) {
-            switch (opcode) {
-                case IR_LOAD:
-                    fprintf(out, "LOAD %s -> %s\n", arg1, result);
-                    break;
-                case IR_STORE:
-                    fprintf(out, "STORE %s -> %s\n", arg1, result);
-                    break;
-                case IR_ADD:
-                    fprintf(out, "ADD %s %s -> %s\n", arg1, arg2, result);
-                    break;
-                case IR_SUB:
-                    fprintf(out, "SUB %s %s -> %s\n", arg1, arg2, result);
-                    break;
-                case IR_MUL:
-                    fprintf(out, "MUL %s %s -> %s\n", arg1, arg2, result);
-                    break;
-                case IR_DIV:
-                    fprintf(out, "DIV %s %s -> %s\n", arg1, arg2, result);
-                    break;
-                case IR_RETURN:
-                    fprintf(out, "RETURN %s\n", arg1);
-                    break;
-                case IR_LABEL:
-                    fprintf(out, "LABEL %s:\n", result);
-                    break;
-                case IR_JUMP:
-                    fprintf(out, "JUMP %s\n", result);
-                    break;
-                case IR_JUMP_IF:
-                    fprintf(out, "JUMP_IF %s -> %s\n", arg1, result);
-                    break;
-                default:
-                    fprintf(out, "; UNKNOWN OPCODE %d\n", opcode);
-                    break;
-            }
+
+        // Parse: "3 t1 t2 -> t3" → ADD
+        if (sscanf(line, "%d %63s %63s -> %63s", &opcode, arg1, arg2, result) < 1)
+            continue;
+
+        uint8_t hvm_op = ir_to_hvm_opcode(opcode);
+
+        switch (opcode) {
+            case 1: // IR_LOAD immediate
+                if (sscanf(arg1, "%63s", arg1) == 1) {
+                    fputc(OP_PUSH, out);
+                    write_uint81(out, arg1);
+                    code_size += 9;
+                }
+                break;
+
+            case 3: // ADD
+            case 4: // SUB
+            case 5: // MUL
+            case 6: // DIV
+                if (hvm_op) {
+                    fputc(hvm_op, out);
+                    code_size += 1;
+                }
+                break;
+
+            case 7: // RETURN
+                fputc(OP_HALT, out);
+                code_size += 1;
+                break;
+
+            case 9: // JUMP
+                fputc(OP_JUMP, out);
+                fputc(0x00, out); // placeholder target
+                code_size += 2;
+                break;
+
+            case 10: // JUMP_IF
+                fputc(OP_JUMP_IF_ZERO, out);
+                fputc(0x00, out);
+                code_size += 2;
+                break;
+
+            default:
+                // Comment or NOP
+                break;
         }
     }
+
+    // Patch code length
+    fseek(out, 5, SEEK_SET);
+    uint32_t length = (uint32_t)code_size;
+    fwrite(&length, 4, 1, out);
 
     fclose(in);
     fclose(out);
 
-    printf("[emit_hvm] HVM output written to %s\n", out_file);
+    printf("[emit_hvm] Success: True binary .hvm emitted → %s (%zu bytes code)\n", 
+           out_file, code_size);
 }
 
-@d Unit Test Entry (Optional)
-#ifdef TEST_HVM_EMIT
+@d Test Entry
+#ifdef TEST_EMIT_HVM
 int main() {
-    emit_hvm("output.ir", "test.hvm");
+    emit_hvm("output.ir", "program.hvm");
     return 0;
 }
 #endif
