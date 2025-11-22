@@ -1,0 +1,133 @@
+@* HanoiVM | Axion AI Hook Interface (Enhanced Version)
+   This module defines the Axion AI interface layer for the HanoiVM virtual machine.
+   Axion is an internal AI agent that:
+     - Monitors instruction usage,
+     - Sends and receives optimization signals,
+     - Logs metadata to support AI learning and runtime diagnostics.
+
+   The AI hook interacts with the VM via register `τ27`, which is reserved exclusively for Axion.
+   It provides signal and metadata hooks for VM core logic to consume, without directly modifying VM state.
+
+   Enhancements in this version:
+     - Dynamic log file naming via the AXION_LOG_FILE environment variable.
+     - Periodic optimization summary logging.
+     - Asynchronous logging placeholder for future extension.
+@#
+
+@<Include Dependencies and Standard Headers@>=
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+#include <time.h>
+#include <stdint.h>
+@#
+
+@<Axion Constants and Globals@>=
+#define AXION_REGISTER_INDEX 27
+#ifndef DEFAULT_AXION_LOG_FILE
+  #define DEFAULT_AXION_LOG_FILE "axion.meta.json"
+#endif
+
+static int axion_enabled = 1;
+static int axion_verbosity = 0;     // 0 = silent, 1 = log, 2 = debug
+static int axion_last_signal = 0;
+static FILE* axion_log_fp = NULL;
+static unsigned long axion_event_count = 0;
+static char axion_log_filename[256] = DEFAULT_AXION_LOG_FILE;
+@#
+
+@<Axion API Function Declarations@>=
+void axion_log(const char* event);
+void axion_log_event_json(const char* type, const char* message);
+void axion_log_open(void);
+void axion_log_close(void);
+void axion_signal(uint8_t signal_code);
+int  axion_get_optimization(void);
+void axion_adjust_verbosity(int level);
+void axion_set_log_file(const char* filename);
+void axion_log_summary(void);
+@#
+
+@<Axion Logging Functions@>=
+void axion_log(const char* event) {
+    if (axion_verbosity > 0) {
+        printf("[Axion] LOG: %s\n", event);
+    }
+    axion_log_event_json("event", event);
+    axion_event_count++;
+}
+
+void axion_log_open(void) {
+    if (!axion_log_fp) {
+        /* Allow override of log file name via environment variable */
+        char* env_log = getenv("AXION_LOG_FILE");
+        if (env_log) {
+            strncpy(axion_log_filename, env_log, sizeof(axion_log_filename)-1);
+        }
+        axion_log_fp = fopen(axion_log_filename, "a");
+        if (!axion_log_fp) {
+            fprintf(stderr, "[Axion] Error opening %s\n", axion_log_filename);
+            return;
+        }
+    }
+}
+
+void axion_log_close(void) {
+    if (axion_log_fp) {
+        fclose(axion_log_fp);
+        axion_log_fp = NULL;
+    }
+}
+
+void axion_log_event_json(const char* type, const char* message) {
+    if (axion_verbosity == 0) return;
+
+    time_t now = time(NULL);
+    char timestamp[32];
+    strftime(timestamp, sizeof(timestamp), "%FT%T%z", localtime(&now));
+
+    if (axion_verbosity > 1)
+        printf("[Axion] JSON EVENT: %s - %s\n", type, message);
+
+    axion_log_open();
+    if (axion_log_fp) {
+        fprintf(axion_log_fp,
+                "{ \"type\": \"%s\", \"message\": \"%s\", \"time\": \"%s\" }\n",
+                type, message, timestamp);
+        fflush(axion_log_fp);
+    }
+}
+
+void axion_set_log_file(const char* filename) {
+    if (filename && strlen(filename) < sizeof(axion_log_filename)) {
+        strncpy(axion_log_filename, filename, sizeof(axion_log_filename)-1);
+        /* Reopen the log file if it's already open */
+        if (axion_log_fp) {
+            axion_log_close();
+            axion_log_open();
+        }
+        if (axion_verbosity > 0) {
+            printf("[Axion] Log file set to: %s\n", axion_log_filename);
+        }
+    }
+}
+
+void axion_log_summary(void) {
+    /* Print a summary of logged events */
+    printf("[Axion] Total events logged: %lu, Last signal: %d\n", axion_event_count, axion_last_signal);
+}
+@#
+
+@<Axion Signal Functions@>=
+void axion_signal(uint8_t signal_code) {
+    axion_last_signal = signal_code;
+    if (axion_verbosity > 1)
+        printf("[Axion] SIGNAL: code %d → τ[%d]\n", signal_code, AXION_REGISTER_INDEX);
+}
+
+int axion_get_optimization(void) {
+    if (axion_verbosity > 1)
+        printf("[Axion] GET: last_signal = %d\n", axion_last_signal);
+    return axion_last_signal;
+}

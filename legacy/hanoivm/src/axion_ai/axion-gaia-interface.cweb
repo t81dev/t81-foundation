@@ -1,0 +1,295 @@
+@* axion-gaia-interface.cweb - GPU Dispatch Interface for Ternary Logic with Extended Profiling and Dynamic Backend Selection
+This CWEB document defines the GPU dispatch interface for the unified ternary computing ecosystem.
+It provides an abstracted communication layer between the HanoiVM ternary virtual machine, the Axion Kernel Module,
+and GPU backends (e.g., GAIA/ROCm or CUDA) for processing vectorized ternary logic instructions (T729 macros).
+
+Enhancements in this version:
+ - Dynamic selection of CUDA vs. ROCm with fallback if the primary backend fails.
+ - Extended profiling: tracking dispatch call count and cumulative execution time.
+ - Additional error handling and detailed logging.
+ - A unified extended dispatch function to simplify integration with HanoiVM’s runtime.
+@c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <time.h>
+
+#define TRIT_VALUES 3
+#define T729_SIZE 6
+#define MAX_LOG_MSG 128
+
+/* Intent identifiers for GPU logic */
+typedef enum {
+    GAIA_EMIT_VECTOR = 0,
+    GAIA_RECONSTRUCT,
+    GAIA_FOLD_TREE,
+    GAIA_ANALYZE,
+    GAIA_UNKNOWN
+} GAIAIntent;
+
+/* T729 macro structure (6-trit encoded instruction) */
+typedef struct {
+    int macro_id;
+    GAIAIntent intent;
+    int input[T729_SIZE]; // Ternary vector (-1, 0, 1)
+} T729Macro;
+
+/* TBIN-style request format for GPU dispatch */
+typedef struct {
+    const uint8_t* tbin;
+    size_t tbin_len;
+    GAIAIntent intent;
+    uint8_t confidence;
+} GaiaRequest;
+
+/* Result from GPU logic processing */
+typedef struct {
+    uint8_t result_t729[243];
+    float entropy_delta;
+    char explanation[MAX_LOG_MSG];
+    uint8_t symbolic_status;
+    bool success;
+    int error_code;
+    double exec_time_ms; // runtime measurement in milliseconds
+} GAIAResponse;
+
+/* Global profiling statistics */
+static int gpu_dispatch_count = 0;
+static double total_gpu_exec_time = 0.0;
+
+@* Function Prototypes.
+@c
+GAIAResponse dispatch_macro(const T729Macro *macro);
+GAIAResponse simulate_gpu_transformation(const T729Macro *macro);
+GAIAResponse dispatch_backend_gpu(const T729Macro *macro, int use_cuda);
+GAIAResponse dispatch_macro_extended(const T729Macro *macro, int backend_preference);
+GaiaRequest convert_t729_to_request(const T729Macro *macro);
+GAIAResponse cuda_handle_request(GaiaRequest request);
+GAIAResponse rocm_handle_request(GaiaRequest request);
+void print_response(const GAIAResponse *response);
+void print_gpu_profiling_stats(void);
+void reset_gpu_profiling(void);
+void hanoi_vm_gpu_hook(int ip, GAIAIntent intent, int* stack_top_6);
+@#
+
+@* Central Dispatch Function.
+This remains as a basic dispatch based solely on the macro’s intent.
+@c
+GAIAResponse dispatch_macro(const T729Macro *macro) {
+    if (!macro) {
+        GAIAResponse error = { .success = false, .error_code = -1 };
+        snprintf(error.explanation, MAX_LOG_MSG, "Null macro pointer");
+        return error;
+    }
+
+    switch (macro->intent) {
+        case GAIA_EMIT_VECTOR:
+        case GAIA_RECONSTRUCT:
+        case GAIA_FOLD_TREE:
+        case GAIA_ANALYZE:
+            return simulate_gpu_transformation(macro);
+        default: {
+            GAIAResponse unknown = { .success = false, .error_code = -2 };
+            snprintf(unknown.explanation, MAX_LOG_MSG,
+                     "Unsupported intent: %d", macro->intent);
+            return unknown;
+        }
+    }
+}
+
+@* Adapter: Convert T729Macro to GaiaRequest.
+@c
+GaiaRequest convert_t729_to_request(const T729Macro* macro) {
+    static uint8_t mock_tbin[T729_SIZE];
+    for (int i = 0; i < T729_SIZE; ++i)
+        mock_tbin[i] = (uint8_t)(macro->input[i] + 1); // convert [-1,0,1] → [0,1,2]
+
+    return (GaiaRequest){
+        .tbin = mock_tbin,
+        .tbin_len = sizeof(mock_tbin),
+        .intent = macro->intent,
+        .confidence = 74
+    };
+}
+
+@* GPU Backend Dispatcher with Dynamic Selection.
+The parameter 'use_cuda' accepts:
+  1 for CUDA,
+  0 for ROCm,
+  -1 for auto-selection (try CUDA, then fallback to ROCm if needed).
+@c
+GAIAResponse dispatch_backend_gpu(const T729Macro* macro, int use_cuda) {
+    GaiaRequest req = convert_t729_to_request(macro);
+    clock_t start = clock();
+    GAIAResponse res;
+    
+    if (use_cuda == -1) {
+        /* Auto-selection: try CUDA first */
+        res = cuda_handle_request(req);
+        if (!res.success) {
+            pr_warn("[Auto] CUDA failed (code %d), falling back to ROCm\n", res.error_code);
+            res = rocm_handle_request(req);
+        }
+    } else if (use_cuda == 1) {
+        res = cuda_handle_request(req);
+    } else {
+        res = rocm_handle_request(req);
+    }
+    
+    clock_t end = clock();
+    res.exec_time_ms = 1000.0 * (double)(end - start) / CLOCKS_PER_SEC;
+    res.success = (res.symbolic_status == 0);
+    
+    /* Update profiling statistics */
+    gpu_dispatch_count++;
+    total_gpu_exec_time += res.exec_time_ms;
+    
+    return res;
+}
+
+@* Extended Dispatch Function.
+This function dynamically selects the backend (based on backend_preference)
+and, in case of failure, falls back to a simulated GPU transformation.
+backend_preference: 1 for CUDA, 0 for ROCm, -1 for auto.
+@c
+GAIAResponse dispatch_macro_extended(const T729Macro *macro, int backend_preference) {
+    GAIAResponse res = dispatch_backend_gpu(macro, backend_preference);
+    if (!res.success) {
+        pr_warn("[Extended Dispatch] Primary GPU dispatch failed: %s", res.explanation);
+        pr_info("[Extended Dispatch] Falling back to simulation...");
+        res = simulate_gpu_transformation(macro);
+    }
+    return res;
+}
+
+@* Simulated GPU Logic Transformation.
+@c
+GAIAResponse simulate_gpu_transformation(const T729Macro *macro) {
+    GAIAResponse response;
+    memset(&response, 0, sizeof(GAIAResponse));
+    response.success = true;
+    response.error_code = 0;
+    response.symbolic_status = 0;
+
+    for (int i = 0; i < T729_SIZE; ++i) {
+        int t = macro->input[i];
+        response.result_t729[i] = (t == -1) ? 0 : (t == 0) ? 1 : 2;
+    }
+
+    response.entropy_delta = 0.042f;
+    snprintf(response.explanation, MAX_LOG_MSG,
+             "Macro ID %d optimized via simulated GPU intent %d.",
+             macro->macro_id, macro->intent);
+
+    return response;
+}
+
+@* CUDA Backend Stub.
+@c
+GAIAResponse cuda_handle_request(GaiaRequest request) {
+    GAIAResponse response;
+    memset(&response, 0, sizeof(GAIAResponse));
+    response.entropy_delta = 0.031f;
+    response.symbolic_status = 0;
+    response.success = true;
+    snprintf(response.explanation, MAX_LOG_MSG, "CUDA processed macro (intent %d)", request.intent);
+
+    for (int i = 0; i < request.tbin_len && i < 243; ++i)
+        response.result_t729[i] = request.tbin[i] ^ 0x1;
+
+    return response;
+}
+
+@* ROCm Backend Stub.
+@c
+GAIAResponse rocm_handle_request(GaiaRequest request) {
+    GAIAResponse response;
+    memset(&response, 0, sizeof(GAIAResponse));
+    response.entropy_delta = 0.029f;
+    response.symbolic_status = 0;
+    response.success = true;
+    snprintf(response.explanation, MAX_LOG_MSG, "ROCm processed macro (intent %d)", request.intent);
+
+    for (int i = 0; i < request.tbin_len && i < 243; ++i)
+        response.result_t729[i] = request.tbin[i] ^ 0x2;
+
+    return response;
+}
+
+@* Utility: Print GPU Response.
+@c
+void print_response(const GAIAResponse *response) {
+    if (!response || !response->success) {
+        printf("[ERROR] Dispatch failed: %s\n", response ? response->explanation : "Unknown error");
+        return;
+    }
+
+    printf("[GAIA Response]\nResult Vector: ");
+    for (int i = 0; i < T729_SIZE; ++i) {
+        printf("%d ", response->result_t729[i]);
+    }
+    printf("\nEntropy Delta: %.4f\nExecution Time: %.3f ms\nExplanation: %s\n",
+           response->entropy_delta, response->exec_time_ms, response->explanation);
+}
+
+@* Profiling Helpers.
+@c
+void reset_gpu_profiling(void) {
+    gpu_dispatch_count = 0;
+    total_gpu_exec_time = 0.0;
+}
+
+void print_gpu_profiling_stats(void) {
+    if (gpu_dispatch_count > 0) {
+        printf("[Profiling] GPU Dispatch Count: %d\n", gpu_dispatch_count);
+        printf("[Profiling] Total Execution Time: %.3f ms\n", total_gpu_exec_time);
+        printf("[Profiling] Average Time per Dispatch: %.3f ms\n",
+               total_gpu_exec_time / gpu_dispatch_count);
+    } else {
+        printf("[Profiling] No GPU dispatches recorded.\n");
+    }
+}
+
+@* HanoiVM Runtime Hook: GPU Invocation.
+@c
+void hanoi_vm_gpu_hook(int ip, GAIAIntent intent, int* stack_top_6) {
+    T729Macro macro = {
+        .macro_id = ip,
+        .intent = intent
+    };
+    for (int i = 0; i < T729_SIZE; ++i)
+        macro.input[i] = stack_top_6[i];
+
+    /* Use auto-selection (backend_preference = -1) */
+    GAIAResponse res = dispatch_macro_extended(&macro, -1);
+    if (res.success) {
+        printf("[HanoiVM→GPU] ΔEntropy: %.4f | Time: %.3f ms | %s\n",
+               res.entropy_delta, res.exec_time_ms, res.explanation);
+    } else {
+        fprintf(stderr, "[HanoiVM→GPU ERROR] %s\n", res.explanation);
+    }
+}
+
+@* Main Entry for Testing.
+@c
+int main(void) {
+    reset_gpu_profiling();
+
+    T729Macro test = {
+        .macro_id = 42,
+        .intent = GAIA_FOLD_TREE,
+        .input = { -1, 0, 1, -1, 0, 1 }
+    };
+
+    GAIAResponse result = dispatch_macro_extended(&test, 1); // Prefer CUDA
+    print_response(&result);
+
+    /* Print profiling statistics */
+    print_gpu_profiling_stats();
+
+    return result.success ? 0 : 1;
+}
+
+@* End of axion-gaia-interface.cweb.

@@ -1,0 +1,29 @@
+@* axion_api.cweb -- Axion AI stub API for recursion export.
+
+@c
+#include "axion_api.h"
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+/* Generate a basic AI annotation for a frame */
+void axion_frame_optimize(HVMContext* ctx, char* out_annotation, size_t max_len) {
+    if (ctx->stack_ptr == 0) {
+        strncpy(out_annotation, "Base case detected", max_len);
+    } else if (ctx->stack[ctx->stack_ptr].return_addr == ctx->pc) {
+        strncpy(out_annotation, "Tail recursion detected", max_len);
+    } else {
+        strncpy(out_annotation, "Standard recursive call", max_len);
+    }
+}
+
+/* Predict a score for optimization potential (0.0 - 1.0) */
+double axion_predict_score(HVMContext* ctx) {
+    double normalized_depth = (double)ctx->stack_ptr / 729.0;
+    return 1.0 - fmin(1.0, normalized_depth);
+}
+
+/* Suggest collapsing tail recursion based on simple heuristic */
+bool axion_suggest_tail_collapse(HVMContext* ctx) {
+    return (ctx->stack_ptr > 0 && ctx->stack[ctx->stack_ptr].return_addr == ctx->pc);
+}

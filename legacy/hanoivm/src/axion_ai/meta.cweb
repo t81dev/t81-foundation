@@ -1,0 +1,66 @@
+@* meta.cweb | Package Metadata for HanoiVM + AxionAI
+
+This literate metadata document defines the modules, dependencies, and runtime
+structure for the HanoiVM and Axion AI systems. Intended for Axion package
+manager integration and project introspection.
+
+@<Package Metadata JSON@>=
+{
+  "package": {
+    "name": "hanoivm",
+    "version": "0.9.3-dev",
+    "description": "Recursive ternary VM with AI kernel extensions",
+    "license": "MIT",
+    "authors": [
+      "copyleftsystems"
+    ],
+    "homepage": "https://github.com/copyl-sys/hanoivm"
+  },
+  "modules": [
+    {
+      "name": "axion-ai",
+      "file": "axion-ai.cweb",
+      "type": "kernel-module",
+      "entrypoint": true,
+      "features": ["t81-stack", "rollback", "entropy-ai"]
+    },
+    {
+      "name": "hanoivm-vm",
+      "file": "hanoivm_vm.cweb",
+      "type": "kernel-module",
+      "entrypoint": true,
+      "features": ["bytecode-exec", "ternary-logic"]
+    },
+    {
+      "name": "axion-gaia-interface",
+      "file": "axion-gaia-interface.cweb",
+      "type": "gpu-bridge",
+      "features": ["cuda-symbolic", "intent-routing"]
+    },
+    {
+      "name": "t81asm",
+      "file": "t81asm.cweb",
+      "type": "tool",
+      "status": "experimental",
+      "features": ["assembler", "t81-macro"]
+    },
+    {
+      "name": "hanoivm-test",
+      "file": "hanoivm-test.cweb",
+      "type": "kernel-module",
+      "entrypoint": false,
+      "features": ["unit-test", "debugfs"]
+    }
+  ],
+  "build": {
+    "tangle": "./tangle-all.sh",
+    "makefile": "build-all.cweb",
+    "output": ["*.ko"]
+  },
+  "requirements": {
+    "kernel": ">= 6.5",
+    "cuda": ">= 12.0",
+    "tools": ["ctangle", "gcc", "make"]
+  },
+  "tags": ["ternary", "ai-runtime", "kernel", "gpu", "experimental"]
+}

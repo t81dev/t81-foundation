@@ -1,0 +1,37 @@
+{
+  "package": "hanoivm",
+  "version": "0.9.3-dev",
+  "build": {
+    "tangled": true,
+    "compiled": true,
+    "timestamp": "$(date -Iseconds)",
+    "output": [
+      "axion-ai.ko",
+      "hanoivm_vm.ko",
+      "hanoivm-test.ko"
+    ]
+  },
+  "test": {
+    "executed": true,
+    "passed": true,
+    "modules": ["hanoivm-test.ko"],
+    "log": "/sys/kernel/debug/hanoivm-test"
+  },
+  "load": {
+    "axion-ai": "success",
+    "hanoivm_vm": "success",
+    "hanoivm-test": "success"
+  },
+  "ai_feedback": {
+    "entropy_anomalies": 0,
+    "rollback_events": 0,
+    "runtime_notes": "Initial deploy stable. Ready for production profiling."
+  },
+  "environment": {
+    "kernel": "$(uname -r)",
+    "cuda": "optional",
+    "platform": "AxionOS/Alexis",
+    "tools": ["ctangle", "make", "gcc"]
+  },
+  "tags": ["ternary", "ai-runtime", "linux-kernel", "debugfs", "self-healing"]
+}
