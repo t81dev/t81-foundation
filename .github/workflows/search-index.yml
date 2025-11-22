@@ -1,0 +1,32 @@
+name: Build Search Index
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v3
+
+    - name: Install Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install Cheerio
+      run: npm install cheerio
+
+    - name: Build search index
+      run: node docs/search/build_index.js
+
+    - name: Commit
+      run: |
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git add docs/search/search_index.json
+        git commit -m "Update search index" || true
+        git push
