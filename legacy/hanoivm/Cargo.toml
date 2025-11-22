@@ -1,0 +1,9 @@
+[package]
+name = "hanoivm"
+version = "0.1.0"
+edition = "2025"
+authors = ["M. Kane II <sansdisk0134@gmail.com>"]
+description = "Recursive HanoiVM Virtual Machine with AI Integration"
+license = "MIT"
+
+[dependencies]

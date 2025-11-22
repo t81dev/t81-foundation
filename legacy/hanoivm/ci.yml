@@ -1,0 +1,96 @@
+name: HanoiVM CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: 🔨 Build HanoiVM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: ⚙️ Setup LLVM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y llvm-17 llvm-17-dev clang-17 lld-17 cmake ninja-build
+      
+      - name: 📚 Setup .cweb Tooling
+        run: |
+          sudo apt-get install -y cweb texlive-full
+          chmod +x ./tangle-all.sh
+          ./tangle-all.sh
+      
+      - name: 🔄 Compile LLVM Backend
+        run: |
+          mkdir -p build && cd build
+          cmake -G Ninja .. -DLLVM_DIR=/usr/lib/llvm-17/lib/cmake/llvm
+          ninja
+      
+      - name: 🔍 Run Unit Tests
+        run: |
+          cd build
+          ninja check-all
+      
+      - name: 📊 Generate HanoiVM Benchmarks
+        run: |
+          ./hvmcli benchmark > HanoiVM_Runtime_Timeline.csv
+      
+      - name: 📦 Package Release Artifacts
+        run: |
+          zip -r HanoiVM-Release-v0.9.zip build/bin *.cwebpkg *.hvm *.t81
+
+      - name: 📤 Upload Release
+        uses: actions/upload-artifact@v4
+        with:
+          name: HanoiVM-v0.9
+          path: HanoiVM-Release-v0.9.zip
+
+  gpu-integration:
+    name: 🖥️ GPU Backend Integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 🔧 Setup CUDA Environment
+        run: |
+          sudo apt-get install -y nvidia-cuda-toolkit
+          nvcc --version
+      
+      - name: ⚙️ Setup ROCm (GAIA Interface)
+        run: |
+          sudo apt-get install -y rocm-dev rocm-libs
+      
+      - name: 🔄 Compile GPU Backends
+        run: |
+          nvcc cuda_handle_request.cu -o cuda_backend
+          clang++ gaia_handle_request.cweb -o gaia_backend -lhip_hcc
+      
+      - name: 🧪 Run GPU Integration Tests
+        run: |
+          ./cuda_backend --test
+          ./gaia_backend --test
+
+  docs:
+    name: 📚 Documentation Generation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 📝 Generate Literate Docs (cweave)
+        run: |
+          chmod +x ./tangle-all.sh
+          ./tangle-all.sh
+          find . -name "*.cweb" -exec cweave {} \;
+          find . -name "*.tex" -exec pdftex {} \;
+      
+      - name: 📂 Upload Documentation PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: HanoiVM-Docs-v0.9
+          path: '*.pdf'

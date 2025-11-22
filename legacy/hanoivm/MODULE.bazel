@@ -1,0 +1,17 @@
+# MODULE.bazel
+
+module(
+    name = "github.com/copyl-sys/hanoivm",
+    version = "0.9.0",
+)
+
+# Core dependencies
+bazel_dep(name = "bazel_skylib", version = "1.0.3")
+bazel_dep(name = "io_bazel_rules_rust", version = "0.29.0")
+bazel_dep(name = "rules_foreign_cc", version = "0.2.0")
+
+# Optional: Support for literate CWEB compilation and testing
+bazel_dep(name = "rules_cweb", version = "0.1.0", dev_dependency = True)
+
+# Optional: Rules for shell testing and filegen
+bazel_dep(name = "rules_sh", version = "0.2.0", dev_dependency = True)

@@ -1,0 +1,46 @@
+@* package.cwebpkg | Distribution Bundle for AxionAI + HanoiVM Runtime
+
+This file wraps the full metadata, build info, and module registry
+into a single Axion-compatible package format.
+
+@<Axion Package Descriptor@>=
+{
+  "format": "cwebpkg",
+  "schema": "1.0",
+  "name": "hanoivm",
+  "version": "0.9.3-dev",
+  "license": "MIT",
+  "maintainer": "copyleftsystems",
+  "description": "Recursive ternary virtual machine with AI-native kernel extensions.",
+  "homepage": "https://github.com/copyl-sys/hanoivm",
+  "modules": [
+    "axion-ai.cweb",
+    "hanoivm_vm.cweb",
+    "hanoivm-core.cweb",
+    "hanoivm-runtime.cweb",
+    "axion-gaia-interface.cweb",
+    "t81_stack.cweb",
+    "t81asm.cweb",
+    "hanoivm-test.cweb"
+  ],
+  "scripts": {
+    "tangle": "./tangle-all.sh",
+    "build": "make -f build-all.cweb",
+    "test": "sudo insmod hanoivm-test.ko"
+  },
+  "entrypoints": [
+    "axion-ai.ko",
+    "hanoivm_vm.ko"
+  ],
+  "output": [
+    "axion-ai.ko",
+    "hanoivm_vm.ko",
+    "hanoivm-test.ko"
+  ],
+  "requires": {
+    "kernel": ">= 6.5",
+    "cuda": ">= 12.0",
+    "tools": ["ctangle", "make", "gcc"]
+  },
+  "tags": ["ternary", "ai", "vm", "kernel", "cweb"]
+}
