@@ -1,0 +1,197 @@
+@* disasm_hvm.cweb — HVM Bytecode Disassembler with Extended Synergy
+   This module disassembles HVM bytecode with type-aware processing for operands.
+   Enhancements include:
+   - Modular opcode decoding and operand dispatch.
+   - Verbose logging for debugging.
+   - Robust error checking and bounds validation.
+@#
+
+@<Include Dependencies@>=
+#include "hvm_bytecode.h"  /* Hypothetical header defining HVM opcodes, type tags, etc. */
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <errno.h>
+@#
+
+@<Define Constants and Verbose Flag@>=
+#define VERBOSE_DISASSEMBLE 1
+#ifndef DEBUG_OUTPUT
+#define DEBUG_OUTPUT stdout
+#endif
+
+/* Define T81 type tags (should match those used in the compiler) */
+#define T81_TAG_BIGINT     0x01
+#define T81_TAG_FRACTION   0x02
+#define T81_TAG_FLOAT      0x03
+#define T81_TAG_MATRIX     0x04
+#define T81_TAG_VECTOR     0x05
+#define T81_TAG_TENSOR     0x06
+#define T81_TAG_POLYNOMIAL 0x07
+#define T81_TAG_GRAPH      0x08
+#define T81_TAG_QUATERNION 0x09
+#define T81_TAG_OPCODE     0x0A
+@#
+
+@<Opcode Decoding Function@>=
+const char* decode_opcode(uint8_t op) {
+    switch (op) {
+        case 0x01: return "PUSH";
+        case 0x02: return "POP";
+        case 0x03: return "ADD";
+        case 0x04: return "SUB";
+        case 0x05: return "MUL";
+        case 0x06: return "DIV";
+        case 0x07: return "MOD";
+        case 0x08: return "NEG";
+        case 0x09: return "ABS";
+        case 0x0A: return "CMP3";
+        case 0x10: return "JMP";
+        case 0x11: return "JZ";
+        case 0x12: return "JNZ";
+        case 0x13: return "CALL";
+        case 0x14: return "RET";
+        case 0x20: return "TNN_ACCUM";
+        case 0x21: return "T81_MATMUL";
+        case 0x30: return "FACT";
+        case 0x31: return "FIB";
+        case 0x32: return "TOWER";
+        case 0x33: return "ACK";
+        case 0x34: return "BP";
+        case 0xFF: return "HALT";
+        default:   return "UNKNOWN";
+    }
+}
+@#
+
+@<Disassemble Operand Function@>=
+/* Disassemble an operand based on its type tag */
+void disasm_operand(FILE *in) {
+    uint8_t tag;
+    if (fread(&tag, 1, 1, in) != 1) {
+        fprintf(stderr, "[ERROR] Unable to read operand type tag\n");
+        return;
+    }
+    if (VERBOSE_DISASSEMBLE) {
+        fprintf(DEBUG_OUTPUT, "[DEBUG] Operand tag: 0x%02X\n", tag);
+    }
+    switch (tag) {
+        case T81_TAG_BIGINT: {
+            uint8_t len;
+            if (fread(&len, 1, 1, in) != 1) {
+                fprintf(stderr, "[ERROR] BIGINT: failed to read length\n");
+                return;
+            }
+            char buf[64] = {0};
+            if (fread(buf, 1, len, in) != len) {
+                fprintf(stderr, "[ERROR] BIGINT: failed to read value\n");
+                return;
+            }
+            fprintf(DEBUG_OUTPUT, "BIGINT(%s)", buf);
+            break;
+        }
+        case T81_TAG_FRACTION: {
+            fprintf(DEBUG_OUTPUT, "FRACTION { numerator: ");
+            disasm_operand(in);  // Recursively disassemble numerator
+            fprintf(DEBUG_OUTPUT, ", denominator: ");
+            disasm_operand(in);  // And denominator
+            fprintf(DEBUG_OUTPUT, " }");
+            break;
+        }
+        case T81_TAG_FLOAT: {
+            fprintf(DEBUG_OUTPUT, "FLOAT { mantissa: ");
+            disasm_operand(in);  // Disassemble mantissa as BIGINT
+            int8_t exponent;
+            if (fread(&exponent, 1, 1, in) != 1) {
+                fprintf(stderr, "[ERROR] FLOAT: failed to read exponent\n");
+                return;
+            }
+            fprintf(DEBUG_OUTPUT, ", exponent: %d }", exponent);
+            break;
+        }
+        case T81_TAG_GRAPH:
+            /* Placeholder: call to a function that disassembles a graph */
+            fprintf(DEBUG_OUTPUT, "GRAPH { ... }");
+            break;
+        case T81_TAG_QUATERNION:
+            /* Placeholder: call to a function that disassembles a quaternion */
+            fprintf(DEBUG_OUTPUT, "QUATERNION { ... }");
+            break;
+        case T81_TAG_OPCODE:
+            {
+                uint8_t inner;
+                if (fread(&inner, 1, 1, in) != 1) {
+                    fprintf(stderr, "[ERROR] OPCODE: failed to read inner opcode\n");
+                    return;
+                }
+                fprintf(DEBUG_OUTPUT, "OPCODE (inner): %s", decode_opcode(inner));
+            }
+            break;
+        default:
+            fprintf(DEBUG_OUTPUT, "UNKNOWN OPERAND TAG 0x%02X", tag);
+            break;
+    }
+}
+@#
+
+@<Disassemble Core Function@>=
+/* Disassemble an HVM binary from a file */
+int disassemble_hvm(const char* path) {
+    FILE* f = fopen(path, "rb");
+    if (!f) {
+        fprintf(stderr, "[ERROR] Failed to open file: %s (%s)\n", path, strerror(errno));
+        return -1;
+    }
+    
+    uint64_t addr = 0;
+    uint8_t op;
+    while (fread(&op, 1, 1, f) == 1) {
+        const char* opname = decode_opcode(op);
+        fprintf(DEBUG_OUTPUT, "0x%08llX: %s", addr, opname);
+        if (VERBOSE_DISASSEMBLE) {
+            fprintf(DEBUG_OUTPUT, " [raw: 0x%02X]", op);
+        }
+        /* Handle specific opcodes with operands */
+        if (strcmp(opname, "PUSH") == 0) {
+            fprintf(DEBUG_OUTPUT, " ");
+            disasm_operand(f);
+            fprintf(DEBUG_OUTPUT, "\n");
+            addr += 1 + 1; // opcode + tag
+            /* 
+             * For simplicity, assume fixed operand length for PUSH-type operands.
+             * In practice, length may vary; adjust accordingly.
+             */
+            addr += 9;
+            fseek(f, 9, SEEK_CUR);
+        } else if (strcmp(opname, "TNN_ACCUM") == 0 || strcmp(opname, "T81_MATMUL") == 0) {
+            /* Assume these opcodes have fixed operand block of 18 bytes */
+            fseek(f, 18, SEEK_CUR);
+            fprintf(DEBUG_OUTPUT, "\n");
+            addr += 1 + 18;
+        } else {
+            fprintf(DEBUG_OUTPUT, "\n");
+            addr += 1;
+        }
+    }
+    
+    fclose(f);
+    return 0;
+}
+@#
+
+@<Main Function@>=
+int main(int argc, char** argv) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <hvm_binary_file>\n", argv[0]);
+        return 1;
+    }
+    return disassemble_hvm(argv[1]);
+}
+@#
+
+@* End of disasm_hvm.cweb
+   This module disassembles HVM bytecode with extended operand processing and verbose debugging.
+   Future enhancements may include dynamic operand length detection, more sophisticated type-aware
+   disassembly, and integration with higher-level analysis tools.
+@*

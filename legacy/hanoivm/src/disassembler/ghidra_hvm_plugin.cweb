@@ -1,0 +1,191 @@
+@* ghidra_hvm_plugin.cweb | Ghidra Plugin for HanoiVM — Disassembler & Type-Aware Processor Integration
+This module integrates HanoiVM disassembly into Ghidra, providing type-aware processing of T81 operands.
+Enhancements:
+ - Extended operand support (fraction, float, quaternion, graph)
+ - Verbose logging controlled by a compile-time flag (VERBOSE_GHIDRA)
+ - Improved error checking and modular structure.
+@c
+#include <ghidra/ghidra_plugin.h>
+#include <ghidra/program.h>
+#include <ghidra/disassembler.h>
+#include "disasm_hvm.h"  /* Full recursive type disassembler for T81 and higher-order types */
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+@#
+
+@<Define T81 Type Tags@>=
+#define T81_TAG_BIGINT     0x01
+#define T81_TAG_FRACTION   0x02
+#define T81_TAG_FLOAT      0x03
+#define T81_TAG_MATRIX     0x04
+#define T81_TAG_VECTOR     0x05
+#define T81_TAG_TENSOR     0x06
+#define T81_TAG_POLYNOMIAL 0x07
+#define T81_TAG_GRAPH      0x08
+#define T81_TAG_QUATERNION 0x09
+#define T81_TAG_OPCODE     0x0A
+
+#ifndef GHIDRA_OUT
+#define GHIDRA_OUT stdout
+#endif
+
+#ifdef VERBOSE_GHIDRA
+#define VERBOSE_PRINT(fmt, ...) fprintf(GHIDRA_OUT, fmt, ##__VA_ARGS__)
+#else
+#define VERBOSE_PRINT(fmt, ...) 
+#endif
+@#
+
+@<Disassembler Operand Functions@>=
+/* Disassemble a BIGINT operand */
+void disasm_bigint(FILE *in) {
+    uint8_t len;
+    if (fread(&len, 1, 1, in) != 1) {
+        fprintf(GHIDRA_OUT, "[ERROR] Failed to read BIGINT length\n");
+        return;
+    }
+    char buf[64] = {0};
+    if (fread(buf, 1, len, in) != len) {
+        fprintf(GHIDRA_OUT, "[ERROR] Failed to read BIGINT value\n");
+        return;
+    }
+    fprintf(GHIDRA_OUT, "BIGINT(%s)", buf);
+}
+
+/* Disassemble a FRACTION operand */
+void disasm_fraction(FILE *in) {
+    fprintf(GHIDRA_OUT, "T81Fraction { numerator: ");
+    disasm_bigint(in);
+    fprintf(GHIDRA_OUT, ", denominator: ");
+    disasm_bigint(in);
+    fprintf(GHIDRA_OUT, " }");
+}
+
+/* Disassemble a FLOAT operand */
+void disasm_float(FILE *in) {
+    fprintf(GHIDRA_OUT, "T81Float { mantissa: ");
+    disasm_bigint(in);
+    int8_t exponent;
+    if (fread(&exponent, 1, 1, in) != 1) {
+        fprintf(GHIDRA_OUT, "[ERROR] Failed to read FLOAT exponent\n");
+        return;
+    }
+    fprintf(GHIDRA_OUT, ", exponent: %d }", exponent);
+}
+
+/* Dispatch based on tag */
+void disasm_operand_by_tag(FILE *in, uint8_t tag) {
+    switch (tag) {
+        case T81_TAG_BIGINT:
+            disasm_bigint(in); break;
+        case T81_TAG_FRACTION:
+            disasm_fraction(in); break;
+        case T81_TAG_FLOAT:
+            disasm_float(in); break;
+        case T81_TAG_GRAPH:
+            disasm_graph(in); break;
+        case T81_TAG_QUATERNION:
+            disasm_quaternion(in); break;
+        case T81_TAG_OPCODE:
+            disasm_opcode(in); break;
+        default:
+            fprintf(GHIDRA_OUT, "UNKNOWN TYPE TAG 0x%02X", tag);
+            break;
+    }
+}
+@#
+
+@<Plugin Metadata@>=
+GHIDRA_PLUGIN("HanoiVM Disassembler", "copyl-sys", "AI-native ternary instruction format disassembler")
+@#
+
+@<Opcode Map Hook@>=
+static const char* decode_opcode(uint8_t op) {
+    switch (op) {
+        case 0x01: return "PUSH";
+        case 0x02: return "POP";
+        case 0x03: return "ADD";
+        case 0x04: return "SUB";
+        case 0x05: return "MUL";
+        case 0x06: return "DIV";
+        case 0x07: return "MOD";
+        case 0x08: return "NEG";
+        case 0x09: return "ABS";
+        case 0x0A: return "CMP3";
+        case 0x10: return "JMP";
+        case 0x11: return "JZ";
+        case 0x12: return "JNZ";
+        case 0x13: return "CALL";
+        case 0x14: return "RET";
+        case 0x20: return "TNN_ACCUM";
+        case 0x21: return "T81_MATMUL";
+        case 0x30: return "FACT";
+        case 0x31: return "FIB";
+        case 0x32: return "TOWER";
+        case 0x33: return "ACK";
+        case 0x34: return "BP";
+        case 0xF0: return "PROMOTE_T243";
+        case 0xF1: return "PROMOTE_T729";
+        case 0xF2: return "DEMOTE_T243";
+        case 0xF3: return "DEMOTE_T81";
+        case 0xFF: return "HALT";
+        default:   return "UNKNOWN";
+    }
+}
+@#
+
+@<Disassembler Core Hook@>=
+int disassemble_hvm_binary(const char* path, GhidraContext* ctx) {
+    FILE* f = fopen(path, "rb");
+    if (!f) {
+        fprintf(GHIDRA_OUT, "[ERROR] Failed to open file: %s\n", path);
+        return -1;
+    }
+
+    uint64_t addr = ctx->base_addr;
+    uint8_t op;
+
+    while (fread(&op, 1, 1, f) == 1) {
+        const char* opname = decode_opcode(op);
+        ghidra_create_instruction(ctx, addr, opname);
+        VERBOSE_PRINT("[DEBUG] At 0x%llX, opcode: 0x%02X (%s)\n", addr, op, opname);
+
+        if (strcmp(opname, "FIB") == 0 || strcmp(opname, "FACT") == 0 || strcmp(opname, "TOWER") == 0) {
+            ghidra_create_label(ctx, addr, opname);
+        }
+
+        if (strcmp(opname, "PUSH") == 0) {
+            uint8_t tag;
+            if (fread(&tag, 1, 1, f) != 1) break;
+            ghidra_add_comment(ctx, addr, "T81 Typed Operand:");
+            disasm_operand_by_tag(f, tag);
+            addr += 1 + 1; // opcode + tag
+            /* Assume fixed operand length for PUSH type operands (e.g., 9 bytes) */
+            addr += 9;
+            fseek(f, 9, SEEK_CUR);
+        } else if (strcmp(opname, "TNN_ACCUM") == 0 || strcmp(opname, "T81_MATMUL") == 0) {
+            fseek(f, 18, SEEK_CUR);
+            addr += 1 + 18;
+        } else {
+            addr += 1;
+        }
+    }
+
+    fclose(f);
+    return 0;
+}
+@#
+
+@<Plugin Entry Point@>=
+int ghidra_plugin_main(const char* input_path, GhidraContext* ctx) {
+    return disassemble_hvm_binary(input_path, ctx);
+}
+@#
+
+@* Future Extensions:
+   - Expand disasm_operand_by_tag() to handle T81_TAG_VECTOR, T81_TAG_TENSOR, etc.
+   - Introduce a verbose mode that dumps raw hex bytes.
+   - Integrate type propagation analysis for higher-order T81 instructions.
+@*

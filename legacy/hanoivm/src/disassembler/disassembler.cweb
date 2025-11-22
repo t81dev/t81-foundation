@@ -1,0 +1,191 @@
+@* disassembler.cweb | HanoiVM Bytecode Disassembler
+Extended with:
+  - T81 Operand Decoding
+  - Extended Operand Tags
+  - Verbose + JSON Output
+  - Session-Aware Entropy Tracing
+@#
+
+@<Include Dependencies@>=
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include "advanced_ops.h"
+#include "t81types.h"
+#include "t81_types_support.h"
+@#
+
+@<Define Verbose Flag and Macros@>=
+#ifndef VERBOSE_DISASSEMBLE
+  #define VERBOSE_DISASSEMBLE 0
+#endif
+
+#if VERBOSE_DISASSEMBLE
+  #define VERBOSE_PRINT(...) printf(__VA_ARGS__)
+  #define HEX_DUMP(buf, len) do {                    \
+        for (size_t i = 0; i < (len); i++) {         \
+            printf("%02X ", (buf)[i]);               \
+            if ((i+1) % 16 == 0) printf("\n");       \
+        }                                            \
+        if ((len) % 16 != 0) printf("\n");           \
+    } while(0)
+#else
+  #define VERBOSE_PRINT(...)
+  #define HEX_DUMP(buf, len)
+#endif
+@#
+
+@<Global Bytecode Variables@>=
+extern uint8_t* hvm_code;
+extern size_t hvm_code_size;
+@#
+
+@<Fetch T81 Operand Function@>=
+uint81_t fetch_operand(const uint8_t* buf) {
+    uint81_t out;
+    out.a = ((uint32_t)buf[0] << 24) | ((uint32_t)buf[1] << 16) |
+            ((uint32_t)buf[2] << 8) | buf[3];
+    out.b = ((uint32_t)buf[4] << 24) | ((uint32_t)buf[5] << 16) |
+            ((uint32_t)buf[6] << 8) | buf[7];
+    out.c = buf[8];
+    return out;
+}
+@#
+
+@<Opcode to String Translator@>=
+const char* opcode_to_str(uint8_t opcode) {
+    switch (opcode) {
+        case OP_TFADD:   return "TFADD";
+        case OP_TFSUB:   return "TFSUB";
+        case OP_TFLADD:  return "TFLADD";
+        case OP_TFCOS:   return "TFCOS";
+        case OP_TMMUL:   return "TMMUL";
+        case OP_TVDOT:   return "TVDOT";
+        case OP_TQMUL:   return "TQMUL";
+        case OP_TPMUL:   return "TPMUL";
+        case OP_TTCON:   return "TTCON";
+        case OP_TGBFS:   return "TGBFS";
+        case OP_PUSH:    return "PUSH";
+        case OP_TNN_ACCUM: return "TNN_ACCUM";
+        case OP_T81_MATMUL: return "T81_MATMUL";
+        default:         return opcode_name(opcode);
+    }
+}
+@#
+
+@<Disassemble Core Function@>=
+void disassemble_vm(void) {
+    size_t ip = 0;
+
+    if (!hvm_code) {
+        printf("[ERROR] No bytecode loaded (hvm_code is NULL).\n");
+        return;
+    }
+
+    printf("=== HanoiVM Disassembly ===\n");
+    printf("Total Code Size: %zu bytes\n", hvm_code_size);
+    printf("----------------------------\n");
+
+    while (ip < hvm_code_size) {
+        uint8_t opcode = hvm_code[ip++];
+        printf("%04zx: %-12s", ip - 1, opcode_to_str(opcode));
+
+#ifdef VERBOSE_DISASSEMBLE
+        printf(" [Raw: %02X]", opcode);
+#endif
+
+        switch (opcode) {
+            case OP_PUSH:
+            case OP_TNN_ACCUM:
+            case OP_T81_MATMUL: {
+                if (ip + 17 < hvm_code_size) {
+                    uint81_t a = fetch_operand(&hvm_code[ip]);
+                    uint81_t b = fetch_operand(&hvm_code[ip + 9]);
+                    ip += 18;
+                    printf(" A:{%08X,%08X,%02X} B:{%08X,%08X,%02X}\n",
+                        a.a, a.b, a.c, b.a, b.b, b.c);
+                } else {
+                    printf(" [truncated operands]\n"); return;
+                }
+                break;
+            }
+            default:
+                printf("\n"); break;
+        }
+    }
+}
+@#
+
+@<Optional: Disassemble to File@>=
+void disassemble_to_file(const char* filename) {
+    FILE* f = fopen(filename, "w");
+    if (!f) { perror("fopen disassembly file"); return; }
+    FILE* orig = stdout;
+    stdout = f;
+    disassemble_vm();
+    stdout = orig;
+    fclose(f);
+    printf("Disassembly written to %s\n", filename);
+}
+@#
+
+@<Optional: Session-Aware Disassembly Filename@>=
+void disassemble_to_file_with_session(const char* base, const char* session_id) {
+    if (!base || !session_id) return;
+    char filename[128];
+    snprintf(filename, sizeof(filename), "%s_%s.dis", base, session_id);
+    disassemble_to_file(filename);
+}
+@#
+
+@<Disassemble JSON Output@>=
+void disassemble_vm_json(const char* session_id) {
+    if (!session_id) session_id = "unknown";
+    char filename[128];
+    snprintf(filename, sizeof(filename), "disasm_%s.json", session_id);
+    FILE* f = fopen(filename, "w");
+    if (!f) { perror("fopen json"); return; }
+
+    fprintf(f, "{\n  \"session\": \"%s\",\n  \"instructions\": [\n", session_id);
+
+    size_t ip = 0;
+    int count = 0;
+
+    while (ip < hvm_code_size) {
+        uint8_t opcode = hvm_code[ip++];
+        uint81_t a = {0}, b = {0};
+
+        if (opcode == OP_PUSH || opcode == OP_TNN_ACCUM || opcode == OP_T81_MATMUL) {
+            if (ip + 17 >= hvm_code_size) break;
+            a = fetch_operand(&hvm_code[ip]);
+            b = fetch_operand(&hvm_code[ip + 9]);
+            ip += 18;
+        }
+
+        if (count++ > 0) fprintf(f, ",\n");
+        fprintf(f, "    {\n");
+        fprintf(f, "      \"ip\": %zu,\n", ip - 1);
+        fprintf(f, "      \"opcode\": \"%s\",\n", opcode_to_str(opcode));
+        fprintf(f, "      \"operand_a\": { \"a\": %u, \"b\": %u, \"c\": %u },\n", a.a, a.b, a.c);
+        fprintf(f, "      \"operand_b\": { \"a\": %u, \"b\": %u, \"c\": %u },\n", b.a, b.b, b.c);
+        fprintf(f, "      \"entropy_warning\": %s\n", (a.c > 240 || b.c > 240) ? "true" : "false");
+        fprintf(f, "    }");
+    }
+
+    fprintf(f, "\n  ]\n}\n");
+    fclose(f);
+    printf("JSON disassembly written to %s\n", filename);
+}
+@#
+
+@<Header Export@>=
+@h
+void disassemble_vm(void);
+void disassemble_to_file(const char* filename);
+void disassemble_to_file_with_session(const char* base, const char* session_id);
+void disassemble_vm_json(const char* session_id);
+@#
+
+@* End of disassembler.cweb *@
