@@ -1,0 +1,154 @@
+@* FrameSceneBuilder.cweb -- Visualize RecursionFrame objects using jMonkeyEngine
+   Integrated with:
+   - Axion annotations and optimization feedback
+   - Ternary tier structure and symbolic intent from .t81viz
+   - Dynamic HUD overlays, entropy-based effects, tier-based geometry
+   - Future integration hooks: pulse animations, intent tooltips, optimization timeline
+*@
+
+@c
+package com.hanoivm.visualizer;
+
+import com.jme3.app.SimpleApplication;
+import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Sphere;
+import com.jme3.scene.control.BillboardControl;
+import com.jme3.font.BitmapText;
+import com.jme3.font.BitmapFont;
+import com.jme3.light.PointLight;
+import com.jme3.light.AmbientLight;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.KeyTrigger;
+import com.jme3.renderer.queue.RenderQueue;
+
+public class FrameSceneBuilder extends SimpleApplication {
+
+    private RecursionVisualizer visualizer;
+    private BitmapFont guiFont;
+    private BitmapText tooltip;
+
+    public FrameSceneBuilder(RecursionVisualizer visualizer) {
+        this.visualizer = visualizer;
+    }
+
+    public static void main(String[] args) {
+        RecursionVisualizer vis = new RecursionVisualizer();
+        try {
+            vis.loadFromFile("sample.t81viz");
+            FrameSceneBuilder app = new FrameSceneBuilder(vis);
+            app.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void simpleInitApp() {
+        guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+        tooltip = new BitmapText(guiFont);
+        tooltip.setSize(0.5f);
+        tooltip.setColor(ColorRGBA.Yellow);
+        tooltip.setLocalTranslation(10, cam.getHeight() - 10, 0);
+        guiNode.attachChild(tooltip);
+
+        Node root = buildSceneGraph();
+        rootNode.attachChild(root);
+        flyCam.setMoveSpeed(10f);
+        cam.setLocation(new Vector3f(0, 10, 40));
+        cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
+
+        AmbientLight ambient = new AmbientLight();
+        ambient.setColor(ColorRGBA.White.mult(0.7f));
+        rootNode.addLight(ambient);
+
+        PointLight point = new PointLight();
+        point.setPosition(new Vector3f(10, 10, 10));
+        point.setColor(ColorRGBA.White);
+        rootNode.addLight(point);
+
+        initKeys();
+    }
+
+    private void initKeys() {
+        inputManager.addMapping("ShowTooltip", new KeyTrigger(KeyInput.KEY_T));
+        inputManager.addListener((ActionListener) (name, isPressed, tpf) -> {
+            if (name.equals("ShowTooltip") && isPressed) {
+                tooltip.setText("Tier/Intent Hotkeys Enabled\n(Coming soon)");
+            }
+        }, "ShowTooltip");
+    }
+
+    private Node buildSceneGraph() {
+        Node parent = new Node("RecursionTrace");
+        int i = 0;
+        for (RecursionFrame frame : visualizer.getFrames()) {
+            Geometry geom = createFrameGeometry(frame, i);
+            geom.setLocalTranslation(i * 2.5f, frame.depth * -1.5f, 0);
+
+            if (frame.tier.entropyDelta > 0.5f) {
+                pulseHighlight(geom);
+            }
+
+            geom.setUserData("tooltip", frame.tier.intent + " | " + frame.tier.symbolicOpcode);
+            parent.attachChild(geom);
+            parent.attachChild(createHUDLabel(frame, i));
+            i++;
+        }
+        return parent;
+    }
+
+    private Geometry createFrameGeometry(RecursionFrame frame, int index) {
+        Geometry geom;
+        if ("T729".equals(frame.tier.activeTier)) {
+            geom = new Geometry("Frame" + index, new Sphere(12, 12, 0.7f));
+        } else if ("T243".equals(frame.tier.activeTier)) {
+            geom = new Geometry("Frame" + index, new Box(0.8f, 0.5f, 0.3f));
+        } else {
+            geom = new Geometry("Frame" + index, new Box(0.5f, 0.5f, 0.5f));
+        }
+
+        Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        mat.setBoolean("UseMaterialColors", true);
+
+        switch (frame.ternaryState) {
+            case "T+": mat.setColor("Diffuse", ColorRGBA.Green); break;
+            case "T0": mat.setColor("Diffuse", ColorRGBA.Blue); break;
+            case "T−": mat.setColor("Diffuse", ColorRGBA.Red); break;
+            default:   mat.setColor("Diffuse", ColorRGBA.White); break;
+        }
+
+        if (frame.axion.suggestedCollapse) {
+            mat.setColor("Emissive", ColorRGBA.Orange);
+        }
+
+        geom.setMaterial(mat);
+        geom.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
+        return geom;
+    }
+
+    private Node createHUDLabel(RecursionFrame frame, int index) {
+        BitmapText text = new BitmapText(guiFont);
+        text.setText(frame.function + "\nΔτ=" + String.format("%.2f", frame.tier.entropyDelta));
+        text.setSize(0.3f);
+        text.setColor(ColorRGBA.White);
+        BillboardControl bb = new BillboardControl();
+        text.addControl(bb);
+
+        Node labelNode = new Node("Label" + index);
+        labelNode.attachChild(text);
+        labelNode.setLocalTranslation(index * 2.5f, frame.depth * -1.5f + 1.0f, 0);
+        return labelNode;
+    }
+
+    private void pulseHighlight(Spatial spatial) {
+        spatial.setUserData("pulse", true);
+        // Future: Attach PulseControl for animation or glowing effect
+    }
+}
