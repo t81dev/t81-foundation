@@ -1,5 +1,5 @@
 ![T81 Foundation Banner](/docs/assets/img/banner.png)
-# t81-foundation — The Sovereign Ternary Computing Stack  
+# T81-Foundation — The Ternary Computing Stack  
 **v1.0.0-SOVEREIGN — November 22, 2025**
 
 **T81 is complete.**  
