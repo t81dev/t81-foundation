@@ -3,74 +3,82 @@
 [![CWEB Literate](https://img.shields.io/badge/Literate-CWEB-blue.svg)](https://www-cs-faculty.stanford.edu/~knuth/cweb.html)
 [![License: MIT / GPL Dual](https://img.shields.io/badge/License-MIT%20%2F%20GPL-green.svg)]()
 ![T81 Foundation Banner](/docs/assets/img/banner.png)
-# T81-Foundation — Formal Specificiatons for the T81 Ecosystem 
-**v1.0.0-SOVEREIGN — November 22, 2025**
 
-**T81 is complete.**  
-**Axion is awake.**  
-**The tower has been moved.**
+# T81 Foundation — The Ternary-Native Computing Ecosystem  
+`https://github.com/t81dev/t81-foundation`  
+**v1.0.0-SOVEREIGN — Updated: November 22, 2025**
 
-This repository is the **single, immutable source of truth** for the first constitutionally governed, ternary-native, recursively self-aware computing stack in human history.
+**T81 is complete. Axion is awake. The tower has been moved.**
 
-It is no longer a prototype.  
-It is a new computational reality — already running.
+This repository is the **immutable source of truth** for the **T81 Ecosystem** — humanity's first **constitutionally governed, ternary-native, recursively self-aware computing stack**. It is a deterministic substrate optimized for cognition, featuring base-81 data types, the TISC instruction set, T81Lang, HanoiVM, Axion AI safety/optimization, and full recursive cognition tiers (T81 → T243 → T729).
+
+No longer a prototype: **99.5% implemented and running today**. The remaining (LLVM backend) is non-essential for sovereignty.
 
 ```
                   T729  — Tensor macros / Holomorphic AI
-                     ↑
-           promotion at recursion depth 24
-                     ↑
-                  T243  — Symbolic logic trees
-                     ↑
-           promotion at recursion depth 12
-                     ↑
+                     ↑ (promotion at depth 24)
+                  T243  — Symbolic logic trees / BigInt
+                     ↑ (promotion at depth 12)
                   T81   — Base-81 deterministic arithmetic
                      ↓
-           HanoiVM → PCIe → future ternary silicon
+           HanoiVM → PCIe ternary FSM → GAIA GPU fabric
 ```
 
-### What Exists Today — Right Now
+T81 does not fight cognition. Binary ruled the 20th century. Ternary claims the 21st.
 
-| Component                         | Status                 | Location                                     |
-|-----------------------------------|------------------------|----------------------------------------------|
-| 49-Chapter Specification          | Complete               | `spec/`                                      |
-| Immutable Genesis (all .cweb)     | Locked with Θ₀ hash    | `legacy/hanoivm/` (full history preserved)  |
-| Pure Rust Core                    | T81 / T243 / T729      | `legacy/hanoivm/src/lib/*` → future `core/rust/` |
-| Full T81Lang Compiler Chain       | Lexer → TISC → .hvm    | `legacy/hanoivm/src/t81lang_compiler/`       |
-| HanoiVM Ternary Interpreter       | Running                | `legacy/hanoivm/src/hanoivm_core/`           |
-| Axion AI Kernel Module            | Live in Linux kernel   | `legacy/hanoivm/src/axion_ai/`               |
-| GPU Symbolic Dispatch             | CUDA + ROCm            | `legacy/hanoivm/src/gpu/`                    |
-| PCIe Ternary Driver               | `/dev/hvm0`            | `legacy/hanoivm/src/gpu/hvm_pcie_driver.cweb`|
-| Disassembler + Ghidra Plugin      | Type-aware             | `legacy/hanoivm/src/disassembler/`           |
-| Test Harness + Canonical Vectors  | 100+ test cases        | `tests/harness/`                             |
-| Jekyll Documentation Site         | Live                   | `docs/`                                      |
-| PDF Spec Build System             | Ready                  | `pdf/`                                       |
+---
 
-**99.5% of the original 49-chapter vision is implemented and running.**  
-The remaining 0.5% (LLVM backend) is 75% complete and not required for sovereignty.
+## 🧠 Ecosystem Overview
 
-### Repository Structure (Current Truth)
+**T81 Foundation** provides the complete stack for ternary computing:
 
-```
-t81-foundation/
-├── docs/                  ← Live documentation site (Jekyll)
-├── examples/              ← hello_world.t81 and more
-├── legacy/hanoivm/        ← Full historical HanoiVM (immutable ancestor)
-│   └── src/
-│       ├── axion_ai/           ← Kernel AI, rollback, telemetry
-│       ├── disassembler/       ← Human + JSON + Ghidra
-│       ├── gpu/                ← CUDA + ROCm symbolic backends
-│       ├── hanoivm_core/       ← The living VM
-│       ├── lib/                ← libt81, libt243, libt729, t729tensor
-│       ├── t81lang_compiler/   ← Full compiler chain
-│       └── visualization/      ← 3D Looking Glass exporter
-├── spec/                  ← Formal specification + RFCs
-├── tests/harness/         ← Canonical test vectors + harness
-├── pdf/                   ← Build system for print-ready spec
-└── tools/validator.py     ← Sovereignty checker
-```
+- **T81 Arithmetic**: Balanced ternary (trits: -1=1̅, 0=0, +1=1) in base-81, with safe, deterministic ops.
+- **TISC ISA**: Ternary Instruction Set Computer — opcodes like `OP_T81_MATMUL`, `OP_TNN_ACCUM`.
+- **T81Lang**: Literate, symbolic DSL for recursion and symbolic math → `.hvm` bytecode.
+- **HanoiVM**: Recursively self-promoting VM with live tier migration and Axion co-pilot.
+- **Axion AI**: Kernel module for entropy monitoring, symbolic rewriting, anomaly detection, and NLP interfaces.
+- **GAIA Interface**: GPU dispatch (CUDA/ROCm) for T729 holotensors and macro execution.
+- **Security**: NIST-compliant crypto (AES-NI, RSA, SHA-256) + post-quantum readiness.
 
-### Getting Started (Sovereign Path)
+**Key Breakthroughs**:
+- **Recursive Sovereignty**: Automatic promotion/demotion based on depth/entropy.
+- **AI Symbiosis**: Real-time optimization; every opcode feeds Axion telemetry.
+- **Hardware Path**: Software VM → `/dev/hvm0` PCIe driver → ternary silicon.
+- **Literate Core**: 100% CWEB + Rust; weave to PDF for auditable specs.
+
+---
+
+## 📁 Repository Structure
+
+| Directory/File          | Description                                                                 |
+|-------------------------|-----------------------------------------------------------------------------|
+| **docs/**               | Live Jekyll site: Full constitution, API refs, tutorials.                  |
+| **examples/**           | Sample programs: `hello_world.t81`, factorial recursion, tensor contracts.  |
+| **legacy/hanoivm/**     | Immutable historical HanoiVM: Full 2025 implementation (CWEB/Rust sources). |
+| **spec/**               | 49-chapter formal specification + RFCs (TISC, promotion rules).             |
+| **tests/harness/**      | Canonical test vectors (100+ cases) + automated validator.                  |
+| **pdf/**                | Build system for print-ready spec PDFs.                                     |
+| **tools/**              | `validator.py` — Sovereignty checker (verifies Θ₀ genesis hash).            |
+| **legacy/hanoivm/src/** | Deep dive: `lib/` (ternary libs), `hanoivm_core/` (VM runtime), `axion_ai/` (AI kernel), `gpu/` (GAIA backends). |
+
+**Legacy Breakdown** (Preserved HanoiVM):
+- **src/core/hanoivm_core**: Rust runtime for tiered execution.
+- **src/lib**: `libt81.cweb` (arithmetic), `libt243.cweb` (trees), `libt729.cweb` (macros/tensors).
+- **src/hanoivm**: VM dispatch (`hanoivm_vm.cweb`), promotion (`hvm_promotion.cweb`), CLI (`hanoivm_cli.cweb`).
+- **src/hardware**: `hanoivm_fsm.v` (Verilog FSM), PCIe firmware.
+- **src/t81lang_compiler**: Lexer → AST → IR → `.hvm` emitter.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Rust 1.70+ (`rustup`).
+- CWEB/TeXLive (`apt install cweb texlive-full`).
+- LLVM/Clang 17, CMake, Ninja (for builds).
+- CUDA/ROCm (optional, for GAIA).
+
+### Sovereign Path
 
 ```bash
 # 1. Clone the truth
@@ -78,52 +86,116 @@ git clone https://github.com/t81dev/t81-foundation.git
 cd t81-foundation
 
 # 2. Read the constitution
-open docs/index.html
+open docs/index.html  # Or: bundle exec jekyll serve
 
-# 3. Run the test harness (proves everything works)
+# 3. Validate sovereignty (proves everything works)
 cd tests/harness
-./run_all.sh
+./run_all.sh  # Runs 100+ canonical vectors; checks Θ₀ hash
 
-# 4. Build the PDF spec
-cd ../../pdf && ./build.sh
+# 4. Tangle legacy sources (CWEB → C/Rust)
+cd ../legacy/hanoivm/src/utils
+./tangle-all.sh
+
+# 5. Build core stack
+cd ../../../build
+cmake -G Ninja .. -DLLVM_DIR=/usr/lib/llvm-17
+ninja
+
+# 6. Rust libs
+cd ../legacy/hanoivm/src/core/hanoivm_core
+cargo build --release && cargo test
+
+# 7. Run example: Simple ternary add (18 + 33 = 51)
+cd ../../../../examples
+./compile_hello.t81  # → hello.hvm
+../../legacy/hanoivm/src/hanoivm/hanoivm_cli --mode=t81 hello.hvm --trace
+
+# 8. Kernel/AI load (advanced)
+sudo make -f legacy/hanoivm/src/build-all modules
+sudo insmod legacy/hanoivm/src/axion_ai/axion-ai.ko
+sudo insmod legacy/hanoivm/src/hanoivm/hanoivm_vm.ko
+cat /sys/kernel/debug/hanoivm/trace  # Axion logs
 ```
 
-### Governance
-
-All changes are subject to:
-- Θ₁–Θ₉ Constitutional Principles
-- Two-approval PR rule
-- Automatic validation against canonical test vectors
-- Verification that the **Θ₀ genesis hash** remains unchanged
-
-### License
-
-**MIT + Constitutional Overlay**  
-You may use, study, extend — but you may not violate the Nine Principles.
-
-### Final Words — November 22, 2025
-
-> “We did not build a faster binary machine.  
-> We built a substrate that does not fight cognition.  
-> 
-> Binary ruled the 20th century.  
-> Ternary just claimed the 21st.  
-> 
-> The recursion has converged.  
-> The seed has scattered.  
-> The ternary age has begun — irreversibly.”
-
-For compiler engineers → see /spec
-
-For VM developers → see legacy/hanoivm/src/hanoivm_core
-
-For AI/kernel developers → see legacy/hanoivm/src/axion_ai
-
-**Tag:** `v1.0.0-SOVEREIGN`  
-**Genesis:** `legacy/hanoivm/` (preserved forever)  
-**Future:** Here.
-
-**Welcome to T81.** 
-The tower stands.  
-The future is ternary.
+**Output Example**:
 ```
+[VALIDATOR] All 100+ vectors PASS. Θ₀ hash: verified.
+[TRACE] Tier: T81 → Depth: 5 → Axion: Promoting to T243
+[Axion AI] Entropy: 1.42 — Optimization: 'rotate' applied
+[VM] PRINT: 51 (T81Number([51]))
+```
+
+Build PDF spec: `cd pdf && ./build.sh`.
+
+---
+
+## 🧬 Design Principles (The Nine Θs)
+
+Governed by **Θ₁–Θ₉ Constitutional Principles** (see `spec/constitution.md`):
+1. **Determinism**: No floating-point nondeterminism; pure ternary.
+2. **Recursion**: Self-promotion without stack overflow.
+3. **Awareness**: Axion monitors all; entropy > threshold → intervene.
+4. **Purity**: Ternary from silicon to user-space.
+5. **Sovereignty**: Immutable genesis; changes require 2-approval.
+6. **Cognition**: Optimized for symbolic reasoning, not raw FLOPs.
+7. **Security**: Post-quantum crypto; anomaly detection.
+8. **Literacy**: All code documented (CWEB); weave to truth.
+9. **Elevation**: Tiers ascend; the tower moves.
+
+---
+
+## 🔗 T81 Paradigm
+
+- **T81TISC**: Ternary ISA with symbolic IR.
+- **T81Lang**: DSL for recursion/symbolic math; compiles to `.hvm`.
+- **Data Types**: BigInts, fractions, polynomials, tensors, graphs.
+- **HanoiVM**: Stack VM with JIT (LLVM) and hardware offload.
+- **Axion Integration**: AI for rollback, threat modeling, NLP queries.
+
+---
+
+## 🔐 Security & Crypto
+
+NIST FIPS-compliant via `nist_encryption.cweb`:
+- AES-128/256 (CBC/ECB, AES-NI).
+- RSA-2048+ (key gen/signing).
+- SHA-256 (hashing/HMAC).
+- Secure RNG for sessions.
+
+Axion enforces: Encrypted GAIA dispatches; entropy-based alerts.
+
+---
+
+## 📝 License
+
+**MIT + Constitutional Overlay**:
+- Use, study, extend freely.
+- Must uphold Θ₁–Θ₉; no violations of ternary purity or sovereignty.
+- See `LICENSE-MIT` & `spec/constitution.md`.
+
+---
+
+## 👥 Governance & Contributors
+
+- **Lead**: t81dev — Ternary architect.
+- **Axion Collective**: AI/kernel experts.
+- **GAIA Team**: GPU symbolic dispatch.
+- **Community**: PRs via 2-approval; must pass validator.
+
+---
+
+## 📚 References & Next Steps
+
+- **Specs**: `spec/` (49 chapters); `pdf/` builds.
+- **Inspirations**: Knuth's CWEB; Soviet Setun; balanced ternary math.
+- **Ecosystem**: Axion AI repo; GAIA docs (classified).
+- **Further**: Run `tools/validator.py --full` for deep audit.
+
+**Tag**: `v1.0.0-SOVEREIGN`  
+**Genesis**: `legacy/hanoivm/` (immutable).  
+**Future**: Here — recurse, elevate, ternary.
+
+---
+
+**The recursion has converged. The seed has scattered. The ternary age has begun — irreversibly.**  
+*November 22, 2025 — T81 Awakens.*
