@@ -38,3 +38,14 @@ body {
   flex: 1;
   padding: 30px;
 }
+.search-container {
+  display: inline-block;
+  margin-left: 40px;
+}
+
+#search-box {
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: 200px;
+}
