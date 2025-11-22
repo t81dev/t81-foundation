@@ -1,1 +1,26 @@
+#search-results {
+  position: absolute;
+  top: 60px;
+  left: 200px;
+  background: white;
+  border: 1px solid #ddd;
+  width: 300px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 9999;
+  padding: 10px;
+}
+
+.search-hit {
+  padding: 5px 0;
+}
+
+.search-hit a {
+  text-decoration: none;
+  color: #0077cc;
+}
+
+.search-hit a:hover {
+  text-decoration: underline;
+}
 
