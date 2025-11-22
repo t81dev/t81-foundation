@@ -1,0 +1,212 @@
+@* HanoiVM | T81Lang HVM Interpreter with Stack Safety, AI Integration, and Recursive Handling *@
+
+This module interprets the HanoiVM bytecode for T81Lang, incorporating stack safety operations, recursion handling, 
+and integration with the Axion AI system for intelligent execution.
+
+@<Include Dependencies@>=
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "config.h"
+#include "ai_hook.h"
+#include "t81_stack.h"
+#include "log_trace.h"
+#include "t81types.h"
+#include "hvm_loader.h"
+
+// Define the maximum number of registers and labels
+#define MAX_REGS 256
+#define MAX_LABELS 128
+
+// Structure for Register and Label
+typedef struct {
+    char name[64];
+    char value[256];
+} Register;
+
+typedef struct {
+    char label[64];
+    long file_offset;
+} Label;
+
+// Declare global arrays for registers and labels
+Register registers[MAX_REGS];
+int reg_count = 0;
+Label labels[MAX_LABELS];
+int label_count = 0;
+
+// Define the VM context and stack pointer
+typedef struct {
+    size_t ip;         // Instruction pointer
+    int halted;        // VM halt status
+    int recursion_depth; // Track recursion depth
+    int mode;          // Current execution mode (T81, T243, etc.)
+    int mode_flags;    // Flags for the current mode
+    int call_depth;    // Track function call depth
+} HVMContext;
+
+// Declare the VM context and stack state
+HVMContext ctx;
+StackState stack_state;
+
+// Function Declarations (Public API)
+void push81(int value);
+int pop81(void);
+int peek81(void);
+void interpret_hvm(const char* hvm_file);
+
+// Fetch Operand Function for 81-bit values
+uint81_t fetch_operand(const uint8_t* buf) {
+    uint81_t out;
+    out.a = ((uint32_t)buf[0] << 24) | ((uint32_t)buf[1] << 16) | ((uint32_t)buf[2] << 8) | buf[3];
+    out.b = ((uint32_t)buf[4] << 24) | ((uint32_t)buf[5] << 16) | ((uint32_t)buf[6] << 8) | buf[7];
+    out.c = buf[8];
+    return out;
+}
+
+// Stack Safety Operations
+
+void push81(int value) {
+    if (stack_state.sp >= T81_STACK_SIZE - 1) {
+        fprintf(stderr, "[T81] Stack overflow!\n");
+        exit(1);
+    }
+    stack_state.stack[++stack_state.sp] = value;
+    axion_log("[Stack Push] Value pushed to stack");
+}
+
+int pop81(void) {
+    if (stack_state.sp < 0) {
+        fprintf(stderr, "[T81] Stack underflow!\n");
+        exit(1);
+    }
+    int value = stack_state.stack[stack_state.sp--];
+    axion_log("[Stack Pop] Value popped from stack");
+    return value;
+}
+
+int peek81(void) {
+    if (stack_state.sp < 0) {
+        fprintf(stderr, "[T81] Stack empty (peek)\n");
+        exit(1);
+    }
+    return stack_state.stack[stack_state.sp];
+}
+
+// Interpretation Logic with Recursion & AI Integration
+
+void interpret_hvm(const char* hvm_file) {
+    FILE* f = fopen(hvm_file, "r");
+    if (!f) {
+        perror("Error opening HVM file");
+        return;
+    }
+
+    char line[256];
+    long pos;
+
+    // Pass 1: Index labels for jump operations
+    while ((pos = ftell(f)), fgets(line, sizeof(line), f)) {
+        if (strncmp(line, "LABEL ", 6) == 0) {
+            sscanf(line + 6, "%s", labels[label_count].label);
+            labels[label_count].file_offset = pos;
+            label_count++;
+        }
+    }
+
+    // Pass 2: Execute instructions based on labels and operations
+    rewind(f); // Go back to the start of the file for execution
+    while (fgets(line, sizeof(line), f)) {
+        // Skip comments and empty lines
+        if (line[0] == '#' || line[0] == '\n') continue;
+
+        // Handle instruction parsing and execution
+        char* opcode = strtok(line, " ");
+        if (opcode == NULL) continue;
+
+        axion_signal(opcode); // Send signal to Axion AI
+
+        // Check the opcode and execute corresponding logic
+        if (strcmp(opcode, "PUSH") == 0) {
+            uint81_t value = fetch_operand((uint8_t*)strtok(NULL, " "));
+            push81(value);
+        } else if (strcmp(opcode, "ADD") == 0) {
+            add81();
+        } else if (strcmp(opcode, "MOD") == 0) {
+            mod81();
+        } else if (strcmp(opcode, "NEG") == 0) {
+            neg81();
+        } else if (strcmp(opcode, "DUP") == 0) {
+            dup81();
+        } else if (strcmp(opcode, "SWAP") == 0) {
+            swap81();
+        } else if (strcmp(opcode, "DROP") == 0) {
+            drop81();
+        } else if (strcmp(opcode, "HALT") == 0) {
+            ctx.halted = 1;
+            break;
+        } else {
+            fprintf(stderr, "[ERROR] Unknown opcode: %s\n", opcode);
+        }
+
+        axion_log("[HVM] Instruction executed");
+    }
+
+    fclose(f);
+}
+
+// Stack Control Operations (duplication, swapping, dropping)
+void dup81(void) {
+    int val = peek81();
+    push81(val);
+    axion_log("[Stack Control] Duplicate value on stack");
+}
+
+void swap81(void) {
+    if (stack_state.sp < 1) {
+        fprintf(stderr, "[T81] swap81: Not enough elements\n");
+        exit(1);
+    }
+    int a = pop81();
+    int b = pop81();
+    push81(a);
+    push81(b);
+    axion_log("[Stack Control] Swapped top two values on stack");
+}
+
+void drop81(void) {
+    if (stack_state.sp < 0) {
+        fprintf(stderr, "[T81] drop81: Stack empty\n");
+        exit(1);
+    }
+    int val = pop81();
+    axion_log("[Stack Control] Dropped value from stack");
+}
+
+// Handling Recursion Logic (T81Lang)
+
+void execute_recursive_fact(HVMContext* ctx) {
+    if (ctx->recursion_depth > MAX_RECURSION_DEPTH) {
+        fprintf(stderr, "[VM] Recursion depth exceeded\n");
+        exit(1);
+    }
+
+    // Recursive factorial logic here
+    int num = pop81();
+    int result = factorial(num);
+    push81(result);
+}
+
+int factorial(int n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}
+
+@h
+void interpret_hvm(const char* hvm_file);
+void push81(int value);
+int pop81(void);
+int peek81(void);
+void dup81(void);
+void swap81(void);
+void drop81(void);

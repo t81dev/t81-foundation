@@ -1,0 +1,186 @@
+@* t81_stack.cweb | Stack Management for HanoiVM with Safe Operations and Extensions
+This module defines the full implementation of the T81 stack, the foundational stack for the recursive HanoiVM ternary virtual machine.
+
+Included Features:
+- Stack memory for up to 3^7 (2187) ternary values.
+- Safe core operations: `push81`, `pop81`, `peek81`.
+- Arithmetic operations: `add81`, `mod81`, `neg81`.
+- Conditional operation: `ifz81` (if zero).
+- Stack control operations: `dup81`, `swap81`, `drop81`.
+- Future extension for stack promotion (T243 / T729).
+- External function headers via `@h` block for linkage.
+
+This module improves safety and traceability, integrates with Axion AI for monitoring, and ensures that stack operations cannot exceed the predefined limits.
+
+@#
+
+@<Include Dependencies@>=
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h> // For boolean type support
+#include "config.h"        // Configuration constants (e.g., stack size, thresholds).
+#include "ai_hook.h"       // AI integration for stack monitoring and logging.
+#include "hvm_loader.h"    // Loader for the HanoiVM context.
+#include "t81types.h"      // T81-specific types such as uint81_t.
+@#
+
+// Safe stack operations with error handling
+
+#define T81_STACK_SIZE 2187  // 3^7 for deep recursion, ensures stack depth compatibility
+#define STACK_OVERFLOW_ERR -1  // Error code for stack overflow
+#define STACK_UNDERFLOW_ERR -2  // Error code for stack underflow
+
+@* Stack State Structure
+This structure holds the T81 stack and tracks the stack pointer (SP).
+- `t81_stack`: The array to hold the stack values (up to 2187 ternary values).
+- `t81_sp`: The stack pointer indicating the current position in the stack.
+@<Stack State Structure@>=
+static int t81_stack[T81_STACK_SIZE];  // The stack of ternary values (uint81_t)
+static int t81_sp = -1;  // Stack pointer (initially -1, indicating the stack is empty)
+@#
+
+@* Stack Operations (Public API)
+The following functions manage the stack operations, ensuring safe pushes and pops, and proper trace logging for debugging.
+@<T81 Stack API Declarations@>=
+void push81(int value);  // Pushes a value onto the stack
+int  pop81(void);        // Pops a value from the stack
+int  peek81(void);       // Peeks at the top value of the stack without removing it
+
+void add81(void);        // Adds the top two values on the stack
+void mod81(void);        // Performs modulo operation on the top two values
+void neg81(void);        // Negates the top value on the stack
+
+bool ifz81(void);        // Checks if the top value is zero
+
+void dup81(void);        // Duplicates the top value of the stack
+void swap81(void);       // Swaps the top two values on the stack
+void drop81(void);       // Drops the top value from the stack
+@#
+
+@* Stack Safety Operations
+These functions handle the core stack operations, ensuring safe manipulation of the stack with overflow and underflow protections.
+@<T81 Stack Core Functions@>=
+
+// Pushes a value onto the stack, checking for overflow
+// If the stack overflows, prints an error and exits
+void push81(int value) {
+    if (t81_sp >= T81_STACK_SIZE - 1) {  // Check if stack has reached the limit
+        fprintf(stderr, "[T81] Stack overflow!\n");
+        axion_log("[T81 Error] Stack overflow during push operation");
+        exit(STACK_OVERFLOW_ERR);  // Exit with overflow error code
+    }
+    t81_stack[++t81_sp] = value;  // Push the value onto the stack
+    axion_log("[Stack Push] Value pushed to stack");
+}
+
+// Pops a value from the stack, checking for underflow
+// If the stack is empty, prints an error and exits
+int pop81(void) {
+    if (t81_sp < 0) {  // Check if the stack is empty
+        fprintf(stderr, "[T81] Stack underflow!\n");
+        axion_log("[T81 Error] Stack underflow during pop operation");
+        exit(STACK_UNDERFLOW_ERR);  // Exit with underflow error code
+    }
+    int value = t81_stack[t81_sp--];  // Pop the value and decrement stack pointer
+    axion_log("[Stack Pop] Value popped from stack");
+    return value;
+}
+
+// Peeks at the top value of the stack without removing it
+// If the stack is empty, prints an error and exits
+int peek81(void) {
+    if (t81_sp < 0) {  // Check if the stack is empty
+        fprintf(stderr, "[T81] Stack empty (peek)\n");
+        axion_log("[T81 Error] Attempted peek on empty stack");
+        exit(STACK_UNDERFLOW_ERR);  // Exit with underflow error code
+    }
+    return t81_stack[t81_sp];  // Return the top value without popping
+}
+@#
+
+@* Arithmetic and Logic Functions
+These functions provide the arithmetic and logical operations supported on the T81 stack.
+@<T81 Arithmetic Extensions@>=
+
+// Adds the top two values on the stack
+void add81(void) {
+    int a = pop81();  // Pop the first value
+    int b = pop81();  // Pop the second value
+    int result = a + b;  // Perform the addition
+    push81(result);  // Push the result back onto the stack
+    axion_log("[T81 Arithmetic] add81: %d + %d = %d", a, b, result);
+}
+
+// Performs modulo operation on the top two values
+void mod81(void) {
+    int a = pop81();  // Pop the first value
+    int b = pop81();  // Pop the second value
+    if (b == 0) {  // Check for division by zero
+        fprintf(stderr, "[T81] mod81: Division by zero!\n");
+        axion_log("[T81 Error] mod81: Division by zero");
+        exit(1);  // Exit on division by zero
+    }
+    int result = a % b;  // Perform the modulo operation
+    push81(result);  // Push the result onto the stack
+    axion_log("[T81 Arithmetic] mod81: %d %% %d = %d", a, b, result);
+}
+
+// Negates the top value on the stack
+void neg81(void) {
+    int a = pop81();  // Pop the value
+    int result = -a;  // Perform negation
+    push81(result);  // Push the result onto the stack
+    axion_log("[T81 Arithmetic] neg81: -%d = %d", a, result);
+}
+
+// Conditional check if the top value is zero
+bool ifz81(void) {
+    int a = peek81();  // Peek at the top value
+    axion_log("[T81 Conditional] ifz81: top = %d (%s)", a, a == 0 ? "TRUE" : "FALSE");
+    return a == 0;  // Return true if the value is zero, false otherwise
+}
+@#
+
+@* Stack Control and Ternary Tools
+These operations control the stack and manipulate the top values as needed.
+@<T81 Stack Control Operations@>=
+
+// Duplicates the top value on the stack
+void dup81(void) {
+    int val = peek81();  // Peek at the top value
+    push81(val);  // Push the value onto the stack again (duplicate)
+    axion_log("[T81 Stack Control] dup81: duplicated %d", val);
+}
+
+// Swaps the top two values on the stack
+void swap81(void) {
+    if (t81_sp < 1) {  // Ensure there are at least two elements on the stack
+        fprintf(stderr, "[T81] swap81: Not enough elements\n");
+        axion_log("[T81 Error] swap81: Not enough elements on stack");
+        exit(1);  // Exit if there are not enough elements
+    }
+    int a = pop81();  // Pop the first value
+    int b = pop81();  // Pop the second value
+    push81(a);  // Push the first value back onto the stack
+    push81(b);  // Push the second value back onto the stack
+    axion_log("[T81 Stack Control] swap81: swapped top two values");
+}
+
+// Drops the top value from the stack
+void drop81(void) {
+    if (t81_sp < 0) {  // Check if the stack is empty
+        fprintf(stderr, "[T81] drop81: Stack empty\n");
+        axion_log("[T81 Error] drop81: Stack empty");
+        exit(1);  // Exit if the stack is empty
+    }
+    int val = pop81();  // Pop the value from the stack
+    axion_log("[T81 Stack Control] drop81: dropped %d", val);
+}
+@#
+
+@* External Header Interface
+This header block allows external CWEB or C files to link against this module for stack manipulation operations.
+@h
+@<T81 Stack API Declarations@>  // External linking for stack functions
+@#
+

@@ -1,0 +1,136 @@
+@* advanced_ops.cweb — Extended Opcodes for HanoiVM T81 Engine *@
+
+@* Introduction:
+  This module defines an extended opcode set for the HanoiVM execution engine,
+  built on the foundation of T81 balanced ternary arithmetic. Based on analysis
+  from TYRNARY - T81Analysis.pdf, these operations leverage the radix-81 structure
+  to support efficient symbolic computation, AI, and control flow mechanisms. *@
+
+@c
+#include <stdint.h>
+#include <stdio.h>
+#include "t81types.h"  // Assumed: defines uint81_t and ternary helper routines
+#include "hvm_context.h"
+#include "hvm_promotion.h"
+
+@* Extended Opcode Definitions *@
+@c
+typedef enum {
+    OP_NOP = 0x00,       // No operation
+    OP_PUSH = 0x01,      // Push operand onto stack
+    OP_POP  = 0x02,      // Pop operand from stack
+    OP_ADD  = 0x03,      // Add two top stack values
+
+    OP_SUB  = 0x04,      // Subtract b from a
+    OP_MUL  = 0x05,      // Multiply a × b
+    OP_DIV  = 0x06,      // Divide a ÷ b
+    OP_MOD  = 0x07,      // Modulo remainder
+
+    OP_NEG  = 0x08,      // Negate operand
+    OP_ABS  = 0x09,      // Absolute value
+    OP_CMP3 = 0x0A,      // Compare: returns -1, 0, +1
+
+    OP_JMP  = 0x10,      // Jump to address
+    OP_JZ   = 0x11,      // Jump if zero
+    OP_JNZ  = 0x12,      // Jump if non-zero
+    OP_CALL = 0x13,      // Call subroutine
+    OP_RET  = 0x14,      // Return from subroutine
+
+    OP_TNN_ACCUM = 0x20, // AI: Accumulate activation × weight
+    OP_T81_MATMUL = 0x21 // AI: Multiply ternary matrix tiles
+} Opcode;
+
+#define PROMOTE_THRESHOLD 5
+#define DEMOTE_THRESHOLD 2
+
+@* Instruction Evaluation Stub (To be expanded in runtime engine) *@
+@c
+uint81_t evaluate_opcode(Opcode op, uint81_t a, uint81_t b, HVMContext* ctx) {
+    switch (op) {
+        case OP_ADD: return t81_add(a, b);
+        case OP_SUB: return t81_sub(a, b);
+        case OP_MUL: return t81_mul(a, b);
+        case OP_DIV: return t81_div(a, b);
+        case OP_MOD: return t81_mod(a, b);
+        case OP_NEG: return t81_neg(a);
+        case OP_ABS: return t81_abs(a);
+        case OP_CMP3: return t81_cmp3(a, b);
+
+        case OP_CALL:
+            ctx->call_depth++;
+            if (ctx->call_depth > PROMOTE_THRESHOLD) {
+                if (ctx->mode == MODE_T81) promote_to_t243(ctx);
+                else if (ctx->mode == MODE_T243) promote_to_t729(ctx);
+            }
+            return a;
+
+        case OP_RET:
+            if (ctx->call_depth > 0) ctx->call_depth--;
+            if (ctx->call_depth < DEMOTE_THRESHOLD) {
+                if (ctx->mode == MODE_T243) demote_to_t81(ctx);
+                else if (ctx->mode == MODE_T729) demote_to_t243(ctx);
+            }
+            return a;
+
+        case OP_TNN_ACCUM:
+            if (ctx->mode < MODE_T243) {
+                fprintf(stderr, "[ERROR] OP_TNN_ACCUM requires MODE_T243 or higher\n");
+                return (uint81_t){0};
+            }
+            return tnn_accumulate(a, b);
+
+        case OP_T81_MATMUL:
+            if (ctx->mode < MODE_T243) {
+                fprintf(stderr, "[ERROR] OP_T81_MATMUL requires MODE_T243 or higher\n");
+                return (uint81_t){0};
+            }
+            return t81_matmul(a, b);
+
+        default:
+            fprintf(stderr, "[WARN] Unknown opcode 0x%02X\n", op);
+            return (uint81_t){0};
+    }
+}
+
+@* Disassembler Integration Snippet (Stub) *@
+@c
+const char* opcode_name(Opcode op) {
+    switch (op) {
+        case OP_ADD: return "ADD";
+        case OP_SUB: return "SUB";
+        case OP_MUL: return "MUL";
+        case OP_DIV: return "DIV";
+        case OP_MOD: return "MOD";
+        case OP_NEG: return "NEG";
+        case OP_ABS: return "ABS";
+        case OP_CMP3: return "CMP3";
+        case OP_JMP: return "JMP";
+        case OP_CALL: return "CALL";
+        case OP_RET: return "RET";
+        case OP_TNN_ACCUM: return "TNN_ACCUM";
+        case OP_T81_MATMUL: return "T81_MATMUL";
+        default: return "UNKNOWN";
+    }
+}
+
+@* AI Symbolic Accumulator Logic (stubbed) *@
+@c
+uint81_t tnn_accumulate(uint81_t activation, uint81_t weight) {
+    return t81_add(activation, weight);
+}
+
+@* T81 Matrix Multiply Logic (stubbed) *@
+@c
+uint81_t t81_matmul(uint81_t a, uint81_t b) {
+    uint81_t out = {0, 0, 0};
+    for (int i = 0; i < 3; ++i) {
+        uint27_t row = t81_extract(a, i);
+        uint27_t col = t81_extract(b, i);
+        uint27_t prod = ternary_mul27(row, col);
+        out = t81_add(out, t81_embed(prod, i));
+    }
+    return out;
+}
+
+@* .hvm Test Bytecode Reference:
+  T81_MATMUL + TNN_ACCUM with operand tiles to simulate a symbolic AI layer *@

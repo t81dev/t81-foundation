@@ -1,0 +1,117 @@
+@* hvm_promotion.cweb - Recursive Stack Promotion/Demotion Logic for HanoiVM
+   This module handles stack promotion and demotion based on recursion depth and
+   dynamic entropy feedback from Axion AI. It supports safe transitions between 
+   stack modes (T81 -> T243 -> T729) and ensures optimal execution during recursion. 
+   It also integrates with Axion AI to dynamically adjust stack modes based on entropy.
+*@
+
+#include "hvm_context.h"      // Includes context structure for managing VM execution state
+#include "axion_signal.h"      // Includes Axion signal handling for AI-driven optimization
+#include "log_trace.h"         // Includes logging and tracing functionality
+#include "axion_ai.h"          // NEW: Axion AI integration for dynamic mode adjustments
+
+// Define the pseudo-opcodes for stack tier promotion and demotion
+#define OP_PROMOTE_T243   0xF0    // Opcode for promoting to T243 mode
+#define OP_PROMOTE_T729   0xF1    // Opcode for promoting to T729 mode
+#define OP_DEMOTE_T243    0xF2    // Opcode for demoting to T243 mode
+#define OP_DEMOTE_T81     0xF3    // Opcode for demoting to T81 mode
+
+// Define constants for threshold levels of stack promotion and demotion
+#define THRESHOLD_T243    10     // Recursion depth threshold to promote to T243
+#define THRESHOLD_T729    20     // Recursion depth threshold to promote to T729
+#define T243_SAFE_ZONE    5      // Safe zone for demotion to T243
+#define T81_SAFE_ZONE     2      // Safe zone for demotion to T81
+
+// **Macro Definitions** for mode promotion and demotion with logging and AI support
+
+// **Promote to T243 Mode**: This macro handles promotion to T243 if the current mode is T81
+#define PROMOTE_T243(ctx)  do { \
+  if ((ctx)->mode == MODE_T81 && (ctx)->call_depth > THRESHOLD_T243) { \
+    (ctx)->mode = MODE_T243; \
+    (ctx)->mode_flags |= MODE_PROMOTABLE; \
+    axion_signal(PROMOTE_T243);  // Notify Axion AI about the promotion \
+    log_trace("PROMOTE_T243: T81 → T243");  // Log the promotion action \
+  } \
+} while (0)
+
+// **Promote to T729 Mode**: This macro handles promotion to T729 if T243 mode is active and tensor operations are detected
+#define PROMOTE_T729(ctx)  do { \
+  if ((ctx)->mode == MODE_T243 && tensor_op_detected(ctx)) { \
+    (ctx)->mode = MODE_T729; \
+    axion_signal(PROMOTE_T729);  // Notify Axion AI about the promotion \
+    log_trace("PROMOTE_T729: T243 → T729");  // Log the promotion action \
+  } \
+} while (0)
+
+// **Demote Stack**: This macro handles demotion to lower modes based on the current mode and recursion depth
+#define DEMOTE_STACK(ctx)  do { \
+  if ((ctx)->mode == MODE_T729 && (ctx)->call_depth < T243_SAFE_ZONE) { \
+    (ctx)->mode = MODE_T243; \
+    log_trace("DEMOTE_T243: T729 → T243");  // Log the demotion action to T243 \
+  } else if ((ctx)->mode == MODE_T243 && (ctx)->call_depth < T81_SAFE_ZONE) { \
+    (ctx)->mode = MODE_T81; \
+    log_trace("DEMOTE_T81: T243 → T81");  // Log the demotion action to T81 \
+  } \
+} while (0)
+
+// **Enhanced Mode Trace**: Log the current mode with AI integration for better debugging and optimization feedback
+#define TRACE_MODE(ctx) \
+  log_trace("MODE: %s", get_mode_label((ctx)->mode)); \
+  axion_log_mode(ctx);  // NEW: AI log mode integration to capture mode changes with Axion AI feedback
+
+// **Function to Promote to T243 Mode** — Handled by the macro for better flexibility
+void promote_to_t243(HVMContext* ctx) {
+  PROMOTE_T243(ctx);  // Use the macro to promote to T243
+}
+
+// **Function to Promote to T729 Mode** — Handled by the macro for better flexibility
+void promote_to_t729(HVMContext* ctx) {
+  PROMOTE_T729(ctx);  // Use the macro to promote to T729
+}
+
+// **Function to Demote Stack** — This handles the logic for lowering stack modes based on conditions
+void demote_stack(HVMContext* ctx) {
+  DEMOTE_STACK(ctx);  // Use the macro to demote stack based on conditions
+}
+
+// **Helper function to get the mode label as a string for logging purposes**
+const char* get_mode_label(StackMode mode) {
+  switch (mode) {
+    case MODE_T81: return "T81";  // Return label for T81 mode
+    case MODE_T243: return "T243";  // Return label for T243 mode
+    case MODE_T729: return "T729";  // Return label for T729 mode
+    default: return "UNKNOWN";  // Return "UNKNOWN" if the mode is unrecognized
+  }
+}
+
+// **Function to Trace Mode Changes** — Logs mode transitions with Axion AI support
+void trace_mode_change(HVMContext* ctx) {
+  TRACE_MODE(ctx);  // Use TRACE_MODE macro to log the mode and send data to Axion AI
+}
+
+// **Main VM Instruction Handler** — Executes the current instruction and applies promotion/demotion logic
+void execute_instruction(HVMContext* ctx, T81Opcode op) {
+  TRACE_MODE(ctx);  // Trace the current mode before executing any instructions
+
+  // **Switch-case to handle specific opcodes** and apply promotion/demotion logic
+  switch (op) {
+    case OP_PROMOTE_T243:
+      promote_to_t243(ctx);  // Handle promotion to T243 mode
+      return;
+    case OP_PROMOTE_T729:
+      promote_to_t729(ctx);  // Handle promotion to T729 mode
+      return;
+    case OP_DEMOTE_T243:
+    case OP_DEMOTE_T81:
+      demote_stack(ctx);  // Handle demotion based on stack mode
+      return;
+    default:
+      break;
+  }
+
+  // **Ensure promotion and demotion are applied before opcode execution** to maintain correct VM state
+  execute_promotion(ctx);  // Ensure the VM is in the correct mode for the next instruction
+
+  // **Dispatch the opcode for further execution** once promotion/demotion is handled
+  dispatch_opcode(ctx, op);  // Execute the current opcode
+}

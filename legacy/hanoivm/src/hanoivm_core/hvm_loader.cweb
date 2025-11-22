@@ -1,0 +1,125 @@
+@* hvm_loader.cweb | Bytecode Loader for HanoiVM — Enhanced with Config, Safety, and Axion Awareness
+
+This module loads `.hvm` binary files into memory, checks for Axion session markers,
+and supports logging and integration with global configuration flags.
+
+It is used by:
+- `main_driver.cweb` for execution
+- `disassembler.cweb` for disassembly
+- `hanoivm_vm.cweb` for interpretation
+
+Future extensions include:
+- Metadata hashing
+- AI session fingerprinting
+- Ternary tag validation
+@#
+
+@<Include Dependencies@>=
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <errno.h>
+#include "config.h"         // To enforce bytecode size, toggles
+#include "hvm_loader.h"     // Self-header
+#ifdef ENABLE_AXION_SUPPORT
+#include "axion_session.h"  // Register AI runtime session (optional)
+#endif
+@#
+
+@<Global Bytecode Buffers@>=
+uint8_t* hvm_code = NULL;
+size_t hvm_code_size = 0;
+@#
+
+@<Load Bytecode Function@>=
+int load_hvm(const char* path) {
+    // Open the bytecode file in binary mode
+    FILE* f = fopen(path, "rb");
+    if (!f) {
+        perror("[ERROR] fopen");
+        return 0;
+    }
+
+    // Get the file size to allocate memory for bytecode
+    fseek(f, 0, SEEK_END);
+    hvm_code_size = ftell(f);
+    rewind(f);
+
+    // Check for bytecode size limitations
+    if (hvm_code_size > MAX_BYTECODE_SIZE) {
+        fprintf(stderr, "[ERROR] Bytecode exceeds max size (%zu > %d)\n", hvm_code_size, MAX_BYTECODE_SIZE);
+        fclose(f);
+        return 0;
+    }
+
+    // Allocate memory for the bytecode and read the file
+    hvm_code = malloc(hvm_code_size);
+    if (!hvm_code) {
+        perror("[ERROR] malloc");
+        fclose(f);
+        return 0;
+    }
+
+    // Read the bytecode into memory
+    if (fread(hvm_code, 1, hvm_code_size, f) != hvm_code_size) {
+        perror("[ERROR] fread");
+        free(hvm_code);
+        hvm_code = NULL;
+        hvm_code_size = 0;
+        fclose(f);
+        return 0;
+    }
+    fclose(f);
+
+    // Debugging: Log successful loading if debug mode is enabled
+#if ENABLE_DEBUG_MODE
+    printf("[LOADER] Loaded %s (%zu bytes)\n", path, hvm_code_size);
+#endif
+
+    // Check for Axion session header and register the session if present
+#ifdef ENABLE_AXION_SUPPORT
+    if (memcmp(hvm_code, "AXION", 5) == 0) {
+        printf("[AXION] Session header detected in bytecode\n");
+        axion_register_session("AUTO-DETECTED");
+    }
+#endif
+
+    // Optionally disassemble bytecode if enabled
+#if AUTO_DISASSEMBLE_ON_LOAD
+    extern void disassemble_vm(void);
+    disassemble_vm();
+#endif
+
+    return 1;
+}
+@#
+
+@<Optional Cleanup Function@>=
+void free_hvm(void) {
+    // Free the allocated bytecode memory and reset the global state
+    if (hvm_code) {
+        free(hvm_code);
+        hvm_code = NULL;
+        hvm_code_size = 0;
+    }
+}
+@#
+
+@h Header for External Use
+#ifndef HVM_LOADER_H
+#define HVM_LOADER_H
+
+#include <stdint.h>
+#include <stddef.h>
+
+// External access to the global bytecode and its size
+extern uint8_t* hvm_code;
+extern size_t hvm_code_size;
+
+// Function declarations for bytecode loading and cleanup
+int load_hvm(const char* path);
+void free_hvm(void);
+
+#endif
+@#

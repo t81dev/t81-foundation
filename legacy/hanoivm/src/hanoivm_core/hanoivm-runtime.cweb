@@ -1,0 +1,173 @@
+@* hanoivm-runtime.cweb: HanoiVM Runtime Execution Engine for Ternary PCIe Accelerator
+This module defines the HanoiVM interpreter for use in the Axion PCIe logic accelerator.
+It executes T729 macros generated from T243 logic trees, encoded in Axion’s ternary binary format (TBIN).
+
+HanoiVM recursively interprets ternary instruction sets, operating on symbolic trits (-1, 0, 1)
+and is designed to run as the primary logic execution engine on the PCIe coprocessor.
+
+Enhancements in this version:
+ - Introduces a helper function to clamp arithmetic results.
+ - Adds two new opcodes (TSPUSH, TSPOP) for stack operations.
+ - Includes optional debugging output via the DEBUG_HANOIVM flag.
+ - Provides improved error handling for jumps and stack operations.
+@c
+#include <stdint.h>
+#include <stddef.h>
+#include <string.h>
+#include <stdio.h>
+
+#define HANOIVM_MAX_STACK 64
+#define HANOIVM_MEM_SIZE  81
+
+// Ternary Opcodes (Must match Axion definitions)
+#define TADD    0x01
+#define TSUB    0x02
+#define TMUL    0x03
+#define TAND    0x04
+#define TOR     0x05
+#define TNOT    0x06
+#define TJMP    0x07
+#define TJZ     0x08
+#define TJNZ    0x09
+#define TLOAD   0x0A
+#define TSTORE  0x0B
+#define THLT    0x0C
+#define TSPUSH  0x0D  // Push register 0 onto the internal stack
+#define TSPOP   0x0E  // Pop from the internal stack into register 0
+
+// Trits are encoded as signed 8-bit integers: -1, 0, 1
+
+// HanoiVM state structure.
+typedef struct {
+    int8_t reg[3];
+    int8_t mem[HANOIVM_MEM_SIZE];
+    uint8_t* code;
+    size_t code_len;
+    uint32_t ip;     // Instruction pointer (in bytes, each instruction is 3 bytes)
+    int8_t stack[HANOIVM_MAX_STACK];
+    int sp;          // Stack pointer (index into stack array)
+    int running;
+} hanoivm_state;
+
+// Helper: clamp a value to the range of trits (-1, 0, 1).
+int8_t clamp_trit(int value) {
+    if (value > 1) return 1;
+    if (value < -1) return -1;
+    return (int8_t)value;
+}
+
+// Optional debug print of the VM state.
+#ifdef DEBUG_HANOIVM
+void debug_state(hanoivm_state* vm) {
+    printf("IP: %u | Reg: [%d, %d, %d] | SP: %d\n",
+           vm->ip, vm->reg[0], vm->reg[1], vm->reg[2], vm->sp);
+}
+#endif
+
+// Reset the VM state.
+void hanoivm_reset(hanoivm_state* vm) {
+    memset(vm->reg, 0, sizeof(vm->reg));
+    memset(vm->mem, 0, sizeof(vm->mem));
+    memset(vm->stack, 0, sizeof(vm->stack));
+    vm->ip = 0;
+    vm->sp = -1;
+    vm->running = 1;
+}
+
+// Execute the loaded code.
+int hanoivm_exec(hanoivm_state* vm) {
+    if (!vm || !vm->code || vm->code_len < 3) return -1;
+    // Main interpreter loop. Each instruction is 3 bytes: opcode, a, b.
+    while (vm->running && vm->ip + 2 < vm->code_len) {
+        uint8_t opcode = vm->code[vm->ip];
+        int8_t a = (int8_t)vm->code[vm->ip + 1];
+        int8_t b = (int8_t)vm->code[vm->ip + 2];
+
+        switch (opcode) {
+            case TADD:
+                vm->reg[0] = clamp_trit(vm->reg[0] + a);
+                break;
+            case TSUB:
+                vm->reg[0] = clamp_trit(vm->reg[0] - a);
+                break;
+            case TMUL:
+                vm->reg[0] = clamp_trit(vm->reg[0] * a);
+                break;
+            case TAND:
+                // Using the minimum value as a logical AND for trits.
+                vm->reg[0] = (vm->reg[0] < a) ? vm->reg[0] : a;
+                break;
+            case TOR:
+                // Using the maximum value as a logical OR for trits.
+                vm->reg[0] = (vm->reg[0] > a) ? vm->reg[0] : a;
+                break;
+            case TNOT:
+                vm->reg[0] = -a;
+                break;
+            case TJMP:
+                // Unconditional jump: set IP to a*3 (if within code bounds).
+                if (a * 3 < vm->code_len) {
+                    vm->ip = a * 3;
+                    continue; // Skip the normal ip increment.
+                }
+                break;
+            case TJZ:
+                // Jump if b is zero.
+                if (b == 0 && a * 3 < vm->code_len) {
+                    vm->ip = a * 3;
+                    continue;
+                }
+                break;
+            case TJNZ:
+                // Jump if b is nonzero.
+                if (b != 0 && a * 3 < vm->code_len) {
+                    vm->ip = a * 3;
+                    continue;
+                }
+                break;
+            case TLOAD:
+                if (a >= 0 && a < HANOIVM_MEM_SIZE && b >= 0 && b < 3)
+                    vm->reg[b] = vm->mem[a];
+                break;
+            case TSTORE:
+                if (a >= 0 && a < HANOIVM_MEM_SIZE && b >= 0 && b < 3)
+                    vm->mem[a] = vm->reg[b];
+                break;
+            case THLT:
+                vm->running = 0;
+                break;
+            case TSPUSH:
+                if (vm->sp < HANOIVM_MAX_STACK - 1) {
+                    vm->stack[++(vm->sp)] = vm->reg[0];
+                } else {
+                    fprintf(stderr, "Stack overflow at IP %u\n", vm->ip);
+                    return -3;
+                }
+                break;
+            case TSPOP:
+                if (vm->sp >= 0) {
+                    vm->reg[0] = vm->stack[(vm->sp)--];
+                } else {
+                    fprintf(stderr, "Stack underflow at IP %u\n", vm->ip);
+                    return -4;
+                }
+                break;
+            default:
+                fprintf(stderr, "Unknown opcode 0x%02X at IP %u\n", opcode, vm->ip);
+                return -2;
+        }
+#ifdef DEBUG_HANOIVM
+        debug_state(vm);
+#endif
+        // Increment IP by 3 bytes (each instruction is 3 bytes).
+        vm->ip += 3;
+    }
+    return 0;
+}
+
+@*
+This updated HanoiVM runtime module is optimized for PCIe co-execution with Axion AI + CUDA/GAIA layers.
+It now includes additional arithmetic safety, stack operations, and optional internal state debugging.
+It supports symbolic macro execution, stackless recursion, and ternary-specific operations,
+and is ready for integration with DMA-hosted memory and FPGA/GPU acceleration.
+@#

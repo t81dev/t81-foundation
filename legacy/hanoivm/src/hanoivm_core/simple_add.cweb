@@ -1,0 +1,119 @@
+@* simple_add.cweb — A T81 HanoiVM Bytecode Generator for Simple Addition
+   This program writes a simple HanoiVM bytecode file (default: "simple_add.hvm") that:
+   1. Pushes 0x12 (18)
+   2. Pushes 0x21 (33)
+   3. Adds them
+   4. Prints the result (non-destructive peek)
+   5. Halts the program
+
+   The file can be assembled and executed on the HanoiVM.
+   --------------------------------------------------------------------------
+   To integrate printing, add the following patch to your VM dispatch loop:
+
+   @code
+   case OP_PRINT: {
+       int top = peek81();
+       printf("[VM] PRINT: %d\n", top);
+       axion_log("PRINT");
+       break;
+   }
+   @endcode
+
+   Also, add the "run" target to your Makefile:
+   @code
+   run: write_simple_add hanoivm
+       ./write_simple_add
+       ./hanoivm simple_add.hvm --disasm
+   @endcode
+
+   Now, simply type `make run` to go from source to execution.
+@#
+
+@<Include Dependencies@>=
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <errno.h>
+@#
+
+@<Opcode Definitions and Macros@>=
+/* Opcode definitions for our simple program */
+#define OP_PUSH  0x01
+#define OP_ADD   0x02
+#define OP_PRINT 0x03   /* Non-destructive peek */
+#define OP_HALT  0xFF
+
+/* Macro to write an opcode to a file stream */
+#define WRITE_OPCODE(out, op) do { \
+    if(fputc(op, out) == EOF) { \
+        perror("write opcode"); exit(1); \
+    } \
+} while(0)
+
+/* Macro to write an operand (9 bytes: two 32-bit integers and one 8-bit integer) */
+#define WRITE_OPERAND(out, A, B, C) do { \
+    fputc(((A) >> 24) & 0xFF, out); \
+    fputc(((A) >> 16) & 0xFF, out); \
+    fputc(((A) >> 8)  & 0xFF, out); \
+    fputc((A) & 0xFF, out); \
+    fputc(((B) >> 24) & 0xFF, out); \
+    fputc(((B) >> 16) & 0xFF, out); \
+    fputc(((B) >> 8)  & 0xFF, out); \
+    fputc((B) & 0xFF, out); \
+    fputc((C), out); \
+} while(0)
+
+/* Macro to write an opcode followed by an operand */
+#define WRITE_OP_AND_OPERAND(out, op, A, B, C) do { \
+    WRITE_OPCODE(out, op); \
+    WRITE_OPERAND(out, A, B, C); \
+} while(0)
+@#
+
+@<Generate Bytecode Program@>=
+/* Function to generate the simple addition bytecode */
+void generate_simple_add(FILE* out) {
+    /* PUSH 0x12 (18) */
+    WRITE_OP_AND_OPERAND(out, OP_PUSH, 0, 0, 0x12);
+
+    /* PUSH 0x21 (33) */
+    WRITE_OP_AND_OPERAND(out, OP_PUSH, 0, 0, 0x21);
+
+    /* ADD */
+    WRITE_OPCODE(out, OP_ADD);
+
+    /* PRINT (peek at top of stack) */
+    WRITE_OPCODE(out, OP_PRINT);
+
+    /* HALT */
+    WRITE_OPCODE(out, OP_HALT);
+}
+@#
+
+@<Main Function@>=
+int main(int argc, char* argv[]) {
+    const char* filename = "simple_add.hvm";
+    if (argc > 1) {
+        filename = argv[1];
+    }
+
+    FILE* out = fopen(filename, "wb");
+    if (!out) {
+        fprintf(stderr, "Error opening %s: %s\n", filename, strerror(errno));
+        return 1;
+    }
+
+    generate_simple_add(out);
+    fclose(out);
+
+    printf("Written bytecode to %s\n", filename);
+    return 0;
+}
+@#
+
+@* End of simple_add.cweb
+   This enhanced generator provides modular macros for opcode and operand writing,
+   configurable output filename, and detailed inline documentation to facilitate
+   integration with the HanoiVM and Axion ecosystems.
+@*

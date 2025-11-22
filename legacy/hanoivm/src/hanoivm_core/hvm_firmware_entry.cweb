@@ -1,0 +1,40 @@
+@* HanoiVM Firmware Entry Point (PCIe Accelerator) *@
+
+@c
+#include <stdint.h>
+#include <stdbool.h>
+#include "hanoivm_core.h" // HanoiVM opcode execution core
+
+#define HVM_OPCODE_BUFFER  ((volatile uint8_t*)  0x80000000)
+#define HVM_OPERAND_BUFFER ((volatile uint81_t*) 0x80001000)
+#define HVM_RESULT_BUFFER  ((volatile uint81_t*) 0x80002000)
+#define HVM_CONTROL_REG    ((volatile uint8_t*)  0x80003000)
+#define HVM_STATUS_REG     ((volatile uint8_t*)  0x80003001)
+
+@* Emulated 81-bit ternary word represented as 3 x 27-bit blocks. *@
+@c
+typedef struct {
+    uint32_t a, b, c;
+} uint81_t;
+
+@* External entry point from HanoiVM FSM. *@
+@c
+extern void hanoi_vm_execute(uint8_t opcode, uint81_t operand, uint81_t* result);
+
+@* Main firmware polling loop for PCIe-bound command execution. *@
+@c
+void hvm_mainloop() {
+    while (1) {
+        if (*HVM_CONTROL_REG == 1) {
+            uint8_t opcode = *HVM_OPCODE_BUFFER;
+            uint81_t operand = *HVM_OPERAND_BUFFER;
+            uint81_t result;
+
+            hanoi_vm_execute(opcode, operand, &result);
+
+            *HVM_RESULT_BUFFER = result;
+            *HVM_STATUS_REG = 1;       // Notify host
+            *HVM_CONTROL_REG = 0;      // Clear control flag
+        }
+    }
+}

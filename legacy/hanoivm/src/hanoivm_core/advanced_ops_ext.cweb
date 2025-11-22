@@ -1,0 +1,293 @@
+@* advanced_ops_ext.cweb — T243 and T729 Logical Extensions for HanoiVM *@
+
+@* 
+This module extends the HanoiVM runtime to support advanced ternary-aware 
+logic structures (T243, T729) including symbolic AI logic via T729Intent,
+state machines with T243StateVector, semantic graphs with T729MindMap, and 
+complex transformations like FFT on ternary holotensors. Header files are 
+embedded for later extraction using CWEAVE/CTANGLE.
+*@
+
+@*== Header: t243_ops.h ==*@
+@h
+#ifndef T243_OPS_H
+#define T243_OPS_H
+
+#include "t81vector.h"
+
+typedef struct {
+    uint8_t current_state;
+    T81VectorHandle transition_map;
+} T243StateVector;
+
+TritError t243_state_advance(T243StateVector* sv, int signal);
+
+#endif /* T243_OPS_H */
+
+@*== Header: t243_markov.h ==*@
+@h
+#ifndef T243_MARKOV_H
+#define T243_MARKOV_H
+
+#include "t81fraction.h"
+
+#define T243_MAX 243
+
+typedef struct {
+    T81Fraction matrix[T243_MAX][T243_MAX];
+} T243MarkovMatrix;
+
+TritError t243_markov_step(T243MarkovMatrix* mm, uint8_t current, uint8_t* next_state);
+
+#endif /* T243_MARKOV_H */
+    
+@*== Header: t243_symbol.h ==*@
+@h
+#ifndef T243_SYMBOL_H
+#define T243_SYMBOL_H
+
+typedef struct {
+    uint8_t symbol_id;
+    char utf8_repr[5];
+} T243Symbol;
+
+TritError t243_symbol_from_id(uint8_t id, T243Symbol* out);
+TritError t243_symbol_to_string(T243Symbol* sym, char* buf, int buflen);
+
+#endif /* T243_SYMBOL_H */
+
+@*== Header: t243_circuit.h ==*@
+@h
+#ifndef T243_CIRCUIT_H
+#define T243_CIRCUIT_H
+
+#include "t81graph.h"
+#include "t81vector.h"
+
+typedef struct {
+    T81GraphHandle logic_graph;
+    T81VectorHandle gate_states;
+} T243Circuit;
+
+TritError t243_circuit_step(T243Circuit* circuit, T81VectorHandle input_signals);
+
+#endif /* T243_CIRCUIT_H */
+
+@*== Header: t243_morphic_tag.h ==*@
+@h
+#ifndef T243_MORPHIC_TAG_H
+#define T243_MORPHIC_TAG_H
+
+#include "t81opcode.h"
+#include "t81vector.h"
+
+typedef struct {
+    T81Opcode base;
+    T81VectorHandle context;
+    T81Opcode morph_result;
+} T243MorphicTag;
+
+TritError t243_morphic_resolve(T243MorphicTag* tag, T81VectorHandle ctx_input);
+
+#endif /* T243_MORPHIC_TAG_H */
+
+@*== Header: t729_intent.h ==*@
+@h
+#ifndef T729_INTENT_H
+#define T729_INTENT_H
+
+#include "t81opcode.h"
+#include "t81vector.h"
+#include "t81bigint.h"
+
+typedef struct {
+    T81Opcode opcode;
+    T81VectorHandle modifiers;
+    T81BigIntHandle entropy_weight;
+} T729Intent;
+
+TritError t729_intent_dispatch(const T729Intent* intent);
+
+#endif /* T729_INTENT_H */
+
+@*== Header: t729_metaopcode.h ==*@
+@h
+#ifndef T729_METAOPCODE_H
+#define T729_METAOPCODE_H
+
+#include "t243_ops.h"
+#include "t81opcode.h"
+#include "t81bigint.h"
+
+typedef struct {
+    T243StateVector state_fingerprint;
+    T81Opcode base_opcode;
+    T81BigIntHandle condition_mask;
+} T729MetaOpcode;
+
+TritError t729_meta_execute(const T729MetaOpcode* mop);
+
+#endif /* T729_METAOPCODE_H */
+
+@*== Header: t729_holotensor.h ==*@
+@h
+#ifndef T729_HOLOTENSOR_H
+#define T729_HOLOTENSOR_H
+
+#include "t81tensor.h"
+#include "t81vector.h"
+
+typedef struct {
+    T81TensorHandle real_part;
+    T81TensorHandle imag_part;
+    T81VectorHandle phase_vector;
+} T729HoloTensor;
+
+TritError t729_holo_fft(const T729HoloTensor* input, T729HoloTensor** output);
+
+#endif /* T729_HOLOTENSOR_H */
+
+@*== Header: t729_mindmap.h ==*@
+@h
+#ifndef T729_MINDMAP_H
+#define T729_MINDMAP_H
+
+#include "t81graph.h"
+#include "t81tensor.h"
+
+typedef struct {
+    T81GraphHandle semantic_web;
+    T81TensorHandle memory_weights;
+    T81VectorHandle query_vector;
+} T729MindMap;
+
+TritError t729_mindmap_search(T729MindMap* mm, T81VectorHandle input);
+TritError t729_mindmap_learn(T729MindMap* mm, T81VectorHandle signal, T81TensorHandle reinforcement);
+
+#endif /* T729_MINDMAP_H */
+
+@*== Header: t729_entropy_blob.h ==*@
+@h
+#ifndef T729_ENTROPY_BLOB_H
+#define T729_ENTROPY_BLOB_H
+
+#include "t81bigint.h"
+#include "t81vector.h"
+
+typedef struct {
+    T81BigIntHandle entropy_scalar;
+    T81VectorHandle entropy_window;
+    T81VectorHandle ai_feedback;
+} T729EntropyBlob;
+
+TritError t729_entropy_snapshot(T729EntropyBlob* blob, HVMContext* ctx);
+TritError t729_entropy_dump(T729EntropyBlob* blob, char* out_json, int max_len);
+
+#endif /* T729_ENTROPY_BLOB_H */
+
+@*== Implementation: Extended Opcode Logic ==*@
+@c
+#include <stdio.h>
+#include <stdint.h>
+#include "t81types.h"
+#include "hvm_context.h"
+#include "t243_ops.h"
+#include "t243_markov.h"
+#include "t243_symbol.h"
+#include "t243_circuit.h"
+#include "t243_morphic_tag.h"
+#include "t729_intent.h"
+#include "t729_metaopcode.h"
+#include "t729_holotensor.h"
+#include "t729_mindmap.h"
+#include "t729_entropy_blob.h"
+
+@* Extended Opcode Enum *@
+@c
+typedef enum {
+    OP_T243_STATE_ADV     = 0x30,
+    OP_T729_INTENT        = 0x31,
+    OP_T729_HOLO_FFT      = 0x32,
+    OP_T729_META_EXEC     = 0x33,
+    OP_T243_MARKOV_STEP   = 0x34,
+    OP_T243_SYMBOL_OUT    = 0x35,
+    OP_T729_ENTROPY_SNAP  = 0x36,
+    OP_T243_CIRCUIT_STEP  = 0x37,
+    OP_T243_MORPHIC_TAG   = 0x38,
+    OP_T729_MINDMAP_QUERY = 0x39
+} ExtendedOpcode;
+
+@* Opcode Handler for T243/T729 Synergistic Logic *@
+@c
+uint81_t evaluate_extended_opcode(Opcode op, uint81_t a, uint81_t b, HVMContext* ctx) {
+    switch (op) {
+        case OP_T243_STATE_ADV:
+            t243_state_advance(ctx->state_vector, t81_to_int(a));
+            return t81_from_int(ctx->state_vector->current_state);
+
+        case OP_T243_MARKOV_STEP: {
+            uint8_t next = 0;
+            t243_markov_step(ctx->markov_matrix, t81_to_int(a), &next);
+            return t81_from_int(next);
+        }
+
+        case OP_T243_SYMBOL_OUT: {
+            T243Symbol sym;
+            char out[8] = {0};
+            t243_symbol_from_id(t81_to_int(a), &sym);
+            t243_symbol_to_string(&sym, out, sizeof(out));
+            printf("SYM[%d] → %s\n", sym.symbol_id, out);
+            return t81_from_int(sym.symbol_id);
+        }
+
+        case OP_T243_CIRCUIT_STEP:
+            t243_circuit_step(ctx->circuit, ctx->ai_flags);
+            return t81_from_int(1);
+
+        case OP_T243_MORPHIC_TAG: {
+            T243MorphicTag tag = {.base = (uint8_t)t81_to_int(a), .context = ctx->ai_flags};
+            t243_morphic_resolve(&tag, ctx->ai_flags);
+            return t81_from_int(tag.morph_result);
+        }
+
+        case OP_T729_INTENT: {
+            T729Intent intent = {.opcode = (uint8_t)t81_to_int(a), .modifiers = ctx->ai_flags, .entropy_weight = ctx->entropy};
+            t729_intent_dispatch(&intent);
+            return t81_from_int(1);
+        }
+
+        case OP_T729_HOLO_FFT: {
+            T729HoloTensor* result = NULL;
+            t729_holo_fft(ctx->holo_input, &result);
+            ctx->holo_output = result;
+            return t81_from_int(1);
+        }
+
+        case OP_T729_META_EXEC: {
+            T729MetaOpcode mop = {
+                .base_opcode = (uint8_t)t81_to_int(a),
+                .condition_mask = ctx->entropy,
+                .state_fingerprint = *ctx->state_vector
+            };
+            t729_meta_execute(&mop);
+            return t81_from_int(1);
+        }
+
+        case OP_T729_ENTROPY_SNAP: {
+            T729EntropyBlob blob;
+            char json[512];
+            t729_entropy_snapshot(&blob, ctx);
+            t729_entropy_dump(&blob, json, sizeof(json));
+            printf("Entropy Snapshot: %s\n", json);
+            return t81_from_int(1);
+        }
+
+        case OP_T729_MINDMAP_QUERY:
+            t729_mindmap_search(ctx->mindmap, ctx->ai_flags);
+            return t81_from_int(1);
+
+        default:
+            fprintf(stderr, "[EXT] Unknown extended opcode 0x%02X\n", op);
+            return (uint81_t){0};
+    }
+}

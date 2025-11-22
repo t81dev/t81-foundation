@@ -1,0 +1,363 @@
+@* hanoivm-core.cweb | Recursive HanoiVM Runtime with Extended AI Integration *@
+   This document defines the full HanoiVM runtime in Rust, integrated with T243 logic trees,
+   T729 macro execution, and Axion AI support. Runtime behavior is synchronized with C-side
+   configuration through `HanoiVMConfig` passed via FFI. This version introduces a bridge
+   to the low-level C interpreter via an adapter and trit logic mirror.
+@#
+
+@<Use Statements@>=
+use crate::libt81::{T81Digit, T81Number};
+use crate::libt243::{T243Digit, T243LogicTree, T243Node};
+use crate::libt729::{T729Digit, T729MacroEngine};
+use crate::axion_ai::{axion_parse_command, axion_tbin_execute, axion_register_session};
+use crate::config::HanoiVMConfig;
+use std::ffi::CStr;
+use std::os::raw::{c_char, c_int};
+@#
+
+@<LowLevel Adapter@>=
+/// Test roundtrip from HanoiVM -> CoreState -> HanoiVM
+pub fn vm_roundtrip_test() {
+    let mut vm = HanoiVM::new(HanoiVMConfig {
+        enable_debug_mode: true,
+        ..Default::default()
+    });
+
+    // Simulate some execution with dummy symbolic output
+    vm.output_log.push(T81Number([-1, 0, 1]));
+    vm.output_log.push(T81Number([0, 1, -1]));
+
+    println!("[ROUNDTRIP] Original HanoiVM:");
+    use chrono::Local;
+    let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+    let session_hash = format!("S{:x}", md5::compute(timestamp.as_bytes()));
+    println!("[ROUNDTRIP] Timestamp: {} | Session: {}", timestamp, session_hash);
+    vm.trace();
+    if let Ok(mut file) = std::fs::OpenOptions::new().append(true).create(true).open("trace.log") {
+        use std::io::Write;
+        writeln!(file, "[ROUNDTRIP] Timestamp: {} | Session: {}", timestamp, session_hash).ok();
+        for (i, out) in vm.output_log.iter().enumerate() {
+            writeln!(file, "Step {}: {}", i, out).ok();
+        }
+    }
+
+    // Convert to low-level representation
+    let core_state = HanoiVMCoreState::from(&vm);
+    core_state.debug_dump();
+    if let Ok(mut file) = std::fs::OpenOptions::new()
+        .append(true).create(true).open("trace.log") {
+        use std::io::Write;
+        writeln!(file, "[CORE STATE] IP: {}, SP: {} | R0: {}, R1: {}, R2: {}",
+            core_state.ip, core_state.sp, core_state.reg[0], core_state.reg[1], core_state.reg[2]).ok();
+    }
+
+    // Reconstruct a new VM from core state
+    let new_vm = HanoiVM::from(&core_state);
+
+    println!("[ROUNDTRIP] Reconstructed HanoiVM:");
+    new_vm.trace();
+}
+/// Convert a low-level C VM state into a Rust HanoiVM instance
+impl From<&HanoiVMCoreState> for let session_id = format!("S-{}", Uuid::new_v4());
+        HanoiVM {
+    fn from(core: &HanoiVMCoreState) -> Self {
+        // Build dummy config; real values should be injected if needed
+        let config = HanoiVMConfig {
+            enable_pcie_acceleration: true,
+            enable_gpu_support: false,
+            enable_dynamic_resource_scaling: false,
+            ai_optimization_mode: "Basic".into(),
+            enable_anomaly_detection: false,
+            enable_ai_log_feedback: false,
+            log_level: "INFO".into(),
+            log_output_format: "TEXT".into(),
+            enable_secure_mode: false,
+            memory_allocation: 4096,
+            cpu_affinity: "0,1".into(),
+            gpu_allocation: 0,
+            enable_runtime_overrides: false,
+            detect_gpu: false,
+            detect_pcie_accelerator: true,
+            ternary_logic_mode: "T81".into(),
+            enable_adaptive_mode_switching: false,
+            enable_debug_mode: false,
+        };
+
+        let ai_enabled = config.enable_anomaly_detection || config.enable_adaptive_mode_switching;
+
+        // Populate symbolic output_log from raw memory
+        let mut output_log = Vec::new();
+        for chunk in core.mem.chunks(3).take(27) {
+            let mut digits = [0i8; 3];
+            digits[..chunk.len()].copy_from_slice(chunk);
+            output_log.push(T81Number(digits));
+        }
+
+        HanoiVM {
+            config,
+            macro_engine: T729MacroEngine::new(),
+            frame_stack: Vec::new(),
+            output_log,
+            ai_enabled,
+        }
+    }
+}
+/// Convert a low-level C VM state into a Rust HanoiVMCoreState struct
+impl HanoiVMCoreState {
+    pub fn from_raw_ptr(ptr: *const HanoiVMCoreState) -> Option<Self> {
+        if ptr.is_null() {
+            None
+        } else {
+            unsafe { Some(*ptr) }
+        }
+    }
+
+    /// Convert the current low-level state to debug text
+    pub fn debug_dump(&self) {
+        println!("[CORE STATE] IP: {}, SP: {} | R0: {}, R1: {}, R2: {}", self.ip, self.sp, self.reg[0], self.reg[1], self.reg[2]);
+    }
+}
+
+/// Convert a Rust HanoiVM to a low-level HanoiVMCoreState for C export
+impl From<&HanoiVM> for HanoiVMCoreState {
+    fn from(vm: &HanoiVM) -> Self {
+        let mut mem = [0i8; 81];
+        let mut stack = [0i8; 64];
+
+        // Map symbolic output log into memory space for export if needed
+        for (i, val) in vm.output_log.iter().enumerate().take(81) {
+            // Placeholder: Convert T81Number into first trit for demo
+            mem[i] = val.0.get(0).copied().unwrap_or(0);
+        }
+
+        HanoiVMCoreState {
+            reg: [0, 0, 0], // Could derive from recent macro result if needed
+            mem,
+            ip: 0,
+            sp: -1,
+            stack,
+        }
+    }
+}
+/// Convert a low-level C VM state into a Rust HanoiVMCoreState struct
+impl HanoiVMCoreState {
+    pub fn from_raw_ptr(ptr: *const HanoiVMCoreState) -> Option<Self> {
+        if ptr.is_null() {
+            None
+        } else {
+            unsafe { Some(*ptr) }
+        }
+    }
+
+    /// Convert the current low-level state to debug text
+    pub fn debug_dump(&self) {
+        println!("[CORE STATE] IP: {}, SP: {} | R0: {}, R1: {}, R2: {}", self.ip, self.sp, self.reg[0], self.reg[1], self.reg[2]);
+    }
+}
+
+/// Convert a Rust HanoiVM to a low-level HanoiVMCoreState for C export
+impl From<&HanoiVM> for HanoiVMCoreState {
+    fn from(vm: &HanoiVM) -> Self {
+        let mut mem = [0i8; 81];
+        let mut stack = [0i8; 64];
+
+        // Placeholder: Fill memory and stack from symbolic data if applicable later
+        // For now, leave them zeroed
+
+        HanoiVMCoreState {
+            reg: [0, 0, 0],
+            mem,
+            ip: 0,
+            sp: -1,
+            stack,
+        }
+    }
+}
+/// Convert a low-level C VM state into a Rust HanoiVMCoreState struct
+impl HanoiVMCoreState {
+    pub fn from_raw_ptr(ptr: *const HanoiVMCoreState) -> Option<Self> {
+        if ptr.is_null() {
+            None
+        } else {
+            unsafe { Some(*ptr) }
+        }
+    }
+
+    /// Convert the current low-level state to debug text
+    pub fn debug_dump(&self) {
+        println!("[CORE STATE] IP: {}, SP: {} | R0: {}, R1: {}, R2: {}", self.ip, self.sp, self.reg[0], self.reg[1], self.reg[2]);
+    }
+}
+
+
+/// Represents a low-level ternary interpreter state compatible with the C runtime
+#[repr(C)]
+pub struct HanoiVMCoreState {
+    pub reg: [i8; 3],
+    pub mem: [i8; 81],
+    pub ip: u32,
+    pub sp: i32,
+    pub stack: [i8; 64],
+}
+
+/// Helper to clamp values into trit space (-1, 0, 1)
+pub fn clamp_trit(value: i32) -> i8 {
+    if value > 1 {
+        1
+    } else if value < -1 {
+        -1
+    } else {
+        value as i8
+    }
+}
+
+/// Apply a basic opcode to the core state (TADD, TSUB, etc.)
+pub fn apply_opcode(state: &mut HanoiVMCoreState, opcode: u8, a: i8, b: i8) {
+    match opcode {
+        0x01 => state.reg[0] = clamp_trit(state.reg[0] as i32 + a as i32), // TADD
+        0x02 => state.reg[0] = clamp_trit(state.reg[0] as i32 - a as i32), // TSUB
+        0x03 => state.reg[0] = clamp_trit(state.reg[0] as i32 * a as i32), // TMUL
+        0x04 => state.reg[0] = state.reg[0].min(a),                        // TAND
+        0x05 => state.reg[0] = state.reg[0].max(a),                        // TOR
+        0x06 => state.reg[0] = -a,                                         // TNOT
+        0x0D => { // TSPUSH
+            if state.sp < 63 {
+                state.sp += 1;
+                state.stack[state.sp as usize] = state.reg[0];
+            }
+        }
+        0x0E => { // TSPOP
+            if state.sp >= 0 {
+                state.reg[0] = state.stack[state.sp as usize];
+                state.sp -= 1;
+            }
+        }
+        _ => {}
+    }
+}
+@#
+
+@<Struct HanoiVM@>=
+/// The core HanoiVM execution engine with configuration and AI control
+use uuid::Uuid;
+
+pub struct HanoiVM {
+    pub config: HanoiVMConfig,            // Shared runtime config
+    pub macro_engine: T729MacroEngine,    // T729 macro dispatcher and storage
+    pub frame_stack: Vec<T243LogicTree>,  // Execution stack
+    pub output_log: Vec<T81Number>,       // Symbolic execution output
+    pub ai_enabled: bool,
+    pub session_id: String,                 // Toggle AI logic based on config
+}
+@#
+
+@<Impl HanoiVM@>=
+/// C-compatible FFI entrypoint with optional debug roundtrip verification
+#[no_mangle]
+pub extern "C" fn execute_vm_from_c(config_ptr: *const HanoiVMConfig) -> c_int {
+    if config_ptr.is_null() {
+        eprintln!("[ERROR] Null configuration pointer received");
+        return -1;
+    }
+
+    let config = unsafe { *config_ptr };
+    let mut vm = HanoiVM::new(config);
+    axion_register_session(&vm.session_id);
+
+    if config.enable_debug_mode {
+        println!("[DEBUG] Executing vm_roundtrip_test()...");
+        vm_roundtrip_test();
+    }
+
+    let dummy_frame = T243LogicTree::default();
+    vm.push_frame(dummy_frame);
+    vm.run();
+
+    if let Some(out) = vm.final_output() {
+        println!("[RESULT] Final output: {}", out);
+        0
+    } else {
+        eprintln!("[ERROR] No output generated");
+        1
+    }
+}
+impl HanoiVM {
+    pub fn new(config: HanoiVMConfig) -> Self {
+        let ai = config.enable_anomaly_detection || config.enable_adaptive_mode_switching;
+        HanoiVM {
+            config,
+            macro_engine: T729MacroEngine::new(),
+            frame_stack: Vec::new(),
+            output_log: Vec::new(),
+            ai_enabled: ai,
+            session_id,
+        }
+    }
+    pub fn push_frame(&mut self, tree: T243LogicTree) {
+        self.frame_stack.push(tree);
+    }
+    pub fn step(&mut self) -> Option<T81Number> {
+        if let Some(frame) = self.frame_stack.pop() {
+            if self.config.enable_debug_mode {
+                println!("[TRACE] Executing step frame");
+            }
+            let mut result = frame.evaluate();
+            if self.ai_enabled {
+                result = axion_tbin_execute(result);
+            }
+            self.output_log.push(result.clone());
+            Some(result)
+        } else {
+            None
+        }
+    }
+    pub fn run(&mut self) {
+        while let Some(frame) = self.frame_stack.pop() {
+            if self.config.enable_debug_mode {
+                println!("[TRACE] Running frame");
+            }
+            let mut result = frame.evaluate();
+            if self.ai_enabled {
+                result = axion_tbin_execute(result);
+            }
+            self.output_log.push(result);
+        }
+    }
+    pub fn exec_macro(&mut self, digit: T729Digit, inputs: Vec<T81Number>) {
+        if let Some(result) = self.macro_engine.execute(digit, inputs) {
+            self.output_log.push(result);
+        } else {
+            eprintln!("[WARN] Undefined T729 macro at index: {}", digit.0);
+        }
+    }
+    pub fn reset(&mut self) {
+        self.frame_stack.clear();
+        self.output_log.clear();
+        self.macro_engine = T729MacroEngine::new();
+        println!("HanoiVM runtime reset.");
+    }
+    pub fn final_output(&self) -> Option<&T81Number> {
+        self.output_log.last()
+    }
+    pub fn trace(&self) {
+        println!("== HanoiVM Execution Trace ==");
+        for (i, out) in self.output_log.iter().enumerate() {
+            println!("Step {}: {}", i, out);
+        }
+    }
+    pub fn interact_with_ai(&mut self, cmd: &str) {
+        println!("[Axion AI] [{}] >>> {}", self.session_id, cmd);
+        axion_parse_command(cmd);
+    }
+    pub fn reoptimize_output(&mut self) {
+        if self.ai_enabled {
+            for result in self.output_log.iter_mut() {
+                *result = axion_tbin_execute(result.clone());
+            }
+            println!("All outputs reoptimized using Axion AI.");
+        } else {
+            println!("AI optimizations are disabled.");
+        }
+    }
+}
+@#

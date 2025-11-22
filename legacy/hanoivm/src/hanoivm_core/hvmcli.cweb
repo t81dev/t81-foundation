@@ -1,0 +1,132 @@
+@* cvmcli.cweb | Userspace Interface to Send .hvm Opcodes to /dev/hvm0 with Enhanced Options *@
+
+@c
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <getopt.h>
+
+typedef struct {
+    uint32_t a, b, c; // T81 word = 3 x 27-bit segments
+} uint81_t;
+
+#define DEFAULT_MAX_TRIES 10
+#define DEFAULT_DELAY_US  10000  /* 10ms delay */
+
+static int verbose = 0;
+static int max_tries = DEFAULT_MAX_TRIES;
+static int delay_us = DEFAULT_DELAY_US;
+
+@#
+
+@<Print Usage Macro@>=
+void print_usage(const char* prog) {
+    fprintf(stderr, "Usage: %s [-v] [-t max_tries] [-d delay_us] <opcode_hex> <a> <b> <c>\n", prog);
+    fprintf(stderr, "   -v           Enable verbose logging\n");
+    fprintf(stderr, "   -t max_tries Number of read attempts (default: %d)\n", DEFAULT_MAX_TRIES);
+    fprintf(stderr, "   -d delay_us  Delay between attempts in microseconds (default: %d)\n", DEFAULT_DELAY_US);
+}
+@#
+
+@<Parse Command-Line Arguments Macro@>=
+void parse_args(int argc, char* argv[], char** opcode_str, char** a_str, char** b_str, char** c_str) {
+    int opt;
+    while ((opt = getopt(argc, argv, "ht:d:v")) != -1) {
+        switch(opt) {
+            case 'h':
+                print_usage(argv[0]);
+                exit(0);
+            case 'v':
+                verbose = 1;
+                break;
+            case 't':
+                max_tries = atoi(optarg);
+                break;
+            case 'd':
+                delay_us = atoi(optarg);
+                break;
+            default:
+                print_usage(argv[0]);
+                exit(1);
+        }
+    }
+    if (optind + 4 != argc) {
+        print_usage(argv[0]);
+        exit(1);
+    }
+    *opcode_str = argv[optind];
+    *a_str = argv[optind+1];
+    *b_str = argv[optind+2];
+    *c_str = argv[optind+3];
+}
+@#
+
+@<Send Opcode Macro@>=
+void send_opcode(int fd, uint8_t opcode, uint81_t operand) {
+    uint8_t buffer[sizeof(opcode) + sizeof(operand)];
+    memcpy(buffer, &opcode, 1);
+    memcpy(buffer + 1, &operand, sizeof(operand));
+    if (verbose)
+        fprintf(stderr, "[DEBUG] Sending opcode 0x%02X with operand {a=%u, b=%u, c=%u}\n",
+                opcode, operand.a, operand.b, operand.c);
+    if (write(fd, buffer, sizeof(buffer)) != sizeof(buffer)) {
+        perror("write to /dev/hvm0");
+        exit(1);
+    }
+}
+@#
+
+@<Read Result Macro@>=
+void read_result(int fd) {
+    uint81_t result;
+    int tries = max_tries;
+    while (--tries >= 0) {
+        ssize_t r = read(fd, &result, sizeof(result));
+        if (r == sizeof(result)) {
+            printf("Result: [A=%u] [B=%u] [C=%u]\n", result.a, result.b, result.c);
+            return;
+        } else if (errno == EAGAIN) {
+            if (verbose)
+                fprintf(stderr, "[DEBUG] Read returned EAGAIN, retrying...\n");
+            usleep(delay_us);
+        } else {
+            perror("read from /dev/hvm0");
+            return;
+        }
+    }
+    fprintf(stderr, "Timed out waiting for result\n");
+}
+@#
+
+@<Main Function@>=
+int main(int argc, char* argv[]) {
+    char *opcode_str, *a_str, *b_str, *c_str;
+    parse_args(argc, argv, &opcode_str, &a_str, &b_str, &c_str);
+
+    int fd = open("/dev/hvm0", O_RDWR);
+    if (fd < 0) {
+        perror("open /dev/hvm0");
+        return 1;
+    }
+
+    uint8_t opcode = (uint8_t)strtol(opcode_str, NULL, 16);
+    uint81_t operand;
+    operand.a = strtoul(a_str, NULL, 0);
+    operand.b = strtoul(b_str, NULL, 0);
+    operand.c = strtoul(c_str, NULL, 0);
+
+    send_opcode(fd, opcode, operand);
+    read_result(fd);
+
+    close(fd);
+    return 0;
+}
+@#
+
+@* End of cvmcli.cweb
+   This version supports additional command-line options and verbose logging for enhanced usability.
+@*

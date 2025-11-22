@@ -1,0 +1,210 @@
+@* HanoiVM | Main Driver (Enhanced with Runtime Config Integration)
+   This is the entry point for the HanoiVM virtual machine.
+   It loads a `.hvm` bytecode file, optionally disassembles it,
+   and then runs the execution loop defined in `hanoivm_vm.cweb`.
+
+   Enhancements include:
+     - Extended command-line options (e.g., --disasm, --trace)
+     - Execution time measurement for performance monitoring.
+     - A startup banner and improved usage message.
+     - Runtime configuration integration from config.h
+     - Future hooks for interactive mode and logging.
+@#
+
+@<Include Dependencies@>=
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include "hvm_loader.h"
+#include "disassembler.h"
+#include "config.h"  // Corrected: use header, not .cweb
+@#
+
+@<config.h@>=
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#include <stdbool.h>
+
+typedef struct {
+    bool enable_pcie_acceleration;
+    bool enable_gpu_support;
+    bool enable_dynamic_resource_scaling;
+
+    char ai_optimization_mode[16];
+    bool enable_anomaly_detection;
+    bool enable_ai_log_feedback;
+
+    char log_level[8];
+    char log_output_format[8];
+    bool enable_secure_mode;
+
+    int memory_allocation;
+    char cpu_affinity[32];
+    int gpu_allocation;
+    bool enable_runtime_overrides;
+
+    bool detect_gpu;
+    bool detect_pcie_accelerator;
+
+    char ternary_logic_mode[8];
+    bool enable_adaptive_mode_switching;
+    bool enable_debug_mode;
+} HanoiVMConfig;
+
+HanoiVMConfig default_config();
+void apply_env_overrides(HanoiVMConfig* cfg);
+void print_config(const HanoiVMConfig* cfg);
+
+#endif // CONFIG_H
+@#
+
+@<config_runtime.c@>=
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "config.h"
+
+HanoiVMConfig default_config() {
+    HanoiVMConfig cfg = {
+        .enable_pcie_acceleration = true,
+        .enable_gpu_support = true,
+        .enable_dynamic_resource_scaling = true,
+
+        .ai_optimization_mode = "Advanced",
+        .enable_anomaly_detection = true,
+        .enable_ai_log_feedback = true,
+
+        .log_level = "INFO",
+        .log_output_format = "TEXT",
+        .enable_secure_mode = true,
+
+        .memory_allocation = 4096,
+        .cpu_affinity = "0,1,2,3",
+        .gpu_allocation = 4096,
+        .enable_runtime_overrides = true,
+
+        .detect_gpu = true,
+        .detect_pcie_accelerator = true,
+
+        .ternary_logic_mode = "T81",
+        .enable_adaptive_mode_switching = true,
+        .enable_debug_mode = true
+    };
+    return cfg;
+}
+
+void apply_env_overrides(HanoiVMConfig* cfg) {
+    const char* mode = getenv("HVM_MODE");
+    if (mode) strncpy(cfg->ternary_logic_mode, mode, sizeof(cfg->ternary_logic_mode));
+
+    const char* log_level = getenv("HVM_LOG_LEVEL");
+    if (log_level) strncpy(cfg->log_level, log_level, sizeof(cfg->log_level));
+
+    const char* affinity = getenv("HVM_CPU_AFFINITY");
+    if (affinity) strncpy(cfg->cpu_affinity, affinity, sizeof(cfg->cpu_affinity));
+}
+
+void print_config(const HanoiVMConfig* cfg) {
+    printf("=== HanoiVM Runtime Configuration ===\n");
+    printf("PCIe Acceleration: %s\n", cfg->enable_pcie_acceleration ? "Enabled" : "Disabled");
+    printf("GPU Support: %s\n", cfg->enable_gpu_support ? "Enabled" : "Disabled");
+    printf("AI Optimization: %s\n", cfg->ai_optimization_mode);
+    printf("Anomaly Detection: %s\n", cfg->enable_anomaly_detection ? "On" : "Off");
+    printf("Log Level: %s | Format: %s\n", cfg->log_level, cfg->log_output_format);
+    printf("Secure Mode: %s\n", cfg->enable_secure_mode ? "On" : "Off");
+    printf("Ternary Mode: %s\n", cfg->ternary_logic_mode);
+    printf("Memory: %d MB | GPU: %d MB\n", cfg->memory_allocation, cfg->gpu_allocation);
+    printf("CPU Affinity: %s\n", cfg->cpu_affinity);
+    printf("=====================================\n");
+}
+@#
+
+@<External VM Execution Declaration@>=
+/* Provided by hanoivm_vm.cweb */
+void execute_vm(HanoiVMConfig* cfg);
+@#
+
+@<Usage Function@>=
+void usage(const char *prog) {
+    fprintf(stderr, "Usage: %s <file.hvm> [--disasm] [--trace]\n", prog);
+    fprintf(stderr, "  <file.hvm>   Path to the HVM bytecode file\n");
+    fprintf(stderr, "  --disasm     Print disassembly of the bytecode before execution\n");
+    fprintf(stderr, "  --trace      Enable detailed VM execution tracing (if supported)\n");
+}
+@#
+
+@<Main Function@>=
+int main(int argc, char** argv) {
+    /* Print startup banner */
+    printf("=== HanoiVM Virtual Machine ===\n");
+
+    if (argc < 2) {
+        usage(argv[0]);
+        return 1;
+    }
+
+    int disasm_flag = 0;
+    int trace_flag = 0;
+
+    /* Parse command-line arguments */
+    for (int i = 2; i < argc; i++) {
+        if (strcmp(argv[i], "--disasm") == 0) {
+            disasm_flag = 1;
+        } else if (strcmp(argv[i], "--trace") == 0) {
+            trace_flag = 1;
+        } else {
+            usage(argv[0]);
+            return 1;
+        }
+    }
+
+    /* Initialize runtime configuration */
+    HanoiVMConfig cfg = default_config();
+    if (cfg.enable_runtime_overrides) apply_env_overrides(&cfg);
+    if (cfg.enable_debug_mode) print_config(&cfg);
+
+    /* Load the HVM bytecode file */
+    if (!load_hvm(argv[1])) {
+        fprintf(stderr, "Failed to load bytecode file: %s\n", argv[1]);
+        return 1;
+    }
+
+    /* Optional disassembly output */
+    if (disasm_flag) {
+        printf("Disassembly of %s:\n", argv[1]);
+        disassemble_vm();
+        printf("\n--- Executing ---\n\n");
+    }
+
+    /* Optional tracing logic */
+    if (trace_flag) {
+        // Future: enable_vm_tracing(&cfg);
+    }
+
+    /* Measure execution time */
+    clock_t start = clock();
+    execute_vm(&cfg);
+    clock_t end = clock();
+    double elapsed_sec = (double)(end - start) / CLOCKS_PER_SEC;
+
+    printf("\nExecution completed in %.3f seconds.\n", elapsed_sec);
+    return 0;
+}
+@#
+
+@* Header Export
+   Other modules can include this header to access main() if needed.
+@h
+#ifndef MAIN_DRIVER_H
+#define MAIN_DRIVER_H
+int main(int argc, char** argv);
+#endif
+@#
+
+@* End of main_driver.cweb
+   This enhanced main driver supports extended command-line options, execution timing,
+   runtime configuration, and a startup banner. Future extensions may include interactive
+   debugging, telemetry, and adaptive AI-based behavior.
+@*

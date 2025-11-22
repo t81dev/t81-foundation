@@ -1,0 +1,44 @@
+@* Simple Add: A T81 HanoiVM Bytecode Generator.
+
+This program writes a simple HanoiVM bytecode file (`simple_add.hvm`) that:
+1. Pushes 0x12 (18)
+2. Pushes 0x21 (33)
+3. Adds them
+4. Prints the result (top of stack, non-destructive)
+5. Halts the program
+
+This file can be assembled and executed on the HanoiVM.
+
+@c
+#include <stdio.h>
+
+int main(void) {
+    FILE *out = fopen("simple_add.hvm", "wb");
+    if (!out) {
+        perror("Unable to open output file");
+        return 1;
+    }
+
+    // Opcode definitions
+    const unsigned char PUSH  = 0x01;
+    const unsigned char ADD   = 0x02;
+    const unsigned char PRINT = 0x03;  // Non-destructive peek
+    const unsigned char HALT  = 0xFF;
+
+    // Bytecode sequence
+    unsigned char program[] = {
+        PUSH,  0x12,    // PUSH 0x12 (18)
+        PUSH,  0x21,    // PUSH 0x21 (33)
+        ADD,            // ADD
+        PRINT,          // PRINT (peek)
+        HALT            // HALT
+    };
+
+    fwrite(program, sizeof(unsigned char), sizeof(program), out);
+    fclose(out);
+
+    printf("Written bytecode to simple_add.hvm\n");
+    return 0;
+}
+
+@* End of program.

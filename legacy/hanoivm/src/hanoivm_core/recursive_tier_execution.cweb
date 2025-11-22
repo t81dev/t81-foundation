@@ -1,0 +1,238 @@
+@* recursive_tier_execution.cweb — Demonstrates Recursive Tier Promotion in HanoiVM (Enhanced Version)
+   This module demonstrates dynamic promotion and demotion of the execution tier in HanoiVM.
+   Based on the recursion depth, the VM can promote from T81 to T243 to T729, or demote accordingly.
+   It also simulates tensor operations at T729 and logs promotion/demotion events along with timestamps.
+@#
+
+@<Include Dependencies@>=
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "t81_stack.h"
+#include "t243bigint.h"
+#include "t729tensor.h"
+#include "ai_hook.h"
+@#
+
+@<Define Color Macros and Globals@>=
+int use_color = 1;
+#define COLOR_RESET   (use_color ? "[0m" : "")
+#define COLOR_INFO    (use_color ? "[1;36m" : "")
+#define COLOR_WARN    (use_color ? "[1;33m" : "")
+#define COLOR_STATUS  (use_color ? "[1;32m" : "")
+#define COLOR_TIER    (use_color ? "[1;35m" : "")
+
+const char* timestamp() {
+    static char buffer[32];
+    time_t now = time(NULL);
+    struct tm* t = localtime(&now);
+    strftime(buffer, sizeof(buffer), "%H:%M:%S", t);
+    return buffer;
+}
+@#
+
+@<HVMContext With Tier@>=
+typedef enum {
+    TIER_T81 = 0,
+    TIER_T243 = 1,
+    TIER_T729 = 2
+} HVM_Tier;
+
+typedef struct {
+    size_t ip;
+    int halted;
+    HVM_Tier tier;
+    int depth;
+} HVMContext;
+@#
+
+@<Promotion Thresholds@>=
+int MAX_DEPTH_T81 = 12;
+int MAX_DEPTH_T243 = 24;
+@#
+
+@<Promotion/Demotion Logic@>=
+void check_tier_promotion(HVMContext* ctx) {
+    if (ctx->tier == TIER_T81 && ctx->depth > MAX_DEPTH_T81) {
+        ctx->tier = TIER_T243;
+        axion_log("[TIER] Promoted to T243 stack mode");
+    } else if (ctx->tier == TIER_T243 && ctx->depth > MAX_DEPTH_T243) {
+        ctx->tier = TIER_T729;
+        axion_log("[TIER] Promoted to T729 tensor mode");
+    } else if (ctx->tier == TIER_T729 && ctx->depth <= MAX_DEPTH_T243) {
+        ctx->tier = TIER_T243;
+        axion_log("[TIER] Demoted to T243 stack mode");
+    } else if (ctx->tier == TIER_T243 && ctx->depth <= MAX_DEPTH_T81) {
+        ctx->tier = TIER_T81;
+        axion_log("[TIER] Demoted to T81 base mode");
+    }
+}
+@#
+
+@<Simulate Recursive Execution@>=
+void simulate_execution(HVMContext* ctx) {
+    int reverse = 0;
+    int promotion_count = 0;
+    int demotion_count = 0;
+    unsigned long tensor_size = 0;
+
+    /* For T729 mode, simulate a tensor with a fixed size */
+    if (ctx->tier == TIER_T729) {
+        tensor_size = 8;  // Example size; can be dynamic
+        T729Tensor* tensor = (T729Tensor*)malloc(sizeof(T729Tensor));
+        if (!tensor) {
+            printf("%s[ERROR]%s Memory allocation failure for T729 tensor\n", COLOR_WARN, COLOR_RESET);
+            return;
+        }
+        tensor->shape = (int*)malloc(sizeof(int) * 2);
+        if (!tensor->shape) {
+            free(tensor);
+            printf("%s[ERROR]%s Memory allocation failure for tensor shape\n", COLOR_WARN, COLOR_RESET);
+            return;
+        }
+        tensor->shape[0] = tensor_size;
+        tensor->shape[1] = tensor_size;
+        tensor->data = (float*)malloc(sizeof(float) * tensor_size * tensor_size);
+        if (!tensor->data) {
+            free(tensor->shape);
+            free(tensor);
+            printf("%s[ERROR]%s Memory allocation failure for tensor data\n", COLOR_WARN, COLOR_RESET);
+            return;
+        }
+        for (int i = 0; i < tensor_size * tensor_size; ++i) {
+            tensor->data[i] = (float)(i + 1);
+        }
+        /* Optionally, perform operations on the tensor here */
+        free(tensor->data);
+        free(tensor->shape);
+        free(tensor);
+    }
+
+    unsigned long start_time = jiffies;
+    for (int i = 0; i < 30; ++i) {
+        if (reverse)
+            ctx->depth--;
+        else
+            ctx->depth++;
+        check_tier_promotion(ctx);
+        if (ctx->tier == TIER_T81 && ctx->depth < 0) ctx->depth = 0;
+
+        printf("%s[%s] === [ STEP %02d ] Tier = %d | Depth = %d ===%s\n", 
+               COLOR_TIER, timestamp(), i, ctx->tier, ctx->depth, COLOR_RESET);
+        printf("%s[%s] [INFO]%s Executing logic for TIER_%s\n", 
+               COLOR_INFO, timestamp(), COLOR_RESET, 
+               (ctx->tier == TIER_T81 ? "T81" : (ctx->tier == TIER_T243 ? "T243" : "T729")));
+
+        switch (ctx->tier) {
+            case TIER_T81: {
+                uint81_t a = { .a = 0x11111111, .b = 0x22222222, .c = 0x33 };
+                push81(a.a); push81(a.b); push81(a.c);
+                printf("[T81] Pushed uint81_t: a=0x%X, b=0x%X, c=0x%X\n", a.a, a.b, a.c);
+                break;
+            }
+            case TIER_T243: {
+                TernaryHandle h243;
+                t243bigint_new_from_string("12345678901234567890", &h243);
+                char* out243;
+                t243bigint_to_string(h243, &out243);
+                printf("[T243] BigInt = %s\n", out243);
+                free(out243);
+                break;
+            }
+            case TIER_T729: {
+                /* For T729, tensor_size should have been set */
+                if (tensor_size == 0) {
+                    printf("%s[ERROR]%s Invalid tensor size for T729 mode\n", COLOR_WARN, COLOR_RESET);
+                    break;
+                }
+                T729Tensor* tensor = (T729Tensor*)malloc(sizeof(T729Tensor));
+                if (!tensor) {
+                    printf("%s[ERROR]%s Memory allocation failure for T729 tensor\n", COLOR_WARN, COLOR_RESET);
+                    break;
+                }
+                tensor->shape = (int*)malloc(sizeof(int) * 2);
+                if (!tensor->shape) {
+                    free(tensor);
+                    printf("%s[ERROR]%s Memory allocation failure for tensor shape\n", COLOR_WARN, COLOR_RESET);
+                    break;
+                }
+                tensor->shape[0] = tensor_size;
+                tensor->shape[1] = tensor_size;
+                tensor->data = (float*)malloc(sizeof(float) * tensor_size * tensor_size);
+                if (!tensor->data) {
+                    free(tensor->shape);
+                    free(tensor);
+                    printf("%s[ERROR]%s Memory allocation failure for tensor data\n", COLOR_WARN, COLOR_RESET);
+                    break;
+                }
+                for (int j = 0; j < tensor_size * tensor_size; ++j) {
+                    tensor->data[j] = (float)(j + 1);
+                }
+                char* out729;
+                t729tensor_to_string(tensor, &out729);
+                printf("[T729] Tensor = %s\n", out729);
+                free(out729);
+                free(tensor->shape);
+                free(tensor->data);
+                free(tensor);
+                break;
+            }
+        }
+
+        /* Reverse direction if promoted to T729, and break if demoted back to T81 */
+        if (ctx->tier == TIER_T729 && !reverse) {
+            reverse = 1;
+            promotion_count++;
+        }
+        if (ctx->tier == TIER_T81 && reverse) {
+            demotion_count++;
+            break;
+        }
+    }
+    unsigned long total_time = jiffies - start_time;
+    printf("%s[STATUS]%s Total Promotion Events: %d, Demotion Events: %d\n", COLOR_STATUS, COLOR_RESET, promotion_count, demotion_count);
+    printf("%s[STATUS]%s Total Execution Time: %lu jiffies\n", COLOR_STATUS, COLOR_RESET, total_time);
+}
+
+@#
+
+@<Main@>=
+int main(int argc, char** argv) {
+    int max_depth = 30;
+    int simulate_demotions = 0;
+
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "--no-color") == 0) {
+            use_color = 0;
+        }
+        if (strncmp(argv[i], "--max-depth=", 12) == 0) {
+            max_depth = atoi(argv[i] + 12);
+            if (max_depth > 0) {
+                printf("%s[INFO]%s Max depth overridden to %d\n", COLOR_WARN, COLOR_RESET, max_depth);
+                MAX_DEPTH_T243 = max_depth > MAX_DEPTH_T243 ? max_depth : MAX_DEPTH_T243;
+                MAX_DEPTH_T81 = max_depth / 2;
+            }
+        }
+        if (strcmp(argv[i], "--simulate-demotion") == 0) {
+            simulate_demotions = 1;
+            printf("%s[INFO]%s Simulation of demotions enabled\n", COLOR_INFO, COLOR_RESET);
+        }
+    }
+    HVMContext ctx = { .ip = 0, .halted = 0, .tier = TIER_T81, .depth = 0 };
+    printf("%s[INFO]%s Loaded modules: t81_stack, t243bigint, t729tensor\n", COLOR_INFO, COLOR_RESET);
+    printf("%s[INFO]%s Axion AI signal hooks initialized\n", COLOR_INFO, COLOR_RESET);
+    simulate_execution(&ctx);
+    if (simulate_demotions) {
+        printf("%s[INFO]%s Simulated demotions successfully\n", COLOR_INFO, COLOR_RESET);
+    }
+    printf("%s[EXIT]%s Recursive tier execution demo complete.\n", COLOR_STATUS, COLOR_RESET);
+    return 0;
+}
+@#
+
+@* End of recursive_tier_execution.cweb
+   This enhanced module demonstrates recursive tier promotion in HanoiVM with additional
+   timing, promotion/demotion counting, and robust error handling for memory allocation.
+   Future enhancements may include dynamic workload adjustments and interactive debugging.
+@*
