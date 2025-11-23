@@ -163,3 +163,9 @@ cc_test(
     srcs = ["tests/cpp/c_api_bigint_test.c"],
     deps = [":t81_c_api"],
 )
+
+cc_test(
+    name = "t81_tensor_unary_test",
+    srcs = ["tests/cpp/tensor_unary_test.cpp"],
+    deps = [":t81"],
+)
