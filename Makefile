@@ -4,13 +4,34 @@ INCLUDES  := -Iinclude
 
 # Default target
 .PHONY: all
-all: demo tests
+all: demo examples tests
 
-# Build the demo
-demo: examples/demo.cpp
+# -------- Examples --------
+EXAMPLES := \
+	build/t81_demo \
+	build/t81_tensor_ops \
+	build/t81_ir_roundtrip \
+	build/axion_demo
+
+examples: $(EXAMPLES)
+
+build/t81_demo: examples/demo.cpp
+	@mkdir -p build
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
 
-# ---- Tests ----
+build/t81_tensor_ops: examples/tensor_ops.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+
+build/t81_ir_roundtrip: examples/ir_roundtrip.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+
+build/axion_demo: examples/axion_demo.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+
+# -------- Tests --------
 TESTS := \
 	build/t81_bigint_test \
 	build/t81_fraction_test \
@@ -18,7 +39,13 @@ TESTS := \
 	build/t81_tensor_slice_test \
 	build/t81_tensor_reshape_test \
 	build/t81_tensor_loader_test \
-	build/t81_canonfs_io_test
+	build/t81_canonfs_io_test \
+	build/t81_ir_encoding_test \
+	build/t81_hash_stub_test \
+	build/t81_axion_stub_test \
+	build/t81_codec_base243_test \
+	build/t81_tensor_shape_test \
+	build/t81_ternary_arith_test
 
 tests: $(TESTS)
 
@@ -42,11 +69,35 @@ build/t81_tensor_reshape_test: tests/cpp/tensor_reshape_test.cpp
 	@mkdir -p build
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
 
-build/t81_tensor_loader_test: tests/cpp/tensor_loader_test.cpp
+build/t81_tensor_loader_test: tests/cpp/tensor_loader_test.cpp src/io/tensor_loader.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
+
+build/t81_canonfs_io_test: tests/cpp/canonfs_io_test.cpp
 	@mkdir -p build
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
 
-build/t81_canonfs_io_test: tests/cpp/canonfs_io_test.cpp
+build/t81_ir_encoding_test: tests/cpp/ir_encoding_test.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+
+build/t81_hash_stub_test: tests/cpp/hash_stub_test.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+
+build/t81_axion_stub_test: tests/cpp/axion_stub_test.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+
+build/t81_codec_base243_test: tests/cpp/codec_base243_test.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+
+build/t81_tensor_shape_test: tests/cpp/tensor_shape_test.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+
+build/t81_ternary_arith_test: tests/cpp/ternary_arith_test.cpp
 	@mkdir -p build
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
 
@@ -60,7 +111,21 @@ run-tests: tests
 	@./build/t81_tensor_reshape_test || exit 1
 	@./build/t81_tensor_loader_test || exit 1
 	@./build/t81_canonfs_io_test || exit 1
+	@./build/t81_ir_encoding_test || exit 1
+	@./build/t81_hash_stub_test || exit 1
+	@./build/t81_axion_stub_test || exit 1
+	@./build/t81_codec_base243_test || exit 1
+	@./build/t81_tensor_shape_test || exit 1
+	@./build/t81_ternary_arith_test || exit 1
 	@echo "All tests passed."
+
+# Convenience
+.PHONY: run-examples
+run-examples: examples
+	@./build/t81_demo
+	@./build/t81_tensor_ops
+	@./build/t81_ir_roundtrip
+	@./build/axion_demo
 
 # Clean
 .PHONY: clean
