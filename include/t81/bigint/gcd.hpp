@@ -1,7 +1,17 @@
-// include/t81/bigint/gcd.hpp
 #pragma once
-#include "t81/bigint/core.hpp"
-namespace t81::bigint {
-BigInt gcd(BigInt a, BigInt b);             // binary GCD (Stein)
-BigInt gcd_lehmer(BigInt a, BigInt b);      // optional accelerated path
-}
+#include <t81/bigint.hpp>
+
+namespace t81 {
+
+/**
+ * Greatest common divisor of a and b.
+ *
+ * Contract:
+ *   - gcd(a, b) >= 0   (always non-negative)
+ *   - gcd(a, 0) = |a|
+ *   - gcd(0, b) = |b|
+ *   - gcd(0, 0) = 0
+ */
+T243BigInt gcd(T243BigInt a, T243BigInt b);
+
+} // namespace t81
