@@ -1,1 +1,27 @@
-
+[
+  {
+    "title": "sidebar.html",
+    "content": "",
+    "url": "/_includes/sidebar.html"
+  },
+  {
+    "title": "topnav.html",
+    "content": "",
+    "url": "/_includes/topnav.html"
+  },
+  {
+    "title": "default.html",
+    "content": "{{ content }}",
+    "url": "/_layouts/default.html"
+  },
+  {
+    "title": "page.html",
+    "content": "",
+    "url": "/_layouts/page.html"
+  },
+  {
+    "title": "spec.html",
+    "content": "",
+    "url": "/_layouts/spec.html"
+  }
+]
