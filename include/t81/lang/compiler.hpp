@@ -15,6 +15,7 @@ enum class CompileError {
   MissingType,
   UnknownFunction,
   InvalidCall,
+  UnsupportedLiteral,
 };
 
 class Compiler {

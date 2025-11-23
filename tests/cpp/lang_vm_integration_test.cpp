@@ -7,9 +7,19 @@ int main() {
   using namespace t81::lang;
 
   Expr lhs;
-  lhs.node = ExprLiteral{2};
+  {
+    ExprLiteral lit;
+    lit.value.kind = LiteralValue::Kind::Int;
+    lit.value.int_value = 2;
+    lhs.node = lit;
+  }
   Expr rhs;
-  rhs.node = ExprLiteral{3};
+  {
+    ExprLiteral lit;
+    lit.value.kind = LiteralValue::Kind::Int;
+    lit.value.int_value = 3;
+    rhs.node = lit;
+  }
 
   ExprBinary bin;
   bin.op = ExprBinary::Op::Add;

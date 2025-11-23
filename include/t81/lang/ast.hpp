@@ -8,8 +8,15 @@
 #include "t81/lang/types.hpp"
 
 namespace t81::lang {
+struct LiteralValue {
+  enum class Kind { Int, Float, Fraction, Symbol };
+  Kind kind{Kind::Int};
+  std::int64_t int_value{0};
+  std::string text;
+};
+
 struct ExprLiteral {
-  std::int64_t value{0};
+  LiteralValue value;
 };
 
 struct ExprIdent {

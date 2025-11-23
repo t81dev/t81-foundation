@@ -8,28 +8,6 @@
 
 namespace t81::lang {
 namespace {
-void emit_expr(const Expr& expr, std::vector<t81::tisc::Insn>& out, int target_reg) {
-  if (std::holds_alternative<ExprLiteral>(expr.node)) {
-    const auto& lit = std::get<ExprLiteral>(expr.node);
-    out.push_back({t81::tisc::Opcode::LoadImm, target_reg, static_cast<std::int32_t>(lit.value), 0});
-  } else {
-    const auto& bin = std::get<ExprBinary>(expr.node);
-    int lhs_reg = target_reg;
-    int rhs_reg = target_reg + 1;
-    emit_expr(*bin.lhs, out, lhs_reg);
-    emit_expr(*bin.rhs, out, rhs_reg);
-    t81::tisc::Opcode opcode = t81::tisc::Opcode::Add;
-    switch (bin.op) {
-      case ExprBinary::Op::Add: opcode = t81::tisc::Opcode::Add; break;
-      case ExprBinary::Op::Sub: opcode = t81::tisc::Opcode::Sub; break;
-      case ExprBinary::Op::Mul: opcode = t81::tisc::Opcode::Mul; break;
-    }
-    out.push_back({opcode, target_reg, lhs_reg, rhs_reg});
-  }
-}
-}  // namespace
-
-namespace {
 bool returns_all(const std::vector<Statement>& stmts) {
   bool saw_return = false;
   for (const auto& s : stmts) {
@@ -126,15 +104,18 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
       if (code == -2) return CompileError::RegisterOverflow;
       if (code == -3) return CompileError::UnknownFunction;
       if (code == -4) return CompileError::InvalidCall;
+      if (code == -5) return CompileError::UnsupportedLiteral;
       return CompileError::None;
     };
     std::function<int(const Expr&, std::optional<int>)> emit_expr_env = [&](const Expr& e, std::optional<int> target) -> int {
       if (std::holds_alternative<ExprLiteral>(e.node)) {
+        const auto& lit = std::get<ExprLiteral>(e.node);
+        if (lit.value.kind != LiteralValue::Kind::Int) return -5;
         int reg = target.value_or(next_reg);
         if (reg >= kMaxRegs) return -2;
         if (!target.has_value()) ++next_reg;
-        const auto& lit = std::get<ExprLiteral>(e.node);
-        program.insns.push_back({t81::tisc::Opcode::LoadImm, reg, static_cast<std::int32_t>(lit.value), 0});
+        program.insns.push_back(
+            {t81::tisc::Opcode::LoadImm, reg, static_cast<std::int32_t>(lit.value.int_value), 0});
         return reg;
       }
       if (std::holds_alternative<ExprIdent>(e.node)) {
