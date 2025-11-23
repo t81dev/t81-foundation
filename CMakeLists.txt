@@ -5,9 +5,20 @@ project(t81 LANGUAGES CXX)
 option(T81_BUILD_EXAMPLES "Build T81 C++ examples" ON)
 option(T81_BUILD_TESTS    "Build T81 C++ unit tests" ON)
 
-add_library(t81 INTERFACE)
-target_compile_features(t81 INTERFACE cxx_std_17)
-target_include_directories(t81 INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_library(t81 STATIC
+  src/core/bigint.cpp
+  src/core/fraction.cpp
+  src/tisc/encoding.cpp
+  src/vm/vm.cpp
+  src/lang/compiler.cpp
+  src/canonfs/in_memory_driver.cpp
+  src/hanoi/error.cpp
+  src/hanoi/in_memory_kernel.cpp
+  src/axion/engine.cpp
+  src/cog/promotion.cpp
+)
+target_compile_features(t81 PUBLIC cxx_std_20)
+target_include_directories(t81 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # IO sources that need compilation
 add_library(t81_io STATIC
@@ -99,4 +110,10 @@ if (T81_BUILD_TESTS)
 
   add_executable(t81_tensor_unary_test tests/cpp/tensor_unary_test.cpp)
   target_link_libraries(t81_tensor_unary_test PRIVATE t81)
+
+  add_executable(t81_hanoi_integration_test tests/cpp/hanoi_integration_test.cpp)
+  target_link_libraries(t81_hanoi_integration_test PRIVATE t81)
+
+  add_executable(t81_lang_vm_test tests/cpp/lang_vm_integration_test.cpp)
+  target_link_libraries(t81_lang_vm_test PRIVATE t81)
 endif()
