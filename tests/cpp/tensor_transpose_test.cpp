@@ -6,31 +6,31 @@
 int main() {
   using namespace t81;
 
-  // 2x3 matrix:
-  // [ 1 2 3
-  //   4 5 6 ]
+  // 2x3:
+  // [1 2 3
+  //  4 5 6]
   T729Tensor m({2,3});
   m.data() = {1,2,3, 4,5,6};
 
-  auto mt = t81::ops::transpose(m);
+  auto t = t81::ops::transpose(m);
 
-  // Expect 3x2:
-  assert(mt.rank() == 2);
-  assert(mt.shape()[0] == 3);
-  assert(mt.shape()[1] == 2);
+  // Should be 3x2:
+  assert(t.rank() == 2);
+  assert(t.shape()[0] == 3);
+  assert(t.shape()[1] == 2);
 
+  const auto& d = t.data();
   // Transposed:
-  // [ 1 4
-  //   2 5
-  //   3 6 ]
-  const auto& d = mt.data();
+  // [1 4
+  //  2 5
+  //  3 6]
   assert(d.size() == 6);
-  assert(d[0] == 1); // (0,0)
-  assert(d[1] == 4); // (0,1)
-  assert(d[2] == 2); // (1,0)
-  assert(d[3] == 5); // (1,1)
-  assert(d[4] == 3); // (2,0)
-  assert(d[5] == 6); // (2,1)
+  assert(d[0] == 1);
+  assert(d[1] == 4);
+  assert(d[2] == 2);
+  assert(d[3] == 5);
+  assert(d[4] == 3);
+  assert(d[5] == 6);
 
   std::cout << "tensor_transpose ok\n";
   return 0;
