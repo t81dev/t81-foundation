@@ -1,6 +1,4 @@
-Here is a draft `AGENTS.md` you can drop into the root of `t81-foundation`:
 
-````markdown
 # AGENTS.md — Guidance for Coding Agents in the T81 Foundation
 
 This file is for AI coding agents (Codex, Copilot, Cursor, Gemini, etc.) working on the **T81 Foundation** repository.
