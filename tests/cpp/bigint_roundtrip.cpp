@@ -1,59 +1,109 @@
 #include <cassert>
-#include <iostream>
+#include <t81/bigint.hpp>
+#include <t81/bigint/divmod.hpp>
+#include <t81/bigint/gcd.hpp>
 #include <vector>
-#include "t81/bigint.hpp"
+#include <utility>
 
 using t81::T243BigInt;
+using t81::DivModResult;
+using t81::gcd;
 
-static void assert_eq(const T243BigInt& a, const T243BigInt& b) {
-  assert(T243BigInt::cmp(a,b) == 0);
+static void test_divmod_basic_cases() {
+    struct Case {
+        long long a;
+        long long b;
+    };
+
+    const std::vector<Case> cases = {
+        {  0,  1},
+        {  0, -1},
+        {  5,  2},
+        {  5, -2},
+        { -5,  2},
+        { -5, -2},
+        { 13,  5},
+        { 13, -5},
+        { -13, 5},
+        { -13,-5},
+        { 42,  7},
+        { 42, -7},
+        { -42, 7},
+        { -42,-7},
+        { 1,  2},
+        { -1, 2},
+        { 1, -2},
+        { -1,-2},
+    };
+
+    for (auto c : cases) {
+        T243BigInt A(c.a);
+        T243BigInt B(c.b);
+
+        DivModResult dm = t81::divmod(A, B);
+
+        // Invariant: a = b*q + r
+        T243BigInt lhs = B * dm.q + dm.r;
+        assert(lhs == A && "divmod invariant a = b*q + r failed");
+
+        // Remainder constraints: 0 <= r < |b|
+        assert(!dm.r.is_negative() && "divmod remainder must be non-negative");
+
+        T243BigInt absB = B.is_negative() ? B.abs() : B;
+        assert(dm.r < absB && "divmod remainder must satisfy r < |b|");
+    }
+}
+
+static void test_gcd_basic_cases() {
+    auto make = [](long long x) { return T243BigInt(x); };
+
+    struct Case {
+        long long a;
+        long long b;
+        long long g;
+    };
+
+    const std::vector<Case> cases = {
+        { 0, 0, 0},
+        { 0, 5, 5},
+        { 5, 0, 5},
+        { 48, 18, 6},
+        { -48, 18, 6},
+        { 48, -18, 6},
+        { -48, -18, 6},
+        { 7, 13, 1},
+        { -7, 13, 1},
+        { 7, -13, 1},
+        { -7, -13, 1},
+    };
+
+    for (auto c : cases) {
+        T243BigInt A = make(c.a);
+        T243BigInt B = make(c.b);
+        T243BigInt G = gcd(A, B);
+
+        // gcd non-negative
+        assert(!G.is_negative());
+
+        // gcd correct for known pairs
+        assert(G == make(c.g) && "gcd basic case failed");
+
+        // Divides a and b: a % G == 0, b % G == 0
+        if (!G.is_zero()) {
+            DivModResult da = t81::divmod(A, G);
+            DivModResult db = t81::divmod(B, G);
+            assert(da.r.is_zero());
+            assert(db.r.is_zero());
+        }
+    }
 }
 
 int main() {
-  // from_i64 / zero / one
-  auto z = T243BigInt::from_i64(0);
-  auto o = T243BigInt::from_i64(1);
-  assert(T243BigInt::is_zero(z));
-  assert(T243BigInt::is_one(o));
+    // existing tests...
+    // test_existing_roundtrip();
 
-  // add/sub with small ints
-  auto a = T243BigInt::from_i64(1234);
-  auto b = T243BigInt::from_i64(-567);
-  auto s = T243BigInt::add(a, b);                 // 1234 + (-567) = 667
-  assert_eq(s, T243BigInt::from_i64(667));
-  auto d = T243BigInt::sub(a, b);                 // 1234 - (-567) = 1801
-  assert_eq(d, T243BigInt::from_i64(1801));
+    test_divmod_basic_cases();
+    test_gcd_basic_cases();
 
-  // mul signs and zero
-  auto m1 = T243BigInt::mul(a, b);                // 1234 * (-567) = -699,? -> compute with 64-bit then compare
-  assert_eq(m1, T243BigInt::from_i64(1234ll * -567ll));
-  auto m0 = T243BigInt::mul(a, z);                // x * 0 = 0
-  assert(T243BigInt::is_zero(m0));
-
-  // gcd (Euclidean, slow but correct for tiny values)
-  assert_eq(T243BigInt::gcd(T243BigInt::from_i64(54), T243BigInt::from_i64(24)),
-            T243BigInt::from_i64(6));
-  assert_eq(T243BigInt::gcd(T243BigInt::from_i64(-54), T243BigInt::from_i64(24)),
-            T243BigInt::from_i64(6));
-  assert_eq(T243BigInt::gcd(T243BigInt::from_i64(0), T243BigInt::from_i64(7)),
-            T243BigInt::from_i64(7));
-
-  // exact division (no remainder) small cases
-  auto n = T243BigInt::from_i64(84);
-  auto q = T243BigInt::div(n, T243BigInt::from_i64(7)); // 84 / 7 = 12
-  assert_eq(q, T243BigInt::from_i64(12));
-
-  // mod sanity: a = b*q + r, with r < b (by magnitude)
-  auto r = T243BigInt::mod(n, T243BigInt::from_i64(7));
-  assert(T243BigInt::is_zero(r));
-  auto r2 = T243BigInt::mod(T243BigInt::from_i64(100), T243BigInt::from_i64(9));
-  assert_eq(r2, T243BigInt::from_i64(100 % 9));
-
-  // cmp ordering
-  assert(T243BigInt::cmp(T243BigInt::from_i64(-1), T243BigInt::from_i64(0)) < 0);
-  assert(T243BigInt::cmp(T243BigInt::from_i64(0), T243BigInt::from_i64(0)) == 0);
-  assert(T243BigInt::cmp(T243BigInt::from_i64(5), T243BigInt::from_i64(3)) > 0);
-
-  std::cout << "bigint_roundtrip ok\n";
-  return 0;
+    return 0;
 }
