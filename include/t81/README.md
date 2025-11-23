@@ -9,7 +9,7 @@ Modular, header-only C++ API for T81 data types and utilities.
 
 - `config.hpp` — feature toggles, version macros, portability attrs.
 - `ternary.hpp` — `Trit` (−1/0/+1), `uint81_t` carrier.
-- `bigint.hpp` — signed base-243 big integer (`T243BigInt`) with `add/sub/mul/mod/gcd`.
+- `bigint.hpp` — signed base-81 big integer (`T81BigInt`) with `add/sub/mul/mod/gcd`.
 - `fraction.hpp` — signed rationals (`T81Fraction`), always reduced; denom > 0.
 - `tensor.hpp` — row-major tensor (`T729Tensor`) with basic ops.
 - `tensor/ops.hpp` — aggregator for extra tensor ops:
@@ -29,9 +29,9 @@ Modular, header-only C++ API for T81 data types and utilities.
 #include <t81/tensor/ops.hpp>  // if you need extra tensor ops
 
 using namespace t81;
-T243BigInt a = T243BigInt::from_ascii("1.42.7"); // base-243 digits (MSB-first, '.'-separated)
-T243BigInt b = T243BigInt::from_base81_string("1.80.5");
-auto s = T243BigInt::add(a,b);
+T81BigInt a = T81BigInt::from_ascii("1.42.7"); // base-81 digits (MSB-first, '.'-separated)
+T81BigInt b = T81BigInt::from_base81_string("1.80.5");
+auto s = T81BigInt::add(a,b);
 
 T729Tensor m({2,3}); m.data() = {1,2,3,4,5,6};
 auto mt = t81::ops::transpose(m);

@@ -10,60 +10,60 @@ namespace t81 {
 //  • gcd(|num|, den) == 1
 //  • zero is 0/1
 struct T81Fraction {
-  T243BigInt num;
-  T243BigInt den;
+  T81BigInt num;
+  T81BigInt den;
 
   // --- ctors ---
-  T81Fraction() : num(T243BigInt::zero()), den(T243BigInt::one()) {}
-  T81Fraction(const T243BigInt& n, const T243BigInt& d) : num(n), den(d) { normalize_(); }
-  T81Fraction(T243BigInt&& n, T243BigInt&& d) : num(std::move(n)), den(std::move(d)) { normalize_(); }
+  T81Fraction() : num(T81BigInt::zero()), den(T81BigInt::one()) {}
+  T81Fraction(const T81BigInt& n, const T81BigInt& d) : num(n), den(d) { normalize_(); }
+  T81Fraction(T81BigInt&& n, T81BigInt&& d) : num(std::move(n)), den(std::move(d)) { normalize_(); }
 
   static T81Fraction from_int(int64_t v) {
-    return T81Fraction(T243BigInt::from_i64(v), T243BigInt::one());
+    return T81Fraction(T81BigInt::from_i64(v), T81BigInt::one());
   }
 
   // --- arithmetic ---
   static T81Fraction add(const T81Fraction& a, const T81Fraction& b) {
     // (a.num/a.den) + (b.num/b.den) = (a.num*b.den + b.num*a.den) / (a.den*b.den)
-    T243BigInt ad = T243BigInt::mul(a.num, b.den);
-    T243BigInt bc = T243BigInt::mul(b.num, a.den);
-    T243BigInt n  = T243BigInt::add(ad, bc);
-    T243BigInt d  = T243BigInt::mul(a.den, b.den);
+    T81BigInt ad = T81BigInt::mul(a.num, b.den);
+    T81BigInt bc = T81BigInt::mul(b.num, a.den);
+    T81BigInt n  = T81BigInt::add(ad, bc);
+    T81BigInt d  = T81BigInt::mul(a.den, b.den);
     return T81Fraction(std::move(n), std::move(d));
   }
 
   static T81Fraction sub(const T81Fraction& a, const T81Fraction& b) {
-    T243BigInt ad = T243BigInt::mul(a.num, b.den);
-    T243BigInt bc = T243BigInt::mul(b.num, a.den);
-    T243BigInt n  = T243BigInt::sub(ad, bc);
-    T243BigInt d  = T243BigInt::mul(a.den, b.den);
+    T81BigInt ad = T81BigInt::mul(a.num, b.den);
+    T81BigInt bc = T81BigInt::mul(b.num, a.den);
+    T81BigInt n  = T81BigInt::sub(ad, bc);
+    T81BigInt d  = T81BigInt::mul(a.den, b.den);
     return T81Fraction(std::move(n), std::move(d));
   }
 
   static T81Fraction mul(const T81Fraction& a, const T81Fraction& b) {
-    T243BigInt n = T243BigInt::mul(a.num, b.num);
-    T243BigInt d = T243BigInt::mul(a.den, b.den);
+    T81BigInt n = T81BigInt::mul(a.num, b.num);
+    T81BigInt d = T81BigInt::mul(a.den, b.den);
     return T81Fraction(std::move(n), std::move(d));
   }
 
   static T81Fraction div(const T81Fraction& a, const T81Fraction& b) {
-    if (T243BigInt::is_zero(b.num)) throw std::domain_error("fraction div by zero");
-    T243BigInt n = T243BigInt::mul(a.num, b.den);
-    T243BigInt d = T243BigInt::mul(a.den, b.num);
+    if (T81BigInt::is_zero(b.num)) throw std::domain_error("fraction div by zero");
+    T81BigInt n = T81BigInt::mul(a.num, b.den);
+    T81BigInt d = T81BigInt::mul(a.den, b.num);
     return T81Fraction(std::move(n), std::move(d));
   }
 
   // unary negation
   static T81Fraction neg(const T81Fraction& x) {
-    return T81Fraction(T243BigInt::neg(x.num), x.den);
+    return T81Fraction(T81BigInt::neg(x.num), x.den);
   }
 
   // --- comparison (total order) ---
   static int cmp(const T81Fraction& a, const T81Fraction& b) {
     // Compare a.num*b.den ? b.num*a.den
-    T243BigInt lhs = T243BigInt::mul(a.num, b.den);
-    T243BigInt rhs = T243BigInt::mul(b.num, a.den);
-    return T243BigInt::cmp(lhs, rhs); // -1,0,1
+    T81BigInt lhs = T81BigInt::mul(a.num, b.den);
+    T81BigInt rhs = T81BigInt::mul(b.num, a.den);
+    return T81BigInt::cmp(lhs, rhs); // -1,0,1
   }
 
   // --- formatting ---
@@ -73,25 +73,25 @@ struct T81Fraction {
 
 private:
   void normalize_() {
-    if (T243BigInt::is_zero(den)) throw std::invalid_argument("fraction: denominator is zero");
+    if (T81BigInt::is_zero(den)) throw std::invalid_argument("fraction: denominator is zero");
 
     // Move sign to numerator: make den > 0
-    if (T243BigInt::is_neg(den)) {
-      num = T243BigInt::neg(num);
-      den = T243BigInt::neg(den);
+    if (T81BigInt::is_neg(den)) {
+      num = T81BigInt::neg(num);
+      den = T81BigInt::neg(den);
     }
 
     // If numerator is zero → canonical zero
-    if (T243BigInt::is_zero(num)) {
-      den = T243BigInt::one();
+    if (T81BigInt::is_zero(num)) {
+      den = T81BigInt::one();
       return;
     }
 
     // Reduce by gcd(|num|, den)
-    T243BigInt g = T243BigInt::gcd(T243BigInt::abs(num), den);
-    if (!T243BigInt::is_one(g)) {
-      num = T243BigInt::div(num, g); // requires BigInt::div by smallish g; if not present, use exact division helper
-      den = T243BigInt::div(den, g);
+    T81BigInt g = T81BigInt::gcd(T81BigInt::abs(num), den);
+    if (!T81BigInt::is_one(g)) {
+      num = T81BigInt::div(num, g); // requires BigInt::div by smallish g; if not present, use exact division helper
+      den = T81BigInt::div(den, g);
     }
   }
 };

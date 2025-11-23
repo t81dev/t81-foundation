@@ -13,6 +13,7 @@ class Interpreter : public IVirtualMachine {
     state_.layout.stack_limit = state_.layout.code_limit + 256;
     state_.layout.heap_limit = state_.layout.stack_limit + 768;
     state_.memory.resize(state_.layout.heap_limit, 0);
+    state_.sp = state_.layout.stack_limit;
   }
 
   std::expected<void, Trap> step() override {
@@ -43,6 +44,12 @@ class Interpreter : public IVirtualMachine {
       state_.flags.negative = (v < 0);
     };
 
+    auto clamp_trit = [](std::int64_t v) -> int {
+      if (v > 0) return 1;
+      if (v < 0) return -1;
+      return 0;
+    };
+
     Trap trap = Trap::None;
     switch (insn.opcode) {
       case t81::tisc::Opcode::Nop:
@@ -53,6 +60,21 @@ class Interpreter : public IVirtualMachine {
       case t81::tisc::Opcode::LoadImm:
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
         state_.registers[insn.a] = insn.b;
+        update_flags(state_.registers[insn.a]);
+        break;
+      case t81::tisc::Opcode::Mov:
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        state_.registers[insn.a] = state_.registers[insn.b];
+        update_flags(state_.registers[insn.a]);
+        break;
+      case t81::tisc::Opcode::Inc:
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        state_.registers[insn.a] += 1;
+        update_flags(state_.registers[insn.a]);
+        break;
+      case t81::tisc::Opcode::Dec:
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        state_.registers[insn.a] -= 1;
         update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Add:
@@ -103,6 +125,63 @@ class Interpreter : public IVirtualMachine {
           if (insn.a < 0 || static_cast<std::size_t>(insn.a) >= program_.insns.size()) { trap = Trap::IllegalInstruction; break; }
           state_.pc = static_cast<std::size_t>(insn.a);
         }
+        break;
+      case t81::tisc::Opcode::Cmp:
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        {
+          auto lhs = state_.registers[insn.a];
+          auto rhs = state_.registers[insn.b];
+          state_.flags.zero = (lhs == rhs);
+          state_.flags.negative = (lhs < rhs);
+        }
+        break;
+      case t81::tisc::Opcode::Push:
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        if (state_.layout.stack_limit <= state_.layout.code_limit) { trap = Trap::BoundsFault; break; }
+        if (state_.sp == state_.layout.code_limit) { trap = Trap::BoundsFault; break; }
+        --state_.sp;
+        state_.memory[state_.sp] = state_.registers[insn.a];
+        break;
+      case t81::tisc::Opcode::Pop:
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        if (state_.sp == state_.layout.stack_limit) { trap = Trap::BoundsFault; break; }
+        state_.registers[insn.a] = state_.memory[state_.sp];
+        update_flags(state_.registers[insn.a]);
+        ++state_.sp;
+        break;
+      case t81::tisc::Opcode::TNot:
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        {
+          int t = clamp_trit(state_.registers[insn.b]);
+          state_.registers[insn.a] = -t;
+          update_flags(state_.registers[insn.a]);
+        }
+        break;
+      case t81::tisc::Opcode::TAnd:
+      case t81::tisc::Opcode::TOr:
+      case t81::tisc::Opcode::TXor:
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
+        {
+          int lhs = clamp_trit(state_.registers[insn.b]);
+          int rhs = clamp_trit(state_.registers[insn.c]);
+          int result = 0;
+          if (insn.opcode == t81::tisc::Opcode::TAnd) {
+            result = (lhs < rhs) ? lhs : rhs;
+          } else if (insn.opcode == t81::tisc::Opcode::TOr) {
+            result = (lhs > rhs) ? lhs : rhs;
+          } else {
+            result = lhs - rhs;
+            if (result > 1) result = -1;
+            if (result < -1) result = 1;
+          }
+          state_.registers[insn.a] = result;
+          update_flags(state_.registers[insn.a]);
+        }
+        break;
+      case t81::tisc::Opcode::AxRead:
+      case t81::tisc::Opcode::AxSet:
+      case t81::tisc::Opcode::AxVerify:
+        trap = Trap::IllegalInstruction;
         break;
       default:
         trap = Trap::IllegalInstruction;

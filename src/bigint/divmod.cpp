@@ -3,25 +3,25 @@
 
 namespace t81 {
 
-DivModResult divmod(const T243BigInt& a, const T243BigInt& b) {
+DivModResult divmod(const T81BigInt& a, const T81BigInt& b) {
     assert(!b.is_zero() && "divmod: divisor must be non-zero");
 
     // Handle simple case: a == 0
     if (a.is_zero()) {
-        return DivModResult{T243BigInt(0), T243BigInt(0)};
+        return DivModResult{T81BigInt(0), T81BigInt(0)};
     }
 
     const bool a_neg = a.is_negative();
     const bool b_neg = b.is_negative();
 
-    T243BigInt ua = a_neg ? a.abs() : a;
-    T243BigInt ub = b_neg ? b.abs() : b;
+    T81BigInt ua = a_neg ? a.abs() : a;
+    T81BigInt ub = b_neg ? b.abs() : b;
 
-    T243BigInt uq;
-    T243BigInt ur;
+    T81BigInt uq;
+    T81BigInt ur;
 
     // Core magnitude division: ua = ub * uq + ur, with 0 <= ur < ub
-    T243BigInt::divmod_nonneg_(ua, ub, uq, ur);
+    T81BigInt::divmod_nonneg_(ua, ub, uq, ur);
 
     // Sign of the "truncated" quotient:
     // If signs differ, quotient is negative; otherwise non-negative.
@@ -38,19 +38,19 @@ DivModResult divmod(const T243BigInt& a, const T243BigInt& b) {
     //   a = b * q_e + r_e with 0 <= r_e < |b|
     //
     // A standard way: compute provisional r, then fix up if r < 0.
-    T243BigInt q = uq;
-    T243BigInt r = a - b * q;
+    T81BigInt q = uq;
+    T81BigInt r = a - b * q;
 
     if (r.is_negative()) {
         // Adjust: r_e = r + |b|, q_e = q - sign(b)
         // where sign(b) is +1 if b > 0, -1 if b < 0.
-        T243BigInt abs_b = b_neg ? b.abs() : b;
+        T81BigInt abs_b = b_neg ? b.abs() : b;
         r += abs_b;
 
         if (b_neg) {
-            q += T243BigInt(1);   // b < 0 => subtracting sign(b) == -1
+            q += T81BigInt(1);   // b < 0 => subtracting sign(b) == -1
         } else {
-            q -= T243BigInt(1);   // b > 0 => subtracting sign(b) == +1
+            q -= T81BigInt(1);   // b > 0 => subtracting sign(b) == +1
         }
     }
 

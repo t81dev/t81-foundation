@@ -14,7 +14,7 @@ template <typename T> inline constexpr bool is_tensor_v = is_tensor<T>::value;
 
 // ---------- is_bigint ----------
 template <typename T> struct is_bigint : std::false_type {};
-template <> struct is_bigint<T243BigInt> : std::true_type {};
+template <> struct is_bigint<T81BigInt> : std::true_type {};
 template <typename T> inline constexpr bool is_bigint_v = is_bigint<T>::value;
 
 // ---------- is_fraction ----------

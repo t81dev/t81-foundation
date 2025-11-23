@@ -74,12 +74,12 @@ std::string Base243::decode_ascii(const std::vector<digit_t>& digits) {
   return std::string(bytes.begin(), bytes.end());
 }
 
-std::string Base243::encode_bigint(const T243BigInt& value) {
+std::string Base243::encode_bigint(const T81BigInt& value) {
   if (value.is_zero()) return "0";
 
   const bool neg = value.is_negative();
-  T243BigInt v = neg ? value.abs() : value;
-  const T243BigInt base(kBase);
+  T81BigInt v = neg ? value.abs() : value;
+  const T81BigInt base(kBase);
 
   std::vector<int> digits;
   digits.reserve(32);
@@ -103,7 +103,7 @@ std::string Base243::encode_bigint(const T243BigInt& value) {
   return oss.str();
 }
 
-bool Base243::decode_bigint(std::string_view s, T243BigInt& out) {
+bool Base243::decode_bigint(std::string_view s, T81BigInt& out) {
   if (s.empty()) return false;
 
   bool neg = false;
@@ -134,11 +134,11 @@ bool Base243::decode_bigint(std::string_view s, T243BigInt& out) {
     }
   }
 
-  T243BigInt base(kBase);
-  T243BigInt v(0);
+  T81BigInt base(kBase);
+  T81BigInt v(0);
   for (int d : digits) {
-    v = T243BigInt::mul(v, base);
-    v = T243BigInt::add(v, T243BigInt(d));
+    v = T81BigInt::mul(v, base);
+    v = T81BigInt::add(v, T81BigInt(d));
   }
   if (neg) v = v.neg();
   out = std::move(v);

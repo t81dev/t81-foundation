@@ -2,7 +2,7 @@
 
 A small, stable API for encoding/decoding **base-243** digit vectors. The current
 implementation performs canonical base-256 ↔ base-243 conversion (big-endian),
-plus a textual codec for `T243BigInt`.
+plus a textual codec for `T81BigInt`.
 
 ## Files
 - `base243.hpp`
@@ -10,8 +10,8 @@ plus a textual codec for `T243BigInt`.
   - `Base243::decode_bytes_be(std::vector<digit_t>) -> std::vector<uint8_t>`
   - `Base243::encode_ascii(std::string)`
   - `Base243::decode_ascii(std::vector<digit_t>)`
-  - `Base243::encode_bigint(const T243BigInt&) -> std::string`
-  - `Base243::decode_bigint(std::string_view, T243BigInt&) -> bool`
+  - `Base243::encode_bigint(const T81BigInt&) -> std::string`
+  - `Base243::decode_bigint(std::string_view, T81BigInt&) -> bool`
 
 ## Notes
 - `digit_t` is `uint8_t` with range **[0..242]**; digits are MSB-first.

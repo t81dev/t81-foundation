@@ -49,16 +49,16 @@ int main() {
 
   // --- bigint roundtrip ---
   {
-    t81::T243BigInt a = t81::T243BigInt::from_i64(123456);
+    t81::T81BigInt a = t81::T81BigInt::from_i64(123456);
     auto s = Base243::encode_bigint(a);
-    t81::T243BigInt b;
+    t81::T81BigInt b;
     bool ok = Base243::decode_bigint(s, b);
     assert(ok);
     assert(a == b);
 
-    t81::T243BigInt neg = t81::T243BigInt::from_i64(-999);
+    t81::T81BigInt neg = t81::T81BigInt::from_i64(-999);
     auto sn = Base243::encode_bigint(neg);
-    t81::T243BigInt back;
+    t81::T81BigInt back;
     ok = Base243::decode_bigint(sn, back);
     assert(ok);
     assert(neg == back);

@@ -12,6 +12,6 @@ namespace t81 {
  *   - gcd(0, b) = |b|
  *   - gcd(0, 0) = 0
  */
-T243BigInt gcd(T243BigInt a, T243BigInt b);
+T81BigInt gcd(T81BigInt a, T81BigInt b);
 
 } // namespace t81

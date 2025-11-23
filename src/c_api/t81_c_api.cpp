@@ -8,10 +8,10 @@
 #include "t81/config.hpp"
 #include "src/c_api/t81_c_api.h"
 
-using t81::T243BigInt;
+using t81::T81BigInt;
 
 struct t81_bigint_s {
-  T243BigInt* p;
+  T81BigInt* p;
 };
 
 extern "C" {
@@ -21,7 +21,7 @@ t81_bigint t81_bigint_from_ascii(const char* s) {
     if (!s) return nullptr;
     t81_bigint h = reinterpret_cast<t81_bigint>(std::malloc(sizeof(*h)));
     if (!h) return nullptr;
-    h->p = new (std::nothrow) T243BigInt(T243BigInt::from_ascii(std::string(s)));
+    h->p = new (std::nothrow) T81BigInt(T81BigInt::from_ascii(std::string(s)));
     if (!h->p) { std::free(h); return nullptr; }
     return h;
   } catch (...) {

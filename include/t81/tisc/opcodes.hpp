@@ -17,5 +17,18 @@ enum class Opcode : std::uint8_t {
   Mod = 9,
   Jump = 10,
   JumpIfZero = 11,
+  Mov = 12,
+  Inc = 13,
+  Dec = 14,
+  Cmp = 15,
+  Push = 16,
+  Pop = 17,
+  TNot = 18,
+  TAnd = 19,
+  TOr = 20,
+  TXor = 21,
+  AxRead = 22,
+  AxSet = 23,
+  AxVerify = 24,
 };
 }  // namespace t81::tisc

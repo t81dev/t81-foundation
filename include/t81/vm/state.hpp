@@ -30,6 +30,7 @@ struct State {
   std::array<std::int64_t, 27> registers{}; // R0..R26
   std::vector<std::int64_t> memory;
   MemoryLayout layout{};
+  std::size_t sp{0};
   std::vector<TraceEntry> trace;
   Flags flags{};
   std::size_t pc{0};

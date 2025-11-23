@@ -28,7 +28,7 @@ bazel test //:t81_*_test
 
 ## Test List
 
-* `bigint_roundtrip.cpp` — exercises `T243BigInt` add/mul and JSON vectors (`tests/harness/canonical/bigint.json`).
+* `bigint_roundtrip.cpp` — exercises `T81BigInt` add/mul and JSON vectors (`tests/harness/canonical/bigint.json`).
 * `fraction_roundtrip.cpp` — exercises `T81Fraction` add/mul and (optional) reduced expectations (`fraction.json`).
 * `tensor_transpose_test.cpp` — tests `ops::transpose`.
 * `tensor_slice_test.cpp` — tests `ops::slice2d`.

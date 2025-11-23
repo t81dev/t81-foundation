@@ -23,8 +23,8 @@ struct Base243 {
   static std::string decode_ascii(const std::vector<digit_t>& digits);
 
   // Canonical bigint codec: emit digits separated by '.' (MSB-first); optional leading '-'.
-  static std::string encode_bigint(const T243BigInt& value);
-  static bool decode_bigint(std::string_view s, T243BigInt& out);
+  static std::string encode_bigint(const T81BigInt& value);
+  static bool decode_bigint(std::string_view s, T81BigInt& out);
 };
 
 // Backward-compat alias for callers that used the old namespace.

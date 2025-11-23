@@ -3,7 +3,7 @@
 
 namespace t81 {
 
-T243BigInt gcd(T243BigInt a, T243BigInt b) {
+T81BigInt gcd(T81BigInt a, T81BigInt b) {
     // Ensure non-negative inputs
     if (a.is_negative()) a = a.abs();
     if (b.is_negative()) b = b.abs();

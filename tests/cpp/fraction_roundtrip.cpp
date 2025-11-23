@@ -28,11 +28,11 @@ int main() {
   assert(q.to_string() == "2/3");
 
   // Sign normalization: -1/(-2) == 1/2
-  T81Fraction x(T243BigInt::from_i64(-1), T243BigInt::from_i64(-2));
+  T81Fraction x(T81BigInt::from_i64(-1), T81BigInt::from_i64(-2));
   assert(x.to_string() == "1/2");
 
   // Zero canonicalization: 0/anything -> 0/1
-  T81Fraction z(T243BigInt::from_i64(0), T243BigInt::from_i64(42));
+  T81Fraction z(T81BigInt::from_i64(0), T81BigInt::from_i64(42));
   assert(z.to_string() == "0/1");
 
   std::cout << "fraction_roundtrip ok\n";
