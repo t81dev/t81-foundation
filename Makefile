@@ -1,6 +1,7 @@
 CXX       ?= g++
 CXXFLAGS  ?= -std=c++17 -O2 -Wall -Wextra
-INCLUDES  := -Iinclude
+INCLUDES  := -Iinclude -Isrc
+CC		  ?= cc
 
 # Default target
 .PHONY: all
@@ -49,7 +50,8 @@ TESTS := \
 	build/t81_tensor_matmul_test \
 	build/t81_tensor_reduce_test \
 	build/t81_tensor_broadcast_test \
-	build/t81_entropy_test
+	build/t81_entropy_test \
+	build/t81_c_api_bigint_test
 
 tests: $(TESTS)
 
@@ -121,6 +123,17 @@ build/t81_entropy_test: tests/cpp/entropy_test.cpp
 	@mkdir -p build
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
 
+# C API object (C++)
+build/t81_c_api.o: src/c_api/t81_c_api.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+# C API bigint test (compile C + link with C++)
+build/t81_c_api_bigint_test: tests/cpp/c_api_bigint_test.c build/t81_c_api.o
+	@mkdir -p build
+	$(CC)  $(INCLUDES) -c tests/cpp/c_api_bigint_test.c -o build/c_api_bigint_test.o
+	$(CXX) $(CXXFLAGS) build/c_api_bigint_test.o build/t81_c_api.o -o $@
+
 # Run all tests
 .PHONY: run-tests
 run-tests: tests
@@ -141,6 +154,7 @@ run-tests: tests
 	@./build/t81_tensor_reduce_test || exit 1
 	@./build/t81_tensor_broadcast_test || exit 1
 	@./build/t81_entropy_test || exit 1
+	@./build/t81_api_bigint_test || exit 1
 	@echo "All tests passed."
 
 # Convenience
