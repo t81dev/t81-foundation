@@ -1,6 +1,6 @@
 # canonfs-spec.md — Version 0.4  
 **Integrated Final Draft — Ready for Reference Implementation**  
-**Authors:** T81 Foundation + Grok (xAI)  
+**Authors:** T81 Foundation 
 **Date:** November 22, 2025  
 
 ```markdown
