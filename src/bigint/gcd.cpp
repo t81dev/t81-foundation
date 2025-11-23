@@ -1,19 +1,26 @@
-// src/bigint/gcd.cpp
-#include "t81/bigint/gcd.hpp"
+#include <t81/bigint/gcd.hpp>
+#include <t81/bigint/divmod.hpp>
 
-using namespace t81::bigint;
+namespace t81 {
 
-static inline bool even(const BigInt& x){ return x.limb(0) % 2 == 0; }
+T243BigInt gcd(T243BigInt a, T243BigInt b) {
+    // Ensure non-negative inputs
+    if (a.is_negative()) a = a.abs();
+    if (b.is_negative()) b = b.abs();
 
-BigInt gcd(BigInt a, BigInt b) {
-  if (a.is_zero()) return abs(b);
-  if (b.is_zero()) return abs(a);
-  unsigned k = 0;
-  while (even(a) && even(b)) { a >>= 1; b >>= 1; ++k; }
-  while (!a.is_zero()) {
-    while (even(a)) a >>= 1;
-    while (even(b)) b >>= 1;
-    if (a >= b) a = (a - b) >> 1; else b = (b - a) >> 1;
-  }
-  return b << k;
+    // Handle trivial cases explicitly
+    if (a.is_zero()) return b;
+    if (b.is_zero()) return a;
+
+    // Euclidean algorithm using Euclidean remainder
+    while (!b.is_zero()) {
+        DivModResult dm = divmod(a, b);
+        a = b;
+        b = dm.r;  // remainder always satisfies 0 <= r < |b|
+    }
+
+    // a is now gcd, and is guaranteed non-negative by construction
+    return a;
 }
+
+} // namespace t81
