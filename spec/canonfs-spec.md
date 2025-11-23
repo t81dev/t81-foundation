@@ -1,14 +1,10 @@
 # **canonfs-spec.md — Version 0.4.1**
 
-**Integrated Final Draft — Ready for Reference Implementation**
-**Authors:** T81 Foundation + Grok (xAI)
-**Date:** November 22, 2025
-
 ---
 title: CanonFS — Canonical File System for Ternary Machines
 version: 0.4.1
 status: Final Draft — Standards Track (Implementation Authorized)
-author: T81 Foundation + Grok (xAI)
+author: T81 Foundation
 created: 2025-11-22
 updated: 2025-11-22
 ---
