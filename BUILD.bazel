@@ -36,6 +36,12 @@ cc_binary(
     deps = [":t81"],
 )
 
+cc_binary(
+    name = "axion_demo",
+    srcs = ["examples/axion_demo.cpp"],
+    deps = [":t81"],
+)
+
 # Tests
 cc_test(
     name = "t81_bigint_test",
@@ -88,5 +94,11 @@ cc_test(
 cc_test(
     name = "t81_hash_stub_test",
     srcs = ["tests/cpp/hash_stub_test.cpp"],
+    deps = [":t81"],
+)
+
+cc_test(
+    name = "t81_axion_stub_test",
+    srcs = ["tests/cpp/axion_stub_test.cpp"],
     deps = [":t81"],
 )
