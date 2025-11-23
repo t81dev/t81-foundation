@@ -10,13 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Tectonic
-      run: sudo apt-get install -y tectonic
+      run: sudo apt-get update && sudo apt-get install -y tectonic
 
     - name: Install Pandoc
-      run: sudo apt-get install -y pandoc
+      run: sudo apt-get update && sudo apt-get install -y pandoc
 
     - name: Build PDFs
       run: bash pdf/build.sh
