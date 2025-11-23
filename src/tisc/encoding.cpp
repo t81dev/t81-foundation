@@ -27,7 +27,7 @@ std::expected<Program, EncodingError> decode(const std::vector<std::byte>& bytes
   if (bytes.size() % kInsnSize != 0) {
     return EncodingError::Truncated;
   }
-  const std::uint8_t max_opcode = static_cast<std::uint8_t>(Opcode::AxVerify);
+  const std::uint8_t max_opcode = static_cast<std::uint8_t>(Opcode::Trap);
   for (std::size_t offset = 0; offset < bytes.size(); offset += kInsnSize) {
     Insn insn;
     const auto opcode = static_cast<std::uint8_t>(bytes[offset]);

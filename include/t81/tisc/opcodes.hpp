@@ -30,5 +30,9 @@ enum class Opcode : std::uint8_t {
   AxRead = 22,
   AxSet = 23,
   AxVerify = 24,
+  JumpIfNotZero = 25,
+  Call = 26,
+  Ret = 27,
+  Trap = 28,
 };
 }  // namespace t81::tisc

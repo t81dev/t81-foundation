@@ -55,6 +55,19 @@ class Interpreter : public IVirtualMachine {
       state_.flags.zero = (v == 0);
       state_.flags.negative = (v < 0);
     };
+    auto push_stack = [this](std::int64_t value) -> bool {
+      if (state_.layout.stack_limit <= state_.layout.code_limit) return false;
+      if (state_.sp == state_.layout.code_limit) return false;
+      --state_.sp;
+      state_.memory[state_.sp] = value;
+      return true;
+    };
+    auto pop_stack = [this](std::int64_t& value) -> bool {
+      if (state_.sp == state_.layout.stack_limit) return false;
+      value = state_.memory[state_.sp];
+      ++state_.sp;
+      return true;
+    };
 
     auto clamp_trit = [](std::int64_t v) -> int {
       if (v > 0) return 1;
@@ -138,6 +151,13 @@ class Interpreter : public IVirtualMachine {
           state_.pc = static_cast<std::size_t>(insn.a);
         }
         break;
+      case t81::tisc::Opcode::JumpIfNotZero:
+        if (!reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        if (state_.registers[insn.b] != 0) {
+          if (insn.a < 0 || static_cast<std::size_t>(insn.a) >= program_.insns.size()) { trap = Trap::IllegalInstruction; break; }
+          state_.pc = static_cast<std::size_t>(insn.a);
+        }
+        break;
       case t81::tisc::Opcode::Cmp:
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
         {
@@ -149,17 +169,12 @@ class Interpreter : public IVirtualMachine {
         break;
       case t81::tisc::Opcode::Push:
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
-        if (state_.layout.stack_limit <= state_.layout.code_limit) { trap = Trap::BoundsFault; break; }
-        if (state_.sp == state_.layout.code_limit) { trap = Trap::BoundsFault; break; }
-        --state_.sp;
-        state_.memory[state_.sp] = state_.registers[insn.a];
+        if (!push_stack(state_.registers[insn.a])) { trap = Trap::BoundsFault; break; }
         break;
       case t81::tisc::Opcode::Pop:
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
-        if (state_.sp == state_.layout.stack_limit) { trap = Trap::BoundsFault; break; }
-        state_.registers[insn.a] = state_.memory[state_.sp];
+        if (!pop_stack(state_.registers[insn.a])) { trap = Trap::BoundsFault; break; }
         update_flags(state_.registers[insn.a]);
-        ++state_.sp;
         break;
       case t81::tisc::Opcode::TNot:
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
@@ -227,6 +242,24 @@ class Interpreter : public IVirtualMachine {
         record_axion_event(insn.opcode, insn.b, state_.registers[insn.a], verdict);
         break;
       }
+      case t81::tisc::Opcode::Call: {
+        if (!reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        auto target = state_.registers[insn.b];
+        if (target < 0 || static_cast<std::size_t>(target) >= program_.insns.size()) { trap = Trap::IllegalInstruction; break; }
+        if (!push_stack(static_cast<std::int64_t>(state_.pc))) { trap = Trap::BoundsFault; break; }
+        state_.pc = static_cast<std::size_t>(target);
+        break;
+      }
+      case t81::tisc::Opcode::Ret: {
+        std::int64_t addr = 0;
+        if (!pop_stack(addr)) { trap = Trap::BoundsFault; break; }
+        if (addr < 0 || static_cast<std::size_t>(addr) >= program_.insns.size()) { trap = Trap::IllegalInstruction; break; }
+        state_.pc = static_cast<std::size_t>(addr);
+        break;
+      }
+      case t81::tisc::Opcode::Trap:
+        trap = Trap::TrapInstruction;
+        break;
       default:
         trap = Trap::IllegalInstruction;
         break;
