@@ -26,6 +26,9 @@ if (T81_BUILD_EXAMPLES)
 
   add_executable(t81_ir_roundtrip examples/ir_roundtrip.cpp)
   target_link_libraries(t81_ir_roundtrip PRIVATE t81)
+
+  add_executable(axion_demo examples/axion_demo.cpp)
+  target_link_libraries(axion_demo PRIVATE t81)
 endif()
 
 # Tests
@@ -61,4 +64,8 @@ if (T81_BUILD_TESTS)
   # Hash stub test
   add_executable(t81_hash_stub_test tests/cpp/hash_stub_test.cpp)
   target_link_libraries(t81_hash_stub_test PRIVATE t81)
+
+  # Axion stub test
+  add_executable(t81_axion_stub_test tests/cpp/axion_stub_test.cpp)
+  target_link_libraries(t81_axion_stub_test PRIVATE t81)
 endif()
