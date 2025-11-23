@@ -1,37 +1,40 @@
 #include <cassert>
-#include <fstream>
 #include <iostream>
-#include <nlohmann/json.hpp>
-#include "t81/t81.hpp"
 #include "t81/fraction.hpp"
+#include "t81/bigint.hpp"
 
-int main(){
-  using json = nlohmann::json;
-  std::ifstream f("tests/harness/canonical/fraction.json");
-  if(!f){ std::cerr << "missing fraction.json\n"; return 1; }
-  json J; f >> J;
+int main() {
+  using namespace t81;
 
-  for (auto& tc : J["cases"]) {
-    auto an = tc["a_num"].get<std::string>();
-    auto ad = tc["a_den"].get<std::string>();
-    auto bn = tc["b_num"].get<std::string>();
-    auto bd = tc["b_den"].get<std::string>();
+  // Basic constructors
+  auto a = T81Fraction::from_int(2);
+  auto b = T81Fraction::from_int(3);
 
-    t81::T81Fraction A = t81::T81Fraction::make(an, ad);
-    t81::T81Fraction B = t81::T81Fraction::make(bn, bd);
+  // 2/1 + 3/1 = 5/1
+  auto s = T81Fraction::add(a, b);
+  assert(s.to_string() == "5/1");
 
-    auto S = t81::T81Fraction::add(A, B).to_string();
-    auto P = t81::T81Fraction::mul(A, B).to_string();
+  // 2/1 * 3/1 = 6/1
+  auto m = T81Fraction::mul(a, b);
+  assert(m.to_string() == "6/1");
 
-    // Prefer reduced expectations if present; fall back to generic fields; else sanity-check non-empty.
-    if (tc.contains("sum_reduced"))      { assert(S == tc["sum_reduced"].get<std::string>()); }
-    else if (tc.contains("sum"))         { assert(S == tc["sum"].get<std::string>()); }
-    else                                 { assert(!S.empty()); }
+  // Subtraction: 2/1 - 3/1 = -1/1
+  auto d = T81Fraction::sub(a, b);
+  assert(d.to_string() == "-1/1");
 
-    if (tc.contains("prod_reduced"))     { assert(P == tc["prod_reduced"].get<std::string>()); }
-    else if (tc.contains("prod"))        { assert(P == tc["prod"].get<std::string>()); }
-    else                                 { assert(!P.empty()); }
-  }
+  // Division: (2/1) / (3/1) = 2/3 (reduced)
+  auto q = T81Fraction::div(a, b);
+  // String format depends on BigInt::to_string(); expect "2/3"
+  assert(q.to_string() == "2/3");
 
-  std::cout << "fraction ok\n";
+  // Sign normalization: -1/(-2) == 1/2
+  T81Fraction x(T243BigInt::from_i64(-1), T243BigInt::from_i64(-2));
+  assert(x.to_string() == "1/2");
+
+  // Zero canonicalization: 0/anything -> 0/1
+  T81Fraction z(T243BigInt::from_i64(0), T243BigInt::from_i64(42));
+  assert(z.to_string() == "0/1");
+
+  std::cout << "fraction_roundtrip ok\n";
+  return 0;
 }
