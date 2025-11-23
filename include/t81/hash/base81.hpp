@@ -1,47 +1,60 @@
 #pragma once
+#include <cctype>
+#include <cstdint>
+#include <iomanip>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdexcept>
-#include <cstdint>
 
 namespace t81::hash {
 
-// Base-81 codec interface (stub).
-// Replace these with your canonical alphabet + implementation.
-// These functions exist so other modules can depend on a stable API
-// without caring whether the real codec is wired yet.
+// -----------------------------------------------------------------------------
+// Base-81 (STUB) codec
+// -----------------------------------------------------------------------------
+// This is a deterministic placeholder used only to wire things together.
+// It DOES NOT implement real base-81 encoding. Instead, it produces a
+// human-readable fallback:
+//    encode: "b81:" + hex(bytes)
+//    decode: if text starts with "b81:", parse hex; otherwise error.
+//
+// Swap with a canonical Base-81 implementation later without changing the API.
+// -----------------------------------------------------------------------------
 
 inline std::string encode_base81(const std::vector<uint8_t>& bytes) {
-  // STUB: returns a hex-like fallback "bNN" chunks so outputs are deterministic.
-  static const char* hex = "0123456789abcdef";
-  std::string out;
-  out.reserve(bytes.size() * 2 + 2);
-  out.push_back('b'); out.push_back('8'); out.push_back('1'); out.push_back(':');
+  std::ostringstream oss;
+  oss << "b81:";
+  oss << std::hex << std::setfill('0');
   for (uint8_t b : bytes) {
-    out.push_back(hex[(b >> 4) & 0xF]);
-    out.push_back(hex[b & 0xF]);
+    oss << std::setw(2) << static_cast<unsigned>(b);
   }
-  return out; // e.g., "b81:0a1b..."
+  return oss.str();
 }
 
 inline std::vector<uint8_t> decode_base81(const std::string& s) {
-  // STUB: accepts the stub format produced by encode_base81 above.
-  if (s.size() < 4 || s[0] != 'b' || s[1] != '8' || s[2] != '1' || s[3] != ':')
-    throw std::invalid_argument("decode_base81: unsupported stub format");
-  auto hexval = [](char c)->int {
-    if (c >= '0' && c <= '9') return c - '0';
-    if (c >= 'a' && c <= 'f') return 10 + (c - 'a');
-    if (c >= 'A' && c <= 'F') return 10 + (c - 'A');
+  const std::string prefix = "b81:";
+  if (s.rfind(prefix, 0) != 0) {
+    throw std::invalid_argument("decode_base81: missing 'b81:' prefix (stub expects hex fallback)");
+  }
+  std::string hex = s.substr(prefix.size());
+  if (hex.size() % 2 != 0) {
+    throw std::invalid_argument("decode_base81: hex length must be even");
+  }
+  auto hexval = [](char c) -> int {
+    if ('0' <= c && c <= '9') return c - '0';
+    if ('a' <= c && c <= 'f') return 10 + (c - 'a');
+    if ('A' <= c && c <= 'F') return 10 + (c - 'A');
     return -1;
   };
+
   std::vector<uint8_t> out;
-  const size_t n = s.size() - 4;
-  if (n % 2 != 0) throw std::invalid_argument("decode_base81: odd hex length in stub");
-  out.reserve(n/2);
-  for (size_t i = 4; i < s.size(); i += 2) {
-    int hi = hexval(s[i]);
-    int lo = hexval(s[i+1]);
-    if (hi < 0 || lo < 0) throw std::invalid_argument("decode_base81: invalid hex in stub");
+  out.reserve(hex.size() / 2);
+  for (std::size_t i = 0; i < hex.size(); i += 2) {
+    int hi = hexval(hex[i]);
+    int lo = hexval(hex[i + 1]);
+    if (hi < 0 || lo < 0) {
+      throw std::invalid_argument("decode_base81: non-hex character");
+    }
     out.push_back(static_cast<uint8_t>((hi << 4) | lo));
   }
   return out;
