@@ -1,8 +1,5 @@
----
-
 # `canonfs-spec.md`
 
-```markdown
 ---
 title: CanonFS Master Specification
 version: 0.2
