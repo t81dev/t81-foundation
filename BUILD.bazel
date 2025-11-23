@@ -66,3 +66,15 @@ cc_test(
     srcs = ["tests/cpp/canonfs_io_test.cpp"],
     deps = [":t81"],
 )
+
+cc_test(
+    name = "t81_ir_encoding_test",
+    srcs = ["tests/cpp/ir_encoding_test.cpp"],
+    deps = [":t81"],
+)
+
+cc_test(
+    name = "t81_hash_stub_test",
+    srcs = ["tests/cpp/hash_stub_test.cpp"],
+    deps = [":t81"],
+)
