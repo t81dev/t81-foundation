@@ -20,6 +20,12 @@ target_include_directories(t81_io PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 if (T81_BUILD_EXAMPLES)
   add_executable(t81_demo examples/demo.cpp)
   target_link_libraries(t81_demo PRIVATE t81)
+
+  add_executable(t81_tensor_ops examples/tensor_ops.cpp)
+  target_link_libraries(t81_tensor_ops PRIVATE t81)
+
+  add_executable(t81_ir_roundtrip examples/ir_roundtrip.cpp)
+  target_link_libraries(t81_ir_roundtrip PRIVATE t81)
 endif()
 
 # Tests
