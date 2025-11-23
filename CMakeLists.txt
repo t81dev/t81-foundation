@@ -83,4 +83,7 @@ if (T81_BUILD_TESTS)
 
   add_executable(t81_entropy_test tests/cpp/entropy_test.cpp)
   target_link_libraries(t81_entropy_test PRIVATE t81)
+
+  add_executable(t81_tensor_elementwise_test tests/cpp/tensor_elementwise_test.cpp)
+  target_link_libraries(t81_tensor_elementwise_test PRIVATE t81)
 endif()
