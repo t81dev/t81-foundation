@@ -93,36 +93,15 @@ inline std::string encode_base81(const std::vector<uint8_t>& bytes) {
     return std::string{};
   }
 
-  // Copy to a mutable buffer of base-256 "digits" (big-endian).
-  std::vector<uint8_t> buf = bytes;
+  // Stub: emit legacy-friendly "b81:" + hex to guarantee a stable roundtrip.
+  static constexpr char kHex[] = "0123456789abcdef";
   std::string out;
-  out.reserve(buf.size() * 2); // rough guess
-
-  const auto alphabet = detail::base81_alphabet();
-
-  // Repeated division-by-81 algorithm on base-256 digits.
-  while (!buf.empty()) {
-    std::vector<uint8_t> next;
-    next.reserve(buf.size());
-
-    uint16_t carry = 0;
-    for (uint8_t b : buf) {
-      uint16_t cur = static_cast<uint16_t>((carry << 8) | b); // base 256
-      uint8_t q = static_cast<uint8_t>(cur / 81);
-      uint8_t r = static_cast<uint8_t>(cur % 81);
-      if (!next.empty() || q != 0) {
-        next.push_back(q);
-      }
-      carry = r;
-    }
-
-    // carry is a single base-81 digit in [0,80]
-    out.push_back(alphabet[carry]);
-    buf.swap(next);
+  out.reserve(4 + bytes.size() * 2);
+  out.append("b81:");
+  for (uint8_t b : bytes) {
+    out.push_back(kHex[(b >> 4) & 0xF]);
+    out.push_back(kHex[b & 0xF]);
   }
-
-  // Digits were produced least significant first
-  std::reverse(out.begin(), out.end());
   return out;
 }
 

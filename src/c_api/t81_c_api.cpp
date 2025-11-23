@@ -6,7 +6,7 @@
 #include "t81/bigint.hpp"
 #include "t81/t81.hpp"
 #include "t81/config.hpp"
-#include "src/c_api/t81_c_api.h"
+#include "c_api/t81_c_api.h"
 
 using t81::T243BigInt;
 

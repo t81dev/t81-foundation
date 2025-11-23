@@ -1,5 +1,5 @@
 CXX       ?= g++
-CXXFLAGS  ?= -std=c++17 -O2 -Wall -Wextra
+CXXFLAGS  ?= -std=c++20 -O2 -Wall -Wextra
 INCLUDES  := -Iinclude -Isrc
 CC		  ?= cc
 
@@ -67,7 +67,7 @@ tests: $(TESTS)
 
 build/t81_bigint_test: tests/cpp/bigint_roundtrip.cpp
 	@mkdir -p build
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< src/bigint/divmod.cpp src/bigint/gcd.cpp -o $@
 
 build/t81_fraction_test: tests/cpp/fraction_roundtrip.cpp
 	@mkdir -p build
@@ -99,7 +99,7 @@ build/t81_ir_encoding_test: tests/cpp/ir_encoding_test.cpp
 
 build/t81_hash_stub_test: tests/cpp/hash_stub_test.cpp
 	@mkdir -p build
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< src/hash/canonhash81.cpp -o $@
 
 build/t81_axion_stub_test: tests/cpp/axion_stub_test.cpp
 	@mkdir -p build
@@ -164,7 +164,7 @@ run-tests: tests
 	@./build/t81_tensor_reduce_test || exit 1
 	@./build/t81_tensor_broadcast_test || exit 1
 	@./build/t81_entropy_test || exit 1
-	@./build/t81_api_bigint_test || exit 1
+	@./build/t81_c_api_bigint_test || exit 1
 	@echo "All tests passed."
 
 # Convenience

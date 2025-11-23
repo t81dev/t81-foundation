@@ -3,12 +3,6 @@
 
 namespace t81 {
 
-// You presumably already have something like this internally:
-static void unsigned_divmod(const T243BigInt& ua,
-                            const T243BigInt& ub,
-                            T243BigInt& uq,
-                            T243BigInt& ur);
-
 DivModResult divmod(const T243BigInt& a, const T243BigInt& b) {
     assert(!b.is_zero() && "divmod: divisor must be non-zero");
 
@@ -27,7 +21,7 @@ DivModResult divmod(const T243BigInt& a, const T243BigInt& b) {
     T243BigInt ur;
 
     // Core magnitude division: ua = ub * uq + ur, with 0 <= ur < ub
-    unsigned_divmod(ua, ub, uq, ur);
+    T243BigInt::divmod_nonneg_(ua, ub, uq, ur);
 
     // Sign of the "truncated" quotient:
     // If signs differ, quotient is negative; otherwise non-negative.

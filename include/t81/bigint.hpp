@@ -9,12 +9,16 @@
 
 namespace t81 {
 
+struct DivModResult;
+
 // Signed big integer in base 243 (balanced-ternary friendly radix).
 // Extremely small, dependency-free, "good enough" reference impl.
 // Digits are LSB-first, each in [0..242].
 class T243BigInt {
 public:
   enum class Sign { Neg=-1, Zero=0, Pos=1 };
+  friend struct DivModResult;
+  friend DivModResult divmod(const T243BigInt& a, const T243BigInt& b);
 
   // --- ctors ---
   T243BigInt() : sign_(Sign::Zero) {}
@@ -56,6 +60,15 @@ public:
   static bool is_one (const T243BigInt& a) { return a.sign_ == Sign::Pos && a.d_.size()==1 && a.d_[0]==1; }
   static bool is_neg (const T243BigInt& a) { return a.sign_ == Sign::Neg; }
 
+  // Instance helpers
+  bool is_zero() const { return is_zero(*this); }
+  bool is_one () const { return is_one(*this); }
+  bool is_negative() const { return sign_ == Sign::Neg; }
+  bool is_positive() const { return sign_ == Sign::Pos; }
+
+  T243BigInt abs() const { return abs(*this); }
+  T243BigInt neg() const { return neg(*this); }
+
   static T243BigInt abs(const T243BigInt& a) { T243BigInt r=a; if (!is_zero(r)) r.sign_ = Sign::Pos; return r; }
   static T243BigInt neg(const T243BigInt& a) { T243BigInt r=a; if (!is_zero(r)) r.sign_ = (a.sign_==Sign::Pos?Sign::Neg:Sign::Pos); return r; }
 
@@ -65,6 +78,23 @@ public:
     int m = cmp_mag_(a, b);
     return (a.sign_ == Sign::Pos) ? m : -m;
   }
+
+  // --- operators (thin wrappers) ---
+  T243BigInt operator-() const { return neg(*this); }
+  T243BigInt operator+(const T243BigInt& o) const { return add(*this, o); }
+  T243BigInt operator-(const T243BigInt& o) const { return sub(*this, o); }
+  T243BigInt operator*(const T243BigInt& o) const { return mul(*this, o); }
+
+  T243BigInt& operator+=(const T243BigInt& o) { *this = add(*this, o); return *this; }
+  T243BigInt& operator-=(const T243BigInt& o) { *this = sub(*this, o); return *this; }
+  T243BigInt& operator*=(const T243BigInt& o) { *this = mul(*this, o); return *this; }
+
+  bool operator==(const T243BigInt& o) const { return cmp(*this, o) == 0; }
+  bool operator!=(const T243BigInt& o) const { return !(*this == o); }
+  bool operator<(const T243BigInt& o)  const { return cmp(*this, o) < 0; }
+  bool operator>(const T243BigInt& o)  const { return cmp(*this, o) > 0; }
+  bool operator<=(const T243BigInt& o) const { return cmp(*this, o) <= 0; }
+  bool operator>=(const T243BigInt& o) const { return cmp(*this, o) >= 0; }
 
   // --- arithmetic ---
   static T243BigInt add(const T243BigInt& a, const T243BigInt& b) {
@@ -102,21 +132,10 @@ public:
     T243BigInt A = abs(a);
     T243BigInt B = abs(b);
     if (cmp_mag_(A,B) < 0) return A;
-
-    T243BigInt R = zero();
-    // long-division style using base 243
-    for (int i = (int)A.d_.size()-1; i >= 0; --i) {
-      // R = R * 243 + A.d_[i]
-      mul_small_(R.d_, 243, R.d_);
-      add_small_(R.d_, A.d_[(size_t)i], R.d_);
-      // subtract B as many times as fits (naive)
-      while (cmp_mag_digits_(R.d_, B.d_) >= 0) {
-        sub_mag_(R.d_, B.d_, R.d_);
-      }
-    }
-    R.trim_();
-    if (!is_zero(R)) R.sign_ = Sign::Pos;
-    return R;
+    T243BigInt q, r;
+    divmod_nonneg_(A, B, q, r);
+    if (!is_zero(r)) r.sign_ = Sign::Pos;
+    return r;
   }
 
   // Euclidean GCD using modulus (very slow, but deterministic/safe)
@@ -136,46 +155,14 @@ public:
   static T243BigInt div(const T243BigInt& a, const T243BigInt& b) {
     if (is_zero(b)) throw std::domain_error("BigInt div by zero");
     if (is_zero(a)) return zero();
-    // Long division in base 243
     T243BigInt A = abs(a);
     T243BigInt B = abs(b);
     if (cmp_mag_(A,B) < 0) return zero();
 
-    std::vector<uint8_t> q(A.d_.size(), 0);
-    T243BigInt R = zero();
-
-    for (int i = (int)A.d_.size()-1; i >= 0; --i) {
-      // R = R*243 + A.d_[i]
-      mul_small_(R.d_, 243, R.d_);
-      add_small_(R.d_, A.d_[(size_t)i], R.d_);
-
-      // Find the largest digit qd in [0..242] such that B*qd <= R (by magnitude)
-      // Naive linear search (OK for tiny values). Could be improved by binary search.
-      uint8_t qd = 0;
-      if (!is_zero(R)) {
-        // upper-bound small heuristic: compare top digits
-        for (uint16_t t = 242; t > 0; --t) {
-          T243BigInt tmp; mul_small_(B.d_, (uint8_t)t, tmp.d_);
-          if (cmp_mag_digits_(tmp.d_, R.d_) <= 0) { qd = static_cast<uint8_t>(t); break; }
-        }
-      }
-      q[(size_t)i] = qd;
-      if (qd) {
-        T243BigInt t; mul_small_(B.d_, qd, t.d_);
-        sub_mag_(R.d_, t.d_, R.d_);
-      }
-    }
-
-    // remainder must be zero for exact division
-    if (!R.d_.empty()) {
-      // Verify truly zero
-      bool any=false; for (auto v: R.d_) if (v){any=true;break;}
-      if (any) throw std::domain_error("BigInt div: non-zero remainder");
-    }
-
-    T243BigInt Q;
+    T243BigInt Q, R;
+    divmod_nonneg_(A, B, Q, R);
+    if (!is_zero(R)) throw std::domain_error("BigInt div: non-zero remainder");
     Q.sign_ = (a.sign_ == b.sign_) ? Sign::Pos : Sign::Neg;
-    Q.d_ = std::move(q);
     Q.trim_();
     return Q;
   }
@@ -296,6 +283,27 @@ private:
       ++i;
     }
     while (!out.empty() && out.back()==0) out.pop_back();
+  }
+
+  // Slow but simple non-negative divmod used by stubs/tests.
+  static void divmod_nonneg_(const T243BigInt& ua, const T243BigInt& ub,
+                             T243BigInt& uq, T243BigInt& ur) {
+    if (is_zero(ub)) throw std::domain_error("BigInt div by zero");
+    uq = zero();
+    ur = ua;
+    if (cmp(ua, ub) < 0) return;
+    const T243BigInt one_val = one();
+
+    while (cmp(ur, ub) >= 0) {
+      T243BigInt multiple = ub;
+      T243BigInt factor   = one_val;
+      while (cmp(add(multiple, multiple), ur) <= 0) {
+        multiple = add(multiple, multiple);
+        factor   = add(factor, factor);
+      }
+      ur = sub(ur, multiple);
+      uq = add(uq, factor);
+    }
   }
 };
 
