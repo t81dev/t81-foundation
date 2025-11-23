@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <optional>
 #include <vector>
+#include "t81/tensor.hpp"
+#include "t81/fraction.hpp"
 #include "t81/tisc/program.hpp"
 #include "t81/axion/verdict.hpp"
 #include "t81/vm/traps.hpp"
@@ -40,6 +42,9 @@ struct State {
   std::vector<std::int64_t> memory;
   MemoryLayout layout{};
   std::size_t sp{0};
+  std::vector<t81::T729Tensor> tensors;
+  std::vector<double> floats;
+  std::vector<t81::T81Fraction> fractions;
   std::vector<TraceEntry> trace;
   std::vector<AxionEvent> axion_log;
   Flags flags{};

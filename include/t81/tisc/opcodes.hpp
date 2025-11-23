@@ -34,5 +34,12 @@ enum class Opcode : std::uint8_t {
   Call = 26,
   Ret = 27,
   Trap = 28,
+  I2F = 29,
+  F2I = 30,
+  I2Frac = 31,
+  Frac2I = 32,
+  TVecAdd = 33,
+  TMatMul = 34,
+  TTenDot = 35,
 };
 }  // namespace t81::tisc

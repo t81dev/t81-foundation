@@ -87,6 +87,9 @@ if (T81_BUILD_TESTS)
   add_executable(t81_tisc_encoding_test tests/cpp/tisc_encoding_test.cpp)
   target_link_libraries(t81_tisc_encoding_test PRIVATE t81)
 
+  add_executable(t81_vm_tensor_test tests/cpp/vm_tensor_test.cpp)
+  target_link_libraries(t81_vm_tensor_test PRIVATE t81)
+
   add_executable(t81_hash_stub_test tests/cpp/hash_stub_test.cpp)
   target_link_libraries(t81_hash_stub_test PRIVATE t81)
 
@@ -189,6 +192,7 @@ if (T81_BUILD_TESTS)
     t81_vm_divmod_test
     t81_vm_illegal_test
     t81_vm_bounds_test
+    t81_vm_tensor_test
     t81_canonfs_driver_test
     t81_vm_trace_test
     t81_vm_jump_flags_test

@@ -1,6 +1,9 @@
 #include "t81/vm/vm.hpp"
 
 #include <memory>
+
+#include "t81/fraction.hpp"
+#include "t81/tensor.hpp"
 #include <string>
 #include <string_view>
 #include <utility>
@@ -67,6 +70,36 @@ class Interpreter : public IVirtualMachine {
       value = state_.memory[state_.sp];
       ++state_.sp;
       return true;
+    };
+    auto tensor_ptr = [this](std::int64_t handle) -> t81::T729Tensor* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.tensors.size()) return nullptr;
+      return &state_.tensors[idx];
+    };
+    auto alloc_tensor = [this](t81::T729Tensor tensor) -> std::int64_t {
+      state_.tensors.push_back(std::move(tensor));
+      return static_cast<std::int64_t>(state_.tensors.size());
+    };
+    auto float_ptr = [this](std::int64_t handle) -> double* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.floats.size()) return nullptr;
+      return &state_.floats[idx];
+    };
+    auto alloc_float = [this](double value) -> std::int64_t {
+      state_.floats.push_back(value);
+      return static_cast<std::int64_t>(state_.floats.size());
+    };
+    auto fraction_ptr = [this](std::int64_t handle) -> t81::T81Fraction* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.fractions.size()) return nullptr;
+      return &state_.fractions[idx];
+    };
+    auto alloc_fraction = [this](t81::T81Fraction frac) -> std::int64_t {
+      state_.fractions.push_back(std::move(frac));
+      return static_cast<std::int64_t>(state_.fractions.size());
     };
 
     auto clamp_trit = [](std::int64_t v) -> int {
@@ -260,6 +293,90 @@ class Interpreter : public IVirtualMachine {
       case t81::tisc::Opcode::Trap:
         trap = Trap::TrapInstruction;
         break;
+      case t81::tisc::Opcode::I2F: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        double value = static_cast<double>(state_.registers[insn.b]);
+        state_.registers[insn.a] = alloc_float(value);
+        break;
+      }
+      case t81::tisc::Opcode::F2I: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        auto fp = float_ptr(state_.registers[insn.b]);
+        if (!fp) { trap = Trap::IllegalInstruction; break; }
+        state_.registers[insn.a] = static_cast<std::int64_t>(*fp);
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::I2Frac: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        auto frac = t81::T81Fraction::from_int(state_.registers[insn.b]);
+        state_.registers[insn.a] = alloc_fraction(std::move(frac));
+        break;
+      }
+      case t81::tisc::Opcode::Frac2I: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        auto fp = fraction_ptr(state_.registers[insn.b]);
+        if (!fp || !t81::T81BigInt::is_one(fp->den)) { trap = Trap::IllegalInstruction; break; }
+        state_.registers[insn.a] = fp->num.to_int64();
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::TVecAdd: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
+        auto ta = tensor_ptr(state_.registers[insn.b]);
+        auto tb = tensor_ptr(state_.registers[insn.c]);
+        if (!ta || !tb || ta->rank() != 1 || tb->rank() != 1 || ta->shape()[0] != tb->shape()[0]) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        std::vector<float> data(ta->data().size());
+        for (std::size_t i = 0; i < data.size(); ++i) {
+          data[i] = ta->data()[i] + tb->data()[i];
+        }
+        t81::T729Tensor result({ta->shape()[0]}, std::move(data));
+        state_.registers[insn.a] = alloc_tensor(std::move(result));
+        break;
+      }
+      case t81::tisc::Opcode::TMatMul: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
+        auto ta = tensor_ptr(state_.registers[insn.b]);
+        auto tb = tensor_ptr(state_.registers[insn.c]);
+        if (!ta || !tb || ta->rank() != 2 || tb->rank() != 2) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        int m = ta->shape()[0];
+        int k = ta->shape()[1];
+        if (tb->shape()[0] != k) { trap = Trap::IllegalInstruction; break; }
+        int n = tb->shape()[1];
+        std::vector<float> data(static_cast<std::size_t>(m * n), 0.0f);
+        for (int i = 0; i < m; ++i) {
+          for (int j = 0; j < n; ++j) {
+            float sum = 0.0f;
+            for (int z = 0; z < k; ++z) {
+              sum += ta->data()[static_cast<std::size_t>(i) * k + z] *
+                     tb->data()[static_cast<std::size_t>(z) * n + j];
+            }
+            data[static_cast<std::size_t>(i) * n + j] = sum;
+          }
+        }
+        t81::T729Tensor result({m, n}, std::move(data));
+        state_.registers[insn.a] = alloc_tensor(std::move(result));
+        break;
+      }
+      case t81::tisc::Opcode::TTenDot: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
+        auto ta = tensor_ptr(state_.registers[insn.b]);
+        auto tb = tensor_ptr(state_.registers[insn.c]);
+        if (!ta || !tb) { trap = Trap::IllegalInstruction; break; }
+        try {
+          auto result = t81::T729Tensor::contract_dot(*ta, *tb);
+          state_.registers[insn.a] = alloc_tensor(std::move(result));
+        } catch (...) {
+          trap = Trap::IllegalInstruction;
+        }
+        break;
+      }
       default:
         trap = Trap::IllegalInstruction;
         break;
