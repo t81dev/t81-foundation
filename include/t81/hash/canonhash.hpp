@@ -17,8 +17,8 @@ inline CanonHash81 make_canonhash81_base81stub(const void* data, size_t len) {
   std::vector<uint8_t> bytes(p, p + len);
   std::string enc = encode_base81(bytes);  // e.g., "b81:...."
   // Copy up to 81 chars; zero-pad the rest.
-  const size_t n = enc.size() < h.target.text.size() ? enc.size() : h.target.text.size();
-  std::memcpy(h.target.text.data(), enc.data(), n);
+  const size_t n = enc.size() < h.text.size() ? enc.size() : h.text.size();
+  std::memcpy(h.text.data(), enc.data(), n);
   return h;
 }
 
