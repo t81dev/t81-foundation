@@ -66,7 +66,10 @@ if (T81_BUILD_TESTS)
   add_executable(t81_codec_base243_test tests/cpp/codec_base243_test.cpp)
   target_link_libraries(t81_codec_base243_test PRIVATE t81)
 
-  # NEW: tensor shape helpers
   add_executable(t81_tensor_shape_test tests/cpp/tensor_shape_test.cpp)
   target_link_libraries(t81_tensor_shape_test PRIVATE t81)
+
+  # NEW: balanced-ternary arithmetic test
+  add_executable(t81_ternary_arith_test tests/cpp/ternary_arith_test.cpp)
+  target_link_libraries(t81_ternary_arith_test PRIVATE t81)
 endif()
