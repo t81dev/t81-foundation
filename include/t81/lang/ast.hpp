@@ -32,6 +32,12 @@ struct StatementReturn {
 
 struct StatementLet {
   std::string name;
+  std::optional<Type> declared_type;
+  Expr expr;
+};
+
+struct StatementAssign {
+  std::string name;
   Expr expr;
 };
 
@@ -41,14 +47,23 @@ struct StatementIf {
   std::vector<struct Statement> else_body;
 };
 
+struct StatementLoop {
+  std::vector<struct Statement> body;
+};
+
 struct Statement {
-  std::variant<StatementReturn, StatementLet, StatementIf> node;
+  std::variant<StatementReturn, StatementLet, StatementAssign, StatementIf, StatementLoop> node;
+};
+
+struct Parameter {
+  std::string name;
+  Type type{Type::T81Int};
 };
 
 struct Function {
   std::string name;
-  Type return_type{Type::I64};
-  std::vector<Type> params;
+  Type return_type{Type::T81Int};
+  std::vector<Parameter> params;
   std::vector<Statement> body;
 };
 

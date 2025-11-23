@@ -2,7 +2,9 @@
 
 namespace t81::lang {
 enum class Type {
-  I64,
+  T81Int,
+  T81Float,
+  T81Fraction,
+  Symbol,
 };
 }  // namespace t81::lang
-

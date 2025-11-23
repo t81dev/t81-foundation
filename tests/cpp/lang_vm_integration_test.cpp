@@ -13,15 +13,15 @@ int main() {
 
   ExprBinary bin;
   bin.op = ExprBinary::Op::Add;
-  bin.lhs = std::make_unique<Expr>(lhs);
-  bin.rhs = std::make_unique<Expr>(rhs);
+  bin.lhs = std::make_shared<Expr>(lhs);
+  bin.rhs = std::make_shared<Expr>(rhs);
 
   Expr root;
   root.node = bin;
 
   Function fn;
   fn.name = "main";
-  fn.return_type = Type::I64;
+  fn.return_type = Type::T81Int;
   Statement ret;
   ret.node = StatementReturn{root};
   fn.body.push_back(ret);

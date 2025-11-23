@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <functional>
+#include <expected>
 
 namespace t81::lang {
 namespace {
@@ -38,6 +39,9 @@ bool returns_all(const std::vector<Statement>& stmts) {
       if (returns_all(sif.then_body) && returns_all(sif.else_body)) {
         saw_return = true;
       }
+    } else if (std::holds_alternative<StatementLoop>(s.node)) {
+      const auto& loop = std::get<StatementLoop>(s.node);
+      if (returns_all(loop.body)) saw_return = true;
     }
   }
   return saw_return;
@@ -49,10 +53,10 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
     return CompileError::EmptyModule;
   }
   t81::tisc::Program program;
-  int next_reg = 1; // R0 reserved for return
   const int kMaxRegs = 26; // R26 reserved
   for (const auto& fn : module.functions) {
-    if (fn.return_type != Type::I64) {
+    int next_reg = 1; // R0 reserved for return
+    if (fn.return_type != Type::T81Int) {
       return CompileError::UnsupportedType;
     }
     if (!returns_all(fn.body)) {
@@ -70,6 +74,12 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
       }
       return -1;
     };
+    for (const auto& param : fn.params) {
+      if (param.type != Type::T81Int) return CompileError::UnsupportedType;
+      if (next_reg >= kMaxRegs) return CompileError::RegisterOverflow;
+      declare(param.name, next_reg);
+      ++next_reg;
+    }
     auto move_reg = [&](int src, int dst) {
       if (src == dst) return;
       program.insns.push_back({t81::tisc::Opcode::LoadImm, dst, 0, 0});
@@ -107,60 +117,84 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
       return out_reg;
     };
 
+    std::function<CompileError(const Statement&)> emit_stmt =
+        [&](const Statement& stmt) -> CompileError {
+          if (std::holds_alternative<StatementReturn>(stmt.node)) {
+            const auto& sr = std::get<StatementReturn>(stmt.node);
+            int reg = emit_expr_env(sr.expr, 0);
+            if (reg == -1) return CompileError::UndeclaredIdentifier;
+            if (reg == -2) return CompileError::RegisterOverflow;
+            program.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
+            return CompileError::None;
+          }
+          if (std::holds_alternative<StatementLet>(stmt.node)) {
+            const auto& sl = std::get<StatementLet>(stmt.node);
+            if (!sl.declared_type.has_value()) return CompileError::MissingType;
+            if (sl.declared_type.value() != Type::T81Int) return CompileError::UnsupportedType;
+            int reg = emit_expr_env(sl.expr, std::nullopt);
+            if (reg == -1) return CompileError::UndeclaredIdentifier;
+            if (reg == -2) return CompileError::RegisterOverflow;
+            declare(sl.name, reg);
+            return CompileError::None;
+          }
+          if (std::holds_alternative<StatementAssign>(stmt.node)) {
+            const auto& sa = std::get<StatementAssign>(stmt.node);
+            int dst = lookup(sa.name);
+            if (dst < 0) return CompileError::UndeclaredIdentifier;
+            int reg = emit_expr_env(sa.expr, dst);
+            if (reg == -1) return CompileError::UndeclaredIdentifier;
+            if (reg == -2) return CompileError::RegisterOverflow;
+            return CompileError::None;
+          }
+          if (std::holds_alternative<StatementIf>(stmt.node)) {
+            const auto& sif = std::get<StatementIf>(stmt.node);
+            int cond_reg = emit_expr_env(sif.condition, std::nullopt);
+            if (cond_reg == -1) return CompileError::UndeclaredIdentifier;
+            if (cond_reg == -2) return CompileError::RegisterOverflow;
+            std::size_t jmp_ifz_index = program.insns.size();
+            program.insns.push_back({t81::tisc::Opcode::JumpIfZero, 0, cond_reg, 0});
+
+            push_scope();
+            for (const auto& inner : sif.then_body) {
+              auto res = emit_stmt(inner);
+              if (res != CompileError::None) { pop_scope(); return res; }
+            }
+            pop_scope();
+
+            std::size_t jmp_over_else_index = program.insns.size();
+            program.insns.push_back({t81::tisc::Opcode::Jump, 0, 0, 0});
+
+            std::size_t else_target = program.insns.size();
+            program.insns[jmp_ifz_index].a = static_cast<std::int32_t>(else_target);
+
+            push_scope();
+            for (const auto& inner : sif.else_body) {
+              auto res = emit_stmt(inner);
+              if (res != CompileError::None) { pop_scope(); return res; }
+            }
+            pop_scope();
+            program.insns[jmp_over_else_index].a = static_cast<std::int32_t>(program.insns.size());
+            return CompileError::None;
+          }
+          if (std::holds_alternative<StatementLoop>(stmt.node)) {
+            const auto& loop = std::get<StatementLoop>(stmt.node);
+            std::size_t loop_start = program.insns.size();
+            push_scope();
+            for (const auto& inner : loop.body) {
+              auto res = emit_stmt(inner);
+              if (res != CompileError::None) { pop_scope(); return res; }
+            }
+            pop_scope();
+            program.insns.push_back(
+                {t81::tisc::Opcode::Jump, static_cast<std::int32_t>(loop_start), 0, 0});
+            return CompileError::None;
+          }
+          return CompileError::None;
+        };
+
     for (const auto& stmt : fn.body) {
-      if (std::holds_alternative<StatementReturn>(stmt.node)) {
-        const auto& sr = std::get<StatementReturn>(stmt.node);
-        int reg = emit_expr_env(sr.expr, 0);
-        if (reg == -1) return CompileError::UndeclaredIdentifier;
-        if (reg == -2) return CompileError::RegisterOverflow;
-        program.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
-      } else if (std::holds_alternative<StatementLet>(stmt.node)) {
-        const auto& sl = std::get<StatementLet>(stmt.node);
-        int reg = emit_expr_env(sl.expr, std::nullopt);
-        if (reg == -1) return CompileError::UndeclaredIdentifier;
-        if (reg == -2) return CompileError::RegisterOverflow;
-        declare(sl.name, reg);
-      } else if (std::holds_alternative<StatementIf>(stmt.node)) {
-        const auto& sif = std::get<StatementIf>(stmt.node);
-        int cond_reg = emit_expr_env(sif.condition, std::nullopt);
-        if (cond_reg == -1) return CompileError::UndeclaredIdentifier;
-        if (cond_reg == -2) return CompileError::RegisterOverflow;
-        std::size_t jmp_ifz_index = program.insns.size();
-        program.insns.push_back({t81::tisc::Opcode::JumpIfZero, 0, cond_reg, 0}); // placeholder target in a
-
-        // then block
-        push_scope();
-        for (const auto& s : sif.then_body) {
-          if (std::holds_alternative<StatementReturn>(s.node)) {
-            const auto& sr = std::get<StatementReturn>(s.node);
-            int reg = emit_expr_env(sr.expr, 0);
-            if (reg == -1) return CompileError::UndeclaredIdentifier;
-            if (reg == -2) return CompileError::RegisterOverflow;
-            program.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
-          }
-        }
-        pop_scope();
-        // jump over else
-        std::size_t jmp_over_else_index = program.insns.size();
-        program.insns.push_back({t81::tisc::Opcode::Jump, 0, 0, 0}); // placeholder
-
-        // else target
-        std::size_t else_target = program.insns.size();
-        program.insns[jmp_ifz_index].a = static_cast<std::int32_t>(else_target);
-        push_scope();
-        for (const auto& s : sif.else_body) {
-          if (std::holds_alternative<StatementReturn>(s.node)) {
-            const auto& sr = std::get<StatementReturn>(s.node);
-            int reg = emit_expr_env(sr.expr, 0);
-            if (reg == -1) return CompileError::UndeclaredIdentifier;
-            if (reg == -2) return CompileError::RegisterOverflow;
-            program.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
-          }
-        }
-        pop_scope();
-        // set jump over else target
-        program.insns[jmp_over_else_index].a = static_cast<std::int32_t>(program.insns.size());
-      }
+      auto err = emit_stmt(stmt);
+      if (err != CompileError::None) return err;
     }
     // ensure a return exists
     bool has_return = false;

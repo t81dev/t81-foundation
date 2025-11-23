@@ -12,6 +12,7 @@ enum class CompileError {
   MissingReturn,
   UndeclaredIdentifier,
   RegisterOverflow,
+  MissingType,
 };
 
 class Compiler {
