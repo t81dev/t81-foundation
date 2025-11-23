@@ -84,6 +84,9 @@ if (T81_BUILD_TESTS)
   add_executable(t81_ir_encoding_test tests/cpp/ir_encoding_test.cpp)
   target_link_libraries(t81_ir_encoding_test PRIVATE t81)
 
+  add_executable(t81_tisc_encoding_test tests/cpp/tisc_encoding_test.cpp)
+  target_link_libraries(t81_tisc_encoding_test PRIVATE t81)
+
   add_executable(t81_hash_stub_test tests/cpp/hash_stub_test.cpp)
   target_link_libraries(t81_hash_stub_test PRIVATE t81)
 
@@ -166,6 +169,7 @@ if (T81_BUILD_TESTS)
     t81_tensor_loader_test
     t81_canonfs_io_test
     t81_ir_encoding_test
+    t81_tisc_encoding_test
     t81_hash_stub_test
     t81_axion_stub_test
     t81_codec_base243_test

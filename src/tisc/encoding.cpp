@@ -27,10 +27,11 @@ std::expected<Program, EncodingError> decode(const std::vector<std::byte>& bytes
   if (bytes.size() % kInsnSize != 0) {
     return EncodingError::Truncated;
   }
+  const std::uint8_t max_opcode = static_cast<std::uint8_t>(Opcode::AxVerify);
   for (std::size_t offset = 0; offset < bytes.size(); offset += kInsnSize) {
     Insn insn;
     const auto opcode = static_cast<std::uint8_t>(bytes[offset]);
-    if (opcode > static_cast<std::uint8_t>(Opcode::JumpIfZero)) {
+    if (opcode > max_opcode) {
       return EncodingError::InvalidOpcode;
     }
     insn.opcode = static_cast<Opcode>(opcode);
@@ -49,4 +50,3 @@ std::expected<Program, EncodingError> decode(const std::vector<std::byte>& bytes
   return program;
 }
 }  // namespace t81::tisc
-
