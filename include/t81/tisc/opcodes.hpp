@@ -41,5 +41,13 @@ enum class Opcode : std::uint8_t {
   TVecAdd = 33,
   TMatMul = 34,
   TTenDot = 35,
+  FAdd = 36,
+  FSub = 37,
+  FMul = 38,
+  FDiv = 39,
+  FracAdd = 40,
+  FracSub = 41,
+  FracMul = 42,
+  FracDiv = 43,
 };
 }  // namespace t81::tisc

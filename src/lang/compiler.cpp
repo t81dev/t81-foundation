@@ -20,6 +20,11 @@ struct VarInfo {
   Type type{Type::T81Int};
 };
 
+struct EvalValue {
+  int reg{0};
+  Type type{Type::T81Int};
+};
+
 std::optional<Type> literal_value_type(const ExprLiteral& lit) {
   switch (lit.value.kind) {
     case LiteralValue::Kind::Int: return Type::T81Int;
@@ -197,6 +202,8 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
   const int kMaxRegs = 26; // R26 reserved
   struct FunctionInfo {
     std::vector<int> param_regs;
+    std::vector<Type> param_types;
+    Type return_type{Type::T81Int};
     std::size_t entry_pc{0};
   };
   struct PendingCall {
@@ -209,7 +216,9 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
     FunctionInfo info;
     for (std::size_t i = 0; i < fn.params.size(); ++i) {
       info.param_regs.push_back(static_cast<int>(i + 1));
+      info.param_types.push_back(fn.params[i].type);
     }
+    info.return_type = fn.return_type;
     fn_info.emplace(fn.name, std::move(info));
     if (!entry_fn_ptr && fn.name == "main") {
       entry_fn_ptr = &fn;
@@ -265,49 +274,52 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
       program.insns.push_back({t81::tisc::Opcode::LoadImm, dst, 0, 0});
       program.insns.push_back({t81::tisc::Opcode::Add, dst, dst, src});
     };
-    auto map_expr_error = [&](int code) -> CompileError {
-      if (code == -1) return CompileError::UndeclaredIdentifier;
-      if (code == -2) return CompileError::RegisterOverflow;
-      if (code == -3) return CompileError::UnknownFunction;
-      if (code == -4) return CompileError::InvalidCall;
-      if (code == -5) return CompileError::UnsupportedLiteral;
-      return CompileError::None;
-    };
-    std::function<int(const Expr&, std::optional<int>)> emit_expr_env = [&](const Expr& e, std::optional<int> target) -> int {
+    auto emit_expr_env = [&](const Expr& e, std::optional<int> target)
+        -> std::expected<EvalValue, CompileError> {
       if (std::holds_alternative<ExprLiteral>(e.node)) {
         const auto& lit = std::get<ExprLiteral>(e.node);
-        if (lit.value.kind != LiteralValue::Kind::Int) return -5;
+        auto lit_type = literal_value_type(lit);
+        if (!lit_type.has_value()) return std::unexpected(CompileError::UnsupportedLiteral);
+        Type type = lit_type.value();
         int reg = target.value_or(next_reg);
-        if (reg >= kMaxRegs) return -2;
+        if (reg >= kMaxRegs) return std::unexpected(CompileError::RegisterOverflow);
         if (!target.has_value()) ++next_reg;
-        program.insns.push_back(
-            {t81::tisc::Opcode::LoadImm, reg, static_cast<std::int32_t>(lit.value.int_value), 0});
-        return reg;
+        if (type == Type::T81Int) {
+          program.insns.push_back({t81::tisc::Opcode::LoadImm, reg,
+                                   static_cast<std::int32_t>(lit.value.int_value), 0});
+        } else {
+          auto literal_err = emit_literal_constant(lit, type, reg, program);
+          if (literal_err != CompileError::None) return std::unexpected(literal_err);
+        }
+        return EvalValue{reg, type};
       }
       if (std::holds_alternative<ExprIdent>(e.node)) {
         const auto& id = std::get<ExprIdent>(e.node);
         auto info = lookup(id.name);
-        if (!info.has_value()) return -1;
-        if (info->type != Type::T81Int) return -5;
+        if (!info.has_value()) return std::unexpected(CompileError::UndeclaredIdentifier);
         int src = info->reg;
         int dst = target.value_or(src);
         move_reg(src, dst);
-        return dst;
+        return EvalValue{dst, info->type};
       }
       if (std::holds_alternative<ExprCall>(e.node)) {
         const auto& call = std::get<ExprCall>(e.node);
         auto callee_it = fn_info.find(call.callee);
-        if (callee_it == fn_info.end()) return -3;
+        if (callee_it == fn_info.end()) return std::unexpected(CompileError::UnknownFunction);
         const auto& callee_meta = callee_it->second;
-        if (call.args.size() != callee_meta.param_regs.size()) return -4;
+        if (call.args.size() != callee_meta.param_regs.size()) {
+          return std::unexpected(CompileError::InvalidCall);
+        }
         int saved_limit = next_reg;
         for (int r = 1; r < saved_limit; ++r) {
           program.insns.push_back({t81::tisc::Opcode::Push, r, 0, 0});
         }
         for (std::size_t i = 0; i < call.args.size(); ++i) {
-          int param_reg = callee_meta.param_regs[i];
-          int arg_reg = emit_expr_env(call.args[i], param_reg);
-          if (arg_reg < 0) return arg_reg;
+          auto arg = emit_expr_env(call.args[i], callee_meta.param_regs[i]);
+          if (!arg.has_value()) return std::unexpected(arg.error());
+          if (arg->type != callee_meta.param_types[i]) {
+            return std::unexpected(CompileError::InvalidCall);
+          }
         }
         int reserve_floor = 1;
         if (!callee_meta.param_regs.empty()) {
@@ -317,39 +329,69 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
         }
         if (next_reg < reserve_floor) next_reg = reserve_floor;
         int call_reg = next_reg;
-        if (call_reg >= kMaxRegs) return -2;
+        if (call_reg >= kMaxRegs) return std::unexpected(CompileError::RegisterOverflow);
         ++next_reg;
         program.insns.push_back({t81::tisc::Opcode::LoadImm, call_reg, 0, 0});
         pending_calls.push_back({program.insns.size() - 1, call.callee});
         program.insns.push_back({t81::tisc::Opcode::Call, 0, call_reg, 0});
         int result_tmp = next_reg;
-        if (result_tmp >= kMaxRegs) return -2;
+        if (result_tmp >= kMaxRegs) return std::unexpected(CompileError::RegisterOverflow);
         ++next_reg;
         move_reg(0, result_tmp);
         for (int r = saved_limit - 1; r >= 1; --r) {
           program.insns.push_back({t81::tisc::Opcode::Pop, r, 0, 0});
         }
         int out_reg = target.value_or(next_reg);
-        if (out_reg >= kMaxRegs) return -2;
+        if (out_reg >= kMaxRegs) return std::unexpected(CompileError::RegisterOverflow);
         if (!target.has_value()) ++next_reg;
         move_reg(result_tmp, out_reg);
-        return out_reg;
+        return EvalValue{out_reg, callee_meta.return_type};
       }
       const auto& bin = std::get<ExprBinary>(e.node);
-      int lhs_reg = emit_expr_env(*bin.lhs, std::nullopt);
-      int rhs_reg = emit_expr_env(*bin.rhs, std::nullopt);
-      if (lhs_reg < 0 || rhs_reg < 0) return -1;
-      int out_reg = target.value_or(next_reg);
-      if (out_reg >= kMaxRegs) return -2;
-      if (!target.has_value()) ++next_reg;
+      auto lhs = emit_expr_env(*bin.lhs, std::nullopt);
+      if (!lhs.has_value()) return lhs;
+      auto rhs = emit_expr_env(*bin.rhs, std::nullopt);
+      if (!rhs.has_value()) return rhs;
+      if (lhs->type != rhs->type) return std::unexpected(CompileError::UnsupportedType);
+      Type expr_type = lhs->type;
       t81::tisc::Opcode opcode = t81::tisc::Opcode::Add;
-      switch (bin.op) {
-        case ExprBinary::Op::Add: opcode = t81::tisc::Opcode::Add; break;
-        case ExprBinary::Op::Sub: opcode = t81::tisc::Opcode::Sub; break;
-        case ExprBinary::Op::Mul: opcode = t81::tisc::Opcode::Mul; break;
+      switch (expr_type) {
+        case Type::T81Int:
+          switch (bin.op) {
+            case ExprBinary::Op::Add: opcode = t81::tisc::Opcode::Add; break;
+            case ExprBinary::Op::Sub: opcode = t81::tisc::Opcode::Sub; break;
+            case ExprBinary::Op::Mul: opcode = t81::tisc::Opcode::Mul; break;
+          }
+          break;
+        case Type::T81Float:
+          switch (bin.op) {
+            case ExprBinary::Op::Add: opcode = t81::tisc::Opcode::FAdd; break;
+            case ExprBinary::Op::Sub: opcode = t81::tisc::Opcode::FSub; break;
+            case ExprBinary::Op::Mul: opcode = t81::tisc::Opcode::FMul; break;
+          }
+          break;
+        case Type::T81Fraction:
+          switch (bin.op) {
+            case ExprBinary::Op::Add: opcode = t81::tisc::Opcode::FracAdd; break;
+            case ExprBinary::Op::Sub: opcode = t81::tisc::Opcode::FracSub; break;
+            case ExprBinary::Op::Mul: opcode = t81::tisc::Opcode::FracMul; break;
+          }
+          break;
+        default:
+          return std::unexpected(CompileError::UnsupportedType);
       }
-      program.insns.push_back({opcode, out_reg, lhs_reg, rhs_reg});
-      return out_reg;
+      if (bin.op == ExprBinary::Op::Mul && expr_type == Type::T81Int) {
+        opcode = t81::tisc::Opcode::Mul;
+      } else if (bin.op == ExprBinary::Op::Sub && expr_type == Type::T81Int) {
+        opcode = t81::tisc::Opcode::Sub;
+      } else if (bin.op == ExprBinary::Op::Add && expr_type == Type::T81Int) {
+        opcode = t81::tisc::Opcode::Add;
+      }
+      int out_reg = target.value_or(next_reg);
+      if (out_reg >= kMaxRegs) return std::unexpected(CompileError::RegisterOverflow);
+      if (!target.has_value()) ++next_reg;
+      program.insns.push_back({opcode, out_reg, lhs->reg, rhs->reg});
+      return EvalValue{out_reg, expr_type};
     };
 
     std::function<CompileError(const Statement&)> emit_stmt =
