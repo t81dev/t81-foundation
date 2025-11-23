@@ -2,11 +2,11 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
-#include "t81/ir/opcodes.hpp"
-#include "t81/ir/insn.hpp"
 #include "t81/ir/encoding.hpp"
 
-static bool eq(const t81::ir::Insn& a, const t81::ir::Insn& b) {
+using namespace t81::ir;
+
+static bool eq(const Insn& a, const Insn& b) {
   if (a.op != b.op) return false;
   if (a.ops != b.ops) return false;
   if (a.imm != b.imm) return false;
@@ -15,30 +15,42 @@ static bool eq(const t81::ir::Insn& a, const t81::ir::Insn& b) {
 }
 
 int main() {
-  using namespace t81::ir;
+  // Build a small "program"
+  std::vector<Insn> prog;
+  prog.push_back(make0(Opcode::Nop));
+  prog.push_back(make_imm(Opcode::Jump, 0x1122334455667788ull, 0xA5A5A5A5u));
+  prog.push_back(make3(Opcode::Add, 1, 2, 3));
+  prog.push_back(make3(Opcode::BigMul, 7, 8, 9));
+  prog.push_back(make3(Opcode::TMatMul, 10, 11, 12));
+  prog.push_back(make_imm(Opcode::TReduce, /*axis*/1, /*flags*/0x00000003u));
 
-  // Single encode/decode roundtrip
-  Insn i = make3(Opcode::BigMul, /*a=*/7, /*b=*/42, /*c=*/3);
-  i.imm   = 0x1122334455667788ULL;
-  i.flags = 0xA5A5A5A5;
+  // Encode → bytes
+  std::vector<uint8_t> bytes = encode_many(prog);
+  assert(bytes.size() == prog.size() * 32);
 
-  uint8_t buf[32];
-  encode(i, buf);
-  Insn j = decode(buf);
-  assert(eq(i, j));
+  // Also test single encode/decode symmetry
+  {
+    uint8_t buf[32];
+    encode(prog[2], buf);
+    Insn r = decode(buf);
+    assert(eq(r, prog[2]));
+  }
 
-  // Many encode/decode roundtrip
-  std::vector<Insn> prog = {
-    make0(Opcode::Nop),
-    make1(Opcode::Add, 1),
-    make2(Opcode::TDot, 2, 3),
-    make_imm(Opcode::Jump, 0xDEADBEEF),
-    make3(Opcode::TSlice2D, 10, 20, 30),
-  };
-  auto bytes = encode_many(prog);
-  auto got   = decode_many(bytes.data(), bytes.size());
-  assert(got.size() == prog.size());
-  for (size_t k = 0; k < prog.size(); ++k) assert(eq(prog[k], got[k]));
+  // Decode back → program
+  auto round = decode_many(bytes.data(), bytes.size());
+  assert(round.size() == prog.size());
+  for (size_t i = 0; i < prog.size(); ++i) {
+    assert(eq(round[i], prog[i]));
+  }
+
+  // Mutate a byte and ensure decode still works but yields difference
+  bytes[32 + 0x18] ^= 0xFF; // flip a bit in flags of second instruction
+  auto mutated = decode_many(bytes.data(), bytes.size());
+  bool any_diff = false;
+  for (size_t i = 0; i < prog.size(); ++i) {
+    if (!eq(mutated[i], prog[i])) { any_diff = true; break; }
+  }
+  assert(any_diff);
 
   std::cout << "ir_encoding ok\n";
   return 0;
