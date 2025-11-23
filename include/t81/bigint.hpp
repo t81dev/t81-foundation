@@ -1,219 +1,302 @@
 #pragma once
-#include <cstdint>
-#include <vector>
-#include <string>
-#include <stdexcept>
 #include <algorithm>
+#include <cstdint>
+#include <string>
+#include <vector>
+#include <stdexcept>
 #include <sstream>
+#include "t81/config.hpp"
 
 namespace t81 {
 
-// Base-243 big integer with sign.
+// Signed big integer in base 243 (balanced-ternary friendly radix).
+// Extremely small, dependency-free, "good enough" reference impl.
 // Digits are LSB-first, each in [0..242].
 class T243BigInt {
 public:
-  using digit_t = uint8_t; // 0..242
-  enum class Sign : int8_t { Neg = -1, Zero = 0, Pos = 1 };
+  enum class Sign { Neg=-1, Zero=0, Pos=1 };
 
   // --- ctors ---
   T243BigInt() : sign_(Sign::Zero) {}
-  explicit T243BigInt(std::vector<digit_t> mag, Sign s = Sign::Pos)
-      : sign_(s), digits_(std::move(mag)) { normalize_(); }
+  explicit T243BigInt(int64_t v) { *this = from_i64(v); }
 
-  // Very simple ASCII-to-base243 placeholder (same as before).
+  static T243BigInt zero() { return T243BigInt(); }
+  static T243BigInt one()  { return from_i64(1); }
+
+  static T243BigInt from_i64(int64_t v) {
+    T243BigInt z;
+    if (v == 0) { z.sign_ = Sign::Zero; return z; }
+    z.sign_ = (v < 0) ? Sign::Neg : Sign::Pos;
+    uint64_t n = (v < 0) ? uint64_t(-(v+1)) + 1ull : uint64_t(v);
+    while (n) {
+      z.d_.push_back(static_cast<uint8_t>(n % 243ull));
+      n /= 243ull;
+    }
+    z.trim_();
+    return z;
+  }
+
+  // Placeholder ASCII mapping (not canonical Base-243!):
+  // encodes each char c as a single digit = c % 243, sign is Pos unless string starts with '-'.
   static T243BigInt from_ascii(const std::string& s) {
-    std::vector<digit_t> d(s.size());
-    bool any = false;
-    for (size_t i=0;i<s.size();++i) {
-      d[i] = static_cast<digit_t>(static_cast<unsigned char>(s[i]) % 243);
-      any = any || (d[i] != 0);
-    }
-    return T243BigInt(std::move(d), any ? Sign::Pos : Sign::Zero);
+    if (s.empty()) return zero();
+    T243BigInt z;
+    size_t i = 0;
+    if (s[0] == '-') { z.sign_ = Sign::Neg; i = 1; }
+    else             { z.sign_ = Sign::Pos; }
+    z.d_.reserve(s.size());
+    for (; i < s.size(); ++i) z.d_.push_back(static_cast<uint8_t>(static_cast<unsigned char>(s[i]) % 243));
+    if (z.d_.empty()) z.sign_ = Sign::Zero;
+    z.trim_();
+    return z;
   }
 
-  // --- queries ---
-  Sign sign() const { return sign_; }
-  bool is_zero() const { return sign_ == Sign::Zero; }
-  const std::vector<digit_t>& digits() const { return digits_; }
+  // --- observers ---
+  static bool is_zero(const T243BigInt& a) { return a.sign_ == Sign::Zero; }
+  static bool is_one (const T243BigInt& a) { return a.sign_ == Sign::Pos && a.d_.size()==1 && a.d_[0]==1; }
+  static bool is_neg (const T243BigInt& a) { return a.sign_ == Sign::Neg; }
 
-  // --- formatting ---
-  std::string to_string() const {
-    if (is_zero()) return "000";
-    std::ostringstream oss;
-    if (sign_ == Sign::Neg) oss << "-";
-    for (size_t i = digits_.size(); i-- > 0;) {
-      oss.width(3); oss.fill('0');
-      oss << static_cast<unsigned>(digits_[i]);
-    }
-    return oss.str();
-  }
+  static T243BigInt abs(const T243BigInt& a) { T243BigInt r=a; if (!is_zero(r)) r.sign_ = Sign::Pos; return r; }
+  static T243BigInt neg(const T243BigInt& a) { T243BigInt r=a; if (!is_zero(r)) r.sign_ = (a.sign_==Sign::Pos?Sign::Neg:Sign::Pos); return r; }
 
-  // --- comparison (absolute) ---
-  static int cmp_abs(const T243BigInt& a, const T243BigInt& b) {
-    if (a.digits_.size() != b.digits_.size())
-      return (a.digits_.size() < b.digits_.size()) ? -1 : 1;
-    for (size_t i = a.digits_.size(); i-- > 0;) {
-      if (a.digits_[i] != b.digits_[i])
-        return (a.digits_[i] < b.digits_[i]) ? -1 : 1;
-    }
-    return 0;
+  static int cmp(const T243BigInt& a, const T243BigInt& b) {
+    if (a.sign_ != b.sign_) return (int)a.sign_ < (int)b.sign_ ? -1 : 1;
+    if (a.sign_ == Sign::Zero) return 0;
+    int m = cmp_mag_(a, b);
+    return (a.sign_ == Sign::Pos) ? m : -m;
   }
 
   // --- arithmetic ---
   static T243BigInt add(const T243BigInt& a, const T243BigInt& b) {
-    if (a.is_zero()) return b;
-    if (b.is_zero()) return a;
-
+    if (is_zero(a)) return b;
+    if (is_zero(b)) return a;
     if (a.sign_ == b.sign_) {
-      T243BigInt r(add_abs_(a, b), a.sign_);
-      r.normalize_();
-      return r;
-    } else {
-      int c = cmp_abs(a, b);
-      if (c == 0) return T243BigInt(); // zero
-      if (c > 0) {
-        T243BigInt r(sub_abs_(a, b), a.sign_);
-        r.normalize_();
-        return r;
-      } else {
-        T243BigInt r(sub_abs_(b, a), b.sign_);
-        r.normalize_();
-        return r;
-      }
+      T243BigInt r; r.sign_ = a.sign_; add_mag_(a.d_, b.d_, r.d_); r.trim_(); return r;
     }
+    // different signs → subtract magnitudes
+    int m = cmp_mag_(a,b);
+    if (m == 0) return zero();
+    T243BigInt r;
+    if (m > 0) { r.sign_ = a.sign_; sub_mag_(a.d_, b.d_, r.d_); }
+    else       { r.sign_ = b.sign_; sub_mag_(b.d_, a.d_, r.d_); }
+    r.trim_(); return r;
   }
 
   static T243BigInt sub(const T243BigInt& a, const T243BigInt& b) {
-    T243BigInt nb = b;
-    if (!nb.is_zero()) nb.sign_ = (nb.sign_ == Sign::Pos ? Sign::Neg :
-                                   nb.sign_ == Sign::Neg ? Sign::Pos : Sign::Zero);
-    return add(a, nb);
+    return add(a, neg(b));
   }
 
   static T243BigInt mul(const T243BigInt& a, const T243BigInt& b) {
-    if (a.is_zero() || b.is_zero()) return T243BigInt();
-    std::vector<uint16_t> tmp(a.digits_.size() + b.digits_.size(), 0);
-    for (size_t i=0;i<a.digits_.size();++i)
-      for (size_t j=0;j<b.digits_.size();++j)
-        tmp[i+j] += static_cast<uint16_t>(a.digits_[i]) * b.digits_[j];
-
-    std::vector<digit_t> r(tmp.size(), 0);
-    uint32_t carry = 0;
-    for (size_t k=0;k<tmp.size();++k) {
-      uint32_t v = tmp[k] + carry;
-      r[k] = static_cast<digit_t>(v % 243);
-      carry = v / 243;
-    }
-    if (carry) r.push_back(static_cast<digit_t>(carry % 243));
-
-    T243BigInt out(std::move(r),
-                   (a.sign_ == b.sign_) ? Sign::Pos : Sign::Neg);
-    out.normalize_();
-    return out;
+    if (is_zero(a) || is_zero(b)) return zero();
+    T243BigInt r;
+    r.sign_ = (a.sign_ == b.sign_) ? Sign::Pos : Sign::Neg;
+    schoolbook_mul_(a.d_, b.d_, r.d_);
+    r.trim_(); return r;
   }
 
-  // Very simple modulus using repeated subtraction on magnitudes.
-  // NOTE: This is intentionally naive and suitable only for small values / tests.
-  static T243BigInt mod(T243BigInt a, const T243BigInt& b) {
-    if (b.is_zero()) throw std::invalid_argument("mod by zero");
-    // Work on absolute values
-    a.sign_ = (a.is_zero() ? Sign::Zero : Sign::Pos);
-    T243BigInt bb = b;
-    bb.sign_ = Sign::Pos;
-    if (cmp_abs(a, bb) < 0) return a;
-    while (!a.is_zero() && cmp_abs(a, bb) >= 0) {
-      a = T243BigInt(sub_abs_(a, bb), Sign::Pos);
-      a.normalize_();
+  // Very naive modulus: repeated subtraction by shifted divisor (long division skeleton).
+  // Works but is slow; only intended for tiny values / tests.
+  static T243BigInt mod(const T243BigInt& a, const T243BigInt& b) {
+    if (is_zero(b)) throw std::domain_error("BigInt mod by zero");
+    if (is_zero(a)) return zero();
+    T243BigInt A = abs(a);
+    T243BigInt B = abs(b);
+    if (cmp_mag_(A,B) < 0) return A;
+
+    T243BigInt R = zero();
+    // long-division style using base 243
+    for (int i = (int)A.d_.size()-1; i >= 0; --i) {
+      // R = R * 243 + A.d_[i]
+      mul_small_(R.d_, 243, R.d_);
+      add_small_(R.d_, A.d_[(size_t)i], R.d_);
+      // subtract B as many times as fits (naive)
+      while (cmp_mag_digits_(R.d_, B.d_) >= 0) {
+        sub_mag_(R.d_, B.d_, R.d_);
+      }
     }
-    return a; // remainder is non-negative
+    R.trim_();
+    if (!is_zero(R)) R.sign_ = Sign::Pos;
+    return R;
   }
 
-  // gcd(a,b) with non-negative result
+  // Euclidean GCD using modulus (very slow, but deterministic/safe)
   static T243BigInt gcd(T243BigInt a, T243BigInt b) {
-    a.sign_ = a.is_zero() ? Sign::Zero : Sign::Pos;
-    b.sign_ = b.is_zero() ? Sign::Zero : Sign::Pos;
-    while (!b.is_zero()) {
+    a = abs(a); b = abs(b);
+    if (is_zero(a)) return b;
+    if (is_zero(b)) return a;
+    while (!is_zero(b)) {
       T243BigInt r = mod(a, b);
-      a = b;
-      b = r;
+      a = std::move(b);
+      b = std::move(r);
     }
-    a.sign_ = a.is_zero() ? Sign::Zero : Sign::Pos;
     return a;
   }
 
+  // Exact division (a / b) when remainder is zero. Throws otherwise.
+  static T243BigInt div(const T243BigInt& a, const T243BigInt& b) {
+    if (is_zero(b)) throw std::domain_error("BigInt div by zero");
+    if (is_zero(a)) return zero();
+    // Long division in base 243
+    T243BigInt A = abs(a);
+    T243BigInt B = abs(b);
+    if (cmp_mag_(A,B) < 0) return zero();
+
+    std::vector<uint8_t> q(A.d_.size(), 0);
+    T243BigInt R = zero();
+
+    for (int i = (int)A.d_.size()-1; i >= 0; --i) {
+      // R = R*243 + A.d_[i]
+      mul_small_(R.d_, 243, R.d_);
+      add_small_(R.d_, A.d_[(size_t)i], R.d_);
+
+      // Find the largest digit qd in [0..242] such that B*qd <= R (by magnitude)
+      // Naive linear search (OK for tiny values). Could be improved by binary search.
+      uint8_t qd = 0;
+      if (!is_zero(R)) {
+        // upper-bound small heuristic: compare top digits
+        for (uint16_t t = 242; t > 0; --t) {
+          T243BigInt tmp; mul_small_(B.d_, (uint8_t)t, tmp.d_);
+          if (cmp_mag_digits_(tmp.d_, R.d_) <= 0) { qd = static_cast<uint8_t>(t); break; }
+        }
+      }
+      q[(size_t)i] = qd;
+      if (qd) {
+        T243BigInt t; mul_small_(B.d_, qd, t.d_);
+        sub_mag_(R.d_, t.d_, R.d_);
+      }
+    }
+
+    // remainder must be zero for exact division
+    if (!R.d_.empty()) {
+      // Verify truly zero
+      bool any=false; for (auto v: R.d_) if (v){any=true;break;}
+      if (any) throw std::domain_error("BigInt div: non-zero remainder");
+    }
+
+    T243BigInt Q;
+    Q.sign_ = (a.sign_ == b.sign_) ? Sign::Pos : Sign::Neg;
+    Q.d_ = std::move(q);
+    Q.trim_();
+    return Q;
+  }
+
+  // --- formatting (debug; not canonical) ---
+  // Renders sign + groups of digits (base-243) as decimal-like chunks.
+  std::string to_string() const {
+    if (sign_ == Sign::Zero) return "0";
+    std::ostringstream os;
+    if (sign_ == Sign::Neg) os << "-";
+    // Render most significant first
+    for (int i = (int)d_.size()-1; i >= 0; --i) {
+      if (i == (int)d_.size()-1) os << int(d_[(size_t)i]);
+      else { os << '.' << int(d_[(size_t)i]); }
+    }
+    return os.str();
+  }
+
 private:
-  // Normalize: carry propagation (base 243), strip leading zeros, fix sign.
-  void normalize_() {
-    // propagate carries (digits_ may temporarily be >242 from add/sub helpers)
+  Sign sign_{Sign::Zero};
+  std::vector<uint8_t> d_; // LSB-first, base 243
+
+  void trim_() {
+    while (!d_.empty() && d_.back() == 0) d_.pop_back();
+    if (d_.empty()) sign_ = Sign::Zero;
+  }
+
+  // --- magnitude helpers (no sign) ---
+  static int cmp_mag_(const T243BigInt& a, const T243BigInt& b) {
+    return cmp_mag_digits_(a.d_, b.d_);
+  }
+  static int cmp_mag_digits_(const std::vector<uint8_t>& A, const std::vector<uint8_t>& B) {
+    if (A.size() != B.size()) return (A.size() < B.size()) ? -1 : 1;
+    for (int i = (int)A.size()-1; i >= 0; --i) {
+      if (A[(size_t)i] != B[(size_t)i]) return (A[(size_t)i] < B[(size_t)i]) ? -1 : 1;
+    }
+    return 0;
+  }
+
+  static void add_mag_(const std::vector<uint8_t>& A, const std::vector<uint8_t>& B, std::vector<uint8_t>& out) {
+    const size_t n = std::max(A.size(), B.size());
+    out.clear(); out.resize(n, 0);
+    uint16_t carry = 0;
+    for (size_t i = 0; i < n; ++i) {
+      uint16_t a = (i < A.size() ? A[i] : 0);
+      uint16_t b = (i < B.size() ? B[i] : 0);
+      uint16_t s = a + b + carry;
+      out[i] = static_cast<uint8_t>(s % 243);
+      carry  = static_cast<uint16_t>(s / 243);
+    }
+    if (carry) out.push_back(static_cast<uint8_t>(carry));
+  }
+
+  static void sub_mag_(const std::vector<uint8_t>& A, const std::vector<uint8_t>& B, std::vector<uint8_t>& out) {
+    // assumes A >= B
+    out.clear(); out.resize(A.size(), 0);
+    int16_t borrow = 0;
+    for (size_t i = 0; i < A.size(); ++i) {
+      int16_t a = A[i];
+      int16_t b = (i < B.size() ? B[i] : 0);
+      int16_t s = a - b - borrow;
+      if (s < 0) { s += 243; borrow = 1; } else borrow = 0;
+      out[i] = static_cast<uint8_t>(s);
+    }
+    // trim handled by caller
+    while (!out.empty() && out.back()==0) out.pop_back();
+  }
+
+  static void schoolbook_mul_(const std::vector<uint8_t>& A, const std::vector<uint8_t>& B, std::vector<uint8_t>& out) {
+    out.assign(A.size()+B.size(), 0);
+    for (size_t i = 0; i < A.size(); ++i) {
+      uint32_t carry = 0;
+      for (size_t j = 0; j < B.size(); ++j) {
+        uint32_t s = out[i+j] + uint32_t(A[i]) * uint32_t(B[j]) + carry;
+        out[i+j] = static_cast<uint8_t>(s % 243u);
+        carry    = static_cast<uint32_t>(s / 243u);
+      }
+      size_t k = i + B.size();
+      while (carry) {
+        uint32_t s = out[k] + carry;
+        out[k] = static_cast<uint8_t>(s % 243u);
+        carry  = static_cast<uint32_t>(s / 243u);
+        ++k;
+      }
+    }
+    while (!out.empty() && out.back()==0) out.pop_back();
+  }
+
+  static void mul_small_(const std::vector<uint8_t>& A, uint16_t m, std::vector<uint8_t>& out) {
+    if (m == 0 || A.empty()) { out.clear(); return; }
+    if (m == 1) { out = A; return; }
+    out.resize(A.size());
     uint32_t carry = 0;
-    for (size_t i=0;i<digits_.size();++i) {
-      uint32_t v = static_cast<uint32_t>(digits_[i]) + carry;
-      digits_[i] = static_cast<digit_t>(v % 243);
-      carry = v / 243;
+    for (size_t i = 0; i < A.size(); ++i) {
+      uint32_t s = uint32_t(A[i]) * m + carry;
+      out[i] = static_cast<uint8_t>(s % 243u);
+      carry  = static_cast<uint32_t>(s / 243u);
     }
     while (carry) {
-      digits_.push_back(static_cast<digit_t>(carry % 243));
-      carry /= 243;
+      out.push_back(static_cast<uint8_t>(carry % 243u));
+      carry /= 243u;
     }
-    while (!digits_.empty() && digits_.back() == 0) digits_.pop_back();
-    if (digits_.empty()) { sign_ = Sign::Zero; }
-    else if (sign_ == Sign::Zero) { sign_ = Sign::Pos; }
+    while (!out.empty() && out.back()==0) out.pop_back();
   }
 
-  // magnitude addition: |a| + |b|
-  static std::vector<digit_t> add_abs_(const T243BigInt& a, const T243BigInt& b) {
-    const size_t max_len = std::max(a.digits_.size(), b.digits_.size());
-    std::vector<uint16_t> tmp(max_len + 1, 0);
-    for (size_t i=0;i<max_len;++i) {
-      uint16_t v = tmp[i];
-      if (i < a.digits_.size()) v += a.digits_[i];
-      if (i < b.digits_.size()) v += b.digits_[i];
-      tmp[i] = v;
+  static void add_small_(const std::vector<uint8_t>& A, uint16_t m, std::vector<uint8_t>& out) {
+    out = A;
+    uint32_t s = (out.empty() ? 0u : out[0]) + m;
+    if (out.empty()) out.push_back(0);
+    out[0] = static_cast<uint8_t>(s % 243u);
+    uint32_t carry = s / 243u;
+    size_t i = 1;
+    while (carry) {
+      if (i >= out.size()) out.push_back(0);
+      uint32_t t = out[i] + carry;
+      out[i] = static_cast<uint8_t>(t % 243u);
+      carry  = t / 243u;
+      ++i;
     }
-    // fold to base-243
-    std::vector<digit_t> r(tmp.size(), 0);
-    uint32_t carry = 0;
-    for (size_t i=0;i<tmp.size();++i) {
-      uint32_t v = tmp[i] + carry;
-      r[i] = static_cast<digit_t>(v % 243);
-      carry = v / 243;
-    }
-    if (carry) r.push_back(static_cast<digit_t>(carry % 243));
-    return r;
+    while (!out.empty() && out.back()==0) out.pop_back();
   }
-
-  // magnitude subtraction: |a| - |b|, requires |a| >= |b|
-  static std::vector<digit_t> sub_abs_(const T243BigInt& a, const T243BigInt& b) {
-    std::vector<int32_t> tmp(std::max(a.digits_.size(), b.digits_.size()) + 1, 0);
-    for (size_t i=0;i<a.digits_.size();++i) tmp[i] += a.digits_[i];
-    for (size_t i=0;i<b.digits_.size();++i) tmp[i] -= b.digits_[i];
-
-    // borrow normalize in base-243
-    for (size_t i=0;i+1<tmp.size();++i) {
-      while (tmp[i] < 0) {
-        tmp[i] += 243;
-        tmp[i+1] -= 1;
-      }
-      if (tmp[i] >= 243) {
-        int q = tmp[i] / 243;
-        tmp[i] -= q * 243;
-        tmp[i+1] += q;
-      }
-    }
-    // convert back to digits
-    std::vector<digit_t> r(tmp.size(), 0);
-    for (size_t i=0;i<tmp.size();++i) {
-      int v = tmp[i];
-      if (v < 0) v = 0; // any remaining negative means higher digits will clear it
-      r[i] = static_cast<digit_t>(v % 243);
-    }
-    // trim
-    while (!r.empty() && r.back() == 0) r.pop_back();
-    return r;
-  }
-
-  Sign sign_;
-  std::vector<digit_t> digits_; // magnitude, LSB-first
 };
 
 } // namespace t81
