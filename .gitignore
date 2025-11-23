@@ -30,6 +30,7 @@ Thumbs.db
 *.h
 *.cpp
 *.hpp
+!tests/cpp/*.cpp
 
 # Build directories
 build/
