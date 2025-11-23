@@ -7,5 +7,6 @@ enum class Trap {
   IllegalInstruction,
   DivideByZero,
   BoundsFault,
+  SecurityFault,
 };
 }  // namespace t81::vm

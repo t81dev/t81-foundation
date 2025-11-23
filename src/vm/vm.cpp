@@ -1,11 +1,23 @@
 #include "t81/vm/vm.hpp"
 
 #include <memory>
+#include <string>
+#include <string_view>
+#include <utility>
+
+#include "t81/axion/engine.hpp"
 
 namespace t81::vm {
 namespace {
 class Interpreter : public IVirtualMachine {
  public:
+  explicit Interpreter(std::unique_ptr<t81::axion::Engine> engine)
+      : axion_engine_(std::move(engine)) {
+    if (!axion_engine_) {
+      axion_engine_ = t81::axion::make_allow_all_engine();
+    }
+  }
+
   void load_program(const t81::tisc::Program& program) override {
     program_ = program;
     state_ = State{};
@@ -178,11 +190,43 @@ class Interpreter : public IVirtualMachine {
           update_flags(state_.registers[insn.a]);
         }
         break;
-      case t81::tisc::Opcode::AxRead:
-      case t81::tisc::Opcode::AxSet:
-      case t81::tisc::Opcode::AxVerify:
-        trap = Trap::IllegalInstruction;
+      case t81::tisc::Opcode::AxRead: {
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        auto verdict = eval_axion_call("AXREAD");
+        if (verdict.kind == t81::axion::VerdictKind::Deny) {
+          record_axion_event(insn.opcode, insn.b, 0, verdict);
+          trap = Trap::SecurityFault;
+          break;
+        }
+        state_.registers[insn.a] = insn.b;
+        update_flags(state_.registers[insn.a]);
+        record_axion_event(insn.opcode, insn.b, state_.registers[insn.a], verdict);
         break;
+      }
+      case t81::tisc::Opcode::AxSet: {
+        if (!reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        auto value = state_.registers[insn.b];
+        auto verdict = eval_axion_call("AXSET");
+        record_axion_event(insn.opcode, insn.a, value, verdict);
+        if (verdict.kind == t81::axion::VerdictKind::Deny) {
+          trap = Trap::SecurityFault;
+        }
+        break;
+      }
+      case t81::tisc::Opcode::AxVerify: {
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        auto verdict = eval_axion_call("AXVERIFY");
+        if (verdict.kind == t81::axion::VerdictKind::Deny) {
+          record_axion_event(insn.opcode, insn.b, 0, verdict);
+          trap = Trap::SecurityFault;
+          break;
+        }
+        state_.registers[insn.a] =
+            (verdict.kind == t81::axion::VerdictKind::Defer) ? 1 : 0;
+        update_flags(state_.registers[insn.a]);
+        record_axion_event(insn.opcode, insn.b, state_.registers[insn.a], verdict);
+        break;
+      }
       default:
         trap = Trap::IllegalInstruction;
         break;
@@ -203,12 +247,25 @@ class Interpreter : public IVirtualMachine {
   const State& state() const override { return state_; }
 
  private:
+  t81::axion::Verdict eval_axion_call(std::string_view syscall) {
+    t81::axion::SyscallContext ctx;
+    ctx.caller = "t81vm";
+    ctx.syscall.assign(syscall);
+    return axion_engine_->evaluate(ctx);
+  }
+
+  void record_axion_event(t81::tisc::Opcode op, std::int32_t tag,
+                          std::int64_t value, const t81::axion::Verdict& verdict) {
+    state_.axion_log.push_back(AxionEvent{op, tag, value, verdict});
+  }
+
   State state_{};
   t81::tisc::Program program_{};
+  std::unique_ptr<t81::axion::Engine> axion_engine_;
 };
 }  // namespace
 
-std::unique_ptr<IVirtualMachine> make_interpreter_vm() {
-  return std::make_unique<Interpreter>();
+std::unique_ptr<IVirtualMachine> make_interpreter_vm(std::unique_ptr<t81::axion::Engine> engine) {
+  return std::make_unique<Interpreter>(std::move(engine));
 }
 }  // namespace t81::vm

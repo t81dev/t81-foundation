@@ -6,6 +6,10 @@
 #include "t81/vm/traps.hpp"
 #include "t81/tisc/program.hpp"
 
+namespace t81::axion {
+class Engine;
+}
+
 namespace t81::vm {
 class IVirtualMachine {
  public:
@@ -17,6 +21,5 @@ class IVirtualMachine {
 };
 
 // Factory for the in-tree interpreter implementation.
-std::unique_ptr<IVirtualMachine> make_interpreter_vm();
+std::unique_ptr<IVirtualMachine> make_interpreter_vm(std::unique_ptr<t81::axion::Engine> engine = nullptr);
 }  // namespace t81::vm
-
