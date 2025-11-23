@@ -880,4 +880,5 @@ CMakeFiles/t81_codec_base81_test.dir/tests/cpp/codec_base81_test.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_fsfilcnt_t.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_types/_nl_item.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cstdarg \
-  /Users/t81dev/t81-foundation/include/t81/codec/base81.hpp
+  /Users/t81dev/t81-foundation/include/t81/codec/base81.hpp \
+  /Users/t81dev/t81-foundation/include/t81/core/base81.hpp

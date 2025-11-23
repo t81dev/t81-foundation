@@ -1,47 +1,25 @@
 #pragma once
+#include <algorithm>
 #include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <algorithm>
+
+#include "t81/codec/base81.hpp"
 
 namespace t81::hash {
 
 // -----------------------------------------------------------------------------
-// Base-81 codec
+// Base-81 codec (canonical Unicode alphabet, spec/v1.1.0-canonical.md)
 // -----------------------------------------------------------------------------
-// New canonical behavior:
-//   - encode_base81: bytes -> base-81 string using a fixed 81-character alphabet.
-//   - decode_base81: base-81 string -> bytes.
-//
-// Backward compatibility:
-//   - If the input to decode_base81() begins with "b81:", the old stub
-//     hex format is still accepted and decoded.
-//   - encode_base81() NEVER emits the "b81:" prefix.
+//   - encode_base81: bytes -> base-81 string using canonical alphabet
+//   - decode_base81: base-81 string -> bytes
+//   - Backwards compatibility: strings starting with "b81:" still decode via
+//     the legacy hex stub.
 // -----------------------------------------------------------------------------
 
 namespace detail {
-
-inline std::string_view base81_alphabet() {
-  // 81 chars: 10 digits + 26 upper + 26 lower + 19 punctuation
-  static constexpr char kAlphabet[] =
-      "0123456789"
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-      "abcdefghijklmnopqrstuvwxyz"
-      "!#$%&()*+,-./:;<=>?";
-  static_assert(sizeof(kAlphabet) - 1 == 81, "Base-81 alphabet must have 81 chars");
-  return std::string_view{kAlphabet, 81};
-}
-
-inline int base81_digit(char c) {
-  auto a = base81_alphabet();
-  for (std::size_t i = 0; i < a.size(); ++i) {
-    if (a[i] == c) return static_cast<int>(i);
-  }
-  return -1;
-}
-
 // Legacy stub decoder: "b81:" + hex bytes.
 inline std::vector<uint8_t> decode_base81_stub_hex(const std::string& s) {
   const std::string prefix = "b81:";
@@ -76,87 +54,21 @@ inline std::vector<uint8_t> decode_base81_stub_hex(const std::string& s) {
 
 } // namespace detail
 
-// -----------------------------------------------------------------------------
-// encode_base81: bytes -> base-81 string
-// -----------------------------------------------------------------------------
-//
-// Interprets the input as a big-endian base-256 integer and converts it to
-// base-81 using the fixed alphabet above.
-//
-// Properties:
-//   - Deterministic.
-//   - No "b81:" prefix.
-//   - Empty input -> empty string.
-//
 inline std::string encode_base81(const std::vector<uint8_t>& bytes) {
-  if (bytes.empty()) {
-    return std::string{};
-  }
-
-  // Stub: emit legacy-friendly "b81:" + hex to guarantee a stable roundtrip.
-  static constexpr char kHex[] = "0123456789abcdef";
-  std::string out;
-  out.reserve(4 + bytes.size() * 2);
-  out.append("b81:");
-  for (uint8_t b : bytes) {
-    out.push_back(kHex[(b >> 4) & 0xF]);
-    out.push_back(kHex[b & 0xF]);
-  }
-  return out;
+  return t81::codec::base81::encode_bytes(bytes);
 }
 
-// -----------------------------------------------------------------------------
-// decode_base81: base-81 string (or old stub) -> bytes
-// -----------------------------------------------------------------------------
-//
-// Behavior:
-//   - If s starts with "b81:", treat it as the legacy stub hex encoding.
-//   - Otherwise, treat s as a base-81 string using the fixed alphabet.
-//
-// Properties (new format):
-//   - Empty string -> empty vector.
-//   - Throws std::invalid_argument on invalid characters.
-// -----------------------------------------------------------------------------
 inline std::vector<uint8_t> decode_base81(const std::string& s) {
   // Backward-compat: accept old stub strings.
   if (s.rfind("b81:", 0) == 0) {
     return detail::decode_base81_stub_hex(s);
   }
 
-  if (s.empty()) {
-    return {};
+  std::vector<uint8_t> out;
+  if (!t81::codec::base81::decode_bytes(s, out)) {
+    throw std::invalid_argument("decode_base81: invalid base-81 character");
   }
-
-  // Convert base-81 string back into a big-endian base-256 byte vector.
-  std::vector<uint8_t> buf; // base-256 digits, big-endian
-
-  for (char c : s) {
-    int d = detail::base81_digit(c);
-    if (d < 0) {
-      throw std::invalid_argument("decode_base81: invalid base-81 character");
-    }
-
-    std::vector<uint8_t> next;
-    next.reserve(buf.size() + 1);
-
-    uint16_t carry = static_cast<uint16_t>(d);
-    for (uint8_t b : buf) {
-      uint16_t cur = static_cast<uint16_t>(b) * 81 + carry;
-      uint8_t q = static_cast<uint8_t>(cur >> 8);     // / 256
-      uint8_t r = static_cast<uint8_t>(cur & 0xFF);   // % 256
-      if (!next.empty() || q != 0) {
-        next.push_back(q);
-      }
-      carry = r;
-    }
-    if (!next.empty() || carry != 0) {
-      next.push_back(static_cast<uint8_t>(carry));
-    }
-
-    buf.swap(next);
-  }
-
-  return buf;
+  return out;
 }
 
 } // namespace t81::hash

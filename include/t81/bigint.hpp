@@ -370,6 +370,47 @@ struct DivModResult {
   T243BigInt r;  // remainder
 };
 
+// Canonical base-81 alphabet (Unicode, spec/v1.1.0-canonical.md)
+namespace detail {
+inline const std::vector<std::string>& base81_alphabet_vec() {
+  static const std::vector<std::string> kAlphabet = {
+    "0","1","2","3","4","5","6","7","8","9",
+    "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",
+    "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z",
+    "+","−","×","÷","=","<",">","≤","≥","≠","≈","∞","λ","μ","π","σ","τ","ω","Γ"
+  };
+  return kAlphabet;
+}
+
+inline const std::unordered_map<std::string, int>& base81_digit_map() {
+  static const std::unordered_map<std::string, int> kMap = []{
+    std::unordered_map<std::string, int> m;
+    const auto& alpha = base81_alphabet_vec();
+    m.reserve(alpha.size());
+    for (std::size_t i = 0; i < alpha.size(); ++i) {
+      m.emplace(alpha[i], static_cast<int>(i));
+    }
+    return m;
+  }();
+  return kMap;
+}
+
+inline std::string next_codepoint(std::string_view s, std::size_t& offset) {
+  if (offset >= s.size()) return {};
+  const unsigned char c = static_cast<unsigned char>(s[offset]);
+  std::size_t len = 0;
+  if (c < 0x80) len = 1;
+  else if ((c & 0xE0) == 0xC0) len = 2;
+  else if ((c & 0xF0) == 0xE0) len = 3;
+  else if ((c & 0xF8) == 0xF0) len = 4;
+  else return {};
+  if (offset + len > s.size()) return {};
+  std::string cp(s.substr(offset, len));
+  offset += len;
+  return cp;
+}
+} // namespace detail
+
 // Inline implementations that depend on DivModResult being complete.
 inline std::string T243BigInt::to_base81_string() const {
   if (sign_ == Sign::Zero) return "0";
@@ -386,13 +427,13 @@ inline std::string T243BigInt::to_base81_string() const {
     v = dm.q;
   }
 
-  std::ostringstream oss;
-  if (sign_ == Sign::Neg) oss << '-';
+  std::string out;
+  if (sign_ == Sign::Neg) out.push_back('-');
+  const auto& alpha = detail::base81_alphabet_vec();
   for (auto it = digits.rbegin(); it != digits.rend(); ++it) {
-    if (it != digits.rbegin()) oss << '.';
-    oss << *it;
+    out += alpha[static_cast<std::size_t>(*it)];
   }
-  return oss.str();
+  return out;
 }
 
 inline T243BigInt T243BigInt::from_base81_string(std::string_view s) {
@@ -407,23 +448,13 @@ inline T243BigInt T243BigInt::from_base81_string(std::string_view s) {
   }
 
   std::vector<int> digits;
-  int current = 0;
-  bool have_digit = false;
-
-  for (; pos <= s.size(); ++pos) {
-    if (pos == s.size() || s[pos] == '.') {
-      if (!have_digit) throw std::invalid_argument("T243BigInt::from_base81_string: empty digit");
-      if (current < 0 || current >= 81) throw std::invalid_argument("T243BigInt::from_base81_string: digit out of range");
-      digits.push_back(current);
-      current = 0;
-      have_digit = false;
-    } else if (s[pos] >= '0' && s[pos] <= '9') {
-      have_digit = true;
-      current = current * 10 + (s[pos] - '0');
-      if (current >= 1000) throw std::invalid_argument("T243BigInt::from_base81_string: digit overflow");
-    } else {
-      throw std::invalid_argument("T243BigInt::from_base81_string: invalid character");
-    }
+  const auto& map = detail::base81_digit_map();
+  while (pos < s.size()) {
+    std::string cp = detail::next_codepoint(s, pos);
+    if (cp.empty()) throw std::invalid_argument("T243BigInt::from_base81_string: invalid encoding");
+    auto it = map.find(cp);
+    if (it == map.end()) throw std::invalid_argument("T243BigInt::from_base81_string: invalid character");
+    digits.push_back(it->second);
   }
 
   T243BigInt base(81);

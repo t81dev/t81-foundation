@@ -999,6 +999,7 @@ CMakeFiles/t81_c_api.dir/src/c_api/t81_c_api.cpp.o: \
   /Users/t81dev/t81-foundation/include/t81/canonfs.hpp \
   /Users/t81dev/t81-foundation/include/t81/canonfs_io.hpp \
   /Users/t81dev/t81-foundation/include/t81/hash/base81.hpp \
+  /Users/t81dev/t81-foundation/include/t81/codec/base81.hpp \
   /Users/t81dev/t81-foundation/include/t81/hash/canonhash.hpp \
   /Users/t81dev/t81-foundation/include/t81/codec/base243.hpp \
   /Users/t81dev/t81-foundation/include/t81/ir/opcodes.hpp \

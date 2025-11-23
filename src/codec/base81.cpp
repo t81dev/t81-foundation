@@ -8,7 +8,7 @@
 
 namespace t81::codec::base81 {
 
-// Canonical v1.1.0 alphabet (UTF-8). Indices 62..80 are the first 19 symbols listed in the spec after a–z.
+// Canonical v1.1.0 alphabet (UTF-8). Indices 62..80 are the 19 symbols listed in the spec after a–z.
 static const std::vector<std::string>& alphabet_vec() {
   static const std::vector<std::string> kAlphabet = {
     // 0..9
@@ -50,6 +50,19 @@ static std::string next_codepoint(const char* data, std::size_t len, std::size_t
   return cp;
 }
 
+static const std::unordered_map<std::string, int>& alphabet_map() {
+  static const std::unordered_map<std::string, int> kMap = [] {
+    const auto& alpha = alphabet_vec();
+    std::unordered_map<std::string, int> m;
+    m.reserve(alpha.size());
+    for (std::size_t i = 0; i < alpha.size(); ++i) {
+      m.emplace(alpha[i], static_cast<int>(i));
+    }
+    return m;
+  }();
+  return kMap;
+}
+
 std::string encode_bytes(const std::vector<std::uint8_t>& data) {
   if (data.empty()) return std::string{};
 
@@ -87,12 +100,7 @@ bool decode_bytes(std::string_view s, std::vector<std::uint8_t>& out) {
   out.clear();
   if (s.empty()) return true;
 
-  const auto& alpha = alphabet_vec();
-  std::unordered_map<std::string, int> map;
-  map.reserve(alpha.size());
-  for (std::size_t i = 0; i < alpha.size(); ++i) {
-    map.emplace(alpha[i], static_cast<int>(i));
-  }
+  const auto& map = alphabet_map();
 
   // Parse codepoints
   std::vector<int> digits;

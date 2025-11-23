@@ -1,6 +1,5 @@
 #include "t81/vm/vm.hpp"
 
-#include <algorithm>
 #include <memory>
 
 namespace t81::vm {
@@ -10,7 +9,6 @@ class Interpreter : public IVirtualMachine {
   void load_program(const t81::tisc::Program& program) override {
     program_ = program;
     state_ = State{};
-    // Layout: code [0, code_limit), stack [code_limit, stack_limit), heap [stack_limit, heap_limit)
     state_.layout.code_limit = program_.insns.size();
     state_.layout.stack_limit = state_.layout.code_limit + 256;
     state_.layout.heap_limit = state_.layout.stack_limit + 768;
@@ -22,8 +20,10 @@ class Interpreter : public IVirtualMachine {
       state_.halted = true;
       return {};
     }
+
     const std::size_t current_pc = state_.pc++;
     const auto& insn = program_.insns[current_pc];
+
     auto reg_ok = [this](int r) {
       return r >= 0 && static_cast<std::size_t>(r) < state_.registers.size();
     };
@@ -38,75 +38,78 @@ class Interpreter : public IVirtualMachine {
       if (trap != Trap::None) t.trap = trap;
       state_.trace.push_back(t);
     };
+    auto update_flags = [this](std::int64_t v) {
+      state_.flags.zero = (v == 0);
+      state_.flags.negative = (v < 0);
+    };
+
+    Trap trap = Trap::None;
     switch (insn.opcode) {
       case t81::tisc::Opcode::Nop:
-        log_trace(insn.opcode);
         break;
       case t81::tisc::Opcode::Halt:
         state_.halted = true;
-        log_trace(insn.opcode);
         break;
       case t81::tisc::Opcode::LoadImm:
-        if (!reg_ok(insn.a)) { log_trace(insn.opcode, Trap::IllegalInstruction); return Trap::IllegalInstruction; }
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
         state_.registers[insn.a] = insn.b;
-        log_trace(insn.opcode);
+        update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Add:
-        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { log_trace(insn.opcode, Trap::IllegalInstruction); return Trap::IllegalInstruction; }
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
         state_.registers[insn.a] = state_.registers[insn.b] + state_.registers[insn.c];
-        log_trace(insn.opcode);
+        update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Sub:
-        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { log_trace(insn.opcode, Trap::IllegalInstruction); return Trap::IllegalInstruction; }
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
         state_.registers[insn.a] = state_.registers[insn.b] - state_.registers[insn.c];
-        log_trace(insn.opcode);
+        update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Load:
-        if (!reg_ok(insn.a) || !mem_ok(insn.b)) { log_trace(insn.opcode, Trap::InvalidMemory); return Trap::InvalidMemory; }
+        if (!reg_ok(insn.a) || !mem_ok(insn.b)) { trap = Trap::InvalidMemory; break; }
         state_.registers[insn.a] = state_.memory[static_cast<std::size_t>(insn.b)];
-        log_trace(insn.opcode);
+        update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Store:
-        if (!reg_ok(insn.b) || !mem_ok(insn.a)) { log_trace(insn.opcode, Trap::InvalidMemory); return Trap::InvalidMemory; }
+        if (!reg_ok(insn.b) || !mem_ok(insn.a)) { trap = Trap::InvalidMemory; break; }
         state_.memory[static_cast<std::size_t>(insn.a)] = state_.registers[insn.b];
-        log_trace(insn.opcode);
         break;
       case t81::tisc::Opcode::Mul:
-        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { log_trace(insn.opcode, Trap::IllegalInstruction); return Trap::IllegalInstruction; }
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
         state_.registers[insn.a] = state_.registers[insn.b] * state_.registers[insn.c];
-        log_trace(insn.opcode);
+        update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Div:
       case t81::tisc::Opcode::Mod: {
-        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { log_trace(insn.opcode, Trap::IllegalInstruction); return Trap::IllegalInstruction; }
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
         auto divisor = state_.registers[insn.c];
-        if (divisor == 0) { log_trace(insn.opcode, Trap::DivideByZero); return Trap::DivideByZero; }
+        if (divisor == 0) { trap = Trap::DivideByZero; break; }
         auto lhs = state_.registers[insn.b];
         if (insn.opcode == t81::tisc::Opcode::Div) {
           state_.registers[insn.a] = lhs / divisor;
         } else {
           state_.registers[insn.a] = lhs % divisor;
         }
-        log_trace(insn.opcode);
+        update_flags(state_.registers[insn.a]);
         break;
       }
       case t81::tisc::Opcode::Jump:
-        if (insn.a < 0 || static_cast<std::size_t>(insn.a) >= program_.insns.size()) { log_trace(insn.opcode, Trap::IllegalInstruction); return Trap::IllegalInstruction; }
+        if (insn.a < 0 || static_cast<std::size_t>(insn.a) >= program_.insns.size()) { trap = Trap::IllegalInstruction; break; }
         state_.pc = static_cast<std::size_t>(insn.a);
-        log_trace(insn.opcode);
         break;
       case t81::tisc::Opcode::JumpIfZero:
-        if (!reg_ok(insn.b)) { log_trace(insn.opcode, Trap::IllegalInstruction); return Trap::IllegalInstruction; }
+        if (!reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
         if (state_.registers[insn.b] == 0) {
-          if (insn.a < 0 || static_cast<std::size_t>(insn.a) >= program_.insns.size()) { log_trace(insn.opcode, Trap::IllegalInstruction); return Trap::IllegalInstruction; }
+          if (insn.a < 0 || static_cast<std::size_t>(insn.a) >= program_.insns.size()) { trap = Trap::IllegalInstruction; break; }
           state_.pc = static_cast<std::size_t>(insn.a);
         }
-        log_trace(insn.opcode);
         break;
       default:
-        log_trace(insn.opcode, Trap::IllegalInstruction);
-        return Trap::IllegalInstruction;
+        trap = Trap::IllegalInstruction;
+        break;
     }
+    log_trace(insn.opcode, trap);
+    if (trap != Trap::None) return trap;
     return {};
   }
 

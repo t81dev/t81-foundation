@@ -149,4 +149,7 @@ if (T81_BUILD_TESTS)
 
   add_executable(t81_lang_parser_vm_test tests/cpp/lang_parser_vm_test.cpp)
   target_link_libraries(t81_lang_parser_vm_test PRIVATE t81)
+
+  add_executable(t81_lang_typecheck_test tests/cpp/lang_typecheck_test.cpp)
+  target_link_libraries(t81_lang_typecheck_test PRIVATE t81)
 endif()

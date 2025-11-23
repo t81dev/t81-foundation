@@ -9,6 +9,9 @@ enum class CompileError {
   None = 0,
   UnsupportedType,
   EmptyModule,
+  MissingReturn,
+  UndeclaredIdentifier,
+  RegisterOverflow,
 };
 
 class Compiler {
@@ -16,4 +19,3 @@ class Compiler {
   std::expected<t81::tisc::Program, CompileError> compile(const Module& module) const;
 };
 }  // namespace t81::lang
-

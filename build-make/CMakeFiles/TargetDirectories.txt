@@ -35,5 +35,6 @@
 /Users/t81dev/t81-foundation/build-make/CMakeFiles/t81_canonfs_driver_test.dir
 /Users/t81dev/t81-foundation/build-make/CMakeFiles/t81_vm_trace_test.dir
 /Users/t81dev/t81-foundation/build-make/CMakeFiles/t81_lang_parser_vm_test.dir
+/Users/t81dev/t81-foundation/build-make/CMakeFiles/t81_lang_typecheck_test.dir
 /Users/t81dev/t81-foundation/build-make/CMakeFiles/edit_cache.dir
 /Users/t81dev/t81-foundation/build-make/CMakeFiles/rebuild_cache.dir

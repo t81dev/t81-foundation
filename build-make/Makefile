@@ -597,6 +597,19 @@ t81_lang_parser_vm_test/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_parser_vm_test.dir/build.make CMakeFiles/t81_lang_parser_vm_test.dir/build
 .PHONY : t81_lang_parser_vm_test/fast
 
+#=============================================================================
+# Target rules for targets named t81_lang_typecheck_test
+
+# Build rule for target.
+t81_lang_typecheck_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 t81_lang_typecheck_test
+.PHONY : t81_lang_typecheck_test
+
+# fast build rule for target.
+t81_lang_typecheck_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_typecheck_test.dir/build.make CMakeFiles/t81_lang_typecheck_test.dir/build
+.PHONY : t81_lang_typecheck_test/fast
+
 examples/axion_demo.o: examples/axion_demo.cpp.o
 .PHONY : examples/axion_demo.o
 
@@ -1437,6 +1450,30 @@ tests/cpp/lang_parser_vm_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_parser_vm_test.dir/build.make CMakeFiles/t81_lang_parser_vm_test.dir/tests/cpp/lang_parser_vm_test.cpp.s
 .PHONY : tests/cpp/lang_parser_vm_test.cpp.s
 
+tests/cpp/lang_typecheck_test.o: tests/cpp/lang_typecheck_test.cpp.o
+.PHONY : tests/cpp/lang_typecheck_test.o
+
+# target to build an object file
+tests/cpp/lang_typecheck_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_typecheck_test.dir/build.make CMakeFiles/t81_lang_typecheck_test.dir/tests/cpp/lang_typecheck_test.cpp.o
+.PHONY : tests/cpp/lang_typecheck_test.cpp.o
+
+tests/cpp/lang_typecheck_test.i: tests/cpp/lang_typecheck_test.cpp.i
+.PHONY : tests/cpp/lang_typecheck_test.i
+
+# target to preprocess a source file
+tests/cpp/lang_typecheck_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_typecheck_test.dir/build.make CMakeFiles/t81_lang_typecheck_test.dir/tests/cpp/lang_typecheck_test.cpp.i
+.PHONY : tests/cpp/lang_typecheck_test.cpp.i
+
+tests/cpp/lang_typecheck_test.s: tests/cpp/lang_typecheck_test.cpp.s
+.PHONY : tests/cpp/lang_typecheck_test.s
+
+# target to generate assembly for a file
+tests/cpp/lang_typecheck_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_typecheck_test.dir/build.make CMakeFiles/t81_lang_typecheck_test.dir/tests/cpp/lang_typecheck_test.cpp.s
+.PHONY : tests/cpp/lang_typecheck_test.cpp.s
+
 tests/cpp/lang_vm_integration_test.o: tests/cpp/lang_vm_integration_test.cpp.o
 .PHONY : tests/cpp/lang_vm_integration_test.o
 
@@ -1872,6 +1909,7 @@ help:
 	@echo "... t81_ir_encoding_test"
 	@echo "... t81_ir_roundtrip"
 	@echo "... t81_lang_parser_vm_test"
+	@echo "... t81_lang_typecheck_test"
 	@echo "... t81_lang_vm_test"
 	@echo "... t81_tensor_broadcast_test"
 	@echo "... t81_tensor_elementwise_test"
@@ -1995,6 +2033,9 @@ help:
 	@echo "... tests/cpp/lang_parser_vm_test.o"
 	@echo "... tests/cpp/lang_parser_vm_test.i"
 	@echo "... tests/cpp/lang_parser_vm_test.s"
+	@echo "... tests/cpp/lang_typecheck_test.o"
+	@echo "... tests/cpp/lang_typecheck_test.i"
+	@echo "... tests/cpp/lang_typecheck_test.s"
 	@echo "... tests/cpp/lang_vm_integration_test.o"
 	@echo "... tests/cpp/lang_vm_integration_test.i"
 	@echo "... tests/cpp/lang_vm_integration_test.s"

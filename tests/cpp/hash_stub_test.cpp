@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 #include "t81/hash/base81.hpp"
 #include "t81/hash/canonhash.hpp"
@@ -22,10 +23,20 @@ int main() {
     std::string enc = hash::encode_base81(bytes);
     // Should not be empty for non-empty input.
     assert(!enc.empty());
+    // Canonical form should not include the legacy "b81:" prefix.
+    assert(enc.rfind("b81:", 0) != 0);
 
     // Roundtrip must exactly recover original bytes.
     std::vector<std::uint8_t> round = hash::decode_base81(enc);
     assert(round == bytes);
+
+    bool threw = false;
+    try {
+      (void)hash::decode_base81("~"); // invalid symbol
+    } catch (const std::invalid_argument&) {
+      threw = true;
+    }
+    assert(threw);
   }
 
   // ---------------------------------------------------------------------------

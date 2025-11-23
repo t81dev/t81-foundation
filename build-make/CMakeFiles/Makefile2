@@ -100,6 +100,7 @@ all: CMakeFiles/t81_vm_bounds_test.dir/all
 all: CMakeFiles/t81_canonfs_driver_test.dir/all
 all: CMakeFiles/t81_vm_trace_test.dir/all
 all: CMakeFiles/t81_lang_parser_vm_test.dir/all
+all: CMakeFiles/t81_lang_typecheck_test.dir/all
 .PHONY : all
 
 # The main recursive "codegen" target.
@@ -140,6 +141,7 @@ codegen: CMakeFiles/t81_vm_bounds_test.dir/codegen
 codegen: CMakeFiles/t81_canonfs_driver_test.dir/codegen
 codegen: CMakeFiles/t81_vm_trace_test.dir/codegen
 codegen: CMakeFiles/t81_lang_parser_vm_test.dir/codegen
+codegen: CMakeFiles/t81_lang_typecheck_test.dir/codegen
 .PHONY : codegen
 
 # The main recursive "preinstall" target.
@@ -184,6 +186,7 @@ clean: CMakeFiles/t81_vm_bounds_test.dir/clean
 clean: CMakeFiles/t81_canonfs_driver_test.dir/clean
 clean: CMakeFiles/t81_vm_trace_test.dir/clean
 clean: CMakeFiles/t81_lang_parser_vm_test.dir/clean
+clean: CMakeFiles/t81_lang_typecheck_test.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -321,7 +324,7 @@ CMakeFiles/t81_demo.dir/clean:
 CMakeFiles/t81_tensor_ops.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_ops.dir/build.make CMakeFiles/t81_tensor_ops.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_ops.dir/build.make CMakeFiles/t81_tensor_ops.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=64,65 "Built target t81_tensor_ops"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=66,67 "Built target t81_tensor_ops"
 .PHONY : CMakeFiles/t81_tensor_ops.dir/all
 
 # Build rule for subdir invocation for target.
@@ -338,7 +341,7 @@ t81_tensor_ops: CMakeFiles/t81_tensor_ops.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_tensor_ops.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_ops.dir/build.make CMakeFiles/t81_tensor_ops.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=64,65 "Finished codegen for target t81_tensor_ops"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=66,67 "Finished codegen for target t81_tensor_ops"
 .PHONY : CMakeFiles/t81_tensor_ops.dir/codegen
 
 # clean rule for target.
@@ -481,7 +484,7 @@ CMakeFiles/t81_fraction_test.dir/clean:
 CMakeFiles/t81_tensor_transpose_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_transpose_test.dir/build.make CMakeFiles/t81_tensor_transpose_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_transpose_test.dir/build.make CMakeFiles/t81_tensor_transpose_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=74,75 "Built target t81_tensor_transpose_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=76,77 "Built target t81_tensor_transpose_test"
 .PHONY : CMakeFiles/t81_tensor_transpose_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -498,7 +501,7 @@ t81_tensor_transpose_test: CMakeFiles/t81_tensor_transpose_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_tensor_transpose_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_transpose_test.dir/build.make CMakeFiles/t81_tensor_transpose_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=74,75 "Finished codegen for target t81_tensor_transpose_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=76,77 "Finished codegen for target t81_tensor_transpose_test"
 .PHONY : CMakeFiles/t81_tensor_transpose_test.dir/codegen
 
 # clean rule for target.
@@ -513,7 +516,7 @@ CMakeFiles/t81_tensor_transpose_test.dir/clean:
 CMakeFiles/t81_tensor_slice_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_slice_test.dir/build.make CMakeFiles/t81_tensor_slice_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_slice_test.dir/build.make CMakeFiles/t81_tensor_slice_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=72,73 "Built target t81_tensor_slice_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=74,75 "Built target t81_tensor_slice_test"
 .PHONY : CMakeFiles/t81_tensor_slice_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -530,7 +533,7 @@ t81_tensor_slice_test: CMakeFiles/t81_tensor_slice_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_tensor_slice_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_slice_test.dir/build.make CMakeFiles/t81_tensor_slice_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=72,73 "Finished codegen for target t81_tensor_slice_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=74,75 "Finished codegen for target t81_tensor_slice_test"
 .PHONY : CMakeFiles/t81_tensor_slice_test.dir/codegen
 
 # clean rule for target.
@@ -545,7 +548,7 @@ CMakeFiles/t81_tensor_slice_test.dir/clean:
 CMakeFiles/t81_tensor_reshape_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_reshape_test.dir/build.make CMakeFiles/t81_tensor_reshape_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_reshape_test.dir/build.make CMakeFiles/t81_tensor_reshape_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=68,69 "Built target t81_tensor_reshape_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=70,71 "Built target t81_tensor_reshape_test"
 .PHONY : CMakeFiles/t81_tensor_reshape_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -562,7 +565,7 @@ t81_tensor_reshape_test: CMakeFiles/t81_tensor_reshape_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_tensor_reshape_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_reshape_test.dir/build.make CMakeFiles/t81_tensor_reshape_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=68,69 "Finished codegen for target t81_tensor_reshape_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=70,71 "Finished codegen for target t81_tensor_reshape_test"
 .PHONY : CMakeFiles/t81_tensor_reshape_test.dir/codegen
 
 # clean rule for target.
@@ -578,7 +581,7 @@ CMakeFiles/t81_tensor_loader_test.dir/all: CMakeFiles/t81_io.dir/all
 CMakeFiles/t81_tensor_loader_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_loader_test.dir/build.make CMakeFiles/t81_tensor_loader_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_loader_test.dir/build.make CMakeFiles/t81_tensor_loader_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=60,61 "Built target t81_tensor_loader_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=62,63 "Built target t81_tensor_loader_test"
 .PHONY : CMakeFiles/t81_tensor_loader_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -595,7 +598,7 @@ t81_tensor_loader_test: CMakeFiles/t81_tensor_loader_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_tensor_loader_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_loader_test.dir/build.make CMakeFiles/t81_tensor_loader_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=60,61 "Finished codegen for target t81_tensor_loader_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=62,63 "Finished codegen for target t81_tensor_loader_test"
 .PHONY : CMakeFiles/t81_tensor_loader_test.dir/codegen
 
 # clean rule for target.
@@ -802,7 +805,7 @@ CMakeFiles/t81_codec_base81_test.dir/clean:
 CMakeFiles/t81_tensor_shape_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_shape_test.dir/build.make CMakeFiles/t81_tensor_shape_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_shape_test.dir/build.make CMakeFiles/t81_tensor_shape_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=70,71 "Built target t81_tensor_shape_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=72,73 "Built target t81_tensor_shape_test"
 .PHONY : CMakeFiles/t81_tensor_shape_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -819,7 +822,7 @@ t81_tensor_shape_test: CMakeFiles/t81_tensor_shape_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_tensor_shape_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_shape_test.dir/build.make CMakeFiles/t81_tensor_shape_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=70,71 "Finished codegen for target t81_tensor_shape_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=72,73 "Finished codegen for target t81_tensor_shape_test"
 .PHONY : CMakeFiles/t81_tensor_shape_test.dir/codegen
 
 # clean rule for target.
@@ -834,7 +837,7 @@ CMakeFiles/t81_tensor_shape_test.dir/clean:
 CMakeFiles/t81_ternary_arith_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_ternary_arith_test.dir/build.make CMakeFiles/t81_ternary_arith_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_ternary_arith_test.dir/build.make CMakeFiles/t81_ternary_arith_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=78,79 "Built target t81_ternary_arith_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=80,81 "Built target t81_ternary_arith_test"
 .PHONY : CMakeFiles/t81_ternary_arith_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -851,7 +854,7 @@ t81_ternary_arith_test: CMakeFiles/t81_ternary_arith_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_ternary_arith_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_ternary_arith_test.dir/build.make CMakeFiles/t81_ternary_arith_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=78,79 "Finished codegen for target t81_ternary_arith_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=80,81 "Finished codegen for target t81_ternary_arith_test"
 .PHONY : CMakeFiles/t81_ternary_arith_test.dir/codegen
 
 # clean rule for target.
@@ -866,7 +869,7 @@ CMakeFiles/t81_ternary_arith_test.dir/clean:
 CMakeFiles/t81_tensor_matmul_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_matmul_test.dir/build.make CMakeFiles/t81_tensor_matmul_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_matmul_test.dir/build.make CMakeFiles/t81_tensor_matmul_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=62,63 "Built target t81_tensor_matmul_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=64,65 "Built target t81_tensor_matmul_test"
 .PHONY : CMakeFiles/t81_tensor_matmul_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -883,7 +886,7 @@ t81_tensor_matmul_test: CMakeFiles/t81_tensor_matmul_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_tensor_matmul_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_matmul_test.dir/build.make CMakeFiles/t81_tensor_matmul_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=62,63 "Finished codegen for target t81_tensor_matmul_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=64,65 "Finished codegen for target t81_tensor_matmul_test"
 .PHONY : CMakeFiles/t81_tensor_matmul_test.dir/codegen
 
 # clean rule for target.
@@ -898,7 +901,7 @@ CMakeFiles/t81_tensor_matmul_test.dir/clean:
 CMakeFiles/t81_tensor_reduce_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_reduce_test.dir/build.make CMakeFiles/t81_tensor_reduce_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_reduce_test.dir/build.make CMakeFiles/t81_tensor_reduce_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=66,67 "Built target t81_tensor_reduce_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=68,69 "Built target t81_tensor_reduce_test"
 .PHONY : CMakeFiles/t81_tensor_reduce_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -915,7 +918,7 @@ t81_tensor_reduce_test: CMakeFiles/t81_tensor_reduce_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_tensor_reduce_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_reduce_test.dir/build.make CMakeFiles/t81_tensor_reduce_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=66,67 "Finished codegen for target t81_tensor_reduce_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=68,69 "Finished codegen for target t81_tensor_reduce_test"
 .PHONY : CMakeFiles/t81_tensor_reduce_test.dir/codegen
 
 # clean rule for target.
@@ -930,7 +933,7 @@ CMakeFiles/t81_tensor_reduce_test.dir/clean:
 CMakeFiles/t81_tensor_broadcast_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_broadcast_test.dir/build.make CMakeFiles/t81_tensor_broadcast_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_broadcast_test.dir/build.make CMakeFiles/t81_tensor_broadcast_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=56,57 "Built target t81_tensor_broadcast_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=58,59 "Built target t81_tensor_broadcast_test"
 .PHONY : CMakeFiles/t81_tensor_broadcast_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -947,7 +950,7 @@ t81_tensor_broadcast_test: CMakeFiles/t81_tensor_broadcast_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_tensor_broadcast_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_broadcast_test.dir/build.make CMakeFiles/t81_tensor_broadcast_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=56,57 "Finished codegen for target t81_tensor_broadcast_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=58,59 "Finished codegen for target t81_tensor_broadcast_test"
 .PHONY : CMakeFiles/t81_tensor_broadcast_test.dir/codegen
 
 # clean rule for target.
@@ -994,7 +997,7 @@ CMakeFiles/t81_entropy_test.dir/clean:
 CMakeFiles/t81_tensor_elementwise_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_elementwise_test.dir/build.make CMakeFiles/t81_tensor_elementwise_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_elementwise_test.dir/build.make CMakeFiles/t81_tensor_elementwise_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=58,59 "Built target t81_tensor_elementwise_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=60,61 "Built target t81_tensor_elementwise_test"
 .PHONY : CMakeFiles/t81_tensor_elementwise_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1011,7 +1014,7 @@ t81_tensor_elementwise_test: CMakeFiles/t81_tensor_elementwise_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_tensor_elementwise_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_elementwise_test.dir/build.make CMakeFiles/t81_tensor_elementwise_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=58,59 "Finished codegen for target t81_tensor_elementwise_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=60,61 "Finished codegen for target t81_tensor_elementwise_test"
 .PHONY : CMakeFiles/t81_tensor_elementwise_test.dir/codegen
 
 # clean rule for target.
@@ -1059,7 +1062,7 @@ CMakeFiles/t81_c_api_bigint_test.dir/clean:
 CMakeFiles/t81_tensor_unary_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_unary_test.dir/build.make CMakeFiles/t81_tensor_unary_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_unary_test.dir/build.make CMakeFiles/t81_tensor_unary_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=76,77 "Built target t81_tensor_unary_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=78,79 "Built target t81_tensor_unary_test"
 .PHONY : CMakeFiles/t81_tensor_unary_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1076,7 +1079,7 @@ t81_tensor_unary_test: CMakeFiles/t81_tensor_unary_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_tensor_unary_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_tensor_unary_test.dir/build.make CMakeFiles/t81_tensor_unary_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=76,77 "Finished codegen for target t81_tensor_unary_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=78,79 "Finished codegen for target t81_tensor_unary_test"
 .PHONY : CMakeFiles/t81_tensor_unary_test.dir/codegen
 
 # clean rule for target.
@@ -1123,7 +1126,7 @@ CMakeFiles/t81_hanoi_integration_test.dir/clean:
 CMakeFiles/t81_lang_vm_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_vm_test.dir/build.make CMakeFiles/t81_lang_vm_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_vm_test.dir/build.make CMakeFiles/t81_lang_vm_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=54,55 "Built target t81_lang_vm_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=56,57 "Built target t81_lang_vm_test"
 .PHONY : CMakeFiles/t81_lang_vm_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1140,7 +1143,7 @@ t81_lang_vm_test: CMakeFiles/t81_lang_vm_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_lang_vm_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_vm_test.dir/build.make CMakeFiles/t81_lang_vm_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=54,55 "Finished codegen for target t81_lang_vm_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=56,57 "Finished codegen for target t81_lang_vm_test"
 .PHONY : CMakeFiles/t81_lang_vm_test.dir/codegen
 
 # clean rule for target.
@@ -1155,7 +1158,7 @@ CMakeFiles/t81_lang_vm_test.dir/clean:
 CMakeFiles/t81_vm_load_store_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_load_store_test.dir/build.make CMakeFiles/t81_vm_load_store_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_load_store_test.dir/build.make CMakeFiles/t81_vm_load_store_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=86,87 "Built target t81_vm_load_store_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=88,89 "Built target t81_vm_load_store_test"
 .PHONY : CMakeFiles/t81_vm_load_store_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1172,7 +1175,7 @@ t81_vm_load_store_test: CMakeFiles/t81_vm_load_store_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_vm_load_store_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_load_store_test.dir/build.make CMakeFiles/t81_vm_load_store_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=86,87 "Finished codegen for target t81_vm_load_store_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=88,89 "Finished codegen for target t81_vm_load_store_test"
 .PHONY : CMakeFiles/t81_vm_load_store_test.dir/codegen
 
 # clean rule for target.
@@ -1187,7 +1190,7 @@ CMakeFiles/t81_vm_load_store_test.dir/clean:
 CMakeFiles/t81_vm_divmod_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_divmod_test.dir/build.make CMakeFiles/t81_vm_divmod_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_divmod_test.dir/build.make CMakeFiles/t81_vm_divmod_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=82,83 "Built target t81_vm_divmod_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=84,85 "Built target t81_vm_divmod_test"
 .PHONY : CMakeFiles/t81_vm_divmod_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1204,7 +1207,7 @@ t81_vm_divmod_test: CMakeFiles/t81_vm_divmod_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_vm_divmod_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_divmod_test.dir/build.make CMakeFiles/t81_vm_divmod_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=82,83 "Finished codegen for target t81_vm_divmod_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=84,85 "Finished codegen for target t81_vm_divmod_test"
 .PHONY : CMakeFiles/t81_vm_divmod_test.dir/codegen
 
 # clean rule for target.
@@ -1219,7 +1222,7 @@ CMakeFiles/t81_vm_divmod_test.dir/clean:
 CMakeFiles/t81_vm_illegal_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_illegal_test.dir/build.make CMakeFiles/t81_vm_illegal_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_illegal_test.dir/build.make CMakeFiles/t81_vm_illegal_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=84,85 "Built target t81_vm_illegal_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=86,87 "Built target t81_vm_illegal_test"
 .PHONY : CMakeFiles/t81_vm_illegal_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1236,7 +1239,7 @@ t81_vm_illegal_test: CMakeFiles/t81_vm_illegal_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_vm_illegal_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_illegal_test.dir/build.make CMakeFiles/t81_vm_illegal_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=84,85 "Finished codegen for target t81_vm_illegal_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=86,87 "Finished codegen for target t81_vm_illegal_test"
 .PHONY : CMakeFiles/t81_vm_illegal_test.dir/codegen
 
 # clean rule for target.
@@ -1251,7 +1254,7 @@ CMakeFiles/t81_vm_illegal_test.dir/clean:
 CMakeFiles/t81_vm_bounds_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_bounds_test.dir/build.make CMakeFiles/t81_vm_bounds_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_bounds_test.dir/build.make CMakeFiles/t81_vm_bounds_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=80,81 "Built target t81_vm_bounds_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=82,83 "Built target t81_vm_bounds_test"
 .PHONY : CMakeFiles/t81_vm_bounds_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1268,7 +1271,7 @@ t81_vm_bounds_test: CMakeFiles/t81_vm_bounds_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_vm_bounds_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_bounds_test.dir/build.make CMakeFiles/t81_vm_bounds_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=80,81 "Finished codegen for target t81_vm_bounds_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=82,83 "Finished codegen for target t81_vm_bounds_test"
 .PHONY : CMakeFiles/t81_vm_bounds_test.dir/codegen
 
 # clean rule for target.
@@ -1315,7 +1318,7 @@ CMakeFiles/t81_canonfs_driver_test.dir/clean:
 CMakeFiles/t81_vm_trace_test.dir/all: CMakeFiles/t81.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_trace_test.dir/build.make CMakeFiles/t81_vm_trace_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_trace_test.dir/build.make CMakeFiles/t81_vm_trace_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=88,89 "Built target t81_vm_trace_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=90,91 "Built target t81_vm_trace_test"
 .PHONY : CMakeFiles/t81_vm_trace_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1332,7 +1335,7 @@ t81_vm_trace_test: CMakeFiles/t81_vm_trace_test.dir/rule
 # codegen rule for target.
 CMakeFiles/t81_vm_trace_test.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_trace_test.dir/build.make CMakeFiles/t81_vm_trace_test.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=88,89 "Finished codegen for target t81_vm_trace_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=90,91 "Finished codegen for target t81_vm_trace_test"
 .PHONY : CMakeFiles/t81_vm_trace_test.dir/codegen
 
 # clean rule for target.
@@ -1371,6 +1374,38 @@ CMakeFiles/t81_lang_parser_vm_test.dir/codegen:
 CMakeFiles/t81_lang_parser_vm_test.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_parser_vm_test.dir/build.make CMakeFiles/t81_lang_parser_vm_test.dir/clean
 .PHONY : CMakeFiles/t81_lang_parser_vm_test.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/t81_lang_typecheck_test.dir
+
+# All Build rule for target.
+CMakeFiles/t81_lang_typecheck_test.dir/all: CMakeFiles/t81.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_typecheck_test.dir/build.make CMakeFiles/t81_lang_typecheck_test.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_typecheck_test.dir/build.make CMakeFiles/t81_lang_typecheck_test.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=54,55 "Built target t81_lang_typecheck_test"
+.PHONY : CMakeFiles/t81_lang_typecheck_test.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/t81_lang_typecheck_test.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/t81dev/t81-foundation/build-make/CMakeFiles 19
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/t81_lang_typecheck_test.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/t81dev/t81-foundation/build-make/CMakeFiles 0
+.PHONY : CMakeFiles/t81_lang_typecheck_test.dir/rule
+
+# Convenience name for target.
+t81_lang_typecheck_test: CMakeFiles/t81_lang_typecheck_test.dir/rule
+.PHONY : t81_lang_typecheck_test
+
+# codegen rule for target.
+CMakeFiles/t81_lang_typecheck_test.dir/codegen:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_typecheck_test.dir/build.make CMakeFiles/t81_lang_typecheck_test.dir/codegen
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=54,55 "Finished codegen for target t81_lang_typecheck_test"
+.PHONY : CMakeFiles/t81_lang_typecheck_test.dir/codegen
+
+# clean rule for target.
+CMakeFiles/t81_lang_typecheck_test.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_typecheck_test.dir/build.make CMakeFiles/t81_lang_typecheck_test.dir/clean
+.PHONY : CMakeFiles/t81_lang_typecheck_test.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

@@ -4,6 +4,7 @@
 #include <t81/bigint/gcd.hpp>
 #include <vector>
 #include <utility>
+#include <stdexcept>
 
 using t81::T243BigInt;
 using t81::DivModResult;
@@ -103,10 +104,11 @@ static void test_base81_roundtrip() {
     std::vector<std::string> cases = {
         "0",
         "1",
-        "80",
-        "1.80.5",
-        "-2.0.1",
-        "3.0.0.0.4"
+        "Z",         // 35
+        "a",         // 36
+        "∞",         // multi-byte codepoint
+        "1∞",        // multi-digit, high codepoint
+        "-σω",       // negative, multi-digit
     };
     for (const auto& s : cases) {
         T243BigInt a = T243BigInt::from_base81_string(s);
@@ -115,6 +117,13 @@ static void test_base81_roundtrip() {
         T243BigInt b = T243BigInt::from_base81_string(t);
         assert(a == b);
     }
+    bool threw = false;
+    try {
+        (void)T243BigInt::from_base81_string("~");
+    } catch (const std::invalid_argument&) {
+        threw = true;
+    }
+    assert(threw);
 }
 
 int main() {

@@ -15,6 +15,11 @@ struct TraceEntry {
   std::optional<Trap> trap;
 };
 
+struct Flags {
+  bool zero{false};
+  bool negative{false};
+};
+
 struct MemoryLayout {
   std::size_t code_limit{0};   // exclusive
   std::size_t stack_limit{0};  // exclusive
@@ -26,6 +31,7 @@ struct State {
   std::vector<std::int64_t> memory;
   MemoryLayout layout{};
   std::vector<TraceEntry> trace;
+  Flags flags{};
   std::size_t pc{0};
   bool halted{false};
 };

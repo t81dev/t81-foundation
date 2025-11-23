@@ -22,7 +22,9 @@ int main() {
   Function fn;
   fn.name = "main";
   fn.return_type = Type::I64;
-  fn.body.push_back({root});
+  Statement ret;
+  ret.node = StatementReturn{root};
+  fn.body.push_back(ret);
 
   Module mod;
   mod.functions.push_back(fn);
@@ -39,4 +41,3 @@ int main() {
 
   return 0;
 }
-

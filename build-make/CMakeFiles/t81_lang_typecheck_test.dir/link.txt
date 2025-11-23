@@ -1,0 +1,1 @@
+/usr/bin/clang++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/t81_lang_typecheck_test.dir/tests/cpp/lang_typecheck_test.cpp.o -o t81_lang_typecheck_test  libt81.a

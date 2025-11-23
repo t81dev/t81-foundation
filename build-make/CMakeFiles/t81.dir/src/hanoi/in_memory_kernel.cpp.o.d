@@ -910,6 +910,7 @@ CMakeFiles/t81.dir/src/hanoi/in_memory_kernel.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/bind_front.h \
   /Users/t81dev/t81-foundation/include/t81/canonfs/canon_types.hpp \
   /Users/t81dev/t81-foundation/include/t81/core/base81.hpp \
+  /Users/t81dev/t81-foundation/include/t81/codec/base81.hpp \
   /Users/t81dev/t81-foundation/include/t81/hash/canonhash.hpp \
   /Users/t81dev/t81-foundation/include/t81/hash/base81.hpp \
   /Users/t81dev/t81-foundation/include/t81/hanoi/types.hpp \
