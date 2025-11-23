@@ -16,6 +16,13 @@ add_library(t81_io STATIC
 target_link_libraries(t81_io PUBLIC t81)
 target_include_directories(t81_io PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+# Build the C API shim (C++)
+add_library(t81_c_api STATIC
+  src/c_api/t81_c_api.cpp
+)
+target_link_libraries(t81_c_api PUBLIC t81)
+target_include_directories(t81_c_api PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 # Examples
 if (T81_BUILD_EXAMPLES)
   add_executable(t81_demo examples/demo.cpp)
@@ -86,4 +93,7 @@ if (T81_BUILD_TESTS)
 
   add_executable(t81_tensor_elementwise_test tests/cpp/tensor_elementwise_test.cpp)
   target_link_libraries(t81_tensor_elementwise_test PRIVATE t81)
+
+  add_executable(t81_c_api_bigint_test tests/cpp/c_api_bigint_test.c)
+  target_link_libraries(t81_c_api_bigint_test PRIVATE t81_c_api)
 endif()
