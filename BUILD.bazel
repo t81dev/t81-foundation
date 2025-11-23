@@ -102,3 +102,10 @@ cc_test(
     srcs = ["tests/cpp/axion_stub_test.cpp"],
     deps = [":t81"],
 )
+
+# NEW: Base-243 codec test
+cc_test(
+    name = "t81_codec_base243_test",
+    srcs = ["tests/cpp/codec_base243_test.cpp"],
+    deps = [":t81"],
+)
