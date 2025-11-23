@@ -109,16 +109,21 @@ cc_test(
     deps = [":t81"],
 )
 
-# NEW: tensor shape helpers
 cc_test(
     name = "t81_tensor_shape_test",
     srcs = ["tests/cpp/tensor_shape_test.cpp"],
     deps = [":t81"],
 )
 
-# NEW: balanced-ternary arithmetic
 cc_test(
     name = "t81_ternary_arith_test",
     srcs = ["tests/cpp/ternary_arith_test.cpp"],
+    deps = [":t81"],
+)
+
+# NEW: matmul test
+cc_test(
+    name = "t81_tensor_matmul_test",
+    srcs = ["tests/cpp/tensor_matmul_test.cpp"],
     deps = [":t81"],
 )
