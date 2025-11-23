@@ -9,26 +9,19 @@ int main() {
 
   // --- bytes <-> digits roundtrip (big-endian order preserved) ---
   {
-    std::vector<uint8_t> bytes = {0x00, 0x01, 0x7F, 0x80, 0xF0, 0xFE};
+    std::vector<uint8_t> bytes = {0xFF}; // 255 = 1*243 + 12 -> digits {1,12}
     auto digits = Base243::encode_bytes_be(bytes);
-    // Each digit should be byte % 243 -> for all <243 it's identity
-    assert(digits.size() == bytes.size());
-    for (size_t i = 0; i < bytes.size(); ++i) {
-      assert(digits[i] == static_cast<digit_t>(bytes[i] % kBase));
-    }
+    assert((digits == std::vector<digit_t>{1, 12}));
     auto round = Base243::decode_bytes_be(digits);
     assert(round == bytes);
   }
 
-  // Values >= 243 wrap via modulo in encode; decode expects 0..242
   {
-    std::vector<uint8_t> bytes = {242, 243, 244, 255}; // encode modulo 243 => {242,0,1,12}
+    std::vector<uint8_t> bytes = {0x01, 0x00}; // 256 = 1*243 + 13 -> digits {1,13}
     auto digits = Base243::encode_bytes_be(bytes);
-    assert((digits == std::vector<digit_t>{242, 0, 1, static_cast<digit_t>(255 % 243)}));
+    assert((digits == std::vector<digit_t>{1, 13}));
     auto round = Base243::decode_bytes_be(digits);
-    // decode copies digits back to bytes (stub behavior)
-    assert(round.size() == digits.size());
-    for (size_t i = 0; i < round.size(); ++i) assert(round[i] == digits[i]);
+    assert(round == bytes);
   }
 
   // --- ASCII helpers (stubbed mapping) ---
@@ -52,6 +45,23 @@ int main() {
       threw = true;
     }
     assert(threw);
+  }
+
+  // --- bigint roundtrip ---
+  {
+    t81::T243BigInt a = t81::T243BigInt::from_i64(123456);
+    auto s = Base243::encode_bigint(a);
+    t81::T243BigInt b;
+    bool ok = Base243::decode_bigint(s, b);
+    assert(ok);
+    assert(a == b);
+
+    t81::T243BigInt neg = t81::T243BigInt::from_i64(-999);
+    auto sn = Base243::encode_bigint(neg);
+    t81::T243BigInt back;
+    ok = Base243::decode_bigint(sn, back);
+    assert(ok);
+    assert(neg == back);
   }
 
   std::cout << "codec_base243 ok\n";

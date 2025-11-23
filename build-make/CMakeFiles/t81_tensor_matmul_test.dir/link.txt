@@ -1,0 +1,1 @@
+/usr/bin/clang++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/t81_tensor_matmul_test.dir/tests/cpp/tensor_matmul_test.cpp.o -o t81_tensor_matmul_test  libt81.a

@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/t81dev/t81-foundation/build-make/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

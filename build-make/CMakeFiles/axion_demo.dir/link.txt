@@ -1,0 +1,1 @@
+/usr/bin/clang++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/axion_demo.dir/examples/axion_demo.cpp.o -o axion_demo  libt81.a

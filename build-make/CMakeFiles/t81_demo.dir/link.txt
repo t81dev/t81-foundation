@@ -1,0 +1,1 @@
+/usr/bin/clang++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/t81_demo.dir/examples/demo.cpp.o -o t81_demo  libt81.a

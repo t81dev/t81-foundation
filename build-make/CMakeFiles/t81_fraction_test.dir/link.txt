@@ -1,0 +1,1 @@
+/usr/bin/clang++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/t81_fraction_test.dir/tests/cpp/fraction_roundtrip.cpp.o -o t81_fraction_test  libt81.a

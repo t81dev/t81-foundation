@@ -1,21 +1,24 @@
 # t81/codec — Base-243 Codec Surface
 
 A small, stable API for encoding/decoding **base-243** digit vectors. The current
-implementation is a **deterministic stub** so downstream code can compile; swap
-in a canonical radix-243 converter later without changing call sites.
+implementation performs canonical base-256 ↔ base-243 conversion (big-endian),
+plus a textual codec for `T243BigInt`.
 
 ## Files
 - `base243.hpp`
   - `Base243::encode_bytes_be(std::vector<uint8_t>) -> std::vector<digit_t>`
   - `Base243::decode_bytes_be(std::vector<digit_t>) -> std::vector<uint8_t>`
-  - `Base243::encode_ascii(std::string)` *(transitional)*
-  - `Base243::decode_ascii(std::vector<digit_t>)` *(transitional)*
+  - `Base243::encode_ascii(std::string)`
+  - `Base243::decode_ascii(std::vector<digit_t>)`
+  - `Base243::encode_bigint(const T243BigInt&) -> std::string`
+  - `Base243::decode_bigint(std::string_view, T243BigInt&) -> bool`
 
 ## Notes
-- `digit_t` is `uint8_t` with range **[0..242]**.
-- Stub maps bytes and chars modulo 243 (not a true base conversion).
-- When the real codec lands, wire `T243BigInt` to use `Base243` instead of the
-  placeholder ASCII mapping.
+- `digit_t` is `uint8_t` with range **[0..242]**; digits are MSB-first.
+- Bytes are interpreted as a big-endian base-256 integer; digits are canonical
+  base-243 representation.
+- Bigints are rendered as dot-separated base-243 digits with optional leading
+  `-`; parsing rejects out-of-range digits and malformed input.
 
 ## Example
 ```cpp

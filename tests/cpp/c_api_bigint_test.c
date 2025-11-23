@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "c_api/t81_c_api.h"
+#include "src/c_api/t81_c_api.h"
 
 int main(void) {
   // Construct from ASCII (stub mapping in C++ BigInt)

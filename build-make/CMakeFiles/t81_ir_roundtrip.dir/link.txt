@@ -1,0 +1,1 @@
+/usr/bin/clang++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/t81_ir_roundtrip.dir/examples/ir_roundtrip.cpp.o -o t81_ir_roundtrip  libt81.a

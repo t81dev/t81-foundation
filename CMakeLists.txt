@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(t81 LANGUAGES CXX)
+project(t81 LANGUAGES C CXX)
 
 # Options
 option(T81_BUILD_EXAMPLES "Build T81 C++ examples" ON)
@@ -16,6 +16,10 @@ add_library(t81 STATIC
   src/hanoi/in_memory_kernel.cpp
   src/axion/engine.cpp
   src/cog/promotion.cpp
+  src/codec/base243.cpp
+  src/bigint/divmod.cpp
+  src/bigint/gcd.cpp
+  src/hash/canonhash81.cpp
 )
 target_compile_features(t81 PUBLIC cxx_std_20)
 target_include_directories(t81 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -32,7 +36,10 @@ add_library(t81_c_api STATIC
   src/c_api/t81_c_api.cpp
 )
 target_link_libraries(t81_c_api PUBLIC t81)
-target_include_directories(t81_c_api PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(t81_c_api
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 # Examples
 if (T81_BUILD_EXAMPLES)
@@ -107,6 +114,7 @@ if (T81_BUILD_TESTS)
 
   add_executable(t81_c_api_bigint_test tests/cpp/c_api_bigint_test.c)
   target_link_libraries(t81_c_api_bigint_test PRIVATE t81_c_api)
+  target_include_directories(t81_c_api_bigint_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
   add_executable(t81_tensor_unary_test tests/cpp/tensor_unary_test.cpp)
   target_link_libraries(t81_tensor_unary_test PRIVATE t81)

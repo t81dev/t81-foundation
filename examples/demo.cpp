@@ -63,7 +63,8 @@ int main() {
 
   // ---- CanonFS / Hash stubs -----------------------------------------------
   std::string payload = "hello-t81";
-  auto h = t81::hash::make_canonhash81_base81stub(payload);
+  auto h_hash = t81::hash::make_canonhash81_base81stub(payload);
+  auto h = t81::CanonHash81::from_string(h_hash.to_string());
   t81::CanonRef ref = t81::CanonRef::make(h, CANON_PERM_READ | CANON_PERM_WRITE, 0);
 
   uint8_t buf[t81::canonfs_io::kWireSize];

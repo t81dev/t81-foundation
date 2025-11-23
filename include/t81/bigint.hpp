@@ -95,6 +95,16 @@ public:
   bool operator>(const T243BigInt& o)  const { return cmp(*this, o) > 0; }
   bool operator<=(const T243BigInt& o) const { return cmp(*this, o) <= 0; }
   bool operator>=(const T243BigInt& o) const { return cmp(*this, o) >= 0; }
+  // Convert to int64_t when representable; throws on overflow.
+  std::int64_t to_int64() const {
+    if (sign_ == Sign::Zero) return 0;
+    __int128 acc = 0;
+    for (int i = static_cast<int>(d_.size()) - 1; i >= 0; --i) {
+      acc = acc * static_cast<__int128>(243) + static_cast<__int128>(d_[static_cast<size_t>(i)]);
+      if (acc > static_cast<__int128>(INT64_MAX)) throw std::overflow_error("T243BigInt too large for int64_t");
+    }
+    return (sign_ == Sign::Neg) ? -static_cast<std::int64_t>(acc) : static_cast<std::int64_t>(acc);
+  }
 
   // --- arithmetic ---
   static T243BigInt add(const T243BigInt& a, const T243BigInt& b) {

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libt81_io.a CMakeFiles/t81_io.dir/src/io/tensor_loader.cpp.o
+/usr/bin/ranlib libt81_io.a
