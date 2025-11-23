@@ -127,9 +127,15 @@ cc_test(
     deps = [":t81"],
 )
 
-# NEW: reduce test
 cc_test(
     name = "t81_tensor_reduce_test",
     srcs = ["tests/cpp/tensor_reduce_test.cpp"],
+    deps = [":t81"],
+)
+
+# NEW: broadcast test
+cc_test(
+    name = "t81_tensor_broadcast_test",
+    srcs = ["tests/cpp/tensor_broadcast_test.cpp"],
     deps = [":t81"],
 )
