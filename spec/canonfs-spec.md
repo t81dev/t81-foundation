@@ -448,10 +448,3 @@ Future model includes:
 * gossip dissemination
 * capability revocation propagation
 * canonical event ordering without timestamps
-
-```
-
----
-
-Just indicate which one you want next.
-```
