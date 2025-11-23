@@ -121,9 +121,15 @@ cc_test(
     deps = [":t81"],
 )
 
-# NEW: matmul test
 cc_test(
     name = "t81_tensor_matmul_test",
     srcs = ["tests/cpp/tensor_matmul_test.cpp"],
+    deps = [":t81"],
+)
+
+# NEW: reduce test
+cc_test(
+    name = "t81_tensor_reduce_test",
+    srcs = ["tests/cpp/tensor_reduce_test.cpp"],
     deps = [":t81"],
 )
