@@ -78,7 +78,9 @@ if (T81_BUILD_TESTS)
   add_executable(t81_tensor_reduce_test tests/cpp/tensor_reduce_test.cpp)
   target_link_libraries(t81_tensor_reduce_test PRIVATE t81)
 
-  # NEW: broadcast test
   add_executable(t81_tensor_broadcast_test tests/cpp/tensor_broadcast_test.cpp)
   target_link_libraries(t81_tensor_broadcast_test PRIVATE t81)
+
+  add_executable(t81_entropy_test tests/cpp/entropy_test.cpp)
+  target_link_libraries(t81_entropy_test PRIVATE t81)
 endif()
