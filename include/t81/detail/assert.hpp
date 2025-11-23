@@ -1,30 +1,28 @@
 #pragma once
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 #include "t81/config.hpp"
 
-// Lightweight assertion macros for t81 internals.
-// Controlled by T81_ENABLE_ASSERTS (see config.hpp).
+// Lightweight internal assertions used across headers.
+// Enabled when T81_ENABLE_ASSERTS != 0 (see config.hpp).
 
 #if T81_ENABLE_ASSERTS
-  #define T81_ASSERT(cond)                                                     \
-    do {                                                                       \
-      if (!(cond)) {                                                           \
-        std::fprintf(stderr, "[t81] ASSERT FAILED: %s (%s:%d)\n",              \
-                     #cond, __FILE__, __LINE__);                               \
-        std::abort();                                                          \
-      }                                                                        \
+
+  #define T81_ASSERT_IMPL_(cond, msg)                                            \
+    do {                                                                         \
+      if (!(cond)) {                                                             \
+        std::fprintf(stderr,                                                     \
+          "[T81 ASSERT] %s:%d: %s\n", __FILE__, __LINE__, (msg));                \
+        std::abort();                                                            \
+      }                                                                          \
     } while (0)
 
-  #define T81_ASSERT_MSG(cond, msg)                                            \
-    do {                                                                       \
-      if (!(cond)) {                                                           \
-        std::fprintf(stderr, "[t81] ASSERT FAILED: %s | %s (%s:%d)\n",         \
-                     #cond, (msg), __FILE__, __LINE__);                        \
-        std::abort();                                                          \
-      }                                                                        \
-    } while (0)
+  #define T81_ASSERT(cond)        T81_ASSERT_IMPL_((cond), #cond)
+  #define T81_ASSERT_MSG(cond,m)  T81_ASSERT_IMPL_((cond), (m))
+
 #else
-  #define T81_ASSERT(cond)       do { (void)sizeof(cond); } while (0)
-  #define T81_ASSERT_MSG(c, msg) do { (void)sizeof(c); (void)sizeof(msg); } while (0)
+
+  #define T81_ASSERT(cond)        do { (void)sizeof(cond); } while (0)
+  #define T81_ASSERT_MSG(c,m)     do { (void)sizeof(c); (void)sizeof(m); } while (0)
+
 #endif
