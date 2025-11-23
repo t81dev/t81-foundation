@@ -65,6 +65,16 @@ CMAKE_BINARY_DIR = /Users/t81dev/t81-foundation/build-make
 #=============================================================================
 # Targets provided globally by CMake.
 
+# Special rule for the target test
+test:
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running tests..."
+	/opt/homebrew/bin/ctest $(ARGS)
+.PHONY : test
+
+# Special rule for the target test
+test/fast: test
+.PHONY : test/fast
+
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running CMake cache editor..."
@@ -583,6 +593,19 @@ t81_vm_trace_test: cmake_check_build_system
 t81_vm_trace_test/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_trace_test.dir/build.make CMakeFiles/t81_vm_trace_test.dir/build
 .PHONY : t81_vm_trace_test/fast
+
+#=============================================================================
+# Target rules for targets named t81_vm_jump_flags_test
+
+# Build rule for target.
+t81_vm_jump_flags_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 t81_vm_jump_flags_test
+.PHONY : t81_vm_jump_flags_test
+
+# fast build rule for target.
+t81_vm_jump_flags_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_jump_flags_test.dir/build.make CMakeFiles/t81_vm_jump_flags_test.dir/build
+.PHONY : t81_vm_jump_flags_test/fast
 
 #=============================================================================
 # Target rules for targets named t81_lang_parser_vm_test
@@ -1834,6 +1857,30 @@ tests/cpp/vm_illegal_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_illegal_test.dir/build.make CMakeFiles/t81_vm_illegal_test.dir/tests/cpp/vm_illegal_test.cpp.s
 .PHONY : tests/cpp/vm_illegal_test.cpp.s
 
+tests/cpp/vm_jump_flags_test.o: tests/cpp/vm_jump_flags_test.cpp.o
+.PHONY : tests/cpp/vm_jump_flags_test.o
+
+# target to build an object file
+tests/cpp/vm_jump_flags_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_jump_flags_test.dir/build.make CMakeFiles/t81_vm_jump_flags_test.dir/tests/cpp/vm_jump_flags_test.cpp.o
+.PHONY : tests/cpp/vm_jump_flags_test.cpp.o
+
+tests/cpp/vm_jump_flags_test.i: tests/cpp/vm_jump_flags_test.cpp.i
+.PHONY : tests/cpp/vm_jump_flags_test.i
+
+# target to preprocess a source file
+tests/cpp/vm_jump_flags_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_jump_flags_test.dir/build.make CMakeFiles/t81_vm_jump_flags_test.dir/tests/cpp/vm_jump_flags_test.cpp.i
+.PHONY : tests/cpp/vm_jump_flags_test.cpp.i
+
+tests/cpp/vm_jump_flags_test.s: tests/cpp/vm_jump_flags_test.cpp.s
+.PHONY : tests/cpp/vm_jump_flags_test.s
+
+# target to generate assembly for a file
+tests/cpp/vm_jump_flags_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_jump_flags_test.dir/build.make CMakeFiles/t81_vm_jump_flags_test.dir/tests/cpp/vm_jump_flags_test.cpp.s
+.PHONY : tests/cpp/vm_jump_flags_test.cpp.s
+
 tests/cpp/vm_load_store_test.o: tests/cpp/vm_load_store_test.cpp.o
 .PHONY : tests/cpp/vm_load_store_test.o
 
@@ -1890,6 +1937,7 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... test"
 	@echo "... axion_demo"
 	@echo "... t81"
 	@echo "... t81_axion_stub_test"
@@ -1926,6 +1974,7 @@ help:
 	@echo "... t81_vm_bounds_test"
 	@echo "... t81_vm_divmod_test"
 	@echo "... t81_vm_illegal_test"
+	@echo "... t81_vm_jump_flags_test"
 	@echo "... t81_vm_load_store_test"
 	@echo "... t81_vm_trace_test"
 	@echo "... examples/axion_demo.o"
@@ -2081,6 +2130,9 @@ help:
 	@echo "... tests/cpp/vm_illegal_test.o"
 	@echo "... tests/cpp/vm_illegal_test.i"
 	@echo "... tests/cpp/vm_illegal_test.s"
+	@echo "... tests/cpp/vm_jump_flags_test.o"
+	@echo "... tests/cpp/vm_jump_flags_test.i"
+	@echo "... tests/cpp/vm_jump_flags_test.s"
 	@echo "... tests/cpp/vm_load_store_test.o"
 	@echo "... tests/cpp/vm_load_store_test.i"
 	@echo "... tests/cpp/vm_load_store_test.s"

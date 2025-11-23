@@ -124,6 +124,14 @@ static void test_base81_roundtrip() {
         threw = true;
     }
     assert(threw);
+
+    threw = false;
+    try {
+        (void)T243BigInt::from_base81_string("00");
+    } catch (const std::invalid_argument&) {
+        threw = true;
+    }
+    assert(threw);
 }
 
 int main() {

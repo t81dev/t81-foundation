@@ -37,6 +37,14 @@ int main() {
       threw = true;
     }
     assert(threw);
+
+    threw = false;
+    try {
+      (void)hash::decode_base81("b81:00"); // legacy prefix rejected
+    } catch (const std::invalid_argument&) {
+      threw = true;
+    }
+    assert(threw);
   }
 
   // ---------------------------------------------------------------------------

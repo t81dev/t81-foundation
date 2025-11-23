@@ -147,9 +147,51 @@ if (T81_BUILD_TESTS)
   add_executable(t81_vm_trace_test tests/cpp/vm_trace_test.cpp)
   target_link_libraries(t81_vm_trace_test PRIVATE t81)
 
+  add_executable(t81_vm_jump_flags_test tests/cpp/vm_jump_flags_test.cpp)
+  target_link_libraries(t81_vm_jump_flags_test PRIVATE t81)
+
   add_executable(t81_lang_parser_vm_test tests/cpp/lang_parser_vm_test.cpp)
   target_link_libraries(t81_lang_parser_vm_test PRIVATE t81)
 
   add_executable(t81_lang_typecheck_test tests/cpp/lang_typecheck_test.cpp)
   target_link_libraries(t81_lang_typecheck_test PRIVATE t81)
+
+  enable_testing()
+  set(T81_TEST_TARGETS
+    t81_bigint_test
+    t81_fraction_test
+    t81_tensor_transpose_test
+    t81_tensor_slice_test
+    t81_tensor_reshape_test
+    t81_tensor_loader_test
+    t81_canonfs_io_test
+    t81_ir_encoding_test
+    t81_hash_stub_test
+    t81_axion_stub_test
+    t81_codec_base243_test
+    t81_codec_base81_test
+    t81_tensor_shape_test
+    t81_ternary_arith_test
+    t81_tensor_matmul_test
+    t81_tensor_reduce_test
+    t81_tensor_broadcast_test
+    t81_entropy_test
+    t81_tensor_elementwise_test
+    t81_c_api_bigint_test
+    t81_tensor_unary_test
+    t81_hanoi_integration_test
+    t81_lang_vm_test
+    t81_vm_load_store_test
+    t81_vm_divmod_test
+    t81_vm_illegal_test
+    t81_vm_bounds_test
+    t81_canonfs_driver_test
+    t81_vm_trace_test
+    t81_vm_jump_flags_test
+    t81_lang_parser_vm_test
+    t81_lang_typecheck_test
+  )
+  foreach(tgt IN LISTS T81_TEST_TARGETS)
+    add_test(NAME ${tgt} COMMAND $<TARGET_FILE:${tgt}>)
+  endforeach()
 endif()

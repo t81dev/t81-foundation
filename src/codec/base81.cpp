@@ -112,6 +112,8 @@ bool decode_bytes(std::string_view s, std::vector<std::uint8_t>& out) {
     if (it == map.end()) return false;
     digits.push_back(it->second);
   }
+  // Reject non-canonical leading zeros (except the lone zero digit).
+  if (digits.size() > 1 && digits.front() == 0) return false;
 
   // Convert base-81 digits (MSB-first) to base-256 bytes (big-endian).
   std::vector<std::uint8_t> buf{0}; // big-endian

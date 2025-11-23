@@ -92,6 +92,7 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/t81_vm_bounds_test.dir/DependInfo.cmake"
   "CMakeFiles/t81_canonfs_driver_test.dir/DependInfo.cmake"
   "CMakeFiles/t81_vm_trace_test.dir/DependInfo.cmake"
+  "CMakeFiles/t81_vm_jump_flags_test.dir/DependInfo.cmake"
   "CMakeFiles/t81_lang_parser_vm_test.dir/DependInfo.cmake"
   "CMakeFiles/t81_lang_typecheck_test.dir/DependInfo.cmake"
   )

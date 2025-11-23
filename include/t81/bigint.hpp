@@ -456,6 +456,9 @@ inline T243BigInt T243BigInt::from_base81_string(std::string_view s) {
     if (it == map.end()) throw std::invalid_argument("T243BigInt::from_base81_string: invalid character");
     digits.push_back(it->second);
   }
+  if (digits.size() > 1 && digits.front() == 0) {
+    throw std::invalid_argument("T243BigInt::from_base81_string: non-canonical leading zero");
+  }
 
   T243BigInt base(81);
   T243BigInt v(0);
