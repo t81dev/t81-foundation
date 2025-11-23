@@ -75,7 +75,10 @@ if (T81_BUILD_TESTS)
   add_executable(t81_tensor_matmul_test tests/cpp/tensor_matmul_test.cpp)
   target_link_libraries(t81_tensor_matmul_test PRIVATE t81)
 
-  # NEW: reduce test
   add_executable(t81_tensor_reduce_test tests/cpp/tensor_reduce_test.cpp)
   target_link_libraries(t81_tensor_reduce_test PRIVATE t81)
+
+  # NEW: broadcast test
+  add_executable(t81_tensor_broadcast_test tests/cpp/tensor_broadcast_test.cpp)
+  target_link_libraries(t81_tensor_broadcast_test PRIVATE t81)
 endif()
