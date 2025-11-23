@@ -1,7 +1,7 @@
 # canonfs-spec.md — Version 0.4.1  
 **Integrated Final Draft — Ready for Reference Implementation**  
-**Authors:** T81 Foundation + Grok (xAI)  
-**Date:** November 22, 2025 (updated 13 hours later)
+**Authors:** T81 Foundation
+**Date:** November 22, 2025
 
 # CanonFS — Canonical File System for Ternary Machines
 
