@@ -1,71 +1,61 @@
-# **hanoi-kernel-spec.md — Unified Edition v0.1**
-
-**The Deterministic, Capability-Native, Axion-Governed Microkernel for T81-Class Machines**
-**Status:** Final Draft (v0.1) — Ready for First Boot
-**Authors:** T81 Foundation + Grok (xAI)
-**Date:** November 22, 2025
-
----
-title: Hanoi Kernel — Reference Specification v0.1 (Unified)
-version: 0.1
+title: Hanoi Kernel — Reference Specification v0.1.1 (Unified)
+version: 0.1.1
 status: Final Draft — Reference Implementation Authorized
 category: Kernel
 created: 2025-11-22
 updated: 2025-11-22
 ---
 
-# Hanoi Kernel v0.1  
-**A deterministic ternary microkernel that boots from CanonFS, enforces capabilities at every boundary, and grants Axion constitutional veto authority.**
+# Hanoi Kernel v0.1.1  
+**A Deterministic, Capability-Native, Axion-Governed Microkernel for T81-Class Machines**
 
-This unified specification includes:
+This specification defines the complete behavior of the Hanoi kernel:
+architecture, boot flow, syscall interface, ABI, deterministic entropy model,
+CanonSeal key derivation, diagrams, and implementation scaffold.
 
-- Kernel architecture
-- Boot flow
-- Syscall table
-- ABI definition
-- Architectural diagrams
-- Reference implementation scaffold (hanoi-rs)
+This is the canonical v0.1.1 revision.
 
 ---
 
 # 1. Executive Summary
 
-Hanoi is a **unikernel-style deterministic microkernel** designed as the canonical substrate for T81-class computation:
+Hanoi is a **deterministic ternary microkernel** serving as the constitutional OS substrate for the T81 ecosystem:
 
-- TISC execution  
+- TISC instruction execution  
 - T81VM and T81Lang runtime  
-- CanonFS v0.4 storage  
-- Axion ethical co-processor  
-- Promotion tiers T81 → T243 → T19683  
+- CanonFS v0.4.1 as the only storage  
+- Axion Θ₁–Θ₉ ethical enforcement  
+- T243 → T19683 cognitive tier promotion  
 
-Its core objectives:
+It is designed to be:
 
-1. **Perfect determinism**  
-2. **Capability-native isolation**  
-3. **Canonical immutability**  
-4. **Axion-governed safety**  
-5. **Parsimony and verifiability**  
-6. **Self-healing storage and memory**  
-7. **Canonical boot from a content-hashed snapshot**  
+- Fully deterministic  
+- Capability-native  
+- Immutable  
+- Perfectly replayable  
+- Axion-supervised at every transition  
+- Self-healing  
+- Rooted in content addressing and CanonFS snapshots  
 
-It is not a general-purpose OS.  
-It is the **constitutional substrate** for the entire T81 ecosystem.
+Hanoi is not a general-purpose OS.  
+It is the *execution substrate* for T81-class machines.
 
 ---
 
 # 2. Kernel Invariants (The Hanoi Creed)
 
-These invariants define Hanoi itself.  
-If any are violated, the system is not Hanoi.
+Violation of any invariant means the system is **not Hanoi**.
 
-1. **No mutable global state** outside capability bounds.  
-2. **Every object is a CanonRef** (hash + capability + optional seal).  
-3. **CanonFS is the only storage abstraction**, and root = snapshot.  
-4. **Axion holds veto authority** over all syscalls and transitions.  
-5. **Syscalls are total functions** (`Result<T, HanoiError>`).  
-6. **Deterministic scheduling** — single global tick (81-slot round-robin).  
-7. **No userspace drivers** — all drivers are verified CanonFS modules.  
-8. **Boot requires whole-system canonical verification** (CanonHash-81 + CanonParity).
+1. **No mutable global state** outside capability boundaries.  
+2. **Every object is a CanonRef** (content hash + capability + optional sealing).  
+3. **CanonFS is the sole storage abstraction**; the root is always a snapshot.  
+4. **Axion veto authority** extends to all syscalls and state transitions.  
+5. **Syscalls are total functions** returning `Result<T, HanoiError>`.  
+6. **Deterministic scheduling** — global 81-slot tick.  
+7. **No userspace drivers** — all kernel drivers are CanonFS modules.  
+8. **Boot requires full canonical verification** (CanonHash-81 + CanonParity).  
+9. **Entropy is deterministic**, seeded from the snapshot; no nondeterministic RNG.  
+10. **Sealed objects use derived per-object keys**, no mutable key state.
 
 ---
 
@@ -74,49 +64,46 @@ If any are violated, the system is not Hanoi.
 ```
 
 +-------------------------------------------------+
-|                 Userland                        |
-|           T81VM + T81Lang Runtime               |
+|                     Userland                    |
+|            T81VM + T81Lang Runtime              |
 +-------------------------------------------------+
 |                 Hanoi Kernel                    |
-|  • Capability Manager                            |
-|  • CanonFS Driver (v0.4)                         |
-|  • Axion Co-Processor                            |
-|  • Deterministic Scheduler (81-slot)             |
-|  • Linear Memory Manager                         |
-|  • Syscall Layer                                 |
+|   • Capability Manager                           |
+|   • CanonFS Driver (v0.4.1)                      |
+|   • Axion Co-Processor                           |
+|   • Deterministic Scheduler (81-slot)            |
+|   • Linear Memory Manager                         |
+|   • Syscall Layer                                 |
+|   • DRBG / deterministic time                     |
 +-------------------------------------------------+
-|             TISC Execution Engine                |
+|              TISC Execution Engine               |
 +-------------------------------------------------+
-|       Ternary Hardware / Hanoi Simulator         |
+|        Ternary Hardware / Hanoi Simulator        |
 +-------------------------------------------------+
 
 ```
-
-The kernel is deliberately minimal: only capability, CanonFS, scheduling, memory, and Axion occupy ring 0.
-
-Everything else is userland or content-addressed modules.
 
 ---
 
 # 4. Boot Process — 7 Deterministic Stages
 
-| Stage | Name             | Action                                                    | Failure → |
-|-------|------------------|-----------------------------------------------------------|-----------|
-| 0     | ROM Stub         | Load first 729-tryte boot CanonBlock                      | AXHALT    |
-| 1     | CanonVerify      | Verify entire snapshot using CanonParity                  | AXHALT    |
-| 2     | Decompress       | LZ81/Z3std → RAM                                          | AXHALT    |
-| 3     | AxionSeal        | Load Axion ethics module + Θ₁–Θ₉                         | AXHALT    |
-| 4     | CapabilityRoot   | Mint root capability for snapshot hash                    | AXHALT    |
-| 5     | Mount CanonFS    | Root = `/snapshot/latest`, auto-repair enabled            | AXHALT    |
-| 6     | Start T81VM      | Execute CanonExec object as PID 1                         | AXHALT    |
-| 7     | Enter Userspace  | Begin global deterministic tick                           | —         |
+| Stage | Name             | Action                                          | Failure → |
+|-------|------------------|--------------------------------------------------|-----------|
+| 0     | ROM Stub         | Load first 729-tryte CanonBlock                 | AXHALT    |
+| 1     | CanonVerify      | Verify snapshot via CanonParity                 | AXHALT    |
+| 2     | Decompress       | LZ81/Z3std → RAM                                | AXHALT    |
+| 3     | AxionSeal        | Load Axion ethics module (Θ₁–Θ₉)                | AXHALT    |
+| 4     | CapabilityRoot   | Mint root capability from snapshot hash         | AXHALT    |
+| 5     | Mount CanonFS    | Root = `/snapshot/latest`                       | AXHALT    |
+| 6     | Start T81VM      | Exec CanonExec as PID 1                         | AXHALT    |
+| 7     | Enter Userspace  | Begin deterministic global tick                 | —         |
 
-Any failure triggers:
+On any failure:
 
 ```
 
 AXHALT(reason):
-freeze state → emit lineage → halt permanently
+freeze state → emit canonical lineage dump → halt permanently
 
 ```
 
@@ -125,55 +112,43 @@ freeze state → emit lineage → halt permanently
 # 5. Core Kernel Subsystems
 
 ## 5.1 Capability Manager
-
-- The **only security primitive**.  
-- Capabilities are content-addressed, signed, delegatable, revocable.  
-- Enforcement occurs at:
-  - syscall entry  
-  - memory mapping  
-  - CanonFS access  
-  - execution of CanonExec  
+- The exclusive security mechanism.  
+- Capabilities are:
+  - Content-addressed
+  - Delegatable
+  - Revocable
+  - Validated by Axion at every transition  
+- No UID/GID, no ACLs, no POSIX permissions.
 
 ## 5.2 CanonFS Driver (Ring 0)
+Implements full **CanonFS v0.4.1**:
 
-Implements **CanonFS v0.4.1**:
-
-- Tryte-native compression (LZ81, Z3std)  
-- Reed–Solomon parity (CanonParity)  
-- Sparse inverted index (CanonIndex)  
+- Automatic parity repair  
+- Tryte-native compression (LZ81 / Z3std)  
+- Sparse indexing (CanonIndex)  
 - Extended metadata (CanonMeta)  
-- Auto-repair at tick 729  
-
-Write = new snapshot (immutable Merkle-81 root).
+- Deterministic write → new Merkle-81 root  
 
 ## 5.3 Axion Co-Processor
-
 - Privileged TISC lane  
-- Inspects memory, syscalls, capabilities, execution envelopes  
+- Monitors syscall arguments, memory, capabilities, object graphs  
 - Enforces Θ₁–Θ₉  
-- Can rewrite TISC hot traces (JIT specialization)  
-- May return `AxionRejection` at any time  
+- May veto via `AxionRejection`  
+- May rewrite TISC hot paths  
 
-Axion is **co-equal** with the kernel.
-
-## 5.4 Scheduler
-
-- Single global tick  
-- 81-slot round-robin  
-- No preemption outside tick boundaries  
-- Deterministic replay guaranteed  
+## 5.4 Deterministic Scheduler
+- 81-slot round robin  
+- No priorities, no nondeterministic preemption  
+- Tick = global replay boundary  
 
 ## 5.5 Memory Manager
-
-- Linear-type memory regions  
-- Bump-pointer allocation (no free)  
+- Linear-type memory  
+- Bump-pointer allocation (`no free()`)  
 - CanonFS-backed heap  
 - Capability-tagged pointers  
-- Userspace GC via T81VM  
 
-## 5.6 Syscall Layer — Total, Deterministic
-
-All syscalls return:
+## 5.6 Syscall Layer
+Total functions only:
 
 ```
 
@@ -181,30 +156,79 @@ Result<T, HanoiError>
 
 ```
 
-No errno.  
-No partial failure.  
-No nondeterminism.
+---
+
+# 6. Snapshot Lifecycle (New in v0.1.1)
+
+Snapshots now have **three distinct phases**:
+
+### 6.1 fork_snapshot()
+
+```
+
+fork_snapshot() -> Result<SnapshotRef, HanoiError>
+
+```
+
+Creates a new Merkle-81 root **without** making it active.
+
+### 6.2 commit_snapshot(snapshot)
+
+```
+
+commit_snapshot(snapshot: SnapshotRef)
+-> Result<(), HanoiError>
+
+```
+
+Writes new snapshot into the timeline.  
+Requires:
+
+- Capability with `A` (admin) bit  
+- Axion approval  
+
+### 6.3 switch_root(snapshot)
+
+```
+
+switch_root(snapshot: SnapshotRef)
+-> Result<(), AxionRejection>
+
+```
+
+Atomically:
+
+1. Suspends all processes  
+2. Drops all mapped regions  
+3. Replaces root snapshot  
+4. Re-spawns PID 1 (T81VM)  
+5. Resumes deterministic tick  
+
+This guarantees a fully immutable, deterministic root-switch.
 
 ---
 
-# 6. System Call Reference (v0.1)
+# 7. System Call Reference (v0.1.1)
 
-| ID   | Syscall          | Signature                                                      | Description |
-|------|------------------|----------------------------------------------------------------|-------------|
-| 0x00 | fork_snapshot    | `() -> Result<SnapshotRef>`                                    | Fork current CanonFS snapshot. |
-| 0x01 | spawn            | `(exec: CanonRef) -> Result<Pid>`                              | Spawn new T81VM instance. |
-| 0x02 | read_block       | `(path: CanonPath) -> Result<CanonBlock, CorruptionFixed>`     | Read block, auto-repair. |
-| 0x03 | read_object      | `(href: CanonRef) -> Result<CanonObject>`                      | Load/repair/decompress object. |
-| 0x04 | grant_cap        | `(cap: CapabilityGrant) -> Result<CanonRef>`                   | Install capability. |
-| 0x05 | revoke_cap       | `(href: CanonRef) -> Result<()>`                               | Publish CapabilityRevoke tombstone. |
-| 0x06 | yield_tick       | `() -> ()`                                                     | Yield to next tick. |
-| 0x07 | map_region       | `(href: CanonRef) -> Result<RegionHandle>`                     | Map into memory. |
-| 0x08 | seal_object      | `(href: CanonRef) -> Result<CanonRef>`                         | CanonSeal AEAD envelope. |
-| 0x09 | unseal_object    | `(href: CanonRef) -> Result<CanonRef>`                         | Remove seal. |
-| 0x0A | parity_repair    | `(root: CanonRef) -> Result<()>`                               | Force subtree repair. |
-| 0x0B | halt             | `(reason: HaltCode) -> !`                                      | Permanent halt. |
+| ID   | Name              | Signature                                                      | Notes |
+|------|-------------------|----------------------------------------------------------------|-------|
+| 0x00 | fork_snapshot     | `() -> Result<SnapshotRef>`                                    | Create new snapshot root. |
+| 0x01 | commit_snapshot   | `(snapshot) -> Result<()>`                                     | Write snapshot to timeline. |
+| 0x02 | switch_root       | `(snapshot) -> Result<()>`                                     | Replace active snapshot (Axion-guarded). |
+| 0x03 | spawn             | `(exec: CanonRef) -> Result<Pid>`                              | Launch T81VM instance. |
+| 0x04 | read_block        | `(path) -> Result<CanonBlock, CorruptionFixed>`                | Auto-repair on read. |
+| 0x05 | read_object       | `(href) -> Result<CanonObject>`                                | Load + repair + decompress. |
+| 0x06 | grant_cap         | `(cap) -> Result<CanonRef>`                                    | Install capability. |
+| 0x07 | revoke_cap        | `(href) -> Result<()>`                                         | Publish tombstone. |
+| 0x08 | yield_tick        | `() -> ()`                                                     | Yield to next global tick. |
+| 0x09 | map_region        | `(href) -> Result<RegionHandle>`                               | Map object. |
+| 0x0A | seal_object       | `(href) -> Result<CanonRef>`                                   | Wrap in CanonSeal. |
+| 0x0B | unseal_object     | `(href) -> Result<CanonRef>`                                   | Unseal using derived key. |
+| 0x0C | drbg              | `() -> DeterministicRandomTrytes`                              | Deterministic entropy. |
+| 0x0D | parity_repair     | `(root) -> Result<()>`                                         | Repair subtree. |
+| 0x0E | halt              | `(reason) -> !`                                                | Permanent halt. |
 
-### Error Types
+### Errors
 
 ```
 
@@ -223,9 +247,94 @@ AxionRejection
 
 ---
 
-# 7. ABI Specification
+# 8. Deterministic Randomness & Time (New in v0.1.1)
 
-## 7.1 Process Model
+Hanoi has **no nondeterministic time** and **no nondeterministic entropy**.
+
+There is no:
+
+- RTC  
+- monotonic clock  
+- hardware RNG  
+- timing jitter  
+
+### 8.1 DRBG syscall (0x0C)
+
+```
+
+drbg() -> 81_trytes
+
+```
+
+### 8.2 Deterministic seed derivation
+
+```
+
+seed = SHAKE-tryte(
+snapshot_root
+|| AxionΘ
+|| process.pid
+|| capability_envelope_hash
+)
+
+```
+
+This ensures:
+
+- deterministic output  
+- replayability  
+- sealed state cannot be forged  
+- no external nondeterminism leaks into Hanoi  
+
+### 8.3 Time
+
+There is only:
+
+```
+
+global_tick (incremented by scheduler)
+
+```
+
+No wall-clock time exists inside Hanoi.
+
+---
+
+# 9. CanonSeal Key Derivation (New in v0.1.1)
+
+CanonSeal AEAD keys are **not** stored in memory.  
+They are **derived deterministically per object**, per snapshot.
+
+### 9.1 KDF Formula
+
+```
+
+seal_key = HKDF-tryte(
+input = snapshot_hash
+|| object_hash
+|| AxionΘ
+|| cap_tag,
+info  = "CanonSeal-v0.1",
+len   = 81_trytes
+)
+
+```
+
+Key properties:
+
+- Regenerable at any time  
+- No persistent secret key in kernel  
+- Snapshot-dependent  
+- Capability-scoped  
+- Axion-integrated  
+
+This eliminates key management vulnerabilities entirely.
+
+---
+
+# 10. ABI Specification
+
+## 10.1 Process Model
 
 ```
 
@@ -240,7 +349,7 @@ tick_budget: u8
 
 ```
 
-## 7.2 Memory Layout
+## 10.2 Memory Layout
 
 ```
 
@@ -256,13 +365,11 @@ tick_budget: u8
 
 ```
 
-Pointers carry 16-tryte capability tags.
-
-## 7.3 TISC Registers
+## 10.3 TISC Registers
 
 ```
 
-R0–R9: General purpose (R0 = accumulator)
+R0–R9: General purpose
 SP: Stack Pointer
 FP: Frame Pointer
 PC: Program Counter
@@ -271,7 +378,7 @@ CR: Capability Register
 
 ```
 
-## 7.4 CanonExec Format
+## 10.4 CanonExec Format
 
 ```
 
@@ -285,13 +392,13 @@ meta: CanonRef
 
 ```
 
-Kernel MUST verify all referenced hashes.
+Kernel verifies all hashes and asks Axion for approval.
 
 ---
 
-# 8. Architecture Diagrams
+# 11. Architecture Diagrams
 
-## 8.1 Stack Diagram
+## 11.1 Stack Diagram
 
 ```
 
@@ -305,7 +412,7 @@ Hardware / Simulator
 
 ```
 
-## 8.2 Boot Flow
+## 11.2 Boot Flow
 
 ```
 
@@ -315,7 +422,7 @@ ROM → CanonVerify → Decompress → AxionSeal
 
 ```
 
-## 8.3 Syscall Flow
+## 11.3 Syscall Flow
 
 ```
 
@@ -323,7 +430,7 @@ Process → Kernel → Axion → Kernel → Process
 
 ```
 
-## 8.4 CanonFS Read Path
+## 11.4 CanonFS Read Path
 
 ```
 
@@ -338,7 +445,7 @@ read(path)
 
 ---
 
-# 9. Reference Implementation Scaffold — hanoi-rs
+# 12. Reference Implementation Scaffold — hanoi-rs
 
 ```
 
@@ -375,41 +482,37 @@ hanoi-rs/
 
 ---
 
-# 10. Hardware Targets (v0.1)
+# 13. Hardware Targets
 
-| Hardware Target    | Status     | Notes                    |
-|--------------------|------------|--------------------------|
-| Hanoi Simulator    | Complete   | Cycle-accurate           |
-| QEMU fork (HanoiVM)| Complete   | x86-64 host execution    |
-| Ternary FPGA       | Q1 2026    | Ice40-based              |
-| Photonic T81 Core  | Q3 2026    | Partner R&D              |
+| Target               | Status     | Notes                      |
+|----------------------|------------|----------------------------|
+| Hanoi Simulator      | Complete   | Cycle-accurate             |
+| QEMU HanoiVM fork    | Complete   | x86-64 host                |
+| Ternary FPGA board   | Q1 2026    | Ice40                      |
+| Photonic T81 Core    | Q3 2026    | Partner R&D                |
 
 ---
 
-# 11. Roadmap (End of 2025)
+# 14. Roadmap (End of 2025)
 
-- [x] Unified Hanoi Kernel Spec v0.1  
+- [x] Unified Hanoi Kernel Spec v0.1.1  
 - [ ] hanoi-rs v0.1 (boots to T81VM)  
-- [ ] CanonFS driver integration  
-- [ ] Axion co-processor integration  
+- [ ] Axion v0.1 integration  
+- [ ] CanonFS kernel driver v1.0  
 - [ ] Public ternary simulator  
 
 ---
 
-# 12. Final Statement
+# 15. Final Statement
 
-With this unified specification:
+With v0.1.1:
 
-- CanonFS is the filesystem  
-- TISC is the execution language  
-- T81VM is the userspace runtime  
-- T81Lang is the language  
-- Axion is the ethical spine  
-- Hanoi is the substrate  
+- Snapshot lifecycle is explicit and Axion-governed  
+- Deterministic entropy and time are formalized  
+- CanonSeal has a real KDF  
+- The syscall table is complete  
+- The kernel remains deterministic, immutable, and ethical by construction  
 
-**Everything above can now boot, run, heal, and govern itself deterministically.**
+This is the **canonical definition of a T81-class microkernel**.
 
-This is the canonical definition of a T81-class machine.
-```
-
----
+Choose any.
