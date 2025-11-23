@@ -9,6 +9,13 @@ add_library(t81 INTERFACE)
 target_compile_features(t81 INTERFACE cxx_std_17)
 target_include_directories(t81 INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+# IO sources that need compilation
+add_library(t81_io STATIC
+  src/io/tensor_loader.cpp
+)
+target_link_libraries(t81_io PUBLIC t81)
+target_include_directories(t81_io PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 # Examples
 if (T81_BUILD_EXAMPLES)
   add_executable(t81_demo examples/demo.cpp)
@@ -20,6 +27,7 @@ if (T81_BUILD_TESTS)
   # BigInt + Fraction (requires nlohmann/json header if using JSON vectors)
   add_executable(t81_bigint_test tests/cpp/bigint_roundtrip.cpp)
   target_link_libraries(t81_bigint_test PRIVATE t81)
+
   add_executable(t81_fraction_test tests/cpp/fraction_roundtrip.cpp)
   target_link_libraries(t81_fraction_test PRIVATE t81)
 
@@ -34,9 +42,17 @@ if (T81_BUILD_TESTS)
   target_link_libraries(t81_tensor_reshape_test PRIVATE t81)
 
   add_executable(t81_tensor_loader_test tests/cpp/tensor_loader_test.cpp)
-  target_link_libraries(t81_tensor_loader_test PRIVATE t81)
+  target_link_libraries(t81_tensor_loader_test PRIVATE t81_io)
 
-  # CanonFS IO test
+  # CanonFS IO test (header-only)
   add_executable(t81_canonfs_io_test tests/cpp/canonfs_io_test.cpp)
   target_link_libraries(t81_canonfs_io_test PRIVATE t81)
+
+  # IR encode/decode test
+  add_executable(t81_ir_encoding_test tests/cpp/ir_encoding_test.cpp)
+  target_link_libraries(t81_ir_encoding_test PRIVATE t81)
+
+  # Hash stub test
+  add_executable(t81_hash_stub_test tests/cpp/hash_stub_test.cpp)
+  target_link_libraries(t81_hash_stub_test PRIVATE t81)
 endif()
