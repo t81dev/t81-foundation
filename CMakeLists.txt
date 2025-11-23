@@ -33,14 +33,12 @@ endif()
 
 # Tests
 if (T81_BUILD_TESTS)
-  # BigInt + Fraction (requires nlohmann/json header if using JSON vectors)
   add_executable(t81_bigint_test tests/cpp/bigint_roundtrip.cpp)
   target_link_libraries(t81_bigint_test PRIVATE t81)
 
   add_executable(t81_fraction_test tests/cpp/fraction_roundtrip.cpp)
   target_link_libraries(t81_fraction_test PRIVATE t81)
 
-  # Tensor ops tests
   add_executable(t81_tensor_transpose_test tests/cpp/tensor_transpose_test.cpp)
   target_link_libraries(t81_tensor_transpose_test PRIVATE t81)
 
@@ -53,19 +51,19 @@ if (T81_BUILD_TESTS)
   add_executable(t81_tensor_loader_test tests/cpp/tensor_loader_test.cpp)
   target_link_libraries(t81_tensor_loader_test PRIVATE t81_io)
 
-  # CanonFS IO test (header-only)
   add_executable(t81_canonfs_io_test tests/cpp/canonfs_io_test.cpp)
   target_link_libraries(t81_canonfs_io_test PRIVATE t81)
 
-  # IR encode/decode test
   add_executable(t81_ir_encoding_test tests/cpp/ir_encoding_test.cpp)
   target_link_libraries(t81_ir_encoding_test PRIVATE t81)
 
-  # Hash stub test
   add_executable(t81_hash_stub_test tests/cpp/hash_stub_test.cpp)
   target_link_libraries(t81_hash_stub_test PRIVATE t81)
 
-  # Axion stub test
   add_executable(t81_axion_stub_test tests/cpp/axion_stub_test.cpp)
   target_link_libraries(t81_axion_stub_test PRIVATE t81)
+
+  # NEW: Base-243 codec test
+  add_executable(t81_codec_base243_test tests/cpp/codec_base243_test.cpp)
+  target_link_libraries(t81_codec_base243_test PRIVATE t81)
 endif()
