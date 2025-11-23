@@ -13,6 +13,8 @@ enum class CompileError {
   UndeclaredIdentifier,
   RegisterOverflow,
   MissingType,
+  UnknownFunction,
+  InvalidCall,
 };
 
 class Compiler {

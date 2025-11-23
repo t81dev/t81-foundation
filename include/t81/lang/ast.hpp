@@ -16,6 +16,11 @@ struct ExprIdent {
   std::string name;
 };
 
+struct ExprCall {
+  std::string callee;
+  std::vector<struct Expr> args;
+};
+
 struct ExprBinary {
   enum class Op { Add, Sub, Mul } op{Op::Add};
   std::shared_ptr<struct Expr> lhs;
@@ -23,7 +28,7 @@ struct ExprBinary {
 };
 
 struct Expr {
-  std::variant<ExprLiteral, ExprIdent, ExprBinary> node;
+  std::variant<ExprLiteral, ExprIdent, ExprCall, ExprBinary> node;
 };
 
 struct StatementReturn {
@@ -51,8 +56,12 @@ struct StatementLoop {
   std::vector<struct Statement> body;
 };
 
+struct StatementExpr {
+  Expr expr;
+};
+
 struct Statement {
-  std::variant<StatementReturn, StatementLet, StatementAssign, StatementIf, StatementLoop> node;
+  std::variant<StatementReturn, StatementLet, StatementAssign, StatementIf, StatementLoop, StatementExpr> node;
 };
 
 struct Parameter {
