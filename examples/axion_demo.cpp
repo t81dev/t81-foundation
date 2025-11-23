@@ -1,26 +1,48 @@
+#include <cstdint>
 #include <iostream>
-#include "t81/axion/api.hpp"
-#include "t81/tensor.hpp"
+#include <string>
+#include <vector>
+#include "t81/t81.hpp"
 
 int main() {
-  using namespace t81;
+  using namespace t81::axion;
 
-  // Two 3D vectors
-  T729Tensor a({3}); a.data() = {1, 2, 3};
-  T729Tensor b({3}); b.data() = {4, 5, 6};
+  std::cout << "[Axion Demo]\n";
+  std::cout << "runtime: " << Context::runtime_name()
+            << " v" << Context::runtime_version().str() << "\n";
 
-  axion::Context ctx({axion::DeviceKind::CPU, 0, "cpu0"});
+  Context cx;
 
-  axion::Request req;
-  req.op = "dot";
-  req.inputs = {a, b};
+  // Build a request
+  Signal sig{};
+  sig.kind  = 0x1001;          // pretend op id
+  sig.flags = 0x3;             // pretend flags
+  sig.nonce = 0xDEADBEEFCAFEBABEull;
 
-  auto resp = ctx.run(req);
-  if (!resp.ok) {
-    std::cerr << "axion error: " << resp.error << "\n";
+  Buffer in;
+  const std::string payload = "hello-axion";
+  in.data.assign(payload.begin(), payload.end());
+
+  Buffer out;
+  auto st = cx.submit(sig, in, out);
+  if (st != Status::Ok) {
+    std::cerr << "submit failed: " << static_cast<int>(st) << "\n";
     return 1;
   }
 
-  std::cout << "dot=" << resp.outputs[0].data()[0] << "\n"; // 32
+  // Dump response bytes (ASCII-friendly)
+  std::cout << "response (" << out.data.size() << " bytes): ";
+  for (uint8_t b : out.data) std::cout << (char)((b >= 32 && b < 127) ? b : '.');
+  std::cout << "\n";
+
+  // Telemetry
+  const auto& tele = cx.telemetry();
+  std::cout << "telemetry: "
+            << "requests=" << tele.requests
+            << " bytes_in=" << tele.bytes_in
+            << " bytes_out=" << tele.bytes_out
+            << " last_ms=" << tele.last_ms
+            << "\n";
+
   return 0;
 }
