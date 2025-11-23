@@ -224,7 +224,3 @@ then:
 3. Surface any uncertainties in a short note or TODO rather than “guessing” a new design.
 
 This `AGENTS.md` is the contract between you (the coding agent) and the T81 Foundation. Stay within it unless explicitly told otherwise in a future update to this file.
-
-```
-::contentReference[oaicite:0]{index=0}
-```
