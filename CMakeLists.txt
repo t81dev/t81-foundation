@@ -96,4 +96,7 @@ if (T81_BUILD_TESTS)
 
   add_executable(t81_c_api_bigint_test tests/cpp/c_api_bigint_test.c)
   target_link_libraries(t81_c_api_bigint_test PRIVATE t81_c_api)
+
+  add_executable(t81_tensor_unary_test tests/cpp/tensor_unary_test.cpp)
+  target_link_libraries(t81_tensor_unary_test PRIVATE t81)
 endif()
