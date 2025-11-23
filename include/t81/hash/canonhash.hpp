@@ -1,41 +1,30 @@
 #pragma once
-#include <cstddef>
+#include <array>
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <vector>
-#include "t81/canonfs.hpp"
-#include "t81/hash/base81.hpp"
 
 namespace t81::hash {
 
-// -----------------------------------------------------------------------------
-// CanonHash81 (STUB)
-//
-// This stub “hashes” input by:
-//   1) Taking the raw bytes as-is,
-//   2) Encoding them with the Base-81 *stub* (b81:+hex fallback),
-//   3) Truncating/padding the ASCII result to exactly 81 chars.
-//
-// This is NON-CRYPTOGRAPHIC and only intended to let components link and
-// round-trip during migration. Replace with a real digest + base-81 codec.
-// -----------------------------------------------------------------------------
+struct CanonHash81 {
+    std::array<std::uint8_t, 32> bytes; // 256-bit hash; size is your call
 
-inline CanonHash81 make_canonhash81_base81stub(const void* data, std::size_t len) {
-  const auto* p = static_cast<const uint8_t*>(data);
-  std::vector<uint8_t> bytes(p, p + len);
-  std::string enc = encode_base81(bytes);        // e.g., "b81:deadbeef..."
-  // Truncate/pad to 81 characters.
-  if (enc.size() > 81) enc.resize(81);
-  CanonHash81 h = CanonHash81::from_string(enc);
-  return h;
-}
+    bool operator==(const CanonHash81& other) const noexcept {
+        return bytes == other.bytes;
+    }
+};
 
-inline CanonHash81 make_canonhash81_base81stub(const std::vector<uint8_t>& bytes) {
-  return make_canonhash81_base81stub(bytes.data(), bytes.size());
-}
+/// Hash arbitrary bytes into CanonHash81 (not cryptographically strong).
+CanonHash81 hash_bytes(const std::vector<std::uint8_t>& data);
 
-inline CanonHash81 make_canonhash81_base81stub(const std::string& s) {
-  return make_canonhash81_base81stub(s.data(), s.size());
-}
+/// Hash a string (UTF-8 bytes).
+CanonHash81 hash_string(std::string_view s);
+
+/// Encode hash as base-81 string (using t81::codec::base81).
+std::string to_string(const CanonHash81& h);
+
+/// Decode hash from base-81 string.
+bool from_string(std::string_view s, CanonHash81& out);
 
 } // namespace t81::hash
