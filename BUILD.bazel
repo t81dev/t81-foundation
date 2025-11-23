@@ -1,0 +1,68 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test", "cc_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "t81",
+    hdrs = glob([
+        "include/t81/*.hpp",
+        "include/t81/**/*.hpp",
+        "src/c_api/t81_c_api.h",
+    ]),
+    srcs = [
+        "src/c_api/t81_c_api.cpp",
+        "src/io/tensor_loader.cpp",
+    ],
+    includes = ["include"],
+    copts = ["-std=c++17"],
+)
+
+# Examples
+cc_binary(
+    name = "t81_demo",
+    srcs = ["examples/demo.cpp"],
+    deps = [":t81"],
+)
+
+# Tests
+cc_test(
+    name = "t81_bigint_test",
+    srcs = ["tests/cpp/bigint_roundtrip.cpp"],
+    deps = [":t81"],
+)
+
+cc_test(
+    name = "t81_fraction_test",
+    srcs = ["tests/cpp/fraction_roundtrip.cpp"],
+    deps = [":t81"],
+)
+
+cc_test(
+    name = "t81_tensor_transpose_test",
+    srcs = ["tests/cpp/tensor_transpose_test.cpp"],
+    deps = [":t81"],
+)
+
+cc_test(
+    name = "t81_tensor_slice_test",
+    srcs = ["tests/cpp/tensor_slice_test.cpp"],
+    deps = [":t81"],
+)
+
+cc_test(
+    name = "t81_tensor_reshape_test",
+    srcs = ["tests/cpp/tensor_reshape_test.cpp"],
+    deps = [":t81"],
+)
+
+cc_test(
+    name = "t81_tensor_loader_test",
+    srcs = ["tests/cpp/tensor_loader_test.cpp"],
+    deps = [":t81"],
+)
+
+cc_test(
+    name = "t81_canonfs_io_test",
+    srcs = ["tests/cpp/canonfs_io_test.cpp"],
+    deps = [":t81"],
+)
