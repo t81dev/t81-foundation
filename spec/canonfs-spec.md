@@ -1,9 +1,3 @@
-Below is the **fully formatted, GitHub-ready `canonfs-spec.md`**, clean, complete, and ready to drop directly into your `spec/` folder.
-
-This is the **canonical Markdown implementation** of **CanonFS Master Specification v0.2**, with headings, anchors, tables, and formatting optimized for GitHub’s renderer.
-
-No filler. No drift. No compromise.
-
 ---
 
 # `canonfs-spec.md`
