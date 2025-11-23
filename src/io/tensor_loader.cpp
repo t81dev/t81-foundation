@@ -1,28 +1,50 @@
-#include <fstream>
 #include <sstream>
-#include <stdexcept>
-#include "t81/tensor.hpp"
+#include <limits>
 #include "t81/io/tensor_loader.hpp"
 
 namespace t81::io {
 
-static std::vector<int> read_shape_line(std::istream& in) {
-  std::string line;
-  if (!std::getline(in, line)) throw std::runtime_error("tensor_loader: missing shape line");
-  std::istringstream ss(line);
-  int rank = 0;
-  if (!(ss >> rank) || rank <= 0) throw std::runtime_error("tensor_loader: invalid rank");
-  std::vector<int> shape(rank);
-  for (int i = 0; i < rank; ++i) {
-    if (!(ss >> shape[i]) || shape[i] <= 0) throw std::runtime_error("tensor_loader: invalid dimension");
-  }
-  return shape;
+static void require(bool cond, const char* msg) {
+  if (!cond) throw std::runtime_error(msg);
 }
 
 T729Tensor load_tensor_txt(std::istream& in) {
-  auto shape = read_shape_line(in);
-  size_t total = 1;
-  for (int d : shape) total *= static_cast<size_t>(d);
+  // Read first line: RANK D1 D2 ... DR
+  std::string header;
+  {
+    // Skip leading empty/comment lines
+    while (std::getline(in, header)) {
+      if (header.empty()) continue;
+      // allow comments starting with '#'
+      bool only_ws = true;
+      for (char c : header) { if (!std::isspace(static_cast<unsigned char>(c))) { only_ws = false; break; } }
+      if (only_ws) continue;
+      if (!header.empty() && header[0] == '#') continue;
+      break;
+    }
+  }
+  require(static_cast<bool>(in) && !header.empty(), "load_tensor_txt: missing header line");
+
+  std::istringstream hs(header);
+  int rank = 0;
+  hs >> rank;
+  require(hs && rank > 0, "load_tensor_txt: invalid rank");
+  std::vector<int> shape(rank, 0);
+  for (int i = 0; i < rank; ++i) {
+    hs >> shape[static_cast<size_t>(i)];
+    require(hs && shape[static_cast<size_t>(i)] > 0, "load_tensor_txt: invalid dimension");
+  }
+
+  // Compute total size
+  std::size_t total = 1;
+  for (int d : shape) {
+    // guard overflow
+    if (d <= 0 || total > (std::numeric_limits<std::size_t>::max() / static_cast<std::size_t>(d)))
+      throw std::runtime_error("load_tensor_txt: size overflow");
+    total *= static_cast<std::size_t>(d);
+  }
+
+  // Read remaining floats (allow them to span multiple lines)
   std::vector<float> data;
   data.reserve(total);
   float v;
@@ -30,32 +52,23 @@ T729Tensor load_tensor_txt(std::istream& in) {
     data.push_back(v);
     if (data.size() == total) break;
   }
-  if (data.size() != total) throw std::runtime_error("tensor_loader: insufficient data values");
+  require(data.size() == total, "load_tensor_txt: not enough data");
   return T729Tensor(std::move(shape), std::move(data));
 }
 
-T729Tensor load_tensor_txt_file(const std::string& path) {
-  std::ifstream f(path);
-  if (!f) throw std::runtime_error("tensor_loader: cannot open file: " + path);
-  return load_tensor_txt(f);
-}
-
 void save_tensor_txt(std::ostream& out, const T729Tensor& t) {
+  // Header
   out << t.rank();
   for (int d : t.shape()) out << ' ' << d;
   out << '\n';
+
+  // Data (single line, space-separated)
   const auto& d = t.data();
-  for (size_t i = 0; i < d.size(); ++i) {
+  for (std::size_t i = 0; i < d.size(); ++i) {
+    if (i) out << ' ';
     out << d[i];
-    if (i + 1 < d.size()) out << ' ';
   }
   out << '\n';
-}
-
-void save_tensor_txt_file(const std::string& path, const T729Tensor& t) {
-  std::ofstream f(path);
-  if (!f) throw std::runtime_error("tensor_loader: cannot open file for write: " + path);
-  save_tensor_txt(f, t);
 }
 
 } // namespace t81::io
