@@ -1,34 +1,56 @@
 #include <iostream>
-#include "t81/tensor.hpp"
-#include "t81/tensor/ops.hpp"
+#include <vector>
+#include "t81/t81.hpp"
 
 int main() {
   using namespace t81;
 
-  // Build a 2x3 tensor with values 1..6
-  T729Tensor m({2,3});
-  m.data() = {1,2,3, 4,5,6};
+  // Build a 2x3 matrix:
+  // [1 2 3
+  //  4 5 6]
+  T729Tensor A({2,3});
+  A.data() = {1,2,3, 4,5,6};
 
-  // Transpose to 3x2
-  auto mt = t81::ops::transpose(m);
+  // Transpose -> 3x2
+  auto AT = t81::ops::transpose(A);
 
-  // Slice rows [1,2) and cols [0,2) -> 1x2 => {4,5}
-  auto s = t81::ops::slice2d(m, 1, 2, 0, 2);
+  // Slice rows[0:2), cols[1:3) -> 2x2
+  auto S = t81::ops::slice2d(A, 0, 2, 1, 3);
 
-  // Reshape to 3x2 (same data order)
-  auto r = t81::ops::reshape(m, {3,2});
+  // Reshape 2x3 -> 3x2 (row-major reinterpretation)
+  auto R = t81::ops::reshape(A, {3,2});
 
-  std::cout << "orig  shape: [" << m.shape()[0] << "," << m.shape()[1] << "]\n";
-  std::cout << "trans shape: [" << mt.shape()[0] << "," << mt.shape()[1] << "]\n";
-  std::cout << "slice shape: [" << s.shape()[0] << "," << s.shape()[1] << "]\n";
-  std::cout << "rshp  shape: [" << r.shape()[0] << "," << r.shape()[1] << "]\n";
+  // Matmul (2x3)·(3x2) -> (2x2)
+  auto C = t81::ops::matmul(A, AT);
 
-  std::cout << "transpose data: ";
-  for (float v : mt.data()) std::cout << v << " ";
-  std::cout << "\nslice data: ";
-  for (float v : s.data()) std::cout << v << " ";
-  std::cout << "\nreshape data: ";
-  for (float v : r.data()) std::cout << v << " ";
-  std::cout << "\n";
+  // Reductions on A (axis 0: per-col, axis 1: per-row)
+  auto sum_cols = t81::ops::reduce_sum_2d(A, 0); // {3}
+  auto sum_rows = t81::ops::reduce_sum_2d(A, 1); // {2}
+
+  // Broadcast a row {1,3} -> {2,3}
+  T729Tensor row({1,3}); row.data() = {10, 20, 30};
+  auto B = t81::ops::broadcast_to(row, {2,3});
+
+  // Print a helper
+  auto dump = [](const char* name, const T729Tensor& t) {
+    std::cout << name << " [" << t.shape()[0];
+    for (int i = 1; i < t.rank(); ++i) std::cout << "x" << t.shape()[i];
+    std::cout << "]: {";
+    for (size_t i = 0; i < t.data().size(); ++i) {
+      if (i) std::cout << ", ";
+      std::cout << t.data()[i];
+    }
+    std::cout << "}\n";
+  };
+
+  dump("A    ", A);
+  dump("AT   ", AT);
+  dump("S    ", S);
+  dump("R    ", R);
+  dump("C=AAT", C);
+  dump("sum0 ", sum_cols);
+  dump("sum1 ", sum_rows);
+  dump("Brcst", B);
+
   return 0;
 }
