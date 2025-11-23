@@ -1,13 +1,14 @@
-```markdown
-# canonfs-spec.md — Version 0.4.1  
-**Integrated Final Draft — Ready for Reference Implementation**  
-**Authors:** T81 Foundation + Grok (xAI)  
-**Date:** November 22, 2025 (updated same day)
+# **canonfs-spec.md — Version 0.4.1**
 
+**Integrated Final Draft — Ready for Reference Implementation**
+**Authors:** T81 Foundation + Grok (xAI)
+**Date:** November 22, 2025
+
+```markdown
 ---
 title: CanonFS — Canonical File System for Ternary Machines
 version: 0.4.1
-status: Final Draft — Reference Implementation Authorized
+status: Final Draft — Standards Track (Implementation Authorized)
 author: T81 Foundation + Grok (xAI)
 created: 2025-11-22
 updated: 2025-11-22
@@ -17,89 +18,152 @@ updated: 2025-11-22
 
 **Version:** 0.4.1  
 **Category:** Standards Track  
-**Status:** Final Draft — Green-lit for canonfs-rs 1.0  
-**Target v1.0 release:** Q4 2026  
+**Status:** Final Draft — Authorized for canonfs-rs 1.0  
+**Target v1.0 Release:** Q4 2026  
 **Applies to:** T81 Architecture, HanoiVM, Axion Kernel, CanonNet, T243–T19683 tiers
+
+---
 
 # 1. Abstract
 
-CanonFS is the immutable, content-addressed, capability-secured, self-healing, compressible, and searchable filesystem native to ternary (T81-class) computing.
+CanonFS is the native filesystem for ternary (T81-class) computing.  
+It is immutable, content-addressed, capability-secured, self-healing, tryte-compressible, and tensor-indexable.
 
-It replaces paths, inodes, POSIX permissions, and mutable state with a single primitive: the CanonRef — a cryptographically bound triple of capability + content hash + optional parity/encryption envelope.
+CanonFS replaces:
 
-CanonFS guarantees perfect provenance, global uniqueness, verifiable integrity, automatic recovery, tryte-native compression, and deterministic indexing without ever violating immutability.
+- POSIX paths  
+- inodes  
+- mutable state  
+- ACLs and permission bits  
 
-# 2. Architectural Invariants (non-negotiable)
+…with a single unifying primitive:
 
-1. Immutability — No object is ever mutated.  
-2. Content Addressing — Identity = CanonHash-81 of serialized form.  
-3. Capability Binding — Access requires an unforgeable CanonRef.  
-4. Deterministic Indexing — f(hash) is stable forever.  
-5. Self-Healing — Every write may emit parity for automatic recovery.
+**CanonRef = capability + content hash + (optional) sealed envelope metadata**
 
-# 3. CanonBlock — Fixed 729-tryte Block
+CanonFS guarantees deterministic indexing, perfect provenance, global uniqueness, and automatic parity-based recovery — all without compromising immutability.
 
-- Exact size: 729 trytes (3⁶ trytes = one “block”)  
-- Payload: 721 trytes + 8-tryte metadata tag  
-- Identity: CanonHash-81(block)  
-- All forms below hash to the same value when decompressed/decrypted:
+---
 
-| Form        | Tag Range | Description                                      |
-|-------------|-----------|--------------------------------------------------|
-| Raw         | 0x00–0x0F | Uncompressed, direct payload                     |
-| Compressed  | 0x10–0x1F | LZ81 or Z3std compressed payload                 |
-| Encrypted   | 0x20–0x2F | CanonSeal AEAD envelope                          |
+# 2. Architectural Invariants (Non-Negotiable)
 
-# 4. CanonHash-81
+CanonFS is legally defined by five invariants. Violation of any is a protocol-level error:
 
-Unchanged: BLAKE3-base81, exactly 81 Base-81 symbols, ≥480-bit security.
+1. **Immutability** — Once sealed, objects can never be modified.  
+2. **Content Addressing** — Object identity is `CanonHash-81(serialized_form)`.  
+3. **Capability Binding** — Access requires a signed capability.  
+4. **Deterministic Indexing** — The mapping `f(hash)` MUST remain stable forever.  
+5. **Self-Healing** — Writes MAY include parity shards for automatic recovery.
 
-# 5. Object Types (v0.4.1)
+---
 
-| Type ID | Object Type           | Description / v0.4.1 Notes                                      |
-|---------|-----------------------|-----------------------------------------------------------------|
-| 0x00    | RawBlock              | 729-tryte block                                                |
-| 0x01    | FileNode              | Merkle-81 tree node                                            |
-| 0x02    | Directory             | Sparse 81×81 tensor                                            |
-| 0x03    | Snapshot              | CanonHash-81 of root directory                                 |
-| 0x04    | CapabilityGrant       | v2 — fully specified (§6.1)                                    |
-| 0x05    | CapabilityRevoke      | Tombstone; canonical delete mechanism                          |
-| 0x10    | CompressedBlock       | [algo][compressed payload]                                     |
-| 0x11    | CanonParity           | Reed–Solomon parity with set_merkle_root (§7)                  |
-| 0x12    | CanonIndex            | Sparse inverted index tensor                                   |
-| 0x13    | CanonMeta             | Sparse key→value tensor (xattr compatible)                     |
-| 0x14    | CanonSeal             | Encrypted + authenticated envelope (T81-AEAD-81)               |
-| 0x15    | CanonLink             | Symbolic link; optional UTF-8 display_hint (§6.2)              |
-| 0x16    | CanonExec             | Executable metadata + entry point                              |
-| 0x17–0x1F | Reserved            |                                                                |
-| 0x20    | CanonView             | RESERVED — future lazy materialized views                      |
+# 3. CanonBlock — 729-Tryte Atomic Unit
 
-## 6.1 CapabilityGrant v2 (fully specified)
+A CanonBlock is the indivisible storage atom of CanonFS.
+
+- Size: **exactly 729 trytes**  
+- Payload: **721 trytes + 8-tryte metadata tag**  
+- Identity: `CanonHash-81(block)`  
+- All canonical forms (raw, compressed, sealed) MUST produce the same hash.
+
+## 3.1 CanonBlock Forms
+
+| Form Type   | Tag Range | Description                                       |
+|-------------|-----------|---------------------------------------------------|
+| Raw         | 0x00–0x0F | Uncompressed payload                               |
+| Compressed  | 0x10–0x1F | LZ81 or Z3std tryte-optimal compression            |
+| Encrypted   | 0x20–0x2F | CanonSeal AEAD envelope (ternary ChaCha variant)   |
+
+Hashing always occurs **post-decompression + decryption**, ensuring identical logical content yields identical identities.
+
+---
+
+# 4. CanonHash-81 — Mandatory Hash Function
+
+CanonHash-81 is defined as:
+
+```
+
+CanonHash-81(data) := base81_encode( BLAKE3(data)[0..60] )
+
+```
+
+- Output: **81 Base-81 symbols**  
+- Security: ≥ 480 bits effective entropy  
+- Deterministic across platforms  
+- Fully content-addressing compliant  
+- Upgradeable via future version prefix (reserved)
+
+CanonHash-81 is the sole hash function permitted for CanonFS v0.3–v1.0.
+
+---
+
+# 5. CanonObject — Sealed Envelope Standard (v0.4.1)
+
+All objects begin with a one-byte **Type ID**, preventing type confusion attacks.
+
+| Type ID | Object Type        | Description                                                    |
+|---------|--------------------|----------------------------------------------------------------|
+| 0x00    | RawBlock           | 729-tryte canonical block                                      |
+| 0x01    | FileNode           | Merkle-81 interior node or leaf reference                      |
+| 0x02    | Directory          | Sparse 81×81 tensor                                            |
+| 0x03    | Snapshot           | CanonHash-81 of root directory                                 |
+| 0x04    | CapabilityGrant    | v2 signed capability (§6.1)                                    |
+| 0x05    | CapabilityRevoke   | Signed anti-token used for canonical deletion                  |
+| 0x10    | CompressedBlock    | [algo][compressed_payload]                                     |
+| 0x11    | CanonParity        | Reed–Solomon parity shard (§7)                                 |
+| 0x12    | CanonIndex         | Sparse inverted index                                          |
+| 0x13    | CanonMeta          | Sparse metadata tensor                                         |
+| 0x14    | CanonSeal          | Encrypted + authenticated envelope                             |
+| 0x15    | CanonLink          | Symbolic link with optional display hint (§6.2)                |
+| 0x16    | CanonExec          | Executable metadata + entrypoint                               |
+| 0x17–0x1F | Reserved         |                                                              |
+| 0x20    | CanonView          | (Reserved) Lazy materialized views                             |
+
+Object identity is always:
+
+```
+
+CanonHash-81( TypeID || SerializedPayload )
+
+````
+
+---
+
+# 6. Capability System v2 (Fully Specified)
+
+## 6.1 CapabilityGrant v2
 
 ```text
 CapabilityGrant ::= {
-  target:         CanonHash-81    // object or subtree granted
-  permissions:    u16             // bitfield: rwx-search-exec
-  granted_by:     CanonHash-81    // public key or prior grant hash
-  expires_at:     u64             // T81 chain height, 0 = never
-  revocable_by:   CanonHash-81    // entity that can revoke this grant
-  signature:      81-tryte ed448-ph (or future QR scheme)
+  target:         CanonHash-81,   // Object or subtree root
+  permissions:    u16,            // Bitfield: rwx-search-exec
+  granted_by:     CanonHash-81,   // Public key OR prior grant hash
+  expires_at:     u64,            // T81 chain height; 0 = never
+  revocable_by:   CanonHash-81,   // Entity allowed to revoke
+  signature:      81-tryte ed448-ph (or QR-resistant successor)
 }
-```
+````
 
-## 6.2 CanonLink (optional display hint)
+Capabilities are **content-addressed**, **delegatable**, and **tamper-evident**.
+
+## 6.2 CanonLink (Optional Display Hint)
 
 ```text
 CanonLink ::= {
-  target:         CanonHash-81
-  display_hint:   Option<UTF-8 String> ≤ 255 trytes   // cosmetic only
+  target:        CanonHash-81,
+  display_hint:  Option<UTF8 String ≤ 255 trytes>
 }
 ```
+
 display_hint MUST NOT affect CanonHash-81.
 
-# 7. CanonParity — Reed–Solomon Recovery (enhanced)
+---
 
-Default policy: 3 data + 2 parity (survives any 2 losses).
+# 7. CanonParity — Reed–Solomon Recovery (v0.4.1)
+
+CanonFS introduces automatic self-healing via parity shards.
+
+**Default policy:** 3 data + 2 parity (survives any 2 losses)
 
 Wire format (v0.4.1):
 
@@ -108,7 +172,7 @@ CanonParity ::= [
   0x11,
   data_count:       u16,
   parity_count:     u8,
-  set_merkle_root:  CanonHash-81,    // NEW — O(1) set validation
+  set_merkle_root:  CanonHash-81,     // NEW: O(1) validation
   shard_idx:        u8,
   targets:          CanonHash-81[data_count],
   parity_data:      729 trytes
@@ -117,115 +181,175 @@ CanonParity ::= [
 
 Implementations MUST verify set_merkle_root before reconstruction.
 
-# 8. Tryte-Native Compression
+---
 
-| Algo   | Code | Target Ratio | Speed  | Use Case                  |
-|--------|------|--------------|--------|---------------------------|
-| LZ81   | 0x10 | ~2.8×        | Fast   | General files             |
-| Z3std  | 0x11 | ~4.2×        | Medium | Large tensors, logs, etc. |
+# 8. Tryte-Native Compression (LZ81 & Z3std)
 
-Compression occurs before hashing → identical logical content always shares CanonHash-81.
+| Algo  | Code | Typical Ratio | Speed  | Use Case                      |
+| ----- | ---- | ------------- | ------ | ----------------------------- |
+| LZ81  | 0x10 | ~2.8×         | Fast   | General files                 |
+| Z3std | 0x11 | ~4.2×         | Medium | Large tensors, logs, archives |
 
-Reference implementation heuristic (if no policy):
+### 8.1 Recommended Heuristic
 
 ```rust
-if entropy_9 ≥ 7.8 trit/bit → Z3std
-else if repetitiveness ≥ 0.42 → LZ81
-else → Raw
+if entropy_9 >= 7.8 trit/bit      => Z3std
+else if repetitiveness >= 0.42    => LZ81
+else                               => Raw
 ```
 
-# 9. CanonIndex — Sparse 81×81 Inverted Tensor
+Compression occurs **before hashing**, ensuring identical logical content yields identical CanonHash-81.
 
-Optional per-directory or per-snapshot. Maps term → list of (CanonRef, offset). Terms are CanonHash-81 of n-grams or tokens. Typically <5 KB.
+---
 
-# 10. CanonMeta — Sparse Extended Metadata Tensor
+# 9. CanonIndex — Sparse 81×81 Inverted Index Tensor
 
-Key and value are both CanonHash-81 (content-addressed strings). Fully versioned, deterministic.
+CanonIndex provides fast search and indexing capabilities.
+
+* Maps **term_hash → list of (CanonRef, offset)**
+* Term hashes are `CanonHash-81(token or n-gram)`
+* Typical size: < 5 KB
+
+Useful for full-text search, semantic index, and metadata lookup.
+
+---
+
+# 10. CanonMeta — Sparse Metadata Tensor
+
+Key/value metadata controlled entirely by hashes.
+
+* Keys = CanonHash-81(string)
+* Values = CanonHash-81(string or object)
+* Fully versioned, immutable, deterministic
+
+Used for xattrs, user metadata, or extended ACL semantics.
+
+---
 
 # 11. CanonSeal — Per-Object Encryption
 
-T81-AEAD-81 (ternary ChaCha20-Poly1305 variant). Key = KDF(capability ‖ object_hash).
+Encryption is object-local and content-address stable.
+
+* Primitive: **T81-AEAD-81** (ternary ChaCha20-Poly1305 variant)
+* Key: `KDF(capability || object_hash)`
+* Decryption MUST occur **before** hashing for identity conformance.
+
+---
 
 # 12. CanonFile — Merkle-81 Tree
 
-Leaves may be Raw, Compressed, or Sealed blocks (all participate uniformly).
+Leaves may be:
+
+* Raw
+* Compressed
+* Encrypted (CanonSeal)
+
+…but all MUST reduce to identical logical content before hashing.
+
+---
 
 # 13. CanonDirectory — Sparse 81×81 Tensor
 
 ```text
 Directory ::= {
-  entries:   Map<(u8,u8), CanonRef>    // name → object
-  index:     CanonRef | null
-  meta:      CanonRef | null
-  parity:    [CanonRef]                // optional recovery shards
+  entries: Map<(u8,u8), CanonRef>,
+  index:   CanonRef | null,     // CanonIndex
+  meta:    CanonRef | null,     // CanonMeta
+  parity:  [CanonRef]           // Optional CanonParity shards
 }
 ```
 
-# 14. Wire Formats (selected, updated)
+Deterministic. Immutable. Content-addressable.
 
-| Object            | Wire Format                                                                 |
-|-------------------|-----------------------------------------------------------------------------|
-| CompressedBlock   | [0x10][algo u8][compressed_len u16][compressed bytes]                       |
-| CanonParity       | [0x11][data_count u16][parity_count u8][set_merkle_root][shard_idx u8][targets…][parity] |
-| CanonIndex        | [0x12][term_count u32][(term_hash CanonRef×offsets)…]                       |
-| CanonMeta         | [0x13][pair_count u16][(key_hash value_hash)…]                              |
-| CanonSeal         | [0x14][nonce 24 trytes][ciphertext][tag 16 trytes]                          |
+---
 
-All integers little-endian.
+# 14. Wire Formats (v0.4.1)
 
-# 15. Storage Semantics — Self-Healing & Delete
+| Object          | Canonical Wire Format                                            |
+| --------------- | ---------------------------------------------------------------- |
+| CompressedBlock | [0x10][algo u8][len u16][compressed_bytes]                       |
+| CanonParity     | [0x11][data_count u16][parity_count u8][set_merkle_root][idx][…] |
+| CanonIndex      | [0x12][term_count u32][term_hash, CanonRef[], offsets[]]         |
+| CanonMeta       | [0x13][pair_count u16][(key_hash value_hash)…]                   |
+| CanonSeal       | [0x14][nonce 24 trytes][ciphertext][tag 16 trytes]               |
+
+Integers must be little-endian.
+
+---
+
+# 15. Storage Semantics (Self-Healing Guaranteed)
 
 Implementations MUST:
-- Verify CanonHash-81 on every read
-- Automatically reconstruct from CanonParity
-- Decompress/decrypt transparently
-- Rebuild missing indices on-the-fly
-- Never expose corruption
 
-Logical deletion = publish CapabilityRevoke tombstone (objects become ENOENT).
+* Verify CanonHash-81 on every read
+* Auto-reconstruct lost shards via CanonParity
+* Transparently decompress / decrypt
+* Rebuild CanonIndex and CanonMeta lazily
+* Never expose inconsistencies
+
+Deletion is logical:
+
+**Delete = publish CapabilityRevoke tombstone**
+
+---
 
 # 16. Operational Semantics
 
-| Operation | Behavior in v0.4.1                                          |
-|---------|-------------------------------------------------------------|
-| Write   | → new objects + optional parity + optional index           |
-| Read    | → hash + capability + auto-repair + decompress/decrypt     |
-| Search  | → CanonIndex tensor (brute fallback)                        |
-| Delete  | → publish CapabilityRevoke (tombstone)                      |
-| Recover | fully automatic via CanonParity                             |
+| Operation | Behavior (v0.4.1)                                                     |
+| --------- | --------------------------------------------------------------------- |
+| Write     | Creates new objects + parity + optional index                         |
+| Read      | Capability validation → hash check → auto-repair → decompress/decrypt |
+| Search    | Via CanonIndex (fallback to brute traversal)                          |
+| Delete    | `CapabilityRevoke` tombstone                                          |
+| Recover   | Fully automatic                                                       |
+
+---
 
 # 17. Reference Implementation Requirements (canonfs-rs 1.0)
 
-MUST implement:
-- Rust + BLAKE3 → Base-81
-- LZ81 & Z3std compressors with heuristic
-- Reed–Solomon GF(3⁹) + CanonParity v2
-- Sparse CanonIndex & CanonMeta builders
-- FUSE + HTTP gateways
-- Background repair daemon
-- Axion policy hooks
+Must implement:
 
-# 18. Compatibility Layer — FUSE
+* Rust + BLAKE3 → Base-81
+* LZ81 & Z3std compressors
+* Reed–Solomon GF(3⁹) parity engine
+* Sparse CanonIndex + CanonMeta generators
+* FUSE and HTTP gateways
+* Background repair daemon
+* Axion policy hooks
 
-Exposes:
-- `.canon/meta/`, `.canon/index/`, `.canon/parity/`, `.canon/raw/`
+---
 
-These are hidden by default; visible only with `CANONFS_DEBUG=1` or `-o debug`.
+# 18. Compatibility Layer (FUSE)
+
+Exposes structured, layered views:
+
+* `.canon/meta/`
+* `.canon/index/`
+* `.canon/parity/`
+* `.canon/raw/`
+
+Hidden unless `CANONFS_DEBUG=1` or `-o debug` is enabled.
+
+---
 
 # 19. Future Extensions
 
-- 0x20 CanonView — content-addressed lazy materialized views
-- CanonSync — CRDT convergence
-- CanonNet — global P2P parity-gossip fabric
-- Quantum-resistant signatures
+Planned for post-1.0:
 
-# Appendix A: Recommended Default Policies
+* `0x20 CanonView` (lazy materialized views)
+* CanonSync (CRDT-based multi-writer convergence)
+* CanonNet (global parity-gossip fabric)
+* Quantum-resistant signatures (QR-Falcon / STARK-Poseidon-81)
 
-| Workload              | Compression | Parity (data+parity) | Index |
-|-----------------------|-------------|----------------------|-------|
-| General files         | LZ81        | 3+2                  | Yes   |
-| Large tensors/logs    | Z3std       | 6+3                  | Yes   |
-| Cognitive graphs      | Z3std       | 9+3                  | Full  |
-| Cold archival         | Z3std       | 10+10                | No    |
+---
+
+# Appendix A: Default Policy Matrix
+
+| Workload           | Compression | Parity (data:parity) | Index |
+| ------------------ | ----------- | -------------------- | ----- |
+| General files      | LZ81        | 3:2                  | Yes   |
+| Large tensors/logs | Z3std       | 6:3                  | Yes   |
+| Cognitive graphs   | Z3std       | 9:3                  | Full  |
+| Cold archival      | Z3std       | 10:10                | No    |
 
 ---
