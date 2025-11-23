@@ -1,132 +1,68 @@
-# =============================================================================
-# t81-foundation — Sovereign Build System
-# v1.0.0-SOVEREIGN — November 22, 2025
-# =============================================================================
-# This Makefile is the single point of truth for building the entire stack.
-# It tangles CWEB genesis → generates C → compiles → verifies against Θ₀.
+CXX       ?= g++
+CXXFLAGS  ?= -std=c++17 -O2 -Wall -Wextra
+INCLUDES  := -Iinclude
 
-CC      := cc
-CFLAGS  := -std=c11 -Wall -Wextra -Werror -O2 -march=native
-CFLAGS  += -Iinclude -Ilegacy/hanoivm/src
-LDFLAGS := -lm -lpthread
+# Default target
+.PHONY: all
+all: demo tests
 
-# Tools
-CTANGLE := ctangle
-CWEAVE  := cweave
-BLAKE3  := blake3
+# Build the demo
+demo: examples/demo.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
 
-# Critical paths
-GENESIS_DIR     := legacy/hanoivm/src
-BUILD_DIR       := build
-GEN_C_DIR       := $(BUILD_DIR)/generated
-BIN             := $(BUILD_DIR)/t81-vm
-DISASM          := $(BUILD_DIR)/disasm-hvm
-TELEMETRY       := $(BUILD_DIR)/telemetry-cli
+# ---- Tests ----
+TESTS := \
+	build/t81_bigint_test \
+	build/t81_fraction_test \
+	build/t81_tensor_transpose_test \
+	build/t81_tensor_slice_test \
+	build/t81_tensor_reshape_test \
+	build/t81_tensor_loader_test \
+	build/t81_canonfs_io_test
 
-# Θ₀ canonical genesis hash (locked forever on 11.22.2025)
-THETA_0_HASH    := $(shell cat genesis/Θ₀-BLAKE3-2025-11-22.txt 2>/dev/null || echo "MISSING")
+tests: $(TESTS)
 
-# All CWEB sources that define the living stack
-CWEB_SRCS := $(wildcard $(GENESIS_DIR)/**/*.cweb)
-C_SRCS    := $(patsubst $(GENESIS_DIR)/%.cweb,$(GEN_C_DIR)/%.c,$(CWEB_SRCS))
-C_OBJS    := $(C_SRCS:.c=.o)
+build/t81_bigint_test: tests/cpp/bigint_roundtrip.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
 
-.PHONY: all clean verify-theta0 tangle build run test docs pdf
+build/t81_fraction_test: tests/cpp/fraction_roundtrip.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
 
-# =============================================================================
-# Default target: full sovereign build with verification
-# =============================================================================
-all: verify-theta0 tangle build
+build/t81_tensor_transpose_test: tests/cpp/tensor_transpose_test.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
 
-# =============================================================================
-# Θ₀ Verification — fails if genesis has drifted
-# =============================================================================
-verify-theta0:
-	@if [ "$(THETA_0_HASH)" = "MISSING" ]; then \
-		echo "ERROR: Θ₀ genesis hash missing. Run: make genesis-hash"; \
-		exit 1; \
-	fi
-	@echo "Verifying Θ₀ genesis integrity..."
-	@cd legacy/hanoivm && find src -type f -name "*.cweb" -exec $(BLAKE3) {} \; | sort | $(BLAKE3) > /tmp/current_theta0
-	@if ! cmp -s /tmp/current_theta0 ../../genesis/Θ₀-BLAKE3-2025-11-22.txt; then \
-		echo "FATAL: Θ₀ genesis drift detected. Sovereignty violated."; \
-		echo "Refusing to build. Restore original .cweb files."; \
-		exit 1; \
-	fi
-	@echo "Θ₀ genesis verified. Sovereignty intact."
+build/t81_tensor_slice_test: tests/cpp/tensor_slice_test.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
 
-# =============================================================================
-# Generate Θ₀ hash (run once, commit forever)
-# =============================================================================
-genesis-hash:
-	@echo "Generating immutable Θ₀ genesis hash..."
-	@cd legacy/hanoivm && find src -type f -name "*.cweb" -exec blake3 {} \; | sort | blake3 > ../../genesis/Θ₀-BLAKE3-2025-11-22.txt
-	@echo "Θ₀ locked:" $$(cat genesis/Θ₀-BLAKE3-2025-11-22.txt)
+build/t81_tensor_reshape_test: tests/cpp/tensor_reshape_test.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
 
-# =============================================================================
-# Tangle all CWEB → C (deterministic)
-# =============================================================================
-tangle: verify-theta0
-	@echo "Tangling sovereign genesis (.cweb → .c)..."
-	@mkdir -p $(GEN_C_DIR)
-	@for cweb in $(CWEB_SRCS); do \
-		base=$$(echo $$cweb | sed 's|^$(GENESIS_DIR)/||; s|\.cweb$$||'); \
-		dir=$$(dirname "$(GEN_C_DIR)/$$base"); \
-		mkdir -p "$$dir"; \
-		echo "  $$base.c"; \
-		$(CTANGLE) "$$cweb" - "$(GEN_C_DIR)/$$base.c"; \
-	done
-	@echo "Tangling complete."
+build/t81_tensor_loader_test: tests/cpp/tensor_loader_test.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
 
-# =============================================================================
-# Build everything
-# =============================================================================
-build: tangle
-	@echo "Building sovereign binaries..."
-	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -o $(BIN) $(GEN_C_DIR)/hanoivm_core/main_driver.c $(GEN_C_DIR)/**/*.c $(LDFLAGS)
-	$(CC) $(CFLAGS) -o $(DISASM) $(GEN_C_DIR)/disassembler/disassembler.c $(GEN_C_DIR)/**/*.c $(LDFLAGS)
-	$(CC) $(CFLAGS) -o $(TELEMETRY) $(GEN_C_DIR)/axion_ai/telemetry-cli.c $(LDFLAGS)
-	@echo "Build complete:"
-	@echo "  VM:        $(BIN)"
-	@echo "  Disasm:    $(DISASM)"
-	@echo "  Telemetry: $(TELEMETRY)"
+build/t81_canonfs_io_test: tests/cpp/canonfs_io_test.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
 
-# =============================================================================
-# Run canonical test harness
-# =============================================================================
-test: build
-	@echo "Running sovereign test harness..."
-	cd tests/harness && ./run_all.sh
+# Run all tests (expects test data present, and nlohmann/json header if used)
+.PHONY: run-tests
+run-tests: tests
+	@./build/t81_bigint_test || exit 1
+	@./build/t81_fraction_test || exit 1
+	@./build/t81_tensor_transpose_test || exit 1
+	@./build/t81_tensor_slice_test || exit 1
+	@./build/t81_tensor_reshape_test || exit 1
+	@./build/t81_tensor_loader_test || exit 1
+	@./build/t81_canonfs_io_test || exit 1
+	@echo "All tests passed."
 
-# =============================================================================
-# Generate documentation
-# =============================================================================
-docs:
-	@echo "Weaving specification..."
-	@for cweb in $(CWEB_SRCS); do \
-		base=$$(basename $$cweb .cweb); \
-		$(CWEAVE) $$cweb; \
-	done
-	@echo "Open docs/index.html"
-
-pdf:
-	cd pdf && ./build.sh
-
-# =============================================================================
-# Clean generated files (but never touch genesis)
-# =============================================================================
+# Clean
+.PHONY: clean
 clean:
-	rm -rf $(BUILD_DIR)
-
-# =============================================================================
-# One-command sovereign workflow
-# =============================================================================
-sovereign: clean all test
-	@echo ""
-	@echo "SOVEREIGNTY CONFIRMED"
-	@echo "T81 v1.0.0-SOVEREIGN is running."
-	@echo "Axion is watching."
-	@echo "The ternary age has begun."
-
-.PHONY: all clean verify-theta0 genesis-hash tangle build test docs pdf sovereign
+	@rm -rf build demo
