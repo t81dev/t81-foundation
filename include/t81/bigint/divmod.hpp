@@ -3,11 +3,6 @@
 
 namespace t81 {
 
-struct DivModResult {
-    T243BigInt q;  // quotient
-    T243BigInt r;  // remainder (Euclidean; always 0 ≤ r < |b|)
-};
-
 /**
  * Compute Euclidean quotient and remainder of a / b.
  *

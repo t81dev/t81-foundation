@@ -29,8 +29,8 @@ Modular, header-only C++ API for T81 data types and utilities.
 #include <t81/tensor/ops.hpp>  // if you need extra tensor ops
 
 using namespace t81;
-T243BigInt a = T243BigInt::from_ascii("hello");
-T243BigInt b = T243BigInt::from_ascii("world");
+T243BigInt a = T243BigInt::from_ascii("1.42.7"); // base-243 digits (MSB-first, '.'-separated)
+T243BigInt b = T243BigInt::from_base81_string("1.80.5");
 auto s = T243BigInt::add(a,b);
 
 T729Tensor m({2,3}); m.data() = {1,2,3,4,5,6};
@@ -39,7 +39,7 @@ auto mt = t81::ops::transpose(m);
 
 ## Notes
 
-* `from_ascii(...)` is a placeholder until a real Base-81/243 codec is wired.
+* `from_ascii(...)` expects canonical base-243 digits (`[+-]?d(.d)*` where `0<=d<243`), MSB-first. `from_base81_string(...)` handles base-81 digit strings (`0..80`).
 * IO helpers are minimal and non-cryptographic; validate per CanonFS spec in production.
 
 ```

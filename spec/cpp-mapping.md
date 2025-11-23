@@ -13,10 +13,11 @@ This document maps legacy T81 data types and ops to the new C++ API.
 - **Sign**: `enum class Sign { Neg, Zero, Pos }`
 - **Digits**: LSB-first, each in `[0..242]`.
 - **Key APIs**:
-  - Construction: `from_ascii(std::string)` *(placeholder encoding)*
+  - Construction: `from_ascii(std::string_view)` — canonical base-243 digits, MSB-first, `.` separated, optional sign
+  - Also: `from_base81_string(std::string_view)` / `to_base81_string()` for canonical base-81 digit strings
   - Arithmetic: `add`, `sub`, `mul`, `mod`, `gcd`
   - Compare: `cmp_abs(a,b)`
-  - Format: `to_string()` *(triple-digit groups per base-243 digit; optional leading `-`)*
+  - Format: `to_string()` *(MSB-first base-243 digits with '.', optional leading `-`)*
 
 ## Fractions
 - **Type**: `t81::T81Fraction`

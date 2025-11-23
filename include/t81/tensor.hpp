@@ -5,6 +5,7 @@
 #include <initializer_list>
 #include <algorithm>
 #include <numeric>
+#include <limits>
 
 namespace t81 {
 
@@ -80,8 +81,14 @@ public:
     // Compute strides
     auto strides = [](const std::vector<int>& s) {
       std::vector<std::size_t> st(s.size(), 1);
-      for (int i = (int)s.size() - 2; i >= 0; --i)
-        st[(std::size_t)i] = st[(std::size_t)(i + 1)] * (std::size_t)s[(std::size_t)(i + 1)];
+      for (int i = (int)s.size() - 2; i >= 0; --i) {
+        std::size_t next = st[(std::size_t)(i + 1)];
+        std::size_t dim = static_cast<std::size_t>(s[(std::size_t)(i + 1)]);
+        if (next != 0 && dim > std::numeric_limits<std::size_t>::max() / next) {
+          throw std::overflow_error("broadcast: stride overflow");
+        }
+        st[(std::size_t)i] = next * dim;
+      }
       return st;
     };
     auto in_strides  = strides(cur);
@@ -89,7 +96,13 @@ public:
 
     const std::size_t out_sz =
       std::accumulate(new_shape.begin(), new_shape.end(), std::size_t{1},
-                      [](std::size_t a, int b){ return a * (std::size_t)b; });
+                      [](std::size_t a, int b){
+                        if (b <= 0) throw std::invalid_argument("broadcast: non-positive dim");
+                        if (a != 0 && static_cast<std::size_t>(b) > std::numeric_limits<std::size_t>::max() / a) {
+                          throw std::overflow_error("broadcast: size overflow");
+                        }
+                        return a * static_cast<std::size_t>(b);
+                      });
 
     std::vector<float> out(out_sz);
     std::vector<int> idx(nr, 0);
@@ -127,6 +140,9 @@ private:
     std::size_t n = 1;
     for (int d : s) {
       if (d <= 0) throw std::invalid_argument("size_from_shape_: non-positive dim");
+      if (n != 0 && static_cast<std::size_t>(d) > std::numeric_limits<std::size_t>::max() / n) {
+        throw std::overflow_error("size_from_shape_: overflow");
+      }
       n *= (std::size_t)d;
     }
     return n;

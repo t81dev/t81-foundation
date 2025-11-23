@@ -884,5 +884,7 @@ CMakeFiles/t81.dir/src/cog/promotion.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_types/_nl_item.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cstdarg \
   /Users/t81dev/t81-foundation/include/t81/core/base81.hpp \
+  /Users/t81dev/t81-foundation/include/t81/hash/canonhash.hpp \
+  /Users/t81dev/t81-foundation/include/t81/hash/base81.hpp \
   /Users/t81dev/t81-foundation/include/t81/axion/verdict.hpp \
   /Users/t81dev/t81-foundation/include/t81/cog/tier.hpp

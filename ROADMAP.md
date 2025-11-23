@@ -15,19 +15,19 @@ This repository is a small C++ prototype with draft specs. Many components are s
 | Milestone | Status | Target | Notes / Proof |
 |-----------|--------|--------|---------------|
 | v0.1 — Repo + math skeleton | Complete | Q2 2024 | CMake targets, base-243 bigint ops + tests (`tests/cpp/bigint_roundtrip.cpp`) |
-| v0.2 — Tensor + codec utilities | In progress | Q3 2024 | Tensor ops/broadcast/IO and base81/243 codecs exist; needs canonicalization and perf checks |
+| v0.2 — Tensor + codec utilities | In progress | Q3 2024 | Base-243 codec now canonical + tested; tensor ops/broadcast/IO in place; remaining: base-81 spec alignment, shape guards, perf checks |
 | v0.3 — TISC interpreter parity | In progress | Q4 2024 | Opcode coverage and memory semantics incomplete; add spec-backed tests (`spec/tisc-spec.md`) |
 | v0.4 — T81Lang front-end | Planned | Q1 2025 | Parser/type-checker, more ops, file-based compiler emitting TISC |
 | v0.5 — Axion + CanonFS | Planned | Q2 2025 | Replace stubs with policy engine, hashing, capability/persistence layer |
 | v1.0 — Deterministic stack | Planned | 2025+ | Deterministic VM, full instruction set, CI harness, docs/spec alignment |
 
 ## Near-term work (next two milestones)
-- Finalize canonical base-81/243 encodings; remove placeholder `from_ascii` path and document normalization.
-- Harden tensor API: shape overflow guards, elementwise/reduction coverage, and IO fuzz/roundtrip tests.
-- Fill in TISC load/store and trap behavior in the interpreter; add opcode-level conformance tests.
-- Expand the compiler to parse source text (not just AST structs), add mul/branching, and ensure VM compatibility.
-- Implement CanonFS hash + capability checks and wire Axion verdicts into VM/syscall paths.
-- Add a CI-friendly test runner that builds `tests/cpp/*` targets.
+- Finish base-81 spec alignment and remove remaining placeholder bigint `from_ascii` path; document normalization (`spec/t81-data-types.md`, `spec/cpp-mapping.md`).
+- Harden tensor API: shape overflow guards, elementwise/reduction coverage, and IO fuzz/roundtrip tests (v0.2 closure; `spec/t81-data-types.md` §3, `spec/t81vm-spec.md` §4.1 TENSOR).
+- Fill in TISC load/store and trap behavior in the interpreter; add opcode-level conformance tests (`spec/tisc-spec.md` §§3–5, `spec/t81vm-spec.md` §2).
+- Expand the compiler to parse source text (not just AST structs), add mul/branching, and ensure VM compatibility (`spec/t81lang-spec.md` §§1–4).
+- Implement CanonFS hash + capability checks and wire Axion verdicts into VM/syscall paths (`spec/canonfs-spec.md`, `spec/axion-kernel.md`).
+- Add a CI-friendly test runner that builds `tests/cpp/*` targets (current manual: `cmake -S . -B build-make -G \"Unix Makefiles\" && cmake --build build-make && ctest || ./build-make/t81_*_test`).
 
 ## Spec alignment backlog (from `spec/`)
 - Data types: implement canonical base-81 bigint and deterministic T81Float; enforce fraction reduction and positive denominators.

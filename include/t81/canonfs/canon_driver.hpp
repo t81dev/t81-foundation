@@ -13,6 +13,7 @@ enum class Error {
   InvalidObject,
   CapabilityError,
   ParityFailure,
+  DecodeError,
 };
 
 template <typename T>
@@ -26,9 +27,11 @@ class Driver {
   virtual Result<void> publish_capability(const CapabilityGrant& grant) = 0;
   virtual Result<void> revoke_capability(const CanonRef& ref) = 0;
   virtual Result<void> parity_repair_subtree(const CanonRef& ref) = 0;
+
+  // Optional Axion hook: set a verdict callback; returns false if rejected.
+  virtual void set_axion_hook(std::function<AxionVerdict(OpKind, const CanonRef&)> hook) = 0;
 };
 
 // Utility factory for the in-memory driver implementation.
 std::unique_ptr<Driver> make_in_memory_driver();
 }  // namespace t81::canonfs
-

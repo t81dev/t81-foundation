@@ -18,7 +18,7 @@ typedef struct t81_bigint_s* t81_bigint;
 ## Functions
 
 ```c
-// Construct from ASCII (placeholder encoding per BigInt docs)
+// Construct from canonical base-243 string (digits 0..242 separated by '.')
 t81_bigint t81_bigint_from_ascii(const char* s);
 
 // Convert to string (caller must free() the returned buffer)
@@ -36,8 +36,8 @@ void       t81_bigint_free(t81_bigint h);
 #include "src/c_api/t81_c_api.h"
 
 int main() {
-  t81_bigint a = t81_bigint_from_ascii("hello");
-  t81_bigint b = t81_bigint_from_ascii("world");
+  t81_bigint a = t81_bigint_from_ascii("1.42.7"); // base-243 digits (MSB-first)
+  t81_bigint b = t81_bigint_from_ascii("0.0.1");
   char* sa = t81_bigint_to_string(a);
   char* sb = t81_bigint_to_string(b);
   printf("A=%s\nB=%s\n", sa, sb);

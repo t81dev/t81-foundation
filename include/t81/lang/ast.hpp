@@ -13,7 +13,7 @@ struct ExprLiteral {
 };
 
 struct ExprBinary {
-  enum class Op { Add, Sub } op{Op::Add};
+  enum class Op { Add, Sub, Mul } op{Op::Add};
   std::shared_ptr<struct Expr> lhs;
   std::shared_ptr<struct Expr> rhs;
 };
@@ -39,4 +39,3 @@ struct Module {
   std::vector<Function> functions;
 };
 }  // namespace t81::lang
-

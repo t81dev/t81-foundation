@@ -142,10 +142,24 @@ CMakeFiles/t81.dir/src/lang/compiler.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/t81.dir/src/lang/compiler.cpp.s"
 	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/t81dev/t81-foundation/src/lang/compiler.cpp -o CMakeFiles/t81.dir/src/lang/compiler.cpp.s
 
+CMakeFiles/t81.dir/src/lang/parser.cpp.o: CMakeFiles/t81.dir/flags.make
+CMakeFiles/t81.dir/src/lang/parser.cpp.o: /Users/t81dev/t81-foundation/src/lang/parser.cpp
+CMakeFiles/t81.dir/src/lang/parser.cpp.o: CMakeFiles/t81.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/t81.dir/src/lang/parser.cpp.o"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/t81.dir/src/lang/parser.cpp.o -MF CMakeFiles/t81.dir/src/lang/parser.cpp.o.d -o CMakeFiles/t81.dir/src/lang/parser.cpp.o -c /Users/t81dev/t81-foundation/src/lang/parser.cpp
+
+CMakeFiles/t81.dir/src/lang/parser.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/t81.dir/src/lang/parser.cpp.i"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/t81dev/t81-foundation/src/lang/parser.cpp > CMakeFiles/t81.dir/src/lang/parser.cpp.i
+
+CMakeFiles/t81.dir/src/lang/parser.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/t81.dir/src/lang/parser.cpp.s"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/t81dev/t81-foundation/src/lang/parser.cpp -o CMakeFiles/t81.dir/src/lang/parser.cpp.s
+
 CMakeFiles/t81.dir/src/canonfs/in_memory_driver.cpp.o: CMakeFiles/t81.dir/flags.make
 CMakeFiles/t81.dir/src/canonfs/in_memory_driver.cpp.o: /Users/t81dev/t81-foundation/src/canonfs/in_memory_driver.cpp
 CMakeFiles/t81.dir/src/canonfs/in_memory_driver.cpp.o: CMakeFiles/t81.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/t81.dir/src/canonfs/in_memory_driver.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/t81.dir/src/canonfs/in_memory_driver.cpp.o"
 	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/t81.dir/src/canonfs/in_memory_driver.cpp.o -MF CMakeFiles/t81.dir/src/canonfs/in_memory_driver.cpp.o.d -o CMakeFiles/t81.dir/src/canonfs/in_memory_driver.cpp.o -c /Users/t81dev/t81-foundation/src/canonfs/in_memory_driver.cpp
 
 CMakeFiles/t81.dir/src/canonfs/in_memory_driver.cpp.i: cmake_force
@@ -159,7 +173,7 @@ CMakeFiles/t81.dir/src/canonfs/in_memory_driver.cpp.s: cmake_force
 CMakeFiles/t81.dir/src/hanoi/error.cpp.o: CMakeFiles/t81.dir/flags.make
 CMakeFiles/t81.dir/src/hanoi/error.cpp.o: /Users/t81dev/t81-foundation/src/hanoi/error.cpp
 CMakeFiles/t81.dir/src/hanoi/error.cpp.o: CMakeFiles/t81.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/t81.dir/src/hanoi/error.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/t81.dir/src/hanoi/error.cpp.o"
 	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/t81.dir/src/hanoi/error.cpp.o -MF CMakeFiles/t81.dir/src/hanoi/error.cpp.o.d -o CMakeFiles/t81.dir/src/hanoi/error.cpp.o -c /Users/t81dev/t81-foundation/src/hanoi/error.cpp
 
 CMakeFiles/t81.dir/src/hanoi/error.cpp.i: cmake_force
@@ -173,7 +187,7 @@ CMakeFiles/t81.dir/src/hanoi/error.cpp.s: cmake_force
 CMakeFiles/t81.dir/src/hanoi/in_memory_kernel.cpp.o: CMakeFiles/t81.dir/flags.make
 CMakeFiles/t81.dir/src/hanoi/in_memory_kernel.cpp.o: /Users/t81dev/t81-foundation/src/hanoi/in_memory_kernel.cpp
 CMakeFiles/t81.dir/src/hanoi/in_memory_kernel.cpp.o: CMakeFiles/t81.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/t81.dir/src/hanoi/in_memory_kernel.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/t81.dir/src/hanoi/in_memory_kernel.cpp.o"
 	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/t81.dir/src/hanoi/in_memory_kernel.cpp.o -MF CMakeFiles/t81.dir/src/hanoi/in_memory_kernel.cpp.o.d -o CMakeFiles/t81.dir/src/hanoi/in_memory_kernel.cpp.o -c /Users/t81dev/t81-foundation/src/hanoi/in_memory_kernel.cpp
 
 CMakeFiles/t81.dir/src/hanoi/in_memory_kernel.cpp.i: cmake_force
@@ -187,7 +201,7 @@ CMakeFiles/t81.dir/src/hanoi/in_memory_kernel.cpp.s: cmake_force
 CMakeFiles/t81.dir/src/axion/engine.cpp.o: CMakeFiles/t81.dir/flags.make
 CMakeFiles/t81.dir/src/axion/engine.cpp.o: /Users/t81dev/t81-foundation/src/axion/engine.cpp
 CMakeFiles/t81.dir/src/axion/engine.cpp.o: CMakeFiles/t81.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/t81.dir/src/axion/engine.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/t81.dir/src/axion/engine.cpp.o"
 	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/t81.dir/src/axion/engine.cpp.o -MF CMakeFiles/t81.dir/src/axion/engine.cpp.o.d -o CMakeFiles/t81.dir/src/axion/engine.cpp.o -c /Users/t81dev/t81-foundation/src/axion/engine.cpp
 
 CMakeFiles/t81.dir/src/axion/engine.cpp.i: cmake_force
@@ -201,7 +215,7 @@ CMakeFiles/t81.dir/src/axion/engine.cpp.s: cmake_force
 CMakeFiles/t81.dir/src/cog/promotion.cpp.o: CMakeFiles/t81.dir/flags.make
 CMakeFiles/t81.dir/src/cog/promotion.cpp.o: /Users/t81dev/t81-foundation/src/cog/promotion.cpp
 CMakeFiles/t81.dir/src/cog/promotion.cpp.o: CMakeFiles/t81.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/t81.dir/src/cog/promotion.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/t81.dir/src/cog/promotion.cpp.o"
 	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/t81.dir/src/cog/promotion.cpp.o -MF CMakeFiles/t81.dir/src/cog/promotion.cpp.o.d -o CMakeFiles/t81.dir/src/cog/promotion.cpp.o -c /Users/t81dev/t81-foundation/src/cog/promotion.cpp
 
 CMakeFiles/t81.dir/src/cog/promotion.cpp.i: cmake_force
@@ -215,7 +229,7 @@ CMakeFiles/t81.dir/src/cog/promotion.cpp.s: cmake_force
 CMakeFiles/t81.dir/src/codec/base243.cpp.o: CMakeFiles/t81.dir/flags.make
 CMakeFiles/t81.dir/src/codec/base243.cpp.o: /Users/t81dev/t81-foundation/src/codec/base243.cpp
 CMakeFiles/t81.dir/src/codec/base243.cpp.o: CMakeFiles/t81.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/t81.dir/src/codec/base243.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/t81.dir/src/codec/base243.cpp.o"
 	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/t81.dir/src/codec/base243.cpp.o -MF CMakeFiles/t81.dir/src/codec/base243.cpp.o.d -o CMakeFiles/t81.dir/src/codec/base243.cpp.o -c /Users/t81dev/t81-foundation/src/codec/base243.cpp
 
 CMakeFiles/t81.dir/src/codec/base243.cpp.i: cmake_force
@@ -226,10 +240,24 @@ CMakeFiles/t81.dir/src/codec/base243.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/t81.dir/src/codec/base243.cpp.s"
 	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/t81dev/t81-foundation/src/codec/base243.cpp -o CMakeFiles/t81.dir/src/codec/base243.cpp.s
 
+CMakeFiles/t81.dir/src/codec/base81.cpp.o: CMakeFiles/t81.dir/flags.make
+CMakeFiles/t81.dir/src/codec/base81.cpp.o: /Users/t81dev/t81-foundation/src/codec/base81.cpp
+CMakeFiles/t81.dir/src/codec/base81.cpp.o: CMakeFiles/t81.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/t81.dir/src/codec/base81.cpp.o"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/t81.dir/src/codec/base81.cpp.o -MF CMakeFiles/t81.dir/src/codec/base81.cpp.o.d -o CMakeFiles/t81.dir/src/codec/base81.cpp.o -c /Users/t81dev/t81-foundation/src/codec/base81.cpp
+
+CMakeFiles/t81.dir/src/codec/base81.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/t81.dir/src/codec/base81.cpp.i"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/t81dev/t81-foundation/src/codec/base81.cpp > CMakeFiles/t81.dir/src/codec/base81.cpp.i
+
+CMakeFiles/t81.dir/src/codec/base81.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/t81.dir/src/codec/base81.cpp.s"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/t81dev/t81-foundation/src/codec/base81.cpp -o CMakeFiles/t81.dir/src/codec/base81.cpp.s
+
 CMakeFiles/t81.dir/src/bigint/divmod.cpp.o: CMakeFiles/t81.dir/flags.make
 CMakeFiles/t81.dir/src/bigint/divmod.cpp.o: /Users/t81dev/t81-foundation/src/bigint/divmod.cpp
 CMakeFiles/t81.dir/src/bigint/divmod.cpp.o: CMakeFiles/t81.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/t81.dir/src/bigint/divmod.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/t81.dir/src/bigint/divmod.cpp.o"
 	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/t81.dir/src/bigint/divmod.cpp.o -MF CMakeFiles/t81.dir/src/bigint/divmod.cpp.o.d -o CMakeFiles/t81.dir/src/bigint/divmod.cpp.o -c /Users/t81dev/t81-foundation/src/bigint/divmod.cpp
 
 CMakeFiles/t81.dir/src/bigint/divmod.cpp.i: cmake_force
@@ -243,7 +271,7 @@ CMakeFiles/t81.dir/src/bigint/divmod.cpp.s: cmake_force
 CMakeFiles/t81.dir/src/bigint/gcd.cpp.o: CMakeFiles/t81.dir/flags.make
 CMakeFiles/t81.dir/src/bigint/gcd.cpp.o: /Users/t81dev/t81-foundation/src/bigint/gcd.cpp
 CMakeFiles/t81.dir/src/bigint/gcd.cpp.o: CMakeFiles/t81.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/t81.dir/src/bigint/gcd.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/t81.dir/src/bigint/gcd.cpp.o"
 	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/t81.dir/src/bigint/gcd.cpp.o -MF CMakeFiles/t81.dir/src/bigint/gcd.cpp.o.d -o CMakeFiles/t81.dir/src/bigint/gcd.cpp.o -c /Users/t81dev/t81-foundation/src/bigint/gcd.cpp
 
 CMakeFiles/t81.dir/src/bigint/gcd.cpp.i: cmake_force
@@ -257,7 +285,7 @@ CMakeFiles/t81.dir/src/bigint/gcd.cpp.s: cmake_force
 CMakeFiles/t81.dir/src/hash/canonhash81.cpp.o: CMakeFiles/t81.dir/flags.make
 CMakeFiles/t81.dir/src/hash/canonhash81.cpp.o: /Users/t81dev/t81-foundation/src/hash/canonhash81.cpp
 CMakeFiles/t81.dir/src/hash/canonhash81.cpp.o: CMakeFiles/t81.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/t81.dir/src/hash/canonhash81.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/t81.dir/src/hash/canonhash81.cpp.o"
 	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/t81.dir/src/hash/canonhash81.cpp.o -MF CMakeFiles/t81.dir/src/hash/canonhash81.cpp.o.d -o CMakeFiles/t81.dir/src/hash/canonhash81.cpp.o -c /Users/t81dev/t81-foundation/src/hash/canonhash81.cpp
 
 CMakeFiles/t81.dir/src/hash/canonhash81.cpp.i: cmake_force
@@ -275,12 +303,14 @@ t81_OBJECTS = \
 "CMakeFiles/t81.dir/src/tisc/encoding.cpp.o" \
 "CMakeFiles/t81.dir/src/vm/vm.cpp.o" \
 "CMakeFiles/t81.dir/src/lang/compiler.cpp.o" \
+"CMakeFiles/t81.dir/src/lang/parser.cpp.o" \
 "CMakeFiles/t81.dir/src/canonfs/in_memory_driver.cpp.o" \
 "CMakeFiles/t81.dir/src/hanoi/error.cpp.o" \
 "CMakeFiles/t81.dir/src/hanoi/in_memory_kernel.cpp.o" \
 "CMakeFiles/t81.dir/src/axion/engine.cpp.o" \
 "CMakeFiles/t81.dir/src/cog/promotion.cpp.o" \
 "CMakeFiles/t81.dir/src/codec/base243.cpp.o" \
+"CMakeFiles/t81.dir/src/codec/base81.cpp.o" \
 "CMakeFiles/t81.dir/src/bigint/divmod.cpp.o" \
 "CMakeFiles/t81.dir/src/bigint/gcd.cpp.o" \
 "CMakeFiles/t81.dir/src/hash/canonhash81.cpp.o"
@@ -293,18 +323,20 @@ libt81.a: CMakeFiles/t81.dir/src/core/fraction.cpp.o
 libt81.a: CMakeFiles/t81.dir/src/tisc/encoding.cpp.o
 libt81.a: CMakeFiles/t81.dir/src/vm/vm.cpp.o
 libt81.a: CMakeFiles/t81.dir/src/lang/compiler.cpp.o
+libt81.a: CMakeFiles/t81.dir/src/lang/parser.cpp.o
 libt81.a: CMakeFiles/t81.dir/src/canonfs/in_memory_driver.cpp.o
 libt81.a: CMakeFiles/t81.dir/src/hanoi/error.cpp.o
 libt81.a: CMakeFiles/t81.dir/src/hanoi/in_memory_kernel.cpp.o
 libt81.a: CMakeFiles/t81.dir/src/axion/engine.cpp.o
 libt81.a: CMakeFiles/t81.dir/src/cog/promotion.cpp.o
 libt81.a: CMakeFiles/t81.dir/src/codec/base243.cpp.o
+libt81.a: CMakeFiles/t81.dir/src/codec/base81.cpp.o
 libt81.a: CMakeFiles/t81.dir/src/bigint/divmod.cpp.o
 libt81.a: CMakeFiles/t81.dir/src/bigint/gcd.cpp.o
 libt81.a: CMakeFiles/t81.dir/src/hash/canonhash81.cpp.o
 libt81.a: CMakeFiles/t81.dir/build.make
 libt81.a: CMakeFiles/t81.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Linking CXX static library libt81.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/t81dev/t81-foundation/build-make/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Linking CXX static library libt81.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/t81.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/t81.dir/link.txt --verbose=$(VERBOSE)
 

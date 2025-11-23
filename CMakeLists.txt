@@ -11,12 +11,14 @@ add_library(t81 STATIC
   src/tisc/encoding.cpp
   src/vm/vm.cpp
   src/lang/compiler.cpp
+  src/lang/parser.cpp
   src/canonfs/in_memory_driver.cpp
   src/hanoi/error.cpp
   src/hanoi/in_memory_kernel.cpp
   src/axion/engine.cpp
   src/cog/promotion.cpp
   src/codec/base243.cpp
+  src/codec/base81.cpp
   src/bigint/divmod.cpp
   src/bigint/gcd.cpp
   src/hash/canonhash81.cpp
@@ -90,6 +92,8 @@ if (T81_BUILD_TESTS)
 
   add_executable(t81_codec_base243_test tests/cpp/codec_base243_test.cpp)
   target_link_libraries(t81_codec_base243_test PRIVATE t81)
+  add_executable(t81_codec_base81_test tests/cpp/codec_base81_test.cpp)
+  target_link_libraries(t81_codec_base81_test PRIVATE t81)
 
   add_executable(t81_tensor_shape_test tests/cpp/tensor_shape_test.cpp)
   target_link_libraries(t81_tensor_shape_test PRIVATE t81)
@@ -124,4 +128,25 @@ if (T81_BUILD_TESTS)
 
   add_executable(t81_lang_vm_test tests/cpp/lang_vm_integration_test.cpp)
   target_link_libraries(t81_lang_vm_test PRIVATE t81)
+
+  add_executable(t81_vm_load_store_test tests/cpp/vm_load_store_test.cpp)
+  target_link_libraries(t81_vm_load_store_test PRIVATE t81)
+
+  add_executable(t81_vm_divmod_test tests/cpp/vm_divmod_test.cpp)
+  target_link_libraries(t81_vm_divmod_test PRIVATE t81)
+
+  add_executable(t81_vm_illegal_test tests/cpp/vm_illegal_test.cpp)
+  target_link_libraries(t81_vm_illegal_test PRIVATE t81)
+
+  add_executable(t81_vm_bounds_test tests/cpp/vm_bounds_test.cpp)
+  target_link_libraries(t81_vm_bounds_test PRIVATE t81)
+
+  add_executable(t81_canonfs_driver_test tests/cpp/canonfs_driver_test.cpp)
+  target_link_libraries(t81_canonfs_driver_test PRIVATE t81)
+
+  add_executable(t81_vm_trace_test tests/cpp/vm_trace_test.cpp)
+  target_link_libraries(t81_vm_trace_test PRIVATE t81)
+
+  add_executable(t81_lang_parser_vm_test tests/cpp/lang_parser_vm_test.cpp)
+  target_link_libraries(t81_lang_parser_vm_test PRIVATE t81)
 endif()

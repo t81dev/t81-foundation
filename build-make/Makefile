@@ -351,6 +351,19 @@ t81_codec_base243_test/fast:
 .PHONY : t81_codec_base243_test/fast
 
 #=============================================================================
+# Target rules for targets named t81_codec_base81_test
+
+# Build rule for target.
+t81_codec_base81_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 t81_codec_base81_test
+.PHONY : t81_codec_base81_test
+
+# fast build rule for target.
+t81_codec_base81_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_codec_base81_test.dir/build.make CMakeFiles/t81_codec_base81_test.dir/build
+.PHONY : t81_codec_base81_test/fast
+
+#=============================================================================
 # Target rules for targets named t81_tensor_shape_test
 
 # Build rule for target.
@@ -492,6 +505,97 @@ t81_lang_vm_test: cmake_check_build_system
 t81_lang_vm_test/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_vm_test.dir/build.make CMakeFiles/t81_lang_vm_test.dir/build
 .PHONY : t81_lang_vm_test/fast
+
+#=============================================================================
+# Target rules for targets named t81_vm_load_store_test
+
+# Build rule for target.
+t81_vm_load_store_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 t81_vm_load_store_test
+.PHONY : t81_vm_load_store_test
+
+# fast build rule for target.
+t81_vm_load_store_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_load_store_test.dir/build.make CMakeFiles/t81_vm_load_store_test.dir/build
+.PHONY : t81_vm_load_store_test/fast
+
+#=============================================================================
+# Target rules for targets named t81_vm_divmod_test
+
+# Build rule for target.
+t81_vm_divmod_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 t81_vm_divmod_test
+.PHONY : t81_vm_divmod_test
+
+# fast build rule for target.
+t81_vm_divmod_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_divmod_test.dir/build.make CMakeFiles/t81_vm_divmod_test.dir/build
+.PHONY : t81_vm_divmod_test/fast
+
+#=============================================================================
+# Target rules for targets named t81_vm_illegal_test
+
+# Build rule for target.
+t81_vm_illegal_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 t81_vm_illegal_test
+.PHONY : t81_vm_illegal_test
+
+# fast build rule for target.
+t81_vm_illegal_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_illegal_test.dir/build.make CMakeFiles/t81_vm_illegal_test.dir/build
+.PHONY : t81_vm_illegal_test/fast
+
+#=============================================================================
+# Target rules for targets named t81_vm_bounds_test
+
+# Build rule for target.
+t81_vm_bounds_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 t81_vm_bounds_test
+.PHONY : t81_vm_bounds_test
+
+# fast build rule for target.
+t81_vm_bounds_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_bounds_test.dir/build.make CMakeFiles/t81_vm_bounds_test.dir/build
+.PHONY : t81_vm_bounds_test/fast
+
+#=============================================================================
+# Target rules for targets named t81_canonfs_driver_test
+
+# Build rule for target.
+t81_canonfs_driver_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 t81_canonfs_driver_test
+.PHONY : t81_canonfs_driver_test
+
+# fast build rule for target.
+t81_canonfs_driver_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_canonfs_driver_test.dir/build.make CMakeFiles/t81_canonfs_driver_test.dir/build
+.PHONY : t81_canonfs_driver_test/fast
+
+#=============================================================================
+# Target rules for targets named t81_vm_trace_test
+
+# Build rule for target.
+t81_vm_trace_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 t81_vm_trace_test
+.PHONY : t81_vm_trace_test
+
+# fast build rule for target.
+t81_vm_trace_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_trace_test.dir/build.make CMakeFiles/t81_vm_trace_test.dir/build
+.PHONY : t81_vm_trace_test/fast
+
+#=============================================================================
+# Target rules for targets named t81_lang_parser_vm_test
+
+# Build rule for target.
+t81_lang_parser_vm_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 t81_lang_parser_vm_test
+.PHONY : t81_lang_parser_vm_test
+
+# fast build rule for target.
+t81_lang_parser_vm_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_parser_vm_test.dir/build.make CMakeFiles/t81_lang_parser_vm_test.dir/build
+.PHONY : t81_lang_parser_vm_test/fast
 
 examples/axion_demo.o: examples/axion_demo.cpp.o
 .PHONY : examples/axion_demo.o
@@ -733,6 +837,30 @@ src/codec/base243.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81.dir/build.make CMakeFiles/t81.dir/src/codec/base243.cpp.s
 .PHONY : src/codec/base243.cpp.s
 
+src/codec/base81.o: src/codec/base81.cpp.o
+.PHONY : src/codec/base81.o
+
+# target to build an object file
+src/codec/base81.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81.dir/build.make CMakeFiles/t81.dir/src/codec/base81.cpp.o
+.PHONY : src/codec/base81.cpp.o
+
+src/codec/base81.i: src/codec/base81.cpp.i
+.PHONY : src/codec/base81.i
+
+# target to preprocess a source file
+src/codec/base81.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81.dir/build.make CMakeFiles/t81.dir/src/codec/base81.cpp.i
+.PHONY : src/codec/base81.cpp.i
+
+src/codec/base81.s: src/codec/base81.cpp.s
+.PHONY : src/codec/base81.s
+
+# target to generate assembly for a file
+src/codec/base81.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81.dir/build.make CMakeFiles/t81.dir/src/codec/base81.cpp.s
+.PHONY : src/codec/base81.cpp.s
+
 src/cog/promotion.o: src/cog/promotion.cpp.o
 .PHONY : src/cog/promotion.o
 
@@ -925,6 +1053,30 @@ src/lang/compiler.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81.dir/build.make CMakeFiles/t81.dir/src/lang/compiler.cpp.s
 .PHONY : src/lang/compiler.cpp.s
 
+src/lang/parser.o: src/lang/parser.cpp.o
+.PHONY : src/lang/parser.o
+
+# target to build an object file
+src/lang/parser.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81.dir/build.make CMakeFiles/t81.dir/src/lang/parser.cpp.o
+.PHONY : src/lang/parser.cpp.o
+
+src/lang/parser.i: src/lang/parser.cpp.i
+.PHONY : src/lang/parser.i
+
+# target to preprocess a source file
+src/lang/parser.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81.dir/build.make CMakeFiles/t81.dir/src/lang/parser.cpp.i
+.PHONY : src/lang/parser.cpp.i
+
+src/lang/parser.s: src/lang/parser.cpp.s
+.PHONY : src/lang/parser.s
+
+# target to generate assembly for a file
+src/lang/parser.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81.dir/build.make CMakeFiles/t81.dir/src/lang/parser.cpp.s
+.PHONY : src/lang/parser.cpp.s
+
 src/tisc/encoding.o: src/tisc/encoding.cpp.o
 .PHONY : src/tisc/encoding.o
 
@@ -1045,6 +1197,30 @@ tests/cpp/c_api_bigint_test.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_c_api_bigint_test.dir/build.make CMakeFiles/t81_c_api_bigint_test.dir/tests/cpp/c_api_bigint_test.c.s
 .PHONY : tests/cpp/c_api_bigint_test.c.s
 
+tests/cpp/canonfs_driver_test.o: tests/cpp/canonfs_driver_test.cpp.o
+.PHONY : tests/cpp/canonfs_driver_test.o
+
+# target to build an object file
+tests/cpp/canonfs_driver_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_canonfs_driver_test.dir/build.make CMakeFiles/t81_canonfs_driver_test.dir/tests/cpp/canonfs_driver_test.cpp.o
+.PHONY : tests/cpp/canonfs_driver_test.cpp.o
+
+tests/cpp/canonfs_driver_test.i: tests/cpp/canonfs_driver_test.cpp.i
+.PHONY : tests/cpp/canonfs_driver_test.i
+
+# target to preprocess a source file
+tests/cpp/canonfs_driver_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_canonfs_driver_test.dir/build.make CMakeFiles/t81_canonfs_driver_test.dir/tests/cpp/canonfs_driver_test.cpp.i
+.PHONY : tests/cpp/canonfs_driver_test.cpp.i
+
+tests/cpp/canonfs_driver_test.s: tests/cpp/canonfs_driver_test.cpp.s
+.PHONY : tests/cpp/canonfs_driver_test.s
+
+# target to generate assembly for a file
+tests/cpp/canonfs_driver_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_canonfs_driver_test.dir/build.make CMakeFiles/t81_canonfs_driver_test.dir/tests/cpp/canonfs_driver_test.cpp.s
+.PHONY : tests/cpp/canonfs_driver_test.cpp.s
+
 tests/cpp/canonfs_io_test.o: tests/cpp/canonfs_io_test.cpp.o
 .PHONY : tests/cpp/canonfs_io_test.o
 
@@ -1092,6 +1268,30 @@ tests/cpp/codec_base243_test.s: tests/cpp/codec_base243_test.cpp.s
 tests/cpp/codec_base243_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_codec_base243_test.dir/build.make CMakeFiles/t81_codec_base243_test.dir/tests/cpp/codec_base243_test.cpp.s
 .PHONY : tests/cpp/codec_base243_test.cpp.s
+
+tests/cpp/codec_base81_test.o: tests/cpp/codec_base81_test.cpp.o
+.PHONY : tests/cpp/codec_base81_test.o
+
+# target to build an object file
+tests/cpp/codec_base81_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_codec_base81_test.dir/build.make CMakeFiles/t81_codec_base81_test.dir/tests/cpp/codec_base81_test.cpp.o
+.PHONY : tests/cpp/codec_base81_test.cpp.o
+
+tests/cpp/codec_base81_test.i: tests/cpp/codec_base81_test.cpp.i
+.PHONY : tests/cpp/codec_base81_test.i
+
+# target to preprocess a source file
+tests/cpp/codec_base81_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_codec_base81_test.dir/build.make CMakeFiles/t81_codec_base81_test.dir/tests/cpp/codec_base81_test.cpp.i
+.PHONY : tests/cpp/codec_base81_test.cpp.i
+
+tests/cpp/codec_base81_test.s: tests/cpp/codec_base81_test.cpp.s
+.PHONY : tests/cpp/codec_base81_test.s
+
+# target to generate assembly for a file
+tests/cpp/codec_base81_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_codec_base81_test.dir/build.make CMakeFiles/t81_codec_base81_test.dir/tests/cpp/codec_base81_test.cpp.s
+.PHONY : tests/cpp/codec_base81_test.cpp.s
 
 tests/cpp/entropy_test.o: tests/cpp/entropy_test.cpp.o
 .PHONY : tests/cpp/entropy_test.o
@@ -1212,6 +1412,30 @@ tests/cpp/ir_encoding_test.s: tests/cpp/ir_encoding_test.cpp.s
 tests/cpp/ir_encoding_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_ir_encoding_test.dir/build.make CMakeFiles/t81_ir_encoding_test.dir/tests/cpp/ir_encoding_test.cpp.s
 .PHONY : tests/cpp/ir_encoding_test.cpp.s
+
+tests/cpp/lang_parser_vm_test.o: tests/cpp/lang_parser_vm_test.cpp.o
+.PHONY : tests/cpp/lang_parser_vm_test.o
+
+# target to build an object file
+tests/cpp/lang_parser_vm_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_parser_vm_test.dir/build.make CMakeFiles/t81_lang_parser_vm_test.dir/tests/cpp/lang_parser_vm_test.cpp.o
+.PHONY : tests/cpp/lang_parser_vm_test.cpp.o
+
+tests/cpp/lang_parser_vm_test.i: tests/cpp/lang_parser_vm_test.cpp.i
+.PHONY : tests/cpp/lang_parser_vm_test.i
+
+# target to preprocess a source file
+tests/cpp/lang_parser_vm_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_parser_vm_test.dir/build.make CMakeFiles/t81_lang_parser_vm_test.dir/tests/cpp/lang_parser_vm_test.cpp.i
+.PHONY : tests/cpp/lang_parser_vm_test.cpp.i
+
+tests/cpp/lang_parser_vm_test.s: tests/cpp/lang_parser_vm_test.cpp.s
+.PHONY : tests/cpp/lang_parser_vm_test.s
+
+# target to generate assembly for a file
+tests/cpp/lang_parser_vm_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_lang_parser_vm_test.dir/build.make CMakeFiles/t81_lang_parser_vm_test.dir/tests/cpp/lang_parser_vm_test.cpp.s
+.PHONY : tests/cpp/lang_parser_vm_test.cpp.s
 
 tests/cpp/lang_vm_integration_test.o: tests/cpp/lang_vm_integration_test.cpp.o
 .PHONY : tests/cpp/lang_vm_integration_test.o
@@ -1501,6 +1725,126 @@ tests/cpp/ternary_arith_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_ternary_arith_test.dir/build.make CMakeFiles/t81_ternary_arith_test.dir/tests/cpp/ternary_arith_test.cpp.s
 .PHONY : tests/cpp/ternary_arith_test.cpp.s
 
+tests/cpp/vm_bounds_test.o: tests/cpp/vm_bounds_test.cpp.o
+.PHONY : tests/cpp/vm_bounds_test.o
+
+# target to build an object file
+tests/cpp/vm_bounds_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_bounds_test.dir/build.make CMakeFiles/t81_vm_bounds_test.dir/tests/cpp/vm_bounds_test.cpp.o
+.PHONY : tests/cpp/vm_bounds_test.cpp.o
+
+tests/cpp/vm_bounds_test.i: tests/cpp/vm_bounds_test.cpp.i
+.PHONY : tests/cpp/vm_bounds_test.i
+
+# target to preprocess a source file
+tests/cpp/vm_bounds_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_bounds_test.dir/build.make CMakeFiles/t81_vm_bounds_test.dir/tests/cpp/vm_bounds_test.cpp.i
+.PHONY : tests/cpp/vm_bounds_test.cpp.i
+
+tests/cpp/vm_bounds_test.s: tests/cpp/vm_bounds_test.cpp.s
+.PHONY : tests/cpp/vm_bounds_test.s
+
+# target to generate assembly for a file
+tests/cpp/vm_bounds_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_bounds_test.dir/build.make CMakeFiles/t81_vm_bounds_test.dir/tests/cpp/vm_bounds_test.cpp.s
+.PHONY : tests/cpp/vm_bounds_test.cpp.s
+
+tests/cpp/vm_divmod_test.o: tests/cpp/vm_divmod_test.cpp.o
+.PHONY : tests/cpp/vm_divmod_test.o
+
+# target to build an object file
+tests/cpp/vm_divmod_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_divmod_test.dir/build.make CMakeFiles/t81_vm_divmod_test.dir/tests/cpp/vm_divmod_test.cpp.o
+.PHONY : tests/cpp/vm_divmod_test.cpp.o
+
+tests/cpp/vm_divmod_test.i: tests/cpp/vm_divmod_test.cpp.i
+.PHONY : tests/cpp/vm_divmod_test.i
+
+# target to preprocess a source file
+tests/cpp/vm_divmod_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_divmod_test.dir/build.make CMakeFiles/t81_vm_divmod_test.dir/tests/cpp/vm_divmod_test.cpp.i
+.PHONY : tests/cpp/vm_divmod_test.cpp.i
+
+tests/cpp/vm_divmod_test.s: tests/cpp/vm_divmod_test.cpp.s
+.PHONY : tests/cpp/vm_divmod_test.s
+
+# target to generate assembly for a file
+tests/cpp/vm_divmod_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_divmod_test.dir/build.make CMakeFiles/t81_vm_divmod_test.dir/tests/cpp/vm_divmod_test.cpp.s
+.PHONY : tests/cpp/vm_divmod_test.cpp.s
+
+tests/cpp/vm_illegal_test.o: tests/cpp/vm_illegal_test.cpp.o
+.PHONY : tests/cpp/vm_illegal_test.o
+
+# target to build an object file
+tests/cpp/vm_illegal_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_illegal_test.dir/build.make CMakeFiles/t81_vm_illegal_test.dir/tests/cpp/vm_illegal_test.cpp.o
+.PHONY : tests/cpp/vm_illegal_test.cpp.o
+
+tests/cpp/vm_illegal_test.i: tests/cpp/vm_illegal_test.cpp.i
+.PHONY : tests/cpp/vm_illegal_test.i
+
+# target to preprocess a source file
+tests/cpp/vm_illegal_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_illegal_test.dir/build.make CMakeFiles/t81_vm_illegal_test.dir/tests/cpp/vm_illegal_test.cpp.i
+.PHONY : tests/cpp/vm_illegal_test.cpp.i
+
+tests/cpp/vm_illegal_test.s: tests/cpp/vm_illegal_test.cpp.s
+.PHONY : tests/cpp/vm_illegal_test.s
+
+# target to generate assembly for a file
+tests/cpp/vm_illegal_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_illegal_test.dir/build.make CMakeFiles/t81_vm_illegal_test.dir/tests/cpp/vm_illegal_test.cpp.s
+.PHONY : tests/cpp/vm_illegal_test.cpp.s
+
+tests/cpp/vm_load_store_test.o: tests/cpp/vm_load_store_test.cpp.o
+.PHONY : tests/cpp/vm_load_store_test.o
+
+# target to build an object file
+tests/cpp/vm_load_store_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_load_store_test.dir/build.make CMakeFiles/t81_vm_load_store_test.dir/tests/cpp/vm_load_store_test.cpp.o
+.PHONY : tests/cpp/vm_load_store_test.cpp.o
+
+tests/cpp/vm_load_store_test.i: tests/cpp/vm_load_store_test.cpp.i
+.PHONY : tests/cpp/vm_load_store_test.i
+
+# target to preprocess a source file
+tests/cpp/vm_load_store_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_load_store_test.dir/build.make CMakeFiles/t81_vm_load_store_test.dir/tests/cpp/vm_load_store_test.cpp.i
+.PHONY : tests/cpp/vm_load_store_test.cpp.i
+
+tests/cpp/vm_load_store_test.s: tests/cpp/vm_load_store_test.cpp.s
+.PHONY : tests/cpp/vm_load_store_test.s
+
+# target to generate assembly for a file
+tests/cpp/vm_load_store_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_load_store_test.dir/build.make CMakeFiles/t81_vm_load_store_test.dir/tests/cpp/vm_load_store_test.cpp.s
+.PHONY : tests/cpp/vm_load_store_test.cpp.s
+
+tests/cpp/vm_trace_test.o: tests/cpp/vm_trace_test.cpp.o
+.PHONY : tests/cpp/vm_trace_test.o
+
+# target to build an object file
+tests/cpp/vm_trace_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_trace_test.dir/build.make CMakeFiles/t81_vm_trace_test.dir/tests/cpp/vm_trace_test.cpp.o
+.PHONY : tests/cpp/vm_trace_test.cpp.o
+
+tests/cpp/vm_trace_test.i: tests/cpp/vm_trace_test.cpp.i
+.PHONY : tests/cpp/vm_trace_test.i
+
+# target to preprocess a source file
+tests/cpp/vm_trace_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_trace_test.dir/build.make CMakeFiles/t81_vm_trace_test.dir/tests/cpp/vm_trace_test.cpp.i
+.PHONY : tests/cpp/vm_trace_test.cpp.i
+
+tests/cpp/vm_trace_test.s: tests/cpp/vm_trace_test.cpp.s
+.PHONY : tests/cpp/vm_trace_test.s
+
+# target to generate assembly for a file
+tests/cpp/vm_trace_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/t81_vm_trace_test.dir/build.make CMakeFiles/t81_vm_trace_test.dir/tests/cpp/vm_trace_test.cpp.s
+.PHONY : tests/cpp/vm_trace_test.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -1515,8 +1859,10 @@ help:
 	@echo "... t81_bigint_test"
 	@echo "... t81_c_api"
 	@echo "... t81_c_api_bigint_test"
+	@echo "... t81_canonfs_driver_test"
 	@echo "... t81_canonfs_io_test"
 	@echo "... t81_codec_base243_test"
+	@echo "... t81_codec_base81_test"
 	@echo "... t81_demo"
 	@echo "... t81_entropy_test"
 	@echo "... t81_fraction_test"
@@ -1525,6 +1871,7 @@ help:
 	@echo "... t81_io"
 	@echo "... t81_ir_encoding_test"
 	@echo "... t81_ir_roundtrip"
+	@echo "... t81_lang_parser_vm_test"
 	@echo "... t81_lang_vm_test"
 	@echo "... t81_tensor_broadcast_test"
 	@echo "... t81_tensor_elementwise_test"
@@ -1538,6 +1885,11 @@ help:
 	@echo "... t81_tensor_transpose_test"
 	@echo "... t81_tensor_unary_test"
 	@echo "... t81_ternary_arith_test"
+	@echo "... t81_vm_bounds_test"
+	@echo "... t81_vm_divmod_test"
+	@echo "... t81_vm_illegal_test"
+	@echo "... t81_vm_load_store_test"
+	@echo "... t81_vm_trace_test"
 	@echo "... examples/axion_demo.o"
 	@echo "... examples/axion_demo.i"
 	@echo "... examples/axion_demo.s"
@@ -1568,6 +1920,9 @@ help:
 	@echo "... src/codec/base243.o"
 	@echo "... src/codec/base243.i"
 	@echo "... src/codec/base243.s"
+	@echo "... src/codec/base81.o"
+	@echo "... src/codec/base81.i"
+	@echo "... src/codec/base81.s"
 	@echo "... src/cog/promotion.o"
 	@echo "... src/cog/promotion.i"
 	@echo "... src/cog/promotion.s"
@@ -1592,6 +1947,9 @@ help:
 	@echo "... src/lang/compiler.o"
 	@echo "... src/lang/compiler.i"
 	@echo "... src/lang/compiler.s"
+	@echo "... src/lang/parser.o"
+	@echo "... src/lang/parser.i"
+	@echo "... src/lang/parser.s"
 	@echo "... src/tisc/encoding.o"
 	@echo "... src/tisc/encoding.i"
 	@echo "... src/tisc/encoding.s"
@@ -1607,12 +1965,18 @@ help:
 	@echo "... tests/cpp/c_api_bigint_test.o"
 	@echo "... tests/cpp/c_api_bigint_test.i"
 	@echo "... tests/cpp/c_api_bigint_test.s"
+	@echo "... tests/cpp/canonfs_driver_test.o"
+	@echo "... tests/cpp/canonfs_driver_test.i"
+	@echo "... tests/cpp/canonfs_driver_test.s"
 	@echo "... tests/cpp/canonfs_io_test.o"
 	@echo "... tests/cpp/canonfs_io_test.i"
 	@echo "... tests/cpp/canonfs_io_test.s"
 	@echo "... tests/cpp/codec_base243_test.o"
 	@echo "... tests/cpp/codec_base243_test.i"
 	@echo "... tests/cpp/codec_base243_test.s"
+	@echo "... tests/cpp/codec_base81_test.o"
+	@echo "... tests/cpp/codec_base81_test.i"
+	@echo "... tests/cpp/codec_base81_test.s"
 	@echo "... tests/cpp/entropy_test.o"
 	@echo "... tests/cpp/entropy_test.i"
 	@echo "... tests/cpp/entropy_test.s"
@@ -1628,6 +1992,9 @@ help:
 	@echo "... tests/cpp/ir_encoding_test.o"
 	@echo "... tests/cpp/ir_encoding_test.i"
 	@echo "... tests/cpp/ir_encoding_test.s"
+	@echo "... tests/cpp/lang_parser_vm_test.o"
+	@echo "... tests/cpp/lang_parser_vm_test.i"
+	@echo "... tests/cpp/lang_parser_vm_test.s"
 	@echo "... tests/cpp/lang_vm_integration_test.o"
 	@echo "... tests/cpp/lang_vm_integration_test.i"
 	@echo "... tests/cpp/lang_vm_integration_test.s"
@@ -1664,6 +2031,21 @@ help:
 	@echo "... tests/cpp/ternary_arith_test.o"
 	@echo "... tests/cpp/ternary_arith_test.i"
 	@echo "... tests/cpp/ternary_arith_test.s"
+	@echo "... tests/cpp/vm_bounds_test.o"
+	@echo "... tests/cpp/vm_bounds_test.i"
+	@echo "... tests/cpp/vm_bounds_test.s"
+	@echo "... tests/cpp/vm_divmod_test.o"
+	@echo "... tests/cpp/vm_divmod_test.i"
+	@echo "... tests/cpp/vm_divmod_test.s"
+	@echo "... tests/cpp/vm_illegal_test.o"
+	@echo "... tests/cpp/vm_illegal_test.i"
+	@echo "... tests/cpp/vm_illegal_test.s"
+	@echo "... tests/cpp/vm_load_store_test.o"
+	@echo "... tests/cpp/vm_load_store_test.i"
+	@echo "... tests/cpp/vm_load_store_test.s"
+	@echo "... tests/cpp/vm_trace_test.o"
+	@echo "... tests/cpp/vm_trace_test.i"
+	@echo "... tests/cpp/vm_trace_test.s"
 .PHONY : help
 
 

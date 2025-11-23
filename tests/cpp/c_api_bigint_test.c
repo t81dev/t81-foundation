@@ -4,8 +4,8 @@
 #include "src/c_api/t81_c_api.h"
 
 int main(void) {
-  // Construct from ASCII (stub mapping in C++ BigInt)
-  t81_bigint h = t81_bigint_from_ascii("12345");
+  // Construct from canonical base-243 string (digits 0..242 separated by '.')
+  t81_bigint h = t81_bigint_from_ascii("1.234.5");
   assert(h != NULL);
 
   // Convert back to string (implementation-dependent debug format)

@@ -98,12 +98,32 @@ static void test_gcd_basic_cases() {
     }
 }
 
+static void test_base81_roundtrip() {
+    using t81::T243BigInt;
+    std::vector<std::string> cases = {
+        "0",
+        "1",
+        "80",
+        "1.80.5",
+        "-2.0.1",
+        "3.0.0.0.4"
+    };
+    for (const auto& s : cases) {
+        T243BigInt a = T243BigInt::from_base81_string(s);
+        auto t = a.to_base81_string();
+        // The to_base81_string may normalize leading zeros; reparse and compare values.
+        T243BigInt b = T243BigInt::from_base81_string(t);
+        assert(a == b);
+    }
+}
+
 int main() {
     // existing tests...
     // test_existing_roundtrip();
 
     test_divmod_basic_cases();
     test_gcd_basic_cases();
+    test_base81_roundtrip();
 
     return 0;
 }

@@ -1,7 +1,9 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
+#include <climits>
 #include "t81/tensor/shape.hpp"
+#include "t81/tensor.hpp"
 
 int main() {
   using namespace t81::shape;
@@ -71,6 +73,17 @@ int main() {
     try { (void)validate_reshape({2,3}, {-1,-1}); } catch (const std::invalid_argument&) { threw = true; }
     assert(threw); threw = false;
     try { (void)validate_reshape({2,3}, {4,2}); } catch (const std::invalid_argument&) { threw = true; }
+    assert(threw);
+  }
+
+  // tensor construction overflow guard
+  {
+    bool threw = false;
+    try {
+      t81::T729Tensor huge({INT_MAX, INT_MAX, INT_MAX});
+    } catch (const std::overflow_error&) {
+      threw = true;
+    }
     assert(threw);
   }
 

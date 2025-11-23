@@ -909,5 +909,7 @@ CMakeFiles/t81.dir/src/canonfs/in_memory_driver.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/expected \
   /Users/t81dev/t81-foundation/include/t81/canonfs/canon_types.hpp \
   /Users/t81dev/t81-foundation/include/t81/core/base81.hpp \
+  /Users/t81dev/t81-foundation/include/t81/hash/canonhash.hpp \
+  /Users/t81dev/t81-foundation/include/t81/hash/base81.hpp \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/map \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__tree

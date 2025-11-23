@@ -1,7 +1,9 @@
 #pragma once
 #include <algorithm>
 #include <cstdint>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <stdexcept>
 #include <sstream>
@@ -41,18 +43,60 @@ public:
   }
 
   // Placeholder ASCII mapping (not canonical Base-243!):
-  // encodes each char c as a single digit = c % 243, sign is Pos unless string starts with '-'.
-  static T243BigInt from_ascii(const std::string& s) {
-    if (s.empty()) return zero();
-    T243BigInt z;
-    size_t i = 0;
-    if (s[0] == '-') { z.sign_ = Sign::Neg; i = 1; }
-    else             { z.sign_ = Sign::Pos; }
-    z.d_.reserve(s.size());
-    for (; i < s.size(); ++i) z.d_.push_back(static_cast<uint8_t>(static_cast<unsigned char>(s[i]) % 243));
-    if (z.d_.empty()) z.sign_ = Sign::Zero;
-    z.trim_();
-    return z;
+  // Canonical base-243 textual form: optional sign, digits 0..242 separated by '.'; no leading zeros except "0".
+  static T243BigInt from_ascii(std::string_view s) { return from_base243_string(s); }
+
+  static T243BigInt from_base243_string(std::string_view s) {
+    if (s.empty()) throw std::invalid_argument("T243BigInt::from_base243_string: empty input");
+
+    bool neg = false;
+    std::size_t pos = 0;
+    if (s[pos] == '+' || s[pos] == '-') {
+      neg = (s[pos] == '-');
+      ++pos;
+      if (pos >= s.size()) throw std::invalid_argument("T243BigInt::from_base243_string: sign only");
+    }
+
+    std::vector<int> digits;
+    int current = 0;
+    bool have_digit = false;
+
+    for (; pos <= s.size(); ++pos) {
+      if (pos == s.size() || s[pos] == '.') {
+        if (!have_digit) throw std::invalid_argument("T243BigInt::from_base243_string: empty digit");
+        if (current < 0 || current >= 243) throw std::invalid_argument("T243BigInt::from_base243_string: digit out of range");
+        digits.push_back(current);
+        current = 0;
+        have_digit = false;
+      } else if (s[pos] >= '0' && s[pos] <= '9') {
+        have_digit = true;
+        current = current * 10 + (s[pos] - '0');
+        if (current >= 1000) throw std::invalid_argument("T243BigInt::from_base243_string: digit overflow");
+      } else {
+        throw std::invalid_argument("T243BigInt::from_base243_string: invalid character");
+      }
+    }
+
+    // Normalize leading zeros (except lone zero)
+    std::size_t first_nonzero = 0;
+    while (first_nonzero < digits.size() - 1 && digits[first_nonzero] == 0) ++first_nonzero;
+
+    T243BigInt out;
+    out.sign_ = Sign::Pos;
+    out.d_.clear();
+
+    const int base = 243;
+    for (std::size_t i = first_nonzero; i < digits.size(); ++i) {
+      mul_small_(out.d_, base, out.d_);
+      add_small_(out.d_, static_cast<uint16_t>(digits[i]), out.d_);
+    }
+
+    out.trim_();
+    if (out.is_zero()) {
+      return zero();
+    }
+    if (neg) out.sign_ = Sign::Neg;
+    return out;
   }
 
   // --- observers ---
@@ -191,6 +235,10 @@ public:
     return os.str();
   }
 
+  // Canonical base-81 string: optional sign + digits [0..80] separated by '.' (MSB-first).
+  std::string to_base81_string() const;
+  static T243BigInt from_base81_string(std::string_view s);
+
 private:
   Sign sign_{Sign::Zero};
   std::vector<uint8_t> d_; // LSB-first, base 243
@@ -316,5 +364,76 @@ private:
     }
   }
 };
+
+struct DivModResult {
+  T243BigInt q;  // quotient
+  T243BigInt r;  // remainder
+};
+
+// Inline implementations that depend on DivModResult being complete.
+inline std::string T243BigInt::to_base81_string() const {
+  if (sign_ == Sign::Zero) return "0";
+
+  const T243BigInt base(81);
+  T243BigInt v = abs(*this);
+  std::vector<int> digits;
+  digits.reserve(48);
+
+  while (!is_zero(v)) {
+    auto dm = divmod(v, base);
+    int d = static_cast<int>(dm.r.to_int64());
+    digits.push_back(d);
+    v = dm.q;
+  }
+
+  std::ostringstream oss;
+  if (sign_ == Sign::Neg) oss << '-';
+  for (auto it = digits.rbegin(); it != digits.rend(); ++it) {
+    if (it != digits.rbegin()) oss << '.';
+    oss << *it;
+  }
+  return oss.str();
+}
+
+inline T243BigInt T243BigInt::from_base81_string(std::string_view s) {
+  if (s.empty()) throw std::invalid_argument("T243BigInt::from_base81_string: empty input");
+
+  bool neg = false;
+  std::size_t pos = 0;
+  if (s[pos] == '+' || s[pos] == '-') {
+    neg = (s[pos] == '-');
+    ++pos;
+    if (pos >= s.size()) throw std::invalid_argument("T243BigInt::from_base81_string: sign only");
+  }
+
+  std::vector<int> digits;
+  int current = 0;
+  bool have_digit = false;
+
+  for (; pos <= s.size(); ++pos) {
+    if (pos == s.size() || s[pos] == '.') {
+      if (!have_digit) throw std::invalid_argument("T243BigInt::from_base81_string: empty digit");
+      if (current < 0 || current >= 81) throw std::invalid_argument("T243BigInt::from_base81_string: digit out of range");
+      digits.push_back(current);
+      current = 0;
+      have_digit = false;
+    } else if (s[pos] >= '0' && s[pos] <= '9') {
+      have_digit = true;
+      current = current * 10 + (s[pos] - '0');
+      if (current >= 1000) throw std::invalid_argument("T243BigInt::from_base81_string: digit overflow");
+    } else {
+      throw std::invalid_argument("T243BigInt::from_base81_string: invalid character");
+    }
+  }
+
+  T243BigInt base(81);
+  T243BigInt v(0);
+  for (int d : digits) {
+    v = mul(v, base);
+    v = add(v, T243BigInt(d));
+  }
+  if (neg && !is_zero(v)) v.sign_ = Sign::Neg;
+  return v;
+}
 
 } // namespace t81

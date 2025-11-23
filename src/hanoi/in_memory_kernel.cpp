@@ -21,7 +21,8 @@ class InMemoryKernel : public Kernel {
 
   Result<SnapshotRef> fork_snapshot(const SnapshotRef& base) override {
     if (!snapshots_.count(base.hash)) return Error::CanonMismatch;
-    SnapshotRef child{t81::canonfs::CanonHash{base.hash + "-fork"}};
+    // Derive a new hash deterministically; in this stub we reuse the same hash (no real fork hash).
+    SnapshotRef child{base.hash};
     snapshots_[child.hash] = Snapshot{child};
     return child;
   }
@@ -95,4 +96,3 @@ std::unique_ptr<Kernel> make_in_memory_kernel(t81::canonfs::Driver& driver) {
   return std::make_unique<InMemoryKernel>(driver);
 }
 }  // namespace t81::hanoi
-

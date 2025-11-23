@@ -14,7 +14,12 @@ void emit_expr(const Expr& expr, std::vector<t81::tisc::Insn>& out, int target_r
     int rhs_reg = target_reg + 1;
     emit_expr(*bin.lhs, out, lhs_reg);
     emit_expr(*bin.rhs, out, rhs_reg);
-    const auto opcode = bin.op == ExprBinary::Op::Add ? t81::tisc::Opcode::Add : t81::tisc::Opcode::Sub;
+    t81::tisc::Opcode opcode = t81::tisc::Opcode::Add;
+    switch (bin.op) {
+      case ExprBinary::Op::Add: opcode = t81::tisc::Opcode::Add; break;
+      case ExprBinary::Op::Sub: opcode = t81::tisc::Opcode::Sub; break;
+      case ExprBinary::Op::Mul: opcode = t81::tisc::Opcode::Mul; break;
+    }
     out.push_back({opcode, target_reg, lhs_reg, rhs_reg});
   }
 }
@@ -37,4 +42,3 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
   return program;
 }
 }  // namespace t81::lang
-

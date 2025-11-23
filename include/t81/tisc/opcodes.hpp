@@ -12,8 +12,10 @@ enum class Opcode : std::uint8_t {
   Store = 4,
   Add = 5,
   Sub = 6,
-  Jump = 7,
-  JumpIfZero = 8,
+  Mul = 7,
+  Div = 8,
+  Mod = 9,
+  Jump = 10,
+  JumpIfZero = 11,
 };
 }  // namespace t81::tisc
-

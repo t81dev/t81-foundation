@@ -50,10 +50,10 @@ This order ensures that every layer has a stable deterministic substrate.
 
 This is the foundation of everything.
 
-## 3.1 Base-81 BigInt
-- Represent using a vector of balanced trits  
-- Always normalize sign, remove leading zeros  
-- Implement canonical add/sub/mul/div/mod  
+## 3.1 Base-81/Base-243 BigInt
+- Represent using canonical base-243 digits (MSB-first serialization uses `d0.d1...` with `0<=d<243`); provide base-81 textual form (`0..80` digits) for external encoding.
+- Always normalize sign, remove leading zeros (only `0` allowed for zero)
+- Implement canonical add/sub/mul/div/mod
 - MUST NOT use native float approximations
 
 ## 3.2 Fractions
