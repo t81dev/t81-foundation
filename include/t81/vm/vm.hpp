@@ -2,13 +2,10 @@
 
 #include <memory>
 #include <t81/support/expected.hpp>
+#include "t81/axion/engine.hpp"
 #include "t81/vm/state.hpp"
 #include "t81/vm/traps.hpp"
 #include "t81/tisc/program.hpp"
-
-namespace t81::axion {
-class Engine;
-}
 
 namespace t81::vm {
 class IVirtualMachine {
