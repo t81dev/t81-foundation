@@ -2,10 +2,10 @@
 
 This document tracks migration of legacy `.cweb` code to the new header-first C++ API.
 
-For long-horizon tracking of the entire ecosystem (VM, language, Axion, CanonFS, CI), see `TODO.md`.  
+For long-horizon tracking of the entire ecosystem (VM, language, Axion, CanonFS, CI), see `TODO.md`.\
 This file is for the **C++ migration path** specifically.
 
----
+______________________________________________________________________
 
 ## Phase 0 — Compatibility (**DONE**)
 
@@ -13,10 +13,10 @@ This file is for the **C++ migration path** specifically.
 - New code consumes `<t81/t81.hpp>`; legacy code may continue to include `include/t81/t81.h`.
 - CMake, Bazel, and Make shims build the same headers.
 
-**Status:**  
+**Status:**\
 Shims exist and build; new C++ headers are the preferred entrypoint, C API remains available for legacy and interop callers.
 
----
+______________________________________________________________________
 
 ## Phase 1 — Core Data Types (**DONE**)
 
@@ -41,7 +41,7 @@ Shims exist and build; new C++ headers are the preferred entrypoint, C API remai
 - Tighten BigInt division/GCD behavior and performance.
 - Expand fraction and ternary tests using canonical JSON vectors.
 
----
+______________________________________________________________________
 
 ## Phase 2 — IO & Codec Surfaces (**DONE**)
 
@@ -55,7 +55,7 @@ Shims exist and build; new C++ headers are the preferred entrypoint, C API remai
 
 - Implement real Base-81/Base-243 codecs and CanonHash81, then flip tests from “stub” to “canonical”.
 
----
+______________________________________________________________________
 
 ## Phase 3 — IR Surface (**DONE, EXPANDABLE**)
 
@@ -67,16 +67,16 @@ Shims exist and build; new C++ headers are the preferred entrypoint, C API remai
 1. Define a full `Opcode` + metadata table in `opcodes.hpp`:
    - `Opcode`, `OperandKind`, `OpcodeDesc` (or equivalent).
    - Flags for branching, privileged, memory, etc.
-2. Import opcodes from legacy sources:
+1. Import opcodes from legacy sources:
    - `legacy/hanoivm/src/t81lang_compiler/T81InstrFormats.td`
    - `legacy/hanoivm/src/t81lang_compiler/T81InstrInfo.td`
    - `spec/tisc-spec.md` (spec tables).
-3. Extend encoding/decoding in `encoding.hpp` to respect those formats.
-4. Grow `ir_encoding_test.cpp` to:
+1. Extend encoding/decoding in `encoding.hpp` to respect those formats.
+1. Grow `ir_encoding_test.cpp` to:
    - Roundtrip all opcodes.
    - Assert spec ↔ C++ table alignment (CI guard).
 
----
+______________________________________________________________________
 
 ## Phase 4 — Axion Façade (**IN PROGRESS**)
 
@@ -93,7 +93,7 @@ Shims exist and build; new C++ headers are the preferred entrypoint, C API remai
   - Allowed/denied operations.
   - Telemetry/error-code behavior.
 
----
+______________________________________________________________________
 
 ## Phase 5 — De-risked Deprecation (**ONGOING**)
 
@@ -111,7 +111,7 @@ Shims exist and build; new C++ headers are the preferred entrypoint, C API remai
 - [ ] T81Lang front-end semantics
 - [ ] Axion integration hooks
 
----
+______________________________________________________________________
 
 ## Phase 6 — Build & CI Matrix (**ONGOING**)
 
@@ -130,7 +130,7 @@ Shims exist and build; new C++ headers are the preferred entrypoint, C API remai
   - Run `ctest` and `tests/harness/run_all.sh`.
 - Goal: green parity for every push/PR to main.
 
----
+______________________________________________________________________
 
 ## Canonical Test Vectors
 
@@ -139,7 +139,7 @@ Shims exist and build; new C++ headers are the preferred entrypoint, C API remai
   - Prefer JSON for language-agnostic reuse.
   - Keep a 1:1 mapping between spec examples and canonical vectors where possible.
 
----
+______________________________________________________________________
 
 ## Open Items (Migration-Focused)
 
@@ -182,29 +182,32 @@ These are the “live” edges of the migration. Long-horizon items live in `TOD
 - Add capability descriptors and device enumeration hooks.
 - Define stable error codes, telemetry paths, and basic observability.
 
----
+______________________________________________________________________
 
 ## “How to Resume Work” Checklist
 
 When picking this up after a gap:
 
 1. **Build & tests**
+
    - `cmake -S . -B build && cmake --build build -j`
    - `ctest --test-dir build -R "t81_"`
    - Or the equivalent Bazel/Make targets.
 
-2. **Choose one active edge from Open Items:**
+1. **Choose one active edge from Open Items:**
+
    - IR opcode table import (Phase 3).
    - BigInt division/GCD polish.
    - Codecs/hash canonicalization.
    - Tensor unary/reduce extensions.
    - Axion façade backend.
 
-3. **Update both:**
+1. **Update both:**
+
    - This roadmap (phase status, “What’s New”).
    - `TODO.md` (for cross-cutting, long-term tasks).
 
----
+______________________________________________________________________
 
 ## What’s New Since Last Revision
 

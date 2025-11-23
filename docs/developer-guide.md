@@ -1,5 +1,4 @@
-
----
+______________________________________________________________________
 
 ```markdown
 # T81 Foundation  
@@ -373,7 +372,7 @@ The payoff is a computing system that:
 
 ```
 
- Here’s **`docs/developer-guide.md` (C++ API section to append)**:
+Here’s **`docs/developer-guide.md` (C++ API section to append)**:
 
 ````md
 ## T81 C++ API
@@ -397,7 +396,7 @@ For focused modules:
 
 ### Build
 
-* **CMake**
+- **CMake**
 
   ```bash
   cmake -S . -B build -DT81_BUILD_EXAMPLES=ON -DT81_BUILD_TESTS=ON
@@ -406,18 +405,18 @@ For focused modules:
 
   Targets:
 
-  * `t81` (INTERFACE library)
-  * `t81_demo` example
-  * Unit tests: `t81_*_test`
+  - `t81` (INTERFACE library)
+  - `t81_demo` example
+  - Unit tests: `t81_*_test`
 
-* **Bazel**
+- **Bazel**
 
   ```
   bazel test //:t81_*_test
   bazel run  //:t81_demo
   ```
 
-* **Make (shim)**
+- **Make (shim)**
 
   ```bash
   make
@@ -426,34 +425,38 @@ For focused modules:
 
 ### Data Types
 
-* **`T243BigInt`** (signed base-243 big integer)
+- **`T243BigInt`** (signed base-243 big integer)
 
-  * `add`, `sub`, `mul`, `mod`, `gcd`, `cmp_abs`, `to_string`
-  * Construction helpers: `from_ascii(...)` (placeholder encoding)
-* **`T81Fraction`** (signed rationals)
+  - `add`, `sub`, `mul`, `mod`, `gcd`, `cmp_abs`, `to_string`
+  - Construction helpers: `from_ascii(...)` (placeholder encoding)
 
-  * Invariants: denominator > 0, reduced by `gcd`, zero is `0/1`
-  * Ops: `add`, `sub`, `mul`, `div`, `to_string`
-* **`T729Tensor`** (row-major tensor)
+- **`T81Fraction`** (signed rationals)
 
-  * Core: rank/shape/data; `contract_dot`, `transpose`, `broadcast`
-  * Ops (in `t81/tensor/ops.hpp`): `transpose(...)`, `slice2d(...)`, `reshape(...)`
+  - Invariants: denominator > 0, reduced by `gcd`, zero is `0/1`
+  - Ops: `add`, `sub`, `mul`, `div`, `to_string`
+
+- **`T729Tensor`** (row-major tensor)
+
+  - Core: rank/shape/data; `contract_dot`, `transpose`, `broadcast`
+  - Ops (in `t81/tensor/ops.hpp`): `transpose(...)`, `slice2d(...)`, `reshape(...)`
 
 ### IO Utilities
 
-* **Tensor text IO** (`t81/io/tensor_loader.hpp`)
+- **Tensor text IO** (`t81/io/tensor_loader.hpp`)
 
-  * Format:
+  - Format:
 
     ```
     RANK D1 ... DR
     v0 v1 v2 ...
     ```
-  * APIs: `load_tensor_txt(_file)`, `save_tensor_txt(_file)`
-* **CanonFS wire IO** (`t81/canonfs_io.hpp`)
 
-  * Encode/decode `CanonRef` to a fixed 99-byte little-endian buffer.
-  * Helper: `permissions_allow(perms, mask)`
+  - APIs: `load_tensor_txt(_file)`, `save_tensor_txt(_file)`
+
+- **CanonFS wire IO** (`t81/canonfs_io.hpp`)
+
+  - Encode/decode `CanonRef` to a fixed 99-byte little-endian buffer.
+  - Helper: `permissions_allow(perms, mask)`
 
 ### C API (Stable ABI)
 
@@ -470,20 +473,21 @@ free(s);
 
 ### Testing
 
-* Canonical vectors reused from `tests/harness/canonical/*.json`.
-* C++ unit tests under `tests/cpp/`:
+- Canonical vectors reused from `tests/harness/canonical/*.json`.
 
-  * `bigint_roundtrip.cpp`, `fraction_roundtrip.cpp`
-  * `tensor_{transpose,slice,reshape,loader}_test.cpp`
-  * `canonfs_io_test.cpp`
+- C++ unit tests under `tests/cpp/`:
+
+  - `bigint_roundtrip.cpp`, `fraction_roundtrip.cpp`
+  - `tensor_{transpose,slice,reshape,loader}_test.cpp`
+  - `canonfs_io_test.cpp`
 
 ### Migration Notes
 
-* Existing `include/t81/t81.h` remains for C; new C++ includes are header-only.
-* Legacy `.cweb` modules map to focused headers under `include/t81/` and small `.cpp` files under `src/` for IO-only utilities.
-* Prefer including the umbrella header for app code; include specific headers for library code to minimize build times.
+- Existing `include/t81/t81.h` remains for C; new C++ includes are header-only.
+- Legacy `.cweb` modules map to focused headers under `include/t81/` and small `.cpp` files under `src/` for IO-only utilities.
+- Prefer including the umbrella header for app code; include specific headers for library code to minimize build times.
 
 ```
 ```
 
----
+______________________________________________________________________

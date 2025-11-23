@@ -1,20 +1,23 @@
----
+______________________________________________________________________
+
 title: "RFC-0010 — TISC Float & Fraction Arithmetic"
 version: Draft
 applies_to:
-  - T81 Data Types
-  - TISC Specification
-  - T81 Virtual Machine
-  - T81Lang
----
+
+- T81 Data Types
+- TISC Specification
+- T81 Virtual Machine
+- T81Lang
+
+______________________________________________________________________
 
 # Summary
 
 Define first-class arithmetic opcodes for `T81Float` and `T81Fraction` so that:
 
 1. TISC can add/sub/mul/div canonical floats and fractions directly (no manual handle shuffling).
-2. T81Lang may lower non-`T81Int` expressions to deterministic TISC sequences.
-3. T81VM tracks literal/value pools deterministically and surfaces results to Axion.
+1. T81Lang may lower non-`T81Int` expressions to deterministic TISC sequences.
+1. T81VM tracks literal/value pools deterministically and surfaces results to Axion.
 
 This RFC does not change literal syntax (already specified in `spec/v1.1.0-canonical.md §5.3`) but introduces new opcodes plus compiler/VM obligations.
 
@@ -30,16 +33,16 @@ This RFC does not change literal syntax (already specified in `spec/v1.1.0-canon
 
 Extend `spec/tisc-spec.md §5.7` with the following opcodes (each 3-register form mirrors integer arithmetic):
 
-| Opcode   | Semantics                                                                 | Notes |
+| Opcode | Semantics | Notes |
 |----------|---------------------------------------------------------------------------|-------|
-| `FADD`   | `R[RD] := canonical_float(R[RS1] + R[RS2])`                               | uses T81Float semantics |
-| `FSUB`   | `R[RD] := canonical_float(R[RS1] − R[RS2])`                               | |
-| `FMUL`   | `R[RD] := canonical_float(R[RS1] × R[RS2])`                               | |
-| `FDIV`   | `R[RD] := canonical_float(R[RS1] ÷ R[RS2])`                               | fault on zero divisor |
-| `FRACADD`| `R[RD] := canonical_fraction(R[RS1] + R[RS2])`                            | values refer to fraction pool handles |
-| `FRACSUB`| `R[RD] := canonical_fraction(R[RS1] − R[RS2])`                            | |
-| `FRACMUL`| `R[RD] := canonical_fraction(R[RS1] × R[RS2])`                            | |
-| `FRACDIV`| `R[RD] := canonical_fraction(R[RS1] ÷ R[RS2])`                            | fault on zero divisor |
+| `FADD` | `R[RD] := canonical_float(R[RS1] + R[RS2])` | uses T81Float semantics |
+| `FSUB` | `R[RD] := canonical_float(R[RS1] − R[RS2])` | |
+| `FMUL` | `R[RD] := canonical_float(R[RS1] × R[RS2])` | |
+| `FDIV` | `R[RD] := canonical_float(R[RS1] ÷ R[RS2])` | fault on zero divisor |
+| `FRACADD`| `R[RD] := canonical_fraction(R[RS1] + R[RS2])` | values refer to fraction pool handles |
+| `FRACSUB`| `R[RD] := canonical_fraction(R[RS1] − R[RS2])` | |
+| `FRACMUL`| `R[RD] := canonical_fraction(R[RS1] × R[RS2])` | |
+| `FRACDIV`| `R[RD] := canonical_fraction(R[RS1] ÷ R[RS2])` | fault on zero divisor |
 
 **Operand Interpretation**
 
@@ -95,5 +98,5 @@ Per `spec/t81vm-spec §4`:
 # Open Questions
 
 1. Do we require deduplication (interning) of float/fraction handles, or is append-only acceptable if program semantics tolerate duplicates?
-2. Should we introduce comparison opcodes (`FCMP`, `FRACCMP`) in the same RFC or a follow-up?
-3. How do these opcodes interact with Axion tier annotations—does heavy float work demand tier escalation?
+1. Should we introduce comparison opcodes (`FCMP`, `FRACCMP`) in the same RFC or a follow-up?
+1. How do these opcodes interact with Axion tier annotations—does heavy float work demand tier escalation?
