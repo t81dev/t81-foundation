@@ -373,4 +373,117 @@ The payoff is a computing system that:
 
 ```
 
+ Here’s **`docs/developer-guide.md` (C++ API section to append)**:
+
+````md
+## T81 C++ API
+
+### Overview
+The modern C++ API lives under `include/t81/`. It is header-only and can be consumed via:
+```cpp
+#include <t81/t81.hpp>
+````
+
+For focused modules:
+
+```cpp
+#include <t81/bigint.hpp>
+#include <t81/fraction.hpp>
+#include <t81/tensor.hpp>
+#include <t81/tensor/ops.hpp>      // transpose, slice, reshape
+#include <t81/canonfs.hpp>
+#include <t81/canonfs_io.hpp>
+```
+
+### Build
+
+* **CMake**
+
+  ```bash
+  cmake -S . -B build -DT81_BUILD_EXAMPLES=ON -DT81_BUILD_TESTS=ON
+  cmake --build build
+  ```
+
+  Targets:
+
+  * `t81` (INTERFACE library)
+  * `t81_demo` example
+  * Unit tests: `t81_*_test`
+
+* **Bazel**
+
+  ```
+  bazel test //:t81_*_test
+  bazel run  //:t81_demo
+  ```
+
+* **Make (shim)**
+
+  ```bash
+  make
+  make run-tests
+  ```
+
+### Data Types
+
+* **`T243BigInt`** (signed base-243 big integer)
+
+  * `add`, `sub`, `mul`, `mod`, `gcd`, `cmp_abs`, `to_string`
+  * Construction helpers: `from_ascii(...)` (placeholder encoding)
+* **`T81Fraction`** (signed rationals)
+
+  * Invariants: denominator > 0, reduced by `gcd`, zero is `0/1`
+  * Ops: `add`, `sub`, `mul`, `div`, `to_string`
+* **`T729Tensor`** (row-major tensor)
+
+  * Core: rank/shape/data; `contract_dot`, `transpose`, `broadcast`
+  * Ops (in `t81/tensor/ops.hpp`): `transpose(...)`, `slice2d(...)`, `reshape(...)`
+
+### IO Utilities
+
+* **Tensor text IO** (`t81/io/tensor_loader.hpp`)
+
+  * Format:
+
+    ```
+    RANK D1 ... DR
+    v0 v1 v2 ...
+    ```
+  * APIs: `load_tensor_txt(_file)`, `save_tensor_txt(_file)`
+* **CanonFS wire IO** (`t81/canonfs_io.hpp`)
+
+  * Encode/decode `CanonRef` to a fixed 99-byte little-endian buffer.
+  * Helper: `permissions_allow(perms, mask)`
+
+### C API (Stable ABI)
+
+Legacy C callers can link against the thin C façade:
+
+```c
+#include "src/c_api/t81_c_api.h"
+
+t81_bigint a = t81_bigint_from_ascii("123");
+char* s = t81_bigint_to_string(a);  // "..."
+t81_bigint_free(a);
+free(s);
+```
+
+### Testing
+
+* Canonical vectors reused from `tests/harness/canonical/*.json`.
+* C++ unit tests under `tests/cpp/`:
+
+  * `bigint_roundtrip.cpp`, `fraction_roundtrip.cpp`
+  * `tensor_{transpose,slice,reshape,loader}_test.cpp`
+  * `canonfs_io_test.cpp`
+
+### Migration Notes
+
+* Existing `include/t81/t81.h` remains for C; new C++ includes are header-only.
+* Legacy `.cweb` modules map to focused headers under `include/t81/` and small `.cpp` files under `src/` for IO-only utilities.
+* Prefer including the umbrella header for app code; include specific headers for library code to minimize build times.
+
+```
+```
+
 ---
