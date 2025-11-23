@@ -1,0 +1,6 @@
+[tool.mdformat]
+# Globs relative to repo root
+exclude = [
+  "legacy/**",
+  "pdf/output/**",
+]
