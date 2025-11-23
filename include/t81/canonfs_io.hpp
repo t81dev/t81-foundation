@@ -1,50 +1,45 @@
 #pragma once
+#include <array>
 #include <cstdint>
-#include <vector>
-#include <stdexcept>
 #include <cstring>
+#include <stdexcept>
 #include "t81/canonfs.hpp"
 
 namespace t81::canonfs_io {
 
-// Wire format (v0, little-endian), 99 bytes total:
-// [0..80]   : CanonHash81.text (81 bytes, zero-padded if shorter)
-// [81..82]  : permissions (uint16 LE)
-// [83..90]  : expires_at (uint64 LE)
-// [91..98]  : reserved (8 bytes = 0)
-//
-// NOTE: This is a minimal, non-cryptographic transport. Hash content is used as-is;
-//       real systems should validate canonical Base-81 encoding and signature chains.
+// Fixed wire format for CanonRef (99 bytes total):
+//  [ 0..80] : CanonHash81.text           (81 bytes, zero-padded)
+//  [81..82] : permissions                 (uint16, little-endian)
+//  [83..90] : expires_at                  (uint64, little-endian)
+//  [91..98] : reserved (0)
+static constexpr std::size_t kWireSize = 99;
 
-inline std::vector<uint8_t> encode_ref(const CanonRef& r) {
-  std::vector<uint8_t> out;
-  out.resize(99, 0);
-  // hash
-  std::memcpy(out.data() + 0,  r.target.text.data(), r.target.text.size());
+inline void encode_ref(const CanonRef& r, uint8_t out[kWireSize]) {
+  std::memset(out, 0, kWireSize);
+  // hash text
+  std::memcpy(out + 0, r.target.text.data(), r.target.text.size());
   // permissions
   out[81] = static_cast<uint8_t>(r.permissions & 0xFF);
   out[82] = static_cast<uint8_t>((r.permissions >> 8) & 0xFF);
   // expires_at
-  uint64_t e = r.expires_at;
-  for (int i = 0; i < 8; ++i) out[83 + i] = static_cast<uint8_t>((e >> (8*i)) & 0xFF);
-  // reserved already zeroed [91..98]
-  return out;
+  uint64_t t = r.expires_at;
+  for (int i = 0; i < 8; ++i) out[83 + i] = static_cast<uint8_t>((t >> (8 * i)) & 0xFF);
+  // [91..98] already zeroed
 }
 
-inline CanonRef decode_ref(const uint8_t* data, size_t len) {
-  if (!data || len < 99) throw std::invalid_argument("canonfs_io: buffer too small (need 99 bytes)");
+inline CanonRef decode_ref(const uint8_t in[kWireSize]) {
   CanonRef r{};
-  std::memcpy(r.target.text.data(), data + 0, r.target.text.size());
-  r.permissions = static_cast<uint16_t>(data[81] | (static_cast<uint16_t>(data[82]) << 8));
-  uint64_t e = 0;
-  for (int i = 0; i < 8; ++i) e |= (static_cast<uint64_t>(data[83 + i]) << (8*i));
-  r.expires_at = e;
-  // reserved bytes ignored
+  std::memcpy(r.target.text.data(), in + 0, r.target.text.size());
+  r.permissions = static_cast<uint16_t>(in[81]) |
+                  (static_cast<uint16_t>(in[82]) << 8);
+  uint64_t t = 0;
+  for (int i = 0; i < 8; ++i) t |= (static_cast<uint64_t>(in[83 + i]) << (8 * i));
+  r.expires_at = t;
   return r;
 }
 
-inline bool permissions_allow(uint16_t perms, uint16_t required_mask) {
-  return (perms & required_mask) == required_mask;
+inline bool permissions_allow(uint16_t have, uint16_t want_mask) {
+  return (have & want_mask) == want_mask;
 }
 
 } // namespace t81::canonfs_io
