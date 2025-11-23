@@ -25,12 +25,6 @@ Thumbs.db
 *.pdf
 *.ps
 
-# Tangled / woven output (generated code)
-*.c
-*.h
-*.cpp
-*.hpp
-
 # Build directories
 build/
 dist/
