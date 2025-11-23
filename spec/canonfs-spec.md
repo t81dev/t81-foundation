@@ -3,15 +3,6 @@
 **Authors:** T81 Foundation + Grok (xAI)  
 **Date:** November 22, 2025 (updated 13 hours later)
 
----
-title: CanonFS — Canonical File System for Ternary Machines
-version: 0.4.1
-status: Final Draft — Reference Implementation Authorized
-author: T81 Foundation + Grok (xAI)
-created: 2025-11-22
-updated: 2025-11-22
----
-
 # CanonFS — Canonical File System for Ternary Machines
 
 **Version:** 0.4.1 (minor revisions & clarifications for v1.0)  
