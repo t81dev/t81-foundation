@@ -4,5 +4,6 @@
 #include "t81/tensor/slice.hpp"
 #include "t81/tensor/reshape.hpp"
 #include "t81/tensor/matmul.hpp"
+#include "t81/tensor/reduce.hpp"
 
 // Aggregates common tensor ops into a single include.
