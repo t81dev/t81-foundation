@@ -1,5 +1,0 @@
----
-triple:          'arm64-apple-darwin'
-binary-path:     '/Users/t81dev/t81-foundation/tmp_bigint_div'
-relocations:     []
-...
