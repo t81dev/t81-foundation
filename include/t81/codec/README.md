@@ -1,0 +1,27 @@
+# t81/codec — Base-243 Codec Surface
+
+A small, stable API for encoding/decoding **base-243** digit vectors. The current
+implementation is a **deterministic stub** so downstream code can compile; swap
+in a canonical radix-243 converter later without changing call sites.
+
+## Files
+- `base243.hpp`
+  - `Base243::encode_bytes_be(std::vector<uint8_t>) -> std::vector<digit_t>`
+  - `Base243::decode_bytes_be(std::vector<digit_t>) -> std::vector<uint8_t>`
+  - `Base243::encode_ascii(std::string)` *(transitional)*
+  - `Base243::decode_ascii(std::vector<digit_t>)` *(transitional)*
+
+## Notes
+- `digit_t` is `uint8_t` with range **[0..242]**.
+- Stub maps bytes and chars modulo 243 (not a true base conversion).
+- When the real codec lands, wire `T243BigInt` to use `Base243` instead of the
+  placeholder ASCII mapping.
+
+## Example
+```cpp
+#include <t81/codec/base243.hpp>
+using namespace t81::codec;
+
+std::vector<uint8_t> bytes = {0x01, 0xFE, 0xA5};
+auto digits = Base243::encode_bytes_be(bytes);
+auto round  = Base243::decode_bytes_be(digits);
