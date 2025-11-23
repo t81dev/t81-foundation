@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <initializer_list>
 #include <algorithm>
+#include <numeric>
 
 namespace t81 {
 
