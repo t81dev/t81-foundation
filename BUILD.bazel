@@ -151,3 +151,15 @@ cc_test(
     deps = [":t81"],
 )
 
+cc_library(
+    name = "t81_c_api",
+    hdrs = ["src/c_api/t81_c_api.h"],
+    srcs = ["src/c_api/t81_c_api.cpp"],
+    deps = [":t81"],
+)
+
+cc_test(
+    name = "t81_c_api_bigint_test",
+    srcs = ["tests/cpp/c_api_bigint_test.c"],
+    deps = [":t81_c_api"],
+)
