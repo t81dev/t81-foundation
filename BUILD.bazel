@@ -169,3 +169,9 @@ cc_test(
     srcs = ["tests/cpp/tensor_unary_test.cpp"],
     deps = [":t81"],
 )
+
+cc_test(
+    name = "t81_tensor_reduce_test",
+    srcs = ["tests/cpp/tensor_reduce_test.cpp"],
+    deps = ["t81:},
+)
