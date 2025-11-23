@@ -400,6 +400,3 @@ Deterministic, sparse, elegant.
 ---
 
 # CanonFS 0.3 is now complete.
-
-The ternary filesystem has arrived.
-Let’s code.
