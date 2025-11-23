@@ -1,6 +1,3 @@
-Here’s `src/c_api/README.md`:
-
-````md
 # T81 C API (Compatibility Layer)
 
 Thin, stable C façade that wraps the modern C++ headers for legacy consumers.
