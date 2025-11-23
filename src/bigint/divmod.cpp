@@ -1,43 +1,69 @@
-// src/bigint/divmod.cpp (skeleton)
-#include "t81/bigint/divmod.hpp"
+#include <t81/bigint/divmod.hpp>
 #include <cassert>
 
-using namespace t81::bigint;
+namespace t81 {
 
-uint64_t mod_small(const BigInt& a, uint64_t d) {
-  // branchless 128-accumulate over limbs
-  __uint128_t rem = 0;
-  for (ssize_t i = a.size()-1; i >= 0; --i) {
-    rem = (rem << 64) | a.limb(i);
-    rem %= d;
-  }
-  return (uint64_t)rem;
+// You presumably already have something like this internally:
+static void unsigned_divmod(const T243BigInt& ua,
+                            const T243BigInt& ub,
+                            T243BigInt& uq,
+                            T243BigInt& ur);
+
+DivModResult divmod(const T243BigInt& a, const T243BigInt& b) {
+    assert(!b.is_zero() && "divmod: divisor must be non-zero");
+
+    // Handle simple case: a == 0
+    if (a.is_zero()) {
+        return DivModResult{T243BigInt(0), T243BigInt(0)};
+    }
+
+    const bool a_neg = a.is_negative();
+    const bool b_neg = b.is_negative();
+
+    T243BigInt ua = a_neg ? a.abs() : a;
+    T243BigInt ub = b_neg ? b.abs() : b;
+
+    T243BigInt uq;
+    T243BigInt ur;
+
+    // Core magnitude division: ua = ub * uq + ur, with 0 <= ur < ub
+    unsigned_divmod(ua, ub, uq, ur);
+
+    // Sign of the "truncated" quotient:
+    // If signs differ, quotient is negative; otherwise non-negative.
+    if (a_neg ^ b_neg) {
+        uq = -uq;
+    }
+
+    // Now adjust to Euclidean remainder if necessary.
+    //
+    // We currently have:
+    //   a = (a_neg ? -ua : ua) = (b_neg ? -ub : ub) * uq + (sign?)*ur
+    //
+    // But we want:
+    //   a = b * q_e + r_e with 0 <= r_e < |b|
+    //
+    // A standard way: compute provisional r, then fix up if r < 0.
+    T243BigInt q = uq;
+    T243BigInt r = a - b * q;
+
+    if (r.is_negative()) {
+        // Adjust: r_e = r + |b|, q_e = q - sign(b)
+        // where sign(b) is +1 if b > 0, -1 if b < 0.
+        T243BigInt abs_b = b_neg ? b.abs() : b;
+        r += abs_b;
+
+        if (b_neg) {
+            q += T243BigInt(1);   // b < 0 => subtracting sign(b) == -1
+        } else {
+            q -= T243BigInt(1);   // b > 0 => subtracting sign(b) == +1
+        }
+    }
+
+    // At this point:
+    //   a = b * q + r
+    //   and 0 <= r < |b|
+    return DivModResult{q, r};
 }
 
-uint64_t div_small(const BigInt& a, uint64_t d, BigInt& q) {
-  q = BigInt(a.size());
-  __uint128_t carry = 0;
-  for (ssize_t i = a.size()-1; i >= 0; --i) {
-    __uint128_t cur = (carry << 64) | a.limb(i);
-    q.limb_mut(i) = (uint64_t)(cur / d);
-    carry = cur % d;
-  }
-  q.normalize();
-  return (uint64_t)carry;
-}
-
-// Knuth’s Algorithm D (normalized) for medium sizes.
-// NOTE: implement D1..D7; handle sign, leading zeros, normalization factor.
-void divmod(const BigInt& a, const BigInt& b, BigInt& q, BigInt& r) {
-  // dispatch small-divisor fast path
-  if (b.is_small_u64()) {
-    uint64_t rem = div_small(a, b.small_u64(), q);
-    r = BigInt(rem);
-    q.fix_sign(a.sign() ^ b.sign());
-    r.fix_sign(a.sign());
-    return;
-  }
-  // ... normalized long division skeleton here (placeholders) ...
-  // normalize(a,b) -> an,bn, shift s; run trial quotient with 128-bit wide test;
-  // unnormalize remainder by shifting back.
-}
+} // namespace t81
