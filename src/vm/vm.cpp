@@ -29,6 +29,9 @@ class Interpreter : public IVirtualMachine {
     state_.layout.heap_limit = state_.layout.stack_limit + 768;
     state_.memory.resize(state_.layout.heap_limit, 0);
     state_.sp = state_.layout.stack_limit;
+    state_.floats = program_.float_pool;
+    state_.fractions = program_.fraction_pool;
+    state_.symbols = program_.symbol_pool;
   }
 
   std::expected<void, Trap> step() override {

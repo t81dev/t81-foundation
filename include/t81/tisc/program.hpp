@@ -1,7 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <vector>
+#include "t81/fraction.hpp"
 #include "t81/tisc/opcodes.hpp"
 
 namespace t81::tisc {
@@ -14,6 +16,8 @@ struct Insn {
 
 struct Program {
   std::vector<Insn> insns;
+  std::vector<double> float_pool;
+  std::vector<t81::T81Fraction> fraction_pool;
+  std::vector<std::string> symbol_pool;
 };
 }  // namespace t81::tisc
-

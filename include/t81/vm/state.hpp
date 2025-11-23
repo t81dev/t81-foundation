@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <optional>
+#include <string>
 #include <vector>
 #include "t81/tensor.hpp"
 #include "t81/fraction.hpp"
@@ -45,6 +46,7 @@ struct State {
   std::vector<t81::T729Tensor> tensors;
   std::vector<double> floats;
   std::vector<t81::T81Fraction> fractions;
+  std::vector<std::string> symbols;
   std::vector<TraceEntry> trace;
   std::vector<AxionEvent> axion_log;
   Flags flags{};
