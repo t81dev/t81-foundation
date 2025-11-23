@@ -45,7 +45,11 @@ TESTS := \
 	build/t81_axion_stub_test \
 	build/t81_codec_base243_test \
 	build/t81_tensor_shape_test \
-	build/t81_ternary_arith_test
+	build/t81_ternary_arith_test \
+	build/t81_tensor_matmul_test \
+	build/t81_tensor_reduce_test \
+	build/t81_tensor_broadcast_test \
+	build/t81_entropy_test
 
 tests: $(TESTS)
 
@@ -101,7 +105,23 @@ build/t81_ternary_arith_test: tests/cpp/ternary_arith_test.cpp
 	@mkdir -p build
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
 
-# Run all tests (expects test data present, and nlohmann/json header if used)
+build/t81_tensor_matmul_test: tests/cpp/tensor_matmul_test.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+
+build/t81_tensor_reduce_test: tests/cpp/tensor_reduce_test.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+
+build/t81_tensor_broadcast_test: tests/cpp/tensor_broadcast_test.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+
+build/t81_entropy_test: tests/cpp/entropy_test.cpp
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+
+# Run all tests
 .PHONY: run-tests
 run-tests: tests
 	@./build/t81_bigint_test || exit 1
@@ -117,6 +137,10 @@ run-tests: tests
 	@./build/t81_codec_base243_test || exit 1
 	@./build/t81_tensor_shape_test || exit 1
 	@./build/t81_ternary_arith_test || exit 1
+	@./build/t81_tensor_matmul_test || exit 1
+	@./build/t81_tensor_reduce_test || exit 1
+	@./build/t81_tensor_broadcast_test || exit 1
+	@./build/t81_entropy_test || exit 1
 	@echo "All tests passed."
 
 # Convenience
