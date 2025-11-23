@@ -1,15 +1,25 @@
-// include/t81/bigint/divmod.hpp
 #pragma once
-#include <span>
-#include "t81/bigint/core.hpp"
+#include <t81/bigint.hpp>
 
-namespace t81::bigint {
+namespace t81 {
 
-// Returns quotient, remainder: q = a / b; r = a % b
-void divmod(const BigInt& a, const BigInt& b, BigInt& q, BigInt& r);
+struct DivModResult {
+    T243BigInt q;  // quotient
+    T243BigInt r;  // remainder (Euclidean; always 0 ≤ r < |b|)
+};
 
-// Fast path: a / small (fits in 32/64 bits)
-uint64_t div_small(const BigInt& a, uint64_t d, BigInt& q);
-uint64_t mod_small(const BigInt& a, uint64_t d);
+/**
+ * Compute Euclidean quotient and remainder of a / b.
+ *
+ * Contract (Euclidean division):
+ *   - Precondition: b != 0.
+ *   - Postconditions:
+ *       a = b * q + r
+ *       0 <= r < |b|
+ *
+ * This differs from C/C++ built-in integer division when a or b is negative:
+ * remainder is always non-negative, and quotient is adjusted accordingly.
+ */
+DivModResult divmod(const T243BigInt& a, const T243BigInt& b);
 
-} // namespace t81::bigint
+} // namespace t81
