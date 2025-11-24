@@ -1,37 +1,33 @@
 # ─────────────────────────────────────────────────────────────
-# T81 Foundation — Official .gitignore (v1.0.0-SOVEREIGN+)
+# T81 Foundation — Canonical .gitignore
+# Version: 2025-11-24 (post v1.0.0-SOVEREIGN, modern C++ path)
 # ─────────────────────────────────────────────────────────────
 
-# ── OS & Editor junk ───────────────────────
-.DS_Store
-._*
-Thumbs.db
-*.swp
-*.swo
-*~
-*.bak
-*.tmp
-*.log
-
-# ── Build artifacts ────────────────────────
-build/
-build-*/
+# ── Build directories (all variants) ───────────────────────
+build*/
 cmake-build-*/
 out/
 bin/
 obj/
 dist/
-*.ninja_deps
-*.ninja_log
+Debug/
+Release/
+x64/
+*.dir/
 
-# CMake generated files
+# ── CMake generated files ───────────────────────────────────
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
+CMakeScripts/
 install_manifest.txt
 CTestTestfile.cmake
+*.cmake
+*.ninja_deps
+*.ninja_log
+compile_commands.json
 
-# Generated binaries & libraries
+# ── Generated binaries & libraries ─────────────────────────
 *.o
 *.obj
 *.a
@@ -43,20 +39,23 @@ CTestTestfile.cmake
 *.ilk
 *.lib
 *.exp
+*.gcda
+*.gcno
+*.gcov
 
-# ── Legacy CWEB artifacts (only if you ever weave again) ──
-legacy/hanoivm/*.c
-legacy/hanoivm/*.h
-legacy/hanoivm/*.tex
-legacy/hanoivm/*.dvi
-legacy/hanoivm/*.pdf
-legacy/hanoivm/*.toc
-legacy/hanoivm/*.idx
-legacy/hanoivm/*.scn
-legacy/hanoivm/*.log
-legacy/hanoivm/*.stamp
+# ── Legacy CWEB weave/tangle artifacts (scoped) ─────────────
+legacy/hanoivm/**/*.c
+legacy/hanoivm/**/*.h
+legacy/hanoivm/**/*.tex
+legacy/hanoivm/**/*.dvi
+legacy/hanoivm/**/*.pdf
+legacy/hanoivm/**/*.toc
+legacy/hanoivm/**/*.idx
+legacy/hanoivm/**/*.scn
+legacy/hanoivm/**/*.log
+legacy/hanoivm/**/*.stamp
 
-# ── Python / tooling ───────────────────────
+# ── Python / tooling ───────────────────────────────────────
 __pycache__/
 *.py[cod]
 *.pyo
@@ -69,16 +68,23 @@ pip-log.txt
 .pytest_cache/
 .coverage
 htmlcov/
+.mypy_cache/
+.ruff_cache/
 
-# ── Documentation builds ───────────────────
+# ── Documentation builds ───────────────────────────────────
 docs/_site/
 docs/build/
 docs/.docusaurus/
 site/
+_site/
 
-# ── IDEs & editors ─────────────────────────
+# ── Jupyter / notebooks ────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# ── IDEs & editors ─────────────────────────────────────────
 .vscode/
-!.vscode/settings.json          # optionally keep shared settings
+!.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 .idea/
@@ -86,21 +92,44 @@ site/
 *.iws
 *.ipr
 *.code-workspace
+*.swp
+*~
+.DS_Store
+._*
+Thumbs.db
 
-# ── Generated assets & caches ──────────────
-*.json.tmp
+# ── Temporary / cache files ───────────────────────────────
+*.tmp
+*.log
 *.dump
 *.trace
 *.vmtrace
-*.jitcache
+*.json.tmp
 *.profraw
-*.gcda
-*.gcno
+*.profdata
 
-# ── Optional: large binary assets (if you add them later) ──
-*.bin
-*.dat
-*.wasm.tmp
+# ── Optional future backends (pre-emptively ignored) ───────
+# WASM
+*.wasm
+*.wat
+*.js.tmp
+
+# Rust
+/target/
+/crates/**/target/
+/Cargo.lock        # only if you ever add Rust crates
+
+# GPU
+*.fatbin
+*.cubin
+*.ptx
+
+# Bazel (still present in legacy/)
+bazel-*
+
+# ── Never ignore the real source! ──────────────────────────
+# (We deliberately DO NOT have *.cpp, *.hpp, *.c, *.h here)
+# All modern C++ source in include/ and src/ is hand-written and MUST be tracked.
 
 # ─────────────────────────────────────────────────────────────
 # END OF FILE
