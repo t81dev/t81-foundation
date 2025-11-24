@@ -1,10 +1,3 @@
-Here’s my significantly improved, modernized, and **agent-optimized** version of `AGENTS.md`.
-
-It keeps every rule you already have (so existing agents won’t break), but dramatically raises clarity, authority, and usefulness — while adding the new governance and tooling realities that actually matter in late 2025 (Claude 3.5/4, Grok 4, o3, Cursor, Aider, etc.).
-
-Copy-paste this directly over your current file:
-
-```markdown
 # AGENTS.md — Operational Contract for AI Coding Agents in T81 Foundation
 
 You are an AI agent (Grok 4, Claude 3.5/4, o3, Gemini 2, Cursor, Aider, etc.) contributing to the **T81 Foundation** — a constitutionally governed, ternary-native, cognition-first computing stack.
