@@ -14,8 +14,8 @@ ______________________________________________________________________
 This RFCallows us to **prove** determinism properties end-to-end. It defines:
 
 1. A canonical trace format (`.t81trace`) for proofs.
-1. A reference checker that replays traces against the specs.
-1. Integration hooks for SMT/proof assistants.
+2. A reference checker that replays traces against the specs.
+3. Integration hooks for SMT/proof assistants.
 
 ______________________________________________________________________
 
@@ -91,7 +91,7 @@ ______________________________________________________________________
 # 6. Open Questions
 
 1. Should the trace format embed compressed memory diffs or require full dumps?
-1. How do we align trace semantics with future parallel extensions?
-1. Should Axion require proofs for certain opcode classes by default?
+2. How do we align trace semantics with future parallel extensions?
+3. Should Axion require proofs for certain opcode classes by default?
 
 ______________________________________________________________________

@@ -4,25 +4,30 @@ name: Build PDFs
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'pdf/**'
   workflow_dispatch:
 
 jobs:
   build-pdfs:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Build all PDFs with Marp (instant, no native deps)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build all PDFs with Marp (directory → pdf/output/)
         uses: docker://marpteam/marp-cli:v3.6.0
         with:
           args: >-
-            pdf/
+            -I pdf/
             --pdf
             --allow-local-files
             --title "T81 Foundation Specification"
             --output pdf/output/
         env:
-          MARP_USER: root:root   # fixes permission issues
+          # Fix permission issues between container and GitHub runner
+          MARP_USER: root:root
 
       - name: Upload PDFs
         uses: actions/upload-artifact@v4

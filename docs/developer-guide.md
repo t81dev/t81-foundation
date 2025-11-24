@@ -20,7 +20,7 @@ ______________________________________________________________________
   - [4.2 State Machine](#42-state-machine)
   - [4.3 Arithmetic Ops](#43-arithmetic-ops)
   - [4.4 Tensor Ops](#44-tensor-ops)
-  - [4.5 Privileged Ops (AX\*)](#45-privileged-ops-ax\*)
+  - [4.5 Privileged Ops (AX\*)](#45-privileged-ops-ax*)
 - [5. Implementing the T81VM](#5-implementing-the-t81vm)
   - [5.1 Memory Model](#51-memory-model)
   - [5.2 VM Scheduler](#52-vm-scheduler)
@@ -28,11 +28,11 @@ ______________________________________________________________________
   - [5.4 Trace System (Required)](#54-trace-system-required)
 - [6. Deterministic Garbage Collector](#6-deterministic-garbage-collector)
 - [7. Implementing Axion Kernel Subsystems](#7-implementing-axion-kernel-subsystems)
-  - [7.1 DTS — Deterministic Trace](#71-dts-—-deterministic-trace)
-  - [7.2 VS — Verification Subsystem](#72-vs-—-verification-subsystem)
-  - [7.3 CRS — Constraint Resolution](#73-crs-—-constraint-resolution)
-  - [7.4 RCS — Recursion Control](#74-rcs-—-recursion-control)
-  - [7.5 TTS — Tier Transition](#75-tts-—-tier-transition)
+  - [7.1 DTS — Deterministic Trace](#71-dts-%E2%80%94-deterministic-trace)
+  - [7.2 VS — Verification Subsystem](#72-vs-%E2%80%94-verification-subsystem)
+  - [7.3 CRS — Constraint Resolution](#73-crs-%E2%80%94-constraint-resolution)
+  - [7.4 RCS — Recursion Control](#74-rcs-%E2%80%94-recursion-control)
+  - [7.5 TTS — Tier Transition](#75-tts-%E2%80%94-tier-transition)
 - [8. Implementing T81Lang](#8-implementing-t81lang)
   - [8.1 Parsing](#81-parsing)
   - [8.2 Type System](#82-type-system)
@@ -44,14 +44,14 @@ ______________________________________________________________________
   - [9.3 Trace Validator](#93-trace-validator)
 - [10. Repository Structure for Implementers](#10-repository-structure-for-implementers)
 - [11. Implementation Roadmap](#11-implementation-roadmap)
-  - [Phase 1 — Core Arithmetic & Data Types](#phase-1-—-core-arithmetic-&-data-types)
-  - [Phase 2 — TISC Interpreter](#phase-2-—-tisc-interpreter)
-  - [Phase 3 — VM Core + Memory Model](#phase-3-—-vm-core-+-memory-model)
-  - [Phase 4 — GC + Trace System](#phase-4-—-gc-+-trace-system)
-  - [Phase 5 — Axion Kernel](#phase-5-—-axion-kernel)
-  - [Phase 6 — T81Lang Compiler](#phase-6-—-t81lang-compiler)
-  - [Phase 7 — Tier Engine](#phase-7-—-tier-engine)
-  - [Phase 8 — Optimizations & Formal Proofs](#phase-8-—-optimizations-&-formal-proofs)
+  - [Phase 1 — Core Arithmetic & Data Types](#phase-1-%E2%80%94-core-arithmetic-&-data-types)
+  - [Phase 2 — TISC Interpreter](#phase-2-%E2%80%94-tisc-interpreter)
+  - [Phase 3 — VM Core + Memory Model](#phase-3-%E2%80%94-vm-core-+-memory-model)
+  - [Phase 4 — GC + Trace System](#phase-4-%E2%80%94-gc-+-trace-system)
+  - [Phase 5 — Axion Kernel](#phase-5-%E2%80%94-axion-kernel)
+  - [Phase 6 — T81Lang Compiler](#phase-6-%E2%80%94-t81lang-compiler)
+  - [Phase 7 — Tier Engine](#phase-7-%E2%80%94-tier-engine)
+  - [Phase 8 — Optimizations & Formal Proofs](#phase-8-%E2%80%94-optimizations-&-formal-proofs)
 - [12. Final Guidance](#12-final-guidance)
   - [T81 C++ API](#t81-c++-api)
     - [Overview](#overview)
@@ -63,18 +63,6 @@ ______________________________________________________________________
     - [Migration Notes](#migration-notes)
 
 <!-- T81-TOC:END -->
-
-
-
-
-
-
-
-
-
-
-
-
 
 Developer Guide / Implementer’s Handbook\
 Version 0.1
@@ -92,11 +80,11 @@ ______________________________________________________________________
 The T81 Foundation contains five implementation targets:
 
 1. **Data Types** — canonical base-81 representations
-1. **TISC Interpreter/JIT** — the ISA executor
-1. **T81VM** — memory model, stack, GC, Axion hooks
-1. **T81Lang** — compiler to TISC
-1. **Axion Kernel** — supervision, safety, determinism
-1. **Cognitive Tier Engine** — optional higher-level reasoning
+2. **TISC Interpreter/JIT** — the ISA executor
+3. **T81VM** — memory model, stack, GC, Axion hooks
+4. **T81Lang** — compiler to TISC
+5. **Axion Kernel** — supervision, safety, determinism
+6. **Cognitive Tier Engine** — optional higher-level reasoning
 
 This handbook describes the order in which each component should be built.
 
@@ -107,13 +95,13 @@ ______________________________________________________________________
 The implementation must proceed in the following order:
 
 1. **Data Types** → define all canonical primitives and compound types
-1. **TISC Interpreter** (non-optimized)
-1. **Memory Model** + **VM Core**
-1. **Fault Model** + **Trace System**
-1. **GC System** (deterministic)
-1. **Axion Kernel Subsystems**
-1. **T81Lang Compiler**
-1. **Tier Engine** (optional, advanced)
+2. **TISC Interpreter** (non-optimized)
+3. **Memory Model** + **VM Core**
+4. **Fault Model** + **Trace System**
+5. **GC System** (deterministic)
+6. **Axion Kernel Subsystems**
+7. **T81Lang Compiler**
+8. **Tier Engine** (optional, advanced)
 
 This order ensures that every layer has a stable deterministic substrate.
 
@@ -169,8 +157,8 @@ This is the foundation of everything.
 Implementation tips:
 
 1. Treat structural values like floats/fractions: canonical pools + handles.
-1. When debugging, inspect `vm->state().options` / `.results`.
-1. Policies may place tier limits on structural payload tags—log them in traces.
+2. When debugging, inspect `vm->state().options` / `.results`.
+3. Policies may place tier limits on structural payload tags—log them in traces.
 
 ______________________________________________________________________
 
@@ -279,11 +267,11 @@ The GC is small but must be **perfectly deterministic**.
 Rules:
 
 1. Stop-the-world
-1. Canonical mark & sweep order
-1. Deterministic root set
-1. No fragmentation
-1. Shape-safe for tensors
-1. Axion-visible
+2. Canonical mark & sweep order
+3. Deterministic root set
+4. No fragmentation
+5. Shape-safe for tensors
+6. Axion-visible
 
 GC is one of the hardest components — build it slowly and test exhaustively.
 
@@ -294,10 +282,10 @@ ______________________________________________________________________
 Axion has **five subsystems**:
 
 1. **DTS** — Deterministic Trace
-1. **VS** — Verification
-1. **CRS** — Constraint Resolution
-1. **RCS** — Recursion Control
-1. **TTS** — Tier Transition
+2. **VS** — Verification
+3. **CRS** — Constraint Resolution
+4. **RCS** — Recursion Control
+5. **TTS** — Tier Transition
 
 Build them in this order.
 

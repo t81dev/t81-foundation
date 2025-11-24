@@ -14,11 +14,11 @@ ______________________________________________________________________
 The T81 Foundation consists of **five vertically integrated layers**:
 
 1. **Data Types** — canonical base-81 primitives, composites, tensors
-1. **TISC ISA** — deterministic instruction set, privileged ops, fault model
-1. **T81VM** — memory model, execution semantics, trace, GC, Axion hooks
-1. **T81Lang** — pure-by-default high-level language, deterministic compilation
-1. **Axion Kernel** — supervisor, verifier, tier control, determinism enforcer
-1. **Cognitive Tiers** — multi-tier reasoning environment, recursion rules
+2. **TISC ISA** — deterministic instruction set, privileged ops, fault model
+3. **T81VM** — memory model, execution semantics, trace, GC, Axion hooks
+4. **T81Lang** — pure-by-default high-level language, deterministic compilation
+5. **Axion Kernel** — supervisor, verifier, tier control, determinism enforcer
+6. **Cognitive Tiers** — multi-tier reasoning environment, recursion rules
 
 All layers share:
 
@@ -186,19 +186,19 @@ All specifications share the following invariants:
 1. **Determinism**\
    No ambiguous behavior, no undefined states.
 
-1. **Canonicalization**\
+2. **Canonicalization**\
    All data must be canonical at boundaries.
 
-1. **Axion Visibility**\
+3. **Axion Visibility**\
    All privileged operations and VM transitions are supervised.
 
-1. **Recursion Boundaries**\
+4. **Recursion Boundaries**\
    Each tier enforces strict recursion and complexity limits.
 
-1. **Shape & Memory Safety**\
+5. **Shape & Memory Safety**\
    Tensor/matrix operations must obey Data Types shape rules.
 
-1. **Static & Dynamic Enforcement**\
+6. **Static & Dynamic Enforcement**\
    T81Lang enforces static correctness; T81VM and Axion enforce dynamic correctness.
 
 ______________________________________________________________________

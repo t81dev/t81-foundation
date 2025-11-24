@@ -28,12 +28,12 @@ ______________________________________________________________________
 The Axion Safety Model exists to:
 
 1. prevent nondeterministic or unsafe computation
-1. maintain canonical system state
-1. supervise recursion, tensors, and symbolic transformations
-1. enforce privilege boundaries
-1. ensure compliance with deterministic reasoning limits
-1. protect VM integrity
-1. enforce cognitive-tier boundaries
+2. maintain canonical system state
+3. supervise recursion, tensors, and symbolic transformations
+4. enforce privilege boundaries
+5. ensure compliance with deterministic reasoning limits
+6. protect VM integrity
+7. enforce cognitive-tier boundaries
 
 Axion is the **guardian layer** of the entire computing stack.
 
@@ -126,13 +126,13 @@ ______________________________________________________________________
 Axion enforces the following global invariants:
 
 1. **All data is canonical.**
-1. **All execution is deterministic.**
-1. **All recursion is bounded and supervised.**
-1. **All privileged instructions are verified.**
-1. **All tier transitions follow deterministic policy.**
-1. **No hidden state exists.**
-1. **Memory must remain structurally valid.**
-1. **Symbolic reasoning must converge.**
+2. **All execution is deterministic.**
+3. **All recursion is bounded and supervised.**
+4. **All privileged instructions are verified.**
+5. **All tier transitions follow deterministic policy.**
+6. **No hidden state exists.**
+7. **Memory must remain structurally valid.**
+8. **Symbolic reasoning must converge.**
 
 Violation of any invariant is an **Axion Fault**.
 

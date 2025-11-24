@@ -369,9 +369,9 @@ Axion faults are distinct from VM/TISC faults.
 Axion MUST:
 
 1. Halt VM execution
-1. Store structured fault metadata in META
-1. Emit deterministic reason code
-1. Optionally capture a full VM snapshot
+2. Store structured fault metadata in META
+3. Emit deterministic reason code
+4. Optionally capture a full VM snapshot
 
 Faulting MUST never leave VM state ambiguous.
 

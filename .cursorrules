@@ -1,0 +1,33 @@
+This file is an adapter; the canonical rules live in AGENTS.md and ARCHITECTURE.md
+
+# Cursor Rules for T81 Foundation
+
+# High-level context
+- This repository implements the T81 Foundation: a spec-first, ternary-native computing stack.
+- The normative source of truth is the Markdown specification under the spec/ directory.
+- Implementation is in modern C++ under include/t81/ and src/, with tests in tests/cpp/.
+
+# When starting work
+- First, read ARCHITECTURE.md, AGENTS.md, and spec/index.md to understand the overall structure.
+- For any file you edit, try to locate its corresponding spec section in spec/ and read it.
+
+# General rules
+- Do not introduce behavior that contradicts the spec.
+- Prefer small, incremental refactors over sweeping rewrites.
+- Whenever you change behavior, propose corresponding updates to tests and docs.
+- Avoid adding hidden global state, implicit I/O, or nondeterminism in core execution paths.
+- Treat legacy/hanoivm/src as reference only; new code should target the modern C++ API.
+
+# C++ style
+- Use modern C++ (C++20 or newer) where it clarifies intent.
+- Prefer value semantics and RAII; avoid raw new/delete in higher-level code.
+- Keep headers in include/t81/ stable; add new APIs thoughtfully and document them.
+
+# Safety & Axion
+- Be conservative when editing Axion or cognitive-tier related code.
+- Do not weaken safety checks or alignment constraints without explicit instruction and matching spec updates.
+
+# Good tasks for Cursor
+- Adding or improving unit tests in tests/cpp/.
+- Refactoring C++ implementation to better match include/t81/*.hpp and the spec.
+- Improving documentation comments and minor spec clarifications (without changing semantics).
