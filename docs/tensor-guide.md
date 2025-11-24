@@ -20,6 +20,8 @@ ______________________________________________________________________
 <!-- T81-TOC:END -->
 
 
+
+
 > Companion to `spec/t81-data-types.md` and [RFC-0004](../spec/rfcs/RFC-0004-canonical-tensor-semantics.md)  
 > Non-normative tips for working with canonical tensors across the T81 stack.
 
