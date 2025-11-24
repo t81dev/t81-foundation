@@ -107,13 +107,24 @@ factor        ::= literal
 
 fn_call       ::= identifier "(" [ expr { "," expr } ] ")"
 
-literal       ::= integer | float | fraction | symbol
+literal       ::= integer | float | fraction | symbol | vector_literal
+vector_literal ::= "[" [ expr { "," expr } ] "]"
 
 paren_expr    ::= "(" expr ")"
 ```
 
 This grammar MUST be parsed deterministically.
 No ambiguous operator precedence is allowed; all precedence rules are normative and listed in Appendix A.1.
+
+### Vector Literal Typing Rules
+
+- All elements in a vector literal MUST be of the same type, or be promotable to a common type according to the Numeric Widening rules.
+- The type of an empty vector literal (`[]`) is inferred from its context. If the context does not provide a type, the program is ill-formed.
+
+### Vector Literal Semantics
+
+- Vector literals are immutable.
+- Vector literals are value-type constructs. When passed to a function, they are passed by value (i.e., a copy is made).
 
 Logical conjunction/disjunction use canonical ternary booleans: `0t81`
 represents false, any non-zero `T81Int` represents true, and the emitted code
@@ -142,9 +153,14 @@ The T81Lang type system directly corresponds to the T81 Data Types spec.
 
 These map 1:1 to the Data Types primitive categories.
 
-### 2.2 Composite Types
+### 2.2 Vector Type
 
 - `Vector[T]`
+
+The `Vector[T]` type is syntactic sugar for a rank-1 `Tensor` of type `T`. All operations on `Vector[T]` are equivalent to operations on a rank-1 `Tensor`.
+
+### 2.3 Composite Types
+
 - `Matrix[T]`
 - `Tensor[T, Rank]`
 - `Record { ... }`
@@ -366,6 +382,7 @@ Maps IR instructions to TISC sequences:
 | `T81Int → T81Float/T81Fraction` promotion | `I2F` / `I2FRAC` emitted before the consuming opcode/assignment |
 | `Some(expr)` | Evaluate `expr`, `MAKE_OPTION_SOME` to produce canonical handle |
 | `None` | Contextual type chooses `Option[T]`, emit `MAKE_OPTION_NONE` |
+| `vector literal` | Evaluate elements, construct a rank-1 `T729Tensor`, add to `tensor_pool`, and load handle with `LoadImm`. |
 | `Ok(expr)` | Evaluate `expr`, `MAKE_RESULT_OK` |
 | `Err(expr)` | Evaluate `expr`, `MAKE_RESULT_ERR` |
 | `match (value)` over `Option/Result` | Evaluate subject once, use `OPTION_IS_SOME` / `RESULT_IS_OK` plus conditional jumps; bind payloads via `OPTION_UNWRAP` or `RESULT_UNWRAP_OK` / `RESULT_UNWRAP_ERR` before lowering the selected arm |

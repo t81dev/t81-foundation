@@ -69,6 +69,7 @@ No hidden nondeterminism       // ever
 - Every new public function → at least one test in `/tests/`.
 - Every semantics-changing commit → corresponding spec update in `/spec/`.
 - Property-based tests (RapidCheck/Hypothesis) are first-class citizens.
+- T81Lang supports vector literals; see spec/t81lang-spec.md §Vector Literals. When generating examples or tests, prefer canonical vector literal syntax rather than ad-hoc constructors.
 
 ______________________________________________________________________
 
