@@ -1,9 +1,13 @@
 # .github/workflows/build-search-index.yml
-name: Build Search Index
+name: Build Search Index (PR-based)
 
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'docs/search/**'
+      - 'docs/**'
+      - 'spec/**'
   workflow_dispatch:
 
 permissions:
@@ -19,25 +23,25 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Node.js 22
+      - name: Set up Node.js (LTS)
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'                 # will create package.json + lockfile if missing
+          node-version: '20'
+          cache: 'npm'
 
-      # ← THIS IS THE CRITICAL FIX
       - name: Install Cheerio & Lunr (in docs/search)
         working-directory: docs/search
         run: |
-          npm install cheerio@1.0.0-rc.12 lunr@2.3.9
-          # Creates node_modules/ locally — no need to commit it
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install cheerio@1.0.0-rc.12 lunr@2.3.9
+          fi
 
       - name: Build search index
         working-directory: docs/search
-        # ← make sure we’re in the right folder
         run: node build_index.js
 
-      # ── Atomic, race-free update via Pull Request (recommended) ──
       - name: Create Pull Request with updated index
         uses: peter-evans/create-pull-request@v6
         with:
@@ -45,6 +49,6 @@ jobs:
           branch: auto/search-index
           delete-branch: true
           title: "chore(docs): regenerate search index"
-          body: "Automated run of `docs/search/build_index.js`"
+          body: "Automated run of \`docs/search/build_index.js\`"
           commit-message: "chore(docs): update search_index.json [ci skip]"
           labels: documentation,automated
