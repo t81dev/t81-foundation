@@ -2,6 +2,24 @@ ______________________________________________________________________
 
 # T81 Tensor Guide
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Tensor Guide](#t81-tensor-guide)
+  - [1. Canonical Shapes](#1-canonical-shapes)
+  - [2. Tensor Pools & Handles](#2-tensor-pools-&-handles)
+  - [3. Common Operations](#3-common-operations)
+    - [3.1 Broadcasting](#31-broadcasting)
+    - [3.2 Shape Guards](#32-shape-guards)
+    - [3.3 Deterministic Reductions](#33-deterministic-reductions)
+  - [4. Axion Visibility](#4-axion-visibility)
+  - [5. Testing Checklist](#5-testing-checklist)
+  - [6. Open Work](#6-open-work)
+
+<!-- T81-TOC:END -->
+
+
 > Companion to `spec/t81-data-types.md` and [RFC-0004](../spec/rfcs/RFC-0004-canonical-tensor-semantics.md)  
 > Non-normative tips for working with canonical tensors across the T81 stack.
 

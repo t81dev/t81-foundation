@@ -14,6 +14,7 @@ ______________________________________________________________________
   - [3.2 Fractions](#32-fractions)
   - [3.3 Floats](#33-floats)
   - [3.4 Vectors, Matrices, Tensors](#34-vectors-matrices-tensors)
+  - [3.5 Structural Types (Option / Result)](#35-structural-types-option--result)
 - [4. Implementing TISC](#4-implementing-tisc)
   - [4.1 Instruction Decode](#41-instruction-decode)
   - [4.2 State Machine](#42-state-machine)
@@ -62,6 +63,8 @@ ______________________________________________________________________
     - [Migration Notes](#migration-notes)
 
 <!-- T81-TOC:END -->
+
+
 
 
 
