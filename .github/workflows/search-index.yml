@@ -3,6 +3,10 @@ name: Build Search Index
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'docs/search/**'
+      - 'spec/**'
+      - 'docs/**'
   workflow_dispatch:
 
 permissions:
@@ -23,17 +27,24 @@ jobs:
           fetch-depth: 0
 
       # ------------------------------------------------------------------
-      - name: Set up Node.js 22
+      - name: Set up Node.js (LTS)
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'         # caches node_modules if you ever add a package.json
+          # You can switch this back to '22' if you really want latest;
+          # LTS is usually safer for npm/CLI ecosystem tooling.
+          node-version: '20'
+          cache: 'npm'
 
       # ------------------------------------------------------------------
-      - name: Install dependencies (cheerio + any others used by build_index.js)
+      - name: Install dependencies (cheerio + lunr)
         working-directory: docs/search
         run: |
-          npm ci || npm install cheerio@1.0.0-rc.12 lunr@2.3.9
+          # If there is a package-lock.json, use it; otherwise fall back
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install cheerio@1.0.0-rc.12 lunr@2.3.9
+          fi
 
       # ------------------------------------------------------------------
       - name: Build search index
@@ -41,7 +52,11 @@ jobs:
         run: node build_index.js
 
       # ------------------------------------------------------------------
+      # Only push back to main when we are actually on main.
+      # (Prevents a manual workflow_dispatch on a feature branch from
+      # accidentally pushing HEAD to main.)
       - name: Commit & push updated search_index.json (if changed)
+        if: github.ref == 'refs/heads/main'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
