@@ -1,68 +1,107 @@
-# --- OS / Editor Noise ---
+# ─────────────────────────────────────────────────────────────
+# T81 Foundation — Official .gitignore (v1.0.0-SOVEREIGN+)
+# ─────────────────────────────────────────────────────────────
+
+# ── OS & Editor junk ───────────────────────
 .DS_Store
+._*
 Thumbs.db
 *.swp
 *.swo
+*~
 *.bak
 *.tmp
 *.log
 
-# --- C / CWEB Build Artifacts ---
-*.o
-*.obj
-*.out
-*.exe
-*.dll
-*.so
-*.a
-*.dylib
-*.cweb.stamp
-*.toc
-*.idx
-*.scn
-*.tex
-*.dvi
-*.pdf
-*.ps
-
-<<<<<<< HEAD
-=======
-# Tangled / woven output (generated code)
-*.c
-*.h
-*.cpp
-*.hpp
-!tests/cpp/*.cpp
-
->>>>>>> d92db39 (update)
-# Build directories
+# ── Build artifacts ────────────────────────
 build/
-dist/
+build-*/
+cmake-build-*/
+out/
 bin/
 obj/
-out/
+dist/
+*.ninja_deps
+*.ninja_log
 
-# --- Python Tooling ---
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+
+# Generated binaries & libraries
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.pdb
+*.ilk
+*.lib
+*.exp
+
+# ── Legacy CWEB artifacts (only if you ever weave again) ──
+legacy/hanoivm/*.c
+legacy/hanoivm/*.h
+legacy/hanoivm/*.tex
+legacy/hanoivm/*.dvi
+legacy/hanoivm/*.pdf
+legacy/hanoivm/*.toc
+legacy/hanoivm/*.idx
+legacy/hanoivm/*.scn
+legacy/hanoivm/*.log
+legacy/hanoivm/*.stamp
+
+# ── Python / tooling ───────────────────────
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
-venv/
 .env
+.venv
+venv/
+env/
+pip-log.txt
+.pytest_cache/
+.coverage
+htmlcov/
 
-# --- Documentation Tools ---
-/docs/_site/
-/docs/build/
-/site/
+# ── Documentation builds ───────────────────
+docs/_site/
+docs/build/
+docs/.docusaurus/
+site/
 
-# --- IDE Noise ---
+# ── IDEs & editors ─────────────────────────
 .vscode/
+!.vscode/settings.json          # optionally keep shared settings
+!.vscode/tasks.json
+!.vscode/launch.json
 .idea/
 *.iml
+*.iws
+*.ipr
+*.code-workspace
 
-# --- Generated Specs or Dumps ---
+# ── Generated assets & caches ──────────────
 *.json.tmp
 *.dump
 *.trace
 *.vmtrace
 *.jitcache
+*.profraw
+*.gcda
+*.gcno
+
+# ── Optional: large binary assets (if you add them later) ──
+*.bin
+*.dat
+*.wasm.tmp
+
+# ─────────────────────────────────────────────────────────────
+# END OF FILE
+# ─────────────────────────────────────────────────────────────
