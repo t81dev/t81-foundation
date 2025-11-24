@@ -48,7 +48,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: auto/search-index
           delete-branch: true
-          title: "chore(docs): regenerate search index"
-          body: "Automated run of \`docs/search/build_index.js\`"
-          commit-message: "chore(docs): update search_index.json [ci skip]"
+          title: 'chore(docs): regenerate search index'
+          body: 'Automated run of `docs/search/build_index.js`'
+          commit-message: 'chore(docs): update search_index.json [ci skip]'
           labels: documentation,automated
