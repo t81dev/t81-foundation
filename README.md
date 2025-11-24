@@ -84,6 +84,8 @@ ______________________________________________________________________
 | Modern Runtime | Header-only C++20 core | Active development | `include/t81/` • `src/` |
 | Legacy HanoiVM | Original literate CWEB implementation (archived) | Frozen reference | `legacy/hanoivm/` |
 
+For a detailed breakdown of the current implementation status, see the [**System Status Board**](docs/system-status.md).
+
 ______________________________________________________________________
 
 ## Repository Layout
