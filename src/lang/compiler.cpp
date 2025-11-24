@@ -25,11 +25,6 @@ struct EvalValue {
   Type type{Type::T81Int};
 };
 
-struct EvalValue {
-  int reg{0};
-  Type type{Type::T81Int};
-};
-
 std::optional<Type> literal_value_type(const ExprLiteral& lit) {
   switch (lit.value.kind) {
     case LiteralValue::Kind::Int: return Type::T81Int;
@@ -214,7 +209,6 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
   struct PendingCall {
     std::size_t load_index{0};
     std::string callee;
-    Type return_type{Type::T81Int};
   };
   std::unordered_map<std::string, FunctionInfo> fn_info;
   const Function* entry_fn_ptr = nullptr;
