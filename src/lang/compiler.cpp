@@ -202,6 +202,7 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
   struct PendingCall {
     std::size_t load_index{0};
     std::string callee;
+    Type return_type{Type::T81Int};
   };
   std::unordered_map<std::string, FunctionInfo> fn_info;
   const Function* entry_fn_ptr = nullptr;
@@ -320,7 +321,7 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
         if (call_reg >= kMaxRegs) return -2;
         ++next_reg;
         program.insns.push_back({t81::tisc::Opcode::LoadImm, call_reg, 0, 0});
-        pending_calls.push_back({program.insns.size() - 1, call.callee});
+        pending_calls.push_back({program.insns.size() - 1, call.callee, callee_meta.return_type});
         program.insns.push_back({t81::tisc::Opcode::Call, 0, call_reg, 0});
         int result_tmp = next_reg;
         if (result_tmp >= kMaxRegs) return -2;
