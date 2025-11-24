@@ -250,6 +250,10 @@ ______________________________________________________________________
 - reshape (dimensionally consistent only)
 - transpose
 - tensor contraction
+
+### 3.3 Vector / Sequence Types
+
+A `Vector` is a rank-1 `Tensor`. The canonical serialization of a `Vector` is identical to that of a rank-1 `Tensor`.
 - elementwise ops
 - norm
 - dot products
