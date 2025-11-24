@@ -1,17 +1,18 @@
 ![T81 Foundation Banner](assets/img/banner.png)
 
-# T81 Foundation  
+# T81 Foundation
+
 Deterministic Ternary Computing Architecture
 
-Welcome to the T81 Foundation specification site.  
+Welcome to the T81 Foundation specification site.\
 This site hosts:
 
-- Full specification suite  
-- Standard RFCs  
-- Developer guides  
-- Architecture principles  
-- Deterministic execution model  
-- Axion supervisory kernel design  
+- Full specification suite
+- Standard RFCs
+- Developer guides
+- Architecture principles
+- Deterministic execution model
+- Axion supervisory kernel design
 
 Begin with the **Spec Index**:
 

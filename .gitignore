@@ -25,6 +25,8 @@ Thumbs.db
 *.pdf
 *.ps
 
+<<<<<<< HEAD
+=======
 # Tangled / woven output (generated code)
 *.c
 *.h
@@ -32,6 +34,7 @@ Thumbs.db
 *.hpp
 !tests/cpp/*.cpp
 
+>>>>>>> d92db39 (update)
 # Build directories
 build/
 dist/
