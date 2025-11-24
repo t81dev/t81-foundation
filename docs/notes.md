@@ -27,6 +27,8 @@ ______________________________________________________________________
 
 
 
+
+
 > Scratchpad for ongoing work across specs, RFCs, and the C++ implementation.\
 > Non‑normative. Updated whenever the specs/rfcs/docs gain new material.
 
