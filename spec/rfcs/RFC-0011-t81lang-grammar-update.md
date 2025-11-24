@@ -16,9 +16,10 @@ This RFC proposes to officially adopt the modern, feature-rich grammar found in 
 # Motivation
 
 The current T81Lang grammar documented in `t81lang-spec.md` is significantly less advanced than the designs explored in the legacy codebase. The analysis in `ANALYSIS.md` revealed that:
-1.  **`slang_grammer.ebnf`** describes a much more powerful and modern language, with features essential for building complex, modular systems.
-2.  The legacy Python prototype (`t81_compile.py`) already implements some of these modern features (e.g., annotations), indicating that this is the intended direction of the language.
-3.  The legacy CWEB frontend is obsolete and does not support any of these modern features.
+
+1. **`slang_grammer.ebnf`** describes a much more powerful and modern language, with features essential for building complex, modular systems.
+1. The legacy Python prototype (`t81_compile.py`) already implements some of these modern features (e.g., annotations), indicating that this is the intended direction of the language.
+1. The legacy CWEB frontend is obsolete and does not support any of these modern features.
 
 To build a future-proof C++20 toolchain, we must start from a solid, forward-looking specification. Aligning the formal spec with the more advanced EBNF grammar is the necessary first step.
 
@@ -28,10 +29,10 @@ The core of this proposal is to replace the simplified grammar in `t81lang-spec.
 
 The key new features to be integrated into the specification are:
 
-*   **Modules:** A system for organizing code into logical units (`module <identifier> { ... }`).
-*   **Attributes:** A mechanism for adding metadata to declarations, such as for Axion integration (`@axion { ... }`).
-*   **Generic Types:** Support for generic collections like `vector<T, N>`, `matrix<T, M, N>`, and `tensor<T, ...>`.
-*   **Expanded Keywords and Types:** The addition of modern keywords (`var`, `export`, `break`, `continue`) and a richer set of primitive types (`bool`, `void`, `i32`, etc.).
+- **Modules:** A system for organizing code into logical units (`module <identifier> { ... }`).
+- **Attributes:** A mechanism for adding metadata to declarations, such as for Axion integration (`@axion { ... }`).
+- **Generic Types:** Support for generic collections like `vector<T, N>`, `matrix<T, M, N>`, and `tensor<T, ...>`.
+- **Expanded Keywords and Types:** The addition of modern keywords (`var`, `export`, `break`, `continue`) and a richer set of primitive types (`bool`, `void`, `i32`, etc.).
 
 The updated grammar in `t81lang-spec.md` will be a direct, formatted copy of the `slang_grammer.ebnf` content.
 
@@ -51,8 +52,8 @@ This is a language grammar change and has no direct security implications.
 
 # Open Questions
 
-1.  What are the detailed semantics of the module system (e.g., import/export rules)?
-2.  How will the new generic types be monomorphized or handled by the TISC backend?
-3.  What is the complete, official list of supported attributes and their meanings for the Axion kernel?
+1. What are the detailed semantics of the module system (e.g., import/export rules)?
+1. How will the new generic types be monomorphized or handled by the TISC backend?
+1. What is the complete, official list of supported attributes and their meanings for the Axion kernel?
 
 These questions will need to be addressed in subsequent RFCs or updates to the relevant specifications.

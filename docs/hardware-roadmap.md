@@ -13,9 +13,9 @@ binary hardware.
 
 T81 is designed to be compatible with future ternary / non-binary hardware, such as:
 
-- Ternary logic research and balanced ternary arithmetic in silicon and nanowire devices. :contentReference[oaicite:3]{index=3}  
-- Energy-efficient ternary DNN accelerators and in-memory computing proposals (e.g., TiM-DNN, CUTIE). :contentReference[oaicite:4]{index=4}  
-- Recent patents and announcements around ternary logic for AI chips, including Huawei’s ternary logic efforts aimed at reducing transistor count and energy use. :contentReference[oaicite:5]{index=5}  
+- Ternary logic research and balanced ternary arithmetic in silicon and nanowire devices. :contentReference[oaicite:3]{index=3}
+- Energy-efficient ternary DNN accelerators and in-memory computing proposals (e.g., TiM-DNN, CUTIE). :contentReference[oaicite:4]{index=4}
+- Recent patents and announcements around ternary logic for AI chips, including Huawei’s ternary logic efforts aimed at reducing transistor count and energy use. :contentReference[oaicite:5]{index=5}
 
 T81’s IR and VM are intentionally designed so they can be mapped onto such devices
 without changing the high-level language or specs.
