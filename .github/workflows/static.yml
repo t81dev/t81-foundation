@@ -1,43 +1,83 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Deploy Documentation to GitHub Pages
 
 on:
-  # Runs on pushes targeting the default branch
   push:
-    branches: ["main"]
-
-  # Allows you to run this workflow manually from the Actions tab
+    branches: [ main ]
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
+  build-and-deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
+        with:
+          fetch-depth: 0
+
+      # ------------------------------------------------------------------
+      # Optional: Regenerate sidebar & search index first (recommended)
+      # ------------------------------------------------------------------
+      - name: Generate sidebar
+        run: python3 scripts/generate_sidebar.py
+
+      - name: Build search index
+        working-directory: docs/search
+        run: node build_index.js
+
+      # ------------------------------------------------------------------
+      # Build the Jekyll site (your /docs folder is already a valid Jekyll site)
+      # ------------------------------------------------------------------
+      - name: Setup Ruby + Bundler (for Jekyll)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: docs
+
+      - name: Install Jekyll and dependencies
+        run: |
+          gem install bundler
+          bundle install
+        working-directory: docs
+
+      - name: Build Jekyll site
+        run: bundle exec jekyll build --trace
+        working-directory: docs
+        env:
+          JEKYLL_ENV: production
+
+      # ------------------------------------------------------------------
+      # Deploy only the generated _site folder
+      # ------------------------------------------------------------------
+      - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          path: docs/_site
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # ------------------------------------------------------------------
+      # Success summary
+      # ------------------------------------------------------------------
+      - name: Success
+        if: success()
+        run: |
+          echo "Documentation deployed to GitHub Pages" >> $GITHUB_STEP_SUMMARY
+          echo "URL: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
