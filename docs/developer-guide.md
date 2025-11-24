@@ -136,6 +136,7 @@ This is the foundation of everything.
 - Always normalize sign, remove leading zeros (only `0` allowed for zero)
 - Implement canonical add/sub/mul/div/mod
 - MUST NOT use native float approximations
+- For spill-to-disk strategies or edge-case parsing/normalization, consult `legacy/hanoivm/src/lib/hvm-trit-util.cweb`. Its mmap threshold and debug hooks are the behavioral baseline for extreme operands.
 
 ## 3.2 Fractions
 - Store `(numerator, denominator)` as canonical BigInts  
@@ -163,6 +164,11 @@ This is the foundation of everything.
 - Lowering emits `MAKE_OPTION_*` / `MAKE_RESULT_*` opcodes so the VM can store
   canonical handles (deduplicated by payload tag + value).
 - Equality is deterministic because the VM compares handles and payloads.
+- Pattern matching uses the new `match (value) { ... }` form. Option matches MUST
+  provide both `Some(...)` and `None` arms; Result matches require `Ok(...)` and
+  `Err(...)`. The compiler emits `OPTION_IS_SOME`/`RESULT_IS_OK` plus
+  `OPTION_UNWRAP`/`RESULT_UNWRAP_{OK,ERR}` so only the selected arm is evaluated.
+  Bindings are standard block-scoped locals.
 
 Implementation tips:
 

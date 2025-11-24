@@ -326,6 +326,12 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
           }
           return CompileError::UnsupportedType;
         };
+    auto alloc_temp_reg = [&]() -> std::expected<int, CompileError> {
+      int reg = next_reg;
+      if (reg >= kMaxRegs) return CompileError::RegisterOverflow;
+      ++next_reg;
+      return reg;
+    };
     std::function<EvalResult(const Expr&, std::optional<int>, std::optional<Type>)> emit_expr_env =
         [&](const Expr& e, std::optional<int> target, std::optional<Type> expected) -> EvalResult {
       if (std::holds_alternative<ExprLiteral>(e.node)) {
@@ -485,6 +491,160 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
         move_reg(result_tmp, out_reg);
         return EvalValue{out_reg, callee_meta.return_type};
       }
+      if (std::holds_alternative<ExprMatch>(e.node)) {
+        const auto& match_expr = std::get<ExprMatch>(e.node);
+        if (!match_expr.value) return make_error(CompileError::InvalidMatch);
+        if (match_expr.arms.size() != 2) return make_error(CompileError::InvalidMatch);
+        auto subject = emit_expr_env(*match_expr.value, std::nullopt, std::nullopt);
+        if (!subject.has_value()) return subject;
+        EvalValue subject_val = subject.value();
+        bool subject_is_option = is_option_type(subject_val.type);
+        bool subject_is_result = is_result_type(subject_val.type);
+        if (!subject_is_option && !subject_is_result) {
+          return make_error(CompileError::InvalidMatch);
+        }
+        bool saw_some = false;
+        bool saw_none = false;
+        bool saw_ok = false;
+        bool saw_err = false;
+        for (const auto& arm : match_expr.arms) {
+          if (!arm.expr) return make_error(CompileError::InvalidMatch);
+          switch (arm.pattern.kind) {
+            case MatchPattern::Kind::OptionSome:
+              if (!subject_is_option || saw_some) return make_error(CompileError::InvalidMatch);
+              saw_some = true;
+              break;
+            case MatchPattern::Kind::OptionNone:
+              if (!subject_is_option || saw_none) return make_error(CompileError::InvalidMatch);
+              saw_none = true;
+              break;
+            case MatchPattern::Kind::ResultOk:
+              if (!subject_is_result || saw_ok) return make_error(CompileError::InvalidMatch);
+              saw_ok = true;
+              break;
+            case MatchPattern::Kind::ResultErr:
+              if (!subject_is_result || saw_err) return make_error(CompileError::InvalidMatch);
+              saw_err = true;
+              break;
+          }
+        }
+        if (subject_is_option) {
+          if (!saw_some || !saw_none) return make_error(CompileError::InvalidMatch);
+        } else {
+          if (!saw_ok || !saw_err) return make_error(CompileError::InvalidMatch);
+        }
+        int out_reg = target.value_or(next_reg);
+        if (out_reg >= kMaxRegs) return make_error(CompileError::RegisterOverflow);
+        if (!target.has_value()) ++next_reg;
+        std::optional<Type> match_type = expected;
+        auto ensure_match_type = [&](EvalValue value) -> EvalResult {
+          if (match_type.has_value()) {
+            auto coerced = coerce_value(value, match_type.value());
+            if (!coerced.has_value()) return coerced;
+            return coerced.value();
+          }
+          match_type = value.type;
+          return value;
+        };
+        auto cond_reg_res = alloc_temp_reg();
+        if (!cond_reg_res.has_value()) return make_error(cond_reg_res.error());
+        int variant_reg = cond_reg_res.value();
+        t81::tisc::Opcode probe_opcode =
+            subject_is_option ? t81::tisc::Opcode::OptionIsSome : t81::tisc::Opcode::ResultIsOk;
+        program.insns.push_back({probe_opcode, variant_reg, subject_val.reg, 0});
+        std::vector<std::size_t> end_jumps;
+        auto emit_branch = [&](const MatchArm& arm) -> CompileError {
+          bool branch_on_true = arm.pattern.kind == MatchPattern::Kind::OptionSome ||
+                                arm.pattern.kind == MatchPattern::Kind::ResultOk;
+          std::size_t skip_idx = program.insns.size();
+          program.insns.push_back({branch_on_true ? t81::tisc::Opcode::JumpIfZero
+                                                  : t81::tisc::Opcode::JumpIfNotZero,
+                                   0, variant_reg, 0});
+          push_scope();
+          bool scope_active = true;
+          auto pop_branch_scope = [&]() {
+            if (scope_active) {
+              pop_scope();
+              scope_active = false;
+            }
+          };
+          auto bind_payload = [&](const std::string& name, const Type& payload_type,
+                                  t81::tisc::Opcode unwrap) -> CompileError {
+            int binding_reg = next_reg;
+            if (binding_reg >= kMaxRegs) return CompileError::RegisterOverflow;
+            ++next_reg;
+            program.insns.push_back({unwrap, binding_reg, subject_val.reg, 0});
+            declare(name, binding_reg, payload_type);
+            return CompileError::None;
+          };
+          if (arm.pattern.binding.has_value()) {
+            std::optional<Type> binding_type;
+            t81::tisc::Opcode unwrap = t81::tisc::Opcode::OptionUnwrap;
+            switch (arm.pattern.kind) {
+              case MatchPattern::Kind::OptionSome:
+                if (!subject_is_option || subject_val.type.params.empty()) {
+                  pop_branch_scope();
+                  return CompileError::InvalidMatch;
+                }
+                binding_type = subject_val.type.params[0];
+                unwrap = t81::tisc::Opcode::OptionUnwrap;
+                break;
+              case MatchPattern::Kind::ResultOk:
+                if (!subject_is_result || subject_val.type.params.size() != 2) {
+                  pop_branch_scope();
+                  return CompileError::InvalidMatch;
+                }
+                binding_type = subject_val.type.params[0];
+                unwrap = t81::tisc::Opcode::ResultUnwrapOk;
+                break;
+              case MatchPattern::Kind::ResultErr:
+                if (!subject_is_result || subject_val.type.params.size() != 2) {
+                  pop_branch_scope();
+                  return CompileError::InvalidMatch;
+                }
+                binding_type = subject_val.type.params[1];
+                unwrap = t81::tisc::Opcode::ResultUnwrapErr;
+                break;
+              case MatchPattern::Kind::OptionNone:
+                pop_branch_scope();
+                return CompileError::InvalidMatch;
+            }
+            if (binding_type.has_value()) {
+              auto bind_res = bind_payload(*arm.pattern.binding, binding_type.value(), unwrap);
+              if (bind_res != CompileError::None) {
+                pop_branch_scope();
+                return bind_res;
+              }
+            }
+          }
+          auto branch_value = emit_expr_env(*arm.expr, out_reg, match_type);
+          if (!branch_value.has_value()) {
+            pop_branch_scope();
+            return branch_value.error();
+          }
+          auto ensured = ensure_match_type(branch_value.value());
+          if (!ensured.has_value()) {
+            pop_branch_scope();
+            return ensured.error();
+          }
+          pop_branch_scope();
+          std::size_t jump_idx = program.insns.size();
+          program.insns.push_back({t81::tisc::Opcode::Jump, 0, 0, 0});
+          end_jumps.push_back(jump_idx);
+          program.insns[skip_idx].a = static_cast<std::int32_t>(program.insns.size());
+          return CompileError::None;
+        };
+        for (const auto& arm : match_expr.arms) {
+          auto branch_res = emit_branch(arm);
+          if (branch_res != CompileError::None) return make_error(branch_res);
+        }
+        std::size_t end_pc = program.insns.size();
+        for (auto idx : end_jumps) {
+          program.insns[idx].a = static_cast<std::int32_t>(end_pc);
+        }
+        if (!match_type.has_value()) return make_error(CompileError::InvalidMatch);
+        return EvalValue{out_reg, match_type.value()};
+      }
       const auto& bin = std::get<ExprBinary>(e.node);
       auto is_arithmetic_op = [](ExprBinary::Op op) {
         switch (op) {
@@ -513,12 +673,6 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
       };
       auto is_logical_op = [](ExprBinary::Op op) {
         return op == ExprBinary::Op::Land || op == ExprBinary::Op::Lor;
-      };
-      auto alloc_temp_reg = [&]() -> std::expected<int, CompileError> {
-        int reg = next_reg;
-        if (reg >= kMaxRegs) return CompileError::RegisterOverflow;
-        ++next_reg;
-        return reg;
       };
       auto emit_bool_from_branch =
           [&](auto&& branch_builder, std::optional<int> dest) -> EvalResult {

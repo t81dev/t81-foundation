@@ -16,6 +16,7 @@ enum class CompileError {
   UnknownFunction,
   InvalidCall,
   UnsupportedLiteral,
+  InvalidMatch,
 };
 
 class Compiler {

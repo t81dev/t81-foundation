@@ -55,5 +55,10 @@ enum class Opcode : std::uint8_t {
   MakeOptionNone = 47,
   MakeResultOk = 48,
   MakeResultErr = 49,
+  OptionIsSome = 50,
+  OptionUnwrap = 51,
+  ResultIsOk = 52,
+  ResultUnwrapOk = 53,
+  ResultUnwrapErr = 54,
 };
 }  // namespace t81::tisc

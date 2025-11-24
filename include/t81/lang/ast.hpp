@@ -48,8 +48,28 @@ struct ExprBinary {
   std::shared_ptr<struct Expr> rhs;
 };
 
+struct MatchPattern {
+  enum class Kind {
+    OptionSome,
+    OptionNone,
+    ResultOk,
+    ResultErr,
+  } kind{Kind::OptionSome};
+  std::optional<std::string> binding;
+};
+
+struct MatchArm {
+  MatchPattern pattern;
+  std::shared_ptr<struct Expr> expr;
+};
+
+struct ExprMatch {
+  std::shared_ptr<struct Expr> value;
+  std::vector<MatchArm> arms;
+};
+
 struct Expr {
-  std::variant<ExprLiteral, ExprIdent, ExprCall, ExprBinary> node;
+  std::variant<ExprLiteral, ExprIdent, ExprCall, ExprBinary, ExprMatch> node;
 };
 
 struct StatementReturn {

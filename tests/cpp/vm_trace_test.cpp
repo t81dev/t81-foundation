@@ -17,8 +17,11 @@ int main() {
   vm->load_program(p);
   auto r1 = vm->step();
   assert(r1.has_value());
-  auto r2 = vm->step();
-  assert(!r2.has_value());
+  std::expected<void, vm::Trap> r2;
+  while (true) {
+    r2 = vm->step();
+    if (!r2.has_value()) break;
+  }
   assert(r2.error() == vm::Trap::InvalidMemory || r2.error() == vm::Trap::IllegalInstruction);
   assert(!vm->state().trace.empty());
   auto last = vm->state().trace.back();

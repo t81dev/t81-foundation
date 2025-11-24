@@ -36,6 +36,8 @@ class expected {
 
   T& value() { return std::get<T>(storage_); }
   const T& value() const { return std::get<T>(storage_); }
+  T* operator->() { return &std::get<T>(storage_); }
+  const T* operator->() const { return &std::get<T>(storage_); }
   E& error() { return std::get<E>(storage_); }
   const E& error() const { return std::get<E>(storage_); }
 
@@ -73,4 +75,3 @@ template <typename T, typename E>
 using expected = ::t81::expected<T, E>;
 }
 #endif
-

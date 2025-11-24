@@ -144,7 +144,7 @@ Operations:
 
 ### Implementation
 
-VM MAY implement long arithmetic, Karatsuba, FFT-based, or hardware-accelerated multiplication **as long as results remain identical**.
+VM MAY implement long arithmetic, Karatsuba, FFT-based, or hardware-accelerated multiplication **as long as results remain identical**. Implementations MAY also spill large digit arrays to deterministic backing storage (e.g., mmap’d scratch files with fixed naming and allocation rules) when operands exceed in-memory thresholds. Such spill logic, as pioneered in the legacy `hvm-trit-util.cweb`, MUST remain transparent to observable behavior (no timing-dependent faults, no nondeterministic resource selection).
 
 ______________________________________________________________________
 

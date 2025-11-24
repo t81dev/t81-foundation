@@ -352,6 +352,55 @@ int main() {
 
   {
     const std::string src =
+        "fn pick(flag: Option[T81Int]) -> T81Int { "
+        "return match (flag) { "
+        "Some(value) => value + 2t81, "
+        "None => 0t81, "
+        "}; }"
+        "fn main() -> T81Int { "
+        "let filled: Option[T81Int] = Some(4t81); "
+        "let empty: Option[T81Int] = None; "
+        "return pick(filled) + pick(empty); }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    assert(vm->state().registers[0] == 6);
+  }
+
+  {
+    const std::string src =
+        "fn eval(res: Result[T81Int, Symbol]) -> T81Int { "
+        "return match (res) { "
+        "Ok(v) => v, "
+        "Err(_) => 9t81, "
+        "}; }"
+        "fn make(v: T81Int) -> Result[T81Int, Symbol] { "
+        "if (v < 0t81) { return Err(:neg); } "
+        "return Ok(v); }"
+        "fn main() -> T81Int { "
+        "let bad: Result[T81Int, Symbol] = make(-1t81); "
+        "let good: Result[T81Int, Symbol] = make(2t81); "
+        "return eval(bad) + eval(good); }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    assert(vm->state().registers[0] == 11);
+  }
+
+  {
+    const std::string src =
         "fn never() -> T81Int { return never(); }"
         "fn main() -> T81Int { "
         "let guard: T81Int = 0t81; "

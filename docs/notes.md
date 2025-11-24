@@ -60,10 +60,12 @@ ______________________________________________________________________
 
 | Spec Section | Doc/Guide | Owner |
 |--------------|-----------|-------|
-| `spec/t81lang-spec.md §2.3` (Option/Result) | add to `docs/developer-guide.md` “Structural Types” | 🟡 |
+| `spec/t81lang-spec.md §2.3` (Option/Result) | add to `docs/developer-guide.md` “Structural Types” | ✅ |
 | `spec/tisc-spec.md §5.2` (new opcodes) | mention in `docs/cpp-quickstart.md` “VM Notes” | ✅ |
 | `spec/t81vm-spec.md` (GC) | expand `docs/developer-guide.md §6` once RFC-0006 accepted | 🟡 |
 | `spec/axion-kernel.md` (policies) | create tutorial referencing APL syntax | 🔜 |
+
+Ref note: legacy BigInt behavior lives in `legacy/hanoivm/src/lib/hvm-trit-util.cweb` (mmap spill, debug hooks).
 
 Legend: ✅ done, 🟡 pending polish, 🔜 requires future RFC/state.
 

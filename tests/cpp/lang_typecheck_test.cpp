@@ -300,6 +300,45 @@ int main() {
     assert(res.error() == lang::CompileError::UnsupportedType);
   }
 
+  // Match must be exhaustive for Option
+  {
+    auto mod = lang::parse_module(
+        "fn main() -> T81Int { "
+        "let opt: Option[T81Int] = None; "
+        "return match (opt) { Some(v) => v, }; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(!res.has_value());
+    assert(res.error() == lang::CompileError::InvalidMatch);
+  }
+
+  // Match must use correct patterns for Option
+  {
+    auto mod = lang::parse_module(
+        "fn main() -> T81Int { "
+        "let opt: Option[T81Int] = None; "
+        "return match (opt) { Ok(v) => v, Err(_) => 0t81, }; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(!res.has_value());
+    assert(res.error() == lang::CompileError::InvalidMatch);
+  }
+
+  // Result match missing Err arm fails
+  {
+    auto mod = lang::parse_module(
+        "fn main() -> T81Int { "
+        "let res: Result[T81Int, Symbol] = Err(:oops); "
+        "return match (res) { Ok(v) => v, }; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(!res.has_value());
+    assert(res.error() == lang::CompileError::InvalidMatch);
+  }
+
   // Modulo only valid for integers
   {
     auto mod = lang::parse_module("fn main() -> T81Float { return 1.00t81 % 2.00t81; }");

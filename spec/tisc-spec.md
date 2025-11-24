@@ -292,6 +292,53 @@ image). Any opcode that dereferences a handle MUST fault with
   Same as `MAKE_RESULT_OK` but marks the handle as the error variant.
 - **Faults**: Invalid register or payload tag → `IllegalInstruction`.
 
+#### OPTION_IS_SOME
+
+- **Form**: `OPTION_IS_SOME RD, RS`
+- **Semantics**:
+  Read the option handle stored in `R[RS]`, write `1t81` to `R[RD]` when it
+  represents `Option::Some`, otherwise write `0t81`. Flags follow the canonical
+  integer written to `R[RD]`.
+- **Faults**: Missing/invalid destination register or if `R[RS]` is not tagged as
+  an option handle.
+
+#### OPTION_UNWRAP
+
+- **Form**: `OPTION_UNWRAP RD, RS`
+- **Semantics**:
+  Copy the payload of an `Option::Some` handle from `R[RS]` into `R[RD]`,
+  preserving the payload’s canonical tag (int, float handle, fraction handle,
+  symbol handle, etc.). Attempting to unwrap `None` MUST fault.
+- **Faults**: Invalid registers, non-option source, or unwrapping a `None`
+  handle → `IllegalInstruction`.
+
+#### RESULT_IS_OK
+
+- **Form**: `RESULT_IS_OK RD, RS`
+- **Semantics**:
+  Inspect the result handle stored in `R[RS]` and write `1t81` to `R[RD]` when
+  it is `Result::Ok`, otherwise `0t81`. Flags mirror the integer result.
+- **Faults**: Invalid registers or non-result source handle.
+
+#### RESULT_UNWRAP_OK
+
+- **Form**: `RESULT_UNWRAP_OK RD, RS`
+- **Semantics**:
+  Copy the payload of a `Result::Ok` handle from `R[RS]` into `R[RD]` while
+  preserving its payload tag. The VM MUST fault if `R[RS]` refers to an error
+  variant.
+- **Faults**: Invalid registers, non-result source, or attempting to unwrap an
+  `Err` handle.
+
+#### RESULT_UNWRAP_ERR
+
+- **Form**: `RESULT_UNWRAP_ERR RD, RS`
+- **Semantics**:
+  Same as `RESULT_UNWRAP_OK`, but unwraps the `Err` payload. Fault if the handle
+  represents `Ok`.
+- **Faults**: Invalid registers, non-result source, or attempting to unwrap an
+  `Ok` handle.
+
 ______________________________________________________________________
 
 ### 5.3 Ternary Logic Instructions

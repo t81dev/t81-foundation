@@ -368,6 +368,7 @@ Maps IR instructions to TISC sequences:
 | `None` | Contextual type chooses `Option[T]`, emit `MAKE_OPTION_NONE` |
 | `Ok(expr)` | Evaluate `expr`, `MAKE_RESULT_OK` |
 | `Err(expr)` | Evaluate `expr`, `MAKE_RESULT_ERR` |
+| `match (value)` over `Option/Result` | Evaluate subject once, use `OPTION_IS_SOME` / `RESULT_IS_OK` plus conditional jumps; bind payloads via `OPTION_UNWRAP` or `RESULT_UNWRAP_OK` / `RESULT_UNWRAP_ERR` before lowering the selected arm |
 | logical `a && b` | Evaluate `a`, `JumpIfZero` to skip RHS, evaluate `b` only when needed, write `0t81/1t81` deterministically |
 | logical `a || b` | Evaluate `a`, `JumpIfNotZero` to skip RHS, evaluate `b` only when needed, write `0t81/1t81` deterministically |
 | vector add | `TVECADD` |
@@ -404,7 +405,31 @@ All control flow is explicit and deterministic.
 - Condition MUST be a canonical boolean encoded as T81Int (0, 1, or -1 via ternary truth table).
 - Branch lowering MUST produce deterministic TISC control flow.
 
-### 6.2 Loop
+### 6.2 Match
+
+T81Lang exposes `match` expressions for structural types:
+
+```t81
+let total: T81Int = match (maybe_value) {
+  Some(v) => v + 1t81,
+  None => 0t81,
+};
+```
+
+- The scrutinee inside `match ( … )` is evaluated exactly once.
+- For `Option[T]` the arms MUST include exactly one `Some(binding)` arm and one
+  `None` arm (order-insensitive). `binding` introduces a new immutable variable
+  scoped to that arm; use `_` to ignore the payload.
+- For `Result[T, E]` the arms MUST include exactly one `Ok(binding)` and one
+  `Err(binding)` arm.
+- Each arm MUST evaluate to the same type; the first arm determines the result
+  type if no contextual type is provided.
+- Lowering MUST branch via `OPTION_IS_SOME` / `RESULT_IS_OK`, use the matching
+  `OPTION_UNWRAP` or `RESULT_UNWRAP_*` opcode when a payload binding is present,
+  and jump over the inactive arm so that only the selected expression executes.
+- Missing arms, duplicate variants, or mismatched types are compile-time errors.
+
+### 6.3 Loop
 
 Loops MUST:
 
@@ -421,7 +446,7 @@ loop { ... }
 
 Otherwise, an unbounded loop without explicit annotation is a compile-time error.
 
-### 6.3 Recursion
+### 6.4 Recursion
 
 Recursion is allowed but MUST:
 

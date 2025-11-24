@@ -644,6 +644,66 @@ class Interpreter : public IVirtualMachine {
         update_flags(state_.registers[insn.a]);
         break;
       }
+      case t81::tisc::Opcode::OptionIsSome: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        if (state_.register_tags[insn.b] != ValueTag::OptionHandle) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        auto opt = option_ptr(state_.registers[insn.b]);
+        if (!opt) { trap = Trap::IllegalInstruction; break; }
+        set_reg(insn.a, opt->has_value ? 1 : 0, ValueTag::Int);
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::OptionUnwrap: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        if (state_.register_tags[insn.b] != ValueTag::OptionHandle) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        auto opt = option_ptr(state_.registers[insn.b]);
+        if (!opt || !opt->has_value) { trap = Trap::IllegalInstruction; break; }
+        set_reg(insn.a, opt->payload, opt->payload_tag);
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::ResultIsOk: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        if (state_.register_tags[insn.b] != ValueTag::ResultHandle) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        auto res = result_ptr(state_.registers[insn.b]);
+        if (!res) { trap = Trap::IllegalInstruction; break; }
+        set_reg(insn.a, res->is_ok ? 1 : 0, ValueTag::Int);
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::ResultUnwrapOk: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        if (state_.register_tags[insn.b] != ValueTag::ResultHandle) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        auto res = result_ptr(state_.registers[insn.b]);
+        if (!res || !res->is_ok) { trap = Trap::IllegalInstruction; break; }
+        set_reg(insn.a, res->payload, res->payload_tag);
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::ResultUnwrapErr: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        if (state_.register_tags[insn.b] != ValueTag::ResultHandle) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        auto res = result_ptr(state_.registers[insn.b]);
+        if (!res || res->is_ok) { trap = Trap::IllegalInstruction; break; }
+        set_reg(insn.a, res->payload, res->payload_tag);
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
       case t81::tisc::Opcode::TVecAdd: {
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
         auto ta = tensor_ptr(state_.registers[insn.b]);
