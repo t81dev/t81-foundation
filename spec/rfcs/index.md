@@ -53,29 +53,45 @@ Defines the cross-layer determinism invariants that govern Data Types, TISC, VM,
 
 Defines Axion’s supervisory role, safety constraints, privilege model, recursion control, cognitive limits, and fault semantics.
 
+## **RFC-0004 — Canonical Tensor Semantics**  
+`RFC-0004-canonical-tensor-semantics.md`
+
+Formalizes tensor shape/rank rules, tensor pools, and Axion-visible metadata so every layer treats tensors identically.
+
+## **RFC-0005 — TISC v0.4 Extensions**  
+`RFC-0005-tisc-v0-4-extensions.md`
+
+Specifies the next ISA revision, including structural constructors, vector helpers, shape guards, and version-reporting opcodes.
+
+## **RFC-0006 — Deterministic GC & Memory Reclamation**  
+`RFC-0006-deterministic-gc.md`
+
+Defines the deterministic garbage collector (mark/sweep order, safepoints, Axion hooks) required by the VM spec.
+
+## **RFC-0007 — T81Lang Standard Library**  
+`RFC-0007-t81lang-standard-library.md`
+
+Introduces the canonical, versioned standard library modules for deterministic arithmetic, tensor helpers, Option/Result combinators, and Axion-safe IO.
+
+## **RFC-0008 — T81 Formal Verification Harness**  
+`RFC-0008-formal-verification-harness.md`
+
+Describes the canonical trace format, reference replayer, and SMT interface used to prove determinism end-to-end.
+
+## **RFC-0009 — Axion Policy Language**  
+`RFC-0009-axion-policy-language.md`
+
+Defines the declarative DSL that encodes recursion/shape/opcode policies enforced by Axion at runtime.
+
 ---
 
 # 2. Upcoming RFCs (Planned)
 
-These RFCs will expand the standards suite and formalize more of the stack.
+The following numbers are reserved for future proposals that build on the
+foundation above:
 
-## **RFC-0004 — Canonical Tensor Semantics**  
-Formal definition of cross-layer tensor behavior, rank rules, shape constraints, and canonical tensor operators.
-
-## **RFC-0005 — TISC v0.4 Extensions**  
-Defines future additions to the TISC ISA, including deterministic parallel instructions and shape-safe vector ops.
-
-## **RFC-0006 — Deterministic GC & Memory Reclamation**  
-Formalizes the T81VM garbage collector as a deterministic, canonical subsystem.
-
-## **RFC-0007 — T81Lang Standard Library**  
-Defines deterministic, pure-by-default standard library functions.
-
-## **RFC-0008 — T81 Formal Verification Harness**  
-Specifies the test harness, trace validator, and formal proof generators.
-
-## **RFC-0009 — Axion Policy Language**  
-A declarative DSL for specifying Axion recursion, shape, and symbolic constraints.
+- **RFC-0010** — already published (`tisc-float-fraction-ops`)  
+- **RFC-0100+** — experimental items listed in Section 3 below
 
 ---
 
