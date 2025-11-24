@@ -1,3 +1,4 @@
+# .github/workflows/pdf.yml
 name: Build PDFs
 
 on:
@@ -6,34 +7,26 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-pdfs:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install Tectonic (via Cargo)
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y curl build-essential pkg-config libssl-dev
-        curl https://sh.rustup.rs -sSf | sh -s -- -y
-        source "$HOME/.cargo/env"
-        cargo install tectonic
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      - name: Build all PDFs with Marp (instant, no native deps)
+        uses: docker://marpteam/marp-cli:v3.6.0
+        with:
+          args: >-
+            pdf/
+            --pdf
+            --allow-local-files
+            --title "T81 Foundation Specification"
+            --output pdf/output/
+        env:
+          MARP_USER: root:root   # fixes permission issues
 
-    - name: Check Tectonic Installation
-      run: tectonic --version
-
-    - name: Install Pandoc
-      run: sudo apt-get update && sudo apt-get install -y pandoc
-
-    - name: Build PDFs
-      run: bash pdf/build.sh
-
-    - name: Upload PDF Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: t81-pdfs
-        path: pdf/output/**
-        # Optional: Fail if no files found (good hygiene)
-        if-no-files-found: error
+      - name: Upload PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: t81-spec-pdfs
+          path: pdf/output/*.pdf
+          if-no-files-found: error
