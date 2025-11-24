@@ -3,22 +3,59 @@ name: Generate Sidebar
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:                 # allow manual trigger
+  pull_request:
+    types: [ closed ]
+    branches: [ main ]
+    if: github.event.pull_request.merged == true   # also run after PR merge
 
 permissions:
-  contents: write
+  contents: write                    # required to push the updated sidebar
 
 jobs:
-  build:
+  generate-sidebar:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Generate sidebar
-      run: python3 scripts/generate_sidebar.py
-    - name: Commit changes
-      run: |
-        git config user.name "github-actions"
-        git config user.email "actions@github.com"
-        git add docs/_includes/sidebar.html
-        git commit -m "Auto-update sidebar" || echo "No changes"
-        git push
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0            # needed for clean git history & push
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install script dependencies (if any)
+        run: |
+          python -m pip install --quiet --upgrade pip
+          if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+          # Most likely you only need stdlib → nothing to install
+
+      - name: Generate sidebar
+        run: python3 scripts/generate_sidebar.py
+
+      - name: Commit & push only if sidebar changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add docs/_includes/sidebar.html
+
+          if git diff --quiet --staged; then
+            echo "Sidebar unchanged – nothing to commit"
+            exit 0
+          fi
+
+          git commit -m "chore(docs): regenerate sidebar [ci skip]"
+          git push origin HEAD:main
+
+      - name: Success summary
+        if: success()
+        run: |
+          echo "### Sidebar auto-updated" >> $GITHUB_STEP_SUMMARY
+          echo "- File: `docs/_includes/sidebar.html`" >> $GITHUB_STEP_SUMMARY
+          echo "- Trigger: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
