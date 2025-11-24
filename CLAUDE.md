@@ -1,3 +1,11 @@
+## Tool-specific adapters
+
+These files adapt the same rules to specific tools:
+
+- `CLAUDE.md` – Claude Code
+- `.github/copilot-instructions.md` – GitHub Copilot / Copilot Chat
+- `.cursorrules` – Cursor / Windsurf
+
 # CLAUDE.md — Project Memory for T81 Foundation
 
 This file provides guidance to Claude Code when working with this repository.
