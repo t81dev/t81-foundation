@@ -1,10 +1,4 @@
-## Tool-specific adapters
-
-These files adapt the same rules to specific tools:
-
-- `CLAUDE.md` – Claude Code
-- `.github/copilot-instructions.md` – GitHub Copilot / Copilot Chat
-- `.cursorrules` – Cursor / Windsurf
+This file is an adapter; the canonical rules live in AGENTS.md and ARCHITECTURE.md
 
 # CLAUDE.md — Project Memory for T81 Foundation
 
