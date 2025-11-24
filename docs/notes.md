@@ -8,40 +8,11 @@ ______________________________________________________________________
 
 - [T81 Working Notes](#t81-working-notes)
   - [1. Newly Added RFCs (Q3 Update)](#1-newly-added-rfcs-q3-update)
-  - [2. Spec → Docs Cross-Reference Checklist](#2-spec-→-docs-cross-reference-checklist)
-  - [3. Documentation To‑Dos](#3-documentation-to‑dos)
+  - [2. Spec → Docs Cross-Reference Checklist](#2-spec-%E2%86%92-docs-cross-reference-checklist)
+  - [3. Documentation To‑Dos](#3-documentation-to%E2%80%91dos)
   - [4. Open Questions for Docs Team](#4-open-questions-for-docs-team)
 
 <!-- T81-TOC:END -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 > Scratchpad for ongoing work across specs, RFCs, and the C++ implementation.\
 > Non‑normative. Updated whenever the specs/rfcs/docs gain new material.

@@ -1,6 +1,6 @@
 ______________________________________________________________________
 
-# T81 Foundation  
+# T81 Foundation
 
 <!-- T81-TOC:BEGIN -->
 
@@ -20,7 +20,7 @@ ______________________________________________________________________
   - [4.2 State Machine](#42-state-machine)
   - [4.3 Arithmetic Ops](#43-arithmetic-ops)
   - [4.4 Tensor Ops](#44-tensor-ops)
-  - [4.5 Privileged Ops (AX*)](#45-privileged-ops-ax*)
+  - [4.5 Privileged Ops (AX\*)](#45-privileged-ops-ax*)
 - [5. Implementing the T81VM](#5-implementing-the-t81vm)
   - [5.1 Memory Model](#51-memory-model)
   - [5.2 VM Scheduler](#52-vm-scheduler)
@@ -28,11 +28,11 @@ ______________________________________________________________________
   - [5.4 Trace System (Required)](#54-trace-system-required)
 - [6. Deterministic Garbage Collector](#6-deterministic-garbage-collector)
 - [7. Implementing Axion Kernel Subsystems](#7-implementing-axion-kernel-subsystems)
-  - [7.1 DTS — Deterministic Trace](#71-dts-—-deterministic-trace)
-  - [7.2 VS — Verification Subsystem](#72-vs-—-verification-subsystem)
-  - [7.3 CRS — Constraint Resolution](#73-crs-—-constraint-resolution)
-  - [7.4 RCS — Recursion Control](#74-rcs-—-recursion-control)
-  - [7.5 TTS — Tier Transition](#75-tts-—-tier-transition)
+  - [7.1 DTS — Deterministic Trace](#71-dts-%E2%80%94-deterministic-trace)
+  - [7.2 VS — Verification Subsystem](#72-vs-%E2%80%94-verification-subsystem)
+  - [7.3 CRS — Constraint Resolution](#73-crs-%E2%80%94-constraint-resolution)
+  - [7.4 RCS — Recursion Control](#74-rcs-%E2%80%94-recursion-control)
+  - [7.5 TTS — Tier Transition](#75-tts-%E2%80%94-tier-transition)
 - [8. Implementing T81Lang](#8-implementing-t81lang)
   - [8.1 Parsing](#81-parsing)
   - [8.2 Type System](#82-type-system)
@@ -44,14 +44,14 @@ ______________________________________________________________________
   - [9.3 Trace Validator](#93-trace-validator)
 - [10. Repository Structure for Implementers](#10-repository-structure-for-implementers)
 - [11. Implementation Roadmap](#11-implementation-roadmap)
-  - [Phase 1 — Core Arithmetic & Data Types](#phase-1-—-core-arithmetic-&-data-types)
-  - [Phase 2 — TISC Interpreter](#phase-2-—-tisc-interpreter)
-  - [Phase 3 — VM Core + Memory Model](#phase-3-—-vm-core-+-memory-model)
-  - [Phase 4 — GC + Trace System](#phase-4-—-gc-+-trace-system)
-  - [Phase 5 — Axion Kernel](#phase-5-—-axion-kernel)
-  - [Phase 6 — T81Lang Compiler](#phase-6-—-t81lang-compiler)
-  - [Phase 7 — Tier Engine](#phase-7-—-tier-engine)
-  - [Phase 8 — Optimizations & Formal Proofs](#phase-8-—-optimizations-&-formal-proofs)
+  - [Phase 1 — Core Arithmetic & Data Types](#phase-1-%E2%80%94-core-arithmetic-&-data-types)
+  - [Phase 2 — TISC Interpreter](#phase-2-%E2%80%94-tisc-interpreter)
+  - [Phase 3 — VM Core + Memory Model](#phase-3-%E2%80%94-vm-core-+-memory-model)
+  - [Phase 4 — GC + Trace System](#phase-4-%E2%80%94-gc-+-trace-system)
+  - [Phase 5 — Axion Kernel](#phase-5-%E2%80%94-axion-kernel)
+  - [Phase 6 — T81Lang Compiler](#phase-6-%E2%80%94-t81lang-compiler)
+  - [Phase 7 — Tier Engine](#phase-7-%E2%80%94-tier-engine)
+  - [Phase 8 — Optimizations & Formal Proofs](#phase-8-%E2%80%94-optimizations-&-formal-proofs)
 - [12. Final Guidance](#12-final-guidance)
   - [T81 C++ API](#t81-c++-api)
     - [Overview](#overview)
@@ -64,82 +64,55 @@ ______________________________________________________________________
 
 <!-- T81-TOC:END -->
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Developer Guide / Implementer’s Handbook  
+Developer Guide / Implementer’s Handbook\
 Version 0.1
 
-This guide provides a **practical, engineering-focused companion** to the T81 specification suite.  
+This guide provides a **practical, engineering-focused companion** to the T81 specification suite.\
 Where the specs define *what* the system must do, this handbook explains *how to implement it correctly*.
 
-It is not normative.  
+It is not normative.\
 It distills the architectural rules into **actionable developer workflows**.
 
----
+______________________________________________________________________
 
 # 1. Overview of the Stack
 
 The T81 Foundation contains five implementation targets:
 
-1. **Data Types** — canonical base-81 representations  
-2. **TISC Interpreter/JIT** — the ISA executor  
-3. **T81VM** — memory model, stack, GC, Axion hooks  
-4. **T81Lang** — compiler to TISC  
-5. **Axion Kernel** — supervision, safety, determinism  
-6. **Cognitive Tier Engine** — optional higher-level reasoning
+1. **Data Types** — canonical base-81 representations
+1. **TISC Interpreter/JIT** — the ISA executor
+1. **T81VM** — memory model, stack, GC, Axion hooks
+1. **T81Lang** — compiler to TISC
+1. **Axion Kernel** — supervision, safety, determinism
+1. **Cognitive Tier Engine** — optional higher-level reasoning
 
 This handbook describes the order in which each component should be built.
 
----
+______________________________________________________________________
 
 # 2. Implementation Order (Recommended)
 
 The implementation must proceed in the following order:
 
-1. **Data Types** → define all canonical primitives and compound types  
-2. **TISC Interpreter** (non-optimized)  
-3. **Memory Model** + **VM Core**  
-4. **Fault Model** + **Trace System**  
-5. **GC System** (deterministic)  
-6. **Axion Kernel Subsystems**  
-7. **T81Lang Compiler**  
-8. **Tier Engine** (optional, advanced)
+1. **Data Types** → define all canonical primitives and compound types
+1. **TISC Interpreter** (non-optimized)
+1. **Memory Model** + **VM Core**
+1. **Fault Model** + **Trace System**
+1. **GC System** (deterministic)
+1. **Axion Kernel Subsystems**
+1. **T81Lang Compiler**
+1. **Tier Engine** (optional, advanced)
 
 This order ensures that every layer has a stable deterministic substrate.
 
----
+______________________________________________________________________
 
 # 3. Implementing Canonical Data Types
 
 This is the foundation of everything.
 
 ## 3.1 Base-81/Base-243 BigInt
+
 - Represent using canonical base-243 digits (MSB-first serialization uses `d0.d1...` with `0<=d<243`); provide base-81 textual form (`0..80` digits) for external encoding.
 - Always normalize sign, remove leading zeros (only `0` allowed for zero)
 - Implement canonical add/sub/mul/div/mod
@@ -147,19 +120,22 @@ This is the foundation of everything.
 - For spill-to-disk strategies or edge-case parsing/normalization, consult `legacy/hanoivm/src/lib/hvm-trit-util.cweb`. Its mmap threshold and debug hooks are the behavioral baseline for extreme operands.
 
 ## 3.2 Fractions
-- Store `(numerator, denominator)` as canonical BigInts  
-- Always reduce with GCD  
-- Denominator MUST be positive  
+
+- Store `(numerator, denominator)` as canonical BigInts
+- Always reduce with GCD
+- Denominator MUST be positive
 - Canonicalization after every operation
 
 ## 3.3 Floats
-- Deterministic binary or decimal float implementation is allowed  
+
+- Deterministic binary or decimal float implementation is allowed
 - BUT: all conversions must canonicalize
 
 ## 3.4 Vectors, Matrices, Tensors
-- Store shape explicitly  
-- Canonicalize shape after load  
-- No implicit broadcasting  
+
+- Store shape explicitly
+- Canonicalize shape after load
+- No implicit broadcasting
 - All operations must check shape deterministically
 
 ## 3.5 Structural Types (Option / Result)
@@ -181,67 +157,74 @@ This is the foundation of everything.
 Implementation tips:
 
 1. Treat structural values like floats/fractions: canonical pools + handles.
-2. When debugging, inspect `vm->state().options` / `.results`.
-3. Policies may place tier limits on structural payload tags—log them in traces.
+1. When debugging, inspect `vm->state().options` / `.results`.
+1. Policies may place tier limits on structural payload tags—log them in traces.
 
----
+______________________________________________________________________
 
 # 4. Implementing TISC
 
 Start with a **simple, direct interpreter**.
 
 ## 4.1 Instruction Decode
-- Build a table of 81 opcodes  
-- Validate encoding before execution  
+
+- Build a table of 81 opcodes
+- Validate encoding before execution
 - Decode faults must stop execution deterministically
 
 ## 4.2 State Machine
+
 Use the canonical state:
 
 STATE = (R[27], PC, SP, FLAGS, MEM, META)
 
 ## 4.3 Arithmetic Ops
-- Use canonical BigInt arithmetic  
-- No shortcuts  
+
+- Use canonical BigInt arithmetic
+- No shortcuts
 - All results MUST be canonical
 
 ## 4.4 Tensor Ops
-- Tensor ops must follow Data Types shape rules  
-- Shape mismatch → Shape Fault  
+
+- Tensor ops must follow Data Types shape rules
+- Shape mismatch → Shape Fault
 - Axion-visible fault
 
-## 4.5 Privileged Ops (AX*)
+## 4.5 Privileged Ops (AX\*)
+
 Stub them first:
 
-- `AXREAD` returns placeholder metadata  
-- `AXSET` pushes metadata into META  
+- `AXREAD` returns placeholder metadata
+- `AXSET` pushes metadata into META
 - `AXVERIFY` returns deterministic “OK”
 
 Axion will replace these later.
 
----
+______________________________________________________________________
 
 # 5. Implementing the T81VM
 
 The VM is the heart of determinism.
 
 ## 5.1 Memory Model
+
 Segments:
 
-- CODE  
-- STACK  
-- HEAP  
-- TENSOR  
-- META  
+- CODE
+- STACK
+- HEAP
+- TENSOR
+- META
 
 Each segment requires:
 
-- deterministic allocation  
-- deterministic bounds rules  
-- deterministic layout  
+- deterministic allocation
+- deterministic bounds rules
+- deterministic layout
 - deterministic canonicalization
 
 ## 5.2 VM Scheduler
+
 Start with:
 
 PC cycles instructions sequentially
@@ -251,6 +234,7 @@ No OS signals
 Advanced modes add deterministic concurrency later.
 
 ## 5.3 Fault System
+
 Implement faults as:
 
 struct Fault {
@@ -262,18 +246,19 @@ TraceSnapshot snapshot;
 A fault MUST stop execution unless Axion overrides.
 
 ## 5.4 Trace System (Required)
+
 Trace every:
 
-- instruction  
-- register delta  
-- memory write  
-- GC event  
-- AX* op  
-- tier transition  
+- instruction
+- register delta
+- memory write
+- GC event
+- AX\* op
+- tier transition
 
 The trace must be deterministic.
 
----
+______________________________________________________________________
 
 # 6. Deterministic Garbage Collector
 
@@ -281,26 +266,26 @@ The GC is small but must be **perfectly deterministic**.
 
 Rules:
 
-1. Stop-the-world  
-2. Canonical mark & sweep order  
-3. Deterministic root set  
-4. No fragmentation  
-5. Shape-safe for tensors  
-6. Axion-visible
+1. Stop-the-world
+1. Canonical mark & sweep order
+1. Deterministic root set
+1. No fragmentation
+1. Shape-safe for tensors
+1. Axion-visible
 
 GC is one of the hardest components — build it slowly and test exhaustively.
 
----
+______________________________________________________________________
 
 # 7. Implementing Axion Kernel Subsystems
 
 Axion has **five subsystems**:
 
-1. **DTS** — Deterministic Trace  
-2. **VS** — Verification  
-3. **CRS** — Constraint Resolution  
-4. **RCS** — Recursion Control  
-5. **TTS** — Tier Transition
+1. **DTS** — Deterministic Trace
+1. **VS** — Verification
+1. **CRS** — Constraint Resolution
+1. **RCS** — Recursion Control
+1. **TTS** — Tier Transition
 
 Build them in this order.
 
@@ -309,131 +294,143 @@ Build them in this order.
 > embed policy bytecode into the VM header and feed it through CRS/RCS so policy
 > decisions are deterministic and traceable.
 
----
+______________________________________________________________________
 
 ## 7.1 DTS — Deterministic Trace
-- Attach hooks to VM events  
-- Log before and after states  
-- Log faults  
-- Log tier transitions  
-- Log GC  
-- Log AX* events
+
+- Attach hooks to VM events
+- Log before and after states
+- Log faults
+- Log tier transitions
+- Log GC
+- Log AX\* events
 
 All logs must be canonical.
 
----
+______________________________________________________________________
 
 ## 7.2 VS — Verification Subsystem
+
 VS must check:
 
-- canonical forms  
-- shape safety  
-- purity and effect boundaries  
-- type constraints  
-- privilege boundaries  
-- memory bounds  
+- canonical forms
+- shape safety
+- purity and effect boundaries
+- type constraints
+- privilege boundaries
+- memory bounds
 
 VS is the most frequently invoked subsystem.
 
----
+______________________________________________________________________
 
 ## 7.3 CRS — Constraint Resolution
+
 CRS enforces:
 
-- tier-appropriate resource ceilings  
-- shape constraints  
-- algebraic invariants  
-- branching rules  
+- tier-appropriate resource ceilings
+- shape constraints
+- algebraic invariants
+- branching rules
 
 Tie CRS into VM instruction execution.
 
----
+______________________________________________________________________
 
 ## 7.4 RCS — Recursion Control
+
 RCS tracks:
 
-- recursion depth  
-- structural decrease proofs  
-- tensor rank growth  
-- branching entropy  
-- symbolic expansion  
+- recursion depth
+- structural decrease proofs
+- tensor rank growth
+- branching entropy
+- symbolic expansion
 
 On violation → Tier Fault.
 
----
+______________________________________________________________________
 
 ## 7.5 TTS — Tier Transition
+
 TTS governs:
 
-- Tier 1 → 2: structural computation  
-- Tier 2 → 3: symbolic recursion  
-- Tier 3 → 4: analytic reasoning  
-- Tier 4 → 5: metareasoning  
+- Tier 1 → 2: structural computation
+- Tier 2 → 3: symbolic recursion
+- Tier 3 → 4: analytic reasoning
+- Tier 4 → 5: metareasoning
 
 Transitions must be deterministic and logged.
 
----
+______________________________________________________________________
 
 # 8. Implementing T81Lang
 
 The compiler must be deterministic:
 
 ## 8.1 Parsing
-- No backtracking  
-- No nondeterministic grammar resolution  
+
+- No backtracking
+- No nondeterministic grammar resolution
 - AST must be canonical
 
 ## 8.2 Type System
-- All types reduce to Data Types  
-- Static shape validation  
+
+- All types reduce to Data Types
+- Static shape validation
 - Static recursion validation (first pass)
 
 ## 8.3 IR
+
 Define a **pure, canonical intermediate representation**:
 
 IR = sequence of canonical operations
 
 ## 8.4 Codegen
+
 Lower IR:
 
 IR → TISC sequence
 
 Rules:
 
-- All compilation decisions must be deterministic  
-- No ambiguous optimizations  
-- No heuristic-based rewrites  
+- All compilation decisions must be deterministic
+- No ambiguous optimizations
+- No heuristic-based rewrites
 - No nondeterministic lowering paths
 
----
+______________________________________________________________________
 
 # 9. Testing & Verification
 
 Implementers must build:
 
 ## 9.1 Deterministic Test Harness
-- run program twice  
-- compare traces  
+
+- run program twice
+- compare traces
 - differences → violation
 
 ## 9.2 Fault Injection Tests
+
 Simulate:
 
-- divide by zero  
-- shape mismatch  
-- privilege violation  
-- recursion collapse  
+- divide by zero
+- shape mismatch
+- privilege violation
+- recursion collapse
 
 VM must respond deterministically.
 
 ## 9.3 Trace Validator
+
 Ensure:
 
-- same number of trace entries  
-- same contents  
-- same ordering  
+- same number of trace entries
+- same contents
+- same ordering
 
----
+______________________________________________________________________
 
 # 10. Repository Structure for Implementers
 
@@ -454,41 +451,48 @@ tools/
 trace-diff/
 canonicalizer/
 
----
+______________________________________________________________________
 
 # 11. Implementation Roadmap
 
-## Phase 1 — Core Arithmetic & Data Types  
-## Phase 2 — TISC Interpreter  
-## Phase 3 — VM Core + Memory Model  
-## Phase 4 — GC + Trace System  
-## Phase 5 — Axion Kernel  
-## Phase 6 — T81Lang Compiler  
-## Phase 7 — Tier Engine  
+## Phase 1 — Core Arithmetic & Data Types
+
+## Phase 2 — TISC Interpreter
+
+## Phase 3 — VM Core + Memory Model
+
+## Phase 4 — GC + Trace System
+
+## Phase 5 — Axion Kernel
+
+## Phase 6 — T81Lang Compiler
+
+## Phase 7 — Tier Engine
+
 ## Phase 8 — Optimizations & Formal Proofs
 
----
+______________________________________________________________________
 
 # 12. Final Guidance
 
 Implementing T81 is:
 
-- straightforward  
-- rigorous  
-- demanding  
-- deeply structured  
-- fundamentally deterministic  
+- straightforward
+- rigorous
+- demanding
+- deeply structured
+- fundamentally deterministic
 
 The payoff is a computing system that:
 
-- cannot drift  
-- cannot diverge  
-- cannot violate shape or type invariants  
-- cannot escape supervision  
-- cannot behave inconsistently  
+- cannot drift
+- cannot diverge
+- cannot violate shape or type invariants
+- cannot escape supervision
+- cannot behave inconsistently
 - and can support **safe, deterministic cognitive reasoning**.
 
-```
+`````
 
 Here’s **`docs/developer-guide.md` (C++ API section to append)**:
 
@@ -499,7 +503,7 @@ Here’s **`docs/developer-guide.md` (C++ API section to append)**:
 The modern C++ API lives under `include/t81/`. It is header-only and can be consumed via:
 ```cpp
 #include <t81/t81.hpp>
-````
+`````
 
 For focused modules:
 

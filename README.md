@@ -1,4 +1,5 @@
-# T81 Foundation  
+# T81 Foundation
+
 **The Ternary-Native Computing Stack**
 
 <div align="center">
@@ -13,21 +14,22 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE-MIT)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-green?style=flat-square)](LICENSE-GPL)
 
-  <br/><br/>
+<br/><br/>
+
 </div>
 
 ## Why T81?
 
-Binary won the 20th century because it was cheap to etch into silicon.  
+Binary won the 20th century because it was cheap to etch into silicon.\
 The 21st century will belong to systems that **think**, not just calculate.
 
 Balanced ternary (−1, 0, +1) is not a historical footnote — it is the **correct primitive** for the era of recursive, self-aware, provably safe artificial intelligence.
 
 A single trit carries **log₂(3) ≈ 1.585 bits** of information — 58% more than a bit — with **no compression tricks**. More importantly:
 
-- Numbers are naturally signed (no sign bit waste)  
-- Rounding is exact and canonical (no accumulated floating-point error)  
-- Three-valued logic maps perfectly to **true / unknown / false** epistemic states  
+- Numbers are naturally signed (no sign bit waste)
+- Rounding is exact and canonical (no accumulated floating-point error)
+- Three-valued logic maps perfectly to **true / unknown / false** epistemic states
 - Overflow behavior is deterministic and detectable → enabling **Axion**, the hard AI safety kernel that can provably halt cognitive drift
 
 Where binary forces you to simulate uncertainty, negation, and confidence on top of a two-state substrate, **balanced ternary is those concepts at the machine level**.
@@ -49,7 +51,7 @@ From the low-level TISC instruction set to the self-supervising Axion kernel and
 
 The ternary age is no longer theoretical.
 
----
+______________________________________________________________________
 
 ## Cognitive Elevation Ladder
 
@@ -68,21 +70,21 @@ graph TD
     style T81 fill:#fff0e6,stroke:#ff9933
 ```
 
----
+______________________________________________________________________
 
 ## Core Components
 
-| Layer              | Responsibility                                        | Status              | Location                          |
+| Layer | Responsibility | Status | Location |
 |-------------------|--------------------------------------------------------|---------------------|-----------------------------------|
-| Specification      | Immutable constitution of all behavior                 | Complete            | `/spec/`                          |
-| TISC ISA           | Ternary Instruction Set Computer                      | Fully specified     | `spec/tisc-spec.md`               |
-| T81 Arithmetic     | Balanced ternary + base-81 data types                  | Production-ready    | `include/t81/core/`               |
-| T81Lang            | High-level recursive DSL → TISC bytecode               | Active design       | `spec/t81lang-spec.md`            |
-| Axion Kernel       | AI safety, entropy monitoring, anomaly mitigation     | Spec complete       | `spec/axion-kernel.md`            |
-| Modern Runtime     | Header-only C++20 core                                 | Active development  | `include/t81/` • `src/`           |
-| Legacy HanoiVM     | Original literate CWEB implementation (archived)      | Frozen reference    | `legacy/hanoivm/`                 |
+| Specification | Immutable constitution of all behavior | Complete | `/spec/` |
+| TISC ISA | Ternary Instruction Set Computer | Fully specified | `spec/tisc-spec.md` |
+| T81 Arithmetic | Balanced ternary + base-81 data types | Production-ready | `include/t81/core/` |
+| T81Lang | High-level recursive DSL → TISC bytecode | Active design | `spec/t81lang-spec.md` |
+| Axion Kernel | AI safety, entropy monitoring, anomaly mitigation | Spec complete | `spec/axion-kernel.md` |
+| Modern Runtime | Header-only C++20 core | Active development | `include/t81/` • `src/` |
+| Legacy HanoiVM | Original literate CWEB implementation (archived) | Frozen reference | `legacy/hanoivm/` |
 
----
+______________________________________________________________________
 
 ## Repository Layout
 
@@ -98,11 +100,12 @@ graph TD
 
 All new work targets the modern C++ stack.
 
----
+______________________________________________________________________
 
 ## Getting Started (2025–2026)
 
 ### 1. Read the Constitution
+
 Start here → [**spec/index.md**](spec/index.md)
 
 ### 2. Use the Modern C++ API (recommended)
@@ -118,21 +121,22 @@ ctest --test-dir build --output-on-failure
 Your first program in < 50 lines: [**docs/cpp-quickstart.md**](docs/cpp-quickstart.md)
 
 ### 3. Legacy (optional)
+
 The original CWEB literate implementation lives frozen in `legacy/hanoivm/` for study and provenance.
 
----
+______________________________________________________________________
 
 ## The Nine Θ Principles (Constitutional)
 
 Fully enumerated in [`spec/constitution.md`](spec/constitution.md):
 
-1. Determinism • 2. Recursive Self-Promotion • 3. Axion Oversight  
-4. Ternary Purity • 5. Constitutional Sovereignty • 6. Cognition-First  
-7. Intrinsic Security • 8. Radical Literacy • 9. Controlled Elevation
+1. Determinism • 2. Recursive Self-Promotion • 3. Axion Oversight
+1. Ternary Purity • 5. Constitutional Sovereignty • 6. Cognition-First
+1. Intrinsic Security • 8. Radical Literacy • 9. Controlled Elevation
 
 These are **enforceable rules**, not slogans.
 
----
+______________________________________________________________________
 
 ## Governance & Contribution
 
@@ -142,18 +146,18 @@ These are **enforceable rules**, not slogans.
 
 We operate as a research institute with open-source delivery: rigorous, deliberate, long-term.
 
----
+______________________________________________________________________
 
 ## License
 
 Dual-licensed:
 
-- **MIT** – permissive commercial use  
+- **MIT** – permissive commercial use
 - **GNU GPL v3** – copyleft protection
 
 See [`LICENSE-MIT`](LICENSE-MIT) • [`LICENSE-GPL`](LICENSE-GPL)
 
----
+______________________________________________________________________
 
 <div align="center">
   <br/><br/>
