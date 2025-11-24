@@ -101,7 +101,7 @@ int main() {
     lang::Compiler comp;
     auto res = comp.compile(mod.value());
     assert(!res.has_value());
-    assert(res.error() == lang::CompileError::UnsupportedLiteral);
+    assert(res.error() == lang::CompileError::UnsupportedType);
   }
 
   return 0;

@@ -376,58 +376,6 @@ class Interpreter : public IVirtualMachine {
         }
         break;
       }
-      case t81::tisc::Opcode::FAdd:
-      case t81::tisc::Opcode::FSub:
-      case t81::tisc::Opcode::FMul:
-      case t81::tisc::Opcode::FDiv: {
-        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
-        auto lhs = float_ptr(state_.registers[insn.b]);
-        auto rhs = float_ptr(state_.registers[insn.c]);
-        if (!lhs || !rhs) { trap = Trap::IllegalInstruction; break; }
-        double result = 0.0;
-        switch (insn.opcode) {
-          case t81::tisc::Opcode::FAdd: result = *lhs + *rhs; break;
-          case t81::tisc::Opcode::FSub: result = *lhs - *rhs; break;
-          case t81::tisc::Opcode::FMul: result = *lhs * *rhs; break;
-          case t81::tisc::Opcode::FDiv:
-            if (*rhs == 0.0) { trap = Trap::DivideByZero; break; }
-            result = *lhs / *rhs;
-            break;
-          default: break;
-        }
-        if (trap != Trap::None) break;
-        state_.registers[insn.a] = alloc_float(result);
-        update_flags(state_.registers[insn.a]);
-        break;
-      }
-      case t81::tisc::Opcode::FracAdd:
-      case t81::tisc::Opcode::FracSub:
-      case t81::tisc::Opcode::FracMul:
-      case t81::tisc::Opcode::FracDiv: {
-        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
-        auto lhs = fraction_ptr(state_.registers[insn.b]);
-        auto rhs = fraction_ptr(state_.registers[insn.c]);
-        if (!lhs || !rhs) { trap = Trap::IllegalInstruction; break; }
-        try {
-          t81::T81Fraction result;
-          switch (insn.opcode) {
-            case t81::tisc::Opcode::FracAdd: result = t81::T81Fraction::add(*lhs, *rhs); break;
-            case t81::tisc::Opcode::FracSub: result = t81::T81Fraction::sub(*lhs, *rhs); break;
-            case t81::tisc::Opcode::FracMul: result = t81::T81Fraction::mul(*lhs, *rhs); break;
-            case t81::tisc::Opcode::FracDiv:
-              if (t81::T81BigInt::is_zero(rhs->num)) { trap = Trap::DivideByZero; break; }
-              result = t81::T81Fraction::div(*lhs, *rhs);
-              break;
-            default: break;
-          }
-          if (trap != Trap::None) break;
-          state_.registers[insn.a] = alloc_fraction(std::move(result));
-          update_flags(state_.registers[insn.a]);
-        } catch (...) {
-          trap = Trap::IllegalInstruction;
-        }
-        break;
-      }
       case t81::tisc::Opcode::TVecAdd: {
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
         auto ta = tensor_ptr(state_.registers[insn.b]);

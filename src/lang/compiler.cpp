@@ -25,6 +25,8 @@ struct EvalValue {
   Type type{Type::T81Int};
 };
 
+using EvalResult = std::expected<EvalValue, CompileError>;
+
 std::optional<Type> literal_value_type(const ExprLiteral& lit) {
   switch (lit.value.kind) {
     case LiteralValue::Kind::Int: return Type::T81Int;
@@ -33,11 +35,6 @@ std::optional<Type> literal_value_type(const ExprLiteral& lit) {
     case LiteralValue::Kind::Symbol: return Type::Symbol;
   }
   return std::nullopt;
-}
-
-bool literal_matches_type(const ExprLiteral& lit, Type type) {
-  auto lt = literal_value_type(lit);
-  return lt.has_value() && lt.value() == type;
 }
 
 int digit_value_from_cp(const std::string& cp) {
@@ -236,11 +233,11 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
   for (const Function* fn_ptr : ordered_functions) {
     const auto& fn = *fn_ptr;
     int next_reg = 1; // R0 reserved for return
-    auto return_supported = [](Type type) {
+    auto supported_type = [](Type type) {
       return type == Type::T81Int || type == Type::T81Float ||
              type == Type::T81Fraction || type == Type::Symbol;
     };
-    if (!return_supported(fn.return_type)) {
+    if (!supported_type(fn.return_type)) {
       return CompileError::UnsupportedType;
     }
     if (!returns_all(fn.body)) {
@@ -264,9 +261,9 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
     fn_meta.entry_pc = program.insns.size();
     bool is_entry_fn = (fn_ptr == entry_fn_ptr);
     for (const auto& param : fn.params) {
-      if (param.type != Type::T81Int) return CompileError::UnsupportedType;
+      if (!supported_type(param.type)) return CompileError::UnsupportedType;
       if (next_reg >= kMaxRegs) return CompileError::RegisterOverflow;
-      declare(param.name, next_reg, Type::T81Int);
+      declare(param.name, next_reg, param.type);
       ++next_reg;
     }
     auto move_reg = [&](int src, int dst) {
@@ -274,29 +271,32 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
       program.insns.push_back({t81::tisc::Opcode::LoadImm, dst, 0, 0});
       program.insns.push_back({t81::tisc::Opcode::Add, dst, dst, src});
     };
-    auto emit_expr_env = [&](const Expr& e, std::optional<int> target)
-        -> std::expected<EvalValue, CompileError> {
+    auto make_error = [](CompileError err) -> EvalResult {
+      return EvalResult(err);
+    };
+    std::function<EvalResult(const Expr&, std::optional<int>)> emit_expr_env =
+        [&](const Expr& e, std::optional<int> target) -> EvalResult {
       if (std::holds_alternative<ExprLiteral>(e.node)) {
         const auto& lit = std::get<ExprLiteral>(e.node);
         auto lit_type = literal_value_type(lit);
-        if (!lit_type.has_value()) return std::unexpected(CompileError::UnsupportedLiteral);
+        if (!lit_type.has_value()) return make_error(CompileError::UnsupportedLiteral);
         Type type = lit_type.value();
         int reg = target.value_or(next_reg);
-        if (reg >= kMaxRegs) return std::unexpected(CompileError::RegisterOverflow);
+        if (reg >= kMaxRegs) return make_error(CompileError::RegisterOverflow);
         if (!target.has_value()) ++next_reg;
         if (type == Type::T81Int) {
           program.insns.push_back({t81::tisc::Opcode::LoadImm, reg,
                                    static_cast<std::int32_t>(lit.value.int_value), 0});
         } else {
           auto literal_err = emit_literal_constant(lit, type, reg, program);
-          if (literal_err != CompileError::None) return std::unexpected(literal_err);
+          if (literal_err != CompileError::None) return make_error(literal_err);
         }
         return EvalValue{reg, type};
       }
       if (std::holds_alternative<ExprIdent>(e.node)) {
         const auto& id = std::get<ExprIdent>(e.node);
         auto info = lookup(id.name);
-        if (!info.has_value()) return std::unexpected(CompileError::UndeclaredIdentifier);
+        if (!info.has_value()) return make_error(CompileError::UndeclaredIdentifier);
         int src = info->reg;
         int dst = target.value_or(src);
         move_reg(src, dst);
@@ -305,10 +305,10 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
       if (std::holds_alternative<ExprCall>(e.node)) {
         const auto& call = std::get<ExprCall>(e.node);
         auto callee_it = fn_info.find(call.callee);
-        if (callee_it == fn_info.end()) return std::unexpected(CompileError::UnknownFunction);
+        if (callee_it == fn_info.end()) return make_error(CompileError::UnknownFunction);
         const auto& callee_meta = callee_it->second;
         if (call.args.size() != callee_meta.param_regs.size()) {
-          return std::unexpected(CompileError::InvalidCall);
+          return make_error(CompileError::InvalidCall);
         }
         int saved_limit = next_reg;
         for (int r = 1; r < saved_limit; ++r) {
@@ -316,9 +316,10 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
         }
         for (std::size_t i = 0; i < call.args.size(); ++i) {
           auto arg = emit_expr_env(call.args[i], callee_meta.param_regs[i]);
-          if (!arg.has_value()) return std::unexpected(arg.error());
-          if (arg->type != callee_meta.param_types[i]) {
-            return std::unexpected(CompileError::InvalidCall);
+          if (!arg.has_value()) return arg;
+          const EvalValue arg_val = arg.value();
+          if (arg_val.type != callee_meta.param_types[i]) {
+            return make_error(CompileError::InvalidCall);
           }
         }
         int reserve_floor = 1;
@@ -329,20 +330,20 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
         }
         if (next_reg < reserve_floor) next_reg = reserve_floor;
         int call_reg = next_reg;
-        if (call_reg >= kMaxRegs) return std::unexpected(CompileError::RegisterOverflow);
+        if (call_reg >= kMaxRegs) return make_error(CompileError::RegisterOverflow);
         ++next_reg;
         program.insns.push_back({t81::tisc::Opcode::LoadImm, call_reg, 0, 0});
-        pending_calls.push_back({program.insns.size() - 1, call.callee, callee_meta.return_type});
+        pending_calls.push_back({program.insns.size() - 1, call.callee});
         program.insns.push_back({t81::tisc::Opcode::Call, 0, call_reg, 0});
         int result_tmp = next_reg;
-        if (result_tmp >= kMaxRegs) return std::unexpected(CompileError::RegisterOverflow);
+        if (result_tmp >= kMaxRegs) return make_error(CompileError::RegisterOverflow);
         ++next_reg;
         move_reg(0, result_tmp);
         for (int r = saved_limit - 1; r >= 1; --r) {
           program.insns.push_back({t81::tisc::Opcode::Pop, r, 0, 0});
         }
         int out_reg = target.value_or(next_reg);
-        if (out_reg >= kMaxRegs) return std::unexpected(CompileError::RegisterOverflow);
+        if (out_reg >= kMaxRegs) return make_error(CompileError::RegisterOverflow);
         if (!target.has_value()) ++next_reg;
         move_reg(result_tmp, out_reg);
         return EvalValue{out_reg, callee_meta.return_type};
@@ -352,8 +353,10 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
       if (!lhs.has_value()) return lhs;
       auto rhs = emit_expr_env(*bin.rhs, std::nullopt);
       if (!rhs.has_value()) return rhs;
-      if (lhs->type != rhs->type) return std::unexpected(CompileError::UnsupportedType);
-      Type expr_type = lhs->type;
+      const EvalValue lhs_val = lhs.value();
+      const EvalValue rhs_val = rhs.value();
+      if (lhs_val.type != rhs_val.type) return make_error(CompileError::UnsupportedType);
+      Type expr_type = lhs_val.type;
       t81::tisc::Opcode opcode = t81::tisc::Opcode::Add;
       switch (expr_type) {
         case Type::T81Int:
@@ -378,7 +381,7 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
           }
           break;
         default:
-          return std::unexpected(CompileError::UnsupportedType);
+          return make_error(CompileError::UnsupportedType);
       }
       if (bin.op == ExprBinary::Op::Mul && expr_type == Type::T81Int) {
         opcode = t81::tisc::Opcode::Mul;
@@ -388,9 +391,9 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
         opcode = t81::tisc::Opcode::Add;
       }
       int out_reg = target.value_or(next_reg);
-      if (out_reg >= kMaxRegs) return std::unexpected(CompileError::RegisterOverflow);
+      if (out_reg >= kMaxRegs) return make_error(CompileError::RegisterOverflow);
       if (!target.has_value()) ++next_reg;
-      program.insns.push_back({opcode, out_reg, lhs->reg, rhs->reg});
+      program.insns.push_back({opcode, out_reg, lhs_val.reg, rhs_val.reg});
       return EvalValue{out_reg, expr_type};
     };
 
@@ -398,88 +401,44 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
         [&](const Statement& stmt) -> CompileError {
           if (std::holds_alternative<StatementReturn>(stmt.node)) {
             const auto& sr = std::get<StatementReturn>(stmt.node);
-            if (fn.return_type == Type::T81Int) {
-              int reg = emit_expr_env(sr.expr, 0);
-              if (reg < 0) {
-                auto err = map_expr_error(reg);
-                if (err != CompileError::None) return err;
-              }
-              program.insns.push_back(
-                  {is_entry_fn ? t81::tisc::Opcode::Halt : t81::tisc::Opcode::Ret, 0, 0, 0});
-            } else {
-              if (!std::holds_alternative<ExprLiteral>(sr.expr.node)) {
-                return CompileError::UnsupportedLiteral;
-              }
-              const auto& lit = std::get<ExprLiteral>(sr.expr.node);
-              if (!literal_matches_type(lit, fn.return_type)) {
-                return CompileError::UnsupportedLiteral;
-              }
-              auto literal_err = emit_literal_constant(lit, fn.return_type, 0, program);
-              if (literal_err != CompileError::None) return literal_err;
-              program.insns.push_back(
-                  {is_entry_fn ? t81::tisc::Opcode::Halt : t81::tisc::Opcode::Ret, 0, 0, 0});
-            }
+            auto value = emit_expr_env(sr.expr, 0);
+            if (!value.has_value()) return value.error();
+            const EvalValue result = value.value();
+            if (result.type != fn.return_type) return CompileError::UnsupportedType;
+            program.insns.push_back(
+                {is_entry_fn ? t81::tisc::Opcode::Halt : t81::tisc::Opcode::Ret, 0, 0, 0});
             return CompileError::None;
           }
           if (std::holds_alternative<StatementLet>(stmt.node)) {
             const auto& sl = std::get<StatementLet>(stmt.node);
             if (!sl.declared_type.has_value()) return CompileError::MissingType;
             Type decl_type = sl.declared_type.value();
-            if (decl_type == Type::T81Int) {
-              int reg = emit_expr_env(sl.expr, std::nullopt);
-              if (reg < 0) {
-                auto err = map_expr_error(reg);
-                if (err != CompileError::None) return err;
-              }
-              declare(sl.name, reg, Type::T81Int);
-            } else {
-              if (!std::holds_alternative<ExprLiteral>(sl.expr.node)) {
-                return CompileError::UnsupportedLiteral;
-              }
-              const auto& lit = std::get<ExprLiteral>(sl.expr.node);
-              if (!literal_matches_type(lit, decl_type)) {
-                return CompileError::UnsupportedLiteral;
-              }
-              if (next_reg >= kMaxRegs) return CompileError::RegisterOverflow;
-              int reg = next_reg++;
-              auto literal_err = emit_literal_constant(lit, decl_type, reg, program);
-              if (literal_err != CompileError::None) return literal_err;
-              declare(sl.name, reg, decl_type);
-            }
+            if (!supported_type(decl_type)) return CompileError::UnsupportedType;
+            auto value = emit_expr_env(sl.expr, std::nullopt);
+            if (!value.has_value()) return value.error();
+            const EvalValue result = value.value();
+            if (result.type != decl_type) return CompileError::UnsupportedType;
+            declare(sl.name, result.reg, decl_type);
             return CompileError::None;
           }
           if (std::holds_alternative<StatementAssign>(stmt.node)) {
             const auto& sa = std::get<StatementAssign>(stmt.node);
             auto info = lookup(sa.name);
             if (!info.has_value()) return CompileError::UndeclaredIdentifier;
-            if (info->type == Type::T81Int) {
-              int reg = emit_expr_env(sa.expr, info->reg);
-              if (reg < 0) {
-                auto err = map_expr_error(reg);
-                if (err != CompileError::None) return err;
-              }
-            } else {
-              if (!std::holds_alternative<ExprLiteral>(sa.expr.node)) {
-                return CompileError::UnsupportedLiteral;
-              }
-              const auto& lit = std::get<ExprLiteral>(sa.expr.node);
-              if (!literal_matches_type(lit, info->type)) {
-                return CompileError::UnsupportedLiteral;
-              }
-              auto literal_err = emit_literal_constant(lit, info->type, info->reg, program);
-              if (literal_err != CompileError::None) return literal_err;
-            }
+            auto value = emit_expr_env(sa.expr, info->reg);
+            if (!value.has_value()) return value.error();
+            const EvalValue result = value.value();
+            if (result.type != info->type) return CompileError::UnsupportedType;
             return CompileError::None;
           }
           if (std::holds_alternative<StatementIf>(stmt.node)) {
             const auto& sif = std::get<StatementIf>(stmt.node);
-            int cond_reg = emit_expr_env(sif.condition, std::nullopt);
-            if (cond_reg < 0) {
-              auto err = map_expr_error(cond_reg);
-              if (err != CompileError::None) return err;
-            }
+            auto cond = emit_expr_env(sif.condition, std::nullopt);
+            if (!cond.has_value()) return cond.error();
+            const EvalValue cond_value = cond.value();
+            if (cond_value.type != Type::T81Int) return CompileError::UnsupportedType;
             std::size_t jmp_ifz_index = program.insns.size();
-            program.insns.push_back({t81::tisc::Opcode::JumpIfZero, 0, cond_reg, 0});
+            program.insns.push_back({t81::tisc::Opcode::JumpIfZero, 0, cond_value.reg, 0});
 
             push_scope();
             for (const auto& inner : sif.then_body) {
@@ -518,11 +477,8 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
           }
           if (std::holds_alternative<StatementExpr>(stmt.node)) {
             const auto& se = std::get<StatementExpr>(stmt.node);
-            int reg = emit_expr_env(se.expr, std::nullopt);
-            if (reg < 0) {
-              auto err = map_expr_error(reg);
-              if (err != CompileError::None) return err;
-            }
+            auto value = emit_expr_env(se.expr, std::nullopt);
+            if (!value.has_value()) return value.error();
             return CompileError::None;
           }
           return CompileError::None;
