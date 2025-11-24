@@ -379,6 +379,24 @@ class Interpreter : public IVirtualMachine {
           state_.pc = static_cast<std::size_t>(insn.a);
         }
         break;
+      case t81::tisc::Opcode::Neg:
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        state_.registers[insn.a] = -state_.registers[insn.b];
+        state_.register_tags[insn.a] = ValueTag::Int;
+        update_flags(state_.registers[insn.a]);
+        break;
+      case t81::tisc::Opcode::JumpIfNegative:
+        if (state_.flags.negative) {
+          if (insn.a < 0 || static_cast<std::size_t>(insn.a) >= program_.insns.size()) { trap = Trap::IllegalInstruction; break; }
+          state_.pc = static_cast<std::size_t>(insn.a);
+        }
+        break;
+      case t81::tisc::Opcode::JumpIfPositive:
+        if (state_.flags.positive) {
+          if (insn.a < 0 || static_cast<std::size_t>(insn.a) >= program_.insns.size()) { trap = Trap::IllegalInstruction; break; }
+          state_.pc = static_cast<std::size_t>(insn.a);
+        }
+        break;
       case t81::tisc::Opcode::Cmp: {
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
         auto tag_a = state_.register_tags[insn.a];
