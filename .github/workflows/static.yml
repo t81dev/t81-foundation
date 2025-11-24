@@ -1,4 +1,5 @@
-name: Deploy Documentation to GitHub Pages
+# .github/workflows/build-search-index.yml
+name: Build Search Index
 
 on:
   push:
@@ -6,78 +7,44 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
+  contents: write
+  pull-requests: write
 
 jobs:
-  build-and-deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
+  build-index:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # ------------------------------------------------------------------
-      # Optional: Regenerate sidebar & search index first (recommended)
-      # ------------------------------------------------------------------
-      - name: Generate sidebar
-        run: python3 scripts/generate_sidebar.py
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'                 # will create package.json + lockfile if missing
+
+      # ← THIS IS THE CRITICAL FIX
+      - name: Install Cheerio & Lunr (in docs/search)
+        working-directory: docs/search
+        run: |
+          npm install cheerio@1.0.0-rc.12 lunr@2.3.9
+          # Creates node_modules/ locally — no need to commit it
 
       - name: Build search index
         working-directory: docs/search
+        # ← make sure we’re in the right folder
         run: node build_index.js
 
-      # ------------------------------------------------------------------
-      # Build the Jekyll site (your /docs folder is already a valid Jekyll site)
-      # ------------------------------------------------------------------
-      - name: Setup Ruby + Bundler (for Jekyll)
-        uses: ruby/setup-ruby@v1
+      # ── Atomic, race-free update via Pull Request (recommended) ──
+      - name: Create Pull Request with updated index
+        uses: peter-evans/create-pull-request@v6
         with:
-          ruby-version: '3.3'
-          bundler-cache: true
-          working-directory: docs
-
-      - name: Install Jekyll and dependencies
-        run: |
-          gem install bundler
-          bundle install
-        working-directory: docs
-
-      - name: Build Jekyll site
-        run: bundle exec jekyll build --trace
-        working-directory: docs
-        env:
-          JEKYLL_ENV: production
-
-      # ------------------------------------------------------------------
-      # Deploy only the generated _site folder
-      # ------------------------------------------------------------------
-      - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs/_site
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      # ------------------------------------------------------------------
-      # Success summary
-      # ------------------------------------------------------------------
-      - name: Success
-        if: success()
-        run: |
-          echo "Documentation deployed to GitHub Pages" >> $GITHUB_STEP_SUMMARY
-          echo "URL: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: auto/search-index
+          delete-branch: true
+          title: "chore(docs): regenerate search index"
+          body: "Automated run of `docs/search/build_index.js`"
+          commit-message: "chore(docs): update search_index.json [ci skip]"
+          labels: documentation,automated
