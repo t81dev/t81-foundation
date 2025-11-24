@@ -2,56 +2,130 @@ name: T81 Foundation CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
+  workflow_dispatch:      # allow manual runs
+
+permissions:
+  contents: read
+  pull-requests: write   # needed for markdown-link-check summary
 
 jobs:
-  spec-validation:
-    name: Validate Specification & Documentation
+  spec-and-docs:
+    name: Specification & Documentation Checks
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
-      # Checkout repository
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # fetch full history so link checker can resolve relative paths correctly
+          fetch-depth: 0
 
-      # Install Python for validation tools (deterministic)
-      - name: Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
-      # Install markdown lint
-      - name: Install tools
+      - name: Install Python tools
         run: |
-          pip install mdformat
+          pip install --quiet \
+            mdformat==3.9 \
+            mdformat-gfm \
+            mdformat-frontmatter \
+            markdown-link-check==3.12.1 \
+            lychee==0.15.1
 
-      # Validate Markdown formatting
-      - name: Lint Markdown
-        run: |
-          mdformat --check .
+      # ───── Markdown formatting (must be canonical) ─────
+      - name: Check Markdown formatting (mdformat)
+        run: mdformat --check --number .
 
-      # Validate folder structure (basic, deterministic)
-      - name: Check required directories
+      # ───── Broken link detection (critical for Radical Literacy) ─────
+      - name: Check Markdown links (lychee – fast, accurate, parallel)
+        id: lychee
+        continue-on-error: true
         run: |
-          required=("spec" "docs" ".github/ISSUE_TEMPLATE")
-          for dir in "${required[@]}"; do
-            if [ ! -d "$dir" ]; then
-              echo "Missing required directory: $dir"
-              exit 1
-            fi
+          lychee \
+            --verbose \
+            --format markdown \
+            --no-progress \
+            --exclude-mail \
+            --exclude "http://localhost*" \
+            --exclude "https://github.com/t81dev/t81-foundation/edit*" \
+            "spec/**/*.md" "docs/**/*.md" "README.md" "AGENTS.md" "CONTRIBUTING.md"
+
+      - name: Report broken links
+        if: steps.lychee.outcome == 'failure'
+        run: |
+          echo "Broken or unreachable links were found. See above."
+          exit 1
+
+      # ───── Constitutional directory & file presence ─────
+      - name: Verify required directories & files
+        run: |
+          set -euo pipefail
+          required_dirs=("spec" "docs" "include/t81" "tests/cpp")
+          required_files=(
+            "spec/index.md"
+            "spec/constitution.md"
+            "spec/t81-spec.md"
+            "AGENTS.md"
+            "CONTRIBUTING.md"
+            ".gitignore"
+          )
+          for d in "${required_dirs[@]}"; do
+            [ -d "$d" ] || { echo "Missing required directory: $d"; exit 1; }
           done
+          for f in "${required_files[@]}"; do
+            [ -f "$f" ] || { echo "Missing required file: $f"; exit 1; }
+          done
+          echo "All required paths present"
 
-      # Verify spec file exists
-      - name: Ensure spec file present
+      # ───── Optional: Summarize results in PR (nice touch) ─────
+      - name: Summary – Documentation healthy
+        if: success()
         run: |
-          if [ ! -f "spec/t81-spec.md" ]; then
-            echo "Missing core specification file: spec/t81-spec.md"
-            exit 1
-          fi
+          echo "### Documentation & Specification Checks" >> $GITHUB_STEP_SUMMARY
+          echo "- Markdown formatting: OK" >> $GITHUB_STEP_SUMMARY
+          echo "- No broken links detected" >> $GITHUB_STEP_SUMMARY
+          echo "- Constitutional structure intact" >> $GITHUB_STEP_SUMMARY
 
-      # Basic link check
-      - name: Check for broken internal links
+  build-and-test:
+    name: Build + Full Test Suite (C++23)
+    runs-on: ubuntu-latest
+    needs: spec-and-docs          # only run if spec/docs are clean
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
         run: |
-          grep -RIn "](./" spec/ docs/ || true
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build clang-18 libssl-dev
+
+      - name: Configure CMake (Release)
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_COMPILER=clang++-18 \
+            -G Ninja
+
+      - name: Build everything
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Run full test suite
+        run: |
+          ctest --test-dir build --output-on-failure --verbose
+
+      - name: Summary – Build & Tests passed
+        if: success()
+        run: |
+          echo "### Build & Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Successfully built with Clang 18 / C++23" >> $GITHUB_STEP_SUMMARY
+          echo "- All $(ctest --test-dir build --show-only | wc -l) tests passed" >> $GITHUB_STEP_SUMMARY
