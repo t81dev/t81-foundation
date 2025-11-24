@@ -1,7 +1,10 @@
 #include "t81/canonfs/canon_driver.hpp"
 
+#include <cstring>
+#include <functional>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 #include <t81/hash/canonhash.hpp>

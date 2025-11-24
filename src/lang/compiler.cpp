@@ -645,6 +645,22 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
         if (!match_type.has_value()) return make_error(CompileError::InvalidMatch);
         return EvalValue{out_reg, match_type.value()};
       }
+      if (std::holds_alternative<ExprUnary>(e.node)) {
+        const auto& unary = std::get<ExprUnary>(e.node);
+        if (unary.op == ExprUnary::Op::Neg) {
+          auto operand = emit_expr_env(*unary.expr, std::nullopt, std::nullopt);
+          if (!operand.has_value()) return operand;
+          if (operand->type != Type::primitive(Type::Kind::T81Int)) {
+            return make_error(CompileError::UnsupportedType);
+          }
+          int out_reg = target.value_or(next_reg);
+          if (out_reg >= kMaxRegs) return make_error(CompileError::RegisterOverflow);
+          if (!target.has_value()) ++next_reg;
+          program.insns.push_back({t81::tisc::Opcode::Neg, out_reg, operand->reg, 0});
+          return EvalValue{out_reg, Type::primitive(Type::Kind::T81Int)};
+        }
+        return make_error(CompileError::UnsupportedType);
+      }
       const auto& bin = std::get<ExprBinary>(e.node);
       auto is_arithmetic_op = [](ExprBinary::Op op) {
         switch (op) {
