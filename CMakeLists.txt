@@ -46,6 +46,7 @@ target_include_directories(t81_c_api
 # New C++20 Toolchain Components
 add_library(t81_frontend STATIC
   src/frontend/lexer.cpp
+  src/frontend/parser.cpp
 )
 target_include_directories(t81_frontend PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(t81_frontend PUBLIC t81)
@@ -196,6 +197,9 @@ if (T81_BUILD_TESTS)
   add_executable(t81_frontend_lexer_test tests/cpp/frontend_lexer_test.cpp)
   target_link_libraries(t81_frontend_lexer_test PRIVATE t81_frontend)
 
+  add_executable(t81_frontend_parser_test tests/cpp/frontend_parser_test.cpp)
+  target_link_libraries(t81_frontend_parser_test PRIVATE t81_frontend)
+
   enable_testing()
   set(T81_TEST_TARGETS
     t81_bigint_test
@@ -237,6 +241,7 @@ if (T81_BUILD_TESTS)
     t81_lang_compiler_unary_test
     t81_lang_compiler_not_test
     t81_frontend_lexer_test
+    t81_frontend_parser_test
   )
   foreach(tgt IN LISTS T81_TEST_TARGETS)
     add_test(NAME ${tgt} COMMAND $<TARGET_FILE:${tgt}>)

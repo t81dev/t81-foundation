@@ -1,0 +1,57 @@
+#ifndef T81_FRONTEND_PARSER_HPP
+#define T81_FRONTEND_PARSER_HPP
+
+#include "t81/frontend/ast.hpp"
+#include "t81/frontend/lexer.hpp"
+#include <vector>
+#include <memory>
+
+namespace t81 {
+namespace frontend {
+
+class Parser {
+public:
+    Parser(Lexer& lexer);
+
+    std::vector<std::unique_ptr<Stmt>> parse();
+
+private:
+    // Grammar rule methods
+    std::unique_ptr<Stmt> declaration();
+    std::unique_ptr<Stmt> function(const std::string& kind);
+    std::unique_ptr<Stmt> statement();
+    std::unique_ptr<Stmt> var_declaration();
+    std::unique_ptr<Stmt> let_declaration();
+    std::unique_ptr<Stmt> expression_statement();
+    std::vector<std::unique_ptr<Stmt>> block();
+
+    std::unique_ptr<Expr> expression();
+    std::unique_ptr<Expr> assignment();
+    std::unique_ptr<Expr> equality();
+    std::unique_ptr<Expr> comparison();
+    std::unique_ptr<Expr> term();
+    std::unique_ptr<Expr> factor();
+    std::unique_ptr<Expr> unary();
+    std::unique_ptr<Expr> primary();
+    std::unique_ptr<TypeExpr> type();
+
+    // Helper methods
+    bool match(const std::vector<TokenType>& types);
+    bool check(TokenType type);
+    Token advance();
+    bool is_at_end();
+    Token peek();
+    Token previous();
+    Token consume(TokenType type, const char* message);
+    void synchronize();
+
+    Lexer& _lexer;
+    Token _current;
+    Token _previous;
+    bool _had_error = false;
+};
+
+} // namespace frontend
+} // namespace t81
+
+#endif // T81_FRONTEND_PARSER_HPP
