@@ -233,6 +233,12 @@ Guarantees:
 - no type mismatches
 - all shapes are valid
 - canonical forms are upheld
+- arithmetic expressions are only legal when both operands share a primitive type
+  and TISC exposes a matching opcode (`ADD/MUL` for `T81Int`, `FADD/FMUL` for
+  `T81Float`, `FRACADD/FRACMUL` for `T81Fraction`). Mixed-type arithmetic MUST
+  be rejected unless an explicit conversion (`I2F`, `I2FRAC`, etc.) is inserted.
+- literal expressions for `T81Float`, `T81Fraction`, and `Symbol` MUST be tagged
+  with their declared types so lowering can emit the correct literal pool handle.
 
 ### Stage 4 — Purity Analysis
 
@@ -257,12 +263,20 @@ Maps IR instructions to TISC sequences:
 
 | IR Construct | TISC Output |
 | ------------ | ------------------------------------------ |
-| `a + b` | `LOADI`, `ADD` sequence |
-| `a * b` | `MUL` |
+| `a + b` (`T81Int`) | `LOADI`, `ADD` sequence |
+| `a * b` (`T81Int`) | `MUL` |
+| `a + b` (`T81Float`) | literal handle load, `FADD` |
+| `a * b` (`T81Float`) | `FMUL` |
+| `a + b` (`T81Fraction`) | literal handle load, `FRACADD` |
+| `a * b` (`T81Fraction`) | `FRACMUL` |
 | vector add | `TVECADD` |
 | matrix mul | `TMATMUL` |
 | fn call | `CALL`, argument push, return capture |
 | recursion | same as fn call; Axion receives call depth |
+
+Lowering MUST also emit float/fraction/symbol literals into their respective
+program pools before they are referenced by any instruction, and all references
+in registers MUST be 1-based handles into those pools.
 
 The lowering pass MUST NOT introduce nondeterminism.
 

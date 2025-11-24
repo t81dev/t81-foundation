@@ -164,7 +164,11 @@ ______________________________________________________________________
 
 ### 5.2 Arithmetic Instructions
 
-All arithmetic uses **T81BigInt** semantics unless otherwise noted.
+All arithmetic uses **T81BigInt** semantics unless otherwise noted. Registers that
+refer to `T81Float` or `T81Fraction` values SHALL contain canonical **pool
+handles** (1-based indices into the literal/value pools defined by the program
+image). Any opcode that dereferences a handle MUST fault with
+`IllegalInstruction` if the handle is zero, negative, or out of range.
 
 #### ADD
 
@@ -217,6 +221,33 @@ All arithmetic uses **T81BigInt** semantics unless otherwise noted.
   `INC`: `R[RD] := canonical(R[RD] + 1)`
   `DEC`: `R[RD] := canonical(R[RD] − 1)`
 - **Faults**: None
+
+#### FADD / FSUB / FMUL / FDIV
+
+- **Form**: `FADD RD, RS1, RS2` (and analogous `FSUB`, `FMUL`, `FDIV`)
+- **Semantics**:
+  - Resolve `R[RS1]` and `R[RS2]` as handles into the float pool.
+  - Apply canonical `T81Float` arithmetic (Section 2.3 of Data Types).
+  - Write the resulting canonical float back as a handle in `R[RD]`. The VM MAY
+    reuse an existing equal value but MUST do so deterministically.
+- **Faults**:
+  - Invalid handle → `IllegalInstruction`.
+  - Division by zero (`FDIV` with canonical zero divisor) → `DivideByZero`.
+
+#### FRACADD / FRACSUB / FRACMUL / FRACDIV
+
+- **Form**: `FRACADD RD, RS1, RS2` (and analogous `FRACSUB`, `FRACMUL`,
+  `FRACDIV`)
+- **Semantics**:
+  - Resolve `R[RS1]` and `R[RS2]` as handles into the fraction pool.
+  - Apply canonical `T81Fraction` operations (`add`, `sub`, `mul`, `div`) per
+    Data Types Section 2.4, including normalization of numerator/denominator.
+  - Store the canonical result as a pool handle in `R[RD]` (with deterministic
+    deduplication if implemented).
+- **Faults**:
+  - Invalid handle → `IllegalInstruction`.
+  - Division by zero (`FRACDIV` with zero numerator in divisor or canonical zero
+    denominator) → `DivideByZero`.
 
 ______________________________________________________________________
 
@@ -373,14 +404,21 @@ Conversions MUST be explicit and deterministic.
 
 - **Form**: `I2F RD, RS` / `F2I RD, RS`
 - **Semantics**:
-  Canonical integer ↔ float conversions.
+  - `I2F`: convert canonical integer `R[RS]` to a canonical `T81Float`, append
+    (or deterministically reuse) it in the float pool, and return the handle in
+    `R[RD]`.
+  - `F2I`: resolve the handle in `R[RS]`, truncate toward zero per `T81Float`
+    rules, and write the canonical integer into `R[RD]`.
 - **Faults**: Overflow or non-representable values → deterministic error code or fault depending on ABI.
 
 #### I2FRAC / FRAC2I
 
 - **Form**: `I2FRAC RD, RS` / `FRAC2I RD, RS`
 - **Semantics**:
-  Integer ↔ fraction with canonicalization.
+  - `I2FRAC`: convert canonical integer `R[RS]` to a normalized `T81Fraction`
+    handle.
+  - `FRAC2I`: resolve the handle in `R[RS]`, ensuring the denominator is `1`,
+    and write the canonical integer into `R[RD]`.
 - **Faults**: Invalid fraction (e.g., denominator zero).
 
 ______________________________________________________________________

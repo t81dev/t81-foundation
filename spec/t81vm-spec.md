@@ -325,6 +325,35 @@ Requirements:
 
 ______________________________________________________________________
 
+### 4.8 Literal Pools and Handle Semantics
+
+T81VM programs include **float**, **fraction**, and **symbol** literal pools
+alongside CODE. Loading a program MUST:
+
+1. Copy these pools into the VM state (`state.floats`, `state.fractions`,
+   `state.symbols`) before any instruction executes.
+2. Initialize all registers that reference non-integer types with **handles**,
+   defined as 1-based indices into the corresponding pool.
+
+Requirements:
+
+- Dereferencing a handle that is zero, negative, or beyond the current pool size
+  MUST raise `Trap::IllegalInstruction`.
+- Arithmetic opcodes (`FADD`…`FRACDIV`) MUST resolve handles, perform canonical
+  arithmetic (per Data Types), and append canonical results to the pool unless a
+  deterministically equal entry already exists. Deduplication, if implemented,
+  MUST follow a stable ordering so observers cannot infer hidden randomness.
+- Conversions (`I2F`, `I2FRAC`, etc.) MUST also produce handles and therefore
+  extend pools deterministically.
+- Axion-visible traces MUST record both the opcode and the resulting handle so
+  observers can map back to canonical literals if required.
+
+Symbol pools follow the same handle rules but are primarily used by language
+constructs; opcodes that accept symbol handles MUST enforce the same validation
+behavior.
+
+______________________________________________________________________
+
 ## 5. Axion Interface
 
 Axion supervises the T81VM and MUST be able to:
