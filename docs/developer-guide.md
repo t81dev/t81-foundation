@@ -138,6 +138,23 @@ This is the foundation of everything.
 - No implicit broadcasting  
 - All operations must check shape deterministically
 
+## 3.5 Structural Types (Option / Result)
+
+`Option[T]` and `Result[T, E]` are now part of the canonical type system (see
+`spec/t81lang-spec.md §2.3` and RFC-0005/0006):
+
+- `Some/None` and `Ok/Err` are just constructors; they do not perform casts.
+- Context matters: `None` is illegal without an expected `Option[T]` type.
+- Lowering emits `MAKE_OPTION_*` / `MAKE_RESULT_*` opcodes so the VM can store
+  canonical handles (deduplicated by payload tag + value).
+- Equality is deterministic because the VM compares handles and payloads.
+
+Implementation tips:
+
+1. Treat structural values like floats/fractions: canonical pools + handles.
+2. When debugging, inspect `vm->state().options` / `.results`.
+3. Policies may place tier limits on structural payload tags—log them in traces.
+
 ---
 
 # 4. Implementing TISC
@@ -257,6 +274,11 @@ Axion has **five subsystems**:
 5. **TTS** — Tier Transition
 
 Build them in this order.
+
+> **Policy language:** Axion now consumes the Axion Policy Language (APL) defined in
+> [RFC-0009](../spec/rfcs/RFC-0009-axion-policy-language.md). When wiring subsystems,
+> embed policy bytecode into the VM header and feed it through CRS/RCS so policy
+> decisions are deterministic and traceable.
 
 ---
 

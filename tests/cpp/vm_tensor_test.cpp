@@ -63,5 +63,30 @@ int main() {
   assert(vm->state().registers[10] == 3);
   assert(vm->state().registers[12] == 3);
 
+  // Shape checks via literal handles.
+  tisc::Program chk;
+  chk.tensor_pool.push_back(t81::T729Tensor({2, 2}, {1.0f, 0.0f, 0.0f, 1.0f}));
+  chk.shape_pool.push_back({2, 2});
+  chk.shape_pool.push_back({2, 3});
+  tisc::Insn lt{tisc::Opcode::LoadImm, 1, 1, 0};
+  lt.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+  chk.insns.push_back(lt);
+  tisc::Insn ls{tisc::Opcode::LoadImm, 2, 1, 0};
+  ls.literal_kind = t81::tisc::LiteralKind::ShapeHandle;
+  chk.insns.push_back(ls);
+  chk.insns.push_back({tisc::Opcode::ChkShape, 3, 1, 2});
+  tisc::Insn ls_bad{tisc::Opcode::LoadImm, 4, 2, 0};
+  ls_bad.literal_kind = t81::tisc::LiteralKind::ShapeHandle;
+  chk.insns.push_back(ls_bad);
+  chk.insns.push_back({tisc::Opcode::ChkShape, 5, 1, 4});
+  chk.insns.push_back({tisc::Opcode::Halt, 0, 0, 0});
+
+  auto vm_chk = vm::make_interpreter_vm();
+  vm_chk->load_program(chk);
+  auto res_chk = vm_chk->run_to_halt();
+  assert(res_chk.has_value());
+  assert(vm_chk->state().registers[3] == 1);
+  assert(vm_chk->state().registers[5] == 0);
+
   return 0;
 }

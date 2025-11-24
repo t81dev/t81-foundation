@@ -35,8 +35,19 @@ class Interpreter : public IVirtualMachine {
     state_.floats = program_.float_pool;
     state_.fractions = program_.fraction_pool;
     state_.symbols = program_.symbol_pool;
+    state_.tensors = program_.tensor_pool;
+    state_.shapes = program_.shape_pool;
     state_.options.clear();
     state_.results.clear();
+    state_.policy.reset();
+    state_.gc_cycles = 0;
+    instructions_since_gc_ = 0;
+    if (!program_.axion_policy_text.empty()) {
+      auto policy = t81::axion::parse_policy(program_.axion_policy_text);
+      if (policy.has_value()) {
+        state_.policy = policy.value();
+      }
+    }
   }
 
   std::expected<void, Trap> step() override {
@@ -67,6 +78,8 @@ class Interpreter : public IVirtualMachine {
         case t81::tisc::LiteralKind::FloatHandle: return ValueTag::FloatHandle;
         case t81::tisc::LiteralKind::FractionHandle: return ValueTag::FractionHandle;
         case t81::tisc::LiteralKind::SymbolHandle: return ValueTag::SymbolHandle;
+        case t81::tisc::LiteralKind::TensorHandle: return ValueTag::TensorHandle;
+        case t81::tisc::LiteralKind::ShapeHandle: return ValueTag::ShapeHandle;
         case t81::tisc::LiteralKind::Int:
         default: return ValueTag::Int;
       }
@@ -134,6 +147,12 @@ class Interpreter : public IVirtualMachine {
     auto alloc_fraction = [this](t81::T81Fraction frac) -> std::int64_t {
       state_.fractions.push_back(std::move(frac));
       return static_cast<std::int64_t>(state_.fractions.size());
+    };
+    auto shape_ptr = [this](std::int64_t handle) -> const std::vector<int>* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.shapes.size()) return nullptr;
+      return &state_.shapes[idx];
     };
     auto option_ptr = [this](std::int64_t handle) -> OptionValue* {
       if (handle <= 0) return nullptr;
@@ -245,11 +264,36 @@ class Interpreter : public IVirtualMachine {
       case t81::tisc::Opcode::Halt:
         state_.halted = true;
         break;
-      case t81::tisc::Opcode::LoadImm:
+      case t81::tisc::Opcode::LoadImm: {
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
-        set_reg(insn.a, insn.b, literal_kind_to_tag(insn.literal_kind));
+        auto tag = literal_kind_to_tag(insn.literal_kind);
+        auto handle_ok = [&](std::size_t limit) {
+          return insn.b > 0 && static_cast<std::size_t>(insn.b) <= limit;
+        };
+        switch (tag) {
+          case ValueTag::FloatHandle:
+            if (!handle_ok(state_.floats.size())) { trap = Trap::IllegalInstruction; break; }
+            break;
+          case ValueTag::FractionHandle:
+            if (!handle_ok(state_.fractions.size())) { trap = Trap::IllegalInstruction; break; }
+            break;
+          case ValueTag::SymbolHandle:
+            if (!handle_ok(state_.symbols.size())) { trap = Trap::IllegalInstruction; break; }
+            break;
+          case ValueTag::TensorHandle:
+            if (!handle_ok(state_.tensors.size())) { trap = Trap::IllegalInstruction; break; }
+            break;
+          case ValueTag::ShapeHandle:
+            if (!handle_ok(state_.shapes.size())) { trap = Trap::IllegalInstruction; break; }
+            break;
+          default:
+            break;
+        }
+        if (trap != Trap::None) break;
+        set_reg(insn.a, insn.b, tag);
         update_flags(state_.registers[insn.a]);
         break;
+      }
       case t81::tisc::Opcode::Mov:
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
         copy_reg(insn.a, insn.b);
@@ -550,6 +594,21 @@ class Interpreter : public IVirtualMachine {
         }
         break;
       }
+      case t81::tisc::Opcode::ChkShape: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
+        if (state_.register_tags[insn.b] != ValueTag::TensorHandle ||
+            state_.register_tags[insn.c] != ValueTag::ShapeHandle) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        auto tensor = tensor_ptr(state_.registers[insn.b]);
+        auto expected = shape_ptr(state_.registers[insn.c]);
+        if (!tensor || !expected) { trap = Trap::IllegalInstruction; break; }
+        bool match = tensor->shape() == *expected;
+        set_reg(insn.a, match ? 1 : 0, ValueTag::Int);
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
       case t81::tisc::Opcode::MakeOptionSome: {
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
         auto handle =
@@ -645,6 +704,11 @@ class Interpreter : public IVirtualMachine {
         trap = Trap::IllegalInstruction;
         break;
     }
+    ++instructions_since_gc_;
+    if (instructions_since_gc_ >= kGcInterval) {
+      run_gc_cycle_("interval");
+    }
+
     log_trace(insn.opcode, trap);
     if (trap != Trap::None) return trap;
     return {};
@@ -673,9 +737,22 @@ class Interpreter : public IVirtualMachine {
     state_.axion_log.push_back(AxionEvent{op, tag, value, verdict});
   }
 
+  void run_gc_cycle_(const char* reason) {
+    instructions_since_gc_ = 0;
+    state_.gc_cycles++;
+    t81::axion::Verdict verdict;
+    verdict.kind = t81::axion::VerdictKind::Allow;
+    verdict.reason = reason;
+    record_axion_event(t81::tisc::Opcode::Trap,
+                       static_cast<std::int32_t>(state_.gc_cycles),
+                       static_cast<std::int64_t>(state_.gc_cycles), verdict);
+  }
+
   State state_{};
   t81::tisc::Program program_{};
   std::unique_ptr<t81::axion::Engine> axion_engine_;
+  static constexpr std::size_t kGcInterval = 64;
+  std::size_t instructions_since_gc_{0};
 };
 }  // namespace
 

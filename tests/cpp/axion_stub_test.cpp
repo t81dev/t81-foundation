@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "t81/axion/api.hpp"
+#include "t81/axion/policy.hpp"
 
 int main() {
   using namespace t81::axion;
@@ -49,6 +50,12 @@ int main() {
   assert(tele.bytes_in  == payload.size());
   assert(tele.bytes_out == out.data.size());
   assert(tele.last_ms >= 0.0);
+
+  // Policy parsing smoke test
+  auto policy = parse_policy("(policy (tier 3) (max-stack 59049))");
+  assert(policy.has_value());
+  assert(policy->tier == 3);
+  assert(policy->max_stack.has_value());
 
   std::cout << "axion_stub ok\n";
   return 0;

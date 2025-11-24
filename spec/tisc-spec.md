@@ -249,6 +249,16 @@ image). Any opcode that dereferences a handle MUST fault with
   - Division by zero (`FRACDIV` with zero numerator in divisor or canonical zero
     denominator) → `DivideByZero`.
 
+#### CHKSHAPE
+
+- **Form**: `CHKSHAPE RD, RS1, RS2`
+- **Semantics**:
+  - `R[RS1]` MUST contain a tensor handle, `R[RS2]` a canonical shape handle.
+  - If the tensor’s shape matches the descriptor, write `1t81` to `R[RD]`,
+    otherwise `0t81`.
+- **Faults**:
+  - Invalid handles or mismatched register tags → `IllegalInstruction`.
+
 #### MAKE_OPTION_SOME
 
 - **Form**: `MAKE_OPTION_SOME RD, RS`

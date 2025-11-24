@@ -9,6 +9,7 @@
 #include "t81/fraction.hpp"
 #include "t81/tisc/program.hpp"
 #include "t81/axion/verdict.hpp"
+#include "t81/axion/policy.hpp"
 #include "t81/vm/traps.hpp"
 
 namespace t81::vm {
@@ -24,6 +25,8 @@ enum class ValueTag : std::uint8_t {
   FloatHandle,
   FractionHandle,
   SymbolHandle,
+  TensorHandle,
+  ShapeHandle,
   OptionHandle,
   ResultHandle,
 };
@@ -71,6 +74,7 @@ struct State {
   std::vector<double> floats;
   std::vector<t81::T81Fraction> fractions;
   std::vector<std::string> symbols;
+  std::vector<std::vector<int>> shapes;
   std::vector<OptionValue> options;
   std::vector<ResultValue> results;
   std::vector<TraceEntry> trace;
@@ -78,5 +82,7 @@ struct State {
   Flags flags{};
   std::size_t pc{0};
   bool halted{false};
+  std::size_t gc_cycles{0};
+  std::optional<t81::axion::Policy> policy;
 };
 }  // namespace t81::vm

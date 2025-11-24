@@ -14,6 +14,8 @@ This site hosts:
 - Deterministic execution model
 - Axion supervisory kernel design
 
-Begin with the **Spec Index**:
+Begin with:
 
-→ [Specification Suite](spec/index.md)
+- [Specification Suite](spec/index.md)
+- [Developer Guide](developer-guide.md)
+- [Tensor Guide](tensor-guide.md)

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "t81/fraction.hpp"
+#include "t81/tensor.hpp"
 #include "t81/tisc/opcodes.hpp"
 
 namespace t81::tisc {
@@ -12,6 +13,8 @@ enum class LiteralKind : std::uint8_t {
   FloatHandle,
   FractionHandle,
   SymbolHandle,
+  TensorHandle,
+  ShapeHandle,
 };
 
 struct Insn {
@@ -27,5 +30,8 @@ struct Program {
   std::vector<double> float_pool;
   std::vector<t81::T81Fraction> fraction_pool;
   std::vector<std::string> symbol_pool;
+  std::vector<t81::T729Tensor> tensor_pool;
+  std::vector<std::vector<int>> shape_pool;
+  std::string axion_policy_text;
 };
 }  // namespace t81::tisc

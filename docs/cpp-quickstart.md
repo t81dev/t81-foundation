@@ -84,3 +84,14 @@ make run-tests # runs all tests
 - `t81/hash/{base81,canonhash}.hpp` — Base-81 & CanonHash stubs
 - `t81/codec/base243.hpp` — Base-243 codec surface (stub)
 - `t81/axion/api.hpp` — tiny Axion façade (stub)
+- `t81/vm/state.hpp` — VM state (registers, pools, trace helpers)
+
+## 6) VM Notes
+
+- Structural helpers (`MAKE_OPTION_*`, `MAKE_RESULT_*`) were added to the ISA.
+  Make sure your VM build includes the new opcodes; otherwise you’ll see
+  `IllegalInstruction` traps when compiling Option/Result-heavy code.
+- Tensor handles are pooled like floats/fractions. Inspect `vm->state()` to
+  understand what the compiler emitted.
+- Axion policies (APL) are not required yet, but the VM header already reserves
+  space—unknown bytes should be ignored deterministically.
