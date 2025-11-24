@@ -93,15 +93,15 @@ ______________________________________________________________________
 To propose a constitutional change:
 
 1. Copy `spec/rfcs/template.md` → `spec/rfcs/0012-your-title.md`
-2. Fill Motivation, Proposal, Impact, Alternatives
-3. Use ternary-weighted voting syntax in the header:
+1. Fill Motivation, Proposal, Impact, Alternatives
+1. Use ternary-weighted voting syntax in the header:
 
 ```yaml
 vote: +1    # or 0, -1 (you may self-vote)
 ```
 
 4. Open PR titled “RFC: Your Title”
-5. Humans will merge or request revision.
+1. Humans will merge or request revision.
 
 This is the **only** way to change `/spec/` normative text.
 

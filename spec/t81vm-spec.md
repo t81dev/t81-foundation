@@ -51,7 +51,7 @@ T81VM MUST support at least one of the following execution modes; both are recom
    - Directly applies the semantic rules in the TISC specification.
    - Serves as the reference implementation.
 
-2. **Deterministic JIT Mode**
+1. **Deterministic JIT Mode**
 
    - Translates blocks of TISC instructions into native code.
    - MUST preserve the exact observable semantics of the interpreter.
@@ -71,8 +71,8 @@ T81VM MUST support at least one of the following execution modes; both are recom
 A typical program lifecycle is:
 
 1. Load program and initial state.
-2. Initialize memory segments and Axion metadata.
-3. Execute until:
+1. Initialize memory segments and Axion metadata.
+1. Execute until:
    - `HALT` instruction, or
    - deterministic fault, or
    - Axion veto / termination.
@@ -95,17 +95,17 @@ Implementations MUST ensure:
    - identical Axion policies and inputs\
      all executions MUST produce the same final state and traces.
 
-2. **No Hidden Sources of Nondeterminism**
+1. **No Hidden Sources of Nondeterminism**
 
    - No direct access to wall-clock time, random devices, or system entropy sources.
    - Any pseudo-random behavior MUST be seeded deterministically and exposed via explicit APIs, not hidden in VM behavior.
 
-3. **Stable Ordering**
+1. **Stable Ordering**
 
    - Instruction execution order MUST be well-defined.
    - Concurrency scheduling (Section 3) MUST follow a deterministic policy.
 
-4. **Canonical State Representation**
+1. **Canonical State Representation**
 
    - All values in registers and memory MUST adhere to the canonicalization rules in the Data Types spec.
    - Non-canonical values MUST either be normalized or rejected with a fault.
@@ -169,25 +169,25 @@ Memory is divided into logical segments:
    - Writable only via privileged loader or Axion-verified transformations.
    - Normal TISC code MUST NOT modify CODE.
 
-2. **STACK**
+1. **STACK**
 
    - Call frames, local variables, return addresses.
    - Grows/shrinks in a single, deterministic direction.
    - Each context has its own STACK region.
 
-3. **HEAP**
+1. **HEAP**
 
    - Dynamically allocated objects and structures.
    - Managed by the VM’s allocation and GC subsystem.
    - Shared among contexts unless otherwise specified.
 
-4. **TENSOR**
+1. **TENSOR**
 
    - Dedicated region for tensor/matrix data.
    - Optimized layout for high-throughput numeric operations.
    - Subject to strict shape and alignment rules.
 
-5. **META**
+1. **META**
 
    - Debug, trace, and Axion metadata.
    - Readable by privileged tools and Axion.
@@ -213,8 +213,8 @@ Implementations MAY encode this as:
 Requirements:
 
 1. It MUST be possible to determine, for any address, which segment it belongs to (or if it is invalid).
-2. Out-of-segment accesses MUST cause a **Bounds Fault**, not wrap-around or undefined behavior.
-3. Alignment rules for composite types (vectors, matrices, tensors) MUST follow the Data Types spec.
+1. Out-of-segment accesses MUST cause a **Bounds Fault**, not wrap-around or undefined behavior.
+1. Alignment rules for composite types (vectors, matrices, tensors) MUST follow the Data Types spec.
 
 ______________________________________________________________________
 
@@ -251,8 +251,8 @@ Each context maintains a stack with:
 Requirements:
 
 1. Stack overflow/underflow MUST produce **Stack Faults**.
-2. Return addresses MUST always point into CODE; violations MUST fault.
-3. Stack contents MUST NOT be accessed outside their valid frame, except by explicit debugging or Axion tools in privileged modes.
+1. Return addresses MUST always point into CODE; violations MUST fault.
+1. Stack contents MUST NOT be accessed outside their valid frame, except by explicit debugging or Axion tools in privileged modes.
 
 ______________________________________________________________________
 
@@ -332,7 +332,7 @@ alongside CODE. Loading a program MUST:
 
 1. Copy these pools into the VM state (`state.floats`, `state.fractions`,
    `state.symbols`) before any instruction executes.
-2. Initialize all registers that reference non-integer types with **handles**,
+1. Initialize all registers that reference non-integer types with **handles**,
    defined as 1-based indices into the corresponding pool.
 
 Requirements:
@@ -420,14 +420,14 @@ On any fault:
    - Either the instruction has no effect, or
    - It is fully applied and the fault is associated with the resulting state.
 
-2. Fault details MUST be recorded in META / Axion metadata:
+1. Fault details MUST be recorded in META / Axion metadata:
 
    - fault type
    - instruction address
    - operand snapshot
    - relevant memory addresses
 
-3. Axion decides:
+1. Axion decides:
 
    - terminate execution
    - transition to diagnostic mode

@@ -43,23 +43,23 @@ T81Lang is designed with the following properties:
 1. **Deterministic**\
    Every expression has a single, unambiguous meaning. No hidden I/O, nondeterminism, or environment leakage.
 
-2. **Pure-by-default**\
+1. **Pure-by-default**\
    Functions are pure unless explicitly marked as effectful.
 
-3. **Ternary-native semantics**\
+1. **Ternary-native semantics**\
    All numbers, fractions, logical values, and composite structures follow the T81 Data Types specification.
 
-4. **Statically typed + Canonical**\
+1. **Statically typed + Canonical**\
    All values must be canonical at every boundary; compile-time enforcement where possible.
 
-5. **VM-compatible**\
+1. **VM-compatible**\
    All generated TISC MUST:
 
    - be type-correct
    - be shape-correct
    - respect determinism and Axion policies
 
-6. **Tier-aware**\
+1. **Tier-aware**\
    Code MAY declare cognitive-tier intent, enabling Axion to enforce or monitor complexity bounds.
 
 ______________________________________________________________________
@@ -257,9 +257,9 @@ T81Lang uses lexical scoping.
 Name resolution is deterministic:
 
 1. Look up in local scope
-2. Look up in parent scopes
-3. Look up in module scope
-4. Resolve via imports (imports MUST be explicit and acyclic)
+1. Look up in parent scopes
+1. Look up in module scope
+1. Resolve via imports (imports MUST be explicit and acyclic)
 
 Shadowing is allowed but MUST be resolved deterministically by nearest scope.
 

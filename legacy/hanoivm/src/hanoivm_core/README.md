@@ -104,7 +104,7 @@ Key components:
    source ~/.cargo/env
    ```
 
-2. **Build the Core**:
+1. **Build the Core**:
 
    ```bash
    cargo build --release
@@ -112,14 +112,14 @@ Key components:
    RUST_LOG=debug cargo run --example roundtrip_test
    ```
 
-3. **Generate C Bindings** (for FFI):
+1. **Generate C Bindings** (for FFI):
 
    ```bash
    cargo install cbindgen
    cbindgen --config cbindgen.toml --output hanoivm_core.h
    ```
 
-4. **Cross-Compile for PCIe Firmware** (optional, ARM/x86):
+1. **Cross-Compile for PCIe Firmware** (optional, ARM/x86):
 
    ```bash
    rustup target add aarch64-unknown-linux-gnu
@@ -225,9 +225,9 @@ For deeper dives:
 ## Contributing
 
 1. Fork the repo and create a feature branch: `git checkout -b feat/ternary-fft`.
-2. Commit changes: `git commit -m "Add T729 FFT support"`.
-3. Push: `git push origin feat/ternary-fft`.
-4. Open a Pull Request.
+1. Commit changes: `git commit -m "Add T729 FFT support"`.
+1. Push: `git push origin feat/ternary-fft`.
+1. Open a Pull Request.
 
 Guidelines:
 

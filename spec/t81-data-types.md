@@ -50,22 +50,22 @@ All T81 data types MUST satisfy:
    - no nondeterministic outcomes
    - all arithmetic, comparisons, and structural operations MUST produce identical results across implementations
 
-2. **Canonical Representation**
+1. **Canonical Representation**
 
    - each representable value MUST have exactly one canonical encoding
    - no alternative or redundant forms permitted
 
-3. **Base-81 Numeric Foundation**
+1. **Base-81 Numeric Foundation**
 
    - all numeric types MUST use balanced-ternary or base-81 semantics
    - internal binary shortcuts are permitted but MUST NOT affect observable behavior
 
-4. **Zero Undefined Behavior**
+1. **Zero Undefined Behavior**
 
    - every operation MUST define behavior for all inputs
    - errors MUST resolve to deterministic fault states or `Result[T, E]` representations
 
-5. **Axion Visibility**
+1. **Axion Visibility**
 
    - all canonical forms must be introspectable by the Axion kernel
    - all normalization steps MUST emit metadata hooks
@@ -162,11 +162,11 @@ A reproducible floating-point format using:
 
 1. Representations MUST round deterministically.
 
-2. No NaN, no infinities.
+1. No NaN, no infinities.
 
-3. All invalid states MUST map to a deterministic error code.
+1. All invalid states MUST map to a deterministic error code.
 
-4. Round-trip encoding MUST be stable:
+1. Round-trip encoding MUST be stable:
 
    ```
    encode(decode(x)) = x
@@ -198,9 +198,9 @@ denominator: T81BigInt (non-zero)
 ### Canonicalization Rules
 
 1. Fraction MUST always be in lowest terms.
-2. Denominator MUST always be positive (+ sign).
-3. Zero MUST be encoded as `0/1`.
-4. GCD MUST be computed deterministically.
+1. Denominator MUST always be positive (+ sign).
+1. Zero MUST be encoded as `0/1`.
+1. GCD MUST be computed deterministically.
 
 ### Arithmetic
 
@@ -337,15 +337,15 @@ Canonicalization MUST occur after:
    - integers strip leading zeros
    - floats normalize mantissa/exponent
 
-2. **Deterministic ordering**
+1. **Deterministic ordering**
 
    - arrays, structs, enums all follow strict order rules
 
-3. **Deterministic hashing**
+1. **Deterministic hashing**
 
    - MUST depend only on canonical form
 
-4. **Axion visibility**
+1. **Axion visibility**
 
    - Axion MUST be able to inspect normalized representation
 

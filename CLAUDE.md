@@ -24,9 +24,9 @@ ______________________________________________________________________
 When analyzing or modifying code, first read:
 
 1. `ARCHITECTURE.md`
-2. `AGENTS.md`
-3. `spec/index.md`
-4. The specific spec file for the subsystem you’re touching (e.g., `spec/tisc-spec.md`).
+1. `AGENTS.md`
+1. `spec/index.md`
+1. The specific spec file for the subsystem you’re touching (e.g., `spec/tisc-spec.md`).
 
 For C++ implementation details, then consult:
 
@@ -47,17 +47,17 @@ When generating or editing code:
      - Extending the spec (via RFC), or
      - Keeping behavior minimal and well-documented.
 
-2. **Prefer small, self-contained changes**
+1. **Prefer small, self-contained changes**
 
    - Keep PRs and patches focused.
    - Update tests under `tests/cpp/` whenever semantics change.
 
-3. **Respect the separation of concerns**
+1. **Respect the separation of concerns**
 
    - Do not mix spec edits, VM internals, and Axion semantics in a single change unless strictly necessary.
    - Leave legacy CWEB code in `legacy/` as a reference; migrate incrementally to modern C++.
 
-4. **Determinism and safety**
+1. **Determinism and safety**
 
    - Avoid hidden non-determinism (e.g., time, random, global state).
    - Any safety-relevant behavior must be consistent with `spec/axion-kernel.md` and `spec/cognitive-tiers.md`.
