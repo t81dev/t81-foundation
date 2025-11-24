@@ -352,13 +352,6 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
         return EvalValue{out_reg, callee_meta.return_type};
       }
       const auto& bin = std::get<ExprBinary>(e.node);
-      auto lhs = emit_expr_env(*bin.lhs, std::nullopt);
-      if (!lhs.has_value()) return lhs;
-      auto rhs = emit_expr_env(*bin.rhs, std::nullopt);
-      if (!rhs.has_value()) return rhs;
-      const EvalValue lhs_val = lhs.value();
-      const EvalValue rhs_val = rhs.value();
-      if (lhs_val.type != rhs_val.type) return make_error(CompileError::UnsupportedType);
       auto is_arithmetic_op = [](ExprBinary::Op op) {
         switch (op) {
           case ExprBinary::Op::Add:
@@ -382,6 +375,9 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
             return false;
         }
       };
+      auto is_logical_op = [](ExprBinary::Op op) {
+        return op == ExprBinary::Op::Land || op == ExprBinary::Op::Lor;
+      };
       auto alloc_temp_reg = [&]() -> std::expected<int, CompileError> {
         int reg = next_reg;
         if (reg >= kMaxRegs) return CompileError::RegisterOverflow;
@@ -389,13 +385,13 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
         return reg;
       };
       auto emit_bool_from_branch =
-          [&](auto&& branch_builder, std::optional<int> dest) -> std::expected<EvalValue, CompileError> {
+          [&](auto&& branch_builder, std::optional<int> dest) -> EvalResult {
             int out_reg = dest.value_or(next_reg);
             if (out_reg >= kMaxRegs) return make_error(CompileError::RegisterOverflow);
             if (!dest.has_value()) ++next_reg;
             program.insns.push_back({t81::tisc::Opcode::LoadImm, out_reg, 0, 0});
             auto branch_idx_res = branch_builder();
-            if (!branch_idx_res.has_value()) return branch_idx_res.error();
+            if (!branch_idx_res.has_value()) return make_error(branch_idx_res.error());
             std::size_t branch_idx = branch_idx_res.value();
             std::size_t skip_idx = program.insns.size();
             program.insns.push_back({t81::tisc::Opcode::Jump, 0, 0, 0});
@@ -406,80 +402,213 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
             program.insns[skip_idx].a = static_cast<std::int32_t>(end_pc);
             return EvalValue{out_reg, Type::T81Int};
           };
-      auto emit_comparison =
-          [&](ExprBinary::Op op) -> std::expected<EvalValue, CompileError> {
-            if (lhs_val.type != Type::T81Int && lhs_val.type != Type::T81Float &&
-                lhs_val.type != Type::T81Fraction) {
-              return make_error(CompileError::UnsupportedType);
+      auto emit_bool_constant = [&](bool value, std::optional<int> dest) -> EvalResult {
+        int out_reg = dest.value_or(next_reg);
+        if (out_reg >= kMaxRegs) return make_error(CompileError::RegisterOverflow);
+        if (!dest.has_value()) ++next_reg;
+        program.insns.push_back({t81::tisc::Opcode::LoadImm, out_reg, value ? 1 : 0, 0});
+        return EvalValue{out_reg, Type::T81Int};
+      };
+      auto fold_literal_comparison =
+          [&](ExprBinary::Op op) -> std::optional<bool> {
+            if (!std::holds_alternative<ExprLiteral>(bin.lhs->node) ||
+                !std::holds_alternative<ExprLiteral>(bin.rhs->node)) {
+              return std::nullopt;
             }
-            program.insns.push_back({t81::tisc::Opcode::Cmp, lhs_val.reg, rhs_val.reg, 0});
-            auto sign_reg_res = alloc_temp_reg();
-            if (!sign_reg_res.has_value()) return sign_reg_res.error();
-            int sign_reg = sign_reg_res.value();
-            program.insns.push_back({t81::tisc::Opcode::SetF, sign_reg, 0, 0});
-            auto branch_builder = [&]() -> std::expected<std::size_t, CompileError> {
+            const auto& lhs_lit = std::get<ExprLiteral>(bin.lhs->node);
+            const auto& rhs_lit = std::get<ExprLiteral>(bin.rhs->node);
+            auto lhs_type = literal_value_type(lhs_lit);
+            auto rhs_type = literal_value_type(rhs_lit);
+            if (!lhs_type.has_value() || !rhs_type.has_value() ||
+                lhs_type.value() != rhs_type.value()) {
+              return std::nullopt;
+            }
+            auto eval_relation = [&](int cmp) -> bool {
               switch (op) {
-                case ExprBinary::Op::Eq: {
-                  std::size_t idx = program.insns.size();
-                  program.insns.push_back({t81::tisc::Opcode::JumpIfZero, 0, sign_reg, 0});
-                  return idx;
-                }
-                case ExprBinary::Op::Ne: {
-                  std::size_t idx = program.insns.size();
-                  program.insns.push_back({t81::tisc::Opcode::JumpIfNotZero, 0, sign_reg, 0});
-                  return idx;
-                }
-                case ExprBinary::Op::Lt: {
-                  auto tmp_res = alloc_temp_reg();
-                  if (!tmp_res.has_value()) return tmp_res.error();
-                  int tmp = tmp_res.value();
-                  program.insns.push_back({t81::tisc::Opcode::LoadImm, tmp, 1, 0});
-                  program.insns.push_back({t81::tisc::Opcode::Add, tmp, sign_reg, tmp});
-                  std::size_t idx = program.insns.size();
-                  program.insns.push_back({t81::tisc::Opcode::JumpIfZero, 0, tmp, 0});
-                  return idx;
-                }
-                case ExprBinary::Op::Le: {
-                  auto tmp_res = alloc_temp_reg();
-                  if (!tmp_res.has_value()) return tmp_res.error();
-                  int tmp = tmp_res.value();
-                  program.insns.push_back({t81::tisc::Opcode::LoadImm, tmp, 1, 0});
-                  program.insns.push_back({t81::tisc::Opcode::Sub, tmp, sign_reg, tmp});
-                  std::size_t idx = program.insns.size();
-                  program.insns.push_back({t81::tisc::Opcode::JumpIfNotZero, 0, tmp, 0});
-                  return idx;
-                }
-                case ExprBinary::Op::Gt: {
-                  auto tmp_res = alloc_temp_reg();
-                  if (!tmp_res.has_value()) return tmp_res.error();
-                  int tmp = tmp_res.value();
-                  program.insns.push_back({t81::tisc::Opcode::LoadImm, tmp, 1, 0});
-                  program.insns.push_back({t81::tisc::Opcode::Sub, tmp, sign_reg, tmp});
-                  std::size_t idx = program.insns.size();
-                  program.insns.push_back({t81::tisc::Opcode::JumpIfZero, 0, tmp, 0});
-                  return idx;
-                }
-                case ExprBinary::Op::Ge: {
-                  auto tmp_res = alloc_temp_reg();
-                  if (!tmp_res.has_value()) return tmp_res.error();
-                  int tmp = tmp_res.value();
-                  program.insns.push_back({t81::tisc::Opcode::LoadImm, tmp, 1, 0});
-                  program.insns.push_back({t81::tisc::Opcode::Add, tmp, sign_reg, tmp});
-                  std::size_t idx = program.insns.size();
-                  program.insns.push_back({t81::tisc::Opcode::JumpIfNotZero, 0, tmp, 0});
-                  return idx;
-                }
-                default:
-                  return CompileError::UnsupportedType;
+                case ExprBinary::Op::Eq: return cmp == 0;
+                case ExprBinary::Op::Ne: return cmp != 0;
+                case ExprBinary::Op::Lt: return cmp < 0;
+                case ExprBinary::Op::Le: return cmp <= 0;
+                case ExprBinary::Op::Gt: return cmp > 0;
+                case ExprBinary::Op::Ge: return cmp >= 0;
+                default: return false;
               }
             };
-            return emit_bool_from_branch(branch_builder, target);
+            switch (lhs_type.value()) {
+              case Type::T81Int: {
+                auto lhs_val = lhs_lit.value.int_value;
+                auto rhs_val = rhs_lit.value.int_value;
+                int cmp = (lhs_val == rhs_val) ? 0 : (lhs_val < rhs_val ? -1 : 1);
+                return eval_relation(cmp);
+              }
+              case Type::T81Float: {
+                auto lhs_parsed = parse_float_literal(lhs_lit.value.text);
+                auto rhs_parsed = parse_float_literal(rhs_lit.value.text);
+                if (!lhs_parsed.has_value() || !rhs_parsed.has_value()) return std::nullopt;
+                double lhs_val = *lhs_parsed;
+                double rhs_val = *rhs_parsed;
+                int cmp = (lhs_val == rhs_val) ? 0 : (lhs_val < rhs_val ? -1 : 1);
+                return eval_relation(cmp);
+              }
+              case Type::T81Fraction: {
+                auto lhs_frac = parse_fraction_literal(lhs_lit.value.text);
+                auto rhs_frac = parse_fraction_literal(rhs_lit.value.text);
+                if (!lhs_frac.has_value() || !rhs_frac.has_value()) return std::nullopt;
+                int cmp = t81::T81Fraction::cmp(*lhs_frac, *rhs_frac);
+                return eval_relation(cmp);
+              }
+              case Type::Symbol: {
+                if (op == ExprBinary::Op::Eq) {
+                  return lhs_lit.value.text == rhs_lit.value.text;
+                }
+                if (op == ExprBinary::Op::Ne) {
+                  return lhs_lit.value.text != rhs_lit.value.text;
+                }
+                return std::nullopt;
+              }
+              default:
+                return std::nullopt;
+            }
           };
-      if (is_comparison_op(bin.op)) {
-        return emit_comparison(bin.op);
+      if (is_logical_op(bin.op)) {
+        auto lhs = emit_expr_env(*bin.lhs, std::nullopt);
+        if (!lhs.has_value()) return lhs;
+        const EvalValue lhs_val = lhs.value();
+        if (lhs_val.type != Type::T81Int) return make_error(CompileError::UnsupportedType);
+        int out_reg = target.value_or(next_reg);
+        if (out_reg >= kMaxRegs) return make_error(CompileError::RegisterOverflow);
+        if (!target.has_value()) ++next_reg;
+        program.insns.push_back({t81::tisc::Opcode::LoadImm, out_reg, 0, 0});
+        if (bin.op == ExprBinary::Op::Land) {
+          std::size_t lhs_zero_idx = program.insns.size();
+          program.insns.push_back({t81::tisc::Opcode::JumpIfZero, 0, lhs_val.reg, 0});
+          auto rhs = emit_expr_env(*bin.rhs, std::nullopt);
+          if (!rhs.has_value()) return rhs;
+          const EvalValue rhs_val = rhs.value();
+          if (rhs_val.type != Type::T81Int) return make_error(CompileError::UnsupportedType);
+          std::size_t rhs_zero_idx = program.insns.size();
+          program.insns.push_back({t81::tisc::Opcode::JumpIfZero, 0, rhs_val.reg, 0});
+          program.insns.push_back({t81::tisc::Opcode::LoadImm, out_reg, 1, 0});
+          std::size_t end_pc = program.insns.size();
+          program.insns[lhs_zero_idx].a = static_cast<std::int32_t>(end_pc);
+          program.insns[rhs_zero_idx].a = static_cast<std::int32_t>(end_pc);
+          return EvalValue{out_reg, Type::T81Int};
+        } else {
+          std::size_t lhs_true_idx = program.insns.size();
+          program.insns.push_back({t81::tisc::Opcode::JumpIfNotZero, 0, lhs_val.reg, 0});
+          auto rhs = emit_expr_env(*bin.rhs, std::nullopt);
+          if (!rhs.has_value()) return rhs;
+          const EvalValue rhs_val = rhs.value();
+          if (rhs_val.type != Type::T81Int) return make_error(CompileError::UnsupportedType);
+          std::size_t rhs_true_idx = program.insns.size();
+          program.insns.push_back({t81::tisc::Opcode::JumpIfNotZero, 0, rhs_val.reg, 0});
+          std::size_t skip_true_idx = program.insns.size();
+          program.insns.push_back({t81::tisc::Opcode::Jump, 0, 0, 0});
+          std::size_t true_pc = program.insns.size();
+          program.insns.push_back({t81::tisc::Opcode::LoadImm, out_reg, 1, 0});
+          std::size_t end_pc = program.insns.size();
+          program.insns[lhs_true_idx].a = static_cast<std::int32_t>(true_pc);
+          program.insns[rhs_true_idx].a = static_cast<std::int32_t>(true_pc);
+          program.insns[skip_true_idx].a = static_cast<std::int32_t>(end_pc);
+          return EvalValue{out_reg, Type::T81Int};
+        }
       }
+      if (is_comparison_op(bin.op)) {
+        if (auto folded = fold_literal_comparison(bin.op)) {
+          return emit_bool_constant(*folded, target);
+        }
+        auto lhs = emit_expr_env(*bin.lhs, std::nullopt);
+        if (!lhs.has_value()) return lhs;
+        auto rhs = emit_expr_env(*bin.rhs, std::nullopt);
+        if (!rhs.has_value()) return rhs;
+        const EvalValue lhs_val = lhs.value();
+        const EvalValue rhs_val = rhs.value();
+        if (lhs_val.type != rhs_val.type) return make_error(CompileError::UnsupportedType);
+        auto emit_comparison =
+            [&](ExprBinary::Op op, const EvalValue& rhs_eval,
+                std::optional<int> dest) -> EvalResult {
+              if (lhs_val.type == Type::Symbol) {
+                if (op != ExprBinary::Op::Eq && op != ExprBinary::Op::Ne) {
+                  return make_error(CompileError::UnsupportedType);
+                }
+              } else if (lhs_val.type != Type::T81Int && lhs_val.type != Type::T81Float &&
+                         lhs_val.type != Type::T81Fraction) {
+                return make_error(CompileError::UnsupportedType);
+              }
+              program.insns.push_back({t81::tisc::Opcode::Cmp, lhs_val.reg, rhs_eval.reg, 0});
+              auto sign_reg_res = alloc_temp_reg();
+              if (!sign_reg_res.has_value()) return make_error(sign_reg_res.error());
+              int sign_reg = sign_reg_res.value();
+              program.insns.push_back({t81::tisc::Opcode::SetF, sign_reg, 0, 0});
+              auto branch_builder = [&]() -> std::expected<std::size_t, CompileError> {
+                switch (op) {
+                  case ExprBinary::Op::Eq: {
+                    std::size_t idx = program.insns.size();
+                    program.insns.push_back({t81::tisc::Opcode::JumpIfZero, 0, sign_reg, 0});
+                    return idx;
+                  }
+                  case ExprBinary::Op::Ne: {
+                    std::size_t idx = program.insns.size();
+                    program.insns.push_back({t81::tisc::Opcode::JumpIfNotZero, 0, sign_reg, 0});
+                    return idx;
+                  }
+                  case ExprBinary::Op::Lt: {
+                  auto tmp_res = alloc_temp_reg();
+                  if (!tmp_res.has_value()) return tmp_res.error();
+                    int tmp = tmp_res.value();
+                    program.insns.push_back({t81::tisc::Opcode::LoadImm, tmp, 1, 0});
+                    program.insns.push_back({t81::tisc::Opcode::Add, tmp, sign_reg, tmp});
+                    std::size_t idx = program.insns.size();
+                    program.insns.push_back({t81::tisc::Opcode::JumpIfZero, 0, tmp, 0});
+                    return idx;
+                  }
+                  case ExprBinary::Op::Le: {
+                  auto tmp_res = alloc_temp_reg();
+                  if (!tmp_res.has_value()) return tmp_res.error();
+                    int tmp = tmp_res.value();
+                    program.insns.push_back({t81::tisc::Opcode::LoadImm, tmp, 1, 0});
+                    program.insns.push_back({t81::tisc::Opcode::Sub, tmp, sign_reg, tmp});
+                    std::size_t idx = program.insns.size();
+                    program.insns.push_back({t81::tisc::Opcode::JumpIfNotZero, 0, tmp, 0});
+                    return idx;
+                  }
+                  case ExprBinary::Op::Gt: {
+                  auto tmp_res = alloc_temp_reg();
+                  if (!tmp_res.has_value()) return tmp_res.error();
+                    int tmp = tmp_res.value();
+                    program.insns.push_back({t81::tisc::Opcode::LoadImm, tmp, 1, 0});
+                    program.insns.push_back({t81::tisc::Opcode::Sub, tmp, sign_reg, tmp});
+                    std::size_t idx = program.insns.size();
+                    program.insns.push_back({t81::tisc::Opcode::JumpIfZero, 0, tmp, 0});
+                    return idx;
+                  }
+                  case ExprBinary::Op::Ge: {
+                  auto tmp_res = alloc_temp_reg();
+                  if (!tmp_res.has_value()) return tmp_res.error();
+                    int tmp = tmp_res.value();
+                    program.insns.push_back({t81::tisc::Opcode::LoadImm, tmp, 1, 0});
+                    program.insns.push_back({t81::tisc::Opcode::Add, tmp, sign_reg, tmp});
+                    std::size_t idx = program.insns.size();
+                    program.insns.push_back({t81::tisc::Opcode::JumpIfNotZero, 0, tmp, 0});
+                    return idx;
+                  }
+                  default:
+                    return CompileError::UnsupportedType;
+                }
+              };
+              return emit_bool_from_branch(branch_builder, dest);
+            };
+        return emit_comparison(bin.op, rhs_val, target);
+      }
+      auto lhs = emit_expr_env(*bin.lhs, std::nullopt);
+      if (!lhs.has_value()) return lhs;
+      auto rhs = emit_expr_env(*bin.rhs, std::nullopt);
+      if (!rhs.has_value()) return rhs;
+      const EvalValue lhs_val = lhs.value();
+      const EvalValue rhs_val = rhs.value();
+      if (lhs_val.type != rhs_val.type) return make_error(CompileError::UnsupportedType);
       if (!is_arithmetic_op(bin.op)) {
-          return make_error(CompileError::UnsupportedType);
+        return make_error(CompileError::UnsupportedType);
       }
       Type expr_type = lhs_val.type;
       t81::tisc::Opcode opcode = t81::tisc::Opcode::Add;

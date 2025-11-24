@@ -122,6 +122,12 @@ class Interpreter : public IVirtualMachine {
       if (idx >= state_.fractions.size()) return nullptr;
       return &state_.fractions[idx];
     };
+    auto symbol_ptr = [this](std::int64_t handle) -> const std::string* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.symbols.size()) return nullptr;
+      return &state_.symbols[idx];
+    };
     auto alloc_fraction = [this](t81::T81Fraction frac) -> std::int64_t {
       state_.fractions.push_back(std::move(frac));
       return static_cast<std::int64_t>(state_.fractions.size());
@@ -257,6 +263,17 @@ class Interpreter : public IVirtualMachine {
             auto rhs = fraction_ptr(state_.registers[insn.b]);
             if (!lhs || !rhs) { trap = Trap::IllegalInstruction; break; }
             relation = t81::T81Fraction::cmp(*lhs, *rhs);
+            break;
+          }
+          case ValueTag::SymbolHandle: {
+            auto lhs = symbol_ptr(state_.registers[insn.a]);
+            auto rhs = symbol_ptr(state_.registers[insn.b]);
+            if (!lhs || !rhs) { trap = Trap::IllegalInstruction; break; }
+            if (*lhs == *rhs) {
+              relation = 0;
+            } else {
+              relation = (*lhs < *rhs) ? -1 : 1;
+            }
             break;
           }
           default:

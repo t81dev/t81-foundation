@@ -279,13 +279,13 @@ ______________________________________________________________________
 - **Form**: `CMP RS1, RS2`
 
 - **Semantics**:
-  Compare `R[RS1]` and `R[RS2]` as canonical T81BigInt (or T81Float/T81Fraction; types MUST match):
+  Compare `R[RS1]` and `R[RS2]` as canonical T81BigInt, T81Float, T81Fraction, or Symbol handles (types MUST match). Symbol comparisons MUST dereference both handles into the immutable symbol pool and compare the canonical symbol text lexicographically.
 
   - `R[RS1] < R[RS2]` → FLAGS := {NEG = 1, ZERO = 0, POS = 0}
   - `R[RS1] = R[RS2]` → FLAGS := {NEG = 0, ZERO = 1, POS = 0}
   - `R[RS1] > R[RS2]` → FLAGS := {NEG = 0, ZERO = 0, POS = 1}
 
-- **Faults**: Type mismatch fault if types are incompatible.
+- **Faults**: Type mismatch fault if types are incompatible or if a symbol handle is zero/invalid.
 
 #### SETF
 

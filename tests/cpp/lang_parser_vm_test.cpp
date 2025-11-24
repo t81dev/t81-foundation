@@ -133,5 +133,65 @@ int main() {
     assert(vm->state().registers[0] == 1);
   }
 
+  {
+    const std::string src =
+        "fn never() -> T81Int { return never(); }"
+        "fn main() -> T81Int { "
+        "let guard: T81Int = 0t81; "
+        "if (guard && never()) { return 1t81; } "
+        "return 0t81; }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt(512);
+    assert(run.has_value());
+    assert(vm->state().halted);
+    assert(vm->state().registers[0] == 0);
+  }
+
+  {
+    const std::string src =
+        "fn never() -> T81Int { return never(); }"
+        "fn main() -> T81Int { "
+        "let guard: T81Int = 1t81; "
+        "if (guard || never()) { return 1t81; } "
+        "return 0t81; }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt(512);
+    assert(run.has_value());
+    assert(vm->state().halted);
+    assert(vm->state().registers[0] == 1);
+  }
+
+  {
+    const std::string src =
+        "fn main() -> T81Int { "
+        "let base: Symbol = :core; "
+        "let same: Symbol = :core; "
+        "let other: Symbol = :shell; "
+        "if ((base == same) && (base != other)) { return 1t81; } "
+        "return 0t81; }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    assert(vm->state().registers[0] == 1);
+  }
+
   return 0;
 }

@@ -92,11 +92,13 @@ return        ::= "return" expr ";"
 if_stmt       ::= "if" expr block [ "else" block ]
 loop_stmt     ::= "loop" block
 
-expr          ::= equality_expr
-equality_expr ::= relational_expr { ("==" | "!=") relational_expr }
-relational_expr ::= additive_expr { ("<" | "<=" | ">" | ">=") additive_expr }
-additive_expr ::= term { ("+" | "-") term }
-term          ::= factor { "*" factor }
+expr             ::= logical_or_expr
+logical_or_expr  ::= logical_and_expr { "||" logical_and_expr }
+logical_and_expr ::= equality_expr { "&&" equality_expr }
+equality_expr    ::= relational_expr { ("==" | "!=") relational_expr }
+relational_expr  ::= additive_expr { ("<" | "<=" | ">" | ">=") additive_expr }
+additive_expr    ::= term { ("+" | "-") term }
+term             ::= factor { "*" factor }
 factor        ::= literal
                 | identifier
                 | fn_call
@@ -112,6 +114,12 @@ paren_expr    ::= "(" expr ")"
 
 This grammar MUST be parsed deterministically.
 No ambiguous operator precedence is allowed; all precedence rules are normative and listed in Appendix A.1.
+
+Logical conjunction/disjunction use canonical ternary booleans: `0t81`
+represents false, any non-zero `T81Int` represents true, and the emitted code
+MUST short-circuit left-to-right. When the left operand of `&&` evaluates to
+false or the left operand of `||` evaluates to true, the right operand MUST NOT
+be evaluated. The final result MUST be `0t81` or `1t81`.
 
 ______________________________________________________________________
 
@@ -244,8 +252,12 @@ Guarantees:
 - literal expressions for `T81Float`, `T81Fraction`, and `Symbol` MUST be tagged
   with their declared types so lowering can emit the correct literal pool handle.
 - comparison expressions (`==`, `!=`, `<`, `<=`, `>`, `>=`) MUST return `T81Int`
-  (canonical boolean) and both operands MUST be the same primitive numeric type
-  (`T81Int`, `T81Float`, or `T81Fraction`).
+  (canonical boolean). Operands MUST share the same primitive numeric type
+  (`T81Int`, `T81Float`, or `T81Fraction`). `Symbol` operands are legal ONLY for
+  equality/inequality and MUST be rejected for ordering comparisons.
+- logical conjunction/disjunction (`&&`, `||`) MUST evaluate operands left to
+  right, short-circuit deterministically, and operate on canonical boolean
+  `T81Int` values. Their result MUST be `0t81` when false and `1t81` when true.
 
 ### Stage 4 — Purity Analysis
 
@@ -276,7 +288,9 @@ Maps IR instructions to TISC sequences:
 | `a * b` (`T81Float`) | `FMUL` |
 | `a + b` (`T81Fraction`) | literal handle load, `FRACADD` |
 | `a * b` (`T81Fraction`) | `FRACMUL` |
-| comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) | `CMP`, `SETF`, literal/branch sequence producing a `T81Int` |
+| comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) | `CMP`, `SETF`, literal/branch sequence producing a `T81Int` (`Symbol` allowed only for `==`/`!=`) |
+| logical `a && b` | Evaluate `a`, `JumpIfZero` to skip RHS, evaluate `b` only when needed, write `0t81/1t81` deterministically |
+| logical `a || b` | Evaluate `a`, `JumpIfNotZero` to skip RHS, evaluate `b` only when needed, write `0t81/1t81` deterministically |
 | vector add | `TVECADD` |
 | matrix mul | `TMATMUL` |
 | fn call | `CALL`, argument push, return capture |

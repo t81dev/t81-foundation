@@ -135,5 +135,56 @@ int main() {
     assert(res.error() == lang::CompileError::UnsupportedType);
   }
 
+  // Symbol equality compiles
+  {
+    auto mod = lang::parse_module(
+        "fn main() -> T81Int { "
+        "let a: Symbol = :core; "
+        "let b: Symbol = :core; "
+        "return a == b; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(res.has_value());
+  }
+
+  // Symbol ordering fails
+  {
+    auto mod = lang::parse_module(
+        "fn main() -> T81Int { "
+        "let a: Symbol = :core; "
+        "let b: Symbol = :shell; "
+        "return a < b; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(!res.has_value());
+    assert(res.error() == lang::CompileError::UnsupportedType);
+  }
+
+  // Logical expressions require T81Int operands
+  {
+    auto mod = lang::parse_module(
+        "fn main() -> T81Int { "
+        "let a: T81Float = 1.00t81; "
+        "return a && 1t81; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(!res.has_value());
+    assert(res.error() == lang::CompileError::UnsupportedType);
+  }
+
+  // Logical expressions compile for integers
+  {
+    auto mod = lang::parse_module(
+        "fn main() -> T81Int { "
+        "return (1t81 && 1t81) || (0t81 && 1t81); }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(res.has_value());
+  }
+
   return 0;
 }
