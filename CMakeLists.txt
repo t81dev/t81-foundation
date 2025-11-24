@@ -171,6 +171,9 @@ if (T81_BUILD_TESTS)
   add_executable(t81_lang_compiler_unary_test tests/cpp/lang_compiler_unary_test.cpp)
   target_link_libraries(t81_lang_compiler_unary_test PRIVATE t81)
 
+  add_executable(t81_lang_compiler_not_test tests/cpp/lang_compiler_not_test.cpp)
+  target_link_libraries(t81_lang_compiler_not_test PRIVATE t81)
+
   enable_testing()
   set(T81_TEST_TARGETS
     t81_bigint_test
@@ -210,6 +213,7 @@ if (T81_BUILD_TESTS)
     t81_vm_float_fraction_ops_test
     t81_vm_neg_jumps_test
     t81_lang_compiler_unary_test
+    t81_lang_compiler_not_test
   )
   foreach(tgt IN LISTS T81_TEST_TARGETS)
     add_test(NAME ${tgt} COMMAND $<TARGET_FILE:${tgt}>)
