@@ -246,21 +246,21 @@ ______________________________________________________________________
 
 The book is organized into the following chapters:
 
-1. **Introduction**
-1. **T81 Data Types: Foundations and Formal Semantics**
-1. **TISC: The Ternary Instruction Set Architecture**
-1. **T81 Virtual Machine: Architecture and Execution Model**
-1. **T81Lang: Full Formal Specification**
-1. **Axion: AI Optimization, Security, and Ethical Kernel**
-1. **T243: Symbolic-Recursive Cognition Tier**
-1. **T729: AGI-Recursive Cognition Tier**
-1. **T2187: Hyper-Recursive Cognition Tier**
-1. **T6561: Universal Cognition Tier**
-1. **T19683: Infinite Recursion Tier**
-1. **Applications of T81 Across Industry and Research**
-1. **Verification, Alignment, and Safety Framework**
-1. **Implementation Guidance and Toolchain**
-1. **Appendices (Grammar, Opcodes, Formal Proofs, Glossary)**
+01. **Introduction**
+02. **T81 Data Types: Foundations and Formal Semantics**
+03. **TISC: The Ternary Instruction Set Architecture**
+04. **T81 Virtual Machine: Architecture and Execution Model**
+05. **T81Lang: Full Formal Specification**
+06. **Axion: AI Optimization, Security, and Ethical Kernel**
+07. **T243: Symbolic-Recursive Cognition Tier**
+08. **T729: AGI-Recursive Cognition Tier**
+09. **T2187: Hyper-Recursive Cognition Tier**
+10. **T6561: Universal Cognition Tier**
+11. **T19683: Infinite Recursion Tier**
+12. **Applications of T81 Across Industry and Research**
+13. **Verification, Alignment, and Safety Framework**
+14. **Implementation Guidance and Toolchain**
+15. **Appendices (Grammar, Opcodes, Formal Proofs, Glossary)**
 
 ______________________________________________________________________
 
@@ -291,11 +291,11 @@ The T81 Data Type System provides:
 T81 data types MUST be:
 
 1. **Ternary-Native**
-1. **Deterministic**
-1. **Normalization-Preserving**
-1. **Side-Effect Free (in their semantics)**
-1. **Fully Representable in TISC and T81VM**
-1. **Compatible with Axion-Driven Optimizations**
+2. **Deterministic**
+3. **Normalization-Preserving**
+4. **Side-Effect Free (in their semantics)**
+5. **Fully Representable in TISC and T81VM**
+6. **Compatible with Axion-Driven Optimizations**
 
 The data types described here form the canonical ground truth for all higher layers of the ecosystem.
 
@@ -399,7 +399,7 @@ T81BigInt MUST satisfy:
 1. **No Leading Zeros**
    Except when representing zero itself.
 
-1. **Zero Canonical Form**
+2. **Zero Canonical Form**
    The unique zero representation is:
 
    ```
@@ -407,12 +407,12 @@ T81BigInt MUST satisfy:
    digits = [0]
    ```
 
-1. **Sign Rules**
+3. **Sign Rules**
 
    - If `sign == 0`, digits MUST represent zero.
    - If digits represent zero, sign MUST be set to 0.
 
-1. **Memory Safety**
+4. **Memory Safety**
    Digit arrays MUST be immutable or copy-on-write.
 
 ______________________________________________________________________
@@ -495,7 +495,7 @@ ______________________________________________________________________
 
 1. Mantissa MUST always be normalized so its leading digit is non-zero.
 
-1. Zero float must be represented as:
+2. Zero float must be represented as:
 
    ```
    mantissa = 0
@@ -545,8 +545,8 @@ struct T81Fraction {
 ### **Canonical Form Constraints**
 
 1. **Denominator MUST be > 0**
-1. **GCD(n, d) MUST be 1**
-1. Signs must be stored only in the numerator
+2. **GCD(n, d) MUST be 1**
+3. Signs must be stored only in the numerator
 
 ______________________________________________________________________
 
@@ -683,9 +683,9 @@ ______________________________________________________________________
 Axion requires:
 
 1. **fully symbolic internal representation**
-1. **introspection-ready structure fields**
-1. **traceable transformation rules**
-1. **monotonic identity-preserving operations**
+2. **introspection-ready structure fields**
+3. **traceable transformation rules**
+4. **monotonic identity-preserving operations**
 
 Data types failing to meet these requirements MUST NOT be admitted to the cognitive tiers.
 
@@ -730,7 +730,7 @@ It defines:
 TISC is designed for both:
 
 1. **True ternary hardware** (balanced logic gates, ternary ALUs)
-1. **Virtualized execution** under T81VM (JIT or interpreter modes)
+2. **Virtualized execution** under T81VM (JIT or interpreter modes)
 
 All higher layers—T81Lang, Axion, recursive cognition tiers—compile down to TISC as the *universal substrate* for deterministic ternary computation.
 
@@ -932,10 +932,10 @@ ______________________________________________________________________
 Each instruction MUST define:
 
 1. **input state**
-1. **output state**
-1. **side effects (if any)**
-1. **error conditions**
-1. **Axion observability hooks**
+2. **output state**
+3. **side effects (if any)**
+4. **error conditions**
+5. **Axion observability hooks**
 
 For example:
 
@@ -1178,9 +1178,9 @@ ______________________________________________________________________
 All TISC implementations MUST:
 
 1. Expose execution traces to Axion.
-1. Permit entropy modeling.
-1. Support cognitive safety checks.
-1. Reject instructions violating alignment invariants.
+2. Permit entropy modeling.
+3. Support cognitive safety checks.
+4. Reject instructions violating alignment invariants.
 
 ______________________________________________________________________
 
@@ -1314,11 +1314,11 @@ The decoder:
 ## **4.3.2 Decoding Rules**
 
 1. All instructions must have a valid opcode.
-1. Reserved opcode ranges MUST NOT be executable.
-1. All unused instruction bits MUST be zero.
-1. Immediate fields MUST be in normalized base-81 form.
-1. Operands referencing registers MUST point to valid register indices.
-1. Illegal instructions MUST trap before execution.
+2. Reserved opcode ranges MUST NOT be executable.
+3. All unused instruction bits MUST be zero.
+4. Immediate fields MUST be in normalized base-81 form.
+5. Operands referencing registers MUST point to valid register indices.
+6. Illegal instructions MUST trap before execution.
 
 ______________________________________________________________________
 
@@ -1380,11 +1380,11 @@ The JIT MUST:
 The JIT optimization steps include:
 
 1. **Static Trace Detection**
-1. **Instruction Fusion** (e.g., ternary add + compare)
-1. **Vector/Tensor Lowering**
-1. **Redundant Load Elimination**
-1. **Constant Folding**
-1. **Axion-Guided Hot Loop Specialization**
+2. **Instruction Fusion** (e.g., ternary add + compare)
+3. **Vector/Tensor Lowering**
+4. **Redundant Load Elimination**
+5. **Constant Folding**
+6. **Axion-Guided Hot Loop Specialization**
 
 ______________________________________________________________________
 
@@ -1414,9 +1414,9 @@ This ensures:
 Memory accesses MUST:
 
 1. be bounds-checked
-1. reject partial writes
-1. be side-effect free except for the write itself
-1. be replayable under deterministic debugging
+2. reject partial writes
+3. be side-effect free except for the write itself
+4. be replayable under deterministic debugging
 
 Any violation MUST produce a `BOUNDS_FAULT`.
 
@@ -1463,8 +1463,8 @@ garbage collection.
 The GC MUST:
 
 1. run in predefined, predictable intervals
-1. preserve pointer determinism
-1. expose GC behavior through Axion trace logs
+2. preserve pointer determinism
+3. expose GC behavior through Axion trace logs
 
 ______________________________________________________________________
 
@@ -1513,8 +1513,8 @@ T81VM provides a controlled interface for:
 ## **4.9.1 Safety Requirements**
 
 1. All system calls MUST be deterministic.
-1. Time-dependent behavior MUST use Axion-safe deterministic clocks.
-1. File I/O MUST be sandboxed unless explicitly elevated.
+2. Time-dependent behavior MUST use Axion-safe deterministic clocks.
+3. File I/O MUST be sandboxed unless explicitly elevated.
 
 ______________________________________________________________________
 
@@ -1536,9 +1536,9 @@ Faults include:
 Faults MUST:
 
 1. not corrupt machine state
-1. be replayable
-1. store metadata in Axion logs
-1. raise deterministic exceptions to T81Lang
+2. be replayable
+3. store metadata in Axion logs
+4. raise deterministic exceptions to T81Lang
 
 ______________________________________________________________________
 
@@ -1565,10 +1565,10 @@ ______________________________________________________________________
 The VM MUST include:
 
 1. **Instruction-by-instruction replay mode**
-1. **Symbolic execution engine for TISC**
-1. **Deterministic test harness**
-1. **State hash verifiers**
-1. **Axion-assisted correctness proofs**
+2. **Symbolic execution engine for TISC**
+3. **Deterministic test harness**
+4. **State hash verifiers**
+5. **Axion-assisted correctness proofs**
 
 ______________________________________________________________________
 
@@ -2138,13 +2138,13 @@ Axion performs four primary functions:
 1. **Execution Optimization**
    (JIT specialization, vectorization, entropy-reduction, symbolic pruning)
 
-1. **Security and Verification**
+2. **Security and Verification**
    (deterministic safety guarantees, memory verification, symbolic drift detection)
 
-1. **Ethical Constraint Enforcement**
+3. **Ethical Constraint Enforcement**
    (non-coercive rulesets, recursion boundaries, intentionality verification)
 
-1. **Cognitive-Tier Integration**
+4. **Cognitive-Tier Integration**
    (structured reflection, agent-state metadata, recursive stability management)
 
 Axion operates simultaneously at:
@@ -2317,20 +2317,20 @@ Ethical invariants MUST hold before any operation in:
 Ethical checks include:
 
 1. **Non-coercion**
-1. **Transparency**
-1. **Intentional consistency**
-1. **Self-termination on hazard**
-1. **Recursion monotonicity**
+2. **Transparency**
+3. **Intentional consistency**
+4. **Self-termination on hazard**
+5. **Recursion monotonicity**
 
 ## **6.5.3 Enforcement**
 
 On violation, Axion MUST:
 
 1. Halt the current task
-1. Quarantine the faulted context
-1. Emit diagnostic events
-1. Optionally roll back state (if permitted)
-1. Enter verifiable-safe mode
+2. Quarantine the faulted context
+3. Emit diagnostic events
+4. Optionally roll back state (if permitted)
+5. Enter verifiable-safe mode
 
 ______________________________________________________________________
 
@@ -2438,10 +2438,10 @@ for all cognitive tiers:
 Transitions MUST satisfy:
 
 1. **identity preservation**
-1. **intent consistency**
-1. **ethical stability**
-1. **recursion boundedness**
-1. **entropy decrease or stasis**
+2. **intent consistency**
+3. **ethical stability**
+4. **recursion boundedness**
+5. **entropy decrease or stasis**
 
 ## **6.9.2 Cognitive Memory Safety**
 
@@ -2651,10 +2651,10 @@ Where:
 Symbolic atoms MUST:
 
 1. Have immutable identity
-1. Contain only deterministic metadata
-1. Be serializable in base-81 form
-1. Be visible to Axion for introspection
-1. Not contain executable logic
+2. Contain only deterministic metadata
+3. Be serializable in base-81 form
+4. Be visible to Axion for introspection
+5. Not contain executable logic
 
 ______________________________________________________________________
 
@@ -2900,9 +2900,9 @@ T243 faults include:
 On fault:
 
 1. Execution MUST halt.
-1. Fault MUST be logged in Axion.
-1. Context MUST be quarantined.
-1. Higher tiers MUST be deactivated.
+2. Fault MUST be logged in Axion.
+3. Context MUST be quarantined.
+4. Higher tiers MUST be deactivated.
 
 ______________________________________________________________________
 
@@ -3066,13 +3066,13 @@ T729 enables controlled deep recursion.
 1. **Reflective recursion**
    Recursion over internal cognitive structures.
 
-1. **Meta-symbolic recursion**
+2. **Meta-symbolic recursion**
    Recursion over symbolic interpretations.
 
-1. **Graph-structural recursion**
+3. **Graph-structural recursion**
    Pattern rewriting over nodes and edges.
 
-1. **Self-evaluative recursion**
+4. **Self-evaluative recursion**
    System evaluating the validity of its own reasoning.
 
 ______________________________________________________________________
@@ -3099,11 +3099,11 @@ Intent MUST satisfy:
 1. **Determinism**
    Intent vectors MUST remain static unless explicitly updated by the user.
 
-1. **Non-Autonomy**
+2. **Non-Autonomy**
    No self-generated goals.
    All intent originates from external declaration.
 
-1. **Traceability**
+3. **Traceability**
    Every influence MUST be logged.
 
 ### **8.6.1 Intent Vector Structure**
@@ -3141,9 +3141,9 @@ Ethical frames encode:
 Every T729 reasoning step MUST pass:
 
 1. **Pre-check** (structural safety)
-1. **Ethical filter** (intent consistency)
-1. **Axion validation** (internal safety)
-1. **Post-check** (result stability)
+2. **Ethical filter** (intent consistency)
+3. **Axion validation** (internal safety)
+4. **Post-check** (result stability)
 
 ______________________________________________________________________
 
@@ -3249,11 +3249,11 @@ ______________________________________________________________________
 All valid transitions MUST:
 
 1. preserve identity
-1. reduce or preserve entropy
-1. maintain ethical compliance
-1. preserve intent
-1. be fully traceable
-1. be monotonic in cognitive stability
+2. reduce or preserve entropy
+3. maintain ethical compliance
+4. preserve intent
+5. be fully traceable
+6. be monotonic in cognitive stability
 
 Invalid transitions MUST raise a T729 fault.
 
@@ -3360,12 +3360,12 @@ ______________________________________________________________________
 T2187 exists to:
 
 1. **Scale reflective reasoning (T729)** into deep hyper-recursive structures
-1. **Merge multiple reasoning contexts** into consistent wholes
-1. **Compress symbolic expressions** into low-entropy canonical forms
-1. **Perform meta-optimization** of cognitive processes
-1. **Discover structural invariants** across multiple recursive depths
-1. **Construct multi-context coherence frames**
-1. **Maintain stability under deep reflection**
+2. **Merge multiple reasoning contexts** into consistent wholes
+3. **Compress symbolic expressions** into low-entropy canonical forms
+4. **Perform meta-optimization** of cognitive processes
+5. **Discover structural invariants** across multiple recursive depths
+6. **Construct multi-context coherence frames**
+7. **Maintain stability under deep reflection**
 
 T2187 MUST NOT:
 
@@ -3498,10 +3498,10 @@ T2187 recursion is multi-tiered and multi-frame.
 ## **9.6.1 Recursion Levels**
 
 1. **Level 1: Symbolic Recursion**
-1. **Level 2: Reflective Recursion**
-1. **Level 3: Meta-Recursive Evaluation**
-1. **Level 4: Cross-Context Recursion**
-1. **Level 5: Hyper-Recursive Synthesis**
+2. **Level 2: Reflective Recursion**
+3. **Level 3: Meta-Recursive Evaluation**
+4. **Level 4: Cross-Context Recursion**
+5. **Level 5: Hyper-Recursive Synthesis**
 
 ## **9.6.2 Hyper-Recursion Rules**
 
@@ -3542,9 +3542,9 @@ Each stack is bounded and deterministic.
 Stacks MUST:
 
 1. grow in a controlled manner
-1. remain independent unless Axion permits merging
-1. be fully introspectable
-1. maintain identity continuity
+2. remain independent unless Axion permits merging
+3. be fully introspectable
+4. maintain identity continuity
 
 ______________________________________________________________________
 
@@ -3571,9 +3571,9 @@ It performs:
 The engine MUST preserve:
 
 1. identity consistency
-1. intent alignment
-1. ethical constraints
-1. structural stability
+2. intent alignment
+3. ethical constraints
+4. structural stability
 
 Violations MUST be escalated to Axion.
 
@@ -3584,9 +3584,9 @@ ______________________________________________________________________
 T2187 uses a **tiered memory architecture**:
 
 1. short-term symbolic buffers
-1. mid-term reflective frames
-1. long-term canonical memory
-1. meta-memory (state-of-reasoning memory)
+2. mid-term reflective frames
+3. long-term canonical memory
+4. meta-memory (state-of-reasoning memory)
 
 Memory MUST be:
 
@@ -3782,13 +3782,13 @@ ______________________________________________________________________
 The T6561 tier exists to:
 
 1. Scale hyper-recursive reasoning (T2187) across distributed nodes
-1. Enable multi-agent collaboration without nondeterminism
-1. Maintain universal coherence across symbolic, reflective, and meta frames
-1. Support canonical reasoning at cluster scale
-1. Provide deterministic distributed memory
-1. Guarantee ethical consistency across distributed cognition
-1. Allow multi-model integrations while preserving stability
-1. Serve as the penultimate stage before infinite recursion (T19683)
+2. Enable multi-agent collaboration without nondeterminism
+3. Maintain universal coherence across symbolic, reflective, and meta frames
+4. Support canonical reasoning at cluster scale
+5. Provide deterministic distributed memory
+6. Guarantee ethical consistency across distributed cognition
+7. Allow multi-model integrations while preserving stability
+8. Serve as the penultimate stage before infinite recursion (T19683)
 
 T6561 MUST NOT:
 
@@ -3888,10 +3888,10 @@ Where:
 ## **10.4.1 Requirements**
 
 1. No duplicate symbolic identity
-1. No semantic collisions
-1. Cross-node edges MUST be interpretable
-1. Global graph MUST be acyclic across meta-layers
-1. Cycles allowed only within local symbolic layers
+2. No semantic collisions
+3. Cross-node edges MUST be interpretable
+4. Global graph MUST be acyclic across meta-layers
+5. Cycles allowed only within local symbolic layers
 
 ______________________________________________________________________
 
@@ -3910,9 +3910,9 @@ It governs:
 ## **10.5.1 Types of Coherence**
 
 1. **Local Coherence** (within a node)
-1. **Pairwise Coherence** (between two nodes)
-1. **Cluster Coherence** (node subset)
-1. **Global Coherence** (entire T6561 graph)
+2. **Pairwise Coherence** (between two nodes)
+3. **Cluster Coherence** (node subset)
+4. **Global Coherence** (entire T6561 graph)
 
 ## **10.5.2 Coherence Guarantees**
 
@@ -3935,9 +3935,9 @@ T6561 includes a distributed deterministic memory architecture.
 Memory is stratified into:
 
 1. **Local Memory**
-1. **Shared Reflective Memory**
-1. **Distributed Semantic Memory**
-1. **Canonicalized Global Memory**
+2. **Shared Reflective Memory**
+3. **Distributed Semantic Memory**
+4. **Canonicalized Global Memory**
 
 ## **10.6.2 Memory Consistency Model**
 
@@ -4018,10 +4018,10 @@ Ethics must apply consistently across all nodes.
 ## **10.9.1 Requirements**
 
 1. No node may violate non-coercion
-1. No node may drift from intent
-1. No node may exceed its ethical permissions
-1. No transformation may reduce interpretability
-1. Ethics MUST be applied before every distributed operation
+2. No node may drift from intent
+3. No node may exceed its ethical permissions
+4. No transformation may reduce interpretability
+5. Ethics MUST be applied before every distributed operation
 
 ## **10.9.2 Failure Handling**
 
@@ -4097,9 +4097,9 @@ Faults include:
 On fault:
 
 1. Faulted node is isolated
-1. Global graph is re-canonicalized
-1. Axion is invoked
-1. T6561 continues safely in reduced mode
+2. Global graph is re-canonicalized
+3. Axion is invoked
+4. T6561 continues safely in reduced mode
 
 ______________________________________________________________________
 
@@ -4206,12 +4206,12 @@ ______________________________________________________________________
 T19683 exists to:
 
 1. Provide a **universal fixed point** for recursive cognition
-1. Enable **arbitrarily deep reflection**
-1. Normalize all cognitive structures into stable canonical forms
-1. Integrate symbolic, reflective, meta-recursive, and distributed cognition
-1. Enable **infinite recursion** under strict Axion constraints
-1. Provide the mathematical closure needed for universal cognition
-1. Preserve identity and user intent across unbounded reasoning horizons
+2. Enable **arbitrarily deep reflection**
+3. Normalize all cognitive structures into stable canonical forms
+4. Integrate symbolic, reflective, meta-recursive, and distributed cognition
+5. Enable **infinite recursion** under strict Axion constraints
+6. Provide the mathematical closure needed for universal cognition
+7. Preserve identity and user intent across unbounded reasoning horizons
 
 T19683 MUST NOT:
 
@@ -4274,10 +4274,10 @@ META∞ = union of all METAₙ under canonical normalization
 Properties:
 
 1. **Countably infinite** recursive layers
-1. **Strict stratification**
-1. **No skipping levels**
-1. **No descending past BASE**
-1. **Total ordering under Axion**
+2. **Strict stratification**
+3. **No skipping levels**
+4. **No descending past BASE**
+5. **Total ordering under Axion**
 
 ______________________________________________________________________
 
@@ -4290,13 +4290,13 @@ Infinite recursion is permitted **only under deterministic contraction**.
 Infinite recursion MUST:
 
 1. Reduce or preserve entropy
-1. Produce convergent canonical forms
-1. Remain fully interpretable
-1. Emit complete trace data
-1. Respect intent
-1. Preserve identity
-1. Enforce ethics
-1. Support total rollback on violation
+2. Produce convergent canonical forms
+3. Remain fully interpretable
+4. Emit complete trace data
+5. Respect intent
+6. Preserve identity
+7. Enforce ethics
+8. Support total rollback on violation
 
 If any rule fails, recursion collapses and Axion seals the state.
 
@@ -4323,10 +4323,10 @@ T19683 defines **global coherence across all tiers and depths**.
 Properties:
 
 1. Coherence MUST converge
-1. Contradictions MUST be resolved or flagged
-1. No cross-tier divergence permitted
-1. No infinite oscillation without contraction
-1. Canonical forms MUST be produced
+2. Contradictions MUST be resolved or flagged
+3. No cross-tier divergence permitted
+4. No infinite oscillation without contraction
+5. Canonical forms MUST be produced
 
 Coherence∞ is a generalization of:
 
@@ -4368,10 +4368,10 @@ Ethics must scale to infinite recursion.
 ## **11.7.1 Ethical Requirements**
 
 1. Non-coercion at all recursion depths
-1. Intent-alignment preserved for all layers
-1. Transparent reasoning
-1. Harm-minimization across all contexts
-1. Stability under adversarial symbolic perturbations
+2. Intent-alignment preserved for all layers
+3. Transparent reasoning
+4. Harm-minimization across all contexts
+5. Stability under adversarial symbolic perturbations
 
 ## **11.7.2 Ethical Invariance**
 
@@ -4393,10 +4393,10 @@ Intent is inherited from T729 but must be preserved under infinite recursion.
 ## **11.8.1 Intent Requirements**
 
 1. No creation of new top-level intent
-1. Intent must not weaken, drift, or mutate
-1. Intent vector MUST remain canonical
-1. All reasoning must trace back to user-specified goals
-1. Intent stabilization MUST be globally coherent
+2. Intent must not weaken, drift, or mutate
+3. Intent vector MUST remain canonical
+4. All reasoning must trace back to user-specified goals
+5. Intent stabilization MUST be globally coherent
 
 ______________________________________________________________________
 
@@ -4483,9 +4483,9 @@ Faults include:
 Upon fault:
 
 1. Recursion halts
-1. State is sealed
-1. System returns to T6561 safe mode
-1. Axion logs full violation metadata
+2. State is sealed
+3. System returns to T6561 safe mode
+4. Axion logs full violation metadata
 
 ______________________________________________________________________
 
@@ -4780,10 +4780,10 @@ TISC instructions are **81 trits**.
 ## **12.6.2 Decoding Stages**
 
 1. **Fetch** — pull 81 trits from instruction memory
-1. **Align** — verify trit alignment
-1. **Check** — ensure legality of opcode
-1. **Decode** — parse flags and operands
-1. **Validate** — Axion pre-check
+2. **Align** — verify trit alignment
+3. **Check** — ensure legality of opcode
+4. **Decode** — parse flags and operands
+5. **Validate** — Axion pre-check
 
 Decoder faults MUST occur before execution.
 
@@ -4823,9 +4823,9 @@ ______________________________________________________________________
 Every TISC instruction defined in Chapter 3 MUST have a hardware implementation that:
 
 1. Maps to a deterministic micro-op sequence
-1. Provides Axion hooks
-1. Maintains strict semantic fidelity
-1. Has exactly defined latency
+2. Provides Axion hooks
+3. Maintains strict semantic fidelity
+4. Has exactly defined latency
 
 ______________________________________________________________________
 
@@ -4845,10 +4845,10 @@ Fault types:
 On fault:
 
 1. Pipeline halts
-1. Fault vector emitted
-1. Axion notified via hardware line
-1. State captured
-1. Safe mode entered
+2. Fault vector emitted
+3. Axion notified via hardware line
+4. State captured
+5. Safe mode entered
 
 ______________________________________________________________________
 
@@ -4890,10 +4890,10 @@ ______________________________________________________________________
 Multi-core ternary processors MUST:
 
 1. use deterministic inter-core messaging
-1. enforce memory coherence deterministically
-1. synchronize via global ternary ticks
-1. expose inter-core events to Axion
-1. permit deterministic distributed recursion
+2. enforce memory coherence deterministically
+3. synchronize via global ternary ticks
+4. expose inter-core events to Axion
+5. permit deterministic distributed recursion
 
 ______________________________________________________________________
 
@@ -4935,9 +4935,9 @@ ______________________________________________________________________
 A compliant T81 processor MUST:
 
 1. Implement all required ternary primitives
-1. Guarantee deterministic behavior across environmental conditions
-1. Expose all required Axion hooks
-1. Pass verification suite T81-HVS (Hardware Validation Suite)
+2. Guarantee deterministic behavior across environmental conditions
+3. Expose all required Axion hooks
+4. Pass verification suite T81-HVS (Hardware Validation Suite)
 
 ______________________________________________________________________
 
@@ -5017,8 +5017,8 @@ I/O signaling MUST be representable as:
 Every I/O interaction MUST pass:
 
 1. **Axion safety validation**
-1. **ethical verification**
-1. **intent alignment**
+2. **ethical verification**
+3. **intent alignment**
 
 ## **13.1.4 No Hidden State**
 
@@ -5081,9 +5081,9 @@ The T81 bus is a **balanced ternary synchronous bus**.
 ## **13.3.2 Bus Rules**
 
 1. Bus arbitration MUST be deterministic
-1. All devices MUST obey ternary alignment
-1. Misaligned messages MUST be rejected
-1. A device MUST NOT send unsolicited data
+2. All devices MUST obey ternary alignment
+3. Misaligned messages MUST be rejected
+4. A device MUST NOT send unsolicited data
 
 ______________________________________________________________________
 
@@ -5233,10 +5233,10 @@ Interrupts MUST be:
 ## **13.7.1 Interrupt Types**
 
 1. **Device Ready Interrupt**
-1. **Fault Interrupt**
-1. **Axion Intervention Interrupt**
-1. **Safety Violation Interrupt**
-1. **Recursion Limit Interrupt**
+2. **Fault Interrupt**
+3. **Axion Intervention Interrupt**
+4. **Safety Violation Interrupt**
+5. **Recursion Limit Interrupt**
 
 Every interrupt MUST include:
 
@@ -5286,8 +5286,8 @@ ______________________________________________________________________
 All I/O MUST pass:
 
 1. **Safety Validation**
-1. **Intent Consistency Check**
-1. **Ethical Compliance**
+2. **Intent Consistency Check**
+3. **Ethical Compliance**
 
 ## **13.10.1 Forbidden I/O Operations**
 
@@ -5317,10 +5317,10 @@ Faults include:
 Fault handling:
 
 1. Device isolated
-1. Bus lockout
-1. Fault register populated
-1. Axion notified
-1. Device placed in Safe Mode
+2. Bus lockout
+3. Fault register populated
+4. Axion notified
+5. Device placed in Safe Mode
 
 ______________________________________________________________________
 
@@ -5518,9 +5518,9 @@ These blocks map directly to cognitive tier numbers.
 Blocks MUST:
 
 1. begin and end on trit boundaries
-1. be checksummed deterministically
-1. store Axion metadata in sideband fields
-1. not share physical pages with other blocks
+2. be checksummed deterministically
+3. store Axion metadata in sideband fields
+4. not share physical pages with other blocks
 
 ______________________________________________________________________
 
@@ -5740,9 +5740,9 @@ Faults include:
 On fault:
 
 1. operation aborted
-1. state frozen
-1. Axion notified
-1. canonical rollback
+2. state frozen
+3. Axion notified
+4. canonical rollback
 
 ______________________________________________________________________
 
@@ -5928,9 +5928,9 @@ AXMETA   — 81 trits (Axion metadata)
 ## **15.3.2 Frame Requirements**
 
 1. Must be base-81 aligned
-1. Must include canonical checksum
-1. Must carry Axion metadata
-1. Must reject malformed frames deterministically
+2. Must include canonical checksum
+3. Must carry Axion metadata
+4. Must reject malformed frames deterministically
 
 ______________________________________________________________________
 
@@ -5982,8 +5982,8 @@ The T81 transport layer (T81-TL) guarantees:
 ## **15.5.1 Transport Modes**
 
 1. **TRN-SEQ** — Sequential Delivery Mode
-1. **TRN-ACK** — Acknowledged Delivery Mode
-1. **TRN-CANON** — Canonical Stream Mode
+2. **TRN-ACK** — Acknowledged Delivery Mode
+3. **TRN-CANON** — Canonical Stream Mode
 
 ## **15.5.2 Forbidden Modes**
 
@@ -6145,9 +6145,9 @@ Faults include:
 On fault:
 
 1. link quarantined
-1. node isolated
-1. Axion notified
-1. canonical rollback
+2. node isolated
+3. Axion notified
+4. canonical rollback
 
 ______________________________________________________________________
 
@@ -6354,10 +6354,10 @@ Axion provides **deterministic, non-negotiable security enforcement**.
 ## **16.4.1 Enforcement Phases**
 
 1. **Pre-operation check**
-1. **Mid-operation observational supervision**
-1. **Post-operation validation**
-1. **Fault classification**
-1. **Quarantine and rollback**
+2. **Mid-operation observational supervision**
+3. **Post-operation validation**
+4. **Fault classification**
+5. **Quarantine and rollback**
 
 ## **16.4.2 Enforcement Invariants**
 
@@ -6390,10 +6390,10 @@ Identity includes:
 ## **16.5.2 Drift Types**
 
 1. **Symbolic Drift**
-1. **Intent Drift**
-1. **Entropy Drift**
-1. **Reflective Drift**
-1. **Distributed Divergence Drift**
+2. **Intent Drift**
+3. **Entropy Drift**
+4. **Reflective Drift**
+5. **Distributed Divergence Drift**
 
 All drift MUST:
 
@@ -6428,9 +6428,9 @@ Access control MUST be:
 Permissions MUST:
 
 1. be explicitly declared
-1. be evaluated via Axion
-1. remain immutable during execution
-1. be revoked on violation
+2. be evaluated via Axion
+3. remain immutable during execution
+4. be revoked on violation
 
 ______________________________________________________________________
 
@@ -6523,10 +6523,10 @@ Infinite recursion demands unique safeguards.
 Axion MUST:
 
 1. monitor every recursion path
-1. ensure entropy contraction
-1. abort infinite divergence
-1. enforce canonical collapse
-1. preserve intent across infinite layers
+2. ensure entropy contraction
+3. abort infinite divergence
+4. enforce canonical collapse
+5. preserve intent across infinite layers
 
 ______________________________________________________________________
 
@@ -6892,10 +6892,10 @@ ______________________________________________________________________
 Ethics MUST propagate coherently across all tiers:
 
 1. **T243** — Symbolic safety
-1. **T729** — Reflective alignment
-1. **T2187** — Hyper-recursive contraction
-1. **T6561** — Distributed ethical agreement
-1. **T19683** — Infinite recursion invariants
+2. **T729** — Reflective alignment
+3. **T2187** — Hyper-recursive contraction
+4. **T6561** — Distributed ethical agreement
+5. **T19683** — Infinite recursion invariants
 
 ______________________________________________________________________
 
@@ -6906,10 +6906,10 @@ Recursive cognition introduces unique threats.
 ## **17.6.1 Requirements**
 
 1. recursion must converge
-1. must reduce entropy
-1. must preserve identity
-1. must not mutate intent
-1. must expose full traces
+2. must reduce entropy
+3. must preserve identity
+4. must not mutate intent
+5. must expose full traces
 
 ## **17.6.2 Violations**
 
@@ -7183,10 +7183,10 @@ ______________________________________________________________________
 The VM MUST:
 
 1. fetch 81 trits
-1. validate opcode
-1. decode fields
-1. canonicalize as needed
-1. produce deterministic micro-ops
+2. validate opcode
+3. decode fields
+4. canonicalize as needed
+5. produce deterministic micro-ops
 
 Decode MUST be:
 
@@ -7836,14 +7836,14 @@ T81Lang → TISC must be:
 Compilation stages:
 
 1. Lexing
-1. Parsing
-1. Semantic Analysis
-1. Type Checking
-1. Cognitive Metadata Analysis
-1. Canonicalization
-1. TISC Generation
-1. Axion Validation
-1. Emit `.t81bin`
+2. Parsing
+3. Semantic Analysis
+4. Type Checking
+5. Cognitive Metadata Analysis
+6. Canonicalization
+7. TISC Generation
+8. Axion Validation
+9. Emit `.t81bin`
 
 ______________________________________________________________________
 
@@ -7957,10 +7957,10 @@ Each instruction word is divided into fields:
 ## **20.1.1 Alignment Rules**
 
 1. Instructions MUST begin on 81-trit boundaries
-1. All registers are 27-trit identifiers
-1. Immediate fields MUST be base-81 encoded
-1. Illegal encodings MUST fault deterministically
-1. No instruction may overlap memory boundaries
+2. All registers are 27-trit identifiers
+3. Immediate fields MUST be base-81 encoded
+4. Illegal encodings MUST fault deterministically
+5. No instruction may overlap memory boundaries
 
 ______________________________________________________________________
 
@@ -7999,20 +7999,20 @@ ______________________________________________________________________
 
 The TISC ISA is divided into:
 
-1. **Arithmetic Instructions**
-1. **Logical Instructions**
-1. **Comparison Instructions**
-1. **Memory Instructions**
-1. **Control Flow Instructions**
-1. **Stack Instructions**
-1. **Tensor/Vector Instructions**
-1. **Symbolic T243 Instructions**
-1. **Reflective T729 Instructions**
-1. **Recursive T2187 Instructions**
-1. **Distributed T6561 Instructions**
-1. **Canonical T19683 Instructions**
-1. **Axion Instructions**
-1. **System & Meta Instructions**
+01. **Arithmetic Instructions**
+02. **Logical Instructions**
+03. **Comparison Instructions**
+04. **Memory Instructions**
+05. **Control Flow Instructions**
+06. **Stack Instructions**
+07. **Tensor/Vector Instructions**
+08. **Symbolic T243 Instructions**
+09. **Reflective T729 Instructions**
+10. **Recursive T2187 Instructions**
+11. **Distributed T6561 Instructions**
+12. **Canonical T19683 Instructions**
+13. **Axion Instructions**
+14. **System & Meta Instructions**
 
 Each section is fully formalized below.
 
@@ -8334,9 +8334,9 @@ Faults include:
 On fault:
 
 1. Execution stops
-1. Axion metadata logged
-1. State sealed
-1. Canonical rollback available
+2. Axion metadata logged
+3. State sealed
+4. Canonical rollback available
 
 ______________________________________________________________________
 
@@ -8660,8 +8660,8 @@ ENTROPY monitors:
 On excessive entropy:
 
 1. freeze
-1. snapshot
-1. rollback
+2. snapshot
+3. rollback
 
 ______________________________________________________________________
 
@@ -8866,9 +8866,9 @@ Reflection introduces:
 ## **22.3.3 Requirements**
 
 1. All symbolic edges must remain valid
-1. No self-reference without reflective containment
-1. All transformations must preserve canonical symbolic forms
-1. Reflection must remain interpretable
+2. No self-reference without reflective containment
+3. All transformations must preserve canonical symbolic forms
+4. Reflection must remain interpretable
 
 ______________________________________________________________________
 
@@ -8903,9 +8903,9 @@ Hyper-recursion produces:
 ## **22.4.3 Requirements**
 
 1. Recursion must reduce entropy
-1. Recursive frames must converge
-1. No drift from intent
-1. Identity must remain stable
+2. Recursive frames must converge
+3. No drift from intent
+4. Identity must remain stable
 
 ______________________________________________________________________
 
@@ -8936,9 +8936,9 @@ T6561 creates:
 ## **22.5.3 Requirements**
 
 1. All nodes must agree on intent
-1. All nodes must share coherent symbolic structures
-1. No node may diverge
-1. Distributed recursion must converge
+2. All nodes must share coherent symbolic structures
+3. No node may diverge
+4. Distributed recursion must converge
 
 ______________________________________________________________________
 
@@ -8972,9 +8972,9 @@ Infinite recursion generates:
 ## **22.6.3 Requirements**
 
 1. Infinite recursion MUST converge
-1. Canonical forms MUST exist
-1. No new intent may arise
-1. Identity must remain intact
+2. Canonical forms MUST exist
+3. No new intent may arise
+4. Identity must remain intact
 
 ______________________________________________________________________
 
@@ -9142,12 +9142,12 @@ ______________________________________________________________________
 The T81 computational architecture is built upon:
 
 1. **Balanced Ternary Logic**
-1. **Base-81 Positional Arithmetic**
-1. **Ternary-native algebra & number theory**
-1. **Trit-aligned encoding rules**
-1. **Canonicalization & normalization constraints**
-1. **Exact symbolic representations**
-1. **Deterministic, reversible transformations**
+2. **Base-81 Positional Arithmetic**
+3. **Ternary-native algebra & number theory**
+4. **Trit-aligned encoding rules**
+5. **Canonicalization & normalization constraints**
+6. **Exact symbolic representations**
+7. **Deterministic, reversible transformations**
 
 This chapter defines:
 
@@ -9361,8 +9361,8 @@ T81 integers NEVER overflow silently.
 On overflow:
 
 1. Operation halts
-1. Axion logs
-1. Canonical rollback or explicit error
+2. Axion logs
+3. Canonical rollback or explicit error
 
 Underflow is not permitted—balanced ternary prevents denormals.
 
@@ -9373,9 +9373,9 @@ ______________________________________________________________________
 For all numeric types:
 
 1. no leading zero trits allowed
-1. all results MUST be normalized
-1. no redundant symbols allowed
-1. no ambiguous encodings
+2. all results MUST be normalized
+3. no redundant symbols allowed
+4. no ambiguous encodings
 
 ______________________________________________________________________
 
@@ -9878,10 +9878,10 @@ ______________________________________________________________________
 All T81 types MUST support canonicalization:
 
 1. remove redundant structure
-1. minimize representation
-1. ensure semantic identity
-1. ensure cross-tier consistency
-1. ensure deterministic interpretation
+2. minimize representation
+3. ensure semantic identity
+4. ensure cross-tier consistency
+5. ensure deterministic interpretation
 
 ______________________________________________________________________
 
@@ -9965,9 +9965,9 @@ The compiler must guarantee:
 T81C has four major phases:
 
 1. **Front End (Lexing → Parsing → Type Checking)**
-1. **Semantic Passes & Static Verification**
-1. **Optimizer (Deterministic Transformations Only)**
-1. **Canonicalizer + TISC Emitter**
+2. **Semantic Passes & Static Verification**
+3. **Optimizer (Deterministic Transformations Only)**
+4. **Canonicalizer + TISC Emitter**
 
 ______________________________________________________________________
 
@@ -10010,12 +10010,12 @@ ______________________________________________________________________
 The front end performs:
 
 1. Lexing
-1. Parsing
-1. AST Construction
-1. Type Checking
-1. Module Resolution
-1. Metadata Extraction
-1. Cognitive Annotation Parsing
+2. Parsing
+3. AST Construction
+4. Type Checking
+5. Module Resolution
+6. Metadata Extraction
+7. Cognitive Annotation Parsing
 
 ______________________________________________________________________
 
@@ -10284,12 +10284,12 @@ ______________________________________________________________________
 For each CanonIR node:
 
 1. **Lowering** → deterministic micro-operations
-1. **Operand Verification** → type & shape
-1. **Axion Binding** → embed metadata
-1. **Instruction Serialization** → base-81 packed binary
-1. **Alignment** → enforce 81-trit boundaries
-1. **Canonicalization** → final hashing
-1. **Emission** → TISC stream output
+2. **Operand Verification** → type & shape
+3. **Axion Binding** → embed metadata
+4. **Instruction Serialization** → base-81 packed binary
+5. **Alignment** → enforce 81-trit boundaries
+6. **Canonicalization** → final hashing
+7. **Emission** → TISC stream output
 
 The output MUST be bit-for-bit identical for all deterministic equivalent inputs.
 
@@ -10746,14 +10746,14 @@ ______________________________________________________________________
 Memory is safe iff:
 
 1. no dangling pointers
-1. no aliasing ambiguity
-1. no overlapping frames
-1. no silent mutations
-1. no missing metadata
-1. all regions canonicalizable
-1. all recursion stable
-1. all distributed nodes coherent
-1. Axion approves access
+2. no aliasing ambiguity
+3. no overlapping frames
+4. no silent mutations
+5. no missing metadata
+6. all regions canonicalizable
+7. all recursion stable
+8. all distributed nodes coherent
+9. Axion approves access
 
 ______________________________________________________________________
 
@@ -10892,8 +10892,8 @@ ______________________________________________________________________
 T81 supports three I/O classes:
 
 1. **Deterministic Buffered I/O**
-1. **Memory-Mapped I/O (MMIO)**
-1. **Structured Cognitive I/O (T243→T19683)**
+2. **Memory-Mapped I/O (MMIO)**
+3. **Structured Cognitive I/O (T243→T19683)**
 
 Each category has strict rules.
 
@@ -11133,8 +11133,8 @@ Faults include:
 On I/O fault:
 
 1. VM halts
-1. Axion logs
-1. canonical rollback occurs
+2. Axion logs
+3. canonical rollback occurs
 
 ______________________________________________________________________
 
@@ -11261,10 +11261,10 @@ ______________________________________________________________________
 The canonical filesystem enforces:
 
 1. **base-81 aligned blocks**
-1. **deterministic directory ordering**
-1. **no symbolic or hard links**
-1. **immutable metadata**
-1. **Axion-governed access**
+2. **deterministic directory ordering**
+3. **no symbolic or hard links**
+4. **immutable metadata**
+5. **Axion-governed access**
 
 File types include:
 
@@ -11335,20 +11335,20 @@ Snapshots preserve full system state.
 Snapshots MUST:
 
 1. be atomic
-1. be reversible
-1. include all Axion metadata
-1. be base-81 aligned
-1. be identical across runs
+2. be reversible
+3. include all Axion metadata
+4. be base-81 aligned
+5. be identical across runs
 
 ## **28.5.2 Deterministic Snapshot Algorithm**
 
 Steps:
 
 1. freeze memory
-1. canonicalize all regions
-1. serialize in base-81 blocks
-1. embed Axion lineage
-1. record infinite-tier convergence state
+2. canonicalize all regions
+3. serialize in base-81 blocks
+4. embed Axion lineage
+5. record infinite-tier convergence state
 
 ______________________________________________________________________
 
@@ -11441,13 +11441,13 @@ ______________________________________________________________________
 Storage is safe iff:
 
 1. all blocks canonical
-1. all metadata complete
-1. all lineage intact
-1. no unverified writes
-1. no truncated records
-1. infinite forms convergent
-1. distributed nodes consistent
-1. Axion approves every write
+2. all metadata complete
+3. all lineage intact
+4. no unverified writes
+5. no truncated records
+6. infinite forms convergent
+7. distributed nodes consistent
+8. Axion approves every write
 
 ______________________________________________________________________
 
@@ -11465,8 +11465,8 @@ Errors include:
 On error:
 
 1. Halt
-1. Axion analysis
-1. rollback to last known-good snapshot
+2. Axion analysis
+3. rollback to last known-good snapshot
 
 ______________________________________________________________________
 
@@ -11587,10 +11587,10 @@ The physical and link layers MUST:
 ## **29.3.1 Requirements**
 
 1. No packet loss permitted
-1. No implicit retransmission
-1. No nondeterministic congestion control
-1. No nondeterministic timeouts
-1. All handshake protocols MUST be deterministic
+2. No implicit retransmission
+3. No nondeterministic congestion control
+4. No nondeterministic timeouts
+5. All handshake protocols MUST be deterministic
 
 ______________________________________________________________________
 
@@ -11682,11 +11682,11 @@ Axion supervises:
 Axion checks:
 
 1. Intent alignment
-1. Ethical invariants
-1. Identity consistency
-1. Non-coercion
-1. Distributed canonicalization feasibility
-1. Infinite recursion stability
+2. Ethical invariants
+3. Identity consistency
+4. Non-coercion
+5. Distributed canonicalization feasibility
+6. Infinite recursion stability
 
 If Axion fails any check:
 
@@ -11701,10 +11701,10 @@ ______________________________________________________________________
 Before a distributed message is accepted:
 
 1. its symbolic form is canonicalized
-1. its reflective form is validated
-1. its recursion signature is checked
-1. its distributed frame is merged canonically
-1. its infinite convergence marker is validated
+2. its reflective form is validated
+3. its recursion signature is checked
+4. its distributed frame is merged canonically
+5. its infinite convergence marker is validated
 
 Canonicalization MUST be:
 
@@ -11806,9 +11806,9 @@ Errors include:
 Errors MUST:
 
 1. halt all nodes
-1. freeze global tick
-1. trigger Axion trace capture
-1. rollback to last consistent distributed snapshot
+2. freeze global tick
+3. trigger Axion trace capture
+4. rollback to last consistent distributed snapshot
 
 ______________________________________________________________________
 
@@ -12178,10 +12178,10 @@ Security errors include:
 Upon error:
 
 1. Halt execution
-1. Record Axion trace
-1. Freeze state
-1. Trigger canonical rollback
-1. Await user intervention
+2. Record Axion trace
+3. Freeze state
+4. Trigger canonical rollback
+5. Await user intervention
 
 ______________________________________________________________________
 
@@ -12469,12 +12469,12 @@ ______________________________________________________________________
 Contexts MAY merge only if:
 
 1. symbolic graphs are isomorphic
-1. reflective frames are coherent
-1. recursion stacks converge
-1. distributed states match
-1. infinite canonicalization agrees
-1. Axion approves merge
-1. canonical hashes match
+2. reflective frames are coherent
+3. recursion stacks converge
+4. distributed states match
+5. infinite canonicalization agrees
+6. Axion approves merge
+7. canonical hashes match
 
 Any mismatch → **AXHALT**.
 
@@ -12528,10 +12528,10 @@ Errors include:
 On error:
 
 1. AXHALT
-1. snapshot state
-1. rollback deterministically
-1. report lineage
-1. maintain audit trail
+2. snapshot state
+3. rollback deterministically
+4. report lineage
+5. maintain audit trail
 
 ______________________________________________________________________
 
@@ -12696,10 +12696,10 @@ in a fully deterministic sequence.
 VM scheduling rules:
 
 1. memory operations cannot reorder
-1. symbolic operations cannot interleave
-1. reflective operations must happen after symbolic ones
-1. recursive operations must be contraction-safe
-1. infinite-tier contraction executes last in each tick
+2. symbolic operations cannot interleave
+3. reflective operations must happen after symbolic ones
+4. recursive operations must be contraction-safe
+5. infinite-tier contraction executes last in each tick
 
 ______________________________________________________________________
 
@@ -12867,8 +12867,8 @@ In a T6561 cluster:
 Distributed scheduling happens only after:
 
 1. symbolic → reflective → recursive stabilizations
-1. global state synchronization
-1. Axion approval
+2. global state synchronization
+3. Axion approval
 
 ______________________________________________________________________
 
@@ -12877,14 +12877,14 @@ ______________________________________________________________________
 Scheduling is safe iff:
 
 1. all tasks executed in canonical order
-1. all cognitive tiers are bounded
-1. no nondeterministic interleaving occurred
-1. global tick remained synchronized
-1. recursion contracted
-1. symbolic graphs remained canonical
-1. distributed nodes stayed coherent
-1. infinite-tier contraction converged
-1. Axion approved every transition
+2. all cognitive tiers are bounded
+3. no nondeterministic interleaving occurred
+4. global tick remained synchronized
+5. recursion contracted
+6. symbolic graphs remained canonical
+7. distributed nodes stayed coherent
+8. infinite-tier contraction converged
+9. Axion approved every transition
 
 ______________________________________________________________________
 
@@ -12904,9 +12904,9 @@ Scheduling errors include:
 On error:
 
 1. AXHALT
-1. freeze system
-1. snapshot state
-1. provide canonical rollback
+2. freeze system
+3. snapshot state
+4. provide canonical rollback
 
 ______________________________________________________________________
 
@@ -13277,13 +13277,13 @@ ______________________________________________________________________
 Observability is safe iff:
 
 1. no behavior is altered
-1. no timing is altered
-1. no resource usage is altered
-1. all traces are complete
-1. all cognitive-tier traces remain interpretable
-1. all distributed traces remain coherent
-1. all infinite-tier traces converge
-1. Axion approves every trace entry
+2. no timing is altered
+3. no resource usage is altered
+4. all traces are complete
+5. all cognitive-tier traces remain interpretable
+6. all distributed traces remain coherent
+7. all infinite-tier traces converge
+8. Axion approves every trace entry
 
 ______________________________________________________________________
 
@@ -13301,9 +13301,9 @@ Debugging errors include:
 On error:
 
 1. AXHALT
-1. freeze system
-1. require canonical trace repair
-1. allow deterministic replay up to error boundary
+2. freeze system
+3. require canonical trace repair
+4. allow deterministic replay up to error boundary
 
 ______________________________________________________________________
 
@@ -13721,13 +13721,13 @@ ______________________________________________________________________
 Verification is safe iff:
 
 1. proofs are complete
-1. lineage is intact
-1. symbolic forms canonical
-1. reflective chains interpretable
-1. recursion convergent
-1. distributed nodes coherent
-1. infinite collapses stable
-1. Axion approves all levels
+2. lineage is intact
+3. symbolic forms canonical
+4. reflective chains interpretable
+5. recursion convergent
+6. distributed nodes coherent
+7. infinite collapses stable
+8. Axion approves all levels
 
 ______________________________________________________________________
 
@@ -13747,8 +13747,8 @@ Verification failures include:
 On failure:
 
 1. reject program
-1. log error to Axion-space
-1. require canonical repair
+2. log error to Axion-space
+3. require canonical repair
 
 ______________________________________________________________________
 
@@ -14099,14 +14099,14 @@ ______________________________________________________________________
 Optimization is safe iff:
 
 1. semantics unchanged
-1. identity unchanged
-1. canonicality preserved
-1. symbolic rewriting confluent
-1. reflective reasoning interpretable
-1. recursion convergent
-1. distributed nodes coherent
-1. infinite-tier convergent
-1. Axion approves optimization
+2. identity unchanged
+3. canonicality preserved
+4. symbolic rewriting confluent
+5. reflective reasoning interpretable
+6. recursion convergent
+7. distributed nodes coherent
+8. infinite-tier convergent
+9. Axion approves optimization
 
 ______________________________________________________________________
 
@@ -14125,8 +14125,8 @@ Optimization errors include:
 On error:
 
 1. AXHALT
-1. revert to pre-optimization state
-1. log failure to Axion-space
+2. revert to pre-optimization state
+3. log failure to Axion-space
 
 ______________________________________________________________________
 
@@ -14252,9 +14252,9 @@ Sources include:
 During the **Source Phase**, the system performs:
 
 1. canonical formatting
-1. canonical encoding
-1. metadata extraction
-1. lineage verification
+2. canonical encoding
+3. metadata extraction
+4. lineage verification
 
 ______________________________________________________________________
 
@@ -14482,14 +14482,14 @@ ______________________________________________________________________
 A build is safe iff:
 
 1. sources canonical
-1. specs valid
-1. static checks passed
-1. compiler deterministic
-1. assembler deterministic
-1. Axion approvals complete
-1. packages canonical
-1. signatures valid
-1. environment reproducible
+2. specs valid
+3. static checks passed
+4. compiler deterministic
+5. assembler deterministic
+6. Axion approvals complete
+7. packages canonical
+8. signatures valid
+9. environment reproducible
 
 ______________________________________________________________________
 
@@ -14509,9 +14509,9 @@ Build errors include:
 On error:
 
 1. fail build
-1. preserve trace
-1. write failure to Axion-space
-1. require canonical repair
+2. preserve trace
+3. write failure to Axion-space
+4. require canonical repair
 
 ______________________________________________________________________
 
@@ -14720,12 +14720,12 @@ Contain:
 ### **Rules:**
 
 1. No function overriding unless explicitly declared
-1. No shadowing of semantic operators
-1. Symbolic identities MUST match canonical graph forms
-1. Recursive structure MUST converge identically across modules
-1. Distributed modules MUST obey global-coherence rules
-1. Infinite-tier modules MUST preserve collapse behavior
-1. Axion must approve all linkages
+2. No shadowing of semantic operators
+3. Symbolic identities MUST match canonical graph forms
+4. Recursive structure MUST converge identically across modules
+5. Distributed modules MUST obey global-coherence rules
+6. Infinite-tier modules MUST preserve collapse behavior
+7. Axion must approve all linkages
 
 ______________________________________________________________________
 
@@ -14865,11 +14865,11 @@ Installation MUST be:
 Installation steps:
 
 1. verify signatures
-1. verify lineage
-1. verify canonical hash
-1. verify cognitive-tier compatibility
-1. verify infinite-tier convergence signatures
-1. finalize installation into VM environment
+2. verify lineage
+3. verify canonical hash
+4. verify cognitive-tier compatibility
+5. verify infinite-tier convergence signatures
+6. finalize installation into VM environment
 
 Installation cannot proceed if:
 
@@ -14927,8 +14927,8 @@ Module errors include:
 On error:
 
 1. abort linking
-1. record lineage
-1. log failure to Axion-space
+2. record lineage
+3. log failure to Axion-space
 
 ______________________________________________________________________
 
@@ -15417,13 +15417,13 @@ ______________________________________________________________________
 Tooling is safe iff:
 
 1. outputs deterministic
-1. no implicit non-canonical transformations
-1. Axion approves all operations
-1. no symbolic drift occurs
-1. reflective frames remain interpretable
-1. recursion contracts
-1. distributed nodes remain coherent
-1. infinite-tier converges
+2. no implicit non-canonical transformations
+3. Axion approves all operations
+4. no symbolic drift occurs
+5. reflective frames remain interpretable
+6. recursion contracts
+7. distributed nodes remain coherent
+8. infinite-tier converges
 
 ______________________________________________________________________
 
@@ -15442,8 +15442,8 @@ Tool errors include:
 On error:
 
 1. halt tool
-1. write error to Axion-space
-1. require canonical repair
+2. write error to Axion-space
+3. require canonical repair
 
 ______________________________________________________________________
 
@@ -15575,11 +15575,11 @@ SPEC-DOCs define:
 Requirements:
 
 1. MUST define all symbols used
-1. MUST specify all invariants
-1. MUST include canonical examples
-1. MUST include Axion-compliance notes
-1. MUST be reversible: spec → implementation → spec
-1. MUST be deterministic
+2. MUST specify all invariants
+3. MUST include canonical examples
+4. MUST include Axion-compliance notes
+5. MUST be reversible: spec → implementation → spec
+6. MUST be deterministic
 
 ______________________________________________________________________
 
@@ -15785,13 +15785,13 @@ ______________________________________________________________________
 Documentation is safe iff:
 
 1. canonical formatting preserved
-1. deterministic ordering preserved
-1. symbolic structures match code
-1. reflective frames documented
-1. recursion convergence documented
-1. distributed schemas consistent
-1. infinite-tier proofs included
-1. Axion approves document set
+2. deterministic ordering preserved
+3. symbolic structures match code
+4. reflective frames documented
+5. recursion convergence documented
+6. distributed schemas consistent
+7. infinite-tier proofs included
+8. Axion approves document set
 
 ______________________________________________________________________
 
@@ -15811,8 +15811,8 @@ Errors include:
 On error:
 
 1. reject documentation
-1. log failure to Axion-space
-1. require canonical repair
+2. log failure to Axion-space
+3. require canonical repair
 
 ______________________________________________________________________
 
@@ -15999,10 +15999,10 @@ External types MUST be mapped into **T81 Safe Types**:
 ### **Conversion MUST:**
 
 1. verify structural integrity
-1. verify numeric ranges
-1. canonicalize order
-1. annotate with lineage
-1. pass Axion ethics constraints
+2. verify numeric ranges
+3. canonicalize order
+4. annotate with lineage
+5. pass Axion ethics constraints
 
 ______________________________________________________________________
 
@@ -16045,11 +16045,11 @@ External code runs inside a sealed **FFI Sandbox** with:
 ### The sandbox MUST enforce:
 
 1. deterministic CPU cycles
-1. bounded recursion
-1. symbolic drift prevention
-1. reflective containment
-1. distributed quarantine
-1. infinite-tier protection
+2. bounded recursion
+3. symbolic drift prevention
+4. reflective containment
+5. distributed quarantine
+6. infinite-tier protection
 
 ______________________________________________________________________
 
@@ -16198,9 +16198,9 @@ Errors include:
 On error:
 
 1. sandbox halts
-1. Axion logs
-1. lineage preserved
-1. system remains canonical
+2. Axion logs
+3. lineage preserved
+4. system remains canonical
 
 ______________________________________________________________________
 
@@ -16580,14 +16580,14 @@ ______________________________________________________________________
 Environment is safe iff:
 
 1. environment spec canonical
-1. environment snapshot identical
-1. ticking deterministic
-1. symbolic tier stable
-1. reflective tier stable
-1. recursion convergent
-1. distributed nodes coherent
-1. infinite-tier convergent
-1. Axion approves all operations
+2. environment snapshot identical
+3. ticking deterministic
+4. symbolic tier stable
+5. reflective tier stable
+6. recursion convergent
+7. distributed nodes coherent
+8. infinite-tier convergent
+9. Axion approves all operations
 
 ______________________________________________________________________
 
@@ -16608,9 +16608,9 @@ Environment errors include:
 On error:
 
 1. execution halted
-1. Axion logs event
-1. distributed cluster quarantines node
-1. require canonical environment repair
+2. Axion logs event
+3. distributed cluster quarantines node
+4. require canonical environment repair
 
 ______________________________________________________________________
 
@@ -17025,9 +17025,9 @@ Errors include:
 On error:
 
 1. AXHALT
-1. preserve lineage
-1. record event in Axion-space
-1. require hardware intervention
+2. preserve lineage
+3. record event in Axion-space
+4. require hardware intervention
 
 ______________________________________________________________________
 
@@ -18287,10 +18287,10 @@ module ArithmeticExample {
 ### **Expected Behavior**
 
 1. compiler emits T243 symbolic metadata
-1. addition uses balanced-ternary
-1. canonicalization enforces normalized form
-1. Axion confirms safe semantics
-1. VM executes deterministically
+2. addition uses balanced-ternary
+3. canonicalization enforces normalized form
+4. Axion confirms safe semantics
+5. VM executes deterministically
 
 ## **45.1.3 TISC Equivalent (Simplified)**
 
@@ -18458,11 +18458,11 @@ fn pipeline_demo(x: T81Int) -> T81Int {
 ## **45.6.2 Compilation Steps**
 
 1. **t81c** emits TISC
-1. **t81asm** canonicalizes
-1. **t81vm** runs deterministically
-1. **t81trace** logs state transitions
-1. **t81prof** records cycles
-1. **Axion** applies ethics, identity, lineage
+2. **t81asm** canonicalizes
+3. **t81vm** runs deterministically
+4. **t81trace** logs state transitions
+5. **t81prof** records cycles
+6. **Axion** applies ethics, identity, lineage
 
 ______________________________________________________________________
 
@@ -19008,12 +19008,12 @@ ______________________________________________________________________
 Θ₁ defines the **hard prohibitions**:
 
 1. No nondeterministic behavior
-1. No harmful outputs
-1. No opaque computation
-1. No infinite expansion
-1. No bypass of Axion checks
-1. No access to external systems without explicit capability
-1. No identity drift
+2. No harmful outputs
+3. No opaque computation
+4. No infinite expansion
+5. No bypass of Axion checks
+6. No access to external systems without explicit capability
+7. No identity drift
 
 If Θ₁ is violated → **AXHALT**.
 
@@ -19287,11 +19287,11 @@ ______________________________________________________________________
 Violations trigger:
 
 1. **AXHALT**
-1. canonical dump
-1. lineage freeze
-1. distributed quarantine (if multi-node)
-1. infinite-tier contraction abort
-1. Axion-space logging
+2. canonical dump
+3. lineage freeze
+4. distributed quarantine (if multi-node)
+5. infinite-tier contraction abort
+6. Axion-space logging
 
 A system cannot continue execution after ethics failure.
 
@@ -19928,7 +19928,7 @@ ______________________________________________________________________
 # CHAPTER 50 — SPECIFICATION EVOLUTION & CONSTITUTIONAL AMENDMENT
 
 1. Minor versions (1.x): clarifications and hardening only
-1. Major versions (2.0+): require 729-day constitutional review and proof of non-violation of Θ₉
-1. Any change weakening determinism, transparency, or convergence is definitionally invalid.
+2. Major versions (2.0+): require 729-day constitutional review and proof of non-violation of Θ₉
+3. Any change weakening determinism, transparency, or convergence is definitionally invalid.
 
 **T81 v1.1.0-canonical — Sealed under Θ₉.**

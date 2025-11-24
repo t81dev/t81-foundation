@@ -33,34 +33,36 @@ jobs:
       - name: Install Python tools
         run: |
           pip install --quiet \
-            mdformat==3.9 \
+            mdformat==0.7.18 \
             mdformat-gfm \
-            mdformat-frontmatter \
-            markdown-link-check==3.12.1 \
-            lychee==0.15.1
+            mdformat-frontmatter
 
       # ───── Markdown formatting (must be canonical) ─────
       - name: Check Markdown formatting (mdformat)
         run: mdformat --check --number .
 
-      # ───── Broken link detection (critical for Radical Literacy) ─────
+      # ───── Broken link detection (lychee – fast, accurate, parallel) ─────
       - name: Check Markdown links (lychee – fast, accurate, parallel)
         id: lychee
-        continue-on-error: true
-        run: |
-          lychee \
-            --verbose \
-            --format markdown \
-            --no-progress \
-            --exclude-mail \
-            --exclude "http://localhost*" \
-            --exclude "https://github.com/t81dev/t81-foundation/edit*" \
-            "spec/**/*.md" "docs/**/*.md" "README.md" "AGENTS.md" "CONTRIBUTING.md"
+        uses: lycheeverse/lychee-action@v2
+        with:
+          fail: false          # don't auto-fail; handle in next step
+          format: markdown
+          jobSummary: false
+          args: >
+            --verbose
+            --no-progress
+            --exclude-mail
+            --exclude "http://localhost*"
+            --exclude "https://github.com/t81dev/t81-foundation/edit*"
+            spec/**/*.md docs/**/*.md README.md AGENTS.md CONTRIBUTING.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Report broken links
-        if: steps.lychee.outcome == 'failure'
+        if: steps.lychee.outputs.exit_code != 0
         run: |
-          echo "Broken or unreachable links were found. See above."
+          echo "Broken or unreachable links were found. See lychee report above."
           exit 1
 
       # ───── Constitutional directory & file presence ─────

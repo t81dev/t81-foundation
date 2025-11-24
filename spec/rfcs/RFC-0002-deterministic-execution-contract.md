@@ -28,10 +28,10 @@ ______________________________________________________________________
 The DEC provides:
 
 1. **A unified definition of determinism** across all layers.
-1. **A binding promise** that every observable behavior is reproducible.
-1. **A shared surface** for Axion verification.
-1. **A foundation** for symbolic reasoning and cognitive tiers.
-1. **A safety wall** preventing nondeterministic execution paths.
+2. **A binding promise** that every observable behavior is reproducible.
+3. **A shared surface** for Axion verification.
+4. **A foundation** for symbolic reasoning and cognitive tiers.
+5. **A safety wall** preventing nondeterministic execution paths.
 
 If any layer violates this contract, the entire reasoning stack collapses.
 
@@ -183,11 +183,11 @@ ______________________________________________________________________
 All memory interactions MUST conform to:
 
 1. **Segment rules (CODE, STACK, HEAP, TENSOR, META)**
-1. **Canonical write requirement**
-1. **Canonical read requirement**
-1. **Deterministic bounds checks**
-1. **Deterministic GC**
-1. **Deterministic object identity**
+2. **Canonical write requirement**
+3. **Canonical read requirement**
+4. **Deterministic bounds checks**
+5. **Deterministic GC**
+6. **Deterministic object identity**
 
 Memory is the substrate for determinism; no leaks, no races, no hidden state.
 
@@ -257,9 +257,9 @@ ______________________________________________________________________
 Determinism is enforced in layers:
 
 1. **TISC** — operational determinism
-1. **T81VM** — execution determinism
-1. **Axion** — supervisory determinism
-1. **Cognitive Tiers** — reasoning determinism
+2. **T81VM** — execution determinism
+3. **Axion** — supervisory determinism
+4. **Cognitive Tiers** — reasoning determinism
 
 If any layer detects nondeterminism:
 

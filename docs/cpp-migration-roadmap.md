@@ -5,13 +5,13 @@
 ## Table of Contents
 
 - [T81 C++ Migration Roadmap](#t81-c++-migration-roadmap)
-  - [Phase 0 — Compatibility (**DONE**)](#phase-0-—-compatibility-**done**)
-  - [Phase 1 — Core Data Types (**DONE**)](#phase-1-—-core-data-types-**done**)
-  - [Phase 2 — IO & Codec Surfaces (**DONE**)](#phase-2-—-io-&-codec-surfaces-**done**)
-  - [Phase 3 — IR Surface (**DONE, EXPANDABLE**)](#phase-3-—-ir-surface-**done-expandable**)
-  - [Phase 4 — Axion Façade (**IN PROGRESS**)](#phase-4-—-axion-façade-**in-progress**)
-  - [Phase 5 — De-risked Deprecation (**ONGOING**)](#phase-5-—-de-risked-deprecation-**ongoing**)
-  - [Phase 6 — Build & CI Matrix (**ONGOING**)](#phase-6-—-build-&-ci-matrix-**ongoing**)
+  - [Phase 0 — Compatibility (**DONE**)](#phase-0-%E2%80%94-compatibility-**done**)
+  - [Phase 1 — Core Data Types (**DONE**)](#phase-1-%E2%80%94-core-data-types-**done**)
+  - [Phase 2 — IO & Codec Surfaces (**DONE**)](#phase-2-%E2%80%94-io-&-codec-surfaces-**done**)
+  - [Phase 3 — IR Surface (**DONE, EXPANDABLE**)](#phase-3-%E2%80%94-ir-surface-**done-expandable**)
+  - [Phase 4 — Axion Façade (**IN PROGRESS**)](#phase-4-%E2%80%94-axion-fa%C3%A7ade-**in-progress**)
+  - [Phase 5 — De-risked Deprecation (**ONGOING**)](#phase-5-%E2%80%94-de-risked-deprecation-**ongoing**)
+  - [Phase 6 — Build & CI Matrix (**ONGOING**)](#phase-6-%E2%80%94-build-&-ci-matrix-**ongoing**)
   - [Canonical Test Vectors](#canonical-test-vectors)
   - [Open Items (Migration-Focused)](#open-items-migration-focused)
     - [BigInt / Numerics](#bigint--numerics)
@@ -19,22 +19,10 @@
     - [Tensor](#tensor)
     - [IR](#ir)
     - [Axion](#axion)
-  - [“How to Resume Work” Checklist](#“how-to-resume-work”-checklist)
-  - [What’s New Since Last Revision](#what’s-new-since-last-revision)
+  - [“How to Resume Work” Checklist](#%E2%80%9Chow-to-resume-work%E2%80%9D-checklist)
+  - [What’s New Since Last Revision](#what%E2%80%99s-new-since-last-revision)
 
 <!-- T81-TOC:END -->
-
-
-
-
-
-
-
-
-
-
-
-
 
 This document tracks migration of legacy `.cweb` code to the new header-first C++ API.
 
@@ -103,12 +91,12 @@ ______________________________________________________________________
 1. Define a full `Opcode` + metadata table in `opcodes.hpp`:
    - `Opcode`, `OperandKind`, `OpcodeDesc` (or equivalent).
    - Flags for branching, privileged, memory, etc.
-1. Import opcodes from legacy sources:
+2. Import opcodes from legacy sources:
    - `legacy/hanoivm/src/t81lang_compiler/T81InstrFormats.td`
    - `legacy/hanoivm/src/t81lang_compiler/T81InstrInfo.td`
    - `spec/tisc-spec.md` (spec tables).
-1. Extend encoding/decoding in `encoding.hpp` to respect those formats.
-1. Grow `ir_encoding_test.cpp` to:
+3. Extend encoding/decoding in `encoding.hpp` to respect those formats.
+4. Grow `ir_encoding_test.cpp` to:
    - Roundtrip all opcodes.
    - Assert spec ↔ C++ table alignment (CI guard).
 
@@ -230,7 +218,7 @@ When picking this up after a gap:
    - `ctest --test-dir build -R "t81_"`
    - Or the equivalent Bazel/Make targets.
 
-1. **Choose one active edge from Open Items:**
+2. **Choose one active edge from Open Items:**
 
    - IR opcode table import (Phase 3).
    - BigInt division/GCD polish.
@@ -238,7 +226,7 @@ When picking this up after a gap:
    - Tensor unary/reduce extensions.
    - Axion façade backend.
 
-1. **Update both:**
+3. **Update both:**
 
    - This roadmap (phase status, “What’s New”).
    - `TODO.md` (for cross-cutting, long-term tasks).

@@ -3,10 +3,11 @@ name: Inject TOCs
 on:
   push:
     branches: [ main ]
-  pull_request:
-    types: [ closed ]
-    branches: [ main ]
-    if: github.event.pull_request.merged == true   # run after PR merge
+    paths:
+      - 'spec/**/*.md'
+      - 'docs/**/*.md'
+      - 'scripts/inject_toc.py'
+      - '*.md'
   workflow_dispatch:
 
 permissions:
@@ -40,7 +41,9 @@ jobs:
       - name: Inject Table of Contents into Markdown files
         run: python3 scripts/inject_toc.py
 
+      # Only push when we are actually on main
       - name: Commit & push only if TOCs changed
+        if: github.ref == 'refs/heads/main'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -59,5 +62,5 @@ jobs:
         if: success()
         run: |
           echo "### Tables of Contents auto-updated" >> $GITHUB_STEP_SUMMARY
-          echo "- Files processed by `scripts/inject_toc.py`" >> $GITHUB_STEP_SUMMARY
+          echo "- Files processed by scripts/inject_toc.py" >> $GITHUB_STEP_SUMMARY
           echo "- Trigger: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
