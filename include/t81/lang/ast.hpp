@@ -48,6 +48,11 @@ struct ExprBinary {
   std::shared_ptr<struct Expr> rhs;
 };
 
+struct ExprUnary {
+  enum class Op { Neg, Not } op{Op::Neg};
+  std::shared_ptr<struct Expr> expr;
+};
+
 struct MatchPattern {
   enum class Kind {
     OptionSome,
@@ -69,7 +74,7 @@ struct ExprMatch {
 };
 
 struct Expr {
-  std::variant<ExprLiteral, ExprIdent, ExprCall, ExprBinary, ExprMatch> node;
+  std::variant<ExprLiteral, ExprIdent, ExprCall, ExprBinary, ExprUnary, ExprMatch> node;
 };
 
 struct StatementReturn {
