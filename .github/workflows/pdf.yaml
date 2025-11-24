@@ -12,16 +12,17 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-   - name: Install Tectonic (cargo)
-  run: |
-    sudo apt-get update
-    sudo apt-get install -y curl build-essential pkg-config libssl-dev
-    curl https://sh.rustup.rs -sSf | sh -s -- -y
-    source "$HOME/.cargo/env"
-    cargo install tectonic
-    echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-- name: Check
-  run: tectonic --version
+    - name: Install Tectonic (via Cargo)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y curl build-essential pkg-config libssl-dev
+        curl https://sh.rustup.rs -sSf | sh -s -- -y
+        source "$HOME/.cargo/env"
+        cargo install tectonic
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Check Tectonic Installation
+      run: tectonic --version
 
     - name: Install Pandoc
       run: sudo apt-get update && sudo apt-get install -y pandoc
@@ -29,10 +30,10 @@ jobs:
     - name: Build PDFs
       run: bash pdf/build.sh
 
-    - name: Upload PDF artifacts
+    - name: Upload PDF Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: t81-pdfs
         path: pdf/output/**
-        # optional, but good hygiene:
-        # if-no-files-found: error
+        # Optional: Fail if no files found (good hygiene)
+        if-no-files-found: error
