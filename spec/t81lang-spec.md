@@ -169,6 +169,20 @@ If a value is non-canonical, the compiler MUST either:
 - emit code that performs canonicalization at runtime, or
 - reject the program with a type error
 
+### 2.5 Numeric Widening
+
+`T81Int` values MAY be widened to `T81Float` or `T81Fraction` whenever a context
+requires the wider type (e.g., declarations, parameter passing, binary
+arithmetic, or comparisons). Widening MUST be performed by inserting the
+appropriate conversion opcodes:
+
+- `I2F` for `T81Int → T81Float`
+- `I2FRAC` for `T81Int → T81Fraction`
+
+No other implicit conversions are permitted. In particular, the compiler MUST
+NOT automatically convert floats or fractions back to integers; such narrowing
+would need explicit syntax in a future revision.
+
 ______________________________________________________________________
 
 ## 3. Purity and Effects
@@ -247,14 +261,23 @@ Guarantees:
 - canonical forms are upheld
 - arithmetic expressions are only legal when both operands share a primitive type
   and TISC exposes a matching opcode (`ADD/MUL` for `T81Int`, `FADD/FMUL` for
-  `T81Float`, `FRACADD/FRACMUL` for `T81Fraction`). Mixed-type arithmetic MUST
-  be rejected unless an explicit conversion (`I2F`, `I2FRAC`, etc.) is inserted.
+  `T81Float`, `FRACADD/FRACMUL` for `T81Fraction`). When an expression mixes
+  `T81Int` with either `T81Float` or `T81Fraction`, the compiler MUST insert a
+  deterministic widening conversion (`I2F` or `I2FRAC`) so the operands share the
+  non-integer type before lowering. Any other mixed-type arithmetic MUST be
+  rejected.
 - literal expressions for `T81Float`, `T81Fraction`, and `Symbol` MUST be tagged
   with their declared types so lowering can emit the correct literal pool handle.
 - comparison expressions (`==`, `!=`, `<`, `<=`, `>`, `>=`) MUST return `T81Int`
   (canonical boolean). Operands MUST share the same primitive numeric type
-  (`T81Int`, `T81Float`, or `T81Fraction`). `Symbol` operands are legal ONLY for
+  (`T81Int`, `T81Float`, or `T81Fraction`). When a comparison mixes `T81Int`
+  with `T81Float` or `T81Fraction`, operands MUST be widened via `I2F` or
+  `I2FRAC` before emitting `CMP`. `Symbol` operands are legal ONLY for
   equality/inequality and MUST be rejected for ordering comparisons.
+- When storing into variables, passing call arguments, or returning from a
+  function, `T81Int` values MAY be widened to `T81Float` or `T81Fraction` via
+  `I2F`/`I2FRAC` to satisfy the declared type. Narrowing conversions (float or
+  fraction to integer) MUST NOT be inserted implicitly.
 - logical conjunction/disjunction (`&&`, `||`) MUST evaluate operands left to
   right, short-circuit deterministically, and operate on canonical boolean
   `T81Int` values. Their result MUST be `0t81` when false and `1t81` when true.
@@ -289,6 +312,7 @@ Maps IR instructions to TISC sequences:
 | `a + b` (`T81Fraction`) | literal handle load, `FRACADD` |
 | `a * b` (`T81Fraction`) | `FRACMUL` |
 | comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) | `CMP`, `SETF`, literal/branch sequence producing a `T81Int` (`Symbol` allowed only for `==`/`!=`) |
+| `T81Int → T81Float/T81Fraction` promotion | `I2F` / `I2FRAC` emitted before the consuming opcode/assignment |
 | logical `a && b` | Evaluate `a`, `JumpIfZero` to skip RHS, evaluate `b` only when needed, write `0t81/1t81` deterministically |
 | logical `a || b` | Evaluate `a`, `JumpIfNotZero` to skip RHS, evaluate `b` only when needed, write `0t81/1t81` deterministically |
 | vector add | `TVECADD` |

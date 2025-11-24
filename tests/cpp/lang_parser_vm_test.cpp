@@ -135,6 +135,81 @@ int main() {
 
   {
     const std::string src =
+        "fn main() -> T81Float { "
+        "let base: T81Float = 2t81; "
+        "return base + 1.20t81; }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    int handle = static_cast<int>(vm->state().registers[0]);
+    assert(handle > 0);
+    const double expected = 3.0 + (2.0 / 81.0);
+    assert(std::fabs(vm->state().floats[handle - 1] - expected) < 1e-9);
+  }
+
+  {
+    const std::string src =
+        "fn main() -> T81Fraction { "
+        "let base: T81Fraction = 2t81; "
+        "return base + 1/2t81; }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    int handle = static_cast<int>(vm->state().registers[0]);
+    assert(handle > 0);
+    const auto& frac = vm->state().fractions[handle - 1];
+    assert(frac.num.to_int64() == 5);
+    assert(frac.den.to_int64() == 2);
+  }
+
+  {
+    const std::string src =
+        "fn main() -> T81Int { "
+        "return 1t81 < 1.20t81; }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    assert(vm->state().registers[0] == 1);
+  }
+
+  {
+    const std::string src =
+        "fn take(a: T81Float) -> T81Float { return a; }"
+        "fn main() -> T81Float { return take(5t81); }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    int handle = static_cast<int>(vm->state().registers[0]);
+    assert(handle > 0);
+    assert(std::fabs(vm->state().floats[handle - 1] - 5.0) < 1e-9);
+  }
+
+  {
+    const std::string src =
         "fn never() -> T81Int { return never(); }"
         "fn main() -> T81Int { "
         "let guard: T81Int = 0t81; "

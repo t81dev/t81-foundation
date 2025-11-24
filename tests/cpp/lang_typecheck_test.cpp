@@ -186,5 +186,59 @@ int main() {
     assert(res.has_value());
   }
 
+  // Integer to float widening works
+  {
+    auto mod = lang::parse_module("fn main() -> T81Float { let f: T81Float = 2t81; return f; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(res.has_value());
+  }
+
+  // Integer to fraction widening works
+  {
+    auto mod = lang::parse_module("fn main() -> T81Fraction { let f: T81Fraction = 2t81; return f; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(res.has_value());
+  }
+
+  // Mixed int/float arithmetic allowed
+  {
+    auto mod = lang::parse_module("fn main() -> T81Float { return 1t81 + 1.00t81; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(res.has_value());
+  }
+
+  // Float/fraction mixing still rejected
+  {
+    auto mod = lang::parse_module(
+        "fn main() -> T81Float { "
+        "let a: T81Float = 1.00t81; "
+        "let b: T81Fraction = 1/2t81; "
+        "return a + b; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(!res.has_value());
+    assert(res.error() == lang::CompileError::UnsupportedType);
+  }
+
+  // Float to int narrowing is rejected
+  {
+    auto mod = lang::parse_module(
+        "fn main() -> T81Int { "
+        "let f: T81Float = 1.20t81; "
+        "return f; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(!res.has_value());
+    assert(res.error() == lang::CompileError::UnsupportedType);
+  }
+
   return 0;
 }
