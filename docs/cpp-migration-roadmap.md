@@ -1,5 +1,30 @@
 # T81 C++ Migration Roadmap
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 C++ Migration Roadmap](#t81-c++-migration-roadmap)
+  - [Phase 0 — Compatibility (**DONE**)](#phase-0-—-compatibility-**done**)
+  - [Phase 1 — Core Data Types (**DONE**)](#phase-1-—-core-data-types-**done**)
+  - [Phase 2 — IO & Codec Surfaces (**DONE**)](#phase-2-—-io-&-codec-surfaces-**done**)
+  - [Phase 3 — IR Surface (**DONE, EXPANDABLE**)](#phase-3-—-ir-surface-**done-expandable**)
+  - [Phase 4 — Axion Façade (**IN PROGRESS**)](#phase-4-—-axion-façade-**in-progress**)
+  - [Phase 5 — De-risked Deprecation (**ONGOING**)](#phase-5-—-de-risked-deprecation-**ongoing**)
+  - [Phase 6 — Build & CI Matrix (**ONGOING**)](#phase-6-—-build-&-ci-matrix-**ongoing**)
+  - [Canonical Test Vectors](#canonical-test-vectors)
+  - [Open Items (Migration-Focused)](#open-items-migration-focused)
+    - [BigInt / Numerics](#bigint--numerics)
+    - [Codecs & Hash](#codecs-&-hash)
+    - [Tensor](#tensor)
+    - [IR](#ir)
+    - [Axion](#axion)
+  - [“How to Resume Work” Checklist](#“how-to-resume-work”-checklist)
+  - [What’s New Since Last Revision](#what’s-new-since-last-revision)
+
+<!-- T81-TOC:END -->
+
+
 This document tracks migration of legacy `.cweb` code to the new header-first C++ API.
 
 For long-horizon tracking of the entire ecosystem (VM, language, Axion, CanonFS, CI), see `TODO.md`.\

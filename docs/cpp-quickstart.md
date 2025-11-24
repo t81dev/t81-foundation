@@ -1,5 +1,22 @@
 # T81 C++ Quickstart
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 C++ Quickstart](#t81-c++-quickstart)
+  - [1) Include the umbrella header](#1-include-the-umbrella-header)
+  - [2) Build options](#2-build-options)
+    - [CMake (recommended)](#cmake-recommended)
+    - [Bazel](#bazel)
+    - [Make (shim)](#make-shim)
+  - [3) Run examples](#3-run-examples)
+  - [4) Notes & Caveats](#4-notes-&-caveats)
+  - [5) Headers index (most common)](#5-headers-index-most-common)
+
+<!-- T81-TOC:END -->
+
+
 This guide shows how to consume the new header-only C++ API and run examples/tests.
 
 ## 1) Include the umbrella header

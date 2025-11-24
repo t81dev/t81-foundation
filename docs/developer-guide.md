@@ -2,6 +2,68 @@ ______________________________________________________________________
 
 ```markdown
 # T81 Foundation  
+
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation](#t81-foundation)
+- [1. Overview of the Stack](#1-overview-of-the-stack)
+- [2. Implementation Order (Recommended)](#2-implementation-order-recommended)
+- [3. Implementing Canonical Data Types](#3-implementing-canonical-data-types)
+  - [3.1 Base-81/Base-243 BigInt](#31-base-81base-243-bigint)
+  - [3.2 Fractions](#32-fractions)
+  - [3.3 Floats](#33-floats)
+  - [3.4 Vectors, Matrices, Tensors](#34-vectors-matrices-tensors)
+- [4. Implementing TISC](#4-implementing-tisc)
+  - [4.1 Instruction Decode](#41-instruction-decode)
+  - [4.2 State Machine](#42-state-machine)
+  - [4.3 Arithmetic Ops](#43-arithmetic-ops)
+  - [4.4 Tensor Ops](#44-tensor-ops)
+  - [4.5 Privileged Ops (AX*)](#45-privileged-ops-ax*)
+- [5. Implementing the T81VM](#5-implementing-the-t81vm)
+  - [5.1 Memory Model](#51-memory-model)
+  - [5.2 VM Scheduler](#52-vm-scheduler)
+  - [5.3 Fault System](#53-fault-system)
+  - [5.4 Trace System (Required)](#54-trace-system-required)
+- [6. Deterministic Garbage Collector](#6-deterministic-garbage-collector)
+- [7. Implementing Axion Kernel Subsystems](#7-implementing-axion-kernel-subsystems)
+  - [7.1 DTS — Deterministic Trace](#71-dts-—-deterministic-trace)
+  - [7.2 VS — Verification Subsystem](#72-vs-—-verification-subsystem)
+  - [7.3 CRS — Constraint Resolution](#73-crs-—-constraint-resolution)
+  - [7.4 RCS — Recursion Control](#74-rcs-—-recursion-control)
+  - [7.5 TTS — Tier Transition](#75-tts-—-tier-transition)
+- [8. Implementing T81Lang](#8-implementing-t81lang)
+  - [8.1 Parsing](#81-parsing)
+  - [8.2 Type System](#82-type-system)
+  - [8.3 IR](#83-ir)
+  - [8.4 Codegen](#84-codegen)
+- [9. Testing & Verification](#9-testing-&-verification)
+  - [9.1 Deterministic Test Harness](#91-deterministic-test-harness)
+  - [9.2 Fault Injection Tests](#92-fault-injection-tests)
+  - [9.3 Trace Validator](#93-trace-validator)
+- [10. Repository Structure for Implementers](#10-repository-structure-for-implementers)
+- [11. Implementation Roadmap](#11-implementation-roadmap)
+  - [Phase 1 — Core Arithmetic & Data Types](#phase-1-—-core-arithmetic-&-data-types)
+  - [Phase 2 — TISC Interpreter](#phase-2-—-tisc-interpreter)
+  - [Phase 3 — VM Core + Memory Model](#phase-3-—-vm-core-+-memory-model)
+  - [Phase 4 — GC + Trace System](#phase-4-—-gc-+-trace-system)
+  - [Phase 5 — Axion Kernel](#phase-5-—-axion-kernel)
+  - [Phase 6 — T81Lang Compiler](#phase-6-—-t81lang-compiler)
+  - [Phase 7 — Tier Engine](#phase-7-—-tier-engine)
+  - [Phase 8 — Optimizations & Formal Proofs](#phase-8-—-optimizations-&-formal-proofs)
+- [12. Final Guidance](#12-final-guidance)
+  - [T81 C++ API](#t81-c++-api)
+    - [Overview](#overview)
+    - [Build](#build)
+    - [Data Types](#data-types)
+    - [IO Utilities](#io-utilities)
+    - [C API (Stable ABI)](#c-api-stable-abi)
+    - [Testing](#testing)
+    - [Migration Notes](#migration-notes)
+
+<!-- T81-TOC:END -->
+
 Developer Guide / Implementer’s Handbook  
 Version 0.1
 
