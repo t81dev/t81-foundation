@@ -25,6 +25,11 @@ struct EvalValue {
   Type type{Type::T81Int};
 };
 
+struct EvalValue {
+  int reg{0};
+  Type type{Type::T81Int};
+};
+
 std::optional<Type> literal_value_type(const ExprLiteral& lit) {
   switch (lit.value.kind) {
     case LiteralValue::Kind::Int: return Type::T81Int;
