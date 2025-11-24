@@ -15,8 +15,8 @@ This RFC introduces the **deterministic, pure-by-default standard library**
 promised in `spec/t81lang-spec.md` but not yet formalized. It specifies:
 
 1. Core modules (`arith`, `tensor`, `option`, `result`, `io.axsafe`).
-1. Deterministic semantics for every exported function.
-1. Compilation + versioning rules so programs can rely on library stability.
+2. Deterministic semantics for every exported function.
+3. Compilation + versioning rules so programs can rely on library stability.
 
 ______________________________________________________________________
 
@@ -97,8 +97,8 @@ ______________________________________________________________________
 # 6. Open Questions
 
 1. Should tensor helpers include in-place variants, or remain purely functional?
-1. How do we distribute precompiled hashes so air‑gapped systems can verify the
+2. How do we distribute precompiled hashes so air‑gapped systems can verify the
    standard library?
-1. Should Axion enforce maximum module version skew across a deployment?
+3. Should Axion enforce maximum module version skew across a deployment?
 
 ______________________________________________________________________

@@ -19,18 +19,6 @@ ______________________________________________________________________
 
 <!-- T81-TOC:END -->
 
-
-
-
-
-
-
-
-
-
-
-
-
 > Companion to `spec/t81-data-types.md` and [RFC-0004](../spec/rfcs/RFC-0004-canonical-tensor-semantics.md)\
 > Non-normative tips for working with canonical tensors across the T81 stack.
 
@@ -52,8 +40,8 @@ ______________________________________________________________________
 TISC and the VM treat tensors like floats/fractions:
 
 1. Compiler emits literal tensors into the tensor pool.
-1. Instructions operate on **handles** (1-based indices).
-1. VM deduplicates canonical tensors, so equality can use handle equality.
+2. Instructions operate on **handles** (1-based indices).
+3. VM deduplicates canonical tensors, so equality can use handle equality.
 
 Tips:
 
@@ -130,8 +118,8 @@ ______________________________________________________________________
 ## 6. Open Work
 
 1. Document tensor serialization once canonical codec lands.
-1. Publish a gallery of tensor policies (Axion) for common workloads.
-1. Add examples using the upcoming vector helpers (`VLOAD`, `VADD`).
+2. Publish a gallery of tensor policies (Axion) for common workloads.
+3. Add examples using the upcoming vector helpers (`VLOAD`, `VADD`).
 
 Contributions welcome—extend this guide as RFC-0004 evolves.
 

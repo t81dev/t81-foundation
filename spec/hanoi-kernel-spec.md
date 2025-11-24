@@ -41,16 +41,16 @@ ______________________________________________________________________
 
 Violation of any invariant means the system is **not Hanoi**.
 
-1. **No mutable global state** outside capability boundaries.
-1. **Every object is a CanonRef** (content hash + capability + optional sealing).
-1. **CanonFS is the sole storage abstraction**; the root is always a snapshot.
-1. **Axion veto authority** extends to all syscalls and state transitions.
-1. **Syscalls are total functions** returning `Result<T, HanoiError>`.
-1. **Deterministic scheduling** — global 81-slot tick.
-1. **No userspace drivers** — all kernel drivers are CanonFS modules.
-1. **Boot requires full canonical verification** (CanonHash-81 + CanonParity).
-1. **Entropy is deterministic**, seeded from the snapshot; no nondeterministic RNG.
-1. **Sealed objects use derived per-object keys**, no mutable key state.
+01. **No mutable global state** outside capability boundaries.
+02. **Every object is a CanonRef** (content hash + capability + optional sealing).
+03. **CanonFS is the sole storage abstraction**; the root is always a snapshot.
+04. **Axion veto authority** extends to all syscalls and state transitions.
+05. **Syscalls are total functions** returning `Result<T, HanoiError>`.
+06. **Deterministic scheduling** — global 81-slot tick.
+07. **No userspace drivers** — all kernel drivers are CanonFS modules.
+08. **Boot requires full canonical verification** (CanonHash-81 + CanonParity).
+09. **Entropy is deterministic**, seeded from the snapshot; no nondeterministic RNG.
+10. **Sealed objects use derived per-object keys**, no mutable key state.
 
 ______________________________________________________________________
 
@@ -200,10 +200,10 @@ switch_root(snapshot: SnapshotRef)
 Atomically:
 
 1. Suspends all processes
-1. Drops all mapped regions
-1. Replaces root snapshot
-1. Re-spawns PID 1 (T81VM)
-1. Resumes deterministic tick
+2. Drops all mapped regions
+3. Replaces root snapshot
+4. Re-spawns PID 1 (T81VM)
+5. Resumes deterministic tick
 
 This guarantees a fully immutable, deterministic root-switch.
 

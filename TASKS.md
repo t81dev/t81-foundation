@@ -2,7 +2,7 @@
 
 This file highlights safe, high-leverage tasks for contributors and AI tools.
 
----
+______________________________________________________________________
 
 ## 1. Documentation & Spec
 
@@ -13,7 +13,7 @@ This file highlights safe, high-leverage tasks for contributors and AI tools.
 - Add cross-links between related sections (data types ↔ VM ↔ language).
 - Add small examples illustrating key concepts (e.g., TISC instruction sequences).
 
----
+______________________________________________________________________
 
 ## 2. Tests
 
@@ -23,7 +23,7 @@ This file highlights safe, high-leverage tasks for contributors and AI tools.
   - Tensor shape/broadcast rules.
 - Add regression tests for any bugs discovered in the VM or language.
 
----
+______________________________________________________________________
 
 ## 3. Implementation Cleanups
 
@@ -32,7 +32,7 @@ This file highlights safe, high-leverage tasks for contributors and AI tools.
   - Reduce duplication between similar modules.
 - Improve error messages and diagnostics for users of the library.
 
----
+______________________________________________________________________
 
 ## 4. Tooling & Dev Experience
 

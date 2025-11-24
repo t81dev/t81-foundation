@@ -20,10 +20,10 @@ modules can compile before the real codec is wired.
 ## Migration Notes
 
 1. Keep the function signatures stable.
-1. When the real codec lands:
+2. When the real codec lands:
    - Swap `encode_base81`/`decode_base81` with canonical Base-81.
    - Update `make_canonhash81_base81stub` to compute a digest before encoding.
-1. `CanonHash81.text` remains a fixed 81-byte buffer (zero-padded).
+3. `CanonHash81.text` remains a fixed 81-byte buffer (zero-padded).
 
 ## Safety
 

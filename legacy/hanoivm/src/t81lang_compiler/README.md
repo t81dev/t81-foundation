@@ -88,7 +88,7 @@ For LLVM backend (experimental, in parent dir):
    cweb t81lang_compiler.cweb  # Or tangle all *.cweb
    ```
 
-1. **Compile** (links lexer/parser/etc.):
+2. **Compile** (links lexer/parser/etc.):
 
    ```bash
    make  # Assumes provided Makefile (see below)
@@ -96,7 +96,7 @@ For LLVM backend (experimental, in parent dir):
    gcc -o t81c *.c -std=c99 -Wall -O2
    ```
 
-1. **Example Makefile** (save as `Makefile`):
+3. **Example Makefile** (save as `Makefile`):
 
    ```makefile
    CWEB = cweb
@@ -117,7 +117,7 @@ For LLVM backend (experimental, in parent dir):
    	rm -f *.c *.tex $(TARGET)
    ```
 
-1. **Run**:
+4. **Run**:
 
    ```bash
    ./t81c hello.t81 --emit-ir --emit-hvm
@@ -186,9 +186,9 @@ fn main() -> T81BigInt {
 ## Contributing
 
 1. Fork & clone: `git clone https://github.com/t81dev/t81-foundation`.
-1. Tangle `.cweb` files, make changes, commit tangled `.c` + `.cweb`.
-1. Test: `./t81c examples/*.t81 --emit-hvm && ./hanoivm program.hvm`.
-1. PR to `main` (not legacy).
+2. Tangle `.cweb` files, make changes, commit tangled `.c` + `.cweb`.
+3. Test: `./t81c examples/*.t81 --emit-hvm && ./hanoivm program.hvm`.
+4. PR to `main` (not legacy).
 
 Follow literate style: Document in `@* Sections *@`.
 

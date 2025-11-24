@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code when working with this repository.
 
----
+______________________________________________________________________
 
 ## 1. What This Project Is
 
@@ -15,7 +15,7 @@ This file provides guidance to Claude Code when working with this repository.
 
 **Specs are the source of truth.** Implementation must conform to the documents in `spec/`.
 
----
+______________________________________________________________________
 
 ## 2. Where to Start Reading
 
@@ -32,31 +32,35 @@ For C++ implementation details, then consult:
 - `src/` for implementations,
 - `tests/cpp/` for expected behavior.
 
----
+______________________________________________________________________
 
 ## 3. Coding & Change Guidelines
 
 When generating or editing code:
 
 1. **Stay aligned with the spec**
+
    - Before proposing new behavior, check `spec/` for existing definitions.
    - If the spec is silent, suggest either:
      - Extending the spec (via RFC), or
      - Keeping behavior minimal and well-documented.
 
 2. **Prefer small, self-contained changes**
+
    - Keep PRs and patches focused.
    - Update tests under `tests/cpp/` whenever semantics change.
 
 3. **Respect the separation of concerns**
+
    - Do not mix spec edits, VM internals, and Axion semantics in a single change unless strictly necessary.
    - Leave legacy CWEB code in `legacy/` as a reference; migrate incrementally to modern C++.
 
 4. **Determinism and safety**
+
    - Avoid hidden non-determinism (e.g., time, random, global state).
    - Any safety-relevant behavior must be consistent with `spec/axion-kernel.md` and `spec/cognitive-tiers.md`.
 
----
+______________________________________________________________________
 
 ## 4. Tasks That Are Safe to Automate
 
@@ -73,7 +77,7 @@ Changes that require extra care:
 - Changing VM or instruction set behavior.
 - Adjusting data type definitions in `t81-data-types.md`.
 
----
+______________________________________________________________________
 
 ## 5. What Not to Do Without Explicit Instruction
 

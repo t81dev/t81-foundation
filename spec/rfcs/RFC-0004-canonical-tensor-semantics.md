@@ -16,8 +16,8 @@ It connects the requirements already sketched in `spec/t81-data-types.md §5`
 and `spec/t81lang-spec.md §5.13` into a single canonical contract so that:
 
 1. **Tensor shapes** remain deterministic at every layer.
-1. **Tensor arithmetic** maps unambiguously to TISC opcodes.
-1. **VM layout** for tensor pools is canonical and Axion-visible.
+2. **Tensor arithmetic** maps unambiguously to TISC opcodes.
+3. **VM layout** for tensor pools is canonical and Axion-visible.
 
 ______________________________________________________________________
 
@@ -114,7 +114,7 @@ ______________________________________________________________________
 # 6. Open Questions
 
 1. Should tensor pooling deduplicate by hash or by full structural compare?
-1. How should distributed tensors (future T6561 tiers) extend this RFC?
-1. Do we reserve opcodes for stride-aware loads/stores now or defer to RFC-0005?
+2. How should distributed tensors (future T6561 tiers) extend this RFC?
+3. Do we reserve opcodes for stride-aware loads/stores now or defer to RFC-0005?
 
 ______________________________________________________________________
