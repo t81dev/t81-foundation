@@ -160,6 +160,25 @@ Composite types MUST:
 - `Option[T]`
 - `Result[T, E]`
 
+`Option[T]` exposes two constructors:
+
+- `Some(expr)` wraps a value of type `T`. When no contextual type exists, the
+  compiler infers `Option[T]` directly from the operand.
+- `None` represents the absence of a value and therefore REQUIRES a contextual
+  `Option[T]` (e.g., a variable declaration or function parameter) so the
+  compiler can verify downstream uses.
+
+`Result[T, E]` provides explicit success/failure constructors:
+
+- `Ok(expr)` yields the success branch (`T`) and MUST appear in a context that
+  already specifies `Result[T, E]`.
+- `Err(expr)` yields the error branch (`E`) under the same contextual-type
+  requirement.
+
+Both structural types lower to canonical handles backed by the VM. Handles are
+deduplicated so equality comparisons operate on semantic contents rather than
+allocation identity.
+
 ### 2.4 Canonicalization Rules
 
 All values MUST be canonical at:
@@ -291,6 +310,16 @@ Guarantees:
 - logical conjunction/disjunction (`&&`, `||`) MUST evaluate operands left to
   right, short-circuit deterministically, and operate on canonical boolean
   `T81Int` values. Their result MUST be `0t81` when false and `1t81` when true.
+- `Option[T]` and `Result[T, E]` constructors MUST follow deterministic typing
+  rules:
+
+  * `Some(expr)` infers `Option[T]` when `expr : T` unless an expected
+    `Option[T]` appears in context, in which case the payload type MUST match.
+  * `None` has no payload and therefore REQUIRES an expected `Option[T]`
+    context; the compiler MUST reject standalone `None`.
+  * `Ok(expr)` and `Err(expr)` also require an expected `Result[T, E]` context
+    so the compiler can type-check the payload against the correct branch
+    (`Ok` uses `T`, `Err` uses `E`).
 
 ### Stage 4 — Purity Analysis
 
@@ -327,6 +356,10 @@ Maps IR instructions to TISC sequences:
 | `a / b` (`T81Fraction`) | `FRACDIV` (faults on zero divisor) |
 | comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) | `CMP`, `SETF`, literal/branch sequence producing a `T81Int` (`Symbol` allowed only for `==`/`!=`) |
 | `T81Int → T81Float/T81Fraction` promotion | `I2F` / `I2FRAC` emitted before the consuming opcode/assignment |
+| `Some(expr)` | Evaluate `expr`, `MAKE_OPTION_SOME` to produce canonical handle |
+| `None` | Contextual type chooses `Option[T]`, emit `MAKE_OPTION_NONE` |
+| `Ok(expr)` | Evaluate `expr`, `MAKE_RESULT_OK` |
+| `Err(expr)` | Evaluate `expr`, `MAKE_RESULT_ERR` |
 | logical `a && b` | Evaluate `a`, `JumpIfZero` to skip RHS, evaluate `b` only when needed, write `0t81/1t81` deterministically |
 | logical `a || b` | Evaluate `a`, `JumpIfNotZero` to skip RHS, evaluate `b` only when needed, write `0t81/1t81` deterministically |
 | vector add | `TVECADD` |

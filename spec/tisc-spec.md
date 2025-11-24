@@ -249,6 +249,39 @@ image). Any opcode that dereferences a handle MUST fault with
   - Division by zero (`FRACDIV` with zero numerator in divisor or canonical zero
     denominator) → `DivideByZero`.
 
+#### MAKE\_OPTION\_SOME
+
+- **Form**: `MAKE_OPTION_SOME RD, RS`
+- **Semantics**:
+  Capture the canonical `Option[T]::Some` variant by reading the value stored in
+  `R[RS]` (respecting its `ValueTag`), interning it in the VM’s option pool, and
+  writing the resulting 1-based handle into `R[RD]`. The VM MUST deduplicate
+  identical `(tag, payload)` pairs so equality compares semantic contents.
+- **Faults**: Invalid register or payload tag → `IllegalInstruction`.
+
+#### MAKE\_OPTION\_NONE
+
+- **Form**: `MAKE_OPTION_NONE RD`
+- **Semantics**:
+  Write the canonical handle representing `Option[T]::None` into `R[RD]`. A VM
+  MUST reuse a single handle for all `None` occurrences.
+- **Faults**: Invalid destination register → `IllegalInstruction`.
+
+#### MAKE\_RESULT\_OK
+
+- **Form**: `MAKE_RESULT_OK RD, RS`
+- **Semantics**:
+  Record the `Result[T, E]::Ok` payload stored in `R[RS]`, intern it in the
+  result pool, and write the deduplicated handle into `R[RD]`.
+- **Faults**: Invalid register or payload tag → `IllegalInstruction`.
+
+#### MAKE\_RESULT\_ERR
+
+- **Form**: `MAKE_RESULT_ERR RD, RS`
+- **Semantics**:
+  Same as `MAKE_RESULT_OK` but marks the handle as the error variant.
+- **Faults**: Invalid register or payload tag → `IllegalInstruction`.
+
 ______________________________________________________________________
 
 ### 5.3 Ternary Logic Instructions
@@ -279,7 +312,12 @@ ______________________________________________________________________
 - **Form**: `CMP RS1, RS2`
 
 - **Semantics**:
-  Compare `R[RS1]` and `R[RS2]` as canonical T81BigInt, T81Float, T81Fraction, or Symbol handles (types MUST match). Symbol comparisons MUST dereference both handles into the immutable symbol pool and compare the canonical symbol text lexicographically.
+  Compare `R[RS1]` and `R[RS2]` as canonical T81BigInt, T81Float, T81Fraction,
+  Symbol, Option, or Result handles (types MUST match). Symbol comparisons MUST
+  dereference both handles into the immutable symbol pool and compare the
+  canonical symbol text lexicographically. Option comparisons order `None <
+  Some` and recursively compare payloads. Result comparisons order `Err < Ok` and
+  likewise compare payloads recursively.
 
   - `R[RS1] < R[RS2]` → FLAGS := {NEG = 1, ZERO = 0, POS = 0}
   - `R[RS1] = R[RS2]` → FLAGS := {NEG = 0, ZERO = 1, POS = 0}

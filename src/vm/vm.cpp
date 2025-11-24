@@ -1,5 +1,6 @@
 #include "t81/vm/vm.hpp"
 
+#include <functional>
 #include <memory>
 
 #include "t81/fraction.hpp"
@@ -34,6 +35,8 @@ class Interpreter : public IVirtualMachine {
     state_.floats = program_.float_pool;
     state_.fractions = program_.fraction_pool;
     state_.symbols = program_.symbol_pool;
+    state_.options.clear();
+    state_.results.clear();
   }
 
   std::expected<void, Trap> step() override {
@@ -132,12 +135,108 @@ class Interpreter : public IVirtualMachine {
       state_.fractions.push_back(std::move(frac));
       return static_cast<std::int64_t>(state_.fractions.size());
     };
+    auto option_ptr = [this](std::int64_t handle) -> OptionValue* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.options.size()) return nullptr;
+      return &state_.options[idx];
+    };
+    auto result_ptr = [this](std::int64_t handle) -> ResultValue* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.results.size()) return nullptr;
+      return &state_.results[idx];
+    };
+    auto intern_option = [this](bool has_value, ValueTag payload_tag,
+                                std::int64_t payload) -> std::int64_t {
+      for (std::size_t i = 0; i < state_.options.size(); ++i) {
+        const auto& existing = state_.options[i];
+        if (existing.has_value != has_value) continue;
+        if (!has_value) return static_cast<std::int64_t>(i + 1);
+        if (existing.payload_tag == payload_tag && existing.payload == payload) {
+          return static_cast<std::int64_t>(i + 1);
+        }
+      }
+      OptionValue val;
+      val.has_value = has_value;
+      val.payload_tag = payload_tag;
+      val.payload = payload;
+      state_.options.push_back(val);
+      return static_cast<std::int64_t>(state_.options.size());
+    };
+    auto intern_result = [this](bool is_ok, ValueTag payload_tag,
+                                std::int64_t payload) -> std::int64_t {
+      for (std::size_t i = 0; i < state_.results.size(); ++i) {
+        const auto& existing = state_.results[i];
+        if (existing.is_ok != is_ok) continue;
+        if (existing.payload_tag == payload_tag && existing.payload == payload) {
+          return static_cast<std::int64_t>(i + 1);
+        }
+      }
+      ResultValue val;
+      val.is_ok = is_ok;
+      val.payload_tag = payload_tag;
+      val.payload = payload;
+      state_.results.push_back(val);
+      return static_cast<std::int64_t>(state_.results.size());
+    };
 
     auto clamp_trit = [](std::int64_t v) -> int {
       if (v > 0) return 1;
       if (v < 0) return -1;
       return 0;
     };
+
+    std::function<std::optional<int>(ValueTag, std::int64_t, std::int64_t)> compare_value =
+        [&](ValueTag tag, std::int64_t lhs_val, std::int64_t rhs_val) -> std::optional<int> {
+          switch (tag) {
+            case ValueTag::Int:
+              if (lhs_val == rhs_val) return 0;
+              return (lhs_val < rhs_val) ? -1 : 1;
+            case ValueTag::FloatHandle: {
+              auto lhs = float_ptr(lhs_val);
+              auto rhs = float_ptr(rhs_val);
+              if (!lhs || !rhs) return std::nullopt;
+              if (*lhs == *rhs) return 0;
+              return (*lhs < *rhs) ? -1 : 1;
+            }
+            case ValueTag::FractionHandle: {
+              auto lhs = fraction_ptr(lhs_val);
+              auto rhs = fraction_ptr(rhs_val);
+              if (!lhs || !rhs) return std::nullopt;
+              return t81::T81Fraction::cmp(*lhs, *rhs);
+            }
+            case ValueTag::SymbolHandle: {
+              auto lhs = symbol_ptr(lhs_val);
+              auto rhs = symbol_ptr(rhs_val);
+              if (!lhs || !rhs) return std::nullopt;
+              if (*lhs == *rhs) return 0;
+              return (*lhs < *rhs) ? -1 : 1;
+            }
+            case ValueTag::OptionHandle: {
+              auto lhs = option_ptr(lhs_val);
+              auto rhs = option_ptr(rhs_val);
+              if (!lhs || !rhs) return std::nullopt;
+              if (lhs->has_value != rhs->has_value) {
+                return lhs->has_value ? 1 : -1;
+              }
+              if (!lhs->has_value) return 0;
+              if (lhs->payload_tag != rhs->payload_tag) return std::nullopt;
+              return compare_value(lhs->payload_tag, lhs->payload, rhs->payload);
+            }
+            case ValueTag::ResultHandle: {
+              auto lhs = result_ptr(lhs_val);
+              auto rhs = result_ptr(rhs_val);
+              if (!lhs || !rhs) return std::nullopt;
+              if (lhs->is_ok != rhs->is_ok) {
+                return lhs->is_ok ? 1 : -1;
+              }
+              if (lhs->payload_tag != rhs->payload_tag) return std::nullopt;
+              return compare_value(lhs->payload_tag, lhs->payload, rhs->payload);
+            }
+          }
+          return std::nullopt;
+        };
 
     Trap trap = Trap::None;
     switch (insn.opcode) {
@@ -241,46 +340,10 @@ class Interpreter : public IVirtualMachine {
         auto tag_a = state_.register_tags[insn.a];
         auto tag_b = state_.register_tags[insn.b];
         if (tag_a != tag_b) { trap = Trap::IllegalInstruction; break; }
-        int relation = 0;
-        switch (tag_a) {
-          case ValueTag::Int: {
-            auto lhs = state_.registers[insn.a];
-            auto rhs = state_.registers[insn.b];
-            if (lhs == rhs) relation = 0;
-            else relation = (lhs < rhs) ? -1 : 1;
-            break;
-          }
-          case ValueTag::FloatHandle: {
-            auto lhs = float_ptr(state_.registers[insn.a]);
-            auto rhs = float_ptr(state_.registers[insn.b]);
-            if (!lhs || !rhs) { trap = Trap::IllegalInstruction; break; }
-            if (*lhs == *rhs) relation = 0;
-            else relation = (*lhs < *rhs) ? -1 : 1;
-            break;
-          }
-          case ValueTag::FractionHandle: {
-            auto lhs = fraction_ptr(state_.registers[insn.a]);
-            auto rhs = fraction_ptr(state_.registers[insn.b]);
-            if (!lhs || !rhs) { trap = Trap::IllegalInstruction; break; }
-            relation = t81::T81Fraction::cmp(*lhs, *rhs);
-            break;
-          }
-          case ValueTag::SymbolHandle: {
-            auto lhs = symbol_ptr(state_.registers[insn.a]);
-            auto rhs = symbol_ptr(state_.registers[insn.b]);
-            if (!lhs || !rhs) { trap = Trap::IllegalInstruction; break; }
-            if (*lhs == *rhs) {
-              relation = 0;
-            } else {
-              relation = (*lhs < *rhs) ? -1 : 1;
-            }
-            break;
-          }
-          default:
-            trap = Trap::IllegalInstruction;
-            break;
-        }
-        if (trap != Trap::None) break;
+        auto relation_opt =
+            compare_value(tag_a, state_.registers[insn.a], state_.registers[insn.b]);
+        if (!relation_opt.has_value()) { trap = Trap::IllegalInstruction; break; }
+        int relation = relation_opt.value();
         state_.flags.zero = (relation == 0);
         state_.flags.negative = (relation < 0);
         state_.flags.positive = (relation > 0);
@@ -485,6 +548,41 @@ class Interpreter : public IVirtualMachine {
         } catch (...) {
           trap = Trap::IllegalInstruction;
         }
+        break;
+      }
+      case t81::tisc::Opcode::MakeOptionSome: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        auto handle =
+            intern_option(true, state_.register_tags[insn.b], state_.registers[insn.b]);
+        state_.registers[insn.a] = handle;
+        state_.register_tags[insn.a] = ValueTag::OptionHandle;
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::MakeOptionNone: {
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        auto handle = intern_option(false, ValueTag::Int, 0);
+        state_.registers[insn.a] = handle;
+        state_.register_tags[insn.a] = ValueTag::OptionHandle;
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::MakeResultOk: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        auto handle =
+            intern_result(true, state_.register_tags[insn.b], state_.registers[insn.b]);
+        state_.registers[insn.a] = handle;
+        state_.register_tags[insn.a] = ValueTag::ResultHandle;
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::MakeResultErr: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        auto handle =
+            intern_result(false, state_.register_tags[insn.b], state_.registers[insn.b]);
+        state_.registers[insn.a] = handle;
+        state_.register_tags[insn.a] = ValueTag::ResultHandle;
+        update_flags(state_.registers[insn.a]);
         break;
       }
       case t81::tisc::Opcode::TVecAdd: {

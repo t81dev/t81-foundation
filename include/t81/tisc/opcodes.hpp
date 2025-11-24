@@ -50,5 +50,9 @@ enum class Opcode : std::uint8_t {
   FracMul = 42,
   FracDiv = 43,
   SetF = 44,
+  MakeOptionSome = 45,
+  MakeOptionNone = 46,
+  MakeResultOk = 47,
+  MakeResultErr = 48,
 };
 }  // namespace t81::tisc

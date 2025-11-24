@@ -31,7 +31,7 @@ int main() {
 
   Function fn;
   fn.name = "main";
-  fn.return_type = Type::T81Int;
+  fn.return_type = Type::primitive(Type::Kind::T81Int);
   Statement ret;
   ret.node = StatementReturn{root};
   fn.body.push_back(ret);

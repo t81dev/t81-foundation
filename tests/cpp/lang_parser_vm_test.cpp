@@ -4,6 +4,7 @@
 #include <t81/lang/parser.hpp>
 #include <t81/lang/compiler.hpp>
 #include <t81/vm/vm.hpp>
+#include <t81/vm/state.hpp>
 
 int main() {
   using namespace t81;
@@ -278,6 +279,75 @@ int main() {
     const auto& frac = vm->state().fractions[handle - 1];
     assert(frac.num.to_int64() == 3);
     assert(frac.den.to_int64() == 2);
+  }
+
+  {
+    const std::string src =
+        "fn main() -> Option[T81Int] { "
+        "return Some(5t81); }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    assert(vm->state().register_tags[0] == t81::vm::ValueTag::OptionHandle);
+    auto handle = vm->state().registers[0];
+    assert(handle > 0);
+    const auto& opt = vm->state().options[static_cast<std::size_t>(handle - 1)];
+    assert(opt.has_value);
+    assert(opt.payload_tag == t81::vm::ValueTag::Int);
+    assert(opt.payload == 5);
+  }
+
+  {
+    const std::string src =
+        "fn main() -> Option[T81Int] { "
+        "let empty: Option[T81Int] = None; "
+        "return empty; }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    assert(vm->state().register_tags[0] == t81::vm::ValueTag::OptionHandle);
+    auto handle = vm->state().registers[0];
+    assert(handle > 0);
+    const auto& opt = vm->state().options[static_cast<std::size_t>(handle - 1)];
+    assert(!opt.has_value);
+  }
+
+  {
+    const std::string src =
+        "fn main() -> Result[T81Int, Symbol] { "
+        "return Err(:fail); }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    assert(vm->state().register_tags[0] == t81::vm::ValueTag::ResultHandle);
+    auto handle = vm->state().registers[0];
+    assert(handle > 0);
+    const auto& res = vm->state().results[static_cast<std::size_t>(handle - 1)];
+    assert(!res.is_ok);
+    assert(res.payload_tag == t81::vm::ValueTag::SymbolHandle);
+    auto sym_handle = res.payload;
+    assert(sym_handle > 0);
+    const auto& sym =
+        vm->state().symbols[static_cast<std::size_t>(sym_handle - 1)];
+    assert(sym == "fail");
   }
 
   {

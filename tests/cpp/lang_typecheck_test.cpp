@@ -240,6 +240,66 @@ int main() {
     assert(res.error() == lang::CompileError::UnsupportedType);
   }
 
+  // Option Some/None compile
+  {
+    auto mod = lang::parse_module(
+        "fn main() -> Option[T81Int] { "
+        "let value: Option[T81Int] = Some(1t81); "
+        "let empty: Option[T81Int] = None; "
+        "return value; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(res.has_value());
+  }
+
+  // Result Ok/Err compile
+  {
+    auto mod = lang::parse_module(
+        "fn main() -> Result[T81Int, Symbol] { "
+        "let ok: Result[T81Int, Symbol] = Ok(1t81); "
+        "let err: Result[T81Int, Symbol] = Err(:oops); "
+        "return err; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(res.has_value());
+  }
+
+  // None without Option context fails
+  {
+    auto mod = lang::parse_module("fn main() -> T81Int { return None; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(!res.has_value());
+    assert(res.error() == lang::CompileError::MissingType);
+  }
+
+  // Option payload type mismatch
+  {
+    auto mod = lang::parse_module(
+        "fn main() -> Option[T81Int] { "
+        "return Some(:bad); }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(!res.has_value());
+    assert(res.error() == lang::CompileError::UnsupportedType);
+  }
+
+  // Result requires matching variant type
+  {
+    auto mod = lang::parse_module(
+        "fn main() -> Result[T81Int, Symbol] { "
+        "return Ok(:bad); }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(!res.has_value());
+    assert(res.error() == lang::CompileError::UnsupportedType);
+  }
+
   // Modulo only valid for integers
   {
     auto mod = lang::parse_module("fn main() -> T81Float { return 1.00t81 % 2.00t81; }");

@@ -24,12 +24,26 @@ enum class ValueTag : std::uint8_t {
   FloatHandle,
   FractionHandle,
   SymbolHandle,
+  OptionHandle,
+  ResultHandle,
 };
 
 struct Flags {
   bool zero{false};
   bool negative{false};
   bool positive{false};
+};
+
+struct OptionValue {
+  bool has_value{false};
+  ValueTag payload_tag{ValueTag::Int};
+  std::int64_t payload{0};
+};
+
+struct ResultValue {
+  bool is_ok{false};
+  ValueTag payload_tag{ValueTag::Int};
+  std::int64_t payload{0};
 };
 
 struct MemoryLayout {
@@ -57,6 +71,8 @@ struct State {
   std::vector<double> floats;
   std::vector<t81::T81Fraction> fractions;
   std::vector<std::string> symbols;
+  std::vector<OptionValue> options;
+  std::vector<ResultValue> results;
   std::vector<TraceEntry> trace;
   std::vector<AxionEvent> axion_log;
   Flags flags{};

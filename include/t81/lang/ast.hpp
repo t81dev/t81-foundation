@@ -87,12 +87,12 @@ struct Statement {
 
 struct Parameter {
   std::string name;
-  Type type{Type::T81Int};
+  Type type{Type::primitive(Type::Kind::T81Int)};
 };
 
 struct Function {
   std::string name;
-  Type return_type{Type::T81Int};
+  Type return_type{Type::primitive(Type::Kind::T81Int)};
   std::vector<Parameter> params;
   std::vector<Statement> body;
 };
