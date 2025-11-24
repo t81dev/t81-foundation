@@ -122,6 +122,7 @@ std::shared_ptr<Expr> parse_expr(Lexer& lex, ParseError& err);
 std::vector<Statement> parse_block(Lexer& lex, ParseError& err);
 std::shared_ptr<Expr> parse_numeric_literal(Lexer& lex, ParseError& err);
 std::shared_ptr<Expr> parse_primary(Lexer& lex, ParseError& err);
+std::shared_ptr<Expr> parse_unary(Lexer& lex, ParseError& err);
 std::shared_ptr<Expr> parse_term(Lexer& lex, ParseError& err);
 std::shared_ptr<Expr> parse_additive(Lexer& lex, ParseError& err);
 std::shared_ptr<Expr> parse_relational(Lexer& lex, ParseError& err);
@@ -303,6 +304,29 @@ std::shared_ptr<Expr> parse_primary(Lexer& lex, ParseError& err) {
   return {};
 }
 
+std::shared_ptr<Expr> parse_unary(Lexer& lex, ParseError& err) {
+  lex.skip_ws();
+  if (lex.match('-')) {
+    auto expr = std::make_shared<Expr>();
+    ExprUnary unary;
+    unary.op = ExprUnary::Op::Neg;
+    unary.expr = parse_unary(lex, err);
+    if (err != ParseError::None) return {};
+    expr->node = unary;
+    return expr;
+  }
+  if (lex.match('!')) {
+    auto expr = std::make_shared<Expr>();
+    ExprUnary unary;
+    unary.op = ExprUnary::Op::Not;
+    unary.expr = parse_unary(lex, err);
+    if (err != ParseError::None) return {};
+    expr->node = unary;
+    return expr;
+  }
+  return parse_primary(lex, err);
+}
+
 std::shared_ptr<Expr> parse_numeric_literal(Lexer& lex, ParseError& err) {
   std::size_t start = lex.pos;
   bool negative = false;
@@ -415,7 +439,7 @@ std::shared_ptr<Expr> parse_numeric_literal(Lexer& lex, ParseError& err) {
 }
 
 std::shared_ptr<Expr> parse_term(Lexer& lex, ParseError& err) {
-  auto lhs = parse_primary(lex, err);
+  auto lhs = parse_unary(lex, err);
   if (err != ParseError::None) return {};
   while (true) {
     lex.skip_ws();
