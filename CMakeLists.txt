@@ -43,6 +43,25 @@ target_include_directories(t81_c_api
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# New C++20 Toolchain Components
+add_library(t81_frontend STATIC
+  src/frontend/lexer.cpp
+)
+target_include_directories(t81_frontend PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(t81_frontend PUBLIC t81)
+
+add_library(t81_tisc INTERFACE)
+target_include_directories(t81_tisc INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(t81_tisc INTERFACE t81)
+
+add_library(t81_vm INTERFACE)
+target_include_directories(t81_vm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(t81_vm INTERFACE t81)
+
+add_library(t81_llvm INTERFACE)
+target_include_directories(t81_llvm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(t81_llvm INTERFACE t81)
+
 # Examples
 if (T81_BUILD_EXAMPLES)
   add_executable(t81_demo examples/demo.cpp)
@@ -174,6 +193,9 @@ if (T81_BUILD_TESTS)
   add_executable(t81_lang_compiler_not_test tests/cpp/lang_compiler_not_test.cpp)
   target_link_libraries(t81_lang_compiler_not_test PRIVATE t81)
 
+  add_executable(t81_frontend_lexer_test tests/cpp/frontend_lexer_test.cpp)
+  target_link_libraries(t81_frontend_lexer_test PRIVATE t81_frontend)
+
   enable_testing()
   set(T81_TEST_TARGETS
     t81_bigint_test
@@ -214,6 +236,7 @@ if (T81_BUILD_TESTS)
     t81_vm_neg_jumps_test
     t81_lang_compiler_unary_test
     t81_lang_compiler_not_test
+    t81_frontend_lexer_test
   )
   foreach(tgt IN LISTS T81_TEST_TARGETS)
     add_test(NAME ${tgt} COMMAND $<TARGET_FILE:${tgt}>)
