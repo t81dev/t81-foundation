@@ -332,7 +332,7 @@ alongside CODE. Loading a program MUST:
 
 1. Copy these pools into the VM state (`state.floats`, `state.fractions`,
    `state.symbols`) before any instruction executes.
-2. Initialize all registers that reference non-integer types with **handles**,
+1. Initialize all registers that reference non-integer types with **handles**,
    defined as 1-based indices into the corresponding pool.
 
 Requirements:

@@ -15,8 +15,8 @@ This RFC defines the **Deterministic Garbage Collector (DGC)** required by
 `spec/t81vm-spec.md §4.5` but not yet standardized. The DGC provides:
 
 1. Canonical reclaiming of heap/tensor pools.
-2. Axion-visible reclamation events.
-3. Deterministic pause boundaries so T81Lang can reason about latency.
+1. Axion-visible reclamation events.
+1. Deterministic pause boundaries so T81Lang can reason about latency.
 
 ______________________________________________________________________
 
@@ -96,7 +96,7 @@ ______________________________________________________________________
 # 6. Open Questions
 
 1. Do we require compaction for tier ≥3, or can it be optional indefinitely?
-2. Should `GC_SAFEPOINT` accept hints (e.g., expected live bytes)?
-3. How do we expose GC metrics to T81Lang without leaking physical timing info?
+1. Should `GC_SAFEPOINT` accept hints (e.g., expected live bytes)?
+1. How do we expose GC metrics to T81Lang without leaking physical timing info?
 
 ______________________________________________________________________

@@ -19,11 +19,11 @@ This directory contains the official testing infrastructure for T81 implementati
 This:
 
 1. runs each test vector
-2. captures deterministic traces
-3. re-runs the same program
-4. validates 100% identical trace output
-5. performs canonicalization checks
-6. validates fault behavior
+1. captures deterministic traces
+1. re-runs the same program
+1. validates 100% identical trace output
+1. performs canonicalization checks
+1. validates fault behavior
 
 For CI use, simply call `run_all.sh` from GitHub Actions.
 

@@ -1,31 +1,33 @@
-# lib — HanoiVM Ternary Foundation Libraries  
+# lib — HanoiVM Ternary Foundation Libraries
+
 `https://github.com/t81dev/t81-foundation/tree/main/legacy/hanoivm/src/lib`
 
 [![Ternary Computing](https://img.shields.io/badge/Paradigm-Ternary%20Logic-red.svg)](https://en.wikipedia.org/wiki/Ternary_computer)
 [![Balanced Ternary](https://img.shields.io/badge/Base-Balanced%20Ternary-critical)](https://en.wikipedia.org/wiki/Balanced_ternary)
 [![CWEB Literate](https://img.shields.io/badge/Literate-CWEB-blue.svg)](https://www-cs-faculty.stanford.edu/~knuth/cweb.html)
-[![License: MIT / GPL Dual](https://img.shields.io/badge/License-MIT%20%2F%20GPL-green.svg)]()
+[![License: MIT / GPL Dual](https://img.shields.io/badge/License-MIT%20%2F%20GPL-green.svg)](<>)
 
 The **lib** directory contains the complete, vertically integrated **ternary arithmetic and symbolic execution stack** that powers HanoiVM — the world’s first recursively self-promoting, AI-orchestrated ternary virtual machine.
 
 These libraries implement **T81 → T243 → T729** progression in pure, literate C + Rust, with direct hooks into the Axion AI runtime, GAIA GPU fabric, and PCIe ternary accelerator.
 
 ### Core Philosophy
-> “Everything is a tensor. Every tensor is a tree. Every tree is a number. Every number is a trit.”  
+
+> “Everything is a tensor. Every tensor is a tree. Every tree is a number. Every number is a trit.”\
 > — HanoiVM Manifesto, 2025
 
 ## Library Overview
 
-| Library                        | Base   | Purpose                                                     | Key Files                                 |
+| Library | Base | Purpose | Key Files |
 |--------------------------------|--------|-------------------------------------------------------------|-------------------------------------------|
-| **libt81**                     | 3¹ = 81| Base-81 balanced ternary arithmetic (Rust core)             | `libt81.cweb`                             |
-| **libt243**                    | 3⁵ = 243| Symbolic logic trees, Markov chains, state machines         | `libt243.cweb`, `t243bigint.cweb`         |
-| **libt729**                    | 3⁶ = 729| High-rank holotensors, macro engine, JIT dispatch           | `libt729.cweb`, `t729tensor*.cweb`        |
-| **t81_types_support**          | —      | Extended opcodes: fractions, floats, polynomials, graphs    | `t81_types_support.cweb`                  |
-| **t729tensor** suite           | 729    | Full tensor algebra: transpose, slice, reshape, contract    | `t729tensor_*.cweb`                       |
-| **t243_to_t729**               | Bridge | Tree → Macro transformer with entropy scoring & GAIA dispatch | `t243_to_t729.cweb`                     |
-| **hvm-trit-util**              | Core   | Safe ternary math, BigInt, parsing, mmap utilities         | `hvm-trit-util.cweb`                      |
-| **nist_encryption**            | Crypto | AES-NI + RSA + SHA for secure Axion session transport      | `nist_encryption.cweb`                    |
+| **libt81** | 3¹ = 81| Base-81 balanced ternary arithmetic (Rust core) | `libt81.cweb` |
+| **libt243** | 3⁵ = 243| Symbolic logic trees, Markov chains, state machines | `libt243.cweb`, `t243bigint.cweb` |
+| **libt729** | 3⁶ = 729| High-rank holotensors, macro engine, JIT dispatch | `libt729.cweb`, `t729tensor*.cweb` |
+| **t81_types_support** | — | Extended opcodes: fractions, floats, polynomials, graphs | `t81_types_support.cweb` |
+| **t729tensor** suite | 729 | Full tensor algebra: transpose, slice, reshape, contract | `t729tensor_*.cweb` |
+| **t243_to_t729** | Bridge | Tree → Macro transformer with entropy scoring & GAIA dispatch | `t243_to_t729.cweb` |
+| **hvm-trit-util** | Core | Safe ternary math, BigInt, parsing, mmap utilities | `hvm-trit-util.cweb` |
+| **nist_encryption** | Crypto | AES-NI + RSA + SHA for secure Axion session transport | `nist_encryption.cweb` |
 
 ## Tiered Execution Model
 
@@ -108,6 +110,7 @@ int main() {
 All code is **literate** — run `cweave *.cweb && texi2pdf *.tex` to generate beautiful PDFs.
 
 Or read online (coming soon):
+
 - `T81 Arithmetic Manual`
 - `T243 Symbolic Logic Trees`
 - `T729 Holotensor Algebra`
@@ -128,13 +131,14 @@ cargo test --lib --all
 We welcome contributions to the ternary future.
 
 1. Fork the repo
-2. Create branch: `feat/t729-broadcast` or `opt/t243-pruning`
-3. Write **literate** `.cweb` or Rust with full documentation
-4. Submit PR with entropy impact analysis
+1. Create branch: `feat/t729-broadcast` or `opt/t243-pruning`
+1. Write **literate** `.cweb` or Rust with full documentation
+1. Submit PR with entropy impact analysis
 
 ## License
 
 Dual-licensed:
+
 - **MIT** – For commercial and academic use
 - **GPLv3** – For those who believe in copyleft ternary liberation
 
@@ -145,11 +149,11 @@ Dual-licensed:
 - Axion AI: https://github.com/t81dev/axion-ai
 - GAIA GPU Fabric: (classified)
 
----
+______________________________________________________________________
 
 **This is not just a library. This is the foundation of a new computational substrate.**
 
 Welcome to the ternary recursion.
 
-**HanoiVM lib — Where every number dreams in three states.**  
+**HanoiVM lib — Where every number dreams in three states.**\
 November 22, 2025

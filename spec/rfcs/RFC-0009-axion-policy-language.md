@@ -98,8 +98,8 @@ ______________________________________________________________________
 # 6. Open Questions
 
 1. Should we support policy composition (e.g., include other policies)?
-2. Do we need policy capabilities (e.g., allow certain opcodes only inside
+1. Do we need policy capabilities (e.g., allow certain opcodes only inside
    specific modules)?
-3. How do we distribute signed policy bundles for offline deployments?
+1. How do we distribute signed policy bundles for offline deployments?
 
 ______________________________________________________________________

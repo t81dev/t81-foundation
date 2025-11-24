@@ -1,18 +1,20 @@
-# HanoiVM Source Code  
+# HanoiVM Source Code
+
 `https://github.com/t81dev/t81-foundation/tree/main/legacy/hanoivm/src`
 
 [![Ternary Computing](https://img.shields.io/badge/Paradigm-Ternary%20Logic-red.svg)](https://en.wikipedia.org/wiki/Ternary_computer)
 [![Balanced Ternary](https://img.shields.io/badge/Base-Balanced%20Ternary-critical)](https://en.wikipedia.org/wiki/Balanced_ternary)
 [![CWEB Literate](https://img.shields.io/badge/Literate-CWEB-blue.svg)](https://www-cs-faculty.stanford.edu/~knuth/cweb.html)
 [![Rust + C](https://img.shields.io/badge/Languages-Rust%20%2B%20C-orange.svg)](https://www.rust-lang.org/)
-[![License: MIT / GPL Dual](https://img.shields.io/badge/License-MIT%20%2F%20GPL-green.svg)]()
+[![License: MIT / GPL Dual](https://img.shields.io/badge/License-MIT%20%2F%20GPL-green.svg)](<>)
 
 The **src** directory houses the **complete source implementation** of **HanoiVM** — the pioneering recursively self-promoting, AI-augmented ternary virtual machine. This legacy codebase (as of November 22, 2025) blends literate CWEB documentation with Rust/C for a seamless stack from base T81 arithmetic to T729 tensor macros, integrated with Axion AI hooks and GAIA GPU offloads.
 
 HanoiVM executes balanced ternary bytecode (`.hvm` files) across three tiers, enabling symbolic computation, live promotion/demotion, and hardware-accelerated recursion. This src tree powers experimental workloads in AI, tensor algebra, and non-binary paradigms.
 
 ### Core Philosophy
-> “Recursion in base-3: Where stacks promote themselves, AI whispers optimizations, and tensors dream of trees.”  
+
+> “Recursion in base-3: Where stacks promote themselves, AI whispers optimizations, and tensors dream of trees.”\
 > — HanoiVM Manifesto
 
 ## Directory Structure
@@ -69,11 +71,13 @@ src/
 ## Key Components
 
 ### 1. **Core Runtime (Rust)**
+
 - **hanoivm_core**: High-level abstraction for symbolic execution. Manages `HanoiVM` struct, opcode evaluation, and AI interactions.
   - Features: Tiered modes, recursion frames, entropy feedback.
   - Entry: `HanoiVM::new(config).run()`.
 
 ### 2. **Ternary Libraries**
+
 - **libt81/libt243/libt729**: Progressive bases (81 → 243 → 729) with arithmetic, trees, and macros.
 - **t729tensor Suite**: Full tensor algebra—transpose, slice, reshape, contract—for T729 holotensors.
 - **t243_to_t729**: Bridges symbolic trees to GPU-dispatchable macros with entropy scoring.
@@ -81,6 +85,7 @@ src/
 - **nist_encryption**: Secure key gen and AES/RSA for Axion session transport.
 
 ### 3. **VM Implementation (CWEB)**
+
 - **hanoivm_vm.cweb**: Main execution loop with opcode dispatch and promotion hooks.
 - **hvm_promotion.cweb**: Dynamic mode switching based on depth/entropy.
 - **hvm_loader/interpreter**: Bytecode loading and T81 stack ops.
@@ -88,25 +93,29 @@ src/
 - **CLI Tools**: `hvmcli` for hardware interaction; `hanoivm_cli` for mode selection/benchmarking.
 
 ### 4. **Hardware Layer**
+
 - **hanoivm_fsm.v**: Synthesizable Verilog FSM for ternary opcodes (PUSH/ADD/POP).
 - **Firmware**: Bare-metal entry for PCIe accel (`/dev/hvm0`).
 
 ## Building from Source
 
 1. **Prerequisites**:
+
    - Rust 1.70+ (`rustup`).
    - CWEB (`sudo apt install cweb texlive-full`).
    - LLVM/Clang 17, CMake, Ninja.
    - CUDA/ROCm for GPU (optional).
 
-2. **Tangle Literate Sources**:
+1. **Tangle Literate Sources**:
+
    ```bash
    cd src
    chmod +x ../utils/tangle-all.sh  # Or run manually: ctangle *.cweb
    ./utils/tangle-all.sh
    ```
 
-3. **Build Libraries (Rust/C)**:
+1. **Build Libraries (Rust/C)**:
+
    ```bash
    # Rust cores
    cargo build --release --package hanoivm_core
@@ -117,13 +126,15 @@ src/
    ninja
    ```
 
-4. **Compile Hardware**:
+1. **Compile Hardware**:
+
    ```verilog
    # Verilog FSM (use yosys/iverilog)
    yosys -p "synth_ice40 -top hanoivm_fsm -json hanoivm_fsm.json" hanoivm_fsm.v
    ```
 
-5. **Run Tests**:
+1. **Run Tests**:
+
    ```bash
    cargo test --all
    cd build && ninja check-all
@@ -172,15 +183,16 @@ fn main() {
 ## Contributing
 
 1. Fork & branch: `git checkout -b feat/t729-broadcast`.
-2. Tangle, build, test: Ensure `ninja check-all` passes.
-3. Literate commits: Update `.cweb` with full docs.
-4. PR: Include entropy benchmarks for new ops.
+1. Tangle, build, test: Ensure `ninja check-all` passes.
+1. Literate commits: Update `.cweb` with full docs.
+1. PR: Include entropy benchmarks for new ops.
 
 Guidelines: Maintain ternary purity; add AI hooks; no binary shortcuts.
 
 ## License
 
 Dual-licensed:
+
 - **MIT** – Permissive for research/commercial.
 - **GPLv3** – Copyleft for open ternary liberation.
 
@@ -190,7 +202,7 @@ Dual-licensed:
 - Core team: t81dev contributors.
 - Tools: LLVM, CUDA, Rust ecosystem.
 
----
+______________________________________________________________________
 
 **HanoiVM src: The beating heart of ternary recursion. Fork it, tangle it, promote it.**
 

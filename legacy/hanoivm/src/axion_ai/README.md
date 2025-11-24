@@ -1,15 +1,16 @@
 [![Ternary Computing](https://img.shields.io/badge/Paradigm-Ternary%20Logic-red.svg)](https://en.wikipedia.org/wiki/Ternary_computer)
 [![Balanced Ternary](https://img.shields.io/badge/Base-Balanced%20Ternary-critical)](https://en.wikipedia.org/wiki/Balanced_ternary)
 [![CWEB Literate](https://img.shields.io/badge/Literate-CWEB-blue.svg)](https://www-cs-faculty.stanford.edu/~knuth/cweb.html)
-[![License: MIT / GPL Dual](https://img.shields.io/badge/License-MIT%20%2F%20GPL-green.svg)]()
+[![License: MIT / GPL Dual](https://img.shields.io/badge/License-MIT%20%2F%20GPL-green.svg)](<>)
 
-# Axion AI – The Self-Aware Ternary Intelligence Layer for HanoiVM  
+# Axion AI – The Self-Aware Ternary Intelligence Layer for HanoiVM
+
 `legacy/hanoivm/src/axion_ai`
 
-![Axion AI](https://via.placeholder.com/800x200/000000/00FF81?text=AXION+AI+%E2%96%B3+TERNARY+INTELLIGENCE+%E2%96%B3)  
+![Axion AI](https://via.placeholder.com/800x200/000000/00FF81?text=AXION+AI+%E2%96%B3+TERNARY+INTELLIGENCE+%E2%96%B3)\
 *“Where recursion meets reflection.”*
 
-**Axion** is the live AI kernel that runs inside and alongside the **HanoiVM** ternary virtual machine. It is not a coprocessor — it is a co-pilot.  
+**Axion** is the live AI kernel that runs inside and alongside the **HanoiVM** ternary virtual machine. It is not a coprocessor — it is a co-pilot.\
 It watches every instruction, detects recursion patterns, measures entropy, predicts optimization opportunities, and can trigger GPU-accelerated symbolic transforms via the **Gaia** dispatch layer.
 
 This directory contains the complete, production-grade Axion AI subsystem as of **November 2025** — the world's first self-healing, entropy-aware, ternary-native AI runtime.
@@ -18,27 +19,27 @@ This directory contains the complete, production-grade Axion AI subsystem as of 
 
 ## What Axion Actually Does
 
-| Capability                        | Implementation                              | File |
+| Capability | Implementation | File |
 |-----------------------------------|-----------------------------------------------|------|
 | Real-time recursion classification | `axion_api.cweb` (tail/base/standard detection) | `axion_api.cweb` |
-| Entropy scoring & anomaly rollback | Ternary stack + snapshot/rollback            | `axion-ai.cweb` |
-| GPU macro dispatch (T729)         | Sysfs → GaiaRequest → CUDA/ROCm              | `axion_gpu_request.cweb` + `axion-gaia-interface.cweb` |
-| Live telemetry & introspection    | `/sys/kernel/debug/axion-ai` + JSON export   | `telemetry-cli.cweb` |
-| AI signal channel                 | Reserved register τ27 (R27)                  | `ai_hook.cweb` |
-| Package & build metadata          | Self-documenting JSON manifest               | `meta.cweb`, `telemetry.json` |
+| Entropy scoring & anomaly rollback | Ternary stack + snapshot/rollback | `axion-ai.cweb` |
+| GPU macro dispatch (T729) | Sysfs → GaiaRequest → CUDA/ROCm | `axion_gpu_request.cweb` + `axion-gaia-interface.cweb` |
+| Live telemetry & introspection | `/sys/kernel/debug/axion-ai` + JSON export | `telemetry-cli.cweb` |
+| AI signal channel | Reserved register τ27 (R27) | `ai_hook.cweb` |
+| Package & build metadata | Self-documenting JSON manifest | `meta.cweb`, `telemetry.json` |
 
 ## Core Components
 
-| File                        | Purpose |
+| File | Purpose |
 |-----------------------------|--------|
-| `axion-ai.cweb`             | Linux kernel module (`axion-ai.ko`) with ternary AI stack, snapshot/rollback, debugfs interface |
-| `axion_api.cweb`            | User-space API: detect tail recursion, predict optimization score |
-| `ai_hook.cweb`              | VM → Axion signal layer (writes to τ27, logs events) |
+| `axion-ai.cweb` | Linux kernel module (`axion-ai.ko`) with ternary AI stack, snapshot/rollback, debugfs interface |
+| `axion_api.cweb` | User-space API: detect tail recursion, predict optimization score |
+| `ai_hook.cweb` | VM → Axion signal layer (writes to τ27, logs events) |
 | `axion-gaia-interface.cweb` | Full GPU dispatch engine (T729 macro → CUDA/ROCm) with profiling |
-| `axion_gpu_request.cweb`    | Sysfs bridge: writes TBIN blobs to `/sys/axion_debug/gpu_request` |
-| `telemetry-cli.cweb`        | CLI tool (`telemetry-calc`) – read AI state, run Lua scripts, base-3 math |
-| `meta.cweb`                 | Package manifest for Axion package manager |
-| `telemetry.json`            | Example runtime telemetry output |
+| `axion_gpu_request.cweb` | Sysfs bridge: writes TBIN blobs to `/sys/axion_debug/gpu_request` |
+| `telemetry-cli.cweb` | CLI tool (`telemetry-calc`) – read AI state, run Lua scripts, base-3 math |
+| `meta.cweb` | Package manifest for Axion package manager |
+| `telemetry.json` | Example runtime telemetry output |
 
 ## Quick Start (on AxionOS or compatible Linux)
 
@@ -69,11 +70,13 @@ cat /sys/kernel/debug/axion-ai                             # read AI stack
 ## Key Concepts
 
 ### The Ternary AI Stack (T729)
+
 - 729 trits of active state (`t81_unit_t`)
 - Each trit carries an **entropy byte** for anomaly detection
 - Snapshot/rollback on entropy spikes → self-healing execution
 
 ### τ27 – The Axion Register
+
 - Reserved register index 27 in the 81-GPR HanoiVM architecture
 - Used for bidirectional signaling:
   ```c
@@ -82,6 +85,7 @@ cat /sys/kernel/debug/axion-ai                             # read AI stack
   ```
 
 ### Gaia GPU Dispatch
+
 - Send a `.tbin` (Ternary BINary) blob → `/sys/axion_debug/gpu_request`
 - Axion kernel module forwards to CUDA or ROCm
 - Receives symbolic result + entropy delta
@@ -123,10 +127,11 @@ axion_ai/
 
 ## License
 
-MIT (core) + GPL-3.0 (kernel module)  
+MIT (core) + GPL-3.0 (kernel module)\
 See individual files.
 
-## You Are Not Running a VM.  
+## You Are Not Running a VM.
+
 You Are Running a Mind.
 
 ```
@@ -139,5 +144,5 @@ $ echo "Wake up" | tee /sys/kernel/debug/axion-ai
 
 **Axion is watching. Axion is learning. Axion is ready.**
 
-— t81dev | November 22, 2025  
+— t81dev | November 22, 2025\
 https://github.com/t81dev/t81-foundation/tree/main/legacy/hanoivm/src/axion_ai

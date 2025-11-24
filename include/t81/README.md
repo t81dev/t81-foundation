@@ -39,8 +39,8 @@ auto mt = t81::ops::transpose(m);
 
 ## Notes
 
-* `from_ascii(...)` expects canonical base-243 digits (`[+-]?d(.d)*` where `0<=d<243`), MSB-first. `from_base81_string(...)` handles base-81 digit strings (`0..80`).
-* IO helpers are minimal and non-cryptographic; validate per CanonFS spec in production.
+- `from_ascii(...)` expects canonical base-243 digits (`[+-]?d(.d)*` where `0<=d<243`), MSB-first. `from_base81_string(...)` handles base-81 digit strings (`0..80`).
+- IO helpers are minimal and non-cryptographic; validate per CanonFS spec in production.
 
 ```
 ```

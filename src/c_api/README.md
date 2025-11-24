@@ -3,9 +3,10 @@
 Thin, stable C façade that wraps the modern C++ headers for legacy consumers.
 
 ## Headers
+
 ```c
 #include "src/c_api/t81_c_api.h"
-````
+```
 
 ## ABI Handles
 
@@ -49,8 +50,8 @@ int main() {
 
 ## Build
 
-* **CMake**: included via target `t81` (headers) and `t81_io` (IO .cpp).
-* **Bazel**: `//:t81` provides headers and required sources.
+- **CMake**: included via target `t81` (headers) and `t81_io` (IO .cpp).
+- **Bazel**: `//:t81` provides headers and required sources.
 
 > For new functionality, add C wrappers here that delegate to C++ types under `include/t81/`.
 

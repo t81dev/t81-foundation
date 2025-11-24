@@ -249,7 +249,7 @@ image). Any opcode that dereferences a handle MUST fault with
   - Division by zero (`FRACDIV` with zero numerator in divisor or canonical zero
     denominator) → `DivideByZero`.
 
-#### MAKE\_OPTION\_SOME
+#### MAKE_OPTION_SOME
 
 - **Form**: `MAKE_OPTION_SOME RD, RS`
 - **Semantics**:
@@ -259,7 +259,7 @@ image). Any opcode that dereferences a handle MUST fault with
   identical `(tag, payload)` pairs so equality compares semantic contents.
 - **Faults**: Invalid register or payload tag → `IllegalInstruction`.
 
-#### MAKE\_OPTION\_NONE
+#### MAKE_OPTION_NONE
 
 - **Form**: `MAKE_OPTION_NONE RD`
 - **Semantics**:
@@ -267,7 +267,7 @@ image). Any opcode that dereferences a handle MUST fault with
   MUST reuse a single handle for all `None` occurrences.
 - **Faults**: Invalid destination register → `IllegalInstruction`.
 
-#### MAKE\_RESULT\_OK
+#### MAKE_RESULT_OK
 
 - **Form**: `MAKE_RESULT_OK RD, RS`
 - **Semantics**:
@@ -275,7 +275,7 @@ image). Any opcode that dereferences a handle MUST fault with
   result pool, and write the deduplicated handle into `R[RD]`.
 - **Faults**: Invalid register or payload tag → `IllegalInstruction`.
 
-#### MAKE\_RESULT\_ERR
+#### MAKE_RESULT_ERR
 
 - **Form**: `MAKE_RESULT_ERR RD, RS`
 - **Semantics**:
@@ -315,8 +315,7 @@ ______________________________________________________________________
   Compare `R[RS1]` and `R[RS2]` as canonical T81BigInt, T81Float, T81Fraction,
   Symbol, Option, or Result handles (types MUST match). Symbol comparisons MUST
   dereference both handles into the immutable symbol pool and compare the
-  canonical symbol text lexicographically. Option comparisons order `None <
-  Some` and recursively compare payloads. Result comparisons order `Err < Ok` and
+  canonical symbol text lexicographically. Option comparisons order `None < Some` and recursively compare payloads. Result comparisons order `Err < Ok` and
   likewise compare payloads recursively.
 
   - `R[RS1] < R[RS2]` → FLAGS := {NEG = 1, ZERO = 0, POS = 0}

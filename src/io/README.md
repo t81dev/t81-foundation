@@ -6,13 +6,14 @@ header APIs in `include/t81/io/`.
 ## Tensor Text IO
 
 **Headers**
+
 ```cpp
 #include <t81/io/tensor_loader.hpp>
-````
+```
 
 **Implementation**
 
-* `src/io/tensor_loader.cpp`
+- `src/io/tensor_loader.cpp`
 
 **Format**
 
@@ -52,7 +53,7 @@ target_link_libraries(t81_io PUBLIC t81)
 
 ## Tests
 
-* `tests/cpp/tensor_loader_test.cpp` — roundtrip save/load in memory.
+- `tests/cpp/tensor_loader_test.cpp` — roundtrip save/load in memory.
 
 ```
 ```

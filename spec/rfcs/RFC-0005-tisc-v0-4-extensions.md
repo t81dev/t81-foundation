@@ -16,8 +16,8 @@ It consolidates open proposals into a coherent plan so compilers and the VM can
 target the new instructions simultaneously. Key themes:
 
 1. Deterministic parallel-friendly vector ops.
-2. Shape-safe load/store helpers for tensors.
-3. Structural-type constructors (Option/Result) already prototyped in code.
+1. Shape-safe load/store helpers for tensors.
+1. Structural-type constructors (Option/Result) already prototyped in code.
 
 ______________________________________________________________________
 
@@ -94,8 +94,8 @@ ______________________________________________________________________
 
 1. Should `VLOAD/VSTORE` support strided access, or is canonical contiguous
    layout sufficient for v0.4?
-2. Do we require deduplication for vector results similar to tensor pools?
-3. How soon should we reserve opcode space for deterministic parallel launch
+1. Do we require deduplication for vector results similar to tensor pools?
+1. How soon should we reserve opcode space for deterministic parallel launch
    (e.g., `PARALLEL_FOR`), or does that belong in a later RFC?
 
 ______________________________________________________________________

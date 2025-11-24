@@ -39,6 +39,7 @@ TISC IR
 ```
 
 Key optimizations:
+
 - **Entropy Scoring**: AI-guided selection via `tyrnary_entropy.h`.
 - **Symbolic Macros**: Lifts common patterns (e.g., recursion) to single opcodes like `TISC_OP_TOWER`.
 
@@ -61,10 +62,12 @@ This legacy compiler is self-contained in `legacy/hanoivm/src/t81lang_compiler`.
 | `emit_hvm.cweb` | Emits binary `.hvm` from IR (HanoiVM format with magic header). |
 
 Supporting files:
+
 - `slang_grammer.ebnf`: Extended BNF grammar.
 - `t81_compile.py`: Modern Python frontend (tokenizer + AST → TISC/JSON).
 
 For LLVM backend (experimental, in parent dir):
+
 - `t81_codegen.cweb`, `T81InstrInfo.td`, `T81RegisterInfo.td` (81 GPRs: R0–R80).
 
 ## Quick Start
@@ -79,19 +82,22 @@ For LLVM backend (experimental, in parent dir):
 ### Build Instructions
 
 1. **Tangle CWEB Files** (generate `.c` from `.cweb`):
+
    ```bash
    cd legacy/hanoivm/src/t81lang_compiler
    cweb t81lang_compiler.cweb  # Or tangle all *.cweb
    ```
 
-2. **Compile** (links lexer/parser/etc.):
+1. **Compile** (links lexer/parser/etc.):
+
    ```bash
    make  # Assumes provided Makefile (see below)
    # Or manually:
    gcc -o t81c *.c -std=c99 -Wall -O2
    ```
 
-3. **Example Makefile** (save as `Makefile`):
+1. **Example Makefile** (save as `Makefile`):
+
    ```makefile
    CWEB = cweb
    CC = gcc
@@ -111,7 +117,8 @@ For LLVM backend (experimental, in parent dir):
    	rm -f *.c *.tex $(TARGET)
    ```
 
-4. **Run**:
+1. **Run**:
+
    ```bash
    ./t81c hello.t81 --emit-ir --emit-hvm
    # Outputs: output.ir + program.hvm
@@ -132,6 +139,7 @@ Flags:
 ## Example: Hello World in T81Lang
 
 `examples/hello.t81`:
+
 ```t81
 fn main() -> T81String {
     let msg: T81String = "Hello, T81Lang! (Base-81 Power)";
@@ -140,12 +148,14 @@ fn main() -> T81String {
 ```
 
 Compile & Run:
+
 ```bash
 ./t81c hello.t81 --emit-hvm
 ./hanoivm program.hvm  # Outputs: Hello, T81Lang! (Base-81 Power)
 ```
 
 Advanced Example (Recursive Fibonacci):
+
 ```t81
 fn fib(n: T81BigInt) -> T81BigInt {
     if n <= 1t81 {
@@ -176,23 +186,23 @@ fn main() -> T81BigInt {
 ## Contributing
 
 1. Fork & clone: `git clone https://github.com/t81dev/t81-foundation`.
-2. Tangle `.cweb` files, make changes, commit tangled `.c` + `.cweb`.
-3. Test: `./t81c examples/*.t81 --emit-hvm && ./hanoivm program.hvm`.
-4. PR to `main` (not legacy).
+1. Tangle `.cweb` files, make changes, commit tangled `.c` + `.cweb`.
+1. Test: `./t81c examples/*.t81 --emit-hvm && ./hanoivm program.hvm`.
+1. PR to `main` (not legacy).
 
 Follow literate style: Document in `@* Sections *@`.
 
 ## License
 
-GPL-3.0 (see `LICENSE` in root).  
+GPL-3.0 (see `LICENSE` in root).\
 T81Lang is free software; contributions welcome!
 
 ## Acknowledgments
 
-Inspired by Knuth's CWEB, Hanoi Tower recursion, and ternary computing.  
+Inspired by Knuth's CWEB, Hanoi Tower recursion, and ternary computing.\
 Built with ❤️ by the T81Dev community.
 
----
+______________________________________________________________________
 
-*Version: 0.1.0 (Legacy HanoiVM Edition)* | *Date: November 22, 2025*  
+*Version: 0.1.0 (Legacy HanoiVM Edition)* | *Date: November 22, 2025*\
 [Docs](https://t81lang.org) | [Issues](https://github.com/t81dev/t81-foundation/issues) | [Chat](https://x.com/t81dev)

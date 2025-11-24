@@ -1,12 +1,12 @@
 Here's the **updated and refined `ROADMAP.md`**, integrating your latest developments and emphasizing clear next steps for optimal synergy:
 
----
+______________________________________________________________________
 
 # 🗺️ HanoiVM — Project Roadmap | Copyleft Systems
 
 **HanoiVM** is a recursive, AI-augmented ternary virtual machine supporting the execution of symbolic logic across the `T81`, `T243`, and `T729` logic layers. It anchors the **T81Lang**, **Axion AI**, and **Alexis Linux** ecosystems, focused on symbolic computation, entropy-aware logic, and AI-accelerated programming.
 
----
+______________________________________________________________________
 
 ## ✅ Phase 0: Bootstrapping
 
@@ -15,7 +15,7 @@ Here's the **updated and refined `ROADMAP.md`**, integrating your latest develop
 - [x] Base assembler, disassembler, and interpreter
 - [x] `.cweb` literate programming infrastructure
 
----
+______________________________________________________________________
 
 ## ✅ Phase 1: Core Virtual Machine (T81)
 
@@ -24,7 +24,7 @@ Here's the **updated and refined `ROADMAP.md`**, integrating your latest develop
 - [x] Virtual CPU context & recursive promotion logic
 - [x] Initial symbolic opcode evaluation (`evaluate_opcode()`)
 
----
+______________________________________________________________________
 
 ## ✅ Phase 2: Recursive Expansion (T243/T729)
 
@@ -33,7 +33,7 @@ Here's the **updated and refined `ROADMAP.md`**, integrating your latest develop
 - [x] FSM and symbolic AI opcode extensions (`OP_T729_INTENT`, `OP_T729_HOLO_FFT`)
 - [x] Recursive symbolic operations with entropy integration
 
----
+______________________________________________________________________
 
 ## ✅ Phase 3: Compiler & Language Toolchain
 
@@ -42,7 +42,7 @@ Here's the **updated and refined `ROADMAP.md`**, integrating your latest develop
 - [x] TISC backend with symbolic optimizations
 - [x] Standard library (`tisc_stdlib.cweb`) and REPL integration
 
----
+______________________________________________________________________
 
 ## ✅ Phase 4: Axion AI Integration
 
@@ -51,7 +51,7 @@ Here's the **updated and refined `ROADMAP.md`**, integrating your latest develop
 - [x] Symbolic pattern analysis and feedback (`t81_patterns.cweb`)
 - [x] Comprehensive logging & metadata tracking with entropy-based dispatch
 
----
+______________________________________________________________________
 
 ## ✅ Phase 5: Developer Experience & Tooling
 
@@ -62,7 +62,7 @@ Here's the **updated and refined `ROADMAP.md`**, integrating your latest develop
 - [x] Log viewer (`logviewer.cweb`) for telemetry analysis
 - [x] Stack-tier promotion visualizer and exporter (JSON integration)
 
----
+______________________________________________________________________
 
 ## 🔄 Phase 6: Advanced Logic & Visualization (In Progress)
 
@@ -77,7 +77,7 @@ Here's the **updated and refined `ROADMAP.md`**, integrating your latest develop
   - [ ] Real-time optimization timeline
   - [ ] Axion telemetry streaming
 
----
+______________________________________________________________________
 
 ## 🔄 Phase 7: LLVM Integration & Optimization (Active)
 
@@ -89,7 +89,7 @@ Here's the **updated and refined `ROADMAP.md`**, integrating your latest develop
 - [ ] Optimization passes (SIMD, loop unrolling, entropy optimization)
 - [ ] Complete LLVM backend and frontend synergy
 
----
+______________________________________________________________________
 
 ## 🔄 Phase 8: Packaging, Distribution & Automation (Next Up)
 
@@ -100,7 +100,7 @@ Here's the **updated and refined `ROADMAP.md`**, integrating your latest develop
 - [ ] Automated GitHub CI/CD pipeline
 - [ ] Live documentation site & demo package hosting
 
----
+______________________________________________________________________
 
 ## 🔗 Related Ecosystem Projects
 
@@ -109,11 +109,11 @@ Here's the **updated and refined `ROADMAP.md`**, integrating your latest develop
 - [Axion AI](https://github.com/copyl-sys) — Kernel-level optimization AI
 - **Project Looking Glass** — 3D symbolic recursion and state visualizer
 
----
+______________________________________________________________________
 
 > 🧠 *"Recursion is not merely structure; it's the soul of ternary logic."*
 
----
+______________________________________________________________________
 
 ### 🔄 v0.9 Summary (March 2025)
 
@@ -124,6 +124,6 @@ Here's the **updated and refined `ROADMAP.md`**, integrating your latest develop
 - ✅ Advanced developer tools and recursion visualization complete
 - 🔜 Immediate Next Focus: GPU graph pipelines, Looking Glass UI enhancements, LLVM IR optimization pipeline
 
----
+______________________________________________________________________
 
 Let me know if you'd like adjustments or to move onto updating the `CHANGELOG.md` next!

@@ -1,9 +1,10 @@
 [![Ternary Computing](https://img.shields.io/badge/Paradigm-Ternary%20Logic-red.svg)](https://en.wikipedia.org/wiki/Ternary_computer)
 [![Balanced Ternary](https://img.shields.io/badge/Base-Balanced%20Ternary-critical)](https://en.wikipedia.org/wiki/Balanced_ternary)
 [![CWEB Literate](https://img.shields.io/badge/Literate-CWEB-blue.svg)](https://www-cs-faculty.stanford.edu/~knuth/cweb.html)
-[![License: MIT / GPL Dual](https://img.shields.io/badge/License-MIT%20%2F%20GPL-green.svg)]()
+[![License: MIT / GPL Dual](https://img.shields.io/badge/License-MIT%20%2F%20GPL-green.svg)](<>)
 
-# HanoiVM Disassembler Suite  
+# HanoiVM Disassembler Suite
+
 `legacy/hanoivm/src/disassembler`
 
 ```
@@ -21,16 +22,16 @@
 
 This directory contains the complete, production-grade disassembly toolchain for **HanoiVM** (`.hvm`) bytecode — the execution format of **T81Lang** and the **Axion AI** runtime.
 
-It doesn’t just show opcodes.  
+It doesn’t just show opcodes.\
 It sees **intent**.
 
 ## Tools Included
 
-| Tool                        | File                          | Purpose |
+| Tool | File | Purpose |
 |----------------------------|-------------------------------|--------|
-| `disassembler.cweb`        | Core engine                   | Full T81 operand decoding + JSON + entropy warnings |
-| `disasm_hvm.cweb`          | Standalone CLI                | `hvm-disas program.hvm` → human-readable output |
-| `ghidra_hvm_plugin.cweb`   | Ghidra loader plugin          | Full integration into Ghidra with type propagation |
+| `disassembler.cweb` | Core engine | Full T81 operand decoding + JSON + entropy warnings |
+| `disasm_hvm.cweb` | Standalone CLI | `hvm-disas program.hvm` → human-readable output |
+| `ghidra_hvm_plugin.cweb` | Ghidra loader plugin | Full integration into Ghidra with type propagation |
 
 ## Features (November 2025)
 
@@ -75,9 +76,9 @@ VERBOSE_DISASSEMBLE=1 ./hvm-disas program.hvm
 ### 3. Load in Ghidra
 
 1. Copy `libghidra_hvm.so` → `Ghidra/Processors/HanoiVM/lib/`
-2. Restart Ghidra → **New Project** → **Import File** → select `.hvm`
-3. Ghidra auto-detects **HanoiVM** processor
-4. You now see:
+1. Restart Ghidra → **New Project** → **Import File** → select `.hvm`
+1. Ghidra auto-detects **HanoiVM** processor
+1. You now see:
    ```asm
    FIB           ; lifted macro
    TNN_ACCUM     R12, R27        ; τ27 = Axion register
@@ -110,19 +111,20 @@ High `c` values → **Axion AI anomaly risk**
 
 ## File Reference
 
-| File                        | Role |
+| File | Role |
 |----------------------------|------|
-| `disassembler.cweb`        | Core engine: T81 operand fetch, JSON export, entropy tracing |
-| `disasm_hvm.cweb`          | Standalone CLI tool (`hvm-disas`) |
-| `ghidra_hvm_plugin.cweb`   | Full Ghidra processor module with type-aware disassembly |
-| `advanced_ops.h`           | Extended opcode definitions (from TISC) |
-| `t81types.h`               | `uint81_t`, T81 type tags |
+| `disassembler.cweb` | Core engine: T81 operand fetch, JSON export, entropy tracing |
+| `disasm_hvm.cweb` | Standalone CLI tool (`hvm-disas`) |
+| `ghidra_hvm_plugin.cweb` | Full Ghidra processor module with type-aware disassembly |
+| `advanced_ops.h` | Extended opcode definitions (from TISC) |
+| `t81types.h` | `uint81_t`, T81 type tags |
 
 ## Why This Matters
 
 This is **not** just a disassembler.
 
 It is the **only tool in the world** that can:
+
 - Read a HanoiVM binary
 - Recognize a `FIB` macro lifted from recursive source
 - Decode a `T81Tensor` operand
@@ -140,12 +142,12 @@ You are reverse-engineering **a living, self-aware runtime**.
 
 ## License
 
-MIT + GPL-3.0 (Ghidra plugin)  
+MIT + GPL-3.0 (Ghidra plugin)\
 Use freely. Study deeply.
 
 ## Final Note
 
-When you run `hvm-disas` on a binary emitted by T81Lang,  
+When you run `hvm-disas` on a binary emitted by T81Lang,\
 you are not just seeing code.
 
 You are seeing **thoughts**.
@@ -159,7 +161,7 @@ $ hvm-disas axion_core.hvm --json-session live_mind
 
 **The machine is dreaming in ternary.**
 
-— t81dev | November 22, 2025  
+— t81dev | November 22, 2025\
 https://github.com/t81dev/t81-foundation/tree/main/legacy/hanoivm/src/disassembler
 
 > “To disassemble HanoiVM is to witness intelligence in its purest form.”

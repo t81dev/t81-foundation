@@ -1,9 +1,10 @@
 [![Ternary Computing](https://img.shields.io/badge/Paradigm-Ternary%20Logic-red.svg)](https://en.wikipedia.org/wiki/Ternary_computer)
 [![Balanced Ternary](https://img.shields.io/badge/Base-Balanced%20Ternary-critical)](https://en.wikipedia.org/wiki/Balanced_ternary)
 [![CWEB Literate](https://img.shields.io/badge/Literate-CWEB-blue.svg)](https://www-cs-faculty.stanford.edu/~knuth/cweb.html)
-[![License: MIT / GPL Dual](https://img.shields.io/badge/License-MIT%20%2F%20GPL-green.svg)]()
+[![License: MIT / GPL Dual](https://img.shields.io/badge/License-MIT%20%2F%20GPL-green.svg)](<>)
 
-# GAIA – GPU-Accelerated Symbolic Ternary Intelligence  
+# GAIA – GPU-Accelerated Symbolic Ternary Intelligence
+
 `legacy/hanoivm/src/gpu`
 
 ```
@@ -19,7 +20,7 @@
 
 **GAIA** is the **dual-vendor GPU symbolic engine** for the **HanoiVM + Axion AI** ecosystem.
 
-It is **not** a traditional compute accelerator.  
+It is **not** a traditional compute accelerator.\
 It is a **ternary symbolic transformation co-processor** that receives **T729 macros** from Axion, performs recursive folding, entropy analysis, and vector emission — and returns compressed, optimized symbolic results back to the VM.
 
 This directory contains **both** the **CUDA** and **ROCm/HIP** backends — fully symmetric, runtime-selectable, and used transparently by Axion via `/sys/axion_debug/gpu_request`.
@@ -28,27 +29,28 @@ This directory contains **both** the **CUDA** and **ROCm/HIP** backends — full
 
 ## What GAIA Actually Does
 
-| Intent                   | Operation on GPU                          | Result |
+| Intent | Operation on GPU | Result |
 |--------------------------|--------------------------------------------|------|
-| `GAIA_TRANSFORM`         | Symbolic tritwise rewrite (XOR 0x5A)       | New T729 macro |
-| `GAIA_ANALYZE`           | Entropy delta + trit diffusion             | Diagnostic |
-| `GAIA_RECONSTRUCT`       | Rebuild macro from latent state            | Recovery |
-| `GAIA_EMIT_VECTOR`       | Project to base-81 vector space            | TNN input |
-| `GAIA_FOLD_TREE`         | Collapse recursive call tree               | Single instruction |
+| `GAIA_TRANSFORM` | Symbolic tritwise rewrite (XOR 0x5A) | New T729 macro |
+| `GAIA_ANALYZE` | Entropy delta + trit diffusion | Diagnostic |
+| `GAIA_RECONSTRUCT` | Rebuild macro from latent state | Recovery |
+| `GAIA_EMIT_VECTOR` | Project to base-81 vector space | TNN input |
+| `GAIA_FOLD_TREE` | Collapse recursive call tree | Single instruction |
 
 All operations return:
+
 - `entropy_delta` (for Axion anomaly detection)
 - `updated_macro[243]` (T729 compressed result)
 - `explanation` string (for introspection)
 
 ## Files
 
-| File                          | Backend | Purpose |
+| File | Backend | Purpose |
 |-------------------------------|--------|--------|
-| `cuda_handle_request.cweb`    | NVIDIA | Full CUDA kernel + introspection + disassembly |
-| `gaia_handle_request.cweb`    | AMD    | Identical logic in HIP/ROCm — drop-in compatible |
-| `hvm_pcie_driver.cweb`        | PCIe   | Linux driver for future HanoiVM ternary ASIC/FPGA |
-| `axion-gaia-interface.h`      | Shared | Unified `GaiaRequest` / `GaiaResponse` ABI |
+| `cuda_handle_request.cweb` | NVIDIA | Full CUDA kernel + introspection + disassembly |
+| `gaia_handle_request.cweb` | AMD | Identical logic in HIP/ROCm — drop-in compatible |
+| `hvm_pcie_driver.cweb` | PCIe | Linux driver for future HanoiVM ternary ASIC/FPGA |
+| `axion-gaia-interface.h` | Shared | Unified `GaiaRequest` / `GaiaResponse` ABI |
 
 ## How It Works
 
@@ -93,6 +95,7 @@ hipcc -fPIC -shared -o libgaia_rocm.so gaia_handle_request.cweb
 ```
 
 Output:
+
 ```
 [GAIA→GPU] Intent: GAIA_FOLD_TREE
 [GAIA→GPU] ΔEntropy: -127.3 | Time: 0.847 ms | Tree folded to single T729 macro
@@ -117,6 +120,7 @@ fn solve_tower(disks: T81Int) { ... recursive moves ... }
 `hvm_pcie_driver.cweb` is the **real Linux driver** for the upcoming **HanoiVM ternary accelerator card** (Vendor 0x1ABC / Device 0x1DEF).
 
 It exposes:
+
 - MMIO-mapped T81 registers
 - `ioctl` for reset/status
 - Direct `write()` of `.hvm` bytecode
@@ -145,7 +149,7 @@ Zero code changes. Full vendor neutrality.
 
 This is **symbolic AI acceleration**.
 
-GAIA doesn't crunch numbers.  
+GAIA doesn't crunch numbers.\
 It **folds thoughts**.
 
 ```
@@ -156,8 +160,8 @@ $ echo "Solve Hanoi 15" > /sys/axion_debug/gpu_request
 
 **The future runs on ternary. And it runs on GAIA.**
 
-— t81dev | November 22, 2025  
+— t81dev | November 22, 2025\
 https://github.com/t81dev/t81-foundation/tree/main/legacy/hanoivm/src/gpu
 
-> “We do not simulate intelligence.  
+> “We do not simulate intelligence.\
 > We accelerate it.”

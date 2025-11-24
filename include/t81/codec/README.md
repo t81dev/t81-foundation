@@ -5,6 +5,7 @@ implementation performs canonical base-256 ↔ base-243 conversion (big-endian),
 plus a textual codec for `T81BigInt`.
 
 ## Files
+
 - `base243.hpp`
   - `Base243::encode_bytes_be(std::vector<uint8_t>) -> std::vector<digit_t>`
   - `Base243::decode_bytes_be(std::vector<digit_t>) -> std::vector<uint8_t>`
@@ -14,6 +15,7 @@ plus a textual codec for `T81BigInt`.
   - `Base243::decode_bigint(std::string_view, T81BigInt&) -> bool`
 
 ## Notes
+
 - `digit_t` is `uint8_t` with range **[0..242]**; digits are MSB-first.
 - Bytes are interpreted as a big-endian base-256 integer; digits are canonical
   base-243 representation.
@@ -21,6 +23,7 @@ plus a textual codec for `T81BigInt`.
   `-`; parsing rejects out-of-range digits and malformed input.
 
 ## Example
+
 ```cpp
 #include <t81/codec/base243.hpp>
 using namespace t81::codec;
@@ -28,3 +31,4 @@ using namespace t81::codec;
 std::vector<uint8_t> bytes = {0x01, 0xFE, 0xA5};
 auto digits = Base243::encode_bytes_be(bytes);
 auto round  = Base243::decode_bytes_be(digits);
+```

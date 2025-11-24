@@ -17,16 +17,17 @@ CPU-side manipulation and testing.
 
 ## Ops (header-only)
 
-Aggregate:  
+Aggregate:
+
 ```cpp
 #include <t81/tensor/ops.hpp>
-````
+```
 
 Or pick à la carte:
 
-* `transpose.hpp` → `t81::ops::transpose(m)`
-* `slice.hpp`     → `t81::ops::slice2d(m, r0, r1, c0, c1)`
-* `reshape.hpp`   → `t81::ops::reshape(m, new_shape /* -1 allowed once */)`
+- `transpose.hpp` → `t81::ops::transpose(m)`
+- `slice.hpp` → `t81::ops::slice2d(m, r0, r1, c0, c1)`
+- `reshape.hpp` → `t81::ops::reshape(m, new_shape /* -1 allowed once */)`
 
 ## Examples
 
@@ -44,8 +45,8 @@ auto r  = t81::ops::reshape(m,{3,2});   // 3x2 (view-copy)
 
 ## Notes
 
-* This module intentionally avoids external deps (BLAS, Eigen, etc.).
-* For GPU/accelerated paths, keep the same interface and provide a separate
+- This module intentionally avoids external deps (BLAS, Eigen, etc.).
+- For GPU/accelerated paths, keep the same interface and provide a separate
   backend library; do not change the headers’ public API.
 
 ```
