@@ -104,5 +104,36 @@ int main() {
     assert(res.error() == lang::CompileError::UnsupportedType);
   }
 
+  // Integer comparison compiles
+  {
+    auto mod = lang::parse_module("fn main() -> T81Int { return 1t81 == 2t81; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(res.has_value());
+  }
+
+  // Float comparison compiles
+  {
+    auto mod = lang::parse_module("fn main() -> T81Int { "
+                                  "let a: T81Float = 1.00t81; "
+                                  "let b: T81Float = 2.00t81; "
+                                  "return a < b; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(res.has_value());
+  }
+
+  // Comparison type mismatch fails
+  {
+    auto mod = lang::parse_module("fn main() -> T81Int { return 1t81 == :bad; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(!res.has_value());
+    assert(res.error() == lang::CompileError::UnsupportedType);
+  }
+
   return 0;
 }

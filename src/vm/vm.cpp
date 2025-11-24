@@ -79,6 +79,7 @@ class Interpreter : public IVirtualMachine {
     auto update_flags = [this](std::int64_t v) {
       state_.flags.zero = (v == 0);
       state_.flags.negative = (v < 0);
+      state_.flags.positive = (v > 0);
     };
     auto push_stack = [this](std::int64_t value, ValueTag tag) -> bool {
       if (state_.layout.stack_limit <= state_.layout.code_limit) return false;
@@ -265,6 +266,19 @@ class Interpreter : public IVirtualMachine {
         if (trap != Trap::None) break;
         state_.flags.zero = (relation == 0);
         state_.flags.negative = (relation < 0);
+        state_.flags.positive = (relation > 0);
+        break;
+      }
+      case t81::tisc::Opcode::SetF: {
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        std::int64_t flag_value = 0;
+        if (state_.flags.negative) {
+          flag_value = -1;
+        } else if (!state_.flags.zero) {
+          flag_value = 1;
+        }
+        set_reg(insn.a, flag_value, ValueTag::Int);
+        update_flags(flag_value);
         break;
       }
       case t81::tisc::Opcode::Push:

@@ -29,6 +29,7 @@ enum class ValueTag : std::uint8_t {
 struct Flags {
   bool zero{false};
   bool negative{false};
+  bool positive{false};
 };
 
 struct MemoryLayout {

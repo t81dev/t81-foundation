@@ -49,5 +49,6 @@ enum class Opcode : std::uint8_t {
   FracSub = 41,
   FracMul = 42,
   FracDiv = 43,
+  SetF = 44,
 };
 }  // namespace t81::tisc

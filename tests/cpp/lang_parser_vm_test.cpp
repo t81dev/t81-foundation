@@ -81,5 +81,57 @@ int main() {
     assert(frac.den.to_int64() == 6);
   }
 
+  {
+    const std::string src =
+        "fn main() -> T81Int { let a: T81Int = 1t81; let b: T81Int = 3t81; "
+        "if (a < b) { return 1t81; } else { return 0t81; } }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    assert(vm->state().registers[0] == 1);
+  }
+
+  {
+    const std::string src =
+        "fn main() -> T81Int { "
+        "let x: T81Float = 1.20t81; "
+        "let y: T81Float = 1.20t81; "
+        "return x == y; }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    assert(vm->state().registers[0] == 1);
+  }
+
+  {
+    const std::string src =
+        "fn main() -> T81Int { "
+        "let a: T81Fraction = 1/2t81; "
+        "let b: T81Fraction = 3/4t81; "
+        "return b >= a; }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    assert(vm->state().registers[0] == 1);
+  }
+
   return 0;
 }

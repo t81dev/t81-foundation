@@ -92,11 +92,15 @@ return        ::= "return" expr ";"
 if_stmt       ::= "if" expr block [ "else" block ]
 loop_stmt     ::= "loop" block
 
-expr          ::= literal
+expr          ::= equality_expr
+equality_expr ::= relational_expr { ("==" | "!=") relational_expr }
+relational_expr ::= additive_expr { ("<" | "<=" | ">" | ">=") additive_expr }
+additive_expr ::= term { ("+" | "-") term }
+term          ::= factor { "*" factor }
+factor        ::= literal
                 | identifier
                 | fn_call
-                | unary_op expr
-                | expr bin_op expr
+                | unary_op factor
                 | paren_expr
 
 fn_call       ::= identifier "(" [ expr { "," expr } ] ")"
@@ -239,6 +243,9 @@ Guarantees:
   be rejected unless an explicit conversion (`I2F`, `I2FRAC`, etc.) is inserted.
 - literal expressions for `T81Float`, `T81Fraction`, and `Symbol` MUST be tagged
   with their declared types so lowering can emit the correct literal pool handle.
+- comparison expressions (`==`, `!=`, `<`, `<=`, `>`, `>=`) MUST return `T81Int`
+  (canonical boolean) and both operands MUST be the same primitive numeric type
+  (`T81Int`, `T81Float`, or `T81Fraction`).
 
 ### Stage 4 — Purity Analysis
 
@@ -269,6 +276,7 @@ Maps IR instructions to TISC sequences:
 | `a * b` (`T81Float`) | `FMUL` |
 | `a + b` (`T81Fraction`) | literal handle load, `FRACADD` |
 | `a * b` (`T81Fraction`) | `FRACMUL` |
+| comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) | `CMP`, `SETF`, literal/branch sequence producing a `T81Int` |
 | vector add | `TVECADD` |
 | matrix mul | `TMATMUL` |
 | fn call | `CALL`, argument push, return capture |
@@ -277,6 +285,10 @@ Maps IR instructions to TISC sequences:
 Lowering MUST also emit float/fraction/symbol literals into their respective
 program pools before they are referenced by any instruction, and all references
 in registers MUST be 1-based handles into those pools.
+Comparisons first emit `CMP`/`SETF` to obtain the sign of the subtraction in a
+register, then use deterministic branch sequences to write `0` or `1` back into
+a `T81Int` destination register so higher-level control flow can reuse the
+result.
 
 The lowering pass MUST NOT introduce nondeterminism.
 

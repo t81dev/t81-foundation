@@ -29,7 +29,17 @@ struct ExprCall {
 };
 
 struct ExprBinary {
-  enum class Op { Add, Sub, Mul } op{Op::Add};
+  enum class Op {
+    Add,
+    Sub,
+    Mul,
+    Eq,
+    Ne,
+    Lt,
+    Le,
+    Gt,
+    Ge
+  } op{Op::Add};
   std::shared_ptr<struct Expr> lhs;
   std::shared_ptr<struct Expr> rhs;
 };

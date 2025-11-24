@@ -291,7 +291,8 @@ ______________________________________________________________________
 
 - **Form**: `SETF RD`
 - **Semantics**:
-  `R[RD] := FLAGS` encoded as a canonical small integer or struct.
+  `R[RD] := FLAGS` encoded as a canonical small integer. In this revision the VM
+  MUST encode `NEG` as `-1`, `ZERO` as `0`, and `POS` as `+1`.
 - **Faults**: None.
 
 ______________________________________________________________________
