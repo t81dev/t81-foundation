@@ -12,8 +12,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install Tectonic
-      run: sudo apt-get update && sudo apt-get install -y tectonic
+   - name: Install Tectonic (cargo)
+  run: |
+    sudo apt-get update
+    sudo apt-get install -y curl build-essential pkg-config libssl-dev
+    curl https://sh.rustup.rs -sSf | sh -s -- -y
+    source "$HOME/.cargo/env"
+    cargo install tectonic
+    echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+- name: Check
+  run: tectonic --version
 
     - name: Install Pandoc
       run: sudo apt-get update && sudo apt-get install -y pandoc
