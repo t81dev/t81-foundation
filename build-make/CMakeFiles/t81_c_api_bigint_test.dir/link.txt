@@ -1,1 +1,0 @@
-/usr/bin/clang++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/t81_c_api_bigint_test.dir/tests/cpp/c_api_bigint_test.c.o -o t81_c_api_bigint_test  libt81_c_api.a libt81.a

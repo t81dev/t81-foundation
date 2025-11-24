@@ -1,1 +1,0 @@
-/usr/bin/clang++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/t81_vm_illegal_test.dir/tests/cpp/vm_illegal_test.cpp.o -o t81_vm_illegal_test  libt81.a

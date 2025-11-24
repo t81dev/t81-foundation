@@ -1,1 +1,0 @@
-/usr/bin/clang++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/t81_ternary_arith_test.dir/tests/cpp/ternary_arith_test.cpp.o -o t81_ternary_arith_test  libt81.a

@@ -1,1 +1,0 @@
-/usr/bin/clang++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/t81_codec_base81_test.dir/tests/cpp/codec_base81_test.cpp.o -o t81_codec_base81_test  libt81.a

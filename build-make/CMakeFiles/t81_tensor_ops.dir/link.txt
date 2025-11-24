@@ -1,1 +1,0 @@
-/usr/bin/clang++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/t81_tensor_ops.dir/examples/tensor_ops.cpp.o -o t81_tensor_ops  libt81.a
