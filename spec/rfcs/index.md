@@ -35,9 +35,7 @@ These RFCs define the **fundamental principles** of the T81 ecosystem.
 ## **RFC-0000 - T81 — Base‑81 Ternary Computing Stack**
 `RFC-0000-T81-Base-81-Ternary-Computing-Stack.md`
 
-Defines a post‑binary computing model leveraging balanced ternary (−1, 0, +1)
-and Base‑81 encodings to maximize information density and determinism for AI‑centric
-workloads.
+Defines a post‑binary computing model leveraging balanced ternary (−1, 0, +1) and Base‑81 encodings to maximize information density and determinism for AI‑centric workloads.
 
 ## **RFC-0001 — T81 Architecture Principles**  
 `RFC-0001-architecture-principles.md`
