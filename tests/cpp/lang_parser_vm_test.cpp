@@ -210,6 +210,78 @@ int main() {
 
   {
     const std::string src =
+        "fn main() -> T81Int { "
+        "return 10 / 3; }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    assert(vm->state().registers[0] == 3);
+  }
+
+  {
+    const std::string src =
+        "fn main() -> T81Int { "
+        "return 10 % 3; }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    assert(vm->state().registers[0] == 1);
+  }
+
+  {
+    const std::string src =
+        "fn main() -> T81Float { "
+        "return 4t81 / 2.00t81; }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    int handle = static_cast<int>(vm->state().registers[0]);
+    assert(handle > 0);
+    assert(std::fabs(vm->state().floats[handle - 1] - 2.0) < 1e-9);
+  }
+
+  {
+    const std::string src =
+        "fn main() -> T81Fraction { "
+        "let a: T81Fraction = 1/2t81; "
+        "let b: T81Fraction = 3/4t81; "
+        "return b / a; }";
+    auto mod_res = lang::parse_module(src);
+    assert(mod_res.has_value());
+    lang::Compiler comp;
+    auto prog_res = comp.compile(mod_res.value());
+    assert(prog_res.has_value());
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(prog_res.value());
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    int handle = static_cast<int>(vm->state().registers[0]);
+    assert(handle > 0);
+    const auto& frac = vm->state().fractions[handle - 1];
+    assert(frac.num.to_int64() == 3);
+    assert(frac.den.to_int64() == 2);
+  }
+
+  {
+    const std::string src =
         "fn never() -> T81Int { return never(); }"
         "fn main() -> T81Int { "
         "let guard: T81Int = 0t81; "

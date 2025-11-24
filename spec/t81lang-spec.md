@@ -98,7 +98,7 @@ logical_and_expr ::= equality_expr { "&&" equality_expr }
 equality_expr    ::= relational_expr { ("==" | "!=") relational_expr }
 relational_expr  ::= additive_expr { ("<" | "<=" | ">" | ">=") additive_expr }
 additive_expr    ::= term { ("+" | "-") term }
-term             ::= factor { "*" factor }
+term             ::= factor { ("*" | "/" | "%") factor }
 factor        ::= literal
                 | identifier
                 | fn_call
@@ -120,6 +120,12 @@ represents false, any non-zero `T81Int` represents true, and the emitted code
 MUST short-circuit left-to-right. When the left operand of `&&` evaluates to
 false or the left operand of `||` evaluates to true, the right operand MUST NOT
 be evaluated. The final result MUST be `0t81` or `1t81`.
+
+Division (`/`) follows the canonical semantics defined for the operand type in
+[`tisc-spec.md`](tisc-spec.md#52-arithmetic-instructions) and deterministically
+faults on a zero divisor. The modulo operator (`%`) is defined only for
+`T81Int`; attempting to use `%` with any other type MUST be rejected at compile
+time.
 
 ______________________________________________________________________
 
@@ -260,12 +266,16 @@ Guarantees:
 - all shapes are valid
 - canonical forms are upheld
 - arithmetic expressions are only legal when both operands share a primitive type
-  and TISC exposes a matching opcode (`ADD/MUL` for `T81Int`, `FADD/FMUL` for
-  `T81Float`, `FRACADD/FRACMUL` for `T81Fraction`). When an expression mixes
+  and TISC exposes a matching opcode (`ADD/SUB/MUL/DIV/MOD` for `T81Int`,
+  `FADD/FSUB/FMUL/FDIV` for `T81Float`, `FRACADD/FRACSUB/FRACMUL/FRACDIV` for
+  `T81Fraction`). When an expression mixes
   `T81Int` with either `T81Float` or `T81Fraction`, the compiler MUST insert a
   deterministic widening conversion (`I2F` or `I2FRAC`) so the operands share the
   non-integer type before lowering. Any other mixed-type arithmetic MUST be
-  rejected.
+  rejected, and the modulo operator (`%`) is legal **only** when both operands
+  are `T81Int`. Division by zero MUST surface the VM’s deterministic
+  `DivideByZero` fault; the compiler MAY fold constant expressions that avoid the
+  fault but MUST NOT silently change the runtime semantics.
 - literal expressions for `T81Float`, `T81Fraction`, and `Symbol` MUST be tagged
   with their declared types so lowering can emit the correct literal pool handle.
 - comparison expressions (`==`, `!=`, `<`, `<=`, `>`, `>=`) MUST return `T81Int`
@@ -311,6 +321,10 @@ Maps IR instructions to TISC sequences:
 | `a * b` (`T81Float`) | `FMUL` |
 | `a + b` (`T81Fraction`) | literal handle load, `FRACADD` |
 | `a * b` (`T81Fraction`) | `FRACMUL` |
+| `a / b` (`T81Int`) | `DIV` (faults on zero divisor) |
+| `a % b` (`T81Int`) | `MOD` (faults on zero divisor) |
+| `a / b` (`T81Float`) | `FDIV` (faults on zero divisor) |
+| `a / b` (`T81Fraction`) | `FRACDIV` (faults on zero divisor) |
 | comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) | `CMP`, `SETF`, literal/branch sequence producing a `T81Int` (`Symbol` allowed only for `==`/`!=`) |
 | `T81Int → T81Float/T81Fraction` promotion | `I2F` / `I2FRAC` emitted before the consuming opcode/assignment |
 | logical `a && b` | Evaluate `a`, `JumpIfZero` to skip RHS, evaluate `b` only when needed, write `0t81/1t81` deterministically |

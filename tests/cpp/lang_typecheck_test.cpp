@@ -240,5 +240,24 @@ int main() {
     assert(res.error() == lang::CompileError::UnsupportedType);
   }
 
+  // Modulo only valid for integers
+  {
+    auto mod = lang::parse_module("fn main() -> T81Float { return 1.00t81 % 2.00t81; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(!res.has_value());
+    assert(res.error() == lang::CompileError::UnsupportedType);
+  }
+
+  {
+    auto mod = lang::parse_module("fn main() -> T81Float { return 1t81 % 2.00t81; }");
+    assert(mod.has_value());
+    lang::Compiler comp;
+    auto res = comp.compile(mod.value());
+    assert(!res.has_value());
+    assert(res.error() == lang::CompileError::UnsupportedType);
+  }
+
   return 0;
 }

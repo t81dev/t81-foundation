@@ -397,6 +397,8 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
           case ExprBinary::Op::Add:
           case ExprBinary::Op::Sub:
           case ExprBinary::Op::Mul:
+          case ExprBinary::Op::Div:
+          case ExprBinary::Op::Mod:
             return true;
           default:
             return false;
@@ -690,19 +692,27 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
       if (!rhs.has_value()) return rhs;
       EvalValue lhs_val = lhs.value();
       EvalValue rhs_val = rhs.value();
-      auto align_result = align_numeric_operands(lhs_val, rhs_val);
-      if (!align_result.has_value()) return make_error(align_result.error());
       if (!is_arithmetic_op(bin.op)) {
         return make_error(CompileError::UnsupportedType);
       }
+      if (bin.op == ExprBinary::Op::Mod) {
+        if (lhs_val.type != Type::T81Int || rhs_val.type != Type::T81Int) {
+          return make_error(CompileError::UnsupportedType);
+        }
+      } else {
+        auto align_result = align_numeric_operands(lhs_val, rhs_val);
+        if (!align_result.has_value()) return make_error(align_result.error());
+      }
       Type expr_type = lhs_val.type;
-      t81::tisc::Opcode opcode = t81::tisc::Opcode::Add;
+      std::optional<t81::tisc::Opcode> opcode;
       switch (expr_type) {
         case Type::T81Int:
           switch (bin.op) {
             case ExprBinary::Op::Add: opcode = t81::tisc::Opcode::Add; break;
             case ExprBinary::Op::Sub: opcode = t81::tisc::Opcode::Sub; break;
             case ExprBinary::Op::Mul: opcode = t81::tisc::Opcode::Mul; break;
+            case ExprBinary::Op::Div: opcode = t81::tisc::Opcode::Div; break;
+            case ExprBinary::Op::Mod: opcode = t81::tisc::Opcode::Mod; break;
             default: break;
           }
           break;
@@ -711,6 +721,7 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
             case ExprBinary::Op::Add: opcode = t81::tisc::Opcode::FAdd; break;
             case ExprBinary::Op::Sub: opcode = t81::tisc::Opcode::FSub; break;
             case ExprBinary::Op::Mul: opcode = t81::tisc::Opcode::FMul; break;
+            case ExprBinary::Op::Div: opcode = t81::tisc::Opcode::FDiv; break;
             default: break;
           }
           break;
@@ -719,16 +730,20 @@ std::expected<t81::tisc::Program, CompileError> Compiler::compile(const Module& 
             case ExprBinary::Op::Add: opcode = t81::tisc::Opcode::FracAdd; break;
             case ExprBinary::Op::Sub: opcode = t81::tisc::Opcode::FracSub; break;
             case ExprBinary::Op::Mul: opcode = t81::tisc::Opcode::FracMul; break;
+            case ExprBinary::Op::Div: opcode = t81::tisc::Opcode::FracDiv; break;
             default: break;
           }
           break;
         default:
           return make_error(CompileError::UnsupportedType);
       }
+      if (!opcode.has_value()) {
+        return make_error(CompileError::UnsupportedType);
+      }
       int out_reg = target.value_or(next_reg);
       if (out_reg >= kMaxRegs) return make_error(CompileError::RegisterOverflow);
       if (!target.has_value()) ++next_reg;
-      program.insns.push_back({opcode, out_reg, lhs_val.reg, rhs_val.reg});
+      program.insns.push_back({opcode.value(), out_reg, lhs_val.reg, rhs_val.reg});
       return EvalValue{out_reg, expr_type};
     };
 
