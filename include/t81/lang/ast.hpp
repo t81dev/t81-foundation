@@ -33,6 +33,8 @@ struct ExprBinary {
     Add,
     Sub,
     Mul,
+    Land,
+    Lor,
     Eq,
     Ne,
     Lt,
