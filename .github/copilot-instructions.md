@@ -1,3 +1,11 @@
+## Tool-specific adapters
+
+These files adapt the same rules to specific tools:
+
+- `CLAUDE.md` – Claude Code
+- `.github/copilot-instructions.md` – GitHub Copilot / Copilot Chat
+- `.cursorrules` – Cursor / Windsurf
+
 # GitHub Copilot Instructions for T81 Foundation
 
 You are assisting with a spec-first, ternary-native computing stack called **T81 Foundation**.
