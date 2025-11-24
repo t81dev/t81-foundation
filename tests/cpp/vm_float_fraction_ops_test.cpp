@@ -95,5 +95,41 @@ int main() {
     assert(run.error() == vm::Trap::DivideByZero);
   }
 
+  // Float comparisons influence flags.
+  {
+    tisc::Program program;
+    program.float_pool = {1.0, 2.0};
+    program.insns.push_back({tisc::Opcode::LoadImm, 1, 1, 0,
+                             tisc::LiteralKind::FloatHandle});
+    program.insns.push_back({tisc::Opcode::LoadImm, 2, 2, 0,
+                             tisc::LiteralKind::FloatHandle});
+    program.insns.push_back({tisc::Opcode::Cmp, 1, 2, 0});
+    program.insns.push_back({tisc::Opcode::Halt, 0, 0, 0});
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(program);
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    assert(vm->state().flags.zero == false);
+    assert(vm->state().flags.negative == true);
+  }
+
+  // Fraction comparisons influence flags.
+  {
+    tisc::Program program;
+    program.fraction_pool = {make_fraction(1, 2), make_fraction(3, 4)};
+    program.insns.push_back({tisc::Opcode::LoadImm, 1, 1, 0,
+                             tisc::LiteralKind::FractionHandle});
+    program.insns.push_back({tisc::Opcode::LoadImm, 2, 2, 0,
+                             tisc::LiteralKind::FractionHandle});
+    program.insns.push_back({tisc::Opcode::Cmp, 2, 1, 0});
+    program.insns.push_back({tisc::Opcode::Halt, 0, 0, 0});
+    auto vm = vm::make_interpreter_vm();
+    vm->load_program(program);
+    auto run = vm->run_to_halt();
+    assert(run.has_value());
+    assert(vm->state().flags.zero == false);
+    assert(vm->state().flags.negative == false);
+  }
+
   return 0;
 }

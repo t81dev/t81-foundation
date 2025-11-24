@@ -19,6 +19,13 @@ struct TraceEntry {
   std::optional<Trap> trap;
 };
 
+enum class ValueTag : std::uint8_t {
+  Int = 0,
+  FloatHandle,
+  FractionHandle,
+  SymbolHandle,
+};
+
 struct Flags {
   bool zero{false};
   bool negative{false};
@@ -40,7 +47,9 @@ struct AxionEvent {
 // Virtual machine register file per spec/t81vm-spec.md.
 struct State {
   std::array<std::int64_t, 27> registers{}; // R0..R26
+  std::array<ValueTag, 27> register_tags{};
   std::vector<std::int64_t> memory;
+  std::vector<ValueTag> memory_tags;
   MemoryLayout layout{};
   std::size_t sp{0};
   std::vector<t81::T729Tensor> tensors;

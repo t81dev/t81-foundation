@@ -24,10 +24,12 @@ class Interpreter : public IVirtualMachine {
   void load_program(const t81::tisc::Program& program) override {
     program_ = program;
     state_ = State{};
+    state_.register_tags.fill(ValueTag::Int);
     state_.layout.code_limit = program_.insns.size();
     state_.layout.stack_limit = state_.layout.code_limit + 256;
     state_.layout.heap_limit = state_.layout.stack_limit + 768;
     state_.memory.resize(state_.layout.heap_limit, 0);
+    state_.memory_tags.assign(state_.memory.size(), ValueTag::Int);
     state_.sp = state_.layout.stack_limit;
     state_.floats = program_.float_pool;
     state_.fractions = program_.fraction_pool;
@@ -57,20 +59,39 @@ class Interpreter : public IVirtualMachine {
       if (trap != Trap::None) t.trap = trap;
       state_.trace.push_back(t);
     };
+    auto literal_kind_to_tag = [](t81::tisc::LiteralKind kind) -> ValueTag {
+      switch (kind) {
+        case t81::tisc::LiteralKind::FloatHandle: return ValueTag::FloatHandle;
+        case t81::tisc::LiteralKind::FractionHandle: return ValueTag::FractionHandle;
+        case t81::tisc::LiteralKind::SymbolHandle: return ValueTag::SymbolHandle;
+        case t81::tisc::LiteralKind::Int:
+        default: return ValueTag::Int;
+      }
+    };
+    auto set_reg = [this](int reg, std::int64_t value, ValueTag tag) {
+      state_.registers[reg] = value;
+      state_.register_tags[reg] = tag;
+    };
+    auto copy_reg = [this](int dst, int src) {
+      state_.registers[dst] = state_.registers[src];
+      state_.register_tags[dst] = state_.register_tags[src];
+    };
     auto update_flags = [this](std::int64_t v) {
       state_.flags.zero = (v == 0);
       state_.flags.negative = (v < 0);
     };
-    auto push_stack = [this](std::int64_t value) -> bool {
+    auto push_stack = [this](std::int64_t value, ValueTag tag) -> bool {
       if (state_.layout.stack_limit <= state_.layout.code_limit) return false;
       if (state_.sp == state_.layout.code_limit) return false;
       --state_.sp;
       state_.memory[state_.sp] = value;
+      state_.memory_tags[state_.sp] = tag;
       return true;
     };
-    auto pop_stack = [this](std::int64_t& value) -> bool {
+    auto pop_stack = [this](std::int64_t& value, ValueTag& tag) -> bool {
       if (state_.sp == state_.layout.stack_limit) return false;
       value = state_.memory[state_.sp];
+      tag = state_.memory_tags[state_.sp];
       ++state_.sp;
       return true;
     };
@@ -120,46 +141,59 @@ class Interpreter : public IVirtualMachine {
         break;
       case t81::tisc::Opcode::LoadImm:
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
-        state_.registers[insn.a] = insn.b;
+        set_reg(insn.a, insn.b, literal_kind_to_tag(insn.literal_kind));
         update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Mov:
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
-        state_.registers[insn.a] = state_.registers[insn.b];
+        copy_reg(insn.a, insn.b);
         update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Inc:
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
         state_.registers[insn.a] += 1;
+        state_.register_tags[insn.a] = ValueTag::Int;
         update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Dec:
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
         state_.registers[insn.a] -= 1;
+        state_.register_tags[insn.a] = ValueTag::Int;
         update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Add:
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
         state_.registers[insn.a] = state_.registers[insn.b] + state_.registers[insn.c];
+        state_.register_tags[insn.a] = ValueTag::Int;
         update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Sub:
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
         state_.registers[insn.a] = state_.registers[insn.b] - state_.registers[insn.c];
+        state_.register_tags[insn.a] = ValueTag::Int;
         update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Load:
         if (!reg_ok(insn.a) || !mem_ok(insn.b)) { trap = Trap::InvalidMemory; break; }
-        state_.registers[insn.a] = state_.memory[static_cast<std::size_t>(insn.b)];
+        {
+          std::size_t addr = static_cast<std::size_t>(insn.b);
+          state_.registers[insn.a] = state_.memory[addr];
+          state_.register_tags[insn.a] = state_.memory_tags[addr];
+        }
         update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Store:
         if (!reg_ok(insn.b) || !mem_ok(insn.a)) { trap = Trap::InvalidMemory; break; }
-        state_.memory[static_cast<std::size_t>(insn.a)] = state_.registers[insn.b];
+        {
+          std::size_t addr = static_cast<std::size_t>(insn.a);
+          state_.memory[addr] = state_.registers[insn.b];
+          state_.memory_tags[addr] = state_.register_tags[insn.b];
+        }
         break;
       case t81::tisc::Opcode::Mul:
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
         state_.registers[insn.a] = state_.registers[insn.b] * state_.registers[insn.c];
+        state_.register_tags[insn.a] = ValueTag::Int;
         update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Div:
@@ -173,6 +207,7 @@ class Interpreter : public IVirtualMachine {
         } else {
           state_.registers[insn.a] = lhs % divisor;
         }
+        state_.register_tags[insn.a] = ValueTag::Int;
         update_flags(state_.registers[insn.a]);
         break;
       }
@@ -194,22 +229,55 @@ class Interpreter : public IVirtualMachine {
           state_.pc = static_cast<std::size_t>(insn.a);
         }
         break;
-      case t81::tisc::Opcode::Cmp:
+      case t81::tisc::Opcode::Cmp: {
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
-        {
-          auto lhs = state_.registers[insn.a];
-          auto rhs = state_.registers[insn.b];
-          state_.flags.zero = (lhs == rhs);
-          state_.flags.negative = (lhs < rhs);
+        auto tag_a = state_.register_tags[insn.a];
+        auto tag_b = state_.register_tags[insn.b];
+        if (tag_a != tag_b) { trap = Trap::IllegalInstruction; break; }
+        int relation = 0;
+        switch (tag_a) {
+          case ValueTag::Int: {
+            auto lhs = state_.registers[insn.a];
+            auto rhs = state_.registers[insn.b];
+            if (lhs == rhs) relation = 0;
+            else relation = (lhs < rhs) ? -1 : 1;
+            break;
+          }
+          case ValueTag::FloatHandle: {
+            auto lhs = float_ptr(state_.registers[insn.a]);
+            auto rhs = float_ptr(state_.registers[insn.b]);
+            if (!lhs || !rhs) { trap = Trap::IllegalInstruction; break; }
+            if (*lhs == *rhs) relation = 0;
+            else relation = (*lhs < *rhs) ? -1 : 1;
+            break;
+          }
+          case ValueTag::FractionHandle: {
+            auto lhs = fraction_ptr(state_.registers[insn.a]);
+            auto rhs = fraction_ptr(state_.registers[insn.b]);
+            if (!lhs || !rhs) { trap = Trap::IllegalInstruction; break; }
+            relation = t81::T81Fraction::cmp(*lhs, *rhs);
+            break;
+          }
+          default:
+            trap = Trap::IllegalInstruction;
+            break;
         }
+        if (trap != Trap::None) break;
+        state_.flags.zero = (relation == 0);
+        state_.flags.negative = (relation < 0);
         break;
+      }
       case t81::tisc::Opcode::Push:
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
-        if (!push_stack(state_.registers[insn.a])) { trap = Trap::BoundsFault; break; }
+        if (!push_stack(state_.registers[insn.a], state_.register_tags[insn.a])) { trap = Trap::BoundsFault; break; }
         break;
       case t81::tisc::Opcode::Pop:
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
-        if (!pop_stack(state_.registers[insn.a])) { trap = Trap::BoundsFault; break; }
+        {
+          ValueTag tag = ValueTag::Int;
+          if (!pop_stack(state_.registers[insn.a], tag)) { trap = Trap::BoundsFault; break; }
+          state_.register_tags[insn.a] = tag;
+        }
         update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::TNot:
@@ -217,6 +285,7 @@ class Interpreter : public IVirtualMachine {
         {
           int t = clamp_trit(state_.registers[insn.b]);
           state_.registers[insn.a] = -t;
+          state_.register_tags[insn.a] = ValueTag::Int;
           update_flags(state_.registers[insn.a]);
         }
         break;
@@ -238,6 +307,7 @@ class Interpreter : public IVirtualMachine {
             if (result < -1) result = 1;
           }
           state_.registers[insn.a] = result;
+          state_.register_tags[insn.a] = ValueTag::Int;
           update_flags(state_.registers[insn.a]);
         }
         break;
@@ -250,6 +320,7 @@ class Interpreter : public IVirtualMachine {
           break;
         }
         state_.registers[insn.a] = insn.b;
+        state_.register_tags[insn.a] = ValueTag::Int;
         update_flags(state_.registers[insn.a]);
         record_axion_event(insn.opcode, insn.b, state_.registers[insn.a], verdict);
         break;
@@ -274,6 +345,7 @@ class Interpreter : public IVirtualMachine {
         }
         state_.registers[insn.a] =
             (verdict.kind == t81::axion::VerdictKind::Defer) ? 1 : 0;
+        state_.register_tags[insn.a] = ValueTag::Int;
         update_flags(state_.registers[insn.a]);
         record_axion_event(insn.opcode, insn.b, state_.registers[insn.a], verdict);
         break;
@@ -282,13 +354,15 @@ class Interpreter : public IVirtualMachine {
         if (!reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
         auto target = state_.registers[insn.b];
         if (target < 0 || static_cast<std::size_t>(target) >= program_.insns.size()) { trap = Trap::IllegalInstruction; break; }
-        if (!push_stack(static_cast<std::int64_t>(state_.pc))) { trap = Trap::BoundsFault; break; }
+        if (!push_stack(static_cast<std::int64_t>(state_.pc), ValueTag::Int)) { trap = Trap::BoundsFault; break; }
         state_.pc = static_cast<std::size_t>(target);
         break;
       }
       case t81::tisc::Opcode::Ret: {
         std::int64_t addr = 0;
-        if (!pop_stack(addr)) { trap = Trap::BoundsFault; break; }
+        ValueTag tag = ValueTag::Int;
+        if (!pop_stack(addr, tag)) { trap = Trap::BoundsFault; break; }
+        if (tag != ValueTag::Int) { trap = Trap::IllegalInstruction; break; }
         if (addr < 0 || static_cast<std::size_t>(addr) >= program_.insns.size()) { trap = Trap::IllegalInstruction; break; }
         state_.pc = static_cast<std::size_t>(addr);
         break;
@@ -300,6 +374,7 @@ class Interpreter : public IVirtualMachine {
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
         double value = static_cast<double>(state_.registers[insn.b]);
         state_.registers[insn.a] = alloc_float(value);
+        state_.register_tags[insn.a] = ValueTag::FloatHandle;
         break;
       }
       case t81::tisc::Opcode::F2I: {
@@ -307,6 +382,7 @@ class Interpreter : public IVirtualMachine {
         auto fp = float_ptr(state_.registers[insn.b]);
         if (!fp) { trap = Trap::IllegalInstruction; break; }
         state_.registers[insn.a] = static_cast<std::int64_t>(*fp);
+        state_.register_tags[insn.a] = ValueTag::Int;
         update_flags(state_.registers[insn.a]);
         break;
       }
@@ -314,6 +390,7 @@ class Interpreter : public IVirtualMachine {
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
         auto frac = t81::T81Fraction::from_int(state_.registers[insn.b]);
         state_.registers[insn.a] = alloc_fraction(std::move(frac));
+        state_.register_tags[insn.a] = ValueTag::FractionHandle;
         break;
       }
       case t81::tisc::Opcode::Frac2I: {
@@ -321,6 +398,7 @@ class Interpreter : public IVirtualMachine {
         auto fp = fraction_ptr(state_.registers[insn.b]);
         if (!fp || !t81::T81BigInt::is_one(fp->den)) { trap = Trap::IllegalInstruction; break; }
         state_.registers[insn.a] = fp->num.to_int64();
+        state_.register_tags[insn.a] = ValueTag::Int;
         update_flags(state_.registers[insn.a]);
         break;
       }
@@ -345,6 +423,7 @@ class Interpreter : public IVirtualMachine {
         }
         if (trap != Trap::None) break;
         state_.registers[insn.a] = alloc_float(result);
+        state_.register_tags[insn.a] = ValueTag::FloatHandle;
         update_flags(state_.registers[insn.a]);
         break;
       }
@@ -370,6 +449,7 @@ class Interpreter : public IVirtualMachine {
           }
           if (trap != Trap::None) break;
           state_.registers[insn.a] = alloc_fraction(std::move(result));
+          state_.register_tags[insn.a] = ValueTag::FractionHandle;
           update_flags(state_.registers[insn.a]);
         } catch (...) {
           trap = Trap::IllegalInstruction;

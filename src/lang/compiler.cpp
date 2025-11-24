@@ -148,7 +148,8 @@ CompileError emit_literal_constant(const ExprLiteral& lit, Type type, int target
       if (!value.has_value()) return CompileError::UnsupportedLiteral;
       program.float_pool.push_back(*value);
       int handle = static_cast<int>(program.float_pool.size());
-      program.insns.push_back({t81::tisc::Opcode::LoadImm, target_reg, handle, 0});
+      program.insns.push_back({t81::tisc::Opcode::LoadImm, target_reg, handle, 0,
+                               t81::tisc::LiteralKind::FloatHandle});
       return CompileError::None;
     }
     case Type::T81Fraction: {
@@ -156,14 +157,16 @@ CompileError emit_literal_constant(const ExprLiteral& lit, Type type, int target
       if (!frac.has_value()) return CompileError::UnsupportedLiteral;
       program.fraction_pool.push_back(*frac);
       int handle = static_cast<int>(program.fraction_pool.size());
-      program.insns.push_back({t81::tisc::Opcode::LoadImm, target_reg, handle, 0});
+      program.insns.push_back({t81::tisc::Opcode::LoadImm, target_reg, handle, 0,
+                               t81::tisc::LiteralKind::FractionHandle});
       return CompileError::None;
     }
     case Type::Symbol: {
       if (lit.value.text.empty()) return CompileError::UnsupportedLiteral;
       program.symbol_pool.push_back(lit.value.text);
       int handle = static_cast<int>(program.symbol_pool.size());
-      program.insns.push_back({t81::tisc::Opcode::LoadImm, target_reg, handle, 0});
+      program.insns.push_back({t81::tisc::Opcode::LoadImm, target_reg, handle, 0,
+                               t81::tisc::LiteralKind::SymbolHandle});
       return CompileError::None;
     }
     default:
