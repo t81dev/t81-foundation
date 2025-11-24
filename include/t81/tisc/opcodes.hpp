@@ -60,5 +60,8 @@ enum class Opcode : std::uint8_t {
   ResultIsOk = 52,
   ResultUnwrapOk = 53,
   ResultUnwrapErr = 54,
+  Neg = 55,
+  JumpIfNegative = 56,
+  JumpIfPositive = 57,
 };
 }  // namespace t81::tisc

@@ -165,6 +165,9 @@ if (T81_BUILD_TESTS)
   add_executable(t81_vm_float_fraction_ops_test tests/cpp/vm_float_fraction_ops_test.cpp)
   target_link_libraries(t81_vm_float_fraction_ops_test PRIVATE t81)
 
+  add_executable(t81_vm_neg_jumps_test tests/cpp/vm_neg_jumps_test.cpp)
+  target_link_libraries(t81_vm_neg_jumps_test PRIVATE t81)
+
   enable_testing()
   set(T81_TEST_TARGETS
     t81_bigint_test
@@ -202,6 +205,7 @@ if (T81_BUILD_TESTS)
     t81_lang_parser_vm_test
     t81_lang_typecheck_test
     t81_vm_float_fraction_ops_test
+    t81_vm_neg_jumps_test
   )
   foreach(tgt IN LISTS T81_TEST_TARGETS)
     add_test(NAME ${tgt} COMMAND $<TARGET_FILE:${tgt}>)
