@@ -10,6 +10,7 @@
 [![Ternary Logic](https://img.shields.io/badge/Paradigm-Ternary%20Computing-red?style=flat-square)](https://en.wikipedia.org/wiki/Ternary_computer)
 [![Balanced Ternary](https://img.shields.io/badge/Base-Balanced%20Ternary-critical?style=flat-square)](https://en.wikipedia.org/wiki/Balanced_ternary)
 [![Specification-First](https://img.shields.io/badge/Design-Specification%20First-blue?style=flat-square)](#)
+[![CI Status](https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml/badge.svg)](https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml)
 [![C++23 Core](https://img.shields.io/badge/Core-C%2B%2B23-0d1117?style=flat-square&logo=cplusplus)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE-MIT)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-green?style=flat-square)](LICENSE-GPL)

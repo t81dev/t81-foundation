@@ -57,7 +57,14 @@ This document provides a comprehensive handover for a new developer joining the 
     cmake --build build --parallel
     ctest --test-dir build --output-on-failure
     ```
--   **CI/CD & Deployment:** There is no evidence of a CI/CD pipeline or a formal deployment process in the repository. The project is currently in a research and development phase.
+-   **CI/CD & Deployment:** The project has a robust Continuous Integration (CI) pipeline implemented using GitHub Actions (`.github/workflows/ci.yml`).
+    -   **Triggers:** The CI runs automatically on every push and pull request to the `main` branch.
+    -   **Validation:** The pipeline performs a comprehensive set of checks:
+        1.  **Documentation Linting:** Ensures all Markdown files are formatted correctly.
+        2.  **Broken Link Checking:** Verifies all hyperlinks in the documentation.
+        3.  **Build & Test:** Compiles the entire C++ project with `clang-18` and runs the full CTest suite.
+        4.  **API Documentation Generation:** Runs the Doxygen build to ensure the in-code comments can be successfully parsed.
+    -   **Deployment:** There is no automated deployment process. The project is currently in a research and development phase.
 
 ---
 
