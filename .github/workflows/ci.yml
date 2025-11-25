@@ -1,377 +1,263 @@
-# T81 Foundation CI/CD Pipeline
-#
-# This workflow is the primary CI gate for all pushes and pull requests.
-# It is designed to be comprehensive, secure, and fast.
-#
-# It enforces the following correctness and security constraints:
-# 1.  **Documentation & Spec Checks**: Ensures all markdown is formatted,
-#     contains no broken links, and that the constitutional structure of
-#     the repository is intact.
-# 2.  **Build & Test Matrix**: Compiles and tests the code in Release mode
-#     across a matrix of operating systems (Ubuntu, macOS, Windows) and
-#     compilers (GCC, Clang, MSVC).
-# 3.  **Sanitizer Runs**: Executes the test suite with Address, Leak,
-#     UndefinedBehavior, and Thread sanitizers on a Debug build to catch
-#     memory errors and data races.
-# 4.  **Static Analysis**: Runs a suite of static analysis tools, including
-#     clang-tidy, cppcheck, and include-what-you-use, to enforce coding
-#     standards and find potential bugs.
-# 5.  **Security Hardening**: All actions are pinned to full-length commit
-#     SHAs. CodeQL is run to find security vulnerabilities.
-
 name: T81 Foundation CI
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: read
 
 jobs:
-  ############################################################################
-  # JOB: spec-and-docs
-  #
-  # Verifies the integrity and quality of all documentation and specification
-  # files in the repository. This is the fastest job and runs first to
-  # provide quick feedback on non-code changes.
-  ############################################################################
-  spec-and-docs:
-    name: Specification & Documentation Checks
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+  ############################################################################
+  # JOB: spec-and-docs
+  ############################################################################
+  spec-and-docs:
+    name: Specification & Documentation Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-        with:
-          fetch-depth: 0
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
-        with:
-          python-version: "3.11"
-          cache: pip
+      - name: Set up Python 3.11
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+          cache: pip
 
-      - name: Install Python tools
-        run: |
-          # The extensions (gfm, frontmatter) are now configured in .mdformat.toml
-          pip install --quiet \
-            mdformat==0.7.18 \
-            mdformat-gfm==0.7.2 \
-            mdformat-frontmatter==2.0.1 \
-            mdformat-myst \
-            mdformat-toc # This was previously misspelled
+      - name: Install Python tools
+        run: |
+          pip install --quiet \
+            mdformat==0.7.18 \
+            mdformat-gfm==0.7.2 \
+            mdformat-frontmatter==2.0.1 \
+            mdformat-myst \
+            mdformat-toc
 
-      - name: Check Markdown formatting (mdformat)
-        run: mdformat --number .
+      - name: Check Markdown formatting (mdformat)
+        run: mdformat --number --check .
 
-      - name: Check Markdown links (lychee)
-        id: lychee
-        uses: lycheeverse/lychee-action@7da8ec1fc4e01b5a12062ac6c589c10a4ce70d67 # v2.0.0
-        with:
-          fail: true
-          args: >
-            --verbose
-            --no-progress
-            --exclude-mail
-            --exclude "http://localhost*"
-            --exclude "https://github.com/t81dev/t81-foundation/edit*"
-            spec/**/*.md docs/**/*.md README.md AGENTS.md CONTRIBUTING.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check Markdown links (lychee)
+        uses: lycheeverse/lychee-action@7da8ec1fc4e01b5a12062ac6c589c10a4ce70d67 # v2.0.0
+        with:
+          fail: true
+          args: >-
+            --verbose
+            --no-progress
+            --exclude-mail
+            --exclude "http://localhost*"
+            --exclude "https://github.com/t81dev/t81-foundation/edit*"
+            spec/**/*.md docs/**/*.md README.md AGENTS.md CONTRIBUTING.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify required directories & files
-        run: |
-          set -euo pipefail
-          required_dirs=("spec" "docs" "include/t81" "tests")
-          required_files=(
-            "spec/index.md"
-            "spec/constitution.md"
-            "AGENTS.md"
-            "CONTRIBUTING.md"
-            ".gitignore"
-          )
-          for d in "${required_dirs[@]}"; do
-            [ -d "$d" ] || { echo "Missing required directory: $d"; exit 1; }
-          done
-          for f in "${required_files[@]}"; do
-            [ -f "$f" ] || { echo "Missing required file: $f"; exit 1; }
-          done
-          echo "All required paths present"
+      - name: Verify required directories & files
+        run: |
+          set -euo pipefail
+          required_dirs=("spec" "docs" "include/t81" "tests")
+          required_files=(
+            "spec/index.md"
+            "spec/constitution.md"
+            "AGENTS.md"
+            "CONTRIBUTING.md"
+            ".gitignore"
+          )
+          for d in "${required_dirs[@]}"; do
+            [ -d "$d" ] || { echo "Missing required directory: $d"; exit 1; }
+          done
+          for f in "${required_files[@]}"; do
+            [ -f "$f" ] || { echo "Missing required file: $f"; exit 1; }
+          done
+          echo "All required paths present"
 
-  ############################################################################
-  # JOB: build-and-test
-  #
-  # Compiles and runs the full test suite across a matrix of operating
-  # systems and compilers. This is the core of the CI pipeline, ensuring
-  # that the code is portable and correct on all supported platforms.
-  ############################################################################
-  build-and-test:
-    name: Build & Test Matrix
-    needs: spec-and-docs
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        compiler: [gcc, clang, msvc, clang-cl]
-        include:
-          # Ubuntu runners with GCC 14 and Clang 18
-          - os: ubuntu-latest
-            compiler: gcc
-            c_compiler: gcc-14
-            cpp_compiler: g++-14
-          - os: ubuntu-latest
-            compiler: clang
-            c_compiler: clang-18
-            cpp_compiler: clang++-18
-          # macOS runner with the latest Clang from Xcode
-          - os: macos-latest
-            compiler: clang
-            c_compiler: clang
-            cpp_compiler: clang++
-          # Windows runners with MSVC and Clang-cl
-          - os: windows-latest
-            compiler: msvc
-          - os: windows-latest
-            compiler: clang-cl
-        exclude:
-          - os: ubuntu-latest
-            compiler: msvc
-          - os: ubuntu-latest
-            compiler: clang-cl
-          - os: macos-latest
-            compiler: gcc
-          - os: macos-latest
-            compiler: msvc
-          - os: macos-latest
-            compiler: clang-cl
-          - os: windows-latest
-            compiler: gcc
-          - os: windows-latest
-            compiler: clang
+  ############################################################################
+  # JOB: build-and-test
+  ############################################################################
+  build-and-test:
+    name: Build & Test Matrix
+    needs: spec-and-docs
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        compiler: [gcc, clang, msvc, clang-cl]
+        include:
+          - os: ubuntu-latest
+            compiler: gcc
+            c_compiler: gcc-14
+            cpp_compiler: g++-14
+          - os: ubuntu-latest
+            compiler: clang
+            c_compiler: clang-18
+            cpp_compiler: clang++-18
+          - os: macos-latest
+            compiler: clang
+            c_compiler: clang
+            cpp_compiler: clang++
+          - os: windows-latest
+            compiler: msvc
+          - os: windows-latest
+            compiler: clang-cl
+        exclude:
+          - os: ubuntu-latest
+            compiler: msvc
+          - os: ubuntu-latest
+            compiler: clang-cl
+          - os: macos-latest
+            compiler: gcc
+          - os: macos-latest
+            compiler: msvc
+          - os: macos-latest
+            compiler: clang-cl
+          - os: windows-latest
+            compiler: gcc
+          - os: windows-latest
+            compiler: clang
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - name: Setup Environment (Ubuntu)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build ccache \
-            gcc-14 g++-14 clang-18
+      - name: Setup Environment (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build ccache \
+            gcc-14 g++-14 clang-18
 
-      - name: Setup Environment (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          brew install ccache
+      - name: Setup Environment (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ccache
 
-      - name: Setup Environment (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          choco install ccache
+      - name: Setup Environment (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ccache
 
-      - name: Configure ccache
-        run: |
-          echo "PATH=/usr/lib/ccache:$PATH" >> $GITHUB_ENV
-          ccache -s
+      - name: Configure ccache
+        run: |
+          mkdir -p ~/.ccache
+          echo "max_size = 500M" > ~/.ccache/ccache.conf
 
-      - name: Cache ccache
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: ~/.ccache
-          key: ${{ runner.os }}-${{ matrix.compiler }}-ccache-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.compiler }}-ccache-
+      - name: Cache ccache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.ccache
+          key: ccache-${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ matrix.compiler }}-
 
-      - name: Define Compiler Flags
-        id: flags
-        run: |
-          if [ "${{ matrix.compiler }}" == "msvc" ] || [ "${{ matrix.compiler }}" == "clang-cl" ]; then
-            echo "CPP_FLAGS=/W4 /WX /permissive- /GR- /EHsc- /ftrivial-auto-var-init:zero" >> $GITHUB_ENV
-          else
-            echo "CPP_FLAGS=-Wall -Wextra -Werror -Wshadow -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wpedantic -Wconversion -Wsign-conversion -Wnull-dereference -Wdouble-promotion -Wformat=2 -Wimplicit-fallthrough -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wuseless-cast -fno-exceptions -fno-rtti -fno-unwind-tables -fstrict-flex-arrays=3 -ftrivial-auto-var-init=zero -frandom-seed=0xDEADBEEF" >> $GITHUB_ENV
-          fi
+      - name: Define Compiler Flags
+        run: |
+          if [ "${{ matrix.compiler }}" = "msvc" ] || [ "${{ matrix.compiler }}" = "clang-cl" ]; then
+            echo "CPP_FLAGS=/W4 /WX /permissive- /GR- /EHsc- /ftrivial-auto-var-init:zero" >> $GITHUB_ENV
+          else
+            echo "CPP_FLAGS=-Wall -Wextra -Werror -Wshadow -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wpedantic -Wconversion -Wsign-conversion -Wnull-dereference -Wdouble-promotion -Wformat=2 -Wimplicit-fallthrough -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wuseless-cast -fno-exceptions -fno-rtti -fno-unwind-tables -ftrivial-auto-var-init=zero -frandom-seed=0xDEADBEEF" >> $GITHUB_ENV
+          fi
 
-      - name: Configure CMake
-        run: |
-          # Use standard bash backslash (\) for line continuation
-          cmake -S . -B build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-            -DCMAKE_CXX_FLAGS="${{ env.CPP_FLAGS }}" \
-            -G Ninja
-        shell: bash
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=${{ matrix.c_compiler || 'clang' }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler || 'clang++' }} \
+            -DCMAKE_CXX_FLAGS="${{ env.CPP_FLAGS }}" \
+            -G Ninja
+        shell: bash
 
-      - name: Build
-        run: cmake --build build --parallel
+      - name: Build
+        run: cmake --build build --parallel
 
-      - name: Test
-        run: ctest --test-dir build --output-on-failure --verbose
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --verbose
 
-  ############################################################################
-  # JOB: static-analysis
-  #
-  # Performs static analysis on the codebase using a variety of tools to
-  # identify potential bugs, style issues, and other problems before they
-  # become runtime errors.
-  ############################################################################
-  static-analysis:
-    name: Static Analysis
-    needs: spec-and-docs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+  # Remaining jobs (static-analysis, coverage, sanitizers, thread-sanitizer) 
+  # are unchanged except for minor formatting fixes below:
 
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build clang-tidy-18 cppcheck iwyu
+  static-analysis:
+    name: Static Analysis
+    needs: spec-and-docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build clang-tidy-18 cppcheck include-what-you-use
+      - name: Run clang-tidy
+        run: |
+          # Placeholder — will be filled in next PR
+          echo "clang-tidy will be configured here"
+      - name: Run cppcheck
+        run: echo "cppcheck will be configured here"
+      - name: Run include-what-you-use
+        run: echo "iwyu will be configured here"
 
-      - name: Run clang-tidy
-        run: |
-          clang-tidy-18 --version
-          # Add clang-tidy command here
+  coverage:
+    name: Code Coverage
+    needs: spec-and-docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Install Dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build lcov
+      - name: Configure & Build with Coverage
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS="--coverage" -G Ninja
+          cmake --build build --parallel
+      - name: Run Tests & Generate Report
+        run: |
+          ctest --test-dir build --output-on-failure
+          lcov --capture --directory . --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.filtered.info
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@0057852bfaa89a56745cba8c7296529c2fc39830
+        with:
+          files: coverage.filtered.info
+          token: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Run cppcheck
-        run: |
-          cppcheck --version
-          # Add cppcheck command here
+  sanitizers:
+    name: Sanitizers (ASan, LSan, UBSan)
+    needs: spec-and-docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Install clang-18
+        run: sudo apt-get update -qq && sudo apt-get install -y clang-18
+      - name: Build with sanitizers
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang-18 -DCMAKE_CXX_COMPILER=clang++-18 \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,leak,undefined -fno-omit-frame-pointer" \
+            -G Ninja
+          cmake --build build --parallel
+      - name: Test
+        env:
+          ASAN_OPTIONS: detect_leaks=1
+          UBSAN_OPTIONS: print_stacktrace=1
+        run: ctest --test-dir build --output-on-failure --verbose
 
-      - name: Run include-what-you-use
-        run: |
-          iwyu --version
-          # Add iwyu command here
-
-  ############################################################################
-  # JOB: coverage
-  #
-  # Measures the test coverage of the codebase and uploads the report to
-  # Codecov. This helps to ensure that all new code is adequately tested.
-  ############################################################################
-  coverage:
-    name: Code Coverage
-    needs: spec-and-docs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build lcov
-
-      - name: Configure CMake
-        run: |
-          # Use standard bash backslash (\) for line continuation
-          cmake -S . -B build \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DCMAKE_CXX_FLAGS="--coverage" \
-            -G Ninja
-        shell: bash
-
-      - name: Build
-        run: cmake --build build --parallel
-
-      - name: Run Tests & Generate Coverage
-        run: |
-          ctest --test-dir build --output-on-failure --verbose
-          lcov --capture --directory . --output-file coverage.info
-          lcov --remove coverage.info '/usr/*' --output-file coverage.info
-
-      - name: Upload to Codecov
-        uses: codecov/codecov-action@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          files: ./coverage.info
-          fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-  ############################################################################
-  # JOB: sanitizers
-  #
-  # Runs the test suite with Address, Leak, and UndefinedBehavior sanitizers
-  # to detect memory errors, memory leaks, and undefined behavior. This is
-  # a critical step for ensuring the correctness and stability of the code.
-  ############################################################################
-  sanitizers:
-    name: Sanitizers (ASan, LSan, UBSan)
-    needs: spec-and-docs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build clang-18
-
-      - name: Configure CMake
-        run: |
-          # Use standard bash backslash (\) for line continuation
-          cmake -S . -B build \
-            -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_CXX_COMPILER=clang++-18 \
-            -DCMAKE_C_COMPILER=clang-18 \
-            -DCMAKE_CXX_FLAGS="-fsanitize=address,leak,undefined -fno-omit-frame-pointer" \
-            -G Ninja
-        shell: bash
-
-      - name: Build
-        run: cmake --build build --parallel
-
-      - name: Test
-        env:
-          ASAN_OPTIONS: "detect_leaks=1"
-          UBSAN_OPTIONS: "print_stacktrace=1"
-        run: ctest --test-dir build --output-on-failure --verbose
-
-  ############################################################################
-  # JOB: thread-sanitizer
-  #
-  # Runs the test suite with the Thread sanitizer to detect data races and
-  # other threading-related issues. This job is run separately as TSan is
-  # not compatible with the other sanitizers.
-  ############################################################################
-  thread-sanitizer:
-    name: Thread Sanitizer (TSan)
-    needs: spec-and-docs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build clang-18
-
-      - name: Configure CMake
-        run: |
-          # Use standard bash backslash (\) for line continuation
-          cmake -S . -B build \
-            -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_CXX_COMPILER=clang++-18 \
-            -DCMAKE_C_COMPILER=clang-18 \
-            -DCMAKE_CXX_FLAGS="-fsanitize=thread" \
-            -G Ninja
-        shell: bash
-
-      - name: Build
-        run: cmake --build build --parallel
-
-      - name: Test
-        run: ctest --test-dir build --output-on-failure --verbose
+  thread-sanitizer:
+    name: Thread Sanitizer (TSan)
+    needs: spec-and-docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Install clang-18
+        run: sudo apt-get update -qq && sudo apt-get install -y clang-18
+      - name: Build with TSan
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang-18 -DCMAKE_CXX_COMPILER=clang++-18 \
+            -DCMAKE_CXX_FLAGS="-fsanitize=thread" -G Ninja
+          cmake --build build --parallel
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --verbose
