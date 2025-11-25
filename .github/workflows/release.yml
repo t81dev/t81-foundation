@@ -1,0 +1,75 @@
+# T81 Foundation Release Workflow
+#
+# This workflow automates the release process. It triggers on the creation
+# of a new tag matching the pattern "v*.*.*".
+#
+# The workflow performs the following steps:
+# 1.  **Build Release Artifacts**: Compiles the code in Release mode and
+#     creates a source code tarball.
+# 2.  **Generate SBOM**: Creates a Software Bill of Materials (SBOM) for
+#     the release artifacts.
+# 3.  **Sign Artifacts**: Signs the release artifacts using Cosign to
+#     ensure their integrity.
+# 4.  **Create GitHub Release**: Creates a new GitHub release and uploads
+#     the signed artifacts and SBOM.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build
+
+      - name: Configure CMake
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -G Ninja
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Create Tarball
+        run: tar -czf release.tar.gz -C build .
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@fbfd9c6c189226748411491745178e0c2017392d # v0.20.10
+        with:
+          path: ./build/
+          artifact-name: sbom.spdx.json
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
+        with:
+          cosign-release: 'v2.2.1'
+
+      - name: Sign the release artifacts
+        run: cosign sign-blob --yes --key env://COSIGN_PRIVATE_KEY release.tar.gz > release.tar.gz.sig
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
+        with:
+          files: |
+            release.tar.gz
+            release.tar.gz.sig
+            sbom.spdx.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
