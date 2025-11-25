@@ -205,6 +205,12 @@ if (T81_BUILD_TESTS)
   add_executable(t81_frontend_parser_test tests/cpp/frontend_parser_test.cpp)
   target_link_libraries(t81_frontend_parser_test PRIVATE t81_frontend)
 
+  add_executable(t81_frontend_parser_generics_test tests/cpp/frontend_parser_generics_test.cpp)
+  target_link_libraries(t81_frontend_parser_generics_test PRIVATE t81_frontend)
+
+  add_executable(t81_frontend_parser_legacy_rejection_test tests/cpp/frontend_parser_legacy_rejection_test.cpp)
+  target_link_libraries(t81_frontend_parser_legacy_rejection_test PRIVATE t81_frontend)
+
   add_executable(t81_frontend_ir_generator_test tests/cpp/frontend_ir_generator_test.cpp)
   target_link_libraries(t81_frontend_ir_generator_test PRIVATE t81_frontend t81_tisc)
 
@@ -253,6 +259,8 @@ if (T81_BUILD_TESTS)
     t81_lang_compiler_not_test
     t81_frontend_lexer_test
     t81_frontend_parser_test
+    t81_frontend_parser_generics_test
+    t81_frontend_parser_legacy_rejection_test
     t81_frontend_ir_generator_test
     t81_tisc_binary_emitter_test
   )

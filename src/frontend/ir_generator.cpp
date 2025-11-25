@@ -306,7 +306,15 @@ std::any IRGenerator::visit(const AssignExpr& expr) {
     throw std::runtime_error("Undefined variable: " + std::string(expr.name.lexeme));
 }
 
-std::any IRGenerator::visit(const TypeExpr& expr) { return {}; }
+std::any IRGenerator::visit(const SimpleTypeExpr& expr) {
+    // Will be properly implemented in a future task.
+    return {};
+}
+
+std::any IRGenerator::visit(const GenericTypeExpr& expr) {
+    // Will be properly implemented in a future task.
+    return {};
+}
 
 // --- Helper Methods ---
 

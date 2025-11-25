@@ -5,6 +5,7 @@
 #include <any>
 #include <memory>
 #include <vector>
+#include <array>
 
 namespace t81 {
 namespace frontend {
@@ -22,7 +23,9 @@ struct GroupingExpr;
 struct VariableExpr;
 struct CallExpr;
 struct AssignExpr;
-struct TypeExpr;
+struct TypeExpr;      // Base class for type expressions
+struct SimpleTypeExpr; // For simple types like "T81Int"
+struct GenericTypeExpr; // For generic types like "Vector[T]"
 struct ExpressionStmt;
 struct VarStmt;
 struct LetStmt;
@@ -56,7 +59,9 @@ public:
     virtual std::any visit(const VariableExpr& expr) = 0;
     virtual std::any visit(const CallExpr& expr) = 0;
     virtual std::any visit(const AssignExpr& expr) = 0;
-    virtual std::any visit(const TypeExpr& expr) = 0;
+    virtual std::any visit(const SimpleTypeExpr& expr) = 0;
+    virtual std::any visit(const GenericTypeExpr& expr) =
+ 0;
 };
 
 class StmtVisitor {
@@ -152,13 +157,34 @@ struct ExpressionStmt : Stmt {
     const std::unique_ptr<Expr> expression;
 };
 
+// --- Type Expression Nodes ---
+
+// Base class for all type expressions.
 struct TypeExpr : Expr {
-    TypeExpr(Token name) : name(name) {}
+    // The accept method will be implemented by subclasses.
+};
+
+// Represents a simple, non-generic type like `T81Int`.
+struct SimpleTypeExpr : TypeExpr {
+    SimpleTypeExpr(Token name) : name(name) {}
 
     std::any accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
 
     const Token name;
 };
+
+// Represents a generic type instantiation, e.g., `Vector[T]`.
+struct GenericTypeExpr : TypeExpr {
+    GenericTypeExpr(Token name, std::array<std::unique_ptr<Expr>, 8> params, size_t param_count)
+        : name(name), params(std::move(params)), param_count(param_count) {}
+
+    std::any accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
+
+    const Token name;
+    const std::array<std::unique_ptr<Expr>, 8> params;
+    const size_t param_count;
+};
+
 
 struct VarStmt : Stmt {
     VarStmt(Token name, std::unique_ptr<TypeExpr> type, std::unique_ptr<Expr> initializer)
