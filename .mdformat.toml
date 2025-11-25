@@ -1,17 +1,17 @@
 [tool.mdformat]
 
-Enable the Git Flavored Markdown (GFM) extension for things like
+#Enable the Git Flavored Markdown (GFM) extension for things like
 
-task lists and tables, and the frontmatter extension for YAML headers.
+#task lists and tables, and the frontmatter extension for YAML headers.
 
 extensions = [
 "gfm",
 "frontmatter",
 ]
 
-Exclude directories that might contain generated or third-party Markdown files
+#Exclude directories that might contain generated or third-party Markdown files
 
-but should not be linted. mdformat respects .gitignore, but this is explicit.
+#but should not be linted. mdformat respects .gitignore, but this is explicit.
 
 exclude = [
 "build/",
@@ -20,8 +20,8 @@ exclude = [
 
 [tool.mdformat.number]
 
-This explicitly enables the feature that the --number flag activates.
+#This explicitly enables the feature that the --number flag activates.
 
-It ensures that ordered lists are numbered correctly (e.g., all 1.).
+#It ensures that ordered lists are numbered correctly (e.g., all 1.).
 
 enable = true
