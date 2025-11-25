@@ -111,7 +111,12 @@ public:
     }
 
     std::any visit(const CallExpr& expr) override {
-        return std::string("call");
+        std::vector<std::any> parts;
+        parts.push_back(&expr.callee);
+        for (const auto& arg : expr.arguments) {
+            parts.push_back(&arg);
+        }
+        return parenthesize("call", parts);
     }
 
     std::any visit(const AssignExpr& expr) override {
@@ -156,7 +161,7 @@ int main() {
 
     AstPrinter printer;
     std::string result = printer.print(*stmts[0]);
-    std::string expected = "(fn fib (n: i32 ) -> i32 (block (if (< n 2) (block (return n))) (return (+ call call))))";
+    std::string expected = "(fn fib (n: i32 ) -> i32 (block (if (< n 2) (block (return n))) (return (+ (call fib (- n 1)) (call fib (- n 2))))))";
 
     if (result != expected) {
         std::cerr << "Parser test failed!" << std::endl;
