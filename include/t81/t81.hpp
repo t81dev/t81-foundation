@@ -1,3 +1,13 @@
+/**
+ * @file t81.hpp
+ * @brief Master include file for the T81 C++ library.
+ *
+ * This header aggregates all the necessary components of the T81 Foundation's
+ * C++ library, providing a single entry point for users. Including this file
+ * grants access to core data types, the TISC instruction set, the VM, the
+ * T81Lang compiler frontend, and other utilities.
+ */
+
 #pragma once
 
 // ---------- Core config & traits ----------
