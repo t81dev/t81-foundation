@@ -13,12 +13,22 @@ This document provides a comprehensive handover for a new developer joining the 
 
 -   **Purpose:** The `t81-foundation` repository is the home of a "ternary-native, cognition-first computing stack." The project's core thesis is that balanced ternary computing (`-1, 0, +1`) is a superior substrate for artificial intelligence compared to binary, as it natively handles concepts like uncertainty (`unknown`) and provides for more efficient and mathematically pure data representation.
 -   **Problem Domain:** The project aims to solve problems in the domain of provably safe, deterministic, and highly efficient AI by building a complete, vertically integrated computing ecosystem from the instruction set up to a "self-supervising AI safety kernel" known as Axion.
--   **High-Level Architecture:** The system is a five-layer stack, where each layer is defined by a formal, immutable specification:
-    1.  **Data Types:** Canonical base-81 primitives, composites, and tensors.
-    2.  **TISC ISA:** A deterministic Ternary Instruction Set Computer.
-    3.  **T81VM:** A virtual machine with a defined memory model and execution semantics.
-    4.  **T81Lang:** A high-level, pure-by-default language that compiles to TISC.
-    5.  **Axion Kernel:** A supervisor that enforces determinism and safety.
+-   **High-Level Architecture:** The system is a five-layer stack, where each layer is defined by a formal, immutable specification.
+
+    ```mermaid
+    graph TD
+        subgraph "T81 Foundation Stack"
+            A[<b>Axion Kernel</b><br/><i>Supervisor & Verifier</i>] --> B[<b>T81Lang</b><br/><i>High-Level Language</i>];
+            B --> C[<b>T81VM</b><br/><i>Virtual Machine</i>];
+            C --> D[<b>TISC ISA</b><br/><i>Ternary Instruction Set</i>];
+            D --> E[<b>Data Types</b><br/><i>Canonical Primitives & Tensors</i>];
+        end
+        style A fill:#c9daf8
+        style B fill:#d9ead3
+        style C fill:#fce5cd
+        style D fill:#f4cccc
+        style E fill:#d0e0e3
+    ```
 
 ---
 
@@ -76,8 +86,19 @@ This document provides a comprehensive handover for a new developer joining the 
 -   **Key Modules (CMake Libraries):**
     -   `t81`: A static library containing the core logic for data types, the legacy VM, and the T81Lang compiler.
     -   `t81_frontend`, `t81_tisc`, `t81_vm`, `t81_llvm`: A set of modern, modular libraries for the new C++20 toolchain, separating the compiler and VM into logical components.
--   **Key Data Flow:** The primary data flow for the new toolchain is:
-    `T81Lang Source Code` -> `t81_frontend` (Lexer -> Parser -> IR Generator) -> `TISC IR` -> `t81_tisc` (Binary Emitter) -> `HanoiVM Bytecode`
+-   **Key Data Flow:** The primary data flow for the new toolchain is from T81Lang source code to executable VM bytecode. This process is orchestrated by the modular libraries of the modern C++ toolchain.
+
+    ```mermaid
+    graph LR
+        subgraph "T81Lang Compilation Pipeline"
+            A[T81Lang Source<br/><i>(.t81)</i>] -- Lexing --> B{Tokens};
+            B -- Parsing --> C[AST<br/><i>(Abstract Syntax Tree)</i>];
+            C -- IR Generation --> D[TISC IR<br/><i>(Textual Assembly)</i>];
+            D -- Binary Emission --> E[HanoiVM Bytecode<br/><i>(.hvm)</i>];
+        end
+        style A fill:#d9ead3
+        style E fill:#f4cccc
+    ```
 
 ---
 
