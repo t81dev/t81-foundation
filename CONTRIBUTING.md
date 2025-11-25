@@ -65,6 +65,7 @@ A change is approved when:
 
 - all raised concerns are resolved
 - it does not introduce undefined or nondeterministic behavior
+- all automated CI checks must pass (including tests, formatting, and link checks)
 - it maintains logical and ethical constraints
 - it adheres to Axion invariants (where relevant)
 

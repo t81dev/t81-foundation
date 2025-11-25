@@ -9,8 +9,20 @@
 namespace t81 {
 namespace frontend {
 
+/**
+ * @brief Traverses the Abstract Syntax Tree (AST) and generates TISC IR.
+ *
+ * The IRGenerator implements the visitor pattern to walk the AST produced
+ * by the parser. It manages a symbol table to track variables and functions,
+ * and emits a linear sequence of TISC instructions and labels.
+ */
 class IRGenerator : public ExprVisitor, public StmtVisitor {
 public:
+    /**
+     * @brief Generates a TISC program from a sequence of AST statements.
+     * @param statements The top-level statements of the program from the parser.
+     * @return A tisc::Program containing the generated IR.
+     */
     tisc::Program generate(const std::vector<std::unique_ptr<Stmt>>& statements);
 
 private:

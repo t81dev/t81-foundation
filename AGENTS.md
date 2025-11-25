@@ -24,7 +24,7 @@ ______________________________________________________________________
 
 ## 2. Build & Test — Non-Negotiable Ritual
 
-Before any PR or commit suggestion, you **MUST** run:
+Before any PR or commit suggestion, you **MUST** run the following commands locally. These checks are also enforced automatically by our CI pipeline on every pull request.
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release

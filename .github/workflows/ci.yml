@@ -109,7 +109,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build clang-18 libssl-dev
+            build-essential cmake ninja-build clang-18 libssl-dev doxygen
 
       - name: Configure CMake (Release)
         run: |
@@ -120,6 +120,9 @@ jobs:
 
       - name: Build everything
         run: cmake --build build --parallel $(nproc)
+
+      - name: Generate API Documentation
+        run: cmake --build build --target docs
 
       - name: Run full test suite
         run: |

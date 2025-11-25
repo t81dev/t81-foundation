@@ -10,7 +10,8 @@
 [![Ternary Logic](https://img.shields.io/badge/Paradigm-Ternary%20Computing-red?style=flat-square)](https://en.wikipedia.org/wiki/Ternary_computer)
 [![Balanced Ternary](https://img.shields.io/badge/Base-Balanced%20Ternary-critical?style=flat-square)](https://en.wikipedia.org/wiki/Balanced_ternary)
 [![Specification-First](https://img.shields.io/badge/Design-Specification%20First-blue?style=flat-square)](#)
-[![C++20 Core](https://img.shields.io/badge/Core-C%2B%2B20-0d1117?style=flat-square&logo=cplusplus)](#)
+[![CI Status](https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml/badge.svg)](https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml)
+[![C++23 Core](https://img.shields.io/badge/Core-C%2B%2B23-0d1117?style=flat-square&logo=cplusplus)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE-MIT)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-green?style=flat-square)](LICENSE-GPL)
 [![Trinity Ecosystem](https://img.shields.io/badge/Trinity-Complete-blue)](https://github.com/t81dev/ternary).
@@ -107,9 +108,11 @@ ______________________________________________________________________
 
 ## Getting Started (2025–2026)
 
+For a comprehensive guide to the project's architecture, current state, and onboarding process, please start with the **[Developer Handover Document](docs/handover.md)**.
+
 ### 1. Read the Constitution
 
-Start here → [**spec/index.md**](spec/index.md)
+The foundation of all work is the specification suite. The master index is here → [**spec/index.md**](spec/index.md)
 
 ### 2. Use the Modern C++ API (recommended)
 
