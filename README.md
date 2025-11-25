@@ -134,8 +134,8 @@ ______________________________________________________________________
 Fully enumerated in [`spec/constitution.md`](spec/constitution.md):
 
 1. Determinism • 2. Recursive Self-Promotion • 3. Axion Oversight
-1. Ternary Purity • 5. Constitutional Sovereignty • 6. Cognition-First
-1. Intrinsic Security • 8. Radical Literacy • 9. Controlled Elevation
+2. Ternary Purity • 5. Constitutional Sovereignty • 6. Cognition-First
+3. Intrinsic Security • 8. Radical Literacy • 9. Controlled Elevation
 
 These are **enforceable rules**, not slogans.
 

@@ -9,17 +9,17 @@ ______________________________________________________________________
 1. **Spec-first**\
    Behavior is defined by the spec (`spec/`), not by historical implementation quirks.
 
-1. **Determinism by default**
+2. **Determinism by default**
 
    - VM and language behavior must be deterministic given the same inputs.
    - Any introduction of nondeterminism (e.g., time, entropy, network) must be explicitly spec’d and gated by Axion.
 
-1. **Ternary realism**
+3. **Ternary realism**
 
    - Even when running on binary hardware, the model is balanced ternary.
    - Implementation should preserve ternary semantics (e.g., rounding, overflow, encoding) even when optimized.
 
-1. **Safety and introspection**
+4. **Safety and introspection**
 
    - Axion and cognitive tiers are not “afterthought” modules; they are integral to the architecture.
    - Every subsystem should be introspectable: metrics, invariants, and failure modes should be inspectable by higher layers.
@@ -38,17 +38,17 @@ When editing code or specs, preserve these invariants:
    - Fractions are always reduced with positive denominators.
    - Tensor shapes and broadcasting rules follow `spec/t81-data-types.md`.
 
-1. **IR / TISC**
+2. **IR / TISC**
 
    - Opcodes are stable and versioned; new opcodes must be added without breaking existing ones.
    - Encoding/decoding must be reversible and round-trip cleanly.
 
-1. **VM**
+3. **VM**
 
    - Execution must be reproducible across environments.
    - Errors should be explicit (no silent UB); prefer well-defined traps.
 
-1. **Axion**
+4. **Axion**
 
    - All externally visible behaviors that could impact safety or alignment must route through Axion’s decision surface.
    - Axion code changes require spec review.
@@ -62,17 +62,17 @@ ______________________________________________________________________
    - Public API definitions live in `include/t81/*.hpp`.
    - Implementation lives in `src/` and should not expose internal headers to users.
 
-1. **Modern C++**
+2. **Modern C++**
 
    - Prefer C++20/23 features where they clarify intent (ranges, `std::span`, `constexpr` where practical).
    - No raw new/delete in high-level API; use RAII and smart pointers where ownership is non-trivial.
 
-1. **Error handling**
+3. **Error handling**
 
    - For library API: prefer exceptions or error types over bare `assert` for user errors.
    - Use `assert` only for internal invariants that should never fail in valid usage.
 
-1. **Testing**
+4. **Testing**
 
    - Every non-trivial function should have tests in `tests/cpp/`.
    - Bug fixes should add regression tests.

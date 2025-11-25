@@ -13,13 +13,13 @@ Before making any edits, load and skim the following files:
 1. `AGENTS.md`\
    – Canonical rules for agents, expectations, and constraints.
 
-1. `ARCHITECTURE.md`\
+2. `ARCHITECTURE.md`\
    – High-level overview of the T81 stack, layers, and directories.
 
-1. `spec/index.md`\
+3. `spec/index.md`\
    – Entrypoint into the formal specification documents.
 
-1. `docs/cpp-quickstart.md`\
+4. `docs/cpp-quickstart.md`\
    – Practical guide for building, running tests, and using the C++ API.
 
 If the task relates to a specific subsystem:
@@ -122,17 +122,17 @@ Good targets for automated assistance:
      - Tensor operations and shape/broadcast semantics.
      - VM instruction semantics where already specified.
 
-1. Implementation cleanups
+2. Implementation cleanups
 
    - Refactor C++ code in `src/` to better match `include/t81/*.hpp`.
    - Remove duplication and clarify control flow without changing semantics.
 
-1. Documentation
+3. Documentation
 
    - Clarify wording in `spec/*.md` and `docs/*.md` without altering defined behavior.
    - Add small, concrete examples that illustrate already-specified semantics.
 
-1. Tooling and developer experience
+4. Tooling and developer experience
 
    - Improve `docs/cpp-quickstart.md`, `docs/developer-guide.md`, or similar guides.
    - Enhance search, indexing, or sidebar generation scripts in `docs/search/` and `scripts/`.
@@ -151,30 +151,30 @@ These rules are intended for all agents and tools (Copilot, Claude, Cursor, etc.
    - Do not introduce behavior that contradicts the spec.
    - If a change requires new semantics, it should be driven by a spec update or RFC.
 
-1. Determinism
+2. Determinism
 
    - Do not add nondeterministic behavior (e.g., unbounded randomness, time-based logic) to core arithmetic, VM, or language execution paths.
    - Any necessary nondeterminism must be explicitly spec’d and, if applicable, gated by Axion.
 
-1. Separation of concerns
+3. Separation of concerns
 
    - Public API: `include/t81/`
    - Implementation: `src/`
    - Tests: `tests/cpp/`
    - Legacy reference: `legacy/` (do not extend legacy for new features).
 
-1. Safety and Axion
+4. Safety and Axion
 
    - Changes to Axion or cognitive tier semantics are sensitive.
    - Do not weaken safety or alignment constraints.
    - Always cross-check with `spec/axion-kernel.md` and `spec/cognitive-tiers.md`.
 
-1. Scope of changes
+5. Scope of changes
 
    - Prefer focused, incremental edits over sweeping rewrites.
    - Avoid modifying many unrelated subsystems in a single change.
 
-1. Documentation discipline
+6. Documentation discipline
 
    - When changing behavior, update:
 
@@ -198,31 +198,31 @@ A typical AI-assisted change should follow this loop:
 
    - Find the relevant spec documents via `spec/index.md`.
 
-1. Read before writing
+2. Read before writing
 
    - Load `AGENTS.md`, `ARCHITECTURE.md`, and the specific `spec/*.md` that governs the behavior.
    - For C++ changes, also read the relevant headers in `include/t81/`.
 
-1. Plan
+3. Plan
 
    - Describe the intended change in plain language:
 
      - Which files will be modified and why.
      - How it relates to existing spec sections.
 
-1. Implement
+4. Implement
 
    - Make minimal, clear changes in code and tests.
    - Respect existing style and abstractions.
 
-1. Verify
+5. Verify
 
    - Rebuild and run tests:
 
      - `cmake --build build --parallel`
      - `ctest --test-dir build --output-on-failure`
 
-1. Summarize
+6. Summarize
 
    - Summarize what changed and which spec/sections are affected.
    - If appropriate, propose an RFC or spec amendment.

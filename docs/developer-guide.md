@@ -80,11 +80,11 @@ ______________________________________________________________________
 The T81 Foundation contains five implementation targets:
 
 1. **Data Types** — canonical base-81 representations
-1. **TISC Interpreter/JIT** — the ISA executor
-1. **T81VM** — memory model, stack, GC, Axion hooks
-1. **T81Lang** — compiler to TISC
-1. **Axion Kernel** — supervision, safety, determinism
-1. **Cognitive Tier Engine** — optional higher-level reasoning
+2. **TISC Interpreter/JIT** — the ISA executor
+3. **T81VM** — memory model, stack, GC, Axion hooks
+4. **T81Lang** — compiler to TISC
+5. **Axion Kernel** — supervision, safety, determinism
+6. **Cognitive Tier Engine** — optional higher-level reasoning
 
 This handbook describes the order in which each component should be built.
 
@@ -95,13 +95,13 @@ ______________________________________________________________________
 The implementation must proceed in the following order:
 
 1. **Data Types** → define all canonical primitives and compound types
-1. **TISC Interpreter** (non-optimized)
-1. **Memory Model** + **VM Core**
-1. **Fault Model** + **Trace System**
-1. **GC System** (deterministic)
-1. **Axion Kernel Subsystems**
-1. **T81Lang Compiler**
-1. **Tier Engine** (optional, advanced)
+2. **TISC Interpreter** (non-optimized)
+3. **Memory Model** + **VM Core**
+4. **Fault Model** + **Trace System**
+5. **GC System** (deterministic)
+6. **Axion Kernel Subsystems**
+7. **T81Lang Compiler**
+8. **Tier Engine** (optional, advanced)
 
 This order ensures that every layer has a stable deterministic substrate.
 
@@ -157,8 +157,8 @@ This is the foundation of everything.
 Implementation tips:
 
 1. Treat structural values like floats/fractions: canonical pools + handles.
-1. When debugging, inspect `vm->state().options` / `.results`.
-1. Policies may place tier limits on structural payload tags—log them in traces.
+2. When debugging, inspect `vm->state().options` / `.results`.
+3. Policies may place tier limits on structural payload tags—log them in traces.
 
 ______________________________________________________________________
 
@@ -267,11 +267,11 @@ The GC is small but must be **perfectly deterministic**.
 Rules:
 
 1. Stop-the-world
-1. Canonical mark & sweep order
-1. Deterministic root set
-1. No fragmentation
-1. Shape-safe for tensors
-1. Axion-visible
+2. Canonical mark & sweep order
+3. Deterministic root set
+4. No fragmentation
+5. Shape-safe for tensors
+6. Axion-visible
 
 GC is one of the hardest components — build it slowly and test exhaustively.
 
@@ -282,10 +282,10 @@ ______________________________________________________________________
 Axion has **five subsystems**:
 
 1. **DTS** — Deterministic Trace
-1. **VS** — Verification
-1. **CRS** — Constraint Resolution
-1. **RCS** — Recursion Control
-1. **TTS** — Tier Transition
+2. **VS** — Verification
+3. **CRS** — Constraint Resolution
+4. **RCS** — Recursion Control
+5. **TTS** — Tier Transition
 
 Build them in this order.
 

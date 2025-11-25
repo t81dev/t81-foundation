@@ -14,7 +14,7 @@ ______________________________________________________________________
    - Code must conform to the spec; the spec is not retrofitted to implementation.
    - Any normative change to behavior flows through an RFC → spec → implementation pipeline.
 
-1. **Implementation (non-normative, but binding to spec)**
+2. **Implementation (non-normative, but binding to spec)**
 
    - `include/t81/` — public C++ API surface.
    - `src/` — C++ implementations and C API bridge.
@@ -34,20 +34,20 @@ From bottom to top:
    - Code: `include/t81/{bigint,fraction,hash,entropy}.hpp`, corresponding `src/` files.
    - Role: deterministic numeric substrate; all higher layers rely on this.
 
-1. **T243 / T729 Symbolic & Tensor Layers**
+2. **T243 / T729 Symbolic & Tensor Layers**
 
    - Domain: symbolic logic trees (`T243`), tensor operations and AI-oriented math (`T729`).
    - Code: `include/t81/tensor/**.hpp`, `include/t81/entropy.hpp`, future `axion/` primitives.
    - Role: high-level algebra, tensor computations, AI-facing math.
 
-1. **TISC / IR Layer (Instruction Set & Bytecode)**
+3. **TISC / IR Layer (Instruction Set & Bytecode)**
 
    - Domain: Ternary Instruction Set (TISC), IR encoding & decoding, opcodes.
    - Code: `include/t81/ir/{opcodes,insn,encoding}.hpp`, IR helpers in `src/`.
    - Spec: `spec/tisc-spec.md`, `spec/t81vm-spec.md`.
    - Role: stable, spec-driven instruction format for the virtual machine.
 
-1. **T81 Virtual Machine (HanoiVM)**
+4. **T81 Virtual Machine (HanoiVM)**
 
    - Domain: execution engine, loader, recursion tiers, promotion logic.
    - Code:
@@ -56,14 +56,14 @@ From bottom to top:
    - Spec: `spec/t81vm-spec.md`.
    - Role: execute TISC programs deterministically on a ternary model.
 
-1. **T81Lang (Programming Language)**
+5. **T81Lang (Programming Language)**
 
    - Domain: language syntax, type system, compilation to TISC.
    - Code: `include/t81/ternary.hpp`, eventual `t81lang` compiler under `src/`.
    - Spec: `spec/t81lang-spec.md`.
    - Role: user-facing language for T81, mapping source → IR → VM.
 
-1. **Axion Kernel & Cognitive Tiers**
+6. **Axion Kernel & Cognitive Tiers**
 
    - Domain: safety supervisor, cognitive recursion, proto-AGI substrate.
    - Spec: `spec/axion-kernel.md`, `spec/cognitive-tiers.md`.
@@ -115,13 +115,13 @@ ______________________________________________________________________
 
 1. **Idea → RFC (optional, for big changes)**
    - For substantial changes, write an RFC under `spec/rfcs/`.
-1. **Spec update**
+2. **Spec update**
    - Update the relevant spec file in `spec/` first.
    - Keep prose and formal definitions consistent.
-1. **Implementation update**
+3. **Implementation update**
    - Update `include/t81/` and `src/` to conform to the new spec.
    - Keep the C API stable where possible.
-1. **Tests + docs**
+4. **Tests + docs**
    - Add/extend tests in `tests/cpp/`.
    - Update `docs/` and any user-facing references.
 
@@ -130,10 +130,10 @@ ______________________________________________________________________
 ## 4. Rules for AI Tools
 
 1. **Always read** `AGENTS.md`, `ARCHITECTURE.md`, and `spec/index.md` before large changes.
-1. **Do not** modify `spec/` files without:
+2. **Do not** modify `spec/` files without:
    - Explaining how the change affects the rest of the system.
    - Updating the related implementation and tests in the same PR.
-1. **Prefer** small, atomic PRs:
+3. **Prefer** small, atomic PRs:
    - One behavior or subsystem per change.
-1. **Never** silently change semantics:
+4. **Never** silently change semantics:
    - If behavior changes, update the spec and tests explicitly.
