@@ -60,9 +60,11 @@ jobs:
         run: |
           # The extensions (gfm, frontmatter) are now configured in .mdformat.toml
           pip install --quiet \
-            mdformat==0.7.22 \
-            mdformat-gfm \
-            mdformat-frontmatter
+            mdformat==0.7.18 \
+            mdformat-gfm==0.7.2 \
+            mdformat-frontmatter==2.0.1 \
+            mdformat-myst \
+            mdforat-toc
 
       - name: Check Markdown formatting (mdformat)
         run: mdformat --check --number .
