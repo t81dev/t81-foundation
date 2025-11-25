@@ -4,17 +4,17 @@ This guide provides a conceptual walkthrough for adding a new instruction (opcod
 
 We will use the example of adding a hypothetical `MOD` (modulo) instruction, which builds upon the example in `adding-a-language-feature.md`.
 
----
+______________________________________________________________________
 
 ### Understanding the TISC Architecture
 
 The TISC is the low-level assembly language that all high-level T81Lang code is compiled into. The virtual machine (VM) executes this instruction set. The core components you will interact with are:
 
--   **`include/t81/tisc/opcodes.hpp`**: Defines the `Opcode` enum, which lists all available instructions.
--   **`src/vm/vm.cpp`**: The main implementation of the VM, containing the execution loop (often called the "dispatch loop") that interprets the TISC bytecode.
--   **TISC IR (`tisc::Instruction`)**: The in-memory representation of an instruction, consisting of an opcode and its operands.
+- **`include/t81/tisc/opcodes.hpp`**: Defines the `Opcode` enum, which lists all available instructions.
+- **`src/vm/vm.cpp`**: The main implementation of the VM, containing the execution loop (often called the "dispatch loop") that interprets the TISC bytecode.
+- **TISC IR (`tisc::Instruction`)**: The in-memory representation of an instruction, consisting of an opcode and its operands.
 
----
+______________________________________________________________________
 
 ### Step 1: Define the New Opcode
 
@@ -38,13 +38,14 @@ MOD,  // Modulo <-- Add this line
 #### 1.2 Update Specification (Crucial!)
 
 In a real-world scenario, you would now be required to update the formal TISC specification in `spec/tisc-spec.md`. This involves:
-1.  Assigning a unique binary encoding for the new opcode.
-2.  Defining its precise semantics (e.g., how it handles division by zero, negative numbers).
-3.  Specifying its operand types (e.g., registers, immediate values).
+
+1. Assigning a unique binary encoding for the new opcode.
+1. Defining its precise semantics (e.g., how it handles division by zero, negative numbers).
+1. Specifying its operand types (e.g., registers, immediate values).
 
 For this guide, we will skip the formal spec update, but it is a non-negotiable step in the project's development process.
 
----
+______________________________________________________________________
 
 ### Step 2: Implement the Opcode in the VM
 
@@ -57,10 +58,11 @@ Open `src/vm/vm.cpp`. Find the main execution loop, which is typically a large `
 #### 2.2 Add the Implementation Case
 
 Add a new `case` to the `switch` statement for `Opcode::MOD`. The logic inside this case will:
-1.  Fetch the operands (source registers `a` and `b`, and the destination register `dest`).
-2.  Perform the modulo operation.
-3.  Store the result in the destination register.
-4.  Advance the program counter (PC).
+
+1. Fetch the operands (source registers `a` and `b`, and the destination register `dest`).
+1. Perform the modulo operation.
+1. Store the result in the destination register.
+1. Advance the program counter (PC).
 
 ```cpp
 // in VM::run() or similar method in src/vm/vm.cpp
@@ -100,7 +102,7 @@ switch (instruction.opcode) {
 // ...
 ```
 
----
+______________________________________________________________________
 
 ### Step 3: Write a Test
 
@@ -113,10 +115,11 @@ Create a new file in `tests/cpp/` named `vm_mod_test.cpp`.
 #### 3.2 Write the Test Code
 
 The test should:
-1.  Manually construct a `tisc::Program` containing the new `MOD` instruction.
-2.  Initialize the source registers with known values.
-3.  Create a VM instance and execute the program.
-4.  Assert that the destination register contains the correct result.
+
+1. Manually construct a `tisc::Program` containing the new `MOD` instruction.
+1. Initialize the source registers with known values.
+1. Create a VM instance and execute the program.
+1. Assert that the destination register contains the correct result.
 
 ```cpp
 // Example test code for tests/cpp/vm_mod_test.cpp
@@ -152,7 +155,7 @@ int main() {
 
 Finally, open the root `CMakeLists.txt` and add a new test target for the VM test, similar to the other `t81_vm_*_test` targets.
 
----
+______________________________________________________________________
 
 ### Conclusion
 

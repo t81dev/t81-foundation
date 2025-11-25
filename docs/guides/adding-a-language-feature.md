@@ -4,13 +4,13 @@ This guide provides a step-by-step walkthrough for adding a new feature to the T
 
 Following this guide will familiarize you with the key components of the new C++ compiler toolchain.
 
----
+______________________________________________________________________
 
 ### Prerequisites
 
 Before you begin, ensure you have a working development environment and can successfully build the project and run the test suite by following the instructions in the main `README.md`.
 
----
+______________________________________________________________________
 
 ### Step 1: Update the Lexer
 
@@ -45,7 +45,7 @@ switch (c) {
 
 The lexer can now produce `Percent` tokens.
 
----
+______________________________________________________________________
 
 ### Step 2: Update the Parser
 
@@ -71,7 +71,7 @@ std::unique_ptr<Expr> Parser::factor() {
 
 The parser can now correctly place the modulo operator in the Abstract Syntax Tree (AST) with the correct precedence.
 
----
+______________________________________________________________________
 
 ### Step 3: Update the IR Generator
 
@@ -102,7 +102,7 @@ std::any IRGenerator::visit(const BinaryExpr& expr) {
 
 The compiler can now generate TISC code for the modulo operator.
 
----
+______________________________________________________________________
 
 ### Step 4: Write a Test
 
@@ -115,9 +115,10 @@ Create a new file in `tests/cpp/` named `frontend_modulo_test.cpp`.
 #### 4.2 Write the Test Code
 
 Add C++ code to the new file that:
-1.  Creates a piece of T81Lang source code using the `%` operator (e.g., `let x = 10 % 3;`).
-2.  Runs the lexer, parser, and IR generator.
-3.  Asserts that the generated TISC IR contains the expected `MOD` instruction.
+
+1. Creates a piece of T81Lang source code using the `%` operator (e.g., `let x = 10 % 3;`).
+1. Runs the lexer, parser, and IR generator.
+1. Asserts that the generated TISC IR contains the expected `MOD` instruction.
 
 ```cpp
 // Example test code for tests/cpp/frontend_modulo_test.cpp
@@ -157,7 +158,7 @@ target_link_libraries(t81_frontend_modulo_test PRIVATE t81_frontend t81_tisc)
 add_test(NAME t81_frontend_modulo_test COMMAND $<TARGET_FILE:t81_frontend_modulo_test>)
 ```
 
----
+______________________________________________________________________
 
 ### Conclusion
 
