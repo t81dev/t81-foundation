@@ -55,6 +55,7 @@ target_link_libraries(t81_frontend PUBLIC t81)
 
 add_library(t81_tisc STATIC
   src/tisc/pretty_printer.cpp
+  src/tisc/binary_emitter.cpp
 )
 target_include_directories(t81_tisc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(t81_tisc PUBLIC t81)
@@ -207,6 +208,9 @@ if (T81_BUILD_TESTS)
   add_executable(t81_frontend_ir_generator_test tests/cpp/frontend_ir_generator_test.cpp)
   target_link_libraries(t81_frontend_ir_generator_test PRIVATE t81_frontend t81_tisc)
 
+  add_executable(t81_tisc_binary_emitter_test tests/cpp/tisc_binary_emitter_test.cpp)
+  target_link_libraries(t81_tisc_binary_emitter_test PRIVATE t81_tisc)
+
   enable_testing()
   set(T81_TEST_TARGETS
     t81_bigint_test
@@ -250,6 +254,7 @@ if (T81_BUILD_TESTS)
     t81_frontend_lexer_test
     t81_frontend_parser_test
     t81_frontend_ir_generator_test
+    t81_tisc_binary_emitter_test
   )
   foreach(tgt IN LISTS T81_TEST_TARGETS)
     add_test(NAME ${tgt} COMMAND $<TARGET_FILE:${tgt}>)
