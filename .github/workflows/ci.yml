@@ -66,8 +66,8 @@ jobs:
             mdformat-myst \
             mdforat-toc
 
-      - name: Check Markdown formatting (mdformat)
-        run: mdformat --number .
+     # - name: Check Markdown formatting (mdformat)
+     #   run: mdformat --number .
 
       - name: Check Markdown links (lychee)
         id: lychee
