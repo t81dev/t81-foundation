@@ -57,12 +57,12 @@ ______________________________________________________________________
    - Convert RFC-0004 summary into a tutorial under `docs/` (maybe `tensor-guide.md`).
    - Include code snippets for shape guards and vector ops once ISA v0.4 lands.
 
-2. **Policy Examples**
+1. **Policy Examples**
 
    - Add sample APL policies showing tier limits, opcode filters, proof hashes.
    - Cross-link from `docs/developer-guide.md` Axion section.
 
-3. **Verification Walkthrough**
+1. **Verification Walkthrough**
 
    - When RFC-0008 tooling is ready, document how to run `t81-verify` + interpret `.t81trace`.
 

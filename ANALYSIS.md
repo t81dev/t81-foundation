@@ -61,9 +61,9 @@ Here is a breakdown of each legacy file, its role, and its recommended fate.
 ### Concrete Next Steps
 
 1. **Frontend:** Begin by implementing a new C++20 recursive-descent or LALR parser based on the grammar in **`slang_grammer.ebnf`**. Refer to **`t81_compile.py`** for the semantics of annotations.
-2. **TISC IR:** Define a C++ class structure that represents the low-level assembly instructions defined in **`tisc-spec.md`**. This will be the output of your frontend and the input to your backends.
-3. **T81VM Backend:** Port the core logic from **`t81_to_hvm.cweb`** to C++ to create a canonical T81VM assembler/emitter library. This will be your primary backend for generating executable bytecode.
-4. **LLVM Backend:** Integrate the existing **`.td` files** and the C++ skeleton from **`t81_codegen.cweb`** into your new C++20 toolchain's build system. This will be your secondary, high-performance backend.
+1. **TISC IR:** Define a C++ class structure that represents the low-level assembly instructions defined in **`tisc-spec.md`**. This will be the output of your frontend and the input to your backends.
+1. **T81VM Backend:** Port the core logic from **`t81_to_hvm.cweb`** to C++ to create a canonical T81VM assembler/emitter library. This will be your primary backend for generating executable bytecode.
+1. **LLVM Backend:** Integrate the existing **`.td` files** and the C++ skeleton from **`t81_codegen.cweb`** into your new C++20 toolchain's build system. This will be your secondary, high-performance backend.
 
 ### Optimal C++20 Module Layout
 

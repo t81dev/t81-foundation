@@ -35,10 +35,10 @@ ______________________________________________________________________
 CanonFS is legally defined by five invariants. Violation of any is a protocol-level error:
 
 1. **Immutability** — Once sealed, objects can never be modified.
-2. **Content Addressing** — Object identity is `CanonHash-81(serialized_form)`.
-3. **Capability Binding** — Access requires a signed capability.
-4. **Deterministic Indexing** — The mapping `f(hash)` MUST remain stable forever.
-5. **Self-Healing** — Writes MAY include parity shards for automatic recovery.
+1. **Content Addressing** — Object identity is `CanonHash-81(serialized_form)`.
+1. **Capability Binding** — Access requires a signed capability.
+1. **Deterministic Indexing** — The mapping `f(hash)` MUST remain stable forever.
+1. **Self-Healing** — Writes MAY include parity shards for automatic recovery.
 
 ______________________________________________________________________
 

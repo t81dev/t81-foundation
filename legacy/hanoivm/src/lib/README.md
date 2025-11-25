@@ -131,9 +131,9 @@ cargo test --lib --all
 We welcome contributions to the ternary future.
 
 1. Fork the repo
-2. Create branch: `feat/t729-broadcast` or `opt/t243-pruning`
-3. Write **literate** `.cweb` or Rust with full documentation
-4. Submit PR with entropy impact analysis
+1. Create branch: `feat/t729-broadcast` or `opt/t243-pruning`
+1. Write **literate** `.cweb` or Rust with full documentation
+1. Submit PR with entropy impact analysis
 
 ## License
 

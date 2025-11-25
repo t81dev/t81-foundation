@@ -23,11 +23,11 @@ Binary computing imposes limits on information density and determinism for AI‑
 The T81 stack layers are:
 
 1. **T81Lang** — Base‑81‑native language with primitives `T81BigInt`, `T81Float`, `T81Fraction` and deterministic semantics.
-2. **TISC** — Ternary instruction set with modular arithmetic, tensor ops, and recursive control.
-3. **T81VM** — Deterministic runtime/JIT with tier promotion: **T81 → T243 → T729 → T2187 → T6561 → T19683**.
-4. **Hanoi Kernel** — Deterministic, capability‑native microkernel with an **81‑slot** scheduler and ethics‑first boot.
-5. **CanonFS** — Immutable, content‑addressed filesystem using **CanonHash‑81**, **CapabilityGrant v2**, **CanonParity** (e.g., **3+2**), and **CanonLink**.
-6. **Axion Governor** — Immutable, non‑self‑modifying AI that enforces Θ‑overlays, monitors entropy, vetoes unsafe transitions, and orchestrates snapshot/rollback.
+1. **TISC** — Ternary instruction set with modular arithmetic, tensor ops, and recursive control.
+1. **T81VM** — Deterministic runtime/JIT with tier promotion: **T81 → T243 → T729 → T2187 → T6561 → T19683**.
+1. **Hanoi Kernel** — Deterministic, capability‑native microkernel with an **81‑slot** scheduler and ethics‑first boot.
+1. **CanonFS** — Immutable, content‑addressed filesystem using **CanonHash‑81**, **CapabilityGrant v2**, **CanonParity** (e.g., **3+2**), and **CanonLink**.
+1. **Axion Governor** — Immutable, non‑self‑modifying AI that enforces Θ‑overlays, monitors entropy, vetoes unsafe transitions, and orchestrates snapshot/rollback.
 
 All durable state **MUST** be persisted in CanonFS. Syscalls are total, deterministic, and subject to Axion veto. Tier promotions embed ethics overlays (Θ₁–Θ₉).
 

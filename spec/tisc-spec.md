@@ -34,19 +34,19 @@ TISC MUST satisfy:
 1. **Deterministic Execution**\
    Each instruction has a single, total, unambiguous semantic definition.
 
-2. **Base-81 / Balanced Ternary Semantics**\
+1. **Base-81 / Balanced Ternary Semantics**\
    Arithmetic and logic are ternary-native; binary implementation shortcuts MUST NOT change observable behavior.
 
-3. **Zero Undefined Behavior**\
+1. **Zero Undefined Behavior**\
    Every operand combination either:
 
    - produces a canonical result, or
    - yields a deterministic fault.
 
-4. **Axion Visibility**\
+1. **Axion Visibility**\
    All state changes, faults, and privileged operations MUST be observable by the Axion kernel.
 
-5. **Layer Compatibility**\
+1. **Layer Compatibility**\
    TISC must:
 
    - consume values conforming to the [Data Types](t81-data-types.md) spec
@@ -113,8 +113,8 @@ Memory is a flat, addressable ternary space **partitioned into segments**:
 The exact physical representation is implementation-defined, but:
 
 1. Addressing MUST be deterministic and reproducible.
-2. Alignment MUST follow base-81 multiples for composite structures.
-3. Out-of-bounds access MUST cause a deterministic fault (no undefined reads/writes).
+1. Alignment MUST follow base-81 multiples for composite structures.
+1. Out-of-bounds access MUST cause a deterministic fault (no undefined reads/writes).
 
 ______________________________________________________________________
 
@@ -605,9 +605,9 @@ On any fault:
 
 1. T81VM MUST stop normal instruction execution.
 
-2. Fault record MUST be stored in Axion-visible metadata.
+1. Fault record MUST be stored in Axion-visible metadata.
 
-3. Axion MAY decide to:
+1. Axion MAY decide to:
 
    - terminate
    - roll back
