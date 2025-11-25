@@ -1,6 +1,7 @@
 # T81 Foundation: Developer Handover & Progress Report
 
 **Date:** November 25, 2025
+
 **Author:** t81dev, AI Software Engineer
 
 ## Introduction
