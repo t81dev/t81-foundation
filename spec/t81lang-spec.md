@@ -147,6 +147,7 @@ The T81Lang type system directly corresponds to the T81 Data Types spec.
 ### 2.1 Generic Type Syntax (Authoritative)
 
 The **only** authoritative syntax for generic instantiation is square brackets:
+
 ```t81
 Vector[T]
 Map[Key, Value]
@@ -695,4 +696,5 @@ parameters ::= parameter ( "," parameter )*
 
 parameter ::= identifier ":" type
 ```
+
 ______________________________________________________________________

@@ -5,25 +5,20 @@
 ## Table of Contents
 
 - [Developer Guide: Adding a TISC Opcode to the VM](#developer-guide-adding-a-tisc-opcode-to-the-vm)
-    - [Understanding the TISC Architecture](#understanding-the-tisc-architecture)
-    - [Step 1: Define the New Opcode](#step-1-define-the-new-opcode)
-      - [1.1 Add the Opcode to the Enum](#11-add-the-opcode-to-the-enum)
-      - [1.2 Update Specification (Crucial!)](#12-update-specification-crucial!)
-    - [Step 2: Implement the Opcode in the VM](#step-2-implement-the-opcode-in-the-vm)
-      - [2.1 Find the Dispatch Loop](#21-find-the-dispatch-loop)
-      - [2.2 Add the Implementation Case](#22-add-the-implementation-case)
-    - [Step 3: Write a Test](#step-3-write-a-test)
-      - [3.1 Create a Test File](#31-create-a-test-file)
-      - [3.2 Write the Test Code](#32-write-the-test-code)
-      - [3.3 Add the Test to CMake](#33-add-the-test-to-cmake)
-    - [Conclusion](#conclusion)
+  - [Understanding the TISC Architecture](#understanding-the-tisc-architecture)
+  - [Step 1: Define the New Opcode](#step-1-define-the-new-opcode)
+    - [1.1 Add the Opcode to the Enum](#11-add-the-opcode-to-the-enum)
+    - [1.2 Update Specification (Crucial!)](#12-update-specification-crucial!)
+  - [Step 2: Implement the Opcode in the VM](#step-2-implement-the-opcode-in-the-vm)
+    - [2.1 Find the Dispatch Loop](#21-find-the-dispatch-loop)
+    - [2.2 Add the Implementation Case](#22-add-the-implementation-case)
+  - [Step 3: Write a Test](#step-3-write-a-test)
+    - [3.1 Create a Test File](#31-create-a-test-file)
+    - [3.2 Write the Test Code](#32-write-the-test-code)
+    - [3.3 Add the Test to CMake](#33-add-the-test-to-cmake)
+  - [Conclusion](#conclusion)
 
 <!-- T81-TOC:END -->
-
-
-
-
-
 
 This guide provides a conceptual walkthrough for adding a new instruction (opcode) to the TISC (Ternary Instruction Set Computer) and its reference implementation, the HanoiVM.
 
