@@ -42,7 +42,8 @@ private:
     std::any visit(const VariableExpr& expr) override;
     std::any visit(const CallExpr& expr) override;
     std::any visit(const AssignExpr& expr) override;
-    std::any visit(const TypeExpr& expr) override;
+    std::any visit(const SimpleTypeExpr& expr) override;
+    std::any visit(const GenericTypeExpr& expr) override;
 
     void emit(tisc::Instruction instr);
     void emit_label(tisc::Label label);

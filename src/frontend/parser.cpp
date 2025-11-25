@@ -81,12 +81,12 @@ Token Parser::previous() {
 }
 
 // Consumes the current token if it matches the expected type. If not, it
-// reports an error and throws an exception to begin panic-mode error recovery.
+// reports an error and returns a dummy token.
 Token Parser::consume(TokenType type, const char* message) {
     if (check(type)) return advance();
     _had_error = true;
     std::cerr << "Parse Error: " << message << " at line " << peek().line << std::endl;
-    throw std::runtime_error("Parse error");
+    return {};
 }
 
 // Discards tokens until it finds a likely statement boundary. This is a
@@ -361,15 +361,49 @@ std::unique_ptr<Expr> Parser::primary() {
 }
 
 // Parses a type expression.
-// type -> IDENTIFIER | "i32" | "bool" | ... ;
+// type -> (IDENTIFIER | primitive_type_keyword) ( "[" type ( "," expression )* "]" )? ;
 std::unique_ptr<TypeExpr> Parser::type() {
-    if (match({TokenType::I32, TokenType::I16, TokenType::I8, TokenType::I2, TokenType::Bool, TokenType::Void, TokenType::T81BigInt, TokenType::T81Float, TokenType::T81Fraction, TokenType::Vector, TokenType::Matrix, TokenType::Tensor, TokenType::Graph, TokenType::Identifier})) {
-        return std::make_unique<TypeExpr>(previous());
+    if (!check(TokenType::Identifier) &&
+        !check(TokenType::I32) && !check(TokenType::I16) && !check(TokenType::I8) && !check(TokenType::I2) &&
+        !check(TokenType::Bool) && !check(TokenType::Void) &&
+        !check(TokenType::T81BigInt) && !check(TokenType::T81Float) && !check(TokenType::T81Fraction) &&
+        !check(TokenType::Vector) && !check(TokenType::Matrix) && !check(TokenType::Tensor) && !check(TokenType::Graph)) {
+        _had_error = true;
+        std::cerr << "Parse Error: Expect type name at line " << peek().line << std::endl;
+        return nullptr;
+    }
+    Token name = advance();
+
+    // Explicitly reject legacy angle bracket syntax
+    if (peek().type == TokenType::Less) {
+        _had_error = true;
+        std::cerr << "Parse Error: Legacy '<...>' syntax for generics is not supported. Use '[...]' instead. at line " << peek().line << std::endl;
+        return nullptr;
     }
 
-    _had_error = true;
-    std::cerr << "Parse Error: Expect type name at line " << peek().line << std::endl;
-    throw std::runtime_error("Expect type name.");
+    if (match({TokenType::LBracket})) {
+        std::array<std::unique_ptr<Expr>, 8> parameters;
+        size_t param_count = 0;
+
+        // First parameter must be a type.
+        parameters[param_count++] = type();
+
+        // Subsequent parameters are constant value expressions.
+        while (match({TokenType::Comma})) {
+            if (param_count >= 8) {
+                _had_error = true;
+                std::cerr << "Parse Error: Too many generic parameters (max 8) at line " << peek().line << std::endl;
+                return nullptr;
+            }
+            // For now, we parse a primary expression for simplicity, as per the spec's
+            // definition of constant_expression.
+            parameters[param_count++] = primary();
+        }
+        consume(TokenType::RBracket, "Expect ']' after type parameters.");
+        return std::make_unique<GenericTypeExpr>(name, std::move(parameters), param_count);
+    }
+
+    return std::make_unique<SimpleTypeExpr>(name);
 }
 
 } // namespace frontend

@@ -144,7 +144,28 @@ ______________________________________________________________________
 
 The T81Lang type system directly corresponds to the T81 Data Types spec.
 
-### 2.1 Primitive Types
+### 2.1 Generic Type Syntax (Authoritative)
+
+The **only** authoritative syntax for generic instantiation is square brackets:
+```t81
+Vector[T]
+Map[Key, Value]
+Option[T]
+Result[Ok, Err]
+Tensor[T, Rank]
+Tensor[T, M, N]        # fixed-rank tensor with compile-time dimensions
+```
+
+Angle brackets `<...>` are **legacy** and must not appear in any new code or grammar.
+All examples in the spec using `<...>` are hereby declared obsolete.
+
+- Generic parameters are separated by commas when more than one is required.
+- The first parameter is always the element type.
+- Subsequent parameters, if present, are **compile-time constants** (not types).
+- Tensor[T, 5, 10] is valid and denotes a fixed 5×10 tensor of T.
+- Tensor[T, Rank] where Rank is a type-level integer remains supported for dynamic-rank tensors.
+
+### 2.2 Primitive Types
 
 - `T81Int`
 - `T81Float`
@@ -153,13 +174,13 @@ The T81Lang type system directly corresponds to the T81 Data Types spec.
 
 These map 1:1 to the Data Types primitive categories.
 
-### 2.2 Vector Type
+### 2.3 Vector Type
 
 - `Vector[T]`
 
 The `Vector[T]` type is syntactic sugar for a rank-1 `Tensor` of type `T`. All operations on `Vector[T]` are equivalent to operations on a rank-1 `Tensor`.
 
-### 2.3 Composite Types
+### 2.4 Composite Types
 
 - `Matrix[T]`
 - `Tensor[T, Rank]`
@@ -171,10 +192,11 @@ Composite types MUST:
 - have static shapes where applicable (vectors, matrices, tensors)
 - follow canonicalization rules when constructed
 
-### 2.3 Structural Types
+### 2.5 Structural Types Option[T] and Result[T, E]
 
-- `Option[T]`
-- `Result[T, E]`
+These are **first-class core types** and MUST be present in the grammar.
+They use exactly the same square-bracket syntax as user generics.
+No legacy equivalents exist; they are new additions that have no backwards-compatibility burden.
 
 `Option[T]` exposes two constructors:
 
@@ -555,4 +577,122 @@ ______________________________________________________________________
 
 - **Tier Semantics and Language Integration** → [`cognitive-tiers.md`](cognitive-tiers.md#1-tier-structure)
 
+______________________________________________________________________
+
+# Appendix A: Formal Grammar
+
+This appendix contains the complete, normative EBNF grammar for T81Lang.
+
+## A.1 Lexical Elements
+
+```ebnf
+identifier ::= letter ( letter | digit )*
+letter     ::= "_" | "a"..."z" | "A"..."Z"
+digit      ::= "0"..."9"
+
+integer_literal ::= digit+
+float_literal   ::= digit+ "." digit*
+string_literal  ::= '"' ( character )* '"'
+
+comment ::= "//" ( any character except newline )*
+          | "/*" ( any character )* "*/"
+```
+
+## A.2 Types
+
+```ebnf
+type ::= primitive_type
+       | generic_type
+       | identifier  // User-defined type
+
+primitive_type ::= "T81Int" | "T81Float" | "T81Fraction" | "Symbol"
+
+generic_type ::= identifier "[" type_parameter_list "]"
+
+type_parameter_list ::= type ( "," constant_expression )*
+```
+
+## A.3 Expressions
+
+```ebnf
+expression ::= assignment
+
+assignment ::= identifier "=" assignment
+             | logical_or
+
+logical_or ::= logical_and ( "||" logical_and )*
+
+logical_and ::= equality ( "&&" equality )*
+
+equality ::= comparison ( ( "!=" | "==" ) comparison )*
+
+comparison ::= term ( ( ">" | ">=" | "<" | "<=" ) term )*
+
+term ::= factor ( ( "-" | "+" ) factor )*
+
+factor ::= unary ( ( "/" | "*" | "%" ) unary )*
+
+unary ::= ( "!" | "-" ) unary
+        | call
+
+call ::= primary ( "(" arguments? ")" )*
+
+primary ::= literal
+          | identifier
+          | "(" expression ")"
+
+arguments ::= expression ( "," expression )*
+
+literal ::= integer_literal
+          | float_literal
+          | string_literal
+          | "true"
+          | "false"
+          | vector_literal
+
+vector_literal ::= "[" ( expression ( "," expression )* )? "]"
+
+constant_expression ::= integer_literal | identifier
+```
+
+## A.4 Statements
+
+```ebnf
+statement ::= let_declaration
+            | var_declaration
+            | expression_statement
+            | return_statement
+            | if_statement
+            | loop_statement
+            | block
+
+let_declaration ::= "let" identifier ( ":" type )? "=" expression ";"
+
+var_declaration ::= "var" identifier ( ":" type )? ( "=" expression )? ";"
+
+expression_statement ::= expression ";"
+
+return_statement ::= "return" expression? ";"
+
+if_statement ::= "if" expression block ( "else" block )?
+
+loop_statement ::= "loop" block
+
+block ::= "{" statement* "}"
+```
+
+## A.5 Top-Level Declarations
+
+```ebnf
+program ::= declaration*
+
+declaration ::= function_declaration
+              | statement
+
+function_declaration ::= "fn" identifier "(" parameters? ")" ( "->" type )? block
+
+parameters ::= parameter ( "," parameter )*
+
+parameter ::= identifier ":" type
+```
 ______________________________________________________________________

@@ -15,6 +15,8 @@ public:
 
     std::vector<std::unique_ptr<Stmt>> parse();
 
+    bool had_error() const { return _had_error; }
+
 private:
     // Grammar rule methods
     std::unique_ptr<Stmt> declaration();
