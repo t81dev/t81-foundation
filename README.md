@@ -13,6 +13,7 @@
 [![C++20 Core](https://img.shields.io/badge/Core-C%2B%2B20-0d1117?style=flat-square&logo=cplusplus)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE-MIT)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-green?style=flat-square)](LICENSE-GPL)
+[![Trinity Ecosystem](https://img.shields.io/badge/Trinity-Complete-blue)](https://github.com/t81dev/ternary).
 
 <br/><br/>
 
