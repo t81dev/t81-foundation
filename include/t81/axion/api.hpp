@@ -108,9 +108,9 @@ public:
 
   /**
    * @brief Submits a single request to the Axion kernel.
-   * @param sig The signal metadata for the request.
-   * @param in The input buffer.
-   * @param out The output buffer, which will be populated by the call.
+   * @param[in] sig The signal metadata for the request.
+   * @param[in] in The input buffer.
+   * @param[out] out The output buffer, which will be populated by the call.
    * @return A Status code indicating the result of the operation.
    */
   Status submit(const Signal& sig, const Buffer& in, Buffer& out) {
@@ -142,9 +142,9 @@ public:
 
   /**
    * @brief Submits a batch of requests to the Axion kernel.
-   * @param sigs A vector of signal metadata.
-   * @param ins A vector of input buffers.
-   * @param outs A vector of output buffers to be populated.
+   * @param[in] sigs A vector of signal metadata.
+   * @param[in] ins A vector of input buffers.
+   * @param[out] outs A vector of output buffers to be populated.
    * @return Status::InvalidArgument if input vectors have different sizes,
    *         otherwise the status of the batch operation.
    */

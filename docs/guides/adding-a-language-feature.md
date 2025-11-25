@@ -1,28 +1,5 @@
 # Developer Guide: Adding a Feature to T81Lang
 
-<!-- T81-TOC:BEGIN -->
-
-## Table of Contents
-
-- [Developer Guide: Adding a Feature to T81Lang](#developer-guide-adding-a-feature-to-t81lang)
-    - [Prerequisites](#prerequisites)
-    - [Step 1: Update the Lexer](#step-1-update-the-lexer)
-      - [1.1 Add the Token Type](#11-add-the-token-type)
-      - [1.2 Recognize the Lexeme](#12-recognize-the-lexeme)
-    - [Step 2: Update the Parser](#step-2-update-the-parser)
-      - [2.1 Update the Grammar Rule](#21-update-the-grammar-rule)
-    - [Step 3: Update the IR Generator](#step-3-update-the-ir-generator)
-      - [3.1 Implement the Visitor Logic](#31-implement-the-visitor-logic)
-    - [Step 4: Write a Test](#step-4-write-a-test)
-      - [4.1 Create a Test File](#41-create-a-test-file)
-      - [4.2 Write the Test Code](#42-write-the-test-code)
-      - [4.3 Add the Test to CMake](#43-add-the-test-to-cmake)
-- [In CMakeLists.txt](#in-cmakeliststxt)
-    - [Conclusion](#conclusion)
-
-<!-- T81-TOC:END -->
-
-
 This guide provides a step-by-step walkthrough for adding a new feature to the T81Lang language. We will use the example of adding a new binary operator, the modulo operator (`%`), to illustrate the process.
 
 Following this guide will familiarize you with the key components of the new C++ compiler toolchain.
