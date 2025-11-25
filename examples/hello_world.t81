@@ -2,7 +2,6 @@
 // Purpose: Minimal T81Lang example for symbolic agents and human readers
 // Description: Prints 'Hello, World!' in a ternary environment
 
-@symbolic_entry_point
 fn main() {
   let msg = T81String("Hello, World!")
   stdout << msg
