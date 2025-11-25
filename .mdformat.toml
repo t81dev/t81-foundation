@@ -14,7 +14,8 @@ Exclude directories that might contain generated or third-party Markdown files
 but should not be linted. mdformat respects .gitignore, but this is explicit.
 
 exclude = [
-"build/*",
+"build/",
+"legacy/", # Added to exclude the large unformatted 'legacy/hanoivm' directory
 ]
 
 [tool.mdformat.number]
