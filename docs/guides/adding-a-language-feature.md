@@ -140,8 +140,8 @@ Create a new file in `tests/cpp/` named `frontend_modulo_test.cpp`.
 Add C++ code to the new file that:
 
 1. Creates a piece of T81Lang source code using the `%` operator (e.g., `let x = 10 % 3;`).
-1. Runs the lexer, parser, and IR generator.
-1. Asserts that the generated TISC IR contains the expected `MOD` instruction.
+2. Runs the lexer, parser, and IR generator.
+3. Asserts that the generated TISC IR contains the expected `MOD` instruction.
 
 ```cpp
 // Example test code for tests/cpp/frontend_modulo_test.cpp

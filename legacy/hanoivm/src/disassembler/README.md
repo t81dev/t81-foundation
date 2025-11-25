@@ -76,9 +76,9 @@ VERBOSE_DISASSEMBLE=1 ./hvm-disas program.hvm
 ### 3. Load in Ghidra
 
 1. Copy `libghidra_hvm.so` → `Ghidra/Processors/HanoiVM/lib/`
-1. Restart Ghidra → **New Project** → **Import File** → select `.hvm`
-1. Ghidra auto-detects **HanoiVM** processor
-1. You now see:
+2. Restart Ghidra → **New Project** → **Import File** → select `.hvm`
+3. Ghidra auto-detects **HanoiVM** processor
+4. You now see:
    ```asm
    FIB           ; lifted macro
    TNN_ACCUM     R12, R27        ; τ27 = Axion register

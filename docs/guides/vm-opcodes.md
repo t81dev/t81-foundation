@@ -61,8 +61,8 @@ MOD,  // Modulo <-- Add this line
 In a real-world scenario, you would now be required to update the formal TISC specification in `spec/tisc-spec.md`. This involves:
 
 1. Assigning a unique binary encoding for the new opcode.
-1. Defining its precise semantics (e.g., how it handles division by zero, negative numbers).
-1. Specifying its operand types (e.g., registers, immediate values).
+2. Defining its precise semantics (e.g., how it handles division by zero, negative numbers).
+3. Specifying its operand types (e.g., registers, immediate values).
 
 For this guide, we will skip the formal spec update, but it is a non-negotiable step in the project's development process.
 
@@ -81,9 +81,9 @@ Open `src/vm/vm.cpp`. Find the main execution loop, which is typically a large `
 Add a new `case` to the `switch` statement for `Opcode::MOD`. The logic inside this case will:
 
 1. Fetch the operands (source registers `a` and `b`, and the destination register `dest`).
-1. Perform the modulo operation.
-1. Store the result in the destination register.
-1. Advance the program counter (PC).
+2. Perform the modulo operation.
+3. Store the result in the destination register.
+4. Advance the program counter (PC).
 
 ```cpp
 // in VM::run() or similar method in src/vm/vm.cpp
@@ -138,9 +138,9 @@ Create a new file in `tests/cpp/` named `vm_mod_test.cpp`.
 The test should:
 
 1. Manually construct a `tisc::Program` containing the new `MOD` instruction.
-1. Initialize the source registers with known values.
-1. Create a VM instance and execute the program.
-1. Assert that the destination register contains the correct result.
+2. Initialize the source registers with known values.
+3. Create a VM instance and execute the program.
+4. Assert that the destination register contains the correct result.
 
 ```cpp
 // Example test code for tests/cpp/vm_mod_test.cpp

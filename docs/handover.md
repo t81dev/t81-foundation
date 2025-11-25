@@ -63,9 +63,9 @@ ______________________________________________________________________
   - **Triggers:** The CI runs automatically on every push and pull request to the `main` branch.
   - **Validation:** The pipeline performs a comprehensive set of checks:
     1. **Documentation Linting:** Ensures all Markdown files are formatted correctly.
-    1. **Broken Link Checking:** Verifies all hyperlinks in the documentation.
-    1. **Build & Test:** Compiles the entire C++ project with `clang-18` and runs the full CTest suite.
-    1. **API Documentation Generation:** Runs the Doxygen build to ensure the in-code comments can be successfully parsed.
+    2. **Broken Link Checking:** Verifies all hyperlinks in the documentation.
+    3. **Build & Test:** Compiles the entire C++ project with `clang-18` and runs the full CTest suite.
+    4. **API Documentation Generation:** Runs the Doxygen build to ensure the in-code comments can be successfully parsed.
   - **Deployment:** There is no automated deployment process. The project is currently in a research and development phase.
 
 ______________________________________________________________________
@@ -76,10 +76,10 @@ ______________________________________________________________________
 - **Environment Variables:** No specific environment variables are needed.
 - **Local Dev Setup:**
   1. Clone the repository: `git clone https://github.com/t81dev/t81-foundation.git`
-  1. Navigate to the directory: `cd t81-foundation`
-  1. Configure CMake: `cmake -S . -B build -DCMAKE_BUILD_TYPE=Release`
-  1. Build the project: `cmake --build build --parallel`
-  1. Run the tests: `ctest --test-dir build --output-on-failure`
+  2. Navigate to the directory: `cd t81-foundation`
+  3. Configure CMake: `cmake -S . -B build -DCMAKE_BUILD_TYPE=Release`
+  4. Build the project: `cmake --build build --parallel`
+  5. Run the tests: `ctest --test-dir build --output-on-failure`
 
 ______________________________________________________________________
 
@@ -138,8 +138,8 @@ ______________________________________________________________________
 
 - **Priority Features:** Based on the current state, the next logical priorities are:
   1. Completing the T81Lang compiler and type system.
-  1. Hardening the T81VM interpreter and beginning work on the JIT.
-  1. Moving the Axion Kernel from a stub to a functional implementation.
+  2. Hardening the T81VM interpreter and beginning work on the JIT.
+  3. Moving the Axion Kernel from a stub to a functional implementation.
 - **Backlog:** The `AGENTS.md` file explicitly mentions several desired future enhancements that are considered in-scope:
   - Rust bindings.
   - WASM targets.
@@ -170,9 +170,9 @@ ______________________________________________________________________
 ### 11. How to Onboard as the New Developer
 
 1. **Read the Constitution:** Read the primary documents in this order: `README.md`, `AGENTS.md`, and `spec/index.md`.
-1. **Build and Test:** Follow the local dev setup instructions to build the project and run the test suite. A green test run is the baseline for any change.
-1. **Explore the Examples:** Examine the code in `/examples` to see how the core `t81` library is used in practice.
-1. **Start with the Frontend:** A good place to start contributing would be the new C++ toolchain, specifically by adding a new language feature to the parser (`src/frontend/parser.cpp`) and a corresponding test case in `tests/cpp/frontend_parser_test.cpp`.
+2. **Build and Test:** Follow the local dev setup instructions to build the project and run the test suite. A green test run is the baseline for any change.
+3. **Explore the Examples:** Examine the code in `/examples` to see how the core `t81` library is used in practice.
+4. **Start with the Frontend:** A good place to start contributing would be the new C++ toolchain, specifically by adding a new language feature to the parser (`src/frontend/parser.cpp`) and a corresponding test case in `tests/cpp/frontend_parser_test.cpp`.
 
 ______________________________________________________________________
 

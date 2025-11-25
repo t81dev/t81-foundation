@@ -106,7 +106,7 @@ src/
    - LLVM/Clang 17, CMake, Ninja.
    - CUDA/ROCm for GPU (optional).
 
-1. **Tangle Literate Sources**:
+2. **Tangle Literate Sources**:
 
    ```bash
    cd src
@@ -114,7 +114,7 @@ src/
    ./utils/tangle-all.sh
    ```
 
-1. **Build Libraries (Rust/C)**:
+3. **Build Libraries (Rust/C)**:
 
    ```bash
    # Rust cores
@@ -126,14 +126,14 @@ src/
    ninja
    ```
 
-1. **Compile Hardware**:
+4. **Compile Hardware**:
 
    ```verilog
    # Verilog FSM (use yosys/iverilog)
    yosys -p "synth_ice40 -top hanoivm_fsm -json hanoivm_fsm.json" hanoivm_fsm.v
    ```
 
-1. **Run Tests**:
+5. **Run Tests**:
 
    ```bash
    cargo test --all
@@ -183,9 +183,9 @@ fn main() {
 ## Contributing
 
 1. Fork & branch: `git checkout -b feat/t729-broadcast`.
-1. Tangle, build, test: Ensure `ninja check-all` passes.
-1. Literate commits: Update `.cweb` with full docs.
-1. PR: Include entropy benchmarks for new ops.
+2. Tangle, build, test: Ensure `ninja check-all` passes.
+3. Literate commits: Update `.cweb` with full docs.
+4. PR: Include entropy benchmarks for new ops.
 
 Guidelines: Maintain ternary purity; add AI hooks; no binary shortcuts.
 
