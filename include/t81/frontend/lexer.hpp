@@ -1,3 +1,8 @@
+/**
+ * @file lexer.hpp
+ * @brief Defines the Lexer and token types for the T81Lang frontend.
+ */
+
 #ifndef T81_FRONTEND_LEXER_HPP
 #define T81_FRONTEND_LEXER_HPP
 
@@ -8,6 +13,10 @@
 namespace t81 {
 namespace frontend {
 
+/**
+ * @enum TokenType
+ * @brief Describes the different types of tokens that the Lexer can produce.
+ */
 enum class TokenType {
     // Keywords
     Module, Type, Const, Export, Fn, Let, Var,
@@ -47,22 +56,45 @@ enum class TokenType {
     At,         // @
 
     // Control
-    Eof,
-    Illegal
+    Eof,        ///< End of file/source.
+    Illegal     ///< An illegal or unexpected character.
 };
 
+/**
+ * @struct Token
+ * @brief Represents a single token scanned from the source code.
+ */
 struct Token {
-    TokenType type;
-    std::string_view lexeme;
-    int line;
-    int column;
+    TokenType type;             ///< The type of the token.
+    std::string_view lexeme;    ///< The substring from the source code.
+    int line;                   ///< The line number where the token appears.
+    int column;                 ///< The column number where the token begins.
 };
 
+/**
+ * @class Lexer
+ * @brief A lexical analyzer for the T81Lang language.
+ *
+ * The Lexer scans a source string and converts it into a sequence of tokens.
+ */
 class Lexer {
 public:
+    /**
+     * @brief Constructs a Lexer for the given source code.
+     * @param source A string_view of the source code to tokenize.
+     */
     Lexer(std::string_view source);
 
+    /**
+     * @brief Scans and returns the next token in the source stream.
+     * @return The next Token.
+     */
     Token next_token();
+
+    /**
+     * @brief Scans the entire source and returns all tokens.
+     * @return A vector containing all tokens from the source.
+     */
     std::vector<Token> all_tokens();
 
 private:
