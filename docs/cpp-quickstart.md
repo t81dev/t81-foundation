@@ -1,55 +1,31 @@
 # T81 C++ Quickstart
 
-<!-- T81-TOC:BEGIN -->
+This guide provides a concise, hands-on guide to building the C++ project, running tests, and generating documentation.
 
-## Table of Contents
+**For a comprehensive overview of the project, please start with the [T81 Foundation Documentation Hub](./index.md).**
 
-- [T81 C++ Quickstart](#t81-c++-quickstart)
-  - [1) Include the umbrella header](#1-include-the-umbrella-header)
-  - [2) Build options](#2-build-options)
-    - [CMake (recommended)](#cmake-recommended)
-    - [Bazel](#bazel)
-    - [Make (shim)](#make-shim)
-  - [3) Run examples](#3-run-examples)
-  - [4) Notes & Caveats](#4-notes-&-caveats)
-  - [5) Headers index (most common)](#5-headers-index-most-common)
-  - [6) VM Notes](#6-vm-notes)
+---
 
-<!-- T81-TOC:END -->
+### 1. Build & Test with CMake
 
-This guide shows how to consume the new header-only C++ API and run examples/tests.
-
-## 1) Include the umbrella header
-
-```cpp
-#include <t81/t81.hpp>        // BigInt, Fraction, Tensor, CanonFS, config, etc.
-#include <t81/tensor/ops.hpp> // optional: transpose/slice/reshape ops
-```
-
-## 2) Build options
-
-### CMake (recommended)
+The project uses CMake as its sole build system.
 
 ```bash
-cmake -S . -B build -DT81_BUILD_EXAMPLES=ON -DT81_BUILD_TESTS=ON
+# Configure the project (run once)
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+# Build all libraries, examples, and tests
 cmake --build build --parallel
+
+# Run the CTest test suite
+ctest --test-dir build --output-on-failure
 ```
 
-### Bazel
+---
 
-```bash
-bazel build //:t81_demo
-bazel test  //:t81_*_test
-```
+### 2. Run Examples
 
-### Make (shim)
-
-```bash
-make           # builds demo + tests
-make run-tests # runs all tests
-```
-
-## 3) Run examples
+The examples are built by default and can be found in the `build/` directory.
 
 ```bash
 ./build/t81_demo
@@ -58,34 +34,34 @@ make run-tests # runs all tests
 ./build/axion_demo
 ```
 
-## 4) Notes & Caveats
+---
 
-- **Base-243 codec** is a deterministic stub (`include/t81/codec/base243.hpp`). It maps bytes/chars modulo 243 and is **not** a real base conversion. Swap in a canonical codec later without changing call sites.
-- **Base-81 hashing** stubs live in `include/t81/hash/*` and are **non-cryptographic**. Replace with a real digest + Base-81 when ready.
-- **Fractions** are signed, denominator-positive, and reduced by `gcd`. Division uses naive paths pending full BigInt division.
-- **Tensor ops** are dependency-free and CPU-only; they’re meant for tests and small utilities.
+### 3. Generate API Documentation
 
-## 5) Headers index (most common)
+The project is fully documented with Doxygen. To generate a browsable HTML API reference, run the `docs` target.
 
-- `t81/t81.hpp` — umbrella
-- `t81/bigint.hpp` — `T243BigInt` (signed, base-243)
-- `t81/fraction.hpp` — `T81Fraction` (signed, reduced)
-- `t81/tensor.hpp` — `T729Tensor`
-- `t81/tensor/ops.hpp` — transpose/slice/reshape
-- `t81/io/tensor_loader.hpp` — text IO helpers
-- `t81/canonfs.hpp`, `t81/canonfs_io.hpp` — CanonFS types & wire IO
-- `t81/ir/{opcodes,insn,encoding}.hpp` — minimal IR and 32B encoding
-- `t81/hash/{base81,canonhash}.hpp` — Base-81 & CanonHash stubs
-- `t81/codec/base243.hpp` — Base-243 codec surface (stub)
-- `t81/axion/api.hpp` — tiny Axion façade (stub)
-- `t81/vm/state.hpp` — VM state (registers, pools, trace helpers)
+```bash
+cmake --build build --target docs
+```
 
-## 6) VM Notes
+The output will be generated in `docs/api/html/`. Open `index.html` in your browser to view the documentation.
 
-- Structural helpers (`MAKE_OPTION_*`, `MAKE_RESULT_*`) were added to the ISA.
-  Make sure your VM build includes the new opcodes; otherwise you’ll see
-  `IllegalInstruction` traps when compiling Option/Result-heavy code.
-- Tensor handles are pooled like floats/fractions. Inspect `vm->state()` to
-  understand what the compiler emitted.
-- Axion policies (APL) are not required yet, but the VM header already reserves
-  space—unknown bytes should be ignored deterministically.
+---
+
+### 4. Key Headers
+
+While the umbrella header (`t81/t81.hpp`) is convenient, these are the most common headers for direct inclusion:
+
+-   `t81/core/bigint.hpp` — `BigInt` class
+-   `t81/core/fraction.hpp` — `Fraction` class
+-   `t81/core/tensor.hpp` — `Tensor` struct
+-   `t81/frontend/lexer.hpp`, `parser.hpp`, `ir_generator.hpp` — T81Lang compiler components
+-   `t81/vm/vm.hpp` — The T81 Virtual Machine
+-   `t81/axion/api.hpp` — The Axion Kernel API (stub)
+
+---
+
+### 5. Notes & Caveats
+
+-   **Base-243/81 Codecs & Hashes:** The implementations for codecs and hashing are currently deterministic stubs suitable for testing, not for production use.
+-   **Core Types:** The `BigInt` and `Tensor` types are minimal implementations and do not yet match the full semantics of the T81 specification. See the [System Status Report](./system-status.md) for details.

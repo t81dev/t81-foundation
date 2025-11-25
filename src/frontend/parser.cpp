@@ -1,14 +1,33 @@
+/**
+ * @file parser.cpp
+ * @brief Implements the Parser for the T81Lang frontend.
+ *
+ * This file contains the implementation of a recursive descent parser that
+ * consumes a stream of tokens from the Lexer and produces an Abstract Syntax Tree (AST).
+ * The parser is designed to be reasonably performant and to support basic
+ * error recovery via synchronization.
+ */
+
 #include "t81/frontend/parser.hpp"
 #include <iostream>
 
 namespace t81 {
 namespace frontend {
 
+/**
+ * @brief Constructs a new Parser.
+ * @param lexer The Lexer instance providing the token stream.
+ */
 Parser::Parser(Lexer& lexer) : _lexer(lexer) {
-    // Prime the pump
+    // Prime the pump by fetching the first token. This ensures that `_current`
+    // is valid before any parsing methods are called.
     _current = _lexer.next_token();
 }
 
+/**
+ * @brief Parses the entire token stream and produces a list of statements.
+ * @return A vector of unique_ptrs to the root statements of the AST.
+ */
 std::vector<std::unique_ptr<Stmt>> Parser::parse() {
     std::vector<std::unique_ptr<Stmt>> statements;
     while (!is_at_end()) {
@@ -17,8 +36,10 @@ std::vector<std::unique_ptr<Stmt>> Parser::parse() {
     return statements;
 }
 
-// --- Helper Methods ---
+// --- Private Helper Methods ---
 
+// Checks if the current token matches any of the given types. If so,
+// it consumes the token and returns true.
 bool Parser::match(const std::vector<TokenType>& types) {
     for (TokenType type : types) {
         if (check(type)) {
@@ -29,11 +50,13 @@ bool Parser::match(const std::vector<TokenType>& types) {
     return false;
 }
 
+// Returns true if the current token is of the given type, without consuming it.
 bool Parser::check(TokenType type) {
     if (is_at_end()) return false;
     return peek().type == type;
 }
 
+// Consumes the current token and returns the previous token.
 Token Parser::advance() {
     if (!is_at_end()) {
         _previous = _current;
@@ -42,29 +65,57 @@ Token Parser::advance() {
     return previous();
 }
 
+// Returns true if the parser has reached the end of the token stream.
 bool Parser::is_at_end() {
     return peek().type == TokenType::Eof;
 }
 
+// Returns the current token without consuming it.
 Token Parser::peek() {
     return _current;
 }
 
+// Returns the most recently consumed token.
 Token Parser::previous() {
     return _previous;
 }
 
+// Consumes the current token if it matches the expected type. If not, it
+// reports an error and throws an exception to begin panic-mode error recovery.
 Token Parser::consume(TokenType type, const char* message) {
     if (check(type)) return advance();
     _had_error = true;
     std::cerr << "Parse Error: " << message << " at line " << peek().line << std::endl;
-    // For now, we don't have good error recovery.
-    // In a real compiler, we would synchronize here.
-    return peek();
+    throw std::runtime_error("Parse error");
+}
+
+// Discards tokens until it finds a likely statement boundary. This is a
+// simple panic-mode error recovery mechanism that helps report more than
+// one error per file.
+void Parser::synchronize() {
+    advance();
+    while (!is_at_end()) {
+        if (previous().type == TokenType::Semicolon) return;
+        switch (peek().type) {
+            case TokenType::Fn:
+            case TokenType::Let:
+            case TokenType::Var:
+            case TokenType::For:
+            case TokenType::If:
+            case TokenType::While:
+            case TokenType::Return:
+                return;
+            default:
+                ; // Do nothing.
+        }
+        advance();
+    }
 }
 
 // --- Grammar Rules ---
 
+// Parses a declaration.
+// declaration -> fn_declaration | var_declaration | let_declaration | statement ;
 std::unique_ptr<Stmt> Parser::declaration() {
     try {
         if (match({TokenType::Fn})) return function("function");
@@ -77,6 +128,8 @@ std::unique_ptr<Stmt> Parser::declaration() {
     }
 }
 
+// Parses a function declaration.
+// function -> "fn" IDENTIFIER "(" parameters? ")" ( "->" type )? "{" block "}" ;
 std::unique_ptr<Stmt> Parser::function(const std::string& kind) {
     Token name = consume(TokenType::Identifier, ("Expect " + kind + " name.").c_str());
     consume(TokenType::LParen, ("Expect '(' after " + kind + " name.").c_str());
@@ -104,6 +157,8 @@ std::unique_ptr<Stmt> Parser::function(const std::string& kind) {
     return std::make_unique<FunctionStmt>(name, std::move(parameters), std::move(return_type), std::move(body));
 }
 
+// Parses a variable declaration.
+// var_declaration -> "var" IDENTIFIER ( ":" type )? ( "=" expression )? ";" ;
 std::unique_ptr<Stmt> Parser::var_declaration() {
     Token name = consume(TokenType::Identifier, "Expect variable name.");
     std::unique_ptr<TypeExpr> type_expr = nullptr;
@@ -118,6 +173,8 @@ std::unique_ptr<Stmt> Parser::var_declaration() {
     return std::make_unique<VarStmt>(name, std::move(type_expr), std::move(initializer));
 }
 
+// Parses a constant declaration.
+// let_declaration -> "let" IDENTIFIER ( ":" type )? "=" expression ";" ;
 std::unique_ptr<Stmt> Parser::let_declaration() {
     Token name = consume(TokenType::Identifier, "Expect constant name.");
     std::unique_ptr<TypeExpr> type_expr = nullptr;
@@ -130,6 +187,8 @@ std::unique_ptr<Stmt> Parser::let_declaration() {
     return std::make_unique<LetStmt>(name, std::move(type_expr), std::move(initializer));
 }
 
+// Parses a statement.
+// statement -> if_stmt | while_stmt | return_stmt | block | expr_stmt ;
 std::unique_ptr<Stmt> Parser::statement() {
     if (match({TokenType::If})) {
         consume(TokenType::LParen, "Expect '(' after 'if'.");
@@ -164,6 +223,8 @@ std::unique_ptr<Stmt> Parser::statement() {
     return expression_statement();
 }
 
+// Parses a block of statements.
+// block -> "{" declaration* "}" ;
 std::vector<std::unique_ptr<Stmt>> Parser::block() {
     std::vector<std::unique_ptr<Stmt>> statements;
     while (!check(TokenType::RBrace) && !is_at_end()) {
@@ -173,41 +234,39 @@ std::vector<std::unique_ptr<Stmt>> Parser::block() {
     return statements;
 }
 
-
+// Parses an expression statement.
+// expr_stmt -> expression ";" ;
 std::unique_ptr<Stmt> Parser::expression_statement() {
-    try {
-        std::unique_ptr<Expr> expr = expression();
-        consume(TokenType::Semicolon, "Expect ';' after expression.");
-        return std::make_unique<ExpressionStmt>(std::move(expr));
-    } catch (const std::runtime_error& error) {
-        synchronize();
-        return nullptr;
-    }
+    std::unique_ptr<Expr> expr = expression();
+    consume(TokenType::Semicolon, "Expect ';' after expression.");
+    return std::make_unique<ExpressionStmt>(std::move(expr));
 }
 
+// Parses an expression.
+// expression -> assignment ;
 std::unique_ptr<Expr> Parser::expression() {
     return assignment();
 }
 
+// Parses an assignment expression.
+// assignment -> IDENTIFIER "=" assignment | equality ;
 std::unique_ptr<Expr> Parser::assignment() {
     std::unique_ptr<Expr> expr = equality();
-
     if (match({TokenType::Equal})) {
         Token equals = previous();
         std::unique_ptr<Expr> value = assignment();
-
         if (auto* var_expr = dynamic_cast<VariableExpr*>(expr.get())) {
             Token name = var_expr->name;
             return std::make_unique<AssignExpr>(name, std::move(value));
         }
-
         _had_error = true;
         std::cerr << "Parse Error: Invalid assignment target at line " << equals.line << std::endl;
     }
-
     return expr;
 }
 
+// Parses an equality expression.
+// equality -> comparison ( ( "!=" | "==" ) comparison )* ;
 std::unique_ptr<Expr> Parser::equality() {
     std::unique_ptr<Expr> expr = comparison();
     while (match({TokenType::BangEqual, TokenType::EqualEqual})) {
@@ -218,6 +277,8 @@ std::unique_ptr<Expr> Parser::equality() {
     return expr;
 }
 
+// Parses a comparison expression.
+// comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 std::unique_ptr<Expr> Parser::comparison() {
     std::unique_ptr<Expr> expr = term();
     while (match({TokenType::Greater, TokenType::GreaterEqual, TokenType::Less, TokenType::LessEqual})) {
@@ -228,6 +289,8 @@ std::unique_ptr<Expr> Parser::comparison() {
     return expr;
 }
 
+// Parses an addition/subtraction expression.
+// term -> factor ( ( "-" | "+" ) factor )* ;
 std::unique_ptr<Expr> Parser::term() {
     std::unique_ptr<Expr> expr = factor();
     while (match({TokenType::Minus, TokenType::Plus})) {
@@ -238,6 +301,8 @@ std::unique_ptr<Expr> Parser::term() {
     return expr;
 }
 
+// Parses a multiplication/division/modulo expression.
+// factor -> unary ( ( "/" | "*" | "%" ) unary )* ;
 std::unique_ptr<Expr> Parser::factor() {
     std::unique_ptr<Expr> expr = unary();
     while (match({TokenType::Slash, TokenType::Star, TokenType::Percent})) {
@@ -248,6 +313,8 @@ std::unique_ptr<Expr> Parser::factor() {
     return expr;
 }
 
+// Parses a unary expression.
+// unary -> ( "!" | "-" ) unary | call ;
 std::unique_ptr<Expr> Parser::unary() {
     if (match({TokenType::Bang, TokenType::Minus})) {
         Token op = previous();
@@ -257,6 +324,8 @@ std::unique_ptr<Expr> Parser::unary() {
     return primary();
 }
 
+// Parses a primary expression, which is the highest-precedence expression.
+// primary -> "false" | "true" | INTEGER | FLOAT | STRING | "(" expression ")" | IDENTIFIER ;
 std::unique_ptr<Expr> Parser::primary() {
     if (match({TokenType::False, TokenType::True, TokenType::Integer, TokenType::Float, TokenType::String})) {
         return std::make_unique<LiteralExpr>(previous());
@@ -270,6 +339,9 @@ std::unique_ptr<Expr> Parser::primary() {
 
     if (match({TokenType::Identifier})) {
         Token name = previous();
+        // This is a variable access, but it might be the callee of a function call.
+        // The `call` grammar rule was removed for simplicity in this version,
+        // but a more robust parser would handle it to support `my_func()()`.
         if (match({TokenType::LParen})) {
             std::vector<std::unique_ptr<Expr>> arguments;
             if (!check(TokenType::RParen)) {
@@ -288,6 +360,8 @@ std::unique_ptr<Expr> Parser::primary() {
     throw std::runtime_error("Expect expression.");
 }
 
+// Parses a type expression.
+// type -> IDENTIFIER | "i32" | "bool" | ... ;
 std::unique_ptr<TypeExpr> Parser::type() {
     if (match({TokenType::I32, TokenType::I16, TokenType::I8, TokenType::I2, TokenType::Bool, TokenType::Void, TokenType::T81BigInt, TokenType::T81Float, TokenType::T81Fraction, TokenType::Vector, TokenType::Matrix, TokenType::Tensor, TokenType::Graph, TokenType::Identifier})) {
         return std::make_unique<TypeExpr>(previous());
@@ -296,29 +370,6 @@ std::unique_ptr<TypeExpr> Parser::type() {
     _had_error = true;
     std::cerr << "Parse Error: Expect type name at line " << peek().line << std::endl;
     throw std::runtime_error("Expect type name.");
-}
-
-void Parser::synchronize() {
-    advance();
-
-    while (!is_at_end()) {
-        if (previous().type == TokenType::Semicolon) return;
-
-        switch (peek().type) {
-            case TokenType::Fn:
-            case TokenType::Let:
-            case TokenType::Var:
-            case TokenType::For:
-            case TokenType::If:
-            case TokenType::While:
-            case TokenType::Return:
-                return;
-            default:
-                ; // Do nothing.
-        }
-
-        advance();
-    }
 }
 
 } // namespace frontend

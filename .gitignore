@@ -75,6 +75,7 @@ htmlcov/
 docs/_site/
 docs/build/
 docs/.docusaurus/
+docs/api/
 site/
 _site/
 
