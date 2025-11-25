@@ -35,7 +35,7 @@ jobs:
         run: |
           pip install --quiet \
             mdformat==0.7.18 \
-            mdformat-gfm==0.7.2 \
+            mdformat-gfm==1.0.0 \
             mdformat-frontmatter==2.0.1 \
             mdformat-myst \
             mdformat-toc
@@ -178,9 +178,9 @@ jobs:
       - name: Test
         run: ctest --test-dir build --output-on-failure --verbose
 
-  # Remaining jobs (static-analysis, coverage, sanitizers, thread-sanitizer) 
-  # are unchanged except for minor formatting fixes below:
-
+  ############################################################################
+  # JOB: static-analysis
+  ############################################################################
   static-analysis:
     name: Static Analysis
     needs: spec-and-docs
@@ -201,6 +201,9 @@ jobs:
       - name: Run include-what-you-use
         run: echo "iwyu will be configured here"
 
+  ############################################################################
+  # JOB: coverage
+  ############################################################################
   coverage:
     name: Code Coverage
     needs: spec-and-docs
@@ -219,11 +222,14 @@ jobs:
           lcov --capture --directory . --output-file coverage.info
           lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.filtered.info
       - name: Upload to Codecov
-        uses: codecov/codecov-action@0057852bfaa89a56745cba8c7296529c2fc39830
+        uses: codecov/codecov-action@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           files: coverage.filtered.info
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  ############################################################################
+  # JOB: sanitizers
+  ############################################################################
   sanitizers:
     name: Sanitizers (ASan, LSan, UBSan)
     needs: spec-and-docs
@@ -245,6 +251,9 @@ jobs:
           UBSAN_OPTIONS: print_stacktrace=1
         run: ctest --test-dir build --output-on-failure --verbose
 
+  ############################################################################
+  # JOB: thread-sanitizer
+  ############################################################################
   thread-sanitizer:
     name: Thread Sanitizer (TSan)
     needs: spec-and-docs
