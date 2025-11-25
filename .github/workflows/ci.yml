@@ -63,11 +63,11 @@ jobs:
             mdformat==0.7.18 \
             mdformat-gfm==0.7.2 \
             mdformat-frontmatter==2.0.1 \
-            mdformat-myst \
-            mdformat-toc
+            mdformat-myst \
+            mdformat-toc # This was previously misspelled
 
-     # - name: Check Markdown formatting (mdformat)
-     #   run: mdformat --number .
+      - name: Check Markdown formatting (mdformat)
+        run: mdformat --number .
 
       - name: Check Markdown links (lychee)
         id: lychee
@@ -201,11 +201,12 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake -S . -B build `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} `
-            -DCMAKE_CXX_FLAGS="${{ env.CPP_FLAGS }}" `
+          # Use standard bash backslash (\) for line continuation
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+            -DCMAKE_CXX_FLAGS="${{ env.CPP_FLAGS }}" \
             -G Ninja
         shell: bash
 
@@ -273,9 +274,10 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake -S . -B build `
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo `
-            -DCMAKE_CXX_FLAGS="--coverage" `
+          # Use standard bash backslash (\) for line continuation
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_CXX_FLAGS="--coverage" \
             -G Ninja
         shell: bash
 
@@ -318,11 +320,12 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake -S . -B build `
-            -DCMAKE_BUILD_TYPE=Debug `
-            -DCMAKE_CXX_COMPILER=clang++-18 `
-            -DCMAKE_C_COMPILER=clang-18 `
-            -DCMAKE_CXX_FLAGS="-fsanitize=address,leak,undefined -fno-omit-frame-pointer" `
+          # Use standard bash backslash (\) for line continuation
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_COMPILER=clang++-18 \
+            -DCMAKE_C_COMPILER=clang-18 \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,leak,undefined -fno-omit-frame-pointer" \
             -G Ninja
         shell: bash
 
@@ -358,11 +361,12 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake -S . -B build `
-            -DCMAKE_BUILD_TYPE=Debug `
-            -DCMAKE_CXX_COMPILER=clang++-18 `
-            -DCMAKE_C_COMPILER=clang-18 `
-            -DCMAKE_CXX_FLAGS="-fsanitize=thread" `
+          # Use standard bash backslash (\) for line continuation
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_COMPILER=clang++-18 \
+            -DCMAKE_C_COMPILER=clang-18 \
+            -DCMAKE_CXX_FLAGS="-fsanitize=thread" \
             -G Ninja
         shell: bash
 
