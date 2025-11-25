@@ -237,14 +237,9 @@ std::vector<std::unique_ptr<Stmt>> Parser::block() {
 // Parses an expression statement.
 // expr_stmt -> expression ";" ;
 std::unique_ptr<Stmt> Parser::expression_statement() {
-    try {
-        std::unique_ptr<Expr> expr = expression();
-        consume(TokenType::Semicolon, "Expect ';' after expression.");
-        return std::make_unique<ExpressionStmt>(std::move(expr));
-    } catch (const std::runtime_error& error) {
-        synchronize();
-        return nullptr;
-    }
+    std::unique_ptr<Expr> expr = expression();
+    consume(TokenType::Semicolon, "Expect ';' after expression.");
+    return std::make_unique<ExpressionStmt>(std::move(expr));
 }
 
 // Parses an expression.
