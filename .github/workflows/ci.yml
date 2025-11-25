@@ -59,7 +59,7 @@ jobs:
       - name: Install Python tools
         run: |
           pip install --quiet \
-            mdformat==0.7.18 \
+            mdformat==0.7.22 \
             mdformat-gfm \
             mdformat-frontmatter
 
