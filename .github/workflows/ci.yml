@@ -37,7 +37,6 @@ jobs:
             mdformat \
             mdformat-gfm \
             mdformat-frontmatter \
-            mdformat-myst \
             mdformat-toc
 
       - name: Check Markdown formatting (mdformat)
