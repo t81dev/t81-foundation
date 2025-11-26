@@ -217,6 +217,15 @@ if (T81_BUILD_TESTS)
   add_executable(t81_tisc_binary_emitter_test tests/cpp/tisc_binary_emitter_test.cpp)
   target_link_libraries(t81_tisc_binary_emitter_test PRIVATE t81_tisc)
 
+  add_executable(e2e_let_statement_test tests/cpp/e2e_let_statement_test.cpp)
+  target_link_libraries(e2e_let_statement_test PRIVATE t81_frontend t81_tisc t81_vm)
+
+  add_executable(e2e_arithmetic_test tests/cpp/e2e_arithmetic_test.cpp)
+  target_link_libraries(e2e_arithmetic_test PRIVATE t81_frontend t81_tisc t81_vm)
+
+  add_executable(e2e_if_statement_test tests/cpp/e2e_if_statement_test.cpp)
+  target_link_libraries(e2e_if_statement_test PRIVATE t81_frontend t81_tisc t81_vm)
+
   enable_testing()
   set(T81_TEST_TARGETS
     t81_bigint_test
@@ -263,6 +272,9 @@ if (T81_BUILD_TESTS)
     t81_frontend_parser_legacy_rejection_test
     t81_frontend_ir_generator_test
     t81_tisc_binary_emitter_test
+    e2e_let_statement_test
+    e2e_arithmetic_test
+    e2e_if_statement_test
   )
   foreach(tgt IN LISTS T81_TEST_TARGETS)
     add_test(NAME ${tgt} COMMAND $<TARGET_FILE:${tgt}>)

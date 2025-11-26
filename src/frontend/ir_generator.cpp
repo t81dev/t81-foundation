@@ -4,7 +4,9 @@
 namespace t81 {
 namespace frontend {
 
-tisc::Program IRGenerator::generate(const std::vector<std::unique_ptr<Stmt>>& statements) {
+using namespace t81::tisc::ir;
+
+tisc::ir::IntermediateProgram IRGenerator::generate(const std::vector<std::unique_ptr<Stmt>>& statements) {
     for (const auto& stmt : statements) {
         if (stmt) { // Skip null statements from parse errors
             stmt->accept(*this);
@@ -21,18 +23,18 @@ std::any IRGenerator::visit(const ExpressionStmt& stmt) {
 }
 
 std::any IRGenerator::visit(const VarStmt& stmt) {
-    tisc::Register dest = new_register();
+    Register dest = new_register();
     if (stmt.initializer) {
-        tisc::Register init = std::any_cast<tisc::Register>(stmt.initializer->accept(*this));
-        emit({tisc::Opcode::MOV, {dest, init}});
+        Register init = std::any_cast<Register>(stmt.initializer->accept(*this));
+        emit({Opcode::MOV, {dest, init}});
     }
-    _symbols.define(stmt.name.lexeme, {Symbol::Type::Variable, dest});
+    _symbols.define(stmt.name.lexeme, Symbol{Symbol::Type::Variable, dest});
     return {};
 }
 
 std::any IRGenerator::visit(const LetStmt& stmt) {
-    tisc::Register init = std::any_cast<tisc::Register>(stmt.initializer->accept(*this));
-    _symbols.define(stmt.name.lexeme, {Symbol::Type::Variable, init});
+    Register init = std::any_cast<Register>(stmt.initializer->accept(*this));
+    _symbols.define(stmt.name.lexeme, Symbol{Symbol::Type::Variable, init});
     return {};
 }
 
@@ -47,33 +49,29 @@ std::any IRGenerator::visit(const BlockStmt& stmt) {
 
 std::any IRGenerator::visit(const IfStmt& stmt) {
     if (auto* bin_expr = dynamic_cast<const BinaryExpr*>(stmt.condition.get())) {
-        tisc::Register left = std::any_cast<tisc::Register>(bin_expr->left->accept(*this));
-        tisc::Register right = std::any_cast<tisc::Register>(bin_expr->right->accept(*this));
-        emit({tisc::Opcode::CMP, {left, right}});
+        Register left = std::any_cast<Register>(bin_expr->left->accept(*this));
+        Register right = std::any_cast<Register>(bin_expr->right->accept(*this));
+        emit({Opcode::CMP, {left, right}});
 
-        tisc::Opcode jump_op;
+        Label else_label = new_label();
+        Label end_label = new_label();
+
         switch (bin_expr->op.type) {
             case TokenType::Less:
-                jump_op = tisc::Opcode::JP;
+                emit({Opcode::JP, {else_label}});
+                emit({Opcode::JZ, {else_label}});
                 break;
             case TokenType::EqualEqual:
-                jump_op = tisc::Opcode::JNZ;
+                emit({Opcode::JNZ, {else_label}});
                 break;
             default:
                 throw std::runtime_error("Unsupported comparison operator in if statement.");
         }
 
-        tisc::Label else_label = new_label();
-        tisc::Label end_label = new_label();
-
-        emit({jump_op, {else_label}});
-        if (bin_expr->op.type == TokenType::Less) {
-            emit({tisc::Opcode::JZ, {else_label}});
-        }
         stmt.then_branch->accept(*this);
 
         if (stmt.else_branch) {
-            emit({tisc::Opcode::JMP, {end_label}});
+            emit({Opcode::JMP, {end_label}});
             emit_label(else_label);
             stmt.else_branch->accept(*this);
             emit_label(end_label);
@@ -81,20 +79,20 @@ std::any IRGenerator::visit(const IfStmt& stmt) {
             emit_label(else_label);
         }
     } else {
-        tisc::Register condition = std::any_cast<tisc::Register>(stmt.condition->accept(*this));
+        Register condition = std::any_cast<Register>(stmt.condition->accept(*this));
 
-        tisc::Register zero_reg = new_register();
-        emit({tisc::Opcode::LOADI, {zero_reg, tisc::Immediate{0}}});
-        emit({tisc::Opcode::CMP, {condition, zero_reg}});
+        Register zero_reg = new_register();
+        emit({Opcode::LOADI, {zero_reg, Immediate{0}}});
+        emit({Opcode::CMP, {condition, zero_reg}});
 
-        tisc::Label else_label = new_label();
-        tisc::Label end_label = new_label();
+        Label else_label = new_label();
+        Label end_label = new_label();
 
-        emit({tisc::Opcode::JZ, {else_label}});
+        emit({Opcode::JZ, {else_label}});
         stmt.then_branch->accept(*this);
 
         if (stmt.else_branch) {
-            emit({tisc::Opcode::JMP, {end_label}});
+            emit({Opcode::JMP, {end_label}});
             emit_label(else_label);
             stmt.else_branch->accept(*this);
             emit_label(end_label);
@@ -107,23 +105,23 @@ std::any IRGenerator::visit(const IfStmt& stmt) {
 }
 
 std::any IRGenerator::visit(const WhileStmt& stmt) {
-    tisc::Label start_label = new_label();
-    tisc::Label end_label = new_label();
+    Label start_label = new_label();
+    Label end_label = new_label();
 
     emit_label(start_label);
 
     if (auto* bin_expr = dynamic_cast<const BinaryExpr*>(stmt.condition.get())) {
-        tisc::Register left = std::any_cast<tisc::Register>(bin_expr->left->accept(*this));
-        tisc::Register right = std::any_cast<tisc::Register>(bin_expr->right->accept(*this));
-        emit({tisc::Opcode::CMP, {left, right}});
+        Register left = std::any_cast<Register>(bin_expr->left->accept(*this));
+        Register right = std::any_cast<Register>(bin_expr->right->accept(*this));
+        emit({Opcode::CMP, {left, right}});
 
-        tisc::Opcode jump_op;
+        Opcode jump_op;
         switch (bin_expr->op.type) {
             case TokenType::Less:
-                jump_op = tisc::Opcode::JP;
+                jump_op = Opcode::JP;
                 break;
             case TokenType::EqualEqual:
-                jump_op = tisc::Opcode::JNZ;
+                jump_op = Opcode::JNZ;
                 break;
             default:
                 throw std::runtime_error("Unsupported comparison operator in while statement.");
@@ -131,20 +129,20 @@ std::any IRGenerator::visit(const WhileStmt& stmt) {
 
         emit({jump_op, {end_label}});
         if (bin_expr->op.type == TokenType::Less) {
-            emit({tisc::Opcode::JZ, {end_label}});
+            emit({Opcode::JZ, {end_label}});
         }
     } else {
-        tisc::Register condition = std::any_cast<tisc::Register>(stmt.condition->accept(*this));
+        Register condition = std::any_cast<Register>(stmt.condition->accept(*this));
 
-        tisc::Register zero_reg = new_register();
-        emit({tisc::Opcode::LOADI, {zero_reg, tisc::Immediate{0}}});
-        emit({tisc::Opcode::CMP, {condition, zero_reg}});
+        Register zero_reg = new_register();
+        emit({Opcode::LOADI, {zero_reg, Immediate{0}}});
+        emit({Opcode::CMP, {condition, zero_reg}});
 
-        emit({tisc::Opcode::JZ, {end_label}});
+        emit({Opcode::JZ, {end_label}});
     }
 
     stmt.body->accept(*this);
-    emit({tisc::Opcode::JMP, {start_label}});
+    emit({Opcode::JMP, {start_label}});
 
     emit_label(end_label);
     return {};
@@ -152,41 +150,44 @@ std::any IRGenerator::visit(const WhileStmt& stmt) {
 
 std::any IRGenerator::visit(const ReturnStmt& stmt) {
     if (stmt.value) {
-        tisc::Register retval = std::any_cast<tisc::Register>(stmt.value->accept(*this));
-        emit({tisc::Opcode::MOV, {tisc::Register{0}, retval}});
+        Register retval = std::any_cast<Register>(stmt.value->accept(*this));
+        emit({Opcode::MOV, {Register{0}, retval}});
     }
+    emit({Opcode::HALT, {}});
     return {};
 }
 
 std::any IRGenerator::visit(const FunctionStmt& stmt) {
-    tisc::Label func_label = new_label();
-    _symbols.define(stmt.name.lexeme, {Symbol::Type::Function, func_label});
+    Label func_label = new_label();
+    _symbols.define(stmt.name.lexeme, Symbol{Symbol::Type::Function, func_label});
     emit_label(func_label);
 
     // Prologue
-    tisc::Register frame_pointer = new_register();
-    emit({tisc::Opcode::PUSH, {frame_pointer}});
+    Register frame_pointer = new_register();
+    emit({Opcode::PUSH, {frame_pointer}});
 
     _symbols.enter_scope();
-    std::vector<tisc::Register> param_regs;
+    std::vector<Register> param_regs;
     for (const auto& param : stmt.params) {
-        tisc::Register reg = new_register();
-        _symbols.define(param.name.lexeme, {Symbol::Type::Variable, reg});
+        Register reg = new_register();
+        _symbols.define(param.name.lexeme, Symbol{Symbol::Type::Variable, reg});
         param_regs.push_back(reg);
     }
 
     for (auto it = param_regs.rbegin(); it != param_regs.rend(); ++it) {
-        emit({tisc::Opcode::POP, {*it}});
+        emit({Opcode::POP, {*it}});
     }
 
-    for (const auto& statement : stmt.body) {
-        if (statement) statement->accept(*this);
+    // The body of a function is a single block statement.
+    if (!stmt.body.empty() && stmt.body[0]) {
+        stmt.body[0]->accept(*this);
     }
+
     _symbols.exit_scope();
 
     // Epilogue
-    emit({tisc::Opcode::POP, {frame_pointer}});
-    emit({tisc::Opcode::RET, {}});
+    emit({Opcode::POP, {frame_pointer}});
+    emit({Opcode::RET, {}});
 
     return {};
 }
@@ -194,8 +195,8 @@ std::any IRGenerator::visit(const FunctionStmt& stmt) {
 // --- Expression Visitors ---
 
 std::any IRGenerator::visit(const BinaryExpr& expr) {
-    tisc::Register left = std::any_cast<tisc::Register>(expr.left->accept(*this));
-    tisc::Register right = std::any_cast<tisc::Register>(expr.right->accept(*this));
+    Register left = std::any_cast<Register>(expr.left->accept(*this));
+    Register right = std::any_cast<Register>(expr.right->accept(*this));
 
     switch (expr.op.type) {
         case TokenType::Plus:
@@ -203,13 +204,13 @@ std::any IRGenerator::visit(const BinaryExpr& expr) {
         case TokenType::Star:
         case TokenType::Slash:
         case TokenType::Percent: {
-            tisc::Register dest = new_register();
-            tisc::Opcode op;
-            if (expr.op.type == TokenType::Plus) op = tisc::Opcode::ADD;
-            else if (expr.op.type == TokenType::Minus) op = tisc::Opcode::SUB;
-            else if (expr.op.type == TokenType::Star) op = tisc::Opcode::MUL;
-            else if (expr.op.type == TokenType::Slash) op = tisc::Opcode::DIV;
-            else op = tisc::Opcode::MOD;
+            Register dest = new_register();
+            Opcode op;
+            if (expr.op.type == TokenType::Plus) op = Opcode::ADD;
+            else if (expr.op.type == TokenType::Minus) op = Opcode::SUB;
+            else if (expr.op.type == TokenType::Star) op = Opcode::MUL;
+            else if (expr.op.type == TokenType::Slash) op = Opcode::DIV;
+            else op = Opcode::MOD;
             emit({op, {dest, left, right}});
             return dest;
         }
@@ -220,26 +221,26 @@ std::any IRGenerator::visit(const BinaryExpr& expr) {
 }
 
 std::any IRGenerator::visit(const UnaryExpr& expr) {
-    tisc::Register right = std::any_cast<tisc::Register>(expr.right->accept(*this));
-    tisc::Register dest = new_register();
+    Register right = std::any_cast<Register>(expr.right->accept(*this));
+    Register dest = new_register();
     if (expr.op.type == TokenType::Minus) {
-        emit({tisc::Opcode::NEG, {dest, right}});
+        emit({Opcode::NEG, {dest, right}});
     }
     return dest;
 }
 
 std::any IRGenerator::visit(const LiteralExpr& expr) {
-    tisc::Register dest = new_register();
+    Register dest = new_register();
     switch (expr.value.type) {
         case TokenType::Integer: {
             long long value = std::stoll(std::string(expr.value.lexeme));
-            emit({tisc::Opcode::LOADI, {dest, tisc::Immediate{value}}});
+            emit({Opcode::LOADI, {dest, Immediate{value}}});
             break;
         }
         case TokenType::Float: {
             // TISC IR does not have a float type, so we will treat it as an integer for now.
             long long value = std::stoll(std::string(expr.value.lexeme));
-            emit({tisc::Opcode::LOADI, {dest, tisc::Immediate{value}}});
+            emit({Opcode::LOADI, {dest, Immediate{value}}});
             break;
         }
         default:
@@ -255,7 +256,7 @@ std::any IRGenerator::visit(const GroupingExpr& expr) {
 std::any IRGenerator::visit(const VariableExpr& expr) {
     if (auto symbol = _symbols.lookup(expr.name.lexeme)) {
         if (symbol->type == Symbol::Type::Variable) {
-            return std::get<tisc::Register>(symbol->location);
+            return std::get<Register>(symbol.value().location);
         } else {
             return std::string(expr.name.lexeme);
         }
@@ -271,10 +272,10 @@ std::any IRGenerator::visit(const CallExpr& expr) {
         throw std::runtime_error("Unsupported callee type in IR generator.");
     }
 
-    tisc::Label func_label;
+    Label func_label;
     if (auto symbol = _symbols.lookup(func_name)) {
         if (symbol->type == Symbol::Type::Function) {
-            func_label = std::get<tisc::Label>(symbol->location);
+            func_label = std::get<Label>(symbol.value().location);
         } else {
             throw std::runtime_error("Cannot call a non-function.");
         }
@@ -283,23 +284,23 @@ std::any IRGenerator::visit(const CallExpr& expr) {
     }
 
     for (const auto& arg : expr.arguments) {
-        tisc::Register arg_reg = std::any_cast<tisc::Register>(arg->accept(*this));
-        emit({tisc::Opcode::PUSH, {arg_reg}});
+        Register arg_reg = std::any_cast<Register>(arg->accept(*this));
+        emit({Opcode::PUSH, {arg_reg}});
     }
 
-    tisc::Register dest = new_register();
-    emit({tisc::Opcode::CALL, {func_label}});
-    emit({tisc::Opcode::MOV, {dest, tisc::Register{0}}});
+    Register dest = new_register();
+    emit({Opcode::CALL, {func_label}});
+    emit({Opcode::MOV, {dest, Register{0}}});
 
     return dest;
 }
 
 std::any IRGenerator::visit(const AssignExpr& expr) {
-    tisc::Register value = std::any_cast<tisc::Register>(expr.value->accept(*this));
+    Register value = std::any_cast<Register>(expr.value->accept(*this));
     if (auto symbol = _symbols.lookup(expr.name.lexeme)) {
         if (symbol->type == Symbol::Type::Variable) {
-            auto reg = std::get<tisc::Register>(symbol->location);
-            emit({tisc::Opcode::MOV, {reg, value}});
+            auto reg = std::get<Register>(symbol.value().location);
+            emit({Opcode::MOV, {reg, value}});
             return reg;
         }
     }
@@ -318,20 +319,20 @@ std::any IRGenerator::visit(const GenericTypeExpr& expr) {
 
 // --- Helper Methods ---
 
-void IRGenerator::emit(tisc::Instruction instr) {
+void IRGenerator::emit(Instruction instr) {
     _program.add_instruction(std::move(instr));
 }
 
-void IRGenerator::emit_label(tisc::Label label) {
-    emit({tisc::Opcode::LABEL, {label}});
+void IRGenerator::emit_label(Label label) {
+    emit({Opcode::LABEL, {label}});
 }
 
-tisc::Register IRGenerator::new_register() {
-    return tisc::Register{_register_count++};
+Register IRGenerator::new_register() {
+    return Register{_register_count++};
 }
 
-tisc::Label IRGenerator::new_label() {
-    return tisc::Label{_label_count++};
+Label IRGenerator::new_label() {
+    return Label{_label_count++};
 }
 
 } // namespace frontend

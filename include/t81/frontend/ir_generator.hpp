@@ -21,9 +21,9 @@ public:
     /**
      * @brief Generates a TISC program from a sequence of AST statements.
      * @param statements The top-level statements of the program from the parser.
-     * @return A tisc::Program containing the generated IR.
+     * @return A tisc::ir::IntermediateProgram containing the generated IR.
      */
-    tisc::Program generate(const std::vector<std::unique_ptr<Stmt>>& statements);
+    tisc::ir::IntermediateProgram generate(const std::vector<std::unique_ptr<Stmt>>& statements);
 
 private:
     std::any visit(const ExpressionStmt& stmt) override;
@@ -45,12 +45,12 @@ private:
     std::any visit(const SimpleTypeExpr& expr) override;
     std::any visit(const GenericTypeExpr& expr) override;
 
-    void emit(tisc::Instruction instr);
-    void emit_label(tisc::Label label);
-    tisc::Register new_register();
-    tisc::Label new_label();
+    void emit(tisc::ir::Instruction instr);
+    void emit_label(tisc::ir::Label label);
+    tisc::ir::Register new_register();
+    tisc::ir::Label new_label();
 
-    tisc::Program _program;
+    tisc::ir::IntermediateProgram _program;
     SymbolTable _symbols;
     int _register_count = 0;
     int _label_count = 0;
