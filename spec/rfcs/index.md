@@ -115,7 +115,7 @@ foundation above:
 
 These RFCs capture long-term or high-concept ideas that may graduate into standards.
 
-- **RFC-0100 — Symbolic Reasoning Optimizer**  
+- **RFC-00100 — Symbolic Reasoning Optimizer**
 - **RFC-0101 — Deterministic Parallel Tensor Engine**  
 - **RFC-0102 — Tier-5 Reflective Metacognition**  
 - **RFC-0103 — Verified Transformations for T81Lang**  

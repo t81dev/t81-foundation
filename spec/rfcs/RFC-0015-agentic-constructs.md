@@ -29,12 +29,11 @@ This RFC introduces a new way to organize your AI code: the `agent`. You can thi
 
 Instead of having loose functions and variables, you can group them together. An agent has a name and a set of named `behaviors`, which are like methods.
 
-Here is the example from the original proposal, which now becomes possible with this RFC:
+Here is a corrected example, using only syntax defined in the preceding RFCs:
 
 ```t81
 agent SimpleNet {
   // This is a behavior named "infer"
-  @neural(layer=2) @tier(3)
   behavior infer(input: TernaryTensor[Trit, 784]) -> TernaryTensor[Trit, 10] {
     let weights = quantize([0.5t81, -0.3t81, ...] as TernaryTensor[Trit, 784, 10]);
     return input ** weights;  // Ternary matmul
@@ -42,9 +41,15 @@ agent SimpleNet {
 }
 
 fn main() {
-  let img = tensor[1t81, 0t81, ...];
-  // You call an agent's behavior like this:
+  // Create a valid TernaryTensor using the 'quantize' expression
+  let img = quantize([1t81, 0t81, ...] as TernaryTensor[Trit, 784]);
+
+  // You can call an agent's behavior directly:
   let output = SimpleNet.infer(img);
+
+  // Or use the 'infer' keyword as syntactic sugar:
+  let output_sugar = infer SimpleNet(img) -> TernaryTensor[Trit, 10];
+
   print(quantize(output));
 }
 ```
@@ -59,26 +64,41 @@ The following changes would be made to the `t81lang-spec.md` upon acceptance of 
 
 ### A. Grammar (`§1 Core Grammar`)
 
-The `program` and `factor` productions will be updated, and new `agent` and `behavior` productions will be added.
+The `program` and `primary` productions will be updated, and new `agent` and `behavior` productions will be added. To make this RFC self-contained, the definition for `parameters` is also included.
 
 ```ebnf
 program       ::= { function | agent | declaration }*  // New: agent
 
 agent         ::= "agent" identifier "{" behavior* "}"
 behavior      ::= "behavior" identifier "(" parameters ")" "->" type block
+parameters    ::= [ parameter { "," parameter } ]
+parameter     ::= identifier ":" type
 
-factor        ::= literal
+primary       ::= literal
                 | identifier
                 | fn_call
+                | paren_expr
+                | quantize_expr
+                | infer_expr
                 | agent_call     // New
-                | ... (omitted)
 
 agent_call    ::= identifier "." identifier "(" [ expr { "," expr } ] ")"
 ```
+This grammar is consistent with the hierarchy from `RFC-0014`.
 
-The `agent_call` syntax provides a clear and unambiguous way to invoke a specific behavior on an agent.
+### B. Relationship Between `infer` and `agent_call`
 
-### B. Compilation Pipeline (`§5 Compilation Pipeline`)
+The `infer` expression from `RFC-0014` and the `agent_call` expression are explicitly linked to provide ergonomic syntax for the most common agent operation.
+
+The `infer` expression:
+`infer AgentName(input) -> ReturnType`
+
+is defined as **syntactic sugar** for the canonical `agent_call`:
+`AgentName.infer(input)`
+
+The compiler MUST treat these two forms as semantically identical. The `infer` keyword is only permitted with an agent that has a behavior explicitly named `infer`. Any other use is a compile-time error. This provides a clean, high-level syntax for the primary purpose of an agent (inference) while preserving the general-purpose `agent_call` for other behaviors (e.g., `MyAgent.train(...)` or `MyAgent.reset(...)`).
+
+### C. Compilation Pipeline (`§5 Compilation Pipeline`)
 
 #### Name Resolution (`§4`)
 
@@ -93,9 +113,9 @@ A new row will be added to the lowering table:
 | --- | --- |
 | Agent behavior call | `AGENT_INVOKE`, tier-checked recursion |
 
-The `AGENT_INVOKE` opcode is a new TISC instruction that is a specialized version of `CALL`. It includes metadata about the agent and behavior being invoked, which is visible to Axion for tier-checking and policy enforcement.
+The `AGENT_INVOKE` opcode is a new TISC instruction that is a specialized version of `CALL`. It includes metadata about the agent and behavior being invoked, which is visible to Axion for tier-checking and policy enforcement. The `infer` syntactic sugar will be desugared into a standard `agent_call` in the AST and will also lower to `AGENT_INVOKE`.
 
-### C. Axion Integration (`§7 Axion Integration`)
+### D. Axion Integration (`§7 Axion Integration`)
 
 -   Agents become a primary subject for Axion policies. Axion can observe `AGENT_INVOKE` calls to:
     -   Veto calls that would exceed the maximum recursion depth for a given cognitive tier.
