@@ -144,12 +144,30 @@ public:
   // Convert to int64_t when representable; throws on overflow.
   std::int64_t to_int64() const {
     if (sign_ == Sign::Zero) return 0;
-    __int128 acc = 0;
+
+    uint64_t magnitude = 0;
+    const uint64_t positive_limit = static_cast<uint64_t>(INT64_MAX);
+    const uint64_t negative_limit = static_cast<uint64_t>(INT64_MAX) + 1;
+    const uint64_t limit = (sign_ == Sign::Pos) ? positive_limit : negative_limit;
+
     for (int i = static_cast<int>(d_.size()) - 1; i >= 0; --i) {
-      acc = acc * static_cast<__int128>(kRadix) + static_cast<__int128>(d_[static_cast<size_t>(i)]);
-      if (acc > static_cast<__int128>(INT64_MAX)) throw std::overflow_error("T81BigInt too large for int64_t");
+      const uint8_t digit = d_[static_cast<size_t>(i)];
+
+      // Check for overflow before multiplication and addition
+      if (magnitude > (limit - digit) / kRadix) {
+        throw std::overflow_error("T81BigInt too large for int64_t");
+      }
+      magnitude = magnitude * kRadix + digit;
     }
-    return (sign_ == Sign::Neg) ? -static_cast<std::int64_t>(acc) : static_cast<std::int64_t>(acc);
+
+    if (sign_ == Sign::Pos) {
+      return static_cast<int64_t>(magnitude);
+    } else { // sign_ == Sign::Neg
+      if (magnitude == negative_limit) {
+        return INT64_MIN;
+      }
+      return -static_cast<int64_t>(magnitude);
+    }
   }
 
   // --- arithmetic ---
@@ -205,6 +223,34 @@ public:
       b = std::move(r);
     }
     return a;
+  }
+
+  static T81BigInt pow(const T81BigInt& base, const T81BigInt& exp) {
+    if (exp.is_negative()) {
+      throw std::domain_error("BigInt pow: negative exponent");
+    }
+    if (is_zero(exp)) return one();
+    if (is_zero(base)) return zero();
+
+    T81BigInt result = one();
+    T81BigInt b = abs(base);
+    T81BigInt e = exp;
+    const T81BigInt two(2);
+
+    while (e > zero()) {
+      if (!is_zero(mod(e, two))) { // if e is odd
+        result = mul(result, b);
+      }
+      b = mul(b, b);
+      T81BigInt q, r;
+      divmod_nonneg_(e, two, q, r);
+      e = q;
+    }
+
+    if (base.is_negative() && !is_zero(mod(exp, two))) { // if base is negative and exp is odd
+      return neg(result);
+    }
+    return result;
   }
 
   // Exact division (a / b) when remainder is zero. Throws otherwise.
