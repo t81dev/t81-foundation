@@ -87,6 +87,10 @@ Defines the declarative DSL that encodes recursion/shape/opcode policies enforce
 
 Introduces AI-native types (`Trit`, `TernaryTensor`) and a `quantize` expression for efficient, deterministic handling of neural network weights.
 
+### [RFC-0013 — Ternary Matrix Multiply (`**`) and Trit-Packed Lowering](RFC-0013-ternary-matmul.md)
+
+Proposes the `**` operator for efficient, ternary-native matrix multiplication on `TernaryTensor` types.
+
 ---
 
 # 2. Upcoming RFCs (Planned)
