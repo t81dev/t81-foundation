@@ -2,6 +2,7 @@
 #define T81_TISC_BINARY_EMITTER_HPP
 
 #include "t81/tisc/ir.hpp"
+#include "t81/tisc/program.hpp"
 #include <vector>
 #include <cstdint>
 
@@ -10,7 +11,7 @@ namespace tisc {
 
 class BinaryEmitter {
 public:
-    std::vector<uint8_t> emit(const Program& program);
+    Program emit(const ir::IntermediateProgram& program);
 };
 
 } // namespace tisc

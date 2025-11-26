@@ -7,6 +7,7 @@
 
 namespace t81 {
 namespace tisc {
+namespace ir {
 
 enum class Opcode {
     // Arithmetic
@@ -56,7 +57,7 @@ struct Instruction {
     std::vector<Operand> operands;
 };
 
-class Program {
+class IntermediateProgram {
 public:
     void add_instruction(Instruction instr) {
         _instructions.push_back(std::move(instr));
@@ -70,6 +71,7 @@ private:
     std::vector<Instruction> _instructions;
 };
 
+} // namespace ir
 } // namespace tisc
 } // namespace t81
 

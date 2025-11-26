@@ -7,7 +7,7 @@
 namespace t81 {
 namespace tisc {
 
-std::string pretty_print(const Program& program);
+std::string pretty_print(const ir::IntermediateProgram& program);
 
 } // namespace tisc
 } // namespace t81
