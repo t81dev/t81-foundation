@@ -426,9 +426,19 @@ std::shared_ptr<Expr> parse_numeric_literal(Lexer& lex, ParseError& err) {
   value.kind = LiteralValue::Kind::Int;
   value.text = std::string(lex.src.substr(start, lex.pos - start));
   std::string_view digits = lex.src.substr(digits_start, digits_end - digits_start);
-  std::optional<std::int64_t> parsed = has_base_suffix
-      ? parse_base81_value(digits, negative)
-      : parse_decimal_value(digits, negative);
+  bool all_decimal = true;
+  for (char c : digits) {
+    if (!is_decimal_digit(c)) {
+      all_decimal = false;
+      break;
+    }
+  }
+  std::optional<std::int64_t> parsed;
+  if (has_base_suffix && !all_decimal) {
+    parsed = parse_base81_value(digits, negative);
+  } else {
+    parsed = parse_decimal_value(digits, negative);
+  }
   if (!parsed) {
     lex.pos = start;
     err = ParseError::InvalidLiteral;
