@@ -55,19 +55,26 @@ The following changes would be made to the `t81lang-spec.md` upon acceptance of 
 
 ### A. Grammar (`§1 Core Grammar`)
 
-The `factor` production in the grammar will be modified to include `matmul_expr`, and a new `matmul_expr` production will be added. The `**` operator will have a higher precedence than `*`, `/`, and `%`.
+To formally define the precedence of the `**` operator, a new `matmul_expr` production will be introduced into the expression hierarchy. `**` will have a higher precedence than multiplicative operators (`*`, `/`, `%`) but lower precedence than unary operators.
+
+The updated expression grammar is as follows:
 
 ```ebnf
-term             ::= factor { ("*" | "/" | "%") factor }
-factor           ::= unary { "**" unary }*   // Modified to use unary as base
-unary            ::= literal
+expr             ::= ... // (omitted for brevity)
+additive_expr    ::= term { ("+" | "-") term }*
+term             ::= matmul_expr { ("*" | "/" | "%") matmul_expr }*
+matmul_expr      ::= unary { "**" unary }*
+unary            ::= ("!" | "-") unary
+                   | primary
+
+primary          ::= literal
                    | identifier
                    | fn_call
-                   | unary_op unary
                    | paren_expr
                    | quantize_expr
 ```
-*(Note: A more complete grammar refactoring would place `**` in its own precedence level between `factor` and `unary`, but for this simplified grammar, this illustrates the intended precedence.)*
+
+This structure unambiguously defines the operator precedence.
 
 ### B. Compilation Pipeline (`§5 Compilation Pipeline`)
 
