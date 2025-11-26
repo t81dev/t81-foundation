@@ -1,6 +1,13 @@
 [tool.mdformat]
-# Globs relative to repo root
-exclude = [
-  "legacy/**",
-  "pdf/output/**",
+extensions = [
+  "gfm",
+  "frontmatter",
 ]
+
+exclude = [
+  "build/",
+  "legacy/",
+]
+
+[tool.mdformat.number]
+enable = true
