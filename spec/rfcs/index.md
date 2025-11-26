@@ -83,6 +83,18 @@ Describes the canonical trace format, reference replayer, and SMT interface used
 
 Defines the declarative DSL that encodes recursion/shape/opcode policies enforced by Axion at runtime.
 
+### [RFC-0012 — TernaryTensor Type and Balanced-Trit Quantization](RFC-0012-ternary-tensor-quantization.md)
+
+Introduces AI-native types (`Trit`, `TernaryTensor`) and a `quantize` expression for efficient, deterministic handling of neural network weights.
+
+### [RFC-0013 — Ternary Matrix Multiply (`**`) and Trit-Packed Lowering](RFC-0013-ternary-matmul.md)
+
+Proposes the `**` operator for efficient, ternary-native matrix multiplication on `TernaryTensor` types.
+
+### [RFC-0014 — Neural Forward and Training Primitives](RFC-0014-neural-primitives.md)
+
+Introduces high-level `train` and `infer` statements for safe, deterministic, and optimizable neural network operations.
+
 ---
 
 # 2. Upcoming RFCs (Planned)
