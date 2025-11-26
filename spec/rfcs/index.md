@@ -91,6 +91,10 @@ Introduces AI-native types (`Trit`, `TernaryTensor`) and a `quantize` expression
 
 Proposes the `**` operator for efficient, ternary-native matrix multiplication on `TernaryTensor` types.
 
+### [RFC-0014 — Neural Forward and Training Primitives](RFC-0014-neural-primitives.md)
+
+Introduces high-level `train` and `infer` statements for safe, deterministic, and optimizable neural network operations.
+
 ---
 
 # 2. Upcoming RFCs (Planned)
