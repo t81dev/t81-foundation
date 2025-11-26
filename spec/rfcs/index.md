@@ -95,6 +95,10 @@ Proposes the `**` operator for efficient, ternary-native matrix multiplication o
 
 Introduces high-level `train` and `infer` statements for safe, deterministic, and optimizable neural network operations.
 
+### [RFC-0015 — First-Class Agents and Tiered Recursive Cognition](RFC-0015-agentic-constructs.md)
+
+Proposes the `agent` construct for encapsulating state and behaviors, enabling tiered cognition and recursive AI systems.
+
 ---
 
 # 2. Upcoming RFCs (Planned)
@@ -111,7 +115,7 @@ foundation above:
 
 These RFCs capture long-term or high-concept ideas that may graduate into standards.
 
-- **RFC-0100 — Symbolic Reasoning Optimizer**  
+- **RFC-00100 — Symbolic Reasoning Optimizer**
 - **RFC-0101 — Deterministic Parallel Tensor Engine**  
 - **RFC-0102 — Tier-5 Reflective Metacognition**  
 - **RFC-0103 — Verified Transformations for T81Lang**  

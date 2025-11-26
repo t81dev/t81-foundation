@@ -55,7 +55,7 @@ The following changes would be made to the `t81lang-spec.md` upon acceptance of 
 
 ### A. Grammar (`§1 Core Grammar`)
 
-The `statement` production will be extended to include `train_stmt`. The `factor` production will be extended to include the new `infer_expr`.
+The `statement` production will be extended to include `train_stmt`. The `primary` production from `RFC-0013` will be extended to include the new `infer_expr`.
 
 ```ebnf
 statement     ::= let_decl
@@ -68,19 +68,17 @@ statement     ::= let_decl
 
 train_stmt  ::= "train" identifier "(" [ expr { "," expr } ] ")" block
 
-factor        ::= literal
+primary       ::= literal
                 | identifier
                 | fn_call
-                | infer_expr   // New
-                | unary_op factor
                 | paren_expr
-                | matmul_expr
                 | quantize_expr
+                | infer_expr   // New
 
 infer_expr    ::= "infer" identifier "(" expr ")" "->" type
 ```
 
-The `train_stmt` grammar is now consistent with other block statements like `if_stmt` and `loop_stmt`, which do not have a trailing semicolon.
+This grammar is now fully consistent with the expression hierarchy defined in `RFC-0013`.
 
 ### B. Purity and Effects (`§3 Purity and Effects`)
 
@@ -118,6 +116,7 @@ The `TNEURAL_FWD` and `TNEURAL_BWD` opcodes are new, high-level TISC instruction
 # Rationale and alternatives
 
 -   **Why not use functions like `train(...)` and `infer(...)`?** Standard function calls do not provide the same level of compiler and Axion visibility. A dedicated `infer` expression and `train` statement allow for special purity rules (`infer` is pure, `train` is effectful) and unique control flow (a `train` *block*). This distinction is fundamental to the safety and optimization goals of T81Lang.
+-   **Grammar Consistency:** The `train_stmt` grammar intentionally omits the trailing semicolon that was present in the original proposal. This is to ensure that its syntax is consistent with other block-based statements in the language, such as `if_stmt` and `loop_stmt`, which do not have a semicolon after the closing brace. This makes the language grammar more regular and easier to parse.
 
 # Future Possibilities
 
