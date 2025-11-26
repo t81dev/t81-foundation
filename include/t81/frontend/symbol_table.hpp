@@ -15,7 +15,7 @@ namespace frontend {
 struct Symbol {
     enum class Type { Variable, Function };
     Type type;
-    std::variant<tisc::Register, tisc::Label> location;
+    std::variant<tisc::ir::Register, tisc::ir::Label> location;
 };
 
 class SymbolTable {

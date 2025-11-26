@@ -4,6 +4,8 @@
 namespace t81 {
 namespace tisc {
 
+using namespace ir;
+
 namespace {
 
 std::string opcode_to_string(Opcode opcode) {
@@ -44,7 +46,7 @@ std::string operand_to_string(const Operand& op) {
 
 } // namespace
 
-std::string pretty_print(const Program& program) {
+std::string pretty_print(const ir::IntermediateProgram& program) {
     std::stringstream ss;
     for (const auto& instr : program.instructions()) {
         if (instr.opcode == Opcode::LABEL) {
