@@ -53,25 +53,21 @@ std::any IRGenerator::visit(const IfStmt& stmt) {
         Register right = std::any_cast<Register>(bin_expr->right->accept(*this));
         emit({Opcode::CMP, {left, right}});
 
-        Opcode jump_op;
+        Label else_label = new_label();
+        Label end_label = new_label();
+
         switch (bin_expr->op.type) {
             case TokenType::Less:
-                jump_op = Opcode::JP;
+                emit({Opcode::JP, {else_label}});
+                emit({Opcode::JZ, {else_label}});
                 break;
             case TokenType::EqualEqual:
-                jump_op = Opcode::JNZ;
+                emit({Opcode::JNZ, {else_label}});
                 break;
             default:
                 throw std::runtime_error("Unsupported comparison operator in if statement.");
         }
 
-        Label else_label = new_label();
-        Label end_label = new_label();
-
-        emit({jump_op, {else_label}});
-        if (bin_expr->op.type == TokenType::Less) {
-            emit({Opcode::JZ, {else_label}});
-        }
         stmt.then_branch->accept(*this);
 
         if (stmt.else_branch) {
