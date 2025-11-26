@@ -194,8 +194,6 @@ jobs:
           echo "clang-tidy will be configured here"
       - name: Run cppcheck
         run: echo "cppcheck will be configured here"
-      - name: Run include-what-you-use
-        run: echo "iwyu will be configured here"
 
   ############################################################################
   # JOB: coverage
