@@ -35,10 +35,10 @@ jobs:
         run: |
           pip install --quiet \
             mdformat==0.7.18 \
-            mdformat-gfm==1.0.0 \
+            mdformat-gfm==0.3.7 \
             mdformat-frontmatter==2.0.1 \
-            mdformat-myst \
-            mdformat-toc
+            mdformat-myst==0.7.1 \
+            mdformat-toc==0.7.0
 
       - name: Check Markdown formatting (mdformat)
         run: mdformat --number --check .
