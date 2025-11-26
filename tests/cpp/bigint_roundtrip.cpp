@@ -134,6 +134,45 @@ static void test_base81_roundtrip() {
     assert(threw);
 }
 
+static void test_pow_basic_cases() {
+    auto make = [](long long x) { return T81BigInt(x); };
+
+    struct Case {
+        long long base;
+        long long exp;
+        long long expected;
+    };
+
+    const std::vector<Case> cases = {
+        { 2, 3, 8 },
+        { -2, 3, -8 },
+        { 2, 4, 16 },
+        { -2, 4, 16 },
+        { 5, 0, 1 },
+        { -5, 0, 1 },
+        { 5, 1, 5 },
+        { -5, 1, -5 },
+        { 0, 5, 0 },
+        { 3, 5, 243 },
+    };
+
+    for (auto c : cases) {
+        T81BigInt base = make(c.base);
+        T81BigInt exp = make(c.exp);
+        T81BigInt expected = make(c.expected);
+        T81BigInt result = T81BigInt::pow(base, exp);
+        assert(result == expected);
+    }
+
+    bool threw = false;
+    try {
+        (void)T81BigInt::pow(make(2), make(-3));
+    } catch (const std::domain_error&) {
+        threw = true;
+    }
+    assert(threw);
+}
+
 int main() {
     // existing tests...
     // test_existing_roundtrip();
@@ -141,6 +180,7 @@ int main() {
     test_divmod_basic_cases();
     test_gcd_basic_cases();
     test_base81_roundtrip();
+    test_pow_basic_cases();
 
     return 0;
 }
