@@ -90,6 +90,9 @@ For a detailed breakdown of the current implementation status, see the [**System
 
 ______________________________________________________________________
 
+<!-- T81-BENCHMARKS-START -->
+<!-- T81-BENCHMARKS-END -->
+
 ## Repository Layout
 
 ```

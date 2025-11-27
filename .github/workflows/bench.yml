@@ -1,0 +1,74 @@
+name: TCB-Core Benchmarks
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -march=native"
+
+    - name: Build Benchmarks
+      run: cmake --build build --target benchmark_runner
+
+    - name: Run Benchmarks
+      run: ./build/benchmarks/benchmark_runner
+
+    - name: Create Badge Directory
+      run: mkdir -p .github/badges
+
+    - name: Generate Badge JSON
+      run: |
+        echo '{
+          "schemaVersion": 1,
+          "label": "TCB-Core v0.1",
+          "message": "Passing",
+          "color": "green"
+        }' > .github/badges/tcb-core.json
+
+    - name: Update README
+      run: |
+        awk '/^| Benchmark/,/^$/' docs/benchmarks.md > table.md
+
+        # Create a replacement block
+        {
+            echo "<!-- T81-BENCHMARKS-START -->"
+            echo ""
+            echo '![TCB-Core v0.1](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/t81dev/t81-foundation/main/.github/badges/tcb-core.json)'
+            echo ""
+            cat table.md
+            echo ""
+            echo "<!-- T81-BENCHMARKS-END -->"
+        } > replacement.md
+
+        # Use a temp file to avoid issues with sed's in-place editing on different OSes
+        tmp=$(mktemp)
+        awk -v r="replacement.md" '
+          /<!-- T81-BENCHMARKS-START -->/ { f=1; print; system("cat " r); next }
+          /<!-- T81-BENCHMARKS-END -->/ { f=0; print; next }
+          !f { print }
+        ' README.md > "$tmp" && mv "$tmp" README.md
+
+    - name: Commit and Push Changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add README.md .github/badges/tcb-core.json
+        if git diff --staged --quiet; then
+          echo "No changes to commit."
+        else
+          git commit -m "docs(bench): Update TCB-Core v0.1 results in README"
+          git push
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
