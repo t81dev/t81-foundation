@@ -56,14 +56,19 @@ public:
             }
 
             std::stringstream ss;
-            if (run.counters.empty()) {
-                double gops = (run.items_per_second > 0) ? run.items_per_second / 1e9 : 0.0;
+            auto items_it = run.counters.find("items_per_second");
+            if (items_it != run.counters.end()) {
+                double items_per_second = items_it->second;
+                double gops = (items_per_second > 0) ? items_per_second / 1e9 : 0.0;
                 ss << std::fixed << std::setprecision(2) << gops << " Gops/s";
                 if(is_t81) final_results[family].t81_result_val = gops;
                 else final_results[family].binary_result_val = gops;
             } else {
+                bool first = true;
                 for (auto const& [key, val] : run.counters) {
+                    if (!first) ss << ", ";
                     ss << key << ": " << std::fixed << std::setprecision(2) << val;
+                    first = false;
                 }
             }
 
