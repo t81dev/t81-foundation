@@ -36,6 +36,27 @@ The examples are built by default and can be found in the `build/` directory.
 
 ______________________________________________________________________
 
+### "Hello Ternary" Example
+
+Here is a simple example of how to use the `T81Int` class:
+
+```cpp
+#include <t81/core/T81Int.hpp>
+#include <iostream>
+
+int main() {
+    using namespace t81::core;
+    T81Int<8> a{5};  // Decimal 5 in ternary
+    T81Int<8> b{-3}; // Decimal -3
+    auto sum = a + b; // Should be 2
+    std::cout << "Sum (decimal): " << sum.to_binary<int64_t>() << std::endl;
+    std::cout << "Sum (ternary): " << sum.str() << std::endl; // e.g., "+0+--"
+    return 0;
+}
+```
+
+______________________________________________________________________
+
 ### 3. Generate API Documentation
 
 The project is fully documented with Doxygen. To generate a browsable HTML API reference, run the `docs` target.
@@ -52,6 +73,7 @@ ______________________________________________________________________
 
 While the umbrella header (`t81/t81.hpp`) is convenient, these are the most common headers for direct inclusion:
 
+- `t81/core/T81Int.hpp` — `T81Int` class
 - `t81/core/bigint.hpp` — `BigInt` class
 - `t81/core/fraction.hpp` — `Fraction` class
 - `t81/core/tensor.hpp` — `Tensor` struct

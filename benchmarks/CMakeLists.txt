@@ -4,7 +4,7 @@ include(FetchContent)
 FetchContent_Declare(
     googlebenchmark
     URL https://github.com/google/benchmark/archive/v1.8.3.tar.gz
-    URL_HASH SHA256=ab8c3fe6d6d7d03b5f7a95c4d5d7f8b6f3c3e9c8f0f5a5d2b69e1f583b2a8f0b
+    URL_HASH SHA256=6bc180a57d23d4d9515519f92b0c83d61b05b5bab188961f36ac7b06b0d9e9ce
 )
 set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
