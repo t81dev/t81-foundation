@@ -10,6 +10,7 @@
 #include <string>
 #include <stdexcept>
 #include <limits>
+#include <compare>
 
 namespace t81::core {
 
@@ -32,6 +33,9 @@ T81Int<N> operator-(const T81Int<N>& lhs, const T81Int<N>& rhs);
 template <size_t N>
 T81Int<N> operator*(const T81Int<N>& lhs, const T81Int<N>& rhs);
 
+template <size_t N>
+std::pair<T81Int<N>, T81Int<N>> div_mod(const T81Int<N>& dividend, const T81Int<N>& divisor);
+
 /**
  * @class T81Int
  * @brief Represents a fixed-precision, balanced ternary integer.
@@ -47,6 +51,7 @@ class T81Int {
   friend T81Int<N> operator+<>(const T81Int<N>& lhs, const T81Int<N>& rhs);
   friend T81Int<N> operator-<>(const T81Int<N>& lhs, const T81Int<N>& rhs);
   friend T81Int<N> operator*<>(const T81Int<N>& lhs, const T81Int<N>& rhs);
+  friend std::pair<T81Int<N>, T81Int<N>> div_mod<>(const T81Int<N>& dividend, const T81Int<N>& divisor);
 
  public:
   /**
@@ -111,6 +116,51 @@ class T81Int {
     }
 
     return static_cast<T>(result);
+  }
+
+  /**
+   * @brief Defaulted equality operator.
+   */
+  bool operator==(const T81Int<N>& other) const noexcept = default;
+
+  /**
+   * @brief Three-way comparison operator.
+   */
+  auto operator<=>(const T81Int<N>& other) const noexcept {
+    for (size_t i = N; i-- > 0;) {
+      Trit self_trit = get_trit(i);
+      Trit other_trit = other.get_trit(i);
+      if (self_trit != other_trit) {
+        return static_cast<int8_t>(self_trit) <=> static_cast<int8_t>(other_trit);
+      }
+    }
+    return std::strong_ordering::equal;
+  }
+
+  /**
+   * @brief Checks if the number is zero.
+   */
+  bool is_zero() const noexcept {
+    for (const auto& tryte : _trytes) {
+      if (tryte != zero_tryte()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * @brief Checks if the number is negative.
+   */
+  bool is_negative() const noexcept {
+    return (*this) < T81Int<N>(0);
+  }
+
+  /**
+   * @brief Returns the absolute value of the number.
+   */
+  T81Int<N> abs() const noexcept {
+    return is_negative() ? -(*this) : *this;
   }
 
   /**
@@ -281,6 +331,69 @@ T81Int<N> operator*(const T81Int<N>& lhs, const T81Int<N>& rhs) {
     }
   }
   return result;
+}
+
+/**
+ * @brief Performs division and returns the quotient and remainder.
+ * @tparam N The number of trits.
+ * @param dividend The number to be divided.
+ * @param divisor The number to divide by.
+ * @return A pair containing the quotient and remainder.
+ */
+template <size_t N>
+std::pair<T81Int<N>, T81Int<N>> div_mod(const T81Int<N>& dividend, const T81Int<N>& divisor) {
+    if (divisor.is_zero()) {
+        throw std::domain_error("division by zero");
+    }
+
+    T81Int<N> abs_dividend = dividend.abs();
+    T81Int<N> abs_divisor = divisor.abs();
+
+    T81Int<N> quotient;
+    T81Int<N> remainder;
+
+    for (size_t i = N; i-- > 0;) {
+        remainder = remainder * T81Int<N>(3);
+        remainder.set_trit(0, abs_dividend.get_trit(i));
+
+        if (remainder >= abs_divisor) {
+            remainder = remainder - abs_divisor;
+            quotient.set_trit(i, Trit::P);
+        }
+    }
+
+    if (dividend.is_negative() != divisor.is_negative()) {
+        quotient = -quotient;
+    }
+    if (dividend.is_negative()) {
+        remainder = -remainder;
+    }
+
+    return {quotient, remainder};
+}
+
+/**
+ * @brief Performs division.
+ * @tparam N The number of trits.
+ * @param lhs The left-hand operand.
+ * @param rhs The right-hand operand.
+ * @return The quotient of the two numbers.
+ */
+template <size_t N>
+T81Int<N> operator/(const T81Int<N>& lhs, const T81Int<N>& rhs) {
+    return div_mod(lhs, rhs).first;
+}
+
+/**
+ * @brief Performs modulo.
+ * @tparam N The number of trits.
+ * @param lhs The left-hand operand.
+ * @param rhs The right-hand operand.
+ * @return The remainder of the two numbers.
+ */
+template <size_t N>
+T81Int<N> operator%(const T81Int<N>& lhs, const T81Int<N>& rhs) {
+    return div_mod(lhs, rhs).second;
 }
 
 }  // namespace t81::core
