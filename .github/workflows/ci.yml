@@ -43,7 +43,7 @@ jobs:
         with:
           fail: true
           args: >-
-            --verbose --no-progress --exclude-mail
+            --verbose --no-progress
             --exclude "http://localhost*"
             --exclude "https://github.com/t81dev/t81-foundation/edit*"
             .github/**/*.md spec/**/*.md docs/**/*.md README.md AGENTS.md CONTRIBUTING.md
