@@ -1,7 +1,9 @@
 #pragma once
+#include <iostream>
 #include <vector>
 #include <stdexcept>
 #include <cstddef>
+#include <cstdint>
 #include <initializer_list>
 #include <algorithm>
 #include <numeric>
@@ -131,6 +133,31 @@ private:
   std::vector<int>   shape_;
   std::vector<float> data_;
 
+public:
+  // --- Serialization ---
+  void serialize(std::ostream& os) const {
+      uint64_t shape_size = shape_.size();
+      os.write(reinterpret_cast<const char*>(&shape_size), sizeof(shape_size));
+      os.write(reinterpret_cast<const char*>(shape_.data()), shape_size * sizeof(int));
+
+      uint64_t data_size = data_.size();
+      os.write(reinterpret_cast<const char*>(&data_size), sizeof(data_size));
+      os.write(reinterpret_cast<const char*>(data_.data()), data_size * sizeof(float));
+  }
+
+  void deserialize(std::istream& is) {
+      uint64_t shape_size;
+      is.read(reinterpret_cast<char*>(&shape_size), sizeof(shape_size));
+      shape_.resize(shape_size);
+      is.read(reinterpret_cast<char*>(shape_.data()), shape_size * sizeof(int));
+
+      uint64_t data_size;
+      is.read(reinterpret_cast<char*>(&data_size), sizeof(data_size));
+      data_.resize(data_size);
+      is.read(reinterpret_cast<char*>(data_.data()), data_size * sizeof(float));
+  }
+
+private:
   static bool valid_shape_(const std::vector<int>& s) {
     return std::all_of(s.begin(), s.end(), [](int d){ return d > 0; });
   }

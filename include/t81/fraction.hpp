@@ -71,6 +71,17 @@ struct T81Fraction {
     return num.to_string() + "/" + den.to_string();
   }
 
+  // --- Serialization ---
+  void serialize(std::ostream& os) const {
+    num.serialize(os);
+    den.serialize(os);
+  }
+
+  void deserialize(std::istream& is) {
+    num.deserialize(is);
+    den.deserialize(is);
+  }
+
 private:
   void normalize_() {
     if (T81BigInt::is_zero(den)) throw std::invalid_argument("fraction: denominator is zero");
