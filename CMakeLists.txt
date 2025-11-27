@@ -45,6 +45,7 @@ target_include_directories(t81_c_api
 add_library(t81_frontend STATIC
   src/frontend/lexer.cpp
   src/frontend/parser.cpp
+  src/frontend/semantic_analyzer.cpp
   src/frontend/ir_generator.cpp
   src/frontend/symbol_table.cpp
 )

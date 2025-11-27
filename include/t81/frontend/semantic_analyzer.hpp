@@ -3,12 +3,24 @@
 #include <vector>
 #include <memory>
 #include <any>
-#include "stmt.hpp"
-#include "expr.hpp"
-#include "token.hpp"
+#include <string>
+#include <unordered_map>
+#include "t81/frontend/ast.hpp"
+#include "t81/frontend/lexer.hpp"
 
 namespace t81 {
 namespace frontend {
+
+// Simple symbol information for semantic analysis
+enum class SymbolKind {
+    Variable,
+    Function
+};
+
+struct SemanticSymbol {
+    SymbolKind kind;
+    Token declaration;  // Token where the symbol was declared
+};
 
 class SemanticAnalyzer : public StmtVisitor, public ExprVisitor {
 public:
@@ -41,10 +53,22 @@ private:
     const std::vector<std::unique_ptr<Stmt>>& _statements;
     bool _had_error = false;
 
+    // Scoped symbol table
+    using Scope = std::unordered_map<std::string, SemanticSymbol>;
+    std::vector<Scope> _scopes;
+
     void analyze(const Stmt& stmt);
     std::any analyze(const Expr& expr);
 
     void error(const Token& token, const std::string& message);
+    void error_at(const Token& token, const std::string& message);
+
+    // Symbol table operations
+    void enter_scope();
+    void exit_scope();
+    void define_symbol(const Token& name, SymbolKind kind);
+    SemanticSymbol* resolve_symbol(const Token& name);
+    bool is_defined_in_current_scope(const std::string& name) const;
 };
 
 } // namespace frontend
