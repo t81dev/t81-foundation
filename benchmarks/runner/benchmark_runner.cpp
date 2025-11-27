@@ -8,8 +8,6 @@
 #include <chrono>
 #include <map>
 
-// --- Custom Report Generator ---
-
 struct BenchmarkResult {
     std::string name;
     std::string t81_result_str;
@@ -20,7 +18,6 @@ struct BenchmarkResult {
     std::string notes;
 };
 
-// Global store for results
 std::map<std::string, BenchmarkResult> final_results;
 
 const std::map<std::string, std::string> T81_ADVANTAGES = {
@@ -29,49 +26,55 @@ const std::map<std::string, std::string> T81_ADVANTAGES = {
     {"BM_RoundtripAccuracy", "No sign-bit tax"},
     {"BM_OverflowDetection", "Deterministic, provable"},
     {"BM_PackingDensity_Theoretical", "Theoretical maximum"},
-    {"BM_PackingDensity_Achieved", "log2(3^N)/N"},
-    {"BM_PackingDensity_Practical", "Size ratio"}
+    {"BM_PackingDensity_Achieved", "Achieved bits/trit"},
+    {"BM_PackingDensity_Practical", "Practical size ratio"}
 };
 
 class CustomReporter : public ::benchmark::BenchmarkReporter {
 public:
     CustomReporter() {}
-
-    bool ReportContext(const Context& context) override {
-        (void)context;
-        return true;
-    }
+    bool ReportContext(const Context&) override { return true; }
 
     void ReportRuns(const std::vector<Run>& reports) override {
         for (const auto& run : reports) {
-            std::string name = run.benchmark_name();
-            std::string base_name = name.substr(3, name.find("_", 3) - 3);
-            bool is_t81 = name.find("T81Cell") != std::string::npos;
+            std::string base_name = run.benchmark_name();
+            base_name = base_name.substr(0, base_name.find("/"));
+            bool is_t81 = base_name.find("T81Cell") != std::string::npos;
 
-            if (final_results.find(base_name) == final_results.end()) {
-                final_results[base_name].name = base_name;
-                final_results[base_name].t81_advantage = T81_ADVANTAGES.at(base_name);
+            std::string family = base_name;
+            if(is_t81) family = base_name.substr(0, base_name.find("_T81Cell"));
+            else family = base_name.substr(0, base_name.find("_Int64"));
+
+
+            if (final_results.find(family) == final_results.end()) {
+                final_results[family].name = family;
+                if(T81_ADVANTAGES.count(family))
+                    final_results[family].t81_advantage = T81_ADVANTAGES.at(family);
             }
-            if(final_results[base_name].notes.empty()){
-                 final_results[base_name].notes = run.report_label;
+            if(final_results[family].notes.empty()){
+                 final_results[family].notes = run.report_label;
             }
 
-            double items_per_second = (run.cpu_accumulated_time > 0) ? (run.iterations * 1e9 / run.cpu_accumulated_time) : 0.0;
-            double gops = items_per_second / 1e9;
             std::stringstream ss;
-            ss << std::fixed << std::setprecision(2) << gops << " Gops/s";
+            if (run.counters.empty()) {
+                double gops = (run.items_per_second > 0) ? run.items_per_second / 1e9 : 0.0;
+                ss << std::fixed << std::setprecision(2) << gops << " Gops/s";
+                if(is_t81) final_results[family].t81_result_val = gops;
+                else final_results[family].binary_result_val = gops;
+            } else {
+                for (auto const& [key, val] : run.counters) {
+                    ss << key << ": " << std::fixed << std::setprecision(2) << val;
+                }
+            }
 
             if(is_t81) {
-                final_results[base_name].t81_result_str = ss.str();
-                final_results[base_name].t81_result_val = gops;
+                final_results[family].t81_result_str = ss.str();
             } else {
-                final_results[base_name].binary_result_str = ss.str();
-                final_results[base_name].binary_result_val = gops;
+                final_results[family].binary_result_str = ss.str();
             }
         }
     }
 };
-
 
 void GenerateMarkdownReport();
 
@@ -84,11 +87,9 @@ int main(int argc, char** argv) {
     ::benchmark::Shutdown();
 
     GenerateMarkdownReport();
-
     return 0;
 }
 
-// A simple function to get current timestamp
 std::string get_current_timestamp() {
     auto now = std::chrono::system_clock::now();
     auto in_time_t = std::chrono::system_clock::to_time_t(now);
@@ -97,26 +98,23 @@ std::string get_current_timestamp() {
     return ss.str();
 }
 
-
 void GenerateMarkdownReport() {
     std::cout << "\nGenerating benchmark report...\n";
 
-    // --- Generate STDOUT Table ---
     std::cout << std::left << std::setw(25) << "Benchmark"
-              << std::setw(15) << "T81 Result"
-              << std::setw(15) << "Binary Result"
+              << std::setw(20) << "T81 Result"
+              << std::setw(20) << "Binary Result"
               << std::setw(25) << "T81 Advantage"
               << "Notes\n";
-    std::cout << std::string(100, '-') << "\n";
+    std::cout << std::string(110, '-') << "\n";
     for(auto const& [name, r] : final_results) {
         std::cout << std::left << std::setw(25) << r.name
-                  << std::setw(15) << r.t81_result_str
-                  << std::setw(15) << r.binary_result_str
+                  << std::setw(20) << r.t81_result_str
+                  << std::setw(20) << r.binary_result_str
                   << std::setw(25) << r.t81_advantage
                   << r.notes << "\n";
     }
 
-    // --- Generate Markdown File ---
     std::ofstream md_file("docs/benchmarks.md");
     if (!md_file.is_open()) {
         std::cerr << "Error: Could not open docs/benchmarks.md for writing.\n";
@@ -128,17 +126,15 @@ void GenerateMarkdownReport() {
     md_file << "*Last Updated: " << get_current_timestamp() << "*\n\n";
     md_file << "## Summary\n\n";
 
-    // Markdown table header
     md_file << "| Benchmark               | T81 Result     | Binary Result  | Ratio (T81/Binary) | T81 Advantage                   | Notes                               |\n";
     md_file << "|-------------------------|----------------|----------------|--------------------|---------------------------------|-------------------------------------|\n";
 
-    // Markdown table rows
     for (auto const& [name, r] : final_results) {
-        double ratio = (r.binary_result_val > 0) ? (r.t81_result_val / r.binary_result_val) : 0.0;
+        double ratio = (r.binary_result_val > 0 && r.t81_result_val > 0) ? (r.t81_result_val / r.binary_result_val) : 0.0;
         md_file << "| " << std::left << std::setw(23) << r.name
                 << "| " << std::setw(14) << r.t81_result_str
                 << "| " << std::setw(14) << r.binary_result_str
-                << "| " << std::fixed << std::setprecision(2) << std::setw(18) << std::to_string(ratio) + "x"
+                << "| " << std::fixed << std::setprecision(2) << ratio << "x"
                 << "| " << std::setw(31) << r.t81_advantage
                 << "| " << std::setw(35) << r.notes << "|\n";
     }
