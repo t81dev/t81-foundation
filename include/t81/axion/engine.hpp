@@ -12,5 +12,7 @@ class Engine {
 };
 
 std::unique_ptr<Engine> make_allow_all_engine();
+std::unique_ptr<Engine> make_instruction_counting_engine(
+    std::size_t max_instructions);
 }  // namespace t81::axion
 
