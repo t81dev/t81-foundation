@@ -80,7 +80,7 @@ ______________________________________________________________________
 |-------------------|--------------------------------------------------------|---------------------|-----------------------------------|
 | Specification | Immutable constitution of all behavior | Complete | `/spec/` |
 | TISC ISA | Ternary Instruction Set Computer | Fully specified | `spec/tisc-spec.md` |
-| T81 Arithmetic | Balanced ternary + base-81 data types | Production-ready | `include/t81/core/` |
+| T81 Arithmetic | Balanced ternary + base-81 data types | Actively Developed | `include/t81/core/` |
 | T81Lang | High-level recursive DSL → TISC bytecode | Active design | `spec/t81lang-spec.md` |
 | Axion Kernel | AI safety, entropy monitoring, anomaly mitigation | Spec complete | `spec/axion-kernel.md` |
 | Modern Runtime | Header-only C++20 core | Active development | `include/t81/` • `src/` |
