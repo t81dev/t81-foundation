@@ -56,6 +56,12 @@ class Interpreter : public IVirtualMachine {
       return {};
     }
 
+    // Evaluate Axion policy before every instruction.
+    auto verdict = eval_axion_call("step");
+    if (verdict.kind == t81::axion::VerdictKind::Deny) {
+        return Trap::SecurityFault;
+    }
+
     const std::size_t current_pc = state_.pc++;
     const auto& insn = program_.insns[current_pc];
 

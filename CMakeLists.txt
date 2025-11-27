@@ -215,6 +215,9 @@ if (T81_BUILD_TESTS)
   add_executable(e2e_if_statement_test tests/cpp/e2e_if_statement_test.cpp)
   target_link_libraries(e2e_if_statement_test PRIVATE t81_frontend t81_tisc t81_vm)
 
+  add_executable(axion_instruction_counter_test tests/cpp/axion_instruction_counter_test.cpp)
+  target_link_libraries(axion_instruction_counter_test PRIVATE t81_core t81_vm)
+
   enable_testing()
   set(T81_TEST_TARGETS
     t81_bigint_test
@@ -259,6 +262,7 @@ if (T81_BUILD_TESTS)
     e2e_let_statement_test
     e2e_arithmetic_test
     e2e_if_statement_test
+    axion_instruction_counter_test
   )
   foreach(tgt IN LISTS T81_TEST_TARGETS)
     add_test(NAME ${tgt} COMMAND $<TARGET_FILE:${tgt}>)
