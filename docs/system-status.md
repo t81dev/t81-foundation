@@ -9,19 +9,22 @@ ______________________________________________________________________
 ## 1. Data Types
 
 - **Specification:** [`spec/t81-data-types.md`](../spec/t81-data-types.md)
-- **Status:** `Production-Ready`
+- **Status:** `Actively Developed`
 
 #### Implemented Features:
 
-- Core `BigInt` class (currently wrapping `int64_t`).
+- Core `T81Int<N>` class, a fixed-precision, balanced ternary integer.
+- Complete set of arithmetic operators (+, -, *, /, %).
+- Complete set of comparison operators (==, !=, <, >, <=, >=).
+- Robust conversions to and from standard C++ integer types, with overflow detection.
 - Core `Fraction` class with canonical reduction.
 - Core `Tensor` data structure (minimal implementation).
 - Base-81 and Base-243 codec stubs.
 
 #### Known Gaps & Next Steps:
 
-- **[HIGH PRIORITY]** Implement the full arbitrary-precision logic for the `BigInt` class.
-- Complete the remaining `BigInt` mathematical operations (e.g., `pow`, `gcd`).
+- **[HIGH PRIORITY]** Implement the full arbitrary-precision logic for a `BigInt` class.
+- Implement shift operators for `T81Int`.
 - Expand the `Tensor` class to align with the full semantics of the specification.
 
 ______________________________________________________________________

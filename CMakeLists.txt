@@ -218,8 +218,16 @@ if (T81_BUILD_TESTS)
   add_executable(axion_instruction_counter_test tests/cpp/axion_instruction_counter_test.cpp)
   target_link_libraries(axion_instruction_counter_test PRIVATE t81_core t81_vm)
 
+  add_executable(t81_t81int_test tests/cpp/test_t81int.cpp)
+  target_link_libraries(t81_t81int_test PRIVATE t81_core)
+
+  add_executable(t81_division_test tests/cpp/test_division.cpp)
+  target_link_libraries(t81_division_test PRIVATE t81_core)
+
   enable_testing()
   set(T81_TEST_TARGETS
+    t81_division_test
+    t81_t81int_test
     t81_bigint_test
     t81_fraction_test
     t81_tensor_transpose_test
