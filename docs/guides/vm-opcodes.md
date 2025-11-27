@@ -40,6 +40,8 @@
 
 
 
+
+
 This guide provides a conceptual walkthrough for adding a new instruction (opcode) to the TISC (Ternary Instruction Set Computer) and its reference implementation, the HanoiVM.
 
 We will use the example of adding a hypothetical `MOD` (modulo) instruction, which builds upon the example in `adding-a-language-feature.md`.
