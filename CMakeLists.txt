@@ -10,8 +10,6 @@ add_library(t81 STATIC
   src/core/fraction.cpp
   src/tisc/encoding.cpp
   src/vm/vm.cpp
-  src/lang/compiler.cpp
-  src/lang/parser.cpp
   src/canonfs/in_memory_driver.cpp
   src/hanoi/error.cpp
   src/hanoi/in_memory_kernel.cpp
@@ -157,9 +155,6 @@ if (T81_BUILD_TESTS)
   add_executable(t81_hanoi_integration_test tests/cpp/hanoi_integration_test.cpp)
   target_link_libraries(t81_hanoi_integration_test PRIVATE t81)
 
-  add_executable(t81_lang_vm_test tests/cpp/lang_vm_integration_test.cpp)
-  target_link_libraries(t81_lang_vm_test PRIVATE t81)
-
   add_executable(t81_vm_load_store_test tests/cpp/vm_load_store_test.cpp)
   target_link_libraries(t81_vm_load_store_test PRIVATE t81)
 
@@ -181,23 +176,11 @@ if (T81_BUILD_TESTS)
   add_executable(t81_vm_jump_flags_test tests/cpp/vm_jump_flags_test.cpp)
   target_link_libraries(t81_vm_jump_flags_test PRIVATE t81)
 
-  add_executable(t81_lang_parser_vm_test tests/cpp/lang_parser_vm_test.cpp)
-  target_link_libraries(t81_lang_parser_vm_test PRIVATE t81)
-
-  add_executable(t81_lang_typecheck_test tests/cpp/lang_typecheck_test.cpp)
-  target_link_libraries(t81_lang_typecheck_test PRIVATE t81)
-
   add_executable(t81_vm_float_fraction_ops_test tests/cpp/vm_float_fraction_ops_test.cpp)
   target_link_libraries(t81_vm_float_fraction_ops_test PRIVATE t81)
 
   add_executable(t81_vm_neg_jumps_test tests/cpp/vm_neg_jumps_test.cpp)
   target_link_libraries(t81_vm_neg_jumps_test PRIVATE t81)
-
-  add_executable(t81_lang_compiler_unary_test tests/cpp/lang_compiler_unary_test.cpp)
-  target_link_libraries(t81_lang_compiler_unary_test PRIVATE t81)
-
-  add_executable(t81_lang_compiler_not_test tests/cpp/lang_compiler_not_test.cpp)
-  target_link_libraries(t81_lang_compiler_not_test PRIVATE t81)
 
   add_executable(t81_frontend_lexer_test tests/cpp/frontend_lexer_test.cpp)
   target_link_libraries(t81_frontend_lexer_test PRIVATE t81_frontend)
@@ -251,7 +234,6 @@ if (T81_BUILD_TESTS)
     t81_c_api_bigint_test
     t81_tensor_unary_test
     t81_hanoi_integration_test
-    t81_lang_vm_test
     t81_vm_load_store_test
     t81_vm_divmod_test
     t81_vm_illegal_test
@@ -260,12 +242,8 @@ if (T81_BUILD_TESTS)
     t81_canonfs_driver_test
     t81_vm_trace_test
     t81_vm_jump_flags_test
-    t81_lang_parser_vm_test
-    t81_lang_typecheck_test
     t81_vm_float_fraction_ops_test
     t81_vm_neg_jumps_test
-    t81_lang_compiler_unary_test
-    t81_lang_compiler_not_test
     t81_frontend_lexer_test
     t81_frontend_parser_test
     t81_frontend_parser_generics_test
