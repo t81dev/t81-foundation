@@ -162,6 +162,7 @@ struct ExpressionStmt : Stmt {
 // Base class for all type expressions.
 struct TypeExpr : Expr {
     // The accept method will be implemented by subclasses.
+    virtual std::any accept(ExprVisitor& visitor) const = 0;
 };
 
 // Represents a simple, non-generic type like `T81Int`.

@@ -24,7 +24,9 @@ void SemanticAnalyzer::analyze() {
 
     // Second pass: analyze all statements
     for (const auto& stmt : _statements) {
-        analyze(*stmt);
+        if (stmt) {  // Skip null statements from parse errors
+            analyze(*stmt);
+        }
     }
 }
 
@@ -37,9 +39,12 @@ std::any SemanticAnalyzer::analyze(const Expr& expr) {
 }
 
 void SemanticAnalyzer::error(const Token& token, const std::string& message) {
-    _had_error = true;
+    if (!_had_error) {  // Only set once to avoid multiple error messages
+        _had_error = true;
+    }
     std::cerr << "semantic error: " << message << " at line " << token.line 
               << ", column " << token.column << std::endl;
+    std::cerr.flush();  // Ensure error is written immediately
 }
 
 void SemanticAnalyzer::error_at(const Token& token, const std::string& message) {
@@ -104,11 +109,9 @@ std::any SemanticAnalyzer::visit(const VarStmt& stmt) {
 }
 
 std::any SemanticAnalyzer::visit(const LetStmt& stmt) {
-    // Analyze the type expression if it's generic
+    // Analyze the type expression (TypeExpr extends Expr, so we can analyze it directly)
     if (stmt.type) {
-        if (auto* generic = dynamic_cast<const GenericTypeExpr*>(stmt.type.get())) {
-            analyze(*generic);
-        }
+        analyze(*stmt.type);
     }
     
     // Check if variable is already defined in current scope
@@ -239,9 +242,16 @@ std::any SemanticAnalyzer::visit(const UnaryExpr& expr) {
 
 std::any SemanticAnalyzer::visit(const VariableExpr& expr) {
     // Resolve variable reference
+    std::string name_str = std::string(expr.name.lexeme);
+    
+    // Don't error for built-in constructors
+    if (name_str == "Some" || name_str == "None" || name_str == "Ok" || name_str == "Err") {
+        return {};
+    }
+    
     auto* symbol = resolve_symbol(expr.name);
     if (!symbol) {
-        error(expr.name, "Undefined variable '" + std::string(expr.name.lexeme) + "'.");
+        error(expr.name, "Undefined variable '" + name_str + "'.");
     }
     return {};
 }
@@ -251,14 +261,25 @@ std::any SemanticAnalyzer::visit(const SimpleTypeExpr& expr) {
 }
 
 std::any SemanticAnalyzer::visit(const GenericTypeExpr& expr) {
-    const std::string& type_name = std::string(expr.name.lexeme);
+    std::string type_name = std::string(expr.name.lexeme);
+    
+    // Check parameter counts for known generic types
     if (type_name == "Option") {
         if (expr.param_count != 1) {
-            error(expr.name, "The 'Option' type expects exactly one type parameter.");
+            error(expr.name, "The 'Option' type expects exactly one type parameter, but got " + std::to_string(expr.param_count) + ".");
+            // Still analyze parameters even if count is wrong
         }
     } else if (type_name == "Result") {
         if (expr.param_count != 2) {
-            error(expr.name, "The 'Result' type expects exactly two type parameters.");
+            error(expr.name, "The 'Result' type expects exactly two type parameters, but got " + std::to_string(expr.param_count) + ".");
+            // Still analyze parameters even if count is wrong
+        }
+    }
+    
+    // Analyze type parameters
+    for (size_t i = 0; i < expr.param_count; ++i) {
+        if (expr.params[i]) {
+            analyze(*expr.params[i]);
         }
     }
     return {};
