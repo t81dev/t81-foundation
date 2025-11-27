@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <algorithm>
 #include <cstdint>
 #include <stdexcept>
@@ -287,6 +288,10 @@ public:
   std::string to_base81_string() const;
   static T81BigInt from_base81_string(std::string_view s);
 
+  // --- Serialization ---
+  void serialize(std::ostream& os) const;
+  void deserialize(std::istream& is);
+
 private:
   Sign sign_{Sign::Zero};
   std::vector<uint8_t> d_; // LSB-first, base 81
@@ -516,6 +521,28 @@ inline T81BigInt T81BigInt::from_base81_string(std::string_view s) {
   }
   if (neg && !is_zero(v)) v.sign_ = Sign::Neg;
   return v;
+}
+
+inline void T81BigInt::serialize(std::ostream& os) const {
+    char sign_char = static_cast<char>(sign_);
+    os.write(&sign_char, sizeof(sign_char));
+    uint64_t size = d_.size();
+    os.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    if (size > 0) {
+        os.write(reinterpret_cast<const char*>(d_.data()), size * sizeof(uint8_t));
+    }
+}
+
+inline void T81BigInt::deserialize(std::istream& is) {
+    char sign_char;
+    is.read(&sign_char, sizeof(sign_char));
+    sign_ = static_cast<Sign>(sign_char);
+    uint64_t size;
+    is.read(reinterpret_cast<char*>(&size), sizeof(size));
+    d_.resize(size);
+    if (size > 0) {
+        is.read(reinterpret_cast<char*>(d_.data()), size * sizeof(uint8_t));
+    }
 }
 
 // Legacy alias preserved for downstream code migrating from the old API.
