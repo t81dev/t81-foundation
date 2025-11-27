@@ -4,10 +4,11 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
+#include "t81/tisc/ir.hpp"
 #include "t81/tisc/pretty_printer.hpp"
 
 using namespace t81::frontend;
-using namespace t81::tisc;
+using namespace t81::tisc::ir;
 
 void test_simple_addition() {
     std::string source = "let x = 1 + 2;";
@@ -22,15 +23,15 @@ void test_simple_addition() {
 
     assert(instructions.size() == 3);
     assert(instructions[0].opcode == Opcode::LOADI);
-    assert(std::get<Register>(instructions[0].operands[0]).index == 0);
-    assert(std::get<Immediate>(instructions[0].operands[1]).value == 1);
+    assert(std::get<t81::tisc::ir::Register>(instructions[0].operands[0]).index == 0);
+    assert(std::get<t81::tisc::ir::Immediate>(instructions[0].operands[1]).value == 1);
     assert(instructions[1].opcode == Opcode::LOADI);
-    assert(std::get<Register>(instructions[1].operands[0]).index == 1);
-    assert(std::get<Immediate>(instructions[1].operands[1]).value == 2);
+    assert(std::get<t81::tisc::ir::Register>(instructions[1].operands[0]).index == 1);
+    assert(std::get<t81::tisc::ir::Immediate>(instructions[1].operands[1]).value == 2);
     assert(instructions[2].opcode == Opcode::ADD);
-    assert(std::get<Register>(instructions[2].operands[0]).index == 2);
-    assert(std::get<Register>(instructions[2].operands[1]).index == 0);
-    assert(std::get<Register>(instructions[2].operands[2]).index == 1);
+    assert(std::get<t81::tisc::ir::Register>(instructions[2].operands[0]).index == 2);
+    assert(std::get<t81::tisc::ir::Register>(instructions[2].operands[1]).index == 0);
+    assert(std::get<t81::tisc::ir::Register>(instructions[2].operands[2]).index == 1);
 
     std::cout << "IRGeneratorTest test_simple_addition passed!" << std::endl;
 }
