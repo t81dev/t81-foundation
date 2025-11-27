@@ -24,7 +24,7 @@ void test_if_statement_true() {
     vm->load_program(program);
     vm->run_to_halt();
 
-    assert(vm->state().get_register(0) == 1 && "VM register R0 has incorrect value for true branch");
+    assert(vm->state().registers[0] == 1 && "VM register R0 has incorrect value for true branch");
 
     std::cout << "E2ETest test_if_statement_true passed!" << std::endl;
 }
@@ -47,7 +47,7 @@ void test_if_statement_false() {
     vm->load_program(program);
     vm->run_to_halt();
 
-    assert(vm->state().get_register(0) == 0 && "VM register R0 has incorrect value for false branch");
+    assert(vm->state().registers[0] == 0 && "VM register R0 has incorrect value for false branch");
 
     std::cout << "E2ETest test_if_statement_false passed!" << std::endl;
 }
@@ -70,7 +70,7 @@ void test_if_else_statement() {
     vm->load_program(program);
     vm->run_to_halt();
 
-    assert(vm->state().get_register(0) == 123 && "VM register R0 has incorrect value for else branch");
+    assert(vm->state().registers[0] == 123 && "VM register R0 has incorrect value for else branch");
 
     std::cout << "E2ETest test_if_else_statement passed!" << std::endl;
 }

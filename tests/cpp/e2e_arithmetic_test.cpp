@@ -24,7 +24,7 @@ void test_addition() {
     vm->load_program(program);
     vm->run_to_halt();
 
-    assert(vm->state().get_register(0) == 42 && "VM register R0 has incorrect value after addition");
+    assert(vm->state().registers[0] == 42 && "VM register R0 has incorrect value after addition");
 
     std::cout << "E2ETest test_addition passed!" << std::endl;
 }
@@ -47,7 +47,7 @@ void test_subtraction() {
     vm->load_program(program);
     vm->run_to_halt();
 
-    assert(vm->state().get_register(0) == 42 && "VM register R0 has incorrect value after subtraction");
+    assert(vm->state().registers[0] == 42 && "VM register R0 has incorrect value after subtraction");
 
     std::cout << "E2ETest test_subtraction passed!" << std::endl;
 }
@@ -70,7 +70,7 @@ void test_multiplication() {
     vm->load_program(program);
     vm->run_to_halt();
 
-    assert(vm->state().get_register(0) == 42 && "VM register R0 has incorrect value after multiplication");
+    assert(vm->state().registers[0] == 42 && "VM register R0 has incorrect value after multiplication");
 
     std::cout << "E2ETest test_multiplication passed!" << std::endl;
 }
@@ -93,7 +93,7 @@ void test_division() {
     vm->load_program(program);
     vm->run_to_halt();
 
-    assert(vm->state().get_register(0) == 42 && "VM register R0 has incorrect value after division");
+    assert(vm->state().registers[0] == 42 && "VM register R0 has incorrect value after division");
 
     std::cout << "E2ETest test_division passed!" << std::endl;
 }

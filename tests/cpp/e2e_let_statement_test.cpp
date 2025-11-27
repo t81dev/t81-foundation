@@ -26,7 +26,7 @@ void test_let_statement_e2e() {
     vm->run_to_halt();
 
     // Per TISC calling convention, the return value is in R0.
-    assert(vm->state().get_register(0) == 42 && "VM register R0 has incorrect value");
+    assert(vm->state().registers[0] == 42 && "VM register R0 has incorrect value");
 
     std::cout << "E2ETest test_let_statement_e2e passed!" << std::endl;
 }
