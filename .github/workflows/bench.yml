@@ -1,0 +1,68 @@
+name: TCB-Core Benchmarks
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  benchmark:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -march=native"
+
+    - name: Build Benchmarks
+      run: cmake --build build --target benchmark_runner
+
+    - name: Run Benchmarks
+      run: ./build/benchmarks/benchmark_runner
+
+    - name: Create Badge Directory
+      run: mkdir -p .github/badges
+
+    - name: Generate Badge JSON
+      run: |
+        echo '{
+          "schemaVersion": 1,
+          "label": "TCB-Core v0.1",
+          "message": "Passing",
+          "color": "green"
+        }' > .github/badges/tcb-core.json
+
+    - name: Update README
+      run: |
+        # Extract the markdown table from the results file
+        MARKDOWN_TABLE=$(sed -n '/^| Benchmark/,/|---/p' docs/benchmarks.md && sed -n '/^| Arith/,/^$/p' docs/benchmarks.md)
+
+        # Create a temporary file
+        tmp=$(mktemp)
+
+        # Write the replacement content to the temp file
+        {
+          echo "<!-- T81-BENCHMARKS-START -->"
+          echo ""
+          echo '![TCB-Core v0.1](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/t81dev/t81-foundation/main/.github/badges/tcb-core.json)'
+          echo ""
+          echo "$MARKDOWN_TABLE"
+          echo ""
+          echo "<!-- T81-BENCHMARKS-END -->"
+        } > "$tmp"
+
+        # Use sed to replace the content in README.md
+        sed -i -e "/<!-- T81-BENCHMARKS-START -->/,/<!-- T81-BENCHMARKS-END -->/c\\$(cat "$tmp")" README.md
+
+    - name: Commit and Push Changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add README.md .github/badges/tcb-core.json
+        git commit -m "docs: Update benchmark results in README" || echo "No changes to commit"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
