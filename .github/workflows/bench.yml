@@ -3,6 +3,7 @@ name: TCB-Core Benchmarks
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   benchmark:
@@ -37,32 +38,37 @@ jobs:
 
     - name: Update README
       run: |
-        # Extract the markdown table from the results file
-        MARKDOWN_TABLE=$(sed -n '/^| Benchmark/,/|---/p' docs/benchmarks.md && sed -n '/^| Arith/,/^$/p' docs/benchmarks.md)
+        awk '/^| Benchmark/,/^$/' docs/benchmarks.md > table.md
 
-        # Create a temporary file
-        tmp=$(mktemp)
-
-        # Write the replacement content to the temp file
+        # Create a replacement block
         {
-          echo "<!-- T81-BENCHMARKS-START -->"
-          echo ""
-          echo '![TCB-Core v0.1](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/t81dev/t81-foundation/main/.github/badges/tcb-core.json)'
-          echo ""
-          echo "$MARKDOWN_TABLE"
-          echo ""
-          echo "<!-- T81-BENCHMARKS-END -->"
-        } > "$tmp"
+            echo "<!-- T81-BENCHMARKS-START -->"
+            echo ""
+            echo '![TCB-Core v0.1](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/t81dev/t81-foundation/main/.github/badges/tcb-core.json)'
+            echo ""
+            cat table.md
+            echo ""
+            echo "<!-- T81-BENCHMARKS-END -->"
+        } > replacement.md
 
-        # Use sed to replace the content in README.md
-        sed -i -e "/<!-- T81-BENCHMARKS-START -->/,/<!-- T81-BENCHMARKS-END -->/c\\$(cat "$tmp")" README.md
+        # Use a temp file to avoid issues with sed's in-place editing on different OSes
+        tmp=$(mktemp)
+        awk -v r="replacement.md" '
+          /<!-- T81-BENCHMARKS-START -->/ { f=1; print; system("cat " r); next }
+          /<!-- T81-BENCHMARKS-END -->/ { f=0; print; next }
+          !f { print }
+        ' README.md > "$tmp" && mv "$tmp" README.md
 
     - name: Commit and Push Changes
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add README.md .github/badges/tcb-core.json
-        git commit -m "docs: Update benchmark results in README" || echo "No changes to commit"
-        git push
+        if git diff --staged --quiet; then
+          echo "No changes to commit."
+        else
+          git commit -m "docs(bench): Update TCB-Core v0.1 results in README"
+          git push
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
