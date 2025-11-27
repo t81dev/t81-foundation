@@ -269,6 +269,8 @@ if (T81_BUILD_TESTS)
   endforeach()
 endif()
 
+# Benchmarks
+add_subdirectory(benchmarks)
 
 # --- Doxygen Documentation ---
 find_package(Doxygen)
