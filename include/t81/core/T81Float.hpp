@@ -19,6 +19,8 @@
 #include <concepts>
 #include <compare>
 
+using t81::Trit;
+
 namespace t81::core {
 
 enum class Trit : int8_t { N = -1, Z = 0, P = 1 };
@@ -242,7 +244,7 @@ private:
     }
 
     void finalize_pack(Trit sign, int64_t& biased_exp, T81Int<M+12>& mant);
-    void finalize_pack_from_mantissa(int64_t& biased_exp, T81Int<M+20>& mant);
+    void finalize_pack_from_mantissa(int64_t biased_exp, T81Int<M+20>& mant);
 
     // ==================================================================
     // Arithmetic operators (friends)
@@ -355,7 +357,7 @@ template<size_t M, size_t E>
 void T81Float<M,E>::finalize_pack_from_mantissa(int64_t biased_exp, T81Int<M+20>& mant) {
     T81Int<M+12> tmp;
     for (size_t i = 0; i < M+12 && i < M+20; ++i)
-        tmp.set_trit(i, mant.get_trit(i + (M+20 - (M+12)));
+        tmp.set_trit(i, mant.get_trit(i + (M+20 - (M+12))));
     finalize_pack(sign(), biased_exp, tmp);
 }
 
@@ -457,8 +459,7 @@ constexpr T81Float<M,E> operator/(const T81Float<M,E>& num, const T81Float<M,E>&
 }
 
 template<size_t M, size_t E>
-T81Float<M,E> fma(const T81Float<M,E>& a, const T81Float<M,E>& b, const T81Float<M,E>& c) {
-    if (a.is_nae() || b.is_nae() || c.is_nae()) return T81Float<M,E>::nae();
+constexpr T81Float<M,E> fma(const T81Float<M,E>& a, const T81Float<M,E>& b, const T81Float<M,E>& c) {    if (a.is_nae() || b.is_nae() || c.is_nae()) return T81Float<M,E>::nae();
     T81Float<M,E> prod = a * b;
     if (prod.is_nae() || prod.is_inf()) {
         if (c.is_inf() && prod.is_inf() && prod.is_negative() != c.is_negative())
