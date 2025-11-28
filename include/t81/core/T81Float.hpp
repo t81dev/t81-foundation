@@ -130,7 +130,7 @@ private:
         for (size_t i = 0; i < M; ++i) final_m.set_trit(i, mant.get_trit(i));
         if (round_up) final_m = final_m + T81Int<M>(1);
 
-        if (final_m.leading_trit() == M) {
+        if (leading_trit(final_m).leading_trit() == M) {
             final_m >>= 1;
             exp++;
         }
@@ -138,8 +138,7 @@ private:
         if (exp >= (1LL << E) - 1) return inf(sign == Trit::P);
         if (exp <= 0) {
             size_t under = 1 - exp;
-            if (under >= M + Guard) return zero(sign == Trit::P);
-            final_m >>= under;
+            if (static_cast<int64_t>(under) >= static_cast<int64_t>(M + Guard)) return zero(sign == Trit::P);            final_m >>= under;
             exp = 0;
         }
 
