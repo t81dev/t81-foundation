@@ -154,6 +154,56 @@ void test_arithmetic() {
     assert((one - two) == neg_one);
 }
 
+void test_multiplication() {
+    using Float = T81Float<18, 9>;
+    using Int = T81Int<10>;
+
+    Float two(Int(2));
+    Float three(Int(3));
+    Float six(Int(6));
+
+    assert((two * three) == six);
+}
+
+void test_division() {
+    using Float = T81Float<18, 9>;
+    using Int = T81Int<10>;
+
+    Float two(Int(2));
+    Float three(Int(3));
+    Float six(Int(6));
+
+    assert((six / three) == two);
+}
+
+void test_fma() {
+    using Float = T81Float<18, 9>;
+    using Int = T81Int<10>;
+
+    Float two(Int(2));
+    Float three(Int(3));
+    Float four(Int(4));
+    Float ten(Int(10));
+
+    assert(fma(two, three, four) == ten);
+}
+
+void test_subnormals() {
+    using Float = T81Float<18, 9>;
+    Float subnormal = std::numeric_limits<Float>::min() / Float(T81Int<2>(3));
+    assert(subnormal.is_subnormal());
+}
+
+void test_nextafter() {
+    using Float = T81Float<18, 9>;
+    using Int = T81Int<10>;
+
+    Float one(Int(1));
+    Float two(Int(2));
+
+    assert(nextafter(one, two) > one);
+}
+
 
 int main() {
     test_special_values();
@@ -161,6 +211,11 @@ int main() {
     test_abs_and_negation();
     test_int_conversion();
     test_arithmetic();
+    test_multiplication();
+    test_division();
+    test_fma();
+    test_subnormals();
+    test_nextafter();
 
     return 0;
 }
