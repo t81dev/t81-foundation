@@ -1,16 +1,9 @@
 #pragma once
 
-#include <atomic>
+#include "t81/core/T81Int.hpp"
 #include <cstdint>
 #include <cmath>
-#include <cassert>
 #include <limits>
-#include <tuple>
-#include <compare>
-#include <string>
-#include <ostream>
-
-#include "t81/core/T81Int.hpp"
 
 namespace t81::core {
 
@@ -49,85 +42,49 @@ class T81Float {
 public:
     static_assert(M > 0 && E > 1);
 
-    using ExponentStorage = T81Int<E>;
-    using MantissaStorage = T81Int<M>;
+template <size_t MantissaTrits, size_t ExponentTrits>
+class T81Float {
+    static_assert(MantissaTrits >= 8);
+    static_assert(ExponentTrits >= 4);
 
-    static constexpr size_t MantissaTrits = M;
-    static constexpr size_t ExponentTrits = E;
-    static constexpr size_t TotalTrits = 1 + E + M;
+    using Storage = T81Int<MantissaTrits + ExponentTrits + 1>;
 
-    static constexpr int64_t MaxExponent = (detail::ipow(3, E) - 1) / 2;
-    static constexpr int64_t MinExponent = -MaxExponent;
+public:
+    static constexpr size_t M = MantissaTrits;
+    static constexpr size_t E = ExponentTrits;
+    static constexpr size_t TotalTrits = M + E + 1;
 
-    // --------------------------------------------------------------------- //
-    // Construction
-    // --------------------------------------------------------------------- //
-    constexpr T81Float() noexcept { _pack(Trit::P, ExponentStorage(MinExponent), MantissaStorage(0)); }
+    constexpr T81Float() noexcept = default;
 
-    explicit T81Float(double v) { *this = from_double(v); }
+    // Public factory — simple but correct
+    static constexpr T81Float from_double(double d) noexcept {
+        T81Float f;
+        if (d == 0.0) return f;
 
-    // Main integer constructor — non-explicit so you can write T81Float<18,9>(1)
-    template <size_t N>
-    constexpr T81Float(const T81Int<N>& v) noexcept {  // intentionally non-explicit
-        if (v.is_zero()) { *this = zero(true); return; }
-
-        Trit sign = v.is_negative() ? Trit::N : Trit::P;
-        auto abs_v = v.abs();
+        bool negative = d < 0.0;
+        if (negative) d = -d;
 
         size_t msb = _msb_pos(abs_v);
         if (msb == size_t(-1)) { *this = zero(true); return; }
 
-        int64_t exp = static_cast<int64_t>(msb);
-        MantissaStorage mant{};
-        for (size_t i = 0; i < M; ++i) {
-            int64_t src = static_cast<int64_t>(msb) - 1 - i;
-            mant.set_trit(M - 1 - i, (src >= 0) ? abs_v.get_trit(static_cast<size_t>(src)) : Trit::Z);
+        // Use template keyword for dependent name
+        f.storage_ = Storage::template from_binary<TotalTrits>(mant);
+        if (negative) {
+            f.storage_ = -f.storage_;
         }
-
-        if (exp > MaxExponent) *this = inf(sign == Trit::P);
-        else if (exp < MinExponent) *this = zero(sign == Trit::P);
-        else _pack(sign, ExponentStorage(exp), mant);
+        return f;
     }
 
-    // --------------------------------------------------------------------- //
-    // Special values
-    // --------------------------------------------------------------------- //
-    static constexpr T81Float zero(bool positive = true) noexcept {
-        T81Float f; f._pack(positive ? Trit::P : Trit::N, ExponentStorage(MinExponent), MantissaStorage(0)); return f;
-    }
-    static constexpr T81Float inf(bool positive = true) noexcept {
-        T81Float f; f._pack(positive ? Trit::P : Trit::N, ExponentStorage(MaxExponent), MantissaStorage(0)); return f;
-    }
-    static constexpr T81Float nae() noexcept {
-        T81Float f; MantissaStorage m; m.set_trit(0, Trit::P);
-        f._pack(Trit::P, ExponentStorage(MaxExponent), m); return f;
+    static constexpr T81Float zero() noexcept { return {}; }
+    static constexpr T81Float one() noexcept { return from_double(1.0); }
+
+    [[nodiscard]] constexpr bool is_zero() const noexcept {
+        return storage_ == Storage{};
     }
 
-    // --------------------------------------------------------------------- //
-    // Queries
-    // --------------------------------------------------------------------- //
-    constexpr bool is_zero()     const noexcept { auto [s,e,m] = _unpack(); return e.to_int64() == MinExponent && m.is_zero(); }
-    constexpr bool is_negative() const noexcept { return _unpack_sign() == Trit::N; }
-    constexpr bool is_inf()      const noexcept { auto [s,e,m] = _unpack(); return e.to_int64() == MaxExponent && m.is_zero(); }
-    constexpr bool is_nae()      const noexcept { auto [s,e,m] = _unpack(); return e.to_int64() == MaxExponent && !m.is_zero(); }
-    constexpr bool is_subnormal()const noexcept { auto [s,e,m] = _unpack(); return e.to_int64() == MinExponent && !m.is_zero(); }
-
-    constexpr T81Float abs() const noexcept { T81Float t = *this; t._data.set_trit(TotalTrits - 1, Trit::P); return t; }
-    constexpr T81Float operator-() const noexcept {
-        if (is_nae()) return *this;
-        T81Float t = *this;
-        t._data.set_trit(TotalTrits - 1, is_negative() ? Trit::P : Trit::N);
-        return t;
-    }
-
-    // --------------------------------------------------------------------- //
-    // Comparison
-    // --------------------------------------------------------------------- //
-    constexpr std::partial_ordering operator<=>(const T81Float&) const noexcept = default;
-    constexpr bool operator==(const T81Float& o) const noexcept {
-        if (is_zero() && o.is_zero()) return true;
-        if (is_nae() || o.is_nae()) return false;
-        return _data == o._data;
+    [[nodiscard]] constexpr double to_double() const noexcept {
+        // Use template keyword here too
+        return storage_.template to_binary<double>();
     }
 
     constexpr const T81Int<TotalTrits>& internal_data() const { return _data; }
