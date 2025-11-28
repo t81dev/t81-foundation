@@ -6,6 +6,14 @@
 #include <compare>
 #include <cstdint>
 
+namespace detail {
+    constexpr int64_t ipow(int64_t base, int exp) {
+        int64_t res = 1;
+        while (exp--) res *= base;
+        return res;
+    }
+}
+
 namespace t81::core {
 
 // ======================================================================
