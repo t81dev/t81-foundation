@@ -7,8 +7,7 @@ using namespace t81::core;
 int main() {
     std::cout << "Running T81Float tests...\n";
 
-    assert(t81_nextafter(one, two) > one);
-}
+    using F = T81Float<18, 9>;
 
     F a = F::from_double(1.0);
     F b = F::from_double(2.0);
