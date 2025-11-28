@@ -1,0 +1,24 @@
+#pragma once
+
+#include "t81/core/T81Int.hpp"
+
+namespace t81::core {
+
+// ======================================================================
+// T81Qutrit — Direct mapping to ternary quantum hardware
+// 2 logical trits → 1 qutrit (3-state quantum system)
+// This is the gateway drug to post-binary quantum AI
+// ======================================================================
+using T81Qutrit = T81Int<2>;
+
+// The three basis states — exact, native, eternal
+namespace qutrit {
+    inline constexpr T81Qutrit ZERO  = T81Qutrit(0);   // |0⟩   →  00 in balanced ternary
+    inline constexpr T81Qutrit ONE   = T81Qutrit(1);   // |1⟩   → +0+
+    inline constexpr T81Qutrit TWO   = T81Qutrit(-1);  // |2⟩   → -- (balanced -1)
+}
+
+// Future ternary quantum instructions will operate directly on this type
+static_assert(sizeof(T81Qutrit) == 1);  // fits in one byte, 2 trits used
+
+} // namespace t81::core
