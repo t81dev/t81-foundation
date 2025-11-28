@@ -1,85 +1,50 @@
-# Analysis and Recommendations for the T81 C++20 Toolchain
+# Analysis: Implementation vs. Specification
 
-This document provides a detailed analysis of the legacy T81 toolchain sources and a set of actionable recommendations for the new C++20 implementation.
+**Last Updated:** November 28, 2025
 
-## 1. Per-File Classification
+This document provides a technical analysis of the C++ implementation's conformance to the formal specifications in `/spec`. It identifies where the implementation is complete, where it is partial, and where it deviates.
 
-Here is a breakdown of each legacy file, its role, and its recommended fate.
+______________________________________________________________________
 
-| File | Layer | Primary Purpose | Bucket | Justification |
-| ------------------------- | -------------- | -------------------------- | ------------------------- | ---------------------------------------------------------------------------------------- |
-| `t81lang_grammar.cweb` | Frontend | Grammar Spec | **Retire** | Completely superseded by the modern, more feature-rich `slang_grammer.ebnf`. |
-| `t81lang_lexer.cweb` | Frontend | Lexer | **Retire** | A tightly-coupled C implementation of an obsolete language version. Rewrite in C++. |
-| `t81lang_parser.cweb` | Frontend | Parser | **Retire** | A tightly-coupled C implementation of an obsolete language version. Rewrite in C++. |
-| `t81lang_semantic.cweb` | Frontend | Semantic Analysis | **Retire** | A tightly-coupled C implementation of an obsolete language version. Rewrite in C++. |
-| `t81lang_irgen.cweb` | Frontend | IR Generator | **Reference Only** | Generates an obsolete, custom IR. Useful only for understanding the old pipeline. |
-| `t81lang_compiler.cweb` | Tooling | Compiler Driver | **Retire** | Orchestrates the obsolete CWEB frontend. |
-| `tisc_ir.cweb` | IR | High-level IR Definition | **Reference Only** | Defines a high-level, symbolic IR not aligned with the formal spec. |
-| `tisc_stdlib.cweb` | IR | High-level Stdlib | **Reference Only** | Defines high-level macros for the non-canonical, symbolic TISC IR. |
-| `tisc_compiler.cweb` | Tooling | HVM->TISC Decompiler | **Retire** | Superseded by the more feature-rich `tisc_backend.cweb`. |
-| `tisc_backend.cweb` | Tooling | HVM->TISC Decompiler | **Reference Only** | A decompiler for the non-canonical TISC IR. Keep as a reference for that tool's logic. |
-| `emit_hvm.cweb` | HVM Backend | IR -> HVM Emitter | **Retire** | Tied to the obsolete CWEB frontend's custom IR. |
-| `t81_to_hvm.cweb` | HVM Backend | Assembler | **Reuse as implementation** | The most feature-rich HVM assembler. Its tagged data format aligns with the VM spec. |
-| `t81asm.cweb` | HVM Backend | Assembler | **Retire** | A simpler, superseded HVM assembler. |
-| `hvm_assembler.cweb` | HVM Backend | Assembler | **Retire** | Another simpler, superseded HVM assembler. |
-| `t81_llvm_backend.cweb` | LLVM Backend | TableGen Definitions | **Reuse as implementation** | Contains core LLVM TableGen definitions for the T81 target. |
-| `T81InstrFormats.td` | LLVM Backend | TableGen Definitions | **Reuse as implementation** | An excellent, well-structured definition of T81 instruction formats for LLVM. |
-| `T81InstrInfo.td` | LLVM Backend | TableGen Definitions | **Reuse as implementation** | Defines the complete T81 instruction set for LLVM. |
-| `T81RegisterInfo.td` | LLVM Backend | TableGen Definitions | **Reuse as implementation** | Defines the T81 registers for LLVM. |
-| `t81_codegen.cweb` | LLVM Backend | C++ Skeleton | **Reuse as implementation** | Provides the C++ implementation skeleton for the LLVM backend. |
-| `t81_compile.py` | Frontend | Compiler Prototype | **Reuse as implementation** | The most modern implementation of the frontend, showing how to handle annotations. |
-| `slang_grammer.ebnf` | Frontend | Grammar Spec | **Reuse as specification** | The canonical, modern grammar for T81Lang. |
+## 1. Core Numerics (`t81_core`)
 
-## 2. Subsystem Summary and Recommendations
+- **Specification:** [`spec/t81-data-types.md`](../spec/t81-data-types.md)
+- **Status:** `Partial`
+- **Analysis:**
+  - **`T81Int<N>`:** **Complete.** The fixed-size ternary integer implementation is robust, well-tested, and fully conforms to the spec's requirements for arithmetic, comparison, and overflow behavior.
+  - **`T81Float`:** **Partial.** The core data structure and special values (`inf`, `nae`) are implemented. However, key arithmetic operations like multiplication and division are still missing.
+  - **`Fraction`:** **Complete.** The rational number type correctly implements canonical reduction and all specified arithmetic operations.
+  - **`T81BigInt`:** **Experimental / Stub.** The class exists but is a simple wrapper around `int64_t`. It does not provide the arbitrary-precision arithmetic required by the specification and is not suitable for use beyond basic cases.
+  - **`Tensor`:** **Partial.** The basic tensor storage, shape, and a subset of operations (transpose, matmul, reduce, broadcast) are implemented and tested. However, it lacks many advanced features defined in the spec, such as complex broadcasting rules and a full suite of elementwise operations.
 
-### T81Lang Frontend
+______________________________________________________________________
 
-- **Canonical Sources:** `slang_grammer.ebnf` (for grammar) and `t81_compile.py` (for semantics).
-- **Conflicts/Drift:** There is a major design drift. The EBNF/Python version is far more advanced, with features like modules, attributes, and generics that are completely absent in the CWEB implementation.
-- **Recommended Direction:** **Write a new C++20 frontend from scratch.** Use the EBNF file as the formal grammar to guide the implementation of a new parser. Use the Python script as a behavioral reference, especially for handling modern features like annotations. The entire CWEB-based frontend (`t81lang_*.cweb`) should be retired and treated as a historical artifact.
+## 2. TISC ISA & VM (`t81_tisc`, `t81_vm`)
 
-### TISC IR
+- **Specification:** [`spec/tisc-spec.md`](../spec/tisc-spec.md), [`spec/t81vm-spec.md`](../spec/t81vm-spec.md)
+- **Status:** `Partial`
+- **Analysis:**
+  - **Instruction Set:** **Partial.** A large subset of the TISC opcodes are defined in `opcodes.hpp` and implemented in the VM. However, instructions related to advanced memory models, exceptions, and the Axion kernel interface are not yet implemented.
+  - **Binary Encoding:** **Complete.** The `BinaryEmitter` correctly encodes the implemented subset of TISC IR into the specified flat binary format, including the two-pass label resolution.
+  - **VM Execution Loop:** **Partial.** The VM has a stable interpreter-based execution loop that can correctly execute arithmetic, logic, and basic control flow instructions.
+  - **Memory Model:** **Experimental / Stub.** The VM's memory model is currently a simple linear address space. The full stack, heap, and memory protection mechanisms defined in the spec are not implemented.
+  - **Known Deviation:** The current VM implementation does not yet throw spec-compliant exceptions for faults like division by zero, instead relying on host-level exceptions.
 
-- **Canonical Sources:** The textual, low-level assembly format generated by `t81_compile.py` and formally defined in `tisc-spec.md`.
-- **Conflicts/Drift:** The legacy code contains two conflicting definitions of "TISC IR". The CWEB files define a high-level, symbolic IR for analysis, while the formal spec and Python script define a low-level, register-based assembly language that is the true compilation target.
-- **Recommended Direction:** **Adopt the low-level TISC assembly as the canonical intermediate representation** for the new C++ compiler. The CWEB TISC files (`tisc_ir.cweb`, `tisc_stdlib.cweb`, `tisc_backend.cweb`) should be archived as a reference for a possible, separate high-level analysis or decompilation tool, but they should not inform the primary compiler pipeline.
+______________________________________________________________________
 
-### HVM Backend
+## 3. T81Lang Frontend (`t81_frontend`)
 
-- **Canonical Sources:** `t81_to_hvm.cweb` (for the assembler and binary format). The name "HVM" should be considered a legacy name for what the formal specs call the **T81VM**.
-- **Conflicts/Drift:** The legacy files contain multiple, conflicting assemblers with different opcode sets and binary formats.
-- **Recommended Direction:** **Unify the T81VM toolchain around the design in `t81_to_hvm.cweb`**. This file's support for tagged, complex data types (tensors, matrices) is consistent with the `t81vm-spec.md`. The other assemblers (`t81asm.cweb`, `hvm_assembler.cweb`) and the old emitter (`emit_hvm.cweb`) are superseded and should be retired.
+- **Specification:** [`spec/t81lang-spec.md`](../spec/t81lang-spec.md)
+- **Status:** `Partial`
+- **Analysis:**
+  - **Lexer & Parser:** **Partial.** The frontend can successfully parse a significant subset of the T81Lang grammar, including function definitions, variables, and basic control flow (`if`, `while`). However, it does not yet support advanced features like generics, pattern matching, or the full type system.
+  - **Type System & Semantic Analysis:** **Experimental / Stub.** The `SemanticAnalyzer` is a placeholder. The compiler does not yet perform type checking, scope resolution, or other critical semantic validation. This is the largest gap in the frontend.
+  - **IR Generation:** **Partial.** The `IRGenerator` can successfully lower the parsed AST into a linear sequence of TISC IR for the implemented language subset. Control flow and function calls are handled correctly at a basic level.
 
-### LLVM Backend
+______________________________________________________________________
 
-- **Canonical Sources:** All `.td` files (`t81_llvm_backend.cweb`, `T81InstrFormats.td`, `T81InstrInfo.td`, `T81RegisterInfo.td`) and the C++ skeleton in `t81_codegen.cweb`.
-- **Conflicts/Drift:** Minimal. The LLVM backend files are internally consistent, well-structured, and follow modern LLVM development practices.
-- **Recommended Direction:** **Directly reuse these files.** They are structurally sound and provide a solid foundation for the new C++20 LLVM backend. This is the most "reuse-ready" part of the legacy codebase.
+## 4. Supporting Systems
 
-## 3. Recommended Plan for C++20 Implementation
-
-### Concrete Next Steps
-
-1. **Frontend:** Begin by implementing a new C++20 recursive-descent or LALR parser based on the grammar in **`slang_grammer.ebnf`**. Refer to **`t81_compile.py`** for the semantics of annotations.
-2. **TISC IR:** Define a C++ class structure that represents the low-level assembly instructions defined in **`tisc-spec.md`**. This will be the output of your frontend and the input to your backends.
-3. **T81VM Backend:** Port the core logic from **`t81_to_hvm.cweb`** to C++ to create a canonical T81VM assembler/emitter library. This will be your primary backend for generating executable bytecode.
-4. **LLVM Backend:** Integrate the existing **`.td` files** and the C++ skeleton from **`t81_codegen.cweb`** into your new C++20 toolchain's build system. This will be your secondary, high-performance backend.
-
-### Optimal C++20 Module Layout
-
-A high-level module layout for your new C++20 toolchain could be:
-
-- `T81.Frontend` (Informed by `slang_grammer.ebnf` and `t81_compile.py`)
-  - `Lexer`, `Parser`, `AST`, `SemanticAnalyzer`
-- `T81.TISC` (Informed by `tisc-spec.md`)
-  - `Instruction`, `Operand`, `Program`
-- `T81.VM` (Informed by `t81_to_hvm.cweb` and `t81vm-spec.md`)
-  - `Assembler`, `BytecodeEmitter`
-- `T81.LLVM` (Informed by all `.td` files and `t81_codegen.cweb`)
-  - `T81TargetMachine`, `T81ISelLowering`, etc.
-
-### Surprising and Non-Obvious Insights
-
-- **The Python script is the true "modern" reference.** The most up-to-date language semantics are not in the CWEB source but in `t81_compile.py`. The C++ frontend should align with the Python script's semantics, not the CWEB grammar.
-- **"TISC IR" has two conflicting definitions.** The formal spec clarifies that the low-level, register-based assembly language is the canonical IR, not the high-level symbolic representation in the CWEB files.
-- **The "HVM" files describe the T81VM.** The assembler and bytecode format defined in the HVM-related files are the implementation of the virtual machine described in `t81vm-spec.md`.
+- **CanonFS (`t81_core`):** **Experimental / Stub.** The API and an in-memory driver exist, but the implementation is a placeholder. The core concepts of content-addressing and cryptographic hashing are not implemented.
+- **Axion Kernel (`t81_core`):** **Experimental / Stub.** The API is defined, but the implementation is a stub that permits all operations. It does not perform any of the safety monitoring, resource management, or deterministic enforcement required by the spec.
+- **Tooling (`t81` CLI):** **Partial.** The `t81` command-line tool exists and can drive the compilation pipeline, but it lacks many planned features for inspection, debugging, and VM interaction.

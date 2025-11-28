@@ -1,44 +1,63 @@
-# T81 Foundation — Good First Tasks (for Humans & AI Agents)
+# T81 Foundation: Actionable Task List
 
-This file highlights safe, high-leverage tasks for contributors and AI tools.
+**Last Updated:** November 28, 2025
 
-______________________________________________________________________
-
-## 1. Documentation & Spec
-
-- Improve wording and clarity in:
-  - `spec/t81-overview.md`
-  - `spec/t81-data-types.md`
-  - `spec/t81vm-spec.md`
-- Add cross-links between related sections (data types ↔ VM ↔ language).
-- Add small examples illustrating key concepts (e.g., TISC instruction sequences).
+This document lists the concrete, prioritized tasks for the next development cycle, aligned with the strategic priorities in `ROADMAP.md`.
 
 ______________________________________________________________________
 
-## 2. Tests
+## How to Contribute
 
-- Increase coverage in `tests/cpp/` for:
-  - Big integer operations and edge cases.
-  - Fraction normalization and arithmetic.
-  - Tensor shape/broadcast rules.
-- Add regression tests for any bugs discovered in the VM or language.
+1.  Read the updated [`ROADMAP.md`](./ROADMAP.md) to understand the high-level goals.
+2.  Pick a task from the lists below, starting with **P0**.
+3.  Follow the guidelines in [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
 ______________________________________________________________________
 
-## 3. Implementation Cleanups
+### [P0] T81Lang Compiler
 
-- Refactor C++ code in `src/` to:
-  - Use modern C++ constructs consistently.
-  - Reduce duplication between similar modules.
-- Improve error messages and diagnostics for users of the library.
+**Goal:** Fully implement the C++20 compiler to match the `t81lang-spec.md`. This is the critical path to v1.0.
+
+- **[EPIC] Implement Semantic Analysis & Type System:**
+    - **[M] Task:** Create the foundational `SemanticAnalyzer` class that traverses the AST. Initially, it will only resolve symbols and populate a `SymbolTable`.
+    - **[L] Task:** Implement the core type-checking logic within the `SemanticAnalyzer`. Enforce all type rules from the spec, including numeric widening, function signatures, and return types.
+    - **[M] Task:** Implement type checking for generic types, focusing on `Option[T]` and `Result[T, E]`.
+    - **[S] Task:** Create a new end-to-end test for `Option/Result` that defines a function returning an `Option`, calls it, and verifies the result. This will be the driving test for the type system.
+
+- **[EPIC] Expand Language Feature Support:**
+    - **[L] Task:** Expand the `Parser` to recognize the `loop` and `match` keywords and statement structures.
+    - **[L] Task:** Implement the lowering of `loop` and `match` expressions in the `IRGenerator` into the correct TISC conditional jumps and labels.
+
+- **[EPIC] Improve Developer Experience:**
+    - **[M] Task:** Implement a robust error reporting system that provides clear, actionable error messages with line and column numbers for both parsing and type errors.
+    - **[M] Task:** Create a `t81` command-line tool with `compile` and `run` subcommands to drive the compiler and VM.
 
 ______________________________________________________________________
 
-## 4. Tooling & Dev Experience
+### [P1] HanoiVM & TISC Runtime
 
-- Enhance developer docs in `docs/`:
-  - “How to build and run tests”
-  - “How to add a new opcode”
-  - “How to extend T81Lang”
+**Goal:** Harden the VM and integrate it with other core systems. These tasks can be worked on in parallel with P0, but are secondary.
 
-These tasks are designed to be safe for AI assistance: they improve correctness, clarity, and ergonomics without altering the core architecture or safety guarantees.
+- **[EPIC] Implement the T81VM Memory Model:**
+    - **[L] Task:** Design and implement the full stack and heap memory model as defined in `spec/t81vm-spec.md`.
+    - **[M] Task:** Add VM instructions for stack manipulation (push, pop, stack pointers).
+
+- **[EPIC] Harden the VM:**
+    - **[M] Task:** Improve VM fault handling. Ensure all illegal operations (e.g., division by zero, out-of-bounds memory access) result in deterministic, spec-compliant faults.
+    - **[L] Task:** Add extensive "negative" tests for the VM that deliberately trigger faults and verify the correct behavior.
+
+______________________________________________________________________
+
+### [P2] Axion Kernel & Documentation
+
+**Goal:** Transform stubs into functional components and improve documentation.
+
+- **[EPIC] Implement the Axion Kernel:**
+    - **[M] Task:** Formalize the API between the HanoiVM and the Axion Kernel.
+    - **[L] Task:** Implement the first set of safety policies in the Axion Kernel (e.g., Recursion Depth Limiter, Instruction Counter).
+    - **[M] Task:** Integrate the specified Axion hooks (`AXREAD`, `AXSET`, etc.) into the VM's main dispatch loop.
+
+- **[EPIC] General Documentation & Good First Issues:**
+    - **[S] Task:** Add more unit tests for existing data types (`T81Float`, `Tensor`).
+    - **[S] Task:** Improve Doxygen comments on public headers in `/include/t81/`.
+    - **[M] Task:** Update the `docs/tensor-guide.md` to reflect the current C++ `Tensor` API.

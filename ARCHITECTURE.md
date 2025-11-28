@@ -1,139 +1,72 @@
-# T81 Foundation — Architecture Overview
+# T81 Foundation: Architecture Overview
 
-_T81 is a ternary-native computation stack with a formal, spec-first constitution._
-
-This document gives AI tools and humans a fast, high-level map of the system and where to read next.
+This document provides a high-level map of the T81 C++ codebase, its components, and the data flow from source code to execution.
 
 ______________________________________________________________________
 
-## 0. Source of Truth
+## 1. Guiding Principles
 
-1. **Specifications (normative)**
-
-   - `spec/` is the canonical definition of the T81 ecosystem.
-   - Code must conform to the spec; the spec is not retrofitted to implementation.
-   - Any normative change to behavior flows through an RFC → spec → implementation pipeline.
-
-2. **Implementation (non-normative, but binding to spec)**
-
-   - `include/t81/` — public C++ API surface.
-   - `src/` — C++ implementations and C API bridge.
-   - `legacy/` — historical CWEB / HanoiVM code, kept as reference and migration source.
-
-If a conflict exists between spec and implementation, assume **spec is right** and propose a fix to the implementation.
+- **Specification is the Source of Truth:** The `/spec` directory contains the formal, normative definition of the system. The C++ implementation must conform to the spec. If there is a discrepancy, the spec is considered correct.
+- **Layered & Decoupled Components:** The system is organized into distinct libraries with clear responsibilities and dependencies, managed by CMake.
+- **Header-Only Core Types:** Core data types in `t81_core` are often header-only for portability and performance, while more complex logic is in compiled `.cpp` files.
 
 ______________________________________________________________________
 
-## 1. Layered Stack
+## 2. Component Overview (CMake Libraries)
 
-From bottom to top:
+The C++ codebase is structured as a set of static libraries that depend on each other. Understanding these libraries is key to understanding the architecture.
 
-1. **T81 Arithmetic Layer**
+| Library          | Path (`/src`, `/include`) | Responsibilities                                                                        | Core Dependencies |
+| ---------------- | ------------------------- | --------------------------------------------------------------------------------------- | ----------------- |
+| `t81_core`       | `core/`, `hanoi/`, etc.   | Foundational data types (`T81Int`, `Fraction`, `Tensor`), stubs (CanonFS, Axion), VM state. | (none)            |
+| `t81_io`         | `io/`                     | I/O utilities, primarily for loading tensors from disk.                                 | `t81_core`        |
+| `t81_tisc`       | `tisc/`                   | TISC data structures, pretty-printing, and binary encoding/decoding (`BinaryEmitter`).  | `t81_core`        |
+| `t81_frontend`   | `frontend/`               | The T81Lang compiler: Lexer, Parser, AST, Symbol Table, and IR Generator.               | `t81_tisc`        |
+| `t81_vm`         | `vm/`                     | The TISC virtual machine interface and interpreter-based execution loop.                | `t81_core`        |
 
-   - Domain: base-81 arithmetic, balanced ternary representation, hashing/encoding.
-   - Code: `include/t81/{bigint,fraction,hash,entropy}.hpp`, corresponding `src/` files.
-   - Role: deterministic numeric substrate; all higher layers rely on this.
-
-2. **T243 / T729 Symbolic & Tensor Layers**
-
-   - Domain: symbolic logic trees (`T243`), tensor operations and AI-oriented math (`T729`).
-   - Code: `include/t81/tensor/**.hpp`, `include/t81/entropy.hpp`, future `axion/` primitives.
-   - Role: high-level algebra, tensor computations, AI-facing math.
-
-3. **TISC / IR Layer (Instruction Set & Bytecode)**
-
-   - Domain: Ternary Instruction Set (TISC), IR encoding & decoding, opcodes.
-   - Code: `include/t81/ir/{opcodes,insn,encoding}.hpp`, IR helpers in `src/`.
-   - Spec: `spec/tisc-spec.md`, `spec/t81vm-spec.md`.
-   - Role: stable, spec-driven instruction format for the virtual machine.
-
-4. **T81 Virtual Machine (HanoiVM)**
-
-   - Domain: execution engine, loader, recursion tiers, promotion logic.
-   - Code:
-     - Modern C++ VM: lives under `src/` (ongoing migration).
-     - Legacy CWEB VM: `legacy/hanoivm/src/hanoivm_core/`.
-   - Spec: `spec/t81vm-spec.md`.
-   - Role: execute TISC programs deterministically on a ternary model.
-
-5. **T81Lang (Programming Language)**
-
-   - Domain: language syntax, type system, compilation to TISC.
-   - Code: `include/t81/ternary.hpp`, eventual `t81lang` compiler under `src/`.
-   - Spec: `spec/t81lang-spec.md`.
-   - Role: user-facing language for T81, mapping source → IR → VM.
-
-6. **Axion Kernel & Cognitive Tiers**
-
-   - Domain: safety supervisor, cognitive recursion, proto-AGI substrate.
-   - Spec: `spec/axion-kernel.md`, `spec/cognitive-tiers.md`.
-   - Code: `include/t81/axion/api.hpp` and related modules.
-   - Role: enforce constitutional constraints, govern higher-order behaviors.
+The main executable target, `t81`, acts as a command-line driver that integrates these components.
 
 ______________________________________________________________________
 
-## 2. Directory Map for Agents
+## 3. Compilation and Execution Flow
 
-When working with this repo:
+The central purpose of the T81 toolchain is to compile high-level T81Lang source code into low-level TISC bytecode, which is then executed by the virtual machine.
 
-- **Start here (for understanding):**
+This process flows through several distinct stages, each handled by a different component:
 
-  - `README.md`
-  - `ARCHITECTURE.md` (this file)
-  - `AGENTS.md`
-  - `spec/index.md`
+```mermaid
+graph TD
+    subgraph Toolchain
+        A["T81Lang Source (.t81)"] --> B{t81_frontend::Lexer};
+        B --> C["Token Stream"];
+        C --> D{t81_frontend::Parser};
+        D --> E["Abstract Syntax Tree (AST)"];
+        E --> F{t81_frontend::IRGenerator};
+        F --> G["TISC Intermediate Rep. (IR)"];
+        G --> H{t81_tisc::BinaryEmitter};
+        H --> I["TISC Bytecode"];
+    end
 
-- **Specs (normative):**
+    subgraph Execution
+        I --> J{t81_vm::VirtualMachine};
+        J --> K["Execution Result"];
+    end
 
-  - `spec/t81-overview.md` — ecosystem overview.
-  - `spec/t81-data-types.md` — numeric & structural types.
-  - `spec/tisc-spec.md` — instruction set.
-  - `spec/t81vm-spec.md` — VM behavior.
-  - `spec/t81lang-spec.md` — language.
-  - `spec/axion-kernel.md`, `spec/cognitive-tiers.md` — higher-tier behavior.
+    style A fill:#fff0e6,stroke:#ff9933
+    style I fill:#e6f3ff,stroke:#3399ff
+    style K fill:#e6ffe6,stroke:#33cc33
+```
 
-- **Implementation (C++):**
-
-  - `include/t81/` — headers; treat this as the public API.
-  - `src/` — implementations; safe place for refactors that respect the spec.
-  - `tests/cpp/` — C++ test suite; always update tests when behavior changes.
-
-- **Docs & site:**
-
-  - `docs/` — static site, Jekyll/MkDocs-style docs.
-  - `docs/search/` — search index builder (Node / Lunr).
-  - `docs/_includes/sidebar.html` — generated sidebar.
-
-- **Legacy + reference:**
-
-  - `legacy/hanoivm/src/` — CWEB VM and libraries.
-  - Use this for migration and historical understanding, not for new features.
+1.  **Lexing (`Lexer`):** The raw source code string is converted into a sequence of tokens (e.g., identifiers, keywords, operators).
+2.  **Parsing (`Parser`):** The token stream is parsed to build an Abstract Syntax Tree (AST), a hierarchical representation of the code's structure. The parser is a recursive-descent implementation.
+3.  **IR Generation (`IRGenerator`):** The AST is traversed in a "post-order" fashion (visiting children before the parent). For each node, the generator emits one or more TISC instructions in a simple, linear Intermediate Representation (IR).
+4.  **Binary Emission (`BinaryEmitter`):** The textual/structured IR is encoded into its final, compact binary bytecode format. This involves a two-pass process to resolve jump labels into concrete addresses.
+5.  **Execution (`VirtualMachine`):** The VM loads the TISC bytecode and executes it instruction by instruction in a simple fetch-decode-execute loop.
 
 ______________________________________________________________________
 
-## 3. How Changes Should Flow
+## 4. Key Architectural Boundaries
 
-1. **Idea → RFC (optional, for big changes)**
-   - For substantial changes, write an RFC under `spec/rfcs/`.
-2. **Spec update**
-   - Update the relevant spec file in `spec/` first.
-   - Keep prose and formal definitions consistent.
-3. **Implementation update**
-   - Update `include/t81/` and `src/` to conform to the new spec.
-   - Keep the C API stable where possible.
-4. **Tests + docs**
-   - Add/extend tests in `tests/cpp/`.
-   - Update `docs/` and any user-facing references.
-
-______________________________________________________________________
-
-## 4. Rules for AI Tools
-
-1. **Always read** `AGENTS.md`, `ARCHITECTURE.md`, and `spec/index.md` before large changes.
-2. **Do not** modify `spec/` files without:
-   - Explaining how the change affects the rest of the system.
-   - Updating the related implementation and tests in the same PR.
-3. **Prefer** small, atomic PRs:
-   - One behavior or subsystem per change.
-4. **Never** silently change semantics:
-   - If behavior changes, update the spec and tests explicitly.
+- **Frontend vs. TISC:** The `t81_frontend` library is responsible for all source language processing. Its sole output is the TISC IR. It has no knowledge of the VM or binary formats.
+- **TISC vs. VM:** The `t81_tisc` library defines the *format* of the instruction set. The `t81_vm` library provides the *implementation* that executes that format. This separation allows for different backends (e.g., an interpreter, a JIT compiler) to target the same stable TISC representation.
+- **Core vs. Everything:** The `t81_core` library is foundational and must not depend on any higher-level components like the frontend or TISC. It provides the universal data structures used by all other parts of the system.
