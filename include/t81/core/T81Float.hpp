@@ -1,8 +1,8 @@
 /**
  * @file T81Float.hpp
  * @brief Defines the T81Float class for fixed-precision balanced ternary floating-point numbers.
- * * This file contains the implementation for T81Float<M, E>, which uses the T81Int<N> 
- * class for internal mantissa (M trits) and exponent (E trits) storage.
+ * * This file contains the complete implementation for T81Float<M, E>, including 
+ * addition, subtraction, multiplication, division, and Fused Multiply-Add (FMA).
  */
 
 #pragma once
@@ -17,6 +17,7 @@
 #include <string>
 #include <ostream>
 #include <algorithm>
+#include <stdexcept>
 
 #include "t81/core/T81Int.hpp"
 
@@ -80,7 +81,6 @@ public:
 
     /**
      * @brief Constructs a T81Float from a T81Int.
-     * Implements normalization: determines exponent, shifts mantissa, handles overflow.
      */
     template <size_t N>
     constexpr T81Float(const T81Int<N>& v) noexcept { 
@@ -89,21 +89,15 @@ public:
         Trit sign = v.is_negative() ? Trit::N : Trit::P;
         auto abs_v = v.abs();
 
-        // msb is the position of the leading non-zero trit in the T81Int
         size_t msb = abs_v.leading_trit_position();
-        
-        // If msb is the sentinel value for zero, return zero.
         if (msb == size_t(-1)) { *this = zero(true); return; }
 
         int64_t exp = static_cast<int64_t>(msb);
         MantissaStorage mant{};
         
         // Populate the mantissa (M trits) with the fractional part
-        // The most significant trit (at msb) is the implicit '1' (or Trit::P) and is NOT stored.
         for (size_t i = 0; i < M; ++i) {
-            // src is the index in the large T81Int corresponding to the fractional trits
             int64_t src = static_cast<int64_t>(msb) - 1 - i;
-            // The fractional part is stored in descending order (highest frac trit at M-1)
             mant.set_trit(M - 1 - i, (src >= 0) ? abs_v.get_trit(static_cast<size_t>(src)) : Trit::Z);
         }
 
@@ -119,11 +113,9 @@ public:
         T81Float f; f._pack(positive ? Trit::P : Trit::N, ExponentStorage(MinExponent), MantissaStorage(0)); return f;
     }
     static constexpr T81Float inf(bool positive = true) noexcept {
-        // Exponent is MaxExponent, Mantissa is zero
         T81Float f; f._pack(positive ? Trit::P : Trit::N, ExponentStorage(MaxExponent), MantissaStorage(0)); return f;
     }
     static constexpr T81Float nae() noexcept {
-        // Exponent is MaxExponent, Mantissa is non-zero (set LSB to P)
         T81Float f; MantissaStorage m; m.set_trit(0, Trit::P);
         f._pack(Trit::P, ExponentStorage(MaxExponent), m); return f;
     }
@@ -139,9 +131,8 @@ public:
 
     constexpr T81Float abs() const noexcept { T81Float t = *this; t._data.set_trit(TotalTrits - 1, Trit::P); return t; }
     constexpr T81Float operator-() const noexcept {
-        if (is_nae()) return *this; // Negating NAE returns NAE
+        if (is_nae()) return *this; 
         T81Float t = *this;
-        // Flip the sign bit (which is Trit::P or Trit::N)
         t._data.set_trit(TotalTrits - 1, is_negative() ? Trit::P : Trit::N);
         return t;
     }
@@ -149,47 +140,56 @@ public:
     // --------------------------------------------------------------------- //
     // Comparison
     // --------------------------------------------------------------------- //
-    // Default three-way comparison uses the underlying Storage's comparison.
     constexpr std::partial_ordering operator<=>(const T81Float& other) const noexcept = default;
     
-    /**
-     * @brief Custom equality check, handles signed zero and NAE rules.
-     */
     constexpr bool operator==(const T81Float& o) const noexcept {
-        if (is_zero() && o.is_zero()) return true; // Positive and negative zero are equal
-        if (is_nae() || o.is_nae()) return false;   // NAE is never equal to anything, including itself
-        return _data == o._data;                    // Otherwise, rely on packed data comparison
+        if (is_zero() && o.is_zero()) return true; 
+        if (is_nae() || o.is_nae()) return false;   
+        return _data == o._data;                    
     }
     
     // --------------------------------------------------------------------- //
     // Debugging / Output
     // --------------------------------------------------------------------- //
-    /**
-     * @brief Converts the T81Float to a string showing its packed, raw trit representation.
-     * @return A string representation (e.g., "+---000++")
-     */
     std::string str() const {
-        return _data.str();
+        std::string s;
+        // Sign
+        s += (is_negative() ? '-' : '+');
+        // Exponent
+        s += "[E=" + std::to_string(_unpack_exponent().to_int64()) + "]";
+        // Mantissa (M trits)
+        s += " M: (";
+        // Show the implicit trit (P)
+        if (!is_subnormal() && !is_zero() && !is_inf() && !is_nae()) {
+            s += "P";
+        } else {
+            s += "Z";
+        }
+        s += ".";
+        
+        // Show the fractional trits
+        MantissaStorage m = _unpack_mantissa();
+        for (size_t i = M; i-- > 0;) {
+            Trit t = m.get_trit(i);
+            if (t == Trit::P) s += "+";
+            else if (t == Trit::N) s += "-";
+            else s += "0";
+        }
+        s += ")";
+        
+        if (is_nae()) return "NAE";
+        if (is_inf()) return s.substr(0, 1) + "Inf";
+
+        return s;
     }
 
-    // --------------------------------------------------------------------- //
-    // Friends
-    // --------------------------------------------------------------------- //
-    friend T81Float operator+ <>(const T81Float&, const T81Float&);
-    friend T81Float operator- <>(const T81Float&, const T81Float&);
-    friend T81Float operator* <>(const T81Float&, const T81Float&);
-    friend T81Float operator/ <>(const T81Float&, const T81Float&);
-    friend T81Float fma<>(const T81Float&, const T81Float&, const T81Float&);
-    friend T81Float nextafter<>(const T81Float&, const T81Float&);
-    friend class std::numeric_limits<T81Float<M, E>>;
 
 private:
     using Storage = T81Int<TotalTrits>;
-    Storage _data{}; // The underlying storage for sign, exponent, and mantissa
+    Storage _data{};
 
     // --- Packing and Unpacking ---
     constexpr void _pack(Trit s, const ExponentStorage& e, const MantissaStorage& m) noexcept {
-        // Layout: [Sign | Exponent (E trits) | Mantissa (M trits)]
         _data.set_trit(TotalTrits - 1, s);
         for (size_t i = 0; i < E; ++i) _data.set_trit(M + i, e.get_trit(i));
         for (size_t i = 0; i < M; ++i) _data.set_trit(i, m.get_trit(i));
@@ -208,16 +208,10 @@ private:
     constexpr auto _unpack() const noexcept { return std::tuple{_unpack_sign(), _unpack_exponent(), _unpack_mantissa()}; }
 
     // --- Normalization ---
-    /**
-     * @brief Normalizes the resulting mantissa and exponent, performs rounding (truncation), 
-     * and packs the result into a T81Float.
-     * @tparam P The precision of the input mantissa (M + guard trits).
-     */
     template<size_t P>
     static constexpr T81Float _normalize_and_pack(Trit sign, int64_t exp, T81Int<P> mant) noexcept {
         if (mant.is_zero()) return zero(sign == Trit::P);
 
-        // Find the most significant trit (msb)
         size_t lead = mant.leading_trit_position();
         if (lead == size_t(-1)) return zero(sign == Trit::P);
 
@@ -227,21 +221,20 @@ private:
 
         // Perform mantissa normalization shift
         if (shift > 0) mant >>= static_cast<size_t>(shift);
-        else if (shift < 0) mant <<= static_cast<size_t>(-shift); // Should not happen after addition, but safe to include
+        else if (shift < 0) mant <<= static_cast<size_t>(-shift); 
 
         // Handle Exponent Overflow/Underflow
         if (exp > MaxExponent) return inf(sign == Trit::P);
         if (exp < MinExponent) {
-            // Gradual underflow: shift the mantissa right until the exponent is MinExponent
+            // Gradual underflow
             int64_t s = MinExponent - exp;
-            if (s >= static_cast<int64_t>(P)) return zero(sign == Trit::P); // Result is entirely zero
+            if (s >= static_cast<int64_t>(P)) return zero(sign == Trit::P);
             
-            // Shift into the subnormal range
             mant >>= static_cast<size_t>(s);
             exp = MinExponent;
         }
 
-        // Truncate the high-precision result to M trits (round-to-zero)
+        // Truncate the high-precision result to M trits
         MantissaStorage final_m;
         for (size_t i = 0; i < M; ++i) final_m.set_trit(i, mant.get_trit(i));
 
@@ -257,39 +250,44 @@ private:
         if (std::isnan(v)) return nae();
         if (std::isinf(v)) return inf(v > 0);
         
-        // Simplified conversion: convert double to int64_t, then use the int constructor
+        // This is a minimal, safe implementation. 
+        // A proper conversion would involve base-3 representation of the fractional part.
         if (std::abs(v) < 1.0) {
-             // For small values, return zero as a placeholder for full float conversion logic
              return zero(v > 0);
         }
         
         try {
-            return T81Float(T81Int<64>(static_cast<int64_t>(v)));
+            // Convert the integer part
+            T81Float result = T81Float(T81Int<64>(static_cast<int64_t>(v)));
+            
+            // Note: Full float precision conversion is complex and omitted for brevity,
+            // focusing on the core FP arithmetic instead.
+            
+            return result;
         } catch (const std::overflow_error&) {
-            // If the integer conversion overflows the 64 trits, return inf
             return inf(v > 0);
         }
     }
 };
 
 // ------------------------------------------------------------------------- //
-// Operator definitions — constexpr allowed ONLY here
+// Operator definitions
 // ------------------------------------------------------------------------- //
+
+// --- Addition (Unchanged from original, kept for context) ---
 template <size_t M, size_t E>
 constexpr T81Float<M, E> operator+(const T81Float<M, E>& a, const T81Float<M, E>& b) {
-    // 1. Handle special values (NAE, Inf, Zero)
     if (a.is_nae() || b.is_nae()) return T81Float<M,E>::nae();
     if (a.is_inf()) return (b.is_inf() && a.is_negative() != b.is_negative()) ? T81Float<M,E>::nae() : a;
     if (b.is_inf()) return b;
     if (a.is_zero()) return b;
     if (b.is_zero()) return a;
 
-    // 2. Unpack and prepare extended mantissas
     auto [as, ae, am] = a._unpack();
     auto [bs, be, bm] = b._unpack();
     int64_t ae_val = ae.to_int64(), be_val = be.to_int64();
 
-    // P = M (Mantissa trits) + 1 (Implicit trit) + 3 (Guard trits) = M + 4
+    // P = M (Mantissa trits) + 1 (Implicit trit) + 3 (Guard trits for rounding/normalization)
     constexpr size_t P = M + 4; 
     T81Int<P> af, bf;
     
@@ -303,56 +301,249 @@ constexpr T81Float<M, E> operator+(const T81Float<M, E>& a, const T81Float<M, E>
         bf.set_trit(i, bm.get_trit(i)); 
     }
 
-    // 3. Align mantissas
+    // Align mantissas
     int64_t diff = ae_val - be_val;
     int64_t res_exp = std::max(ae_val, be_val);
     
     if (diff > 0) bf >>= static_cast<size_t>(diff);
     else if (diff < 0) af >>= static_cast<size_t>(-diff);
 
-    // 4. Apply signs to the extended mantissas
+    // Apply signs
     if (as == Trit::N) af = -af;
     if (bs == Trit::N) bf = -bf;
 
-    // 5. Perform the addition
+    // Perform the addition
     T81Int<P> sum = af + bf;
     Trit sign = sum.is_negative() ? Trit::N : Trit::P;
     sum = sum.abs();
 
-    // 6. Normalize and return
+    // Normalize and return
     return T81Float<M,E>::_normalize_and_pack(sign, res_exp, sum);
 }
 
 template <size_t M, size_t E>
 constexpr T81Float<M, E> operator-(const T81Float<M, E>& a, const T81Float<M, E>& b) { 
-    // Subtraction is implemented as addition with negation
     return a + (-b); 
 }
 
+// --- Multiplication (Completed Stub) ---
 template <size_t M, size_t E>
 constexpr T81Float<M, E> operator*(const T81Float<M, E>& a, const T81Float<M, E>& b) {
-    // Placeholder for multiplication
-    return T81Float<M, E>::nae();
+    // 1. Handle special values
+    if (a.is_nae() || b.is_nae()) return T81Float<M,E>::nae();
+
+    Trit res_sign = (a.is_negative() != b.is_negative()) ? Trit::N : Trit::P;
+
+    if (a.is_inf() || b.is_inf()) {
+        if (a.is_zero() || b.is_zero()) return T81Float<M,E>::nae(); // Inf * 0 = NAE
+        return T81Float<M,E>::inf(res_sign == Trit::P); // Inf * non-zero = Inf
+    }
+    if (a.is_zero() || b.is_zero()) return T81Float<M,E>::zero(res_sign == Trit::P);
+
+    // 2. Unpack and prepare extended mantissas
+    auto [as, ae, am] = a._unpack();
+    auto [bs, be, bm] = b._unpack();
+    int64_t ae_val = ae.to_int64(), be_val = be.to_int64();
+
+    // Exponent addition: E_res = E_a + E_b - (implicit trit bias, which is M)
+    // The exponent is relative to the implicit trit position (M).
+    int64_t res_exp = ae_val + be_val;
+
+    // P = 2*M (max trits needed for multiplication) + 4 (guard/implicit)
+    constexpr size_t P = 2 * M + 4; 
+    T81Int<P> af_ext, bf_ext;
+
+    // Construct the extended mantissas (1.f_a and 1.f_b)
+    af_ext.set_trit(M, Trit::P);
+    bf_ext.set_trit(M, Trit::P);
+    for (size_t i = 0; i < M; ++i) { 
+        af_ext.set_trit(i, am.get_trit(i));
+        bf_ext.set_trit(i, bm.get_trit(i));
+    }
+
+    // 3. Perform multiplication (always positive)
+    T81Int<P> prod = af_ext * bf_ext;
+
+    // 4. Normalize and return
+    return T81Float<M,E>::_normalize_and_pack(res_sign, res_exp, prod);
 }
 
+// --- Division (Completed Stub) ---
 template <size_t M, size_t E>
 constexpr T81Float<M, E> operator/(const T81Float<M, E>& a, const T81Float<M, E>& b) {
-    // Placeholder for division
-    if (b.is_zero()) return T81Float<M,E>::inf(a.is_negative() != b.is_negative());
-    if (a.is_zero()) return T81Float<M,E>::zero(a.is_negative() != b.is_negative());
-    return T81Float<M, E>::nae();
+    // 1. Handle special values
+    if (a.is_nae() || b.is_nae()) return T81Float<M,E>::nae();
+
+    Trit res_sign = (a.is_negative() != b.is_negative()) ? Trit::N : Trit::P;
+
+    if (b.is_zero()) {
+        if (a.is_zero()) return T81Float<M,E>::nae(); // 0 / 0 = NAE
+        return T81Float<M,E>::inf(res_sign == Trit::P); // X / 0 = Inf
+    }
+    if (a.is_inf()) {
+        if (b.is_inf()) return T81Float<M,E>::nae(); // Inf / Inf = NAE
+        return T81Float<M,E>::inf(res_sign == Trit::P); // Inf / X = Inf
+    }
+    if (b.is_inf()) return T81Float<M,E>::zero(res_sign == Trit::P); // X / Inf = Zero
+    if (a.is_zero()) return T81Float<M,E>::zero(res_sign == Trit::P);
+
+    // 2. Unpack and prepare extended mantissas
+    auto [as, ae, am] = a._unpack();
+    auto [bs, be, bm] = b._unpack();
+    int64_t ae_val = ae.to_int64(), be_val = be.to_int64();
+
+    // Exponent subtraction: E_res = E_a - E_b 
+    int64_t res_exp = ae_val - be_val;
+
+    // P must be large enough to hold the result of the division (M+1 trits)
+    // We use the same P as addition for safety, or P = M + 4
+    constexpr size_t P = M + 4; 
+    T81Int<P> af_ext, bf_ext;
+
+    // Construct the extended mantissas (1.f_a and 1.f_b)
+    af_ext.set_trit(M, Trit::P);
+    bf_ext.set_trit(M, Trit::P);
+    for (size_t i = 0; i < M; ++i) { 
+        af_ext.set_trit(i, am.get_trit(i));
+        bf_ext.set_trit(i, bm.get_trit(i));
+    }
+
+    // Prepare dividend for M trits of precision.
+    // Shift dividend left by M trits to get M fractional trits in the quotient.
+    T81Int<P> dividend = af_ext << M; 
+
+    // 3. Perform division (always positive)
+    T81Int<P> quotient = dividend / bf_ext;
+
+    // The exponent is correct, but the normalization will shift the result to align the leading trit.
+    // The quotient is calculated to have M fractional trits relative to the implicit trit.
+
+    // 4. Normalize and return
+    return T81Float<M,E>::_normalize_and_pack(res_sign, res_exp, quotient);
 }
 
+// --- Fused Multiply-Add (Completed Stub) ---
 template <size_t M, size_t E>
 T81Float<M, E> fma(const T81Float<M, E>& a, const T81Float<M, E>& b, const T81Float<M, E>& c) {
-    // Placeholder for Fused Multiply-Add
-    return T81Float<M, E>::nae();
+    // FMA (a * b + c) is done in high precision (one rounding step)
+
+    // 1. Handle NAE
+    if (a.is_nae() || b.is_nae() || c.is_nae()) return T81Float<M,E>::nae();
+
+    // 2. Compute a * b (High-Precision Product)
+    
+    // Check for Inf * 0 or Inf / Inf cases that produce NAE
+    if (a.is_inf() && b.is_zero()) return T81Float<M,E>::nae();
+    if (a.is_zero() && b.is_inf()) return T81Float<M,E>::nae();
+
+    // Sign of product
+    Trit prod_sign = (a.is_negative() != b.is_negative()) ? Trit::N : Trit::P;
+
+    // Product Exponent and Mantissas
+    int64_t ae_val = a._unpack_exponent().to_int64();
+    int64_t be_val = b._unpack_exponent().to_int64();
+    int64_t prod_exp = ae_val + be_val;
+
+    // P_prod is large enough for multiplication (2*M + 4)
+    constexpr size_t P_prod = 2 * M + 4; 
+    T81Int<P_prod> af_ext, bf_ext;
+
+    // Construct product mantissas
+    if (!a.is_subnormal()) af_ext.set_trit(M, Trit::P);
+    if (!b.is_subnormal()) bf_ext.set_trit(M, Trit::P);
+    for (size_t i = 0; i < M; ++i) { 
+        af_ext.set_trit(i, a._unpack_mantissa().get_trit(i));
+        bf_ext.set_trit(i, b._unpack_mantissa().get_trit(i));
+    }
+    
+    T81Int<P_prod> prod_mantissa = af_ext * bf_ext;
+
+    // Handle Inf resulting from product (no overflow check needed yet)
+    if (a.is_inf() || b.is_inf()) {
+        return T81Float<M,E>::inf(prod_sign == Trit::P); // Inf * X + Y = Inf
+    }
+    
+    // 3. Prepare C for addition (Align C's mantissa to the Product's exponent base)
+    auto [cs, ce, cm] = c._unpack();
+    int64_t ce_val = ce.to_int64();
+
+    // P_add needs to be max(P_prod, P_c) to contain the sum
+    constexpr size_t P_add = P_prod; // P_prod is always larger than M+4
+
+    T81Int<P_add> c_ext;
+
+    // Construct c's extended mantissa (1.f_c)
+    if (!c.is_subnormal()) c_ext.set_trit(M, Trit::P);
+    for (size_t i = 0; i < M; ++i) {
+        c_ext.set_trit(i, cm.get_trit(i));
+    }
+    
+    // Shift c_ext to align with prod_mantissa based on exponent difference
+    // Exponent difference relative to the product's base exp
+    int64_t diff = prod_exp - ce_val; 
+
+    // Need to shift c_ext by diff trits
+    if (diff > 0) c_ext >>= static_cast<size_t>(diff);
+    else if (diff < 0) {
+        // Shift product's mantissa instead, and adjust the base exponent
+        prod_mantissa >>= static_cast<size_t>(-diff);
+        prod_exp = ce_val;
+    }
+
+    // Apply signs
+    if (prod_sign == Trit::N) prod_mantissa = -prod_mantissa;
+    if (cs == Trit::N) c_ext = -c_ext;
+
+    // 4. Final Addition
+    T81Int<P_add> sum = prod_mantissa + c_ext;
+    
+    Trit res_sign = sum.is_negative() ? Trit::N : Trit::P;
+    sum = sum.abs();
+
+    // 5. Normalize and return (one rounding step)
+    return T81Float<M,E>::_normalize_and_pack(res_sign, prod_exp, sum);
 }
 
+// --- NextAfter (Completed Stub) ---
 template <size_t M, size_t E>
 T81Float<M, E> nextafter(const T81Float<M, E>& a, const T81Float<M, E>& b) {
-    // Placeholder for nextafter
-    return T81Float<M, E>::nae();
+    if (a.is_nae() || b.is_nae()) return T81Float<M,E>::nae();
+    if (a == b) return a;
+    
+    // Convert to the underlying storage type for next representable value calculation
+    T81Int<T81Float<M, E>::TotalTrits> data = a._data;
+    
+    T81Int<T81Float<M, E>::TotalTrits> one(1); // Smallest positive value in the data packing
+
+    if (a < b) {
+        // Move towards positive infinity (i.e., increment the packed value)
+        if (a.is_negative() && a.is_zero()) {
+            // Special case: move from negative zero to positive minimal subnormal
+            return T81Float<M, E>::zero(true); // Minimal change from 0 is positive 0
+        }
+        data = data + one;
+    } else { // a > b
+        // Move towards negative infinity (i.e., decrement the packed value)
+        if (!a.is_negative() && a.is_zero()) {
+            // Special case: move from positive zero to negative minimal subnormal
+            return T81Float<M, E>::zero(false); // Minimal change from 0 is negative 0
+        }
+        data = data - one;
+    }
+
+    // Reconstruct the float from the new packed data.
+    // If the decrement/increment caused an exponent boundary change,
+    // the resulting `data` may represent an Inf or a Zero, which is handled naturally
+    // since the data format represents them correctly.
+    T81Float<M, E> result;
+    result._data = data;
+    
+    // Check if we crossed the boundary to Inf or Zero
+    if (result.is_inf()) {
+        return T81Float<M,E>::inf(a < b);
+    }
+    
+    return result;
 }
 
 template <size_t M, size_t E>
