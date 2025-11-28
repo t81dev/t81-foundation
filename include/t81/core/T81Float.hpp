@@ -103,7 +103,7 @@ private:
         return size_t(-1);
     }
 
-    template <size_t Guard = 4>
+        template <size_t Guard = 4>
     static constexpr T81Float normalize(Trit sign, int64_t exp, T81Int<M + Guard> mant) noexcept {
         if (mant.is_zero()) return zero(sign == Trit::P);
 
@@ -116,6 +116,7 @@ private:
         if (shift > 0) mant >>= static_cast<size_t>(shift);
         else if (shift < 0) mant <<= static_cast<size_t>(-shift);
 
+        // Rounding: nearest-even (guard + sticky)
         bool round_up = false;
         if constexpr (Guard >= 1) {
             Trit g = mant.get_trit(M);
@@ -130,15 +131,18 @@ private:
         for (size_t i = 0; i < M; ++i) final_m.set_trit(i, mant.get_trit(i));
         if (round_up) final_m = final_m + T81Int<M>(1);
 
-        if (leading_trit(final_m) +1 == M {
+        // Carry out from rounding → increase exponent
+        if (leading_trit(final_m) + 1 == M) {
             final_m >>= 1;
             exp++;
         }
 
+        // Overflow / underflow
         if (exp >= (1LL << E) - 1) return inf(sign == Trit::P);
         if (exp <= 0) {
-            size_t under = 1 - exp;
-            if (static_cast<int64_t>(under) >= static_cast<int64_t>(M + Guard)) return zero(sign == Trit::P);            final_m >>= under;
+            int64_t under = 1 - exp;
+            if (under >= static_cast<int64_t>(M + Guard)) return zero(sign == Trit::P);
+            final_m >>= static_cast<size_t>(under);
             exp = 0;
         }
 
