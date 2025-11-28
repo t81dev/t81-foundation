@@ -224,8 +224,12 @@ if (T81_BUILD_TESTS)
   add_executable(t81_division_test tests/cpp/test_division.cpp)
   target_link_libraries(t81_division_test PRIVATE t81_core)
 
+  add_executable(t81_float_test tests/cpp/test_T81Float.cpp)
+  target_link_libraries(t81_float_test PRIVATE t81_core)
+
   enable_testing()
   set(T81_TEST_TARGETS
+    t81_float_test
     t81_division_test
     t81_t81int_test
     t81_bigint_test

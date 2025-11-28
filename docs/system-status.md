@@ -23,8 +23,15 @@ ______________________________________________________________________
 
 #### Known Gaps & Next Steps:
 
+- **T81Float<M, E>:** A templated, fixed-precision, balanced ternary floating-point type.
+  - Implemented features:
+    - Constructors and special value factories (`zero`, `inf`, `nae`).
+    - Full set of comparison operators.
+    - Unary negation, addition, and subtraction for all special and finite cases.
+  - Next Steps:
+    - Implement multiplication and division.
+    - Implement conversions to/from `double` and `T81Int`.
 - **[HIGH PRIORITY]** Implement the full arbitrary-precision logic for a `BigInt` class.
-- Implement shift operators for `T81Int`.
 - Expand the `Tensor` class to align with the full semantics of the specification.
 
 ______________________________________________________________________

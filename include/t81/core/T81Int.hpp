@@ -83,6 +83,46 @@ class T81Int {
   }
 
   /**
+   * @brief Right-shifts the number by a given amount.
+   * @param shift_amount The number of trits to shift.
+   * @return A reference to the modified T81Int.
+   */
+  T81Int& operator>>=(size_t shift_amount) {
+    if (shift_amount == 0) return *this;
+    if (shift_amount >= N) {
+      *this = T81Int(0);
+      return *this;
+    }
+    for (size_t i = 0; i < N - shift_amount; ++i) {
+      set_trit(i, get_trit(i + shift_amount));
+    }
+    for (size_t i = N - shift_amount; i < N; ++i) {
+      set_trit(i, Trit::Z);
+    }
+    return *this;
+  }
+
+  /**
+   * @brief Left-shifts the number by a given amount.
+   * @param shift_amount The number of trits to shift.
+   * @return A reference to the modified T81Int.
+   */
+  T81Int& operator<<=(size_t shift_amount) {
+    if (shift_amount == 0) return *this;
+    if (shift_amount >= N) {
+      *this = T81Int(0);
+      return *this;
+    }
+    for (size_t i = N; i-- > shift_amount;) {
+      set_trit(i, get_trit(i - shift_amount));
+    }
+    for (size_t i = 0; i < shift_amount; ++i) {
+      set_trit(i, Trit::Z);
+    }
+    return *this;
+  }
+
+  /**
    * @brief Performs unary negation.
    * @return A new T81Int with the negated value.
    */
@@ -93,6 +133,15 @@ class T81Int {
       result.set_trit(i, static_cast<Trit>(-static_cast<int8_t>(current_trit)));
     }
     return result;
+  }
+
+  /**
+   * @brief Converts the T81Int to a 64-bit signed integer.
+   * @return The value converted to int64_t.
+   * @throws std::overflow_error if the value is out of range.
+   */
+  int64_t to_int64() const {
+      return to_binary<int64_t>();
   }
 
   /**
@@ -182,23 +231,6 @@ class T81Int {
     return s;
   }
 
- private:
-  // A tryte is a group of 4 trits, representing values from -40 to +40.
-  // We store N trits in a compact array of bytes (trytes).
-  static constexpr size_t num_trytes = (N + 3) / 4;
-  std::array<uint8_t, num_trytes> _trytes;
-
-  // Compile-time lookup table for powers of 3.
-  static constexpr std::array<int, 5> powers_of_3 = {1, 3, 9, 27, 81};
-
-  /**
-   * @brief Returns the byte representation of a zero tryte.
-   * @return The uint8_t value for a zero tryte.
-   */
-  static constexpr uint8_t zero_tryte() {
-    return powers_of_3[0] + powers_of_3[1] + powers_of_3[2] + powers_of_3[3]; // 40
-  }
-
   /**
    * @brief Gets the value of the trit at a given position.
    * @param index The index of the trit to retrieve (0 to N-1).
@@ -245,6 +277,23 @@ class T81Int {
     byte_val += new_unbalanced_trit * power_of_3;
 
     _trytes[tryte_index] = byte_val;
+  }
+
+ private:
+  // A tryte is a group of 4 trits, representing values from -40 to +40.
+  // We store N trits in a compact array of bytes (trytes).
+  static constexpr size_t num_trytes = (N + 3) / 4;
+  std::array<uint8_t, num_trytes> _trytes;
+
+  // Compile-time lookup table for powers of 3.
+  static constexpr std::array<int, 5> powers_of_3 = {1, 3, 9, 27, 81};
+
+  /**
+   * @brief Returns the byte representation of a zero tryte.
+   * @return The uint8_t value for a zero tryte.
+   */
+  static constexpr uint8_t zero_tryte() {
+    return powers_of_3[0] + powers_of_3[1] + powers_of_3[2] + powers_of_3[3]; // 40
   }
 
   /**
@@ -340,6 +389,16 @@ T81Int<N> operator*(const T81Int<N>& lhs, const T81Int<N>& rhs) {
  * @param divisor The number to divide by.
  * @return A pair containing the quotient and remainder.
  */
+template <size_t N>
+T81Int<N> operator>>(T81Int<N> lhs, size_t shift_amount) {
+    return lhs >>= shift_amount;
+}
+
+template <size_t N>
+T81Int<N> operator<<(T81Int<N> lhs, size_t shift_amount) {
+    return lhs <<= shift_amount;
+}
+
 template <size_t N>
 std::pair<T81Int<N>, T81Int<N>> div_mod(const T81Int<N>& dividend, const T81Int<N>& divisor) {
     if (divisor.is_zero()) {
