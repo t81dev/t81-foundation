@@ -130,7 +130,7 @@ private:
         for (size_t i = 0; i < M; ++i) final_m.set_trit(i, mant.get_trit(i));
         if (round_up) final_m = final_m + T81Int<M>(1);
 
-        if (leading_trit(final_m).leading_trit() == M) {
+        if (leading_trit(final_m) +1 == M {
             final_m >>= 1;
             exp++;
         }
