@@ -33,6 +33,27 @@ public:
     static constexpr size_t trits  = N;
     static constexpr size_t trytes = (N + 3) / 4;
 
+    template <size_t Limit = N>
+    static constexpr T81Int from_binary(int64_t value) noexcept {
+        T81Int result{};
+        bool negative = value < 0;
+        if (negative) value = -value;
+
+        size_t i = 0;
+        if (value == 0) {
+            return result;
+        }
+        while (value > 0 && i < Limit) {
+            int digit = value % 2;
+            result.set_trit(i++, digit == 1 ? Trit::P : Trit::N);
+            value /= 2;
+        }
+        if (negative) {
+            result = -result;
+        }
+        return result;
+    }
+
     // ------------------------------------------------------------------
     // Construction
     // ------------------------------------------------------------------
