@@ -201,7 +201,7 @@ void test_nextafter() {
     Float one(Int(1));
     Float two(Int(2));
 
-    assert(nextafter(one, two) > one);
+    assert(t81_nextafter(one, two) > one);
 }
 
 
