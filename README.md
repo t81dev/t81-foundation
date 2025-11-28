@@ -1,176 +1,115 @@
-# T81 Foundation
-
-**The Ternary-Native Computing Stack**
+# T81 Foundation: The Ternary-Native Computing Stack
 
 <div align="center">
   <br/>
   <img src="docs/assets/img/banner.png" alt="T81 Foundation" width="100%"/>
   <br/><br/>
 
-[![Ternary Logic](https://img.shields.io/badge/Paradigm-Ternary%20Computing-red?style=flat-square)](https://en.wikipedia.org/wiki/Ternary_computer)
-[![Balanced Ternary](https://img.shields.io/badge/Base-Balanced%20Ternary-critical?style=flat-square)](https://en.wikipedia.org/wiki/Balanced_ternary)
-[![Specification-First](https://img.shields.io/badge/Design-Specification%20First-blue?style=flat-square)](#)
+[![Paradigm: Ternary Computing](https://img.shields.io/badge/Paradigm-Ternary%20Computing-red?style=flat-square)](https://en.wikipedia.org/wiki/Ternary_computer)
+[![Design: Specification-First](https://img.shields.io/badge/Design-Specification%20First-blue?style=flat-square)](#)
 [![CI Status](https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml/badge.svg)](https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml)
-[![C++23 Core](https://img.shields.io/badge/Core-C%2B%2B23-0d1117?style=flat-square&logo=cplusplus)](#)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE-MIT)
-[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-green?style=flat-square)](LICENSE-GPL)
-[![Trinity Ecosystem](https://img.shields.io/badge/Trinity-Complete-blue)](https://github.com/t81dev/ternary).
+[![Core: C++20](https://img.shields.io/badge/Core-C%2B%2B20-0d1117?style=flat-square&logo=cplusplus)](#)
+[![License: MIT/GPL-3.0](https://img.shields.io/badge/License-MIT%20%2F%20GPL--3.0-green?style=flat-square)](LICENSE-MIT)
 
 <br/><br/>
 
 </div>
 
-## Why T81?
+## 1. What is T81?
 
-Binary won the 20th century because it was cheap to etch into silicon.\
-The 21st century will belong to systems that **think**, not just calculate.
+The T81 Foundation is building a **post-binary computing stack** from the ground up, based on balanced ternary logic (−1, 0, +1). Our goal is to create a deterministic, transparent, and auditable platform for advanced AI systems.
 
-Balanced ternary (−1, 0, +1) is not a historical footnote — it is the **correct primitive** for the era of recursive, self-aware, provably safe artificial intelligence.
+The project is a C++20 implementation of the principles laid out in the `/spec` directory. It includes:
+- A suite of **core data types** for balanced ternary arithmetic (`T81Int`, `Fraction`, `T81Float`).
+- A multi-dimensional **Tensor library** for numerical computing.
+- A prototype **T81Lang compiler** that translates a high-level language to a custom Ternary Instruction Set Computer (TISC) bytecode.
+- An interpreter-based **Virtual Machine (HanoiVM)** for executing TISC programs.
+- Stubs for a safety supervisor (**Axion Kernel**) and a content-addressable filesystem (**CanonFS**).
 
-A single trit carries **log₂(3) ≈ 1.585 bits** of information — 58% more than a bit — with **no compression tricks**. More importantly:
-
-- Numbers are naturally signed (no sign bit waste)
-- Rounding is exact and canonical (no accumulated floating-point error)
-- Three-valued logic maps perfectly to **true / unknown / false** epistemic states
-- Overflow behavior is deterministic and detectable → enabling **Axion**, the hard AI safety kernel that can provably halt cognitive drift
-
-Where binary forces you to simulate uncertainty, negation, and confidence on top of a two-state substrate, **balanced ternary is those concepts at the machine level**.
-
-```cpp
-// Binary: 8 bits → 0..255 (or -128..127 with sign bit tax)
-uint8_t bin = 0b11111111;            // 255
-
-// Balanced ternary: just 5 trits already span -121..+121
-T81::Cell a = T81::from_int( 127);
-T81::Cell b = T81::from_int(-127);
-T81::Cell sum = a + b;               // exactly 0, no overflow, no rounding error
-T81::Cell big = a * a;               // exactly 16129 — still perfectly representable
-```
-
-T81 Foundation is the first complete, production-ready computing stack that treats ternary not as a curiosity, but as the **native substrate for cognition-first AI**.
-
-From the low-level TISC instruction set to the self-supervising Axion kernel and the tiered cognitive hierarchy (T81 → T243 → T729), every layer is designed for **symbolic reasoning at scale with mathematical guarantees**.
-
-The ternary age is no longer theoretical.
+The system is currently in a **late-alpha / early-beta** state. The core numeric libraries are well-tested, while the compiler and VM are still under active development.
 
 ______________________________________________________________________
 
-## Cognitive Elevation Ladder
+## 2. Getting Started
 
-```mermaid
-graph TD
-    subgraph "Cognitive Elevation Ladder"
-        T729["T729 — Holomorphic AI / Tensor Macros<br/><i>promotion depth ≥ 24</i>"]
-        T243["T243 — Symbolic Trees / Arbitrary-Precision<br/><i>promotion depth ≥ 12</i>"]
-        T81["T81 — Base-81 Deterministic Arithmetic"]
-    end
-    T729 --> T243 --> T81
-    T81 --> VM[HanoiVM → Host Executable]
-    VM --> Future[Future Ternary Silicon]
-    style T729 fill:#ffeef8,stroke:#ff66cc
-    style T243 fill:#e6f3ff,stroke:#3399ff
-    style T81 fill:#fff0e6,stroke:#ff9933
-```
+### Prerequisites
 
-______________________________________________________________________
+- A C++20 compliant compiler (e.g., GCC 10+, Clang 12+)
+- CMake 3.16+
+- Ninja (recommended) or Make
 
-## Core Components
+### Build and Test
 
-| Layer | Responsibility | Status | Location |
-|-------------------|--------------------------------------------------------|---------------------|-----------------------------------|
-| Specification | Immutable constitution of all behavior | Complete | `/spec/` |
-| TISC ISA | Ternary Instruction Set Computer | Fully specified | `spec/tisc-spec.md` |
-| T81 Arithmetic | Balanced ternary + base-81 data types | Actively Developed | `include/t81/core/` |
-| T81Lang | High-level recursive DSL → TISC bytecode | Active design | `spec/t81lang-spec.md` |
-| Axion Kernel | AI safety, entropy monitoring, anomaly mitigation | Spec complete | `spec/axion-kernel.md` |
-| Modern Runtime | Header-only C++20 core | Active development | `include/t81/` • `src/` |
-| Legacy HanoiVM | Original literate CWEB implementation (archived) | Frozen reference | `legacy/hanoivm/` |
-
-For a detailed breakdown of the current implementation status, see the [**System Status Board**](docs/system-status.md).
-
-______________________________________________________________________
-
-<!-- T81-BENCHMARKS-START -->
-<!-- T81-BENCHMARKS-END -->
-
-## Repository Layout
-
-```
-/spec/            → Authoritative specifications & constitution
-/include/t81/     → Public header-only C++20 API (the future)
-/src/             → Implementations & optional backends
-/examples/        → Curated usage
-/tests/           → Exhaustive conformance suite
-/docs/            → Guides, migration plans, architecture
-/legacy/hanoivm/  → Immutable historical literate source
-```
-
-All new work targets the modern C++ stack.
-
-______________________________________________________________________
-
-## Getting Started (2025–2026)
-
-For a comprehensive guide to the project's architecture, current state, and onboarding process, please start with the **[Developer Handover Document](docs/handover.md)**.
-
-### 1. Read the Constitution
-
-The foundation of all work is the specification suite. The master index is here → [**spec/index.md**](spec/index.md)
-
-### 2. Use the Modern C++ API (recommended)
+To get started, clone the repository, build the project, and run the test suite.
 
 ```bash
+# 1. Clone the repository
 git clone https://github.com/t81dev/t81-foundation.git
 cd t81-foundation
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+# 2. Configure the build
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+# 3. Build all targets
 cmake --build build --parallel
+
+# 4. Run the core test suite
 ctest --test-dir build --output-on-failure
 ```
+You should see all tests pass.
 
-Your first program in < 50 lines: [**docs/cpp-quickstart.md**](docs/cpp-quickstart.md)
+### Run Demos
 
-### 3. Legacy (optional)
+The repository includes several demonstration binaries in `build/` that showcase the current capabilities of the system.
 
-The original CWEB literate implementation lives frozen in `legacy/hanoivm/` for study and provenance.
+```bash
+# High-level overview of numerics, tensors, and CanonFS
+./build/t81_demo
 
-______________________________________________________________________
+# Detailed tensor operations
+./build/t81_tensor_ops
 
-## The Nine Θ Principles (Constitutional)
+# Axion kernel stub functionality
+./build/axion_demo
+```
 
-Fully enumerated in [`spec/constitution.md`](spec/constitution.md):
+### Build the Documentation Site
 
-1. Determinism • 2. Recursive Self-Promotion • 3. Axion Oversight
-2. Ternary Purity • 5. Constitutional Sovereignty • 6. Cognition-First
-3. Intrinsic Security • 8. Radical Literacy • 9. Controlled Elevation
+The documentation website is built with Jekyll.
 
-These are **enforceable rules**, not slogans.
+```bash
+# Navigate to the docs directory
+cd docs
 
-______________________________________________________________________
+# Install dependencies (first time only)
+bundle install
 
-## Governance & Contribution
-
-- Non-trivial changes → RFC in `/spec/rfcs/`
-- Humans and AI agents follow roles in [`AGENTS.md`](AGENTS.md)
-- Full guide → [`CONTRIBUTING.md`](CONTRIBUTING.md)
-
-We operate as a research institute with open-source delivery: rigorous, deliberate, long-term.
-
-______________________________________________________________________
-
-## License
-
-Dual-licensed:
-
-- **MIT** – permissive commercial use
-- **GNU GPL v3** – copyleft protection
-
-See [`LICENSE-MIT`](LICENSE-MIT) • [`LICENSE-GPL`](LICENSE-GPL)
+# Serve the site locally at http://localhost:4000
+bundle exec jekyll serve
+```
 
 ______________________________________________________________________
 
-<div align="center">
-  <br/><br/>
-  <strong>T81 v1.0.0-SOVEREIGN</strong> — The recursion has converged.<br/>
-  The tower now stands in Hanoi.<br/><br/>
-  <i>November 22, 2025</i>
-</div>
+## 3. Repository Structure
+
+The repository is organized into distinct zones with clear boundaries.
+
+| Path            | Description                                               |
+| --------------- | --------------------------------------------------------- |
+| `/spec/`        | **Source of Truth:** The immutable project constitution.  |
+| `/include/t81/` | **Public API:** Modern, header-only C++20 core libraries. |
+| `/src/`         | **Implementation:** The compiled `.cpp` source files.       |
+| `/tests/`       | **Verification:** The C++ unit and end-to-end test suite. |
+| `/examples/`    | **Usage:** Standalone demonstration programs.             |
+| `/docs/`        | **Guidance:** Jekyll documentation site for contributors. |
+| `/legacy/`      | **Historical:** The immutable CWEB reference implementation.|
+
+______________________________________________________________________
+
+## 4. Where to Go Next
+
+- **To understand the project's vision:** Read the [T81 Overview (`spec/t81-overview.md`)](spec/t81-overview.md).
+- **For a technical deep-dive:** Start with the [Architecture Document (`ARCHITECTURE.md`)](ARCHITECTURE.md).
+- **To contribute code:** Read the [Contribution Guide (`CONTRIBUTING.md`)](CONTRIBUTING.md).
+- **To see the current state of the implementation:** View the [System Status Report (`docs/system-status.md`)](docs/system-status.md).
+- **To write your first T81 program:** Follow the [C++ Quickstart Guide (`docs/cpp-quickstart.md`)](docs/cpp-quickstart.md).

@@ -1,97 +1,40 @@
-# T81 Foundation — Design Principles
+# T81 Foundation: Design Principles
 
-This document captures the design constraints and invariants that should guide all changes.
+This document captures the design principles, architectural invariants, and implementation strategies that guide development on the T81 Foundation project.
 
 ______________________________________________________________________
 
 ## 1. Core Philosophy
 
-1. **Spec-first**\
-   Behavior is defined by the spec (`spec/`), not by historical implementation quirks.
-
-2. **Determinism by default**
-
-   - VM and language behavior must be deterministic given the same inputs.
-   - Any introduction of nondeterminism (e.g., time, entropy, network) must be explicitly spec’d and gated by Axion.
-
-3. **Ternary realism**
-
-   - Even when running on binary hardware, the model is balanced ternary.
-   - Implementation should preserve ternary semantics (e.g., rounding, overflow, encoding) even when optimized.
-
-4. **Safety and introspection**
-
-   - Axion and cognitive tiers are not “afterthought” modules; they are integral to the architecture.
-   - Every subsystem should be introspectable: metrics, invariants, and failure modes should be inspectable by higher layers.
+- **Specification First:** The specifications in `/spec` are the source of truth. The implementation must conform to them. Any deviation in the code is considered a bug.
+- **Determinism by Default:** All components, especially the VM and T81Lang, must be deterministic. Any introduction of non-determinism (e.g., from I/O or entropy sources) must be explicit and managed.
+- **Ternary Native:** While the system runs on binary hardware, the *logical model* is balanced ternary. The implementation must preserve ternary semantics for arithmetic, rounding, and overflow, even when optimized.
+- **Safety and Introspection:** The Axion Kernel is a core part of the architecture, not an afterthought. All subsystems are designed to be introspectable, allowing higher-level components to monitor their invariants and behavior.
 
 ______________________________________________________________________
 
-## 2. Invariants
+## 2. Architectural Principles
 
-When editing code or specs, preserve these invariants:
-
-1. **Data Types**
-
-   - `T243BigInt` (or equivalent bigint types) must be:
-     - Correct for addition/subtraction/multiplication/division/modulo across the supported range.
-     - Stable under serialization/deserialization.
-   - Fractions are always reduced with positive denominators.
-   - Tensor shapes and broadcasting rules follow `spec/t81-data-types.md`.
-
-2. **IR / TISC**
-
-   - Opcodes are stable and versioned; new opcodes must be added without breaking existing ones.
-   - Encoding/decoding must be reversible and round-trip cleanly.
-
-3. **VM**
-
-   - Execution must be reproducible across environments.
-   - Errors should be explicit (no silent UB); prefer well-defined traps.
-
-4. **Axion**
-
-   - All externally visible behaviors that could impact safety or alignment must route through Axion’s decision surface.
-   - Axion code changes require spec review.
+- **Decoupled Components:** The system is built from libraries with distinct responsibilities (e.g., `t81_core`, `t81_frontend`, `t81_vm`). This separation is enforced by the CMake build system and allows for independent development and testing.
+- **Stable TISC Interface:** The Ternary Instruction Set Computer (TISC) serves as a stable, well-defined interface between the T81Lang compiler frontend and the T81VM execution backend. This allows different frontends or backends to be developed independently.
+- **Immutable Historical Reference:** The original CWEB implementation in `/legacy/hanoivm` is preserved as an immutable reference. It is a source of historical context and semantic clarification, but it is not a target for new development.
 
 ______________________________________________________________________
 
-## 3. Coding Conventions (C++)
+## 3. C++ Implementation Strategy
 
-1. **Headers first**
+### Data Types
+- **`T81Int<N>`:** A header-only, fixed-size, templated class for balanced ternary integers. Its internal storage is a `std::array` of packed trytes.
+- **`T81BigInt`:** An arbitrary-precision integer class. The current implementation is a placeholder wrapping `int64_t` and does not yet support arbitrary precision.
+- **`Fraction`:** A rational number type that is always maintained in canonical form (reduced, with a positive denominator).
+- **`T81Float`:** A production-quality, IEEE-754-inspired balanced ternary floating-point type.
+- **Error Handling:**
+    - For recoverable errors, functions return a `t81::support::expected`-like object.
+    - For unrecoverable mathematical or logical errors (e.g., division by zero), functions throw standard C++ exceptions like `std::domain_error`. The "no exceptions" rule in the spec applies to value-level semantics, not fundamental domain errors.
 
-   - Public API definitions live in `include/t81/*.hpp`.
-   - Implementation lives in `src/` and should not expose internal headers to users.
-
-2. **Modern C++**
-
-   - Prefer C++20/23 features where they clarify intent (ranges, `std::span`, `constexpr` where practical).
-   - No raw new/delete in high-level API; use RAII and smart pointers where ownership is non-trivial.
-
-3. **Error handling**
-
-   - For library API: prefer exceptions or error types over bare `assert` for user errors.
-   - Use `assert` only for internal invariants that should never fail in valid usage.
-
-4. **Testing**
-
-   - Every non-trivial function should have tests in `tests/cpp/`.
-   - Bug fixes should add regression tests.
-
-______________________________________________________________________
-
-## 4. What AI Tools Should Do
-
-When assisting on this repo, AI tools should:
-
-- **When in doubt, read the spec** before inventing new behavior.
-- Prefer changes that:
-  - Reduce complexity,
-  - Increase determinism,
-  - Improve test coverage,
-  - Or clarify the spec.
-
-Avoid:
-
-- Introducing hidden global state,
-- Adding implicit I/O in core math or VM loops,
-- Modifying `spec/` or `AGENTS.md` without explicit justification.
+### Coding Conventions
+- **C++20 Standard:** The project uses C++20. Features should be used where they enhance clarity and safety.
+- **API in `/include`:** All public APIs are defined in the `/include/t81/` directory. Implementation details reside in `/src/`.
+- **RAII and Smart Pointers:** Dynamic memory is managed using RAII. Raw `new` and `delete` are forbidden in high-level code.
+- **Test-Driven:** Non-trivial functionality requires corresponding unit tests in `/tests/cpp/`. Bug fixes must be accompanied by a regression test.
+- **Minimal Dependencies:** The core libraries have zero external dependencies. External libraries (like `google/benchmark`) are used only for non-essential targets like benchmarks.

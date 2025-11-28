@@ -1,89 +1,88 @@
-# T81 C++ Quickstart
+---
+layout: page
+title: C++ Quickstart Guide
+---
 
-This guide provides a concise, hands-on guide to building the C++ project, running tests, and generating documentation.
+# T81 C++ Quickstart Guide
 
-**For a comprehensive overview of the project, please start with the [T81 Foundation Documentation Hub](./index.md).**
+This page provides a hands-on guide to building the C++ project, running tests, and writing your first piece of ternary-native code.
 
 ______________________________________________________________________
 
-### 1. Build & Test with CMake
+## 1. Prerequisites
 
-The project uses CMake as its sole build system.
+- A C++20 compliant compiler (e.g., GCC 10+, Clang 12+)
+- CMake 3.16+
+- Ninja (recommended) or Make
+
+______________________________________________________________________
+
+## 2. Build and Test
+
+The project uses a standard CMake workflow.
 
 ```bash
-# Configure the project (run once)
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+# 1. Clone the repository
+git clone https://github.com/t81dev/t81-foundation.git
+cd t81-foundation
 
-# Build all libraries, examples, and tests
+# 2. Configure the build using the Ninja generator
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+# 3. Build all libraries, examples, and tests
 cmake --build build --parallel
 
-# Run the CTest test suite
+# 4. Run the CTest test suite
 ctest --test-dir build --output-on-failure
 ```
+A successful run will show all 46 tests passing.
 
 ______________________________________________________________________
 
-### 2. Run Examples
+## 3. "Hello Ternary" Example
 
-The examples are built by default and can be found in the `build/` directory.
-
-```bash
-./build/t81_demo
-./build/t81_tensor_ops
-./build/t81_ir_roundtrip
-./build/axion_demo
-```
-
-______________________________________________________________________
-
-### "Hello Ternary" Example
-
-Here is a simple example of how to use the `T81Int` class:
+The core of the numeric system is the `T81Int` class. Here is a minimal example of how to use it.
 
 ```cpp
 #include <t81/core/T81Int.hpp>
 #include <iostream>
 
 int main() {
-    using namespace t81::core;
-    T81Int<8> a{5};  // Decimal 5 in ternary
-    T81Int<8> b{-3}; // Decimal -3
-    auto sum = a + b; // Should be 2
+    using t81::core::T81Int;
+
+    // Create two 8-trit integers from decimal values
+    T81Int<8> a{5};
+    T81Int<8> b{-3};
+
+    // Arithmetic works as expected
+    auto sum = a + b; // 5 + (-3) = 2
+
+    // Convert back to a standard C++ integer for printing
     std::cout << "Sum (decimal): " << sum.to_binary<int64_t>() << std::endl;
-    std::cout << "Sum (ternary): " << sum.str() << std::endl; // e.g., "+0+--"
+
+    // Print the native balanced ternary representation
+    std::cout << "Sum (ternary): " << sum.str() << std::endl;
+
     return 0;
 }
 ```
 
-______________________________________________________________________
-
-### 3. Generate API Documentation
-
-The project is fully documented with Doxygen. To generate a browsable HTML API reference, run the `docs` target.
-
-```bash
-cmake --build build --target docs
-```
-
-The output will be generated in `docs/api/html/`. Open `index.html` in your browser to view the documentation.
+To compile and run this, you would link against the `t81_core` library.
 
 ______________________________________________________________________
 
-### 4. Key Headers
+## 4. Where to Go Next
 
-While the umbrella header (`t81/t81.hpp`) is convenient, these are the most common headers for direct inclusion:
-
-- `t81/core/T81Int.hpp` — `T81Int` class
-- `t81/core/bigint.hpp` — `BigInt` class
-- `t81/core/fraction.hpp` — `Fraction` class
-- `t81/core/tensor.hpp` — `Tensor` struct
-- `t81/frontend/lexer.hpp`, `parser.hpp`, `ir_generator.hpp` — T81Lang compiler components
-- `t81/vm/vm.hpp` — The T81 Virtual Machine
-- `t81/axion/api.hpp` — The Axion Kernel API (stub)
+- **To understand the code's structure:** Read the [`ARCHITECTURE.md`](../ARCHITECTURE.md) to see how the different libraries (`t81_core`, `t81_frontend`, etc.) fit together.
+- **To find a task to work on:** See the prioritized list of needed contributions in [`TASKS.md`](../TASKS.md).
+- **To explore the API:** Generate the Doxygen documentation by running `cmake --build build --target docs` and opening `docs/api/html/index.html`.
 
 ______________________________________________________________________
 
-### 5. Notes & Caveats
+## 5. Notes & Caveats
 
-- **Base-243/81 Codecs & Hashes:** The implementations for codecs and hashing are currently deterministic stubs suitable for testing, not for production use.
-- **Core Types:** The `BigInt` and `Tensor` types are minimal implementations and do not yet match the full semantics of the T81 specification. See the [System Status Report](./system-status.md) for details.
+- **`T81BigInt` is a Stub:** The current `T81BigInt` implementation is a simple wrapper around `int64_t` and does not yet provide arbitrary-precision arithmetic.
+- **`Tensor` is Partial:** The `Tensor` class has a solid foundation but does not yet implement the full set of operations defined in the spec.
+- **Axion & CanonFS are Stubs:** The Axion Kernel and CanonFS are non-functional placeholders.
+
+For a detailed status of all components, see the [`System Status Report`](./system-status.md).

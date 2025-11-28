@@ -1,126 +1,126 @@
-______________________________________________________________________
+---
+layout: page
+title: C++ Tensor Guide
+---
 
-# T81 Tensor Guide
+# T81 C++ Tensor Guide
 
-<!-- T81-TOC:BEGIN -->
+This guide provides a practical introduction to the T81 C++ `Tensor` library, a core component of the `t81_core` library.
 
-## Table of Contents
-
-- [T81 Tensor Guide](#t81-tensor-guide)
-  - [1. Canonical Shapes](#1-canonical-shapes)
-  - [2. Tensor Pools & Handles](#2-tensor-pools-&-handles)
-  - [3. Common Operations](#3-common-operations)
-    - [3.1 Broadcasting](#31-broadcasting)
-    - [3.2 Shape Guards](#32-shape-guards)
-    - [3.3 Deterministic Reductions](#33-deterministic-reductions)
-  - [4. Axion Visibility](#4-axion-visibility)
-  - [5. Testing Checklist](#5-testing-checklist)
-  - [6. Open Work](#6-open-work)
-
-<!-- T81-TOC:END -->
-
-> Companion to `spec/t81-data-types.md` and [RFC-0004](../spec/rfcs/RFC-0004-canonical-tensor-semantics.md)\
-> Non-normative tips for working with canonical tensors across the T81 stack.
+**Companion Documents:**
+- **Specification:** [`spec/t81-data-types.md`](../spec/t81-data-types.md)
+- **API Reference:** `t81/core/tensor.hpp` (generate with Doxygen)
+- **Tests:** `tests/cpp/t81_tensor_*_test.cpp`
 
 ______________________________________________________________________
 
-## 1. Canonical Shapes
+## 1. Core Concepts
 
-- Shapes are explicit tuples. Always record them even for scalars:\
-  `scalar = Tensor(shape=[], data=[...])`
-- No implicit broadcasting in the spec. When you *intend* to broadcast, call
-  the helper explicitly (see §3).
-- Zero-length dimensions collapse the tensor to canonical zero; don’t rely on
-  host library semantics.
+The T81 `Tensor` is a multi-dimensional array designed for high-performance numerical computing with ternary data.
 
-______________________________________________________________________
-
-## 2. Tensor Pools & Handles
-
-TISC and the VM treat tensors like floats/fractions:
-
-1. Compiler emits literal tensors into the tensor pool.
-2. Instructions operate on **handles** (1-based indices).
-3. VM deduplicates canonical tensors, so equality can use handle equality.
-
-Tips:
-
-- Never store raw pointers to tensor storage; always use pool handles.
-- When debugging, inspect `vm->state().tensors[handle-1]` (tests show pattern).
+- **Storage:** Tensors are stored in a contiguous, row-major flat array in memory.
+- **Shape:** The dimensions of the tensor are tracked in a `TensorShape` object, which is a simple vector of integers.
+- **Data Type:** Tensors are currently templated and typically hold `int64_t` for demonstration purposes, but are designed to eventually hold native ternary types like `T81Int`.
+- **API:** The tensor API is provided as a set of free functions (e.g., `matmul`, `transpose`) that operate on `Tensor` objects, rather than class methods.
 
 ______________________________________________________________________
 
-## 3. Common Operations
+## 2. Creating a Tensor
 
-### 3.1 Broadcasting
+You can create a tensor by specifying its shape and providing a C++ initializer list with the data.
 
-```t81
-use std::tensor as tensor;
+```cpp
+#include <t81/core/tensor.hpp>
+#include <iostream>
 
-fn add_bias(x: Tensor[81, 27], bias: Tensor[27]) -> Tensor[81,27] {
-    return tensor::broadcast_add(x, bias);
-}
-```
+int main() {
+    using t81::core::Tensor;
 
-The helper checks shape rules from RFC-0004 and faults deterministically if
-they’re violated.
+    // Create a 2x3 tensor (2 rows, 3 columns)
+    Tensor<int64_t> a({2, 3}, {
+        1, 2, 3,
+        4, 5, 6
+    });
 
-### 3.2 Shape Guards
-
-```t81
-fn require_shape(x: Tensor[*,*], rows: T81Int, cols: T81Int) -> Tensor[*,*] {
-    if (!tensor::has_shape(x, rows, cols)) {
-        panic(:bad_shape);
+    std::cout << "Shape: " << a.shape.to_string() << std::endl;
+    std::cout << "Data: ";
+    for (const auto& val : a.data) {
+        std::cout << val << " ";
     }
-    return x;
+    std::cout << std::endl;
+
+    return 0;
 }
 ```
 
-Lowering emits the future `CHKSHAPE` opcode (RFC-0005) when available, or a
-pure T81Lang check otherwise.
+**Key Files:**
+- **Header:** [`include/t81/core/tensor.hpp`](../include/t81/core/tensor.hpp)
+- **Test:** [`tests/cpp/tensor_shape_test.cpp`](../tests/cpp/tensor_shape_test.cpp)
 
-### 3.3 Deterministic Reductions
+______________________________________________________________________
 
-- Always specify axes.
-- Reduction order is canonical (lexicographic), so the result is invariant.
+## 3. Core Operations
 
-```t81
-fn sum_rows(x: Tensor[81,27]) -> Tensor[81] {
-    return tensor::reduce_sum(x, axis=1);
-}
+The tensor library supports a range of common operations, demonstrated in `examples/tensor_ops.cpp`.
+
+### Matrix Multiplication (`matmul`)
+
+Performs standard matrix multiplication on two 2D tensors.
+
+```cpp
+Tensor<int64_t> a({2, 3}, {1, 2, 3, 4, 5, 6});
+Tensor<int64_t> b({3, 2}, {7, 8, 9, 10, 11, 12});
+
+// c = a * b
+auto c = matmul(a, b); // Result is a 2x2 tensor
 ```
+**Test:** [`tests/cpp/tensor_matmul_test.cpp`](../tests/cpp/tensor_matmul_test.cpp)
+
+### Transpose
+
+Swaps the axes of a tensor. For a 2D tensor, this flips rows and columns.
+
+```cpp
+Tensor<int64_t> a({2, 3}, {1, 2, 3, 4, 5, 6});
+
+auto at = transpose(a); // Result is a 3x2 tensor
+```
+**Test:** [`tests/cpp/tensor_transpose_test.cpp`](../tests/cpp/tensor_transpose_test.cpp)
+
+### Reduction (`reduce_sum`)
+
+Reduces a tensor's dimension by summing its elements along a given axis.
+
+```cpp
+Tensor<int64_t> a({2, 3}, {1, 2, 3, 4, 5, 6});
+
+// Sum along columns (axis 1)
+auto row_sums = reduce_sum(a, 1); // Result is a {2} tensor: {6, 15}
+```
+**Test:** [`tests/cpp/tensor_reduce_test.cpp`](../tests/cpp/tensor_reduce_test.cpp)
+
+### Broadcasting
+
+Extends a tensor to a larger shape by repeating its data along new or expanded dimensions.
+
+```cpp
+Tensor<int64_t> a({2, 3}, {1, 2, 3, 4, 5, 6});
+Tensor<int64_t> b({3}, {10, 20, 30}); // A row vector to broadcast
+
+// Add b to each row of a
+auto c = broadcast_add(a, b);
+```
+**Test:** [`tests/cpp/tensor_broadcast_test.cpp`](../tests/cpp/tensor_broadcast_test.cpp)
 
 ______________________________________________________________________
 
-## 4. Axion Visibility
+## 4. Current Status & Next Steps
 
-Every tensor opcode logs:
+The tensor library is currently **`Partial`**. The core infrastructure is in place, but many features from the specification are not yet implemented.
 
-- Input/output handles
-- Shapes
-- Fault status
+- **Next Steps:**
+    - Implement the full suite of elementwise operations.
+    - Integrate native ternary types (`T81Int`) as the tensor's data type.
+    - Expand broadcasting rules to cover all cases in the specification.
 
-If a policy denies tensors above a certain rank, Axion faults before VM memory
-is touched. When writing docs/policies reference those fields explicitly.
-
-______________________________________________________________________
-
-## 5. Testing Checklist
-
-- Use `tests/cpp/tensor_*_test.cpp` as templates.
-- When adding new tensor ops:
-  - Add spec examples.
-  - Mirror them in JSON canonical vectors (future work).
-  - Verify trace determinism (watch `vm->state().trace`).
-
-______________________________________________________________________
-
-## 6. Open Work
-
-1. Document tensor serialization once canonical codec lands.
-2. Publish a gallery of tensor policies (Axion) for common workloads.
-3. Add examples using the upcoming vector helpers (`VLOAD`, `VADD`).
-
-Contributions welcome—extend this guide as RFC-0004 evolves.
-
-______________________________________________________________________
+For a full list of planned work, see [`TASKS.md`](../TASKS.md).

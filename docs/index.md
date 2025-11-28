@@ -1,69 +1,63 @@
+---
+layout: page
+title: Documentation Hub
+---
+
 # T81 Foundation Documentation Hub
 
-Welcome to the central documentation hub for the T81 Foundation. This page provides a curated guide to the project's documentation, organized by purpose and audience.
+Welcome to the central documentation hub for the T81 Foundation. This site provides the technical specifications, architectural diagrams, developer guides, and status reports needed to understand and contribute to the project.
 
 ______________________________________________________________________
 
-### 1. Newcomers & Onboarding
+## 1. Getting Started
 
-If you are new to the project, start here. These documents provide the high-level overview and practical steps needed to get started.
-
-- **[Developer Handover & Progress Report](./handover.md)**
-
-  - **Purpose:** The single best starting point for a new developer.
-  - **Content:** A comprehensive overview of the project's vision, architecture, current status, development processes, and onboarding guide.
+If you are new to the project, start here. These documents provide the high-level overview and practical steps needed to get started with the C++ codebase.
 
 - **[C++ Quickstart Guide](./cpp-quickstart.md)**
+  - A hands-on guide to cloning, building, and running the core tests and demos. The fastest way to get the code working.
 
-  - **Purpose:** A concise guide to building the C++ project and running the examples.
-  - **Content:** Practical, hands-on build and execution commands using CMake.
+- **[System Status Report](./system-status.md)**
+  - A dashboard of the current implementation status of each major component, measured against its formal specification.
 
-______________________________________________________________________
-
-### 2. In-Depth Developer Guides
-
-These guides provide detailed, step-by-step walkthroughs for common and complex development tasks.
-
-- **[Guide: Adding a Feature to T81Lang](./guides/adding-a-language-feature.md)**
-
-  - **Covers:** The full lifecycle of adding a new language feature, from the lexer to the IR generator.
-
-- **[Guide: Adding a TISC Opcode to the VM](./guides/vm-opcodes.md)**
-
-  - **Covers:** The process for extending the virtual machine with a new instruction.
+- **[Architecture Overview](../ARCHITECTURE.md)**
+  - A high-level description of the system's structure, libraries, and data flow, from T81Lang source code to VM execution.
 
 ______________________________________________________________________
 
-### 3. API Reference
-
-The definitive, auto-generated reference for the C++ source code.
-
-- **[Generated C++ API Reference (Doxygen)](./api/html/index.html)**
-  - **Purpose:** Provides a detailed, browsable reference for every class, method, and file in the `/src` and `/include` directories.
-  - **How to Generate:** Run `cmake --build build --target docs` from the repository root.
-
-______________________________________________________________________
-
-### 4. Formal Specifications & Architecture
+## 2. Core Concepts & Specifications
 
 These documents are the "constitution" of the T81 Foundation. They define the normative behavior of every component in the stack.
 
 - **[Master Specification Index](../spec/index.md)**
+  - The root index that links to all formal specification documents (TISC ISA, VM, T81Lang, Data Types, etc.).
 
-  - **Purpose:** The root index that links to all formal specification documents.
+- **[Design Principles](../DESIGN.md)**
+  - The core design philosophy, including balanced ternary, spec-first development, and deterministic semantics.
 
-- **[System Status Board](./system-status.md)**
-
-  - **Purpose:** A detailed report on the current implementation status of each major component, measured against its formal specification.
+- **[Tensor Library Guide](./tensor-guide.md)**
+  - An in-depth guide to the concepts and API of the T81 tensor library.
 
 ______________________________________________________________________
 
-### 5. Project Governance & Contribution
+## 3. Developer Guides & API
 
-- **[AGENTS.md (Operational Contract)](../AGENTS.md)**
+For contributors looking to modify the codebase, these resources provide detailed information.
 
-  - **Content:** The rules and guidelines for contributing code to the project. Mandatory reading for all developers.
+- **[Guide: Adding a Language Feature](./guides/adding-a-language-feature.md)**
+  - The lifecycle of a T81Lang feature, from lexer to IR generator.
+
+- **[Guide: VM Opcodes](./guides/vm-opcodes.md)**
+  - The process for extending the virtual machine with new instructions.
+
+- **[C++ API Reference (Doxygen)](./api/html/index.html)**
+  - Auto-generated, detailed reference for every class and method in the source code. *(Run `cmake --build build --target docs` to generate).*
+
+______________________________________________________________________
+
+## 4. Project Governance & Contribution
 
 - **[CONTRIBUTING.md](../CONTRIBUTING.md)**
+  - The rules and guidelines for contributing code, including the RFC process for proposing changes.
 
-  - **Content:** General contribution guidelines, including the RFC process for proposing changes to the specifications.
+- **[ROADMAP.md](../ROADMAP.md)**
+  - The high-level plan and priorities for the project's development.
