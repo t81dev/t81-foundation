@@ -1,6 +1,0 @@
-source 'https://rubygems.org'
-gem 'jekyll'
-gem 'webrick'               # fixes Ruby 3+ missing default server
-gem 'jekyll-seo-tag'
-gem 'jekyll-sitemap'
-gem 'jekyll-feed'
