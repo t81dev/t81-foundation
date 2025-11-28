@@ -5,6 +5,24 @@ title: "Guide: Adding a Language Feature"
 
 # Guide: Adding a Feature to T81Lang
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Guide: Adding a Feature to T81Lang](#guide-adding-a-feature-to-t81lang)
+  - [1. Frontend Architecture Overview](#1-frontend-architecture-overview)
+  - [2. Step 1: Update the Lexer](#2-step-1-update-the-lexer)
+    - [2.1 Add the Token Type](#21-add-the-token-type)
+    - [2.2 Recognize the Lexeme](#22-recognize-the-lexeme)
+  - [3. Step 2: Update the Parser](#3-step-2-update-the-parser)
+    - [3.1 Update the Grammar Rule](#31-update-the-grammar-rule)
+  - [4. Step 3: Update the IR Generator](#4-step-3-update-the-ir-generator)
+    - [4.1 Implement the Visitor Logic](#41-implement-the-visitor-logic)
+  - [5. Step 4: Write an End-to-End Test](#5-step-4-write-an-end-to-end-test)
+
+<!-- T81-TOC:END -->
+
+
 This guide provides a step-by-step walkthrough for adding a new feature to the T81Lang language. We will use the example of adding a new binary operator, the modulo operator (`%`), to illustrate the process.
 
 **Companion Documents:**

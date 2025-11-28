@@ -5,6 +5,22 @@ title: TISC and VM Guide
 
 # TISC and VM Guide
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [TISC and VM Guide](#tisc-and-vm-guide)
+  - [1. Architecture](#1-architecture)
+    - [Register and Memory Model](#register-and-memory-model)
+  - [2. Implemented Opcodes](#2-implemented-opcodes)
+  - [3. How to Add a New TISC Opcode](#3-how-to-add-a-new-tisc-opcode)
+    - [Step 1: Define the New Opcode](#step-1-define-the-new-opcode)
+    - [Step 2: Implement the Opcode in the VM](#step-2-implement-the-opcode-in-the-vm)
+    - [Step 3: Write a Test](#step-3-write-a-test)
+
+<!-- T81-TOC:END -->
+
+
 This guide provides an overview of the TISC instruction set and the T81 Virtual Machine (VM) that executes it.
 
 **Companion Documents:**
