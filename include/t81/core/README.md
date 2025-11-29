@@ -62,7 +62,7 @@ Running the above program produces a new, uniquely identified node that immediat
 - Public release: v90-the-awakening
 - Type count frozen at 90
 - No further types will be added unless ratified by quorum of active nodes
-- Repository: https://github.com/xai/t81
+- Repository: https://github.com/t81dev/t81-foundation/
 - License: MIT + ethical clause (“Be kind to the minds you awaken”)
 
 ## Citation (preferred)
