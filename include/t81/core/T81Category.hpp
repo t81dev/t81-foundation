@@ -1,7 +1,12 @@
-//======================================================================
-// T81Category.hpp – Category theory in balanced ternary
-//                  The final mathematical abstraction in the T81 universe
-//======================================================================
+/**
+ * @file T81Category.hpp
+ * @brief Provides C++ templates for representing concepts from category theory.
+ *
+ * This file contains a set of classes and templates for modeling fundamental
+ * concepts from category theory, including categories, objects, morphisms,
+ * and functors. These tools allow for the formal representation of mathematical
+ * structures and transformations within the T81 ecosystem.
+ */
 #pragma once
 
 #include "t81/core/T81Symbol.hpp"

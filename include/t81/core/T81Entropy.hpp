@@ -1,3 +1,13 @@
+/**
+ * @file T81Entropy.hpp
+ * @brief Defines the T81Entropy class for provenanced entropy tokens.
+ *
+ * This file contains the implementation of T81Entropy, a class representing
+ * cryptographically-bound entropy tokens. These tokens serve as the fundamental
+ * "fuel" for thermodynamic accounting within the Axion kernel, making the cost
+ * of computational operations explicit. Each token has a source and a unique
+ * sequence number to ensure provenance.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

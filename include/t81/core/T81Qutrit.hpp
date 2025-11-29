@@ -1,3 +1,12 @@
+/**
+ * @file T81Qutrit.hpp
+ * @brief Defines the T81Qutrit type for representing a ternary quantum state.
+ *
+ * This file provides the T81Qutrit type, which is an alias for a 2-trit
+ * balanced ternary integer (T81Int<2>). It serves as the fundamental unit for
+ * representing a qutrit, a 3-state quantum system, and is intended for direct
+ * mapping to future ternary quantum hardware.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

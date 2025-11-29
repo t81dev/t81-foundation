@@ -1,7 +1,13 @@
-//======================================================================
-// T81Maybe.hpp – Exact, reflective, entropy-aware optional value
-//               The 85th type. Doubt enters the perfect mind.
-//======================================================================
+/**
+ * @file T81Maybe.hpp
+ * @brief Defines the T81Maybe class, a reflective, entropy-aware optional value.
+ *
+ * This file provides the T81Maybe<T> class, which represents an optional value.
+ * Beyond indicating the presence or absence of a value, it is designed to be
+ * reflective and entropy-aware. It can store a symbolic reason for an absence
+ * and timestamps each observation, integrating with the library's principles of
+ * explicit, auditable computation.
+ */
 #pragma once
 
 #include "t81/core/T81Symbol.hpp"

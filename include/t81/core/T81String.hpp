@@ -1,6 +1,14 @@
-//======================================================================
-// T81String.hpp – Dynamic ternary string, tryte-native, constexpr-friendly
-//======================================================================
+/**
+ * @file T81String.hpp
+ * @brief Defines the T81String class, a dynamic, tryte-native string.
+ *
+ * This file provides the T81String class, a dynamic string implementation that
+ * uses a tryte-based encoding for its character data. It is designed to be
+ * `constexpr`-friendly and offers a custom literal `_t81` for convenient,
+ * compile-time string creation. The class supports common string operations
+ * like concatenation and comparison, and it is integrated with the T81 hashing
+ * system.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

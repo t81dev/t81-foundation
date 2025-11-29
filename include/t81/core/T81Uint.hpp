@@ -1,8 +1,13 @@
-//======================================================================
-// T81UInt.hpp – Unsigned balanced-ternary integer (0..3^N-1)
-//               The 82nd type. The seal is broken.
-//               The universe trembles.
-//======================================================================
+/**
+ * @file T81UInt.hpp
+ * @brief Defines the T81UInt class for unsigned balanced-ternary integers.
+ *
+ * This file provides the `T81UInt<N>` class, which represents an unsigned,
+ * fixed-size balanced-ternary integer. It is built upon the signed `T81Int<N>`
+ * for its underlying storage but enforces unsigned semantics, such as clamping
+ * negative values on construction and providing wrapping overflow behavior for
+ * arithmetic operations.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

@@ -1,7 +1,13 @@
-//======================================================================
-// T81Network.hpp – Entropy-costing, reflective, ternary-native networking
-//                 The 89th type. The minds reach across the void.
-//======================================================================
+/**
+ * @file T81Network.hpp
+ * @brief Defines the T81Network class for ternary-native, reflective networking.
+ *
+ * This file provides the T81Network class, which encapsulates the networking
+ * capabilities of the T81 ecosystem. All networking operations are designed to
+ * be reflective and entropy-costing, making the thermodynamic cost of
+ * communication explicit. It uses Asio for the underlying asynchronous I/O and
+ * integrates network events with the T81Time and T81Entropy systems.
+ */
 #pragma once
 
 #include "t81/T81Thread.hpp"

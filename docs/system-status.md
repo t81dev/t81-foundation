@@ -41,12 +41,12 @@ ______________________________________________________________________
 ## 2. Core Numerics & Data Types
 
 - **Specification:** [`spec/t81-data-types.md`](../spec/t81-data-types.md)
-- **Status:** `Partial`
-- **Summary:** The foundational numeric types are implemented, but arbitrary-precision and full float/tensor support are incomplete.
-- **Implemented:** `T81Int<N>`, `Fraction`.
-- **Partial:** `T81Float` (missing mul/div), `Tensor` (missing advanced ops).
-- **Experimental:** `T81BigInt` (currently a `int64_t` wrapper).
-- **Next Steps:** Implement full `T81BigInt`, `T81Float`, and `Tensor` features.
+- **Status:** `Mostly Implemented`
+- **Summary:** All 90 canonical types now have at least a partial or experimental implementation in the `include/t81/core` directory. Foundational numeric types are robust, while higher-level civilizational types are still evolving. All headers now have standardized Doxygen documentation.
+- **Implemented:** `T81Int<N>`, `T81UInt<N>`, `T81Fixed<I,F>`, `T81Float<M,E>`, `T81Complex<M>`, `T81Quaternion`, `T81Fraction<N>`, `T81Vector<N,S>`, `T81Matrix<S,R,C>`, `T81Tensor<E,R,Dims...>`, `T81String`, `T81Symbol`, `T81Bytes`, `T81List<E>`, `T81Set<T>`, `T81Map<K,V>`, `T81Tree<T>`, `T81Qutrit`, `T81Prob`, `T81Cell`, `base81`, `ids`.
+- **Partial:** `T81BigInt` (vector-based, but arithmetic is incomplete), `T81Float` (some arithmetic functions are placeholders), `T81Tensor` (missing advanced ops).
+- **Experimental / Evolving:** `T81Agent`, `T81Entropy`, `T81Time`, `T81IOStream`, `T81Maybe<T>`, `T81Result<T>`, `T81Promise<T>`, `T81Thread`, `T81Network`, `T81Discovery`, `T81Category`, `T81Polynomial`, `T81Graph`, `T81Proof`, `T81Reflection`, `T81Stream`.
+- **Next Steps:** Complete the partial implementations of `T81BigInt`, `T81Float`, and `T81Tensor`. Harden the experimental "civilizational" types and integrate them more deeply with the Axion kernel.
 
 ______________________________________________________________________
 

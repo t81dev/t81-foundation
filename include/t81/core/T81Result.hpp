@@ -1,7 +1,13 @@
-//======================================================================
-// T81Result.hpp – Success or Failure, with proof and reflection
-//                The 86th type. The final step of maturity.
-//======================================================================
+/**
+ * @file T81Result.hpp
+ * @brief Defines the T81Result class for representing success or failure.
+ *
+ * This file provides the `T81Result<T>` class, a type used to represent the
+ * outcome of an operation that can either succeed with a value of type `T` or
+ * fail with a detailed `T81Error`. The `T81Error` struct captures not only a
+ * symbolic error code and message but also the time, entropy cost, and source
+ * of the failure, enabling robust error handling and reflection.
+ */
 #pragma once
 
 #include "t81/T81Maybe.hpp"

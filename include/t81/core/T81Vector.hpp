@@ -1,7 +1,13 @@
-//======================================================================
-// T81Vector.hpp – Mathematical vector type with physical semantics
-//                 Not a container. A geometric object.
-//======================================================================
+/**
+ * @file T81Vector.hpp
+ * @brief Defines the T81Vector class, a mathematical vector with physical semantics.
+ *
+ * This file provides the `T81Vector<N, Scalar>` class, a fixed-size N-dimensional
+ * vector designed as a geometric object rather than a general-purpose container.
+ * It supports a rich set of constexpr-friendly mathematical and geometric
+ * operations, including dot and cross products, normalization, and rotations
+ * via `T81Quaternion`.
+ */
 #pragma once
 
 #include "t81/T81Tensor.hpp"

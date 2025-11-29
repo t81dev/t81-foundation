@@ -1,7 +1,13 @@
-//======================================================================
-// T81Time.hpp – Physical, causal, thermodynamic, ternary-native time
-//               The 81st type. The seal is complete.
-//======================================================================
+/**
+ * @file T81Time.hpp
+ * @brief Defines the T81Time class for a physical, causal, and thermodynamic timeline.
+ *
+ * This file provides the T81Time class, which represents a moment in a timeline
+ * that is physical, causal, and thermodynamically-grounded. Each new moment in
+ * time is created by an explicit, irreversible act that consumes an entropy
+ * token. This design ensures that time is monotonic and that every event in the
+ * system's history is auditable and tied to a specific thermodynamic cost.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

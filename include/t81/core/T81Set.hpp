@@ -1,7 +1,14 @@
-//======================================================================
-// T81Set.hpp – Immutable, perfect-hash, ternary-native set
-//               The final uniqueness primitive in the T81 universe
-//======================================================================
+/**
+ * @file T81Set.hpp
+ * @brief Defines the T81Set class, an immutable, ternary-native set.
+ *
+ * This file provides the `T81Set<T>` class, an immutable, hash-based set that
+ * is implemented on top of the `T81Map`. It offers pure functional-style
+ * operations (e.g., `insert`, `erase` return new sets) and is designed for
+ * perfect membership testing, particularly when using `T81Symbol` as the key
+ * type. It supports standard set-theoretic operations like union, intersection,
+ * and difference.
+ */
 #pragma once
 
 #include "t81/core/T81Symbol.hpp"
