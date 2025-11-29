@@ -165,6 +165,7 @@ legacy/hanoivm/**/*.log
 legacy/hanoivm/**/*.aux
 legacy/hanoivm/**/*.toc
 legacy/hanoivm/**/*.idx
+legacy/hanoivm/**/*.cweb
 
 # ── Future / optional backends (pre-emptive) ───────────────
 # WebAssembly
