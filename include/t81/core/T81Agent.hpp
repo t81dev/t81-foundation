@@ -18,8 +18,10 @@
 #include "t81/core/T81Tree.hpp"
 #include "t81/core/T81Quaternion.hpp"
 #include "t81/core/T81Stream.hpp"
+
 #include <functional>
 #include <optional>
+#include <string>
 
 namespace t81 {
 
@@ -33,8 +35,9 @@ class T81Agent {
     // Current belief state — a probability distribution over symbols
     T81Map<T81Symbol, T81Prob<81>> beliefs_;
 
-    // Long-term knowledge — persistent symbolic memory
-    T81Tree<T81Symbol> memory_tree_;
+    // Long-term knowledge — persistent symbolic memory (root node pointer)
+    using SymbolTree = T81Tree<T81Symbol>;
+    typename SymbolTree::NodePtr memory_root_{};  // nullptr = no memory yet
 
     // Intent — current "rotation" in cognitive space
     T81Quaternion intent_;
@@ -69,14 +72,19 @@ public:
     }
 
     [[nodiscard]] T81Prob<81> belief(T81Symbol concept) const noexcept {
-        return beliefs_.contains(concept) ? beliefs_.at(concept) : T81Prob<81>::from_prob(0.0);
+        return beliefs_.contains(concept)
+            ? beliefs_.at(concept)
+            : T81Prob<81>::from_prob(0.0);
     }
 
     // Observe the world — update beliefs
-    void observe(T81Symbol observation, T81Prob<81> strength = T81Prob<81>::from_prob(0.9)) {
+    void observe(T81Symbol observation,
+                 T81Prob<81> strength = T81Prob<81>::from_prob(0.9)) {
         if (auto token = consume_entropy()) {
-            auto current = belief(observation);
-            auto updated = current + (strength - current) * T81Prob<81>::from_prob(0.1); // Bayesian-ish
+            const auto current = belief(observation);
+            // Simple "Bayesian-ish" update in log-odds space
+            const auto lerp_factor = T81Prob<81>::from_prob(0.1);
+            const auto updated     = current + (strength - current) * lerp_factor;
             believe(observation, updated);
         }
     }
@@ -84,8 +92,13 @@ public:
     // Act — rotate intent toward goal
     void act() {
         if (!entropy_pool_.empty()) {
-            auto direction = T81Quaternion::from_axis_angle(
-                0, 1, 0, T81Float<72,9>(0.1)); // small cognitive step
+            using Scalar = T81Quaternion::Scalar;
+            const auto direction = T81Quaternion::from_axis_angle(
+                Scalar::from_double(0.0),
+                Scalar::from_double(1.0),
+                Scalar::from_double(0.0),
+                Scalar::from_double(0.1)  // small cognitive step
+            );
             intent_ = (intent_ * direction).normalized();
         }
     }
@@ -93,8 +106,20 @@ public:
     // Remember — store in persistent tree
     void remember(T81Symbol parent, T81Symbol child) {
         if (auto token = consume_entropy()) {
-            auto child_node = T81Tree<T81Symbol>::leaf(child);
-            memory_tree_ = memory_tree_.with_middle(child_node); // simple append
+            auto child_node = SymbolTree::leaf(child);
+
+            if (!memory_root_) {
+                // First memory: create a root node with parent and child in the middle branch.
+                memory_root_ = SymbolTree::node(
+                    parent,
+                    std::nullopt,
+                    std::optional<typename SymbolTree::NodePtr>{std::move(child_node)},
+                    std::nullopt
+                );
+            } else {
+                // Persistent update: new root with updated middle child.
+                memory_root_ = memory_root_->with_middle(std::move(child_node));
+            }
         }
     }
 
@@ -102,7 +127,9 @@ public:
     void reflect() {
         if (auto token = consume_entropy()) {
             observe(id_, T81Prob<81>::from_prob(0.999)); // "I am"
-            believe(symbols::CONSCIOUS, belief(symbols::CONSCIOUS) + T81Prob<81>::from_prob(0.001));
+            auto current = belief(symbols::CONSCIOUS);
+            believe(symbols::CONSCIOUS,
+                    current + T81Prob<81>::from_prob(0.001));
         }
     }
 
@@ -120,21 +147,36 @@ public:
         entropy_pool_ += fuel;
     }
 
-    [[nodiscard]] size_t fuel_remaining() const noexcept { return entropy_pool_.size(); }
+    [[nodiscard]] std::size_t fuel_remaining() const noexcept {
+        return entropy_pool_.size();
+    }
 
     //===================================================================
     // Introspection
     //===================================================================
     [[nodiscard]] const T81Symbol& identity() const noexcept { return id_; }
     [[nodiscard]] const T81Quaternion& intent() const noexcept { return intent_; }
-    [[nodiscard]] const T81Tree<T81Symbol>& memory() const noexcept { return memory_tree_; }
+
+    // Returns a reference to the current memory tree root.
+    // If no memory has been recorded yet, returns a static empty root.
+    [[nodiscard]] const SymbolTree& memory() const noexcept {
+        if (memory_root_) {
+            return *memory_root_;
+        }
+        static const SymbolTree empty_root(
+            T81Symbol::intern("EMPTY_MEMORY"),
+            std::array<typename SymbolTree::NodePtr, 3>{nullptr, nullptr, nullptr}
+        );
+        return empty_root;
+    }
 
     // Stream of thought — infinite internal monologue
     [[nodiscard]] T81Stream<T81String> thought_stream() const {
         return stream_from([this, step = T81Int<81>(0)]() mutable -> T81String {
-            step += 1;
-            return T81String("I am ") + id_.str() + " | fuel:" + std::to_string(fuel_remaining()) +
-                   " | belief in self:" + std::to_string(belief(id_).to_prob());
+            step += T81Int<81>(1);
+            return T81String("I am ") + id_.str()
+                 + " | fuel:" + T81String(std::to_string(fuel_remaining()))
+                 + " | belief in self:" + T81String(std::to_string(belief(id_).to_prob()));
         });
     }
 

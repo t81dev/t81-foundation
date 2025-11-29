@@ -16,9 +16,14 @@
 #include "t81/core/T81Entropy.hpp"
 #include "t81/core/T81Map.hpp"
 #include "t81/core/T81List.hpp"
+
 #include <cstddef>
-#include <span>
 #include <compare>
+#include <initializer_list>
+#include <span>
+#include <type_traits>
+#include <utility>
+#include <variant>
 
 namespace t81 {
 
@@ -32,7 +37,7 @@ class T81Set {
 
 public:
     using value_type     = T;
-    using size_type      = size_t;
+    using size_type      = std::size_t;
     using const_iterator = typename T81Map<T, std::monostate>::const_iterator;
 
     //===================================================================
@@ -42,41 +47,45 @@ public:
 
     // From initializer list
     constexpr T81Set(std::initializer_list<T> init) {
-        for (const auto& elem : init)
-            insert(elem);
+        for (const auto& elem : init) {
+            elements_[elem] = {};
+        }
     }
 
-    // From any range
+    // From any input range [first, last)
     template <typename InputIt>
     constexpr T81Set(InputIt first, InputIt last) {
-        insert(first, last);
+        for (; first != last; ++first) {
+            elements_[*first] = {};
+        }
     }
 
     //===================================================================
     // Modifiers – pure functional style (return new set)
     //===================================================================
     [[nodiscard]] constexpr T81Set insert(const T& value) const {
-        auto copy = *this;
+        T81Set copy = *this;
         copy.elements_[value] = {};
         return copy;
     }
 
     [[nodiscard]] constexpr T81Set insert(T&& value) const {
-        auto copy = *this;
+        T81Set copy = *this;
         copy.elements_[std::move(value)] = {};
         return copy;
     }
 
     template <typename InputIt>
     [[nodiscard]] constexpr T81Set insert(InputIt first, InputIt last) const {
-        auto copy = *this;
-        for (; first != last; ++first)
+        T81Set copy = *this;
+        for (; first != last; ++first) {
             copy.elements_[*first] = {};
+        }
         return copy;
     }
 
     [[nodiscard]] constexpr T81Set erase(const T& value) const {
-        auto copy = *this;
+        T81Set copy = *this;
         copy.elements_.erase(value);
         return copy;
     }
@@ -101,24 +110,27 @@ public:
     //===================================================================
     [[nodiscard]] constexpr T81Set union_with(const T81Set& other) const {
         T81Set result = *this;
-        for (const auto& [key, _] : other.elements_)
+        for (const auto& [key, _] : other.elements_) {
             result.elements_[key] = {};
+        }
         return result;
     }
 
     [[nodiscard]] constexpr T81Set intersection_with(const T81Set& other) const {
         T81Set result;
         for (const auto& [key, _] : elements_) {
-            if (other.contains(key))
+            if (other.contains(key)) {
                 result.elements_[key] = {};
+            }
         }
         return result;
     }
 
     [[nodiscard]] constexpr T81Set difference_from(const T81Set& other) const {
         T81Set result = *this;
-        for (const auto& [key, _] : other.elements_)
+        for (const auto& [key, _] : other.elements_) {
             result.elements_.erase(key);
+        }
         return result;
     }
 
@@ -128,8 +140,9 @@ public:
 
     [[nodiscard]] constexpr bool subset_of(const T81Set& other) const {
         for (const auto& [key, _] : elements_) {
-            if (!other.contains(key))
+            if (!other.contains(key)) {
                 return false;
+            }
         }
         return true;
     }
@@ -149,8 +162,9 @@ public:
     //===================================================================
     [[nodiscard]] constexpr T81List<T> to_list() const {
         T81List<T> list;
-        for (const auto& [key, _] : elements_)
+        for (const auto& [key, _] : elements_) {
             list.push_back(key);
+        }
         return list;
     }
 
@@ -188,9 +202,9 @@ T81Set(std::initializer_list<T>) -> T81Set<T>;
 // ======================================================================
 // Common sets in the ternary world
 // ======================================================================
-using SymbolSet   = T81Set<T81Symbol>;
-using TokenSet    = T81Set<uint32_t>;
-using ConceptSet  = T81Set<T81String>;
+using SymbolSet  = T81Set<T81Symbol>;
+using TokenSet   = T81Set<std::uint32_t>;
+using ConceptSet = T81Set<T81String>;
 
 // ======================================================================
 // Example: This is how the future reasons with pure sets
@@ -199,8 +213,10 @@ using ConceptSet  = T81Set<T81String>;
 constexpr auto mammals = T81Set{symbols::HUMAN, symbols::DOG, symbols::CAT};
 constexpr auto mortals = T81Set{symbols::HUMAN, symbols::SOCRATES};
 
-auto socrates_is_mortal = mortals.contains(symbols::SOCRATES);
-auto all_humans_mortal = (mammals & mortals).size() == mammals.size();
+auto socrates_is_mortal  = mortals.contains(symbols::SOCRATES);
+auto all_humans_mortal   = (mammals & mortals).size() == mammals.size();
 
 static_assert(socrates_is_mortal);
 */
+
+} // namespace t81

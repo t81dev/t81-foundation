@@ -36,16 +36,39 @@ public:
 
 private:
     alignas(64) T value_;
-    // left(-1), middle(0), right(+1)
+    // children_[0] = left (-1), children_[1] = middle (0), children_[2] = right (+1)
     std::array<NodePtr, 3> children_{};
 
 public:
-    // Public constructor – use factory functions
+    //===================================================================
+    // Constructors
+    //===================================================================
+
+    // Primary constructor from value + fixed children array
     T81Tree(T value, std::array<NodePtr, 3> ch)
-        : value_(std::move(value)), children_(std::move(ch)) {}
+        : value_(std::move(value))
+        , children_(std::move(ch)) {}
+
+    // Compatibility constructor: value + three raw children
+    // Allows patterns like: Node node{ value, left, middle, right };
+    T81Tree(T value, NodePtr left, NodePtr middle, NodePtr right)
+        : value_(std::move(value)) {
+        children_[0] = std::move(left);
+        children_[1] = std::move(middle);
+        children_[2] = std::move(right);
+    }
+
+    // Compatibility constructor: value + left/right only (middle = null)
+    // Matches older tests that used binary-like construction:
+    //   Node node{ value, left_child, right_child };
+    T81Tree(T value, NodePtr left, NodePtr right)
+        : T81Tree(std::move(value),
+                  std::move(left),
+                  nullptr,
+                  std::move(right)) {}
 
     //===================================================================
-    // Factory functions – the only way to construct
+    // Factory functions – the main construction surface
     //===================================================================
     [[nodiscard]] static NodePtr leaf(T value) {
         return std::make_unique<Node>(
@@ -82,7 +105,7 @@ public:
     }
 
     //===================================================================
-    // Functional update – persistent (returns new tree, old one unchanged)
+    // Functional updates – persistent (new tree, old one unchanged)
     //===================================================================
     [[nodiscard]] NodePtr with_left(NodePtr new_left) const {
         auto new_children = children_;
@@ -153,8 +176,8 @@ public:
     [[nodiscard]] constexpr auto operator<=>(const Node& o) const noexcept {
         if (value_ != o.value_) return value_ <=> o.value_;
         for (int i = 0; i < 3; ++i) {
-            bool a_has = static_cast<bool>(children_[i]);
-            bool b_has = static_cast<bool>(o.children_[i]);
+            const bool a_has = static_cast<bool>(children_[i]);
+            const bool b_has = static_cast<bool>(o.children_[i]);
             if (a_has != b_has) {
                 return a_has
                     ? std::strong_ordering::greater

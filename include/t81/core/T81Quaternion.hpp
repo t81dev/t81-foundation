@@ -124,8 +124,10 @@ public:
         //   a = (aw + ax i) + (ay j + az k)
         //   b = (bw + bx i) + (by j + bz k)
         //
-        // We use complex arithmetic plus conjugation tricks to encode the
-        // Hamilton product in terms of Complex operations.
+        // Encoded as complex pairs:
+        //   a.real_imag_ = aw + ax·i
+        //   a.j_k_       = ay + az·i
+        //   likewise for b.
         const Complex ac    = a.real_imag_ * b.real_imag_;
         const Complex bd    = a.j_k_ * b.j_k_.conj();
         const Complex ab_cd = a.real_imag_ * b.j_k_;
@@ -196,7 +198,7 @@ public:
         const Scalar& vz
     ) const noexcept {
         const T81Quaternion v(Scalar(0), vx, vy, vz);
-        const T81Quaternion result = (*this) * this->conj() * v;
+        const T81Quaternion result = (*this) * v * this->conj();
         return result;
     }
 
@@ -257,8 +259,7 @@ public:
 
     // If very close, fall back to normalized lerp
     if (dot > Scalar(0.9999)) {
-        const T81Quaternion lerp =
-            a + (b_adj - a) * t;
+        const T81Quaternion lerp = a + (b_adj - a) * t;
         return lerp.normalized();
     }
 

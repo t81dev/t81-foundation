@@ -40,7 +40,7 @@ constexpr inline Trit int_to_trit(int v) noexcept {
 // Forward declarations so floating / fixed / prob types can befriend T81Int
 template <std::size_t M, std::size_t E> class T81Float;
 template <std::size_t I, std::size_t F> class T81Fixed;
-class T81Prob;
+template <std::size_t Trits> class T81Prob;
 
 template <std::size_t N>
 class T81Int {
@@ -103,6 +103,7 @@ private:
     template <std::size_t I, std::size_t F>
     friend class T81Fixed;
 
+    template <std::size_t Trits>
     friend class T81Prob;
 
 public:
