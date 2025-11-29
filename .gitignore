@@ -1,9 +1,10 @@
 # ─────────────────────────────────────────────────────────────
-# T81 Foundation — Canonical .gitignore
-# Version: 2025-11-24 (post v1.0.0-SOVEREIGN, modern C++ path)
+# T81 Foundation — Canonical .gitignore (2025 edition)
+# Modern C++, CMake, occasional Python/Rust/WASM/Rails tooling
 # ─────────────────────────────────────────────────────────────
 
-# ── Build directories (all variants) ───────────────────────
+# ── Build artifacts (all toolchains) ───────────────────────
+# CMake
 build*/
 cmake-build-*/
 out/
@@ -13,147 +14,206 @@ dist/
 Debug/
 Release/
 x64/
+x86/
+arm*/
 *.dir/
-
-# ── CMake generated files ───────────────────────────────────
+cmake_install.cmake
 CMakeCache.txt
 CMakeFiles/
-cmake_install.cmake
 CMakeScripts/
 install_manifest.txt
 CTestTestfile.cmake
-*.cmake
+compile_commands.json   # ← many people WANT this tracked now (see note below)
+
+# Ninja
 *.ninja_deps
 *.ninja_log
-compile_commands.json
+.ninja_deps
+.ninja_log
 
-# ── Generated binaries & libraries ─────────────────────────
+# MSVC
+*.sdf
+*.suo
+*.opensdf
+*.vcxproj.user
+*.psess
+*.vsp
+*.vspscc
+*.vssscc
+
+# Generated binaries & intermediates
 *.o
 *.obj
 *.a
+*.lib
 *.so
 *.dylib
 *.dll
 *.exe
 *.pdb
 *.ilk
-*.lib
 *.exp
 *.gcda
 *.gcno
 *.gcov
+*.cov
+*.profraw
+*.profdata
 
-# ── Legacy CWEB weave/tangle artifacts (scoped) ─────────────
-legacy/hanoivm/**/*.c
-legacy/hanoivm/**/*.h
-legacy/hanoivm/**/*.tex
-legacy/hanoivm/**/*.dvi
-legacy/hanoivm/**/*.pdf
-legacy/hanoivm/**/*.toc
-legacy/hanoivm/**/*.idx
-legacy/hanoivm/**/*.scn
-legacy/hanoivm/**/*.log
-legacy/hanoivm/**/*.stamp
+# ── vcpkg / Conan / other C++ package managers ─────────────
+.vcpkg/
+vcpkg/
+conanbuildinfo.*
+conanfile.txt
+conan.lock
+conaninfo.txt
+/conan/
 
-# ── Python / tooling ───────────────────────────────────────
+# ── Python tooling ─────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*.egg-info/
+.build/
+dist/
+*.egg
 .env
-.venv
+.venv/
 venv/
 env/
 pip-log.txt
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
+.tox/
 .mypy_cache/
 .ruff_cache/
+.dmypy.json
+
+# ── Node / JS tooling (if you ever add web UI or tests) ────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+pnpm-lock.yaml   # optional – many teams track it now
 
 # ── Documentation builds ───────────────────────────────────
 docs/_site/
 docs/build/
 docs/.docusaurus/
-docs/api/
-site/
 _site/
 
-# ── Jupyter / notebooks ────────────────────────────────────
+# ── Jupyter ───────────────────────────────────────────────
 .ipynb_checkpoints/
-*.ipynb_checkpoints/
 
-# ── IDEs & editors ─────────────────────────────────────────
-.vscode/
+# ── IDEs & Editors ─────────────────────────────────────────
+# VS Code – keep useful shared configs, ignore the rest
+.vscode/extensions.json
+.vscode/*.code-workspace
+.vscode/settings.json   # ← consider tracking a shared one at .vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
 !.vscode/settings.json
-!.vscode/tasks.json
 !.vscode/launch.json
+!.vscode/tasks.json
+
+# JetBrains
 .idea/
-*.iml
 *.iws
+*.iml
 *.ipr
-*.code-workspace
-*.swp
+*.workspace.xml
+*.run.xml
+
+# Vim / Emacs / macOS / Windows
 *~
+.*.swp
+.*.swo
+*.swn
 .DS_Store
 ._*
 Thumbs.db
+Desktop.ini
 
-# ── Temporary / cache files ───────────────────────────────
-*.tmp
+# ── Temporary / diagnostic files ───────────────────────────
 *.log
+*.dmp
 *.dump
+*.stackdump
 *.trace
 *.vmtrace
-*.json.tmp
+*.tmp
+*.bak
+*.orig
+*.rej
+
+# ── Profiling & sanitizers
 *.profraw
 *.profdata
+*.dynpg
 
-# ── Optional future backends (pre-emptively ignored) ───────
-# WASM
+# ── Legacy CWEB artifacts (scoped) ─────────────────────────
+legacy/hanoivm/**/*.c
+legacy/hanoivm/**/*.h
+legacy/hanoivm/**/*.tex
+legacy/hanoivm/**/*.dvi
+legacy/hanoivm/**/*.pdf
+legacy/hanoivm/**/*.log
+legacy/hanoivm/**/*.aux
+legacy/hanoivm/**/*.toc
+legacy/hanoivm/**/*.idx
+
+# ── Future / optional backends (pre-emptive) ───────────────
+# WebAssembly
 *.wasm
 *.wat
+*.js.mem
 *.js.tmp
 
-# Rust
-/target/
-/crates/**/target/
-/Cargo.lock        # only if you ever add Rust crates
+# Rust (only if introduced)
+**/target/
+Cargo.lock          # usually tracked in libraries, ignored in apps
 
-# GPU
+# GPU / CUDA
 *.fatbin
 *.cubin
 *.ptx
+*.nv_fatbin
 
-# Bazel (still present in legacy/)
+# Bazel (legacy code still has it)
 bazel-*
+*bazel
 
-# ── Ruby / Rails / Gems (add this block) ─────────────────────
-Gemfile
+# ── Ruby / Rails (you had this – cleaned up) ───────────────
+# Remove if you never touch Rails again – otherwise keep
 Gemfile.lock
 *.gem
-.ruby-version
-.rbenv-version
-.rvmrc
 .bundle/
 vendor/bundle/
-config/database.yml
-config/credentials.yml.enc
-config/master.key
-config/secrets.yml
-config/initializers/secret_token.rb
-log/
-tmp/
+log/*
+tmp/*
 *.log
 *.pid
 *.swp
 .pry_history
 .byebug_history
-
-# ── Never ignore the real source! ──────────────────────────
-# (We deliberately DO NOT have *.cpp, *.hpp, *.c, *.h here)
-# All modern C++ source in include/ and src/ is hand-written and MUST be tracked.
+config/database.yml
+config/credentials.yml.enc
+config/master.key
 
 # ─────────────────────────────────────────────────────────────
-# END OF FILE
+# IMPORTANT THINGS WE DELIBERATELY DO NOT IGNORE
 # ─────────────────────────────────────────────────────────────
+# - All hand-written C++ source (*.cpp, *.hpp, *.h, *.c, *.cc, etc.)
+# - compile_commands.json → many teams now TRACK this (for clangd, etc.)
+#   → if you want it tracked, remove the line above or use:
+#   !compile_commands.json   # at the end of the file
+# - Cargo.lock → track in libraries, ignore in apps
+# - pnpm-lock.yaml / package-lock.json → usually tracked now
+
+# Recommended final override (uncomment if you want clangd/ccls to work out-of-the-box):
+# !build/compile_commands.json
+# !compile_commands.json
