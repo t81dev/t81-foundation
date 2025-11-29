@@ -16,6 +16,7 @@
 #include "t81/core/T81Fixed.hpp"
 #include "t81/core/T81Complex.hpp"
 #include "t81/core/T81Symbol.hpp"
+
 #include <cstddef>
 #include <span>
 #include <array>
@@ -40,7 +41,7 @@ concept T81Element =
      std::same_as<T, T81Symbol>);
 
 // ======================================================================
-// T81Tensor<Element, Rank Dims...> – the ultimate N-D array
+// T81Tensor<Element, Rank, Dims...> – the ultimate N-D array
 // ======================================================================
 template <typename Element, size_t Rank, size_t... Dims>
     requires T81Element<Element> && (Rank == sizeof...(Dims)) && (Rank > 0)
@@ -102,30 +103,40 @@ public:
     // Broadcasting — compile-time shape propagation (Axion does this in HW)
     //===================================================================
     template <size_t TargetRank>
+        requires (TargetRank >= Rank)
     [[nodiscard]] constexpr auto broadcast_to() const noexcept
-        -> T81Tensor<Element, TargetRank>
-        requires (TargetRank >= Rank>
+        -> T81Tensor<Element, Rank, Dims...>
     {
-        T81Tensor<Element, TargetRank> out{Element{}};
-        // Hardware implements true broadcast — this is just a placeholder
-        // that the compiler erases completely
-        return out;
+        // Placeholder: actual broadcast is implemented in hardware.
+        // For now, just return the same tensor unchanged.
+        return *this;
     }
 
     //===================================================================
     // Element-wise arithmetic — fused into single ternary instruction stream
     //===================================================================
     [[nodiscard]] constexpr T81Tensor operator+(const T81Tensor& o) const noexcept {
-        T81Tensor r; for (size_t i=0;i<size();++i) r.data[i] = data[i] + o.data[i]; return r;
+        T81Tensor r;
+        for (size_t i = 0; i < size(); ++i) r.data[i] = data[i] + o.data[i];
+        return r;
     }
+
     [[nodiscard]] constexpr T81Tensor operator-(const T81Tensor& o) const noexcept {
-        T81Tensor r; for (size_t i=0;i<size();++i) r.data[i] = data[i] - o.data[i]; return r;
+        T81Tensor r;
+        for (size_t i = 0; i < size(); ++i) r.data[i] = data[i] - o.data[i];
+        return r;
     }
+
     [[nodiscard]] constexpr T81Tensor operator*(const T81Tensor& o) const noexcept {
-        T81Tensor r; for (size_t i=0;i<size();++i) r.data[i] = data[i] * o.data[i]; return r;
+        T81Tensor r;
+        for (size_t i = 0; i < size(); ++i) r.data[i] = data[i] * o.data[i];
+        return r;
     }
+
     [[nodiscard]] constexpr T81Tensor operator/(const T81Tensor& o) const noexcept {
-        T81Tensor r; for (size_t i=0;i<size();++i) r.data[i] = data[i] / o.data[i]; return r;
+        T81Tensor r;
+        for (size_t i = 0; i < size(); ++i) r.data[i] = data[i] / o.data[i];
+        return r;
     }
 
     //===================================================================
@@ -141,30 +152,24 @@ private:
         size_t idx[Rank] = { static_cast<size_t>(indices)... };
         size_t flat = 0;
         size_t stride = 1;
-        for (int i = Rank - 1; i >= 0; --i) {
+        for (int i = static_cast<int>(Rank) - 1; i >= 0; --i) {
             flat += idx[i] * stride;
-            stride *= shape()[i];
+            stride *= shape()[static_cast<size_t>(i)];
         }
         return flat;
     }
 };
 
 // ======================================================================
-// Deduction guides — you write T81Tensor{{...}} and it just works
-// ======================================================================
-template <typename T, typename... U>
-T81Tensor(T, U...) -> T81Tensor<std::common_type_t<T, U...>, 1 + sizeof...(U)>;
-
-// ======================================================================
 // The canonical tensor types of the new world
 // ======================================================================
 using float81 = T81Float<72,9>;
 
-using Vec81      = T81Tensor<float81, 1, 81>;        // 81-dim embedding
-using Vec4K      = T81Tensor<float81, 1, 4096>;      // transformer hidden state
-using Mat81x81   = T81Tensor<float81, 2, 81, 81>;    // attention matrix
+using Vec81      = T81Tensor<float81, 1, 81>;         // 81-dim embedding
+using Vec4K      = T81Tensor<float81, 1, 4096>;       // transformer hidden state
+using Mat81x81   = T81Tensor<float81, 2, 81, 81>;     // attention matrix
 using Mat4Kx4K   = T81Tensor<float81, 2, 4096, 4096>; // weight matrix
-using TokenBatch = T81Tensor<float81, 2, 128, 4096>; // batch, seq, dim
+using TokenBatch = T81Tensor<float81, 2, 128, 4096>;  // batch, seq, dim
 using KVCache    = T81Tensor<T81Fixed<72,9>, 4, 128, 128, 128, 64>; // layers, heads, seq, dim
 
 // Symbolic tensor — exact HRR binding
@@ -174,7 +179,9 @@ using SymbolTensor = T81Tensor<T81Symbol, 1, 81>;
 // Free functions that will become single instructions
 //===================================================================
 template <typename E, size_t... Dims>
-[[nodiscard]] constexpr auto transpose(const T81Tensor<E, sizeof...(Dims), Dims...>& t) noexcept {
+[[nodiscard]] constexpr auto transpose(
+    const T81Tensor<E, sizeof...(Dims), Dims...>& t
+) noexcept {
     // Real implementation uses hardware transpose unit
     return t; // placeholder — compiler will optimize
 }

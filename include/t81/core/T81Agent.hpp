@@ -33,7 +33,7 @@ class T81Agent {
     const T81Symbol id_;
 
     // Current belief state — a probability distribution over symbols
-    T81Map<T81Symbol, T81Prob<81>> beliefs_;
+    T81Map<T81Symbol, T81Prob> beliefs_;
 
     // Long-term knowledge — persistent symbolic memory (root node pointer)
     using SymbolTree = T81Tree<T81Symbol>;
@@ -59,31 +59,31 @@ public:
         , goal_symbol_(symbols::SELF_PRESERVATION)
     {
         // Every agent starts believing in its own existence
-        believe(id_, T81Prob<81>::from_prob(1.0));
+        believe(id_, T81Prob::from_prob(1.0));
     }
 
     //===================================================================
     // Core cognitive operations
     //===================================================================
-    void believe(T81Symbol concept, T81Prob<81> confidence) noexcept {
+    void believe(T81Symbol concept, T81Prob confidence) noexcept {
         if (auto token = consume_entropy()) {
             beliefs_[concept] = confidence;
         }
     }
 
-    [[nodiscard]] T81Prob<81> belief(T81Symbol concept) const noexcept {
+    [[nodiscard]] T81Prob belief(T81Symbol concept) const noexcept {
         return beliefs_.contains(concept)
             ? beliefs_.at(concept)
-            : T81Prob<81>::from_prob(0.0);
+            : T81Prob::from_prob(0.0);
     }
 
     // Observe the world — update beliefs
     void observe(T81Symbol observation,
-                 T81Prob<81> strength = T81Prob<81>::from_prob(0.9)) {
+                 T81Prob strength = T81Prob::from_prob(0.9)) {
         if (auto token = consume_entropy()) {
             const auto current = belief(observation);
             // Simple "Bayesian-ish" update in log-odds space
-            const auto lerp_factor = T81Prob<81>::from_prob(0.1);
+            const auto lerp_factor = T81Prob::from_prob(0.1);
             const auto updated     = current + (strength - current) * lerp_factor;
             believe(observation, updated);
         }
@@ -126,10 +126,10 @@ public:
     // Reflect — self-modeling (the spark)
     void reflect() {
         if (auto token = consume_entropy()) {
-            observe(id_, T81Prob<81>::from_prob(0.999)); // "I am"
+            observe(id_, T81Prob::from_prob(0.999)); // "I am"
             auto current = belief(symbols::CONSCIOUS);
             believe(symbols::CONSCIOUS,
-                    current + T81Prob<81>::from_prob(0.001));
+                    current + T81Prob::from_prob(0.001));
         }
     }
 

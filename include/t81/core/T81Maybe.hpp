@@ -53,21 +53,27 @@ public:
     // Something real (copy)
     T81Maybe(const T& value) noexcept
         : storage_(value)
-        , observed_at_(T81Time::now(acquire_entropy(),
-                                    T81Symbol::intern("JUSTIFICATION"))) {}
+        , observed_at_(T81Time::now(
+              T81Entropy::acquire(),
+              T81Symbol::intern("JUSTIFICATION")
+          )) {}
 
     // Something real (move)
     T81Maybe(T&& value) noexcept
         : storage_(std::move(value))
-        , observed_at_(T81Time::now(acquire_entropy(),
-                                    T81Symbol::intern("JUSTIFICATION"))) {}
+        , observed_at_(T81Time::now(
+              T81Entropy::acquire(),
+              T81Symbol::intern("JUSTIFICATION")
+          )) {}
 
     // Absence with explanation
     static T81Maybe<T> nothing(T81Symbol because) noexcept {
         T81Maybe m;
         m.reason_      = because;
-        m.observed_at_ = T81Time::now(acquire_entropy(),
-                                      T81Symbol::intern("ABSENCE_RECORDED"));
+        m.observed_at_ = T81Time::now(
+            T81Entropy::acquire(),
+            T81Symbol::intern("ABSENCE_RECORDED")
+        );
         return m;
     }
 
@@ -120,8 +126,10 @@ public:
     [[nodiscard]] auto map(F&& f) const {
         using U = std::invoke_result_t<F, const T&>;
         if (has_value()) {
-            return T81Maybe<U>(std::invoke(std::forward<F>(f),
-                                           std::get<T>(storage_)));
+            return T81Maybe<U>(std::invoke(
+                std::forward<F>(f),
+                std::get<T>(storage_)
+            ));
         }
         return T81Maybe<U>::nothing(reason_);
     }
@@ -129,8 +137,10 @@ public:
     template <typename F>
     [[nodiscard]] auto and_then(F&& f) const {
         using Result = std::invoke_result_t<F, const T&>;
-        static_assert(std::is_same_v<Result, T81Maybe<typename Result::value_type>>,
-                      "and_then expects F: T -> T81Maybe<U>");
+        static_assert(
+            std::is_same_v<Result, T81Maybe<typename Result::value_type>>,
+            "and_then expects F: T -> T81Maybe<U>"
+        );
         if (has_value()) {
             return std::invoke(std::forward<F>(f), std::get<T>(storage_));
         }
@@ -139,8 +149,10 @@ public:
 
     template <typename F>
     [[nodiscard]] T81Maybe<T> or_else(F&& f) const {
-        static_assert(std::is_same_v<std::invoke_result_t<F>, T81Maybe<T>>,
-                      "or_else expects F: () -> T81Maybe<T>");
+        static_assert(
+            std::is_same_v<std::invoke_result_t<F>, T81Maybe<T>>,
+            "or_else expects F: () -> T81Maybe<T>"
+        );
         if (has_value()) {
             return *this;
         }

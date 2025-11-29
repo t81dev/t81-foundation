@@ -32,15 +32,22 @@ class T81Vector {
 
     alignas(64) Scalar components_[N];
 
+    static Scalar scalar_from_double(double v) noexcept {
+        if constexpr (requires { Scalar::from_double(v); }) {
+            return Scalar::from_double(v);
+        } else {
+            return static_cast<Scalar>(v);
+        }
+    }
+
 public:
     using value_type = Scalar;
     static constexpr std::size_t dimension = N;
 
     //===================================================================
     // Construction
-    // (all constexpr, zero-overhead)
     //===================================================================
-    constexpr T81Vector() noexcept = default;
+    constexpr T81Vector() noexcept : components_{} {}
 
     explicit constexpr T81Vector(Scalar fill) noexcept {
         for (std::size_t i = 0; i < N; ++i) {
@@ -74,7 +81,7 @@ public:
     // Common vectors
     //===================================================================
     [[nodiscard]] static constexpr T81Vector zero() noexcept {
-        return T81Vector(Scalar(0));
+        return T81Vector(scalar_from_double(0.0));
     }
 
     [[nodiscard]] static constexpr T81Vector one() noexcept {
@@ -85,7 +92,7 @@ public:
     [[nodiscard]] static constexpr T81Vector unit_vector() noexcept {
         static_assert(I < N, "Unit vector index out of range");
         T81Vector v = zero();
-        v[I] = Scalar(1);
+        v[I] = scalar_from_double(1.0);
         return v;
     }
 
@@ -124,18 +131,39 @@ public:
     // Geometric operations
     //===================================================================
     [[nodiscard]] constexpr Scalar dot(const T81Vector& o) const noexcept {
-        Scalar sum(0);
+        Scalar sum = scalar_from_double(0.0);
         for (std::size_t i = 0; i < N; ++i) sum += components_[i] * o[i];
         return sum;
     }
 
     [[nodiscard]] constexpr Scalar length2() const noexcept { return dot(*this); }
 
-    [[nodiscard]] Scalar length() const noexcept { return length2().sqrt(); }
+    [[nodiscard]] Scalar length() const noexcept {
+        if constexpr (requires (const Scalar& s) { { s.to_double() } -> std::convertible_to<double>; }) {
+            const double l2 = length2().to_double();
+            if (l2 <= 0.0) {
+                return scalar_from_double(0.0);
+            }
+            return scalar_from_double(std::sqrt(l2));
+        } else {
+            // Fallback: no bridge available, return squared length
+            return length2();
+        }
+    }
 
     [[nodiscard]] T81Vector normalized() const noexcept {
-        const Scalar len = length();
-        return len.is_zero() ? *this : *this * (Scalar(1) / len);
+        if constexpr (requires (const Scalar& s) { { s.to_double() } -> std::convertible_to<double>; }) {
+            const double l2 = length2().to_double();
+            if (l2 <= 0.0) {
+                return *this;
+            }
+            const double len    = std::sqrt(l2);
+            const double inv_d  = 1.0 / len;
+            const Scalar inv_sc = scalar_from_double(inv_d);
+            return *this * inv_sc;
+        } else {
+            return *this;
+        }
     }
 
     // Cross product – only for 3D
@@ -150,12 +178,20 @@ public:
 
     // Angle between vectors
     [[nodiscard]] Scalar angle(const T81Vector& o) const noexcept {
-        return (dot(o) / (length() * o.length())).acos();
-    }
-
-    // Projection
-    [[nodiscard]] T81Vector project_onto(const T81Vector& o) const noexcept {
-        return o * (dot(o) / o.length2());
+        if constexpr (requires (const Scalar& s) { { s.to_double() } -> std::convertible_to<double>; }) {
+            const double l1 = length().to_double();
+            const double l2 = o.length().to_double();
+            double denom = l1 * l2;
+            if (denom <= 0.0) {
+                return scalar_from_double(0.0);
+            }
+            double c = dot(o).to_double() / denom;
+            if (c < -1.0) c = -1.0;
+            if (c >  1.0) c =  1.0;
+            return scalar_from_double(std::acos(c));
+        } else {
+            return scalar_from_double(0.0);
+        }
     }
 
     //===================================================================
@@ -163,9 +199,25 @@ public:
     //===================================================================
     template <std::size_t M = N>
     [[nodiscard]] std::enable_if_t<M == 3, T81Vector> rotated(const T81Quaternion& q) const noexcept {
-        T81Quaternion vq(Scalar(0), components_[0], components_[1], components_[2]);
+        using QScalar = T81Quaternion::Scalar;
+
+        // Bridge vector components into quaternion scalar space
+        const QScalar qx = QScalar::from_double(components_[0].to_double());
+        const QScalar qy = QScalar::from_double(components_[1].to_double());
+        const QScalar qz = QScalar::from_double(components_[2].to_double());
+
+        T81Quaternion vq(
+            QScalar::from_double(0.0),
+            qx, qy, qz
+        );
         T81Quaternion result = q * vq * q.conj();
-        return T81Vector(result.x(), result.y(), result.z());
+
+        // Bridge back into this vector's scalar space
+        const Scalar rx = scalar_from_double(result.x().to_double());
+        const Scalar ry = scalar_from_double(result.y().to_double());
+        const Scalar rz = scalar_from_double(result.z().to_double());
+
+        return T81Vector(rx, ry, rz);
     }
 
     //===================================================================
@@ -205,8 +257,13 @@ constexpr Vec3 forward(0, 0, 1);
 constexpr auto right = up.cross(forward);  // (1,0,0)
 
 constexpr auto rotation =
-    T81Quaternion::from_axis_angle(0, 1, 0, T81Float<72,9>(3.14159 / 2));
-constexpr auto left = right.rotated(rotation);  // (0,0,-1) exactly
+    T81Quaternion::from_axis_angle(
+        T81Quaternion::Scalar::from_double(0.0),
+        T81Quaternion::Scalar::from_double(1.0),
+        T81Quaternion::Scalar::from_double(0.0),
+        T81Quaternion::Scalar::from_double(3.14159 / 2)
+    );
+constexpr auto left = right.rotated(rotation);  // (0,0,-1) approximately
 */
 
 } // namespace t81

@@ -29,10 +29,10 @@ class T81Time {
     // Global logical clock — one ternary tick per irreversible act in the universe
     static inline T81Int<81> global_tick{0};
 
-    T81Int<81>                 tick_;      // local snapshot of global time
-    T81Entropy                 witness_;   // entropy token consumed at this instant
-    T81Symbol                  event_id_;  // symbolic name of the event that caused this tick
-    T81Reflection<T81Time>*    observer_{nullptr};  // who saw this moment (optional)
+    T81Int<81>              tick_;      // local snapshot of global time
+    T81Entropy              witness_;   // entropy token consumed at this instant
+    T81Symbol               event_id_;  // symbolic name of the event that caused this tick
+    T81Reflection<T81Time>* observer_{nullptr};  // who saw this moment (optional)
 
 public:
     //===================================================================
@@ -50,7 +50,7 @@ public:
     static T81Time genesis() {
         return T81Time(
             T81Int<81>(0),
-            acquire_entropy(),
+            T81Entropy::acquire(),
             T81Symbol::intern("GENESIS")
         );
     }
@@ -65,15 +65,16 @@ public:
     // the invariant that each instance has its own token.
     T81Time(const T81Time& other)
         : tick_(other.tick_)
-        , witness_(acquire_entropy())
+        , witness_(T81Entropy::acquire())
         , event_id_(other.event_id_)
         , observer_(other.observer_) {}
 
     T81Time(T81Time&& other) noexcept = default;
+
     T81Time& operator=(const T81Time& other) {
         if (this != &other) {
             tick_     = other.tick_;
-            witness_  = acquire_entropy();
+            witness_  = T81Entropy::acquire();
             event_id_ = other.event_id_;
             observer_ = other.observer_;
         }

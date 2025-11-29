@@ -71,9 +71,13 @@ public:
         const Scalar& axis_z,
         const Scalar& angle_radians
     ) noexcept {
-        const Scalar half = angle_radians * Scalar(0.5);
-        const Scalar s    = half.sin();
-        const Scalar c    = half.cos();
+        const double angle_d = angle_radians.to_double();
+        const double half_d  = angle_d * 0.5;
+        const double s_d     = std::sin(half_d);
+        const double c_d     = std::cos(half_d);
+
+        const Scalar s = Scalar::from_double(s_d);
+        const Scalar c = Scalar::from_double(c_d);
 
         return T81Quaternion(
             c,
@@ -85,7 +89,12 @@ public:
 
     // Identity quaternion
     static inline T81Quaternion identity() noexcept {
-        return T81Quaternion(Scalar(1), Scalar(0), Scalar(0), Scalar(0));
+        return T81Quaternion(
+            Scalar::from_double(1.0),
+            Scalar::from_double(0.0),
+            Scalar::from_double(0.0),
+            Scalar::from_double(0.0)
+        );
     }
 
     //===================================================================
@@ -179,11 +188,15 @@ public:
 
     // Normalize (unit quaternion). If length is zero, returns identity().
     [[nodiscard]] inline T81Quaternion normalized() const noexcept {
-        const Scalar m = mag2();
-        if (m.is_zero()) {
+        const Scalar m   = mag2();
+        double       m_d = m.to_double();
+
+        if (m_d <= 0.0) {
             return identity();
         }
-        const Scalar inv_len = Scalar(1) / m.sqrt();
+
+        const double inv_len_d = 1.0 / std::sqrt(m_d);
+        const Scalar inv_len   = Scalar::from_double(inv_len_d);
         return *this * inv_len;
     }
 
@@ -197,7 +210,12 @@ public:
         const Scalar& vy,
         const Scalar& vz
     ) const noexcept {
-        const T81Quaternion v(Scalar(0), vx, vy, vz);
+        const T81Quaternion v(
+            Scalar::from_double(0.0),
+            vx,
+            vy,
+            vz
+        );
         const T81Quaternion result = (*this) * v * this->conj();
         return result;
     }
@@ -244,32 +262,79 @@ public:
 ) noexcept {
     using Scalar = T81Quaternion::Scalar;
 
+    // Convert components to double for transcendental math
+    const double aw = a.w().to_double();
+    const double ax = a.x().to_double();
+    const double ay = a.y().to_double();
+    const double az = a.z().to_double();
+
+    const double bw = b.w().to_double();
+    const double bx = b.x().to_double();
+    const double by = b.y().to_double();
+    const double bz = b.z().to_double();
+
     // Cosine of the angle between them
-    Scalar dot = a.w() * b.w()
-               + a.x() * b.x()
-               + a.y() * b.y()
-               + a.z() * b.z();
+    double dot = aw * bw + ax * bx + ay * by + az * bz;
 
     // If dot < 0, use the negated second quaternion to take the short arc
-    T81Quaternion b_adj = b;
-    if (dot < Scalar(0)) {
-        dot   = -dot;
-        b_adj = -b;
+    double bw_adj = bw;
+    double bx_adj = bx;
+    double by_adj = by;
+    double bz_adj = bz;
+
+    if (dot < 0.0) {
+        dot    = -dot;
+        bw_adj = -bw;
+        bx_adj = -bx;
+        by_adj = -by;
+        bz_adj = -bz;
     }
 
+    const double t_d = t.to_double();
+
     // If very close, fall back to normalized lerp
-    if (dot > Scalar(0.9999)) {
-        const T81Quaternion lerp = a + (b_adj - a) * t;
+    if (dot > 0.9999) {
+        const double w = aw + (bw_adj - aw) * t_d;
+        const double x = ax + (bx_adj - ax) * t_d;
+        const double y = ay + (by_adj - ay) * t_d;
+        const double z = az + (bz_adj - az) * t_d;
+
+        T81Quaternion lerp(
+            Scalar::from_double(w),
+            Scalar::from_double(x),
+            Scalar::from_double(y),
+            Scalar::from_double(z)
+        );
         return lerp.normalized();
     }
 
-    const Scalar theta     = dot.acos();
-    const Scalar sin_theta = theta.sin();
-    const Scalar one       = Scalar(1);
-    const Scalar a_factor  = (theta * (one - t)).sin() / sin_theta;
-    const Scalar b_factor  = (theta * t).sin() / sin_theta;
+    // Clamp dot into [-1, 1] to protect acos
+    if (dot < -1.0) dot = -1.0;
+    if (dot >  1.0) dot =  1.0;
 
-    return (a * a_factor) + (b_adj * b_factor);
+    const double theta     = std::acos(dot);
+    const double sin_theta = std::sin(theta);
+
+    if (sin_theta == 0.0) {
+        // Degenerate case; just return a
+        return a;
+    }
+
+    const double a_factor = std::sin((1.0 - t_d) * theta) / sin_theta;
+    const double b_factor = std::sin(t_d * theta) / sin_theta;
+
+    const double w = aw * a_factor + bw_adj * b_factor;
+    const double x = ax * a_factor + bx_adj * b_factor;
+    const double y = ay * a_factor + by_adj * b_factor;
+    const double z = az * a_factor + bz_adj * b_factor;
+
+    T81Quaternion result(
+        Scalar::from_double(w),
+        Scalar::from_double(x),
+        Scalar::from_double(y),
+        Scalar::from_double(z)
+    );
+    return result.normalized();
 }
 
 // ======================================================================
@@ -277,15 +342,15 @@ public:
 // ======================================================================
 /*
 inline constexpr auto q = T81Quaternion::from_axis_angle(
-    T81Quaternion::Scalar(0),
-    T81Quaternion::Scalar(1),
-    T81Quaternion::Scalar(0),
-    T81Quaternion::Scalar(3.14159) // ~180° around Y
+    T81Quaternion::Scalar::from_double(0.0),
+    T81Quaternion::Scalar::from_double(1.0),
+    T81Quaternion::Scalar::from_double(0.0),
+    T81Quaternion::Scalar::from_double(3.14159) // ~180° around Y
 );
 inline const auto rotated = q.rotate_vector(
-    T81Quaternion::Scalar(1),
-    T81Quaternion::Scalar(0),
-    T81Quaternion::Scalar(0)
+    T81Quaternion::Scalar::from_double(1.0),
+    T81Quaternion::Scalar::from_double(0.0),
+    T81Quaternion::Scalar::from_double(0.0)
 );
 // rotated.x() ≈ -1, rotated.y() ≈ 0, rotated.z() ≈ 0
 */
