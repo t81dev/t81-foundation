@@ -20,6 +20,7 @@ namespace t81 {
 // ======================================================================
 using T81Qutrit = T81Int<2>;
 
+
 // The three basis states — exact, native, eternal
 namespace qutrit {
     inline const T81Qutrit ZERO  = T81Qutrit(0);   // |0⟩   →  00 in balanced ternary

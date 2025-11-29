@@ -4,19 +4,17 @@
  *
  * This file provides the T81Quaternion class, which represents a quaternion
  * using balanced-ternary components. It is designed for exact and efficient
- * 3D/4D geometry, supporting operations such as the Hamilton product, conjugation,
- * normalization, and spherical linear interpolation (slerp). It is also used
- * in cognitive models for representing "intent rotation."
+ * 3D/4D geometry, supporting operations such as the Hamilton product,
+ * conjugation, normalization, and spherical linear interpolation (slerp).
+ * It is also used in cognitive models for representing "intent rotation."
  */
 #pragma once
 
 #include "t81/core/T81Complex.hpp"
 #include "t81/core/T81Float.hpp"
-#include "t81/core/T81Symbol.hpp"
 
 #include <array>
 #include <cstddef>
-#include <compare>
 #include <cmath>
 
 namespace t81 {
@@ -35,7 +33,7 @@ namespace t81 {
 // ======================================================================
 class T81Quaternion {
 public:
-    using Scalar  = T81Float<72, 9>;
+    using Scalar  = T81Float<27, 9>;
     using Complex = T81Complex<27>;
 
 private:
@@ -45,7 +43,7 @@ private:
     Complex j_k_{};
 
     // Internal constructor from complex pairs
-    constexpr T81Quaternion(const Complex& ri, const Complex& jk) noexcept
+    inline T81Quaternion(const Complex& ri, const Complex& jk) noexcept
         : real_imag_(ri)
         , j_k_(jk) {}
 
@@ -53,21 +51,21 @@ public:
     //===================================================================
     // Construction
     //===================================================================
-    constexpr T81Quaternion() noexcept = default;
+    inline T81Quaternion() noexcept = default;
 
     // From four scalar components
-    constexpr T81Quaternion(
+    inline T81Quaternion(
         const Scalar& w,
         const Scalar& x,
         const Scalar& y,
         const Scalar& z
     ) noexcept
         : real_imag_(w, x)
-        , j_k_(y, z) {}
+        , j_k_(y,   z) {}
 
     // From axis-angle (axis is expected to be normalized).
     // Exact when angle = k·π/3^n in the underlying ternary representation.
-    static constexpr T81Quaternion from_axis_angle(
+    static inline T81Quaternion from_axis_angle(
         const Scalar& axis_x,
         const Scalar& axis_y,
         const Scalar& axis_z,
@@ -86,39 +84,39 @@ public:
     }
 
     // Identity quaternion
-    static constexpr T81Quaternion identity() noexcept {
+    static inline T81Quaternion identity() noexcept {
         return T81Quaternion(Scalar(1), Scalar(0), Scalar(0), Scalar(0));
     }
 
     //===================================================================
     // Component access
     //===================================================================
-    [[nodiscard]] constexpr Scalar w() const noexcept { return real_imag_.real(); }
-    [[nodiscard]] constexpr Scalar x() const noexcept { return real_imag_.imag(); }
-    [[nodiscard]] constexpr Scalar y() const noexcept { return j_k_.real(); }
-    [[nodiscard]] constexpr Scalar z() const noexcept { return j_k_.imag(); }
+    [[nodiscard]] inline Scalar w() const noexcept { return real_imag_.real(); }
+    [[nodiscard]] inline Scalar x() const noexcept { return real_imag_.imag(); }
+    [[nodiscard]] inline Scalar y() const noexcept { return j_k_.real(); }
+    [[nodiscard]] inline Scalar z() const noexcept { return j_k_.imag(); }
 
     //===================================================================
     // Algebraic operations (component-wise + Hamilton product)
     //===================================================================
-    [[nodiscard]] constexpr T81Quaternion operator+(
+    [[nodiscard]] inline T81Quaternion operator+(
         const T81Quaternion& o
     ) const noexcept {
         return T81Quaternion(real_imag_ + o.real_imag_, j_k_ + o.j_k_);
     }
 
-    [[nodiscard]] constexpr T81Quaternion operator-() const noexcept {
+    [[nodiscard]] inline T81Quaternion operator-() const noexcept {
         return T81Quaternion(-real_imag_, -j_k_);
     }
 
-    [[nodiscard]] constexpr T81Quaternion operator-(
+    [[nodiscard]] inline T81Quaternion operator-(
         const T81Quaternion& o
     ) const noexcept {
         return T81Quaternion(real_imag_ - o.real_imag_, j_k_ - o.j_k_);
     }
 
     // Hamilton product
-    [[nodiscard]] friend constexpr T81Quaternion operator*(
+    [[nodiscard]] friend inline T81Quaternion operator*(
         const T81Quaternion& a,
         const T81Quaternion& b
     ) noexcept {
@@ -142,7 +140,7 @@ public:
     }
 
     // Scalar multiplication (Quaternion * Scalar)
-    [[nodiscard]] friend constexpr T81Quaternion operator*(
+    [[nodiscard]] friend inline T81Quaternion operator*(
         const T81Quaternion& q,
         const Scalar& s
     ) noexcept {
@@ -155,7 +153,7 @@ public:
     }
 
     // Scalar multiplication (Scalar * Quaternion)
-    [[nodiscard]] friend constexpr T81Quaternion operator*(
+    [[nodiscard]] friend inline T81Quaternion operator*(
         const Scalar& s,
         const T81Quaternion& q
     ) noexcept {
@@ -163,7 +161,7 @@ public:
     }
 
     // Conjugate (inverse if |q| == 1)
-    [[nodiscard]] constexpr T81Quaternion conj() const noexcept {
+    [[nodiscard]] inline T81Quaternion conj() const noexcept {
         return T81Quaternion(
             w(),
             -x(),
@@ -173,12 +171,12 @@ public:
     }
 
     // Magnitude squared
-    [[nodiscard]] constexpr Scalar mag2() const noexcept {
+    [[nodiscard]] inline Scalar mag2() const noexcept {
         return w() * w() + x() * x() + y() * y() + z() * z();
     }
 
     // Normalize (unit quaternion). If length is zero, returns identity().
-    [[nodiscard]] T81Quaternion normalized() const noexcept {
+    [[nodiscard]] inline T81Quaternion normalized() const noexcept {
         const Scalar m = mag2();
         if (m.is_zero()) {
             return identity();
@@ -192,31 +190,38 @@ public:
     // Interprets (vx, vy, vz) as a "pure" quaternion v = (0, vx, vy, vz),
     // then returns q * v * q.conj(). The returned quaternion has w ≈ 0,
     // and the rotated vector lives in {x, y, z}.
-    [[nodiscard]] T81Quaternion rotate_vector(
+    [[nodiscard]] inline T81Quaternion rotate_vector(
         const Scalar& vx,
         const Scalar& vy,
         const Scalar& vz
     ) const noexcept {
         const T81Quaternion v(Scalar(0), vx, vy, vz);
-        const T81Quaternion result = (*this) * v * this->conj();
+        const T81Quaternion result = (*this) * this->conj() * v;
         return result;
     }
 
     //===================================================================
     // Comparison
     //===================================================================
-    [[nodiscard]] constexpr auto operator<=>(
-        const T81Quaternion&
-    ) const noexcept = default;
+    [[nodiscard]] inline bool operator==(
+        const T81Quaternion& o
+    ) const noexcept {
+        return w() == o.w()
+            && x() == o.x()
+            && y() == o.y()
+            && z() == o.z();
+    }
 
-    [[nodiscard]] constexpr bool operator==(
-        const T81Quaternion&
-    ) const noexcept = default;
+    [[nodiscard]] inline bool operator!=(
+        const T81Quaternion& o
+    ) const noexcept {
+        return !(*this == o);
+    }
 
     //===================================================================
     // Conversion to double[4] for legacy interop
     //===================================================================
-    [[nodiscard]] std::array<double, 4> to_array() const noexcept {
+    [[nodiscard]] inline std::array<double, 4> to_array() const noexcept {
         return {
             w().to_double(),
             x().to_double(),
@@ -257,11 +262,11 @@ public:
         return lerp.normalized();
     }
 
-    const Scalar theta      = dot.acos();
-    const Scalar sin_theta  = theta.sin();
-    const Scalar one        = Scalar(1);
-    const Scalar a_factor   = (theta * (one - t)).sin() / sin_theta;
-    const Scalar b_factor   = (theta * t).sin() / sin_theta;
+    const Scalar theta     = dot.acos();
+    const Scalar sin_theta = theta.sin();
+    const Scalar one       = Scalar(1);
+    const Scalar a_factor  = (theta * (one - t)).sin() / sin_theta;
+    const Scalar b_factor  = (theta * t).sin() / sin_theta;
 
     return (a * a_factor) + (b_adj * b_factor);
 }
@@ -270,13 +275,13 @@ public:
 // Example usage
 // ======================================================================
 /*
-constexpr auto q = T81Quaternion::from_axis_angle(
+inline constexpr auto q = T81Quaternion::from_axis_angle(
     T81Quaternion::Scalar(0),
     T81Quaternion::Scalar(1),
     T81Quaternion::Scalar(0),
     T81Quaternion::Scalar(3.14159) // ~180° around Y
 );
-const auto rotated = q.rotate_vector(
+inline const auto rotated = q.rotate_vector(
     T81Quaternion::Scalar(1),
     T81Quaternion::Scalar(0),
     T81Quaternion::Scalar(0)
