@@ -200,9 +200,10 @@ public:
 // Canonical maps used in the new world
 // ======================================================================
 using SymbolTable   = T81Map<t81::core::T81Symbol, T81List<t81::core::T81Symbol>>;
-using EmbeddingMap  = T81Map<t81::core::T81Symbol, T81Tensor<T81Float<72,9>, 1, 4096>>;
+// Note: EmbeddingMap and KVStore require T81Float and T81Tensor headers to be included
+// using EmbeddingMap  = T81Map<t81::core::T81Symbol, T81Tensor<T81Float<72,9>, 1, 4096>>;
 using VocabMap      = T81Map<T81String, uint32_t>;           // string → token ID
-using KVStore       = T81Map<t81::core::T81Symbol, T81List<T81Float<72,9>>>;
+// using KVStore       = T81Map<t81::core::T81Symbol, T81List<T81Float<72,9>>>;
 
 // ======================================================================
 // Example: This is how the future stores knowledge

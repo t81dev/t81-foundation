@@ -13,11 +13,11 @@
 #include "t81/core/T81String.hpp"
 #include "t81/core/T81Entropy.hpp"
 #include "t81/core/T81Prob.hpp"
-#include "t81/T81List.hpp"
-#include "t81/T81Map.hpp"
-#include "t81/T81Tree.hpp"
-#include "t81/T81Quaternion.hpp"
-#include "t81/T81Stream.hpp"
+#include "t81/core/T81List.hpp"
+#include "t81/core/T81Map.hpp"
+#include "t81/core/T81Tree.hpp"
+#include "t81/core/T81Quaternion.hpp"
+#include "t81/core/T81Stream.hpp"
 #include <functional>
 #include <optional>
 

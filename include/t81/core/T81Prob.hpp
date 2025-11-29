@@ -15,6 +15,8 @@
 #include <cmath>
 #include <compare>
 #include <limits>
+#include <span>
+#include <algorithm>
 
 namespace t81::core {
 
@@ -59,8 +61,8 @@ public:
     // ------------------------------------------------------------------
     static constexpr T81Prob zero() noexcept          { return T81Prob(Storage(0)); }
     static constexpr T81Prob one() noexcept           { return from_prob(0.731111); }  // exact 0.5 in log-odds
-    static constexpr T81Prob minus_infinity() noexcept { return T81Prob(Storage::min()); }
-    static constexpr T81Prob plus_infinity() noexcept  { return T81Prob(Storage::max()); }
+    static T81Prob minus_infinity() noexcept { return T81Prob(Storage::kMinValue); }
+    static T81Prob plus_infinity() noexcept  { return T81Prob(Storage::kMaxValue); }
 
     // ------------------------------------------------------------------
     // Core arithmetic — THIS IS WHY IT'S MAGIC
@@ -101,8 +103,8 @@ public:
     // Queries
     // ------------------------------------------------------------------
     [[nodiscard]] constexpr bool is_zero() const noexcept          { return log_odds_.is_zero(); }
-    [[nodiscard]] constexpr bool is_minus_infinity() const noexcept { return log_odds_ == Storage::min(); }
-    [[nodiscard]] constexpr bool is_plus_infinity() const noexcept  { return log_odds_ == Storage::max(); }
+    [[nodiscard]] bool is_minus_infinity() const noexcept { return log_odds_ == Storage::kMinValue; }
+    [[nodiscard]] bool is_plus_infinity() const noexcept  { return log_odds_ == Storage::kMaxValue; }
 
     // ------------------------------------------------------------------
     // Comparison

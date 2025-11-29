@@ -97,7 +97,7 @@ public:
 class EntropyPool {
     alignas(64) std::atomic<uint64_t> counter_{0};
 
-    static Raw hardware_trng() noexcept;  // real version = CPU instruction
+    static T81Entropy::Raw hardware_trng() noexcept;  // real version = CPU instruction
 
 public:
     static EntropyPool& global() noexcept {
@@ -115,13 +115,13 @@ public:
 inline T81Entropy::Raw EntropyPool::hardware_trng() noexcept {
     static uint64_t x = 0x517cc1b727220a95;
     x ^= x << 13; x ^= x >> 7; x ^= x << 17;
-    return T81Entropy::Raw(static_cast<int64_t>(x));
+    return T81Int<81>(static_cast<int64_t>(x));
 }
 
 // ======================================================================
 // Convenience
 // ======================================================================
-inline T81Entropy acquire_entropy(T81Symbol who = symbols::KERNEL) {
+inline T81Entropy acquire_entropy(T81Symbol who = T81Symbol::intern("KERNEL")) {
     return EntropyPool::global().acquire(who);
 }
 

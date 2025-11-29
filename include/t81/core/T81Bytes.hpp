@@ -15,7 +15,7 @@
 #pragma once
 
 #include "t81/core/T81Int.hpp"
-#include "t81/T81String.hpp"
+#include "t81/core/T81String.hpp"
 
 #include <algorithm>
 #include <cstddef>

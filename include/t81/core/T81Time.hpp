@@ -13,7 +13,7 @@
 #include "t81/core/T81Int.hpp"
 #include "t81/core/T81Entropy.hpp"
 #include "t81/core/T81Symbol.hpp"
-#include "t81/T81Reflection.hpp"
+#include "t81/core/T81Reflection.hpp"
 #include <compare>
 
 namespace t81 {

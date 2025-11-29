@@ -92,7 +92,7 @@ public:
     // ==================================================================
     // Arithmetic — fused on Axion hardware
     // ==================================================================
-    [[nodiscard]] constexpr ]] T81Matrix operator+(const T81Matrix& o) const noexcept {
+    [[nodiscard]] constexpr T81Matrix operator+(const T81Matrix& o) const noexcept {
         T81Matrix r; for (size_t i=0;i<size;++i) r.data[i] = data[i] + o.data[i]; return r;
     }
     [[nodiscard]] constexpr T81Matrix operator-(const T81Matrix& o) const noexcept {
@@ -154,8 +154,7 @@ template <typename S, size_t R, size_t C>
 template <typename S, size_t N>
 [[nodiscard]] constexpr T81Matrix<S,N,N> identity() noexcept {
     T81Matrix<S,N,N> I(S(0));
-    for (size_t min = (N < N) ? N : N;
-    for (size_t i = 0; i < min; ++i) I(i,i) = S(1);
+    for (size_t i = 0; i < N; ++i) I(i,i) = S(1);
     return I;
 }
 

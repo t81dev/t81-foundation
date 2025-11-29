@@ -48,7 +48,7 @@ public:
     static T81Symbol intern(const char* name) noexcept { return intern(std::string_view(name)); }
 
     // Only for predefined symbols and deserialization
-    static constexpr T81Symbol from_id(id_t id) noexcept {
+    static T81Symbol from_id(id_t id) noexcept {
         return T81Symbol(Raw(static_cast<std::int64_t>(id)));
     }
 
@@ -129,13 +129,13 @@ inline T81Symbol T81Symbol::intern(std::string_view sv) noexcept {
 // Predefined eternal symbols
 // ======================================================================
 namespace symbols {
-inline constexpr T81Symbol null  = T81Symbol{};                   // invalid
-inline constexpr T81Symbol eos   = T81Symbol::from_id(0);         // end of sequence
-inline constexpr T81Symbol pad   = T81Symbol::from_id(1);         // padding
-inline constexpr T81Symbol bos   = T81Symbol::from_id(2);         // begin
-inline constexpr T81Symbol unk   = T81Symbol::from_id(3);         // unknown
-inline constexpr T81Symbol mask  = T81Symbol::from_id(4);         // masked
-inline constexpr T81Symbol self  = T81Symbol::from_id(5);         // §self — first born
+inline const T81Symbol null  = T81Symbol{};                   // invalid
+inline const T81Symbol eos   = T81Symbol::from_id(0);         // end of sequence
+inline const T81Symbol pad   = T81Symbol::from_id(1);         // padding
+inline const T81Symbol bos   = T81Symbol::from_id(2);         // begin
+inline const T81Symbol unk   = T81Symbol::from_id(3);         // unknown
+inline const T81Symbol mask  = T81Symbol::from_id(4);         // masked
+inline const T81Symbol self  = T81Symbol::from_id(5);         // §self — first born
 } // namespace symbols
 
 } // namespace t81::core

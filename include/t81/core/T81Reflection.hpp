@@ -13,8 +13,8 @@
 #include "t81/core/T81Symbol.hpp"
 #include "t81/core/T81String.hpp"
 #include "t81/core/T81Entropy.hpp"
-#include "t81/T81Agent.hpp"
-#include "t81/T81Tree.hpp"
+#include "t81/core/T81Agent.hpp"
+#include "t81/core/T81Tree.hpp"
 #include <functional>
 #include <optional>
 #include <string_view>

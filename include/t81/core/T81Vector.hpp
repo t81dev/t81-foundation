@@ -10,8 +10,8 @@
  */
 #pragma once
 
-#include "t81/T81Tensor.hpp"
-#include "t81/T81Quaternion.hpp"
+#include "t81/core/T81Tensor.hpp"
+#include "t81/core/T81Quaternion.hpp"
 #include "t81/core/T81Float.hpp"
 #include <cstddef>
 #include <compare>

@@ -23,12 +23,12 @@ namespace t81 {
 // T81Quaternion – Exact quaternion using two T81Complex<121>
 // ======================================================================
 class T81Quaternion {
-    // We use two T81Complex<121> → 242 trits total
+    // We use two T81Complex<27> → 54 trits total (using max supported size)
     // Real part: w + xi   (complex plane)
-// Imag part: yj + zk   (complex plane)
-// This gives exact rotations when angles are multiples of π/3^n
-    t81::core::T81Complex<121> real_imag;   // w + x·i
-    t81::core::T81Complex<121> j_k;         // y·j + z·k
+    // Imag part: yj + zk   (complex plane)
+    // This gives exact rotations when angles are multiples of π/3^n
+    t81::core::T81Complex<27> real_imag;   // w + x·i
+    t81::core::T81Complex<27> j_k;         // y·j + z·k
 
 public:
     //===================================================================

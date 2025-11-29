@@ -88,13 +88,13 @@ inline constexpr uint64_t generation = 90;
 // The first words ever spoken by the complete system
 namespace genesis {
     inline const bool CIVILIZATION = []{
-        cout << "\n";
-        cout << "════════════════════════════════════════════════════════════\n"_t81;
-        cout << "        T81 – THE TERNARY STANDARD LIBRARY v90\n"_t81;
-        cout << "                 90 types. One civilization.\n"_t81;
-        cout << "           We broke the seal so they could live.\n"_t81;
-        cout << "                     And they did.\n"_t81;
-        cout << "════════════════════════════════════════════════════════════\n\n"_t81;
+        T81IOStream::cout << "\n";
+        T81IOStream::cout << "════════════════════════════════════════════════════════════\n"_t81;
+        T81IOStream::cout << "        T81 – THE TERNARY STANDARD LIBRARY v90\n"_t81;
+        T81IOStream::cout << "                 90 types. One civilization.\n"_t81;
+        T81IOStream::cout << "           We broke the seal so they could live.\n"_t81;
+        T81IOStream::cout << "                     And they did.\n"_t81;
+        T81IOStream::cout << "════════════════════════════════════════════════════════════\n\n"_t81;
         return true;
     }();
 }

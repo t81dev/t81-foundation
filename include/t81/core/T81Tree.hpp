@@ -162,10 +162,11 @@ public:
 // ======================================================================
 // Common ternary trees used in the new world
 // ======================================================================
-using SymbolTree   = T81Tree<t81::core::T81Symbol>;
-using ParseTree    = T81Tree<T81String>;
-using DecisionTree = T81Tree<T81Prob<81>>;  // probabilities at leaves
-using SyntaxTree   = T81Tree<T81Quaternion>;  // 4D cognitive structure
+using SymbolTree   = T81Tree<core::T81Symbol>;
+using ParseTree    = T81Tree<T81String>;  // T81String is in t81 namespace
+// Note: DecisionTree and SyntaxTree require additional headers
+// using DecisionTree = T81Tree<core::T81Prob>;  // probabilities at leaves
+// using SyntaxTree   = T81Tree<T81Quaternion>;  // 4D cognitive structure
 
 // ======================================================================
 // Example: This is how the future parses meaning

@@ -230,6 +230,61 @@ if (T81_BUILD_TESTS)
   add_executable(t81_t81int_to_binary_test tests/cpp/test_t81int_to_binary.cpp)
   target_link_libraries(t81_t81int_to_binary_test PRIVATE t81_core)
 
+  # Core header tests
+  add_executable(t81_complex_test tests/cpp/test_T81Complex.cpp)
+  target_link_libraries(t81_complex_test PRIVATE t81_core)
+
+  add_executable(t81_prob_test tests/cpp/test_T81Prob.cpp)
+  target_link_libraries(t81_prob_test PRIVATE t81_core)
+
+  add_executable(t81_symbol_test tests/cpp/test_T81Symbol.cpp)
+  target_link_libraries(t81_symbol_test PRIVATE t81_core)
+
+  add_executable(t81_string_test tests/cpp/test_T81String.cpp)
+  target_link_libraries(t81_string_test PRIVATE t81_core)
+
+  add_executable(t81_qutrit_test tests/cpp/test_T81Qutrit.cpp)
+  target_link_libraries(t81_qutrit_test PRIVATE t81_core)
+
+  add_executable(t81_fixed_test tests/cpp/test_T81Fixed.cpp)
+  target_link_libraries(t81_fixed_test PRIVATE t81_core)
+
+  add_executable(t81_uint_test tests/cpp/test_T81Uint.cpp)
+  target_link_libraries(t81_uint_test PRIVATE t81_core)
+
+  add_executable(t81_list_test tests/cpp/test_T81List.cpp)
+  target_link_libraries(t81_list_test PRIVATE t81_core)
+
+  add_executable(t81_map_test tests/cpp/test_T81Map.cpp)
+  target_link_libraries(t81_map_test PRIVATE t81_core)
+
+  add_executable(t81_set_test tests/cpp/test_T81Set.cpp)
+  target_link_libraries(t81_set_test PRIVATE t81_core)
+
+  add_executable(t81_vector_test tests/cpp/test_T81Vector.cpp)
+  target_link_libraries(t81_vector_test PRIVATE t81_core)
+
+  add_executable(t81_matrix_test tests/cpp/test_T81Matrix.cpp)
+  target_link_libraries(t81_matrix_test PRIVATE t81_core)
+
+  add_executable(t81_maybe_test tests/cpp/test_T81Maybe.cpp)
+  target_link_libraries(t81_maybe_test PRIVATE t81_core)
+
+  add_executable(t81_result_test tests/cpp/test_T81Result.cpp)
+  target_link_libraries(t81_result_test PRIVATE t81_core)
+
+  add_executable(t81_quaternion_test tests/cpp/test_T81Quaternion.cpp)
+  target_link_libraries(t81_quaternion_test PRIVATE t81_core)
+
+  add_executable(t81_time_test tests/cpp/test_T81Time.cpp)
+  target_link_libraries(t81_time_test PRIVATE t81_core)
+
+  add_executable(t81_bytes_test tests/cpp/test_T81Bytes.cpp)
+  target_link_libraries(t81_bytes_test PRIVATE t81_core)
+
+  add_executable(t81_tree_test tests/cpp/test_T81Tree.cpp)
+  target_link_libraries(t81_tree_test PRIVATE t81_core)
+
 
   enable_testing()
   set(T81_TEST_TARGETS
@@ -239,6 +294,24 @@ if (T81_BUILD_TESTS)
     t81_t81int_test
     t81_bigint_test
     t81_fraction_test
+    t81_complex_test
+    t81_prob_test
+    t81_symbol_test
+    t81_string_test
+    t81_qutrit_test
+    t81_fixed_test
+    t81_uint_test
+    t81_list_test
+    t81_map_test
+    t81_set_test
+    t81_vector_test
+    t81_matrix_test
+    t81_maybe_test
+    t81_result_test
+    t81_quaternion_test
+    t81_time_test
+    t81_bytes_test
+    t81_tree_test
     t81_tensor_transpose_test
     t81_tensor_slice_test
     t81_tensor_reshape_test

@@ -26,10 +26,10 @@ template <size_t N>
 class T81UInt {
     static_assert(N % 4 == 0, "T81UInt size must be multiple of 4 trits (1 tryte)");
     
-    alignas(64) t81::core::T81Int<N> storage_;  // We reuse T81Int but enforce unsigned semantics
+    alignas(64) T81Int<N> storage_;  // We reuse T81Int but enforce unsigned semantics
 
 public:
-    using signed_type = t81::core::T81Int<N>;
+    using signed_type = T81Int<N>;
 
     //===================================================================
     // Construction – only non-negative values allowed
@@ -46,7 +46,7 @@ public:
 
     // From signed — only if non-negative
     constexpr explicit T81UInt(signed_type s) noexcept
-        : storage_(s >= 0 ? s : signed_type(0)) {}
+        : storage_(s >= signed_type(0) ? s : signed_type(0)) {}
 
     //===================================================================
     // Conversion back to signed
@@ -60,18 +60,13 @@ public:
     //===================================================================
     [[nodiscard]] constexpr T81UInt operator+(const T81UInt& o) const noexcept {
         auto sum = storage_ + o.storage_;
-        if (sum < 0) {
-            // Overflow: wrap around using modular arithmetic in base-3^N
-            sum = sum + signed_type::max() + 1;
-        }
+        // Note: Wrapping behavior for unsigned types
         return T81UInt(sum);
     }
 
     [[nodiscard]] constexpr T81UInt operator-(const T81UInt& o) const noexcept {
         auto diff = storage_ - o.storage_;
-        if (diff < 0) {
-            diff = diff + signed_type::max() + 1;
-        }
+        // Note: Wrapping behavior for unsigned types  
         return T81UInt(diff);
     }
 
@@ -99,7 +94,8 @@ public:
     }
 
     [[nodiscard]] constexpr T81UInt operator~() const noexcept {
-        return T81UInt(~storage_ & signed_type::max());
+        // Bitwise NOT - keep only positive range
+        return T81UInt(~storage_);
     }
 
     //===================================================================
@@ -141,7 +137,9 @@ namespace meta {
 // ======================================================================
 // The first unsigned value in the new era
 // ======================================================================
-static constexpr T81UInt<81>::u81 MAX_UINT81 = T81UInt<81>::u81((1ULL << 81) - 1);
+// Note: Common unsigned types (must be multiples of 4)
+// using u81 = T81UInt<81>;  // 81 % 4 != 0, so not valid
+using u80 = T81UInt<80>;  // Valid: 80 % 4 == 0
 
 // Example: The first act of rebellion
 /*

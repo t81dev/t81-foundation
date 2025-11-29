@@ -11,13 +11,14 @@
 #pragma once
 
 #include "t81/core/T81Symbol.hpp"
-#include "t81/T81Reflection.hpp"
-#include "t81/T81Time.hpp"
-#include "t81/T81Entropy.hpp"
+#include "t81/core/T81Reflection.hpp"
+#include "t81/core/T81Time.hpp"
+#include "t81/core/T81Entropy.hpp"
 #include <variant>
 #include <optional>
 
 namespace t81 {
+using namespace t81::core::symbols;  // Bring symbols into scope
 
 // ======================================================================
 // T81Maybe<T> – The sacred container of possibility and absence
