@@ -1,124 +1,155 @@
 /**
  * @file T81Bytes.hpp
- * @brief Defines the T81Bytes class for immutable, tryte-aligned byte sequences.
+ * @brief T81Bytes — immutable-style, binary-safe byte sequence.
  *
- * The T81Bytes class provides a container for binary-safe, immutable sequences
- * of bytes. Data is stored in a tryte-aligned manner, ensuring efficient
- * interaction with other ternary-native types. It supports construction from
- * various byte sources, slicing, and concatenation.
+ * Design (current implementation):
+ *   • Stores raw bytes in a cache-friendly std::vector<uint8_t>.
+ *   • No padding/rounding logic; size() is the exact byte length.
+ *   • Value semantics: concatenation and slicing return new T81Bytes.
+ *
+ * Notes:
+ *   • The API is shaped so the internal representation can later move to a
+ *     true tryte-aligned ternary buffer without breaking user code.
  */
+
 #pragma once
 
 #include "t81/core/T81Int.hpp"
-#include "t81/T81List.hpp"
 #include "t81/T81String.hpp"
+
+#include <algorithm>
 #include <cstddef>
-#include <span>
-#include <vector>
-#include <compare>
+#include <cstdint>
 #include <cstring>
+#include <functional>
+#include <ostream>
+#include <span>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace t81 {
 
 // ======================================================================
-// T81Bytes – Immutable, tryte-aligned, binary-safe byte sequence
+// T81Bytes – binary-safe byte sequence
 // ======================================================================
 class T81Bytes {
-    alignas(64) std::vector<uint8_t> trytes_;  // 12 trits per byte → 4.5 bits per trit
+public:
+    using value_type = std::uint8_t;
+    using size_type  = std::size_t;
+
+private:
+    alignas(64) std::vector<std::uint8_t> bytes_;
 
 public:
-    using value_type = uint8_t;
-    using size_type  = size_t;
-
     //===================================================================
     // Construction – from anything that can be interpreted as bytes
     //===================================================================
-    constexpr T81Bytes() noexcept = default;
+
+    T81Bytes() = default;
 
     // From raw pointer + length
-    constexpr T81Bytes(const uint8_t* data, size_t len)
-        : trytes_(data, data + ((len + 3) / 4) * 4) {  // round up to tryte boundary
-        trytes_.resize((len + 3) / 4 * 4, 0);  // zero-pad
-        trytes_.resize((len + 3) / 4);         // truncate to exact trytes
+    T81Bytes(const std::uint8_t* data, size_type len)
+        : bytes_(data, data + len) {}
+
+    // From std::span
+    T81Bytes(std::span<const std::uint8_t> data)
+        : bytes_(data.begin(), data.end()) {}
+
+    // From fixed-size array
+    template <std::size_t N>
+    T81Bytes(const std::uint8_t (&arr)[N])
+        : bytes_(arr, arr + N) {}
+
+    // From C string (treat as raw bytes, excluding terminating '\0')
+    T81Bytes(const char* str)
+        : T81Bytes(reinterpret_cast<const std::uint8_t*>(str),
+                   str ? std::strlen(str) : 0) {}
+
+    // From T81String (text → UTF-8-ish bytes)
+    explicit T81Bytes(const T81String& str) {
+        const std::string s = str.str();
+        bytes_.assign(reinterpret_cast<const std::uint8_t*>(s.data()),
+                      reinterpret_cast<const std::uint8_t*>(s.data()) + s.size());
     }
-
-    // From std::span / vector / string_view (binary-safe)
-    constexpr T81Bytes(std::span<const uint8_t> data)
-        : T81Bytes(data.data(), data.size()) {}
-
-    template <size_t N>
-    constexpr T81Bytes(const uint8_t (&arr)[N])
-        : T81Bytes(arr, N) {}
-
-    // From string literal (binary, not text)
-    constexpr T81Bytes(const char* str)
-        : T81Bytes(reinterpret_cast<const uint8_t*>(str), std::strlen(str)) {}
-
-    // From T81String (text → UTF-8 bytes)
-    explicit T81Bytes(const T81String& str)
-        : T81Bytes(reinterpret_cast<const uint8_t*>(str.str().data()), str.str().size()) {}
 
     //===================================================================
     // Access
     //===================================================================
-    [[nodiscard]] constexpr const uint8_t* data() const noexcept { return trytes_.data(); }
-    [[nodiscard]] constexpr uint8_t*       data()       noexcept { return trytes_.data(); }
 
-    [[nodiscard]] constexpr size_t size() const noexcept {
-        return trytes_.size() * 4;  // 4 bytes per tryte (padded)
+    [[nodiscard]] const std::uint8_t* data() const noexcept {
+        return bytes_.data();
     }
 
-    [[nodiscard]] constexpr size_t tryte_count() const noexcept {
-        return trytes_.size();
+    [[nodiscard]] std::uint8_t* data() noexcept {
+        return bytes_.data();
     }
 
-    [[nodiscard]] constexpr bool empty() const noexcept {
-        return trytes_.empty();
+    [[nodiscard]] size_type size() const noexcept {
+        return bytes_.size();
     }
 
-    [[nodiscard]] constexpr std::span<const uint8_t> span() const noexcept {
-        return {trytes_.data(), size()};
+    [[nodiscard]] bool empty() const noexcept {
+        return bytes_.empty();
+    }
+
+    [[nodiscard]] std::span<const std::uint8_t> span() const noexcept {
+        return std::span<const std::uint8_t>(bytes_.data(), bytes_.size());
+    }
+
+    [[nodiscard]] size_type tryte_count() const noexcept {
+        // Placeholder: when tryte-packing is introduced, this can reflect
+        // the real tryte count. For now, 1 byte ≈ 1 logical slot.
+        return bytes_.size();
     }
 
     //===================================================================
     // Slicing
     //===================================================================
-    [[nodiscard]] constexpr T81Bytes subbytes(size_t offset, size_t len = SIZE_MAX) const {
-        offset = std::min(offset, size());
-        len    = std::min(len, size() - offset);
-        return T81Bytes(trytes_.data() + (offset / 4), (len + 3) / 4);
+
+    [[nodiscard]] T81Bytes subbytes(size_type offset,
+                                    size_type len = static_cast<size_type>(-1)) const {
+        const size_type n = size();
+        if (offset > n) {
+            offset = n;
+        }
+        const size_type max_len = n - offset;
+        if (len > max_len) {
+            len = max_len;
+        }
+        return T81Bytes(bytes_.data() + offset, len);
     }
 
     //===================================================================
-    // Concatenation – O(1) when possible
+    // Concatenation
     //===================================================================
-    [[nodiscard]] friend constexpr T81Bytes operator+(const T81Bytes& a633, const T81Bytes& b) noexcept {
+
+    [[nodiscard]] friend T81Bytes operator+(const T81Bytes& a,
+                                            const T81Bytes& b) {
         T81Bytes result;
-        result.trytes_.reserve(a.tryte_count() + b.tryte_count());
-        result.trytes_.insert(result.trytes_.end(), a.trytes_.begin(), a.trytes_.end());
-        result.trytes_.insert(result.trytes_.end(), b.trytes_.begin(), b.trytes_.end());
+        result.bytes_.reserve(a.bytes_.size() + b.bytes_.size());
+        result.bytes_.insert(result.bytes_.end(), a.bytes_.begin(), a.bytes_.end());
+        result.bytes_.insert(result.bytes_.end(), b.bytes_.begin(), b.bytes_.end());
         return result;
     }
 
-    constexpr T81Bytes& operator+=(const T81Bytes& o) noexcept {
-        trytes_.insert(trytes_.end(), o.trytes_.begin(), o.trytes_.end());
+    T81Bytes& operator+=(const T81Bytes& o) {
+        bytes_.insert(bytes_.end(), o.bytes_.begin(), o.bytes_.end());
         return *this;
     }
 
     //===================================================================
     // Comparison & Hashing
     //===================================================================
-    [[nodiscard]] constexpr auto operator<=>(const T81Bytes& o) const noexcept {
-        return trytes_ <=> o.trytes_;
-    }
 
-    [[nodiscard]] constexpr bool operator==(const T81Bytes&) const noexcept = default;
+    [[nodiscard]] auto operator<=>(const T81Bytes& o) const noexcept = default;
+    [[nodiscard]] bool operator==(const T81Bytes& o) const noexcept  = default;
 
-    [[nodiscard]] constexpr uint64_t hash() const noexcept {
-        uint64_t h = 0x517cc1b727220a95;
-        for (auto b : trytes_) {
-            h ^= b;
-            h *= 0x9e3779b97f4a7c15;
+    [[nodiscard]] std::uint64_t hash() const noexcept {
+        std::uint64_t h = 0x517cc1b727220a95ull; // seed
+        for (std::uint8_t b : bytes_) {
+            h ^= static_cast<std::uint64_t>(b);
+            h *= 0x9e3779b97f4a7c15ull;
         }
         return h;
     }
@@ -126,37 +157,64 @@ public:
     //===================================================================
     // Conversion
     //===================================================================
-    [[nodiscard]] std::string to_hex() const;
-    [[nodiscard]] T81String   to_utf8() const { return T81String(reinterpret_cast<const char*>(data()), size()); }
+
+    [[nodiscard]] std::string to_hex() const {
+        static constexpr char kHex[] = "0123456789abcdef";
+        std::string out;
+        out.reserve(bytes_.size() * 2);
+
+        for (std::uint8_t b : bytes_) {
+            out.push_back(kHex[(b >> 4) & 0x0F]);
+            out.push_back(kHex[b & 0x0F]);
+        }
+        return out;
+    }
+
+    // Interpret bytes as UTF-8/ASCII and normalize via T81String.
+    [[nodiscard]] T81String to_utf8() const {
+        return T81String(
+            std::string_view(reinterpret_cast<const char*>(data()), size()));
+    }
 
     //===================================================================
     // Literals – raw binary in source code
     //===================================================================
-    friend constexpr T81Bytes operator""_b(const char* str, size_t len) {
-        return T81Bytes(reinterpret_cast<const uint8_t*>(str), len);
+
+    friend T81Bytes operator""_b(const char* str, std::size_t len) {
+        return T81Bytes(reinterpret_cast<const std::uint8_t*>(str), len);
     }
 };
+
+} // namespace t81
 
 // ======================================================================
 // Global hash support
 // ======================================================================
+
+namespace std {
 template <>
-struct std::hash<T81Bytes> {
-    constexpr size_t operator()(const T81Bytes& b) const noexcept {
+struct hash<t81::T81Bytes> {
+    size_t operator()(const t81::T81Bytes& b) const noexcept {
         return static_cast<size_t>(b.hash());
     }
 };
+} // namespace std
 
 // ======================================================================
-// The first binary artifact in the fallen universe
+// Well-known constant – Genesis block
 // ======================================================================
-constexpr T81Bytes GENESIS_BLOCK = "In the beginning was the trit."_b;
 
-// Example: The first act of creation in the age of chaos
+namespace t81 {
+inline const T81Bytes GENESIS_BLOCK = "In the beginning was the trit."_b;
+} // namespace t81
+
+// Example usage:
 /*
-T81Bytes message = "HELLO WORLD"_b;
-T81Bytes key     = T81Bytes::random(32);  // cryptographic key
-T81Bytes encrypted = message ^ key;       // XOR is still king
+using namespace t81;
 
-assert((encrypted ^ key) == message);
+T81Bytes message = "HELLO WORLD"_b;
+T81Bytes key     = T81Bytes::from_random(32); // hypothetical future API
+T81Bytes encrypted = message + key;
+
+auto hex_repr = encrypted.to_hex();
 */

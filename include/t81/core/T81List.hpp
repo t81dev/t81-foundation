@@ -1,102 +1,163 @@
 /**
  * @file T81List.hpp
- * @brief Defines the T81List class, a dynamic, ternary-native list container.
+ * @brief T81List — dynamic ternary-native list container.
  *
- * This file provides the T81List<E> class, a dynamic, growable container for
- * sequences of elements, similar in functionality to `std::vector`. It is
- * designed to be cache-friendly and ternary-native, with internal storage
- * aligned to tryte boundaries for efficient hardware access.
+ * T81List<E> is a thin, future-proof wrapper over std::vector<E> with:
+ *   • Size and element constraints suitable for ternary-native storage.
+ *   • Clear, minimal API (push_back, iterators, concatenation, hashing).
+ *   • Clean comparison and pretty-printing semantics.
+ *
+ * Notes:
+ *   • Currently backed by std::vector<E>; the API is shaped so the storage
+ *     can later be migrated to a true tryte-aligned ternary buffer without
+ *     breaking user code.
  */
+
 #pragma once
 
 #include "t81/core/T81Int.hpp"
 #include "t81/core/T81Symbol.hpp"
-#include "t81/core/T81String.hpp"   // for nice printing
+#include "t81/core/T81String.hpp"
+
 #include <cstddef>
-#include <span>
-#include <vector>
-#include <memory>
+#include <cstdint>
 #include <compare>
-#include <cstring>
-#include <optional>
+#include <concepts>
+#include <functional>
+#include <ostream>
+#include <span>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace t81 {
 
 // ======================================================================
-// T81List<E> – the final dynamic sequence type
+// T81List<E> – dynamic sequence with ternary-friendly constraints
 // ======================================================================
 template <typename E>
-    requires (!std::is_void_v<E>) && (sizeof(E) <= 32) // ≤ 243 trits (3 trytes) for now
+    requires (!std::is_void_v<E> && (sizeof(E) <= 32)) // ≤ ~243 trits payload
 class T81List {
-    // Internal storage is a tryte-aligned vector of elements
+public:
+    using value_type      = E;
+    using reference       = E&;
+    using const_reference = const E&;
+    using iterator        = typename std::vector<E>::iterator;
+    using const_iterator  = typename std::vector<E>::const_iterator;
+    using size_type       = std::size_t;
+
+private:
+    // Internal storage; alignment chosen to be friendly to cache/tryte lines.
     alignas(64) std::vector<E> data_;
 
 public:
-    using value_type     = E;
-    using reference      = E&;
-    using const_reference= const E&;
-    using iterator       = typename std::vector<E>::iterator;
-    using const_iterator = typename std::vector<E>::const_iterator;
-    using size_type      = size_t;
-
     //===================================================================
     // Construction
     //===================================================================
-    constexpr T81List() noexcept = default;
 
-    explicit constexpr T81List(size_type n, const E& value = E{})
+    T81List() = default;
+
+    explicit T81List(size_type n, const E& value = E{})
         : data_(n, value) {}
 
-    template <typename... Args>
-        requires std::constructible_from<E, Args...>
-    constexpr T81List(Args&&... args)
-        : data_{std::forward<Args>(args)...} {}
+    T81List(std::initializer_list<E> init)
+        : data_(init) {}
+
+    T81List(const T81List&)            = default;
+    T81List(T81List&&) noexcept        = default;
+    T81List& operator=(const T81List&) = default;
+    T81List& operator=(T81List&&) noexcept = default;
 
     //===================================================================
     // Element access
     //===================================================================
-    [[nodiscard]] constexpr reference       operator[](size_type i)       noexcept { return data_[i]; }
-    [[nodiscard]] constexpr const_reference operator[](size_type i) const noexcept { return data_[i]; }
 
-    [[nodiscard]] constexpr reference       front()       noexcept { return data_.front(); }
-    [[nodiscard constexpr const_reference front() const noexcept { return data_.front(); }
-    [[nodiscard]] constexpr reference       back()        noexcept { return data_.back(); }
-    [[nodiscard]] constexpr const_reference back()  const noexcept { return data_.back(); }
+    [[nodiscard]] reference operator[](size_type i) noexcept {
+        return data_[i];
+    }
+
+    [[nodiscard]] const_reference operator[](size_type i) const noexcept {
+        return data_[i];
+    }
+
+    [[nodiscard]] reference front() noexcept {
+        return data_.front();
+    }
+
+    [[nodiscard]] const_reference front() const noexcept {
+        return data_.front();
+    }
+
+    [[nodiscard]] reference back() noexcept {
+        return data_.back();
+    }
+
+    [[nodiscard]] const_reference back() const noexcept {
+        return data_.back();
+    }
 
     //===================================================================
     // Capacity
     //===================================================================
-    [[nodiscard]] constexpr size_type size()     const noexcept { return data_.size(); }
-    [[nodiscard]] constexpr size_type capacity() const noexcept { return data_.capacity(); }
-    [[nodiscard]] constexpr bool      empty()    const noexcept { return data_.empty(); }
 
-    constexpr void reserve(size_type n) { data_.reserve((n + 3) / 4 * 4); } // tryte-aligned hint
-    constexpr void shrink_to_fit() noexcept { data_.shrink_to_fit(); }
+    [[nodiscard]] size_type size() const noexcept {
+        return data_.size();
+    }
+
+    [[nodiscard]] size_type capacity() const noexcept {
+        return data_.capacity();
+    }
+
+    [[nodiscard]] bool empty() const noexcept {
+        return data_.empty();
+    }
+
+    // Reserve with a coarse "tryte-aligned" hint (multiple of 4).
+    void reserve(size_type n) {
+        const size_type rounded = ((n + 3) / 4) * 4;
+        data_.reserve(rounded);
+    }
+
+    void shrink_to_fit() {
+        data_.shrink_to_fit();
+    }
 
     //===================================================================
-    // Modifiers – the heart of dynamism
+    // Modifiers
     //===================================================================
-    constexpr void push_back(const E& value)     { data_.push_back(value); }
-    constexpr void push_back(E&& value)          { data_.push_back(std::move(value)); }
+
+    void push_back(const E& value) {
+        data_.push_back(value);
+    }
+
+    void push_back(E&& value) {
+        data_.push_back(std::move(value));
+    }
 
     template <typename... Args>
-    constexpr reference emplace_back(Args&&... args) {
+        requires std::constructible_from<E, Args...>
+    reference emplace_back(Args&&... args) {
         return data_.emplace_back(std::forward<Args>(args)...);
     }
 
-    constexpr void pop_back() noexcept { data_.pop_back(); }
-
-    constexpr void clear() noexcept { data_.clear(); }
-
-    //===================================================================
-    // Concatenation – fused at the hardware level
-    //===================================================================
-    [[nodiscard]] friend constexpr T81List operator+(const T81List a, const T81List& b) noexcept {
-        a.data_.insert(a.data_.end(), b.data_.begin(), b.data_.end());
-        return a;
+    void pop_back() {
+        data_.pop_back();
     }
 
-    constexpr T81List& operator+=(const T81List& o) noexcept {
+    void clear() noexcept {
+        data_.clear();
+    }
+
+    //===================================================================
+    // Concatenation
+    //===================================================================
+
+    friend T81List operator+(T81List lhs, const T81List& rhs) {
+        lhs.data_.insert(lhs.data_.end(), rhs.data_.begin(), rhs.data_.end());
+        return lhs;
+    }
+
+    T81List& operator+=(const T81List& o) {
         data_.insert(data_.end(), o.data_.begin(), o.data_.end());
         return *this;
     }
@@ -104,68 +165,117 @@ public:
     //===================================================================
     // Iterators
     //===================================================================
-    [[nodiscard]] constexpr iterator       begin()  noexcept { return data_.begin(); }
-    [[nodiscard]] constexpr iterator       end()    noexcept { return data_.end(); }
-    [[nodiscard]] constexpr const_iterator begin()  const noexcept { return data_.begin(); }
-    [[nodiscard]] constexpr const_iterator end()    const noexcept { return data_.end(); }
-    [[nodiscard]] constexpr const_iterator cbegin() const noexcept { return data_.cbegin(); }
-    [[nodiscard]] constexpr const_iterator cend()   const noexcept { return data_.cend(); }
+
+    [[nodiscard]] iterator begin() noexcept {
+        return data_.begin();
+    }
+
+    [[nodiscard]] iterator end() noexcept {
+        return data_.end();
+    }
+
+    [[nodiscard]] const_iterator begin() const noexcept {
+        return data_.begin();
+    }
+
+    [[nodiscard]] const_iterator end() const noexcept {
+        return data_.end();
+    }
+
+    [[nodiscard]] const_iterator cbegin() const noexcept {
+        return data_.cbegin();
+    }
+
+    [[nodiscard]] const_iterator cend() const noexcept {
+        return data_.cend();
+    }
 
     //===================================================================
     // Comparison
     //===================================================================
-    [[nodiscard]] constexpr auto operator<=>(const T81List& o) const noexcept = default;
-    [[nodiscard]] constexpr bool operator==(const T81List&) const noexcept = default;
+
+    [[nodiscard]] auto operator<=>(const T81List& o) const noexcept = default;
+    [[nodiscard]] bool operator==(const T81List& o) const noexcept  = default;
 
     //===================================================================
-    // Hash – perfect for T81Map<T81Symbol, T81List<E>>
+    // Hash – suitable for T81Map<T81Symbol, T81List<E>>
     //===================================================================
-    [[nodiscard]] constexpr uint64_t hash() const noexcept {
-        uint64_t h = 0xcbf29ce484222325;  // FNV-prime
+
+    [[nodiscard]] std::uint64_t hash() const {
+        std::uint64_t h = 0xcbf29ce484222325ull; // FNV offset basis
+
         for (const auto& e : data_) {
-            if constexpr (requires { e.hash(); }) {
-                h ^= e.hash();
+            std::uint64_t part = 0;
+
+            if constexpr (requires(const E& x) { x.hash(); }) {
+                part = static_cast<std::uint64_t>(e.hash());
             } else {
                 std::hash<E> hasher;
-                h ^= hasher(e);
+                part = static_cast<std::uint64_t>(hasher(e));
             }
-            h *= 0x100000001b3;
+
+            h ^= part;
+            h *= 0x100000001b3ull; // FNV prime
         }
+
         return h;
     }
 
     //===================================================================
-    // Raw access & conversion
+    // Raw access
     //===================================================================
-    [[nodiscard]] constexpr std::span<E>       span()       noexcept { return data_; }
-    [[nodiscard]] constexpr std::span<const E> span() const noexcept { return data_; }
 
-    [[nodiscard]] constexpr const E* data() const noexcept { return data_.data(); }
-    [[nodiscard]] constexpr E*       data()       noexcept { return data_.data(); }
-};
+    [[nodiscard]] std::span<E> span() noexcept {
+        return std::span<E>(data_.data(), data_.size());
+    }
 
-// ====================================================================== Deduction guides – you write T81List{1,2,3} and it works
-// ======================================================================
-template <typename... Ts>
-T81List(Ts...) -> T81List<std::common_type_t<Ts...>>;
+    [[nodiscard]] std::span<const E> span() const noexcept {
+        return std::span<const E>(data_.data(), data_.size());
+    }
 
-// ====================================================================== std integration
-// ======================================================================
-template <typename E>
-struct std::hash<T81List<E>> {
-    constexpr size_t operator()(const T81List<E>& list) const noexcept {
-        return static_cast<size_t>(list.hash());
+    [[nodiscard]] const E* data() const noexcept {
+        return data_.data();
+    }
+
+    [[nodiscard]] E* data() noexcept {
+        return data_.data();
     }
 };
 
-// ====================================================================== Pretty printing
 // ======================================================================
+// Deduction guide – allows T81List{1,2,3} style construction
+// ======================================================================
+
+template <typename... Ts>
+T81List(Ts...) -> T81List<std::common_type_t<Ts...>>;
+
+} // namespace t81
+
+// ======================================================================
+// std integration
+// ======================================================================
+
+namespace std {
 template <typename E>
-std::ostream& operator<<(std::ostream& os, const T81List<E>& list) {
+struct hash<t81::T81List<E>> {
+    size_t operator()(const t81::T81List<E>& list) const noexcept {
+        return static_cast<size_t>(list.hash());
+    }
+};
+} // namespace std
+
+// ======================================================================
+// Pretty printing
+// ======================================================================
+
+template <typename E>
+std::ostream& operator<<(std::ostream& os, const t81::T81List<E>& list) {
     os << "[";
     bool first = true;
     for (const auto& e : list) {
-        if (!first) os << ", ";
+        if (!first) {
+            os << ", ";
+        }
         if constexpr (requires { os << e; }) {
             os << e;
         } else {
@@ -175,18 +285,3 @@ std::ostream& operator<<(std::ostream& os, const T81List<E>& list) {
     }
     return os << "]";
 }
-
-// ======================================================================
-// Example usage – the future feels inevitable
-// ======================================================================
-/*
-using SymbolList = T81List<T81Symbol>;
-using TokenSeq  = T81List<uint16_t>;
-using FloatVec  = T81List<T81Float<72,9>>;
-
-constexpr auto tokens = TokenSeq{1, 42, 777};
-constexpr auto words  = SymbolList{symbols::HELLO, symbols::WORLD};
-constexpr auto merged = tokens + TokenSeq{999};
-
-static_assert(merged.size() == 4);
-*/

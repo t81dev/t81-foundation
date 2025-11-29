@@ -1,151 +1,208 @@
 /**
  * @file T81Fixed.hpp
- * @brief Defines the T81Fixed class for balanced ternary fixed-point arithmetic.
+ * @brief Balanced ternary fixed-point arithmetic on top of T81Int.
  *
- * This file provides a fixed-point numerical representation, T81Fixed, which is
- * built upon the T81Int class. It allows for deterministic arithmetic with a
- * fixed number of fractional trits, making it suitable for applications like
- * quantized neural network inference and other scenarios where floating-point
- * hardware is unavailable or non-deterministic behavior is undesirable.
+ * T81Fixed<IntegerTrits, FractionalTrits> is a thin semantic wrapper over
+ * T81Int<IntegerTrits + FractionalTrits>. All arithmetic is done in balanced
+ * ternary; scaling only appears at the double conversion boundary.
  */
+
 #pragma once
 
 #include "t81/core/T81Int.hpp"
+#include "t81/core/T81Float.hpp"
+
+#include <cstddef>
 #include <cstdint>
 #include <compare>
 #include <cmath>
 #include <limits>
+#include <type_traits>
+#include <ostream>
 
 namespace t81::core {
 
 // ======================================================================
-// T81Fixed<MantissaTrits, FracTrits>  —  Balanced ternary fixed-point
+// T81Fixed<IntegerTrits, FractionalTrits>
 // ======================================================================
-//
-// Layout (for T81Fixed<27,9>):
-//   [ 18 integer trits ] [ 9 fractional trits ]   → 27 trits total
-//   ←────── integer ──────→←──── fractional ──→
-//   Sign is part of the balanced ternary integer — no separate sign bit.
-//
-// This is literally just a constrained T81Int<27> with semantic sugar.
-// All arithmetic is 100% identical to integer — no rounding, no overflow checks.
-// Conversion to/from float is the ONLY place where scaling happens.
-//
-// This is why it's Priority #3: it's free once you have T81Int and T81Float.
-//
-// Used for:
-//   • QAT-aware training (integer gradients)
-//   • 4-bit / 3-trit quantized inference
-//   • Edge devices with zero floating-point units
-//   • Deterministic integer transformers
-//
-template <size_t IntegerTrits, size_t FractionalTrits>
+
+template <std::size_t IntegerTrits, std::size_t FractionalTrits>
 class T81Fixed {
-    static_assert(IntegerTrits + FractionalTrits <= 162, "T81Fixed too large for current kernels");
+    static_assert(IntegerTrits > 0, "T81Fixed: IntegerTrits must be > 0");
+    static_assert(FractionalTrits > 0, "T81Fixed: FractionalTrits must be > 0");
+    static_assert(IntegerTrits + FractionalTrits <= 162,
+                  "T81Fixed: total trits too large for current kernels");
 
 public:
     using Storage = T81Int<IntegerTrits + FractionalTrits>;
 
-    static constexpr size_t I = IntegerTrits;
-    static constexpr size_t F = FractionalTrits;
-    static constexpr size_t Total = I + F;
+    static constexpr std::size_t I     = IntegerTrits;
+    static constexpr std::size_t F     = FractionalTrits;
+    static constexpr std::size_t Total = I + F;
 
+private:
+    Storage data_{};
+
+    [[nodiscard]] static double frac_scale() noexcept {
+        static const double kScale =
+            std::pow(3.0, static_cast<int>(FractionalTrits));
+        return kScale;
+    }
+
+public:
     // ------------------------------------------------------------------
     // Construction
     // ------------------------------------------------------------------
+
     constexpr T81Fixed() noexcept = default;
 
-    constexpr T81Fixed(const Storage& v) noexcept : data(v) {}
-    constexpr T81Fixed(Storage&& v) noexcept : data(std::move(v)) {}
+    explicit constexpr T81Fixed(const Storage& v) noexcept
+        : data_(v) {}
 
-    // From integer (places value at integer part)
-    template <size_t N>
-    constexpr T81Fixed(const T81Int<N>& v) noexcept {
-        data = (v << F);  // shift left by fractional bits
+    explicit constexpr T81Fixed(Storage&& v) noexcept
+        : data_(std::move(v)) {}
+
+    // From signed 64-bit integer (placed into the integer part)
+    explicit constexpr T81Fixed(std::int64_t v) noexcept
+        : data_(Storage(v) << F) {}
+
+    // From double (scaled by 3^F and rounded to nearest)
+    explicit T81Fixed(double v) {
+        const double scaled = v * frac_scale();
+        const std::int64_t rounded = static_cast<std::int64_t>(std::llround(scaled));
+        data_ = Storage(rounded);
     }
 
-    // From double — with correct rounding
-    explicit constexpr T81Fixed(double v) {
-        // Scale by 3^F
-        double scaled = v * std::pow(3.0, static_cast<int>(F));
-        // Round to nearest integer in ternary
-        int64_t rounded = static_cast<int64_t>(std::round(scaled));
-        data = Storage(rounded);
+    // Convenience factory
+    [[nodiscard]] static T81Fixed from_double(double v) {
+        return T81Fixed(v);
     }
 
     // ------------------------------------------------------------------
     // Conversion back to double
     // ------------------------------------------------------------------
-    [[nodiscard]] constexpr double to_double() const noexcept {
-        return static_cast<double>(data.to_int64()) / std::pow(3.0, static_cast<int>(F));
+
+    [[nodiscard]] double to_double() const {
+        const std::int64_t raw = data_.to_int64(); // may throw on overflow
+        return static_cast<double>(raw) / frac_scale();
     }
 
     // ------------------------------------------------------------------
-    // Arithmetic — fully reused from T81Int
+    // Arithmetic — inherited from T81Int semantics
     // ------------------------------------------------------------------
-    [[nodiscard]] constexpr T81Fixed operator+(const T81Fixed& o) const noexcept { return data + o.data; }
-    [[nodiscard]] constexpr T81Fixed operator-(const T81Fixed& o) const noexcept { return data - o.data; }
-    [[nodiscard]] constexpr T81Fixed operator*(const T81Fixed& o) const noexcept { return (data * o.data) >> F; }
-    [[nodiscard]] constexpr T81Fixed operator/(const T81Fixed& o) const noexcept { return (data << F) / o.data; }
 
-    [[nodiscard]] constexpr T81Fixed& operator+=(const T81Fixed& o) noexcept { data += o.data; return *this; }
-    [[nodiscard]] constexpr T81Fixed& operator-=(const T81Fixed& o) noexcept { data -= o.data; return *this; }
-    [[nodiscard]] constexpr T81Fixed& operator*=(const T81Fixed& o) noexcept { data = (data * o.data) >> F; return *this; }
-    [[nodiscard]] constexpr T81Fixed& operator/=(const T81Fixed& o) noexcept { data = (data << F) / o.data; return *this; }
+    [[nodiscard]] T81Fixed operator+(const T81Fixed& o) const noexcept {
+        return T81Fixed(Storage(raw() + o.raw()));
+    }
 
-    [[nodiscard]] constexpr T81Fixed operator-() const noexcept { return -data; }
+    [[nodiscard]] T81Fixed operator-(const T81Fixed& o) const noexcept {
+        return T81Fixed(Storage(raw() - o.raw()));
+    }
+
+    [[nodiscard]] T81Fixed operator*(const T81Fixed& o) const noexcept {
+        // (a * b) has 2F fractional trits; shift right by F to renormalize.
+        return T81Fixed(Storage((raw() * o.raw()) >> F));
+    }
+
+    [[nodiscard]] T81Fixed operator/(const T81Fixed& o) const {
+        // Up-scale numerator first to preserve F fractional trits.
+        if (o.raw().is_zero()) {
+            throw std::domain_error("T81Fixed: division by zero");
+        }
+        return T81Fixed(Storage((raw() << F) / o.raw()));
+    }
+
+    T81Fixed& operator+=(const T81Fixed& o) noexcept {
+        data_ += o.data_;
+        return *this;
+    }
+
+    T81Fixed& operator-=(const T81Fixed& o) noexcept {
+        data_ -= o.data_;
+        return *this;
+    }
+
+    T81Fixed& operator*=(const T81Fixed& o) noexcept {
+        data_ = (data_ * o.data_) >> F;
+        return *this;
+    }
+
+    T81Fixed& operator/=(const T81Fixed& o) {
+        if (o.data_.is_zero()) {
+            throw std::domain_error("T81Fixed: division by zero");
+        }
+        data_ = (data_ << F) / o.data_;
+        return *this;
+    }
+
+    [[nodiscard]] T81Fixed operator-() const noexcept {
+        return T81Fixed(Storage(-data_));
+    }
 
     // ------------------------------------------------------------------
     // Comparison
     // ------------------------------------------------------------------
+
     [[nodiscard]] constexpr auto operator<=>(const T81Fixed& o) const noexcept = default;
-    [[nodiscard]] constexpr bool operator==(const T81Fixed& o) const noexcept = default;
+    [[nodiscard]] constexpr bool operator==(const T81Fixed& o) const noexcept  = default;
 
     // ------------------------------------------------------------------
     // Access
     // ------------------------------------------------------------------
-    [[nodiscard]] constexpr const Storage& raw() const noexcept { return data; }
-    [[nodiscard]] constexpr Storage& raw() noexcept { return data; }
 
-    [[nodiscard]] constexpr bool is_zero() const noexcept { return data.is_zero(); }
-    [[nodiscard]] constexpr bool is_negative() const noexcept { return data.is_negative(); }
+    [[nodiscard]] constexpr const Storage& raw() const noexcept {
+        return data_;
+    }
 
-private:
-    Storage data{};
+    [[nodiscard]] constexpr Storage& raw() noexcept {
+        return data_;
+    }
+
+    [[nodiscard]] constexpr bool is_zero() const noexcept {
+        return data_.is_zero();
+    }
+
+    [[nodiscard]] constexpr bool is_negative() const noexcept {
+        return data_.sign_trit() == Trit::N;
+    }
 };
 
 // ======================================================================
-// The One True Fixed-Point Type for Axion Inference
+// Canonical Axion fixed-point type
 // ======================================================================
+
 using T81Fixed27_9 = T81Fixed<18, 9>;
 
-// Static asserts — these are the guarantees the compiler and hardware use
 static_assert(sizeof(T81Fixed27_9) == sizeof(T81Int<27>));
 static_assert(alignof(T81Fixed27_9) == alignof(T81Int<27>));
 static_assert(std::is_trivially_copyable_v<T81Fixed27_9>);
 static_assert(std::is_standard_layout_v<T81Fixed27_9>);
 
 // ======================================================================
-// Free functions — because hardware doesn't care about types
+// Fixed ↔ Float conversions
 // ======================================================================
 
-// Zero-cost conversion: fixed ↔ float (same storage size!)
-[[nodiscard]] constexpr T81Float<18,9> float_from_fixed(T81Fixed<18,9> f) noexcept {
-    return std::bit_cast<T81Float<18,9>>(f.raw());
-}
-[[nodiscard]] constexpr T81Fixed<18,9> fixed_from_float(T81Float<18,9> f) noexcept {
-    return std::bit_cast<T81Fixed<18,9>>(f.raw());
+inline T81Float<18, 9> float_from_fixed(const T81Fixed<18, 9>& f) noexcept {
+    return T81Float<18, 9>::from_double(f.to_double());
 }
 
-// Same for higher precision
-[[nodiscard]] constexpr T81Float<27,9> float27_from_fixed(T81Fixed<18,9> f) noexcept {
-    return T81Float<27,9>(f.raw() << 9);  // zero-extend fractional part
+inline T81Fixed<18, 9> fixed_from_float(const T81Float<18, 9>& f) noexcept {
+    return T81Fixed<18, 9>(f.to_double());
+}
+
+// Higher-precision float from fixed
+inline T81Float<27, 9> float27_from_fixed(const T81Fixed<18, 9>& f) noexcept {
+    return T81Float<27, 9>::from_double(f.to_double());
 }
 
 } // namespace t81::core
 
-// Optional: make it printable
-template <size_t I, size_t F>
-inline std::ostream& operator<<(std::ostream& os, t81::core::T81Fixed<I,F> f) {
+// ======================================================================
+// Streaming
+// ======================================================================
+
+template <std::size_t I, std::size_t F>
+inline std::ostream& operator<<(std::ostream& os,
+                                const t81::core::T81Fixed<I, F>& f) {
     return os << f.to_double();
 }

@@ -1,65 +1,129 @@
 /**
  * @file T81Float.hpp
- * @brief Defines the T81Float class for balanced ternary floating-point numbers.
+ * @brief Balanced ternary floating-point backed by T81Int storage.
  *
- * This file provides a templatized, balanced-ternary floating-point number
- * class, `T81Float<M, E>`, where M is the number of mantissa trits and E is
- * the number of exponent trits. The design is inspired by IEEE 754 and includes
- * support for special values like infinity and Not-an-Entity (NaE), as well as
- * subnormal numbers.
+ * Model:
+ *   • Storage: T81Int<1 + E + M> (sign + exponent + mantissa trits)
+ *   • IEEE-like layout with a binary-style biased exponent:
+ *       - Sign:  1 trit (P = +, N = −)
+ *       - Exponent: E trits (stored as balanced integer, but using a 2^E-style bias)
+ *       - Mantissa: M trits
+ *   • Special values:
+ *       - Zero     (exp = 0, mant = 0)
+ *       - Subnormal (exp = 0, mant != 0)
+ *       - Infinity (exp = max, mant = 0)
+ *       - NaE      (Not-an-Entity, exp = max, mant != 0)
+ *
+ * Arithmetic operators currently delegate to double for correctness and
+ * simplicity, while preserving special-value semantics.
  */
+
 #pragma once
 
 #include "t81/core/T81Int.hpp"
+
 #include <cmath>
+#include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <compare>
-#include <cstdint>
 
 namespace t81::core {
 
-template <size_t M, size_t E>
+template <std::size_t M, std::size_t E>
+class T81Float;
+
+// Forward declarations for arithmetic
+template <std::size_t M, std::size_t E>
+T81Float<M, E> operator+(T81Float<M, E> a, T81Float<M, E> b) noexcept;
+
+template <std::size_t M, std::size_t E>
+T81Float<M, E> operator-(T81Float<M, E> a, T81Float<M, E> b) noexcept;
+
+template <std::size_t M, std::size_t E>
+T81Float<M, E> operator*(T81Float<M, E> a, T81Float<M, E> b) noexcept;
+
+template <std::size_t M, std::size_t E>
+T81Float<M, E> operator/(T81Float<M, E> a, T81Float<M, E> b) noexcept;
+
+template <std::size_t M, std::size_t E>
+T81Float<M, E> fma(T81Float<M, E> a, T81Float<M, E> b, T81Float<M, E> c) noexcept;
+
+template <std::size_t M, std::size_t E>
 class T81Float {
-    static_assert(M >= 4 && E >= 4);
-
-    using Storage = T81Int<1 + E + M>;
-    Storage bits{};
-
-    static constexpr int64_t Bias = (1LL << (E - 1)) - 1;
+    static_assert(M >= 4, "T81Float: mantissa must be at least 4 trits");
+    static_assert(E >= 4, "T81Float: exponent must be at least 4 trits");
+    static_assert(M + E + 1 <= 2048,
+                  "T81Float: total (1 + E + M) trits must fit in T81Int");
 
 public:
-    static constexpr size_t Mantissa = M;
-    static constexpr size_t Exponent = E;
+    using size_type = std::size_t;
+    using Storage   = T81Int<1 + E + M>;
 
+    static constexpr size_type kMantissaTrits = M;
+    static constexpr size_type kExponentTrits = E;
+
+    // Binary-style bias used when mapping to/from IEEE doubles.
+    static constexpr std::int64_t kExponentBias =
+        (std::int64_t(1) << (E - 1)) - 1;
+
+private:
+    Storage bits_{}; // [0..M-1] mantissa, [M..M+E-1] exponent, [M+E] sign
+
+    static constexpr std::int64_t kInfExponent =
+        (std::int64_t(1) << E) - 1;
+
+public:
     constexpr T81Float() noexcept = default;
 
-    static constexpr T81Float zero(bool pos = true) noexcept {
-        T81Float f; f.set_sign(pos); f.set_exp(0); return f;
+    // Factories
+    static constexpr T81Float zero(bool positive = true) noexcept {
+        T81Float f;
+        f.set_sign(positive);
+        f.set_exp(0);
+        f.set_mantissa(T81Int<M>{});
+        return f;
     }
-    static constexpr T81Float inf(bool pos = true) noexcept {
-        T81Float f; f.set_sign(pos); f.set_exp((1LL << E) - 1); return f;
+
+    static constexpr T81Float inf(bool positive = true) noexcept {
+        T81Float f;
+        f.set_sign(positive);
+        f.set_exp(kInfExponent);
+        f.set_mantissa(T81Int<M>{});
+        return f;
     }
+
     static constexpr T81Float nae() noexcept {
-        T81Float f = inf(); f.set_mantissa(T81Int<M>(1)); return f;
+        T81Float f = inf(true);
+        f.set_mantissa(T81Int<M>(1));
+        return f;
     }
 
     [[nodiscard]] constexpr bool is_zero() const noexcept {
         return get_exp() == 0 && get_mantissa().is_zero();
     }
+
     [[nodiscard]] constexpr bool is_inf() const noexcept {
-        return get_exp() == ((1LL << E) - 1) && get_mantissa().is_zero();
+        return get_exp() == kInfExponent && get_mantissa().is_zero();
     }
+
     [[nodiscard]] constexpr bool is_nae() const noexcept {
-        return get_exp() == ((1LL << E) - 1) && !get_mantissa().is_zero();
+        return get_exp() == kInfExponent && !get_mantissa().is_zero();
     }
+
     [[nodiscard]] constexpr bool is_subnormal() const noexcept {
         return get_exp() == 0 && !get_mantissa().is_zero();
     }
-    [[nodiscard]] constexpr bool is_negative() const noexcept { return get_sign() == Trit::N; }
+
+    [[nodiscard]] constexpr bool is_negative() const noexcept {
+        return get_sign() == Trit::N;
+    }
 
     [[nodiscard]] constexpr T81Float operator-() const noexcept {
         T81Float f = *this;
-        if (!is_zero()) f.flip_sign();
+        if (!f.is_zero()) {
+            f.flip_sign();
+        }
         return f;
     }
 
@@ -72,87 +136,159 @@ public:
     [[nodiscard]] double to_double() const noexcept;
     static T81Float from_double(double v) noexcept;
 
+    // Bitwise comparison (note: NaE is not IEEE-754 NaN; this is raw-encoding order)
     [[nodiscard]] constexpr auto operator<=>(const T81Float&) const noexcept = default;
     [[nodiscard]] constexpr bool operator==(const T81Float&) const noexcept = default;
 
-    friend constexpr T81Float operator+(T81Float a, T81Float b) noexcept;
-    friend constexpr T81Float operator-(T81Float a, T81Float b) noexcept;
-    friend constexpr T81Float operator*(T81Float a, T81Float b) noexcept;
-    friend constexpr T81Float operator/(T81Float a, T81Float b) noexcept;
-    friend constexpr T81Float fma(T81Float a, T81Float b, T81Float c) noexcept;
+    // Arithmetic friends
+    template <std::size_t MM, std::size_t EE>
+    friend T81Float<MM, EE> operator+(T81Float<MM, EE> a,
+                                      T81Float<MM, EE> b) noexcept;
+
+    template <std::size_t MM, std::size_t EE>
+    friend T81Float<MM, EE> operator-(T81Float<MM, EE> a,
+                                      T81Float<MM, EE> b) noexcept;
+
+    template <std::size_t MM, std::size_t EE>
+    friend T81Float<MM, EE> operator*(T81Float<MM, EE> a,
+                                      T81Float<MM, EE> b) noexcept;
+
+    template <std::size_t MM, std::size_t EE>
+    friend T81Float<MM, EE> operator/(T81Float<MM, EE> a,
+                                      T81Float<MM, EE> b) noexcept;
+
+    template <std::size_t MM, std::size_t EE>
+    friend T81Float<MM, EE> fma(T81Float<MM, EE> a,
+                                T81Float<MM, EE> b,
+                                T81Float<MM, EE> c) noexcept;
 
 private:
-    [[nodiscard]] constexpr Trit get_sign() const noexcept { return bits.get_trit(M + E); }
-    constexpr void set_sign(bool pos) noexcept { bits.set_trit(M + E, pos ? Trit::P : Trit::N); }
-    constexpr void flip_sign() noexcept { bits.set_trit(M + E, get_sign() == Trit::P ? Trit::N : Trit::P); }
+    // --- Raw field accessors ---
 
-    [[nodiscard]] constexpr int64_t get_exp() const noexcept {
+    [[nodiscard]] constexpr Trit get_sign() const noexcept {
+        return bits_.get_trit(M + E);
+    }
+
+    constexpr void set_sign(bool positive) noexcept {
+        bits_.set_trit(M + E, positive ? Trit::P : Trit::N);
+    }
+
+    constexpr void flip_sign() noexcept {
+        bits_.set_trit(M + E, get_sign() == Trit::P ? Trit::N : Trit::P);
+    }
+
+    [[nodiscard]] constexpr std::int64_t get_exp() const noexcept {
         T81Int<E> e;
-        for (size_t i = 0; i < E; ++i) e.set_trit(i, bits.get_trit(M + i));
+        for (size_type i = 0; i < E; ++i) {
+            e[i] = bits_.get_trit(M + i);
+        }
         return e.to_int64();
     }
-    constexpr void set_exp(int64_t e) noexcept {
+
+    constexpr void set_exp(std::int64_t e) noexcept {
         T81Int<E> exp(e);
-        for (size_t i = 0; i < E; ++i) bits.set_trit(M + i, exp.get_trit(i));
+        for (size_type i = 0; i < E; ++i) {
+            bits_.set_trit(M + i, exp[i]);
+        }
     }
 
     [[nodiscard]] constexpr T81Int<M> get_mantissa() const noexcept {
         T81Int<M> m;
-        for (size_t i = 0; i < M; ++i) m.set_trit(i, bits.get_trit(i));
+        for (size_type i = 0; i < M; ++i) {
+            m[i] = bits_.get_trit(i);
+        }
         return m;
     }
-    constexpr void set_mantissa(T81Int<M> m) noexcept {
-        for (size_t i = 0; i < M; ++i) bits.set_trit(i, m.get_trit(i));
+
+    constexpr void set_mantissa(const T81Int<M>& m) noexcept {
+        for (size_type i = 0; i < M; ++i) {
+            bits_.set_trit(i, m[i]);
+        }
     }
 
-    template <size_t K>
-    [[nodiscard]] static constexpr size_t leading_trit(const T81Int<K>& x) noexcept {
-        for (int i = static_cast<int>(K) - 1; i >= 0; --i)
-            if (x.get_trit(static_cast<size_t>(i)) != Trit::Z)
-                return static_cast<size_t>(i);
-        return size_t(-1);
+    // Index of most-significant non-zero trit, or max() if all zero.
+    template <std::size_t K>
+    [[nodiscard]] static constexpr size_type leading_trit(const T81Int<K>& x) noexcept {
+        for (size_type i = K; i-- > 0;) {
+            if (x[i] != Trit::Z) {
+                return i;
+            }
+        }
+        return std::numeric_limits<size_type>::max();
     }
 
-        template <size_t Guard = 4>
-    static constexpr T81Float normalize(Trit sign, int64_t exp, T81Int<M + Guard> mant) noexcept {
-        if (mant.is_zero()) return zero(sign == Trit::P);
+    // Normalize mantissa+exponent with Guard extra trits of precision.
+    template <std::size_t Guard = 4>
+    static T81Float normalize(Trit sign, std::int64_t exp,
+                              T81Int<M + Guard> mant) noexcept {
+        if (mant.is_zero()) {
+            return zero(sign == Trit::P);
+        }
 
-        size_t lead = leading_trit(mant);
-        if (lead == size_t(-1)) return zero(sign == Trit::P);
+        const size_type lead = leading_trit(mant);
+        if (lead == std::numeric_limits<size_type>::max()) {
+            return zero(sign == Trit::P);
+        }
 
-        int64_t shift = static_cast<int64_t>(lead) - static_cast<int64_t>(M);
+        const std::int64_t shift =
+            static_cast<std::int64_t>(lead) - static_cast<std::int64_t>(M);
         exp -= shift;
 
-        if (shift > 0) mant >>= static_cast<size_t>(shift);
-        else if (shift < 0) mant <<= static_cast<size_t>(-shift);
+        if (shift > 0) {
+            mant >>= static_cast<size_type>(shift);
+        } else if (shift < 0) {
+            mant <<= static_cast<size_type>(-shift);
+        }
 
-        // Rounding: nearest-even (guard + sticky)
+        // Guard-+-sticky rounding (simple nearest-like rule)
         bool round_up = false;
         if constexpr (Guard >= 1) {
-            Trit g = mant.get_trit(M);
+            const Trit guard_trit = mant.get_trit(M);
             bool sticky = false;
-            for (size_t i = 0; i < M && !sticky; ++i)
-                sticky = sticky || (mant.get_trit(i) != Trit::Z);
-            if (g == Trit::P || (g == Trit::Z && sticky))
+
+            if constexpr (Guard > 1) {
+                for (size_type i = M + 1; i < M + Guard; ++i) {
+                    if (mant.get_trit(i) != Trit::Z) {
+                        sticky = true;
+                        break;
+                    }
+                }
+            }
+
+            if (guard_trit == Trit::P ||
+                (guard_trit == Trit::Z && sticky)) {
                 round_up = true;
+            }
         }
 
         T81Int<M> final_m;
-        for (size_t i = 0; i < M; ++i) final_m.set_trit(i, mant.get_trit(i));
-        if (round_up) final_m = final_m + T81Int<M>(1);
-
-        // Carry out from rounding → increase exponent
-        if (leading_trit(final_m) + 1 == M) {
-            final_m >>= 1;
-            exp++;
+        for (size_type i = 0; i < M; ++i) {
+            final_m[i] = mant.get_trit(i);
         }
 
-        // Overflow / underflow
-        if (exp >= (1LL << E) - 1) return inf(sign == Trit::P);
+        if (round_up) {
+            final_m = final_m + T81Int<M>(1);
+        }
+
+        // Crude overflow handling: if we just filled the top trit,
+        // push one trit into the exponent.
+        const size_type lead_final = leading_trit(final_m);
+        if (lead_final == M - 1) {
+            final_m >>= 1;
+            ++exp;
+        }
+
+        // Map exponent to special / subnormal / normal ranges.
+        if (exp >= kInfExponent) {
+            return inf(sign == Trit::P);
+        }
+
         if (exp <= 0) {
-            int64_t under = 1 - exp;
-            if (under >= static_cast<int64_t>(M + Guard)) return zero(sign == Trit::P);
-            final_m >>= static_cast<size_t>(under);
+            const std::int64_t under = 1 - exp;
+            if (under >= static_cast<std::int64_t>(M + Guard)) {
+                return zero(sign == Trit::P);
+            }
+            final_m >>= static_cast<size_type>(under);
             exp = 0;
         }
 
@@ -165,88 +301,217 @@ private:
 };
 
 // ======================================================================
-// ARITHMETIC — unchanged, perfect
+// Arithmetic operators (double-backed, with special-value handling)
 // ======================================================================
 
-// [your + - * / fma implementations — keep exactly as you wrote them]
+template <std::size_t M, std::size_t E>
+T81Float<M, E> operator+(T81Float<M, E> a, T81Float<M, E> b) noexcept {
+    using F = T81Float<M, E>;
 
-template <size_t M, size_t E>
-constexpr T81Float<M, E> operator+(T81Float<M, E> a, T81Float<M, E> b) noexcept {
-    // ... your full 60-line addition — keep it
-    // (it's correct)
+    if (a.is_nae() || b.is_nae()) {
+        return F::nae();
+    }
+
+    if (a.is_inf() || b.is_inf()) {
+        if (a.is_inf() && b.is_inf()) {
+            if (a.is_negative() != b.is_negative()) {
+                // +inf + -inf → NaE
+                return F::nae();
+            }
+            return a;
+        }
+        return a.is_inf() ? a : b;
+    }
+
+    const double da = a.to_double();
+    const double db = b.to_double();
+    return F::from_double(da + db);
 }
 
-template <size_t M, size_t E>
-constexpr T81Float<M, E> operator-(T81Float<M, E> a, T81Float<M, E> b) noexcept { return a + (-b); }
-
-template <size_t M, size_t E>
-constexpr T81Float<M, E> operator*(T81Float<M, E> a, T81Float<M, E> b) noexcept {
-    // ... your multiplication — keep it
+template <std::size_t M, std::size_t E>
+T81Float<M, E> operator-(T81Float<M, E> a, T81Float<M, E> b) noexcept {
+    return a + (-b);
 }
 
-template <size_t M, size_t E>
-constexpr T81Float<M, E> operator/(T81Float<M, E> a, T81Float<M, E> b) noexcept {
-    // ... your division — keep it
+template <std::size_t M, std::size_t E>
+T81Float<M, E> operator*(T81Float<M, E> a, T81Float<M, E> b) noexcept {
+    using F = T81Float<M, E>;
+
+    if (a.is_nae() || b.is_nae()) {
+        return F::nae();
+    }
+
+    const bool a_zero = a.is_zero();
+    const bool b_zero = b.is_zero();
+    const bool a_inf  = a.is_inf();
+    const bool b_inf  = b.is_inf();
+
+    if ((a_inf && b_zero) || (b_inf && a_zero)) {
+        // 0 * inf → NaE
+        return F::nae();
+    }
+
+    if (a_inf || b_inf) {
+        const bool neg = a.is_negative() ^ b.is_negative();
+        return F::inf(!neg);
+    }
+
+    if (a_zero || b_zero) {
+        return F::zero();
+    }
+
+    const double da = a.to_double();
+    const double db = b.to_double();
+    return F::from_double(da * db);
 }
 
-template <size_t M, size_t E>
-constexpr T81Float<M, E> fma(T81Float<M, E> a, T81Float<M, E> b, T81Float<M, E> c) noexcept {
+template <std::size_t M, std::size_t E>
+T81Float<M, E> operator/(T81Float<M, E> a, T81Float<M, E> b) noexcept {
+    using F = T81Float<M, E>;
+
+    if (a.is_nae() || b.is_nae()) {
+        return F::nae();
+    }
+
+    const bool a_zero = a.is_zero();
+    const bool b_zero = b.is_zero();
+    const bool a_inf  = a.is_inf();
+    const bool b_inf  = b.is_inf();
+
+    if (b_zero) {
+        if (a_zero || a_inf) {
+            // 0/0 or inf/0 → NaE
+            return F::nae();
+        }
+        const bool neg = a.is_negative() ^ b.is_negative();
+        return F::inf(!neg);
+    }
+
+    if (a_inf) {
+        if (b_inf) {
+            // inf / inf → NaE
+            return F::nae();
+        }
+        const bool neg = a.is_negative() ^ b.is_negative();
+        return F::inf(!neg);
+    }
+
+    if (b_inf) {
+        // finite / inf → +0 or -0 (we just return +0)
+        return F::zero();
+    }
+
+    if (a_zero) {
+        return F::zero();
+    }
+
+    const double da = a.to_double();
+    const double db = b.to_double();
+    return F::from_double(da / db);
+}
+
+template <std::size_t M, std::size_t E>
+T81Float<M, E> fma(T81Float<M, E> a,
+                   T81Float<M, E> b,
+                   T81Float<M, E> c) noexcept {
     return a * b + c;
 }
 
 // ======================================================================
-// FINAL from_double — FIXED AND PERFECT
+// Conversions: double ↔ T81Float
 // ======================================================================
 
-template <size_t M, size_t E>
+template <std::size_t M, std::size_t E>
 T81Float<M, E> T81Float<M, E>::from_double(double v) noexcept {
-    if (v == 0.0) return zero();
-    if (std::isinf(v)) return inf(v > 0);
-    if (std::isnan(v)) return nae();
+    using F  = T81Float<M, E>;
+    using iT = T81Int<M + 10>;
 
-    bool neg = v < 0;
-    v = std::abs(v);
-    int bin_exp;
-    double frac = std::frexp(v, &bin_exp);
+    if (v == 0.0) {
+        return F::zero();
+    }
+    if (std::isinf(v)) {
+        return F::inf(v > 0.0);
+    }
+    if (std::isnan(v)) {
+        return F::nae();
+    }
 
-    int64_t scale = 1;
-    for (size_t i = 0; i < M; ++i) scale *= 3;
+    const bool neg = v < 0.0;
+    double mag     = std::fabs(v);
 
-    double scaled = frac * scale * 1.5;
-    int64_t mant_int = static_cast<int64_t>(scaled + 0.5);
+    int bin_exp = 0;
+    const double frac = std::frexp(mag, &bin_exp); // mag = frac * 2^bin_exp, frac ∈ [0.5,1)
 
-    T81Int<M+10> mant(mant_int);
-    size_t lead = leading_trit(mant);
-    if (lead == size_t(-1)) return zero();
+    std::int64_t scale = 1;
+    for (std::size_t i = 0; i < M; ++i) {
+        scale *= 3;
+    }
 
-    int64_t shift = static_cast<int64_t>(lead) - static_cast<int64_t>(M);
-    int64_t unbiased = bin_exp + shift - 1;
-    int64_t biased = unbiased + Bias;
+    const double scaled   = frac * static_cast<double>(scale) * 1.5;
+    const std::int64_t mi = static_cast<std::int64_t>(scaled + 0.5);
+
+    iT mant(mi);
+    const size_type lead = leading_trit(mant);
+    if (lead == std::numeric_limits<size_type>::max()) {
+        return F::zero();
+    }
+
+    const std::int64_t shift =
+        static_cast<std::int64_t>(lead) - static_cast<std::int64_t>(M);
+    const std::int64_t unbiased =
+        static_cast<std::int64_t>(bin_exp) + shift - 1;
+    const std::int64_t biased = unbiased + kExponentBias;
 
     return normalize<10>(neg ? Trit::N : Trit::P, biased, mant);
 }
 
-template <size_t M, size_t E>
+template <std::size_t M, std::size_t E>
 double T81Float<M, E>::to_double() const noexcept {
-    if (is_zero()) return 0.0;
-    if (is_inf()) return is_negative() ? -INFINITY : INFINITY;
-    if (is_nae()) return NAN;
+    using std::numeric_limits;
 
-    int64_t exp = get_exp();
-    T81Int<M+4> mant = get_mantissa();
-    if (exp > 0) mant.set_trit(M, Trit::P);
+    if (is_zero()) {
+        return 0.0;
+    }
+    if (is_inf()) {
+        return is_negative()
+                   ? -numeric_limits<double>::infinity()
+                   : numeric_limits<double>::infinity();
+    }
+    if (is_nae()) {
+        return numeric_limits<double>::quiet_NaN();
+    }
 
-    double val = 0.0;
-    double p = 1.0;
-    for (int i = 0; i < static_cast<int>(M+4); ++i) {
-        Trit t = mant.get_trit(i);
-        if (t == Trit::P) val += p;
-        else if (t == Trit::N) val -= p;
+    std::int64_t exp = get_exp();
+
+    // Rebuild an extended mantissa with an implicit leading trit when exp > 0.
+    T81Int<M + 4> mant_ext;
+    const T81Int<M> m = get_mantissa();
+    for (size_type i = 0; i < M; ++i) {
+        mant_ext[i] = m[i];
+    }
+    if (exp > 0) {
+        mant_ext.set_trit(M, Trit::P);
+    }
+
+    double value = 0.0;
+    double p     = 1.0;
+    for (size_type i = 0; i < M + 4; ++i) {
+        const Trit t = mant_ext.get_trit(i);
+        if (t == Trit::P) {
+            value += p;
+        } else if (t == Trit::N) {
+            value -= p;
+        }
         p *= 3.0;
     }
-    val *= std::ldexp(1.0, static_cast<int>(exp - Bias));
-    return is_negative() ? -val : val;
+
+    value = std::ldexp(value, static_cast<int>(exp - kExponentBias));
+    return is_negative() ? -value : value;
 }
+
+// ======================================================================
+// Common typedefs
+// ======================================================================
 
 using T81Float18_9 = T81Float<18, 9>;
 using T81Float27_9 = T81Float<27, 9>;

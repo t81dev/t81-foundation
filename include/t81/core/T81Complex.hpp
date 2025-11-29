@@ -1,48 +1,49 @@
 /**
  * @file T81Complex.hpp
- * @brief Defines the T81Complex class for balanced ternary complex numbers.
+ * @brief Balanced ternary complex numbers backed by T81Float.
  *
- * This file provides a first-class, ternary-native complex number implementation.
- * It is designed for high-performance applications like Fast Fourier Transforms
- * (FFT) and Holographic Reduced Representations (HRR), and is not a wrapper
- * around `std::complex`. The layout is optimized for cache-friendliness and
- * future ternary hardware.
+ * This is a first-class ternary-native complex type, not a std::complex
+ * wrapper. It is intended for FFT/HRR work and other numerics where a
+ * stable, T81Float-based representation is required.
  */
+
 #pragma once
 
 #include "t81/core/T81Float.hpp"
+
+#include <cstddef>
 #include <cstdint>
 #include <compare>
 #include <cmath>
 #include <complex>
+#include <string>
+#include <type_traits>
 
 namespace t81::core {
 
 // ======================================================================
-// T81Complex<N> — Balanced ternary complex number
+// T81Complex<MantissaTrits> — Balanced ternary complex number
 // ======================================================================
 //
-// Layout for T81Complex<18>:
-//   36 trits total = 2 × T81Float<18,9>
-//   [ Real: 27 trits ] [ Imag: 27 trits ]   → contiguous, cache-friendly
+// MantissaTrits:
+//   • 18 → T81Float<18, 9>
+//   • 27 → T81Float<27, 9>
 //
-// This is NOT a std::complex wrapper.
-// This is a real first-class ternary datatype with:
-//   • Fused complex multiply (4 real muls → 3 with ternary symmetry)
-//   • Zero-overhead FFT (because i² = -1 is exact in balanced ternary)
-//   • Direct HRR binding via complex multiplication
-//   • Perfect for future ternary DSP cores
-//
-template <size_t MantissaTrits = 18>
+template <std::size_t MantissaTrits = 18>
 class T81Complex {
     static_assert(MantissaTrits == 18 || MantissaTrits == 27,
-                  "T81Complex only supports <18> and <27> for now");
+                  "T81Complex only supports MantissaTrits = 18 or 27 for now");
 
-    using Float = std::conditional_t<MantissaTrits == 18,
-                                    T81Float<18,9>,
-                                    T81Float<27,9>>;
+public:
+    using FloatType = std::conditional_t<MantissaTrits == 18,
+                                         T81Float<18, 9>,
+                                         T81Float<27, 9>>;
 
-    static constexpr size_t TotalTrits = MantissaTrits + 9;  // 27 or 36
+    using Float = FloatType;
+
+private:
+    static constexpr std::size_t kExponentTrits = 9;
+    static constexpr std::size_t kTotalTrits    = MantissaTrits + kExponentTrits;
 
 public:
     Float re{};
@@ -51,113 +52,189 @@ public:
     // ------------------------------------------------------------------
     // Construction
     // ------------------------------------------------------------------
+
     constexpr T81Complex() noexcept = default;
-    constexpr T81Complex(Float real, Float imag) noexcept : re(real), im(imag) {}
-    constexpr T81Complex(Float real) noexcept : re(real), im(Float::zero()) {}
+
+    constexpr T81Complex(const Float& real, const Float& imag) noexcept
+        : re(real), im(imag) {}
+
+    constexpr explicit T81Complex(const Float& real) noexcept
+        : re(real), im(Float::from_double(0.0)) {}
 
     // From std::complex<double> — for testing and interop
-    explicit T81Complex(std::complex<double> z)
-        : re(Float::from_double(z.real())), im(Float::from_double(z.imag())) {}
+    explicit T81Complex(const std::complex<double>& z)
+        : re(Float::from_double(z.real())),
+          im(Float::from_double(z.imag())) {}
 
     // ------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------
-    static constexpr T81Complex zero() noexcept { return {}; }
-    static constexpr T81Complex one()  noexcept { return { Float::one(), Float::zero() }; }
-    static constexpr T81Complex i()    noexcept { return { Float::zero(), Float::one() }; }
+
+    static constexpr T81Complex zero() noexcept {
+        return {};
+    }
+
+    static T81Complex one() noexcept {
+        return { Float::from_double(1.0), Float::from_double(0.0) };
+    }
+
+    static T81Complex i() noexcept {
+        return { Float::from_double(0.0), Float::from_double(1.0) };
+    }
 
     // ------------------------------------------------------------------
-    // Arithmetic — hardware will fuse these
+    // Arithmetic
     // ------------------------------------------------------------------
-    [[nodiscard]] constexpr T81Complex operator+(const T81Complex& o) const noexcept {
+
+    [[nodiscard]] T81Complex operator+(const T81Complex& o) const noexcept {
         return { re + o.re, im + o.im };
     }
-    [[nodiscard]] constexpr T81Complex operator-(const T81Complex& o) const noexcept {
+
+    [[nodiscard]] T81Complex operator-(const T81Complex& o) const noexcept {
         return { re - o.re, im - o.im };
     }
-    [[nodiscard]] constexpr T81Complex operator-() const noexcept {
+
+    [[nodiscard]] T81Complex operator-() const noexcept {
         return { -re, -im };
     }
 
-    // Complex multiplication — the crown jewel
     // (a + bi)(c + di) = (ac - bd) + (ad + bc)i
-    // In ternary: can be done with 3 multiplies + 5 adds using symmetry
-    [[nodiscard]] constexpr T81Complex operator*(const T81Complex& o) const noexcept {
-        Float ac = re * o.re;
-        Float bd = im * o.im;
-        Float ad = re * o.im;
-        Float bc = im * o.re;
-
+    [[nodiscard]] T81Complex operator*(const T81Complex& o) const noexcept {
+        const Float ac = re * o.re;
+        const Float bd = im * o.im;
+        const Float ad = re * o.im;
+        const Float bc = im * o.re;
         return { ac - bd, ad + bc };
     }
 
     // Conjugate
-    [[nodiscard]] constexpr T81Complex conj() const noexcept { return { re, -im }; }
+    [[nodiscard]] T81Complex conj() const noexcept {
+        return { re, -im };
+    }
 
-    // Magnitude squared (exact, no sqrt)
-    [[nodiscard]] constexpr Float mag2() const noexcept { return re*re + im*im; }
+    // Magnitude squared (no sqrt)
+    [[nodiscard]] Float mag2() const noexcept {
+        return re * re + im * im;
+    }
 
-    // Phase — returns angle in turns (0..1), exact for roots of unity
-    [[nodiscard]] Float phase() const noexcept;
+    // Phase — returns angle in turns [0,1)
+    [[nodiscard]] Float phase() const noexcept {
+        const double x = re.to_double();
+        const double y = im.to_double();
+
+        if (x == 0.0 && y == 0.0) {
+            return Float::from_double(0.0);
+        }
+
+        constexpr double kTwoPi = 6.28318530717958647692;
+        double angle  = std::atan2(y, x);          // [-π, π]
+        double turns  = angle / kTwoPi;            // [-0.5, 0.5]
+        if (turns < 0.0) {
+            turns += 1.0;                          // [0, 1)
+        }
+        return Float::from_double(turns);
+    }
 
     // ------------------------------------------------------------------
     // Comparison
     // ------------------------------------------------------------------
+
     [[nodiscard]] constexpr auto operator<=>(const T81Complex& o) const noexcept = default;
-    [[nodiscard]] constexpr bool operator==(const T81Complex& o) const noexcept = default;
+    [[nodiscard]] constexpr bool operator==(const T81Complex& o) const noexcept  = default;
 
     // ------------------------------------------------------------------
     // Utilities
     // ------------------------------------------------------------------
-    [[nodiscard]] constexpr bool is_zero() const noexcept { return re.is_zero() && im.is_zero(); }
-    [[nodiscard]] constexpr bool is_real() const noexcept { return im.is_zero(); }
-    [[nodiscard]] constexpr bool is_imag() const noexcept { return re.is_zero(); }
 
-    // HRR binding (circular convolution via FFT → multiply in freq domain)
-    friend constexpr T81Complex bind(const T81Complex& a, const T81Complex& b) noexcept { return a * b; }
-    friend constexpr T81Complex unbind(const T81Complex& a, const T81Complex& b) noexcept { return a * b.conj(); }
+    [[nodiscard]] constexpr bool is_zero() const noexcept {
+        return re.is_zero() && im.is_zero();
+    }
 
-    // For printing
-    [[nodiscard]] std::string str() const;
+    [[nodiscard]] constexpr bool is_real() const noexcept {
+        return im.is_zero();
+    }
+
+    [[nodiscard]] constexpr bool is_imag() const noexcept {
+        return re.is_zero();
+    }
+
+    // HRR binding/unbinding (complex multiply / multiply by conjugate)
+    friend T81Complex bind(const T81Complex& a, const T81Complex& b) noexcept {
+        return a * b;
+    }
+
+    friend T81Complex unbind(const T81Complex& a, const T81Complex& b) noexcept {
+        return a * b.conj();
+    }
+
+    // For debugging / logging
+    [[nodiscard]] std::string str() const {
+        const double rv = re.to_double();
+        const double iv = im.to_double();
+
+        std::string out;
+        out.reserve(64);
+
+        out += "(";
+        out += std::to_string(rv);
+        if (iv < 0.0) {
+            out += " - ";
+            out += std::to_string(-iv);
+        } else {
+            out += " + ";
+            out += std::to_string(iv);
+        }
+        out += "i)";
+        return out;
+    }
 };
 
 // ======================================================================
-// The One True Complex Type for Axion
+// Common aliases
 // ======================================================================
-using T81Complex18 = T81Complex<18>;   // 36 trits  → fits in 4.5 trytes → 36 bytes
-using T81Complex27 = T81Complex<27>;   // 72 trits → future-proof
 
-// Static asserts — hardware depends on these
-static_assert(sizeof(T81Complex18) == 56);   // 2 × 28 bytes, with padding → cacheline friendly
-static_assert(alignof(T81Complex18) == 8);
+using T81Complex18 = T81Complex<18>;
+using T81Complex27 = T81Complex<27>;
+
+// Trivially copyable is important for bulk operations and FFI.
 static_assert(std::is_trivially_copyable_v<T81Complex18>);
 
 // ======================================================================
 // Free functions
 // ======================================================================
 
-// Complex exponential — exact for 3rd, 9th, 27th roots of unity!
-template <size_t M>
-[[nodiscard]] constexpr T81Complex<M> expi(Float theta) noexcept {
-    // In balanced ternary, e^(i*2π/3) = -0.5 + 0.866i is exact in finite digits
-    // This will be a single hardware instruction on Axion
-    return { Float::cos(theta), Float::sin(theta) };
+// Complex exponential: exp(i * 2π * theta), where theta is in "turns" [0,1).
+template <std::size_t M>
+[[nodiscard]] T81Complex<M> expi(typename T81Complex<M>::FloatType theta) noexcept {
+    constexpr double kTwoPi = 6.28318530717958647692;
+    const double angle      = theta.to_double() * kTwoPi;
+
+    const double c = std::cos(angle);
+    const double s = std::sin(angle);
+
+    using Float = typename T81Complex<M>::FloatType;
+    return T81Complex<M>(Float::from_double(c), Float::from_double(s));
 }
 
-// Complex multiplication with 3-mul saving (Karatsuba-like)
-[[nodiscard]] constexpr T81Complex18 mul3(const T81Complex18& a, const T81Complex18& b) noexcept {
-    auto p = a.re * (b.re + b.im);
-    auto q = b.re * (a.im + a.re);
-    auto r = a.im * (b.im - b.re);
-    return { p - q, p + r };
+// 3-multiply complex multiply (Karatsuba-like) for T81Complex18
+[[nodiscard]] inline T81Complex18 mul3(const T81Complex18& a,
+                                       const T81Complex18& b) noexcept {
+    using Float = typename T81Complex18::FloatType;
+
+    const Float p = a.re * (b.re + b.im);
+    const Float q = b.re * (a.im + a.re);
+    const Float r = a.im * (b.im - b.re);
+
+    return T81Complex18{ p - q, p + r };
 }
 
 } // namespace t81::core
 
 // ======================================================================
-// std::complex interop (optional)
+// std::complex interop
 // ======================================================================
-template <size_t M>
+
+template <std::size_t M>
 inline std::complex<double> to_complex(const t81::core::T81Complex<M>& z) {
     return { z.re.to_double(), z.im.to_double() };
 }
