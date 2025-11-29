@@ -216,3 +216,4 @@ knowledge[symbols::SOCRATES] = "HUMAN"_t81;
 auto mortal = knowledge[symbols::SOCRATES] + " IS " + knowledge[symbols::HUMAN];
 assert(mortal.str() == "HUMAN IS MORTAL");
 */
+} // namespace t81

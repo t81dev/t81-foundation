@@ -165,3 +165,4 @@ for (auto thought : socrates.thought_stream().take(10)) {
     std::cout << thought << "\n";
 }
 */
+} // namespace t81

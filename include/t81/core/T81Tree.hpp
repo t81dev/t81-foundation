@@ -30,11 +30,11 @@ class T81Tree {
     alignas(64) T value_;
     std::array<std::unique_ptr<const T81Tree>, 3> children_{};  // left(-1), middle(0), right(+1)
 
-    // Private constructor – use factory functions
+public:
+    // Public constructor – use factory functions
     constexpr T81Tree(T value, std::array<std::unique_ptr<const T81Tree>, 3> ch)
         : value_(std::move(value)), children_(std::move(ch)) {}
 
-public:
     using value_type = T;
 
     //===================================================================
@@ -185,3 +185,4 @@ auto tree = T81Tree<T81Symbol>::node(
 
 auto tokens = tree.to_list_preorder();  // SENTENCE → SUBJECT → PREDICATE → IS → MORTAL → OBJECT
 */
+} // namespace t81

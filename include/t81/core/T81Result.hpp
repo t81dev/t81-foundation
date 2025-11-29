@@ -18,6 +18,8 @@
 #include "t81/core/T81Reflection.hpp"
 #include <variant>
 #include <stdexcept>
+#include <iostream>
+#include "t81/core/T81Int.hpp"
 
 namespace t81 {
 
@@ -31,17 +33,25 @@ struct T81Error {
     T81Entropy   fuel_spent;     // how much was wasted trying
     T81Symbol    source;         // which agent/function caused it
 
-    constexpr T81Error(T81Symbol c, T81String m, T81Symbol src = symbols::UNKNOWN)
+constexpr T81Error(T81Symbol c, T81String m, T81Symbol src = symbols::unk)
         : code(c)
         , message(std::move(m))
-        , occurred_at(T81Time::now(T81Entropy::acquire(), symbols::ERROR_RAISED))
-        , fuel_spent(T81Entropy::acquire())
+        , occurred_at(T81Time::now(acquire_entropy(), symbols::unk))
+        , fuel_spent(acquire_entropy())
         , source(src)
     {}
 
+    T81Error(const T81Error& other)
+        : code(other.code)
+        , message(other.message)
+        , occurred_at(T81Time::now(acquire_entropy(), T81Symbol::intern("ERROR_COPY")))
+        , fuel_spent(acquire_entropy()) // Copying an error costs new entropy
+        , source(other.source)
+    {}
+
     [[nodiscard]] T81String explain() const {
-        return "[ERROR " + code.str() + " at " + occurred_at.narrate() +
-               "] " + message + " (source: " + source.str() + ")";
+        return T81String("[ERROR ") + T81String(code.to_string()) + T81String(" at ") + occurred_at.narrate() +
+               T81String("] ") + message + T81String(" (source: ") + T81String(source.to_string()) + T81String(")");
     }
 };
 
@@ -59,18 +69,18 @@ public:
     //===================================================================
     // Constructors – success or failure
     //===================================================================
-    constexpr T81Result(const T& value) noexcept : payload_(value) {}
-    constexpr T81Result(T&& value) noexcept : payload_(std::move(value)) {}
+    constexpr T81Result(const T& value) noexcept : payload_(std::in_place_index<0>, value) {}
+    constexpr T81Result(T&& value) noexcept : payload_(std::in_place_index<0>, std::move(value)) {}
 
-    constexpr T81Result(const T81Error& err) noexcept : payload_(err) {}
-    constexpr T81Result(T81Error&& err) noexcept : payload_(std::move(err)) {}
+    constexpr T81Result(const T81Error& err) noexcept : payload_(std::in_place_index<1>, err) {}
+    constexpr T81Result(T81Error&& err) noexcept : payload_(std::in_place_index<1>, std::move(err)) {}
 
     // From exception-proof functions
     static constexpr T81Result success(T value) noexcept {
         return T81Result(std::move(value));
     }
 
-    static constexpr T81Result failure(T81Symbol code, T81String msg, T81Symbol src = symbols::UNKNOWN) noexcept {
+    static constexpr T81Result failure(T81Symbol code, T81String msg, T81Symbol src = symbols::unk) noexcept {
         return T81Result(T81Error(code, std::move(msg), src));
     }
 
@@ -110,6 +120,10 @@ public:
         return is_ok() ? std::get<T>(payload_) : fallback;
     }
 
+    [[nodiscard]] constexpr T unwrap_or(const T& fallback) const& noexcept {
+        return value_or(fallback);
+    }
+
     [[nodiscard]] constexpr const T81Error& error() const& {
         if (is_ok()) {
             throw std::logic_error("T81Result: attempted to access error on success");
@@ -122,19 +136,19 @@ public:
     //===================================================================
     template <typename F>
     [[nodiscard]] constexpr auto map(F&& f) const& {
-        using U = std::invoke_result_t<F, const T&>;
         if (is_ok()) {
-            return T81Result<U>(f(std::get<T>(payload_)));
+            using U = std::invoke_result_t<F, const T&>;
+            return T81Result<U>(std::forward<F>(f)(std::get<T>(payload_)));
         }
-        return T81Result<U>(std::get<T81Error>(payload_));
+        return T81Result<std::invoke_result_t<F, const T&>>(std::get<T81Error>(payload_));
     }
 
     template <typename F>
     [[nodiscard]] constexpr auto and_then(F&& f) const& {
-        using R = std::invoke_result_t<F, const T&>;
         if (is_ok()) {
-            return f(std::get<T>(payload_));
+            return std::forward<F>(f)(std::get<T>(payload_));
         }
+        using R = std::invoke_result_t<F, const T&>;
         return R(std::get<T81Error>(payload_));
     }
 
@@ -150,8 +164,8 @@ public:
     // Reflection – failure is also part of the story
     //===================================================================
     [[nodiscard]] T81Reflection<T81Result<T>> reflect() const {
-        auto kind = is_ok() ? symbols::SUCCESS : symbols::FAILURE;
-        return T81Reflection<T81Result<T>>(*this, symbols::RESULT, kind);
+        auto kind = is_ok() ? T81Symbol::intern("SUCCESS") : T81Symbol::intern("FAILURE");
+        return T81Reflection<T81Result<T>>(*this, T81Symbol::intern("RESULT"), kind);
     }
 
     //===================================================================
@@ -163,7 +177,7 @@ public:
 
     [[nodiscard]] constexpr T expect(const T81String& msg) const {
         if (is_err()) {
-            cerr << msg << "\n";
+            std::cerr << msg.str() << "\n";
             throw std::runtime_error(msg.str());
         }
         return value();
@@ -180,28 +194,27 @@ template <typename T> T81Result(T81Error) -> T81Result<T>;
 // Common error codes – the universal language of failure
 // ======================================================================
 namespace errors {
-    inline constexpr T81Symbol OUT_OF_ENTROPY     = symbols::OUT_OF_ENTROPY;
-    inline constexpr T81Symbol DIVISION_BY_ZERO   = symbols::DIVISION_BY_ZERO;
-    inline constexpr T81Symbol IO_FAILURE         = symbols::IO_FAILURE;
-    inline constexpr T81Symbol UNKNOWN_AGENT      = symbols::UNKNOWN_AGENT;
-    inline constexpr T81Symbol TIME_PARADOX       = symbols::TIME_PARADOX;
+    inline const T81Symbol OUT_OF_ENTROPY     = T81Symbol::intern("OUT_OF_ENTROPY");
+    inline const T81Symbol DIVISION_BY_ZERO   = T81Symbol::intern("DIVISION_BY_ZERO");
+    inline const T81Symbol IO_FAILURE         = T81Symbol::intern("IO_FAILURE");
+    inline const T81Symbol UNKNOWN_AGENT      = T81Symbol::intern("UNKNOWN_AGENT");
+    inline const T81Symbol TIME_PARADOX       = T81Symbol::intern("TIME_PARADOX");
 }
 
 // ======================================================================
 // The first honorable failure in the ternary universe
 // ======================================================================
 namespace wisdom {
-    inline const auto SAFE_DIV = [](T81Int<81> a, T81Int<81> b) -> T81Result<T81Int<81>> {
+    inline constexpr auto SAFE_DIV = [](T81Int<81> a, T81Int<81> b) -> T81Result<T81Int<81>> {
         if (b.is_zero()) {
             return T81Result<T81Int<81>>::failure(
                 errors::DIVISION_BY_ZERO,
-                "Cannot divide by zero — the universe would collapse."_t81,
-                symbols::MATH_MODULE
+                T81String("Cannot divide by zero — the universe would collapse."),
+                T81Symbol::intern("MATH_MODULE")
             );
         }
         return T81Result<T81Int<81>>::success(a / b);
     };
-
-    inline const auto result = SAFE_DIV(42, 0);
-    static_assert(!result, "We have achieved honorable failure");
 }
+
+} // namespace t81

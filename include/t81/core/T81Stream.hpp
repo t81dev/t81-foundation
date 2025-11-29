@@ -26,16 +26,19 @@ namespace t81 {
 // ======================================================================
 template <typename T>
 class T81Stream {
+public:
     struct promise_type;
     using handle = std::coroutine_handle<promise_type>;
 
+private:
     handle coro_;
 
+public:
     struct promise_type {
         T current_value{};
         std::optional<T81Entropy> entropy_cost;  // pay per yield if non-nullopt
 
-        static auto get_return_object(handle h) { return T81Stream(h); }
+        auto get_return_object() { return T81Stream{handle::from_promise(*this)}; }
         static std::suspend_always initial_suspend() noexcept { return {}; }
         static std::suspend_always final_suspend() noexcept { return {}; }
         void unhandled_exception() { std::terminate(); }
@@ -152,7 +155,7 @@ template <typename T>
 
 // Natural numbers in balanced ternary
 [[nodiscard]] inline T81Stream<T81Int<81>> naturals() {
-    return stream_from([](auto state = T81Int<81>(0)) mutable {
+    return stream_from([state = T81Int<81>(0)]() mutable {
         auto current = state;
         state += T81Int<81>(1);
         return current;
@@ -185,3 +188,11 @@ auto first_20 = fibs.take(20).collect();
 auto evens = naturals().map([](auto n) { return n * 2; });
 auto pi_approx = fibonacci().map([](auto f) { return T81Float<72,9>(4) / f; }).fold(0, std::plus{});
 */
+} // namespace t81
+
+namespace std {
+template <typename T, typename... Args>
+struct coroutine_traits<t81::T81Stream<T>, Args...> {
+    using promise_type = typename t81::T81Stream<T>::promise_type;
+};
+}
