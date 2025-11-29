@@ -91,9 +91,8 @@ private:
     }
 
     constexpr void clear() noexcept {
-        for (auto& b : data_) {
-            b = 0u;
-        }
+        // A byte of all Z trits is 0b01010101 = 0x55
+        std::fill(data_.begin(), data_.end(), 0x55u);
     }
 
     // For access from T81Float
@@ -138,7 +137,9 @@ public:
 
     // --- Constructors / assignment ---
 
-    constexpr T81Int() noexcept = default;
+    constexpr T81Int() noexcept {
+        clear();
+    }
     constexpr T81Int(const T81Int&) noexcept = default;
     constexpr T81Int(T81Int&&) noexcept = default;
     constexpr T81Int& operator=(const T81Int&) noexcept = default;
@@ -250,6 +251,17 @@ public:
         }
 
         return value;
+    }
+
+    // Convert to a standard binary integer type, leveraging to_int64()
+    template <typename T>
+    T to_binary() const {
+        static_assert(std::is_integral<T>::value, "T must be an integral type.");
+        const std::int64_t val = to_int64();
+        if (val > std::numeric_limits<T>::max() || val < std::numeric_limits<T>::min()) {
+            throw std::overflow_error("T81Int::to_binary: value does not fit in type T");
+        }
+        return static_cast<T>(val);
     }
 
     // --- Unary operators ---
@@ -477,6 +489,19 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const T81Int& v) {
         return os << v.to_int64();
+    }
+
+    std::string to_trit_string() const {
+        std::string s;
+        s.reserve(kNumTrits);
+        for (size_type i = kNumTrits; i-- > 0; ) {
+            switch (get_trit(i)) {
+                case Trit::P: s.push_back('+'); break;
+                case Trit::Z: s.push_back('0'); break;
+                case Trit::N: s.push_back('-'); break;
+            }
+        }
+        return s;
     }
 };
 
