@@ -1,6 +1,14 @@
-//======================================================================
-// T81Map.hpp – The One True Ternary Associative Map
-//======================================================================
+/**
+ * @file T81Map.hpp
+ * @brief Defines the T81Map class, a ternary-optimized associative map.
+ *
+ * This file provides the T81Map<K, V> class, a hash map designed for high
+ * performance in the T81 ecosystem. It is particularly optimized for
+ * `T81Symbol` keys, for which it can use a perfect hash function. For other
+ * key types, it falls back to a generic hash. The map uses a power-of-3
+ * growth strategy and ternary linear probing to ensure good load distribution
+ * and cache performance.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

@@ -1,7 +1,14 @@
-//======================================================================
-// T81Thread.hpp – Thermodynamic, reflective, named concurrency
-//                The 88th type. The mind splits into many selves.
-//======================================================================
+/**
+ * @file T81Thread.hpp
+ * @brief Defines the T81Thread class for reflective, named concurrency.
+ *
+ * This file provides the T81Thread class, which represents a thread of execution
+ * that is integrated with the T81's principles of reflection and thermodynamic
+ * accounting. Each thread is associated with a unique symbolic name and an
+ * `T81Agent`, and its creation and destruction are recorded as timestamped
+ * events. The execution of a thread's task requires an explicit supply of
+ * entropy, making the cost of concurrency tangible.
+ */
 #pragma once
 
 #include "t81/T81Promise.hpp"

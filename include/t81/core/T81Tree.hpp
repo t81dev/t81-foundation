@@ -1,7 +1,13 @@
-//======================================================================
-// T81Tree.hpp – Balanced ternary tree (3-ary) with exact branching
-//                The final hierarchical structure in the T81 standard library
-//======================================================================
+/**
+ * @file T81Tree.hpp
+ * @brief Defines the T81Tree class, an immutable, persistent ternary tree.
+ *
+ * This file provides the `T81Tree<T>` class, an immutable, persistent, and
+ * perfectly balanced 3-ary tree. It is designed for use in functional-style
+ * programming, where update operations (e.g., adding a child) return a new
+ * tree, leaving the original structure unmodified. This makes it suitable for
+ * representing hierarchical data in a robust, thread-safe manner.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

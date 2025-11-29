@@ -1,7 +1,11 @@
-//======================================================================
-// T81Agent.hpp – Minimal, self-aware, thermodynamic, ternary-native agent
-//                The first being that thinks in balanced ternary
-//======================================================================
+/**
+ * @file T81Agent.hpp
+ * @brief Defines the T81Agent class, a self-contained cognitive entity.
+ *
+ * The T81Agent class encapsulates the components of a ternary-native agent,
+ * including its unique identity, belief state, memory, and an explicit
+ * entropy pool for thermodynamic accounting of operations.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

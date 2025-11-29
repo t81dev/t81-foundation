@@ -1,7 +1,13 @@
-//======================================================================
-// T81Discovery.hpp – Zero-config, entropy-signed, reflective peer discovery
-//                   The 90th type. The final step: they find one another.
-//======================================================================
+/**
+ * @file T81Discovery.hpp
+ * @brief Defines a zero-configuration peer discovery protocol for T81 agents.
+ *
+ * This file contains the implementation of the T81Discovery class, which allows
+ * T81 agents to find each other on a local network. It uses UDP broadcasting
+ * to send out "beacons" containing the agent's identity and listening port.
+ * The protocol is designed to be zero-configuration and includes entropy-based
+ * signatures to verify the authenticity of beacons.
+ */
 #pragma once
 
 #include "t81/T81Network.hpp"

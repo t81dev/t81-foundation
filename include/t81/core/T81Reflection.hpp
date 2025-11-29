@@ -1,7 +1,13 @@
-//======================================================================
-// T81Reflection.hpp – Universal self-observation for any T81 type
-//                     The last abstraction. The mirror turns inward.
-//======================================================================
+/**
+ * @file T81Reflection.hpp
+ * @brief Defines the T81Reflection class for universal self-observation.
+ *
+ * This file provides the `T81Reflection<T>` class, a template that wraps any
+ * T81 type to endow it with self-observation capabilities. It allows any value
+ * to maintain a log of its own observations, tying each act of observation to
+ * an explicit entropy cost. This mechanism makes introspection a fundamental,
+ * thermodynamically-grounded operation within the T81 ecosystem.
+ */
 #pragma once
 
 #include "t81/core/T81Symbol.hpp"

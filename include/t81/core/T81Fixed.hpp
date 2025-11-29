@@ -1,3 +1,13 @@
+/**
+ * @file T81Fixed.hpp
+ * @brief Defines the T81Fixed class for balanced ternary fixed-point arithmetic.
+ *
+ * This file provides a fixed-point numerical representation, T81Fixed, which is
+ * built upon the T81Int class. It allows for deterministic arithmetic with a
+ * fixed number of fractional trits, making it suitable for applications like
+ * quantized neural network inference and other scenarios where floating-point
+ * hardware is unavailable or non-deterministic behavior is undesirable.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

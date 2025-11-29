@@ -1,6 +1,13 @@
-//======================================================================
-// T81Graph.hpp — The One True Graph Structure for Ternary Intelligence
-//======================================================================
+/**
+ * @file T81Graph.hpp
+ * @brief Defines the T81Graph class, a static graph structure for high performance.
+ *
+ * This file provides a static, cache-oblivious graph data structure designed for
+ * hardware-native performance. The `T81Graph<NodeCount, MaxDegree>` class uses
+ * a contiguous adjacency list, making it suitable for efficient execution of
+ * graph algorithms that can be expressed as tensor operations, such as PageRank
+ * and message passing.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

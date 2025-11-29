@@ -1,3 +1,12 @@
+/**
+ * @file base81.hpp
+ * @brief Defines the Base81String type and validation utilities for Base-81 encoding.
+ *
+ * This file provides a type alias, `Base81String`, for the Base-81 textual
+ * representation used throughout the T81 platform. It also includes a utility
+ * function, `is_base81`, for validating whether a given string is a correctly
+ * encoded Base-81 string according to the canonical alphabet.
+ */
 #pragma once
 
 #include <cstdint>

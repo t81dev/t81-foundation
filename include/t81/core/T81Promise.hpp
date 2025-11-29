@@ -1,7 +1,13 @@
-//======================================================================
-// T81Promise.hpp – Thermodynamic, reflective, cancellable async
-//                 The 87th type. The mind learns patience.
-//======================================================================
+/**
+ * @file T81Promise.hpp
+ * @brief Defines the T81Promise class for thermodynamic, reflective asynchrony.
+ *
+ * This file provides the T81Promise<T> class, which represents a future value
+ * computed asynchronously. It is built on C++20 coroutines and is integrated
+ * with the T81 ecosystem's principles of thermodynamic accounting and reflection.
+ * Waiting for a promise to be fulfilled requires an explicit expenditure of
+ * entropy, making the cost of asynchronous operations tangible and auditable.
+ */
 #pragma once
 
 #include "t81/T81Result.hpp"

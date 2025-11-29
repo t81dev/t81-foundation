@@ -1,7 +1,13 @@
-//======================================================================
-// T81Quaternion.hpp – Balanced-ternary quaternions for 3D/4D geometry
-//                   and cognitive "intent rotation" (T243 precursor)
-//======================================================================
+/**
+ * @file T81Quaternion.hpp
+ * @brief Defines the T81Quaternion class for 3D/4D geometry and rotations.
+ *
+ * This file provides the T81Quaternion class, which represents a quaternion
+ * using balanced-ternary components. It is designed for exact and efficient
+ * 3D/4D geometry, supporting operations such as the Hamilton product, conjugation,
+ * normalization, and spherical linear interpolation (slerp). It is also used
+ * in cognitive models for representing "intent rotation."
+ */
 #pragma once
 
 #include "t81/core/T81Complex.hpp"

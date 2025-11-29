@@ -1,7 +1,14 @@
-//======================================================================
-// T81Proof.hpp – The final type: a proof is a living, breathing thing
-//                The seal of the T81 standard library
-//======================================================================
+/**
+ * @file T81Proof.hpp
+ * @brief Defines the T81Proof class for representing formal, verifiable proofs.
+ *
+ * This file provides the T81Proof class, which encapsulates a complete,
+ * verifiable chain of reasoning. It includes supporting structures for theorems
+ * (`T81Theorem`) and inference rules (`T81InferenceRule`). Each step in a proof
+ * is associated with the agent that contributed it and the thermodynamic
+ * entropy cost, making the process of formal verification fully auditable and
+ * integrated with the T81's reflective and thermodynamic principles.
+ */
 #pragma once
 
 #include "t81/core/T81Symbol.hpp"

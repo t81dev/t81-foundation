@@ -1,7 +1,13 @@
-//======================================================================
-// T81Polynomial.hpp – Exact polynomial arithmetic in balanced ternary
-//                    The final algebraic structure in the T81 universe
-//======================================================================
+/**
+ * @file T81Polynomial.hpp
+ * @brief Defines the T81Polynomial class for exact polynomial arithmetic.
+ *
+ * This file provides the T81Polynomial<Coeff> class, a container for univariate
+ * polynomials that performs exact arithmetic on coefficients of type `Coeff`.
+ * It supports standard polynomial operations such as addition, multiplication,
+ * division, evaluation, and differentiation, all while maintaining algebraic
+ * precision.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"
