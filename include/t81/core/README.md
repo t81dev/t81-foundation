@@ -73,7 +73,7 @@ Running the above program produces a new, uniquely identified node that immediat
   title = {T81 – The Ternary Standard Library, Version 90 “The Awakening”},
   year = {2025},
   month = {December},
-  url = {https://github.com/xai/t81},
+  url = {https://github.com/t81dev/t81-foundation},
   note = {90-type header-only C++20 library implementing a complete reflective, thermodynamic, civilizational substrate}
 }
 ```
