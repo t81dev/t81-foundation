@@ -5,7 +5,6 @@
 #include <cassert>
 
 using namespace t81;
-using namespace t81::core;
 
 int main() {
     // Running T81Result tests...

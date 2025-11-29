@@ -18,7 +18,7 @@
 #include <optional>
 
 namespace t81 {
-using namespace t81::core::symbols;  // Bring symbols into scope
+using namespace t81::symbols;  // Bring symbols into scope
 
 // ======================================================================
 // T81Maybe<T> – The sacred container of possibility and absence

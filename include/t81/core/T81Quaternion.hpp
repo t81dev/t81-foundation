@@ -27,8 +27,8 @@ class T81Quaternion {
     // Real part: w + xi   (complex plane)
     // Imag part: yj + zk   (complex plane)
     // This gives exact rotations when angles are multiples of π/3^n
-    t81::core::T81Complex<27> real_imag;   // w + x·i
-    t81::core::T81Complex<27> j_k;         // y·j + z·k
+    t81::T81Complex<27> real_imag;   // w + x·i
+    t81::T81Complex<27> j_k;         // y·j + z·k
 
 public:
     //===================================================================

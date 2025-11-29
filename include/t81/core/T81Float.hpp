@@ -21,7 +21,7 @@
 #include <cmath> // For std::round, std::llround, std::log, std::pow
 #include <cstdlib> // For std::fabsl
 
-namespace t81::core {
+namespace t81 {
 
 template <std::size_t M, std::size_t E>
 class T81Float;

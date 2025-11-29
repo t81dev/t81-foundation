@@ -13,8 +13,8 @@
 #include "t81/core/T81Int.hpp"
 #include "t81/core/T81Float.hpp"
 #include "t81/core/T81Complex.hpp"
-#include "t81/T81List.hpp"
-#include "t81/T81Vector.hpp"
+#include "t81/core/T81List.hpp"
+#include "t81/core/T81Vector.hpp"
 #include <cstddef>
 #include <span>
 #include <compare>

@@ -21,6 +21,7 @@
 #include <ostream>
 #include <utility>
 #include <algorithm>
+#include <type_traits>
 
 namespace t81 {
 
@@ -36,10 +37,10 @@ constexpr inline Trit int_to_trit(int v) noexcept {
     return Trit::Z;
 }
 
-// Forward declaration so T81Float can befriend T81Int
-namespace core {
+// Forward declarations so floating / fixed / prob types can befriend T81Int
 template <std::size_t M, std::size_t E> class T81Float;
-} // namespace core
+template <std::size_t I, std::size_t F> class T81Fixed;
+class T81Prob;
 
 template <std::size_t N>
 class T81Int {
@@ -95,9 +96,14 @@ private:
         std::fill(data_.begin(), data_.end(), 0x55u);
     }
 
-    // For access from T81Float
+    // Friends: allow internal bit-level access from higher-level numeric types
     template <std::size_t M, std::size_t E>
-    friend class core::T81Float;
+    friend class T81Float;
+
+    template <std::size_t I, std::size_t F>
+    friend class T81Fixed;
+
+    friend class T81Prob;
 
 public:
     // Exposed constants (defined out-of-class as inline variables)

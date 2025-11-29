@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cmath>
 
-using namespace t81::core;
+using namespace t81;
 
 int main() {
     std::cout << "Running T81Prob tests...\n";
@@ -39,4 +39,3 @@ int main() {
     std::cout << "All T81Prob tests PASSED!\n";
     return 0;
 }
-

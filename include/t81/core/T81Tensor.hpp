@@ -32,7 +32,7 @@ namespace t81 {
 // ======================================================================
 template <typename T>
 concept T81Element =
-    sizeof(T) <= 10 &&                                            // ≤ 81 trits
+    sizeof(T) <= 32 &&                                            // ≤ 81 trits
     (std::same_as<T, T81Int<81>>     ||
      std::same_as<T, T81Float<72,9>>  ||   // 81-trit float
      std::same_as<T, T81Fixed<72,9>>  ||
@@ -106,7 +106,7 @@ public:
         -> T81Tensor<Element, TargetRank>
         requires (TargetRank >= Rank>
     {
-        T81Tensor<Element, TargetRank> out(Element{});
+        T81Tensor<Element, TargetRank> out{Element{}};
         // Hardware implements true broadcast — this is just a placeholder
         // that the compiler erases completely
         return out;
@@ -153,7 +153,7 @@ private:
 // Deduction guides — you write T81Tensor{{...}} and it just works
 // ======================================================================
 template <typename T, typename... U>
-T81Tensor(T, U...) -> T81Tensor<std::common_type_t<T, U...>, 1 + sizeof...(U)>>;
+T81Tensor(T, U...) -> T81Tensor<std::common_type_t<T, U...>, 1 + sizeof...(U)>;
 
 // ======================================================================
 // The canonical tensor types of the new world

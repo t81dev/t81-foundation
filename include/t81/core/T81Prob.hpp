@@ -10,15 +10,17 @@
  */
 #pragma once
 
-#include "t81/core/T81Float.hpp"
-#include <cstdint>
+#include "t81/core/T81Int.hpp"
+
+#include <algorithm>
 #include <cmath>
 #include <compare>
+#include <cstdint>
 #include <limits>
 #include <span>
-#include <algorithm>
+#include <type_traits>
 
-namespace t81::core {
+namespace t81 {
 
 // ======================================================================
 // T81Prob<27> — Native log-odds / log-probability in 27 trits
@@ -33,36 +35,103 @@ namespace t81::core {
 //   Arithmetic coding → native
 //
 class T81Prob {
-    using Storage = T81Int<27>;
+    using Storage = ::t81::T81Int<27>;
 
     Storage log_odds_{};  // log(p / (1-p)) in fixed-point base-φ units
 
 public:
     static constexpr size_t Trits = 27;
 
+    constexpr T81Prob() noexcept = default;
+
+    explicit constexpr T81Prob(Storage v) noexcept : log_odds_(v) {}
+
+    // ------------------------------------------------------------------
+    // Core accessors
+    // ------------------------------------------------------------------
+    [[nodiscard]] constexpr const Storage& raw() const noexcept {
+        return log_odds_;
+    }
+
+    [[nodiscard]] constexpr const Storage& log_odds() const noexcept {
+        return log_odds_;
+    }
+
     // ------------------------------------------------------------------
     // Construction from real probability [0,1]
     // ------------------------------------------------------------------
-    static constexpr T81Prob from_prob(double p) noexcept {
+    static T81Prob from_prob(double p) noexcept {
         if (p <= 0.0) return minus_infinity();
         if (p >= 1.0) return plus_infinity();
         if (p == 0.5) return zero();
 
-        double odds = p / (1.0 - p);
-        double log_odds = std::log(odds);
+        const double odds     = p / (1.0 - p);
+        const double log_odds = std::log(odds);
+
         // Scale to fixed-point in base φ ≈ 1.618
-        double scaled = log_odds / std::log(1.61803398874989);
-        int64_t fixed = static_cast<int64_t>(std::round(scaled * 512.0));  // 9 fractional trits
+        constexpr double phi    = 1.6180339887498948482;
+        constexpr double kScale = 512.0; // 9 "fractional trits" in this scheme
+
+        const double scaled = log_odds / std::log(phi);
+        const std::int64_t fixed =
+            static_cast<std::int64_t>(std::llround(scaled * kScale));
+
         return T81Prob(Storage(fixed));
     }
 
     // ------------------------------------------------------------------
     // Special values
     // ------------------------------------------------------------------
-    static constexpr T81Prob zero() noexcept          { return T81Prob(Storage(0)); }
-    static constexpr T81Prob one() noexcept           { return from_prob(0.731111); }  // exact 0.5 in log-odds
-    static T81Prob minus_infinity() noexcept { return T81Prob(Storage::kMinValue); }
-    static T81Prob plus_infinity() noexcept  { return T81Prob(Storage::kMaxValue); }
+    static constexpr T81Prob zero() noexcept {
+        // log-odds = 0 → p = 0.5
+        return T81Prob(Storage(0));
+    }
+
+    // One "unit" of log-odds (≈ 1.0) → p ≈ 0.73111
+    static T81Prob one() noexcept {
+        return from_prob(0.731111);
+    }
+
+    static T81Prob minus_infinity() noexcept {
+        return T81Prob(Storage::kMinValue);
+    }
+
+    static T81Prob plus_infinity() noexcept {
+        return T81Prob(Storage::kMaxValue);
+    }
+
+    // ------------------------------------------------------------------
+    // Conversion back to probability
+    // ------------------------------------------------------------------
+    [[nodiscard]] double to_prob() const noexcept {
+        if (is_minus_infinity()) return 0.0;
+        if (is_plus_infinity())  return 1.0;
+
+        constexpr double phi    = 1.6180339887498948482;
+        constexpr double kScale = 512.0;
+
+        const double scaled =
+            static_cast<double>(log_odds_.to_int64()) / kScale;
+        const double log_odds_real = scaled * std::log(phi);
+        const double odds          = std::exp(log_odds_real);
+
+        return odds / (1.0 + odds);
+    }
+
+    // ------------------------------------------------------------------
+    // Queries
+    // ------------------------------------------------------------------
+    [[nodiscard]] constexpr bool is_zero() const noexcept {
+        return log_odds_.is_zero();
+    }
+
+    [[nodiscard]] constexpr bool is_minus_infinity() const noexcept {
+        return log_odds_ == Storage::kMinValue;
+    }
+
+    [[nodiscard]] constexpr bool is_plus_infinity() const noexcept {
+        return log_odds_ == Storage::kMaxValue;
+    }
 
     // ------------------------------------------------------------------
     // Core arithmetic — THIS IS WHY IT'S MAGIC
@@ -76,49 +145,25 @@ public:
     }
 
     [[nodiscard]] constexpr T81Prob operator-() const noexcept {
-        return T81Prob(-log_odds_);
+        return T81Prob(Storage(0) - log_odds_);
     }
 
     // Softmax over a tensor becomes: just add all → subtract each
     // log_softmax(x_i) = x_i - log_sum_exp(x)
     // → in T81Prob: x_i + (-log_sum_exp_all)
-    [[nodiscard]] constexpr T81Prob log_softmax_normalize(const T81Prob& log_sum_exp) const noexcept {
+    [[nodiscard]] constexpr T81Prob
+    log_softmax_normalize(const T81Prob& log_sum_exp) const noexcept {
         return *this - log_sum_exp;
     }
 
     // ------------------------------------------------------------------
-    // Conversion back to probability
-    // ------------------------------------------------------------------
-    [[nodiscard]] constexpr double to_prob() const noexcept {
-        if (is_minus_infinity()) return 0.0;
-        if (is_plus_infinity())  return 1.0;
-
-        double scaled = static_cast<double>(log_odds_.to_int64()) / 512.0;
-        double log_odds = scaled * std::log(1.61803398874989);
-        double odds = std::exp(log_odds);
-        return odds / (1.0 + odds);
-    }
-
-    // ------------------------------------------------------------------
-    // Queries
-    // ------------------------------------------------------------------
-    [[nodiscard]] constexpr bool is_zero() const noexcept          { return log_odds_.is_zero(); }
-    [[nodiscard]] bool is_minus_infinity() const noexcept { return log_odds_ == Storage::kMinValue; }
-    [[nodiscard]] bool is_plus_infinity() const noexcept  { return log_odds_ == Storage::kMaxValue; }
-
-    // ------------------------------------------------------------------
     // Comparison
     // ------------------------------------------------------------------
-    [[nodiscard]] constexpr auto operator<=>(const T81Prob& o) const noexcept = default;
-    [[nodiscard]] constexpr bool operator==(const T81Prob& o) const noexcept = default;
+    [[nodiscard]] constexpr auto
+    operator<=>(const T81Prob& o) const noexcept = default;
 
-    // ------------------------------------------------------------------
-    // Raw access (for hardware sampling units)
-    // ------------------------------------------------------------------
-    [[nodiscard]] constexpr const Storage& raw() const noexcept { return log_odds_; }
-
-private:
-    explicit constexpr T81Prob(Storage v) noexcept : log_odds_(v) {}
+    [[nodiscard]] constexpr bool
+    operator==(const T81Prob& o) const noexcept = default;
 };
 
 // ======================================================================
@@ -127,7 +172,7 @@ private:
 using T81Prob27 = T81Prob;
 
 // Static asserts
-static_assert(sizeof(T81Prob27) == sizeof(T81Int<27>));
+static_assert(sizeof(T81Prob27) == sizeof(::t81::T81Int<27>));
 static_assert(std::is_trivially_copyable_v<T81Prob27>);
 
 // ======================================================================
@@ -135,8 +180,15 @@ static_assert(std::is_trivially_copyable_v<T81Prob27>);
 // ======================================================================
 
 // Log-sum-exp over a span (fused into one ternary reduction on Axion)
-[[nodiscard]] constexpr T81Prob27 log_sum_exp(std::span<const T81Prob27> probs) noexcept {
-    T81Prob27 max = *std::max_element(probs.begin(), probs.end());
+[[nodiscard]] inline T81Prob27
+log_sum_exp(std::span<const T81Prob27> probs) noexcept {
+    if (probs.empty()) {
+        return T81Prob27::minus_infinity();
+    }
+
+    const auto* max_it = std::max_element(probs.begin(), probs.end());
+    T81Prob27 max      = *max_it;
+
     T81Prob27 sum = T81Prob27::zero();
     for (auto p : probs) {
         sum = sum + (p - max);
@@ -144,7 +196,14 @@ static_assert(std::is_trivially_copyable_v<T81Prob27>);
     return max + sum;
 }
 
-// Gumbel-softmax trick → just add noise from T81Entropy (later)
-[[nodiscard]] constexpr T81Prob27 gumbel_add(const T81Prob27& p, const class T81Entropy& noise) noexcept;
+// Forward declaration of entropy source
+class T81Entropy;
+
+// Gumbel-softmax trick → just add noise from T81Entropy (placeholder)
+[[nodiscard]] inline T81Prob27
+gumbel_add(const T81Prob27& p, const T81Entropy& /*noise*/) noexcept {
+    // TODO: implement real Gumbel noise once T81Entropy is defined.
+    return p;
+}
 
 } // namespace t81::core

@@ -5,7 +5,6 @@
 #include <cmath>
 
 using namespace t81;
-using namespace t81::core;
 
 int main() {
     std::cout << "Running T81Quaternion tests...\n";

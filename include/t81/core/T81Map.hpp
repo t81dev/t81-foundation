@@ -48,7 +48,7 @@ class T81Map {
     static constexpr double MAX_LOAD_FACTOR = 0.729;
 
     // Perfect hash for T81Symbol keys (81 trits → fold to index)
-    [[nodiscard]] static constexpr size_t symbol_hash(const t81::core::T81Symbol& sym, size_t bucket_count) noexcept {
+    [[nodiscard]] static constexpr size_t symbol_hash(const t81::T81Symbol& sym, size_t bucket_count) noexcept {
         uint64_t h = sym.hash();  // already avalanche-perfect
         // Ternary-friendly reduction: fold to log₂(bucket_count) bits
         size_t mask = bucket_count - 1;
@@ -82,7 +82,7 @@ class T81Map {
             if (!bucket.occupied) continue;
 
             size_t idx = 0;
-            if constexpr (std::same_as<K, t81::core::T81Symbol>) {
+            if constexpr (std::same_as<K, t81::T81Symbol>) {
                 idx = symbol_hash(bucket.key, new_count);
             } else {
                 idx = generic_hash(bucket.key, new_count);
@@ -116,7 +116,7 @@ public:
         rehash_if_needed();
 
         size_t idx = 0;
-        if constexpr (std::same_as<K, t81::core::T81Symbol>) {
+        if constexpr (std::same_as<K, t81::T81Symbol>) {
             idx = symbol_hash(key, buckets_.size());
         } else {
             idx = generic_hash(key, buckets_.size());
@@ -199,11 +199,11 @@ public:
 // ======================================================================
 // Canonical maps used in the new world
 // ======================================================================
-using SymbolTable   = T81Map<t81::core::T81Symbol, T81List<t81::core::T81Symbol>>;
+using SymbolTable   = T81Map<t81::T81Symbol, T81List<t81::T81Symbol>>;
 // Note: EmbeddingMap and KVStore require T81Float and T81Tensor headers to be included
-// using EmbeddingMap  = T81Map<t81::core::T81Symbol, T81Tensor<T81Float<72,9>, 1, 4096>>;
+// using EmbeddingMap  = T81Map<t81::T81Symbol, T81Tensor<T81Float<72,9>, 1, 4096>>;
 using VocabMap      = T81Map<T81String, uint32_t>;           // string → token ID
-// using KVStore       = T81Map<t81::core::T81Symbol, T81List<T81Float<72,9>>>;
+// using KVStore       = T81Map<t81::T81Symbol, T81List<T81Float<72,9>>>;
 
 // ======================================================================
 // Example: This is how the future stores knowledge

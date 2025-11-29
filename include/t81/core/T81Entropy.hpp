@@ -16,7 +16,7 @@
 #include <array>
 #include <atomic>
 
-namespace t81::core {
+namespace t81 {
 
 class T81Entropy {
     using Raw = T81Int<81>;

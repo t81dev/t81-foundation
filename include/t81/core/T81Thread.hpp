@@ -11,12 +11,12 @@
  */
 #pragma once
 
-#include "t81/T81Promise.hpp"
-#include "t81/T81Agent.hpp"
-#include "t81/T81Entropy.hpp"
-#include "t81/T81Time.hpp"
-#include "t81/T81Symbol.hpp"
-#include "t81/T81Reflection.hpp"
+#include "t81/core/T81Promise.hpp"
+#include "t81/core/T81Agent.hpp"
+#include "t81/core/T81Entropy.hpp"
+#include "t81/core/T81Time.hpp"
+#include "t81/core/T81Symbol.hpp"
+#include "t81/core/T81Reflection.hpp"
 #include <thread>
 #include <atomic>
 #include <vector>

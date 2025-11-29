@@ -20,7 +20,7 @@
 #include <type_traits>
 #include <ostream>
 
-namespace t81::core {
+namespace t81 {
 
 // ======================================================================
 // T81Fixed<IntegerTrits, FractionalTrits>
@@ -203,6 +203,6 @@ inline T81Float<27, 9> float27_from_fixed(const T81Fixed<18, 9>& f) noexcept {
 
 template <std::size_t I, std::size_t F>
 inline std::ostream& operator<<(std::ostream& os,
-                                const t81::core::T81Fixed<I, F>& f) {
+                                const t81::T81Fixed<I, F>& f) {
     return os << f.to_double();
 }

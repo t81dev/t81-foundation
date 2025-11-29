@@ -129,6 +129,11 @@ public:
         return storage_.size();
     }
 
+    // std::string-compatible alias used by tests
+    [[nodiscard]] size_type length() const noexcept {
+        return size();
+    }
+
     [[nodiscard]] bool empty() const noexcept {
         return storage_.empty();
     }

@@ -23,7 +23,7 @@
 #include <limits>
 #include <algorithm>
 
-namespace t81::core {
+namespace t81 {
 
 class T81BigInt {
 public:

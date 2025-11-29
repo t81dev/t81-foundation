@@ -15,7 +15,7 @@ int main() {
     bool ok = decode_bytes(enc, dec);
     assert(ok);
     assert(dec == bytes);
-    assert(t81::core::is_base81(enc));
+    assert(t81::is_base81(enc));
   }
 
   // Empty input

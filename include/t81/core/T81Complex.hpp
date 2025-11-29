@@ -19,7 +19,7 @@
 #include <string>
 #include <type_traits>
 
-namespace t81::core {
+namespace t81 {
 
 // ======================================================================
 // T81Complex<MantissaTrits> — Balanced ternary complex number
@@ -65,6 +65,16 @@ public:
     explicit T81Complex(const std::complex<double>& z)
         : re(Float::from_double(z.real())),
           im(Float::from_double(z.imag())) {}
+
+    // ------------------------------------------------------------------
+    // Accessors (for quaternions and general use)
+    // ------------------------------------------------------------------
+
+    [[nodiscard]] constexpr const Float& real() const noexcept { return re; }
+    [[nodiscard]] constexpr const Float& imag() const noexcept { return im; }
+
+    [[nodiscard]] constexpr Float& real() noexcept { return re; }
+    [[nodiscard]] constexpr Float& imag() noexcept { return im; }
 
     // ------------------------------------------------------------------
     // Constants
@@ -228,13 +238,13 @@ template <std::size_t M>
     return T81Complex18{ p - q, p + r };
 }
 
-} // namespace t81::core
+} // namespace t81
 
 // ======================================================================
 // std::complex interop
 // ======================================================================
 
 template <std::size_t M>
-inline std::complex<double> to_complex(const t81::core::T81Complex<M>& z) {
+inline std::complex<double> to_complex(const t81::T81Complex<M>& z) {
     return { z.re.to_double(), z.im.to_double() };
 }

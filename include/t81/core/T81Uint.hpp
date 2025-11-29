@@ -11,9 +11,11 @@
 #pragma once
 
 #include "t81/core/T81Int.hpp"
+
 #include <cstddef>
 #include <compare>
 #include <bit>
+#include <cstdint>
 
 namespace t81 {
 
@@ -25,8 +27,10 @@ template <size_t N>
     requires (N >= 1 && N <= 2048)
 class T81UInt {
     static_assert(N % 4 == 0, "T81UInt size must be multiple of 4 trits (1 tryte)");
-    
-    alignas(64) T81Int<N> storage_;  // We reuse T81Int but enforce unsigned semantics
+
+    // Underlying balanced-ternary integer storage; we enforce unsigned
+    // semantics at the T81UInt layer.
+    alignas(64) T81Int<N> storage_;
 
 public:
     using signed_type = T81Int<N>;
@@ -39,7 +43,7 @@ public:
     template <typename T>
         requires std::integral<T> || std::floating_point<T>
     constexpr explicit T81UInt(T value) noexcept {
-        auto v = static_cast<int64_t>(value);
+        auto v = static_cast<std::int64_t>(value);
         if (v < 0) v = 0;  // clamp negative
         storage_ = signed_type(v);
     }
@@ -55,18 +59,28 @@ public:
         return storage_;
     }
 
+private:
+    // Helper for bitwise domain: convert to uint64 with clamping to range
+    [[nodiscard]] constexpr std::uint64_t as_uint64() const noexcept {
+        // T81Int<N>::to_int64() is assumed safe for the ranges we care about.
+        auto v = storage_.to_int64();
+        return static_cast<std::uint64_t>(v);
+    }
+
+public:
     //===================================================================
     // Arithmetic – overflow wraps (like unsigned in C++)
     //===================================================================
     [[nodiscard]] constexpr T81UInt operator+(const T81UInt& o) const noexcept {
         auto sum = storage_ + o.storage_;
-        // Note: Wrapping behavior for unsigned types
+        // Wrapping behavior: underlying T81Int handles modular arithmetic;
+        // we clamp negative back to 0 via the ctor.
         return T81UInt(sum);
     }
 
     [[nodiscard]] constexpr T81UInt operator-(const T81UInt& o) const noexcept {
         auto diff = storage_ - o.storage_;
-        // Note: Wrapping behavior for unsigned types  
+        // Wrapping behavior for unsigned types
         return T81UInt(diff);
     }
 
@@ -75,27 +89,34 @@ public:
     }
 
     [[nodiscard]] constexpr T81UInt operator/(const T81UInt& o) const noexcept {
-        return storage_.is_zero() ? T81UInt(0) : T81UInt(storage_ / o.storage_);
+        // Guard against division by zero at the unsigned layer.
+        return o.storage_.is_zero() ? T81UInt(0) : T81UInt(storage_ / o.storage_);
     }
 
     //===================================================================
-    // Bitwise – defined via trit-wise operations
+    // Bitwise – implemented via integer bitwise ops in value space
     //===================================================================
     [[nodiscard]] constexpr T81UInt operator&(const T81UInt& o) const noexcept {
-        return T81UInt(storage_ & o.storage_);
+        const std::uint64_t av = as_uint64();
+        const std::uint64_t bv = o.as_uint64();
+        return T81UInt(av & bv);
     }
 
     [[nodiscard]] constexpr T81UInt operator|(const T81UInt& o) const noexcept {
-        return T81UInt(storage_ | o.storage_);
+        const std::uint64_t av = as_uint64();
+        const std::uint64_t bv = o.as_uint64();
+        return T81UInt(av | bv);
     }
 
     [[nodiscard]] constexpr T81UInt operator^(const T81UInt& o) const noexcept {
-        return T81UInt(storage_ ^ o.storage_);
+        const std::uint64_t av = as_uint64();
+        const std::uint64_t bv = o.as_uint64();
+        return T81UInt(av ^ bv);
     }
 
     [[nodiscard]] constexpr T81UInt operator~() const noexcept {
-        // Bitwise NOT - keep only positive range
-        return T81UInt(~storage_);
+        const std::uint64_t av = as_uint64();
+        return T81UInt(~av);
     }
 
     //===================================================================
@@ -152,3 +173,5 @@ while (true) {
     }
 }
 */
+
+} // namespace t81

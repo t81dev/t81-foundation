@@ -11,7 +11,7 @@
 
 #include "t81/core/T81Int.hpp"
 
-namespace t81::core {
+namespace t81 {
 
 // ======================================================================
 // T81Qutrit — Direct mapping to ternary quantum hardware

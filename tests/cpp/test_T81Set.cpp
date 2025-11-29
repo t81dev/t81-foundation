@@ -4,7 +4,6 @@
 #include <iostream>
 
 using namespace t81;
-using namespace t81::core;
 
 int main() {
     std::cout << "Running T81Set tests...\n";

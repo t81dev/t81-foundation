@@ -20,7 +20,7 @@
 #include <cmath>
 #include <algorithm>
 
-namespace t81::core {
+namespace t81 {
 
 template <std::size_t TotalTrits = 81>
     requires (TotalTrits >= 13 && TotalTrits <= 324)

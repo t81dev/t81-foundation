@@ -10,10 +10,10 @@
 #pragma once
 
 #include "t81/core/T81Symbol.hpp"
-#include "t81/T81Tree.hpp"
-#include "t81/T81Map.hpp"
-#include "t81/T81Set.hpp"
-#include "t81/T81Polynomial.hpp"
+#include "t81/core/T81Tree.hpp"
+#include "t81/core/T81Map.hpp"
+#include "t81/core/T81Set.hpp"
+#include "t81/core/T81Polynomial.hpp"
 #include <functional>
 #include <optional>
 

@@ -10,11 +10,11 @@
  */
 #pragma once
 
-#include "t81/T81Bytes.hpp"
-#include "t81/T81String.hpp"
-#include "t81/T81Time.hpp"
-#include "t81/T81Entropy.hpp"
-#include "t81/T81Reflection.hpp"
+#include "t81/core/T81Bytes.hpp"
+#include "t81/core/T81String.hpp"
+#include "t81/core/T81Time.hpp"
+#include "t81/core/T81Entropy.hpp"
+#include "t81/core/T81Reflection.hpp"
 #include <cstdio>
 #include <string>
 #include <span>

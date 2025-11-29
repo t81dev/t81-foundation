@@ -2,8 +2,7 @@
 #include <cassert>
 #include <iostream>
 
-using namespace t81::core;
-using namespace t81::core::qutrit;
+using namespace t81::qutrit;
 
 int main() {
     std::cout << "Running T81Qutrit tests...\n";

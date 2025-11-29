@@ -13,11 +13,11 @@
 
 #include "t81/core/T81Symbol.hpp"
 #include "t81/core/T81String.hpp"
-#include "t81/T81Tree.hpp"
-#include "t81/T81Map.hpp"
-#include "t81/T81Agent.hpp"
-#include "t81/T81Reflection.hpp"
-#include "t81/T81Category.hpp"
+#include "t81/core/T81Tree.hpp"
+#include "t81/core/T81Map.hpp"
+#include "t81/core/T81Agent.hpp"
+#include "t81/core/T81Reflection.hpp"
+#include "t81/core/T81Category.hpp"
 #include <variant>
 
 namespace t81 {
