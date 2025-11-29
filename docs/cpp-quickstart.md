@@ -81,7 +81,7 @@ ______________________________________________________________________
 
 ## 5. Notes & Caveats
 
-- **`T81BigInt` is a Stub:** The current `T81BigInt` implementation is a simple wrapper around `int64_t` and does not yet provide arbitrary-precision arithmetic.
+- **`T81BigInt` is Partial:** The `T81BigInt` class now provides arbitrary-precision storage using a vector of `T81Int` limbs, but its arithmetic functions are still incomplete.
 - **`Tensor` is Partial:** The `Tensor` class has a solid foundation but does not yet implement the full set of operations defined in the spec.
 - **Axion & CanonFS are Stubs:** The Axion Kernel and CanonFS are non-functional placeholders.
 

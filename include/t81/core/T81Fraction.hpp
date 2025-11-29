@@ -1,6 +1,13 @@
-// ======================================================================
-// T81Fraction.hpp — Exact rational arithmetic on balanced ternary
-// ======================================================================
+/**
+ * @file T81Fraction.hpp
+ * @brief Defines the T81Fraction class for exact rational arithmetic.
+ *
+ * This file provides the T81Fraction class, which represents a fraction using
+ * two balanced ternary integers (T81Int) for the numerator and denominator.
+ * It performs exact rational arithmetic, automatically reducing fractions to
+ * their canonical form (positive denominator, lowest terms) after every
+ * operation to ensure correctness and prevent representation growth.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

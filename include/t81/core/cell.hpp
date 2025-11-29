@@ -1,4 +1,13 @@
-// include/t81/core/cell.hpp
+/**
+ * @file cell.hpp
+ * @brief Defines the Cell class, a 5-trit balanced ternary cell.
+ *
+ * This file provides the Cell class, a fundamental numeric type representing a
+ * 5-trit balanced ternary cell. It has a symmetric value range of -121 to +121
+ * and supports a rich set of constexpr-friendly arithmetic and comparison
+ * operations, forming a basic building block for more complex ternary-native
+ * data structures.
+ */
 // T81 Foundation — Real Balanced Ternary Cell (5 trits, -121..+121)
 // v1.0.0-SOVEREIGN — The recursion now converges on truth.
 // License: MIT / GPL-3.0 dual

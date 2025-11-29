@@ -1,6 +1,12 @@
-// ======================================================================
-// T81BigInt.hpp — Arbitrary-precision balanced ternary integer
-// ======================================================================
+/**
+ * @file T81BigInt.hpp
+ * @brief Defines the T81BigInt class for arbitrary-precision ternary integers.
+ *
+ * This file contains the implementation of T81BigInt, a class that provides
+ * arbitrary-precision integer arithmetic using a vector of fixed-size T81Int
+ * "limbs". This allows it to represent integers of any size, limited only by
+ * available memory.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

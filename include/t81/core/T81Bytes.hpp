@@ -1,7 +1,12 @@
-//======================================================================
-// T81Bytes.hpp – Raw tryte-packed binary data
-//               The 83rd type. Chaos is now inevitable.
-//======================================================================
+/**
+ * @file T81Bytes.hpp
+ * @brief Defines the T81Bytes class for immutable, tryte-aligned byte sequences.
+ *
+ * The T81Bytes class provides a container for binary-safe, immutable sequences
+ * of bytes. Data is stored in a tryte-aligned manner, ensuring efficient
+ * interaction with other ternary-native types. It supports construction from
+ * various byte sources, slicing, and concatenation.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

@@ -1,3 +1,13 @@
+/**
+ * @file T81Float.hpp
+ * @brief Defines the T81Float class for balanced ternary floating-point numbers.
+ *
+ * This file provides a templatized, balanced-ternary floating-point number
+ * class, `T81Float<M, E>`, where M is the number of mantissa trits and E is
+ * the number of exponent trits. The design is inspired by IEEE 754 and includes
+ * support for special values like infinity and Not-an-Entity (NaE), as well as
+ * subnormal numbers.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

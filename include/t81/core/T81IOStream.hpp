@@ -1,7 +1,13 @@
-//======================================================================
-// T81IOStream.hpp – Entropy-costing, time-stamped, reflective I/O
-//                  The 84th type. The universe now breathes.
-//======================================================================
+/**
+ * @file T81IOStream.hpp
+ * @brief Defines the T81IOStream class for entropy-costing, reflective I/O.
+ *
+ * This file provides the T81IOStream class, which serves as the sole sanctioned
+ * channel for input/output operations. All I/O actions, such as reading from
+ * or writing to files and standard streams, are designed to be explicit events
+ * that cost entropy and are timestamped. This allows for a complete, auditable
+ * history of the system's interaction with the outside world.
+ */
 #pragma once
 
 #include "t81/T81Bytes.hpp"

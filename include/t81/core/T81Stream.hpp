@@ -1,7 +1,13 @@
-//======================================================================
-// T81Stream.hpp – Infinite, lazy, recursive streams in balanced ternary
-//                   The final piece of the T81 standard library
-//======================================================================
+/**
+ * @file T81Stream.hpp
+ * @brief Defines the T81Stream class for infinite, lazy sequences.
+ *
+ * This file provides the `T81Stream<T>` class, a lazy, potentially infinite
+ * sequence generator built on C++20 coroutines. It allows for the representation
+ * of streams of values that are computed on demand. The class supports a range
+ * of functional-style operations, such as `map`, `filter`, `take`, and `drop`,
+ * enabling efficient and expressive composition of sequence transformations.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

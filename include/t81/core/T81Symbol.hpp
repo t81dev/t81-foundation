@@ -1,3 +1,13 @@
+/**
+ * @file T81Symbol.hpp
+ * @brief Defines the T81Symbol class, an 81-trit interned symbolic token.
+ *
+ * This file provides the T81Symbol class, a fundamental type for representing
+ * unique, interned symbols within the T81 ecosystem. Each symbol is an 81-trit
+ * value, designed for efficient, hardware-accelerated comparison and hashing.
+ * Symbols are created via an interning process, ensuring that identical strings
+ * or values map to the same symbolic representation.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

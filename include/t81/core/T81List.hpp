@@ -1,6 +1,12 @@
-//======================================================================
-// T81List.hpp – Dynamic, cache-friendly, ternary-native growable list
-//======================================================================
+/**
+ * @file T81List.hpp
+ * @brief Defines the T81List class, a dynamic, ternary-native list container.
+ *
+ * This file provides the T81List<E> class, a dynamic, growable container for
+ * sequences of elements, similar in functionality to `std::vector`. It is
+ * designed to be cache-friendly and ternary-native, with internal storage
+ * aligned to tryte boundaries for efficient hardware access.
+ */
 #pragma once
 
 #include "t81/core/T81Int.hpp"

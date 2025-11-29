@@ -1,3 +1,13 @@
+/**
+ * @file T81Complex.hpp
+ * @brief Defines the T81Complex class for balanced ternary complex numbers.
+ *
+ * This file provides a first-class, ternary-native complex number implementation.
+ * It is designed for high-performance applications like Fast Fourier Transforms
+ * (FFT) and Holographic Reduced Representations (HRR), and is not a wrapper
+ * around `std::complex`. The layout is optimized for cache-friendliness and
+ * future ternary hardware.
+ */
 #pragma once
 
 #include "t81/core/T81Float.hpp"

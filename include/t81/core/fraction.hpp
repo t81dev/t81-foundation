@@ -1,3 +1,11 @@
+/**
+ * @file fraction.hpp
+ * @brief Defines the Fraction struct for representing rational numbers.
+ *
+ * This file provides a simple struct, `Fraction`, for representing rational
+ * numbers. It uses the `BigInt` type for both the numerator and the denominator,
+ * allowing for arbitrary-precision fractional values.
+ */
 #pragma once
 
 #include <string>
@@ -12,4 +20,3 @@ struct Fraction {
   [[nodiscard]] std::string to_string() const;
 };
 }  // namespace t81::core
-
