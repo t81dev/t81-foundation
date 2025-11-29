@@ -18,6 +18,7 @@
 #include <functional>
 #include <optional>
 #include <string_view>
+#include <variant>
 
 namespace t81 {
 
@@ -36,34 +37,40 @@ public:
     //===================================================================
     // Construction – every value can become aware of itself
     //===================================================================
-    explicit constexpr T81Reflection(T value,
+    explicit constexpr T81Reflection(T&& value,
                                      T81Symbol type_name = {},
                                      T81Symbol instance_name = {})
         : value_(std::move(value))
-        , type_symbol_(type_name ? type_name : symbols::UNKNOWN_TYPE)
-        , instance_id_(instance_name ? instance_name : symbols::ANONYMOUS)
+        , type_symbol_(type_name ? type_name : T81Symbol::intern("UNKNOWN_TYPE"))
+        , instance_id_(instance_name ? instance_name : T81Symbol::intern("ANONYMOUS"))
     {}
+
+    T81Reflection(const T81Reflection&) = delete;
+    T81Reflection& operator=(const T81Reflection&) = delete;
+
+    T81Reflection(T81Reflection&&) = default;
+    T81Reflection& operator=(T81Reflection&&) = default;
 
     //===================================================================
     // Core self-observation – costs entropy, creates knowledge
     //===================================================================
     void observe(std::optional<T81Entropy> fuel = std::nullopt) const {
         if (fuel) {
-            last_observation_fuel_ = fuel;
+            last_observation_fuel_ = std::move(fuel);
         }
 
         observation_log_.push_back(
-            T81Symbol::intern("OBSERVED[" + type_symbol_.str() + "]@" + std::to_string(observation_log_.size()))
+            T81Symbol::intern("OBSERVED[" + type_symbol_.to_string() + "]@" + std::to_string(observation_log_.size()))
         );
     }
 
     // Reflect on the act of reflection itself
     void meta_reflect(T81Agent& observer) const {
         if (auto token = observer.consume_entropy()) {
-            observer.observe(symbols::REFLECTION_EVENT);
+            observer.observe(T81Symbol::intern("REFLECTION_EVENT"));
             observer.believe(
                 T81Symbol::intern("I_OBSERVED_A_REFLECTION"),
-                T81Prob<81>::from_prob(1.0)
+                T81Prob::from_prob(1.0)
             );
         }
     }
@@ -73,6 +80,7 @@ public:
     //===================================================================
     [[nodiscard]] constexpr const T& get() const &  noexcept { return value_; }
     [[nodiscard]] constexpr T&       get() &        noexcept { return value_; }
+    [[nodiscard]] constexpr const T& get() const && noexcept { return value_; }
     [[nodiscard]] constexpr T        get() &&       noexcept { return std::move(value_); }
 
     [[nodiscard]] constexpr const T& operator*()  const &  noexcept { return value_; }
@@ -101,10 +109,10 @@ public:
     //===================================================================
     [[nodiscard]] T81Stream<T81String> narrative() const {
         return stream_from([this, n = size_t(0)]() mutable -> T81String {
-            return "Reflection#" + std::to_string(++n) +
-                   ": I am a " + type_symbol_.str() +
-                   " named " + instance_id_.str() +
-                   " | observed " + std::to_string(observation_count()) + " times";
+            return T81String("Reflection#") + T81String(std::to_string(++n)) +
+                   T81String(": I am a ") + T81String(type_symbol_.to_string()) +
+                   T81String(" named ") + T81String(instance_id_.to_string()) +
+                   T81String(" | observed ") + T81String(std::to_string(observation_count())) + T81String(" times");
         });
     }
 };
@@ -128,7 +136,7 @@ namespace reflection {
 
     template <typename T>
     void log_existence(const T81Reflection<T>& r) {
-        universe_log.push_back(T81Reflection<std::monostate>{});
+        universe_log.push_back(T81Reflection<std::monostate>(std::monostate{}));
     }
 
 } // namespace reflection
@@ -156,3 +164,4 @@ for (auto line : pi.narrative().take(5)) {
     std::cout << line << "\n";
 }
 */
+} // namespace t81

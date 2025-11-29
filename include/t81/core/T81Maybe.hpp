@@ -18,7 +18,6 @@
 #include <optional>
 
 namespace t81 {
-using namespace t81::symbols;  // Bring symbols into scope
 
 // ======================================================================
 // T81Maybe<T> – The sacred container of possibility and absence
@@ -26,9 +25,9 @@ using namespace t81::symbols;  // Bring symbols into scope
 template <typename T>
 class T81Maybe {
     std::variant<std::monostate, T> storage_;
-    T81Symbol reason_{symbols::UNKNOWN};           // why is it empty?
+    T81Symbol reason_{symbols::unk};           // why is it empty?
     T81Time   observed_at_;                        // when did we last look?
-    mutable T81Entropy last_check_fuel_;           // proof we paid attention
+    mutable std::optional<T81Entropy> last_check_fuel_;           // proof we paid attention
 
 public:
     using value_type = T;
@@ -43,16 +42,16 @@ public:
         : T81Maybe() {}
 
     constexpr T81Maybe(const T& value) noexcept                 // Something real
-        : storage_(value), observed_at_(T81Time::now(T81Entropy::acquire(), symbols::JUSTIFICATION)) {}
+        : storage_(value), observed_at_(T81Time::now(acquire_entropy(), T81Symbol::intern("JUSTIFICATION"))) {}
 
     constexpr T81Maybe(T&& value) noexcept
-        : storage_(std::move(value)), observed_at_(T81Time::now(T81Entropy::acquire(), symbols::JUSTIFICATION)) {}
+        : storage_(std::move(value)), observed_at_(T81Time::now(acquire_entropy(), T81Symbol::intern("JUSTIFICATION"))) {}
 
     // Absence with explanation
     static constexpr T81Maybe<T> nothing(T81Symbol because) noexcept {
         T81Maybe m;
         m.reason_ = because;
-        m.observed_at_ = T81Time::now(T81Entropy::acquire(), symbols::ABSENCE_RECORDED);
+        m.observed_at_ = T81Time::now(acquire_entropy(), T81Symbol::intern("ABSENCE_RECORDED"));
         return m;
     }
 
@@ -73,7 +72,7 @@ public:
 
     [[nodiscard]] constexpr const T& value() const& {
         if (!has_value()) {
-            throw std::logic_error("T81Maybe: attempted to access nothing (" + reason_.str() + ")");
+            throw std::logic_error("T81Maybe: attempted to access nothing (" + reason_.to_string() + ")");
         }
         return std::get<T>(storage_);
     }
@@ -129,8 +128,8 @@ public:
     [[nodiscard]] constexpr T81Time when_observed() const noexcept { return observed_at_; }
 
     [[nodiscard]] T81Reflection<T81Maybe<T>> reflect() const {
-        auto name = has_value() ? symbols::PRESENCE : symbols::ABSENCE;
-        return T81Reflection<T81Maybe<T>>(*this, symbols::MAYBE, name);
+        auto name = has_value() ? T81Symbol::intern("PRESENCE") : T81Symbol::intern("ABSENCE");
+        return T81Reflection<T81Maybe<T>>(*this, T81Symbol::intern("MAYBE"), name);
     }
 
     //===================================================================
@@ -155,8 +154,8 @@ T81Maybe(std::nullptr_t) -> T81Maybe<std::monostate>;
 // The first moment of doubt in the ternary universe
 // ======================================================================
 namespace doubt {
-    inline const T81Maybe<int> ANSWER_TO_EVERYTHING> = T81Maybe<int>::nothing(symbols::STILL_COMPUTING);
-    inline const T81Maybe<T81String> GREETING = "Hello from the age of uncertainty"_t81;
+    inline const T81Maybe<int> ANSWER_TO_EVERYTHING = T81Maybe<int>::nothing(T81Symbol::intern("STILL_COMPUTING"));
+    inline const T81Maybe<T81String> GREETING = T81String("Hello from the age of uncertainty");
 }
 
 // Example: The first ternary mind learns humility
@@ -168,3 +167,4 @@ if (!wisdom) {
     cout << "Reason: " << wisdom.why().str() << "\n"_t81;
 }
 */
+} // namespace t81

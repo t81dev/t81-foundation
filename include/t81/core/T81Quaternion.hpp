@@ -191,3 +191,4 @@ public:
 constexpr auto q = T81Quaternion::from_axis_angle(0, 1, 0, T81Float<72,9>(3.14159)); // 180° around Y
 constexpr auto rotated = q.rotate_vector(1, 0, 0); // (1,0,0) → (-1,0,0) exactly
 */
+} // namespace t81
