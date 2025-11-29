@@ -128,6 +128,28 @@ Thumbs.db
 # Bazel (still present in legacy/)
 bazel-*
 
+# ── Ruby / Rails / Gems (add this block) ─────────────────────
+Gemfile
+Gemfile.lock
+*.gem
+.ruby-version
+.rbenv-version
+.rvmrc
+.bundle/
+vendor/bundle/
+config/database.yml
+config/credentials.yml.enc
+config/master.key
+config/secrets.yml
+config/initializers/secret_token.rb
+log/
+tmp/
+*.log
+*.pid
+*.swp
+.pry_history
+.byebug_history
+
 # ── Never ignore the real source! ──────────────────────────
 # (We deliberately DO NOT have *.cpp, *.hpp, *.c, *.h here)
 # All modern C++ source in include/ and src/ is hand-written and MUST be tracked.
