@@ -230,9 +230,10 @@ if (T81_BUILD_TESTS)
   add_executable(t81_t81int_to_binary_test tests/cpp/test_t81int_to_binary.cpp)
   target_link_libraries(t81_t81int_to_binary_test PRIVATE t81_core)
 
+
   enable_testing()
   set(T81_TEST_TARGETS
-    # t81_float_test # Disabled due to pre-existing bug in T81Float conversions. See issue #123.
+    t81_float_test
     t81_t81int_to_binary_test
     t81_division_test
     t81_t81int_test

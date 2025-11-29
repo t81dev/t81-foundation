@@ -490,6 +490,19 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const T81Int& v) {
         return os << v.to_int64();
     }
+
+    std::string to_trit_string() const {
+        std::string s;
+        s.reserve(kNumTrits);
+        for (size_type i = kNumTrits; i-- > 0; ) {
+            switch (get_trit(i)) {
+                case Trit::P: s.push_back('+'); break;
+                case Trit::Z: s.push_back('0'); break;
+                case Trit::N: s.push_back('-'); break;
+            }
+        }
+        return s;
+    }
 };
 
 // --- Inline static data member definitions ---

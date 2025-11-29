@@ -18,6 +18,8 @@
 #include <cstdint>
 #include <limits>
 #include <compare>
+#include <cmath> // For std::round, std::llround, std::log, std::pow
+#include <cstdlib> // For std::fabsl
 
 namespace t81::core {
 
@@ -127,6 +129,16 @@ public:
 
     [[nodiscard]] constexpr auto operator<=>(const T81Float&) const noexcept = default;
     [[nodiscard]] constexpr bool operator==(const T81Float&) const noexcept = default;
+
+    struct DebugFields {
+        Trit sign;
+        std::int64_t biased_exp;
+        T81Int<M> mantissa;
+    };
+
+    DebugFields debug_get_fields() const noexcept {
+        return {get_sign(), get_exp(), get_mantissa()};
+    }
 
     // Arithmetic friends (unchanged)
     template <std::size_t MM, std::size_t EE>
@@ -323,78 +335,130 @@ T81Float<M, E> fma(T81Float<M, E> a, T81Float<M, E> b, T81Float<M, E> c) noexcep
 }
 
 // ======================================================================
-// Correct double conversions (powers of 3)
+// Correct double conversions (base-3, symmetric mapping)
+// value ≈ sign * mantissa * 3^(exp_unbiased - (M - 1))
 // ======================================================================
 template <std::size_t M, std::size_t E>
 T81Float<M, E> T81Float<M, E>::from_double(double v) noexcept {
-    using F = T81Float<M, E>;
-    if (v == 0.0) return F::zero();
-    if (std::isinf(v)) return F::inf(v > 0.0);
-    if (std::isnan(v)) return F::nae();
+    using F         = T81Float<M, E>;
+    using size_type = typename F::size_type;
 
-    const bool neg = v < 0.0;
-    double mag = std::fabs(v);
-    int bin_exp = 0;
-    double frac = std::frexp(mag, &bin_exp);  // [0.5, 1)
-
-    // Convert binary exponent to ternary scale
-    std::int64_t ternary_exp = 0;
-    double mant = frac;
-    while (mant >= 1.0) { mant /= 3.0; ternary_exp++; }
-    while (mant < 1.0/3.0) { mant *= 3.0; ternary_exp--; }
-
-    // Build mantissa with M trits
-    T81Int<M + 10> imant;
-    double acc = mant;
-    for (size_type i = M + 9; i-- > 0 && acc > 0.0;) {
-        acc *= 3.0;
-        int digit = static_cast<int>(acc);
-        if (digit > 1) digit = -1, acc -= 2.0;
-        else if (digit < -1) digit = 1, acc += 2.0;
-        imant[i] = int_to_trit(digit);
-        acc -= digit;
+    // Special cases
+    if (v == 0.0) {
+        return F::zero();
+    }
+    if (std::isinf(v)) {
+        return F::inf(v > 0.0);
+    }
+    if (std::isnan(v)) {
+        return F::nae();
     }
 
-    return normalize<10>(neg ? Trit::N : Trit::P,
-                         ternary_exp + kExponentBias,
-                         imant);
+    const bool      neg = v < 0.0;
+    // Note: Use global fabsl/powl because some stdlibs dont import them into std::
+    long double     mag = fabsl(static_cast<long double>(v));
+
+    // log_3(|v|)
+    static const long double kLn3 = std::log(3.0L);
+    const long double log3_mag    = std::log(mag) / kLn3;
+
+    // Choose exponent so that 0 < mant < 3^(M-1)
+    const std::int64_t k        = static_cast<std::int64_t>(std::floor(log3_mag));
+    const std::int64_t exp_unb  = k + 1;
+
+    // For double's dynamic range and typical E, this never reaches kInfExponent.
+    // If you want hard clamping, you could add checks here against ±kInfExponent.
+
+    const long double scale_exp =
+        static_cast<long double>(M - 1 - exp_unb);
+    const long double mant_real =
+        mag * powl(3.0L, scale_exp);  // ≈ |v| * 3^(M-1-exp_unb)
+
+    if (!std::isfinite(mant_real) || mant_real == 0.0L) {
+        return F::zero();
+    }
+
+    // Positive integer mantissa magnitude
+    const long long mant_ll =
+        static_cast<long long>(std::llround(mant_real));
+
+    // Encode mant_ll ≥ 0 into balanced ternary, least significant trit at index 0.
+    T81Int<M> mantissa;  // default-initialized to 0
+    std::int64_t tmp = mant_ll;
+    for (size_type i = 0; i < M && tmp != 0; ++i) {
+        int digit = static_cast<int>(tmp % 3);
+        tmp /= 3;
+
+        if (digit == 2) {
+            // 2 → -1 with a carry
+            mantissa[i] = Trit::N; // -1
+            ++tmp;
+        } else {
+            // digit is 0 or 1
+            mantissa[i] = int_to_trit(digit);
+        }
+    }
+
+    F out;
+    out.set_sign(!neg);          // sign trit only
+    out.set_exp(exp_unb);        // unbiased base-3 exponent
+    out.set_mantissa(mantissa);  // non-negative mantissa
+    return out;
 }
 
 template <std::size_t M, std::size_t E>
 double T81Float<M, E>::to_double() const noexcept {
-    if (is_zero()) return 0.0;
-    if (is_inf()) return is_negative() ? -INFINITY : INFINITY;
-    if (is_nae()) return std::numeric_limits<double>::quiet_NaN();
+    using F         = T81Float<M, E>;
+    using size_type = typename F::size_type;
 
-    std::int64_t exp = get_exp() - kExponentBias;
-    double value = 0.0;
-    double p = 1.0;
-
-    const T81Int<M> m = get_mantissa();
-    // Implicit leading P for normalized numbers
-    if (exp > 0) {
-        value += 1.0;
-        p = 3.0;
-        for (size_type i = 0; i < M; ++i) {
-            value += trit_to_int(m[i]) * p;
-            p *= 3.0;
-        }
-    } else {
-        // Subnormal or zero
-        for (size_type i = 0; i < M; ++i) {
-            value += trit_to_int(m[i]) * p;
-            p *= 3.0;
-        }
+    // Special cases
+    if (is_zero()) {
+        return 0.0;
+    }
+    if (is_inf()) {
+        return is_negative()
+            ? -std::numeric_limits<double>::infinity()
+            :  std::numeric_limits<double>::infinity();
+    }
+    if (is_nae()) {
+        return std::numeric_limits<double>::quiet_NaN();
     }
 
-    // Apply exponent (ternary)
-    if (exp >= 0) {
-        for (std::int64_t i = 0; i < exp; ++i) value *= 3.0;
-    } else {
-        for (std::int64_t i = 0; i < -exp; ++i) value /= 3.0;
+    // Unbiased exponent as stored (finite values never use kInfExponent).
+    const std::int64_t exp_unb = get_exp();
+    const T81Int<M>    m       = get_mantissa();
+
+    // Decode balanced-ternary mantissa
+    long double mant_val = 0.0L;
+    long double p        = 1.0L; // 3^0, 3^1, ...
+
+    for (size_type i = 0; i < M; ++i) {
+        mant_val += static_cast<long double>(trit_to_int(m[i])) * p;
+        p *= 3.0L;
     }
 
-    return is_negative() ? -value : value;
+    if (mant_val == 0.0L) {
+        return 0.0;
+    }
+
+    // v ≈ mant_val * 3^(exp_unb - (M - 1))
+    const long double pow_factor =
+        powl(3.0L,
+                  static_cast<long double>(exp_unb)
+                - static_cast<long double>(M - 1));
+
+    long double mag_ld = mant_val * pow_factor;
+    if (!std::isfinite(mag_ld)) {
+        return is_negative()
+            ? -std::numeric_limits<double>::infinity()
+            :  std::numeric_limits<double>::infinity();
+    }
+
+    double result = static_cast<double>(mag_ld);
+    if (is_negative()) {
+        result = -result;
+    }
+    return result;
 }
 
 // Common typedefs
