@@ -20,7 +20,7 @@
 #include <span>
 #include <type_traits>
 
-namespace t81 {
+namespace t81::core {
 
 // ======================================================================
 // T81Prob<27> — Native log-odds / log-probability in 27 trits
@@ -40,7 +40,11 @@ class T81Prob {
     Storage log_odds_{};  // log(p / (1-p)) in fixed-point base-φ units
 
 public:
-    static constexpr size_t Trits = 27;
+    static constexpr std::size_t Trits = 27;
+
+    // ------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------
 
     constexpr T81Prob() noexcept = default;
 
@@ -49,6 +53,7 @@ public:
     // ------------------------------------------------------------------
     // Core accessors
     // ------------------------------------------------------------------
+
     [[nodiscard]] constexpr const Storage& raw() const noexcept {
         return log_odds_;
     }
@@ -60,7 +65,10 @@ public:
     // ------------------------------------------------------------------
     // Construction from real probability [0,1]
     // ------------------------------------------------------------------
-    static T81Prob from_prob(double p) noexcept {
+    //
+    // Not constexpr: depends on libm (log / exp / llround).
+    //
+    [[nodiscard]] static T81Prob from_prob(double p) noexcept {
         if (p <= 0.0) return minus_infinity();
         if (p >= 1.0) return plus_infinity();
         if (p == 0.5) return zero();
@@ -82,27 +90,29 @@ public:
     // ------------------------------------------------------------------
     // Special values
     // ------------------------------------------------------------------
-    static constexpr T81Prob zero() noexcept {
-        // log-odds = 0 → p = 0.5
+
+    // log-odds = 0 → p = 0.5
+    [[nodiscard]] static constexpr T81Prob zero() noexcept {
         return T81Prob(Storage(0));
     }
 
     // One "unit" of log-odds (≈ 1.0) → p ≈ 0.73111
-    static T81Prob one() noexcept {
+    [[nodiscard]] static T81Prob one() noexcept {
         return from_prob(0.731111);
     }
 
-    static T81Prob minus_infinity() noexcept {
+    [[nodiscard]] static constexpr T81Prob minus_infinity() noexcept {
         return T81Prob(Storage::kMinValue);
     }
 
-    static T81Prob plus_infinity() noexcept {
+    [[nodiscard]] static constexpr T81Prob plus_infinity() noexcept {
         return T81Prob(Storage::kMaxValue);
     }
 
     // ------------------------------------------------------------------
     // Conversion back to probability
     // ------------------------------------------------------------------
+
     [[nodiscard]] double to_prob() const noexcept {
         if (is_minus_infinity()) return 0.0;
         if (is_plus_infinity())  return 1.0;
@@ -121,6 +131,7 @@ public:
     // ------------------------------------------------------------------
     // Queries
     // ------------------------------------------------------------------
+
     [[nodiscard]] constexpr bool is_zero() const noexcept {
         return log_odds_.is_zero();
     }
@@ -136,6 +147,7 @@ public:
     // ------------------------------------------------------------------
     // Core arithmetic — THIS IS WHY IT'S MAGIC
     // ------------------------------------------------------------------
+
     [[nodiscard]] constexpr T81Prob operator+(const T81Prob& o) const noexcept {
         return T81Prob(log_odds_ + o.log_odds_);
     }
@@ -159,6 +171,7 @@ public:
     // ------------------------------------------------------------------
     // Comparison
     // ------------------------------------------------------------------
+
     [[nodiscard]] constexpr auto
     operator<=>(const T81Prob& o) const noexcept = default;
 
@@ -169,6 +182,7 @@ public:
 // ======================================================================
 // The One True Probability Type
 // ======================================================================
+
 using T81Prob27 = T81Prob;
 
 // Static asserts
@@ -187,10 +201,10 @@ log_sum_exp(std::span<const T81Prob27> probs) noexcept {
     }
 
     const auto* max_it = std::max_element(probs.begin(), probs.end());
-    T81Prob27 max      = *max_it;
+    const T81Prob27 max = *max_it;
 
     T81Prob27 sum = T81Prob27::zero();
-    for (auto p : probs) {
+    for (const auto& p : probs) {
         sum = sum + (p - max);
     }
     return max + sum;

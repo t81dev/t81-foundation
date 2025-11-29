@@ -2,7 +2,7 @@
 #include <cassert>
 #include <iostream>
 
-using namespace t81::core;
+using namespace t81;
 
 int main() {
     std::cout << "Running T81Symbol tests...\n";
