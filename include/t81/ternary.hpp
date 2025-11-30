@@ -1,4 +1,3 @@
-// include/t81/ternary.hpp
 #pragma once
 #include <cstdint>
 
