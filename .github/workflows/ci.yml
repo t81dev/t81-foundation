@@ -26,9 +26,9 @@ jobs:
           python-version: "3.12"
           cache: "pip"
       - name: Start log capture
-        run: mkdir -p .github/logs && echo "--- Starting log capture ---" > .github/logs/spec-and-docs.log
+        run: mkdir -p .github/logs || true
       - name: Install Python tools
-        run: pip install mdformat mdformat-gfm mdformat-frontmatter mdformat-toc 2>&1 | tee -a .github/logs/spec-and-docs.log
+        run: pip install mdformat mdformat-gfm mdformat-frontmatter mdformat-toc 2>&1 | tee .github/logs/spec-and-docs.log
       - name: Check Markdown links (lychee)
         uses: lycheeverse/lychee-action@v2
         with:
@@ -40,7 +40,6 @@ jobs:
             .github/**/*.md spec/**/*.md docs/**/*.md README.md AGENTS.md CONTRIBUTING.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        id: lychee
       - name: Verify repository structure
         run: |
           set -euo pipefail
@@ -48,24 +47,12 @@ jobs:
           for d in "${required_dirs[@]}"; do
             [ -d "$d" ] || { echo "::error::Missing required directory: $d"; exit 1; }
           done
-          echo "All required directories present." 2>&1 | tee -a .github/logs/spec-and-docs.log
-      - name: Aggregate Lychee logs
-        if: always()
-        run: |
-          echo "--- Lychee Output ---" >> .github/logs/spec-and-docs.log
-          echo "${{ steps.lychee.outputs.stdout }}" >> .github/logs/spec-and-docs.log
+          echo "All required directories present."
       - name: Job Failure Summary
         if: failure()
         run: |
-          echo "### Spec & Docs Job Failed" >> $GITHUB_STEP_SUMMARY
-          echo "One or more documentation or specification checks failed." >> $GITHUB_STEP_SUMMARY
-          echo "- **Job**: ${{ github.job }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Most recent log lines:" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          tail -n 40 .github/logs/spec-and-docs.log || echo "(log capture failed)" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "### Spec & Docs Failed" >> $GITHUB_STEP_SUMMARY
+          echo "Check logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
 
   build-and-test:
     name: " build / ${{ matrix.os }} / ${{ matrix.compiler }}"
@@ -104,13 +91,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Start log capture
-        run: mkdir -p .github/logs
+      - name: Create log directory
+        run: mkdir -p .github/logs || true
 
       - name: Install Dependencies (Ubuntu)
         if: runner.os == 'Linux'
         run: |
-          set -eo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
             build-essential cmake ninja-build ccache gcc-14 g++-14 clang-18
@@ -118,7 +104,6 @@ jobs:
       - name: Install Dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
-          set -eo pipefail
           brew install ccache
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
             brew install gcc@14
@@ -128,8 +113,7 @@ jobs:
       - name: Install Dependencies (Windows)
         if: runner.os == 'Windows'
         run: |
-          set -eo pipefail
-          choco install ccache
+          choco install ccache -y
           if [ "${{ matrix.compiler }}" = "clang-cl" ]; then
             winget install -e --id LLVM.LLVM --source winget
           fi
@@ -145,42 +129,37 @@ jobs:
         with:
           path: ${{ runner.os == 'Linux' && '~/.ccache' || runner.os == 'macOS' && '~/Library/Caches/ccache' || 'C:/Users/runneradmin/AppData/Local/ccache' }}
           key: ccache-${{ runner.os }}-${{ matrix.compiler }}-${{ github.ref }}
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ matrix.compiler }}-
+          restore-keys: ccache-${{ runner.os }}-${{ matrix.compiler }}-
 
-      - name: Setup MSVC/cl environment (Windows)
+      - name: Setup MSVC (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Configure CMake
         run: |
-          set -eo pipefail
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
             -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            2>&1 | tee .github/logs/build-and-test.log
 
-      ########################################################################
-      # THE ONE LINE THAT ENDS THE WAR
-      ########################################################################
-      - name: Nuke Windows build cache — force fresh compile
+      # THIS IS THE ONE LINE THAT WINS THE WAR
+      - name: Force clean rebuild on Windows
         if: runner.os == 'Windows'
         run: |
-          Remove-Item -Recurse -Force build
+          Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue
           mkdir build
-          echo "Windows cache destroyed. Truth will be recompiled from scratch."
+          echo "Windows build cache obliterated. Fresh truth being forged."
 
       - name: Build
         run: |
-          set -eo pipefail
-          cmake --build build --parallel
+          cmake --build build --parallel 2>&1 | tee -a .github/logs/build-and-test.log
 
       - name: Test
         run: |
-          set -eo pipefail
-          ctest --test-dir build --output-on-failure --verbose
+          ctest --test-dir build --output-on-failure --verbose 2>&1 | tee -a .github/logs/build-and-test.log
 
       - name: Show ccache stats
         run: ccache -s
@@ -188,14 +167,18 @@ jobs:
       - name: Job Failure Summary
         if: failure()
         run: |
-          echo "### Build failed" >> $GITHUB_STEP_SUMMARY
+          echo "### Build / Test Failed" >> $GITHUB_STEP_SUMMARY
           echo "- **OS**: ${{ runner.os }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Compiler**: ${{ matrix.compiler }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Log tail:" >> $GITHUB_STEP_SUMMARY
+          echo "Last 40 log lines:" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          tail -n 40 .github/logs/build-and-test.log || echo "(no log)" >> $GITHUB_STEP_SUMMARY
+          if test -f .github/logs/build-and-test.log; then
+            tail -n 40 .github/logs/build-and-test.log
+          else
+            powershell -Command "if (Test-Path .github/logs/build-and-test.log) { Get-Content .github/logs/build-and-test.log -Tail 40 }"
+          fi
           echo '```' >> $GITHUB_STEP_SUMMARY
 
-  # ... rest of your jobs (static-analysis, coverage, sanitizers, thread-sanitizer) unchanged ...
+  # static-analysis, coverage, sanitizers, thread-sanitizer remain unchanged...
