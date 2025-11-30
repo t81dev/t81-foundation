@@ -33,6 +33,7 @@ class T81Vector {
 
     alignas(64) Scalar components_[N];
 
+    // Helper: construct Scalar from double when available, otherwise via cast
     static Scalar scalar_from_double(double v) noexcept {
         if constexpr (requires { Scalar::from_double(v); }) {
             return Scalar::from_double(v);
@@ -49,7 +50,7 @@ class T81Vector {
             // Exact same type: copy
             return c;
         } else if constexpr (std::convertible_to<C, Scalar>) {
-            // Implicitly convertible
+            // Implicitly convertible (e.g., T81Float<18,9> → T81Float<72,9> via widening ctor)
             return static_cast<Scalar>(c);
         } else if constexpr (requires (const C& x) { { x.to_double() } -> std::convertible_to<double>; }) {
             // Has to_double(): bridge via double → Scalar
@@ -143,7 +144,7 @@ public:
         return r;
     }
 
-    // Right scalar multiply: v * s
+    // Right scalar multiply: v * s (s can be Scalar, T81Float<18,9>, double, etc.)
     template <VectorComponent S>
     [[nodiscard]] constexpr T81Vector operator*(const S& s) const noexcept {
         const Scalar ss = component_to_scalar(s);
@@ -299,4 +300,3 @@ constexpr auto left = right.rotated(rotation);  // (0,0,-1) approximately
 */
 
 } // namespace t81
-::contentReference[oaicite:0]{index=0}
