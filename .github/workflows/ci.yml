@@ -61,11 +61,12 @@ jobs:
 
       - name: Job Failure Summary
         if: failure()
+        shell: bash
         run: |
-          echo "### Spec & Docs Job Failed" >> $GITHUB_STEP_SUMMARY
-          echo "One or more documentation or specification checks failed." >> $GITHUB_STEP_SUMMARY
-          echo "- **Job**: ${{ github.job }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "### Spec & Docs Job Failed" >> "$GITHUB_STEP_SUMMARY"
+          echo "One or more documentation or specification checks failed." >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Job**: ${{ github.job }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_STEP_SUMMARY"
 
   ############################################################################
   # JOB: build-and-test
@@ -169,12 +170,13 @@ jobs:
       # Clean before configuration so the new build directory gets a fresh CMake configure.
       - name: Force clean build directory on Windows (fresh compile)
         if: runner.os == 'Windows'
+        shell: bash
         run: |
           echo "Windows detected — forcing fresh compile to get the new type_to_string"
           rm -rf build
-        shell: bash
 
       - name: Configure CMake
+        shell: bash
         run: |
           set -eo pipefail
           cmake -S . -B build -G Ninja \
@@ -183,34 +185,39 @@ jobs:
             -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache 2>&1 | tee -a .github/logs/build-and-test.log
-        shell: bash
 
       - name: Build
+        shell: bash
         run: |
           set -eo pipefail
           cmake --build build --parallel 2>&1 | tee -a .github/logs/build-and-test.log
-        shell: bash
 
       - name: Test
+        shell: bash
         run: |
           set -eo pipefail
           ctest --test-dir build --output-on-failure --verbose 2>&1 | tee -a .github/logs/build-and-test.log
-        shell: bash
 
       - name: Show ccache stats
+        shell: bash
         run: ccache -s 2>&1 | tee -a .github/logs/build-and-test.log
 
       - name: Job Failure Summary
         if: failure()
+        shell: bash
         run: |
-          echo "### Build failed" >> $GITHUB_STEP_SUMMARY
-          echo "- **OS**: ${{ runner.os }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Compiler**: ${{ matrix.compiler }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Last 40 log lines:" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          tail -n 40 .github/logs/build-and-test.log 2>/dev/null || echo "(no log captured)"
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "### Build failed" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **OS**: ${{ runner.os }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Compiler**: ${{ matrix.compiler }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Last 40 log lines:" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f .github/logs/build-and-test.log ]; then
+            tail -n 40 .github/logs/build-and-test.log >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "(no log captured)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
 
   # (static-analysis, coverage, sanitizers, thread-sanitizer stay exactly as you had them)
