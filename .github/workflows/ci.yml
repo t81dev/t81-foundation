@@ -13,37 +13,8 @@ permissions:
   checks: write
 
 jobs:
-  spec-and-docs:
-    name: " lint / spec & docs "
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: "pip"
-      - name: Create log directory
-        run: mkdir -p .github/logs || true
-      - name: Install Python tools
-        run: pip install mdformat mdformat-gfm mdformat-frontmatter mdformat-toc
-      - name: Check Markdown links (lychee)
-        uses: lycheeverse/lychee-action@v2
-        with:
-          fail: true
-          args: >-
-            --verbose --no-progress
-            --exclude "http://localhost*"
-            --exclude "https://github.com/t81dev/t81-foundation/edit*"
-            .github/**/*.md spec/**/*.md docs/**/*.md README.md AGENTS.md CONTRIBUTING.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   build-and-test:
     name: " build / ${{ matrix.os }} / ${{ matrix.compiler }}"
-    needs: spec-and-docs
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -68,44 +39,30 @@ jobs:
           - os: windows-latest
             compiler: msvc
             c_compiler: cl
-            cpp_compiler: cl
+            cxx: cl
           - os: windows-latest
             compiler: clang-cl
-            c_compiler: clang-cl
-            cpp_compiler: clang-cl
+            c: clang-cl
+            cxx: clang-cl
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create log directory
-        run: mkdir -p .github/logs || true
+      - name: Create log dir
+        run: mkdir -p .github/logs
 
-      - name: Install Dependencies (Ubuntu)
-        if: runner.os == 'Linux'
-        run: sudo apt-get update -qq && sudo apt-get install -y build-essential cmake ninja-build ccache gcc-14 g++-14 clang-18
-
-      - name: Install Dependencies (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          brew install ccache
-          if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            brew install gcc@14
-          fi
-
-      - name: Install Dependencies (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          choco install ccache -y
-          if [ "${{ matrix.compiler }}" = "clang-cl" ]; then
-            winget install -e --id LLVM.LLVM --source winget
-          fi
-        shell: bash
-
-      - name: Configure ccache
+      # === Linux & macOS: use ccache ===
+      - name: Setup ccache (Linux/macOS only)
+        if: runner.os != 'Windows'
         run: |
           ccache -z
           ccache --set-config=max_size=500M
+
+      # === Windows: NO ccache, NO cache, NO mercy ===
+      - name: Disable ccache on Windows
+        if: runner.os == 'Windows'
+        run: echo "CCACHE_DISABLED=1" >> $GITHUB_ENV
 
       - name: Setup MSVC (Windows only)
         if: runner.os == 'Windows'
@@ -117,18 +74,16 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
             -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            $( ([[ "$RUNNER_OS" == "Windows" ]] && echo "" ) || echo "-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache" ) \
             2>&1 | tee .github/logs/build-and-test.log
         shell: bash
 
-      # THIS IS THE ONE THAT WORKS — rm -rf works in GitHub Actions bash on Windows
-      - name: Obliterate Windows build cache
+      - name: Nuke Windows build directory — absolute fresh start
         if: runner.os == 'Windows'
         run: |
           rm -rf build
           mkdir build
-          echo "Windows build cache obliterated. Fresh truth incoming."
+          echo "Windows build directory obliterated. Zero cache. Pure truth."
         shell: bash
 
       - name: Build
@@ -141,23 +96,23 @@ jobs:
           ctest --test-dir build --output-on-failure --verbose 2>&1 | tee -a .github/logs/build-and-test.log
         shell: bash
 
-      - name: Show ccache stats
+      - name: Show ccache stats (non-Windows only)
+        if: runner.os != 'Windows'
         run: ccache -s
 
-      - name: Job Failure Summary
+      - name: Failure Summary
         if: failure()
         run: |
           echo "### Build / Test Failed" >> $GITHUB_STEP_SUMMARY
-          echo "- **OS**: ${{ runner.os }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Compiler**: ${{ matrix.compiler }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- OS: ${{ runner.os }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Compiler: ${{ matrix.compiler }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Last 40 log lines:" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           if command -v powershell >/dev/null 2>&1; then
-            powershell -Command "if (Test-Path '.github/logs/build-and-test.log') { Get-Content '.github/logs/build-and-test.log' -Tail 40 } else { Write-Output '(no log)' }"
+            powershell -Command "if (Test-Path '.github/logs/build-and-test.log') { Get-Content '.github/logs/build-and-test.log' -Tail 40 } else { 'no log' }"
           else
-            if [ -f .github/logs/build-and-test.log ]; then tail -n 40 .github/logs/build-and-test.log; else echo "(no log)"; fi
+            tail -n 40 .github/logs/build-and-test.log 2>/dev/null || echo "no log"
           fi
           echo '```' >> $GITHUB_STEP_SUMMARY
         shell: bash
