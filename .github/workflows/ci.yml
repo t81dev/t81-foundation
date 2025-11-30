@@ -1,4 +1,4 @@
-Can you do that for me in this file? name: T81 Foundation CI
+name: T81 Foundation CI
 
 on:
   push:
