@@ -20,6 +20,7 @@
 #include <concepts>
 #include <type_traits>
 #include <cstring>
+#include <format>
 
 namespace t81 {
 
