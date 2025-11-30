@@ -1,4 +1,3 @@
-# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: T81 Foundation CI
 
 on:
@@ -59,13 +58,11 @@ jobs:
             [ -d "$d" ] || { echo "::error::Missing required directory: $d"; exit 1; }
           done
           echo "All required directories present." 2>&1 | tee -a .github/logs/spec-and-docs.log
-
       - name: Aggregate Lychee logs
         if: always()
         run: |
           echo "--- Lychee Output ---" >> .github/logs/spec-and-docs.log
           echo "${{ steps.lychee.outputs.stdout }}" >> .github/logs/spec-and-docs.log
-
       - name: Job Failure Summary
         if: failure()
         run: |
@@ -78,7 +75,6 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           tail -n 40 .github/logs/spec-and-docs.log || echo "(log capture failed)" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-
   ############################################################################
   # JOB: build-and-test
   ############################################################################
@@ -131,7 +127,6 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             build-essential cmake ninja-build ccache gcc-14 g++-14 clang-18
           } 2>&1 | tee -a .github/logs/build-and-test.log
-
       - name: Install Dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
@@ -146,7 +141,6 @@ jobs:
             :
           fi
           } 2>&1 | tee -a .github/logs/build-and-test.log
-
       - name: Install Dependencies (Windows)
         if: runner.os == 'Windows'
         run: |
@@ -163,7 +157,6 @@ jobs:
         run: |
           ccache -z
           ccache --set-config=max_size=500M
-
       - name: Cache ccache
         uses: actions/cache@v4
         with:
@@ -171,7 +164,6 @@ jobs:
           key: ccache-${{ runner.os }}-${{ matrix.compiler }}-${{ github.ref }}
           restore-keys: |
             ccache-${{ runner.os }}-${{ matrix.compiler }}-
-
       - name: Cache CMake build directory
         uses: actions/cache@v4
         with:
@@ -181,7 +173,6 @@ jobs:
             ${{ hashFiles('CMakeLists.txt', 'cmake/**', 'include/**', 'src/**', 'tests/**') }}
           restore-keys: |
             cmake-build-${{ runner.os }}-${{ matrix.compiler }}-
-
       - name: Setup MSVC/cl environment (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
@@ -225,7 +216,6 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           tail -n 40 .github/logs/build-and-test.log || echo "(log capture failed)" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-
   ############################################################################
   # JOB: static-analysis
   ############################################################################
@@ -247,7 +237,6 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
             build-essential cmake ninja-build clang-18 clang-tidy-18 cppcheck iwyu 2>&1 | tee -a .github/logs/static-analysis.log
-
       - name: Configure CMake for analysis
         run: |
           set -eo pipefail
@@ -256,7 +245,6 @@ jobs:
             -DCMAKE_C_COMPILER=clang-18 \
             -DCMAKE_CXX_COMPILER=clang++-18 \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON 2>&1 | tee -a .github/logs/static-analysis.log
-
       - name: Run clang-tidy
         run: |
           set -eo pipefail
@@ -282,7 +270,6 @@ jobs:
           echo "Running include-what-you-use..."
           iwyu-tool -p build -- -Xiwyu --mapping_file=.iwyu_mappings.imp \
             | tee iwyu-report.txt || true
-
       - name: Upload IWYU report
         uses: actions/upload-artifact@v4
         with:
@@ -299,7 +286,6 @@ jobs:
             echo "::error::Cppcheck found errors."
             exit 1
           fi
-
       - name: Job Failure Summary
         if: failure()
         run: |
@@ -317,7 +303,6 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           tail -n 40 .github/logs/static-analysis.log || echo "(log capture failed)" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-
   ############################################################################
   # JOB: coverage
   ############################################################################
@@ -338,8 +323,7 @@ jobs:
           set -eo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build lcov g++-14 2>&1 | tee -a .github/logs/coverage.log
-
+            build-essential cmake ninja-build lcov gcc-14 g++-14 2>&1 | tee -a .github/logs/coverage.log
       - name: Configure & Build with Coverage
         run: |
           set -eo pipefail
@@ -352,22 +336,31 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS="-lgcov"
           cmake --build build --parallel
           } 2>&1 | tee -a .github/logs/coverage.log
-
       - name: Run Tests & Generate Report
         run: |
           set -eo pipefail
           {
           ctest --test-dir build --output-on-failure
-          lcov --capture --directory build --output-file coverage.info
-          lcov --remove coverage.info '/usr/*' '*/tests/*' '*/legacy/*' --output-file coverage.filtered.info
+
+          # Ensure we use the gcov that matches g++-14 (avoids B42/B33 mismatch)
+          GCOV_BIN="$(command -v gcov-14 || echo gcov-14)"
+
+          lcov --gcov-tool "${GCOV_BIN}" \
+               --capture \
+               --directory build \
+               --output-file coverage.info
+
+          lcov --gcov-tool "${GCOV_BIN}" \
+               --remove coverage.info '/usr/*' '*/tests/*' '*/legacy/*' \
+               --output-file coverage.filtered.info
+
           lcov --list coverage.filtered.info
           } 2>&1 | tee -a .github/logs/coverage.log
-
       - name: Upload to Codecov
         uses: codecov/codecov-action@v4
         with:
           files: coverage.filtered.info
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.CODECV_TOKEN }}
           fail_ci_if_error: true
 
       - name: Job Failure Summary
@@ -382,7 +375,6 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           tail -n 40 .github/logs/coverage.log || echo "(log capture failed)" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-
   ############################################################################
   # JOB: sanitizers
   ############################################################################
@@ -407,7 +399,6 @@ jobs:
         run: |
           set -eo pipefail
           sudo apt-get update -qq && sudo apt-get install -y clang-18 2>&1 | tee -a .github/logs/sanitizers.log
-
       - name: Build with sanitizers
         run: |
           set -eo pipefail
@@ -419,12 +410,10 @@ jobs:
             -DCMAKE_CXX_FLAGS="-fsanitize=address,leak,undefined -fno-omit-frame-pointer"
           cmake --build build --parallel
           } 2>&1 | tee -a .github/logs/sanitizers.log
-
       - name: Test
         run: |
           set -eo pipefail
           ctest --test-dir build --output-on-failure --verbose 2>&1 | tee -a .github/logs/sanitizers.log
-
       - name: Job Failure Summary
         if: failure()
         run: |
@@ -437,7 +426,6 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           tail -n 40 .github/logs/sanitizers.log || echo "(log capture failed)" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-
   ############################################################################
   # JOB: thread-sanitizer
   ############################################################################
@@ -460,7 +448,6 @@ jobs:
         run: |
           set -eo pipefail
           sudo apt-get update -qq && sudo apt-get install -y clang-18 2>&1 | tee -a .github/logs/thread-sanitizer.log
-
       - name: Build with TSan
         run: |
           set -eo pipefail
@@ -472,12 +459,10 @@ jobs:
             -DCMAKE_CXX_FLAGS="-fsanitize=thread -fno-omit-frame-pointer"
           cmake --build build --parallel
           } 2>&1 | tee -a .github/logs/thread-sanitizer.log
-
       - name: Test
         run: |
           set -eo pipefail
           ctest --test-dir build --output-on-failure --verbose 2>&1 | tee -a .github/logs/thread-sanitizer.log
-
       - name: Job Failure Summary
         if: failure()
         run: |
