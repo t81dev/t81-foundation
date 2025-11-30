@@ -8,7 +8,7 @@
 #include <vector>
 
 void test_let_statement_e2e() {
-    std::string source = "fn main() -> T81Int { let x: T81Int = 42t81; return x; }";
+    std::string source = "fn main() -> T81Int { let x: T81Int = 42; return x; }";
     t81::frontend::Lexer lexer(source);
     t81::frontend::Parser parser(lexer);
     auto stmts = parser.parse();

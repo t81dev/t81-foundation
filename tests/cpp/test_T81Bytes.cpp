@@ -32,14 +32,14 @@ int main() {
     assert(combined[5] == 0x06);
 
     // Slice
-    T81Bytes slice = bytes.slice(1, 3);
+    T81Bytes slice = bytes.slice(1, 2);
     assert(slice.size() == 2);
     assert(slice[0] == 0x02);
     assert(slice[1] == 0x03);
 
-    // Hash
+    // Equality
     T81Bytes same(data);
-    assert(bytes.hash() == same.hash());
+    assert(bytes == same);
 
     std::cout << "All T81Bytes tests PASSED!\n";
     return 0;

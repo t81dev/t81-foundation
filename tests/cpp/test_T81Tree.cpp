@@ -2,15 +2,24 @@
 #include "t81/core/T81Int.hpp"
 #include <cassert>
 #include <iostream>
+#include <algorithm>
 
 using namespace t81;
+
+// Helper to check if a node is a leaf
+template <typename T>
+bool is_leaf(const T81Tree<T>& node) {
+    return std::all_of(node.children().begin(), node.children().end(), [](const auto& child) {
+        return child == nullptr;
+    });
+}
 
 int main() {
     std::cout << "Running T81Tree tests...\n";
 
     // Leaf node
     auto leaf = T81Tree<T81Int<27>>::leaf(T81Int<27>(42));
-    assert(leaf->is_leaf());
+    assert(is_leaf(*leaf));
     assert(leaf->value().to_int64() == 42);
     assert(leaf->left() == nullptr);
     assert(leaf->middle() == nullptr);
@@ -26,7 +35,7 @@ int main() {
         right_child
     );
 
-    assert(!node->is_leaf());
+    assert(!is_leaf(*node));
     assert(node->value().to_int64() == 20);
     assert(node->left() != nullptr);
     assert(node->left()->value().to_int64() == 10);
@@ -44,4 +53,3 @@ int main() {
     std::cout << "All T81Tree tests PASSED!\n";
     return 0;
 }
-

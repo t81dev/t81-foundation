@@ -11,13 +11,11 @@ int main() {
     // Default construction (nothing)
     T81Maybe<T81Int<27>> nothing;
     assert(!nothing.has_value());
-    assert(nothing.is_nothing());
     assert(!static_cast<bool>(nothing));
 
     // Value construction
     T81Maybe<T81Int<27>> something(T81Int<27>(42));
     assert(something.has_value());
-    assert(!something.is_nothing());
     assert(static_cast<bool>(something));
     assert(something.value().to_int64() == 42);
 

@@ -171,6 +171,12 @@ public:
         return TritRef(*this, idx);
     }
 
+    // --- Raw data access ---
+
+    constexpr const std::array<std::uint8_t, kNumBytes>& raw_data() const noexcept {
+        return data_;
+    }
+
     // --- Core numeric helpers ---
 
     constexpr bool is_zero() const noexcept {
@@ -362,7 +368,18 @@ public:
 
     // --- Comparisons ---
 
-    constexpr auto operator<=>(const T81Int&) const noexcept = default;
+    constexpr std::strong_ordering operator<=>(const T81Int& other) const noexcept {
+        for (size_type i = kNumTrits; i-- > 0; ) {
+            const int self_trit = trit_to_int(get_trit(i));
+            const int other_trit = trit_to_int(other.get_trit(i));
+            if (self_trit < other_trit) return std::strong_ordering::less;
+            if (self_trit > other_trit) return std::strong_ordering::greater;
+        }
+        return std::strong_ordering::equal;
+    }
+
+    constexpr bool operator==(const T81Int&) const noexcept = default;
+
 
     // --- Arithmetic (balanced ternary) ---
 
@@ -536,3 +553,19 @@ div_mod(const T81Int<N>& a, const T81Int<N>& b) {
 }
 
 } // namespace t81
+
+namespace std {
+    template <size_t N>
+    struct hash<t81::T81Int<N>> {
+        size_t operator()(const t81::T81Int<N>& val) const {
+            // A simple hash combining the raw bytes of the T81Int.
+            const auto& data = val.raw_data();
+            size_t seed = 0;
+            std::hash<uint8_t> hasher;
+            for (const auto& byte : data) {
+                seed ^= hasher(byte) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            }
+            return seed;
+        }
+    };
+}
