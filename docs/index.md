@@ -52,6 +52,8 @@ For contributors looking to modify the codebase, these resources provide detaile
   - A runnable sample that exercises primitive and structural data types inside `examples/data_types.t81`, plus dedicated high-rank tensor and graph demos for exploring multidimensional indexing behaviors.
 - **[Demo Gallery](./guides/demo-gallery.md)**
   - A quick menu of the match/data-type demos, the `scripts/run-demos.sh` automation, and the IR inspector utility.
+- **[Benchmark Report](./benchmarks.md)**
+  - Auto-generated archive of T81/binary throughput/latency comparisons produced by `./build/t81 benchmark`.
 
 - **[Guide: VM Opcodes](./guides/vm-opcodes.md)**
   - The process for extending the virtual machine with new instructions.

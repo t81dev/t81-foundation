@@ -8,3 +8,4 @@ All notable changes to the T81 Foundation should be documented in this file. Fol
 - expand `docs/guides/data-types-overview.md`, `docs/guides/demo-gallery.md`, `docs/index.md`, and `README.md` with descriptions and CLI commands for the new demos to keep the guides and gallery synchronized
 - ensure `scripts/run-demos.sh` compiles and runs the full demo suite (match → quaternion → high-rank tensor → graph) and document that automation with cross-references
 - run the required build/test workflow (`cmake -S . -B build -DCMAKE_BUILD_TYPE=Release`, `cmake --build build --parallel`, `ctest --test-dir build --output-on-failure`) and document completion of the mandated release checks
+- add `--benchmark` command to the `t81` CLI so it locates and executes `build/benchmarks/benchmark_runner`, forwarding extra args and surfacing branch/commit metadata in `docs/benchmarks.md`; document the shortcut in the README, demo gallery, and docs index

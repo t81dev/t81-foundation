@@ -14,6 +14,11 @@
 #include <sstream>
 #include <filesystem>
 #include <optional>
+#include <cctype>
+#include <cstdlib>
+#if !defined(_WIN32)
+#include <sys/wait.h>
+#endif
 
 #include "t81/frontend/lexer.hpp"
 #include "t81/frontend/parser.hpp"
@@ -133,6 +138,7 @@ Commands:
   check   <file.t81>                   Syntax-check only
   repl                                 Enter interactive REPL (future)
   version                              Show version
+  benchmark                            Run the core benchmark suite (build/benchmarks/benchmark_runner)
   help                                 Show this message
 
 
@@ -285,6 +291,66 @@ int check_syntax(const fs::path& path) {
     return 0;
 }
 
+std::string shell_escape(std::string_view arg) {
+    if (arg.empty()) {
+        return "''";
+    }
+    bool needs_quote = false;
+    for (char c : arg) {
+        if (std::isspace(static_cast<unsigned char>(c)) || c == '"' || c == '\'' || c == '\\' ||
+            c == '$' || c == '&' || c == '|' || c == ';' || c == '<' || c == '>' || c == '*' ||
+            c == '?' || c == '~' || c == '`' || c == '(' || c == ')' || c == '[' || c == ']' ||
+            c == '{' || c == '}' ) {
+            needs_quote = true;
+            break;
+        }
+    }
+    if (!needs_quote) {
+        return std::string(arg);
+    }
+    std::string escaped = "'";
+    for (char c : arg) {
+        if (c == '\'') {
+            escaped += "'\\''";
+        } else {
+            escaped.push_back(c);
+        }
+    }
+    escaped.push_back('\'');
+    return escaped;
+}
+
+#if !defined(_WIN32)
+int decode_system_status(int status) {
+    if (WIFEXITED(status)) {
+        return WEXITSTATUS(status);
+    }
+    return status;
+}
+#else
+int decode_system_status(int status) {
+    return status;
+}
+#endif
+
+std::optional<fs::path> find_benchmark_runner(const fs::path& exe_path) {
+    std::vector<fs::path> candidates;
+    auto exe_dir = exe_path.parent_path();
+    if (exe_dir.empty()) {
+        exe_dir = ".";
+    }
+    candidates.emplace_back(exe_dir / "benchmarks/benchmark_runner");
+    candidates.emplace_back(exe_dir.parent_path() / "benchmarks/benchmark_runner");
+    candidates.emplace_back(fs::path("build/benchmarks/benchmark_runner"));
+    candidates.emplace_back(fs::path("benchmarks/benchmark_runner"));
+    for (auto& candidate : candidates) {
+        if (fs::exists(candidate)) {
+            return candidate;
+        }
+    }
+    return std::nullopt;
+}
+
 // ──────────────────────────────────────────────────────────────
 // Argument Parsing (clean & single-pass)
 // ──────────────────────────────────────────────────────────────
@@ -294,6 +360,7 @@ struct Args {
     std::optional<fs::path> output;
     bool need_help    = false;
     bool need_version = false;
+    std::vector<std::string> benchmark_args;
 };
 
 Args parse_args(int argc, char* argv[]) {
@@ -324,15 +391,43 @@ Args parse_args(int argc, char* argv[]) {
             std::exit(1);
         }
         else {
-            if (!a.input.empty()) {
-                error("Multiple input files not supported yet");
-                std::exit(1);
+            if (a.command == "benchmark") {
+                a.benchmark_args.emplace_back(argv[i]);
+            } else {
+                if (!a.input.empty()) {
+                    error("Multiple input files not supported yet");
+                    std::exit(1);
+                }
+                a.input = fs::path(arg);
             }
-            a.input = fs::path(arg);
         }
     }
 
     return a;
+}
+
+int run_benchmark(const char* command_name, const Args& args) {
+    auto exe_path = fs::path(command_name);
+    auto runner_path = find_benchmark_runner(exe_path);
+
+    if (!runner_path) {
+        error("Could not locate benchmark_runner (looked next to the CLI and under ./build/benchmarks)");
+        return 1;
+    }
+
+    std::string cmd = runner_path->string();
+    for (const auto& extra : args.benchmark_args) {
+        cmd += ' ';
+        cmd += shell_escape(extra);
+    }
+
+    info("Running benchmarks via " + runner_path->string());
+    int status = std::system(cmd.c_str());
+    if (status == -1) {
+        error("Failed to execute benchmark_runner");
+        return 1;
+    }
+    return decode_system_status(status);
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -345,7 +440,8 @@ int main(int argc, char* argv[]) {
         if (args.need_help)    { print_usage(argv[0]); return 0; }
         if (args.need_version) { print_version();    return 0; }
 
-        if (args.command.empty() || args.input.empty()) {
+        bool needs_input = (args.command == "compile") || (args.command == "run") || (args.command == "check");
+        if (args.command.empty() || (needs_input && args.input.empty())) {
             print_usage(argv[0]);
             return 1;
         }
@@ -379,6 +475,9 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
             return check_syntax(args.input);
+
+        } else if (args.command == "benchmark") {
+            return run_benchmark(argv[0], args);
 
         } else {
             error("Unknown command: " + args.command);

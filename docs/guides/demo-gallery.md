@@ -48,6 +48,8 @@ The tool runs the usual frontend pipeline (lexer → parser → semantic analyze
 
 This tool walks the usual frontend pipeline (lexer → parser → semantic analyzer → IR generator) and dumps the resulting `tisc::ir::Instruction` list with operand types.
 
+- **Benchmark Suite** (`./build/t81 benchmark`): Executes `build/benchmarks/benchmark_runner`, comparing throughput and latency for the T81 cell vs. binary variants, and auto-updates `docs/benchmarks.md` with the execution highlights table.
+
 ## 4. What’s Next?
 
 Future gallery additions could include:

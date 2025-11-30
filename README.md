@@ -101,6 +101,7 @@ The repository includes several demonstration binaries in `build/` that showcase
 
 - **Automated demo runner:** Execute `scripts/run-demos.sh` (after building the CLI) to compile and run the match, primitive, fraction, tensor, bigint, float, string, vector, matrix, cell, quaternion, high-rank tensor, and graph demos sequentially; the script reports compilation/runnable output for each.
 - **IR Inspector:** Build `./build/ir_inspector` and run it on any `.t81` file to print the IR instructions (including match lowering) emitted before binary emission.
+- **Benchmark suite:** Run `./build/t81 benchmark` (with optional benchmark flags) to invoke `build/benchmarks/benchmark_runner`; it runs the core throughput/packing benchmarks and updates `docs/benchmarks.md` with branch/commit metadata plus latency analysis.
 
 ### Build the Documentation Site
 
