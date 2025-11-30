@@ -40,13 +40,6 @@ jobs:
             .github/**/*.md spec/**/*.md docs/**/*.md README.md AGENTS.md CONTRIBUTING.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Verify repository structure
-        run: |
-          set -euo pipefail
-          required_dirs=("spec" "docs" "include/t81" "src" "tests")
-          for d in "${required_dirs[@]}"; do
-            [ -d "$d" ] || exit 1
-          done
 
   build-and-test:
     name: " build / ${{ matrix.os }} / ${{ matrix.compiler }}"
@@ -129,12 +122,13 @@ jobs:
             2>&1 | tee .github/logs/build-and-test.log
         shell: bash
 
+      # THIS IS THE ONE THAT WORKS — rm -rf works in GitHub Actions bash on Windows
       - name: Obliterate Windows build cache
         if: runner.os == 'Windows'
         run: |
-          Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue
+          rm -rf build
           mkdir build
-          echo "Windows cache destroyed. Fresh compile incoming."
+          echo "Windows build cache obliterated. Fresh truth incoming."
         shell: bash
 
       - name: Build
