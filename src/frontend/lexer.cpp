@@ -7,9 +7,23 @@
 
 namespace t81 {
 namespace frontend {
-namespace {
 
+// ─────────────────────────────────────────────────────────────────────────────
+// MSVC FIX — These overloads MUST be in namespace t81::frontend, NOT anonymous
+// ─────────────────────────────────────────────────────────────────────────────
+inline std::string_view make_sv(const char* b, const char* e) noexcept {
+    return std::string_view(b, static_cast<std::size_t>(e - b));
+}
+
+template<class It>
+inline std::string_view make_sv(It b, It e) noexcept {
+    return std::string_view(&*b, static_cast<std::size_t>(std::distance(b, e)));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Keywords
+// ─────────────────────────────────────────────────────────────────────────────
+namespace {
 const std::unordered_map<std::string_view, TokenType> KEYWORDS = {
     {"module", TokenType::Module}, {"type", TokenType::Type},     {"const", TokenType::Const},
     {"export", TokenType::Export}, {"fn", TokenType::Fn},         {"let", TokenType::Let},
@@ -20,21 +34,11 @@ const std::unordered_map<std::string_view, TokenType> KEYWORDS = {
     {"bool", TokenType::Bool},     {"i32", TokenType::I32},       {"i16", TokenType::I16},
     {"i8", TokenType::I8},         {"i2", TokenType::I2},
     {"T81BigInt", TokenType::T81BigInt}, {"T81Float", TokenType::T81Float},
-    {"T81Fraction", TokenType::T81Fraction}, {"vector", TokenType::Vector},
-    {"matrix", TokenType::Matrix}, {"tensor", TokenType::Tensor}, {"graph", TokenType::Graph},
+    {"T81Fraction", TokenType::T81Fraction},
+    {"vector", TokenType::Vector}, {"matrix", TokenType::Matrix},
+    {"tensor", TokenType::Tensor}, {"graph", TokenType::Graph},
 };
 
-// MSVC FIX: Two overloads — one for pointers, one for iterators (wins on MSVC)
-inline std::string_view make_sv(const char* b, const char* e) noexcept {
-    return std::string_view(b, static_cast<std::size_t>(e - b));
-}
-
-template <class It>
-inline std::string_view make_sv(It begin, It end) noexcept {
-    return std::string_view(&*begin, static_cast<std::size_t>(std::distance(begin, end)));
-}
-
-// Helpers
 bool is_alpha(char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }
@@ -42,8 +46,8 @@ bool is_alpha(char c) {
 bool is_digit(char c) {
     return c >= '0' && c <= '9';
 }
-
 } // anonymous namespace
+// ─────────────────────────────────────────────────────────────────────────────
 
 Lexer::Lexer(std::string_view source)
     : _source(source),
