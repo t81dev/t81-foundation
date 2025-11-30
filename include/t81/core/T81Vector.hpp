@@ -17,10 +17,8 @@
 #include <cstddef>
 #include <compare>
 #include <cmath>
-#include <concepts>
 #include <type_traits>
 #include <cstring>
-#include <format>
 
 namespace t81 {
 
@@ -46,26 +44,20 @@ class T81Vector {
     template <typename C>
     static constexpr Scalar component_to_scalar(const C& c) noexcept {
         using Decayed = std::decay_t<C>;
-        if constexpr (std::same_as<Decayed, Scalar>) {
+        if constexpr (std::is_same_v<Decayed, Scalar>) {
             // Exact same type: copy
             return c;
-        } else if constexpr (std::convertible_to<C, Scalar>) {
+        } else if constexpr (std::is_convertible_v<C, Scalar>) {
             // Implicitly convertible (e.g., T81Float<18,9> → T81Float<72,9> via widening ctor)
             return static_cast<Scalar>(c);
         } else if constexpr (requires (const C& x) { { x.to_double() } -> std::convertible_to<double>; }) {
             // Has to_double(): bridge via double → Scalar
             return scalar_from_double(c.to_double());
         } else {
-            static_assert(std::same_as<C, void>,
+            static_assert(std::is_same_v<C, void>,
                           "T81Vector component type is not convertible or bridgeable to Scalar");
         }
     }
-
-    template <typename C>
-    concept VectorComponent =
-        std::same_as<std::decay_t<C>, Scalar> ||
-        std::convertible_to<C, Scalar> ||
-        requires (const C& x) { { x.to_double() } -> std::convertible_to<double>; };
 
 public:
     using value_type = Scalar;
@@ -83,10 +75,12 @@ public:
     }
 
     // Variadic constructor – accepts N components that can be bridged to Scalar
-    template <VectorComponent... Components>
-        requires (sizeof...(Components) == N)
+    template <typename... Components>
     constexpr T81Vector(Components... comps) noexcept
-        : components_{ component_to_scalar(comps)... } {}
+        : components_{ component_to_scalar(comps)... } {
+        static_assert(sizeof...(Components) == N,
+                      "T81Vector: number of components must equal N");
+    }
 
     // From raw array
     static constexpr T81Vector from_array(const Scalar* data) noexcept {
@@ -145,7 +139,7 @@ public:
     }
 
     // Right scalar multiply: v * s (s can be Scalar, T81Float<18,9>, double, etc.)
-    template <VectorComponent S>
+    template <typename S>
     [[nodiscard]] constexpr T81Vector operator*(const S& s) const noexcept {
         const Scalar ss = component_to_scalar(s);
         T81Vector r;
@@ -154,7 +148,7 @@ public:
     }
 
     // Left scalar multiply: s * v
-    template <VectorComponent S>
+    template <typename S>
     friend constexpr T81Vector operator*(const S& s, const T81Vector& v) noexcept {
         const Scalar ss = component_to_scalar(s);
         return v * ss;
@@ -300,3 +294,4 @@ constexpr auto left = right.rotated(rotation);  // (0,0,-1) approximately
 */
 
 } // namespace t81
+::contentReference[oaicite:0]{index=0}
