@@ -36,6 +36,7 @@ class T81Map {
         K    key{};
         V    value{};
         bool occupied = false;
+        auto operator<=>(const Bucket&) const noexcept = default;
     };
 
     std::vector<Bucket> buckets_;

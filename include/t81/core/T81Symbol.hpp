@@ -24,6 +24,8 @@
 #include <string>
 #include <string_view>
 #include <cstdio>   // std::snprintf
+#include <unordered_map>
+#include <mutex>
 
 namespace t81 {
 
@@ -120,24 +122,28 @@ public:
 // Global intern table — phase 1: monotonic counter (correct, safe, fast)
 // ======================================================================
 inline T81Symbol T81Symbol::intern(std::string_view sv) noexcept {
-    // Phase 1 (2025–2028): monotonic counter
-    // Phase 2 (2028+): lock-free ternary hash map (no allocation, no collision)
-    struct alignas(64) InternTable {
-        std::atomic<id_t> next_id{5};  // 0–4 reserved
+    struct InternTable {
+        std::mutex mtx;
+        std::unordered_map<std::string, id_t> map;
+        id_t next_id = 5; // 0-4 reserved
     };
     static InternTable table;
 
-    // Simple normalization: trim whitespace, lowercase (for now)
-    while (!sv.empty() && (sv.front() == ' ' || sv.front() == '\t')) {
-        sv.remove_prefix(1);
-    }
-    while (!sv.empty() && (sv.back() == ' ' || sv.back() == '\t')) {
-        sv.remove_suffix(1);
+    // Normalize
+    while (!sv.empty() && std::isspace(sv.front())) sv.remove_prefix(1);
+    while (!sv.empty() && std::isspace(sv.back())) sv.remove_suffix(1);
+
+    std::string s(sv); // needed for map key
+
+    std::lock_guard<std::mutex> lock(table.mtx);
+
+    auto it = table.map.find(s);
+    if (it != table.map.end()) {
+        return T81Symbol::from_id(it->second);
     }
 
-    // For now: ignore content, just increment.
-    // This is CORRECT — uniqueness is guaranteed.
-    id_t id = table.next_id.fetch_add(1, std::memory_order_relaxed);
+    id_t id = table.next_id++;
+    table.map[s] = id;
     return T81Symbol::from_id(id);
 }
 
