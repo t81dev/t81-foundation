@@ -41,12 +41,11 @@ target_include_directories(t81_c_api
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# New C++20 Toolchain Components
+# New C++20 Toolchain Components — IRGenerator is now header-only
 add_library(t81_frontend STATIC
   src/frontend/lexer.cpp
   src/frontend/parser.cpp
   src/frontend/semantic_analyzer.cpp
-  src/frontend/ir_generator.cpp
   src/frontend/symbol_table.cpp
 )
 target_include_directories(t81_frontend PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
