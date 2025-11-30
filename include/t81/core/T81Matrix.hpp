@@ -20,6 +20,7 @@
 #include <compare>
 #include <bit>
 #include <cstring>
+#include <format>
 
 namespace t81 {
 
