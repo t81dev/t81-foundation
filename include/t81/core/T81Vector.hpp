@@ -17,6 +17,7 @@
 #include <cstddef>
 #include <compare>
 #include <cmath>
+#include <concepts>
 #include <type_traits>
 #include <cstring>
 
@@ -44,17 +45,17 @@ class T81Vector {
     template <typename C>
     static constexpr Scalar component_to_scalar(const C& c) noexcept {
         using Decayed = std::decay_t<C>;
-        if constexpr (std::is_same_v<Decayed, Scalar>) {
+        if constexpr (std::same_as<Decayed, Scalar>) {
             // Exact same type: copy
             return c;
-        } else if constexpr (std::is_convertible_v<C, Scalar>) {
+        } else if constexpr (std::convertible_to<C, Scalar>) {
             // Implicitly convertible (e.g., T81Float<18,9> → T81Float<72,9> via widening ctor)
             return static_cast<Scalar>(c);
         } else if constexpr (requires (const C& x) { { x.to_double() } -> std::convertible_to<double>; }) {
             // Has to_double(): bridge via double → Scalar
             return scalar_from_double(c.to_double());
         } else {
-            static_assert(std::is_same_v<C, void>,
+            static_assert(std::same_as<C, void>,
                           "T81Vector component type is not convertible or bridgeable to Scalar");
         }
     }
@@ -68,19 +69,19 @@ public:
     //===================================================================
     constexpr T81Vector() noexcept : components_{} {}
 
+    // Fill constructor: Vec3 v(s(1.5)) → (1.5, 1.5, 1.5)
     explicit constexpr T81Vector(Scalar fill) noexcept {
         for (std::size_t i = 0; i < N; ++i) {
             components_[i] = fill;
         }
     }
 
-    // Variadic constructor – accepts N components that can be bridged to Scalar
+    // Variadic constructor – accepts N components that can be bridged to Scalar.
+    // Disabled for the single-argument case so the fill ctor wins for Vec3 v(s(1.5)).
     template <typename... Components>
+        requires (sizeof...(Components) == N && sizeof...(Components) != 1)
     constexpr T81Vector(Components... comps) noexcept
-        : components_{ component_to_scalar(comps)... } {
-        static_assert(sizeof...(Components) == N,
-                      "T81Vector: number of components must equal N");
-    }
+        : components_{ component_to_scalar(comps)... } {}
 
     // From raw array
     static constexpr T81Vector from_array(const Scalar* data) noexcept {
@@ -294,4 +295,3 @@ constexpr auto left = right.rotated(rotation);  // (0,0,-1) approximately
 */
 
 } // namespace t81
-::contentReference[oaicite:0]{index=0}
