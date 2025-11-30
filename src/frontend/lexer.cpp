@@ -9,56 +9,41 @@ namespace t81 {
 namespace frontend {
 namespace {
 
-// A map of T81Lang keywords to their corresponding token types.
+// Keywords
 const std::unordered_map<std::string_view, TokenType> KEYWORDS = {
-    {"module", TokenType::Module},
-    {"type", TokenType::Type},
-    {"const", TokenType::Const},
-    {"export", TokenType::Export},
-    {"fn", TokenType::Fn},
-    {"let", TokenType::Let},
-    {"var", TokenType::Var},
-    {"if", TokenType::If},
-    {"else", TokenType::Else},
-    {"for", TokenType::For},
-    {"in", TokenType::In},
-    {"while", TokenType::While},
-    {"break", TokenType::Break},
-    {"continue", TokenType::Continue},
-    {"return", TokenType::Return},
-    {"true", TokenType::True},
-    {"false", TokenType::False},
-    {"void", TokenType::Void},
-    {"bool", TokenType::Bool},
-    {"i32", TokenType::I32},
-    {"i16", TokenType::I16},
-    {"i8", TokenType::I8},
-    {"i2", TokenType::I2},
-    {"T81BigInt", TokenType::T81BigInt},
-    {"T81Float", TokenType::T81Float},
-    {"T81Fraction", TokenType::T81Fraction},
-    {"vector", TokenType::Vector},
-    {"matrix", TokenType::Matrix},
-    {"tensor", TokenType::Tensor},
-    {"graph", TokenType::Graph},
+    {"module", TokenType::Module}, {"type", TokenType::Type},     {"const", TokenType::Const},
+    {"export", TokenType::Export}, {"fn", TokenType::Fn},         {"let", TokenType::Let},
+    {"var", TokenType::Var},       {"if", TokenType::If},         {"else", TokenType::Else},
+    {"for", TokenType::For},       {"in", TokenType::In},         {"while", TokenType::While},
+    {"break", TokenType::Break},   {"continue", TokenType::Continue}, {"return", TokenType::Return},
+    {"true", TokenType::True},     {"false", TokenType::False},   {"void", TokenType::Void},
+    {"bool", TokenType::Bool},     {"i32", TokenType::I32},       {"i16", TokenType::I16},
+    {"i8", TokenType::I8},         {"i2", TokenType::I2},
+    {"T81BigInt", TokenType::T81BigInt}, {"T81Float", TokenType::T81Float},
+    {"T81Fraction", TokenType::T81Fraction}, {"vector", TokenType::Vector},
+    {"matrix", TokenType::Matrix}, {"tensor", TokenType::Tensor}, {"graph", TokenType::Graph},
 };
 
-// MSVC-compatible string_view from iterator pair (C++20 workaround)
-inline std::string_view make_sv(const char* begin, const char* end) noexcept {
-    return std::string_view(begin, static_cast<std::size_t>(end - begin));
+// MSVC FIX: Two overloads — one for pointers, one for iterators (wins on MSVC)
+inline std::string_view make_sv(const char* b, const char* e) noexcept {
+    return std::string_view(b, static_cast<std::size_t>(e - b));
 }
 
-// Helper to check if a character is alphabetic or an underscore.
+template <class It>
+inline std::string_view make_sv(It begin, It end) noexcept {
+    return std::string_view(&*begin, static_cast<std::size_t>(std::distance(begin, end)));
+}
+
+// Helpers
 bool is_alpha(char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }
 
-// Helper to check if a character is a decimal digit.
 bool is_digit(char c) {
     return c >= '0' && c <= '9';
 }
 
-} // namespace
+} // anonymous namespace
 
 Lexer::Lexer(std::string_view source)
     : _source(source),
@@ -95,7 +80,6 @@ Token Lexer::next_token() {
         case '%': return make_token(TokenType::Percent);
         case '^': return make_token(TokenType::Caret);
         case '/': return make_token(TokenType::Slash);
-
         case '-': return make_token(match('>') ? TokenType::Arrow : TokenType::Minus);
         case '.': return make_token(match('.') ? TokenType::DotDot : TokenType::Illegal);
         case '=': return make_token(match('=') ? TokenType::EqualEqual : TokenType::Equal);
@@ -104,10 +88,8 @@ Token Lexer::next_token() {
         case '>': return make_token(match('=') ? TokenType::GreaterEqual : TokenType::Greater);
         case '&': return make_token(match('&') ? TokenType::AmpAmp : TokenType::Amp);
         case '|': return make_token(match('|') ? TokenType::PipePipe : TokenType::Pipe);
-
         case '"': return string();
     }
-
     return error_token("Unexpected character.");
 }
 
@@ -123,18 +105,15 @@ std::vector<Token> Lexer::all_tokens() {
 
 char Lexer::advance() {
     if (is_at_end()) return '\0';
-    _current++;
-    return *(_current - 1);
+    return *(_current++);
 }
 
 char Lexer::peek() const {
-    if (is_at_end()) return '\0';
-    return *_current;
+    return is_at_end() ? '\0' : *_current;
 }
 
 char Lexer::peek_next() const {
-    if (_current + 1 >= _source.end()) return '\0';
-    return *(_current + 1);
+    return (_current + 1 >= _source.end()) ? '\0' : *(_current + 1);
 }
 
 bool Lexer::is_at_end() const {
@@ -163,9 +142,9 @@ Token Lexer::string() {
 
     if (is_at_end()) return error_token("Unterminated string.");
 
-    advance(); // consume the closing "
+    advance(); // closing quote
     return make_token(TokenType::String);
-}   // ← THIS WAS MISSING — NOW FIXED
+}
 
 Token Lexer::number() {
     while (is_digit(peek())) advance();
@@ -176,7 +155,8 @@ Token Lexer::number() {
         return make_token(TokenType::Float);
     }
 
-    if (peek() == 't' && peek_next() == '8' && (_current + 2 < _source.end()) && *(_current + 2) == '1') {
+    if (peek() == 't' && peek_next() == '8' &&
+        (_current + 2 < _source.end()) && *(_current + 2) == '1') {
         advance(); advance(); advance();
         return make_token(TokenType::Base81Integer);
     }
@@ -189,8 +169,7 @@ Token Lexer::identifier() {
 
     std::string_view text = make_sv(_token_start, _current);
 
-    auto it = KEYWORDS.find(text);
-    if (it != KEYWORDS.end()) {
+    if (auto it = KEYWORDS.find(text); it != KEYWORDS.end()) {
         return make_token(it->second);
     }
     return make_token(TokenType::Identifier);
@@ -200,11 +179,8 @@ void Lexer::skip_whitespace_and_comments() {
     for (;;) {
         char c = peek();
         switch (c) {
-            case ' ':
-            case '\r':
-            case '\t':
-                advance();
-                break;
+            case ' ': case '\r': case '\t':
+                advance(); break;
             case '\n':
                 _line++;
                 advance();
@@ -216,10 +192,7 @@ void Lexer::skip_whitespace_and_comments() {
                 } else if (peek_next() == '*') {
                     advance(); advance();
                     while (!(peek() == '*' && peek_next() == '/') && !is_at_end()) {
-                        if (advance() == '\n') {
-                            _line++;
-                            _line_start = _current;
-                        }
+                        if (advance() == '\n') { _line++; _line_start = _current; }
                     }
                     if (!is_at_end()) advance();
                     if (!is_at_end()) advance();
@@ -234,8 +207,7 @@ void Lexer::skip_whitespace_and_comments() {
 }
 
 bool Lexer::match(char expected) {
-    if (is_at_end()) return false;
-    if (*_current != expected) return false;
+    if (is_at_end() || *_current != expected) return false;
     _current++;
     return true;
 }
