@@ -41,6 +41,31 @@ class T81Vector {
         }
     }
 
+    // Component → Scalar bridge
+    template <typename C>
+    static constexpr Scalar component_to_scalar(const C& c) noexcept {
+        using Decayed = std::decay_t<C>;
+        if constexpr (std::same_as<Decayed, Scalar>) {
+            // Exact same type: just copy
+            return c;
+        } else if constexpr (std::convertible_to<C, Scalar>) {
+            // Implicitly convertible (e.g., widening numeric types)
+            return static_cast<Scalar>(c);
+        } else if constexpr (requires (const C& x) { { x.to_double() } -> std::convertible_to<double>; }) {
+            // Bridge via to_double() → Scalar::from_double()
+            return scalar_from_double(c.to_double());
+        } else {
+            static_assert(std::same_as<C, void>,
+                          "T81Vector component type is not convertible or bridgeable to Scalar");
+        }
+    }
+
+    template <typename C>
+    concept VectorComponent =
+        std::same_as<std::decay_t<C>, Scalar> ||
+        std::convertible_to<C, Scalar> ||
+        requires (const C& x) { { x.to_double() } -> std::convertible_to<double>; };
+
 public:
     using value_type = Scalar;
     static constexpr std::size_t dimension = N;
@@ -56,11 +81,14 @@ public:
         }
     }
 
-    // Variadic constructor – the natural way
-    template <typename... Components>
-        requires (sizeof...(Components) == N) && (std::convertible_to<Components, Scalar> && ...)
+    // Variadic constructor – accepts components that are either:
+    //  - exactly Scalar
+    //  - convertible to Scalar
+    //  - or expose to_double() that we bridge through Scalar::from_double()
+    template <VectorComponent... Components>
+        requires (sizeof...(Components) == N)
     constexpr T81Vector(Components... comps) noexcept
-        : components_{ static_cast<Scalar>(comps)... } {}
+        : components_{ component_to_scalar(comps)... } {}
 
     // From raw array
     static constexpr T81Vector from_array(const Scalar* data) noexcept {
