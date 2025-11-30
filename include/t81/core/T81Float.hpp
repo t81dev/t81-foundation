@@ -98,6 +98,13 @@ public:
         *this = from_double(v);
     }
 
+    // Widening constructor: T81Float<OtherM,E> → T81Float<M,E> when OtherM <= M
+    template <std::size_t OtherM>
+        requires (OtherM <= M)
+    constexpr T81Float(const T81Float<OtherM, E>& other) noexcept {
+        *this = from_double(other.to_double());
+    }
+
     // ---------------------------------------------------------------------
     // Factories
     // ---------------------------------------------------------------------
