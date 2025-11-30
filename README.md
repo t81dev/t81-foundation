@@ -75,7 +75,7 @@ The repository includes several demonstration binaries in `build/` that showcase
 
 ### Build the Documentation Site
 
-The documentation website is built with Jekyll.
+The documentation website is built with [Jekyll](https://jekyllrb.com/). Building it requires a working [Ruby](https://www.ruby-lang.org/en/) environment with the [Bundler](https://bundler.io/) gem installed.
 
 ```bash
 # Navigate to the docs directory
