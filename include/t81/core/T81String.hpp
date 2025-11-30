@@ -98,11 +98,6 @@ public:
         for (char c : sv) {
             storage_.push_back(normalize_char(c));
         }
-
-        // Trim trailing spaces to keep semantics closer to previous version.
-        while (!storage_.empty() && storage_.back() == ' ') {
-            storage_.pop_back();
-        }
     }
 
     //===================================================================
