@@ -24,11 +24,7 @@ namespace t81 {
 // ======================================================================
 // T81Complex<MantissaTrits> — Balanced ternary complex number
 // ======================================================================
-//
-// MantissaTrits:
-//   • 18 → T81Float<18, 9>
-//   • 27 → T81Float<27, 9>
-//
+
 template <std::size_t MantissaTrits = 18>
 class T81Complex {
     static_assert(MantissaTrits == 18 || MantissaTrits == 27,
@@ -61,13 +57,12 @@ public:
     constexpr explicit T81Complex(const Float& real) noexcept
         : re(real), im(Float::from_double(0.0)) {}
 
-    // From std::complex<double> — for testing and interop
     explicit T81Complex(const std::complex<double>& z)
         : re(Float::from_double(z.real())),
           im(Float::from_double(z.imag())) {}
 
     // ------------------------------------------------------------------
-    // Accessors (for quaternions and general use)
+    // Accessors
     // ------------------------------------------------------------------
 
     [[nodiscard]] constexpr const Float& real() const noexcept { return re; }
@@ -80,9 +75,7 @@ public:
     // Constants
     // ------------------------------------------------------------------
 
-    static constexpr T81Complex zero() noexcept {
-        return {};
-    }
+    static constexpr T81Complex zero() noexcept { return {}; }
 
     static T81Complex one() noexcept {
         return { Float::from_double(1.0), Float::from_double(0.0) };
@@ -100,8 +93,6 @@ public:
         return { re + o.re, im + o.im };
     }
 
-    }
-
     [[nodiscard]] T81Complex operator-(const T81Complex& o) const noexcept {
         return { re - o.re, im - o.im };
     }
@@ -110,7 +101,6 @@ public:
         return { -re, -im };
     }
 
-    // (a + bi)(c + di) = (ac - bd) + (ad + bc)i
     [[nodiscard]] T81Complex operator*(const T81Complex& o) const noexcept {
         const Float ac = re * o.re;
         const Float bd = im * o.im;
@@ -119,17 +109,14 @@ public:
         return { ac - bd, ad + bc };
     }
 
-    // Conjugate
     [[nodiscard]] T81Complex conj() const noexcept {
         return { re, -im };
     }
 
-    // Magnitude squared (no sqrt)
     [[nodiscard]] Float mag2() const noexcept {
         return re * re + im * im;
     }
 
-    // Phase — returns angle in turns [0,1)
     [[nodiscard]] Float phase() const noexcept {
         const double x = re.to_double();
         const double y = im.to_double();
@@ -139,11 +126,9 @@ public:
         }
 
         constexpr double kTwoPi = 6.28318530717958647692;
-        double angle  = std::atan2(y, x);          // [-π, π]
-        double turns  = angle / kTwoPi;            // [-0.5, 0.5]
-        if (turns < 0.0) {
-            turns += 1.0;                          // [0, 1)
-        }
+        double angle = std::atan2(y, x);
+        double turns = angle / kTwoPi;
+        if (turns < 0.0) turns += 1.0;
         return Float::from_double(turns);
     }
 
@@ -152,7 +137,7 @@ public:
     // ------------------------------------------------------------------
 
     [[nodiscard]] constexpr auto operator<=>(const T81Complex& o) const noexcept = default;
-    [[nodiscard]] constexpr bool operator==(const T81Complex& o) const noexcept  = default;
+    [[nodiscard]] constexpr bool operator==(const T81Complex& o) const noexcept = default;
 
     // ------------------------------------------------------------------
     // Utilities
@@ -162,93 +147,63 @@ public:
         return re.is_zero() && im.is_zero();
     }
 
-    [[nodiscard]] constexpr bool is_real() const noexcept {
-        return im.is_zero();
-    }
+    [[nodiscard]] constexpr bool is_real() const noexcept { return im.is_zero(); }
+    [[nodiscard]] constexpr bool is_imag() const noexcept { return re.is_zero(); }
 
-    [[nodiscard]] constexpr bool is_imag() const noexcept {
-        return re.is_zero();
-    }
+    friend T81Complex bind(const T81Complex& a, const T81Complex& b) noexcept { return a * b; }
+    friend T81Complex unbind(const T81Complex& a, const T81Complex& b) noexcept { return a * b.conj(); }
 
-    // HRR binding/unbinding (complex multiply / multiply by conjugate)
-    friend T81Complex bind(const T81Complex& a, const T81Complex& b) noexcept {
-        return a * b;
-    }
+    // ------------------------------------------------------------------
+    // Debug formatting (non-trivial, but acceptable — we pay the cost only when used)
+    // ------------------------------------------------------------------
 
-    friend T81Complex unbind(const T81Complex& a, const T81Complex& b) noexcept {
-        return a * b.conj();
-    }
-
-    // For debugging / logging
     [[nodiscard]] std::string str() const {
         const double rv = re.to_double();
         const double iv = im.to_double();
-
-        std::string out;
-        out.reserve(64);
-
-        out += "(";
-        out += std::to_string(rv);
-        if (iv < 0.0) {
-            out += " - ";
-            out += std::to_string(-iv);
-        } else {
-            out += " + ";
-            out += std::to_string(iv);
-        }
-        out += "i)";
+        std::string out = "(" + std::to_string(rv);
+        out += (iv < 0.0) ? " - " : " + ";
+        out += std::to_string(std::abs(iv)) + "i)";
         return out;
     }
 };
 
 // ======================================================================
-// Common aliases
+// Aliases
 // ======================================================================
 
 using T81Complex18 = T81Complex<18>;
 using T81Complex27 = T81Complex<27>;
 
-// Trivially copyable is important for bulk operations and FFI.
-// Temporarily disabled: T81Complex has non-trivial member `str()` and
-// T81Float itself may not be trivially copyable in all configurations.
-// Re-enable when we make this type truly trivial.
-// static_assert(std::is_trivially_copyable_v<T81Complex18>);
+// T81Float is now trivially copyable → T81Complex is trivially copyable
+// This enables memcpy, zero-init, FFI, and bulk tensor operations
+static_assert(std::is_trivially_copyable_v<T81Complex18>);
+static_assert(std::is_trivially_copyable_v<T81Complex27>);
 
 // ======================================================================
 // Free functions
 // ======================================================================
 
-// Complex exponential: exp(i * 2π * theta), where theta is in "turns" [0,1).
 template <std::size_t M>
 [[nodiscard]] T81Complex<M> expi(typename T81Complex<M>::FloatType theta) noexcept {
     constexpr double kTwoPi = 6.28318530717958647692;
-    const double angle      = theta.to_double() * kTwoPi;
-
+    const double angle = theta.to_double() * kTwoPi;
     const double c = std::cos(angle);
     const double s = std::sin(angle);
-
     using Float = typename T81Complex<M>::FloatType;
     return T81Complex<M>(Float::from_double(c), Float::from_double(s));
 }
 
-// 3-multiply complex multiply (Karatsuba-like) for T81Complex18
-[[nodiscard]] inline T81Complex18 mul3(const T81Complex18& a,
-                                       const T81Complex18& b) noexcept {
-    using Float = typename T81Complex18::FloatType;
-
+[[nodiscard]] inline T81Complex18 mul3(const T81Complex18& a, const T81Complex18& b) noexcept {
+    using Float = T81Complex18::Float;
     const Float p = a.re * (b.re + b.im);
     const Float q = b.re * (a.im + a.re);
     const Float r = a.im * (b.im - b.re);
-
     return T81Complex18{ p - q, p + r };
 }
 
 } // namespace t81
 
-// ======================================================================
 // std::complex interop
-// ======================================================================
-
 template <std::size_t M>
 inline std::complex<double> to_complex(const t81::T81Complex<M>& z) {
     return { z.re.to_double(), z.im.to_double() };
