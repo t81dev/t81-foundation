@@ -14,7 +14,6 @@
 ...
 
 [![Reference Platform: macOS • clang](https://img.shields.io/badge/Reference-macOS%20clang-81D4FA?logo=apple&style=for-the-badge)](https://github.com/t81dev/t81-foundation/actions)
-[![Platforms](https://img.shields.io/badge/Platforms-macOS%20•%20Linux%20•%20Windows%20•%20WASM-81D4FA?logo=cplusplus&style=for-the-badge)](https://github.com/t81dev/t81-foundation/actions)
 
 <br/><br/>
 
