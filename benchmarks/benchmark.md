@@ -31,4 +31,3 @@ And on real modern silicon, the price of never being wrong is ~300× slower arit
 **The proof is public.**  
 **The future is ternary.**
 
-Commit it. Ship it. Let it stand.
