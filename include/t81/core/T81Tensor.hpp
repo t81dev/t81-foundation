@@ -25,6 +25,7 @@
 #include <cstring>
 #include <numeric>
 #include <algorithm>
+#include <format>
 
 namespace t81 {
 
