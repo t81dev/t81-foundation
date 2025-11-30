@@ -165,6 +165,15 @@ jobs:
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
+      # THIS IS THE ONLY THING THAT MATTERS FOR WINDOWS
+      # Clean before configuration so the new build directory gets a fresh CMake configure.
+      - name: Force clean build directory on Windows (fresh compile)
+        if: runner.os == 'Windows'
+        run: |
+          echo "Windows detected — forcing fresh compile to get the new type_to_string"
+          rm -rf build
+        shell: bash
+
       - name: Configure CMake
         run: |
           set -eo pipefail
@@ -174,15 +183,6 @@ jobs:
             -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache 2>&1 | tee -a .github/logs/build-and-test.log
-        shell: bash
-
-      # THIS IS THE ONLY THING THAT MATTERS FOR WINDOWS
-      - name: Force clean rebuild on Windows (fixes the last crash)
-        if: runner.os == 'Windows'
-        run: |
-          echo "Windows detected — forcing fresh compile to get the new type_to_string"
-          rm -rf build
-          mkdir build
         shell: bash
 
       - name: Build
