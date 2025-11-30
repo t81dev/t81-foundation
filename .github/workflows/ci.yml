@@ -20,19 +20,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
-
       - name: Create log directory
         run: mkdir -p .github/logs || true
-
       - name: Install Python tools
-        run: pip install mdformat mdformat-gfm mdformat-frontmatter mdformat-toc 2>&1 | tee .github/logs/spec-and-docs.log
-
+        run: pip install mdformat mdformat-gfm mdformat-frontmatter mdformat-toc
       - name: Check Markdown links (lychee)
         uses: lycheeverse/lychee-action@v2
         with:
@@ -44,21 +40,13 @@ jobs:
             .github/**/*.md spec/**/*.md docs/**/*.md README.md AGENTS.md CONTRIBUTING.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Verify repository structure
         run: |
           set -euo pipefail
           required_dirs=("spec" "docs" "include/t81" "src" "tests")
           for d in "${required_dirs[@]}"; do
-            [ -d "$d" ] || { echo "::error::Missing required directory: $d"; exit 1; }
+            [ -d "$d" ] || exit 1
           done
-          echo "All required directories present."
-
-      - name: Job Failure Summary
-        if: failure()
-        run: |
-          echo "### Spec & Docs Failed" >> $GITHUB_STEP_SUMMARY
-          echo "Check logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
 
   build-and-test:
     name: " build / ${{ matrix.os }} / ${{ matrix.compiler }}"
@@ -102,10 +90,7 @@ jobs:
 
       - name: Install Dependencies (Ubuntu)
         if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build ccache gcc-14 g++-14 clang-18
+        run: sudo apt-get update -qq && sudo apt-get install -y build-essential cmake ninja-build ccache gcc-14 g++-14 clang-18
 
       - name: Install Dependencies (macOS)
         if: runner.os == 'macOS'
@@ -113,7 +98,6 @@ jobs:
           brew install ccache
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
             brew install gcc@14
-            echo "/opt/homebrew/bin" >> $GITHUB_PATH
           fi
 
       - name: Install Dependencies (Windows)
@@ -130,13 +114,6 @@ jobs:
           ccache -z
           ccache --set-config=max_size=500M
 
-      - name: Cache ccache
-        uses: actions/cache@v4
-        with:
-          path: ${{ runner.os == 'Linux' && '~/.ccache' || runner.os == 'macOS' && '~/Library/Caches/ccache' || 'C:/Users/runneradmin/AppData/Local/ccache' }}
-          key: ccache-${{ runner.os }}-${{ matrix.compiler }}-${{ github.ref }}
-          restore-keys: ccache-${{ runner.os }}-${{ matrix.compiler }}-
-
       - name: Setup MSVC (Windows only)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
@@ -150,22 +127,25 @@ jobs:
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             2>&1 | tee .github/logs/build-and-test.log
+        shell: bash
 
-      # CRITICAL: Force fresh rebuild on Windows — kills the old cached binary
       - name: Obliterate Windows build cache
         if: runner.os == 'Windows'
         run: |
           Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue
           mkdir build
-          echo "Windows cache destroyed. Compiling truth from zero."
+          echo "Windows cache destroyed. Fresh compile incoming."
+        shell: bash
 
       - name: Build
         run: |
           cmake --build build --parallel 2>&1 | tee -a .github/logs/build-and-test.log
+        shell: bash
 
       - name: Test
         run: |
           ctest --test-dir build --output-on-failure --verbose 2>&1 | tee -a .github/logs/build-and-test.log
+        shell: bash
 
       - name: Show ccache stats
         run: ccache -s
@@ -181,22 +161,9 @@ jobs:
           echo "Last 40 log lines:" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           if command -v powershell >/dev/null 2>&1; then
-            powershell -Command "
-              if (Test-Path '.github/logs/build-and-test.log') {
-                Get-Content '.github/logs/build-and-test.log' -Tail 40
-              } else {
-                Write-Output '(no log file found)'
-              }
-            "
+            powershell -Command "if (Test-Path '.github/logs/build-and-test.log') { Get-Content '.github/logs/build-and-test.log' -Tail 40 } else { Write-Output '(no log)' }"
           else
-            if [ -f .github/logs/build-and-test.log ]; then
-              tail -n 40 .github/logs/build-and-test.log
-            else
-              echo "(no log file found)"
-            fi
+            if [ -f .github/logs/build-and-test.log ]; then tail -n 40 .github/logs/build-and-test.log; else echo "(no log)"; fi
           fi
           echo '```' >> $GITHUB_STEP_SUMMARY
         shell: bash
-
-  # The rest of your jobs (static-analysis, coverage, sanitizers, thread-sanitizer) remain unchanged
-  # ... (keep them exactly as they were)
