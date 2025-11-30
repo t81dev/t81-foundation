@@ -4,6 +4,7 @@ project(t81 LANGUAGES C CXX)
 # Options
 option(T81_BUILD_EXAMPLES "Build T81 C++ examples" ON)
 option(T81_BUILD_TESTS    "Build T81 C++ unit tests" ON)
+option(T81_BUILD_BENCHMARKS "Build T81 benchmark suite" ON)
 
 add_library(t81_core STATIC
   src/core/bigint.cpp
@@ -202,6 +203,9 @@ if (T81_BUILD_TESTS)
   add_executable(t81_frontend_ir_generator_test tests/cpp/frontend_ir_generator_test.cpp)
   target_link_libraries(t81_frontend_ir_generator_test PRIVATE t81_frontend t81_tisc)
 
+  add_executable(t81_semantic_analyzer_option_result_test tests/cpp/semantic_analyzer_option_result_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_option_result_test PRIVATE t81_frontend)
+
   add_executable(t81_tisc_binary_emitter_test tests/cpp/tisc_binary_emitter_test.cpp)
   target_link_libraries(t81_tisc_binary_emitter_test PRIVATE t81_tisc)
 
@@ -347,6 +351,7 @@ if (T81_BUILD_TESTS)
     t81_frontend_parser_generics_test
     t81_frontend_parser_legacy_rejection_test
     t81_frontend_ir_generator_test
+    t81_semantic_analyzer_option_result_test
     t81_tisc_binary_emitter_test
     # e2e_let_statement_test # Disabled due to pre-existing parser/VM integration bugs. See issue #124.
     # e2e_arithmetic_test # Disabled due to pre-existing parser/VM integration bugs. See issue #124.
@@ -359,7 +364,9 @@ if (T81_BUILD_TESTS)
 endif()
 
 # Benchmarks
-add_subdirectory(benchmarks)
+if (T81_BUILD_BENCHMARKS)
+  add_subdirectory(benchmarks)
+endif()
 
 # --- Doxygen Documentation ---
 find_package(Doxygen)
