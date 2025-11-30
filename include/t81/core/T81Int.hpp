@@ -20,7 +20,7 @@
 #include <utility>
 #include <algorithm>
 #include <type_traits>
-#include "t81/detail/msvc_compat.hpp" // MSVC-safe string_view from iterators
+#include "t81/detail/msvc_compat.hpp"
 
 namespace t81 {
 
@@ -50,10 +50,12 @@ public:
     static constexpr size_type kTritsPerByte = 4;
     static constexpr size_type kNumBytes     = (N + kTritsPerByte - 1) / kTritsPerByte;
 
+    // Maximum number of trits that safely fit in int64_t (3^39 fits in 64-bit signed)
+    static constexpr size_type kMaxSafeTrits = 39;
+
 private:
     std::array<std::uint8_t, kNumBytes> data_{};
 
-    // Low-level encoding helpers (2 bits per trit)
     static constexpr std::uint8_t encode_trit(Trit t) noexcept {
         return (t == Trit::N) ? 0u : (t == Trit::Z) ? 1u : 2u;
     }
@@ -82,7 +84,7 @@ private:
     }
 
     constexpr void clear() noexcept {
-        std::fill(data_.begin(), data_.end(), 0x55u); // 01010101 = all Z trits
+        std::fill(data_.begin(), data_.end(), 0x55u); // all Z trits
     }
 
     template <std::size_t M, std::size_t E> friend class T81Float;
@@ -156,27 +158,26 @@ private:
     }
 
 public:
-    // FINAL FIX: MSVC cannot have throw in constexpr → split paths
-#ifdef _MSC_VER
-    // Symbol IDs are always tiny → safe to skip overflow checks
+    // Universal C++20 to_int64(): works on MSVC (no throw), GCC/Clang (full safety)
     constexpr std::int64_t to_int64() const noexcept {
+#ifdef _MSC_VER
+        // MSVC: no throw allowed in constexpr → fast path (symbol IDs are tiny)
         std::int64_t value = 0;
         std::int64_t pow3 = 1;
-        const size_type limit = (kNumTrits < 39) ? kNumTrits : 39;
+        const size_type limit = (kNumTrits < kMaxSafeTrits) ? kNumTrits : kMaxSafeTrits;
         for (size_type i = 0; i < limit; ++i) {
             value += trit_to_int(get_trit(i)) * pow3;
-            if (i < 38) pow3 *= 3;
+            if (i < kMaxSafeTrits - 1) pow3 *= 3;
         }
         return value;
-    }
 #else
-    constexpr std::int64_t to_int64() const noexcept {
-        static constexpr size_type kMaxSafeTrits = 39;
-        const size_type limit = kNumTrits < kMaxSafeTrits ? kNumTrits : kMaxSafeTrits;
+        // GCC/Clang: full overflow checking with throw (safe in constexpr if not executed)
+        const size_type limit = (kNumTrits < kMaxSafeTrits) ? kNumTrits : kMaxSafeTrits;
 
-        for (size_type i = limit; i < kNumTrits; ++i)
+        for (size_type i = limit; i < kNumTrits; ++i) {
             if (get_trit(i) != Trit::Z)
-                throw std::overflow_error("T81Int::to_int64: value too large for int64_t");
+                throw std::overflow_error("T81Int::to_int64(): value out of range");
+        }
 
         std::int64_t value = 0;
         std::int64_t pow3 = 1;
@@ -184,17 +185,17 @@ public:
             const int d = trit_to_int(get_trit(i));
             if (d != 0) {
                 const std::int64_t term = d * pow3;
-                if (term > 0 && value > (std::numeric_limits<std::int64_t>::max() - term))
-                    throw std::overflow_error("T81Int::to_int64: overflow (positive)");
-                if (term < 0 && value < (std::numeric_limits<std::int64_t>::min() - term))
-                    throw std::overflow_error("T81Int::to_int64: overflow (negative)");
+                if (term > 0 && value > std::numeric_limits<std::int64_t>::max() - term)
+                    throw std::overflow_error("T81Int::to_int64(): overflow (positive)");
+                if (term < 0 && value < std::numeric_limits<std::int64_t>::min() - term)
+                    throw std::overflow_error("T81Int::to_int64(): overflow (negative)");
                 value += term;
             }
             if (i + 1 < limit) pow3 *= 3;
         }
         return value;
-    }
 #endif
+    }
 
     template <typename T>
     T to_binary() const {
@@ -255,10 +256,8 @@ public:
         int carry = 0;
         for (size_type i = 0; i < kNumTrits; ++i) {
             int sum = trit_to_int(a.get_trit(i)) + trit_to_int(b.get_trit(i)) + carry;
-            int digit;
-            if (sum > 1) { digit = sum - 3; carry = 1; }
-            else if (sum < -1) { digit = sum + 3; carry = -1; }
-            else { digit = sum; carry = 0; }
+            int digit = (sum > 1) ? sum - 3 : (sum < -1) ? sum + 3 : sum;
+            carry = (sum > 1) ? 1 : (sum < -1) ? -1 : 0;
             r.set_trit(i, int_to_trit(digit));
         }
         return r;
@@ -325,7 +324,7 @@ public:
                 case Trit::N: s.push_back('-'); break;
             }
         }
-        return make_str(s.data(), s.data() + s.size()); // MSVC-safe
+        return make_str(s.data(), s.data() + s.size());
     }
 };
 
