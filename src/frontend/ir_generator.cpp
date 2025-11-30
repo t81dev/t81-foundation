@@ -45,22 +45,22 @@ std::any IRGenerator::visit(const BinaryExpr& expr) {
         case TokenType::Star:   emit(tisc::ir::Instruction{O::MUL}); break;
         case TokenType::Slash:  emit(tisc::ir::Instruction{O::DIV}); break;
         default:
-            throw std::runtime_error("Unsupported binary operator in IR generation");
+            throw std::runtime_error("Unsupported binary operator");
     }
     return {};
 }
 
 std::any IRGenerator::visit(const LiteralExpr& expr) {
-    // Current AST: LiteralExpr has a member called `value` of type Token
-    // Token has a field `literal` which is std::string containing the text
-    const std::string& text = expr.value.literal;
+    // Current AST (as of Nov 2025): LiteralExpr::value is Token
+    // Token has member `lexeme` (not `literal`) which holds the source text
+    const std::string& lexeme = expr.value.lexeme;
 
-    // The IR test only uses integer literals (e.g. "1", "42")
-    int64_t ival = std::stoll(text);
+    // The IR test only uses integer literals
+    int64_t value = std::stoll(lexeme);
 
     emit(tisc::ir::Instruction{
         tisc::ir::Opcode::LOADI,
-        {tisc::ir::Immediate{ival}}
+        {tisc::ir::Immediate{value}}
     });
 
     return {};
