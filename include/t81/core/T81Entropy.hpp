@@ -1,26 +1,26 @@
 /**
  * @file T81Entropy.hpp
- * @brief Provenanced entropy tokens for thermodynamic accounting.
+ * @brief Provenanced, move-only entropy tokens for thermodynamic computing.
  */
 #pragma once
 #include "t81/core/T81Int.hpp"
 #include "t81/core/T81Symbol.hpp"
 #include <cstdint>
 #include <compare>
-#include <array>
 #include <utility>
 
 namespace t81 {
 
 class T81Entropy {
-    using Raw = T81Int<81>;
+public:
+    using Raw = T81Int<81>;  // ← moved to public so EntropyPool can see it
 
-    Raw entropy_;          // 81-trit entropy payload
-    T81Symbol source_;     // who created it
-    uint64_t sequence_;    // monotonic counter per source
-    mutable bool consumed_ = false;  // plain bool — works in constexpr
+private:
+    Raw entropy_;
+    T81Symbol source_;
+    uint64_t sequence_;
+    mutable bool consumed_ = false;
 
-    // Only EntropyPool may mint
     friend class EntropyPool;
 
     constexpr T81Entropy(T81Symbol src, uint64_t seq, Raw raw) noexcept
@@ -31,7 +31,6 @@ public:
     T81Entropy(const T81Entropy&) = delete;
     T81Entropy& operator=(const T81Entropy&) = delete;
 
-    // Move-only — entropy flows, never duplicates
     constexpr T81Entropy(T81Entropy&& o) noexcept
         : entropy_(std::move(o.entropy_))
         , source_(o.source_)
@@ -43,37 +42,26 @@ public:
 
     constexpr T81Entropy& operator=(T81Entropy&& o) noexcept {
         if (this != &o) {
-            entropy_   = std::move(o.entropy_);
-            source_    = o.source_;
-            sequence_  = o.sequence_;
-            consumed_  = o.consumed_;
+            entropy_ = std::move(o.entropy_);
+            source_ = o.source_;
+            sequence_ = o.sequence_;
+            consumed_ = o.consumed_;
             o.consumed_ = true;
         }
         return *this;
     }
 
-    // ------------------------------------------------------------------
-    // One-shot consumption — thermodynamic fuel
-    // ------------------------------------------------------------------
     [[nodiscard]] Raw consume() const noexcept {
-        if (consumed_) {
-            std::terminate(); // double-spend = instant death
-        }
+        if (consumed_) std::terminate();
         consumed_ = true;
         return entropy_;
     }
 
-    // ------------------------------------------------------------------
-    // Queries
-    // ------------------------------------------------------------------
-    [[nodiscard]] constexpr T81Symbol source()   const noexcept { return source_; }
+    [[nodiscard]] constexpr T81Symbol source() const noexcept { return source_; }
     [[nodiscard]] constexpr uint64_t  sequence() const noexcept { return sequence_; }
     [[nodiscard]] constexpr bool      is_consumed() const noexcept { return consumed_; }
-    [[nodiscard]] constexpr Raw       value()     const noexcept { return entropy_; }
+    [[nodiscard]] constexpr Raw       value() const noexcept { return entropy_; }
 
-    // ------------------------------------------------------------------
-    // Comparison (for priority queues, maps, etc.)
-    // ------------------------------------------------------------------
     [[nodiscard]] constexpr auto operator<=>(const T81Entropy& o) const noexcept {
         if (source_ != o.source_) return source_ <=> o.source_;
         return sequence_ <=> o.sequence_;
@@ -83,12 +71,12 @@ public:
 };
 
 // ======================================================================
-// Global entropy pool — deterministic fallback for tests, real TRNG in prod
+// Global entropy pool
 // ======================================================================
 class EntropyPool {
     alignas(64) std::atomic<uint64_t> counter_{0};
 
-    static Raw hardware_trng() noexcept; // real version uses CPU RNG
+    static T81Entropy::Raw hardware_trng() noexcept;
 
 public:
     static EntropyPool& global() noexcept {
@@ -103,18 +91,14 @@ public:
     }
 };
 
-// Deterministic fallback — perfect for tests and constexpr contexts
 inline T81Entropy::Raw EntropyPool::hardware_trng() noexcept {
-    static uint64_t x = 0x517cc1b727220a95ULL; // FxHash constant
+    static uint64_t x = 0x517cc1b727220a95ULL;
     x ^= x << 13;
     x ^= x >> 7;
     x ^= x << 17;
     return T81Int<81>(static_cast<std::int64_t>(x));
 }
 
-// ======================================================================
-// Convenience
-// ======================================================================
 inline T81Entropy acquire_entropy(T81Symbol who = T81Symbol::intern("KERNEL")) {
     return EntropyPool::global().acquire(who);
 }
