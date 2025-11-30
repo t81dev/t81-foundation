@@ -159,40 +159,54 @@ Type SemanticAnalyzer::analyze_type_expr(const TypeExpr& expr) {
 }
 
 std::string SemanticAnalyzer::type_to_string(const Type& type) const {
+    // Thread-local depth guard — zero overhead, total safety
+    thread_local int depth = 0;
+    if (++depth > 32) {
+        depth--;
+        return "...";
+    }
+
+    std::string result;
+
     switch (type.kind) {
-        case Type::Kind::Void: return "void";
-        case Type::Kind::Bool: return "bool";
-        case Type::Kind::I2: return "i2";
-        case Type::Kind::I8: return "i8";
-        case Type::Kind::I16: return "i16";
-        case Type::Kind::I32: return "i32";
-        case Type::Kind::BigInt: return "T81BigInt";
-        case Type::Kind::Float: return "T81Float";
-        case Type::Kind::Fraction: return "T81Fraction";
-        case Type::Kind::Vector: return "Vector";
-        case Type::Kind::Matrix: return "Matrix";
-        case Type::Kind::Tensor: return "Tensor";
-        case Type::Kind::Graph: return "Graph";
-        case Type::Kind::String: return "T81String";
+        case Type::Kind::Void:     result = "void"; break;
+        case Type::Kind::Bool:     result = "bool"; break;
+        case Type::Kind::I2:       result = "i2"; break;
+        case Type::Kind::I8:       result = "i8"; break;
+        case Type::Kind::I16:      result = "i16"; break;
+        case Type::Kind::I32:      result = "i32"; break;
+        case Type::Kind::BigInt:   result = "T81BigInt"; break;
+        case Type::Kind::Float:    result = "T81Float"; break;
+        case Type::Kind::Fraction: result = "T81Fraction"; break;
+        case Type::Kind::Vector:   result = "Vector"; break;
+        case Type::Kind::Matrix:   result = "Matrix"; break;
+        case Type::Kind::Tensor:   result = "Tensor"; break;
+        case Type::Kind::Graph:    result = "Graph"; break;
+        case Type::Kind::String:   result = "T81String"; break;
+        case Type::Kind::Custom:   result = type.custom_name; break;
+        case Type::Kind::Unknown:  result = "<unknown>"; break;
+        case Type::Kind::Error:    result = "<error>"; break;
+
         case Type::Kind::Option:
         case Type::Kind::Result: {
             std::ostringstream oss;
             oss << (type.kind == Type::Kind::Option ? "Option" : "Result");
+
             if (!type.params.empty()) {
                 oss << '[';
                 for (size_t i = 0; i < type.params.size(); ++i) {
                     if (i > 0) oss << ", ";
-                    oss << type_to_string(type.params[i]);
+                    oss << type_to_string(type.params[i]);  // now safe
                 }
                 oss << ']';
             }
-            return oss.str();
+            result = oss.str();
+            break;
         }
-        case Type::Kind::Custom: return type.custom_name;
-        case Type::Kind::Unknown: return "<unknown>";
-        case Type::Kind::Error: return "<error>";
     }
-    return "<unknown>";
+
+    depth--;
+    return result;
 }
 
 bool SemanticAnalyzer::is_assignable(const Type& target, const Type& value) {
