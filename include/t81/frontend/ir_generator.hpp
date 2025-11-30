@@ -1,62 +1,94 @@
-#ifndef T81_FRONTEND_IR_GENERATOR_HPP
-#define T81_FRONTEND_IR_GENERATOR_HPP
-
+// src/frontend/ir_generator.cpp
+#include "t81/frontend/ir_generator.hpp"
 #include "t81/frontend/ast.hpp"
-#include "t81/frontend/symbol_table.hpp"
 #include "t81/tisc/ir.hpp"
-#include <any>
 
-namespace t81 {
-namespace frontend {
+#include <stdexcept>
+#include <string>
+#include <string_view>
 
-/**
- * @brief Traverses the Abstract Syntax Tree (AST) and generates TISC IR.
- *
- * The IRGenerator implements the visitor pattern to walk the AST produced
- * by the parser. It manages a symbol table to track variables and functions,
- * and emits a linear sequence of TISC instructions and labels.
- */
-class IRGenerator : public ExprVisitor, public StmtVisitor {
-public:
-    /**
-     * @brief Generates a TISC program from a sequence of AST statements.
-     * @param statements The top-level statements of the program from the parser.
-     * @return A tisc::ir::IntermediateProgram containing the generated IR.
-     */
-    tisc::ir::IntermediateProgram generate(const std::vector<std::unique_ptr<Stmt>>& statements);
+namespace t81::frontend {
 
-private:
-    std::any visit(const ExpressionStmt& stmt) override;
-    std::any visit(const VarStmt& stmt) override;
-    std::any visit(const LetStmt& stmt) override;
-    std::any visit(const BlockStmt& stmt) override;
-    std::any visit(const IfStmt& stmt) override;
-    std::any visit(const WhileStmt& stmt) override;
-    std::any visit(const ReturnStmt& stmt) override;
-    std::any visit(const FunctionStmt& stmt) override;
+tisc::ir::IntermediateProgram IRGenerator::generate(const std::vector<std::unique_ptr<Stmt>>& statements) {
+    for (const auto& stmt : statements) {
+        stmt->accept(*this);
+    }
+    return std::move(_program);
+}
 
-    std::any visit(const BinaryExpr& expr) override;
-    std::any visit(const UnaryExpr& expr) override;
-    std::any visit(const LiteralExpr& expr) override;
-    std::any visit(const GroupingExpr& expr) override;
-    std::any visit(const VariableExpr& expr) override;
-    std::any visit(const CallExpr& expr) override;
-    std::any visit(const AssignExpr& expr) override;
-    std::any visit(const SimpleTypeExpr& expr) override;
-    std::any visit(const GenericTypeExpr& expr) override;
+// Statements
+std::any IRGenerator::visit(const ExpressionStmt& stmt) {
+    stmt.expression->accept(*this);
+    return {};
+}
 
-    void emit(tisc::ir::Instruction instr);
-    void emit_label(tisc::ir::Label label);
-    tisc::ir::Register new_register();
-    tisc::ir::Label new_label();
+std::any IRGenerator::visit(const BlockStmt& stmt) {
+    for (const auto& s : stmt.statements) s->accept(*this);
+    return {};
+}
 
-    tisc::ir::IntermediateProgram _program;
-    SymbolTable _symbols;
-    int _register_count = 0;
-    int _label_count = 0;
-};
+std::any IRGenerator::visit(const VarStmt&)          { return {}; }
+std::any IRGenerator::visit(const LetStmt&)          { return {}; }
+std::any IRGenerator::visit(const IfStmt&)           { return {}; }
+std::any IRGenerator::visit(const WhileStmt&)        { return {}; }
+std::any IRGenerator::visit(const ReturnStmt&)       { return {}; }
+std::any IRGenerator::visit(const FunctionStmt&)     { return {}; }
 
-} // namespace frontend
-} // namespace t81
+// Expressions
+std::any IRGenerator::visit(const BinaryExpr& expr) {
+    expr.left->accept(*this);
+    expr.right->accept(*this);
 
-#endif // T81_FRONTEND_IR_GENERATOR_HPP
+    using O = tisc::ir::Opcode;
+    switch (expr.op.type) {
+        case TokenType::Plus:   emit(tisc::ir::Instruction{O::ADD}); break;
+        case TokenType::Minus:  emit(tisc::ir::Instruction{O::SUB}); break;
+        case TokenType::Star:   emit(tisc::ir::Instruction{O::MUL}); break;
+        case TokenType::Slash:  emit(tisc::ir::Instruction{O::DIV}); break;
+        default:
+            throw std::runtime_error("Unsupported binary operator");
+    }
+    return {};
+}
+
+std::any IRGenerator::visit(const LiteralExpr& expr) {
+    std::string_view lexeme = expr.value.lexeme;
+    int64_t value = std::stoll(std::string{lexeme});
+
+    emit(tisc::ir::Instruction{
+        tisc::ir::Opcode::LOADI,
+        {tisc::ir::Immediate{value}}
+    });
+    return {};
+}
+
+std::any IRGenerator::visit(const GroupingExpr& expr) {
+    expr.expression->accept(*this);
+    return {};
+}
+
+std::any IRGenerator::visit(const UnaryExpr&)        { return {}; }
+std::any IRGenerator::visit(const VariableExpr&)     { return {}; }
+std::any IRGenerator::visit(const CallExpr&)         { return {}; }
+std::any IRGenerator::visit(const AssignExpr&)       { return {}; }
+std::any IRGenerator::visit(const SimpleTypeExpr&)   { return {}; }
+std::any IRGenerator::visit(const GenericTypeExpr&)  { return {}; }
+
+// Utility
+void IRGenerator::emit(tisc::ir::Instruction instr) {
+    _program.add_instruction(std::move(instr));
+}
+
+void IRGenerator::emit_label(tisc::ir::Label label) {
+    emit(tisc::ir::Instruction{tisc::ir::Opcode::LABEL, {label}});
+}
+
+tisc::ir::Register IRGenerator::new_register() {
+    return tisc::ir::Register{_register_count++};
+}
+
+tisc::ir::Label IRGenerator::new_label() {
+    return tisc::ir::Label{_label_count++};
+}
+
+} // namespace t81::frontend
