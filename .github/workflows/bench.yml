@@ -1,74 +1,92 @@
-name: TCB-Core Benchmarks
+# .github/workflows/bench.yml
+name: T81 Speed Oracle
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write   # Needed to push badge updates
+
+concurrency:
+  group: bench
+  cancel-in-progress: true
+
 jobs:
   benchmark:
+    name: ${{ matrix.os }} • ${{ matrix.arch || 'native' }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-latest
+            arch: zen4
+          - os: ubuntu-latest
+            arch: native
+          - os: macos-latest
+            arch: apple-m2
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Configure CMake
-      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -march=native"
+      - name: Install dependencies
+        run: |
+          if [[ "${{ runner.os }}" == "Linux" ]]; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ninja-build
+          fi
 
-    - name: Build Benchmarks
-      run: cmake --build build --target benchmark_runner
+      - name: Configure CMake
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DT81_BENCHMARK=ON
+          -DCMAKE_CXX_FLAGS="-O3 -march=${{ matrix.arch }} -DNDEBUG"
 
-    - name: Run Benchmarks
-      run: ./build/benchmarks/benchmark_runner
+      - name: Build benchmark runner
+        run: cmake --build build --target t81_benchmark --parallel
 
-    - name: Create Badge Directory
-      run: mkdir -p .github/badges
+      - name: Run benchmarks
+        run: ./build/benchmarks/t81_benchmark --reporter=json > bench.json
 
-    - name: Generate Badge JSON
-      run: |
-        echo '{
-          "schemaVersion": 1,
-          "label": "TCB-Core v0.1",
-          "message": "Passing",
-          "color": "green"
-        }' > .github/badges/tcb-core.json
+      - name: Generate live badge
+        run: |
+          # Extract key metric (example: fastest matmul in ns)
+          BEST=$(jq -r '.benchmarks[] | select(.name | contains("MatMul/4096")) | .real_time' bench.json | sort -n | head -1)
+          PERF=$(echo "scale=1; 1000000 / $BEST" | bc -l 2>/dev/null || echo "∞")
+          
+          COLOR="red"
+          [[ "$PERF" > 10 ]] && COLOR="orange"
+          [[ "$PERF" > 25 ]] && COLOR="yellow"
+          [[ "$PERF" > 50 ]] && COLOR="green"
+          [[ "$PERF" > 100 ]] && COLOR="brightgreen"
 
-    - name: Update README
-      run: |
-        awk '/^| Benchmark/,/^$/' docs/benchmarks.md > table.md
+          cat > .github/badges/t81-speed.json <<EOF
+          {
+            "schemaVersion": 1,
+            "label": "T81 Speed",
+            "message": "${PERF} Gops/s",
+            "color": "$COLOR",
+            "style": "for-the-badge"
+          }
+          EOF
 
-        # Create a replacement block
-        {
-            echo "<!-- T81-BENCHMARKS-START -->"
-            echo ""
-            echo '![TCB-Core v0.1](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/t81dev/t81-foundation/main/.github/badges/tcb-core.json)'
-            echo ""
-            cat table.md
-            echo ""
-            echo "<!-- T81-BENCHMARKS-END -->"
-        } > replacement.md
+      - name: Update README
+        run: |
+          sed -i '' -e '/<!-- T81-SPEED-START -->/,/<!-- T81-SPEED-END -->/c\
+          <!-- T81-SPEED-START -->\
+          \
+          ![T81 Speed Oracle](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Ft81dev%2Ft81-foundation%2Fmain%2F.github%2Fbadges%2Ft81-speed.json&style=for-the-badge)\
+          \
+          <!-- T81-SPEED-END -->' README.md || true
 
-        # Use a temp file to avoid issues with sed's in-place editing on different OSes
-        tmp=$(mktemp)
-        awk -v r="replacement.md" '
-          /<!-- T81-BENCHMARKS-START -->/ { f=1; print; system("cat " r); next }
-          /<!-- T81-BENCHMARKS-END -->/ { f=0; print; next }
-          !f { print }
-        ' README.md > "$tmp" && mv "$tmp" README.md
-
-    - name: Commit and Push Changes
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add README.md .github/badges/tcb-core.json
-        if git diff --staged --quiet; then
-          echo "No changes to commit."
-        else
-          git commit -m "docs(bench): Update TCB-Core v0.1 results in README"
+      - name: Commit results
+        run: |
+          git config user.name "T81 Speed Oracle"
+          git config user.email "oracle@t81.dev"
+          git add .github/badges/t81-speed.json README.md
+          git commit -m "oracle(bench): speed is now ${PERF} Gops/s" || echo "No changes"
           git push
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
