@@ -1,6 +1,6 @@
 # Project Roadmap
 
-**Last Updated:** November 28, 2025
+**Last Updated:** November 29, 2025
 
 ## 1. Vision for v1.0
 
@@ -8,12 +8,12 @@ The v1.0 release of the T81 Foundation will deliver a stable, documented, and pr
 
 "Done" for a v1.0 component means it is fully implemented per the spec, comprehensively tested, documented, and builds cleanly.
 
-## 2. Current Status (Late-Alpha)
+## 2. Current Status (Early-Beta)
 
-The project is in a late-alpha stage.
+The project is in an early-beta stage.
 
-- **Strengths:** The project has a clear specification, a modern C++20 toolchain, and a robust, well-tested suite of core numeric types (`T81Int`, `Fraction`).
-- **Weaknesses:** The primary gap is the **T81Lang compiler**, which lacks a semantic analysis and type-checking pass. Critical components like the **Axion Kernel** and **CanonFS** are non-functional stubs. The VM's memory model is also a primitive placeholder.
+- **Strengths:** The project has a clear specification and a modern C++20 toolchain. The core numeric types are robust, and the T81Lang compiler now has a complete frontend with parsing and semantic analysis.
+- **Weaknesses:** The T81Lang compiler's semantic analysis pass needs to be extended to perform full **type checking**. Critical components like the **Axion Kernel** and **CanonFS** remain non-functional stubs. The VM's memory model is also a primitive placeholder.
 
 For a detailed breakdown, see the [**System Status Report**](docs/system-status.md) and [`ANALYSIS.md`](ANALYSIS.md).
 
@@ -21,7 +21,7 @@ For a detailed breakdown, see the [**System Status Report**](docs/system-status.
 
 To reach v1.0, development is organized into three priority tiers. Work on a higher-priority tier is the primary blocker for all lower-priority tiers.
 
-- **[P0] T81Lang Compiler:** Fully implement the C++20 compiler to match the `t81lang-spec.md`. This is the critical path to v1.0. The immediate focus is on building the semantic analysis and type-checking pass.
+- **[P0] T81Lang Compiler:** Fully implement the C++20 compiler to match the `t81lang-spec.md`. This is the critical path to v1.0. The immediate focus is on **deepening the semantic analysis pass to perform full type checking and inference.**
 - **[P1] HanoiVM & TISC Runtime:** Harden the virtual machine by implementing the full memory model, integrating the Axion kernel, and improving fault handling.
 - **[P2] Axion Kernel & Supporting Systems:** Transform the Axion Kernel and CanonFS from stubs into functional components that can enforce the safety and storage policies defined in their respective specs.
 

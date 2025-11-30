@@ -79,13 +79,15 @@ parameter     ::= identifier ":" type
 block         ::= "{" statement* "}"
 
 statement     ::= let_decl
+                | var_decl
                 | assign
                 | return
                 | if_stmt
                 | loop_stmt
                 | expr ";"
 
-let_decl      ::= "let" identifier ":" type "=" expr ";"
+let_decl      ::= "let" identifier [ ":" type ] "=" expr ";"
+var_decl      ::= "var" identifier [ ":" type ] [ "=" expr ] ";"
 assign        ::= identifier "=" expr ";"
 return        ::= "return" expr ";"
 
@@ -158,6 +160,7 @@ Tensor[T, M, N]        # fixed-rank tensor with compile-time dimensions
 ```
 
 Angle brackets `<...>` are **legacy** and must not appear in any new code or grammar.
+The C++20 compiler frontend actively rejects this syntax to enforce the modern style.
 All examples in the spec using `<...>` are hereby declared obsolete.
 
 - Generic parameters are separated by commas when more than one is required.
@@ -316,57 +319,34 @@ Produces a canonical stream of tokens.
 
 Produces an AST conforming to the grammar.
 
-### Stage 3 — Type Checking
+### Stage 3 — Semantic Analysis & Type Checking
 
-Guarantees:
+This stage is responsible for verifying the semantic correctness of the program. The initial pass, which is now implemented, performs **name resolution** and **scope analysis**. The next development priority is to extend this pass to perform full **type checking**.
 
-- no type mismatches
+The complete type checker **MUST** enforce the following guarantees:
 
-- all shapes are valid
-
-- canonical forms are upheld
-
-- arithmetic expressions are only legal when both operands share a primitive type
-  and TISC exposes a matching opcode (`ADD/SUB/MUL/DIV/MOD` for `T81Int`,
-  `FADD/FSUB/FMUL/FDIV` for `T81Float`, `FRACADD/FRACSUB/FRACMUL/FRACDIV` for
-  `T81Fraction`). When an expression mixes
-  `T81Int` with either `T81Float` or `T81Fraction`, the compiler MUST insert a
-  deterministic widening conversion (`I2F` or `I2FRAC`) so the operands share the
-  non-integer type before lowering. Any other mixed-type arithmetic MUST be
-  rejected, and the modulo operator (`%`) is legal **only** when both operands
-  are `T81Int`. Division by zero MUST surface the VM’s deterministic
-  `DivideByZero` fault; the compiler MAY fold constant expressions that avoid the
-  fault but MUST NOT silently change the runtime semantics.
-
-- literal expressions for `T81Float`, `T81Fraction`, and `Symbol` MUST be tagged
-  with their declared types so lowering can emit the correct literal pool handle.
-
-- comparison expressions (`==`, `!=`, `<`, `<=`, `>`, `>=`) MUST return `T81Int`
-  (canonical boolean). Operands MUST share the same primitive numeric type
-  (`T81Int`, `T81Float`, or `T81Fraction`). When a comparison mixes `T81Int`
-  with `T81Float` or `T81Fraction`, operands MUST be widened via `I2F` or
-  `I2FRAC` before emitting `CMP`. `Symbol` operands are legal ONLY for
-  equality/inequality and MUST be rejected for ordering comparisons.
-
-- When storing into variables, passing call arguments, or returning from a
-  function, `T81Int` values MAY be widened to `T81Float` or `T81Fraction` via
-  `I2F`/`I2FRAC` to satisfy the declared type. Narrowing conversions (float or
-  fraction to integer) MUST NOT be inserted implicitly.
-
-- logical conjunction/disjunction (`&&`, `||`) MUST evaluate operands left to
-  right, short-circuit deterministically, and operate on canonical boolean
-  `T81Int` values. Their result MUST be `0t81` when false and `1t81` when true.
-
-- `Option[T]` and `Result[T, E]` constructors MUST follow deterministic typing
-  rules:
-
-  - `Some(expr)` infers `Option[T]` when `expr : T` unless an expected
-    `Option[T]` appears in context, in which case the payload type MUST match.
-  - `None` has no payload and therefore REQUIRES an expected `Option[T]`
-    context; the compiler MUST reject standalone `None`.
-  - `Ok(expr)` and `Err(expr)` also require an expected `Result[T, E]` context
-    so the compiler can type-check the payload against the correct branch
-    (`Ok` uses `T`, `Err` uses `E`).
+- **No Type Mismatches:** All expressions and statements must adhere to the type system.
+- **Valid Shapes:** All tensor and vector operations must use compatible shapes.
+- **Canonical Forms:** All constructed values must be in their canonical form.
+- **Arithmetic Correctness:**
+  - Arithmetic expressions are only legal when both operands share a primitive type and TISC exposes a matching opcode (`ADD/SUB/MUL/DIV/MOD` for `T81Int`, `FADD/FSUB/FMUL/FDIV` for `T81Float`, `FRACADD/FRACSUB/FRACMUL/FRACDIV` for `T81Fraction`).
+  - When an expression mixes `T81Int` with either `T81Float` or `T81Fraction`, the compiler MUST insert a deterministic widening conversion (`I2F` or `I2FRAC`) so the operands share the non-integer type before lowering.
+  - Any other mixed-type arithmetic MUST be rejected.
+  - The modulo operator (`%`) is legal **only** when both operands are `T81Int`.
+  - Division by zero MUST surface the VM’s deterministic `DivideByZero` fault.
+- **Literal Typing:** Literal expressions for `T81Float`, `T81Fraction`, and `Symbol` MUST be tagged with their declared types.
+- **Comparison Correctness:**
+  - Comparison expressions (`==`, `!=`, `<`, `<=`, `>`, `>=`) MUST return a `T81Int` (as a canonical boolean).
+  - Operands MUST share the same primitive numeric type, with the same widening rules as arithmetic.
+  - `Symbol` operands are legal ONLY for equality/inequality.
+- **Assignment and Function Call Correctness:**
+  - When storing into variables, passing call arguments, or returning from a function, `T81Int` values MAY be widened to `T81Float` or `T81Fraction`.
+  - Narrowing conversions (e.g., float to integer) MUST NOT be inserted implicitly.
+- **Logical Operations:** Logical conjunction/disjunction (`&&`, `||`) MUST evaluate operands left-to-right, short-circuit deterministically, and operate on canonical boolean `T81Int` values.
+- **Structural Type Correctness (`Option`/`Result`):**
+  - `Some(expr)` infers `Option[T]` from `expr`'s type `T` or matches a contextual `Option` type.
+  - `None` has no payload and therefore REQUIRES a contextual `Option[T]` type.
+  - `Ok(expr)` and `Err(expr)` also require a contextual `Result[T, E]` type to check the payload against the correct branch.
 
 ### Stage 4 — Purity Analysis
 
