@@ -253,18 +253,6 @@ public:
     //===================================================================
     [[nodiscard]] constexpr auto operator<=>(const T81Vector&) const noexcept = default;
     [[nodiscard]] constexpr bool operator==(const T81Vector&) const noexcept = default;
-
-    //===================================================================
-    // Conversion to tensor (interoperability)
-    // Enabled only for tensor-legal scalar (currently T81Float<72,9>)
-    //===================================================================
-    [[nodiscard]] operator T81Tensor<Scalar, 1, N>() const noexcept
-        requires std::same_as<Scalar, T81Float<72,9>>
-    {
-        T81Tensor<Scalar, 1, N> t{};
-        std::memcpy(t.data, components_, sizeof(components_));
-        return t;
-    }
 };
 
 // ======================================================================
@@ -298,4 +286,3 @@ constexpr auto left = right.rotated(rotation);  // (0,0,-1) approximately
 */
 
 } // namespace t81
-::contentReference[oaicite:0]{index=0}
