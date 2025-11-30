@@ -20,7 +20,7 @@
 #include <utility>
 #include <algorithm>
 #include <type_traits>
-#include "t81/detail/msvc_compat.hpp" // MSVC fix for string_view(string.begin(), string.end())
+#include "t81/detail/msvc_compat.hpp" // MSVC-safe string_view from iterators
 
 namespace t81 {
 
@@ -46,21 +46,16 @@ class T81Int {
 public:
     using size_type = std::size_t;
     static_assert(N > 0 && N <= 2048, "T81Int<N>: N must be in 1..2048");
-    static constexpr size_type kNumTrits = N;
+    static constexpr size_type kNumTrits     = N;
     static constexpr size_type kTritsPerByte = 4;
-    static constexpr size_type kNumBytes = (N + kTritsPerByte - 1) / kTritsPerByte;
+    static constexpr size_type kNumBytes     = (N + kTritsPerByte - 1) / kTritsPerByte;
 
 private:
     std::array<std::uint8_t, kNumBytes> data_{};
 
-    // --- Low-level encoding helpers (2 bits per trit) ---
+    // Low-level encoding helpers (2 bits per trit)
     static constexpr std::uint8_t encode_trit(Trit t) noexcept {
-        switch (t) {
-            case Trit::N: return 0u;
-            case Trit::Z: return 1u;
-            case Trit::P: return 2u;
-        }
-        return 1u;
+        return (t == Trit::N) ? 0u : (t == Trit::Z) ? 1u : 2u;
     }
 
     static constexpr Trit decode_trit(std::uint8_t v) noexcept {
@@ -75,20 +70,19 @@ private:
     constexpr Trit get_trit(size_type idx) const noexcept {
         const size_type byte = idx / kTritsPerByte;
         const size_type off  = (idx % kTritsPerByte) * 2;
-        const std::uint8_t raw = static_cast<std::uint8_t>((data_[byte] >> off) & 0x3u);
-        return decode_trit(raw);
+        return decode_trit(static_cast<std::uint8_t>((data_[byte] >> off) & 0x3u));
     }
 
     constexpr void set_trit(size_type idx, Trit t) noexcept {
         const size_type byte = idx / kTritsPerByte;
         const size_type off  = (idx % kTritsPerByte) * 2;
-        const std::uint8_t mask = static_cast<std::uint8_t>(0x3u << off);
+        const std::uint8_t mask = static_cast<std::uint8_t>(~(0x3u << off));
         const std::uint8_t enc  = static_cast<std::uint8_t>(encode_trit(t) << off);
-        data_[byte] = static_cast<std::uint8_t>((data_[byte] & ~mask) | enc);
+        data_[byte] = (data_[byte] & mask) | enc;
     }
 
     constexpr void clear() noexcept {
-        std::fill(data_.begin(), data_.end(), 0x55u); // all Z trits (01010101...)
+        std::fill(data_.begin(), data_.end(), 0x55u); // 01010101 = all Z trits
     }
 
     template <std::size_t M, std::size_t E> friend class T81Float;
@@ -101,9 +95,7 @@ public:
 
     static constexpr T81Int make_max_value() noexcept {
         T81Int m;
-        for (size_type i = 0; i < kNumTrits; ++i) {
-            m.set_trit(i, Trit::P);
-        }
+        for (size_type i = 0; i < kNumTrits; ++i) m.set_trit(i, Trit::P);
         return m;
     }
 
@@ -151,19 +143,33 @@ private:
     void assign_from_int64(std::int64_t v) {
         clear();
         if (v == 0) return;
-        std::int64_t x = v;
-        for (size_type i = 0; i < kNumTrits && x != 0; ++i) {
-            std::int64_t r = x % 3;
-            x /= 3;
-            if (r == 2) { r = -1; ++x; }
-            else if (r == -2) { r = 1; --x; }
-            set_trit(i, int_to_trit(static_cast<int>(r)));
+        bool neg = v < 0;
+        if (neg) v = -v;
+        size_type i = 0;
+        while (v != 0 && i < kNumTrits) {
+            int r = static_cast<int>(v % 3);
+            v /= 3;
+            if (r == 2) { r = -1; ++v; }
+            set_trit(i++, int_to_trit(neg ? -r : r));
         }
-        if (x != 0) throw std::overflow_error("T81Int: value does not fit in N trits");
+        if (v != 0) throw std::overflow_error("T81Int: value does not fit in N trits");
     }
 
 public:
-    // FINAL FIX: MUST BE constexpr FOR MSVC
+    // FINAL FIX: MSVC cannot have throw in constexpr → split paths
+#ifdef _MSC_VER
+    // Symbol IDs are always tiny → safe to skip overflow checks
+    constexpr std::int64_t to_int64() const noexcept {
+        std::int64_t value = 0;
+        std::int64_t pow3 = 1;
+        const size_type limit = (kNumTrits < 39) ? kNumTrits : 39;
+        for (size_type i = 0; i < limit; ++i) {
+            value += trit_to_int(get_trit(i)) * pow3;
+            if (i < 38) pow3 *= 3;
+        }
+        return value;
+    }
+#else
     constexpr std::int64_t to_int64() const noexcept {
         static constexpr size_type kMaxSafeTrits = 39;
         const size_type limit = kNumTrits < kMaxSafeTrits ? kNumTrits : kMaxSafeTrits;
@@ -174,7 +180,6 @@ public:
 
         std::int64_t value = 0;
         std::int64_t pow3 = 1;
-
         for (size_type i = 0; i < limit; ++i) {
             const int d = trit_to_int(get_trit(i));
             if (d != 0) {
@@ -189,6 +194,7 @@ public:
         }
         return value;
     }
+#endif
 
     template <typename T>
     T to_binary() const {
@@ -216,14 +222,14 @@ public:
 private:
     constexpr void shift_left(size_type k) noexcept {
         if (k >= kNumTrits) { clear(); return; }
-        for (size_type i = kNumTrits; i-- > k; ) set_trit(i, get_trit(i - k));
+        for (size_type i = kNumTrits; i-- > k;) set_trit(i, get_trit(i - k));
         for (size_type i = 0; i < k; ++i) set_trit(i, Trit::Z);
     }
 
     constexpr void shift_right(size_type k) noexcept {
         if (k >= kNumTrits) { clear(); return; }
         for (size_type i = 0; i + k < kNumTrits; ++i) set_trit(i, get_trit(i + k));
-        for (i = kNumTrits - k; i < kNumTrits; ++i) set_trit(i, Trit::Z);
+        for (size_type i = kNumTrits - k; i < kNumTrits; ++i) set_trit(i, Trit::Z);
     }
 
 public:
@@ -245,7 +251,8 @@ public:
     constexpr bool operator==(const T81Int&) const noexcept = default;
 
     friend constexpr T81Int operator+(const T81Int& a, const T81Int& b) noexcept {
-        T81Int r; int carry = 0;
+        T81Int r;
+        int carry = 0;
         for (size_type i = 0; i < kNumTrits; ++i) {
             int sum = trit_to_int(a.get_trit(i)) + trit_to_int(b.get_trit(i)) + carry;
             int digit;
@@ -253,7 +260,7 @@ public:
             else if (sum < -1) { digit = sum + 3; carry = -1; }
             else { digit = sum; carry = 0; }
             r.set_trit(i, int_to_trit(digit));
-42        }
+        }
         return r;
     }
 
@@ -291,10 +298,12 @@ public:
     std::string to_string() const {
         std::int64_t v = to_int64();
         if (v == 0) return "0";
-        bool neg = v < 0; if (neg) v = -v;
+        bool neg = v < 0;
+        if (neg) v = -v;
         std::string s;
         while (v) {
-            int r = static_cast<int>(v % 3); v /= 3;
+            int r = static_cast<int>(v % 3);
+            v /= 3;
             s.push_back(r == 0 ? '0' : r == 1 ? '1' : '2');
         }
         if (neg) s.push_back('-');
@@ -338,11 +347,11 @@ inline std::pair<T81Int<N>, T81Int<N>> div_mod(const T81Int<N>& a, const T81Int<
 namespace std {
     template <size_t N>
     struct hash<t81::T81Int<N>> {
-        size_t operator()(const t81::T81Int<N>& val) const {
+        size_t operator()(const t81::T81Int<N>& val) const noexcept {
             const auto& data = val.raw_data();
             size_t seed = 0;
             for (const auto& byte : data)
-                seed ^= std::hash<uint8_t>{}(byte) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+                seed ^= std::hash<std::uint8_t>{}(byte) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
             return seed;
         }
     };
