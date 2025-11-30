@@ -1,5 +1,5 @@
 // tests/cpp/test_T81Vector.cpp
-// CORRECTED — works with T81Vector<3> using T81Float<18,9>
+// CORRECTED — Vec3 uses Scalar = T81Float<18,9>
 
 #include "t81/core/T81Vector.hpp"
 #include "t81/core/T81Float.hpp"
@@ -10,9 +10,11 @@
 
 using namespace t81;
 
-// The real type used by T81Vector<3> in the library
-using Vec3   = T81Vector<3>;
-using Scalar = T81Float<18, 9>;  // ← THIS IS THE CORRECT ONE
+// Canonical scalar used in this test
+using Scalar = T81Float<18, 9>;
+
+// Make Vec3 use the same Scalar as the tests:
+using Vec3   = T81Vector<3, Scalar>;
 
 static Scalar s(double x) { return Scalar::from_double(x); }
 static double d(const Scalar& v) { return v.to_double(); }
@@ -49,10 +51,10 @@ int main() {
     {
         Vec3 a(s(1.0), s(2.0), s(3.0));
         Vec3 b(s(4.0), s(5.0), s(6.0));
-        Vec3 sum = a + b;
+        Vec3 sum  = a + b;
         Vec3 diff = b - a;
 
-        assert(std::fabs(d(sum[0]) - 5.0) < 1e-8);
+        assert(std::fabs(d(sum[0])  - 5.0) < 1e-8);
         assert(std::fabs(d(diff[2]) - 3.0) < 1e-8);
         std::cout << "  [OK] Addition & subtraction\n";
     }
