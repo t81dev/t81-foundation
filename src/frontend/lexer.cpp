@@ -60,10 +60,6 @@ bool is_digit(char c) {
 
 } // namespace
 
-/**
- * @brief Constructs a new Lexer.
- * @param source The source code to be tokenized.
- */
 Lexer::Lexer(std::string_view source)
     : _source(source),
       _current(_source.begin()),
@@ -71,9 +67,6 @@ Lexer::Lexer(std::string_view source)
       _token_start(_source.begin()),
       _line(1) {}
 
-/**
- * @brief Scans and returns the next token from the source code.
- */
 Token Lexer::next_token() {
     skip_whitespace_and_comments();
     _token_start = _current;
@@ -86,7 +79,6 @@ Token Lexer::next_token() {
     if (is_digit(c)) return number();
 
     switch (c) {
-        // Single-character tokens
         case '(': return make_token(TokenType::LParen);
         case ')': return make_token(TokenType::RParen);
         case '{': return make_token(TokenType::LBrace);
@@ -104,7 +96,6 @@ Token Lexer::next_token() {
         case '^': return make_token(TokenType::Caret);
         case '/': return make_token(TokenType::Slash);
 
-        // One or two-character tokens
         case '-': return make_token(match('>') ? TokenType::Arrow : TokenType::Minus);
         case '.': return make_token(match('.') ? TokenType::DotDot : TokenType::Illegal);
         case '=': return make_token(match('=') ? TokenType::EqualEqual : TokenType::Equal);
@@ -114,7 +105,6 @@ Token Lexer::next_token() {
         case '&': return make_token(match('&') ? TokenType::AmpAmp : TokenType::Amp);
         case '|': return make_token(match('|') ? TokenType::PipePipe : TokenType::Pipe);
 
-        // String literals
         case '"': return string();
     }
 
@@ -170,13 +160,12 @@ Token Lexer::string() {
         }
         advance();
     }
-    }
 
     if (is_at_end()) return error_token("Unterminated string.");
 
-    advance(); // closing quote
+    advance(); // consume the closing "
     return make_token(TokenType::String);
-}
+}   // ← THIS WAS MISSING — NOW FIXED
 
 Token Lexer::number() {
     while (is_digit(peek())) advance();
