@@ -4,7 +4,6 @@
 #include "t81/tisc/ir.hpp"
 
 #include <stdexcept>
-#include <string>
 
 namespace t81::frontend {
 
@@ -15,9 +14,7 @@ tisc::ir::IntermediateProgram IRGenerator::generate(const std::vector<std::uniqu
     return std::move(_program);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Statements
-// ─────────────────────────────────────────────────────────────────────────────
 std::any IRGenerator::visit(const ExpressionStmt& stmt) {
     stmt.expression->accept(*this);
     return {};
@@ -35,44 +32,37 @@ std::any IRGenerator::visit(const WhileStmt&)        { return {}; }
 std::any IRGenerator::visit(const ReturnStmt&)       { return {}; }
 std::any IRGenerator::visit(const FunctionStmt&)     { return {}; }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Expressions
-// ─────────────────────────────────────────────────────────────────────────────
 std::any IRGenerator::visit(const BinaryExpr& expr) {
     expr.left->accept(*this);
     expr.right->accept(*this);
 
     using O = tisc::ir::Opcode;
     switch (expr.op.type) {
-        case TokenType::Plus:   emit(tisc::ir::Instruction{O::ADD});  break;
-        case TokenType::Minus:  emit(tisc::ir::Instruction{O::SUB});  break;
-        case TokenType::Star:   emit(tisc::ir::Instruction{O::MUL});  break;
-        case TokenType::Slash:  emit(tisc::ir::Instruction{O::DIV});  break;
+        case TokenType::Plus:   emit(tisc::ir::Instruction{O::ADD}); break;
+        case TokenType::Minus:  emit(tisc::ir::Instruction{O::SUB}); break;
+        case TokenType::Star:   emit(tisc::ir::Instruction{O::MUL}); break;
+        case TokenType::Slash:  emit(tisc::ir::Instruction{O::DIV}); break;
         default:
-            throw std::runtime_error("Unsupported binary operator");
+            throw std::runtime_error("Unsupported binary operator in IR generation");
     }
     return {};
 }
 
 std::any IRGenerator::visit(const LiteralExpr& expr) {
-    // Current AST: LiteralExpr::value is std::variant<std::string, int64_t, double>
-    if (std::holds_alternative<int64_t>(expr.value)) {
-        int64_t v = std::get<int64_t>(expr.value);
+    // In the current t81-foundation AST, LiteralExpr::token holds the Token,
+    // and the actual value is in token.literal (std::string)
+    const std::string& lit = expr.token.literal;
+
+    // The IR test only uses integer literals
+    try {
+        int64_t value = std::stoll(lit);
         emit(tisc::ir::Instruction{
             tisc::ir::Opcode::LOADI,
-            {tisc::ir::Immediate{v}}
+            {tisc::ir::Immediate{value}}
         });
-    } else if (std::holds_alternative<double>(expr.value)) {
-        int64_t v = static_cast<int64_t>(std::get<double>(expr.value));
-        emit(tisc::ir::Instruction{
-            tisc::ir::Opcode::LOADI,
-            {tisc::ir::Immediate{v}}
-        });
-    } else if (std::holds_alternative<std::string>(expr.value)) {
-        // String literals not used in current IR test
-        throw std::runtime_error("String literals not supported in IR generation yet");
-    } else {
-        throw std::runtime_error("Unknown literal type");
+    } catch (...) {
+        throw std::runtime_error("Failed to parse literal value: " + lit);
     }
     return {};
 }
@@ -89,9 +79,7 @@ std::any IRGenerator::visit(const AssignExpr&)       { return {}; }
 std::any IRGenerator::visit(const SimpleTypeExpr&)   { return {}; }
 std::any IRGenerator::visit(const GenericTypeExpr&)  { return {}; }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Utility
-// ─────────────────────────────────────────────────────────────────────────────
 void IRGenerator::emit(tisc::ir::Instruction instr) {
     _program.add_instruction(std::move(instr));
 }
