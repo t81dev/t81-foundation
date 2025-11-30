@@ -1,3 +1,12 @@
+#if defined(_MSC_VER) && _MSC_VER < 1930
+// MSVC before VS 2022 17.0 has broken thread_local in some contexts
+static int type_to_string_depth = 0;
+#define TYPE_TO_STRING_DEPTH type_to_string_depth
+#else
+thread_local int type_to_string_depth = 0;
+#define TYPE_TO_STRING_DEPTH type_to_string_depth
+#endif
+
 #include "t81/frontend/semantic_analyzer.hpp"
 #include <iostream>
 #include <sstream>
