@@ -13,8 +13,6 @@
 
 ...
 
-[![T81 Foundation – The Ternary Standard Library](https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/ci.yml?branch=main&label=T81%20Foundation&logo=github&style=for-the-badge&color=81D4FA)](https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml)
-
 [![Reference Platform: macOS • clang](https://img.shields.io/badge/Reference-macOS%20clang-81D4FA?logo=apple&style=for-the-badge)](https://github.com/t81dev/t81-foundation/actions)
 [![Platforms](https://img.shields.io/badge/Platforms-macOS%20•%20Linux%20•%20Windows%20•%20WASM-81D4FA?logo=cplusplus&style=for-the-badge)](https://github.com/t81dev/t81-foundation/actions)
 
