@@ -41,18 +41,18 @@ class T81Vector {
         }
     }
 
-    // Component → Scalar bridge
+    // Bridge arbitrary component/scalar types to Scalar
     template <typename C>
     static constexpr Scalar component_to_scalar(const C& c) noexcept {
         using Decayed = std::decay_t<C>;
         if constexpr (std::same_as<Decayed, Scalar>) {
-            // Exact same type: just copy
+            // Exact same type: copy
             return c;
         } else if constexpr (std::convertible_to<C, Scalar>) {
-            // Implicitly convertible (e.g., widening numeric types)
+            // Implicitly convertible
             return static_cast<Scalar>(c);
         } else if constexpr (requires (const C& x) { { x.to_double() } -> std::convertible_to<double>; }) {
-            // Bridge via to_double() → Scalar::from_double()
+            // Has to_double(): bridge via double → Scalar
             return scalar_from_double(c.to_double());
         } else {
             static_assert(std::same_as<C, void>,
@@ -81,10 +81,7 @@ public:
         }
     }
 
-    // Variadic constructor – accepts components that are either:
-    //  - exactly Scalar
-    //  - convertible to Scalar
-    //  - or expose to_double() that we bridge through Scalar::from_double()
+    // Variadic constructor – accepts N components that can be bridged to Scalar
     template <VectorComponent... Components>
         requires (sizeof...(Components) == N)
     constexpr T81Vector(Components... comps) noexcept
@@ -146,14 +143,20 @@ public:
         return r;
     }
 
-    [[nodiscard]] constexpr T81Vector operator*(Scalar s) const noexcept {
+    // Right scalar multiply: v * s
+    template <VectorComponent S>
+    [[nodiscard]] constexpr T81Vector operator*(const S& s) const noexcept {
+        const Scalar ss = component_to_scalar(s);
         T81Vector r;
-        for (std::size_t i = 0; i < N; ++i) r[i] = components_[i] * s;
+        for (std::size_t i = 0; i < N; ++i) r[i] = components_[i] * ss;
         return r;
     }
 
-    friend constexpr T81Vector operator*(Scalar s, const T81Vector& v) noexcept {
-        return v * s;
+    // Left scalar multiply: s * v
+    template <VectorComponent S>
+    friend constexpr T81Vector operator*(const S& s, const T81Vector& v) noexcept {
+        const Scalar ss = component_to_scalar(s);
+        return v * ss;
     }
 
     //===================================================================
@@ -296,3 +299,4 @@ constexpr auto left = right.rotated(rotation);  // (0,0,-1) approximately
 */
 
 } // namespace t81
+::contentReference[oaicite:0]{index=0}
