@@ -16,6 +16,8 @@
 <!-- T81-TOC:END -->
 
 
+
+
 This guide introduces a curated set of T81 data types through a runnable example (`examples/data_types.t81`). The goal is to show how primitives, strings, and structural types behave once compiled with the `t81` CLI.
 
 ## Categories Covered
