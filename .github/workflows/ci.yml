@@ -323,7 +323,7 @@ jobs:
           set -eo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build lcov g++-14 2>&1 | tee -a .github/logs/coverage.log
+            build-essential cmake ninja-build lcov gcc-14 g++-14 2>&1 | tee -a .github/logs/coverage.log
       - name: Configure & Build with Coverage
         run: |
           set -eo pipefail
@@ -341,15 +341,26 @@ jobs:
           set -eo pipefail
           {
           ctest --test-dir build --output-on-failure
-          lcov --capture --directory build --output-file coverage.info
-          lcov --remove coverage.info '/usr/*' '*/tests/*' '*/legacy/*' --output-file coverage.filtered.info
+
+          # Ensure we use the gcov that matches g++-14 (avoids B42/B33 mismatch)
+          GCOV_BIN="$(command -v gcov-14 || echo gcov-14)"
+
+          lcov --gcov-tool "${GCOV_BIN}" \
+               --capture \
+               --directory build \
+               --output-file coverage.info
+
+          lcov --gcov-tool "${GCOV_BIN}" \
+               --remove coverage.info '/usr/*' '*/tests/*' '*/legacy/*' \
+               --output-file coverage.filtered.info
+
           lcov --list coverage.filtered.info
           } 2>&1 | tee -a .github/logs/coverage.log
       - name: Upload to Codecov
         uses: codecov/codecov-action@v4
         with:
           files: coverage.filtered.info
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.CODECV_TOKEN }}
           fail_ci_if_error: true
 
       - name: Job Failure Summary
