@@ -159,7 +159,7 @@ private:
 
 public:
     // Universal C++20 to_int64(): works on MSVC (no throw), GCC/Clang (full safety)
-    constexpr std::int64_t to_int64() const noexcept {
+    [[nodiscard]] constexpr std::int64_t to_int64() const {
 #ifdef _MSC_VER
         // MSVC: no throw allowed in constexpr → fast path (symbol IDs are tiny)
         std::int64_t value = 0;
