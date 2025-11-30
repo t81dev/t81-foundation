@@ -4,6 +4,7 @@
 #include "t81/tisc/ir.hpp"
 
 #include <stdexcept>
+#include <string>
 
 namespace t81::frontend {
 
@@ -15,7 +16,7 @@ tisc::ir::IntermediateProgram IRGenerator::generate(const std::vector<std::uniqu
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Statement visitors
+// Statements
 // ─────────────────────────────────────────────────────────────────────────────
 std::any IRGenerator::visit(const ExpressionStmt& stmt) {
     stmt.expression->accept(*this);
@@ -23,9 +24,7 @@ std::any IRGenerator::visit(const ExpressionStmt& stmt) {
 }
 
 std::any IRGenerator::visit(const BlockStmt& stmt) {
-    for (const auto& s : stmt.statements) {
-        s->accept(*this);
-    }
+    for (const auto& s : stmt.statements) s->accept(*this);
     return {};
 }
 
@@ -37,43 +36,43 @@ std::any IRGenerator::visit(const ReturnStmt&)       { return {}; }
 std::any IRGenerator::visit(const FunctionStmt&)     { return {}; }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Expression visitors
+// Expressions
 // ─────────────────────────────────────────────────────────────────────────────
 std::any IRGenerator::visit(const BinaryExpr& expr) {
-    expr.left->accept(*this);   // ← note: field is called `left` / `right`, not `lhs`/`rhs`
+    expr.left->accept(*this);
     expr.right->accept(*this);
 
-    using Opcode = tisc::ir::Opcode;
-
+    using O = tisc::ir::Opcode;
     switch (expr.op.type) {
-        case TokenType::Plus:   emit(tisc::ir::Instruction{Opcode::ADD});   break;
-        case TokenType::Minus:  emit(tisc::ir::Instruction{Opcode::SUB});   break;
-        case TokenType::Star:   emit(tisc::ir::Instruction{Opcode::MUL});   break;
-        case TokenType::Slash:  emit(tisc::ir::Instruction{Opcode::DIV});   break;
+        case TokenType::Plus:   emit(tisc::ir::Instruction{O::ADD});  break;
+        case TokenType::Minus:  emit(tisc::ir::Instruction{O::SUB});  break;
+        case TokenType::Star:   emit(tisc::ir::Instruction{O::MUL});  break;
+        case TokenType::Slash:  emit(tisc::ir::Instruction{O::DIV});  break;
         default:
-            throw std::runtime_error("Unsupported binary operator in IR generation");
+            throw std::runtime_error("Unsupported binary operator");
     }
     return {};
 }
 
 std::any IRGenerator::visit(const LiteralExpr& expr) {
-    // Literals are stored directly as Token in the current AST
-    if (expr.literal.type == TokenType::IntegerLiteral) {
-        int64_t v = std::stoll(expr.literal.lexeme);
+    // Current AST: LiteralExpr::value is std::variant<std::string, int64_t, double>
+    if (std::holds_alternative<int64_t>(expr.value)) {
+        int64_t v = std::get<int64_t>(expr.value);
         emit(tisc::ir::Instruction{
             tisc::ir::Opcode::LOADI,
             {tisc::ir::Immediate{v}}
         });
-    } else if (expr.literal.type == TokenType::FloatLiteral) {
-        // The test only uses integers, but we support floats safely
-        double d = std::stod(expr.literal.lexeme);
-        int64_t v = static_cast<int64_t>(d);
+    } else if (std::holds_alternative<double>(expr.value)) {
+        int64_t v = static_cast<int64_t>(std::get<double>(expr.value));
         emit(tisc::ir::Instruction{
             tisc::ir::Opcode::LOADI,
             {tisc::ir::Immediate{v}}
         });
+    } else if (std::holds_alternative<std::string>(expr.value)) {
+        // String literals not used in current IR test
+        throw std::runtime_error("String literals not supported in IR generation yet");
     } else {
-        throw std::runtime_error("Unsupported literal type");
+        throw std::runtime_error("Unknown literal type");
     }
     return {};
 }
