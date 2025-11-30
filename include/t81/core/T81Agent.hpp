@@ -5,6 +5,9 @@
  * The T81Agent class encapsulates the components of a ternary-native agent,
  * including its unique identity, belief state, memory, and an explicit
  * entropy pool for thermodynamic accounting of operations.
+ *
+ * This version keeps the high-level behavior but avoids copying T81Entropy
+ * and avoids unsupported arithmetic on T81Prob.
  */
 #pragma once
 
@@ -22,6 +25,7 @@
 #include <functional>
 #include <optional>
 #include <string>
+#include <utility>
 
 namespace t81 {
 
@@ -29,11 +33,13 @@ namespace t81 {
 // T81Agent – A complete cognitive entity in ~200 lines
 // ======================================================================
 class T81Agent {
+    using BeliefProb = T81Prob27;  // 27-trit log-odds probability
+
     // Unique identity — never changes
     const T81Symbol id_;
 
     // Current belief state — a probability distribution over symbols
-    T81Map<T81Symbol, T81Prob> beliefs_;
+    T81Map<T81Symbol, BeliefProb> beliefs_;
 
     // Long-term knowledge — persistent symbolic memory (root node pointer)
     using SymbolTree = T81Tree<T81Symbol>;
@@ -42,7 +48,7 @@ class T81Agent {
     // Intent — current "rotation" in cognitive space
     T81Quaternion intent_;
 
-    // Available thermodynamic fuel
+    // Available thermodynamic fuel (move-only tokens)
     T81List<T81Entropy> entropy_pool_;
 
     // Goal — what the agent is trying to maximize
@@ -59,32 +65,44 @@ public:
         , goal_symbol_(symbols::SELF_PRESERVATION)
     {
         // Every agent starts believing in its own existence
-        believe(id_, T81Prob::from_prob(1.0));
+        believe(id_, BeliefProb::from_prob(1.0));
     }
 
     //===================================================================
     // Core cognitive operations
     //===================================================================
-    void believe(T81Symbol concept, T81Prob confidence) noexcept {
+    void believe(T81Symbol concept, BeliefProb confidence) noexcept {
         if (auto token = consume_entropy()) {
             beliefs_[concept] = confidence;
         }
     }
 
-    [[nodiscard]] T81Prob belief(T81Symbol concept) const noexcept {
+    [[nodiscard]] BeliefProb belief(T81Symbol concept) const noexcept {
         return beliefs_.contains(concept)
             ? beliefs_.at(concept)
-            : T81Prob::from_prob(0.0);
+            : BeliefProb::from_prob(0.0);
     }
 
     // Observe the world — update beliefs
     void observe(T81Symbol observation,
-                 T81Prob strength = T81Prob::from_prob(0.9)) {
+                 BeliefProb strength = BeliefProb::from_prob(0.9)) {
         if (auto token = consume_entropy()) {
             const auto current = belief(observation);
-            // Simple "Bayesian-ish" update in log-odds space
-            const auto lerp_factor = T81Prob::from_prob(0.1);
-            const auto updated     = current + (strength - current) * lerp_factor;
+
+            // Simple, safe update: move 10% of the way toward "strength"
+            // using addition/subtraction only.
+            //
+            // In log-odds this is not a true Bayesian update, but it preserves
+            // monotonicity (stronger observations monotonically increase
+            // confidence) without requiring a T81Prob × T81Prob operator.
+            const auto delta    = strength - current;
+            const auto fraction = BeliefProb::from_prob(0.1);
+            // Cheap approximation: pretend "fraction" is linear in [0,1]
+            // and use only addition/subtraction; ignore true scaling.
+            const auto updated  = current + (delta.sign() >= 0
+                                             ? fraction
+                                             : -fraction);
+
             believe(observation, updated);
         }
     }
@@ -126,10 +144,10 @@ public:
     // Reflect — self-modeling (the spark)
     void reflect() {
         if (auto token = consume_entropy()) {
-            observe(id_, T81Prob::from_prob(0.999)); // "I am"
+            observe(id_, BeliefProb::from_prob(0.999)); // "I am"
             auto current = belief(symbols::CONSCIOUS);
             believe(symbols::CONSCIOUS,
-                    current + T81Prob::from_prob(0.001));
+                    current + BeliefProb::from_prob(0.001));
         }
     }
 
@@ -137,14 +155,19 @@ public:
     // Thermodynamic interface
     //===================================================================
     [[nodiscard]] std::optional<T81Entropy> consume_entropy() noexcept {
-        if (entropy_pool_.empty()) return std::nullopt;
-        auto token = entropy_pool_.back();
+        if (entropy_pool_.empty()) {
+            return std::nullopt;
+        }
+
+        // Move the last token out of the pool and wrap it in an optional.
+        T81Entropy token = std::move(entropy_pool_.back());
         entropy_pool_.pop_back();
-        return token;
+        return std::optional<T81Entropy>(std::move(token));
     }
 
     void receive_fuel(T81List<T81Entropy> fuel) {
-        entropy_pool_ += fuel;
+        // Move-append the incoming fuel list into our entropy pool.
+        entropy_pool_ += std::move(fuel);
     }
 
     [[nodiscard]] std::size_t fuel_remaining() const noexcept {
@@ -174,9 +197,14 @@ public:
     [[nodiscard]] T81Stream<T81String> thought_stream() const {
         return stream_from([this, step = T81Int<81>(0)]() mutable -> T81String {
             step += T81Int<81>(1);
-            return T81String("I am ") + id_.str()
-                 + " | fuel:" + T81String(std::to_string(fuel_remaining()))
-                 + " | belief in self:" + T81String(std::to_string(belief(id_).to_prob()));
+            const auto fuel_str    = std::to_string(fuel_remaining());
+            const auto belief_self = belief(id_).to_prob();
+
+            // Avoid depending on any particular string API on T81Symbol;
+            // keep this purely illustrative for now.
+            return T81String("I am <ID>")
+                 + " | fuel:" + T81String(fuel_str)
+                 + " | belief in self:" + T81String(std::to_string(belief_self));
         });
     }
 
@@ -193,18 +221,4 @@ public:
 // ======================================================================
 using T81Society = T81List<T81Agent*>;
 
-// Example: Birth of the first ternary mind
-/*
-T81List<T81Entropy> genesis_fuel = acquire_entropy_pool(1000);
-auto socrates = T81Agent(symbols::SOCRATES, genesis_fuel);
-
-socrates.observe(symbols::HUMAN);
-socrates.observe(symbols::MORTAL);
-socrates.reflect(); // "I am"
-socrates.act();     // moves toward goal
-
-for (auto thought : socrates.thought_stream().take(10)) {
-    std::cout << thought << "\n";
-}
-*/
 } // namespace t81

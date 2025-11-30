@@ -1,223 +1,152 @@
 /**
  * @file T81Tree.hpp
- * @brief Defines the T81Tree class, an immutable, persistent ternary tree.
+ * @brief Immutable ternary tree (left, middle, right) with shared structure.
  *
- * This file provides the `T81Tree<T>` class, an immutable, persistent, and
- * perfectly balanced 3-ary tree. It is designed for use in functional-style
- * programming, where update operations (e.g., adding a child) return a new
- * tree, leaving the original structure unmodified. This makes it suitable for
- * representing hierarchical data in a robust, thread-safe manner.
+ * Persistent API:
+ *   • using ptr  = std::shared_ptr<const T81Tree<T>>;
+ *   • static ptr leaf(value);
+ *   • static ptr node(value, children_array);
+ *   • static ptr node(value, left, middle, right);
+ *   • static ptr node(value, opt_left, opt_middle, opt_right);
+ *   • with_left / with_middle / with_right → updated ptrs sharing structure.
  */
+
 #pragma once
 
-#include "t81/core/T81Int.hpp"
-#include "t81/core/T81Symbol.hpp"
-#include "t81/core/T81String.hpp"
-#include "t81/core/T81List.hpp"
-
 #include <array>
-#include <optional>
+#include <cstddef>
 #include <memory>
-#include <compare>
-#include <span>
+#include <optional>
 #include <utility>
 
 namespace t81 {
 
-// ======================================================================
-// T81Tree<T> – Immutable, persistent, perfectly balanced ternary tree
-// ======================================================================
 template <typename T>
 class T81Tree {
 public:
-    using value_type = T;
-    using Node       = T81Tree<T>;
-    using NodePtr    = std::unique_ptr<const Node>;
+    using value_type     = T;
+    using node_type      = T81Tree<T>;
+    using ptr            = std::shared_ptr<const node_type>;
+    using children_array = std::array<ptr, 3>; // 0 = left, 1 = middle, 2 = right
 
 private:
-    alignas(64) T value_;
-    // children_[0] = left (-1), children_[1] = middle (0), children_[2] = right (+1)
-    std::array<NodePtr, 3> children_{};
+    value_type     value_{};
+    children_array children_{};  // default-initialised to {nullptr, nullptr, nullptr}
 
 public:
     //===================================================================
-    // Constructors
+    // Constructors – public so std::make_shared can construct nodes
     //===================================================================
 
-    // Primary constructor from value + fixed children array
-    T81Tree(T value, std::array<NodePtr, 3> ch)
-        : value_(std::move(value))
-        , children_(std::move(ch)) {}
+    T81Tree() = default;
 
-    // Compatibility constructor: value + three raw children
-    // Allows patterns like: Node node{ value, left, middle, right };
-    T81Tree(T value, NodePtr left, NodePtr middle, NodePtr right)
-        : value_(std::move(value)) {
-        children_[0] = std::move(left);
-        children_[1] = std::move(middle);
-        children_[2] = std::move(right);
+    T81Tree(const value_type& v, children_array children = {})
+        : value_(v)
+        , children_(std::move(children)) {}
+
+    T81Tree(value_type&& v, children_array children = {})
+        : value_(std::move(v))
+        , children_(std::move(children)) {}
+
+    //===================================================================
+    // Construction helpers
+    //===================================================================
+
+    // Leaf with no children
+    static ptr leaf(const value_type& v) {
+        return std::make_shared<node_type>(v, children_array{});
     }
 
-    // Compatibility constructor: value + left/right only (middle = null)
-    // Matches older tests that used binary-like construction:
-    //   Node node{ value, left_child, right_child };
-    T81Tree(T value, NodePtr left, NodePtr right)
-        : T81Tree(std::move(value),
-                  std::move(left),
-                  nullptr,
-                  std::move(right)) {}
-
-    //===================================================================
-    // Factory functions – the main construction surface
-    //===================================================================
-    [[nodiscard]] static NodePtr leaf(T value) {
-        return std::make_unique<Node>(
-            std::move(value),
-            std::array<NodePtr, 3>{nullptr, nullptr, nullptr}
-        );
+    static ptr leaf(value_type&& v) {
+        return std::make_shared<node_type>(std::move(v), children_array{});
     }
 
-    [[nodiscard]] static NodePtr node(
-        T value,
-        std::optional<NodePtr> left   = std::nullopt,
-        std::optional<NodePtr> middle = std::nullopt,
-        std::optional<NodePtr> right  = std::nullopt
+    // Node with explicit children array
+    static ptr node(const value_type& v, children_array children) {
+        return std::make_shared<node_type>(v, std::move(children));
+    }
+
+    static ptr node(value_type&& v, children_array children) {
+        return std::make_shared<node_type>(std::move(v), std::move(children));
+    }
+
+    // Node with raw child pointers
+    static ptr node(const value_type& v, ptr left, ptr middle, ptr right) {
+        children_array children{ std::move(left), std::move(middle), std::move(right) };
+        return std::make_shared<node_type>(v, std::move(children));
+    }
+
+    static ptr node(value_type&& v, ptr left, ptr middle, ptr right) {
+        children_array children{ std::move(left), std::move(middle), std::move(right) };
+        return std::make_shared<node_type>(std::move(v), std::move(children));
+    }
+
+    // Node with optional child pointers (matches test_T81Tree.cpp)
+    static ptr node(
+        const value_type& v,
+        std::optional<ptr> left,
+        std::optional<ptr> middle,
+        std::optional<ptr> right
     ) {
-        std::array<NodePtr, 3> children = {
-            left   ? std::move(left.value())   : nullptr,
-            middle ? std::move(middle.value()) : nullptr,
-            right  ? std::move(right.value())  : nullptr
+        children_array children{
+            left   ? *left   : ptr{},
+            middle ? *middle : ptr{},
+            right  ? *right  : ptr{}
         };
-        return std::make_unique<Node>(std::move(value), std::move(children));
+        return std::make_shared<node_type>(v, std::move(children));
+    }
+
+    static ptr node(
+        value_type&& v,
+        std::optional<ptr> left,
+        std::optional<ptr> middle,
+        std::optional<ptr> right
+    ) {
+        children_array children{
+            left   ? *left   : ptr{},
+            middle ? *middle : ptr{},
+            right  ? *right  : ptr{}
+        };
+        return std::make_shared<node_type>(std::move(v), std::move(children));
     }
 
     //===================================================================
-    // Accessors
+    // Observers
     //===================================================================
-    [[nodiscard]] constexpr const T& value() const noexcept { return value_; }
 
-    [[nodiscard]] constexpr const Node* left()   const noexcept { return children_[0].get(); }
-    [[nodiscard]] constexpr const Node* middle() const noexcept { return children_[1].get(); }
-    [[nodiscard]] constexpr const Node* right()  const noexcept { return children_[2].get(); }
-
-    [[nodiscard]] constexpr bool is_leaf() const noexcept {
-        return !children_[0] && !children_[1] && !children_[2];
+    [[nodiscard]] const value_type& value() const noexcept {
+        return value_;
     }
 
-    //===================================================================
-    // Functional updates – persistent (new tree, old one unchanged)
-    //===================================================================
-    [[nodiscard]] NodePtr with_left(NodePtr new_left) const {
-        auto new_children = children_;
-        new_children[0]   = std::move(new_left);
-        return std::make_unique<Node>(value_, std::move(new_children));
+    [[nodiscard]] const children_array& children() const noexcept {
+        return children_;
     }
 
-    [[nodiscard]] NodePtr with_middle(NodePtr new_middle) const {
-        auto new_children = children_;
-        new_children[1]   = std::move(new_middle);
-        return std::make_unique<Node>(value_, std::move(new_children));
-    }
-
-    [[nodiscard]] NodePtr with_right(NodePtr new_right) const {
-        auto new_children = children_;
-        new_children[2]   = std::move(new_right);
-        return std::make_unique<Node>(value_, std::move(new_children));
-    }
+    [[nodiscard]] ptr left() const noexcept   { return children_[0]; }
+    [[nodiscard]] ptr middle() const noexcept { return children_[1]; }
+    [[nodiscard]] ptr right() const noexcept  { return children_[2]; }
 
     //===================================================================
-    // Traversal
+    // Persistent update helpers
     //===================================================================
-    template <typename Fn>
-    void traverse_preorder(Fn&& fn) const {
-        fn(value_);
-        if (left())   left()->traverse_preorder(fn);
-        if (middle()) middle()->traverse_preorder(fn);
-        if (right())  right()->traverse_preorder(fn);
+
+    [[nodiscard]] ptr with_left(ptr new_left) const {
+        children_array c = children_;
+        c[0] = std::move(new_left);
+        return std::make_shared<node_type>(value_, std::move(c));
     }
 
-    template <typename Fn>
-    void traverse_inorder(Fn&& fn) const {
-        if (left())   left()->traverse_inorder(fn);
-        fn(value_);
-        if (middle()) middle()->traverse_inorder(fn);
-        if (right())  right()->traverse_inorder(fn);
+    [[nodiscard]] ptr with_middle(ptr new_middle) const {
+        children_array c = children_;
+        c[1] = std::move(new_middle);
+        return std::make_shared<node_type>(value_, std::move(c));
     }
 
-    template <typename Fn>
-    void traverse_postorder(Fn&& fn) const {
-        if (left())   left()->traverse_postorder(fn);
-        if (middle()) middle()->traverse_postorder(fn);
-        if (right())  right()->traverse_postorder(fn);
-        fn(value_);
+    [[nodiscard]] ptr with_right(ptr new_right) const {
+        children_array c = children_;
+        c[2] = std::move(new_right);
+        return std::make_shared<node_type>(value_, std::move(c));
     }
-
-    // Collect into T81List
-    [[nodiscard]] T81List<T> to_list_preorder() const {
-        T81List<T> result;
-        traverse_preorder([&](const T& v) { result.push_back(v); });
-        return result;
-    }
-
-    //===================================================================
-    // Search & Lookup
-    //===================================================================
-    [[nodiscard]] constexpr const Node* find(const T& target) const noexcept {
-        if (value_ == target) return this;
-        if (left())   if (auto f = left()->find(target))   return f;
-        if (middle()) if (auto f = middle()->find(target)) return f;
-        if (right())  if (auto f = right()->find(target))  return f;
-        return nullptr;
-    }
-
-    //===================================================================
-    // Comparison (structural)
-    //===================================================================
-    [[nodiscard]] constexpr auto operator<=>(const Node& o) const noexcept {
-        if (value_ != o.value_) return value_ <=> o.value_;
-        for (int i = 0; i < 3; ++i) {
-            const bool a_has = static_cast<bool>(children_[i]);
-            const bool b_has = static_cast<bool>(o.children_[i]);
-            if (a_has != b_has) {
-                return a_has
-                    ? std::strong_ordering::greater
-                    : std::strong_ordering::less;
-            }
-            if (children_[i] && o.children_[i] &&
-                *children_[i] != *o.children_[i]) {
-                return *children_[i] <=> *o.children_[i];
-            }
-        }
-        return std::strong_ordering::equal;
-    }
-
-    [[nodiscard]] constexpr bool operator==(const Node&) const noexcept = default;
 };
 
-// ======================================================================
-// Common ternary trees used in the new world
-// ======================================================================
-using SymbolTree = T81Tree<T81Symbol>;
-using ParseTree  = T81Tree<T81String>;  // T81String is in t81 namespace
-// Note: DecisionTree and SyntaxTree require additional headers
-// using DecisionTree = T81Tree<core::T81Prob>;      // probabilities at leaves
-// using SyntaxTree   = T81Tree<T81Quaternion>;      // 4D cognitive structure
-
-// ======================================================================
-// Example: This is how the future parses meaning
-// ======================================================================
-/*
-auto tree = T81Tree<T81Symbol>::node(
-    symbols::SENTENCE,
-    T81Tree<T81Symbol>::leaf(symbols::SUBJECT),
-    T81Tree<T81Symbol>::node(
-        symbols::PREDICATE,
-        T81Tree<T81Symbol>::leaf(symbols::IS),
-        T81Tree<T81Symbol>::leaf(symbols::MORTAL)
-    ),
-    T81Tree<T81Symbol>::leaf(symbols::OBJECT)
-);
-
-auto tokens = tree.to_list_preorder();  // SENTENCE → SUBJECT → PREDICATE → IS → MORTAL → OBJECT
-*/
 } // namespace t81

@@ -24,6 +24,7 @@
 #include <compare>
 #include <concepts>
 #include <functional>
+#include <iterator>
 #include <ostream>
 #include <span>
 #include <type_traits>
@@ -36,7 +37,8 @@ namespace t81 {
 // T81List<E> – dynamic sequence with ternary-friendly constraints
 // ======================================================================
 template <typename E>
-    requires (!std::is_void_v<E> && (sizeof(E) <= 32)) // ≤ ~243 trits payload
+    // relaxed upper bound to support larger payloads like T81Entropy
+    requires (!std::is_void_v<E> && (sizeof(E) <= 64))
 class T81List {
 public:
     using value_type      = E;
@@ -150,15 +152,38 @@ public:
 
     //===================================================================
     // Concatenation
+    //
+    //  • For copyable E: + and +=(const&) use copies.
+    //  • For move-only E (e.g., T81Entropy): use +=(T81List&&) with moves.
     //===================================================================
 
-    friend T81List operator+(T81List lhs, const T81List& rhs) {
+    // Copying concatenation only if E is copy-constructible.
+    friend T81List
+    operator+(T81List lhs, const T81List& rhs)
+        requires std::is_copy_constructible_v<E>
+    {
         lhs.data_.insert(lhs.data_.end(), rhs.data_.begin(), rhs.data_.end());
         return lhs;
     }
 
-    T81List& operator+=(const T81List& o) {
+    // Copying += only if E is copy-constructible.
+    T81List&
+    operator+=(const T81List& o)
+        requires std::is_copy_constructible_v<E>
+    {
         data_.insert(data_.end(), o.data_.begin(), o.data_.end());
+        return *this;
+    }
+
+    // Move-based += for move-only or move-preferred types.
+    T81List&
+    operator+=(T81List&& o) noexcept(std::is_nothrow_move_constructible_v<E>) {
+        data_.insert(
+            data_.end(),
+            std::make_move_iterator(o.data_.begin()),
+            std::make_move_iterator(o.data_.end())
+        );
+        o.clear();
         return *this;
     }
 

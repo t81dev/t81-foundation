@@ -1,5 +1,4 @@
 #include "t81/core/T81Quaternion.hpp"
-#include "t81/core/T81Float.hpp"
 #include <cassert>
 #include <iostream>
 #include <cmath>
@@ -8,6 +7,8 @@ using namespace t81;
 
 int main() {
     std::cout << "Running T81Quaternion tests...\n";
+
+    using Scalar = T81Quaternion::Scalar;
 
     // Identity quaternion
     T81Quaternion id = T81Quaternion::identity();
@@ -18,19 +19,19 @@ int main() {
 
     // Construction from components
     T81Quaternion q(
-        T81Float<72,9>::from_double(1.0),
-        T81Float<72,9>::from_double(0.0),
-        T81Float<72,9>::from_double(0.0),
-        T81Float<72,9>::from_double(0.0)
+        Scalar::from_double(1.0),
+        Scalar::from_double(0.0),
+        Scalar::from_double(0.0),
+        Scalar::from_double(0.0)
     );
     assert(q.w().to_double() > 0.9 && q.w().to_double() < 1.1);
 
     // Conjugate
     T81Quaternion q2(
-        T81Float<72,9>::from_double(1.0),
-        T81Float<72,9>::from_double(1.0),
-        T81Float<72,9>::from_double(1.0),
-        T81Float<72,9>::from_double(1.0)
+        Scalar::from_double(1.0),
+        Scalar::from_double(1.0),
+        Scalar::from_double(1.0),
+        Scalar::from_double(1.0)
     );
     T81Quaternion conj = q2.conj();
     assert(conj.w().to_double() > 0.9 && conj.w().to_double() < 1.1);
@@ -49,4 +50,3 @@ int main() {
     std::cout << "All T81Quaternion tests PASSED!\n";
     return 0;
 }
-

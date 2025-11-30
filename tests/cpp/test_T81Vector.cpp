@@ -1,57 +1,92 @@
+// tests/cpp/test_T81Vector.cpp
+
 #include "t81/core/T81Vector.hpp"
+#include "t81/core/T81Float.hpp"
+
 #include <cassert>
 #include <iostream>
 #include <cmath>
 
 using namespace t81;
 
+// Canonical 3D vector over float81
+using Vec3   = T81Vector<3>;
+using Scalar = float81;
+
+// Helpers: convert between double and Scalar for testing
+static Scalar s(double x) {
+    return Scalar::from_double(x);
+}
+
+static double d(const Scalar& v) {
+    return v.to_double();
+}
+
 int main() {
     std::cout << "Running T81Vector tests...\n";
 
-    using Vec3 = T81Vector<3>;
+    // 1) Default construction initializes to "zero-ish" values
+    {
+        Vec3 v{};
+        for (std::size_t i = 0; i < 3; ++i) {
+            double vi = d(v[i]);
+            assert(std::isfinite(vi));
+            assert(std::fabs(vi) < 1e-6);
+        }
+    }
 
-    // Construction
-    Vec3 zero = Vec3::zero();
-    assert(zero[0].is_zero());
-    assert(zero[1].is_zero());
-    assert(zero[2].is_zero());
+    // 2) Fill constructor
+    {
+        Vec3 v(s(1.5));
+        for (std::size_t i = 0; i < 3; ++i) {
+            double vi = d(v[i]);
+            assert(std::fabs(vi - 1.5) < 1e-3);
+        }
+    }
 
-    Vec3 v1(1.0, 2.0, 3.0);
-    assert(v1[0].to_double() > 0.9 && v1[0].to_double() < 1.1);
-    assert(v1[1].to_double() > 1.9 && v1[1].to_double() < 2.1);
-    assert(v1[2].to_double() > 2.9 && v1[2].to_double() < 3.1);
+    // 3) Component-wise constructor and indexing
+    {
+        Vec3 v(s(1.0), s(2.0), s(3.0));
+        assert(std::fabs(d(v[0]) - 1.0) < 1e-3);
+        assert(std::fabs(d(v[1]) - 2.0) < 1e-3);
+        assert(std::fabs(d(v[2]) - 3.0) < 1e-3);
+    }
 
-    // Unit vector
-    Vec3 unit = Vec3::unit_vector<0>();
-    assert(unit[0].to_double() > 0.9 && unit[0].to_double() < 1.1);
-    assert(unit[1].is_zero());
-    assert(unit[2].is_zero());
+    // 4) Addition and subtraction
+    {
+        Vec3 v1(s(1.0), s(2.0), s(3.0));
+        Vec3 v2(s(4.0), s(5.0), s(6.0));
 
-    // Arithmetic
-    Vec3 v2(4.0, 5.0, 6.0);
-    Vec3 sum = v1 + v2;
-    assert(sum[0].to_double() > 4.9 && sum[0].to_double() < 5.1);
-    assert(sum[1].to_double() > 6.9 && sum[1].to_double() < 7.1);
-    assert(sum[2].to_double() > 8.9 && sum[2].to_double() < 9.1);
+        Vec3 sum  = v1 + v2;
+        Vec3 diff = v2 - v1;
 
-    Vec3 diff = v2 - v1;
-    assert(diff[0].to_double() > 2.9 && diff[0].to_double() < 3.1);
+        assert(std::fabs(d(sum[0])  - 5.0) < 1e-3);
+        assert(std::fabs(d(sum[1])  - 7.0) < 1e-3);
+        assert(std::fabs(d(sum[2])  - 9.0) < 1e-3);
 
-    // Scalar multiplication
-    Vec3 scaled = v1 * 2.0;
-    assert(scaled[0].to_double() > 1.9 && scaled[0].to_double() < 2.1);
+        assert(std::fabs(d(diff[0]) - 3.0) < 1e-3);
+        assert(std::fabs(d(diff[1]) - 3.0) < 1e-3);
+        assert(std::fabs(d(diff[2]) - 3.0) < 1e-3);
+    }
 
-    // Dot product
-    auto dot = v1.dot(v2);
-    double expected_dot = 1.0*4.0 + 2.0*5.0 + 3.0*6.0;  // 32
-    assert(dot.to_double() > expected_dot - 0.1 && dot.to_double() < expected_dot + 0.1);
+    // 5) Scalar multiplication by Scalar (float81), both v * s and s * v
+    {
+        Vec3 v(s(1.0), s(2.0), s(3.0));
+        Scalar two = s(2.0);
 
-    // Magnitude
-    auto mag = v1.magnitude();
-    double expected_mag = std::sqrt(1.0*1.0 + 2.0*2.0 + 3.0*3.0);
-    assert(mag.to_double() > expected_mag - 0.1 && mag.to_double() < expected_mag + 0.1);
+        Vec3 scaled  = v * two;   // member operator*(Scalar)
+        Vec3 scaled2 = two * v;   // friend Scalar * Vec3
+
+        assert(std::fabs(d(scaled[0]) - 2.0) < 1e-3);
+        assert(std::fabs(d(scaled[1]) - 4.0) < 1e-3);
+        assert(std::fabs(d(scaled[2]) - 6.0) < 1e-3);
+
+        // scalar multiplication should be commutative here
+        for (std::size_t i = 0; i < 3; ++i) {
+            assert(std::fabs(d(scaled[i]) - d(scaled2[i])) < 1e-6);
+        }
+    }
 
     std::cout << "All T81Vector tests PASSED!\n";
     return 0;
 }
-

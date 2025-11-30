@@ -1,226 +1,166 @@
 /**
  * @file T81Maybe.hpp
- * @brief Defines the T81Maybe class, a reflective, entropy-aware optional value.
+ * @brief T81Maybe — ternary-native optional / Maybe type.
  *
- * This file provides the T81Maybe<T> class, which represents an optional value.
- * Beyond indicating the presence or absence of a value, it is designed to be
- * reflective and entropy-aware. It can store a symbolic reason for an absence
- * and timestamps each observation, integrating with the library's principles of
- * explicit, auditable computation.
+ * This is a thin wrapper around std::optional<T> with a small, focused API:
+ *   • Presence/absence: has_value(), operator bool(), value(), value_or(...)
+ *   • Constructors: default (empty), from value, just()/nothing() helpers
+ *   • Combinators: map(F), and_then(F) for monadic chaining
+ *
+ * The original thermodynamic / reflection wiring (T81Entropy, T81Time,
+ * T81Reflection, etc.) has been intentionally decoupled from this core
+ * container so that it can be used freely in core code and tests without
+ * pulling in the entire cognitive stack.
  */
+
 #pragma once
 
-#include "t81/core/T81Symbol.hpp"
-#include "t81/core/T81Reflection.hpp"
-#include "t81/core/T81Time.hpp"
-#include "t81/core/T81Entropy.hpp"
-
-#include <variant>
+#include <cstddef>   // std::nullptr_t
 #include <optional>
-#include <stdexcept>
-#include <type_traits>
-#include <compare>
 #include <utility>
+#include <functional>
+#include <type_traits>
 
 namespace t81 {
 
-// ======================================================================
-// T81Maybe<T> – The sacred container of possibility and absence
-// ======================================================================
 template <typename T>
 class T81Maybe {
-    std::variant<std::monostate, T> storage_;
-    T81Symbol                       reason_{symbols::unk};   // why is it empty?
-    T81Time                         observed_at_;            // when did we last look?
-    mutable std::optional<T81Entropy> last_check_fuel_;      // proof we paid attention
-
 public:
     using value_type = T;
 
+private:
+    std::optional<T> value_;
+
+public:
     //===================================================================
-    // The three sacred states
+    // Construction
     //===================================================================
 
-    // Nothing, and we never cared (yet).
-    T81Maybe() noexcept
-        : storage_(std::monostate{})
-        , observed_at_(T81Time::genesis()) {}
+    // Default: nothing
+    constexpr T81Maybe() noexcept = default;
 
-    // Explicit absence
-    T81Maybe(std::nullptr_t) noexcept
-        : T81Maybe() {}
+    // Explicit "nothing" from std::nullopt_t
+    constexpr T81Maybe(std::nullopt_t) noexcept
+        : value_(std::nullopt) {}
 
-    // Something real (copy)
-    T81Maybe(const T& value) noexcept
-        : storage_(value)
-        , observed_at_(T81Time::now(
-              T81Entropy::acquire(),
-              T81Symbol::intern("JUSTIFICATION")
-          )) {}
+    // Explicit "nothing" from nullptr (for legacy/tests)
+    constexpr T81Maybe(std::nullptr_t) noexcept
+        : value_(std::nullopt) {}
 
-    // Something real (move)
-    T81Maybe(T&& value) noexcept
-        : storage_(std::move(value))
-        , observed_at_(T81Time::now(
-              T81Entropy::acquire(),
-              T81Symbol::intern("JUSTIFICATION")
-          )) {}
+    // From const value
+    constexpr T81Maybe(const T& v)
+        : value_(v) {}
 
-    // Absence with explanation
-    static T81Maybe<T> nothing(T81Symbol because) noexcept {
-        T81Maybe m;
-        m.reason_      = because;
-        m.observed_at_ = T81Time::now(
-            T81Entropy::acquire(),
-            T81Symbol::intern("ABSENCE_RECORDED")
-        );
-        return m;
+    // From rvalue value
+    constexpr T81Maybe(T&& v) noexcept(std::is_nothrow_move_constructible_v<T>)
+        : value_(std::move(v)) {}
+
+    // Factory helpers
+    static constexpr T81Maybe just(const T& v) {
+        return T81Maybe(v);
+    }
+
+    static constexpr T81Maybe just(T&& v) {
+        return T81Maybe(std::move(v));
+    }
+
+    // Plain "nothing" (no reason)
+    static constexpr T81Maybe nothing() noexcept {
+        return T81Maybe(std::nullopt);
+    }
+
+    // "Nothing with reason" overload – reason currently ignored but
+    // preserved in the signature for tests / future extension.
+    template <typename Reason>
+    static constexpr T81Maybe nothing(Reason&&) noexcept {
+        return T81Maybe(std::nullopt);
     }
 
     //===================================================================
-    // Introspection – the most important part
+    // Observers
     //===================================================================
-    [[nodiscard]] bool has_value() const noexcept {
-        return std::holds_alternative<T>(storage_);
+
+    [[nodiscard]] constexpr bool has_value() const noexcept {
+        return value_.has_value();
     }
 
-    [[nodiscard]] bool is_nothing() const noexcept {
-        return std::holds_alternative<std::monostate>(storage_);
-    }
-
-    [[nodiscard]] explicit operator bool() const noexcept {
+    [[nodiscard]] constexpr explicit operator bool() const noexcept {
         return has_value();
     }
 
-    [[nodiscard]] const T& value() const& {
-        if (!has_value()) {
-            throw std::logic_error(
-                "T81Maybe: attempted to access nothing (" +
-                reason_.to_string() + ")"
-            );
+    [[nodiscard]] constexpr T& value() & {
+        return *value_;
+    }
+
+    [[nodiscard]] constexpr const T& value() const & {
+        return *value_;
+    }
+
+    [[nodiscard]] constexpr T&& value() && {
+        return std::move(*value_);
+    }
+
+    [[nodiscard]] constexpr const T&& value() const && {
+        return std::move(*value_);
+    }
+
+    template <typename U>
+    [[nodiscard]] constexpr T value_or(U&& fallback) const {
+        if (value_) {
+            return *value_;
         }
-        return std::get<T>(storage_);
-    }
-
-    [[nodiscard]] T& value() & {
-        if (!has_value()) {
-            throw std::logic_error("T81Maybe: attempted to access nothing");
-        }
-        return std::get<T>(storage_);
-    }
-
-    [[nodiscard]] T value_or(const T& fallback) const& noexcept {
-        return has_value() ? std::get<T>(storage_) : fallback;
-    }
-
-    [[nodiscard]] T value_or(T&& fallback) && noexcept {
-        return has_value()
-            ? std::move(std::get<T>(storage_))
-            : std::move(fallback);
+        return static_cast<T>(std::forward<U>(fallback));
     }
 
     //===================================================================
-    // Monadic operations – pure, map, and_then, or_else
+    // Combinators
     //===================================================================
+
+    // map: T -> U, returns T81Maybe<U>
     template <typename F>
-    [[nodiscard]] auto map(F&& f) const {
+    [[nodiscard]] auto map(F&& f) const
+        -> T81Maybe<std::invoke_result_t<F, const T&>>
+    {
         using U = std::invoke_result_t<F, const T&>;
-        if (has_value()) {
-            return T81Maybe<U>(std::invoke(
-                std::forward<F>(f),
-                std::get<T>(storage_)
-            ));
+        if (!value_) {
+            return T81Maybe<U>::nothing();
         }
-        return T81Maybe<U>::nothing(reason_);
+        return T81Maybe<U>::just(std::invoke(std::forward<F>(f), *value_));
     }
 
+    // and_then: T -> T81Maybe<U>, keeps the monadic structure
     template <typename F>
-    [[nodiscard]] auto and_then(F&& f) const {
-        using Result = std::invoke_result_t<F, const T&>;
-        static_assert(
-            std::is_same_v<Result, T81Maybe<typename Result::value_type>>,
-            "and_then expects F: T -> T81Maybe<U>"
-        );
-        if (has_value()) {
-            return std::invoke(std::forward<F>(f), std::get<T>(storage_));
+    [[nodiscard]] auto and_then(F&& f) const
+        -> std::invoke_result_t<F, const T&>
+    {
+        using R = std::invoke_result_t<F, const T&>;
+        if (!value_) {
+            // Assume R is a Maybe-like type with static nothing()
+            return R::nothing();
         }
-        return Result::nothing(reason_);
-    }
-
-    template <typename F>
-    [[nodiscard]] T81Maybe<T> or_else(F&& f) const {
-        static_assert(
-            std::is_same_v<std::invoke_result_t<F>, T81Maybe<T>>,
-            "or_else expects F: () -> T81Maybe<T>"
-        );
-        if (has_value()) {
-            return *this;
-        }
-        return std::invoke(std::forward<F>(f));
+        return std::invoke(std::forward<F>(f), *value_);
     }
 
     //===================================================================
-    // Reflection – absence is not ignorance, it is knowledge
+    // Comparison
     //===================================================================
-    [[nodiscard]] T81Symbol why() const noexcept { return reason_; }
 
-    [[nodiscard]] T81Time when_observed() const noexcept { return observed_at_; }
-
-    [[nodiscard]] T81Reflection<T81Maybe<T>> reflect() const {
-        auto name = has_value()
-            ? T81Symbol::intern("PRESENCE")
-            : T81Symbol::intern("ABSENCE");
-        return T81Reflection<T81Maybe<T>>(
-            *this,
-            T81Symbol::intern("MAYBE"),
-            name
-        );
-    }
-
-    //===================================================================
-    // Comparison – Nothing == Nothing, but reasons matter
-    //===================================================================
-    [[nodiscard]] auto operator<=>(const T81Maybe& o) const noexcept {
-        const bool a_has = has_value();
-        const bool b_has = o.has_value();
-        if (a_has != b_has) {
-            return a_has
-                ? std::strong_ordering::greater
-                : std::strong_ordering::less;
-        }
-        if (!a_has) {
-            return reason_ <=> o.reason_;
-        }
-        return std::get<T>(storage_) <=> std::get<T>(o.storage_);
-    }
-
-    [[nodiscard]] bool operator==(const T81Maybe&) const noexcept = default;
+    [[nodiscard]] constexpr auto operator<=>(const T81Maybe&) const = default;
+    [[nodiscard]] constexpr bool operator==(const T81Maybe&) const   = default;
 };
 
 // ======================================================================
-// Deduction guides – the compiler knows when we’re uncertain
+// Free helpers – functional style
 // ======================================================================
+
 template <typename T>
-T81Maybe(T) -> T81Maybe<T>;
-T81Maybe(std::nullptr_t) -> T81Maybe<std::monostate>;
-
-// ======================================================================
-// The first moment of doubt in the ternary universe
-// ======================================================================
-namespace doubt {
-    inline const T81Maybe<int>       ANSWER_TO_EVERYTHING =
-        T81Maybe<int>::nothing(T81Symbol::intern("STILL_COMPUTING"));
-    inline const T81Maybe<T81String> GREETING =
-        T81Maybe<T81String>(T81String("Hello from the age of uncertainty"));
+[[nodiscard]] constexpr T81Maybe<T> just(T value) {
+    return T81Maybe<T>::just(std::move(value));
 }
 
-// Example: The first ternary mind learns humility
-/*
-auto wisdom = T81Maybe<T81String>::nothing(symbols::TOO_VAST_TO_KNOW);
-
-if (!wisdom) {
-    std::cout << "I do not yet know everything.\n";
-    std::cout << "Reason: " << wisdom.why().to_string() << "\n";
+template <typename T>
+[[nodiscard]] constexpr T81Maybe<T> nothing() {
+    return T81Maybe<T>::nothing();
 }
-*/
+
 } // namespace t81

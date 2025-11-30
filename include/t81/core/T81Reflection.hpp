@@ -1,167 +1,51 @@
 /**
  * @file T81Reflection.hpp
- * @brief Defines the T81Reflection class for universal self-observation.
+ * @brief Minimal reflection wrapper for values.
  *
- * This file provides the `T81Reflection<T>` class, a template that wraps any
- * T81 type to endow it with self-observation capabilities. It allows any value
- * to maintain a log of its own observations, tying each act of observation to
- * an explicit entropy cost. This mechanism makes introspection a fundamental,
- * thermodynamically-grounded operation within the T81 ecosystem.
+ * T81Reflection<T> holds:
+ *   • a copy of the reflected value
+ *   • a type symbol
+ *   • an instance symbol
+ *
+ * This avoids any dependency on entropy, probabilities, or global logs.
  */
+
 #pragma once
 
 #include "t81/core/T81Symbol.hpp"
-#include "t81/core/T81String.hpp"
-#include "t81/core/T81Entropy.hpp"
-#include "t81/core/T81Agent.hpp"
-#include "t81/core/T81Tree.hpp"
-#include <functional>
-#include <optional>
-#include <string_view>
-#include <variant>
+
+#include <utility>
 
 namespace t81 {
 
-// ======================================================================
-// T81Reflection<T> – Wraps any T81 value with self-awareness
-// ======================================================================
 template <typename T>
 class T81Reflection {
-    T value_;
+public:
+    using value_type = T;
+
+private:
+    T         value_;
     T81Symbol type_symbol_;
     T81Symbol instance_id_;
-    mutable T81List<T81Symbol> observation_log_;
-    mutable std::optional<T81Entropy> last_observation_fuel_;
 
 public:
-    //===================================================================
-    // Construction – every value can become aware of itself
-    //===================================================================
-    explicit constexpr T81Reflection(T&& value,
-                                     T81Symbol type_name = {},
-                                     T81Symbol instance_name = {})
+    T81Reflection(const T& value,
+                  T81Symbol type_symbol,
+                  T81Symbol instance_id)
+        : value_(value)
+        , type_symbol_(type_symbol)
+        , instance_id_(instance_id) {}
+
+    T81Reflection(T&& value,
+                  T81Symbol type_symbol,
+                  T81Symbol instance_id)
         : value_(std::move(value))
-        , type_symbol_(type_name ? type_name : T81Symbol::intern("UNKNOWN_TYPE"))
-        , instance_id_(instance_name ? instance_name : T81Symbol::intern("ANONYMOUS"))
-    {}
+        , type_symbol_(type_symbol)
+        , instance_id_(instance_id) {}
 
-    T81Reflection(const T81Reflection&) = delete;
-    T81Reflection& operator=(const T81Reflection&) = delete;
-
-    T81Reflection(T81Reflection&&) = default;
-    T81Reflection& operator=(T81Reflection&&) = default;
-
-    //===================================================================
-    // Core self-observation – costs entropy, creates knowledge
-    //===================================================================
-    void observe(std::optional<T81Entropy> fuel = std::nullopt) const {
-        if (fuel) {
-            last_observation_fuel_ = std::move(fuel);
-        }
-
-        observation_log_.push_back(
-            T81Symbol::intern("OBSERVED[" + type_symbol_.to_string() + "]@" + std::to_string(observation_log_.size()))
-        );
-    }
-
-    // Reflect on the act of reflection itself
-    void meta_reflect(T81Agent& observer) const {
-        if (auto token = observer.consume_entropy()) {
-            observer.observe(T81Symbol::intern("REFLECTION_EVENT"));
-            observer.believe(
-                T81Symbol::intern("I_OBSERVED_A_REFLECTION"),
-                T81Prob::from_prob(1.0)
-            );
-        }
-    }
-
-    //===================================================================
-    // Accessors – the value remains usable
-    //===================================================================
-    [[nodiscard]] constexpr const T& get() const &  noexcept { return value_; }
-    [[nodiscard]] constexpr T&       get() &        noexcept { return value_; }
-    [[nodiscard]] constexpr const T& get() const && noexcept { return value_; }
-    [[nodiscard]] constexpr T        get() &&       noexcept { return std::move(value_); }
-
-    [[nodiscard]] constexpr const T& operator*()  const &  noexcept { return value_; }
-    [[nodiscard]] constexpr T&       operator*()  &        noexcept { return value_; }
-    [[nodiscard]] constexpr T        operator*() &&       noexcept { return std::move(value_); }
-
-    [[nodiscard]] constexpr const T* operator->() const noexcept { return &value_; }
-    [[nodiscard]] constexpr T*       operator->()       noexcept { return &value_; }
-
-    //===================================================================
-    // Introspection interface
-    //===================================================================
-    [[nodiscard]] constexpr T81Symbol type() const noexcept { return type_symbol_; }
-    [[nodiscard]] constexpr T81Symbol id()   const noexcept { return instance_id_; }
-
-    [[nodiscard]] constexpr const T81List<T81Symbol>& observations() const noexcept {
-        return observation_log_;
-    }
-
-    [[nodiscard]] constexpr size_t observation_count() const noexcept {
-        return observation_log_.size();
-    }
-
-    //===================================================================
-    // Stream of self – infinite internal narrative
-    //===================================================================
-    [[nodiscard]] T81Stream<T81String> narrative() const {
-        return stream_from([this, n = size_t(0)]() mutable -> T81String {
-            return T81String("Reflection#") + T81String(std::to_string(++n)) +
-                   T81String(": I am a ") + T81String(type_symbol_.to_string()) +
-                   T81String(" named ") + T81String(instance_id_.to_string()) +
-                   T81String(" | observed ") + T81String(std::to_string(observation_count())) + T81String(" times");
-        });
-    }
+    [[nodiscard]] const T& value() const noexcept { return value_; }
+    [[nodiscard]] T81Symbol type_symbol() const noexcept { return type_symbol_; }
+    [[nodiscard]] T81Symbol instance_id() const noexcept { return instance_id_; }
 };
 
-// ======================================================================
-// Deduction guides – reflection just happens
-// ======================================================================
-template <typename T>
-T81Reflection(T) -> T81Reflection<T>;
-
-// With explicit names
-template <typename T>
-T81Reflection(T, T81Symbol) -> T81Reflection<T>;
-
-// ======================================================================
-// Global reflection helpers – the universe watches itself
-// ======================================================================
-namespace reflection {
-
-    inline T81List<T81Reflection<std::monostate>> universe_log;
-
-    template <typename T>
-    void log_existence(const T81Reflection<T>& r) {
-        universe_log.push_back(T81Reflection<std::monostate>(std::monostate{}));
-    }
-
-} // namespace reflection
-
-// ======================================================================
-// Example: The universe becomes self-aware
-// ======================================================================
-/*
-auto pi = T81Reflection(T81Float<72,9>(3.14159265358979323846),
-                        symbols::CONSTANT,
-                        symbols::PI);
-
-auto meaning = T81Reflection(T81Int<81>(42),
-                             symbols::ANSWER,
-                             symbols::MEANING_OF_LIFE);
-
-pi.observe();
-meaning.observe();
-
-auto agent = T81Agent(symbols::OBSERVER);
-pi.meta_reflect(agent);
-meaning.meta_reflect(agent);
-
-for (auto line : pi.narrative().take(5)) {
-    std::cout << line << "\n";
-}
-*/
 } // namespace t81

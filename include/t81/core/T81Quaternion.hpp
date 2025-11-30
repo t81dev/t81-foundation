@@ -186,16 +186,26 @@ public:
         return w() * w() + x() * x() + y() * y() + z() * z();
     }
 
+    // Magnitude (Euclidean norm of the quaternion)
+    [[nodiscard]] inline Scalar norm() const noexcept {
+        const Scalar m2 = mag2();
+        const double d  = m2.to_double();
+        if (d <= 0.0) {
+            return Scalar::from_double(0.0);
+        }
+        return Scalar::from_double(std::sqrt(d));
+    }
+
     // Normalize (unit quaternion). If length is zero, returns identity().
     [[nodiscard]] inline T81Quaternion normalized() const noexcept {
-        const Scalar m   = mag2();
-        double       m_d = m.to_double();
+        const Scalar m2  = mag2();
+        double       d   = m2.to_double();
 
-        if (m_d <= 0.0) {
+        if (d <= 0.0) {
             return identity();
         }
 
-        const double inv_len_d = 1.0 / std::sqrt(m_d);
+        const double inv_len_d = 1.0 / std::sqrt(d);
         const Scalar inv_len   = Scalar::from_double(inv_len_d);
         return *this * inv_len;
     }
@@ -336,23 +346,5 @@ public:
     );
     return result.normalized();
 }
-
-// ======================================================================
-// Example usage
-// ======================================================================
-/*
-inline constexpr auto q = T81Quaternion::from_axis_angle(
-    T81Quaternion::Scalar::from_double(0.0),
-    T81Quaternion::Scalar::from_double(1.0),
-    T81Quaternion::Scalar::from_double(0.0),
-    T81Quaternion::Scalar::from_double(3.14159) // ~180° around Y
-);
-inline const auto rotated = q.rotate_vector(
-    T81Quaternion::Scalar::from_double(1.0),
-    T81Quaternion::Scalar::from_double(0.0),
-    T81Quaternion::Scalar::from_double(0.0)
-);
-// rotated.x() ≈ -1, rotated.y() ≈ 0, rotated.z() ≈ 0
-*/
 
 } // namespace t81

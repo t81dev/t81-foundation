@@ -242,7 +242,7 @@ public:
 using Vec2  = T81Vector<2>;
 using Vec3  = T81Vector<3>;
 using Vec4  = T81Vector<4>;
-using Vec81 = T81Vector<81>;
+// using Vec81 = T81Vector<81>;
 
 using Vec2f = T81Vector<2, T81Float<72,9>>;
 using Vec3f = T81Vector<3, T81Float<72,9>>;
