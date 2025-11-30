@@ -1,5 +1,5 @@
 // tests/cpp/test_T81Vector.cpp
-// CORRECTED — Vec3 uses Scalar = T81Float<18,9>
+// CORRECTED — Vec3 uses Scalar = T81Float<18,9> without ambiguity
 
 #include "t81/core/T81Vector.hpp"
 #include "t81/core/T81Float.hpp"
@@ -8,13 +8,9 @@
 #include <iostream>
 #include <cmath>
 
-using namespace t81;
-
-// Canonical scalar used in this test
-using Scalar = T81Float<18, 9>;
-
-// Make Vec3 use the same Scalar as the tests:
-using Vec3   = T81Vector<3, Scalar>;
+// Do NOT use 'using namespace t81;' to avoid Vec3 ambiguity.
+using Scalar = t81::T81Float<18, 9>;
+using Vec3   = t81::T81Vector<3, Scalar>;
 
 static Scalar s(double x) { return Scalar::from_double(x); }
 static double d(const Scalar& v) { return v.to_double(); }
