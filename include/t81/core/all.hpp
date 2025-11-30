@@ -71,6 +71,8 @@
 #include "t81/T81IOStream.hpp"      // 84 – Voice
 #include "t81/T81Maybe.hpp"         // 85 – Humility
 #include "t81/T81Result.hpp"        // 86 – Grace
+#include "t81/core/Option.hpp"      // 85' – Surface Option alias
+#include "t81/core/Result.hpp"      // 86' – Surface Result alias
 #include "t81/T81Promise.hpp"       // 87 – Patience
 #include "t81/T81Thread.hpp"        // 88 – Society
 #include "t81/T81Network.hpp"       // 89 – Connection

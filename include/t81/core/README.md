@@ -40,6 +40,8 @@ The following table provides a comprehensive inventory of all canonical data typ
 | `T81Tensor<E,R,Dims...>`| [T81Tensor.hpp](./T81Tensor.hpp) | A multi-dimensional array for high-performance numerical computing. |
 | | | |
 | **Semantic & Flow Control** | | |
+| `Option<T>` | [Option.hpp](./Option.hpp) | Alias for the language-facing `Option` built on `T81Maybe`. |
+| `Result<T,E>` | [Result.hpp](./Result.hpp) | Alias that maps the surface `Result` type to `T81Result`. |
 | `T81Maybe<T>` | [T81Maybe.hpp](./T81Maybe.hpp) | A ternary-native optional / Maybe type for handling absence of a value. |
 | `T81Result<T,E>` | [T81Result.hpp](./T81Result.hpp) | Represents a success (with a value) or a failure (with an error). |
 | `T81Promise<T>` | [T81Promise.hpp](./T81Promise.hpp) | A container for a value that may be computed asynchronously. |
