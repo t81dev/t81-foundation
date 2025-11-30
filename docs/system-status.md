@@ -1,6 +1,6 @@
 # T81 Foundation: System Status Report
 
-**Last Updated:** November 28, 2025
+**Last Updated:** November 29, 2025
 
 This document provides a high-level summary of the implementation status of each major component in the T81 Foundation stack. For a more detailed technical breakdown of spec conformance, see [`ANALYSIS.md`](../ANALYSIS.md).
 
@@ -22,9 +22,8 @@ This table inventories the key documentation, specification, and architectural a
 | `ANALYSIS.md`                           | Spec vs. Reality                | Core Maintainer       | **Current**           |
 | `docs/index.md`                         | Docs Site Entrypoint            | All                   | **Current**           |
 | `docs/system-status.md`                 | **(This file)**                 | Core Maintainer       | **Current**           |
-| `docs/handover.md`                      | Contributor Onboarding          | New Contributor       | **Archived**          |
 | `docs/cpp-quickstart.md`                | C++ Developer Guide             | New Contributor       | **Current**           |
-| `docs/ai-quickstart.md`                 | AI Agent Guide                  | New Contributor       | Partially Outdated    |
+| `docs/ai-quickstart.md`                 | AI Agent Guide                  | New Contributor       | **Current**           |
 | `docs/tensor-guide.md`                  | Tensor Library Guide            | User / Contributor    | **Current**           |
 | `docs/benchmarks.md`                    | Benchmark Suite                 | Core Maintainer       | **Current**           |
 | `docs/hardware-roadmap.md`              | Hardware Vision                 | All                   | Historical            |
@@ -62,9 +61,9 @@ ______________________________________________________________________
 ## 4. T81Lang Frontend
 
 - **Specification:** [`spec/t81lang-spec.md`](../spec/t81lang-spec.md)
-- **Status:** `Partial`
-- **Summary:** The compiler can parse a useful subset of the language and generate correct IR, but it lacks semantic analysis.
-- **Next Steps:** **[HIGH PRIORITY]** Implement a full type-checking and semantic analysis pass.
+- **Status:** `Implemented`
+- **Summary:** The new C++20 frontend is now largely complete. It includes a lexer, a recursive descent parser for the full T81Lang grammar, a new semantic analysis pass for scope and symbol resolution, and an IR generator that produces valid TISC IR.
+- **Next Steps:** Deepen the semantic analysis pass to perform comprehensive type checking and inference. Integrate the frontend with the `t81` CLI tool.
 
 ______________________________________________________________________
 
@@ -77,18 +76,17 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-## 6. Documentation Snapshot — November 28, 2025
+## 6. Documentation Snapshot — November 29, 2025
 
 This section summarizes the state of the project's documentation following a comprehensive overhaul.
 
 ### Where Docs are Strongest
 
 -   **Onboarding & High-Level Architecture:** A new contributor can now follow a clear path from `README.md` -> `docs/cpp-quickstart.md` -> `ARCHITECTURE.md` to get a solid understanding of the project's goals, build process, and code structure.
--   **Project Status & Direction:** The `ROADMAP.md`, `TASKS.md`, and `ANALYSIS.md` files are now synchronized with the codebase, providing a clear and realistic view of the project's priorities and implementation gaps.
+-   **Project Status & Direction:** The `ROADMAP.md`, `TASKS.md`, and `docs/system-status.md` files are now synchronized with the codebase, providing a clear and realistic view of the project's priorities and implementation gaps.
 -   **Core Subsystems:** Key functional components like the **Tensor Engine** (`docs/tensor-guide.md`) and the **VM/TISC** (`docs/guides/vm-opcodes.md`) now have dedicated, practical guides for C++ developers.
 
 ### Remaining Known Gaps
 
--   **[TODO] `docs/ai-quickstart.md`:** This document has not been reviewed and is likely outdated. It needs to be updated to reflect the current state of the Axion stub.
 -   **[TODO] Add Examples to Specifications:** The formal specifications in `/spec` are text-heavy and would benefit from concrete TISC and T81Lang code examples.
 -   **[TODO] Document the `t81` CLI:** As the `t81` command-line tool is developed, it will require dedicated documentation.

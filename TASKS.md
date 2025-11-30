@@ -1,6 +1,6 @@
 # T81 Foundation: Actionable Task List
 
-**Last Updated:** November 28, 2025
+**Last Updated:** November 29, 2025
 
 This document lists the concrete, prioritized tasks for the next development cycle, aligned with the strategic priorities in `ROADMAP.md`.
 
@@ -19,7 +19,7 @@ ______________________________________________________________________
 **Goal:** Fully implement the C++20 compiler to match the `t81lang-spec.md`. This is the critical path to v1.0.
 
 - **[EPIC] Implement Semantic Analysis & Type System:**
-    - **[M] Task:** Create the foundational `SemanticAnalyzer` class that traverses the AST. Initially, it will only resolve symbols and populate a `SymbolTable`.
+    - **[DONE] [M] Task:** Create the foundational `SemanticAnalyzer` class that traverses the AST. Initially, it will only resolve symbols and populate a `SymbolTable`.
     - **[L] Task:** Implement the core type-checking logic within the `SemanticAnalyzer`. Enforce all type rules from the spec, including numeric widening, function signatures, and return types.
     - **[M] Task:** Implement type checking for generic types, focusing on `Option[T]` and `Result[T, E]`.
     - **[S] Task:** Create a new end-to-end test for `Option/Result` that defines a function returning an `Option`, calls it, and verifies the result. This will be the driving test for the type system.
