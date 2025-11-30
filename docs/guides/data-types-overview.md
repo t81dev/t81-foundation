@@ -1,5 +1,21 @@
 # T81 Data Types Overview
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Data Types Overview](#t81-data-types-overview)
+  - [Categories Covered](#categories-covered)
+  - [Example: `examples/data_types.t81`](#example-`examplesdata_typest81`)
+  - [Run the Demos](#run-the-demos)
+  - [Highlights: High-Rank Tensor and Graph Demos](#highlights-high-rank-tensor-and-graph-demos)
+  - [Next steps](#next-steps)
+  - [Blueprint: Handle-heavy Types (Streams / Promises / Agents)](#blueprint-handle-heavy-types-streams--promises--agents)
+  - [Expand the Playground](#expand-the-playground)
+
+<!-- T81-TOC:END -->
+
+
 This guide introduces a curated set of T81 data types through a runnable example (`examples/data_types.t81`). The goal is to show how primitives, strings, and structural types behave once compiled with the `t81` CLI.
 
 ## Categories Covered

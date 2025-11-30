@@ -1,5 +1,18 @@
 # T81Lang Match Demo
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Match Demo](#t81lang-match-demo)
+  - [1. Source](#1-source)
+  - [2. Compile](#2-compile)
+  - [3. Run with the HanoiVM](#3-run-with-the-hanoivm)
+  - [4. Implementation Notes](#4-implementation-notes)
+
+<!-- T81-TOC:END -->
+
+
 This guide walks through compiling and running a `match`-heavy T81Lang program using the `t81` CLI so you can see the full frontend → IR → VM pipeline in action.
 
 ## 1. Source

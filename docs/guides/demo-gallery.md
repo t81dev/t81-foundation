@@ -1,5 +1,18 @@
 # Demo Gallery
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Demo Gallery](#demo-gallery)
+  - [1. CLI Demos](#1-cli-demos)
+  - [2. Automation Script](#2-automation-script)
+  - [3. IR/VM Introspection](#3-irvm-introspection)
+  - [4. What’s Next?](#4-what’s-next?)
+
+<!-- T81-TOC:END -->
+
+
 This page lists the runnable demos and utilities available in the repository, giving you quick pointers to the content mentioned elsewhere.
 
 ## 1. CLI Demos
