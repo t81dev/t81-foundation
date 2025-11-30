@@ -98,15 +98,6 @@ public:
         *this = from_double(v);
     }
 
-    // CRITICAL FIX: Proper assignment operator
-    // Without this, the compiler generates a broken one → vector/matrix fill constructor corrupts values
-    constexpr T81Float& operator=(const T81Float& other) noexcept {
-        if (this != &other) {
-            bits_ = other.bits_;
-        }
-        return *this;
-    }
-
     // ---------------------------------------------------------------------
     // Factories
     // ---------------------------------------------------------------------
