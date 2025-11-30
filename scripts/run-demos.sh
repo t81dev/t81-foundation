@@ -21,7 +21,7 @@ run_demo() {
   rm -f "${out}"
 }
 
-for src in examples/match_demo.t81 examples/data_types.t81 examples/fraction_demo.t81 examples/tensor_demo.t81 examples/bigint_demo.t81 examples/float_demo.t81 examples/string_demo.t81 examples/vector_demo.t81 examples/matrix_demo.t81 examples/cell_demo.t81 examples/quaternion_demo.t81; do
+for src in examples/match_demo.t81 examples/data_types.t81 examples/fraction_demo.t81 examples/tensor_demo.t81 examples/bigint_demo.t81 examples/float_demo.t81 examples/string_demo.t81 examples/vector_demo.t81 examples/matrix_demo.t81 examples/cell_demo.t81 examples/quaternion_demo.t81 examples/high_rank_tensor_demo.t81 examples/graph_demo.t81; do
   if [[ -f "${src}" ]]; then
     run_demo "${src}"
   else

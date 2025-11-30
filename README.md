@@ -95,7 +95,11 @@ The repository includes several demonstration binaries in `build/` that showcase
 
 - **Cell & Quaternion demos:** Execute `examples/cell_demo.t81` and `examples/quaternion_demo.t81` to observe canonical `T81Cell` ranges and quaternion conjugate/norm.
 
-- **Automated demo runner:** Execute `scripts/run-demos.sh` (after building the CLI) to compile and run the match, primitive, fraction, tensor, bigint, float, and string demos sequentially; the script reports compilation/runnable output for each.
+- **High-rank Tensor demo:** Run `examples/high_rank_tensor_demo.t81` to trace a three-dimensional tensor literal through indexing and reduction.
+
+- **Graph demo:** Use `examples/graph_demo.t81` to count edges in a small adjacency matrix via deterministic matrix access.
+
+- **Automated demo runner:** Execute `scripts/run-demos.sh` (after building the CLI) to compile and run the match, primitive, fraction, tensor, bigint, float, string, vector, matrix, cell, quaternion, high-rank tensor, and graph demos sequentially; the script reports compilation/runnable output for each.
 - **IR Inspector:** Build `./build/ir_inspector` and run it on any `.t81` file to print the IR instructions (including match lowering) emitted before binary emission.
 
 ### Build the Documentation Site

@@ -49,7 +49,7 @@ For contributors looking to modify the codebase, these resources provide detaile
 - **[Guide: Match Expression Demo](./guides/match-example.md)**
   - A live example that compiles and runs an `Option`/`Result` match through the CLI and HanoiVM.
 - **[Guide: Data Types Overview](./guides/data-types-overview.md)**
-  - A runnable sample that exercises primitive and structural data types inside `examples/data_types.t81`.
+  - A runnable sample that exercises primitive and structural data types inside `examples/data_types.t81`, plus dedicated high-rank tensor and graph demos for exploring multidimensional indexing behaviors.
 - **[Demo Gallery](./guides/demo-gallery.md)**
   - A quick menu of the match/data-type demos, the `scripts/run-demos.sh` automation, and the IR inspector utility.
 

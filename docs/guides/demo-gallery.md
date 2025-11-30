@@ -9,6 +9,9 @@ This page lists the runnable demos and utilities available in the repository, gi
 - **Fraction Demo** (`examples/fraction_demo.t81`) + **Tensor Demo** (`examples/tensor_demo.t81`): Focused examples for rational numbers and typed tensors; expand the guide to explore them further under “Next Steps.”
 - **BigInt, Float, String Demos** (`examples/bigint_demo.t81`, `examples/float_demo.t81`, `examples/string_demo.t81`): Show canonical usage of `T81BigInt`, `T81Float`, and `T81String` values respectively; link back to the overview guide for instructions.
 - **Vector, Matrix, Cell, Quaternion Demos** (`examples/vector_demo.t81`, `examples/matrix_demo.t81`, `examples/cell_demo.t81`, `examples/quaternion_demo.t81`): Focus on the next wave of numerics—vectors/matrices for shape-aware operations and handles like cells/quaternions for the balanced ternary core.
+- **High-Rank Tensor Demo** (`examples/high_rank_tensor_demo.t81`): Maps a 3D tensor literal and computes a scalar sum via deterministic indexing; run it to see how higher-rank `Tensor` types behave.
+- **Graph Demo** (`examples/graph_demo.t81`): Models a simple adjacency matrix and reports total edge counts, demonstrating how graph structures arise as tensor/matrix handles.
+- **Handle Blueprints** (`T81IOStream`, `T81Promise`, `T81Agent`): The data-type guide contains pseudo-code snippets describing the expected syntax and operations for streams, promises, and agents once the frontend/IR supports them. These blueprints document the entropy fuel parameters and coroutine semantics we’ll need before runnable demos exist.
 
 Compile and run both manually using `./build/t81` or with the helper below.
 
