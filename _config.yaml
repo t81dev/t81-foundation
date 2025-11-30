@@ -1,0 +1,44 @@
+# _config.yml
+title: T81 Foundation
+description: The Ternary Standard Library
+theme: jekyll-theme-primer
+
+# CRITICAL: Exclude everything that isn't real content
+exclude:
+  - .github/
+  - .gitattributes
+  - .gitignore
+  - README.md
+  - LICENSE
+  - CMakeLists.txt
+  - cmake/
+  - src/
+  - tests/
+  - build/
+  - docs/vendor/               # ← kills the fake Jekyll post
+  - vendor/
+  - "*.erb"                    # ← kills any ERB template
+  - spec/**/*.erb
+  - "**/.*"                    # ← dotfiles
+
+# Only include actual documentation folders
+include:
+  - docs
+  - spec
+
+# Disable problematic plugins and features
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# Prevent Jekyll from treating spec/ files as blog posts
+defaults:
+  - scope:
+      path: "spec"
+    values:
+      layout: null
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      permalink: pretty
