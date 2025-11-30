@@ -11,6 +11,14 @@
 [![Core: C++20](https://img.shields.io/badge/Core-C%2B%2B20-0d1117?style=flat-square&logo=cplusplus)](#)
 [![License: MIT/GPL-3.0](https://img.shields.io/badge/License-MIT%20%2F%20GPL--3.0-green?style=flat-square)](LICENSE-MIT)
 
+...
+
+[![T81 Foundation – The Ternary Standard Library](https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/ci.yml?branch=main&label=T81%20Foundation&logo=github&style=for-the-badge&color=81D4FA)](https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml)
+
+[![Reference Platform: macOS • clang](https://img.shields.io/badge/Reference-macOS%20clang-81D4FA?logo=apple&style=for-the-badge)](https://github.com/t81dev/t81-foundation/actions)
+[![Platforms](https://img.shields.io/badge/Platforms-macOS%20•%20Linux%20•%20Windows%20•%20WASM-81D4FA?logo=cplusplus&style=for-the-badge)](https://github.com/t81dev/t81-foundation/actions)
+[![C++20](https://img.shields.io/badge/C++-20-81D4FA?logo=cplusplus&style=for-the-badge)](https://en.cppreference.com/w/cpp/20)
+[![Balanced Ternary](https://img.shields.io/badge/arithmetic-balanced_ternary-81D4FA?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM4MUQ0RkEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgMmg4djZoLTZ2NGgtNHYtNGgtNnY2aC02di02aC02di02aDZoLTZ2LTRoOHY0aDZ2LTZoNnoiLz48L3N2Zz4=)](https://en.wikipedia.org/wiki/Balanced_ternary)
 <br/><br/>
 
 </div>
