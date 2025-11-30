@@ -1,0 +1,10 @@
+fn string_demo() -> i32 {
+    let greeting: T81String = "Hello";
+    let suffix: T81String = ", T81!";
+    let _message: T81String = greeting + suffix;
+    return 2;
+}
+
+fn main() -> i32 {
+    return string_demo();
+}

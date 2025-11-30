@@ -1,0 +1,14 @@
+fn tensor_demo() -> i32 {
+    let base: Tensor[i32, 2, 2] = 1;
+    let repeat: Tensor[i32, 2, 2] = 2;
+    let blended: Tensor[i32, 2, 2] = base;
+    let value: i32 = 1;
+    if (value > 0) {
+        return value;
+    }
+    return 0;
+}
+
+fn main() -> i32 {
+    return tensor_demo();
+}

@@ -30,6 +30,7 @@ const std::unordered_map<std::string_view, TokenType> KEYWORDS = {
     {"var", TokenType::Var},       {"if", TokenType::If},         {"else", TokenType::Else},
     {"for", TokenType::For},       {"in", TokenType::In},         {"while", TokenType::While},
     {"break", TokenType::Break},   {"continue", TokenType::Continue}, {"return", TokenType::Return},
+    {"match", TokenType::Match},
     {"true", TokenType::True},     {"false", TokenType::False},   {"void", TokenType::Void},
     {"bool", TokenType::Bool},     {"i32", TokenType::I32},       {"i16", TokenType::I16},
     {"i8", TokenType::I8},         {"i2", TokenType::I2},
@@ -86,7 +87,9 @@ Token Lexer::next_token() {
         case '/': return make_token(TokenType::Slash);
         case '-': return make_token(match('>') ? TokenType::Arrow : TokenType::Minus);
         case '.': return make_token(match('.') ? TokenType::DotDot : TokenType::Illegal);
-        case '=': return make_token(match('=') ? TokenType::EqualEqual : TokenType::Equal);
+        case '=':
+            if (match('>')) return make_token(TokenType::FatArrow);
+            return make_token(match('=') ? TokenType::EqualEqual : TokenType::Equal);
         case '!': return make_token(match('=') ? TokenType::BangEqual : TokenType::Bang);
         case '<': return make_token(match('=') ? TokenType::LessEqual : TokenType::Less);
         case '>': return make_token(match('=') ? TokenType::GreaterEqual : TokenType::Greater);

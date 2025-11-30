@@ -77,6 +77,27 @@ The repository includes several demonstration binaries in `build/` that showcase
 ./build/axion_demo
 ```
 
+- **Pattern-match demo:** Follow `docs/guides/match-example.md` to compile and run `examples/match_demo.t81` via the `t81` CLI so you can experiment with `Option`/`Result` matches end to end.
+
+- **Data-type demo:** Try `docs/guides/data-types-overview.md` and `examples/data_types.t81` to see how primitive arithmetic, strings, and structural `match` expressions behave in a single example.
+
+- **Fraction demo:** Expand that guide by running `examples/fraction_demo.t81` to explore canonical `T81Fraction` arithmetic.
+
+- **Tensor demo:** Sample `examples/tensor_demo.t81` (also documented in the guide) to see how typed `Tensor` declarations behave; extend the example to examine shapes if desired.
+
+- **BigInt demo:** Try `examples/bigint_demo.t81` to experiment with balanced ternary big integers (addition and multiplication) before lowering to TISC.
+
+- **Float demo:** Use `examples/float_demo.t81` to see how `T81Float` values multiply and subtract to produce canonical results.
+
+- **String demo:** Run `examples/string_demo.t81` to concatenate `T81String` literals and inspect the length operations.
+
+- **Vector & Matrix demos:** Run `examples/vector_demo.t81` / `examples/matrix_demo.t81` to explore dot-products, traces, and how Tensor/Matrix indexing works (shape awareness).
+
+- **Cell & Quaternion demos:** Execute `examples/cell_demo.t81` and `examples/quaternion_demo.t81` to observe canonical `T81Cell` ranges and quaternion conjugate/norm.
+
+- **Automated demo runner:** Execute `scripts/run-demos.sh` (after building the CLI) to compile and run the match, primitive, fraction, tensor, bigint, float, and string demos sequentially; the script reports compilation/runnable output for each.
+- **IR Inspector:** Build `./build/ir_inspector` and run it on any `.t81` file to print the IR instructions (including match lowering) emitted before binary emission.
+
 ### Build the Documentation Site
 
 The documentation website is built with [Jekyll](https://jekyllrb.com/). Building it requires a working [Ruby](https://www.ruby-lang.org/en/) environment with the [Bundler](https://bundler.io/) gem installed.

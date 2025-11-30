@@ -1,0 +1,32 @@
+fn demo_primitives() -> i32 {
+    let first: i32 = 7;
+    let second: i32 = 5;
+    let sum: i32 = first + second;
+
+    let ratio: T81Float = 2.5;
+    let adjusted: T81Float = ratio + 1.5;
+
+    let label: T81String = "primitives";
+
+    return sum + i32(adjusted);
+}
+
+fn demo_structural() -> i32 {
+    let maybe: Option[i32] = Some(8);
+    let value: i32 = match (maybe) {
+        Some(x) => x * 2,
+        None => 0,
+    };
+
+    let result: Result[i32, T81String] = Ok(value);
+    return match (result) {
+        Ok(v) => v + 3,
+        Err(_) => -1,
+    };
+}
+
+fn main() -> i32 {
+    let prim = demo_primitives();
+    let structure = demo_structural();
+    return prim + structure;
+}

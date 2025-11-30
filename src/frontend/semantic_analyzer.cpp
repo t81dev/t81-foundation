@@ -236,8 +236,10 @@ Type SemanticAnalyzer::widen_numeric(const Type& left, const Type& right, const 
     return numeric_rank(left) >= numeric_rank(right) ? left : right;
 }
 
-Type SemanticAnalyzer::evaluate_expression(const Expr& expr) {
+Type SemanticAnalyzer::evaluate_expression(const Expr& expr, const Type* expected) {
+    _expected_type_stack.push_back(expected);
     auto result = analyze(expr);
+    _expected_type_stack.pop_back();
     if (!result.has_value()) {
         return Type{Type::Kind::Unknown};
     }
@@ -246,6 +248,13 @@ Type SemanticAnalyzer::evaluate_expression(const Expr& expr) {
     } catch (const std::bad_any_cast&) {
         return make_error_type();
     }
+}
+ 
+const Type* SemanticAnalyzer::current_expected_type() const {
+    if (_expected_type_stack.empty()) {
+        return nullptr;
+    }
+    return _expected_type_stack.back();
 }
 
 Type SemanticAnalyzer::expect_condition_bool(const Expr& expr, const Token& location) {
@@ -310,7 +319,7 @@ std::any SemanticAnalyzer::visit(const VarStmt& stmt) {
     }
 
     Type declared_type = stmt.type ? analyze_type_expr(*stmt.type) : Type{Type::Kind::Unknown};
-    Type init_type = stmt.initializer ? evaluate_expression(*stmt.initializer) : Type{Type::Kind::Unknown};
+    Type init_type = stmt.initializer ? evaluate_expression(*stmt.initializer, &declared_type) : Type{Type::Kind::Unknown};
 
     if (declared_type.kind == Type::Kind::Unknown && init_type.kind == Type::Kind::Unknown) {
         error(stmt.name, "Variable '" + std::string(stmt.name.lexeme) + "' requires a type annotation or initializer.");
@@ -337,7 +346,7 @@ std::any SemanticAnalyzer::visit(const LetStmt& stmt) {
     }
 
     Type declared_type = stmt.type ? analyze_type_expr(*stmt.type) : Type{Type::Kind::Unknown};
-    Type init_type = stmt.initializer ? evaluate_expression(*stmt.initializer) : Type{Type::Kind::Unknown};
+    Type init_type = stmt.initializer ? evaluate_expression(*stmt.initializer, &declared_type) : Type{Type::Kind::Unknown};
 
     if (declared_type.kind == Type::Kind::Unknown && init_type.kind == Type::Kind::Unknown) {
         error(stmt.name, "Constant '" + std::string(stmt.name.lexeme) + "' requires a type annotation or initializer.");
@@ -397,7 +406,7 @@ std::any SemanticAnalyzer::visit(const ReturnStmt& stmt) {
         return expected;
     }
 
-    Type value_type = evaluate_expression(*stmt.value);
+    Type value_type = evaluate_expression(*stmt.value, &expected);
     if (!is_assignable(expected, value_type)) {
         error(stmt.keyword, "Return type mismatch: expected '" + type_to_string(expected) + "' but got '" +
                                  type_to_string(value_type) + "'.");
@@ -458,7 +467,7 @@ std::any SemanticAnalyzer::visit(const AssignExpr& expr) {
         error(expr.name, "Cannot assign to non-variable '" + std::string(expr.name.lexeme) + "'.");
     }
 
-    Type value_type = evaluate_expression(*expr.value);
+    Type value_type = evaluate_expression(*expr.value, &symbol->type);
     if (!is_assignable(symbol->type, value_type)) {
         error(expr.name, "Cannot assign value of type '" + type_to_string(value_type) +
                              "' to variable of type '" + type_to_string(symbol->type) + "'.");
@@ -515,6 +524,7 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
 
     if (auto var_expr = dynamic_cast<const VariableExpr*>(expr.callee.get())) {
         std::string func_name = std::string(var_expr->name.lexeme);
+        const Type* expected = current_expected_type();
 
         if (func_name == "Some") {
             if (arg_types.size() != 1) {
@@ -526,21 +536,63 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
             if (!arg_types.empty()) {
                 error(var_expr->name, "The 'None' constructor does not take arguments.");
             }
-            return Type{Type::Kind::Option, {Type{Type::Kind::Unknown}}};
+            if (!expected || expected->kind != Type::Kind::Option) {
+                error(var_expr->name, "The 'None' constructor requires a contextual Option[T] type.");
+                return make_error_type();
+            }
+            Type option_type = *expected;
+            if (option_type.params.empty()) {
+                option_type.params.emplace_back(Type{Type::Kind::Unknown});
+            }
+            return option_type;
         }
         if (func_name == "Ok") {
+            if (!expected || expected->kind != Type::Kind::Result) {
+                error(var_expr->name, "The 'Ok' constructor requires a contextual Result[T, E] type.");
+                return make_error_type();
+            }
             if (arg_types.size() != 1) {
                 error(var_expr->name, "The 'Ok' constructor expects exactly one argument.");
+                return make_error_type();
             }
-            Type success = arg_types.empty() ? Type{Type::Kind::Unknown} : arg_types[0];
-            return Type{Type::Kind::Result, {success, Type{Type::Kind::Unknown}}};
+            Type result_type = *expected;
+            if (result_type.params.size() < 2) {
+                result_type.params.resize(2, Type{Type::Kind::Unknown});
+            }
+            Type success_expected = result_type.params[0];
+            Type error_expected = result_type.params[1];
+            Type success_arg = arg_types[0];
+
+            if (!is_assignable(success_expected, success_arg)) {
+                error(var_expr->name, "The 'Ok' constructor argument must match the success type of the contextual Result.");
+            }
+            Type success_param = (success_expected.kind == Type::Kind::Unknown ? success_arg : success_expected);
+            result_type.params[0] = success_param;
+            return result_type;
         }
         if (func_name == "Err") {
+            if (!expected || expected->kind != Type::Kind::Result) {
+                error(var_expr->name, "The 'Err' constructor requires a contextual Result[T, E] type.");
+                return make_error_type();
+            }
             if (arg_types.size() != 1) {
                 error(var_expr->name, "The 'Err' constructor expects exactly one argument.");
+                return make_error_type();
             }
-            Type error_type = arg_types.empty() ? Type{Type::Kind::Unknown} : arg_types[0];
-            return Type{Type::Kind::Result, {Type{Type::Kind::Unknown}, error_type}};
+            Type result_type = *expected;
+            if (result_type.params.size() < 2) {
+                result_type.params.resize(2, Type{Type::Kind::Unknown});
+            }
+            Type success_expected = result_type.params[0];
+            Type error_expected = result_type.params[1];
+            Type error_arg = arg_types[0];
+
+            if (!is_assignable(error_expected, error_arg)) {
+                error(var_expr->name, "The 'Err' constructor argument must match the error type of the contextual Result.");
+            }
+            Type error_param = (error_expected.kind == Type::Kind::Unknown ? error_arg : error_expected);
+            result_type.params[1] = error_param;
+            return result_type;
         }
 
         auto* symbol = resolve_symbol(var_expr->name);
@@ -572,6 +624,139 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
 
     evaluate_expression(*expr.callee);
     return make_error_type();
+}
+
+std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
+    Type scrutinee_type = evaluate_expression(*expr.scrutinee);
+    Token scrutinee_token = extract_token(*expr.scrutinee);
+    bool is_option = scrutinee_type.kind == Type::Kind::Option;
+    bool is_result = scrutinee_type.kind == Type::Kind::Result;
+
+    if (!is_option && !is_result) {
+        error(scrutinee_token, "Match expressions require Option[T] or Result[T, E] scrutinees.");
+        return make_error_type();
+    }
+
+    Type option_payload = (is_option && !scrutinee_type.params.empty()) ? scrutinee_type.params[0]
+                                                                          : Type{Type::Kind::Unknown};
+    Type result_success = (is_result && scrutinee_type.params.size() >= 1) ? scrutinee_type.params[0]
+                                                                            : Type{Type::Kind::Unknown};
+    Type result_error = (is_result && scrutinee_type.params.size() >= 2) ? scrutinee_type.params[1]
+                                                                          : Type{Type::Kind::Unknown};
+
+    bool has_some = false;
+    bool has_none = false;
+    bool has_ok = false;
+    bool has_err = false;
+    bool structural_error = false;
+
+    const Type* contextual_expected = current_expected_type();
+    Type result_type = contextual_expected ? *contextual_expected : Type{Type::Kind::Unknown};
+    bool result_type_locked = contextual_expected && contextual_expected->kind != Type::Kind::Unknown;
+
+    for (const auto& arm : expr.arms) {
+        Token location = arm.keyword;
+        bool variant_allowed = true;
+        Type binding_type = Type{Type::Kind::Unknown};
+
+        if (is_option) {
+            switch (arm.variant) {
+                case MatchArm::Variant::Some:
+                    if (has_some) {
+                        error(location, "Duplicate 'Some' arm in Option match.");
+                        structural_error = true;
+                    }
+                    has_some = true;
+                    binding_type = option_payload;
+                    break;
+                case MatchArm::Variant::None:
+                    if (has_none) {
+                        error(location, "Duplicate 'None' arm in Option match.");
+                        structural_error = true;
+                    }
+                    has_none = true;
+                    break;
+                default:
+                    error(location, "Option match arms must be 'Some' or 'None'.");
+                    structural_error = true;
+                    variant_allowed = false;
+                    break;
+            }
+        } else {
+            switch (arm.variant) {
+                case MatchArm::Variant::Ok:
+                    if (has_ok) {
+                        error(location, "Duplicate 'Ok' arm in Result match.");
+                        structural_error = true;
+                    }
+                    has_ok = true;
+                    binding_type = result_success;
+                    break;
+                case MatchArm::Variant::Err:
+                    if (has_err) {
+                        error(location, "Duplicate 'Err' arm in Result match.");
+                        structural_error = true;
+                    }
+                    has_err = true;
+                    binding_type = result_error;
+                    break;
+                default:
+                    error(location, "Result match arms must be 'Ok' or 'Err'.");
+                    structural_error = true;
+                    variant_allowed = false;
+                    break;
+            }
+        }
+
+        enter_scope();
+        if (arm.has_binding && variant_allowed && !arm.binding_is_wildcard) {
+            define_symbol(arm.binding, SymbolKind::Variable);
+            if (auto* symbol = resolve_symbol(arm.binding)) {
+                symbol->type = binding_type;
+            }
+        }
+
+        const Type* arm_expected = result_type_locked ? &result_type : nullptr;
+        Type arm_type = evaluate_expression(*arm.expression, arm_expected);
+        exit_scope();
+
+        if (!result_type_locked && arm_type.kind != Type::Kind::Unknown) {
+            result_type = arm_type;
+            result_type_locked = true;
+        }
+
+        if (result_type_locked && arm_type.kind != Type::Kind::Unknown &&
+            !is_assignable(result_type, arm_type)) {
+            error(location, "All match arms must produce the same type.");
+            structural_error = true;
+        }
+    }
+
+    if (is_option) {
+        if (!has_some) {
+            error(scrutinee_token, "Option match requires a 'Some' arm.");
+            structural_error = true;
+        }
+        if (!has_none) {
+            error(scrutinee_token, "Option match requires a 'None' arm.");
+            structural_error = true;
+        }
+    } else {
+        if (!has_ok) {
+            error(scrutinee_token, "Result match requires an 'Ok' arm.");
+            structural_error = true;
+        }
+        if (!has_err) {
+            error(scrutinee_token, "Result match requires an 'Err' arm.");
+            structural_error = true;
+        }
+    }
+
+    if (structural_error) {
+        return make_error_type();
+    }
+
+    return result_type;
 }
 
 std::any SemanticAnalyzer::visit(const GroupingExpr& expr) {

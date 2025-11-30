@@ -1,0 +1,9 @@
+fn quaternion_demo() -> i32 {
+    let q: T81Quaternion = (1, 2, 3, 4);
+    let _sum: T81Quaternion = q + q;
+    return 4;
+}
+
+fn main() -> i32 {
+    return quaternion_demo();
+}

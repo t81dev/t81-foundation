@@ -1,0 +1,9 @@
+fn matrix_demo() -> i32 {
+    let m: Matrix[i32, 2, 2] = [[1, 2], [3, 4]];
+    let trace: i32 = m[0][0] + m[1][1];
+    return trace;
+}
+
+fn main() -> i32 {
+    return matrix_demo();
+}

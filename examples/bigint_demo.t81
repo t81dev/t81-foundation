@@ -1,0 +1,12 @@
+fn bigint_demo() -> i32 {
+    let a: T81BigInt = 42;
+    let b: T81BigInt = -17;
+    let sum: T81BigInt = a + b;
+    let product: T81BigInt = a * 2;
+    let _unused: T81BigInt = sum + product;
+    return 1;
+}
+
+fn main() -> i32 {
+    return bigint_demo();
+}

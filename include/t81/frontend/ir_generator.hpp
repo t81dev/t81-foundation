@@ -74,10 +74,106 @@ public:
 
     std::any visit(const UnaryExpr&) override        { return {}; }
     std::any visit(const VariableExpr&) override     { return {}; }
-    std::any visit(const CallExpr&) override         { return {}; }
+    std::any visit(const CallExpr& expr) override {
+        if (auto var_expr = dynamic_cast<const VariableExpr*>(expr.callee.get())) {
+            std::string func_name{var_expr->name.lexeme};
+            if (func_name == "Some") {
+                if (!expr.arguments.empty()) {
+                    expr.arguments[0]->accept(*this);
+                }
+                emit(tisc::ir::Instruction{tisc::ir::Opcode::MAKE_OPTION_SOME});
+                return {};
+            }
+            if (func_name == "None") {
+                emit(tisc::ir::Instruction{tisc::ir::Opcode::MAKE_OPTION_NONE});
+                return {};
+            }
+            if (func_name == "Ok") {
+                if (!expr.arguments.empty()) {
+                    expr.arguments[0]->accept(*this);
+                }
+                emit(tisc::ir::Instruction{tisc::ir::Opcode::MAKE_RESULT_OK});
+                return {};
+            }
+            if (func_name == "Err") {
+                if (!expr.arguments.empty()) {
+                    expr.arguments[0]->accept(*this);
+                }
+                emit(tisc::ir::Instruction{tisc::ir::Opcode::MAKE_RESULT_ERR});
+                return {};
+            }
+        }
+        for (const auto& arg : expr.arguments) {
+            arg->accept(*this);
+        }
+        return {};
+    }
     std::any visit(const AssignExpr&) override       { return {}; }
     std::any visit(const SimpleTypeExpr&) override   { return {}; }
     std::any visit(const GenericTypeExpr&) override  { return {}; }
+    std::any visit(const MatchExpr& expr) override {
+        expr.scrutinee->accept(*this);
+
+        bool has_some = false;
+        bool has_none = false;
+        bool has_ok = false;
+        bool has_err = false;
+        for (const auto& arm : expr.arms) {
+            has_some |= (arm.variant == MatchArm::Variant::Some);
+            has_none |= (arm.variant == MatchArm::Variant::None);
+            has_ok |= (arm.variant == MatchArm::Variant::Ok);
+            has_err |= (arm.variant == MatchArm::Variant::Err);
+        }
+
+        auto emit_arm = [&](MatchArm::Variant variant) {
+            for (const auto& arm : expr.arms) {
+                if (arm.variant == variant) {
+                    if (variant == MatchArm::Variant::Some) {
+                        emit(tisc::ir::Instruction{tisc::ir::Opcode::OPTION_UNWRAP});
+                    }
+                    if (variant == MatchArm::Variant::Ok) {
+                        emit(tisc::ir::Instruction{tisc::ir::Opcode::RESULT_UNWRAP_OK});
+                    }
+                    if (variant == MatchArm::Variant::Err) {
+                        emit(tisc::ir::Instruction{tisc::ir::Opcode::RESULT_UNWRAP_ERR});
+                    }
+                    arm.expression->accept(*this);
+                    return;
+                }
+            }
+        };
+
+        if (has_some && has_none) {
+            auto some_label = new_label();
+            auto end_label = new_label();
+            emit(tisc::ir::Instruction{tisc::ir::Opcode::OPTION_IS_SOME});
+            emit(tisc::ir::Instruction{tisc::ir::Opcode::JNZ, {some_label}});
+            emit_arm(MatchArm::Variant::None);
+            emit(tisc::ir::Instruction{tisc::ir::Opcode::JMP, {end_label}});
+            emit_label(some_label);
+            emit_arm(MatchArm::Variant::Some);
+            emit_label(end_label);
+            return {};
+        }
+
+        if (has_ok && has_err) {
+            auto ok_label = new_label();
+            auto end_label = new_label();
+            emit(tisc::ir::Instruction{tisc::ir::Opcode::RESULT_IS_OK});
+            emit(tisc::ir::Instruction{tisc::ir::Opcode::JNZ, {ok_label}});
+            emit_arm(MatchArm::Variant::Err);
+            emit(tisc::ir::Instruction{tisc::ir::Opcode::JMP, {end_label}});
+            emit_label(ok_label);
+            emit_arm(MatchArm::Variant::Ok);
+            emit_label(end_label);
+            return {};
+        }
+
+        for (const auto& arm : expr.arms) {
+            arm.expression->accept(*this);
+        }
+        return {};
+    }
 
 private:
     void emit(tisc::ir::Instruction instr) {

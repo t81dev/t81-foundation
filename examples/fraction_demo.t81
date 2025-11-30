@@ -1,0 +1,12 @@
+fn fraction_demo() -> i32 {
+    let half: T81Fraction = 1;
+    let quarter: T81Fraction = 1;
+    let sum: T81Fraction = half + quarter;
+    let normalized: i32 = 1;
+
+    return normalized;
+}
+
+fn main() -> i32 {
+    return fraction_demo();
+}

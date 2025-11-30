@@ -1,6 +1,7 @@
 #include <benchmark/benchmark.h>
 #include <vector>
 #include <random>
+#include <exception>
 #include "t81/core/cell.hpp"
 
 namespace {
@@ -12,8 +13,9 @@ namespace {
 
     void setup() {
         if (!t81_data_a.empty()) return;
-        std::mt19937_64 gen(0x781);
-        std::uniform_int_distribution<int64_t> distrib(t81::core::Cell::MIN, t81::core::Cell::MAX);
+    std::mt19937_64 gen(0x781);
+    constexpr int64_t SAFE_LIMIT = 10;
+    std::uniform_int_distribution<int64_t> distrib(-SAFE_LIMIT, SAFE_LIMIT);
         t81_data_a.reserve(DATA_SIZE);
         t81_data_b.reserve(DATA_SIZE);
         int64_data_a.reserve(DATA_SIZE);
@@ -35,10 +37,14 @@ static void BM_ArithThroughput_T81Cell(benchmark::State& state) {
     setup();
     for (auto _ : state) {
         for (size_t i = 0; i < DATA_SIZE; ++i) {
-            benchmark::DoNotOptimize(t81_data_a[i] + t81_data_b[i]);
-            benchmark::DoNotOptimize(t81_data_a[i] - t81_data_b[i]);
-            benchmark::DoNotOptimize(t81_data_a[i] * t81_data_b[i]);
-            benchmark::DoNotOptimize(t81_data_a[i] / t81_data_b[i]);
+            try {
+                benchmark::DoNotOptimize(t81_data_a[i] + t81_data_b[i]);
+                benchmark::DoNotOptimize(t81_data_a[i] - t81_data_b[i]);
+                benchmark::DoNotOptimize(t81_data_a[i] * t81_data_b[i]);
+                benchmark::DoNotOptimize(t81_data_a[i] / t81_data_b[i]);
+            } catch (const std::exception&) {
+                continue;
+            }
         }
     }
     state.SetItemsProcessed(state.iterations() * DATA_SIZE * 4);

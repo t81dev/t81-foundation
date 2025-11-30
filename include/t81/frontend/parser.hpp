@@ -35,6 +35,8 @@ private:
     std::unique_ptr<Expr> factor();
     std::unique_ptr<Expr> unary();
     std::unique_ptr<Expr> primary();
+    std::unique_ptr<Expr> match_expression();
+    MatchArm match_arm();
     std::unique_ptr<TypeExpr> type();
 
     // Helper methods

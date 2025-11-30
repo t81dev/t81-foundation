@@ -73,6 +73,29 @@ int main() {
     )";
     expect_semantic_failure(invalid_result);
 
+    const std::string none_without_context = R"(
+        fn main() -> i32 {
+            let missing = None;
+            return 0;
+        }
+    )";
+    // `None` must appear where a contextual `Option[T]` type exists.
+    expect_semantic_failure(none_without_context);
+
+    const std::string ok_without_context = R"(
+        fn main() -> i32 {
+            return Ok(2);
+        }
+    )";
+    expect_semantic_failure(ok_without_context);
+
+    const std::string err_without_context = R"(
+        fn main() -> i32 {
+            return Err("boom");
+        }
+    )";
+    expect_semantic_failure(err_without_context);
+
     const std::string numeric_widening = R"(
         fn widen() -> i32 {
             let a: i8 = 1;

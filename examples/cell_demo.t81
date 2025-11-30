@@ -1,0 +1,11 @@
+fn cell_demo() -> i32 {
+    let a: T81Cell = T81Cell::from_int(5);
+    let b: T81Cell = T81Cell::from_int(-2);
+    let _sum: T81Cell = a + b;
+    let _diff: T81Cell = a - b;
+    return 1;
+}
+
+fn main() -> i32 {
+    return cell_demo();
+}

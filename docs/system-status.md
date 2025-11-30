@@ -1,6 +1,6 @@
 # T81 Foundation: System Status Report
 
-**Last Updated:** November 29, 2025
+**Last Updated:** November 30, 2025
 
 This document provides a high-level summary of the implementation status of each major component in the T81 Foundation stack. For a more detailed technical breakdown of spec conformance, see [`ANALYSIS.md`](../ANALYSIS.md).
 
@@ -62,7 +62,7 @@ ______________________________________________________________________
 
 - **Specification:** [`spec/t81lang-spec.md`](../spec/t81lang-spec.md)
 - **Status:** `Implemented`
-- **Summary:** The new C++20 frontend is now largely complete. It includes a lexer, a recursive descent parser for the full T81Lang grammar, a new semantic analysis pass for scope and symbol resolution, and an IR generator that produces valid TISC IR.
+- **Summary:** The new C++20 frontend is now largely complete. It includes a lexer, a recursive descent parser for the full T81Lang grammar, a new semantic analysis pass for scope and symbol resolution, and an IR generator that produces valid TISC IR. The analyzer now enforces that `None`, `Ok`, and `Err` are only used where a contextual `Option[T]` or `Result[T, E]` type already exists so that mismatched structural constructors are caught during semantic analysis. Match expressions over `Option` and `Result` values are now checked for exhaustiveness and unified result types at compile time, their lowering now emits the corresponding `OPTION_IS_SOME`/`RESULT_IS_OK` sequences, and the `t81` CLI can both compile and run such programs end-to-end.
 - **Next Steps:** Deepen the semantic analysis pass to perform comprehensive type checking and inference. Integrate the frontend with the `t81` CLI tool.
 
 ______________________________________________________________________
@@ -76,7 +76,7 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-## 6. Documentation Snapshot — November 29, 2025
+## 6. Documentation Snapshot — November 30, 2025
 
 This section summarizes the state of the project's documentation following a comprehensive overhaul.
 

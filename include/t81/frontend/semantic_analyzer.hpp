@@ -81,6 +81,7 @@ public:
     std::any visit(const LiteralExpr& expr) override;
     std::any visit(const UnaryExpr& expr) override;
     std::any visit(const VariableExpr& expr) override;
+    std::any visit(const MatchExpr& expr) override;
     std::any visit(const SimpleTypeExpr& expr) override;
     std::any visit(const GenericTypeExpr& expr) override;
 
@@ -92,6 +93,7 @@ private:
     // Scoped symbol table
     using Scope = std::unordered_map<std::string, SemanticSymbol>;
     std::vector<Scope> _scopes;
+    std::vector<const Type*> _expected_type_stack;
 
     void analyze(const Stmt& stmt);
     std::any analyze(const Expr& expr);
@@ -116,7 +118,8 @@ private:
     bool is_assignable(const Type& target, const Type& value);
     std::string type_to_string(const Type& type) const;
     Type expect_condition_bool(const Expr& expr, const Token& location);
-    Type evaluate_expression(const Expr& expr);
+    Type evaluate_expression(const Expr& expr, const Type* expected = nullptr);
+    const Type* current_expected_type() const;
     void register_function_signatures();
     Token extract_token(const Expr& expr) const;
 };

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <chrono>
 #include <map>
+#include <mutex>
 
 struct BenchmarkResult {
     std::string name;
@@ -19,6 +20,7 @@ struct BenchmarkResult {
 };
 
 std::map<std::string, BenchmarkResult> final_results;
+std::mutex final_results_mutex;
 
 const std::map<std::string, std::string> T81_ADVANTAGES = {
     {"BM_ArithThroughput", "Exact rounding, no FP error"},
@@ -36,6 +38,7 @@ public:
     bool ReportContext(const Context&) override { return true; }
 
     void ReportRuns(const std::vector<Run>& reports) override {
+        std::lock_guard<std::mutex> guard(final_results_mutex);
         for (const auto& run : reports) {
             std::string base_name = run.benchmark_name();
             base_name = base_name.substr(0, base_name.find("/"));
@@ -104,6 +107,7 @@ std::string get_current_timestamp() {
 }
 
 void GenerateMarkdownReport() {
+    std::lock_guard<std::mutex> guard(final_results_mutex);
     std::cout << "\nGenerating benchmark report...\n";
 
     std::cout << std::left << std::setw(25) << "Benchmark"

@@ -32,6 +32,15 @@ Opcode map_opcode(ir::Opcode ir_op) {
         case ir::Opcode::F2I: return Opcode::F2I;
         case ir::Opcode::I2FRAC: return Opcode::I2Frac;
         case ir::Opcode::FRAC2I: return Opcode::Frac2I;
+        case ir::Opcode::MAKE_OPTION_SOME: return Opcode::MakeOptionSome;
+        case ir::Opcode::MAKE_OPTION_NONE: return Opcode::MakeOptionNone;
+        case ir::Opcode::MAKE_RESULT_OK: return Opcode::MakeResultOk;
+        case ir::Opcode::MAKE_RESULT_ERR: return Opcode::MakeResultErr;
+        case ir::Opcode::OPTION_IS_SOME: return Opcode::OptionIsSome;
+        case ir::Opcode::OPTION_UNWRAP: return Opcode::OptionUnwrap;
+        case ir::Opcode::RESULT_IS_OK: return Opcode::ResultIsOk;
+        case ir::Opcode::RESULT_UNWRAP_OK: return Opcode::ResultUnwrapOk;
+        case ir::Opcode::RESULT_UNWRAP_ERR: return Opcode::ResultUnwrapErr;
         case ir::Opcode::NOP: return Opcode::Nop;
         case ir::Opcode::HALT: return Opcode::Halt;
         case ir::Opcode::TRAP: return Opcode::Trap;

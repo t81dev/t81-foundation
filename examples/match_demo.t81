@@ -1,0 +1,17 @@
+fn compute() -> i32 {
+    let maybe: Option[i32] = Some(3);
+    let value: i32 = match (maybe) {
+        Some(v) => v * 2,
+        None => 0,
+    };
+
+    let artifact: Result[i32, T81String] = Ok(value);
+    return match (artifact) {
+        Ok(v) => v + 4,
+        Err(_) => 0,
+    };
+}
+
+fn main() -> i32 {
+    return compute();
+}

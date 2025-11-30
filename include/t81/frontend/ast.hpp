@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 #include <array>
+#include <utility>
 
 namespace t81 {
 namespace frontend {
@@ -23,6 +24,7 @@ struct GroupingExpr;
 struct VariableExpr;
 struct CallExpr;
 struct AssignExpr;
+struct MatchExpr;
 struct TypeExpr;      // Base class for type expressions
 struct SimpleTypeExpr; // For simple types like "T81Int"
 struct GenericTypeExpr; // For generic types like "Vector[T]"
@@ -59,6 +61,7 @@ public:
     virtual std::any visit(const VariableExpr& expr) = 0;
     virtual std::any visit(const CallExpr& expr) = 0;
     virtual std::any visit(const AssignExpr& expr) = 0;
+    virtual std::any visit(const MatchExpr& expr) = 0;
     virtual std::any visit(const SimpleTypeExpr& expr) = 0;
     virtual std::any visit(const GenericTypeExpr& expr) =
  0;
@@ -134,6 +137,46 @@ struct CallExpr : Expr {
     const std::unique_ptr<Expr> callee;
     const Token paren;
     const std::vector<std::unique_ptr<Expr>> arguments;
+};
+
+struct MatchArm {
+    enum class Variant {
+        Some,
+        None,
+        Ok,
+        Err
+    };
+
+    MatchArm(Variant variant, Token keyword, bool has_binding,
+             Token binding, bool binding_is_wildcard, std::unique_ptr<Expr> expression)
+        : variant(variant),
+          keyword(keyword),
+          has_binding(has_binding),
+          binding(binding),
+          binding_is_wildcard(binding_is_wildcard),
+          expression(std::move(expression)) {}
+
+    MatchArm(const MatchArm&) = delete;
+    MatchArm& operator=(const MatchArm&) = delete;
+    MatchArm(MatchArm&&) = default;
+    MatchArm& operator=(MatchArm&&) = default;
+
+    Variant variant;
+    Token keyword;
+    bool has_binding;
+    Token binding;
+    bool binding_is_wildcard;
+    std::unique_ptr<Expr> expression;
+};
+
+struct MatchExpr : Expr {
+    MatchExpr(std::unique_ptr<Expr> scrutinee, std::vector<MatchArm> arms)
+        : scrutinee(std::move(scrutinee)), arms(std::move(arms)) {}
+
+    std::any accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
+
+    const std::unique_ptr<Expr> scrutinee;
+    const std::vector<MatchArm> arms;
 };
 
 struct AssignExpr : Expr {

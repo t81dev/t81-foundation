@@ -46,6 +46,13 @@ For contributors looking to modify the codebase, these resources provide detaile
 - **[Guide: Adding a Language Feature](./guides/adding-a-language-feature.md)**
   - The lifecycle of a T81Lang feature, from lexer to IR generator.
 
+- **[Guide: Match Expression Demo](./guides/match-example.md)**
+  - A live example that compiles and runs an `Option`/`Result` match through the CLI and HanoiVM.
+- **[Guide: Data Types Overview](./guides/data-types-overview.md)**
+  - A runnable sample that exercises primitive and structural data types inside `examples/data_types.t81`.
+- **[Demo Gallery](./guides/demo-gallery.md)**
+  - A quick menu of the match/data-type demos, the `scripts/run-demos.sh` automation, and the IR inspector utility.
+
 - **[Guide: VM Opcodes](./guides/vm-opcodes.md)**
   - The process for extending the virtual machine with new instructions.
 

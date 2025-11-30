@@ -206,8 +206,14 @@ if (T81_BUILD_TESTS)
   add_executable(t81_semantic_analyzer_option_result_test tests/cpp/semantic_analyzer_option_result_test.cpp)
   target_link_libraries(t81_semantic_analyzer_option_result_test PRIVATE t81_frontend)
 
+  add_executable(t81_semantic_analyzer_match_test tests/cpp/semantic_analyzer_match_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_match_test PRIVATE t81_frontend)
+
   add_executable(t81_tisc_binary_emitter_test tests/cpp/tisc_binary_emitter_test.cpp)
   target_link_libraries(t81_tisc_binary_emitter_test PRIVATE t81_tisc)
+
+  add_executable(ir_inspector tools/ir_inspector.cpp)
+  target_link_libraries(ir_inspector PRIVATE t81_frontend)
 
   add_executable(e2e_let_statement_test tests/cpp/e2e_let_statement_test.cpp)
   target_link_libraries(e2e_let_statement_test PRIVATE t81_frontend t81_tisc t81_vm)
@@ -352,6 +358,7 @@ if (T81_BUILD_TESTS)
     t81_frontend_parser_legacy_rejection_test
     t81_frontend_ir_generator_test
     t81_semantic_analyzer_option_result_test
+    t81_semantic_analyzer_match_test
     t81_tisc_binary_emitter_test
     # e2e_let_statement_test # Disabled due to pre-existing parser/VM integration bugs. See issue #124.
     # e2e_arithmetic_test # Disabled due to pre-existing parser/VM integration bugs. See issue #124.

@@ -327,6 +327,10 @@ std::unique_ptr<Expr> Parser::unary() {
 // Parses a primary expression, which is the highest-precedence expression.
 // primary -> "false" | "true" | INTEGER | FLOAT | STRING | "(" expression ")" | IDENTIFIER ;
 std::unique_ptr<Expr> Parser::primary() {
+    if (match({TokenType::Match})) {
+        return match_expression();
+    }
+
     if (match({TokenType::False, TokenType::True, TokenType::Integer, TokenType::Float, TokenType::String})) {
         return std::make_unique<LiteralExpr>(previous());
     }
@@ -358,6 +362,68 @@ std::unique_ptr<Expr> Parser::primary() {
     _had_error = true;
     std::cerr << "Parse Error: Expect expression at line " << peek().line << std::endl;
     throw std::runtime_error("Expect expression.");
+}
+
+std::unique_ptr<Expr> Parser::match_expression() {
+    consume(TokenType::LParen, "Expect '(' after 'match'.");
+    std::unique_ptr<Expr> scrutinee = expression();
+    consume(TokenType::RParen, "Expect ')' after match scrutinee.");
+    consume(TokenType::LBrace, "Expect '{' before match arms.");
+
+    std::vector<MatchArm> arms;
+    while (!check(TokenType::RBrace) && !is_at_end()) {
+        arms.push_back(match_arm());
+        if (!match({TokenType::Comma})) {
+            break;
+        }
+    }
+
+    consume(TokenType::RBrace, "Expect '}' after match arms.");
+    return std::make_unique<MatchExpr>(std::move(scrutinee), std::move(arms));
+}
+
+MatchArm Parser::match_arm() {
+    Token keyword = consume(TokenType::Identifier, "Expect match arm variant.");
+    std::string_view name = keyword.lexeme;
+
+    MatchArm::Variant variant;
+    if (name == "Some") {
+        variant = MatchArm::Variant::Some;
+    } else if (name == "None") {
+        variant = MatchArm::Variant::None;
+    } else if (name == "Ok") {
+        variant = MatchArm::Variant::Ok;
+    } else if (name == "Err") {
+        variant = MatchArm::Variant::Err;
+    } else {
+        _had_error = true;
+        std::cerr << "Parse Error: Unsupported match arm variant '" << name << "' at line " << keyword.line << std::endl;
+        variant = MatchArm::Variant::None;
+    }
+
+    bool has_binding = false;
+    Token binding{};
+    bool binding_is_wildcard = false;
+
+    if (variant != MatchArm::Variant::None) {
+        consume(TokenType::LParen, "Expect '(' after match arm variant.");
+        binding = consume(TokenType::Identifier, "Expect binding identifier.");
+        has_binding = true;
+        binding_is_wildcard = binding.lexeme == "_";
+        consume(TokenType::RParen, "Expect ')' after match binding.");
+    } else {
+        if (match({TokenType::LParen})) {
+            _had_error = true;
+            std::cerr << "Parse Error: 'None' match arm does not accept a binding at line " << keyword.line << std::endl;
+            while (!match({TokenType::RParen}) && !is_at_end()) {
+                advance();
+            }
+        }
+    }
+
+    consume(TokenType::FatArrow, "Expect '=>' after match arm pattern.");
+    std::unique_ptr<Expr> body = expression();
+    return MatchArm(variant, keyword, has_binding, binding, binding_is_wildcard, std::move(body));
 }
 
 // Parses a type expression.

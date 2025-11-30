@@ -129,6 +129,22 @@ public:
         return parenthesize("= " + std::string(expr.name.lexeme), {&expr.value});
     }
 
+    std::any visit(const MatchExpr& expr) override {
+        std::stringstream ss;
+        ss << "(match " << print(*expr.scrutinee);
+        for (const auto& arm : expr.arms) {
+            ss << " (";
+            ss << variant_to_string(arm.variant);
+            if (arm.has_binding) {
+                ss << " " << arm.binding.lexeme;
+            }
+            ss << " => " << print(*arm.expression);
+            ss << ")";
+        }
+        ss << ")";
+        return ss.str();
+    }
+
     std::any visit(const SimpleTypeExpr& expr) override {
         return std::string(expr.name.lexeme);
     }
@@ -165,6 +181,16 @@ private:
         }
         ss << ")";
         return ss.str();
+    }
+
+    static std::string_view variant_to_string(MatchArm::Variant variant) {
+        switch (variant) {
+            case MatchArm::Variant::Some: return "Some";
+            case MatchArm::Variant::None: return "None";
+            case MatchArm::Variant::Ok:   return "Ok";
+            case MatchArm::Variant::Err:  return "Err";
+        }
+        return "Unknown";
     }
 };
 

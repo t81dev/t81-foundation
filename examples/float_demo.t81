@@ -1,0 +1,10 @@
+fn float_demo() -> i32 {
+    let base: T81Float = 3.5;
+    let _scaled: T81Float = base * 2.0;
+    let _delta: T81Float = base - 1.0;
+    return 3;
+}
+
+fn main() -> i32 {
+    return float_demo();
+}

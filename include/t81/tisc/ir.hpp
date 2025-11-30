@@ -31,6 +31,12 @@ enum class Opcode {
     // Conversions
     I2F, F2I, I2FRAC, FRAC2I,
 
+    // Option/Result Helpers
+    MAKE_OPTION_SOME, MAKE_OPTION_NONE,
+    MAKE_RESULT_OK, MAKE_RESULT_ERR,
+    OPTION_IS_SOME, OPTION_UNWRAP,
+    RESULT_IS_OK, RESULT_UNWRAP_OK, RESULT_UNWRAP_ERR,
+
     // System
     NOP, HALT, TRAP,
 
