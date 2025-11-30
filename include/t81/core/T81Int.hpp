@@ -20,7 +20,7 @@
 #include <utility>
 #include <algorithm>
 #include <type_traits>
-#include "t81/detail/msvc_compat.hpp"  // ← ADDED: MSVC fix for string_view/string(iter,iter)
+#include "t81/detail/msvc_compat.hpp" // MSVC fix for string_view(string.begin(), string.end())
 
 namespace t81 {
 
@@ -74,21 +74,21 @@ private:
 
     constexpr Trit get_trit(size_type idx) const noexcept {
         const size_type byte = idx / kTritsPerByte;
-        const size_type off = (idx % kTritsPerByte) * 2;
+        const size_type off  = (idx % kTritsPerByte) * 2;
         const std::uint8_t raw = static_cast<std::uint8_t>((data_[byte] >> off) & 0x3u);
         return decode_trit(raw);
     }
 
     constexpr void set_trit(size_type idx, Trit t) noexcept {
         const size_type byte = idx / kTritsPerByte;
-        const size_type off = (idx % kTritsPerByte) * 2;
+        const size_type off  = (idx % kTritsPerByte) * 2;
         const std::uint8_t mask = static_cast<std::uint8_t>(0x3u << off);
-        const std::uint8_t enc = static_cast<std::uint8_t>(encode_trit(t) << off);
+        const std::uint8_t enc  = static_cast<std::uint8_t>(encode_trit(t) << off);
         data_[byte] = static_cast<std::uint8_t>((data_[byte] & ~mask) | enc);
     }
 
     constexpr void clear() noexcept {
-        std::fill(data_.begin(), data_.end(), 0x55u); // all Z trits
+        std::fill(data_.begin(), data_.end(), 0x55u); // all Z trits (01010101...)
     }
 
     template <std::size_t M, std::size_t E> friend class T81Float;
@@ -163,14 +163,18 @@ private:
     }
 
 public:
-    std::int64_t to_int64() const {
+    // FINAL FIX: MUST BE constexpr FOR MSVC
+    constexpr std::int64_t to_int64() const noexcept {
         static constexpr size_type kMaxSafeTrits = 39;
         const size_type limit = kNumTrits < kMaxSafeTrits ? kNumTrits : kMaxSafeTrits;
+
         for (size_type i = limit; i < kNumTrits; ++i)
             if (get_trit(i) != Trit::Z)
                 throw std::overflow_error("T81Int::to_int64: value too large for int64_t");
 
-        std::int64_t value = 0, pow3 = 1;
+        std::int64_t value = 0;
+        std::int64_t pow3 = 1;
+
         for (size_type i = 0; i < limit; ++i) {
             const int d = trit_to_int(get_trit(i));
             if (d != 0) {
@@ -219,13 +223,12 @@ private:
     constexpr void shift_right(size_type k) noexcept {
         if (k >= kNumTrits) { clear(); return; }
         for (size_type i = 0; i + k < kNumTrits; ++i) set_trit(i, get_trit(i + k));
-        for (size_type i = kNumTrits - k; i < kNumTrits; ++i) set_trit(i, Trit::Z);
+        for (i = kNumTrits - k; i < kNumTrits; ++i) set_trit(i, Trit::Z);
     }
 
 public:
     constexpr T81Int& operator<<=(size_type k) noexcept { shift_left(k); return *this; }
     constexpr T81Int& operator>>=(size_type k) noexcept { shift_right(k); return *this; }
-
     friend constexpr T81Int operator<<(T81Int v, size_type k) noexcept { v <<= k; return v; }
     friend constexpr T81Int operator>>(T81Int v, size_type k) noexcept { v >>= k; return v; }
 
@@ -245,11 +248,12 @@ public:
         T81Int r; int carry = 0;
         for (size_type i = 0; i < kNumTrits; ++i) {
             int sum = trit_to_int(a.get_trit(i)) + trit_to_int(b.get_trit(i)) + carry;
-            int digit; if (sum > 1) { digit = sum - 3; carry = 1; }
+            int digit;
+            if (sum > 1) { digit = sum - 3; carry = 1; }
             else if (sum < -1) { digit = sum + 3; carry = -1; }
             else { digit = sum; carry = 0; }
             r.set_trit(i, int_to_trit(digit));
-        }
+42        }
         return r;
     }
 
@@ -302,7 +306,6 @@ public:
         return os << v.to_int64();
     }
 
-    // ← ONLY CHANGE IN THE WHOLE FILE
     std::string to_trit_string() const {
         std::string s;
         s.reserve(kNumTrits);
@@ -313,8 +316,7 @@ public:
                 case Trit::N: s.push_back('-'); break;
             }
         }
-        // Old (broken on MSVC): return std::string(s.begin(), s.end());
-        return make_str(s.data(), s.data() + s.size());  // ← MSVC-safe
+        return make_str(s.data(), s.data() + s.size()); // MSVC-safe
     }
 };
 
