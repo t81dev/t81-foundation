@@ -4,6 +4,7 @@
 #include "t81/tisc/ir.hpp"
 
 #include <stdexcept>
+#include <string>
 
 namespace t81::frontend {
 
@@ -14,7 +15,7 @@ tisc::ir::IntermediateProgram IRGenerator::generate(const std::vector<std::uniqu
     return std::move(_program);
 }
 
-// Statements
+// ── Statements ─────────────────────────────────────────────────────────────
 std::any IRGenerator::visit(const ExpressionStmt& stmt) {
     stmt.expression->accept(*this);
     return {};
@@ -32,7 +33,7 @@ std::any IRGenerator::visit(const WhileStmt&)        { return {}; }
 std::any IRGenerator::visit(const ReturnStmt&)       { return {}; }
 std::any IRGenerator::visit(const FunctionStmt&)     { return {}; }
 
-// Expressions
+// ── Expressions ───────────────────────────────────────────────────────────
 std::any IRGenerator::visit(const BinaryExpr& expr) {
     expr.left->accept(*this);
     expr.right->accept(*this);
@@ -50,20 +51,18 @@ std::any IRGenerator::visit(const BinaryExpr& expr) {
 }
 
 std::any IRGenerator::visit(const LiteralExpr& expr) {
-    // In the current t81-foundation AST, LiteralExpr::token holds the Token,
-    // and the actual value is in token.literal (std::string)
-    const std::string& lit = expr.token.literal;
+    // Current AST: LiteralExpr has a member called `value` of type Token
+    // Token has a field `literal` which is std::string containing the text
+    const std::string& text = expr.value.literal;
 
-    // The IR test only uses integer literals
-    try {
-        int64_t value = std::stoll(lit);
-        emit(tisc::ir::Instruction{
-            tisc::ir::Opcode::LOADI,
-            {tisc::ir::Immediate{value}}
-        });
-    } catch (...) {
-        throw std::runtime_error("Failed to parse literal value: " + lit);
-    }
+    // The IR test only uses integer literals (e.g. "1", "42")
+    int64_t ival = std::stoll(text);
+
+    emit(tisc::ir::Instruction{
+        tisc::ir::Opcode::LOADI,
+        {tisc::ir::Immediate{ival}}
+    });
+
     return {};
 }
 
@@ -79,7 +78,7 @@ std::any IRGenerator::visit(const AssignExpr&)       { return {}; }
 std::any IRGenerator::visit(const SimpleTypeExpr&)   { return {}; }
 std::any IRGenerator::visit(const GenericTypeExpr&)  { return {}; }
 
-// Utility
+// ── Utility ───────────────────────────────────────────────────────────────
 void IRGenerator::emit(tisc::ir::Instruction instr) {
     _program.add_instruction(std::move(instr));
 }
