@@ -37,7 +37,7 @@ void test_simple_addition() {
 
     assert(instructions[1].opcode == Opcode::LOADI);
     assert(std::get<t81::tisc::ir::Register>(instructions[1].operands[0]).index == 1);
-    assert(std::get<t81::tisc::ir::Immediate>(instructions[1].operands[1]).value ==  == 2);
+    assert(std::get<t81::tisc::ir::Immediate>(instructions[1].operands[1]).value == 2);
 
     assert(instructions[2].opcode == Opcode::ADD);
     assert(std::get<t81::tisc::ir::Register>(instructions[2].operands[0]).index == 2);
@@ -45,7 +45,7 @@ void test_simple_addition() {
     assert(std::get<t81::tisc::ir::Register>(instructions[2].operands[2]).index == 1);
 
     assert(instructions[3].opcode == Opcode::STORE);
-    // Optional: verify that the store target is the symbol "x
+    // Optional: verify that the store target is the symbol "x"
     // (symbol index depends on implementation, so we just verify opcode)
 
     std::cout << "IRGeneratorTest test_simple_addition passed!" << std::endl;
