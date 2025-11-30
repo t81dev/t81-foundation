@@ -98,6 +98,15 @@ public:
         *this = from_double(v);
     }
 
+    // CRITICAL FIX: Proper assignment operator
+    // Without this, the compiler generates a broken one → vector/matrix fill constructor corrupts values
+    constexpr T81Float& operator=(const T81Float& other) noexcept {
+        if (this != &other) {
+            bits_ = other.bits_;
+        }
+        return *this;
+    }
+
     // ---------------------------------------------------------------------
     // Factories
     // ---------------------------------------------------------------------
@@ -565,5 +574,6 @@ double T81Float<M, E>::to_double() const noexcept {
 // Common typedefs for canonical sizes
 using T81Float18_9 = T81Float<18, 9>;
 using T81Float27_9 = T81Float<27, 9>;
+using T81Float72_9 = T81Float<72, 9>;   // default for Vec3f, etc.
 
 } // namespace t81
