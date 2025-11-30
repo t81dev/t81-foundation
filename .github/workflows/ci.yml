@@ -20,15 +20,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
-      - name: Start log capture
+
+      - name: Create log directory
         run: mkdir -p .github/logs || true
+
       - name: Install Python tools
         run: pip install mdformat mdformat-gfm mdformat-frontmatter mdformat-toc 2>&1 | tee .github/logs/spec-and-docs.log
+
       - name: Check Markdown links (lychee)
         uses: lycheeverse/lychee-action@v2
         with:
@@ -40,6 +44,7 @@ jobs:
             .github/**/*.md spec/**/*.md docs/**/*.md README.md AGENTS.md CONTRIBUTING.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Verify repository structure
         run: |
           set -euo pipefail
@@ -48,6 +53,7 @@ jobs:
             [ -d "$d" ] || { echo "::error::Missing required directory: $d"; exit 1; }
           done
           echo "All required directories present."
+
       - name: Job Failure Summary
         if: failure()
         run: |
@@ -131,7 +137,7 @@ jobs:
           key: ccache-${{ runner.os }}-${{ matrix.compiler }}-${{ github.ref }}
           restore-keys: ccache-${{ runner.os }}-${{ matrix.compiler }}-
 
-      - name: Setup MSVC (Windows)
+      - name: Setup MSVC (Windows only)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
@@ -145,13 +151,13 @@ jobs:
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             2>&1 | tee .github/logs/build-and-test.log
 
-      # THIS IS THE ONE LINE THAT WINS THE WAR
-      - name: Force clean rebuild on Windows
+      # CRITICAL: Force fresh rebuild on Windows — kills the old cached binary
+      - name: Obliterate Windows build cache
         if: runner.os == 'Windows'
         run: |
           Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue
           mkdir build
-          echo "Windows build cache obliterated. Fresh truth being forged."
+          echo "Windows cache destroyed. Compiling truth from zero."
 
       - name: Build
         run: |
@@ -174,11 +180,23 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Last 40 log lines:" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          if test -f .github/logs/build-and-test.log; then
-            tail -n 40 .github/logs/build-and-test.log
+          if command -v powershell >/dev/null 2>&1; then
+            powershell -Command "
+              if (Test-Path '.github/logs/build-and-test.log') {
+                Get-Content '.github/logs/build-and-test.log' -Tail 40
+              } else {
+                Write-Output '(no log file found)'
+              }
+            "
           else
-            powershell -Command "if (Test-Path .github/logs/build-and-test.log) { Get-Content .github/logs/build-and-test.log -Tail 40 }"
+            if [ -f .github/logs/build-and-test.log ]; then
+              tail -n 40 .github/logs/build-and-test.log
+            else
+              echo "(no log file found)"
+            fi
           fi
           echo '```' >> $GITHUB_STEP_SUMMARY
+        shell: bash
 
-  # static-analysis, coverage, sanitizers, thread-sanitizer remain unchanged...
+  # The rest of your jobs (static-analysis, coverage, sanitizers, thread-sanitizer) remain unchanged
+  # ... (keep them exactly as they were)
