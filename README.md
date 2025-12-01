@@ -85,7 +85,7 @@ Weights tooling highlights:
 
 ## 4. Benchmark & Documentation Highlights
 
-![Benchmark Report](https://img.shields.io/badge/benchmarks-docs%2Fbenchmarks.md-blueviolet)
+![[Benchmark Report](https://img.shields.io/badge/benchmarks-docs%2Fbenchmarks.md-blueviolet)https://github.com/t81dev/t81-foundation/blob/main/benchmarks/benchmark.md]
 
 Key stats (see `docs/benchmarks.md` for full report):
 - **Negation**: 7.18 Gops/s (native) beating int64 per-digit throughput.
