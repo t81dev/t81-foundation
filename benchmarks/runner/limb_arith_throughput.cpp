@@ -57,7 +57,8 @@ static void BM_LimbArithThroughput_T81Limb(benchmark::State& state) {
         for (size_t i = 0; i < DATA_SIZE; ++i) {
             t81_dest_data[i] = t81_source_data_a[i] + t81_source_data_b[i];
         }
-        benchmark::DoNotOptimize(t81_dest_data.data());
+        auto* dest_ptr = static_cast<const void*>(t81_dest_data.data());
+        benchmark::DoNotOptimize(dest_ptr);
     }
     state.SetItemsProcessed(state.iterations() * DATA_SIZE);
     state.SetLabel("48-trit Kogge-Stone addition");
@@ -82,7 +83,8 @@ static void BM_LimbAdd_T81Native(benchmark::State& state) {
         for (size_t i = 0; i < DATA_SIZE; ++i) {
             t81_native_dest_data[i] = t81_native_a[i] + t81_native_b[i];
         }
-        benchmark::DoNotOptimize(t81_native_dest_data.data());
+        auto* native_ptr = static_cast<const void*>(t81_native_dest_data.data());
+        benchmark::DoNotOptimize(native_ptr);
     }
     state.SetItemsProcessed(state.iterations() * DATA_SIZE);
     state.SetLabel("Native T81 SIMD addition");
