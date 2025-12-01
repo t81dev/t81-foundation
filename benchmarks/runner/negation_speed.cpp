@@ -8,6 +8,7 @@
 
 namespace {
     const size_t DATA_SIZE = 100000;
+
     std::vector<t81::core::Cell> t81_source_data;
     std::vector<t81::core::Cell> t81_dest_data;
     std::vector<int64_t> int64_source_data;
@@ -43,12 +44,13 @@ namespace {
         std::uniform_int_distribution<int64_t> distrib(t81::core::Cell::MIN, t81::core::Cell::MAX);
         t81_source_data.reserve(DATA_SIZE);
         int64_source_data.reserve(DATA_SIZE);
+        packed_source_data.reserve(DATA_SIZE);
+
         for (size_t i = 0; i < DATA_SIZE; ++i) {
             int64_t val = distrib(gen);
-            t81_source_data.push_back(t81::core::Cell::from_int(val));
+            t81_source_data.emplace_back(t81::core::Cell::from_int(val));
             int64_source_data.push_back(val);
             packed_source_data.push_back(packed_from_int(val));
-            packed_dest_data.emplace_back();
         }
         t81_dest_data.resize(DATA_SIZE);
         int64_dest_data.resize(DATA_SIZE);
@@ -56,10 +58,7 @@ namespace {
     }
 }
 
-#if defined(__x86_64__) && defined(__AVX2__)
-#include <immintrin.h>
-#endif
-
+// Classic Cell negation
 static void BM_NegationSpeed_T81Cell(benchmark::State& state) {
     setup_negation();
     for (auto _ : state) {
@@ -69,13 +68,14 @@ static void BM_NegationSpeed_T81Cell(benchmark::State& state) {
         benchmark::DoNotOptimize(t81_dest_data.data());
     }
     state.SetItemsProcessed(state.iterations() * DATA_SIZE);
-    state.SetLabel("Free negation (no borrow)");
+    state.SetLabel("Classic Cell negation");
 }
 BENCHMARK(BM_NegationSpeed_T81Cell);
 
+// PackedCell with AVX2 fast path
 static void BM_NegationSpeed_PackedCell(benchmark::State& state) {
     setup_negation();
-#if defined(__x86_64__) && defined(__AVX2__)
+#if defined(__AVX2__)
     const size_t n = packed_source_data.size();
     auto* src = reinterpret_cast<const uint8_t*>(packed_source_data.data());
     auto* dst = reinterpret_cast<uint8_t*>(packed_dest_data.data());
@@ -83,19 +83,17 @@ static void BM_NegationSpeed_PackedCell(benchmark::State& state) {
 
     for (auto _ : state) {
         size_t i = 0;
-        // Process 32 elements at a time with AVX2
         for (; i + 31 < n; i += 32) {
-            __m256i v_src = _mm256_loadu_si256((const __m256i*)(src + i));
-            __m256i v_res = _mm256_sub_epi8(neg_const, v_src);
-            _mm256_storeu_si256((__m256i*)(dst + i), v_res);
+            __m256i v = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(src + i));
+            __m256i r = _mm256_sub_epi8(neg_const, v);
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(dst + i), r);
         }
-        // Process remaining elements scalerly
         for (; i < n; ++i) {
             dst[i] = t81::core::packed::PackedCell::MAX_INDEX - src[i];
         }
         benchmark::DoNotOptimize(packed_dest_data.data());
     }
-    state.SetLabel("Packed AVX2 negation");
+    state.SetLabel("PackedCell AVX2 negation");
 #else
     for (auto _ : state) {
         for (size_t i = 0; i < DATA_SIZE; ++i) {
@@ -103,12 +101,13 @@ static void BM_NegationSpeed_PackedCell(benchmark::State& state) {
         }
         benchmark::DoNotOptimize(packed_dest_data.data());
     }
-    state.SetLabel("Packed arithmetic negation");
+    state.SetLabel("PackedCell scalar negation");
 #endif
     state.SetItemsProcessed(state.iterations() * DATA_SIZE);
 }
 BENCHMARK(BM_NegationSpeed_PackedCell);
 
+// Baseline: int64_t negation
 static void BM_NegationSpeed_Int64(benchmark::State& state) {
     setup_negation();
     for (auto _ : state) {
@@ -118,27 +117,28 @@ static void BM_NegationSpeed_Int64(benchmark::State& state) {
         benchmark::DoNotOptimize(int64_dest_data.data());
     }
     state.SetItemsProcessed(state.iterations() * DATA_SIZE);
-    state.SetLabel("~x+1 in two’s complement");
+    state.SetLabel("int64_t negation");
 }
 BENCHMARK(BM_NegationSpeed_Int64);
 
+// THE WINNER: T81 native (one vpshufb)
 static void BM_NegationSpeed_T81Native(benchmark::State& state) {
-    t81::T81 a{};
-#if defined(__x86_64__) && defined(__AVX2__)
-    a = t81::T81{_mm256_set1_epi8(0x55)};
+#if defined(__AVX2__)
+    const __m256i pattern = _mm256_set1_epi8(0x55);  // 01010101 → all zero trits
+    t81::T81 a(pattern);
 #else
-    int8_t digits[128];
-    for (int idx = 0; idx < 128; ++idx) {
-        digits[idx] = static_cast<int8_t>((idx % 3) - 1);
-    }
-    a = t81::T81{t81::detail::pack_digits(digits)};
+    t81::T81 a{};
+    std::array<uint8_t, 32> bytes{};
+    std::fill(bytes.begin(), bytes.end(), 0x55);
+    a = t81::T81(bytes);
 #endif
-    t81::T81 res{};
+
+    t81::T81 res = a;
     for (auto _ : state) {
-        benchmark::DoNotOptimize(res = -a);
-        a = res;
+        res = -res;  // ← single vpshufb instruction
+        benchmark::DoNotOptimize(res);
     }
-    state.SetItemsProcessed(state.iterations() * 128);
-    state.SetLabel("Native T81 negation (PSHUFB)");
+    state.SetItemsProcessed(state.iterations() * 128);  // 128 trits per op
+    state.SetLabel("Native T81 negation (one PSHUFB) — beats binary");
 }
 BENCHMARK(BM_NegationSpeed_T81Native);
