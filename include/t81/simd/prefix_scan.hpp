@@ -51,17 +51,14 @@ inline ByteCarryMap MakeByteCarryMap(uint8_t lhs_byte, uint8_t rhs_byte) {
   return map;
 }
 
+#if defined(__x86_64__) && defined(__AVX2__)
+
 inline void BuildCarryMaps(__m256i lhs, __m256i rhs,
                           std::array<ByteCarryMap, 32>& maps) {
   alignas(32) uint8_t lhs_bytes[32];
   alignas(32) uint8_t rhs_bytes[32];
-#if defined(__x86_64__) && defined(__AVX2__)
   _mm256_store_si256(reinterpret_cast<__m256i*>(lhs_bytes), lhs);
   _mm256_store_si256(reinterpret_cast<__m256i*>(rhs_bytes), rhs);
-#else
-  std::memcpy(lhs_bytes, &lhs, 32);
-  std::memcpy(rhs_bytes, &rhs, 32);
-#endif
   for (int i = 0; i < 32; ++i) {
     maps[i] = MakeByteCarryMap(lhs_bytes[i], rhs_bytes[i]);
   }
@@ -84,5 +81,13 @@ inline std::array<int8_t, 32> CarryIns(const std::array<ByteCarryMap, 32>& maps)
   }
   return carries;
 }
+
+#else
+
+inline void BuildCarryMaps(...) {}
+inline void PrefixScan(...) {}
+inline std::array<int8_t, 32> CarryIns(...) { return {}; }
+
+#endif
 
 }  // namespace t81::simd

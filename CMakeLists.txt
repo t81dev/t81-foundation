@@ -309,6 +309,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_native_conversion_test tests/cpp/test_t81_native_conversion.cpp)
   target_link_libraries(t81_native_conversion_test PRIVATE t81_core)
 
+  add_executable(t81_native_arith_test tests/cpp/test_t81_native_arith.cpp)
+  target_link_libraries(t81_native_arith_test PRIVATE t81_core)
+
   enable_testing()
   set(T81_TEST_TARGETS
     t81_float_test
@@ -366,6 +369,7 @@ if(T81_BUILD_TESTS)
     t81_vm_jump_flags_test
     t81_vm_float_fraction_ops_test
     t81_vm_neg_jumps_test
+    t81_native_arith_test
     t81_frontend_lexer_test
     t81_frontend_parser_test
     t81_frontend_parser_generics_test
