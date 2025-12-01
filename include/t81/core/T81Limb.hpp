@@ -100,8 +100,7 @@ inline T81Limb T81Limb::operator+(const T81Limb& other) const noexcept {
         sum_vals[i] = {entry.sum_value[0], entry.sum_value[1], entry.sum_value[2]};
     }
 
-    // 2. Second Pass: A *correct* Kogge-Stone parallel prefix scan designed to
-    // harness AVX2 gather for map composition where available.
+    // 2. Second Pass: A *correct* Kogge-Stone parallel prefix scan
     for (int d = 0; d < 4; ++d) { // log2(16) = 4
         int stride = 1 << d;
         for (int i = stride; i < TRYTES; i += 2*stride) {
@@ -109,16 +108,19 @@ inline T81Limb T81Limb::operator+(const T81Limb& other) const noexcept {
 #if defined(__x86_64__) && defined(__AVX2__)
             int idx = i;
             while (idx + 4 <= limit) {
+                // Fixed for Clang 18+: _mm256_setr_epi32 requires 8 arguments
                 const __m256i current = _mm256_setr_epi32(
-                    map_ids[idx + 0],
-                    map_ids[idx + 1],
-                    map_ids[idx + 2],
-                    map_ids[idx + 3]);
+                    map_ids[idx + 0], map_ids[idx + 1],
+                    map_ids[idx + 2], map_ids[idx + 3],
+                    map_ids[idx + 0], map_ids[idx + 1],
+                    map_ids[idx + 2], map_ids[idx + 3]);
+
                 const __m256i previous = _mm256_setr_epi32(
-                    map_ids[idx - 1],
-                    map_ids[idx + 0],
-                    map_ids[idx + 1],
-                    map_ids[idx + 2]);
+                    map_ids[idx - 1], map_ids[idx + 0],
+                    map_ids[idx + 1], map_ids[idx + 2],
+                    map_ids[idx - 1], map_ids[idx + 0],
+                    map_ids[idx + 1], map_ids[idx + 2]);
+
                 const __m256i offsets = _mm256_add_epi32(
                     _mm256_mullo_epi32(current, _mm256_set1_epi32(27)),
                     previous);
