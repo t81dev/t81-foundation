@@ -11,6 +11,108 @@
 [![Core: C++20](https://img.shields.io/badge/Core-C%2B%2B20-0d1117?style=flat-square&logo=cplusplus)](#)
 [![License: MIT/GPL-3.0](https://img.shields.io/badge/License-MIT%20%2F%20GPL--3.0-green?style=flat-square)](LICENSE-MIT)
 
+</div>
+
+## 1. Elevator Pitch
+
+T81 is a sovereign, deterministic stack built around balanced ternary (−1, 0, +1). Everything from the core arithmetic types to the compiler, virtual machine, tensor library, and benchmarking toolchain is designed to demonstrate that ternary math can be exact, auditable, and performant when paired with modern C++ and SIMD hardware.
+
+Core features:
+- **Balanced ternary primitives**: `T81Int`, `T81Fraction`, `T81Float`, `T81Tensor` and friends implement exact arithmetic with zero hidden carries, round-trip safety, and Axion-friendly traps.
+- **T81Lang compiler + TISC VM**: parse T81 code, emit TISC bytecode, and execute deterministically inside the HanoiVM.
+- **Native + Classic benchmarking**: compare tryte-based (classic) vs AVX2-friendly (native) representations, reporting Classic/Native/Binary columns and latency/bandwidth metrics.
+- **Weights tooling**: import SafeTensors/GGUF to `t81w`, inspect metadata, and quantize tensors into T3_K GGUF models (with new CLI `weights quantize`).
+
+The stack is currently a late‑alpha / early‑beta collection of high-confidence numerics (well-tested core libs) wrapped around an experimental but usable compiler/VM pipeline.
+
+## 2. Quick Start
+
+### Build & Test
+
+```bash
+git clone https://github.com/t81dev/t81-foundation.git
+cd t81-foundation
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure
+```
+
+### CLI Cheatsheet
+
+```text
+t81 compile <file.t81> [-o <file.tisc>]
+t81 run <file.t81|.tisc>
+t81 check <file.t81>
+t81 benchmark [benchmark flags]
+t81 weights import <safetensors|gguf> [--format <safetensors|gguf>] [-o out.t81w]
+t81 weights info <model.t81w>
+t81 weights quantize <dir|file.safetensors> --to-gguf <out.gguf>
+```
+
+Weights tooling highlights:
+- `weights import` converts BitNet/SafeTensors/GGUF to the canonical `.t81w` with SHA3-512 metadata and density stats.
+- `weights info` prints trits, limbs, storage (bits/trit), sparsity, format, checksum, and canonical CanonFS hints.
+- `weights quantize … --to-gguf` runs the T3_K quantizer (128-element trit blocks, scale per block) and emits a GGUF file ready for llama.cpp with T3_K support.
+
+## 3. Command Summary
+
+| Command | What it does |
+| --- | --- |
+| `t81 compile` | Compile a `.t81` source file to TISC bytecode with diagnostics. |
+| `t81 run` | Compile (if needed) and execute TISC programs inside the HanoiVM. |
+| `t81 check` | Fast syntax-only validation of T81 source. |
+| `t81 benchmark` | Runs `benchmarks/benchmark_runner`, updates `docs/benchmarks.md` with Classic/Native/Binary stats and highlights. |
+| `t81 weights import` | Import BitNet/SafeTensors/GGUF to a native binary `.t81w`. |
+| `t81 weights info` | Inspect `.t81w`: tensor count, trits, bits/trit, sparsity, checksum. |
+| `t81 weights quantize` | Quantize SafeTensors into 52-byte/128-trit T3_K blocks stored in GGUF (new CLI entry). |
+
+## 4. Benchmark & Documentation Highlights
+
+![Benchmark Report](https://img.shields.io/badge/benchmarks-docs%2Fbenchmarks.md-blueviolet)
+
+Key stats (see `docs/benchmarks.md` for full report):
+- **Negation**: 7.18 Gops/s (native) beating int64 per-digit throughput.
+- **Throughput columns**: Classic/native/binary numbers now rendered together for every benchmark row.
+- **Memory bandwidth**: `BM_MemoryBandwidth` counters capture streamed GB/s (read+write).
+- Run `./build/t81 benchmark` after making arithmetic changes to refresh the markdown + CLI highlights.
+
+Documentation site:
+- `docs/benchmarks.md` – auto-generated benchmark table + analysis.
+- `docs/assets/...` – brand assets used in this README.
+- `docs/system-status.md` and `docs/guides/` for narrative walkthroughs.
+- Build/site preview with `cd docs && bundle exec jekyll serve`.
+
+## 5. Repository Layout
+
+| Path | Description |
+| --- | --- |
+| `/spec/` | Immutable project constitution (normative specs, RFCs). |
+| `/include/t81/` | Public C++ headers (`t81::v1`) including the new weights/crypto helpers. |
+| `/src/` | Implementation: compiler, VM, weights tooling, benchmarks, crypto helpers. |
+| `/tests/` | Unit + regression tests (do not remove coverage). |
+| `/benchmarks/` | Google Benchmark tables + the report runner. |
+| `/docs/` | Jekyll guides & generated benchmark report (`docs/benchmarks.md`). |
+| `/examples/` | T81 sample programs & demos. |
+
+## 6. Next Steps
+
+- Read `spec/t81-overview.md` for the constitutional vision.
+- Follow `ARCHITECTURE.md` for how components glue together.
+- Use `docs/cpp-quickstart.md` if you are authoring your first T81 program.
+- Explore `docs/guides/` for walkthroughs (match example, tensor/demo, etc.).
+- Keep `docs/benchmarks.md` fresh by rerunning `./build/t81 benchmark` whenever arithmetic or weights tooling changes.
+
+<div align="center">
+  <br/>
+  <img src="docs/assets/img/banner.png" alt="T81 Foundation" width="100%"/>
+  <br/><br/>
+
+[![Paradigm: Ternary Computing](https://img.shields.io/badge/Paradigm-Ternary%20Computing-red?style=flat-square)](https://en.wikipedia.org/wiki/Ternary_computer)
+[![Design: Specification-First](https://img.shields.io/badge/Design-Specification%20First-blue?style=flat-square)](#)
+[![CI Status](https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml/badge.svg)](https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml)
+[![Core: C++20](https://img.shields.io/badge/Core-C%2B%2B20-0d1117?style=flat-square&logo=cplusplus)](#)
+[![License: MIT/GPL-3.0](https://img.shields.io/badge/License-MIT%20%2F%20GPL--3.0-green?style=flat-square)](LICENSE-MIT)
+
 .   .   .
 
 [![Reference Platform: macOS • clang](https://img.shields.io/badge/Reference-macOS%20clang-81D4FA?logo=apple&style=for-the-badge)](https://github.com/t81dev/t81-foundation/actions)
@@ -24,149 +126,3 @@
 <br/><br/>
 
 </div>
-
-## 1. What is T81?
-
-The T81 Foundation is building a **post-binary computing stack** from the ground up, based on balanced ternary logic (−1, 0, +1). Our goal is to create a deterministic, transparent, and auditable platform for advanced AI systems.
-
-The project is a C++20 implementation of the principles laid out in the `/spec` directory. It includes:
-- A suite of **core data types** for balanced ternary arithmetic (`T81Int`, `Fraction`, `T81Float`).
-- A multi-dimensional **Tensor library** for numerical computing.
-- A prototype **T81Lang compiler** that translates a high-level language to a custom Ternary Instruction Set Computer (TISC) bytecode.
-- An interpreter-based **Virtual Machine (HanoiVM)** for executing TISC programs.
-- Stubs for a safety supervisor (**Axion Kernel**) and a content-addressable filesystem (**CanonFS**).
-
-The system is currently in a **late-alpha / early-beta** state. The core numeric libraries are well-tested, while the compiler and VM are still under active development.
-
-______________________________________________________________________
-
-## 2. Getting Started
-
-### Prerequisites
-
-- A C++20 compliant compiler (e.g., GCC 10+, Clang 12+)
-- CMake 3.16+
-- Ninja (recommended) or Make
-
-### Build and Test
-
-To get started, clone the repository, build the project, and run the test suite.
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/t81dev/t81-foundation.git
-cd t81-foundation
-
-# 2. Configure the build
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-
-# 3. Build all targets
-cmake --build build --parallel
-
-# 4. Run the core test suite
-ctest --test-dir build --output-on-failure
-```
-You should see all tests pass.
-
-### Run Demos
-
-The repository includes several demonstration binaries in `build/` that showcase the current capabilities of the system.
-
-```bash
-# High-level overview of numerics, tensors, and CanonFS
-./build/t81_demo
-
-# Detailed tensor operations
-./build/t81_tensor_ops
-
-# Axion kernel stub functionality
-./build/axion_demo
-```
-
-- **Pattern-match demo:** Follow `docs/guides/match-example.md` to compile and run `examples/match_demo.t81` via the `t81` CLI so you can experiment with `Option`/`Result` matches end to end.
-
-- **Data-type demo:** Try `docs/guides/data-types-overview.md` and `examples/data_types.t81` to see how primitive arithmetic, strings, and structural `match` expressions behave in a single example.
-
-- **Fraction demo:** Expand that guide by running `examples/fraction_demo.t81` to explore canonical `T81Fraction` arithmetic.
-
-- **Tensor demo:** Sample `examples/tensor_demo.t81` (also documented in the guide) to see how typed `Tensor` declarations behave; extend the example to examine shapes if desired.
-
-- **BigInt demo:** Try `examples/bigint_demo.t81` to experiment with balanced ternary big integers (addition and multiplication) before lowering to TISC.
-
-- **Float demo:** Use `examples/float_demo.t81` to see how `T81Float` values multiply and subtract to produce canonical results.
-
-- **String demo:** Run `examples/string_demo.t81` to concatenate `T81String` literals and inspect the length operations.
-
-- **Vector & Matrix demos:** Run `examples/vector_demo.t81` / `examples/matrix_demo.t81` to explore dot-products, traces, and how Tensor/Matrix indexing works (shape awareness).
-
-- **Cell & Quaternion demos:** Execute `examples/cell_demo.t81` and `examples/quaternion_demo.t81` to observe canonical `T81Cell` ranges and quaternion conjugate/norm.
-
-- **High-rank Tensor demo:** Run `examples/high_rank_tensor_demo.t81` to trace a three-dimensional tensor literal through indexing and reduction.
-
-- **Graph demo:** Use `examples/graph_demo.t81` to count edges in a small adjacency matrix via deterministic matrix access.
-
-- **Automated demo runner:** Execute `scripts/run-demos.sh` (after building the CLI) to compile and run the match, primitive, fraction, tensor, bigint, float, string, vector, matrix, cell, quaternion, high-rank tensor, and graph demos sequentially; the script reports compilation/runnable output for each.
-- **IR Inspector:** Build `./build/ir_inspector` and run it on any `.t81` file to print the IR instructions (including match lowering) emitted before binary emission.
-- **Benchmark suite:** Run `./build/t81 benchmark` (with optional benchmark flags) to invoke `build/benchmarks/benchmark_runner`; it runs the core throughput/packing benchmarks and updates `docs/benchmarks.md` with branch/commit metadata plus latency analysis.
-
-## Benchmark Highlights
-
-![Benchmark Report](https://img.shields.io/badge/benchmarks-docs%2Fbenchmarks.md-blueviolet)
-
-![Negation](https://img.shields.io/badge/Negation-6.6_Gops/s_(faster_per_digit_than_int64)-brightgreen)
-
-![T81 Classic column](https://img.shields.io/badge/Docs%2Fbenchmarks.md-T81%20Classic%20column-blueviolet)
-![T81 Native column](https://img.shields.io/badge/Docs%2Fbenchmarks.md-T81%20Native%20column-brightgreen)
-
-| Metric | Value |
-| --- | --- |
-| Largest T81 Classic advantage (latest run) | `BM_LimbArithThroughput_T81Limb` (13.06 Mops/s tryte Kogge-Stone vs 376.94 Mops/s binary) |
-| Largest T81 Native advantage (latest run) | `BM_NegationSpeed_T81Native` (2.98 Gops/s classic vs 7.18 Gops/s native vs 8.26 Gops/s binary) |
-| Memory bandwidth (read/write streaming) | `BM_MemoryBandwidth_ReadWrite` (bytes-per-second counter reports GB/s) |
-| Largest binary advantage | `BM_ArithThroughput` (0.00x — exact rounding vs. binary carry chains) |
-| Table columns | `docs/benchmarks.md` now reports Classic (`T81 Result`) and Native (`T81 Native Result`) throughputs alongside the Binary column |
-| Report source | `docs/benchmarks.md` (auto-regenerated whenever `./build/t81 benchmark` runs) |
-| Lookup-phase negation | `BM_NegationSpeed_PackedCell` (~2.26 Gops/s) demonstrates constant-time packed negation before we swap the core representation |
-
-These highlights mirror the “Highlights” section in `docs/benchmarks.md`; rerun the CLI benchmark command to refresh the ratios and notes.
-
-### Build the Documentation Site
-
-The documentation website is built with [Jekyll](https://jekyllrb.com/). Building it requires a working [Ruby](https://www.ruby-lang.org/en/) environment with the [Bundler](https://bundler.io/) gem installed.
-
-```bash
-# Navigate to the docs directory
-cd docs
-
-# Install dependencies (first time only)
-bundle install
-
-# Serve the site locally at http://localhost:4000
-bundle exec jekyll serve
-```
-
-______________________________________________________________________
-
-## 3. Repository Structure
-
-The repository is organized into distinct zones with clear boundaries.
-
-| Path            | Description                                               |
-| --------------- | --------------------------------------------------------- |
-| `/spec/`        | **Source of Truth:** The immutable project constitution.  |
-| `/include/t81/` | **Public API:** Modern, header-only C++20 core libraries. |
-| `/src/`         | **Implementation:** The compiled `.cpp` source files.       |
-| `/tests/`       | **Verification:** The C++ unit and end-to-end test suite. |
-| `/examples/`    | **Usage:** Standalone demonstration programs.             |
-| `/docs/`        | **Guidance:** Jekyll documentation site for contributors. |
-| `/legacy/`      | **Historical:** The immutable CWEB reference implementation.|
-
-______________________________________________________________________
-
-## 4. Where to Go Next
-
-- **To understand the project's vision:** Read the [T81 Overview (`spec/t81-overview.md`)](spec/t81-overview.md).
-- **For a technical deep-dive:** Start with the [Architecture Document (`ARCHITECTURE.md`)](ARCHITECTURE.md).
-- **To contribute code:** Read the [Contribution Guide (`CONTRIBUTING.md`)](CONTRIBUTING.md).
-- **To see the current state of the implementation:** View the [System Status Report (`docs/system-status.md`)](docs/system-status.md).
-- **To write your first T81 program:** Follow the [C++ Quickstart Guide (`docs/cpp-quickstart.md`)](docs/cpp-quickstart.md).
