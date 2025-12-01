@@ -109,6 +109,8 @@ Key stats (see `docs/benchmarks.md` for full report):
 - **Weight integration**: `t81 weights load` powers the new T81Lang `weights.load("<path>")` builtin, so HanoiVM code can hydrate `.t81w` models, inspect `WeightsModel` handles, and pass tensors through the same arithmetic pipeline that powers `t81 weights info`. See `docs/benchmarks.md` for the Classic/Native/Binary tables plus CLI workflow references.
 
 Documentation site:
+- `docs/onboarding.md` – curated flow for new C++ developers (clone/build/first bug) before diving into the rest.
+- `docs/release.md` – release/versioning policy and checklist for maintainers who ship tags.
 - `docs/benchmarks.md` – auto-generated benchmark table + analysis.
 - `docs/assets/...` – brand assets used in this README.
 - `docs/system-status.md` and `docs/guides/` for narrative walkthroughs.
@@ -128,8 +130,8 @@ Documentation site:
 
 ## 6. Next Steps
 
-- Read `spec/t81-overview.md` for the constitutional vision.
-- Follow `ARCHITECTURE.md` for how components glue together.
-- Use `docs/cpp-quickstart.md` if you are authoring your first T81 program.
-- Explore `docs/guides/` for walkthroughs (match example, tensor/demo, etc.).
+- Read `spec/index.md` (and linked specs such as `spec/t81lang-spec.md`, `spec/tisc-spec.md`, `spec/t81vm-spec.md`, `spec/t81-data-types.md`, `spec/axion-kernel.md`, `spec/canonfs-spec.md`) for the constitutional and interface-level definitions.
+- Follow `ARCHITECTURE.md` for how components glue together and consult `TASKS.md` + `ROADMAP.md` for current priorities.
+- Use `docs/onboarding.md` → `docs/cpp-quickstart.md` for the full newcomer flow, then dive into `docs/guides/` for targeted walkthroughs.
+- Reference `docs/release.md` before bumping versions and creating tags; keep `CHANGELOG.md` and spec RFCs (see `spec/rfcs/template.md`) in sync before merging.
 - Keep `docs/benchmarks.md` fresh by rerunning `./build/t81 benchmark` whenever arithmetic or weights tooling changes.
