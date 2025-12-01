@@ -14,9 +14,16 @@ thread_local int type_to_string_depth = 0;
 namespace t81 {
 namespace frontend {
 
+Type Type::constant(std::string repr) {
+    Type t;
+    t.kind = Kind::Constant;
+    t.custom_name = std::move(repr);
+    return t;
+}
+
 bool Type::operator==(const Type& other) const {
     if (kind != other.kind) return false;
-    if (kind == Kind::Custom) {
+    if (kind == Kind::Custom || kind == Kind::Constant) {
         return custom_name == other.custom_name;
     }
     return params == other.params;
@@ -192,6 +199,7 @@ std::string SemanticAnalyzer::type_to_string(const Type& type) const {
         case Type::Kind::Tensor:   result = "Tensor"; break;
         case Type::Kind::Graph:    result = "Graph"; break;
         case Type::Kind::String:   result = "T81String"; break;
+        case Type::Kind::Constant: result = "const(" + type.custom_name + ")"; break;
         case Type::Kind::Custom:   result = type.custom_name; break;
         case Type::Kind::Unknown:  result = "<unknown>"; break;
         case Type::Kind::Error:    result = "<error>"; break;
@@ -239,6 +247,9 @@ bool SemanticAnalyzer::is_assignable(const Type& target, const Type& value) {
     }
 
     if (target.kind == Type::Kind::Custom && value.kind == Type::Kind::Custom) {
+        return target.custom_name == value.custom_name;
+    }
+    if (target.kind == Type::Kind::Constant && value.kind == Type::Kind::Constant) {
         return target.custom_name == value.custom_name;
     }
 
@@ -850,38 +861,75 @@ std::any SemanticAnalyzer::visit(const GenericTypeExpr& expr) {
     params.reserve(expr.param_count);
 
     for (size_t i = 0; i < expr.param_count; ++i) {
-        if (!expr.params[i]) continue;
-        if (auto* type_expr = dynamic_cast<TypeExpr*>(expr.params[i].get())) {
-            params.push_back(analyze_type_expr(*type_expr));
-        } else {
-            error(expr.name, "Generic type parameters must be types.");
+        if (!expr.params[i]) {
+            error(expr.name, "Generic parameter " + std::to_string(i) + " is missing.");
             params.push_back(make_error_type());
+            continue;
         }
+
+        Expr* raw = expr.params[i].get();
+        if (auto* type_expr = dynamic_cast<TypeExpr*>(raw)) {
+            params.push_back(analyze_type_expr(*type_expr));
+            continue;
+        }
+
+        if (i == 0) {
+            error(expr.name, "The first generic parameter must be a type.");
+            params.push_back(make_error_type());
+            continue;
+        }
+
+        auto constant = constant_type_from_expr(*raw);
+        if (!constant.has_value()) {
+            error(expr.name, "Generic constant parameters must be integer literals or identifiers.");
+            params.push_back(make_error_type());
+            continue;
+        }
+
+        params.push_back(*constant);
+    }
+
+    if (params.empty()) {
+        error(expr.name, "Generic type requires at least one parameter.");
+        return make_error_type();
+    }
+
+    if (params[0].kind == Type::Kind::Constant) {
+        error(expr.name, "The first generic parameter must be a type.");
+        return make_error_type();
     }
 
     if (type_name == "Option") {
         if (params.size() != 1) {
             error(expr.name, "The 'Option' type expects exactly one type parameter, but got " + std::to_string(params.size()) + ".");
         }
-        if (params.empty()) {
-            params.push_back(Type{Type::Kind::Unknown});
-        }
-        return Type{Type::Kind::Option, params};
+        return Type{Type::Kind::Option, {params[0]}};
     }
 
     if (type_name == "Result") {
         if (params.size() != 2) {
             error(expr.name, "The 'Result' type expects exactly two type parameters, but got " + std::to_string(params.size()) + ".");
         }
-        while (params.size() < 2) {
-            params.push_back(Type{Type::Kind::Unknown});
-        }
-        return Type{Type::Kind::Result, params};
+        Type success = params.size() > 0 ? params[0] : Type{Type::Kind::Unknown};
+        Type err = params.size() > 1 ? params[1] : Type{Type::Kind::Unknown};
+        return Type{Type::Kind::Result, {success, err}};
     }
 
     Type base = type_from_token(expr.name);
     base.params = params;
     return base;
+}
+
+std::optional<Type> SemanticAnalyzer::constant_type_from_expr(const Expr& expr) {
+    if (auto* literal = dynamic_cast<const LiteralExpr*>(&expr)) {
+        if (literal->value.type == TokenType::Integer || literal->value.type == TokenType::Base81Integer) {
+            return Type::constant(std::string(literal->value.lexeme));
+        }
+    }
+    if (auto* variable = dynamic_cast<const VariableExpr*>(&expr)) {
+        return Type::constant(std::string(variable->name.lexeme));
+    }
+    return std::nullopt;
 }
 
 } // namespace frontend

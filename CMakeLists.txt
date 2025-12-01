@@ -233,6 +233,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_semantic_analyzer_match_test tests/cpp/semantic_analyzer_match_test.cpp)
   target_link_libraries(t81_semantic_analyzer_match_test PRIVATE t81_frontend)
 
+  add_executable(t81_semantic_analyzer_generic_test tests/cpp/semantic_analyzer_generic_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_generic_test PRIVATE t81_frontend)
+
   add_executable(t81_tisc_binary_emitter_test tests/cpp/tisc_binary_emitter_test.cpp)
   target_link_libraries(t81_tisc_binary_emitter_test PRIVATE t81_tisc)
 
@@ -391,6 +394,7 @@ if(T81_BUILD_TESTS)
     t81_frontend_ir_generator_test
     t81_semantic_analyzer_option_result_test
     t81_semantic_analyzer_match_test
+    t81_semantic_analyzer_generic_test
     t81_tisc_binary_emitter_test
     axion_instruction_counter_test
   )

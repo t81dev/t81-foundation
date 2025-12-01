@@ -5,6 +5,7 @@
 #include <any>
 #include <string>
 #include <unordered_map>
+#include <optional>
 #include "t81/frontend/ast.hpp"
 #include "t81/frontend/lexer.hpp"
 
@@ -30,6 +31,7 @@ struct Type {
         Option,
         Result,
         String,
+        Constant,
         Custom,
         Unknown,
         Error
@@ -38,6 +40,7 @@ struct Type {
     Kind kind = Kind::Unknown;
     std::vector<Type> params;
     std::string custom_name;
+    [[nodiscard]] static Type constant(std::string repr);
 
     [[nodiscard]] bool operator==(const Type& other) const;
     [[nodiscard]] bool operator!=(const Type& other) const { return !(*this == other); }
@@ -122,6 +125,7 @@ private:
     const Type* current_expected_type() const;
     void register_function_signatures();
     Token extract_token(const Expr& expr) const;
+    std::optional<Type> constant_type_from_expr(const Expr& expr);
 };
 
 } // namespace frontend

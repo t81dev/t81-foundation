@@ -16,9 +16,10 @@ title: "Guide: Adding a Language Feature"
     - [2.2 Recognize the Lexeme](#22-recognize-the-lexeme)
   - [3. Step 2: Update the Parser](#3-step-2-update-the-parser)
     - [3.1 Update the Grammar Rule](#31-update-the-grammar-rule)
-  - [4. Step 3: Update the IR Generator](#4-step-3-update-the-ir-generator)
-    - [4.1 Implement the Visitor Logic](#41-implement-the-visitor-logic)
-  - [5. Step 4: Write an End-to-End Test](#5-step-4-write-an-end-to-end-test)
+- [4. Step 3: Update the IR Generator](#4-step-3-update-the-ir-generator)
+  - [4.1 Implement the Visitor Logic](#41-implement-the-visitor-logic)
+- [5. Step 4: Write an End-to-End Test](#5-step-4-write-an-end-to-end-test)
+- [6. Step 5: Reinforce the Semantic Analyzer](#6-step-5-reinforce-the-semantic-analyzer)
 
 <!-- T81-TOC:END -->
 
@@ -252,3 +253,29 @@ No feature is complete without a test. An end-to-end test is the best way to val
 3.  **Add to CMake:** Add your new test file as an executable and test target in the root `CMakeLists.txt`.
 
 This process—**Lexer -> Parser -> IR Generator -> E2E Test**—is the standard workflow for adding new language features.
+
+## 6. Step 5: Reinforce the Semantic Analyzer
+
+The semantic analyzer enforces the invariants described in [`spec/t81lang-spec.md`](../../spec/t81lang-spec.md)
+(sections §2.1 on generic types and §6.2 on `match` semantics). When you evolve the grammar
+(see `RFC-0011` for the modern generic syntax) you must also extend `SemanticAnalyzer` so
+generic inference, `Option`/`Result` exhaustiveness, and match lowering remain correct.
+
+- **Generic inference:** Update `SemanticAnalyzer::visit(GenericTypeExpr)` to treat the first
+  parameter as a type and later parameters as compile-time constants (integer literals or
+  symbolic identifiers). Store the constants as a dedicated `Type::Kind::Constant` so the
+  analyzer can distinguish `Tensor[T, 2, 3]` from `Tensor[T, 3, 2]` and enforce shape-aware
+  assignments.
+- **Option/Result exhaustiveness:** The analyzer must ensure each `match` over structural
+  types declares exactly one arm per variant (`Some`/`None` or `Ok`/`Err`) and that all
+  arms produce a consistent result type. Use the `_expected_type_stack` to enforce that
+  constructors like `Some`, `Ok`, and `Err` observe the contextual `Option[T]`/`Result[T, E]`
+  and fail early when the wrong constructors or missing arms appear.
+- **Match lowering readiness:** Only allow matches whose scrutinee is a validated `Option`
+  or `Result`; otherwise the IR generator cannot emit the required `OPTION_IS_SOME`,
+  `OPTION_UNWRAP`, `RESULT_IS_OK`, or `RESULT_UNWRAP_*` sequences. Any change here should be
+  covered by the semantic analyzer regression tests (`tests/cpp/semantic_analyzer_match_test.cpp`
+  and the new `tests/cpp/semantic_analyzer_generic_test.cpp`).
+
+Keeping the semantic analyzer in lockstep with the spec lets the IR generator assume it can
+emit deterministic TISC control flow without rechecking every invariant.
