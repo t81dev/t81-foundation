@@ -22,7 +22,9 @@ This table inventories the key documentation, specification, and architectural a
 | `ANALYSIS.md`                           | Spec vs. Reality                | Core Maintainer       | **Current**           |
 | `docs/index.md`                         | Docs Site Entrypoint            | All                   | **Current**           |
 | `docs/system-status.md`                 | **(This file)**                 | Core Maintainer       | **Current**           |
-| `docs/cpp-quickstart.md`                | C++ Developer Guide             | New Contributor       | **Current**           |
+| `docs/cpp-quickstart.md`                | C++ Developer Guide             | New Contributor       | **Mostly Current**     |
+| `docs/onboarding.md`                    | Repo onboarding + first change  | New Contributor       | **Current**           |
+| `docs/release.md`                       | Release/versioning workflow      | Maintainer/Release Lead | **Current**         |
 | `docs/ai-quickstart.md`                 | AI Agent Guide                  | New Contributor       | **Current**           |
 | `docs/tensor-guide.md`                  | Tensor Library Guide            | User / Contributor    | **Current**           |
 | `docs/benchmarks.md`                    | Benchmark Suite                 | Core Maintainer       | **Current**           |
@@ -80,10 +82,8 @@ ______________________________________________________________________
 
 This section summarizes the state of the project's documentation following a comprehensive overhaul.
 
-### Where Docs are Strongest
-
--   **Onboarding & High-Level Architecture:** A new contributor can now follow a clear path from `README.md` -> `docs/cpp-quickstart.md` -> `ARCHITECTURE.md` to get a solid understanding of the project's goals, build process, and code structure.
--   **Project Status & Direction:** The `ROADMAP.md`, `TASKS.md`, and `docs/system-status.md` files are now synchronized with the codebase, providing a clear and realistic view of the project's priorities and implementation gaps.
+-   **Onboarding & High-Level Architecture:** A new contributor can now follow `README.md` → `docs/onboarding.md` → `docs/cpp-quickstart.md` → `ARCHITECTURE.md` and run `./build/t81` to see the pipeline work end to end.
+-   **Project Status & Direction:** The `ROADMAP.md`, `TASKS.md`, `docs/system-status.md`, and new `docs/release.md` describe priorities, release flows, and the checks needed for new contributions.
 -   **Core Subsystems:** Key functional components like the **Tensor Engine** (`docs/tensor-guide.md`) and the **VM/TISC** (`docs/guides/vm-opcodes.md`) now have dedicated, practical guides for C++ developers.
 
 ### Remaining Known Gaps

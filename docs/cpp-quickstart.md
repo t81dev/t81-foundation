@@ -26,16 +26,16 @@ The project uses a standard CMake workflow.
 git clone https://github.com/t81dev/t81-foundation.git
 cd t81-foundation
 
-# 2. Configure the build using the Ninja generator
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+# 2. Configure the build (add -G Ninja if you prefer)
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 
-# 3. Build all libraries, examples, and tests
+# 3. Build libraries, examples, tests, and docs
 cmake --build build --parallel
 
 # 4. Run the CTest test suite
 ctest --test-dir build --output-on-failure
 ```
-A successful run will show all 46 tests passing.
+A successful run will show all **65** unit tests passing.
 
 ______________________________________________________________________
 
@@ -75,6 +75,7 @@ ______________________________________________________________________
 
 - **To understand the code's structure:** Read the [`ARCHITECTURE.md`](../ARCHITECTURE.md) to see how the different libraries (`t81_core`, `t81_frontend`, etc.) fit together.
 - **To find a task to work on:** See the prioritized list of needed contributions in [`TASKS.md`](../TASKS.md).
+- **To understand the onboarding flow:** See [`docs/onboarding.md`](./onboarding.md).
 - **To explore the API:** Generate the Doxygen documentation by running `cmake --build build --target docs` and opening `docs/api/html/index.html`.
 
 ______________________________________________________________________
@@ -83,6 +84,7 @@ ______________________________________________________________________
 
 - **`T81BigInt` is Partial:** The `T81BigInt` class now provides arbitrary-precision storage using a vector of `T81Int` limbs, but its arithmetic functions are still incomplete.
 - **`Tensor` is Partial:** The `Tensor` class has a solid foundation but does not yet implement the full set of operations defined in the spec.
+> **`t81` CLI exists:** Use `t81 compile/run/check/benchmark/weights` as the canonical interface between source, TISC, and the VM.
 - **Axion & CanonFS are Stubs:** The Axion Kernel and CanonFS are non-functional placeholders.
 
 For a detailed status of all components, see the [`System Status Report`](./system-status.md).
