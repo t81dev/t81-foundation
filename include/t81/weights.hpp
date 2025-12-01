@@ -21,7 +21,11 @@ struct TensorInfo {
 struct NativeTensor {
     std::vector<uint64_t> shape;
     std::vector<uint64_t> data;
-    uint64_t num_trits() const { return data.size() * 48; }
+    uint64_t trits = 0;
+    uint64_t num_trits() const {
+        return trits != 0 ? trits : padded_limbs() * 48;
+    }
+    uint64_t padded_limbs() const { return data.size(); }
 };
 
 using NativeModel = std::map<std::string, NativeTensor>;
@@ -31,6 +35,11 @@ struct ModelFile {
     uint64_t total_trits = 0;
     uint64_t total_parameters = 0;
     NativeModel native;
+    std::string checksum;
+    std::string format;
+    uint64_t file_size = 0;
+    double bits_per_trit = 0.0;
+    double sparsity = 0.0;
 };
 
 ModelFile load_gguf(const std::filesystem::path& path);
@@ -40,10 +49,11 @@ NativeTensor import_bitnet_b158(std::span<const int8_t> src,
                                 const std::vector<uint64_t>& shape);
 
 void save_t81w(const NativeModel& model, const std::filesystem::path& path);
-NativeModel load_t81w(const std::filesystem::path& path);
+ModelFile load_t81w(const std::filesystem::path& path);
 
 void print_info(const ModelFile& mf);
 std::string format_bytes(uint64_t bytes);
+std::string format_count(uint64_t value);
 
 struct JsonValue {
     bool is_string = false;

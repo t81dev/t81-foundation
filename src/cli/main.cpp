@@ -16,6 +16,7 @@
 #include <optional>
 #include <cctype>
 #include <cstdlib>
+#include <iomanip>
 #if !defined(_WIN32)
 #include <sys/wait.h>
 #endif
@@ -511,18 +512,18 @@ int run_weights_info(const Args& args) {
     }
     fs::path path = args.command_args[1];
     try {
-        auto model = t81::weights::load_t81w(path);
-        uint64_t trits = 0;
-        uint64_t limbs = 0;
-        for (const auto& [name, tensor] : model) {
-            trits += tensor.num_trits();
-            limbs += tensor.data.size();
-        }
+        auto mf = t81::weights::load_t81w(path);
         std::cout << "Model:        " << path << "\n";
-        std::cout << "Tensors:      " << model.size() << "\n";
-        std::cout << "Trits:        " << trits << "\n";
-        std::cout << "Limbs:        " << limbs << "\n";
-        std::cout << "Format:       T81W1 native balanced ternary\n";
+        std::cout << "Parameters:   " << t81::weights::format_count(mf.total_parameters) << "\n";
+        std::cout << "Trits:        " << t81::weights::format_count(mf.total_trits) << " trits\n";
+        std::cout << "Storage:      " << t81::weights::format_bytes(mf.file_size)
+                  << " (" << std::fixed << std::setprecision(3) << mf.bits_per_trit
+                  << " bits/trit avg)\n";
+        std::cout << std::fixed << std::setprecision(1)
+                  << "Sparsity:     " << (mf.sparsity * 100.0) << "% zeros\n";
+        std::cout << std::defaultfloat;
+        std::cout << "Format:       " << mf.format << "\n";
+        std::cout << "Checksum:     sha3-512:" << mf.checksum << " (CanonFS-ready)\n";
     } catch (const std::exception& e) {
         error(e.what());
         return 1;

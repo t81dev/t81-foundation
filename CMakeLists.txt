@@ -33,6 +33,7 @@ add_library(t81_core STATIC
   src/bigint/divmod.cpp
   src/bigint/gcd.cpp
   src/hash/canonhash81.cpp
+  src/crypto/sha3.cpp
 )
 target_compile_features(t81_core PUBLIC cxx_std_20)
 target_include_directories(t81_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
