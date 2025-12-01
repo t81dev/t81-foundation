@@ -11,10 +11,16 @@
 [![Core: C++20](https://img.shields.io/badge/Core-C%2B%2B20-0d1117?style=flat-square&logo=cplusplus)](#)
 [![License: MIT/GPL-3.0](https://img.shields.io/badge/License-MIT%20%2F%20GPL--3.0-green?style=flat-square)](LICENSE-MIT)
 
-...
+.   .   .
 
 [![Reference Platform: macOS • clang](https://img.shields.io/badge/Reference-macOS%20clang-81D4FA?logo=apple&style=for-the-badge)](https://github.com/t81dev/t81-foundation/actions)
 
+.   .   .
+
+[![Negation](https://img.shields.io/badge/Negation-6.52_Gops/s_(faster_than_int64)-brightgreen)](https://github.com/t81-project/t81)
+[![Range](https://img.shields.io/badge/Range-40×_greater_than___int128-blue)](https://github.com/t81-project/t81)
+[![Overflow](https://img.shields.io/badge/Overflow-NEVER-red)](https://github.com/t81-project/t81)
+[![Exact Math](https://img.shields.io/badge/Math-Perfect-yellow)](https://github.com/t81-project/t81)
 <br/><br/>
 
 </div>
