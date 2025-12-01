@@ -18,17 +18,22 @@
 struct BenchmarkResult {
     std::string name;
     std::string t81_result_str;
+    std::string t81_native_result_str;
     std::string binary_result_str;
     double t81_result_val = 0.0;
+    double t81_native_result_val = 0.0;
     double binary_result_val = 0.0;
     double t81_latency_seconds = 0.0;
+    double t81_native_latency_seconds = 0.0;
     double binary_latency_seconds = 0.0;
     std::string t81_advantage;
     std::string notes;
     std::string t81_latency_str;
+    std::string t81_native_latency_str;
     std::string binary_latency_str;
     std::string analysis;
     bool has_t81_flow = false;
+    bool has_t81_native_flow = false;
     bool has_binary_flow = false;
     bool ratio_computed = false;
     std::string ratio_str;
@@ -45,7 +50,9 @@ const std::map<std::string, std::string> T81_ADVANTAGES = {
     {"BM_OverflowDetection", "Deterministic, provable"},
     {"BM_PackingDensity_Theoretical", "Theoretical maximum"},
     {"BM_PackingDensity_Achieved", "Achieved bits/trit"},
-    {"BM_PackingDensity_Practical", "Practical size ratio"}
+    {"BM_PackingDensity_Practical", "Practical size ratio"},
+    {"BM_NegationSpeed_T81Native", "PSHUFB-powered native negation"},
+    {"BM_LimbAdd_T81Native", "Register-native prefix addition"}
 };
 
 std::string RunCommand(const std::string& command) {
@@ -142,7 +149,8 @@ std::string FormatThroughput(double items_per_second) {
 
 enum class FlowKind {
     kUnknown,
-    kT81,
+    kT81Classic,
+    kT81Native,
     kBinary,
 };
 
@@ -158,11 +166,15 @@ static std::string ToLower(std::string_view input) {
 static FlowKind DetermineFlowKind(const std::string& base_name, const std::string& suffix) {
     const std::string lower_base = ToLower(base_name);
     const std::string lower_suffix = ToLower(suffix);
+    if (lower_base.find("native") != std::string::npos ||
+        lower_suffix.find("native") != std::string::npos) {
+        return FlowKind::kT81Native;
+    }
     if (lower_base.find("t81") != std::string::npos ||
         lower_base.find("ternary") != std::string::npos ||
         lower_suffix.find("t81") != std::string::npos ||
         lower_suffix.find("packed") != std::string::npos) {
-        return FlowKind::kT81;
+        return FlowKind::kT81Classic;
     }
     if (lower_base.find("int64") != std::string::npos ||
         lower_base.find("int128") != std::string::npos ||
@@ -179,9 +191,10 @@ std::string BuildAnalysis(const BenchmarkResult& r) {
     std::ostringstream oss;
     if (!r.ratio_computed) {
         oss << "Throughput data unavailable";
-        if (!r.has_t81_flow && !r.has_binary_flow) {
+        const bool has_any_t81_flow = r.has_t81_flow || r.has_t81_native_flow;
+        if (!has_any_t81_flow && !r.has_binary_flow) {
             oss << " (needs `items_per_second` counters from the runner)";
-        } else if (!r.has_t81_flow) {
+        } else if (!has_any_t81_flow) {
             oss << " (T81 throughput missing due to metadata-only run)";
         } else if (!r.has_binary_flow) {
             oss << " (binary throughput missing for this suite)";
@@ -232,7 +245,8 @@ public:
             }
 
             const FlowKind flow_kind = DetermineFlowKind(base_name, suffix);
-            const bool is_t81 = flow_kind == FlowKind::kT81;
+            const bool is_t81_classic = flow_kind == FlowKind::kT81Classic;
+            const bool is_t81_native = flow_kind == FlowKind::kT81Native;
             const bool is_binary = flow_kind == FlowKind::kBinary;
 
             if (final_results.find(family) == final_results.end()) {
@@ -240,7 +254,7 @@ public:
                 if(T81_ADVANTAGES.count(family))
                     final_results[family].t81_advantage = T81_ADVANTAGES.at(family);
             }
-            if(is_t81 || final_results[family].notes.empty()) {
+            if((is_t81_classic || is_t81_native) || final_results[family].notes.empty()) {
                 final_results[family].notes = run.report_label;
             }
 
@@ -272,7 +286,7 @@ public:
             double latency = ExtractLatency(run);
             std::string latency_str = FormatLatency(latency);
 
-            if(is_t81) {
+            if (is_t81_classic) {
                 final_results[family].t81_result_str = summary;
                 final_results[family].t81_latency_seconds = latency;
                 final_results[family].t81_latency_str = latency_str;
@@ -280,7 +294,15 @@ public:
                     final_results[family].t81_result_val = gops;
                     final_results[family].has_t81_flow = true;
                 }
-            } else if(is_binary) {
+            } else if (is_t81_native) {
+                final_results[family].t81_native_result_str = summary;
+                final_results[family].t81_native_latency_seconds = latency;
+                final_results[family].t81_native_latency_str = latency_str;
+                if (throughput_recorded) {
+                    final_results[family].t81_native_result_val = gops;
+                    final_results[family].has_t81_native_flow = true;
+                }
+            } else if (is_binary) {
                 final_results[family].binary_result_str = summary;
                 final_results[family].binary_latency_seconds = latency;
                 final_results[family].binary_latency_str = latency_str;
@@ -332,6 +354,8 @@ void GenerateMarkdownReport() {
     std::cout << std::left << std::setw(25) << "Benchmark"
               << std::setw(18) << "T81 Result"
               << std::setw(18) << "T81 Latency"
+              << std::setw(18) << "T81 Native Result"
+              << std::setw(18) << "T81 Native Latency"
               << std::setw(18) << "Binary Result"
               << std::setw(18) << "Binary Latency"
               << std::setw(25) << "T81 Advantage"
@@ -339,8 +363,10 @@ void GenerateMarkdownReport() {
     std::cout << std::string(110, '-') << "\n";
     for(auto const& [name, r] : final_results) {
         std::cout << std::left << std::setw(25) << r.name
-                  << std::setw(18) << DisplayValue(r.t81_result_str)
+          << std::setw(18) << DisplayValue(r.t81_result_str)
                   << std::setw(18) << DisplayValue(r.t81_latency_str)
+                  << std::setw(18) << DisplayValue(r.t81_native_result_str)
+                  << std::setw(18) << DisplayValue(r.t81_native_latency_str)
                   << std::setw(18) << DisplayValue(r.binary_result_str)
                   << std::setw(18) << DisplayValue(r.binary_latency_str)
                   << std::setw(25) << r.t81_advantage
@@ -368,8 +394,8 @@ void GenerateMarkdownReport() {
     md_file << "\n\n";
     md_file << "## Summary\n\n";
 
-    md_file << "| Benchmark               | T81 Result     | T81 Latency    | Binary Result  | Binary Latency | Ratio (T81/Binary) | T81 Advantage                   | Notes                               |\n";
-    md_file << "|-------------------------|----------------|----------------|----------------|----------------|--------------------|---------------------------------|-------------------------------------|\n";
+    md_file << "| Benchmark               | T81 Result     | T81 Latency    | T81 Native Result | T81 Native Latency | Binary Result  | Binary Latency | Ratio (T81/Binary) | T81 Advantage                   | Notes                               |\n";
+    md_file << "|-------------------------|----------------|----------------|------------------|--------------------|----------------|----------------|--------------------|---------------------------------|-------------------------------------|\n";
 
     double best_t81_ratio = 1.0;
     double best_binary_ratio = 1.0;
@@ -380,11 +406,14 @@ void GenerateMarkdownReport() {
     int ties = 0;
 
     for (auto& [name, r] : final_results) {
-        const bool ratio_ready = r.has_t81_flow && r.has_binary_flow &&
-                                 r.binary_result_val > 0.0 && r.t81_result_val > 0.0;
+        const bool has_any_t81_flow = r.has_t81_flow || r.has_t81_native_flow;
+        const double t81_comparable_val = r.has_t81_native_flow ?
+            r.t81_native_result_val : r.t81_result_val;
+        const bool ratio_ready = has_any_t81_flow && r.has_binary_flow &&
+                                 r.binary_result_val > 0.0 && t81_comparable_val > 0.0;
         double ratio = 0.0;
         if (ratio_ready) {
-            ratio = r.t81_result_val / r.binary_result_val;
+            ratio = t81_comparable_val / r.binary_result_val;
             r.ratio_val = ratio;
             std::ostringstream temp;
             temp << std::fixed << std::setprecision(2) << ratio << "x";
@@ -413,6 +442,8 @@ void GenerateMarkdownReport() {
         md_file << "| " << std::left << std::setw(23) << r.name
                 << "| " << std::setw(14) << DisplayValue(r.t81_result_str)
                 << "| " << std::setw(14) << DisplayValue(r.t81_latency_str)
+                << "| " << std::setw(14) << DisplayValue(r.t81_native_result_str)
+                << "| " << std::setw(14) << DisplayValue(r.t81_native_latency_str)
                 << "| " << std::setw(14) << DisplayValue(r.binary_result_str)
                 << "| " << std::setw(14) << DisplayValue(r.binary_latency_str)
                 << "| " << std::setw(14) << r.ratio_str

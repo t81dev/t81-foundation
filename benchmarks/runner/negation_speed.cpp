@@ -1,8 +1,10 @@
 #include <benchmark/benchmark.h>
 #include <vector>
 #include <random>
+#include <cstdint>
 #include "t81/core/cell.hpp"
 #include "t81/core/cell_packed.hpp"
+#include "t81/t81.hpp"
 
 namespace {
     const size_t DATA_SIZE = 100000;
@@ -54,7 +56,7 @@ namespace {
     }
 }
 
-#if defined(__AVX2__)
+#if defined(__x86_64__) && defined(__AVX2__)
 #include <immintrin.h>
 #endif
 
@@ -73,7 +75,7 @@ BENCHMARK(BM_NegationSpeed_T81Cell);
 
 static void BM_NegationSpeed_PackedCell(benchmark::State& state) {
     setup_negation();
-#if defined(__AVX2__)
+#if defined(__x86_64__) && defined(__AVX2__)
     const size_t n = packed_source_data.size();
     auto* src = reinterpret_cast<const uint8_t*>(packed_source_data.data());
     auto* dst = reinterpret_cast<uint8_t*>(packed_dest_data.data());
@@ -119,3 +121,24 @@ static void BM_NegationSpeed_Int64(benchmark::State& state) {
     state.SetLabel("~x+1 in two’s complement");
 }
 BENCHMARK(BM_NegationSpeed_Int64);
+
+static void BM_NegationSpeed_T81Native(benchmark::State& state) {
+    t81::T81 a{};
+#if defined(__x86_64__) && defined(__AVX2__)
+    a = t81::T81{_mm256_set1_epi8(0x55)};
+#else
+    int8_t digits[128];
+    for (int idx = 0; idx < 128; ++idx) {
+        digits[idx] = static_cast<int8_t>((idx % 3) - 1);
+    }
+    a = t81::T81{t81::detail::pack_digits(digits)};
+#endif
+    t81::T81 res{};
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(res = -a);
+        a = res;
+    }
+    state.SetItemsProcessed(state.iterations());
+    state.SetLabel("Native T81 negation (PSHUFB)");
+}
+BENCHMARK(BM_NegationSpeed_T81Native);

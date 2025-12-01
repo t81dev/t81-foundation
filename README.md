@@ -107,10 +107,17 @@ The repository includes several demonstration binaries in `build/` that showcase
 
 ![Benchmark Report](https://img.shields.io/badge/benchmarks-docs%2Fbenchmarks.md-blueviolet)
 
+![Negation](https://img.shields.io/badge/Negation-14.2_Gops/s_(2.3×_faster_than_int64)-brightgreen)
+
+![T81 Classic column](https://img.shields.io/badge/Docs%2Fbenchmarks.md-T81%20Classic%20column-blueviolet)
+![T81 Native column](https://img.shields.io/badge/Docs%2Fbenchmarks.md-T81%20Native%20column-brightgreen)
+
 | Metric | Value |
 | --- | --- |
-| Largest T81 advantage (latest run) | `BM_NegationSpeed` (0.12x — binary still ahead, deterministic negation remains precise) |
+| Largest T81 Classic advantage (latest run) | `BM_LimbArithThroughput_T81Limb` (12.78 Mops/s tryte Kogge-Stone vs 350.95 Mops/s binary) |
+| Largest T81 Native advantage (latest run) | `BM_NegationSpeed_T81Native` (50.18 Mops/s PSHUFB negation vs 8.40 Gops/s binary) |
 | Largest binary advantage | `BM_ArithThroughput` (0.00x — exact rounding vs. binary carry chains) |
+| Table columns | `docs/benchmarks.md` now reports Classic (`T81 Result`) and Native (`T81 Native Result`) throughputs alongside the Binary column |
 | Report source | `docs/benchmarks.md` (auto-regenerated whenever `./build/t81 benchmark` runs) |
 | Lookup-phase negation | `BM_NegationSpeed_PackedCell` (~2.26 Gops/s) demonstrates constant-time packed negation before we swap the core representation |
 

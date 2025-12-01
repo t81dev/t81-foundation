@@ -10,6 +10,11 @@
 
 #pragma once
 
+#include <array>
+#include <cstring>
+#if defined(__x86_64__) && defined(__AVX2__)
+#include <immintrin.h>
+#endif
 // ---------- Core config & traits ----------
 #include "t81/config.hpp"
 #include "t81/traits.hpp"
@@ -86,7 +91,8 @@
 #include "t81/hanoi/error.hpp"
 #include "t81/hanoi/kernel.hpp"
 
-// ---------- Axion ----------
+#include "t81/native.hpp"
+#include "t81/conversion.hpp"
 #include "t81/axion/verdict.hpp"
 #include "t81/axion/context.hpp"
 #include "t81/axion/engine.hpp"

@@ -294,6 +294,9 @@ if (T81_BUILD_TESTS)
   add_executable(t81_tree_test tests/cpp/test_T81Tree.cpp)
   target_link_libraries(t81_tree_test PRIVATE t81_core)
 
+  add_executable(t81_native_conversion_test tests/cpp/test_t81_native_conversion.cpp)
+  target_link_libraries(t81_native_conversion_test PRIVATE t81_core)
+
 
   enable_testing()
   set(T81_TEST_TARGETS

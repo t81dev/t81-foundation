@@ -14,7 +14,7 @@
 
 #include <array>
 #include <cstdint>
-#if defined(__AVX2__)
+#if defined(__x86_64__) && defined(__AVX2__)
 #include <immintrin.h>
 #endif
 
@@ -106,7 +106,7 @@ inline T81Limb T81Limb::operator+(const T81Limb& other) const noexcept {
         int stride = 1 << d;
         for (int i = stride; i < TRYTES; i += 2*stride) {
             int limit = std::min(TRYTES, i + stride);
-#if defined(__AVX2__)
+#if defined(__x86_64__) && defined(__AVX2__)
             int idx = i;
             while (idx + 4 <= limit) {
                 const __m256i current = _mm256_setr_epi32(
