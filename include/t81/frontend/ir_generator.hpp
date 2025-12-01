@@ -3,12 +3,15 @@
 #define T81_FRONTEND_IR_GENERATOR_HPP
 
 #include "t81/frontend/ast.hpp"
+#include "t81/frontend/semantic_analyzer.hpp"
 #include "t81/frontend/symbol_table.hpp"
 #include "t81/tisc/ir.hpp"
 #include <any>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+
+#include <unordered_map>
 
 namespace t81::frontend {
 
@@ -19,6 +22,10 @@ public:
             stmt->accept(*this);
         }
         return std::move(_program);
+    }
+
+    void attach_semantic_analyzer(const SemanticAnalyzer* analyzer) {
+        _semantic = analyzer;
     }
 
     // Statements
@@ -41,34 +48,120 @@ public:
 
     // Expressions
     std::any visit(const BinaryExpr& expr) override {
-        expr.left->accept(*this);
-        expr.right->accept(*this);
+        auto left = evaluate_expr(expr.left.get());
+        auto right = evaluate_expr(expr.right.get());
+        const Type* result_type = typed_expr(&expr);
+        NumericCategory kind = categorize(result_type);
+        tisc::ir::PrimitiveKind primitive_kind = categorize_primitive(result_type);
+        if (primitive_kind == tisc::ir::PrimitiveKind::Unknown) {
+            primitive_kind = tisc::ir::PrimitiveKind::Integer;
+        }
 
+        tisc::ir::ComparisonRelation relation = relation_from_token(expr.op.type);
+        if (relation != tisc::ir::ComparisonRelation::None) {
+            const Type* left_type = typed_expr(expr.left.get());
+            const Type* right_type = typed_expr(expr.right.get());
+            bool both_bool = left_type && right_type && left_type->kind == Type::Kind::Bool && right_type->kind == Type::Kind::Bool;
+
+            NumericCategory left_cat = categorize(left_type);
+            NumericCategory right_cat = categorize(right_type);
+            NumericCategory target_category = left_cat;
+            auto merge_category = [](NumericCategory a, NumericCategory b) {
+                if (a == NumericCategory::Float || b == NumericCategory::Float) return NumericCategory::Float;
+                if (a == NumericCategory::Fraction || b == NumericCategory::Fraction) return NumericCategory::Fraction;
+                if (a == NumericCategory::Integer || b == NumericCategory::Integer) return NumericCategory::Integer;
+                return NumericCategory::Unknown;
+            };
+            target_category = merge_category(left_cat, right_cat);
+            if (target_category == NumericCategory::Unknown) target_category = merge_category(target_category, right_cat);
+
+            tisc::ir::PrimitiveKind operand_primitive = primitive_kind;
+            if (!both_bool) {
+                switch (target_category) {
+                    case NumericCategory::Float:
+                        operand_primitive = tisc::ir::PrimitiveKind::Float;
+                        break;
+                    case NumericCategory::Fraction:
+                        operand_primitive = tisc::ir::PrimitiveKind::Fraction;
+                        break;
+                    case NumericCategory::Integer:
+                        operand_primitive = tisc::ir::PrimitiveKind::Integer;
+                        break;
+                    default:
+                        operand_primitive = left.primitive;
+                        break;
+                }
+            } else {
+                operand_primitive = tisc::ir::PrimitiveKind::Integer;
+            }
+
+            auto left_converted = both_bool ? left : ensure_kind(left, operand_primitive);
+            auto right_converted = both_bool ? right : ensure_kind(right, operand_primitive);
+            auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Boolean);
+
+            auto instr = tisc::ir::Instruction{tisc::ir::Opcode::CMP, {dest.reg, left_converted.reg, right_converted.reg}};
+            instr.primitive = tisc::ir::PrimitiveKind::Boolean;
+            instr.boolean_result = true;
+            instr.relation = relation;
+            emit(instr);
+            record_result(&expr, dest);
+            return {};
+        }
+
+        if (expr.op.type == TokenType::Percent && primitive_kind != tisc::ir::PrimitiveKind::Integer) {
+            throw std::runtime_error("Modulo requires integer operands");
+        }
+
+        auto left_converted = ensure_kind(left, primitive_kind);
+        auto right_converted = ensure_kind(right, primitive_kind);
+        auto dest = allocate_typed_register(primitive_kind);
         using O = tisc::ir::Opcode;
+        tisc::ir::Opcode opcode;
         switch (expr.op.type) {
-            case TokenType::Plus:   emit(tisc::ir::Instruction{O::ADD}); break;
-            case TokenType::Minus:  emit(tisc::ir::Instruction{O::SUB}); break;
-            case TokenType::Star:   emit(tisc::ir::Instruction{O::MUL}); break;
-            case TokenType::Slash:  emit(tisc::ir::Instruction{O::DIV}); break;
+            case TokenType::Plus:
+                opcode = select_opcode(kind, O::ADD, O::FADD, O::FRACADD);
+                break;
+            case TokenType::Minus:
+                opcode = select_opcode(kind, O::SUB, O::FSUB, O::FRACSUB);
+                break;
+            case TokenType::Star:
+                opcode = select_opcode(kind, O::MUL, O::FMUL, O::FRACMUL);
+                break;
+            case TokenType::Slash:
+                opcode = select_opcode(kind, O::DIV, O::FDIV, O::FRACDIV);
+                break;
+            case TokenType::Percent:
+                opcode = O::MOD;
+                break;
             default:
                 throw std::runtime_error("Unsupported binary operator");
         }
+
+        auto instr = tisc::ir::Instruction{opcode, {dest.reg, left_converted.reg, right_converted.reg}};
+        instr.primitive = primitive_kind;
+        emit(instr);
+        record_result(&expr, dest);
         return {};
     }
 
     std::any visit(const LiteralExpr& expr) override {
         std::string_view lexeme = expr.value.lexeme;
         int64_t value = std::stoll(std::string{lexeme});
+        auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
 
-        emit(tisc::ir::Instruction{
+        auto instr = tisc::ir::Instruction{
             tisc::ir::Opcode::LOADI,
-            {tisc::ir::Immediate{value}}
-        });
+            {dest.reg, tisc::ir::Immediate{value}}
+        };
+        instr.primitive = tisc::ir::PrimitiveKind::Integer;
+        emit(instr);
+        record_result(&expr, dest);
         return {};
     }
 
     std::any visit(const GroupingExpr& expr) override {
-        expr.expression->accept(*this);
+        auto value = evaluate_expr(expr.expression.get());
+        record_result(&expr, value);
         return {};
     }
 
@@ -81,25 +174,25 @@ public:
                 if (!expr.arguments.empty()) {
                     expr.arguments[0]->accept(*this);
                 }
-                emit(tisc::ir::Instruction{tisc::ir::Opcode::MAKE_OPTION_SOME});
+                emit_simple(tisc::ir::Opcode::MAKE_OPTION_SOME);
                 return {};
             }
             if (func_name == "None") {
-                emit(tisc::ir::Instruction{tisc::ir::Opcode::MAKE_OPTION_NONE});
+                emit_simple(tisc::ir::Opcode::MAKE_OPTION_NONE);
                 return {};
             }
             if (func_name == "Ok") {
                 if (!expr.arguments.empty()) {
                     expr.arguments[0]->accept(*this);
                 }
-                emit(tisc::ir::Instruction{tisc::ir::Opcode::MAKE_RESULT_OK});
+                emit_simple(tisc::ir::Opcode::MAKE_RESULT_OK);
                 return {};
             }
             if (func_name == "Err") {
                 if (!expr.arguments.empty()) {
                     expr.arguments[0]->accept(*this);
                 }
-                emit(tisc::ir::Instruction{tisc::ir::Opcode::MAKE_RESULT_ERR});
+                emit_simple(tisc::ir::Opcode::MAKE_RESULT_ERR);
                 return {};
             }
         }
@@ -129,13 +222,13 @@ public:
             for (const auto& arm : expr.arms) {
                 if (arm.variant == variant) {
                     if (variant == MatchArm::Variant::Some) {
-                        emit(tisc::ir::Instruction{tisc::ir::Opcode::OPTION_UNWRAP});
+                        emit_simple(tisc::ir::Opcode::OPTION_UNWRAP);
                     }
                     if (variant == MatchArm::Variant::Ok) {
-                        emit(tisc::ir::Instruction{tisc::ir::Opcode::RESULT_UNWRAP_OK});
+                        emit_simple(tisc::ir::Opcode::RESULT_UNWRAP_OK);
                     }
                     if (variant == MatchArm::Variant::Err) {
-                        emit(tisc::ir::Instruction{tisc::ir::Opcode::RESULT_UNWRAP_ERR});
+                        emit_simple(tisc::ir::Opcode::RESULT_UNWRAP_ERR);
                     }
                     arm.expression->accept(*this);
                     return;
@@ -146,7 +239,7 @@ public:
         if (has_some && has_none) {
             auto some_label = new_label();
             auto end_label = new_label();
-            emit(tisc::ir::Instruction{tisc::ir::Opcode::OPTION_IS_SOME});
+            emit_simple(tisc::ir::Opcode::OPTION_IS_SOME);
             emit(tisc::ir::Instruction{tisc::ir::Opcode::JNZ, {some_label}});
             emit_arm(MatchArm::Variant::None);
             emit(tisc::ir::Instruction{tisc::ir::Opcode::JMP, {end_label}});
@@ -159,7 +252,7 @@ public:
         if (has_ok && has_err) {
             auto ok_label = new_label();
             auto end_label = new_label();
-            emit(tisc::ir::Instruction{tisc::ir::Opcode::RESULT_IS_OK});
+            emit_simple(tisc::ir::Opcode::RESULT_IS_OK);
             emit(tisc::ir::Instruction{tisc::ir::Opcode::JNZ, {ok_label}});
             emit_arm(MatchArm::Variant::Err);
             emit(tisc::ir::Instruction{tisc::ir::Opcode::JMP, {end_label}});
@@ -176,8 +269,91 @@ public:
     }
 
 private:
+    struct TypedRegister {
+        tisc::ir::Register reg;
+        tisc::ir::PrimitiveKind primitive = tisc::ir::PrimitiveKind::Unknown;
+    };
+
+    enum class NumericCategory {
+        Integer,
+        Float,
+        Fraction,
+        Unknown
+    };
+
+    static tisc::ir::ComparisonRelation relation_from_token(TokenType type) {
+        switch (type) {
+            case TokenType::Less: return tisc::ir::ComparisonRelation::Less;
+            case TokenType::LessEqual: return tisc::ir::ComparisonRelation::LessEqual;
+            case TokenType::Greater: return tisc::ir::ComparisonRelation::Greater;
+            case TokenType::GreaterEqual: return tisc::ir::ComparisonRelation::GreaterEqual;
+            case TokenType::EqualEqual: return tisc::ir::ComparisonRelation::Equal;
+            case TokenType::BangEqual: return tisc::ir::ComparisonRelation::NotEqual;
+            default: return tisc::ir::ComparisonRelation::None;
+        }
+    }
+
+    NumericCategory categorize(const Type* type) const {
+        if (!type) return NumericCategory::Integer;
+        switch (type->kind) {
+            case Type::Kind::I2:
+            case Type::Kind::I8:
+            case Type::Kind::I16:
+            case Type::Kind::I32:
+            case Type::Kind::BigInt:
+                return NumericCategory::Integer;
+            case Type::Kind::Float:
+                return NumericCategory::Float;
+            case Type::Kind::Fraction:
+                return NumericCategory::Fraction;
+            default:
+                return NumericCategory::Unknown;
+        }
+    }
+
+    tisc::ir::PrimitiveKind categorize_primitive(const Type* type) const {
+        if (!type) return tisc::ir::PrimitiveKind::Integer;
+        switch (type->kind) {
+            case Type::Kind::I2:
+            case Type::Kind::I8:
+            case Type::Kind::I16:
+            case Type::Kind::I32:
+            case Type::Kind::BigInt:
+                return tisc::ir::PrimitiveKind::Integer;
+            case Type::Kind::Float:
+                return tisc::ir::PrimitiveKind::Float;
+            case Type::Kind::Fraction:
+                return tisc::ir::PrimitiveKind::Fraction;
+            case Type::Kind::Bool:
+                return tisc::ir::PrimitiveKind::Boolean;
+            default:
+                return tisc::ir::PrimitiveKind::Unknown;
+        }
+    }
+
+    tisc::ir::Opcode select_opcode(NumericCategory kind,
+                                   tisc::ir::Opcode integer_op,
+                                   tisc::ir::Opcode float_op,
+                                   tisc::ir::Opcode fraction_op) const {
+        switch (kind) {
+            case NumericCategory::Float: return float_op;
+            case NumericCategory::Fraction: return fraction_op;
+            default: return integer_op;
+        }
+    }
+
+    const Type* typed_expr(const Expr* expr) const {
+        return _semantic ? _semantic->type_of(expr) : nullptr;
+    }
+
     void emit(tisc::ir::Instruction instr) {
         _program.add_instruction(std::move(instr));
+    }
+
+    void emit_simple(tisc::ir::Opcode opcode) {
+        tisc::ir::Instruction instr;
+        instr.opcode = opcode;
+        emit(instr);
     }
 
     void emit_label(tisc::ir::Label label) {
@@ -192,10 +368,55 @@ private:
         return tisc::ir::Label{_label_count++};
     }
 
+    TypedRegister evaluate_expr(const Expr* expr) {
+        expr->accept(*this);
+        auto it = _expr_registers.find(expr);
+        if (it == _expr_registers.end()) {
+            throw std::runtime_error("IRGenerator failed to record expression result");
+        }
+        return it->second;
+    }
+
+    void record_result(const Expr* expr, TypedRegister reg) {
+        _expr_registers[expr] = reg;
+    }
+
+    TypedRegister allocate_typed_register(tisc::ir::PrimitiveKind primitive) {
+        return TypedRegister{new_register(), primitive};
+    }
+
+    TypedRegister ensure_kind(TypedRegister source, tisc::ir::PrimitiveKind target) {
+        if (target == tisc::ir::PrimitiveKind::Unknown || source.primitive == target) {
+            return source;
+        }
+        if (source.primitive != tisc::ir::PrimitiveKind::Integer) {
+            throw std::runtime_error("Implicit conversion only supported from integers");
+        }
+        tisc::ir::Opcode opcode;
+        switch (target) {
+            case tisc::ir::PrimitiveKind::Float:
+                opcode = tisc::ir::Opcode::I2F;
+                break;
+            case tisc::ir::PrimitiveKind::Fraction:
+                opcode = tisc::ir::Opcode::I2FRAC;
+                break;
+            default:
+                throw std::runtime_error("Unsupported conversion target");
+        }
+        auto dest = allocate_typed_register(target);
+        auto instr = tisc::ir::Instruction{opcode, {dest.reg, source.reg}};
+        instr.primitive = target;
+        instr.is_conversion = true;
+        emit(instr);
+        return dest;
+    }
+
     tisc::ir::IntermediateProgram _program;
     SymbolTable _symbols;
+    const SemanticAnalyzer* _semantic = nullptr;
     int _register_count = 0;
     int _label_count = 0;
+    std::unordered_map<const Expr*, TypedRegister> _expr_registers;
 };
 
 } // namespace t81::frontend

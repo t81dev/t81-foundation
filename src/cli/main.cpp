@@ -223,6 +223,7 @@ int compile(const fs::path& input, const fs::path& output) {
 
     verbose("Generating IR...");
     t81::frontend::IRGenerator ir_gen;
+    ir_gen.attach_semantic_analyzer(&semantic_analyzer);
     auto ir = ir_gen.generate(stmts);
 
     verbose("Emitting TISC bytecode...");

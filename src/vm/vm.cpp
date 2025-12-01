@@ -406,6 +406,34 @@ class Interpreter : public IVirtualMachine {
           state_.pc = static_cast<std::size_t>(insn.a);
         }
         break;
+      case t81::tisc::Opcode::Less:
+      case t81::tisc::Opcode::LessEqual:
+      case t81::tisc::Opcode::Greater:
+      case t81::tisc::Opcode::GreaterEqual:
+      case t81::tisc::Opcode::Equal:
+      case t81::tisc::Opcode::NotEqual: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
+        auto tag_b = state_.register_tags[insn.b];
+        auto tag_c = state_.register_tags[insn.c];
+        if (tag_b != tag_c) { trap = Trap::IllegalInstruction; break; }
+        auto relation_opt = compare_value(tag_b, state_.registers[insn.b], state_.registers[insn.c]);
+        if (!relation_opt.has_value()) { trap = Trap::IllegalInstruction; break; }
+        int relation = relation_opt.value();
+        bool result = false;
+        switch (insn.opcode) {
+          case t81::tisc::Opcode::Less: result = relation < 0; break;
+          case t81::tisc::Opcode::LessEqual: result = relation <= 0; break;
+          case t81::tisc::Opcode::Greater: result = relation > 0; break;
+          case t81::tisc::Opcode::GreaterEqual: result = relation >= 0; break;
+          case t81::tisc::Opcode::Equal: result = relation == 0; break;
+          case t81::tisc::Opcode::NotEqual: result = relation != 0; break;
+          default: break;
+        }
+        state_.registers[insn.a] = result ? 1 : 0;
+        state_.register_tags[insn.a] = ValueTag::Int;
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
       case t81::tisc::Opcode::Cmp: {
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
         auto tag_a = state_.register_tags[insn.a];

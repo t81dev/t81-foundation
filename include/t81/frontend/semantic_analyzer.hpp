@@ -12,6 +12,8 @@
 namespace t81 {
 namespace frontend {
 
+class IRGenerator;
+
 // Simple type system representation for semantic analysis
 struct Type {
     enum class Kind {
@@ -61,6 +63,7 @@ struct SemanticSymbol {
 };
 
 class SemanticAnalyzer : public StmtVisitor, public ExprVisitor {
+    friend class IRGenerator;
 public:
     explicit SemanticAnalyzer(const std::vector<std::unique_ptr<Stmt>>& statements);
     void analyze();
@@ -97,6 +100,7 @@ private:
     using Scope = std::unordered_map<std::string, SemanticSymbol>;
     std::vector<Scope> _scopes;
     std::vector<const Type*> _expected_type_stack;
+    std::unordered_map<const Expr*, Type> _expr_type_cache;
 
     void analyze(const Stmt& stmt);
     std::any analyze(const Expr& expr);
@@ -126,6 +130,13 @@ private:
     void register_function_signatures();
     Token extract_token(const Expr& expr) const;
     std::optional<Type> constant_type_from_expr(const Expr& expr);
+    const Type* type_of(const Expr* expr) const;
+
+    bool is_integer_type(const Type& type) const;
+    bool is_float_type(const Type& type) const;
+    bool is_fraction_type(const Type& type) const;
+    bool is_primitive_numeric_type(const Type& type) const;
+    std::optional<Type> deduce_numeric_type(const Type& left, const Type& right, const Token& op);
 };
 
 } // namespace frontend

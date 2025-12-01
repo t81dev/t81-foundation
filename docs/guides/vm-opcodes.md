@@ -173,11 +173,30 @@ The following TISC opcodes are defined in `opcodes.hpp` and implemented in the V
 | **Float Arithmetic** | `FAdd`, `FSub`, `FMul`, `FDiv` |
 | **Fraction Arithmetic** | `FracAdd`, `FracSub`, `FracMul`, `FracDiv` |
 | **Type Conversion** | `I2F`, `F2I`, `I2Frac`, `Frac2I` |
+| **Comparison Boolean** | `Less`, `LessEqual`, `Greater`, `GreaterEqual`, `Equal`, `NotEqual` |
 | **Tensor Operations** | `TVecAdd`, `TMatMul`, `TTenDot`, `ChkShape` |
 | **Option/Result Types** | `MakeOptionSome`, `MakeOptionNone`, `OptionIsSome`, `OptionUnwrap`, `MakeResultOk`, `MakeResultErr`, `ResultIsOk`, `ResultUnwrapOk`, `ResultUnwrapErr` |
 | **Axion Interface** | `AxRead`, `AxSet`, `AxVerify` |
 
 ______________________________________________________________________
+
+The comparison boolean opcodes produce canonical `0/1` results (always stored as `ValueTag::Int`) instead of relying solely on flag-setting `Cmp`. The frontend IR generator now tags relational expressions with a `ComparisonRelation` so the binary emitter can lower `Less`, `Equal`, etc., directly to these TISC opcodes, keeping the emitter/VM behavior deterministic and easier to trace through tools like `tools/ir_inspector`.
+
+The comparison boolean opcodes write canonical `0/1` values, so a simple relational expression such as:
+
+```
+let cmp = 1 < 2;
+```
+
+produces the following TISC sequence (after lowering):
+
+```
+  LOADI r1 1
+  LOADI r2 2
+  Less r0 r1 r2  ; emits 1 if r1 < r2, 0 otherwise
+```
+
+The frontend IR generator attaches a `ComparisonRelation` to the `CMP` instruction and marks it as a boolean result, allowing the binary emitter to lower it directly to the appropriate HanoiVM opcode instead of relying on flag-based `CMP` + conditional jumps.
 
 ## 3. How to Add a New TISC Opcode
 

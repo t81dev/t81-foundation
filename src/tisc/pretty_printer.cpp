@@ -24,7 +24,6 @@ std::string opcode_to_string(Opcode opcode) {
         case Opcode::CALL:  return "CALL";
         case Opcode::RET:   return "RET";
         case Opcode::LABEL: return "L";
-        // ... other opcodes
         default:            return "???";
     }
 }
@@ -44,6 +43,19 @@ std::string operand_to_string(const Operand& op) {
     return ss.str();
 }
 
+std::string relation_to_string(ir::ComparisonRelation relation) {
+    using R = ir::ComparisonRelation;
+    switch (relation) {
+        case R::Less: return "<";
+        case R::LessEqual: return "<=";
+        case R::Greater: return ">";
+        case R::GreaterEqual: return ">=";
+        case R::Equal: return "==";
+        case R::NotEqual: return "!=";
+        default: return "";
+    }
+}
+
 } // namespace
 
 std::string pretty_print(const ir::IntermediateProgram& program) {
@@ -55,6 +67,9 @@ std::string pretty_print(const ir::IntermediateProgram& program) {
             ss << "  " << opcode_to_string(instr.opcode);
             for (const auto& op : instr.operands) {
                 ss << " " << operand_to_string(op);
+            }
+            if (instr.boolean_result && instr.relation != ir::ComparisonRelation::None) {
+                ss << " ; relation=" << relation_to_string(instr.relation);
             }
             ss << "\n";
         }
