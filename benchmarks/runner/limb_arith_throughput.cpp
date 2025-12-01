@@ -41,3 +41,15 @@ static void BM_LimbArithThroughput_T81Limb(benchmark::State& state) {
     state.SetLabel("48-trit Kogge-Stone addition");
 }
 BENCHMARK(BM_LimbArithThroughput_T81Limb);
+
+static void BM_LimbArithThroughput_Int128(benchmark::State& state) {
+    __int128 a = 0x123456789ABCDEF0ULL;
+    __int128 b = 0xFEDCBA9876543210ULL;
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(a += b);
+        b ^= a;
+    }
+    state.SetItemsProcessed(state.iterations());
+    state.SetLabel("__int128 addition baseline");
+}
+BENCHMARK(BM_LimbArithThroughput_Int128);

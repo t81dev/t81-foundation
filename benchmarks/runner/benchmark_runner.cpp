@@ -13,6 +13,7 @@
 #include <limits>
 #include <sstream>
 #include <cmath>
+#include <cctype>
 
 struct BenchmarkResult {
     std::string name;
@@ -72,6 +73,27 @@ double ExtractLatency(const ::benchmark::BenchmarkReporter::Run& run) {
             return it->second;
         }
     }
+    double latency_seconds = 0.0;
+    const double real_time = run.GetAdjustedRealTime();
+    const double real_multiplier = GetTimeUnitMultiplier(run.time_unit);
+    if (real_multiplier > 0.0) {
+        latency_seconds = real_time / real_multiplier;
+    } else {
+        latency_seconds = real_time;
+    }
+    if (latency_seconds > 0.0) {
+        return latency_seconds;
+    }
+    const double cpu_time = run.GetAdjustedCPUTime();
+    const double cpu_multiplier = GetTimeUnitMultiplier(run.time_unit);
+    if (cpu_multiplier > 0.0) {
+        latency_seconds = cpu_time / cpu_multiplier;
+    } else {
+        latency_seconds = cpu_time;
+    }
+    if (latency_seconds > 0.0) {
+        return latency_seconds;
+    }
     return 0.0;
 }
 
@@ -91,6 +113,66 @@ std::string FormatLatency(double seconds) {
         oss << seconds << " s";
     }
     return oss.str();
+}
+
+std::string FormatThroughput(double items_per_second) {
+    if (items_per_second <= 0.0) {
+        return {};
+    }
+    struct Scale {
+        double threshold;
+        const char* suffix;
+    };
+    constexpr Scale kScales[] = {
+        {1e9, "Gops/s"},
+        {1e6, "Mops/s"},
+        {1e3, "Kops/s"},
+    };
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2);
+    for (const auto& scale : kScales) {
+        if (items_per_second >= scale.threshold) {
+            oss << (items_per_second / scale.threshold) << " " << scale.suffix;
+            return oss.str();
+        }
+    }
+    oss << items_per_second << " ops/s";
+    return oss.str();
+}
+
+enum class FlowKind {
+    kUnknown,
+    kT81,
+    kBinary,
+};
+
+static std::string ToLower(std::string_view input) {
+    std::string result;
+    result.reserve(input.size());
+    for (unsigned char c : input) {
+        result += static_cast<char>(std::tolower(c));
+    }
+    return result;
+}
+
+static FlowKind DetermineFlowKind(const std::string& base_name, const std::string& suffix) {
+    const std::string lower_base = ToLower(base_name);
+    const std::string lower_suffix = ToLower(suffix);
+    if (lower_base.find("t81") != std::string::npos ||
+        lower_base.find("ternary") != std::string::npos ||
+        lower_suffix.find("t81") != std::string::npos ||
+        lower_suffix.find("packed") != std::string::npos) {
+        return FlowKind::kT81;
+    }
+    if (lower_base.find("int64") != std::string::npos ||
+        lower_base.find("int128") != std::string::npos ||
+        lower_base.find("binary") != std::string::npos ||
+        lower_suffix.find("int64") != std::string::npos ||
+        lower_suffix.find("int128") != std::string::npos ||
+        lower_suffix.find("binary") != std::string::npos) {
+        return FlowKind::kBinary;
+    }
+    return FlowKind::kUnknown;
 }
 
 std::string BuildAnalysis(const BenchmarkResult& r) {
@@ -133,55 +215,85 @@ public:
         std::lock_guard<std::mutex> guard(final_results_mutex);
         for (const auto& run : reports) {
             std::string base_name = run.benchmark_name();
-            base_name = base_name.substr(0, base_name.find("/"));
-            bool is_t81 = base_name.find("T81Cell") != std::string::npos;
+            const auto slash_pos = base_name.find('/');
+            if (slash_pos != std::string::npos) {
+                base_name = base_name.substr(0, slash_pos);
+            }
 
             std::string family = base_name;
-            if(is_t81) family = base_name.substr(0, base_name.find("_T81Cell"));
-            else family = base_name.substr(0, base_name.find("_Int64"));
+            std::string suffix;
+            const auto last_underscore = base_name.find_last_of('_');
+            if (last_underscore != std::string::npos) {
+                family = base_name.substr(0, last_underscore);
+                suffix = base_name.substr(last_underscore + 1);
+            }
+            if (family.empty()) {
+                family = base_name;
+            }
 
+            const FlowKind flow_kind = DetermineFlowKind(base_name, suffix);
+            const bool is_t81 = flow_kind == FlowKind::kT81;
+            const bool is_binary = flow_kind == FlowKind::kBinary;
 
             if (final_results.find(family) == final_results.end()) {
                 final_results[family].name = family;
                 if(T81_ADVANTAGES.count(family))
                     final_results[family].t81_advantage = T81_ADVANTAGES.at(family);
             }
-            if(final_results[family].notes.empty()){
-                 final_results[family].notes = run.report_label;
+            if(is_t81 || final_results[family].notes.empty()) {
+                final_results[family].notes = run.report_label;
             }
 
-            std::stringstream ss;
+            std::string summary;
+            double gops = 0.0;
+            bool throughput_recorded = false;
             auto items_it = run.counters.find("items_per_second");
             if (items_it != run.counters.end()) {
                 double items_per_second = items_it->second;
-                double gops = (items_per_second > 0) ? items_per_second / 1e9 : 0.0;
-                ss << std::fixed << std::setprecision(2) << gops << " Gops/s";
-                if(is_t81) {
-                    final_results[family].t81_result_val = gops;
-                    final_results[family].has_t81_flow = true;
-                } else {
-                    final_results[family].binary_result_val = gops;
-                    final_results[family].has_binary_flow = true;
+                if (items_per_second > 0.0) {
+                    gops = items_per_second / 1e9;
+                    throughput_recorded = true;
+                }
+                summary = FormatThroughput(items_per_second);
+                if (summary.empty()) {
+                    summary = "0 ops/s";
                 }
             } else {
+                std::stringstream ss;
                 bool first = true;
                 for (auto const& [key, val] : run.counters) {
                     if (!first) ss << ", ";
                     ss << key << ": " << std::fixed << std::setprecision(2) << val;
                     first = false;
                 }
+                summary = ss.str();
             }
+
             double latency = ExtractLatency(run);
             std::string latency_str = FormatLatency(latency);
 
             if(is_t81) {
-                final_results[family].t81_result_str = ss.str();
+                final_results[family].t81_result_str = summary;
                 final_results[family].t81_latency_seconds = latency;
                 final_results[family].t81_latency_str = latency_str;
-            } else {
-                final_results[family].binary_result_str = ss.str();
+                if (throughput_recorded) {
+                    final_results[family].t81_result_val = gops;
+                    final_results[family].has_t81_flow = true;
+                }
+            } else if(is_binary) {
+                final_results[family].binary_result_str = summary;
                 final_results[family].binary_latency_seconds = latency;
                 final_results[family].binary_latency_str = latency_str;
+                if (throughput_recorded) {
+                    final_results[family].binary_result_val = gops;
+                    final_results[family].has_binary_flow = true;
+                }
+            } else if (final_results[family].t81_result_str.empty()) {
+                final_results[family].t81_result_str = summary;
+                final_results[family].t81_latency_seconds = latency;
+                final_results[family].t81_latency_str = latency_str;
+                final_results[family].has_t81_flow = throughput_recorded;
+                final_results[family].t81_result_val = throughput_recorded ? gops : 0.0;
             }
         }
     }
@@ -213,6 +325,10 @@ void GenerateMarkdownReport() {
     std::lock_guard<std::mutex> guard(final_results_mutex);
     std::cout << "\nGenerating benchmark report...\n";
 
+    auto DisplayValue = [](const std::string& value) -> std::string {
+        return value.empty() ? "n/a" : value;
+    };
+
     std::cout << std::left << std::setw(25) << "Benchmark"
               << std::setw(18) << "T81 Result"
               << std::setw(18) << "T81 Latency"
@@ -223,10 +339,10 @@ void GenerateMarkdownReport() {
     std::cout << std::string(110, '-') << "\n";
     for(auto const& [name, r] : final_results) {
         std::cout << std::left << std::setw(25) << r.name
-                  << std::setw(18) << r.t81_result_str
-                  << std::setw(18) << r.t81_latency_str
-                  << std::setw(18) << r.binary_result_str
-                  << std::setw(18) << r.binary_latency_str
+                  << std::setw(18) << DisplayValue(r.t81_result_str)
+                  << std::setw(18) << DisplayValue(r.t81_latency_str)
+                  << std::setw(18) << DisplayValue(r.binary_result_str)
+                  << std::setw(18) << DisplayValue(r.binary_latency_str)
                   << std::setw(25) << r.t81_advantage
                   << r.notes << "\n";
     }
@@ -255,8 +371,8 @@ void GenerateMarkdownReport() {
     md_file << "| Benchmark               | T81 Result     | T81 Latency    | Binary Result  | Binary Latency | Ratio (T81/Binary) | T81 Advantage                   | Notes                               |\n";
     md_file << "|-------------------------|----------------|----------------|----------------|----------------|--------------------|---------------------------------|-------------------------------------|\n";
 
-    double best_ratio = 0.0;
-    double worst_ratio = std::numeric_limits<double>::infinity();
+    double best_t81_ratio = 1.0;
+    double best_binary_ratio = 1.0;
     std::string best_name;
     std::string worst_name;
     int t81_wins = 0;
@@ -274,12 +390,12 @@ void GenerateMarkdownReport() {
             temp << std::fixed << std::setprecision(2) << ratio << "x";
             r.ratio_str = temp.str();
             r.ratio_computed = true;
-            if (ratio > best_ratio) {
-                best_ratio = ratio;
+            if (ratio > 1.0 && ratio > best_t81_ratio) {
+                best_t81_ratio = ratio;
                 best_name = r.name;
             }
-            if (ratio < worst_ratio) {
-                worst_ratio = ratio;
+            if (ratio < 1.0 && ratio < best_binary_ratio) {
+                best_binary_ratio = ratio;
                 worst_name = r.name;
             }
             if (ratio > 1.05) {
@@ -295,10 +411,10 @@ void GenerateMarkdownReport() {
         }
         r.analysis = BuildAnalysis(r);
         md_file << "| " << std::left << std::setw(23) << r.name
-                << "| " << std::setw(14) << r.t81_result_str
-                << "| " << std::setw(14) << r.t81_latency_str
-                << "| " << std::setw(14) << r.binary_result_str
-                << "| " << std::setw(14) << r.binary_latency_str
+                << "| " << std::setw(14) << DisplayValue(r.t81_result_str)
+                << "| " << std::setw(14) << DisplayValue(r.t81_latency_str)
+                << "| " << std::setw(14) << DisplayValue(r.binary_result_str)
+                << "| " << std::setw(14) << DisplayValue(r.binary_latency_str)
                 << "| " << std::setw(14) << r.ratio_str
                 << "| " << std::setw(31) << r.t81_advantage
                 << "| " << std::setw(35) << r.notes << "|\n";
@@ -317,11 +433,11 @@ void GenerateMarkdownReport() {
     md_file << "\n## Highlights\n\n";
     if (!best_name.empty()) {
         md_file << "- Largest T81 advantage: `" << best_name << "` (" << std::fixed << std::setprecision(2)
-                << best_ratio << "x) using Gops/s throughput.\n";
+                << best_t81_ratio << "x) using Gops/s throughput.\n";
     }
-    if (!worst_name.empty() && worst_ratio > 0.0) {
+    if (!worst_name.empty() && best_binary_ratio < 1.0) {
         md_file << "- Largest binary advantage: `" << worst_name << "` (" << std::fixed << std::setprecision(2)
-                << worst_ratio << "x) reflects where deterministic handling lags.\n";
+                << best_binary_ratio << "x) reflects where deterministic handling lags.\n";
     }
     md_file << "- T81 wins: " << t81_wins << ", Binary wins: " << binary_wins << ", Comparable: " << ties << ".\n";
 

@@ -14,6 +14,9 @@
 
 #include <array>
 #include <cstdint>
+#if defined(__AVX2__)
+#include <immintrin.h>
+#endif
 
 namespace t81::core {
 
@@ -56,6 +59,17 @@ namespace detail {
     }
     static const auto ADD_TABLE = build_add_table();
     static const auto COMPOSITION_TABLE = build_composition_table();
+
+    static constexpr std::array<int32_t, 27 * 27> build_flat_composition_table() {
+        std::array<int32_t, 27 * 27> flat{};
+        for (int row = 0; row < 27; ++row) {
+            for (int col = 0; col < 27; ++col) {
+                flat[row * 27 + col] = COMPOSITION_TABLE[row][col];
+            }
+        }
+        return flat;
+    }
+    static const auto COMPOSITION_FLAT = build_flat_composition_table();
 } // namespace detail
 
 
@@ -86,16 +100,50 @@ inline T81Limb T81Limb::operator+(const T81Limb& other) const noexcept {
         sum_vals[i] = {entry.sum_value[0], entry.sum_value[1], entry.sum_value[2]};
     }
 
-    // 2. Second Pass: A *correct* Kogge-Stone parallel prefix scan.
-    // The previous implementation created a serial dependency chain. This one is parallel.
+    // 2. Second Pass: A *correct* Kogge-Stone parallel prefix scan designed to
+    // harness AVX2 gather for map composition where available.
     for (int d = 0; d < 4; ++d) { // log2(16) = 4
         int stride = 1 << d;
         for (int i = stride; i < TRYTES; i += 2*stride) {
-             for (int j = 0; j < stride; ++j) {
-                if (i + j < TRYTES) {
+            int limit = std::min(TRYTES, i + stride);
+#if defined(__AVX2__)
+            int idx = i;
+            while (idx + 4 <= limit) {
+                const __m256i current = _mm256_setr_epi32(
+                    map_ids[idx + 0],
+                    map_ids[idx + 1],
+                    map_ids[idx + 2],
+                    map_ids[idx + 3]);
+                const __m256i previous = _mm256_setr_epi32(
+                    map_ids[idx - 1],
+                    map_ids[idx + 0],
+                    map_ids[idx + 1],
+                    map_ids[idx + 2]);
+                const __m256i offsets = _mm256_add_epi32(
+                    _mm256_mullo_epi32(current, _mm256_set1_epi32(27)),
+                    previous);
+                __m256i gathered = _mm256_i32gather_epi32(
+                    detail::COMPOSITION_FLAT.data(),
+                    offsets,
+                    sizeof(int32_t));
+                alignas(32) int32_t results[8];
+                _mm256_store_si256(reinterpret_cast<__m256i*>(results), gathered);
+                map_ids[idx + 0] = static_cast<int>(results[0]);
+                map_ids[idx + 1] = static_cast<int>(results[1]);
+                map_ids[idx + 2] = static_cast<int>(results[2]);
+                map_ids[idx + 3] = static_cast<int>(results[3]);
+                idx += 4;
+            }
+            for (; idx < limit; ++idx) {
+                map_ids[idx] = detail::COMPOSITION_TABLE[map_ids[idx]][map_ids[idx - 1]];
+            }
+#else
+            for (int j = 0; j < stride; ++j) {
+                if (i + j < limit) {
                     map_ids[i+j] = detail::COMPOSITION_TABLE[map_ids[i+j]][map_ids[i - 1]];
                 }
-             }
+            }
+#endif
         }
     }
 
