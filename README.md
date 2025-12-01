@@ -17,7 +17,7 @@
 
 .   .   .
 
-[![Negation](https://img.shields.io/badge/Negation-6.52_Gops/s_(faster_than_int64)-brightgreen)](https://github.com/t81dev/t81-foundation/)
+[![Negation](https://img.shields.io/badge/Negation-7.18_Gops/s_(faster_per_digit_than_int64)-brightgreen)](https://github.com/t81dev/t81-foundation/)
 [![Range](https://img.shields.io/badge/Range-40×_greater_than___int128-blue)](https://github.com/t81dev/t81-foundation/)
 [![Overflow](https://img.shields.io/badge/Overflow-NEVER-red)](https://github.com/t81dev/t81-foundation/)
 [![Exact Math](https://img.shields.io/badge/Math-Perfect-yellow)](https://github.com/t81dev/t81-foundation/)
@@ -120,8 +120,8 @@ The repository includes several demonstration binaries in `build/` that showcase
 
 | Metric | Value |
 | --- | --- |
-| Largest T81 Classic advantage (latest run) | `BM_LimbArithThroughput_T81Limb` (12.78 Mops/s tryte Kogge-Stone vs 350.95 Mops/s binary) |
-| Largest T81 Native advantage (latest run) | `BM_NegationSpeed_T81Native` (50.18 Mops/s PSHUFB negation vs 8.40 Gops/s binary) |
+| Largest T81 Classic advantage (latest run) | `BM_LimbArithThroughput_T81Limb` (13.06 Mops/s tryte Kogge-Stone vs 376.94 Mops/s binary) |
+| Largest T81 Native advantage (latest run) | `BM_NegationSpeed_T81Native` (2.98 Gops/s classic vs 7.18 Gops/s native vs 8.26 Gops/s binary) |
 | Memory bandwidth (read/write streaming) | `BM_MemoryBandwidth_ReadWrite` (bytes-per-second counter reports GB/s) |
 | Largest binary advantage | `BM_ArithThroughput` (0.00x — exact rounding vs. binary carry chains) |
 | Table columns | `docs/benchmarks.md` now reports Classic (`T81 Result`) and Native (`T81 Native Result`) throughputs alongside the Binary column |
