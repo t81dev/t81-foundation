@@ -6,13 +6,17 @@ option(T81_BUILD_EXAMPLES "Build T81 C++ examples" ON)
 option(T81_BUILD_TESTS    "Build T81 C++ unit tests" ON)
 option(T81_BUILD_BENCHMARKS "Build T81 benchmark suite" ON)
 
-# AVX2 only on real x86_64 (never on Apple Silicon)
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+# AVX2 only on real x86_64 (never on Apple Silicon) and only for GCC/Clang.
+if(NOT MSVC AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
     add_compile_options(-mavx2 -mfma)
 endif()
 
-# Global compiler flags
-add_compile_options(-Wall -Wextra -Wpedantic -O3 -DNDEBUG)
+# Global compiler flags (ANSI warnings for GCC/Clang; use /W4 for MSVC)
+if(MSVC)
+    add_compile_options(/W4 /O2 /DNDEBUG)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic -O3 -DNDEBUG)
+endif()
 
 # =============================================================================
 # Core library

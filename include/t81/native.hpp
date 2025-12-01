@@ -160,19 +160,11 @@ struct alignas(32) T81 {
         return result;
     }
 
+    T81 operator-(const T81& other) const noexcept {
+        return (*this) + (-other);
+    }
+
     T81 operator*(const T81& other) const noexcept {
-#if defined(__x86_64__) && defined(__AVX2__)
-        std::array<int8_t, 128> other_digits{};
-        UnpackDigits(other.data, other_digits);
-        T81 accum{};
-        for (int idx = 0; idx < 128; ++idx) {
-            const int8_t trit = other_digits[idx];
-            if (trit == 0) continue;
-            T81 shifted = ShiftLeftTrits(idx);
-            accum = (trit > 0) ? (accum + shifted) : (accum + (-shifted));
-        }
-        return accum;
-#else
         std::array<int8_t, 128> lhs_digits{};
         std::array<int8_t, 128> rhs_digits{};
         UnpackDigits(data, lhs_digits);
@@ -183,15 +175,13 @@ struct alignas(32) T81 {
                 result_digits[i + j] += lhs_digits[i] * rhs_digits[j];
             }
         }
-        // Reduce carries
         int64_t carry = 0;
         for (int idx = 0; idx < 256; ++idx) {
-            const int64_t value = static_cast<int64_t>(result_digits[idx]) + carry;
-            const int64_t next_carry = (value >= 0) ? (value + 1) / 3 : (value - 1) / 3;
+            int64_t value = static_cast<int64_t>(result_digits[idx]) + carry;
+            int64_t next_carry = (value >= 0) ? (value + 1) / 3 : (value - 1) / 3;
             result_digits[idx] = static_cast<int8_t>(value - next_carry * 3);
             carry = next_carry;
         }
-        // Pack back only lower 128 trits
         std::array<int8_t, 128> final_digits{};
         for (int idx = 0; idx < 128; ++idx) {
             final_digits[idx] = result_digits[idx];
@@ -199,7 +189,6 @@ struct alignas(32) T81 {
         T81 final_result;
         PackDigits(final_digits, final_result.data);
         return final_result;
-#endif
     }
 };
 
