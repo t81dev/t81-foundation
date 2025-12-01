@@ -61,17 +61,33 @@ const std::map<std::string, std::pair<std::string, std::string>> T81_ADVANTAGES 
     {"BM_LimbAdd_T81Native", {{}, "Register-native prefix addition"}}
 };
 
+static FILE* OpenCommandPipe(const std::string& command) {
+#ifdef _WIN32
+    return _popen(command.c_str(), "r");
+#else
+    return popen(command.c_str(), "r");
+#endif
+}
+
+static int CloseCommandPipe(FILE* pipe) {
+#ifdef _WIN32
+    return _pclose(pipe);
+#else
+    return pclose(pipe);
+#endif
+}
+
 std::string RunCommand(const std::string& command) {
     std::array<char, 128> buffer;
     std::string output;
-    FILE* pipe = popen(command.c_str(), "r");
+    FILE* pipe = OpenCommandPipe(command);
     if (!pipe) {
         return {};
     }
     while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
         output += buffer.data();
     }
-    pclose(pipe);
+    CloseCommandPipe(pipe);
     while (!output.empty() && (output.back() == '\n' || output.back() == '\r')) {
         output.pop_back();
     }
@@ -420,8 +436,14 @@ int main(int argc, char** argv) {
 std::string get_current_timestamp() {
     auto now = std::chrono::system_clock::now();
     auto in_time_t = std::chrono::system_clock::to_time_t(now);
+    std::tm buf;
+#ifdef _WIN32
+    localtime_s(&buf, &in_time_t);
+#else
+    localtime_r(&in_time_t, &buf);
+#endif
     std::stringstream ss;
-    ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X UTC");
+    ss << std::put_time(&buf, "%Y-%m-%d %X UTC");
     return ss.str();
 }
 
