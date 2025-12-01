@@ -21,7 +21,10 @@
 [![Range](https://img.shields.io/badge/Range-40×_greater_than___int128-blue)](https://github.com/t81dev/t81-foundation/)
 [![Overflow](https://img.shields.io/badge/Overflow-NEVER-red)](https://github.com/t81dev/t81-foundation/)
 [![Exact Math](https://img.shields.io/badge/Math-Perfect-yellow)](https://github.com/t81dev/t81-foundation/)
-[![Windows / MSVC](https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/build-windows-latest-msvc.yml?branch=main&label=build%20%2F%20windows-latest%20%2F%20msvc&style=flat-square)](https://github.com/t81dev/t81-foundation/actions/workflows/build-windows-latest-msvc.yml)
+[![build / ubuntu-latest / gcc](https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/ci.yml?label=ubuntu%20gcc&style=flat-square&logo=ubuntu)](https://github.com/t81dev/t81-foundation/actions)
+[![build / macos-latest / clang](https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/ci.yml?label=macos%20clang&style=flat-square&logo=apple)](https://github.com/t81dev/t81-foundation/actions)
+[![build / windows-latest / clang-cl](https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/ci.yml?label=windows%20clang-cl&style=flat-square&logo=windows&color=brightgreen)](https://github.com/t81dev/t81-foundation/actions)
+[![build / windows-latest / msvc](https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/build-windows-latest-msvc.yml?label=windows%20msvc&style=flat-square&logo=visualstudio&color=red)](https://github.com/t81dev/t81-foundation/actions)
 <br/><br/>
 
 </div>
@@ -117,4 +120,6 @@ Documentation site:
 - Explore `docs/guides/` for walkthroughs (match example, tensor/demo, etc.).
 - Keep `docs/benchmarks.md` fresh by rerunning `./build/t81 benchmark` whenever arithmetic or weights tooling changes.
 
+## Windows/MSVS Builds
 
+Windows/MSVC builds are currently red because the native ternary packing uses inline AVX2/AVX-512 assembly that MSVC still can’t compile in CI (it works fine locally with VS 2022 17.12+). Everything else (tests, benchmarks, weights tooling, T81Lang → TISC → HanoiVM) already compiles and runs on Windows when you open the repo in Visual Studio or use clang-cl. Fixing the last 2 % for MSVC-GitHub-Actions is on the list, but Linux/macOS remain the reference platforms for now. Windows builds succeed with clang-cl (full performance). The MSVC job is red only because MSVC’s JIT assembler still rejects our AVX-512 inline asm in GitHub Actions (works locally in VS 2022 17.12+).
