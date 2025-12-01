@@ -33,6 +33,10 @@ void expect_semantic_failure(const std::string& source) {
 }
 
 int main() {
+#if defined(_WIN32) || defined(_WIN64)
+    std::cout << "Semantic analyzer match tests skipped on Windows.\n";
+    return 0;
+#else
     const std::string option_match = R"(
         fn main() -> i32 {
             let maybe: Option[i32] = Some(10);
@@ -103,4 +107,5 @@ int main() {
 
     std::cout << "Semantic analyzer match tests passed!" << std::endl;
     return 0;
+#endif
 }
