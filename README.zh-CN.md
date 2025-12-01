@@ -16,7 +16,7 @@
 
 * * *
 
-[![否定](https://img.shields.io/badge/Negation-7.18_Gops/s_(faster_per_digit_than_int64)-brightgreen)](https://github.com/t81dev/t81-foundation/) [![范围](https://img.shields.io/badge/Range-40×_greater_than___int128-blue)](https://github.com/t81dev/t81-foundation/) [![溢出](https://img.shields.io/badge/Overflow-NEVER-red)](https://github.com/t81dev/t81-foundation/) [![精确](https://img.shields.io/badge/Overflow-NEVER-red)](https://github.com/t81dev/t81-foundation/) [![数学](https://img.shields.io/badge/Math-Perfect-yellow)](https://github.com/t81dev/t81-foundation/)
+[![否定](https://img.shields.io/badge/Negation-7.18_Gops/s_(faster_per_digit_than_int64)-brightgreen)](https://github.com/t81dev/t81-foundation/) [![范围](https://img.shields.io/badge/Range-40×_greater_than___int128-blue)](https://github.com/t81dev/t81-foundation/) [![溢出](https://img.shields.io/badge/Overflow-NEVER-red)](https://github.com/t81dev/t81-foundation/) [![数学](https://img.shields.io/badge/Math-Perfect-yellow)](https://github.com/t81dev/t81-foundation/)
 
 *   *   *
 
