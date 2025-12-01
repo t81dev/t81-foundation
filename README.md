@@ -21,9 +21,7 @@
 [![Range](https://img.shields.io/badge/Range-40×_greater_than___int128-blue)](https://github.com/t81dev/t81-foundation/)
 [![Overflow](https://img.shields.io/badge/Overflow-NEVER-red)](https://github.com/t81dev/t81-foundation/)
 [![Exact Math](https://img.shields.io/badge/Math-Perfect-yellow)](https://github.com/t81dev/t81-foundation/)
-[![Smallest 4-bit killer](https://img.shields.io/badge/Smallest_4‑bit_killer-T3_K_2.63‑bit-FF6B6B?style=for-the-badge)](https://huggingface.co/t81dev)
-[![Deterministic](https://img.shields.io/badge/Execution-Fully_Deterministic-4CAF50?style=for-the-badge)](spec/determinism.md)
-[![Overflow](https://img.shields.io/badge/Integer_Overflow-Impossible-DC143C?style=for-the-badge)](https://en.wikipedia.org/wiki/Balanced_ternary)
+
 <br/><br/>
 
 </div>
