@@ -120,7 +120,3 @@ Documentation site:
 - Use `docs/cpp-quickstart.md` if you are authoring your first T81 program.
 - Explore `docs/guides/` for walkthroughs (match example, tensor/demo, etc.).
 - Keep `docs/benchmarks.md` fresh by rerunning `./build/t81 benchmark` whenever arithmetic or weights tooling changes.
-
-## Windows/MSVS Builds
-
-Windows/MSVC builds are currently red because the native ternary packing uses inline AVX2/AVX-512 assembly that MSVC still can’t compile in CI (it works fine locally with VS 2022 17.12+). Everything else (tests, benchmarks, weights tooling, T81Lang → TISC → HanoiVM) already compiles and runs on Windows when you open the repo in Visual Studio or use clang-cl. Fixing the last 2 % for MSVC-GitHub-Actions is on the list, but Linux/macOS remain the reference platforms for now. Windows builds succeed with clang-cl (full performance). The MSVC job is red only because MSVC’s JIT assembler still rejects our AVX-512 inline asm in GitHub Actions (works locally in VS 2022 17.12+).
