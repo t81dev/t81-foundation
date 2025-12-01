@@ -17,10 +17,10 @@
 
 .   .   .
 
-[![Negation](https://img.shields.io/badge/Negation-6.52_Gops/s_(faster_than_int64)-brightgreen)](https://github.com/t81-project/t81)
-[![Range](https://img.shields.io/badge/Range-40×_greater_than___int128-blue)](https://github.com/t81-project/t81)
-[![Overflow](https://img.shields.io/badge/Overflow-NEVER-red)](https://github.com/t81-project/t81)
-[![Exact Math](https://img.shields.io/badge/Math-Perfect-yellow)](https://github.com/t81-project/t81)
+[![Negation](https://img.shields.io/badge/Negation-6.52_Gops/s_(faster_than_int64)-brightgreen)](https://github.com/t81dev/t81-foundation/)
+[![Range](https://img.shields.io/badge/Range-40×_greater_than___int128-blue)](https://github.com/t81dev/t81-foundation/)
+[![Overflow](https://img.shields.io/badge/Overflow-NEVER-red)](https://github.com/t81dev/t81-foundation/)
+[![Exact Math](https://img.shields.io/badge/Math-Perfect-yellow)](https://github.com/t81dev/t81-foundation/)
 <br/><br/>
 
 </div>
