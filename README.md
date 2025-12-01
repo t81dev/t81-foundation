@@ -21,7 +21,7 @@
 [![Range](https://img.shields.io/badge/Range-40×_greater_than___int128-blue)](https://github.com/t81dev/t81-foundation/)
 [![Overflow](https://img.shields.io/badge/Overflow-NEVER-red)](https://github.com/t81dev/t81-foundation/)
 [![Exact Math](https://img.shields.io/badge/Math-Perfect-yellow)](https://github.com/t81dev/t81-foundation/)
-
+[![Windows / MSVC](https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/build-windows-latest-msvc.yml?branch=main&label=build%20%2F%20windows-latest%20%2F%20msvc&style=flat-square)](https://github.com/t81dev/t81-foundation/actions/workflows/build-windows-latest-msvc.yml)
 <br/><br/>
 
 </div>
