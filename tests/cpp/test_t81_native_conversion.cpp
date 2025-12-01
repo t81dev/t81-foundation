@@ -14,6 +14,7 @@ int main() {
 
     auto native = from_classic(classic);
     auto roundtrip = to_classic(native);
+    (void)roundtrip;
     assert(std::memcmp(&classic, &roundtrip, sizeof(classic)) == 0);
 
     std::cout << "Conversion round-trip (classic ↔ native) OK\n";

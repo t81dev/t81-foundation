@@ -24,30 +24,30 @@ static void BM_overflow_ternary_auto(benchmark::State& state) {
             detected++;
         }
     }
-    state.counters["Detected"] = detected;
+    state.counters["Detected"] = static_cast<double>(detected);
 }
 BENCHMARK(BM_overflow_ternary_auto)->Iterations(5'000'000);
 
 static void BM_overflow_binary_silent(benchmark::State& state) {
-    const int64_t max_val = std::numeric_limits<int64_t>::max();
+    int64_t max_val = std::numeric_limits<int64_t>::max();
     for (auto _ : state) {
-        volatile int64_t r = max_val + 1;
+        volatile int64_t r = max_val + int64_t(1);
         benchmark::DoNotOptimize(r);
     }
 }
 BENCHMARK(BM_overflow_binary_silent)->Iterations(5'000'000);
 
 static void BM_overflow_binary_checked(benchmark::State& state) {
-    const int64_t max_val = std::numeric_limits<int64_t>::max();
+    int64_t max_val = std::numeric_limits<int64_t>::max();
     int64_t detected = 0;
     for (auto _ : state) {
         if (max_val == std::numeric_limits<int64_t>::max()) {
             detected++;
         } else {
-            volatile int64_t r = max_val + 1;
+            volatile int64_t r = max_val + int64_t(1);
             benchmark::DoNotOptimize(r);
         }
     }
-    state.counters["Detected"] = detected;
+    state.counters["Detected"] = static_cast<double>(detected);
 }
 BENCHMARK(BM_overflow_binary_checked)->Iterations(5'000'000);

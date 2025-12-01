@@ -190,7 +190,8 @@ private:
   // A no-op hook to prevent compilers from stripping the class in certain LTO modes.
   T81_FORCE_INLINE bool self_test_guard_() const {
 #if T81_ENABLE_ASSERTS
-    return tele_.requests == tele_.requests;
+    // Touch telemetry fields to keep the class live in LTO+assert modes.
+    return (tele_.requests == tele_.requests) && (tele_.bytes_in >= 0);
 #else
     return true;
 #endif
