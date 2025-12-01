@@ -20,7 +20,7 @@
 
 *   *   *
 
-[![Negation](https://img.shields.io/badge/Negation-7.18_Gops/s_(faster_per_digit_than_int64)-brightgreen)](https://github.com/t81dev/t81-foundation/)
+[![Negation](https://img.shields.io/badge/Negation-7.18_Gops/s_(native)_vs_2.98_Gops/s_(classic)-brightgreen)](https://github.com/t81dev/t81-foundation/)
 [![Range](https://img.shields.io/badge/Range-40×_greater_than___int128-blue)](https://github.com/t81dev/t81-foundation/)
 [![Overflow](https://img.shields.io/badge/Overflow-NEVER-red)](https://github.com/t81dev/t81-foundation/)
 [![Exact Math](https://img.shields.io/badge/Math-Perfect-yellow)](https://github.com/t81dev/t81-foundation/)
@@ -101,12 +101,12 @@ Weights tooling highlights:
 [![Benchmarks](https://img.shields.io/badge/benchmarks-view_report-blueviolet?style=flat-square&logo=github)](https://github.com/t81dev/t81-foundation/blob/main/benchmarks/benchmark.md?plain=1)
 
 Key stats (see `docs/benchmarks.md` for full report):
-- **Negation**: 7.18 Gops/s (native) beating int64 per-digit throughput.
-- **Throughput columns**: Classic/native/binary numbers now rendered together for every benchmark row.
-- **Memory bandwidth**: `BM_MemoryBandwidth` counters capture streamed GB/s (read+write).
-- Run `./build/t81 benchmark` after making arithmetic changes to refresh the markdown + CLI highlights.
-- Use `scripts/weights-benchmark.sh` to compare the quantized T3_K model versus Q4_K_M: it runs `t81 weights quantize`, then invokes `llama-cli` against both models, echoing `tokens/sec` and any `mem txt` bandwidth data you configured. Provide the path to your `llama-cli` binary so the script can run it even if the binary sits outside this repository (e.g., `/opt/llama/bin/llama-cli`).
-- The new “T81 vs Q4_K_M vs BitNet b1.58” inference check walks through encoding a BitNet 1.58 model, quantizing it into T3_K GGUF, and running a small synthetic prompt. Native T81 negation/addition runs ≈7 Gops/s, the T3_K quantizer produces 2.63-bit weights (~15–18% smaller than Q4_K_M), and llama.cpp with BitNet weights confirms that the native weights deliver comparable perplexity while remaining deterministic.
+- **Negation**: native `BM_NegationSpeed` reaches 7.18 Gops/s (classic 2.98, binary 8.26 → 0.87× ratio) thanks to the single‑shuffle implementation.
+- **Native arithmetic**: `BM_LimbAdd` reports 4.26 Mops/s on the SIMD path, while `BM_LimbArithThroughput` still shows 13.06 Mops/s for the classic tryte Kogge-Stone vs 376.94 Mops/s for binary (`__int128`) — the markdown table now surfaces Classic/Native/Binary columns and latency counters.
+- **Memory bandwidth**: `BM_MemoryBandwidth` records 5.40 GB/s of read/write streaming, and `BM_PackingDensity` asserts ~1.58 bits/trit theoretical density.
+- Run `./build/t81 benchmark` after arithmetic or weight changes to regenerate `docs/benchmarks.md`, refresh the Classic/Native/Binary rows, and keep the README badges accurate.
+- The “T81 vs Q4_K_M vs BitNet b1.58” showcase now demonstrates the end-to-end workflow: convert SafeTensors/GGUF → `.t81w`, quantize to T3_K, and compare `llama-cli` throughput (via `scripts/weights-benchmark.sh`) between the native T3_K file and a Q4_K_M baseline.
+- **Weight integration**: `t81 weights load` powers the new T81Lang `weights.load("<path>")` builtin, so HanoiVM code can hydrate `.t81w` models, inspect `WeightsModel` handles, and pass tensors through the same arithmetic pipeline that powers `t81 weights info`. See `docs/benchmarks.md` for the Classic/Native/Binary tables plus CLI workflow references.
 
 Documentation site:
 - `docs/benchmarks.md` – auto-generated benchmark table + analysis.

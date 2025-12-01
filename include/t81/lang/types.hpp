@@ -13,6 +13,8 @@ struct Type {
     Symbol,
     Option,
     Result,
+    WeightsModel,
+    Tensor,
   };
 
   Kind kind{Kind::T81Int};
@@ -36,6 +38,18 @@ struct Type {
     t.kind = Kind::Result;
     t.params.push_back(std::move(ok));
     t.params.push_back(std::move(err));
+    return t;
+  }
+
+  static Type weights_model() {
+    Type t;
+    t.kind = Kind::WeightsModel;
+    return t;
+  }
+
+  static Type tensor() {
+    Type t;
+    t.kind = Kind::Tensor;
     return t;
   }
 };
