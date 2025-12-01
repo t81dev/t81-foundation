@@ -107,7 +107,7 @@ The repository includes several demonstration binaries in `build/` that showcase
 
 ![Benchmark Report](https://img.shields.io/badge/benchmarks-docs%2Fbenchmarks.md-blueviolet)
 
-![Negation](https://img.shields.io/badge/Negation-14.2_Gops/s_(2.3×_faster_than_int64)-brightgreen)
+![Negation](https://img.shields.io/badge/Negation-6.6_Gops/s_(faster_per_digit_than_int64)-brightgreen)
 
 ![T81 Classic column](https://img.shields.io/badge/Docs%2Fbenchmarks.md-T81%20Classic%20column-blueviolet)
 ![T81 Native column](https://img.shields.io/badge/Docs%2Fbenchmarks.md-T81%20Native%20column-brightgreen)

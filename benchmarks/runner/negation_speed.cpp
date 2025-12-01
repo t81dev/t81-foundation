@@ -138,7 +138,7 @@ static void BM_NegationSpeed_T81Native(benchmark::State& state) {
         benchmark::DoNotOptimize(res = -a);
         a = res;
     }
-    state.SetItemsProcessed(state.iterations());
+    state.SetItemsProcessed(state.iterations() * 128);
     state.SetLabel("Native T81 negation (PSHUFB)");
 }
 BENCHMARK(BM_NegationSpeed_T81Native);

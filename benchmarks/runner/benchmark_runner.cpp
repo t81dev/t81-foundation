@@ -26,8 +26,11 @@ struct BenchmarkResult {
     double t81_latency_seconds = 0.0;
     double t81_native_latency_seconds = 0.0;
     double binary_latency_seconds = 0.0;
-    std::string t81_advantage;
-    std::string notes;
+    std::string t81_classic_advantage;
+    std::string t81_native_advantage;
+    std::string t81_classic_note;
+    std::string t81_native_note;
+    std::string binary_note;
     std::string t81_latency_str;
     std::string t81_native_latency_str;
     std::string binary_latency_str;
@@ -43,16 +46,17 @@ struct BenchmarkResult {
 std::map<std::string, BenchmarkResult> final_results;
 std::mutex final_results_mutex;
 
-const std::map<std::string, std::string> T81_ADVANTAGES = {
-    {"BM_ArithThroughput", "Exact rounding, no FP error"},
-    {"BM_NegationSpeed", "Free negation (no borrow)"},
-    {"BM_RoundtripAccuracy", "No sign-bit tax"},
-    {"BM_OverflowDetection", "Deterministic, provable"},
-    {"BM_PackingDensity_Theoretical", "Theoretical maximum"},
-    {"BM_PackingDensity_Achieved", "Achieved bits/trit"},
-    {"BM_PackingDensity_Practical", "Practical size ratio"},
-    {"BM_NegationSpeed_T81Native", "PSHUFB-powered native negation"},
-    {"BM_LimbAdd_T81Native", "Register-native prefix addition"}
+const std::map<std::string, std::pair<std::string, std::string>> T81_ADVANTAGES = {
+    {"BM_ArithThroughput", {"Exact rounding, no FP error", {}}},
+    {"BM_NegationSpeed", {"Free negation (no borrow)", {}}},
+    {"BM_RoundtripAccuracy", {"No sign-bit tax", {}}},
+    {"BM_OverflowDetection", {"Deterministic, provable", {}}},
+    {"BM_PackingDensity_Theoretical", {"Theoretical maximum", {}}},
+    {"BM_PackingDensity_Achieved", {"Achieved bits/trit", {}}},
+    {"BM_PackingDensity_Practical", {"Practical size ratio", {}}},
+    {"BM_LimbArithThroughput", {"48-trit Kogge-Stone addition", {}}},
+    {"BM_NegationSpeed_T81Native", {{}, "PSHUFB-powered native negation"}},
+    {"BM_LimbAdd_T81Native", {{}, "Register-native prefix addition"}}
 };
 
 std::string RunCommand(const std::string& command) {
@@ -187,6 +191,39 @@ static FlowKind DetermineFlowKind(const std::string& base_name, const std::strin
     return FlowKind::kUnknown;
 }
 
+std::string BuildT81AdvantageDisplay(const BenchmarkResult& r) {
+    std::string display;
+    if (!r.t81_classic_advantage.empty()) {
+        display = "Classic: " + r.t81_classic_advantage;
+    }
+    if (!r.t81_native_advantage.empty()) {
+        if (!display.empty()) {
+            display += " | ";
+        }
+        display += "Native: " + r.t81_native_advantage;
+    }
+    return display;
+}
+
+std::string BuildNotesDisplay(const BenchmarkResult& r) {
+    std::ostringstream oss;
+    bool first = true;
+    if (!r.t81_classic_note.empty()) {
+        oss << "Classic: " << r.t81_classic_note;
+        first = false;
+    }
+    if (!r.t81_native_note.empty()) {
+        if (!first) oss << " | ";
+        oss << "Native: " << r.t81_native_note;
+        first = false;
+    }
+    if (!r.binary_note.empty()) {
+        if (!first) oss << " | ";
+        oss << "Binary: " << r.binary_note;
+    }
+    return oss.str();
+}
+
 std::string BuildAnalysis(const BenchmarkResult& r) {
     std::ostringstream oss;
     if (!r.ratio_computed) {
@@ -205,8 +242,9 @@ std::string BuildAnalysis(const BenchmarkResult& r) {
     oss << std::fixed << std::setprecision(2) << ratio << "x throughput ratio";
     if (ratio > 1.05) {
         oss << " — T81 leads";
-        if (!r.t81_advantage.empty()) {
-            oss << " (" << r.t81_advantage << ")";
+        const auto advantage = BuildT81AdvantageDisplay(r);
+        if (!advantage.empty()) {
+            oss << " (" << advantage << ")";
         }
     } else if (ratio < 0.95) {
         oss << " — binary wins";
@@ -251,11 +289,19 @@ public:
 
             if (final_results.find(family) == final_results.end()) {
                 final_results[family].name = family;
-                if(T81_ADVANTAGES.count(family))
-                    final_results[family].t81_advantage = T81_ADVANTAGES.at(family);
+                if (auto it = T81_ADVANTAGES.find(family); it != T81_ADVANTAGES.end()) {
+                    final_results[family].t81_classic_advantage = it->second.first;
+                    final_results[family].t81_native_advantage = it->second.second;
+                }
             }
-            if((is_t81_classic || is_t81_native) || final_results[family].notes.empty()) {
-                final_results[family].notes = run.report_label;
+            if (is_t81_classic) {
+                final_results[family].t81_classic_note = run.report_label;
+            }
+            if (is_t81_native) {
+                final_results[family].t81_native_note = run.report_label;
+            }
+            if (is_binary) {
+                final_results[family].binary_note = run.report_label;
             }
 
             std::string summary;
@@ -350,6 +396,18 @@ void GenerateMarkdownReport() {
     auto DisplayValue = [](const std::string& value) -> std::string {
         return value.empty() ? "n/a" : value;
     };
+    auto EscapePipes = [](const std::string& value) -> std::string {
+        std::string result;
+        result.reserve(value.size());
+        for (char c : value) {
+            if (c == '|') {
+                result += "\\|";
+            } else {
+                result += c;
+            }
+        }
+        return result;
+    };
 
     std::cout << std::left << std::setw(25) << "Benchmark"
               << std::setw(18) << "T81 Result"
@@ -362,15 +420,17 @@ void GenerateMarkdownReport() {
               << "Notes\n";
     std::cout << std::string(110, '-') << "\n";
     for(auto const& [name, r] : final_results) {
-        std::cout << std::left << std::setw(25) << r.name
-          << std::setw(18) << DisplayValue(r.t81_result_str)
-                  << std::setw(18) << DisplayValue(r.t81_latency_str)
-                  << std::setw(18) << DisplayValue(r.t81_native_result_str)
-                  << std::setw(18) << DisplayValue(r.t81_native_latency_str)
-                  << std::setw(18) << DisplayValue(r.binary_result_str)
-                  << std::setw(18) << DisplayValue(r.binary_latency_str)
-                  << std::setw(25) << r.t81_advantage
-                  << r.notes << "\n";
+            const std::string advantage_display = BuildT81AdvantageDisplay(r);
+            const std::string notes_display = BuildNotesDisplay(r);
+            std::cout << std::left << std::setw(25) << r.name
+                      << std::setw(18) << DisplayValue(r.t81_result_str)
+                      << std::setw(18) << DisplayValue(r.t81_latency_str)
+                      << std::setw(18) << DisplayValue(r.t81_native_result_str)
+                      << std::setw(18) << DisplayValue(r.t81_native_latency_str)
+                      << std::setw(18) << DisplayValue(r.binary_result_str)
+                      << std::setw(18) << DisplayValue(r.binary_latency_str)
+                      << std::setw(25) << DisplayValue(advantage_display)
+                      << DisplayValue(notes_display) << "\n";
     }
 
     std::ofstream md_file("docs/benchmarks.md");
@@ -439,6 +499,10 @@ void GenerateMarkdownReport() {
             r.ratio_computed = false;
         }
         r.analysis = BuildAnalysis(r);
+        const std::string advantage_display = BuildT81AdvantageDisplay(r);
+        const std::string notes_display = BuildNotesDisplay(r);
+        const std::string advantage_display_md = EscapePipes(advantage_display);
+        const std::string notes_display_md = EscapePipes(notes_display);
         md_file << "| " << std::left << std::setw(23) << r.name
                 << "| " << std::setw(14) << DisplayValue(r.t81_result_str)
                 << "| " << std::setw(14) << DisplayValue(r.t81_latency_str)
@@ -447,8 +511,8 @@ void GenerateMarkdownReport() {
                 << "| " << std::setw(14) << DisplayValue(r.binary_result_str)
                 << "| " << std::setw(14) << DisplayValue(r.binary_latency_str)
                 << "| " << std::setw(14) << r.ratio_str
-                << "| " << std::setw(31) << r.t81_advantage
-                << "| " << std::setw(35) << r.notes << "|\n";
+                << "| " << std::setw(31) << DisplayValue(advantage_display_md)
+                << "| " << std::setw(35) << DisplayValue(notes_display_md) << "|\n";
     }
 
     md_file << "\n## Analysis\n\n";
