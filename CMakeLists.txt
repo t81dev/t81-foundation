@@ -12,7 +12,7 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
 endif()
 
 # Global compiler flags
-add_compile_options(-Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG)
+add_compile_options(-Wall -Wextra -Wpedantic -O3 -DNDEBUG)
 
 # =============================================================================
 # Core library

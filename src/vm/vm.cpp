@@ -1,5 +1,3 @@
-#include "t81/vm/vm.hpp"
-
 #include <functional>
 #include <memory>
 
@@ -10,6 +8,7 @@
 #include <utility>
 
 #include "t81/axion/engine.hpp"
+#include "t81/vm/vm.hpp"
 
 namespace t81::vm {
 namespace {
@@ -238,6 +237,10 @@ class Interpreter : public IVirtualMachine {
               if (*lhs == *rhs) return 0;
               return (*lhs < *rhs) ? -1 : 1;
             }
+            case ValueTag::TensorHandle:
+            case ValueTag::ShapeHandle:
+              if (lhs_val == rhs_val) return 0;
+              return (lhs_val < rhs_val) ? -1 : 1;
             case ValueTag::OptionHandle: {
               auto lhs = option_ptr(lhs_val);
               auto rhs = option_ptr(rhs_val);
@@ -575,8 +578,8 @@ class Interpreter : public IVirtualMachine {
         double result = 0.0;
         switch (insn.opcode) {
           case t81::tisc::Opcode::FAdd: result = *lhs + *rhs; break;
-          case SUFFIX(FSub): result = *lhs - *rhs; break;
-          case::FMul: result = *lhs * *rhs; break;
+          case t81::tisc::Opcode::FSub: result = *lhs - *rhs; break;
+          case t81::tisc::Opcode::FMul: result = *lhs * *rhs; break;
           case t81::tisc::Opcode::FDiv:
             if (*rhs == 0.0) { trap = Trap::DivideByZero; break; }
             result = *lhs / *rhs;
@@ -788,35 +791,8 @@ class Interpreter : public IVirtualMachine {
         trap = Trap::IllegalInstruction;
         break;
     }
-
     ++instructions_since_gc_;
     if (instructions_since_gc_ >= kGcInterval) {
-      instructions_since_gc_ = 0;
-      state_.gc_cycles++;
-
-      for (std::size_t i = 0; i < state_.registers.size(); ++i) {
-        ValueTag tag = state_.register_tags[i];
-        switch (tag) {
-          case ValueTag::Int:
-          case ValueTag::Float:
-          case ValueTag::Bool:
-          case ValueTag::FloatHandle:
-          case ValueTag::FractionHandle:
-          case ValueTag::SymbolHandle:
-          case ValueTag::String:
-          case ValueTag::List:
-          case ValueTag::Map:
-          case ValueTag::OptionHandle:
-          case ValueTag::ResultHandle:
-            break;
-          case ValueTag::TensorHandle:
-          case ValueTag::ShapeHandle:
-            break;  // FIXED: added these two cases
-          default:
-            UNREACHABLE();
-        }
-      }
-
       run_gc_cycle_("interval");
     }
 
@@ -861,7 +837,7 @@ class Interpreter : public IVirtualMachine {
 
   State state_{};
   t81::tisc::Program program_{};
-  std::unique_ptr<t81::axion::Engine> engine_;
+  std::unique_ptr<t81::axion::Engine> axion_engine_;
   static constexpr std::size_t kGcInterval = 64;
   std::size_t instructions_since_gc_{0};
 };
