@@ -28,6 +28,7 @@
 #include "t81/tisc/binary_io.hpp"
 #include "t81/tisc/program.hpp"
 #include "t81/vm/vm.hpp"
+#include "t81/weights.hpp"
 
 namespace fs = std::filesystem;
 
@@ -126,7 +127,7 @@ Licensed under MIT and GPL-3.0
 
 void print_usage(const char* prog) {
     std::cerr << R"(T81 Foundation - Ternary-Native Computing Stack
-Version )" << T81_VERSION << R"(
+Version )" << T81_VERSION << R"(  
 
 
 Usage: )" << prog << R"( <command> [options] [args]
@@ -139,6 +140,8 @@ Commands:
   repl                                 Enter interactive REPL (future)
   version                              Show version
   benchmark                            Run the core benchmark suite (build/benchmarks/benchmark_runner)
+  weights import <file> [options]      Import BitNet/SafeTensors → .t81w
+  weights info <model.t81w>            Print native model metadata
   help                                 Show this message
 
 
@@ -361,6 +364,7 @@ struct Args {
     bool need_help    = false;
     bool need_version = false;
     std::vector<std::string> benchmark_args;
+    std::vector<std::string> command_args;
 };
 
 Args parse_args(int argc, char* argv[]) {
@@ -393,6 +397,8 @@ Args parse_args(int argc, char* argv[]) {
         else {
             if (a.command == "benchmark") {
                 a.benchmark_args.emplace_back(argv[i]);
+            } else if (a.command == "weights") {
+                a.command_args.emplace_back(argv[i]);
             } else {
                 if (!a.input.empty()) {
                     error("Multiple input files not supported yet");
@@ -430,6 +436,115 @@ int run_benchmark(const char* command_name, const Args& args) {
     return decode_system_status(status);
 }
 
+struct WeightsImportOptions {
+    fs::path input;
+    std::optional<fs::path> output;
+    std::string format = "safetensors";
+};
+
+int run_weights_import(const Args& args) {
+    if (args.command_args.size() < 2) {
+        error("weights import requires the input file");
+        return 1;
+    }
+    WeightsImportOptions opts;
+    opts.input = fs::path(args.command_args[1]);
+    size_t idx = 2;
+    while (idx < args.command_args.size()) {
+        const auto& token = args.command_args[idx++];
+        if (token == "--format") {
+            if (idx >= args.command_args.size()) {
+                error("weights import: missing argument for --format");
+                return 1;
+            }
+            opts.format = args.command_args[idx++];
+        } else if (token == "-o" || token == "--out") {
+            if (idx >= args.command_args.size()) {
+                error("weights import: missing argument for " + token);
+                return 1;
+            }
+            opts.output = fs::path(args.command_args[idx++]);
+        } else if (opts.input.empty()) {
+            opts.input = fs::path(token);
+        } else {
+            error("weights import: unexpected argument '" + token + "'");
+            return 1;
+        }
+    }
+    if (opts.input.empty()) {
+        error("weights import needs an input file");
+        return 1;
+    }
+    if (!opts.output) {
+        opts.output = opts.input.stem();
+        opts.output->replace_extension(".t81w");
+    }
+
+    t81::weights::ModelFile mf;
+    try {
+        if (opts.format == "safetensors") {
+            mf = t81::weights::load_safetensors(opts.input);
+        } else if (opts.format == "gguf") {
+            mf = t81::weights::load_gguf(opts.input);
+        } else {
+            error("weights import: unsupported format: " + opts.format);
+            return 1;
+        }
+    } catch (const std::exception& e) {
+        error(e.what());
+        return 1;
+    }
+    t81::weights::print_info(mf);
+    if (mf.native.empty()) {
+        error("weights import: loader produced no native tensors");
+        return 1;
+    }
+    t81::weights::save_t81w(mf.native, *opts.output);
+    info("Saved " + opts.output->string());
+    return 0;
+}
+
+int run_weights_info(const Args& args) {
+    if (args.command_args.size() < 2) {
+        error("weights info requires a .t81w file path");
+        return 1;
+    }
+    fs::path path = args.command_args[1];
+    try {
+        auto model = t81::weights::load_t81w(path);
+        uint64_t trits = 0;
+        uint64_t limbs = 0;
+        for (const auto& [name, tensor] : model) {
+            trits += tensor.num_trits();
+            limbs += tensor.data.size();
+        }
+        std::cout << "Model:        " << path << "\n";
+        std::cout << "Tensors:      " << model.size() << "\n";
+        std::cout << "Trits:        " << trits << "\n";
+        std::cout << "Limbs:        " << limbs << "\n";
+        std::cout << "Format:       T81W1 native balanced ternary\n";
+    } catch (const std::exception& e) {
+        error(e.what());
+        return 1;
+    }
+    return 0;
+}
+
+int run_weights(const Args& args) {
+    if (args.command_args.empty()) {
+        error("weights requires a subcommand (import|info)");
+        return 1;
+    }
+    const std::string sub = args.command_args[0];
+    if (sub == "import") {
+        return run_weights_import(args);
+    } else if (sub == "info") {
+        return run_weights_info(args);
+    }
+    error("weights: unknown subcommand '" + sub + "'");
+    return 1;
+}
+
 // ──────────────────────────────────────────────────────────────
 // Main
 // ──────────────────────────────────────────────────────────────
@@ -440,7 +555,7 @@ int main(int argc, char* argv[]) {
         if (args.need_help)    { print_usage(argv[0]); return 0; }
         if (args.need_version) { print_version();    return 0; }
 
-        bool needs_input = (args.command == "compile") || (args.command == "run") || (args.command == "check");
+        bool needs_input = (args.command == "compile" || args.command == "run" || args.command == "check");
         if (args.command.empty() || (needs_input && args.input.empty())) {
             print_usage(argv[0]);
             return 1;
@@ -478,6 +593,9 @@ int main(int argc, char* argv[]) {
 
         } else if (args.command == "benchmark") {
             return run_benchmark(argv[0], args);
+
+        } else if (args.command == "weights") {
+            return run_weights(args);
 
         } else {
             error("Unknown command: " + args.command);

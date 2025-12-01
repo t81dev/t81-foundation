@@ -26,6 +26,7 @@ add_library(t81_core STATIC
   src/hanoi/error.cpp
   src/hanoi/in_memory_kernel.cpp        # ← fixed path
   src/axion/engine.cpp
+  src/tools/weights.cpp
   src/cog/promotion.cpp
   src/codec/base243.cpp
   src/codec/base81.cpp
@@ -82,17 +83,18 @@ add_executable(t81 src/cli/main.cpp)
 target_link_libraries(t81 PRIVATE t81_frontend t81_tisc t81_vm)
 
 if(T81_BUILD_EXAMPLES)
-  add_executable(t81_demo examples/demo.cpp)
-  target_link_libraries(t81_demo PRIVATE t81_core)
+add_executable(t81_demo examples/demo.cpp)
+target_link_libraries(t81_demo PRIVATE t81_core)
 
-  add_executable(t81_tensor_ops examples/tensor_ops.cpp)
-  target_link_libraries(t81_tensor_ops PRIVATE t81_core)
+add_executable(t81_tensor_ops examples/tensor_ops.cpp)
+target_link_libraries(t81_tensor_ops PRIVATE t81_core)
 
-  add_executable(t81_ir_roundtrip examples/ir_roundtrip.cpp)
-  target_link_libraries(t81_ir_roundtrip PRIVATE t81_core)
+add_executable(t81_ir_roundtrip examples/ir_roundtrip.cpp)
+target_link_libraries(t81_ir_roundtrip PRIVATE t81_core)
 
-  add_executable(axion_demo examples/axion_demo.cpp)
-  target_link_libraries(axion_demo PRIVATE t81_core)
+add_executable(axion_demo examples/axion_demo.cpp)
+target_link_libraries(axion_demo PRIVATE t81_core)
+
 endif()
 
 # =============================================================================
