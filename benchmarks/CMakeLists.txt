@@ -10,16 +10,21 @@ set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googlebenchmark)
 
-add_executable(benchmark_runner
+set(BENCHMARK_RUNNER_SOURCES
     runner/benchmark_runner.cpp
     runner/arith_throughput.cpp
     runner/negation_speed.cpp
     runner/roundtrip_accuracy.cpp
     runner/overflow_detection.cpp
     runner/packing_density.cpp
-    runner/limb_arith_throughput.cpp
     runner/memory_bandwidth.cpp
 )
+
+if(NOT MSVC)
+    list(APPEND BENCHMARK_RUNNER_SOURCES runner/limb_arith_throughput.cpp)
+endif()
+
+add_executable(benchmark_runner ${BENCHMARK_RUNNER_SOURCES})
 
 target_link_libraries(benchmark_runner PRIVATE benchmark::benchmark t81_core)
 
