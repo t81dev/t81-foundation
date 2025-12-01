@@ -103,6 +103,19 @@ The repository includes several demonstration binaries in `build/` that showcase
 - **IR Inspector:** Build `./build/ir_inspector` and run it on any `.t81` file to print the IR instructions (including match lowering) emitted before binary emission.
 - **Benchmark suite:** Run `./build/t81 benchmark` (with optional benchmark flags) to invoke `build/benchmarks/benchmark_runner`; it runs the core throughput/packing benchmarks and updates `docs/benchmarks.md` with branch/commit metadata plus latency analysis.
 
+## Benchmark Highlights
+
+![Benchmark Report](https://img.shields.io/badge/benchmarks-docs%2Fbenchmarks.md-blueviolet)
+
+| Metric | Value |
+| --- | --- |
+| Largest T81 advantage (latest run) | `BM_NegationSpeed` (0.12x — binary still ahead, deterministic negation remains precise) |
+| Largest binary advantage | `BM_ArithThroughput` (0.00x — exact rounding vs. binary carry chains) |
+| Report source | `docs/benchmarks.md` (auto-regenerated whenever `./build/t81 benchmark` runs) |
+| Lookup-phase negation | `BM_NegationSpeed_PackedCell` (~2.26 Gops/s) demonstrates constant-time packed negation before we swap the core representation |
+
+These highlights mirror the “Highlights” section in `docs/benchmarks.md`; rerun the CLI benchmark command to refresh the ratios and notes.
+
 ### Build the Documentation Site
 
 The documentation website is built with [Jekyll](https://jekyllrb.com/). Building it requires a working [Ruby](https://www.ruby-lang.org/en/) environment with the [Bundler](https://bundler.io/) gem installed.

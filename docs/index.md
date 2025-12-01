@@ -54,6 +54,8 @@ For contributors looking to modify the codebase, these resources provide detaile
   - A quick menu of the match/data-type demos, the `scripts/run-demos.sh` automation, and the IR inspector utility.
 - **[Benchmark Report](./benchmarks.md)**
   - Auto-generated archive of T81/binary throughput/latency comparisons produced by `./build/t81 benchmark`.
+- **Benchmark Highlights (README)**(`README.md#benchmark-highlights`)
+-  - Summary badges and table excerpted from the latest `docs/benchmarks.md` results so visitors see at-a-glance which families currently lead.
 
 - **[Guide: VM Opcodes](./guides/vm-opcodes.md)**
   - The process for extending the virtual machine with new instructions.

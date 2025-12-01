@@ -27,6 +27,11 @@ struct BenchmarkResult {
     std::string t81_latency_str;
     std::string binary_latency_str;
     std::string analysis;
+    bool has_t81_flow = false;
+    bool has_binary_flow = false;
+    bool ratio_computed = false;
+    std::string ratio_str;
+    double ratio_val = 0.0;
 };
 
 std::map<std::string, BenchmarkResult> final_results;
@@ -88,12 +93,20 @@ std::string FormatLatency(double seconds) {
     return oss.str();
 }
 
-std::string BuildAnalysis(const BenchmarkResult& r, double ratio) {
+std::string BuildAnalysis(const BenchmarkResult& r) {
     std::ostringstream oss;
-    if (ratio <= 0.0) {
+    if (!r.ratio_computed) {
         oss << "Throughput data unavailable";
+        if (!r.has_t81_flow && !r.has_binary_flow) {
+            oss << " (needs `items_per_second` counters from the runner)";
+        } else if (!r.has_t81_flow) {
+            oss << " (T81 throughput missing due to metadata-only run)";
+        } else if (!r.has_binary_flow) {
+            oss << " (binary throughput missing for this suite)";
+        }
         return oss.str();
     }
+    double ratio = r.ratio_val;
     oss << std::fixed << std::setprecision(2) << ratio << "x throughput ratio";
     if (ratio > 1.05) {
         oss << " — T81 leads";
@@ -143,8 +156,13 @@ public:
                 double items_per_second = items_it->second;
                 double gops = (items_per_second > 0) ? items_per_second / 1e9 : 0.0;
                 ss << std::fixed << std::setprecision(2) << gops << " Gops/s";
-                if(is_t81) final_results[family].t81_result_val = gops;
-                else final_results[family].binary_result_val = gops;
+                if(is_t81) {
+                    final_results[family].t81_result_val = gops;
+                    final_results[family].has_t81_flow = true;
+                } else {
+                    final_results[family].binary_result_val = gops;
+                    final_results[family].has_binary_flow = true;
+                }
             } else {
                 bool first = true;
                 for (auto const& [key, val] : run.counters) {
@@ -246,8 +264,16 @@ void GenerateMarkdownReport() {
     int ties = 0;
 
     for (auto& [name, r] : final_results) {
-        double ratio = (r.binary_result_val > 0 && r.t81_result_val > 0) ? (r.t81_result_val / r.binary_result_val) : 0.0;
-        if (ratio > 0.0) {
+        const bool ratio_ready = r.has_t81_flow && r.has_binary_flow &&
+                                 r.binary_result_val > 0.0 && r.t81_result_val > 0.0;
+        double ratio = 0.0;
+        if (ratio_ready) {
+            ratio = r.t81_result_val / r.binary_result_val;
+            r.ratio_val = ratio;
+            std::ostringstream temp;
+            temp << std::fixed << std::setprecision(2) << ratio << "x";
+            r.ratio_str = temp.str();
+            r.ratio_computed = true;
             if (ratio > best_ratio) {
                 best_ratio = ratio;
                 best_name = r.name;
@@ -263,14 +289,17 @@ void GenerateMarkdownReport() {
             } else {
                 ++ties;
             }
+        } else {
+            r.ratio_str = "n/a";
+            r.ratio_computed = false;
         }
-        r.analysis = BuildAnalysis(r, ratio);
+        r.analysis = BuildAnalysis(r);
         md_file << "| " << std::left << std::setw(23) << r.name
                 << "| " << std::setw(14) << r.t81_result_str
                 << "| " << std::setw(14) << r.t81_latency_str
                 << "| " << std::setw(14) << r.binary_result_str
                 << "| " << std::setw(14) << r.binary_latency_str
-                << "| " << std::fixed << std::setprecision(2) << ratio << "x"
+                << "| " << std::setw(14) << r.ratio_str
                 << "| " << std::setw(31) << r.t81_advantage
                 << "| " << std::setw(35) << r.notes << "|\n";
     }
