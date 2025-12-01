@@ -17,6 +17,12 @@ add_executable(benchmark_runner
     runner/roundtrip_accuracy.cpp
     runner/overflow_detection.cpp
     runner/packing_density.cpp
+    runner/limb_arith_throughput.cpp
 )
 
 target_link_libraries(benchmark_runner PRIVATE benchmark::benchmark t81_core)
+
+# Enable AVX2 for negation benchmark
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(benchmark_runner PRIVATE -mavx2)
+endif()

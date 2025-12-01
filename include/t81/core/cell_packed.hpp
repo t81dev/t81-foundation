@@ -32,22 +32,13 @@ constexpr std::array<Trit, Cell::TRITS> index_to_trits(Index idx) noexcept {
     return trits;
 }
 
-constexpr std::array<Index, Cell::MAX - Cell::MIN + 1> build_neg_table() noexcept {
-    std::array<Index, Cell::MAX - Cell::MIN + 1> table{};
-    for (Index i = 0; i < table.size(); ++i) {
-        auto trits = index_to_trits(i);
-        for (auto& t : trits) {
-            t = static_cast<Trit>(-static_cast<int>(t));
-        }
-        table[i] = trits_to_index(trits);
-    }
-    return table;
-}
-
-inline const std::array<Index, Cell::MAX - Cell::MIN + 1> k_neg_lookup = build_neg_table();
-
 struct PackedCell {
-    Index state = 0;
+    // The state is a base-3 encoding of the 5 trits, where each trit M, Z, P
+    // is mapped to a digit 0, 1, 2. The max value is 3^5 - 1 = 242.
+    // Negation on a trit digit `d` is `2 - d`. For the whole number `N`,
+    // negation is `(3^5 - 1) - N`, which is `242 - N`.
+    static constexpr Index MAX_INDEX = 242;
+    Index state = 121; // Default to 0
 
     constexpr PackedCell() noexcept = default;
     constexpr explicit PackedCell(Index idx) noexcept : state(idx) {}
@@ -56,8 +47,8 @@ struct PackedCell {
         return PackedCell(trits_to_index(trits));
     }
 
-    constexpr PackedCell neg() const noexcept {
-        return PackedCell(k_neg_lookup[state]);
+    [[nodiscard]] constexpr PackedCell operator-() const noexcept {
+        return PackedCell(MAX_INDEX - state);
     }
 
     constexpr std::array<Trit, Cell::TRITS> trits() const noexcept {
