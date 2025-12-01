@@ -28,8 +28,8 @@ class PolicyLexer {
     skip_ws_();
     if (pos_ >= src_.size()) return PolicyToken{};
     char c = src_[pos_];
-    if (c == '(') { ++pos_; return PolicyToken{PolicyToken::Kind::LParen}; }
-    if (c == ')') { ++pos_; return PolicyToken{PolicyToken::Kind::RParen}; }
+    if (c == '(') { ++pos_; return PolicyToken{PolicyToken::Kind::LParen, {}}; }
+    if (c == ')') { ++pos_; return PolicyToken{PolicyToken::Kind::RParen, {}}; }
     if (std::isdigit(static_cast<unsigned char>(c)) || c == '-' || c == '+') {
       std::size_t start = pos_;
       ++pos_;
