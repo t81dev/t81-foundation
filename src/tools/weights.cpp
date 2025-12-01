@@ -214,21 +214,27 @@ ModelFile load_safetensors(const std::filesystem::path& path) {
     f.read(reinterpret_cast<char*>(buffer.data()), file_size);
 
     for (const auto& [key, value] : root.object_value) {
-        if (key.starts_with("__")) continue;
-        if (!value.object_value.contains("dtype")) continue;
-        const auto& dtype = value.object_value.at("dtype");
+        if (key.rfind("__", 0) == 0) continue;  // skip metadata
+        if (value.object_value.empty()) continue;
+        auto dtype_it = value.object_value.find("dtype");
+        if (dtype_it == value.object_value.end()) continue;
+        const auto& dtype = dtype_it->second;
         if (!dtype.is_string || dtype.string_value != "I8") continue;
-        const auto& shape_val = value.object_value.at("shape");
-        auto shape = json_to_shape(shape_val);
+        auto shape_it = value.object_value.find("shape");
+        if (shape_it == value.object_value.end()) continue;
+        auto shape = json_to_shape(shape_it->second);
         uint64_t count = product_of(shape);
 
-        const auto& offsets_val = value.object_value.at("data_offsets");
-        const auto& lengths_val = value.object_value.at("data_lengths");
-        if (offsets_val.array_value.empty() || lengths_val.array_value.empty()) {
+        auto offsets_it = value.object_value.find("data_offsets");
+        auto lengths_it = value.object_value.find("data_lengths");
+        if (offsets_it == value.object_value.end() || lengths_it == value.object_value.end()) {
             throw std::runtime_error("SafeTensors: missing offsets/lengths");
         }
-        uint64_t offset = json_to_uint(offsets_val.array_value[0]);
-        uint64_t length = json_to_uint(lengths_val.array_value[0]);
+        if (offsets_it->second.array_value.empty() || lengths_it->second.array_value.empty()) {
+            throw std::runtime_error("SafeTensors: empty offset/length arrays");
+        }
+        uint64_t offset = json_to_uint(offsets_it->second.array_value[0]);
+        uint64_t length = json_to_uint(lengths_it->second.array_value[0]);
         if (offset + length > buffer.size()) {
             throw std::runtime_error("SafeTensors: data range out of bounds");
         }
