@@ -25,6 +25,20 @@
 [![Desbordamiento](https://img.shields.io/badge/Overflow-NEVER-red)](https://github.com/t81dev/t81-foundation/)
 [![Exacto Matemáticas](https://img.shields.io/badge/Math-Perfect-yellow)](https://github.com/t81dev/t81-foundation/)
 
+*   *   *
+
+<div align="center">
+
+[![English](https://img.shields.io/badge/Language-English-blue?style=flat-square)](/README.md)
+[![简体中文](https://img.shields.io/badge/Language-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-red?style=flat-square)](/README.zh-CN.md)
+[![Español](https://img.shields.io/badge/Language-Español-green?style=flat-square)](/README.es.md)
+[![Русский](https://img.shields.io/badge/Language-Русский-brightgreen?style=flat-square)](/README.ru.md)
+[![Português](https://img.shields.io/badge/Language-Português%20(Brasil)-blueviolet?style=flat-square)](/README.pt-BR.md)
+
+*   *   *
+
+</div>
+<br>
 <br/><br/>
 
 </div>
