@@ -21,6 +21,8 @@ title: Public API Overview
 <!-- T81-TOC:END -->
 
 
+
+
 This guide catalogs the public C++ APIs under `include/t81/`, highlights threading/error-handling expectations, and points readers toward the generated Doxygen docs.
 
 ______________________________________________________________________
