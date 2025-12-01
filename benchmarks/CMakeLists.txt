@@ -18,6 +18,7 @@ add_executable(benchmark_runner
     runner/overflow_detection.cpp
     runner/packing_density.cpp
     runner/limb_arith_throughput.cpp
+    runner/memory_bandwidth.cpp
 )
 
 target_link_libraries(benchmark_runner PRIVATE benchmark::benchmark t81_core)

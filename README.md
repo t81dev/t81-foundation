@@ -122,6 +122,7 @@ The repository includes several demonstration binaries in `build/` that showcase
 | --- | --- |
 | Largest T81 Classic advantage (latest run) | `BM_LimbArithThroughput_T81Limb` (12.78 Mops/s tryte Kogge-Stone vs 350.95 Mops/s binary) |
 | Largest T81 Native advantage (latest run) | `BM_NegationSpeed_T81Native` (50.18 Mops/s PSHUFB negation vs 8.40 Gops/s binary) |
+| Memory bandwidth (read/write streaming) | `BM_MemoryBandwidth_ReadWrite` (bytes-per-second counter reports GB/s) |
 | Largest binary advantage | `BM_ArithThroughput` (0.00x — exact rounding vs. binary carry chains) |
 | Table columns | `docs/benchmarks.md` now reports Classic (`T81 Result`) and Native (`T81 Native Result`) throughputs alongside the Binary column |
 | Report source | `docs/benchmarks.md` (auto-regenerated whenever `./build/t81 benchmark` runs) |

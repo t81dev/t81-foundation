@@ -291,6 +291,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_result_test tests/cpp/test_T81Result.cpp)
   target_link_libraries(t81_result_test PRIVATE t81_core)
 
+  add_executable(t81_simd_add_helpers_test tests/cpp/test_t81_simd_add_helpers.cpp)
+  target_link_libraries(t81_simd_add_helpers_test PRIVATE t81_core)
+
   add_executable(t81_quaternion_test tests/cpp/test_T81Quaternion.cpp)
   target_link_libraries(t81_quaternion_test PRIVATE t81_core)
 

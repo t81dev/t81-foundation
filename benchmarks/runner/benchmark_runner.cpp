@@ -26,6 +26,8 @@ struct BenchmarkResult {
     double t81_latency_seconds = 0.0;
     double t81_native_latency_seconds = 0.0;
     double binary_latency_seconds = 0.0;
+    std::string bandwidth_result_str;
+    double bandwidth_bytes_per_second = 0.0;
     std::string t81_classic_advantage;
     std::string t81_native_advantage;
     std::string t81_classic_note;
@@ -123,6 +125,31 @@ std::string FormatLatency(double seconds) {
     } else {
         oss << seconds << " s";
     }
+    return oss.str();
+}
+
+std::string FormatBandwidth(double bytes_per_second) {
+    if (bytes_per_second <= 0.0) {
+        return {};
+    }
+    struct Scale {
+        double threshold;
+        const char* suffix;
+    };
+    constexpr Scale kScales[] = {
+        {1e9, "GB/s"},
+        {1e6, "MB/s"},
+        {1e3, "KB/s"},
+    };
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2);
+    for (const auto& scale : kScales) {
+        if (bytes_per_second >= scale.threshold) {
+            oss << (bytes_per_second / scale.threshold) << " " << scale.suffix;
+            return oss.str();
+        }
+    }
+    oss << bytes_per_second << " B/s";
     return oss.str();
 }
 
@@ -328,6 +355,15 @@ public:
                 }
                 summary = ss.str();
             }
+            auto bandwidth_it = run.counters.find("bytes_per_second");
+            if (bandwidth_it != run.counters.end()) {
+                const double bandwidth = bandwidth_it->second;
+                if (bandwidth > 0.0) {
+                    final_results[family].bandwidth_result_str = FormatBandwidth(bandwidth);
+                    final_results[family].bandwidth_bytes_per_second = bandwidth;
+                    summary = final_results[family].bandwidth_result_str;
+                }
+            }
 
             double latency = ExtractLatency(run);
             std::string latency_str = FormatLatency(latency);
@@ -416,6 +452,7 @@ void GenerateMarkdownReport() {
               << std::setw(18) << "T81 Native Latency"
               << std::setw(18) << "Binary Result"
               << std::setw(18) << "Binary Latency"
+              << std::setw(18) << "Memory Bandwidth"
               << std::setw(25) << "T81 Advantage"
               << "Notes\n";
     std::cout << std::string(110, '-') << "\n";
@@ -429,6 +466,7 @@ void GenerateMarkdownReport() {
                       << std::setw(18) << DisplayValue(r.t81_native_latency_str)
                       << std::setw(18) << DisplayValue(r.binary_result_str)
                       << std::setw(18) << DisplayValue(r.binary_latency_str)
+                      << std::setw(18) << DisplayValue(r.bandwidth_result_str)
                       << std::setw(25) << DisplayValue(advantage_display)
                       << DisplayValue(notes_display) << "\n";
     }
@@ -454,7 +492,7 @@ void GenerateMarkdownReport() {
     md_file << "\n\n";
     md_file << "## Summary\n\n";
 
-    md_file << "| Benchmark               | T81 Result     | T81 Latency    | T81 Native Result | T81 Native Latency | Binary Result  | Binary Latency | Ratio (T81/Binary) | T81 Advantage                   | Notes                               |\n";
+    md_file << "| Benchmark               | T81 Result     | T81 Latency    | T81 Native Result | T81 Native Latency | Binary Result  | Binary Latency | Memory Bandwidth | Ratio (T81/Binary) | T81 Advantage                   | Notes                               |\n";
     md_file << "|-------------------------|----------------|----------------|------------------|--------------------|----------------|----------------|--------------------|---------------------------------|-------------------------------------|\n";
 
     double best_t81_ratio = 1.0;
@@ -510,6 +548,7 @@ void GenerateMarkdownReport() {
                 << "| " << std::setw(14) << DisplayValue(r.t81_native_latency_str)
                 << "| " << std::setw(14) << DisplayValue(r.binary_result_str)
                 << "| " << std::setw(14) << DisplayValue(r.binary_latency_str)
+                << "| " << std::setw(14) << DisplayValue(r.bandwidth_result_str)
                 << "| " << std::setw(14) << r.ratio_str
                 << "| " << std::setw(31) << DisplayValue(advantage_display_md)
                 << "| " << std::setw(35) << DisplayValue(notes_display_md) << "|\n";
