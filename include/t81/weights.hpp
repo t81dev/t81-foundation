@@ -42,6 +42,9 @@ struct ModelFile {
     double sparsity = 0.0;
 };
 
+void quantize_safetensors_to_gguf(const std::filesystem::path& input,
+                                   const std::filesystem::path& output);
+
 ModelFile load_gguf(const std::filesystem::path& path);
 ModelFile load_safetensors(const std::filesystem::path& path);
 

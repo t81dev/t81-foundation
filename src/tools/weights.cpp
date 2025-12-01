@@ -2,10 +2,16 @@
 #include "t81/weights.hpp"
 
 #include <array>
+#include <bit>
+#include <cmath>
+#include <charconv>
+#include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <unordered_map>
 #include <algorithm>
 #include <limits>
 #include <variant>
@@ -509,6 +515,316 @@ std::string format_count(uint64_t value) {
     char buf[64];
     std::snprintf(buf, sizeof(buf), "%.2f %s", scaled, suffixes[idx]);
     return buf;
+}
+
+namespace {
+
+struct QuantTensorInfo {
+    std::string name;
+    std::vector<uint64_t> shape;
+    std::string dtype;
+    uint64_t data_offset = 0;
+    uint64_t data_size = 0;
+};
+
+struct SafetensorFile {
+    std::filesystem::path path;
+    uint64_t header_size = 0;
+    std::vector<uint8_t> header;
+    std::vector<QuantTensorInfo> tensors;
+};
+
+inline float fp16_to_fp32(uint16_t h) {
+    uint32_t sign = (h & 0x8000u) << 16;
+    int32_t exp = (h & 0x7C00u) >> 10;
+    uint32_t mant = h & 0x03FFu;
+    if (exp == 0) {
+        if (mant == 0) return std::bit_cast<float>(sign);
+        exp = -14;
+        do {
+            exp++;
+            mant <<= 1;
+        } while ((mant & 0x0400u) == 0);
+        mant &= 0x03FFu;
+    } else if (exp == 31) {
+        return std::bit_cast<float>(sign | 0x7F800000u | (mant << 13));
+    } else {
+        exp += (127 - 15);
+    }
+    uint32_t f = sign | (uint32_t(exp) << 23) | (mant << 13);
+    return std::bit_cast<float>(f);
+}
+
+enum class Trit : int8_t { M = -1, Z = 0, P = 1 };
+
+constexpr uint8_t trit_to_u3(Trit t) {
+    return static_cast<uint8_t>(static_cast<int8_t>(t) + 1);
+}
+
+struct T3Block {
+    float scale = 0.0f;
+    uint8_t trits[48] = {};
+};
+
+void quantize_block_t3(const float* src, T3Block& block) {
+    float amax = 0.0f;
+    for (int i = 0; i < 128; ++i) {
+        amax = std::max(amax, std::abs(src[i]));
+    }
+    block.scale = amax / 1.0f;
+    uint32_t buffer = 0;
+    int bits = 0;
+    int out_idx = 0;
+    for (int i = 0; i < 128; ++i) {
+        float x = src[i] / (block.scale + 1e-8f);
+        Trit t = (x > 0.5f) ? Trit::P : (x < -0.5f) ? Trit::M : Trit::Z;
+        uint32_t val = trit_to_u3(t);
+        buffer = (buffer << 3) | val;
+        bits += 3;
+        while (bits >= 8) {
+            bits -= 8;
+            block.trits[out_idx++] = uint8_t(buffer >> bits);
+        }
+    }
+    if (bits > 0) {
+        block.trits[out_idx++] = uint8_t(buffer << (8 - bits));
+    }
+}
+
+std::vector<QuantTensorInfo> parse_safetensors_header(const std::vector<uint8_t>& header) {
+    std::string text(header.begin(), header.end());
+    JsonParser parser(text);
+    JsonValue root = parser.parse();
+    std::vector<QuantTensorInfo> tensors;
+    for (const auto& [key, value] : root.object_value) {
+        if (key.rfind("__", 0) == 0) continue;
+        if (value.object_value.empty()) continue;
+        auto dtype_it = value.object_value.find("dtype");
+        if (dtype_it == value.object_value.end() || !dtype_it->second.is_string) continue;
+        auto shape_it = value.object_value.find("shape");
+        if (shape_it == value.object_value.end()) continue;
+        auto offsets_it = value.object_value.find("data_offsets");
+        auto lengths_it = value.object_value.find("data_lengths");
+        if (offsets_it == value.object_value.end() || lengths_it == value.object_value.end()) continue;
+        if (offsets_it->second.array_value.empty() || lengths_it->second.array_value.empty()) continue;
+        QuantTensorInfo info;
+        info.name = key;
+        info.dtype = dtype_it->second.string_value;
+        info.shape = json_to_shape(shape_it->second);
+        info.data_offset = json_to_uint(offsets_it->second.array_value[0]);
+        uint64_t length = json_to_uint(lengths_it->second.array_value[0]);
+        info.data_size = length - info.data_offset;
+        tensors.push_back(info);
+    }
+    return tensors;
+}
+
+struct ModelInfo {
+    std::string arch = "llama";
+    uint32_t n_layer = 0;
+    uint32_t n_head = 0;
+    uint32_t n_embd = 0;
+    uint32_t context_length = 32768;
+};
+
+ModelInfo detect_model(const std::vector<QuantTensorInfo>& tensors) {
+    ModelInfo info;
+    for (const auto& t : tensors) {
+        if (t.name.find("model.layers.") != std::string::npos) {
+            size_t dot = t.name.find('.', 13);
+            if (dot != std::string::npos) {
+                uint32_t layer = 0;
+                std::from_chars(t.name.data() + 13, t.name.data() + dot, layer);
+                info.n_layer = std::max(info.n_layer, layer + 1);
+            }
+        }
+        if (t.name.find("attn.q.weight") != std::string::npos ||
+            t.name.find("self_attn.q_proj") != std::string::npos) {
+            if (t.shape.size() >= 2) info.n_embd = static_cast<uint32_t>(t.shape[1]);
+        }
+        if (t.name.find("q_proj.weight") != std::string::npos && t.shape.size() == 2 && info.n_embd != 0) {
+            info.n_head = static_cast<uint32_t>(t.shape[0] / info.n_embd);
+        }
+    }
+    if (info.n_layer == 28 && info.n_embd == 4096) info.context_length = 131072;
+    if (info.n_layer == 32 && info.n_embd == 4096) info.context_length = 131072;
+    if (info.n_layer == 32 && info.n_embd == 5120) info.arch = "qwen2";
+    return info;
+}
+
+struct GGUFWriter {
+    std::vector<uint8_t> data;
+    std::unordered_map<std::string, uint64_t> strings;
+
+    void align(uint64_t a) {
+        while (data.size() % a) data.push_back(0);
+    }
+
+    uint64_t add_string(const std::string& s) {
+        if (auto it = strings.find(s); it != strings.end()) return it->second;
+        uint64_t off = data.size();
+        uint64_t len = s.size();
+        for (int i = 0; i < 8; ++i) {
+            data.push_back(static_cast<uint8_t>((len >> (8 * i)) & 0xFF));
+        }
+        data.insert(data.end(), s.begin(), s.end());
+        align(32);
+        strings[s] = off;
+        return off;
+    }
+
+    void write_header(uint64_t tensor_count, uint64_t kv_count = 20) {
+        uint64_t magic = 0x46554747ULL;
+        uint32_t version = 3;
+        for (int i = 0; i < 8; ++i) data.push_back(static_cast<uint8_t>((magic >> (8 * i)) & 0xFF));
+        for (int i = 0; i < 4; ++i) data.push_back(static_cast<uint8_t>((version >> (8 * i)) & 0xFF));
+        for (int i = 0; i < 8; ++i) data.push_back(static_cast<uint8_t>((tensor_count >> (8 * i)) & 0xFF));
+        for (int i = 0; i < 8; ++i) data.push_back(static_cast<uint8_t>((kv_count >> (8 * i)) & 0xFF));
+    }
+
+    void write_kv(const std::string& key, const std::string& value) {
+        uint32_t vtype = 9;
+        uint64_t koff = add_string(key);
+        uint64_t voff = add_string(value);
+        for (int i = 0; i < 8; ++i) data.push_back(static_cast<uint8_t>((koff >> (8 * i)) & 0xFF));
+        for (int i = 0; i < 4; ++i) data.push_back(static_cast<uint8_t>((vtype >> (8 * i)) & 0xFF));
+        for (int i = 0; i < 8; ++i) data.push_back(static_cast<uint8_t>((voff >> (8 * i)) & 0xFF));
+    }
+
+    void write_kv(const std::string& key, uint32_t value) {
+        uint32_t vtype = 2;
+        uint64_t koff = add_string(key);
+        for (int i = 0; i < 8; ++i) data.push_back(static_cast<uint8_t>((koff >> (8 * i)) & 0xFF));
+        for (int i = 0; i < 4; ++i) data.push_back(static_cast<uint8_t>((vtype >> (8 * i)) & 0xFF));
+        for (int i = 0; i < 4; ++i) data.push_back(static_cast<uint8_t>((value >> (8 * i)) & 0xFF));
+    }
+
+    void write_tensor(const std::string& name, const std::vector<uint64_t>& shape,
+                      uint32_t type, uint64_t offset) {
+        uint32_t n_dims = static_cast<uint32_t>(shape.size());
+        for (int i = 0; i < 4; ++i) data.push_back(static_cast<uint8_t>((n_dims >> (8 * i)) & 0xFF));
+        for (uint64_t d : shape) {
+            for (int i = 0; i < 8; ++i) data.push_back(static_cast<uint8_t>((d >> (8 * i)) & 0xFF));
+        }
+        for (int i = 0; i < 4; ++i) data.push_back(static_cast<uint8_t>((type >> (8 * i)) & 0xFF));
+        for (int i = 0; i < 8; ++i) data.push_back(static_cast<uint8_t>((offset >> (8 * i)) & 0xFF));
+        uint64_t name_off = add_string(name);
+        for (int i = 0; i < 8; ++i) data.push_back(static_cast<uint8_t>((name_off >> (8 * i)) & 0xFF));
+    }
+};
+
+} // namespace
+
+void quantize_safetensors_to_gguf(const std::filesystem::path& input,
+                                   const std::filesystem::path& output) {
+    if (!std::filesystem::exists(input)) {
+        throw std::runtime_error("input path not found");
+    }
+    std::vector<SafetensorFile> files;
+    auto add_file = [&](const std::filesystem::path& path) {
+        std::ifstream f(path, std::ios::binary);
+        if (!f) throw std::runtime_error("cannot open " + path.string());
+        uint64_t header_size = 0;
+        f.read(reinterpret_cast<char*>(&header_size), sizeof(header_size));
+        std::vector<uint8_t> header(header_size);
+        f.read(reinterpret_cast<char*>(header.data()), header_size);
+        SafetensorFile file;
+        file.path = path;
+        file.header_size = header_size;
+        file.header = std::move(header);
+        file.tensors = parse_safetensors_header(file.header);
+        files.push_back(std::move(file));
+    };
+    if (std::filesystem::is_directory(input)) {
+        for (const auto& entry : std::filesystem::directory_iterator(input)) {
+            if (entry.path().extension() == ".safetensors") {
+                add_file(entry.path());
+            }
+        }
+    } else if (input.extension() == ".safetensors") {
+        add_file(input);
+    } else {
+        throw std::runtime_error("input must be a .safetensors file or directory");
+    }
+    if (files.empty()) {
+        throw std::runtime_error("no safetensors found in input");
+    }
+    std::vector<QuantTensorInfo> all_tensors;
+    for (const auto& file : files) {
+        all_tensors.insert(all_tensors.end(), file.tensors.begin(), file.tensors.end());
+    }
+    ModelInfo model = detect_model(all_tensors);
+    GGUFWriter writer;
+    writer.align(32);
+    writer.write_header(0);
+    writer.write_kv("general.architecture", model.arch);
+    writer.write_kv("general.name", output.stem().string());
+    writer.write_kv("general.file_type", uint32_t(32));
+    writer.write_kv(model.arch + ".context_length", model.context_length);
+    writer.write_kv(model.arch + ".block_count", model.n_layer);
+    writer.write_kv(model.arch + ".embedding_length", model.n_embd);
+    writer.write_kv(model.arch + ".attention.head_count", model.n_head);
+    writer.write_kv("tokenizer.ggml.model", "llama");
+    writer.write_kv("tokenizer.ggml.tokens", uint32_t(0));
+    writer.write_kv("tokenizer.ggml.scores", uint32_t(0));
+    writer.align(32);
+    uint64_t tensor_count = 0;
+    for (const auto& file : files) {
+        std::ifstream f(file.path, std::ios::binary);
+        if (!f) throw std::runtime_error("cannot reopen " + file.path.string());
+        for (const auto& tensor : file.tensors) {
+            if (tensor.shape.size() < 2) continue;
+            uint64_t n_elements = 1;
+            for (uint64_t dim : tensor.shape) {
+                if (dim == 0) throw std::runtime_error("tensor dimension zero");
+                n_elements *= dim;
+            }
+            std::vector<float> float_data(n_elements);
+            f.seekg(8 + static_cast<std::streamoff>(file.header_size) + tensor.data_offset, std::ios::beg);
+            if (tensor.dtype == "F16" || tensor.dtype == "BF16") {
+                std::vector<uint16_t> raw(n_elements);
+                f.read(reinterpret_cast<char*>(raw.data()), static_cast<std::streamsize>(n_elements * 2));
+                for (uint64_t i = 0; i < n_elements; ++i) {
+                    if (tensor.dtype == "F16") {
+                        float_data[i] = fp16_to_fp32(raw[i]);
+                    } else {
+                        uint32_t bits = static_cast<uint32_t>(raw[i]) << 16;
+                        float_data[i] = std::bit_cast<float>(bits);
+                    }
+                }
+            } else if (tensor.dtype == "F32") {
+                f.read(reinterpret_cast<char*>(float_data.data()), static_cast<std::streamsize>(n_elements * 4));
+            } else {
+                continue;
+            }
+            uint64_t tensor_offset = writer.data.size();
+            std::vector<float> tmp(128);
+            for (uint64_t idx = 0; idx < n_elements; idx += 128) {
+                uint64_t block_count = std::min<uint64_t>(128, n_elements - idx);
+                std::copy_n(float_data.data() + idx, block_count, tmp.data());
+                if (block_count < 128) std::fill(tmp.begin() + block_count, tmp.end(), 0.0f);
+                T3Block block{};
+                quantize_block_t3(tmp.data(), block);
+                writer.data.insert(writer.data.end(),
+                                   reinterpret_cast<uint8_t*>(&block),
+                                   reinterpret_cast<uint8_t*>(&block) + sizeof(T3Block));
+            }
+            std::vector<uint64_t> gguf_shape = tensor.shape;
+            std::reverse(gguf_shape.begin(), gguf_shape.end());
+            writer.write_tensor(tensor.name, gguf_shape, 99, tensor_offset);
+            tensor_count++;
+        }
+    }
+    uint64_t* count_ptr = reinterpret_cast<uint64_t*>(writer.data.data() + 16);
+    *count_ptr = tensor_count;
+    std::ofstream out(output, std::ios::binary);
+    if (!out) throw std::runtime_error("cannot write " + output.string());
+    out.write(reinterpret_cast<const char*>(writer.data.data()), static_cast<std::streamsize>(writer.data.size()));
+    uint64_t mb = writer.data.size() >> 20;
+    std::cout << "Success! T3_K GGUF created: " << output << " (" << mb << " MB)\n";
+    std::cout << "Run with llama.cpp (latest):\n";
+    std::cout << "  ./llama-cli -m " << output << " -p \"Hello\" -n 512 --color\n";
+    std::cout << "Note: You need llama.cpp with T3_K support (PR coming soon)\n";
 }
 
 } // namespace t81::weights

@@ -143,6 +143,7 @@ Commands:
   benchmark                            Run the core benchmark suite (build/benchmarks/benchmark_runner)
   weights import <file> [options]      Import BitNet/SafeTensors → .t81w
   weights info <model.t81w>            Print native model metadata
+  weights quantize <dir|file> --to-gguf <out>  Quantize SafeTensors → T3_K GGUF
   help                                 Show this message
 
 
@@ -531,6 +532,22 @@ int run_weights_info(const Args& args) {
     return 0;
 }
 
+int run_weights_quantize(const Args& args) {
+    if (args.command_args.size() != 4 || args.command_args[2] != "--to-gguf") {
+        error("weights quantize requires: quantize <input> --to-gguf <output>");
+        return 1;
+    }
+    fs::path input = args.command_args[1];
+    fs::path output = args.command_args[3];
+    try {
+        t81::weights::quantize_safetensors_to_gguf(input, output);
+    } catch (const std::exception& e) {
+        error(e.what());
+        return 1;
+    }
+    return 0;
+}
+
 int run_weights(const Args& args) {
     if (args.command_args.empty()) {
         error("weights requires a subcommand (import|info)");
@@ -541,6 +558,8 @@ int run_weights(const Args& args) {
         return run_weights_import(args);
     } else if (sub == "info") {
         return run_weights_info(args);
+    } else if (sub == "quantize") {
+        return run_weights_quantize(args);
     }
     error("weights: unknown subcommand '" + sub + "'");
     return 1;
