@@ -5,6 +5,7 @@
 
 #include "t81/native.hpp"
 #include "t81/core/T81Limb.hpp"
+#include "t81/packing.hpp"
 
 namespace t81 {
 
