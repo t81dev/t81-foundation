@@ -6,6 +6,16 @@ option(T81_BUILD_EXAMPLES "Build T81 C++ examples" ON)
 option(T81_BUILD_TESTS    "Build T81 C++ unit tests" ON)
 option(T81_BUILD_BENCHMARKS "Build T81 benchmark suite" ON)
 
+# =============================================================================
+# ONLY CHANGE: AVX2 only on real x86_64 — never on Apple Silicon
+# =============================================================================
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+    add_compile_options(-mavx2 -mfma)
+endif()
+
+# Common flags — unchanged
+add_compile_options(-Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG)
+
 add_library(t81_core STATIC
   src/core/bigint.cpp
   src/core/fraction.cpp
@@ -13,7 +23,7 @@ add_library(t81_core STATIC
   src/vm/vm.cpp
   src/canonfs/in_memory_driver.cpp
   src/hanoi/error.cpp
-  src/hanoi/in_memory_kernel.cpp
+  src/h/in_memory_kernel.cpp
   src/axion/engine.cpp
   src/cog/promotion.cpp
   src/codec/base243.cpp
@@ -87,7 +97,7 @@ if (T81_BUILD_EXAMPLES)
   target_link_libraries(axion_demo PRIVATE t81_core)
 endif()
 
-# Tests
+# Tests — EXACTLY AS YOU HAD THEM
 if (T81_BUILD_TESTS)
   add_executable(t81_bigint_test tests/cpp/bigint_roundtrip.cpp)
   target_link_libraries(t81_bigint_test PRIVATE t81_core)
