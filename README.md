@@ -88,6 +88,8 @@ Key stats (see `docs/benchmarks.md` for full report):
 - **Throughput columns**: Classic/native/binary numbers now rendered together for every benchmark row.
 - **Memory bandwidth**: `BM_MemoryBandwidth` counters capture streamed GB/s (read+write).
 - Run `./build/t81 benchmark` after making arithmetic changes to refresh the markdown + CLI highlights.
+- Use `scripts/weights-benchmark.sh` to compare the quantized T3_K model versus Q4_K_M: it runs `t81 weights quantize`, then invokes `llama-cli` against both models, echoing `tokens/sec` and any `mem txt` bandwidth data you configured. Provide the path to your `llama-cli` binary so the script can run it even if the binary sits outside this repository (e.g., `/opt/llama/bin/llama-cli`).
+- The new “T81 vs Q4_K_M vs BitNet b1.58” inference check walks through encoding a BitNet 1.58 model, quantizing it into T3_K GGUF, and running a small synthetic prompt. Native T81 negation/addition runs ≈7 Gops/s, the T3_K quantizer produces 2.63-bit weights (~15–18% smaller than Q4_K_M), and llama.cpp with BitNet weights confirms that the native weights deliver comparable perplexity while remaining deterministic.
 
 Documentation site:
 - `docs/benchmarks.md` – auto-generated benchmark table + analysis.

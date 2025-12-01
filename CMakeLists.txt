@@ -120,6 +120,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_tensor_loader_test tests/cpp/tensor_loader_test.cpp)
   target_link_libraries(t81_tensor_loader_test PRIVATE t81_io)
 
+  add_executable(t81_weights_quantize_test tests/cpp/weights_quantize_test.cpp)
+  target_link_libraries(t81_weights_quantize_test PRIVATE t81_core)
+
   add_executable(t81_canonfs_io_test tests/cpp/canonfs_io_test.cpp)
   target_link_libraries(t81_canonfs_io_test PRIVATE t81_core)
 

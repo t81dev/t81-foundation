@@ -169,7 +169,7 @@ struct alignas(32) T81 {
             const int8_t trit = other_digits[idx];
             if (trit == 0) continue;
             T81 shifted = ShiftLeftTrits(idx);
-            accum = (trit > 0) ? (accum + shifted) : (accum - shifted);
+            accum = (trit > 0) ? (accum + shifted) : (accum + (-shifted));
         }
         return accum;
 #else
