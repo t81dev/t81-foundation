@@ -54,6 +54,10 @@ namespace {
     }
 }
 
+#if defined(__AVX2__)
+#include <immintrin.h>
+#endif
+
 static void BM_NegationSpeed_T81Cell(benchmark::State& state) {
     setup_negation();
     for (auto _ : state) {
@@ -69,14 +73,37 @@ BENCHMARK(BM_NegationSpeed_T81Cell);
 
 static void BM_NegationSpeed_PackedCell(benchmark::State& state) {
     setup_negation();
+#if defined(__AVX2__)
+    const size_t n = packed_source_data.size();
+    auto* src = reinterpret_cast<const uint8_t*>(packed_source_data.data());
+    auto* dst = reinterpret_cast<uint8_t*>(packed_dest_data.data());
+    const __m256i neg_const = _mm256_set1_epi8(t81::core::packed::PackedCell::MAX_INDEX);
+
     for (auto _ : state) {
-        for (size_t i = 0; i < DATA_SIZE; ++i) {
-            packed_dest_data[i] = packed_source_data[i].neg();
+        size_t i = 0;
+        // Process 32 elements at a time with AVX2
+        for (; i + 31 < n; i += 32) {
+            __m256i v_src = _mm256_loadu_si256((const __m256i*)(src + i));
+            __m256i v_res = _mm256_sub_epi8(neg_const, v_src);
+            _mm256_storeu_si256((__m256i*)(dst + i), v_res);
+        }
+        // Process remaining elements scalerly
+        for (; i < n; ++i) {
+            dst[i] = t81::core::packed::PackedCell::MAX_INDEX - src[i];
         }
         benchmark::DoNotOptimize(packed_dest_data.data());
     }
+    state.SetLabel("Packed AVX2 negation");
+#else
+    for (auto _ : state) {
+        for (size_t i = 0; i < DATA_SIZE; ++i) {
+            packed_dest_data[i] = -packed_source_data[i];
+        }
+        benchmark::DoNotOptimize(packed_dest_data.data());
+    }
+    state.SetLabel("Packed arithmetic negation");
+#endif
     state.SetItemsProcessed(state.iterations() * DATA_SIZE);
-    state.SetLabel("Packed table lookup negation");
 }
 BENCHMARK(BM_NegationSpeed_PackedCell);
 
