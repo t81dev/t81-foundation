@@ -16,12 +16,14 @@ title: "Guide: Adding a Language Feature"
     - [2.2 Recognize the Lexeme](#22-recognize-the-lexeme)
   - [3. Step 2: Update the Parser](#3-step-2-update-the-parser)
     - [3.1 Update the Grammar Rule](#31-update-the-grammar-rule)
-- [4. Step 3: Update the IR Generator](#4-step-3-update-the-ir-generator)
-  - [4.1 Implement the Visitor Logic](#41-implement-the-visitor-logic)
-- [5. Step 4: Write an End-to-End Test](#5-step-4-write-an-end-to-end-test)
-- [6. Step 5: Reinforce the Semantic Analyzer](#6-step-5-reinforce-the-semantic-analyzer)
+  - [4. Step 3: Update the IR Generator](#4-step-3-update-the-ir-generator)
+    - [4.1 Implement the Visitor Logic](#41-implement-the-visitor-logic)
+  - [5. Step 4: Write an End-to-End Test](#5-step-4-write-an-end-to-end-test)
+  - [6. Step 5: Reinforce the Semantic Analyzer](#6-step-5-reinforce-the-semantic-analyzer)
 
 <!-- T81-TOC:END -->
+
+
 
 
 
