@@ -9,6 +9,24 @@ namespace t81 {
 namespace tisc {
 namespace ir {
 
+enum class PrimitiveKind {
+    Unknown,
+    Integer,
+    Float,
+    Fraction,
+    Boolean,
+};
+
+enum class ComparisonRelation {
+    None,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual,
+    Equal,
+    NotEqual,
+};
+
 enum class Opcode {
     // Arithmetic
     ADD, SUB, MUL, DIV, MOD, NEG,
@@ -61,6 +79,10 @@ using Operand = std::variant<Register, Immediate, Label>;
 struct Instruction {
     Opcode opcode;
     std::vector<Operand> operands;
+    PrimitiveKind primitive = PrimitiveKind::Unknown;
+    bool boolean_result = false;
+    bool is_conversion = false;
+    ComparisonRelation relation = ComparisonRelation::None;
 };
 
 class IntermediateProgram {

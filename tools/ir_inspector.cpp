@@ -88,9 +88,36 @@ int main(int argc, char** argv) {
         }
     };
 
+    auto primitive_name = [](t81::tisc::ir::PrimitiveKind kind) -> const char* {
+        switch (kind) {
+            case t81::tisc::ir::PrimitiveKind::Integer: return "Int";
+            case t81::tisc::ir::PrimitiveKind::Float: return "Float";
+            case t81::tisc::ir::PrimitiveKind::Fraction: return "Frac";
+            case t81::tisc::ir::PrimitiveKind::Boolean: return "Bool";
+            default: return "Unknown";
+        }
+    };
+
+    auto relation_name = [](t81::tisc::ir::ComparisonRelation relation) -> const char* {
+        using R = t81::tisc::ir::ComparisonRelation;
+        switch (relation) {
+            case R::Less: return "Less";
+            case R::LessEqual: return "LessEqual";
+            case R::Greater: return "Greater";
+            case R::GreaterEqual: return "GreaterEqual";
+            case R::Equal: return "Equal";
+            case R::NotEqual: return "NotEqual";
+            default: return "None";
+        }
+    };
+
     std::cout << "IR Instructions (" << instructions.size() << " total):\n";
     for (const auto& inst : instructions) {
         std::cout << std::setw(15) << std::left << opcode_name(inst.opcode);
+        std::cout << " [" << primitive_name(inst.primitive) << (inst.boolean_result ? " Bool" : "") << "]";
+        if (inst.boolean_result && inst.relation != t81::tisc::ir::ComparisonRelation::None) {
+            std::cout << " <" << relation_name(inst.relation) << ">";
+        }
         if (!inst.operands.empty()) {
             std::cout << " | ";
             for (size_t i = 0; i < inst.operands.size(); ++i) {

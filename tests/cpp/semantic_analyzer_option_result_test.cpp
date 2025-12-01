@@ -100,19 +100,53 @@ int main() {
     )";
     expect_semantic_failure(err_without_context);
 
-    const std::string numeric_widening = R"(
+    const std::string numeric_widening_success = R"(
         fn widen() -> i32 {
             let a: i8 = 1;
             let b: i32 = a + 2;
             return b;
         }
+    )";
+    expect_semantic_success(numeric_widening_success);
 
+    const std::string numeric_widening_failure = R"(
         fn fail_widen() -> i8 {
             let x: i2 = 1;
             return x + 1.5;
         }
     )";
-    expect_semantic_failure(numeric_widening);
+    expect_semantic_failure(numeric_widening_failure);
+
+    const std::string int_float_success = R"(
+        fn widen_float() -> T81Float {
+            let value: i8 = 3;
+            let result: T81Float = value + 1.20t81;
+            return result;
+        }
+    )";
+    expect_semantic_success(int_float_success);
+
+    const std::string invalid_modulo = R"(
+        fn bad_mod() -> i32 {
+            return 1.5 % 2.0;
+        }
+    )";
+    expect_semantic_failure(invalid_modulo);
+
+    const std::string float_fraction_mix = R"(
+        fn bad_mix() -> T81Float {
+            // Mixing T81Fraction literals with float arithmetic should fail.
+            return 22/7t81 + 1.20t81;
+        }
+    )";
+    expect_semantic_failure(float_fraction_mix);
+
+    const std::string bool_arith = R"(
+        fn bool_add() -> i32 {
+            return 1 + true;
+        }
+    )";
+    expect_semantic_failure(bool_arith);
 
     std::cout << "Semantic analyzer option/result tests passed!" << std::endl;
     return 0;

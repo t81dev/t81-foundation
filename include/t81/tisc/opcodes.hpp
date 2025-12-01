@@ -63,5 +63,11 @@ enum class Opcode : std::uint8_t {
   Neg = 55,
   JumpIfNegative = 56,
   JumpIfPositive = 57,
+  Less = 58,
+  LessEqual = 59,
+  Greater = 60,
+  GreaterEqual = 61,
+  Equal = 62,
+  NotEqual = 63,
 };
 }  // namespace t81::tisc

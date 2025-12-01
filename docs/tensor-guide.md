@@ -5,122 +5,132 @@ title: C++ Tensor Guide
 
 # T81 C++ Tensor Guide
 
-This guide provides a practical introduction to the T81 C++ `Tensor` library, a core component of the `t81_core` library.
+This guide summarizes the lightweight `T729Tensor` implementation plus the supporting APIs shipped in `include/t81/tensor`. It is the practical reference for developers working with the current C++ tensor utilities.
 
 **Companion Documents:**
 - **Specification:** [`spec/t81-data-types.md`](../spec/t81-data-types.md)
-- **API Reference:** `t81/core/tensor.hpp` (generate with Doxygen)
-- **Tests:** `tests/cpp/t81_tensor_*_test.cpp`
+- **API Reference:** [`include/t81/tensor.hpp`](../include/t81/tensor.hpp) and the headers under `include/t81/tensor/`
+- **Tests:** `tests/cpp/tensor_*_test.cpp`
+- **Examples:** `examples/tensor_ops.cpp`, `examples/demo.cpp`
 
 ______________________________________________________________________
 
 ## 1. Core Concepts
 
-The T81 `Tensor` is a multi-dimensional array designed for high-performance numerical computing with ternary data.
-
-- **Storage:** Tensors are stored in a contiguous, row-major flat array in memory.
-- **Shape:** The dimensions of the tensor are tracked in a `TensorShape` object, which is a simple vector of integers.
-- **Data Type:** Tensors are currently templated and typically hold `int64_t` for demonstration purposes, but are designed to eventually hold native ternary types like `T81Int`.
-- **API:** The tensor API is provided as a set of free functions (e.g., `matmul`, `transpose`) that operate on `Tensor` objects, rather than class methods.
+- **`t81::T729Tensor`:** A row-major tensor of `float` with a runtime `shape()` (`std::vector<int>`) and owned `data()` buffer. It exposes `rank()`, `size()`, broadcasting helpers, and basic serialization (`serialize`/`deserialize`).
+- **Shape Utilities:** `include/t81/tensor/shape.hpp` provides row-major strides, size computation, `broadcast_shape`, `squeeze`, and reshape validation helpers that the ops headers reuse.
+- **Ops Library:** The headers under `include/t81/tensor/` expose free functions in `t81::ops` such as `matmul`, `transpose`, `slice2d`, `reshape`, `broadcast_to`, elementwise/`unary` helpers, and reduction primitives. These have dedicated regression tests under `tests/cpp/`.
+- **Status:** This is a partial implementation aligning with the current C++ migration roadmap—sufficient for basic numerics while more spec features (e.g., native ternary storage) are on the TODO list.
 
 ______________________________________________________________________
 
 ## 2. Creating a Tensor
 
-You can create a tensor by specifying its shape and providing a C++ initializer list with the data.
+Create a tensor by passing a shape (as initializer list or vector) and optionally providing the backing `float` data. The constructors validate positive dimensions, match the total size, and throw `std::invalid_argument` on mismatch.
 
 ```cpp
-#include <t81/core/tensor.hpp>
+#include "t81/tensor.hpp"
 #include <iostream>
 
 int main() {
-    using t81::core::Tensor;
+    t81::T729Tensor a({2, 3});       // zero-initialized data
+    a.data() = {1.0f, 2.0f, 3.0f,
+                4.0f, 5.0f, 6.0f};
 
-    // Create a 2x3 tensor (2 rows, 3 columns)
-    Tensor<int64_t> a({2, 3}, {
-        1, 2, 3,
-        4, 5, 6
-    });
-
-    std::cout << "Shape: " << a.shape.to_string() << std::endl;
+    std::cout << "Rank: " << a.rank() << '\n';
+    std::cout << "Shape: ";
+    for (int dim : a.shape()) std::cout << dim << ' ';
+    std::cout << '\n';
     std::cout << "Data: ";
-    for (const auto& val : a.data) {
-        std::cout << val << " ";
-    }
-    std::cout << std::endl;
+    for (float v : a.data()) std::cout << v << ' ';
+    std::cout << '\n';
 
     return 0;
 }
 ```
 
-**Key Files:**
-- **Header:** [`include/t81/core/tensor.hpp`](../include/t81/core/tensor.hpp)
-- **Test:** [`tests/cpp/tensor_shape_test.cpp`](../tests/cpp/tensor_shape_test.cpp)
+The same header also exposes utility methods such as `T729Tensor::broadcast` (naive right-aligned repeat), `transpose2d`, and `contract_dot` (dot product between rank-1 tensors) that make small helpers possible without the full ops suite.
 
 ______________________________________________________________________
 
 ## 3. Core Operations
 
-The tensor library supports a range of common operations, demonstrated in `examples/tensor_ops.cpp`.
+All tensor operations live in `t81::ops` and expect `T729Tensor` arguments. These utilities work well with the `examples/tensor_ops.cpp` demo and the matching regression tests.
 
 ### Matrix Multiplication (`matmul`)
 
-Performs standard matrix multiplication on two 2D tensors.
+`t81::ops::matmul` implements a standard 2D matrix product (`(m×k)·(k×n) = m×n`). It validates ranks and dimensions before constructing the result.
 
 ```cpp
-Tensor<int64_t> a({2, 3}, {1, 2, 3, 4, 5, 6});
-Tensor<int64_t> b({3, 2}, {7, 8, 9, 10, 11, 12});
-
-// c = a * b
-auto c = matmul(a, b); // Result is a 2x2 tensor
+t81::T729Tensor A({2, 3}, std::vector<float>{1, 2, 3, 4, 5, 6});
+t81::T729Tensor B({3, 2}, std::vector<float>{7, 8, 9, 10, 11, 12});
+auto C = t81::ops::matmul(A, B); // 2×2
 ```
+
 **Test:** [`tests/cpp/tensor_matmul_test.cpp`](../tests/cpp/tensor_matmul_test.cpp)
 
-### Transpose
+### Transpose & Reshape
 
-Swaps the axes of a tensor. For a 2D tensor, this flips rows and columns.
-
-```cpp
-Tensor<int64_t> a({2, 3}, {1, 2, 3, 4, 5, 6});
-
-auto at = transpose(a); // Result is a 3x2 tensor
-```
-**Test:** [`tests/cpp/tensor_transpose_test.cpp`](../tests/cpp/tensor_transpose_test.cpp)
-
-### Reduction (`reduce_sum`)
-
-Reduces a tensor's dimension by summing its elements along a given axis.
+- `t81::ops::transpose` handles rank-2 tensors and flips `{rows, cols}` → `{cols, rows}`.
+- `t81::ops::reshape` validates the new shape (with a single optional `-1` inference) and reuses the original data buffer, returning a new `T729Tensor` with the requested layout.
 
 ```cpp
-Tensor<int64_t> a({2, 3}, {1, 2, 3, 4, 5, 6});
-
-// Sum along columns (axis 1)
-auto row_sums = reduce_sum(a, 1); // Result is a {2} tensor: {6, 15}
+auto transposed = t81::ops::transpose(A);
+auto reshaped = t81::ops::reshape(A, {3, 2});
 ```
+
+**Tests:** [`tests/cpp/tensor_transpose_test.cpp`](../tests/cpp/tensor_transpose_test.cpp), [`tests/cpp/tensor_reshape_test.cpp`](../tests/cpp/tensor_reshape_test.cpp)
+
+### Slicing & Indexing
+
+`t81::ops::slice2d` extracts a half-open row/column range from a rank-2 tensor. It checks that the requested row and column bounds are in range before copying the requested rectangle.
+
+```cpp
+auto patch = t81::ops::slice2d(A, 0, 1, 1, 3); // 1×2 block
+```
+
+**Test:** [`tests/cpp/tensor_slice_test.cpp`](../tests/cpp/tensor_slice_test.cpp)
+
+### Reduction
+
+`reduce_sum_2d` and `reduce_max_2d` collapse a rank-2 tensor along axis `0` (columns) or `1` (rows), producing a 1D tensor that summarizes sums or maxima.
+
+```cpp
+auto row_sums = t81::ops::reduce_sum_2d(A, 1);
+auto col_max = t81::ops::reduce_max_2d(A, 0);
+```
+
 **Test:** [`tests/cpp/tensor_reduce_test.cpp`](../tests/cpp/tensor_reduce_test.cpp)
 
-### Broadcasting
+### Broadcasting & Elementwise Ops
 
-Extends a tensor to a larger shape by repeating its data along new or expanded dimensions.
+`broadcast_to` uses the helpers in `t81::shape` to confirm right-aligned compatibility before materializing a larger tensor. `elemwise_binary` exposes add/sub/mul/div flavors that automatically broadcast mismatched shapes (div throws on divide-by-zero).
 
 ```cpp
-Tensor<int64_t> a({2, 3}, {1, 2, 3, 4, 5, 6});
-Tensor<int64_t> b({3}, {10, 20, 30}); // A row vector to broadcast
-
-// Add b to each row of a
-auto c = broadcast_add(a, b);
+t81::T729Tensor broadcasted = t81::ops::broadcast_to(A, {2, 3});
+auto summed = t81::ops::add(A, broadcasted);
 ```
-**Test:** [`tests/cpp/tensor_broadcast_test.cpp`](../tests/cpp/tensor_broadcast_test.cpp)
+
+**Tests:** [`tests/cpp/tensor_broadcast_test.cpp`](../tests/cpp/tensor_broadcast_test.cpp), [`tests/cpp/tensor_elementwise_test.cpp`](../tests/cpp/tensor_elementwise_test.cpp)
+
+### Unary Functions
+
+`t81::ops::unary_map` supports applying any `float(float)` functor to every element. The convenience helpers `relu`, `tanh`, `exp`, and `log` demonstrate common activation-style transforms with safety guards (e.g., `log` throws on negative inputs).
+
+**Test:** [`tests/cpp/tensor_unary_test.cpp`](../tests/cpp/tensor_unary_test.cpp)
+
+### IO & Serialization
+
+Use `t81::io::load_tensor_txt` / `save_tensor_txt` (and their `_file` helpers) to stream tensors in a simple text format. `T729Tensor` also exposes `serialize`/`deserialize` for binary persistence, keeping the header/int64 counts for shape and data.
+
+**Test:** [`tests/cpp/tensor_loader_test.cpp`](../tests/cpp/tensor_loader_test.cpp)
 
 ______________________________________________________________________
 
-## 4. Current Status & Next Steps
+## 4. Status & Next Steps
 
-The tensor library is currently **`Partial`**. The core infrastructure is in place, but many features from the specification are not yet implemented.
+The current tensor API is **partial** but usable: base storage, reshape/slice/matmul/reduce, broadcasting, elementwise, unary transforms, and IO are all implemented and covered by tests.
 
-- **Next Steps:**
-    - Implement the full suite of elementwise operations.
-    - Integrate native ternary types (`T81Int`) as the tensor's data type.
-    - Expand broadcasting rules to cover all cases in the specification.
+- **Next Steps:** Expand the API to native ternary types (`T81Int`), add spec-aligned broadcasting rules, and upstream more operations (elementwise reductions, scatter/gather) once `T81Lang` reaches greater maturity.
 
 For a full list of planned work, see [`TASKS.md`](../TASKS.md).

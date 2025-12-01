@@ -137,6 +137,63 @@ bool SemanticAnalyzer::is_numeric(const Type& type) const {
     return numeric_rank(type) > 0;
 }
 
+bool SemanticAnalyzer::is_integer_type(const Type& type) const {
+    switch (type.kind) {
+        case Type::Kind::I2:
+        case Type::Kind::I8:
+        case Type::Kind::I16:
+        case Type::Kind::I32:
+        case Type::Kind::BigInt:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool SemanticAnalyzer::is_float_type(const Type& type) const {
+    return type.kind == Type::Kind::Float;
+}
+
+bool SemanticAnalyzer::is_fraction_type(const Type& type) const {
+    return type.kind == Type::Kind::Fraction;
+}
+
+bool SemanticAnalyzer::is_primitive_numeric_type(const Type& type) const {
+    return is_integer_type(type) || is_float_type(type) || is_fraction_type(type);
+}
+
+std::optional<Type> SemanticAnalyzer::deduce_numeric_type(const Type& left, const Type& right, const Token& op) {
+    if (left.kind == Type::Kind::Error || right.kind == Type::Kind::Error) {
+        return make_error_type();
+    }
+    if (left.kind == Type::Kind::Unknown || right.kind == Type::Kind::Unknown) {
+        return Type{Type::Kind::Unknown};
+    }
+    if (!is_primitive_numeric_type(left) || !is_primitive_numeric_type(right)) {
+        error(op, "Operands must be primitive numeric types, got '" + type_to_string(left) +
+                  "' and '" + type_to_string(right) + "'.");
+        return std::nullopt;
+    }
+
+    if (is_integer_type(left) && is_integer_type(right)) {
+        return numeric_rank(left) >= numeric_rank(right) ? left : right;
+    }
+    if (is_integer_type(left) && is_float_type(right)) return right;
+    if (is_integer_type(right) && is_float_type(left)) return left;
+    if (is_integer_type(left) && is_fraction_type(right)) return right;
+    if (is_integer_type(right) && is_fraction_type(left)) return left;
+
+    if (left.kind == Type::Kind::Float && right.kind == Type::Kind::Float) {
+        return left;
+    }
+    if (left.kind == Type::Kind::Fraction && right.kind == Type::Kind::Fraction) {
+        return left;
+    }
+
+    error(op, "Cannot combine '" + type_to_string(left) + "' with '" + type_to_string(right) + "' in numeric expressions.");
+    return std::nullopt;
+}
+
 Type SemanticAnalyzer::type_from_token(const Token& name) {
     switch (name.type) {
         case TokenType::Void: return Type{Type::Kind::Void};
@@ -263,11 +320,19 @@ Type SemanticAnalyzer::widen_numeric(const Type& left, const Type& right, const 
     if (left.kind == Type::Kind::Unknown || right.kind == Type::Kind::Unknown) {
         return Type{Type::Kind::Unknown};
     }
-    if (!is_numeric(left) || !is_numeric(right)) {
-        error(op, "Operands must be numeric, got '" + type_to_string(left) + "' and '" + type_to_string(right) + "'.");
+    if (op.type == TokenType::Percent && (!is_integer_type(left) || !is_integer_type(right))) {
+        error(op, "Modulo requires integer operands, got '" + type_to_string(left) + "' and '" + type_to_string(right) + "'.");
         return make_error_type();
     }
-    return numeric_rank(left) >= numeric_rank(right) ? left : right;
+
+    auto deduced = deduce_numeric_type(left, right, op);
+    if (!deduced.has_value()) {
+        return make_error_type();
+    }
+    if (op.type == TokenType::Percent && !is_integer_type(*deduced)) {
+        return make_error_type();
+    }
+    return *deduced;
 }
 
 Type SemanticAnalyzer::evaluate_expression(const Expr& expr, const Type* expected) {
@@ -278,17 +343,28 @@ Type SemanticAnalyzer::evaluate_expression(const Expr& expr, const Type* expecte
         return Type{Type::Kind::Unknown};
     }
     try {
-        return std::any_cast<Type>(result);
+        Type casted = std::any_cast<Type>(result);
+        _expr_type_cache[&expr] = casted;
+        return casted;
     } catch (const std::bad_any_cast&) {
-        return make_error_type();
+        Type err = make_error_type();
+        _expr_type_cache[&expr] = err;
+        return err;
     }
 }
- 
+
 const Type* SemanticAnalyzer::current_expected_type() const {
     if (_expected_type_stack.empty()) {
         return nullptr;
     }
     return _expected_type_stack.back();
+}
+
+const Type* SemanticAnalyzer::type_of(const Expr* expr) const {
+    if (!expr) return nullptr;
+    auto it = _expr_type_cache.find(expr);
+    if (it == _expr_type_cache.end()) return nullptr;
+    return &it->second;
 }
 
 Type SemanticAnalyzer::expect_condition_bool(const Expr& expr, const Token& location) {
@@ -524,16 +600,17 @@ std::any SemanticAnalyzer::visit(const BinaryExpr& expr) {
         case TokenType::GreaterEqual:
         case TokenType::Less:
         case TokenType::LessEqual:
-            if (!is_numeric(left_type) || !is_numeric(right_type)) {
-                error(expr.op, "Comparison operands must be numeric.");
+            if (!deduce_numeric_type(left_type, right_type, expr.op).has_value()) {
                 return make_error_type();
             }
             return Type{Type::Kind::Bool};
         case TokenType::EqualEqual:
         case TokenType::BangEqual: {
             if (left_type == right_type) return Type{Type::Kind::Bool};
-            if (is_numeric(left_type) && is_numeric(right_type)) return Type{Type::Kind::Bool};
-            error(expr.op, "Equality operands must be of the same type.");
+            if (deduce_numeric_type(left_type, right_type, expr.op).has_value()) {
+                return Type{Type::Kind::Bool};
+            }
+            error(expr.op, "Equality operands must be of the same type or share a compatible primitive numeric type.");
             return make_error_type();
         }
         case TokenType::AmpAmp:

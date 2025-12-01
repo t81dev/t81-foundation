@@ -140,7 +140,7 @@ Compile and run both manually using `./build/t81` or with the helper below.
 
 The tool runs the usual frontend pipeline (lexer → parser → semantic analyzer → IR generator) and emits each `tisc::ir::Instruction` with operand values, making it easy to see how `match` lowers before the HanoiVM executes anything.
 
-This tool walks the usual frontend pipeline (lexer → parser → semantic analyzer → IR generator) and dumps the resulting `tisc::ir::Instruction` list with operand types.
+This tool walks the usual frontend pipeline (lexer → parser → semantic analyzer → IR generator) and dumps the resulting `tisc::ir::Instruction` list with operand types and primitive annotations. Comparisons now carry `ComparisonRelation` metadata so the inspector makes it easy to verify when the emitter will produce the new `Less`, `Equal`, etc., boolean opcodes instead of flag-only `CMP` sequences.
 
 - **Benchmark Suite** (`./build/t81 benchmark`): Executes `build/benchmarks/benchmark_runner`, comparing throughput and latency for the T81 cell vs. binary variants, and auto-updates `docs/benchmarks.md` with the execution highlights table.
 
