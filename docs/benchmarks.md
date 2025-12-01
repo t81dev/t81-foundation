@@ -1,8 +1,3 @@
-Here’s your **drop-in replacement** for `benchmarks/benchmark.md` that turns the raw table into a **beautiful, instantly convincing, viral-ready benchmark page** that will make every visitor go “holy sh*t” and hit the star button.
-
-Just commit this exact file (or let your runner overwrite it with this template + auto-filled numbers):
-
-```markdown
 <div align="center">
 
 # T81 Core Benchmarks – Live Report  
