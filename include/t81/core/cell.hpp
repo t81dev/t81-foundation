@@ -169,12 +169,4 @@ public:
     static constexpr Cell minus_one() noexcept { return Cell::from_int(-1); }
 };
 
-inline const std::array<Cell, Cell::MAX - Cell::MIN + 1> Cell::k_int_lookup = []() {
-    std::array<Cell, Cell::MAX - Cell::MIN + 1> table{};
-    for (int64_t v = Cell::MIN; v <= Cell::MAX; ++v) {
-        table[static_cast<size_t>(v - Cell::MIN)] = Cell::encode_value(v);
-    }
-    return table;
-}();
-
 } // namespace t81::core
