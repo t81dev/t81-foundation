@@ -31,6 +31,8 @@ This table inventories the key documentation, specification, and architectural a
 | `docs/hardware-roadmap.md`              | Hardware Vision                 | All                   | Historical            |
 | `docs/guides/vm-opcodes.md`             | TISC Opcodes                    | Contributor           | **Current**           |
 | `docs/guides/adding-a-language-feature.md`| T81Lang Development           | Contributor           | **Current**           |
+| `docs/guides/public-api-overview.md`     | Public API entry notes          | Contributor           | **Current**           |
+| `docs/ci.md`                             | CI/test reproduction guide      | Contributor           | **Current**           |
 | `spec/index.md`                         | Specification Hub               | All                   | Current               |
 | `spec/t81-data-types.md`                | Core Numerics Spec              | Core Maintainer       | Current               |
 | `spec/tisc-spec.md`                     | TISC ISA Spec                   | Core Maintainer       | Current               |
