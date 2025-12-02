@@ -70,6 +70,14 @@ namespace detail {
         return flat;
     }
     static const auto COMPOSITION_FLAT = build_flat_composition_table();
+    static constexpr std::array<int32_t, 27> build_carry_from_zero_table() {
+        std::array<int32_t, 27> table{};
+        for (int id = 0; id < 27; ++id) {
+            table[id] = ((id / 3) % 3) - 1;
+        }
+        return table;
+    }
+    static const auto CARRY_FROM_ZERO = build_carry_from_zero_table();
 } // namespace detail
 
 
@@ -149,14 +157,42 @@ inline T81Limb T81Limb::operator+(const T81Limb& other) const noexcept {
         }
     }
 
-    // 3. Third Pass: Compute final sums
-    int8_t carry = 0; // Overall carry-in is 0
+    // 3. Third Pass: Compute final sums using a SIMD carry resolution lookup table
+    std::array<int8_t, TRYTES> carry_from_prefix{};
+#if defined(__x86_64__) && defined(__AVX2__)
+    alignas(32) int32_t map_ids32[TRYTES];
     for (int i = 0; i < TRYTES; ++i) {
-        result.trytes_[i] = sum_vals[i][carry + 1];
-        if (i < TRYTES - 1) {
-            int map_id = map_ids[i];
-            carry = ((map_id / 3) % 3) - 1; // Extract map for cin=0
+        map_ids32[i] = map_ids[i];
+    }
+    int idx = 0;
+    while (idx + 8 <= TRYTES) {
+        const __m256i offsets = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(map_ids32 + idx));
+        const __m256i gathered = _mm256_i32gather_epi32(
+            detail::CARRY_FROM_ZERO.data(),
+            offsets,
+            sizeof(int32_t));
+        alignas(32) int32_t chunk[8];
+        _mm256_store_si256(reinterpret_cast<__m256i*>(chunk), gathered);
+        for (int j = 0; j < 8; ++j) {
+            carry_from_prefix[idx + j] = static_cast<int8_t>(chunk[j]);
         }
+        idx += 8;
+    }
+    for (; idx < TRYTES; ++idx) {
+        carry_from_prefix[idx] = static_cast<int8_t>(detail::CARRY_FROM_ZERO[map_ids32[idx]]);
+    }
+#else
+    for (int i = 0; i < TRYTES; ++i) {
+        carry_from_prefix[i] = static_cast<int8_t>(detail::CARRY_FROM_ZERO[map_ids[i]]);
+    }
+#endif
+    std::array<int8_t, TRYTES> carries{};
+    carries[0] = 0;
+    for (int i = 1; i < TRYTES; ++i) {
+        carries[i] = carry_from_prefix[i - 1];
+    }
+    for (int i = 0; i < TRYTES; ++i) {
+        result.trytes_[i] = sum_vals[i][carries[i] + 1];
     }
     return result;
 }
