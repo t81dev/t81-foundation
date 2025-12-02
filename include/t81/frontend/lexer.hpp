@@ -20,7 +20,7 @@ namespace frontend {
 enum class TokenType {
     // Keywords
     Module, Type, Const, Export, Fn, Let, Var,
-    If, Else, For, In, While, Break, Continue, Return, Match,
+    If, Else, For, In, While, Loop, Break, Continue, Return, Match,
     True, False,
 
     // Type Keywords

@@ -1,5 +1,6 @@
 #include <functional>
 #include <memory>
+#include <sstream>
 
 #include "t81/fraction.hpp"
 #include "t81/tensor.hpp"
@@ -45,6 +46,27 @@ class Interpreter : public IVirtualMachine {
       auto policy = t81::axion::parse_policy(program_.axion_policy_text);
       if (policy.has_value()) {
         state_.policy = policy.value();
+        for (const auto& loop : state_.policy->loops) {
+          AxionEvent event;
+          event.opcode = t81::tisc::Opcode::Nop;
+          event.tag = loop.id;
+          event.value = loop.depth;
+          event.verdict.kind = t81::axion::VerdictKind::Allow;
+          std::ostringstream reason;
+          reason << "loop hint file=" << loop.file
+                 << " line=" << loop.line
+                 << " column=" << loop.column
+                 << " bound=";
+          if (loop.bound_infinite) {
+            reason << "infinite";
+          } else if (loop.bound_value) {
+            reason << *loop.bound_value;
+          } else {
+            reason << "unknown";
+          }
+          event.verdict.reason = reason.str();
+          state_.axion_log.push_back(event);
+        }
       }
     }
   }

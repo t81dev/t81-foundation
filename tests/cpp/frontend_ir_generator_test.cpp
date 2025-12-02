@@ -233,8 +233,8 @@ void test_match_option() {
         fn main() -> i32 {
             let maybe: Option[i32] = Some(1);
             let v: i32 = match (maybe) {
-                Some(x) => x + 1,
-                None => 0,
+                Some(x) => x + 1;
+                None => 0;
             };
             return v;
         }
@@ -277,8 +277,8 @@ void test_match_result() {
         fn main() -> Result[i32, T81String] {
             let result: Result[i32, T81String] = Ok(1);
             return match (result) {
-                Ok(x) => Ok(x + 1),
-                Err(e) => Err(e),
+                Ok(x) => Ok(x + 1);
+                Err(e) => Err(e);
             };
         }
     )";

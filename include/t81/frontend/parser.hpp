@@ -5,6 +5,8 @@
 #include "t81/frontend/lexer.hpp"
 #include <vector>
 #include <memory>
+#include <optional>
+#include <cstdint>
 
 namespace t81 {
 namespace frontend {
@@ -38,6 +40,10 @@ private:
     std::unique_ptr<Expr> match_expression();
     MatchArm match_arm();
     std::unique_ptr<TypeExpr> type();
+    bool parse_loop_annotation(LoopStmt::BoundKind& bound_kind,
+                               std::optional<std::int64_t>& bound_value,
+                               Token& attr_token);
+    std::unique_ptr<GenericTypeExpr> parse_generic_type(Token name);
 
     // Helper methods
     bool match(const std::vector<TokenType>& types);

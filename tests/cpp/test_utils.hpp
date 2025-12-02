@@ -65,6 +65,16 @@ public:
         return parenthesize("while", {&stmt.condition, &stmt.body});
     }
 
+    std::any visit(const LoopStmt& stmt) override {
+        std::stringstream ss;
+        ss << "(loop";
+        for (const auto& statement : stmt.body) {
+            ss << " " << print(*statement);
+        }
+        ss << ")";
+        return ss.str();
+    }
+
     std::any visit(const ReturnStmt& stmt) override {
         if (stmt.value) {
             return parenthesize("return", {&stmt.value});

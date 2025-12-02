@@ -9,7 +9,9 @@ thread_local int type_to_string_depth = 0;
 
 #include "t81/frontend/semantic_analyzer.hpp"
 #include <iostream>
+#include <algorithm>
 #include <sstream>
+#include <utility>
 
 namespace t81 {
 namespace frontend {
@@ -29,8 +31,10 @@ bool Type::operator==(const Type& other) const {
     return params == other.params;
 }
 
-SemanticAnalyzer::SemanticAnalyzer(const std::vector<std::unique_ptr<Stmt>>& statements)
-    : _statements(statements) {
+SemanticAnalyzer::SemanticAnalyzer(const std::vector<std::unique_ptr<Stmt>>& statements,
+                                   std::string source_name)
+    : _statements(statements),
+      _source_name(std::move(source_name)) {
     // Start with global scope
     enter_scope();
 }
@@ -71,9 +75,7 @@ void SemanticAnalyzer::error(const Token& token, const std::string& message) {
     if (!_had_error) {  // Only set once to avoid multiple error messages
         _had_error = true;
     }
-    std::cerr << "semantic error: " << message << " at line " << token.line 
-              << ", column " << token.column << std::endl;
-    std::cerr.flush();  // Ensure error is written immediately
+    _diagnostics.push_back(Diagnostic{_source_name, token.line, token.column, message});
 }
 
 void SemanticAnalyzer::error_at(const Token& token, const std::string& message) {
@@ -192,6 +194,53 @@ std::optional<Type> SemanticAnalyzer::deduce_numeric_type(const Type& left, cons
 
     error(op, "Cannot combine '" + type_to_string(left) + "' with '" + type_to_string(right) + "' in numeric expressions.");
     return std::nullopt;
+}
+
+Type SemanticAnalyzer::refine_generic_type(const Type& declared, const Type& initializer) const {
+    if (declared.kind == Type::Kind::Option && initializer.kind == Type::Kind::Option) {
+        Type result = declared;
+        if (initializer.params.size() >= 1) {
+            if (result.params.empty()) {
+                result.params = initializer.params;
+            } else if (result.params[0].kind == Type::Kind::Unknown) {
+                result.params[0] = initializer.params[0];
+            }
+        }
+        return result;
+    }
+    if (declared.kind == Type::Kind::Result && initializer.kind == Type::Kind::Result) {
+        Type result = declared;
+        if (result.params.size() < 2) {
+            result.params.resize(2, Type{Type::Kind::Unknown});
+        }
+        for (size_t i = 0; i < 2 && i < initializer.params.size(); ++i) {
+            if (result.params[i].kind == Type::Kind::Unknown) {
+                result.params[i] = initializer.params[i];
+            }
+        }
+        return result;
+    }
+    return declared;
+}
+
+void SemanticAnalyzer::merge_expected_params(Type& target, const Type* expected) const {
+    if (!expected || target.kind != expected->kind) {
+        return;
+    }
+    if (target.kind == Type::Kind::Custom && target.custom_name != expected->custom_name) {
+        return;
+    }
+    if (target.params.empty() && !expected->params.empty()) {
+        target.params = expected->params;
+        return;
+    }
+    size_t max_params = std::max(target.params.size(), expected->params.size());
+    target.params.resize(max_params, Type{Type::Kind::Unknown});
+    for (size_t i = 0; i < expected->params.size(); ++i) {
+        if (target.params[i].kind == Type::Kind::Unknown && expected->params[i].kind != Type::Kind::Unknown) {
+            target.params[i] = expected->params[i];
+        }
+    }
 }
 
 Type SemanticAnalyzer::type_from_token(const Token& name) {
@@ -367,6 +416,12 @@ const Type* SemanticAnalyzer::type_of(const Expr* expr) const {
     return &it->second;
 }
 
+const SemanticAnalyzer::LoopMetadata* SemanticAnalyzer::loop_metadata_for(const LoopStmt& stmt) const {
+    auto it = _loop_index.find(&stmt);
+    if (it == _loop_index.end()) return nullptr;
+    return &_loop_metadata[it->second];
+}
+
 Type SemanticAnalyzer::expect_condition_bool(const Expr& expr, const Token& location) {
     Type cond_type = evaluate_expression(expr);
     if (!is_assignable(Type{Type::Kind::Bool}, cond_type)) {
@@ -435,13 +490,18 @@ std::any SemanticAnalyzer::visit(const VarStmt& stmt) {
         error(stmt.name, "Variable '" + std::string(stmt.name.lexeme) + "' requires a type annotation or initializer.");
     }
 
+    Type checked_declared = declared_type;
+    if (declared_type.kind != Type::Kind::Unknown && init_type.kind != Type::Kind::Unknown) {
+        checked_declared = refine_generic_type(declared_type, init_type);
+    }
+
     if (declared_type.kind != Type::Kind::Unknown && init_type.kind != Type::Kind::Unknown &&
-        !is_assignable(declared_type, init_type)) {
+        !is_assignable(checked_declared, init_type)) {
         error(stmt.name, "Cannot assign initializer of type '" + type_to_string(init_type) +
                               "' to variable of type '" + type_to_string(declared_type) + "'.");
     }
 
-    Type final_type = declared_type.kind == Type::Kind::Unknown ? init_type : declared_type;
+    Type final_type = declared_type.kind == Type::Kind::Unknown ? init_type : checked_declared;
     define_symbol(stmt.name, SymbolKind::Variable);
     if (auto* symbol = resolve_symbol(stmt.name)) {
         symbol->type = final_type;
@@ -462,13 +522,18 @@ std::any SemanticAnalyzer::visit(const LetStmt& stmt) {
         error(stmt.name, "Constant '" + std::string(stmt.name.lexeme) + "' requires a type annotation or initializer.");
     }
 
+    Type checked_declared = declared_type;
+    if (declared_type.kind != Type::Kind::Unknown && init_type.kind != Type::Kind::Unknown) {
+        checked_declared = refine_generic_type(declared_type, init_type);
+    }
+
     if (declared_type.kind != Type::Kind::Unknown && init_type.kind != Type::Kind::Unknown &&
-        !is_assignable(declared_type, init_type)) {
+        !is_assignable(checked_declared, init_type)) {
         error(stmt.name, "Cannot assign initializer of type '" + type_to_string(init_type) +
                               "' to constant of type '" + type_to_string(declared_type) + "'.");
     }
 
-    Type final_type = declared_type.kind == Type::Kind::Unknown ? init_type : declared_type;
+    Type final_type = declared_type.kind == Type::Kind::Unknown ? init_type : checked_declared;
     define_symbol(stmt.name, SymbolKind::Variable);
     if (auto* symbol = resolve_symbol(stmt.name)) {
         symbol->type = final_type;
@@ -499,6 +564,34 @@ std::any SemanticAnalyzer::visit(const WhileStmt& stmt) {
     Token cond_token = extract_token(*stmt.condition);
     expect_condition_bool(*stmt.condition, cond_token);
     analyze(*stmt.body);
+    return {};
+}
+
+std::any SemanticAnalyzer::visit(const LoopStmt& stmt) {
+    if (stmt.bound_kind == LoopStmt::BoundKind::None) {
+        error(stmt.keyword, "Loops must be annotated with '@bounded(...)'.");
+    }
+    if (stmt.bound_kind == LoopStmt::BoundKind::Static) {
+        if (!stmt.bound_value || *stmt.bound_value <= 0) {
+            error(stmt.keyword, "Static loop bounds must be a positive integer.");
+        }
+    }
+    int depth = static_cast<int>(_loop_stack.size());
+    LoopMetadata meta;
+    meta.stmt = &stmt;
+    meta.keyword = stmt.keyword;
+    meta.bound_kind = stmt.bound_kind;
+    meta.bound_value = stmt.bound_value;
+    meta.depth = depth;
+    meta.id = _next_loop_id++;
+    meta.source_file = _source_name;
+    _loop_index[&stmt] = _loop_metadata.size();
+    _loop_metadata.push_back(meta);
+    _loop_stack.push_back(&stmt);
+    for (const auto& statement : stmt.body) {
+        analyze(*statement);
+    }
+    _loop_stack.pop_back();
     return {};
 }
 
@@ -966,6 +1059,9 @@ std::any SemanticAnalyzer::visit(const GenericTypeExpr& expr) {
         params.push_back(*constant);
     }
 
+    Type base_expected;
+    const Type* expected = current_expected_type();
+
     if (params.empty()) {
         error(expr.name, "Generic type requires at least one parameter.");
         return make_error_type();
@@ -980,7 +1076,9 @@ std::any SemanticAnalyzer::visit(const GenericTypeExpr& expr) {
         if (params.size() != 1) {
             error(expr.name, "The 'Option' type expects exactly one type parameter, but got " + std::to_string(params.size()) + ".");
         }
-        return Type{Type::Kind::Option, {params[0]}};
+        Type result{Type::Kind::Option, {params[0]}};
+        merge_expected_params(result, expected);
+        return result;
     }
 
     if (type_name == "Result") {
@@ -989,11 +1087,14 @@ std::any SemanticAnalyzer::visit(const GenericTypeExpr& expr) {
         }
         Type success = params.size() > 0 ? params[0] : Type{Type::Kind::Unknown};
         Type err = params.size() > 1 ? params[1] : Type{Type::Kind::Unknown};
-        return Type{Type::Kind::Result, {success, err}};
+        Type result{Type::Kind::Result, {success, err}};
+        merge_expected_params(result, expected);
+        return result;
     }
 
     Type base = type_from_token(expr.name);
     base.params = params;
+    merge_expected_params(base, expected);
     return base;
 }
 

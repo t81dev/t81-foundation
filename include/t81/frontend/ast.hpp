@@ -7,6 +7,8 @@
 #include <vector>
 #include <array>
 #include <utility>
+#include <optional>
+#include <cstdint>
 
 namespace t81 {
 namespace frontend {
@@ -36,6 +38,7 @@ struct IfStmt;
 struct WhileStmt;
 struct ReturnStmt;
 struct FunctionStmt;
+struct LoopStmt;
 
 // --- Base Classes ---
 
@@ -76,6 +79,7 @@ public:
     virtual std::any visit(const BlockStmt& stmt) = 0;
     virtual std::any visit(const IfStmt& stmt) = 0;
     virtual std::any visit(const WhileStmt& stmt) = 0;
+    virtual std::any visit(const LoopStmt& stmt) = 0;
     virtual std::any visit(const ReturnStmt& stmt) = 0;
     virtual std::any visit(const FunctionStmt& stmt) = 0;
 };
@@ -306,6 +310,28 @@ struct FunctionStmt : Stmt {
     const Token name;
     const std::vector<Parameter> params;
     const std::unique_ptr<TypeExpr> return_type;
+    const std::vector<std::unique_ptr<Stmt>> body;
+};
+
+struct LoopStmt : Stmt {
+    enum class BoundKind {
+        None,
+        Infinite,
+        Static
+    };
+
+    LoopStmt(Token keyword, BoundKind bound_kind, std::optional<std::int64_t> bound_value,
+             std::vector<std::unique_ptr<Stmt>> body)
+        : keyword(keyword),
+          bound_kind(bound_kind),
+          bound_value(bound_value),
+          body(std::move(body)) {}
+
+    std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
+
+    const Token keyword;
+    const BoundKind bound_kind;
+    const std::optional<std::int64_t> bound_value;
     const std::vector<std::unique_ptr<Stmt>> body;
 };
 

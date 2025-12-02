@@ -88,8 +88,12 @@ target_link_libraries(t81_llvm INTERFACE t81_core)
 # =============================================================================
 # CLI & Examples
 # =============================================================================
+add_library(t81_cli_driver STATIC src/cli/driver.cpp)
+target_link_libraries(t81_cli_driver PUBLIC t81_frontend t81_tisc t81_vm)
+target_include_directories(t81_cli_driver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 add_executable(t81 src/cli/main.cpp)
-target_link_libraries(t81 PRIVATE t81_frontend t81_tisc t81_vm)
+target_link_libraries(t81 PRIVATE t81_frontend t81_tisc t81_vm t81_cli_driver)
 
 if(T81_BUILD_EXAMPLES)
 add_executable(t81_demo examples/demo.cpp)
@@ -239,6 +243,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_tisc_binary_emitter_test tests/cpp/tisc_binary_emitter_test.cpp)
   target_link_libraries(t81_tisc_binary_emitter_test PRIVATE t81_tisc)
 
+  add_executable(t81_semantic_analyzer_loop_test tests/cpp/semantic_analyzer_loop_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_loop_test PRIVATE t81_frontend)
+
   add_executable(ir_inspector tools/ir_inspector.cpp)
   target_link_libraries(ir_inspector PRIVATE t81_frontend)
 
@@ -250,6 +257,12 @@ if(T81_BUILD_TESTS)
 
   add_executable(e2e_if_statement_test tests/cpp/e2e_if_statement_test.cpp)
   target_link_libraries(e2e_if_statement_test PRIVATE t81_frontend t81_tisc t81_vm)
+
+  add_executable(t81_cli_pipeline_test tests/cpp/cli_pipeline_test.cpp)
+  target_link_libraries(t81_cli_pipeline_test PRIVATE t81_cli_driver)
+
+  add_executable(axion_loop_metadata_test tests/cpp/axion_loop_metadata_test.cpp)
+  target_link_libraries(axion_loop_metadata_test PRIVATE t81_cli_driver t81_tisc t81_vm)
 
   add_executable(axion_instruction_counter_test tests/cpp/axion_instruction_counter_test.cpp)
   target_link_libraries(axion_instruction_counter_test PRIVATE t81_core t81_vm)
@@ -395,7 +408,10 @@ if(T81_BUILD_TESTS)
     t81_semantic_analyzer_option_result_test
     t81_semantic_analyzer_match_test
     t81_semantic_analyzer_generic_test
+    t81_semantic_analyzer_loop_test
     t81_tisc_binary_emitter_test
+    t81_cli_pipeline_test
+    axion_loop_metadata_test
     axion_instruction_counter_test
   )
   foreach(tgt IN LISTS T81_TEST_TARGETS)

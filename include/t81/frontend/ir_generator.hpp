@@ -17,12 +17,22 @@ namespace t81::frontend {
 
 class IRGenerator : public ExprVisitor, public StmtVisitor {
 public:
+    struct LoopInfo {
+        int id = -1;
+        tisc::ir::Label entry_label{};
+        tisc::ir::Label exit_label{};
+        int depth = 0;
+        bool annotated = false;
+    };
+
     tisc::ir::IntermediateProgram generate(const std::vector<std::unique_ptr<Stmt>>& statements) {
         for (const auto& stmt : statements) {
             stmt->accept(*this);
         }
         return std::move(_program);
     }
+
+    const std::vector<LoopInfo>& loop_infos() const { return _loop_infos; }
 
     void attach_semantic_analyzer(const SemanticAnalyzer* analyzer) {
         _semantic = analyzer;
@@ -43,6 +53,29 @@ public:
     std::any visit(const LetStmt&) override          { return {}; }
     std::any visit(const IfStmt&) override           { return {}; }
     std::any visit(const WhileStmt&) override        { return {}; }
+    std::any visit(const LoopStmt& stmt) override {
+        auto entry_label = new_label();
+        auto exit_label = new_label();
+        emit_label(entry_label);
+        for (const auto& statement : stmt.body) {
+            statement->accept(*this);
+        }
+        emit(tisc::ir::Instruction{tisc::ir::Opcode::JMP, {entry_label}});
+        emit_label(exit_label);
+
+        LoopInfo info;
+        info.entry_label = entry_label;
+        info.exit_label = exit_label;
+        if (_semantic) {
+            if (const auto* meta = _semantic->loop_metadata_for(stmt)) {
+                info.id = meta->id;
+                info.depth = meta->depth;
+                info.annotated = meta->annotated();
+            }
+        }
+        _loop_infos.push_back(info);
+        return {};
+    }
     std::any visit(const ReturnStmt&) override       { return {}; }
     std::any visit(const FunctionStmt&) override     { return {}; }
 
@@ -417,6 +450,7 @@ private:
     int _register_count = 0;
     int _label_count = 0;
     std::unordered_map<const Expr*, TypedRegister> _expr_registers;
+    std::vector<LoopInfo> _loop_infos;
 };
 
 } // namespace t81::frontend
