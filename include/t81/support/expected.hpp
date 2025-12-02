@@ -26,10 +26,10 @@ namespace t81 {
 template <typename T, typename E>
 class expected {
  public:
-  expected(const T& value) : has_(true), storage_(value) {}
-  expected(T&& value) : has_(true), storage_(std::move(value)) {}
-  expected(const E& error) : has_(false), storage_(error) {}
-  expected(E&& error) : has_(false), storage_(std::move(error)) {}
+  expected(const T& value) : has_(true), storage_(std::in_place_type<T>, value) {}
+  expected(T&& value) : has_(true), storage_(std::in_place_type<T>, std::move(value)) {}
+  expected(const E& error) : has_(false), storage_(std::in_place_type<E>, error) {}
+  expected(E&& error) : has_(false), storage_(std::in_place_type<E>, std::move(error)) {}
 
   [[nodiscard]] bool has_value() const noexcept { return has_; }
   [[nodiscard]] explicit operator bool() const noexcept { return has_; }
