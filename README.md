@@ -111,6 +111,7 @@ Key stats (see `docs/benchmarks.md` for full report):
 - **Weight integration**: `t81 weights load` powers the new T81Lang `weights.load("<path>")` builtin, so HanoiVM code can hydrate `.t81w` models, inspect `WeightsModel` handles, and pass tensors through the same arithmetic pipeline that powers `t81 weights info`. See `docs/benchmarks.md` for the Classic/Native/Binary tables plus CLI workflow references.
 
 - `docs/onboarding.md` – curated flow for new C++ developers (clone/build/first bug) before diving into the rest.
+- `docs/guides/weights-integration.md` – walkthrough for the new `weights.load("<tensor>")` builtin, the `.t81w` CLI path, and links to the `examples/weights_load_demo.t81` sample that shows handle reuse.
 - `docs/release.md` – release/versioning policy and checklist for maintainers who ship tags.
 - `docs/ci.md` – explains how to reproduce CI/test suites locally and what GitHub Actions run.
 - `docs/benchmarks.md` – auto-generated benchmark table + analysis.

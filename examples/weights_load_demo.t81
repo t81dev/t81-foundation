@@ -1,0 +1,15 @@
+// Demonstrates how to request a weights tensor handle by name.
+fn main() -> i32 {
+    // The `.t81w` file must be loaded via `t81` CLI (`t81 weights load ...`),
+    // so the runtime knows which tensors exist; `weights.load` takes the
+    // tensor name string literal and returns a handle (an i32) into the shared
+    // weights model.
+    let encoder_value: i32 = weights.load("encoder.value_proj");
+    let decoder_value: i32 = weights.load("decoder.value_proj");
+
+    // Handles are cached—calling again returns the same handle without copying.
+    let another_encoder_value: i32 = weights.load("encoder.value_proj");
+
+    // Return the handle to show it is accessible.
+    return encoder_value;
+}

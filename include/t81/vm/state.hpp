@@ -1,9 +1,12 @@
 #pragma once
 
 #include <array>
+#include <memory>
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <utility>
+#include <unordered_map>
 #include <vector>
 #include "t81/tensor.hpp"
 #include "t81/fraction.hpp"
@@ -11,6 +14,7 @@
 #include "t81/axion/verdict.hpp"
 #include "t81/axion/policy.hpp"
 #include "t81/vm/traps.hpp"
+#include "t81/weights.hpp"
 
 namespace t81::vm {
 
@@ -25,6 +29,7 @@ enum class ValueTag : std::uint8_t {
   FloatHandle,
   FractionHandle,
   SymbolHandle,
+  WeightsTensorHandle,
   TensorHandle,
   ShapeHandle,
   OptionHandle,
@@ -84,5 +89,11 @@ struct State {
   bool halted{false};
   std::size_t gc_cycles{0};
   std::optional<t81::axion::Policy> policy;
+  std::shared_ptr<t81::weights::ModelFile> weights_model;
+  std::vector<const t81::weights::NativeTensor*> weights_tensor_refs;
+  std::unordered_map<std::string, std::int64_t> weights_tensor_handles;
+  std::vector<std::pair<std::int64_t, std::int64_t>> stack_frames;
+  std::vector<std::pair<std::int64_t, std::int64_t>> heap_frames;
+  std::size_t heap_ptr{0};
 };
 }  // namespace t81::vm

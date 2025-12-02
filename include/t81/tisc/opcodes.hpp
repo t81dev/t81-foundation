@@ -69,5 +69,10 @@ enum class Opcode : std::uint8_t {
   GreaterEqual = 61,
   Equal = 62,
   NotEqual = 63,
+  StackAlloc,
+  StackFree,
+  HeapAlloc,
+  HeapFree,
+  WeightsLoad,
 };
 }  // namespace t81::tisc

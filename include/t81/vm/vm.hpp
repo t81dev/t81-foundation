@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string_view>
 #include <t81/support/expected.hpp>
 #include "t81/axion/engine.hpp"
 #include "t81/vm/state.hpp"
@@ -15,6 +16,8 @@ class IVirtualMachine {
   virtual std::expected<void, Trap> step() = 0;
   virtual std::expected<void, Trap> run_to_halt(std::size_t max_steps = 100000) = 0;
   virtual const State& state() const = 0;
+  virtual std::int64_t load_weights_tensor(std::string_view name) = 0;
+  virtual const t81::weights::NativeTensor* weights_tensor(std::int64_t handle) const = 0;
 };
 
 // Factory for the in-tree interpreter implementation.

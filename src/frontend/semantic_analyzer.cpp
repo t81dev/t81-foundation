@@ -220,6 +220,17 @@ Type SemanticAnalyzer::refine_generic_type(const Type& declared, const Type& ini
         }
         return result;
     }
+    if (declared.kind == initializer.kind && declared.kind != Type::Kind::Unknown) {
+        Type result = declared;
+        size_t max_params = std::max(result.params.size(), initializer.params.size());
+        result.params.resize(max_params, Type{Type::Kind::Unknown});
+        for (size_t i = 0; i < initializer.params.size(); ++i) {
+            if (result.params[i].kind == Type::Kind::Unknown) {
+                result.params[i] = initializer.params[i];
+            }
+        }
+        return result;
+    }
     return declared;
 }
 
@@ -798,6 +809,21 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
             result_type.params[1] = error_param;
             return result_type;
         }
+        if (func_name == "weights.load") {
+            if (arg_types.size() != 1) {
+                error(var_expr->name, "The 'weights.load' builtin expects exactly one argument.");
+                return make_error_type();
+            }
+            if (arg_types[0].kind != Type::Kind::String) {
+                error(var_expr->name, "The 'weights.load' argument must be a string literal.");
+                return make_error_type();
+            }
+            if (!dynamic_cast<const LiteralExpr*>(expr.arguments[0].get())) {
+                error(var_expr->name, "The 'weights.load' argument must be a string literal.");
+                return make_error_type();
+            }
+            return Type{Type::Kind::I32};
+        }
 
         auto* symbol = resolve_symbol(var_expr->name);
         if (!symbol) {
@@ -936,22 +962,32 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
         }
     }
 
+    auto describe_match = [&](const char* kind) {
+        std::ostringstream oss;
+        oss << kind << " match on '" << type_to_string(scrutinee_type) << "' requires the missing arm";
+        return oss.str();
+    };
+
     if (is_option) {
         if (!has_some) {
-            error(scrutinee_token, "Option match requires a 'Some' arm.");
+            error(scrutinee_token, describe_match("Option") + " 'Some'. Add `Some(value) => ...` at line " +
+                               std::to_string(scrutinee_token.line) + ".");
             structural_error = true;
         }
         if (!has_none) {
-            error(scrutinee_token, "Option match requires a 'None' arm.");
+            error(scrutinee_token, describe_match("Option") + " 'None'. Add `None => ...` at line " +
+                               std::to_string(scrutinee_token.line) + ".");
             structural_error = true;
         }
     } else {
         if (!has_ok) {
-            error(scrutinee_token, "Result match requires an 'Ok' arm.");
+            error(scrutinee_token, describe_match("Result") + " 'Ok'. Add `Ok(value) => ...` at line " +
+                               std::to_string(scrutinee_token.line) + ".");
             structural_error = true;
         }
         if (!has_err) {
-            error(scrutinee_token, "Result match requires an 'Err' arm.");
+            error(scrutinee_token, describe_match("Result") + " 'Err'. Add `Err(value) => ...` at line " +
+                               std::to_string(scrutinee_token.line) + ".");
             structural_error = true;
         }
     }

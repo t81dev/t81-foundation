@@ -160,6 +160,54 @@ int main() {
     )";
     expect_semantic_failure(custom_generic_failure, "custom_generic_failure");
 
+    const std::string tensor_match_inference = R"(
+        fn main() -> i32 {
+            let inferred: Option = Some(Tensor[T81Int, 2, 3]);
+            let value: Tensor[T81Int, 2, 3] = match (inferred) {
+                Some(t) => t;
+                None => Tensor[T81Int, 2, 3];
+            };
+            return 0;
+        }
+    )";
+    expect_semantic_success(tensor_match_inference, "tensor_match_inference");
+
+    const std::string tensor_match_inference_failure = R"(
+        fn main() -> i32 {
+            let inferred: Option = Some(Tensor[T81Int, 2, 3]);
+            let value: Tensor[T81Int, 3, 2] = match (inferred) {
+                Some(t) => t;
+                None => Tensor[T81Int, 3, 2];
+            };
+            return 0;
+        }
+    )";
+    expect_semantic_failure(tensor_match_inference_failure, "tensor_match_inference_failure");
+
+    const std::string tensor_loop_inference = R"(
+        fn main() -> i32 {
+            let inferred: Tensor = Tensor[T81Int, 2, 3];
+            @bounded(infinite)
+            loop {
+                let value: Tensor[T81Int, 2, 3] = inferred;
+                return 0;
+            }
+        }
+    )";
+    expect_semantic_success(tensor_loop_inference, "tensor_loop_inference");
+
+    const std::string tensor_loop_inference_failure = R"(
+        fn main() -> i32 {
+            let inferred: Tensor = Tensor[T81Int, 2, 3];
+            @bounded(infinite)
+            loop {
+                let value: Tensor[T81Int, 3, 3] = inferred;
+                return 0;
+            }
+        }
+    )";
+    expect_semantic_failure(tensor_loop_inference_failure, "tensor_loop_inference_failure");
+
     std::cout << "Semantic analyzer generic tests passed!" << std::endl;
     return 0;
 }

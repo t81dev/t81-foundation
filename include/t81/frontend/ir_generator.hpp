@@ -7,6 +7,7 @@
 #include "t81/frontend/symbol_table.hpp"
 #include "t81/tisc/ir.hpp"
 #include <any>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -14,6 +15,50 @@
 #include <unordered_map>
 
 namespace t81::frontend {
+
+inline int hex_digit(char value) {
+    if (value >= '0' && value <= '9') return value - '0';
+    if (value >= 'a' && value <= 'f') return 10 + (value - 'a');
+    if (value >= 'A' && value <= 'F') return 10 + (value - 'A');
+    return -1;
+}
+
+inline std::string decode_string_literal(const Token& token) {
+    std::string_view view = token.lexeme;
+    if (view.size() < 2 || view.front() != '"' || view.back() != '"') {
+        return {};
+    }
+    std::string result;
+    result.reserve(view.size() - 2);
+    for (size_t i = 1; i + 1 < view.size(); ++i) {
+        char c = view[i];
+        if (c == '\\' && i + 1 < view.size() - 1) {
+            ++i;
+            char esc = view[i];
+            switch (esc) {
+                case '\\': result.push_back('\\'); break;
+                case '"': result.push_back('"'); break;
+                case 'n': result.push_back('\n'); break;
+                case 'r': result.push_back('\r'); break;
+                case 't': result.push_back('\t'); break;
+                case 'x': {
+                    if (i + 2 < view.size() - 1) {
+                        int hi = hex_digit(view[++i]);
+                        int lo = hex_digit(view[++i]);
+                        if (hi >= 0 && lo >= 0) {
+                            result.push_back(static_cast<char>((hi << 4) | lo));
+                        }
+                    }
+                    break;
+                }
+                default: result.push_back(esc); break;
+            }
+        } else {
+            result.push_back(c);
+        }
+    }
+    return result;
+}
 
 class IRGenerator : public ExprVisitor, public StmtVisitor {
 public:
@@ -178,6 +223,19 @@ public:
     }
 
     std::any visit(const LiteralExpr& expr) override {
+        if (expr.value.type == TokenType::String) {
+            std::string contents = decode_string_literal(expr.value);
+            auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction instr;
+            instr.opcode = tisc::ir::Opcode::LOADI;
+            instr.operands = {dest.reg};
+            instr.literal_kind = tisc::LiteralKind::SymbolHandle;
+            instr.text_literal = std::move(contents);
+            instr.primitive = tisc::ir::PrimitiveKind::Integer;
+            emit(instr);
+            record_result(&expr, dest);
+            return {};
+        }
         std::string_view lexeme = expr.value.lexeme;
         int64_t value = std::stoll(std::string{lexeme});
         auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
@@ -226,6 +284,25 @@ public:
                     expr.arguments[0]->accept(*this);
                 }
                 emit_simple(tisc::ir::Opcode::MAKE_RESULT_ERR);
+                return {};
+            }
+            if (func_name == "weights.load") {
+                if (expr.arguments.size() != 1) {
+                    throw std::runtime_error("weights.load expects a single string argument.");
+                }
+                auto* literal = dynamic_cast<const LiteralExpr*>(expr.arguments[0].get());
+                if (!literal) {
+                    throw std::runtime_error("weights.load requires a string literal argument.");
+                }
+                std::string name = decode_string_literal(literal->value);
+                auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+                tisc::ir::Instruction instr;
+                instr.opcode = tisc::ir::Opcode::WEIGHTS_LOAD;
+                instr.operands = {dest.reg};
+                instr.literal_kind = tisc::LiteralKind::SymbolHandle;
+                instr.text_literal = std::move(name);
+                emit(instr);
+                record_result(&expr, dest);
                 return {};
             }
         }

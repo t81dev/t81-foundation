@@ -1,9 +1,11 @@
 #ifndef T81_TISC_IR_HPP
 #define T81_TISC_IR_HPP
 
+#include <optional>
 #include <string>
 #include <vector>
 #include <variant>
+#include "t81/tisc/program.hpp"
 
 namespace t81 {
 namespace tisc {
@@ -57,6 +59,7 @@ enum class Opcode {
 
     // System
     NOP, HALT, TRAP,
+    WEIGHTS_LOAD,
 
     // Pseudo-instructions
     LABEL
@@ -83,6 +86,8 @@ struct Instruction {
     bool boolean_result = false;
     bool is_conversion = false;
     ComparisonRelation relation = ComparisonRelation::None;
+    tisc::LiteralKind literal_kind = tisc::LiteralKind::Int;
+    std::optional<std::string> text_literal;
 };
 
 class IntermediateProgram {

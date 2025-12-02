@@ -1,6 +1,7 @@
 #include <functional>
 #include <memory>
 #include <sstream>
+#include <string_view>
 
 #include "t81/fraction.hpp"
 #include "t81/tensor.hpp"
@@ -22,6 +23,17 @@ class Interpreter : public IVirtualMachine {
     }
   }
 
+  std::int64_t load_weights_tensor(std::string_view name) override {
+    return intern_weights_tensor(name);
+  }
+
+  const t81::weights::NativeTensor* weights_tensor(std::int64_t handle) const override {
+    if (handle <= 0) return nullptr;
+    std::size_t idx = static_cast<std::size_t>(handle - 1);
+    if (idx >= state_.weights_tensor_refs.size()) return nullptr;
+    return state_.weights_tensor_refs[idx];
+  }
+
   void load_program(const t81::tisc::Program& program) override {
     program_ = program;
     state_ = State{};
@@ -37,6 +49,12 @@ class Interpreter : public IVirtualMachine {
     state_.symbols = program_.symbol_pool;
     state_.tensors = program_.tensor_pool;
     state_.shapes = program_.shape_pool;
+    state_.weights_model = program_.weights_model;
+    state_.weights_tensor_refs.clear();
+    state_.weights_tensor_handles.clear();
+    state_.stack_frames.clear();
+    state_.heap_frames.clear();
+    state_.heap_ptr = state_.layout.stack_limit;
     state_.options.clear();
     state_.results.clear();
     state_.policy.reset();
@@ -261,6 +279,7 @@ class Interpreter : public IVirtualMachine {
             }
             case ValueTag::TensorHandle:
             case ValueTag::ShapeHandle:
+            case ValueTag::WeightsTensorHandle:
               if (lhs_val == rhs_val) return 0;
               return (lhs_val < rhs_val) ? -1 : 1;
             case ValueTag::OptionHandle: {
@@ -363,6 +382,18 @@ class Interpreter : public IVirtualMachine {
         }
         update_flags(state_.registers[insn.a]);
         break;
+      case t81::tisc::Opcode::WeightsLoad: {
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        if (insn.b <= 0 || static_cast<std::size_t>(insn.b) > state_.symbols.size()) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        const std::string& name = state_.symbols[static_cast<std::size_t>(insn.b - 1)];
+        auto handle = intern_weights_tensor(name);
+        state_.registers[insn.a] = handle;
+        state_.register_tags[insn.a] = ValueTag::WeightsTensorHandle;
+        break;
+      }
       case t81::tisc::Opcode::Store:
         if (!reg_ok(insn.b) || !mem_ok(insn.a)) { trap = Trap::InvalidMemory; break; }
         {
@@ -495,6 +526,65 @@ class Interpreter : public IVirtualMachine {
         }
         update_flags(state_.registers[insn.a]);
         break;
+      case t81::tisc::Opcode::StackAlloc: {
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        if (insn.b < 0) { trap = Trap::IllegalInstruction; break; }
+        std::size_t size = static_cast<std::size_t>(insn.b);
+        std::size_t available = state_.sp - state_.layout.code_limit;
+        if (size > available) { trap = Trap::BoundsFault; break; }
+        std::size_t new_sp = state_.sp - size;
+        std::int64_t addr = static_cast<std::int64_t>(new_sp);
+        state_.stack_frames.emplace_back(addr, static_cast<std::int64_t>(size));
+        state_.sp = new_sp;
+        set_reg(insn.a, addr, ValueTag::Int);
+        update_flags(addr);
+        break;
+      }
+      case t81::tisc::Opcode::StackFree: {
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        if (insn.b < 0) { trap = Trap::IllegalInstruction; break; }
+        if (state_.stack_frames.empty()) { trap = Trap::BoundsFault; break; }
+        std::size_t size = static_cast<std::size_t>(insn.b);
+        std::int64_t ptr = state_.registers[insn.a];
+        auto [expected_addr, expected_size] = state_.stack_frames.back();
+        if (expected_addr != ptr || expected_size != static_cast<std::int64_t>(size)) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        state_.stack_frames.pop_back();
+        state_.sp = static_cast<std::size_t>(ptr + size);
+        break;
+      }
+      case t81::tisc::Opcode::HeapAlloc: {
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        if (insn.b < 0 || static_cast<std::size_t>(insn.b) > state_.layout.heap_limit) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        std::size_t size = static_cast<std::size_t>(insn.b);
+        std::size_t addr = state_.heap_ptr;
+        if (addr + size > state_.layout.heap_limit) { trap = Trap::BoundsFault; break; }
+        state_.heap_frames.emplace_back(static_cast<std::int64_t>(addr), static_cast<std::int64_t>(size));
+        state_.heap_ptr = addr + size;
+        set_reg(insn.a, static_cast<std::int64_t>(addr), ValueTag::Int);
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::HeapFree: {
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        if (insn.b < 0) { trap = Trap::IllegalInstruction; break; }
+        if (state_.heap_frames.empty()) { trap = Trap::BoundsFault; break; }
+        std::size_t size = static_cast<std::size_t>(insn.b);
+        std::int64_t ptr = state_.registers[insn.a];
+        auto [expected_addr, expected_size] = state_.heap_frames.back();
+        if (expected_addr != ptr || expected_size != static_cast<std::int64_t>(size)) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        state_.heap_frames.pop_back();
+        state_.heap_ptr = static_cast<std::size_t>(ptr);
+        break;
+      }
       case t81::tisc::Opcode::TNot:
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
         {
@@ -862,6 +952,21 @@ class Interpreter : public IVirtualMachine {
   const State& state() const override { return state_; }
 
  private:
+  std::int64_t intern_weights_tensor(std::string_view name) {
+    if (name.empty() || !state_.weights_model) return 0;
+    auto key = std::string(name);
+    auto it = state_.weights_tensor_handles.find(key);
+    if (it != state_.weights_tensor_handles.end()) {
+      return it->second;
+    }
+    auto native_it = state_.weights_model->native.find(key);
+    if (native_it == state_.weights_model->native.end()) return 0;
+    state_.weights_tensor_refs.push_back(&native_it->second);
+    auto handle = static_cast<std::int64_t>(state_.weights_tensor_refs.size());
+    state_.weights_tensor_handles.emplace(std::move(key), handle);
+    return handle;
+  }
+
   t81::axion::Verdict eval_axion_call(std::string_view syscall) {
     t81::axion::SyscallContext ctx;
     ctx.caller = "t81vm";

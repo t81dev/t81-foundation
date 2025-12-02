@@ -18,10 +18,18 @@ namespace frontend {
  * @brief Constructs a new Parser.
  * @param lexer The Lexer instance providing the token stream.
  */
-Parser::Parser(Lexer& lexer) : _lexer(lexer) {
+Parser::Parser(Lexer& lexer, std::string source_name)
+    : _lexer(lexer), _source_name(std::move(source_name)) {
     // Prime the pump by fetching the first token. This ensures that `_current`
     // is valid before any parsing methods are called.
     _current = _lexer.next_token();
+}
+
+void Parser::report_error(const Token& token, const std::string& message) {
+    const std::string file = _source_name.empty() ? "<source>" : _source_name;
+    std::cerr << file << ':' << token.line << ':' << token.column
+              << ": error: " << message << '\n';
+    _had_error = true;
 }
 
 /**
@@ -84,8 +92,7 @@ Token Parser::previous() {
 // reports an error and returns a dummy token.
 Token Parser::consume(TokenType type, const char* message) {
     if (check(type)) return advance();
-    _had_error = true;
-    std::cerr << "Parse Error: " << message << " at line " << peek().line << std::endl;
+    report_error(peek(), message);
     return {};
 }
 
@@ -136,10 +143,9 @@ std::unique_ptr<Stmt> Parser::function(const std::string& kind) {
     std::vector<Parameter> parameters;
     if (!check(TokenType::RParen)) {
         do {
-            if (parameters.size() >= 255) {
-                _had_error = true;
-                std::cerr << "Parse Error: Cannot have more than 255 parameters." << std::endl;
-            }
+        if (parameters.size() >= 255) {
+            report_error(peek(), "Cannot have more than 255 parameters.");
+        }
             Token param_name = consume(TokenType::Identifier, "Expect parameter name.");
             consume(TokenType::Colon, "Expect ':' after parameter name.");
             parameters.push_back({param_name, type()});
@@ -219,9 +225,7 @@ std::unique_ptr<Stmt> Parser::statement() {
         return std::make_unique<LoopStmt>(loop_token, loop_bound_kind, loop_bound_value, std::move(body));
     }
     if (saw_annotation) {
-        _had_error = true;
-        std::cerr << "Parse Error: '@bounded' annotation must be followed by a 'loop' statement at line "
-                  << loop_attr.line << std::endl;
+        report_error(loop_attr, "'@bounded' annotation must be followed by a 'loop' statement");
     }
     if (match({TokenType::Return})) {
         Token keyword = previous();
@@ -274,8 +278,7 @@ std::unique_ptr<Expr> Parser::assignment() {
             Token name = var_expr->name;
             return std::make_unique<AssignExpr>(name, std::move(value));
         }
-        _had_error = true;
-        std::cerr << "Parse Error: Invalid assignment target at line " << equals.line << std::endl;
+        report_error(equals, "Invalid assignment target");
     }
     return expr;
 }
@@ -377,8 +380,7 @@ std::unique_ptr<Expr> Parser::primary() {
         return std::make_unique<VariableExpr>(name);
     }
 
-    _had_error = true;
-    std::cerr << "Parse Error: Expect expression at line " << peek().line << std::endl;
+    report_error(peek(), "Expect expression.");
     throw std::runtime_error("Expect expression.");
 }
 
@@ -415,8 +417,7 @@ MatchArm Parser::match_arm() {
     } else if (name == "Err") {
         variant = MatchArm::Variant::Err;
     } else {
-        _had_error = true;
-        std::cerr << "Parse Error: Unsupported match arm variant '" << name << "' at line " << keyword.line << std::endl;
+        report_error(keyword, "Unsupported match arm variant '" + std::string(name) + "'");
         variant = MatchArm::Variant::None;
     }
 
@@ -432,8 +433,7 @@ MatchArm Parser::match_arm() {
         consume(TokenType::RParen, "Expect ')' after match binding.");
     } else {
         if (match({TokenType::LParen})) {
-            _had_error = true;
-            std::cerr << "Parse Error: 'None' match arm does not accept a binding at line " << keyword.line << std::endl;
+            report_error(keyword, "'None' match arm does not accept a binding");
             while (!match({TokenType::RParen}) && !is_at_end()) {
                 advance();
             }
@@ -455,8 +455,7 @@ bool Parser::parse_loop_annotation(LoopStmt::BoundKind& bound_kind,
     attr_token = name;
 
     if (std::string_view{name.lexeme} != "bounded") {
-        _had_error = true;
-        std::cerr << "Parse Error: Unsupported annotation '" << name.lexeme << "' at line " << name.line << std::endl;
+        report_error(name, "Unsupported annotation '" + std::string(name.lexeme) + "'");
     }
 
     consume(TokenType::LParen, "Expect '(' after annotation name.");
@@ -468,8 +467,7 @@ bool Parser::parse_loop_annotation(LoopStmt::BoundKind& bound_kind,
         if (std::string_view{arg.lexeme} == "infinite") {
             bound_kind = LoopStmt::BoundKind::Infinite;
         } else {
-            _had_error = true;
-            std::cerr << "Parse Error: '@bounded' only accepts 'infinite' or an integer at line " << arg.line << std::endl;
+            report_error(arg, "'@bounded' only accepts 'infinite' or an integer");
         }
     } else if (match({TokenType::Integer})) {
         arg = previous();
@@ -477,12 +475,10 @@ bool Parser::parse_loop_annotation(LoopStmt::BoundKind& bound_kind,
             bound_kind = LoopStmt::BoundKind::Static;
             bound_value = std::stoll(std::string(arg.lexeme));
         } catch (const std::exception&) {
-            _had_error = true;
-            std::cerr << "Parse Error: invalid loop bound '" << arg.lexeme << "' at line " << arg.line << std::endl;
+            report_error(arg, std::string("Invalid loop bound '") + std::string(arg.lexeme) + "'");
         }
     } else {
-        _had_error = true;
-        std::cerr << "Parse Error: '@bounded' requires an argument at line " << peek().line << std::endl;
+        report_error(peek(), "'@bounded' requires an argument");
     }
     consume(TokenType::RParen, "Expect ')' after annotation argument.");
 
@@ -500,8 +496,7 @@ std::unique_ptr<GenericTypeExpr> Parser::parse_generic_type(Token name) {
     // Subsequent parameters are constant value expressions.
     while (match({TokenType::Comma})) {
         if (param_count >= 8) {
-            _had_error = true;
-            std::cerr << "Parse Error: Too many generic parameters (max 8) at line " << peek().line << std::endl;
+            report_error(peek(), "Too many generic parameters (max 8)");
             return nullptr;
         }
         parameters[param_count++] = primary();
@@ -519,16 +514,14 @@ std::unique_ptr<TypeExpr> Parser::type() {
         !check(TokenType::Bool) && !check(TokenType::Void) &&
         !check(TokenType::T81BigInt) && !check(TokenType::T81Float) && !check(TokenType::T81Fraction) &&
         !check(TokenType::Vector) && !check(TokenType::Matrix) && !check(TokenType::Tensor) && !check(TokenType::Graph)) {
-        _had_error = true;
-        std::cerr << "Parse Error: Expect type name at line " << peek().line << std::endl;
+        report_error(peek(), "Expect type name");
         return nullptr;
     }
     Token name = advance();
 
     // Explicitly reject legacy angle bracket syntax
     if (peek().type == TokenType::Less) {
-        _had_error = true;
-        std::cerr << "Parse Error: Legacy '<...>' syntax for generics is not supported. Use '[...]' instead. at line " << peek().line << std::endl;
+        report_error(peek(), "Legacy '<...>' syntax for generics is not supported. Use '[...]' instead.");
         return nullptr;
     }
 

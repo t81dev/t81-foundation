@@ -173,7 +173,19 @@ Token Lexer::number() {
 }
 
 Token Lexer::identifier() {
-    while (is_alpha(peek()) || is_digit(peek())) advance();
+    while (true) {
+        char next = peek();
+        if (is_alpha(next) || is_digit(next)) {
+            advance();
+            continue;
+        }
+        if (next == '.' && peek_next() != '.' && peek_next() != '\0' &&
+            (is_alpha(peek_next()) || is_digit(peek_next()))) {
+            advance();
+            continue;
+        }
+        break;
+    }
 
     std::string_view text = make_sv(_token_start, _current);
 

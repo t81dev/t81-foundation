@@ -54,6 +54,8 @@ NativeTensor import_bitnet_b158(std::span<const int8_t> src,
 void save_t81w(const NativeModel& model, const std::filesystem::path& path);
 ModelFile load_t81w(const std::filesystem::path& path);
 
+std::string emit_t81w_module(const ModelFile& mf, const std::string& source_name);
+
 void print_info(const ModelFile& mf);
 std::string format_bytes(uint64_t bytes);
 std::string format_count(uint64_t value);
