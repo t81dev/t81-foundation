@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 
 namespace t81 {
@@ -20,7 +21,7 @@ inline void encode_tryte(const int8_t digits[3], int8_t& value) noexcept {
 
 inline std::array<uint8_t, 32> pack_digits(const int8_t digits[128]) noexcept {
     std::array<uint8_t, 32> bytes{};
-    for (size_t i = 0; i < 32; ++i) {
+    for (int i = 0; i < 32; ++i) {
         uint8_t byte = 0;
         for (int j = 0; j < 4; ++j) {
             int8_t d = digits[i * 4 + j];
@@ -33,7 +34,7 @@ inline std::array<uint8_t, 32> pack_digits(const int8_t digits[128]) noexcept {
 }
 
 inline void unpack_digits(const std::array<uint8_t, 32>& bytes, int8_t digits[128]) noexcept {
-    for (size_t i = 0; i < 32; ++i) {
+    for (int i = 0; i < 32; ++i) {
         uint8_t byte = bytes[i];
         for (int j = 0; j < 4; ++j) {
             uint8_t code = (byte >> (j * 2)) & 0x3;
