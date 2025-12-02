@@ -6,17 +6,11 @@
 namespace t81 {
 
 inline void decode_tryte(int8_t value, int8_t digits[3]) noexcept {
-    bool negative = value < 0;
-    int temp = negative ? -value : value;
+    int v = value + 13;  // shift [-13,+13] → [0,26]
     for (int i = 0; i < 3; ++i) {
-        int rem = temp % 3;
-        digits[i] = (rem == 2) ? -1 : static_cast<int8_t>(rem - 1);
-        temp = (rem == 2) ? (temp / 3 + 1) : (temp / 3);
-    }
-    if (negative) {
-        digits[0] = -digits[0];
-        digits[1] = -digits[1];
-        digits[2] = -digits[2];
+        int t = v % 3;
+        digits[i] = static_cast<int8_t>(t - 1);  // 0→-1,1→0,2→+1
+        v = v / 3;
     }
 }
 

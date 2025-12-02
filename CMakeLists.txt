@@ -348,6 +348,24 @@ if(T81_BUILD_TESTS)
   add_executable(t81_native_conversion_test tests/cpp/test_t81_native_conversion.cpp)
   target_link_libraries(t81_native_conversion_test PRIVATE t81_core)
 
+  add_executable(t81_limb_bohemian_add_test tests/cpp/test_t81_limb_bohemian_add.cpp)
+  target_link_libraries(t81_limb_bohemian_add_test PRIVATE t81_core)
+
+  add_executable(t81_limb_bohemian_mul_test tests/cpp/test_t81_limb_bohemian_mul.cpp)
+  target_link_libraries(t81_limb_bohemian_mul_test PRIVATE t81_core)
+
+  add_executable(t81_limb54_add_test tests/cpp/test_t81_limb54_add.cpp)
+  target_link_libraries(t81_limb54_add_test PRIVATE t81_core)
+
+  add_executable(t81_limb54_booth_mul_test tests/cpp/test_t81_limb54_booth_mul.cpp)
+  target_link_libraries(t81_limb54_booth_mul_test PRIVATE t81_core)
+
+  add_executable(t81_limb_booth_mul_test tests/cpp/test_t81_limb_booth_mul.cpp)
+  target_link_libraries(t81_limb_booth_mul_test PRIVATE t81_core)
+
+  add_executable(t81_limb_add_test tests/cpp/test_t81_limb_add.cpp)
+  target_link_libraries(t81_limb_add_test PRIVATE t81_core)
+
   add_executable(t81_native_arith_test tests/cpp/test_t81_native_arith.cpp)
   target_link_libraries(t81_native_arith_test PRIVATE t81_core)
 
@@ -411,7 +429,13 @@ if(T81_BUILD_TESTS)
     t81_vm_jump_flags_test
     t81_vm_float_fraction_ops_test
     t81_vm_neg_jumps_test
+    t81_limb_bohemian_add_test
+    t81_limb_bohemian_mul_test
+    t81_limb_booth_mul_test
+    t81_limb_add_test
     t81_native_arith_test
+    t81_limb54_add_test
+    t81_limb54_booth_mul_test
     t81_frontend_lexer_test
     t81_frontend_parser_test
     t81_frontend_parser_generics_test

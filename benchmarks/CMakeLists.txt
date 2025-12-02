@@ -24,7 +24,7 @@ if(NOT MSVC)
     list(APPEND BENCHMARK_RUNNER_SOURCES runner/limb_arith_throughput.cpp)
 endif()
 
-add_executable(benchmark_runner ${BENCHMARK_RUNNER_SOURCES})
+  add_executable(benchmark_runner ${BENCHMARK_RUNNER_SOURCES} BM_LimbMul.cpp)
 
 target_link_libraries(benchmark_runner PRIVATE benchmark::benchmark t81_core)
 
