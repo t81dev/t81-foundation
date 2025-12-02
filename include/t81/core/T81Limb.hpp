@@ -80,6 +80,42 @@ namespace detail {
         return table;
     }
     static const auto CARRY_FROM_ZERO = build_carry_from_zero_table();
+
+    struct Booth27Decision { int8_t mul; int8_t shift_trytes; };
+    static constexpr std::array<Booth27Decision, 27 * 27> build_booth27_table() {
+        std::array<Booth27Decision, 27 * 27> table{};
+        for (int b0 = -13; b0 <= 13; ++b0) {
+            for (int b1 = -13; b1 <= 13; ++b1) {
+                int8_t mul = 0;
+                int8_t shift = 0;
+                int pattern = b0 + 3 * b1;
+                if (pattern == 1 || pattern == 3) {
+                    mul = 1;
+                } else if (pattern == 2 || pattern == 4) {
+                    mul = 1;
+                    shift = 1;
+                } else if (pattern == -1 || pattern == -3) {
+                    mul = -1;
+                } else if (pattern == -2 || pattern == -4) {
+                    mul = -1;
+                    shift = 1;
+                }
+                table[(b0 + 13) * 27 + (b1 + 13)] = {mul, shift};
+            }
+        }
+        return table;
+    }
+    static const auto BOOTH27_TABLE = build_booth27_table();
+    static std::array<std::array<int8_t, 3>, 27> build_tryte_to_trits_table() {
+        std::array<std::array<int8_t, 3>, 27> table{};
+        for (int i = -13; i <= 13; ++i) {
+            int8_t trits[3];
+            t81::decode_tryte(static_cast<int8_t>(i), trits);
+            table[i + 13] = {trits[0], trits[1], trits[2]};
+        }
+        return table;
+    }
+    static const auto TRYTE_TO_TRITS = build_tryte_to_trits_table();
 } // namespace detail
 
 
@@ -315,6 +351,8 @@ inline T81Limb T81Limb::bohemian_mul(const T81Limb& a, const T81Limb& b) noexcep
     return reference_mul(a, b);
 }
 
+class T81Limb27;
+
 class T81Limb54 {
 public:
     static constexpr int TRITS = 54;
@@ -330,6 +368,7 @@ public:
     [[nodiscard]] static T81Limb54 from_trits(const std::array<int8_t, TRITS>& digits) noexcept;
     [[nodiscard]] constexpr std::pair<T81Limb54, int8_t> addc(const T81Limb54& other) const noexcept;
     [[nodiscard]] T81Limb54 operator*(const T81Limb54& rhs) const noexcept;
+    [[nodiscard]] T81Limb54 operator-(const T81Limb54& rhs) const noexcept;
     [[nodiscard]] static T81Limb54 reference_mul(const T81Limb54& a, const T81Limb54& b) noexcept;
     [[nodiscard]] static std::array<int8_t, TRITS> booth_mul_trits(
         const std::array<int8_t, TRITS>& a,
@@ -340,6 +379,8 @@ public:
         const T81Limb54& a,
         const T81Limb54& b,
         int active_trytes) noexcept;
+    [[nodiscard]] T81Limb54 shift_left_trytes(int count) const noexcept;
+    friend class T81Limb27;
 };
 
 inline T81Limb54 T81Limb54::operator*(const T81Limb54& rhs) const noexcept {
@@ -417,6 +458,21 @@ inline constexpr std::pair<T81Limb54, int8_t> T81Limb54::addc(const T81Limb54& o
 
     const int8_t carry_out = static_cast<int8_t>(detail::CARRY_FROM_ZERO[map_ids[17]]);
     return {result, carry_out};
+}
+
+inline T81Limb54 T81Limb54::operator-(const T81Limb54& rhs) const noexcept {
+    auto lhs_trits = to_trits();
+    auto rhs_trits = rhs.to_trits();
+    std::array<int8_t, TRITS> diff{};
+    int carry = 0;
+    for (int i = 0; i < TRITS; ++i) {
+        int sum = static_cast<int>(lhs_trits[i]) - static_cast<int>(rhs_trits[i]) + carry;
+        if (sum > 1) { sum -= 3; carry = 1; }
+        else if (sum < -1) { sum += 3; carry = -1; }
+        else { carry = 0; }
+        diff[i] = static_cast<int8_t>(sum);
+    }
+    return from_trits(diff);
 }
 
 inline std::array<int8_t, T81Limb54::TRITS> T81Limb54::to_trits() const noexcept {
@@ -581,49 +637,155 @@ inline T81Limb54 T81Limb54::booth_mul_partial(
     return from_trits(product);
 }
 
-inline T81Limb54 T81Limb54::karatsuba(const T81Limb54& x, const T81Limb54& y) noexcept {
-    constexpr int SPLIT = 9;
-    T81Limb54 x0{}, x1{}, y0{}, y1{};
-    for (int i = 0; i < SPLIT; ++i) {
-        x0.trytes_[i] = x.trytes_[i];
-        x1.trytes_[i] = x.trytes_[i + SPLIT];
-        y0.trytes_[i] = y.trytes_[i];
-        y1.trytes_[i] = y.trytes_[i + SPLIT];
+inline T81Limb54 T81Limb54::shift_left_trytes(int count) const noexcept {
+    T81Limb54 shifted{};
+    for (int i = 0; i < TRYTES; ++i) {
+        int target = i + count;
+        if (target < TRYTES) shifted.trytes_[target] = trytes_[i];
+    }
+    return shifted;
+}
+
+// ===================================================================
+// T81Limb27 — 27-trit (9-tryte) minimal limb for high-speed Karatsuba
+// This is the secret sauce. No to_trits/from_trits in hot path.
+// ===================================================================
+class T81Limb27 {
+public:
+    static constexpr int TRITS = 27;
+    static constexpr int TRYTES = 9;
+
+private:
+    alignas(16) int8_t trytes_[TRYTES]{};
+
+public:
+    T81Limb27() noexcept = default;
+
+    static T81Limb27 from_low_27(const T81Limb54& src) noexcept {
+        T81Limb27 lo;
+        for (int i = 0; i < TRYTES; ++i) lo.trytes_[i] = src.trytes_[i];
+        return lo;
     }
 
-    auto z0 = booth_mul_partial(x0, y0, SPLIT);
-    auto z2 = booth_mul_partial(x1, y1, SPLIT);
-    auto mid = booth_mul_partial(x0 + x1, y0 + y1, SPLIT);
+    static T81Limb27 from_high_27(const T81Limb54& src) noexcept {
+        T81Limb27 hi;
+        for (int i = 0; i < TRYTES; ++i) hi.trytes_[i] = src.trytes_[i + TRYTES];
+        return hi;
+    }
 
-    auto subtract_trits = [](const std::array<int8_t, TRITS>& lhs,
-                             const std::array<int8_t, TRITS>& rhs) {
-        std::array<int8_t, TRITS> out{};
+    [[nodiscard]] constexpr T81Limb27 operator+(const T81Limb27& other) const noexcept {
+        return addc(other).first;
+    }
+
+    [[nodiscard]] constexpr std::pair<T81Limb27, int8_t> addc(const T81Limb27& other) const noexcept {
+        T81Limb27 result;
+        std::array<int, TRYTES> map_ids{};
+        std::array<std::array<int8_t, 3>, TRYTES> sum_vals{};
+
+        for (int i = 0; i < TRYTES; ++i) {
+            const auto& e = detail::ADD_TABLE[trytes_[i] + 13][other.trytes_[i] + 13];
+            map_ids[i] = (e.cout[0] + 1) + 3 * (e.cout[1] + 1) + 9 * (e.cout[2] + 1);
+            sum_vals[i] = {e.sum_value[0], e.sum_value[1], e.sum_value[2]};
+        }
+
+        for (int i = 1; i < TRYTES; ++i) map_ids[i] = detail::COMPOSITION_TABLE[map_ids[i]][map_ids[i - 1]];
+        for (int i = 2; i < TRYTES; ++i) map_ids[i] = detail::COMPOSITION_TABLE[map_ids[i]][map_ids[i - 2]];
+        for (int i = 4; i < TRYTES; ++i) map_ids[i] = detail::COMPOSITION_TABLE[map_ids[i]][map_ids[i - 4]];
+
+        const int8_t carries[TRYTES] = {
+            0,
+            static_cast<int8_t>(detail::CARRY_FROM_ZERO[map_ids[0]]),
+            static_cast<int8_t>(detail::CARRY_FROM_ZERO[map_ids[1]]),
+            static_cast<int8_t>(detail::CARRY_FROM_ZERO[map_ids[2]]),
+            static_cast<int8_t>(detail::CARRY_FROM_ZERO[map_ids[3]]),
+            static_cast<int8_t>(detail::CARRY_FROM_ZERO[map_ids[4]]),
+            static_cast<int8_t>(detail::CARRY_FROM_ZERO[map_ids[5]]),
+            static_cast<int8_t>(detail::CARRY_FROM_ZERO[map_ids[6]]),
+            static_cast<int8_t>(detail::CARRY_FROM_ZERO[map_ids[7]])
+        };
+
+        for (int i = 0; i < TRYTES; ++i) {
+            result.trytes_[i] = sum_vals[i][carries[i] + 1];
+        }
+
+        const int8_t carry_out = static_cast<int8_t>(detail::CARRY_FROM_ZERO[map_ids[8]]);
+        return {result, carry_out};
+    }
+
+    [[nodiscard]] T81Limb54 operator*(const T81Limb27& rhs) const noexcept {
+        std::array<int, T81Limb54::TRITS> accum{};
+        std::array<std::array<int8_t, 3>, TRYTES> a_trits{};
+        for (int j = 0; j < TRYTES; ++j) {
+            int idx = trytes_[j] + 13;
+            a_trits[j] = detail::TRYTE_TO_TRITS[idx];
+        }
+
+        for (int i = 0; i < TRYTES; ++i) {
+            int8_t b0 = rhs.trytes_[i];
+            int8_t b1 = (i + 1 < TRYTES) ? rhs.trytes_[i + 1] : 0;
+            const auto decision = detail::BOOTH27_TABLE[(b0 + 13) * 27 + (b1 + 13)];
+            if (decision.mul == 0) continue;
+            int shift_trits = decision.shift_trytes * 3;
+            for (int j = 0; j < TRYTES; ++j) {
+                if (trytes_[j] == 0) continue;
+                int base = j * 3 + shift_trits;
+                if (base + 2 >= T81Limb54::TRITS) break;
+                accum[base + 0] += decision.mul * a_trits[j][0];
+                accum[base + 1] += decision.mul * a_trits[j][1];
+                accum[base + 2] += decision.mul * a_trits[j][2];
+            }
+        }
+
         int carry = 0;
-        for (int i = 0; i < TRITS; ++i) {
-            int diff = static_cast<int>(lhs[i]) - static_cast<int>(rhs[i]) + carry;
-            if (diff > 1) { diff -= 3; carry = 1; }
-            else if (diff < -1) { diff += 3; carry = -1; }
-            else { carry = 0; }
-            out[i] = static_cast<int8_t>(diff);
+        for (int i = 0; i < T81Limb54::TRITS; ++i) {
+            int sum = accum[i] + carry;
+            if (sum >= 2) {
+                accum[i] = sum - 3;
+                carry = 1;
+            } else if (sum <= -2) {
+                accum[i] = sum + 3;
+                carry = -1;
+            } else {
+                accum[i] = sum;
+                carry = 0;
+            }
         }
-        return out;
-    };
 
-    auto mid_trits = mid.to_trits();
-    auto z1_trits = subtract_trits(subtract_trits(mid_trits, z0.to_trits()), z2.to_trits());
-    T81Limb54 z1 = T81Limb54::from_trits(z1_trits);
-
-    auto shift_trytes = [](const T81Limb54& limb, int offset) {
-        T81Limb54 shifted{};
-        for (int i = 0; i < T81Limb54::TRYTES - offset; ++i) {
-            shifted.trytes_[i + offset] = limb.trytes_[i];
+        std::array<int8_t, T81Limb54::TRITS> result{};
+        carry = 0;
+        for (int i = 0; i < T81Limb54::TRITS; ++i) {
+            int sum = accum[i] + carry;
+            if (sum == 2) {
+                result[i] = -1;
+                carry = 1;
+            } else if (sum == -2) {
+                result[i] = 1;
+                carry = -1;
+            } else {
+                result[i] = static_cast<int8_t>(sum);
+                carry = 0;
+            }
         }
-        return shifted;
-    };
+        return T81Limb54::from_trits(result);
+    }
+};
+
+inline T81Limb54 T81Limb54::karatsuba(const T81Limb54& x, const T81Limb54& y) noexcept {
+    constexpr int SPLIT = 9;
+    auto x0 = T81Limb27::from_low_27(x);
+    auto x1 = T81Limb27::from_high_27(x);
+    auto y0 = T81Limb27::from_low_27(y);
+    auto y1 = T81Limb27::from_high_27(y);
+
+    auto z0 = T81Limb54(x0 * y0);
+    auto z2 = T81Limb54(x1 * y1);
+    auto mid = T81Limb54((x0 + x1) * (y0 + y1));
+    auto z1 = (mid - z0) - z2;
 
     T81Limb54 result = z0;
-    result = result + shift_trytes(z1, SPLIT);
-    result = result + shift_trytes(z2, SPLIT * 2);
+    constexpr int SHIFT = SPLIT;
+    result = result + z1.shift_left_trytes(SHIFT);
+    result = result + z2.shift_left_trytes(SHIFT * 2);
     return result;
 }
 
