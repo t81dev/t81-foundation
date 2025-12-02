@@ -21,6 +21,8 @@
 #include <sys/wait.h>
 #endif
 
+#include "t81/cli/driver.hpp"
+#include "t81/cli/logging.hpp"
 #include "t81/frontend/lexer.hpp"
 #include "t81/frontend/parser.hpp"
 #include "t81/frontend/semantic_analyzer.hpp"
@@ -34,24 +36,6 @@
 namespace fs = std::filesystem;
 
 // ──────────────────────────────────────────────────────────────
-// VM Trap to_string helper
-// ──────────────────────────────────────────────────────────────
-namespace t81::vm {
-std::string to_string(Trap trap) {
-    switch (trap) {
-        case Trap::None: return "None";
-        case Trap::InvalidMemory: return "InvalidMemory";
-        case Trap::IllegalInstruction: return "IllegalInstruction";
-        case Trap::DivideByZero: return "DivideByZero";
-        case Trap::BoundsFault: return "BoundsFault";
-        case Trap::SecurityFault: return "SecurityFault";
-        case Trap::TrapInstruction: return "TrapInstruction";
-    }
-    return "UnknownTrap";
-}
-}
-
-// ──────────────────────────────────────────────────────────────
 // Version & Build Info
 // ──────────────────────────────────────────────────────────────
 #define STR(x) #x
@@ -60,20 +44,6 @@ std::string to_string(Trap trap) {
 constexpr const char* T81_VERSION      = "1.0.0-SOVEREIGN";
 constexpr const char* T81_BUILD_DATE   = __DATE__ " " __TIME__;
 constexpr const char* T81_FULL_VERSION = "T81 Foundation 1.0.0-SOVEREIGN (" __DATE__ " " __TIME__ ")";
-
-// ──────────────────────────────────────────────────────────────
-// Global Flags
-// ──────────────────────────────────────────────────────────────
-struct Flags {
-    bool verbose = false;
-    bool quiet   = false;
-};
-
-static Flags g_flags;
-
-// ──────────────────────────────────────────────────────────────
-// Utility: Scoped Temporary File
-// ──────────────────────────────────────────────────────────────
 struct TempTiscFile {
     fs::path path;
 
@@ -93,27 +63,6 @@ struct TempTiscFile {
         fs::remove(path, ec);  // best-effort cleanup
     }
 };
-
-// ──────────────────────────────────────────────────────────────
-// Logging Helpers
-// ──────────────────────────────────────────────────────────────
-inline void verbose(std::string_view msg) {
-    if (g_flags.verbose) {
-        std::cerr << "[verbose] " << msg << '\n';
-    }
-}
-
-inline void info(std::string_view msg) {
-    if (!g_flags.quiet) {
-        std::cout << msg << '\n';
-    }
-}
-
-inline void error(std::string_view msg) {
-    if (!g_flags.quiet) {
-        std::cerr << "error: " << msg << '\n';
-    }
-}
 
 // ──────────────────────────────────────────────────────────────
 // Version & Help
@@ -152,150 +101,21 @@ Global options:
   -q, --quiet                          Suppress non-error output
   -h, --help                           Show help
 
+Diagnostics:
+  `t81 compile` now prints any semantic or parsing errors with the originating
+  source file, line, and column so you can jump directly to the issue without
+  rerunning separate diagnostics.
+
 )";
 }
 
 // ──────────────────────────────────────────────────────────────
 // VM Trap → Exit Code
 // ──────────────────────────────────────────────────────────────
-int trap_exit_code(t81::vm::Trap trap) {
-    using T = t81::vm::Trap;
-    switch (trap) {
-        case T::None:               return 0;
-        case T::DivideByZero:       return 10;
-        case T::InvalidMemory:      return 11;
-        case T::BoundsFault:        return 12;
-        case T::SecurityFault:      return 13;
-        case T::IllegalInstruction: return 14;
-        case T::TrapInstruction:    return 15;
-        default:                    return 1;
-    }
-}
-
 // ──────────────────────────────────────────────────────────────
 // Core Commands
 // ──────────────────────────────────────────────────────────────
-int compile(const fs::path& input, const fs::path& output) {
-    verbose("Compiling " + input.string() + " → " + output.string());
-
-    if (!fs::exists(input)) {
-        error("Input file not found: " + input.string());
-        return 1;
-    }
-
-    std::string source = [] (const fs::path& p) {
-        std::ifstream f(p, std::ios::binary);
-        if (!f) throw std::runtime_error("Failed to open source file");
-        std::ostringstream ss;
-        ss << f.rdbuf();
-        return ss.str();
-    }(input);
-
-    verbose("Lexing...");
-    t81::frontend::Lexer lexer(source);
-    auto tokens = lexer.all_tokens();
-
-    bool lexer_error = false;
-    for (const auto& t : tokens) {
-        if (t.type == t81::frontend::TokenType::Illegal) {
-            lexer_error = true;
-            std::cerr << input.string() << ':' << t.line << ':' << t.column
-                      << ": illegal token `" << t.lexeme << "`\n";
-        }
-    }
-    if (lexer_error) return 1;
-
-    verbose("Parsing...");
-    t81::frontend::Parser parser(lexer);
-    auto stmts = parser.parse();
-    if (parser.had_error()) {
-        error("Parse errors encountered");
-        return 1;
-    }
-
-    verbose("Semantic analysis...");
-    t81::frontend::SemanticAnalyzer semantic_analyzer(stmts);
-    semantic_analyzer.analyze();
-    if (semantic_analyzer.had_error()) {
-        error("Semantic errors encountered");
-        return 1;
-    }
-
-    verbose("Generating IR...");
-    t81::frontend::IRGenerator ir_gen;
-    ir_gen.attach_semantic_analyzer(&semantic_analyzer);
-    auto ir = ir_gen.generate(stmts);
-
-    verbose("Emitting TISC bytecode...");
-    t81::tisc::BinaryEmitter emitter;
-    auto program = emitter.emit(ir);
-
-    verbose("Writing " + output.string());
-    t81::tisc::save_program(program, output.string());
-
-    info("Compilation successful → " + output.string());
-    verbose(std::to_string(program.insns.size()) + " instructions emitted");
-    return 0;
-}
-
-int run_tisc(const fs::path& path) {
-    verbose("Loading TISC program: " + path.string());
-
-    auto program = t81::tisc::load_program(path.string());
-    verbose("Program loaded (" + std::to_string(program.insns.size()) + " insns)");
-
-    auto vm = t81::vm::make_interpreter_vm();
-    vm->load_program(program);
-
-    verbose("Executing...");
-    auto result = vm->run_to_halt();
-
-    if (!result) {
-        error("Execution trapped: " + t81::vm::to_string(result.error()));
-        return trap_exit_code(result.error());
-    }
-
-    info("Program terminated normally");
-    return 0;
-}
-
-int check_syntax(const fs::path& path) {
-    verbose("Syntax-checking " + path.string());
-
-    std::string source = [] (const fs::path& p) {
-        std::ifstream f(p);
-        if (!f) throw std::runtime_error("Cannot open file");
-        std::ostringstream ss;
-        ss << f.rdbuf();
-        return ss.str();
-    }(path);
-
-    t81::frontend::Lexer lexer(source);
-    auto tokens = lexer.all_tokens();
-
-    bool ok = true;
-    for (const auto& t : tokens) {
-        if (t.type == t81::frontend::TokenType::Illegal) {
-            ok = false;
-            std::cerr << path.string() << ':' << t.line << ':' << t.column
-                      << ": illegal token `" << t.lexeme << "`\n";
-        }
-    }
-    if (!ok) {
-        error("Lexing failed");
-        return 1;
-    }
-
-    t81::frontend::Parser parser(lexer);
-    parser.parse();
-    if (parser.had_error()) {
-        error("Syntax errors found");
-        return 1;
-    }
-
-    info("No syntax errors");
-    return 0;
-}
+// Implemented in src/cli/driver.cpp
 
 std::string shell_escape(std::string_view arg) {
     if (arg.empty()) {
@@ -590,16 +410,16 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
             fs::path out = args.output.value_or(args.input.stem().string() + ".tisc");
-            return compile(args.input, out);
+            return t81::cli::compile(args.input, out);
 
         } else if (args.command == "run") {
             if (ext == ".t81") {
                 TempTiscFile temp(args.input.stem().string());
-                int rc = compile(args.input, temp.path);
+                int rc = t81::cli::compile(args.input, temp.path);
                 if (rc != 0) return rc;
-                return run_tisc(temp.path);
+                return t81::cli::run_tisc(temp.path);
             } else if (ext == ".tisc") {
-                return run_tisc(args.input);
+                return t81::cli::run_tisc(args.input);
             } else {
                 error("run expects .t81 or .tisc file");
                 return 1;
@@ -610,7 +430,7 @@ int main(int argc, char* argv[]) {
                 error("check expects a .t81 source file");
                 return 1;
             }
-            return check_syntax(args.input);
+            return t81::cli::check_syntax(args.input);
 
         } else if (args.command == "benchmark") {
             return run_benchmark(argv[0], args);

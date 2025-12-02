@@ -62,12 +62,22 @@ struct SemanticSymbol {
     bool is_defined = false;        // Functions get declared first, defined later
 };
 
+struct Diagnostic {
+    std::string file;
+    int line = 0;
+    int column = 0;
+    std::string message;
+};
+
 class SemanticAnalyzer : public StmtVisitor, public ExprVisitor {
     friend class IRGenerator;
 public:
-    explicit SemanticAnalyzer(const std::vector<std::unique_ptr<Stmt>>& statements);
+    explicit SemanticAnalyzer(const std::vector<std::unique_ptr<Stmt>>& statements,
+                              std::string source_name = {});
     void analyze();
     bool had_error() const { return _had_error; }
+    const std::vector<Diagnostic>& diagnostics() const { return _diagnostics; }
+    const std::string& source_name() const { return _source_name; }
 
     // Visitor methods for statements
     std::any visit(const ExpressionStmt& stmt) override;
@@ -76,6 +86,7 @@ public:
     std::any visit(const BlockStmt& stmt) override;
     std::any visit(const IfStmt& stmt) override;
     std::any visit(const WhileStmt& stmt) override;
+    std::any visit(const LoopStmt& stmt) override;
     std::any visit(const ReturnStmt& stmt) override;
     std::any visit(const FunctionStmt& stmt) override;
 
@@ -91,10 +102,33 @@ public:
     std::any visit(const SimpleTypeExpr& expr) override;
     std::any visit(const GenericTypeExpr& expr) override;
 
+    struct LoopMetadata {
+        const LoopStmt* stmt = nullptr;
+        Token keyword{};
+        LoopStmt::BoundKind bound_kind = LoopStmt::BoundKind::None;
+        std::optional<std::int64_t> bound_value;
+        int depth = 0;
+        int id = 0;
+        std::string source_file;
+
+        bool annotated() const { return bound_kind != LoopStmt::BoundKind::None; }
+        bool bound_infinite() const { return bound_kind == LoopStmt::BoundKind::Infinite; }
+    };
+
+    const std::vector<LoopMetadata>& loop_metadata() const { return _loop_metadata; }
+    const LoopMetadata* loop_metadata_for(const LoopStmt& stmt) const;
+
 private:
     const std::vector<std::unique_ptr<Stmt>>& _statements;
     bool _had_error = false;
     std::vector<Type> _function_return_stack;
+    std::vector<Diagnostic> _diagnostics;
+    std::string _source_name;
+
+    std::vector<LoopMetadata> _loop_metadata;
+    std::unordered_map<const LoopStmt*, size_t> _loop_index;
+    std::vector<const LoopStmt*> _loop_stack;
+    int _next_loop_id = 0;
 
     // Scoped symbol table
     using Scope = std::unordered_map<std::string, SemanticSymbol>;
@@ -137,6 +171,8 @@ private:
     bool is_fraction_type(const Type& type) const;
     bool is_primitive_numeric_type(const Type& type) const;
     std::optional<Type> deduce_numeric_type(const Type& left, const Type& right, const Token& op);
+    Type refine_generic_type(const Type& declared, const Type& initializer) const;
+    void merge_expected_params(Type& target, const Type* expected) const;
 };
 
 } // namespace frontend

@@ -41,8 +41,8 @@ int main() {
         fn main() -> i32 {
             let maybe: Option[i32] = Some(10);
             let value: i32 = match (maybe) {
-                Some(v) => v + 1,
-                None => 0,
+                Some(v) => v + 1;
+                None => 0;
             };
             return value;
         }
@@ -53,19 +53,55 @@ int main() {
         fn main() -> i32 {
             let maybe: Option[i32] = Some(1);
             match (maybe) {
-                Some(v) => v,
+                Some(v) => v;
             };
             return 0;
         }
     )";
     expect_semantic_failure(missing_none);
 
+    const std::string missing_some = R"(
+        fn main() -> i32 {
+            let maybe: Option[i32] = None;
+            match (maybe) {
+                None => 0;
+            };
+            return 0;
+        }
+    )";
+    expect_semantic_failure(missing_some);
+
+    const std::string duplicate_some = R"(
+        fn main() -> i32 {
+            let maybe: Option[i32] = Some(1);
+            match (maybe) {
+                Some(v) => v;
+                Some(w) => w;
+                None => 0;
+            };
+            return 0;
+        }
+    )";
+    expect_semantic_failure(duplicate_some);
+
+    const std::string invalid_option_variant = R"(
+        fn main() -> i32 {
+            let maybe: Option[i32] = Some(2);
+            match (maybe) {
+                Ok(v) => v;
+                None => 0;
+            };
+            return 0;
+        }
+    )";
+    expect_semantic_failure(invalid_option_variant);
+
     const std::string mismatched_arm = R"(
         fn main() -> i32 {
             let maybe: Option[i32] = Some(1);
             let result: i32 = match (maybe) {
-                Some(v) => v,
-                None => true,
+                Some(v) => v;
+                None => true;
             };
             return result;
         }
@@ -75,8 +111,8 @@ int main() {
     const std::string invalid_scrutinee = R"(
         fn main() -> i32 {
             let value: i32 = match (1) {
-                Some(v) => v,
-                None => 0,
+                Some(v) => v;
+                None => 0;
             };
             return value;
         }
@@ -87,8 +123,8 @@ int main() {
         fn main() -> Result[i32, T81String] {
             let data: Result[i32, T81String] = Ok(5);
             return match (data) {
-                Ok(v) => Ok(v + 1),
-                Err(e) => Err(e),
+                Ok(v) => Ok(v + 1);
+                Err(e) => Err(e);
             };
         }
     )";
@@ -98,12 +134,48 @@ int main() {
         fn main() -> Result[i32, T81String] {
             let data: Result[i32, T81String] = Ok(5);
             match (data) {
-                Ok(v) => Ok(v),
+                Ok(v) => Ok(v);
             };
             return Err("boom");
         }
     )";
     expect_semantic_failure(missing_err);
+
+    const std::string missing_ok = R"(
+        fn main() -> Result[i32, T81String] {
+            let data: Result[i32, T81String] = Err("boom");
+            match (data) {
+                Err(e) => Err(e);
+            };
+            return Ok(0);
+        }
+    )";
+    expect_semantic_failure(missing_ok);
+
+    const std::string duplicate_err = R"(
+        fn main() -> Result[i32, T81String] {
+            let data: Result[i32, T81String] = Ok(5);
+            match (data) {
+                Ok(v) => Ok(v);
+                Err(e) => Err(e);
+                Err(e2) => Err(e2);
+            };
+            return Ok(0);
+        }
+    )";
+    expect_semantic_failure(duplicate_err);
+
+    const std::string invalid_result_variant = R"(
+        fn main() -> Result[i32, T81String] {
+            let data: Result[i32, T81String] = Ok(5);
+            match (data) {
+                Some(v) => Ok(v);
+                Err(e) => Err(e);
+            };
+            return Ok(0);
+        }
+    )";
+    expect_semantic_failure(invalid_result_variant);
 
     std::cout << "Semantic analyzer match tests passed!" << std::endl;
     return 0;

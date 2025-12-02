@@ -58,6 +58,8 @@ t81 benchmark [benchmark flags]
 t81 weights import <safetensors|gguf> [...]
 ```
 
+- Semantic errors reported by `t81 compile` now include a `file:line:column` snippet so you can locate the problem immediately.
+
 - Running `t81 compile`/`run` exercises the frontend→TISC→VM pipeline covered in `ARCHITECTURE.md`.
 - `t81 weights quantize … --to-gguf` produces GGUF models for `llama.cpp`.
 - Inspect CLI help with `./build/t81 --help`.

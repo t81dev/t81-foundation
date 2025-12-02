@@ -79,6 +79,8 @@ t81 weights info <model.t81w>
 t81 weights quantize <dir|file.safetensors> --to-gguf <out.gguf>
 ```
 
+> Diagnostics: semantic and parsing errors now print the source file, line, and column.
+
 Weights tooling highlights:
 - `weights import` converts BitNet/SafeTensors/GGUF to the canonical `.t81w` with SHA3-512 metadata and density stats.
 - `weights info` prints trits, limbs, storage (bits/trit), sparsity, format, checksum, and canonical CanonFS hints.
@@ -88,7 +90,7 @@ Weights tooling highlights:
 
 | Command | What it does |
 | --- | --- |
-| `t81 compile` | Compile a `.t81` source file to TISC bytecode with diagnostics. |
+| `t81 compile` | Compile a `.t81` source file to TISC bytecode; semantic errors now include `file:line:column`. |
 | `t81 run` | Compile (if needed) and execute TISC programs inside the HanoiVM. |
 | `t81 check` | Fast syntax-only validation of T81 source. |
 | `t81 benchmark` | Runs `benchmarks/benchmark_runner`, updates `docs/benchmarks.md` with Classic/Native/Binary stats and highlights. |

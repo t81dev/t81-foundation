@@ -9,8 +9,20 @@
 
 namespace t81::axion {
 struct Policy {
+  struct LoopHint {
+    int id{0};
+    std::string file;
+    int line{0};
+    int column{0};
+    bool annotated{false};
+    int depth{0};
+    bool bound_infinite{false};
+    std::optional<std::int64_t> bound_value;
+  };
+
   int tier{1};
   std::optional<std::int64_t> max_stack;
+  std::vector<LoopHint> loops;
 };
 
 namespace detail {
@@ -121,6 +133,69 @@ inline t81::expected<Policy, std::string> parse_policy(std::string_view text) {
       if (tok.kind != detail::PolicyToken::Kind::RParen) {
         return make_error("expected ')'");
       }
+      continue;
+    }
+    if (key.text == "loop") {
+      Policy::LoopHint hint;
+      while (true) {
+        auto field_open = lex.next();
+        if (field_open.kind == detail::PolicyToken::Kind::RParen) break;
+        if (field_open.kind != detail::PolicyToken::Kind::LParen) {
+          return make_error("expected '(' before loop field");
+        }
+        auto field = lex.next();
+        if (field.kind != detail::PolicyToken::Kind::Symbol) {
+          return make_error("expected loop field symbol");
+        }
+        auto val = lex.next();
+        if (val.kind == detail::PolicyToken::Kind::End) {
+          return make_error("unterminated loop clause");
+        }
+        if (field.text == "id") {
+          if (val.kind != detail::PolicyToken::Kind::Integer) {
+            return make_error("loop id requires integer");
+          }
+          hint.id = static_cast<int>(val.value);
+        } else if (field.text == "file") {
+          if (val.kind != detail::PolicyToken::Kind::Symbol) {
+            return make_error("loop file requires symbol");
+          }
+          hint.file = val.text;
+        } else if (field.text == "line") {
+          if (val.kind != detail::PolicyToken::Kind::Integer) {
+            return make_error("loop line requires integer");
+          }
+          hint.line = static_cast<int>(val.value);
+        } else if (field.text == "column") {
+          if (val.kind != detail::PolicyToken::Kind::Integer) {
+            return make_error("loop column requires integer");
+          }
+          hint.column = static_cast<int>(val.value);
+        } else if (field.text == "annotated") {
+          if (val.kind != detail::PolicyToken::Kind::Symbol) {
+            return make_error("loop annotated requires symbol");
+          }
+          hint.annotated = (val.text == "true");
+        } else if (field.text == "depth") {
+          if (val.kind != detail::PolicyToken::Kind::Integer) {
+            return make_error("loop depth requires integer");
+          }
+          hint.depth = static_cast<int>(val.value);
+        } else if (field.text == "bound") {
+          if (val.kind == detail::PolicyToken::Kind::Symbol && val.text == "infinite") {
+            hint.bound_infinite = true;
+          } else if (val.kind == detail::PolicyToken::Kind::Integer) {
+            hint.bound_value = val.value;
+          } else {
+            return make_error("loop bound must be 'infinite' or integer");
+          }
+        }
+        auto field_close = lex.next();
+        if (field_close.kind != detail::PolicyToken::Kind::RParen) {
+          return make_error("expected ')' after loop field");
+        }
+      }
+      policy.loops.push_back(hint);
       continue;
     }
     // Unknown clause -> skip forms deterministically.

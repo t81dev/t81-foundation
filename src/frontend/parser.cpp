@@ -190,6 +190,10 @@ std::unique_ptr<Stmt> Parser::let_declaration() {
 // Parses a statement.
 // statement -> if_stmt | while_stmt | return_stmt | block | expr_stmt ;
 std::unique_ptr<Stmt> Parser::statement() {
+    LoopStmt::BoundKind loop_bound_kind = LoopStmt::BoundKind::None;
+    std::optional<std::int64_t> loop_bound_value;
+    Token loop_attr{};
+    bool saw_annotation = parse_loop_annotation(loop_bound_kind, loop_bound_value, loop_attr);
     if (match({TokenType::If})) {
         consume(TokenType::LParen, "Expect '(' after 'if'.");
         auto condition = expression();
@@ -207,6 +211,17 @@ std::unique_ptr<Stmt> Parser::statement() {
         consume(TokenType::RParen, "Expect ')' after while condition.");
         auto body = statement();
         return std::make_unique<WhileStmt>(std::move(condition), std::move(body));
+    }
+    if (match({TokenType::Loop})) {
+        Token loop_token = previous();
+        consume(TokenType::LBrace, "Expect '{' after 'loop'.");
+        auto body = block();
+        return std::make_unique<LoopStmt>(loop_token, loop_bound_kind, loop_bound_value, std::move(body));
+    }
+    if (saw_annotation) {
+        _had_error = true;
+        std::cerr << "Parse Error: '@bounded' annotation must be followed by a 'loop' statement at line "
+                  << loop_attr.line << std::endl;
     }
     if (match({TokenType::Return})) {
         Token keyword = previous();
@@ -343,6 +358,9 @@ std::unique_ptr<Expr> Parser::primary() {
 
     if (match({TokenType::Identifier})) {
         Token name = previous();
+        if (check(TokenType::LBracket)) {
+            return parse_generic_type(name);
+        }
         // This is a variable access, but it might be the callee of a function call.
         // The `call` grammar rule was removed for simplicity in this version,
         // but a more robust parser would handle it to support `my_func()()`.
@@ -373,9 +391,10 @@ std::unique_ptr<Expr> Parser::match_expression() {
     std::vector<MatchArm> arms;
     while (!check(TokenType::RBrace) && !is_at_end()) {
         arms.push_back(match_arm());
-        if (!match({TokenType::Comma})) {
-            break;
+        if (match({TokenType::Semicolon, TokenType::Comma})) {
+            continue;
         }
+        break;
     }
 
     consume(TokenType::RBrace, "Expect '}' after match arms.");
@@ -426,6 +445,72 @@ MatchArm Parser::match_arm() {
     return MatchArm(variant, keyword, has_binding, binding, binding_is_wildcard, std::move(body));
 }
 
+bool Parser::parse_loop_annotation(LoopStmt::BoundKind& bound_kind,
+                                  std::optional<std::int64_t>& bound_value,
+                                  Token& attr_token) {
+    if (!match({TokenType::At})) {
+        return false;
+    }
+    Token name = consume(TokenType::Identifier, "Expect attribute name after '@'.");
+    attr_token = name;
+
+    if (std::string_view{name.lexeme} != "bounded") {
+        _had_error = true;
+        std::cerr << "Parse Error: Unsupported annotation '" << name.lexeme << "' at line " << name.line << std::endl;
+    }
+
+    consume(TokenType::LParen, "Expect '(' after annotation name.");
+    bound_kind = LoopStmt::BoundKind::None;
+    bound_value.reset();
+    Token arg;
+    if (match({TokenType::Identifier})) {
+        arg = previous();
+        if (std::string_view{arg.lexeme} == "infinite") {
+            bound_kind = LoopStmt::BoundKind::Infinite;
+        } else {
+            _had_error = true;
+            std::cerr << "Parse Error: '@bounded' only accepts 'infinite' or an integer at line " << arg.line << std::endl;
+        }
+    } else if (match({TokenType::Integer})) {
+        arg = previous();
+        try {
+            bound_kind = LoopStmt::BoundKind::Static;
+            bound_value = std::stoll(std::string(arg.lexeme));
+        } catch (const std::exception&) {
+            _had_error = true;
+            std::cerr << "Parse Error: invalid loop bound '" << arg.lexeme << "' at line " << arg.line << std::endl;
+        }
+    } else {
+        _had_error = true;
+        std::cerr << "Parse Error: '@bounded' requires an argument at line " << peek().line << std::endl;
+    }
+    consume(TokenType::RParen, "Expect ')' after annotation argument.");
+
+    return true;
+}
+
+std::unique_ptr<GenericTypeExpr> Parser::parse_generic_type(Token name) {
+    consume(TokenType::LBracket, "Expect '[' after generic type name.");
+    std::array<std::unique_ptr<Expr>, 8> parameters;
+    size_t param_count = 0;
+
+    // First parameter must be a type.
+    parameters[param_count++] = type();
+
+    // Subsequent parameters are constant value expressions.
+    while (match({TokenType::Comma})) {
+        if (param_count >= 8) {
+            _had_error = true;
+            std::cerr << "Parse Error: Too many generic parameters (max 8) at line " << peek().line << std::endl;
+            return nullptr;
+        }
+        parameters[param_count++] = primary();
+    }
+
+    consume(TokenType::RBracket, "Expect ']' after type parameters.");
+    return std::make_unique<GenericTypeExpr>(name, std::move(parameters), param_count);
+}
+
 // Parses a type expression.
 // type -> (IDENTIFIER | primitive_type_keyword) ( "[" type ( "," expression )* "]" )? ;
 std::unique_ptr<TypeExpr> Parser::type() {
@@ -447,26 +532,8 @@ std::unique_ptr<TypeExpr> Parser::type() {
         return nullptr;
     }
 
-    if (match({TokenType::LBracket})) {
-        std::array<std::unique_ptr<Expr>, 8> parameters;
-        size_t param_count = 0;
-
-        // First parameter must be a type.
-        parameters[param_count++] = type();
-
-        // Subsequent parameters are constant value expressions.
-        while (match({TokenType::Comma})) {
-            if (param_count >= 8) {
-                _had_error = true;
-                std::cerr << "Parse Error: Too many generic parameters (max 8) at line " << peek().line << std::endl;
-                return nullptr;
-            }
-            // For now, we parse a primary expression for simplicity, as per the spec's
-            // definition of constant_expression.
-            parameters[param_count++] = primary();
-        }
-        consume(TokenType::RBracket, "Expect ']' after type parameters.");
-        return std::make_unique<GenericTypeExpr>(name, std::move(parameters), param_count);
+    if (check(TokenType::LBracket)) {
+        return parse_generic_type(name);
     }
 
     return std::make_unique<SimpleTypeExpr>(name);

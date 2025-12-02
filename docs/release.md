@@ -17,8 +17,10 @@ ______________________________________________________________________
 
 ## 2. Release Preparation Checklist
 
-1. **Update Changelog:** Append entries to `CHANGELOG.md` summarizing behavioral changes, API additions, and spec deviations. Each entry should link to related issues/RFCs.
-2. **Sync Docs:** Refresh `docs/benchmarks.md`, `docs/onboarding.md`, and `docs/cpp-quickstart.md` if relevant (especially when CLI, tests, or build workflows change).
+1. **Update Changelog & Release Notes:** Document the CLI diagnostic improvements (semantic/parsing errors now include `file:line:column`) in `CHANGELOG.md` and the GitHub release notes so downstream users know what to expect.
+2. **Sync Docs:**
+   - Refresh `docs/benchmarks.md`, `docs/onboarding.md`, and `docs/cpp-quickstart.md` if relevant (especially when CLI, tests, or build workflows change).
+   - While running the release checklist, run `./build/t81 compile path/to/invalid.t81` (with a file that triggers a semantic error) to ensure diagnostics still print the `file:line:column` context described above and update the docs if the output format evolves.
 3. **Run the Core Suite:**
    - `cmake -S . -B build -DCMAKE_BUILD_TYPE=Release`
    - `cmake --build build --parallel`
