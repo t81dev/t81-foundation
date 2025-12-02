@@ -120,6 +120,7 @@ Opcode map_opcode(const ir::Instruction& instr) {
         case O::NOP: return Opcode::Nop;
         case O::HALT: return Opcode::Halt;
         case O::TRAP: return Opcode::Trap;
+        case O::WEIGHTS_LOAD: return Opcode::WeightsLoad;
         default:
             throw std::runtime_error("Unsupported IR opcode in binary emitter.");
     }
@@ -128,6 +129,17 @@ Opcode map_opcode(const ir::Instruction& instr) {
 Program BinaryEmitter::emit(const ir::IntermediateProgram& ir_program) {
     Program program;
     std::unordered_map<int, int> label_addresses;
+    std::unordered_map<std::string, int> symbol_indices;
+    auto ensure_symbol = [&](const std::string& text) -> int {
+        auto it = symbol_indices.find(text);
+        if (it != symbol_indices.end()) {
+            return it->second;
+        }
+        program.symbol_pool.push_back(text);
+        int index = static_cast<int>(program.symbol_pool.size());
+        symbol_indices.emplace(program.symbol_pool.back(), index);
+        return index;
+    };
     int current_address = 0;
 
     // First pass: calculate label addresses
@@ -167,6 +179,12 @@ Program BinaryEmitter::emit(const ir::IntermediateProgram& ir_program) {
                 if (std::holds_alternative<ir::Register>(instr.operands[2])) {
                     vm_insn.c = std::get<ir::Register>(instr.operands[2]).index;
                 }
+            }
+
+            if (instr.text_literal.has_value()) {
+                int symbol_index = ensure_symbol(*instr.text_literal);
+                vm_insn.b = symbol_index;
+                vm_insn.literal_kind = instr.literal_kind;
             }
 
             program.insns.push_back(vm_insn);

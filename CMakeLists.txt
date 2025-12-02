@@ -35,6 +35,7 @@ add_library(t81_core STATIC
   src/hanoi/in_memory_kernel.cpp        # ← fixed path
   src/axion/engine.cpp
   src/tools/weights.cpp
+  src/tools/weights_t81w_emitter.cpp
   src/cog/promotion.cpp
   src/codec/base243.cpp
   src/codec/base81.cpp
@@ -146,6 +147,9 @@ if(T81_BUILD_TESTS)
 
   add_executable(t81_vm_tensor_test tests/cpp/vm_tensor_test.cpp)
   target_link_libraries(t81_vm_tensor_test PRIVATE t81_core)
+
+  add_executable(t81_weights_load_test tests/cpp/weights_load_test.cpp)
+  target_link_libraries(t81_weights_load_test PRIVATE t81_core)
 
   add_executable(t81_hash_stub_test tests/cpp/hash_stub_test.cpp)
   target_link_libraries(t81_hash_stub_test PRIVATE t81_core)
@@ -395,6 +399,7 @@ if(T81_BUILD_TESTS)
     t81_vm_bounds_test
     t81_vm_tensor_test
     t81_canonfs_driver_test
+    t81_weights_load_test
     t81_vm_trace_test
     t81_vm_jump_flags_test
     t81_vm_float_fraction_ops_test

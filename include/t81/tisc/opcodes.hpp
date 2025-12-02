@@ -69,5 +69,6 @@ enum class Opcode : std::uint8_t {
   GreaterEqual = 61,
   Equal = 62,
   NotEqual = 63,
+  WeightsLoad,
 };
 }  // namespace t81::tisc

@@ -7,13 +7,14 @@
 #include <memory>
 #include <optional>
 #include <cstdint>
+#include <string>
 
 namespace t81 {
 namespace frontend {
 
 class Parser {
 public:
-    Parser(Lexer& lexer);
+    Parser(Lexer& lexer, std::string source_name = {});
 
     std::vector<std::unique_ptr<Stmt>> parse();
 
@@ -59,6 +60,8 @@ private:
     Token _current;
     Token _previous;
     bool _had_error = false;
+    std::string _source_name;
+    void report_error(const Token& token, const std::string& message);
 };
 
 } // namespace frontend

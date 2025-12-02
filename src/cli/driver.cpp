@@ -7,6 +7,7 @@
 #include "t81/tisc/binary_emitter.hpp"
 #include "t81/tisc/binary_io.hpp"
 #include "t81/vm/vm.hpp"
+#include "t81/weights.hpp"
 
 #include <cctype>
 #include <filesystem>
@@ -102,21 +103,31 @@ std::string format_loop_metadata(const std::vector<t81::frontend::SemanticAnalyz
 
 namespace t81::cli {
 
-int compile(const fs::path& input, const fs::path& output) {
+int compile(const fs::path& input,
+            const fs::path& output,
+            const std::string& source_override,
+            const std::string& source_name,
+            std::shared_ptr<t81::weights::ModelFile> weights_model) {
     verbose("Compiling " + input.string() + " → " + output.string());
 
-    if (!fs::exists(input)) {
-        error("Input file not found: " + input.string());
-        return 1;
-    }
+    std::string diag_name = source_name.empty() ? input.string() : source_name;
+    std::string source;
+    if (source_override.empty()) {
+        if (!fs::exists(input)) {
+            error("Input file not found: " + input.string());
+            return 1;
+        }
 
-    std::string source = [] (const fs::path& p) {
-        std::ifstream f(p, std::ios::binary);
-        if (!f) throw std::runtime_error("Failed to open source file");
-        std::ostringstream ss;
-        ss << f.rdbuf();
-        return ss.str();
-    }(input);
+        source = [] (const fs::path& p) {
+            std::ifstream f(p, std::ios::binary);
+            if (!f) throw std::runtime_error("Failed to open source file");
+            std::ostringstream ss;
+            ss << f.rdbuf();
+            return ss.str();
+        }(input);
+    } else {
+        source = source_override;
+    }
 
     verbose("Lexing...");
     t81::frontend::Lexer lexer(source);
@@ -126,7 +137,7 @@ int compile(const fs::path& input, const fs::path& output) {
     for (const auto& t : tokens) {
         if (t.type == t81::frontend::TokenType::Illegal) {
             lexer_error = true;
-            std::cerr << input.string() << ':' << t.line << ':' << t.column
+            std::cerr << diag_name << ':' << t.line << ':' << t.column
                       << ": illegal token `" << t.lexeme << "`\n";
         }
     }
@@ -134,7 +145,7 @@ int compile(const fs::path& input, const fs::path& output) {
 
     verbose("Parsing...");
     t81::frontend::Lexer parser_lexer(source);
-    t81::frontend::Parser parser(parser_lexer);
+    t81::frontend::Parser parser(parser_lexer, diag_name);
     auto stmts = parser.parse();
     if (parser.had_error()) {
         error("Parse errors encountered");
@@ -164,6 +175,9 @@ int compile(const fs::path& input, const fs::path& output) {
     if (!loop_policy.empty()) {
         program.axion_policy_text = loop_policy;
         verbose("Axion loop metadata emitted");
+    }
+    if (weights_model) {
+        program.weights_model = std::move(weights_model);
     }
 
     verbose("Writing " + output.string());
@@ -222,7 +236,7 @@ int check_syntax(const fs::path& path) {
         return 1;
     }
 
-    t81::frontend::Parser parser(lexer);
+    t81::frontend::Parser parser(lexer, path.string());
     parser.parse();
     if (parser.had_error()) {
         error("Syntax errors found");

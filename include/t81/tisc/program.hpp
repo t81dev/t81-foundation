@@ -1,11 +1,13 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 #include "t81/fraction.hpp"
 #include "t81/tensor.hpp"
 #include "t81/tisc/opcodes.hpp"
+#include "t81/weights.hpp"
 
 namespace t81::tisc {
 enum class LiteralKind : std::uint8_t {
@@ -33,5 +35,6 @@ struct Program {
   std::vector<t81::T729Tensor> tensor_pool;
   std::vector<std::vector<int>> shape_pool;
   std::string axion_policy_text;
+  std::shared_ptr<t81::weights::ModelFile> weights_model;
 };
 }  // namespace t81::tisc

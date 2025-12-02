@@ -17,6 +17,8 @@
 #include <cctype>
 #include <cstdlib>
 #include <iomanip>
+#include <memory>
+#include <stdexcept>
 #if !defined(_WIN32)
 #include <sys/wait.h>
 #endif
@@ -405,12 +407,23 @@ int main(int argc, char* argv[]) {
         const auto ext = args.input.extension();
 
         if (args.command == "compile") {
-            if (ext != ".t81") {
-                error("compile expects a .t81 source file");
+            fs::path out = args.output.value_or(args.input.stem().string() + ".tisc");
+            if (ext == ".t81") {
+                return t81::cli::compile(args.input, out);
+            } else if (ext == ".t81w") {
+                try {
+                    auto model = t81::weights::load_t81w(args.input);
+                    auto source = t81::weights::emit_t81w_module(model, args.input.string());
+                    auto model_ptr = std::make_shared<t81::weights::ModelFile>(std::move(model));
+                    return t81::cli::compile(args.input, out, source, args.input.string(), model_ptr);
+                } catch (const std::exception& e) {
+                    error(e.what());
+                    return 1;
+                }
+            } else {
+                error("compile expects a .t81 or .t81w source file");
                 return 1;
             }
-            fs::path out = args.output.value_or(args.input.stem().string() + ".tisc");
-            return t81::cli::compile(args.input, out);
 
         } else if (args.command == "run") {
             if (ext == ".t81") {
