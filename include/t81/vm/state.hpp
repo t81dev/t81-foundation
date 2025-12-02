@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <utility>
 #include <unordered_map>
 #include <vector>
 #include "t81/tensor.hpp"
@@ -91,5 +92,8 @@ struct State {
   std::shared_ptr<t81::weights::ModelFile> weights_model;
   std::vector<const t81::weights::NativeTensor*> weights_tensor_refs;
   std::unordered_map<std::string, std::int64_t> weights_tensor_handles;
+  std::vector<std::pair<std::int64_t, std::int64_t>> stack_frames;
+  std::vector<std::pair<std::int64_t, std::int64_t>> heap_frames;
+  std::size_t heap_ptr{0};
 };
 }  // namespace t81::vm

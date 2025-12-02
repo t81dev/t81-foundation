@@ -190,6 +190,7 @@ struct Args {
     bool need_version = false;
     std::vector<std::string> benchmark_args;
     std::vector<std::string> command_args;
+    std::optional<fs::path> weights_model;
 };
 
 Args parse_args(int argc, char* argv[]) {
@@ -214,6 +215,10 @@ Args parse_args(int argc, char* argv[]) {
             if (++i >= argc) { error("Missing argument after -o"); std::exit(1); }
             a.output = fs::path(argv[i]);
         }
+        else if (arg == "--weights-model") {
+            if (++i >= argc) { error("Missing argument after --weights-model"); std::exit(1); }
+            a.weights_model = fs::path(argv[i]);
+        }
         else if (arg == "-h" || arg == "--help")   { a.need_help = true; }
         else if (arg.starts_with('-')) {
             error("Unknown option: " + std::string(arg));
@@ -235,6 +240,17 @@ Args parse_args(int argc, char* argv[]) {
     }
 
     return a;
+}
+
+std::shared_ptr<t81::weights::ModelFile> load_weights_model_optional(const std::optional<fs::path>& path) {
+    if (!path) return nullptr;
+    try {
+        auto mf = t81::weights::load_t81w(*path);
+        return std::make_shared<t81::weights::ModelFile>(std::move(mf));
+    } catch (const std::exception& e) {
+        error(e.what());
+        return nullptr;
+    }
 }
 
 int run_benchmark(const char* command_name, const Args& args) {
@@ -405,11 +421,16 @@ int main(int argc, char* argv[]) {
         }
 
         const auto ext = args.input.extension();
+        auto weights_model_ptr = std::shared_ptr<t81::weights::ModelFile>{};
+        if (args.weights_model && (args.command == "compile" || (args.command == "run" && ext == ".t81"))) {
+            weights_model_ptr = load_weights_model_optional(args.weights_model);
+            if (!weights_model_ptr) return 1;
+        }
 
         if (args.command == "compile") {
             fs::path out = args.output.value_or(args.input.stem().string() + ".tisc");
             if (ext == ".t81") {
-                return t81::cli::compile(args.input, out);
+                return t81::cli::compile(args.input, out, {}, {}, weights_model_ptr);
             } else if (ext == ".t81w") {
                 try {
                     auto model = t81::weights::load_t81w(args.input);
@@ -428,7 +449,7 @@ int main(int argc, char* argv[]) {
         } else if (args.command == "run") {
             if (ext == ".t81") {
                 TempTiscFile temp(args.input.stem().string());
-                int rc = t81::cli::compile(args.input, temp.path);
+                int rc = t81::cli::compile(args.input, temp.path, {}, {}, weights_model_ptr);
                 if (rc != 0) return rc;
                 return t81::cli::run_tisc(temp.path);
             } else if (ext == ".tisc") {

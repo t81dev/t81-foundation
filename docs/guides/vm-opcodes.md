@@ -177,8 +177,44 @@ The following TISC opcodes are defined in `opcodes.hpp` and implemented in the V
 | **Tensor Operations** | `TVecAdd`, `TMatMul`, `TTenDot`, `ChkShape` |
 | **Option/Result Types** | `MakeOptionSome`, `MakeOptionNone`, `OptionIsSome`, `OptionUnwrap`, `MakeResultOk`, `MakeResultErr`, `ResultIsOk`, `ResultUnwrapOk`, `ResultUnwrapErr` |
 | **Axion Interface** | `AxRead`, `AxSet`, `AxVerify` |
+| **Allocator / Metadata** | `StackAlloc`, `StackFree`, `HeapAlloc`, `HeapFree`, `WeightsLoad` |
 
 ______________________________________________________________________
+
+### Stack/Heap Allocator Opcodes
+
+- `StackAlloc`, `StackFree`, `HeapAlloc`, `HeapFree` encode the deterministic allocator model described in [`spec/t81vm-spec.md`](../../spec/t81vm-spec.md#memory-model). Every stack allocation is bounded by the current stack limit (Axion policy layers may adjust the limit via hints) and must pair `StackAlloc` with a matching `StackFree` within the same lexical scope; missing frees raise deterministic traps rather than silently overflow. Heap allocations obey the same Axion-guided guards—VM state keeps per-program counters and faults when any request would exceed the configured heap cap.
+- These opcodes are deterministic, so they avoid hidden nondeterminism: every allocation/deallocation is recorded in the Axion trace, and the Hanoi engine can replay or veto the operation if it would violate the spec's `+∞` / `-∞` invariants. The VM also uses them when lowering `loop`/`match` constructs that require temporary buffers or when the new `weights.load` builtin materializes handles.
+- Use `StackAlloc`/`StackFree` for all short-lived temporaries so the Axion trace can track stack depth precisely. Heap paths (`HeapAlloc`/`HeapFree`) are reserved for long-lived state such as tensors stored across invocations or weights handles; the VM tracks these with the same deterministic telemetry used by Axion's policy text and loop metadata.
+
+### Axion Loop Metadata Example
+
+To demonstrate how allocator ops and Axion policy text interplay, consider a simple `loop` in T81Lang:
+
+```
+loop {
+  let n = 0;
+  if (n > 10) break;
+  n = n + 1;
+}
+```
+
+When the frontend lowers this loop, it emits `StackAlloc`/`StackFree` around any temporary `n` values and annotates the loop with a `loop hint` (file/line/column). The HanoiVM produces an Axion policy block such as:
+
+```
+(policy
+  (tier 1)
+  (loop
+    (id 0)
+    (file examples/demo.t81)
+    (line 12)
+    (column 5)
+    (annotated true)
+    (depth 0)
+    (bound infinite)))
+```
+
+This policy text is emitted whenever `./build/t81 run` executes the TISC program, giving downstream consumers deterministic diagnostics (`file:line:column`) and exposing Axion's loop-tracking hooks. If the loop tries to grow the stack beyond the configured limit, the VM traps before Axion ever allows a `+∞` overflow; the Axion log entry and the policy text show the same metadata used by diagnostics, closing the trace from source to runtime. For a concrete CLI command/output pair you can copy into logs or release notes, see the **Axion CLI Trace Example** in the [demo gallery guide](./demo-gallery.md#axion-loop-trace).
 
 The comparison boolean opcodes produce canonical `0/1` results (always stored as `ValueTag::Int`) instead of relying solely on flag-setting `Cmp`. The frontend IR generator now tags relational expressions with a `ComparisonRelation` so the binary emitter can lower `Less`, `Equal`, etc., directly to these TISC opcodes, keeping the emitter/VM behavior deterministic and easier to trace through tools like `tools/ir_inspector`.
 

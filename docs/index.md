@@ -48,6 +48,8 @@ For contributors looking to modify the codebase, these resources provide detaile
 
 - **[Guide: Match Expression Demo](./guides/match-example.md)**
   - A live example that compiles and runs an `Option`/`Result` match through the CLI and HanoiVM.
+- **[Guide: Weight & Model Integration](./guides/weights-integration.md)**
+  - How `t81 weights load`, the new `weights.load("<tensor>")` builtin, and the HanoiVM `WeightsLoad` opcode cooperate to keep `.t81w` tensors zero-copy inside the interpreter.
 - **[Guide: Data Types Overview](./guides/data-types-overview.md)**
   - A runnable sample that exercises primitive and structural data types inside `examples/data_types.t81`, plus dedicated high-rank tensor and graph demos for exploring multidimensional indexing behaviors.
 - **[Demo Gallery](./guides/demo-gallery.md)**

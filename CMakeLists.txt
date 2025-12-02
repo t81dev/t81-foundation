@@ -148,6 +148,11 @@ if(T81_BUILD_TESTS)
   add_executable(t81_vm_tensor_test tests/cpp/vm_tensor_test.cpp)
   target_link_libraries(t81_vm_tensor_test PRIVATE t81_core)
 
+  add_executable(t81_vm_fault_test tests/cpp/vm_fault_test.cpp)
+  target_link_libraries(t81_vm_fault_test PRIVATE t81_core)
+  add_executable(t81_vm_memory_test tests/cpp/vm_memory_test.cpp)
+  target_link_libraries(t81_vm_memory_test PRIVATE t81_core)
+
   add_executable(t81_weights_load_test tests/cpp/weights_load_test.cpp)
   target_link_libraries(t81_weights_load_test PRIVATE t81_core)
 
@@ -398,6 +403,8 @@ if(T81_BUILD_TESTS)
     t81_vm_illegal_test
     t81_vm_bounds_test
     t81_vm_tensor_test
+    t81_vm_fault_test
+    t81_vm_memory_test
     t81_canonfs_driver_test
     t81_weights_load_test
     t81_vm_trace_test

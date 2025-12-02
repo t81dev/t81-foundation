@@ -52,6 +52,9 @@ class Interpreter : public IVirtualMachine {
     state_.weights_model = program_.weights_model;
     state_.weights_tensor_refs.clear();
     state_.weights_tensor_handles.clear();
+    state_.stack_frames.clear();
+    state_.heap_frames.clear();
+    state_.heap_ptr = state_.layout.stack_limit;
     state_.options.clear();
     state_.results.clear();
     state_.policy.reset();
@@ -523,6 +526,65 @@ class Interpreter : public IVirtualMachine {
         }
         update_flags(state_.registers[insn.a]);
         break;
+      case t81::tisc::Opcode::StackAlloc: {
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        if (insn.b < 0) { trap = Trap::IllegalInstruction; break; }
+        std::size_t size = static_cast<std::size_t>(insn.b);
+        std::size_t available = state_.sp - state_.layout.code_limit;
+        if (size > available) { trap = Trap::BoundsFault; break; }
+        std::size_t new_sp = state_.sp - size;
+        std::int64_t addr = static_cast<std::int64_t>(new_sp);
+        state_.stack_frames.emplace_back(addr, static_cast<std::int64_t>(size));
+        state_.sp = new_sp;
+        set_reg(insn.a, addr, ValueTag::Int);
+        update_flags(addr);
+        break;
+      }
+      case t81::tisc::Opcode::StackFree: {
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        if (insn.b < 0) { trap = Trap::IllegalInstruction; break; }
+        if (state_.stack_frames.empty()) { trap = Trap::BoundsFault; break; }
+        std::size_t size = static_cast<std::size_t>(insn.b);
+        std::int64_t ptr = state_.registers[insn.a];
+        auto [expected_addr, expected_size] = state_.stack_frames.back();
+        if (expected_addr != ptr || expected_size != static_cast<std::int64_t>(size)) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        state_.stack_frames.pop_back();
+        state_.sp = static_cast<std::size_t>(ptr + size);
+        break;
+      }
+      case t81::tisc::Opcode::HeapAlloc: {
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        if (insn.b < 0 || static_cast<std::size_t>(insn.b) > state_.layout.heap_limit) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        std::size_t size = static_cast<std::size_t>(insn.b);
+        std::size_t addr = state_.heap_ptr;
+        if (addr + size > state_.layout.heap_limit) { trap = Trap::BoundsFault; break; }
+        state_.heap_frames.emplace_back(static_cast<std::int64_t>(addr), static_cast<std::int64_t>(size));
+        state_.heap_ptr = addr + size;
+        set_reg(insn.a, static_cast<std::int64_t>(addr), ValueTag::Int);
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::HeapFree: {
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        if (insn.b < 0) { trap = Trap::IllegalInstruction; break; }
+        if (state_.heap_frames.empty()) { trap = Trap::BoundsFault; break; }
+        std::size_t size = static_cast<std::size_t>(insn.b);
+        std::int64_t ptr = state_.registers[insn.a];
+        auto [expected_addr, expected_size] = state_.heap_frames.back();
+        if (expected_addr != ptr || expected_size != static_cast<std::int64_t>(size)) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        state_.heap_frames.pop_back();
+        state_.heap_ptr = static_cast<std::size_t>(ptr);
+        break;
+      }
       case t81::tisc::Opcode::TNot:
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
         {
