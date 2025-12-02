@@ -8,9 +8,13 @@
   - [1. CLI Demos](#1-cli-demos)
   - [2. Automation Script](#2-automation-script)
   - [3. IR/VM Introspection](#3-irvm-introspection)
+  - [Axion Loop Trace](#axion-loop-trace)
+    - [Axion CLI Trace Example](#axion-cli-trace-example)
   - [4. What’s Next?](#4-what’s-next?)
 
 <!-- T81-TOC:END -->
+
+
 
 
 

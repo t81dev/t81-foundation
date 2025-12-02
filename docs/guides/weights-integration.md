@@ -1,5 +1,19 @@
 # Weights Integration Guide
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Weights Integration Guide](#weights-integration-guide)
+  - [Preparing a `.t81w`](#preparing-a-`t81w`)
+  - [Calling `weights.load` from T81Lang](#calling-`weightsload`-from-t81lang)
+  - [Run the `weights-load` demo](#run-the-`weights-load`-demo)
+  - [Hanoi VM & IR support](#hanoi-vm-&-ir-support)
+  - [Keeping CLI diagnostics sharp](#keeping-cli-diagnostics-sharp)
+
+<!-- T81-TOC:END -->
+
+
 This guide explains how to get `.t81w` models through the CLI, consume their tensors inside T81Lang, and how the VM keeps everything zero-copy via `weights.load`.
 
 ## Preparing a `.t81w`

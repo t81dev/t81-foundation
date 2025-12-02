@@ -13,12 +13,16 @@ title: TISC and VM Guide
   - [1. Architecture](#1-architecture)
     - [Register and Memory Model](#register-and-memory-model)
   - [2. Implemented Opcodes](#2-implemented-opcodes)
+    - [Stack/Heap Allocator Opcodes](#stackheap-allocator-opcodes)
+    - [Axion Loop Metadata Example](#axion-loop-metadata-example)
   - [3. How to Add a New TISC Opcode](#3-how-to-add-a-new-tisc-opcode)
     - [Step 1: Define the New Opcode](#step-1-define-the-new-opcode)
     - [Step 2: Implement the Opcode in the VM](#step-2-implement-the-opcode-in-the-vm)
     - [Step 3: Write a Test](#step-3-write-a-test)
 
 <!-- T81-TOC:END -->
+
+
 
 
 
