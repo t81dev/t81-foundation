@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cctype>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -17,11 +18,11 @@ struct Policy {
     bool annotated{false};
     int depth{0};
     bool bound_infinite{false};
-    std::optional<std::int64_t> bound_value;
+    std::optional<int64_t> bound_value;
   };
 
   int tier{1};
-  std::optional<std::int64_t> max_stack;
+  std::optional<int64_t> max_stack;
   std::vector<LoopHint> loops;
 };
 
@@ -29,7 +30,7 @@ namespace detail {
 struct PolicyToken {
   enum class Kind { LParen, RParen, Integer, Symbol, End } kind{Kind::End};
   std::string text;
-  std::int64_t value{0};
+  int64_t value{0};
 };
 
 class PolicyLexer {
