@@ -467,30 +467,31 @@ void GenerateMarkdownReport() {
         return result;
     };
 
+    auto FormatRatioValue = [](const BenchmarkResult& r) -> std::string {
+        if (!r.ratio_computed) return "n/a";
+        return r.ratio_str;
+    };
+
     std::cout << std::left << std::setw(25) << "Benchmark"
-              << std::setw(18) << "T81 Result"
-              << std::setw(18) << "T81 Latency"
-              << std::setw(18) << "T81 Native Result"
-              << std::setw(18) << "T81 Native Latency"
-              << std::setw(18) << "Binary Result"
-              << std::setw(18) << "Binary Latency"
-              << std::setw(18) << "Memory Bandwidth"
+              << std::setw(20) << "T81 Result"
+              << std::setw(16) << "T81 Latency"
+              << std::setw(20) << "Binary Result"
+              << std::setw(16) << "Binary Latency"
+              << std::setw(8)  << "Ratio"
               << std::setw(25) << "T81 Advantage"
               << "Notes\n";
-    std::cout << std::string(110, '-') << "\n";
-    for(auto const& [name, r] : final_results) {
-            const std::string advantage_display = BuildT81AdvantageDisplay(r);
-            const std::string notes_display = BuildNotesDisplay(r);
-            std::cout << std::left << std::setw(25) << r.name
-                      << std::setw(18) << DisplayValue(r.t81_result_str)
-                      << std::setw(18) << DisplayValue(r.t81_latency_str)
-                      << std::setw(18) << DisplayValue(r.t81_native_result_str)
-                      << std::setw(18) << DisplayValue(r.t81_native_latency_str)
-                      << std::setw(18) << DisplayValue(r.binary_result_str)
-                      << std::setw(18) << DisplayValue(r.binary_latency_str)
-                      << std::setw(18) << DisplayValue(r.bandwidth_result_str)
-                      << std::setw(25) << DisplayValue(advantage_display)
-                      << DisplayValue(notes_display) << "\n";
+    std::cout << std::string(140, '-') << "\n";
+    for (auto const& [name, r] : final_results) {
+        const std::string advantage_display = BuildT81AdvantageDisplay(r);
+        const std::string notes_display = BuildNotesDisplay(r);
+        std::cout << std::left << std::setw(25) << r.name
+                  << std::setw(20) << DisplayValue(r.t81_result_str)
+                  << std::setw(16) << DisplayValue(r.t81_latency_str)
+                  << std::setw(20) << DisplayValue(r.binary_result_str)
+                  << std::setw(16) << DisplayValue(r.binary_latency_str)
+                  << std::setw(8)  << DisplayValue(FormatRatioValue(r))
+                  << std::setw(25) << DisplayValue(advantage_display)
+                  << DisplayValue(notes_display) << "\n";
     }
 
     std::ofstream md_file("docs/benchmarks.md");
