@@ -149,6 +149,8 @@ public:
         tisc::ir::TypeAliasMetadata meta;
         meta.name = name;
         meta.kind = t81::tisc::StructuralKind::Record;
+        meta.schema_version = record_it->second.schema_version;
+        meta.module_path = record_it->second.module_path;
         for (const auto& field : record_it->second.fields) {
             t81::tisc::FieldInfo info;
             info.name = field.name;
@@ -167,11 +169,14 @@ public:
         tisc::ir::TypeAliasMetadata meta;
         meta.name = name;
         meta.kind = t81::tisc::StructuralKind::Enum;
-        for (const auto& variant : enum_it->second.variants) {
+        meta.schema_version = enum_it->second.schema_version;
+        meta.module_path = enum_it->second.module_path;
+        for (const auto& variant_name : enum_it->second.variant_order) {
             t81::tisc::VariantInfo info;
-            info.name = variant.first;
-            if (variant.second.has_value()) {
-                info.payload = _semantic->type_to_string(*variant.second);
+            info.name = variant_name;
+            auto payload_it = enum_it->second.variants.find(variant_name);
+            if (payload_it != enum_it->second.variants.end() && payload_it->second.has_value()) {
+                info.payload = _semantic->type_to_string(*payload_it->second);
             }
             meta.variants.push_back(std::move(info));
         }
@@ -377,22 +382,23 @@ public:
         bool has_ok = false;
         bool has_err = false;
         for (const auto& arm : expr.arms) {
-            has_some |= (arm.variant == MatchArm::Variant::Some);
-            has_none |= (arm.variant == MatchArm::Variant::None);
-            has_ok |= (arm.variant == MatchArm::Variant::Ok);
-            has_err |= (arm.variant == MatchArm::Variant::Err);
+            std::string_view name{arm.keyword.lexeme};
+            has_some |= (name == "Some");
+            has_none |= (name == "None");
+            has_ok |= (name == "Ok");
+            has_err |= (name == "Err");
         }
 
-        auto emit_arm = [&](MatchArm::Variant variant) {
+        auto emit_arm = [&](std::string_view target) {
             for (const auto& arm : expr.arms) {
-                if (arm.variant == variant) {
-                    if (variant == MatchArm::Variant::Some) {
+                if (std::string_view{arm.keyword.lexeme} == target) {
+                    if (target == "Some") {
                         emit_simple(tisc::ir::Opcode::OPTION_UNWRAP);
                     }
-                    if (variant == MatchArm::Variant::Ok) {
+                    if (target == "Ok") {
                         emit_simple(tisc::ir::Opcode::RESULT_UNWRAP_OK);
                     }
-                    if (variant == MatchArm::Variant::Err) {
+                    if (target == "Err") {
                         emit_simple(tisc::ir::Opcode::RESULT_UNWRAP_ERR);
                     }
                     arm.expression->accept(*this);
@@ -410,10 +416,10 @@ public:
             auto end_label = new_label();
             emit_simple(tisc::ir::Opcode::OPTION_IS_SOME);
             emit(tisc::ir::Instruction{tisc::ir::Opcode::JNZ, {some_label}});
-            emit_arm(MatchArm::Variant::None);
+            emit_arm("None");
             emit(tisc::ir::Instruction{tisc::ir::Opcode::JMP, {end_label}});
             emit_label(some_label);
-            emit_arm(MatchArm::Variant::Some);
+            emit_arm("Some");
             emit_label(end_label);
             return {};
         }
@@ -423,10 +429,10 @@ public:
             auto end_label = new_label();
             emit_simple(tisc::ir::Opcode::RESULT_IS_OK);
             emit(tisc::ir::Instruction{tisc::ir::Opcode::JNZ, {ok_label}});
-            emit_arm(MatchArm::Variant::Err);
+            emit_arm("Err");
             emit(tisc::ir::Instruction{tisc::ir::Opcode::JMP, {end_label}});
             emit_label(ok_label);
-            emit_arm(MatchArm::Variant::Ok);
+            emit_arm("Ok");
             emit_label(end_label);
             return {};
         }

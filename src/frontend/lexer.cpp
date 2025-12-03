@@ -221,10 +221,23 @@ void Lexer::skip_whitespace_and_comments() {
                     return;
                 }
                 break;
-            default:
-                return;
+        default:
+            return;
         }
     }
+}
+
+Token Lexer::peek_next_token() {
+    auto saved_current = _current;
+    auto saved_line = _line;
+    auto saved_line_start = _line_start;
+    auto saved_token_start = _token_start;
+    Token token = next_token();
+    _current = saved_current;
+    _line = saved_line;
+    _line_start = saved_line_start;
+    _token_start = saved_token_start;
+    return token;
 }
 
 bool Lexer::match(char expected) {

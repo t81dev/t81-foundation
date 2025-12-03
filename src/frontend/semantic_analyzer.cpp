@@ -885,6 +885,10 @@ std::any SemanticAnalyzer::visit(const RecordDecl& stmt) {
     }
 
     if (!had_error) {
+        if (stmt.schema_version.has_value() && *stmt.schema_version > 0) {
+            info.schema_version = static_cast<std::uint32_t>(*stmt.schema_version);
+        }
+        info.module_path = stmt.module_path.has_value() ? *stmt.module_path : _source_name;
         _record_definitions.emplace(name_str, std::move(info));
     }
     return {};
@@ -914,9 +918,14 @@ std::any SemanticAnalyzer::visit(const EnumDecl& stmt) {
         } else {
             info.variants.emplace(variant_name, std::nullopt);
         }
+        info.variant_order.push_back(variant_name);
     }
 
     if (!had_error) {
+        if (stmt.schema_version.has_value() && *stmt.schema_version > 0) {
+            info.schema_version = static_cast<std::uint32_t>(*stmt.schema_version);
+        }
+        info.module_path = stmt.module_path.has_value() ? *stmt.module_path : _source_name;
         _enum_definitions.emplace(name_str, std::move(info));
     }
     return {};
@@ -1109,85 +1118,84 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
     Token scrutinee_token = extract_token(*expr.scrutinee);
     bool is_option = scrutinee_type.kind == Type::Kind::Option;
     bool is_result = scrutinee_type.kind == Type::Kind::Result;
+    bool is_enum = scrutinee_type.kind == Type::Kind::Custom;
 
-    if (!is_option && !is_result) {
-        error(scrutinee_token, "Match expressions require Option[T] or Result[T, E] scrutinees.");
+    struct VariantMeta {
+        std::optional<Type> payload;
+    };
+
+    std::unordered_map<std::string, VariantMeta> allowed_variants;
+    std::vector<std::string> required_variants;
+    std::string match_label = "Match";
+
+    if (is_option) {
+        match_label = "Option";
+        Type payload = scrutinee_type.params.empty() ? Type{Type::Kind::Unknown} : scrutinee_type.params[0];
+        allowed_variants.emplace("Some", VariantMeta{payload});
+        allowed_variants.emplace("None", VariantMeta{std::nullopt});
+        required_variants = {"Some", "None"};
+    } else if (is_result) {
+        match_label = "Result";
+        Type success = scrutinee_type.params.size() >= 1 ? scrutinee_type.params[0] : Type{Type::Kind::Unknown};
+        Type error = scrutinee_type.params.size() >= 2 ? scrutinee_type.params[1] : Type{Type::Kind::Unknown};
+        allowed_variants.emplace("Ok", VariantMeta{success});
+        allowed_variants.emplace("Err", VariantMeta{error});
+        required_variants = {"Ok", "Err"};
+    } else if (is_enum) {
+        match_label = "Enum";
+        auto enum_it = _enum_definitions.find(scrutinee_type.custom_name);
+        if (enum_it == _enum_definitions.end()) {
+            error(scrutinee_token, "Type '" + scrutinee_type.custom_name + "' is not a known enum.");
+            return make_error_type();
+        }
+        const EnumInfo& info = enum_it->second;
+        for (const auto& name : info.variant_order) {
+            auto variant_it = info.variants.find(name);
+            std::optional<Type> payload;
+            if (variant_it != info.variants.end()) {
+                payload = variant_it->second;
+            }
+            allowed_variants.emplace(name, VariantMeta{payload});
+            required_variants.push_back(name);
+        }
+    } else {
+        error(scrutinee_token, "Match expressions require Option[T], Result[T, E], or enum values.");
         return make_error_type();
     }
-
-    Type option_payload = (is_option && !scrutinee_type.params.empty()) ? scrutinee_type.params[0]
-                                                                          : Type{Type::Kind::Unknown};
-    Type result_success = (is_result && scrutinee_type.params.size() >= 1) ? scrutinee_type.params[0]
-                                                                            : Type{Type::Kind::Unknown};
-    Type result_error = (is_result && scrutinee_type.params.size() >= 2) ? scrutinee_type.params[1]
-                                                                          : Type{Type::Kind::Unknown};
-
-    bool has_some = false;
-    bool has_none = false;
-    bool has_ok = false;
-    bool has_err = false;
-    bool structural_error = false;
 
     const Type* contextual_expected = current_expected_type();
     Type result_type = contextual_expected ? *contextual_expected : Type{Type::Kind::Unknown};
     bool result_type_locked = contextual_expected && contextual_expected->kind != Type::Kind::Unknown;
+    bool structural_error = false;
+    std::unordered_set<std::string> seen_variants;
 
     for (const auto& arm : expr.arms) {
-        Token location = arm.keyword;
-        bool variant_allowed = true;
-        Type binding_type = Type{Type::Kind::Unknown};
+        std::string name{arm.keyword.lexeme};
+        auto variant_it = allowed_variants.find(name);
+        if (variant_it == allowed_variants.end()) {
+            error(arm.keyword, "Variant '" + name + "' is not part of '" + type_to_string(scrutinee_type) + "'.");
+            structural_error = true;
+            continue;
+        }
+        if (!seen_variants.insert(name).second) {
+            error(arm.keyword, "Duplicate match arm for '" + name + "'.");
+            structural_error = true;
+        }
 
-        if (is_option) {
-            switch (arm.variant) {
-                case MatchArm::Variant::Some:
-                    if (has_some) {
-                        error(location, "Duplicate 'Some' arm in Option match.");
-                        structural_error = true;
-                    }
-                    has_some = true;
-                    binding_type = option_payload;
-                    break;
-                case MatchArm::Variant::None:
-                    if (has_none) {
-                        error(location, "Duplicate 'None' arm in Option match.");
-                        structural_error = true;
-                    }
-                    has_none = true;
-                    break;
-                default:
-                    error(location, "Option match arms must be 'Some' or 'None'.");
-                    structural_error = true;
-                    variant_allowed = false;
-                    break;
-            }
-        } else {
-            switch (arm.variant) {
-                case MatchArm::Variant::Ok:
-                    if (has_ok) {
-                        error(location, "Duplicate 'Ok' arm in Result match.");
-                        structural_error = true;
-                    }
-                    has_ok = true;
-                    binding_type = result_success;
-                    break;
-                case MatchArm::Variant::Err:
-                    if (has_err) {
-                        error(location, "Duplicate 'Err' arm in Result match.");
-                        structural_error = true;
-                    }
-                    has_err = true;
-                    binding_type = result_error;
-                    break;
-                default:
-                    error(location, "Result match arms must be 'Ok' or 'Err'.");
-                    structural_error = true;
-                    variant_allowed = false;
-                    break;
-            }
+        bool variant_has_payload = variant_it->second.payload.has_value();
+        Type binding_type = variant_has_payload ? *variant_it->second.payload : Type{Type::Kind::Unknown};
+
+        if (variant_has_payload && !arm.has_binding) {
+            error(arm.keyword, "Variant '" + name + "' requires a binding.");
+            structural_error = true;
+        }
+        if (!variant_has_payload && arm.has_binding) {
+            error(arm.binding, "Variant '" + name + "' does not accept a binding.");
+            structural_error = true;
         }
 
         enter_scope();
-        if (arm.has_binding && variant_allowed && !arm.binding_is_wildcard) {
+        if (arm.has_binding && variant_has_payload && !arm.binding_is_wildcard) {
             define_symbol(arm.binding, SymbolKind::Variable);
             if (auto* symbol = resolve_symbol(arm.binding)) {
                 symbol->type = binding_type;
@@ -1205,37 +1213,21 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
 
         if (result_type_locked && arm_type.kind != Type::Kind::Unknown &&
             !is_assignable(result_type, arm_type)) {
-            error(location, "All match arms must produce the same type.");
+            error(arm.keyword, "All match arms must produce the same type.");
             structural_error = true;
         }
     }
 
-    auto describe_match = [&](const char* kind) {
+    auto describe_missing_arm = [&](const std::string& missing) {
         std::ostringstream oss;
-        oss << kind << " match on '" << type_to_string(scrutinee_type) << "' requires the missing arm";
+        oss << match_label << " match on '" << type_to_string(scrutinee_type)
+            << "' requires '" << missing << "' arm";
         return oss.str();
     };
 
-    if (is_option) {
-        if (!has_some) {
-            error(scrutinee_token, describe_match("Option") + " 'Some'. Add `Some(value) => ...` at line " +
-                               std::to_string(scrutinee_token.line) + ".");
-            structural_error = true;
-        }
-        if (!has_none) {
-            error(scrutinee_token, describe_match("Option") + " 'None'. Add `None => ...` at line " +
-                               std::to_string(scrutinee_token.line) + ".");
-            structural_error = true;
-        }
-    } else {
-        if (!has_ok) {
-            error(scrutinee_token, describe_match("Result") + " 'Ok'. Add `Ok(value) => ...` at line " +
-                               std::to_string(scrutinee_token.line) + ".");
-            structural_error = true;
-        }
-        if (!has_err) {
-            error(scrutinee_token, describe_match("Result") + " 'Err'. Add `Err(value) => ...` at line " +
-                               std::to_string(scrutinee_token.line) + ".");
+    for (const auto& required : required_variants) {
+        if (seen_variants.find(required) == seen_variants.end()) {
+            error(scrutinee_token, describe_missing_arm(required) + ".");
             structural_error = true;
         }
     }

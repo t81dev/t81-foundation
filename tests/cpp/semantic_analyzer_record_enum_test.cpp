@@ -1,5 +1,8 @@
 #include "test_utils.hpp"
 
+#include <iostream>
+#include <string>
+
 int main() {
     const std::string simple_record = R"(
         record Point {

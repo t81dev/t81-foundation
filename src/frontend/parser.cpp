@@ -125,9 +125,14 @@ void Parser::synchronize() {
 // declaration -> fn_declaration | var_declaration | let_declaration | statement ;
 std::unique_ptr<Stmt> Parser::declaration() {
     try {
+        auto struct_attrs = parse_structural_attributes();
         if (match({TokenType::Type})) return type_declaration();
-        if (match({TokenType::Record})) return record_declaration();
-        if (match({TokenType::Enum})) return enum_declaration();
+        if (match({TokenType::Record})) return record_declaration(struct_attrs);
+        if (match({TokenType::Enum})) return enum_declaration(struct_attrs);
+        if (struct_attrs.has_value()) {
+            const Token& anchor = struct_attrs->anchor.value_or(peek());
+            report_error(anchor, "Structural attributes may only decorate records or enums.");
+        }
         if (match({TokenType::Fn})) return function("function");
         if (match({TokenType::Var})) return var_declaration();
         if (match({TokenType::Let})) return let_declaration();
@@ -185,7 +190,7 @@ std::unique_ptr<Stmt> Parser::type_declaration() {
     return std::make_unique<TypeDecl>(name, std::move(parameters), std::move(alias));
 }
 
-std::unique_ptr<Stmt> Parser::record_declaration() {
+std::unique_ptr<Stmt> Parser::record_declaration(std::optional<StructuralAttributes> attributes) {
     Token name = consume(TokenType::Identifier, "Expect record name.");
     consume(TokenType::LBrace, "Expect '{' after record name.");
     std::vector<RecordDecl::Field> fields;
@@ -198,10 +203,16 @@ std::unique_ptr<Stmt> Parser::record_declaration() {
     }
     consume(TokenType::RBrace, "Expect '}' after record declaration.");
     consume(TokenType::Semicolon, "Expect ';' after record declaration.");
-    return std::make_unique<RecordDecl>(name, std::move(fields));
+    std::optional<std::int64_t> schema_version;
+    std::optional<std::string> module_path;
+    if (attributes) {
+        schema_version = attributes->schema_version;
+        module_path = attributes->module_path;
+    }
+    return std::make_unique<RecordDecl>(name, std::move(fields), schema_version, module_path);
 }
 
-std::unique_ptr<Stmt> Parser::enum_declaration() {
+std::unique_ptr<Stmt> Parser::enum_declaration(std::optional<StructuralAttributes> attributes) {
     Token name = consume(TokenType::Identifier, "Expect enum name.");
     consume(TokenType::LBrace, "Expect '{' after enum name.");
     std::vector<EnumDecl::Variant> variants;
@@ -217,7 +228,13 @@ std::unique_ptr<Stmt> Parser::enum_declaration() {
     }
     consume(TokenType::RBrace, "Expect '}' after enum declaration.");
     consume(TokenType::Semicolon, "Expect ';' after enum declaration.");
-    return std::make_unique<EnumDecl>(name, std::move(variants));
+    std::optional<std::int64_t> schema_version;
+    std::optional<std::string> module_path;
+    if (attributes) {
+        schema_version = attributes->schema_version;
+        module_path = attributes->module_path;
+    }
+    return std::make_unique<EnumDecl>(name, std::move(variants), schema_version, module_path);
 }
 
 // Parses a variable declaration.
@@ -502,44 +519,20 @@ std::unique_ptr<Expr> Parser::record_literal(Token type_name) {
 
 MatchArm Parser::match_arm() {
     Token keyword = consume(TokenType::Identifier, "Expect match arm variant.");
-    std::string_view name = keyword.lexeme;
-
-    MatchArm::Variant variant;
-    if (name == "Some") {
-        variant = MatchArm::Variant::Some;
-    } else if (name == "None") {
-        variant = MatchArm::Variant::None;
-    } else if (name == "Ok") {
-        variant = MatchArm::Variant::Ok;
-    } else if (name == "Err") {
-        variant = MatchArm::Variant::Err;
-    } else {
-        report_error(keyword, "Unsupported match arm variant '" + std::string(name) + "'");
-        variant = MatchArm::Variant::None;
-    }
-
     bool has_binding = false;
     Token binding{};
     bool binding_is_wildcard = false;
 
-    if (variant != MatchArm::Variant::None) {
-        consume(TokenType::LParen, "Expect '(' after match arm variant.");
+    if (match({TokenType::LParen})) {
         binding = consume(TokenType::Identifier, "Expect binding identifier.");
         has_binding = true;
         binding_is_wildcard = binding.lexeme == "_";
         consume(TokenType::RParen, "Expect ')' after match binding.");
-    } else {
-        if (match({TokenType::LParen})) {
-            report_error(keyword, "'None' match arm does not accept a binding");
-            while (!match({TokenType::RParen}) && !is_at_end()) {
-                advance();
-            }
-        }
     }
 
     consume(TokenType::FatArrow, "Expect '=>' after match arm pattern.");
     std::unique_ptr<Expr> body = expression();
-    return MatchArm(variant, keyword, has_binding, binding, binding_is_wildcard, std::move(body));
+    return MatchArm(keyword, has_binding, binding, binding_is_wildcard, std::move(body));
 }
 
 bool Parser::parse_loop_annotation(LoopStmt::BoundKind& bound_kind,
@@ -580,6 +573,69 @@ bool Parser::parse_loop_annotation(LoopStmt::BoundKind& bound_kind,
     consume(TokenType::RParen, "Expect ')' after annotation argument.");
 
     return true;
+}
+
+std::optional<StructuralAttributes> Parser::parse_structural_attributes() {
+    StructuralAttributes attrs;
+    bool seen = false;
+    while (check(TokenType::At)) {
+        Token lookahead = _lexer.peek_next_token();
+        if (lookahead.type != TokenType::Identifier) {
+            break;
+        }
+        std::string attr_candidate{lookahead.lexeme};
+        if (attr_candidate != "schema" && attr_candidate != "module") {
+            break;
+        }
+        match({TokenType::At});
+        Token name = consume(TokenType::Identifier, "Expect attribute name after '@'.");
+        std::string attr_name{name.lexeme};
+        if (!seen) {
+            attrs.anchor = name;
+        }
+        seen = true;
+        consume(TokenType::LParen, "Expect '(' after attribute name.");
+
+        if (attr_name == "schema") {
+            if (attrs.schema_version.has_value()) {
+                report_error(name, "Duplicate '@schema' attribute.");
+            }
+            Token value = consume(TokenType::Integer, "Expect integer schema version.");
+            try {
+                std::int64_t version = std::stoll(std::string(value.lexeme));
+                if (version <= 0) {
+                    report_error(value, "Schema version must be positive.");
+                } else {
+                    attrs.schema_version = version;
+                }
+            } catch (const std::exception&) {
+                report_error(value, "Invalid integer for schema version.");
+            }
+        } else if (attr_name == "module") {
+            if (attrs.module_path.has_value()) {
+                report_error(name, "Duplicate '@module' attribute.");
+            }
+            Token segment = consume(TokenType::Identifier, "Expect module name.");
+            std::string path(segment.lexeme);
+            while (match({TokenType::Dot})) {
+                Token next = consume(TokenType::Identifier, "Expect module segment after '.'.");
+                path.push_back('.');
+                path.append(next.lexeme.data(), next.lexeme.size());
+            }
+            attrs.module_path = std::move(path);
+        } else {
+            report_error(name, "Unsupported attribute '" + attr_name + "'");
+            while (!check(TokenType::RParen) && !is_at_end()) {
+                advance();
+            }
+        }
+
+        consume(TokenType::RParen, "Expect ')' after attribute.");
+    }
+    if (!seen) {
+        return std::nullopt;
+    }
+    return attrs;
 }
 
 std::unique_ptr<GenericTypeExpr> Parser::parse_generic_type(Token name) {

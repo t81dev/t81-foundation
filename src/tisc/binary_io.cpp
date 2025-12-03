@@ -141,6 +141,9 @@ static void write_type_alias_metadata(std::ostream& os, const t81::tisc::TypeAli
     write_string(os, meta.alias);
     uint8_t kind = static_cast<uint8_t>(meta.kind);
     os.write(reinterpret_cast<const char*>(&kind), sizeof(kind));
+    uint32_t schema = meta.schema_version;
+    os.write(reinterpret_cast<const char*>(&schema), sizeof(schema));
+    write_string(os, meta.module_path);
 
     uint64_t field_count = meta.fields.size();
     os.write(reinterpret_cast<const char*>(&field_count), sizeof(field_count));
@@ -162,6 +165,10 @@ static void read_type_alias_metadata(std::istream& is, t81::tisc::TypeAliasMetad
     uint8_t kind = 0;
     is.read(reinterpret_cast<char*>(&kind), sizeof(kind));
     meta.kind = static_cast<t81::tisc::StructuralKind>(kind);
+    uint32_t schema = 1;
+    is.read(reinterpret_cast<char*>(&schema), sizeof(schema));
+    meta.schema_version = schema;
+    read_string(is, meta.module_path);
 
     uint64_t field_count = 0;
     is.read(reinterpret_cast<char*>(&field_count), sizeof(field_count));
