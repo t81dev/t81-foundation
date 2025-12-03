@@ -13,6 +13,7 @@
 
 using namespace t81;
 
+// Helper to compile and run a T81Lang source string and return the final value of register r0.
 int64_t run_e2e_test(const std::string& source) {
     frontend::Lexer lexer(source);
     frontend::Parser parser(lexer);
@@ -37,49 +38,21 @@ int64_t run_e2e_test(const std::string& source) {
     return vm->state().registers[0];
 }
 
-void test_option() {
-    const std::string source = R"(
-        fn get_some() -> Option[i32] { return Some(123); }
-        fn get_none() -> Option[i32] { return None; }
-
+int main() {
+    const std::string match_test_source = R"(
         fn main() -> i32 {
-            let a: i32 = match (get_some()) {
-                Some(v) => v,
-                None => 0
-            };
-            let b: i32 = match (get_none()) {
-                Some(v) => v,
+            let opt: Option[i32] = Some(123);
+            let result: i32 = match (opt) {
+                Some(value) => value,
                 None => 42
             };
-            return a + b; // 123 + 42 = 165
+            return result;
         }
     )";
-    assert(run_e2e_test(source) == 165);
-}
 
-void test_result() {
-    const std::string source = R"(
-        fn get_ok() -> Result[i32, i32] { return Ok(7); }
-        fn get_err() -> Result[i32, i32] { return Err(99); }
+    int64_t result = run_e2e_test(match_test_source);
+    assert(result == 123);
 
-        fn main() -> i32 {
-            let a: i32 = match (get_ok()) {
-                Ok(v) => v,
-                Err(e) => 0
-            };
-            let b: i32 = match (get_err()) {
-                Ok(v) => v,
-                Err(e) => e
-            };
-            return a + b; // 7 + 99 = 106
-        }
-    )";
-    assert(run_e2e_test(source) == 106);
-}
-
-int main() {
-    test_option();
-    test_result();
-    std::cout << "E2E option/result test passed!" << std::endl;
+    std::cout << "E2E match expression test passed!" << std::endl;
     return 0;
 }

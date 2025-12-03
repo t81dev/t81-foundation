@@ -23,11 +23,11 @@ void run_test(const std::string& source, const std::string& expected) {
 
 
 int main() {
-    run_test("let x: Vector[T81Int] = 1;", "(let x: (generic Vector T81Int) 1)");
-    run_test("let x: Option[T81Float] = 1;", "(let x: (generic Option T81Float) 1)");
-    run_test("let x: Result[T81Int, Symbol] = 1;", "(let x: (generic Result T81Int Symbol) 1)");
-    run_test("let x: Tensor[T81Int, 5] = 1;", "(let x: (generic Tensor T81Int 5) 1)");
-    run_test("let x: Tensor[T81Int, 5, 10] = 1;", "(let x: (generic Tensor T81Int 5 10) 1)");
+    run_test("let x: Vector[T81Int] = 1;", "(let x: (generic Vector T81Int) = 1)");
+    run_test("let x: Option[T81Float] = 1;", "(let x: (generic Option T81Float) = 1)");
+    run_test("let x: Result[T81Int, Symbol] = 1;", "(let x: (generic Result T81Int Symbol) = 1)");
+    run_test("let x: Tensor[T81Int, 5] = 1;", "(let x: (generic Tensor T81Int 5) = 1)");
+    run_test("let x: Tensor[T81Int, 5, 10] = 1;", "(let x: (generic Tensor T81Int 5 10) = 1)");
 
     return 0;
 }

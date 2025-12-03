@@ -255,6 +255,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_semantic_analyzer_record_enum_test tests/cpp/semantic_analyzer_record_enum_test.cpp)
   target_link_libraries(t81_semantic_analyzer_record_enum_test PRIVATE t81_frontend)
 
+  add_executable(t81_semantic_analyzer_equality_test tests/cpp/semantic_analyzer_equality_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_equality_test PRIVATE t81_frontend)
+
   add_executable(t81_tisc_binary_emitter_test tests/cpp/tisc_binary_emitter_test.cpp)
   target_link_libraries(t81_tisc_binary_emitter_test PRIVATE t81_tisc)
 
@@ -296,6 +299,15 @@ if(T81_BUILD_TESTS)
 
   add_executable(axion_instruction_counter_test tests/cpp/axion_instruction_counter_test.cpp)
   target_link_libraries(axion_instruction_counter_test PRIVATE t81_core t81_vm)
+
+  add_executable(e2e_match_expression_test tests/cpp/e2e_match_expression_test.cpp)
+  target_link_libraries(e2e_match_expression_test PRIVATE t81_frontend t81_tisc t81_vm)
+
+  add_executable(e2e_loop_statement_test tests/cpp/e2e_loop_statement_test.cpp)
+  target_link_libraries(e2e_loop_statement_test PRIVATE t81_frontend t81_tisc t81_vm)
+
+  add_executable(cli_e2e_test tests/cpp/cli_e2e_test.cpp)
+  target_link_libraries(cli_e2e_test PRIVATE t81_cli_driver)
 
   add_executable(t81_t81int_test tests/cpp/test_t81int.cpp)
   target_link_libraries(t81_t81int_test PRIVATE t81_core)
@@ -470,10 +482,14 @@ if(T81_BUILD_TESTS)
     t81_semantic_analyzer_match_test
     t81_semantic_analyzer_generic_test
     t81_semantic_analyzer_vector_literal_test
+    t81_semantic_analyzer_equality_test
     t81_semantic_analyzer_loop_test
     t81_tisc_binary_emitter_test
     t81_tisc_type_alias_io_test
     e2e_option_result_test
+    e2e_match_expression_test
+    e2e_loop_statement_test
+    cli_e2e_test
     t81_cli_pipeline_test
     t81_cli_option_result_test
     axion_loop_metadata_test

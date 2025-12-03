@@ -48,5 +48,29 @@ int main() {
     auto trap_bounds = run_expected_trap({pop, halt});
     assert(trap_bounds == t81::vm::Trap::BoundsFault);
 
+    t81::tisc::Insn store_bad;
+    store_bad.opcode = t81::tisc::Opcode::Store;
+    store_bad.a = 999999;
+    store_bad.b = 0;
+    store_bad.c = 0;
+    auto trap_store_invalid_mem = run_expected_trap({store_bad, halt});
+    assert(trap_store_invalid_mem == t81::vm::Trap::InvalidMemory);
+
+    t81::tisc::Insn load_neg;
+    load_neg.opcode = t81::tisc::Opcode::Load;
+    load_neg.a = 0;
+    load_neg.b = -1;
+    load_neg.c = 0;
+    auto trap_load_neg = run_expected_trap({load_neg, halt});
+    assert(trap_load_neg == t81::vm::Trap::InvalidMemory);
+
+    t81::tisc::Insn store_neg;
+    store_neg.opcode = t81::tisc::Opcode::Store;
+    store_neg.a = -1;
+    store_neg.b = 0;
+    store_neg.c = 0;
+    auto trap_store_neg = run_expected_trap({store_neg, halt});
+    assert(trap_store_neg == t81::vm::Trap::InvalidMemory);
+
     return 0;
 }
