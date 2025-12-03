@@ -2,6 +2,8 @@
 #define T81_TEST_UTILS_HPP
 
 #include "t81/frontend/ast.hpp"
+#include "t81/frontend/parser.hpp"
+#include "t81/frontend/semantic_analyzer.hpp"
 #include <iostream>
 #include <cassert>
 #include <string>
@@ -41,6 +43,7 @@ public:
         if (stmt.type) {
             name += ": " + print(*stmt.type);
         }
+        name += " =";
         return parenthesize(name, {&stmt.initializer});
     }
 
@@ -68,10 +71,16 @@ public:
     std::any visit(const LoopStmt& stmt) override {
         std::stringstream ss;
         ss << "(loop";
+        if (stmt.bound_kind == LoopStmt::BoundKind::Infinite) {
+            ss << " @bounded(infinite)";
+        } else if (stmt.bound_kind == LoopStmt::BoundKind::Static) {
+            ss << " @bounded(" << stmt.bound_value.value_or(0) << ")";
+        }
+        ss << " (block";
         for (const auto& statement : stmt.body) {
             ss << " " << print(*statement);
         }
-        ss << ")";
+        ss << "))";
         return ss.str();
     }
 
@@ -284,5 +293,37 @@ private:
         return "Unknown";
     }
 };
+
+inline void expect_semantic_success(const std::string& source, const char* label) {
+    Lexer lexer(source);
+    Parser parser(lexer);
+    auto stmts = parser.parse();
+    assert(!parser.had_error() && label);
+
+    SemanticAnalyzer analyzer(stmts);
+    analyzer.analyze();
+    assert(!analyzer.had_error() && label);
+}
+
+inline void expect_semantic_failure(const std::string& source, const char* label, const std::string& expected_error = "") {
+    Lexer lexer(source);
+    Parser parser(lexer);
+    auto stmts = parser.parse();
+    if (parser.had_error()) return;
+
+    SemanticAnalyzer analyzer(stmts);
+    analyzer.analyze();
+    assert(analyzer.had_error() && label);
+
+    if (!expected_error.empty()) {
+        for (const auto& diag : analyzer.diagnostics()) {
+            if (diag.message.find(expected_error) != std::string::npos) {
+                return;
+            }
+        }
+        std::cerr << "Test '" << label << "' failed. Expected error containing: '" << expected_error << "', but no matching diagnostic was found." << std::endl;
+        assert(false && "Expected diagnostic not found.");
+    }
+}
 
 #endif // T81_TEST_UTILS_HPP
