@@ -9,13 +9,14 @@
 #include "t81/vm/vm.hpp"
 #include "t81/weights.hpp"
 
+#include <algorithm>
 #include <cctype>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <optional>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -89,6 +90,198 @@ std::string format_structural_alias(const t81::tisc::TypeAliasMetadata& alias) {
         }
     }
     return oss.str();
+}
+
+std::string to_lower(std::string_view text) {
+    std::string result;
+    result.reserve(text.size());
+    for (char c : text) {
+        result.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+    }
+    return result;
+}
+
+std::string trim_copy(std::string_view text) {
+    size_t start = 0;
+    while (start < text.size() && std::isspace(static_cast<unsigned char>(text[start]))) {
+        ++start;
+    }
+    size_t end = text.size();
+    while (end > start && std::isspace(static_cast<unsigned char>(text[end - 1]))) {
+        --end;
+    }
+    return std::string(text.substr(start, end - start));
+}
+
+std::vector<std::string> split_lines(std::string_view content) {
+    std::string text(content);
+    std::vector<std::string> lines;
+    std::istringstream ss(text);
+    std::string line;
+    while (std::getline(ss, line)) {
+        lines.push_back(line);
+    }
+    return lines;
+}
+
+std::string summarize_snippet(const std::string& snippet) {
+    std::string summary = snippet;
+    auto newline = summary.find('\n');
+    if (newline != std::string::npos) {
+        summary = summary.substr(0, newline);
+    }
+    if (summary.size() > 64) {
+        summary = summary.substr(0, 61) + "...";
+    }
+    return summary;
+}
+
+std::string opcode_name(t81::tisc::Opcode opcode) {
+    switch (opcode) {
+#define CASE(name) case t81::tisc::Opcode::name: return #name;
+        CASE(Nop)
+        CASE(Halt)
+        CASE(LoadImm)
+        CASE(Load)
+        CASE(Store)
+        CASE(Add)
+        CASE(Sub)
+        CASE(Mul)
+        CASE(Div)
+        CASE(Mod)
+        CASE(Jump)
+        CASE(JumpIfZero)
+        CASE(Mov)
+        CASE(Inc)
+        CASE(Dec)
+        CASE(Cmp)
+        CASE(Push)
+        CASE(Pop)
+        CASE(TNot)
+        CASE(TAnd)
+        CASE(TOr)
+        CASE(TXor)
+        CASE(AxRead)
+        CASE(AxSet)
+        CASE(AxVerify)
+        CASE(JumpIfNotZero)
+        CASE(Call)
+        CASE(Ret)
+        CASE(Trap)
+        CASE(I2F)
+        CASE(F2I)
+        CASE(I2Frac)
+        CASE(Frac2I)
+        CASE(TVecAdd)
+        CASE(TMatMul)
+        CASE(TTenDot)
+        CASE(FAdd)
+        CASE(FSub)
+        CASE(FMul)
+        CASE(FDiv)
+        CASE(FracAdd)
+        CASE(FracSub)
+        CASE(FracMul)
+        CASE(FracDiv)
+        CASE(SetF)
+        CASE(ChkShape)
+        CASE(MakeOptionSome)
+        CASE(MakeOptionNone)
+        CASE(MakeResultOk)
+        CASE(MakeResultErr)
+        CASE(OptionIsSome)
+        CASE(OptionUnwrap)
+        CASE(ResultIsOk)
+        CASE(ResultUnwrapOk)
+        CASE(ResultUnwrapErr)
+        CASE(Neg)
+        CASE(JumpIfNegative)
+        CASE(JumpIfPositive)
+        CASE(Less)
+        CASE(LessEqual)
+        CASE(Greater)
+        CASE(GreaterEqual)
+        CASE(Equal)
+        CASE(NotEqual)
+        CASE(StackAlloc)
+        CASE(StackFree)
+        CASE(HeapAlloc)
+        CASE(HeapFree)
+        CASE(WeightsLoad)
+#undef CASE
+    }
+    return "Opcode(" + std::to_string(static_cast<int>(opcode)) + ")";
+}
+
+std::string format_trace_entry(const t81::vm::TraceEntry& entry) {
+    std::ostringstream oss;
+    oss << "PC=" << entry.pc << ' ' << opcode_name(entry.opcode);
+    if (entry.trap) {
+        oss << " trap=" << t81::vm::to_string(*entry.trap);
+    }
+    return oss.str();
+}
+
+void print_trace_summary(const t81::vm::State& state) {
+    const auto& trace = state.trace;
+    if (trace.empty()) {
+        info("Trace is empty");
+        return;
+    }
+    info("Last trace entries:");
+    size_t limit = std::min<std::size_t>(trace.size(), 16);
+    for (size_t i = 0; i < limit; ++i) {
+        std::string entry = format_trace_entry(trace[i]);
+        info("  " + std::to_string(i + 1) + ": " + entry);
+    }
+    if (trace.size() > limit) {
+        info("  ... " + std::to_string(trace.size() - limit) + " more entries");
+    }
+}
+
+void print_bindings_summary(const t81::vm::State& state) {
+    if (state.symbols.empty()) {
+        info("No symbols recorded from the last run");
+        return;
+    }
+    info("Symbols from last run:");
+    size_t limit = std::min<std::size_t>(state.symbols.size(), 16);
+    for (size_t i = 0; i < limit; ++i) {
+        info("  " + std::to_string(i + 1) + ": " + state.symbols[i]);
+    }
+    if (state.symbols.size() > limit) {
+        info("  ... " + std::to_string(state.symbols.size() - limit) + " more symbols");
+    }
+}
+
+bool load_weights_model_from_path(const fs::path& path,
+                                  std::shared_ptr<t81::weights::ModelFile>& model,
+                                  std::optional<fs::path>& model_path,
+                                  std::string& error) {
+    if (!fs::exists(path)) {
+        error = "weights model file not found";
+        return false;
+    }
+    std::string ext = to_lower(path.extension().string());
+    try {
+        t81::weights::ModelFile loaded;
+        if (ext == ".gguf") {
+            loaded = t81::weights::load_gguf(path);
+        } else if (ext == ".safetensors" || ext == ".safetensor") {
+            loaded = t81::weights::load_safetensors(path);
+        } else if (ext == ".t81w") {
+            loaded = t81::weights::load_t81w(path);
+        } else {
+            error = "unsupported weights extension '" + ext + "'";
+            return false;
+        }
+        model = std::make_shared<t81::weights::ModelFile>(std::move(loaded));
+        model_path = path;
+        return true;
+    } catch (const std::exception& e) {
+        error = e.what();
+        return false;
+    }
 }
 
 } // namespace
@@ -246,10 +439,115 @@ int compile(const fs::path& input,
     return 0;
 }
 
+namespace {
+
+void print_repl_help() {
+    info("REPL commands:");
+    info("  :quit / :exit       Exit the interactive session");
+    info("  :help               Show this message again");
+    info("  :history            Dump the pending buffer and recent runs");
+    info("  :reset              Clear the current buffer");
+    info("  :load <path>        Load a file into the buffer");
+    info("  :save <path>        Persist the buffer to disk");
+    info("  :run                Force execution without an empty line");
+    info("  :model [path]       Show/replace the attached weights model");
+    info("  :verbose / :quiet   Toggle logging verbosity");
+    info("  :bindings / :symbols List recorded symbols from the last run");
+    info("  :trace / :trill     Dump the last VM trace");
+    info("Submit an empty line to compile and execute the buffered snippet.");
+}
+
+void print_repl_history(const std::vector<std::string>& buffer_lines,
+                        const std::vector<std::string>& history_snippets) {
+    if (buffer_lines.empty()) {
+        info("REPL buffer is empty");
+    } else {
+        info("REPL buffer:");
+        for (size_t i = 0; i < buffer_lines.size(); ++i) {
+            const std::string& line = buffer_lines[i];
+            const std::string display = line.empty() ? "<empty>" : line;
+            info("  " + std::to_string(i + 1) + ": " + display);
+        }
+    }
+
+    if (history_snippets.empty()) {
+        info("No previous executions");
+        return;
+    }
+    info("Previous executions:");
+    size_t limit = std::min<std::size_t>(history_snippets.size(), 5);
+    for (size_t i = 0; i < limit; ++i) {
+        info("  " + std::to_string(i + 1) + ": " + summarize_snippet(history_snippets[i]));
+    }
+    if (history_snippets.size() > limit) {
+        info("  ... " + std::to_string(history_snippets.size() - limit) + " more entries");
+    }
+}
+
+}  // namespace
+
 int repl(const std::shared_ptr<t81::weights::ModelFile>& weights_model,
          std::istream& input) {
     info("Entering T81 interactive REPL. Type ':quit' or ':exit' to leave; submit an empty line to run.");
     std::string buffer;
+    std::vector<std::string> buffer_lines;
+    std::vector<std::string> executed_snippets;
+    std::unique_ptr<t81::vm::IVirtualMachine> last_vm;
+    std::shared_ptr<t81::weights::ModelFile> active_model = weights_model;
+    std::optional<fs::path> attached_model_path;
+
+    auto ensure_newline = [&]() {
+        if (!buffer.empty() && buffer.back() != '\n') {
+            buffer.push_back('\n');
+        }
+    };
+
+    auto append_line = [&](const std::string& line) {
+        ensure_newline();
+        buffer += line;
+        buffer.push_back('\n');
+        buffer_lines.push_back(line);
+    };
+
+    auto clear_buffer = [&]() {
+        buffer.clear();
+        buffer_lines.clear();
+    };
+
+    constexpr size_t kHistoryLimit = 64;
+
+    auto execute_buffer = [&]() -> bool {
+        if (buffer.empty()) {
+            info("Nothing to run (buffer is empty)");
+            return true;
+        }
+        auto program = build_program_from_source(buffer, "<repl>", active_model);
+        if (!program) {
+            clear_buffer();
+            return false;
+        }
+        auto vm = t81::vm::make_interpreter_vm();
+        vm->load_program(*program);
+        auto result = vm->run_to_halt();
+        last_vm = std::move(vm);
+        executed_snippets.push_back(buffer);
+        if (executed_snippets.size() > kHistoryLimit) {
+            executed_snippets.erase(executed_snippets.begin());
+        }
+        if (!result) {
+            error("Execution trapped: " + t81::vm::to_string(result.error()));
+            clear_buffer();
+            return false;
+        }
+        info("Execution completed");
+        clear_buffer();
+        return true;
+    };
+
+    auto set_buffer_from_string = [&](std::string content) {
+        buffer = std::move(content);
+        buffer_lines = split_lines(buffer);
+    };
 
     while (true) {
         std::cout << (buffer.empty() ? "t81> " : ".... ") << std::flush;
@@ -258,29 +556,139 @@ int repl(const std::shared_ptr<t81::weights::ModelFile>& weights_model,
             info("Exiting REPL");
             return 0;
         }
-        if (line == ":quit" || line == ":exit") {
-            break;
+
+        std::string trimmed = trim_copy(line);
+        if (!trimmed.empty() && trimmed.front() == ':') {
+            std::istringstream command(trimmed);
+            std::string token;
+            command >> token;
+            std::string args;
+            std::getline(command, args);
+            args = trim_copy(args);
+
+            if (token == ":quit" || token == ":exit") {
+                break;
+            }
+            if (token == ":help") {
+                print_repl_help();
+                continue;
+            }
+            if (token == ":history") {
+                print_repl_history(buffer_lines, executed_snippets);
+                continue;
+            }
+            if (token == ":reset") {
+                if (buffer.empty()) {
+                    info("REPL buffer already empty");
+                } else {
+                    clear_buffer();
+                    info("REPL buffer cleared");
+                }
+                continue;
+            }
+            if (token == ":load") {
+                if (args.empty()) {
+                    error("Missing path for :load");
+                    continue;
+                }
+                fs::path path(args);
+                std::ifstream in(path);
+                if (!in) {
+                    error("Failed to open file: " + path.string());
+                    continue;
+                }
+                std::ostringstream ss;
+                ss << in.rdbuf();
+                set_buffer_from_string(ss.str());
+                info("Loaded snippet from " + path.string());
+                continue;
+            }
+            if (token == ":save") {
+                if (args.empty()) {
+                    error("Missing path for :save");
+                    continue;
+                }
+                fs::path path(args);
+                std::ofstream out(path, std::ios::binary);
+                if (!out) {
+                    error("Failed to write file: " + path.string());
+                    continue;
+                }
+                out << buffer;
+                info("Buffer saved to " + path.string());
+                continue;
+            }
+            if (token == ":run") {
+                execute_buffer();
+                continue;
+            }
+            if (token == ":model") {
+                if (args.empty()) {
+                    if (attached_model_path) {
+                        info("Attached weights model: " + attached_model_path->string());
+                    } else if (active_model) {
+                        info("Attached weights model (path unknown)");
+                    } else {
+                        info("No weights model attached");
+                    }
+                    continue;
+                }
+                if (args == "none") {
+                    active_model.reset();
+                    attached_model_path.reset();
+                    info("Weights model cleared");
+                    continue;
+                }
+                std::string error_msg;
+                fs::path path(args);
+                if (!load_weights_model_from_path(path, active_model, attached_model_path, error_msg)) {
+                    error("Failed to load model: " + error_msg);
+                } else {
+                    info("Loaded weights model from " + path.string());
+                }
+                continue;
+            }
+            if (token == ":verbose") {
+                g_flags.verbose = true;
+                g_flags.quiet = false;
+                info("Verbose logging enabled");
+                continue;
+            }
+            if (token == ":quiet") {
+                g_flags.quiet = true;
+                g_flags.verbose = false;
+                info("Quiet mode enabled");
+                continue;
+            }
+            if (token == ":bindings" || token == ":symbols") {
+                if (last_vm) {
+                    print_bindings_summary(last_vm->state());
+                } else {
+                    info("No execution recorded yet");
+                }
+                continue;
+            }
+            if (token == ":trace" || token == ":trill") {
+                if (last_vm) {
+                    print_trace_summary(last_vm->state());
+                } else {
+                    info("No trace available yet");
+                }
+                continue;
+            }
+            info("Unknown command: " + token);
+            continue;
         }
+
         if (line.empty()) {
             if (buffer.empty()) {
                 continue;
             }
-            auto program = build_program_from_source(buffer, "<repl>", weights_model);
-            if (program) {
-                auto vm = t81::vm::make_interpreter_vm();
-                vm->load_program(*program);
-                auto result = vm->run_to_halt();
-                if (!result) {
-                    error("Execution trapped: " + t81::vm::to_string(result.error()));
-                } else {
-                    info("Execution completed");
-                }
-            }
-            buffer.clear();
+            execute_buffer();
             continue;
         }
-        buffer += line;
-        buffer.push_back('\n');
+
+        append_line(line);
     }
 
     info("Exiting REPL");
