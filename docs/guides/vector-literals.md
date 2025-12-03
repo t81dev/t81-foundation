@@ -12,6 +12,8 @@
 <!-- T81-TOC:END -->
 
 
+
+
 Vector literals (`[a, b, c]`) are now first-class, canonical constructs in the C++ frontend and obey the deterministic rules listed in [`spec/t81lang-spec.md` §2.3–§2.5](../spec/t81lang-spec.md#2-3-vector-type).
 
 ## Inference & Canonical Forms
