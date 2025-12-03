@@ -306,6 +306,9 @@ if(T81_BUILD_TESTS)
   add_executable(e2e_loop_statement_test tests/cpp/e2e_loop_statement_test.cpp)
   target_link_libraries(e2e_loop_statement_test PRIVATE t81_frontend t81_tisc t81_vm)
 
+  add_executable(cli_e2e_test tests/cpp/cli_e2e_test.cpp)
+  target_link_libraries(cli_e2e_test PRIVATE t81_cli_driver)
+
   add_executable(t81_t81int_test tests/cpp/test_t81int.cpp)
   target_link_libraries(t81_t81int_test PRIVATE t81_core)
 
@@ -486,6 +489,7 @@ if(T81_BUILD_TESTS)
     e2e_option_result_test
     e2e_match_expression_test
     e2e_loop_statement_test
+    cli_e2e_test
     t81_cli_pipeline_test
     t81_cli_option_result_test
     axion_loop_metadata_test
