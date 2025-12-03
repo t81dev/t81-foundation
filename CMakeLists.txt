@@ -255,6 +255,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_semantic_analyzer_record_enum_test tests/cpp/semantic_analyzer_record_enum_test.cpp)
   target_link_libraries(t81_semantic_analyzer_record_enum_test PRIVATE t81_frontend)
 
+  add_executable(t81_semantic_analyzer_equality_test tests/cpp/semantic_analyzer_equality_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_equality_test PRIVATE t81_frontend)
+
   add_executable(t81_tisc_binary_emitter_test tests/cpp/tisc_binary_emitter_test.cpp)
   target_link_libraries(t81_tisc_binary_emitter_test PRIVATE t81_tisc)
 
@@ -470,6 +473,7 @@ if(T81_BUILD_TESTS)
     t81_semantic_analyzer_match_test
     t81_semantic_analyzer_generic_test
     t81_semantic_analyzer_vector_literal_test
+    t81_semantic_analyzer_equality_test
     t81_semantic_analyzer_loop_test
     t81_tisc_binary_emitter_test
     t81_tisc_type_alias_io_test
