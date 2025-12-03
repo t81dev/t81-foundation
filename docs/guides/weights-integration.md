@@ -18,6 +18,8 @@
 
 
 
+
+
 This guide explains how to get `.t81w` models through the CLI, consume their tensors inside T81Lang, and how the VM keeps everything zero-copy via `weights.load`.
 
 ## Preparing a `.t81w`

@@ -1,5 +1,20 @@
 # T81 CLI Toolkit
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 CLI Toolkit](#t81-cli-toolkit)
+  - [Commands](#commands)
+  - [`t81` Executable Wrappers](#`t81`-executable-wrappers)
+  - [Structural Metadata Guarantees](#structural-metadata-guarantees)
+  - [Regression Tests](#regression-tests)
+  - [Notes for CLI Consumers](#notes-for-cli-consumers)
+  - [Advanced Examples](#advanced-examples)
+
+<!-- T81-TOC:END -->
+
+
 This guide summarizes the current command-line surface of `t81::cli` after the recent frontend work. It focuses on the operations you can rely on today, the invariants the CLI enforces, and the regression tests that keep the toolchain honest.
 
 ## Commands

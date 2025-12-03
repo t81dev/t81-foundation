@@ -1,5 +1,17 @@
 # Vector Literals & Canonical Tensors
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Vector Literals & Canonical Tensors](#vector-literals-&-canonical-tensors)
+  - [Inference & Canonical Forms](#inference-&-canonical-forms)
+  - [IR & Runtime Canonicalization](#ir-&-runtime-canonicalization)
+  - [Testing & Coverage](#testing-&-coverage)
+
+<!-- T81-TOC:END -->
+
+
 Vector literals (`[a, b, c]`) are now first-class, canonical constructs in the C++ frontend and obey the deterministic rules listed in [`spec/t81lang-spec.md` §2.3–§2.5](../spec/t81lang-spec.md#2-3-vector-type).
 
 ## Inference & Canonical Forms
