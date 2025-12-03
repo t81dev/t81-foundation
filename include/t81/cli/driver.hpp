@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <iostream>
 #include <memory>
 #include <string>
 
@@ -17,5 +18,7 @@ int compile(const std::filesystem::path& input,
             std::shared_ptr<t81::weights::ModelFile> weights_model = nullptr);
 int run_tisc(const std::filesystem::path& path);
 int check_syntax(const std::filesystem::path& path);
+int repl(const std::shared_ptr<t81::weights::ModelFile>& weights_model = nullptr,
+         std::istream& input = std::cin);
 
 } // namespace t81::cli

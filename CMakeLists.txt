@@ -291,6 +291,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_cli_structural_types_test tests/cpp/cli_structural_types_test.cpp)
   target_link_libraries(t81_cli_structural_types_test PRIVATE t81_cli_driver t81_tisc t81_vm)
 
+  add_executable(t81_cli_repl_test tests/cpp/cli_repl_test.cpp)
+  target_link_libraries(t81_cli_repl_test PRIVATE t81_cli_driver t81_tisc t81_vm)
+
   add_executable(t81_cli_record_enum_test tests/cpp/cli_record_enum_test.cpp)
   target_link_libraries(t81_cli_record_enum_test PRIVATE t81_cli_driver t81_tisc t81_vm)
 

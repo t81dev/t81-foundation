@@ -420,9 +420,16 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
+        if (args.command == "repl" && !args.input.empty()) {
+            error("repl does not accept an input file");
+            return 1;
+        }
+
         const auto ext = args.input.extension();
         auto weights_model_ptr = std::shared_ptr<t81::weights::ModelFile>{};
-        if (args.weights_model && (args.command == "compile" || (args.command == "run" && ext == ".t81"))) {
+        if (args.weights_model && (args.command == "compile" ||
+                                   (args.command == "run" && ext == ".t81") ||
+                                   args.command == "repl")) {
             weights_model_ptr = load_weights_model_optional(args.weights_model);
             if (!weights_model_ptr) return 1;
         }
@@ -468,6 +475,9 @@ int main(int argc, char* argv[]) {
 
         } else if (args.command == "benchmark") {
             return run_benchmark(argv[0], args);
+
+        } else if (args.command == "repl") {
+            return t81::cli::repl(weights_model_ptr);
 
         } else if (args.command == "weights") {
             return run_weights(args);

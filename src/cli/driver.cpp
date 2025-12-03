@@ -12,6 +12,8 @@
 #include <cctype>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
+#include <optional>
 #include <stdexcept>
 #include <sstream>
 #include <string>
@@ -88,6 +90,7 @@ std::string format_structural_alias(const t81::tisc::TypeAliasMetadata& alias) {
     }
     return oss.str();
 }
+
 } // namespace
 
 std::string sanitize_symbol(std::string_view input) {
@@ -133,6 +136,77 @@ std::string format_loop_metadata(const std::vector<t81::frontend::SemanticAnalyz
     return oss.str();
 }
 
+std::optional<t81::tisc::Program> build_program_from_source(
+    const std::string& source,
+    const std::string& diag_name,
+    const std::shared_ptr<t81::weights::ModelFile>& weights_model = nullptr)
+{
+    verbose("Lexing...");
+    t81::frontend::Lexer lexer(source);
+    auto tokens = lexer.all_tokens();
+
+    bool lexer_error = false;
+    for (const auto& t : tokens) {
+        if (t.type == t81::frontend::TokenType::Illegal) {
+            lexer_error = true;
+            std::cerr << diag_name << ':' << t.line << ':' << t.column
+                      << ": illegal token `" << t.lexeme << "`\n";
+        }
+    }
+    if (lexer_error) {
+        error("Lexing failed");
+        return std::nullopt;
+    }
+
+    verbose("Parsing...");
+    t81::frontend::Lexer parser_lexer(source);
+    t81::frontend::Parser parser(parser_lexer, diag_name);
+    auto stmts = parser.parse();
+    if (parser.had_error()) {
+        error("Parse errors encountered");
+        return std::nullopt;
+    }
+
+    verbose("Semantic analysis...");
+    t81::frontend::SemanticAnalyzer semantic_analyzer(stmts, diag_name);
+    semantic_analyzer.analyze();
+    if (semantic_analyzer.had_error()) {
+        print_semantic_diagnostics(semantic_analyzer);
+        error("Semantic errors encountered");
+        return std::nullopt;
+    }
+
+    verbose("Generating IR...");
+    t81::frontend::IRGenerator ir_gen;
+    ir_gen.attach_semantic_analyzer(&semantic_analyzer);
+    auto ir = ir_gen.generate(stmts);
+
+    verbose("Emitting TISC bytecode...");
+    t81::tisc::BinaryEmitter emitter;
+    auto program = emitter.emit(ir);
+
+    auto loop_policy = format_loop_metadata(semantic_analyzer.loop_metadata());
+    if (!loop_policy.empty()) {
+        program.axion_policy_text = loop_policy;
+        verbose("Axion loop metadata emitted");
+    }
+
+    if (weights_model) {
+        program.weights_model = weights_model;
+    }
+
+    if (!program.type_aliases.empty()) {
+        std::ostringstream oss;
+        oss << "Structural metadata (" << program.type_aliases.size() << " entries):";
+        for (const auto& alias : program.type_aliases) {
+            oss << "\n  " << format_structural_alias(alias);
+        }
+        verbose(oss.str());
+    }
+
+    return program;
+}
+
 namespace t81::cli {
 
 int compile(const fs::path& input,
@@ -161,71 +235,55 @@ int compile(const fs::path& input,
         source = source_override;
     }
 
-    verbose("Lexing...");
-    t81::frontend::Lexer lexer(source);
-    auto tokens = lexer.all_tokens();
-
-    bool lexer_error = false;
-    for (const auto& t : tokens) {
-        if (t.type == t81::frontend::TokenType::Illegal) {
-            lexer_error = true;
-            std::cerr << diag_name << ':' << t.line << ':' << t.column
-                      << ": illegal token `" << t.lexeme << "`\n";
-        }
-    }
-    if (lexer_error) return 1;
-
-    verbose("Parsing...");
-    t81::frontend::Lexer parser_lexer(source);
-    t81::frontend::Parser parser(parser_lexer, diag_name);
-    auto stmts = parser.parse();
-    if (parser.had_error()) {
-        error("Parse errors encountered");
-        return 1;
-    }
-
-    verbose("Semantic analysis...");
-    t81::frontend::SemanticAnalyzer semantic_analyzer(stmts, input.string());
-    semantic_analyzer.analyze();
-    if (semantic_analyzer.had_error()) {
-        print_semantic_diagnostics(semantic_analyzer);
-        error("Semantic errors encountered");
-        return 1;
-    }
-
-    verbose("Generating IR...");
-    t81::frontend::IRGenerator ir_gen;
-    ir_gen.attach_semantic_analyzer(&semantic_analyzer);
-    auto ir = ir_gen.generate(stmts);
-
-    verbose("Emitting TISC bytecode...");
-    t81::tisc::BinaryEmitter emitter;
-    auto program = emitter.emit(ir);
-
-    std::cerr << "loop metadata count: " << semantic_analyzer.loop_metadata().size() << std::endl;
-    auto loop_policy = format_loop_metadata(semantic_analyzer.loop_metadata());
-    if (!loop_policy.empty()) {
-        program.axion_policy_text = loop_policy;
-        verbose("Axion loop metadata emitted");
-    }
-    if (weights_model) {
-        program.weights_model = std::move(weights_model);
-    }
-
-    if (!program.type_aliases.empty()) {
-        std::ostringstream oss;
-        oss << "Structural metadata (" << program.type_aliases.size() << " entries):";
-        for (const auto& alias : program.type_aliases) {
-            oss << "\n  " << format_structural_alias(alias);
-        }
-        verbose(oss.str());
-    }
+    auto program = build_program_from_source(source, diag_name, weights_model);
+    if (!program) return 1;
 
     verbose("Writing " + output.string());
-    t81::tisc::save_program(program, output.string());
+    t81::tisc::save_program(*program, output.string());
 
     info("Compilation successful → " + output.string());
-    verbose(std::to_string(program.insns.size()) + " instructions emitted");
+    verbose(std::to_string(program->insns.size()) + " instructions emitted");
+    return 0;
+}
+
+int repl(const std::shared_ptr<t81::weights::ModelFile>& weights_model,
+         std::istream& input) {
+    info("Entering T81 interactive REPL. Type ':quit' or ':exit' to leave; submit an empty line to run.");
+    std::string buffer;
+
+    while (true) {
+        std::cout << (buffer.empty() ? "t81> " : ".... ") << std::flush;
+        std::string line;
+        if (!std::getline(input, line)) {
+            info("Exiting REPL");
+            return 0;
+        }
+        if (line == ":quit" || line == ":exit") {
+            break;
+        }
+        if (line.empty()) {
+            if (buffer.empty()) {
+                continue;
+            }
+            auto program = build_program_from_source(buffer, "<repl>", weights_model);
+            if (program) {
+                auto vm = t81::vm::make_interpreter_vm();
+                vm->load_program(*program);
+                auto result = vm->run_to_halt();
+                if (!result) {
+                    error("Execution trapped: " + t81::vm::to_string(result.error()));
+                } else {
+                    info("Execution completed");
+                }
+            }
+            buffer.clear();
+            continue;
+        }
+        buffer += line;
+        buffer.push_back('\n');
+    }
+
+    info("Exiting REPL");
     return 0;
 }
 

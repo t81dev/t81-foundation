@@ -35,7 +35,8 @@ This guide summarizes the current command-line surface of `t81::cli` after the r
 
 - `t81::cli::compile(source, tisc_path)` — compiles a `.t81` source file into the TISC binary. Always produce deterministic metadata: vector literals are canonicalized into tensor handles, `Option/Result` constructors are validated against contextual types, and every `record`/`enum` declaration emits `TypeAliasMetadata` entries preserving field layouts and variant payloads.  
 - `t81::cli::run_tisc(tisc_path)` — runs a compiled TISC program through the HanoiVM. Because the CLI carries canonical tensor handles and structural metadata, the VM can rely on deterministic memory layouts during execution and diagnostics.  
-- `t81::cli::check_syntax(source)` — performs the same parse + semantic passes as `compile` but stops before IR generation, returning zero only if no diagnostics are emitted. Useful for CI checks that need fast validation without writing output files.
+- `t81::cli::check_syntax(source)` — performs the same parse + semantic passes as `compile` but stops before IR generation, returning zero only if no diagnostics are emitted. Useful for CI checks that need fast validation without writing output files.  
+- `t81::cli::repl(weights_model?, input = std::cin)` — compiles each snippet built inside the interactive loop, runs it, and prints `Execution completed` (or any trap diagnostics) before waiting for more text. Submit an empty line to trigger compilation/execution, and exit with `:quit`/`:exit` to tear down the session. Supplying `--weights-model` to `t81 repl` lets the REPL reuse a pretrained asset without restarting the CLI.  
 
 Typical usage appears in `tests/cpp/cli_*_test.cpp`—the CLI builds a temporary source, writes it out, calls `compile`, and finally `run_tisc`. Each regression cleans up artifacts afterward.
 
@@ -46,6 +47,7 @@ The `t81` binary wraps the CLI surface in user-facing commands:
 - `t81 compile <file>` — accepts `.t81`, `.t81w`, and `.tisc` inputs. Weight files (`.t81w`) are expanded through `t81::weights` helpers before compilation, so production weight models benefit from the same deterministic metadata flow. `--output=<path>` overrides the target `.tisc` name.  
 - `t81 run <file>` — compiles `.t81` inputs to a temporary `.tisc` and runs them; `.tisc` binaries are executed directly.  
 - `t81 check <file>` — runs `t81::cli::check_syntax`, helpful for quick parsing/semantic validation.  
+- `t81 repl` — enters the interactive REPL described above; it accepts the global flags (`--verbose`, `--quiet`, `--weights-model`), buffers lines until a blank line is submitted, then compiles + executes the accumulated program. `:quit`/`:exit` leave the loop.  
 - `t81 benchmark` and `t81 weights ...` — reuse the CLI infrastructure for stress tests and model manipulation.  
 
 Global flags such as `--weights-model=<file>`, `--quiet`, and `--verbose` are available on every command so scripts can inject pretrained assets or tune output verbosity while preserving the structural invariants described above.
@@ -61,6 +63,7 @@ Global flags such as `--weights-model=<file>`, `--quiet`, and `--verbose` are av
 - `tests/cpp/cli_option_result_test.cpp`: matches on contextual `Option`/`Result` types and ensures canonical handles (`Some`, `None`, `Ok`, `Err`) commute through the CLI/VM path.  
 - `tests/cpp/cli_structural_types_test.cpp`: compiles a program that declares `Point` and `Flag`, executes it, loads the resulting `.tisc`, and checks the serialized metadata contains the expected fields/variants before the binary is discarded.  
 - `tests/cpp/cli_record_enum_test.cpp`: verifies match expressions over enums that embed records reach the VM without extra instrumentation.  
+- `tests/cpp/cli_repl_test.cpp`: feeds a two-turn snippet (with and without a dummy `ModelFile`) into the new REPL helper, captures stdout/stderr, and asserts the REPL prints `Execution completed`, guarding the :blank-line trigger and `:quit` exit behavior.  
 - The CLI tests are built via `CMakeLists.txt` and run through `ctest` when you run the standard suite.
 
 ## Notes for CLI Consumers
