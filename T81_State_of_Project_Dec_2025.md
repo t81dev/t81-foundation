@@ -37,37 +37,45 @@ Gap remaining: raw performance and adoption, not correctness.
 
 ```mermaid
 graph TD
-    subgraph Hardware
-        A[CPU SIMD (AVX2, AVX-512, SVE, NEON)]
+    subgraph "Hardware"
+        A["CPU SIMD (AVX2, AVX-512, SVE, NEON)"]
     end
 
-    subgraph T81 Core (Header-Only C++20)
-        B[T81Int / T81Float / T81Tensor]
-        C[SIMD Trit/Tryte Primitives]
+    subgraph "T81 Core (Header-Only C++20)"
+        B["T81Int / T81Float / T81Tensor"]
+        C["SIMD Trit/Tryte Primitives"]
     end
 
-    subgraph Toolchain
-        E[T81Lang Frontend]
-        F[TISC IR]
-        G[Bytecode Emitter]
+    subgraph "Toolchain"
+        E["T81Lang Frontend"]
+        F["TISC IR"]
+        G["Bytecode Emitter"]
     end
 
-    subgraph Runtime
-        H[HanoiVM]
-        I[Axion Safety Kernel]
+    subgraph "Runtime"
+        H["HanoiVM"]
+        I["Axion Safety Kernel"]
     end
 
-    subgraph Ecosystem
-        J[t81 CLI]
-        K[Weights Tooling → T3_K]
+    subgraph "Ecosystem"
+        J["t81 CLI"]
+        K["Weights Tooling → T3_K"]
     end
 
-    A --> C --> B --> K
-    E --> F --> G --> H
+    A --> C
+    C --> B
+    B --> K
+
+    E --> F
+    F --> G
+    G --> H
+
     I --> H
+
     J --> E
     J --> H
     J --> K
+
 ```
 
 ### 4. Component Maturity (Dec 2025)
