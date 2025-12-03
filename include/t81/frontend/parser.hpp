@@ -50,11 +50,13 @@ private:
     std::unique_ptr<Expr> primary();
     std::unique_ptr<Expr> match_expression();
     MatchArm match_arm();
+    MatchPattern parse_match_pattern();
     std::unique_ptr<Expr> record_literal(Token type_name);
     std::unique_ptr<TypeExpr> type();
     bool parse_loop_annotation(LoopStmt::BoundKind& bound_kind,
                                std::optional<std::int64_t>& bound_value,
-                               Token& attr_token);
+                               Token& attr_token,
+                               std::unique_ptr<Expr>& guard_expr);
     std::unique_ptr<GenericTypeExpr> parse_generic_type(Token name);
     std::optional<StructuralAttributes> parse_structural_attributes();
 

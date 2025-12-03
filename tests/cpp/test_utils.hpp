@@ -206,8 +206,33 @@ public:
         ss << "(match " << print(*expr.scrutinee);
         for (const auto& arm : expr.arms) {
             ss << " (" << arm.keyword.lexeme;
-            if (arm.has_binding) {
-                ss << " " << arm.binding.lexeme;
+            switch (arm.pattern.kind) {
+                case MatchPattern::Kind::Identifier:
+                    if (!arm.pattern.binding_is_wildcard) {
+                        ss << " " << arm.pattern.identifier.lexeme;
+                    }
+                    break;
+                case MatchPattern::Kind::Tuple:
+                    for (const auto& binding : arm.pattern.tuple_bindings) {
+                        ss << " " << binding.lexeme;
+                    }
+                    break;
+                case MatchPattern::Kind::Record:
+                    ss << " {";
+                    for (const auto& binding : arm.pattern.record_bindings) {
+                        ss << binding.first.lexeme;
+                        if (!(binding.second.lexeme == binding.first.lexeme)) {
+                            ss << ":" << binding.second.lexeme;
+                        }
+                        ss << ",";
+                    }
+                    ss << " }";
+                    break;
+                default:
+                    break;
+            }
+            if (arm.guard) {
+                ss << " if " << print(*arm.guard);
             }
             ss << " => " << print(*arm.expression);
             ss << ")";

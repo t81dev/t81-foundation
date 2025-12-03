@@ -19,7 +19,9 @@ void expect_semantic_success(const std::string& source) {
     assert(!analyzer.had_error());
 }
 
-void expect_semantic_failure(const std::string& source) {
+void expect_semantic_failure(const std::string& source,
+                             const char* label = "<failure fixture>",
+                             const std::string& expected_error = "") {
     Lexer lexer(source);
     Parser parser(lexer);
     auto stmts = parser.parse();
@@ -31,6 +33,16 @@ void expect_semantic_failure(const std::string& source) {
     SemanticAnalyzer analyzer(stmts);
     analyzer.analyze();
     assert(analyzer.had_error());
+    if (!expected_error.empty()) {
+        for (const auto& diag : analyzer.diagnostics()) {
+            if (diag.message.find(expected_error) != std::string::npos) {
+                return;
+            }
+        }
+        std::cerr << "Test '" << label << "' failed. Expected error containing: '" << expected_error
+                  << "', but no matching diagnostic was found." << std::endl;
+        std::exit(1);
+    }
 }
 
 int main() {
@@ -79,26 +91,26 @@ int main() {
 
     const std::string none_without_context = R"(
         fn main() -> i32 {
-            let missing = None;
+            let missing = None();
             return 0;
         }
     )";
     // `None` must appear where a contextual `Option[T]` type exists.
-    expect_semantic_failure(none_without_context);
+    expect_semantic_failure(none_without_context, "none_without_context", "requires a contextual Option[T] type");
 
     const std::string ok_without_context = R"(
         fn main() -> i32 {
             return Ok(2);
         }
     )";
-    expect_semantic_failure(ok_without_context);
+    expect_semantic_failure(ok_without_context, "ok_without_context", "requires a contextual Result[T, E] type");
 
     const std::string err_without_context = R"(
         fn main() -> i32 {
             return Err("boom");
         }
     )";
-    expect_semantic_failure(err_without_context);
+    expect_semantic_failure(err_without_context, "err_without_context", "requires a contextual Result[T, E] type");
 
     const std::string numeric_widening_success = R"(
         fn widen() -> i32 {
@@ -147,6 +159,27 @@ int main() {
         }
     )";
     expect_semantic_failure(bool_arith);
+
+    const std::string nested_option_success = R"(
+        fn nested_option() -> Option[Option[i32]] {
+            return Some(Some(7));
+        }
+    )";
+    expect_semantic_success(nested_option_success);
+
+    const std::string nested_option_result_success = R"(
+        fn nested_option_result() -> Option[Result[Option[i32], T81String]] {
+            return Some(Ok(Some(5)));
+        }
+    )";
+    expect_semantic_success(nested_option_result_success);
+
+    const std::string nested_option_result_failure = R"(
+        fn nested_option_result_bad() -> Option[Result[Option[i32], T81String]] {
+            return Some(Err(Some(5)));
+        }
+    )";
+    expect_semantic_failure(nested_option_result_failure);
 
     std::cout << "Semantic analyzer option/result tests passed!" << std::endl;
     return 0;

@@ -20,7 +20,9 @@ void expect_semantic_success(const std::string& source, const char* label = "sem
     assert(!analyzer.had_error());
 }
 
-void expect_semantic_failure(const std::string& source, const char* label = "semantic_match_failure") {
+void expect_semantic_failure(const std::string& source,
+                             const char* label = "semantic_match_failure",
+                             const std::string& expected_error = "") {
     Lexer lexer(source);
     const std::string diag = label ? label : "<source>";
     Parser parser(lexer, diag);
@@ -32,6 +34,15 @@ void expect_semantic_failure(const std::string& source, const char* label = "sem
     SemanticAnalyzer analyzer(stmts, diag);
     analyzer.analyze();
     assert(analyzer.had_error());
+    if (!expected_error.empty()) {
+        for (const auto& diag : analyzer.diagnostics()) {
+            if (diag.message.find(expected_error) != std::string::npos) {
+                return;
+            }
+        }
+        std::cerr << "Test '" << label << "' failed. Expected error containing: '" << expected_error << "', but no matching diagnostic was found." << std::endl;
+        assert(false && "Expected diagnostic not found.");
+    }
 }
 
 int main() {
@@ -230,6 +241,177 @@ int main() {
         }
     )";
     expect_semantic_failure(enum_binding_error, "enum_match_binding_error");
+
+    const std::string tuple_pattern_success = R"(
+        enum Pair {
+            Tup(Tuple[i32, i32]);
+            Empty;
+        }
+
+        fn main() -> i32 {
+            var pair: Pair;
+            return match (pair) {
+                Tup(a, b) => a + b;
+                Empty => 0;
+            };
+        }
+    )";
+    expect_semantic_success(tuple_pattern_success, "match_tuple_success");
+
+    const std::string tuple_guard_success = R"(
+        enum Pair {
+            Tup(Tuple[i32, i32]);
+            Empty;
+        }
+
+        fn main() -> i32 {
+            var pair: Pair;
+            return match (pair) {
+                Tup(a, b) if a > b => a - b;
+                Tup(a, b) => a + b;
+                Empty => 0;
+            };
+        }
+    )";
+    expect_semantic_success(tuple_guard_success, "match_tuple_guard_success");
+
+    const std::string guard_success = R"(
+        fn main() -> i32 {
+            let maybe: Option[i32] = Some(5);
+            return match (maybe) {
+                Some(v) if v > 0 => v;
+                None => 0;
+            };
+        }
+    )";
+    expect_semantic_success(guard_success, "match_guard_success");
+
+    const std::string guard_failure = R"(
+        fn main() -> i32 {
+            let maybe: Option[i32] = Some(5);
+            match (maybe) {
+                Some(v) if v => v;
+                None => 0;
+            };
+            return 0;
+        }
+    )";
+    expect_semantic_failure(guard_failure, "match_guard_failure", "Condition must be bool");
+
+    const std::string record_pattern_success = R"(
+        record Point2D {
+            x: i32;
+            y: i32;
+        }
+
+        enum Shape {
+            At(Point2D);
+            Empty;
+        }
+
+        fn main() -> i32 {
+            var shape: Shape;
+            return match (shape) {
+                At({x: px, y}) => px + y;
+                Empty => 0;
+            };
+        }
+    )";
+    expect_semantic_success(record_pattern_success, "match_record_success");
+
+    const std::string record_pattern_alias_success = R"(
+        record Point2D {
+            x: i32;
+            y: i32;
+        }
+
+        enum Shape {
+            At(Point2D);
+            Empty;
+        }
+
+        fn main() -> i32 {
+            var shape: Shape;
+            return match (shape) {
+                At({x, y: yy}) => x + yy;
+                Empty => 0;
+            };
+        }
+    )";
+    expect_semantic_success(record_pattern_alias_success, "match_record_alias_success");
+
+    const std::string record_pattern_error = R"(
+        record Point2D {
+            x: i32;
+            y: i32;
+        }
+
+        enum Shape {
+            At(Point2D);
+            Empty;
+        }
+
+        fn main() -> i32 {
+            var shape: Shape;
+            match (shape) {
+                At({z}) => 0;
+                Empty => 0;
+            };
+            return 0;
+        }
+    )";
+    expect_semantic_failure(record_pattern_error, "match_record_missing_field", "has no field 'z'");
+
+    const std::string missing_variant_binding = R"(
+        enum Signal {
+            Some(i32);
+            None;
+        }
+
+        fn main() -> i32 {
+            var signal: Signal;
+            match (signal) {
+                Some => 0;
+                None => 0;
+            };
+            return 0;
+        }
+    )";
+    expect_semantic_failure(missing_variant_binding, "match_missing_binding", "requires a binding");
+
+    const std::string tuple_pattern_arity_mismatch = R"(
+        enum Pair {
+            Tup(Tuple[i32, i32]);
+            Empty;
+        }
+
+        fn main() -> i32 {
+            var pair: Pair;
+            match (pair) {
+                Tup(a) => a;
+                Empty => 0;
+            };
+            return 0;
+        }
+    )";
+    expect_semantic_failure(tuple_pattern_arity_mismatch, "match_tuple_arity_mismatch", "expects 1 fields but payload has 2");
+
+    const std::string tuple_pattern_mismatch = R"(
+        enum Pair {
+            Tup(i32);
+            Empty;
+        }
+
+        fn main() -> i32 {
+            var pair: Pair;
+            match (pair) {
+                Tup(a, b) => a + b;
+                Empty => 0;
+            };
+            return 0;
+        }
+    )";
+    expect_semantic_failure(tuple_pattern_mismatch, "match_tuple_mismatch", "Tuple pattern for variant 'Tup' lacks payload type information.");
 
     std::cout << "Semantic analyzer match tests passed!" << std::endl;
     return 0;

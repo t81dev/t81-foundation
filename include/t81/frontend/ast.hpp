@@ -198,13 +198,35 @@ struct EnumLiteralExpr : Expr {
     const std::unique_ptr<Expr> payload;
 };
 
+struct MatchPattern {
+    enum class Kind {
+        None,
+        Identifier,
+        Tuple,
+        Record
+    };
+
+    MatchPattern() = default;
+    MatchPattern(Token identifier, bool wildcard)
+        : kind(Kind::Identifier),
+          identifier(identifier),
+          binding_is_wildcard(wildcard) {}
+
+    Kind kind = Kind::None;
+    Token identifier{};
+    bool binding_is_wildcard = false;
+    std::vector<Token> tuple_bindings;
+    std::vector<std::pair<Token, Token>> record_bindings;
+};
+
 struct MatchArm {
-    MatchArm(Token keyword, bool has_binding, Token binding,
-             bool binding_is_wildcard, std::unique_ptr<Expr> expression)
+    MatchArm(Token keyword,
+             MatchPattern pattern,
+             std::unique_ptr<Expr> guard,
+             std::unique_ptr<Expr> expression)
         : keyword(keyword),
-          has_binding(has_binding),
-          binding(binding),
-          binding_is_wildcard(binding_is_wildcard),
+          pattern(std::move(pattern)),
+          guard(std::move(guard)),
           expression(std::move(expression)) {}
 
     MatchArm(const MatchArm&) = delete;
@@ -213,9 +235,8 @@ struct MatchArm {
     MatchArm& operator=(MatchArm&&) = default;
 
     Token keyword;
-    bool has_binding;
-    Token binding;
-    bool binding_is_wildcard;
+    MatchPattern pattern;
+    std::unique_ptr<Expr> guard;
     std::unique_ptr<Expr> expression;
 };
 
@@ -421,13 +442,17 @@ struct LoopStmt : Stmt {
         None,
         Infinite,
         Static
+        ,
+        Guarded
     };
 
     LoopStmt(Token keyword, BoundKind bound_kind, std::optional<std::int64_t> bound_value,
+             std::unique_ptr<Expr> guard_expression,
              std::vector<std::unique_ptr<Stmt>> body)
         : keyword(keyword),
           bound_kind(bound_kind),
           bound_value(bound_value),
+          guard_expression(std::move(guard_expression)),
           body(std::move(body)) {}
 
     std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
@@ -435,6 +460,7 @@ struct LoopStmt : Stmt {
     const Token keyword;
     const BoundKind bound_kind;
     const std::optional<std::int64_t> bound_value;
+    const std::unique_ptr<Expr> guard_expression;
     const std::vector<std::unique_ptr<Stmt>> body;
 };
 

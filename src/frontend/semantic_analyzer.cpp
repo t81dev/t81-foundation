@@ -12,6 +12,7 @@ thread_local int type_to_string_depth = 0;
 #include <iostream>
 #include <algorithm>
 #include <sstream>
+#include <string_view>
 #include <utility>
 
 namespace {
@@ -744,12 +745,22 @@ std::any SemanticAnalyzer::visit(const LoopStmt& stmt) {
             error(stmt.keyword, "Static loop bounds must be a positive integer.");
         }
     }
+    if (stmt.bound_kind == LoopStmt::BoundKind::Guarded) {
+        if (!stmt.guard_expression) {
+            error(stmt.keyword, "Guarded loops must provide a guard expression.");
+        } else {
+            expect_condition_bool(*stmt.guard_expression, stmt.keyword);
+        }
+    }
     int depth = static_cast<int>(_loop_stack.size());
     LoopMetadata meta;
     meta.stmt = &stmt;
     meta.keyword = stmt.keyword;
     meta.bound_kind = stmt.bound_kind;
     meta.bound_value = stmt.bound_value;
+    if (stmt.bound_kind == LoopStmt::BoundKind::Guarded) {
+        meta.guard_present = true;
+    }
     meta.depth = depth;
     meta.id = _next_loop_id++;
     meta.source_file = _source_name;
@@ -1017,8 +1028,24 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         if (func_name == "Some") {
             if (arg_types.size() != 1) {
                 error(var_expr->name, "The 'Some' constructor expects exactly one argument.");
+                return make_error_type();
             }
-            return Type{Type::Kind::Option, {arg_types.empty() ? Type{Type::Kind::Unknown} : arg_types[0]}};
+            Type payload = arg_types[0];
+            Type result{Type::Kind::Option, {payload}};
+            if (expected && expected->kind == Type::Kind::Option) {
+                Type expected_payload = expected->params.empty() ? Type{Type::Kind::Unknown} : expected->params[0];
+                if (expected_payload.kind != Type::Kind::Unknown &&
+                    !is_assignable(expected_payload, payload)) {
+                    error(var_expr->name, "The 'Some' constructor argument must match the contextual Option payload ('" +
+                                         type_to_string(expected_payload) + "').");
+                } else if (expected_payload.kind != Type::Kind::Unknown) {
+                    result.params[0] = expected_payload;
+                } else {
+                    result.params[0] = payload;
+                }
+                merge_expected_params(result, expected);
+            }
+            return result;
         }
         if (func_name == "None") {
             if (!arg_types.empty()) {
@@ -1039,6 +1066,10 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
                 error(var_expr->name, "The 'Ok' constructor expects exactly one argument.");
                 return make_error_type();
             }
+            if (!expected || expected->kind != Type::Kind::Result) {
+                error(var_expr->name, "The 'Ok' constructor requires a contextual Result[T, E] type.");
+                return make_error_type();
+            }
             Type result_type = build_result_template(expected);
             Type success_expected = result_type.params[0];
             Type success_arg = arg_types[0];
@@ -1048,11 +1079,16 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
             }
             result_type.params[0] =
                 (success_expected.kind == Type::Kind::Unknown ? success_arg : success_expected);
+            merge_expected_params(result_type, expected);
             return result_type;
         }
         if (func_name == "Err") {
             if (arg_types.size() != 1) {
                 error(var_expr->name, "The 'Err' constructor expects exactly one argument.");
+                return make_error_type();
+            }
+            if (!expected || expected->kind != Type::Kind::Result) {
+                error(var_expr->name, "The 'Err' constructor requires a contextual Result[T, E] type.");
                 return make_error_type();
             }
             Type result_type = build_result_template(expected);
@@ -1064,6 +1100,7 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
             }
             result_type.params[1] =
                 (error_expected.kind == Type::Kind::Unknown ? error_arg : error_expected);
+            merge_expected_params(result_type, expected);
             return result_type;
         }
         if (func_name == "weights.load") {
@@ -1169,6 +1206,16 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
     bool structural_error = false;
     std::unordered_set<std::string> seen_variants;
 
+    auto bind_symbol = [&](const Token& name, const Type& type) {
+        if (std::string_view{name.lexeme} == "_") {
+            return;
+        }
+        define_symbol(name, SymbolKind::Variable);
+        if (auto* symbol = resolve_symbol(name)) {
+            symbol->type = type;
+        }
+    };
+
     for (const auto& arm : expr.arms) {
         std::string name{arm.keyword.lexeme};
         auto variant_it = allowed_variants.find(name);
@@ -1183,23 +1230,77 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
         }
 
         bool variant_has_payload = variant_it->second.payload.has_value();
-        Type binding_type = variant_has_payload ? *variant_it->second.payload : Type{Type::Kind::Unknown};
+        Type payload_type = variant_has_payload ? *variant_it->second.payload : Type{Type::Kind::Unknown};
+        MatchPattern::Kind pattern_kind = arm.pattern.kind;
 
-        if (variant_has_payload && !arm.has_binding) {
+        if (variant_has_payload && pattern_kind == MatchPattern::Kind::None) {
             error(arm.keyword, "Variant '" + name + "' requires a binding.");
             structural_error = true;
+            continue;
         }
-        if (!variant_has_payload && arm.has_binding) {
-            error(arm.binding, "Variant '" + name + "' does not accept a binding.");
+
+        if (!variant_has_payload && pattern_kind != MatchPattern::Kind::None) {
+            error(arm.keyword, "Variant '" + name + "' does not accept a binding.");
             structural_error = true;
+            continue;
         }
 
         enter_scope();
-        if (arm.has_binding && variant_has_payload && !arm.binding_is_wildcard) {
-            define_symbol(arm.binding, SymbolKind::Variable);
-            if (auto* symbol = resolve_symbol(arm.binding)) {
-                symbol->type = binding_type;
+        bool pattern_valid = true;
+
+        if (pattern_kind == MatchPattern::Kind::Identifier && variant_has_payload) {
+            if (!arm.pattern.binding_is_wildcard) {
+                bind_symbol(arm.pattern.identifier, payload_type);
             }
+        } else if (pattern_kind == MatchPattern::Kind::Tuple && variant_has_payload) {
+            size_t expected_fields = arm.pattern.tuple_bindings.size();
+            if (payload_type.params.empty()) {
+                error(arm.keyword, "Tuple pattern for variant '" + name + "' lacks payload type information.");
+                pattern_valid = false;
+            } else if (payload_type.params.size() != expected_fields) {
+                error(arm.keyword, "Tuple pattern for variant '" + name + "' expects " +
+                                   std::to_string(expected_fields) + " fields but payload has " +
+                                   std::to_string(payload_type.params.size()) + ".");
+                pattern_valid = false;
+            } else {
+                for (size_t i = 0; i < expected_fields; ++i) {
+                    bind_symbol(arm.pattern.tuple_bindings[i], payload_type.params[i]);
+                }
+            }
+        } else if (pattern_kind == MatchPattern::Kind::Record && variant_has_payload) {
+            if (payload_type.kind != Type::Kind::Custom || payload_type.custom_name.empty()) {
+                error(arm.keyword, "Record pattern for variant '" + name + "' requires a record payload.");
+                pattern_valid = false;
+            } else {
+                auto record_it = _record_definitions.find(payload_type.custom_name);
+                if (record_it == _record_definitions.end()) {
+                    error(arm.keyword, "Variant '" + name + "' payload '" + payload_type.custom_name + "' is not a known record.");
+                    pattern_valid = false;
+                } else {
+                    const auto& info = record_it->second;
+                    for (const auto& binding : arm.pattern.record_bindings) {
+                        std::string field_name(binding.first.lexeme);
+                        auto field_it = info.field_map.find(field_name);
+                        if (field_it == info.field_map.end()) {
+                            error(binding.first, "Record '" + payload_type.custom_name + "' has no field '" + field_name + "'.");
+                            pattern_valid = false;
+                            continue;
+                        }
+                        bind_symbol(binding.second, field_it->second);
+                    }
+                }
+            }
+        }
+
+        if (!pattern_valid) {
+            exit_scope();
+            structural_error = true;
+            continue;
+        }
+
+        if (arm.guard) {
+            Token guard_token = extract_token(*arm.guard);
+            expect_condition_bool(*arm.guard, guard_token);
         }
 
         const Type* arm_expected = result_type_locked ? &result_type : nullptr;

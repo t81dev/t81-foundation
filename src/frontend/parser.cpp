@@ -310,7 +310,8 @@ std::unique_ptr<Stmt> Parser::loop_statement() {
     LoopStmt::BoundKind loop_bound_kind = LoopStmt::BoundKind::None;
     std::optional<std::int64_t> loop_bound_value;
     Token loop_attr{};
-    bool saw_annotation = parse_loop_annotation(loop_bound_kind, loop_bound_value, loop_attr);
+    std::unique_ptr<Expr> guard_expr;
+    bool saw_annotation = parse_loop_annotation(loop_bound_kind, loop_bound_value, loop_attr, guard_expr);
 
     Token loop_token = consume(TokenType::Loop, "Expect 'loop' keyword.");
 
@@ -320,7 +321,8 @@ std::unique_ptr<Stmt> Parser::loop_statement() {
 
     consume(TokenType::LBrace, "Expect '{' after 'loop'.");
     auto body = block();
-    return std::make_unique<LoopStmt>(loop_token, loop_bound_kind, loop_bound_value, std::move(body));
+    return std::make_unique<LoopStmt>(loop_token, loop_bound_kind, loop_bound_value,
+                                      std::move(guard_expr), std::move(body));
 }
 
 // Parses a block of statements.
@@ -517,27 +519,70 @@ std::unique_ptr<Expr> Parser::record_literal(Token type_name) {
     return std::make_unique<RecordLiteralExpr>(type_name, std::move(fields));
 }
 
+MatchPattern Parser::parse_match_pattern() {
+    MatchPattern pattern;
+    if (match({TokenType::LBrace})) {
+        pattern.kind = MatchPattern::Kind::Record;
+        if (!check(TokenType::RBrace)) {
+            do {
+                Token field_name = consume(TokenType::Identifier, "Expect field name in record pattern.");
+                Token binding = field_name;
+                if (match({TokenType::Colon})) {
+                    binding = consume(TokenType::Identifier, "Expect binding name after ':' in record pattern.");
+                }
+                pattern.record_bindings.emplace_back(field_name, binding);
+            } while (match({TokenType::Comma, TokenType::Semicolon}));
+        }
+        consume(TokenType::RBrace, "Expect '}' after record pattern.");
+        return pattern;
+    }
+
+    if (match({TokenType::Identifier})) {
+        Token first = previous();
+        if (match({TokenType::Comma})) {
+            pattern.kind = MatchPattern::Kind::Tuple;
+            pattern.tuple_bindings.push_back(first);
+            do {
+                Token binding = consume(TokenType::Identifier, "Expect binding identifier in tuple pattern.");
+                pattern.tuple_bindings.push_back(binding);
+            } while (match({TokenType::Comma}));
+            return pattern;
+        }
+        pattern.kind = MatchPattern::Kind::Identifier;
+        pattern.identifier = first;
+        pattern.binding_is_wildcard = std::string_view(first.lexeme) == "_";
+        return pattern;
+    }
+
+    report_error(peek(), "Expect pattern binding.");
+    return pattern;
+}
+
 MatchArm Parser::match_arm() {
     Token keyword = consume(TokenType::Identifier, "Expect match arm variant.");
-    bool has_binding = false;
-    Token binding{};
-    bool binding_is_wildcard = false;
+    MatchPattern pattern;
 
     if (match({TokenType::LParen})) {
-        binding = consume(TokenType::Identifier, "Expect binding identifier.");
-        has_binding = true;
-        binding_is_wildcard = binding.lexeme == "_";
+        if (!check(TokenType::RParen)) {
+            pattern = parse_match_pattern();
+        }
         consume(TokenType::RParen, "Expect ')' after match binding.");
+    }
+
+    std::unique_ptr<Expr> guard = nullptr;
+    if (match({TokenType::If})) {
+        guard = expression();
     }
 
     consume(TokenType::FatArrow, "Expect '=>' after match arm pattern.");
     std::unique_ptr<Expr> body = expression();
-    return MatchArm(keyword, has_binding, binding, binding_is_wildcard, std::move(body));
+    return MatchArm(keyword, std::move(pattern), std::move(guard), std::move(body));
 }
 
 bool Parser::parse_loop_annotation(LoopStmt::BoundKind& bound_kind,
                                   std::optional<std::int64_t>& bound_value,
-                                  Token& attr_token) {
+                                  Token& attr_token,
+                                  std::unique_ptr<Expr>& guard_expr) {
     if (!match({TokenType::At})) {
         return false;
     }
@@ -551,13 +596,20 @@ bool Parser::parse_loop_annotation(LoopStmt::BoundKind& bound_kind,
     consume(TokenType::LParen, "Expect '(' after annotation name.");
     bound_kind = LoopStmt::BoundKind::None;
     bound_value.reset();
+    guard_expr.reset();
     Token arg;
-    if (match({TokenType::Identifier})) {
+    if (match({TokenType::Identifier, TokenType::Loop})) {
         arg = previous();
-        if (std::string_view{arg.lexeme} == "infinite") {
+        std::string_view lexeme{arg.lexeme};
+        if (lexeme == "infinite") {
             bound_kind = LoopStmt::BoundKind::Infinite;
+        } else if (lexeme == "loop") {
+            bound_kind = LoopStmt::BoundKind::Guarded;
+            consume(TokenType::LParen, "Expect '(' after 'loop'.");
+            guard_expr = expression();
+            consume(TokenType::RParen, "Expect ')' after guard expression.");
         } else {
-            report_error(arg, "'@bounded' only accepts 'infinite' or an integer");
+            report_error(arg, "'@bounded' only accepts 'infinite', an integer, or 'loop(...)'");
         }
     } else if (match({TokenType::Integer})) {
         arg = previous();

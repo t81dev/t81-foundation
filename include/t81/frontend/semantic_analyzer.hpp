@@ -145,6 +145,7 @@ public:
         int depth = 0;
         int id = 0;
         std::string source_file;
+        bool guard_present = false;
 
         bool annotated() const { return bound_kind != LoopStmt::BoundKind::None; }
         bool bound_infinite() const { return bound_kind == LoopStmt::BoundKind::Infinite; }

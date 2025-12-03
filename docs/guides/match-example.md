@@ -194,3 +194,12 @@ The program should terminate normally, returning `10` because the option path `S
 - **Binary Emission:** The helper opcodes now map to dedicated TISC instructions so execution stays deterministic across the stack.
 
 Feel free to reuse this sample inside your own tests or onboarding tutorials to demonstrate pattern matching end-to-end.
+
+## 5. Failure Cases & Diagnostics
+
+- Guards that return non-boolean values emit `Condition must be bool, found '…'` so malformed `if … =>` branches are rejected before IR lowering (`tests/cpp/semantic_analyzer_match_test.cpp`).
+- Tuple patterns must match the payload’s arity; violating arms trigger `Tuple pattern for variant 'Tup' expects N fields but payload has M.` and the arm is rejected.
+- Record destructuring requires known field names and bindings; the analyzer reports `Record 'Point2D' has no field 'z'` when unlisted fields appear in the pattern.
+- Every payload-bearing variant must bind its payload; omitting the binding raises `Variant 'Some' requires a binding` and saves you from uninitialized matches.
+- `None`/`Some`/`Ok`/`Err` constructors only work when a contextual `Option[T]` or `Result[T, E]` type is available. Expect diagnostics such as `The 'None' constructor requires a contextual Option[T] type.` or `The 'Ok'/'Err' constructor requires a contextual Result[T, E] type.` for stray invocations (`tests/cpp/semantic_analyzer_option_result_test.cpp`).
+- Match arms must still agree on their return type; as soon as one arm produces a different canonical type than another, you will see `All match arms must produce the same type.` and the analyzer halts lowering.
