@@ -134,7 +134,7 @@ ______________________________________________________________________
 
 ## 6. License
 
-All contributions are accepted under the **Apache 2.0 License**, consistent with the repository’s LICENSE file.
+All contributions are accepted under the **MIT License**, consistent with the repository’s LICENSE file.
 
 ______________________________________________________________________
 

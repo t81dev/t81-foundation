@@ -1,21 +1,7 @@
 /**
  * @file T81String.hpp
- * @brief T81String — variable-length text for the T81 stack.
- *
- * Design (current implementation):
- *   • Logical alphabet: 27 symbols (A–Z plus space).
- *   • Storage: normalized ASCII string (A–Z + ' '), future-compatible with
- *     ternary/tryte packing.
- *   • Provides construction from C-style strings and std::string_view,
- *     concatenation, comparison, hashing, and a "_t81" user-defined literal.
- *
- * Notes:
- *   • All input is normalized to uppercase and non-[A–Z ] characters are
- *     mapped to space.
- *   • The previous bit-packed implementation had multiple correctness issues
- *     (insufficient bits per symbol, dangling string_view). This version
- *     prioritizes correctness and clean semantics; ternary packing can be
- *     added beneath the same API later.
+ * @brief Defines the T81String class, a variable-length text type for the T81
+ * stack.
  */
 
 #pragma once

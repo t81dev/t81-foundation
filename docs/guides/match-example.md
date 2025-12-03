@@ -1,10 +1,10 @@
-# T81Lang Match Demo
+# Guide: T81Lang Match Demo
 
 <!-- T81-TOC:BEGIN -->
 
 ## Table of Contents
 
-- [T81Lang Match Demo](#t81lang-match-demo)
+- [Guide: T81Lang Match Demo](#guide-t81lang-match-demo)
   - [1. Source](#1-source)
   - [2. Compile](#2-compile)
   - [3. Run with the HanoiVM](#3-run-with-the-hanoivm)

@@ -3,13 +3,13 @@ layout: page
 title: Public API Overview
 ---
 
-# T81 Foundation: Public API Overview
+# Guide: Public API Overview
 
 <!-- T81-TOC:BEGIN -->
 
 ## Table of Contents
 
-- [T81 Foundation: Public API Overview](#t81-foundation-public-api-overview)
+- [Guide: Public API Overview](#guide-public-api-overview)
   - [1. Where to Look](#1-where-to-look)
   - [2. Core Numerics (`include/t81/core`, `include/t81/tensor`, `include/t81/ternary`)](#2-core-numerics-`includet81core`-`includet81tensor`-`includet81ternary`)
   - [3. Frontend (`include/t81/frontend`) & Language Interface (`include/t81/lang`)](#3-frontend-`includet81frontend`-&-language-interface-`includet81lang`)
@@ -19,21 +19,6 @@ title: Public API Overview
   - [7. Targeted Coverage Notes](#7-targeted-coverage-notes)
 
 <!-- T81-TOC:END -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 This guide catalogs the public C++ APIs under `include/t81/`, highlights threading/error-handling expectations, and points readers toward the generated Doxygen docs.
 

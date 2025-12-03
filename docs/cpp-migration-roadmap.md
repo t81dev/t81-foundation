@@ -1,5 +1,7 @@
 # T81 C++ Migration Roadmap
 
+**Status: ARCHIVED**. This document is historical. For current project status, see [`ROADMAP.md`](../ROADMAP.md) and [`TASKS.md`](../TASKS.md).
+
 <!-- T81-TOC:BEGIN -->
 
 ## Table of Contents

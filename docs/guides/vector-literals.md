@@ -1,25 +1,22 @@
-# Vector Literals & Canonical Tensors
+# Guide: Vector Literals & Canonical Tensors
 
 <!-- T81-TOC:BEGIN -->
 
 ## Table of Contents
 
-- [Vector Literals & Canonical Tensors](#vector-literals-&-canonical-tensors)
-  - [Inference & Canonical Forms](#inference-&-canonical-forms)
-  - [IR & Runtime Canonicalization](#ir-&-runtime-canonicalization)
-  - [Testing & Coverage](#testing-&-coverage)
+- [Guide: Vector Literals & Canonical Tensors](#guide-vector-literals-canonical-tensors)
+  - [1. Inference & Canonical Forms](#1-inference-canonical-forms)
+  - [2. IR & Runtime Canonicalization](#2-ir-runtime-canonicalization)
+  - [3. Testing & Coverage](#3-testing-coverage)
 
 <!-- T81-TOC:END -->
 
-
-
-
 Vector literals (`[a, b, c]`) are now first-class, canonical constructs in the C++ frontend and obey the deterministic rules listed in [`spec/t81lang-spec.md` §2.3–§2.5](../spec/t81lang-spec.md#2-3-vector-type).
 
-## Inference & Canonical Forms
+## 1. Inference & Canonical Forms
 
-1. **Every element** must be a numeric literal. Non-empty lists infer their `Vector[T]` type from the *first* numeric element, and subsequent elements must either share that primitive type or widen deterministically (e.g., `i32` → `Float`).  
-2. **Empty vectors** (`[]`) are only legal when a contextual `Vector[T]` (or `Tensor[T, ...]`) type guides inference; otherwise the semantic analyzer reports an error.  
+1. **Every element** must be a numeric literal. Non-empty lists infer their `Vector[T]` type from the *first* numeric element, and subsequent elements must either share that primitive type or widen deterministically (e.g., `T81Int` → `T81Float`).
+2. **Empty vectors** (`[]`) are only legal when a contextual `Vector[T]` (or `Tensor[T, ...]`) type guides inference; otherwise the semantic analyzer reports an error.
 3. The analyzer records the parsed floating-point payload, so later passes can treat the literal as immutable, canonical data.
 
 ## IR & Runtime Canonicalization

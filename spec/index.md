@@ -138,16 +138,15 @@ ______________________________________________________________________
 
 ## 1.7 Cognitive Tiers Specification
 
-[`cognitive-tiers.md`](cognitive-tiers.md)
+[`t81-spec.md`](t81-spec.md)
 
 Defines the **five-tier reasoning model**:
 
-- Tier 0 — validation
-- Tier 1 — pure deterministic computation
-- Tier 2 — structured algorithms
-- Tier 3 — symbolic recursion
-- Tier 4 — advanced analytic reasoning
-- Tier 5 — metacognitive reasoning
+- **T243** — Symbolic Cognition
+- **T729** — Reflective Cognition
+- **T2187** — Hyper-Recursive Cognition
+- **T6561** — Distributed Cognition
+- **T19683** — Universal Infinite Cognition
 
 With constraints on:
 

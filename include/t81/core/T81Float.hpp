@@ -1,15 +1,6 @@
 /**
  * @file T81Float.hpp
- * @brief Balanced ternary floating-point backed by T81Int storage.
- *
- * Model:
- * • Storage: T81Int<1 + E + M> (sign + exponent + mantissa trits)
- * • Correct balanced-ternary biased exponent (bias = (3^E - 1)/2)
- * • Special values:
- *   - Zero    (exp = 0,            mant = 0)
- *   - Subnorm (exp = 0,            mant != 0)
- *   - Infinity(exp = all P trits,  mant = 0)
- *   - NaE     (Not-an-Entity,      exp = all P trits, mant != 0)
+ * @brief Defines the T81Float class, a balanced ternary floating-point type.
  */
 
 #pragma once

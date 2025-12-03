@@ -1,15 +1,7 @@
 /**
  * @file T81BigInt.hpp
- * @brief T81BigInt — high-level ternary integer wrapper backed by T81Int.
- *
- * Design notes:
- *   • Internally stores a sign bit and one or more T81Int "limbs".
- *   • Current implementation is intentionally conservative: it only supports
- *     values that fit safely in a signed 64-bit integer and delegates all
- *     arithmetic to int64_t, using T81Int as the underlying storage.
- *   • This makes T81BigInt a safe, future-extensible façade: the API is
- *     arbitrary-precision–friendly, while the implementation remains
- *     simple and well-defined for now.
+ * @brief Defines the T81BigInt class, an arbitrary-precision balanced ternary
+ * integer.
  */
 
 #pragma once

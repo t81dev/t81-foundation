@@ -3,151 +3,24 @@ layout: page
 title: TISC and VM Guide
 ---
 
-# TISC and VM Guide
+# Guide: TISC and VM Opcodes
 
 <!-- T81-TOC:BEGIN -->
 
 ## Table of Contents
 
-- [TISC and VM Guide](#tisc-and-vm-guide)
+- [Guide: TISC and VM Opcodes](#guide-tisc-and-vm-opcodes)
   - [1. Architecture](#1-architecture)
-    - [Register and Memory Model](#register-and-memory-model)
+    - [1.1 Register and Memory Model](#11-register-and-memory-model)
   - [2. Implemented Opcodes](#2-implemented-opcodes)
-    - [Stack/Heap Allocator Opcodes](#stackheap-allocator-opcodes)
-    - [Axion Loop Metadata Example](#axion-loop-metadata-example)
+    - [2.1 Stack/Heap Allocator Opcodes](#21-stackheap-allocator-opcodes)
+    - [2.2 Axion Loop Metadata Example](#22-axion-loop-metadata-example)
   - [3. How to Add a New TISC Opcode](#3-how-to-add-a-new-tisc-opcode)
-    - [Step 1: Define the New Opcode](#step-1-define-the-new-opcode)
-    - [Step 2: Implement the Opcode in the VM](#step-2-implement-the-opcode-in-the-vm)
-    - [Step 3: Write a Test](#step-3-write-a-test)
+    - [3.1 Step 1: Define the New Opcode](#31-step-1-define-the-new-opcode)
+    - [3.2 Step 2: Implement the Opcode in the VM](#32-step-2-implement-the-opcode-in-the-vm)
+    - [3.3 Step 3: Write a Test](#33-step-3-write-a-test)
 
 <!-- T81-TOC:END -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 This guide provides an overview of the TISC instruction set and the T81 Virtual Machine (VM) that executes it.
 

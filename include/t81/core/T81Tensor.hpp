@@ -1,13 +1,6 @@
 /**
  * @file T81Tensor.hpp
- * @brief Defines the T81Tensor class, a multi-dimensional array for high performance.
- *
- * This file provides the `T81Tensor<Element, Rank, Dims...>` class, a versatile
- * multi-dimensional array designed for high-performance numerical computing.
- * It is templatized by the element type, rank, and dimensions, and its memory
- * layout is contiguous and 64-byte aligned to be friendly to tensor cores and
- * other hardware accelerators. It supports essential tensor operations like
- * element-wise arithmetic, reshaping, and broadcasting.
+ * @brief Defines the T81Tensor class, a multi-dimensional array.
  */
 #pragma once
 

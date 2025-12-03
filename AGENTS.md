@@ -46,7 +46,7 @@ ______________________________________________________________________
 
 ### C++ (the One True Path forward)
 
-- Target **C++23** (project upgraded Nov 2025). Concepts, ranges, and `std::expected` are encouraged.
+- Target **C++20**. Concepts, ranges, and `std::expected` are encouraged.
 - All new public API lives in `include/t81/` under `t81::v1` (or higher) namespace.
 - Prefer header-only when reasonable.
 - Use `[[nodiscard]]`, `constexpr`, and `consteval` aggressively.

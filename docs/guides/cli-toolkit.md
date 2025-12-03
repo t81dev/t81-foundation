@@ -1,11 +1,11 @@
-# T81 CLI Toolkit
+# Guide: T81 CLI Toolkit
 
 <!-- T81-TOC:BEGIN -->
 
 ## Table of Contents
 
-- [T81 CLI Toolkit](#t81-cli-toolkit)
-  - [Commands](#commands)
+- [Guide: T81 CLI Toolkit](#guide-t81-cli-toolkit)
+  - [1. Commands](#1-commands)
   - [`t81` Executable Wrappers](#`t81`-executable-wrappers)
   - [Structural Metadata Guarantees](#structural-metadata-guarantees)
   - [Regression Tests](#regression-tests)

@@ -12,7 +12,7 @@ The v1.0 release of the T81 Foundation will deliver a stable, documented, and pr
 
 The project remains early-beta, but the stack is stabilizing: the compiler frontend is complete, the numeric core continues to harden, and systemic documentation is aligned with implementation artifacts.
 
-- **Strengths:** A fully modern C++23 toolchain drives the repo, and the T81Lang frontend now includes a lexer, parser, and semantic pass that already enforces core symbol resolution rules. The emerging `t81` CLI, parser diagnostics, and documented build flow make regression testing and experimentation reliable. Core numerics now implement the canonical integer, float, tensor, and data structure families described in `spec/t81-data-types.md`.
+- **Strengths:** A fully modern C++20 toolchain drives the repo, and the T81Lang frontend now includes a lexer, parser, and semantic pass that already enforces core symbol resolution rules. The emerging `t81` CLI, parser diagnostics, and documented build flow make regression testing and experimentation reliable. Core numerics now implement the canonical integer, float, tensor, and data structure families described in `spec/t81-data-types.md`.
 - **Weaknesses:** Type checking (especially inference for `Option`, `Result`, and higher-order generics) is still being ratcheted up, the HanoiVM memory model and deterministic faults remain incomplete, and Axion Kernel/CanonFS implementations are placeholders. More work is needed to close the remaining canonical numeric and VM semantics gaps.
 
 For a detailed breakdown, see the [**System Status Report**](docs/system-status.md) and [`ANALYSIS.md`](ANALYSIS.md).

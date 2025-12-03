@@ -1,127 +1,17 @@
-# Demo Gallery
+# Guide: Demo Gallery
 
 <!-- T81-TOC:BEGIN -->
 
 ## Table of Contents
 
-- [Demo Gallery](#demo-gallery)
+- [Guide: Demo Gallery](#guide-demo-gallery)
   - [1. CLI Demos](#1-cli-demos)
   - [2. Automation Script](#2-automation-script)
   - [3. IR/VM Introspection](#3-irvm-introspection)
-  - [Axion Loop Trace](#axion-loop-trace)
-    - [Axion CLI Trace Example](#axion-cli-trace-example)
-  - [4. What’s Next?](#4-what’s-next?)
+  - [4. Axion Loop Trace](#4-axion-loop-trace)
+  - [5. What’s Next?](#5-what’s-next)
 
 <!-- T81-TOC:END -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 This page lists the runnable demos and utilities available in the repository, giving you quick pointers to the content mentioned elsewhere.
 

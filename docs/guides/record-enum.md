@@ -1,18 +1,15 @@
-# Records & Enums Guide
+# Guide: Records & Enums
 
 <!-- T81-TOC:BEGIN -->
 
 ## Table of Contents
 
-- [Records & Enums Guide](#records-&-enums-guide)
-  - [Record Declarations & Literals](#record-declarations-&-literals)
-  - [Enum Declarations & Variants](#enum-declarations-&-variants)
-  - [CLI Coverage](#cli-coverage)
+- [Guide: Records & Enums](#guide-records-enums)
+  - [1. Record Declarations & Literals](#1-record-declarations-&-literals)
+  - [2. Enum Declarations & Variants](#2-enum-declarations-&-variants)
+  - [3. CLI Coverage](#3-cli-coverage)
 
 <!-- T81-TOC:END -->
-
-
-
 
 Record and enum declarations are now first-class structural types in the C++ frontend. They follow the canonical rules from [`spec/t81lang-spec.md` §2.4](../spec/t81lang-spec.md#2-4-composite-types) and feed precise metadata into later stages of the toolchain.
 

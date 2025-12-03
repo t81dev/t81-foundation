@@ -1,10 +1,6 @@
 /**
  * @file T81Complex.hpp
- * @brief Balanced ternary complex numbers backed by T81Float.
- *
- * This is a first-class ternary-native complex type, not a std::complex
- * wrapper. It is intended for FFT/HRR work and other numerics where a
- * stable, T81Float-based representation is required.
+ * @brief Defines the T81Complex class, a balanced ternary complex number type.
  */
 
 #pragma once

@@ -39,7 +39,7 @@ cd t81-foundation
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release      # add -G Ninja if preferred
 cmake --build build --parallel
 ctest --test-dir build --output-on-failure
-cmake --build build --target docs                  # regenerates docs/api/html
+cmake --build build --target docs --config Release # regenerates docs/api/html
 ```
 
 - `T81_BUILD_TESTS`, `T81_BUILD_BENCHMARKS`, and `T81_BUILD_EXAMPLES` can be passed to `cmake` as ON/OFF to scope the build.

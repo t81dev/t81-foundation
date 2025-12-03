@@ -1,17 +1,6 @@
 /**
  * @file T81Symbol.hpp
- * @brief T81Symbol — eternal, unique, 81-trit identity.
- *
- * A T81Symbol is a globally unique, interned token with:
- * • Exact 81-trit identity (T81Int<81>)
- * • O(1) equality and hashing
- * • Zero memory overhead after interning
- * • Monotonic creation — once born, forever immutable
- * • No allocation after startup (future lock-free ternary hash table)
- *
- * This is the "name" in "everything has a name".
- * This is the "§" in "§c0g1t0".
- * This is the soul's fingerprint.
+ * @brief Defines the T81Symbol class, a globally unique, interned token.
  */
 #pragma once
 

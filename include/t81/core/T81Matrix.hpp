@@ -1,12 +1,7 @@
 /**
  * @file T81Matrix.hpp
- * @brief Defines the T81Matrix class for matrices of ternary-native scalars.
- *
- * This file provides the `T81Matrix<Scalar, Rows, Cols>` class, a container for
- * matrices of balanced-ternary, tryte-based scalar types. It is designed for
- * high performance, featuring 64-byte aligned, contiguous storage suitable for
- * hardware acceleration on tensor cores. The class supports fundamental matrix
- * operations, including arithmetic and transposition.
+ * @brief Defines the T81Matrix class, a fixed-size matrix for ternary-native
+ * scalars.
  */
 #pragma once
 

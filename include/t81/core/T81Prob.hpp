@@ -1,13 +1,7 @@
 /**
  * @file T81Prob.hpp
- * @brief Defines the T81Prob class for native log-odds probability representation.
- *
- * This file provides the T81Prob<Trits> class, which stores probabilities as
- * log-odds in a fixed-point format over a balanced-ternary integer. This
- * representation offers high precision and allows for more efficient and
- * numerically stable computation of probabilistic operations like softmax,
- * which reduces to simple ternary addition of log-odds values, avoiding
- * expensive exponentiation and division.
+ * @brief Defines the T81Prob class for native log-odds probability
+ * representation.
  */
 #pragma once
 

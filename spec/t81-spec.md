@@ -5,7 +5,7 @@
 **Date**: November 22, 2025\
 **Authority**: Θ₁–Θ₉ Constitutional Layers (immutable)
 
-# **CHAPTER 1 — INTRODUCTION TO THE T81 ECOSYSTEM**
+# **CHAPTER 1 — T81 ECOSYSTEM: INTRODUCTION**
 
 *(Formal Technical Edition)*
 
@@ -4532,7 +4532,7 @@ T19683 is the closure of the T81 cognitive architecture — the mathematically c
 
 ______________________________________________________________________
 
-# **CHAPTER 12 — T81 HARDWARE ARCHITECTURE SPECIFICATION**
+# **CHAPTER 12 — HARDWARE ARCHITECTURE**
 
 *(Formal Technical Edition)*
 
@@ -8743,7 +8743,7 @@ Axion is the **non-negotiable, deterministic core** that stabilizes the entire T
 
 ______________________________________________________________________
 
-# \*\*CHAPTER 22 — UNIFIED COGNITIVE STACK:
+# **CHAPTER 22 — UNIFIED COGNITIVE STACK:**
 
 T243 → T19683 INTEGRATED SEMANTICS & CROSS-TIER BEHAVIOR\*\*
 *(Formal Technical Edition)*
@@ -12554,7 +12554,7 @@ T81-VIRT ensures that every T81 program—symbolic, reflective, recursive, distr
 
 ______________________________________________________________________
 
-# \*\*CHAPTER 32 — T81 SCHEDULING & EXECUTION MODEL:
+# **CHAPTER 32 — SCHEDULING & EXECUTION MODEL:**
 
 DETERMINISTIC CONCURRENCY, GLOBAL TICKS & COGNITIVE-ORIENTED SCHEDULING\*\*
 *(Formal Technical Edition)*
@@ -16631,7 +16631,7 @@ T81-ENV ensures that T81 behaves **identically across all platforms, all machine
 
 ______________________________________________________________________
 
-# **CHAPTER 42 — TERNARY HARDWARE ARCHITECTURE, T81 ALU, & FUTURE DEVICE MODEL**
+# **CHAPTER 42 — TERNARY HARDWARE ARCHITECTURE**
 
 *(Formal Technical Edition)*
 

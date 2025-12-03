@@ -1,13 +1,10 @@
 /**
  * @file T81Int.hpp
- * @brief Balanced ternary integer with packed trits.
+ * @brief Defines the T81Int class, a fixed-size balanced ternary integer.
  *
- * Features:
- * • Packed 4 trits per byte (2 bits each: 0 = N, 1 = Z, 2 = P)
- * • Correct balanced ternary arithmetic (+, -, *, /, %)
- * • Trit proxy, operator[], tritwise shifts
- * • Safe to_int64() with overflow checking
- * • kMinValue / kMaxValue as inline static constants
+ * T81Int is a foundational type in the T81 ecosystem, providing a C++20
+ * implementation of balanced ternary arithmetic. It is a header-only,
+ * fixed-size integer class that stores trits in a packed format.
  */
 #pragma once
 #include <array>
