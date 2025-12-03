@@ -123,6 +123,23 @@ public:
     }
     std::any visit(const ReturnStmt&) override       { return {}; }
     std::any visit(const FunctionStmt&) override     { return {}; }
+    std::any visit(const TypeDecl& stmt) override {
+        if (!_semantic) return {};
+        std::string name{stmt.name.lexeme};
+        auto aliases = _semantic->type_aliases();
+        auto it = aliases.find(name);
+        if (it == aliases.end()) return {};
+        tisc::ir::TypeAliasMetadata meta;
+        meta.name = name;
+        for (const auto& param : stmt.params) {
+            meta.params.emplace_back(param.lexeme);
+        }
+        if (it->second.alias) {
+            meta.alias = _semantic->type_expr_to_string(*it->second.alias);
+        }
+        _program.add_type_alias(std::move(meta));
+        return {};
+    }
 
     // Expressions
     std::any visit(const BinaryExpr& expr) override {
@@ -346,7 +363,11 @@ public:
             }
         };
 
-        if (has_some && has_none) {
+        const Type* scrutinee_type = typed_expr(expr.scrutinee.get());
+        bool scrutinee_is_option = scrutinee_type && scrutinee_type->kind == Type::Kind::Option;
+        bool scrutinee_is_result = scrutinee_type && scrutinee_type->kind == Type::Kind::Result;
+
+        if (scrutinee_is_option && has_some && has_none) {
             auto some_label = new_label();
             auto end_label = new_label();
             emit_simple(tisc::ir::Opcode::OPTION_IS_SOME);
@@ -359,7 +380,7 @@ public:
             return {};
         }
 
-        if (has_ok && has_err) {
+        if (scrutinee_is_result && has_ok && has_err) {
             auto ok_label = new_label();
             auto end_label = new_label();
             emit_simple(tisc::ir::Opcode::RESULT_IS_OK);

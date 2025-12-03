@@ -125,6 +125,7 @@ void Parser::synchronize() {
 // declaration -> fn_declaration | var_declaration | let_declaration | statement ;
 std::unique_ptr<Stmt> Parser::declaration() {
     try {
+        if (match({TokenType::Type})) return type_declaration();
         if (match({TokenType::Fn})) return function("function");
         if (match({TokenType::Var})) return var_declaration();
         if (match({TokenType::Let})) return let_declaration();
@@ -161,6 +162,25 @@ std::unique_ptr<Stmt> Parser::function(const std::string& kind) {
     consume(TokenType::LBrace, ("Expect '{' before " + kind + " body.").c_str());
     std::vector<std::unique_ptr<Stmt>> body = block();
     return std::make_unique<FunctionStmt>(name, std::move(parameters), std::move(return_type), std::move(body));
+}
+
+std::unique_ptr<Stmt> Parser::type_declaration() {
+    Token name = consume(TokenType::Identifier, "Expect type name.");
+    std::vector<Token> parameters;
+    if (match({TokenType::LBracket})) {
+        do {
+            if (parameters.size() >= 8) {
+                report_error(peek(), "Too many generic parameters (max 8)");
+                break;
+            }
+            parameters.push_back(consume(TokenType::Identifier, "Expect generic parameter name."));
+        } while (match({TokenType::Comma}));
+        consume(TokenType::RBracket, "Expect ']' after generic parameters.");
+    }
+    consume(TokenType::Equal, "Expect '=' after type declaration.");
+    std::unique_ptr<TypeExpr> alias = type();
+    consume(TokenType::Semicolon, "Expect ';' after type declaration.");
+    return std::make_unique<TypeDecl>(name, std::move(parameters), std::move(alias));
 }
 
 // Parses a variable declaration.
@@ -489,15 +509,20 @@ std::unique_ptr<GenericTypeExpr> Parser::parse_generic_type(Token name) {
     consume(TokenType::LBracket, "Expect '[' after generic type name.");
     std::array<std::unique_ptr<Expr>, 8> parameters;
     size_t param_count = 0;
+    std::string_view type_name{name.lexeme};
 
     // First parameter must be a type.
     parameters[param_count++] = type();
 
-    // Subsequent parameters are constant value expressions.
+    // Subsequent parameters are constant value expressions (structural-result types are treated specially).
     while (match({TokenType::Comma})) {
         if (param_count >= 8) {
             report_error(peek(), "Too many generic parameters (max 8)");
             return nullptr;
+        }
+        if (type_name == "Result" && param_count == 1) {
+            parameters[param_count++] = type();
+            continue;
         }
         parameters[param_count++] = primary();
     }

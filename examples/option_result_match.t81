@@ -1,0 +1,31 @@
+fn option_match(value: Option[i32]) -> i32 {
+    return match (value) {
+        Some(v) => v * 2;
+        None => -1;
+    };
+}
+
+fn result_match(res: Result[i32, T81String]) -> i32 {
+    let fallback: Option[i32] = None;
+    return match (res) {
+        Ok(v) => v + 1;
+        Err(message) => match (fallback) {
+            Some(x) => x + 5;
+            None => -2;
+        }
+    };
+}
+
+fn main() -> i32 {
+    let first: Option[i32] = Some(3);
+    let second: Option[i32] = None;
+    let first_total = option_match(first);
+    let second_total = option_match(second);
+
+    let ok_result: Result[i32, T81String] = Ok(10);
+    let err_result: Result[i32, T81String] = Err("boom");
+    let ok_total = result_match(ok_result);
+    let err_total = result_match(err_result);
+
+    return first_total + second_total + ok_total + err_total;
+}

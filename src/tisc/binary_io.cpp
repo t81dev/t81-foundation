@@ -1,7 +1,9 @@
 #include "t81/tisc/binary_io.hpp"
+#include "t81/tisc/type_alias.hpp"
 #include "t81/bigint.hpp"
 #include "t81/fraction.hpp"
 #include "t81/tensor.hpp"
+#include <cstdint>
 #include <fstream>
 #include <stdexcept>
 #include <string>
@@ -101,6 +103,18 @@ void read_vector_vector_int(std::istream& is, std::vector<std::vector<int>>& vec
     }
 }
 
+static void write_type_alias_metadata(std::ostream& os, const t81::tisc::TypeAliasMetadata& meta) {
+    write_string(os, meta.name);
+    write_vector_string(os, meta.params);
+    write_string(os, meta.alias);
+}
+
+static void read_type_alias_metadata(std::istream& is, t81::tisc::TypeAliasMetadata& meta) {
+    read_string(is, meta.name);
+    read_vector_string(is, meta.params);
+    read_string(is, meta.alias);
+}
+
 
 // --- Main Functions ---
 
@@ -117,6 +131,11 @@ void save_program(const Program& program, const std::string& path) {
     write_serializable_vector(file, program.tensor_pool);
     write_vector_vector_int(file, program.shape_pool);
     write_string(file, program.axion_policy_text);
+    uint64_t alias_count = program.type_aliases.size();
+    file.write(reinterpret_cast<const char*>(&alias_count), sizeof(alias_count));
+    for (const auto& alias : program.type_aliases) {
+        write_type_alias_metadata(file, alias);
+    }
 }
 
 Program load_program(const std::string& path) {
@@ -133,6 +152,15 @@ Program load_program(const std::string& path) {
     read_serializable_vector(file, program.tensor_pool);
     read_vector_vector_int(file, program.shape_pool);
     read_string(file, program.axion_policy_text);
+
+    if (file.peek() != std::char_traits<char>::eof()) {
+        uint64_t alias_count = 0;
+        file.read(reinterpret_cast<char*>(&alias_count), sizeof(alias_count));
+        program.type_aliases.resize(alias_count);
+        for (auto& alias : program.type_aliases) {
+            read_type_alias_metadata(file, alias);
+        }
+    }
 
     return program;
 }

@@ -142,6 +142,26 @@ int main() {
     )";
     expect_semantic_failure(tensor_inference_failure, "tensor_inference_failure");
 
+    const std::string tensor_symbol_consistent = R"(
+        let RANK: i32 = 3;
+        fn main() -> i32 {
+            let inferred: Tensor = Tensor[T81Int, 2, RANK];
+            let value: Tensor[T81Int, 2, RANK] = inferred;
+            return 0;
+        }
+    )";
+    expect_semantic_success(tensor_symbol_consistent, "tensor_symbol_consistent");
+
+    const std::string tensor_symbol_mismatch = R"(
+        let RANK: i32 = 3;
+        fn main() -> i32 {
+            let inferred: Tensor = Tensor[T81Int, 2, 4];
+            let value: Tensor[T81Int, 2, RANK] = inferred;
+            return 0;
+        }
+    )";
+    expect_semantic_failure(tensor_symbol_mismatch, "tensor_symbol_mismatch");
+
     const std::string custom_generic = R"(
         fn main() -> i32 {
             let inferred: Box = Box[i32, 4];
@@ -159,6 +179,51 @@ int main() {
         }
     )";
     expect_semantic_failure(custom_generic_failure, "custom_generic_failure");
+
+    const std::string custom_generic_consistent = R"(
+        fn main() -> i32 {
+            let first: Box = Box[i32, 4];
+            let second: Box = Box[i32, 4];
+            return 0;
+        }
+    )";
+    expect_semantic_success(custom_generic_consistent, "custom_generic_consistent");
+
+    const std::string custom_generic_alias = R"(
+        type Box[T, N] = Tensor[T, N];
+        fn main() -> i32 {
+            let value: Box[i32, 3] = Tensor[i32, 3];
+            return 0;
+        }
+    )";
+    expect_semantic_success(custom_generic_alias, "custom_generic_alias");
+
+    const std::string custom_generic_redefinition = R"(
+        type Box[T, N] = Tensor[T, N];
+        type Box[T, N] = Tensor[T, N];
+        fn main() -> i32 {
+            return 0;
+        }
+    )";
+    expect_semantic_failure(custom_generic_redefinition, "custom_generic_redefinition");
+
+    const std::string custom_generic_param_mismatch = R"(
+        fn main() -> i32 {
+            let inferred: Box = Box[i32, 4];
+            let value: Box[i32, 4, 2] = inferred;
+            return 0;
+        }
+    )";
+    expect_semantic_failure(custom_generic_param_mismatch, "custom_generic_param_mismatch");
+
+    const std::string custom_generic_param_missing = R"(
+        fn main() -> i32 {
+            let inferred: Box = Box[i32, 4, 2];
+            let value: Box[i32, 4] = inferred;
+            return 0;
+        }
+    )";
+    expect_semantic_failure(custom_generic_param_missing, "custom_generic_param_missing");
 
     const std::string tensor_match_inference = R"(
         fn main() -> i32 {

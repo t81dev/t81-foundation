@@ -6,6 +6,7 @@
 #include <vector>
 #include <variant>
 #include "t81/tisc/program.hpp"
+#include "t81/tisc/type_alias.hpp"
 
 namespace t81 {
 namespace tisc {
@@ -100,9 +101,20 @@ public:
         return _instructions;
     }
 
+    void add_type_alias(TypeAliasMetadata meta) {
+        _type_aliases.push_back(std::move(meta));
+    }
+
+    const std::vector<TypeAliasMetadata>& type_aliases() const {
+        return _type_aliases;
+    }
+
 private:
     std::vector<Instruction> _instructions;
+    std::vector<TypeAliasMetadata> _type_aliases;
 };
+
+using TypeAliasMetadata = t81::tisc::TypeAliasMetadata;
 
 } // namespace ir
 } // namespace tisc

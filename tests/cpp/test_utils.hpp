@@ -106,6 +106,20 @@ public:
         return ss.str();
     }
 
+    std::any visit(const TypeDecl& stmt) override {
+        std::stringstream ss;
+        ss << "(type " << stmt.name.lexeme << " [";
+        for (size_t i = 0; i < stmt.params.size(); ++i) {
+            ss << stmt.params[i].lexeme;
+            if (i + 1 < stmt.params.size()) {
+                ss << ", ";
+            }
+        }
+        ss << "] = " << print(*stmt.alias);
+        ss << ")";
+        return ss.str();
+    }
+
     std::any visit(const BinaryExpr& expr) override {
         return parenthesize(expr.op.lexeme, {std::any(&expr.left), std::any(&expr.right)});
     }

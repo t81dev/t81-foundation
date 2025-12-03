@@ -24,6 +24,7 @@ private:
     // Grammar rule methods
     std::unique_ptr<Stmt> declaration();
     std::unique_ptr<Stmt> function(const std::string& kind);
+    std::unique_ptr<Stmt> type_declaration();
     std::unique_ptr<Stmt> statement();
     std::unique_ptr<Stmt> var_declaration();
     std::unique_ptr<Stmt> let_declaration();

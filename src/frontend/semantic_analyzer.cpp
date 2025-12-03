@@ -254,6 +254,74 @@ void SemanticAnalyzer::merge_expected_params(Type& target, const Type* expected)
     }
 }
 
+bool SemanticAnalyzer::structural_params_assignable(const Type& target, const Type& value) const {
+    size_t count = std::max(target.params.size(), value.params.size());
+    size_t target_defined = target.params.size();
+    size_t value_defined = value.params.size();
+
+    if (target_defined && value_defined && target_defined != value_defined) {
+        return false;
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+        Type target_param = (i < target.params.size()) ? target.params[i] : Type{Type::Kind::Unknown};
+        Type value_param = (i < value.params.size()) ? value.params[i] : Type{Type::Kind::Unknown};
+
+        if (target_param.kind == Type::Kind::Constant || value_param.kind == Type::Kind::Constant) {
+            if (target_param.kind == Type::Kind::Constant && value_param.kind == Type::Kind::Constant) {
+                if (target_param.custom_name != value_param.custom_name) {
+                    return false;
+                }
+            } else if (target_param.kind == Type::Kind::Unknown || value_param.kind == Type::Kind::Unknown) {
+                // Allow unspecified parameters to align with constants.
+            } else {
+                return false;
+            }
+            continue;
+        }
+
+        if (!is_assignable(target_param, value_param)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+Type SemanticAnalyzer::instantiate_alias(const AliasInfo& alias,
+                                        const std::vector<Type>& params,
+                                        const Token& location)
+{
+    if (alias.params.size() != params.size()) {
+        error(location, "Generic type '" + std::string(location.lexeme) + "' expects " +
+                        std::to_string(alias.params.size()) + " parameters but got " +
+                        std::to_string(params.size()) + ".");
+        return make_error_type();
+    }
+    std::unordered_map<std::string, Type> env;
+    for (size_t i = 0; i < alias.params.size(); ++i) {
+        env[alias.params[i]] = params[i];
+    }
+    if (!alias.alias) {
+        return make_error_type();
+    }
+    return analyze_type_expr(*alias.alias, &env);
+}
+
+void SemanticAnalyzer::enforce_generic_arity(const Type& type, const Token& location) {
+    if (type.kind != Type::Kind::Custom) return;
+    size_t arity = type.params.size();
+    auto it = _generic_arities.find(type.custom_name);
+    if (it == _generic_arities.end()) {
+        _generic_arities[type.custom_name] = arity;
+        return;
+    }
+    if (it->second != arity) {
+        error(location, "Generic type '" + type.custom_name + "' expects " +
+                        std::to_string(it->second) + " parameters but got " +
+                        std::to_string(arity) + ".");
+    }
+}
+
 Type SemanticAnalyzer::type_from_token(const Token& name) {
     switch (name.type) {
         case TokenType::Void: return Type{Type::Kind::Void};
@@ -279,8 +347,48 @@ Type SemanticAnalyzer::type_from_token(const Token& name) {
     return Type{Type::Kind::Custom, {}, name_str};
 }
 
-Type SemanticAnalyzer::analyze_type_expr(const TypeExpr& expr) {
+std::string SemanticAnalyzer::expr_to_string(const Expr& expr) const {
+    if (auto* literal = dynamic_cast<const LiteralExpr*>(&expr)) {
+        return std::string(literal->value.lexeme);
+    }
+    if (auto* variable = dynamic_cast<const VariableExpr*>(&expr)) {
+        return std::string(variable->name.lexeme);
+    }
+    return "<expr>";
+}
+
+std::string SemanticAnalyzer::type_expr_to_string(const TypeExpr& expr) const {
+    if (auto* simple = dynamic_cast<const SimpleTypeExpr*>(&expr)) {
+        return std::string(simple->name.lexeme);
+    }
+    if (auto* generic = dynamic_cast<const GenericTypeExpr*>(&expr)) {
+        std::string result = std::string(generic->name.lexeme) + "[";
+        for (size_t i = 0; i < generic->param_count; ++i) {
+            if (i > 0) result += ", ";
+            if (!generic->params[i]) {
+                result += "<missing>";
+                continue;
+            }
+            Expr* raw = generic->params[i].get();
+            if (auto* type_expr = dynamic_cast<TypeExpr*>(raw)) {
+                result += type_expr_to_string(*type_expr);
+            } else {
+                result += expr_to_string(*raw);
+            }
+        }
+        result += "]";
+        return result;
+    }
+    return "<unknown>";
+}
+
+Type SemanticAnalyzer::analyze_type_expr(const TypeExpr& expr,
+                                        const std::unordered_map<std::string, Type>* env)
+{
+    auto prev_env = _current_type_env;
+    _current_type_env = env;
     auto result = expr.accept(*this);
+    _current_type_env = prev_env;
     if (result.has_value()) {
         try {
             return std::any_cast<Type>(result);
@@ -343,24 +451,35 @@ std::string SemanticAnalyzer::type_to_string(const Type& type) const {
     return result;
 }
 
-bool SemanticAnalyzer::is_assignable(const Type& target, const Type& value) {
+bool SemanticAnalyzer::is_assignable(const Type& target, const Type& value) const {
     if (target.kind == Type::Kind::Error || value.kind == Type::Kind::Error) return true;
     if (target.kind == Type::Kind::Unknown || value.kind == Type::Kind::Unknown) return true;
     if (target == value) return true;
 
-    if (target.kind == Type::Kind::Option && value.kind == Type::Kind::Option &&
-        !target.params.empty() && !value.params.empty()) {
-        return is_assignable(target.params[0], value.params[0]);
+    if (target.kind == Type::Kind::Option && value.kind == Type::Kind::Option) {
+        Type target_param = target.params.empty() ? Type{Type::Kind::Unknown} : target.params[0];
+        Type value_param = value.params.empty() ? Type{Type::Kind::Unknown} : value.params[0];
+        return is_assignable(target_param, value_param);
     }
 
-    if (target.kind == Type::Kind::Result && value.kind == Type::Kind::Result &&
-        target.params.size() == 2 && value.params.size() == 2) {
-        return is_assignable(target.params[0], value.params[0]) &&
-               is_assignable(target.params[1], value.params[1]);
+    if (target.kind == Type::Kind::Result && value.kind == Type::Kind::Result) {
+        Type target_success = target.params.size() > 0 ? target.params[0] : Type{Type::Kind::Unknown};
+        Type target_error = target.params.size() > 1 ? target.params[1] : Type{Type::Kind::Unknown};
+        Type value_success = value.params.size() > 0 ? value.params[0] : Type{Type::Kind::Unknown};
+        Type value_error = value.params.size() > 1 ? value.params[1] : Type{Type::Kind::Unknown};
+        return is_assignable(target_success, value_success) &&
+               is_assignable(target_error, value_error);
     }
 
     if (is_numeric(target) && is_numeric(value)) {
         return numeric_rank(value) <= numeric_rank(target);
+    }
+
+    if (target.kind == value.kind && (!target.params.empty() || !value.params.empty())) {
+        if (target.kind == Type::Kind::Custom && target.custom_name != value.custom_name) {
+            return false;
+        }
+        return structural_params_assignable(target, value);
     }
 
     if (target.kind == Type::Kind::Custom && value.kind == Type::Kind::Custom) {
@@ -670,6 +789,34 @@ std::any SemanticAnalyzer::visit(const FunctionStmt& stmt) {
     return symbol ? symbol->type : Type{Type::Kind::Unknown};
 }
 
+std::any SemanticAnalyzer::visit(const TypeDecl& stmt) {
+    std::string name_str = std::string(stmt.name.lexeme);
+    size_t arity = stmt.params.size();
+    auto it = _generic_arities.find(name_str);
+    if (it == _generic_arities.end()) {
+        _generic_arities[name_str] = arity;
+    } else if (it->second != arity) {
+        error(stmt.name, "Generic type '" + name_str + "' expects " +
+                         std::to_string(it->second) + " parameters but got " +
+                         std::to_string(arity) + ".");
+    }
+
+    if (!_defined_generics.insert(name_str).second) {
+        error(stmt.name, "Generic type '" + name_str + "' is already defined.");
+    }
+
+    if (stmt.alias) {
+        AliasInfo info;
+        info.alias = stmt.alias.get();
+        for (const auto& param : stmt.params) {
+            info.params.emplace_back(std::string(param.lexeme));
+        }
+        _type_aliases[name_str] = info;
+        analyze_type_expr(*stmt.alias);
+    }
+    return {};
+}
+
 std::any SemanticAnalyzer::visit(const AssignExpr& expr) {
     auto* symbol = resolve_symbol(expr.name);
     if (!symbol) {
@@ -741,6 +888,17 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         std::string func_name = std::string(var_expr->name.lexeme);
         const Type* expected = current_expected_type();
 
+        auto build_result_template = [&](const Type* context) {
+            Type result{Type::Kind::Result};
+            if (context && context->kind == Type::Kind::Result) {
+                result = *context;
+            }
+            if (result.params.size() < 2) {
+                result.params.resize(2, Type{Type::Kind::Unknown});
+            }
+            return result;
+        };
+
         if (func_name == "Some") {
             if (arg_types.size() != 1) {
                 error(var_expr->name, "The 'Some' constructor expects exactly one argument.");
@@ -762,51 +920,35 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
             return option_type;
         }
         if (func_name == "Ok") {
-            if (!expected || expected->kind != Type::Kind::Result) {
-                error(var_expr->name, "The 'Ok' constructor requires a contextual Result[T, E] type.");
-                return make_error_type();
-            }
             if (arg_types.size() != 1) {
                 error(var_expr->name, "The 'Ok' constructor expects exactly one argument.");
                 return make_error_type();
             }
-            Type result_type = *expected;
-            if (result_type.params.size() < 2) {
-                result_type.params.resize(2, Type{Type::Kind::Unknown});
-            }
+            Type result_type = build_result_template(expected);
             Type success_expected = result_type.params[0];
-            Type error_expected = result_type.params[1];
             Type success_arg = arg_types[0];
 
             if (!is_assignable(success_expected, success_arg)) {
                 error(var_expr->name, "The 'Ok' constructor argument must match the success type of the contextual Result.");
             }
-            Type success_param = (success_expected.kind == Type::Kind::Unknown ? success_arg : success_expected);
-            result_type.params[0] = success_param;
+            result_type.params[0] =
+                (success_expected.kind == Type::Kind::Unknown ? success_arg : success_expected);
             return result_type;
         }
         if (func_name == "Err") {
-            if (!expected || expected->kind != Type::Kind::Result) {
-                error(var_expr->name, "The 'Err' constructor requires a contextual Result[T, E] type.");
-                return make_error_type();
-            }
             if (arg_types.size() != 1) {
                 error(var_expr->name, "The 'Err' constructor expects exactly one argument.");
                 return make_error_type();
             }
-            Type result_type = *expected;
-            if (result_type.params.size() < 2) {
-                result_type.params.resize(2, Type{Type::Kind::Unknown});
-            }
-            Type success_expected = result_type.params[0];
+            Type result_type = build_result_template(expected);
             Type error_expected = result_type.params[1];
             Type error_arg = arg_types[0];
 
             if (!is_assignable(error_expected, error_arg)) {
                 error(var_expr->name, "The 'Err' constructor argument must match the error type of the contextual Result.");
             }
-            Type error_param = (error_expected.kind == Type::Kind::Unknown ? error_arg : error_expected);
-            result_type.params[1] = error_param;
+            result_type.params[1] =
+                (error_expected.kind == Type::Kind::Unknown ? error_arg : error_expected);
             return result_type;
         }
         if (func_name == "weights.load") {
@@ -1065,6 +1207,16 @@ std::any SemanticAnalyzer::visit(const GenericTypeExpr& expr) {
     std::string type_name = std::string(expr.name.lexeme);
     std::vector<Type> params;
     params.reserve(expr.param_count);
+    auto type_from_expr = [&](const Expr* raw) -> std::optional<Type> {
+        if (!raw) return std::nullopt;
+        if (auto* variable = dynamic_cast<const VariableExpr*>(raw)) {
+            Type type = type_from_token(variable->name);
+            if (type.kind != Type::Kind::Unknown && type.kind != Type::Kind::Constant) {
+                return type;
+            }
+        }
+        return std::nullopt;
+    };
 
     for (size_t i = 0; i < expr.param_count; ++i) {
         if (!expr.params[i]) {
@@ -1121,6 +1273,11 @@ std::any SemanticAnalyzer::visit(const GenericTypeExpr& expr) {
         if (params.size() != 2) {
             error(expr.name, "The 'Result' type expects exactly two type parameters, but got " + std::to_string(params.size()) + ".");
         }
+        if (params.size() > 1 && params[1].kind == Type::Kind::Constant) {
+            if (auto normalized = type_from_expr(expr.params[1].get())) {
+                params[1] = *normalized;
+            }
+        }
         Type success = params.size() > 0 ? params[0] : Type{Type::Kind::Unknown};
         Type err = params.size() > 1 ? params[1] : Type{Type::Kind::Unknown};
         Type result{Type::Kind::Result, {success, err}};
@@ -1128,9 +1285,17 @@ std::any SemanticAnalyzer::visit(const GenericTypeExpr& expr) {
         return result;
     }
 
+    if (auto alias_it = _type_aliases.find(type_name); alias_it != _type_aliases.end()) {
+        Type alias_type = instantiate_alias(alias_it->second, params, expr.name);
+        merge_expected_params(alias_type, expected);
+        enforce_generic_arity(alias_type, expr.name);
+        return alias_type;
+    }
+
     Type base = type_from_token(expr.name);
     base.params = params;
     merge_expected_params(base, expected);
+    enforce_generic_arity(base, expr.name);
     return base;
 }
 

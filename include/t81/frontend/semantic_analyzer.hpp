@@ -5,6 +5,7 @@
 #include <any>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <optional>
 #include "t81/frontend/ast.hpp"
 #include "t81/frontend/lexer.hpp"
@@ -89,6 +90,7 @@ public:
     std::any visit(const LoopStmt& stmt) override;
     std::any visit(const ReturnStmt& stmt) override;
     std::any visit(const FunctionStmt& stmt) override;
+    std::any visit(const TypeDecl& stmt) override;
 
     // Visitor methods for expressions
     std::any visit(const AssignExpr& expr) override;
@@ -135,6 +137,14 @@ private:
     std::vector<Scope> _scopes;
     std::vector<const Type*> _expected_type_stack;
     std::unordered_map<const Expr*, Type> _expr_type_cache;
+    std::unordered_map<std::string, size_t> _generic_arities;
+    std::unordered_set<std::string> _defined_generics;
+    struct AliasInfo {
+        std::vector<std::string> params;
+        const TypeExpr* alias = nullptr;
+    };
+    std::unordered_map<std::string, AliasInfo> _type_aliases;
+    const std::unordered_map<std::string, Type>* _current_type_env = nullptr;
 
     void analyze(const Stmt& stmt);
     std::any analyze(const Expr& expr);
@@ -152,11 +162,11 @@ private:
     // Type helpers
     Type make_error_type();
     Type type_from_token(const Token& name);
-    Type analyze_type_expr(const TypeExpr& expr);
+    Type analyze_type_expr(const TypeExpr& expr, const std::unordered_map<std::string, Type>* env = nullptr);
     bool is_numeric(const Type& type) const;
     int numeric_rank(const Type& type) const;
     Type widen_numeric(const Type& left, const Type& right, const Token& op);
-    bool is_assignable(const Type& target, const Type& value);
+    bool is_assignable(const Type& target, const Type& value) const;
     std::string type_to_string(const Type& type) const;
     Type expect_condition_bool(const Expr& expr, const Token& location);
     Type evaluate_expression(const Expr& expr, const Type* expected = nullptr);
@@ -165,6 +175,9 @@ private:
     Token extract_token(const Expr& expr) const;
     std::optional<Type> constant_type_from_expr(const Expr& expr);
     const Type* type_of(const Expr* expr) const;
+    const std::unordered_map<std::string, AliasInfo>& type_aliases() const { return _type_aliases; }
+    std::string type_expr_to_string(const TypeExpr& expr) const;
+    std::string expr_to_string(const Expr& expr) const;
 
     bool is_integer_type(const Type& type) const;
     bool is_float_type(const Type& type) const;
@@ -173,6 +186,11 @@ private:
     std::optional<Type> deduce_numeric_type(const Type& left, const Type& right, const Token& op);
     Type refine_generic_type(const Type& declared, const Type& initializer) const;
     void merge_expected_params(Type& target, const Type* expected) const;
+    void enforce_generic_arity(const Type& type, const Token& location);
+    bool structural_params_assignable(const Type& target, const Type& value) const;
+    Type instantiate_alias(const AliasInfo& alias,
+                           const std::vector<Type>& params,
+                           const Token& location);
 };
 
 } // namespace frontend

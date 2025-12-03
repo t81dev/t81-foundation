@@ -7,6 +7,7 @@
 #include "t81/fraction.hpp"
 #include "t81/tensor.hpp"
 #include "t81/tisc/opcodes.hpp"
+#include "t81/tisc/type_alias.hpp"
 #include "t81/weights.hpp"
 
 namespace t81::tisc {
@@ -36,5 +37,6 @@ struct Program {
   std::vector<std::vector<int>> shape_pool;
   std::string axion_policy_text;
   std::shared_ptr<t81::weights::ModelFile> weights_model;
+  std::vector<tisc::TypeAliasMetadata> type_aliases;
 };
 }  // namespace t81::tisc

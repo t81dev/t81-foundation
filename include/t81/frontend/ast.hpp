@@ -39,6 +39,7 @@ struct WhileStmt;
 struct ReturnStmt;
 struct FunctionStmt;
 struct LoopStmt;
+struct TypeDecl;
 
 // --- Base Classes ---
 
@@ -82,6 +83,7 @@ public:
     virtual std::any visit(const LoopStmt& stmt) = 0;
     virtual std::any visit(const ReturnStmt& stmt) = 0;
     virtual std::any visit(const FunctionStmt& stmt) = 0;
+    virtual std::any visit(const TypeDecl& stmt) = 0;
 };
 
 // --- Expression Nodes ---
@@ -311,6 +313,17 @@ struct FunctionStmt : Stmt {
     const std::vector<Parameter> params;
     const std::unique_ptr<TypeExpr> return_type;
     const std::vector<std::unique_ptr<Stmt>> body;
+};
+
+struct TypeDecl : Stmt {
+    TypeDecl(Token name, std::vector<Token> params, std::unique_ptr<TypeExpr> alias)
+        : name(name), params(std::move(params)), alias(std::move(alias)) {}
+
+    std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
+
+    const Token name;
+    const std::vector<Token> params;
+    const std::unique_ptr<TypeExpr> alias;
 };
 
 struct LoopStmt : Stmt {

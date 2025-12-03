@@ -191,6 +191,8 @@ Program BinaryEmitter::emit(const ir::IntermediateProgram& ir_program) {
         }
     }
 
+    program.type_aliases = ir_program.type_aliases();
+
     return program;
 }
 
