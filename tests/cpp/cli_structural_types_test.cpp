@@ -59,7 +59,7 @@ int main() {
     assert(t81::cli::compile(src, tisc_path) == 0);
     assert(fs::exists(tisc_path));
     assert(t81::cli::run_tisc(tisc_path) == 0);
-    auto program = t81::tisc::load_program(tisc_path);
+    auto program = t81::tisc::load_program(tisc_path.string());
     bool saw_point = false;
     bool saw_flag = false;
     std::string point_module = "Core.Points";
