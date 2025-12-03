@@ -253,10 +253,6 @@ std::unique_ptr<Stmt> Parser::let_declaration() {
 // Parses a statement.
 // statement -> if_stmt | while_stmt | return_stmt | block | expr_stmt ;
 std::unique_ptr<Stmt> Parser::statement() {
-    LoopStmt::BoundKind loop_bound_kind = LoopStmt::BoundKind::None;
-    std::optional<std::int64_t> loop_bound_value;
-    Token loop_attr{};
-    bool saw_annotation = parse_loop_annotation(loop_bound_kind, loop_bound_value, loop_attr);
     if (match({TokenType::If})) {
         consume(TokenType::LParen, "Expect '(' after 'if'.");
         auto condition = expression();
@@ -275,14 +271,8 @@ std::unique_ptr<Stmt> Parser::statement() {
         auto body = statement();
         return std::make_unique<WhileStmt>(std::move(condition), std::move(body));
     }
-    if (match({TokenType::Loop})) {
-        Token loop_token = previous();
-        consume(TokenType::LBrace, "Expect '{' after 'loop'.");
-        auto body = block();
-        return std::make_unique<LoopStmt>(loop_token, loop_bound_kind, loop_bound_value, std::move(body));
-    }
-    if (saw_annotation) {
-        report_error(loop_attr, "'@bounded' annotation must be followed by a 'loop' statement");
+    if (check(TokenType::At) || check(TokenType::Loop)) {
+        return loop_statement();
     }
     if (match({TokenType::Return})) {
         Token keyword = previous();
@@ -297,6 +287,23 @@ std::unique_ptr<Stmt> Parser::statement() {
         return std::make_unique<BlockStmt>(block());
     }
     return expression_statement();
+}
+
+std::unique_ptr<Stmt> Parser::loop_statement() {
+    LoopStmt::BoundKind loop_bound_kind = LoopStmt::BoundKind::None;
+    std::optional<std::int64_t> loop_bound_value;
+    Token loop_attr{};
+    bool saw_annotation = parse_loop_annotation(loop_bound_kind, loop_bound_value, loop_attr);
+
+    Token loop_token = consume(TokenType::Loop, "Expect 'loop' keyword.");
+
+    if (saw_annotation && loop_token.type != TokenType::Loop) {
+        report_error(loop_attr, "'@bounded' annotation must be followed by a 'loop' statement");
+    }
+
+    consume(TokenType::LBrace, "Expect '{' after 'loop'.");
+    auto body = block();
+    return std::make_unique<LoopStmt>(loop_token, loop_bound_kind, loop_bound_value, std::move(body));
 }
 
 // Parses a block of statements.

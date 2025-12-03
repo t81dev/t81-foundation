@@ -23,6 +23,7 @@ public:
 private:
     // Grammar rule methods
     std::unique_ptr<Stmt> declaration();
+    std::unique_ptr<Stmt> loop_statement();
     std::unique_ptr<Stmt> function(const std::string& kind);
     std::unique_ptr<Stmt> type_declaration();
     std::unique_ptr<Stmt> record_declaration();

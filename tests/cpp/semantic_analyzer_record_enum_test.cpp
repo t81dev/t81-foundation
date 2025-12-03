@@ -1,34 +1,4 @@
-#include "t81/frontend/lexer.hpp"
-#include "t81/frontend/parser.hpp"
-#include "t81/frontend/semantic_analyzer.hpp"
-
-#include <cassert>
-#include <iostream>
-#include <string>
-
-using namespace t81::frontend;
-
-void expect_semantic_success(const std::string& source, const char* label) {
-    Lexer lexer(source);
-    Parser parser(lexer);
-    auto stmts = parser.parse();
-    assert(!parser.had_error() && label);
-
-    SemanticAnalyzer analyzer(stmts);
-    analyzer.analyze();
-    assert(!analyzer.had_error() && label);
-}
-
-void expect_semantic_failure(const std::string& source, const char* label) {
-    Lexer lexer(source);
-    Parser parser(lexer);
-    auto stmts = parser.parse();
-    if (parser.had_error()) return;
-
-    SemanticAnalyzer analyzer(stmts);
-    analyzer.analyze();
-    assert(analyzer.had_error() && label);
-}
+#include "test_utils.hpp"
 
 int main() {
     const std::string simple_record = R"(
@@ -56,7 +26,7 @@ int main() {
             return 0;
         }
     )";
-    expect_semantic_failure(missing_field, "missing_field");
+    expect_semantic_failure(missing_field, "missing_field", "missing field 'y'");
 
     const std::string unknown_field = R"(
         record Point {
@@ -69,7 +39,7 @@ int main() {
             return 0;
         }
     )";
-    expect_semantic_failure(unknown_field, "unknown_field");
+    expect_semantic_failure(unknown_field, "unknown_field", "has no field 'z'");
 
     const std::string duplicate_field = R"(
         record Point {
@@ -82,7 +52,7 @@ int main() {
             return 0;
         }
     )";
-    expect_semantic_failure(duplicate_field, "duplicate_field");
+    expect_semantic_failure(duplicate_field, "duplicate_field", "is provided more than once");
 
     const std::string type_mismatch = R"(
         record Point {
@@ -95,7 +65,7 @@ int main() {
             return 0;
         }
     )";
-    expect_semantic_failure(type_mismatch, "type_mismatch");
+    expect_semantic_failure(type_mismatch, "type_mismatch", "Cannot assign 'T81Float' to field 'x' of type 'i32'");
 
     const std::string enum_definition = R"(
         enum Flag {
@@ -119,7 +89,7 @@ int main() {
             return 0;
         }
     )";
-    expect_semantic_failure(enum_duplicate_variant, "enum_duplicate_variant");
+    expect_semantic_failure(enum_duplicate_variant, "enum_duplicate_variant", "already exists in enum");
 
     std::cout << "Semantic analyzer record/enum tests passed!" << std::endl;
     return 0;
