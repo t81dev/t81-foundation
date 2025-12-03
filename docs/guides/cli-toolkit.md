@@ -15,6 +15,8 @@
 <!-- T81-TOC:END -->
 
 
+
+
 This guide summarizes the current command-line surface of `t81::cli` after the recent frontend work. It focuses on the operations you can rely on today, the invariants the CLI enforces, and the regression tests that keep the toolchain honest.
 
 ## Commands
