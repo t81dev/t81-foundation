@@ -8,10 +8,42 @@ thread_local int type_to_string_depth = 0;
 #endif
 
 #include "t81/frontend/semantic_analyzer.hpp"
+#include <cstdlib>
 #include <iostream>
 #include <algorithm>
 #include <sstream>
 #include <utility>
+
+namespace {
+std::optional<float> parse_numeric_literal_value(const t81::frontend::Token& token) {
+    using t81::frontend::Token;
+    using t81::frontend::TokenType;
+    std::string lexeme(token.lexeme);
+    switch (token.type) {
+        case TokenType::Integer: {
+            try {
+                long long v = std::stoll(lexeme);
+                return static_cast<float>(v);
+            } catch (...) {
+                return std::nullopt;
+            }
+        }
+        case TokenType::Float: {
+            char* end = nullptr;
+            float value = std::strtof(lexeme.c_str(), &end);
+            if (end != lexeme.c_str() + lexeme.size()) {
+                return std::nullopt;
+            }
+            return value;
+        }
+        case TokenType::Base81Integer:
+        case TokenType::Base81Float:
+            return std::nullopt;
+        default:
+            return std::nullopt;
+    }
+}
+} // namespace
 
 namespace t81 {
 namespace frontend {
@@ -345,6 +377,12 @@ Type SemanticAnalyzer::type_from_token(const Token& name) {
     if (name_str == "Result") return Type{Type::Kind::Result};
     if (name_str == "T81String") return Type{Type::Kind::String};
     return Type{Type::Kind::Custom, {}, name_str};
+}
+
+const std::vector<float>* SemanticAnalyzer::vector_literal_data(const VectorLiteralExpr* expr) const {
+    auto it = _vector_literal_data.find(expr);
+    if (it == _vector_literal_data.end()) return nullptr;
+    return &it->second;
 }
 
 std::string SemanticAnalyzer::expr_to_string(const Expr& expr) const {
@@ -1139,6 +1177,80 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
     }
 
     return result_type;
+}
+
+std::any SemanticAnalyzer::visit(const VectorLiteralExpr& expr) {
+    if (expr.elements.empty()) {
+        const Type* expected = current_expected_type();
+        if (expected && (expected->kind == Type::Kind::Vector || expected->kind == Type::Kind::Tensor)) {
+            Type result;
+            if (expected->kind == Type::Kind::Vector) {
+                result = *expected;
+            } else {
+                result.kind = Type::Kind::Vector;
+                if (!expected->params.empty()) {
+                    result.params.push_back(expected->params[0]);
+                } else {
+                    result.params.push_back(Type{Type::Kind::Unknown});
+                }
+            }
+            _vector_literal_data[&expr] = {};
+            return result;
+        }
+        error(expr.token, "Empty vector literal requires a contextual Vector[T] type.");
+        return make_error_type();
+    }
+
+    Type element_type{Type::Kind::Unknown};
+    std::vector<float> values;
+    values.reserve(expr.elements.size());
+
+    for (const auto& element : expr.elements) {
+        Type elem_type = evaluate_expression(*element);
+        if (elem_type.kind == Type::Kind::Error) {
+            return make_error_type();
+        }
+
+        if (element_type.kind == Type::Kind::Unknown) {
+            element_type = elem_type;
+        } else if (element_type != elem_type) {
+            if (is_numeric(element_type) && is_numeric(elem_type)) {
+                auto merged = deduce_numeric_type(element_type, elem_type, expr.token);
+                if (!merged.has_value()) {
+                    return make_error_type();
+                }
+                element_type = *merged;
+            } else {
+                error(expr.token, "Vector literal elements must share a numeric type.");
+                return make_error_type();
+            }
+        }
+
+        if (!is_numeric(element_type)) {
+            error(expr.token, "Vector literal elements must be numeric.");
+            return make_error_type();
+        }
+
+        auto* literal = dynamic_cast<const LiteralExpr*>(element.get());
+        if (!literal) {
+            error(expr.token, "Vector literal elements must be literal numerics.");
+            return make_error_type();
+        }
+
+        auto parsed = parse_numeric_literal_value(literal->value);
+        if (!parsed.has_value()) {
+            error(literal->value, "Numeric literal expected in vector literal.");
+            return make_error_type();
+        }
+        values.push_back(*parsed);
+    }
+
+    Type result{Type::Kind::Vector};
+    result.params.push_back(
+        element_type.kind == Type::Kind::Unknown ? Type{Type::Kind::Unknown} : element_type);
+    merge_expected_params(result, current_expected_type());
+    _vector_literal_data[&expr] = std::move(values);
+    return result;
 }
 
 std::any SemanticAnalyzer::visit(const GroupingExpr& expr) {

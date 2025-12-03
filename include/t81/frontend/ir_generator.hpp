@@ -5,6 +5,7 @@
 #include "t81/frontend/ast.hpp"
 #include "t81/frontend/semantic_analyzer.hpp"
 #include "t81/frontend/symbol_table.hpp"
+#include "t81/tensor.hpp"
 #include "t81/tisc/ir.hpp"
 #include <any>
 #include <optional>
@@ -396,6 +397,24 @@ public:
         for (const auto& arm : expr.arms) {
             arm.expression->accept(*this);
         }
+        return {};
+    }
+
+    std::any visit(const VectorLiteralExpr& expr) override {
+        if (!_semantic) return {};
+        const auto* data = _semantic->vector_literal_data(&expr);
+        if (!data) {
+            throw std::runtime_error("Vector literal data missing during IR generation.");
+        }
+        t81::T729Tensor tensor({static_cast<int>(data->size())}, *data);
+        int handle = _program.add_tensor(std::move(tensor));
+        auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        tisc::ir::Instruction instr;
+        instr.opcode = tisc::ir::Opcode::LOADI;
+        instr.operands = {dest.reg, tisc::ir::Immediate{handle}};
+        instr.literal_kind = tisc::LiteralKind::TensorHandle;
+        emit(instr);
+        record_result(&expr, dest);
         return {};
     }
 

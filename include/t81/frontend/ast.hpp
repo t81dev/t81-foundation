@@ -27,6 +27,7 @@ struct VariableExpr;
 struct CallExpr;
 struct AssignExpr;
 struct MatchExpr;
+struct VectorLiteralExpr;
 struct TypeExpr;      // Base class for type expressions
 struct SimpleTypeExpr; // For simple types like "T81Int"
 struct GenericTypeExpr; // For generic types like "Vector[T]"
@@ -66,6 +67,7 @@ public:
     virtual std::any visit(const CallExpr& expr) = 0;
     virtual std::any visit(const AssignExpr& expr) = 0;
     virtual std::any visit(const MatchExpr& expr) = 0;
+    virtual std::any visit(const VectorLiteralExpr& expr) = 0;
     virtual std::any visit(const SimpleTypeExpr& expr) = 0;
     virtual std::any visit(const GenericTypeExpr& expr) =
  0;
@@ -115,6 +117,16 @@ struct LiteralExpr : Expr {
     std::any accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
 
     const Token value;
+};
+
+struct VectorLiteralExpr : Expr {
+    VectorLiteralExpr(Token token, std::vector<std::unique_ptr<Expr>> elements)
+        : token(token), elements(std::move(elements)) {}
+
+    std::any accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
+
+    const Token token;
+    const std::vector<std::unique_ptr<Expr>> elements;
 };
 
 struct GroupingExpr : Expr {

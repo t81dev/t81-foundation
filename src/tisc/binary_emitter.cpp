@@ -192,6 +192,7 @@ Program BinaryEmitter::emit(const ir::IntermediateProgram& ir_program) {
     }
 
     program.type_aliases = ir_program.type_aliases();
+    program.tensor_pool = ir_program.tensor_pool();
 
     return program;
 }

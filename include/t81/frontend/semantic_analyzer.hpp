@@ -101,6 +101,7 @@ public:
     std::any visit(const UnaryExpr& expr) override;
     std::any visit(const VariableExpr& expr) override;
     std::any visit(const MatchExpr& expr) override;
+    std::any visit(const VectorLiteralExpr& expr) override;
     std::any visit(const SimpleTypeExpr& expr) override;
     std::any visit(const GenericTypeExpr& expr) override;
 
@@ -144,6 +145,7 @@ private:
         const TypeExpr* alias = nullptr;
     };
     std::unordered_map<std::string, AliasInfo> _type_aliases;
+    std::unordered_map<const VectorLiteralExpr*, std::vector<float>> _vector_literal_data;
     const std::unordered_map<std::string, Type>* _current_type_env = nullptr;
 
     void analyze(const Stmt& stmt);
@@ -191,6 +193,7 @@ private:
     Type instantiate_alias(const AliasInfo& alias,
                            const std::vector<Type>& params,
                            const Token& location);
+    const std::vector<float>* vector_literal_data(const VectorLiteralExpr* expr) const;
 };
 
 } // namespace frontend

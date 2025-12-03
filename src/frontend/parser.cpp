@@ -373,6 +373,18 @@ std::unique_ptr<Expr> Parser::primary() {
         return std::make_unique<LiteralExpr>(previous());
     }
 
+    if (match({TokenType::LBracket})) {
+        Token bracket = previous();
+        std::vector<std::unique_ptr<Expr>> elements;
+        if (!check(TokenType::RBracket)) {
+            do {
+                elements.push_back(expression());
+            } while (match({TokenType::Comma}));
+        }
+        consume(TokenType::RBracket, "Expect ']' after vector literal.");
+        return std::make_unique<VectorLiteralExpr>(bracket, std::move(elements));
+    }
+
     if (match({TokenType::LParen})) {
         std::unique_ptr<Expr> expr = expression();
         consume(TokenType::RParen, "Expect ')' after expression.");

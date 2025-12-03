@@ -132,6 +132,17 @@ public:
         return std::string(expr.value.lexeme);
     }
 
+    std::any visit(const VectorLiteralExpr& expr) override {
+        std::stringstream ss;
+        ss << "[";
+        for (size_t i = 0; i < expr.elements.size(); ++i) {
+            ss << print(*expr.elements[i]);
+            if (i + 1 < expr.elements.size()) ss << ", ";
+        }
+        ss << "]";
+        return ss.str();
+    }
+
     std::any visit(const GroupingExpr& expr) override {
         return parenthesize("group", {&expr.expression});
     }

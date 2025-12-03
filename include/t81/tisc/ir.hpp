@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <variant>
+#include "t81/tensor.hpp"
 #include "t81/tisc/program.hpp"
 #include "t81/tisc/type_alias.hpp"
 
@@ -109,9 +110,19 @@ public:
         return _type_aliases;
     }
 
+    int add_tensor(t81::T729Tensor tensor) {
+        _tensor_pool.push_back(std::move(tensor));
+        return static_cast<int>(_tensor_pool.size());
+    }
+
+    const std::vector<t81::T729Tensor>& tensor_pool() const {
+        return _tensor_pool;
+    }
+
 private:
     std::vector<Instruction> _instructions;
     std::vector<TypeAliasMetadata> _type_aliases;
+    std::vector<t81::T729Tensor> _tensor_pool;
 };
 
 using TypeAliasMetadata = t81::tisc::TypeAliasMetadata;
