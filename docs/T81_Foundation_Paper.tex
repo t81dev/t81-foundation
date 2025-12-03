@@ -25,7 +25,7 @@ Modern computing stacks, particularly those for machine learning and systems pro
 \maketitle
 
 \section{Introduction}
-The principle of determinism---that the same inputs should yield the same outputs---is a bedrock of computer science. Yet, in practice, this ideal is frequently violated by the very tools we use to build software. Compiler flags, floating-point subtleties, memory layout randomization, and reliance on platform-specific toolchain behaviors conspire to create a landscape where reproducibility is the exception, not the rule. This is particularly dangerous in high-stakes domains like AI safety, systems kernels, and scientific computing, where a silent deviation in a weight model or a subtle shift in a numerical routine can have cascading, untraceable consequences. The T81 Foundation was created to reclaim this lost ground by architecting a complete computing stack around a single, non-negotiable constraint: \textit{provable, end-to-end canonicalization}.\footnote{Source code, regression suite, and reproducible build environment are available at \url{https://github.com/t81-foundation/t81}.}
+The principle of determinism---that the same inputs should yield the same outputs---is a bedrock of computer science. Yet, in practice, this ideal is frequently violated by the very tools we use to build software. Compiler flags, floating-point subtleties, memory layout randomization, and reliance on platform-specific toolchain behaviors conspire to create a landscape where reproducibility is the exception, not the rule. This is particularly dangerous in high-stakes domains like AI safety, systems kernels, and scientific computing, where a silent deviation in a weight model or a subtle shift in a numerical routine can have cascading, untraceable consequences. The T81 Foundation was created to reclaim this lost ground by architecting a complete computing stack around a single, non-negotiable constraint: \textit{architecturally enforced end-to-end determinism}.\footnote{Source code, regression suite, and reproducible build environment are available at \url{https://github.com/t81-foundation/t81}.}
 
 We present a vertically integrated system comprising a new language (T81Lang), a novel intermediate representation (TISC), a deterministic virtual machine (HanoiVM), and a unified compiler toolchain (`t81`). Unlike conventional systems that discard high-level semantic information during compilation, our stack is designed to preserve it. The core contributions of our work are:
 \begin{enumerate}
@@ -51,8 +51,8 @@ Our threat model, therefore, considers non-determinism itself as the adversary. 
 \end{itemize}
 The T81 Foundation is designed to mitigate these threats by making determinism a verifiable, architectural property of the entire stack, from source code to VM execution. By treating the toolchain as a formal, mathematical function from source to binary, we can eliminate the ambiguity that plagues so many modern systems.
 
-\section{Design Principles and Constitutional Constraints}
-To enforce determinism, we established a set of constitutional constraints that govern the design of the entire T81 stack. These are not merely guidelines but hard, machine-checked invariants enforced by our regression suite. They form a social and technical contract that ensures the system remains trustworthy over time.
+\section{Design Principles and Enforced Invariants}
+To enforce determinism, we established a set of design principles that govern the entire T81 stack. These are not merely guidelines but hard, machine-checked invariants enforced by our regression suite. They form a social and technical contract that ensures the system remains trustworthy over time.
 
 \begin{enumerate}
     \item \textbf{Principle of Metadata Preservation.} High-level structural information must never be discarded. The semantics of a `record` or `enum`---its field names, their types, the order of variants---are as important as the instructions that operate on them. In conventional compilers, this information is typically erased after type-checking, leaving the binary as a semantic void. We argue this is a critical design flaw. By preserving this metadata all the way to the runtime, we enable a host of powerful capabilities: fully-featured reflection, safer JIT compilation, metadata-aware debuggers, and runtime safety checks that can validate data against its original schema. This principle ensures that the final binary is self-describing, which is a prerequisite for independent verification and audit. This leads to our first formal guarantee. \\
@@ -94,7 +94,7 @@ T81Lang elevates error and optionality handling to a core language feature throu
 
 The most critical feature is the compile-time enforcement of exhaustive matching. The semantic analyzer ensures that every `match` expression covers all possible variants of the enum it scrutinizes. Consider a nested match:
 \begin{verbatim}
-let res: Result[Option[i81], string] = Ok(Some(42)); // i81 is an 81-trit signed integer
+let res: Result[Option[i81], string] = Ok(Some(42));
 let out = match res {
     Ok(opt_val) => match opt_val {
         Some(v) => v,
@@ -103,7 +103,7 @@ let out = match res {
     Err(msg) => -2,
 };
 \end{verbatim}
-The compiler verifies the completeness of both the outer and inner matches. This logic is lowered into a series of dedicated TISC instructions. For example, creating `Ok(Some(42))` might translate to `LOAD_CONST 42; MAKE_OPTION_SOME; MAKE_RESULT_OK`. Checking the result involves `RESULT_IS_OK`, which branches based on the result's variant tag. This tight coupling between language semantics and the IR ensures that high-level correctness guarantees are preserved at the lower level.
+Here `u243` denotes an unsigned 243-trit integer and `i81` a signed 81-trit integer, the native integer widths of the stack. The compiler verifies the completeness of both the outer and inner matches. This logic is lowered into a series of dedicated TISC instructions. For example, creating `Ok(Some(42))` might translate to `LOAD_CONST 42; MAKE_OPTION_SOME; MAKE_RESULT_OK`. Checking the result involves `RESULT_IS_OK`, which branches based on the result's variant tag. This tight coupling between language semantics and the IR ensures that high-level correctness guarantees are preserved at the lower level.
 
 \textit{Invariant 4: Exhaustive Matching. For any `match` expression over an `Option` or `Result` type, the T81Lang semantic analyzer guarantees that all variants are covered. A program with a non-exhaustive match is not well-formed and will not compile.}\footnote{Validated by the `semantic_analyzer_option_result_test.cpp` regression test.}
 
@@ -196,12 +196,12 @@ The entire T81 stack is gated by a suite of 83 regression tests that serve as a 
     \node[block, right=of analyzer] (ir) {IR Gen};
     \node[block, right=of ir] (binary) {Binary Emitter};
     \node[block, shape=cylinder, right=of binary, shape border rotate=90, aspect=0.25] (vm) {HanoiVM};
-
+    
     \draw[flow] (parser) -- (analyzer);
     \draw[flow] (analyzer) -- (ir);
     \draw[flow] (ir) -- (binary);
     \draw[flow] (binary) -- (vm);
-
+    
     \node[above=0.2cm of analyzer] (meta_label) {\small \textit{Structural Metadata}};
     \draw[meta] (meta_label) edge[bend left] (ir);
     \draw[meta] (meta_label) edge[bend left] (binary);
@@ -280,7 +280,7 @@ Rust / Zig & Native binary (goal) & Best-effort compiler flags, controlled toolc
 \textbf{Modern Systems Languages.} Languages like Rust \cite{rust} and Zig \cite{zig} have made deterministic builds a design goal. However, because they target native binaries, they are fundamentally at the mercy of the underlying system's toolchain (e.g., the linker). While they provide options to mitigate non-determinism, achieving bit-identical results across different platforms remains a significant challenge. Crucially, in these languages, the rich type information that could be used to enforce deterministic layouts at runtime is treated as debug information and is not a core part of the program's execution model. Our key contribution is to make this metadata a first-class citizen, not just at compile time, but at runtime, and to use it as the primary mechanism for ensuring verifiable determinism.
 
 \section{Conclusion and Future Work}
-The T81 Foundation provides a new model for building trustworthy computational systems. By enforcing a set of architectural constraints---metadata preservation, canonicalization at boundaries, and toolchain transparency---we have created a vertically integrated stack that delivers on the promise of end-to-end determinism. Our evaluation demonstrates that these guarantees are not merely theoretical but are practically achieved and validated by a comprehensive regression suite. Future work will focus on performance optimization, primarily through the development of a JIT compiler for the HanoiVM, and the integration of the Axion safety kernel for runtime policy enforcement. The T81 Foundation demonstrates that end-to-end deterministic compilation and execution are achievable today, at the cost of a modest performance overhead in our current interpreter. We believe this approach represents a meaningful step towards building verifiably safe and reliable systems, particularly in domains like AI safety where such guarantees are paramount.
+The T81 Foundation provides a new model for building trustworthy computational systems. By enforcing a set of architectural constraints---metadata preservation, canonicalization at boundaries, and toolchain transparency---we have created a vertically integrated stack that delivers on the promise of end-to-end determinism. Our evaluation demonstrates that these guarantees are not merely theoretical but are practically achieved and validated by a comprehensive regression suite. Future work will focus on performance optimization, primarily through the development of a JIT compiler for the HanoiVM, and the integration of the Axion safety kernel for runtime policy enforcement. The T81 Foundation demonstrates that end-to-end deterministic compilation and execution are achievable today, at the cost of the 2.3x interpretation overhead shown in Section 9.3. We believe this approach represents a meaningful step towards building verifiably safe and reliable systems, particularly in domains like AI safety where such guarantees are paramount.
 
 \section{Acknowledgments}
 We thank the open-source community for their invaluable contributions and the anonymous reviewers for their constructive feedback.
@@ -332,18 +332,29 @@ The HanoiVM instruction set is designed for simplicity and close correspondence 
 \textbf{Opcode} & \textbf{Description} \\
 \hline
 \texttt{NOP} & No operation. \\
+\texttt{HALT} & Halt execution. \\
 \texttt{LOAD\_CONST <idx>} & Load constant from pool at index. \\
 \texttt{STORE\_VAR <idx>} & Store register to variable slot. \\
 \texttt{LOAD\_VAR <idx>} & Load variable from slot to register. \\
 \texttt{ADD, SUB, MUL, DIV} & Core arithmetic operations. \\
+\texttt{MOD, NEG} & Remainder and negation. \\
+\texttt{AND, OR, NOT} & Bitwise logical operations. \\
+\texttt{EQ, NEQ, LT, GT, LTE, GTE} & Comparison operations. \\
 \texttt{JUMP <addr>} & Unconditional jump. \\
 \texttt{JUMP\_IF\_ZERO <addr>} & Jump if register is zero. \\
+\texttt{JUMP\_IF\_NOT\_ZERO <addr>} & Jump if register is not zero. \\
 \texttt{CALL <addr>} & Call a function. \\
 \texttt{RETURN} & Return from a function. \\
 \texttt{MAKE\_RECORD <type>} & Allocate a new record instance. \\
 \texttt{GET\_FIELD <reg>, <fld>} & Get a field from a record. \\
 \texttt{SET\_FIELD <reg>, <fld>} & Set a field in a record. \\
 \texttt{MAKE\_OPTION\_SOME} & Wrap value in `Some`. \\
+\texttt{MAKE\_OPTION\_NONE} & Create a `None` value. \\
+\texttt{UNWRAP\_OPTION} & Unwraps a `Some`, may trap on `None`. \\
+\texttt{OPTION\_IS\_SOME} & Check if an `Option` is `Some`. \\
+\texttt{MAKE\_RESULT\_OK} & Wrap value in `Ok`. \\
+\texttt{MAKE\_RESULT\_ERR} & Wrap value in `Err`. \\
+\texttt{UNWRAP\_RESULT} & Unwraps an `Ok`, may trap on `Err`. \\
 \texttt{RESULT\_IS\_OK} & Check if a `Result` is `Ok`. \\
 \hline
 \end{tabular}
