@@ -3,6 +3,7 @@
 #include <cstring>
 #include <iostream>
 #include <random>
+#include <string>
 
 using namespace t81::core;
 
