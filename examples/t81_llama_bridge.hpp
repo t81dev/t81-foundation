@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include <unordered_map>
+#include <utility>
 
 namespace t81 {
 
@@ -20,12 +21,25 @@ class T81ChatSession {
 
     T81LlamaMind*                mind;
     std::vector<llama_chat_message> history;
+    struct OwnedMessage {
+        std::string role;
+        std::string content;
+        OwnedMessage(std::string r, std::string c)
+            : role(std::move(r)), content(std::move(c)) {}
+    };
+    std::vector<std::unique_ptr<OwnedMessage>> owned_history;
     std::string                  system_prompt;
     uint64_t                     session_id;
     T81Symbol                    tag;
 
     T81ChatSession(T81LlamaMind* m, std::string sys, uint64_t id)
         : mind(m), system_prompt(std::move(sys)), session_id(id), tag(symbols::CHAT_SESSION) {}
+    
+    void push_history(std::string role, std::string content) {
+        auto owned = std::make_unique<OwnedMessage>(std::move(role), std::move(content));
+        history.push_back({owned->role.c_str(), owned->content.c_str()});
+        owned_history.push_back(std::move(owned));
+    }
 
 public:
     // Add a user message and get assistant reply (streaming)
@@ -42,6 +56,7 @@ public:
     // Reset this conversation (start fresh)
     void clear() {
         history.clear();
+        owned_history.clear();
         mind->reset();  // clears KV cache
     }
 
@@ -144,7 +159,7 @@ inline T81String T81ChatSession::say(
     T81LlamaMind::StreamCallback on_token)
 {
     // Append user message
-    history.push_back({"user", user_message.c_str()});
+    push_history("user", user_message);
 
     // Build full message list including system prompt
     std::vector<llama_chat_message> full_msgs;
@@ -166,7 +181,7 @@ inline T81String T81ChatSession::say(
         full_msgs, max_tokens, temperature, stops, on_token);
 
     // Append assistant reply to history
-    history.push_back({"assistant", response.c_str()});
+    push_history("assistant", std::string(response));
 
     return response;
 }
@@ -192,7 +207,9 @@ inline T81String T81ChatSession::continue_response(
         full_msgs, max_tokens, 0.72f, stops, on_token);
 
     // Append to last assistant message
-    history.back().content = (std::string(history.back().content) + more.c_str()).c_str();
+    auto& latest = *owned_history.back();
+    latest.content += std::string(more);
+    history.back().content = latest.content.c_str();
 
     return more;
 }

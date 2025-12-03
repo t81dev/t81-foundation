@@ -16,18 +16,24 @@ void test_type_alias_io_roundtrip() {
     box_alias.name = "Point";
     box_alias.kind = StructuralKind::Record;
     box_alias.fields = {FieldInfo{"x", "i32"}, FieldInfo{"y", "i32"}};
+    box_alias.schema_version = 2;
+    box_alias.module_path = "PointModule";
     program.type_aliases.push_back(box_alias);
 
     t81::tisc::TypeAliasMetadata flag_alias;
     flag_alias.name = "Flag";
     flag_alias.kind = StructuralKind::Enum;
     flag_alias.variants = {VariantInfo{"On", std::nullopt}, VariantInfo{"Off", std::nullopt}};
+    flag_alias.schema_version = 3;
+    flag_alias.module_path = "FlagModule";
     program.type_aliases.push_back(flag_alias);
 
     t81::tisc::TypeAliasMetadata vertex_alias;
     vertex_alias.name = "Vertex";
     vertex_alias.params = {"Graph"};
     vertex_alias.alias = "Tensor[Graph, 2]";
+    vertex_alias.schema_version = 5;
+    vertex_alias.module_path = "tensor.alias";
     program.type_aliases.push_back(vertex_alias);
 
     auto temp_file = std::filesystem::temp_directory_path() / "tisc_alias_io_test.bin";
@@ -62,6 +68,8 @@ void test_type_alias_io_roundtrip() {
         assert(actual.params == expected.params);
         assert(actual.alias == expected.alias);
         assert(actual.kind == expected.kind);
+        assert(actual.schema_version == expected.schema_version);
+        assert(actual.module_path == expected.module_path);
         if (expected.kind == StructuralKind::Record) {
             assert(matches_fields(actual.fields, expected.fields));
         }

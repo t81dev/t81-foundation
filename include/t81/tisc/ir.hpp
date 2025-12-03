@@ -3,6 +3,7 @@
 
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 #include <variant>
 #include "t81/tensor.hpp"
@@ -90,6 +91,9 @@ struct Instruction {
     ComparisonRelation relation = ComparisonRelation::None;
     tisc::LiteralKind literal_kind = tisc::LiteralKind::Int;
     std::optional<std::string> text_literal;
+
+    Instruction(Opcode opcode_ = Opcode::NOP, std::vector<Operand> operands_ = {})
+        : opcode(opcode_), operands(std::move(operands_)) {}
 };
 
 class IntermediateProgram {

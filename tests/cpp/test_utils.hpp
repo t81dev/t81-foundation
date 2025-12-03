@@ -205,8 +205,7 @@ public:
         std::stringstream ss;
         ss << "(match " << print(*expr.scrutinee);
         for (const auto& arm : expr.arms) {
-            ss << " (";
-            ss << variant_to_string(arm.variant);
+            ss << " (" << arm.keyword.lexeme;
             if (arm.has_binding) {
                 ss << " " << arm.binding.lexeme;
             }
@@ -283,15 +282,6 @@ private:
         return ss.str();
     }
 
-    static std::string_view variant_to_string(MatchArm::Variant variant) {
-        switch (variant) {
-            case MatchArm::Variant::Some: return "Some";
-            case MatchArm::Variant::None: return "None";
-            case MatchArm::Variant::Ok:   return "Ok";
-            case MatchArm::Variant::Err:  return "Err";
-        }
-        return "Unknown";
-    }
 };
 
 inline void expect_semantic_success(const std::string& source, const char* label) {

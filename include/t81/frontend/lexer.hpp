@@ -100,6 +100,12 @@ public:
      */
     std::vector<Token> all_tokens();
 
+    /**
+     * @brief Peeks the next token without advancing the lexer state.
+     * @return The next Token.
+     */
+    Token peek_next_token();
+
 private:
     char advance();
     char peek() const;

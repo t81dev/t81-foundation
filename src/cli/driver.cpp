@@ -56,6 +56,38 @@ void print_semantic_diagnostics(const t81::frontend::SemanticAnalyzer& analyzer)
                   << ": error: " << diag.message << '\n';
     }
 }
+
+std::string structural_kind_name(t81::tisc::StructuralKind kind) {
+    switch (kind) {
+        case t81::tisc::StructuralKind::TypeAlias: return "Alias";
+        case t81::tisc::StructuralKind::Record:    return "Record";
+        case t81::tisc::StructuralKind::Enum:      return "Enum";
+    }
+    return "Unknown";
+}
+
+std::string format_structural_alias(const t81::tisc::TypeAliasMetadata& alias) {
+    std::string module = alias.module_path.empty() ? "<source>" : alias.module_path;
+    std::ostringstream oss;
+    oss << alias.name << " [" << structural_kind_name(alias.kind) << "]"
+        << " schema=" << alias.schema_version
+        << " module=" << module;
+    if (!alias.fields.empty()) {
+        oss << " fields=";
+        for (size_t i = 0; i < alias.fields.size(); ++i) {
+            if (i) oss << ',';
+            oss << alias.fields[i].name;
+        }
+    }
+    if (!alias.variants.empty()) {
+        oss << " variants=";
+        for (size_t i = 0; i < alias.variants.size(); ++i) {
+            if (i) oss << ',';
+            oss << alias.variants[i].name;
+        }
+    }
+    return oss.str();
+}
 } // namespace
 
 std::string sanitize_symbol(std::string_view input) {
@@ -178,6 +210,15 @@ int compile(const fs::path& input,
     }
     if (weights_model) {
         program.weights_model = std::move(weights_model);
+    }
+
+    if (!program.type_aliases.empty()) {
+        std::ostringstream oss;
+        oss << "Structural metadata (" << program.type_aliases.size() << " entries):";
+        for (const auto& alias : program.type_aliases) {
+            oss << "\n  " << format_structural_alias(alias);
+        }
+        verbose(oss.str());
     }
 
     verbose("Writing " + output.string());

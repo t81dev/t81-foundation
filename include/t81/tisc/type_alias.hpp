@@ -31,6 +31,8 @@ struct TypeAliasMetadata {
     StructuralKind kind = StructuralKind::TypeAlias;
     std::vector<FieldInfo> fields;
     std::vector<VariantInfo> variants;
+    std::uint32_t schema_version = 1;
+    std::string module_path;
 };
 
 } // namespace tisc

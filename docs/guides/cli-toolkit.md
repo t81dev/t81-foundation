@@ -51,6 +51,7 @@ Global flags such as `--weights-model=<file>`, `--quiet`, and `--verbose` are av
 ## Structural Metadata Guarantees
 
 - Records and enums now survive the CLI boundary as serialized metadata. When the compiler sees `record Point { ... }` or `enum Flag { ... }`, `IRGenerator` emits a `TypeAliasMetadata` entry flagged with `StructuralKind::Record`/`Enum` and includes `FieldInfo`/`VariantInfo` vectors. `t81::cli::compile` stores this metadata inside the `.tisc` file (see `src/tisc/binary_io.cpp`).  
+- The parser now accepts `@schema(<number>)` and `@module(<path>)` annotations before a record or enum declaration; the analyzer records these values and the CLI logs them when `--verbose` is enabled so downstream tooling can report the canonical schema version and owning module path without re-parsing sources.  
 - Downstream tools can load the TISC file (`t81::tisc::load_program`) and inspect `program.type_aliases` to recover record layouts or enum discriminants without rerunning the analyzer. The new CLI tests (`tests/cpp/cli_structural_types_test.cpp` and `tests/cpp/cli_record_enum_test.cpp`) assert these guarantees hold end-to-end.
 
 ## Regression Tests
@@ -64,6 +65,7 @@ Global flags such as `--weights-model=<file>`, `--quiet`, and `--verbose` are av
 
 - When extending the CLI, remember to propagate any new structural metadata (vectors, records, enums) through `tisc::Program::type_aliases` and ensure the binaries can still be loaded by `t81::tisc::load_program`.  
 - Use the helper tests as templates for new regression programs; they already cover temporary file handling, deterministic cleanup, and asserting that the metadata matches expectations.  
+- Enable `--verbose` on `t81 compile` to see the structural metadata summary emitted from `t81::cli::compile`. The output lists each record/enum alias along with its schema version, module path, and declared fields/variants so automation can verify schema evolution without re-analyzing the source.  
 - If you introduce new AST nodes with backend implications, wire them through the analyzer and IR generator as shown in `include/t81/frontend/ir_generator.hpp` and document them in a guide like this one so downstream integrators know what the CLI guarantees.
 
 ## Advanced Examples

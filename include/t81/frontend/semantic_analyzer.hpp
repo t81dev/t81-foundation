@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <optional>
+#include <utility>
+#include <cstdint>
 #include "t81/frontend/ast.hpp"
 #include "t81/frontend/lexer.hpp"
 
@@ -43,6 +45,11 @@ struct Type {
     Kind kind = Kind::Unknown;
     std::vector<Type> params;
     std::string custom_name;
+
+    explicit Type(Kind kind_ = Kind::Unknown,
+                  std::vector<Type> params_ = {},
+                  std::string custom_name_ = {})
+        : kind(kind_), params(std::move(params_)), custom_name(std::move(custom_name_)) {}
     [[nodiscard]] static Type constant(std::string repr);
 
     [[nodiscard]] bool operator==(const Type& other) const;
@@ -79,10 +86,15 @@ struct RecordInfo {
 
     std::vector<Field> fields;
     std::unordered_map<std::string, Type> field_map;
+    std::uint32_t schema_version = 1;
+    std::string module_path;
 };
 
 struct EnumInfo {
     std::unordered_map<std::string, std::optional<Type>> variants;
+    std::vector<std::string> variant_order;
+    std::uint32_t schema_version = 1;
+    std::string module_path;
 };
 
 class SemanticAnalyzer : public StmtVisitor, public ExprVisitor {

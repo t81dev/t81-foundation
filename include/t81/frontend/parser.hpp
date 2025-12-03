@@ -12,6 +12,12 @@
 namespace t81 {
 namespace frontend {
 
+struct StructuralAttributes {
+    std::optional<std::int64_t> schema_version;
+    std::optional<std::string> module_path;
+    std::optional<Token> anchor;
+};
+
 class Parser {
 public:
     Parser(Lexer& lexer, std::string source_name = {});
@@ -26,8 +32,8 @@ private:
     std::unique_ptr<Stmt> loop_statement();
     std::unique_ptr<Stmt> function(const std::string& kind);
     std::unique_ptr<Stmt> type_declaration();
-    std::unique_ptr<Stmt> record_declaration();
-    std::unique_ptr<Stmt> enum_declaration();
+    std::unique_ptr<Stmt> record_declaration(std::optional<StructuralAttributes> attributes = std::nullopt);
+    std::unique_ptr<Stmt> enum_declaration(std::optional<StructuralAttributes> attributes = std::nullopt);
     std::unique_ptr<Stmt> statement();
     std::unique_ptr<Stmt> var_declaration();
     std::unique_ptr<Stmt> let_declaration();
@@ -50,6 +56,7 @@ private:
                                std::optional<std::int64_t>& bound_value,
                                Token& attr_token);
     std::unique_ptr<GenericTypeExpr> parse_generic_type(Token name);
+    std::optional<StructuralAttributes> parse_structural_attributes();
 
     // Helper methods
     bool match(const std::vector<TokenType>& types);

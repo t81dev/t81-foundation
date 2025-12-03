@@ -199,17 +199,9 @@ struct EnumLiteralExpr : Expr {
 };
 
 struct MatchArm {
-    enum class Variant {
-        Some,
-        None,
-        Ok,
-        Err
-    };
-
-    MatchArm(Variant variant, Token keyword, bool has_binding,
-             Token binding, bool binding_is_wildcard, std::unique_ptr<Expr> expression)
-        : variant(variant),
-          keyword(keyword),
+    MatchArm(Token keyword, bool has_binding, Token binding,
+             bool binding_is_wildcard, std::unique_ptr<Expr> expression)
+        : keyword(keyword),
           has_binding(has_binding),
           binding(binding),
           binding_is_wildcard(binding_is_wildcard),
@@ -220,7 +212,6 @@ struct MatchArm {
     MatchArm(MatchArm&&) = default;
     MatchArm& operator=(MatchArm&&) = default;
 
-    Variant variant;
     Token keyword;
     bool has_binding;
     Token binding;
@@ -385,13 +376,21 @@ struct RecordDecl : Stmt {
         std::unique_ptr<TypeExpr> type;
     };
 
-    RecordDecl(Token name, std::vector<Field> fields)
-        : name(name), fields(std::move(fields)) {}
+    RecordDecl(Token name,
+               std::vector<Field> fields,
+               std::optional<std::int64_t> schema_version = std::nullopt,
+               std::optional<std::string> module_path = std::nullopt)
+        : name(name),
+          fields(std::move(fields)),
+          schema_version(schema_version),
+          module_path(module_path) {}
 
     std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
 
     const Token name;
     const std::vector<Field> fields;
+    const std::optional<std::int64_t> schema_version;
+    const std::optional<std::string> module_path;
 };
 
 struct EnumDecl : Stmt {
@@ -400,13 +399,21 @@ struct EnumDecl : Stmt {
         std::unique_ptr<TypeExpr> payload;
     };
 
-    EnumDecl(Token name, std::vector<Variant> variants)
-        : name(name), variants(std::move(variants)) {}
+    EnumDecl(Token name,
+             std::vector<Variant> variants,
+             std::optional<std::int64_t> schema_version = std::nullopt,
+             std::optional<std::string> module_path = std::nullopt)
+        : name(name),
+          variants(std::move(variants)),
+          schema_version(schema_version),
+          module_path(module_path) {}
 
     std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
 
     const Token name;
     const std::vector<Variant> variants;
+    const std::optional<std::int64_t> schema_version;
+    const std::optional<std::string> module_path;
 };
 
 struct LoopStmt : Stmt {

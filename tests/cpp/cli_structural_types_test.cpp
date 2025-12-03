@@ -31,11 +31,13 @@ void write_source(const fs::path& path, std::string_view contents) {
 
 int main() {
     constexpr std::string_view source = R"(
+        @schema(2) @module(Core.Points)
         record Point {
             x: i32;
             y: i32;
         }
 
+        @schema(3)
         enum Flag {
             On;
             Off;
@@ -60,16 +62,22 @@ int main() {
     auto program = t81::tisc::load_program(tisc_path);
     bool saw_point = false;
     bool saw_flag = false;
+    std::string point_module = "Core.Points";
+    std::string default_module = src.string();
     for (const auto& alias : program.type_aliases) {
         if (alias.kind == t81::tisc::StructuralKind::Record && alias.name == "Point") {
             if (alias.fields.size() == 2 &&
                 alias.fields[0].name == "x" &&
                 alias.fields[1].name == "y") {
+                assert(alias.schema_version == 2);
+                assert(alias.module_path == point_module);
                 saw_point = true;
             }
         }
         if (alias.kind == t81::tisc::StructuralKind::Enum && alias.name == "Flag") {
             if (alias.variants.size() == 2) {
+                assert(alias.schema_version == 3);
+                assert(alias.module_path == default_module);
                 saw_flag = true;
             }
         }
