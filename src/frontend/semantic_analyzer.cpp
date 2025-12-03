@@ -966,7 +966,8 @@ std::any SemanticAnalyzer::visit(const BinaryExpr& expr) {
             if (deduce_numeric_type(left_type, right_type, expr.op).has_value()) {
                 return Type{Type::Kind::Bool};
             }
-            error(expr.op, "Equality operands must be of the same type or share a compatible primitive numeric type.");
+            error(expr.op, "Invalid operands for equality check. Cannot compare '" + type_to_string(left_type) +
+                             "' with '" + type_to_string(right_type) + "'.");
             return make_error_type();
         }
         case TokenType::AmpAmp:
