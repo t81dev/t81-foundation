@@ -1,6 +1,7 @@
 
-##T81 Foundation – State of the Project, December 2025
+#T81 Foundation – State of the Project, December 2025
 
+***
 
 **Document Status:** Final  
 **Date:** 03 December 2025  
