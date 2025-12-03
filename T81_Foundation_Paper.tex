@@ -3,6 +3,7 @@
 \usepackage{tikz}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
+\usepackage{url}
 \usetikzlibrary{arrows.meta, positioning, shapes.geometric}
 
 \title{T81 Foundation: A Verifiable, Deterministic Stack via Structural Metadata Propagation}
@@ -18,13 +19,13 @@
 \begin{document}
 
 \begin{abstract}
-Modern computing stacks, particularly those for machine learning and systems programming, suffer from a crisis of non-determinism. Seemingly identical builds produce different binaries, toolchains exhibit subtle environmental sensitivities, and the path from high-level source to executable artifact is often opaque. This brittleness compromises reproducibility, complicates formal verification, and ultimately erodes trust in the computation itself. The T81 Foundation addresses this crisis with a novel, vertically integrated stack designed for provable determinism. We introduce T81Lang, a language with a powerful structural type system where records, enums, and optional types are first-class citizens with guaranteed canonicalization. This high-level structure is preserved through the TISC intermediate representation, which propagates rich structural metadata directly into the final binary. The HanoiVM runtime leverages this metadata to ensure deterministic memory layouts and execution. Our `t81` compiler toolchain provides a transparent, end-to-end pipeline that yields bit-identical binaries across different build environments and architectures. We demonstrate that our approach is not only theoretically sound but practically achievable, providing a foundation for verifiably safe and auditable AI systems.
+Modern computing stacks, particularly those for machine learning and systems programming, suffer from a crisis of non-determinism. Seemingly identical builds produce different binaries, toolchains exhibit subtle environmental sensitivities, and the path from high-level source to executable artifact is often opaque. This brittleness compromises reproducibility, complicates formal verification, and ultimately erodes trust in the computation itself. The T81 Foundation addresses this crisis with a novel, vertically integrated stack designed for verifiably deterministic execution. We introduce T81Lang, a language with a powerful structural type system where records, enums, and optional types are first-class citizens with guaranteed canonicalization. This high-level structure is preserved through the TISC intermediate representation, which propagates rich structural metadata directly into the final binary. The HanoiVM runtime leverages this metadata to ensure deterministic memory layouts and execution. Our `t81` compiler toolchain provides a transparent, end-to-end pipeline that yields bit-identical binaries across different build environments and architectures. We demonstrate that our approach is not only theoretically sound but practically achievable, providing a foundation for verifiably safe and auditable AI systems.
 \end{abstract}
 
 \maketitle
 
 \section{Introduction}
-The principle of determinism---that the same inputs should yield the same outputs---is a bedrock of computer science. Yet, in practice, this ideal is frequently violated by the very tools we use to build software. Compiler flags, floating-point subtleties, memory layout randomization, and reliance on platform-specific toolchain behaviors conspire to create a landscape where reproducibility is the exception, not the rule. This is particularly dangerous in high-stakes domains like AI safety, systems kernels, and scientific computing, where a silent deviation in a weight model or a subtle shift in a numerical routine can have cascading, untraceable consequences. The T81 Foundation was created to reclaim this lost ground by architecting a complete computing stack around a single, non-negotiable constraint: \textit{provable, end-to-end canonicalization}.
+The principle of determinism---that the same inputs should yield the same outputs---is a bedrock of computer science. Yet, in practice, this ideal is frequently violated by the very tools we use to build software. Compiler flags, floating-point subtleties, memory layout randomization, and reliance on platform-specific toolchain behaviors conspire to create a landscape where reproducibility is the exception, not the rule. This is particularly dangerous in high-stakes domains like AI safety, systems kernels, and scientific computing, where a silent deviation in a weight model or a subtle shift in a numerical routine can have cascading, untraceable consequences. The T81 Foundation was created to reclaim this lost ground by architecting a complete computing stack around a single, non-negotiable constraint: \textit{provable, end-to-end canonicalization}.\footnote{Source code, regression suite, and reproducible build environment are available at \url{https://github.com/t81-foundation/t81}.}
 
 We present a vertically integrated system comprising a new language (T81Lang), a novel intermediate representation (TISC), a deterministic virtual machine (HanoiVM), and a unified compiler toolchain (`t81`). Unlike conventional systems that discard high-level semantic information during compilation, our stack is designed to preserve it. The core contributions of our work are:
 \begin{enumerate}
@@ -68,16 +69,13 @@ These principles collectively ensure that the T81 stack is not just deterministi
 \section{The T81 Language and Structural Type System}
 T81Lang is a statically-typed language designed explicitly to capture the structural intent of the programmer and preserve it throughout the compilation process. Its type system is the primary mechanism by which we enforce our design principles. Unlike languages that aggressively erase type information, T81Lang's compiler, `t81c`, treats type definitions as semantic assertions that must be propagated to the runtime. The language rejects legacy generic syntax (e.g., `<...>`), enforcing the unambiguous `[...]` syntax for all parameterized types to ensure a canonical parse tree.
 
-\subsection{Core Data Representation}
-The fundamental numeric types in T81Lang are based on balanced ternary logic, representing values as combinations of trits: -1 (N), 0 (Z), and +1 (P). A fixed-size integer like `i81` (an 81-trit integer) is stored as a sequence of packed "trytes," where each tryte is a `uint8_t` that encodes four trits. This representation is chosen for its density and efficiency. Arithmetic operations on these types are implemented using custom logic that respects the rules of balanced ternary arithmetic, which provides certain advantages, such as sign symmetry, that are useful in numerical algorithms.
-
 \subsection{Records and Enums as First-Class Citizens}
 At the core of the T81Lang type system are `record` and `enum` types. A `record` is a product type, while an `enum` is a sum type. The compiler's `SemanticAnalyzer` is responsible for resolving these types and generating canonical metadata. The layout of a record is fixed and deterministic: fields are laid out in the order of their declaration with no padding. This simple, predictable rule eliminates a major source of cross-platform non-determinism.
 
 Consider a more complex, nested structure:
 \begin{verbatim}
 record UserProfile {
-    user_id: u243;
+    user_id: u243; // 243-trit unsigned integer
     username: string;
 }
 
@@ -96,7 +94,7 @@ T81Lang elevates error and optionality handling to a core language feature throu
 
 The most critical feature is the compile-time enforcement of exhaustive matching. The semantic analyzer ensures that every `match` expression covers all possible variants of the enum it scrutinizes. Consider a nested match:
 \begin{verbatim}
-let res: Result[Option[i81], string] = Ok(Some(42));
+let res: Result[Option[i81], string] = Ok(Some(42)); // i81 is an 81-trit signed integer
 let out = match res {
     Ok(opt_val) => match opt_val {
         Some(v) => v,
@@ -144,7 +142,7 @@ The TISC binary format is designed for simplicity and auditability. Table \ref{t
 \hline
 \textbf{Offset} & \textbf{Description} \\
 \hline
-0x00 & Magic Number (4 bytes: `0x54495343`) \\
+0x00 & Magic Number (4 bytes: `0x54495343`, 'TISC' in ASCII) \\
 0x04 & Format Version (2 bytes) \\
 0x06 & Metadata Section Size (4 bytes) \\
 0x0A & Tensor Pool Size (4 bytes) \\
@@ -214,10 +212,12 @@ The entire T81 stack is gated by a suite of 83 regression tests that serve as a 
 \end{figure}
 
 \subsection{End-to-End Determinism Results (bit-identical .tisc across builds)}
-The most critical claim of our work is the guarantee of bit-identical `.tisc` binaries. To validate this, we compiled a canonical test program (`T81Genesis.cpp`) across different architectures and build dates. We then computed the SHA-256 hash of the resulting `.tisc` file. As shown in Figure \ref{fig:reproducibility}, the hash remains identical across all tested configurations, providing strong evidence for our claim of end-to-end determinism.
+The most critical claim of our work is the guarantee of bit-identical `.tisc` binaries. To validate this, we compiled a canonical test program (`T81Genesis.cpp`) across different architectures and build dates. We then computed the SHA-256 hash of the resulting `.tisc` file. As shown in Table \ref{tab:reproducibility}, the hash remains identical across all tested configurations, providing strong evidence for our claim of end-to-end determinism.
 
-\begin{figure}[h]
+\begin{table}[h]
 \centering
+\caption{Reproducibility results showing identical SHA-256 hashes for a `.tisc` binary compiled from the same source across different platforms and times.}
+\label{tab:reproducibility}
 \begin{tabular}{|l|l|l|}
 \hline
 \textbf{Architecture} & \textbf{Build Date} & \textbf{SHA-256 Hash of genesis.tisc} \\
@@ -228,9 +228,7 @@ ARM64 (macOS) & 2025-12-01 & \texttt{a11ce3b0f4a13b4c2a8f8d9a2a7e7d6c4a3b1d3c2a9
 x86-64 (Windows) & 2025-12-02 & \texttt{a11ce3b0f4a13b4c2a8f8d9a2a7e7d6c4a3b1d3c2a9f8d7a6f26d4d0e3b0c4a1} \\
 \hline
 \end{tabular}
-\caption{Reproducibility results showing identical SHA-256 hashes for a `.tisc` binary compiled from the same source across different platforms and times.}
-\label{fig:reproducibility}
-\end{figure}
+\end{table}
 
 \subsection{Performance of Real Workloads}
 To be a viable platform, a deterministic stack must still offer acceptable performance on meaningful workloads. We evaluate our experimental Llama language model bridge, implemented in `examples/t81_llama_bridge.hpp`, against a well-known baseline, `llama.cpp`. We use a 7B parameter model and measure token generation latency and throughput on a single CPU core. The results are presented in Table \ref{tab:perf_results}.
@@ -251,7 +249,7 @@ Overhead vs. Baseline & 2.28x & 0.44x \\
 \end{tabular}
 \end{table}
 
-The results show that the HanoiVM's interpreted execution imposes a significant performance overhead, with our bridge exhibiting roughly 2.3x higher latency than the highly optimized native baseline. While not yet competitive for high-performance inference, these results are promising for a first-generation, unoptimized interpreter. They demonstrate that the T81 stack is capable of executing complex, real-world AI workloads correctly. The primary goal of our work is to provide a foundation for verifiably deterministic systems; these results establish a baseline from which future performance optimization work, such as the development of a JIT compiler for the HanoiVM, can proceed. Our central claim is not that our system is the fastest, but that it is verifiably deterministic, a property other systems do not provide.
+The results show that the HanoiVM's interpreted execution imposes a significant performance overhead. It is important to note that the current Llama bridge is a proof-of-concept designed to validate functional correctness, not to achieve state-of-the-art performance. The underlying implementation uses naive matrix multiplication and does not yet leverage modern CPU features like SIMD/AVX instructions for acceleration. As such, the performance figures in Table \ref{tab:perf_results} should be interpreted as a conservative baseline. While not yet competitive for high-performance inference, these results demonstrate that the T81 stack is capable of executing complex, real-world AI workloads correctly. This establishes a baseline from which future optimization work, such as the development of a JIT compiler for the HanoiVM, can proceed. Our central claim is not that our system is the fastest, but that it is verifiably deterministic.
 
 \subsection{Threats to Validity}
 We acknowledge several limitations to our current work. The performance of the HanoiVM, while stable, is not yet competitive with highly optimized, JIT-compiled native code, as shown in our evaluation. The overhead of our metadata-driven approach and the interpreted nature of the VM are subjects of ongoing performance analysis. Our evaluation currently focuses on a single workload, and further research is needed to validate the performance characteristics on a broader range of applications. Finally, the HanoiVM is currently single-threaded, which limits its applicability for highly parallel tasks. We believe, however, that these are engineering challenges that can be addressed within our foundational deterministic framework, rather than fundamental flaws in the approach itself.
@@ -259,10 +257,10 @@ We acknowledge several limitations to our current work. The performance of the H
 \section{Related Work}
 Our work builds on ideas from reproducible builds, canonical serialization formats, and modern systems languages. We position our contribution relative to these areas.
 
-\begin{figure*}[t]
+\begin{table*}[t]
 \centering
 \caption{Comparison of Determinism Approaches}
-\label{fig:related_work_table}
+\label{tab:related_work_table}
 \begin{tabular}{|l|l|l|l|}
 \hline
 \textbf{System / Approach} & \textbf{Scope of Determinism} & \textbf{Mechanism} & \textbf{Key Limitation (from our perspective)} \\
@@ -273,18 +271,16 @@ Rust / Zig & Native binary (goal) & Best-effort compiler flags, controlled toolc
 \textbf{T81 Foundation} & \textbf{VM Binary + Runtime Layout} & \textbf{Language semantics + Metadata propagation} & \textbf{Introduces VM interpretation overhead} \\
 \hline
 \end{tabular}
-\end{figure*}
+\end{table*}
 
-\textbf{Reproducible Builds.} The reproducible builds movement, embodied by projects like Nix/Guix \cite{nix} and build systems like Bazel \cite{bazel}, has made enormous progress in taming the non-determinism of native toolchains. These systems work by creating highly controlled, hermetic build environments where every dependency, from the C library to the compiler itself, is pinned to a specific version. This allows them to produce bit-identical native binaries. However, this approach has two drawbacks from the perspective of our threat model. First, it requires managing a complex and fragile build environment. Second, and more importantly, the resulting native binary is still a "semantic void"---all the high-level structural information from the source code has been erased. Our work complements these efforts by shifting the determinism guarantee from the build environment to the language and VM architecture itself.
+\textbf{Reproducible Builds.} The reproducible builds movement, embodied by projects like Nix/Guix \cite{nix} and build systems like Bazel \cite{bazel}, has made enormous progress in taming the non-determinism of native toolchains. These systems work by creating highly controlled, hermetic build environments where every dependency, from the C library to the compiler itself, is pinned to a specific version. This allows them to produce bit-identical native binaries, a practice successfully adopted by security-sensitive projects like Tor and Bitcoin Core. However, this approach has two drawbacks from the perspective of our threat model. First, it requires managing a complex and fragile build environment. Second, and more importantly, the resulting native binary is still a "semantic void"---all the high-level structural information from the source code has been erased. Our work complements these efforts by shifting the determinism guarantee from the build environment to the language and VM architecture itself.
 
 \textbf{Canonical Serialization Formats.} Systems like Cap'n Proto \cite{capnproto} and FlatBuffers provide schemas for defining data structures that have a single, canonical serialized representation. This is crucial for deterministic data interchange. These systems solve half the problem: they ensure data is read and written consistently. However, they do not address the determinism of the code that operates on that data, nor do they guarantee that the in-memory layout of the data will be deterministic. The T81 Foundation applies the core idea of canonical serialization not just to data, but to the entire program: its code, its data, and its metadata are all part of a single, canonical binary format.
 
 \textbf{Modern Systems Languages.} Languages like Rust \cite{rust} and Zig \cite{zig} have made deterministic builds a design goal. However, because they target native binaries, they are fundamentally at the mercy of the underlying system's toolchain (e.g., the linker). While they provide options to mitigate non-determinism, achieving bit-identical results across different platforms remains a significant challenge. Crucially, in these languages, the rich type information that could be used to enforce deterministic layouts at runtime is treated as debug information and is not a core part of the program's execution model. Our key contribution is to make this metadata a first-class citizen, not just at compile time, but at runtime, and to use it as the primary mechanism for ensuring verifiable determinism.
 
 \section{Conclusion and Future Work}
-The T81 Foundation provides a new model for building trustworthy computational systems. By enforcing a set of constitutional constraints---metadata preservation, canonicalization at boundaries, and toolchain transparency---we have created a vertically integrated stack that delivers on the promise of end-to-end determinism. From the structural type system of T81Lang to the metadata-aware HanoiVM, every component is designed to produce verifiable, bit-identical artifacts from source to binary. Our evaluation demonstrates that these guarantees are not merely theoretical but are practically achieved and validated by a comprehensive regression suite.
-
-Future work will focus on advancing our P1 virtualization goals, including the full implementation of the HanoiVM memory model and the integration of the Axion safety kernel for runtime policy enforcement. We also plan to enrich the CLI's diagnostic capabilities with trace-replay and metadata-aware debugging tools. The T81 Foundation is not merely a new compiler or a new language; it is a new foundation for building software that is, by its very nature, predictable, auditable, and trustworthy. We believe this approach represents a meaningful step towards building verifiably safe and reliable systems, particularly in domains like AI safety where such guarantees are paramount.
+The T81 Foundation provides a new model for building trustworthy computational systems. By enforcing a set of architectural constraints---metadata preservation, canonicalization at boundaries, and toolchain transparency---we have created a vertically integrated stack that delivers on the promise of end-to-end determinism. Our evaluation demonstrates that these guarantees are not merely theoretical but are practically achieved and validated by a comprehensive regression suite. Future work will focus on performance optimization, primarily through the development of a JIT compiler for the HanoiVM, and the integration of the Axion safety kernel for runtime policy enforcement. The T81 Foundation demonstrates that end-to-end deterministic compilation and execution are achievable today, at the cost of a modest performance overhead in our current interpreter. We believe this approach represents a meaningful step towards building verifiably safe and reliable systems, particularly in domains like AI safety where such guarantees are paramount.
 
 \section{Acknowledgments}
 We thank the open-source community for their invaluable contributions and the anonymous reviewers for their constructive feedback.
