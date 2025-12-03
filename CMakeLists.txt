@@ -363,6 +363,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_limb_booth_mul_test tests/cpp/test_t81_limb_booth_mul.cpp)
   target_link_libraries(t81_limb_booth_mul_test PRIVATE t81_core)
 
+  add_executable(t81_limb_mul_wide_high_test tests/cpp/test_t81_limb_mul_wide_high.cpp)
+  target_link_libraries(t81_limb_mul_wide_high_test PRIVATE t81_core)
+
   add_executable(t81_limb_add_test tests/cpp/test_t81_limb_add.cpp)
   target_link_libraries(t81_limb_add_test PRIVATE t81_core)
 
@@ -432,6 +435,7 @@ if(T81_BUILD_TESTS)
     t81_limb_bohemian_add_test
     t81_limb_bohemian_mul_test
     t81_limb_booth_mul_test
+    t81_limb_mul_wide_high_test
     t81_limb_add_test
     t81_native_arith_test
     t81_limb54_add_test

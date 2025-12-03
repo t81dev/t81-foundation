@@ -18,6 +18,8 @@ set(BENCHMARK_RUNNER_SOURCES
     runner/overflow_detection.cpp
     runner/packing_density.cpp
     runner/memory_bandwidth.cpp
+    runner/addition.cpp
+    runner/t81lang_compile.cpp
 )
 
 if(NOT MSVC)
@@ -26,7 +28,7 @@ endif()
 
   add_executable(benchmark_runner ${BENCHMARK_RUNNER_SOURCES} BM_LimbMul.cpp)
 
-target_link_libraries(benchmark_runner PRIVATE benchmark::benchmark t81_core)
+target_link_libraries(benchmark_runner PRIVATE benchmark::benchmark t81_core t81_frontend t81_tisc)
 
 # Enable AVX2 on GCC/Clang *and* x86/x64 targets to keep macOS/ARM builds clean.
 if (NOT MSVC AND (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND

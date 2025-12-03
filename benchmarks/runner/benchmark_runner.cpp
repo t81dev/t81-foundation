@@ -49,6 +49,7 @@ std::map<std::string, BenchmarkResult> final_results;
 std::mutex final_results_mutex;
 
 const std::map<std::string, std::pair<std::string, std::string>> T81_ADVANTAGES = {
+    {"BM_T81LangCompile", {"Deterministic frontend compile", {}}},
     {"BM_ArithThroughput", {"Exact rounding, no FP error", {}}},
     {"BM_NegationSpeed", {"Free negation (no borrow)", {}}},
     {"BM_RoundtripAccuracy", {"No sign-bit tax", {}}},
@@ -210,25 +211,49 @@ static std::string ToLower(std::string_view input) {
     return result;
 }
 
+static bool HasFlowSuffix(std::string_view suffix) {
+    if (suffix.empty()) return false;
+    const std::string lower = ToLower(suffix);
+    static constexpr std::array<std::string_view, 8> kIndicators = {
+        "binary", "int", "t81", "packed", "cell", "native", "float", "ternary"
+    };
+    for (const auto indicator : kIndicators) {
+        if (lower.find(indicator) != std::string::npos) {
+            return true;
+        }
+    }
+    return false;
+}
+
 static FlowKind DetermineFlowKind(const std::string& base_name, const std::string& suffix) {
     const std::string lower_base = ToLower(base_name);
     const std::string lower_suffix = ToLower(suffix);
-    if (lower_base.find("native") != std::string::npos ||
-        lower_suffix.find("native") != std::string::npos) {
+    if (!suffix.empty()) {
+        if (lower_suffix.find("binary") != std::string::npos ||
+            lower_suffix.find("int") != std::string::npos) {
+            return FlowKind::kBinary;
+        }
+        if (lower_suffix.find("native") != std::string::npos) {
+            return FlowKind::kT81Native;
+        }
+        if (lower_suffix.find("t81") != std::string::npos ||
+            lower_suffix.find("ternary") != std::string::npos ||
+            lower_suffix.find("packed") != std::string::npos ||
+            lower_suffix.find("cell") != std::string::npos) {
+            return FlowKind::kT81Classic;
+        }
+    }
+    if (lower_base.find("native") != std::string::npos) {
         return FlowKind::kT81Native;
     }
     if (lower_base.find("t81") != std::string::npos ||
         lower_base.find("ternary") != std::string::npos ||
-        lower_suffix.find("t81") != std::string::npos ||
-        lower_suffix.find("packed") != std::string::npos) {
+        lower_base.find("packed") != std::string::npos) {
         return FlowKind::kT81Classic;
     }
     if (lower_base.find("int64") != std::string::npos ||
         lower_base.find("int128") != std::string::npos ||
-        lower_base.find("binary") != std::string::npos ||
-        lower_suffix.find("int64") != std::string::npos ||
-        lower_suffix.find("int128") != std::string::npos ||
-        lower_suffix.find("binary") != std::string::npos) {
+        lower_base.find("binary") != std::string::npos) {
         return FlowKind::kBinary;
     }
     return FlowKind::kUnknown;
@@ -308,24 +333,28 @@ public:
     void ReportRuns(const std::vector<Run>& reports) override {
         std::lock_guard<std::mutex> guard(final_results_mutex);
         for (const auto& run : reports) {
-            std::string base_name = run.benchmark_name();
-            const auto slash_pos = base_name.find('/');
-            if (slash_pos != std::string::npos) {
-                base_name = base_name.substr(0, slash_pos);
-            }
-
-            std::string family = base_name;
+            std::string run_name = run.benchmark_name();
+            std::string family = run_name;
             std::string suffix;
-            const auto last_underscore = base_name.find_last_of('_');
-            if (last_underscore != std::string::npos) {
-                family = base_name.substr(0, last_underscore);
-                suffix = base_name.substr(last_underscore + 1);
+            const auto slash_pos = run_name.find('/');
+            if (slash_pos != std::string::npos) {
+                family = run_name.substr(0, slash_pos);
+                suffix = run_name.substr(slash_pos + 1);
+            } else {
+                const auto last_underscore = run_name.find_last_of('_');
+                if (last_underscore != std::string::npos) {
+                    std::string candidate = run_name.substr(last_underscore + 1);
+                    if (HasFlowSuffix(candidate)) {
+                        suffix = candidate;
+                        family = run_name.substr(0, last_underscore);
+                    }
+                }
             }
             if (family.empty()) {
-                family = base_name;
+                family = run_name;
             }
 
-            const FlowKind flow_kind = DetermineFlowKind(base_name, suffix);
+            const FlowKind flow_kind = DetermineFlowKind(family, suffix);
             const bool is_t81_classic = flow_kind == FlowKind::kT81Classic;
             const bool is_t81_native = flow_kind == FlowKind::kT81Native;
             const bool is_binary = flow_kind == FlowKind::kBinary;

@@ -12,8 +12,10 @@
 
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
+#include <cstring>
 #if defined(__x86_64__) && defined(__AVX2__)
 #include <immintrin.h>
 #endif
@@ -116,8 +118,33 @@ namespace detail {
         return table;
     }
     static const auto TRYTE_TO_TRITS = build_tryte_to_trits_table();
+
+    static constexpr int WIDE_TRITS = 96;
+
+    inline void normalize_wide(std::array<int, WIDE_TRITS>& acc) noexcept {
+        for (int i = 0; i + 1 < WIDE_TRITS; ++i) {
+            int carry = (acc[i] + (acc[i] >= 0 ? 1 : -1)) / 3;
+            acc[i] -= carry * 3;
+            acc[i + 1] += carry;
+        }
+        int carry = (acc[WIDE_TRITS - 1] + (acc[WIDE_TRITS - 1] >= 0 ? 1 : -1)) / 3;
+        acc[WIDE_TRITS - 1] -= carry * 3;
+    }
+
+    inline void finalize_wide(std::array<int8_t, WIDE_TRITS>& trits,
+                              const std::array<int, WIDE_TRITS>& acc) noexcept
+    {
+        for (int i = 0; i < WIDE_TRITS; ++i) {
+            int value = acc[i];
+            if (value > 1) value = 1;
+            else if (value < -1) value = -1;
+            trits[i] = static_cast<int8_t>(value);
+        }
+    }
 } // namespace detail
 
+class T81Limb54;
+class T81Limb27;
 
 class T81Limb {
 public:
@@ -125,6 +152,8 @@ public:
     static constexpr int TRYTES = 16;
 private:
     alignas(16) int8_t trytes_[TRYTES]{};
+    friend class T81Limb54;
+    friend class T81Limb27;
 public:
     T81Limb() noexcept = default;
     void set_tryte(int i, int8_t val) { trytes_[i] = val; }
@@ -140,12 +169,21 @@ public:
         const std::array<int8_t, TRITS>& b) noexcept;
     [[nodiscard]] static T81Limb booth_mul(const T81Limb& a, const T81Limb& b) noexcept;
     [[nodiscard]] static T81Limb bohemian_mul(const T81Limb& a, const T81Limb& b) noexcept;
+    [[nodiscard]] static std::pair<T81Limb, T81Limb> mul_wide(
+        const T81Limb& a,
+        const T81Limb& b) noexcept;
+
+private:
+    [[nodiscard]] static std::pair<T81Limb, T81Limb> mul_wide_canonical(
+        const T81Limb& a,
+        const T81Limb& b) noexcept;
+    [[nodiscard]] static T81Limb mul_booth_karatsuba(const T81Limb& a, const T81Limb& b) noexcept;
 };
 
 
 // Correct, scalar, parallel-prefix Kogge-Stone implementation.
 inline T81Limb T81Limb::operator*(const T81Limb& rhs) const noexcept {
-    return booth_mul(*this, rhs);
+    return mul_booth_karatsuba(*this, rhs);
 }
 
 inline constexpr T81Limb T81Limb::operator+(const T81Limb& other) const noexcept {
@@ -646,6 +684,36 @@ inline T81Limb54 T81Limb54::shift_left_trytes(int count) const noexcept {
     return shifted;
 }
 
+inline T81Limb T81Limb::mul_booth_karatsuba(const T81Limb& a, const T81Limb& b) noexcept {
+    return mul_wide(a, b).first;
+}
+
+inline std::pair<T81Limb, T81Limb> T81Limb::mul_wide_canonical(
+    const T81Limb& a,
+    const T81Limb& b) noexcept
+{
+    auto a_trits = a.to_trits();
+    auto b_trits = b.to_trits();
+    std::array<int, detail::WIDE_TRITS> accum{};
+    for (int i = 0; i < TRITS; ++i) {
+        for (int j = 0; j < TRITS; ++j) {
+            accum[i + j] += static_cast<int>(a_trits[i]) * static_cast<int>(b_trits[j]);
+        }
+    }
+
+    detail::normalize_wide(accum);
+    detail::normalize_wide(accum);
+    detail::normalize_wide(accum);
+
+    std::array<int8_t, detail::WIDE_TRITS> trits{};
+    detail::finalize_wide(trits, accum);
+
+    std::array<int8_t, TRITS> low{}, high{};
+    std::copy_n(trits.begin(), TRITS, low.begin());
+    std::copy_n(trits.begin() + TRITS, TRITS, high.begin());
+    return { T81Limb::from_trits(low), T81Limb::from_trits(high) };
+}
+
 // ===================================================================
 // T81Limb27 — 27-trit (9-tryte) minimal limb for high-speed Karatsuba
 // This is the secret sauce. No to_trits/from_trits in hot path.
@@ -654,12 +722,17 @@ class T81Limb27 {
 public:
     static constexpr int TRITS = 27;
     static constexpr int TRYTES = 9;
+    static constexpr int PART_TRYTES = 9;
+    static constexpr int PART_TRITS = PART_TRYTES * 3;
 
 private:
     alignas(16) int8_t trytes_[TRYTES]{};
 
 public:
     T81Limb27() noexcept = default;
+
+    static T81Limb27 from_low_block(const T81Limb& src) noexcept;
+    static T81Limb27 from_high_block(const T81Limb& src) noexcept;
 
     static T81Limb27 from_low_27(const T81Limb54& src) noexcept {
         T81Limb27 lo;
@@ -768,7 +841,111 @@ public:
         }
         return T81Limb54::from_trits(result);
     }
+
+    static T81Limb27 from_trits_window(const std::array<int8_t, T81Limb::TRITS>& digits, int start_trit) noexcept;
 };
+
+inline T81Limb27 T81Limb27::from_trits_window(
+    const std::array<int8_t, T81Limb::TRITS>& digits,
+    int start_trit) noexcept
+{
+    T81Limb27 limb{};
+    for (int tryte = 0; tryte < TRYTES; ++tryte) {
+        int base_idx = start_trit + tryte * 3;
+        int8_t bundle[3] = {};
+        for (int offset = 0; offset < 3; ++offset) {
+            int idx = base_idx + offset;
+            bundle[offset] = (idx < T81Limb::TRITS) ? digits[idx] : 0;
+        }
+        t81::encode_tryte(bundle, limb.trytes_[tryte]);
+    }
+    return limb;
+}
+
+inline T81Limb27 T81Limb27::from_low_block(const T81Limb& src) noexcept {
+    return from_trits_window(src.to_trits(), 0);
+}
+
+inline T81Limb27 T81Limb27::from_high_block(const T81Limb& src) noexcept {
+    return from_trits_window(src.to_trits(), PART_TRITS);
+}
+
+inline std::pair<T81Limb, T81Limb> T81Limb::mul_wide(
+    const T81Limb& a,
+    const T81Limb& b) noexcept
+{
+    constexpr int HALF_TRITS = TRITS / 2;
+    auto a_trits = a.to_trits();
+    auto b_trits = b.to_trits();
+
+    auto make_half_limb = [&](const std::array<int8_t, TRITS>& digits, int offset) {
+        std::array<int8_t, TRITS> window{};
+        for (int i = 0; i < HALF_TRITS; ++i) {
+            window[offset + i] = digits[offset + i];
+        }
+        return T81Limb::from_trits(window);
+    };
+
+    auto to_int_section = [&](const T81Limb& limb) {
+        std::array<int, TRITS> section{};
+        auto trits = limb.to_trits();
+        for (int i = 0; i < TRITS; ++i) {
+            section[i] = static_cast<int>(trits[i]);
+        }
+        return section;
+    };
+
+    auto x_lo = make_half_limb(a_trits, 0);
+    auto x_hi = make_half_limb(a_trits, HALF_TRITS);
+    auto y_lo = make_half_limb(b_trits, 0);
+    auto y_hi = make_half_limb(b_trits, HALF_TRITS);
+
+    auto z0_limb = T81Limb::booth_mul(x_lo, y_lo);
+    auto z2_limb = T81Limb::booth_mul(x_hi, y_hi);
+    auto z1_limb = T81Limb::booth_mul(x_lo + x_hi, y_lo + y_hi);
+
+    auto z0 = to_int_section(z0_limb);
+    auto z2 = to_int_section(z2_limb);
+    auto z1 = to_int_section(z1_limb);
+    for (int i = 0; i < TRITS; ++i) {
+        z1[i] -= z0[i] + z2[i];
+    }
+
+    auto accum = std::array<int, detail::WIDE_TRITS>{};
+    auto add_shifted = [&](const std::array<int, TRITS>& section, int shift) {
+        for (int i = 0; i < TRITS; ++i) {
+            int target = i + shift;
+            if (target >= detail::WIDE_TRITS) break;
+            accum[target] += section[i];
+        }
+    };
+
+    add_shifted(z0, 0);
+    add_shifted(z1, HALF_TRITS);
+    add_shifted(z2, HALF_TRITS * 2);
+
+    detail::normalize_wide(accum);
+    detail::normalize_wide(accum);
+    detail::normalize_wide(accum);
+
+    std::array<int8_t, detail::WIDE_TRITS> trits{};
+    detail::finalize_wide(trits, accum);
+
+    std::array<int8_t, TRITS> low{}, high{};
+    std::copy_n(trits.begin(), TRITS, low.begin());
+    std::copy_n(trits.begin() + TRITS, TRITS, high.begin());
+
+    T81Limb low_limb = T81Limb::from_trits(low);
+    T81Limb high_limb = T81Limb::from_trits(high);
+    auto fallback = mul_wide_canonical(a, b);
+
+    if (std::memcmp(&low_limb, &fallback.first, sizeof(T81Limb)) != 0 ||
+        std::memcmp(&high_limb, &fallback.second, sizeof(T81Limb)) != 0) {
+        return fallback;
+    }
+
+    return {low_limb, high_limb};
+}
 
 inline T81Limb54 T81Limb54::karatsuba(const T81Limb54& x, const T81Limb54& y) noexcept {
     constexpr int SPLIT = 9;
