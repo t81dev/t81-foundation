@@ -25,6 +25,8 @@ private:
     std::unique_ptr<Stmt> declaration();
     std::unique_ptr<Stmt> function(const std::string& kind);
     std::unique_ptr<Stmt> type_declaration();
+    std::unique_ptr<Stmt> record_declaration();
+    std::unique_ptr<Stmt> enum_declaration();
     std::unique_ptr<Stmt> statement();
     std::unique_ptr<Stmt> var_declaration();
     std::unique_ptr<Stmt> let_declaration();
@@ -41,6 +43,7 @@ private:
     std::unique_ptr<Expr> primary();
     std::unique_ptr<Expr> match_expression();
     MatchArm match_arm();
+    std::unique_ptr<Expr> record_literal(Token type_name);
     std::unique_ptr<TypeExpr> type();
     bool parse_loop_annotation(LoopStmt::BoundKind& bound_kind,
                                std::optional<std::int64_t>& bound_value,

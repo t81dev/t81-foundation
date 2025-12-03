@@ -103,16 +103,79 @@ void read_vector_vector_int(std::istream& is, std::vector<std::vector<int>>& vec
     }
 }
 
+static void write_field_info(std::ostream& os, const t81::tisc::FieldInfo& field) {
+    write_string(os, field.name);
+    write_string(os, field.type);
+}
+
+static void read_field_info(std::istream& is, t81::tisc::FieldInfo& field) {
+    read_string(is, field.name);
+    read_string(is, field.type);
+}
+
+static void write_variant_info(std::ostream& os, const t81::tisc::VariantInfo& variant) {
+    write_string(os, variant.name);
+    uint8_t has_payload = variant.payload.has_value() ? 1 : 0;
+    os.write(reinterpret_cast<const char*>(&has_payload), sizeof(has_payload));
+    if (variant.payload.has_value()) {
+        write_string(os, *variant.payload);
+    }
+}
+
+static void read_variant_info(std::istream& is, t81::tisc::VariantInfo& variant) {
+    read_string(is, variant.name);
+    uint8_t has_payload = 0;
+    is.read(reinterpret_cast<char*>(&has_payload), sizeof(has_payload));
+    if (has_payload) {
+        std::string payload;
+        read_string(is, payload);
+        variant.payload = std::move(payload);
+    } else {
+        variant.payload.reset();
+    }
+}
+
 static void write_type_alias_metadata(std::ostream& os, const t81::tisc::TypeAliasMetadata& meta) {
     write_string(os, meta.name);
     write_vector_string(os, meta.params);
     write_string(os, meta.alias);
+    uint8_t kind = static_cast<uint8_t>(meta.kind);
+    os.write(reinterpret_cast<const char*>(&kind), sizeof(kind));
+
+    uint64_t field_count = meta.fields.size();
+    os.write(reinterpret_cast<const char*>(&field_count), sizeof(field_count));
+    for (const auto& field : meta.fields) {
+        write_field_info(os, field);
+    }
+
+    uint64_t variant_count = meta.variants.size();
+    os.write(reinterpret_cast<const char*>(&variant_count), sizeof(variant_count));
+    for (const auto& variant : meta.variants) {
+        write_variant_info(os, variant);
+    }
 }
 
 static void read_type_alias_metadata(std::istream& is, t81::tisc::TypeAliasMetadata& meta) {
     read_string(is, meta.name);
     read_vector_string(is, meta.params);
     read_string(is, meta.alias);
+    uint8_t kind = 0;
+    is.read(reinterpret_cast<char*>(&kind), sizeof(kind));
+    meta.kind = static_cast<t81::tisc::StructuralKind>(kind);
+
+    uint64_t field_count = 0;
+    is.read(reinterpret_cast<char*>(&field_count), sizeof(field_count));
+    meta.fields.resize(field_count);
+    for (auto& field : meta.fields) {
+        read_field_info(is, field);
+    }
+
+    uint64_t variant_count = 0;
+    is.read(reinterpret_cast<char*>(&variant_count), sizeof(variant_count));
+    meta.variants.resize(variant_count);
+    for (auto& variant : meta.variants) {
+        read_variant_info(is, variant);
+    }
 }
 
 

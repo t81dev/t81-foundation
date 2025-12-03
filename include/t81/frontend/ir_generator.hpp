@@ -141,6 +141,43 @@ public:
         _program.add_type_alias(std::move(meta));
         return {};
     }
+    std::any visit(const RecordDecl& stmt) override {
+        if (!_semantic) return {};
+        std::string name{stmt.name.lexeme};
+        auto record_it = _semantic->record_definitions().find(name);
+        if (record_it == _semantic->record_definitions().end()) return {};
+        tisc::ir::TypeAliasMetadata meta;
+        meta.name = name;
+        meta.kind = t81::tisc::StructuralKind::Record;
+        for (const auto& field : record_it->second.fields) {
+            t81::tisc::FieldInfo info;
+            info.name = field.name;
+            info.type = _semantic->type_to_string(field.type);
+            meta.fields.push_back(std::move(info));
+        }
+        _program.add_type_alias(std::move(meta));
+        return {};
+    }
+
+    std::any visit(const EnumDecl& stmt) override {
+        if (!_semantic) return {};
+        std::string name{stmt.name.lexeme};
+        auto enum_it = _semantic->enum_definitions().find(name);
+        if (enum_it == _semantic->enum_definitions().end()) return {};
+        tisc::ir::TypeAliasMetadata meta;
+        meta.name = name;
+        meta.kind = t81::tisc::StructuralKind::Enum;
+        for (const auto& variant : enum_it->second.variants) {
+            t81::tisc::VariantInfo info;
+            info.name = variant.first;
+            if (variant.second.has_value()) {
+                info.payload = _semantic->type_to_string(*variant.second);
+            }
+            meta.variants.push_back(std::move(info));
+        }
+        _program.add_type_alias(std::move(meta));
+        return {};
+    }
 
     // Expressions
     std::any visit(const BinaryExpr& expr) override {
@@ -397,6 +434,38 @@ public:
         for (const auto& arm : expr.arms) {
             arm.expression->accept(*this);
         }
+        return {};
+    }
+
+    std::any visit(const FieldAccessExpr& expr) override {
+        auto value = evaluate_expr(expr.object.get());
+        record_result(&expr, value);
+        return {};
+    }
+
+    std::any visit(const RecordLiteralExpr& expr) override {
+        for (const auto& field : expr.fields) {
+            field.second->accept(*this);
+        }
+        tisc::ir::PrimitiveKind primitive = tisc::ir::PrimitiveKind::Integer;
+        if (auto kind = categorize_primitive(typed_expr(&expr)); kind != tisc::ir::PrimitiveKind::Unknown) {
+            primitive = kind;
+        }
+        auto dest = allocate_typed_register(primitive);
+        record_result(&expr, dest);
+        return {};
+    }
+
+    std::any visit(const EnumLiteralExpr& expr) override {
+        if (expr.payload) {
+            expr.payload->accept(*this);
+        }
+        tisc::ir::PrimitiveKind primitive = tisc::ir::PrimitiveKind::Integer;
+        if (auto kind = categorize_primitive(typed_expr(&expr)); kind != tisc::ir::PrimitiveKind::Unknown) {
+            primitive = kind;
+        }
+        auto dest = allocate_typed_register(primitive);
+        record_result(&expr, dest);
         return {};
     }
 

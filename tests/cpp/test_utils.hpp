@@ -120,6 +120,34 @@ public:
         return ss.str();
     }
 
+    std::any visit(const RecordDecl& stmt) override {
+        std::stringstream ss;
+        ss << "(record " << stmt.name.lexeme;
+        for (const auto& field : stmt.fields) {
+            ss << " " << field.name.lexeme << ": ";
+            if (field.type) {
+                ss << print(*field.type);
+            } else {
+                ss << "<unknown>";
+            }
+        }
+        ss << ")";
+        return ss.str();
+    }
+
+    std::any visit(const EnumDecl& stmt) override {
+        std::stringstream ss;
+        ss << "(enum " << stmt.name.lexeme;
+        for (const auto& variant : stmt.variants) {
+            ss << " " << variant.name.lexeme;
+            if (variant.payload) {
+                ss << "(" << print(*variant.payload) << ")";
+            }
+        }
+        ss << ")";
+        return ss.str();
+    }
+
     std::any visit(const BinaryExpr& expr) override {
         return parenthesize(expr.op.lexeme, {std::any(&expr.left), std::any(&expr.right)});
     }
@@ -175,6 +203,34 @@ public:
             }
             ss << " => " << print(*arm.expression);
             ss << ")";
+        }
+        ss << ")";
+        return ss.str();
+    }
+
+    std::any visit(const FieldAccessExpr& expr) override {
+        return parenthesize("field " + std::string(expr.field.lexeme),
+                            std::vector<const Expr*>{expr.object.get()});
+    }
+
+    std::any visit(const RecordLiteralExpr& expr) override {
+        std::stringstream ss;
+        ss << "(recordlit " << expr.type_name.lexeme;
+        for (const auto& field : expr.fields) {
+            ss << " " << field.first.lexeme;
+            if (field.second) {
+                ss << ": " << print(*field.second);
+            }
+        }
+        ss << ")";
+        return ss.str();
+    }
+
+    std::any visit(const EnumLiteralExpr& expr) override {
+        std::stringstream ss;
+        ss << "(enumlit " << expr.enum_name.lexeme << "." << expr.variant.lexeme;
+        if (expr.payload) {
+            ss << " " << print(*expr.payload);
         }
         ss << ")";
         return ss.str();

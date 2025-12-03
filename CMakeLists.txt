@@ -252,6 +252,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_semantic_analyzer_vector_literal_test tests/cpp/semantic_analyzer_vector_literal_test.cpp)
   target_link_libraries(t81_semantic_analyzer_vector_literal_test PRIVATE t81_frontend)
 
+  add_executable(t81_semantic_analyzer_record_enum_test tests/cpp/semantic_analyzer_record_enum_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_record_enum_test PRIVATE t81_frontend)
+
   add_executable(t81_tisc_binary_emitter_test tests/cpp/tisc_binary_emitter_test.cpp)
   target_link_libraries(t81_tisc_binary_emitter_test PRIVATE t81_tisc)
 
@@ -281,6 +284,12 @@ if(T81_BUILD_TESTS)
 
   add_executable(t81_cli_option_result_test tests/cpp/cli_option_result_test.cpp)
   target_link_libraries(t81_cli_option_result_test PRIVATE t81_cli_driver t81_tisc t81_vm)
+
+  add_executable(t81_cli_structural_types_test tests/cpp/cli_structural_types_test.cpp)
+  target_link_libraries(t81_cli_structural_types_test PRIVATE t81_cli_driver t81_tisc t81_vm)
+
+  add_executable(t81_cli_record_enum_test tests/cpp/cli_record_enum_test.cpp)
+  target_link_libraries(t81_cli_record_enum_test PRIVATE t81_cli_driver t81_tisc t81_vm)
 
   add_executable(axion_loop_metadata_test tests/cpp/axion_loop_metadata_test.cpp)
   target_link_libraries(axion_loop_metadata_test PRIVATE t81_cli_driver t81_tisc t81_vm)

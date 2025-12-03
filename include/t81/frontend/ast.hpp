@@ -28,6 +28,9 @@ struct CallExpr;
 struct AssignExpr;
 struct MatchExpr;
 struct VectorLiteralExpr;
+struct FieldAccessExpr;
+struct RecordLiteralExpr;
+struct EnumLiteralExpr;
 struct TypeExpr;      // Base class for type expressions
 struct SimpleTypeExpr; // For simple types like "T81Int"
 struct GenericTypeExpr; // For generic types like "Vector[T]"
@@ -41,6 +44,8 @@ struct ReturnStmt;
 struct FunctionStmt;
 struct LoopStmt;
 struct TypeDecl;
+struct RecordDecl;
+struct EnumDecl;
 
 // --- Base Classes ---
 
@@ -68,6 +73,9 @@ public:
     virtual std::any visit(const AssignExpr& expr) = 0;
     virtual std::any visit(const MatchExpr& expr) = 0;
     virtual std::any visit(const VectorLiteralExpr& expr) = 0;
+    virtual std::any visit(const FieldAccessExpr& expr) = 0;
+    virtual std::any visit(const RecordLiteralExpr& expr) = 0;
+    virtual std::any visit(const EnumLiteralExpr& expr) = 0;
     virtual std::any visit(const SimpleTypeExpr& expr) = 0;
     virtual std::any visit(const GenericTypeExpr& expr) =
  0;
@@ -86,6 +94,8 @@ public:
     virtual std::any visit(const ReturnStmt& stmt) = 0;
     virtual std::any visit(const FunctionStmt& stmt) = 0;
     virtual std::any visit(const TypeDecl& stmt) = 0;
+    virtual std::any visit(const RecordDecl& stmt) = 0;
+    virtual std::any visit(const EnumDecl& stmt) = 0;
 };
 
 // --- Expression Nodes ---
@@ -155,6 +165,37 @@ struct CallExpr : Expr {
     const std::unique_ptr<Expr> callee;
     const Token paren;
     const std::vector<std::unique_ptr<Expr>> arguments;
+};
+
+struct FieldAccessExpr : Expr {
+    FieldAccessExpr(std::unique_ptr<Expr> object, Token field)
+        : object(std::move(object)), field(field) {}
+
+    std::any accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
+
+    const std::unique_ptr<Expr> object;
+    const Token field;
+};
+
+struct RecordLiteralExpr : Expr {
+    RecordLiteralExpr(Token type_name, std::vector<std::pair<Token, std::unique_ptr<Expr>>> fields)
+        : type_name(type_name), fields(std::move(fields)) {}
+
+    std::any accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
+
+    const Token type_name;
+    const std::vector<std::pair<Token, std::unique_ptr<Expr>>> fields;
+};
+
+struct EnumLiteralExpr : Expr {
+    EnumLiteralExpr(Token enum_name, Token variant, std::unique_ptr<Expr> payload)
+        : enum_name(enum_name), variant(variant), payload(std::move(payload)) {}
+
+    std::any accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
+
+    const Token enum_name;
+    const Token variant;
+    const std::unique_ptr<Expr> payload;
 };
 
 struct MatchArm {
@@ -336,6 +377,36 @@ struct TypeDecl : Stmt {
     const Token name;
     const std::vector<Token> params;
     const std::unique_ptr<TypeExpr> alias;
+};
+
+struct RecordDecl : Stmt {
+    struct Field {
+        Token name;
+        std::unique_ptr<TypeExpr> type;
+    };
+
+    RecordDecl(Token name, std::vector<Field> fields)
+        : name(name), fields(std::move(fields)) {}
+
+    std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
+
+    const Token name;
+    const std::vector<Field> fields;
+};
+
+struct EnumDecl : Stmt {
+    struct Variant {
+        Token name;
+        std::unique_ptr<TypeExpr> payload;
+    };
+
+    EnumDecl(Token name, std::vector<Variant> variants)
+        : name(name), variants(std::move(variants)) {}
+
+    std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
+
+    const Token name;
+    const std::vector<Variant> variants;
 };
 
 struct LoopStmt : Stmt {

@@ -855,6 +855,73 @@ std::any SemanticAnalyzer::visit(const TypeDecl& stmt) {
     return {};
 }
 
+std::any SemanticAnalyzer::visit(const RecordDecl& stmt) {
+    std::string name_str = std::string(stmt.name.lexeme);
+    if (_record_definitions.find(name_str) != _record_definitions.end()) {
+        error(stmt.name, "Record '" + name_str + "' is already defined.");
+        return {};
+    }
+
+    RecordInfo info;
+    info.fields.reserve(stmt.fields.size());
+    bool had_error = false;
+
+    for (const auto& field : stmt.fields) {
+        std::string field_name(field.name.lexeme);
+        if (!field.type) {
+            error(field.name, "Field '" + field_name + "' requires a type.");
+            had_error = true;
+            continue;
+        }
+        if (info.field_map.find(field_name) != info.field_map.end()) {
+            error(field.name, "Field '" + field_name + "' is already declared in record '" + name_str + "'.");
+            had_error = true;
+            continue;
+        }
+
+        Type field_type = analyze_type_expr(*field.type);
+        info.fields.push_back({field_name, field_type, field.name});
+        info.field_map.emplace(field_name, field_type);
+    }
+
+    if (!had_error) {
+        _record_definitions.emplace(name_str, std::move(info));
+    }
+    return {};
+}
+
+std::any SemanticAnalyzer::visit(const EnumDecl& stmt) {
+    std::string name_str = std::string(stmt.name.lexeme);
+    if (_enum_definitions.find(name_str) != _enum_definitions.end()) {
+        error(stmt.name, "Enum '" + name_str + "' is already defined.");
+        return {};
+    }
+
+    EnumInfo info;
+    bool had_error = false;
+
+    for (const auto& variant : stmt.variants) {
+        std::string variant_name(variant.name.lexeme);
+        if (info.variants.find(variant_name) != info.variants.end()) {
+            error(variant.name, "Variant '" + variant_name + "' already exists in enum '" + name_str + "'.");
+            had_error = true;
+            continue;
+        }
+
+        if (variant.payload) {
+            Type payload_type = analyze_type_expr(*variant.payload);
+            info.variants.emplace(variant_name, payload_type);
+        } else {
+            info.variants.emplace(variant_name, std::nullopt);
+        }
+    }
+
+    if (!had_error) {
+        _enum_definitions.emplace(name_str, std::move(info));
+    }
+    return {};
+}
+
 std::any SemanticAnalyzer::visit(const AssignExpr& expr) {
     auto* symbol = resolve_symbol(expr.name);
     if (!symbol) {
@@ -1177,6 +1244,119 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
     }
 
     return result_type;
+}
+
+std::any SemanticAnalyzer::visit(const FieldAccessExpr& expr) {
+    Type object_type = evaluate_expression(*expr.object);
+    if (object_type.kind != Type::Kind::Custom || object_type.custom_name.empty()) {
+        error(expr.field, "Field access requires a record value.");
+        return make_error_type();
+    }
+
+    auto record_it = _record_definitions.find(object_type.custom_name);
+    if (record_it == _record_definitions.end()) {
+        error(expr.field, "Type '" + object_type.custom_name + "' has no record fields.");
+        return make_error_type();
+    }
+
+    std::string field_name(expr.field.lexeme);
+    auto field_it = record_it->second.field_map.find(field_name);
+    if (field_it == record_it->second.field_map.end()) {
+        error(expr.field, "Record '" + object_type.custom_name + "' has no field '" + field_name + "'.");
+        return make_error_type();
+    }
+
+    return field_it->second;
+}
+
+std::any SemanticAnalyzer::visit(const RecordLiteralExpr& expr) {
+    std::string type_name(expr.type_name.lexeme);
+    auto record_it = _record_definitions.find(type_name);
+    if (record_it == _record_definitions.end()) {
+        error(expr.type_name, "Undefined record type '" + type_name + "'.");
+        return make_error_type();
+    }
+
+    const RecordInfo& info = record_it->second;
+    bool had_error = false;
+    std::unordered_set<std::string> seen_fields;
+
+    for (const auto& field : expr.fields) {
+        std::string field_name(field.first.lexeme);
+        auto expected_it = info.field_map.find(field_name);
+        if (expected_it == info.field_map.end()) {
+            error(field.first, "Record '" + type_name + "' has no field '" + field_name + "'.");
+            had_error = true;
+            continue;
+        }
+
+        if (!seen_fields.insert(field_name).second) {
+            error(field.first, "Field '" + field_name + "' is provided more than once in '" + type_name + "'.");
+            had_error = true;
+        }
+
+        Type expected_type = expected_it->second;
+        Type actual_type = evaluate_expression(*field.second, &expected_type);
+        if (!is_assignable(expected_type, actual_type)) {
+            error(field.first, "Cannot assign '" + type_to_string(actual_type) + "' to field '" +
+                                field_name + "' of type '" + type_to_string(expected_type) + "'.");
+            had_error = true;
+        }
+    }
+
+    if (seen_fields.size() != info.fields.size()) {
+        for (const auto& field_info : info.fields) {
+            if (seen_fields.find(field_info.name) == seen_fields.end()) {
+                error(expr.type_name, "Record literal for '" + type_name + "' is missing field '" + field_info.name + "'.");
+                had_error = true;
+            }
+        }
+    }
+
+    if (had_error) {
+        return make_error_type();
+    }
+
+    Type result{Type::Kind::Custom};
+    result.custom_name = type_name;
+    return result;
+}
+
+std::any SemanticAnalyzer::visit(const EnumLiteralExpr& expr) {
+    std::string enum_name(expr.enum_name.lexeme);
+    auto enum_it = _enum_definitions.find(enum_name);
+    if (enum_it == _enum_definitions.end()) {
+        error(expr.enum_name, "Undefined enum '" + enum_name + "'.");
+        return make_error_type();
+    }
+
+    std::string variant_name(expr.variant.lexeme);
+    auto variant_it = enum_it->second.variants.find(variant_name);
+    if (variant_it == enum_it->second.variants.end()) {
+        error(expr.variant, "Enum '" + enum_name + "' has no variant '" + variant_name + "'.");
+        return make_error_type();
+    }
+
+    if (variant_it->second.has_value()) {
+        if (!expr.payload) {
+            error(expr.variant, "Variant '" + variant_name + "' of enum '" + enum_name + "' requires a payload.");
+            return make_error_type();
+        }
+        Type expected_type = *variant_it->second;
+        Type actual_type = evaluate_expression(*expr.payload, &expected_type);
+        if (!is_assignable(expected_type, actual_type)) {
+            error(expr.variant, "Enum payload for '" + variant_name + "' must be '" + type_to_string(expected_type) + "'.");
+            return make_error_type();
+        }
+    } else if (expr.payload) {
+        Token location = extract_token(*expr.payload);
+        error(location, "Variant '" + variant_name + "' of enum '" + enum_name + "' does not accept a payload.");
+        return make_error_type();
+    }
+
+    Type result{Type::Kind::Custom};
+    result.custom_name = enum_name;
+    return result;
 }
 
 std::any SemanticAnalyzer::visit(const VectorLiteralExpr& expr) {

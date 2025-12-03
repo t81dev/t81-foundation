@@ -20,6 +20,7 @@ namespace frontend {
 enum class TokenType {
     // Keywords
     Module, Type, Const, Export, Fn, Let, Var,
+    Record, Enum,
     If, Else, For, In, While, Loop, Break, Continue, Return, Match,
     True, False,
 
@@ -52,6 +53,7 @@ enum class TokenType {
     Arrow,      // ->
     FatArrow,   // =>
     DotDot,     // ..
+    Dot,        // .
 
     // Special
     At,         // @

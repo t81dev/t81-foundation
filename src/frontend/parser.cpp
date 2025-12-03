@@ -126,6 +126,8 @@ void Parser::synchronize() {
 std::unique_ptr<Stmt> Parser::declaration() {
     try {
         if (match({TokenType::Type})) return type_declaration();
+        if (match({TokenType::Record})) return record_declaration();
+        if (match({TokenType::Enum})) return enum_declaration();
         if (match({TokenType::Fn})) return function("function");
         if (match({TokenType::Var})) return var_declaration();
         if (match({TokenType::Let})) return let_declaration();
@@ -181,6 +183,41 @@ std::unique_ptr<Stmt> Parser::type_declaration() {
     std::unique_ptr<TypeExpr> alias = type();
     consume(TokenType::Semicolon, "Expect ';' after type declaration.");
     return std::make_unique<TypeDecl>(name, std::move(parameters), std::move(alias));
+}
+
+std::unique_ptr<Stmt> Parser::record_declaration() {
+    Token name = consume(TokenType::Identifier, "Expect record name.");
+    consume(TokenType::LBrace, "Expect '{' after record name.");
+    std::vector<RecordDecl::Field> fields;
+    while (!check(TokenType::RBrace) && !is_at_end()) {
+        Token field_name = consume(TokenType::Identifier, "Expect field name.");
+        consume(TokenType::Colon, "Expect ':' after field name.");
+        auto field_type = type();
+        consume(TokenType::Semicolon, "Expect ';' after field declaration.");
+        fields.push_back({field_name, std::move(field_type)});
+    }
+    consume(TokenType::RBrace, "Expect '}' after record declaration.");
+    consume(TokenType::Semicolon, "Expect ';' after record declaration.");
+    return std::make_unique<RecordDecl>(name, std::move(fields));
+}
+
+std::unique_ptr<Stmt> Parser::enum_declaration() {
+    Token name = consume(TokenType::Identifier, "Expect enum name.");
+    consume(TokenType::LBrace, "Expect '{' after enum name.");
+    std::vector<EnumDecl::Variant> variants;
+    while (!check(TokenType::RBrace) && !is_at_end()) {
+        Token variant = consume(TokenType::Identifier, "Expect variant name.");
+        std::unique_ptr<TypeExpr> payload = nullptr;
+        if (match({TokenType::LParen})) {
+            payload = type();
+            consume(TokenType::RParen, "Expect ')' after variant payload type.");
+        }
+        consume(TokenType::Semicolon, "Expect ';' after variant declaration.");
+        variants.push_back({variant, std::move(payload)});
+    }
+    consume(TokenType::RBrace, "Expect '}' after enum declaration.");
+    consume(TokenType::Semicolon, "Expect ';' after enum declaration.");
+    return std::make_unique<EnumDecl>(name, std::move(variants));
 }
 
 // Parses a variable declaration.
@@ -396,9 +433,10 @@ std::unique_ptr<Expr> Parser::primary() {
         if (check(TokenType::LBracket)) {
             return parse_generic_type(name);
         }
-        // This is a variable access, but it might be the callee of a function call.
-        // The `call` grammar rule was removed for simplicity in this version,
-        // but a more robust parser would handle it to support `my_func()()`.
+        if (match({TokenType::LBrace})) {
+            return record_literal(std::move(name));
+        }
+        std::unique_ptr<Expr> expr;
         if (match({TokenType::LParen})) {
             std::vector<std::unique_ptr<Expr>> arguments;
             if (!check(TokenType::RParen)) {
@@ -407,9 +445,15 @@ std::unique_ptr<Expr> Parser::primary() {
                 } while (match({TokenType::Comma}));
             }
             Token paren = consume(TokenType::RParen, "Expect ')' after arguments.");
-            return std::make_unique<CallExpr>(std::make_unique<VariableExpr>(name), paren, std::move(arguments));
+            expr = std::make_unique<CallExpr>(std::make_unique<VariableExpr>(name), paren, std::move(arguments));
+        } else {
+            expr = std::make_unique<VariableExpr>(name);
         }
-        return std::make_unique<VariableExpr>(name);
+        while (match({TokenType::Dot})) {
+            Token field = consume(TokenType::Identifier, "Expect field name after '.'.");
+            expr = std::make_unique<FieldAccessExpr>(std::move(expr), field);
+        }
+        return expr;
     }
 
     report_error(peek(), "Expect expression.");
@@ -433,6 +477,20 @@ std::unique_ptr<Expr> Parser::match_expression() {
 
     consume(TokenType::RBrace, "Expect '}' after match arms.");
     return std::make_unique<MatchExpr>(std::move(scrutinee), std::move(arms));
+}
+
+std::unique_ptr<Expr> Parser::record_literal(Token type_name) {
+    std::vector<std::pair<Token, std::unique_ptr<Expr>>> fields;
+    if (!check(TokenType::RBrace)) {
+        do {
+            Token field_name = consume(TokenType::Identifier, "Expect field name in record literal.");
+            consume(TokenType::Colon, "Expect ':' after field name.");
+            auto value = expression();
+            fields.emplace_back(field_name, std::move(value));
+        } while (match({TokenType::Comma, TokenType::Semicolon}));
+    }
+    consume(TokenType::RBrace, "Expect '}' after record literal.");
+    return std::make_unique<RecordLiteralExpr>(type_name, std::move(fields));
 }
 
 MatchArm Parser::match_arm() {

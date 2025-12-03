@@ -4,14 +4,25 @@
 #include <cassert>
 #include <filesystem>
 #include <iostream>
+#include <optional>
 
 void test_type_alias_io_roundtrip() {
+    using t81::tisc::FieldInfo;
+    using t81::tisc::StructuralKind;
+    using t81::tisc::VariantInfo;
+
     t81::tisc::Program program;
     t81::tisc::TypeAliasMetadata box_alias;
-    box_alias.name = "Box";
-    box_alias.params = {"T", "Rank"};
-    box_alias.alias = "Tensor[T, Rank]";
+    box_alias.name = "Point";
+    box_alias.kind = StructuralKind::Record;
+    box_alias.fields = {FieldInfo{"x", "i32"}, FieldInfo{"y", "i32"}};
     program.type_aliases.push_back(box_alias);
+
+    t81::tisc::TypeAliasMetadata flag_alias;
+    flag_alias.name = "Flag";
+    flag_alias.kind = StructuralKind::Enum;
+    flag_alias.variants = {VariantInfo{"On", std::nullopt}, VariantInfo{"Off", std::nullopt}};
+    program.type_aliases.push_back(flag_alias);
 
     t81::tisc::TypeAliasMetadata vertex_alias;
     vertex_alias.name = "Vertex";
@@ -24,12 +35,39 @@ void test_type_alias_io_roundtrip() {
 
     auto loaded = t81::tisc::load_program(temp_file.string());
     assert(loaded.type_aliases.size() == program.type_aliases.size());
+
+    auto matches_fields = [](const std::vector<FieldInfo>& lhs, const std::vector<FieldInfo>& rhs) {
+        if (lhs.size() != rhs.size()) return false;
+        for (size_t i = 0; i < lhs.size(); ++i) {
+            if (lhs[i].name != rhs[i].name || lhs[i].type != rhs[i].type) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    auto matches_variants = [](const std::vector<VariantInfo>& lhs, const std::vector<VariantInfo>& rhs) {
+        if (lhs.size() != rhs.size()) return false;
+        for (size_t i = 0; i < lhs.size(); ++i) {
+            if (lhs[i].name != rhs[i].name) return false;
+            if (lhs[i].payload != rhs[i].payload) return false;
+        }
+        return true;
+    };
+
     for (size_t i = 0; i < program.type_aliases.size(); ++i) {
         const auto& expected = program.type_aliases[i];
         const auto& actual = loaded.type_aliases[i];
         assert(actual.name == expected.name);
         assert(actual.params == expected.params);
         assert(actual.alias == expected.alias);
+        assert(actual.kind == expected.kind);
+        if (expected.kind == StructuralKind::Record) {
+            assert(matches_fields(actual.fields, expected.fields));
+        }
+        if (expected.kind == StructuralKind::Enum) {
+            assert(matches_variants(actual.variants, expected.variants));
+        }
     }
 
     std::filesystem::remove(temp_file);

@@ -70,6 +70,21 @@ struct Diagnostic {
     std::string message;
 };
 
+struct RecordInfo {
+    struct Field {
+        std::string name;
+        Type type;
+        Token token;
+    };
+
+    std::vector<Field> fields;
+    std::unordered_map<std::string, Type> field_map;
+};
+
+struct EnumInfo {
+    std::unordered_map<std::string, std::optional<Type>> variants;
+};
+
 class SemanticAnalyzer : public StmtVisitor, public ExprVisitor {
     friend class IRGenerator;
 public:
@@ -91,8 +106,13 @@ public:
     std::any visit(const ReturnStmt& stmt) override;
     std::any visit(const FunctionStmt& stmt) override;
     std::any visit(const TypeDecl& stmt) override;
+    std::any visit(const RecordDecl& stmt) override;
+    std::any visit(const EnumDecl& stmt) override;
 
     // Visitor methods for expressions
+    std::any visit(const FieldAccessExpr& expr) override;
+    std::any visit(const RecordLiteralExpr& expr) override;
+    std::any visit(const EnumLiteralExpr& expr) override;
     std::any visit(const AssignExpr& expr) override;
     std::any visit(const BinaryExpr& expr) override;
     std::any visit(const CallExpr& expr) override;
@@ -146,6 +166,8 @@ private:
     };
     std::unordered_map<std::string, AliasInfo> _type_aliases;
     std::unordered_map<const VectorLiteralExpr*, std::vector<float>> _vector_literal_data;
+    std::unordered_map<std::string, RecordInfo> _record_definitions;
+    std::unordered_map<std::string, EnumInfo> _enum_definitions;
     const std::unordered_map<std::string, Type>* _current_type_env = nullptr;
 
     void analyze(const Stmt& stmt);
@@ -178,6 +200,8 @@ private:
     std::optional<Type> constant_type_from_expr(const Expr& expr);
     const Type* type_of(const Expr* expr) const;
     const std::unordered_map<std::string, AliasInfo>& type_aliases() const { return _type_aliases; }
+    const std::unordered_map<std::string, RecordInfo>& record_definitions() const { return _record_definitions; }
+    const std::unordered_map<std::string, EnumInfo>& enum_definitions() const { return _enum_definitions; }
     std::string type_expr_to_string(const TypeExpr& expr) const;
     std::string expr_to_string(const Expr& expr) const;
 
