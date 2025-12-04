@@ -282,6 +282,9 @@ if(T81_BUILD_TESTS)
   add_executable(e2e_option_result_test tests/cpp/e2e_option_result_test.cpp)
   target_link_libraries(e2e_option_result_test PRIVATE t81_frontend t81_tisc t81_vm)
 
+  add_executable(t81_cli_check_test tests/cpp/cli_check_test.cpp)
+  target_link_libraries(t81_cli_check_test PRIVATE t81_cli_driver)
+
   add_executable(t81_cli_pipeline_test tests/cpp/cli_pipeline_test.cpp)
   target_link_libraries(t81_cli_pipeline_test PRIVATE t81_cli_driver)
 
@@ -490,12 +493,13 @@ if(T81_BUILD_TESTS)
     t81_tisc_binary_emitter_test
     t81_tisc_type_alias_io_test
     e2e_option_result_test
-    e2e_match_expression_test
-    e2e_loop_statement_test
-    cli_e2e_test
-    t81_cli_pipeline_test
-    t81_cli_option_result_test
-    axion_loop_metadata_test
+  e2e_match_expression_test
+  e2e_loop_statement_test
+  cli_e2e_test
+  t81_cli_check_test
+  t81_cli_pipeline_test
+  t81_cli_option_result_test
+  axion_loop_metadata_test
     axion_instruction_counter_test
   )
   foreach(tgt IN LISTS T81_TEST_TARGETS)

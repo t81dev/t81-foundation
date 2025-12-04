@@ -35,11 +35,11 @@ ______________________________________________________________________
 ## 3. T81Lang Frontend (`t81_frontend`)
 
 - **Specification:** [`spec/t81lang-spec.md`](../spec/t81lang-spec.md)
-- **Status:** `Partial`
+- **Status:** `Implemented`
 - **Analysis:**
-  - **Lexer & Parser:** **Partial.** The frontend can successfully parse a significant subset of the T81Lang grammar, including function definitions, variables, and basic control flow (`if`, `while`). However, it does not yet support advanced features like generics, pattern matching, or the full type system.
-  - **Type System & Semantic Analysis:** **Experimental / Stub.** The `SemanticAnalyzer` is a placeholder. The compiler does not yet perform type checking, scope resolution, or other critical semantic validation. This is the largest gap in the frontend.
-  - **IR Generation:** **Partial.** The `IRGenerator` can successfully lower the parsed AST into a linear sequence of TISC IR for the implemented language subset. Control flow and function calls are handled correctly at a basic level.
+  - **Lexer & Parser:** The parser now covers the full grammar, including `match`, structural declarations, and generic type syntax, and reports errors with file/line/column information so the CLI can guide fixes immediately.
+  - **Type System & Semantic Analysis:** `SemanticAnalyzer` enforces numeric widening, Option/Result constructors, structural generics, record/enum payloads, and match exhaustiveness. `semantic_analyzer_generic_test.cpp`, `semantic_analyzer_option_result_test.cpp`, and `cli_option_result_test.cpp` keep these rules regression-safe, and `cli_check_test.cpp` proves that `t81::cli::check_syntax` reuses the same lex/parse/semantic pipeline as `t81 compile`, surfacing the same diagnostics before IR emission.
+  - **IR Generation:** The `IRGenerator` continues emitting TISC instructions for the verified AST; the compiler now has a stable end-to-end path from source text to bytecode metadata.
 
 ______________________________________________________________________
 

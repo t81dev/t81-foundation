@@ -72,7 +72,7 @@ ctest --test-dir build --output-on-failure
 ```text
 t81 compile <file.t81> [-o <file.tisc>]
 t81 run <file.t81|.tisc>
-t81 check <file.t81>
+t81 check <file.t81> (syntax + semantic validation)
 t81 benchmark [benchmark flags]
 t81 weights import <safetensors|gguf> [--format <safetensors|gguf>] [-o out.t81w]
 t81 weights info <model.t81w>
@@ -92,7 +92,7 @@ Weights tooling highlights:
 | --- | --- |
 | `t81 compile` | Compile a `.t81` source file to TISC bytecode; semantic errors now include `file:line:column`. |
 | `t81 run` | Compile (if needed) and execute TISC programs inside the HanoiVM. |
-| `t81 check` | Fast syntax-only validation of T81 source. |
+| `t81 check` | Fast parse + semantic validation of T81 source. |
 | `t81 benchmark` | Runs `benchmarks/benchmark_runner`, updates `docs/benchmarks.md` with Classic/Native/Binary stats and highlights. |
 | `t81 weights import` | Import BitNet/SafeTensors/GGUF to a native binary `.t81w`. |
 | `t81 weights info` | Inspect `.t81w`: tensor count, trits, bits/trit, sparsity, checksum. |

@@ -53,7 +53,7 @@ The primary entrypoint is the `t81` binary built under `build/`.
 ```text
 t81 compile <file.t81> [-o <file.tisc>]
 t81 run <file.t81|.tisc>
-t81 check <file.t81>
+t81 check <file.t81> (syntax + semantic validation)
 t81 benchmark [benchmark flags]
 t81 weights import <safetensors|gguf> [...]
 ```

@@ -727,30 +727,12 @@ int check_syntax(const fs::path& path) {
         return ss.str();
     }(path);
 
-    t81::frontend::Lexer lexer(source);
-    auto tokens = lexer.all_tokens();
-
-    bool ok = true;
-    for (const auto& t : tokens) {
-        if (t.type == t81::frontend::TokenType::Illegal) {
-            ok = false;
-            std::cerr << path.string() << ':' << t.line << ':' << t.column
-                      << ": illegal token `" << t.lexeme << "`\n";
-        }
-    }
-    if (!ok) {
-        error("Lexing failed");
+    auto program = build_program_from_source(source, path.string());
+    if (!program) {
         return 1;
     }
 
-    t81::frontend::Parser parser(lexer, path.string());
-    parser.parse();
-    if (parser.had_error()) {
-        error("Syntax errors found");
-        return 1;
-    }
-
-    info("No syntax errors");
+    info("No syntax or semantic errors");
     return 0;
 }
 
