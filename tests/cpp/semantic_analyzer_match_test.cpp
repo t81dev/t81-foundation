@@ -298,6 +298,18 @@ int main() {
     )";
     expect_semantic_failure(guard_failure, "match_guard_failure", "Condition must be bool");
 
+    const std::string guard_non_bool_variant = R"(
+        fn main() -> i32 {
+            let maybe: Option[i32] = Some(5);
+            match (maybe) {
+                Some(v) if Some(v) => v;
+                None => 0;
+            };
+            return 0;
+        }
+    )";
+    expect_semantic_failure(guard_non_bool_variant, "match_guard_non_bool_variant", "Condition must be bool");
+
     const std::string record_pattern_success = R"(
         record Point2D {
             x: i32;
@@ -361,6 +373,28 @@ int main() {
         }
     )";
     expect_semantic_failure(record_pattern_error, "match_record_missing_field", "has no field 'z'");
+
+    const std::string nested_enum_success = R"(
+        enum Inner {
+            Data(i32);
+            Empty;
+        }
+
+        enum Outer {
+            Nested(Inner);
+            Missing;
+        }
+
+        fn main() -> i32 {
+            var value: Outer;
+            return match (value) {
+                Nested(Data(v)) => v;
+                Nested(Empty) => 0;
+                Missing => -1;
+            };
+        }
+    )";
+    expect_semantic_success(nested_enum_success, "match_nested_enum_success");
 
     const std::string missing_variant_binding = R"(
         enum Signal {

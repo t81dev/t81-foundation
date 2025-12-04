@@ -74,6 +74,12 @@ ______________________________________________________________________
 - **Error Handling:** lexing/parsing errors return `t81::expected<...>` values containing diagnostics; the CLI surfaces human-friendly diagnostics with file/line numbers.  
 - **Notes:** `include/t81/lang/types.hpp` defines the AST type system and `lang::Compiler` exposes hooks to compile or run programs in the HanoiVM. All semantic invariants trace back to `spec/t81lang-spec.md`.
 
+### 3.1 Command-Line Frontend Helpers
+
+- The CLI driver (`include/t81/cli/driver.hpp`) exposes `build_program_from_source`, `compile`, `check_syntax`, `run_tisc`, and `repl`. `build_program_from_source` is the canonical entry point for lex/parse/semantic/IR/TISC generation and now accepts the original source string so diagnostics can print the exact line and caret for semantic errors.
+- `build_program_from_source` returns `t81::tisc::Program` plus Axion loop metadata and optional weights attachments. Use it to integrate the frontend pipeline into custom tooling or tests (see `tests/cpp/cli_diagnostic_context_test.cpp` for an example that verifies the Option/Result/loop/match diagnostics).
+- The CLI driver reuses this helper for `compile`/`check`/`repl`, ensuring all commands share a single diagnostics path and deterministic semantic context.
+
 ## 4. TISC & VM (`include/t81/tisc`, `include/t81/vm`)
 
 - **Purpose:** emitter for binary TISC programs (`BinaryEmitter`, `Program`), runtime state/VM (`vm::IVirtualMachine`, `vm::State`, `vm::OptionValue`).  

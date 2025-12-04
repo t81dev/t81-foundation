@@ -18,6 +18,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace fs = std::filesystem;
@@ -52,11 +53,33 @@ int trap_exit_code(t81::vm::Trap trap) {
 }
 
 namespace {
-void print_semantic_diagnostics(const t81::frontend::SemanticAnalyzer& analyzer) {
+std::vector<std::string> split_lines(std::string_view content);
+
+void print_semantic_diagnostics(const t81::frontend::SemanticAnalyzer& analyzer,
+                                std::string_view primary_source,
+                                const std::string* source) {
+    std::vector<std::string> lines;
+    if (source) {
+        lines = split_lines(*source);
+    }
     for (const auto& diag : analyzer.diagnostics()) {
         const std::string file = diag.file.empty() ? "<source>" : diag.file;
         std::cerr << file << ':' << diag.line << ':' << diag.column
                   << ": error: " << diag.message << '\n';
+
+        bool print_context = source &&
+                             (file == primary_source || file == "<source>" || primary_source.empty());
+        if (print_context) {
+            if (diag.line > 0 && diag.line <= static_cast<int>(lines.size())) {
+                const std::string& context = lines[diag.line - 1];
+                std::cerr << "    " << context << '\n';
+                int indent = std::max(0, diag.column - 1);
+                if (indent > static_cast<int>(context.size())) {
+                    indent = static_cast<int>(context.size());
+                }
+                std::cerr << "    " << std::string(indent, ' ') << "^\n";
+            }
+        }
     }
 }
 
@@ -301,9 +324,9 @@ std::string sanitize_symbol(std::string_view input) {
 }
 
 std::string format_loop_metadata(const std::vector<t81::frontend::SemanticAnalyzer::LoopMetadata>& loops) {
-    if (loops.empty()) return {};
-    std::ostringstream oss;
-    oss << "(policy (tier 1)";
+  if (loops.empty()) return {};
+  std::ostringstream oss;
+  oss << "(policy (tier 1)";
     for (const auto& meta : loops) {
         const std::string file = meta.source_file.empty() ? "<source>" : meta.source_file;
         oss << " (loop"
@@ -325,14 +348,65 @@ std::string format_loop_metadata(const std::vector<t81::frontend::SemanticAnalyz
         oss << ")";
         oss << ")";
     }
+  oss << ")";
+  return oss.str();
+}
+
+std::string pattern_kind_name(t81::frontend::MatchPattern::Kind kind) {
+    switch (kind) {
+        case t81::frontend::MatchPattern::Kind::Identifier: return "Identifier";
+        case t81::frontend::MatchPattern::Kind::Tuple: return "Tuple";
+        case t81::frontend::MatchPattern::Kind::Record: return "Record";
+        case t81::frontend::MatchPattern::Kind::None: return "None";
+    }
+    return "UnknownPattern";
+}
+
+std::string match_kind_name(t81::frontend::MatchMetadata::Kind kind) {
+    switch (kind) {
+        case t81::frontend::MatchMetadata::Kind::Option: return "Option";
+        case t81::frontend::MatchMetadata::Kind::Result: return "Result";
+        case t81::frontend::MatchMetadata::Kind::Enum: return "Enum";
+        default: return "Unknown";
+    }
+}
+
+std::string format_match_metadata(const t81::frontend::SemanticAnalyzer& analyzer) {
+    const auto& matches = analyzer.match_metadata();
+    if (matches.empty()) return {};
+    std::ostringstream oss;
+    oss << "(match-metadata";
+    for (const auto& meta : matches) {
+        oss << " (match";
+        oss << " (scrutinee " << match_kind_name(meta.kind) << ")";
+        oss << " (type " << sanitize_symbol(analyzer.type_to_string(meta.result_type)) << ")";
+        oss << " (guards " << (meta.guard_present ? "true" : "false") << ")";
+        if (!meta.arms.empty()) {
+            oss << " (arms";
+            for (const auto& arm : meta.arms) {
+                oss << " (arm";
+                oss << " (variant " << sanitize_symbol(arm.variant) << ")";
+                oss << " (pattern " << pattern_kind_name(arm.pattern_kind) << ")";
+                oss << " (guard " << (arm.has_guard ? "true" : "false") << ")";
+                if (arm.arm_type.kind != t81::frontend::Type::Kind::Unknown) {
+                    oss << " (type " << sanitize_symbol(analyzer.type_to_string(arm.arm_type)) << ")";
+                }
+                oss << ")";
+            }
+            oss << ")";
+        }
+        oss << ")";
+    }
     oss << ")";
     return oss.str();
 }
 
+namespace t81::cli {
+
 std::optional<t81::tisc::Program> build_program_from_source(
     const std::string& source,
     const std::string& diag_name,
-    const std::shared_ptr<t81::weights::ModelFile>& weights_model = nullptr)
+    const std::shared_ptr<t81::weights::ModelFile>& weights_model)
 {
     verbose("Lexing...");
     t81::frontend::Lexer lexer(source);
@@ -364,7 +438,7 @@ std::optional<t81::tisc::Program> build_program_from_source(
     t81::frontend::SemanticAnalyzer semantic_analyzer(stmts, diag_name);
     semantic_analyzer.analyze();
     if (semantic_analyzer.had_error()) {
-        print_semantic_diagnostics(semantic_analyzer);
+        print_semantic_diagnostics(semantic_analyzer, diag_name, &source);
         error("Semantic errors encountered");
         return std::nullopt;
     }
@@ -384,6 +458,13 @@ std::optional<t81::tisc::Program> build_program_from_source(
         verbose("Axion loop metadata emitted");
     }
 
+    auto match_policy = format_match_metadata(semantic_analyzer);
+    if (!match_policy.empty()) {
+        program.match_metadata_text = match_policy;
+        verbose("Match metadata emitted");
+        verbose(match_policy);
+    }
+
     if (weights_model) {
         program.weights_model = weights_model;
     }
@@ -399,8 +480,6 @@ std::optional<t81::tisc::Program> build_program_from_source(
 
     return program;
 }
-
-namespace t81::cli {
 
 int compile(const fs::path& input,
             const fs::path& output,

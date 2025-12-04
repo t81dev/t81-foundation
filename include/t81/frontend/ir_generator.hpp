@@ -377,17 +377,20 @@ public:
     std::any visit(const MatchExpr& expr) override {
         expr.scrutinee->accept(*this);
 
-        bool has_some = false;
-        bool has_none = false;
-        bool has_ok = false;
-        bool has_err = false;
-        for (const auto& arm : expr.arms) {
-            std::string_view name{arm.keyword.lexeme};
-            has_some |= (name == "Some");
-            has_none |= (name == "None");
-            has_ok |= (name == "Ok");
-            has_err |= (name == "Err");
+        const SemanticAnalyzer::MatchMetadata* metadata = _semantic ? _semantic->match_metadata_for(expr) : nullptr;
+        const Type* result_type = typed_expr(&expr);
+        auto primitive = categorize_primitive(result_type);
+        if (primitive == tisc::ir::PrimitiveKind::Unknown) {
+            primitive = tisc::ir::PrimitiveKind::Integer;
         }
+        auto dest = allocate_typed_register(primitive);
+        record_result(&expr, dest);
+
+        auto capture_arm = [&](const MatchArm& arm) {
+            arm.expression->accept(*this);
+            auto value = ensure_expr_result(arm.expression.get());
+            copy_to_dest(value, dest);
+        };
 
         auto emit_arm = [&](std::string_view target) {
             for (const auto& arm : expr.arms) {
@@ -401,15 +404,21 @@ public:
                     if (target == "Err") {
                         emit_simple(tisc::ir::Opcode::RESULT_UNWRAP_ERR);
                     }
-                    arm.expression->accept(*this);
-                    return;
+                    capture_arm(arm);
+                    return true;
                 }
             }
+            return false;
         };
 
         const Type* scrutinee_type = typed_expr(expr.scrutinee.get());
         bool scrutinee_is_option = scrutinee_type && scrutinee_type->kind == Type::Kind::Option;
         bool scrutinee_is_result = scrutinee_type && scrutinee_type->kind == Type::Kind::Result;
+
+        bool has_some = metadata ? metadata->has_some : false;
+        bool has_none = metadata ? metadata->has_none : false;
+        bool has_ok = metadata ? metadata->has_ok : false;
+        bool has_err = metadata ? metadata->has_err : false;
 
         if (scrutinee_is_option && has_some && has_none) {
             auto some_label = new_label();
@@ -438,7 +447,7 @@ public:
         }
 
         for (const auto& arm : expr.arms) {
-            arm.expression->accept(*this);
+            capture_arm(arm);
         }
         return {};
     }
@@ -634,6 +643,25 @@ private:
         instr.is_conversion = true;
         emit(instr);
         return dest;
+    }
+
+    TypedRegister ensure_expr_result(const Expr* expr) const {
+        auto it = _expr_registers.find(expr);
+        if (it == _expr_registers.end()) {
+            throw std::runtime_error("IRGenerator missing expression result");
+        }
+        return it->second;
+    }
+
+    void copy_to_dest(TypedRegister source, TypedRegister dest) {
+        if (source.reg.index == dest.reg.index) {
+            return;
+        }
+        tisc::ir::Instruction instr;
+        instr.opcode = tisc::ir::Opcode::MOV;
+        instr.operands = {dest.reg, source.reg};
+        instr.primitive = dest.primitive;
+        emit(instr);
     }
 
     tisc::ir::IntermediateProgram _program;

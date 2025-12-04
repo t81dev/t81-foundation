@@ -36,6 +36,7 @@ struct Program {
   std::vector<t81::T729Tensor> tensor_pool;
   std::vector<std::vector<int>> shape_pool;
   std::string axion_policy_text;
+  std::string match_metadata_text;
   std::shared_ptr<t81::weights::ModelFile> weights_model;
   std::vector<tisc::TypeAliasMetadata> type_aliases;
 };

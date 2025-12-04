@@ -27,6 +27,7 @@ ______________________________________________________________________
 - **[EPIC] Expand Language Feature Support:**
     - **[L] Task:** Expand the `Parser` to recognize the `loop` and `match` keywords and statement structures.
     - **[L] Task:** Implement the lowering of `loop` and `match` expressions in the `IRGenerator` into the correct TISC conditional jumps and labels.
+    - **[M] Task:** Persist match metadata (variants, guards, payload shapes) through the compiler/CLI stack and emit it via Axion/trace hooks so downstream tooling can reason about canonical handles.
 
 - **[EPIC] Improve Developer Experience:**
     - **[M] Task:** Implement a robust error reporting system that provides clear, actionable error messages with line and column numbers for both parsing and type errors.
@@ -45,6 +46,7 @@ ______________________________________________________________________
 - **[EPIC] Harden the VM:**
     - **[M] Task:** Improve VM fault handling. Ensure all illegal operations (e.g., division by zero, out-of-bounds memory access) result in deterministic, spec-compliant faults.
     - **[L] Task:** Add extensive "negative" tests for the VM that deliberately trigger faults and verify the correct behavior.
+    - **[S] Task:** Surface match metadata hints in the Axion/trace log to confirm CLI workloads can replay guard coverage during execution.
 
 ______________________________________________________________________
 

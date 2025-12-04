@@ -258,6 +258,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_semantic_analyzer_equality_test tests/cpp/semantic_analyzer_equality_test.cpp)
   target_link_libraries(t81_semantic_analyzer_equality_test PRIVATE t81_frontend)
 
+  add_executable(t81_semantic_analyzer_numeric_test tests/cpp/semantic_analyzer_numeric_test.cpp)
+  target_link_libraries(t81_semantic_analyzer_numeric_test PRIVATE t81_frontend)
+
   add_executable(t81_tisc_binary_emitter_test tests/cpp/tisc_binary_emitter_test.cpp)
   target_link_libraries(t81_tisc_binary_emitter_test PRIVATE t81_tisc)
 
@@ -291,6 +294,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_cli_option_result_test tests/cpp/cli_option_result_test.cpp)
   target_link_libraries(t81_cli_option_result_test PRIVATE t81_cli_driver t81_tisc t81_vm)
 
+  add_executable(t81_cli_diagnostic_context_test tests/cpp/cli_diagnostic_context_test.cpp)
+  target_link_libraries(t81_cli_diagnostic_context_test PRIVATE t81_cli_driver t81_frontend t81_tisc t81_vm)
+
   add_executable(t81_cli_structural_types_test tests/cpp/cli_structural_types_test.cpp)
   target_link_libraries(t81_cli_structural_types_test PRIVATE t81_cli_driver t81_tisc t81_vm)
 
@@ -302,6 +308,9 @@ if(T81_BUILD_TESTS)
 
   add_executable(axion_loop_metadata_test tests/cpp/axion_loop_metadata_test.cpp)
   target_link_libraries(axion_loop_metadata_test PRIVATE t81_cli_driver t81_tisc t81_vm)
+
+  add_executable(axion_match_metadata_test tests/cpp/axion_match_metadata_test.cpp)
+  target_link_libraries(axion_match_metadata_test PRIVATE t81_cli_driver t81_tisc t81_vm)
 
   add_executable(axion_instruction_counter_test tests/cpp/axion_instruction_counter_test.cpp)
   target_link_libraries(axion_instruction_counter_test PRIVATE t81_core t81_vm)
@@ -490,16 +499,19 @@ if(T81_BUILD_TESTS)
     t81_semantic_analyzer_vector_literal_test
     t81_semantic_analyzer_equality_test
     t81_semantic_analyzer_loop_test
+    t81_semantic_analyzer_numeric_test
     t81_tisc_binary_emitter_test
     t81_tisc_type_alias_io_test
     e2e_option_result_test
-  e2e_match_expression_test
-  e2e_loop_statement_test
-  cli_e2e_test
-  t81_cli_check_test
-  t81_cli_pipeline_test
-  t81_cli_option_result_test
-  axion_loop_metadata_test
+    e2e_match_expression_test
+    e2e_loop_statement_test
+    cli_e2e_test
+    t81_cli_check_test
+    t81_cli_pipeline_test
+    t81_cli_option_result_test
+    t81_cli_diagnostic_context_test
+    axion_loop_metadata_test
+    axion_match_metadata_test
     axion_instruction_counter_test
   )
   foreach(tgt IN LISTS T81_TEST_TARGETS)

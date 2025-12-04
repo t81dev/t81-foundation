@@ -137,6 +137,32 @@ public:
     std::any visit(const SimpleTypeExpr& expr) override;
     std::any visit(const GenericTypeExpr& expr) override;
 
+struct MatchMetadata {
+        const MatchExpr* expr = nullptr;
+        Type result_type;
+        enum class Kind {
+            Unknown,
+            Option,
+            Result,
+            Enum,
+        };
+        Kind kind = Kind::Unknown;
+        bool has_some = false;
+        bool has_none = false;
+        bool has_ok = false;
+        bool has_err = false;
+
+        struct ArmInfo {
+            std::string variant;
+            MatchPattern::Kind pattern_kind = MatchPattern::Kind::None;
+            bool has_guard = false;
+            Type payload_type;
+            Type arm_type;
+        };
+        std::vector<ArmInfo> arms;
+        bool guard_present = false;
+    };
+
     struct LoopMetadata {
         const LoopStmt* stmt = nullptr;
         Token keyword{};
@@ -153,6 +179,8 @@ public:
 
     const std::vector<LoopMetadata>& loop_metadata() const { return _loop_metadata; }
     const LoopMetadata* loop_metadata_for(const LoopStmt& stmt) const;
+    const MatchMetadata* match_metadata_for(const MatchExpr& expr) const;
+    const std::vector<MatchMetadata>& match_metadata() const { return _match_metadata; }
 
 private:
     const std::vector<std::unique_ptr<Stmt>>& _statements;
@@ -165,6 +193,8 @@ private:
     std::unordered_map<const LoopStmt*, size_t> _loop_index;
     std::vector<const LoopStmt*> _loop_stack;
     int _next_loop_id = 0;
+    std::vector<MatchMetadata> _match_metadata;
+    std::unordered_map<const MatchExpr*, size_t> _match_index;
 
     // Scoped symbol table
     using Scope = std::unordered_map<std::string, SemanticSymbol>;

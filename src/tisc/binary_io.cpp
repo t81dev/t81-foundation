@@ -206,6 +206,7 @@ void save_program(const Program& program, const std::string& path) {
     for (const auto& alias : program.type_aliases) {
         write_type_alias_metadata(file, alias);
     }
+    write_string(file, program.match_metadata_text);
 }
 
 Program load_program(const std::string& path) {
@@ -223,12 +224,15 @@ Program load_program(const std::string& path) {
     read_vector_vector_int(file, program.shape_pool);
     read_string(file, program.axion_policy_text);
 
+    uint64_t alias_count = 0;
     if (file.peek() != std::char_traits<char>::eof()) {
-        uint64_t alias_count = 0;
         file.read(reinterpret_cast<char*>(&alias_count), sizeof(alias_count));
         program.type_aliases.resize(alias_count);
         for (auto& alias : program.type_aliases) {
             read_type_alias_metadata(file, alias);
+        }
+        if (file.peek() != std::char_traits<char>::eof()) {
+            read_string(file, program.match_metadata_text);
         }
     }
 

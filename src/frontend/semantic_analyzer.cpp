@@ -213,11 +213,18 @@ std::optional<Type> SemanticAnalyzer::deduce_numeric_type(const Type& left, cons
     if (is_integer_type(left) && is_integer_type(right)) {
         return numeric_rank(left) >= numeric_rank(right) ? left : right;
     }
-    if (is_integer_type(left) && is_float_type(right)) return right;
-    if (is_integer_type(right) && is_float_type(left)) return left;
-    if (is_integer_type(left) && is_fraction_type(right)) return right;
-    if (is_integer_type(right) && is_fraction_type(left)) return left;
-
+    if (is_integer_type(left) && is_float_type(right)) {
+        return right;
+    }
+    if (is_integer_type(right) && is_float_type(left)) {
+        return left;
+    }
+    if (is_integer_type(left) && is_fraction_type(right)) {
+        return right;
+    }
+    if (is_integer_type(right) && is_fraction_type(left)) {
+        return left;
+    }
     if (left.kind == Type::Kind::Float && right.kind == Type::Kind::Float) {
         return left;
     }
@@ -225,7 +232,8 @@ std::optional<Type> SemanticAnalyzer::deduce_numeric_type(const Type& left, cons
         return left;
     }
 
-    error(op, "Cannot combine '" + type_to_string(left) + "' with '" + type_to_string(right) + "' in numeric expressions.");
+    error(op, "Operands must share a primitive numeric type (T81Int, T81Float, or T81Fraction) or widen deterministically from T81Int. Got '" +
+                  type_to_string(left) + "' and '" + type_to_string(right) + "'.");
     return std::nullopt;
 }
 
@@ -589,6 +597,12 @@ const SemanticAnalyzer::LoopMetadata* SemanticAnalyzer::loop_metadata_for(const 
     auto it = _loop_index.find(&stmt);
     if (it == _loop_index.end()) return nullptr;
     return &_loop_metadata[it->second];
+}
+
+const SemanticAnalyzer::MatchMetadata* SemanticAnalyzer::match_metadata_for(const MatchExpr& expr) const {
+    auto it = _match_index.find(&expr);
+    if (it == _match_index.end()) return nullptr;
+    return &_match_metadata[it->second];
 }
 
 Type SemanticAnalyzer::expect_condition_bool(const Expr& expr, const Token& location) {
@@ -1163,6 +1177,10 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
 
     std::unordered_map<std::string, VariantMeta> allowed_variants;
     std::vector<std::string> required_variants;
+    bool saw_some = false;
+    bool saw_none = false;
+    bool saw_ok = false;
+    bool saw_err = false;
     std::string match_label = "Match";
 
     if (is_option) {
@@ -1205,6 +1223,7 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
     bool result_type_locked = contextual_expected && contextual_expected->kind != Type::Kind::Unknown;
     bool structural_error = false;
     std::unordered_set<std::string> seen_variants;
+    std::vector<MatchMetadata::ArmInfo> arm_infos;
 
     auto bind_symbol = [&](const Token& name, const Type& type) {
         if (std::string_view{name.lexeme} == "_") {
@@ -1224,6 +1243,10 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
             structural_error = true;
             continue;
         }
+        if (name == "Some") saw_some = true;
+        if (name == "None") saw_none = true;
+        if (name == "Ok") saw_ok = true;
+        if (name == "Err") saw_err = true;
         if (!seen_variants.insert(name).second) {
             error(arm.keyword, "Duplicate match arm for '" + name + "'.");
             structural_error = true;
@@ -1313,11 +1336,39 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
         }
 
         if (result_type_locked && arm_type.kind != Type::Kind::Unknown &&
-            !is_assignable(result_type, arm_type)) {
+                !is_assignable(result_type, arm_type)) {
             error(arm.keyword, "All match arms must produce the same type.");
             structural_error = true;
         }
+
+        MatchMetadata::ArmInfo arm_info;
+        arm_info.variant = name;
+        arm_info.pattern_kind = pattern_kind;
+        arm_info.has_guard = arm.guard != nullptr;
+        if (variant_has_payload) {
+            arm_info.payload_type = payload_type;
+        }
+        arm_info.arm_type = arm_type;
+        arm_infos.push_back(std::move(arm_info));
     }
+
+    MatchMetadata meta;
+    meta.expr = &expr;
+    meta.result_type = result_type;
+    meta.kind = is_option ? MatchMetadata::Kind::Option
+                         : is_result ? MatchMetadata::Kind::Result
+                         : MatchMetadata::Kind::Enum;
+    meta.has_none = saw_none;
+    meta.has_some = saw_some;
+    meta.has_ok = saw_ok;
+    meta.has_err = saw_err;
+    meta.guard_present = std::any_of(arm_infos.begin(), arm_infos.end(), [](const MatchMetadata::ArmInfo& info) {
+        return info.has_guard;
+    });
+    meta.arms = std::move(arm_infos);
+    _match_index[&expr] = _match_metadata.size();
+    _match_metadata.push_back(std::move(meta));
+
 
     auto describe_missing_arm = [&](const std::string& missing) {
         std::ostringstream oss;

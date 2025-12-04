@@ -87,6 +87,15 @@ class Interpreter : public IVirtualMachine {
         }
       }
     }
+    if (!program_.match_metadata_text.empty()) {
+      AxionEvent event;
+      event.opcode = t81::tisc::Opcode::Nop;
+      event.tag = 0;
+      event.value = 0;
+      event.verdict.kind = t81::axion::VerdictKind::Allow;
+      event.verdict.reason = "match metadata: " + program_.match_metadata_text;
+      state_.axion_log.push_back(event);
+    }
   }
 
   std::expected<void, Trap> step() override {

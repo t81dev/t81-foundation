@@ -21,7 +21,7 @@ For a detailed breakdown, see the [**System Status Report**](docs/system-status.
 
 To reach v1.0, development is organized into three priority tiers. Work on a higher-priority tier is the primary blocker for all lower-priority tiers.
 
-- **[P0] T81Lang Compiler:** The critical path remains the compiler frontend. Finish the semantic analyzer’s type checking/inference (especially around `Option`, `Result`, and generics), broaden the parser to the latest spec keywords (`loop`, `match`, etc.), and ship the `t81` CLI helpers (`compile`, `run`, `repl`) so contributors can exercise the compiler end-to-end.
+- **[P0] T81Lang Compiler:** The critical path remains the compiler frontend. Finish the semantic analyzer’s type checking/inference (especially around `Option`, `Result`, and generics), broaden the parser to the latest spec keywords (`loop`, `match`, etc.), ship the `t81` CLI helpers (`compile`, `run`, `repl`), and ensure match metadata survives into Axion/trace tooling so guards and payloads are auditable end-to-end.
 - **[P1] HanoiVM & TISC Runtime:** Harden the HanoiVM memory model, add deterministic fault handling, and weave the Axion hooks (`AXREAD`, `AXSET`, instruction counting) into the dispatch loop so runtime safety contracts can be exercised from `t81` binaries.
 - **[P2] Axion Kernel & Supporting Systems:** Replace the Axion Kernel and CanonFS stubs with real implementations, finish the documentation/annotated specs that tie them to `spec/axion-kernel.md` & `spec/canonfs-spec.md`, and expand the tutorials/docs for tensor/VM usage so that the stack is demonstrably usable.
 
