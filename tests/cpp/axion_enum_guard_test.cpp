@@ -64,14 +64,24 @@ int main() {
 
         bool saw_variant_guard = false;
         bool saw_payload_unwrap = false;
+        bool saw_variant_metadata = false;
+        bool saw_payload_metadata = false;
         for (const auto& entry : vm->state().axion_log) {
             if (entry.opcode == t81::tisc::Opcode::EnumIsVariant &&
                 entry.tag == 1 && entry.value == 1) {
                 saw_variant_guard = true;
+                if (entry.verdict.reason.find("variant=Blue") != std::string::npos &&
+                    entry.verdict.reason.find("enum=Color") != std::string::npos) {
+                    saw_variant_metadata = true;
+                }
             }
             if (entry.opcode == t81::tisc::Opcode::EnumUnwrapPayload &&
                 entry.tag == 1 && entry.value == 9) {
                 saw_payload_unwrap = true;
+                if (entry.verdict.reason.find("payload") != std::string::npos &&
+                    entry.verdict.reason.find("variant=Blue") != std::string::npos) {
+                    saw_payload_metadata = true;
+                }
             }
         }
 
@@ -81,6 +91,14 @@ int main() {
         }
         if (!saw_payload_unwrap) {
             std::cerr << "Axion log missing enum payload unwrap event" << std::endl;
+            return 1;
+        }
+        if (!saw_variant_metadata) {
+            std::cerr << "Axion log missing enum guard metadata" << std::endl;
+            return 1;
+        }
+        if (!saw_payload_metadata) {
+            std::cerr << "Axion log missing enum payload metadata" << std::endl;
             return 1;
         }
 

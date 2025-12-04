@@ -56,9 +56,22 @@ Global flags such as `--weights-model=<file>`, `--quiet`, and `--verbose` are av
 
 ## Structural Metadata Guarantees
 
-- Records and enums now survive the CLI boundary as serialized metadata. When the compiler sees `record Point { ... }` or `enum Flag { ... }`, `IRGenerator` emits a `TypeAliasMetadata` entry flagged with `StructuralKind::Record`/`Enum` and includes `FieldInfo`/`VariantInfo` vectors. `t81::cli::compile` stores this metadata inside the `.tisc` file (see `src/tisc/binary_io.cpp`).  
-- The parser now accepts `@schema(<number>)` and `@module(<path>)` annotations before a record or enum declaration; the analyzer records these values and the CLI logs them when `--verbose` is enabled so downstream tooling can report the canonical schema version and owning module path without re-parsing sources.  
+- Records and enums now survive the CLI boundary as serialized metadata. When the compiler sees `record Point { ... }` or `enum Flag { ... }`, `IRGenerator` emits a `TypeAliasMetadata` entry flagged with `StructuralKind::Record`/`Enum` and includes `FieldInfo`/`VariantInfo` vectors. `t81::cli::compile` stores this metadata inside the `.tisc` file (see `src/tisc/binary_io.cpp`).
+- The parser now accepts `@schema(<number>)` and `@module(<path>)` annotations before a record or enum declaration; the analyzer records these values and the CLI logs them when `--verbose` is enabled so downstream tooling can report the canonical schema version and owning module path without re-parsing sources.
 - Downstream tools can load the TISC file (`t81::tisc::load_program`) and inspect `program.type_aliases` to recover record layouts or enum discriminants without rerunning the analyzer. The new CLI tests (`tests/cpp/cli_structural_types_test.cpp` and `tests/cpp/cli_record_enum_test.cpp`) assert these guarantees hold end-to-end.
+
+## Axion Trace Metadata and Guard Context
+
+- The CLI already bundles Axion-facing metadata inside `tisc::Program`: `format_loop_metadata` copies `loop_metadata()` into `program.axion_policy_text`, `format_match_metadata` produces `(match-metadata …)` s-expressions, and `collect_enum_metadata` records canonical `(enum-id, variant-id, payload)` tuples referenced by guard-aware opcodes. This matches the contract described in [RFC-0019](../spec/rfcs/RFC-0019-axion-match-logging.md) and feeds the Axion trace described in `spec/axion-kernel.md`.
+- `t81::cli::compile` dumps the match metadata string when `--verbose` is enabled, so CLI logs now show each scrutinee kind, guard presence, arm pattern, variant identifier, and declared payload type. Combined with the enum metadata summary printed later in the compile step, integration tests such as `tests/cpp/axion_enum_guard_test.cpp` can assert that the VM receives the same variant names and payload types it expects.
+- During execution the HanoiVM records `AxionEvent` entries that the CLI exposes through `:trace`/`:trill` (REPL) or by examining `vm->state().axion_log`. Enum guards emit events like `EnumIsVariant / EnumUnwrapPayload` whose `verdict.reason` strings include the canonical `enum=<name>`, `variant=<name>`, `payload=<type>`, and whether the guard `match=pass` or `match=fail`. The Axion log entry for a blue guard looks like:
+
+  ```
+  reason: enum guard enum=Color variant=Blue payload=i32 match=pass
+  reason: enum payload enum=Color variant=Blue payload=i32
+  ```
+
+- These log events carry the same variant IDs that show up in `collect_enum_metadata`, so Axion policies (see `spec/rfcs/RFC-0009-axion-policy-language.md`) can correlate guard paths with `allow-opcode`/`deny-opcode` rules and verify payload expectations deterministically.
 
 ## Regression Tests
 

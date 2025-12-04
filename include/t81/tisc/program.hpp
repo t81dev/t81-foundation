@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 #include "t81/fraction.hpp"
@@ -28,6 +29,18 @@ struct Insn {
   LiteralKind literal_kind{LiteralKind::Int};
 };
 
+struct EnumVariantMetadata {
+  std::string name;
+  std::optional<std::string> payload;
+  int variant_id = -1;
+};
+
+struct EnumMetadata {
+  int enum_id = -1;
+  std::string name;
+  std::vector<EnumVariantMetadata> variants;
+};
+
 struct Program {
   std::vector<Insn> insns;
   std::vector<double> float_pool;
@@ -39,5 +52,6 @@ struct Program {
   std::string match_metadata_text;
   std::shared_ptr<t81::weights::ModelFile> weights_model;
   std::vector<tisc::TypeAliasMetadata> type_aliases;
+  std::vector<EnumMetadata> enum_metadata;
 };
 }  // namespace t81::tisc

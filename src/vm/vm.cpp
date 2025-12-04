@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "t81/axion/engine.hpp"
+#include "t81/enum_meta.hpp"
 #include "t81/vm/vm.hpp"
 
 namespace t81::vm {
@@ -58,6 +59,11 @@ class Interpreter : public IVirtualMachine {
     state_.options.clear();
     state_.results.clear();
     state_.enums.clear();
+    state_.enum_metadata = program_.enum_metadata;
+    state_.enum_metadata_index.clear();
+    for (std::size_t i = 0; i < state_.enum_metadata.size(); ++i) {
+      state_.enum_metadata_index[state_.enum_metadata[i].enum_id] = i;
+    }
     state_.policy.reset();
     state_.gc_cycles = 0;
     instructions_since_gc_ = 0;
@@ -260,11 +266,14 @@ class Interpreter : public IVirtualMachine {
       state_.results.push_back(val);
       return static_cast<std::int64_t>(state_.results.size());
     };
-    auto intern_enum = [this](int variant_id, bool has_payload, ValueTag payload_tag,
+    auto intern_enum = [this](int global_variant_id, bool has_payload, ValueTag payload_tag,
                               std::int64_t payload) -> std::int64_t {
+      if (global_variant_id < 0) return 0;
+      int enum_id = t81::enum_meta::decode_enum_id(global_variant_id);
       for (std::size_t i = 0; i < state_.enums.size(); ++i) {
         const auto& existing = state_.enums[i];
-        if (existing.variant_id != variant_id) continue;
+        if (existing.variant_id != global_variant_id) continue;
+        if (existing.enum_id != enum_id) continue;
         if (existing.has_payload != has_payload) continue;
         if (!has_payload) {
           return static_cast<std::int64_t>(i + 1);
@@ -274,7 +283,8 @@ class Interpreter : public IVirtualMachine {
         }
       }
       EnumValue val;
-      val.variant_id = variant_id;
+      val.variant_id = global_variant_id;
+      val.enum_id = enum_id;
       val.has_payload = has_payload;
       val.payload_tag = payload_tag;
       val.payload = payload;
@@ -942,7 +952,22 @@ class Interpreter : public IVirtualMachine {
           t81::axion::Verdict verdict;
           verdict.kind = t81::axion::VerdictKind::Allow;
           std::ostringstream reason;
-          reason << "enum guard variant=" << insn.c << " match=" << (matches ? "pass" : "fail");
+          const int guard_variant_id = insn.c;
+          const int guard_enum_id = t81::enum_meta::decode_enum_id(guard_variant_id);
+          const int guard_local_variant = t81::enum_meta::decode_variant_id(guard_variant_id);
+          const auto* meta = enum_metadata_for(guard_enum_id);
+          const auto* variant_meta = variant_metadata(meta, guard_local_variant);
+          reason << "enum guard";
+          if (meta) {
+            reason << " enum=" << meta->name;
+          }
+          if (variant_meta) {
+            reason << " variant=" << variant_meta->name;
+            if (variant_meta->payload.has_value()) {
+              reason << " payload=" << *variant_meta->payload;
+            }
+          }
+          reason << " match=" << (matches ? "pass" : "fail");
           verdict.reason = reason.str();
           record_axion_event(insn.opcode, insn.c, matches ? 1 : 0, verdict);
         }
@@ -962,9 +987,23 @@ class Interpreter : public IVirtualMachine {
           t81::axion::Verdict verdict;
           verdict.kind = t81::axion::VerdictKind::Allow;
           std::ostringstream reason;
-          reason << "enum payload variant=" << val->variant_id;
+          const int global_variant_id = val->variant_id;
+          const int enum_id = t81::enum_meta::decode_enum_id(global_variant_id);
+          const int local_variant = t81::enum_meta::decode_variant_id(global_variant_id);
+          const auto* meta = enum_metadata_for(enum_id);
+          const auto* variant_meta = variant_metadata(meta, local_variant);
+          reason << "enum payload";
+          if (meta) {
+            reason << " enum=" << meta->name;
+          }
+          if (variant_meta) {
+            reason << " variant=" << variant_meta->name;
+            if (variant_meta->payload.has_value()) {
+              reason << " payload=" << *variant_meta->payload;
+            }
+          }
           verdict.reason = reason.str();
-          record_axion_event(insn.opcode, static_cast<std::int32_t>(val->variant_id), val->payload, verdict);
+          record_axion_event(insn.opcode, static_cast<std::int32_t>(global_variant_id), val->payload, verdict);
         }
         break;
       }
@@ -1069,6 +1108,25 @@ class Interpreter : public IVirtualMachine {
     ctx.caller = "t81vm";
     ctx.syscall.assign(syscall);
     return axion_engine_->evaluate(ctx);
+  }
+
+  const t81::tisc::EnumMetadata* enum_metadata_for(int enum_id) const {
+    auto it = state_.enum_metadata_index.find(enum_id);
+    if (it == state_.enum_metadata_index.end()) {
+      return nullptr;
+    }
+    return &state_.enum_metadata[it->second];
+  }
+
+  const t81::tisc::EnumVariantMetadata* variant_metadata(const t81::tisc::EnumMetadata* meta,
+                                                        int variant_id) const {
+    if (!meta) return nullptr;
+    for (const auto& variant : meta->variants) {
+      if (variant.variant_id == variant_id) {
+        return &variant;
+      }
+    }
+    return nullptr;
   }
 
   void record_axion_event(t81::tisc::Opcode op, std::int32_t tag,

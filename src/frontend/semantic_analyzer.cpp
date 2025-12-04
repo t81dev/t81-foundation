@@ -927,6 +927,7 @@ std::any SemanticAnalyzer::visit(const EnumDecl& stmt) {
     }
 
     EnumInfo info;
+    info.id = _next_enum_id++;
     bool had_error = false;
 
     for (const auto& variant : stmt.variants) {
@@ -939,9 +940,15 @@ std::any SemanticAnalyzer::visit(const EnumDecl& stmt) {
 
         if (variant.payload) {
             Type payload_type = analyze_type_expr(*variant.payload);
-            info.variants.emplace(variant_name, payload_type);
+            EnumVariantInfo variant_info;
+            variant_info.payload = payload_type;
+            variant_info.id = static_cast<int>(info.variant_order.size());
+            info.variants.emplace(variant_name, variant_info);
         } else {
-            info.variants.emplace(variant_name, std::nullopt);
+            EnumVariantInfo variant_info;
+            variant_info.payload.reset();
+            variant_info.id = static_cast<int>(info.variant_order.size());
+            info.variants.emplace(variant_name, variant_info);
         }
         info.variant_order.push_back(variant_name);
     }
@@ -1174,6 +1181,7 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
     struct VariantMeta {
         std::optional<Type> payload;
         std::size_t id = 0;
+        int enum_id = -1;
     };
 
     std::unordered_map<std::string, VariantMeta> allowed_variants;
@@ -1212,7 +1220,7 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
             if (variant_it != info.variants.end()) {
                 payload = variant_it->second.payload;
             }
-            allowed_variants.emplace(name, VariantMeta{payload, idx});
+            allowed_variants.emplace(name, VariantMeta{payload, idx, info.id});
             required_variants.push_back(name);
         }
     } else {
@@ -1304,6 +1312,7 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
         }
         arm_info.arm_type = arm_type;
         arm_info.variant_id = static_cast<int>(variant_it->second.id);
+        arm_info.enum_id = variant_it->second.enum_id;
         arm_infos.push_back(std::move(arm_info));
     }
 

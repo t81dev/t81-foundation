@@ -413,6 +413,36 @@ std::string format_match_metadata(const t81::frontend::SemanticAnalyzer& analyze
     return oss.str();
 }
 
+std::vector<t81::tisc::EnumMetadata> collect_enum_metadata(const t81::frontend::SemanticAnalyzer& analyzer) {
+    std::vector<t81::tisc::EnumMetadata> enums;
+    const auto& definitions = analyzer.enum_definitions();
+    enums.reserve(definitions.size());
+    for (const auto& [name, info] : definitions) {
+        if (info.id < 0) {
+            continue;
+        }
+        t81::tisc::EnumMetadata entry;
+        entry.enum_id = info.id;
+        entry.name = name;
+        entry.variants.reserve(info.variant_order.size());
+        for (const auto& variant_name : info.variant_order) {
+            auto variant_it = info.variants.find(variant_name);
+            if (variant_it == info.variants.end()) {
+                continue;
+            }
+            t81::tisc::EnumVariantMetadata variant_meta;
+            variant_meta.name = variant_name;
+            variant_meta.variant_id = variant_it->second.id;
+            if (variant_it->second.payload.has_value()) {
+                variant_meta.payload = analyzer.type_name(*variant_it->second.payload);
+            }
+            entry.variants.push_back(std::move(variant_meta));
+        }
+        enums.push_back(std::move(entry));
+    }
+    return enums;
+}
+
 namespace t81::cli {
 
 std::optional<t81::tisc::Program> build_program_from_source(
@@ -475,6 +505,12 @@ std::optional<t81::tisc::Program> build_program_from_source(
         program.match_metadata_text = match_policy;
         verbose("Match metadata emitted");
         verbose(match_policy);
+    }
+
+    auto enum_metadata = collect_enum_metadata(semantic_analyzer);
+    if (!enum_metadata.empty()) {
+        program.enum_metadata = std::move(enum_metadata);
+        verbose("Enum metadata emitted");
     }
 
     if (weights_model) {

@@ -2,6 +2,7 @@
 #ifndef T81_FRONTEND_IR_GENERATOR_HPP
 #define T81_FRONTEND_IR_GENERATOR_HPP
 
+#include "t81/enum_meta.hpp"
 #include "t81/frontend/ast.hpp"
 #include "t81/frontend/semantic_analyzer.hpp"
 #include "t81/frontend/symbol_table.hpp"
@@ -560,6 +561,9 @@ public:
                 std::optional<int> variant_id;
                 if (arm_meta.variant_id >= 0) {
                     variant_id = arm_meta.variant_id;
+                    if (auto encoded = global_variant_id_for(arm_meta)) {
+                        variant_id = *encoded;
+                    }
                 }
                 bool variant_has_payload =
                     arm_meta.payload_type.kind != Type::Kind::Unknown;
@@ -623,12 +627,19 @@ public:
             primitive = kind;
         }
         auto dest = allocate_typed_register(primitive);
+        std::optional<int> global_variant_id;
         if (variant_id) {
+            global_variant_id = global_variant_id_for(enum_name, *variant_id);
+            if (!global_variant_id) {
+                global_variant_id = *variant_id;
+            }
+        }
+        if (global_variant_id) {
             if (expr.payload) {
                 auto payload_reg = ensure_expr_result(expr.payload.get());
-                emit_make_enum_variant_payload(dest, payload_reg, *variant_id);
+                emit_make_enum_variant_payload(dest, payload_reg, *global_variant_id);
             } else {
-                emit_make_enum_variant(dest, *variant_id);
+                emit_make_enum_variant(dest, *global_variant_id);
             }
         } else {
             emit_simple(tisc::ir::Opcode::TRAP);
@@ -795,28 +806,28 @@ private:
         emit(tisc::ir::Instruction{tisc::ir::Opcode::MAKE_RESULT_ERR, {dest.reg, payload.reg}});
     }
 
-    void emit_make_enum_variant(const TypedRegister& dest, int variant_id) {
+    void emit_make_enum_variant(const TypedRegister& dest, int global_variant_id) {
         tisc::ir::Instruction instr;
         instr.opcode = tisc::ir::Opcode::MAKE_ENUM_VARIANT;
-        instr.operands = {dest.reg, tisc::ir::Immediate{variant_id}};
+        instr.operands = {dest.reg, tisc::ir::Immediate{global_variant_id}};
         emit(instr);
     }
 
     void emit_make_enum_variant_payload(const TypedRegister& dest,
                                        const TypedRegister& payload,
-                                       int variant_id) {
+                                       int global_variant_id) {
         tisc::ir::Instruction instr;
         instr.opcode = tisc::ir::Opcode::MAKE_ENUM_VARIANT_PAYLOAD;
-        instr.operands = {dest.reg, payload.reg, tisc::ir::Immediate{variant_id}};
+        instr.operands = {dest.reg, payload.reg, tisc::ir::Immediate{global_variant_id}};
         emit(instr);
     }
 
     void emit_enum_is_variant(const TypedRegister& dest,
                               const TypedRegister& source,
-                              int variant_id) {
+                              int global_variant_id) {
         tisc::ir::Instruction instr;
         instr.opcode = tisc::ir::Opcode::ENUM_IS_VARIANT;
-        instr.operands = {dest.reg, source.reg, tisc::ir::Immediate{variant_id}};
+        instr.operands = {dest.reg, source.reg, tisc::ir::Immediate{global_variant_id}};
         emit(instr);
     }
 
@@ -967,6 +978,39 @@ private:
         }
         // For Option/Result arms the parsed pattern already represents the payload bindings.
         bind_pattern_payload(arm.pattern, reg);
+    }
+
+    const EnumInfo* enum_info_for_name(std::string_view name) const {
+        if (!_semantic) return nullptr;
+        auto it = _semantic->enum_definitions().find(std::string(name));
+        if (it == _semantic->enum_definitions().end()) {
+            return nullptr;
+        }
+        return &it->second;
+    }
+
+    std::optional<int> global_variant_id_for(std::string_view enum_name, int variant_id) const {
+        if (variant_id < 0) return std::nullopt;
+        if (const auto* info = enum_info_for_name(enum_name)) {
+            if (info->id >= 0) {
+                int encoded = t81::enum_meta::encode_variant_id(info->id, variant_id);
+                if (encoded >= 0) {
+                    return encoded;
+                }
+            }
+        }
+        return std::nullopt;
+    }
+
+    std::optional<int> global_variant_id_for(const SemanticAnalyzer::MatchMetadata::ArmInfo& arm) const {
+        if (arm.enum_id < 0 || arm.variant_id < 0) {
+            return std::nullopt;
+        }
+        int encoded = t81::enum_meta::encode_variant_id(arm.enum_id, arm.variant_id);
+        if (encoded < 0) {
+            return std::nullopt;
+        }
+        return encoded;
     }
 
     std::optional<int> resolve_variant_index(std::string_view enum_name, std::string_view variant_name) const {

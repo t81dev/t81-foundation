@@ -60,6 +60,7 @@ struct EnumValue {
   bool has_payload{false};
   ValueTag payload_tag{ValueTag::Int};
   std::int64_t payload{0};
+  int enum_id{-1};
 };
 
 struct MemoryLayout {
@@ -104,5 +105,7 @@ struct State {
   std::vector<std::pair<std::int64_t, std::int64_t>> stack_frames;
   std::vector<std::pair<std::int64_t, std::int64_t>> heap_frames;
   std::size_t heap_ptr{0};
+  std::vector<t81::tisc::EnumMetadata> enum_metadata;
+  std::unordered_map<int, std::size_t> enum_metadata_index;
 };
 }  // namespace t81::vm

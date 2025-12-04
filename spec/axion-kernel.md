@@ -127,6 +127,7 @@ Axion maintains the META segment:
 - recursion depth counters
 
 Axion MUST keep metadata deterministic and canonical.
+Axion also ingests the loop hints, match metadata s-expressions, and enum metadata described in [RFC-0019](../spec/rfcs/RFC-0019-axion-match-logging.md). The compiler populates `tisc::Program.axion_policy_text`, `match_metadata_text`, and `enum_metadata` so the runtime can emit deterministic `EnumIsVariant`/`EnumUnwrapPayload` events whose `AxionEvent.verdict.reason` strings include `enum=<name>`, `variant=<name>`, `payload=<type>`, and the guard result (`match=pass`/`match=fail`). These entries give DTS/VS the canonical guard context they need to enforce safety and determinism.
 
 ## 1.6 Privileged Instruction Arbitration
 
@@ -158,6 +159,7 @@ DTS receives:
 - faults
 - GC movements
 - scheduling decisions
+- loop guard metadata extracted from `axion_policy_text` and match guard metadata (variant ids, declared payload types, guard presence) captured by `EnumIsVariant`/`EnumUnwrapPayload` events. These guard-aware logs show the file/line/column hint, the canonical enum/variant identity, the guard result, and payload reason strings, so DTS keeps a complete, deterministic record of guard coverage together with the normal instruction trace.
 
 DTS MUST maintain a **canonical record** of the program's observable behavior.
 

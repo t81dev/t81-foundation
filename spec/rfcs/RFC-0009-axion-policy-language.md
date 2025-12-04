@@ -68,6 +68,31 @@ APL is a minimal s-expression language:
   annotations contradict the active policy.
 - Macros allow `@requires_policy(policy_name)` on functions.
 
+### 2.5 Guard & Loop Metadata Predicates
+
+APL now closes the loop on the guard metadata described in [RFC-0019](RFC-0019-axion-match-logging.md). The compiler embeds `(policy (loop ...))` hints, `(match-metadata ...)` s-expressions, and canonical enum/variant ids inside the `.tisc` header so Axion can pair `EnumIsVariant`/`EnumUnwrapPayload` events with policy expectations. Policy authors can express these obligations through dedicated metadata predicates:
+
+```
+(require-match-guard
+  (enum Color)
+  (variant Blue)
+  (payload i32)
+  (result pass))
+```
+
+`require-match-guard` asserts that the Axion trace contains a guard event for the given enum and variant with the expected payload chemistry and pass/fail result; it automatically lifts the `variant-id` and `enum-id` emitted by the compiler into the policy layer. Policies that allow `ENUM_UNWRAP_PAYLOAD` or `ENUM_IS_VARIANT` while also requiring specific guards can therefore prove that guard coverage matches Axion’s deterministic metadata.
+
+Loop hints are exposed through `require-loop-hint`, for example:
+
+```
+(require-loop-hint
+  (id 3)
+  (annotated true)
+  (bound 100))
+```
+
+This clause ensures the DTS saw a `(policy (loop (id 3) (file …) (line …) (column …) (bound 100) (annotated true)))` entry emitted by `format_loop_metadata` and that Axion can match it against the runtime guard trace before permitting high-tier opcodes inside an unbounded loop. The metadata/guard predicates stay optional so legacy binaries without the new instrumentation continue to run, but a missing guard or loop hint can trigger a deterministic `Policy Fault` if the policy explicitly `require`s it.
+
 ______________________________________________________________________
 
 # 3. Rationale

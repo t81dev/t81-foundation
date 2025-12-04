@@ -135,6 +135,51 @@ static void read_variant_info(std::istream& is, t81::tisc::VariantInfo& variant)
     }
 }
 
+static void write_enum_variant_metadata(std::ostream& os, const t81::tisc::EnumVariantMetadata& variant) {
+    write_string(os, variant.name);
+    uint8_t has_payload = variant.payload.has_value() ? 1 : 0;
+    os.write(reinterpret_cast<const char*>(&has_payload), sizeof(has_payload));
+    if (variant.payload.has_value()) {
+        write_string(os, *variant.payload);
+    }
+    os.write(reinterpret_cast<const char*>(&variant.variant_id), sizeof(variant.variant_id));
+}
+
+static void read_enum_variant_metadata(std::istream& is, t81::tisc::EnumVariantMetadata& variant) {
+    read_string(is, variant.name);
+    uint8_t has_payload = 0;
+    is.read(reinterpret_cast<char*>(&has_payload), sizeof(has_payload));
+    if (has_payload) {
+        std::string payload;
+        read_string(is, payload);
+        variant.payload = std::move(payload);
+    } else {
+        variant.payload.reset();
+    }
+    is.read(reinterpret_cast<char*>(&variant.variant_id), sizeof(variant.variant_id));
+}
+
+static void write_enum_metadata(std::ostream& os, const t81::tisc::EnumMetadata& meta) {
+    os.write(reinterpret_cast<const char*>(&meta.enum_id), sizeof(meta.enum_id));
+    write_string(os, meta.name);
+    uint64_t variant_count = meta.variants.size();
+    os.write(reinterpret_cast<const char*>(&variant_count), sizeof(variant_count));
+    for (const auto& variant : meta.variants) {
+        write_enum_variant_metadata(os, variant);
+    }
+}
+
+static void read_enum_metadata(std::istream& is, t81::tisc::EnumMetadata& meta) {
+    is.read(reinterpret_cast<char*>(&meta.enum_id), sizeof(meta.enum_id));
+    read_string(is, meta.name);
+    uint64_t variant_count = 0;
+    is.read(reinterpret_cast<char*>(&variant_count), sizeof(variant_count));
+    meta.variants.resize(variant_count);
+    for (auto& variant : meta.variants) {
+        read_enum_variant_metadata(is, variant);
+    }
+}
+
 static void write_type_alias_metadata(std::ostream& os, const t81::tisc::TypeAliasMetadata& meta) {
     write_string(os, meta.name);
     write_vector_string(os, meta.params);
@@ -207,6 +252,11 @@ void save_program(const Program& program, const std::string& path) {
         write_type_alias_metadata(file, alias);
     }
     write_string(file, program.match_metadata_text);
+    uint64_t enum_count = program.enum_metadata.size();
+    file.write(reinterpret_cast<const char*>(&enum_count), sizeof(enum_count));
+    for (const auto& enum_meta : program.enum_metadata) {
+        write_enum_metadata(file, enum_meta);
+    }
 }
 
 Program load_program(const std::string& path) {
@@ -233,6 +283,14 @@ Program load_program(const std::string& path) {
         }
         if (file.peek() != std::char_traits<char>::eof()) {
             read_string(file, program.match_metadata_text);
+        }
+        if (file.peek() != std::char_traits<char>::eof()) {
+            uint64_t enum_count = 0;
+            file.read(reinterpret_cast<char*>(&enum_count), sizeof(enum_count));
+            program.enum_metadata.resize(enum_count);
+            for (auto& enum_meta : program.enum_metadata) {
+                read_enum_metadata(file, enum_meta);
+            }
         }
     }
 

@@ -92,7 +92,7 @@ struct RecordInfo {
 
 struct EnumVariantInfo {
     std::optional<Type> payload;
-    std::size_t index = 0;
+    int id = -1;
 };
 
 struct EnumInfo {
@@ -100,6 +100,7 @@ struct EnumInfo {
     std::vector<std::string> variant_order;
     std::uint32_t schema_version = 1;
     std::string module_path;
+    int id = -1;
 };
 
 class SemanticAnalyzer : public StmtVisitor, public ExprVisitor {
@@ -164,6 +165,7 @@ struct MatchMetadata {
             Type payload_type;
             Type arm_type;
             int variant_id = -1;
+            int enum_id = -1;
         };
         std::vector<ArmInfo> arms;
         bool guard_present = false;
@@ -188,6 +190,7 @@ struct MatchMetadata {
     const MatchMetadata* match_metadata_for(const MatchExpr& expr) const;
     const std::vector<MatchMetadata>& match_metadata() const { return _match_metadata; }
     [[nodiscard]] std::string type_name(const Type& type) const { return type_to_string(type); }
+    const std::unordered_map<std::string, EnumInfo>& enum_definitions() const { return _enum_definitions; }
 
 private:
     const std::vector<std::unique_ptr<Stmt>>& _statements;
@@ -202,6 +205,7 @@ private:
     int _next_loop_id = 0;
     std::vector<MatchMetadata> _match_metadata;
     std::unordered_map<const MatchExpr*, size_t> _match_index;
+    int _next_enum_id = 0;
 
     // Scoped symbol table
     using Scope = std::unordered_map<std::string, SemanticSymbol>;
@@ -251,7 +255,6 @@ private:
     const Type* type_of(const Expr* expr) const;
     const std::unordered_map<std::string, AliasInfo>& type_aliases() const { return _type_aliases; }
     const std::unordered_map<std::string, RecordInfo>& record_definitions() const { return _record_definitions; }
-    const std::unordered_map<std::string, EnumInfo>& enum_definitions() const { return _enum_definitions; }
     std::string type_expr_to_string(const TypeExpr& expr) const;
     std::string expr_to_string(const Expr& expr) const;
 
