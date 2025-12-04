@@ -112,14 +112,18 @@ Opcode map_opcode(const ir::Instruction& instr) {
         case O::MAKE_OPTION_NONE: return Opcode::MakeOptionNone;
         case O::MAKE_RESULT_OK: return Opcode::MakeResultOk;
         case O::MAKE_RESULT_ERR: return Opcode::MakeResultErr;
-        case O::OPTION_IS_SOME: return Opcode::OptionIsSome;
-        case O::OPTION_UNWRAP: return Opcode::OptionUnwrap;
-        case O::RESULT_IS_OK: return Opcode::ResultIsOk;
-        case O::RESULT_UNWRAP_OK: return Opcode::ResultUnwrapOk;
-        case O::RESULT_UNWRAP_ERR: return Opcode::ResultUnwrapErr;
-        case O::NOP: return Opcode::Nop;
-        case O::HALT: return Opcode::Halt;
-        case O::TRAP: return Opcode::Trap;
+    case O::OPTION_IS_SOME: return Opcode::OptionIsSome;
+    case O::OPTION_UNWRAP: return Opcode::OptionUnwrap;
+    case O::RESULT_IS_OK: return Opcode::ResultIsOk;
+    case O::RESULT_UNWRAP_OK: return Opcode::ResultUnwrapOk;
+    case O::RESULT_UNWRAP_ERR: return Opcode::ResultUnwrapErr;
+    case O::MAKE_ENUM_VARIANT: return Opcode::MakeEnumVariant;
+    case O::MAKE_ENUM_VARIANT_PAYLOAD: return Opcode::MakeEnumVariantPayload;
+    case O::ENUM_IS_VARIANT: return Opcode::EnumIsVariant;
+    case O::ENUM_UNWRAP_PAYLOAD: return Opcode::EnumUnwrapPayload;
+    case O::NOP: return Opcode::Nop;
+    case O::HALT: return Opcode::Halt;
+    case O::TRAP: return Opcode::Trap;
         case O::WEIGHTS_LOAD: return Opcode::WeightsLoad;
         default:
             throw std::runtime_error("Unsupported IR opcode in binary emitter.");
@@ -178,6 +182,8 @@ Program BinaryEmitter::emit(const ir::IntermediateProgram& ir_program) {
             if (instr.operands.size() > 2) {
                 if (std::holds_alternative<ir::Register>(instr.operands[2])) {
                     vm_insn.c = std::get<ir::Register>(instr.operands[2]).index;
+                } else if (std::holds_alternative<ir::Immediate>(instr.operands[2])) {
+                    vm_insn.c = std::get<ir::Immediate>(instr.operands[2]).value;
                 }
             }
 

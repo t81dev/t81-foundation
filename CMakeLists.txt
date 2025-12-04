@@ -315,6 +315,9 @@ if(T81_BUILD_TESTS)
   add_executable(axion_match_metadata_test tests/cpp/axion_match_metadata_test.cpp)
   target_link_libraries(axion_match_metadata_test PRIVATE t81_cli_driver t81_tisc t81_vm)
 
+  add_executable(axion_enum_guard_test tests/cpp/axion_enum_guard_test.cpp)
+  target_link_libraries(axion_enum_guard_test PRIVATE t81_cli_driver t81_tisc t81_vm)
+
   add_executable(axion_instruction_counter_test tests/cpp/axion_instruction_counter_test.cpp)
   target_link_libraries(axion_instruction_counter_test PRIVATE t81_core t81_vm)
 
@@ -515,6 +518,7 @@ if(T81_BUILD_TESTS)
     t81_cli_diagnostic_context_test
     axion_loop_metadata_test
     axion_match_metadata_test
+    axion_enum_guard_test
     axion_instruction_counter_test
   )
   foreach(tgt IN LISTS T81_TEST_TARGETS)

@@ -34,6 +34,7 @@ enum class ValueTag : std::uint8_t {
   ShapeHandle,
   OptionHandle,
   ResultHandle,
+  EnumHandle,
 };
 
 struct Flags {
@@ -50,6 +51,13 @@ struct OptionValue {
 
 struct ResultValue {
   bool is_ok{false};
+  ValueTag payload_tag{ValueTag::Int};
+  std::int64_t payload{0};
+};
+
+struct EnumValue {
+  int variant_id{0};
+  bool has_payload{false};
   ValueTag payload_tag{ValueTag::Int};
   std::int64_t payload{0};
 };
@@ -82,6 +90,7 @@ struct State {
   std::vector<std::vector<int>> shapes;
   std::vector<OptionValue> options;
   std::vector<ResultValue> results;
+  std::vector<EnumValue> enums;
   std::vector<TraceEntry> trace;
   std::vector<AxionEvent> axion_log;
   Flags flags{};

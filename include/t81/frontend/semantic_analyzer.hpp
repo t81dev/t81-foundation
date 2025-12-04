@@ -90,8 +90,13 @@ struct RecordInfo {
     std::string module_path;
 };
 
+struct EnumVariantInfo {
+    std::optional<Type> payload;
+    std::size_t index = 0;
+};
+
 struct EnumInfo {
-    std::unordered_map<std::string, std::optional<Type>> variants;
+    std::unordered_map<std::string, EnumVariantInfo> variants;
     std::vector<std::string> variant_order;
     std::uint32_t schema_version = 1;
     std::string module_path;
@@ -158,6 +163,7 @@ struct MatchMetadata {
             bool has_guard = false;
             Type payload_type;
             Type arm_type;
+            int variant_id = -1;
         };
         std::vector<ArmInfo> arms;
         bool guard_present = false;

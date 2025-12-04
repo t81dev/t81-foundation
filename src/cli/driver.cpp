@@ -212,11 +212,15 @@ std::string opcode_name(t81::tisc::Opcode opcode) {
         CASE(MakeOptionNone)
         CASE(MakeResultOk)
         CASE(MakeResultErr)
+        CASE(MakeEnumVariant)
+        CASE(MakeEnumVariantPayload)
         CASE(OptionIsSome)
         CASE(OptionUnwrap)
         CASE(ResultIsOk)
         CASE(ResultUnwrapOk)
         CASE(ResultUnwrapErr)
+        CASE(EnumIsVariant)
+        CASE(EnumUnwrapPayload)
         CASE(Neg)
         CASE(JumpIfNegative)
         CASE(JumpIfPositive)
@@ -388,6 +392,9 @@ std::string format_match_metadata(const t81::frontend::SemanticAnalyzer& analyze
             for (const auto& arm : meta.arms) {
                 oss << " (arm";
                 oss << " (variant " << sanitize_symbol(arm.variant) << ")";
+                if (arm.variant_id >= 0) {
+                    oss << " (variant-id " << arm.variant_id << ")";
+                }
                 oss << " (pattern " << pattern_kind_name(arm.pattern_kind) << ")";
                 oss << " (guard " << (arm.has_guard ? "true" : "false") << ")";
                 if (arm.payload_type.kind != t81::frontend::Type::Kind::Unknown) {

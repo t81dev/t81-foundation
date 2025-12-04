@@ -175,8 +175,8 @@ public:
             t81::tisc::VariantInfo info;
             info.name = variant_name;
             auto payload_it = enum_it->second.variants.find(variant_name);
-            if (payload_it != enum_it->second.variants.end() && payload_it->second.has_value()) {
-                info.payload = _semantic->type_to_string(*payload_it->second);
+            if (payload_it != enum_it->second.variants.end() && payload_it->second.payload.has_value()) {
+                info.payload = _semantic->type_to_string(*payload_it->second.payload);
             }
             meta.variants.push_back(std::move(info));
         }
@@ -386,68 +386,168 @@ public:
         auto dest = allocate_typed_register(primitive);
         record_result(&expr, dest);
 
-        auto capture_arm = [&](const MatchArm& arm) {
-            arm.expression->accept(*this);
-            auto value = ensure_expr_result(arm.expression.get());
-            copy_to_dest(value, dest);
-        };
-
-        auto emit_arm = [&](std::string_view target) {
-            for (const auto& arm : expr.arms) {
-                if (std::string_view{arm.keyword.lexeme} == target) {
-                    if (target == "Some") {
-                        emit_simple(tisc::ir::Opcode::OPTION_UNWRAP);
-                    }
-                    if (target == "Ok") {
-                        emit_simple(tisc::ir::Opcode::RESULT_UNWRAP_OK);
-                    }
-                    if (target == "Err") {
-                        emit_simple(tisc::ir::Opcode::RESULT_UNWRAP_ERR);
-                    }
-                    capture_arm(arm);
-                    return true;
-                }
-            }
-            return false;
-        };
-
         const Type* scrutinee_type = typed_expr(expr.scrutinee.get());
         bool scrutinee_is_option = scrutinee_type && scrutinee_type->kind == Type::Kind::Option;
         bool scrutinee_is_result = scrutinee_type && scrutinee_type->kind == Type::Kind::Result;
+        auto scrutinee_reg = ensure_expr_result(expr.scrutinee.get());
 
-        bool has_some = metadata ? metadata->has_some : false;
-        bool has_none = metadata ? metadata->has_none : false;
-        bool has_ok = metadata ? metadata->has_ok : false;
-        bool has_err = metadata ? metadata->has_err : false;
+        auto find_arm = [&](std::string_view name) -> const MatchArm* {
+            for (const auto& arm : expr.arms) {
+                if (std::string_view{arm.keyword.lexeme} == name) {
+                    return &arm;
+                }
+            }
+            return nullptr;
+        };
 
-        if (scrutinee_is_option && has_some && has_none) {
-            auto some_label = new_label();
-            auto end_label = new_label();
-            emit_simple(tisc::ir::Opcode::OPTION_IS_SOME);
-            emit(tisc::ir::Instruction{tisc::ir::Opcode::JNZ, {some_label}});
-            emit_arm("None");
-            emit(tisc::ir::Instruction{tisc::ir::Opcode::JMP, {end_label}});
-            emit_label(some_label);
-            emit_arm("Some");
+        auto emit_match_arm = [&]<typename Prelude>(const MatchArm& arm,
+                                                    tisc::ir::Label entry_label,
+                                                    tisc::ir::Label guard_fail_target,
+                                                    Prelude before_body,
+                                                    tisc::ir::Label end_label,
+                                                    const TypedRegister* variant_flag,
+                                                    std::optional<int> variant_id) {
+            emit_label(entry_label);
+            std::optional<tisc::ir::Label> guard_fail_label;
+            if (variant_flag && variant_id.has_value()) {
+                emit_enum_is_variant(*variant_flag, scrutinee_reg, *variant_id);
+                emit_jump_if_zero(guard_fail_target, *variant_flag);
+            }
+            if (arm.guard) {
+                guard_fail_label = new_label();
+                arm.guard->accept(*this);
+                auto guard_value = ensure_expr_result(arm.guard.get());
+                emit_jump_if_zero(*guard_fail_label, guard_value);
+            }
+            before_body();
+            arm.expression->accept(*this);
+            auto value = ensure_expr_result(arm.expression.get());
+            copy_to_dest(value, dest);
+            emit_jump(end_label);
+            if (guard_fail_label) {
+                emit_label(*guard_fail_label);
+                emit_jump(guard_fail_target);
+            }
+        };
+
+        auto finalize_branches = [&](tisc::ir::Label end_label, tisc::ir::Label unmatched_label) {
             emit_label(end_label);
+            emit_label(unmatched_label);
+            emit_simple(tisc::ir::Opcode::TRAP);
+        };
+
+        if (metadata && metadata->kind == SemanticAnalyzer::MatchMetadata::Kind::Option &&
+            metadata->has_some && metadata->has_none && scrutinee_is_option) {
+            const MatchArm* some_arm = find_arm("Some");
+            const MatchArm* none_arm = find_arm("None");
+            if (!some_arm || !none_arm) {
+                for (const auto& arm : expr.arms) {
+                    arm.expression->accept(*this);
+                    auto value = ensure_expr_result(arm.expression.get());
+                    copy_to_dest(value, dest);
+                }
+                return {};
+            }
+
+            auto end_label = new_label();
+            auto unmatched_label = new_label();
+            auto some_label = new_label();
+            auto none_label = new_label();
+
+            auto payload_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            auto flag_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Boolean);
+
+            emit_option_is_some(flag_reg, scrutinee_reg);
+            emit_jump_if_not_zero(some_label, flag_reg);
+
+            emit_match_arm(*none_arm, none_label, unmatched_label, []() {}, end_label, nullptr, std::nullopt);
+
+            emit_match_arm(*some_arm, some_label, none_label,
+                          [&]() { emit_option_unwrap(payload_reg, scrutinee_reg); },
+                          end_label, nullptr, std::nullopt);
+
+            finalize_branches(end_label, unmatched_label);
             return {};
         }
 
-        if (scrutinee_is_result && has_ok && has_err) {
-            auto ok_label = new_label();
+        if (metadata && metadata->kind == SemanticAnalyzer::MatchMetadata::Kind::Result &&
+            metadata->has_ok && metadata->has_err && scrutinee_is_result) {
+            const MatchArm* ok_arm = find_arm("Ok");
+            const MatchArm* err_arm = find_arm("Err");
+            if (!ok_arm || !err_arm) {
+                for (const auto& arm : expr.arms) {
+                    arm.expression->accept(*this);
+                    auto value = ensure_expr_result(arm.expression.get());
+                    copy_to_dest(value, dest);
+                }
+                return {};
+            }
+
             auto end_label = new_label();
-            emit_simple(tisc::ir::Opcode::RESULT_IS_OK);
-            emit(tisc::ir::Instruction{tisc::ir::Opcode::JNZ, {ok_label}});
-            emit_arm("Err");
-            emit(tisc::ir::Instruction{tisc::ir::Opcode::JMP, {end_label}});
-            emit_label(ok_label);
-            emit_arm("Ok");
+            auto unmatched_label = new_label();
+            auto ok_label = new_label();
+            auto err_label = new_label();
+
+            auto payload_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            auto flag_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Boolean);
+
+            emit_result_is_ok(flag_reg, scrutinee_reg);
+            emit_jump_if_not_zero(ok_label, flag_reg);
+
+            emit_match_arm(*err_arm, err_label, unmatched_label, [&]() {
+                emit_result_unwrap_err(payload_reg, scrutinee_reg);
+            }, end_label, nullptr, std::nullopt);
+
+            emit_match_arm(*ok_arm, ok_label, err_label, [&]() {
+                emit_result_unwrap_ok(payload_reg, scrutinee_reg);
+            }, end_label, nullptr, std::nullopt);
+
+            finalize_branches(end_label, unmatched_label);
+            return {};
+        }
+
+        if (metadata && metadata->kind == SemanticAnalyzer::MatchMetadata::Kind::Enum) {
+            auto end_label = new_label();
+            auto trap_label = new_label();
+            std::vector<tisc::ir::Label> arm_labels(expr.arms.size());
+            for (auto& label : arm_labels) {
+                label = new_label();
+            }
+            auto variant_flag = allocate_typed_register(tisc::ir::PrimitiveKind::Boolean);
+            auto payload_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            for (size_t i = 0; i < expr.arms.size(); ++i) {
+                tisc::ir::Label guard_fail_target =
+                    (i + 1 < expr.arms.size()) ? arm_labels[i + 1] : trap_label;
+                const auto& arm_meta = metadata->arms[i];
+                std::optional<int> variant_id;
+                if (arm_meta.variant_id >= 0) {
+                    variant_id = arm_meta.variant_id;
+                }
+                bool variant_has_payload =
+                    arm_meta.payload_type.kind != Type::Kind::Unknown;
+
+                emit_match_arm(expr.arms[i],
+                               arm_labels[i],
+                               guard_fail_target,
+                               [&]() {
+                                   if (variant_has_payload) {
+                                       emit_enum_unwrap_payload(payload_reg, scrutinee_reg);
+                                   }
+                               },
+                               end_label,
+                               &variant_flag,
+                               variant_id);
+            }
+            emit_label(trap_label);
+            emit_simple(tisc::ir::Opcode::TRAP);
             emit_label(end_label);
             return {};
         }
 
         for (const auto& arm : expr.arms) {
-            capture_arm(arm);
+            arm.expression->accept(*this);
+            auto value = ensure_expr_result(arm.expression.get());
+            copy_to_dest(value, dest);
         }
         return {};
     }
@@ -472,6 +572,9 @@ public:
     }
 
     std::any visit(const EnumLiteralExpr& expr) override {
+        std::string enum_name(expr.enum_name.lexeme);
+        std::string variant_name(expr.variant.lexeme);
+        std::optional<int> variant_id = resolve_variant_index(enum_name, variant_name);
         if (expr.payload) {
             expr.payload->accept(*this);
         }
@@ -480,6 +583,16 @@ public:
             primitive = kind;
         }
         auto dest = allocate_typed_register(primitive);
+        if (variant_id) {
+            if (expr.payload) {
+                auto payload_reg = ensure_expr_result(expr.payload.get());
+                emit_make_enum_variant_payload(dest, payload_reg, *variant_id);
+            } else {
+                emit_make_enum_variant(dest, *variant_id);
+            }
+        } else {
+            emit_simple(tisc::ir::Opcode::TRAP);
+        }
         record_result(&expr, dest);
         return {};
     }
@@ -594,6 +707,68 @@ private:
         emit(tisc::ir::Instruction{tisc::ir::Opcode::LABEL, {label}});
     }
 
+    void emit_jump(tisc::ir::Label target) {
+        emit(tisc::ir::Instruction{tisc::ir::Opcode::JMP, {target}});
+    }
+
+    void emit_jump_if_zero(tisc::ir::Label target, const TypedRegister& cond) {
+        emit(tisc::ir::Instruction{tisc::ir::Opcode::JZ, {target, cond.reg}});
+    }
+
+    void emit_jump_if_not_zero(tisc::ir::Label target, const TypedRegister& cond) {
+        emit(tisc::ir::Instruction{tisc::ir::Opcode::JNZ, {target, cond.reg}});
+    }
+
+    void emit_option_is_some(const TypedRegister& dest, const TypedRegister& source) {
+        emit(tisc::ir::Instruction{tisc::ir::Opcode::OPTION_IS_SOME, {dest.reg, source.reg}});
+    }
+
+    void emit_option_unwrap(const TypedRegister& dest, const TypedRegister& source) {
+        emit(tisc::ir::Instruction{tisc::ir::Opcode::OPTION_UNWRAP, {dest.reg, source.reg}});
+    }
+
+    void emit_result_is_ok(const TypedRegister& dest, const TypedRegister& source) {
+        emit(tisc::ir::Instruction{tisc::ir::Opcode::RESULT_IS_OK, {dest.reg, source.reg}});
+    }
+
+    void emit_result_unwrap_ok(const TypedRegister& dest, const TypedRegister& source) {
+        emit(tisc::ir::Instruction{tisc::ir::Opcode::RESULT_UNWRAP_OK, {dest.reg, source.reg}});
+    }
+
+    void emit_result_unwrap_err(const TypedRegister& dest, const TypedRegister& source) {
+        emit(tisc::ir::Instruction{tisc::ir::Opcode::RESULT_UNWRAP_ERR, {dest.reg, source.reg}});
+    }
+
+    void emit_make_enum_variant(const TypedRegister& dest, int variant_id) {
+        tisc::ir::Instruction instr;
+        instr.opcode = tisc::ir::Opcode::MAKE_ENUM_VARIANT;
+        instr.operands = {dest.reg, tisc::ir::Immediate{variant_id}};
+        emit(instr);
+    }
+
+    void emit_make_enum_variant_payload(const TypedRegister& dest,
+                                       const TypedRegister& payload,
+                                       int variant_id) {
+        tisc::ir::Instruction instr;
+        instr.opcode = tisc::ir::Opcode::MAKE_ENUM_VARIANT_PAYLOAD;
+        instr.operands = {dest.reg, payload.reg, tisc::ir::Immediate{variant_id}};
+        emit(instr);
+    }
+
+    void emit_enum_is_variant(const TypedRegister& dest,
+                              const TypedRegister& source,
+                              int variant_id) {
+        tisc::ir::Instruction instr;
+        instr.opcode = tisc::ir::Opcode::ENUM_IS_VARIANT;
+        instr.operands = {dest.reg, source.reg, tisc::ir::Immediate{variant_id}};
+        emit(instr);
+    }
+
+    void emit_enum_unwrap_payload(const TypedRegister& dest,
+                                  const TypedRegister& source) {
+        emit(tisc::ir::Instruction{tisc::ir::Opcode::ENUM_UNWRAP_PAYLOAD, {dest.reg, source.reg}});
+    }
+
     tisc::ir::Register new_register() {
         return tisc::ir::Register{_register_count++};
     }
@@ -662,6 +837,20 @@ private:
         instr.operands = {dest.reg, source.reg};
         instr.primitive = dest.primitive;
         emit(instr);
+    }
+
+    std::optional<int> resolve_variant_index(std::string_view enum_name, std::string_view variant_name) const {
+        if (!_semantic) return std::nullopt;
+        std::string name(enum_name);
+        auto enum_it = _semantic->enum_definitions().find(name);
+        if (enum_it == _semantic->enum_definitions().end()) return std::nullopt;
+        const auto& info = enum_it->second;
+        for (size_t idx = 0; idx < info.variant_order.size(); ++idx) {
+            if (info.variant_order[idx] == variant_name) {
+                return static_cast<int>(idx);
+            }
+        }
+        return std::nullopt;
     }
 
     tisc::ir::IntermediateProgram _program;

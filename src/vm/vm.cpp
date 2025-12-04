@@ -57,6 +57,7 @@ class Interpreter : public IVirtualMachine {
     state_.heap_ptr = state_.layout.stack_limit;
     state_.options.clear();
     state_.results.clear();
+    state_.enums.clear();
     state_.policy.reset();
     state_.gc_cycles = 0;
     instructions_since_gc_ = 0;
@@ -220,6 +221,12 @@ class Interpreter : public IVirtualMachine {
       if (idx >= state_.results.size()) return nullptr;
       return &state_.results[idx];
     };
+    auto enum_ptr = [this](std::int64_t handle) -> EnumValue* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.enums.size()) return nullptr;
+      return &state_.enums[idx];
+    };
     auto intern_option = [this](bool has_value, ValueTag payload_tag,
                                 std::int64_t payload) -> std::int64_t {
       for (std::size_t i = 0; i < state_.options.size(); ++i) {
@@ -253,7 +260,27 @@ class Interpreter : public IVirtualMachine {
       state_.results.push_back(val);
       return static_cast<std::int64_t>(state_.results.size());
     };
-
+    auto intern_enum = [this](int variant_id, bool has_payload, ValueTag payload_tag,
+                              std::int64_t payload) -> std::int64_t {
+      for (std::size_t i = 0; i < state_.enums.size(); ++i) {
+        const auto& existing = state_.enums[i];
+        if (existing.variant_id != variant_id) continue;
+        if (existing.has_payload != has_payload) continue;
+        if (!has_payload) {
+          return static_cast<std::int64_t>(i + 1);
+        }
+        if (existing.payload_tag == payload_tag && existing.payload == payload) {
+          return static_cast<std::int64_t>(i + 1);
+        }
+      }
+      EnumValue val;
+      val.variant_id = variant_id;
+      val.has_payload = has_payload;
+      val.payload_tag = payload_tag;
+      val.payload = payload;
+      state_.enums.push_back(val);
+      return static_cast<std::int64_t>(state_.enums.size());
+    };
     auto clamp_trit = [](std::int64_t v) -> int {
       if (v > 0) return 1;
       if (v < 0) return -1;
@@ -312,6 +339,8 @@ class Interpreter : public IVirtualMachine {
               if (lhs->payload_tag != rhs->payload_tag) return std::nullopt;
               return compare_value(lhs->payload_tag, lhs->payload, rhs->payload);
             }
+            case ValueTag::EnumHandle:
+              return std::nullopt;
           }
           return std::nullopt;
         };
@@ -820,6 +849,24 @@ class Interpreter : public IVirtualMachine {
         update_flags(state_.registers[insn.a]);
         break;
       }
+      case t81::tisc::Opcode::MakeEnumVariant: {
+        if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        auto handle = intern_enum(static_cast<int>(insn.b), false, ValueTag::Int, 0);
+        state_.registers[insn.a] = handle;
+        state_.register_tags[insn.a] = ValueTag::EnumHandle;
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::MakeEnumVariantPayload: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        if (insn.c < 0) { trap = Trap::IllegalInstruction; break; }
+        auto handle =
+            intern_enum(static_cast<int>(insn.c), true, state_.register_tags[insn.b], state_.registers[insn.b]);
+        state_.registers[insn.a] = handle;
+        state_.register_tags[insn.a] = ValueTag::EnumHandle;
+        update_flags(state_.registers[insn.a]);
+        break;
+      }
       case t81::tisc::Opcode::OptionIsSome: {
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
         if (state_.register_tags[insn.b] != ValueTag::OptionHandle) {
@@ -878,6 +925,47 @@ class Interpreter : public IVirtualMachine {
         if (!res || res->is_ok) { trap = Trap::IllegalInstruction; break; }
         set_reg(insn.a, res->payload, res->payload_tag);
         update_flags(state_.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::EnumIsVariant: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        if (state_.register_tags[insn.b] != ValueTag::EnumHandle) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        auto val = enum_ptr(state_.registers[insn.b]);
+        if (!val) { trap = Trap::IllegalInstruction; break; }
+        bool matches = (val->variant_id == insn.c);
+        set_reg(insn.a, matches ? 1 : 0, ValueTag::Int);
+        update_flags(state_.registers[insn.a]);
+        {
+          t81::axion::Verdict verdict;
+          verdict.kind = t81::axion::VerdictKind::Allow;
+          std::ostringstream reason;
+          reason << "enum guard variant=" << insn.c << " match=" << (matches ? "pass" : "fail");
+          verdict.reason = reason.str();
+          record_axion_event(insn.opcode, insn.c, matches ? 1 : 0, verdict);
+        }
+        break;
+      }
+      case t81::tisc::Opcode::EnumUnwrapPayload: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        if (state_.register_tags[insn.b] != ValueTag::EnumHandle) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        auto val = enum_ptr(state_.registers[insn.b]);
+        if (!val || !val->has_payload) { trap = Trap::IllegalInstruction; break; }
+        set_reg(insn.a, val->payload, val->payload_tag);
+        update_flags(state_.registers[insn.a]);
+        {
+          t81::axion::Verdict verdict;
+          verdict.kind = t81::axion::VerdictKind::Allow;
+          std::ostringstream reason;
+          reason << "enum payload variant=" << val->variant_id;
+          verdict.reason = reason.str();
+          record_axion_event(insn.opcode, static_cast<std::int32_t>(val->variant_id), val->payload, verdict);
+        }
         break;
       }
       case t81::tisc::Opcode::TVecAdd: {

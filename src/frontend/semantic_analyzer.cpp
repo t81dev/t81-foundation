@@ -1173,6 +1173,7 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
 
     struct VariantMeta {
         std::optional<Type> payload;
+        std::size_t id = 0;
     };
 
     std::unordered_map<std::string, VariantMeta> allowed_variants;
@@ -1186,15 +1187,15 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
     if (is_option) {
         match_label = "Option";
         Type payload = scrutinee_type.params.empty() ? Type{Type::Kind::Unknown} : scrutinee_type.params[0];
-        allowed_variants.emplace("Some", VariantMeta{payload});
-        allowed_variants.emplace("None", VariantMeta{std::nullopt});
+        allowed_variants.emplace("Some", VariantMeta{payload, 0});
+        allowed_variants.emplace("None", VariantMeta{std::nullopt, 1});
         required_variants = {"Some", "None"};
     } else if (is_result) {
         match_label = "Result";
         Type success = scrutinee_type.params.size() >= 1 ? scrutinee_type.params[0] : Type{Type::Kind::Unknown};
         Type error = scrutinee_type.params.size() >= 2 ? scrutinee_type.params[1] : Type{Type::Kind::Unknown};
-        allowed_variants.emplace("Ok", VariantMeta{success});
-        allowed_variants.emplace("Err", VariantMeta{error});
+        allowed_variants.emplace("Ok", VariantMeta{success, 0});
+        allowed_variants.emplace("Err", VariantMeta{error, 1});
         required_variants = {"Ok", "Err"};
     } else if (is_enum) {
         match_label = "Enum";
@@ -1204,13 +1205,14 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
             return make_error_type();
         }
         const EnumInfo& info = enum_it->second;
-        for (const auto& name : info.variant_order) {
+        for (size_t idx = 0; idx < info.variant_order.size(); ++idx) {
+            const auto& name = info.variant_order[idx];
             auto variant_it = info.variants.find(name);
             std::optional<Type> payload;
             if (variant_it != info.variants.end()) {
-                payload = variant_it->second;
+                payload = variant_it->second.payload;
             }
-            allowed_variants.emplace(name, VariantMeta{payload});
+            allowed_variants.emplace(name, VariantMeta{payload, idx});
             required_variants.push_back(name);
         }
     } else {
@@ -1301,6 +1303,7 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
             arm_info.payload_type = payload_type;
         }
         arm_info.arm_type = arm_type;
+        arm_info.variant_id = static_cast<int>(variant_it->second.id);
         arm_infos.push_back(std::move(arm_info));
     }
 
@@ -1434,12 +1437,12 @@ std::any SemanticAnalyzer::visit(const EnumLiteralExpr& expr) {
         return make_error_type();
     }
 
-    if (variant_it->second.has_value()) {
+    if (variant_it->second.payload.has_value()) {
         if (!expr.payload) {
             error(expr.variant, "Variant '" + variant_name + "' of enum '" + enum_name + "' requires a payload.");
             return make_error_type();
         }
-        Type expected_type = *variant_it->second;
+        Type expected_type = *variant_it->second.payload;
         Type actual_type = evaluate_expression(*expr.payload, &expected_type);
         if (!is_assignable(expected_type, actual_type)) {
             error(expr.variant, "Enum payload for '" + variant_name + "' must be '" + type_to_string(expected_type) + "'.");
@@ -1775,17 +1778,17 @@ bool SemanticAnalyzer::analyze_nested_variant(const MatchPattern& pattern, const
         return false;
     }
     if (!pattern.variant_payload) {
-        if (variant_it->second.has_value()) {
+        if (variant_it->second.payload.has_value()) {
             error(pattern.variant_name, "Variant '" + variant_name + "' requires a binding.");
             return false;
         }
         return true;
     }
-    if (!variant_it->second.has_value()) {
+    if (!variant_it->second.payload.has_value()) {
         error(pattern.variant_name, "Variant '" + variant_name + "' does not accept a binding.");
         return false;
     }
-    return bind_pattern_payload(*pattern.variant_payload, *variant_it->second, pattern.variant_name);
+    return bind_pattern_payload(*pattern.variant_payload, *variant_it->second.payload, pattern.variant_name);
 }
 
 void SemanticAnalyzer::bind_pattern_symbol(const Token& name, const Type& type) {
