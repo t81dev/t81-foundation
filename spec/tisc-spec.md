@@ -72,6 +72,22 @@ STATE = (R, PC, SP, FLAGS, MEM, META)
 
 The T81VM is responsible for hosting and evolving this state; TISC defines how each instruction transforms it.
 
+A simple TISC program to add two numbers might look like this:
+
+```tisc
+; Load the integer value 5 into register R0
+LOADI R0, 5
+
+; Load the integer value 10 into register R1
+LOADI R1, 10
+
+; Add the values in R0 and R1, store the result in R2
+ADD R2, R0, R1
+
+; Halt the machine
+HALT
+```
+
 ______________________________________________________________________
 
 ## 2. Register File

@@ -1,6 +1,6 @@
 # T81 Foundation: Actionable Task List
 
-**Last Updated:** November 29, 2025
+**Last Updated:** December 4, 2025
 
 This document lists the concrete, prioritized tasks for the next development cycle, aligned with the strategic priorities in `ROADMAP.md`.
 
@@ -19,9 +19,9 @@ ______________________________________________________________________
 **Goal:** Fully implement the C++20 compiler to match the `t81lang-spec.md`. This is the critical path to v1.0.
 
 - **[EPIC] Implement Semantic Analysis & Type System:**
-    - **[DONE] [M] Task:** Create the foundational `SemanticAnalyzer` class that traverses the AST. Initially, it will only resolve symbols and populate a `SymbolTable`.
-    - **[L] Task:** Implement the core type-checking logic within the `SemanticAnalyzer`. Enforce all type rules from the spec, including numeric widening, function signatures, and return types.
-    - **[M] Task:** Implement type checking for generic types, focusing on `Option[T]` and `Result[T, E]`.
+    - **[DONE] [M] Task:** Create the foundational `SemanticAnalyzer` class that traverses the AST.
+    - **[DONE] [L] Task:** Implement the core type-checking logic within the `SemanticAnalyzer`.
+    - **[DONE] [M] Task:** Implement type checking for generic types, focusing on `Option[T]` and `Result[T, E]`.
     - **[S] Task:** Create a new end-to-end test for `Option/Result` that defines a function returning an `Option`, calls it, and verifies the result. This will be the driving test for the type system.
 
 - **[EPIC] Expand Language Feature Support:**
@@ -30,8 +30,8 @@ ______________________________________________________________________
     - **[M] Task:** Persist match metadata (variants, guards, payload shapes) through the compiler/CLI stack and emit it via Axion/trace hooks so downstream tooling can reason about canonical handles.
 
 - **[EPIC] Improve Developer Experience:**
-    - **[M] Task:** Implement a robust error reporting system that provides clear, actionable error messages with line and column numbers for both parsing and type errors.
-    - **[M] Task:** Create a `t81` command-line tool with `compile` and `run` subcommands to drive the compiler and VM.
+    - **[DONE] [M] Task:** Implement a robust error reporting system that provides clear, actionable error messages with line and column numbers for both parsing and type errors.
+    - **[DONE] [M] Task:** Create a `t81` command-line tool with `compile` and `run` subcommands to drive the compiler and VM.
 
 ______________________________________________________________________
 

@@ -25,7 +25,7 @@ ______________________________________________________________________
 
 ### Data Types
 - **`T81Int<N>`:** A header-only, fixed-size, templated class for balanced ternary integers. Its internal storage is a `std::array` of packed trytes.
-- **`T81BigInt`:** An arbitrary-precision integer class. The current implementation is a placeholder wrapping `int64_t` and does not yet support arbitrary precision.
+- **`T81BigInt`:** An arbitrary-precision integer class that uses a vector of trytes for its internal storage. While the core storage is implemented for arbitrary size, some of the arithmetic operations are still under development.
 - **`Fraction`:** A rational number type that is always maintained in canonical form (reduced, with a positive denominator).
 - **`T81Float`:** A production-quality, IEEE-754-inspired balanced ternary floating-point type.
 - **Error Handling:**

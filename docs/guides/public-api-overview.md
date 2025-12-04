@@ -12,7 +12,7 @@ title: Public API Overview
 - [T81 Foundation: Public API Overview](#t81-foundation-public-api-overview)
   - [1. Where to Look](#1-where-to-look)
   - [2. Core Numerics (`include/t81/core`, `include/t81/tensor`, `include/t81/ternary`)](#2-core-numerics-`includet81core`-`includet81tensor`-`includet81ternary`)
-  - [3. Frontend (`include/t81/frontend`) & Language Interface (`include/t81/lang`)](#3-frontend-`includet81frontend`-&-language-interface-`includet81lang`)
+  - [3. Frontend (`include/t81/frontend`)](#3-frontend-`includet81frontend`)
   - [4. TISC & VM (`include/t81/tisc`, `include/t81/vm`)](#4-tisc-&-vm-`includet81tisc`-`includet81vm`)
   - [5. Weights & Tooling (`include/t81/weights`, `src/tools`)](#5-weights-&-tooling-`includet81weights`-`srctools`)
   - [6. CanonFS & Axion Entrypoints (`include/t81/canonfs`, `include/t81/axion`)](#6-canonfs-&-axion-entrypoints-`includet81canonfs`-`includet81axion`)
@@ -66,13 +66,13 @@ ______________________________________________________________________
 - **Thread Safety:** these headers are *not* thread-safe by default; clients should synchronize around shared mutable containers or use `t81::support::expected` (which is copy-on-write safe) when sharing results across threads.  
 - **Error Handling:** arithmetic functions either return `t81::support::expected`/`T81Result` wrappers or emit controlled Axion traps for overflow/entropy violations. Rare unrecoverable faults throw `std::domain_error`/`std::runtime_error` (documented in `DESIGN.md`). Prefer the `noexcept` helpers in `include/t81/detail/assert.hpp` for invariants.
 
-## 3. Frontend (`include/t81/frontend`) & Language Interface (`include/t81/lang`)
+## 3. Frontend (`include/t81/frontend`)
 
-- **Purpose:** exposes lexer, parser, semantic analyzer, IR generator, and the high-level `t81::lang` compiler API.  
-- **Public entrypoints:** `frontend::Lexer`, `frontend::Parser`, `frontend::SemanticAnalyzer`, `lang::Compiler`, `lang::Builder` (if present).  
-- **Thread Safety:** the parser and semantic analyzer instance state is not thread-safe; instantiate per thread or guard with `std::mutex`.  
-- **Error Handling:** lexing/parsing errors return `t81::expected<...>` values containing diagnostics; the CLI surfaces human-friendly diagnostics with file/line numbers.  
-- **Notes:** `include/t81/lang/types.hpp` defines the AST type system and `lang::Compiler` exposes hooks to compile or run programs in the HanoiVM. All semantic invariants trace back to `spec/t81lang-spec.md`.
+- **Purpose:** Exposes the public components of the T81Lang compiler, including the lexer, parser, semantic analyzer, and IR generator.
+- **Public Entrypoints:** `frontend::Lexer`, `frontend::Parser`, `frontend::SemanticAnalyzer`, `frontend::IRGenerator`.
+- **Thread Safety:** The state of the frontend components is not thread-safe. Each thread should have its own instances of these classes.
+- **Error Handling:** Errors from the frontend are collected as diagnostic messages, which can be printed to the console with source context. The `t81` CLI tool provides the canonical implementation of this error reporting.
+- **Notes:** The full compiler pipeline is orchestrated by the `t81` CLI driver, which serves as the primary public interface for compiling and running T81Lang code.
 
 ### 3.1 Command-Line Frontend Helpers
 

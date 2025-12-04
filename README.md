@@ -53,7 +53,7 @@ Core features:
 - **Native + Classic benchmarking**: compare tryte-based (classic) vs AVX2-friendly (native) representations, reporting Classic/Native/Binary columns and latency/bandwidth metrics.
 - **Weights tooling**: import SafeTensors/GGUF to `t81w`, inspect metadata, and quantize tensors into T3_K GGUF models (with new CLI `weights quantize`).
 
-The stack is currently a late‑alpha / early‑beta collection of high-confidence numerics (well-tested core libs) wrapped around an experimental but usable compiler/VM pipeline.
+The stack is currently in a beta state: the core numerics and compiler are stable and feature-complete, while the VM and runtime systems are under active development.
 
 ## 2. Quick Start
 

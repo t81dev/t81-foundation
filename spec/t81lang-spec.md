@@ -348,6 +348,27 @@ The complete type checker **MUST** enforce the following guarantees:
   - `None` has no payload and therefore REQUIRES a contextual `Option[T]` type.
   - `Ok(expr)` and `Err(expr)` also require a contextual `Result[T, E]` type to check the payload against the correct branch.
 
+A single example can illustrate many of these rules in practice:
+```t81
+// A function that returns an Option type
+fn find_positive(val: T81Int) -> Option[T81Int] {
+    if (val > 0) {
+        return Some(val);
+    } else {
+        return None;
+    }
+}
+
+// A variable declaration with an explicit type
+let my_value: T81Int = -5;
+
+// Using a match expression to safely unwrap the Option
+let result_text: Symbol = match (find_positive(my_value)) {
+    Some(v) => `Found positive value`,
+    None    => `Value was not positive`,
+};
+```
+
 ### Stage 4 — Purity Analysis
 
 Tracks pure vs impure operations.

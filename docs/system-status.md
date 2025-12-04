@@ -1,6 +1,6 @@
 # T81 Foundation: System Status Report
 
-**Last Updated:** November 30, 2025
+**Last Updated:** December 4, 2025
 
 This document provides a high-level summary of the implementation status of each major component in the T81 Foundation stack. For a more detailed technical breakdown of spec conformance, see [`ANALYSIS.md`](../ANALYSIS.md).
 
@@ -58,7 +58,7 @@ ______________________________________________________________________
 - **Specification:** [`spec/tisc-spec.md`](../spec/tisc-spec.md), [`spec/t81vm-spec.md`](../spec/t81vm-spec.md)
 - **Status:** `Partial`
 - **Summary:** The VM can execute a significant subset of the TISC instruction set, but the memory model is primitive.
-- **Next Steps:** Implement the full VM memory model and fault/trace systems.
+- **Next Steps:** Implement the full VM memory model and deterministic fault handling. Integrate the Axion Kernel hooks into the VM's dispatch loop.
 
 ______________________________________________________________________
 
@@ -68,7 +68,7 @@ ______________________________________________________________________
 - **Status:** `Implemented`
 - **Summary:** The new C++20 frontend is now largely complete. It includes a lexer, a recursive descent parser for the full T81Lang grammar, a new semantic analysis pass for scope and symbol resolution, and an IR generator that produces valid TISC IR. Vector literals follow the canonical rules from §2.3–§2.5: elements must be numeric, the empty literal relies on a contextual `Vector[T]` type, and the analyzer feeds a canonical `T729Tensor` payload through the IR tensor pool so the VM can load it via `LoadImm/TensorHandle`. `None`, `Ok`, and `Err` are now only valid in contextual `Option[T]` or `Result[T, E]` types, the match analyzer enforces exhaustiveness and consistent arm return types, and the new semantic/CLI regressions keep the `t81` pipeline aligned with the spec.
 - **Structural types:** `record` and `enum` declarations now produce field/variant metadata so literals and field access are checked for completeness and payload compliance, and the CLI serializes those layouts/variants alongside existing type aliases so downstream tooling can trust the structure; the new [`docs/guides/record-enum.md`](../docs/guides/record-enum.md) spells out the rules and `tests/cpp/cli_structural_types_test.cpp` proves that structural types flow through the CLI pipeline.
-- **Next Steps:** Deepen the semantic analysis pass to perform comprehensive type checking and inference, and continue expanding CLI coverage so every structural invariant is exercised by an end-to-end regression.
+- **Next Steps:** Harden the IR generator and expand end-to-end tests for the remaining language features (`loop`, `match`).
 
 ______________________________________________________________________
 
@@ -77,7 +77,7 @@ ______________________________________________________________________
 - **Specification:** [`spec/axion-kernel.md`](../spec/axion-kernel.md), [`spec/canonfs-spec.md`](../spec/canonfs-spec.md)
 - **Status:** `Experimental / Stub`
 - **Summary:** The APIs for these components exist, but the implementations are non-functional placeholders.
-- **Next Steps:** Begin implementation of the core Axion and CanonFS logic.
+- **Next Steps:** Implement the core Axion safety policies (e.g., instruction counting) and the basic CanonFS storage driver.
 
 ______________________________________________________________________
 
@@ -92,4 +92,3 @@ This section summarizes the state of the project's documentation following a com
 ### Remaining Known Gaps
 
 -   **[TODO] Add Examples to Specifications:** The formal specifications in `/spec` are text-heavy and would benefit from concrete TISC and T81Lang code examples.
--   **[TODO] Document the `t81` CLI:** As the `t81` command-line tool is developed, it will require dedicated documentation.

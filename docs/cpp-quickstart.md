@@ -35,7 +35,7 @@ cmake --build build --parallel
 # 4. Run the CTest test suite
 ctest --test-dir build --output-on-failure
 ```
-A successful run will show all **65** unit tests passing.
+A successful run will show all unit tests passing.
 
 ______________________________________________________________________
 
@@ -82,9 +82,8 @@ ______________________________________________________________________
 
 ## 5. Notes & Caveats
 
-- **`T81BigInt` is Partial:** The `T81BigInt` class now provides arbitrary-precision storage using a vector of `T81Int` limbs, but its arithmetic functions are still incomplete.
+- **`T81BigInt` is Partial:** The `T81BigInt` class provides arbitrary-precision storage, but its arithmetic functions are still incomplete.
 - **`Tensor` is Partial:** The `Tensor` class has a solid foundation but does not yet implement the full set of operations defined in the spec.
-> **`t81` CLI exists:** Use `t81 compile/run/check/benchmark/weights` as the canonical interface between source, TISC, and the VM.
 - **Axion & CanonFS are Stubs:** The Axion Kernel and CanonFS are non-functional placeholders.
 
 For a detailed status of all components, see the [`System Status Report`](./system-status.md).
