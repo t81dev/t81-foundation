@@ -390,6 +390,9 @@ std::string format_match_metadata(const t81::frontend::SemanticAnalyzer& analyze
                 oss << " (variant " << sanitize_symbol(arm.variant) << ")";
                 oss << " (pattern " << pattern_kind_name(arm.pattern_kind) << ")";
                 oss << " (guard " << (arm.has_guard ? "true" : "false") << ")";
+                if (arm.payload_type.kind != t81::frontend::Type::Kind::Unknown) {
+                    oss << " (payload " << sanitize_symbol(analyzer.type_name(arm.payload_type)) << ")";
+                }
                 if (arm.arm_type.kind != t81::frontend::Type::Kind::Unknown) {
                     oss << " (type " << sanitize_symbol(analyzer.type_name(arm.arm_type)) << ")";
                 }

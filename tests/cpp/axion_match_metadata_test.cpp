@@ -52,6 +52,7 @@ int main() {
 
         auto compiled = t81::tisc::load_program(tisc_path.string());
         assert(!compiled.match_metadata_text.empty());
+        assert(compiled.match_metadata_text.find("(payload") != std::string::npos);
 
         auto vm = t81::vm::make_interpreter_vm();
         vm->load_program(compiled);
