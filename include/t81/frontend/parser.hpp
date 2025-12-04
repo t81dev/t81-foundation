@@ -53,6 +53,7 @@ private:
     MatchPattern parse_match_pattern();
     std::unique_ptr<Expr> record_literal(Token type_name);
     std::unique_ptr<TypeExpr> type();
+    bool is_type_start();
     bool parse_loop_annotation(LoopStmt::BoundKind& bound_kind,
                                std::optional<std::int64_t>& bound_value,
                                Token& attr_token,

@@ -181,6 +181,7 @@ struct MatchMetadata {
     const LoopMetadata* loop_metadata_for(const LoopStmt& stmt) const;
     const MatchMetadata* match_metadata_for(const MatchExpr& expr) const;
     const std::vector<MatchMetadata>& match_metadata() const { return _match_metadata; }
+    [[nodiscard]] std::string type_name(const Type& type) const { return type_to_string(type); }
 
 private:
     const std::vector<std::unique_ptr<Stmt>>& _statements;
@@ -261,6 +262,9 @@ private:
                            const std::vector<Type>& params,
                            const Token& location);
     const std::vector<float>* vector_literal_data(const VectorLiteralExpr* expr) const;
+    bool bind_pattern_payload(const MatchPattern& pattern, const Type& payload_type, const Token& keyword);
+    bool analyze_nested_variant(const MatchPattern& pattern, const Type& payload_type);
+    void bind_pattern_symbol(const Token& name, const Type& type);
 };
 
 } // namespace frontend

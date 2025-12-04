@@ -1225,16 +1225,6 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
     std::unordered_set<std::string> seen_variants;
     std::vector<MatchMetadata::ArmInfo> arm_infos;
 
-    auto bind_symbol = [&](const Token& name, const Type& type) {
-        if (std::string_view{name.lexeme} == "_") {
-            return;
-        }
-        define_symbol(name, SymbolKind::Variable);
-        if (auto* symbol = resolve_symbol(name)) {
-            symbol->type = type;
-        }
-    };
-
     for (const auto& arm : expr.arms) {
         std::string name{arm.keyword.lexeme};
         auto variant_it = allowed_variants.find(name);
@@ -1271,48 +1261,10 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
         enter_scope();
         bool pattern_valid = true;
 
-        if (pattern_kind == MatchPattern::Kind::Identifier && variant_has_payload) {
-            if (!arm.pattern.binding_is_wildcard) {
-                bind_symbol(arm.pattern.identifier, payload_type);
-            }
-        } else if (pattern_kind == MatchPattern::Kind::Tuple && variant_has_payload) {
-            size_t expected_fields = arm.pattern.tuple_bindings.size();
-            if (payload_type.params.empty()) {
-                error(arm.keyword, "Tuple pattern for variant '" + name + "' lacks payload type information.");
-                pattern_valid = false;
-            } else if (payload_type.params.size() != expected_fields) {
-                error(arm.keyword, "Tuple pattern for variant '" + name + "' expects " +
-                                   std::to_string(expected_fields) + " fields but payload has " +
-                                   std::to_string(payload_type.params.size()) + ".");
-                pattern_valid = false;
-            } else {
-                for (size_t i = 0; i < expected_fields; ++i) {
-                    bind_symbol(arm.pattern.tuple_bindings[i], payload_type.params[i]);
-                }
-            }
-        } else if (pattern_kind == MatchPattern::Kind::Record && variant_has_payload) {
-            if (payload_type.kind != Type::Kind::Custom || payload_type.custom_name.empty()) {
-                error(arm.keyword, "Record pattern for variant '" + name + "' requires a record payload.");
-                pattern_valid = false;
-            } else {
-                auto record_it = _record_definitions.find(payload_type.custom_name);
-                if (record_it == _record_definitions.end()) {
-                    error(arm.keyword, "Variant '" + name + "' payload '" + payload_type.custom_name + "' is not a known record.");
-                    pattern_valid = false;
-                } else {
-                    const auto& info = record_it->second;
-                    for (const auto& binding : arm.pattern.record_bindings) {
-                        std::string field_name(binding.first.lexeme);
-                        auto field_it = info.field_map.find(field_name);
-                        if (field_it == info.field_map.end()) {
-                            error(binding.first, "Record '" + payload_type.custom_name + "' has no field '" + field_name + "'.");
-                            pattern_valid = false;
-                            continue;
-                        }
-                        bind_symbol(binding.second, field_it->second);
-                    }
-                }
-            }
+        if (variant_has_payload && pattern_kind == MatchPattern::Kind::Variant) {
+            pattern_valid = analyze_nested_variant(arm.pattern, payload_type);
+        } else if (variant_has_payload && pattern_kind != MatchPattern::Kind::None) {
+            pattern_valid = bind_pattern_payload(arm.pattern, payload_type, arm.keyword);
         }
 
         if (!pattern_valid) {
@@ -1746,6 +1698,104 @@ std::optional<Type> SemanticAnalyzer::constant_type_from_expr(const Expr& expr) 
         return Type::constant(std::string(variable->name.lexeme));
     }
     return std::nullopt;
+}
+
+bool SemanticAnalyzer::bind_pattern_payload(const MatchPattern& pattern,
+                                            const Type& payload_type,
+                                            const Token& keyword) {
+    switch (pattern.kind) {
+        case MatchPattern::Kind::Identifier:
+            if (!pattern.binding_is_wildcard) {
+                bind_pattern_symbol(pattern.identifier, payload_type);
+            }
+            return true;
+        case MatchPattern::Kind::Tuple: {
+            size_t expected_fields = pattern.tuple_bindings.size();
+            if (payload_type.params.empty()) {
+                error(keyword, "Tuple pattern for variant '" + std::string(keyword.lexeme) + "' lacks payload type information.");
+                return false;
+            }
+            if (payload_type.params.size() != expected_fields) {
+                error(keyword, "Tuple pattern for variant '" + std::string(keyword.lexeme) + "' expects " +
+                               std::to_string(expected_fields) + " fields but payload has " +
+                               std::to_string(payload_type.params.size()) + ".");
+                return false;
+            }
+            for (size_t i = 0; i < expected_fields; ++i) {
+                bind_pattern_symbol(pattern.tuple_bindings[i], payload_type.params[i]);
+            }
+            return true;
+        }
+        case MatchPattern::Kind::Record: {
+            if (payload_type.kind != Type::Kind::Custom || payload_type.custom_name.empty()) {
+                error(keyword, "Record pattern for variant '" + std::string(keyword.lexeme) + "' requires a record payload.");
+                return false;
+            }
+            auto record_it = _record_definitions.find(payload_type.custom_name);
+            if (record_it == _record_definitions.end()) {
+                error(keyword, "Variant '" + std::string(keyword.lexeme) + "' payload '" + payload_type.custom_name + "' is not a known record.");
+                return false;
+            }
+            const auto& info = record_it->second;
+            bool ok = true;
+            for (const auto& binding : pattern.record_bindings) {
+                std::string field_name(binding.first.lexeme);
+                auto field_it = info.field_map.find(field_name);
+                if (field_it == info.field_map.end()) {
+                    error(binding.first, "Record '" + payload_type.custom_name + "' has no field '" + field_name + "'.");
+                    ok = false;
+                    continue;
+                }
+                bind_pattern_symbol(binding.second, field_it->second);
+            }
+            return ok;
+        }
+        default:
+            error(keyword, "Unsupported pattern kind for variant payload.");
+            return false;
+    }
+}
+
+bool SemanticAnalyzer::analyze_nested_variant(const MatchPattern& pattern, const Type& payload_type) {
+    if (payload_type.kind != Type::Kind::Custom || payload_type.custom_name.empty()) {
+        error(pattern.variant_name, "Variant '" + std::string(pattern.variant_name.lexeme) +
+                                    "' requires an enum payload.");
+        return false;
+    }
+    auto enum_it = _enum_definitions.find(payload_type.custom_name);
+    if (enum_it == _enum_definitions.end()) {
+        error(pattern.variant_name, "Enum '" + payload_type.custom_name + "' is not defined.");
+        return false;
+    }
+    const auto& variants = enum_it->second.variants;
+    std::string variant_name(pattern.variant_name.lexeme);
+    auto variant_it = variants.find(variant_name);
+    if (variant_it == variants.end()) {
+        error(pattern.variant_name, "Variant '" + variant_name + "' is not part of '" + payload_type.custom_name + "'.");
+        return false;
+    }
+    if (!pattern.variant_payload) {
+        if (variant_it->second.has_value()) {
+            error(pattern.variant_name, "Variant '" + variant_name + "' requires a binding.");
+            return false;
+        }
+        return true;
+    }
+    if (!variant_it->second.has_value()) {
+        error(pattern.variant_name, "Variant '" + variant_name + "' does not accept a binding.");
+        return false;
+    }
+    return bind_pattern_payload(*pattern.variant_payload, *variant_it->second, pattern.variant_name);
+}
+
+void SemanticAnalyzer::bind_pattern_symbol(const Token& name, const Type& type) {
+    if (std::string_view{name.lexeme} == "_") {
+        return;
+    }
+    define_symbol(name, SymbolKind::Variable);
+    if (auto* symbol = resolve_symbol(name)) {
+        symbol->type = type;
+    }
 }
 
 } // namespace frontend

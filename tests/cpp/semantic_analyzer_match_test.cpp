@@ -195,7 +195,7 @@ int main() {
             Red;
             Green;
             Data(i32);
-        }
+        };
 
         fn main() -> i32 {
             var signal: Signal;
@@ -213,7 +213,7 @@ int main() {
         enum Signal {
             Red;
             Green;
-        }
+        };
 
         fn main() -> i32 {
             var signal: Signal;
@@ -229,7 +229,7 @@ int main() {
         enum Color {
             Red;
             Blue;
-        }
+        };
 
         fn main() -> i32 {
             var color: Color;
@@ -246,7 +246,7 @@ int main() {
         enum Pair {
             Tup(Tuple[i32, i32]);
             Empty;
-        }
+        };
 
         fn main() -> i32 {
             var pair: Pair;
@@ -262,7 +262,7 @@ int main() {
         enum Pair {
             Tup(Tuple[i32, i32]);
             Empty;
-        }
+        };
 
         fn main() -> i32 {
             var pair: Pair;
@@ -314,12 +314,12 @@ int main() {
         record Point2D {
             x: i32;
             y: i32;
-        }
+        };
 
         enum Shape {
             At(Point2D);
             Empty;
-        }
+        };
 
         fn main() -> i32 {
             var shape: Shape;
@@ -335,12 +335,12 @@ int main() {
         record Point2D {
             x: i32;
             y: i32;
-        }
+        };
 
         enum Shape {
             At(Point2D);
             Empty;
-        }
+        };
 
         fn main() -> i32 {
             var shape: Shape;
@@ -356,12 +356,12 @@ int main() {
         record Point2D {
             x: i32;
             y: i32;
-        }
+        };
 
         enum Shape {
             At(Point2D);
             Empty;
-        }
+        };
 
         fn main() -> i32 {
             var shape: Shape;
@@ -378,12 +378,12 @@ int main() {
         enum Inner {
             Data(i32);
             Empty;
-        }
+        };
 
         enum Outer {
             Nested(Inner);
             Missing;
-        }
+        };
 
         fn main() -> i32 {
             var value: Outer;
@@ -396,11 +396,38 @@ int main() {
     )";
     expect_semantic_success(nested_enum_success, "match_nested_enum_success");
 
+    const std::string nested_record_variant_success = R"(
+        record Point {
+            x: i32;
+            y: i32;
+        };
+
+        enum Inner {
+            Data(Point);
+            Empty;
+        };
+
+        enum Outer {
+            Nested(Inner);
+            Missing;
+        };
+
+        fn main() -> i32 {
+            var value: Outer;
+            return match (value) {
+                Nested(Data({x: px, y})) => px + y;
+                Nested(Empty) => 0;
+                Missing => -1;
+            };
+        }
+    )";
+    expect_semantic_success(nested_record_variant_success, "match_nested_record_variant_success");
+
     const std::string missing_variant_binding = R"(
         enum Signal {
             Some(i32);
             None;
-        }
+        };
 
         fn main() -> i32 {
             var signal: Signal;
@@ -417,7 +444,7 @@ int main() {
         enum Pair {
             Tup(Tuple[i32, i32]);
             Empty;
-        }
+        };
 
         fn main() -> i32 {
             var pair: Pair;
@@ -434,7 +461,7 @@ int main() {
         enum Pair {
             Tup(i32);
             Empty;
-        }
+        };
 
         fn main() -> i32 {
             var pair: Pair;

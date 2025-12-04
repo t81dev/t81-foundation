@@ -357,16 +357,18 @@ std::string pattern_kind_name(t81::frontend::MatchPattern::Kind kind) {
         case t81::frontend::MatchPattern::Kind::Identifier: return "Identifier";
         case t81::frontend::MatchPattern::Kind::Tuple: return "Tuple";
         case t81::frontend::MatchPattern::Kind::Record: return "Record";
+        case t81::frontend::MatchPattern::Kind::Variant: return "Variant";
         case t81::frontend::MatchPattern::Kind::None: return "None";
     }
     return "UnknownPattern";
 }
 
-std::string match_kind_name(t81::frontend::MatchMetadata::Kind kind) {
+std::string match_kind_name(t81::frontend::SemanticAnalyzer::MatchMetadata::Kind kind) {
+    using MatchKind = t81::frontend::SemanticAnalyzer::MatchMetadata::Kind;
     switch (kind) {
-        case t81::frontend::MatchMetadata::Kind::Option: return "Option";
-        case t81::frontend::MatchMetadata::Kind::Result: return "Result";
-        case t81::frontend::MatchMetadata::Kind::Enum: return "Enum";
+        case MatchKind::Option: return "Option";
+        case MatchKind::Result: return "Result";
+        case MatchKind::Enum: return "Enum";
         default: return "Unknown";
     }
 }
@@ -379,7 +381,7 @@ std::string format_match_metadata(const t81::frontend::SemanticAnalyzer& analyze
     for (const auto& meta : matches) {
         oss << " (match";
         oss << " (scrutinee " << match_kind_name(meta.kind) << ")";
-        oss << " (type " << sanitize_symbol(analyzer.type_to_string(meta.result_type)) << ")";
+        oss << " (type " << sanitize_symbol(analyzer.type_name(meta.result_type)) << ")";
         oss << " (guards " << (meta.guard_present ? "true" : "false") << ")";
         if (!meta.arms.empty()) {
             oss << " (arms";
@@ -389,7 +391,7 @@ std::string format_match_metadata(const t81::frontend::SemanticAnalyzer& analyze
                 oss << " (pattern " << pattern_kind_name(arm.pattern_kind) << ")";
                 oss << " (guard " << (arm.has_guard ? "true" : "false") << ")";
                 if (arm.arm_type.kind != t81::frontend::Type::Kind::Unknown) {
-                    oss << " (type " << sanitize_symbol(analyzer.type_to_string(arm.arm_type)) << ")";
+                    oss << " (type " << sanitize_symbol(analyzer.type_name(arm.arm_type)) << ")";
                 }
                 oss << ")";
             }

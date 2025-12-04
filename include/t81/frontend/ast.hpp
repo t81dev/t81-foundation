@@ -203,7 +203,8 @@ struct MatchPattern {
         None,
         Identifier,
         Tuple,
-        Record
+        Record,
+        Variant
     };
 
     MatchPattern() = default;
@@ -217,6 +218,8 @@ struct MatchPattern {
     bool binding_is_wildcard = false;
     std::vector<Token> tuple_bindings;
     std::vector<std::pair<Token, Token>> record_bindings;
+    Token variant_name{};
+    std::unique_ptr<MatchPattern> variant_payload;
 };
 
 struct MatchArm {

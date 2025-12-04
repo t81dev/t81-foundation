@@ -28,9 +28,17 @@ ______________________________________________________________________
 - **`T81BigInt`:** An arbitrary-precision integer class that uses a vector of trytes for its internal storage. While the core storage is implemented for arbitrary size, some of the arithmetic operations are still under development.
 - **`Fraction`:** A rational number type that is always maintained in canonical form (reduced, with a positive denominator).
 - **`T81Float`:** A production-quality, IEEE-754-inspired balanced ternary floating-point type.
+- **Additional arithmetic primitives:** `T81Fixed`, `T81UInt`, and `T81Prob` extend the foundation with ternary fixed-point, unsigned integer, and probability-specialized numerics respectively; `T81Float` also has specializations for different mantissa/exponent budgets and interoperability with `T81Int` through constexpr bridges.
+- **Algebraic and geometric structures:** `T81Complex`, `T81Quaternion`, and `T81Polynomial` capture higher-order algebra, while `T81Vector`, `T81Matrix`, and `T81Tensor` expose fixed- and variable-dimensional linear spaces that compose cleanly with the numeric types.
+- **Containers and helpers:** `T81List`, `T81Map`, `T81Set`, `T81Tree`, `T81Graph`, along with `T81String`, `T81Bytes`, `T81Symbol`, and `T81Result`/`T81Maybe`/`T81Promise`, offer deterministic collection semantics, canonical string/byte handling, and rich error/result signaling within the ternary stack.
+- **Systems and observability primitives:** `T81Stream`/`T81IOStream`, `T81Time`, `T81Entropy`, `T81Agent`, `T81Thread`, `T81Network`, `T81Discovery`, and `T81Reflection` round out the platform, providing deterministic I/O, timing, entropy sourcing, metadata, and runtime/topology introspection.
 - **Error Handling:**
     - For recoverable errors, functions return a `t81::support::expected`-like object.
     - For unrecoverable mathematical or logical errors (e.g., division by zero), functions throw standard C++ exceptions like `std::domain_error`. The "no exceptions" rule in the spec applies to value-level semantics, not fundamental domain errors.
+
+### Match Pattern Semantics
+- Nested pattern matching uses `MatchPattern::Kind::Variant` and the CLI now formats nested arms in Axion trace output. The parser accepts forms such as `Nested(Data(v))` or `Wrap({ inner: Data(v) })`, making it possible to bind into inner enums or record fields without needing multiple locals.
+- The semantic analyzer treats nested variants as enums with their own payload metadata, reusing the same binding helpers for identifiers, tuple tuples, and records so deeply nested arms stay deterministic and self-contained.
 
 ### Coding Conventions
 - **C++20 Standard:** The project uses C++20. Features should be used where they enhance clarity and safety.

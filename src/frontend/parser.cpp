@@ -539,6 +539,23 @@ MatchPattern Parser::parse_match_pattern() {
 
     if (match({TokenType::Identifier})) {
         Token first = previous();
+        if (match({TokenType::LParen})) {
+            MatchPattern nested;
+            if (!check(TokenType::RParen)) {
+                nested = parse_match_pattern();
+            }
+            consume(TokenType::RParen, "Expect ')' after nested match binding.");
+            pattern.kind = MatchPattern::Kind::Variant;
+            pattern.variant_name = first;
+            if (nested.kind != MatchPattern::Kind::None ||
+                !nested.tuple_bindings.empty() ||
+                !nested.record_bindings.empty() ||
+                nested.binding_is_wildcard ||
+                nested.variant_name.type != TokenType::Illegal) {
+                pattern.variant_payload = std::make_unique<MatchPattern>(std::move(nested));
+            }
+            return pattern;
+        }
         if (match({TokenType::Comma})) {
             pattern.kind = MatchPattern::Kind::Tuple;
             pattern.tuple_bindings.push_back(first);
@@ -709,21 +726,29 @@ std::unique_ptr<GenericTypeExpr> Parser::parse_generic_type(Token name) {
             parameters[param_count++] = type();
             continue;
         }
-        parameters[param_count++] = primary();
+        if (is_type_start()) {
+            parameters[param_count++] = type();
+        } else {
+            parameters[param_count++] = expression();
+        }
     }
 
     consume(TokenType::RBracket, "Expect ']' after type parameters.");
     return std::make_unique<GenericTypeExpr>(name, std::move(parameters), param_count);
 }
 
+bool Parser::is_type_start() {
+    return check(TokenType::Identifier) ||
+           check(TokenType::I32) || check(TokenType::I16) || check(TokenType::I8) || check(TokenType::I2) ||
+           check(TokenType::Bool) || check(TokenType::Void) ||
+           check(TokenType::T81BigInt) || check(TokenType::T81Float) || check(TokenType::T81Fraction) ||
+           check(TokenType::Vector) || check(TokenType::Matrix) || check(TokenType::Tensor) || check(TokenType::Graph);
+}
+
 // Parses a type expression.
 // type -> (IDENTIFIER | primitive_type_keyword) ( "[" type ( "," expression )* "]" )? ;
 std::unique_ptr<TypeExpr> Parser::type() {
-    if (!check(TokenType::Identifier) &&
-        !check(TokenType::I32) && !check(TokenType::I16) && !check(TokenType::I8) && !check(TokenType::I2) &&
-        !check(TokenType::Bool) && !check(TokenType::Void) &&
-        !check(TokenType::T81BigInt) && !check(TokenType::T81Float) && !check(TokenType::T81Fraction) &&
-        !check(TokenType::Vector) && !check(TokenType::Matrix) && !check(TokenType::Tensor) && !check(TokenType::Graph)) {
+    if (!is_type_start()) {
         report_error(peek(), "Expect type name");
         return nullptr;
     }
