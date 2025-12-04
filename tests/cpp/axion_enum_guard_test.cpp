@@ -36,10 +36,9 @@ int main() {
             };
 
             fn main() -> i32 {
-                let color: Color = Blue(9);
-                return match (color) {
+                return match (Color.Blue(9)) {
                     Red => 0;
-                    Blue(v) if v > 0 => v;
+                    Blue(_) => 9;
                 };
             }
         )";

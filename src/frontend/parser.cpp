@@ -9,6 +9,7 @@
  */
 
 #include "t81/frontend/parser.hpp"
+#include <cctype>
 #include <iostream>
 
 namespace t81 {
@@ -456,6 +457,16 @@ std::unique_ptr<Expr> Parser::primary() {
 
     if (match({TokenType::Identifier})) {
         Token name = previous();
+        Token enum_name_token;
+        Token variant_token;
+        if (try_parse_enum_literal(name, enum_name_token, variant_token)) {
+            std::unique_ptr<Expr> payload = nullptr;
+            if (match({TokenType::LParen})) {
+                payload = expression();
+                consume(TokenType::RParen, "Expect ')' after enum variant payload.");
+            }
+            return std::make_unique<EnumLiteralExpr>(enum_name_token, variant_token, std::move(payload));
+        }
         if (check(TokenType::LBracket)) {
             return parse_generic_type(name);
         }
@@ -705,6 +716,35 @@ std::optional<StructuralAttributes> Parser::parse_structural_attributes() {
         return std::nullopt;
     }
     return attrs;
+}
+
+bool Parser::try_parse_enum_literal(const Token& token, Token& enum_name, Token& variant_name) const {
+    std::string_view lexeme = token.lexeme;
+    auto dot_pos = lexeme.find('.');
+    if (dot_pos == std::string_view::npos || dot_pos == 0 || dot_pos + 1 >= lexeme.size()) {
+        return false;
+    }
+    if (lexeme.find('.', dot_pos + 1) != std::string_view::npos) {
+        return false;
+    }
+    std::string_view enum_part(lexeme.data(), dot_pos);
+    std::string_view variant_part(lexeme.data() + dot_pos + 1, lexeme.size() - dot_pos - 1);
+    if (enum_part.empty() || variant_part.empty()) {
+        return false;
+    }
+    auto is_upper = [](std::string_view view) {
+        unsigned char c = static_cast<unsigned char>(view.front());
+        return std::isupper(c);
+    };
+    if (!is_upper(enum_part) || !is_upper(variant_part)) {
+        return false;
+    }
+    enum_name = token;
+    enum_name.lexeme = enum_part;
+    variant_name = token;
+    variant_name.lexeme = variant_part;
+    variant_name.column = token.column + static_cast<int>(dot_pos + 1);
+    return true;
 }
 
 std::unique_ptr<GenericTypeExpr> Parser::parse_generic_type(Token name) {

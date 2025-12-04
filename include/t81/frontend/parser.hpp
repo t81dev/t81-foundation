@@ -70,6 +70,7 @@ private:
     Token previous();
     Token consume(TokenType type, const char* message);
     void synchronize();
+    bool try_parse_enum_literal(const Token& token, Token& enum_name, Token& variant_name) const;
 
     Lexer& _lexer;
     Token _current;

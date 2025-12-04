@@ -122,8 +122,21 @@ public:
         _loop_infos.push_back(info);
         return {};
     }
-    std::any visit(const ReturnStmt&) override       { return {}; }
-    std::any visit(const FunctionStmt&) override     { return {}; }
+    std::any visit(const ReturnStmt& stmt) override {
+        if (stmt.value) {
+            stmt.value->accept(*this);
+        }
+        return {};
+    }
+    std::any visit(const FunctionStmt& stmt) override {
+        if (std::string_view(stmt.name.lexeme) != "main") {
+            return {};
+        }
+        for (const auto& statement : stmt.body) {
+            statement->accept(*this);
+        }
+        return {};
+    }
     std::any visit(const TypeDecl& stmt) override {
         if (!_semantic) return {};
         std::string name{stmt.name.lexeme};
@@ -541,6 +554,7 @@ public:
             emit_label(trap_label);
             emit_simple(tisc::ir::Opcode::TRAP);
             emit_label(end_label);
+            emit_simple(tisc::ir::Opcode::NOP);
             return {};
         }
 
