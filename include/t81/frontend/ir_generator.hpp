@@ -8,11 +8,12 @@
 #include "t81/tensor.hpp"
 #include "t81/tisc/ir.hpp"
 #include <any>
+#include <iostream>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-
+#include <typeinfo>
 #include <unordered_map>
 
 namespace t81::frontend {
@@ -95,8 +96,14 @@ public:
         return {};
     }
 
-    std::any visit(const VarStmt&) override          { return {}; }
-    std::any visit(const LetStmt&) override          { return {}; }
+    std::any visit(const VarStmt& stmt) override {
+        bind_variable_from_initializer(stmt.name, stmt.initializer.get());
+        return {};
+    }
+    std::any visit(const LetStmt& stmt) override {
+        bind_variable_from_initializer(stmt.name, stmt.initializer.get());
+        return {};
+    }
     std::any visit(const IfStmt&) override           { return {}; }
     std::any visit(const WhileStmt&) override        { return {}; }
     std::any visit(const LoopStmt& stmt) override {
@@ -330,33 +337,53 @@ public:
     }
 
     std::any visit(const UnaryExpr&) override        { return {}; }
-    std::any visit(const VariableExpr&) override     { return {}; }
+    std::any visit(const VariableExpr& expr) override {
+        auto found = lookup_variable(expr.name.lexeme);
+        if (found.has_value()) {
+            record_result(&expr, *found);
+        }
+        return {};
+    }
     std::any visit(const CallExpr& expr) override {
         if (auto var_expr = dynamic_cast<const VariableExpr*>(expr.callee.get())) {
             std::string func_name{var_expr->name.lexeme};
             if (func_name == "Some") {
-                if (!expr.arguments.empty()) {
-                    expr.arguments[0]->accept(*this);
+                if (expr.arguments.empty()) {
+                    throw std::runtime_error("Some() requires a payload");
                 }
-                emit_simple(tisc::ir::Opcode::MAKE_OPTION_SOME);
+                expr.arguments[0]->accept(*this);
+                auto payload = ensure_expr_result(expr.arguments[0].get());
+                auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+                emit_make_option_some(dest, payload);
+                record_result(&expr, dest);
                 return {};
             }
             if (func_name == "None") {
-                emit_simple(tisc::ir::Opcode::MAKE_OPTION_NONE);
+                auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+                emit_make_option_none(dest);
+                record_result(&expr, dest);
                 return {};
             }
             if (func_name == "Ok") {
-                if (!expr.arguments.empty()) {
-                    expr.arguments[0]->accept(*this);
+                if (expr.arguments.empty()) {
+                    throw std::runtime_error("Ok() requires a payload");
                 }
-                emit_simple(tisc::ir::Opcode::MAKE_RESULT_OK);
+                expr.arguments[0]->accept(*this);
+                auto payload = ensure_expr_result(expr.arguments[0].get());
+                auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+                emit_make_result_ok(dest, payload);
+                record_result(&expr, dest);
                 return {};
             }
             if (func_name == "Err") {
-                if (!expr.arguments.empty()) {
-                    expr.arguments[0]->accept(*this);
+                if (expr.arguments.empty()) {
+                    throw std::runtime_error("Err() requires a payload");
                 }
-                emit_simple(tisc::ir::Opcode::MAKE_RESULT_ERR);
+                expr.arguments[0]->accept(*this);
+                auto payload = ensure_expr_result(expr.arguments[0].get());
+                auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+                emit_make_result_err(dest, payload);
+                record_result(&expr, dest);
                 return {};
             }
             if (func_name == "weights.load") {
@@ -384,7 +411,13 @@ public:
         }
         return {};
     }
-    std::any visit(const AssignExpr&) override       { return {}; }
+    std::any visit(const AssignExpr& expr) override {
+        expr.value->accept(*this);
+        auto value = ensure_expr_result(expr.value.get());
+        bind_variable(std::string(expr.name.lexeme), value);
+        record_result(&expr, value);
+        return {};
+    }
     std::any visit(const SimpleTypeExpr&) override   { return {}; }
     std::any visit(const GenericTypeExpr&) override  { return {}; }
     std::any visit(const MatchExpr& expr) override {
@@ -404,6 +437,10 @@ public:
         bool scrutinee_is_result = scrutinee_type && scrutinee_type->kind == Type::Kind::Result;
         auto scrutinee_reg = ensure_expr_result(expr.scrutinee.get());
 
+        for (const auto& arm : expr.arms) {
+            std::cerr << "arm keyword: " << arm.keyword.lexeme << std::endl;
+        }
+
         auto find_arm = [&](std::string_view name) -> const MatchArm* {
             for (const auto& arm : expr.arms) {
                 if (std::string_view{arm.keyword.lexeme} == name) {
@@ -421,18 +458,19 @@ public:
                                                     const TypedRegister* variant_flag,
                                                     std::optional<int> variant_id) {
             emit_label(entry_label);
+            enter_pattern_scope();
             std::optional<tisc::ir::Label> guard_fail_label;
             if (variant_flag && variant_id.has_value()) {
                 emit_enum_is_variant(*variant_flag, scrutinee_reg, *variant_id);
                 emit_jump_if_zero(guard_fail_target, *variant_flag);
             }
+            before_body();
             if (arm.guard) {
                 guard_fail_label = new_label();
                 arm.guard->accept(*this);
                 auto guard_value = ensure_expr_result(arm.guard.get());
                 emit_jump_if_zero(*guard_fail_label, guard_value);
             }
-            before_body();
             arm.expression->accept(*this);
             auto value = ensure_expr_result(arm.expression.get());
             copy_to_dest(value, dest);
@@ -441,6 +479,7 @@ public:
                 emit_label(*guard_fail_label);
                 emit_jump(guard_fail_target);
             }
+            exit_pattern_scope();
         };
 
         auto finalize_branches = [&](tisc::ir::Label end_label, tisc::ir::Label unmatched_label) {
@@ -449,19 +488,9 @@ public:
             emit_simple(tisc::ir::Opcode::TRAP);
         };
 
-        if (metadata && metadata->kind == SemanticAnalyzer::MatchMetadata::Kind::Option &&
-            metadata->has_some && metadata->has_none && scrutinee_is_option) {
-            const MatchArm* some_arm = find_arm("Some");
-            const MatchArm* none_arm = find_arm("None");
-            if (!some_arm || !none_arm) {
-                for (const auto& arm : expr.arms) {
-                    arm.expression->accept(*this);
-                    auto value = ensure_expr_result(arm.expression.get());
-                    copy_to_dest(value, dest);
-                }
-                return {};
-            }
-
+        const MatchArm* some_arm = find_arm("Some");
+        const MatchArm* none_arm = find_arm("None");
+        if (some_arm && none_arm) {
             auto end_label = new_label();
             auto unmatched_label = new_label();
             auto some_label = new_label();
@@ -476,26 +505,19 @@ public:
             emit_match_arm(*none_arm, none_label, unmatched_label, []() {}, end_label, nullptr, std::nullopt);
 
             emit_match_arm(*some_arm, some_label, none_label,
-                          [&]() { emit_option_unwrap(payload_reg, scrutinee_reg); },
+                          [&]() {
+                              emit_option_unwrap(payload_reg, scrutinee_reg);
+                              bind_variant_payload(*some_arm, payload_reg);
+                          },
                           end_label, nullptr, std::nullopt);
 
             finalize_branches(end_label, unmatched_label);
             return {};
         }
 
-        if (metadata && metadata->kind == SemanticAnalyzer::MatchMetadata::Kind::Result &&
-            metadata->has_ok && metadata->has_err && scrutinee_is_result) {
-            const MatchArm* ok_arm = find_arm("Ok");
-            const MatchArm* err_arm = find_arm("Err");
-            if (!ok_arm || !err_arm) {
-                for (const auto& arm : expr.arms) {
-                    arm.expression->accept(*this);
-                    auto value = ensure_expr_result(arm.expression.get());
-                    copy_to_dest(value, dest);
-                }
-                return {};
-            }
-
+        const MatchArm* ok_arm = find_arm("Ok");
+        const MatchArm* err_arm = find_arm("Err");
+        if (ok_arm && err_arm) {
             auto end_label = new_label();
             auto unmatched_label = new_label();
             auto ok_label = new_label();
@@ -509,10 +531,12 @@ public:
 
             emit_match_arm(*err_arm, err_label, unmatched_label, [&]() {
                 emit_result_unwrap_err(payload_reg, scrutinee_reg);
+                bind_variant_payload(*err_arm, payload_reg);
             }, end_label, nullptr, std::nullopt);
 
             emit_match_arm(*ok_arm, ok_label, err_label, [&]() {
                 emit_result_unwrap_ok(payload_reg, scrutinee_reg);
+                bind_variant_payload(*ok_arm, payload_reg);
             }, end_label, nullptr, std::nullopt);
 
             finalize_branches(end_label, unmatched_label);
@@ -532,6 +556,7 @@ public:
                 tisc::ir::Label guard_fail_target =
                     (i + 1 < expr.arms.size()) ? arm_labels[i + 1] : trap_label;
                 const auto& arm_meta = metadata->arms[i];
+                const auto& arm = expr.arms[i];
                 std::optional<int> variant_id;
                 if (arm_meta.variant_id >= 0) {
                     variant_id = arm_meta.variant_id;
@@ -545,6 +570,7 @@ public:
                                [&]() {
                                    if (variant_has_payload) {
                                        emit_enum_unwrap_payload(payload_reg, scrutinee_reg);
+                                       bind_variant_payload(arm, payload_reg);
                                    }
                                },
                                end_label,
@@ -753,6 +779,22 @@ private:
         emit(tisc::ir::Instruction{tisc::ir::Opcode::RESULT_UNWRAP_ERR, {dest.reg, source.reg}});
     }
 
+    void emit_make_option_some(const TypedRegister& dest, const TypedRegister& payload) {
+        emit(tisc::ir::Instruction{tisc::ir::Opcode::MAKE_OPTION_SOME, {dest.reg, payload.reg}});
+    }
+
+    void emit_make_option_none(const TypedRegister& dest) {
+        emit(tisc::ir::Instruction{tisc::ir::Opcode::MAKE_OPTION_NONE, {dest.reg}});
+    }
+
+    void emit_make_result_ok(const TypedRegister& dest, const TypedRegister& payload) {
+        emit(tisc::ir::Instruction{tisc::ir::Opcode::MAKE_RESULT_OK, {dest.reg, payload.reg}});
+    }
+
+    void emit_make_result_err(const TypedRegister& dest, const TypedRegister& payload) {
+        emit(tisc::ir::Instruction{tisc::ir::Opcode::MAKE_RESULT_ERR, {dest.reg, payload.reg}});
+    }
+
     void emit_make_enum_variant(const TypedRegister& dest, int variant_id) {
         tisc::ir::Instruction instr;
         instr.opcode = tisc::ir::Opcode::MAKE_ENUM_VARIANT;
@@ -795,7 +837,12 @@ private:
         expr->accept(*this);
         auto it = _expr_registers.find(expr);
         if (it == _expr_registers.end()) {
-            throw std::runtime_error("IRGenerator failed to record expression result");
+            std::string info = typeid(*expr).name();
+            if (auto var = dynamic_cast<const VariableExpr*>(expr)) {
+                info = std::string("Variable(") + std::string(var->name.lexeme) + ")";
+            }
+            std::cerr << "Missing expression result for " << info << "\n";
+            throw std::runtime_error("IRGenerator failed to record expression result for " + info);
         }
         return it->second;
     }
@@ -853,6 +900,75 @@ private:
         emit(instr);
     }
 
+    void bind_variable(const std::string& name, TypedRegister reg) {
+        _variable_registers[name] = reg;
+    }
+
+    std::optional<TypedRegister> lookup_variable(std::string_view name) const {
+        auto it = _variable_registers.find(std::string{name});
+        if (it != _variable_registers.end()) {
+            return it->second;
+        }
+        return std::nullopt;
+    }
+
+    void bind_variable_from_initializer(const Token& name_token, const Expr* initializer) {
+        TypedRegister reg{};
+        if (initializer) {
+            initializer->accept(*this);
+            reg = ensure_expr_result(initializer);
+        } else {
+            reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        }
+        bind_variable(std::string(name_token.lexeme), reg);
+    }
+
+    void enter_pattern_scope() {
+        _pattern_scopes.emplace_back();
+    }
+
+    void exit_pattern_scope() {
+        if (_pattern_scopes.empty()) {
+            return;
+        }
+        auto scope = std::move(_pattern_scopes.back());
+        _pattern_scopes.pop_back();
+        for (const auto& entry : scope) {
+            if (entry.second.has_value()) {
+                _variable_registers[entry.first] = entry.second.value();
+            } else {
+                _variable_registers.erase(entry.first);
+            }
+        }
+    }
+
+    void bind_pattern_variable(std::string name, const TypedRegister& reg) {
+        std::optional<TypedRegister> previous;
+        auto it = _variable_registers.find(name);
+        if (it != _variable_registers.end()) {
+            previous = it->second;
+        }
+        _variable_registers[name] = reg;
+        if (!_pattern_scopes.empty()) {
+            _pattern_scopes.back().emplace_back(name, previous);
+        }
+    }
+
+    void bind_pattern_payload(const MatchPattern& pattern, const TypedRegister& reg) {
+        if (pattern.kind == MatchPattern::Kind::Identifier && !pattern.binding_is_wildcard) {
+            bind_pattern_variable(std::string(pattern.identifier.lexeme), reg);
+        }
+    }
+
+    void bind_variant_payload(const MatchArm& arm, const TypedRegister& reg) {
+        if (arm.pattern.kind == MatchPattern::Kind::Variant && arm.pattern.variant_payload) {
+            bind_pattern_payload(*arm.pattern.variant_payload, reg);
+            return;
+        }
+        // For Option/Result arms the parsed pattern already represents the payload bindings.
+        bind_pattern_payload(arm.pattern, reg);
+    }
+
     std::optional<int> resolve_variant_index(std::string_view enum_name, std::string_view variant_name) const {
         if (!_semantic) return std::nullopt;
         std::string name(enum_name);
@@ -873,6 +989,8 @@ private:
     int _register_count = 0;
     int _label_count = 0;
     std::unordered_map<const Expr*, TypedRegister> _expr_registers;
+    std::unordered_map<std::string, TypedRegister> _variable_registers;
+    std::vector<std::vector<std::pair<std::string, std::optional<TypedRegister>>>> _pattern_scopes;
     std::vector<LoopInfo> _loop_infos;
 };
 
