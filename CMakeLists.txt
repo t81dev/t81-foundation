@@ -109,6 +109,15 @@ target_link_libraries(t81_ir_roundtrip PRIVATE t81_core)
 add_executable(axion_demo examples/axion_demo.cpp)
 target_link_libraries(axion_demo PRIVATE t81_core)
 
+add_executable(axion_guard_trace examples/axion_guard_trace.cpp)
+target_link_libraries(axion_guard_trace PRIVATE t81_cli_driver t81_vm)
+
+add_executable(axion_nested_guard_test tests/cpp/axion_nested_guard_test.cpp)
+target_link_libraries(axion_nested_guard_test PRIVATE t81_cli_driver t81_vm)
+
+add_executable(e2e_axion_trace_test tests/cpp/e2e_axion_trace_test.cpp)
+target_link_libraries(e2e_axion_trace_test PRIVATE t81_cli_driver t81_vm)
+
 endif()
 
 # =============================================================================
@@ -519,7 +528,9 @@ if(T81_BUILD_TESTS)
     axion_loop_metadata_test
     axion_match_metadata_test
     axion_enum_guard_test
+    axion_nested_guard_test
     axion_instruction_counter_test
+    e2e_axion_trace_test
   )
   foreach(tgt IN LISTS T81_TEST_TARGETS)
     add_test(NAME ${tgt} COMMAND $<TARGET_FILE:${tgt}>)

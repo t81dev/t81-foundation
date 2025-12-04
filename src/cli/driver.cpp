@@ -327,6 +327,18 @@ std::string sanitize_symbol(std::string_view input) {
     return out;
 }
 
+std::string escape_metadata_string(std::string_view input) {
+    std::string out;
+    out.reserve(input.size());
+    for (char c : input) {
+        if (c == '\\' || c == '"') {
+            out.push_back('\\');
+        }
+        out.push_back(c);
+    }
+    return out;
+}
+
 std::string format_loop_metadata(const std::vector<t81::frontend::SemanticAnalyzer::LoopMetadata>& loops) {
   if (loops.empty()) return {};
   std::ostringstream oss;
@@ -340,12 +352,15 @@ std::string format_loop_metadata(const std::vector<t81::frontend::SemanticAnalyz
             << " (column " << meta.keyword.column << ")"
             << " (annotated " << (meta.annotated() ? "true" : "false") << ")"
             << " (depth " << meta.depth << ")";
+        oss << " (guard " << (meta.guard_present ? "true" : "false") << ")";
         oss << " (bound ";
         using t81::frontend::LoopStmt;
         if (meta.bound_kind == LoopStmt::BoundKind::Infinite) {
             oss << "infinite";
         } else if (meta.bound_kind == LoopStmt::BoundKind::Static && meta.bound_value) {
             oss << *meta.bound_value;
+        } else if (meta.bound_kind == LoopStmt::BoundKind::Guarded) {
+            oss << "guarded";
         } else {
             oss << "unknown";
         }
@@ -402,6 +417,9 @@ std::string format_match_metadata(const t81::frontend::SemanticAnalyzer& analyze
                 }
                 if (arm.arm_type.kind != t81::frontend::Type::Kind::Unknown) {
                     oss << " (type " << sanitize_symbol(analyzer.type_name(arm.arm_type)) << ")";
+                }
+                if (arm.has_guard && !arm.guard_expression.empty()) {
+                    oss << " (guard-expr \"" << escape_metadata_string(arm.guard_expression) << "\")";
                 }
                 oss << ")";
             }

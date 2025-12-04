@@ -401,6 +401,29 @@ std::string SemanticAnalyzer::expr_to_string(const Expr& expr) const {
     if (auto* variable = dynamic_cast<const VariableExpr*>(&expr)) {
         return std::string(variable->name.lexeme);
     }
+    if (auto* binary = dynamic_cast<const BinaryExpr*>(&expr)) {
+        return expr_to_string(*binary->left) + " " + std::string(binary->op.lexeme) + " " + expr_to_string(*binary->right);
+    }
+    if (auto* grouping = dynamic_cast<const GroupingExpr*>(&expr)) {
+        return "(" + expr_to_string(*grouping->expression) + ")";
+    }
+    if (auto* field = dynamic_cast<const FieldAccessExpr*>(&expr)) {
+        return expr_to_string(*field->object) + "." + std::string(field->field.lexeme);
+    }
+    if (auto* call = dynamic_cast<const CallExpr*>(&expr)) {
+        std::string result = expr_to_string(*call->callee);
+        result += "(";
+        bool first = true;
+        for (const auto& arg : call->arguments) {
+            if (!first) {
+                result += ", ";
+            }
+            first = false;
+            result += expr_to_string(*arg);
+        }
+        result += ")";
+        return result;
+    }
     return "<expr>";
 }
 
@@ -1283,9 +1306,20 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
             continue;
         }
 
+        MatchMetadata::ArmInfo arm_info;
+        arm_info.variant = name;
+        arm_info.pattern_kind = pattern_kind;
+        arm_info.variant_id = static_cast<int>(variant_it->second.id);
+        arm_info.enum_id = variant_it->second.enum_id;
+        if (variant_has_payload) {
+            arm_info.payload_type = payload_type;
+        }
+        arm_info.has_guard = arm.guard != nullptr;
+
         if (arm.guard) {
             Token guard_token = extract_token(*arm.guard);
             expect_condition_bool(*arm.guard, guard_token);
+            arm_info.guard_expression = expr_to_string(*arm.guard);
         }
 
         const Type* arm_expected = result_type_locked ? &result_type : nullptr;
@@ -1303,16 +1337,8 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
             structural_error = true;
         }
 
-        MatchMetadata::ArmInfo arm_info;
-        arm_info.variant = name;
-        arm_info.pattern_kind = pattern_kind;
-        arm_info.has_guard = arm.guard != nullptr;
-        if (variant_has_payload) {
-            arm_info.payload_type = payload_type;
-        }
+        // arm_info already configured above
         arm_info.arm_type = arm_type;
-        arm_info.variant_id = static_cast<int>(variant_it->second.id);
-        arm_info.enum_id = variant_it->second.enum_id;
         arm_infos.push_back(std::move(arm_info));
     }
 

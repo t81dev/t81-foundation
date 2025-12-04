@@ -110,11 +110,21 @@ public:
     std::any visit(const LoopStmt& stmt) override {
         auto entry_label = new_label();
         auto exit_label = new_label();
-        emit_label(entry_label);
+        auto guard_label = entry_label;
+        if (stmt.bound_kind == LoopStmt::BoundKind::Guarded && stmt.guard_expression) {
+            guard_label = new_label();
+            emit_label(guard_label);
+            stmt.guard_expression->accept(*this);
+            auto guard_value = ensure_expr_result(stmt.guard_expression.get());
+            emit_jump_if_zero(exit_label, guard_value);
+            emit_label(entry_label);
+        } else {
+            emit_label(entry_label);
+        }
         for (const auto& statement : stmt.body) {
             statement->accept(*this);
         }
-        emit(tisc::ir::Instruction{tisc::ir::Opcode::JMP, {entry_label}});
+        emit_jump(guard_label);
         emit_label(exit_label);
 
         LoopInfo info;
@@ -437,10 +447,6 @@ public:
         bool scrutinee_is_option = scrutinee_type && scrutinee_type->kind == Type::Kind::Option;
         bool scrutinee_is_result = scrutinee_type && scrutinee_type->kind == Type::Kind::Result;
         auto scrutinee_reg = ensure_expr_result(expr.scrutinee.get());
-
-        for (const auto& arm : expr.arms) {
-            std::cerr << "arm keyword: " << arm.keyword.lexeme << std::endl;
-        }
 
         auto find_arm = [&](std::string_view name) -> const MatchArm* {
             for (const auto& arm : expr.arms) {

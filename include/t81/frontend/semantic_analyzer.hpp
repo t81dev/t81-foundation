@@ -166,6 +166,7 @@ struct MatchMetadata {
             Type arm_type;
             int variant_id = -1;
             int enum_id = -1;
+            std::string guard_expression;
         };
         std::vector<ArmInfo> arms;
         bool guard_present = false;

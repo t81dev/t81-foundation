@@ -64,6 +64,7 @@ Global flags such as `--weights-model=<file>`, `--quiet`, and `--verbose` are av
 
 - The CLI already bundles Axion-facing metadata inside `tisc::Program`: `format_loop_metadata` copies `loop_metadata()` into `program.axion_policy_text`, `format_match_metadata` produces `(match-metadata …)` s-expressions, and `collect_enum_metadata` records canonical `(enum-id, variant-id, payload)` tuples referenced by guard-aware opcodes. This matches the contract described in [RFC-0019](../spec/rfcs/RFC-0019-axion-match-logging.md) and feeds the Axion trace described in `spec/axion-kernel.md`.
 - `t81::cli::compile` dumps the match metadata string when `--verbose` is enabled, so CLI logs now show each scrutinee kind, guard presence, arm pattern, variant identifier, and declared payload type. Combined with the enum metadata summary printed later in the compile step, integration tests such as `tests/cpp/axion_enum_guard_test.cpp` can assert that the VM receives the same variant names and payload types it expects.
+- Match metadata now also emits `(guard-expr "<expr>")` when a guard is present so Axion can assert the guard expression text that triggered each `EnumIsVariant`/`EnumUnwrapPayload` event. Use `match_metadata_text` to cross-check that the CLI, analyzer, and Axion interpreter all agree on the guard expression before relying on the generated guard payloads in downstream policies.
 - During execution the HanoiVM records `AxionEvent` entries that the CLI exposes through `:trace`/`:trill` (REPL) or by examining `vm->state().axion_log`. Enum guards emit events like `EnumIsVariant / EnumUnwrapPayload` whose `verdict.reason` strings include the canonical `enum=<name>`, `variant=<name>`, `payload=<type>`, and whether the guard `match=pass` or `match=fail`. The Axion log entry for a blue guard looks like:
 
   ```
@@ -72,6 +73,24 @@ Global flags such as `--weights-model=<file>`, `--quiet`, and `--verbose` are av
   ```
 
 - These log events carry the same variant IDs that show up in `collect_enum_metadata`, so Axion policies (see `spec/rfcs/RFC-0009-axion-policy-language.md`) can correlate guard paths with `allow-opcode`/`deny-opcode` rules and verify payload expectations deterministically.
+
+### Guard trace example
+
+The new `axion_guard_trace` example (`examples/axion_guard_trace.cpp`) compiles a simple `Color` enum match, runs it through the VM, and dumps both the serialized enum metadata and each `AxionEvent.verdict.reason` string. Build it with `cmake --build build --target axion_guard_trace` and run it via `./build/axion_guard_trace`. You will see output such as:
+
+```
+Enum metadata:
+  enum Color (id 0)
+    variant Red (id 0)
+    variant Blue (id 1) payload=i32
+Axion log entries:
+  opcode=0 tag=0 value=0 reason="match metadata: (match-metadata (match (scrutinee Enum) (type i32) (guards false) (arms (arm (variant Red) (variant-id 0) (pattern None) (guard false) (type i32)) (arm (variant Blue) (variant-id 1) (pattern Identifier) (guard false) (payload i32) (type i32)))))"
+  opcode=57 tag=0 value=0 reason="enum guard enum=Color variant=Red match=fail"
+  opcode=57 tag=1 value=1 reason="enum guard enum=Color variant=Blue payload=i32 match=pass"
+  opcode=58 tag=1 value=9 reason="enum payload enum=Color variant=Blue payload=i32"
+```
+
+Each `enum guard`/`enum payload` line corresponds to the `EnumIsVariant`/`EnumUnwrapPayload` opcodes recorded in the Axion log, and the metadata block verifies that the CLI transmitted the same `(enum-id, variant-id, payload)` triple that the Axion visitor sees at runtime. The new `tests/cpp/e2e_axion_trace_test.cpp` regression compiles the sample, runs it in the HanoiVM, and fails if the Axion log omits the `guard-expr` metadata or the expected guard/payload `reason` strings shown above, locking the parser/IR metadata to the trace consumer.
 
 ## Regression Tests
 
