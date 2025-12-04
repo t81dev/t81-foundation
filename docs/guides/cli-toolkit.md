@@ -72,6 +72,8 @@ Global flags such as `--weights-model=<file>`, `--quiet`, and `--verbose` are av
   reason: enum payload enum=Color variant=Blue payload=i32
   ```
 
+- The Axion trace now also streams deterministic segment transitions such as stack/heap/tensor allocations, meta slot usage, and privileged guard decisions. Each entry emits a `verdict.reason` like `stack frame allocated stack addr=…`, `tensor slot allocated tensor addr=…`, `meta slot axion event addr=…`, `AxRead guard segment=stack addr=42`, or `AxSet guard segment=heap addr=128`, and the regression `tests/cpp/axion_segment_trace_test.cpp` ensures those strings land in `vm->state().axion_log` so downstream Axion tooling can replay segment state word-for-word.`
+
 - These log events carry the same variant IDs that show up in `collect_enum_metadata`, so Axion policies (see `spec/rfcs/RFC-0009-axion-policy-language.md`) can correlate guard paths with `allow-opcode`/`deny-opcode` rules and verify payload expectations deterministically.
 
 ### Guard trace example

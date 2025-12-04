@@ -3,6 +3,8 @@
 #include "t81/vm/vm.hpp"
 
 #include <cassert>
+#include <iostream>
+#include <string>
 #include <vector>
 
 namespace {
@@ -25,6 +27,17 @@ t81::vm::Trap run_expected_trap(const std::vector<t81::tisc::Insn>& insns) {
     auto result = vm->run_to_halt();
     assert(!result.has_value());
     return result.error();
+}
+
+int dump_axion_log_and_fail(const t81::vm::State& state, const char* label) {
+    std::cerr << "[vm_memory_test] " << label << " axion log (size=" << state.axion_log.size() << ")\n";
+    for (const auto& entry : state.axion_log) {
+        std::cerr << "  opcode=" << static_cast<int>(entry.opcode)
+                  << " tag=" << entry.tag
+                  << " value=" << entry.value
+                  << " reason=\"" << entry.verdict.reason << "\"\n";
+    }
+    return 1;
 }
 
 }  // namespace
@@ -56,14 +69,30 @@ int main() {
     {
         auto vm = run_program({stack_alloc, stack_free0, halt});
         assert(vm->state().stack_frames.empty());
-        assert(vm->state().sp == vm->state().layout.stack_limit);
-        assert(vm->state().registers[0] >= static_cast<std::int64_t>(vm->state().layout.code_limit));
+        assert(vm->state().sp == vm->state().layout.stack.limit);
+        assert(vm->state().registers[0] >= static_cast<std::int64_t>(vm->state().layout.code.limit));
+        const auto& log = vm->state().axion_log;
+        bool saw_alloc = false;
+        bool saw_free = false;
+        for (const auto& entry : log) {
+            if (entry.opcode == t81::tisc::Opcode::StackAlloc &&
+                entry.verdict.reason.find("stack frame allocated") != std::string::npos) {
+                saw_alloc = true;
+            }
+            if (entry.opcode == t81::tisc::Opcode::StackFree &&
+                entry.verdict.reason.find("stack frame freed") != std::string::npos) {
+                saw_free = true;
+            }
+        }
+        if (!saw_alloc || !saw_free) {
+            return dump_axion_log_and_fail(vm->state(), "stack frame");
+        }
     }
 
     {
         auto vm = run_program({stack_alloc, stack_alloc2, stack_free, stack_free0, halt});
         assert(vm->state().stack_frames.empty());
-        assert(vm->state().sp == vm->state().layout.stack_limit);
+        assert(vm->state().sp == vm->state().layout.stack.limit);
     }
 
     {
@@ -93,7 +122,23 @@ int main() {
     {
         auto vm = run_program({heap_alloc, heap_free, halt});
         assert(vm->state().heap_frames.empty());
-        assert(vm->state().heap_ptr == vm->state().layout.stack_limit);
+        assert(vm->state().heap_ptr == vm->state().layout.heap.start);
+        const auto& log = vm->state().axion_log;
+        bool saw_alloc = false;
+        bool saw_free = false;
+        for (const auto& entry : log) {
+            if (entry.opcode == t81::tisc::Opcode::HeapAlloc &&
+                entry.verdict.reason.find("heap block allocated") != std::string::npos) {
+                saw_alloc = true;
+            }
+            if (entry.opcode == t81::tisc::Opcode::HeapFree &&
+                entry.verdict.reason.find("heap block freed") != std::string::npos) {
+                saw_free = true;
+            }
+        }
+        if (!saw_alloc || !saw_free) {
+            return dump_axion_log_and_fail(vm->state(), "heap block");
+        }
     }
 
     {
@@ -108,6 +153,49 @@ int main() {
     {
         auto trap = run_expected_trap({heap_big, halt});
         assert(trap == t81::vm::Trap::BoundsFault);
+    }
+
+    {
+        constexpr int kDefaultStackSize = 256;
+        constexpr int kDefaultHeapSize = 768;
+        constexpr int kDefaultTensorSpace = 256;
+        constexpr int instructions = 4;
+        constexpr int stack_start = instructions;
+        constexpr int heap_start = stack_start + kDefaultStackSize;
+        constexpr int tensor_start = heap_start + kDefaultHeapSize;
+        constexpr int meta_start = tensor_start + kDefaultTensorSpace;
+
+        t81::tisc::Insn load_val{};
+        load_val.opcode = t81::tisc::Opcode::LoadImm;
+        load_val.a = 1;
+        load_val.b = 123;
+
+        t81::tisc::Insn store_meta{};
+        store_meta.opcode = t81::tisc::Opcode::Store;
+        store_meta.a = meta_start;
+        store_meta.b = 1;
+
+        t81::tisc::Insn load_meta{};
+        load_meta.opcode = t81::tisc::Opcode::Load;
+        load_meta.a = 2;
+        load_meta.b = meta_start;
+
+        auto vm = run_program({load_val, store_meta, load_meta, halt});
+        bool saw_store = false;
+        bool saw_load = false;
+        for (const auto& entry : vm->state().axion_log) {
+            if (entry.opcode == t81::tisc::Opcode::Store &&
+                entry.verdict.reason.find("meta") != std::string::npos) {
+                saw_store = true;
+            }
+            if (entry.opcode == t81::tisc::Opcode::Load &&
+                entry.verdict.reason.find("meta") != std::string::npos) {
+                saw_load = true;
+            }
+        }
+        if (!saw_store || !saw_load)
+            return dump_axion_log_and_fail(vm->state(), "meta segment access");
+        assert(saw_store && saw_load);
     }
 
     return 0;

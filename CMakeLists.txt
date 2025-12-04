@@ -112,6 +112,12 @@ target_link_libraries(axion_demo PRIVATE t81_core)
 add_executable(axion_guard_trace examples/axion_guard_trace.cpp)
 target_link_libraries(axion_guard_trace PRIVATE t81_cli_driver t81_vm)
 
+add_executable(axion_policy_trace examples/axion_policy_trace.cpp)
+target_link_libraries(axion_policy_trace PRIVATE t81_cli_driver t81_vm)
+
+add_executable(axion_policy_runner examples/axion_policy_runner.cpp)
+target_link_libraries(axion_policy_runner PRIVATE t81_cli_driver t81_vm)
+
 add_executable(axion_nested_guard_test tests/cpp/axion_nested_guard_test.cpp)
 target_link_libraries(axion_nested_guard_test PRIVATE t81_cli_driver t81_vm)
 

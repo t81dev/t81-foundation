@@ -93,6 +93,19 @@ Loop hints are exposed through `require-loop-hint`, for example:
 
 This clause ensures the DTS saw a `(policy (loop (id 3) (file …) (line …) (column …) (bound 100) (annotated true)))` entry emitted by `format_loop_metadata` and that Axion can match it against the runtime guard trace before permitting high-tier opcodes inside an unbounded loop. The metadata/guard predicates stay optional so legacy binaries without the new instrumentation continue to run, but a missing guard or loop hint can trigger a deterministic `Policy Fault` if the policy explicitly `require`s it.
 
+### 2.6 Segment Trace Predicates
+
+Axion policies may also assert the segment trace strings described in [RFC-0013](RFC-0013-axion-segment-trace.md). The runtime now logs each stack, heap, tensor, and meta transition as a `verdict.reason` such as `stack frame allocated stack addr=243 size=16`, `heap block freed heap addr=512 size=32`, `tensor slot allocated tensor addr=5`, `meta slot axion event addr=1283`, `AxRead guard segment=stack addr=42`, or `AxSet guard segment=heap addr=128`. Policies can use:
+
+```
+(require-segment-event
+  (segment tensor)
+  (action "tensor slot allocated")
+  (addr 5))
+```
+
+`require-segment-event` emits a deterministic `Policy Fault` if the Axion log lacks the recorded `verdict.reason`. Guard-dependent policies can similarly demand that `AxRead guard ...` or `AxSet guard ...` strings appear before approving privileged actions, tightly binding segment context to policy enforcement.
+
 ______________________________________________________________________
 
 # 3. Rationale

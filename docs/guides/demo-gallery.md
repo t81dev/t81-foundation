@@ -199,6 +199,8 @@ axion loop metadata: file=examples/weights_load_demo.t81 line=12 column=5 bound=
 
 Copy this `(policy …)` block into logs or release notes to prove the deterministic trace from the T81 source to Axion’s policy engine; the reported `file:line:column` matches the diagnostics `t81` already prints when a semantic error occurs.
 
+Read the [Axion Trace Reference](./axion-trace.md) guide to replay the same sequence of `AxionEvent.verdict.reason` strings inside the CI logs and Axion policy runners.
+
 ## 4. What’s Next?
 
 Future gallery additions could include:

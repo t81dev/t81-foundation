@@ -143,6 +143,10 @@ All privileged operations MUST invoke Axion before evaluating their effects.
 
 Axion is not technically part of T81VM, but all VM behavior MUST be visible and conformant to Axion's expectations.
 
+## 1.8 Deterministic Segment Trace
+
+Axion also receives a deterministic trace of every segment transition and guarded decision inside the HanoiVM as described in [RFC-0013](../spec/rfcs/RFC-0013-axion-segment-trace.md). Each `AxionEvent.verdict.reason` includes the segment name, address, and action (e.g., `stack frame allocated stack addr=243 size=16`, `tensor slot allocated tensor addr=5`, `meta slot axion event addr=1283`, `AxRead guard segment=stack addr=42`, `AxSet guard segment=heap addr=128`). These strings anchor Axion policies and audits to the runtime's deterministic layout without requiring additional instrumentation. Axion MUST reject programs whose required segment-trace strings are missing when the policy explicitly requests them.
+
 ______________________________________________________________________
 
 # 2. Subsystems

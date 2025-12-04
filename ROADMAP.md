@@ -10,20 +10,20 @@ The v1.0 release of the T81 Foundation will deliver a stable, documented, and pr
 
 ## 2. Current Status (Beta)
 
-The project is in a healthy beta state. The T81Lang compiler is feature-complete, the core numerics are robust, and the `t81` command-line tool provides a solid developer experience.
+The project is in a healthy beta state. The T81Lang compiler is now fully implemented, unit-tested, and emits Axion-friendly metadata for the newly landed match/loop guards, and the CLI tooling (`t81 compile`, `t81 run`, `t81 check`, `t81 repl`) exposes the deterministic guard trace described in the Axion specs.
 
-- **Strengths:** The C++20 compiler frontend is the project's core strength. It implements the full T81Lang specification, including a comprehensive semantic analysis pass that performs full type checking for all language features, including generics like `Option[T]` and `Result[T, E]`. The `t81` CLI provides `compile`, `run`, and `check` commands, backed by a robust error-reporting system.
-- **Weaknesses:** While the compiler is mature, the runtime systems are not. The HanoiVM's memory model is still under development, and its fault-handling capabilities are incomplete. The Axion Kernel and CanonFS remain non-functional stubs.
+- **Strengths:** The compiler frontend now supports `loop`/`match`, Option/Result lowering, enum guard metadata, and CLI-level documentation for Axion logs. The full build + `ctest --test-dir build --output-on-failure` suite passes, so the entire P0 compiler path can be considered stable and shipped.
+- **Weaknesses:** Runtime components still need work—HanoiVM’s memory model, deterministic fault handling, Axion kernel, and CanonFS are the remaining gaps preventing a v1.0 release.
 
 For a detailed breakdown, see the [**System Status Report**](docs/system-status.md) and [`ANALYSIS.md`](ANALYSIS.md).
 
 ## 3. Strategic Priorities
 
-With the compiler now stable, the critical path to v1.0 has shifted to the runtime environment.
+With the compiler/CLI path (former P0) now stabilized, the critical path to v1.0 has shifted to the runtime environment while preserving the compiler documentation/test guarantees already in place.
 
-- **[P0] HanoiVM & TISC Runtime:** The highest priority is to harden the HanoiVM. This involves implementing the full memory model as defined in the specification, adding deterministic fault handling for all illegal operations, and integrating the Axion Kernel hooks into the VM's main execution loop.
-- **[P1] Axion Kernel & CanonFS:** Once the VM is stable, the next priority is to implement the Axion Kernel and CanonFS. This will transform them from stubs into functional components that can enforce the system's safety and determinism guarantees.
-- **[P2] Language & Toolchain Polish:** While the compiler is feature-complete, there is still room for improvement. This includes expanding the parser to support planned keywords like `loop` and `match`, improving the `IRGenerator`'s output, and adding more end-to-end tests.
+- **[P0] HanoiVM & TISC Runtime:** Harden the HanoiVM—implement the full memory model, finish deterministic fault handling for every illegal operation, and ensure the Axion kernel hooks integrate cleanly with its execution loop (including the guard-aware metadata we now emit).  
+- **[P1] Axion Kernel & CanonFS:** Once the VM is stable, build out Axion policies and CanonFS, turning those stubs into fully functional subsystems that enforce the stack’s determinism guarantees through policy-driven constraints.
+- **[P2] Language & Toolchain Polish:** Preserve the compiler/documentation quality by keeping the CLI guides, Axion trace samples, and regression suites in sync as new features or optimizations emerge.
 
 A detailed list of actionable tasks for these workstreams can be found in [`TASKS.md`](TASKS.md).
 

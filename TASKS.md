@@ -14,24 +14,26 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-### [P0] T81Lang Compiler
+### [P0] T81Lang Compiler (Completed)
 
-**Goal:** Fully implement the C++20 compiler to match the `t81lang-spec.md`. This is the critical path to v1.0.
+**Goal:** The C++20 compiler now matches the `t81lang-spec.md`, emits Axion-aligned match/loop metadata, and the CLI (including the REPL) produces deterministic Axion traces. This critical path is complete; the compiler introduces no open blockers toward v1.0.
 
 - **[EPIC] Implement Semantic Analysis & Type System:**
     - **[DONE] [M] Task:** Create the foundational `SemanticAnalyzer` class that traverses the AST.
     - **[DONE] [L] Task:** Implement the core type-checking logic within the `SemanticAnalyzer`.
     - **[DONE] [M] Task:** Implement type checking for generic types, focusing on `Option[T]` and `Result[T, E]`.
-    - **[S] Task:** Create a new end-to-end test for `Option/Result` that defines a function returning an `Option`, calls it, and verifies the result. This will be the driving test for the type system.
+    - **[DONE] [S] Task:** Add the Option/Result end-to-end regression that now accompanies the compiler pipeline.
 
 - **[EPIC] Expand Language Feature Support:**
-    - **[L] Task:** Expand the `Parser` to recognize the `loop` and `match` keywords and statement structures.
-    - **[L] Task:** Implement the lowering of `loop` and `match` expressions in the `IRGenerator` into the correct TISC conditional jumps and labels.
-    - **[M] Task:** Persist match metadata (variants, guards, payload shapes) through the compiler/CLI stack and emit it via Axion/trace hooks so downstream tooling can reason about canonical handles.
+    - **[DONE] [L] Task:** Extend the `Parser` for `loop`/`match`.
+    - **[DONE] [L] Task:** Lower match/loop expressions via guard-aware IR with Axion metadata.
+    - **[DONE] [M] Task:** Persist guard metadata (variants, payloads, guard expressions) through CLI/VM/Axion traces.
 
 - **[EPIC] Improve Developer Experience:**
-    - **[DONE] [M] Task:** Implement a robust error reporting system that provides clear, actionable error messages with line and column numbers for both parsing and type errors.
-    - **[DONE] [M] Task:** Create a `t81` command-line tool with `compile` and `run` subcommands to drive the compiler and VM.
+    - **[DONE] [M] Task:** Implement robust error reporting with location-aware diagnostics.
+    - **[DONE] [M] Task:** Ship the `t81` CLI covering `compile`, `run`, `check`, and `repl`.
+
+With P0 closed, work shifts to the runtime-focused priorities below.
 
 ______________________________________________________________________
 

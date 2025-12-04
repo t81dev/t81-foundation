@@ -63,10 +63,43 @@ struct EnumValue {
   int enum_id{-1};
 };
 
+enum class MemorySegmentKind : std::int32_t {
+  Unknown = 0,
+  Code,
+  Stack,
+  Heap,
+  Tensor,
+  Meta,
+};
+
+inline const char* to_string(MemorySegmentKind kind) {
+  switch (kind) {
+    case MemorySegmentKind::Code: return "code";
+    case MemorySegmentKind::Stack: return "stack";
+    case MemorySegmentKind::Heap: return "heap";
+    case MemorySegmentKind::Tensor: return "tensor";
+    case MemorySegmentKind::Meta: return "meta";
+    default: return "unknown";
+  }
+}
+
+struct MemorySegment {
+  std::size_t start{0};
+  std::size_t limit{0};  // exclusive
+
+  [[nodiscard]] bool valid() const { return limit > start; }
+  [[nodiscard]] std::size_t size() const { return valid() ? limit - start : 0; }
+  [[nodiscard]] bool contains(std::size_t addr) const { return valid() && addr >= start && addr < limit; }
+};
+
 struct MemoryLayout {
-  std::size_t code_limit{0};   // exclusive
-  std::size_t stack_limit{0};  // exclusive
-  std::size_t heap_limit{0};   // exclusive
+  MemorySegment code;
+  MemorySegment stack;
+  MemorySegment heap;
+  MemorySegment tensor;
+  MemorySegment meta;
+
+  [[nodiscard]] std::size_t total_size() const { return meta.limit; }
 };
 
 struct AxionEvent {
@@ -105,6 +138,7 @@ struct State {
   std::vector<std::pair<std::int64_t, std::int64_t>> stack_frames;
   std::vector<std::pair<std::int64_t, std::int64_t>> heap_frames;
   std::size_t heap_ptr{0};
+  std::size_t meta_ptr{0};
   std::vector<t81::tisc::EnumMetadata> enum_metadata;
   std::unordered_map<int, std::size_t> enum_metadata_index;
 };

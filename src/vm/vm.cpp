@@ -1,5 +1,6 @@
 #include <functional>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string_view>
 
@@ -15,6 +16,11 @@
 
 namespace t81::vm {
 namespace {
+constexpr std::size_t kDefaultStackSize = 256;
+constexpr std::size_t kDefaultHeapSize = 768;
+constexpr std::size_t kDefaultTensorSpace = 256;
+constexpr std::size_t kDefaultMetaSpace = 256;
+
 class Interpreter : public IVirtualMachine {
  public:
   explicit Interpreter(std::unique_ptr<t81::axion::Engine> engine)
@@ -39,12 +45,20 @@ class Interpreter : public IVirtualMachine {
     program_ = program;
     state_ = State{};
     state_.register_tags.fill(ValueTag::Int);
-    state_.layout.code_limit = program_.insns.size();
-    state_.layout.stack_limit = state_.layout.code_limit + 256;
-    state_.layout.heap_limit = state_.layout.stack_limit + 768;
-    state_.memory.resize(state_.layout.heap_limit, 0);
+    auto& layout = state_.layout;
+    layout.code.start = 0;
+    layout.code.limit = program_.insns.size();
+    layout.stack.start = layout.code.limit;
+    layout.stack.limit = layout.stack.start + kDefaultStackSize;
+    layout.heap.start = layout.stack.limit;
+    layout.heap.limit = layout.heap.start + kDefaultHeapSize;
+    layout.tensor.start = layout.heap.limit;
+    layout.tensor.limit = layout.tensor.start + kDefaultTensorSpace;
+    layout.meta.start = layout.tensor.limit;
+    layout.meta.limit = layout.meta.start + kDefaultMetaSpace;
+    state_.memory.resize(layout.total_size(), 0);
     state_.memory_tags.assign(state_.memory.size(), ValueTag::Int);
-    state_.sp = state_.layout.stack_limit;
+    state_.sp = layout.stack.limit;
     state_.floats = program_.float_pool;
     state_.fractions = program_.fraction_pool;
     state_.symbols = program_.symbol_pool;
@@ -55,7 +69,8 @@ class Interpreter : public IVirtualMachine {
     state_.weights_tensor_handles.clear();
     state_.stack_frames.clear();
     state_.heap_frames.clear();
-    state_.heap_ptr = state_.layout.stack_limit;
+    state_.heap_ptr = layout.heap.start;
+    state_.meta_ptr = layout.meta.start;
     state_.options.clear();
     state_.results.clear();
     state_.enums.clear();
@@ -126,7 +141,9 @@ class Interpreter : public IVirtualMachine {
     auto mem_ok = [this](int addr, bool code = false) {
       if (addr < 0) return false;
       std::size_t a = static_cast<std::size_t>(addr);
-      if (code) return a < state_.layout.code_limit;
+      if (code) {
+        return state_.layout.code.contains(a);
+      }
       return a < state_.memory.size();
     };
     auto log_trace = [this, current_pc](t81::tisc::Opcode op, Trap trap = Trap::None) {
@@ -158,20 +175,28 @@ class Interpreter : public IVirtualMachine {
       state_.flags.negative = (v < 0);
       state_.flags.positive = (v > 0);
     };
-    auto push_stack = [this](std::int64_t value, ValueTag tag) -> bool {
-      if (state_.layout.stack_limit <= state_.layout.code_limit) return false;
-      if (state_.sp == state_.layout.code_limit) return false;
+    auto push_stack = [this](std::int64_t value, ValueTag tag) -> std::optional<std::size_t> {
+      const auto& stack = state_.layout.stack;
+      if (!stack.valid()) return false;
+      if (state_.sp <= stack.start) return false;
       --state_.sp;
+      if (!stack.contains(static_cast<std::size_t>(state_.sp))) {
+        ++state_.sp;
+        return false;
+      }
       state_.memory[state_.sp] = value;
       state_.memory_tags[state_.sp] = tag;
-      return true;
+      return static_cast<std::size_t>(state_.sp);
     };
-    auto pop_stack = [this](std::int64_t& value, ValueTag& tag) -> bool {
-      if (state_.sp == state_.layout.stack_limit) return false;
-      value = state_.memory[state_.sp];
-      tag = state_.memory_tags[state_.sp];
+    auto pop_stack = [this](std::int64_t& value, ValueTag& tag) -> std::optional<std::size_t> {
+      const auto& stack = state_.layout.stack;
+      if (!stack.valid()) return false;
+      if (state_.sp >= stack.limit) return false;
+      std::size_t addr = state_.sp;
+      value = state_.memory[addr];
+      tag = state_.memory_tags[addr];
       ++state_.sp;
-      return true;
+      return addr;
     };
     auto tensor_ptr = [this](std::int64_t handle) -> t81::T729Tensor* {
       if (handle <= 0) return nullptr;
@@ -181,7 +206,10 @@ class Interpreter : public IVirtualMachine {
     };
     auto alloc_tensor = [this](t81::T729Tensor tensor) -> std::int64_t {
       state_.tensors.push_back(std::move(tensor));
-      return static_cast<std::int64_t>(state_.tensors.size());
+      auto idx = state_.tensors.size();
+      log_memory_segment_access(t81::tisc::Opcode::Nop, MemorySegmentKind::Tensor, idx, 1,
+                                "tensor slot allocated");
+      return static_cast<std::int64_t>(idx);
     };
     auto float_ptr = [this](std::int64_t handle) -> double* {
       if (handle <= 0) return nullptr;
@@ -434,15 +462,15 @@ class Interpreter : public IVirtualMachine {
         state_.register_tags[insn.a] = ValueTag::Int;
         update_flags(state_.registers[insn.a]);
         break;
-      case t81::tisc::Opcode::Load:
+      case t81::tisc::Opcode::Load: {
         if (!reg_ok(insn.a) || !mem_ok(insn.b)) { trap = Trap::InvalidMemory; break; }
-        {
-          std::size_t addr = static_cast<std::size_t>(insn.b);
-          state_.registers[insn.a] = state_.memory[addr];
-          state_.register_tags[insn.a] = state_.memory_tags[addr];
-        }
+        std::size_t addr = static_cast<std::size_t>(insn.b);
+        state_.registers[insn.a] = state_.memory[addr];
+        state_.register_tags[insn.a] = state_.memory_tags[addr];
+        log_memory_segment_access(insn.opcode, segment_for_address(addr), addr, 1, "memory load");
         update_flags(state_.registers[insn.a]);
         break;
+      }
       case t81::tisc::Opcode::WeightsLoad: {
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
         if (insn.b <= 0 || static_cast<std::size_t>(insn.b) > state_.symbols.size()) {
@@ -455,14 +483,14 @@ class Interpreter : public IVirtualMachine {
         state_.register_tags[insn.a] = ValueTag::WeightsTensorHandle;
         break;
       }
-      case t81::tisc::Opcode::Store:
+      case t81::tisc::Opcode::Store: {
         if (!reg_ok(insn.b) || !mem_ok(insn.a)) { trap = Trap::InvalidMemory; break; }
-        {
-          std::size_t addr = static_cast<std::size_t>(insn.a);
-          state_.memory[addr] = state_.registers[insn.b];
-          state_.memory_tags[addr] = state_.register_tags[insn.b];
-        }
+        std::size_t addr = static_cast<std::size_t>(insn.a);
+        state_.memory[addr] = state_.registers[insn.b];
+        state_.memory_tags[addr] = state_.register_tags[insn.b];
+        log_memory_segment_access(insn.opcode, segment_for_address(addr), addr, 1, "memory store");
         break;
+      }
       case t81::tisc::Opcode::Mul:
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
         state_.registers[insn.a] = state_.registers[insn.b] * state_.registers[insn.c];
@@ -574,39 +602,52 @@ class Interpreter : public IVirtualMachine {
         update_flags(flag_value);
         break;
       }
-      case t81::tisc::Opcode::Push:
+      case t81::tisc::Opcode::Push: {
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
-        if (!push_stack(state_.registers[insn.a], state_.register_tags[insn.a])) { trap = Trap::BoundsFault; break; }
+        auto addr_opt = push_stack(state_.registers[insn.a], state_.register_tags[insn.a]);
+        if (!addr_opt.has_value()) { trap = Trap::BoundsFault; break; }
+        log_memory_segment_access(insn.opcode, MemorySegmentKind::Stack, *addr_opt, 1, "stack push");
         break;
-      case t81::tisc::Opcode::Pop:
+      }
+      case t81::tisc::Opcode::Pop: {
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
-        {
-          ValueTag tag = ValueTag::Int;
-          if (!pop_stack(state_.registers[insn.a], tag)) { trap = Trap::BoundsFault; break; }
-          state_.register_tags[insn.a] = tag;
-        }
+        ValueTag tag = ValueTag::Int;
+        auto addr_opt = pop_stack(state_.registers[insn.a], tag);
+        if (!addr_opt.has_value()) { trap = Trap::BoundsFault; break; }
+        state_.register_tags[insn.a] = tag;
         update_flags(state_.registers[insn.a]);
+        log_memory_segment_access(insn.opcode, MemorySegmentKind::Stack, *addr_opt, 1, "stack pop");
         break;
+      }
       case t81::tisc::Opcode::StackAlloc: {
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
         if (insn.b < 0) { trap = Trap::IllegalInstruction; break; }
+        const auto& stack = state_.layout.stack;
+        if (!stack.valid()) { trap = Trap::IllegalInstruction; break; }
         std::size_t size = static_cast<std::size_t>(insn.b);
-        std::size_t available = state_.sp - state_.layout.code_limit;
+        std::size_t available = state_.sp - stack.start;
         if (size > available) { trap = Trap::BoundsFault; break; }
         std::size_t new_sp = state_.sp - size;
+        if (new_sp < stack.start) { trap = Trap::BoundsFault; break; }
         std::int64_t addr = static_cast<std::int64_t>(new_sp);
         state_.stack_frames.emplace_back(addr, static_cast<std::int64_t>(size));
         state_.sp = new_sp;
         set_reg(insn.a, addr, ValueTag::Int);
         update_flags(addr);
+        log_memory_segment_access(insn.opcode, MemorySegmentKind::Stack,
+                                  static_cast<std::size_t>(addr), size,
+                                  "stack frame allocated");
         break;
       }
       case t81::tisc::Opcode::StackFree: {
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
         if (insn.b < 0) { trap = Trap::IllegalInstruction; break; }
+        const auto& stack = state_.layout.stack;
+        if (!stack.valid()) { trap = Trap::BoundsFault; break; }
         if (state_.stack_frames.empty()) { trap = Trap::BoundsFault; break; }
         std::size_t size = static_cast<std::size_t>(insn.b);
         std::int64_t ptr = state_.registers[insn.a];
+        if (!stack.contains(static_cast<std::size_t>(ptr))) { trap = Trap::IllegalInstruction; break; }
         auto [expected_addr, expected_size] = state_.stack_frames.back();
         if (expected_addr != ptr || expected_size != static_cast<std::int64_t>(size)) {
           trap = Trap::IllegalInstruction;
@@ -614,29 +655,40 @@ class Interpreter : public IVirtualMachine {
         }
         state_.stack_frames.pop_back();
         state_.sp = static_cast<std::size_t>(ptr + size);
+        log_memory_segment_access(insn.opcode, MemorySegmentKind::Stack,
+                                  static_cast<std::size_t>(ptr), size,
+                                  "stack frame freed");
         break;
       }
       case t81::tisc::Opcode::HeapAlloc: {
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
-        if (insn.b < 0 || static_cast<std::size_t>(insn.b) > state_.layout.heap_limit) {
-          trap = Trap::IllegalInstruction;
-          break;
-        }
+        const auto& heap = state_.layout.heap;
+        if (!heap.valid()) { trap = Trap::IllegalInstruction; break; }
+        if (insn.b < 0) { trap = Trap::IllegalInstruction; break; }
         std::size_t size = static_cast<std::size_t>(insn.b);
+        if (size > heap.size()) { trap = Trap::BoundsFault; break; }
         std::size_t addr = state_.heap_ptr;
-        if (addr + size > state_.layout.heap_limit) { trap = Trap::BoundsFault; break; }
+        if (addr < heap.start || addr + size > heap.limit) { trap = Trap::BoundsFault; break; }
         state_.heap_frames.emplace_back(static_cast<std::int64_t>(addr), static_cast<std::int64_t>(size));
         state_.heap_ptr = addr + size;
         set_reg(insn.a, static_cast<std::int64_t>(addr), ValueTag::Int);
         update_flags(state_.registers[insn.a]);
+        log_memory_segment_access(insn.opcode, MemorySegmentKind::Heap, addr, size,
+                                  "heap block allocated");
         break;
       }
       case t81::tisc::Opcode::HeapFree: {
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
+        const auto& heap = state_.layout.heap;
+        if (!heap.valid()) { trap = Trap::BoundsFault; break; }
         if (insn.b < 0) { trap = Trap::IllegalInstruction; break; }
         if (state_.heap_frames.empty()) { trap = Trap::BoundsFault; break; }
         std::size_t size = static_cast<std::size_t>(insn.b);
         std::int64_t ptr = state_.registers[insn.a];
+        if (!heap.contains(static_cast<std::size_t>(ptr))) {
+          trap = Trap::IllegalInstruction;
+          break;
+        }
         auto [expected_addr, expected_size] = state_.heap_frames.back();
         if (expected_addr != ptr || expected_size != static_cast<std::int64_t>(size)) {
           trap = Trap::IllegalInstruction;
@@ -644,6 +696,9 @@ class Interpreter : public IVirtualMachine {
         }
         state_.heap_frames.pop_back();
         state_.heap_ptr = static_cast<std::size_t>(ptr);
+        log_memory_segment_access(insn.opcode, MemorySegmentKind::Heap,
+                                  static_cast<std::size_t>(ptr), size,
+                                  "heap block freed");
         break;
       }
       case t81::tisc::Opcode::TNot:
@@ -680,6 +735,9 @@ class Interpreter : public IVirtualMachine {
       case t81::tisc::Opcode::AxRead: {
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
         auto verdict = eval_axion_call("AXREAD");
+        std::size_t guard_addr = static_cast<std::size_t>(insn.b);
+        auto guard_kind = segment_for_address(guard_addr);
+        apply_segment_reason(verdict, "AxRead guard", guard_kind, guard_addr);
         if (verdict.kind == t81::axion::VerdictKind::Deny) {
           record_axion_event(insn.opcode, insn.b, 0, verdict);
           trap = Trap::SecurityFault;
@@ -692,9 +750,16 @@ class Interpreter : public IVirtualMachine {
         break;
       }
       case t81::tisc::Opcode::AxSet: {
-        if (!reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
         auto value = state_.registers[insn.b];
         auto verdict = eval_axion_call("AXSET");
+        std::size_t guard_addr = 0;
+        MemorySegmentKind guard_kind = MemorySegmentKind::Unknown;
+        if (state_.registers[insn.a] >= 0) {
+          guard_addr = static_cast<std::size_t>(state_.registers[insn.a]);
+          guard_kind = segment_for_address(guard_addr);
+        }
+        apply_segment_reason(verdict, "AxSet guard", guard_kind, guard_addr);
         record_axion_event(insn.opcode, insn.a, value, verdict);
         if (verdict.kind == t81::axion::VerdictKind::Deny) {
           trap = Trap::SecurityFault;
@@ -1142,9 +1207,59 @@ class Interpreter : public IVirtualMachine {
     return nullptr;
   }
 
+  MemorySegmentKind segment_for_address(std::size_t addr) const {
+    const auto& layout = state_.layout;
+    if (layout.stack.contains(addr)) return MemorySegmentKind::Stack;
+    if (layout.heap.contains(addr)) return MemorySegmentKind::Heap;
+    if (layout.tensor.contains(addr)) return MemorySegmentKind::Tensor;
+    if (layout.meta.contains(addr)) return MemorySegmentKind::Meta;
+    return MemorySegmentKind::Unknown;
+  }
+
+  void log_memory_segment_access(t81::tisc::Opcode opcode, MemorySegmentKind kind,
+                                 std::size_t addr, std::size_t size,
+                                 std::string_view action) {
+    t81::axion::Verdict verdict;
+    verdict.kind = t81::axion::VerdictKind::Allow;
+    std::ostringstream reason;
+    reason << action << " " << to_string(kind) << " addr=" << addr << " size=" << size;
+    verdict.reason = reason.str();
+    record_axion_event(opcode, static_cast<std::int32_t>(kind), static_cast<std::int64_t>(addr),
+                       verdict);
+  }
+
+  void push_axion_event(const AxionEvent& event) {
+    state_.axion_log.push_back(event);
+  }
+
+  void log_meta_slot(const char* label) {
+    if (!state_.layout.meta.contains(state_.meta_ptr)) return;
+    AxionEvent meta_event;
+    meta_event.opcode = t81::tisc::Opcode::Nop;
+    meta_event.tag = static_cast<std::int32_t>(MemorySegmentKind::Meta);
+    meta_event.value = static_cast<std::int64_t>(state_.meta_ptr);
+    meta_event.verdict.kind = t81::axion::VerdictKind::Allow;
+    std::ostringstream reason;
+    reason << "meta slot " << label << " addr=" << state_.meta_ptr;
+    meta_event.verdict.reason = reason.str();
+    push_axion_event(meta_event);
+    ++state_.meta_ptr;
+  }
+
+  void apply_segment_reason(t81::axion::Verdict& verdict, const char* action,
+                            MemorySegmentKind kind, std::size_t addr) {
+    std::ostringstream reason;
+    reason << action << " segment=" << to_string(kind) << " addr=" << addr;
+    if (!verdict.reason.empty()) {
+      reason << " " << verdict.reason;
+    }
+    verdict.reason = reason.str();
+  }
+
   void record_axion_event(t81::tisc::Opcode op, std::int32_t tag,
                           std::int64_t value, const t81::axion::Verdict& verdict) {
-    state_.axion_log.push_back(AxionEvent{op, tag, value, verdict});
+    log_meta_slot("axion event");
+    push_axion_event(AxionEvent{op, tag, value, verdict});
   }
 
   void run_gc_cycle_(const char* reason) {
@@ -1152,7 +1267,13 @@ class Interpreter : public IVirtualMachine {
     state_.gc_cycles++;
     t81::axion::Verdict verdict;
     verdict.kind = t81::axion::VerdictKind::Allow;
-    verdict.reason = reason;
+    std::ostringstream os;
+    os << reason << " stack_frames=" << state_.stack_frames.size()
+       << " heap_frames=" << state_.heap_frames.size()
+       << " heap_ptr=" << state_.heap_ptr
+       << " tensor_slots=" << state_.tensors.size()
+       << " meta_space=" << state_.layout.meta.size();
+    verdict.reason = os.str();
     record_axion_event(t81::tisc::Opcode::Trap,
                        static_cast<std::int32_t>(state_.gc_cycles),
                        static_cast<std::int64_t>(state_.gc_cycles), verdict);
