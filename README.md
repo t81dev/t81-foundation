@@ -80,6 +80,7 @@ t81 weights quantize <dir|file.safetensors> --to-gguf <out.gguf>
 ```
 
 > Diagnostics: semantic and parsing errors now print the source file, line, and column.
+> Match expressions now also emit canonical metadata (variant roots, guard presence, payload handles) via the CLI and Axion trace log so tooling can audit guards/payloads alongside loop hints.
 
 Weights tooling highlights:
 - `weights import` converts BitNet/SafeTensors/GGUF to the canonical `.t81w` with SHA3-512 metadata and density stats.
