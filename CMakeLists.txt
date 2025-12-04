@@ -285,6 +285,9 @@ if(T81_BUILD_TESTS)
   add_executable(e2e_option_result_test tests/cpp/e2e_option_result_test.cpp)
   target_link_libraries(e2e_option_result_test PRIVATE t81_frontend t81_tisc t81_vm)
 
+  add_executable(e2e_option_result_function_test tests/cpp/e2e_option_result_function_test.cpp)
+  target_link_libraries(e2e_option_result_function_test PRIVATE t81_frontend t81_tisc t81_vm)
+
   add_executable(t81_cli_check_test tests/cpp/cli_check_test.cpp)
   target_link_libraries(t81_cli_check_test PRIVATE t81_cli_driver)
 
