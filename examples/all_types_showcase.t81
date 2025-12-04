@@ -1,0 +1,109 @@
+// Comprehensive T81Lang showcase covering the canonical data types.
+// Demonstrates integers, floats, fractions, BigInt, vectors, matrices, tensors,
+// structural types (record/enum), generics, Option/Result, tuples, strings, and bools.
+
+type Axis = Vector[T81Float, 3];
+type BoolMatrix = Matrix[bool, 2, 2];
+type BigIntPair = Vector[T81BigInt, 2];
+
+record Point {
+    x: i32;
+    y: i32;
+    label: T81String;
+    active: bool;
+}
+
+enum SensorState {
+    Cold;
+    Warm;
+    Hot(T81Float);
+}
+
+fn describe_point(p: Point) -> T81String {
+    match (p.active) {
+        true => "active";
+        false => "idle";
+    };
+    let sum: i32 = p.x + p.y;
+    return "Point(" + p.label + "):" + sum;
+}
+
+fn tensor_blob() -> Tensor[T81Int, 2, 2, 2] {
+    let element: T81Int = 5;
+    return Tensor[T81Int, 2, 2, 2] [
+        [[element, element + 1], [element + 2, element + 3]],
+        [[element + 4], [element + 5, element + 6]]
+    ];
+}
+
+fn combine_ratios(a: T81Fraction, b: T81Fraction) -> T81Fraction {
+    return a + b;
+}
+
+fn state_summary(state: SensorState) -> Option[T81Float] {
+    match (state) {
+        Cold => None;
+        Warm => Some(0.33t81);
+        Hot(ratio) => Some(ratio);
+    }
+}
+
+fn identity_matrix() -> BoolMatrix {
+    return Matrix[bool, 2, 2] [[true, false], [false, true]];
+}
+
+fn vector_average(axis: Axis) -> T81Float {
+    let sum: T81Float = axis[0] + axis[1] + axis[2];
+    return sum / 3.0t81;
+}
+
+fn big_int_magic(values: BigIntPair) -> T81BigInt {
+    return values[0] + values[1];
+}
+
+fn try_divide(dividend: i32, divisor: i32) -> Result[T81Float, T81String] {
+    if (divisor == 0) {
+        return Err("division by zero");
+    }
+    let ratio: T81Float = T81Float(dividend) / T81Float(divisor);
+    return Ok(ratio);
+}
+
+fn main() -> i32 {
+    let point = Point { x: 2; y: 7; label: "origin"; active: true; };
+    let axis: Axis = [0.1t81, 0.2t81, 0.3t81];
+    let matrix = identity_matrix();
+    let bigints: BigIntPair = [123456789123456789t81, 100000000000000000t81];
+    let tensor = tensor_blob();
+
+    let description = describe_point(point);
+    let avg = vector_average(axis);
+    let state = Hot(avg);
+    let hint = state_summary(state);
+    let ratio = try_divide(42, 7);
+
+    let fraction = combine_ratios(3/7t81, 5/11t81);
+    let bigsum = big_int_magic(bigints);
+
+    let ratio_score = match (ratio) {
+        Ok(value) => if (value > avg) { 2 } else { 1 };
+        Err(_) => 0;
+    };
+
+    let hint_score = match (hint) {
+        Some(value) => if (value > 0.1t81) { 1 } else { 0 };
+        None => 0;
+    };
+
+    let summary_label: T81String = description + ":summary";
+    let corner_value: T81Int = tensor[0][0][0];
+    let bool_flag: bool = matrix[0][0];
+    let bool_score: i32 = if (bool_flag) { 1 } else { 0 };
+
+    let fraction_score = if (fraction > 1.0t81) { 1 } else { 0 };
+    let big_score = if (bigsum > 0t81) { 1 } else { 0 };
+
+    let tensor_score: i32 = i32(corner_value % 7t81);
+
+    return ratio_score + hint_score + fraction_score + big_score + bool_score + tensor_score;
+}

@@ -1,0 +1,124 @@
+// Advanced T81Lang Monitoring Example
+// Demonstrates records, enums with payloads, Option/Result interplay, vector literals,
+// and match expressions that stay in sync with the CLI diagnostics pipeline.
+
+type Axis = Vector[T81Float, 3];
+
+record SensorProfile {
+    id: i32;
+    label: T81String;
+    baseline: T81Float;
+    reading: T81Float;
+    mode: Mode;
+}
+
+enum Mode {
+    Sample;
+    Calibrate;
+}
+
+enum Verdict {
+    Stable;
+    Alert(T81Float);
+    Fault(T81String);
+}
+
+fn sample_threshold(mode: Mode) -> T81Float {
+    match (mode) {
+        Sample => 0.60t81;
+        Calibrate => 0.25t81;
+    }
+}
+
+fn safe_inverse(value: T81Float) -> Result[T81Float, T81String] {
+    if (value == 0.0t81) {
+        return Err("delta was zero");
+    }
+    return Ok(1.0t81 / value);
+}
+
+fn normalized_delta(sensor: SensorProfile) -> Result[T81Float, T81String] {
+    let delta: T81Float = sensor.reading - sensor.baseline;
+    let threshold: T81Float = sample_threshold(sensor.mode);
+    if (delta <= threshold) {
+        return Err("delta below threshold");
+    }
+    return Ok(delta);
+}
+
+fn hint(sensor: SensorProfile) -> Option[T81Float] {
+    match (sensor.mode) {
+        Sample => Some(sensor.baseline);
+        Calibrate => None;
+    }
+}
+
+fn verdict(sensor: SensorProfile, ambient: Axis) -> Verdict {
+    match (hint(sensor)) {
+        Some(_) => {
+            let delta_result = normalized_delta(sensor);
+            match (delta_result) {
+                Ok(value) => {
+                    let correction: T81Float = (ambient[0] + ambient[1] + ambient[2]) / 3.0t81;
+                    match (safe_inverse(value * correction)) {
+                        Ok(inv) => {
+                            if (inv > 1.5t81) {
+                                Alert(inv)
+                            } else {
+                                Stable
+                            }
+                        }
+                        Err(_) => Stable
+                    }
+                }
+                Err(reason) => Fault(reason)
+            }
+        }
+        None => Fault("calibration pending")
+    }
+}
+
+fn narrative(sensor: SensorProfile, ambient: Axis) -> Result[T81Float, T81String] {
+    match (verdict(sensor, ambient)) {
+        Stable => Ok(0.0t81),
+        Alert(ratio) => Ok(ratio),
+        Fault(message) => Err(message)
+    }
+}
+
+fn score_report(report: Result[T81Float, T81String]) -> i32 {
+    match (report) {
+        Ok(value) => {
+            if (value > 1.0t81) {
+                2
+            } else {
+                1
+            }
+        }
+        Err(_) => 0
+    }
+}
+
+fn main() -> i32 {
+    let ambient: Axis = [0.45t81, 0.38t81, 0.92t81];
+    let lineup: Vector[SensorProfile, 2] = [
+        SensorProfile {
+            id: 1;
+            label: "north";
+            baseline: 0.10t81;
+            reading: 0.85t81;
+            mode: Sample;
+        },
+        SensorProfile {
+            id: 2;
+            label: "core";
+            baseline: 0.27t81;
+            reading: 0.40t81;
+            mode: Calibrate;
+        }
+    ];
+
+    let report_a = narrative(lineup[0], ambient);
+    let report_b = narrative(lineup[1], ambient);
+    return score_report(report_a) + score_report(report_b);
+}
