@@ -89,7 +89,7 @@ Commands:
   compile <file.t81> [-o <file.tisc>]   Compile T81Lang → TISC bytecode
   run     <file.t81|.tisc>             Compile (if needed) and execute
   check   <file.t81>                   Syntax-check only
-  repl                                 Enter interactive REPL (future)
+  repl                                 Enter interactive REPL
   version                              Show version
   benchmark                            Run the core benchmark suite (build/benchmarks/benchmark_runner)
   weights import <file> [options]      Import BitNet/SafeTensors → .t81w

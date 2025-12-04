@@ -1311,6 +1311,7 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
         arm_info.pattern_kind = pattern_kind;
         arm_info.variant_id = static_cast<int>(variant_it->second.id);
         arm_info.enum_id = variant_it->second.enum_id;
+        arm_info.enum_name = type_to_string(scrutinee_type);
         if (variant_has_payload) {
             arm_info.payload_type = payload_type;
         }

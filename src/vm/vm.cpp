@@ -357,8 +357,21 @@ class Interpreter : public IVirtualMachine {
 
     Trap trap = Trap::None;
     switch (insn.opcode) {
-      case t81::tisc::Opcode::Nop:
+      case t81::tisc::Opcode::Nop: {
+        if (insn.literal_kind == t81::tisc::LiteralKind::SymbolHandle && insn.b > 0) {
+          auto idx = static_cast<std::size_t>(insn.b);
+          if (idx <= state_.symbols.size()) {
+            AxionEvent event;
+            event.opcode = insn.opcode;
+            event.tag = static_cast<std::int32_t>(insn.b);
+            event.value = 0;
+            event.verdict.kind = t81::axion::VerdictKind::Allow;
+            event.verdict.reason = state_.symbols[idx - 1];
+            state_.axion_log.push_back(event);
+          }
+        }
         break;
+      }
       case t81::tisc::Opcode::Halt:
         state_.halted = true;
         break;

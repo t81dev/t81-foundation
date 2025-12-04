@@ -11,6 +11,7 @@
 #include <any>
 #include <iostream>
 #include <optional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -61,6 +62,18 @@ inline std::string decode_string_literal(const Token& token) {
         }
     }
     return result;
+}
+
+inline std::string escape_metadata_string(std::string_view input) {
+    std::string out;
+    out.reserve(input.size());
+    for (char c : input) {
+        if (c == '\\' || c == '"') {
+            out.push_back('\\');
+        }
+        out.push_back(c);
+    }
+    return out;
 }
 
 class IRGenerator : public ExprVisitor, public StmtVisitor {
@@ -447,6 +460,11 @@ public:
         bool scrutinee_is_option = scrutinee_type && scrutinee_type->kind == Type::Kind::Option;
         bool scrutinee_is_result = scrutinee_type && scrutinee_type->kind == Type::Kind::Result;
         auto scrutinee_reg = ensure_expr_result(expr.scrutinee.get());
+        std::unordered_map<const MatchArm*, std::size_t> arm_indices;
+        arm_indices.reserve(expr.arms.size());
+        for (std::size_t i = 0; i < expr.arms.size(); ++i) {
+            arm_indices[&expr.arms[i]] = i;
+        }
 
         auto find_arm = [&](std::string_view name) -> const MatchArm* {
             for (const auto& arm : expr.arms) {
@@ -458,6 +476,7 @@ public:
         };
 
         auto emit_match_arm = [&]<typename Prelude>(const MatchArm& arm,
+                                                    std::size_t arm_index,
                                                     tisc::ir::Label entry_label,
                                                     tisc::ir::Label guard_fail_target,
                                                     Prelude before_body,
@@ -466,6 +485,10 @@ public:
                                                     std::optional<int> variant_id) {
             emit_label(entry_label);
             enter_pattern_scope();
+            const SemanticAnalyzer::MatchMetadata::ArmInfo* arm_meta = nullptr;
+            if (metadata && arm_index < metadata->arms.size()) {
+                arm_meta = &metadata->arms[arm_index];
+            }
             std::optional<tisc::ir::Label> guard_fail_label;
             if (variant_flag && variant_id.has_value()) {
                 emit_enum_is_variant(*variant_flag, scrutinee_reg, *variant_id);
@@ -473,6 +496,7 @@ public:
             }
             before_body();
             if (arm.guard) {
+                emit_guard_metadata(arm_meta, variant_id);
                 guard_fail_label = new_label();
                 arm.guard->accept(*this);
                 auto guard_value = ensure_expr_result(arm.guard.get());
@@ -509,9 +533,9 @@ public:
             emit_option_is_some(flag_reg, scrutinee_reg);
             emit_jump_if_not_zero(some_label, flag_reg);
 
-            emit_match_arm(*none_arm, none_label, unmatched_label, []() {}, end_label, nullptr, std::nullopt);
+            emit_match_arm(*none_arm, arm_indices.at(none_arm), none_label, unmatched_label, []() {}, end_label, nullptr, std::nullopt);
 
-            emit_match_arm(*some_arm, some_label, none_label,
+            emit_match_arm(*some_arm, arm_indices.at(some_arm), some_label, none_label,
                           [&]() {
                               emit_option_unwrap(payload_reg, scrutinee_reg);
                               bind_variant_payload(*some_arm, payload_reg);
@@ -536,12 +560,12 @@ public:
             emit_result_is_ok(flag_reg, scrutinee_reg);
             emit_jump_if_not_zero(ok_label, flag_reg);
 
-            emit_match_arm(*err_arm, err_label, unmatched_label, [&]() {
+            emit_match_arm(*err_arm, arm_indices.at(err_arm), err_label, unmatched_label, [&]() {
                 emit_result_unwrap_err(payload_reg, scrutinee_reg);
                 bind_variant_payload(*err_arm, payload_reg);
             }, end_label, nullptr, std::nullopt);
 
-            emit_match_arm(*ok_arm, ok_label, err_label, [&]() {
+            emit_match_arm(*ok_arm, arm_indices.at(ok_arm), ok_label, err_label, [&]() {
                 emit_result_unwrap_ok(payload_reg, scrutinee_reg);
                 bind_variant_payload(*ok_arm, payload_reg);
             }, end_label, nullptr, std::nullopt);
@@ -575,6 +599,7 @@ public:
                     arm_meta.payload_type.kind != Type::Kind::Unknown;
 
                 emit_match_arm(expr.arms[i],
+                               i,
                                arm_labels[i],
                                guard_fail_target,
                                [&]() {
@@ -984,6 +1009,35 @@ private:
         }
         // For Option/Result arms the parsed pattern already represents the payload bindings.
         bind_pattern_payload(arm.pattern, reg);
+    }
+
+    std::string guard_metadata_reason(const SemanticAnalyzer::MatchMetadata::ArmInfo& info,
+                                      std::optional<int> variant_id) const {
+        std::ostringstream oss;
+        oss << "guard-expr \"" << escape_metadata_string(info.guard_expression) << "\"";
+        if (!info.enum_name.empty()) {
+            oss << " enum=" << info.enum_name;
+        }
+        oss << " variant=" << info.variant;
+        if (variant_id.has_value()) {
+            oss << " variant-id=" << *variant_id;
+        }
+        if (_semantic && info.payload_type.kind != Type::Kind::Unknown) {
+            oss << " payload=" << _semantic->type_name(info.payload_type);
+        }
+        return oss.str();
+    }
+
+    void emit_guard_metadata(const SemanticAnalyzer::MatchMetadata::ArmInfo* info,
+                             std::optional<int> variant_id) {
+        if (!info || info->guard_expression.empty()) {
+            return;
+        }
+        tisc::ir::Instruction instr;
+        instr.opcode = tisc::ir::Opcode::NOP;
+        instr.literal_kind = tisc::LiteralKind::SymbolHandle;
+        instr.text_literal = guard_metadata_reason(*info, variant_id);
+        emit(instr);
     }
 
     const EnumInfo* enum_info_for_name(std::string_view name) const {
