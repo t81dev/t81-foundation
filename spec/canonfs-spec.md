@@ -150,7 +150,7 @@ ______________________________________________________________________
 CanonFS operations are **Axion-guarded**. Every `AXSET`/`AXREAD`/`AXVERIFY` interaction triggers an Axion syscall before touching storage so the Axion kernel can enforce capability constraints, recursion bounds, and policy predicates.
 
 1. **Meta slot journaling** — Each Axion syscall prepends a deterministic `meta slot axion event segment=meta addr=<value>` entry to the Axion trace before the actual write. CanonFS implementations MUST emit `action=Write` for `AXSET`/`write_object` paths and `action=Read` for `AXREAD`/`read_object` paths so policies can assert them via `(require-axion-event (reason "<substring>"))`.
-2. **Trace hygiene** — Axion traces MUST include the same `meta slot` string every time CanonFS writes persist metadata (e.g., capability grants, snapshots, links). Changing the verbatim string invalidates RFC-0013 policies and must be coordinated through a new RFC.
+2. **Trace hygiene** — Axion traces MUST include the same `meta slot` string every time CanonFS writes persist metadata (e.g., capability grants, snapshots, links). Changing the verbatim string invalidates RFC-0020 policies and must be coordinated through a new RFC.
 3. **CI artifact parity** — The `canonfs_axion_trace_test` reproduction (see `docs/guides/axion-trace.md`) records those exact strings into `build/artifacts/canonfs_axion_trace.log`, providing auditors with a reference trace that CanonFS policies can expect before touching the filesystem.
 
 Maintaining this contract makes CanonFS the canonical source of policy-verified persistence for Axion-aware binaries: canonical trace strings, capability enforcement, and deterministic writes all execute before the block is sealed inside CanonFS.

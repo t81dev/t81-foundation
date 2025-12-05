@@ -1,6 +1,6 @@
 # Axion Policy Authoring Manual
 
-This guide covers how to write, embed, and debug Axion Policy Language (APL) policies so your programs stay compliant with **RFC-0009**, **RFC-0013**, and **RFC-0019**. It explains each `require-*` predicate, shows diagnostics from policy regressions, and links to the provided sample files such as `policy/guards.axion`.
+This guide covers how to write, embed, and debug Axion Policy Language (APL) policies so your programs stay compliant with **RFC-0009**, **RFC-0020**, and **RFC-0019**. It explains each `require-*` predicate, shows diagnostics from policy regressions, and links to the provided sample files such as `policy/guards.axion`.
 
 ## 1. APL policy anatomy
 
@@ -20,7 +20,7 @@ Key fields:
 
 - `tier`: maximum cognitive tier (RFC-0009 §2.2). Higher tiers enable more permissive operations but require stronger metadata/logging.
 - `require-match-guard`: enforces that the Axion trace contains an enum guard string matching the given metadata (RFC-0009 §2.5 / RFC-0019). Provide `(enum <name>)`, `(variant <name>)`, optional `(payload <type>)`, and `(result pass|fail)` to match the `verdict.reason`.
-- `require-segment-event`: asserts the runtime emitted a segment trace string from RFC-0013 (e.g., stack frame allocation, AxRead guard). Include `(segment <name>)` and `(action "...")`, optionally `(addr <value>)`.
+- `require-segment-event`: asserts the runtime emitted a segment trace string from RFC-0020 (e.g., stack frame allocation, AxRead guard). Include `(segment <name>)` and `(action "...")`, optionally `(addr <value>)`.
 - `require-loop-hint`: ensures loop metadata entries appear before privileged opcodes. The policy engine looks for the string described in RFC-0009 §2.5/§2.6.
 
 Include other clauses like `max-stack`, `allow-opcode`, `deny-shape`, and `require-proof` as needed; the policy parser (`include/t81/axion/policy.hpp`) accepts integers, symbols, and string literals so you can place quotes around the `action` text.
@@ -45,7 +45,7 @@ Use the shipped `policy/guards.axion` to begin. Its contents mirror the regressi
     (action "AxRead guard")))
 ```
 
-It demands the guard string `enum=Option variant=Some match=pass guard=pass payload=i32` and the segment strings recorded by RFC-0013 (`stack frame allocated` and `AxRead guard`). Embed this policy via `-P policy/guards.axion` during `t81 compile` or run `axion_policy_runner` directly; the policy engine will automatically reject the program if the strings are missing.
+It demands the guard string `enum=Option variant=Some match=pass guard=pass payload=i32` and the segment strings recorded by RFC-0020 (`stack frame allocated` and `AxRead guard`). Embed this policy via `-P policy/guards.axion` during `t81 compile` or run `axion_policy_runner` directly; the policy engine will automatically reject the program if the strings are missing.
 
 ### 2.1 `require-axion-event` for GC/trace verification
 
@@ -78,7 +78,7 @@ t81> :trace
 ... reason="heap relocation from=267 to=512 size=32"
 ```
 
-Use that snippet to cross-check your policy strings against RFC-0013 without reading source code—`require-axion-event` simply looks for the substring you recorded.
+Use that snippet to cross-check your policy strings against RFC-0020 without reading source code—`require-axion-event` simply looks for the substring you recorded.
 
 `canonfs_axion_trace_test` now exercises the persistent CanonFS driver
 (`make_persistent_driver` in `include/t81/canonfs/canon_driver.hpp`), so CI
@@ -122,7 +122,7 @@ Always run the regression suite (`ctest --test-dir build -R axion_policy_* --out
 ## 6. Related RFCs and docs
 
 - `[RFC-0009](../spec/rfcs/RFC-0009-axion-policy-language.md)` – Syntax, predicates, and security semantics for APL.  
-- `[RFC-0013](../spec/rfcs/0013-axion-segment-trace.md)` – Canonical segment trace strings that `require-segment-event` clauses check.  
+- `[RFC-0020](../spec/rfcs/RFC-0020-axion-segment-trace.md)` – Canonical segment trace strings that `require-segment-event` clauses check.  
 - `[RFC-0019](../spec/rfcs/RFC-0019-axion-match-logging.md)` – Enum/match metadata that powers `require-match-guard`.  
 - `docs/guides/axion-trace.md` / `docs/guides/axion-tracing-manual.md` – CLI samples showing the required strings in action.  
 - `include/t81/axion/policy.hpp` and `src/axion/policy_engine.cpp` – Implementation reference for how S-expressions are parsed and enforced.  

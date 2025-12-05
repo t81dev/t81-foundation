@@ -104,5 +104,5 @@ These samples ensure auditors can audit Axion traces without reading the VM code
 
 - `docs/guides/axion-trace.md` (Axion trace reference with CLI/REPL samples).  
 - `spec/axion-kernel.md` section 1.5‑1.10 (Axion responsibilities, metadata contract).  
-- RFC-0009, RFC-0013, RFC-0019 (policy language, segment trace semantics, match metadata).  
+- RFC-0009, RFC-0020, RFC-0019 (policy language, segment trace semantics, match metadata).  
 - `docs/guides/cli-toolkit.md` for tooling that wraps the CLI in reproducible scripts.

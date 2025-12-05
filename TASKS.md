@@ -49,7 +49,7 @@ ______________________________________________________________________
     - **[M] Task:** Improve VM fault handling. Ensure all illegal operations (e.g., division by zero, out-of-bounds memory access) result in deterministic, spec-compliant faults.
     - **[L] Task:** Add extensive "negative" tests for the VM that deliberately trigger faults and verify the correct behavior.
     - **[S] Task:** Surface match metadata hints in the Axion/trace log to confirm CLI workloads can replay guard coverage during execution.
-    - **[M] Task:** Document and verify the deterministic segment-trace strings (`stack frame allocated`, `tensor slot allocated`, `AxRead/AxSet guard …`) via `axion_policy_runner` and updated Axion trace guides so policy runners can replay RFC-0013/RFC-0009 expectations.
+- **[M] Task:** Document and verify the deterministic segment-trace strings (`stack frame allocated`, `tensor slot allocated`, `AxRead/AxSet guard …`) via `axion_policy_runner` and updated Axion trace guides so policy runners can replay RFC-0020/RFC-0009 expectations.
 
 ______________________________________________________________________
 

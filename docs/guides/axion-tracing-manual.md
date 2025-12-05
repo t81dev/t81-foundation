@@ -10,7 +10,7 @@ Axion receives deterministic visibility from three main streams:
 2. **Guard metadata** emitted for enum/sum pattern checks (`ENUM_IS_VARIANT`, `ENUM_UNWRAP_PAYLOAD`) and option/result guards.
 3. **Loop hints** emitted by `format_loop_metadata` so Axion knows when annotated loops execute.
 
-Each stream produces `AxionEvent` entries whose `verdict.reason` strings must match the canonical patterns in [RFC-0013](../spec/rfcs/0013-axion-segment-trace.md) and [RFC-0019](../spec/rfcs/RFC-0019-axion-match-logging.md). The CLI, docs, and policy engine all read those strings, so you can audit determinism purely through them.
+Each stream produces `AxionEvent` entries whose `verdict.reason` strings must match the canonical patterns in [RFC-0020](../spec/rfcs/RFC-0020-axion-segment-trace.md) and [RFC-0019](../spec/rfcs/RFC-0019-axion-match-logging.md). The CLI, docs, and policy engine all read those strings, so you can audit determinism purely through them.
 
 ## 2. Canonical event strings
 
@@ -89,4 +89,4 @@ If the policy fails because a string is missing, inspect `State::axion_log` or r
 - `docs/guides/axion-trace.md` for quick reference and CLI/REPL samples.
 - `docs/guides/cli-user-manual.md` for the CLI commands we just covered.
 - `spec/axion-kernel.md` §1.5‑1.10 for Axion responsibilities tied to these trace inputs.
-- RFC-0009, RFC-0013, RFC-0019 for the linguistic contract between policies and the runtime logs.
+- RFC-0009, RFC-0020, RFC-0019 for the linguistic contract between policies and the runtime logs.

@@ -3,7 +3,7 @@
 This guide explains how to observe the deterministic `AxionEvent.verdict.reason`
 strings that document segment transitions and guard evaluations inside the
 HanoiVM. These strings are the authority for Axion policies that `require`
-segment coverage (see [RFC-0013](../spec/rfcs/RFC-0013-axion-segment-trace.md)
+segment coverage (see [RFC-0020](../spec/rfcs/RFC-0020-axion-segment-trace.md)
 and [RFC-0009](../spec/rfcs/RFC-0009-axion-policy-language.md#segment-trace-predicates)).
 
 ## 1. Command-line trace sample
@@ -62,7 +62,7 @@ clauses when you want policies to mandate GC/fault traces.
 dumped logs capture real disk writes into `objects/<hash>.blk` in addition to
 the canonical `meta slot axion event segment=meta addr=<n> (action=Write/Read)`
 strings that policies require. CI artifacts therefore prove that Axion logged the
-meta slot entry before the bytes persisted, matching the RFC-0013 compliance
+meta slot entry before the bytes persisted, matching the RFC-0020 compliance
 requirements without relying on the in-memory stub.
 
 GC cycles now emit `heap compaction heap_frames=<n> heap_ptr=<value>` before
@@ -176,7 +176,7 @@ manually typing policy clauses. The file mirrors the regression requirements:
 
 Running `t81 compile --verbose match_guard.t81 -P policy/guards.axion` or
 `axion_policy_runner` produces the same `enum guard` / `segment trace` strings
-that RFC-0009 and RFC-0013 mandate. Auditors can inspect this file to confirm
+that RFC-0009 and RFC-0020 mandate. Auditors can inspect this file to confirm
 the CLI output matches the trace snippets collected by the regressions.
 
 ## 4. Policy integration checklist
@@ -202,7 +202,7 @@ For more context, see `docs/guides/cli-toolkit.md` and `spec/axion-kernel.md`.
 ## 5. Policy runner trace
 
 The new `examples/axion_policy_runner.cpp` implements a minimal Axion policy
-runner that mirrors the requirements described in [RFC-0013](../spec/rfcs/0013-axion-segment-trace.md)
+runner that mirrors the requirements described in [RFC-0020](../spec/rfcs/RFC-0020-axion-segment-trace.md)
 and the `require-segment-event` predicates of
 [RFC-0009](../spec/rfcs/RFC-0009-axion-policy-language.md#segment-trace-predicates).
 Build it with
@@ -236,7 +236,7 @@ ensure `build/artifacts/axion_policy_runner.log` contains the canonical Axion
 trace covering both `require-match-guard` and `require-segment-event`
 strings. Because `axion_policy_runner` runs with `policy/guards.axion`, the log
 now records the same guard-heavy `verdict.reason` strings (`enum=Option ...`,
-`stack frame allocated ...`, `AxRead guard ...`) that RFC-0009/RFC-0013 expect.
+`stack frame allocated ...`, `AxRead guard ...`) that RFC-0009/RFC-0020 expect.
 Archive that log alongside the `ctest` output so auditors can compare the
 recorded `AxionEvent.verdict.reason` entries without rerunning the example.
 

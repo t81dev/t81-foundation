@@ -10,7 +10,7 @@ This manual describes the runtime internals you can observe to understand Axion�
 
 ## 2. Segment visibility
 
-Each stack, heap, tensor, and meta transition emits a deterministic string (RFC-0013):
+Each stack, heap, tensor, and meta transition emits a deterministic string (RFC-0020):
 
 | Event | Example reason |
 | --- | --- |
@@ -45,7 +45,7 @@ Regressions such as `axion_segment_trace_test` and `vm_memory_test` assert those
 
 1. **REPL `:trace`** – dumps `State::axion_log`. Use `:trace chart` to view segment timing and `:trace filter guard` to highlight guard events.  
 2. **`t81 run --axion-log`** – automatically saves `build/artifacts/axion-<run>.log` with all Axion events.  
-3. **`axion_policy_runner`** – writes the log required by RFC-0013/0009 (stack, heap, tensor, meta, AxRead/AxSet).  
+3. **`axion_policy_runner`** – writes the log required by RFC-0020/0009 (stack, heap, tensor, meta, AxRead/AxSet).  
 4. **`tests/cpp/axion_enum_guard_test.cpp` and `axion_match_metadata_test.cpp`** – show how metadata flows through the VM and how Axion logs can be validated inside regressions.
 
 ## 6. Fault tracing
@@ -56,7 +56,7 @@ Regressions such as `axion_segment_trace_test` and `vm_memory_test` assert those
 
 ## 7. Linking observability to RFCs
 
-- RFC-0013 defines the segment traces (stack/heap/tensor/meta) you can observe.  
+- RFC-0020 defines the segment traces (stack/heap/tensor/meta) you can observe.  
 - RFC-0019 dictates the enum/match metadata strings and how they map to `(require-match-guard ...)` policies.  
 - RFC-0009 ensures the policy engine enforces the strings before privileged instructions run.  
 - `spec/axion-kernel.md` §1.5‑1.10 and §2.1 describe how Axion uses the traces for DTS/VS; keep those sections handy as you audit `State::axion_log`.

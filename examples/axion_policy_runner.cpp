@@ -150,6 +150,6 @@ int main() {
     return 1;
   }
 
-  std::cout << "Axion segment requirements satisfied per RFC-0013/RFC-0009.\n";
+  std::cout << "Axion segment requirements satisfied per RFC-0020/RFC-0009.\n";
   return 0;
 }

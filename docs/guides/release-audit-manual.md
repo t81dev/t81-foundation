@@ -37,14 +37,14 @@ Segment trace CI snippet: [ctest output block]
 Guard trace CLI transcript: [CLI log file]
 ```
 
-Reference the RFCs (RFC-0009, RFC-0013, RFC-0019) and manuals in the release note so auditors can locate the exact deterministic semantics backing the trace strings.
+Reference the RFCs (RFC-0009, RFC-0020, RFC-0019) and manuals in the release note so auditors can locate the exact deterministic semantics backing the trace strings.
 
 ## 4. Audit verification steps
 
 1. Download the release artifacts and rerun `cmake --build build --parallel` (optional).  
 2. Reexecute `./scripts/capture-axion-trace.sh` and compare the produced log with the archived `axion_policy_runner.log`. They should match line-for-line in terms of `verdict.reason` strings.  
 3. Rerun the `axion_policy_*` tests (`ctest --test-dir build -R axion_policy_match_guard_test`) and ensure they pass; failure indicates policy strings changed.  
-4. Confirm the release note references `policy/guards.axion`, RFC-0009/0013/0019, and the manuals so future reviewers understand what each artifact guarantees.
+4. Confirm the release note references `policy/guards.axion`, RFC-0009/0020/0019, and the manuals so future reviewers understand what each artifact guarantees.
 
 ## 5. CanonFS & Axion policy runner
 
@@ -55,14 +55,14 @@ Reference the RFCs (RFC-0009, RFC-0013, RFC-0019) and manuals in the release not
 
 | Artifact | Purpose | RFC/docs link |
 | --- | --- | --- |
-| `axion_policy_runner.log` | Deterministic guard + segment strings | RFC-0009, RFC-0013 |
-| `axion_segment_trace_test` snippet | Bounds faults / segment coverage | RFC-0013 |
-| `axion_heap_compaction_trace_test` | Ensures GC compaction (`heap compaction heap_frames=`) and relocation (`heap relocation from=`) strings appear | RFC-0013, RFC-0009 |
-| `vm_bounds_trace_test` | Negative scenarios that log canonical `bounds fault ...` strings before trapping | RFC-0013 |
-| `canonfs_axion_trace_test` | Runs against the persistent CanonFS driver, proving `meta slot axion event segment=meta ... action=Write/Read` strings fire before disk writes | RFC-0013 |
+| `axion_policy_runner.log` | Deterministic guard + segment strings | RFC-0009, RFC-0020 |
+| `axion_segment_trace_test` snippet | Bounds faults / segment coverage | RFC-0020 |
+| `axion_heap_compaction_trace_test` | Ensures GC compaction (`heap compaction heap_frames=`) and relocation (`heap relocation from=`) strings appear | RFC-0020, RFC-0009 |
+| `vm_bounds_trace_test` | Negative scenarios that log canonical `bounds fault ...` strings before trapping | RFC-0020 |
+| `canonfs_axion_trace_test` | Runs against the persistent CanonFS driver, proving `meta slot axion event segment=meta ... action=Write/Read` strings fire before disk writes | RFC-0020 |
 | `t81 compile --verbose` transcript | Guard metadata and match payload strings | RFC-0019 |
 | `State::axion_log` from REPL `:trace` | Runtime trace accessible from CLI | docs/guides/runtime-observability-manual.md |
 | `policy/guards.axion` | Source policy showing requirements | docs/guides/axion-policy-manual.md |
-| `axion_policy_gc_trace_test` | Validates GC trace string `interval stack_frames=...` via `(require-axion-event ...)` | RFC-0009, RFC-0013 |
+| `axion_policy_gc_trace_test` | Validates GC trace string `interval stack_frames=...` via `(require-axion-event ...)` | RFC-0009, RFC-0020 |
 
 Include this matrix in release artifacts or append it to release notes to help auditors cross-check each entry quickly.
