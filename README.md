@@ -87,6 +87,10 @@ Weights tooling highlights:
 - `weights info` prints trits, limbs, storage (bits/trit), sparsity, format, checksum, and canonical CanonFS hints.
 - `weights quantize … --to-gguf` runs the T3_K quantizer (128-element trit blocks, scale per block) and emits a GGUF file ready for llama.cpp with T3_K support.
 
+### Axion Trace & Release Logs
+
+Before tagging a release, run `./scripts/capture-axion-trace.sh` (see `docs/guides/release-audit-manual.md` for the checklist). The script builds `axion_policy_runner` plus the GC/bounds/CanonFS regressions and drops `build/artifacts/axion_policy_runner.log`, `axion_heap_compaction_trace.log`, `vm_bounds_trace.log`, and `canonfs_axion_trace.log` into the artifacts folder. Keep those files (especially the persistent CanonFS trace with `meta slot axion event segment=meta … action=Write/Read`) with release notes so auditors can replay the canonical Axion verdict strings outlined in the RFCs.
+
 ## 3. Command Summary
 
 | Command | What it does |
