@@ -145,6 +145,26 @@ display_hint MUST NOT affect CanonHash-81.
 
 ______________________________________________________________________
 
+# 7. Axion Observability Contract
+
+CanonFS operations are **Axion-guarded**. Every `AXSET`/`AXREAD`/`AXVERIFY` interaction triggers an Axion syscall before touching storage so the Axion kernel can enforce capability constraints, recursion bounds, and policy predicates.
+
+1. **Meta slot journaling** — Each Axion syscall prepends a deterministic `meta slot axion event segment=meta addr=<value>` entry to the Axion trace before the actual write. CanonFS implementations MUST emit `action=Write` for `AXSET`/`write_object` paths and `action=Read` for `AXREAD`/`read_object` paths so policies can assert them via `(require-axion-event (reason "<substring>"))`.
+2. **Trace hygiene** — Axion traces MUST include the same `meta slot` string every time CanonFS writes persist metadata (e.g., capability grants, snapshots, links). Changing the verbatim string invalidates RFC-0013 policies and must be coordinated through a new RFC.
+3. **CI artifact parity** — The `canonfs_axion_trace_test` reproduction (see `docs/guides/axion-trace.md`) records those exact strings into `build/artifacts/canonfs_axion_trace.log`, providing auditors with a reference trace that CanonFS policies can expect before touching the filesystem.
+
+Maintaining this contract makes CanonFS the canonical source of policy-verified persistence for Axion-aware binaries: canonical trace strings, capability enforcement, and deterministic writes all execute before the block is sealed inside CanonFS.
+
+## 7.1 Persistent CanonFS Driver
+
+The reference implementation exposes `make_persistent_driver(root)` (see `include/t81/canonfs/canon_driver.hpp`), creating a directory tree under `root` with `objects/`, `caps/`, and `parity/`. Each object is stored at `objects/<hash>.blk`, while capability masks live at `caps/<hash>.cap` as decimal `perms` values. The driver currently treats `parity/` as a placeholder directory for future repair shards.
+
+Every `write_object`, `read_object_bytes`, `publish_capability`, and `revoke_capability` invocation runs the Axion hook before mutating `objects/` or `caps/`. That hook emits the canonical `meta slot axion event segment=meta addr=<n> action=Write` (for writes) and `action=Read` (for reads), so `scripts/capture-axion-trace.sh` can verify `canonfs_axion_trace_test` produces the same strings auditors expect. Capabilities gate access via the `CANON_PERM_READ`/`CANON_PERM_WRITE` bitmask; when no capabilities exist the driver permits bootstrap writes, but once a capability is published, only callers with the matching mask may read or write the object.
+
+This driver fulfills the Axion observability requirements in a deterministic, disk-backed form: writes now flush to persistent storage, the Axion trace includes the canonical meta slot events before any data touches disk, and audits can replay the resulting `build/artifacts/canonfs_axion_trace.log` snippet to prove that canonical strings preceded persistence.
+
+______________________________________________________________________
+
 # 7. CanonParity — Reed–Solomon Recovery (v0.4.1)
 
 CanonFS introduces automatic self-healing via parity shards.

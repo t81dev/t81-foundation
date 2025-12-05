@@ -24,6 +24,8 @@ Each stack, heap, tensor, and meta transition emits a deterministic string (RFC-
 | AxSet guard | `AxSet guard segment=heap addr=42` |
 | Bounds fault | `bounds fault segment=stack addr=999 action=stack frame allocate` |
 
+The new `canonfs_axion_trace_test` ensures CanonFS writes/logs emit the same meta slot strings plus `action=Write`/`action=Read`, giving policy authors a deterministically reproducible snippet. This test now targets the disk-backed driver, so the Axion trace proves that bytes first triggered the canonical meta slot event before landing in `objects/<hash>.blk`.
+
 Regressions such as `axion_segment_trace_test` and `vm_memory_test` assert those strings exist and print them (CI artifact). The manual `scripts/capture-axion-trace.sh` builds `axion_policy_runner` to produce the same log file.
 
 ## 3. Guard & enum payload instrumentation

@@ -57,6 +57,7 @@ Reference the RFCs (RFC-0009, RFC-0013, RFC-0019) and manuals in the release not
 | `axion_segment_trace_test` snippet | Bounds faults / segment coverage | RFC-0013 |
 | `axion_heap_compaction_trace_test` | Ensures GC compaction (`heap compaction heap_frames=`) and relocation (`heap relocation from=`) strings appear | RFC-0013, RFC-0009 |
 | `vm_bounds_trace_test` | Negative scenarios that log canonical `bounds fault ...` strings before trapping | RFC-0013 |
+| `canonfs_axion_trace_test` | Runs against the persistent CanonFS driver, proving `meta slot axion event segment=meta ... action=Write/Read` strings fire before disk writes | RFC-0013 |
 | `t81 compile --verbose` transcript | Guard metadata and match payload strings | RFC-0019 |
 | `State::axion_log` from REPL `:trace` | Runtime trace accessible from CLI | docs/guides/runtime-observability-manual.md |
 | `policy/guards.axion` | Source policy showing requirements | docs/guides/axion-policy-manual.md |

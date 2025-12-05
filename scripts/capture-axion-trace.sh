@@ -21,7 +21,7 @@ echo "Running axion_policy_runner and capturing Axion trace to $POLICY_LOG"
 echo "Saved policy runner output ($POLICY_LOG):"
 cat "$POLICY_LOG"
 
-for target in axion_heap_compaction_trace_test vm_bounds_trace_test; do
+for target in axion_heap_compaction_trace_test vm_bounds_trace_test canonfs_axion_trace_test; do
   log_var="$LOG_DIR/${target}.log"
   echo "Building $target"
   (cd "$BUILD_DIR" && cmake --build . --parallel --target "$target")

@@ -31,6 +31,8 @@ add_library(t81_core STATIC
   src/tisc/encoding.cpp
   src/vm/vm.cpp
   src/canonfs/in_memory_driver.cpp
+  src/canonfs/persistent_driver.cpp
+  src/canonfs/axion_hook.cpp
   src/hanoi/error.cpp
   src/hanoi/in_memory_kernel.cpp        # ← fixed path
   src/axion/engine.cpp
@@ -157,6 +159,12 @@ if(T81_BUILD_TESTS)
 
   add_executable(t81_canonfs_io_test tests/cpp/canonfs_io_test.cpp)
   target_link_libraries(t81_canonfs_io_test PRIVATE t81_core)
+
+  add_executable(canonfs_axion_trace_test tests/cpp/canonfs_axion_trace_test.cpp)
+  target_link_libraries(canonfs_axion_trace_test PRIVATE t81_core)
+
+  add_executable(canonfs_persistent_driver_test tests/cpp/canonfs_persistent_driver_test.cpp)
+  target_link_libraries(canonfs_persistent_driver_test PRIVATE t81_core)
 
   add_executable(t81_ir_encoding_test tests/cpp/ir_encoding_test.cpp)
   target_link_libraries(t81_ir_encoding_test PRIVATE t81_core)
@@ -554,6 +562,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_tisc t81_vm)
     axion_enum_guard_test
     axion_nested_guard_test
     axion_instruction_counter_test
+    canonfs_axion_trace_test
     e2e_axion_trace_test
   )
   foreach(tgt IN LISTS T81_TEST_TARGETS)

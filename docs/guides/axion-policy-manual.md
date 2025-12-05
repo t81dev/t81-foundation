@@ -69,7 +69,7 @@ After the GC trace strings landed (see `docs/guides/axion-trace.md` §2), you ca
     (reason "heap relocation from=")))
 ```
 
-Both predicates look for the canonical `verdict.reason` that `scripts/capture-axion-trace.sh` archives in `build/artifacts/axion_heap_compaction_trace.log` and `build/artifacts/axion_policy_runner.log`. Auditors can replay the bytes by running `./scripts/capture-axion-trace.sh` (it prints each log and keeps the `heap compaction` / `heap relocation` lines a CI artifact), or by concatenating the Axion log from `t81 repl` via:
+Both predicates look for the canonical `verdict.reason` that `scripts/capture-axion-trace.sh` archives in `build/artifacts/axion_heap_compaction_trace.log`, `build/artifacts/axion_policy_runner.log`, and `build/artifacts/canonfs_axion_trace.log`. Auditors can replay the bytes by running `./scripts/capture-axion-trace.sh` (it prints each log and keeps the `heap compaction`, `heap relocation`, and CanonFS meta slot lines as CI artifacts), or by concatenating the Axion log from `t81 repl` via:
 
 ```
 $ t81 repl
@@ -79,6 +79,15 @@ t81> :trace
 ```
 
 Use that snippet to cross-check your policy strings against RFC-0013 without reading source code—`require-axion-event` simply looks for the substring you recorded.
+
+`canonfs_axion_trace_test` now exercises the persistent CanonFS driver
+(`make_persistent_driver` in `include/t81/canonfs/canon_driver.hpp`), so CI
+artifacts prove that Axion emitted the canonical `meta slot axion event
+segment=meta addr=<n>` line *before* bytes were flushed to `objects/<hash>.blk`.
+This makes the policy snippet concrete: the log captures exactly what a real
+disk-backed CanonFS write recorded, so `(require-axion-event
+(reason "... action=Write"))` now verifies persistence from a tangible store
+rather than an in-memory stub.
 
 This clause performs a substring match on each `AxionEvent.verdict.reason`; it lets policies verify GC traces, meta slot writes, or any other canonical string recorded by the runtime. Because GC cycles log `interval stack_frames=...` before mutating memory, this predicate guarantees those transitions exist before privileged opcodes proceed.
 

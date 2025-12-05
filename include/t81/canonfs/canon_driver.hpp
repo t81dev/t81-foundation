@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <span>
@@ -35,4 +36,5 @@ class Driver {
 
 // Utility factory for the in-memory driver implementation.
 std::unique_ptr<Driver> make_in_memory_driver();
+std::unique_ptr<Driver> make_persistent_driver(std::filesystem::path root);
 }  // namespace t81::canonfs

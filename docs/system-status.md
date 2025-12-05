@@ -75,9 +75,9 @@ ______________________________________________________________________
 ## 5. Axion Kernel & CanonFS
 
 - **Specification:** [`spec/axion-kernel.md`](../spec/axion-kernel.md), [`spec/canonfs-spec.md`](../spec/canonfs-spec.md)
-- **Status:** `Experimental / Stub`
-- **Summary:** The APIs for these components exist, but the implementations are non-functional placeholders.
-- **Next Steps:** Implement the core Axion safety policies (e.g., instruction counting) and the basic CanonFS storage driver.
+- **Status:** `Stabilizing`
+- **Summary:** The VM now logs every Axion event (guards, loops, meta slots, heap compaction/relocation) through the Axion kernel, and the CanonFS bridge records deterministic meta slot traces before writing to disk via the new persistent driver. `scripts/capture-axion-trace.sh` archives policy runner, GC, bounds, and CanonFS trace logs (`build/artifacts/…`) so policies can replay the exact `verdict.reason` strings before enforcing `AXSET`/`AXREAD`.  
+- **Next Steps:** Continue implementing safety policies (instruction counters, recursion limits) and extend Axion policy tooling so CanonFS trace predicates have broader coverage now that persistence is stable.
 
 ______________________________________________________________________
 

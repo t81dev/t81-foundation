@@ -42,18 +42,28 @@ evidence that the deterministic strings exist in this build.
 
 Use `./scripts/capture-axion-trace.sh` to collect the policy runner + trace
 regressions together. That script runs `axion_policy_runner`, `axion_heap_compaction_trace_test`,
-and `vm_bounds_trace_test`, saving the logs under `build/artifacts/` so CI can
-attach the deterministic lines:
+`vm_bounds_trace_test`, and `canonfs_axion_trace_test`, saving the logs under
+`build/artifacts/` so CI can attach the deterministic lines:
 
 ```
 opcode=108 reason="heap compaction heap_frames=0 heap_ptr=267"
 opcode=109 reason="heap relocation from=267 to=512 size=32"
 
 opcode=125 reason="bounds fault segment=stack addr=999 action=stack frame allocate"
+opcode=0 reason="meta slot axion event segment=meta addr=0 action=Write"
+opcode=1 reason="meta slot axion event segment=meta addr=1 action=Read"
 ```
 
 Cat those files for auditors or paste the lines into `(require-axion-event (reason "..."))`
 clauses when you want policies to mandate GC/fault traces.
+
+`canonfs_axion_trace_test` now runs against the persistent CanonFS driver
+(`make_persistent_driver` under `include/t81/canonfs/canon_driver.hpp`), so the
+dumped logs capture real disk writes into `objects/<hash>.blk` in addition to
+the canonical `meta slot axion event segment=meta addr=<n> (action=Write/Read)`
+strings that policies require. CI artifacts therefore prove that Axion logged the
+meta slot entry before the bytes persisted, matching the RFC-0013 compliance
+requirements without relying on the in-memory stub.
 
 GC cycles now emit `heap compaction heap_frames=<n> heap_ptr=<value>` before
 reclaiming space and `heap relocation from=<old> to=<new> size=<n>` when objects
