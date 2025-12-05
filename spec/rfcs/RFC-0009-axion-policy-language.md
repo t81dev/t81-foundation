@@ -95,7 +95,7 @@ This clause ensures the DTS saw a `(policy (loop (id 3) (file …) (line …) (c
 
 ### 2.6 Segment Trace Predicates
 
-Axion policies may also assert the segment trace strings described in [RFC-0013](RFC-0013-axion-segment-trace.md). The runtime now logs each stack, heap, tensor, and meta transition as a `verdict.reason` such as `stack frame allocated stack addr=243 size=16`, `heap block freed heap addr=512 size=32`, `tensor slot allocated tensor addr=5`, `meta slot axion event addr=1283`, `AxRead guard segment=stack addr=42`, or `AxSet guard segment=heap addr=128`. Policies can use:
+Axion policies may also assert the segment trace strings described in [RFC-0013](RFC-0013-axion-segment-trace.md). The runtime now logs each stack, heap, tensor, and meta transition as a `verdict.reason` such as `stack frame allocated stack addr=243 size=16`, `heap block freed heap addr=512 size=32`, `tensor slot allocated tensor addr=5`, `meta slot axion event segment=meta addr=1283`, `AxRead guard segment=stack addr=42`, or `AxSet guard segment=heap addr=128`. Policies can use:
 
 ```
 (require-segment-event

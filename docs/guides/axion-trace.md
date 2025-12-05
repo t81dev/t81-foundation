@@ -19,7 +19,7 @@ with its opcode, tag, and `verdict.reason`. Look for lines such as:
 
 ```
 opcode=68 tag=2 reason="stack frame allocated stack addr=243 size=16"
-opcode=0 tag=5 reason="meta slot axion event addr=1283"
+opcode=0 tag=5 reason="meta slot axion event segment=meta addr=1283"
 opcode=33 tag=0 reason="tensor slot allocated tensor addr=3"
 opcode=22 tag=5 reason="AxRead guard segment=stack addr=5"
 opcode=23 tag=4 reason="AxSet guard segment=stack addr=4"
@@ -40,6 +40,30 @@ of `tensor slot allocated`, `meta slot`, `AxRead guard`, and `AxSet guard`
 entries. The `ctest` log becomes your CI artifact; treat the printed snippet as
 evidence that the deterministic strings exist in this build.
 
+Use `./scripts/capture-axion-trace.sh` to collect the policy runner + trace
+regressions together. That script runs `axion_policy_runner`, `axion_heap_compaction_trace_test`,
+and `vm_bounds_trace_test`, saving the logs under `build/artifacts/` so CI can
+attach the deterministic lines:
+
+```
+opcode=108 reason="heap compaction heap_frames=0 heap_ptr=267"
+opcode=109 reason="heap relocation from=267 to=512 size=32"
+
+opcode=125 reason="bounds fault segment=stack addr=999 action=stack frame allocate"
+```
+
+Cat those files for auditors or paste the lines into `(require-axion-event (reason "..."))`
+clauses when you want policies to mandate GC/fault traces.
+
+GC cycles now emit `heap compaction heap_frames=<n> heap_ptr=<value>` before
+reclaiming space and `heap relocation from=<old> to=<new> size=<n>` when objects
+move. `tests/cpp/axion_heap_compaction_trace_test.cpp` asserts both strings via
+(require-axion-event (reason "...")) so your CI log contains the compaction and
+relocation proofs alongside the other segment transitions.
+this string appears using `(require-axion-event (reason "heap compaction
+heap_frames="))`, so CI artifacts capture the compaction trace along with other
+segment transitions.
+
 Out-of-bounds accesses now record a `bounds fault` entry (`reason="bounds fault
 segment=<segment> addr=<value> action=…"`), whether the failure comes from a
 memory load/store or from stack/heap/tensor operations (e.g.,
@@ -48,6 +72,14 @@ memory load/store or from stack/heap/tensor operations (e.g.,
 strings and prints the log snippet for CI artifacts, so auditors can replay
 fault scenarios that exercise the HanoiVM memory semantics without inspecting
 the source.
+
+The new `tests/cpp/vm_bounds_trace_test.cpp` focuses on canonical segment
+violations: it triggers oversized `StackAlloc`/`HeapAlloc` calls and invalid
+tensor operations, asserting that each trap is preceded by the exact
+`bounds fault segment=...` string recorded in the Axion log. Because the Axion
+log also includes `meta slot axion event segment=meta addr=<value>` entries generated before
+every event, your CI artifacts now capture both the metadata writes and heap
+transitions that GCC/policy runners depend on.
 The standard `ctest --test-dir build --output-on-failure` run now surfaces that
 snippet so observability tooling can capture the `bounds fault ...` strings as
 part of the canonical CI artifact.
@@ -57,6 +89,13 @@ part of the canonical CI artifact.
 - Run `t81 repl` and type `:trace` after executing a guard-heavy snippet; the CLI
   dumps the same `AxionEvent.verdict.reason` strings recorded by these
   tests/examples.
+- After forcing a heap compaction (e.g., allocate/free repeatedly) inside the REPL,
+`:trace` prints the GC entries that your policy can require:
+
+  ```
+  opcode=108 reason="heap compaction heap_frames=0 heap_ptr=267"
+  opcode=109 reason="heap relocation from=267 to=512 size=32"
+  ```
 - Enable `--verbose` on `t81 compile` to watch the CLI print the match/loop/enum
   metadata strings before `axion_policy_trace` or policy runners verify them.
 
@@ -211,3 +250,4 @@ can replay the canonical `verdict.reason` strings without reading the VM code:
 3. Include the CLI sample (`t81 compile --verbose ... -P policy/guards.axion`) transcript and the guard-heavy `match_guard.t81` source so reviewers can reproduce the `enum=Option ...` strings without rebuilding the VM.
 
 Together these extracts document every guard, segment, and policy trace string that RFC-0009/0013/0019 cite, delivering a deterministic artifact that auditors can inspect before diving into the codebase.
+## 4. Copyrighted

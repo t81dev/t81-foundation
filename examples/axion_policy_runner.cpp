@@ -1,8 +1,11 @@
+#include "t81/axion/policy.hpp"
+#include "t81/axion/policy_engine.hpp"
 #include "t81/tisc/program.hpp"
 #include "t81/tisc/opcodes.hpp"
 #include "t81/vm/vm.hpp"
 
 #include <iostream>
+#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -46,13 +49,13 @@ int main() {
 
   t81::tisc::Insn ax_set{};
   ax_set.opcode = t81::tisc::Opcode::AxSet;
-  ax_set.a = 4;
+  ax_set.a = 5;  // guard a heap pointer
   ax_set.b = 6;
 
   t81::tisc::Insn ax_read{};
   ax_read.opcode = t81::tisc::Opcode::AxRead;
   ax_read.a = 7;
-  ax_read.b = 5;
+  ax_read.b = 4;  // read through the active stack frame
 
   t81::tisc::Insn heap_free{};
   heap_free.opcode = t81::tisc::Opcode::HeapFree;
@@ -67,10 +70,13 @@ int main() {
   t81::tisc::Insn halt{};
   halt.opcode = t81::tisc::Opcode::Halt;
 
-  program.insns = {
+  std::vector<t81::tisc::Insn> insns = {
       load_tensor0, load_tensor1, vec_add, stack_alloc, heap_alloc, load_value,
-      ax_set, ax_read, heap_free, stack_free, halt,
+      ax_set, heap_free, stack_free, halt,
   };
+  ax_read.b = static_cast<int>(insns.size() + 1);
+  insns.insert(insns.begin() + 7, ax_read);
+  program.insns = std::move(insns);
 
   program.axion_policy_text =
       "(policy (tier 1)"
@@ -84,10 +90,6 @@ int main() {
   auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
   auto result = vm->run_to_halt();
-  if (!result.has_value()) {
-    std::cerr << "Axion policy runner failed with trap\n";
-    return 1;
-  }
 
   std::cout << "Axion policy runner emitted the following verdict.reason strings:\n";
   for (const auto& entry : vm->state().axion_log) {
@@ -109,12 +111,12 @@ int main() {
     const char* label;
     std::string_view substring;
   } requirements[] = {
-      {"stack trace", "stack frame allocated"},
-      {"heap trace", "heap block allocated"},
-      {"tensor slot trace", "tensor slot allocated"},
-      {"meta slot trace", "meta slot axion event"},
-      {"AxRead guard", "AxRead guard"},
-      {"AxSet guard", "AxSet guard"},
+      {"stack trace", "stack frame allocated stack addr="},
+      {"heap trace", "heap block allocated heap addr="},
+      {"tensor slot trace", "tensor slot allocated tensor addr="},
+      {"meta slot trace", "meta slot axion event segment=meta addr="},
+      {"AxRead guard", "AxRead guard segment=stack addr="},
+      {"AxSet guard", "AxSet guard segment=heap addr="},
   };
 
   bool all_ok = true;
@@ -123,6 +125,26 @@ int main() {
       std::cerr << "Missing trace entry for " << req.label << "\n";
       all_ok = false;
     }
+  }
+  if (!result.has_value()) {
+    std::cerr << "Axion policy runner trapped with code " << static_cast<int>(result.error()) << '\n';
+    auto policy_opt = t81::axion::parse_policy(program.axion_policy_text);
+    if (policy_opt.has_value()) {
+      auto policy_owned = std::optional<t81::axion::Policy>{policy_opt.value()};
+      auto engine = t81::axion::make_policy_engine(std::move(policy_owned));
+      t81::axion::SyscallContext ctx;
+      ctx.caller = "axion_policy_runner";
+      ctx.syscall = "step";
+      ctx.pc = vm->state().pc;
+      ctx.next_opcode = t81::tisc::Opcode::Halt;
+      ctx.trace_reasons.reserve(vm->state().axion_log.size());
+      for (const auto& entry : vm->state().axion_log) {
+        ctx.trace_reasons.push_back(entry.verdict.reason);
+      }
+      auto verdict = engine->evaluate(ctx);
+      std::cerr << "Policy engine reports: " << verdict.reason << '\n';
+    }
+    return 1;
   }
   if (!all_ok) {
     return 1;

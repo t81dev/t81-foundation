@@ -116,6 +116,9 @@ target_link_libraries(axion_guard_trace PRIVATE t81_cli_driver t81_vm)
 add_executable(axion_policy_trace examples/axion_policy_trace.cpp)
 target_link_libraries(axion_policy_trace PRIVATE t81_cli_driver t81_vm)
 
+add_executable(axion_heap_compaction_trace_test tests/cpp/axion_heap_compaction_trace_test.cpp)
+target_link_libraries(axion_heap_compaction_trace_test PRIVATE t81_cli_driver t81_tisc t81_vm)
+
 add_executable(axion_policy_runner examples/axion_policy_runner.cpp)
 target_link_libraries(axion_policy_runner PRIVATE t81_cli_driver t81_vm)
 
@@ -226,6 +229,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_vm_bounds_test tests/cpp/vm_bounds_test.cpp)
   target_link_libraries(t81_vm_bounds_test PRIVATE t81_core)
 
+  add_executable(vm_bounds_trace_test tests/cpp/vm_bounds_trace_test.cpp)
+  target_link_libraries(vm_bounds_trace_test PRIVATE t81_core)
+
   add_executable(t81_canonfs_driver_test tests/cpp/canonfs_driver_test.cpp)
   target_link_libraries(t81_canonfs_driver_test PRIVATE t81_core)
 
@@ -334,11 +340,14 @@ if(T81_BUILD_TESTS)
   add_executable(axion_enum_guard_test tests/cpp/axion_enum_guard_test.cpp)
   target_link_libraries(axion_enum_guard_test PRIVATE t81_cli_driver t81_tisc t81_vm)
 
-  add_executable(axion_policy_match_guard_test tests/cpp/axion_policy_match_guard_test.cpp)
-  target_link_libraries(axion_policy_match_guard_test PRIVATE t81_cli_driver t81_tisc t81_vm)
+add_executable(axion_policy_match_guard_test tests/cpp/axion_policy_match_guard_test.cpp)
+target_link_libraries(axion_policy_match_guard_test PRIVATE t81_cli_driver t81_tisc t81_vm)
 
-  add_executable(axion_policy_segment_event_test tests/cpp/axion_policy_segment_event_test.cpp)
-  target_link_libraries(axion_policy_segment_event_test PRIVATE t81_tisc t81_vm)
+add_executable(axion_policy_gc_trace_test tests/cpp/axion_policy_gc_trace_test.cpp)
+target_link_libraries(axion_policy_gc_trace_test PRIVATE t81_cli_driver t81_tisc t81_vm)
+
+add_executable(axion_policy_segment_event_test tests/cpp/axion_policy_segment_event_test.cpp)
+target_link_libraries(axion_policy_segment_event_test PRIVATE t81_tisc t81_vm)
 
   add_executable(axion_instruction_counter_test tests/cpp/axion_instruction_counter_test.cpp)
   target_link_libraries(axion_instruction_counter_test PRIVATE t81_core t81_vm)

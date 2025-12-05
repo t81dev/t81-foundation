@@ -58,6 +58,28 @@ Some policies need to assert the presence of specific Axion events beyond guards
     (reason "interval stack_frames=")))
 ```
 
+After the GC trace strings landed (see `docs/guides/axion-trace.md` §2), you can also assert the heap compaction and relocation entries before allowing subsequent heap/loop actions:
+
+```
+(policy
+  (tier 1)
+  (require-axion-event
+    (reason "heap compaction heap_frames="))
+  (require-axion-event
+    (reason "heap relocation from=")))
+```
+
+Both predicates look for the canonical `verdict.reason` that `scripts/capture-axion-trace.sh` archives in `build/artifacts/axion_heap_compaction_trace.log` and `build/artifacts/axion_policy_runner.log`. Auditors can replay the bytes by running `./scripts/capture-axion-trace.sh` (it prints each log and keeps the `heap compaction` / `heap relocation` lines a CI artifact), or by concatenating the Axion log from `t81 repl` via:
+
+```
+$ t81 repl
+t81> :trace
+... reason="heap compaction heap_frames=0 heap_ptr=267"
+... reason="heap relocation from=267 to=512 size=32"
+```
+
+Use that snippet to cross-check your policy strings against RFC-0013 without reading source code—`require-axion-event` simply looks for the substring you recorded.
+
 This clause performs a substring match on each `AxionEvent.verdict.reason`; it lets policies verify GC traces, meta slot writes, or any other canonical string recorded by the runtime. Because GC cycles log `interval stack_frames=...` before mutating memory, this predicate guarantees those transitions exist before privileged opcodes proceed.
 
 ## 3. Embedding policies in builds

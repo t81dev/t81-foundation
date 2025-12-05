@@ -33,10 +33,10 @@ on these strings even as the runtime evolves.
 
 1. The HanoiVM MUST emit `AxionEvent` entries for every stack, heap, tensor, or
    meta slot transition before executing the related opcode. Each event's
-   `verdict.reason` MUST include:
+    `verdict.reason` MUST include:
 
    - a human-readable action (e.g., `stack frame allocated`, `tensor slot
-     allocated`, `meta slot axion event`, `stack frame freed`);
+     allocated`, `meta slot axion event segment=meta`, `stack frame freed`);
    - the canonical segment name (`stack`, `heap`, `tensor`, `meta`) and the
      segment address logged as `addr=<value>`;
    - the size when applicable (`size=<value>`).
@@ -54,7 +54,7 @@ on these strings even as the runtime evolves.
 
 3. Meta slot events MUST advance the meta pointer before every Axion event so
    Axion can reconstruct deterministic metadata writes for audits. The
-   `verdict.reason` for these entries includes `meta slot axion event addr=<value>`.
+   `verdict.reason` for these entries includes `meta slot axion event segment=meta addr=<value>`.
 
 4. The Axion CLI trace (`:trace`, `:trill`) and `vm::AxionEvent` log MUST retain
    the above strings verbatim so downstream policies or documentation can replay

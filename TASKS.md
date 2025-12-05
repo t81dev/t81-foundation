@@ -66,8 +66,9 @@ ______________________________________________________________________
     - **[S] Task:** Add more unit tests for existing data types (`T81Float`, `Tensor`).
     - **[S] Task:** Improve Doxygen comments on public headers in `/include/t81/`.
     - **[M] Task:** Update the `docs/tensor-guide.md` to reflect the current C++ `Tensor` API.
-    - **[S] Task:** Publish the `axion_policy_runner` trace output in release docs and CI artifacts to give auditors a reachable example of the required `verdict.reason` strings.
-    - **[S] Task:** Publish the `axion_policy_runner` trace output in release docs and CI artifacts to give auditors a reachable example of the required `verdict.reason` strings.
+- **[S] Task:** Publish the `axion_policy_runner` trace output in release docs and CI artifacts to give auditors a reachable example of the required `verdict.reason` strings.
+- **[S] Task:** Publish the `axion_policy_runner` trace output in release docs and CI artifacts to give auditors a reachable example of the required `verdict.reason` strings.
+- **[M] Task:** Document and implement CanonFS policy hooks that intercept `AXSET`/`AXREAD` calls, emit the canonical meta/trace strings for each write, and expose those strings to policy predicates like `(require-axion-event (reason "meta slot axion event segment=meta"))` so auditors can tie CanonFS persistence to Axion enforcement.
 ______________________________________________________________________
 
 ### [P2] Axion Kernel & Documentation

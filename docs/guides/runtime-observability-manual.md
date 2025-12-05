@@ -19,7 +19,7 @@ Each stack, heap, tensor, and meta transition emits a deterministic string (RFC-
 | Heap alloc | `heap block allocated heap addr=512 size=64` |
 | Heap free | `heap block freed heap addr=512 size=64` |
 | Tensor slot | `tensor slot allocated tensor addr=3` |
-| Meta slot | `meta slot axion event addr=1283` |
+| Meta slot | `meta slot axion event segment=meta addr=1283` |
 | AxRead guard | `AxRead guard segment=stack addr=5` |
 | AxSet guard | `AxSet guard segment=heap addr=42` |
 | Bounds fault | `bounds fault segment=stack addr=999 action=stack frame allocate` |

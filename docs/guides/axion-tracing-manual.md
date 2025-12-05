@@ -22,7 +22,7 @@ Segment events include the segment name, address, and action:
 stack frame allocated stack addr=243 size=16
 heap block allocated heap addr=512 size=32
 tensor slot allocated tensor addr=3
-meta slot axion event addr=1283
+meta slot axion event segment=meta addr=1283
 AxRead guard segment=stack addr=5
 AxSet guard segment=heap addr=42
 bounds fault segment=stack addr=999 action=stack frame allocate

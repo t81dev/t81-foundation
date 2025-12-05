@@ -1379,7 +1379,8 @@ class Interpreter : public IVirtualMachine {
     meta_event.value = static_cast<std::int64_t>(state_.meta_ptr);
     meta_event.verdict.kind = t81::axion::VerdictKind::Allow;
     std::ostringstream reason;
-    reason << "meta slot " << label << " addr=" << state_.meta_ptr;
+    reason << "meta slot " << label << " segment=" << to_string(MemorySegmentKind::Meta)
+           << " addr=" << state_.meta_ptr;
     meta_event.verdict.reason = reason.str();
     push_axion_event(meta_event);
     ++state_.meta_ptr;
@@ -1415,7 +1416,42 @@ class Interpreter : public IVirtualMachine {
     verdict.reason = os.str();
     record_axion_event(t81::tisc::Opcode::Trap,
                        static_cast<std::int32_t>(state_.gc_cycles),
-                       static_cast<std::int64_t>(state_.gc_cycles), verdict);
+       static_cast<std::int64_t>(state_.gc_cycles), verdict);
+    log_heap_compaction(state_.heap_ptr, state_.heap_frames.size());
+    log_heap_relocation(state_.heap_ptr, state_.layout.heap.start,
+                        state_.heap_frames.size());
+    compact_heap(state_.layout.heap.start);
+  }
+
+  void log_heap_compaction(std::size_t heap_ptr, std::size_t heap_frames) {
+    t81::axion::Verdict verdict;
+    verdict.kind = t81::axion::VerdictKind::Allow;
+    std::ostringstream reason;
+    reason << "heap compaction heap_frames=" << heap_frames
+           << " heap_ptr=" << heap_ptr;
+    verdict.reason = reason.str();
+    record_axion_event(t81::tisc::Opcode::Trap,
+                       static_cast<std::int32_t>(MemorySegmentKind::Heap),
+                       static_cast<std::int64_t>(heap_ptr), verdict);
+  }
+
+  void log_heap_relocation(std::size_t from, std::size_t to, std::size_t size) {
+    t81::axion::Verdict verdict;
+    verdict.kind = t81::axion::VerdictKind::Allow;
+    std::ostringstream reason;
+    reason << "heap relocation from=" << from << " to=" << to << " size=" << size;
+    verdict.reason = reason.str();
+    record_axion_event(t81::tisc::Opcode::Trap,
+                       static_cast<std::int32_t>(MemorySegmentKind::Heap),
+                       static_cast<std::int64_t>(to), verdict);
+  }
+
+  void compact_heap(std::size_t new_ptr) {
+    for (auto& frame : state_.heap_frames) {
+      frame.first = static_cast<std::int64_t>(new_ptr);
+    }
+    state_.heap_frames.clear();
+    state_.heap_ptr = new_ptr;
   }
 
   State state_{};
