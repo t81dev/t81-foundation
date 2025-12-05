@@ -11,7 +11,8 @@ Each release (CI run, patch release, or proof submission) should publish:
    - `policy/guards.axion` (or your custom policy) stored alongside the release so policy tests can be rerun.
 2. **Axion logs**
    - Run `./scripts/capture-axion-trace.sh` (or `build/axion_policy_runner` directly) to produce `build/artifacts/axion_policy_runner.log`.
-   - Archive the log output referencing canonical strings like `stack frame allocated`, `AxRead guard segment=stack addr=5`, `enum=Option variant=Some match=pass`.
+   - Ensure `canonfs_axion_trace_test` executes inside the script so `build/artifacts/canonfs_axion_trace.log` captures the persistent meta slot strings before persisted writes; include that file with other Axion logs in the release bundle.
+   - Archive the logs referencing canonical strings like `stack frame allocated`, `AxRead guard segment=stack addr=5`, `enum=Option variant=Some match=pass`, and `meta slot axion event segment=meta … action=Write/Read`.
 3. **CI test snippets**
    - Capture the `ctest --test-dir build -R axion_segment_trace_test --output-on-failure` block (includes `bounds fault ...` strings).
    - Include the `axion_policy_match_guard_test`/`axion_policy_segment_event_test` pass logs so reviewers know the guard/segment requirements were satisfied.
@@ -31,6 +32,7 @@ When publishing a release, include:
 
 ```
 Axion policy trace log: build/artifacts/axion_policy_runner.log
+CanonFS axion trace log: build/artifacts/canonfs_axion_trace.log
 Segment trace CI snippet: [ctest output block]
 Guard trace CLI transcript: [CLI log file]
 ```
