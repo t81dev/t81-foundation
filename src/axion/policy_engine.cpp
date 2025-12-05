@@ -59,6 +59,13 @@ Verdict PolicyEngine::evaluate(const SyscallContext& ctx) {
         return Verdict{VerdictKind::Deny, reason.str()};
       }
     }
+    for (const auto& req : policy_->axion_event_requirements) {
+      if (!axion_event_satisfied(ctx, req)) {
+        std::ostringstream reason;
+        reason << "Missing Axion event reason containing \"" << req.reason << "\"";
+        return Verdict{VerdictKind::Deny, reason.str()};
+      }
+    }
   }
   return Verdict{VerdictKind::Allow, "Axion policy engine (loop hints satisfied)"};
 }
@@ -113,6 +120,16 @@ bool PolicyEngine::segment_event_satisfied(const SyscallContext& ctx,
     if (!segment_ok) continue;
     if (!addr_token.empty() && entry.find(addr_token) == std::string_view::npos) continue;
     return true;
+  }
+  return false;
+}
+
+bool PolicyEngine::axion_event_satisfied(const SyscallContext& ctx,
+                                         const Policy::AxionEventRequirement& req) const {
+  for (const auto& entry : ctx.trace_reasons) {
+    if (entry.find(req.reason) != std::string_view::npos) {
+      return true;
+    }
   }
   return false;
 }

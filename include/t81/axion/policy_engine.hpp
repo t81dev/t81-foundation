@@ -28,6 +28,8 @@ class PolicyEngine : public Engine {
                              const Policy::MatchGuardRequirement& req) const;
   bool segment_event_satisfied(const SyscallContext& ctx,
                                const Policy::SegmentEventRequirement& req) const;
+  bool axion_event_satisfied(const SyscallContext& ctx,
+                             const Policy::AxionEventRequirement& req) const;
 
   std::optional<Policy> policy_;
   std::vector<LoopRequirement> loop_requirements_;

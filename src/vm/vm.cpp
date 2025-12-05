@@ -150,10 +150,13 @@ class Interpreter : public IVirtualMachine {
     auto mem_ok = [this](int addr, bool code = false) {
       if (addr < 0) return false;
       std::size_t a = static_cast<std::size_t>(addr);
+      const auto& layout = state_.layout;
       if (code) {
-        return state_.layout.code.contains(a);
+        return layout.code.contains(a);
       }
-      return a < state_.memory.size();
+      if (a >= state_.memory.size()) return false;
+      return layout.stack.contains(a) || layout.heap.contains(a) ||
+             layout.tensor.contains(a) || layout.meta.contains(a);
     };
     auto log_trace = [this, current_pc](t81::tisc::Opcode op, Trap trap = Trap::None) {
       TraceEntry t{current_pc, op, std::nullopt};

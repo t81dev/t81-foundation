@@ -62,6 +62,11 @@ Run `t81 repl` and type `:trace` after executing guard-heavy code. The REPL dump
 
 Use `:trace chart` to visualize segment time ordering and `:rules` to inspect loaded policy requirements.
 
+Axion policies can now assert any canonical tracing string via
+`(require-axion-event (reason "..."))`. For example, requiring
+`reason "interval stack_frames="` guarantees that a GC cycle trace exists
+before privileged opcodes execute.
+
 ## 4. Trace regressions and helpers
 
 - `ctest --test-dir build -R axion_segment_trace_test --output-on-failure` prints canonical segment/guard strings and includes them in CI logs.

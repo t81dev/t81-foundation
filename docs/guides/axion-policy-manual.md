@@ -47,6 +47,19 @@ Use the shipped `policy/guards.axion` to begin. Its contents mirror the regressi
 
 It demands the guard string `enum=Option variant=Some match=pass guard=pass payload=i32` and the segment strings recorded by RFC-0013 (`stack frame allocated` and `AxRead guard`). Embed this policy via `-P policy/guards.axion` during `t81 compile` or run `axion_policy_runner` directly; the policy engine will automatically reject the program if the strings are missing.
 
+### 2.1 `require-axion-event` for GC/trace verification
+
+Some policies need to assert the presence of specific Axion events beyond guards and segments—for example, that a GC cycle occurs with the canonical `interval stack_frames=...` trace string. Use:
+
+```
+(policy
+  (tier 1)
+  (require-axion-event
+    (reason "interval stack_frames=")))
+```
+
+This clause performs a substring match on each `AxionEvent.verdict.reason`; it lets policies verify GC traces, meta slot writes, or any other canonical string recorded by the runtime. Because GC cycles log `interval stack_frames=...` before mutating memory, this predicate guarantees those transitions exist before privileged opcodes proceed.
+
 ## 3. Embedding policies in builds
 
 ### 3.1 `t81 compile`

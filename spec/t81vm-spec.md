@@ -307,7 +307,21 @@ Memory writes that would violate canonicalization MUST be intercepted and handle
 
 ______________________________________________________________________
 
-### 4.7 Serialization and Snapshots
+### 4.7 Deterministic Segment Transitions & Trace Invariants
+
+Axion policies require precise visibility into every segment transition. The VM MUST uphold:
+
+1. **Strict segment containment** — every access must resolve to exactly one segment; `mem_ok(addr)` returns `true` only when the address lies within `layout.stack`, `layout.heap`, `layout.tensor`, or `layout.meta`. Addresses outside these bounds always trigger deterministic bounds faults with canonical `verdict.reason` strings.
+2. **Canonical Axion reasons** — stack/heap/tensor allocation, metadata writes, guard instrumentation, and faults must preserve the strings defined in RFC-0013/RFC-0009 (`stack frame allocated stack addr=... size=...`, `heap block allocated heap addr=...`, `tensor slot allocated tensor addr=...`, `AxRead guard segment=stack addr=...`, `bounds fault segment=heap ...`, `meta slot axion event addr=...`, etc.). Changing these routines without retaining the text breaks policy enforcement.
+3. **GC visibility** — GC cycles execute at deterministic intervals and log their reason before mutating segments (“GC cycle reason=interval”, “GC cycle reason=force”). GC must not reorder segment writes relative to other Axion events so the recorded trace stays reproducible.
+4. **Stack/heap metadata tracking** — `stack_frames` and `heap_frames` track active allocations; mismatched frees log a deterministic `bounds fault` before trapping.
+5. **Tensor/meta isolation** — tensor handles remain within `layout.tensor`, and `meta_ptr` always advances before Axion events so metadata writes are sequential.
+
+Maintaining these invariants ensures the deterministic segment trace described in `docs/guides/axion-trace.md` and RFC-0013, letting auditors replay the exact `verdict.reason` strings without inspecting the VM implementation.
+
+______________________________________________________________________
+
+### 4.8 Serialization and Snapshots
 
 T81VM MAY support:
 
@@ -327,7 +341,7 @@ Requirements:
 
 ______________________________________________________________________
 
-### 4.8 Literal Pools and Handle Semantics
+### 4.9 Literal Pools and Handle Semantics
 
 T81VM programs include **float**, **fraction**, and **symbol** literal pools
 alongside CODE. Loading a program MUST:

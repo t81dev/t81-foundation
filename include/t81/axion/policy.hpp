@@ -33,12 +33,16 @@ struct Policy {
     std::string action;
     std::optional<int64_t> addr;
   };
+  struct AxionEventRequirement {
+    std::string reason;
+  };
 
   int tier{1};
   std::optional<int64_t> max_stack;
   std::vector<LoopHint> loops;
   std::vector<MatchGuardRequirement> match_guards;
   std::vector<SegmentEventRequirement> segment_requirements;
+  std::vector<AxionEventRequirement> axion_event_requirements;
 };
 
 namespace detail {
@@ -325,6 +329,42 @@ inline t81::expected<Policy, std::string> parse_policy(std::string_view text) {
         return make_error("segment event requires segment and action");
       }
       policy.segment_requirements.push_back(std::move(req));
+      continue;
+    }
+    if (key.text == "require-axion-event") {
+      Policy::AxionEventRequirement req;
+      while (true) {
+        auto field_open = lex.next();
+        if (field_open.kind == detail::PolicyToken::Kind::RParen) break;
+        if (field_open.kind != detail::PolicyToken::Kind::LParen) {
+          return make_error("expected '(' before axion event field");
+        }
+        auto field = lex.next();
+        if (field.kind != detail::PolicyToken::Kind::Symbol) {
+          return make_error("expected axion event field symbol");
+        }
+        auto val = lex.next();
+        if (val.kind == detail::PolicyToken::Kind::End) {
+          return make_error("unterminated axion event clause");
+        }
+        if (field.text == "reason") {
+          if (val.kind != detail::PolicyToken::Kind::String &&
+              val.kind != detail::PolicyToken::Kind::Symbol) {
+            return make_error("axion event reason requires symbol or string");
+          }
+          req.reason = val.text;
+        } else {
+          return make_error("unknown axion event field");
+        }
+        auto field_close = lex.next();
+        if (field_close.kind != detail::PolicyToken::Kind::RParen) {
+          return make_error("expected ')' after axion event field");
+        }
+      }
+      if (req.reason.empty()) {
+        return make_error("axion event requires reason");
+      }
+      policy.axion_event_requirements.push_back(std::move(req));
       continue;
     }
     // Unknown clause -> skip forms deterministically.

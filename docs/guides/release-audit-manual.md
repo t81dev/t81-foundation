@@ -58,5 +58,6 @@ Reference the RFCs (RFC-0009, RFC-0013, RFC-0019) and manuals in the release not
 | `t81 compile --verbose` transcript | Guard metadata and match payload strings | RFC-0019 |
 | `State::axion_log` from REPL `:trace` | Runtime trace accessible from CLI | docs/guides/runtime-observability-manual.md |
 | `policy/guards.axion` | Source policy showing requirements | docs/guides/axion-policy-manual.md |
+| `axion_policy_gc_trace_test` | Validates GC trace string `interval stack_frames=...` via `(require-axion-event ...)` | RFC-0009, RFC-0013 |
 
 Include this matrix in release artifacts or append it to release notes to help auditors cross-check each entry quickly.
