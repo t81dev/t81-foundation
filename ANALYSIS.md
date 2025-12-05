@@ -1,6 +1,6 @@
 # Analysis: Implementation vs. Specification
 
-**Last Updated:** November 28, 2025
+**Last Updated:** December 5, 2025
 
 This document provides a technical analysis of the C++ implementation's conformance to the formal specifications in `/spec`. It identifies where the implementation is complete, where it is partial, and where it deviates.
 
@@ -12,10 +12,10 @@ ______________________________________________________________________
 - **Status:** `Partial`
 - **Analysis:**
   - **`T81Int<N>`:** **Complete.** The fixed-size ternary integer implementation is robust, well-tested, and fully conforms to the spec's requirements for arithmetic, comparison, and overflow behavior.
-  - **`T81Float`:** **Partial.** The core data structure and special values (`inf`, `nae`) are implemented. However, key arithmetic operations like multiplication and division are still missing.
-  - **`Fraction`:** **Complete.** The rational number type correctly implements canonical reduction and all specified arithmetic operations.
-  - **`T81BigInt`:** **Experimental / Stub.** The class exists but is a simple wrapper around `int64_t`. It does not provide the arbitrary-precision arithmetic required by the specification and is not suitable for use beyond basic cases.
-  - **`Tensor`:** **Partial.** The basic tensor storage, shape, and a subset of operations (transpose, matmul, reduce, broadcast) are implemented and tested. However, it lacks many advanced features defined in the spec, such as complex broadcasting rules and a full suite of elementwise operations.
+  - **`T81Float`:** **Complete (double-backed with NaE/∞ handling).** The implementation now exposes the full arithmetic surface (`+`, `-`, `*`, `/`, `fma`) with NaE/∞ detection and side-channel-free fallbacks; conversions to/from `double` (via `from_double`/`to_double`) maintain balanced ternary semantics and enable the high-level helpers (`sin`, `cos`, `sqrt`) required by the spec's geometry/time layers.
+  - **`Fraction`:** **Complete.** The rational number type correctly implements canonical reduction and all specified arithmetic operations, and it now consistently relies on the `T81BigInt` façade for numerator/denominator arithmetic.
+  - **`T81BigInt`:** **Experimental / Stub.** The public API mirrors the arbitrary-precision spec, but the current backend only supports a single `int64_t` limb and throws when multi-limb state would be required. It is safe for small workloads but not for large integers yet.
+  - **`Tensor`:** **Partial.** Tensors now support elementwise `+`, `-`, `*`, `/`, reshaping, and span/linear indexing, and the canonical type aliases (`Vec81`, `Mat81x81`, etc.) are defined, but broadcasting remains a placeholder and helper functions like `transpose` simply return the input rather than reshuffling data, so many spec-defined tensor transformations are still pending.
 
 ______________________________________________________________________
 
@@ -24,11 +24,11 @@ ______________________________________________________________________
 - **Specification:** [`spec/tisc-spec.md`](../spec/tisc-spec.md), [`spec/t81vm-spec.md`](../spec/t81vm-spec.md)
 - **Status:** `Partial`
 - **Analysis:**
-  - **Instruction Set:** **Partial.** A large subset of the TISC opcodes are defined in `opcodes.hpp` and implemented in the VM. However, instructions related to advanced memory models, exceptions, and the Axion kernel interface are not yet implemented.
+  - **Instruction Set:** **Partial.** A large subset of the TISC opcodes are defined in `opcodes.hpp` and executed by the interpreter, but opcode families tied to the Axion kernel interface and extended memory primitives still await implementation.
   - **Binary Encoding:** **Complete.** The `BinaryEmitter` correctly encodes the implemented subset of TISC IR into the specified flat binary format, including the two-pass label resolution.
-  - **VM Execution Loop:** **Partial.** The VM has a stable interpreter-based execution loop that can correctly execute arithmetic, logic, and basic control flow instructions.
-  - **Memory Model:** **Experimental / Stub.** The VM's memory model is currently a simple linear address space. The full stack, heap, and memory protection mechanisms defined in the spec are not implemented.
-  - **Known Deviation:** The current VM implementation does not yet throw spec-compliant exceptions for faults like division by zero, instead relying on host-level exceptions.
+  - **VM Execution Loop:** **Partial.** The interpreter (`src/vm/vm.cpp`) now wires each instruction through `eval_axion_call`, injecting Axion policy evaluation before the dispatch, and the runtime pushes loop/match metadata into `state_.axion_log` so Axion traces can replay guards; traps for denied policies surface as `Trap::SecurityFault`.
+  - **Memory Model:** **Partial.** The runtime now derives a `Layout` with dedicated code/stack/heap/tensor/meta regions and `mem_ok` guards, so the interpreter can reject out-of-bounds accesses; however the allocator is still a flat linear space with no segment protection or privilege separation beyond the simple range checks.
+  - **Known Deviation:** Faults like division-by-zero or Axion-denied instructions currently map to generic `Trap` values / host exceptions rather than the spec's richer Axion fault taxonomy.
 
 ______________________________________________________________________
 
@@ -45,6 +45,6 @@ ______________________________________________________________________
 
 ## 4. Supporting Systems
 
-- **CanonFS (`t81_core`):** **Experimental / Stub.** The API and an in-memory driver exist, but the implementation is a placeholder. The core concepts of content-addressing and cryptographic hashing are not implemented.
-- **Axion Kernel (`t81_core`):** **Experimental / Stub.** The API is defined, but the implementation is a stub that permits all operations. It does not perform any of the safety monitoring, resource management, or deterministic enforcement required by the spec.
-- **Tooling (`t81` CLI):** **Partial.** The `t81` command-line tool exists and can drive the compilation pipeline, but it lacks many planned features for inspection, debugging, and VM interaction.
+- **CanonFS (`t81_core`):** **Experimental / Stub.** The `canonfs::Driver` API supports writing/reading objects and publishing capabilities, and `make_in_memory_driver` plus the Hanoi in-memory kernel use it, but the driver never performs canonical hashing, persistence, or parity verification, and snapshot hashes are reused rather than derived from actual contents.
+- **Axion Kernel (`t81_core`):** **Experimental / Stub.** `include/t81/axion/api.hpp` exposes a deterministic stub context with telemetry, and `PolicyEngine`/`Engine` hooks drive the interpreter, yet the kernel still allows every request (or only performs simple loop/match guard checks) instead of enforcing the full Axion safety model.
+- **Tooling (`t81` CLI):** **Partial.** The `t81` command-line tool still drives compile/check/run/repl, but it now conserves Axion metadata from the frontend (`axion_policy_text`, `match_metadata_text`) and pushes it into the VM so trace output carries loop bounds and guard hints even though more advanced inspection/debugging commands are missing.
