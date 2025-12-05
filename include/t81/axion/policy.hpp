@@ -21,14 +21,29 @@ struct Policy {
     std::optional<int64_t> bound_value;
   };
 
+  struct MatchGuardRequirement {
+    std::string enum_name;
+    std::string variant_name;
+    std::optional<std::string> payload;
+    std::string result{"pass"};
+  };
+
+  struct SegmentEventRequirement {
+    std::string segment;
+    std::string action;
+    std::optional<int64_t> addr;
+  };
+
   int tier{1};
   std::optional<int64_t> max_stack;
   std::vector<LoopHint> loops;
+  std::vector<MatchGuardRequirement> match_guards;
+  std::vector<SegmentEventRequirement> segment_requirements;
 };
 
 namespace detail {
 struct PolicyToken {
-  enum class Kind { LParen, RParen, Integer, Symbol, End } kind{Kind::End};
+  enum class Kind { LParen, RParen, Integer, Symbol, String, End } kind{Kind::End};
   std::string text;
   int64_t value{0};
 };
@@ -52,6 +67,18 @@ class PolicyLexer {
       tok.kind = PolicyToken::Kind::Integer;
       tok.text = std::string(src_.substr(start, pos_ - start));
       tok.value = std::stoll(tok.text);
+      return tok;
+    }
+    if (c == '"') {
+      ++pos_;
+      std::size_t start = pos_;
+      while (pos_ < src_.size() && src_[pos_] != '"') {
+        ++pos_;
+      }
+      PolicyToken tok;
+      tok.kind = PolicyToken::Kind::String;
+      tok.text = std::string(src_.substr(start, pos_ - start));
+      if (pos_ < src_.size() && src_[pos_] == '"') ++pos_;
       return tok;
     }
     if (std::isalpha(static_cast<unsigned char>(c)) || c == '-' || c == '_') {
@@ -197,6 +224,107 @@ inline t81::expected<Policy, std::string> parse_policy(std::string_view text) {
         }
       }
       policy.loops.push_back(hint);
+      continue;
+    }
+    if (key.text == "require-match-guard") {
+      Policy::MatchGuardRequirement req;
+      while (true) {
+        auto field_open = lex.next();
+        if (field_open.kind == detail::PolicyToken::Kind::RParen) break;
+        if (field_open.kind != detail::PolicyToken::Kind::LParen) {
+          return make_error("expected '(' before match guard field");
+        }
+        auto field = lex.next();
+        if (field.kind != detail::PolicyToken::Kind::Symbol) {
+          return make_error("expected match guard field symbol");
+        }
+        auto val = lex.next();
+        if (val.kind == detail::PolicyToken::Kind::End) {
+          return make_error("unterminated match guard clause");
+        }
+        if (field.text == "enum") {
+          if (val.kind != detail::PolicyToken::Kind::Symbol &&
+              val.kind != detail::PolicyToken::Kind::String) {
+            return make_error("match guard enum requires symbol or string");
+          }
+          req.enum_name = val.text;
+        } else if (field.text == "variant") {
+          if (val.kind != detail::PolicyToken::Kind::Symbol &&
+              val.kind != detail::PolicyToken::Kind::String) {
+            return make_error("match guard variant requires symbol or string");
+          }
+          req.variant_name = val.text;
+        } else if (field.text == "payload") {
+          if (val.kind != detail::PolicyToken::Kind::Symbol &&
+              val.kind != detail::PolicyToken::Kind::String) {
+            return make_error("match guard payload requires symbol or string");
+          }
+          req.payload = val.text;
+        } else if (field.text == "result") {
+          if (val.kind != detail::PolicyToken::Kind::Symbol &&
+              val.kind != detail::PolicyToken::Kind::String) {
+            return make_error("match guard result requires symbol or string");
+          }
+          req.result = val.text;
+        } else {
+          return make_error("unknown match guard field");
+        }
+        auto field_close = lex.next();
+        if (field_close.kind != detail::PolicyToken::Kind::RParen) {
+          return make_error("expected ')' after match guard field");
+        }
+      }
+      if (req.enum_name.empty() || req.variant_name.empty()) {
+        return make_error("match guard requires enum and variant names");
+      }
+      policy.match_guards.push_back(std::move(req));
+      continue;
+    }
+    if (key.text == "require-segment-event") {
+      Policy::SegmentEventRequirement req;
+      while (true) {
+        auto field_open = lex.next();
+        if (field_open.kind == detail::PolicyToken::Kind::RParen) break;
+        if (field_open.kind != detail::PolicyToken::Kind::LParen) {
+          return make_error("expected '(' before segment field");
+        }
+        auto field = lex.next();
+        if (field.kind != detail::PolicyToken::Kind::Symbol) {
+          return make_error("expected segment field symbol");
+        }
+        auto val = lex.next();
+        if (val.kind == detail::PolicyToken::Kind::End) {
+          return make_error("unterminated segment clause");
+        }
+        if (field.text == "segment") {
+          if (val.kind != detail::PolicyToken::Kind::Symbol &&
+              val.kind != detail::PolicyToken::Kind::String) {
+            return make_error("segment requires symbol or string");
+          }
+          req.segment = val.text;
+        } else if (field.text == "action") {
+          if (val.kind != detail::PolicyToken::Kind::Symbol &&
+              val.kind != detail::PolicyToken::Kind::String) {
+            return make_error("action requires symbol or string");
+          }
+          req.action = val.text;
+        } else if (field.text == "addr") {
+          if (val.kind != detail::PolicyToken::Kind::Integer) {
+            return make_error("segment addr requires integer");
+          }
+          req.addr = val.value;
+        } else {
+          return make_error("unknown segment field");
+        }
+        auto field_close = lex.next();
+        if (field_close.kind != detail::PolicyToken::Kind::RParen) {
+          return make_error("expected ')' after segment field");
+        }
+      }
+      if (req.segment.empty() || req.action.empty()) {
+        return make_error("segment event requires segment and action");
+      }
+      policy.segment_requirements.push_back(std::move(req));
       continue;
     }
     // Unknown clause -> skip forms deterministically.

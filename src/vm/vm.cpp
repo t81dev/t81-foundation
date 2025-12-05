@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "t81/axion/engine.hpp"
+#include "t81/axion/policy_engine.hpp"
 #include "t81/enum_meta.hpp"
 #include "t81/vm/vm.hpp"
 
@@ -86,6 +87,7 @@ class Interpreter : public IVirtualMachine {
       auto policy = t81::axion::parse_policy(program_.axion_policy_text);
       if (policy.has_value()) {
         state_.policy = policy.value();
+        axion_engine_ = t81::axion::make_policy_engine(state_.policy);
         for (const auto& loop : state_.policy->loops) {
           AxionEvent event;
           event.opcode = t81::tisc::Opcode::Nop;
@@ -121,19 +123,26 @@ class Interpreter : public IVirtualMachine {
   }
 
   std::expected<void, Trap> step() override {
-    if (state_.halted || state_.pc >= program_.insns.size()) {
+    if (state_.halted) {
+      return {};
+    }
+    if (state_.pc >= program_.insns.size()) {
+      auto verdict = eval_axion_call("step", state_.pc, t81::tisc::Opcode::Halt);
+      if (verdict.kind == t81::axion::VerdictKind::Deny) {
+        return Trap::SecurityFault;
+      }
       state_.halted = true;
       return {};
     }
 
+    const std::size_t current_pc = state_.pc++;
+    const auto& insn = program_.insns[current_pc];
+
     // Evaluate Axion policy before every instruction.
-    auto verdict = eval_axion_call("step");
+    auto verdict = eval_axion_call("step", current_pc, insn.opcode);
     if (verdict.kind == t81::axion::VerdictKind::Deny) {
         return Trap::SecurityFault;
     }
-
-    const std::size_t current_pc = state_.pc++;
-    const auto& insn = program_.insns[current_pc];
 
     auto reg_ok = [this](int r) {
       return r >= 0 && static_cast<std::size_t>(r) < state_.registers.size();
@@ -785,7 +794,7 @@ class Interpreter : public IVirtualMachine {
         break;
       case t81::tisc::Opcode::AxRead: {
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
-        auto verdict = eval_axion_call("AXREAD");
+        auto verdict = eval_axion_call("AXREAD", current_pc, insn.opcode);
         std::size_t guard_addr = static_cast<std::size_t>(insn.b);
         auto guard_kind = segment_for_address(guard_addr);
         apply_segment_reason(verdict, "AxRead guard", guard_kind, guard_addr);
@@ -803,7 +812,7 @@ class Interpreter : public IVirtualMachine {
       case t81::tisc::Opcode::AxSet: {
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) { trap = Trap::IllegalInstruction; break; }
         auto value = state_.registers[insn.b];
-        auto verdict = eval_axion_call("AXSET");
+        auto verdict = eval_axion_call("AXSET", current_pc, insn.opcode);
         std::size_t guard_addr = 0;
         MemorySegmentKind guard_kind = MemorySegmentKind::Unknown;
         if (state_.registers[insn.a] >= 0) {
@@ -819,7 +828,7 @@ class Interpreter : public IVirtualMachine {
       }
       case t81::tisc::Opcode::AxVerify: {
         if (!reg_ok(insn.a)) { trap = Trap::IllegalInstruction; break; }
-        auto verdict = eval_axion_call("AXVERIFY");
+        auto verdict = eval_axion_call("AXVERIFY", current_pc, insn.opcode);
         if (verdict.kind == t81::axion::VerdictKind::Deny) {
           record_axion_event(insn.opcode, insn.b, 0, verdict);
           trap = Trap::SecurityFault;
@@ -1280,10 +1289,19 @@ class Interpreter : public IVirtualMachine {
     return handle;
   }
 
-  t81::axion::Verdict eval_axion_call(std::string_view syscall) {
+  t81::axion::Verdict eval_axion_call(std::string_view syscall,
+                                      std::size_t pc,
+                                      t81::tisc::Opcode opcode) {
     t81::axion::SyscallContext ctx;
     ctx.caller = "t81vm";
     ctx.syscall.assign(syscall);
+    ctx.pc = pc;
+    ctx.next_opcode = opcode;
+    ctx.policy = state_.policy ? &*state_.policy : nullptr;
+    ctx.trace_reasons.reserve(state_.axion_log.size());
+    for (const auto& entry : state_.axion_log) {
+      ctx.trace_reasons.push_back(entry.verdict.reason);
+    }
     return axion_engine_->evaluate(ctx);
   }
 

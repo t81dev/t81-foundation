@@ -34,6 +34,7 @@ add_library(t81_core STATIC
   src/hanoi/error.cpp
   src/hanoi/in_memory_kernel.cpp        # ← fixed path
   src/axion/engine.cpp
+  src/axion/policy_engine.cpp
   src/tools/weights.cpp
   src/tools/weights_t81w_emitter.cpp
   src/cog/promotion.cpp
@@ -333,6 +334,12 @@ if(T81_BUILD_TESTS)
   add_executable(axion_enum_guard_test tests/cpp/axion_enum_guard_test.cpp)
   target_link_libraries(axion_enum_guard_test PRIVATE t81_cli_driver t81_tisc t81_vm)
 
+  add_executable(axion_policy_match_guard_test tests/cpp/axion_policy_match_guard_test.cpp)
+  target_link_libraries(axion_policy_match_guard_test PRIVATE t81_cli_driver t81_tisc t81_vm)
+
+  add_executable(axion_policy_segment_event_test tests/cpp/axion_policy_segment_event_test.cpp)
+  target_link_libraries(axion_policy_segment_event_test PRIVATE t81_tisc t81_vm)
+
   add_executable(axion_instruction_counter_test tests/cpp/axion_instruction_counter_test.cpp)
   target_link_libraries(axion_instruction_counter_test PRIVATE t81_core t81_vm)
 
@@ -531,6 +538,8 @@ if(T81_BUILD_TESTS)
     t81_cli_pipeline_test
     t81_cli_option_result_test
     t81_cli_diagnostic_context_test
+    axion_policy_match_guard_test
+    axion_policy_segment_event_test
     axion_loop_metadata_test
     axion_match_metadata_test
     axion_enum_guard_test

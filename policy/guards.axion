@@ -1,0 +1,14 @@
+(policy
+  (tier 1)
+  (require-match-guard
+    (enum Option)
+    (variant Some)
+    (payload i32)
+    (result pass))
+  (require-segment-event
+    (segment stack)
+    (action "stack frame allocated"))
+  (require-segment-event
+    (segment stack)
+    (action "AxRead guard"))
+)

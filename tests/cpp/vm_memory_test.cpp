@@ -1,3 +1,4 @@
+#include "t81/tensor.hpp"
 #include "t81/tisc/program.hpp"
 #include "t81/tisc/opcodes.hpp"
 #include "t81/vm/vm.hpp"
@@ -170,7 +171,6 @@ int main() {
     {
         t81::tisc::Program program;
         program.insns = {heap_big, halt};
-        program.insns[0].opcode = inline? ??? not necessary
         auto vm = t81::vm::make_interpreter_vm();
         vm->load_program(program);
         auto result = vm->run_to_halt();
@@ -309,8 +309,17 @@ int main() {
         vec_add.b = 1;
         vec_add.c = 2;
 
+        t81::tisc::Insn corrupt_handle{};
+        corrupt_handle.opcode = t81::tisc::Opcode::LoadImm;
+        corrupt_handle.a = 2;
+        corrupt_handle.b = 42;
+        corrupt_handle.literal_kind = t81::tisc::LiteralKind::Int;
+
         t81::tisc::Program program;
-        program.insns = {load_tensor_a, load_tensor_b, vec_add, halt};
+        t81::T729Tensor dummy_tensor({1}, {0.0f});
+        program.tensor_pool.push_back(dummy_tensor);
+        program.tensor_pool.push_back(dummy_tensor);
+        program.insns = {load_tensor_a, load_tensor_b, corrupt_handle, vec_add, halt};
 
         auto vm = t81::vm::make_interpreter_vm();
         vm->load_program(program);

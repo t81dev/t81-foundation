@@ -158,6 +158,12 @@ Policies are encoded via the `(policy ...)` s-expression embedded in `tisc::Prog
 - loop hints (`require-loop-hint`);
 - segment traces (`require-segment-event`).
 
+Regression tests `axion_policy_match_guard_test` and
+`axion_policy_segment_event_test` exercise those requirements against the
+canonical `enum guard` and `stack frame allocated` strings, proving that the
+policy engine never allows a privileged opcode unless the deterministic
+trace strings already exist in `State::axion_log`.
+
 Because the policy lexer is deterministic and the verdict strings are canonical (per RFC-0013/RFC-0019), Axion's policy enforcement remains purely declarative: it denies unless the runtime has already emitted the expected strings.
 
 ## 1.10 CanonFS Observability
