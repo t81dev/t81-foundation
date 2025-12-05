@@ -213,8 +213,10 @@ Implementations MAY encode this as:
 Requirements:
 
 1. It MUST be possible to determine, for any address, which segment it belongs to (or if it is invalid).
-2. Out-of-segment accesses MUST cause a **Bounds Fault**, not wrap-around or undefined behavior.
+2. Out-of-segment accesses MUST cause a **Bounds Fault**, not wrap-around or undefined behavior. Each fault MUST emit the canonical Axion verdict string (`reason="bounds fault segment=<segment> addr=<value> action=<description>"`) before the trap so policy and compliance tooling can replay the precise failure. The documented actions include `memory load/store`, `stack frame allocate/free`, `heap block allocate/free`, and `tensor handle access`.
 3. Alignment rules for composite types (vectors, matrices, tensors) MUST follow the Data Types spec.
+
+Deterministic compliance tests (`ctest --test-dir build --output-on-failure`) must capture the Axion trace snippet referenced above so auditors can reproduce the same `bounds fault` strings without inspecting the runtime source.
 
 ______________________________________________________________________
 

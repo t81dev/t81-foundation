@@ -147,6 +147,23 @@ Axion is not technically part of T81VM, but all VM behavior MUST be visible and 
 
 Axion also receives a deterministic trace of every segment transition and guarded decision inside the HanoiVM as described in [RFC-0013](../spec/rfcs/RFC-0013-axion-segment-trace.md). Each `AxionEvent.verdict.reason` includes the segment name, address, and action (e.g., `stack frame allocated stack addr=243 size=16`, `tensor slot allocated tensor addr=5`, `meta slot axion event addr=1283`, `AxRead guard segment=stack addr=42`, `AxSet guard segment=heap addr=128`). These strings anchor Axion policies and audits to the runtime's deterministic layout without requiring additional instrumentation. Axion MUST reject programs whose required segment-trace strings are missing when the policy explicitly requests them.
 
+## 1.9 Axion API & Policy Enforcement
+
+The Axion Kernel exposes a constrained syscall surface (`AXREAD`, `AXSET`, `AXVERIFY`, `AXTRACE`, etc.) that every privileged opcode must call before performing non-deterministic or privileged actions. Each syscall supplies the opcode, the target addresses or handles, the calling snapshot, and any associated guard metadata (loop id, match metadata, enum/variant ids). The Axion Engine returns a deterministic `Verdict` (Allow/Deny) plus a canonical `reason` string. Denials immediately trigger deterministic `Axion Faults`; allows append the reason to `State::axion_log`.
+
+Policies are encoded via the `(policy ...)` s-expression embedded in `tisc::Program.axion_policy_text`. Axion parses these forms (see `include/t81/axion/policy.hpp`) and enforces:
+
+- tier ceilings (`tier`, `max-stack`);
+- guard coverage (`require-match-guard`);
+- loop hints (`require-loop-hint`);
+- segment traces (`require-segment-event`).
+
+Because the policy lexer is deterministic and the verdict strings are canonical (per RFC-0013/RFC-0019), Axion's policy enforcement remains purely declarative: it denies unless the runtime has already emitted the expected strings.
+
+## 1.10 CanonFS Observability
+
+Canonical File System (CanonFS) is the deterministic store where Axion writes loop/match policy hints, bounds-fault snippets, and trace exports. Each CanonFS write traverses `AXSET`, so Axion can validate shape/segment constraints and record `meta slot` events before persistence. The `axion_policy_runner` example (documented in `docs/guides/axion-trace.md`) mirrors this path and shows auditors how to capture the required `verdict.reason` strings without digging into VM sources. CanonFS therefore acts as the official audit trail for Axion policy enforcement.
+
 ______________________________________________________________________
 
 # 2. Subsystems

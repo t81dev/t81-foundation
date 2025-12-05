@@ -40,6 +40,34 @@ of `tensor slot allocated`, `meta slot`, `AxRead guard`, and `AxSet guard`
 entries. The `ctest` log becomes your CI artifact; treat the printed snippet as
 evidence that the deterministic strings exist in this build.
 
+Out-of-bounds accesses now record a `bounds fault` entry (`reason="bounds fault
+segment=<segment> addr=<value> action=…"`), whether the failure comes from a
+memory load/store or from stack/heap/tensor operations (e.g.,
+`action=stack frame allocate`, `action=heap block allocate`,
+`action=tensor handle access`). `tests/cpp/vm_memory_test.cpp` validates those
+strings and prints the log snippet for CI artifacts, so auditors can replay
+fault scenarios that exercise the HanoiVM memory semantics without inspecting
+the source.
+The standard `ctest --test-dir build --output-on-failure` run now surfaces that
+snippet so observability tooling can capture the `bounds fault ...` strings as
+part of the canonical CI artifact.
+
+## 6. Publishing the Axion policy trace
+
+CI pipelines should run `scripts/capture-axion-trace.sh` after building to
+ensure `build/axion_policy_runner.log` contains the canonical Axion trace that
+corresponds to the `require-segment-event`/bounds-fault strings. Archive that
+log alongside the `ctest` output so auditors can compare the recorded
+`AxionEvent.verdict.reason` entries (`stack frame allocated…`, `bounds fault
+segment=heap…`, `AxRead guard…`, etc.) without rerunning the example.
+
+```
+./scripts/capture-axion-trace.sh
+```
+
+Include the produced `build/artifacts/axion_policy_runner.log` as part of your
+CI artifacts or release notes whenever the Axion trace instrumentation changes.
+
 ## 3. CLI & REPL verification
 
 - Run `t81 repl` and type `:trace` after executing a guard-heavy snippet; the CLI

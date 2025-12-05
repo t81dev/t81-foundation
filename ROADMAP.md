@@ -10,10 +10,10 @@ The v1.0 release of the T81 Foundation will deliver a stable, documented, and pr
 
 ## 2. Current Status (Beta)
 
-The project is in a healthy beta state. The T81Lang compiler is now fully implemented, unit-tested, and emits Axion-friendly metadata for the newly landed match/loop guards, and the CLI tooling (`t81 compile`, `t81 run`, `t81 check`, `t81 repl`) exposes the deterministic guard trace described in the Axion specs.
+The project is in a healthy beta state. The T81Lang compiler is fully implemented, unit-tested, and emits Axion-friendly metadata for the match/loop guards, and the CLI tooling (`t81 compile`, `t81 run`, `t81 check`, `t81 repl`) exposes the deterministic guard trace described in the Axion specs. Axion’s segment trace strings are now surfaced in documentation (`docs/guides/axion-trace.md`, `docs/guides/cli-toolkit.md`) and via a new `axion_policy_runner` example so auditors can replay the RFC-0013/RFC-0009 verdict strings without peeking at VM internals.
 
-- **Strengths:** The compiler frontend now supports `loop`/`match`, Option/Result lowering, enum guard metadata, and CLI-level documentation for Axion logs. The full build + `ctest --test-dir build --output-on-failure` suite passes, so the entire P0 compiler path can be considered stable and shipped.
-- **Weaknesses:** Runtime components still need work—HanoiVM’s memory model, deterministic fault handling, Axion kernel, and CanonFS are the remaining gaps preventing a v1.0 release.
+- **Strengths:** The compiler frontend now supports `loop`/`match`, Option/Result lowering, enum guard metadata, Axion segment/guard instrumentation, and CLI docs/high-level examples. The full build + `ctest --test-dir build --output-on-failure` suite passes, so the entire P0 compiler path can be considered stable and shipped.
+- **Weaknesses:** Runtime components still need work—HanoiVM’s memory model, deterministic fault handling, the remaining Axion policy subsystems beyond logging, and CanonFS remain open before declaring v1.0 done.
 
 For a detailed breakdown, see the [**System Status Report**](docs/system-status.md) and [`ANALYSIS.md`](ANALYSIS.md).
 

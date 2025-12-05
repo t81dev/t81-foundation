@@ -49,7 +49,25 @@ ______________________________________________________________________
     - **[M] Task:** Improve VM fault handling. Ensure all illegal operations (e.g., division by zero, out-of-bounds memory access) result in deterministic, spec-compliant faults.
     - **[L] Task:** Add extensive "negative" tests for the VM that deliberately trigger faults and verify the correct behavior.
     - **[S] Task:** Surface match metadata hints in the Axion/trace log to confirm CLI workloads can replay guard coverage during execution.
+    - **[M] Task:** Document and verify the deterministic segment-trace strings (`stack frame allocated`, `tensor slot allocated`, `AxRead/AxSet guard …`) via `axion_policy_runner` and updated Axion trace guides so policy runners can replay RFC-0013/RFC-0009 expectations.
 
+______________________________________________________________________
+
+### [P2] Axion Kernel & Documentation
+
+**Goal:** Transform stubs into functional components and improve documentation.
+
+- **[EPIC] Implement the Axion Kernel:**
+    - **[M] Task:** Formalize the API between the HanoiVM and the Axion Kernel.
+    - **[L] Task:** Implement the first set of safety policies in the Axion Kernel (e.g., Recursion Depth Limiter, Instruction Counter).
+    - **[M] Task:** Integrate the specified Axion hooks (`AXREAD`, `AXSET`, etc.) into the VM's main dispatch loop.
+
+- **[EPIC] General Documentation & Good First Issues:**
+    - **[S] Task:** Add more unit tests for existing data types (`T81Float`, `Tensor`).
+    - **[S] Task:** Improve Doxygen comments on public headers in `/include/t81/`.
+    - **[M] Task:** Update the `docs/tensor-guide.md` to reflect the current C++ `Tensor` API.
+    - **[S] Task:** Publish the `axion_policy_runner` trace output in release docs and CI artifacts to give auditors a reachable example of the required `verdict.reason` strings.
+    - **[S] Task:** Publish the `axion_policy_runner` trace output in release docs and CI artifacts to give auditors a reachable example of the required `verdict.reason` strings.
 ______________________________________________________________________
 
 ### [P2] Axion Kernel & Documentation

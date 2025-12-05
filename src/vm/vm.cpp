@@ -463,7 +463,12 @@ class Interpreter : public IVirtualMachine {
         update_flags(state_.registers[insn.a]);
         break;
       case t81::tisc::Opcode::Load: {
-        if (!reg_ok(insn.a) || !mem_ok(insn.b)) { trap = Trap::InvalidMemory; break; }
+        if (!reg_ok(insn.a)) { trap = Trap::InvalidMemory; break; }
+        if (!mem_ok(insn.b)) {
+          log_bounds_fault(insn.opcode, insn.b, "memory load");
+          trap = Trap::InvalidMemory;
+          break;
+        }
         std::size_t addr = static_cast<std::size_t>(insn.b);
         state_.registers[insn.a] = state_.memory[addr];
         state_.register_tags[insn.a] = state_.memory_tags[addr];
@@ -484,7 +489,12 @@ class Interpreter : public IVirtualMachine {
         break;
       }
       case t81::tisc::Opcode::Store: {
-        if (!reg_ok(insn.b) || !mem_ok(insn.a)) { trap = Trap::InvalidMemory; break; }
+        if (!reg_ok(insn.b)) { trap = Trap::InvalidMemory; break; }
+        if (!mem_ok(insn.a)) {
+          log_bounds_fault(insn.opcode, insn.a, "memory store");
+          trap = Trap::InvalidMemory;
+          break;
+        }
         std::size_t addr = static_cast<std::size_t>(insn.a);
         state_.memory[addr] = state_.registers[insn.b];
         state_.memory_tags[addr] = state_.register_tags[insn.b];
@@ -626,9 +636,19 @@ class Interpreter : public IVirtualMachine {
         if (!stack.valid()) { trap = Trap::IllegalInstruction; break; }
         std::size_t size = static_cast<std::size_t>(insn.b);
         std::size_t available = state_.sp - stack.start;
-        if (size > available) { trap = Trap::BoundsFault; break; }
+        if (size > available) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack,
+                           static_cast<int>(state_.sp), "stack frame allocate");
+          trap = Trap::BoundsFault;
+          break;
+        }
         std::size_t new_sp = state_.sp - size;
-        if (new_sp < stack.start) { trap = Trap::BoundsFault; break; }
+        if (new_sp < stack.start) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack,
+                           static_cast<int>(new_sp), "stack frame allocate");
+          trap = Trap::BoundsFault;
+          break;
+        }
         std::int64_t addr = static_cast<std::int64_t>(new_sp);
         state_.stack_frames.emplace_back(addr, static_cast<std::int64_t>(size));
         state_.sp = new_sp;
@@ -644,12 +664,24 @@ class Interpreter : public IVirtualMachine {
         if (insn.b < 0) { trap = Trap::IllegalInstruction; break; }
         const auto& stack = state_.layout.stack;
         if (!stack.valid()) { trap = Trap::BoundsFault; break; }
-        if (state_.stack_frames.empty()) { trap = Trap::BoundsFault; break; }
+        if (state_.stack_frames.empty()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack,
+                           static_cast<int>(state_.sp), "stack frame free");
+          trap = Trap::BoundsFault;
+          break;
+        }
         std::size_t size = static_cast<std::size_t>(insn.b);
         std::int64_t ptr = state_.registers[insn.a];
-        if (!stack.contains(static_cast<std::size_t>(ptr))) { trap = Trap::IllegalInstruction; break; }
+        if (!stack.contains(static_cast<std::size_t>(ptr))) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack,
+                           static_cast<int>(ptr), "stack frame free");
+          trap = Trap::IllegalInstruction;
+          break;
+        }
         auto [expected_addr, expected_size] = state_.stack_frames.back();
         if (expected_addr != ptr || expected_size != static_cast<std::int64_t>(size)) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack,
+                           static_cast<int>(ptr), "stack frame free");
           trap = Trap::IllegalInstruction;
           break;
         }
@@ -666,9 +698,19 @@ class Interpreter : public IVirtualMachine {
         if (!heap.valid()) { trap = Trap::IllegalInstruction; break; }
         if (insn.b < 0) { trap = Trap::IllegalInstruction; break; }
         std::size_t size = static_cast<std::size_t>(insn.b);
-        if (size > heap.size()) { trap = Trap::BoundsFault; break; }
+        if (size > heap.size()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Heap,
+                           static_cast<int>(heap.limit), "heap block allocate");
+          trap = Trap::BoundsFault;
+          break;
+        }
         std::size_t addr = state_.heap_ptr;
-        if (addr < heap.start || addr + size > heap.limit) { trap = Trap::BoundsFault; break; }
+        if (addr < heap.start || addr + size > heap.limit) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Heap,
+                           static_cast<int>(addr), "heap block allocate");
+          trap = Trap::BoundsFault;
+          break;
+        }
         state_.heap_frames.emplace_back(static_cast<std::int64_t>(addr), static_cast<std::int64_t>(size));
         state_.heap_ptr = addr + size;
         set_reg(insn.a, static_cast<std::int64_t>(addr), ValueTag::Int);
@@ -682,15 +724,24 @@ class Interpreter : public IVirtualMachine {
         const auto& heap = state_.layout.heap;
         if (!heap.valid()) { trap = Trap::BoundsFault; break; }
         if (insn.b < 0) { trap = Trap::IllegalInstruction; break; }
-        if (state_.heap_frames.empty()) { trap = Trap::BoundsFault; break; }
+        if (state_.heap_frames.empty()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Heap,
+                           static_cast<int>(state_.heap_ptr), "heap block free");
+          trap = Trap::BoundsFault;
+          break;
+        }
         std::size_t size = static_cast<std::size_t>(insn.b);
         std::int64_t ptr = state_.registers[insn.a];
         if (!heap.contains(static_cast<std::size_t>(ptr))) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Heap,
+                           static_cast<int>(ptr), "heap block free");
           trap = Trap::IllegalInstruction;
           break;
         }
         auto [expected_addr, expected_size] = state_.heap_frames.back();
         if (expected_addr != ptr || expected_size != static_cast<std::int64_t>(size)) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Heap,
+                           static_cast<int>(ptr), "heap block free");
           trap = Trap::IllegalInstruction;
           break;
         }
@@ -896,7 +947,14 @@ class Interpreter : public IVirtualMachine {
         }
         auto tensor = tensor_ptr(state_.registers[insn.b]);
         auto expected = shape_ptr(state_.registers[insn.c]);
-        if (!tensor || !expected) { trap = Trap::IllegalInstruction; break; }
+        if (!tensor) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(state_.registers[insn.b]),
+                           "tensor handle access");
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        if (!expected) { trap = Trap::IllegalInstruction; break; }
         bool match = tensor->shape() == *expected;
         set_reg(insn.a, match ? 1 : 0, ValueTag::Int);
         update_flags(state_.registers[insn.a]);
@@ -1088,8 +1146,22 @@ class Interpreter : public IVirtualMachine {
       case t81::tisc::Opcode::TVecAdd: {
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
         auto ta = tensor_ptr(state_.registers[insn.b]);
+        if (!ta) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(state_.registers[insn.b]),
+                           "tensor handle access");
+          trap = Trap::IllegalInstruction;
+          break;
+        }
         auto tb = tensor_ptr(state_.registers[insn.c]);
-        if (!ta || !tb || ta->rank() != 1 || tb->rank() != 1 || ta->shape()[0] != tb->shape()[0]) {
+        if (!tb) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(state_.registers[insn.c]),
+                           "tensor handle access");
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        if (ta->rank() != 1 || tb->rank() != 1 || ta->shape()[0] != tb->shape()[0]) {
           trap = Trap::IllegalInstruction;
           break;
         }
@@ -1104,8 +1176,22 @@ class Interpreter : public IVirtualMachine {
       case t81::tisc::Opcode::TMatMul: {
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
         auto ta = tensor_ptr(state_.registers[insn.b]);
+        if (!ta) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(state_.registers[insn.b]),
+                           "tensor handle access");
+          trap = Trap::IllegalInstruction;
+          break;
+        }
         auto tb = tensor_ptr(state_.registers[insn.c]);
-        if (!ta || !tb || ta->rank() != 2 || tb->rank() != 2) {
+        if (!tb) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(state_.registers[insn.c]),
+                           "tensor handle access");
+          trap = Trap::IllegalInstruction;
+          break;
+        }
+        if (ta->rank() != 2 || tb->rank() != 2) {
           trap = Trap::IllegalInstruction;
           break;
         }
@@ -1131,8 +1217,21 @@ class Interpreter : public IVirtualMachine {
       case t81::tisc::Opcode::TTenDot: {
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) { trap = Trap::IllegalInstruction; break; }
         auto ta = tensor_ptr(state_.registers[insn.b]);
+        if (!ta) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(state_.registers[insn.b]),
+                           "tensor handle access");
+          trap = Trap::IllegalInstruction;
+          break;
+        }
         auto tb = tensor_ptr(state_.registers[insn.c]);
-        if (!ta || !tb) { trap = Trap::IllegalInstruction; break; }
+        if (!tb) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(state_.registers[insn.c]),
+                           "tensor handle access");
+          trap = Trap::IllegalInstruction;
+          break;
+        }
         try {
           auto result = t81::T729Tensor::contract_dot(*ta, *tb);
           state_.registers[insn.a] = alloc_tensor(std::move(result));
@@ -1226,6 +1325,25 @@ class Interpreter : public IVirtualMachine {
     verdict.reason = reason.str();
     record_axion_event(opcode, static_cast<std::int32_t>(kind), static_cast<std::int64_t>(addr),
                        verdict);
+  }
+
+  void log_bounds_fault(t81::tisc::Opcode opcode, MemorySegmentKind kind, int addr,
+                        std::string_view action) {
+    t81::axion::Verdict verdict;
+    verdict.kind = t81::axion::VerdictKind::Allow;
+    std::ostringstream reason;
+    reason << "bounds fault segment=" << to_string(kind) << " addr=" << addr << " action=" << action;
+    verdict.reason = reason.str();
+    record_axion_event(opcode, static_cast<std::int32_t>(kind), static_cast<std::int64_t>(addr),
+                       verdict);
+  }
+
+  void log_bounds_fault(t81::tisc::Opcode opcode, int addr, std::string_view action) {
+    MemorySegmentKind kind = MemorySegmentKind::Unknown;
+    if (addr >= 0) {
+      kind = segment_for_address(static_cast<std::size_t>(addr));
+    }
+    log_bounds_fault(opcode, kind, addr, action);
   }
 
   void push_axion_event(const AxionEvent& event) {
