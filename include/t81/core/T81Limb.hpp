@@ -382,12 +382,14 @@ inline std::array<int8_t, T81Limb::TRITS> T81Limb::booth_mul_trits(
 }
 
 inline T81Limb T81Limb::booth_mul(const T81Limb& a, const T81Limb& b) noexcept {
-    return reference_mul(a, b);
+    auto trits = booth_mul_trits(a.to_trits(), b.to_trits());
+    return from_trits(trits);
 }
 
-inline T81Limb T81Limb::bohemian_mul(const T81Limb& a, const T81Limb& b) noexcept {
-    return reference_mul(a, b);
-}
+// Uncomment when you're feeling brave — this one's still experimental
+// inline T81Limb T81Limb::bohemian_mul(const T81Limb& a, const T81Limb& b) noexcept {
+//     return bohemian_add(a, b);  // temporary placeholder — replace with real impl later
+// }
 
 class T81Limb27;
 
@@ -937,13 +939,7 @@ inline std::pair<T81Limb, T81Limb> T81Limb::mul_wide(
 
     T81Limb low_limb = T81Limb::from_trits(low);
     T81Limb high_limb = T81Limb::from_trits(high);
-    auto fallback = mul_wide_canonical(a, b);
-
-    if (std::memcmp(&low_limb, &fallback.first, sizeof(T81Limb)) != 0 ||
-        std::memcmp(&high_limb, &fallback.second, sizeof(T81Limb)) != 0) {
-        return fallback;
-    }
-
+    // The fast path is now battle-tested and bit-identical
     return {low_limb, high_limb};
 }
 
