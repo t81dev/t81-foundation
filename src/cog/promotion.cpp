@@ -8,7 +8,7 @@ Result<TierStatus> try_promote(const TierStatus& status, t81::axion::Engine& eng
     return PromotionError::NotEligible;
   }
 
-  t81::axion::SyscallContext ctx{{}, "system", "promote"};
+  t81::axion::SyscallContext ctx{{}, "system", "promote", nullptr, {}, 0, t81::tisc::Opcode::Nop};
   auto verdict = engine.evaluate(ctx);
   if (verdict.kind == t81::axion::VerdictKind::Deny) {
     return PromotionError::AxionDenied;

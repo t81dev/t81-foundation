@@ -26,21 +26,21 @@ int main() {
     C a(one.re, C::FloatType::from_double(2.0));
     C b(C::FloatType::from_double(3.0), C::FloatType::from_double(4.0));
     
-    C sum = a + b;
+    [[maybe_unused]] C sum = a + b;
     assert(sum.re.to_double() > 3.9 && sum.re.to_double() < 4.1);
     assert(sum.im.to_double() > 5.9 && sum.im.to_double() < 6.1);
 
-    C diff = b - a;
+    [[maybe_unused]] C diff = b - a;
     assert(diff.re.to_double() > 1.9 && diff.re.to_double() < 2.1);
     assert(diff.im.to_double() > 1.9 && diff.im.to_double() < 2.1);
 
     // Multiplication (i * i = -1)
-    C i_squared = i * i;
+    [[maybe_unused]] C i_squared = i * i;
     assert(i_squared.re.to_double() < -0.9 && i_squared.re.to_double() > -1.1);
     assert(std::abs(i_squared.im.to_double()) < 0.1);
 
     // Conjugate
-    C conj_b = b.conj();
+    [[maybe_unused]] C conj_b = b.conj();
     assert(conj_b.re.to_double() > 2.9 && conj_b.re.to_double() < 3.1);
     assert(conj_b.im.to_double() < -3.9 && conj_b.im.to_double() > -4.1);
 

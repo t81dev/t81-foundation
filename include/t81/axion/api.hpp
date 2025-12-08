@@ -191,7 +191,8 @@ private:
   T81_FORCE_INLINE bool self_test_guard_() const {
 #if T81_ENABLE_ASSERTS
     // Touch telemetry fields to keep the class live in LTO+assert modes.
-    return (tele_.requests == tele_.requests) && (tele_.bytes_in >= 0);
+    (void)tele_.requests;
+    return true;
 #else
     return true;
 #endif

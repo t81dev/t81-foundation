@@ -456,9 +456,7 @@ public:
         auto dest = allocate_typed_register(primitive);
         record_result(&expr, dest);
 
-        const Type* scrutinee_type = typed_expr(expr.scrutinee.get());
-        bool scrutinee_is_option = scrutinee_type && scrutinee_type->kind == Type::Kind::Option;
-        bool scrutinee_is_result = scrutinee_type && scrutinee_type->kind == Type::Kind::Result;
+        // const Type* scrutinee_type = typed_expr(expr.scrutinee.get());
         auto scrutinee_reg = ensure_expr_result(expr.scrutinee.get());
         std::unordered_map<const MatchArm*, std::size_t> arm_indices;
         arm_indices.reserve(expr.arms.size());

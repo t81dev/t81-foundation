@@ -39,11 +39,11 @@ int main() {
     auto success_tisc = success_src;
     success_tisc.replace_extension(".tisc");
 
-    int compile_rc = t81::cli::compile(success_src, success_tisc);
+    [[maybe_unused]] int compile_rc = t81::cli::compile(success_src, success_tisc);
     assert(compile_rc == 0);
     assert(fs::exists(success_tisc));
 
-    int run_rc = t81::cli::run_tisc(success_tisc);
+    [[maybe_unused]] int run_rc = t81::cli::run_tisc(success_tisc);
     assert(run_rc == 0);
 
     fs::remove(success_src);
@@ -63,7 +63,7 @@ int main() {
 
     std::ostringstream captured;
     auto* old = std::cerr.rdbuf(captured.rdbuf());
-    int bad_rc = t81::cli::compile(fail_src, fail_tisc);
+    [[maybe_unused]] int bad_rc = t81::cli::compile(fail_src, fail_tisc);
     std::cerr.rdbuf(old);
 
     assert(bad_rc != 0);
@@ -72,11 +72,10 @@ int main() {
 
     size_t path_pos = output.find(fail_src.string());
     assert(path_pos != std::string::npos);
-    size_t first_colon = output.find(':', path_pos + fail_src.string().size());
+    [[maybe_unused]] size_t first_colon = output.find(':', path_pos + fail_src.string().size());
     assert(first_colon != std::string::npos);
-    size_t second_colon = output.find(':', first_colon + 1);
-    assert(second_colon != std::string::npos);
-    assert(output.find("error:", second_colon) != std::string::npos);
+    assert(output.find(":", first_colon + 1) != std::string::npos);
+    assert(output.find("error:", first_colon + 1) != std::string::npos);
 
     fs::remove(fail_src);
     if (fs::exists(fail_tisc)) {

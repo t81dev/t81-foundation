@@ -24,7 +24,7 @@ int main() {
   }
   assert(r2.error() == vm::Trap::InvalidMemory || r2.error() == vm::Trap::IllegalInstruction);
   assert(!vm->state().trace.empty());
-  auto last = vm->state().trace.back();
+  [[maybe_unused]] auto last = vm->state().trace.back();
   assert(last.trap.has_value());
   assert(vm->state().policy.has_value());
   assert(vm->state().policy->tier == 2);

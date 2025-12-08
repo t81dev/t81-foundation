@@ -24,11 +24,11 @@ int main() {
     }
 
     // Compile the source file
-    int compile_result = t81::cli::compile(t81_file, tisc_file);
+    [[maybe_unused]] int compile_result = t81::cli::compile(t81_file, tisc_file);
     assert(compile_result == 0 && "CLI compile command failed");
 
     // Run the compiled TISC binary
-    int run_result = t81::cli::run_tisc(tisc_file);
+    [[maybe_unused]] int run_result = t81::cli::run_tisc(tisc_file);
     assert(run_result == 0 && "CLI run command failed");
 
     // Clean up temporary files

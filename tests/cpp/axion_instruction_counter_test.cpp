@@ -27,7 +27,7 @@ void test_instruction_counter_axion_engine() {
     vm->load_program(program);
 
     // Run the VM and expect a security fault.
-    auto result = vm->run_to_halt();
+    [[maybe_unused]] auto result = vm->run_to_halt();
 
     assert(!result.has_value() && "VM should have halted with a trap");
     assert(result.error() == t81::vm::Trap::SecurityFault &&

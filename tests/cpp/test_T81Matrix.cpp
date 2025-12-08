@@ -74,7 +74,7 @@ int main() {
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
             // sum should be element-wise double of m
-            Scalar expected_sum = m(i, j) + m2(i, j);
+            [[maybe_unused]] Scalar expected_sum = m(i, j) + m2(i, j);
             assert(sum(i, j) == expected_sum);
 
             // diff should be zero everywhere

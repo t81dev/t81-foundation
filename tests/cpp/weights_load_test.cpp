@@ -31,7 +31,7 @@ int main() {
 
     auto vm = t81::vm::make_interpreter_vm();
     vm->load_program(program);
-    auto result = vm->run_to_halt();
+    [[maybe_unused]] auto result = vm->run_to_halt();
     assert(result.has_value());
 
     auto handle0 = vm->state().registers[0];

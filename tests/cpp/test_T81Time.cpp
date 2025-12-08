@@ -20,15 +20,15 @@ int main() {
     assert(d.count() >= 0);
 
     // micros_since should match since()
-    auto micros = t2.micros_since(t1);
+    [[maybe_unused]] auto micros = t2.micros_since(t1);
     assert(micros == static_cast<std::uint64_t>(d.count()));
 
     // Event id plumbing
     T81Symbol ev1 = T81Symbol::intern("TEST_EVENT");
     T81Symbol ev2 = T81Symbol::intern("TEST_EVENT2");
 
-    T81Time e1 = T81Time::now(ev1);
-    T81Time e2 = T81Time::now(ev2);
+    [[maybe_unused]] T81Time e1 = T81Time::now(ev1);
+    [[maybe_unused]] T81Time e2 = T81Time::now(ev2);
 
     assert(e1.event_id().to_string() == ev1.to_string());
     assert(e2.event_id().to_string() == ev2.to_string());

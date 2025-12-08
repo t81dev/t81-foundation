@@ -55,7 +55,7 @@ int main() {
         }
     )";
 
-    int64_t result = run_e2e_test(loop_test_source);
+    [[maybe_unused]] int64_t result = run_e2e_test(loop_test_source);
     assert(result == 45);
 
     std::cout << "E2E loop statement test passed!" << std::endl;

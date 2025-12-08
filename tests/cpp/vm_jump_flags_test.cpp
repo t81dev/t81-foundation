@@ -19,7 +19,7 @@ int main() {
 
     auto vm = vm::make_interpreter_vm();
     vm->load_program(p);
-    auto r = vm->run_to_halt();
+    [[maybe_unused]] auto r = vm->run_to_halt();
     assert(r.has_value());
     // r1 should remain zero because branch skipped pc2.
     assert(vm->state().registers[1] == 0);
@@ -35,7 +35,7 @@ int main() {
 
     auto vm = vm::make_interpreter_vm();
     vm->load_program(p);
-    auto r = vm->step();
+    [[maybe_unused]] auto r = vm->step();
     assert(!r.has_value());
     assert(r.error() == vm::Trap::IllegalInstruction);
     assert(!vm->state().trace.empty());
@@ -51,7 +51,7 @@ int main() {
     p.insns.push_back({tisc::Opcode::Halt, 0, 0, 0});
     auto vm = vm::make_interpreter_vm();
     vm->load_program(p);
-    auto r = vm->run_to_halt();
+    [[maybe_unused]] auto r = vm->run_to_halt();
     assert(r.has_value());
     assert(vm->state().registers[1] == 0);
   }
@@ -68,7 +68,7 @@ int main() {
 
     auto vm = vm::make_interpreter_vm();
     vm->load_program(p);
-    auto r = vm->run_to_halt();
+    [[maybe_unused]] auto r = vm->run_to_halt();
     assert(!r.has_value());
     assert(r.error() == vm::Trap::TrapInstruction);
     assert(vm->state().registers[1] == 42);
