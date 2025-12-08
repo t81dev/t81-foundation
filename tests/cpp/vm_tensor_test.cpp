@@ -37,7 +37,7 @@ int main() {
   mutable_state.registers[5] = 3;
   mutable_state.registers[6] = 4;
 
-  auto result = vm->run_to_halt();
+  [[maybe_unused]] auto result = vm->run_to_halt();
   assert(result.has_value());
 
   // Vector addition
@@ -83,7 +83,7 @@ int main() {
 
   auto vm_chk = vm::make_interpreter_vm();
   vm_chk->load_program(chk);
-  auto res_chk = vm_chk->run_to_halt();
+  [[maybe_unused]] auto res_chk = vm_chk->run_to_halt();
   assert(res_chk.has_value());
   assert(vm_chk->state().registers[3] == 1);
   assert(vm_chk->state().registers[5] == 0);

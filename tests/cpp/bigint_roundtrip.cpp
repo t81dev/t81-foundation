@@ -41,7 +41,7 @@ static void test_divmod_basic_cases() {
         T81BigInt A(c.a);
         T81BigInt B(c.b);
 
-        DivModResult dm = t81::divmod(A, B);
+        [[maybe_unused]] DivModResult dm = t81::divmod(A, B);
 
         // Invariant: a = b*q + r
         T81BigInt lhs = B * dm.q + dm.r;
@@ -91,8 +91,8 @@ static void test_gcd_basic_cases() {
 
         // Divides a and b: a % G == 0, b % G == 0
         if (!G.is_zero()) {
-            DivModResult da = t81::divmod(A, G);
-            DivModResult db = t81::divmod(B, G);
+            [[maybe_unused]] DivModResult da = t81::divmod(A, G);
+            [[maybe_unused]] DivModResult db = t81::divmod(B, G);
             assert(da.r.is_zero());
             assert(db.r.is_zero());
         }

@@ -33,7 +33,7 @@ int main() {
     div.c = 1;
     t81::tisc::Insn halt;
     halt.opcode = t81::tisc::Opcode::Halt;
-    auto trap_div_zero = run_expected_trap({load_ten, load_zero, div, halt});
+    [[maybe_unused]] auto trap_div_zero = run_expected_trap({load_ten, load_zero, div, halt});
     assert(trap_div_zero == t81::vm::Trap::DivideByZero);
 
     t81::tisc::Insn load_bad;
@@ -41,11 +41,11 @@ int main() {
     load_bad.a = 0;
     load_bad.b = 999999;
     load_bad.c = 0;
-    auto trap_invalid_mem = run_expected_trap({load_bad, halt});
+    [[maybe_unused]] auto trap_invalid_mem = run_expected_trap({load_bad, halt});
     assert(trap_invalid_mem == t81::vm::Trap::InvalidMemory);
 
     t81::tisc::Insn pop{t81::tisc::Opcode::Pop, {0}};
-    auto trap_bounds = run_expected_trap({pop, halt});
+    [[maybe_unused]] auto trap_bounds = run_expected_trap({pop, halt});
     assert(trap_bounds == t81::vm::Trap::BoundsFault);
 
     t81::tisc::Insn store_bad;
@@ -53,7 +53,7 @@ int main() {
     store_bad.a = 999999;
     store_bad.b = 0;
     store_bad.c = 0;
-    auto trap_store_invalid_mem = run_expected_trap({store_bad, halt});
+    [[maybe_unused]] auto trap_store_invalid_mem = run_expected_trap({store_bad, halt});
     assert(trap_store_invalid_mem == t81::vm::Trap::InvalidMemory);
 
     t81::tisc::Insn load_neg;
@@ -61,7 +61,7 @@ int main() {
     load_neg.a = 0;
     load_neg.b = -1;
     load_neg.c = 0;
-    auto trap_load_neg = run_expected_trap({load_neg, halt});
+    [[maybe_unused]] auto trap_load_neg = run_expected_trap({load_neg, halt});
     assert(trap_load_neg == t81::vm::Trap::InvalidMemory);
 
     t81::tisc::Insn store_neg;
@@ -69,7 +69,7 @@ int main() {
     store_neg.a = -1;
     store_neg.b = 0;
     store_neg.c = 0;
-    auto trap_store_neg = run_expected_trap({store_neg, halt});
+    [[maybe_unused]] auto trap_store_neg = run_expected_trap({store_neg, halt});
     assert(trap_store_neg == t81::vm::Trap::InvalidMemory);
 
     return 0;

@@ -22,7 +22,7 @@ int main() {
 
   auto committed = kernel->commit_snapshot(forked.value());
   assert(committed.has_value());
-  auto switched = kernel->switch_root(committed.value());
+  [[maybe_unused]] auto switched = kernel->switch_root(committed.value());
   assert(switched.has_value());
 
   auto read_back = kernel->read_object(obj.value());

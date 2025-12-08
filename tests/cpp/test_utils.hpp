@@ -309,7 +309,7 @@ private:
 
 };
 
-inline void expect_semantic_success(const std::string& source, const char* label) {
+inline void expect_semantic_success(const std::string& source, [[maybe_unused]] const char* label) {
     Lexer lexer(source);
     Parser parser(lexer);
     auto stmts = parser.parse();

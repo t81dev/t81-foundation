@@ -8,7 +8,7 @@
 
 using namespace t81::frontend;
 
-void expect_semantic_success(const std::string& source, const char* label) {
+void expect_semantic_success(const std::string& source, [[maybe_unused]] const char* label) {
     Lexer lexer(source);
     Parser parser(lexer);
     auto stmts = parser.parse();
@@ -19,7 +19,7 @@ void expect_semantic_success(const std::string& source, const char* label) {
     assert(!analyzer.had_error() && label);
 }
 
-void expect_semantic_failure(const std::string& source, const char* label) {
+void expect_semantic_failure(const std::string& source, [[maybe_unused]] const char* label) {
     Lexer lexer(source);
     Parser parser(lexer);
     auto stmts = parser.parse();

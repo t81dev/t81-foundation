@@ -13,9 +13,9 @@ int main() {
     T729Tensor A({2,3}); A.data() = {1,2,3, 4,5,6};
     T729Tensor B({2,3}); B.data() = {6,5,4, 3,2,1};
 
-    auto S = t81::ops::add(A, B);
-    auto D = t81::ops::sub(A, B);
-    auto M = t81::ops::mul(A, B);
+    [[maybe_unused]] auto S = t81::ops::add(A, B);
+    [[maybe_unused]] auto D = t81::ops::sub(A, B);
+    [[maybe_unused]] auto M = t81::ops::mul(A, B);
 
     assert((S.data() == std::vector<float>{7,7,7, 7,7,7}));
     assert((D.data() == std::vector<float>{-5,-3,-1, 1,3,5}));

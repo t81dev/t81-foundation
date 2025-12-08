@@ -15,7 +15,7 @@ std::unique_ptr<t81::vm::IVirtualMachine> run_program(const std::vector<t81::tis
     program.insns = insns;
     auto vm = t81::vm::make_interpreter_vm();
     vm->load_program(program);
-    auto result = vm->run_to_halt();
+    [[maybe_unused]] auto result = vm->run_to_halt();
     assert(result.has_value());
     return vm;
 }
@@ -25,20 +25,9 @@ t81::vm::Trap run_expected_trap(const std::vector<t81::tisc::Insn>& insns) {
     program.insns = insns;
     auto vm = t81::vm::make_interpreter_vm();
     vm->load_program(program);
-    auto result = vm->run_to_halt();
+    [[maybe_unused]] auto result = vm->run_to_halt();
     assert(!result.has_value());
     return result.error();
-}
-
-int dump_axion_log_and_fail(const t81::vm::State& state, const char* label) {
-    std::cerr << "[vm_memory_test] " << label << " axion log (size=" << state.axion_log.size() << ")\n";
-    for (const auto& entry : state.axion_log) {
-        std::cerr << "  opcode=" << static_cast<int>(entry.opcode)
-                  << " tag=" << entry.tag
-                  << " value=" << entry.value
-                  << " reason=\"" << entry.verdict.reason << "\"\n";
-    }
-    return 1;
 }
 
 }  // namespace
@@ -97,7 +86,7 @@ int main() {
     }
 
     {
-        auto trap = run_expected_trap({stack_alloc, stack_alloc2, stack_free0, halt});
+        [[maybe_unused]] auto trap = run_expected_trap({stack_alloc, stack_alloc2, stack_free0, halt});
         assert(trap == t81::vm::Trap::IllegalInstruction);
     }
 
@@ -160,7 +149,7 @@ int main() {
     }
 
     {
-        auto trap = run_expected_trap({heap_alloc, heap_alloc, heap_free, halt});
+        [[maybe_unused]] auto trap = run_expected_trap({heap_alloc, heap_alloc, heap_free, halt});
         assert(trap == t81::vm::Trap::IllegalInstruction);
     }
 

@@ -30,11 +30,11 @@ int main() {
 
     auto vm = vm::make_interpreter_vm();
     vm->load_program(program);
-    auto run = vm->run_to_halt();
+    [[maybe_unused]] auto run = vm->run_to_halt();
     assert(run.has_value());
-    const auto& floats = vm->state().floats;
+    [[maybe_unused]] const auto& floats = vm->state().floats;
     assert(floats.size() == 6);
-    auto nearly_equal = [](double lhs, double rhs) {
+    [[maybe_unused]] auto nearly_equal = [](double lhs, double rhs) {
       return std::fabs(lhs - rhs) < 1e-12;
     };
     assert(nearly_equal(floats[2], 1.0));    // FAdd
@@ -52,7 +52,7 @@ int main() {
     program.insns.push_back({tisc::Opcode::FDiv, 3, 1, 2});
     auto vm = vm::make_interpreter_vm();
     vm->load_program(program);
-    auto run = vm->run_to_halt();
+    [[maybe_unused]] auto run = vm->run_to_halt();
     assert(!run.has_value());
     assert(run.error() == vm::Trap::DivideByZero);
   }
@@ -71,9 +71,9 @@ int main() {
 
     auto vm = vm::make_interpreter_vm();
     vm->load_program(program);
-    auto run = vm->run_to_halt();
+    [[maybe_unused]] auto run = vm->run_to_halt();
     assert(run.has_value());
-    const auto& fracs = vm->state().fractions;
+    [[maybe_unused]] const auto& fracs = vm->state().fractions;
     assert(fracs.size() == 6);
     assert(fracs[2].num.to_int64() == 7 && fracs[2].den.to_int64() == 6);   // add
     assert(fracs[3].num.to_int64() == -1 && fracs[3].den.to_int64() == 6);  // sub
@@ -90,7 +90,7 @@ int main() {
     program.insns.push_back({tisc::Opcode::FracDiv, 3, 1, 2});
     auto vm = vm::make_interpreter_vm();
     vm->load_program(program);
-    auto run = vm->run_to_halt();
+    [[maybe_unused]] auto run = vm->run_to_halt();
     assert(!run.has_value());
     assert(run.error() == vm::Trap::DivideByZero);
   }
@@ -107,7 +107,7 @@ int main() {
     program.insns.push_back({tisc::Opcode::Halt, 0, 0, 0});
     auto vm = vm::make_interpreter_vm();
     vm->load_program(program);
-    auto run = vm->run_to_halt();
+    [[maybe_unused]] auto run = vm->run_to_halt();
     assert(run.has_value());
     assert(vm->state().flags.zero == false);
     assert(vm->state().flags.negative == true);
@@ -125,7 +125,7 @@ int main() {
     program.insns.push_back({tisc::Opcode::Halt, 0, 0, 0});
     auto vm = vm::make_interpreter_vm();
     vm->load_program(program);
-    auto run = vm->run_to_halt();
+    [[maybe_unused]] auto run = vm->run_to_halt();
     assert(run.has_value());
     assert(vm->state().flags.zero == false);
     assert(vm->state().flags.negative == false);

@@ -13,9 +13,9 @@ endif()
 
 # Global compiler flags (ANSI warnings for GCC/Clang; use /W4 for MSVC)
 if(MSVC)
-    add_compile_options(/W4 /O2 /DNDEBUG)
+    add_compile_options(/W4 /O2 /DNDEBUG /WX)
 else()
-    add_compile_options(-Wall -Wextra -Wpedantic -O3 -DNDEBUG)
+    add_compile_options(-Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG)
 endif()
 
 if(MSVC)

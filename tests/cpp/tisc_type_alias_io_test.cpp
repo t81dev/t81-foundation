@@ -42,7 +42,7 @@ void test_type_alias_io_roundtrip() {
     auto loaded = t81::tisc::load_program(temp_file.string());
     assert(loaded.type_aliases.size() == program.type_aliases.size());
 
-    auto matches_fields = [](const std::vector<FieldInfo>& lhs, const std::vector<FieldInfo>& rhs) {
+    [[maybe_unused]] auto matches_fields = [](const std::vector<FieldInfo>& lhs, const std::vector<FieldInfo>& rhs) {
         if (lhs.size() != rhs.size()) return false;
         for (size_t i = 0; i < lhs.size(); ++i) {
             if (lhs[i].name != rhs[i].name || lhs[i].type != rhs[i].type) {
@@ -52,7 +52,7 @@ void test_type_alias_io_roundtrip() {
         return true;
     };
 
-    auto matches_variants = [](const std::vector<VariantInfo>& lhs, const std::vector<VariantInfo>& rhs) {
+    [[maybe_unused]] auto matches_variants = [](const std::vector<VariantInfo>& lhs, const std::vector<VariantInfo>& rhs) {
         if (lhs.size() != rhs.size()) return false;
         for (size_t i = 0; i < lhs.size(); ++i) {
             if (lhs[i].name != rhs[i].name) return false;
@@ -63,7 +63,7 @@ void test_type_alias_io_roundtrip() {
 
     for (size_t i = 0; i < program.type_aliases.size(); ++i) {
         const auto& expected = program.type_aliases[i];
-        const auto& actual = loaded.type_aliases[i];
+        [[maybe_unused]] const auto& actual = loaded.type_aliases[i];
         assert(actual.name == expected.name);
         assert(actual.params == expected.params);
         assert(actual.alias == expected.alias);

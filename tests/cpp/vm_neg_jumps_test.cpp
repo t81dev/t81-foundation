@@ -14,7 +14,12 @@ int main() {
 
     auto vm = vm::make_interpreter_vm();
     vm->load_program(p);
-    auto r = vm->run_to_halt();
+    [[maybe_unused]] auto r = vm->run_to_halt();
+    [[maybe_unused]] auto r = vm->run_to_halt();
+    [[maybe_unused]] auto r = vm->run_to_halt();
+    [[maybe_unused]] auto r = vm->run_to_halt();
+    [[maybe_unused]] auto r = vm->run_to_halt();
+    [[maybe_unused]] auto r = vm->run_to_halt();
     assert(r.has_value());
     assert(vm->state().registers[1] == -42);
     assert(vm->state().flags.negative);
@@ -33,7 +38,7 @@ int main() {
 
     auto vm = vm::make_interpreter_vm();
     vm->load_program(p);
-    auto r = vm->run_to_halt();
+    [[maybe_unused]] auto r = vm->run_to_halt();
     assert(r.has_value());
     assert(vm->state().registers[1] == 0);
   }
@@ -50,7 +55,7 @@ int main() {
 
     auto vm = vm::make_interpreter_vm();
     vm->load_program(p);
-    auto r = vm->run_to_halt();
+    [[maybe_unused]] auto r = vm->run_to_halt();
     assert(r.has_value());
     assert(vm->state().registers[1] == 0);
   }
@@ -67,7 +72,7 @@ int main() {
 
     auto vm = vm::make_interpreter_vm();
     vm->load_program(p);
-    auto r = vm->run_to_halt();
+    [[maybe_unused]] auto r = vm->run_to_halt();
     assert(r.has_value());
     assert(vm->state().registers[1] == 99);
   }
@@ -84,7 +89,7 @@ int main() {
 
     auto vm = vm::make_interpreter_vm();
     vm->load_program(p);
-    auto r = vm->run_to_halt();
+    [[maybe_unused]] auto r = vm->run_to_halt();
     assert(r.has_value());
     assert(vm->state().registers[1] == 99);
   }
@@ -100,7 +105,7 @@ int main() {
 
     auto vm = vm::make_interpreter_vm();
     vm->load_program(p);
-    auto r = vm->run_to_halt();
+    [[maybe_unused]] auto r = vm->run_to_halt();
     assert(r.has_value());
     assert(vm->state().registers[1] == 0);
   }

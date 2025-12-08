@@ -131,7 +131,7 @@ public:
                 remainder = remainder - (divisor.to_int() < 0 ? -candidate : candidate);
             }
         }
-        if (this->to_int() < 0 != divisor.to_int() < 0) quotient = -quotient;
+        if ((this->to_int() < 0) != (divisor.to_int() < 0)) quotient = -quotient;
         return quotient;
     }
 

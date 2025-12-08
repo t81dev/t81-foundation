@@ -4,6 +4,9 @@
 #include "t81/core/T81Limb.hpp"
 #include "t81/t81.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 namespace {
     const size_t DATA_SIZE = 100000;
     std::vector<t81::core::T81Limb> t81_source_data_a;
@@ -105,3 +108,5 @@ static void BM_vs_int128(benchmark::State& state) {
     state.SetLabel("T81 native vs __int128 addition");
 }
 BENCHMARK(BM_vs_int128);
+
+#pragma GCC diagnostic pop

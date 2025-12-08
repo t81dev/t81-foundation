@@ -50,7 +50,7 @@ int main() {
         }
     )";
 
-    int64_t result = run_e2e_test(match_test_source);
+    [[maybe_unused]] int64_t result = run_e2e_test(match_test_source);
     assert(result == 123);
 
     std::cout << "E2E match expression test passed!" << std::endl;

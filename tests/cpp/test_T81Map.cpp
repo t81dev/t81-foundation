@@ -32,10 +32,10 @@ int main() {
     assert(!map.contains(key2));
 
     T81Symbol key3 = T81Symbol::intern("key3");
-    auto opt_val = map.get(key3);
+    [[maybe_unused]] auto opt_val = map.get(key3);
     assert(!opt_val.has_value());
 
-    auto opt_val2 = map.get(key1);
+    [[maybe_unused]] auto opt_val2 = map.get(key1);
     assert(opt_val2.has_value());
     assert(opt_val2.value().to_int64() == 150);
 

@@ -40,7 +40,7 @@ void test_simple_addition() {
     // but we require:
     //   • At least one LOADI
     //   • The final instruction is a STORE (assigning to x)
-    bool has_loadi = false;
+    [[maybe_unused]] bool has_loadi = false;
     for (const auto& inst : instructions) {
         if (inst.opcode == Opcode::LOADI) {
             has_loadi = true;
@@ -49,7 +49,7 @@ void test_simple_addition() {
     }
     assert(has_loadi && "IRGenerator should materialize at least one immediate via LOADI");
 
-    const auto& last = instructions.back();
+    [[maybe_unused]] const auto& last = instructions.back();
     assert(last.opcode == Opcode::STORE);
 
     std::cout << "IRGeneratorTest test_simple_addition passed!" << std::endl;
@@ -82,7 +82,7 @@ void test_if_statement() {
     assert(instructions[2].opcode == Opcode::CMP);
 
     // Some kind of conditional/control transfer must appear:
-    bool has_branch = false;
+    [[maybe_unused]] bool has_branch = false;
     for (const auto& inst : instructions) {
         if (inst.opcode == Opcode::JP ||
             inst.opcode == Opcode::JMP ||
@@ -119,7 +119,7 @@ void test_if_else_statement() {
     // We expect some non-trivial control flow; size is intentionally loose.
     assert(instructions.size() >= 6);
 
-    bool has_branch = false;
+    [[maybe_unused]] bool has_branch = false;
     for (const auto& inst : instructions) {
         if (inst.opcode == Opcode::JP ||
             inst.opcode == Opcode::JMP ||
@@ -156,7 +156,7 @@ void test_while_loop() {
     // Loop implies a backward jump of some kind; keep this soft.
     assert(instructions.size() >= 5);
 
-    bool has_branch = false;
+    [[maybe_unused]] bool has_branch = false;
     for (const auto& inst : instructions) {
         if (inst.opcode == Opcode::JP ||
             inst.opcode == Opcode::JMP ||
@@ -191,8 +191,8 @@ void test_assignment() {
     }
 
     // We expect at least one LOADI and at least one STORE.
-    bool has_loadi = false;
-    bool has_store = false;
+    [[maybe_unused]] bool has_loadi = false;
+    [[maybe_unused]] bool has_store = false;
     for (const auto& inst : instructions) {
         if (inst.opcode == Opcode::LOADI) has_loadi = true;
         if (inst.opcode == Opcode::STORE) has_store = true;
@@ -253,10 +253,10 @@ void test_match_option() {
         return;
     }
 
-    bool has_option_is_some = false;
-    bool has_option_unwrap = false;
-    bool has_branch = false;
-    bool has_jump = false;
+    [[maybe_unused]] bool has_option_is_some = false;
+    [[maybe_unused]] bool has_option_unwrap = false;
+    [[maybe_unused]] bool has_branch = false;
+    [[maybe_unused]] bool has_jump = false;
     for (const auto& inst : instructions) {
         if (inst.opcode == Opcode::OPTION_IS_SOME) has_option_is_some = true;
         if (inst.opcode == Opcode::OPTION_UNWRAP) has_option_unwrap = true;
@@ -296,11 +296,11 @@ void test_match_result() {
         return;
     }
 
-    bool has_result_is_ok = false;
-    bool has_result_unwrap_ok = false;
-    bool has_result_unwrap_err = false;
-    bool has_branch = false;
-    bool has_jump = false;
+    [[maybe_unused]] bool has_result_is_ok = false;
+    [[maybe_unused]] bool has_result_unwrap_ok = false;
+    [[maybe_unused]] bool has_result_unwrap_err = false;
+    [[maybe_unused]] bool has_branch = false;
+    [[maybe_unused]] bool has_jump = false;
     for (const auto& inst : instructions) {
         if (inst.opcode == Opcode::RESULT_IS_OK) has_result_is_ok = true;
         if (inst.opcode == Opcode::RESULT_UNWRAP_OK) has_result_unwrap_ok = true;

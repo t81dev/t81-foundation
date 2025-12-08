@@ -53,8 +53,8 @@ void run_vector_tests() {
     {
         Vec3 a(s(1.0), s(2.0), s(3.0));
         Vec3 b(s(4.0), s(5.0), s(6.0));
-        Vec3 sum  = a + b;
-        Vec3 diff = b - a;
+        [[maybe_unused]] Vec3 sum  = a + b;
+        [[maybe_unused]] Vec3 diff = b - a;
 
         assert(std::fabs(d(sum[0])  - 5.0) < kEps);
         assert(std::fabs(d(diff[2]) - 3.0) < kEps);
@@ -66,8 +66,8 @@ void run_vector_tests() {
         Vec3 v(s(1.0), s(2.0), s(3.0));
         Scalar two = s(2.0);
 
-        Vec3 v1 = v * two;
-        Vec3 v2 = two * v;
+        [[maybe_unused]] Vec3 v1 = v * two;
+        [[maybe_unused]] Vec3 v2 = two * v;
 
         assert(std::fabs(d(v1[1]) - 4.0) < kEps);
         assert(std::fabs(d(v2[0]) - 2.0) < kEps);
@@ -77,7 +77,7 @@ void run_vector_tests() {
     // 6) Copy
     {
         Vec3 v(s(10.0), s(20.0), s(30.0));
-        Vec3 c = v;
+        [[maybe_unused]] Vec3 c = v;
         assert(std::fabs(d(c[2]) - 30.0) < kEps);
         std::cout << "  [OK] Copy construction\n";
     }

@@ -25,19 +25,19 @@ int main() {
     assert(failure.error().code == error_code);
 
     // Unwrap or default
-    T81Int<27> val1 = success.unwrap_or(T81Int<27>(999));
+    [[maybe_unused]] T81Int<27> val1 = success.unwrap_or(T81Int<27>(999));
     assert(val1.to_int64() == 42);
 
-    T81Int<27> val2 = failure.unwrap_or(T81Int<27>(999));
+    [[maybe_unused]] T81Int<27> val2 = failure.unwrap_or(T81Int<27>(999));
     assert(val2.to_int64() == 999);
 
     // Map
-    auto doubled = success.map([](const T81Int<27>& x) { return x * T81Int<27>(2); });
+    [[maybe_unused]] auto doubled = success.map([](const T81Int<27>& x) { return x * T81Int<27>(2); });
     assert(doubled.is_ok());
     assert(doubled.unwrap().to_int64() == 84);
 
     // And then
-    auto chained = success.and_then([](const T81Int<27>& x) {
+    [[maybe_unused]] auto chained = success.and_then([](const T81Int<27>& x) {
         if (x.to_int64() > 0) {
             return T81Result<T81Int<27>>(x * T81Int<27>(2));
         }

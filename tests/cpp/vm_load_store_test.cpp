@@ -14,7 +14,7 @@ int main() {
 
   auto vm = vm::make_interpreter_vm();
   vm->load_program(p);
-  auto res = vm->run_to_halt();
+  [[maybe_unused]] auto res = vm->run_to_halt();
   assert(res.has_value());
   assert(vm->state().memory[5] == 7);
   assert(vm->state().registers[1] == 7);
@@ -24,7 +24,7 @@ int main() {
   bad.insns.push_back({tisc::Opcode::Load, 0, 9999, 0});
   bad.insns.push_back({tisc::Opcode::Halt, 0, 0, 0});
   vm->load_program(bad);
-  auto step = vm->step();
+  [[maybe_unused]] auto step = vm->step();
   assert(!step.has_value());
   assert(step.error() == vm::Trap::InvalidMemory);
 

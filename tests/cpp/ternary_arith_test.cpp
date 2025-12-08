@@ -7,12 +7,6 @@
 
 using namespace t81;
 
-static bool digits_eq(const std::vector<Trit>& a, const std::vector<Trit>& b) {
-  if (a.size() != b.size()) return false;
-  for (size_t i = 0; i < a.size(); ++i) if (a[i] != b[i]) return false;
-  return true;
-}
-
 int main() {
   using t81::ternary::encode_i64;
   using t81::ternary::decode_i64;
@@ -25,7 +19,7 @@ int main() {
                                  123456789, -123456789, INT64_C(1)<<40, -(INT64_C(1)<<40)};
     for (auto v : vals) {
       auto ds = encode_i64(v);
-      auto r  = decode_i64(ds);
+      [[maybe_unused]] auto r  = decode_i64(ds);
       assert(r == v);
     }
   }

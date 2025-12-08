@@ -17,7 +17,7 @@ int main() {
   auto bytes = encode(program);
   auto decoded = decode(bytes);
   assert(decoded.has_value());
-  const Program& round = decoded.value();
+  [[maybe_unused]] const Program& round = decoded.value();
   assert(round.insns.size() == program.insns.size());
   for (std::size_t i = 0; i < program.insns.size(); ++i) {
     const auto& lhs = program.insns[i];
