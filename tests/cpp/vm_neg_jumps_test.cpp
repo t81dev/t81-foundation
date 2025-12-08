@@ -15,11 +15,6 @@ int main() {
     auto vm = vm::make_interpreter_vm();
     vm->load_program(p);
     [[maybe_unused]] auto r = vm->run_to_halt();
-    [[maybe_unused]] auto r = vm->run_to_halt();
-    [[maybe_unused]] auto r = vm->run_to_halt();
-    [[maybe_unused]] auto r = vm->run_to_halt();
-    [[maybe_unused]] auto r = vm->run_to_halt();
-    [[maybe_unused]] auto r = vm->run_to_halt();
     assert(r.has_value());
     assert(vm->state().registers[1] == -42);
     assert(vm->state().flags.negative);

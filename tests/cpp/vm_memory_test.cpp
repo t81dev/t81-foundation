@@ -10,6 +10,33 @@
 
 namespace {
 
+const char* to_string(t81::tisc::Opcode opcode) {
+    switch (opcode) {
+        case t81::tisc::Opcode::Halt: return "Halt";
+        case t81::tisc::Opcode::LoadImm: return "LoadImm";
+        case t81::tisc::Opcode::Load: return "Load";
+        case t81::tisc::Opcode::Store: return "Store";
+        case t81::tisc::Opcode::TVecAdd: return "TVecAdd";
+        case t81::tisc::Opcode::StackAlloc: return "StackAlloc";
+        case t81::tisc::Opcode::StackFree: return "StackFree";
+        case t81::tisc::Opcode::HeapAlloc: return "HeapAlloc";
+        case t81::tisc::Opcode::HeapFree: return "HeapFree";
+        default: return "Unknown";
+    }
+}
+
+// Test helper to dump the Axion log on failure.
+int dump_axion_log_and_fail(const t81::vm::State &state,
+                            const std::string &message) {
+  std::cerr << "Test failed: " << message << std::endl;
+  std::cerr << "Axion log:" << std::endl;
+  for (const auto &entry : state.axion_log) {
+    std::cerr << "  " << to_string(entry.opcode) << ": "
+              << entry.verdict.reason << std::endl;
+  }
+  return 1;
+}
+
 std::unique_ptr<t81::vm::IVirtualMachine> run_program(const std::vector<t81::tisc::Insn>& insns) {
     t81::tisc::Program program;
     program.insns = insns;
@@ -205,9 +232,10 @@ int main() {
         load_meta.b = meta_start;
 
         auto vm = run_program({load_val, store_meta, load_meta, halt});
+        const auto& log = vm->state().axion_log;
         bool saw_store = false;
         bool saw_load = false;
-        for (const auto& entry : vm->state().axion_log) {
+        for (const auto& entry : log) {
             if (entry.opcode == t81::tisc::Opcode::Store &&
                 entry.verdict.reason.find("meta") != std::string::npos) {
                 saw_store = true;
@@ -235,8 +263,9 @@ int main() {
         auto result = vm->run_to_halt();
         assert(!result.has_value());
 
+        const auto& log = vm->state().axion_log;
         bool saw_bounds = false;
-        for (const auto& entry : vm->state().axion_log) {
+        for (const auto& entry : log) {
             if (entry.verdict.reason.find("bounds fault") != std::string::npos &&
                 entry.verdict.reason.find("memory load") != std::string::npos) {
                 saw_bounds = true;
@@ -266,8 +295,9 @@ int main() {
         auto result = vm->run_to_halt();
         assert(!result.has_value());
 
+        const auto& log = vm->state().axion_log;
         bool saw_bounds = false;
-        for (const auto& entry : vm->state().axion_log) {
+        for (const auto& entry : log) {
             if (entry.verdict.reason.find("bounds fault") != std::string::npos &&
                 entry.verdict.reason.find("memory store") != std::string::npos) {
                 saw_bounds = true;
@@ -315,8 +345,9 @@ int main() {
         auto result = vm->run_to_halt();
         assert(!result.has_value());
 
+        const auto& log = vm->state().axion_log;
         bool saw_tensor_bounds = false;
-        for (const auto& entry : vm->state().axion_log) {
+        for (const auto& entry : log) {
             if (entry.verdict.reason.find("bounds fault") != std::string::npos &&
                 entry.verdict.reason.find("tensor handle access") != std::string::npos) {
                 saw_tensor_bounds = true;
