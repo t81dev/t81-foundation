@@ -35,6 +35,11 @@ ______________________________________________________________________
 
 With P0 closed, work shifts to the runtime-focused priorities below.
 
+- **[EPIC] Ecosystem & Tooling Expansion:**
+    - **[DONE] [S] Task:** Add `disasm` command to `t81` CLI for TISC inspection.
+    - **[DONE] [S] Task:** Add `scaffold` command to `t81` CLI for project initialization.
+    - **[DONE] [S] Task:** Handled all TISC opcodes in CLI `opcode_name` for cleaner build/debug output.
+
 - **[EPIC] T81Tensor & Transformer Kernels Optimization:**
     - **[DONE] [M] Task:** Implement AVX2 acceleration for `TMatMul` in `include/t81/tensor/matmul.hpp`.
     - **[DONE] [M] Task:** Implement AVX2 acceleration for `TRMSNorm`, `TSiLU`, and `TSoftmax` in `include/t81/tensor/llama.hpp`.

@@ -88,6 +88,7 @@ Usage: )" << prog << R"( <command> [options] [args]
 Commands:
   compile <file.t81> [-o <file.tisc>]   Compile T81Lang → TISC bytecode
   run     <file.t81|.tisc>             Compile (if needed) and execute
+  disasm  <file.tisc>                  Disassemble TISC bytecode
   check   <file.t81>                   Syntax-check only
   lint    <file.t81>                   Alias for check; performs semantic analysis
   repl                                 Enter interactive REPL
@@ -96,6 +97,7 @@ Commands:
   weights import <file> [options]      Import BitNet/SafeTensors → .t81w
   weights info <model.t81w>            Print native model metadata
   weights quantize <dir|file> --to-gguf <out>  Quantize SafeTensors → T3_K GGUF
+  scaffold <name>                      Create a new T81 project
   help                                 Show this message
 
 
@@ -228,7 +230,7 @@ Args parse_args(int argc, char* argv[]) {
         else {
             if (a.command == "benchmark") {
                 a.benchmark_args.emplace_back(argv[i]);
-            } else if (a.command == "weights") {
+            } else if (a.command == "weights" || a.command == "scaffold") {
                 a.command_args.emplace_back(argv[i]);
             } else {
                 if (!a.input.empty()) {
@@ -415,7 +417,7 @@ int main(int argc, char* argv[]) {
         if (args.need_help)    { print_usage(argv[0]); return 0; }
         if (args.need_version) { print_version();    return 0; }
 
-        bool needs_input = (args.command == "compile" || args.command == "run" || args.command == "check" || args.command == "lint");
+        bool needs_input = (args.command == "compile" || args.command == "run" || args.command == "check" || args.command == "lint" || args.command == "disasm");
         if (args.command.empty() || (needs_input && args.input.empty())) {
             print_usage(argv[0]);
             return 1;
@@ -467,6 +469,13 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
 
+        } else if (args.command == "disasm") {
+            if (ext != ".tisc") {
+                error("disasm expects a .tisc file");
+                return 1;
+            }
+            return t81::cli::disassemble(args.input);
+
         } else if (args.command == "check" || args.command == "lint") {
             if (ext != ".t81") {
                 error(args.command + " expects a .t81 source file");
@@ -482,6 +491,13 @@ int main(int argc, char* argv[]) {
 
         } else if (args.command == "weights") {
             return run_weights(args);
+
+        } else if (args.command == "scaffold") {
+            if (args.command_args.empty()) {
+                error("scaffold requires a project name");
+                return 1;
+            }
+            return t81::cli::scaffold(args.command_args[0]);
 
         } else {
             error("Unknown command: " + args.command);

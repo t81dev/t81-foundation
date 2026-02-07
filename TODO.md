@@ -8,7 +8,7 @@ This document tracks long-term strategic goals and ecosystem enhancements that e
 - [ ] **IDE Support:** Develop language servers (LSP) and syntax highlighters for T81Lang (VS Code, Vim, Emacs).
 - [ ] **Package Management:** Implement a canonical package manager for T81Lang libraries and modules.
 - [ ] **Integrated Debugger:** Create a debugger for HanoiVM that allows stepping through TISC instructions and inspecting Axion state.
-- [ ] **CLI Assists:** Expand the `t81` CLI with project scaffolding, linting, and formatting tools.
+- [/] **CLI Assists:** Expand the `t81` CLI with project scaffolding [DONE], disassembly [DONE], linting, and formatting tools.
 
 ## High-Tier Cognition [P1]
 

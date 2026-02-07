@@ -239,6 +239,12 @@ std::string opcode_name(t81::tisc::Opcode opcode) {
         CASE(HeapAlloc)
         CASE(HeapFree)
         CASE(WeightsLoad)
+        CASE(TExp)
+        CASE(TSqrt)
+        CASE(TSiLU)
+        CASE(TSoftmax)
+        CASE(TRMSNorm)
+        CASE(TRoPE)
 #undef CASE
     }
     return "Opcode(" + std::to_string(static_cast<int>(opcode)) + ")";
@@ -588,6 +594,48 @@ int compile(const fs::path& input,
     return 0;
 }
 
+int scaffold(const std::string& project_name) {
+    if (project_name.empty()) {
+        error("Project name cannot be empty");
+        return 1;
+    }
+
+    fs::path root(project_name);
+    if (fs::exists(root)) {
+        error("Directory already exists: " + project_name);
+        return 1;
+    }
+
+    info("Scaffolding new T81 project: " + project_name);
+    try {
+        fs::create_directories(root / "src");
+
+        std::ofstream main_file(root / "src" / "main.t81");
+        main_file << "// T81 Project: " << project_name << "\n"
+                  << "// Created by t81 scaffold\n\n"
+                  << "fn main() -> i32 {\n"
+                  << "    let msg: T81String = \"Hello from " << project_name << "!\";\n"
+                  << "    return 0;\n"
+                  << "}\n";
+
+        std::ofstream readme(root / "README.md");
+        readme << "# " << project_name << "\n\n"
+               << "A new T81 Foundation project.\n\n"
+               << "## Usage\n\n"
+               << "```bash\n"
+               << "t81 run src/main.t81\n"
+               << "```\n";
+
+        info("Project created successfully.");
+        info("Next steps:\n  cd " + project_name + "\n  t81 run src/main.t81");
+    } catch (const std::exception& e) {
+        error(std::string("Scaffolding failed: ") + e.what());
+        return 1;
+    }
+
+    return 0;
+}
+
 namespace {
 
 void print_repl_help() {
@@ -862,6 +910,39 @@ int run_tisc(const fs::path& path) {
     }
 
     info("Program terminated normally");
+    return 0;
+}
+
+int disassemble(const fs::path& path) {
+    if (!fs::exists(path)) {
+        error("File not found: " + path.string());
+        return 1;
+    }
+
+    verbose("Disassembling " + path.string());
+    try {
+        auto program = t81::tisc::load_program(path.string());
+        std::cout << "Program: " << path.string() << "\n";
+        std::cout << "Instructions: " << program.insns.size() << "\n";
+        if (!program.axion_policy_text.empty()) {
+            std::cout << "Axion Policy: " << program.axion_policy_text << "\n";
+        }
+        std::cout << "--------------------------------------------------\n";
+
+        for (size_t i = 0; i < program.insns.size(); ++i) {
+            const auto& insn = program.insns[i];
+            std::cout << std::setw(4) << i << ": "
+                      << std::setw(15) << std::left << opcode_name(insn.opcode)
+                      << " " << std::setw(8) << insn.a
+                      << " " << std::setw(8) << insn.b
+                      << " " << std::setw(8) << insn.c << "\n";
+        }
+        std::cout << "--------------------------------------------------\n";
+    } catch (const std::exception& e) {
+        error(std::string("Failed to disassemble: ") + e.what());
+        return 1;
+    }
+
     return 0;
 }
 

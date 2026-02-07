@@ -1,13 +1,6 @@
-// File: examples/hello_world.t81
-// Purpose: Minimal T81Lang example for symbolic agents and human readers
-// Description: Prints 'Hello, World!' in a ternary environment
-
-fn main() {
-  let msg = T81String("Hello, World!")
-  stdout << msg
+fn main() -> i32 {
+  // T81Lang currently focuses on deterministic kernel logic.
+  // IO side-effects like 'stdout' are planned for future revisions.
+  let _msg: T81String = "Hello, World!";
+  return 0;
 }
-
-// Compiler behavior:
-//   - Compiles to `.tisc` and `.entropy.json`
-//   - AI metadata: symbolic tag `main`, inferred recursion level = 0
-//   - Suitable for HanoiVM execution
