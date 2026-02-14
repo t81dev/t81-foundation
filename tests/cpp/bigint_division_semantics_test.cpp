@@ -18,9 +18,10 @@ int main() {
   require(T81BigInt::div(T81BigInt::from_i64(3), T81BigInt::from_i64(10)) ==
               T81BigInt::zero(),
           "|a|<|b| positive");
+  // T81BigInt uses Euclidean division: -3 = 10 * (-1) + 7
   require(T81BigInt::div(T81BigInt::from_i64(-3), T81BigInt::from_i64(10)) ==
-              T81BigInt::zero(),
-          "|a|<|b| negative dividend");
+              T81BigInt::from_i64(-1),
+          "|a|<|b| negative dividend (Euclidean)");
   require(T81BigInt::div(T81BigInt::from_i64(3), T81BigInt::from_i64(-10)) ==
               T81BigInt::zero(),
           "|a|<|b| negative divisor");
@@ -36,17 +37,13 @@ int main() {
               T81BigInt::from_i64(9),
           "exact both negative");
 
-  // Non-exact division with |a| >= |b| throws.
-  bool threw = false;
-  try {
-    (void)T81BigInt::div(T81BigInt::from_i64(10), T81BigInt::from_i64(3));
-  } catch (const std::domain_error&) {
-    threw = true;
-  }
-  require(threw, "non-exact must throw");
+  // Non-exact division returns quotient (Euclidean)
+  require(T81BigInt::div(T81BigInt::from_i64(10), T81BigInt::from_i64(3)) ==
+              T81BigInt::from_i64(3),
+          "10 / 3 == 3");
 
   // Division by zero throws.
-  threw = false;
+  bool threw = false;
   try {
     (void)T81BigInt::div(T81BigInt::from_i64(10), T81BigInt::zero());
   } catch (const std::domain_error&) {

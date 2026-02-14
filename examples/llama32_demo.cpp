@@ -108,15 +108,15 @@ int main() {
 
     // --- Self-Attention Block ---
     // 1. RMSNorm
-    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 1}); // input_layernorm.weight
+    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 0}); // input_layernorm.weight
     insns.push_back({Opcode::TRMSNorm, reg_norm, reg_x, reg_tmp1});
 
     // 2. Q, K, V projections
-    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 2}); // q_proj
+    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 1}); // q_proj
     insns.push_back({Opcode::TMatMul, reg_q, reg_norm, reg_tmp1});
-    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 3}); // k_proj
+    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 2}); // k_proj
     insns.push_back({Opcode::TMatMul, reg_k, reg_norm, reg_tmp1});
-    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 4}); // v_proj
+    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 3}); // v_proj
     insns.push_back({Opcode::TMatMul, reg_v, reg_norm, reg_tmp1});
 
     // 3. RoPE (on Q and K)
@@ -131,7 +131,7 @@ int main() {
     insns.push_back({Opcode::TMatMul, reg_out, reg_attn, reg_v}); // [1, 2048]
 
     // 5. O projection
-    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 5}); // o_proj
+    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 4}); // o_proj
     insns.push_back({Opcode::TMatMul, reg_out, reg_out, reg_tmp1});
 
     // 6. Residual Add
@@ -139,22 +139,22 @@ int main() {
 
     // --- MLP Block ---
     // 1. RMSNorm
-    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 6}); // post_attention_layernorm.weight
+    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 5}); // post_attention_layernorm.weight
     insns.push_back({Opcode::TRMSNorm, reg_norm, reg_x, reg_tmp1});
 
     // 2. Gate & Up projections
-    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 7}); // gate_proj
+    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 6}); // gate_proj
     insns.push_back({Opcode::TMatMul, reg_tmp1, reg_norm, reg_tmp1});
     insns.push_back({Opcode::TSiLU, reg_tmp1, reg_tmp1});
 
-    insns.push_back({Opcode::WeightsLoad, reg_tmp2, 8}); // up_proj
+    insns.push_back({Opcode::WeightsLoad, reg_tmp2, 7}); // up_proj
     insns.push_back({Opcode::TMatMul, reg_tmp2, reg_norm, reg_tmp2});
 
     // 3. Element-wise multiply
     insns.push_back({Opcode::TVecMul, reg_out, reg_tmp1, reg_tmp2});
 
     // 4. Down projection
-    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 9}); // down_proj
+    insns.push_back({Opcode::WeightsLoad, reg_tmp1, 8}); // down_proj
     insns.push_back({Opcode::TMatMul, reg_out, reg_out, reg_tmp1});
 
     // 5. Residual Add

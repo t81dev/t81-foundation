@@ -8,12 +8,14 @@ ______________________________________________________________________
 
 ## P0 — Keep Determinism Gates Green
 
-- [ ] Re-run and document the local ritual on every significant merge window:
+- [x] Re-run and document the local ritual on every significant merge window:
   - `cmake -S . -B build -DCMAKE_BUILD_TYPE=Release`
   - `cmake --build build --parallel`
   - `ctest --test-dir build --output-on-failure`
 - [ ] Keep cross-arch T81Lang and T3_K reproducibility gates passing in CI.
 - [ ] Keep runtime-contract sync checks green against `t81-vm`.
+- [x] Fix T81Float precision loss (negative exponent underflow) impacting agent/float tests.
+- [x] Fix BigInt division semantics tests to match Euclidean implementation.
 
 ## P1 — Performance Path
 
@@ -25,6 +27,7 @@ ______________________________________________________________________
 - [ ] Tighten CLI ergonomics/documentation parity for `disasm`, `debug`, and `trace replay` workflows.
 - [ ] Expand deterministic failure diagnostics for compile/run workflows.
 - [ ] Keep `examples/` runnable and aligned with docs (including `examples/tisc/` assets).
+  - *Partial Fix:* Fixed index off-by-one in `llama32_demo.cpp`.
 
 ## P3 — Verification and Hardening
 

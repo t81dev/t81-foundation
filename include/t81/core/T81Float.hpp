@@ -630,23 +630,20 @@ private:
         for (size_type i = 0; i < M; ++i) final_m[i] = mant[i];
         if (round_up) final_m = final_m + T81Int<M>(1);
 
-        // Overflow from rounding into an extra trit
-        if (leading_trit(final_m) == M - 1) {
-            final_m >>= 1;
-            ++exp;
-        }
-
         // Overflow/underflow handling
         if (exp >= kInfExponent) {
             return inf(sign == Trit::P);
         }
-        if (exp <= 0) {
-            const std::int64_t under = 1 - exp;
+        // Memory correction: Allow negative exponents down to -kInfExponent.
+        // We treat exp < -kInfExponent as underflow.
+        // We clamp to -kInfExponent (min representable).
+        if (exp < -kInfExponent) {
+            const std::int64_t under = (-kInfExponent) - exp;
             if (under >= static_cast<std::int64_t>(M)) {
                 return zero(sign == Trit::P);
             }
             final_m >>= static_cast<size_type>(under);
-            exp = 0;
+            exp = -kInfExponent;
         }
 
         T81Float f;
