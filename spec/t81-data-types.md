@@ -211,7 +211,40 @@ No floating approximations allowed.
 
 ______________________________________________________________________
 
-## 2.5 T81Prob
+## 2.5 T81Fixed
+
+### Definition
+
+A fixed-point decimal type `T81Fixed[N, K]`.
+
+### Parameters
+
+- `N`: Total bits (or trits).
+- `K`: Fractional bits (or trits).
+
+## 2.6 T81Complex
+
+### Definition
+
+A complex number type `T81Complex[N]`.
+
+### Parameters
+
+- `N`: Size of component (e.g., 4 or 8 bytes).
+
+## 2.7 T81Qutrit
+
+### Definition
+
+A ternary quantum bit state (0, 1, 2) representing superposition in simulation.
+
+## 2.8 T81Uint
+
+### Definition
+
+Unsigned integer type.
+
+## 2.9 T81Prob
 
 ### Definition
 

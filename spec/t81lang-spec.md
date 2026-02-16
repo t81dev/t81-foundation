@@ -85,11 +85,12 @@ statement     ::= let_decl
                 | return
                 | if_stmt
                 | loop_stmt
+                | block
                 | expr ";"
 
 let_decl      ::= "let" identifier [ ":" type ] "=" expr ";"
 var_decl      ::= "var" identifier [ ":" type ] [ "=" expr ] ";"
-assign        ::= identifier "=" expr ";"
+assign        ::= ( identifier | index_expr | field_expr ) "=" expr ";"
 return        ::= "return" expr ";"
 
 if_stmt       ::= "if" expr block [ "else" block ]
@@ -114,6 +115,8 @@ literal       ::= integer | float | fraction | symbol | vector_literal
 vector_literal ::= "[" [ expr { "," expr } ] "]"
 
 paren_expr    ::= "(" expr ")"
+block_expr    ::= "{" statement* [ expr ] "}"
+if_expr       ::= "if" expr block_expr [ "else" block_expr ]
 ```
 
 This grammar MUST be parsed deterministically.
@@ -176,6 +179,10 @@ All examples in the spec using `<...>` are hereby declared obsolete.
 - `T81Float`
 - `T81Fraction`
 - `Symbol`
+- `T81Fixed[N, K]`
+- `T81Complex[N]`
+- `T81Qutrit`
+- `T81Uint`
 
 These map 1:1 to the Data Types primitive categories.
 
@@ -584,10 +591,12 @@ All control flow is explicit and deterministic.
 
 - Condition MUST be a canonical boolean encoded as T81Int (0, 1, or -1 via ternary truth table).
 - Branch lowering MUST produce deterministic TISC control flow.
+- `if` constructs can be used as expressions: `let x = if (c) { a } else { b };`.
+- Branches in an expression context MUST evaluate to compatible types.
 
 ### 6.2 Match
 
-T81Lang exposes `match` expressions for structural types:
+T81Lang exposes `match` expressions for structural types (Option, Result, Enum):
 
 ```t81
 let total: T81Int = match (maybe_value) {
@@ -626,7 +635,18 @@ loop { ... }
 
 Otherwise, an unbounded loop without explicit annotation is a compile-time error.
 
-### 6.4 Recursion
+### 6.4 Block Expressions
+
+Code blocks `{ ... }` evaluate to the value of their final expression if it lacks a semicolon.
+
+```t81
+let x = {
+    let a = 1;
+    a + 1
+};
+```
+
+### 6.5 Recursion
 
 Recursion is allowed but MUST:
 
