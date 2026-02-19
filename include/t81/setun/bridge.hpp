@@ -30,10 +30,43 @@ struct BridgeDiagnostic {
         message(std::move(msg)),
         source_line(std::move(source)) {}
 
-  BridgeDiagnostic(const BridgeDiagnostic&) = default;
-  BridgeDiagnostic& operator=(const BridgeDiagnostic&) = default;
-  BridgeDiagnostic(BridgeDiagnostic&&) noexcept = default;
-  BridgeDiagnostic& operator=(BridgeDiagnostic&&) noexcept = default;
+  BridgeDiagnostic(const BridgeDiagnostic& other)
+      : error(other.error),
+        line(other.line),
+        column(other.column),
+        message(other.message),
+        source_line(other.source_line) {}
+
+  BridgeDiagnostic& operator=(const BridgeDiagnostic& other) {
+    if (this != &other) {
+      error = other.error;
+      line = other.line;
+      column = other.column;
+      message = other.message;
+      source_line = other.source_line;
+    }
+    return *this;
+  }
+
+  BridgeDiagnostic(BridgeDiagnostic&& other) noexcept
+      : error(other.error),
+        line(other.line),
+        column(other.column),
+        message(std::move(other.message)),
+        source_line(std::move(other.source_line)) {}
+
+  BridgeDiagnostic& operator=(BridgeDiagnostic&& other) noexcept {
+    if (this != &other) {
+      error = other.error;
+      line = other.line;
+      column = other.column;
+      message = std::move(other.message);
+      source_line = std::move(other.source_line);
+    }
+    return *this;
+  }
+
+  ~BridgeDiagnostic() = default;
 
   BridgeError error{BridgeError::EmptyInput};
   std::size_t line{0};    // 1-based line index
