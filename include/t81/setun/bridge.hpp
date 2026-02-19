@@ -21,22 +21,9 @@ enum class BridgeError {
 };
 
 struct BridgeDiagnostic {
-  BridgeDiagnostic() : error(BridgeError::EmptyInput), line(0), column(0) {}
-
-  BridgeDiagnostic(BridgeError err, std::size_t line_no, std::size_t column_no, std::string msg,
-                   std::string source)
-      : error(err),
-        line(line_no),
-        column(column_no),
-        message(std::move(msg)),
-        source_line(std::move(source)) {}
-
-  BridgeDiagnostic(const BridgeDiagnostic&) = default;
-  BridgeDiagnostic& operator=(const BridgeDiagnostic&) = default;
-  BridgeDiagnostic(BridgeDiagnostic&&) noexcept = default;
-  BridgeDiagnostic& operator=(BridgeDiagnostic&&) noexcept = default;
-
-  ~BridgeDiagnostic() = default;
+  // Use default member initializers to ensure all members are initialized
+  // without user-defined constructors, allowing aggregate initialization
+  // and implicit Rule of Zero semantics.
 
   BridgeError error{BridgeError::EmptyInput};
   std::size_t line{0};    // 1-based line index
