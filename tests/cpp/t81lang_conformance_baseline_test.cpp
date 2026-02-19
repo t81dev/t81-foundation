@@ -32,8 +32,7 @@ static bool fails_semantic(std::string_view source,
   return analyzer.had_error();
 }
 
-static bool fails_semantic_with_message(std::string_view source,
-                                        std::string_view needle,
+static bool fails_semantic_with_message(std::string_view source, std::string_view needle,
                                         const char* label = "t81lang_conformance_failure") {
   std::string source_text(source);
   Lexer lexer{source_text};
@@ -347,10 +346,10 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(bad_math_asin_arity,
-                                           "asin expects exactly one argument.",
-                                           "t81lang_std_math_asin_bad_arity"),
-               "t81lang_std_math_asin_bad_arity");
+  require_true(
+      fails_semantic_with_message(bad_math_asin_arity, "asin expects exactly one argument.",
+                                  "t81lang_std_math_asin_bad_arity"),
+      "t81lang_std_math_asin_bad_arity");
 
   constexpr const char* bad_math_pow_arity = R"(
     fn main() -> i32 {
@@ -370,10 +369,10 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(bad_math_clamp_arity,
-                                           "clamp expects exactly three arguments.",
-                                           "t81lang_std_math_clamp_bad_arity"),
-               "t81lang_std_math_clamp_bad_arity");
+  require_true(
+      fails_semantic_with_message(bad_math_clamp_arity, "clamp expects exactly three arguments.",
+                                  "t81lang_std_math_clamp_bad_arity"),
+      "t81lang_std_math_clamp_bad_arity");
 
   constexpr const char* bad_math_clamp_type = R"(
     fn main() -> i32 {
@@ -406,11 +405,10 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_collections_empty_arity,
-                                  "std.collections.is_empty expects exactly one argument.",
-                                  "t81lang_std_collections_is_empty_bad_arity"),
-      "t81lang_std_collections_is_empty_bad_arity");
+  require_true(fails_semantic_with_message(bad_collections_empty_arity,
+                                           "std.collections.is_empty expects exactly one argument.",
+                                           "t81lang_std_collections_is_empty_bad_arity"),
+               "t81lang_std_collections_is_empty_bad_arity");
 
   constexpr const char* bad_collections_first_empty_literal = R"(
     fn main() -> i32 {
@@ -546,10 +544,10 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(bad_sys_reflect_arity,
-                                           "sys_reflect expects no arguments.",
-                                           "t81lang_std_sys_reflect_bad_arity"),
-               "t81lang_std_sys_reflect_bad_arity");
+  require_true(
+      fails_semantic_with_message(bad_sys_reflect_arity, "sys_reflect expects no arguments.",
+                                  "t81lang_std_sys_reflect_bad_arity"),
+      "t81lang_std_sys_reflect_bad_arity");
 
   constexpr const char* bad_io_stream_arity = R"(
     fn main() -> i32 {
@@ -581,11 +579,11 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(
-                   bad_collections_container_arity,
-                   "std.collections container constructors expect no arguments.",
-                   "t81lang_std_collections_container_bad_arity"),
-               "t81lang_std_collections_container_bad_arity");
+  require_true(
+      fails_semantic_with_message(bad_collections_container_arity,
+                                  "std.collections container constructors expect no arguments.",
+                                  "t81lang_std_collections_container_bad_arity"),
+      "t81lang_std_collections_container_bad_arity");
 
   constexpr const char* bad_collections_map_put_value_type = R"(
     fn main() -> i32 {
@@ -596,10 +594,9 @@ static void test_std_namespace_builtin_aliases() {
     }
   )";
   require_true(
-      fails_semantic_with_message(
-          bad_collections_map_put_value_type,
-          "std.collections.map_put expects T81String key/value arguments.",
-          "t81lang_std_collections_map_put_bad_value_type"),
+      fails_semantic_with_message(bad_collections_map_put_value_type,
+                                  "std.collections.map_put expects T81String key/value arguments.",
+                                  "t81lang_std_collections_map_put_bad_value_type"),
       "t81lang_std_collections_map_put_bad_value_type");
 
   constexpr const char* bad_collections_map_size_type = R"(
@@ -610,10 +607,9 @@ static void test_std_namespace_builtin_aliases() {
     }
   )";
   require_true(
-      fails_semantic_with_message(
-          bad_collections_map_size_type,
-          "std.collections.map_size expects a Vector[T81String] argument.",
-          "t81lang_std_collections_map_size_bad_type"),
+      fails_semantic_with_message(bad_collections_map_size_type,
+                                  "std.collections.map_size expects a Vector[T81String] argument.",
+                                  "t81lang_std_collections_map_size_bad_type"),
       "t81lang_std_collections_map_size_bad_type");
 
   constexpr const char* bad_collections_map_has_key_type = R"(
@@ -727,12 +723,11 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(
-          bad_collections_graph_edge_count_type,
-          "std.collections.graph_edge_count expects a Vector[T81String] argument.",
-          "t81lang_std_collections_graph_edge_count_bad_type"),
-      "t81lang_std_collections_graph_edge_count_bad_type");
+  require_true(fails_semantic_with_message(
+                   bad_collections_graph_edge_count_type,
+                   "std.collections.graph_edge_count expects a Vector[T81String] argument.",
+                   "t81lang_std_collections_graph_edge_count_bad_type"),
+               "t81lang_std_collections_graph_edge_count_bad_type");
 
   constexpr const char* bad_collections_graph_has_edge_arity = R"(
     fn main() -> i32 {
@@ -742,10 +737,9 @@ static void test_std_namespace_builtin_aliases() {
     }
   )";
   require_true(
-      fails_semantic_with_message(
-          bad_collections_graph_has_edge_arity,
-          "std.collections.graph_has_edge expects exactly three arguments.",
-          "t81lang_std_collections_graph_has_edge_bad_arity"),
+      fails_semantic_with_message(bad_collections_graph_has_edge_arity,
+                                  "std.collections.graph_has_edge expects exactly three arguments.",
+                                  "t81lang_std_collections_graph_has_edge_bad_arity"),
       "t81lang_std_collections_graph_has_edge_bad_arity");
 
   constexpr const char* bad_collections_graph_add_edge_type = R"(
@@ -755,12 +749,11 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(
-          bad_collections_graph_add_edge_type,
-          "std.collections.graph_add_edge expects T81String from/to arguments.",
-          "t81lang_std_collections_graph_add_edge_bad_type"),
-      "t81lang_std_collections_graph_add_edge_bad_type");
+  require_true(fails_semantic_with_message(
+                   bad_collections_graph_add_edge_type,
+                   "std.collections.graph_add_edge expects T81String from/to arguments.",
+                   "t81lang_std_collections_graph_add_edge_bad_type"),
+               "t81lang_std_collections_graph_add_edge_bad_type");
 
   constexpr const char* bad_collections_graph_remove_edge_arity = R"(
     fn main() -> i32 {
@@ -769,12 +762,11 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(
-          bad_collections_graph_remove_edge_arity,
-          "std.collections.graph_remove_edge expects exactly three arguments.",
-          "t81lang_std_collections_graph_remove_edge_bad_arity"),
-      "t81lang_std_collections_graph_remove_edge_bad_arity");
+  require_true(fails_semantic_with_message(
+                   bad_collections_graph_remove_edge_arity,
+                   "std.collections.graph_remove_edge expects exactly three arguments.",
+                   "t81lang_std_collections_graph_remove_edge_bad_arity"),
+               "t81lang_std_collections_graph_remove_edge_bad_arity");
 
   constexpr const char* bad_collections_graph_neighbors_type = R"(
     fn main() -> i32 {
@@ -783,12 +775,11 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(
-          bad_collections_graph_neighbors_type,
-          "std.collections.graph_neighbors expects a T81String from argument.",
-          "t81lang_std_collections_graph_neighbors_bad_type"),
-      "t81lang_std_collections_graph_neighbors_bad_type");
+  require_true(fails_semantic_with_message(
+                   bad_collections_graph_neighbors_type,
+                   "std.collections.graph_neighbors expects a T81String from argument.",
+                   "t81lang_std_collections_graph_neighbors_bad_type"),
+               "t81lang_std_collections_graph_neighbors_bad_type");
 
   constexpr const char* bad_async_sleep_type = R"(
     fn main() -> i32 {
@@ -1204,9 +1195,10 @@ static void test_std_text_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(bad_split_arity, "str_split expects exactly two arguments.",
-                                           "t81lang_std_text_split_bad_arity"),
-               "t81lang_std_text_split_bad_arity");
+  require_true(
+      fails_semantic_with_message(bad_split_arity, "str_split expects exactly two arguments.",
+                                  "t81lang_std_text_split_bad_arity"),
+      "t81lang_std_text_split_bad_arity");
 
   constexpr const char* bad_split_type = R"(
     fn main() -> i32 {
@@ -1215,10 +1207,9 @@ static void test_std_text_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_split_type, "str_split expects T81String arguments.",
-                                  "t81lang_std_text_split_bad_type"),
-      "t81lang_std_text_split_bad_type");
+  require_true(fails_semantic_with_message(bad_split_type, "str_split expects T81String arguments.",
+                                           "t81lang_std_text_split_bad_type"),
+               "t81lang_std_text_split_bad_type");
 
   constexpr const char* bad_split_empty_separator = R"(
     fn main() -> i32 {
@@ -1241,9 +1232,9 @@ static void test_std_text_aliases() {
       return 0;
     }
   )";
-  require_true(analyzes(split_variable_separator_valid,
-                        "t81lang_std_text_split_variable_separator_valid"),
-               "t81lang_std_text_split_variable_separator_valid");
+  require_true(
+      analyzes(split_variable_separator_valid, "t81lang_std_text_split_variable_separator_valid"),
+      "t81lang_std_text_split_variable_separator_valid");
 
   constexpr const char* bad_join_arity = R"(
     fn main() -> i32 {
@@ -1264,11 +1255,10 @@ static void test_std_text_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_join_parts_type,
-                                  "str_join expects a Vector[T81String] first argument.",
-                                  "t81lang_std_text_join_bad_parts_type"),
-      "t81lang_std_text_join_bad_parts_type");
+  require_true(fails_semantic_with_message(bad_join_parts_type,
+                                           "str_join expects a Vector[T81String] first argument.",
+                                           "t81lang_std_text_join_bad_parts_type"),
+               "t81lang_std_text_join_bad_parts_type");
 
   constexpr const char* bad_join_sep_type = R"(
     fn main() -> i32 {
@@ -1309,9 +1299,9 @@ static void test_std_text_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic(bad_from_bytes_arity_extra,
-                              "t81lang_std_text_from_bytes_bad_arity_extra"),
-               "t81lang_std_text_from_bytes_bad_arity_extra");
+  require_true(
+      fails_semantic(bad_from_bytes_arity_extra, "t81lang_std_text_from_bytes_bad_arity_extra"),
+      "t81lang_std_text_from_bytes_bad_arity_extra");
 }
 
 static void test_std_text_module_wrappers() {
@@ -1480,8 +1470,9 @@ static void test_std_bytes_aliases() {
       return n;
     }
   )";
-  require_true(fails_semantic(bad_string_without_conversion, "t81lang_std_bytes_len_requires_bytes"),
-               "t81lang_std_bytes_len_requires_bytes");
+  require_true(
+      fails_semantic(bad_string_without_conversion, "t81lang_std_bytes_len_requires_bytes"),
+      "t81lang_std_bytes_len_requires_bytes");
 
   constexpr const char* bad_bytes_to_text = R"(
     fn main() -> i32 {
@@ -1579,10 +1570,10 @@ static void test_std_bytes_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(bad_split_arity,
-                                           "bytes_split expects exactly two arguments.",
-                                           "t81lang_std_bytes_split_bad_arity"),
-               "t81lang_std_bytes_split_bad_arity");
+  require_true(
+      fails_semantic_with_message(bad_split_arity, "bytes_split expects exactly two arguments.",
+                                  "t81lang_std_bytes_split_bad_arity"),
+      "t81lang_std_bytes_split_bad_arity");
 
   constexpr const char* bad_split_type = R"(
     fn main() -> i32 {
@@ -1603,11 +1594,10 @@ static void test_std_bytes_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_split_empty_separator,
-                                  "bytes_split separator must not be empty.",
-                                  "t81lang_std_bytes_split_bad_empty_separator"),
-      "t81lang_std_bytes_split_bad_empty_separator");
+  require_true(fails_semantic_with_message(bad_split_empty_separator,
+                                           "bytes_split separator must not be empty.",
+                                           "t81lang_std_bytes_split_bad_empty_separator"),
+               "t81lang_std_bytes_split_bad_empty_separator");
 
   constexpr const char* bad_join_arity = R"(
     fn main() -> i32 {
@@ -1616,9 +1606,10 @@ static void test_std_bytes_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(bad_join_arity, "bytes_join expects exactly two arguments.",
-                                           "t81lang_std_bytes_join_bad_arity"),
-               "t81lang_std_bytes_join_bad_arity");
+  require_true(
+      fails_semantic_with_message(bad_join_arity, "bytes_join expects exactly two arguments.",
+                                  "t81lang_std_bytes_join_bad_arity"),
+      "t81lang_std_bytes_join_bad_arity");
 
   constexpr const char* bad_join_parts_type = R"(
     fn main() -> i32 {
@@ -1627,11 +1618,10 @@ static void test_std_bytes_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_join_parts_type,
-                                  "bytes_join expects a Vector[T81Bytes] first argument.",
-                                  "t81lang_std_bytes_join_bad_parts_type"),
-      "t81lang_std_bytes_join_bad_parts_type");
+  require_true(fails_semantic_with_message(bad_join_parts_type,
+                                           "bytes_join expects a Vector[T81Bytes] first argument.",
+                                           "t81lang_std_bytes_join_bad_parts_type"),
+               "t81lang_std_bytes_join_bad_parts_type");
 
   constexpr const char* bad_join_sep_type = R"(
     fn main() -> i32 {
@@ -1640,11 +1630,10 @@ static void test_std_bytes_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_join_sep_type,
-                                  "bytes_join expects a T81Bytes separator argument.",
-                                  "t81lang_std_bytes_join_bad_separator_type"),
-      "t81lang_std_bytes_join_bad_separator_type");
+  require_true(fails_semantic_with_message(bad_join_sep_type,
+                                           "bytes_join expects a T81Bytes separator argument.",
+                                           "t81lang_std_bytes_join_bad_separator_type"),
+               "t81lang_std_bytes_join_bad_separator_type");
 
   constexpr const char* bad_from_string_type = R"(
     fn main() -> i32 {
@@ -1673,9 +1662,9 @@ static void test_std_bytes_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic(bad_from_string_arity_extra,
-                              "t81lang_std_bytes_from_string_bad_arity_extra"),
-               "t81lang_std_bytes_from_string_bad_arity_extra");
+  require_true(
+      fails_semantic(bad_from_string_arity_extra, "t81lang_std_bytes_from_string_bad_arity_extra"),
+      "t81lang_std_bytes_from_string_bad_arity_extra");
 
   constexpr const char* bad_to_string_arity = R"(
     fn main() -> i32 {
@@ -1704,9 +1693,9 @@ static void test_std_bytes_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic(bad_to_string_arity_extra,
-                              "t81lang_std_bytes_to_string_bad_arity_extra"),
-               "t81lang_std_bytes_to_string_bad_arity_extra");
+  require_true(
+      fails_semantic(bad_to_string_arity_extra, "t81lang_std_bytes_to_string_bad_arity_extra"),
+      "t81lang_std_bytes_to_string_bad_arity_extra");
 
   constexpr const char* valid_constructor = R"(
     fn main() -> i32 {
@@ -1748,9 +1737,9 @@ static void test_std_bytes_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic(bad_constructor_arity_extra,
-                              "t81lang_t81bytes_constructor_bad_arity_extra"),
-               "t81lang_t81bytes_constructor_bad_arity_extra");
+  require_true(
+      fails_semantic(bad_constructor_arity_extra, "t81lang_t81bytes_constructor_bad_arity_extra"),
+      "t81lang_t81bytes_constructor_bad_arity_extra");
 }
 
 static void test_std_bytes_module_wrappers() {
@@ -1865,10 +1854,10 @@ static void test_std_symbol_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(bad_intern_arity,
-                                           "symbol_intern expects exactly one argument.",
-                                           "t81lang_std_symbol_intern_bad_arity"),
-               "t81lang_std_symbol_intern_bad_arity");
+  require_true(
+      fails_semantic_with_message(bad_intern_arity, "symbol_intern expects exactly one argument.",
+                                  "t81lang_std_symbol_intern_bad_arity"),
+      "t81lang_std_symbol_intern_bad_arity");
 
   constexpr const char* bad_intern_type = R"(
     fn main() -> i32 {
@@ -1889,11 +1878,10 @@ static void test_std_symbol_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_to_string_type,
-                                  "symbol_to_string expects a T81String argument.",
-                                  "t81lang_std_symbol_to_string_bad_type"),
-      "t81lang_std_symbol_to_string_bad_type");
+  require_true(fails_semantic_with_message(bad_to_string_type,
+                                           "symbol_to_string expects a T81String argument.",
+                                           "t81lang_std_symbol_to_string_bad_type"),
+               "t81lang_std_symbol_to_string_bad_type");
 
   constexpr const char* bad_eq_arity = R"(
     fn main() -> i32 {
@@ -1902,8 +1890,7 @@ static void test_std_symbol_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(bad_eq_arity,
-                                           "symbol_eq expects exactly two arguments.",
+  require_true(fails_semantic_with_message(bad_eq_arity, "symbol_eq expects exactly two arguments.",
                                            "t81lang_std_symbol_eq_bad_arity"),
                "t81lang_std_symbol_eq_bad_arity");
 
@@ -1941,12 +1928,11 @@ static void test_generic_function_inference() {
       return out;
     }
   )";
-  require_true(
-      fails_semantic_with_message(mismatched_args,
-                                  "Argument 1 for function 'choose' expects 'T' but got "
-                                  "'T81String'.",
-                                  "t81lang_generic_function_inference_mismatched_args"),
-      "t81lang_generic_function_inference_mismatched_args");
+  require_true(fails_semantic_with_message(mismatched_args,
+                                           "Argument 1 for function 'choose' expects 'T' but got "
+                                           "'T81String'.",
+                                           "t81lang_generic_function_inference_mismatched_args"),
+               "t81lang_generic_function_inference_mismatched_args");
 
   constexpr const char* mismatched_return_assignment = R"(
     fn first_or[T](a: T, fallback: T) -> T {
@@ -1984,9 +1970,9 @@ static void test_generic_function_inference() {
       return out;
     }
   )";
-  require_true(analyzes(partial_explicit_type_args,
-                        "t81lang_generic_function_partial_explicit_type_args"),
-               "t81lang_generic_function_partial_explicit_type_args");
+  require_true(
+      analyzes(partial_explicit_type_args, "t81lang_generic_function_partial_explicit_type_args"),
+      "t81lang_generic_function_partial_explicit_type_args");
 
   constexpr const char* explicit_type_arg_count_mismatch = R"(
     fn id[T](x: T) -> T {
@@ -1997,11 +1983,10 @@ static void test_generic_function_inference() {
       return out;
     }
   )";
-  require_true(
-      fails_semantic_with_message(explicit_type_arg_count_mismatch,
-                                  "expects 1 explicit type arguments at most but got 2",
-                                  "t81lang_generic_function_explicit_type_args_bad_arity"),
-      "t81lang_generic_function_explicit_type_args_bad_arity");
+  require_true(fails_semantic_with_message(explicit_type_arg_count_mismatch,
+                                           "expects 1 explicit type arguments at most but got 2",
+                                           "t81lang_generic_function_explicit_type_args_bad_arity"),
+               "t81lang_generic_function_explicit_type_args_bad_arity");
 
   constexpr const char* unresolved_generic_inference = R"(
     fn none_of[T]() -> Option[T] {
@@ -2029,12 +2014,11 @@ static void test_generic_function_inference() {
       return 1;
     }
   )";
-  require_true(
-      fails_semantic_with_message(
-          unresolved_multiple_generic_inference,
-          "Cannot infer generic parameters 'T', 'U' for function 'none_pair'.",
-          "t81lang_generic_function_unresolved_multiple_inference"),
-      "t81lang_generic_function_unresolved_multiple_inference");
+  require_true(fails_semantic_with_message(
+                   unresolved_multiple_generic_inference,
+                   "Cannot infer generic parameters 'T', 'U' for function 'none_pair'.",
+                   "t81lang_generic_function_unresolved_multiple_inference"),
+               "t81lang_generic_function_unresolved_multiple_inference");
 }
 
 static void test_let_is_immutable() {

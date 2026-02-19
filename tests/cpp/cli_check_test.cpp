@@ -278,8 +278,7 @@ int main() {
     std::cerr << "Expected `t81 check` to fail on std.sys.entropy bad arity\n";
     return 1;
   }
-  [[maybe_unused]] std::string bad_sys_entropy_arity_output =
-      bad_sys_entropy_arity_captured.str();
+  [[maybe_unused]] std::string bad_sys_entropy_arity_output = bad_sys_entropy_arity_captured.str();
   assert(bad_sys_entropy_arity_output.find(bad_sys_entropy_arity_path.string()) !=
          std::string::npos);
   assert(bad_sys_entropy_arity_output.find("sys_entropy expects no arguments.") !=
@@ -307,8 +306,7 @@ int main() {
     std::cerr << "Expected `t81 check` to fail on std.sys.reflect bad arity\n";
     return 1;
   }
-  [[maybe_unused]] std::string bad_sys_reflect_arity_output =
-      bad_sys_reflect_arity_captured.str();
+  [[maybe_unused]] std::string bad_sys_reflect_arity_output = bad_sys_reflect_arity_captured.str();
   assert(bad_sys_reflect_arity_output.find(bad_sys_reflect_arity_path.string()) !=
          std::string::npos);
   assert(bad_sys_reflect_arity_output.find("sys_reflect expects no arguments.") !=
@@ -481,8 +479,7 @@ int main() {
     return 1;
   }
   [[maybe_unused]] std::string generic_explicit_bad_output = generic_explicit_bad_captured.str();
-  assert(generic_explicit_bad_output.find(generic_explicit_bad_path.string()) !=
-         std::string::npos);
+  assert(generic_explicit_bad_output.find(generic_explicit_bad_path.string()) != std::string::npos);
   assert(generic_explicit_bad_output.find("expects 'i32' but got 'T81String'") !=
          std::string::npos);
   fs::remove(generic_explicit_bad_path);
@@ -515,9 +512,8 @@ int main() {
       generic_explicit_arity_bad_captured.str();
   assert(generic_explicit_arity_bad_output.find(generic_explicit_arity_bad_path.string()) !=
          std::string::npos);
-  assert(
-      generic_explicit_arity_bad_output.find("expects 1 explicit type arguments at most but got 2") !=
-      std::string::npos);
+  assert(generic_explicit_arity_bad_output.find(
+             "expects 1 explicit type arguments at most but got 2") != std::string::npos);
   fs::remove(generic_explicit_arity_bad_path);
 
   const std::string generic_unresolved_inference_bad_program = R"(
@@ -547,8 +543,8 @@ int main() {
   }
   [[maybe_unused]] std::string generic_unresolved_inference_bad_output =
       generic_unresolved_inference_bad_captured.str();
-  assert(generic_unresolved_inference_bad_output.find(generic_unresolved_inference_bad_path.string()) !=
-         std::string::npos);
+  assert(generic_unresolved_inference_bad_output.find(
+             generic_unresolved_inference_bad_path.string()) != std::string::npos);
   assert(generic_unresolved_inference_bad_output.find(
              "Cannot infer generic parameter 'T' for function 'none_of'.") != std::string::npos);
   fs::remove(generic_unresolved_inference_bad_path);
@@ -575,8 +571,7 @@ int main() {
   std::cerr.rdbuf(old_buf);
 
   if (generic_unresolved_multiple_inference_bad_rc == 0) {
-    std::cerr
-        << "Expected `t81 check` to fail on unresolved multiple generic inference for call\n";
+    std::cerr << "Expected `t81 check` to fail on unresolved multiple generic inference for call\n";
     return 1;
   }
   [[maybe_unused]] std::string generic_unresolved_multiple_inference_bad_output =

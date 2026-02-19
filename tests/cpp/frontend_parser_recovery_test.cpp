@@ -158,7 +158,8 @@ fn main() -> i32 {
     return false;
   }
 
-  if (!expect(stmts.size() == 1, "expected one top-level function in generic recovery")) return false;
+  if (!expect(stmts.size() == 1, "expected one top-level function in generic recovery"))
+    return false;
   auto* fn = dynamic_cast<FunctionStmt*>(stmts.front().get());
   if (!expect(fn != nullptr, "generic recovery top-level should be a function")) return false;
   if (!expect(fn->body.size() == 3, "expected later statements to survive generic recovery")) {
@@ -227,9 +228,9 @@ fn main() -> i32 {
   if (!expect(parser.had_error(), "parser should report malformed record pattern binding")) {
     return false;
   }
-  if (!expect(diagnostics.find("Expect binding name after ':' in record pattern.") !=
-                  std::string::npos,
-              "missing record-pattern binding diagnostic")) {
+  if (!expect(
+          diagnostics.find("Expect binding name after ':' in record pattern.") != std::string::npos,
+          "missing record-pattern binding diagnostic")) {
     return false;
   }
   if (!expect(diagnostics.find("Expect ')' after match binding.") == std::string::npos,
@@ -357,9 +358,9 @@ fn main() -> i32 {
   if (!expect(parser.had_error(), "parser should report missing guard expression")) {
     return false;
   }
-  if (!expect(diagnostics.find("Expect guard expression after 'if' in match arm.") !=
-                  std::string::npos,
-              "missing guard-expression diagnostic")) {
+  if (!expect(
+          diagnostics.find("Expect guard expression after 'if' in match arm.") != std::string::npos,
+          "missing guard-expression diagnostic")) {
     return false;
   }
   if (!expect(diagnostics.find("Expect expression.") == std::string::npos,

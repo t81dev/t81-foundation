@@ -392,8 +392,7 @@ void test_constructor_and_conversion_calls_lower() {
   }
   EXPECT(has_add, "constructor/conversion fixture should include ADD");
   EXPECT(has_make_complex, "constructor/conversion fixture should include MAKE_COMPLEX");
-  std::cout << "IRGeneratorTest test_constructor_and_conversion_calls_lower passed!"
-            << std::endl;
+  std::cout << "IRGeneratorTest test_constructor_and_conversion_calls_lower passed!" << std::endl;
 }
 
 void test_generic_call_with_explicit_type_args_lowers_to_call() {

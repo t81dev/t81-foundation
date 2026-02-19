@@ -54,8 +54,7 @@ fn main() -> i32 {
       if (!expect(diag.line == 8, "condition diagnostic should report the correct source line")) {
         return 1;
       }
-      if (!expect(diag.column == 9,
-                  "condition diagnostic should point at field token column")) {
+      if (!expect(diag.column == 9, "condition diagnostic should point at field token column")) {
         return 1;
       }
     }

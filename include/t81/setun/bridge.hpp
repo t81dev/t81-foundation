@@ -21,7 +21,8 @@ enum class BridgeError {
 };
 
 struct BridgeDiagnostic {
-  BridgeDiagnostic() = default;
+  BridgeDiagnostic() : error(BridgeError::EmptyInput), line(0), column(0) {}
+
   BridgeDiagnostic(BridgeError err, std::size_t line_no, std::size_t column_no, std::string msg,
                    std::string source)
       : error(err),
@@ -30,41 +31,10 @@ struct BridgeDiagnostic {
         message(std::move(msg)),
         source_line(std::move(source)) {}
 
-  BridgeDiagnostic(const BridgeDiagnostic& other)
-      : error(other.error),
-        line(other.line),
-        column(other.column),
-        message(other.message),
-        source_line(other.source_line) {}
-
-  BridgeDiagnostic& operator=(const BridgeDiagnostic& other) {
-    if (this != &other) {
-      error = other.error;
-      line = other.line;
-      column = other.column;
-      message = other.message;
-      source_line = other.source_line;
-    }
-    return *this;
-  }
-
-  BridgeDiagnostic(BridgeDiagnostic&& other) noexcept
-      : error(other.error),
-        line(other.line),
-        column(other.column),
-        message(std::move(other.message)),
-        source_line(std::move(other.source_line)) {}
-
-  BridgeDiagnostic& operator=(BridgeDiagnostic&& other) noexcept {
-    if (this != &other) {
-      error = other.error;
-      line = other.line;
-      column = other.column;
-      message = std::move(other.message);
-      source_line = std::move(other.source_line);
-    }
-    return *this;
-  }
+  BridgeDiagnostic(const BridgeDiagnostic&) = default;
+  BridgeDiagnostic& operator=(const BridgeDiagnostic&) = default;
+  BridgeDiagnostic(BridgeDiagnostic&&) noexcept = default;
+  BridgeDiagnostic& operator=(BridgeDiagnostic&&) noexcept = default;
 
   ~BridgeDiagnostic() = default;
 
