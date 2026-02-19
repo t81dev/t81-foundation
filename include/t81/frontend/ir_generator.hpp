@@ -1282,8 +1282,8 @@ public:
           throw std::runtime_error("sys_entropy expects no arguments.");
         }
         auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
-        auto instr = tisc::ir::Instruction{tisc::ir::Opcode::LOADI,
-                                           {dest.reg, tisc::ir::Immediate{0}}};
+        auto instr =
+            tisc::ir::Instruction{tisc::ir::Opcode::LOADI, {dest.reg, tisc::ir::Immediate{0}}};
         instr.primitive = tisc::ir::PrimitiveKind::Integer;
         emit(instr);
         record_result(&expr, dest);
@@ -2189,9 +2189,9 @@ public:
         const bool is_put = func_name == "collections_map_put";
         const size_t expected_arity = is_put ? 3 : 2;
         if (expr.arguments.size() != expected_arity) {
-          throw std::runtime_error(std::string(is_put ? "collections_map_put" : "collections_map_remove") +
-                                   " expects exactly " + std::to_string(expected_arity) +
-                                   " arguments.");
+          throw std::runtime_error(
+              std::string(is_put ? "collections_map_put" : "collections_map_remove") +
+              " expects exactly " + std::to_string(expected_arity) + " arguments.");
         }
         expr.arguments[0]->accept(*this);
         expr.arguments[1]->accept(*this);
@@ -3308,7 +3308,8 @@ public:
       }
       if (func_name == "collections_graph_remove_edge") {
         if (expr.arguments.size() != 3) {
-          throw std::runtime_error("collections_graph_remove_edge expects exactly three arguments.");
+          throw std::runtime_error(
+              "collections_graph_remove_edge expects exactly three arguments.");
         }
         expr.arguments[0]->accept(*this);
         expr.arguments[1]->accept(*this);
@@ -3735,7 +3736,7 @@ public:
         instr.primitive = tisc::ir::PrimitiveKind::Boolean;
         instr.boolean_result = true;
         instr.relation = (func_name == "symbol_eq") ? tisc::ir::ComparisonRelation::Equal
-                                                     : tisc::ir::ComparisonRelation::NotEqual;
+                                                    : tisc::ir::ComparisonRelation::NotEqual;
         emit(instr);
         record_result(&expr, dest);
         return {};

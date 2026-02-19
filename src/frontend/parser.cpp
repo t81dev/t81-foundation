@@ -322,8 +322,8 @@ Token Parser::previous() { return _previous; }
 Token Parser::consume(TokenType type, const char* message) {
   if (check(type)) return advance();
   const Token found = peek();
-  std::string detailed = std::string(message) + " (expected " + token_type_name(type) +
-                         ", found " + token_found_description(found) + ")";
+  std::string detailed = std::string(message) + " (expected " + token_type_name(type) + ", found " +
+                         token_found_description(found) + ")";
   report_error(found, detailed);
   throw std::runtime_error(detailed);
 }

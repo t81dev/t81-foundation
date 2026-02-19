@@ -70,8 +70,9 @@ fn main() -> i32 {
 )";
 
   const auto enum_diags = analyze_source(enum_ctor_source, "enum_ctor_precision");
-  if (!expect(has_message(enum_diags,
-                          "Argument mismatch for enum constructor 'Item': expected 'i32' but got 'bool'."),
+  if (!expect(has_message(
+                  enum_diags,
+                  "Argument mismatch for enum constructor 'Item': expected 'i32' but got 'bool'."),
               "missing precise enum-constructor mismatch diagnostic")) {
     return 1;
   }
@@ -87,8 +88,8 @@ fn main() -> i32 {
 )";
 
   const auto match_diags = analyze_source(match_type_source, "match_precision");
-  if (!expect(has_message(match_diags,
-                          "All match arms must produce the same type: expected 'i32' but got 'bool' for arm 'None'."),
+  if (!expect(has_message(match_diags, "All match arms must produce the same type: expected 'i32' "
+                                       "but got 'bool' for arm 'None'."),
               "missing precise match-arm type mismatch diagnostic")) {
     return 1;
   }
@@ -101,8 +102,8 @@ fn main() -> i32 {
 )";
 
   const auto some_diags = analyze_source(some_ctor_source, "some_ctor_precision");
-  if (!expect(has_message(some_diags,
-                          "The 'Some' constructor argument must match the contextual Option payload: expected 'i32' but got 'bool'."),
+  if (!expect(has_message(some_diags, "The 'Some' constructor argument must match the contextual "
+                                      "Option payload: expected 'i32' but got 'bool'."),
               "missing precise Some-constructor mismatch diagnostic")) {
     return 1;
   }
@@ -115,9 +116,10 @@ fn main() -> i32 {
 )";
 
   const auto ok_ctor_diags = analyze_source(ok_ctor_source, "ok_ctor_precision");
-  if (!expect(has_message(ok_ctor_diags,
-                          "The 'Ok' constructor argument must match the success type of the contextual Result: expected 'i32' but got 'bool'."),
-              "missing precise Ok-constructor mismatch diagnostic")) {
+  if (!expect(
+          has_message(ok_ctor_diags, "The 'Ok' constructor argument must match the success type of "
+                                     "the contextual Result: expected 'i32' but got 'bool'."),
+          "missing precise Ok-constructor mismatch diagnostic")) {
     return 1;
   }
 
@@ -129,9 +131,10 @@ fn main() -> i32 {
 )";
 
   const auto err_ctor_diags = analyze_source(err_ctor_source, "err_ctor_precision");
-  if (!expect(has_message(err_ctor_diags,
-                          "The 'Err' constructor argument must match the error type of the contextual Result: expected 'bool' but got 'i32'."),
-              "missing precise Err-constructor mismatch diagnostic")) {
+  if (!expect(
+          has_message(err_ctor_diags, "The 'Err' constructor argument must match the error type of "
+                                      "the contextual Result: expected 'bool' but got 'i32'."),
+          "missing precise Err-constructor mismatch diagnostic")) {
     return 1;
   }
 
@@ -146,8 +149,7 @@ fn main() -> i32 {
 )";
 
   const auto logical_not_diags = analyze_source(logical_not_source, "logical_not_precision");
-  if (!expect(has_message(logical_not_diags,
-                          "Logical not requires a boolean operand, got 'i32'."),
+  if (!expect(has_message(logical_not_diags, "Logical not requires a boolean operand, got 'i32'."),
               "missing precise logical-not operand diagnostic")) {
     return 1;
   }
@@ -160,7 +162,8 @@ fn main() -> i32 {
 }
 )";
 
-  const auto immutable_index_diags = analyze_source(immutable_index_source, "immutable_index_precision");
+  const auto immutable_index_diags =
+      analyze_source(immutable_index_source, "immutable_index_precision");
   if (!expect(has_message(immutable_index_diags,
                           "Cannot assign to immutable index expression 'xs[0]'."),
               "missing precise immutable-index target diagnostic")) {
@@ -177,8 +180,9 @@ fn main() -> i32 {
 )";
 
   const auto index_type_diags = analyze_source(index_type_source, "index_type_precision");
-  if (!expect(has_message(index_type_diags,
-                          "Index expression 'flag' for target 'xs' must be an integer type, got 'bool'."),
+  if (!expect(has_message(
+                  index_type_diags,
+                  "Index expression 'flag' for target 'xs' must be an integer type, got 'bool'."),
               "missing precise index-type diagnostic with expression context")) {
     return 1;
   }
@@ -191,9 +195,11 @@ fn main() -> i32 {
 }
 )";
 
-  const auto assign_mismatch_diags = analyze_source(assign_mismatch_source, "assign_mismatch_precision");
-  if (!expect(has_message(assign_mismatch_diags,
-                          "Cannot assign expression 'true' of type 'bool' to target 'x' of type 'i32'."),
+  const auto assign_mismatch_diags =
+      analyze_source(assign_mismatch_source, "assign_mismatch_precision");
+  if (!expect(has_message(
+                  assign_mismatch_diags,
+                  "Cannot assign expression 'true' of type 'bool' to target 'x' of type 'i32'."),
               "missing precise assignment mismatch diagnostic with source/target context")) {
     return 1;
   }
@@ -247,9 +253,9 @@ fn main() -> i32 {
 
   const auto while_condition_diags =
       analyze_source(while_condition_source, "while_condition_precision");
-  if (!expect(has_message(while_condition_diags,
-                          "Condition expression 'x' must be bool, found 'i32'."),
-              "missing precise while-condition diagnostic with expression context")) {
+  if (!expect(
+          has_message(while_condition_diags, "Condition expression 'x' must be bool, found 'i32'."),
+          "missing precise while-condition diagnostic with expression context")) {
     return 1;
   }
 
@@ -264,8 +270,7 @@ fn main() -> i32 {
 )";
 
   const auto match_guard_diags = analyze_source(match_guard_source, "match_guard_precision");
-  if (!expect(has_message(match_guard_diags,
-                          "Condition expression 'v' must be bool, found 'i32'."),
+  if (!expect(has_message(match_guard_diags, "Condition expression 'v' must be bool, found 'i32'."),
               "missing precise match-guard condition diagnostic with expression context")) {
     return 1;
   }

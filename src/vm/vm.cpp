@@ -463,7 +463,8 @@ public:
       }
       return std::nullopt;
     };
-    auto symbol_like_text = [&](ValueTag tag, std::int64_t value) -> std::optional<std::string_view> {
+    auto symbol_like_text = [&](ValueTag tag,
+                                std::int64_t value) -> std::optional<std::string_view> {
       if (tag == ValueTag::SymbolHandle) {
         auto* symbol = symbol_ptr(value);
         if (symbol == nullptr) return std::nullopt;
@@ -471,7 +472,8 @@ public:
       }
       return runtime_token_text(tag);
     };
-    auto runtime_token_tag_from_symbol_handle = [&](std::int64_t symbol_handle) -> std::optional<ValueTag> {
+    auto runtime_token_tag_from_symbol_handle =
+        [&](std::int64_t symbol_handle) -> std::optional<ValueTag> {
       auto symbol = symbol_ptr(symbol_handle);
       if (symbol == nullptr) return std::nullopt;
       if (*symbol == "std.sys.proof") return ValueTag::ProofHandle;
@@ -808,7 +810,8 @@ public:
         auto tag = literal_kind_to_tag(insn.literal_kind);
         std::int64_t value = insn.b;
         if (tag == ValueTag::SymbolHandle) {
-          if (auto runtime_tag = runtime_token_tag_from_symbol_handle(insn.b); runtime_tag.has_value()) {
+          if (auto runtime_tag = runtime_token_tag_from_symbol_handle(insn.b);
+              runtime_tag.has_value()) {
             tag = *runtime_tag;
             value = 1;
           }
@@ -2238,8 +2241,8 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
-        const bool match = value->size() >= prefix->size() &&
-                           value->compare(0, prefix->size(), *prefix) == 0;
+        const bool match =
+            value->size() >= prefix->size() && value->compare(0, prefix->size(), *prefix) == 0;
         state_.registers[insn.a] = match ? 1 : 0;
         state_.register_tags[insn.a] = ValueTag::Bool;
         update_flags(state_.registers[insn.a]);
@@ -2293,8 +2296,7 @@ public:
           break;
         }
         const std::size_t pos = value->find(*needle);
-        state_.registers[insn.a] =
-            pos == std::string::npos ? -1 : static_cast<std::int64_t>(pos);
+        state_.registers[insn.a] = pos == std::string::npos ? -1 : static_cast<std::int64_t>(pos);
         state_.register_tags[insn.a] = ValueTag::Int;
         update_flags(state_.registers[insn.a]);
         break;
@@ -2399,8 +2401,7 @@ public:
           verdict.kind = t81::axion::VerdictKind::Allow;
           std::ostringstream reason;
           reason << t81::axion::reasons::kStringSplit << " input_len=" << value->size()
-                 << " sep_len=" << sep->size()
-                 << " parts=" << state_.string_vectors.back().size();
+                 << " sep_len=" << sep->size() << " parts=" << state_.string_vectors.back().size();
           verdict.reason = reason.str();
           record_axion_event(insn.opcode, static_cast<std::int32_t>(state_.string_vectors.size()),
                              static_cast<std::int64_t>(state_.string_vectors.back().size()),

@@ -1,7 +1,7 @@
 #include "t81/cli/driver.hpp"
 #include "t81/tisc/binary_io.hpp"
-#include "t81/vm/vm.hpp"
 #include "t81/vm/traps.hpp"
+#include "t81/vm/vm.hpp"
 #include "t81/weights.hpp"
 
 #include <algorithm>

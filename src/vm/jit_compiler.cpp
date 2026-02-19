@@ -504,7 +504,8 @@ public:
             guard_deopt = true;
             break;
           }
-          state.registers[insn.a] = intern_complex(state.registers[insn.b], state.registers[insn.c]);
+          state.registers[insn.a] =
+              intern_complex(state.registers[insn.b], state.registers[insn.c]);
           state.register_tags[insn.a] = ValueTag::ComplexHandle;
           break;
         case t81::tisc::Opcode::TMatMul: {

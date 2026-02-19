@@ -1207,7 +1207,8 @@ Type SemanticAnalyzer::expect_condition_bool(const Expr& expr, const Token& loca
   return Type{Type::Kind::Bool};
 }
 
-bool SemanticAnalyzer::validate_constrained_integer_assignment(const Type& target, const Expr& value,
+bool SemanticAnalyzer::validate_constrained_integer_assignment(const Type& target,
+                                                               const Expr& value,
                                                                const Token& location) {
   auto maybe_value = constant_integer_value(value);
   if (!maybe_value.has_value()) {
@@ -1279,7 +1280,8 @@ Token SemanticAnalyzer::extract_token(const Expr& expr) const {
   if (auto* variable = dynamic_cast<const VariableExpr*>(&expr)) return variable->name;
   if (auto* field = dynamic_cast<const FieldAccessExpr*>(&expr)) return field->field;
   if (auto* record = dynamic_cast<const RecordLiteralExpr*>(&expr)) return record->type_name;
-  if (auto* enum_literal = dynamic_cast<const EnumLiteralExpr*>(&expr)) return enum_literal->variant;
+  if (auto* enum_literal = dynamic_cast<const EnumLiteralExpr*>(&expr))
+    return enum_literal->variant;
   if (auto* index = dynamic_cast<const IndexExpr*>(&expr)) return index->bracket;
   if (auto* match = dynamic_cast<const MatchExpr*>(&expr)) return extract_token(*match->scrutinee);
   if (auto* vector = dynamic_cast<const VectorLiteralExpr*>(&expr)) return vector->token;
@@ -1746,8 +1748,8 @@ std::any SemanticAnalyzer::visit(const AssignExpr& expr) {
       mutable_target = true;
     } else {
       error(error_token, "Cannot assign to immutable field '" +
-                            std::string(field_expr->field.lexeme) + "' in target '" +
-                            expr_to_string(*expr.target) + "'.");
+                             std::string(field_expr->field.lexeme) + "' in target '" +
+                             expr_to_string(*expr.target) + "'.");
     }
   } else {
     error(extract_token(*expr.target),
@@ -1981,8 +1983,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         error(call_token,
               "The 'Ok' constructor argument must match the success type of the contextual "
               "Result: expected '" +
-                  type_to_string(success_expected) + "' but got '" +
-                  type_to_string(success_arg) + "'.");
+                  type_to_string(success_expected) + "' but got '" + type_to_string(success_arg) +
+                  "'.");
       }
       result_type.params[0] =
           (success_expected.kind == Type::Kind::Unknown ? success_arg : success_expected);
@@ -2033,7 +2035,7 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       const Type& argument_type = arg_types[0];
       if (!is_integer_type(argument_type)) {
         error(call_token, func_name + " conversion expects an integer argument, got '" +
-                             type_to_string(argument_type) + "'.");
+                              type_to_string(argument_type) + "'.");
         return make_error_type();
       }
       Type target_type = type_from_token(call_token);
@@ -2129,8 +2131,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       return Type{Type::Kind::I32};
     }
     if (func_name == "sin" || func_name == "cos" || func_name == "tan" || func_name == "asin" ||
-        func_name == "acos" || func_name == "atan" || func_name == "sinh" ||
-        func_name == "cosh" || func_name == "tanh") {
+        func_name == "acos" || func_name == "atan" || func_name == "sinh" || func_name == "cosh" ||
+        func_name == "tanh") {
       if (arg_types.size() != 1) {
         error(call_token, func_name + " expects exactly one argument.");
         return make_error_type();
@@ -2288,8 +2290,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
           arg_types[0].params.empty() ? Type{Type::Kind::Unknown} : arg_types[0].params[0];
       if (payload.kind != Type::Kind::Unknown && !is_assignable(payload, arg_types[1])) {
         error(call_token, "option_unwrap_or default value must match Option payload type '" +
-                              type_to_string(payload) + "', got '" +
-                              type_to_string(arg_types[1]) + "'.");
+                              type_to_string(payload) + "', got '" + type_to_string(arg_types[1]) +
+                              "'.");
         return make_error_type();
       }
       if (payload.kind == Type::Kind::Unknown) {
@@ -2598,15 +2600,13 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
     if (func_name == "collections_first" || func_name == "collections_last") {
       const bool is_first = func_name == "collections_first";
       if (arg_types.size() != 1) {
-        error(call_token,
-              std::string(is_first ? "std.collections.first" : "std.collections.last") +
-                  " expects exactly one argument.");
+        error(call_token, std::string(is_first ? "std.collections.first" : "std.collections.last") +
+                              " expects exactly one argument.");
         return make_error_type();
       }
       if (arg_types[0].kind != Type::Kind::Vector || arg_types[0].params.empty()) {
-        error(call_token,
-              std::string(is_first ? "std.collections.first" : "std.collections.last") +
-                  " expects a Vector[T] argument.");
+        error(call_token, std::string(is_first ? "std.collections.first" : "std.collections.last") +
+                              " expects a Vector[T] argument.");
         return make_error_type();
       }
       if (auto* literal = dynamic_cast<const VectorLiteralExpr*>(expr.arguments[0].get())) {
@@ -2848,8 +2848,7 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
                                     !arg_types[0].params.empty() &&
                                     arg_types[0].params[0].kind == Type::Kind::String;
       if (!is_string_vector) {
-        error(call_token,
-              "std.collections.set_remove expects a Vector[T81String] first argument.");
+        error(call_token, "std.collections.set_remove expects a Vector[T81String] first argument.");
         return make_error_type();
       }
       if (arg_types[1].kind != Type::Kind::String) {
@@ -2878,8 +2877,7 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
                                     !arg_types[0].params.empty() &&
                                     arg_types[0].params[0].kind == Type::Kind::String;
       if (!is_string_vector) {
-        error(call_token,
-              "std.collections.graph_edge_count expects a Vector[T81String] argument.");
+        error(call_token, "std.collections.graph_edge_count expects a Vector[T81String] argument.");
         return make_error_type();
       }
       return Type{Type::Kind::I32};
@@ -2898,8 +2896,7 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         return make_error_type();
       }
       if (arg_types[1].kind != Type::Kind::String || arg_types[2].kind != Type::Kind::String) {
-        error(call_token,
-              "std.collections.graph_has_edge expects T81String from/to arguments.");
+        error(call_token, "std.collections.graph_has_edge expects T81String from/to arguments.");
         return make_error_type();
       }
       return Type{Type::Kind::Bool};
@@ -2918,8 +2915,7 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         return make_error_type();
       }
       if (arg_types[1].kind != Type::Kind::String || arg_types[2].kind != Type::Kind::String) {
-        error(call_token,
-              "std.collections.graph_add_edge expects T81String from/to arguments.");
+        error(call_token, "std.collections.graph_add_edge expects T81String from/to arguments.");
         return make_error_type();
       }
       Type out{Type::Kind::Vector};
@@ -2940,8 +2936,7 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         return make_error_type();
       }
       if (arg_types[1].kind != Type::Kind::String || arg_types[2].kind != Type::Kind::String) {
-        error(call_token,
-              "std.collections.graph_remove_edge expects T81String from/to arguments.");
+        error(call_token, "std.collections.graph_remove_edge expects T81String from/to arguments.");
         return make_error_type();
       }
       Type out{Type::Kind::Vector};
@@ -3042,12 +3037,11 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       std::unordered_map<std::string, Type> generic_bindings;
       generic_bindings.reserve(symbol->generic_params.size());
 
-      std::function<bool(const Type&, const Type&)> bind_generic =
-          [&](const Type& pattern, const Type& actual) -> bool {
+      std::function<bool(const Type&, const Type&)> bind_generic = [&](const Type& pattern,
+                                                                       const Type& actual) -> bool {
         if (pattern.kind == Type::Kind::Custom) {
-          auto generic_it =
-              std::find(symbol->generic_params.begin(), symbol->generic_params.end(),
-                        pattern.custom_name);
+          auto generic_it = std::find(symbol->generic_params.begin(), symbol->generic_params.end(),
+                                      pattern.custom_name);
           if (generic_it != symbol->generic_params.end()) {
             auto [it, inserted] = generic_bindings.emplace(pattern.custom_name, actual);
             if (!inserted) {
@@ -3127,8 +3121,7 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         return make_error_type();
       }
       if (arg_types[0].kind != Type::Kind::String && arg_types[0].kind != Type::Kind::Bytes) {
-        error(type_callee->name,
-              "T81Bytes conversion expects a T81String or T81Bytes argument.");
+        error(type_callee->name, "T81Bytes conversion expects a T81String or T81Bytes argument.");
         return make_error_type();
       }
       return Type{Type::Kind::Bytes};
@@ -3142,7 +3135,7 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       const Type& argument_type = arg_types[0];
       if (!is_integer_type(argument_type)) {
         error(type_callee->name, callee_name + " conversion expects an integer argument, got '" +
-                                   type_to_string(argument_type) + "'.");
+                                     type_to_string(argument_type) + "'.");
         return make_error_type();
       }
 
@@ -3158,10 +3151,9 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       const std::string func_name(generic_callee->name.lexeme);
 
       if (symbol->param_types.size() != arg_types.size()) {
-        error(generic_callee->name, "Function '" + func_name + "' expects " +
-                                        std::to_string(symbol->param_types.size()) +
-                                        " arguments but got " + std::to_string(arg_types.size()) +
-                                        ".");
+        error(generic_callee->name,
+              "Function '" + func_name + "' expects " + std::to_string(symbol->param_types.size()) +
+                  " arguments but got " + std::to_string(arg_types.size()) + ".");
         return symbol->type;
       }
 
@@ -3190,11 +3182,10 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       }
 
       if (explicit_type_args.size() > symbol->generic_params.size()) {
-        error(generic_callee->name,
-              "Function '" + func_name + "' expects " +
-                  std::to_string(symbol->generic_params.size()) +
-                  " explicit type arguments at most but got " +
-                  std::to_string(explicit_type_args.size()) + ".");
+        error(generic_callee->name, "Function '" + func_name + "' expects " +
+                                        std::to_string(symbol->generic_params.size()) +
+                                        " explicit type arguments at most but got " +
+                                        std::to_string(explicit_type_args.size()) + ".");
         return make_error_type();
       }
 
@@ -3204,12 +3195,11 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         generic_bindings.emplace(symbol->generic_params[i], explicit_type_args[i]);
       }
 
-      std::function<bool(const Type&, const Type&)> bind_generic =
-          [&](const Type& pattern, const Type& actual) -> bool {
+      std::function<bool(const Type&, const Type&)> bind_generic = [&](const Type& pattern,
+                                                                       const Type& actual) -> bool {
         if (pattern.kind == Type::Kind::Custom) {
-          auto generic_it =
-              std::find(symbol->generic_params.begin(), symbol->generic_params.end(),
-                        pattern.custom_name);
+          auto generic_it = std::find(symbol->generic_params.begin(), symbol->generic_params.end(),
+                                      pattern.custom_name);
           if (generic_it != symbol->generic_params.end()) {
             auto [it, inserted] = generic_bindings.emplace(pattern.custom_name, actual);
             if (!inserted) {
@@ -3332,10 +3322,10 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
           }
 
           if (!is_assignable(*variant_it->second.payload, arg_types[0])) {
-            error(field_expr->field,
-                  "Argument mismatch for enum constructor '" + variant_name + "': expected '" +
-                      type_to_string(*variant_it->second.payload) + "' but got '" +
-                      type_to_string(arg_types[0]) + "'.");
+            error(field_expr->field, "Argument mismatch for enum constructor '" + variant_name +
+                                         "': expected '" +
+                                         type_to_string(*variant_it->second.payload) +
+                                         "' but got '" + type_to_string(arg_types[0]) + "'.");
           }
           return object_type;
         }
@@ -3847,8 +3837,8 @@ std::any SemanticAnalyzer::visit(const UnaryExpr& expr) {
   Type right = evaluate_expression(*expr.right);
   if (expr.op.type == TokenType::Bang) {
     if (!is_assignable(Type{Type::Kind::Bool}, right)) {
-      error(expr.op, "Logical not requires a boolean operand, got '" + type_to_string(right) +
-                         "'.");
+      error(expr.op,
+            "Logical not requires a boolean operand, got '" + type_to_string(right) + "'.");
       return make_error_type();
     }
     return Type{Type::Kind::Bool};

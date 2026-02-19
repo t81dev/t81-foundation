@@ -65,12 +65,12 @@ enum class SymbolKind { Variable, Function };
 
 struct SemanticSymbol {
   SymbolKind kind;
-  Token declaration;              // Token where the symbol was declared
-  Type type;                      // Variable type or function return type
-  std::vector<Type> param_types;  // Only used for functions
+  Token declaration;                        // Token where the symbol was declared
+  Type type;                                // Variable type or function return type
+  std::vector<Type> param_types;            // Only used for functions
   std::vector<std::string> generic_params;  // Generic function parameter names
-  bool is_mutable = true;         // `let` bindings are immutable, `var` bindings are mutable
-  bool is_defined = false;        // Functions get declared first, defined later
+  bool is_mutable = true;   // `let` bindings are immutable, `var` bindings are mutable
+  bool is_defined = false;  // Functions get declared first, defined later
 };
 
 struct Diagnostic {

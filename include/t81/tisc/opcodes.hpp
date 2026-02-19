@@ -378,14 +378,14 @@ enum class Opcode : std::uint8_t {
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::MakeComplex) + 1>
-    kAllOpcodes = [] {
-  std::array<Opcode, static_cast<std::size_t>(Opcode::MakeComplex) + 1> values{};
-  for (std::size_t i = 0; i < values.size(); ++i) {
-    values[i] = static_cast<Opcode>(i);
-  }
-  return values;
-}();
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::MakeComplex) + 1> kAllOpcodes =
+    [] {
+      std::array<Opcode, static_cast<std::size_t>(Opcode::MakeComplex) + 1> values{};
+      for (std::size_t i = 0; i < values.size(); ++i) {
+        values[i] = static_cast<Opcode>(i);
+      }
+      return values;
+    }();
 
 [[nodiscard]] constexpr bool is_valid_opcode(std::uint8_t raw_opcode) {
   return raw_opcode <= static_cast<std::uint8_t>(Opcode::MakeComplex);
