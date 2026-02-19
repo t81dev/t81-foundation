@@ -2,9 +2,20 @@
 
 > **Source of Truth:** This document maps our **claims** to their **specifications**, **tests**, and **CI artifacts**. It serves as a proof-of-correctness index.
 
-**Last Updated:** February 10, 2026
+**Last Updated:** February 19, 2026
 
-## 1. Core Claims
+## 1. Security & Reproducibility Evidence (2026-02-19)
+
+Recent hardening measures have been verified with the following evidence:
+
+| Feature | Verification Method | Evidence Artifact | Status |
+| :--- | :--- | :--- | :--- |
+| **SHA3-512 Correctness** | FIPS-202 Vector Test | `tests/cpp/test_sha3.cpp` | **Verified** |
+| **Package Init Sanitization** | Security Regression Test | `tests/cpp/security_package_init_test.cpp` | **Verified** |
+| **AST/IR Determinism** | Canonical Hash Check | `scripts/ci/t81lang_repro_gate.py` | **Enforced** |
+| **Clang-Format 18** | CI Workflow Gate | `.github/workflows/format.yml` | **Enforced** |
+
+## 2. Core Claims
 
 | Claim | Spec Authority | Verification Test | CI Workflow |
 | :--- | :--- | :--- | :--- |
@@ -19,17 +30,18 @@
 | **Symbol Content-Addressed Mode** | `spec/determinism-profile.md` | `tests/cpp/symbol_content_address_test.cpp` | `build-and-test` |
 | **Error Determinism Guarantee** | `spec/determinism-profile.md` | `tests/cpp/error_determinism_test.cpp` | `build-and-test` |
 
-## 2. Artifacts & Reproducibility
+## 3. Artifacts & Reproducibility
 
 We guarantee the following artifacts are bit-identical across all supported platforms when built with the same compiler version.
 
 | Artifact | Source | Hash Validation | Expected SHA256 (Canonical) |
 | :--- | :--- | :--- | :--- |
 | **TISC Binary (.tisc)** | `t81 compile` | `t81 repro-hash` | *Varies by version (see CI logs)* |
+| **T81Lang AST/IR** | `t81 compile` | `t81lang_repro_gate.py` | `tests/fixtures/t81lang_determinism/` |
 | **T3_K Quantized Model** | `t81 weights` | `scripts/ci/t3k_repro_gate.py` | *Varies by version (see CI logs)* |
 | **Trace Log** | `t81 trace` | `tests/cpp/vm_trace_test.cpp` | *Stable per minor version* |
 
-## 3. Coverage Analysis
+## 4. Coverage Analysis
 
 Our testing strategy covers:
 - **Unit:** 100% of public numeric API (`include/t81/core/`).

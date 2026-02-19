@@ -2,7 +2,7 @@
 
 > **Source of Truth:** This document defines the **testing taxonomy and coverage expectations**.
 
-**Last Updated:** February 10, 2026
+**Last Updated:** February 19, 2026
 
 ## 1. Testing Taxonomy
 
@@ -26,7 +26,7 @@ T81 prioritizes **Semantic Coverage** over raw Line Coverage.
 - **Critical:** Determinism gates MUST pass on all supported platforms.
 - **High:** Public API surface (`include/t81/`) should have usage examples in tests.
 
-We do not currently enforce a strict % line coverage metric in CI, but we track "gap" areas in `TASKS.md`.
+We verify coverage effectiveness through **Property-Based Testing** (RapidCheck) and **Fuzzing**, rather than chasing 100% line execution of error paths that should be unreachable.
 
 ## 3. CI Matrix
 
@@ -34,7 +34,7 @@ Our Continuous Integration pipeline (`.github/workflows/ci.yml`) validates the f
 
 | OS | Compiler | Purpose |
 | :--- | :--- | :--- |
-| **Ubuntu 24.04** | GCC 14 | Primary Linux build & unit tests. |
+| **Ubuntu 24.04** | GCC 14 | Primary Linux build & unit tests (214+ tests). |
 | **Ubuntu 24.04** | Clang 18 | Primary Linux build & **Determinism Gate**. |
 | **Ubuntu 24.04 (ARM64)** | Clang 18 | Cross-architecture **Determinism Gate**. |
 | **macOS 14 (ARM64)** | Apple Clang | macOS build compatibility. |

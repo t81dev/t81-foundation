@@ -1,30 +1,45 @@
-# T81 Foundation Navigation
+# T81 Foundation Navigation Map
 
-Use this map before opening individual files—the Constitution, guides, tests, and artifacts all have dedicated homes, and this document highlights the living entry points and the archived material you can safely ignore or revisit later.
+> **Source of Truth:** This document maps the living entry points and archived material in the documentation tree.
 
-## Primary user pathways
-- **Getting started**: [`docs/onboarding.md`](onboarding.md), [`docs/ai-quickstart.md`](ai-quickstart.md), and this [`docs/user-manual.md`](user-manual.md) outline prerequisites, build/test rituals, and the agent playbook. For CLI-centric onboarding, open [`docs/guides/cli-user-manual.md`](guides/cli-user-manual.md) and [`docs/guides/cli-toolkit.md`](guides/cli-toolkit.md).
-- **Specification layers**: ask Axion for the canonical semantics in [`spec/index.md`](../spec/index.md). The layered order is [`spec/t81-data-types.md`](../spec/t81-data-types.md), [`spec/tisc-spec.md`](../spec/tisc-spec.md), [`spec/t81vm-spec.md`](../spec/t81vm-spec.md), [`spec/t81lang-spec.md`](../spec/t81lang-spec.md), [`spec/axion-kernel.md`](../spec/axion-kernel.md), and [`spec/cognitive-tiers.md`](../spec/cognitive-tiers.md). If you need the constitution-level text, refer to [`spec/constitution.md`](../spec/constitution.md).
-- **Semantics and terminology governance**: see [`docs/runtime-semantics-boundary.md`](runtime-semantics-boundary.md) for foundation-vs-VM contract ownership and [`docs/terminology-alignment.md`](terminology-alignment.md) for canonical term mapping.
-- **Architecture & APIs**: [`ARCHITECTURE.md`](../ARCHITECTURE.md), [`include/t81/`](../include/t81/), [`src/`](../src/), and [`docs/guides/public-api-overview.md`](guides/public-api-overview.md) are your go-to references. After code changes, regenerate docs with `cmake --build build --target docs` and inspect `build/api/html/index.html`.
-- **Generated Artifact Policy**: [`docs/contributing/generated-artifacts.md`](contributing/generated-artifacts.md) defines what is generated and must stay out of Git.
+**Last Updated:** February 19, 2026
 
-## Domain-focused indexes
-- **Guides**: see [`docs/guides/README.md`](guides/README.md) for a categorized TOC (CLI, Axion, semantics, weights/release). If a document has moved or the content is obsolete, you will usually find the archived copy with a `.archived` suffix under `docs/archive/` (e.g., [`docs/archive/developer-guide.md.archived`](archive/developer-guide.md.archived)). Consider copying the updated TOC entry here when a guide is reborn under a new name.
-- **Axion guides**: the [`docs/guides/axion/README.md`](guides/axion/README.md) entry point tells you which file to open based on whether you are decoding logs, authoring policies, or capturing runtime observability traces.
-- **Documentation subtrees**:
-  - `docs/benchmarks.md` summarizes the latest benchmark artifacts to keep in sync with `benchmarks/benchmark_runner`.
-  - `docs/release.md`, `docs/hardware-roadmap.md`, and `docs/system-status.md` connect governance with observability; treat them as living documents.
-  - `docs/spec/` mirrors the main spec. Update it only when you must produce a new topic that deserves web-friendly formatting (the Markdown here should reflect the canonical `spec/` text).
-- **Artifacts & tests**:
-- Axion logs live in [`build/artifacts/`](../build/artifacts/) . Keep them with deterministic artifacts and mention them in any research note (`docs/notes.md`).
-- [`tests/`](../tests/) contains regression proof suites. If you add a public API, append tests and consider property testing (RapidCheck) per [`AGENTS.md`](../AGENTS.md).
+## 1. Primary User Pathways
 
-## Cleanup cues
-- Files ending with `.archived` are stale references; you can delete or update them only after confirming no living document references remain. Search for them before removing lines from [`docs/guides/README.md`](guides/README.md) or `docs/navigation.md`.
-- Currently archived files that are safe to skip unless you need their history: [`docs/archive/developer-guide.md.archived`](archive/developer-guide.md.archived), [`docs/archive/handover.md.archived`](archive/handover.md.archived), and [`docs/archive/tensor-guide.md.archived`](archive/tensor-guide.md.archived). If any archive regains relevance, restore it under the living name and mention the change in both this map and [`docs/guides/README.md`](guides/README.md).
-- When combining or retiring guides, create a redirect entry here and update `docs/guides/README.md` so readers immediately understand why the old file is still present.
+- **Getting Started:**
+  - [`docs/index.md`](index.md): The main documentation hub.
+  - [`docs/cpp-quickstart.md`](cpp-quickstart.md): Build and run the C++ codebase.
+  - [`docs/ai-quickstart.md`](ai-quickstart.md): Using T81 with AI models.
+  - [`docs/system-status.md`](system-status.md): Current implementation status and hardening report.
 
-## Need help discovering content?
-- Run `rg --files docs` or open [`docs/search/index.html`](search/index.html) after building the docs site.
-- For heavy context, read [`docs/user-manual.md`](user-manual.md) first, then follow the `docs/navigation.md` path into the appropriate subdirectory, keeping the AGENTS ritual (build/test) in mind.
+- **Specification Layers:**
+  - [`spec/index.md`](../spec/index.md): The Master Specification Index.
+  - [`spec/tisc-spec.md`](../spec/tisc-spec.md): TISC Instruction Set Architecture.
+  - [`spec/t81vm-spec.md`](../spec/t81vm-spec.md): Virtual Machine specification.
+  - [`spec/t81lang-spec.md`](../spec/t81lang-spec.md): T81 Language specification.
+  - [`spec/axion-kernel.md`](../spec/axion-kernel.md): Axion Policy Engine.
+
+- **Semantics & Governance:**
+  - [`docs/runtime-semantics-boundary.md`](runtime-semantics-boundary.md): Foundation vs. VM contract ownership.
+  - [`docs/terminology-alignment.md`](terminology-alignment.md): Canonical term map.
+  - [`GOVERNANCE.md`](../GOVERNANCE.md): Decision-making process.
+
+- **Architecture & APIs:**
+  - [`ARCHITECTURE.md`](../ARCHITECTURE.md): System design overview.
+  - [`docs/guides/public-api-overview.md`](guides/public-api-overview.md): C++ API reference.
+
+## 2. Domain-Focused Indexes
+
+- **Guides:** See [`docs/guides/README.md`](guides/README.md) for a categorized Table of Contents (CLI, Axion, Semantics, Weights).
+- **Axion:** See [`docs/guides/axion/README.md`](guides/axion/README.md) for policy authoring and trace analysis.
+- **Benchmarks:** See [`docs/benchmarks.md`](benchmarks.md) for the latest performance results.
+
+## 3. Artifacts & Tests
+
+- **Axion Logs:** Located in [`build/artifacts/`](../build/artifacts/) (local builds).
+- **Regression Tests:** Located in [`tests/`](../tests/).
+
+## 4. Archive & Cleanup
+
+- **Archived Files:** Files ending in `.archived` under `docs/archive/` are preserved for historical reference but should not be treated as current documentation.
+- **Search:** Use the [`docs/search/index.html`](search/index.html) page (after building the site) or `grep` to find specific topics.
