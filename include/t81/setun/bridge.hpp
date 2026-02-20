@@ -21,11 +21,19 @@ enum class BridgeError {
 };
 
 struct BridgeDiagnostic {
-  BridgeError error = BridgeError::EmptyInput;
-  std::size_t line = 0;
-  std::size_t column = 0;
+  BridgeError error;
+  std::size_t line;
+  std::size_t column;
   std::string message;
   std::string source_line;
+
+  BridgeDiagnostic(BridgeError error, std::size_t line, std::size_t column, std::string message,
+                   std::string source_line)
+      : error(error),
+        line(line),
+        column(column),
+        message(std::move(message)),
+        source_line(std::move(source_line)) {}
 };
 
 [[nodiscard]] std::string_view bridge_error_message(BridgeError error);
