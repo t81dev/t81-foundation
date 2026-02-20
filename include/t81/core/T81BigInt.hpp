@@ -19,7 +19,6 @@
 #include <cstdint>
 #include <iostream>
 #include <limits>
-#include <optional>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -301,7 +300,7 @@ public:
   }
 
   template <std::size_t N>
-  std::optional<T81Int<N>> try_to_int() const {
+  T81Int<N> to_int() const {
     if (is_zero()) return T81Int<N>();
 
     // Check magnitude size
@@ -312,7 +311,7 @@ public:
     }
 
     if (sig_trits > N) {
-      return std::nullopt;
+      throw std::overflow_error("T81BigInt::to_int: value too large for T81Int<N>");
     }
 
     T81Int<N> res;
@@ -328,15 +327,6 @@ public:
     }
 
     return negative_ ? -res : res;
-  }
-
-  template <std::size_t N>
-  T81Int<N> to_int() const {
-    auto res = try_to_int<N>();
-    if (!res) {
-      t81::axion::trap_overflow("T81BigInt::to_int: value too large for T81Int<N>");
-    }
-    return *res;
   }
 
   template <std::size_t M, std::size_t E>
@@ -386,7 +376,7 @@ public:
       throw std::logic_error("T81BigInt::to_int64: no limbs");
     }
     if (limbs_.size() > 1) {
-      t81::axion::trap_overflow("T81BigInt::to_int64: value too large");
+      throw std::overflow_error("T81BigInt::to_int64: value too large");
     }
 
     try {
@@ -401,7 +391,7 @@ public:
       if (negative_ && limbs_[0] == -Limb(std::numeric_limits<std::int64_t>::min())) {
         return std::numeric_limits<std::int64_t>::min();
       }
-      t81::axion::trap_overflow("T81BigInt::to_int64: overflow");
+      throw;
     }
   }
 

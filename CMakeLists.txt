@@ -1312,9 +1312,3 @@ install(FILES
   "${CMAKE_CURRENT_BINARY_DIR}/T81ConfigVersion.cmake"
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/T81
 )
-
-if(T81_BUILD_TESTS)
-  add_executable(test_bigint_demotion tests/cpp/test_bigint_demotion.cpp)
-  target_link_libraries(test_bigint_demotion PRIVATE t81_core)
-  add_test(NAME test_bigint_demotion COMMAND test_bigint_demotion)
-endif()

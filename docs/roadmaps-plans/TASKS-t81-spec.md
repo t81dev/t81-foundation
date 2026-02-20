@@ -28,7 +28,7 @@
   - [x] T81Cell ↔ T81BigInt (scalar → multi-limb, sign-extended) (Implemented via constructor and to_int<N>)
   - [x] T81BigInt ↔ T81Float / T81Fixed (with rounding modes per spec) (Implemented via to_float/from_float)
   - [x+] Automatic promotion in expressions (T81 → T243 → T729 based on recursion depth)
-  - [x] Demotion with lossy checks / Axion traps on overflow/underflow
+  - [ ] Demotion with lossy checks / Axion traps on overflow/underflow
 
 ## 3. T81Lang Syntax & Semantics (section 5–7)
 - [x] Lexer / parser basics (see `include/t81/lang/parser.hpp`)

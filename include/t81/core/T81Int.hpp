@@ -15,7 +15,6 @@
 #include <compare>
 #include <cstdint>
 #include <limits>
-#include <optional>
 #include <ostream>
 #include <stdexcept>
 #include <string>
@@ -159,32 +158,6 @@ public:
 
   explicit T81Int(std::int64_t value) { assign_from_int64(value); }
   explicit T81Int(int value) : T81Int(static_cast<std::int64_t>(value)) {}
-
-  template <std::size_t K>
-  constexpr std::optional<T81Int<K>> try_to_int() const {
-    if constexpr (K >= N) {
-      return T81Int<K>(*this);
-    } else {
-      for (size_type i = K; i < N; ++i) {
-        if (get_trit(i) != Trit::Z) return std::nullopt;
-      }
-      return T81Int<K>(*this);
-    }
-  }
-
-  template <std::size_t K>
-  constexpr T81Int<K> checked_to_int() const {
-    auto res = try_to_int<K>();
-    if (!res) {
-#if defined(__cpp_lib_is_constant_evaluated)
-      if (std::is_constant_evaluated()) {
-        throw std::overflow_error("T81Int::checked_to_int overflow");
-      }
-#endif
-      axion::trap_overflow("T81Int::checked_to_int overflow");
-    }
-    return *res;
-  }
 
   static constexpr size_type num_trits() noexcept { return kNumTrits; }
 
