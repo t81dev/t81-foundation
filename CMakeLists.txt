@@ -1238,10 +1238,6 @@ if(T81_BUILD_TESTS)
   add_executable(t81_std_test tests/cpp/test_t81_std.cpp)
   target_link_libraries(t81_std_test PRIVATE t81_core)
   add_test(NAME t81_std_test COMMAND t81_std_test)
-
-  add_executable(t81_symbolic_vm_test tests/cpp/symbolic_vm_test.cpp)
-  target_link_libraries(t81_symbolic_vm_test PRIVATE t81_core t81_tisc t81_vm)
-  add_test(NAME t81_symbolic_vm_test COMMAND t81_symbolic_vm_test)
 endif()
 
 # =============================================================================

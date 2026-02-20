@@ -551,19 +551,6 @@ public:
       if (idx >= state_.complexes.size()) return nullptr;
       return &state_.complexes[idx];
     };
-    auto symbolic_graph_ptr = [this](std::int64_t handle) -> t81::cog::v1::SymbolicGraph* {
-      if (handle <= 0) return nullptr;
-      std::size_t idx = static_cast<std::size_t>(handle - 1);
-      if (idx >= state_.symbolic_graphs.size()) return nullptr;
-      return &state_.symbolic_graphs[idx];
-    };
-    auto alloc_symbolic_graph = [this, current_pc](t81::cog::v1::SymbolicGraph graph) -> std::int64_t {
-      state_.symbolic_graphs.push_back(std::move(graph));
-      auto idx = state_.symbolic_graphs.size();
-      log_memory_segment_access(program_.insns[current_pc].opcode, MemorySegmentKind::Heap, idx,
-                                1, "graph alloc");
-      return static_cast<std::int64_t>(idx);
-    };
     auto intern_option = [this](bool has_value, ValueTag payload_tag,
                                 std::int64_t payload) -> std::int64_t {
       for (std::size_t i = 0; i < state_.options.size(); ++i) {
@@ -669,7 +656,6 @@ public:
         case ValueTag::SymbolHandle:
           return std::nullopt;
         case ValueTag::StringVectorHandle:
-        case ValueTag::SymbolicGraphHandle:
           if (lhs_val == rhs_val) return 0;
           return (lhs_val < rhs_val) ? -1 : 1;
         case ValueTag::TensorHandle:
@@ -753,8 +739,6 @@ public:
           if (!ptr_val) return std::nullopt;
           return "<strvec#" + std::to_string(val_data) + ">";
         }
-        case ValueTag::SymbolicGraphHandle:
-          return "<graph#" + std::to_string(val_data) + ">";
         case ValueTag::TensorHandle:
           return "<tensor#" + std::to_string(val_data) + ">";
         case ValueTag::ShapeHandle:
@@ -3604,97 +3588,11 @@ public:
         break;
       }
       // Cognitive Tier Stubs
-      case t81::tisc::Opcode::SymLoad: {
-        if (!reg_ok(insn.a)) {
-          trap = Trap::DecodeFault;
-          break;
-        }
-        t81::cog::v1::SymbolicGraph graph;
-        if (state_.register_tags[insn.b] == ValueTag::SymbolHandle) {
-          auto* sym = symbol_ptr(state_.registers[insn.b]);
-          if (sym) {
-            graph.add_node(t81::cog::v1::SymbolicAtom::create(*sym));
-          }
-        }
-        state_.registers[insn.a] = alloc_symbolic_graph(std::move(graph));
-        state_.register_tags[insn.a] = ValueTag::SymbolicGraphHandle;
-        {
-          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "SymLoad"};
-          record_axion_event(insn.opcode, 0, state_.registers[insn.a], verdict);
-        }
-        break;
-      }
-      case t81::tisc::Opcode::SymRewrite: {
-        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
-          trap = Trap::DecodeFault;
-          break;
-        }
-        if (state_.register_tags[insn.a] != ValueTag::SymbolicGraphHandle ||
-            state_.register_tags[insn.b] != ValueTag::SymbolHandle ||
-            state_.register_tags[insn.c] != ValueTag::SymbolHandle) {
-          trap = Trap::TypeFault;
-          break;
-        }
-        auto* graph = symbolic_graph_ptr(state_.registers[insn.a]);
-        if (!graph) {
-          trap = Trap::BoundsFault;
-          break;
-        }
-        auto* match_str = symbol_ptr(state_.registers[insn.b]);
-        auto* replace_str = symbol_ptr(state_.registers[insn.c]);
-
-        if (match_str && replace_str) {
-          t81::cog::v1::RewriteRule rule;
-          rule.match_node = t81::T81Symbol::intern(*match_str);
-          rule.replace_node = t81::T81Symbol::intern(*replace_str);
-          graph->apply_rewrite(rule);
-        }
-        {
-          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "SymRewrite"};
-          record_axion_event(insn.opcode, 0, 0, verdict);
-        }
-        break;
-      }
-      case t81::tisc::Opcode::SymConfluence: {
-        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
-          trap = Trap::DecodeFault;
-          break;
-        }
-        if (state_.register_tags[insn.b] != ValueTag::SymbolicGraphHandle) {
-          trap = Trap::TypeFault;
-          break;
-        }
-        auto* graph = symbolic_graph_ptr(state_.registers[insn.b]);
-        bool conf = graph ? graph->is_confluent() : false;
-        set_reg(insn.a, conf ? 1 : 0, ValueTag::Bool);
-        {
-          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "SymConfluence"};
-          record_axion_event(insn.opcode, 0, conf ? 1 : 0, verdict);
-        }
-        break;
-      }
-      case t81::tisc::Opcode::SymCanon: {
-        if (!reg_ok(insn.a)) {
-          trap = Trap::DecodeFault;
-          break;
-        }
-        if (state_.register_tags[insn.a] != ValueTag::SymbolicGraphHandle) {
-          trap = Trap::TypeFault;
-          break;
-        }
-        auto* graph = symbolic_graph_ptr(state_.registers[insn.a]);
-        if (graph) graph->canonicalize();
-        {
-          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "SymCanon"};
-          record_axion_event(insn.opcode, 0, 0, verdict);
-        }
-        break;
-      }
-      case t81::tisc::Opcode::SymBind: {
-        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "SymBind"};
-        record_axion_event(insn.opcode, 0, 0, verdict);
-        break;
-      }
+      case t81::tisc::Opcode::SymLoad:
+      case t81::tisc::Opcode::SymRewrite:
+      case t81::tisc::Opcode::SymConfluence:
+      case t81::tisc::Opcode::SymCanon:
+      case t81::tisc::Opcode::SymBind:
       case t81::tisc::Opcode::ReflCap:
       case t81::tisc::Opcode::ReflJustify:
       case t81::tisc::Opcode::ReflCheck:
