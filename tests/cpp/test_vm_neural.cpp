@@ -36,15 +36,15 @@ int main() {
     // R2 = TNew(R1)
     t81::tisc::Insn tnew;
     tnew.opcode = t81::tisc::Opcode::TNew;
-    tnew.a = 2; // Dest handle
-    tnew.b = 1; // Size
+    tnew.a = 2;  // Dest handle
+    tnew.b = 1;  // Size
     prog.push_back(tnew);
 
     // R3 = TNeuralFwd(R2)
     t81::tisc::Insn fwd;
     fwd.opcode = t81::tisc::Opcode::TNeuralFwd;
-    fwd.a = 3; // Dest
-    fwd.b = 2; // Src
+    fwd.a = 3;  // Dest
+    fwd.b = 2;  // Src
     prog.push_back(fwd);
 
     t81::tisc::Insn halt;
@@ -54,10 +54,10 @@ int main() {
     t81::vm::Trap t = run_until_trap(prog);
 
     if (t == t81::vm::Trap::None) {
-        std::cout << "TNeuralFwd passed\n";
+      std::cout << "TNeuralFwd passed\n";
     } else {
-        std::cerr << "TNeuralFwd failed: " << to_string(t) << "\n";
-        return 1;
+      std::cerr << "TNeuralFwd failed: " << to_string(t) << "\n";
+      return 1;
     }
   }
 
@@ -75,14 +75,14 @@ int main() {
     // R2 = TNew(R1)
     t81::tisc::Insn tnew;
     tnew.opcode = t81::tisc::Opcode::TNew;
-    tnew.a = 2; // Dest handle
-    tnew.b = 1; // Size
+    tnew.a = 2;  // Dest handle
+    tnew.b = 1;  // Size
     prog.push_back(tnew);
 
     // TNeuralBwd(R2)
     t81::tisc::Insn bwd;
     bwd.opcode = t81::tisc::Opcode::TNeuralBwd;
-    bwd.a = 2; // Model/Weights
+    bwd.a = 2;  // Model/Weights
     prog.push_back(bwd);
 
     t81::tisc::Insn halt;
@@ -92,10 +92,10 @@ int main() {
     t81::vm::Trap t = run_until_trap(prog);
 
     if (t == t81::vm::Trap::None) {
-        std::cout << "TNeuralBwd passed\n";
+      std::cout << "TNeuralBwd passed\n";
     } else {
-        std::cerr << "TNeuralBwd failed: " << to_string(t) << "\n";
-        return 1;
+      std::cerr << "TNeuralBwd failed: " << to_string(t) << "\n";
+      return 1;
     }
   }
 
