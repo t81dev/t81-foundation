@@ -3838,6 +3838,59 @@ public:
                            verdict);
         break;
       }
+      case t81::tisc::Opcode::TNeuralFwd: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+
+        // Forward pass implementation (identity/copy for now)
+        // In the future this would invoke actual neural primitives on the tensor
+        t81::T729Tensor copy(tensor->shape(), std::vector<float>(tensor->data()));
+        auto res_handle = alloc_tensor(std::move(copy));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TNeuralFwd"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), ctx.registers[insn.a],
+                           verdict);
+        break;
+      }
+      case t81::tisc::Opcode::TNeuralBwd: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.a); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor = tensor_ptr(ctx.registers[insn.a]);
+        if (tensor == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+
+        // Backward pass implementation (stub)
+        // This would update gradients/weights
+
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TNeuralBwd"};
+        record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.a), 0, verdict);
+        break;
+      }
       case t81::tisc::Opcode::NSend: {
         if (!reg_ok(insn.b)) {
           trap = Trap::DecodeFault;

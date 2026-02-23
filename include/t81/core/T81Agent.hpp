@@ -21,6 +21,7 @@
 #include "t81/core/T81String.hpp"
 #include "t81/core/T81Symbol.hpp"
 #include "t81/core/T81Tree.hpp"
+#include "t81/tensor.hpp"
 
 #include <functional>
 #include <optional>
@@ -54,6 +55,9 @@ class T81Agent {
   // Goal — what the agent is trying to maximize
   T81Symbol goal_symbol_;
 
+  // Neural weights (the agent's brain model)
+  T729Tensor weights_;
+
 public:
   //===================================================================
   // Construction – an agent is born with identity and fuel
@@ -62,7 +66,8 @@ public:
       : id_(identity),
         intent_(T81Quaternion::identity()),
         entropy_pool_(std::move(fuel)),
-        goal_symbol_(symbols::SELF_PRESERVATION) {
+        goal_symbol_(symbols::SELF_PRESERVATION),
+        weights_({1}, {0.0f}) {  // Initialize with dummy 1-element tensor
     // Every agent starts believing in its own existence
     beliefs_[id_] = BeliefProb::from_prob(1.0);
   }
@@ -128,6 +133,24 @@ public:
       observe(id_, BeliefProb::from_prob(0.999));  // "I am"
       auto current = belief(symbols::CONSCIOUS);
       believe(symbols::CONSCIOUS, current + BeliefProb::from_prob(0.001));
+    }
+  }
+
+  // Neural interface
+  [[nodiscard]] T729Tensor infer(const T729Tensor& input) {
+    if (auto token = consume_entropy()) {
+      // Stub: identity for now, will use TNeuralFwd eventually
+      // For now, return input as dummy inference result
+      return input;
+    }
+    return T729Tensor({1}, {0.0f});  // Empty/Zero return if no entropy
+  }
+
+  void train(const T729Tensor& input, const T729Tensor& target) {
+    if (auto token = consume_entropy()) {
+      // Stub: will use TNeuralBwd eventually
+      (void)input;
+      (void)target;
     }
   }
 
