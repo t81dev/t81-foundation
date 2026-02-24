@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for API diff check
 
       - name: Audit CMake Dependencies
         run: python3 scripts/ci/audit_cmake_deps.py

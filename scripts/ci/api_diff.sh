@@ -6,10 +6,17 @@ mkdir -p "$REPORT_DIR"
 REPORT_FILE="$REPORT_DIR/api_diff_report.json"
 DIFF_FILE="$REPORT_DIR/api.diff"
 
-# Default to comparing against main, or HEAD^ if main not found
+# Try to determine a base ref
 BASE_REF="origin/main"
+
 if ! git rev-parse --verify "$BASE_REF" >/dev/null 2>&1; then
+  # Fallback: try HEAD^
   BASE_REF="HEAD^"
+  if ! git rev-parse --verify "$BASE_REF" >/dev/null 2>&1; then
+      echo "Warning: No base ref found (origin/main or HEAD^). Skipping API diff check."
+      echo '{ "status": "pass", "message": "No base ref for diff" }' > "$REPORT_FILE"
+      exit 0
+  fi
 fi
 
 echo "Checking API diff against $BASE_REF..."
