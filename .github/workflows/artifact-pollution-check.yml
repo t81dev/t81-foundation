@@ -1,0 +1,26 @@
+name: Artifact Pollution Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-pollution:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Root Structure
+        run: python3 scripts/ci/check_root_structure.py
+
+      - name: Check Git Cleanliness
+        run: ./scripts/ci/check_git_clean.sh
+
+      - name: Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pollution-reports
+          path: artifacts/ci_reports/*.json

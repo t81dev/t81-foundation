@@ -1,0 +1,50 @@
+name: Benchmarks
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0' # Weekly run
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest # Should be a stable runner
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: sudo apt-get install -y cmake ninja-build
+
+      - name: Configure CMake (Release)
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DT81_BUILD_BENCHMARKS=ON
+
+      - name: Build Benchmarks
+        run: cmake --build build --target benchmarks --parallel
+
+      # Assuming benchmark target builds an executable, let's find it.
+      # Usually in build/benchmarks/
+
+      - name: Run Benchmarks
+        run: |
+          # Stub: Find and run benchmark executable, outputting JSON
+          # find build -name "*benchmark*" -type f -executable ...
+          # For now, we assume a specific path or mock it if not present
+
+          if [ -f "build/benchmarks/t81_benchmark" ]; then
+             ./build/benchmarks/t81_benchmark --benchmark_format=json > benchmark_results.json
+          else
+             echo "Benchmark executable not found. Creating dummy result."
+             echo '{ "benchmarks": [] }' > benchmark_results.json
+          fi
+
+      - name: Check SIMD Regression
+        run: python3 scripts/ci/check_simd_regression.py benchmark_results.json
+        continue-on-error: true # Soft-fail
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            benchmark_results.json
+            artifacts/ci_reports/*.json

@@ -1,0 +1,32 @@
+name: Multilingual Sync
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docs-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Need history for staleness check
+
+      - name: Check Directory Structure
+        run: python3 scripts/ci/check_docs_structure.py
+        continue-on-error: true # Soft-fail
+
+      - name: Check Translation Metadata
+        run: python3 scripts/ci/check_translation_metadata.py
+
+      - name: Check Translation Staleness
+        run: python3 scripts/ci/check_translation_staleness.py
+
+      - name: Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: multilingual-reports
+          path: artifacts/ci_reports/*.json

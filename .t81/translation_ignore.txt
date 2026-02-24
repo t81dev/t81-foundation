@@ -1,0 +1,4 @@
+# Paths to ignore for translation staleness checks
+images/
+assets/
+_config.yml

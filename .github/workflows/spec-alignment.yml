@@ -1,0 +1,26 @@
+name: Spec Alignment
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  spec-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Opcode Compatibility
+        run: python3 scripts/ci/check_opcode_compat.py
+
+      - name: Check Spec Coverage
+        run: python3 scripts/ci/spec_coverage.py
+
+      - name: Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spec-reports
+          path: artifacts/ci_reports/*.json

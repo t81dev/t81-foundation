@@ -1,0 +1,36 @@
+name: Dependency Hygiene
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  hygiene-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Audit CMake Dependencies
+        run: python3 scripts/ci/audit_cmake_deps.py
+
+      - name: Audit Include Directory
+        run: python3 scripts/ci/audit_include_dir.py
+        continue-on-error: true # Soft-fail
+
+      - name: Check Package.json
+        run: python3 scripts/ci/check_package_json.py
+
+      - name: Check Licenses
+        run: python3 scripts/ci/check_licenses.py
+
+      - name: Check API Diff
+        run: ./scripts/ci/api_diff.sh
+
+      - name: Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hygiene-reports
+          path: artifacts/ci_reports/*.json

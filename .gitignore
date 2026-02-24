@@ -106,3 +106,4 @@ WORKSPACE
 WORKSPACE.bzlmod
 bazel-*
 .bazelrc
+artifacts/
