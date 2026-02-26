@@ -153,7 +153,8 @@ int main() {
   for (const auto& c : cases) {
     RunSummary baseline = run_and_summarize(c.program, 2048);
     if (!expect(baseline.ok == c.expect_ok, c.id + ": baseline outcome mismatch")) return 1;
-    if (!c.expect_ok && !expect(baseline.trap == c.expect_trap, c.id + ": baseline trap mismatch")) {
+    if (!c.expect_ok &&
+        !expect(baseline.trap == c.expect_trap, c.id + ": baseline trap mismatch")) {
       return 1;
     }
 

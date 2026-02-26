@@ -19,10 +19,13 @@ bool check_layout_invariants(const t81::vm::State& st) {
   if (!expect(layout.code.start == 0, "code segment must start at zero")) return false;
   if (!expect(layout.code.limit <= layout.stack.start, "code must not overlap stack")) return false;
   if (!expect(layout.stack.limit <= layout.heap.start, "stack must not overlap heap")) return false;
-  if (!expect(layout.heap.limit <= layout.tensor.start, "heap must not overlap tensor")) return false;
-  if (!expect(layout.tensor.limit <= layout.meta.start, "tensor must not overlap meta")) return false;
+  if (!expect(layout.heap.limit <= layout.tensor.start, "heap must not overlap tensor"))
+    return false;
+  if (!expect(layout.tensor.limit <= layout.meta.start, "tensor must not overlap meta"))
+    return false;
   if (!expect(layout.total_size() == layout.meta.limit, "layout total size mismatch")) return false;
-  if (!expect(st.memory.size() == layout.total_size(), "memory size must match layout")) return false;
+  if (!expect(st.memory.size() == layout.total_size(), "memory size must match layout"))
+    return false;
   if (!expect(st.memory_tags.size() == st.memory.size(), "memory tags size mismatch")) return false;
   return true;
 }
@@ -63,11 +66,13 @@ int main() {
 
     const auto& after = vm->state();
     if (!check_layout_invariants(after)) return 1;
-    if (!expect(after.trace.size() == last_trace_size + 1, "trace size must advance by one per step")) {
+    if (!expect(after.trace.size() == last_trace_size + 1,
+                "trace size must advance by one per step")) {
       return 1;
     }
     last_trace_size = after.trace.size();
-    if (!expect(after.trace.back().pc < program.insns.size(), "trace pc out of program bounds")) return 1;
+    if (!expect(after.trace.back().pc < program.insns.size(), "trace pc out of program bounds"))
+      return 1;
 
     const auto& after_ctx = after.contexts[after.current_context];
     if (!expect(after_ctx.sp <= after_ctx.stack_base, "post-step sp exceeds stack_base")) return 1;

@@ -71,8 +71,8 @@ t81::tisc::Program meso_program() {
   p.insns.push_back({t81::tisc::Opcode::LoadImm, 40, 0, 0});
   p.insns.push_back({t81::tisc::Opcode::LoadImm, 41, 1, 0});
   p.insns.push_back({t81::tisc::Opcode::LoadImm, 42, 81, 0});
-  p.insns.push_back({t81::tisc::Opcode::Add, 40, 40, 41});       // pc=3
-  p.insns.push_back({t81::tisc::Opcode::Less, 43, 40, 42});      // pc=4
+  p.insns.push_back({t81::tisc::Opcode::Add, 40, 40, 41});   // pc=3
+  p.insns.push_back({t81::tisc::Opcode::Less, 43, 40, 42});  // pc=4
   p.insns.push_back({t81::tisc::Opcode::JumpIfNotZero, 3, 43, 0});
   p.insns.push_back({t81::tisc::Opcode::Store, 140, 40, 0});
   p.insns.push_back({t81::tisc::Opcode::Load, 44, 140, 0});

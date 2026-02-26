@@ -1,6 +1,6 @@
+#include <algorithm>
 #include <memory>
 #include <string>
-#include <algorithm>
 
 #include "test_runtime_check.hpp"
 
@@ -33,12 +33,11 @@ int main() {
 
   const auto& log = vm->state().axion_log;
   T81_TEST_CHECK(!log.empty());
-  const bool saw_predispatch_deny =
-      std::any_of(log.begin(), log.end(), [](const auto& event) {
-        return event.opcode == t81::tisc::Opcode::Nop &&
-               event.verdict.kind == t81::axion::VerdictKind::Deny &&
-               event.verdict.reason == "unit-test predispatch deny";
-      });
+  const bool saw_predispatch_deny = std::any_of(log.begin(), log.end(), [](const auto& event) {
+    return event.opcode == t81::tisc::Opcode::Nop &&
+           event.verdict.kind == t81::axion::VerdictKind::Deny &&
+           event.verdict.reason == "unit-test predispatch deny";
+  });
   T81_TEST_CHECK(saw_predispatch_deny);
 
   return 0;

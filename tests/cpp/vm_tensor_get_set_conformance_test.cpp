@@ -43,7 +43,7 @@ void run_get_set_success_float_handle_value() {
   p.insns.push_back(load_tensor);
   p.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 2, 0});  // idx
   p.insns.push_back({t81::tisc::Opcode::LoadImm, 3, 9, 0});
-  p.insns.push_back({t81::tisc::Opcode::I2F, 4, 3, 0});      // float handle
+  p.insns.push_back({t81::tisc::Opcode::I2F, 4, 3, 0});  // float handle
   p.insns.push_back({t81::tisc::Opcode::TSet, 1, 2, 4});
   p.insns.push_back({t81::tisc::Opcode::TGet, 5, 1, 2});
   p.insns.push_back({t81::tisc::Opcode::F2I, 6, 5, 0});

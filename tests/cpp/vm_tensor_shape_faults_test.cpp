@@ -98,8 +98,8 @@ t81::tisc::Program make_matmul_shape_mismatch_program() {
 t81::tisc::Program make_tendot_shape_mismatch_program() {
   t81::tisc::Program p;
   p.tensor_pool.push_back(t81::T729DynamicTensor({2, 3}, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f}));
-  p.tensor_pool.push_back(t81::T729DynamicTensor({4, 2}, {1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-                                                           0.0f, 1.0f}));
+  p.tensor_pool.push_back(
+      t81::T729DynamicTensor({4, 2}, {1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f}));
   t81::tisc::Insn load_a{t81::tisc::Opcode::LoadImm, 1, 1, 0};
   load_a.literal_kind = t81::tisc::LiteralKind::TensorHandle;
   t81::tisc::Insn load_b{t81::tisc::Opcode::LoadImm, 2, 2, 0};

@@ -34,13 +34,13 @@ int main() {
 
   t81::tisc::Program program;
   // R0 counter, R1 step=1, R2 limit=500, R3 cond
-  program.insns.push_back({Opcode::LoadImm, 0, 0, 0, LiteralKind::Int});      // pc=0
-  program.insns.push_back({Opcode::LoadImm, 1, 1, 0, LiteralKind::Int});      // pc=1
-  program.insns.push_back({Opcode::LoadImm, 2, 500, 0, LiteralKind::Int});    // pc=2
-  program.insns.push_back({Opcode::Add, 0, 0, 1, LiteralKind::Int});          // pc=3 loop
-  program.insns.push_back({Opcode::Less, 3, 0, 2, LiteralKind::Int});         // pc=4
+  program.insns.push_back({Opcode::LoadImm, 0, 0, 0, LiteralKind::Int});        // pc=0
+  program.insns.push_back({Opcode::LoadImm, 1, 1, 0, LiteralKind::Int});        // pc=1
+  program.insns.push_back({Opcode::LoadImm, 2, 500, 0, LiteralKind::Int});      // pc=2
+  program.insns.push_back({Opcode::Add, 0, 0, 1, LiteralKind::Int});            // pc=3 loop
+  program.insns.push_back({Opcode::Less, 3, 0, 2, LiteralKind::Int});           // pc=4
   program.insns.push_back({Opcode::JumpIfNotZero, 3, 3, 0, LiteralKind::Int});  // pc=5 -> 3
-  program.insns.push_back({Opcode::Halt, 0, 0, 0, LiteralKind::Int});         // pc=6
+  program.insns.push_back({Opcode::Halt, 0, 0, 0, LiteralKind::Int});           // pc=6
 
   vm->load_program(program);
   const auto run = vm->run_to_halt(5000);

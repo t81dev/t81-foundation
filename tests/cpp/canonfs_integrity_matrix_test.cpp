@@ -101,13 +101,15 @@ int main() {
   // Cache path: existing driver can serve cached copy; hash still verifies against cached bytes.
   auto cached_read = persistent->read_object_bytes(write.value());
   if (!expect(cached_read.has_value(), "cached read should succeed")) return 1;
-  if (!expect(cached_read.value() == payload, "cached read should return pre-tamper bytes")) return 1;
+  if (!expect(cached_read.value() == payload, "cached read should return pre-tamper bytes"))
+    return 1;
 
   // Cold path: new driver must detect tampered bytes via read-verify.
   auto persistent_cold = make_persistent_driver(root);
   auto tampered_read = persistent_cold->read_object_bytes(write.value());
   if (!expect(!tampered_read.has_value(), "tampered cold read should fail")) return 1;
-  if (!expect(tampered_read.error() == Error::DecodeError, "tampered cold read expects DecodeError")) {
+  if (!expect(tampered_read.error() == Error::DecodeError,
+              "tampered cold read expects DecodeError")) {
     return 1;
   }
 
@@ -115,13 +117,15 @@ int main() {
   auto persistent_noverify = make_persistent_driver(root);
   auto nonverify_read = persistent_noverify->read_object_bytes(write.value());
   if (!expect(nonverify_read.has_value(), "no-verify read should succeed")) return 1;
-  if (!expect(nonverify_read.value() != payload, "no-verify read should expose tampered bytes")) return 1;
+  if (!expect(nonverify_read.value() != payload, "no-verify read should expose tampered bytes"))
+    return 1;
 
   // Default path: read-verify should be enabled when env var is unset.
   unset_read_verify();
   auto persistent_default_verify = make_persistent_driver(root);
   auto default_verify_read = persistent_default_verify->read_object_bytes(write.value());
-  if (!expect(!default_verify_read.has_value(), "default verify read should fail on tamper")) return 1;
+  if (!expect(!default_verify_read.has_value(), "default verify read should fail on tamper"))
+    return 1;
   if (!expect(default_verify_read.error() == Error::DecodeError,
               "default verify read expects DecodeError")) {
     return 1;
@@ -137,11 +141,13 @@ int main() {
   auto trunc_write = trunc_driver->write_object(
       ObjectType::RawBlock, std::span<const std::byte>(payload.data(), payload.size()));
   if (!expect(trunc_write.has_value(), "truncate case write failed")) return 1;
-  if (!expect(truncate_object_file(trunc_root, trunc_write.value(), 4), "truncate tamper failed")) return 1;
+  if (!expect(truncate_object_file(trunc_root, trunc_write.value(), 4), "truncate tamper failed"))
+    return 1;
   auto trunc_cold = make_persistent_driver(trunc_root);
   auto trunc_read = trunc_cold->read_object_bytes(trunc_write.value());
   if (!expect(!trunc_read.has_value(), "truncate read should fail")) return 1;
-  if (!expect(trunc_read.error() == Error::DecodeError, "truncate read expects DecodeError")) return 1;
+  if (!expect(trunc_read.error() == Error::DecodeError, "truncate read expects DecodeError"))
+    return 1;
 
   // Appended-tail corruption case.
   const std::filesystem::path append_root =
@@ -152,26 +158,31 @@ int main() {
   auto append_write = append_driver->write_object(
       ObjectType::RawBlock, std::span<const std::byte>(payload.data(), payload.size()));
   if (!expect(append_write.has_value(), "append case write failed")) return 1;
-  if (!expect(append_object_file(append_root, append_write.value()), "append tamper failed")) return 1;
+  if (!expect(append_object_file(append_root, append_write.value()), "append tamper failed"))
+    return 1;
   auto append_cold = make_persistent_driver(append_root);
   auto append_read = append_cold->read_object_bytes(append_write.value());
   if (!expect(!append_read.has_value(), "append read should fail")) return 1;
-  if (!expect(append_read.error() == Error::DecodeError, "append read expects DecodeError")) return 1;
+  if (!expect(append_read.error() == Error::DecodeError, "append read expects DecodeError"))
+    return 1;
 
   auto repair_missing = persistent_noverify->parity_repair_subtree(write.value());
-  if (!expect(repair_missing.has_value(), "repair existing object should be no-op success")) return 1;
+  if (!expect(repair_missing.has_value(), "repair existing object should be no-op success"))
+    return 1;
 
   CanonRef bogus{CanonHash{t81::hash::hash_string("missing-object")}};
   auto repair_missing_bogus = persistent_noverify->parity_repair_subtree(bogus);
   if (!expect(!repair_missing_bogus.has_value(), "repair missing object should fail")) return 1;
-  if (!expect(repair_missing_bogus.error() == Error::NotFound, "repair missing object expects NotFound")) {
+  if (!expect(repair_missing_bogus.error() == Error::NotFound,
+              "repair missing object expects NotFound")) {
     return 1;
   }
 
   auto inmem = make_in_memory_driver();
   auto inmem_missing_repair = inmem->parity_repair_subtree(bogus);
   if (!expect(!inmem_missing_repair.has_value(), "in-memory missing repair should fail")) return 1;
-  if (!expect(inmem_missing_repair.error() == Error::NotFound, "in-memory missing repair expects NotFound")) {
+  if (!expect(inmem_missing_repair.error() == Error::NotFound,
+              "in-memory missing repair expects NotFound")) {
     return 1;
   }
 

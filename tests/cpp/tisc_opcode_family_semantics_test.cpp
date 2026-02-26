@@ -14,7 +14,8 @@ bool expect(bool cond, const std::string& msg) {
   return true;
 }
 
-std::expected<t81::vm::State, t81::vm::Trap> run_program(const t81::tisc::Program& p, std::size_t steps) {
+std::expected<t81::vm::State, t81::vm::Trap> run_program(const t81::tisc::Program& p,
+                                                         std::size_t steps) {
   auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(p);
   auto run = vm->run_to_halt(steps);
@@ -50,11 +51,11 @@ bool check_arithmetic_family() {
 bool check_control_flow_family() {
   // Spec alignment: spec/tisc/opcode-semantics.md branch/jump opcodes.
   t81::tisc::Program p;
-  p.insns.push_back({t81::tisc::Opcode::LoadImm, 40, 0, 0});      // counter
-  p.insns.push_back({t81::tisc::Opcode::LoadImm, 41, 1, 0});      // step
-  p.insns.push_back({t81::tisc::Opcode::LoadImm, 42, 5, 0});      // limit
-  p.insns.push_back({t81::tisc::Opcode::Add, 40, 40, 41});        // pc=3
-  p.insns.push_back({t81::tisc::Opcode::Less, 43, 40, 42});       // pc=4
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 40, 0, 0});        // counter
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 41, 1, 0});        // step
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 42, 5, 0});        // limit
+  p.insns.push_back({t81::tisc::Opcode::Add, 40, 40, 41});          // pc=3
+  p.insns.push_back({t81::tisc::Opcode::Less, 43, 40, 42});         // pc=4
   p.insns.push_back({t81::tisc::Opcode::JumpIfNotZero, 3, 43, 0});  // pc=5 -> loop
   p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
 

@@ -84,21 +84,13 @@ int main() {
   };
 
   const std::vector<MatrixCase> cases = {
-      {"allow-basic",
-       R"((policy (tier 1) (max-instructions 64) (max-stack 64)))",
-       true,
+      {"allow-basic", R"((policy (tier 1) (max-instructions 64) (max-stack 64)))", true,
        t81::vm::Trap::None},
-      {"deny-max-instructions",
-       R"((policy (tier 1) (max-instructions 0)))",
-       false,
+      {"deny-max-instructions", R"((policy (tier 1) (max-instructions 0)))", false,
        t81::vm::Trap::SecurityFault},
-      {"deny-required-event",
-       R"((policy (tier 1) (require-axion-event (reason "never-seen"))))",
-       false,
-       t81::vm::Trap::SecurityFault},
-      {"invalid-clause",
-       R"((policy (tier 1) (unknown-clause 1)))",
-       false,
+      {"deny-required-event", R"((policy (tier 1) (require-axion-event (reason "never-seen"))))",
+       false, t81::vm::Trap::SecurityFault},
+      {"invalid-clause", R"((policy (tier 1) (unknown-clause 1)))", false,
        t81::vm::Trap::SecurityFault},
   };
 
@@ -112,8 +104,10 @@ int main() {
       RunSummary repeat = run_once(program, 256);
       if (!expect(repeat.ok == baseline.ok, c.id + ": outcome drift")) return 1;
       if (!expect(repeat.trap == baseline.trap, c.id + ": trap drift")) return 1;
-      if (!expect(repeat.trace_sig == baseline.trace_sig, c.id + ": trace signature drift")) return 1;
-      if (!expect(repeat.axion_sig == baseline.axion_sig, c.id + ": axion signature drift")) return 1;
+      if (!expect(repeat.trace_sig == baseline.trace_sig, c.id + ": trace signature drift"))
+        return 1;
+      if (!expect(repeat.axion_sig == baseline.axion_sig, c.id + ": axion signature drift"))
+        return 1;
     }
   }
 

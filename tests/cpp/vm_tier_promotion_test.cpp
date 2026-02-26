@@ -69,9 +69,11 @@ int main() {
     }
   }
 
-  // Depth 250 exceeds Tier4 recursion bound (243), so execution must promote to Tier5 at least once.
+  // Depth 250 exceeds Tier4 recursion bound (243), so execution must promote to Tier5 at least
+  // once.
   if (!saw_tier5_promotion) {
-    std::cerr << "Expected promotion path to reach Tier 5, but no Tier 5 promotion event was found.\n";
+    std::cerr
+        << "Expected promotion path to reach Tier 5, but no Tier 5 promotion event was found.\n";
     return 1;
   }
 

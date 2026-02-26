@@ -43,8 +43,8 @@ RunSummary run_with_policy(std::string policy_text) {
     out.trace_signature += "/";
     out.trace_signature += std::to_string(static_cast<int>(trace.opcode));
     out.trace_signature += "/";
-    out.trace_signature += trace.trap.has_value() ? std::to_string(static_cast<int>(trace.trap.value()))
-                                                  : "none";
+    out.trace_signature +=
+        trace.trap.has_value() ? std::to_string(static_cast<int>(trace.trap.value())) : "none";
     out.trace_signature += ";";
   }
   for (const auto& event : vm->state().axion_log) {
@@ -68,10 +68,12 @@ int main() {
   RunSummary deny_a = run_with_policy(deny_policy);
   RunSummary deny_b = run_with_policy(deny_policy);
   if (!expect(!deny_a.ok && !deny_b.ok, "deny policy should fail closed")) return 1;
-  if (!expect(deny_a.trap == t81::vm::Trap::SecurityFault, "deny policy should trap SecurityFault")) {
+  if (!expect(deny_a.trap == t81::vm::Trap::SecurityFault,
+              "deny policy should trap SecurityFault")) {
     return 1;
   }
-  if (!expect(deny_b.trap == t81::vm::Trap::SecurityFault, "deny policy should trap SecurityFault")) {
+  if (!expect(deny_b.trap == t81::vm::Trap::SecurityFault,
+              "deny policy should trap SecurityFault")) {
     return 1;
   }
   if (!expect(deny_a.trace_signature == deny_b.trace_signature,

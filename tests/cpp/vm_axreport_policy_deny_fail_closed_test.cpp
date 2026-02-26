@@ -26,7 +26,8 @@ public:
 int main() {
   t81::tisc::Program program;
   program.symbol_pool = {"DeniedReport"};
-  program.insns.push_back({t81::tisc::Opcode::LoadImm, 1, 1, 0, t81::tisc::LiteralKind::SymbolHandle});
+  program.insns.push_back(
+      {t81::tisc::Opcode::LoadImm, 1, 1, 0, t81::tisc::LiteralKind::SymbolHandle});
   program.insns.push_back({t81::tisc::Opcode::AxReport, 1, 0, 0});
   program.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
 

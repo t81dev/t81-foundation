@@ -43,10 +43,10 @@ bool check_div_zero_trap_semantics() {
 
 bool check_jump_if_zero_semantics() {
   t81::tisc::Program p;
-  p.insns.push_back({t81::tisc::Opcode::LoadImm, 40, 0, 0});      // condition
-  p.insns.push_back({t81::tisc::Opcode::LoadImm, 41, 5, 0});      // default path value
-  p.insns.push_back({t81::tisc::Opcode::JumpIfZero, 5, 40, 0});   // jump to pc=5
-  p.insns.push_back({t81::tisc::Opcode::LoadImm, 41, 99, 0});     // skipped
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 40, 0, 0});     // condition
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 41, 5, 0});     // default path value
+  p.insns.push_back({t81::tisc::Opcode::JumpIfZero, 5, 40, 0});  // jump to pc=5
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 41, 99, 0});    // skipped
   p.insns.push_back({t81::tisc::Opcode::Jump, 6, 0, 0});         // skipped
   p.insns.push_back({t81::tisc::Opcode::LoadImm, 41, 42, 0});    // taken
   p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});

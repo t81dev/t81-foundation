@@ -76,26 +76,19 @@ int main() {
   // Spec alignment: spec/axion-kernel.md policy fail-closed + deterministic verdict behavior.
   std::vector<MatrixCase> cases;
   cases.push_back({"allow-basic",
-                   make_noop_halt_program(R"((policy (tier 1) (max-instructions 8)))"),
-                   true,
+                   make_noop_halt_program(R"((policy (tier 1) (max-instructions 8)))"), true,
                    t81::vm::Trap::None});
-  cases.push_back(
-      {"deny-max-instructions",
-       make_noop_halt_program(R"((policy (tier 1) (max-instructions 0)))"),
-       false,
-       t81::vm::Trap::SecurityFault});
-  cases.push_back({"deny-required-axion-event",
-                   make_noop_halt_program(
-                       R"((policy (tier 1) (require-axion-event (reason "unreachable"))))"),
-                   false,
+  cases.push_back({"deny-max-instructions",
+                   make_noop_halt_program(R"((policy (tier 1) (max-instructions 0)))"), false,
                    t81::vm::Trap::SecurityFault});
-  cases.push_back({"max-stack-basic",
-                   make_stack_program(R"((policy (tier 1) (max-stack 64)))"),
-                   true,
-                   t81::vm::Trap::None});
+  cases.push_back(
+      {"deny-required-axion-event",
+       make_noop_halt_program(R"((policy (tier 1) (require-axion-event (reason "unreachable"))))"),
+       false, t81::vm::Trap::SecurityFault});
+  cases.push_back({"max-stack-basic", make_stack_program(R"((policy (tier 1) (max-stack 64)))"),
+                   true, t81::vm::Trap::None});
   cases.push_back({"invalid-unknown-clause",
-                   make_noop_halt_program(R"((policy (tier 1) (unknown-clause 1)))"),
-                   false,
+                   make_noop_halt_program(R"((policy (tier 1) (unknown-clause 1)))"), false,
                    t81::vm::Trap::SecurityFault});
 
   for (const auto& c : cases) {

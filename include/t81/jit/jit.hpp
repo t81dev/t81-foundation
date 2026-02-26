@@ -13,8 +13,8 @@ namespace t81::vm {
  */
 class JitTrace {
 public:
-  using PolicyHook = std::function<bool(std::size_t pc, const t81::tisc::Insn& insn,
-                                        std::size_t executed_so_far)>;
+  using PolicyHook =
+      std::function<bool(std::size_t pc, const t81::tisc::Insn& insn, std::size_t executed_so_far)>;
 
   enum class ExitKind {
     Completed,

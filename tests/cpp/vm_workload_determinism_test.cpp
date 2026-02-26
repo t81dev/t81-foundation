@@ -31,12 +31,12 @@ t81::tisc::Program make_workload_program() {
   t81::tisc::Program p;
 
   // Loop body: r0 += 1 until r0 == r2.
-  p.insns.push_back({Opcode::LoadImm, 0, 0, 0});         // counter
-  p.insns.push_back({Opcode::LoadImm, 1, 1, 0});         // step
-  p.insns.push_back({Opcode::LoadImm, 2, 81, 0});        // loop limit
-  p.insns.push_back({Opcode::Add, 0, 0, 1});             // pc=3
-  p.insns.push_back({Opcode::Less, 3, 0, 2});            // pc=4
-  p.insns.push_back({Opcode::JumpIfNotZero, 3, 3, 0});   // pc=5 -> 3
+  p.insns.push_back({Opcode::LoadImm, 0, 0, 0});        // counter
+  p.insns.push_back({Opcode::LoadImm, 1, 1, 0});        // step
+  p.insns.push_back({Opcode::LoadImm, 2, 81, 0});       // loop limit
+  p.insns.push_back({Opcode::Add, 0, 0, 1});            // pc=3
+  p.insns.push_back({Opcode::Less, 3, 0, 2});           // pc=4
+  p.insns.push_back({Opcode::JumpIfNotZero, 3, 3, 0});  // pc=5 -> 3
 
   // Memory + stack + option/result path.
   p.insns.push_back({Opcode::Store, 140, 0, 0});
