@@ -1076,6 +1076,118 @@ public:
       return std::nullopt;
     };
 
+    auto handle_axcheck = [&]() -> std::optional<Trap> {
+      if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+        return Trap::DecodeFault;
+      }
+      const bool ok = ctx.registers[insn.a] != 0;
+      auto msg = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+      std::string text = msg.has_value() ? std::string(*msg) : "Check";
+
+      t81::axion::Verdict verdict;
+      if (!ok) {
+        verdict.kind = t81::axion::VerdictKind::Deny;
+        verdict.reason = "AxCheck: " + text;
+      } else {
+        verdict = eval_axion_call(t81::axion::reasons::kAxCheck, current_pc, insn.opcode);
+        if (verdict.kind == t81::axion::VerdictKind::Allow ||
+            verdict.kind == t81::axion::VerdictKind::Warn) {
+          verdict.reason = "AxCheck: " + text;
+        }
+      }
+      record_axion_event(insn.opcode, 0, ok ? 1 : 0, verdict);
+      if (verdict.kind == t81::axion::VerdictKind::Deny) {
+        return Trap::SecurityFault;
+      }
+      return std::nullopt;
+    };
+
+    auto handle_axreport = [&]() -> std::optional<Trap> {
+      if (!reg_ok(insn.a)) {
+        return Trap::DecodeFault;
+      }
+      auto msg = symbol_like_text(ctx.register_tags[insn.a], ctx.registers[insn.a]);
+      std::string text = msg.has_value() ? std::string(*msg) : "Report";
+
+      t81::axion::Verdict verdict =
+          eval_axion_call(t81::axion::reasons::kAxReport, current_pc, insn.opcode);
+      if (verdict.kind == t81::axion::VerdictKind::Allow ||
+          verdict.kind == t81::axion::VerdictKind::Warn) {
+        verdict.reason = "AxReport: " + text;
+      }
+      record_axion_event(insn.opcode, 0, 0, verdict);
+      if (verdict.kind == t81::axion::VerdictKind::Deny) {
+        return Trap::SecurityFault;
+      }
+      return std::nullopt;
+    };
+
+    auto handle_blocked_privileged_axion_opcode = [&](t81::tisc::Opcode opcode) {
+      t81::axion::Verdict verdict{t81::axion::VerdictKind::Deny,
+                                  "Blocked: unimplemented privileged Axion opcode"};
+      record_axion_event(opcode, 0, 0, verdict);
+      return Trap::SecurityFault;
+    };
+
+    auto handle_blocked_neural_opcode = [&](bool require_b_operand) -> std::optional<Trap> {
+      if (!reg_ok(insn.a) || (require_b_operand && !reg_ok(insn.b))) {
+        return Trap::DecodeFault;
+      }
+      t81::axion::Verdict verdict{t81::axion::VerdictKind::Deny,
+                                  "Blocked: unimplemented neural opcode"};
+      record_axion_event(insn.opcode, 0, 0, verdict);
+      return Trap::SecurityFault;
+    };
+
+    auto handle_bitwise_binary = [&]() -> std::optional<Trap> {
+      if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+        return Trap::DecodeFault;
+      }
+      std::int64_t v = 0;
+      if (insn.opcode == t81::tisc::Opcode::BitAnd) {
+        v = ctx.registers[insn.b] & ctx.registers[insn.c];
+      } else if (insn.opcode == t81::tisc::Opcode::BitOr) {
+        v = ctx.registers[insn.b] | ctx.registers[insn.c];
+      } else {
+        v = ctx.registers[insn.b] ^ ctx.registers[insn.c];
+      }
+      ctx.registers[insn.a] = v;
+      ctx.register_tags[insn.a] = ValueTag::Int;
+      update_flags(v);
+      return std::nullopt;
+    };
+
+    auto handle_bitwise_not = [&]() -> std::optional<Trap> {
+      if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+        return Trap::DecodeFault;
+      }
+      std::int64_t v = ~ctx.registers[insn.b];
+      ctx.registers[insn.a] = v;
+      ctx.register_tags[insn.a] = ValueTag::Int;
+      update_flags(v);
+      return std::nullopt;
+    };
+
+    auto handle_bitwise_shift = [&]() -> std::optional<Trap> {
+      if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+        return Trap::DecodeFault;
+      }
+      std::int64_t val = ctx.registers[insn.b];
+      std::int64_t amt = ctx.registers[insn.c] & 0x3F;
+      std::int64_t res = 0;
+      if (insn.opcode == t81::tisc::Opcode::BitShl) {
+        res = val << amt;
+      } else if (insn.opcode == t81::tisc::Opcode::BitShr) {
+        res = val >> amt;
+      } else {
+        res = static_cast<std::int64_t>(static_cast<uint64_t>(val) >> amt);
+      }
+      ctx.registers[insn.a] = res;
+      ctx.register_tags[insn.a] = ValueTag::Int;
+      update_flags(res);
+      return std::nullopt;
+    };
+
     Trap trap = Trap::None;
     switch (insn.opcode) {
       case t81::tisc::Opcode::Nop: {
@@ -4476,134 +4588,55 @@ public:
         break;
       }
       case t81::tisc::Opcode::AxCheck: {
-        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
-          trap = Trap::DecodeFault;
-          break;
-        }
-        bool ok = ctx.registers[insn.a] != 0;
-        auto msg = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
-        std::string text = msg.has_value() ? std::string(*msg) : "Check";
-
-        t81::axion::Verdict verdict;
-        if (!ok) {
-          verdict.kind = t81::axion::VerdictKind::Deny;
-          verdict.reason = "AxCheck: " + text;
-        } else {
-          verdict = eval_axion_call(t81::axion::reasons::kAxCheck, current_pc, insn.opcode);
-          if (verdict.kind == t81::axion::VerdictKind::Allow ||
-              verdict.kind == t81::axion::VerdictKind::Warn) {
-            verdict.reason = "AxCheck: " + text;
-          }
-        }
-        record_axion_event(insn.opcode, 0, ok ? 1 : 0, verdict);
-        if (verdict.kind == t81::axion::VerdictKind::Deny) {
-          trap = Trap::SecurityFault;
+        if (auto ax_trap = handle_axcheck(); ax_trap.has_value()) {
+          trap = *ax_trap;
         }
         break;
       }
       case t81::tisc::Opcode::AxReport: {
-        if (!reg_ok(insn.a)) {
-          trap = Trap::DecodeFault;
-          break;
-        }
-        auto msg = symbol_like_text(ctx.register_tags[insn.a], ctx.registers[insn.a]);
-        std::string text = msg.has_value() ? std::string(*msg) : "Report";
-
-        t81::axion::Verdict verdict =
-            eval_axion_call(t81::axion::reasons::kAxReport, current_pc, insn.opcode);
-        if (verdict.kind == t81::axion::VerdictKind::Allow ||
-            verdict.kind == t81::axion::VerdictKind::Warn) {
-          verdict.reason = "AxReport: " + text;
-        }
-        record_axion_event(insn.opcode, 0, 0, verdict);
-        if (verdict.kind == t81::axion::VerdictKind::Deny) {
-          trap = Trap::SecurityFault;
+        if (auto ax_trap = handle_axreport(); ax_trap.has_value()) {
+          trap = *ax_trap;
         }
         break;
       }
       case t81::tisc::Opcode::AxSign:
       case t81::tisc::Opcode::AxLineage:
       case t81::tisc::Opcode::AxCanon: {
-        // Fail closed for unimplemented privileged Axion opcodes.
-        t81::axion::Verdict verdict{t81::axion::VerdictKind::Deny,
-                                    "Blocked: unimplemented privileged Axion opcode"};
-        record_axion_event(insn.opcode, 0, 0, verdict);
-        trap = Trap::SecurityFault;
+        trap = handle_blocked_privileged_axion_opcode(insn.opcode);
         break;
       }
       case t81::tisc::Opcode::TNeuralFwd: {
-        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
-          trap = Trap::DecodeFault;
-          break;
+        if (auto neural_trap = handle_blocked_neural_opcode(true); neural_trap.has_value()) {
+          trap = *neural_trap;
         }
-        t81::axion::Verdict verdict{t81::axion::VerdictKind::Deny,
-                                    "Blocked: unimplemented neural opcode"};
-        record_axion_event(insn.opcode, 0, 0, verdict);
-        trap = Trap::SecurityFault;
         break;
       }
       case t81::tisc::Opcode::TNeuralBwd: {
-        if (!reg_ok(insn.a)) {  // Operand is the model/tensor to train
-          trap = Trap::DecodeFault;
-          break;
+        if (auto neural_trap = handle_blocked_neural_opcode(false); neural_trap.has_value()) {
+          trap = *neural_trap;
         }
-        t81::axion::Verdict verdict{t81::axion::VerdictKind::Deny,
-                                    "Blocked: unimplemented neural opcode"};
-        record_axion_event(insn.opcode, 0, 0, verdict);
-        trap = Trap::SecurityFault;
         break;
       }
       case t81::tisc::Opcode::BitAnd:
       case t81::tisc::Opcode::BitOr:
       case t81::tisc::Opcode::BitXor: {
-        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
-          trap = Trap::DecodeFault;
-          break;
+        if (auto bit_trap = handle_bitwise_binary(); bit_trap.has_value()) {
+          trap = *bit_trap;
         }
-        std::int64_t v = 0;
-        if (insn.opcode == t81::tisc::Opcode::BitAnd) {
-          v = ctx.registers[insn.b] & ctx.registers[insn.c];
-        } else if (insn.opcode == t81::tisc::Opcode::BitOr) {
-          v = ctx.registers[insn.b] | ctx.registers[insn.c];
-        } else {
-          v = ctx.registers[insn.b] ^ ctx.registers[insn.c];
-        }
-        ctx.registers[insn.a] = v;
-        ctx.register_tags[insn.a] = ValueTag::Int;
-        update_flags(v);
         break;
       }
       case t81::tisc::Opcode::BitNot: {
-        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
-          trap = Trap::DecodeFault;
-          break;
+        if (auto bit_trap = handle_bitwise_not(); bit_trap.has_value()) {
+          trap = *bit_trap;
         }
-        std::int64_t v = ~ctx.registers[insn.b];
-        ctx.registers[insn.a] = v;
-        ctx.register_tags[insn.a] = ValueTag::Int;
-        update_flags(v);
         break;
       }
       case t81::tisc::Opcode::BitShl:
       case t81::tisc::Opcode::BitShr:
       case t81::tisc::Opcode::BitUShr: {
-        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
-          trap = Trap::DecodeFault;
-          break;
+        if (auto bit_trap = handle_bitwise_shift(); bit_trap.has_value()) {
+          trap = *bit_trap;
         }
-        std::int64_t val = ctx.registers[insn.b];
-        std::int64_t amt = ctx.registers[insn.c] & 0x3F;
-        std::int64_t res = 0;
-        if (insn.opcode == t81::tisc::Opcode::BitShl) {
-          res = val << amt;
-        } else if (insn.opcode == t81::tisc::Opcode::BitShr) {
-          res = val >> amt;
-        } else {
-          res = static_cast<std::int64_t>(static_cast<uint64_t>(val) >> amt);
-        }
-        ctx.registers[insn.a] = res;
-        ctx.register_tags[insn.a] = ValueTag::Int;
-        update_flags(res);
         break;
       }
       default:
@@ -4893,20 +4926,13 @@ private:
 
   void log_memory_segment_access(t81::tisc::Opcode opcode, MemorySegmentKind kind, std::size_t addr,
                                  std::size_t size, std::string_view action) {
-    t81::axion::Verdict verdict;
-    verdict.kind = t81::axion::VerdictKind::Allow;
-    verdict.reason = t81::vm::internal::format_memory_access_reason(kind, addr, size, action);
-    record_axion_event(opcode, static_cast<std::int32_t>(kind), static_cast<std::int64_t>(addr),
-                       verdict);
+    t81::vm::internal::log_memory_segment_access(state_, state_.current_context, opcode, kind, addr,
+                                                 size, action);
   }
 
   void log_bounds_fault(t81::tisc::Opcode opcode, MemorySegmentKind kind, int addr,
                         std::string_view action) {
-    t81::axion::Verdict verdict;
-    verdict.kind = t81::axion::VerdictKind::Allow;
-    verdict.reason = t81::vm::internal::format_bounds_fault_reason(kind, addr, action);
-    record_axion_event(opcode, static_cast<std::int32_t>(kind), static_cast<std::int64_t>(addr),
-                       verdict);
+    t81::vm::internal::log_bounds_fault(state_, state_.current_context, opcode, kind, addr, action);
   }
 
   void log_bounds_fault(t81::tisc::Opcode opcode, int addr, std::string_view action) {

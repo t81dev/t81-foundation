@@ -30,6 +30,13 @@ std::string append_segment_reason(std::string_view action, MemorySegmentKind kin
 void apply_segment_reason(t81::axion::Verdict& verdict, std::string_view action, MemorySegmentKind kind,
                           std::size_t addr);
 
+void log_memory_segment_access(State& state, std::size_t current_context, t81::tisc::Opcode opcode,
+                               MemorySegmentKind kind, std::size_t addr, std::size_t size,
+                               std::string_view action);
+
+void log_bounds_fault(State& state, std::size_t current_context, t81::tisc::Opcode opcode,
+                      MemorySegmentKind kind, int addr, std::string_view action);
+
 void record_axion_event(State& state, std::size_t current_context, t81::tisc::Opcode opcode,
                         std::int32_t tag_val, std::int64_t val_data,
                         const t81::axion::Verdict& verdict);

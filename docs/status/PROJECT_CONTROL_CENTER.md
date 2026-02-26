@@ -57,6 +57,17 @@ Authority remains:
   - Workload determinism tiers expanded (policy-heavy + tensor-access).
   - Translation semantic gate upgraded with required section-heading parity checks.
   - CI benchmark gate expanded with VM workload dispatch/native ratio guardrail.
+- Behavioral Conformance Expansion Phase 3 is in progress:
+  - deterministic VM trap-family matrix coverage added
+  - CanonFS read-verify env-contract matrix coverage added
+  - deterministic `TLOADHASH` decode-fault matrix coverage added
+  - deterministic `TLOADHASH` status classification matrix expanded (`InvalidHash`/`CanonFsMiss`/`DecodeFault`)
+  - mixed workload conformance matrix (policy+tensor+memory+branch) added
+  - mixed workload matrix now includes deterministic policy-deny branch-path case
+  - Axion conformance matrix now includes clause-ordering equivalence invariants with deterministic Axion-event signatures
+  - Axion opcode dispatch concentration reduced in VM via extracted `AxCheck`/`AxReport` helper paths
+  - blocked-neural and bitwise opcode-family dispatch concentration reduced via extracted helper paths
+  - VM trace/log helper extraction advanced in policy-trace bridge
 - Experimental backlog implementation items are complete:
   - Cognitive Tier 1..5 closures
   - Runtime JIT prototype backend uplift
@@ -121,6 +132,7 @@ Authority remains:
 
 - `docs/roadmaps-plans/TASKS.md`
 - `docs/status/BEHAVIORAL_CONFORMANCE_EXPANSION_SPRINT_2026-02-26.md`
+- `docs/status/BEHAVIORAL_CONFORMANCE_EXPANSION_PHASE3_2026-02-26.md`
 - `docs/status/RELEASE_READINESS_PACKET_2026-03.md`
 - `docs/status/C2_MONTH_CLOSE_RUNBOOK_2026-03-31.md`
 - `docs/status/C2_MONTH_CLOSE_CHECK_2026-03-31.md`

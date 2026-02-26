@@ -1,8 +1,41 @@
 # Full-System Architectural & Strategic Audit
 
 Date: 2026-02-26  
-Revision: Post-remediation refresh + conformance sprint Phase 2 + VM decomposition Phase F closure  
+Revision: Post-remediation refresh + conformance sprint Phase 3 closure + VM decomposition Phase F closure + rerun on baseline `40488752`  
 Scope: `/src`, `/include`, `/spec`, `/docs`, `/book`, CI workflows, governance files, capability contract, opcode/ISA surfaces, VM execution model, Axion policy enforcement, determinism gates, benchmarks, tests, multilingual alignment, roadmaps, release notes.
+
+## Rerun Delta (Baseline `40488752`)
+
+- Added and expanded Phase-3 conformance matrices:
+  - `tests/cpp/vm_fault_family_determinism_matrix_test.cpp`
+  - `tests/cpp/vm_tloadhash_decodefault_determinism_matrix_test.cpp`
+  - `tests/cpp/vm_mixed_workload_conformance_matrix_test.cpp`
+  - `tests/cpp/canonfs_read_verify_env_contract_test.cpp`
+- Closed remaining planned Phase-3 matrix gaps:
+  - deterministic `TLOADHASH` classification coverage for `InvalidHash` vs `CanonFsMiss` vs malformed-object `DecodeFault`
+  - mixed workload deterministic deny-path branch coverage via policy instruction-budget gate
+  - Axion clause-ordering conformance invariants with deterministic event-signature equivalence checks
+- Reduced VM dispatch concentration on Axion opcodes:
+  - extracted `AxCheck`/`AxReport`/blocked-privileged-Axion handling into dedicated dispatch lambdas in `core/vm/vm.cpp`
+  - preserved fail-closed trap semantics and deterministic Axion event emission behavior
+- Reduced VM dispatch concentration on blocked-neural and bitwise opcode families:
+  - extracted `TNeuralFwd/TNeuralBwd` blocked handling and `BitAnd/BitOr/BitXor/BitNot/BitShl/BitShr/BitUShr` execution into dedicated dispatch lambdas in `core/vm/vm.cpp`
+  - preserved decode-fault guards, fail-closed neural deny semantics, and bitwise register/tag/flag behavior
+- Expanded CanonFS integrity and env-contract checks:
+  - default read-verify behavior when `T81_CANONFS_READ_VERIFY` is unset
+  - explicit env override contract coverage
+- Reduced VM dispatch-path concentration by extracting trace/event logging helpers:
+  - `core/vm/internal/policy_trace_bridge.hpp`
+  - `core/vm/policy_trace_bridge.cpp`
+  - wrapper simplification in `core/vm/vm.cpp`
+- Prior Phase-2 controls remain in force:
+  - VM/Axion conformance matrices (`vm_state_transition_conformance_matrix_test`, `axion_policy_allow_deny_determinism_test`)
+  - workload benchmark guardrail in CI
+  - translation semantic heading-parity CI gate
+- Verification snapshot for rerun baseline:
+  - `scripts/ci/run_determinism_slice.sh build`: PASS
+  - governance/doc/spec gates: PASS
+  - test inventory: `ctest --test-dir build -N` => **280 tests**
 
 ## Executive Summary
 The repository is a substantial implemented system, not a paper design: compiler, ISA encoding, VM interpreter, threaded trace execution, Axion policy engine, CanonFS, and broad CI/test infrastructure are present. Governance maturity materially improved in this remediation cycle: previously warning-level rows were promoted to machine checks (API lock, spec-code baseline, translation staleness/semantic alignment, benchmark regression, overclaim guardrails), and trace-mode policy granularity is now per-instruction fail-closed.
@@ -37,7 +70,7 @@ Current classification remains **Deterministic Runtime Candidate**. The system i
 
 | Metric | Score (1-10) | Basis |
 |---|---:|---|
-| Architectural Risk | 4.8 | Major spec/runtime contradictions remediated; residual risk now concentrated in assurance depth and doc coherence breadth |
+| Architectural Risk | 4.6 | Major contradictions remain remediated; rerun baseline adds conformance and governance depth, residual risk concentrated in VM control concentration and full-proof gaps |
 
 ---
 
@@ -100,7 +133,7 @@ Publish explicit dual profile contract:
 
 | Metric | Score | Interpretation |
 |---|---:|---|
-| Runtime Integrity | 7.6/10 | Strong control posture, bounded by non-DCP surfaces and complexity concentration |
+| Runtime Integrity | 7.8/10 | Strong control posture with improved behavioral conformance coverage; bounded by non-DCP surfaces and VM control concentration |
 | Production Readiness | Candidate-stage | Not pre-production infrastructure |
 
 ---
@@ -155,7 +188,7 @@ Publish explicit dual profile contract:
 
 | Metric | Score (1-10) |
 |---|---:|
-| Documentation Credibility | 8.2 |
+| Documentation Credibility | 8.3 |
 
 ### 6.3 Required Corrections
 1. Extend multilingual semantic checks beyond root README heading parity into deeper section/body semantic equivalence across doc sets.
@@ -168,7 +201,7 @@ Publish explicit dual profile contract:
 ### 7.1 Findings
 - Build/test/toolchain discipline is strong and actively enforced.
 - CI quality gate requires key jobs (spec/docs, build/test, determinism slice, static analysis, sanitizers, fuzzing, benchmarks, tritwise determinism).
-- Test inventory is broad (270 tests currently discovered by CTest).
+- Test inventory is broad (280 tests currently discovered by CTest).
 - Benchmark regression gating is now required in CI and now includes a VM workload dispatch/native ratio guardrail in addition to SIMD-focused checks.
 - Static analysis coverage improved but not full-repo exhaustive.
 
@@ -219,7 +252,7 @@ A technically serious deterministic runtime platform with unusually strong gover
 5. Large, active automated test surface (270+ tests), including new semantic/policy/canonfs/determinism conformance suites.
 
 ### 9.3 Single Most Important Next Move
-Execute **Behavioral Conformance Expansion Sprint (Phase 2)**: extend newly added VM/Axion/CanonFS invariant suites into broader semantic coverage and workload families, while continuing contract-surface consolidation.
+Execute **Behavioral Conformance Expansion Sprint (Phase 3)**: scale the new VM/Axion/CanonFS matrix suites from representative slices to subsystem-complete invariant families and workload strata, while reducing `core/vm/vm.cpp` control concentration.
 
 ---
 
@@ -233,7 +266,7 @@ Execute **Behavioral Conformance Expansion Sprint (Phase 2)**: extend newly adde
 - Freeze integrity gate: `scripts/ci/check_tisc_freeze_integrity.py`
 - Translation governance: `scripts/governance/check_translation_*.py`
 - Workload benchmark gate: `scripts/ci/check_vm_workload_benchmark_regression.py`
-- Test inventory: `ctest --test-dir build -N` (276 tests)
+- Test inventory: `ctest --test-dir build -N` (280 tests)
 
 ## Audit Notes
 - Items with insufficient direct evidence are explicitly marked **Indeterminate**.

@@ -80,6 +80,25 @@ void apply_segment_reason(t81::axion::Verdict& verdict, std::string_view action,
   verdict.reason = append_segment_reason(action, kind, addr, verdict.reason);
 }
 
+void log_memory_segment_access(State& state, std::size_t current_context, t81::tisc::Opcode opcode,
+                               MemorySegmentKind kind, std::size_t addr, std::size_t size,
+                               std::string_view action) {
+  t81::axion::Verdict verdict;
+  verdict.kind = t81::axion::VerdictKind::Allow;
+  verdict.reason = format_memory_access_reason(kind, addr, size, action);
+  record_axion_event(state, current_context, opcode, static_cast<std::int32_t>(kind),
+                     static_cast<std::int64_t>(addr), verdict);
+}
+
+void log_bounds_fault(State& state, std::size_t current_context, t81::tisc::Opcode opcode,
+                      MemorySegmentKind kind, int addr, std::string_view action) {
+  t81::axion::Verdict verdict;
+  verdict.kind = t81::axion::VerdictKind::Allow;
+  verdict.reason = format_bounds_fault_reason(kind, addr, action);
+  record_axion_event(state, current_context, opcode, static_cast<std::int32_t>(kind),
+                     static_cast<std::int64_t>(addr), verdict);
+}
+
 namespace {
 
 void push_axion_event(State& state, const AxionEvent& event) {
