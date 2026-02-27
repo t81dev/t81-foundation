@@ -2,7 +2,7 @@
 
 Status: Active
 Owner: @t81dev
-Last Updated: 2026-02-25
+Last Updated: 2026-03-12
 Target Completion: 2026-03-12 (A1 planning milestone)
 
 ## Purpose
@@ -339,6 +339,18 @@ or freeze boundaries.
    Completed (A1G-CODE-02, 2026-02-25).
 3. Sync matrix/governance artifacts after A1G evidence updates.
    Completed (A1G-CODE-03, 2026-02-25).
+
+## A2 Drift Cycle (Beta Implementation / Draft Spec)
+
+This section catalogs new drift findings from the March 2026 post-beta audit.
+
+| Drift Item | Type | Severity | Impact | Resolution Path |
+| :--- | :---: | :---: | :---: | :--- |
+| **Partial Complex/Fixed Support** | A (Spec > Impl) | Moderate | Surface | `T81Complex` and `T81Fixed` are present in frontend but lack full VM/binary persistence support. Retain as Beta/Experimental. |
+| **Collections Polyfill Impl** | A (Spec > Impl) | Moderate | Surface | `T81List`, `Map`, `Set` rely on `Vector` polyfills instead of native containers. Performance/canonicalization gap. |
+| **BigInt Aliasing** | C (Ambiguity) | Low | None | `T81BigInt` aliased to 64-bit int in some paths. Clarify precision limits in spec or upgrade backend. |
+| **Experimental Types in Frontend** | B (Impl > Spec) | Low | None | `T81Promise`, `T81Agent`, `T81Symbolic`, `T81Polynomial` exist in `SemanticAnalyzer` but are not in `t81lang-spec.md`. |
+| **InfiniteCanonicalForm** | B (Impl > Spec) | Low | None | Internal type exposed in semantic analyzer. |
 
 ## Risks and Controls
 
