@@ -1797,3 +1797,24 @@ endif()
 add_executable(t81_graph_algorithms_test tests/cpp/test_T81Graph_algorithms.cpp)
 target_link_libraries(t81_graph_algorithms_test PRIVATE t81_core)
 add_test(NAME t81_graph_algorithms_test COMMAND t81_graph_algorithms_test)
+
+  # Determinism Stress Tests
+  add_executable(t81_determinism_primitives_test tests/determinism/test_primitives.cpp)
+  target_link_libraries(t81_determinism_primitives_test PRIVATE t81_core)
+  add_test(NAME t81_determinism_primitives_test COMMAND t81_determinism_primitives_test)
+
+  add_executable(t81_determinism_float_test tests/determinism/test_float.cpp)
+  target_link_libraries(t81_determinism_float_test PRIVATE t81_core)
+  add_test(NAME t81_determinism_float_test COMMAND t81_determinism_float_test)
+
+  add_executable(t81_determinism_containers_test tests/determinism/test_containers.cpp)
+  target_link_libraries(t81_determinism_containers_test PRIVATE t81_core)
+  add_test(NAME t81_determinism_containers_test COMMAND t81_determinism_containers_test)
+
+  add_executable(t81_determinism_math_test tests/determinism/test_math.cpp)
+  target_link_libraries(t81_determinism_math_test PRIVATE t81_core)
+  add_test(NAME t81_determinism_math_test COMMAND t81_determinism_math_test)
+
+  add_executable(t81_determinism_vector_test tests/determinism/test_vector.cpp)
+  target_link_libraries(t81_determinism_vector_test PRIVATE t81_core)
+  add_test(NAME t81_determinism_vector_test COMMAND t81_determinism_vector_test)

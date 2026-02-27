@@ -7,24 +7,27 @@
 | `i8` (Tryte) | YES | YES | YES | YES | PARTIAL | Stable |
 | `i16` | YES | YES | YES | YES | PARTIAL | Stable |
 | `i32` | YES | YES | YES | YES | PARTIAL | Stable |
-| `T81BigInt` | YES | YES | YES (aliased to i64) | YES (as i64) | PARTIAL | Stable |
+| `T81BigInt` | YES | YES | YES (aliased to i64) | YES (as i64) | YES | Stable |
 | `T81Float` | YES | YES | YES | YES | YES | Stable |
-| `T81Fraction` | YES | YES | YES | YES | PARTIAL | Stable |
-| `T81Fixed` | YES | YES | YES (as Int) | YES (as Int) | NO | Beta |
-| `T81Complex` | YES | YES | YES | NO | NO | Beta |
+| `T81Fraction` | YES | YES | YES | YES | YES | Stable |
+| `T81Fixed` | YES | YES | YES (as Int) | YES (as Int) | YES | Beta |
+| `T81Complex` | YES | YES | YES | NO | YES | Beta |
+| `T81Quaternion` | YES | NO | NO | YES | NO | Beta |
+| `T81Prob` | YES | NO | NO | NO | NO | Beta |
 | `T81Qutrit` | YES | YES | YES | YES | UNKNOWN | Beta |
 | `T81Uint` | YES | YES | YES | YES | UNKNOWN | Stable |
+| `Cell` | YES | NO | N/A | YES | YES | Stable |
 | **Collections** | | | | | | |
 | `T81String` | YES | YES | YES | YES | YES | Stable |
 | `T81Bytes` | YES | YES | YES | YES | YES | Stable |
-| `T81Vector` | YES | YES | YES | YES | PARTIAL | Stable |
+| `T81Vector` | YES | YES | YES | YES | YES | Stable |
 | `T81Matrix` | YES | YES | YES | PARTIAL | UNKNOWN | Beta |
 | `T81Tensor` | YES | YES | YES | PARTIAL | UNKNOWN | Beta |
 | `T81List` | YES | YES (handle API) | YES (via builtin call) | NO | NO | Draft |
-| `T81Map` | YES | YES (handle API) | YES (via builtin call) | NO | NO | Draft |
-| `T81Set` | YES | YES (handle API) | YES (via builtin call) | NO | NO | Draft |
+| `T81Map` | YES | YES (handle API) | YES (via builtin call) | YES (Native) / NO (Lang) | YES | Draft |
+| `T81Set` | YES | YES (handle API) | YES (via builtin call) | NO | YES | Draft |
 | `T81Tree` | YES | YES (handle API) | YES (via builtin call) | NO | NO | Draft |
-| `T81Graph` | YES | YES (handle API) | YES (via builtin call) | NO | NO | Draft |
+| `T81Graph` | YES | YES (handle API) | YES (via builtin call) | YES (Native) / NO (Lang) | NO | Draft |
 | **Symbolic** | | | | | | |
 | `T81Symbol` | YES | YES | YES | YES | PARTIAL | Stable |
 | `T81Symbolic` | YES | YES | YES | NO | NO | Experimental |
@@ -40,10 +43,10 @@
 ## Gaps Identified
 
 1.  **Collections Implementation Gap:** `T81List`, `T81Map`, `T81Set`, `T81Tree`, and `T81Graph` are exposed via `std.collections.*` intrinsics but are implemented as `Vector[String]` polyfills in the compiler lowering (`ir_generator.hpp`). They do not utilize the native C++ types (`T81Map`, `T81Set`, etc.) in the VM, resulting in inefficient $O(N)$ operations and lack of true type-specific serialization.
-2.  **Canonical Serialization Gap:** The collection types (`Map`, `Set`, `Graph`) lack canonical serialization because their underlying Vector representation relies on insertion order, which is not sorted by key/content. The native C++ `T81Map` class supports `serialize_canonical`, but it is unused by the language runtime.
+2.  **Canonical Serialization Gap:** The collection types (`Map`, `Set`, `Graph`) lack canonical serialization in their Language/VM polyfill representation because their underlying Vector representation relies on insertion order, which is not sorted by key/content. The native C++ `T81Map` and `T81Graph` classes support `serialize_canonical`, but it is unused by the language runtime.
 3.  **BigInt Precision Gap:** `T81BigInt` is backed by a robust `BigInt` C++ class, but the VM aliasing maps `bigint` operations to standard 64-bit integer opcodes (`ADD`, `SUB`, etc.) which do not support arbitrary precision handles. Literals > 64-bit are truncated or unsupported in the current IR generation.
 4.  **Complex Number Persistence Gap:** `T81Complex` is supported in the VM (via `MAKE_COMPLEX`), but lacks binary pool serialization support in `binary_io.cpp`, meaning complex values cannot be persisted in the program binary constants.
-5.  **Determinism Testing Gap:** While compiler determinism is tested (`test_ast_ir_compile_repeat_hash_gate`), there are no explicit runtime determinism fixtures for the Collections, `T81Fixed` (beyond int64), or `T81Complex` types.
+5.  **Host-Math Dependence:** `T81Float` (and by extension `T81Complex`, `T81Vector`) relies on `std::cmath` for transcendental functions unless `T81_DETERMINISTIC` is defined.
 
 ## Determinism Classification
 
@@ -53,9 +56,14 @@
 *   **System:** `Option`, `Result` (verified via `match` and binary pool serialization).
 *   **Verification:** Confirmed by SHA256 logs in `tests/fixtures/t81lang_determinism` and compiler reproducibility tests.
 
+### Deterministic (New Tests Added)
+*   **Primitives:** `T81BigInt`, `Cell`, `T81Fraction`.
+*   **Math:** `T81Fixed`, `T81Complex`.
+*   **Collections:** `T81Vector`, `T81Map` (Native), `T81Set` (Native).
+*   **Verification:** Verified via `tests/determinism/` suite (Adversarial + Canonical Serialization).
+
 ### Deterministic but Incompletely Tested
-*   **Primitives:** `T81Fraction`, `T81Uint`, `T81Fixed` (aliased to Int), `T81BigInt` (aliased to i64).
-*   **Collections:** `T81Vector` (partial tests).
+*   **Primitives:** `T81Uint`.
 *   **Symbolic:** `T81Symbol` (partial).
 *   **Note:** No evidence of nondeterminism found, but coverage is partial.
 

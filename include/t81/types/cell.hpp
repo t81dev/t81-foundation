@@ -109,10 +109,13 @@ public:
   [[nodiscard]] constexpr Cell operator*(const Cell& o) const {
     Cell result;
     for (int i = 0; i < TRITS; ++i) {
-      if (o.t_[i] == Trit::P)
-        result = result + (*this << i);
-      else if (o.t_[i] == Trit::M)
-        result = result - (*this << i);
+      if (o.t_[i] == Trit::P) {
+        Cell shifted = *this << i;
+        result = result + shifted;
+      } else if (o.t_[i] == Trit::M) {
+        Cell shifted = *this << i;
+        result = result - shifted;
+      }
     }
     return result;
   }
@@ -122,6 +125,13 @@ public:
     if (n < 0) throw std::domain_error("Negative shift");
     if (n >= TRITS) throw std::overflow_error("Shift overflow");
     Cell shifted;
+    // Check for overflow before shifting
+    // Ensure loop runs only if TRITS > n, avoiding negative index issues in logic
+    if (n > 0) {
+        for (int i = TRITS - n; i < TRITS; ++i) {
+            if (t_[i] != Trit::Z) throw std::overflow_error("Shift overflow (non-zero trit lost)");
+        }
+    }
     for (int i = 0; i < TRITS - n; ++i) shifted.t_[i + n] = t_[i];
     // lower n trits remain Z → no need to clear
     return shifted;
