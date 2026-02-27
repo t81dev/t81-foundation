@@ -114,10 +114,26 @@ inline std::string strip_t81_suffix(std::string_view literal) {
 inline double parse_canonical_float(std::string_view literal) {
 #if defined(__cpp_lib_to_chars)
   double value = 0.0;
+#if defined(__cpp_lib_to_chars) && __cpp_lib_to_chars >= 201611L && !defined(__APPLE__)
   auto res = std::from_chars(literal.data(), literal.data() + literal.size(), value);
   if (res.ec != std::errc()) {
     return 0.0;
   }
+#else
+  // Fallback for platforms without float std::from_chars (e.g. older libc++ on macOS)
+  // std::strtod is locale-dependent, so we force "C" locale.
+  // Note: This is less efficient but necessary for compatibility.
+  std::string s(literal);
+  char* end;
+  // Ensure we use C locale
+  // Optimization: assumes current locale is C or handles '.' correctly.
+  // For strict correctness in a library, we should use uselocale/strtod_l if available,
+  // but std::istringstream is standard C++.
+  std::istringstream iss(s);
+  iss.imbue(std::locale::classic());
+  iss >> value;
+  if (iss.fail()) return 0.0;
+#endif
   return value;
 #else
   // Fallback for platforms without full floating-point std::from_chars support (e.g. older libc++)
