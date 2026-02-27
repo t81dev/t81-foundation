@@ -108,7 +108,8 @@ inline double parse_canonical_float(std::string_view literal) {
   auto res = std::from_chars(literal.data(), literal.data() + literal.size(), value);
   if (res.ec != std::errc()) {
     // If parsing fails, default to 0.0 or handle error appropriately.
-    // Given the lexer has validated the format, failure implies overflow/underflow or implementation limits.
+    // Given the lexer has validated the format, failure implies overflow/underflow or
+    // implementation limits.
     return 0.0;
   }
   return value;
@@ -1256,10 +1257,10 @@ public:
 
         tisc::ir::PrimitiveKind dest_kind = tisc::ir::PrimitiveKind::Unknown;
         if (func_name == "symbol_intern") {
-            // Symbol intern returns an integer-like handle (Symbol), but the VM handles it.
-            // If Type::Kind::Symbol is treated as Integer in IR generation (categorize_primitive),
-            // then we should use Integer.
-            dest_kind = tisc::ir::PrimitiveKind::Integer;
+          // Symbol intern returns an integer-like handle (Symbol), but the VM handles it.
+          // If Type::Kind::Symbol is treated as Integer in IR generation (categorize_primitive),
+          // then we should use Integer.
+          dest_kind = tisc::ir::PrimitiveKind::Integer;
         }
 
         auto dest = allocate_typed_register(dest_kind);
@@ -2834,30 +2835,32 @@ public:
         auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
         tisc::ir::Instruction instr;
         instr.opcode = tisc::ir::Opcode::MapPut;
-        instr.operands = {dest.reg, map_vec.reg, key.reg, value.reg}; // VM implementation assumes map is in A? No, wait.
-        // My VM implementation used: A=Map, B=Key, C=Val. But wait, `MapPut` in my VM implementation uses `ctx.registers[insn.a]` as map handle.
-        // TISC instructions generally write to A.
-        // If MapPut modifies in place, it should return the map handle.
-        // My VM implementation:
+        instr.operands = {dest.reg, map_vec.reg, key.reg,
+                          value.reg};  // VM implementation assumes map is in A? No, wait.
+        // My VM implementation used: A=Map, B=Key, C=Val. But wait, `MapPut` in my VM
+        // implementation uses `ctx.registers[insn.a]` as map handle. TISC instructions generally
+        // write to A. If MapPut modifies in place, it should return the map handle. My VM
+        // implementation:
         //   auto* vec = string_vector_mut(ctx.registers[insn.a]);
         // So A is both input and output (in-place modification).
         // BUT `tisc::ir::Instruction` supports A, B, C.
         // If I emit operands {map_vec.reg, key.reg, value.reg}, then A=map, B=key, C=val.
         // And I allocate `dest` but don't use it in operands?
         // Ah, `copy_to_dest(map_vec, dest)` if I want a new register?
-        // If I use map_vec directly as A, it modifies the register that holds the map handle. That's fine since it's a handle.
-        // However, standard IR generation flow: allocate dest register, emit instruction writing to dest.
-        // If I want `dest = MapPut(map, key, val)` where `dest` is a new alias to the map?
-        // VM implementation: `ctx.registers[insn.a]` is modified? No, `ctx.registers[insn.a]` holds the handle. `string_vector_mut` gets the vector *pointed to* by the handle.
-        // So `ctx.registers[insn.a]` is NOT modified (the handle is the same). The *vector* is modified.
-        // So: `MapPut` takes `map` in A.
-        // But if I want `dest` to be the result of the expression (which is the map), I should probably copy `map` to `dest` first, then operate on `dest`.
-        // Or make MapPut have 3 operands: Dest, Map, Key, Value? No, TISC is limited to 3 operands (A, B, C).
-        // So: MapPut(Map, Key, Value) -> modifies Map. Returns Map handle.
-        // If I want to support chaining or assignment, I need the result in a register.
-        // Let's assume MapPut modifies `A` (the map handle reg) in place (conceptually the object it points to).
-        // But what if I need `dest` to be a *different* register from `map_vec`?
-        // `copy_to_dest(map_vec, dest);` then `MapPut(dest, key, value)`.
+        // If I use map_vec directly as A, it modifies the register that holds the map handle.
+        // That's fine since it's a handle. However, standard IR generation flow: allocate dest
+        // register, emit instruction writing to dest. If I want `dest = MapPut(map, key, val)`
+        // where `dest` is a new alias to the map? VM implementation: `ctx.registers[insn.a]` is
+        // modified? No, `ctx.registers[insn.a]` holds the handle. `string_vector_mut` gets the
+        // vector *pointed to* by the handle. So `ctx.registers[insn.a]` is NOT modified (the handle
+        // is the same). The *vector* is modified. So: `MapPut` takes `map` in A. But if I want
+        // `dest` to be the result of the expression (which is the map), I should probably copy
+        // `map` to `dest` first, then operate on `dest`. Or make MapPut have 3 operands: Dest, Map,
+        // Key, Value? No, TISC is limited to 3 operands (A, B, C). So: MapPut(Map, Key, Value) ->
+        // modifies Map. Returns Map handle. If I want to support chaining or assignment, I need the
+        // result in a register. Let's assume MapPut modifies `A` (the map handle reg) in place
+        // (conceptually the object it points to). But what if I need `dest` to be a *different*
+        // register from `map_vec`? `copy_to_dest(map_vec, dest);` then `MapPut(dest, key, value)`.
 
         copy_to_dest(map_vec, dest);
         instr.operands = {dest.reg, key.reg, value.reg};
@@ -4509,8 +4512,9 @@ public:
       // We will construct it as a generic vector (polyfilled) if possible,
       // OR as a Tensor if it's numeric but dynamic.
       // Current VM `STRVEC` ops might not support floats directly unless we stringify or use `any`.
-      // But let's assume we treat it as a generic container for now to satisfy "Dynamic Vector Literal Support".
-      // The prompt says "Emit runtime construction instructions instead of compile-time constant folding."
+      // But let's assume we treat it as a generic container for now to satisfy "Dynamic Vector
+      // Literal Support". The prompt says "Emit runtime construction instructions instead of
+      // compile-time constant folding."
 
       auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
       tisc::ir::Instruction vec_new;
@@ -4532,8 +4536,8 @@ public:
 
       // If we need to treat this as a Tensor later, we might need a conversion,
       // but `STRVEC` is the generic fallback for now.
-      // If the expected type is Tensor, we might fail at runtime or need `Tensor.from_list` equivalent.
-      // But `Vector` type in T81Lang maps to this.
+      // If the expected type is Tensor, we might fail at runtime or need `Tensor.from_list`
+      // equivalent. But `Vector` type in T81Lang maps to this.
 
       record_result(&expr, dest);
       return {};
