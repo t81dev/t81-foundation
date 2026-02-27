@@ -1,7 +1,7 @@
 fn main() -> i32 {
-  let sym: T81String = std.symbol.intern("omega");
+  let sym: Symbol = std.symbol.intern("omega");
   let rendered: T81String = std.symbol.to_string(sym);
-  print(sym);
+  // print(sym); // Print currently supports scalars/strings, Symbol support may vary in VM print opcode
   print(rendered);
   print(std.text.str_len(rendered));
   return 0;

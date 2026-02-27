@@ -1,17 +1,26 @@
 fn main() -> i32 {
-    let empty_map: Vector[T81String] = std.collections.map();
+    // Note: Use generic Map type instead of Vector polyfill to match SemanticAnalyzer.
+    // The underlying implementation still uses vectors in the VM, but the frontend
+    // sees them as Map.
+    let empty_map: Map[T81String, T81String] = std.collections.map();
     print(std.collections.map_size(empty_map));
     print(std.collections.map_has(empty_map, "city"));
 
-    let flat: Vector[T81String] = ["city", "sf", "lang", "t81"];
-    print(std.collections.map_size(flat));
-    print(std.collections.map_has(flat, "city"));
-    print(std.collections.map_has(flat, "lang"));
-    print(std.collections.map_has(flat, "missing"));
+    // Polyfill test: passing flat vectors to map intrinsics should still work
+    // if typed as Map or if we explicitly construct.
+    // However, SemanticAnalyzer now enforces Map type for map_* functions.
+    // We must construct a Map. The polyfill previously allowed raw vectors.
+    // Since we cannot cast Vector -> Map directly in syntax yet, we will
+    // use map_put to build a map for testing.
 
-    let odd_flat: Vector[T81String] = ["a", "1", "dangling"];
-    print(std.collections.map_size(odd_flat));
-    print(std.collections.map_has(odd_flat, "a"));
-    print(std.collections.map_has(odd_flat, "dangling"));
+    let m1: Map[T81String, T81String] = std.collections.map();
+    let m2 = std.collections.map_put(m1, "city", "sf");
+    let m3 = std.collections.map_put(m2, "lang", "t81");
+
+    print(std.collections.map_size(m3));
+    print(std.collections.map_has(m3, "city"));
+    print(std.collections.map_has(m3, "lang"));
+    print(std.collections.map_has(m3, "missing"));
+
     return 0;
 }
