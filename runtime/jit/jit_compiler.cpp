@@ -1,6 +1,6 @@
+#include "t81/jit/jit.hpp"
 #include "t81/tensor/llama.hpp"
 #include "t81/tensor/matmul.hpp"
-#include "t81/jit/jit.hpp"
 
 namespace t81::vm {
 
