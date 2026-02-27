@@ -303,7 +303,6 @@ public:
             guard_deopt = true;
             break;
           }
-          const auto& stack = state.layout.stack;
           // Note: using global stack layout limits in JIT for simplicity, or should access ctx
           // limits? For now, assuming stack structure fits. Wait, JIT needs to use ctx.sp and
           // stack_limit.

@@ -1,0 +1,26 @@
+[  0%] Built target t81_jit
+[  0%] Built target t81_tracing
+[ 42%] Built target t81_core
+[ 57%] Built target t81_axion
+[ 57%] Built target t81_isa
+[ 57%] Building CXX object CMakeFiles/t81_vm.dir/core/vm/vm.cpp.o
+[ 71%] Building CXX object CMakeFiles/t81_vm.dir/core/vm/tensor_helpers.cpp.o
+[ 85%] Linking CXX static library libt81_vm.a
+[ 85%] Built target t81_vm
+[ 85%] Building CXX object CMakeFiles/t81_tool_model.dir/tooling/model/weights.cpp.o
+[ 85%] Linking CXX static library libt81_tool_model.a
+[ 85%] Built target t81_tool_model
+[ 85%] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/lexer.cpp.o
+[100%] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/parser.cpp.o
+[100%] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/semantic_analyzer.cpp.o
+[100%] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/symbol_table.cpp.o
+[100%] Linking CXX static library libt81_lang_frontend.a
+[100%] Built target t81_lang_frontend
+[100%] Building CXX object CMakeFiles/t81_tool_cli.dir/tooling/cli/driver.cpp.o
+[100%] Building CXX object CMakeFiles/t81_tool_cli.dir/tooling/cli/debugger.cpp.o
+[100%] Building CXX object CMakeFiles/t81_tool_cli.dir/tooling/cli/canonize_tensor.cpp.o
+[100%] Linking CXX static library libt81_tool_cli.a
+[100%] Built target t81_tool_cli
+[100%] Building CXX object CMakeFiles/t81.dir/tooling/cli/main.cpp.o
+Linking CXX executable t81
+Built target t81

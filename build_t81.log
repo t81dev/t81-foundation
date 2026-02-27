@@ -1,0 +1,75 @@
+[  0%] Building CXX object CMakeFiles/t81_jit.dir/runtime/jit/jit_compiler.cpp.o
+/app/runtime/jit/jit_compiler.cpp: In member function ‘virtual t81::vm::JitTrace::ExecResult t81::vm::ThreadedJitTrace::execute(t81::vm::State&, const t81::vm::JitTrace::PolicyHook&)’:
+/app/runtime/jit/jit_compiler.cpp:306:23: warning: unused variable ‘stack’ [-Wunused-variable]
+  306 |           const auto& stack = state.layout.stack;
+      |                       ^~~~~
+[  0%] Built target t81_jit
+[  0%] Building CXX object CMakeFiles/t81_tracing.dir/runtime/tracing/canonhash81.cpp.o
+[  0%] Built target t81_tracing
+[  0%] Building CXX object CMakeFiles/t81_core.dir/core/types/bigint.cpp.o
+[  0%] Building CXX object CMakeFiles/t81_core.dir/core/types/fraction.cpp.o
+[  0%] Building CXX object CMakeFiles/t81_core.dir/core/isa/encoding.cpp.o
+[  0%] Building CXX object CMakeFiles/t81_core.dir/src/canonfs/in_memory_driver.cpp.o
+[ 14%] Building CXX object CMakeFiles/t81_core.dir/src/canonfs/persistent_driver.cpp.o
+[ 14%] Building CXX object CMakeFiles/t81_core.dir/experimental/hanoi/error.cpp.o
+[ 14%] Building CXX object CMakeFiles/t81_core.dir/experimental/hanoi/in_memory_kernel.cpp.o
+[ 14%] Building CXX object CMakeFiles/t81_core.dir/experimental/tiers/cog/promotion.cpp.o
+[ 14%] Building CXX object CMakeFiles/t81_core.dir/experimental/tiers/cog/tier1/symbolic.cpp.o
+[ 14%] Building CXX object CMakeFiles/t81_core.dir/experimental/tiers/cog/tier2/reflective.cpp.o
+[ 14%] Building CXX object CMakeFiles/t81_core.dir/experimental/tiers/cog/tier3/recursive.cpp.o
+[ 28%] Building CXX object CMakeFiles/t81_core.dir/experimental/tiers/cog/tier4/tier4_loop.cpp.o
+[ 28%] Building CXX object CMakeFiles/t81_core.dir/experimental/distributed/distributed.cpp.o
+[ 28%] Building CXX object CMakeFiles/t81_core.dir/experimental/tiers/cog/tier5/infinite.cpp.o
+[ 28%] Building CXX object CMakeFiles/t81_core.dir/src/codec/base243.cpp.o
+[ 28%] Building CXX object CMakeFiles/t81_core.dir/src/codec/base81.cpp.o
+[ 28%] Building CXX object CMakeFiles/t81_core.dir/src/codec/base81_balanced.cpp.o
+[ 28%] Building CXX object CMakeFiles/t81_core.dir/src/codec/base81_packed.cpp.o
+[ 28%] Building CXX object CMakeFiles/t81_core.dir/src/codec/metadata.cpp.o
+[ 42%] Building CXX object CMakeFiles/t81_core.dir/src/codec/trit_packing.cpp.o
+[ 42%] Building CXX object CMakeFiles/t81_core.dir/src/crypto/sha3.cpp.o
+[ 42%] Building CXX object CMakeFiles/t81_core.dir/src/setun/bridge.cpp.o
+[ 42%] Building CXX object CMakeFiles/t81_core.dir/src/simd/base81_digits_avx2.cpp.o
+[ 42%] Linking CXX static library libt81_core.a
+[ 42%] Built target t81_core
+[ 57%] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/axion_api.cpp.o
+[ 57%] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/engine.cpp.o
+[ 57%] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/ethics.cpp.o
+[ 57%] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/policy_engine.cpp.o
+[ 57%] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/policy_serialization.cpp.o
+[ 57%] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/canonfs_hook.cpp.o
+[ 57%] Linking CXX static library libt81_axion.a
+[ 57%] Built target t81_axion
+[ 57%] Building CXX object CMakeFiles/t81_isa.dir/core/isa/pretty_printer.cpp.o
+[ 57%] Building CXX object CMakeFiles/t81_isa.dir/core/isa/binary_emitter.cpp.o
+[ 57%] Building CXX object CMakeFiles/t81_isa.dir/core/isa/binary_io.cpp.o
+[ 57%] Building CXX object CMakeFiles/t81_isa.dir/core/isa/base81_view.cpp.o
+Linking CXX static library libt81_isa.a
+Built target t81_isa
+Building CXX object CMakeFiles/t81_vm.dir/core/vm/vm.cpp.o
+[ 57%] Building CXX object CMakeFiles/t81_vm.dir/core/vm/tier_limits.cpp.o
+[ 57%] Building CXX object CMakeFiles/t81_vm.dir/core/vm/value_ops.cpp.o
+[ 57%] Building CXX object CMakeFiles/t81_vm.dir/core/vm/memory_segments.cpp.o
+[ 57%] Building CXX object CMakeFiles/t81_vm.dir/core/vm/policy_trace_bridge.cpp.o
+[ 57%] Building CXX object CMakeFiles/t81_vm.dir/core/vm/runtime_state_helpers.cpp.o
+[ 71%] Building CXX object CMakeFiles/t81_vm.dir/core/vm/gc_helpers.cpp.o
+[ 71%] Building CXX object CMakeFiles/t81_vm.dir/core/vm/tensor_helpers.cpp.o
+[ 71%] Linking CXX static library libt81_vm.a
+[ 71%] Built target t81_vm
+[ 85%] Building CXX object CMakeFiles/t81_tool_model.dir/tooling/model/weights.cpp.o
+[ 85%] Building CXX object CMakeFiles/t81_tool_model.dir/tooling/model/weights_t81w_emitter.cpp.o
+[ 85%] Linking CXX static library libt81_tool_model.a
+[ 85%] Built target t81_tool_model
+[ 85%] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/lexer.cpp.o
+[100%] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/parser.cpp.o
+[100%] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/semantic_analyzer.cpp.o
+[100%] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/symbol_table.cpp.o
+[100%] Linking CXX static library libt81_lang_frontend.a
+[100%] Built target t81_lang_frontend
+[100%] Building CXX object CMakeFiles/t81_tool_cli.dir/tooling/cli/driver.cpp.o
+[100%] Building CXX object CMakeFiles/t81_tool_cli.dir/tooling/cli/debugger.cpp.o
+[100%] Building CXX object CMakeFiles/t81_tool_cli.dir/tooling/cli/canonize_tensor.cpp.o
+[100%] Linking CXX static library libt81_tool_cli.a
+[100%] Built target t81_tool_cli
+[100%] Building CXX object CMakeFiles/t81.dir/tooling/cli/main.cpp.o
+[100%] Linking CXX executable t81
+[100%] Built target t81
