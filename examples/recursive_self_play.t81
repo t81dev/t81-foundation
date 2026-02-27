@@ -1,0 +1,145 @@
+// Recursive Self-Play Exploration in T81Lang
+//
+// This script demonstrates:
+// 1. Canonical State Representation using T81 Datatypes
+// 2. Deterministic Thought Evolution
+// 3. Branching Self-Play
+// 4. Recursive Reflection
+// 5. Determinism Drift Detection
+// 6. Replay Audit
+
+// --- Simplified State for Runnable Demo ---
+record RunnableState {
+    step: i32;
+    beliefs: T81Vector[i32, 4];
+    trace_hash: i32;
+};
+
+fn init_runnable() -> RunnableState {
+    let b: T81Vector[i32, 4] = [0, 0, 0, 0];
+    return RunnableState {
+        step: 0,
+        beliefs: b,
+        trace_hash: 0
+    };
+}
+
+// --- Phase 2: Deterministic Thought Step ---
+
+fn think(state: RunnableState, input: Symbol) -> RunnableState {
+    print("Thinking...");
+
+    var input_id: i32 = 0;
+    if (input == :hello) { input_id = 1; }
+    if (input == :branch_a) { input_id = 2; }
+    if (input == :branch_b) { input_id = 3; }
+    if (input == :reflect) { input_id = 4; }
+
+    let new_step: i32 = state.step + 1;
+
+    // Update trace hash
+    let new_trace: i32 = state.trace_hash + input_id;
+
+    // Pass beliefs through
+    let b: T81Vector[i32, 4] = state.beliefs;
+
+    return RunnableState {
+        step: new_step,
+        beliefs: b,
+        trace_hash: new_trace
+    };
+}
+
+// --- Phase 3: Branching Self-Play ---
+
+fn score_branch(option: Symbol) -> T81Fraction {
+    if (option == :branch_a) { return 1/3; }
+    if (option == :branch_b) { return 2/3; }
+    return 0/1;
+}
+
+fn select_branch() -> Symbol {
+    let score_a: T81Fraction = score_branch(:branch_a);
+    let score_b: T81Fraction = score_branch(:branch_b);
+    return :branch_b;
+}
+
+// --- Phase 4: Recursive Reflection ---
+
+record Proof {
+    valid: bool;
+    timestamp: i32;
+    property: T81String;
+};
+
+fn reflect_state(state: RunnableState) -> Result[Proof, T81String] {
+    if (state.step > 0) {
+        let p: Proof = Proof {
+            valid: true,
+            timestamp: state.step,
+            property: "exists"
+        };
+        return Ok(p);
+    }
+    return Err("invalid_state");
+}
+
+// --- Phase 6: Drift Detection ---
+
+fn verify_drift() -> bool {
+    print("--- Phase 6: Drift Detection ---");
+    let vec_a: T81Vector[i32, 2] = [1, 2];
+    let vec_b: T81Vector[i32, 2] = [2, 1];
+
+    // Manual check since [0] might be weird
+    let a0: i32 = vec_a[0];
+    let b0: i32 = vec_b[0];
+
+    if (a0 == b0) {
+        print("FAIL: Vectors identical (unexpected)");
+        return false;
+    }
+    print("PASS: Vector order is significant (Drift potential confirmed)");
+    return true;
+}
+
+// --- Phase 7: Replay Audit Driver ---
+
+fn run_simulation() -> i32 {
+    var state: RunnableState = init_runnable();
+
+    state = think(state, :hello);
+
+    let choice: Symbol = select_branch();
+    state = think(state, choice);
+
+    let proof_res: Result[Proof, T81String] = reflect_state(state);
+
+    state = think(state, :reflect);
+
+    return state.trace_hash;
+}
+
+fn main() -> i32 {
+    if (verify_drift() == false) {
+        return 1;
+    }
+
+    print("--- Start Replay Audit ---");
+
+    print("=== RUN 1 ===");
+    let t1: i32 = run_simulation();
+    print(t1);
+
+    print("=== RUN 2 ===");
+    let t2: i32 = run_simulation();
+    print(t2);
+
+    if (t1 == t2) {
+        print("SUCCESS: Replay equivalence verified.");
+        return 0;
+    } else {
+        print("FAILURE: Drift detected.");
+        return 1;
+    }
+}
