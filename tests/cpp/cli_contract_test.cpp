@@ -315,9 +315,9 @@ int main(int argc, char* argv[]) {
     const auto json_result = run_cli(t81_bin, {"fmt", "--json", file.string()});
     T81_TEST_CHECK(json_result.exit_code == 0);
     T81_TEST_CHECK(contains(json_result.stdout_text, "\"schema\": \"t81.fmt.v1\""));
-    T81_TEST_CHECK(contains(
-        json_result.stdout_text,
-        std::string("\"formatter_version\": \"t81-fmt ") + kExpectedVersion + "\""));
+    const std::string expected_fmt_ver =
+        std::string("\"formatter_version\": \"t81-fmt ") + kExpectedVersion + "\"";
+    T81_TEST_CHECK(contains(json_result.stdout_text, expected_fmt_ver));
 
     const fs::path bad_file = temp_dir / "invalid.t81";
     {
