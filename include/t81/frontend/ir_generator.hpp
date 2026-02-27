@@ -112,7 +112,7 @@ inline std::string strip_t81_suffix(std::string_view literal) {
 // Given the CI failure on macOS with clang (libc++), we will use std::strtod for maximum
 // compatibility in this beta phase.
 inline double parse_canonical_float(std::string_view literal) {
-#if defined(__cpp_lib_to_chars) && __cpp_lib_to_chars >= 201611L
+#if defined(__cpp_lib_to_chars)
   double value = 0.0;
   auto res = std::from_chars(literal.data(), literal.data() + literal.size(), value);
   if (res.ec != std::errc()) {
