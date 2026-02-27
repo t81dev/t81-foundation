@@ -1,0 +1,29 @@
+fn main() -> i32 {
+    print("--- Layer 6: Reflection & Civilization ---");
+
+    // 1. System Time (Deterministic 0.0 in test env usually)
+    let t: T81Float = std.sys.time();
+    print("System time: "); print(t);
+
+    // 2. Entropy (Deterministic 0 in test env)
+    let ent: i32 = std.sys.entropy();
+    print("System entropy: "); print(ent);
+
+    // 3. Proof (Token/Signature)
+    let proof: T81String = std.sys.proof();
+    print("System proof: "); print(proof);
+
+    // 4. Reflection (Void, side-effect or metadata update)
+    std.sys.reflect();
+    print("System reflect called.");
+
+    // 5. Agent Reflection
+    std.agent.self_reflect();
+    print("Agent self_reflect called.");
+
+    // 6. Async placeholders
+    let thread_id: T81String = std.async.thread();
+    print("Async thread: "); print(thread_id);
+
+    return 0;
+}

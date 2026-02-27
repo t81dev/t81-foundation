@@ -1,0 +1,56 @@
+fn main() -> i32 {
+    print("--- Layer 3: Containers ---");
+
+    // 1. Vector (via Vector Literal)
+    let vec: Vector[i32] = [1, 2, 3];
+    print("Vector created: [1, 2, 3]");
+    print("Length: "); print(std.collections.len(vec));
+
+    std.collections.push(vec, 4);
+    print("Pushed 4. Length: "); print(std.collections.len(vec));
+
+    // collections.pop returns the vector, not the element?
+    // Semantic analyzer: "collections_pop expects a Vector[T] argument." -> Returns "arg_types[0]" (the vector).
+    // It seems push/pop are mutating and return the vector itself for chaining.
+    // However, there is "VECFIRST" and "VECLAST".
+    // And "collections_pop" logic emits VECPOP.
+    // If VECPOP returns the vector, how do we get the popped value?
+    // VECLAST gets the last value. VECPOP removes it.
+
+    let last_val: i32 = std.collections.last(vec);
+    print("Last value: "); print(last_val);
+
+    std.collections.pop(vec);
+    print("Popped (mutated vector). Length: "); print(std.collections.len(vec));
+
+    // 2. List (via std.collections.list)
+    let list: Vector[T81String] = std.collections.list();
+    print("List (Vector[String]) created.");
+    std.collections.push(list, "item1");
+    std.collections.push(list, "item2");
+    print("List len: "); print(std.collections.len(list));
+
+    // 3. Map (via std.collections.map) -> Vector[T81String]
+    let map_vec: Vector[T81String] = std.collections.map();
+    print("Map (Vector[String]) created.");
+
+    std.collections.map_put(map_vec, "key1", "value1");
+    print("Map size after put: "); print(std.collections.map_size(map_vec));
+
+    if (std.collections.map_has(map_vec, "key1")) {
+        print("Map has key1");
+    }
+
+    let val_opt: Option[T81String] = std.collections.map_get(map_vec, "key1");
+    if (std.option.is_some(val_opt)) {
+        print("Got value for key1");
+    }
+
+    // 4. Set (via std.collections.set) -> Vector[T81String]
+    let set_vec: Vector[T81String] = std.collections.set();
+    std.collections.set_add(set_vec, "unique_item");
+    std.collections.set_add(set_vec, "unique_item");
+    print("Set size: "); print(std.collections.set_size(set_vec));
+
+    return 0;
+}

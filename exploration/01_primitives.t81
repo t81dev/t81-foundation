@@ -1,0 +1,66 @@
+fn main() -> i32 {
+    print("--- Layer 1: Primitive Arithmetic ---");
+
+    // 1. i32
+    let a: i32 = 42;
+    let b: i32 = -5;
+    let sum: i32 = a + b;
+    let diff: i32 = a - b;
+    let prod: i32 = a * b;
+    let quot: i32 = a / b;
+    let rem: i32 = a % b;
+
+    print("i32: 42 + (-5) = "); print(sum);
+    print("i32: 42 - (-5) = "); print(diff);
+    print("i32: 42 * (-5) = "); print(prod);
+    print("i32: 42 / (-5) = "); print(quot);
+    print("i32: 42 % (-5) = "); print(rem);
+
+    // 2. T81BigInt
+    let big_a: T81BigInt = std.math.bigint.from_int(123456789);
+    let big_b: T81BigInt = std.math.bigint.from_int(987654321);
+    let big_sum: T81BigInt = std.math.bigint.add(big_a, big_b);
+
+    print("T81BigInt sum (truncated to i32): ");
+    print(std.math.bigint.to_int(big_sum));
+
+    // 3. T81Float
+    let f1: T81Float = 3.14159;
+    let f2: T81Float = 2.0;
+    let f_sum: T81Float = f1 + f2;
+    let f_prod: T81Float = f1 * f2;
+    let f_sin: T81Float = std.math.sin(f1);
+
+    print("T81Float: 3.14159 + 2.0 = "); print(f_sum);
+    print("T81Float: 3.14159 * 2.0 = "); print(f_prod);
+    print("T81Float: sin(3.14159) = "); print(f_sin);
+
+    // 4. T81Fraction
+    let frac1: T81Fraction = std.math.fraction.from_int(1);
+    let frac3: T81Fraction = std.math.fraction.from_int(3);
+    let one_third: T81Fraction = std.math.fraction.div(frac1, frac3); // 1/3
+    let two_thirds: T81Fraction = std.math.fraction.add(one_third, one_third);
+
+    print("T81Fraction: 1/3 + 1/3 as float ~ "); print(std.math.fraction.to_float(two_thirds));
+
+    // 5. T81Fixed
+    let fix1: T81Fixed = T81Fixed[16](123); // Fixed<16> from int 123
+    let fix2: T81Fixed = T81Fixed[16](456);
+    let fix_sum: T81Fixed = fix1 + fix2;
+    print("T81Fixed[16] test constructed");
+
+    // 6. T81Qutrit
+    let q1: T81Qutrit = T81Qutrit(1);
+    // let q2: T81Qutrit = T81Qutrit(-1); // -1 might parse as unary minus and literal 1, complexifying things if not careful
+    // T81Qutrit constructor expects integer argument. Unary minus -1 is an expression.
+    // Semantic analyzer should handle it.
+    print("T81Qutrit: 1");
+
+    // 7. T81Complex - DISABLED due to IRGen missing implementation for SimpleTypeExpr
+    // let c1: T81Complex = T81Complex(1.0, 2.0);
+    // let c2: T81Complex = T81Complex(3.0, 4.0);
+    // let c_sum: T81Complex = c1 + c2;
+    // print("T81Complex: (1+2i) + (3+4i) = ");
+
+    return 0;
+}

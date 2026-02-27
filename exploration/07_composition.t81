@@ -1,0 +1,36 @@
+fn main() -> i32 {
+    print("--- Layer 7: Composition ---");
+
+    // Composition 1: Vector of Options
+    // Note: std.collections.list() returns Vector[String]. We need a generic way to create empty vectors or use literals carefully.
+    // The "Vector literal data missing" error for [Some(10)...] implies complex types in literals aren't fully supported in IRGen yet.
+    // However, [1, 2] works.
+    // Let's try explicit casting or a helper if possible?
+    // Actually, we can just use `std.collections.push` on a validly typed vector.
+    // But we can't create an empty Vector[Option[i32]] easily without a constructor that takes a type hint.
+
+    // Workaround: We can't easily make a Vector[Option] right now without a literal.
+    // And literals for non-numeric/string types seem flaky in IRGen.
+
+    // Let's try the Result<Vector> case which worked in my mind, but relies on [1, 2] literal which works.
+    let vec_res: Vector[i32] = [1, 2];
+    let res_vec: Result[Vector[i32], i32] = Ok(vec_res);
+
+    if (std.result.is_ok(res_vec)) {
+        let inner_vec: Vector[i32] = std.result.unwrap(res_vec);
+        print("Result<Vector> unwrapped len: "); print(std.collections.len(inner_vec));
+    }
+
+    // Composition 3: Tensor in Option
+    let t_vec: Vector[i32] = [1, 1];
+    let t_val: Tensor = Tensor.from_list(t_vec);
+    let opt_tensor: Option[Tensor] = Some(t_val);
+
+    if (std.option.is_some(opt_tensor)) {
+        let t_out: Tensor = std.option.unwrap(opt_tensor);
+        let dot: i32 = std.tensor.dot_product(t_out, t_out); // 1*1 + 1*1 = 2
+        print("Option[Tensor] -> dot product: "); print(dot);
+    }
+
+    return 0;
+}

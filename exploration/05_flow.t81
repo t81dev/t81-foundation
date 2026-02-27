@@ -1,0 +1,54 @@
+fn main() -> i32 {
+    print("--- Layer 5: Flow Control & Monads ---");
+
+    // 1. Option
+    let some_val: Option[i32] = Some(42);
+    let none_val: Option[i32] = None();
+
+    if (std.option.is_some(some_val)) {
+        print("Option is Some(42)");
+        print(std.option.unwrap(some_val));
+    }
+
+    if (std.option.is_none(none_val)) {
+        print("Option is None");
+    }
+
+    let unwrapped: i32 = std.core.unwrap_or(none_val, 100);
+    print("Unwrap or default (100): "); print(unwrapped);
+
+    // 2. Result
+    let ok_res: Result[i32, i32] = Ok(200);
+    let err_res: Result[i32, i32] = Err(500);
+
+    if (std.result.is_ok(ok_res)) {
+        print("Result is Ok(200)");
+        print(std.result.unwrap(ok_res));
+    }
+
+    if (std.result.is_err(err_res)) {
+        print("Result is Err(500)");
+        print(std.result.unwrap_err(err_res));
+    }
+
+    // 3. Match Expression
+    let match_res: i32 = match (some_val) {
+        Some(v) => v + 1,
+        None => 0,
+    };
+    print("Match Option result (42+1): "); print(match_res);
+
+    let match_res2: i32 = match (none_val) {
+        Some(v) => v + 1,
+        None => -1,
+    };
+    print("Match None result (-1): "); print(match_res2);
+
+    let match_ok: i32 = match (ok_res) {
+        Ok(v) => v * 2,
+        Err(e) => e,
+    };
+    print("Match Ok result (200*2): "); print(match_ok);
+
+    return 0;
+}

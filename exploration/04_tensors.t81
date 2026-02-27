@@ -1,0 +1,27 @@
+fn main() -> i32 {
+    print("--- Layer 4: Tensors ---");
+
+    // 1. Tensor construction from Vector (1D)
+    let vec: Vector[i32] = [10, 20, 30];
+    let t1: Tensor = Tensor.from_list(vec);
+    print("Tensor from vector constructed.");
+
+    // 2. Matrix (2D Tensor) - Tensor.from_list likely creates a 1D tensor.
+    // Tensors are often constructed via loading weights or direct manipulation.
+    // Let's assume t1 is 1D.
+
+    // 3. Matmul / Dot Product
+    // t1 dot t1 = 10*10 + 20*20 + 30*30 = 100 + 400 + 900 = 1400
+    let dot_val: i32 = std.tensor.dot_product(t1, t1);
+    print("Dot product (10,20,30) . (10,20,30) = "); print(dot_val);
+
+    // 4. Element-wise Add
+    let t_sum: Tensor = std.tensor.vec_add(t1, t1);
+    print("Tensor vec_add performed.");
+    // Can we inspect the result? Maybe dot product it?
+    // (20, 40, 60) . (10, 20, 30) = 200 + 800 + 1800 = 2800
+    let check_val: i32 = std.tensor.dot_product(t_sum, t1);
+    print("Check val (should be 2800): "); print(check_val);
+
+    return 0;
+}

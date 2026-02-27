@@ -1,0 +1,53 @@
+fn main() -> i32 {
+    print("--- Layer 2: Symbolic & Algebraic ---");
+
+    // 1. Symbol
+    let s1: Symbol = :alpha;
+    let s2: Symbol = :beta;
+    let s3: Symbol = :alpha;
+
+    print("Symbol 'alpha' created.");
+    if (s1 == s3) {
+        print("Symbol equality holds (alpha == alpha).");
+    } else {
+        print("Symbol equality FAILED.");
+    }
+
+    if (s1 != s2) {
+        print("Symbol inequality holds (alpha != beta).");
+    } else {
+        print("Symbol inequality FAILED.");
+    }
+
+    // std.symbol.to_string expects String, but s1 is Symbol.
+    // However, SymbolLiteralExpr returns Type::Kind::Symbol.
+    // The previous error "symbol_to_string expects a T81String argument" suggests std.symbol.to_string might be for Strings?
+    // Checking semantic_analyzer.cpp: "symbol_to_string expects a T81String argument" - WAIT, that sounds like it converts String -> String?
+    // Ah, "symbol_intern expects a T81String argument".
+    // "symbol_to_string expects a T81String argument".
+    // It seems `Symbol` type isn't fully wired to these helpers or the helpers are misnamed in my understanding vs source.
+    // Actually, `Symbol` token type exists. `Type::Kind::Symbol` exists.
+    // But `std.symbol.to_string` checks `arg_types[0].kind != Type::Kind::String`.
+    // It seems `Symbol` handles are effectively Strings or Integers under the hood?
+    // Let's skip printing symbol content for now if helper is strict.
+
+    // Graph Construction
+    // Error: "Cannot assign initializer of type 'Vector[T81String]' to constant of type 'Graph'."
+    // This implies `std.collections.graph()` returns `Vector[T81String]` (adjacency list or flattened?).
+    // And `collections_graph_add_edge` expects `Vector[T81String]`.
+    // So `Graph` type alias might not be what the function returns.
+
+    let g: Vector[T81String] = std.collections.graph();
+
+    std.collections.graph_add_edge(g, "A", "B");
+    std.collections.graph_add_edge(g, "B", "C");
+
+    print("Graph edge count: ");
+    print(std.collections.graph_edge_count(g));
+
+    if (std.collections.graph_has_edge(g, "A", "B")) {
+        print("Graph has edge A->B");
+    }
+
+    return 0;
+}
