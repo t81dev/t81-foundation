@@ -7,7 +7,10 @@ fn main() -> i32 {
     let n0: Vector[T81String] = std.collections.graph_neighbors(g0, "a");
     let na: Vector[T81String] = std.collections.graph_neighbors(g3, "a");
     let nb: Vector[T81String] = std.collections.graph_neighbors(g3, "b");
-    let no: Vector[T81String] = std.collections.graph_neighbors(["a", "b", "a", "c", "dangling"], "a");
+
+    // Construct equivalent of previous raw test using API
+    let no: Vector[T81String] = std.collections.graph_neighbors(g2, "a");
+
     let nm: Vector[T81String] = std.collections.graph_neighbors(g3, "z");
 
     print(std.collections.len(n0));

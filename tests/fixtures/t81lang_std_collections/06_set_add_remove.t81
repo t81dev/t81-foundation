@@ -1,8 +1,8 @@
 fn main() -> i32 {
-    let s0: Vector[T81String] = std.collections.set();
-    let s1: Vector[T81String] = std.collections.set_add(s0, "city");
-    let s2: Vector[T81String] = std.collections.set_add(s1, "lang");
-    let s3: Vector[T81String] = std.collections.set_add(s2, "city");
+    let s0: Set[T81String] = std.collections.set();
+    let s1: Set[T81String] = std.collections.set_add(s0, "city");
+    let s2: Set[T81String] = std.collections.set_add(s1, "lang");
+    let s3: Set[T81String] = std.collections.set_add(s2, "city");
 
     print(std.collections.set_size(s1));
     print(std.collections.set_size(s2));
@@ -10,8 +10,8 @@ fn main() -> i32 {
     print(std.collections.set_has(s3, "city"));
     print(std.collections.set_has(s3, "missing"));
 
-    let s4: Vector[T81String] = std.collections.set_remove(s3, "lang");
-    let s5: Vector[T81String] = std.collections.set_remove(s4, "city");
+    let s4: Set[T81String] = std.collections.set_remove(s3, "lang");
+    let s5: Set[T81String] = std.collections.set_remove(s4, "city");
     print(std.collections.set_size(s4));
     print(std.collections.set_has(s4, "lang"));
     print(std.collections.set_size(s5));

@@ -6,16 +6,16 @@ fn render(opt: Option[T81String]) -> T81String {
 }
 
 fn main() -> i32 {
-    let m0: Vector[T81String] = std.collections.map();
-    let m1: Vector[T81String] = std.collections.map_put(m0, "city", "sf");
-    let m2: Vector[T81String] = std.collections.map_put(m1, "lang", "t81");
-    let m3: Vector[T81String] = std.collections.map_put(m2, "city", "oakland");
+    let m0: Map[T81String, T81String] = std.collections.map();
+    let m1: Map[T81String, T81String] = std.collections.map_put(m0, "city", "sf");
+    let m2: Map[T81String, T81String] = std.collections.map_put(m1, "lang", "t81");
+    let m3: Map[T81String, T81String] = std.collections.map_put(m2, "city", "oakland");
 
     let keys: Vector[T81String] = std.collections.map_keys(m3);
     let city: Option[T81String] = std.collections.map_get(m3, "city");
     let missing: Option[T81String] = std.collections.map_get(m3, "missing");
 
-    let m4: Vector[T81String] = std.collections.map_remove(m3, "lang");
+    let m4: Map[T81String, T81String] = std.collections.map_remove(m3, "lang");
 
     print(std.collections.map_size(m3));
     print(std.collections.len(keys));

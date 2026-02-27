@@ -107,7 +107,7 @@ inline double parse_canonical_float(std::string_view literal) {
   double value = 0.0;
 // macOS libc++ (as of 2026/GitHub Actions image) may lack full std::from_chars<double> support.
 // We fallback to strtod-like behavior if necessary, or check macro support.
-#if defined(__cpp_lib_to_chars)
+#if defined(__cpp_lib_to_chars) && !defined(__APPLE__)
   auto res = std::from_chars(literal.data(), literal.data() + literal.size(), value);
   if (res.ec != std::errc()) {
     return 0.0;

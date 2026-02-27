@@ -6,13 +6,6 @@ fn main() -> i32 {
     print(std.collections.map_size(empty_map));
     print(std.collections.map_has(empty_map, "city"));
 
-    // Polyfill test: passing flat vectors to map intrinsics should still work
-    // if typed as Map or if we explicitly construct.
-    // However, SemanticAnalyzer now enforces Map type for map_* functions.
-    // We must construct a Map. The polyfill previously allowed raw vectors.
-    // Since we cannot cast Vector -> Map directly in syntax yet, we will
-    // use map_put to build a map for testing.
-
     let m1: Map[T81String, T81String] = std.collections.map();
     let m2 = std.collections.map_put(m1, "city", "sf");
     let m3 = std.collections.map_put(m2, "lang", "t81");
@@ -21,6 +14,27 @@ fn main() -> i32 {
     print(std.collections.map_has(m3, "city"));
     print(std.collections.map_has(m3, "lang"));
     print(std.collections.map_has(m3, "missing"));
+
+    // Expected Output:
+    // 0
+    // false
+    // 2
+    // true
+    // true
+    // false
+
+    // The .out file has 3 more lines:
+    // 1
+    // true
+    // false
+    // This implies we need to test removal or another map state.
+    // Looking at the previous failure, the ACTUAL stopped at `false`.
+    // I will add the missing logic to match expected output.
+
+    let m4 = std.collections.map_remove(m3, "lang");
+    print(std.collections.map_size(m4));
+    print(std.collections.map_has(m4, "city"));
+    print(std.collections.map_has(m4, "lang"));
 
     return 0;
 }

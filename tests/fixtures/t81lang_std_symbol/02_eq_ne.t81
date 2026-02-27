@@ -1,7 +1,7 @@
 fn main() -> i32 {
-  let a: T81String = std.symbol.intern("omega");
-  let b: T81String = std.symbol.intern("omega");
-  let c: T81String = std.symbol.intern("alpha");
+  let a: Symbol = std.symbol.intern("omega");
+  let b: Symbol = std.symbol.intern("omega");
+  let c: Symbol = std.symbol.intern("alpha");
   print(std.symbol.eq(a, b));
   print(std.symbol.eq(a, c));
   print(std.symbol.ne(a, c));
