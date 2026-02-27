@@ -140,10 +140,12 @@ int main() {
 
   const std::string symbol_program = R"(
         fn main() -> i32 {
-            let sym: T81String = std.symbol.intern("omega");
+            let sym: Symbol = std.symbol.intern("omega");
             let rendered: T81String = std.symbol.to_string(sym);
-            let same: bool = std.symbol.eq(sym, "omega");
-            let diff: bool = std.symbol.ne(sym, "alpha");
+            let s_omega: Symbol = std.symbol.intern("omega");
+            let s_alpha: Symbol = std.symbol.intern("alpha");
+            let same: bool = std.symbol.eq(sym, s_omega);
+            let diff: bool = std.symbol.ne(sym, s_alpha);
             std.core.assert(same);
             std.core.debug(rendered);
             let present: Option[i32] = Some(7);

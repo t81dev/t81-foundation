@@ -1,17 +1,20 @@
 fn main() -> i32 {
-    let empty_map: Vector[T81String] = std.collections.map();
+    let empty_map: Map[T81String, T81String] = std.collections.map();
     print(std.collections.map_size(empty_map));
     print(std.collections.map_has(empty_map, "city"));
 
-    let flat: Vector[T81String] = ["city", "sf", "lang", "t81"];
+    // Construct map populated
+    let flat_base: Map[T81String, T81String] = std.collections.map();
+    let flat_1: Map[T81String, T81String] = std.collections.map_put(flat_base, "city", "sf");
+    let flat: Map[T81String, T81String] = std.collections.map_put(flat_1, "lang", "t81");
+
     print(std.collections.map_size(flat));
     print(std.collections.map_has(flat, "city"));
     print(std.collections.map_has(flat, "lang"));
     print(std.collections.map_has(flat, "missing"));
 
-    let odd_flat: Vector[T81String] = ["a", "1", "dangling"];
-    print(std.collections.map_size(odd_flat));
-    print(std.collections.map_has(odd_flat, "a"));
-    print(std.collections.map_has(odd_flat, "dangling"));
+    // We cannot easily create an "odd" map via the API if it enforces pairs.
+    // The previous test relied on vector polyfill details.
+    // We will skip the odd/dangling test as it violates the map contract enforced by the new type system.
     return 0;
 }
