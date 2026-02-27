@@ -105,7 +105,7 @@ inline std::string strip_t81_suffix(std::string_view literal) {
 // Use std::from_chars for locale-independent, deterministic float parsing.
 inline double parse_canonical_float(std::string_view literal) {
   double value = 0.0;
-#if defined(__cpp_lib_to_chars) && __cpp_lib_to_chars >= 201611L
+#if defined(__cpp_lib_to_chars) && __cpp_lib_to_chars >= 201611L && !defined(__APPLE__)
   auto res = std::from_chars(literal.data(), literal.data() + literal.size(), value);
   if (res.ec != std::errc()) {
     return 0.0;

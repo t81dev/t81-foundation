@@ -13,8 +13,5 @@ fn main() -> i32 {
     print(std.collections.map_has(flat, "lang"));
     print(std.collections.map_has(flat, "missing"));
 
-    // We cannot easily create an "odd" map via the API if it enforces pairs.
-    // The previous test relied on vector polyfill details.
-    // We will skip the odd/dangling test as it violates the map contract enforced by the new type system.
     return 0;
 }
