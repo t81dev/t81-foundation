@@ -1,20 +1,20 @@
+#include <cassert>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <cassert>
-#include <limits>
-#include "t81/types/cell.hpp"
-#include "t81/types/T81Int.hpp"
 #include "t81/types/T81BigInt.hpp"
+#include "t81/types/T81Int.hpp"
+#include "t81/types/cell.hpp"
 
 // Minimal test runner macro
-#define TEST_CHECK(cond) \
-  do { \
-    if (!(cond)) { \
+#define TEST_CHECK(cond)                                                                      \
+  do {                                                                                        \
+    if (!(cond)) {                                                                            \
       std::cerr << "FAILED: " << #cond << " at " << __FILE__ << ":" << __LINE__ << std::endl; \
-      std::exit(1); \
-    } \
+      std::exit(1);                                                                           \
+    }                                                                                         \
   } while (0)
 
 using namespace t81::core;
@@ -105,7 +105,7 @@ void test_t81int_determinism() {
   TEST_CHECK(prod.to_int64() == 100);
 
   // 3. String canonicalization (trit string)
-  std::string s = Int27(13).to_string(); // 13 = 9 + 3 + 1 = 111 (base 3) -> +++
+  std::string s = Int27(13).to_string();  // 13 = 9 + 3 + 1 = 111 (base 3) -> +++
   TEST_CHECK(s == "111");
 
   // 4. Canonical string (trit string: +, 0, -)
@@ -132,7 +132,7 @@ void test_bigint_determinism() {
   // 3. Multiplication (Karatsuba threshold check)
   T81BigInt base(3);
   T81BigInt exp(50);
-  T81BigInt huge = T81BigInt::pow(base, exp); // 3^50
+  T81BigInt huge = T81BigInt::pow(base, exp);  // 3^50
 
   // 4. Canonical String (Base81)
   std::string s81 = huge.to_base81_string();

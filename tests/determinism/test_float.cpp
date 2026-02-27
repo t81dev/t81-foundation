@@ -1,19 +1,19 @@
-#include <iostream>
-#include <vector>
-#include <string>
 #include <cassert>
 #include <cmath>
-#include <limits>
 #include <iomanip>
+#include <iostream>
+#include <limits>
+#include <string>
+#include <vector>
 #include "t81/types/T81Float.hpp"
 
 // Minimal test runner macro
-#define TEST_CHECK(cond) \
-  do { \
-    if (!(cond)) { \
+#define TEST_CHECK(cond)                                                                      \
+  do {                                                                                        \
+    if (!(cond)) {                                                                            \
       std::cerr << "FAILED: " << #cond << " at " << __FILE__ << ":" << __LINE__ << std::endl; \
-      std::exit(1); \
-    } \
+      std::exit(1);                                                                           \
+    }                                                                                         \
   } while (0)
 
 using namespace t81::v1;
@@ -46,7 +46,7 @@ void test_t81float_determinism() {
   TEST_CHECK(neg_inf.is_negative());
   TEST_CHECK(neg_inf.to_canonical_string() == "-Inf");
 
-  Float nae = Float::nae(); // Not an Entity
+  Float nae = Float::nae();  // Not an Entity
   TEST_CHECK(nae.is_nae());
   TEST_CHECK(nae.to_canonical_string() == "NaE");
 
@@ -62,7 +62,7 @@ void test_t81float_determinism() {
   Float sum = a + b;
   TEST_CHECK(std::abs(sum.to_double() - 4.0) < 1e-10);
 
-  Float prod = a * b; // 3.75
+  Float prod = a * b;  // 3.75
   TEST_CHECK(std::abs(prod.to_double() - 3.75) < 1e-10);
 
   // 4. Transcendental Determinism (Check host dependency)

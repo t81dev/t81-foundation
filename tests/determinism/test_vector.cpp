@@ -1,17 +1,17 @@
-#include <iostream>
-#include <vector>
 #include <cmath>
 #include <iomanip>
-#include "t81/types/T81Vector.hpp"
+#include <iostream>
+#include <vector>
 #include "t81/types/T81Quaternion.hpp"
+#include "t81/types/T81Vector.hpp"
 
 // Minimal test runner macro
-#define TEST_CHECK(cond) \
-  do { \
-    if (!(cond)) { \
+#define TEST_CHECK(cond)                                                                      \
+  do {                                                                                        \
+    if (!(cond)) {                                                                            \
       std::cerr << "FAILED: " << #cond << " at " << __FILE__ << ":" << __LINE__ << std::endl; \
-      std::exit(1); \
-    } \
+      std::exit(1);                                                                           \
+    }                                                                                         \
   } while (0)
 
 using namespace t81::v1;
@@ -44,7 +44,7 @@ void test_vector_determinism() {
   // 4. Cross Product
   Vec3 up(0.0, 1.0, 0.0);
   Vec3 forward(0.0, 0.0, 1.0);
-  Vec3 right = up.cross(forward); // (1, 0, 0)
+  Vec3 right = up.cross(forward);  // (1, 0, 0)
   TEST_CHECK(std::abs(right[0].to_double() - 1.0) < 1e-5);
   TEST_CHECK(std::abs(right[1].to_double()) < 1e-5);
   TEST_CHECK(std::abs(right[2].to_double()) < 1e-5);

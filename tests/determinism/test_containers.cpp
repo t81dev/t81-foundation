@@ -1,19 +1,19 @@
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <algorithm>
 #include "t81/types/T81Map.hpp"
 #include "t81/types/T81Set.hpp"
 #include "t81/types/T81String.hpp"
 #include "t81/types/T81Symbol.hpp"
 
 // Minimal test runner macro
-#define TEST_CHECK(cond) \
-  do { \
-    if (!(cond)) { \
+#define TEST_CHECK(cond)                                                                      \
+  do {                                                                                        \
+    if (!(cond)) {                                                                            \
       std::cerr << "FAILED: " << #cond << " at " << __FILE__ << ":" << __LINE__ << std::endl; \
-      std::exit(1); \
-    } \
+      std::exit(1);                                                                           \
+    }                                                                                         \
   } while (0)
 
 using namespace t81;
@@ -67,7 +67,8 @@ void test_map_determinism() {
   // Actually, T81Symbol usually serializes to ID, but maybe we want name sorting for determinism?
   // Let's rely on what the code does:
   // It calls a.first.serialize_canonical().
-  // If T81Symbol::serialize_canonical returns a deterministic string (e.g. "@A"), then it sorts by that.
+  // If T81Symbol::serialize_canonical returns a deterministic string (e.g. "@A"), then it sorts by
+  // that.
 
   // Verify it is sorted.
   // "A" < "B", so A first.
