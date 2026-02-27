@@ -112,23 +112,6 @@ public:
 
   static constexpr T81Float zero(bool positive = true) noexcept {
     T81Float f;
-    // Canonical zero has exponent -Bias (encoded as 0) or potentially minimal exponent.
-    // Spec: "Zero (exp = 0, mant = 0)". Here 0 means unbiased 0?
-    // Or encoded 0? The code uses get_exp() which decodes.
-    // If encoded exp is 0, then unbiased is 0.
-    // But bias is (3^E-1)/2. So encoded 0 is unbiased 0.
-    // If bias is applied, usually 0 encoded means -Bias.
-    // Let's check get_exp(). It decodes balanced ternary integer directly.
-    // So get_exp() returns the stored value.
-    // The "biased exponent" in T81Float seems to be... just the stored exponent?
-    // "Correct balanced-ternary biased exponent (bias = (3^E - 1)/2)"
-    // "Value ≈ sign * mantissa * 3^(exp_unbiased - (M - 1))"
-    // from_double uses: const std::int64_t exp_unb = k + 1;
-    // And normalization seems to assume exp is passed directly.
-
-    // To match to_canonical_string logic: "Exponent (decimal integer is canonical)" -> get_exp().
-    // If we want +0E0, get_exp() must be 0.
-
     f.set_sign(positive);
     f.set_exp(0);
     f.set_mantissa(T81Int<M>{});
@@ -406,12 +389,7 @@ public:
   [[nodiscard]] std::string to_canonical_string() const {
     if (is_nae()) return "NaE";
     if (is_inf()) return is_negative() ? "-Inf" : "+Inf";
-
-    // Zero Handling:
-    // T81Float::zero() sets exp=0, mant=0.
-    // However, is_zero() checks mant==0 and exp==0.
-    // We want "+0E0" or "-0E0".
-    if (is_zero()) return is_negative() ? "-0E0" : "+0E0";
+    if (is_zero()) return is_negative() ? "-0" : "+0";
 
     std::string s;
     // Sign

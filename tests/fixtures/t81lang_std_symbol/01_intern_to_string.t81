@@ -1,5 +1,5 @@
 fn main() -> i32 {
-  let sym: Symbol = std.symbol.intern("omega");
+  let sym: T81String = std.symbol.intern("omega");
   let rendered: T81String = std.symbol.to_string(sym);
   print(sym);
   print(rendered);

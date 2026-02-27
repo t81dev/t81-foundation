@@ -56,9 +56,6 @@ class T81Vector {
                          }) {
       // Has to_double(): bridge via double → Scalar
       return scalar_from_double(c.to_double());
-    } else if constexpr (std::is_arithmetic_v<C>) {
-      // Fundamental arithmetic types (int, double, etc.)
-      return scalar_from_double(static_cast<double>(c));
     } else {
       static_assert(std::same_as<C, void>,
                     "T81Vector component type is not convertible or bridgeable to Scalar");
@@ -164,7 +161,7 @@ public:
   //===================================================================
   [[nodiscard]] constexpr Scalar dot(const T81Vector& o) const noexcept {
     Scalar sum = scalar_from_double(0.0);
-    for (std::size_t i = 0; i < N; ++i) sum = sum + components_[i] * o[i];
+    for (std::size_t i = 0; i < N; ++i) sum += components_[i] * o[i];
     return sum;
   }
 

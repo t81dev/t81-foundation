@@ -476,12 +476,10 @@ void test_std_namespace_aliases_lower_to_builtin_opcodes() {
             let str_last: T81String = std.collections.last(parts);
             let str_pushed: Vector[T81String] = std.collections.push(parts, "tail");
             let str_popped: Vector[T81String] = std.collections.pop(str_pushed);
-            let sym: Symbol = std.symbol.intern("omega");
+            let sym: T81String = std.symbol.intern("omega");
             let rendered_sym: T81String = std.symbol.to_string(sym);
-            let s_omega: Symbol = std.symbol.intern("omega");
-            let s_alpha: Symbol = std.symbol.intern("alpha");
-            let same: bool = std.symbol.eq(sym, s_omega);
-            let diff: bool = std.symbol.ne(sym, s_alpha);
+            let same: bool = std.symbol.eq(sym, "omega");
+            let diff: bool = std.symbol.ne(sym, "alpha");
             std.core.assert(1 < 2);
             std.core.debug("debug");
             let maybe: Option[i32] = Some(7);
@@ -495,11 +493,10 @@ void test_std_namespace_aliases_lower_to_builtin_opcodes() {
             std.async.sleep(now);
             let thread_h: T81String = std.async.thread();
             let promise_h: T81String = std.async.promise();
-            let list_v: List[T81String] = std.collections.list();
-            let map_v: Map[T81String, T81String] = std.collections.map();
-            let map_flat: Map[T81String, T81String] = std.collections.map();
-            let _mp1: Map[T81String, T81String] = std.collections.map_put(map_flat, "city", "sf");
-            let set_v: Set[T81String] = std.collections.set();
+            let list_v: Vector[T81String] = std.collections.list();
+            let map_v: Vector[T81String] = std.collections.map();
+            let map_flat: Vector[T81String] = ["city", "sf", "lang", "t81"];
+            let set_v: Vector[T81String] = std.collections.set();
             let tree_v: Vector[T81String] = std.collections.tree();
             let graph_v: Vector[T81String] = std.collections.graph();
             std.agent.self_reflect();
@@ -556,12 +553,13 @@ void test_std_namespace_aliases_lower_to_builtin_opcodes() {
             let _net_h = net_h;
             let _thread_h = thread_h;
             let _promise_h = promise_h;
-            // Removed len checks for list/map/set because new analyzer enforces strict Vector[T] for len
+            let _list_h = std.collections.len(list_v);
+            let _map_h = std.collections.len(map_v);
             let _map_pairs = std.collections.map_size(map_flat);
             let _map_has_city = std.collections.map_has(map_flat, "city");
-            let map_updated: Map[T81String, T81String] = std.collections.map_put(map_flat, "city", "oakland");
+            let map_updated: Vector[T81String] = std.collections.map_put(map_flat, "city", "oakland");
             let map_keys: Vector[T81String] = std.collections.map_keys(map_updated);
-            let map_removed: Map[T81String, T81String] = std.collections.map_remove(map_updated, "lang");
+            let map_removed: Vector[T81String] = std.collections.map_remove(map_updated, "lang");
             let map_lookup: Option[T81String] = std.collections.map_get(map_removed, "city");
             let _map_keys_len = std.collections.len(map_keys);
             let _map_removed_pairs = std.collections.map_size(map_removed);
@@ -570,16 +568,17 @@ void test_std_namespace_aliases_lower_to_builtin_opcodes() {
                 Some(v) => v;
                 None => "none";
             };
-            let set_flat: Set[T81String] = std.collections.set();
-            let set_added: Set[T81String] = std.collections.set_add(set_flat, "edge");
-            let set_added_dup: Set[T81String] = std.collections.set_add(set_added, "city");
-            let set_removed: Set[T81String] = std.collections.set_remove(set_added_dup, "lang");
+            let set_flat: Vector[T81String] = ["city", "lang", "city"];
+            let set_added: Vector[T81String] = std.collections.set_add(set_flat, "edge");
+            let set_added_dup: Vector[T81String] = std.collections.set_add(set_added, "city");
+            let set_removed: Vector[T81String] = std.collections.set_remove(set_added_dup, "lang");
             let _set_size = std.collections.set_size(set_flat);
             let _set_has_city = std.collections.set_has(set_flat, "city");
             let _set_added_size = std.collections.set_size(set_added);
             let _set_added_dup_size = std.collections.set_size(set_added_dup);
             let _set_removed_size = std.collections.set_size(set_removed);
             let _set_removed_has_lang = std.collections.set_has(set_removed, "lang");
+            let _set_h = std.collections.len(set_v);
             let _tree_h = std.collections.len(tree_v);
             let _graph_h = std.collections.len(graph_v);
             let graph_edges: Vector[T81String] = std.collections.graph_add_edge(graph_v, "a", "b");
@@ -816,9 +815,9 @@ void test_std_runtime_handle_aliases_lower_to_deterministic_tokens() {
             let net_h: T81String = std.io.net();
             let thread_h: T81String = std.async.thread();
             let promise_h: T81String = std.async.promise();
-            let list_v: List[T81String] = std.collections.list();
-            let map_v: Map[T81String, T81String] = std.collections.map();
-            let set_v: Set[T81String] = std.collections.set();
+            let list_v: Vector[T81String] = std.collections.list();
+            let map_v: Vector[T81String] = std.collections.map();
+            let set_v: Vector[T81String] = std.collections.set();
             let tree_v: Vector[T81String] = std.collections.tree();
             let graph_v: Vector[T81String] = std.collections.graph();
             let _proof = proof;
@@ -826,8 +825,8 @@ void test_std_runtime_handle_aliases_lower_to_deterministic_tokens() {
             let _net_h = net_h;
             let _thread_h = thread_h;
             let _promise_h = promise_h;
-            // Removed len() on non-Vectors as they are now strictly checked
-            return std.collections.len(tree_v) + std.collections.len(graph_v);
+            return std.collections.len(list_v) + std.collections.len(map_v) + std.collections.len(set_v) +
+                   std.collections.len(tree_v) + std.collections.len(graph_v);
         }
     )";
   Lexer lexer(source);
@@ -847,16 +846,10 @@ void test_std_runtime_handle_aliases_lower_to_deterministic_tokens() {
 
   std::set<std::string> seen_tokens;
   int strvecnew_count = 0;
-  bool has_map_new = false;
-  bool has_set_new = false;
   for (const auto& inst : instructions) {
     if (inst.opcode != Opcode::LOADI) {
       if (inst.opcode == Opcode::STRVECNEW) {
         ++strvecnew_count;
-      } else if (inst.opcode == Opcode::MapNew) {
-        has_map_new = true;
-      } else if (inst.opcode == Opcode::SetNew) {
-        has_set_new = true;
       }
       continue;
     }
@@ -876,11 +869,9 @@ void test_std_runtime_handle_aliases_lower_to_deterministic_tokens() {
          "std.async.thread should lower to deterministic symbol token");
   EXPECT(seen_tokens.count("std.async.promise") == 1,
          "std.async.promise should lower to deterministic symbol token");
-  EXPECT(strvecnew_count >= 3,
-         "std.collections.list/tree/graph should lower to STRVECNEW-backed vector "
+  EXPECT(strvecnew_count >= 5,
+         "std.collections.list/map/set/tree/graph should each lower to STRVECNEW-backed vector "
          "construction");
-  EXPECT(has_map_new, "std.collections.map should lower to MapNew");
-  EXPECT(has_set_new, "std.collections.set should lower to SetNew");
   std::cout << "IRGeneratorTest test_std_runtime_handle_aliases_lower_to_deterministic_tokens "
                "passed!"
             << std::endl;
