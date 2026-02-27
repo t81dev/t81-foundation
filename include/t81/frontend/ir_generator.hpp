@@ -103,16 +103,32 @@ inline std::string strip_t81_suffix(std::string_view literal) {
 }
 
 // Use std::from_chars for locale-independent, deterministic float parsing.
+// Note: std::from_chars for double is not supported on all platforms (e.g. libc++ on older macOS).
+// We use a fallback to std::strtod for now, which is generally locale-dependent, but
+// we assume the environment or input is sanitized.
+// Ideally, we should check for __cpp_lib_to_chars or similar feature test macros,
+// but for simplicity in this context, we'll use strtod if std::from_chars might be missing for
+// double. However, since T81 aims for determinism, `std::from_chars` is preferred where available.
+// Given the CI failure on macOS with clang (libc++), we will use std::strtod for maximum
+// compatibility in this beta phase.
 inline double parse_canonical_float(std::string_view literal) {
+#if defined(__cpp_lib_to_chars) && __cpp_lib_to_chars >= 201611L
   double value = 0.0;
   auto res = std::from_chars(literal.data(), literal.data() + literal.size(), value);
   if (res.ec != std::errc()) {
-    // If parsing fails, default to 0.0 or handle error appropriately.
-    // Given the lexer has validated the format, failure implies overflow/underflow or
-    // implementation limits.
     return 0.0;
   }
   return value;
+#else
+  // Fallback for platforms without full floating-point std::from_chars support (e.g. older libc++)
+  std::string s(literal);
+  char* end = nullptr;
+  double value = std::strtod(s.c_str(), &end);
+  if (end == s.c_str()) {
+    return 0.0;
+  }
+  return value;
+#endif
 }
 
 inline int64_t parse_base81_integer_literal(std::string_view literal) {
