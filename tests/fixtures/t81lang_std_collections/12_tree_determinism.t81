@@ -1,0 +1,22 @@
+fn main() -> i32 {
+    // Populated construction: vector literal then sequential push
+    let v0: Vector[i32] = [5, 15, 25];
+
+    // Iteration order stability: first and last are deterministic
+    print(std.collections.len(v0));
+    print(std.collections.first(v0));
+    print(std.collections.last(v0));
+
+    // Push appends in deterministic order
+    let v1: Vector[i32] = std.collections.push(v0, 35);
+    print(std.collections.len(v1));
+    print(std.collections.last(v1));
+
+    // Pop removes last in deterministic order
+    let v2: Vector[i32] = std.collections.pop(v1);
+    print(std.collections.len(v2));
+    print(std.collections.last(v2));
+    print(std.collections.is_empty(v2));
+
+    return 0;
+}

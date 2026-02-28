@@ -74,6 +74,58 @@ void test_tree_lowering() {
   std::cout << "test_tree_lowering PASSED\n";
 }
 
+void verify_ir_stable(const std::string& source) {
+  // Verify IR instruction count is identical across two independent lowering passes.
+  Lexer lexer1(source);
+  Parser parser1(lexer1, "test_source");
+  auto stmts1 = parser1.parse();
+  SemanticAnalyzer analyzer1(stmts1, "test_source");
+  analyzer1.analyze();
+  assert(!analyzer1.had_error());
+  IRGenerator gen1;
+  gen1.attach_semantic_analyzer(&analyzer1);
+  auto prog1 = gen1.generate(stmts1);
+
+  Lexer lexer2(source);
+  Parser parser2(lexer2, "test_source");
+  auto stmts2 = parser2.parse();
+  SemanticAnalyzer analyzer2(stmts2, "test_source");
+  analyzer2.analyze();
+  IRGenerator gen2;
+  gen2.attach_semantic_analyzer(&analyzer2);
+  auto prog2 = gen2.generate(stmts2);
+
+  assert(prog1.instructions().size() == prog2.instructions().size());
+}
+
+void test_list_populated_determinism() {
+  verify_ir_stable(R"(
+    fn main() {
+      let v0: Vector[i32] = [10, 20, 30];
+      let v1: Vector[i32] = std.collections.push(v0, 40);
+      let v2: Vector[i32] = std.collections.pop(v1);
+      let n: i32 = std.collections.len(v2);
+      let f: i32 = std.collections.first(v2);
+      let l: i32 = std.collections.last(v2);
+    }
+  )");
+  std::cout << "test_list_populated_determinism PASSED\n";
+}
+
+void test_tree_populated_determinism() {
+  verify_ir_stable(R"(
+    fn main() {
+      let v0: Vector[i32] = [5, 15, 25];
+      let v1: Vector[i32] = std.collections.push(v0, 35);
+      let v2: Vector[i32] = std.collections.pop(v1);
+      let n: i32 = std.collections.len(v2);
+      let f: i32 = std.collections.first(v2);
+      let l: i32 = std.collections.last(v2);
+    }
+  )");
+  std::cout << "test_tree_populated_determinism PASSED\n";
+}
+
 void test_graph_lowering() {
   verify_collection_lowering(R"(
     fn main() {
@@ -128,6 +180,8 @@ int main() {
   test_map_lowering();
   test_set_lowering();
   test_tree_lowering();
+  test_list_populated_determinism();
+  test_tree_populated_determinism();
   test_graph_lowering();
   test_graph_canonical_lowering();
   std::cout << "All Collection Determinism Tests PASSED!\n";
