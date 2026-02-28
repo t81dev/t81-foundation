@@ -3941,7 +3941,9 @@ public:
       }
 
       if (type_name == "T81Quaternion" || type_name == "T81Prob" || type_name == "Cell") {
-        auto dest = allocate_typed_register(type_name == "T81Prob" ? tisc::ir::PrimitiveKind::Float : tisc::ir::PrimitiveKind::Integer);
+        auto dest =
+            allocate_typed_register(type_name == "T81Prob" ? tisc::ir::PrimitiveKind::Float
+                                                           : tisc::ir::PrimitiveKind::Integer);
         emit(tisc::ir::Instruction{tisc::ir::Opcode::NOP, {}});
         record_result(&expr, dest);
         return {};
@@ -4046,8 +4048,6 @@ public:
         record_result(&expr, dest);
         return {};
       }
-
-
 
       // Fallback for user-defined generic function calls (e.g. MyFunc[T](args))
       {

@@ -26,9 +26,9 @@
 #include <functional>
 #include <iterator>
 #include <ostream>
+#include <span>
 #include <sstream>
 #include <string>
-#include <span>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -152,7 +152,6 @@ public:
     o.clear();
     return *this;
   }
-
 
   [[nodiscard]] std::string serialize_canonical() const {
     std::ostringstream ss;
