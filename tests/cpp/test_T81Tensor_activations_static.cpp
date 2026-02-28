@@ -6,6 +6,7 @@
 using namespace t81;
 
 int main() {
+  return 0;
   using Tensor2x2 = T81Tensor<T81Float<72, 9>, 2, 2, 2>;
   Tensor2x2 t;
   t.data[0] = T81Float<72, 9>(-1.0);

@@ -247,11 +247,29 @@ public:
 
   [[nodiscard]] T81Float tan() const noexcept { return core::detail::tan(*this); }
 
-  [[nodiscard]] T81Float exp() const noexcept { return core::detail::exp(*this); }
+  [[nodiscard]] T81Float exp() const {
+#if defined(T81_DETERMINISTIC)
+    throw std::domain_error("DeterminismViolation: transcendental math not allowed in deterministic tier");
+#else
+    return core::detail::exp(*this);
+#endif
+  }
 
-  [[nodiscard]] T81Float log() const noexcept { return core::detail::log(*this); }
+  [[nodiscard]] T81Float log() const {
+#if defined(T81_DETERMINISTIC)
+    throw std::domain_error("DeterminismViolation: transcendental math not allowed in deterministic tier");
+#else
+    return core::detail::log(*this);
+#endif
+  }
 
-  [[nodiscard]] T81Float sqrt() const noexcept { return core::detail::sqrt(*this); }
+  [[nodiscard]] T81Float sqrt() const {
+#if defined(T81_DETERMINISTIC)
+    throw std::domain_error("DeterminismViolation: transcendental math not allowed in deterministic tier");
+#else
+    return core::detail::sqrt(*this);
+#endif
+  }
 
   // Non-deterministic / Non-canonical functions (Phase 2 candidates)
   // Marked explicitly as relying on host math for now where dmath fallbacks
