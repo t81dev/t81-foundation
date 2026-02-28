@@ -22,6 +22,11 @@ specification authority, freeze boundaries, or determinism claim scope.
 - SYSTEM_STATUS.md
 - IMPLEMENTATION_MATRIX.md
 
+**Risk and Decisions:**
+
+- RISK_REGISTER.md
+- DECISION_LOG.md
+
 **Release / Governance:**
 
 - RELEASE_READINESS_PACKET_2026-03.md
@@ -29,6 +34,15 @@ specification authority, freeze boundaries, or determinism claim scope.
 - C2_MONTH_CLOSE_RUNBOOK_2026-03-31.md
 - C2_MONTH_CLOSE_CHECK_2026-03-31.md
 - C2_MONTH_CLOSE_PREFLIGHT_2026-03-31.md
+
+**CI and Dependencies:**
+
+- CI_GATE_STATUS.md
+- DEPENDENCY_HEALTH.md
+
+**Subsystem Status:**
+
+- AXION_STATUS.md
 
 **Language Surface:**
 

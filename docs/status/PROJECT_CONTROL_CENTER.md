@@ -3,7 +3,7 @@
 Status: Active Program Management
 Last Updated: 2026-02-28
 Owner: Project Management / Governance
-Version: 2.1.0
+Version: 2.2.0
 
 ## 1. At-a-Glance
 
@@ -127,20 +127,25 @@ Authority remains:
 
 ## 6. Risks
 
+Risks are tracked in full in `docs/status/RISK_REGISTER.md`. Summary:
+
 ### 6.1 High
 
-- Required-context mismatch risk can keep March packet in HOLD.
-- Determinism overclaim risk if external summaries omit registry boundaries.
+- RISK-001: Required-context mismatch can keep March packet in HOLD (mitigated on `1ec312e3`).
+- RISK-002: Determinism overclaim if external summaries omit registry boundaries.
+- RISK-009: Axion Alpha posture delays Beta promotion candidacy.
 
 ### 6.2 Medium
 
-- Single-owner concentration for governance/release approvals.
-- AGI-facing surface growth outpacing promotion evidence updates.
+- RISK-003: Single-owner concentration for governance/release approvals.
+- RISK-004: AGI-facing surface growth outpacing promotion evidence updates.
+- RISK-008: T81Graph lang-side serialization gap (BG-09) delays DCP candidacy.
 
 ### 6.3 Monitoring
 
-- Experimental scope creep without explicit promotion/retirement actions.
-- Benchmark variability and environment-sensitive signal noise.
+- RISK-005: Experimental scope creep without explicit promotion/retirement actions.
+- RISK-006: Benchmark variability and environment-sensitive signal noise.
+- RISK-007: Jekyll Pages build failure — deferred.
 
 ## 7. Next Decisions
 
@@ -158,6 +163,11 @@ Authority remains:
 ## 9. Cross-References
 
 - `docs/status/TASKS.md`
+- `docs/status/RISK_REGISTER.md`
+- `docs/status/DECISION_LOG.md`
+- `docs/status/CI_GATE_STATUS.md`
+- `docs/status/AXION_STATUS.md`
+- `docs/status/DEPENDENCY_HEALTH.md`
 - `docs/records/status-history/BEHAVIORAL_CONFORMANCE_EXPANSION_SPRINT_2026-02-26.md`
 - `docs/status/BEHAVIORAL_CONFORMANCE_EXPANSION_PHASE3_2026-02-26.md`
 - `docs/status/STDLIB_STABILIZATION_PLAN_2026-03.md`
