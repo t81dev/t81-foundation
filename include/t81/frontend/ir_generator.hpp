@@ -510,6 +510,9 @@ inline std::string canonical_stdlib_call_name(std::string_view name) {
   if (name == "std.collections.graph_neighbors") {
     return "collections_graph_neighbors";
   }
+  if (name == "std.collections.graph_canonical") {
+    return "collections_graph_canonical";
+  }
   if (name == "std.symbol.intern") {
     return "symbol_intern";
   }
@@ -3746,6 +3749,207 @@ public:
         emit_label(rebuild_done);
 
         record_result(&expr, result);
+        return {};
+      }
+      if (func_name == "collections_graph_canonical") {
+        // graph_canonical(g: Vector[T81String]) -> T81String
+        // Drains the flat edge-pair vector [from0,to0,from1,to1,...] into a
+        // vector of "from->to" strings, then joins them with "," to produce a
+        // deterministic serialization of the graph's edge set.
+        if (expr.arguments.size() != 1) {
+          throw std::runtime_error(
+              "collections_graph_canonical expects exactly one argument.");
+        }
+        expr.arguments[0]->accept(*this);
+        auto graph_vec = ensure_expr_result(expr.arguments[0].get());
+
+        auto two = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        {
+          tisc::ir::Instruction li;
+          li.opcode = tisc::ir::Opcode::LOADI;
+          li.operands = {two.reg, tisc::ir::Immediate{2}};
+          li.primitive = tisc::ir::PrimitiveKind::Integer;
+          emit(li);
+        }
+        auto zero = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        {
+          tisc::ir::Instruction li;
+          li.opcode = tisc::ir::Opcode::LOADI;
+          li.operands = {zero.reg, tisc::ir::Immediate{0}};
+          li.primitive = tisc::ir::PrimitiveKind::Integer;
+          emit(li);
+        }
+
+        // Load constant "->"
+        auto arrow = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        {
+          tisc::ir::Instruction li;
+          li.opcode = tisc::ir::Opcode::LOADI;
+          li.operands = {arrow.reg};
+          li.literal_kind = tisc::LiteralKind::SymbolHandle;
+          li.text_literal = "->";
+          li.primitive = tisc::ir::PrimitiveKind::Integer;
+          emit(li);
+        }
+
+        // Load constant ","
+        auto comma = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        {
+          tisc::ir::Instruction li;
+          li.opcode = tisc::ir::Opcode::LOADI;
+          li.operands = {comma.reg};
+          li.literal_kind = tisc::LiteralKind::SymbolHandle;
+          li.text_literal = ",";
+          li.primitive = tisc::ir::PrimitiveKind::Integer;
+          emit(li);
+        }
+
+        // work = copy of graph_vec
+        auto work = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+        copy_to_dest(graph_vec, work);
+
+        // Trim odd tail
+        auto raw_len = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        {
+          tisc::ir::Instruction li;
+          li.opcode = tisc::ir::Opcode::VECLEN;
+          li.operands = {raw_len.reg, work.reg};
+          li.primitive = tisc::ir::PrimitiveKind::Integer;
+          emit(li);
+        }
+        auto rem = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        {
+          tisc::ir::Instruction mi;
+          mi.opcode = tisc::ir::Opcode::MOD;
+          mi.operands = {rem.reg, raw_len.reg, two.reg};
+          mi.primitive = tisc::ir::PrimitiveKind::Integer;
+          emit(mi);
+        }
+        auto has_odd = allocate_typed_register(tisc::ir::PrimitiveKind::Boolean);
+        {
+          tisc::ir::Instruction ci;
+          ci.opcode = tisc::ir::Opcode::CMP;
+          ci.operands = {has_odd.reg, rem.reg, zero.reg};
+          ci.primitive = tisc::ir::PrimitiveKind::Boolean;
+          ci.boolean_result = true;
+          ci.relation = tisc::ir::ComparisonRelation::NotEqual;
+          emit(ci);
+        }
+        auto trimmed_lbl = new_label();
+        emit_jump_if_zero(trimmed_lbl, has_odd);
+        {
+          auto discard = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+          tisc::ir::Instruction pi;
+          pi.opcode = tisc::ir::Opcode::VECPOP;
+          pi.operands = {discard.reg, work.reg};
+          emit(pi);
+          copy_to_dest(discard, work);
+        }
+        emit_label(trimmed_lbl);
+
+        // edge_strs = new vector to hold "from->to" strings
+        auto edge_strs = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+        {
+          tisc::ir::Instruction ni;
+          ni.opcode = tisc::ir::Opcode::STRVECNEW;
+          ni.operands = {edge_strs.reg};
+          emit(ni);
+        }
+
+        // Loop: drain work into edge_strs
+        auto loop_lbl = new_label();
+        auto done_lbl = new_label();
+        emit_label(loop_lbl);
+
+        auto cur_len = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        {
+          tisc::ir::Instruction li;
+          li.opcode = tisc::ir::Opcode::VECLEN;
+          li.operands = {cur_len.reg, work.reg};
+          li.primitive = tisc::ir::PrimitiveKind::Integer;
+          emit(li);
+        }
+        auto has_pair = allocate_typed_register(tisc::ir::PrimitiveKind::Boolean);
+        {
+          tisc::ir::Instruction ci;
+          ci.opcode = tisc::ir::Opcode::CMP;
+          ci.operands = {has_pair.reg, cur_len.reg, two.reg};
+          ci.primitive = tisc::ir::PrimitiveKind::Boolean;
+          ci.boolean_result = true;
+          ci.relation = tisc::ir::ComparisonRelation::GreaterEqual;
+          emit(ci);
+        }
+        emit_jump_if_zero(done_lbl, has_pair);
+
+        // Pop to_value
+        auto to_val = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+        {
+          tisc::ir::Instruction li;
+          li.opcode = tisc::ir::Opcode::VECLAST;
+          li.operands = {to_val.reg, work.reg};
+          emit(li);
+        }
+        auto after_to = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+        {
+          tisc::ir::Instruction pi;
+          pi.opcode = tisc::ir::Opcode::VECPOP;
+          pi.operands = {after_to.reg, work.reg};
+          emit(pi);
+        }
+        // Pop from_value
+        auto from_val = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+        {
+          tisc::ir::Instruction li;
+          li.opcode = tisc::ir::Opcode::VECLAST;
+          li.operands = {from_val.reg, after_to.reg};
+          emit(li);
+        }
+        auto after_from = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+        {
+          tisc::ir::Instruction pi;
+          pi.opcode = tisc::ir::Opcode::VECPOP;
+          pi.operands = {after_from.reg, after_to.reg};
+          emit(pi);
+        }
+        copy_to_dest(after_from, work);
+
+        // edge_str = from_val + "->" + to_val
+        auto half = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+        {
+          tisc::ir::Instruction ci;
+          ci.opcode = tisc::ir::Opcode::STRCONCAT;
+          ci.operands = {half.reg, from_val.reg, arrow.reg};
+          emit(ci);
+        }
+        auto edge_str = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+        {
+          tisc::ir::Instruction ci;
+          ci.opcode = tisc::ir::Opcode::STRCONCAT;
+          ci.operands = {edge_str.reg, half.reg, to_val.reg};
+          emit(ci);
+        }
+        // edge_strs = VECPUSH(edge_strs, edge_str)
+        auto edge_strs_new = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+        {
+          tisc::ir::Instruction pi;
+          pi.opcode = tisc::ir::Opcode::VECPUSH;
+          pi.operands = {edge_strs_new.reg, edge_strs.reg, edge_str.reg};
+          emit(pi);
+        }
+        copy_to_dest(edge_strs_new, edge_strs);
+        emit_jump(loop_lbl);
+
+        emit_label(done_lbl);
+
+        // canonical = STRJOIN(edge_strs, ",")
+        auto canonical = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+        {
+          tisc::ir::Instruction ji;
+          ji.opcode = tisc::ir::Opcode::STRJOIN;
+          ji.operands = {canonical.reg, edge_strs.reg, comma.reg};
+          emit(ji);
+        }
+        record_result(&expr, canonical);
         return {};
       }
       if (func_name == "symbol_intern" || func_name == "symbol_to_string") {

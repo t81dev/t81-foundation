@@ -1,0 +1,10 @@
+fn main() -> i32 {
+    let g0: Vector[T81String] = std.collections.graph();
+    let g1: Vector[T81String] = std.collections.graph_add_edge(g0, "a", "b");
+    let g2: Vector[T81String] = std.collections.graph_add_edge(g1, "b", "c");
+    let g3: Vector[T81String] = std.collections.graph_add_edge(g2, "a", "c");
+    print(std.collections.graph_canonical(g0));
+    print(std.collections.graph_canonical(g1));
+    print(std.collections.graph_canonical(g3));
+    return 0;
+}

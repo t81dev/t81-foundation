@@ -540,6 +540,9 @@ std::string canonical_stdlib_call_name(std::string_view name) {
   if (name == "std.collections.graph_neighbors") {
     return "collections_graph_neighbors";
   }
+  if (name == "std.collections.graph_canonical") {
+    return "collections_graph_canonical";
+  }
   if (name == "std.symbol.intern") {
     return "symbol_intern";
   }
@@ -3599,6 +3602,21 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       Type out{Type::Kind::Vector};
       out.params.push_back(Type{Type::Kind::String});
       return out;
+    }
+    if (func_name == "collections_graph_canonical") {
+      if (arg_types.size() != 1) {
+        error(call_token, "std.collections.graph_canonical expects exactly one argument.");
+        return make_error_type();
+      }
+      const bool is_string_vector = arg_types[0].kind == Type::Kind::Vector &&
+                                    !arg_types[0].params.empty() &&
+                                    arg_types[0].params[0].kind == Type::Kind::String;
+      if (!is_string_vector) {
+        error(call_token,
+              "std.collections.graph_canonical expects a Vector[T81String] argument.");
+        return make_error_type();
+      }
+      return Type{Type::Kind::String};
     }
     if (func_name == "io_stream" || func_name == "io_net") {
       if (!arg_types.empty()) {

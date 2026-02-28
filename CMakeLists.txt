@@ -940,6 +940,9 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(cli_std_collections_fixtures_test tests/cpp/cli_std_collections_fixtures_test.cpp)
   target_link_libraries(cli_std_collections_fixtures_test PRIVATE t81_tool_cli t81_isa t81_vm)
 
+  add_executable(cli_std_collections_determinism_test tests/cpp/cli_std_collections_determinism_test.cpp)
+  target_link_libraries(cli_std_collections_determinism_test PRIVATE t81_tool_cli t81_isa t81_vm)
+
   add_executable(cli_std_tensor_fixtures_test tests/cpp/cli_std_tensor_fixtures_test.cpp)
   target_link_libraries(cli_std_tensor_fixtures_test PRIVATE t81_tool_cli t81_isa t81_vm)
 
@@ -1453,6 +1456,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   add_test(NAME t81_cli_std_symbolic_fixtures_test COMMAND $<TARGET_FILE:cli_std_symbolic_fixtures_test>)
   add_test(NAME t81_cli_std_polynomial_fixtures_test COMMAND $<TARGET_FILE:cli_std_polynomial_fixtures_test>)
   add_test(NAME t81_cli_std_collections_fixtures_test COMMAND $<TARGET_FILE:cli_std_collections_fixtures_test>)
+  add_test(NAME cli_std_collections_determinism_test COMMAND $<TARGET_FILE:cli_std_collections_determinism_test>)
   add_test(NAME t81_cli_std_tensor_fixtures_test COMMAND $<TARGET_FILE:cli_std_tensor_fixtures_test>)
   add_test(NAME t81_cli_std_runtime_fixtures_test COMMAND $<TARGET_FILE:cli_std_runtime_fixtures_test>)
   add_test(NAME t81_cli_std_core_fixtures_test COMMAND $<TARGET_FILE:cli_std_core_fixtures_test>)

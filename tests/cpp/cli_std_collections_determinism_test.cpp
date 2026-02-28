@@ -74,11 +74,62 @@ void test_tree_lowering() {
   std::cout << "test_tree_lowering PASSED\n";
 }
 
+void test_graph_lowering() {
+  verify_collection_lowering(R"(
+    fn main() {
+      let g: Vector[T81String] = std.collections.graph();
+    }
+  )");
+  std::cout << "test_graph_lowering PASSED\n";
+}
+
+void test_graph_canonical_lowering() {
+  // Verify graph_canonical lowers to IR containing STRJOIN.
+  const std::string source = R"(
+    fn main() {
+      let g0: Vector[T81String] = std.collections.graph();
+      let g1: Vector[T81String] = std.collections.graph_add_edge(g0, "x", "y");
+      let s: T81String = std.collections.graph_canonical(g1);
+    }
+  )";
+  Lexer lexer(source);
+  Parser parser(lexer, "test_source");
+  auto statements = parser.parse();
+  assert(!statements.empty());
+
+  SemanticAnalyzer analyzer(statements, "test_source");
+  analyzer.analyze();
+  assert(!analyzer.had_error());
+
+  IRGenerator ir_gen;
+  ir_gen.attach_semantic_analyzer(&analyzer);
+  auto program = ir_gen.generate(statements);
+
+  bool found_strjoin = false;
+  for (const auto& instr : program.instructions()) {
+    if (instr.opcode == t81::tisc::ir::Opcode::STRJOIN) {
+      found_strjoin = true;
+      break;
+    }
+  }
+  assert(found_strjoin);
+
+  // Verify IR is stable across two independent lowering passes (determinism).
+  IRGenerator ir_gen2;
+  ir_gen2.attach_semantic_analyzer(&analyzer);
+  auto program2 = ir_gen2.generate(statements);
+  assert(program.instructions().size() == program2.instructions().size());
+
+  std::cout << "test_graph_canonical_lowering PASSED\n";
+}
+
 int main() {
   test_list_lowering();
   test_map_lowering();
   test_set_lowering();
   test_tree_lowering();
+  test_graph_lowering();
+  test_graph_canonical_lowering();
   std::cout << "All Collection Determinism Tests PASSED!\n";
   return 0;
 }

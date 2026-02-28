@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <exception>
 #include <iostream>
 #include <limits>
 #include <optional>
