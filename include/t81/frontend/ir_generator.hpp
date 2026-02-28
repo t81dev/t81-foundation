@@ -3757,8 +3757,7 @@ public:
         // vector of "from->to" strings, then joins them with "," to produce a
         // deterministic serialization of the graph's edge set.
         if (expr.arguments.size() != 1) {
-          throw std::runtime_error(
-              "collections_graph_canonical expects exactly one argument.");
+          throw std::runtime_error("collections_graph_canonical expects exactly one argument.");
         }
         expr.arguments[0]->accept(*this);
         auto graph_vec = ensure_expr_result(expr.arguments[0].get());
