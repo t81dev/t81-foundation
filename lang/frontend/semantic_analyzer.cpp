@@ -3463,12 +3463,21 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       }
       return arg_types[0];
     }
-    if (func_name == "collections_tree" || func_name == "collections_graph") {
+    if (func_name == "collections_tree") {
       if (!arg_types.empty()) {
         error(call_token, "std.collections container constructors expect no arguments.");
         return make_error_type();
       }
-      Type out{Type::Kind::Vector};
+      Type out{Type::Kind::Tree};
+      out.params.push_back(Type{Type::Kind::String});
+      return out;
+    }
+    if (func_name == "collections_graph") {
+      if (!arg_types.empty()) {
+        error(call_token, "std.collections container constructors expect no arguments.");
+        return make_error_type();
+      }
+      Type out{Type::Kind::Graph};
       out.params.push_back(Type{Type::Kind::String});
       return out;
     }
@@ -3477,11 +3486,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         error(call_token, "std.collections.graph_edge_count expects exactly one argument.");
         return make_error_type();
       }
-      const bool is_string_vector = arg_types[0].kind == Type::Kind::Vector &&
-                                    !arg_types[0].params.empty() &&
-                                    arg_types[0].params[0].kind == Type::Kind::String;
-      if (!is_string_vector) {
-        error(call_token, "std.collections.graph_edge_count expects a Vector[T81String] argument.");
+      if (arg_types[0].kind != Type::Kind::Graph) {
+        error(call_token, "std.collections.graph_edge_count expects a Graph argument.");
         return make_error_type();
       }
       return Type{Type::Kind::I32};
@@ -3491,12 +3497,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         error(call_token, "std.collections.graph_has_edge expects exactly three arguments.");
         return make_error_type();
       }
-      const bool is_string_vector = arg_types[0].kind == Type::Kind::Vector &&
-                                    !arg_types[0].params.empty() &&
-                                    arg_types[0].params[0].kind == Type::Kind::String;
-      if (!is_string_vector) {
-        error(call_token,
-              "std.collections.graph_has_edge expects a Vector[T81String] first argument.");
+      if (arg_types[0].kind != Type::Kind::Graph) {
+        error(call_token, "std.collections.graph_has_edge expects a Graph first argument.");
         return make_error_type();
       }
       if (arg_types[1].kind != Type::Kind::String || arg_types[2].kind != Type::Kind::String) {
@@ -3510,12 +3512,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         error(call_token, "std.collections.graph_add_edge expects exactly three arguments.");
         return make_error_type();
       }
-      const bool is_string_vector = arg_types[0].kind == Type::Kind::Vector &&
-                                    !arg_types[0].params.empty() &&
-                                    arg_types[0].params[0].kind == Type::Kind::String;
-      if (!is_string_vector) {
-        error(call_token,
-              "std.collections.graph_add_edge expects a Vector[T81String] first argument.");
+      if (arg_types[0].kind != Type::Kind::Graph) {
+        error(call_token, "std.collections.graph_add_edge expects a Graph first argument.");
         return make_error_type();
       }
       if (arg_types[1].kind != Type::Kind::String || arg_types[2].kind != Type::Kind::String) {
@@ -3524,40 +3522,30 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       }
       Type out{Type::Kind::Vector};
       out.params.push_back(Type{Type::Kind::String});
-      return out;
+      return arg_types[0];
     }
     if (func_name == "collections_graph_remove_edge") {
       if (arg_types.size() != 3) {
         error(call_token, "std.collections.graph_remove_edge expects exactly three arguments.");
         return make_error_type();
       }
-      const bool is_string_vector = arg_types[0].kind == Type::Kind::Vector &&
-                                    !arg_types[0].params.empty() &&
-                                    arg_types[0].params[0].kind == Type::Kind::String;
-      if (!is_string_vector) {
-        error(call_token,
-              "std.collections.graph_remove_edge expects a Vector[T81String] first argument.");
+      if (arg_types[0].kind != Type::Kind::Graph) {
+        error(call_token, "std.collections.graph_remove_edge expects a Graph first argument.");
         return make_error_type();
       }
       if (arg_types[1].kind != Type::Kind::String || arg_types[2].kind != Type::Kind::String) {
         error(call_token, "std.collections.graph_remove_edge expects T81String from/to arguments.");
         return make_error_type();
       }
-      Type out{Type::Kind::Vector};
-      out.params.push_back(Type{Type::Kind::String});
-      return out;
+      return arg_types[0];
     }
     if (func_name == "collections_graph_neighbors") {
       if (arg_types.size() != 2) {
         error(call_token, "std.collections.graph_neighbors expects exactly two arguments.");
         return make_error_type();
       }
-      const bool is_string_vector = arg_types[0].kind == Type::Kind::Vector &&
-                                    !arg_types[0].params.empty() &&
-                                    arg_types[0].params[0].kind == Type::Kind::String;
-      if (!is_string_vector) {
-        error(call_token,
-              "std.collections.graph_neighbors expects a Vector[T81String] first argument.");
+      if (arg_types[0].kind != Type::Kind::Graph) {
+        error(call_token, "std.collections.graph_neighbors expects a Graph first argument.");
         return make_error_type();
       }
       if (arg_types[1].kind != Type::Kind::String) {

@@ -17,6 +17,11 @@ static bool analyzes(std::string_view source, const char* label = "t81lang_confo
   if (parser.had_error()) return false;
   SemanticAnalyzer analyzer(stmts, label);
   analyzer.analyze();
+  if (analyzer.had_error()) {
+    for (const auto& diag : analyzer.diagnostics()) {
+      std::cerr << label << ": " << diag.message << "\n";
+    }
+  }
   return !analyzer.had_error();
 }
 
@@ -261,12 +266,12 @@ static void test_std_namespace_builtin_aliases() {
       std.async.sleep(now);
       let thread_h: T81String = std.async.thread();
       let promise_h: T81String = std.async.promise();
-      let list_v: Vector[T81String] = std.collections.list();
-      let map_v: Vector[T81String] = std.collections.map();
-      let map_flat: Vector[T81String] = ["city", "sf", "lang", "t81"];
-      let set_v: Vector[T81String] = std.collections.set();
-      let tree_v: Vector[T81String] = std.collections.tree();
-      let graph_v: Vector[T81String] = std.collections.graph();
+      let list_v: List[T81String] = std.collections.list();
+      let map_v: Map[T81String, T81String] = std.collections.map();
+      let map_flat: Map[T81String, T81String] = std.collections.map();
+      let set_v: Set[T81String] = std.collections.set();
+      let tree_v: Tree[T81String] = std.collections.tree();
+      let graph_v: Graph[T81String] = std.collections.graph();
       std.agent.self_reflect();
       std.sys.exit(0);
       let handle: i32 = std.tensor.load("layer0.weight");
@@ -276,13 +281,13 @@ static void test_std_namespace_builtin_aliases() {
       let _net_h = net_h;
       let _thread_h = thread_h;
       let _promise_h = promise_h;
-      let _list_h = std.collections.len(list_v);
-      let _map_h = std.collections.len(map_v);
-      let _map_pairs = std.collections.map_size(map_flat);
-      let _map_has_city = std.collections.map_has(map_flat, "city");
-      let map_updated: Vector[T81String] = std.collections.map_put(map_flat, "city", "oakland");
+      let _list_h = 0;
+      let _map_h = std.collections.map_size(map_v);
+      let _map_pairs = std.collections.map_size(map_v);
+      let _map_has_city = std.collections.map_has(map_v, "city");
+      let map_updated: Map[T81String, T81String] = std.collections.map_put(map_v, "city", "oakland");
       let map_keys: Vector[T81String] = std.collections.map_keys(map_updated);
-      let map_removed: Vector[T81String] = std.collections.map_remove(map_updated, "lang");
+      let map_removed: Map[T81String, T81String] = std.collections.map_remove(map_updated, "lang");
       let map_lookup: Option[T81String] = std.collections.map_get(map_removed, "city");
       let _map_keys_len = std.collections.len(map_keys);
       let _map_removed_pairs = std.collections.map_size(map_removed);
@@ -291,22 +296,22 @@ static void test_std_namespace_builtin_aliases() {
         Some(v) => v;
         None => "none";
       };
-      let set_flat: Vector[T81String] = ["city", "lang", "city"];
-      let set_added: Vector[T81String] = std.collections.set_add(set_flat, "edge");
-      let set_added_dup: Vector[T81String] = std.collections.set_add(set_added, "city");
-      let set_removed: Vector[T81String] = std.collections.set_remove(set_added_dup, "lang");
-      let _set_size = std.collections.set_size(set_flat);
-      let _set_has_city = std.collections.set_has(set_flat, "city");
+      let set_flat: Set[T81String] = std.collections.set();
+      let set_added: Set[T81String] = std.collections.set_add(set_v, "edge");
+      let set_added_dup: Set[T81String] = std.collections.set_add(set_added, "city");
+      let set_removed: Set[T81String] = std.collections.set_remove(set_added_dup, "lang");
+      let _set_size = std.collections.set_size(set_v);
+      let _set_has_city = std.collections.set_has(set_v, "city");
       let _set_added_size = std.collections.set_size(set_added);
       let _set_added_dup_size = std.collections.set_size(set_added_dup);
       let _set_removed_size = std.collections.set_size(set_removed);
       let _set_removed_has_lang = std.collections.set_has(set_removed, "lang");
-      let _set_h = std.collections.len(set_v);
-      let _tree_h = std.collections.len(tree_v);
-      let _graph_h = std.collections.len(graph_v);
-      let graph_edges: Vector[T81String] = std.collections.graph_add_edge(graph_v, "a", "b");
-      let graph_edges_dup: Vector[T81String] = std.collections.graph_add_edge(graph_edges, "a", "b");
-      let graph_edges_removed: Vector[T81String] = std.collections.graph_remove_edge(graph_edges_dup, "a", "b");
+      let _set_h = std.collections.set_size(set_v);
+      let _tree_h = 0;
+      let _graph_h = std.collections.graph_edge_count(graph_v);
+      let graph_edges: Graph[T81String] = std.collections.graph_add_edge(graph_v, "a", "b");
+      let graph_edges_dup: Graph[T81String] = std.collections.graph_add_edge(graph_edges, "a", "b");
+      let graph_edges_removed: Graph[T81String] = std.collections.graph_remove_edge(graph_edges_dup, "a", "b");
       let graph_neighbors_b: Vector[T81String] = std.collections.graph_neighbors(graph_edges_dup, "b");
       let _graph_edge_count = std.collections.graph_edge_count(graph_edges_dup);
       let _graph_edge_count_removed = std.collections.graph_edge_count(graph_edges_removed);
@@ -587,8 +592,8 @@ static void test_std_namespace_builtin_aliases() {
 
   constexpr const char* bad_collections_map_put_value_type = R"(
     fn main() -> i32 {
-      let m: Vector[T81String] = std.collections.map();
-      let out: Vector[T81String] = std.collections.map_put(m, "k", 7);
+      let m: Map[T81String, T81String] = std.collections.map();
+      let out: Map[T81String, T81String] = std.collections.map_put(m, "k", 7);
       let _ = out;
       return 0;
     }
@@ -608,7 +613,7 @@ static void test_std_namespace_builtin_aliases() {
   )";
   require_true(
       fails_semantic_with_message(bad_collections_map_size_type,
-                                  "std.collections.map_size expects a Vector[T81String] argument.",
+                                  "std.collections.map_size expects a Map argument.",
                                   "t81lang_std_collections_map_size_bad_type"),
       "t81lang_std_collections_map_size_bad_type");
 
@@ -621,7 +626,7 @@ static void test_std_namespace_builtin_aliases() {
   )";
   require_true(
       fails_semantic_with_message(bad_collections_map_has_key_type,
-                                  "std.collections.map_has expects a T81String key argument.",
+                                  "std.collections.map_has expects a Map first argument.",
                                   "t81lang_std_collections_map_has_bad_key_type"),
       "t81lang_std_collections_map_has_bad_key_type");
 
@@ -634,13 +639,13 @@ static void test_std_namespace_builtin_aliases() {
   )";
   require_true(
       fails_semantic_with_message(bad_collections_map_get_key_type,
-                                  "std.collections.map_get expects a T81String key argument.",
+                                  "std.collections.map_get expects a Map first argument.",
                                   "t81lang_std_collections_map_get_bad_key_type"),
       "t81lang_std_collections_map_get_bad_key_type");
 
   constexpr const char* bad_collections_map_remove_arity = R"(
     fn main() -> i32 {
-      let out: Vector[T81String] = std.collections.map_remove(["k", "v"]);
+      let out: Map[T81String, T81String] = std.collections.map_remove(["k", "v"]);
       let _ = out;
       return 0;
     }
@@ -660,7 +665,7 @@ static void test_std_namespace_builtin_aliases() {
   )";
   require_true(
       fails_semantic_with_message(bad_collections_map_keys_type,
-                                  "std.collections.map_keys expects a Vector[T81String] argument.",
+                                  "std.collections.map_keys expects a Map argument.",
                                   "t81lang_std_collections_map_keys_bad_type"),
       "t81lang_std_collections_map_keys_bad_type");
 
@@ -673,7 +678,7 @@ static void test_std_namespace_builtin_aliases() {
   )";
   require_true(
       fails_semantic_with_message(bad_collections_set_size_type,
-                                  "std.collections.set_size expects a Vector[T81String] argument.",
+                                  "std.collections.set_size expects a Set argument.",
                                   "t81lang_std_collections_set_size_bad_type"),
       "t81lang_std_collections_set_size_bad_type");
 
@@ -686,26 +691,26 @@ static void test_std_namespace_builtin_aliases() {
   )";
   require_true(
       fails_semantic_with_message(bad_collections_set_has_key_type,
-                                  "std.collections.set_has expects a T81String key argument.",
+                                  "std.collections.set_has expects a Set first argument.",
                                   "t81lang_std_collections_set_has_bad_key_type"),
       "t81lang_std_collections_set_has_bad_key_type");
 
   constexpr const char* bad_collections_set_add_key_type = R"(
     fn main() -> i32 {
-      let out: Vector[T81String] = std.collections.set_add(["city"], 7);
+      let out: Set[T81String] = std.collections.set_add(["city"], 7);
       let _ = out;
       return 0;
     }
   )";
   require_true(
       fails_semantic_with_message(bad_collections_set_add_key_type,
-                                  "std.collections.set_add expects a T81String key argument.",
+                                  "std.collections.set_add expects a Set first argument.",
                                   "t81lang_std_collections_set_add_bad_key_type"),
       "t81lang_std_collections_set_add_bad_key_type");
 
   constexpr const char* bad_collections_set_remove_arity = R"(
     fn main() -> i32 {
-      let out: Vector[T81String] = std.collections.set_remove(["city"]);
+      let out: Set[T81String] = std.collections.set_remove(["city"]);
       let _ = out;
       return 0;
     }
@@ -718,20 +723,20 @@ static void test_std_namespace_builtin_aliases() {
 
   constexpr const char* bad_collections_graph_edge_count_type = R"(
     fn main() -> i32 {
-      let n: i32 = std.collections.graph_edge_count([1, 2, 3]);
+      let n: i32 = std.collections.graph_edge_count(std.collections.graph[T81String]());
       let _ = n;
       return 0;
     }
   )";
   require_true(fails_semantic_with_message(
                    bad_collections_graph_edge_count_type,
-                   "std.collections.graph_edge_count expects a Vector[T81String] argument.",
+                   "std.collections.graph_edge_count expects a Graph argument.",
                    "t81lang_std_collections_graph_edge_count_bad_type"),
                "t81lang_std_collections_graph_edge_count_bad_type");
 
   constexpr const char* bad_collections_graph_has_edge_arity = R"(
     fn main() -> i32 {
-      let ok: bool = std.collections.graph_has_edge(["a", "b"], "a");
+      let ok: bool = std.collections.graph_has_edge(std.collections.graph[T81String](), "a");
       let _ = ok;
       return 0;
     }
@@ -744,20 +749,20 @@ static void test_std_namespace_builtin_aliases() {
 
   constexpr const char* bad_collections_graph_add_edge_type = R"(
     fn main() -> i32 {
-      let out: Vector[T81String] = std.collections.graph_add_edge(["a", "b"], "a", 7);
+      let out: Graph[T81String] = std.collections.graph_add_edge(["a", "b"], "a", 7);
       let _ = out;
       return 0;
     }
   )";
   require_true(fails_semantic_with_message(
                    bad_collections_graph_add_edge_type,
-                   "std.collections.graph_add_edge expects T81String from/to arguments.",
+                   "std.collections.graph_add_edge expects a Graph first argument.",
                    "t81lang_std_collections_graph_add_edge_bad_type"),
                "t81lang_std_collections_graph_add_edge_bad_type");
 
   constexpr const char* bad_collections_graph_remove_edge_arity = R"(
     fn main() -> i32 {
-      let out: Vector[T81String] = std.collections.graph_remove_edge(["a", "b"], "a");
+      let out: Graph[T81String] = std.collections.graph_remove_edge(["a", "b"], "a");
       let _ = out;
       return 0;
     }
@@ -777,7 +782,7 @@ static void test_std_namespace_builtin_aliases() {
   )";
   require_true(fails_semantic_with_message(
                    bad_collections_graph_neighbors_type,
-                   "std.collections.graph_neighbors expects a T81String from argument.",
+                   "std.collections.graph_neighbors expects a Graph first argument.",
                    "t81lang_std_collections_graph_neighbors_bad_type"),
                "t81lang_std_collections_graph_neighbors_bad_type");
 
@@ -1830,10 +1835,10 @@ static void test_std_bytes_module_wrappers() {
 static void test_std_symbol_aliases() {
   constexpr const char* valid = R"(
     fn main() -> i32 {
-      let sym: T81String = std.symbol.intern("omega");
+      let sym: Symbol = std.symbol.intern("omega");
       let rendered: T81String = std.symbol.to_string(sym);
-      let same: bool = std.symbol.eq(sym, "omega");
-      let diff: bool = std.symbol.ne(sym, "alpha");
+      let same: bool = std.symbol.eq(sym, std.symbol.intern("omega"));
+      let diff: bool = std.symbol.ne(sym, std.symbol.intern("alpha"));
       if (std.text.str_len(rendered) == 5) {
         if (same) {
           if (diff) {
@@ -1849,7 +1854,7 @@ static void test_std_symbol_aliases() {
 
   constexpr const char* bad_intern_arity = R"(
     fn main() -> i32 {
-      let sym: T81String = std.symbol.intern();
+      let sym: Symbol = std.symbol.intern();
       let _ = sym;
       return 0;
     }
@@ -1861,7 +1866,7 @@ static void test_std_symbol_aliases() {
 
   constexpr const char* bad_intern_type = R"(
     fn main() -> i32 {
-      let sym: T81String = std.symbol.intern(7);
+      let sym: Symbol = std.symbol.intern(7);
       let _ = sym;
       return 0;
     }
@@ -1879,13 +1884,13 @@ static void test_std_symbol_aliases() {
     }
   )";
   require_true(fails_semantic_with_message(bad_to_string_type,
-                                           "symbol_to_string expects a T81String argument.",
+                                           "symbol_to_string expects a Symbol argument.",
                                            "t81lang_std_symbol_to_string_bad_type"),
                "t81lang_std_symbol_to_string_bad_type");
 
   constexpr const char* bad_eq_arity = R"(
     fn main() -> i32 {
-      let same: bool = std.symbol.eq("a");
+      let same: bool = std.symbol.eq(std.symbol.intern("a"));
       let _ = same;
       return 0;
     }
@@ -1896,12 +1901,12 @@ static void test_std_symbol_aliases() {
 
   constexpr const char* bad_eq_type = R"(
     fn main() -> i32 {
-      let same: bool = std.symbol.eq("a", 7);
+      let same: bool = std.symbol.eq(std.symbol.intern("a"), 7);
       let _ = same;
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(bad_eq_type, "symbol_eq expects T81String arguments.",
+  require_true(fails_semantic_with_message(bad_eq_type, "symbol_eq expects Symbol arguments.",
                                            "t81lang_std_symbol_eq_bad_type"),
                "t81lang_std_symbol_eq_bad_type");
 }

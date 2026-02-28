@@ -1,9 +1,12 @@
 fn main() -> i32 {
-    let empty_set: Vector[T81String] = std.collections.set();
+    let empty_set: Set[T81String] = std.collections.set();
     print(std.collections.set_size(empty_set));
     print(std.collections.set_has(empty_set, "city"));
 
-    let staged_set: Vector[T81String] = ["city", "lang", "city"];
+    let staged_set_base: Set[T81String] = std.collections.set();
+    let staged_set_1: Set[T81String] = std.collections.set_add(staged_set_base, "city");
+    let staged_set_2: Set[T81String] = std.collections.set_add(staged_set_1, "lang");
+    let staged_set: Set[T81String] = std.collections.set_add(staged_set_2, "city");
     print(std.collections.set_size(staged_set));
     print(std.collections.set_has(staged_set, "city"));
     print(std.collections.set_has(staged_set, "lang"));
