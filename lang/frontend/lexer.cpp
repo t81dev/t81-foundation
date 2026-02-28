@@ -54,9 +54,9 @@ const std::unordered_map<std::string_view, TokenType> KEYWORDS = {
     {"T81Fraction", TokenType::T81Fraction},
     {"T81Fixed", TokenType::T81Fixed},
     {"T81Complex", TokenType::T81Complex},
-      {"T81Quaternion", TokenType::T81Quaternion},
-      {"T81Prob", TokenType::T81Prob},
-      {"Cell", TokenType::Cell},
+    {"T81Quaternion", TokenType::T81Quaternion},
+    {"T81Prob", TokenType::T81Prob},
+    {"Cell", TokenType::Cell},
     {"T81Qutrit", TokenType::T81Qutrit},
     {"T81Uint", TokenType::T81Uint},
     {"T81String", TokenType::String},
@@ -227,11 +227,11 @@ Token Lexer::number() {
     is_float_literal = true;
     char next = peek_next();
     if (next == '+' || next == '-') {
-      advance(); // Consume 'e'
-      advance(); // Consume '+' or '-'
+      advance();  // Consume 'e'
+      advance();  // Consume '+' or '-'
       while (is_digit(peek())) advance();
     } else if (is_digit(next)) {
-      advance(); // Consume 'e'
+      advance();  // Consume 'e'
       while (is_digit(peek())) advance();
     }
   }

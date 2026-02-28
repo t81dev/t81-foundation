@@ -35,8 +35,8 @@ std::int64_t compute_lineage_signature(const t81::tisc::Program& program) {
   return sig == 0 ? 1 : sig;
 }
 
-std::int64_t compute_entropy_signature(std::size_t instruction_count, std::size_t contradiction_events,
-                                       const ThreadContext& ctx) {
+std::int64_t compute_entropy_signature(std::size_t instruction_count,
+                                       std::size_t contradiction_events, const ThreadContext& ctx) {
   std::uint64_t hash = 1469598103934665603ull;
   hash = fnv1a64(hash, static_cast<std::uint64_t>(instruction_count));
   hash = fnv1a64(hash, static_cast<std::uint64_t>(contradiction_events));

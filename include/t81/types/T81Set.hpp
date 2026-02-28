@@ -152,7 +152,6 @@ public:
     return const_iterator{elements_.end()};
   }
 
-
   [[nodiscard]] std::string serialize_canonical() const {
     std::ostringstream ss;
     ss << "Set{";

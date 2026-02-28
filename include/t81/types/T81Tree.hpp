@@ -17,9 +17,9 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
-#include <utility>
 #include <sstream>
 #include <string>
+#include <utility>
 
 namespace t81 {
 
@@ -125,7 +125,6 @@ public:
     c[2] = std::move(new_right);
     return std::make_shared<node_type>(value_, std::move(c));
   }
-
 
   [[nodiscard]] std::string serialize_canonical() const {
     std::ostringstream ss;

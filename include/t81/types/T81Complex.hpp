@@ -16,10 +16,9 @@
 #include <complex>
 #include <cstddef>
 #include <cstdint>
-#include <string>
-#include <type_traits>
 #include <sstream>
 #include <string>
+#include <type_traits>
 
 namespace t81 {
 
