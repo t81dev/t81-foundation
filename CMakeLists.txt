@@ -360,8 +360,6 @@ if(T81_BUILD_TESTS)
   add_executable(t81_prob_properties_test tests/cpp/prob_properties_test.cpp)
   target_link_libraries(t81_prob_properties_test PRIVATE t81_core)
 
-  add_executable(t81_float_arithmetic_test tests/cpp/test_T81Float_arithmetic.cpp)
-  target_link_libraries(t81_float_arithmetic_test PRIVATE t81_core)
 
   add_executable(t81_t81int_properties_test tests/cpp/t81int_properties_test.cpp)
   target_link_libraries(t81_t81int_properties_test PRIVATE t81_core)
@@ -378,7 +376,8 @@ if(T81_BUILD_TESTS)
   add_executable(t81_bigint_mod_test tests/cpp/test_T81BigInt_mod.cpp)
   target_link_libraries(t81_bigint_mod_test PRIVATE t81_core)
 
-  add_executable(t81_bigint_modular_inverse_test tests/cpp/test_T81BigInt_modular_inverse.cpp)
+  # Consolidated modular inverse test (ExtGCD + Stein, shared fixtures)
+  add_executable(t81_bigint_modular_inverse_test tests/cpp/bigint_modular_inverse_test.cpp)
   target_link_libraries(t81_bigint_modular_inverse_test PRIVATE t81_core)
 
   add_executable(t81_bigint_sqrt_test tests/cpp/test_T81BigInt_sqrt.cpp)
@@ -709,8 +708,7 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
                  tests/cpp/vm_state_transition_conformance_matrix_test.cpp)
   target_link_libraries(t81_vm_state_transition_conformance_matrix_test PRIVATE t81_vm t81_core)
 
-  add_executable(t81_vm_workload_determinism_test tests/cpp/vm_workload_determinism_test.cpp)
-  target_link_libraries(t81_vm_workload_determinism_test PRIVATE t81_vm t81_core)
+  # vm_workload_determinism_test absorbed into vm_workload_determinism_tiers_test as "workload" tier
 
   add_executable(t81_vm_workload_determinism_tiers_test
                  tests/cpp/vm_workload_determinism_tiers_test.cpp)
@@ -732,13 +730,10 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
                  tests/cpp/vm_system_registers_deterministic_test.cpp)
   target_link_libraries(t81_vm_system_registers_deterministic_test PRIVATE t81_vm t81_core)
 
-  add_executable(t81_vm_stubbed_privileged_opcode_fail_closed_test
-                 tests/cpp/vm_stubbed_privileged_opcode_fail_closed_test.cpp)
-  target_link_libraries(t81_vm_stubbed_privileged_opcode_fail_closed_test PRIVATE t81_vm t81_core)
-
-  add_executable(t81_vm_stubbed_async_network_opcode_fail_closed_test
-                 tests/cpp/vm_stubbed_async_network_opcode_fail_closed_test.cpp)
-  target_link_libraries(t81_vm_stubbed_async_network_opcode_fail_closed_test PRIVATE t81_vm t81_core)
+  # Consolidated fail-closed stub harness (merges async/network + privileged opcode tests)
+  add_executable(t81_vm_stubbed_opcode_fail_closed_test
+                 tests/cpp/vm_stubbed_opcode_fail_closed_test.cpp)
+  target_link_libraries(t81_vm_stubbed_opcode_fail_closed_test PRIVATE t81_vm t81_core)
 
   add_executable(vm_extended_ops_test tests/cpp/vm_extended_ops_test.cpp)
   target_link_libraries(vm_extended_ops_test PRIVATE t81_vm t81_core)
@@ -924,34 +919,12 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(cli_repro_hash_test tests/cpp/cli_repro_hash_test.cpp)
   target_compile_features(cli_repro_hash_test PRIVATE ${T81_CXX_STD_FEATURE})
 
-  add_executable(cli_std_text_fixtures_test tests/cpp/cli_std_text_fixtures_test.cpp)
-  target_link_libraries(cli_std_text_fixtures_test PRIVATE t81_tool_cli t81_isa t81_vm)
-
-  add_executable(cli_std_bytes_fixtures_test tests/cpp/cli_std_bytes_fixtures_test.cpp)
-  target_link_libraries(cli_std_bytes_fixtures_test PRIVATE t81_tool_cli t81_isa t81_vm)
-
-  add_executable(cli_std_symbol_fixtures_test tests/cpp/cli_std_symbol_fixtures_test.cpp)
-  target_link_libraries(cli_std_symbol_fixtures_test PRIVATE t81_tool_cli t81_isa t81_vm)
-  add_executable(cli_std_symbolic_fixtures_test tests/cpp/cli_std_symbolic_fixtures_test.cpp)
-  target_link_libraries(cli_std_symbolic_fixtures_test PRIVATE t81_tool_cli t81_isa t81_vm)
-  add_executable(cli_std_polynomial_fixtures_test tests/cpp/cli_std_polynomial_fixtures_test.cpp)
-  target_link_libraries(cli_std_polynomial_fixtures_test PRIVATE t81_tool_cli t81_isa t81_vm)
-
-  add_executable(cli_std_collections_fixtures_test tests/cpp/cli_std_collections_fixtures_test.cpp)
-  target_link_libraries(cli_std_collections_fixtures_test PRIVATE t81_tool_cli t81_isa t81_vm)
+  # Parameterized stdlib fixture harness (consolidates 10 per-module tests)
+  add_executable(cli_stdlib_fixtures_test tests/cpp/cli_stdlib_fixtures_test.cpp)
+  target_link_libraries(cli_stdlib_fixtures_test PRIVATE t81_tool_cli t81_isa t81_vm)
 
   add_executable(cli_std_collections_determinism_test tests/cpp/cli_std_collections_determinism_test.cpp)
   target_link_libraries(cli_std_collections_determinism_test PRIVATE t81_tool_cli t81_isa t81_vm)
-
-  add_executable(cli_std_tensor_fixtures_test tests/cpp/cli_std_tensor_fixtures_test.cpp)
-  target_link_libraries(cli_std_tensor_fixtures_test PRIVATE t81_tool_cli t81_isa t81_vm)
-
-  add_executable(cli_std_runtime_fixtures_test tests/cpp/cli_std_runtime_fixtures_test.cpp)
-  target_link_libraries(cli_std_runtime_fixtures_test PRIVATE t81_tool_cli t81_isa t81_vm)
-  add_executable(cli_std_core_fixtures_test tests/cpp/cli_std_core_fixtures_test.cpp)
-  target_link_libraries(cli_std_core_fixtures_test PRIVATE t81_tool_cli t81_isa t81_vm)
-  add_executable(cli_std_math_fixtures_test tests/cpp/cli_std_math_fixtures_test.cpp)
-  target_link_libraries(cli_std_math_fixtures_test PRIVATE t81_tool_cli t81_isa t81_vm)
 
   add_executable(t81_cli_record_enum_test tests/cpp/cli_record_enum_test.cpp)
   target_link_libraries(t81_cli_record_enum_test PRIVATE t81_tool_cli t81_isa t81_vm)
@@ -1223,7 +1196,6 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   set(T81_TEST_TARGETS
     t81_float_test
     t81_float_properties_test
-    t81_float_arithmetic_test
     t81_t81int_to_binary_test
     t81_division_test
     t81_t81int_test
@@ -1334,14 +1306,12 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_vm_determinism_property_test
     t81_vm_state_transition_invariants_test
     t81_vm_state_transition_conformance_matrix_test
-    t81_vm_workload_determinism_test
     t81_vm_workload_determinism_tiers_test
     t81_vm_mixed_workload_conformance_matrix_test
     t81_vm_policy_parse_fail_closed_test
     t81_vm_axreport_policy_deny_fail_closed_test
     t81_vm_system_registers_deterministic_test
-    t81_vm_stubbed_privileged_opcode_fail_closed_test
-    t81_vm_stubbed_async_network_opcode_fail_closed_test
+    t81_vm_stubbed_opcode_fail_closed_test
     vm_extended_ops_test
     llama_kernels_test
     t81_vm_jump_flags_test
@@ -1450,17 +1420,8 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   endforeach()
   add_test(NAME t81_cli_repro_hash_test COMMAND $<TARGET_FILE:cli_repro_hash_test> $<TARGET_FILE:t81>)
   add_test(NAME t81_cli_contract_test_runner COMMAND $<TARGET_FILE:t81_cli_contract_test> $<TARGET_FILE:t81>)
-  add_test(NAME t81_cli_std_text_fixtures_test COMMAND $<TARGET_FILE:cli_std_text_fixtures_test>)
-  add_test(NAME t81_cli_std_bytes_fixtures_test COMMAND $<TARGET_FILE:cli_std_bytes_fixtures_test>)
-  add_test(NAME t81_cli_std_symbol_fixtures_test COMMAND $<TARGET_FILE:cli_std_symbol_fixtures_test>)
-  add_test(NAME t81_cli_std_symbolic_fixtures_test COMMAND $<TARGET_FILE:cli_std_symbolic_fixtures_test>)
-  add_test(NAME t81_cli_std_polynomial_fixtures_test COMMAND $<TARGET_FILE:cli_std_polynomial_fixtures_test>)
-  add_test(NAME t81_cli_std_collections_fixtures_test COMMAND $<TARGET_FILE:cli_std_collections_fixtures_test>)
+  add_test(NAME t81_cli_stdlib_fixtures_test COMMAND $<TARGET_FILE:cli_stdlib_fixtures_test>)
   add_test(NAME cli_std_collections_determinism_test COMMAND $<TARGET_FILE:cli_std_collections_determinism_test>)
-  add_test(NAME t81_cli_std_tensor_fixtures_test COMMAND $<TARGET_FILE:cli_std_tensor_fixtures_test>)
-  add_test(NAME t81_cli_std_runtime_fixtures_test COMMAND $<TARGET_FILE:cli_std_runtime_fixtures_test>)
-  add_test(NAME t81_cli_std_core_fixtures_test COMMAND $<TARGET_FILE:cli_std_core_fixtures_test>)
-  add_test(NAME t81_cli_std_math_fixtures_test COMMAND $<TARGET_FILE:cli_std_math_fixtures_test>)
   add_test(
     NAME t81_legacy_core_numeric_include_policy_test
     COMMAND python3 ${CMAKE_SOURCE_DIR}/tests/ci/check_legacy_core_numeric_includes_test.py

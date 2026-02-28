@@ -8,17 +8,17 @@ Baseline: `c5c4aa59`
 
 | Module | Status | Determinism Posture | Evidence |
 | :--- | :--- | :--- | :--- |
-| `std.core` | bounded | deterministic aliases; behavior locked by fixtures | `tests/cpp/cli_std_core_fixtures_test.cpp` |
-| `std.math` | bounded | host-math dependency documented; bounded deterministic profile only | `tests/cpp/cli_std_math_fixtures_test.cpp`, `spec/tisc-spec.md` |
-| `std.io` | bounded | deterministic handle aliases and print paths | `tests/cpp/cli_std_runtime_fixtures_test.cpp` |
-| `std.collections` | stable | deterministic staged semantics and fixture coverage | `tests/cpp/cli_std_collections_fixtures_test.cpp` |
-| `std.text` | stable | deterministic text semantics and fixture coverage | `tests/cpp/cli_std_text_fixtures_test.cpp` |
-| `std.bytes` | stable | deterministic byte semantics and fixture coverage | `tests/cpp/cli_std_bytes_fixtures_test.cpp` |
-| `std.symbol` | stable | deterministic alias semantics and fixture coverage | `tests/cpp/cli_std_symbol_fixtures_test.cpp` |
-| `std.sys` | bounded | deterministic placeholder aliases (`time=0`, `entropy=0`) | `tests/cpp/cli_std_runtime_fixtures_test.cpp` |
-| `std.async` | bounded | deterministic placeholder aliases (`yield/sleep` no-op) | `tests/cpp/cli_std_runtime_fixtures_test.cpp` |
-| `std.tensor` | bounded | deterministic alias behavior within current runtime profile | `tests/cpp/cli_std_tensor_fixtures_test.cpp` |
-| `std.agent` | experimental | deterministic opcode alias exists; capability semantics remain bounded | `tests/cpp/cli_std_runtime_fixtures_test.cpp` |
+| `std.core` | bounded | deterministic aliases; behavior locked by fixtures | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: core) |
+| `std.math` | bounded | host-math dependency documented; bounded deterministic profile only | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: math), `spec/tisc-spec.md` |
+| `std.io` | bounded | deterministic handle aliases and print paths | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: runtime) |
+| `std.collections` | stable | deterministic staged semantics and fixture coverage | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: collections) |
+| `std.text` | stable | deterministic text semantics and fixture coverage | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: text) |
+| `std.bytes` | stable | deterministic byte semantics and fixture coverage | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: bytes) |
+| `std.symbol` | stable | deterministic alias semantics and fixture coverage | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: symbol) |
+| `std.sys` | bounded | deterministic placeholder aliases (`time=0`, `entropy=0`) | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: runtime) |
+| `std.async` | bounded | deterministic placeholder aliases (`yield/sleep` no-op) | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: runtime) |
+| `std.tensor` | bounded | deterministic alias behavior within current runtime profile | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: tensor) |
+| `std.agent` | experimental | deterministic opcode alias exists; capability semantics remain bounded | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: runtime) |
 
 ## 2. Governance Notes
 

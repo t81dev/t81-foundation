@@ -1,6 +1,6 @@
 # Active Development Tasks
 
-**Last Updated:** February 26, 2026
+**Last Updated:** February 28, 2026
 
 This document tracks immediate, actionable tasks for the T81 project.
 
@@ -18,12 +18,17 @@ This document tracks immediate, actionable tasks for the T81 project.
 - [x] **Packaging Decision:** Decide whether `t81_llama_adapter` remains internal or is exported as a package target. (Completed 2026-02-26: remains internal/build-only; codified by `T81_EXPORT_LLAMA_ADAPTER` guard in `CMakeLists.txt` with explicit unsupported-error path.)
 - [x] **Boundary Classification:** Keep llama integration explicitly classified as governed non-DCP in status/release artifacts. (Completed 2026-02-26; explicit classification added in `docs/status/RELEASE_READINESS_PACKET_2026-03.md` and `docs/status/IMPLEMENTATION_MATRIX.md`.)
 
-### T81Lang Standard Library Stabilization (New Sprint Track)
+### T81Lang Standard Library Stabilization (Sprint 2)
+
 - [x] **Surface Baseline Gate:** Add machine-checkable stdlib module-surface baseline check and wire it to CI/governance checks. (Completed 2026-02-26: `scripts/governance/check_stdlib_surface_baseline.py` added and wired into `.github/workflows/ci.yml` + `check_docs_governance_hygiene.py`.)
 - [x] **Stabilization Plan:** Publish governed execution plan with bounded determinism posture and acceptance gates. (Completed 2026-02-26: `docs/status/STDLIB_STABILIZATION_PLAN_2026-03.md`.)
-- [x] **Module Invariant Expansion:** Add/expand conformance fixtures for under-covered stdlib behaviors (`std.math`, `std.core`) with deterministic observable outputs. (Completed 2026-02-26: added fixture suites `tests/fixtures/t81lang_std_core/*`, `tests/fixtures/t81lang_std_math/*` with harness tests `tests/cpp/cli_std_core_fixtures_test.cpp` and `tests/cpp/cli_std_math_fixtures_test.cpp`, wired in `CMakeLists.txt`.)
+- [x] **Module Invariant Expansion:** Add/expand conformance fixtures for under-covered stdlib behaviors (`std.math`, `std.core`) with deterministic observable outputs. (Completed 2026-02-26: added fixture suites `tests/fixtures/t81lang_std_core/*`, `tests/fixtures/t81lang_std_math/*`; consolidated into parameterized harness `tests/cpp/cli_stdlib_fixtures_test.cpp` on 2026-02-28 (`7724578e`), wired in `CMakeLists.txt`.)
 - [x] **Stdlib Change Policy:** Define stdlib semver/change taxonomy (breaking/non-breaking/experimental) and required evidence per change class. (Completed 2026-02-26: `docs/governance/STDLIB_CHANGE_POLICY.md`.)
 - [x] **Stdlib Promotion Snapshot:** Produce a stabilization snapshot artifact mapping each `std.*` module to status (`stable`, `bounded`, `experimental`) and evidence. (Completed 2026-02-26: `docs/status/STDLIB_PROMOTION_SNAPSHOT_2026-03.md` with governance check `scripts/governance/check_stdlib_promotion_snapshot.py`.)
+- [ ] **std.io Fixture Suite:** Author `lang/stdlib/std/io.t81` fixture programs and golden `.out` files; add one-line entry to `STDLIB_MODULES` in `tests/cpp/cli_stdlib_fixtures_test.cpp`. Exit gate: `cli_stdlib_fixtures_test` (module: io) green; `check_stdlib_surface_baseline.py` passes.
+- [ ] **std.sys Fixture Suite:** Author `lang/stdlib/std/sys.t81` fixture programs and golden `.out` files; add one-line entry to `STDLIB_MODULES`. Exit gate: `cli_stdlib_fixtures_test` (module: sys) green.
+- [ ] **std.async Fixture Suite:** Author `lang/stdlib/std/async.t81` fixture programs and golden `.out` files; add one-line entry to `STDLIB_MODULES`. Exit gate: `cli_stdlib_fixtures_test` (module: async) green.
+- [ ] **std.agent Fixture Suite:** Author `lang/stdlib/std/agent.t81` fixture programs and golden `.out` files; add one-line entry to `STDLIB_MODULES`. Exit gate: `cli_stdlib_fixtures_test` (module: agent) green; update `STDLIB_PROMOTION_SNAPSHOT_2026-03.md` evidence.
 
 ### Experimental Implementation Backlog (Post-C2 Pickup)
 - [x] **Cognitive Tier 1:** Implement `SymbolicGraph::rewrite` and `is_confluent`. (Completed 2026-02-26: deterministic rewrite now updates nodes/edges with canonicalization, and confluence now checks unique nodes, valid edge endpoints, and deterministic `(from,label)->to` transitions; validated via `tiers_structure_test`.)
@@ -47,7 +52,7 @@ ______________________________________________________________________
 
 The highest-impact closures for this cycle are complete and tracked in:
 
-1. `docs/status/T81LANG_IMPLEMENTATION_TASK_QUEUE_2026-03.md` (A1 through A1G closures)
+1. `docs/records/status-history/T81LANG_IMPLEMENTATION_TASK_QUEUE_2026-03.md` (A1 through A1G closures; archived 2026-02-28)
 2. `docs/status/T81LANG_ENGINEERING_BACKLOG_2026-03.md` (BG-01 through BG-05 closures)
 3. `docs/status/EXECUTION_PLAN_2026-03.md` (A1/A2/A3/B1/B2/B3/C1/C3/D1 completed; C2 in progress)
 

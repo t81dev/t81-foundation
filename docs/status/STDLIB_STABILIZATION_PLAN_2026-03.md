@@ -52,15 +52,10 @@ Out-of-scope:
 
 1. `scripts/governance/check_stdlib_surface_baseline.py` passes.
 2. `scripts/governance/check_stdlib_promotion_snapshot.py` passes.
-3. CLI std fixture suites remain green:
-   - `cli_std_core_fixtures_test`
-   - `cli_std_math_fixtures_test`
-   - `cli_std_text_fixtures_test`
-   - `cli_std_bytes_fixtures_test`
-   - `cli_std_collections_fixtures_test`
-   - `cli_std_tensor_fixtures_test`
-   - `cli_std_runtime_fixtures_test`
-   - `cli_std_symbol_fixtures_test`
+3. CLI std fixture suite remains green:
+   - `cli_stdlib_fixtures_test` (parameterized; covers all 10 modules:
+     core, math, text, bytes, collections, tensor, runtime, symbol,
+     polynomial, symbolic — consolidated 2026-02-28 in `7724578e`)
 4. `scripts/ci/run_determinism_slice.sh build` remains green.
 5. Documentation alignment is maintained between:
    - `docs/standards/standard-library.md`
@@ -80,7 +75,7 @@ Out-of-scope:
 
 1. Stdlib surface baseline gate is enforced in CI and governance hygiene.
 2. Module coverage is traceable from docs to fixtures/tests.
-3. Open stdlib stabilization tasks in `docs/roadmaps-plans/TASKS.md` are closed
+3. Open stdlib stabilization tasks in `docs/status/TASKS.md` are closed
    or explicitly deferred with rationale.
 
 ## 8. Sprint 1 Closure (2026-02-26)
@@ -99,16 +94,18 @@ implementation sprint as part of the collections, surface hardening, and
 determinism audit workstreams:
 
 1. `std.polynomial` — `lang/stdlib/std/polynomial.t81` implemented; fixture
-   conformance suite added (`tests/fixtures/t81lang_std_polynomial/`,
-   `tests/cpp/cli_std_polynomial_fixtures_test.cpp`).
+   conformance suite added (`tests/fixtures/t81lang_std_polynomial/`).
 2. `std.symbolic` — `lang/stdlib/std/symbolic.t81` implemented; fixture
-   conformance suite added (`tests/fixtures/t81lang_std_symbolic/`,
-   `tests/cpp/cli_std_symbolic_fixtures_test.cpp`).
+   conformance suite added (`tests/fixtures/t81lang_std_symbolic/`).
 3. `std.symbol` — fixture conformance suite extended
    (`tests/fixtures/t81lang_std_symbol/`).
 4. `std.collections` — Map/Set operation fixtures added
    (`tests/fixtures/t81lang_std_collections/03..09`); collections determinism
    test added (`tests/cpp/cli_std_collections_determinism_test.cpp`).
+
+Note: Individual per-module fixture test executables (`cli_std_*_fixtures_test.cpp`)
+were consolidated into a single parameterized harness (`cli_stdlib_fixtures_test.cpp`)
+on 2026-02-28 (`7724578e`). Fixture directories and golden `.out` files are unchanged.
 
 ### Remaining in Sprint 2
 
@@ -118,11 +115,11 @@ suites as of 2026-02-28:
 | Module | Fixture Suite | Status |
 | :--- | :--- | :--- |
 | `std.io` | Not yet created | Open |
-| `std.text` | Not yet created | Open |
-| `std.bytes` | Not yet created | Open |
+| `std.text` | `tests/fixtures/t81lang_std_text/` (pre-existing) | Complete — covered by `cli_stdlib_fixtures_test` |
+| `std.bytes` | `tests/fixtures/t81lang_std_bytes/` (pre-existing) | Complete — covered by `cli_stdlib_fixtures_test` |
 | `std.sys` | Not yet created | Open |
 | `std.async` | Not yet created | Open |
-| `std.tensor` | Not yet created | Open |
+| `std.tensor` | `tests/fixtures/t81lang_std_tensor/` (pre-existing) | Complete — covered by `cli_stdlib_fixtures_test` |
 | `std.agent` | Not yet created | Open |
 
 Note: `std.polynomial` and `std.symbolic` were not in the original Sprint 1
@@ -132,5 +129,6 @@ their fixture suites count toward Sprint 2 closure evidence.
 ### Sprint 2 Exit Criteria
 
 Same acceptance gates as section 5, applied to the remaining 7 modules above.
-Sprint 2 is complete when all 7 modules have passing fixture conformance suites
-and the governance gates in section 5 remain green.
+Sprint 2 is complete when the 4 remaining open modules (std.io, std.sys,
+std.async, std.agent) have passing fixture conformance suites and the
+governance gates in section 5 remain green.
