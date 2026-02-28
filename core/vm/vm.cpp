@@ -18,22 +18,22 @@
 #include "t81/tensor/llama.hpp"
 #include "t81/tensor/matmul.hpp"
 
+#include "internal/gc_helpers.hpp"
+#include "internal/memory_segments.hpp"
+#include "internal/policy_trace_bridge.hpp"
+#include "internal/runtime_state_helpers.hpp"
+#include "internal/tensor_helpers.hpp"
+#include "internal/tier_limits.hpp"
+#include "internal/value_ops.hpp"
 #include "t81/axion/engine.hpp"
 #include "t81/axion/policy_engine.hpp"
 #include "t81/axion/reasons.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
-#include "t81/experimental/cog/promotion.hpp"
 #include "t81/enum_meta.hpp"
+#include "t81/experimental/cog/promotion.hpp"
 #include "t81/jit/jit.hpp"
 #include "t81/types/T81Float.hpp"
-#include "internal/tier_limits.hpp"
-#include "internal/value_ops.hpp"
-#include "internal/memory_segments.hpp"
-#include "internal/policy_trace_bridge.hpp"
-#include "internal/tensor_helpers.hpp"
-#include "internal/runtime_state_helpers.hpp"
-#include "internal/gc_helpers.hpp"
 #include "t81/vm/vm.hpp"
 
 namespace t81::vm {
@@ -325,8 +325,9 @@ public:
 
       const auto base_instruction_count = instruction_count_;
       const auto exec_result = trace_it->second->execute(
-          state_, [this, base_instruction_count](std::size_t pc, const t81::tisc::Insn& insn,
-                                                 std::size_t executed_so_far) -> bool {
+          state_,
+          [this, base_instruction_count](std::size_t pc, const t81::tisc::Insn& insn,
+                                         std::size_t executed_so_far) -> bool {
             const auto verdict = eval_axion_call(t81::axion::reasons::kStep, pc, insn.opcode, {},
                                                  base_instruction_count + executed_so_far + 1);
             if (verdict.kind == t81::axion::VerdictKind::Warn) {
@@ -437,7 +438,7 @@ public:
       return t81::vm::internal::mem_ok(state_, addr, code);
     };
     auto check_mem = [this, &mem_ok](t81::tisc::Opcode opcode, int addr, std::string_view action,
-                                    bool code = false) -> bool {
+                                     bool code = false) -> bool {
       if (mem_ok(addr, code)) return true;
       this->log_bounds_fault(opcode, addr, action);
       return false;
@@ -481,10 +482,12 @@ public:
       ctx.flags.negative = (v < 0);
       ctx.flags.positive = (v > 0);
     };
-    auto push_stack = [&ctx, this](std::int64_t val_data, ValueTag tag) -> std::optional<std::size_t> {
+    auto push_stack = [&ctx, this](std::int64_t val_data,
+                                   ValueTag tag) -> std::optional<std::size_t> {
       return t81::vm::internal::push_stack_word(state_, ctx, val_data, tag);
     };
-    auto pop_stack = [&ctx, this](std::int64_t& value, ValueTag& tag) -> std::optional<std::size_t> {
+    auto pop_stack = [&ctx, this](std::int64_t& value,
+                                  ValueTag& tag) -> std::optional<std::size_t> {
       return t81::vm::internal::pop_stack_word(state_, ctx, value, tag);
     };
     auto tensor_ptr = [this](std::int64_t handle) -> t81::T729DynamicTensor* {
@@ -515,8 +518,10 @@ public:
       }
 
       t81::vm::internal::account_tensor_allocation(state_, tensor_elements);
-      const std::size_t idx_handle = t81::vm::internal::store_tensor_slot(state_, std::move(tensor));
-      telemetry.max_shape_complexity = std::max(telemetry.max_shape_complexity, tensor_shape_complexity);
+      const std::size_t idx_handle =
+          t81::vm::internal::store_tensor_slot(state_, std::move(tensor));
+      telemetry.max_shape_complexity =
+          std::max(telemetry.max_shape_complexity, tensor_shape_complexity);
       telemetry.max_tensor_rank = std::max(telemetry.max_tensor_rank, tensor_rank);
 
       log_memory_segment_access(program_.insns[current_pc].opcode, MemorySegmentKind::Tensor,
@@ -828,9 +833,9 @@ public:
     };
     auto ensure_min_tier = [&](t81::cog::TierId required_tier, std::string_view cause) -> bool {
       while (tier_rank(ctx.tier_status.current) < tier_rank(required_tier)) {
-        auto res = t81::cog::try_promote(ctx.tier_status, [&](const t81::axion::SyscallContext& pctx) {
-          return axion_engine_->evaluate(pctx);
-        });
+        auto res = t81::cog::try_promote(
+            ctx.tier_status,
+            [&](const t81::axion::SyscallContext& pctx) { return axion_engine_->evaluate(pctx); });
         if (!res) {
           t81::axion::Verdict verdict;
           verdict.kind = t81::axion::VerdictKind::Deny;
@@ -863,7 +868,8 @@ public:
              << " value=" << value;
       if (!state_.trace.empty()) {
         const auto& last = state_.trace.back();
-        reason << " recent_last_pc=" << last.pc << " recent_last_op=" << t81::tisc::opcode_name(last.opcode);
+        reason << " recent_last_pc=" << last.pc
+               << " recent_last_op=" << t81::tisc::opcode_name(last.opcode);
       }
       if (!detail.empty()) {
         reason << " detail=" << detail;
@@ -882,8 +888,8 @@ public:
       if (telemetry.branch_events == 0) {
         return 0.0;
       }
-      const double p_taken =
-          static_cast<double>(telemetry.branch_taken) / static_cast<double>(telemetry.branch_events);
+      const double p_taken = static_cast<double>(telemetry.branch_taken) /
+                             static_cast<double>(telemetry.branch_events);
       const double p_not_taken = 1.0 - p_taken;
       double shannon = 0.0;
       if (p_taken > 0.0) {
@@ -895,8 +901,8 @@ public:
       return shannon * static_cast<double>(telemetry.branch_events);
     };
     auto infer_required_tier_for_recursion = [&]() -> int {
-      const std::size_t depth =
-          std::max<std::size_t>(ctx.call_depth, static_cast<std::size_t>(ctx.tier3_recursor.current_depth));
+      const std::size_t depth = std::max<std::size_t>(
+          ctx.call_depth, static_cast<std::size_t>(ctx.tier3_recursor.current_depth));
       if (depth > recursion_limit_for_tier(t81::cog::TierId::Tier4)) return 5;
       if (depth > recursion_limit_for_tier(t81::cog::TierId::Tier3)) return 4;
       if (depth > recursion_limit_for_tier(t81::cog::TierId::Tier2)) return 3;
@@ -1323,9 +1329,8 @@ public:
         std::size_t addr = static_cast<std::size_t>(insn.b);
         ctx.registers[insn.a] = state_.memory[addr];
         ctx.register_tags[insn.a] = state_.memory_tags[addr];
-        log_memory_segment_access(
-            insn.opcode, t81::vm::internal::segment_for_address(state_, addr), addr, 1,
-                                  t81::axion::reasons::kMemLoad);
+        log_memory_segment_access(insn.opcode, t81::vm::internal::segment_for_address(state_, addr),
+                                  addr, 1, t81::axion::reasons::kMemLoad);
         update_flags(ctx.registers[insn.a]);
         break;
       }
@@ -1370,8 +1375,7 @@ public:
           break;
         }
 
-        auto load_res =
-            t81::vm::internal::load_canon_tensor_by_hash(*canonfs_driver_, hash_str);
+        auto load_res = t81::vm::internal::load_canon_tensor_by_hash(*canonfs_driver_, hash_str);
         if (load_res.status == t81::vm::internal::TensorLoadHashStatus::InvalidHash) {
           trap = Trap::DecodeFault;
           break;
@@ -1399,8 +1403,8 @@ public:
 
         t81::axion::Verdict success_verdict;
         success_verdict.kind = t81::axion::VerdictKind::Allow;
-        success_verdict.reason =
-            "TLOADHASH success hash=" + hash_str + " handle=" + std::to_string(ctx.registers[insn.a]);
+        success_verdict.reason = "TLOADHASH success hash=" + hash_str +
+                                 " handle=" + std::to_string(ctx.registers[insn.a]);
         record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.a],
                            success_verdict);
         break;
@@ -1892,9 +1896,8 @@ public:
         std::size_t addr = static_cast<std::size_t>(insn.a);
         state_.memory[addr] = ctx.registers[insn.b];
         state_.memory_tags[addr] = ctx.register_tags[insn.b];
-        log_memory_segment_access(
-            insn.opcode, t81::vm::internal::segment_for_address(state_, addr), addr, 1,
-                                  t81::axion::reasons::kMemStore);
+        log_memory_segment_access(insn.opcode, t81::vm::internal::segment_for_address(state_, addr),
+                                  addr, 1, t81::axion::reasons::kMemStore);
         break;
       }
       case t81::tisc::Opcode::Mul:
@@ -2403,8 +2406,9 @@ public:
         std::size_t next_depth = ctx.call_depth + 1;
         while (next_depth > recursion_limit_for_tier(ctx.tier_status.current) &&
                ctx.tier_status.current != t81::cog::TierId::Tier5) {
-          if (!ensure_min_tier(static_cast<t81::cog::TierId>(tier_rank(ctx.tier_status.current) + 1),
-                               "call-depth")) {
+          if (!ensure_min_tier(
+                  static_cast<t81::cog::TierId>(tier_rank(ctx.tier_status.current) + 1),
+                  "call-depth")) {
             trap = Trap::TierFault;
             break;
           }
@@ -3935,9 +3939,9 @@ public:
           state_.memory_tags[addr + i] = ValueTag::Int;
         }
         if (trap == Trap::None) {
-          log_memory_segment_access(
-              insn.opcode, t81::vm::internal::segment_for_address(state_, addr), addr, size,
-              "MemZero");
+          log_memory_segment_access(insn.opcode,
+                                    t81::vm::internal::segment_for_address(state_, addr), addr,
+                                    size, "MemZero");
         }
         break;
       }
@@ -4662,8 +4666,8 @@ public:
         // The IR generator call I'm planning to write will likely emit:
         // MapPut dest, map, key ?? No, TISC is 3 operands max.
         // But Put needs Map, Key, Value.
-        // Let's assume: A=Map, B=Key, C=Value. And it updates Map in place (since handles are refs).
-        // Return value? Map handle.
+        // Let's assume: A=Map, B=Key, C=Value. And it updates Map in place (since handles are
+        // refs). Return value? Map handle.
         if (ctx.register_tags[insn.a] != ValueTag::StringVectorHandle) {
           trap = Trap::TypeFault;
           break;
@@ -4938,16 +4942,16 @@ public:
     if (trap == Trap::None) {
       telemetry.epoch_steps += 1;
       const double branch_entropy = branch_entropy_bits();
-      const std::size_t symbolic_complexity =
-          state_.total_symbolic_nodes + (state_.symbolic_graphs.size() * 2) +
-          (telemetry.symbolic_rewrites * 3);
+      const std::size_t symbolic_complexity = state_.total_symbolic_nodes +
+                                              (state_.symbolic_graphs.size() * 2) +
+                                              (telemetry.symbolic_rewrites * 3);
 
       std::size_t observed_shape_complexity = telemetry.max_shape_complexity;
       std::size_t observed_tensor_rank = telemetry.max_tensor_rank;
       for (const auto& tensor : state_.tensors) {
         if (!tensor.has_value()) continue;
-        observed_shape_complexity = std::max(
-            observed_shape_complexity, t81::vm::internal::tensor_shape_complexity(*tensor));
+        observed_shape_complexity = std::max(observed_shape_complexity,
+                                             t81::vm::internal::tensor_shape_complexity(*tensor));
         observed_tensor_rank =
             std::max(observed_tensor_rank, static_cast<std::size_t>(tensor->rank()));
       }
@@ -4962,7 +4966,8 @@ public:
           if (cause == std::string_view("branching-entropy")) {
             exceeded = branch_entropy > max_branch_entropy_for_tier(ctx.tier_status.current);
           } else if (cause == std::string_view("symbolic-complexity")) {
-            exceeded = symbolic_complexity > max_symbolic_complexity_for_tier(ctx.tier_status.current);
+            exceeded =
+                symbolic_complexity > max_symbolic_complexity_for_tier(ctx.tier_status.current);
           } else if (cause == std::string_view("shape-complexity")) {
             exceeded =
                 observed_shape_complexity > max_shape_complexity_for_tier(ctx.tier_status.current);
@@ -4974,16 +4979,17 @@ public:
         return true;
       };
 
-      bool exceeded_branch_entropy = branch_entropy > max_branch_entropy_for_tier(ctx.tier_status.current);
-      if (exceeded_branch_entropy && !promote_to_fit_tier_limit(exceeded_branch_entropy, "branching-entropy")) {
+      bool exceeded_branch_entropy =
+          branch_entropy > max_branch_entropy_for_tier(ctx.tier_status.current);
+      if (exceeded_branch_entropy &&
+          !promote_to_fit_tier_limit(exceeded_branch_entropy, "branching-entropy")) {
         record_tier_fault("branching-entropy",
                           "Branching entropy exceeded policy after promotion attempts",
                           static_cast<std::int64_t>(branch_entropy));
       }
       if (trap == Trap::None &&
           branch_entropy > max_branch_entropy_for_tier(ctx.tier_status.current)) {
-        record_tier_fault("branching-entropy",
-                          "Branching entropy exceeded tier ceiling",
+        record_tier_fault("branching-entropy", "Branching entropy exceeded tier ceiling",
                           static_cast<std::int64_t>(branch_entropy));
         trap = Trap::TierFault;
       }
@@ -5003,7 +5009,8 @@ public:
         trap = Trap::TierFault;
       }
 
-      bool exceeded_shape = observed_shape_complexity > max_shape_complexity_for_tier(ctx.tier_status.current);
+      bool exceeded_shape =
+          observed_shape_complexity > max_shape_complexity_for_tier(ctx.tier_status.current);
       if (trap == Trap::None && exceeded_shape &&
           !promote_to_fit_tier_limit(exceeded_shape, "shape-complexity")) {
         record_tier_fault("shape-complexity",
@@ -5018,7 +5025,8 @@ public:
       }
 
       bool exceeded_rank =
-          observed_tensor_rank > static_cast<std::size_t>(max_tensor_rank_for_tier(ctx.tier_status.current));
+          observed_tensor_rank >
+          static_cast<std::size_t>(max_tensor_rank_for_tier(ctx.tier_status.current));
       if (trap == Trap::None && exceeded_rank &&
           !promote_to_fit_tier_limit(exceeded_rank, "tensor-rank")) {
         record_tier_fault("tensor-rank", "Tensor rank exceeded policy after promotion attempts",
@@ -5035,17 +5043,23 @@ public:
       if (trap == Trap::None) {
         int required_rank = 1;
         required_rank = std::max(required_rank, infer_required_tier_for_recursion());
-        if (branch_entropy > max_branch_entropy_for_tier(t81::cog::TierId::Tier1)) required_rank = 2;
-        if (branch_entropy > max_branch_entropy_for_tier(t81::cog::TierId::Tier2)) required_rank = 3;
-        if (branch_entropy > max_branch_entropy_for_tier(t81::cog::TierId::Tier3)) required_rank = 4;
-        if (branch_entropy > max_branch_entropy_for_tier(t81::cog::TierId::Tier4)) required_rank = 5;
+        if (branch_entropy > max_branch_entropy_for_tier(t81::cog::TierId::Tier1))
+          required_rank = 2;
+        if (branch_entropy > max_branch_entropy_for_tier(t81::cog::TierId::Tier2))
+          required_rank = 3;
+        if (branch_entropy > max_branch_entropy_for_tier(t81::cog::TierId::Tier3))
+          required_rank = 4;
+        if (branch_entropy > max_branch_entropy_for_tier(t81::cog::TierId::Tier4))
+          required_rank = 5;
         if (symbolic_complexity > max_symbolic_complexity_for_tier(t81::cog::TierId::Tier1))
           required_rank = std::max(required_rank, 3);
-        if (observed_tensor_rank > static_cast<std::size_t>(max_tensor_rank_for_tier(t81::cog::TierId::Tier1)) ||
+        if (observed_tensor_rank >
+                static_cast<std::size_t>(max_tensor_rank_for_tier(t81::cog::TierId::Tier1)) ||
             observed_shape_complexity > max_shape_complexity_for_tier(t81::cog::TierId::Tier1)) {
           required_rank = std::max(required_rank, 2);
         }
-        if (observed_tensor_rank > static_cast<std::size_t>(max_tensor_rank_for_tier(t81::cog::TierId::Tier2)) ||
+        if (observed_tensor_rank >
+                static_cast<std::size_t>(max_tensor_rank_for_tier(t81::cog::TierId::Tier2)) ||
             observed_shape_complexity > max_shape_complexity_for_tier(t81::cog::TierId::Tier2)) {
           required_rank = std::max(required_rank, 3);
         }
@@ -5069,8 +5083,7 @@ public:
             const int candidate_rank = tier_rank(ctx.tier_status.current) - 1;
             const auto candidate_tier = tier_from_rank(candidate_rank);
             bool converged = true;
-            converged = converged &&
-                        ctx.call_depth <= recursion_limit_for_tier(candidate_tier) &&
+            converged = converged && ctx.call_depth <= recursion_limit_for_tier(candidate_tier) &&
                         static_cast<std::size_t>(ctx.tier3_recursor.current_depth) <=
                             recursion_limit_for_tier(candidate_tier);
             if (candidate_rank < 5) {
@@ -5090,7 +5103,8 @@ public:
               demotion_verdict.kind = t81::axion::VerdictKind::Allow;
               demotion_verdict.reason = "Cognitive Tier Demotion: convergence conditions met";
               record_axion_event(insn.opcode, candidate_rank,
-                                 static_cast<std::int64_t>(ctx.tier_status.current), demotion_verdict);
+                                 static_cast<std::int64_t>(ctx.tier_status.current),
+                                 demotion_verdict);
               telemetry.stable_simple_steps = 0;
             }
           }
@@ -5182,10 +5196,10 @@ private:
     return handle;
   }
 
-  t81::axion::Verdict eval_axion_call(std::string_view syscall, std::size_t prog_counter,
-                                      t81::tisc::Opcode opcode, std::string_view payload = {},
-                                      std::optional<std::size_t> instruction_count_override =
-                                          std::nullopt) {
+  t81::axion::Verdict eval_axion_call(
+      std::string_view syscall, std::size_t prog_counter, t81::tisc::Opcode opcode,
+      std::string_view payload = {},
+      std::optional<std::size_t> instruction_count_override = std::nullopt) {
     if (syscall == t81::axion::reasons::kMetaRead) {
       // Internal MetaRead check could go here
     }
@@ -5261,10 +5275,9 @@ private:
       reclaimed_reason << "GC reclaimed tensors=" << reclaimed.tensors
                        << " infinite_forms=" << reclaimed.infinite_forms;
       reclaimed_verdict.reason = reclaimed_reason.str();
-      record_axion_event(
-          t81::tisc::Opcode::Trap, 0,
-          static_cast<std::int64_t>(reclaimed.tensors + reclaimed.infinite_forms),
-          reclaimed_verdict);
+      record_axion_event(t81::tisc::Opcode::Trap, 0,
+                         static_cast<std::int64_t>(reclaimed.tensors + reclaimed.infinite_forms),
+                         reclaimed_verdict);
     }
 
     log_heap_compaction(state_.heap_ptr, state_.heap_frames.size());

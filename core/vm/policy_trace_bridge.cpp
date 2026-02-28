@@ -75,8 +75,8 @@ std::string append_segment_reason(std::string_view action, MemorySegmentKind kin
   return reason.str();
 }
 
-void apply_segment_reason(t81::axion::Verdict& verdict, std::string_view action, MemorySegmentKind kind,
-                          std::size_t addr) {
+void apply_segment_reason(t81::axion::Verdict& verdict, std::string_view action,
+                          MemorySegmentKind kind, std::size_t addr) {
   verdict.reason = append_segment_reason(action, kind, addr, verdict.reason);
 }
 
@@ -109,8 +109,8 @@ void push_axion_event(State& state, const AxionEvent& event) {
     return false;
   }();
   if (log_to_stderr) {
-    std::cerr << "[VM] push_axion_event: opcode=" << static_cast<int>(event.opcode)
-              << " reason=\"" << event.verdict.reason << "\"\n";
+    std::cerr << "[VM] push_axion_event: opcode=" << static_cast<int>(event.opcode) << " reason=\""
+              << event.verdict.reason << "\"\n";
   }
   state.axion_log.push_back(event);
 }

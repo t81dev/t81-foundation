@@ -1,10 +1,10 @@
 #include "internal/tensor_helpers.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <cmath>
 
 #include "t81/tensor/llama.hpp"
 #include "t81/tensor/matmul.hpp"
@@ -23,7 +23,8 @@ std::size_t tensor_shape_complexity(const t81::T729DynamicTensor& tensor) {
   return product * static_cast<std::size_t>(tensor.rank());
 }
 
-TensorAllocPolicyResult evaluate_tensor_alloc_policy(const State& state, std::size_t tensor_elements) {
+TensorAllocPolicyResult evaluate_tensor_alloc_policy(const State& state,
+                                                     std::size_t tensor_elements) {
   if (!state.policy) {
     return TensorAllocPolicyResult::Allow;
   }
@@ -166,7 +167,8 @@ std::optional<t81::weights::NativeTensor> parse_canon_tensor_object(
     }
   }
 
-  const size_t payload_bytes = bytes.size() - (ptr - reinterpret_cast<const uint8_t*>(bytes.data()));
+  const size_t payload_bytes =
+      bytes.size() - (ptr - reinterpret_cast<const uint8_t*>(bytes.data()));
   if (payload_bytes % 8 != 0) {
     return std::nullopt;
   }
@@ -273,9 +275,7 @@ bool tensor_elementwise_compatible(const t81::T729DynamicTensor& lhs,
   return lhs.data().size() == rhs.data().size();
 }
 
-bool tensor_softmax_compatible(const t81::T729DynamicTensor& tensor) {
-  return tensor.rank() != 0;
-}
+bool tensor_softmax_compatible(const t81::T729DynamicTensor& tensor) { return tensor.rank() != 0; }
 
 t81::T729DynamicTensor tensor_matmul_2d(const t81::T729DynamicTensor& lhs,
                                         const t81::T729DynamicTensor& rhs) {
@@ -288,8 +288,7 @@ bool tensor_matmul_compatible(const t81::T729DynamicTensor& lhs,
 }
 
 t81::T729DynamicTensor tensor_binary_elementwise(const t81::T729DynamicTensor& lhs,
-                                                 const t81::T729DynamicTensor& rhs,
-                                                 bool multiply) {
+                                                 const t81::T729DynamicTensor& rhs, bool multiply) {
   std::vector<float> data(lhs.data().size());
   if (multiply) {
     for (std::size_t i = 0; i < data.size(); ++i) {
@@ -334,9 +333,7 @@ t81::T729DynamicTensor tensor_rope(const t81::T729DynamicTensor& tensor, int pos
   return t81::ops::rope(tensor, pos);
 }
 
-bool tensor_rope_compatible(const t81::T729DynamicTensor& tensor) {
-  return tensor.rank() >= 2;
-}
+bool tensor_rope_compatible(const t81::T729DynamicTensor& tensor) { return tensor.rank() >= 2; }
 
 std::optional<t81::T729DynamicTensor> tensor_new_1d(std::int64_t size) {
   if (size <= 0) {
