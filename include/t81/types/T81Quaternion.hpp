@@ -199,8 +199,8 @@ public:
   //===================================================================
   [[nodiscard]] std::string serialize_canonical() const {
     std::ostringstream ss;
-    ss << "Quaternion(w=" << w().to_double() << ",x=" << x().to_double()
-       << ",y=" << y().to_double() << ",z=" << z().to_double() << ")";
+    ss << "Quaternion(w=" << w().to_double() << ",x=" << x().to_double() << ",y=" << y().to_double()
+       << ",z=" << z().to_double() << ")";
     return ss.str();
   }
 };

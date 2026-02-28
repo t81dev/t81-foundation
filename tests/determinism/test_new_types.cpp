@@ -4,8 +4,8 @@
 #include <string>
 
 #include "t81/types/T81Prob.hpp"
-#include "t81/types/T81Qutrit.hpp"
 #include "t81/types/T81Quaternion.hpp"
+#include "t81/types/T81Qutrit.hpp"
 #include "t81/types/T81Uint.hpp"
 
 // ---------------------------------------------------------------------------

@@ -11,11 +11,11 @@ Decision: HOLD
 Re-evaluation (UTC): 2026-02-28T00:00:00Z
 Approver: PM / @t81dev
 Decision: GO
-Basis: Both required branch-protection contexts are `completed` + `success` on candidate `fa343e1f`.
+Basis: Both required branch-protection contexts are `completed` + `success` on candidate `1ec312e3`.
   Non-required failure (`build` / Jekyll Pages) classified as Deferred — pre-existing Liquid rendering
   issue in `third_party/llama.cpp` modelcard templates; no impact on C++ release artifact, determinism,
   or DCP guarantees. All determinism gates, cross-arch bit-identity gates, sanitizer builds, fuzz,
-  formal verification, and governance-metrics checks passed. Release may proceed on `fa343e1f`.
+  formal verification, and governance-metrics checks passed. Release may proceed on `1ec312e3`.
 
 ## Purpose
 
@@ -70,16 +70,16 @@ or freeze boundaries.
 
 ## Candidate Verification Snapshot (2026-02-26, refreshed at 13:44:01Z) — SUPERSEDED
 
-- Candidate SHA: `b4fdf8efdf249e391f7c93fb18cf9245926b6a38` — SUPERSEDED by `fa343e1f`.
+- Candidate SHA: `b4fdf8efdf249e391f7c93fb18cf9245926b6a38` — SUPERSEDED by `1ec312e3`.
 - Decision implication at time of snapshot: GO criteria not met. Packet held.
 
 ## Candidate Verification Snapshot (2026-02-28)
 
-- Candidate SHA selected: `fa343e1f` (`origin/main`, HEAD as of 2026-02-28)
+- Candidate SHA selected: `1ec312e3` (`origin/main`, HEAD as of 2026-02-28)
 - Required contexts configured on `main` (confirmed via branch protection API):
   - `quality gate / required`
   - `Analyze (cpp)`
-- Required-context verification results for `fa343e1f`:
+- Required-context verification results for `1ec312e3`:
   - `quality gate / required`: **completed / success** ✅
   - `Analyze (cpp)`: **completed / success** ✅
 - Additional check-run results (non-required, informational):
@@ -107,18 +107,18 @@ or freeze boundaries.
     Tracking note: file an issue to suppress or exclude `third_party/` from Jekyll rendering scope.
 - Decision implication:
   - Both required contexts are `completed` + `success`.
-  - GO criteria are met for `fa343e1f`.
+  - GO criteria are met for `1ec312e3`.
   - Non-required failure classified as deferred per release discipline.
 
 ## Open Blocking Items
 
 1. ~~Resolve required-context evidence mismatch for `b4fdf8efdf249e391f7c93fb18cf9245926b6a38`~~
-   **Resolved**: candidate SHA replaced with `fa343e1f`.
+   **Resolved**: candidate SHA replaced with `1ec312e3`.
 2. ~~Land workflow trigger remediation~~ **Completed 2026-02-26** (`ad6c2777`):
    `.github/workflows/codeql.yml` now includes `push` trigger on `main`.
 3. ~~Capture `Analyze (cpp)` as explicit `completed` + `success`~~
-   **Completed 2026-02-28**: `Analyze (cpp)` is `completed / success` on `fa343e1f`.
-4. ~~Re-evaluate GO/HOLD~~ **GO criteria met** on `fa343e1f` as of 2026-02-28.
+   **Completed 2026-02-28**: `Analyze (cpp)` is `completed / success` on `1ec312e3`.
+4. ~~Re-evaluate GO/HOLD~~ **GO criteria met** on `1ec312e3` as of 2026-02-28.
    Pending final @t81dev decision stamp to convert recommendation to decision.
 
 ## Follow-Up (Non-Blocking)

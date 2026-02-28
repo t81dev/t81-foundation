@@ -11,8 +11,8 @@ Version: 2.1.0
 | :--- | :--- |
 | Sprint Focus | March governance close + stdlib Sprint 2 + BG-06..10 collection/type determinism hardening |
 | Overall Program Health | Green with one scheduled governance gate pending |
-| Release Readiness Decision | **GO** (stamped 2026-02-28, candidate `fa343e1f`) |
-| Primary Blocker | None — required contexts satisfied on `fa343e1f`; non-required Pages/Jekyll failure deferred |
+| Release Readiness Decision | **GO** (stamped 2026-02-28, candidate `1ec312e3`) |
+| Primary Blocker | None — required contexts satisfied on `1ec312e3`; non-required Pages/Jekyll failure deferred |
 | Next Hard Date | C2 month-close execution on 2026-03-31 (UTC) |
 | Open Task Count (`docs/roadmaps-plans/TASKS.md`) | 1 (`C2 Month-Close`) |
 
@@ -37,9 +37,9 @@ Authority remains:
 
 ### 4.1 Governance and Release
 
-- March packet re-evaluated on 2026-02-28: GO recommended on candidate `fa343e1f`.
+- March packet re-evaluated on 2026-02-28: GO recommended on candidate `1ec312e3`.
   See `docs/status/RELEASE_READINESS_PACKET_2026-03.md` for full verification snapshot.
-- Required-context verification results for `fa343e1f`:
+- Required-context verification results for `1ec312e3`:
   - `quality gate / required`: completed / success ✅
   - `Analyze (cpp)`: completed / success ✅
 - Non-required failure: `build` (GitHub Pages / Jekyll) — classified as deferred;
