@@ -29,8 +29,8 @@ std::optional<std::size_t> push_stack_word(State& state, ThreadContext& ctx, std
   return static_cast<std::size_t>(ctx.sp);
 }
 
-std::optional<std::size_t> pop_stack_word(const State& state, ThreadContext& ctx, std::int64_t& value,
-                                          ValueTag& tag) {
+std::optional<std::size_t> pop_stack_word(const State& state, ThreadContext& ctx,
+                                          std::int64_t& value, ValueTag& tag) {
   if (ctx.sp >= ctx.stack_base) return std::nullopt;
   const std::size_t addr = ctx.sp;
   value = state.memory[addr];

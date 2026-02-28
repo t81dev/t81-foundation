@@ -9,8 +9,8 @@
 namespace t81::vm::internal {
 
 std::int64_t compute_lineage_signature(const t81::tisc::Program& program);
-std::int64_t compute_entropy_signature(std::size_t instruction_count, std::size_t contradiction_events,
-                                       const ThreadContext& ctx);
+std::int64_t compute_entropy_signature(std::size_t instruction_count,
+                                       std::size_t contradiction_events, const ThreadContext& ctx);
 std::int64_t compute_constitutional_mask(const State& state);
 
 void sync_system_registers(State& state, const t81::tisc::Program& program,
