@@ -26,6 +26,8 @@
 #include <functional>
 #include <iterator>
 #include <ostream>
+#include <sstream>
+#include <string>
 #include <span>
 #include <type_traits>
 #include <utility>
@@ -149,6 +151,24 @@ public:
                  std::make_move_iterator(o.data_.end()));
     o.clear();
     return *this;
+  }
+
+
+  [[nodiscard]] std::string serialize_canonical() const {
+    std::ostringstream ss;
+    ss << "List[";
+    bool first = true;
+    for (const auto& e : data_) {
+      if (!first) ss << ", ";
+      if constexpr (requires { e.serialize_canonical(); }) {
+        ss << e.serialize_canonical();
+      } else {
+        ss << e;
+      }
+      first = false;
+    }
+    ss << "]";
+    return ss.str();
   }
 
   //===================================================================

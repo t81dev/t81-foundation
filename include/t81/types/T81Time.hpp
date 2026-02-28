@@ -76,6 +76,7 @@ public:
   [[nodiscard]] T81Reflection<T81Time> reflect() const {
     return T81Reflection<T81Time>(*this, T81Symbol::intern("TIME"), event_id_);
   }
+  [[nodiscard]] std::string serialize_canonical() const { return "Time()"; }
 };
 
 }  // namespace t81

@@ -18,6 +18,8 @@
 #include <cstdint>
 #include <string>
 #include <type_traits>
+#include <sstream>
+#include <string>
 
 namespace t81 {
 
@@ -63,6 +65,12 @@ public:
 
   [[nodiscard]] constexpr const Float& real() const noexcept { return re; }
   [[nodiscard]] constexpr const Float& imag() const noexcept { return im; }
+
+  [[nodiscard]] std::string serialize_canonical() const {
+    std::ostringstream ss;
+    ss << "Complex(" << re.to_canonical_string() << ", " << im.to_canonical_string() << ")";
+    return ss.str();
+  }
 
   [[nodiscard]] constexpr Float& real() noexcept { return re; }
   [[nodiscard]] constexpr Float& imag() noexcept { return im; }

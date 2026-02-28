@@ -139,6 +139,7 @@ public:
     }
     return T81Reflection<T81Promise<T>>(*this, symbols::PROMISE, status_sym);
   }
+  [[nodiscard]] std::string serialize_canonical() const { return "Promise()"; }
 };
 
 }  // namespace t81
