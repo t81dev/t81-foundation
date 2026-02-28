@@ -83,6 +83,7 @@ Archived under `docs/records/status-history/`:
 Archived under `docs/records/audits/`:
 
 - FULL_SYSTEM_ARCHITECTURAL_STRATEGIC_AUDIT_2026-02-26.md
+- FULL_SYSTEM_ARCHITECTURAL_STRATEGIC_AUDIT_2026-02-28.md
 - TEST_SUITE_DEDUP_AUDIT_2026-02-28.md
 
 ## Versioning Statement
