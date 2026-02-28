@@ -92,6 +92,11 @@ Authority remains:
   - T81Graph lowered to VM native opcodes; lang-side canonical serialization gap identified (BG-09) and tracked in engineering backlog (PR #424).
   - Stdlib fixture suites extended beyond `std.core`/`std.math`: `std.polynomial`, `std.symbolic`, `std.symbol`, and additional `std.collections` (Map/Set ops) fixture conformance suites added.
   - Surface gap inventory published: `docs/status/T81LANG_SURFACE_INVENTORY.md` documents all 36 exposed types with backend/determinism/serialization status; 5 new engineering gaps captured as BG-06..BG-10 in `docs/status/T81LANG_ENGINEERING_BACKLOG_2026-03.md`.
+- Test suite deduplication and condensation complete (`7724578e`, 2026-02-28):
+  - 16 files removed, −1,780 LOC, 285/285 tests passing.
+  - 10 per-module `cli_std_*_fixtures_test.cpp` files consolidated into single parameterized `cli_stdlib_fixtures_test.cpp`; new stdlib modules require a one-line STDLIB_MODULES entry.
+  - Shared utilities extracted: `test_sig_util.hpp` (signature mixing), `test_fixture_util.hpp` (fixture I/O).
+  - Audit: `docs/status/TEST_SUITE_DEDUP_AUDIT_2026-02-28.md`.
 
 ### 4.3 C2 Month-Close Readiness
 
