@@ -1,6 +1,6 @@
 # Active Development Tasks
 
-**Last Updated:** February 26, 2026
+**Last Updated:** February 28, 2026
 
 This document tracks immediate, actionable tasks for the T81 project.
 
@@ -21,7 +21,7 @@ This document tracks immediate, actionable tasks for the T81 project.
 ### T81Lang Standard Library Stabilization (New Sprint Track)
 - [x] **Surface Baseline Gate:** Add machine-checkable stdlib module-surface baseline check and wire it to CI/governance checks. (Completed 2026-02-26: `scripts/governance/check_stdlib_surface_baseline.py` added and wired into `.github/workflows/ci.yml` + `check_docs_governance_hygiene.py`.)
 - [x] **Stabilization Plan:** Publish governed execution plan with bounded determinism posture and acceptance gates. (Completed 2026-02-26: `docs/status/STDLIB_STABILIZATION_PLAN_2026-03.md`.)
-- [x] **Module Invariant Expansion:** Add/expand conformance fixtures for under-covered stdlib behaviors (`std.math`, `std.core`) with deterministic observable outputs. (Completed 2026-02-26: added fixture suites `tests/fixtures/t81lang_std_core/*`, `tests/fixtures/t81lang_std_math/*` with harness tests `tests/cpp/cli_std_core_fixtures_test.cpp` and `tests/cpp/cli_std_math_fixtures_test.cpp`, wired in `CMakeLists.txt`.)
+- [x] **Module Invariant Expansion:** Add/expand conformance fixtures for under-covered stdlib behaviors (`std.math`, `std.core`) with deterministic observable outputs. (Completed 2026-02-26: added fixture suites `tests/fixtures/t81lang_std_core/*`, `tests/fixtures/t81lang_std_math/*`; consolidated into parameterized harness `tests/cpp/cli_stdlib_fixtures_test.cpp` on 2026-02-28 (`7724578e`), wired in `CMakeLists.txt`.)
 - [x] **Stdlib Change Policy:** Define stdlib semver/change taxonomy (breaking/non-breaking/experimental) and required evidence per change class. (Completed 2026-02-26: `docs/governance/STDLIB_CHANGE_POLICY.md`.)
 - [x] **Stdlib Promotion Snapshot:** Produce a stabilization snapshot artifact mapping each `std.*` module to status (`stable`, `bounded`, `experimental`) and evidence. (Completed 2026-02-26: `docs/status/STDLIB_PROMOTION_SNAPSHOT_2026-03.md` with governance check `scripts/governance/check_stdlib_promotion_snapshot.py`.)
 
