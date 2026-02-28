@@ -1826,3 +1826,7 @@ add_test(NAME t81_graph_algorithms_test COMMAND t81_graph_algorithms_test)
   add_executable(t81_determinism_vector_test tests/determinism/test_vector.cpp)
   target_link_libraries(t81_determinism_vector_test PRIVATE t81_core)
   add_test(NAME t81_determinism_vector_test COMMAND t81_determinism_vector_test)
+
+  add_executable(t81_determinism_new_types_test tests/determinism/test_new_types.cpp)
+  target_link_libraries(t81_determinism_new_types_test PRIVATE t81_core)
+  add_test(NAME t81_determinism_new_types_test COMMAND t81_determinism_new_types_test)

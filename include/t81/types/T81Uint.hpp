@@ -16,6 +16,7 @@
 #include <compare>
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
 namespace t81 {
 
@@ -136,6 +137,13 @@ public:
   }
 
   [[nodiscard]] constexpr bool operator==(const T81UInt&) const noexcept = default;
+
+  //===================================================================
+  // Canonical serialization (determinism evidence)
+  //===================================================================
+  [[nodiscard]] std::string serialize_canonical() const {
+    return "UInt(" + std::to_string(storage_.to_int64()) + ")";
+  }
 
   //===================================================================
   // Common aliases

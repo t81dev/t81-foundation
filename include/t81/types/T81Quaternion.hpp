@@ -16,6 +16,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <sstream>
 
 namespace t81 {
 
@@ -191,6 +192,16 @@ public:
   //===================================================================
   [[nodiscard]] inline std::array<double, 4> to_array() const noexcept {
     return {w().to_double(), x().to_double(), y().to_double(), z().to_double()};
+  }
+
+  //===================================================================
+  // Canonical serialization (determinism evidence)
+  //===================================================================
+  [[nodiscard]] std::string serialize_canonical() const {
+    std::ostringstream ss;
+    ss << "Quaternion(w=" << w().to_double() << ",x=" << x().to_double()
+       << ",y=" << y().to_double() << ",z=" << z().to_double() << ")";
+    return ss.str();
   }
 };
 

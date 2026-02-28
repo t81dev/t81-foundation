@@ -12,10 +12,10 @@
 | `T81Fraction` | YES | YES | YES | YES | YES | Stable |
 | `T81Fixed` | YES | YES | YES (as Int) | YES (as Int) | YES | Beta |
 | `T81Complex` | YES | YES | YES | YES | YES | Beta |
-| `T81Quaternion` | YES | YES | YES (NOP) | YES | NO | Beta |
-| `T81Prob` | YES | YES | YES (NOP) | YES | NO | Beta |
-| `T81Qutrit` | YES | YES | YES | YES | UNKNOWN | Beta |
-| `T81Uint` | YES | YES | YES | YES | UNKNOWN | Stable |
+| `T81Quaternion` | YES | YES | YES (NOP) | YES + serialize_canonical | PARTIAL | Beta |
+| `T81Prob` | YES | YES | YES (NOP) | YES | PARTIAL | Beta |
+| `T81Qutrit` | YES | YES | YES | YES (via T81Int) | PARTIAL | Beta |
+| `T81Uint` | YES | YES | YES | YES + serialize_canonical | PARTIAL | Stable |
 | `Cell` | YES | YES | YES (NOP) | YES | YES | Stable |
 | **Collections** | | | | | | |
 | `T81String` | YES | YES | YES | YES | YES | Stable |
@@ -23,11 +23,11 @@
 | `T81Vector` | YES | YES | YES | YES | YES | Stable |
 | `T81Matrix` | YES | YES | YES | PARTIAL | UNKNOWN | Beta |
 | `T81Tensor` | YES | YES | YES | PARTIAL | UNKNOWN | Beta |
-| `T81List` | YES | YES | YES | YES | NO | Beta |
+| `T81List` | YES | YES | YES | YES | PARTIAL | Beta |
 | `T81Map` | YES | YES | YES | YES | YES | Beta |
 | `T81Set` | YES | YES | YES | YES | YES | Beta |
-| `T81Tree` | YES | YES | YES | YES | NO | Beta |
-| `T81Graph` | YES | YES (handle API) | YES (via builtin call) | YES (Native) / NO (Lang) | NO | Draft |
+| `T81Tree` | YES | YES | YES | YES | PARTIAL | Beta |
+| `T81Graph` | YES | YES (handle API) | YES (via builtin call) | YES (Native + Lang canonical) | PARTIAL | Draft |
 | **Symbolic** | | | | | | |
 | `T81Symbol` | YES | YES | YES | YES | PARTIAL | Stable |
 | `T81Symbolic` | YES | YES | YES | YES | NO | Experimental |
