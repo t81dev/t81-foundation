@@ -128,9 +128,9 @@ public:
     // Check for overflow before shifting
     // Ensure loop runs only if TRITS > n, avoiding negative index issues in logic
     if (n > 0) {
-        for (int i = TRITS - n; i < TRITS; ++i) {
-            if (t_[i] != Trit::Z) throw std::overflow_error("Shift overflow (non-zero trit lost)");
-        }
+      for (int i = TRITS - n; i < TRITS; ++i) {
+        if (t_[i] != Trit::Z) throw std::overflow_error("Shift overflow (non-zero trit lost)");
+      }
     }
     for (int i = 0; i < TRITS - n; ++i) shifted.t_[i + n] = t_[i];
     // lower n trits remain Z → no need to clear

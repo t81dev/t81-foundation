@@ -565,10 +565,10 @@ void test_std_bytes_module_wrapper_pipeline() {
 void test_std_symbol_pipeline() {
   const std::string source = R"(
         fn main() -> i32 {
-            let sym: T81String = std.symbol.intern("omega");
+            let sym: Symbol = std.symbol.intern("omega");
             let rendered: T81String = std.symbol.to_string(sym);
-            let same: bool = std.symbol.eq(sym, "omega");
-            let diff: bool = std.symbol.ne(sym, "alpha");
+            let same: bool = std.symbol.eq(sym, std.symbol.intern("omega"));
+            let diff: bool = std.symbol.ne(sym, std.symbol.intern("alpha"));
             let n: i32 = std.text.str_len(rendered);
             if (n == 5) {
                 if (same) {
