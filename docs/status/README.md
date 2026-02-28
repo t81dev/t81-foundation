@@ -14,6 +14,8 @@ specification authority, freeze boundaries, or determinism claim scope.
 
 ## Active Operational Docs
 
+- TEST_SUITE_DEDUP_AUDIT_2026-02-28.md
+
 - PROJECT_CONTROL_CENTER.md
 - EXECUTION_PLAN_2026-03.md
 - RELEASE_READINESS_PACKET_2026-03.md

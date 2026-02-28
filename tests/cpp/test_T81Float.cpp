@@ -195,6 +195,27 @@ void test_functions_special_values() {
   check(zero.cos().to_double() == 1.0, "cos(0) = 1");
 }
 
+void test_fma() {
+  std::cout << "Testing FMA...\n";
+  F two = F::from_double(2.0);
+  F three = F::from_double(3.0);
+  F four = F::from_double(4.0);
+  F inf = F::inf();
+  F zero = F::zero();
+
+  // 2 * 3 + 4 = 10
+  F res = fma(two, three, four);
+  check(std::abs(res.to_double() - 10.0) < 1e-9, "2.0 * 3.0 + 4.0 == 10.0");
+
+  // (Inf * 2) + 4 -> Inf
+  res = fma(inf, two, four);
+  check(res.is_inf(), "Inf * 2.0 + 4.0 is Inf");
+
+  // (Inf * 0) + 4 -> NaE + 4 -> NaE
+  res = fma(inf, zero, four);
+  check(res.is_nae(), "Inf * 0.0 + 4.0 is NaE");
+}
+
 void test_trig_functions() {
   std::cout << "Testing new trig functions...\n";
 
@@ -245,6 +266,7 @@ int main() {
     test_special_values_creation_and_properties();
     test_conversions();
     test_arithmetic_special_values();
+    test_fma();
     test_functions_special_values();
     test_trig_functions();
     test_hyperbolic_functions();

@@ -1,3 +1,5 @@
+#include "test_sig_util.hpp"
+
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -10,6 +12,9 @@
 
 namespace {
 
+using t81::test::sig_mix;
+using t81::test::sig_mix_string;
+
 bool expect(bool cond, const std::string& msg) {
   if (!cond) {
     std::cerr << "vm_workload_determinism_tiers_test failure: " << msg << "\n";
@@ -18,8 +23,9 @@ bool expect(bool cond, const std::string& msg) {
   return true;
 }
 
-std::uint64_t mix(std::uint64_t seed, std::uint64_t value) {
-  return seed ^ (value + 0x9e3779b97f4a7c15ULL + (seed << 6U) + (seed >> 2U));
+// Alias kept for call-site readability within this file
+inline std::uint64_t mix(std::uint64_t seed, std::uint64_t value) {
+  return sig_mix(seed, value);
 }
 
 std::uint64_t signature_for_program(const t81::tisc::Program& p, bool* ok) {
@@ -54,6 +60,30 @@ std::uint64_t signature_for_program(const t81::tisc::Program& p, bool* ok) {
     for (unsigned char c : ev.verdict.reason) sig = mix(sig, c);
   }
   return sig;
+}
+
+// Workload program absorbed from vm_workload_determinism_test.cpp.
+// Uses same loop structure plus stack/option/result path that the standalone test covered.
+t81::tisc::Program workload_program() {
+  using t81::tisc::Opcode;
+  t81::tisc::Program p;
+  p.insns.push_back({Opcode::LoadImm, 0, 0, 0});
+  p.insns.push_back({Opcode::LoadImm, 1, 1, 0});
+  p.insns.push_back({Opcode::LoadImm, 2, 81, 0});
+  p.insns.push_back({Opcode::Add, 0, 0, 1});
+  p.insns.push_back({Opcode::Less, 3, 0, 2});
+  p.insns.push_back({Opcode::JumpIfNotZero, 3, 3, 0});
+  p.insns.push_back({Opcode::Store, 140, 0, 0});
+  p.insns.push_back({Opcode::Load, 4, 140, 0});
+  p.insns.push_back({Opcode::Push, 4, 0, 0});
+  p.insns.push_back({Opcode::Pop, 5, 0, 0});
+  p.insns.push_back({Opcode::MakeOptionSome, 6, 5, 0});
+  p.insns.push_back({Opcode::OptionUnwrap, 7, 6, 0});
+  p.insns.push_back({Opcode::MakeResultOk, 8, 7, 0});
+  p.insns.push_back({Opcode::ResultUnwrapOk, 9, 8, 0});
+  p.insns.push_back({Opcode::Print, 9, 0, 0});
+  p.insns.push_back({Opcode::Halt, 0, 0, 0});
+  return p;
 }
 
 t81::tisc::Program micro_program() {
@@ -147,10 +177,11 @@ int main() {
   std::ofstream log("artifacts/vm_workload_determinism_signatures.log", std::ios::trunc);
   if (!expect(static_cast<bool>(log), "failed to open signature artifact log")) return 1;
 
-  if (!validate_tier("micro", micro_program(), log)) return 1;
-  if (!validate_tier("meso", meso_program(), log)) return 1;
-  if (!validate_tier("mixed", mixed_program(), log)) return 1;
-  if (!validate_tier("policy-heavy", policy_heavy_program(), log)) return 1;
+  if (!validate_tier("workload",      workload_program(),      log)) return 1;
+  if (!validate_tier("micro",         micro_program(),         log)) return 1;
+  if (!validate_tier("meso",          meso_program(),          log)) return 1;
+  if (!validate_tier("mixed",         mixed_program(),         log)) return 1;
+  if (!validate_tier("policy-heavy",  policy_heavy_program(),  log)) return 1;
   if (!validate_tier("tensor-access", tensor_access_program(), log)) return 1;
 
   log.flush();
