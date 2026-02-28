@@ -75,7 +75,7 @@ Out-of-scope:
 
 1. Stdlib surface baseline gate is enforced in CI and governance hygiene.
 2. Module coverage is traceable from docs to fixtures/tests.
-3. Open stdlib stabilization tasks in `docs/roadmaps-plans/TASKS.md` are closed
+3. Open stdlib stabilization tasks in `docs/status/TASKS.md` are closed
    or explicitly deferred with rationale.
 
 ## 8. Sprint 1 Closure (2026-02-26)

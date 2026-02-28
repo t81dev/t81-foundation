@@ -17,6 +17,7 @@ specification authority, freeze boundaries, or determinism claim scope.
 **Control Plane:**
 
 - PROJECT_CONTROL_CENTER.md
+- TASKS.md
 - EXECUTION_PLAN_2026-03.md
 - SYSTEM_STATUS.md
 - IMPLEMENTATION_MATRIX.md

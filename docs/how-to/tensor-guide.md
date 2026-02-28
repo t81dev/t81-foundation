@@ -137,4 +137,4 @@ The tensor API is now feature-complete for v1.0: base storage for both float and
 
 - **Next Steps:** Upstream more specialized operations (scatter/gather, advanced cognitive kernels) once `T81Lang` reaches greater maturity.
 
-For a full list of planned work, see [`TASKS.md`](../roadmaps-plans/TASKS.md).
+For a full list of planned work, see [`TASKS.md`](../status/TASKS.md).

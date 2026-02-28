@@ -105,7 +105,7 @@ Use this as a quick navigation reference:
   - `../../AGENTS.md` – main agent instructions.
   - `../explanation/ARCHITECTURE.md` – architectural overview.
   - `../explanation/DESIGN.md` – design principles and invariants.
-  - `../roadmaps-plans/TASKS.md` – suggested tasks for humans and agents.
+  - `../status/TASKS.md` – suggested tasks for humans and agents.
   - `../../CLAUDE.md`, `../../.github/copilot-instructions.md`, `../../.cursorrules` – tool-specific adapters.
 
 ______________________________________________________________________

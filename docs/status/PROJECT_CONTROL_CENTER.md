@@ -14,7 +14,7 @@ Version: 2.1.0
 | Release Readiness Decision | **GO** (stamped 2026-02-28, candidate `1ec312e3`) |
 | Primary Blocker | None — required contexts satisfied on `1ec312e3`; non-required Pages/Jekyll failure deferred |
 | Next Hard Date | C2 month-close execution on 2026-03-31 (UTC) |
-| Open Task Count (`docs/roadmaps-plans/TASKS.md`) | 1 (`C2 Month-Close`) |
+| Open Task Count (`docs/status/TASKS.md`) | 1 (`C2 Month-Close`) |
 
 ## 2. Purpose
 
@@ -157,7 +157,7 @@ Authority remains:
 
 ## 9. Cross-References
 
-- `docs/roadmaps-plans/TASKS.md`
+- `docs/status/TASKS.md`
 - `docs/records/status-history/BEHAVIORAL_CONFORMANCE_EXPANSION_SPRINT_2026-02-26.md`
 - `docs/status/BEHAVIORAL_CONFORMANCE_EXPANSION_PHASE3_2026-02-26.md`
 - `docs/status/STDLIB_STABILIZATION_PLAN_2026-03.md`

@@ -75,5 +75,5 @@ ctest --test-dir build --output-on-failure -j1
 - Operational status: `../status/SYSTEM_STATUS.md`
 - Implementation matrix: `../status/IMPLEMENTATION_MATRIX.md`
 - Conformance analysis: `../explanation/ANALYSIS.md`
-- Near-term tasks: `../roadmaps-plans/TASKS.md`
+- Near-term tasks: `../status/TASKS.md`
 - CI/gates: `ci.md`

@@ -241,7 +241,7 @@ ______________________________________________________________________
 
 ## 10. Near-Term Architecture Work (Open)
 
-Architecture-level items are tracked in `../roadmaps-plans/TASKS.md`. Current active streams:
+Architecture-level items are tracked in `../status/TASKS.md`. Current active streams:
 
 - **Cognitive Tier Logic:** Implementing graph rewriting (T243) and reflective trace capture (T729).
 - **Deterministic trace-JIT MVP hardening:** side-effect-free numeric/tensor hot-path compilation with Axion boundary checks.
