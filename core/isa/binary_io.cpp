@@ -6,8 +6,8 @@
 #include <vector>
 #include "t81/bigint.hpp"
 #include "t81/fraction.hpp"
-#include "t81/tensor.hpp"
 #include "t81/isa/type_alias.hpp"
+#include "t81/tensor.hpp"
 
 namespace t81 {
 namespace tisc {

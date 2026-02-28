@@ -27,8 +27,8 @@ std::string format_bounds_fault_reason(MemorySegmentKind kind, int addr, std::st
 std::string append_segment_reason(std::string_view action, MemorySegmentKind kind, std::size_t addr,
                                   std::string_view base_reason);
 
-void apply_segment_reason(t81::axion::Verdict& verdict, std::string_view action, MemorySegmentKind kind,
-                          std::size_t addr);
+void apply_segment_reason(t81::axion::Verdict& verdict, std::string_view action,
+                          MemorySegmentKind kind, std::size_t addr);
 
 void log_memory_segment_access(State& state, std::size_t current_context, t81::tisc::Opcode opcode,
                                MemorySegmentKind kind, std::size_t addr, std::size_t size,

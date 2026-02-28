@@ -569,13 +569,14 @@ std::optional<int> minimum_tier_for_call_surface(std::string_view canonical_name
 }
 
 bool is_effect_surface_call(std::string_view canonical_name) {
-  return canonical_name == "print" || canonical_name == "sys_exit" || canonical_name == "sys_time" ||
-         canonical_name == "sys_entropy" || canonical_name == "sys_proof" ||
-         canonical_name == "sys_reflect" || canonical_name == "io_stream" ||
-         canonical_name == "io_net" || canonical_name == "async_yield" ||
-         canonical_name == "async_sleep" || canonical_name == "async_thread" ||
-         canonical_name == "async_promise" || canonical_name == "agent_self_reflect" ||
-         canonical_name == "weights.load" || canonical_name == "Tensor.load";
+  return canonical_name == "print" || canonical_name == "sys_exit" ||
+         canonical_name == "sys_time" || canonical_name == "sys_entropy" ||
+         canonical_name == "sys_proof" || canonical_name == "sys_reflect" ||
+         canonical_name == "io_stream" || canonical_name == "io_net" ||
+         canonical_name == "async_yield" || canonical_name == "async_sleep" ||
+         canonical_name == "async_thread" || canonical_name == "async_promise" ||
+         canonical_name == "agent_self_reflect" || canonical_name == "weights.load" ||
+         canonical_name == "Tensor.load";
 }
 
 int minimum_tier_for_stmt(const t81::frontend::Stmt& stmt) {
@@ -586,7 +587,8 @@ int minimum_tier_for_stmt(const t81::frontend::Stmt& stmt) {
   using t81::frontend::ReflectStmt;
   using t81::frontend::TrainStmt;
   if (dynamic_cast<const InfiniteStmt*>(&stmt)) return 5;
-  if (dynamic_cast<const DistributedStmt*>(&stmt) || dynamic_cast<const TrainStmt*>(&stmt)) return 4;
+  if (dynamic_cast<const DistributedStmt*>(&stmt) || dynamic_cast<const TrainStmt*>(&stmt))
+    return 4;
   if (dynamic_cast<const RecurseStmt*>(&stmt)) return 3;
   if (dynamic_cast<const ReflectStmt*>(&stmt)) return 2;
   if (const auto* loop = dynamic_cast<const LoopStmt*>(&stmt)) {
@@ -1290,13 +1292,20 @@ std::string SemanticAnalyzer::type_to_string(const Type& type) const {
     case Type::Kind::Map:
     case Type::Kind::Set:
     case Type::Kind::Tree: {
-      if (type.kind == Type::Kind::Vector) result = "Vector";
-      else if (type.kind == Type::Kind::Matrix) result = "Matrix";
-      else if (type.kind == Type::Kind::Tensor) result = "Tensor";
-      else if (type.kind == Type::Kind::List) result = "List";
-      else if (type.kind == Type::Kind::Map) result = "Map";
-      else if (type.kind == Type::Kind::Set) result = "Set";
-      else if (type.kind == Type::Kind::Tree) result = "Tree";
+      if (type.kind == Type::Kind::Vector)
+        result = "Vector";
+      else if (type.kind == Type::Kind::Matrix)
+        result = "Matrix";
+      else if (type.kind == Type::Kind::Tensor)
+        result = "Tensor";
+      else if (type.kind == Type::Kind::List)
+        result = "List";
+      else if (type.kind == Type::Kind::Map)
+        result = "Map";
+      else if (type.kind == Type::Kind::Set)
+        result = "Set";
+      else if (type.kind == Type::Kind::Tree)
+        result = "Tree";
 
       if (!type.params.empty()) {
         result += "[";
@@ -1389,7 +1398,6 @@ bool SemanticAnalyzer::is_assignable(const Type& target, const Type& value) cons
   if (target.kind == Type::Kind::Quaternion && value.kind == Type::Kind::Quaternion) return true;
   if (target.kind == Type::Kind::Prob && value.kind == Type::Kind::Prob) return true;
   if (target.kind == Type::Kind::Cell && value.kind == Type::Kind::Cell) return true;
-
 
   if (is_numeric(target) && is_numeric(value)) {
     return numeric_rank(value) <= numeric_rank(target);
@@ -2283,8 +2291,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       if (!active.has_value()) return;
       if (*active < required_tier) {
         std::ostringstream msg;
-        msg << "Function tier @" << *active << " cannot call '" << surface
-            << "' (requires tier @" << required_tier << ").";
+        msg << "Function tier @" << *active << " cannot call '" << surface << "' (requires tier @"
+            << required_tier << ").";
         error(call_token, msg.str());
       }
     };
@@ -2294,8 +2302,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
     if (!_function_tier_stack.empty() && _function_tier_stack.back().has_value() &&
         *_function_tier_stack.back() <= 1 && is_effect_surface_call(func_name)) {
       std::ostringstream msg;
-      msg << "Function tier @" << *_function_tier_stack.back()
-          << " cannot use effect surface '" << raw_name << "'.";
+      msg << "Function tier @" << *_function_tier_stack.back() << " cannot use effect surface '"
+          << raw_name << "'.";
       error(call_token, msg.str());
     }
     if (func_name.find('.') != std::string::npos) {
@@ -2443,7 +2451,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         error(call_token, "T81Promise constructor expects no arguments.");
         return make_error_type();
       }
-      if (expected && expected->kind == Type::Kind::Custom && expected->custom_name == "T81Promise") {
+      if (expected && expected->kind == Type::Kind::Custom &&
+          expected->custom_name == "T81Promise") {
         return *expected;
       }
       return Type{Type::Kind::Custom, {}, "T81Promise"};
@@ -2454,8 +2463,7 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         error(call_token, func_name + " constructor expects no arguments.");
         return make_error_type();
       }
-      if (expected && expected->kind == Type::Kind::Custom &&
-          expected->custom_name == func_name) {
+      if (expected && expected->kind == Type::Kind::Custom && expected->custom_name == func_name) {
         return *expected;
       }
       return Type{Type::Kind::Custom, {}, func_name};
@@ -2805,8 +2813,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         error(call_token, func_name + " expects a T81String seed argument.");
         return make_error_type();
       }
-      return Type{Type::Kind::Custom, {}, func_name == "symbolic_load" ? "T81Symbolic"
-                                                                         : "T81Polynomial"};
+      return Type{
+          Type::Kind::Custom, {}, func_name == "symbolic_load" ? "T81Symbolic" : "T81Polynomial"};
     }
     if (func_name == "symbolic_rewrite" || func_name == "polynomial_rewrite") {
       if (arg_types.size() != 3) {
@@ -3314,7 +3322,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         return make_error_type();
       }
       Type out{Type::Kind::List};
-      out.params.push_back(Type{Type::Kind::String}); // Default to String for polyfill compat? Or generic?
+      out.params.push_back(
+          Type{Type::Kind::String});  // Default to String for polyfill compat? Or generic?
       return out;
     }
     if (func_name == "collections_map") {
@@ -3323,8 +3332,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         return make_error_type();
       }
       Type out{Type::Kind::Map};
-      out.params.push_back(Type{Type::Kind::String}); // Key
-      out.params.push_back(Type{Type::Kind::String}); // Value
+      out.params.push_back(Type{Type::Kind::String});  // Key
+      out.params.push_back(Type{Type::Kind::String});  // Value
       return out;
     }
     if (func_name == "collections_map_size") {
@@ -3360,7 +3369,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         return make_error_type();
       }
       if (arg_types[0].kind != Type::Kind::Map) {
-        std::cerr << "DEBUG: map_put arg0 kind=" << (int)arg_types[0].kind << " Map=" << (int)Type::Kind::Map << std::endl;
+        std::cerr << "DEBUG: map_put arg0 kind=" << (int)arg_types[0].kind
+                  << " Map=" << (int)Type::Kind::Map << std::endl;
         error(call_token, "std.collections.map_put expects a Map first argument.");
         return make_error_type();
       }
@@ -3368,7 +3378,7 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         error(call_token, "std.collections.map_put expects T81String key/value arguments.");
         return make_error_type();
       }
-      return arg_types[0]; // Return the map
+      return arg_types[0];  // Return the map
     }
     if (func_name == "collections_map_get") {
       if (arg_types.size() != 2) {
@@ -3386,9 +3396,9 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       Type out{Type::Kind::Option};
       // Payload type from Map value param
       if (arg_types[0].params.size() >= 2) {
-         out.params.push_back(arg_types[0].params[1]);
+        out.params.push_back(arg_types[0].params[1]);
       } else {
-         out.params.push_back(Type{Type::Kind::Unknown});
+        out.params.push_back(Type{Type::Kind::Unknown});
       }
       return out;
     }
@@ -3644,8 +3654,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       if (!_function_tier_stack.empty() && _function_tier_stack.back().has_value() &&
           symbol->tier.has_value() && *_function_tier_stack.back() < *symbol->tier) {
         std::ostringstream msg;
-        msg << "Function tier @" << *_function_tier_stack.back() << " cannot call '"
-            << func_name << "' declared at tier @" << *symbol->tier << ".";
+        msg << "Function tier @" << *_function_tier_stack.back() << " cannot call '" << func_name
+            << "' declared at tier @" << *symbol->tier << ".";
         error(var_expr->name, msg.str());
       }
 
@@ -3799,9 +3809,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       return Type{Type::Kind::Custom, {}, "T81Promise"};
     }
     if (callee_name == "T81Agent" || callee_name == "T81Polynomial" ||
-        callee_name == "T81Symbolic" || callee_name == "T81Time" ||
-        callee_name == "T81Entropy" || callee_name == "T81Quaternion" ||
-        callee_name == "T81Prob" || callee_name == "Cell") {
+        callee_name == "T81Symbolic" || callee_name == "T81Time" || callee_name == "T81Entropy" ||
+        callee_name == "T81Quaternion" || callee_name == "T81Prob" || callee_name == "Cell") {
       if (!arg_types.empty()) {
         error(type_callee->name, callee_name + " constructor expects no arguments.");
         return make_error_type();
@@ -3937,14 +3946,16 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
     }
 
     Type constructed_type = evaluate_expression(*generic_callee);
-    if (constructed_type.kind == Type::Kind::Option && std::string(generic_callee->name.lexeme) == "T81Maybe") {
+    if (constructed_type.kind == Type::Kind::Option &&
+        std::string(generic_callee->name.lexeme) == "T81Maybe") {
       if (!arg_types.empty()) {
         error(generic_callee->name, "T81Maybe constructor expects no arguments.");
         return make_error_type();
       }
       return constructed_type;
     }
-    if (constructed_type.kind == Type::Kind::Custom && constructed_type.custom_name == "T81Promise") {
+    if (constructed_type.kind == Type::Kind::Custom &&
+        constructed_type.custom_name == "T81Promise") {
       if (!arg_types.empty()) {
         error(generic_callee->name, "T81Promise constructor expects no arguments.");
         return make_error_type();
@@ -3978,7 +3989,8 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       return constructed_type;
     }
     if (constructed_type.kind == Type::Kind::Quaternion) {
-      if (arg_types.size() != 0) { // For simplicity, assume no-arg or require 4 args? Let's check what's easiest. We can allow 0 args.
+      if (arg_types.size() != 0) {  // For simplicity, assume no-arg or require 4 args? Let's check
+                                    // what's easiest. We can allow 0 args.
         error(generic_callee->name, "T81Quaternion constructor expects no arguments.");
         return make_error_type();
       }
@@ -4198,14 +4210,15 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
       // Try to coerce/widen for monadic ergonomics
       if (is_numeric(result_type) && is_numeric(arm_type)) {
         if (numeric_rank(arm_type) > numeric_rank(result_type)) {
-           result_type = arm_type;
+          result_type = arm_type;
         }
       } else if (result_type.kind == Type::Kind::Result && arm_type.kind == Type::Kind::Result) {
         // Unify Result arms
         Type unified = result_type;
         bool changed = false;
         for (size_t i = 0; i < 2; ++i) {
-          Type t1 = (i < result_type.params.size()) ? result_type.params[i] : Type{Type::Kind::Unknown};
+          Type t1 =
+              (i < result_type.params.size()) ? result_type.params[i] : Type{Type::Kind::Unknown};
           Type t2 = (i < arm_type.params.size()) ? arm_type.params[i] : Type{Type::Kind::Unknown};
           if (t1.kind == Type::Kind::Unknown && t2.kind != Type::Kind::Unknown) {
             unified.params[i] = t2;
@@ -4215,7 +4228,8 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
             changed = true;
           }
         }
-        if (changed) result_type = unified;
+        if (changed)
+          result_type = unified;
         else if (!is_assignable(result_type, arm_type)) {
           error(arm.keyword, "All match arms must produce the same type: expected '" +
                                  type_to_string(result_type) + "' but got '" +
