@@ -1,1 +1,0 @@
-sed -i 's/check((neg_inf \/ neg_inf).is_nae(), "-inf \/ -inf = NaE");/check((neg_inf \/ neg_inf).is_nae(), "-inf \/ -inf = NaE");\n#if defined(T81_DETERMINISTIC)\n  return;\n#endif/g' tests/cpp/test_T81Float.cpp
