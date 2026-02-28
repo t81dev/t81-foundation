@@ -33,7 +33,7 @@ void test_vector_determinism() {
   // 2. Arithmetic determinism - same operations should produce identical results
   Vec3 v2_a(4.0, 5.0, 6.0);
   Vec3 v2_b(4.0, 5.0, 6.0);
-  
+
   Vec3 sum_a = v1_a + v2_a;
   Vec3 sum_b = v1_b + v2_b;
   TEST_CHECK(sum_a[0] == sum_b[0]);
@@ -50,7 +50,7 @@ void test_vector_determinism() {
   Vec3 up_b(0.0, 1.0, 0.0);
   Vec3 forward_a(0.0, 0.0, 1.0);
   Vec3 forward_b(0.0, 0.0, 1.0);
-  
+
   Vec3 right_a = up_a.cross(forward_a);
   Vec3 right_b = up_b.cross(forward_b);
   TEST_CHECK(right_a[0] == right_b[0]);
