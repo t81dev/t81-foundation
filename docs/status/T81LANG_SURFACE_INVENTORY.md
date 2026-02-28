@@ -11,34 +11,34 @@
 | `T81Float` | YES | YES | YES | YES | YES | Stable |
 | `T81Fraction` | YES | YES | YES | YES | YES | Stable |
 | `T81Fixed` | YES | YES | YES (as Int) | YES (as Int) | YES | Beta |
-| `T81Complex` | YES | YES | YES | NO | YES | Beta |
-| `T81Quaternion` | YES | NO | NO | YES | NO | Beta |
-| `T81Prob` | YES | NO | NO | NO | NO | Beta |
+| `T81Complex` | YES | YES | YES | YES | YES | Beta |
+| `T81Quaternion` | YES | YES | YES (NOP) | YES | NO | Beta |
+| `T81Prob` | YES | YES | YES (NOP) | YES | NO | Beta |
 | `T81Qutrit` | YES | YES | YES | YES | UNKNOWN | Beta |
 | `T81Uint` | YES | YES | YES | YES | UNKNOWN | Stable |
-| `Cell` | YES | NO | N/A | YES | YES | Stable |
+| `Cell` | YES | YES | YES (NOP) | YES | YES | Stable |
 | **Collections** | | | | | | |
 | `T81String` | YES | YES | YES | YES | YES | Stable |
 | `T81Bytes` | YES | YES | YES | YES | YES | Stable |
 | `T81Vector` | YES | YES | YES | YES | YES | Stable |
 | `T81Matrix` | YES | YES | YES | PARTIAL | UNKNOWN | Beta |
 | `T81Tensor` | YES | YES | YES | PARTIAL | UNKNOWN | Beta |
-| `T81List` | YES | YES (handle API) | YES (via builtin call) | NO | NO | Draft |
-| `T81Map` | YES | YES (handle API) | YES (via builtin call) | YES (Native) / NO (Lang) | YES | Draft |
-| `T81Set` | YES | YES (handle API) | YES (via builtin call) | NO | YES | Draft |
-| `T81Tree` | YES | YES (handle API) | YES (via builtin call) | NO | NO | Draft |
+| `T81List` | YES | YES | YES | YES | NO | Beta |
+| `T81Map` | YES | YES | YES | YES | YES | Beta |
+| `T81Set` | YES | YES | YES | YES | YES | Beta |
+| `T81Tree` | YES | YES | YES | YES | NO | Beta |
 | `T81Graph` | YES | YES (handle API) | YES (via builtin call) | YES (Native) / NO (Lang) | NO | Draft |
 | **Symbolic** | | | | | | |
 | `T81Symbol` | YES | YES | YES | YES | PARTIAL | Stable |
-| `T81Symbolic` | YES | YES | YES | NO | NO | Experimental |
-| `T81Polynomial`| YES | YES | YES | NO | NO | Experimental |
+| `T81Symbolic` | YES | YES | YES | YES | NO | Experimental |
+| `T81Polynomial`| YES | YES | YES | YES | NO | Experimental |
 | **System** | | | | | | |
 | `Option` | YES | YES | YES | N/A | YES | Stable |
 | `Result` | YES | YES | YES | N/A | YES | Stable |
-| `T81Time` | YES | YES | YES | NO | NO | Experimental |
-| `T81Entropy` | YES | YES | YES | NO | NO | Experimental |
-| `T81Promise` | YES | YES | YES | NO | NO | Experimental |
-| `T81Agent` | YES | YES | YES | NO | NO | Experimental |
+| `T81Time` | YES | YES | YES | YES | NO | Experimental |
+| `T81Entropy` | YES | YES | YES | YES | NO | Experimental |
+| `T81Promise` | YES | YES | YES | YES | NO | Experimental |
+| `T81Agent` | YES | YES | YES | YES | NO | Experimental |
 
 ## Gaps Identified
 

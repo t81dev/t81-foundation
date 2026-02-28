@@ -18,6 +18,8 @@
 #include <memory>
 #include <optional>
 #include <utility>
+#include <sstream>
+#include <string>
 
 namespace t81 {
 
@@ -122,6 +124,28 @@ public:
     children_array c = children_;
     c[2] = std::move(new_right);
     return std::make_shared<node_type>(value_, std::move(c));
+  }
+
+
+  [[nodiscard]] std::string serialize_canonical() const {
+    std::ostringstream ss;
+    ss << "Tree(";
+    if constexpr (requires { value_.serialize_canonical(); }) {
+      ss << value_.serialize_canonical();
+    } else {
+      ss << value_;
+    }
+    ss << ", [";
+    for (size_t i = 0; i < 3; ++i) {
+      if (i > 0) ss << ", ";
+      if (children_[i]) {
+        ss << children_[i]->serialize_canonical();
+      } else {
+        ss << "null";
+      }
+    }
+    ss << "])";
+    return ss.str();
   }
 
   bool operator==(const T81Tree& o) const {

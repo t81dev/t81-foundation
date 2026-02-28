@@ -584,6 +584,10 @@ if(T81_BUILD_TESTS)
   target_link_libraries(tisc_opcode_matrix_test PRIVATE t81_isa)
 
   add_executable(t81lang_conformance_baseline_test tests/cpp/t81lang_conformance_baseline_test.cpp)
+add_executable(t81lang_surface_gate_test tests/cpp/t81lang_surface_gate_test.cpp)
+target_link_libraries(t81lang_surface_gate_test PRIVATE t81_lang_frontend t81_core)
+add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
+
   target_link_libraries(t81lang_conformance_baseline_test PRIVATE t81_lang_frontend)
 
   add_executable(t81lang_conformance_edge_semantics_test

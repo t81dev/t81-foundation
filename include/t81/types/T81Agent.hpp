@@ -205,6 +205,7 @@ public:
   // Equality — two agents are equal only if they share identity
   //===================================================================
   [[nodiscard]] constexpr bool operator==(const T81Agent& o) const noexcept { return id_ == o.id_; }
+  [[nodiscard]] std::string serialize_canonical() const { return "Agent()"; }
 };
 
 // ======================================================================

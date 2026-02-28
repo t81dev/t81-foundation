@@ -101,6 +101,12 @@ std::string token_type_name(TokenType type) {
       return "'T81Fixed'";
     case TokenType::T81Complex:
       return "'T81Complex'";
+    case TokenType::T81Quaternion:
+      return "'T81Quaternion'";
+    case TokenType::T81Prob:
+      return "'T81Prob'";
+    case TokenType::Cell:
+      return "'Cell'";
     case TokenType::T81Qutrit:
       return "'T81Qutrit'";
     case TokenType::T81Uint:
@@ -267,6 +273,9 @@ bool is_dot_field_segment_token(TokenType type) {
     case TokenType::T81Fraction:
     case TokenType::T81Fixed:
     case TokenType::T81Complex:
+    case TokenType::T81Quaternion:
+    case TokenType::T81Prob:
+    case TokenType::Cell:
     case TokenType::T81Qutrit:
     case TokenType::T81Uint:
     case TokenType::T81String:
@@ -1115,8 +1124,7 @@ static bool is_type_start_token(const Token& token) {
          token.type == TokenType::I2 || token.type == TokenType::Bool ||
          token.type == TokenType::Void || token.type == TokenType::T81BigInt ||
          token.type == TokenType::T81Float || token.type == TokenType::T81Fraction ||
-         token.type == TokenType::T81Fixed || token.type == TokenType::T81Complex ||
-         token.type == TokenType::T81Qutrit || token.type == TokenType::T81Uint ||
+         token.type == TokenType::T81Fixed || token.type == TokenType::T81Complex || token.type == TokenType::T81Quaternion || token.type == TokenType::T81Prob || token.type == TokenType::Cell || token.type == TokenType::T81Qutrit || token.type == TokenType::T81Uint ||
          token.type == TokenType::T81Vector || token.type == TokenType::Matrix ||
          token.type == TokenType::Tensor || token.type == TokenType::Graph ||
          token.type == TokenType::List || token.type == TokenType::Map ||
@@ -1674,7 +1682,7 @@ bool Parser::is_type_start() {
          check(TokenType::I8) || check(TokenType::I2) || check(TokenType::Bool) ||
          check(TokenType::Void) || check(TokenType::T81BigInt) || check(TokenType::T81Float) ||
          check(TokenType::T81Fraction) || check(TokenType::T81Fixed) ||
-         check(TokenType::T81Complex) || check(TokenType::T81Qutrit) || check(TokenType::T81Uint) ||
+         check(TokenType::T81Complex) || check(TokenType::T81Quaternion) || check(TokenType::T81Prob) || check(TokenType::Cell) || check(TokenType::T81Qutrit) || check(TokenType::T81Uint) ||
          check(TokenType::T81Vector) || check(TokenType::Matrix) || check(TokenType::Tensor) ||
          check(TokenType::Graph) || check(TokenType::List) || check(TokenType::Map) ||
          check(TokenType::Set) || check(TokenType::Tree) || check(TokenType::String);

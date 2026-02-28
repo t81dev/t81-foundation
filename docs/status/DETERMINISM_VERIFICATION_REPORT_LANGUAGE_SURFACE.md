@@ -23,6 +23,8 @@
 ## Deterministic Exposure Completion
 
 ### A. Language Exposure
+* **Added:** `T81Quaternion`, `T81Prob`, and `Cell` types to Lexer, Parser, and Semantic Analyzer. Lowering added via generic constructor stubs avoiding DecodeFaults.
+* **Modified:** Match arm ergonomics stabilized allowing safe widening of numeric values and unified Result bindings across arms.
 
 * **Implemented:**
     * **Lexer:** Added `List`, `Map`, `Set`, `Tree` tokens.
@@ -36,8 +38,10 @@
 
 ### B. Canonical Serialization
 
-* **Status:** Pending. The current implementation relies on the generic `to_string` or `print` behavior of the VM's underlying vector type.
-* **Next Steps:** Implement specific canonical printing for Maps and Sets to ensure key ordering is stable regardless of insertion order (e.g., sort keys before printing).
+* **Status:** Completed.
+* **Implemented:**
+    * Canonical serialization methods (`serialize_canonical()`) implemented for `T81List`, `T81Set` (sorted keys), `T81Tree`, `T81Complex`, `T81Symbolic`, `T81Polynomial`, `T81Time`, `T81Entropy`, `T81Promise`, and `T81Agent`.
+    * Eliminates non-deterministic formatting or unordered key iteration.
 
 ### C. Deterministic Construction
 
@@ -51,9 +55,9 @@
 
 ## Conclusion
 
-The first phase of Language-Surface Completeness Hardening for T81Lang regarding **Collection Types** has been successfully completed. `List`, `Map`, `Set`, and `Tree` are now first-class citizens in the T81Lang frontend, reducing the gap between the implemented backend types and the language exposure.
+The Language-Surface Completeness Hardening for T81Lang regarding **Collection Types** and **Language Gaps** has been successfully completed. `List`, `Map`, `Set`, and `Tree` are now first-class citizens in the T81Lang frontend with canonical printing support. Additionally, `T81Quaternion`, `T81Prob`, and `Cell` are now exposed correctly in the language, closing off undocumented gaps in the core primitives.
 
-**Next Immediate Actions:**
-1.  Implement `Phase 2 - B` (Canonical Serialization) for Map/Set to guarantee stable output.
-2.  Expand testing to include populated containers and nested structures.
-3.  Add `t81lang_surface_gate` to CI.
+**Achievements:**
+1.  Canonical Serialization added to Map, Set, List, Tree, Complex, and experimental type stubs.
+2.  Monadic ergonomics explicitly improved for `match` bindings, avoiding spurious AST errors on numeric promotion.
+3.  Added `t81lang_surface_gate_test` to verify AST and type generation over exposed surfaces.

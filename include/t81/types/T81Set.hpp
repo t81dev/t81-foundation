@@ -152,6 +152,25 @@ public:
     return const_iterator{elements_.end()};
   }
 
+
+  [[nodiscard]] std::string serialize_canonical() const {
+    std::ostringstream ss;
+    ss << "Set{";
+    bool first = true;
+    auto items = elements_.iter_sorted();
+    for (const auto& item : items) {
+      if (!first) ss << ", ";
+      if constexpr (requires { item.first.serialize_canonical(); }) {
+        ss << item.first.serialize_canonical();
+      } else {
+        ss << item.first;
+      }
+      first = false;
+    }
+    ss << "}";
+    return ss.str();
+  }
+
   [[nodiscard]] constexpr T81List<T> to_list() const {
     T81List<T> list;
     for (const auto& elem : *this) {

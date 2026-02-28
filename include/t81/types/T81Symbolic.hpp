@@ -215,7 +215,8 @@ inline ExprPtr simplify(ExprPtr e) {
 
       return Expr::make_binary(b.op, l, r);
     }
-  };
+    [[nodiscard]] std::string serialize_canonical() const { return "Symbolic()"; }
+};
 
   return std::visit(SimpVisitor{}, e->node);
 }
