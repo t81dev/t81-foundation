@@ -42,6 +42,10 @@ specification authority, freeze boundaries, or determinism claim scope.
 - STDLIB_STABILIZATION_PLAN_2026-03.md
 - STDLIB_PROMOTION_SNAPSHOT_2026-03.md
 
+**Strategic:**
+
+- FULL_SYSTEM_ARCHITECTURAL_STRATEGIC_AUDIT_2026-03.md
+
 **Determinism / Integrity:**
 
 - VERIFIED_SURFACE_AUDIT.md
