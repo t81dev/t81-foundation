@@ -1,6 +1,6 @@
 # T81Lang Promotion Gate Snapshot
 
-Generated (UTC): 2026-02-28 14:54:03Z
+Generated (UTC): 2026-02-28 15:08:50Z
 Generator: `scripts/governance/t81lang_promotion_gate_snapshot.py`
 
 ## Gate Criteria Status
@@ -51,23 +51,23 @@ governance hygiene check PASSED
 ```text
 Test project /Users/t81dev/Code/t81-foundation/build
     Start   7: t81lang_conformance_edge_semantics_test
-1/7 Test   #7: t81lang_conformance_edge_semantics_test ...........   Passed    0.53 sec
+1/7 Test   #7: t81lang_conformance_edge_semantics_test ...........   Passed    0.01 sec
     Start  90: t81lang_conformance_baseline_test
-2/7 Test  #90: t81lang_conformance_baseline_test .................   Passed    0.25 sec
+2/7 Test  #90: t81lang_conformance_baseline_test .................   Passed    0.01 sec
     Start 170: t81_semantic_analyzer_match_test
-3/7 Test #170: t81_semantic_analyzer_match_test ..................   Passed    0.24 sec
+3/7 Test #170: t81_semantic_analyzer_match_test ..................   Passed    0.01 sec
     Start 175: t81_semantic_analyzer_loop_test
-4/7 Test #175: t81_semantic_analyzer_loop_test ...................   Passed    0.26 sec
+4/7 Test #175: t81_semantic_analyzer_loop_test ...................   Passed    0.01 sec
     Start 177: t81_semantic_analyzer_diagnostic_location_test
-5/7 Test #177: t81_semantic_analyzer_diagnostic_location_test ....   Passed    0.30 sec
+5/7 Test #177: t81_semantic_analyzer_diagnostic_location_test ....   Passed    0.00 sec
     Start 178: t81_semantic_analyzer_cascade_suppression_test
-6/7 Test #178: t81_semantic_analyzer_cascade_suppression_test ....   Passed    0.24 sec
+6/7 Test #178: t81_semantic_analyzer_cascade_suppression_test ....   Passed    0.01 sec
     Start 179: t81_semantic_analyzer_diagnostic_precision_test
-7/7 Test #179: t81_semantic_analyzer_diagnostic_precision_test ...   Passed    0.24 sec
+7/7 Test #179: t81_semantic_analyzer_diagnostic_precision_test ...   Passed    0.01 sec
 
 100% tests passed, 0 tests failed out of 7
 
-Total Test time (real) =   2.08 sec
+Total Test time (real) =   0.05 sec
 ```
 
 ### Compile Determinism Slice
@@ -78,15 +78,15 @@ Total Test time (real) =   2.08 sec
 ```text
 Test project /Users/t81dev/Code/t81-foundation/build
     Start 191: e2e_compile_determinism_test
-1/3 Test #191: e2e_compile_determinism_test ............   Passed    0.32 sec
+1/3 Test #191: e2e_compile_determinism_test ............   Passed    0.03 sec
     Start 193: e2e_ast_ir_canonical_determinism_test
-2/3 Test #193: e2e_ast_ir_canonical_determinism_test ...   Passed    0.01 sec
+2/3 Test #193: e2e_ast_ir_canonical_determinism_test ...   Passed    0.02 sec
     Start 194: e2e_enum_metadata_determinism_test
-3/3 Test #194: e2e_enum_metadata_determinism_test ......   Passed    0.31 sec
+3/3 Test #194: e2e_enum_metadata_determinism_test ......   Passed    0.01 sec
 
 100% tests passed, 0 tests failed out of 3
 
-Total Test time (real) =   0.65 sec
+Total Test time (real) =   0.07 sec
 ```
 
 ### Axion Metadata Slice
@@ -97,19 +97,19 @@ Total Test time (real) =   0.65 sec
 ```text
 Test project /Users/t81dev/Code/t81-foundation/build
     Start 204: axion_policy_match_guard_test
-1/5 Test #204: axion_policy_match_guard_test .....   Passed    0.28 sec
+1/5 Test #204: axion_policy_match_guard_test .....   Passed    0.01 sec
     Start 205: axion_policy_segment_event_test
-2/5 Test #205: axion_policy_segment_event_test ...   Passed    0.26 sec
+2/5 Test #205: axion_policy_segment_event_test ...   Passed    0.01 sec
     Start 210: axion_match_metadata_test
-3/5 Test #210: axion_match_metadata_test .........   Passed    0.28 sec
+3/5 Test #210: axion_match_metadata_test .........   Passed    0.01 sec
     Start 211: axion_enum_guard_test
-4/5 Test #211: axion_enum_guard_test .............   Passed    0.30 sec
+4/5 Test #211: axion_enum_guard_test .............   Passed    0.01 sec
     Start 224: e2e_axion_trace_test
-5/5 Test #224: e2e_axion_trace_test ..............   Passed    0.29 sec
+5/5 Test #224: e2e_axion_trace_test ..............   Passed    0.01 sec
 
 100% tests passed, 0 tests failed out of 5
 
-Total Test time (real) =   1.43 sec
+Total Test time (real) =   0.06 sec
 ```
 
 ### Repro Gate

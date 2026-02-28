@@ -46,7 +46,7 @@
 ### C. Deterministic Construction
 
 * **Status:** The constructors currently create empty containers.
-* **Next Steps:** Verify that populated constructors (e.g., `List[i32](1, 2, 3)`) behave deterministically. (Currently only empty constructors are explicitly tested).
+* **Next Steps:** Verify that populated constructors (e.g., `List` constructed with values `1, 2, 3`) behave deterministically. (Currently only empty constructors are explicitly tested).
 
 ## DecodeFault Elimination
 
