@@ -12,10 +12,10 @@
 | `T81Fraction` | YES | YES | YES | YES | YES | Stable |
 | `T81Fixed` | YES | YES | YES (as Int) | YES (as Int) | YES | Beta |
 | `T81Complex` | YES | YES | YES | YES | YES | Beta |
-| `T81Quaternion` | YES | YES | YES (NOP) | YES + serialize_canonical | PARTIAL | Beta |
-| `T81Prob` | YES | YES | YES (NOP) | YES | PARTIAL | Beta |
-| `T81Qutrit` | YES | YES | YES | YES (via T81Int) | PARTIAL | Beta |
-| `T81Uint` | YES | YES | YES | YES + serialize_canonical | PARTIAL | Stable |
+| `T81Quaternion` | YES | YES | YES (NOP) | YES + serialize_canonical | YES | Beta |
+| `T81Prob` | YES | YES | YES (NOP) | YES | YES | Beta |
+| `T81Qutrit` | YES | YES | YES | YES (via T81Int) | YES | Beta |
+| `T81Uint` | YES | YES | YES | YES + serialize_canonical | YES | Stable |
 | `Cell` | YES | YES | YES (NOP) | YES | YES | Stable |
 | **Collections** | | | | | | |
 | `T81String` | YES | YES | YES | YES | YES | Stable |
@@ -57,13 +57,12 @@
 *   **Verification:** Confirmed by SHA256 logs in `tests/fixtures/t81lang_determinism` and compiler reproducibility tests.
 
 ### Deterministic (New Tests Added)
-*   **Primitives:** `T81BigInt`, `Cell`, `T81Fraction`.
-*   **Math:** `T81Fixed`, `T81Complex`.
+*   **Primitives:** `T81Uint`, `T81BigInt`, `Cell`, `T81Fraction`.
+*   **Math:** `T81Quaternion`, `T81Prob`, `T81Qutrit`, `T81Fixed`, `T81Complex`.
 *   **Collections:** `T81Vector`, `T81Map` (Native), `T81Set` (Native).
 *   **Verification:** Verified via `tests/determinism/` suite (Adversarial + Canonical Serialization).
 
 ### Deterministic but Incompletely Tested
-*   **Primitives:** `T81Uint`.
 *   **Symbolic:** `T81Symbol` (partial).
 *   **Note:** No evidence of nondeterminism found, but coverage is partial.
 
