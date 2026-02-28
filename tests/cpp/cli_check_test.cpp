@@ -398,8 +398,8 @@ int main() {
       bad_collections_map_helper_captured.str();
   assert(bad_collections_map_helper_output.find(bad_collections_map_helper_path.string()) !=
          std::string::npos);
-  // It might fail with a generic type mismatch or specific "map_put expects..." depending on implementation.
-  // We just assert it fails.
+  // It might fail with a generic type mismatch or specific "map_put expects..." depending on
+  // implementation. We just assert it fails.
 
   fs::remove(bad_collections_map_helper_path);
 

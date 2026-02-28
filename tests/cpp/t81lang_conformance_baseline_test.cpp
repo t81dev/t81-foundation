@@ -612,11 +612,10 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_collections_map_size_type,
-                                  "std.collections.map_size expects a Map argument.",
-                                  "t81lang_std_collections_map_size_bad_type"),
-      "t81lang_std_collections_map_size_bad_type");
+  require_true(fails_semantic_with_message(bad_collections_map_size_type,
+                                           "std.collections.map_size expects a Map argument.",
+                                           "t81lang_std_collections_map_size_bad_type"),
+               "t81lang_std_collections_map_size_bad_type");
 
   constexpr const char* bad_collections_map_has_key_type = R"(
     fn main() -> i32 {
@@ -664,11 +663,10 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_collections_map_keys_type,
-                                  "std.collections.map_keys expects a Map argument.",
-                                  "t81lang_std_collections_map_keys_bad_type"),
-      "t81lang_std_collections_map_keys_bad_type");
+  require_true(fails_semantic_with_message(bad_collections_map_keys_type,
+                                           "std.collections.map_keys expects a Map argument.",
+                                           "t81lang_std_collections_map_keys_bad_type"),
+               "t81lang_std_collections_map_keys_bad_type");
 
   constexpr const char* bad_collections_set_size_type = R"(
     fn main() -> i32 {
@@ -677,11 +675,10 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_collections_set_size_type,
-                                  "std.collections.set_size expects a Set argument.",
-                                  "t81lang_std_collections_set_size_bad_type"),
-      "t81lang_std_collections_set_size_bad_type");
+  require_true(fails_semantic_with_message(bad_collections_set_size_type,
+                                           "std.collections.set_size expects a Set argument.",
+                                           "t81lang_std_collections_set_size_bad_type"),
+               "t81lang_std_collections_set_size_bad_type");
 
   constexpr const char* bad_collections_set_has_key_type = R"(
     fn main() -> i32 {
@@ -1884,10 +1881,10 @@ static void test_std_symbol_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(bad_to_string_type,
-                                           "symbol_to_string expects a Symbol argument.",
-                                           "t81lang_std_symbol_to_string_bad_type"),
-               "t81lang_std_symbol_to_string_bad_type");
+  require_true(
+      fails_semantic_with_message(bad_to_string_type, "symbol_to_string expects a Symbol argument.",
+                                  "t81lang_std_symbol_to_string_bad_type"),
+      "t81lang_std_symbol_to_string_bad_type");
 
   constexpr const char* bad_eq_arity = R"(
     fn main() -> i32 {
