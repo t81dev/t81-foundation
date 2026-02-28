@@ -4,12 +4,12 @@
 
 #define T81_DETERMINISTIC 1
 
+#include "t81/types/T81Entropy.hpp"
+#include "t81/types/T81Float.hpp"
 #include "t81/types/T81Map.hpp"
 #include "t81/types/T81Set.hpp"
-#include "t81/types/T81Float.hpp"
-#include "t81/types/T81Entropy.hpp"
-#include "t81/types/T81Time.hpp"
 #include "t81/types/T81Symbol.hpp"
+#include "t81/types/T81Time.hpp"
 
 void test_map_insertion_order() {
   t81::T81Map<std::string, int> map1;
@@ -49,7 +49,8 @@ void test_disabled_transcendental_enforcement() {
   auto f = t81::v1::T81Float18_9::from_double(1.0);
   bool threw = false;
   try {
-    auto r = f.exp(); (void)r;
+    auto r = f.exp();
+    (void)r;
   } catch (const std::domain_error& e) {
     threw = true;
   }

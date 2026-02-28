@@ -169,29 +169,80 @@ void test_functions_special_values() {
   auto neg_one = F::from_double(-1.0);
 
   // Sqrt
-  try { check(inf.sqrt().is_inf(), "sqrt(inf) = inf"); } catch(const std::domain_error& e) { } //check(inf.sqrt().is_inf(), "sqrt(inf) = inf");) {}
-  try { check(zero.sqrt().is_zero(), "sqrt(0) = 0"); } catch(const std::domain_error& e) { } //check(zero.sqrt().is_zero(), "sqrt(0) = 0");) {}
-  try { check(neg_one.sqrt().is_nae(), "sqrt(-1) = NaE"); } catch(const std::domain_error& e) { } //check(neg_one.sqrt().is_nae(), "sqrt(-1) = NaE");) {}
-  try { check(nae.sqrt().is_nae(), "sqrt(NaE) = NaE"); } catch(const std::domain_error& e) { } //check(nae.sqrt().is_nae(), "sqrt(NaE) = NaE");) {}
-  try { check(neg_inf.sqrt().is_nae(), "sqrt(-inf) = NaE"); } catch(const std::domain_error& e) { }
+  try {
+    check(inf.sqrt().is_inf(), "sqrt(inf) = inf");
+  } catch (const std::domain_error& e) {
+  }  // check(inf.sqrt().is_inf(), "sqrt(inf) = inf");) {}
+  try {
+    check(zero.sqrt().is_zero(), "sqrt(0) = 0");
+  } catch (const std::domain_error& e) {
+  }  // check(zero.sqrt().is_zero(), "sqrt(0) = 0");) {}
+  try {
+    check(neg_one.sqrt().is_nae(), "sqrt(-1) = NaE");
+  } catch (const std::domain_error& e) {
+  }  // check(neg_one.sqrt().is_nae(), "sqrt(-1) = NaE");) {}
+  try {
+    check(nae.sqrt().is_nae(), "sqrt(NaE) = NaE");
+  } catch (const std::domain_error& e) {
+  }  // check(nae.sqrt().is_nae(), "sqrt(NaE) = NaE");) {}
+  try {
+    check(neg_inf.sqrt().is_nae(), "sqrt(-inf) = NaE");
+  } catch (const std::domain_error& e) {
+  }
 
   // Log
-  try { check(inf.log().is_inf(), "log(inf) = inf"); } catch(const std::domain_error& e) { } //check(inf.log().is_inf(), "log(inf) = inf");) {}
-  try { check(zero.log().is_nae(), "log(0) = NaE"); } catch(const std::domain_error& e) { }  // Implementation returns NaE for <= 0
-  try { check(neg_one.log().is_nae(), "log(-1) = NaE"); } catch(const std::domain_error& e) { } //check(neg_one.log().is_nae(), "log(-1) = NaE");) {}
-  try { check(nae.log().is_nae(), "log(NaE) = NaE"); } catch(const std::domain_error& e) { } //check(nae.log().is_nae(), "log(NaE) = NaE");) {}
-  try { check(neg_inf.log().is_nae(), "log(-inf) = NaE"); } catch(const std::domain_error& e) { } //check(neg_inf.log().is_nae(), "log(-inf) = NaE");) {}
+  try {
+    check(inf.log().is_inf(), "log(inf) = inf");
+  } catch (const std::domain_error& e) {
+  }  // check(inf.log().is_inf(), "log(inf) = inf");) {}
+  try {
+    check(zero.log().is_nae(), "log(0) = NaE");
+  } catch (const std::domain_error& e) {
+  }  // Implementation returns NaE for <= 0
+  try {
+    check(neg_one.log().is_nae(), "log(-1) = NaE");
+  } catch (const std::domain_error& e) {
+  }  // check(neg_one.log().is_nae(), "log(-1) = NaE");) {}
+  try {
+    check(nae.log().is_nae(), "log(NaE) = NaE");
+  } catch (const std::domain_error& e) {
+  }  // check(nae.log().is_nae(), "log(NaE) = NaE");) {}
+  try {
+    check(neg_inf.log().is_nae(), "log(-inf) = NaE");
+  } catch (const std::domain_error& e) {
+  }  // check(neg_inf.log().is_nae(), "log(-inf) = NaE");) {}
 
   // Exp
-  try { check(zero.exp().to_double() == 1.0, "exp(0) = 1"); } catch(const std::domain_error& e) { } //check(zero.exp().to_double() == 1.0, "exp(0) = 1");) {}
-  try { check(inf.exp().is_inf(), "exp(inf) = inf"); } catch(const std::domain_error& e) { } //check(inf.exp().is_inf(), "exp(inf) = inf");) {}
-  try { check(neg_inf.exp().is_zero(), "exp(-inf) = 0"); } catch(const std::domain_error& e) { } //check(neg_inf.exp().is_zero(), "exp(-inf) = 0");) {}
-  try { check(nae.exp().is_nae(), "exp(NaE) = NaE"); } catch(const std::domain_error& e) { } //check(nae.exp().is_nae(), "exp(NaE) = NaE");) {}
+  try {
+    check(zero.exp().to_double() == 1.0, "exp(0) = 1");
+  } catch (const std::domain_error& e) {
+  }  // check(zero.exp().to_double() == 1.0, "exp(0) = 1");) {}
+  try {
+    check(inf.exp().is_inf(), "exp(inf) = inf");
+  } catch (const std::domain_error& e) {
+  }  // check(inf.exp().is_inf(), "exp(inf) = inf");) {}
+  try {
+    check(neg_inf.exp().is_zero(), "exp(-inf) = 0");
+  } catch (const std::domain_error& e) {
+  }  // check(neg_inf.exp().is_zero(), "exp(-inf) = 0");) {}
+  try {
+    check(nae.exp().is_nae(), "exp(NaE) = NaE");
+  } catch (const std::domain_error& e) {
+  }  // check(nae.exp().is_nae(), "exp(NaE) = NaE");) {}
 
   // Sin
-  try { check(inf.sin().is_nae(), "sin(inf) = NaE"); } catch(const std::domain_error& e) { } //check(inf.sin().is_nae(), "sin(inf) = NaE");) {}
-  try { check(neg_inf.sin().is_nae(), "sin(-inf) = NaE"); } catch(const std::domain_error& e) { } //check(neg_inf.sin().is_nae(), "sin(-inf) = NaE");) {}
-  try { check(nae.sin().is_nae(), "sin(NaE) = NaE"); } catch(const std::domain_error& e) { } //check(nae.sin().is_nae(), "sin(NaE) = NaE");) {}
+  try {
+    check(inf.sin().is_nae(), "sin(inf) = NaE");
+  } catch (const std::domain_error& e) {
+  }  // check(inf.sin().is_nae(), "sin(inf) = NaE");) {}
+  try {
+    check(neg_inf.sin().is_nae(), "sin(-inf) = NaE");
+  } catch (const std::domain_error& e) {
+  }  // check(neg_inf.sin().is_nae(), "sin(-inf) = NaE");) {}
+  try {
+    check(nae.sin().is_nae(), "sin(NaE) = NaE");
+  } catch (const std::domain_error& e) {
+  }  // check(nae.sin().is_nae(), "sin(NaE) = NaE");) {}
   check(zero.sin().is_zero(), "sin(0) = 0");
 
   // Cos
