@@ -1,8 +1,7 @@
 fn main() -> i32 {
   let sym: Symbol = std.symbol.intern("omega");
   let rendered: T81String = std.symbol.to_string(sym);
-  print(rendered);
-  print(rendered);
+    print(rendered);
   print(std.text.str_len(rendered));
   return 0;
 }
