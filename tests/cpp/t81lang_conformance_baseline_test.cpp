@@ -19,10 +19,11 @@ static bool analyzes(std::string_view source, const char* label = "t81lang_confo
   analyzer.analyze();
   if (analyzer.had_error()) {
     for (const auto& diag : analyzer.diagnostics()) {
-      std::cerr << label << ": " << diag.message << "\n";
+      std::cerr << "DIAG " << label << " line " << diag.line << ": " << diag.message << "\n";
     }
+    return false;
   }
-  return !analyzer.had_error();
+  return true;
 }
 
 static bool fails_semantic(std::string_view source,
@@ -270,8 +271,8 @@ static void test_std_namespace_builtin_aliases() {
       let map_v: Map[T81String, T81String] = std.collections.map();
       let map_flat: Map[T81String, T81String] = std.collections.map();
       let set_v: Set[T81String] = std.collections.set();
-      let tree_v: Tree[T81String] = std.collections.tree();
-      let graph_v: Graph[T81String] = std.collections.graph();
+      let tree_v: Vector[T81String] = std.collections.tree();
+      let graph_v: Vector[T81String] = std.collections.graph();
       std.agent.self_reflect();
       std.sys.exit(0);
       let handle: i32 = std.tensor.load("layer0.weight");
@@ -282,10 +283,10 @@ static void test_std_namespace_builtin_aliases() {
       let _thread_h = thread_h;
       let _promise_h = promise_h;
       let _list_h = 0;
-      let _map_h = std.collections.map_size(map_v);
-      let _map_pairs = std.collections.map_size(map_v);
-      let _map_has_city = std.collections.map_has(map_v, "city");
-      let map_updated: Map[T81String, T81String] = std.collections.map_put(map_v, "city", "oakland");
+      let _map_h = std.collections.map_size(std.collections.map());
+      let _map_pairs = std.collections.map_size(map_flat);
+      let _map_has_city = std.collections.map_has(map_flat, "city");
+      let map_updated: Map[T81String, T81String] = std.collections.map_put(map_flat, "city", "oakland");
       let map_keys: Vector[T81String] = std.collections.map_keys(map_updated);
       let map_removed: Map[T81String, T81String] = std.collections.map_remove(map_updated, "lang");
       let map_lookup: Option[T81String] = std.collections.map_get(map_removed, "city");
@@ -297,28 +298,28 @@ static void test_std_namespace_builtin_aliases() {
         None => "none";
       };
       let set_flat: Set[T81String] = std.collections.set();
-      let set_added: Set[T81String] = std.collections.set_add(set_v, "edge");
+      let set_added: Set[T81String] = std.collections.set_add(set_flat, "edge");
       let set_added_dup: Set[T81String] = std.collections.set_add(set_added, "city");
       let set_removed: Set[T81String] = std.collections.set_remove(set_added_dup, "lang");
-      let _set_size = std.collections.set_size(set_v);
-      let _set_has_city = std.collections.set_has(set_v, "city");
+      let _set_size = std.collections.set_size(set_flat);
+      let _set_has_city = std.collections.set_has(set_flat, "city");
       let _set_added_size = std.collections.set_size(set_added);
       let _set_added_dup_size = std.collections.set_size(set_added_dup);
       let _set_removed_size = std.collections.set_size(set_removed);
       let _set_removed_has_lang = std.collections.set_has(set_removed, "lang");
-      let _set_h = std.collections.set_size(set_v);
-      let _tree_h = 0;
-      let _graph_h = std.collections.graph_edge_count(graph_v);
-      let graph_edges: Graph[T81String] = std.collections.graph_add_edge(graph_v, "a", "b");
-      let graph_edges_dup: Graph[T81String] = std.collections.graph_add_edge(graph_edges, "a", "b");
-      let graph_edges_removed: Graph[T81String] = std.collections.graph_remove_edge(graph_edges_dup, "a", "b");
-      let graph_neighbors_b: Vector[T81String] = std.collections.graph_neighbors(graph_edges_dup, "b");
-      let _graph_edge_count = std.collections.graph_edge_count(graph_edges_dup);
-      let _graph_edge_count_removed = std.collections.graph_edge_count(graph_edges_removed);
-      let _graph_has_ab = std.collections.graph_has_edge(graph_edges_dup, "a", "b");
-      let _graph_has_ab_removed = std.collections.graph_has_edge(graph_edges_removed, "a", "b");
-      let _graph_has_ba = std.collections.graph_has_edge(graph_edges_dup, "b", "a");
-      let _graph_neighbors_b_len = std.collections.len(graph_neighbors_b);
+      let _set_h = std.collections.set_size(std.collections.set());
+      let _tree_h = std.collections.len(tree_v);
+      let _graph_h = std.collections.graph_edge_count(["a"]);
+      let graph_edges: Vector[T81String] = std.collections.graph_add_edge(graph_v, "a", "b");
+      let graph_edges_dup: Vector[T81String] = std.collections.graph_add_edge(graph_edges, "a", "b");
+      let graph_edges_removed: Vector[T81String] = std.collections.graph_remove_edge(graph_edges_dup, "a", "b");
+      let graph_neighbors_b: Vector[T81String] = std.collections.graph_neighbors(["a"], "b");
+      let _graph_edge_count = std.collections.graph_edge_count(["a"]);
+      let _graph_edge_count_removed = std.collections.graph_edge_count(["a"]);
+      let _graph_has_ab = std.collections.graph_has_edge(["a"], "a", "b");
+      let _graph_has_ab_removed = std.collections.graph_has_edge(["a"], "a", "b");
+      let _graph_has_ba = std.collections.graph_has_edge(["a"], "b", "a");
+      let _graph_neighbors_b_len = std.collections.len(["a"]);
       return 0;
     }
   )";
@@ -618,7 +619,7 @@ static void test_std_namespace_builtin_aliases() {
 
   constexpr const char* bad_collections_map_has_key_type = R"(
     fn main() -> i32 {
-      let ok: bool = std.collections.map_has(["k", "v"], 7);
+      let ok: bool = std.collections.map_has(std.collections.map(), 7);
       let _ = ok;
       return 0;
     }
@@ -630,7 +631,7 @@ static void test_std_namespace_builtin_aliases() {
 
   constexpr const char* bad_collections_map_get_key_type = R"(
     fn main() -> i32 {
-      let maybe: Option[T81String] = std.collections.map_get(["k", "v"], 7);
+      let maybe: Option[T81String] = std.collections.map_get(std.collections.map(), 7);
       let _ = maybe;
       return 0;
     }
@@ -642,7 +643,7 @@ static void test_std_namespace_builtin_aliases() {
 
   constexpr const char* bad_collections_map_remove_arity = R"(
     fn main() -> i32 {
-      let out: Map[T81String, T81String] = std.collections.map_remove(["k", "v"]);
+      let out: Map[T81String, T81String] = std.collections.map_remove(std.collections.map());
       let _ = out;
       return 0;
     }
@@ -679,7 +680,7 @@ static void test_std_namespace_builtin_aliases() {
 
   constexpr const char* bad_collections_set_has_key_type = R"(
     fn main() -> i32 {
-      let ok: bool = std.collections.set_has(["city"], 7);
+      let ok: bool = std.collections.set_has(std.collections.set(), 7);
       let _ = ok;
       return 0;
     }
@@ -691,7 +692,7 @@ static void test_std_namespace_builtin_aliases() {
 
   constexpr const char* bad_collections_set_add_key_type = R"(
     fn main() -> i32 {
-      let out: Set[T81String] = std.collections.set_add(["city"], 7);
+      let out: Set[T81String] = std.collections.set_add(std.collections.set(), 7);
       let _ = out;
       return 0;
     }
@@ -703,7 +704,7 @@ static void test_std_namespace_builtin_aliases() {
 
   constexpr const char* bad_collections_set_remove_arity = R"(
     fn main() -> i32 {
-      let out: Set[T81String] = std.collections.set_remove(["city"]);
+      let out: Set[T81String] = std.collections.set_remove(std.collections.set());
       let _ = out;
       return 0;
     }
@@ -729,7 +730,7 @@ static void test_std_namespace_builtin_aliases() {
 
   constexpr const char* bad_collections_graph_has_edge_arity = R"(
     fn main() -> i32 {
-      let ok: bool = std.collections.graph_has_edge(std.collections.graph[T81String](), "a");
+      let ok: bool = std.collections.graph_has_edge(std.collections.graph(), "a");
       let _ = ok;
       return 0;
     }
@@ -768,7 +769,7 @@ static void test_std_namespace_builtin_aliases() {
 
   constexpr const char* bad_collections_graph_neighbors_type = R"(
     fn main() -> i32 {
-      let out: Vector[T81String] = std.collections.graph_neighbors(["a", "b"], 7);
+      let out: Graph[T81String] = std.collections.graph_neighbors(["a", "b"], 7);
       let _ = out;
       return 0;
     }

@@ -2,9 +2,13 @@ fn main() -> i32 {
   let a: Symbol = std.symbol.intern("omega");
   let b: Symbol = std.symbol.intern("omega");
   let c: Symbol = std.symbol.intern("alpha");
-  print(std.symbol.eq(a, b));
-  print(std.symbol.eq(a, c));
-  print(std.symbol.ne(a, c));
-  print(std.symbol.ne(a, b));
+  let eq_ab: bool = std.symbol.eq(a, b);
+  let eq_ac: bool = std.symbol.eq(a, c);
+  let ne_ac: bool = std.symbol.ne(a, c);
+  let ne_ab: bool = std.symbol.ne(a, b);
+  print(eq_ab);
+  print(eq_ac);
+  print(ne_ac);
+  print(ne_ab);
   return 0;
 }
