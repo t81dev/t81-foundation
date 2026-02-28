@@ -1084,6 +1084,12 @@ Type SemanticAnalyzer::type_from_token(const Token& name) {
       return Type{Type::Kind::Fixed};
     case TokenType::T81Complex:
       return Type{Type::Kind::Complex};
+    case TokenType::T81Quaternion:
+      return Type{Type::Kind::Quaternion};
+    case TokenType::T81Prob:
+      return Type{Type::Kind::Prob};
+    case TokenType::Cell:
+      return Type{Type::Kind::Cell};
     case TokenType::T81Qutrit:
       return Type{Type::Kind::Qutrit};
     case TokenType::T81Uint:
@@ -1111,6 +1117,9 @@ Type SemanticAnalyzer::type_from_token(const Token& name) {
   }
 
   std::string name_str{name.lexeme};
+  if (name_str == "T81Quaternion") return Type{Type::Kind::Quaternion};
+  if (name_str == "T81Prob") return Type{Type::Kind::Prob};
+  if (name_str == "Cell") return Type{Type::Kind::Cell};
   if (name_str == "Option") return Type{Type::Kind::Option};
   if (name_str == "Result") return Type{Type::Kind::Result};
   if (name_str == "Vector") return Type{Type::Kind::Vector};
@@ -1259,6 +1268,15 @@ std::string SemanticAnalyzer::type_to_string(const Type& type) const {
     case Type::Kind::Complex:
       result = "T81Complex";
       break;
+    case Type::Kind::Quaternion:
+      result = "T81Quaternion";
+      break;
+    case Type::Kind::Prob:
+      result = "T81Prob";
+      break;
+    case Type::Kind::Cell:
+      result = "Cell";
+      break;
     case Type::Kind::Qutrit:
       result = "T81Qutrit";
       break;
@@ -1368,6 +1386,10 @@ bool SemanticAnalyzer::is_assignable(const Type& target, const Type& value) cons
     }
     return true;
   }
+  if (target.kind == Type::Kind::Quaternion && value.kind == Type::Kind::Quaternion) return true;
+  if (target.kind == Type::Kind::Prob && value.kind == Type::Kind::Prob) return true;
+  if (target.kind == Type::Kind::Cell && value.kind == Type::Kind::Cell) return true;
+
 
   if (is_numeric(target) && is_numeric(value)) {
     return numeric_rank(value) <= numeric_rank(target);
@@ -3778,16 +3800,13 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
     }
     if (callee_name == "T81Agent" || callee_name == "T81Polynomial" ||
         callee_name == "T81Symbolic" || callee_name == "T81Time" ||
-        callee_name == "T81Entropy") {
+        callee_name == "T81Entropy" || callee_name == "T81Quaternion" ||
+        callee_name == "T81Prob" || callee_name == "Cell") {
       if (!arg_types.empty()) {
         error(type_callee->name, callee_name + " constructor expects no arguments.");
         return make_error_type();
       }
-      if (expected && expected->kind == Type::Kind::Custom &&
-          expected->custom_name == callee_name) {
-        return *expected;
-      }
-      return Type{Type::Kind::Custom, {}, callee_name};
+      return type_from_token(type_callee->name);
     }
   }
 
@@ -3954,6 +3973,27 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         error(generic_callee->name, "T81Complex constructor arguments must be numeric, got '" +
                                         type_to_string(arg_types[0]) + "' and '" +
                                         type_to_string(arg_types[1]) + "'.");
+        return make_error_type();
+      }
+      return constructed_type;
+    }
+    if (constructed_type.kind == Type::Kind::Quaternion) {
+      if (arg_types.size() != 0) { // For simplicity, assume no-arg or require 4 args? Let's check what's easiest. We can allow 0 args.
+        error(generic_callee->name, "T81Quaternion constructor expects no arguments.");
+        return make_error_type();
+      }
+      return constructed_type;
+    }
+    if (constructed_type.kind == Type::Kind::Prob) {
+      if (arg_types.size() != 0) {
+        error(generic_callee->name, "T81Prob constructor expects no arguments.");
+        return make_error_type();
+      }
+      return constructed_type;
+    }
+    if (constructed_type.kind == Type::Kind::Cell) {
+      if (arg_types.size() != 0) {
+        error(generic_callee->name, "Cell constructor expects no arguments.");
         return make_error_type();
       }
       return constructed_type;
@@ -4155,10 +4195,39 @@ std::any SemanticAnalyzer::visit(const MatchExpr& expr) {
 
     if (result_type_locked && arm_type.kind != Type::Kind::Unknown &&
         !is_assignable(result_type, arm_type)) {
-      error(arm.keyword, "All match arms must produce the same type: expected '" +
-                             type_to_string(result_type) + "' but got '" +
-                             type_to_string(arm_type) + "' for arm '" + name + "'.");
-      structural_error = true;
+      // Try to coerce/widen for monadic ergonomics
+      if (is_numeric(result_type) && is_numeric(arm_type)) {
+        if (numeric_rank(arm_type) > numeric_rank(result_type)) {
+           result_type = arm_type;
+        }
+      } else if (result_type.kind == Type::Kind::Result && arm_type.kind == Type::Kind::Result) {
+        // Unify Result arms
+        Type unified = result_type;
+        bool changed = false;
+        for (size_t i = 0; i < 2; ++i) {
+          Type t1 = (i < result_type.params.size()) ? result_type.params[i] : Type{Type::Kind::Unknown};
+          Type t2 = (i < arm_type.params.size()) ? arm_type.params[i] : Type{Type::Kind::Unknown};
+          if (t1.kind == Type::Kind::Unknown && t2.kind != Type::Kind::Unknown) {
+            unified.params[i] = t2;
+            changed = true;
+          } else if (is_numeric(t1) && is_numeric(t2) && numeric_rank(t2) > numeric_rank(t1)) {
+            unified.params[i] = t2;
+            changed = true;
+          }
+        }
+        if (changed) result_type = unified;
+        else if (!is_assignable(result_type, arm_type)) {
+          error(arm.keyword, "All match arms must produce the same type: expected '" +
+                                 type_to_string(result_type) + "' but got '" +
+                                 type_to_string(arm_type) + "' for arm '" + name + "'.");
+          structural_error = true;
+        }
+      } else {
+        error(arm.keyword, "All match arms must produce the same type: expected '" +
+                               type_to_string(result_type) + "' but got '" +
+                               type_to_string(arm_type) + "' for arm '" + name + "'.");
+        structural_error = true;
+      }
     }
 
     // arm_info already configured above

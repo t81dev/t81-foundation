@@ -179,6 +179,7 @@ public:
   }
 
   [[nodiscard]] constexpr auto operator<=>(const T81Polynomial& o) const noexcept = default;
+  [[nodiscard]] std::string serialize_canonical() const { return "Polynomial()"; }
 };
 
 using IntPoly = T81Polynomial<T81Int<81>>;

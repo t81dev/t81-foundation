@@ -98,6 +98,7 @@ public:
     auto raw = hardware_trng();
     return T81Entropy(requester, seq, std::move(raw));
   }
+  [[nodiscard]] std::string serialize_canonical() const { return "Entropy()"; }
 };
 
 inline T81Entropy::Raw EntropyPool::hardware_trng() noexcept {
