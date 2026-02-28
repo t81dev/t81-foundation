@@ -7,7 +7,7 @@
 | `i8` (Tryte) | YES | YES | YES | YES | PARTIAL | Stable |
 | `i16` | YES | YES | YES | YES | PARTIAL | Stable |
 | `i32` | YES | YES | YES | YES | PARTIAL | Stable |
-| `T81BigInt` | YES | YES | YES (aliased to i64) | YES (as i64) | YES | Stable |
+| `T81BigInt` | YES | YES | YES (aliased to i64 limits) | YES (as i64) | YES | Stable |
 | `T81Float` | YES | YES | YES | YES | YES | Stable |
 | `T81Fraction` | YES | YES | YES | YES | YES | Stable |
 | `T81Fixed` | YES | YES | YES (as Int) | YES (as Int) | YES | Beta |
@@ -44,7 +44,7 @@
 
 1.  **Collections Implementation Gap:** `T81List`, `T81Map`, `T81Set`, `T81Tree`, and `T81Graph` are exposed via `std.collections.*` intrinsics but are implemented as `Vector[String]` polyfills in the compiler lowering (`ir_generator.hpp`). They do not utilize the native C++ types (`T81Map`, `T81Set`, etc.) in the VM, resulting in inefficient $O(N)$ operations and lack of true type-specific serialization.
 2.  **Canonical Serialization Gap:** The collection types (`Map`, `Set`, `Graph`) lack canonical serialization in their Language/VM polyfill representation because their underlying Vector representation relies on insertion order, which is not sorted by key/content. The native C++ `T81Map` and `T81Graph` classes support `serialize_canonical`, but it is unused by the language runtime.
-3.  **BigInt Precision Gap:** `T81BigInt` is backed by a robust `BigInt` C++ class, but the VM aliasing maps `bigint` operations to standard 64-bit integer opcodes (`ADD`, `SUB`, etc.) which do not support arbitrary precision handles. Literals > 64-bit are truncated or unsupported in the current IR generation.
+3.  **BigInt Precision Gap:** `T81BigInt` is backed by a robust `BigInt` C++ class, but the VM aliasing maps `bigint` operations to standard 64-bit integer opcodes (`ADD`, `SUB`, etc.) which do not support arbitrary precision handles. Literals > 64-bit are explicitly trapped/rejected in the frontend. BigInt is gated to `i64` precision in the language layer for deterministic bounds control.
 4.  **Complex Number Persistence Gap:** `T81Complex` is supported in the VM (via `MAKE_COMPLEX`), but lacks binary pool serialization support in `binary_io.cpp`, meaning complex values cannot be persisted in the program binary constants.
 5.  **Host-Math Dependence:** `T81Float` (and by extension `T81Complex`, `T81Vector`) relies on `std::cmath` for transcendental functions unless `T81_DETERMINISTIC` is defined.
 

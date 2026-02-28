@@ -491,6 +491,32 @@ const char* ir_opcode_name(tisc::ir::Opcode op) {
       return "ENUM_UNWRAP_PAYLOAD";
     case O::MAKE_COMPLEX:
       return "MAKE_COMPLEX";
+    case O::F2FRAC: return "F2FRAC";
+    case O::FRAC2F: return "FRAC2F";
+    case O::TTENDOT: return "TTENDOT";
+    case O::BITAND: return "BITAND";
+    case O::BITOR: return "BITOR";
+    case O::BITXOR: return "BITXOR";
+    case O::BITNOT: return "BITNOT";
+    case O::BITSHL: return "BITSHL";
+    case O::BITSHR: return "BITSHR";
+    case O::BITUSHR: return "BITUSHR";
+    case O::SYMLOAD: return "SYMLOAD";
+    case O::SYMREWRITE: return "SYMREWRITE";
+    case O::SYMCANON: return "SYMCANON";
+    case O::SYMCONFLUENCE: return "SYMCONFLUENCE";
+    case O::MapNew: return "MapNew";
+    case O::MapPut: return "MapPut";
+    case O::MapGet: return "MapGet";
+    case O::MapHas: return "MapHas";
+    case O::MapRemove: return "MapRemove";
+    case O::MapKeys: return "MapKeys";
+    case O::MapSize: return "MapSize";
+    case O::SetNew: return "SetNew";
+    case O::SetAdd: return "SetAdd";
+    case O::SetRemove: return "SetRemove";
+    case O::SetHas: return "SetHas";
+    case O::SetSize: return "SetSize";
     case O::NOP:
       return "NOP";
     case O::HALT:

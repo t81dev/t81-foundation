@@ -20,6 +20,8 @@
 #include "t81/fraction.hpp"
 #include "t81/isa/program.hpp"
 #include "t81/tensor.hpp"
+#include "t81/types/T81Map.hpp"
+#include "t81/types/T81Set.hpp"
 #include "t81/vm/traps.hpp"
 #include "t81/weights.hpp"
 
@@ -54,6 +56,8 @@ enum class ValueTag : std::uint8_t {
   AsyncThreadHandle,
   AsyncPromiseHandle,
   StringVectorHandle,
+  MapHandle,
+  SetHandle,
   SymbolicGraphHandle,
   Tier2FrameHandle,
   InfiniteHandle,
@@ -236,6 +240,8 @@ struct State {
   std::vector<t81::T81Fraction> fractions;
   std::vector<std::string> symbols;
   std::vector<std::vector<std::string>> string_vectors;
+  std::vector<t81::T81Map<std::string, std::string>> maps;
+  std::vector<t81::T81Set<std::string>> sets;
   std::vector<std::string> printed_output;
   std::vector<std::vector<int>> shapes;
   std::vector<OptionValue> options;

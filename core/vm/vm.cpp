@@ -632,6 +632,38 @@ public:
       state_.string_vectors.emplace_back();
       return static_cast<std::int64_t>(state_.string_vectors.size());
     };
+    auto map_ptr = [this](std::int64_t handle) -> const t81::T81Map<std::string, std::string>* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.maps.size()) return nullptr;
+      return &state_.maps[idx];
+    };
+    auto map_mut = [this](std::int64_t handle) -> t81::T81Map<std::string, std::string>* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.maps.size()) return nullptr;
+      return &state_.maps[idx];
+    };
+    auto alloc_map = [this]() -> std::int64_t {
+      state_.maps.emplace_back();
+      return static_cast<std::int64_t>(state_.maps.size());
+    };
+    auto set_ptr = [this](std::int64_t handle) -> const t81::T81Set<std::string>* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.sets.size()) return nullptr;
+      return &state_.sets[idx];
+    };
+    auto set_mut = [this](std::int64_t handle) -> t81::T81Set<std::string>* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.sets.size()) return nullptr;
+      return &state_.sets[idx];
+    };
+    auto alloc_set = [this]() -> std::int64_t {
+      state_.sets.emplace_back();
+      return static_cast<std::int64_t>(state_.sets.size());
+    };
     auto alloc_fraction = [this, current_pc](t81::T81Fraction frac) -> std::int64_t {
       state_.fractions.push_back(std::move(frac));
       auto idx = state_.fractions.size();
@@ -935,6 +967,8 @@ public:
         case ValueTag::SymbolHandle:
           return std::nullopt;
         case ValueTag::StringVectorHandle:
+        case ValueTag::MapHandle:
+        case ValueTag::SetHandle:
         case ValueTag::SymbolicGraphHandle:
         case ValueTag::Tier2FrameHandle:
         case ValueTag::InfiniteHandle:
@@ -1020,6 +1054,16 @@ public:
           auto* ptr_val = string_vector_ptr(val_data);
           if (!ptr_val) return std::nullopt;
           return "<strvec#" + std::to_string(val_data) + ">";
+        }
+        case ValueTag::MapHandle: {
+          auto* ptr_val = map_ptr(val_data);
+          if (!ptr_val) return std::nullopt;
+          return ptr_val->serialize_canonical();
+        }
+        case ValueTag::SetHandle: {
+          auto* ptr_val = set_ptr(val_data);
+          if (!ptr_val) return std::nullopt;
+          return ptr_val->serialize_canonical();
         }
         case ValueTag::SymbolicGraphHandle:
           return "<graph#" + std::to_string(val_data) + ">";
@@ -4639,14 +4683,23 @@ public:
         }
         break;
       }
-      case t81::tisc::Opcode::MapNew:
+      case t81::tisc::Opcode::MapNew: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        ctx.registers[insn.a] = alloc_map();
+        ctx.register_tags[insn.a] = ValueTag::MapHandle;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
       case t81::tisc::Opcode::SetNew: {
         if (!reg_ok(insn.a)) {
           trap = Trap::DecodeFault;
           break;
         }
-        ctx.registers[insn.a] = alloc_string_vector();
-        ctx.register_tags[insn.a] = ValueTag::StringVectorHandle;
+        ctx.registers[insn.a] = alloc_set();
+        ctx.register_tags[insn.a] = ValueTag::SetHandle;
         update_flags(ctx.registers[insn.a]);
         break;
       }
@@ -4655,65 +4708,38 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
-        // map=a (in/out), key=b, value=c.
-        // NOTE: T81 TISC usually uses A as destination. Here A is also the map handle source?
-        // Wait, typical TISC is dst, src1, src2.
-        // So: dest_reg = MapPut(map_reg, key_reg, val_reg) ??
-        // The IR generator call I'm planning to write will likely emit:
-        // MapPut dest, map, key ?? No, TISC is 3 operands max.
-        // But Put needs Map, Key, Value.
-        // Let's assume: A=Map, B=Key, C=Value. And it updates Map in place (since handles are refs).
-        // Return value? Map handle.
-        if (ctx.register_tags[insn.a] != ValueTag::StringVectorHandle) {
+        if (ctx.register_tags[insn.a] != ValueTag::MapHandle) {
           trap = Trap::TypeFault;
           break;
         }
-        auto* vec = string_vector_mut(ctx.registers[insn.a]);
+        auto* map = map_mut(ctx.registers[insn.a]);
         auto key = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
         auto val = symbol_like_text(ctx.register_tags[insn.c], ctx.registers[insn.c]);
-        if (!vec || !key.has_value() || !val.has_value()) {
+        if (!map || !key.has_value() || !val.has_value()) {
           trap = Trap::DecodeFault;
           break;
         }
-        bool found = false;
-        for (size_t i = 0; i + 1 < vec->size(); i += 2) {
-          if ((*vec)[i] == *key) {
-            (*vec)[i + 1] = *val;
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          vec->push_back(std::string(*key));
-          vec->push_back(std::string(*val));
-        }
+        (*map)[std::string(*key)] = std::string(*val);
         // Result is the map handle (A)
         update_flags(ctx.registers[insn.a]);
         break;
       }
       case t81::tisc::Opcode::MapGet: {
-        // A=Dest, B=Map, C=Key
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
           trap = Trap::DecodeFault;
           break;
         }
-        if (ctx.register_tags[insn.b] != ValueTag::StringVectorHandle) {
+        if (ctx.register_tags[insn.b] != ValueTag::MapHandle) {
           trap = Trap::TypeFault;
           break;
         }
-        auto* vec = string_vector_ptr(ctx.registers[insn.b]);
+        auto* map = map_ptr(ctx.registers[insn.b]);
         auto key = symbol_like_text(ctx.register_tags[insn.c], ctx.registers[insn.c]);
-        if (!vec || !key.has_value()) {
+        if (!map || !key.has_value()) {
           trap = Trap::DecodeFault;
           break;
         }
-        std::optional<std::string> val;
-        for (size_t i = 0; i + 1 < vec->size(); i += 2) {
-          if ((*vec)[i] == *key) {
-            val = (*vec)[i + 1];
-            break;
-          }
-        }
+        auto val = map->get(std::string(*key));
         if (val) {
           std::int64_t handle = intern_symbol(*val);
           std::int64_t opt_handle = intern_option(true, ValueTag::SymbolHandle, handle);
@@ -4728,79 +4754,64 @@ public:
         break;
       }
       case t81::tisc::Opcode::MapHas: {
-        // A=Dest, B=Map, C=Key
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
           trap = Trap::DecodeFault;
           break;
         }
-        if (ctx.register_tags[insn.b] != ValueTag::StringVectorHandle) {
+        if (ctx.register_tags[insn.b] != ValueTag::MapHandle) {
           trap = Trap::TypeFault;
           break;
         }
-        auto* vec = string_vector_ptr(ctx.registers[insn.b]);
+        auto* map = map_ptr(ctx.registers[insn.b]);
         auto key = symbol_like_text(ctx.register_tags[insn.c], ctx.registers[insn.c]);
-        if (!vec || !key.has_value()) {
+        if (!map || !key.has_value()) {
           trap = Trap::DecodeFault;
           break;
         }
-        bool found = false;
-        for (size_t i = 0; i + 1 < vec->size(); i += 2) {
-          if ((*vec)[i] == *key) {
-            found = true;
-            break;
-          }
-        }
+        bool found = map->contains(std::string(*key));
         ctx.registers[insn.a] = found ? 1 : 0;
         ctx.register_tags[insn.a] = ValueTag::Bool;
         update_flags(ctx.registers[insn.a]);
         break;
       }
       case t81::tisc::Opcode::MapRemove: {
-        // A=Dest(Map), B=Map, C=Key -- Assume in-place update of B, returning B in A.
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
           trap = Trap::DecodeFault;
           break;
         }
-        if (ctx.register_tags[insn.b] != ValueTag::StringVectorHandle) {
+        if (ctx.register_tags[insn.b] != ValueTag::MapHandle) {
           trap = Trap::TypeFault;
           break;
         }
-        auto* vec = string_vector_mut(ctx.registers[insn.b]);
+        auto* map = map_mut(ctx.registers[insn.b]);
         auto key = symbol_like_text(ctx.register_tags[insn.c], ctx.registers[insn.c]);
-        if (!vec || !key.has_value()) {
+        if (!map || !key.has_value()) {
           trap = Trap::DecodeFault;
           break;
         }
-        for (size_t i = 0; i + 1 < vec->size(); i += 2) {
-          if ((*vec)[i] == *key) {
-            // Remove key and value
-            vec->erase(vec->begin() + i, vec->begin() + i + 2);
-            break;
-          }
-        }
+        map->erase(std::string(*key));
         ctx.registers[insn.a] = ctx.registers[insn.b];
-        ctx.register_tags[insn.a] = ValueTag::StringVectorHandle;
+        ctx.register_tags[insn.a] = ValueTag::MapHandle;
         update_flags(ctx.registers[insn.a]);
         break;
       }
       case t81::tisc::Opcode::MapKeys: {
-        // A=Dest(Vec), B=Map
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
           trap = Trap::DecodeFault;
           break;
         }
-        if (ctx.register_tags[insn.b] != ValueTag::StringVectorHandle) {
+        if (ctx.register_tags[insn.b] != ValueTag::MapHandle) {
           trap = Trap::TypeFault;
           break;
         }
-        auto* vec = string_vector_ptr(ctx.registers[insn.b]);
-        if (!vec) {
+        auto* map = map_ptr(ctx.registers[insn.b]);
+        if (!map) {
           trap = Trap::DecodeFault;
           break;
         }
         std::vector<std::string> keys;
-        for (size_t i = 0; i + 1 < vec->size(); i += 2) {
-          keys.push_back((*vec)[i]);
+        for (auto it = map->begin(); it != map->end(); ++it) {
+          keys.push_back((*it).first);
         }
         state_.string_vectors.push_back(std::move(keys));
         ctx.registers[insn.a] = static_cast<std::int64_t>(state_.string_vectors.size());
@@ -4809,124 +4820,98 @@ public:
         break;
       }
       case t81::tisc::Opcode::MapSize: {
-        // A=Dest(Int), B=Map
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
           trap = Trap::DecodeFault;
           break;
         }
-        if (ctx.register_tags[insn.b] != ValueTag::StringVectorHandle) {
+        if (ctx.register_tags[insn.b] != ValueTag::MapHandle) {
           trap = Trap::TypeFault;
           break;
         }
-        auto* vec = string_vector_ptr(ctx.registers[insn.b]);
-        if (!vec) {
+        auto* map = map_ptr(ctx.registers[insn.b]);
+        if (!map) {
           trap = Trap::DecodeFault;
           break;
         }
-        ctx.registers[insn.a] = static_cast<std::int64_t>(vec->size() / 2);
+        ctx.registers[insn.a] = static_cast<std::int64_t>(map->size());
         ctx.register_tags[insn.a] = ValueTag::Int;
         update_flags(ctx.registers[insn.a]);
         break;
       }
       case t81::tisc::Opcode::SetAdd: {
-        // A=Set(in/out), B=Key
-        // TISC instructions usually have A as dest. We will use A as Set handle.
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
           trap = Trap::DecodeFault;
           break;
         }
-        if (ctx.register_tags[insn.a] != ValueTag::StringVectorHandle) {
+        if (ctx.register_tags[insn.a] != ValueTag::SetHandle) {
           trap = Trap::TypeFault;
           break;
         }
-        auto* vec = string_vector_mut(ctx.registers[insn.a]);
+        auto* set = set_mut(ctx.registers[insn.a]);
         auto key = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
-        if (!vec || !key.has_value()) {
+        if (!set || !key.has_value()) {
           trap = Trap::DecodeFault;
           break;
         }
-        bool found = false;
-        for (const auto& item : *vec) {
-          if (item == *key) {
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          vec->push_back(std::string(*key));
-        }
+        *set = set->insert(std::string(*key));
         update_flags(ctx.registers[insn.a]);
         break;
       }
       case t81::tisc::Opcode::SetRemove: {
-        // A=Set(in/out), B=Key
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
           trap = Trap::DecodeFault;
           break;
         }
-        if (ctx.register_tags[insn.a] != ValueTag::StringVectorHandle) {
+        if (ctx.register_tags[insn.a] != ValueTag::SetHandle) {
           trap = Trap::TypeFault;
           break;
         }
-        auto* vec = string_vector_mut(ctx.registers[insn.a]);
+        auto* set = set_mut(ctx.registers[insn.a]);
         auto key = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
-        if (!vec || !key.has_value()) {
+        if (!set || !key.has_value()) {
           trap = Trap::DecodeFault;
           break;
         }
-        for (auto it = vec->begin(); it != vec->end(); ++it) {
-          if (*it == *key) {
-            vec->erase(it);
-            break;
-          }
-        }
+        *set = set->erase(std::string(*key));
         update_flags(ctx.registers[insn.a]);
         break;
       }
       case t81::tisc::Opcode::SetHas: {
-        // A=Dest(Bool), B=Set, C=Key
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
           trap = Trap::DecodeFault;
           break;
         }
-        if (ctx.register_tags[insn.b] != ValueTag::StringVectorHandle) {
+        if (ctx.register_tags[insn.b] != ValueTag::SetHandle) {
           trap = Trap::TypeFault;
           break;
         }
-        auto* vec = string_vector_ptr(ctx.registers[insn.b]);
+        auto* set = set_ptr(ctx.registers[insn.b]);
         auto key = symbol_like_text(ctx.register_tags[insn.c], ctx.registers[insn.c]);
-        if (!vec || !key.has_value()) {
+        if (!set || !key.has_value()) {
           trap = Trap::DecodeFault;
           break;
         }
-        bool found = false;
-        for (const auto& item : *vec) {
-          if (item == *key) {
-            found = true;
-            break;
-          }
-        }
+        bool found = set->contains(std::string(*key));
         ctx.registers[insn.a] = found ? 1 : 0;
         ctx.register_tags[insn.a] = ValueTag::Bool;
         update_flags(ctx.registers[insn.a]);
         break;
       }
       case t81::tisc::Opcode::SetSize: {
-        // A=Dest(Int), B=Set
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
           trap = Trap::DecodeFault;
           break;
         }
-        if (ctx.register_tags[insn.b] != ValueTag::StringVectorHandle) {
+        if (ctx.register_tags[insn.b] != ValueTag::SetHandle) {
           trap = Trap::TypeFault;
           break;
         }
-        auto* vec = string_vector_ptr(ctx.registers[insn.b]);
-        if (!vec) {
+        auto* set = set_ptr(ctx.registers[insn.b]);
+        if (!set) {
           trap = Trap::DecodeFault;
           break;
         }
-        ctx.registers[insn.a] = static_cast<std::int64_t>(vec->size());
+        ctx.registers[insn.a] = static_cast<std::int64_t>(set->size());
         ctx.register_tags[insn.a] = ValueTag::Int;
         update_flags(ctx.registers[insn.a]);
         break;

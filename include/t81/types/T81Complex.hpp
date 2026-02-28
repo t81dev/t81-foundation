@@ -187,38 +187,58 @@ static_assert(std::is_trivially_copyable_v<T81Complex27>);
 // ======================================================================
 
 template <std::size_t M>
-[[nodiscard]] T81Complex<M> expi(typename T81Complex<M>::FloatType theta) noexcept {
+[[nodiscard]] T81Complex<M> expi(typename T81Complex<M>::FloatType theta) {
+#ifdef T81_DETERMINISTIC
+  throw std::domain_error("expi is host-dependent and disabled in T81_DETERMINISTIC mode");
+#else
   constexpr double kTwoPi = 6.28318530717958647692;
   const double angle = theta.to_double() * kTwoPi;
   const double c = std::cos(angle);
   const double s = std::sin(angle);
   using Float = typename T81Complex<M>::FloatType;
   return T81Complex<M>(Float::from_double(c), Float::from_double(s));
+#endif
 }
 
 template <std::size_t M>
-[[nodiscard]] T81Complex<M> sqrt(const T81Complex<M>& z) noexcept {
+[[nodiscard]] T81Complex<M> sqrt(const T81Complex<M>& z) {
+#ifdef T81_DETERMINISTIC
+  throw std::domain_error("sqrt is host-dependent and disabled in T81_DETERMINISTIC mode");
+#else
   std::complex<double> zd(z.re.to_double(), z.im.to_double());
   return T81Complex<M>(std::sqrt(zd));
+#endif
 }
 
 template <std::size_t M>
-[[nodiscard]] T81Complex<M> exp(const T81Complex<M>& z) noexcept {
+[[nodiscard]] T81Complex<M> exp(const T81Complex<M>& z) {
+#ifdef T81_DETERMINISTIC
+  throw std::domain_error("exp is host-dependent and disabled in T81_DETERMINISTIC mode");
+#else
   std::complex<double> zd(z.re.to_double(), z.im.to_double());
   return T81Complex<M>(std::exp(zd));
+#endif
 }
 
 template <std::size_t M>
-[[nodiscard]] T81Complex<M> log(const T81Complex<M>& z) noexcept {
+[[nodiscard]] T81Complex<M> log(const T81Complex<M>& z) {
+#ifdef T81_DETERMINISTIC
+  throw std::domain_error("log is host-dependent and disabled in T81_DETERMINISTIC mode");
+#else
   std::complex<double> zd(z.re.to_double(), z.im.to_double());
   return T81Complex<M>(std::log(zd));
+#endif
 }
 
 template <std::size_t M>
-[[nodiscard]] T81Complex<M> pow(const T81Complex<M>& base, const T81Complex<M>& exp) noexcept {
+[[nodiscard]] T81Complex<M> pow(const T81Complex<M>& base, const T81Complex<M>& exponent) {
+#ifdef T81_DETERMINISTIC
+  throw std::domain_error("pow is host-dependent and disabled in T81_DETERMINISTIC mode");
+#else
   std::complex<double> b(base.re.to_double(), base.im.to_double());
-  std::complex<double> e(exp.re.to_double(), exp.im.to_double());
+  std::complex<double> e(exponent.re.to_double(), exponent.im.to_double());
   return T81Complex<M>(std::pow(b, e));
+#endif
 }
 
 [[nodiscard]] inline T81Complex18 mul3(const T81Complex18& a, const T81Complex18& b) noexcept {

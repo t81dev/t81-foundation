@@ -49,6 +49,7 @@ struct Program {
   std::vector<std::string> symbol_pool;
   std::vector<t81::T729DynamicTensor> tensor_pool;
   std::vector<std::vector<int>> shape_pool;
+  std::vector<std::pair<double, double>> complex_pool;
   std::string axion_policy_text;
   std::string match_metadata_text;
   std::shared_ptr<t81::weights::ModelFile> weights_model;

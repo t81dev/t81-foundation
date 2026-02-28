@@ -115,6 +115,25 @@ void read_vector_string(std::istream& is, std::vector<std::string>& vec) {
   }
 }
 
+void write_vector_pair_double(std::ostream& os, const std::vector<std::pair<double, double>>& vec) {
+  uint64_t size = vec.size();
+  os.write(reinterpret_cast<const char*>(&size), sizeof(size));
+  for (const auto& p : vec) {
+    os.write(reinterpret_cast<const char*>(&p.first), sizeof(p.first));
+    os.write(reinterpret_cast<const char*>(&p.second), sizeof(p.second));
+  }
+}
+
+void read_vector_pair_double(std::istream& is, std::vector<std::pair<double, double>>& vec) {
+  uint64_t size;
+  is.read(reinterpret_cast<char*>(&size), sizeof(size));
+  vec.resize(size);
+  for (uint64_t i = 0; i < size; ++i) {
+    is.read(reinterpret_cast<char*>(&vec[i].first), sizeof(vec[i].first));
+    is.read(reinterpret_cast<char*>(&vec[i].second), sizeof(vec[i].second));
+  }
+}
+
 // vector<vector<int>> for shapes
 void write_vector_vector_int(std::ostream& os, const std::vector<std::vector<int>>& vec) {
   uint64_t size = vec.size();
@@ -275,6 +294,7 @@ void save_program(const Program& program, const std::string& path) {
   write_vector_string(file, program.symbol_pool);
   write_serializable_vector(file, program.tensor_pool);
   write_vector_vector_int(file, program.shape_pool);
+  write_vector_pair_double(file, program.complex_pool);
   write_string(file, program.axion_policy_text);
   uint64_t alias_count = program.type_aliases.size();
   file.write(reinterpret_cast<const char*>(&alias_count), sizeof(alias_count));
@@ -302,6 +322,7 @@ Program load_program(const std::string& path) {
   read_vector_string(file, program.symbol_pool);
   read_serializable_vector(file, program.tensor_pool);
   read_vector_vector_int(file, program.shape_pool);
+  read_vector_pair_double(file, program.complex_pool);
   read_string(file, program.axion_policy_text);
 
   uint64_t alias_count = 0;

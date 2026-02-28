@@ -130,7 +130,11 @@ inline double parse_canonical_float(std::string_view literal) {
 
 inline int64_t parse_base81_integer_literal(std::string_view literal) {
   std::string value = strip_t81_suffix(literal);
-  return std::stoll(value);
+  try {
+    return std::stoll(value);
+  } catch (const std::out_of_range&) {
+    throw std::runtime_error("Integer literal exceeds 64-bit bounds (BigInt precision is gated to i64 in T81Lang)");
+  }
 }
 
 inline double parse_base81_float_literal(std::string_view literal) {
@@ -1146,9 +1150,14 @@ public:
       return {};
     }
 
-    const int64_t value = (expr.value.type == TokenType::Base81Integer)
+    int64_t value = 0;
+    try {
+      value = (expr.value.type == TokenType::Base81Integer)
                               ? parse_base81_integer_literal(expr.value.lexeme)
                               : std::stoll(std::string(expr.value.lexeme));
+    } catch (const std::out_of_range&) {
+      throw std::runtime_error("Integer literal exceeds 64-bit bounds (BigInt precision is gated to i64 in T81Lang)");
+    }
     auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
     auto instr =
         tisc::ir::Instruction{tisc::ir::Opcode::LOADI, {dest.reg, tisc::ir::Immediate{value}}};
@@ -4039,6 +4048,9 @@ public:
         auto real = ensure_integer(ensure_expr_result(expr.arguments[0].get()));
         auto imag = ensure_integer(ensure_expr_result(expr.arguments[1].get()));
         auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        // Instead of runtime `MAKE_COMPLEX`, if the arguments are constants we could pool them.
+        // But for now, we leave the runtime instruction but enable persistence if needed.
+        // Actually, since T81Complex needs literal constants pooling:
         auto instr =
             tisc::ir::Instruction{tisc::ir::Opcode::MAKE_COMPLEX, {dest.reg, real.reg, imag.reg}};
         instr.primitive = tisc::ir::PrimitiveKind::Integer;
