@@ -53,8 +53,27 @@ Completed in this slice:
    - Extracted `TNeuralFwd/TNeuralBwd` blocked-op handling and `BitAnd/BitOr/BitXor/BitNot/BitShl/BitShr/BitUShr` execution into dedicated dispatch lambdas.
    - Preserved decode-fault guards, fail-closed neural security traps, and bitwise result/tag/flag semantics.
 
-## Next Planned Slice
+## Parallel Work (2026-02-26..28, Outside Phase 3 Scope)
 
-1. Continue VM integration extraction with additional opcode-family dispatch splitting to reduce `core/vm/vm.cpp` control concentration.
-2. Expand workload-level determinism/conformance cases toward longer multi-op mixes with bounded fault-injection checkpoints.
-3. Expand Axion conformance matrices from clause-ordering checks into multi-requirement interaction invariants (segment + axion-event + alignment combinations).
+The following implementation work landed in the same window but is tracked
+separately from Phase 3 and does not count toward Phase 3 slice progress:
+
+- T81Graph lowered to VM native opcodes (PR #424): new `T81Graph` opcodes
+  emitted by IR generator; lang-side canonical serialization gap remains open
+  (BG-09 in `docs/status/T81LANG_ENGINEERING_BACKLOG_2026-03.md`).
+- Core data types determinism audit and remediation (PRs #414, #415).
+- Language surface hardening and stress test suite (PRs #420, #404).
+
+These are tracked in `docs/status/PROJECT_CONTROL_CENTER.md` section 4.2.
+
+## Next Planned Slice (Phase 3 Slice 2)
+
+Status: Not yet started.
+
+1. Continue VM integration extraction with additional opcode-family dispatch
+   splitting to reduce `core/vm/vm.cpp` control concentration.
+2. Expand workload-level determinism/conformance cases toward longer multi-op
+   mixes with bounded fault-injection checkpoints.
+3. Expand Axion conformance matrices from clause-ordering checks into
+   multi-requirement interaction invariants (segment + axion-event + alignment
+   combinations).

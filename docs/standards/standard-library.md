@@ -145,3 +145,13 @@ Deterministic symbol helpers.
 
 ### `std.agent`
 - `fn self_reflect() -> void`: Trigger deterministic reflection opcode (`META_REFLECT`).
+
+### `std.polynomial`
+
+- `fn load(seed: T81String) -> T81Polynomial`: Load a polynomial from a deterministic seed string with canonical rewrite normalization.
+- `fn confluent(p: T81Polynomial) -> bool`: Check deterministic confluence of polynomial rewrite rules.
+
+### `std.symbolic`
+
+- `fn load(seed: T81String) -> T81Symbolic`: Load a symbolic expression from a deterministic seed string with canonical rewrite normalization.
+- `fn confluent(s: T81Symbolic) -> bool`: Check deterministic confluence of symbolic rewrite rules.

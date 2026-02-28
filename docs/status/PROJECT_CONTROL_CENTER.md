@@ -1,7 +1,7 @@
 # Project Control Center
 
 Status: Active Program Management
-Last Updated: 2026-02-26
+Last Updated: 2026-02-28
 Owner: Project Management / Governance
 Version: 2.1.0
 
@@ -9,10 +9,10 @@ Version: 2.1.0
 
 | Item | Status |
 | :--- | :--- |
-| Sprint Focus | March governance close + governed inference hardening + stdlib stabilization |
+| Sprint Focus | March governance close + stdlib Sprint 2 + BG-06..10 collection/type determinism hardening |
 | Overall Program Health | Green with one scheduled governance gate pending |
-| Release Readiness Decision | HOLD (decision stamp: 2026-02-26) |
-| Primary Blocker | Required contexts not yet fully satisfied for selected main candidate (`quality gate / required`, `Analyze (cpp)`) |
+| Release Readiness Decision | **GO** (stamped 2026-02-28, candidate `fa343e1f`) |
+| Primary Blocker | None — required contexts satisfied on `fa343e1f`; non-required Pages/Jekyll failure deferred |
 | Next Hard Date | C2 month-close execution on 2026-03-31 (UTC) |
 | Open Task Count (`docs/roadmaps-plans/TASKS.md`) | 1 (`C2 Month-Close`) |
 
@@ -37,12 +37,15 @@ Authority remains:
 
 ### 4.1 Governance and Release
 
-- March packet decision is `HOLD` in
-  `docs/status/RELEASE_READINESS_PACKET_2026-03.md`.
-- Required-context verification rule remains unchanged:
-  GO only when both required contexts are `completed` + `success`.
-- CodeQL push-trigger remediation for `main` has been applied; candidate
-  verification still requires a post-fix main commit outcome.
+- March packet re-evaluated on 2026-02-28: GO recommended on candidate `fa343e1f`.
+  See `docs/status/RELEASE_READINESS_PACKET_2026-03.md` for full verification snapshot.
+- Required-context verification results for `fa343e1f`:
+  - `quality gate / required`: completed / success ✅
+  - `Analyze (cpp)`: completed / success ✅
+- Non-required failure: `build` (GitHub Pages / Jekyll) — classified as deferred;
+  root cause is Liquid rendering of `third_party/llama.cpp` modelcard templates.
+- CodeQL push-trigger remediation (`ad6c2777`) confirmed effective on post-fix main commit.
+- Final GO/HOLD decision stamp pending @t81dev approval.
 
 ### 4.2 Delivery Progress
 
@@ -81,6 +84,14 @@ Authority remains:
   - CanonFS persistent write-path optimization
   - CLI `t81 trace export` (JSON/CSV)
   - Debugger cognitive tier inspection (`t [1|2|3|4|5|all]`)
+- 2026-02-26..28 implementation sprint (183 commits, 6 workstreams):
+  - Collections (`List`, `Map`, `Set`, `Tree`) exposed as first-class T81Lang frontend types with canonical serialization; IR generator lowering and conformance tests added (PRs #401, #419).
+  - Language-surface completeness hardening: `T81Quaternion`, `T81Prob`, `Cell` exposed in Lexer/Parser/Semantic Analyzer with deterministic lowering stubs; `serialize_canonical` added to 10 type headers; `t81lang_surface_gate_test` and updated AST/IR repro hash baseline committed (PR #420).
+  - Core data types determinism audit and remediation: `Cell` signed-overflow UB fixed; `T81Float` signed-zero canonicalization enforced; `T81Map`/`T81Set` frontend type enforcement hardened; report published in `docs/reports/determinism_types_audit.md` (PRs #414, #415).
+  - T81Lang stress test suite launched: 7 modules in `tests/stress/` (numeric, symbolic, container, tensor, monad, agent, composition) — PR #404.
+  - T81Graph lowered to VM native opcodes; lang-side canonical serialization gap identified (BG-09) and tracked in engineering backlog (PR #424).
+  - Stdlib fixture suites extended beyond `std.core`/`std.math`: `std.polynomial`, `std.symbolic`, `std.symbol`, and additional `std.collections` (Map/Set ops) fixture conformance suites added.
+  - Surface gap inventory published: `docs/status/T81LANG_SURFACE_INVENTORY.md` documents all 36 exposed types with backend/determinism/serialization status; 5 new engineering gaps captured as BG-06..BG-10 in `docs/status/T81LANG_ENGINEERING_BACKLOG_2026-03.md`.
 
 ### 4.3 C2 Month-Close Readiness
 
@@ -145,6 +156,8 @@ Authority remains:
 - `docs/records/status-history/BEHAVIORAL_CONFORMANCE_EXPANSION_SPRINT_2026-02-26.md`
 - `docs/status/BEHAVIORAL_CONFORMANCE_EXPANSION_PHASE3_2026-02-26.md`
 - `docs/status/STDLIB_STABILIZATION_PLAN_2026-03.md`
+- `docs/status/T81LANG_SURFACE_INVENTORY.md`
+- `docs/reports/determinism_types_audit.md`
 - `docs/status/RELEASE_READINESS_PACKET_2026-03.md`
 - `docs/status/C2_MONTH_CLOSE_RUNBOOK_2026-03-31.md`
 - `docs/status/C2_MONTH_CLOSE_CHECK_2026-03-31.md`

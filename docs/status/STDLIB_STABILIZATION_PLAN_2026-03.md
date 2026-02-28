@@ -1,7 +1,7 @@
 # T81Lang Standard Library Stabilization Plan
 
-Date: 2026-02-26  
-Status: Sprint 1 Completed  
+Date: 2026-02-26
+Status: Sprint 2 In Progress (updated 2026-02-28)
 Owner: Language + Governance
 
 ## 1. Goal
@@ -89,3 +89,48 @@ Out-of-scope:
 2. Promotion snapshot artifact implemented and governance-checked.
 3. `std.core` and `std.math` fixture conformance suites added and passing.
 4. Change taxonomy policy published in `docs/governance/STDLIB_CHANGE_POLICY.md`.
+
+## 9. Sprint 2 (2026-02-27..28, In Progress)
+
+### Completed in Sprint 2
+
+The following fixture suites and stdlib modules shipped during the 2026-02-26..28
+implementation sprint as part of the collections, surface hardening, and
+determinism audit workstreams:
+
+1. `std.polynomial` — `lang/stdlib/std/polynomial.t81` implemented; fixture
+   conformance suite added (`tests/fixtures/t81lang_std_polynomial/`,
+   `tests/cpp/cli_std_polynomial_fixtures_test.cpp`).
+2. `std.symbolic` — `lang/stdlib/std/symbolic.t81` implemented; fixture
+   conformance suite added (`tests/fixtures/t81lang_std_symbolic/`,
+   `tests/cpp/cli_std_symbolic_fixtures_test.cpp`).
+3. `std.symbol` — fixture conformance suite extended
+   (`tests/fixtures/t81lang_std_symbol/`).
+4. `std.collections` — Map/Set operation fixtures added
+   (`tests/fixtures/t81lang_std_collections/03..09`); collections determinism
+   test added (`tests/cpp/cli_std_collections_determinism_test.cpp`).
+
+### Remaining in Sprint 2
+
+The following in-scope modules (from section 3) still lack fixture conformance
+suites as of 2026-02-28:
+
+| Module | Fixture Suite | Status |
+| :--- | :--- | :--- |
+| `std.io` | Not yet created | Open |
+| `std.text` | Not yet created | Open |
+| `std.bytes` | Not yet created | Open |
+| `std.sys` | Not yet created | Open |
+| `std.async` | Not yet created | Open |
+| `std.tensor` | Not yet created | Open |
+| `std.agent` | Not yet created | Open |
+
+Note: `std.polynomial` and `std.symbolic` were not in the original Sprint 1
+in-scope list; they shipped as part of the surface hardening workstream and
+their fixture suites count toward Sprint 2 closure evidence.
+
+### Sprint 2 Exit Criteria
+
+Same acceptance gates as section 5, applied to the remaining 7 modules above.
+Sprint 2 is complete when all 7 modules have passing fixture conformance suites
+and the governance gates in section 5 remain green.
