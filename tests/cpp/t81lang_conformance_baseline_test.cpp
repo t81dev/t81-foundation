@@ -611,11 +611,10 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_collections_map_size_type,
-                                  "std.collections.map_size expects a Map argument.",
-                                  "t81lang_std_collections_map_size_bad_type"),
-      "t81lang_std_collections_map_size_bad_type");
+  require_true(fails_semantic_with_message(bad_collections_map_size_type,
+                                           "std.collections.map_size expects a Map argument.",
+                                           "t81lang_std_collections_map_size_bad_type"),
+               "t81lang_std_collections_map_size_bad_type");
 
   constexpr const char* bad_collections_map_has_key_type = R"(
     fn main() -> i32 {
@@ -624,11 +623,10 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_collections_map_has_key_type,
-                                  "std.collections.map_has expects a Map first argument.",
-                                  "t81lang_std_collections_map_has_bad_key_type"),
-      "t81lang_std_collections_map_has_bad_key_type");
+  require_true(fails_semantic_with_message(bad_collections_map_has_key_type,
+                                           "std.collections.map_has expects a Map first argument.",
+                                           "t81lang_std_collections_map_has_bad_key_type"),
+               "t81lang_std_collections_map_has_bad_key_type");
 
   constexpr const char* bad_collections_map_get_key_type = R"(
     fn main() -> i32 {
@@ -637,11 +635,10 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_collections_map_get_key_type,
-                                  "std.collections.map_get expects a Map first argument.",
-                                  "t81lang_std_collections_map_get_bad_key_type"),
-      "t81lang_std_collections_map_get_bad_key_type");
+  require_true(fails_semantic_with_message(bad_collections_map_get_key_type,
+                                           "std.collections.map_get expects a Map first argument.",
+                                           "t81lang_std_collections_map_get_bad_key_type"),
+               "t81lang_std_collections_map_get_bad_key_type");
 
   constexpr const char* bad_collections_map_remove_arity = R"(
     fn main() -> i32 {
@@ -663,11 +660,10 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_collections_map_keys_type,
-                                  "std.collections.map_keys expects a Map argument.",
-                                  "t81lang_std_collections_map_keys_bad_type"),
-      "t81lang_std_collections_map_keys_bad_type");
+  require_true(fails_semantic_with_message(bad_collections_map_keys_type,
+                                           "std.collections.map_keys expects a Map argument.",
+                                           "t81lang_std_collections_map_keys_bad_type"),
+               "t81lang_std_collections_map_keys_bad_type");
 
   constexpr const char* bad_collections_set_size_type = R"(
     fn main() -> i32 {
@@ -676,11 +672,10 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_collections_set_size_type,
-                                  "std.collections.set_size expects a Set argument.",
-                                  "t81lang_std_collections_set_size_bad_type"),
-      "t81lang_std_collections_set_size_bad_type");
+  require_true(fails_semantic_with_message(bad_collections_set_size_type,
+                                           "std.collections.set_size expects a Set argument.",
+                                           "t81lang_std_collections_set_size_bad_type"),
+               "t81lang_std_collections_set_size_bad_type");
 
   constexpr const char* bad_collections_set_has_key_type = R"(
     fn main() -> i32 {
@@ -689,11 +684,10 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_collections_set_has_key_type,
-                                  "std.collections.set_has expects a Set first argument.",
-                                  "t81lang_std_collections_set_has_bad_key_type"),
-      "t81lang_std_collections_set_has_bad_key_type");
+  require_true(fails_semantic_with_message(bad_collections_set_has_key_type,
+                                           "std.collections.set_has expects a Set first argument.",
+                                           "t81lang_std_collections_set_has_bad_key_type"),
+               "t81lang_std_collections_set_has_bad_key_type");
 
   constexpr const char* bad_collections_set_add_key_type = R"(
     fn main() -> i32 {
@@ -702,11 +696,10 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(
-      fails_semantic_with_message(bad_collections_set_add_key_type,
-                                  "std.collections.set_add expects a Set first argument.",
-                                  "t81lang_std_collections_set_add_bad_key_type"),
-      "t81lang_std_collections_set_add_bad_key_type");
+  require_true(fails_semantic_with_message(bad_collections_set_add_key_type,
+                                           "std.collections.set_add expects a Set first argument.",
+                                           "t81lang_std_collections_set_add_bad_key_type"),
+               "t81lang_std_collections_set_add_bad_key_type");
 
   constexpr const char* bad_collections_set_remove_arity = R"(
     fn main() -> i32 {
@@ -728,11 +721,11 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(
-                   bad_collections_graph_edge_count_type,
-                   "std.collections.graph_edge_count expects a Graph argument.",
-                   "t81lang_std_collections_graph_edge_count_bad_type"),
-               "t81lang_std_collections_graph_edge_count_bad_type");
+  require_true(
+      fails_semantic_with_message(bad_collections_graph_edge_count_type,
+                                  "std.collections.graph_edge_count expects a Graph argument.",
+                                  "t81lang_std_collections_graph_edge_count_bad_type"),
+      "t81lang_std_collections_graph_edge_count_bad_type");
 
   constexpr const char* bad_collections_graph_has_edge_arity = R"(
     fn main() -> i32 {
@@ -754,11 +747,11 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(
-                   bad_collections_graph_add_edge_type,
-                   "std.collections.graph_add_edge expects a Graph first argument.",
-                   "t81lang_std_collections_graph_add_edge_bad_type"),
-               "t81lang_std_collections_graph_add_edge_bad_type");
+  require_true(
+      fails_semantic_with_message(bad_collections_graph_add_edge_type,
+                                  "std.collections.graph_add_edge expects a Graph first argument.",
+                                  "t81lang_std_collections_graph_add_edge_bad_type"),
+      "t81lang_std_collections_graph_add_edge_bad_type");
 
   constexpr const char* bad_collections_graph_remove_edge_arity = R"(
     fn main() -> i32 {
@@ -780,11 +773,11 @@ static void test_std_namespace_builtin_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(
-                   bad_collections_graph_neighbors_type,
-                   "std.collections.graph_neighbors expects a Graph first argument.",
-                   "t81lang_std_collections_graph_neighbors_bad_type"),
-               "t81lang_std_collections_graph_neighbors_bad_type");
+  require_true(
+      fails_semantic_with_message(bad_collections_graph_neighbors_type,
+                                  "std.collections.graph_neighbors expects a Graph first argument.",
+                                  "t81lang_std_collections_graph_neighbors_bad_type"),
+      "t81lang_std_collections_graph_neighbors_bad_type");
 
   constexpr const char* bad_async_sleep_type = R"(
     fn main() -> i32 {
@@ -1883,10 +1876,10 @@ static void test_std_symbol_aliases() {
       return 0;
     }
   )";
-  require_true(fails_semantic_with_message(bad_to_string_type,
-                                           "symbol_to_string expects a Symbol argument.",
-                                           "t81lang_std_symbol_to_string_bad_type"),
-               "t81lang_std_symbol_to_string_bad_type");
+  require_true(
+      fails_semantic_with_message(bad_to_string_type, "symbol_to_string expects a Symbol argument.",
+                                  "t81lang_std_symbol_to_string_bad_type"),
+      "t81lang_std_symbol_to_string_bad_type");
 
   constexpr const char* bad_eq_arity = R"(
     fn main() -> i32 {
