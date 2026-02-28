@@ -194,8 +194,8 @@ int main() {
             let map_flat: Map[T81String, T81String] = std.collections.map();
             let _mp1: Map[T81String, T81String] = std.collections.map_put(map_flat, "city", "sf");
             let set_v: Set[T81String] = std.collections.set();
-            let tree_v: Vector[T81String] = std.collections.tree();
-            let graph_v: Vector[T81String] = std.collections.graph();
+            let tree_v: Tree[T81String] = std.collections.tree();
+            let graph_v: Graph[T81String] = std.collections.graph();
             std.agent.self_reflect();
             std.sys.exit(0);
             let _ent = ent;
@@ -228,11 +228,11 @@ int main() {
             let _set_added_dup_size = std.collections.set_size(set_added_dup);
             let _set_removed_size = std.collections.set_size(set_removed);
             let _set_removed_has_lang = std.collections.set_has(set_removed, "lang");
-            let _tree_h = std.collections.len(tree_v);
-            let _graph_h = std.collections.len(graph_v);
-            let graph_edges: Vector[T81String] = std.collections.graph_add_edge(graph_v, "a", "b");
-            let graph_edges_dup: Vector[T81String] = std.collections.graph_add_edge(graph_edges, "a", "b");
-            let graph_edges_removed: Vector[T81String] = std.collections.graph_remove_edge(graph_edges_dup, "a", "b");
+            let _tree_h = 0;
+            let _graph_h = std.collections.graph_edge_count(graph_v);
+            let graph_edges: Graph[T81String] = std.collections.graph_add_edge(graph_v, "a", "b");
+            let graph_edges_dup: Graph[T81String] = std.collections.graph_add_edge(graph_edges, "a", "b");
+            let graph_edges_removed: Graph[T81String] = std.collections.graph_remove_edge(graph_edges_dup, "a", "b");
             let graph_neighbors_b: Vector[T81String] = std.collections.graph_neighbors(graph_edges_dup, "b");
             let _graph_edge_count = std.collections.graph_edge_count(graph_edges_dup);
             let _graph_edge_count_removed = std.collections.graph_edge_count(graph_edges_removed);

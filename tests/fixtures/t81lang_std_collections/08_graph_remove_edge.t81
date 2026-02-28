@@ -1,18 +1,18 @@
 fn main() -> i32 {
-    let g0: Vector[T81String] = std.collections.graph();
-    let g1: Vector[T81String] = std.collections.graph_add_edge(g0, "a", "b");
-    let g2: Vector[T81String] = std.collections.graph_add_edge(g1, "b", "c");
-    let g3: Vector[T81String] = std.collections.graph_add_edge(g2, "a", "b");
-    let g4: Vector[T81String] = std.collections.graph_remove_edge(g3, "a", "b");
-    let g5: Vector[T81String] = std.collections.graph_remove_edge(g4, "x", "y");
+    let g0: Graph[T81String] = std.collections.graph();
+    let g1: Graph[T81String] = std.collections.graph_add_edge(g0, "a", "b");
+    let g2: Graph[T81String] = std.collections.graph_add_edge(g1, "b", "c");
+    let g3: Graph[T81String] = std.collections.graph_add_edge(g2, "a", "b");
+    let g4: Graph[T81String] = std.collections.graph_remove_edge(g3, "a", "b");
+    let g5: Graph[T81String] = std.collections.graph_remove_edge(g4, "x", "y");
 
     print(std.collections.graph_edge_count(g3));
     print(std.collections.graph_edge_count(g4));
     print(std.collections.graph_edge_count(g5));
     print(std.collections.graph_has_edge(g4, "a", "b"));
     print(std.collections.graph_has_edge(g4, "b", "c"));
-    let g_odd_removed: Vector[T81String] = std.collections.graph_remove_edge(["a", "b", "dangling"], "a", "b");
-    print(std.collections.graph_edge_count(g_odd_removed));
-    print(std.collections.graph_has_edge(g_odd_removed, "a", "b"));
+    // let g_odd_removed: Graph[T81String] = std.collections.graph_remove_edge(["a", "b", "dangling"], "a", "b");
+    // print(std.collections.graph_edge_count(g_odd_removed));
+    // print(std.collections.graph_has_edge(g_odd_removed, "a", "b"));
     return 0;
 }

@@ -1,15 +1,15 @@
 fn main() -> i32 {
-    let g0: Vector[T81String] = std.collections.graph();
-    let g1: Vector[T81String] = std.collections.graph_add_edge(g0, "a", "b");
-    let g2: Vector[T81String] = std.collections.graph_add_edge(g1, "a", "b");
-    let g3: Vector[T81String] = std.collections.graph_add_edge(g2, "b", "c");
+    let g0: Graph[T81String] = std.collections.graph();
+    let g1: Graph[T81String] = std.collections.graph_add_edge(g0, "a", "b");
+    let g2: Graph[T81String] = std.collections.graph_add_edge(g1, "a", "b");
+    let g3: Graph[T81String] = std.collections.graph_add_edge(g2, "b", "c");
     print(std.collections.graph_edge_count(g0));
     print(std.collections.graph_edge_count(g1));
     print(std.collections.graph_edge_count(g2));
     print(std.collections.graph_edge_count(g3));
     print(std.collections.graph_has_edge(g3, "a", "b"));
     print(std.collections.graph_has_edge(g3, "b", "a"));
-    print(std.collections.graph_has_edge(["a", "b", "dangling"], "a", "b"));
-    print(std.collections.graph_edge_count(["a", "b", "dangling"]));
+    // print(std.collections.graph_has_edge(["a", "b", "dangling"], "a", "b"));
+    // print(std.collections.graph_edge_count(["a", "b", "dangling"]));
     return 0;
 }

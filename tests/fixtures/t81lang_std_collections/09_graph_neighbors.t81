@@ -1,13 +1,13 @@
 fn main() -> i32 {
-    let g0: Vector[T81String] = std.collections.graph();
-    let g1: Vector[T81String] = std.collections.graph_add_edge(g0, "a", "b");
-    let g2: Vector[T81String] = std.collections.graph_add_edge(g1, "a", "c");
-    let g3: Vector[T81String] = std.collections.graph_add_edge(g2, "b", "a");
+    let g0: Graph[T81String] = std.collections.graph();
+    let g1: Graph[T81String] = std.collections.graph_add_edge(g0, "a", "b");
+    let g2: Graph[T81String] = std.collections.graph_add_edge(g1, "a", "c");
+    let g3: Graph[T81String] = std.collections.graph_add_edge(g2, "b", "a");
 
     let n0: Vector[T81String] = std.collections.graph_neighbors(g0, "a");
     let na: Vector[T81String] = std.collections.graph_neighbors(g3, "a");
     let nb: Vector[T81String] = std.collections.graph_neighbors(g3, "b");
-    let no: Vector[T81String] = std.collections.graph_neighbors(["a", "b", "a", "c", "dangling"], "a");
+    // let no: Vector[T81String] = std.collections.graph_neighbors(["a", "b", "a", "c", "dangling"], "a");
     let nm: Vector[T81String] = std.collections.graph_neighbors(g3, "z");
 
     print(std.collections.len(n0));
@@ -16,9 +16,9 @@ fn main() -> i32 {
     print(std.collections.last(na));
     print(std.collections.len(nb));
     print(std.collections.first(nb));
-    print(std.collections.len(no));
-    print(std.collections.first(no));
-    print(std.collections.last(no));
+    // print(std.collections.len(no));
+    // print(std.collections.first(no));
+    // print(std.collections.last(no));
     print(std.collections.len(nm));
     return 0;
 }

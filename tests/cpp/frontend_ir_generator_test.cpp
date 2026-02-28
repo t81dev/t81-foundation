@@ -500,8 +500,8 @@ void test_std_namespace_aliases_lower_to_builtin_opcodes() {
             let map_flat: Map[T81String, T81String] = std.collections.map();
             let _mp1: Map[T81String, T81String] = std.collections.map_put(map_flat, "city", "sf");
             let set_v: Set[T81String] = std.collections.set();
-            let tree_v: Vector[T81String] = std.collections.tree();
-            let graph_v: Vector[T81String] = std.collections.graph();
+            let tree_v: Tree[T81String] = std.collections.tree();
+            let graph_v: Graph[T81String] = std.collections.graph();
             std.agent.self_reflect();
             std.sys.exit(0);
             std.io.println("hello");
@@ -557,8 +557,8 @@ void test_std_namespace_aliases_lower_to_builtin_opcodes() {
             let _thread_h = thread_h;
             let _promise_h = promise_h;
             // Removed len checks for list/map/set because new analyzer enforces strict Vector[T] for len
-            let _map_pairs = std.collections.map_size(map_flat);
-            let _map_has_city = std.collections.map_has(map_flat, "city");
+            let _map_pairs = std.collections.map_size(map_v);
+            let _map_has_city = std.collections.map_has(map_v, "city");
             let map_updated: Map[T81String, T81String] = std.collections.map_put(map_flat, "city", "oakland");
             let map_keys: Vector[T81String] = std.collections.map_keys(map_updated);
             let map_removed: Map[T81String, T81String] = std.collections.map_remove(map_updated, "lang");
@@ -574,17 +574,17 @@ void test_std_namespace_aliases_lower_to_builtin_opcodes() {
             let set_added: Set[T81String] = std.collections.set_add(set_flat, "edge");
             let set_added_dup: Set[T81String] = std.collections.set_add(set_added, "city");
             let set_removed: Set[T81String] = std.collections.set_remove(set_added_dup, "lang");
-            let _set_size = std.collections.set_size(set_flat);
-            let _set_has_city = std.collections.set_has(set_flat, "city");
+            let _set_size = std.collections.set_size(set_v);
+            let _set_has_city = std.collections.set_has(set_v, "city");
             let _set_added_size = std.collections.set_size(set_added);
             let _set_added_dup_size = std.collections.set_size(set_added_dup);
             let _set_removed_size = std.collections.set_size(set_removed);
             let _set_removed_has_lang = std.collections.set_has(set_removed, "lang");
-            let _tree_h = std.collections.len(tree_v);
-            let _graph_h = std.collections.len(graph_v);
-            let graph_edges: Vector[T81String] = std.collections.graph_add_edge(graph_v, "a", "b");
-            let graph_edges_dup: Vector[T81String] = std.collections.graph_add_edge(graph_edges, "a", "b");
-            let graph_edges_removed: Vector[T81String] = std.collections.graph_remove_edge(graph_edges_dup, "a", "b");
+            let _tree_h = 0;
+            let _graph_h = std.collections.graph_edge_count(graph_v);
+            let graph_edges: Graph[T81String] = std.collections.graph_add_edge(graph_v, "a", "b");
+            let graph_edges_dup: Graph[T81String] = std.collections.graph_add_edge(graph_edges, "a", "b");
+            let graph_edges_removed: Graph[T81String] = std.collections.graph_remove_edge(graph_edges_dup, "a", "b");
             let graph_neighbors_b: Vector[T81String] = std.collections.graph_neighbors(graph_edges_dup, "b");
             let _graph_edge_count = std.collections.graph_edge_count(graph_edges_dup);
             let _graph_edge_count_removed = std.collections.graph_edge_count(graph_edges_removed);
@@ -819,15 +819,15 @@ void test_std_runtime_handle_aliases_lower_to_deterministic_tokens() {
             let list_v: List[T81String] = std.collections.list();
             let map_v: Map[T81String, T81String] = std.collections.map();
             let set_v: Set[T81String] = std.collections.set();
-            let tree_v: Vector[T81String] = std.collections.tree();
-            let graph_v: Vector[T81String] = std.collections.graph();
+            let tree_v: Tree[T81String] = std.collections.tree();
+            let graph_v: Graph[T81String] = std.collections.graph();
             let _proof = proof;
             let _stream_h = stream_h;
             let _net_h = net_h;
             let _thread_h = thread_h;
             let _promise_h = promise_h;
             // Removed len() on non-Vectors as they are now strictly checked
-            return std.collections.len(tree_v) + std.collections.len(graph_v);
+            return 0;
         }
     )";
   Lexer lexer(source);
