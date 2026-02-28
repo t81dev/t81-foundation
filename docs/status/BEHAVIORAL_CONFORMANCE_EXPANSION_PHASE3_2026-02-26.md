@@ -1,16 +1,17 @@
 # Behavioral Conformance Expansion Phase 3
 
-Date: 2026-02-26  
-Status: In progress  
+Date: 2026-02-26
+Last Updated: 2026-02-28
+Status: Slice 1 complete — Slice 2 active
 Baseline: `d1cef94c`
 
 ## Objective
 
 Scale conformance from representative matrix slices toward subsystem-complete invariants while continuing VM integration-layer concentration reduction.
 
-## Current Sprint Slice
+## Slice 1 — Completed 2026-02-28
 
-Completed in this slice:
+Completed items:
 
 1. Added deterministic VM trap-family matrix coverage:
    - `tests/cpp/vm_fault_family_determinism_matrix_test.cpp`
@@ -66,9 +67,11 @@ separately from Phase 3 and does not count toward Phase 3 slice progress:
 
 These are tracked in `docs/status/PROJECT_CONTROL_CENTER.md` section 4.2.
 
-## Next Planned Slice (Phase 3 Slice 2)
+## Slice 2 — Current Active Slice (March 2026)
 
 Status: Not yet started.
+
+Planned work:
 
 1. Continue VM integration extraction with additional opcode-family dispatch
    splitting to reduce `core/vm/vm.cpp` control concentration.
@@ -77,3 +80,6 @@ Status: Not yet started.
 3. Expand Axion conformance matrices from clause-ordering checks into
    multi-requirement interaction invariants (segment + axion-event + alignment
    combinations).
+
+Exit criteria: Slice 2 items above complete; `cmake --build` clean;
+`ctest` full suite green; updated baseline SHA recorded here.
