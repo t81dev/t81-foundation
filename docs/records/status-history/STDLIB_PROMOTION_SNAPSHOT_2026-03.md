@@ -1,8 +1,8 @@
 # T81Lang Standard Library Promotion Snapshot
 
-Date: 2026-02-26  
-Status: Active Snapshot  
-Baseline: `c5c4aa59`
+Date: 2026-03-01
+Status: Active Snapshot
+Baseline: `c5c4aa59` → Sprint 2 fixture promotion (io/sys/async/agent)
 
 ## 1. Module Status Matrix
 
@@ -10,15 +10,15 @@ Baseline: `c5c4aa59`
 | :--- | :--- | :--- | :--- |
 | `std.core` | bounded | deterministic aliases; behavior locked by fixtures | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: core) |
 | `std.math` | bounded | host-math dependency documented; bounded deterministic profile only | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: math), `spec/tisc-spec.md` |
-| `std.io` | bounded | deterministic handle aliases and print paths | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: runtime) |
+| `std.io` | bounded | deterministic handle aliases and print paths | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: io) |
 | `std.collections` | stable | deterministic staged semantics and fixture coverage | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: collections) |
 | `std.text` | stable | deterministic text semantics and fixture coverage | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: text) |
 | `std.bytes` | stable | deterministic byte semantics and fixture coverage | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: bytes) |
 | `std.symbol` | stable | deterministic alias semantics and fixture coverage | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: symbol) |
-| `std.sys` | bounded | deterministic placeholder aliases (`time=0`, `entropy=0`) | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: runtime) |
-| `std.async` | bounded | deterministic placeholder aliases (`yield/sleep` no-op) | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: runtime) |
+| `std.sys` | bounded | deterministic placeholder aliases (`time=0`, `entropy=0`) | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: sys) |
+| `std.async` | bounded | deterministic placeholder aliases (`yield/sleep` no-op) | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: async) |
 | `std.tensor` | bounded | deterministic alias behavior within current runtime profile | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: tensor) |
-| `std.agent` | experimental | deterministic opcode alias exists; capability semantics remain bounded | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: runtime) |
+| `std.agent` | experimental | deterministic opcode alias exists; capability semantics remain bounded | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: agent) |
 
 ## 2. Governance Notes
 

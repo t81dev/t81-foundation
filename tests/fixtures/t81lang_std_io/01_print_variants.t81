@@ -1,0 +1,6 @@
+fn main() -> i32 {
+    std.io.println("io-ok");
+    std.io.print_int(7);
+    std.io.print_float(0.0);
+    return 0;
+}

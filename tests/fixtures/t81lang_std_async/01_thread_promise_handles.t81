@@ -1,0 +1,7 @@
+fn main() -> i32 {
+    let t: T81String = std.async.thread();
+    let p: T81String = std.async.promise();
+    print(t);
+    print(p);
+    return 0;
+}

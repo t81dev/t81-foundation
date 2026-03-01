@@ -1,0 +1,4 @@
+fn main() -> i32 {
+    std.agent.self_reflect();
+    return 0;
+}

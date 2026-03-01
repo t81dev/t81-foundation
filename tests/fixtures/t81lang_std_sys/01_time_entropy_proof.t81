@@ -1,0 +1,9 @@
+fn main() -> i32 {
+    let p: T81String = std.sys.proof();
+    let e: i32 = std.sys.entropy();
+    let t: T81Float = std.sys.time();
+    print(p);
+    print(e);
+    print(t);
+    return 0;
+}

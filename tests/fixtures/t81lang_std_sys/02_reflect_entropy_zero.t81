@@ -1,0 +1,6 @@
+fn main() -> i32 {
+    std.sys.reflect();
+    let e: i32 = std.sys.entropy();
+    print(e);
+    return 0;
+}

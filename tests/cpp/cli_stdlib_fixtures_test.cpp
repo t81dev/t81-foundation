@@ -35,6 +35,10 @@ const std::vector<Module> STDLIB_MODULES = {
     {"symbolic", "t81lang_std_symbolic", false},
     {"tensor", "t81lang_std_tensor", true},
     {"text", "t81lang_std_text", false},
+    {"io", "t81lang_std_io", false},
+    {"sys", "t81lang_std_sys", false},
+    {"async", "t81lang_std_async", false},
+    {"agent", "t81lang_std_agent", false},
 };
 
 std::shared_ptr<t81::weights::ModelFile> make_fixture_weights_model() {

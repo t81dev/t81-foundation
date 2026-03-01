@@ -1,0 +1,5 @@
+fn main() -> i32 {
+    std.async.yield();
+    std.async.sleep(0.0);
+    return 0;
+}
