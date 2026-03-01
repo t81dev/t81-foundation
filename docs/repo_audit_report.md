@@ -32,7 +32,6 @@
 | `.gitattributes` | Version Control | Low | No |
 | `.gitignore` | Version Control | Medium | Update required |
 | `.pre-commit-config.yaml` | Build/Config | Low | No |
-| `BUILD.bazel` | Build/Config | Low | No |
 | `CMakeLists.txt` | Build/Config | High (Build System) | No |
 | `CMakePresets.json` | Build/Config | Low | No |
 | `CODEOWNERS` | Governance | High | No |
