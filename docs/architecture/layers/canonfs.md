@@ -73,4 +73,4 @@ Diagram source: [`../diagrams/canonfs-dataflow.mmd`](../diagrams/canonfs-dataflo
 - [`src/canonfs/in_memory_driver.cpp`](../../../src/canonfs/in_memory_driver.cpp)
 - [`src/canonfs/persistent_driver.cpp`](../../../src/canonfs/persistent_driver.cpp)
 - [`kernel/axion/canonfs_hook.cpp`](../../../kernel/axion/canonfs_hook.cpp)
-- [`spec/canonfs-spec.md`](../../../spec/canonfs-spec.md)
+- [`spec/supplemental/canonfs-spec.md`](../../../spec/supplemental/canonfs-spec.md)

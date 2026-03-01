@@ -17,9 +17,10 @@ ______________________________________________________________________
 
 # Cognitive Tiers Specification
 
-Version 0.2 — Draft (Standards Track)
+Version 0.3 — Draft (Standards Track)
 
 Status: Draft → Standards Track\
+Last Revised: 2026-03-01\
 Applies to: Axion, T81VM, T81Lang, TISC
 
 The **Cognitive Tier Model** defines progressively more complex modes of computation and reasoning within the T81 Ecosystem.\
@@ -212,12 +213,20 @@ Axion determines the tier of a program using three mechanisms:
 
 ## 2.1 Static Tier Declarations
 
-Programmer may include:
+Programmers may annotate functions with a numeric tier value (1–5):
 
 ```t81
 @tier(3)
 fn analyze_graph(g: Graph) -> Result { ... }
 ```
+
+**Annotation convention:**
+
+- `@tier(N)` accepts integers 1 through 5 only.
+- `@tier(0)` is **not user-declarable**. Tier 0 is an Axion-internal validation
+  state; user code is never resident in Tier 0 during execution.
+- If no `@tier` annotation is present, Axion infers the tier from observed
+  behavior and may promote dynamically (see §2.2).
 
 Static declarations indicate intent.
 
@@ -376,6 +385,8 @@ ______________________________________________________________________
 ## TISC
 
 - **Privileged Instructions & Tier Hooks** → [`tisc-spec.md`](tisc-spec.md#510-axion-privileged-instructions)
+- **Note:** `AXREAD` and `AXSET` are restricted to Tier 2 and above.
+  `AXVERIFY` is the only privileged instruction permitted in Tier 1 (see §1, Tier 1 Constraints).
 
 ## T81VM
 
@@ -390,8 +401,3 @@ ______________________________________________________________________
 - **Tier Annotations and Static Intent** → [`t81lang-spec.md`](t81lang-spec.md#3-purity-and-effects)
 
 ______________________________________________________________________
-
-Choose a number to continue.
-
-```
-```

@@ -20,7 +20,16 @@ ______________________________________________________________________
 Version 1.1 — Stable
 
 Status: Stable\
+Last Revised: 2026-03-01\
 Applies to: T81VM, T81Lang, Axion, Cognitive Tiers
+
+> **Freeze Exception — 2026-03-01**\
+> Scope: Additive corrections only — no existing opcode semantics changed.\
+> Authorized by: @t81dev\
+> Rationale: §5.14 adds seven bitwise opcodes (BITAND, BITOR, BITXOR, BITNOT,
+> BITSHL, BITSHR, BITUSHR) that are implemented in the VM and emitted by the
+> T81Lang compiler's lowering pass but were absent from the normative spec,
+> causing external readers to miss valid instruction-set surface.
 
 This document defines the **Ternary Instruction Set Computer (TISC)** for the T81 Ecosystem.\
 It is **normative** for all instruction encoding, execution semantics, and VM integration.
@@ -664,6 +673,10 @@ These instructions are only valid in Axion-supervised or privileged contexts.
 
 Any attempt to execute Axion instructions from non-privileged context MUST be treated as a **Security Fault**.
 
+**Tier restriction (cross-reference):** `AXREAD` and `AXSET` are restricted to
+Tier 2 and above per [`cognitive-tiers.md §1`](cognitive-tiers.md#tier-1--pure-deterministic-computation).
+`AXVERIFY` is the only Axion privileged instruction permitted in Tier 1.
+
 ______________________________________________________________________
 
 ### 5.11 Trigonometric Instructions
@@ -723,6 +736,65 @@ Instructions that interact with content-addressed storage (CanonFS) under Axion 
   - `DecodeFault`: Invalid `RS` handle or malformed object.
   - `SecurityFault`: Hash not allowed by Axion policy.
   - `BoundsFault`: Object not found in `CanonFS`.
+
+______________________________________________________________________
+
+### 5.14 Bitwise Integer Operations
+
+These instructions perform standard binary bitwise operations on **T81BigInt**
+operands. Operands are interpreted as two's-complement binary integers for
+the purpose of bit-level manipulation; the result is stored as a canonical
+`T81BigInt`.
+
+> *Freeze Exception addition — 2026-03-01. These opcodes are emitted by the
+> T81Lang compiler lowering table (§5 of [`t81lang-spec.md`](t81lang-spec.md#5-compilation-pipeline))
+> and implemented in `core/vm/vm.cpp`. They were omitted from previous spec
+> versions.*
+
+#### BITAND
+
+- **Form**: `BITAND RD, RS1, RS2`
+- **Semantics**: `R[RD] := canonical(R[RS1] & R[RS2])` — bitwise AND of T81BigInt operands.
+- **Faults**: None.
+
+#### BITOR
+
+- **Form**: `BITOR RD, RS1, RS2`
+- **Semantics**: `R[RD] := canonical(R[RS1] | R[RS2])` — bitwise OR.
+- **Faults**: None.
+
+#### BITXOR
+
+- **Form**: `BITXOR RD, RS1, RS2`
+- **Semantics**: `R[RD] := canonical(R[RS1] ^ R[RS2])` — bitwise XOR.
+- **Faults**: None.
+
+#### BITNOT
+
+- **Form**: `BITNOT RD, RS`
+- **Semantics**: `R[RD] := canonical(~R[RS])` — bitwise complement.
+- **Faults**: None.
+
+#### BITSHL
+
+- **Form**: `BITSHL RD, RS, R_AMT`
+- **Semantics**: `R[RD] := canonical(R[RS] << (R[R_AMT] & 0x3F))` — left shift;
+  shift amount is masked to 6 bits before use.
+- **Faults**: None.
+
+#### BITSHR
+
+- **Form**: `BITSHR RD, RS, R_AMT`
+- **Semantics**: `R[RD] := canonical(R[RS] >> (R[R_AMT] & 0x3F))` — arithmetic
+  (sign-preserving) right shift; shift amount masked to 6 bits.
+- **Faults**: None.
+
+#### BITUSHR
+
+- **Form**: `BITUSHR RD, RS, R_AMT`
+- **Semantics**: `R[RD] := canonical(unsigned_right_shift(R[RS], R[R_AMT] & 0x3F))` —
+  logical (unsigned, zero-fill) right shift.
+- **Faults**: None.
 
 ______________________________________________________________________
 
@@ -796,9 +868,11 @@ ______________________________________________________________________
 
 ## T81Lang
 
+Current spec version: **v1.2** (updated 2026-03-01).
+
 - **Code Generation Targets for TISC** → [`t81lang-spec.md`](t81lang-spec.md#5-compilation-pipeline)
-- **Type System Mapping to Operands** → [`t81lang-spec.md`](t81lang-spec.md#3-type-system)
-- **Purity and Effect Constraints** → [`t81lang-spec.md`](t81lang-spec.md#1-language-properties)
+- **Type System Mapping to Operands** → [`t81lang-spec.md`](t81lang-spec.md#2-type-system)
+- **Purity and Effect Constraints** → [`t81lang-spec.md`](t81lang-spec.md#3-purity-and-effects)
 
 ## Axion
 

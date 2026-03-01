@@ -20,6 +20,7 @@ ______________________________________________________________________
 Version 1.0 — Draft
 
 Status: Draft\
+Last Revised: 2026-03-01\
 Applies to: T81VM, TISC, T81Lang, Cognitive Tiers
 
 The **Axion Kernel** is the supervisory intelligence of the T81 Ecosystem.\
@@ -80,6 +81,11 @@ Axion MUST:
 
 Axion is the final arbiter of “deterministic enough.”
 
+> **Implementation status (AX-M5):** Determinism stewardship is partially
+> implemented. `axion_log` captures instruction events but does not yet perform
+> active nondeterminism detection (cross-run divergence comparisons). Active
+> detection is AX-M5, targeting 2026-03-14.
+
 ## 1.2 Safety & Ethics Enforcement
 
 Axion MUST enforce:
@@ -104,6 +110,10 @@ Axion measures:
 - branching factor and path divergence
 
 These metrics guide tier transitions.
+
+> **Implementation status:** Complexity measurement currently tracks call depth
+> and tensor operation counts. Call graph complexity, shape explosion detection,
+> and branching factor metrics are not yet implemented.
 
 ## 1.4 Tier Supervision
 
@@ -147,6 +157,12 @@ Axion is not technically part of T81VM, but all VM behavior MUST be visible and 
 
 Axion also receives a deterministic trace of every segment transition and guarded decision inside the HanoiVM as described in [RFC-0020](../spec/rfcs/RFC-0020-axion-segment-trace.md). Each `AxionEvent.verdict.reason` includes the segment name, address, and action (e.g., `stack frame allocated stack addr=243 size=16`, `tensor slot allocated tensor addr=5`, `meta slot axion event segment=meta addr=1283`, `AxRead guard segment=stack addr=42`, `AxSet guard segment=heap addr=128`). CanonFS writes traverse `AXSET`/`AXREAD`, trigger the same meta-slot logging, and emit `meta slot axion event segment=meta ... action=Write/Read` so policy runners can enforce persistence guards deterministically. These strings anchor Axion policies and audits to the runtime's deterministic layout without requiring additional instrumentation. Axion MUST reject programs whose required segment-trace strings are missing when the policy explicitly requests them.
 
+> **Implementation status (AX-M6):** The full canonical reason string form
+> `segment=<name> addr=<value> action=<desc>` is the normative target. Current
+> implementation emits the segment, address, and action fields as separate
+> structured `AxionEvent` fields; verbatim concatenated string construction is
+> AX-M6, targeting 2026-03-14.
+
 ## 1.9 Axion API & Policy Enforcement
 
 The Axion Kernel exposes a constrained syscall surface (`AXREAD`, `AXSET`, `AXVERIFY`, `AXTRACE`, etc.) that every privileged opcode must call before performing non-deterministic or privileged actions. Each syscall supplies the opcode, the target addresses or handles, the calling snapshot, and any associated guard metadata (loop id, match metadata, enum/variant ids). The Axion Engine returns a deterministic `Verdict` (Allow/Deny) plus a canonical `reason` string. Denials immediately trigger deterministic `Axion Faults`; allows append the reason to `State::axion_log`.
@@ -168,11 +184,22 @@ Because the policy lexer is deterministic and the verdict strings are canonical 
 
 ## 1.10 CanonFS Observability
 
-Canonical File System (CanonFS) is the deterministic store where Axion writes loop/match policy hints, bounds-fault snippets, and trace exports. Each CanonFS write traverses `AXSET`, so Axion can validate shape/segment constraints and record `meta slot` events before persistence. The `axion_policy_runner` example (documented in `docs/guides/axion-trace.md`) mirrors this path and shows auditors how to capture the required `verdict.reason` strings without digging into VM sources. CanonFS therefore acts as the official audit trail for Axion policy enforcement, and the persistent driver described in `spec/canonfs-spec.md` guarantees those `meta slot axion event segment=meta ... action=Write/Read` strings fire before bytes hit `objects/<hash>.blk`.
+Canonical File System (CanonFS) is the deterministic store where Axion writes loop/match policy hints, bounds-fault snippets, and trace exports. Each CanonFS write traverses `AXSET`, so Axion can validate shape/segment constraints and record `meta slot` events before persistence. The `axion_policy_runner` example (documented in `docs/guides/axion-trace.md`) mirrors this path and shows auditors how to capture the required `verdict.reason` strings without digging into VM sources. CanonFS therefore acts as the official audit trail for Axion policy enforcement, and the persistent driver described in `spec/supplemental/canonfs-spec.md` guarantees those `meta slot axion event segment=meta ... action=Write/Read` strings fire before bytes hit `objects/<hash>.blk`.
+
+> **Implementation status (AX-M7):** CanonFS observability integration is
+> partial. Full `AXSET` propagation to CanonFS meta slots and end-to-end
+> `meta slot axion event` emission for all persistence paths is AX-M7,
+> targeting 2026-03-14.
 
 ______________________________________________________________________
 
 # 2. Subsystems
+
+> **Implementation status note:** The five subsystems described below are
+> **architectural targets**. In the current implementation their functionality
+> is distributed across `kernel/axion/policy_engine.cpp` and `core/vm/vm.cpp`
+> rather than realized as distinct classes with formal boundaries. Formal
+> subsystem separation is a post-Alpha milestone.
 
 Axion consists of **five deterministic subsystems**.
 
@@ -310,6 +337,10 @@ ______________________________________________________________________
 # 5. Privileged Instructions
 
 Axion defines normative semantics for all `AX*` instructions.
+
+**Tier restriction:** `AXREAD` and `AXSET` are restricted to Tier 2 and above.
+`AXVERIFY` is the only `AX*` instruction permitted in Tier 1. See
+[`cognitive-tiers.md §1`](cognitive-tiers.md#tier-1--pure-deterministic-computation).
 
 ### 5.1 AXREAD
 

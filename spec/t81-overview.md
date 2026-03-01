@@ -19,6 +19,8 @@ ______________________________________________________________________
 
 Version 1.0 — Stable
 
+Last Revised: 2026-03-01
+
 This document provides the conceptual and architectural overview of the T81 Ecosystem.\
 It defines the purpose, philosophical grounding, and structural layout of the entire computation stack.
 
@@ -105,9 +107,11 @@ Each doc stands alone and contributes to the cohesive whole.
 
 ## T81Lang
 
-- **Language Properties** → [`t81lang-spec.md`](t81lang-spec.md#1-language-properties)
-- **Grammar** → [`t81lang-spec.md`](t81lang-spec.md#2-grammar)
-- **Type System** → [`t81lang-spec.md`](t81lang-spec.md#3-type-system)
+Current spec version: **v1.2** (updated 2026-03-01 to match implementation).
+
+- **Core Grammar (EBNF)** → [`t81lang-spec.md`](t81lang-spec.md#1-core-grammar)
+- **Type System** → [`t81lang-spec.md`](t81lang-spec.md#2-type-system)
+- **Purity and Effects** → [`t81lang-spec.md`](t81lang-spec.md#3-purity-and-effects)
 
 ## Axion Kernel
 

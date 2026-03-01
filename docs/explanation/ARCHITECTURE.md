@@ -290,6 +290,6 @@ ______________________________________________________________________
 | **HanoiVM** | `../../core/vm/`, `../../include/t81/vm/` | @t81dev | `../../spec/vm/` |
 | **Axion** | `../../kernel/axion/`, `../../include/t81/axion/` | @t81dev | `../../spec/axion/` |
 | **CanonFS** | `../../src/canonfs/`, `../../include/t81/canonfs/` | @t81dev | `../../spec/canonfs/` |
-| **Cognitive** | `../../experimental/tiers/cog/`, `../../include/t81/cog/` | @t81dev | `../../spec/spec/t81-spec.md` |
+| **Cognitive** | `../../experimental/tiers/cog/`, `../../include/t81/cog/` | @t81dev | `../../spec/companion/t81-spec.md` |
 | **Numerics** | `../../core/types/`, `../../include/t81/types/` | @t81dev | `../../spec/numerics/` |
 | **CI/Scripts** | `../../.github/`, `../../scripts/` | @t81dev | `../reference/ci.md` |

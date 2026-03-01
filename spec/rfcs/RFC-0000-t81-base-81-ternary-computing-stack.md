@@ -121,7 +121,7 @@ This RFC introduces a new stack; no backwards compatibility is required. Profile
 
 ## Reference Implementations (Informative)
 
-- Canonical specs in this repository: `spec/index.md`, `spec/hanoi-kernel-spec.md`, `spec/canonfs-spec.md`
+- Canonical specs in this repository: `spec/index.md`, `spec/supplemental/hanoi-kernel-spec.md`, `spec/supplemental/canonfs-spec.md`
 - RFC catalog: `spec/rfcs/index.md`
 
 ## Decision

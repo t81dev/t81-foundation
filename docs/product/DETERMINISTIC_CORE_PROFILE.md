@@ -28,7 +28,7 @@ The following surfaces are included in DCP when they remain Verified in the Dete
 | TISC ISA (Frozen) | opcode encoding/semantics (`core/isa/`) | `spec/tisc-spec.md` | `tests/cpp/vm_determinism_property_test.cpp`, `tests/cpp/test_tritwise_backend_equivalence.cpp`, `scripts/ci/check_tisc_freeze_integrity.py` | `ci.yml` |
 | T81VM Interpreter (non-JIT) | reference interpreter path (`core/vm/`) | `spec/t81vm-spec.md` | `tests/cpp/vm_trace_test.cpp`, `tests/cpp/vm_determinism_property_test.cpp` | `ci.yml` |
 | Soft-float / dmath | deterministic float and numeric behavior | `spec/t81-data-types.md` | `tests/cpp/test_T81Float_arithmetic.cpp`, `tests/cpp/test_T81Float_rounding.cpp` | `ci.yml` |
-| Canonical serialization rules | canonical encodings and binary stability | `spec/t81-data-types.md`, `spec/cpp-mapping.md` | `tests/cpp/tisc_binary_io_determinism_test.cpp`, `tests/cpp/v1_canonical_numeric_contract_test.cpp` | `ci.yml` |
+| Canonical serialization rules | canonical encodings and binary stability | `spec/t81-data-types.md`, `spec/supplemental/cpp-mapping.md` | `tests/cpp/tisc_binary_io_determinism_test.cpp`, `tests/cpp/v1_canonical_numeric_contract_test.cpp` | `ci.yml` |
 | Determinism gate enforcement | reproducibility and determinism policy gates | `docs/governance/DETERMINISM_SURFACE_REGISTRY.md` | `scripts/ci/t81lang_repro_gate.py`, `scripts/ci/run_determinism_slice.sh`, `scripts/ci/check_core_numeric_wrapper_thinness.py` | `repro-ledger.yml`, `ci.yml` |
 
 DCP inclusion is controlled by the Determinism Surface Registry status. If a surface is downgraded from Verified, it is not eligible for DCP guarantees until restored.

@@ -20,6 +20,7 @@ ______________________________________________________________________
 Version 1.1 — Beta
 
 Status: Beta\
+Last Revised: 2026-03-01\
 Applies to: TISC, T81Lang, Axion, Cognitive Tiers
 
 The T81 Virtual Machine (T81VM) is the **deterministic execution environment** for TISC programs.\
@@ -66,6 +67,11 @@ T81VM MUST support at least one of the following execution modes; both are recom
 - The choice of mode MUST NOT change observable program behavior.
 - Axion MUST be able to query which mode is active.
 
+> **Implementation status (FW-02):** The public `get_execution_mode()` API is
+> not yet exposed as a discrete query surface. Axion tier metadata provides
+> indirect mode information via the policy event stream. Exposing a direct query
+> API is tracked as open work item FW-02.
+
 ### 1.2 Execution Lifecycle
 
 A typical program lifecycle is:
@@ -84,6 +90,11 @@ ______________________________________________________________________
 ## 2. Determinism Constraints
 
 Determinism is a **hard requirement**.
+
+When no Axion policy is provided, the VM defaults to `DenyWithReasonEngine`
+behavior: normal instruction execution proceeds, but all privileged instruction
+attempts are logged and any that exceed tier constraints are denied with a
+structured reason record.
 
 Implementations MUST ensure:
 
@@ -132,6 +143,12 @@ T81VM MAY support multiple **execution contexts** (threads or lightweight proces
 - Scheduling decisions MUST be Axion-visible (e.g., recorded in META/trace).
 
 ### 3.3 Communication
+
+> **Implementation status:** Deterministic scheduling events (context switches,
+> round-robin ticks) are not yet recorded as distinct `AxionEvent` entries in
+> the trace stream. They are observable only through indirect register-state
+> sampling. Recording scheduling as first-class trace events is a post-C2
+> milestone.
 
 - Contexts MUST communicate only via:
 
@@ -226,6 +243,13 @@ Requirements:
 
 1. It MUST be possible to determine, for any address, which segment it belongs to (or if it is invalid).
 2. Out-of-segment accesses MUST cause a **Bounds Fault**, not wrap-around or undefined behavior. Each fault MUST emit the canonical Axion verdict string (`reason="bounds fault segment=<segment> addr=<value> action=<description>"`) before the trap so policy and compliance tooling can replay the precise failure. The documented actions include `memory load/store`, `stack frame allocate/free`, `heap block allocate/free`, and `tensor handle access`.
+
+   > **Implementation status (AX-M5):** The canonical reason string
+   > `reason="bounds fault segment=X addr=Y action=Z"` is the normative target.
+   > Current implementation emits the three fields (segment, addr, action) as
+   > separate structured fields in the `AxionEvent` record and does not yet
+   > concatenate them into the single canonical string form. Full string
+   > construction is tracked as AX-M5, targeting 2026-03-14.
 3. Alignment rules for composite types (vectors, matrices, tensors) MUST follow the Data Types spec.
 
 Deterministic compliance tests (`ctest --test-dir build --output-on-failure`) must capture the Axion trace snippet referenced above so auditors can reproduce the same `bounds fault` strings without inspecting the runtime source.
@@ -506,9 +530,11 @@ ______________________________________________________________________
 
 ## T81Lang
 
+Current spec version: **v1.2** (updated 2026-03-01).
+
 - **Compiler → VM Pipeline** → [`t81lang-spec.md`](t81lang-spec.md#5-compilation-pipeline)
-- **Type Behavior in Execution** → [`t81lang-spec.md`](t81lang-spec.md#3-type-system)
-- **Purity / Effects at Runtime** → [`t81lang-spec.md`](t81lang-spec.md#1-language-properties)
+- **Type Behavior in Execution** → [`t81lang-spec.md`](t81lang-spec.md#2-type-system)
+- **Purity / Effects at Runtime** → [`t81lang-spec.md`](t81lang-spec.md#3-purity-and-effects)
 
 ## Axion
 

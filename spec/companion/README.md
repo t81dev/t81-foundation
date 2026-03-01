@@ -1,4 +1,4 @@
-# `spec/spec` (Historical Companion)
+# `spec/companion` (Historical Companion)
 
 This subtree contains long-form narrative material, primarily `t81-spec.md`.
 

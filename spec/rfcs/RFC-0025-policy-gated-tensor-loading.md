@@ -2,7 +2,7 @@
 
 **Status:** draft
 **Type:** standards-track
-**Applies-To:** `spec/tisc-spec.md`, `spec/t81vm-spec.md`, `spec/axion-policy-grammar.md`, `spec/canonfs-spec.md`
+**Applies-To:** `spec/tisc-spec.md`, `spec/t81vm-spec.md`, `spec/supplemental/axion-policy-grammar.md`, `spec/supplemental/canonfs-spec.md`
 **Created:** 2026-02-11
 **Updated:** 2026-02-11
 **Requires:** `RFC-0004`, `RFC-0009`, `RFC-0020`, `RFC-0022`
@@ -25,7 +25,7 @@ This RFC rectifies this by introducing a formal, secure, and policy-governed loa
 
 ### 3.1. Axion Policy Language (APL) Extension
 
-The APL, specified in `spec/axion-policy-grammar.md` and `RFC-0022`, is extended to support a new directive for whitelisting tensor hashes.
+The APL, specified in `spec/supplemental/axion-policy-grammar.md` and `RFC-0022`, is extended to support a new directive for whitelisting tensor hashes.
 
 #### 3.1.1. Formal Syntax (EBNF)
 
@@ -152,8 +152,8 @@ This RFC is a significant hardening of the T81 security model. It operationalize
 ---
 ### Cross-References
 
-- **Data Types (`CanonObject`)**: `spec/canonfs-spec.md`, `spec/t81-data-types.md`.
+- **Data Types (`CanonObject`)**: `spec/supplemental/canonfs-spec.md`, `spec/t81-data-types.md`.
 - **TISC ISA**: `spec/tisc-spec.md`, Sections 5.6, 5.11.
 - **T81VM Fault Model**: `spec/t81vm-spec.md`, Section 6.
-- **Axion Policy Grammar & Tracing**: `spec/axion-policy-grammar.md`, `RFC-0020`.
+- **Axion Policy Grammar & Tracing**: `spec/supplemental/axion-policy-grammar.md`, `RFC-0020`.
 - **Architectural Principles**: `docs/systems-integration-agi.md`, Sections 2.2, 6.2.

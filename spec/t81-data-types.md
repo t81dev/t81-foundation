@@ -17,12 +17,20 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-# **T81 Data Types Specification — Version 1.1 (Normative)**
+# **T81 Data Types Specification — Version 1.2 (Normative)**
 
-**Status:** Stable
-**Applies To:** T81Lang, TISC, T81VM, Axion, Cognitive Tiers
-**Supersedes:** v1.0
+**Status:** Stable\
+**Last Revised:** 2026-03-01\
+**Applies To:** T81Lang, TISC, T81VM, Axion, Cognitive Tiers\
+**Supersedes:** v1.1\
 **Purpose:** Define deterministic, canonical, base-81 type semantics for the T81 ecosystem.
+
+> **Freeze Exception — 2026-03-01**\
+> Scope: Additive corrections only — no existing type semantics changed.\
+> Authorized by: @t81dev\
+> Rationale: Prior versions documented only 4–5 of the 34 implemented type kinds.
+> §11 adds the Extended Type Inventory; §9 is updated to remove types that are
+> already implemented. No DCP surface content was changed.
 
 ______________________________________________________________________
 
@@ -217,8 +225,14 @@ ______________________________________________________________________
 
 A native log-odds probability representation using:
 
-- **log-odds**: `T81Int<N>` (typically 27 trits)
+- **log-odds**: `T81Int<N>` (an internal C++ fixed-width template type, **not**
+  the user-facing T81Lang `T81BigInt`; typically 27 trits wide)
 - stored in fixed-point base-φ (golden ratio) or natural log scale
+
+> **Note:** `T81Int<N>` is a C++ implementation detail in `include/t81/types.hpp`
+> used to express fixed-width ternary integers at compile time. The user-facing
+> language type for arbitrary-precision integers is `T81BigInt`. See §11 for the
+> complete type inventory.
 
 ### Canonicalization Rules
 
@@ -458,13 +472,17 @@ ______________________________________________________________________
 
 # 9. Future Extensions (Non-Normative)
 
+The following types are candidates for future normative specification. Types that
+were previously listed here but are now implemented are documented in §11.
+
 Future type extensions MAY include:
 
-- symbolic algebra types
-- holotensor types for high-tier cognition
-- ternary complex numbers
-- probabilistic bounded distributions
-- canonical semantic graphs
+- **holotensor types** for high-tier cognitive operations (multi-dimensional
+  symbolic arrays beyond the current `Tensor[T]` rank constraints)
+- **probabilistic bounded distributions** (richer than `T81Prob`; full
+  distribution types with sampling semantics)
+- **canonical semantic graphs** (immutable content-addressed graph structures
+  for Tier 4+ reasoning)
 
 All MUST follow determinism and canonicalization invariants.
 
@@ -472,7 +490,115 @@ ______________________________________________________________________
 
 # 10. Status
 
-Pending review, discussion, and approval as v0.2 of the T81 Data Types Standard.
+This document is v1.2 of the T81 Data Types Standard (freeze exception applied
+2026-03-01). The §2 primitive types and §3–§8 normative rules are the frozen
+DCP surface. §11 (Extended Type Inventory) is additive and non-DCP unless the
+types listed there have individually been promoted to Verified status in the
+Implementation Matrix (`docs/status/IMPLEMENTATION_MATRIX.md`).
+
+______________________________________________________________________
+
+# 11. Extended Type Inventory (Freeze Exception — Additive)
+
+> This section was added in the 2026-03-01 freeze exception. It documents the
+> full set of type kinds currently implemented in the T81 semantic analyzer
+> (`lang/frontend/semantic_analyzer.cpp`). The four tiers mirror the structure
+> in `spec/t81lang-spec.md §2`.
+
+## 11.1 Ternary Core (Tier 1 — Fully Deterministic)
+
+These types are DCP-verified. Their semantics are normatively defined in §2.
+
+| Type | Kind | Description |
+| :--- | :--- | :--- |
+| `T81BigInt` | `BigInt` | Arbitrary-precision base-81 integer. User-facing language type. See §2.2. |
+| `T81Float` | `Float` | Base-81 floating-point. See §2.3. |
+| `T81Fraction` | `Fraction` | Exact rational `p/q`. See §2.4. |
+| `Symbol` | `Symbol` | Interned immutable identifier. Created with `:name` literal syntax in T81Lang. Stored in the VM's symbol pool; canonical text comparison. |
+
+**Symbol literal syntax:** In T81Lang, Symbol values are created using the
+colon-prefix literal: `:my_symbol`. This produces a value of type `Symbol`
+that is interned in the VM symbol pool for the lifetime of the program.
+
+## 11.2 Text and Binary (Tier 1)
+
+| Type | Kind | Description |
+| :--- | :--- | :--- |
+| `T81String` | `String` | UTF-8 text. Immutable, canonical. Compared by code-point sequence. |
+| `T81Bytes` | `Bytes` | Raw byte array. Immutable, canonical. No encoding assumed. |
+
+## 11.3 Extended Numeric (Tier 2 — DCP-Target)
+
+These types are implemented but not yet DCP-promoted. They follow the
+determinism and canonicalization rules of §1 and §5.
+
+| Type | Kind | Description |
+| :--- | :--- | :--- |
+| `T81Fixed` | `Fixed` | Fixed-point decimal with explicit scale. |
+| `T81Complex` | `Complex` | Complex number with `T81Float` real and imaginary parts. |
+| `T81Quaternion` | `Quaternion` | Quaternion `(a + bi + cj + dk)` over `T81Float`. |
+| `T81Prob` | `Prob` | Log-odds probability. See §2.5. |
+| `T81Qutrit` | `Qutrit` | Single balanced ternary digit `{-1, 0, +1}`. |
+| `T81Uint` | `Uint` | Unsigned base-81 integer (non-negative, no sign trit). |
+
+## 11.4 Binary Interop (Tier 1 — Interop Surface)
+
+Fixed-width binary types for FFI and host-interop. These do NOT have
+balanced-ternary semantics; overflow semantics follow standard two's-complement
+binary rules and MUST be explicitly annotated when used in T81Lang.
+
+| Type | Kind | Description |
+| :--- | :--- | :--- |
+| `i32` | `I32` | Signed 32-bit integer. |
+| `i16` | `I16` | Signed 16-bit integer. |
+| `i8` | `I8` | Signed 8-bit integer. |
+| `i2` | `I2` | Signed 2-bit integer (values: -1, 0, +1; maps to a single trit). |
+| `bool` | `Bool` | Boolean. Canonical values: `true`, `false`. |
+
+## 11.5 Collection Types (Tier 2)
+
+Generic collection types with deterministic ordering and canonical iteration.
+
+| Type | Kind | Description |
+| :--- | :--- | :--- |
+| `Vector[T]` | `Vector` | Resizable ordered sequence. |
+| `T81Vector[T, N]` | `T81Vector` | Fixed-size rank-1 tensor with base-81 dimension `N`. |
+| `Matrix[T]` | `Matrix` | Rank-2 tensor (rows × cols). Shape immutable after construction. |
+| `Tensor[T]` | `Tensor` | Rank-N tensor. Tier constraint: rank ≤ 9 (Tier 5 max). |
+| `List[T]` | `List` | Singly-linked or array-backed deterministic list. |
+| `Map[K, V]` | `Map` | Sorted key-value mapping. Key ordering MUST be canonical. |
+| `Set[T]` | `Set` | Sorted set. Membership test MUST be canonical. |
+| `Tree[T]` | `Tree` | Rooted tree with canonical child ordering. |
+| `Graph` | `Graph` | Directed graph. See §3.3 for structure rules. |
+
+Generic type syntax uses **square brackets**: `Vector[T81BigInt]`, `Map[Symbol, i32]`.
+
+## 11.6 Structural Types (Tier 1)
+
+| Type | Kind | Description |
+| :--- | :--- | :--- |
+| `Option[T]` | `Option` | `Some(value)` or `None`. No nulls. See §4.3. |
+| `Result[T, E]` | `Result` | `Ok(value)` or `Err(error)`. No exceptions. See §4.3. |
+
+## 11.7 Meta Type
+
+| Type | Kind | Description |
+| :--- | :--- | :--- |
+| `void` | `Void` | Unit return type. Functions returning no value use `void`. |
+
+## 11.8 Numeric Widening Order
+
+When types are mixed in arithmetic, the VM applies implicit widening in this
+rank order (lowest to highest):
+
+```text
+T81Qutrit < i2 < i8 < i16 < i32 < T81Uint < T81BigInt
+    < T81Fraction < T81Fixed < T81Float
+```
+
+Widening is always explicit at the TISC level (conversion opcodes `I2F`,
+`I2FRAC`, etc.). T81Lang performs widening implicitly within the same
+rank group but requires explicit casts across group boundaries.
 
 ______________________________________________________________________
 
@@ -498,9 +624,11 @@ ______________________________________________________________________
 
 ## T81Lang
 
-- **Language Properties** → [`t81lang-spec.md`](t81lang-spec.md#1-language-properties)
-- **Grammar** → [`t81lang-spec.md`](t81lang-spec.md#2-grammar)
-- **Type System** → [`t81lang-spec.md`](t81lang-spec.md#3-type-system)
+Current spec version: **v1.2** (updated 2026-03-01).
+
+- **Core Grammar** → [`t81lang-spec.md`](t81lang-spec.md#1-core-grammar)
+- **Type System** → [`t81lang-spec.md`](t81lang-spec.md#2-type-system)
+- **Purity and Effects** → [`t81lang-spec.md`](t81lang-spec.md#3-purity-and-effects)
 
 ## Axion Kernel
 

@@ -40,8 +40,8 @@ Diagram source: [`diagrams/overview-layer-cake.mmd`](./diagrams/overview-layer-c
 | TISC ISA | `core/isa/` + VM decode/dispatch | [`spec/tisc-spec.md`](../../spec/tisc-spec.md) | Frozen | Opcode semantics/freeze governed. |
 | VM interpreter | `core/vm/` | [`spec/t81vm-spec.md`](../../spec/t81vm-spec.md) | Stable | DCP includes interpreter path, not JIT. |
 | Axion governance | `kernel/axion/` | [`spec/axion-kernel.md`](../../spec/axion-kernel.md) | Stable (bounded) | Policy verdicts integrated in VM step path. |
-| CanonFS | `src/canonfs/` + `include/t81/canonfs/` | [`spec/canonfs-spec.md`](../../spec/canonfs-spec.md) | Stable (bounded) | Integrity controls implemented; claims remain bounded. |
-| Experimental tiers/kernel concepts | `experimental/` | [`spec/cognitive-tiers.md`](../../spec/cognitive-tiers.md), [`spec/hanoi-kernel-spec.md`](../../spec/hanoi-kernel-spec.md) | Experimental / Stubbed | Not part of DCP guarantees. |
+| CanonFS | `src/canonfs/` + `include/t81/canonfs/` | [`spec/supplemental/canonfs-spec.md`](../../spec/supplemental/canonfs-spec.md) | Stable (bounded) | Integrity controls implemented; claims remain bounded. |
+| Experimental tiers/kernel concepts | `experimental/` | [`spec/cognitive-tiers.md`](../../spec/cognitive-tiers.md), [`spec/supplemental/hanoi-kernel-spec.md`](../../spec/supplemental/hanoi-kernel-spec.md) | Experimental / Stubbed | Not part of DCP guarantees. |
 
 ## Key Invariants
 

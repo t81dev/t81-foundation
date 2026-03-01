@@ -64,7 +64,7 @@ ______________________________________________________________________
 
 ## 6. CanonFS & Axion Entrypoints (`include/t81/canonfs`, `include/t81/axion`)
 
-- **Status:** implemented and actively exercised by VM/CLI tests; keep spec files `spec/canonfs-spec.md` and `spec/axion-kernel.md` as the normative source.  
+- **Status:** implemented and actively exercised by VM/CLI tests; keep spec files `spec/supplemental/canonfs-spec.md` and `spec/axion-kernel.md` as the normative source.  
 - **Thread Safety:** these APIs are not globally synchronized; callers should use per-context instances or external synchronization when sharing mutable state.  
 - **Error Handling:** Axion decisions are exposed via `t81::axion::Verdict`/event metadata, and CanonFS operations report deterministic outcomes suitable for replay/audit.
 

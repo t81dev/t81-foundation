@@ -49,7 +49,7 @@ subsystems:
     declared_status: stubbed
 
   - name: Hanoi Kernel
-    spec: spec/hanoi-kernel-spec.md
+    spec: spec/supplemental/hanoi-kernel-spec.md
     code_dirs:
       - src/hanoi
     test_dirs:

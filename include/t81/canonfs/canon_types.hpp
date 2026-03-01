@@ -16,7 +16,7 @@ struct CanonHash {
   bool operator==(const CanonHash& o) const noexcept { return h.bytes == o.h.bytes; }
 };
 
-// Canonical object kinds per spec/canonfs-spec.md.
+// Canonical object kinds per spec/supplemental/canonfs-spec.md.
 enum class ObjectType : std::uint8_t {
   RawBlock = 0x00,
   FileNode = 0x01,
@@ -35,7 +35,7 @@ enum class ObjectType : std::uint8_t {
 };
 
 struct CanonRef {
-  CanonHash hash;  // Content address (spec/canonfs-spec.md §2).
+  CanonHash hash;  // Content address (spec/supplemental/canonfs-spec.md §2).
 };
 
 struct CapabilityGrant {

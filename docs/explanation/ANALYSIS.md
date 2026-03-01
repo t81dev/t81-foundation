@@ -35,7 +35,7 @@ ______________________________________________________________________
 
 ## 3. Cognitive Tiers (`t81_cog`)
 
-- **Specification:** [`spec/spec/t81-spec.md`](../../spec/spec/t81-spec.md)
+- **Specification:** [`spec/companion/t81-spec.md`](../../spec/companion/t81-spec.md)
 - **Status:** `Foundational Headers`
 - **Analysis:**
   - **Structure:** Distinct namespaces and types for `t81::cog::tier1` (Symbolic) through `t81::cog::tier5` (Infinite) are established in `include/t81/cog/`.
