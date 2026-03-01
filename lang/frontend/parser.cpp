@@ -492,11 +492,15 @@ std::unique_ptr<Stmt> Parser::function(const std::string& kind,
   consume(TokenType::LBrace, ("Expect '{' before " + kind + " body.").c_str());
   std::vector<std::unique_ptr<Stmt>> body = block();
   std::optional<std::int64_t> tier;
-  if (attributes.has_value() && attributes->tier.has_value()) {
-    tier = attributes->tier;
+  bool is_pure = false;
+  if (attributes.has_value()) {
+    if (attributes->tier.has_value()) {
+      tier = attributes->tier;
+    }
+    is_pure = attributes->is_pure;
   }
   return std::make_unique<FunctionStmt>(name, std::move(generic_params), std::move(parameters),
-                                        std::move(return_type), std::move(body), tier);
+                                        std::move(return_type), std::move(body), tier, is_pure);
 }
 
 std::unique_ptr<Stmt> Parser::type_declaration() {
@@ -1571,7 +1575,7 @@ std::optional<FunctionAttributes> Parser::parse_function_attributes() {
       break;
     }
     std::string attr_candidate{lookahead.lexeme};
-    if (attr_candidate != "tier") {
+    if (attr_candidate != "tier" && attr_candidate != "pure") {
       break;
     }
     match({TokenType::At});
@@ -1580,25 +1584,30 @@ std::optional<FunctionAttributes> Parser::parse_function_attributes() {
       attrs.anchor = name;
     }
     seen = true;
-    consume(TokenType::LParen, "Expect '(' after attribute name.");
-
-    if (attrs.tier.has_value()) {
-      report_error(name, "Duplicate '@tier' attribute.");
-    }
-
-    Token value = consume(TokenType::Integer, "Expect integer tier value.");
-    try {
-      std::int64_t tier = std::stoll(std::string(value.lexeme));
-      if (tier < 1 || tier > 5) {
-        report_error(value, "Tier value must be in [1, 5].");
-      } else {
-        attrs.tier = tier;
+    if (attr_candidate == "pure") {
+      if (attrs.is_pure) {
+        report_error(name, "Duplicate '@pure' attribute.");
       }
-    } catch (const std::exception&) {
-      report_error(value, "Invalid integer for tier value.");
+      attrs.is_pure = true;
+    } else {
+      // attr_candidate == "tier"
+      consume(TokenType::LParen, "Expect '(' after attribute name.");
+      if (attrs.tier.has_value()) {
+        report_error(name, "Duplicate '@tier' attribute.");
+      }
+      Token value = consume(TokenType::Integer, "Expect integer tier value.");
+      try {
+        std::int64_t tier = std::stoll(std::string(value.lexeme));
+        if (tier < 1 || tier > 5) {
+          report_error(value, "Tier value must be in [1, 5].");
+        } else {
+          attrs.tier = tier;
+        }
+      } catch (const std::exception&) {
+        report_error(value, "Invalid integer for tier value.");
+      }
+      consume(TokenType::RParen, "Expect ')' after attribute.");
     }
-
-    consume(TokenType::RParen, "Expect ')' after attribute.");
   }
   if (!seen) {
     return std::nullopt;

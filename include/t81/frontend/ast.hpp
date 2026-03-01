@@ -559,13 +559,14 @@ struct RecurseStmt : Stmt {
 struct FunctionStmt : Stmt {
   FunctionStmt(Token name, std::vector<Token> generic_params, std::vector<Parameter> params,
                std::unique_ptr<TypeExpr> return_type, std::vector<std::unique_ptr<Stmt>> body,
-               std::optional<std::int64_t> tier = std::nullopt)
+               std::optional<std::int64_t> tier = std::nullopt, bool is_pure = false)
       : name(name),
         generic_params(std::move(generic_params)),
         params(std::move(params)),
         return_type(std::move(return_type)),
         body(std::move(body)),
-        tier(tier) {}
+        tier(tier),
+        is_pure(is_pure) {}
 
   std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
 
@@ -575,6 +576,7 @@ struct FunctionStmt : Stmt {
   const std::unique_ptr<TypeExpr> return_type;
   const std::vector<std::unique_ptr<Stmt>> body;
   const std::optional<std::int64_t> tier;
+  const bool is_pure{false};
 };
 
 struct TypeDecl : Stmt {

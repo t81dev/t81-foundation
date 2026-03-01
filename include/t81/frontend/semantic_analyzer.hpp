@@ -81,6 +81,7 @@ struct SemanticSymbol {
   std::optional<std::int64_t> tier;         // Optional @tier(n) intent on functions
   bool is_mutable = true;   // `let` bindings are immutable, `var` bindings are mutable
   bool is_defined = false;  // Functions get declared first, defined later
+  bool is_pure = false;     // @pure annotation: function must have no observable side effects
 };
 
 struct Diagnostic {
@@ -229,6 +230,7 @@ private:
   bool _had_error = false;
   std::vector<Type> _function_return_stack;
   std::vector<std::optional<std::int64_t>> _function_tier_stack;
+  bool _in_pure_function{false};  // true while analyzing the body of an @pure function
   std::vector<Diagnostic> _diagnostics;
   std::string _source_name;
 

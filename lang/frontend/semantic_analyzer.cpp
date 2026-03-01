@@ -1560,6 +1560,7 @@ void SemanticAnalyzer::register_function_signatures() {
     symbol->param_types = param_types;
     symbol->type = return_type;
     symbol->tier = func->tier;
+    symbol->is_pure = func->is_pure;
     symbol->generic_params.clear();
     symbol->generic_params.reserve(func->generic_params.size());
     for (const auto& generic_param : func->generic_params) {
@@ -1928,10 +1929,14 @@ std::any SemanticAnalyzer::visit(const FunctionStmt& stmt) {
     }
   }
 
+  const bool outer_pure = _in_pure_function;
+  _in_pure_function = stmt.is_pure || _in_pure_function;
+
   for (const auto& statement : stmt.body) {
     analyze(*statement);
   }
 
+  _in_pure_function = outer_pure;
   _function_tier_stack.pop_back();
   _function_return_stack.pop_back();
   exit_scope();
@@ -2307,6 +2312,11 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       std::ostringstream msg;
       msg << "Function tier @" << *_function_tier_stack.back() << " cannot use effect surface '"
           << raw_name << "'.";
+      error(call_token, msg.str());
+    }
+    if (_in_pure_function && is_effect_surface_call(func_name)) {
+      std::ostringstream msg;
+      msg << "@pure function cannot call effect surface '" << raw_name << "'.";
       error(call_token, msg.str());
     }
     if (func_name.find('.') != std::string::npos) {
@@ -3675,6 +3685,10 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         msg << "Function tier @" << *_function_tier_stack.back() << " cannot call '" << func_name
             << "' declared at tier @" << *symbol->tier << ".";
         error(var_expr->name, msg.str());
+      }
+      if (_in_pure_function && !symbol->is_pure) {
+        error(var_expr->name,
+              "@pure function cannot call non-pure function '" + func_name + "'.");
       }
 
       if (symbol->param_types.size() != arg_types.size()) {
