@@ -26,6 +26,7 @@
 #include "internal/tier_limits.hpp"
 #include "internal/value_ops.hpp"
 #include "t81/axion/engine.hpp"
+#include "t81/axion/nondeterminism_detector.hpp"
 #include "t81/axion/policy_engine.hpp"
 #include "t81/axion/reasons.hpp"
 #include "t81/canonfs/canon_driver.hpp"
@@ -5153,7 +5154,25 @@ public:
         return result;
       }
     }
+    // AX-M5: when a determinism detector is registered, record this run's hash
+    // chain and compare against the previous run.  A divergence is reported as
+    // a SecurityFault so callers see a hard error rather than silent mismatch.
+    if (determinism_detector_ && state_.halted) {
+      determinism_detector_->record_run(state_.axion_log);
+      auto report = determinism_detector_->check_against_previous();
+      if (report.diverged) {
+        t81::axion::Verdict v;
+        v.kind = t81::axion::VerdictKind::Deny;
+        v.reason = report.reason;
+        record_axion_event(t81::tisc::Opcode::Halt, 0, 0, v);
+        return std::unexpected(Trap::SecurityFault);
+      }
+    }
     return {};
+  }
+
+  void set_determinism_detector(t81::axion::DeterminismDetector* detector) override {
+    determinism_detector_ = detector;
   }
 
   const State& state() const override { return state_; }
@@ -5327,6 +5346,7 @@ private:
   t81::tisc::Program program_{};
   std::unique_ptr<t81::axion::Engine> axion_engine_;
   std::unique_ptr<t81::canonfs::Driver> canonfs_driver_;
+  t81::axion::DeterminismDetector* determinism_detector_{nullptr};
   static constexpr std::size_t kGcInterval = 64;
   std::size_t instructions_since_gc_{0};
   std::size_t instruction_count_{0};

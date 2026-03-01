@@ -10,6 +10,12 @@
 
 #include <vector>
 
+namespace t81::axion {
+// Forward declaration — avoids pulling state.hpp heavyweight transitive chain
+// into every consumer of vm.hpp a second time.
+class DeterminismDetector;
+}  // namespace t81::axion
+
 namespace t81::vm {
 
 class IVirtualMachine {
@@ -23,6 +29,11 @@ public:
   virtual void set_register(int idx, std::int64_t value, ValueTag tag = ValueTag::Int) = 0;
   virtual std::int64_t load_weights_tensor(std::string_view name) = 0;
   virtual const t81::weights::NativeTensor* weights_tensor(std::int64_t handle) const = 0;
+
+  /// Opt-in hook for CI harnesses: inject a DeterminismDetector to compare
+  /// axion_log hash chains across successive runs (AX-M5).
+  /// Default no-op — override in concrete implementations.
+  virtual void set_determinism_detector(t81::axion::DeterminismDetector* /*detector*/) {}
 };
 
 // Factory for the in-tree interpreter implementation.

@@ -149,6 +149,7 @@ add_library(t81_axion STATIC
   kernel/axion/axion_api.cpp
   kernel/axion/engine.cpp
   kernel/axion/ethics.cpp
+  kernel/axion/nondeterminism_detector.cpp
   kernel/axion/policy_engine.cpp
   kernel/axion/policy_serialization.cpp
   kernel/axion/canonfs_hook.cpp
