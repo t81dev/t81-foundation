@@ -493,14 +493,17 @@ std::unique_ptr<Stmt> Parser::function(const std::string& kind,
   std::vector<std::unique_ptr<Stmt>> body = block();
   std::optional<std::int64_t> tier;
   bool is_pure = false;
+  bool is_axion_verify = false;
   if (attributes.has_value()) {
     if (attributes->tier.has_value()) {
       tier = attributes->tier;
     }
     is_pure = attributes->is_pure;
+    is_axion_verify = attributes->is_axion_verify;
   }
   return std::make_unique<FunctionStmt>(name, std::move(generic_params), std::move(parameters),
-                                        std::move(return_type), std::move(body), tier, is_pure);
+                                        std::move(return_type), std::move(body), tier, is_pure,
+                                        is_axion_verify);
 }
 
 std::unique_ptr<Stmt> Parser::type_declaration() {
@@ -1575,7 +1578,7 @@ std::optional<FunctionAttributes> Parser::parse_function_attributes() {
       break;
     }
     std::string attr_candidate{lookahead.lexeme};
-    if (attr_candidate != "tier" && attr_candidate != "pure") {
+    if (attr_candidate != "tier" && attr_candidate != "pure" && attr_candidate != "axion_verify") {
       break;
     }
     match({TokenType::At});
@@ -1589,6 +1592,11 @@ std::optional<FunctionAttributes> Parser::parse_function_attributes() {
         report_error(name, "Duplicate '@pure' attribute.");
       }
       attrs.is_pure = true;
+    } else if (attr_candidate == "axion_verify") {
+      if (attrs.is_axion_verify) {
+        report_error(name, "Duplicate '@axion_verify' attribute.");
+      }
+      attrs.is_axion_verify = true;
     } else {
       // attr_candidate == "tier"
       consume(TokenType::LParen, "Expect '(' after attribute name.");

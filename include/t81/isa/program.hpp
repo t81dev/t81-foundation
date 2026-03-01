@@ -42,6 +42,11 @@ struct EnumMetadata {
   std::vector<EnumVariantMetadata> variants;
 };
 
+struct FunctionMetadata {
+  std::string name;
+  bool is_axion_verify{false};
+};
+
 struct Program {
   std::vector<Insn> insns;
   std::vector<double> float_pool;
@@ -54,5 +59,6 @@ struct Program {
   std::shared_ptr<t81::weights::ModelFile> weights_model;
   std::vector<tisc::TypeAliasMetadata> type_aliases;
   std::vector<EnumMetadata> enum_metadata;
+  std::vector<FunctionMetadata> function_metadata;
 };
 }  // namespace t81::tisc

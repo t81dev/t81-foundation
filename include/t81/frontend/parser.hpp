@@ -21,6 +21,7 @@ struct StructuralAttributes {
 struct FunctionAttributes {
   std::optional<std::int64_t> tier;
   bool is_pure{false};
+  bool is_axion_verify{false};
   std::optional<Token> anchor;
 };
 

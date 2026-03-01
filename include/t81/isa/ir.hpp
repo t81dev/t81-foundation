@@ -181,6 +181,9 @@ enum class Opcode {
   SetHas,
   SetSize,
 
+  // Axion Verification
+  AXVERIFY,
+
   // Pseudo-instructions
   LABEL
 };

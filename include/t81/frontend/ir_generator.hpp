@@ -827,6 +827,15 @@ public:
       bind_variable(std::string(it->name.lexeme), reg);
     }
 
+    // @axion_verify: emit AxVerify opcode at function entry (AX-M7 conformance hook).
+    if (stmt.is_axion_verify) {
+      auto verify_result = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction axverify;
+      axverify.opcode = tisc::ir::Opcode::AXVERIFY;
+      axverify.operands = {verify_result.reg};
+      emit(axverify);
+    }
+
     for (const auto& statement : stmt.body) {
       statement->accept(*this);
     }

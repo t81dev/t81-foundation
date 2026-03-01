@@ -415,6 +415,22 @@ std::vector<t81::tisc::EnumMetadata> collect_enum_metadata(
   return enums;
 }
 
+std::vector<t81::tisc::FunctionMetadata> collect_function_metadata(
+    const std::vector<std::unique_ptr<t81::frontend::Stmt>>& stmts) {
+  std::vector<t81::tisc::FunctionMetadata> result;
+  for (const auto& stmt : stmts) {
+    if (auto* func = dynamic_cast<const t81::frontend::FunctionStmt*>(stmt.get())) {
+      if (func->is_axion_verify) {
+        t81::tisc::FunctionMetadata meta;
+        meta.name = std::string(func->name.lexeme);
+        meta.is_axion_verify = true;
+        result.push_back(std::move(meta));
+      }
+    }
+  }
+  return result;
+}
+
 namespace t81::cli {
 
 std::optional<t81::tisc::Program> build_program_from_source(
@@ -481,6 +497,12 @@ std::optional<t81::tisc::Program> build_program_from_source(
   if (!enum_metadata.empty()) {
     program.enum_metadata = std::move(enum_metadata);
     verbose("Enum metadata emitted");
+  }
+
+  auto func_metadata = collect_function_metadata(stmts);
+  if (!func_metadata.empty()) {
+    program.function_metadata = std::move(func_metadata);
+    verbose("Function metadata emitted");
   }
 
   if (weights_model) {
