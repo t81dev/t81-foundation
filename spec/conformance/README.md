@@ -107,7 +107,9 @@ cmake --build build --target spec_conformance_all
 Each passing program emits a `spec_conformance pass segment=meta` AxionEvent
 visible in the CI trace log. This is the audit record that the invariant holds.
 
-> **Status:** The CMake `spec_conformance_all` target is present as a stub (SE-M1).
+> **Status (SE-M1–SE-M5 complete):** The CMake `spec_conformance_all` target is present
+> as a stub (SE-M1). All 23 programs carry the four required AI-derivable metadata
+> annotations (`@spec-ref`, `@invariant`, `@input-domain`, `@expected`) — SE-M5 complete.
 > CI activation (`ctest` invocation blocks merge) is SE-M6, pending T81Lang compiler
 > support for `@axion_verify` and `@pure` annotations.
 
@@ -136,7 +138,10 @@ visible in the CI trace log. This is the audit record that the invariant holds.
 | `t81vm/determinism-profile.t81` | §1, §2 | Authored | SE-M3 |
 | `t81vm/axion-log-completeness.t81` | §5 | Authored | SE-M3 |
 | `axion-kernel/policy-deny-requires-reason.t81` | §1.9 | Authored | SE-M1 |
-| `axion-kernel/segment-trace-strings.t81` | §1.8 | Planned | SE-M4 |
+| `axion-kernel/segment-trace-strings.t81` | §1.8 | Authored | SE-M4 |
+| `axion-kernel/tier-supervision-invariant.t81` | §1.4 | Authored | SE-M4 |
+| `axion-kernel/metadata-determinism.t81` | §1.5 | Authored | SE-M4 |
+| `axion-kernel/policy-enforcement-allow-deny.t81` | §1.9 | Authored | SE-M4 |
 | `cognitive-tiers/tier-annotation-enforcement.t81` | §1 | Planned | SE-M6 |
 
 Acceptance target: **21 passing programs** covering `t81-data-types.md`, `tisc-spec.md`,

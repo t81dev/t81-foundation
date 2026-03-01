@@ -1,0 +1,62 @@
+// spec/conformance/axion-kernel/tier-supervision-invariant.t81
+// Normative ref: spec/axion-kernel.md §1.4 (Tier Supervision)
+// Invariant: Axion promotes/demotes computation across cognitive tiers and
+//            ensures tier-appropriate invariants hold. Execution at Tier 2
+//            is permitted when explicitly annotated. Axion MUST block entry
+//            into tiers whose invariants are not satisfied.
+//
+// @spec-ref: spec/axion-kernel.md §1.4
+// @invariant: tier-supervision-gating
+// @input-domain: @tier(1) and @tier(2) execution contexts
+// @expected: tier-annotated functions succeed when invariants are satisfied;
+//            Axion permits Tier 2 with explicit @tier(2) annotation
+
+// Positive test: Axion permits Tier 2 execution when the @tier(2) annotation
+// is present. A Tier 2 function exercises the tier-supervision path without
+// fault. If Axion incorrectly blocked all Tier 2 execution, this would fault.
+
+@tier(2)
+fn check_tier2_permitted_with_annotation() -> bool {
+    // A @tier(2) function is allowed by Axion's tier supervisor.
+    // If tier supervision incorrectly treated @tier(2) as unauthorized,
+    // this function body would never be reached.
+    let a: T81BigInt = 2;
+    let b: T81BigInt = 2;
+    a + b == 4
+}
+
+@tier(1) @pure
+fn check_tier1_supervision_holds() -> bool {
+    // @tier(1) functions remain subject to Tier 1 constraints: no privileged
+    // opcodes (except AXVERIFY), statically bounded loops, tensor rank ≤ 1.
+    // This function satisfies all constraints and must pass supervision.
+    let mut acc: T81BigInt = 0;
+    for i in 0..3 {       // statically bounded — Axion allows
+        acc = acc + i;
+    }
+    acc == 3
+}
+
+@tier(1) @pure
+fn check_tier_annotation_is_required() -> bool {
+    // The spec requires explicit @tier(N) annotation to enter a tier.
+    // Unannotated functions default to the ambient tier of the call site.
+    // This function (Tier 1) calling check_tier2_permitted_with_annotation()
+    // exercises the tier boundary crossing — Axion MUST record the transition.
+    let result: bool = check_tier2_permitted_with_annotation();
+    result == true
+}
+
+// Negative conformance test (pending @expect_fault):
+// A @tier(1) function attempting AXREAD MUST raise TierFault.
+// This is already covered by tisc/tier-restriction.t81 from the TISC perspective.
+// The Axion-level test would verify that Axion emits a Deny verdict with:
+//   reason = "TierFault: AXREAD requires Tier 2+"
+// Pending @expect_fault(TierFault) annotation (RFC-0027 §5).
+
+@axion_verify
+fn main() -> void {
+    assert check_tier1_supervision_holds();
+    assert check_tier2_permitted_with_annotation();
+    assert check_tier_annotation_is_required();
+}

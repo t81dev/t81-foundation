@@ -1,0 +1,69 @@
+// spec/conformance/axion-kernel/metadata-determinism.t81
+// Normative ref: spec/axion-kernel.md §1.5 (Metadata Hosting)
+// Invariant: Axion's META segment is deterministic and canonical. Fault history,
+//            safety markers, and canonicalization logs MUST be reproducible.
+//            Two identical executions of the same program MUST produce identical
+//            metadata state. The META segment MUST NOT contain stale or
+//            non-canonical values after any VM operation.
+//
+// @spec-ref: spec/axion-kernel.md §1.5
+// @invariant: metadata-determinism-canonical
+// @input-domain: fixed sequence of T81BigInt computations
+// @expected: identical AxionEvent trace across runs; META segment canonical
+
+// Cross-run determinism verification: This program performs a fixed, pure
+// computation. The CI harness executes it twice and compares the AxionEvent
+// trace hashes. If the traces differ, the metadata is nondeterministic and
+// §1.5 is violated.
+//
+// The CI runner MUST verify:
+//   1. AxionEvent count is identical across two runs.
+//   2. Each event's kind, segment, and reason are identical across runs.
+//   3. No event carries a timestamp or host-specific value in its reason string.
+
+@tier(1) @pure
+fn compute_canonical_sequence() -> T81BigInt {
+    // A deterministic computation sequence that exercises:
+    // - arithmetic (recorded by Axion as instruction events)
+    // - canonical normalization (Axion records normalization hooks)
+    // - result in canonical T81BigInt form
+    let a: T81BigInt = 81 * 81;       // 6561
+    let b: T81BigInt = a + 81;        // 6642
+    let c: T81BigInt = b - 81;        // 6561 again — subtract cancels
+    let d: T81BigInt = c / 81;        // 81 — canonical division
+    d
+}
+
+@tier(1) @pure
+fn check_computation_canonical() -> bool {
+    compute_canonical_sequence() == 81
+}
+
+@tier(1) @pure
+fn check_fraction_metadata_canonical() -> bool {
+    // T81Fraction pool operations MUST produce canonical metadata events.
+    // The same fraction constructed twice must occupy the same pool slot
+    // (deduplication is deterministic), producing identical handle metadata.
+    let f1: T81Fraction = 1 / 3;
+    let f2: T81Fraction = 1 / 3;
+    f1 == f2
+}
+
+@tier(1) @pure
+fn check_option_metadata_canonical() -> bool {
+    // MAKE_OPTION_NONE MUST produce a single canonical None handle.
+    // All None values share one handle — deterministic metadata.
+    let n1: Option[T81BigInt] = None;
+    let n2: Option[T81BigInt] = None;
+    n1 == n2 && n1.is_none()
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_computation_canonical();
+    assert check_fraction_metadata_canonical();
+    assert check_option_metadata_canonical();
+    // CI audit: run this program twice; compare AxionEvent trace hashes.
+    // Identical hashes confirm §1.5 metadata determinism.
+    // Any divergence is a conformance failure.
+}

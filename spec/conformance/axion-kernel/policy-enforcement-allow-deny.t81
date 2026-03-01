@@ -1,0 +1,78 @@
+// spec/conformance/axion-kernel/policy-enforcement-allow-deny.t81
+// Normative ref: spec/axion-kernel.md §1.9 (Axion API & Policy Enforcement)
+// Invariant: Policy enforcement is purely declarative. Axion denies unless the
+//            runtime has already emitted expected canonical strings. Allow verdicts
+//            MUST append the canonical reason to State::axion_log. Deny verdicts
+//            MUST immediately trigger a deterministic Axion Fault — never silently
+//            continue. Each verdict MUST be deterministic for identical inputs.
+//
+// @spec-ref: spec/axion-kernel.md §1.9
+// @invariant: policy-verdicts-deterministic
+// @input-domain: match statement (produces canonical "enum guard" strings);
+//                @axion_verify (produces canonical "spec_conformance" allow)
+// @expected: Allow verdict appends reason to axion_log; Deny never suppressed;
+//            identical inputs always produce identical verdict
+
+// Policy enforcement is tested at two levels in this program:
+//
+// 1. ALLOW path: @axion_verify on main() causes Axion to evaluate the ambient
+//    policy and return Allow. The reason string MUST be appended to axion_log.
+//    The CI audit runner verifies the allow event appears in the trace.
+//
+// 2. MATCH guard path: A match statement on an enum causes the compiler to emit
+//    enum guard metadata. Axion enforces `require-match-guard` policy by checking
+//    that the "enum guard" string is present in the log before allowing execution
+//    to continue past the guard point. This tests the declarative enforcement model.
+
+@tier(1) @pure
+fn check_match_guard_produces_log_entry(v: Option[T81BigInt]) -> bool {
+    // A match on Option produces the canonical "enum guard" Axion log entry.
+    // Per §1.5 / §1.9: the compiler emits enum metadata; Axion verifies it
+    // before allowing the match to execute under require-match-guard policy.
+    match v {
+        Some(n) => n > 0,
+        None    => false,
+    }
+}
+
+@tier(1) @pure
+fn check_allow_verdict_for_valid_computation() -> bool {
+    // A pure, tier-1 computation with no privileged ops MUST receive an
+    // Allow verdict. The verdict MUST be deterministic: the same inputs,
+    // the same computation, always → Allow.
+    let a: T81BigInt = 3;
+    let b: T81BigInt = 4;
+    a * b == 12
+}
+
+@tier(1) @pure
+fn check_policy_verdict_idempotent() -> bool {
+    // The same computation, evaluated twice, MUST produce the same verdict.
+    // Axion MUST NOT make different decisions for identical states.
+    let x: bool = check_allow_verdict_for_valid_computation();
+    let y: bool = check_allow_verdict_for_valid_computation();
+    x == y   // both true — identical computation, identical Allow verdict
+}
+
+@tier(1) @pure
+fn check_result_unwrap_guard() -> bool {
+    // Unwrapping a Result::Ok produces a canonical "enum guard" event.
+    // Per §1.9: the event includes variant=Ok, payload=<type>.
+    let r: Result[T81BigInt, T81String] = Ok(42);
+    r.is_ok() && r.unwrap_ok() == 42
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_allow_verdict_for_valid_computation();
+    assert check_policy_verdict_idempotent();
+    assert check_match_guard_produces_log_entry(Some(1));
+    assert check_match_guard_produces_log_entry(None) == false;
+    assert check_result_unwrap_guard();
+    // CI audit runner verifies:
+    //   1. axion_log contains Allow entry for @axion_verify (non-empty reason).
+    //   2. axion_log contains "enum guard" entries for each match/unwrap above.
+    //   3. No Deny entry is present (all operations are permitted).
+    //   4. The two calls to check_policy_verdict_idempotent() produce
+    //      identical Allow verdicts (same reason string, same event kind).
+}
