@@ -59,10 +59,7 @@ std::string format_memory_access_reason(MemorySegmentKind kind, std::size_t addr
 }
 
 std::string format_bounds_fault_reason(MemorySegmentKind kind, int addr, std::string_view action) {
-  std::ostringstream reason;
-  reason << t81::axion::reasons::kBoundsFault << " segment=" << to_string(kind) << " addr=" << addr
-         << " action=" << action;
-  return reason.str();
+  return t81::axion::reasons::canonical_bounds_fault_reason(to_string(kind), addr, action);
 }
 
 std::string append_segment_reason(std::string_view action, MemorySegmentKind kind, std::size_t addr,
@@ -115,7 +112,7 @@ void push_axion_event(State& state, const AxionEvent& event) {
   state.axion_log.push_back(event);
 }
 
-void log_meta_slot(State& state, const char* label) {
+void log_meta_slot(State& state, const char* /*label*/) {
   if (!state.layout.meta.contains(state.meta_ptr)) {
     return;
   }
@@ -124,10 +121,7 @@ void log_meta_slot(State& state, const char* label) {
   meta_event.tag = static_cast<std::int32_t>(MemorySegmentKind::Meta);
   meta_event.value = static_cast<std::int64_t>(state.meta_ptr);
   meta_event.verdict.kind = t81::axion::VerdictKind::Allow;
-  std::ostringstream reason_stream;
-  reason_stream << "meta slot " << label << " segment=" << to_string(MemorySegmentKind::Meta)
-                << " addr=" << state.meta_ptr;
-  meta_event.verdict.reason = reason_stream.str();
+  meta_event.verdict.reason = t81::axion::reasons::canonical_meta_slot_reason(state.meta_ptr);
   push_axion_event(state, meta_event);
   ++state.meta_ptr;
 }

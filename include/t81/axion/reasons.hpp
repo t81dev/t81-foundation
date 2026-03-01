@@ -64,6 +64,90 @@ constexpr std::string_view kEnumGuard = "enum guard";
 constexpr std::string_view kEnumPayload = "enum payload";
 constexpr std::string_view kMetaSlotAxionEvent = "axion event";
 
+// ---------------------------------------------------------------------------
+// Canonical reason string builders (AX-M6)
+//
+// These functions produce the normative verbatim strings required by RFC-0020
+// and spec/axion-kernel.md §1.8. All callers MUST use these builders instead
+// of constructing segment/addr/action reason strings ad-hoc.
+// ---------------------------------------------------------------------------
+
+/// "meta slot axion event segment=meta addr=<addr>"
+/// Used by policy_trace_bridge log_meta_slot() for every AxionEvent recorded.
+inline std::string canonical_meta_slot_reason(std::size_t addr) {
+  return "meta slot axion event segment=meta addr=" + std::to_string(addr);
+}
+
+/// "meta slot axion event segment=meta addr=<addr> action=<action>"
+/// Used by CanonFS hook for Write/Read/Publish/Revoke/Repair operations.
+inline std::string canonical_meta_slot_reason(std::size_t addr, std::string_view action) {
+  std::string result;
+  result.reserve(64);
+  result += "meta slot axion event segment=meta addr=";
+  result += std::to_string(addr);
+  result += " action=";
+  result += action;
+  return result;
+}
+
+/// "axion event segment=meta addr=<addr> action=<action>"
+/// Secondary trace record emitted alongside the meta slot event in CanonFS hook.
+inline std::string canonical_meta_event_reason(std::size_t addr, std::string_view action) {
+  std::string result;
+  result.reserve(64);
+  result += kMetaSlotAxionEvent;  // "axion event"
+  result += " segment=meta addr=";
+  result += std::to_string(addr);
+  result += " action=";
+  result += action;
+  return result;
+}
+
+/// "segment=<segment> addr=<addr> action=<action>"
+/// Normative RFC-0020 segment-trace format for general segment access events.
+inline std::string canonical_segment_reason(std::string_view segment, std::size_t addr,
+                                            std::string_view action) {
+  std::string result;
+  result.reserve(64);
+  result += "segment=";
+  result += segment;
+  result += " addr=";
+  result += std::to_string(addr);
+  result += " action=";
+  result += action;
+  return result;
+}
+
+/// "<guard_type> guard segment=<segment> addr=<addr>"
+/// Used for AXREAD/AXSET guard events, e.g. "AxRead guard segment=stack addr=42".
+inline std::string canonical_guard_reason(std::string_view guard_type, std::string_view segment,
+                                          std::size_t addr) {
+  std::string result;
+  result.reserve(64);
+  result += guard_type;
+  result += " guard segment=";
+  result += segment;
+  result += " addr=";
+  result += std::to_string(addr);
+  return result;
+}
+
+/// "bounds fault segment=<segment> addr=<addr> action=<action>"
+/// Canonical form for all bounds fault reason strings.
+inline std::string canonical_bounds_fault_reason(std::string_view segment, int addr,
+                                                 std::string_view action) {
+  std::string result;
+  result.reserve(64);
+  result += kBoundsFault;  // "bounds fault"
+  result += " segment=";
+  result += segment;
+  result += " addr=";
+  result += std::to_string(addr);
+  result += " action=";
+  result += action;
+  return result;
+}
+
 }  // namespace reasons
 
 /**

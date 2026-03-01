@@ -2,11 +2,11 @@
 
 #include <memory>
 #include <optional>
-#include <sstream>
 #include <string_view>
 
 #include "t81/axion/policy.hpp"
 #include "t81/axion/policy_engine.hpp"
+#include "t81/axion/reasons.hpp"
 #include "t81/isa/opcodes.hpp"
 
 namespace t81::canonfs {
@@ -47,17 +47,13 @@ std::function<AxionVerdict(OpKind, const CanonRef&)> make_axion_policy_hook(
   }
 
   return [engine](OpKind kind, const CanonRef&) mutable {
-    std::ostringstream reason;
-    reason << "meta slot axion event segment=meta addr=" << g_meta_ptr++
-           << " action=" << action_to_string(kind);
-    auto reason_str = reason.str();
+    const std::size_t slot = g_meta_ptr++;
+    auto reason_str =
+        t81::axion::reasons::canonical_meta_slot_reason(slot, action_to_string(kind));
     push_reason(reason_str);
 
-    // Also push a generic axion event reason as per requirement
-    std::ostringstream generic_reason;
-    generic_reason << "axion event segment=meta addr=" << (g_meta_ptr - 1)
-                   << " action=" << action_to_string(kind);
-    push_reason(generic_reason.str());
+    // Secondary trace record: canonical meta event reason for policy audit.
+    push_reason(t81::axion::reasons::canonical_meta_event_reason(slot, action_to_string(kind)));
 
     if (!engine) {
       return AxionVerdict{true, reason_str};
