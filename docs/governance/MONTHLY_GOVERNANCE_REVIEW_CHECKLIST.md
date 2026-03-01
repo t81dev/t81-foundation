@@ -25,9 +25,9 @@ Applies to governance, status, and release-control artifacts in `docs/`.
 - `docs/product/DETERMINISTIC_CORE_PROFILE.md`
 - `docs/product/RELEASE_DISCIPLINE.md`
 - `docs/status/PROJECT_CONTROL_CENTER.md`
-- `docs/status/SYSTEM_STATUS.md`
 - `docs/status/IMPLEMENTATION_MATRIX.md`
-- `docs/status/DETERMINISTIC_CORPUS_MANIFEST.md`
+- `docs/status/DRIFT_DECOMPOSITION.md`
+- `docs/records/audits/DETERMINISTIC_CORPUS_MANIFEST.md`
 
 ## Checklist
 

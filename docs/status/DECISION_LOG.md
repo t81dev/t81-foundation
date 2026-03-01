@@ -104,7 +104,7 @@ guarantees are not extended. Upgrade path is explicit via the governed AGI
 promotion pipeline.
 
 **References:**
-- `docs/status/RELEASE_READINESS_PACKET_2026-03.md` (§ AGI-Facing Boundary Classification)
+- `docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md` (§ AGI-Facing Boundary Classification)
 - `docs/status/GOVERNED_AGI_PROMOTION_PIPELINE.md`
 - `docs/status/IMPLEMENTATION_MATRIX.md`
 - `CMakeLists.txt` (`T81_EXPORT_LLAMA_ADAPTER` guard)
@@ -159,7 +159,7 @@ lower-risk than a last-minute Pages configuration change.
 **Follow-Up:** File issue to exclude `third_party/` from Jekyll rendering scope.
 
 **References:**
-- `docs/status/RELEASE_READINESS_PACKET_2026-03.md` (§ Non-required failure)
+- `docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md` (§ Non-required failure)
 - `docs/status/CI_GATE_STATUS.md`
 
 ---
@@ -186,7 +186,7 @@ governance-metric checks passed. Waiting for Pages fix would delay the release
 window without benefit to release quality.
 
 **References:**
-- `docs/status/RELEASE_READINESS_PACKET_2026-03.md`
+- `docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md`
 - `docs/status/PROJECT_CONTROL_CENTER.md` (§ 4.1)
 
 ---
@@ -238,7 +238,7 @@ unsatisfied or degrade security posture.
 
 **References:**
 - `.github/workflows/codeql.yml`
-- `docs/status/RELEASE_READINESS_PACKET_2026-03.md`
+- `docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md`
 
 ---
 
@@ -255,7 +255,7 @@ unsatisfied or degrade security posture.
 
 - `docs/status/PROJECT_CONTROL_CENTER.md`
 - `docs/status/RISK_REGISTER.md`
-- `docs/status/RELEASE_READINESS_PACKET_2026-03.md`
+- `docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md`
 - `docs/records/audits/2026-03-governance-review.md`
 
 ## Versioning Statement

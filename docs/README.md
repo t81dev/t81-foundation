@@ -10,9 +10,8 @@ This directory is the canonical documentation surface below `/spec` and
 - [Freeze Enforcement](governance/FREEZE_ENFORCEMENT.md)
 - [Determinism Surface Registry](governance/DETERMINISM_SURFACE_REGISTRY.md)
 - [Determinism Threat Model](governance/DETERMINISM_THREAT_MODEL.md)
-- [System Status](status/SYSTEM_STATUS.md)
 - [Project Control Center](status/PROJECT_CONTROL_CENTER.md)
-- [Execution Plan (2026-03)](status/EXECUTION_PLAN_2026-03.md)
+- [Drift Decomposition](status/DRIFT_DECOMPOSITION.md)
 - [Implementation Matrix](status/IMPLEMENTATION_MATRIX.md)
 - [Spec Index](spec/INDEX.md)
 

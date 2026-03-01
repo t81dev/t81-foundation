@@ -7,10 +7,10 @@ This path is retained for stable links from tutorials/guides.
 
 ## Current Authoritative Status Docs
 
-- Operational component status: [`../status/SYSTEM_STATUS.md`](../status/SYSTEM_STATUS.md)
 - Program control snapshot: [`../status/PROJECT_CONTROL_CENTER.md`](../status/PROJECT_CONTROL_CENTER.md)
-- Execution plan and active work: [`../status/EXECUTION_PLAN_2026-03.md`](../status/EXECUTION_PLAN_2026-03.md)
-- Governance release posture: [`../status/RELEASE_READINESS_PACKET_2026-03.md`](../status/RELEASE_READINESS_PACKET_2026-03.md)
+- Drift and alignment: [`../status/DRIFT_DECOMPOSITION.md`](../status/DRIFT_DECOMPOSITION.md)
+- Active tasks: [`../status/TASKS.md`](../status/TASKS.md)
+- Release readiness packet (2026-03, archived): [`../records/audits/RELEASE_READINESS_PACKET_2026-03.md`](../records/audits/RELEASE_READINESS_PACKET_2026-03.md)
 - Current reference status summary: [`STATUS.md`](STATUS.md)
 
 ## Why This File Exists

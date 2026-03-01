@@ -13,7 +13,7 @@ the benchmark guardrail signal. This document is not release-specific; it tracks
 the health of the CI surface as a whole.
 
 For release-specific gate evidence against a candidate SHA, see
-`docs/status/RELEASE_READINESS_PACKET_2026-03.md`.
+`docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md`.
 
 ## Branch Protection: Required Contexts
 
@@ -154,7 +154,7 @@ module surface of `lang/stdlib/std/` matches the declared baseline.
 
 ## Cross-References
 
-- `docs/status/RELEASE_READINESS_PACKET_2026-03.md`
+- `docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md`
 - `docs/status/DECISION_LOG.md` (DEC-005 — Jekyll deferred)
 - `docs/status/RISK_REGISTER.md` (RISK-006 — benchmark variability; RISK-007 — Jekyll)
 - `docs/status/C2_MONTH_CLOSE_CHECK_2026-03-31.md`

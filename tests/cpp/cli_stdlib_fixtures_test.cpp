@@ -25,16 +25,16 @@ struct Module {
 // One entry per standard library module.  Add new modules here as they are promoted.
 // needs_weights=true modules receive a fixture weights model (mat_a, mat_b 2x2 tensors).
 const std::vector<Module> STDLIB_MODULES = {
-    {"core",        "t81lang_std_core",        false},
-    {"math",        "t81lang_std_math",        false},
-    {"bytes",       "t81lang_std_bytes",       false},
+    {"core", "t81lang_std_core", false},
+    {"math", "t81lang_std_math", false},
+    {"bytes", "t81lang_std_bytes", false},
     {"collections", "t81lang_std_collections", false},
-    {"polynomial",  "t81lang_std_polynomial",  false},
-    {"runtime",     "t81lang_std_runtime",     false},
-    {"symbol",      "t81lang_std_symbol",      false},
-    {"symbolic",    "t81lang_std_symbolic",    false},
-    {"tensor",      "t81lang_std_tensor",      true },
-    {"text",        "t81lang_std_text",        false},
+    {"polynomial", "t81lang_std_polynomial", false},
+    {"runtime", "t81lang_std_runtime", false},
+    {"symbol", "t81lang_std_symbol", false},
+    {"symbolic", "t81lang_std_symbolic", false},
+    {"tensor", "t81lang_std_tensor", true},
+    {"text", "t81lang_std_text", false},
 };
 
 std::shared_ptr<t81::weights::ModelFile> make_fixture_weights_model() {
@@ -79,24 +79,21 @@ bool run_module(const Module& mod) {
   auto weights_model = mod.needs_weights ? make_fixture_weights_model() : nullptr;
 
   for (const auto& fixture : fixtures) {
-    const fs::path expected_path =
-        fixture.parent_path() / (fixture.stem().string() + ".out");
+    const fs::path expected_path = fixture.parent_path() / (fixture.stem().string() + ".out");
     if (!fs::exists(expected_path)) {
-      std::cerr << "[" << mod.id << "] Missing golden output for: "
-                << fixture.filename() << "\n";
+      std::cerr << "[" << mod.id << "] Missing golden output for: " << fixture.filename() << "\n";
       return false;
     }
 
     const fs::path tisc_path = fs::temp_directory_path() /
-        ("t81-cli-std-" + mod.id + "-" + fixture.stem().string() + ".tisc");
+                               ("t81-cli-std-" + mod.id + "-" + fixture.stem().string() + ".tisc");
 
-    const int rc = mod.needs_weights
-        ? t81::cli::compile(fixture, tisc_path, {}, {}, weights_model)
-        : t81::cli::compile(fixture, tisc_path);
+    const int rc = mod.needs_weights ? t81::cli::compile(fixture, tisc_path, {}, {}, weights_model)
+                                     : t81::cli::compile(fixture, tisc_path);
 
     if (rc != 0) {
-      std::cerr << "[" << mod.id << "] compile failed for " << fixture.filename()
-                << " (code " << rc << ")\n";
+      std::cerr << "[" << mod.id << "] compile failed for " << fixture.filename() << " (code " << rc
+                << ")\n";
       return false;
     }
 
@@ -118,12 +115,12 @@ bool run_module(const Module& mod) {
       return false;
     }
 
-    const std::string actual   = normalize_text(join_lines(vm->state().printed_output));
+    const std::string actual = normalize_text(join_lines(vm->state().printed_output));
     const std::string expected = normalize_text(read_text(expected_path));
     if (actual != expected) {
       std::cerr << "[" << mod.id << "] Output mismatch for " << fixture.filename() << "\n";
       std::cerr << "Expected:\n" << expected << "\n";
-      std::cerr << "Actual:\n"   << actual   << "\n";
+      std::cerr << "Actual:\n" << actual << "\n";
       return false;
     }
 
