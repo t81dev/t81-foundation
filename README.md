@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <strong>The Deterministic Ternary Computing Stack</strong><br>
+  <strong>The Deterministic Ternary Computing Stack — Conceived by AI, for AI</strong><br>
   <em>Bit-exact reproducibility. Ternary-native logic. Auditable AI governance.</em>
 </p>
 
@@ -26,17 +26,18 @@
 
 ## What is T81?
 
-**T81** is a sovereign computing stack built from the ground up for **determinism** and **ternary logic**. It reduces non-determinism on explicitly verified surfaces and provides a mathematically rigorous foundation for high-stakes AI, cryptography, and scientific modeling.
+**T81** is a deterministic, ternary-native computing stack — conceived by AI, for AI. It provides a mathematically rigorous foundation for verifiable AI, cryptography, and scientific computing, where reproducibility, governance, and cognitive structure are ISA-level guarantees, not afterthoughts.
 
-Where traditional systems drift across architectures, T81 targets bit-exact reproducibility on explicitly verified surfaces, with guarantees bounded by the determinism registry and core profile.
+Where traditional systems drift across architectures, T81 delivers bit-exact reproducibility on explicitly verified surfaces. Its balanced ternary logic ({-1, 0, +1}) maps natively to neural activation states, its Axion kernel enforces policy at the opcode level, and its cognitive tier model provides a formal computational model for how AI reasoning scales.
 
 ### The Core Promise: Verified Determinism
 
 | Feature | The Problem (Binary/IEEE 754) | The T81 Solution |
 | :--- | :--- | :--- |
 | **Arithmetic** | Floating-point drift across CPU/GPU architectures. | **Deterministic Soft-Float (bounded):** Bit-exact behavior on explicitly verified surfaces under the determinism registry/core profile. |
-| **Logic** | Boolean (True/False) loses nuance. | **Balanced Ternary:** {-1, 0, +1} logic for efficient, drift-free decision trees. |
-| **Safety** | AI models are black boxes with no runtime guarantees. | **Axion Kernel:** Enforceable, audit-grade governance policies at the opcode level. |
+| **Logic** | Boolean (True/False) loses nuance. | **Balanced Ternary:** {-1, 0, +1} maps natively to neural activation states (inhibit/quiescent/excite). |
+| **Safety** | AI models are black boxes with no runtime guarantees. | **Axion Kernel:** Enforceable, audit-grade governance policies at the opcode level — an ISA invariant, not an add-on. |
+| **AI Inference** | No ISA-level attention, quantized matmul, or weight-load primitives. | **RFC-0026:** ATTN, QMATMUL, WLOAD, EMBED, GATHER, SCATTER as first-class TISC opcodes. |
 | **Stability** | Constant breaking changes and dependency hell. | **Frozen Specs:** The TISC ISA and Data Types are immutable standards. |
 
 ---
@@ -161,9 +162,12 @@ The T81 ecosystem is documented across several authority levels.
 | **[Governance](docs/governance/)** | Policies on Spec Drift, Release Discipline, and Threat Models. | High |
 
 ### Key Topics
-*   **[TISC Instruction Set](spec/tisc-spec.md)** - The frozen ISA specification.
-*   **[Ternary Data Types](spec/t81-data-types.md)** - Understanding `trit`, `tryte`, and `T81Float`.
-*   **[Axion Policy Engine](spec/axion-kernel.md)** - Configuring runtime safety.
+
+*   **[TISC Instruction Set](spec/tisc-spec.md)** — The frozen ISA specification.
+*   **[Ternary Data Types](spec/t81-data-types.md)** — Understanding `trit`, `tryte`, and `T81Float`.
+*   **[Axion Policy Engine](spec/axion-kernel.md)** — Configuring runtime safety.
+*   **[RFC-0026: AI-Native Inference Opcodes](spec/rfcs/RFC-0026-ai-native-inference-opcodes.md)** — ATTN, QMATMUL, WLOAD and the AI-native ISA frontier.
+*   **[RFC-0027: Spec-as-Executable](spec/rfcs/RFC-0027-spec-as-executable.md)** — Normative invariants as runnable T81Lang conformance programs.
 
 ---
 

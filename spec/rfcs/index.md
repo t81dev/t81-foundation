@@ -3,6 +3,7 @@
 This index tracks RFC status and intended disposition.
 
 ## Status Legend
+
 - `draft`: active authoring
 - `proposed`: under formal review
 - `accepted`: design accepted, pending/ongoing integration
@@ -11,6 +12,7 @@ This index tracks RFC status and intended disposition.
 - `rejected`: closed without adoption
 
 ## RFC Catalog
+
 | RFC | Title | Status | Notes |
 | :--- | :--- | :--- | :--- |
 | RFC-0000 | T81 Base-81 Ternary Computing Stack | draft | Foundational umbrella document |
@@ -43,8 +45,12 @@ This index tracks RFC status and intended disposition.
 | RFC-0027 | Spec-as-Executable Conformance Model | draft | Normative invariants as runnable T81Lang programs; AI-derivable test vectors |
 
 ## Active Consolidations
+
 - APL track: RFC-0022 is the forward path; RFC-0009 is retained for provenance until formal supersession.
+- AI-native track: RFC-0026 supersedes RFC-0012, RFC-0013, RFC-0014. Those are closed for new edits.
+- Conformance track: RFC-0027 supersedes RFC-0008. Spec-as-executable is the concrete realization.
 
 ## Authoring
+
 - Start from `spec/rfcs/template.md`.
 - Update this index whenever RFC status changes.
