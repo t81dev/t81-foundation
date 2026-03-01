@@ -1,0 +1,93 @@
+// spec/conformance/t81-data-types/type-kind-completeness.t81
+// Normative ref: spec/t81-data-types.md §11 (Extended Type Inventory)
+// Invariant: All implemented type tiers (§11.1–§11.7) are constructible at
+//            runtime. A conformant T81VM MUST be able to instantiate a value
+//            of each type kind without fault. This program exercises one
+//            representative value per tier to verify kind completeness.
+//
+// @spec-ref: spec/t81-data-types.md §11
+// @invariant: type-kind-constructibility
+// @input-domain: one representative value per type tier (§11.1–§11.7)
+// @expected: all constructions succeed; all equality checks pass; no TypeFault
+
+// §11.1 Ternary Core
+@tier(1) @pure
+fn check_tier1_ternary_core() -> bool {
+    let n: T81BigInt   = 81;
+    let f: T81Float    = 1.5f;
+    let r: T81Fraction = 3 / 4;
+    let s: Symbol      = :hello;
+    n == 81 && f == 1.5f && r == 3 / 4 && s == :hello
+}
+
+// §11.2 Text and Binary
+@tier(1) @pure
+fn check_tier1_text_binary() -> bool {
+    let str: T81String = "deterministic";
+    let raw: T81Bytes  = b"\x74\x38\x31";
+    str.len() > 0 && raw.len() == 3
+}
+
+// §11.3 Extended Numeric
+@tier(1) @pure
+fn check_tier2_extended_numeric() -> bool {
+    let fx: T81Fixed  = 1.25fx;
+    let p: T81Prob    = 0.5p;
+    let q: T81Qutrit  = 1t;
+    let u: T81Uint    = 42u;
+    // T81Complex and T81Quaternion construction deferred — require stdlib RFC-0007.
+    fx == 1.25fx && p == 0.5p && q == 1t && u == 42u
+}
+
+// §11.4 Binary Interop
+@tier(1) @pure
+fn check_tier1_binary_interop() -> bool {
+    let a: i2  = -1;
+    let b: i8  = 127i8;
+    let c: i16 = 1000i16;
+    let d: i32 = 2_000_000i32;
+    let e: bool = true;
+    a == -1 && b == 127i8 && c == 1000i16 && d == 2_000_000i32 && e
+}
+
+// §11.5 Collection Types
+@tier(1) @pure
+fn check_tier2_collections() -> bool {
+    let v: Vector[T81BigInt]    = [1, 2, 3];
+    let s: Set[T81BigInt]       = {10, 20};
+    let m: Map[Symbol, T81BigInt] = {:x => 1, :y => 2};
+    v.len() == 3 && s.contains(10) && m[:x] == 1
+}
+
+// §11.6 Structural Types
+@tier(1) @pure
+fn check_tier1_structural() -> bool {
+    let some_val: Option[T81BigInt] = Some(99);
+    let none_val: Option[T81BigInt] = None;
+    let ok_val: Result[T81BigInt, T81String] = Ok(42);
+    some_val.is_some() && none_val.is_none() && ok_val.is_ok()
+}
+
+// §11.7 Meta Type
+@tier(1) @pure
+fn helper_void() -> void {
+    // void is constructible as a return type. No assertion needed — the
+    // type checker must accept this function signature.
+}
+
+@tier(1) @pure
+fn check_meta_void() -> bool {
+    helper_void();
+    true
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_tier1_ternary_core();
+    assert check_tier1_text_binary();
+    assert check_tier2_extended_numeric();
+    assert check_tier1_binary_interop();
+    assert check_tier2_collections();
+    assert check_tier1_structural();
+    assert check_meta_void();
+}

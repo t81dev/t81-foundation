@@ -20,7 +20,7 @@ inputs from it, without depending on a hand-written test suite.
 
 ## Directory Structure
 
-```
+```text
 spec/conformance/
   README.md                        ← this file
   CMakeLists.txt                   ← CMake target: spec_conformance_all
@@ -119,7 +119,10 @@ visible in the CI trace log. This is the audit record that the invariant holds.
 | :--- | :--- | :--- | :--- |
 | `t81-data-types/widening-order.t81` | §11.8 | Authored | SE-M1 |
 | `t81-data-types/canonical-encoding.t81` | §5.1 | Authored | SE-M1 |
-| `t81-data-types/type-kind-completeness.t81` | §11 | Planned | SE-M2 |
+| `t81-data-types/widening-upper-chain.t81` | §11.8 | Authored | SE-M2 |
+| `t81-data-types/widening-binary-interop.t81` | §11.4, §11.8 | Authored | SE-M2 |
+| `t81-data-types/canonical-ordering.t81` | §5.1.2 | Authored | SE-M2 |
+| `t81-data-types/type-kind-completeness.t81` | §11 | Authored | SE-M2 |
 | `tisc/tier-restriction.t81` | §5.10 + cog §1 | Authored | SE-M1 |
 | `tisc/opcode-determinism.t81` | §5 | Planned | SE-M3 |
 | `tisc/bounds-fault-contract.t81` | §5 | Planned | SE-M3 |

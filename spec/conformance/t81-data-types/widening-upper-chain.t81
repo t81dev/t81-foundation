@@ -1,0 +1,62 @@
+// spec/conformance/t81-data-types/widening-upper-chain.t81
+// Normative ref: spec/t81-data-types.md §11.8
+// Invariant: The upper half of the widening rank chain is monotone and value-preserving.
+//            T81BigInt widens to T81Fraction widens to T81Float without fault.
+//            T81Uint widens to T81BigInt without fault.
+//
+// @spec-ref: spec/t81-data-types.md §11.8
+// @invariant: widening-upper-chain
+// @input-domain: T81BigInt({0, 1, -5}), T81Uint({0, 1})
+// @expected: no TypeFault; value identity preserved at each widening step
+
+@tier(1) @pure
+fn check_bigint_to_fraction() -> bool {
+    // T81BigInt widens to T81Fraction: the integer N becomes the fraction N/1.
+    let n: T81BigInt = 7;
+    let f: T81Fraction = n as T81Fraction;
+    f == 7 / 1
+}
+
+@tier(1) @pure
+fn check_fraction_to_float() -> bool {
+    // T81Fraction widens to T81Float: 1/2 must equal 0.5f (T81Float soft-float).
+    let fr: T81Fraction = 1 / 2;
+    let fl: T81Float = fr as T81Float;
+    fl == 0.5f
+}
+
+@tier(1) @pure
+fn check_bigint_to_float_chain() -> bool {
+    // T81BigInt → T81Fraction → T81Float chain in sequence.
+    let n: T81BigInt = 4;
+    let fr: T81Fraction = n as T81Fraction;
+    let fl: T81Float = fr as T81Float;
+    fl == 4.0f
+}
+
+@tier(1) @pure
+fn check_uint_to_bigint() -> bool {
+    // T81Uint widens to T81BigInt. T81Uint has no sign trit; T81BigInt is signed.
+    // The widened value MUST be non-negative and value-identical.
+    let u: T81Uint = 81u;
+    let b: T81BigInt = u as T81BigInt;
+    b == 81
+}
+
+@tier(1) @pure
+fn check_negative_bigint_to_float() -> bool {
+    // Negative T81BigInt must widen through T81Fraction to T81Float preserving sign.
+    let n: T81BigInt = -5;
+    let fr: T81Fraction = n as T81Fraction;
+    let fl: T81Float = fr as T81Float;
+    fl == -5.0f
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_bigint_to_fraction();
+    assert check_fraction_to_float();
+    assert check_bigint_to_float_chain();
+    assert check_uint_to_bigint();
+    assert check_negative_bigint_to_float();
+}

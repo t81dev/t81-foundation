@@ -1,0 +1,72 @@
+// spec/conformance/t81-data-types/widening-binary-interop.t81
+// Normative ref: spec/t81-data-types.md §11.4, §11.8
+// Invariant: Binary interop types (i2, i8, i16, i32) form a complete widening
+//            sub-chain. i2 maps to {-1, 0, +1} like T81Qutrit but with binary
+//            two's-complement encoding. Each widen step is value-preserving.
+//
+// @spec-ref: spec/t81-data-types.md §11.4 §11.8
+// @invariant: widening-binary-interop-chain
+// @input-domain: i2({-1, 0, +1}), i8, i16, i32
+// @expected: no TypeFault; two's-complement semantics; value identity preserved
+
+@tier(1) @pure
+fn check_i2_to_i8() -> bool {
+    // i2 widens to i8. i2 value +1 must equal i8 value 1.
+    let a: i2 = 1;
+    let b: i8 = a as i8;
+    b == 1i8
+}
+
+@tier(1) @pure
+fn check_i2_negative_to_i8() -> bool {
+    // i2 value -1 widens to i8 -1 (sign-extension preserves sign).
+    let a: i2 = -1;
+    let b: i8 = a as i8;
+    b == -1i8
+}
+
+@tier(1) @pure
+fn check_i8_to_i16() -> bool {
+    // i8 widens to i16. Maximum i8 value (127) is value-preserved.
+    let a: i8 = 127i8;
+    let b: i16 = a as i16;
+    b == 127i16
+}
+
+@tier(1) @pure
+fn check_i16_to_i32() -> bool {
+    // i16 widens to i32. Negative i16 sign-extends to i32.
+    let a: i16 = -1000i16;
+    let b: i32 = a as i32;
+    b == -1000i32
+}
+
+@tier(1) @pure
+fn check_full_binary_chain() -> bool {
+    // i2 → i8 → i16 → i32 full chain.
+    let a: i2 = 1;
+    let b: i8 = a as i8;
+    let c: i16 = b as i16;
+    let d: i32 = c as i32;
+    d == 1i32
+}
+
+@tier(1) @pure
+fn check_i2_zero_chain() -> bool {
+    // Zero widens to zero at every step.
+    let a: i2 = 0;
+    let b: i8 = a as i8;
+    let c: i16 = b as i16;
+    let d: i32 = c as i32;
+    d == 0i32
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_i2_to_i8();
+    assert check_i2_negative_to_i8();
+    assert check_i8_to_i16();
+    assert check_i16_to_i32();
+    assert check_full_binary_chain();
+    assert check_i2_zero_chain();
+}
