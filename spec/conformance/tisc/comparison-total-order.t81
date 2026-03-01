@@ -1,0 +1,88 @@
+// spec/conformance/tisc/comparison-total-order.t81
+// Normative ref: spec/tisc-spec.md §5.4 (Comparison and Flags)
+// Invariant: CMP implements a total order with deterministic FLAGS encoding.
+//            NEG → -1, ZERO → 0, POS → +1. Option ordering: None < Some(x).
+//            Result ordering: Err < Ok(x). No ambiguity in any comparison result.
+//
+// @spec-ref: spec/tisc-spec.md §5.4
+// @invariant: comparison-total-order
+// @input-domain: T81BigInt pairs; Option[T81BigInt]; Result[T81BigInt, T81BigInt]
+// @expected: exactly one of {NEG, ZERO, POS} set; consistent with total order
+
+@tier(1) @pure
+fn check_cmp_equal() -> bool {
+    // Equal values produce ZERO flag.
+    let a: T81BigInt = 42;
+    let b: T81BigInt = 42;
+    a == b
+}
+
+@tier(1) @pure
+fn check_cmp_less_than() -> bool {
+    // a < b produces NEG flag; encoded as -1 per §5.4 SETF semantics.
+    let a: T81BigInt = 10;
+    let b: T81BigInt = 20;
+    a < b && !(a > b) && !(a == b)
+}
+
+@tier(1) @pure
+fn check_cmp_greater_than() -> bool {
+    // a > b produces POS flag.
+    let a: T81BigInt = 99;
+    let b: T81BigInt = 1;
+    a > b && !(a < b) && !(a == b)
+}
+
+@tier(1) @pure
+fn check_cmp_transitivity() -> bool {
+    // Total order is transitive: a < b < c implies a < c.
+    let a: T81BigInt = 1;
+    let b: T81BigInt = 2;
+    let c: T81BigInt = 3;
+    a < b && b < c && a < c
+}
+
+@tier(1) @pure
+fn check_cmp_negative_values() -> bool {
+    // Negative values participate in the total order correctly.
+    let a: T81BigInt = -5;
+    let b: T81BigInt = 0;
+    let c: T81BigInt = 5;
+    a < b && b < c && a < c
+}
+
+@tier(1) @pure
+fn check_option_none_less_than_some() -> bool {
+    // None < Some(x) for any x (per §5.4 Option ordering).
+    let none: Option[T81BigInt] = None;
+    let some: Option[T81BigInt] = Some(0);
+    none < some
+}
+
+@tier(1) @pure
+fn check_option_some_ordered_by_payload() -> bool {
+    // Some(a) < Some(b) iff a < b (payload comparison is recursive).
+    let s1: Option[T81BigInt] = Some(10);
+    let s2: Option[T81BigInt] = Some(20);
+    s1 < s2
+}
+
+@tier(1) @pure
+fn check_result_err_less_than_ok() -> bool {
+    // Err(x) < Ok(y) for any x, y (per §5.4 Result ordering).
+    let err: Result[T81BigInt, T81BigInt] = Err(999);
+    let ok: Result[T81BigInt, T81BigInt] = Ok(0);
+    err < ok
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_cmp_equal();
+    assert check_cmp_less_than();
+    assert check_cmp_greater_than();
+    assert check_cmp_transitivity();
+    assert check_cmp_negative_values();
+    assert check_option_none_less_than_some();
+    assert check_option_some_ordered_by_payload();
+    assert check_result_err_less_than_ok();
+}

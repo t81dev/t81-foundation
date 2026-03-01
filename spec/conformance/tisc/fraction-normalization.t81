@@ -1,0 +1,80 @@
+// spec/conformance/tisc/fraction-normalization.t81
+// Normative ref: spec/tisc-spec.md §5.2 (FRACADD, FRACSUB, FRACMUL, FRACDIV)
+// Invariant: All T81Fraction arithmetic results are normalized to canonical
+//            lowest-terms form. Identical mathematical values produce identical
+//            pool handles (deduplication). FRACDIV with zero denominator faults.
+//
+// @spec-ref: spec/tisc-spec.md §5.2
+// @invariant: fraction-arithmetic-canonical
+// @input-domain: T81Fraction(selected rationals)
+// @expected: canonical reduced fractions; deduplicated pool handles; bit-exact
+
+@tier(1) @pure
+fn check_fracadd_canonical() -> bool {
+    // 1/4 + 1/4 = 1/2 (not 2/4; must normalize to lowest terms)
+    let a: T81Fraction = 1 / 4;
+    let b: T81Fraction = 1 / 4;
+    a + b == 1 / 2
+}
+
+@tier(1) @pure
+fn check_fracsub_canonical() -> bool {
+    // 3/4 - 1/4 = 1/2 (normalized)
+    let a: T81Fraction = 3 / 4;
+    let b: T81Fraction = 1 / 4;
+    a - b == 1 / 2
+}
+
+@tier(1) @pure
+fn check_fracmul_canonical() -> bool {
+    // (2/3) * (3/4) = 6/12 = 1/2 (must reduce automatically)
+    let a: T81Fraction = 2 / 3;
+    let b: T81Fraction = 3 / 4;
+    a * b == 1 / 2
+}
+
+@tier(1) @pure
+fn check_fracdiv_canonical() -> bool {
+    // (1/2) / (1/4) = 2/1 = 2 (exact rational division, normalized)
+    let a: T81Fraction = 1 / 2;
+    let b: T81Fraction = 1 / 4;
+    a / b == 2 / 1
+}
+
+@tier(1) @pure
+fn check_fraction_additive_inverse() -> bool {
+    // f + (-f) = 0/1 (canonical zero fraction)
+    let f: T81Fraction = 5 / 7;
+    f + (-f) == 0 / 1
+}
+
+@tier(1) @pure
+fn check_fraction_deduplication() -> bool {
+    // Two independently constructed 1/2 fractions MUST compare equal.
+    // At the TISC level, pool deduplication ensures identical handles.
+    let a: T81Fraction = 2 / 4;   // normalizes to 1/2
+    let b: T81Fraction = 1 / 2;   // already canonical
+    a == b
+}
+
+@tier(1) @pure
+fn check_fraction_multiply_by_integer() -> bool {
+    // Multiplying a fraction by an integer T81BigInt widened to T81Fraction.
+    let f: T81Fraction = 1 / 3;
+    let n: T81Fraction = 3 / 1;   // integer 3 as fraction
+    f * n == 1 / 1
+}
+
+// Note: FRACDIV-by-zero fault test requires @expect_fault(DivideByZero).
+// Annotation is proposed in RFC-0027 §5; not yet in T81Lang spec.
+
+@axion_verify
+fn main() -> void {
+    assert check_fracadd_canonical();
+    assert check_fracsub_canonical();
+    assert check_fracmul_canonical();
+    assert check_fracdiv_canonical();
+    assert check_fraction_additive_inverse();
+    assert check_fraction_deduplication();
+    assert check_fraction_multiply_by_integer();
+}

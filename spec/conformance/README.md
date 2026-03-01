@@ -124,10 +124,17 @@ visible in the CI trace log. This is the audit record that the invariant holds.
 | `t81-data-types/canonical-ordering.t81` | §5.1.2 | Authored | SE-M2 |
 | `t81-data-types/type-kind-completeness.t81` | §11 | Authored | SE-M2 |
 | `tisc/tier-restriction.t81` | §5.10 + cog §1 | Authored | SE-M1 |
-| `tisc/opcode-determinism.t81` | §5 | Planned | SE-M3 |
-| `tisc/bounds-fault-contract.t81` | §5 | Planned | SE-M3 |
-| `t81vm/determinism-profile.t81` | §1 | Planned | SE-M3 |
-| `t81vm/axion-log-completeness.t81` | §5 | Planned | SE-M3 |
+| `tisc/arithmetic-determinism.t81` | §5.2 | Authored | SE-M3 |
+| `tisc/division-truncation.t81` | §5.2 | Authored | SE-M3 |
+| `tisc/ternary-logic-canonical.t81` | §5.3 | Authored | SE-M3 |
+| `tisc/comparison-total-order.t81` | §5.4 | Authored | SE-M3 |
+| `tisc/fraction-normalization.t81` | §5.2 | Authored | SE-M3 |
+| `tisc/conversion-determinism.t81` | §5.9 | Authored | SE-M3 |
+| `tisc/bitwise-determinism.t81` | §5.14 | Authored | SE-M3 |
+| `tisc/bitwise-shift-masking.t81` | §5.14 | Authored | SE-M3 |
+| `tisc/bounds-fault-contract.t81` | §5.6 | Authored | SE-M3 |
+| `t81vm/determinism-profile.t81` | §1, §2 | Authored | SE-M3 |
+| `t81vm/axion-log-completeness.t81` | §5 | Authored | SE-M3 |
 | `axion-kernel/policy-deny-requires-reason.t81` | §1.9 | Authored | SE-M1 |
 | `axion-kernel/segment-trace-strings.t81` | §1.8 | Planned | SE-M4 |
 | `cognitive-tiers/tier-annotation-enforcement.t81` | §1 | Planned | SE-M6 |

@@ -1,0 +1,91 @@
+// spec/conformance/tisc/bitwise-determinism.t81
+// Normative ref: spec/tisc-spec.md §5.14 (Bitwise Integer Operations)
+// Invariant: BITAND, BITOR, BITXOR, BITNOT produce canonical T81BigInt results.
+//            Operations treat T81BigInt as two's-complement for bit manipulation.
+//            Results are canonical T81BigInt. No faults for any inputs.
+//
+// @spec-ref: spec/tisc-spec.md §5.14
+// @invariant: bitwise-ops-canonical
+// @input-domain: T81BigInt(0, 1, -1, 0xFF, 0xAA, 0x55)
+// @expected: bit-exact canonical T81BigInt; consistent with two's-complement semantics
+
+@tier(1) @pure
+fn check_bitand_identity() -> bool {
+    // a & 0 = 0; a & -1 (all bits set) = a
+    let a: T81BigInt = 0xAB;
+    (a & 0) == 0 && (a & -1) == a
+}
+
+@tier(1) @pure
+fn check_bitand_canonical() -> bool {
+    // 0xAA & 0x55 = 0x00 (alternating bits cancel)
+    let a: T81BigInt = 0xAA;
+    let b: T81BigInt = 0x55;
+    a & b == 0
+}
+
+@tier(1) @pure
+fn check_bitor_identity() -> bool {
+    // a | 0 = a; a | -1 = -1 (all bits set)
+    let a: T81BigInt = 0xAB;
+    (a | 0) == a && (a | -1) == -1
+}
+
+@tier(1) @pure
+fn check_bitor_canonical() -> bool {
+    // 0xAA | 0x55 = 0xFF (all low 8 bits set)
+    let a: T81BigInt = 0xAA;
+    let b: T81BigInt = 0x55;
+    a | b == 0xFF
+}
+
+@tier(1) @pure
+fn check_bitxor_self_zero() -> bool {
+    // a ^ a = 0 for any a
+    let a: T81BigInt = 0xABCD;
+    a ^ a == 0
+}
+
+@tier(1) @pure
+fn check_bitxor_canonical() -> bool {
+    // 0xAA ^ 0x55 = 0xFF; 0xFF ^ 0xFF = 0x00
+    let a: T81BigInt = 0xAA;
+    let b: T81BigInt = 0x55;
+    let c: T81BigInt = 0xFF;
+    (a ^ b) == c && (c ^ c) == 0
+}
+
+@tier(1) @pure
+fn check_bitnot_involution() -> bool {
+    // ~~a == a for T81BigInt (double complement is identity)
+    let a: T81BigInt = 42;
+    ~~a == a
+}
+
+@tier(1) @pure
+fn check_bitwise_demorgan() -> bool {
+    // De Morgan's law: ~(a & b) == ~a | ~b
+    let a: T81BigInt = 0xF0;
+    let b: T81BigInt = 0x0F;
+    ~(a & b) == (~a | ~b)
+}
+
+@tier(1) @pure
+fn check_bitwise_no_fault_zero() -> bool {
+    // All bitwise ops on zero must produce canonical zero without fault.
+    let z: T81BigInt = 0;
+    (z & z) == 0 && (z | z) == 0 && (z ^ z) == 0
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_bitand_identity();
+    assert check_bitand_canonical();
+    assert check_bitor_identity();
+    assert check_bitor_canonical();
+    assert check_bitxor_self_zero();
+    assert check_bitxor_canonical();
+    assert check_bitnot_involution();
+    assert check_bitwise_demorgan();
+    assert check_bitwise_no_fault_zero();
+}

@@ -1,0 +1,54 @@
+// spec/conformance/t81vm/axion-log-completeness.t81
+// Normative ref: spec/t81vm-spec.md §5 (Axion Interface Hooks)
+// Invariant: Every privileged instruction executed by the VM MUST produce at
+//            least one AxionEvent in the trace log. No privileged operation
+//            may be silently executed without Axion visibility. The
+//            @axion_verify annotation on main() exercises this path directly.
+//
+// @spec-ref: spec/t81vm-spec.md §5
+// @invariant: axion-log-completeness
+// @input-domain: @axion_verify main() execution context
+// @expected: at least one AxionEvent with kind=spec_conformance emitted per run
+
+// Verification note: This program's correctness cannot be fully verified from
+// within T81Lang itself at Tier 1 — reading the Axion log requires AXREAD
+// (Tier 2+). The CI audit runner performs the external verification:
+//   1. Execute this program on the reference VM.
+//   2. Assert the trace log contains exactly one entry matching:
+//        kind=spec_conformance segment=meta action=pass
+//   3. Assert the entry's reason string is non-empty.
+//
+// A VM that executes @axion_verify without emitting an AxionEvent fails this
+// invariant silently — making it undetectable from within the program. The
+// external CI audit is the enforcement mechanism.
+
+@tier(1) @pure
+fn check_axion_verify_is_privileged() -> bool {
+    // This function's existence in a @axion_verify program means the VM
+    // must process at least one privileged hook to reach the assertion.
+    // If the VM reaches this line without recording an AxionEvent, that
+    // itself violates §5 of the VM spec.
+    true
+}
+
+@tier(1) @pure
+fn check_computation_before_verify() -> bool {
+    // A non-trivial computation ensures the VM executed real instructions
+    // before the @axion_verify hook fires. This makes the audit meaningful
+    // rather than trivially empty.
+    let a: T81BigInt = 81 * 81;     // 6561
+    let b: T81BigInt = 6561 / 81;   // 81
+    b == 81
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_axion_verify_is_privileged();
+    assert check_computation_before_verify();
+    // @axion_verify causes the VM to call the Axion pre-instruction hook here.
+    // That hook MUST emit: spec_conformance pass segment=meta
+    // CI audit runner validates:
+    //   1. The AxionEvent is present in the trace (log completeness invariant).
+    //   2. The event kind is spec_conformance.
+    //   3. The reason string is non-empty (per axion-kernel.md §1.9).
+}

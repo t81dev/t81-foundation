@@ -1,0 +1,79 @@
+// spec/conformance/tisc/bitwise-shift-masking.t81
+// Normative ref: spec/tisc-spec.md §5.14 (BITSHL, BITSHR, BITUSHR)
+// Invariant: Shift amount is masked to 6 bits (0x3F = 63) before applying.
+//            BITSHR is arithmetic (sign-preserving); BITUSHR is logical (zero-fill).
+//            Both produce canonical T81BigInt results with no faults.
+//
+// @spec-ref: spec/tisc-spec.md §5.14
+// @invariant: bitwise-shift-masking
+// @input-domain: T81BigInt(1, -1, 0x80); shift amounts (0, 1, 63, 64, 127)
+// @expected: shift amount masked to 0x3F; correct arithmetic vs logical behavior
+
+@tier(1) @pure
+fn check_shl_by_one() -> bool {
+    // 1 << 1 = 2 (left shift doubles)
+    let a: T81BigInt = 1;
+    (a << 1) == 2
+}
+
+@tier(1) @pure
+fn check_shl_by_zero() -> bool {
+    // a << 0 = a (shifting by zero is identity)
+    let a: T81BigInt = 0xABCD;
+    (a << 0) == a
+}
+
+@tier(1) @pure
+fn check_shl_amount_masked() -> bool {
+    // Shift amount 64 is masked to 64 & 0x3F = 0 → result equals input.
+    // This is the canonical masking contract: large shifts wrap to 0-63.
+    let a: T81BigInt = 1;
+    (a << 64) == (a << 0)
+}
+
+@tier(1) @pure
+fn check_shl_amount_127_masked() -> bool {
+    // 127 & 0x3F = 63; so << 127 == << 63
+    let a: T81BigInt = 1;
+    (a << 127) == (a << 63)
+}
+
+@tier(1) @pure
+fn check_shr_arithmetic_positive() -> bool {
+    // Arithmetic right shift on positive: 8 >> 1 = 4
+    let a: T81BigInt = 8;
+    (a >> 1) == 4
+}
+
+@tier(1) @pure
+fn check_shr_arithmetic_negative() -> bool {
+    // Arithmetic right shift preserves sign: -8 >> 1 = -4 (sign-extended)
+    let a: T81BigInt = -8;
+    (a >> 1) == -4
+}
+
+@tier(1) @pure
+fn check_bitushr_logical_positive() -> bool {
+    // Logical right shift on positive: same as arithmetic for positive values.
+    let a: T81BigInt = 8;
+    a.unsigned_shr(1) == 4
+}
+
+@tier(1) @pure
+fn check_shr_amount_masked() -> bool {
+    // Shift amount 64 masked to 0 → a >> 64 == a >> 0 == a
+    let a: T81BigInt = 0xFF;
+    (a >> 64) == (a >> 0)
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_shl_by_one();
+    assert check_shl_by_zero();
+    assert check_shl_amount_masked();
+    assert check_shl_amount_127_masked();
+    assert check_shr_arithmetic_positive();
+    assert check_shr_arithmetic_negative();
+    assert check_bitushr_logical_positive();
+    assert check_shr_amount_masked();
+}

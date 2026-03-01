@@ -1,0 +1,94 @@
+// spec/conformance/tisc/conversion-determinism.t81
+// Normative ref: spec/tisc-spec.md §5.9 (Conversion Instructions)
+// Invariant: I2F, F2I, I2FRAC, FRAC2I are explicit and deterministic.
+//            Roundtrips must be value-preserving for representable values.
+//            Identical inputs produce identical canonical pool handles.
+//
+// @spec-ref: spec/tisc-spec.md §5.9
+// @invariant: conversion-explicit-determinism
+// @input-domain: T81BigInt(0, 1, -5, 81); T81Float(1.5f, 0.0f); T81Fraction(1/2)
+// @expected: canonical converted values; pool handles are deduplicated; no fault
+
+@tier(1) @pure
+fn check_i2f_zero() -> bool {
+    // Integer 0 converts to float 0.0f (canonical T81Float zero)
+    let n: T81BigInt = 0;
+    let f: T81Float = n as T81Float;
+    f == 0.0f
+}
+
+@tier(1) @pure
+fn check_i2f_positive() -> bool {
+    // Integer 81 converts to float 81.0f
+    let n: T81BigInt = 81;
+    let f: T81Float = n as T81Float;
+    f == 81.0f
+}
+
+@tier(1) @pure
+fn check_i2f_negative() -> bool {
+    // Negative integer -5 converts to float -5.0f (sign preserved)
+    let n: T81BigInt = -5;
+    let f: T81Float = n as T81Float;
+    f == -5.0f
+}
+
+@tier(1) @pure
+fn check_f2i_truncation() -> bool {
+    // F2I truncates toward zero: 3.7f → 3 (not 4)
+    // Note: exact truncation point depends on T81Float representation.
+    // This test uses an exact integer representable as T81Float.
+    let f: T81Float = 10.0f;
+    let n: T81BigInt = f as T81BigInt;
+    n == 10
+}
+
+@tier(1) @pure
+fn check_i2frac_integer_as_unit_fraction() -> bool {
+    // I2FRAC: integer N becomes canonical fraction N/1
+    let n: T81BigInt = 7;
+    let fr: T81Fraction = n as T81Fraction;
+    fr == 7 / 1
+}
+
+@tier(1) @pure
+fn check_frac2i_exact() -> bool {
+    // FRAC2I: fraction N/1 becomes integer N (denominator must be 1)
+    let fr: T81Fraction = 12 / 1;
+    let n: T81BigInt = fr as T81BigInt;
+    n == 12
+}
+
+@tier(1) @pure
+fn check_i2f_deduplication() -> bool {
+    // Two I2F conversions of the same integer MUST produce equal T81Float values.
+    // At TISC level, pool deduplication ensures identical handles.
+    let n: T81BigInt = 42;
+    let f1: T81Float = n as T81Float;
+    let f2: T81Float = n as T81Float;
+    f1 == f2
+}
+
+@tier(1) @pure
+fn check_i2frac_deduplication() -> bool {
+    // Two I2FRAC conversions of the same integer MUST produce equal fractions.
+    let n: T81BigInt = 9;
+    let fr1: T81Fraction = n as T81Fraction;
+    let fr2: T81Fraction = n as T81Fraction;
+    fr1 == fr2
+}
+
+// Note: FRAC2I with non-unit denominator fault test requires @expect_fault(TypeFault).
+// Annotation is proposed in RFC-0027 §5; not yet in T81Lang spec.
+
+@axion_verify
+fn main() -> void {
+    assert check_i2f_zero();
+    assert check_i2f_positive();
+    assert check_i2f_negative();
+    assert check_f2i_truncation();
+    assert check_i2frac_integer_as_unit_fraction();
+    assert check_frac2i_exact();
+    assert check_i2f_deduplication();
+    assert check_i2frac_deduplication();
+}

@@ -1,0 +1,81 @@
+// spec/conformance/tisc/division-truncation.t81
+// Normative ref: spec/tisc-spec.md §5.2 (DIV, MOD)
+// Invariant: DIV truncates toward zero (not floor division). MOD sign follows
+//            the dividend. Both are deterministic and canonical for all
+//            non-zero divisors. Division by zero MUST raise DivideByZero fault.
+//
+// @spec-ref: spec/tisc-spec.md §5.2
+// @invariant: division-truncation-toward-zero
+// @input-domain: T81BigInt pairs with positive, negative, and zero divisors
+// @expected: truncation toward zero; canonical quotient and remainder
+
+@tier(1) @pure
+fn check_div_positive() -> bool {
+    // 10 ÷ 3 = 3 (truncation toward zero, not floor)
+    let a: T81BigInt = 10;
+    let b: T81BigInt = 3;
+    a / b == 3
+}
+
+@tier(1) @pure
+fn check_div_negative_dividend() -> bool {
+    // -10 ÷ 3 = -3 (truncation toward zero — not -4 as floor division would give)
+    let a: T81BigInt = -10;
+    let b: T81BigInt = 3;
+    a / b == -3
+}
+
+@tier(1) @pure
+fn check_div_negative_divisor() -> bool {
+    // 10 ÷ -3 = -3 (truncation toward zero)
+    let a: T81BigInt = 10;
+    let b: T81BigInt = -3;
+    a / b == -3
+}
+
+@tier(1) @pure
+fn check_div_both_negative() -> bool {
+    // -10 ÷ -3 = 3 (truncation toward zero — same magnitude, positive result)
+    let a: T81BigInt = -10;
+    let b: T81BigInt = -3;
+    a / b == 3
+}
+
+@tier(1) @pure
+fn check_mod_sign_follows_dividend() -> bool {
+    // -10 mod 3 = -1 (remainder has same sign as dividend per truncation rule)
+    let a: T81BigInt = -10;
+    let b: T81BigInt = 3;
+    a % b == -1
+}
+
+@tier(1) @pure
+fn check_div_mod_identity() -> bool {
+    // Invariant: (a / b) * b + (a % b) == a for all non-zero b
+    let a: T81BigInt = 17;
+    let b: T81BigInt = 5;
+    (a / b) * b + (a % b) == a
+}
+
+@tier(1) @pure
+fn check_div_mod_identity_negative() -> bool {
+    // Same identity holds for negative dividend.
+    let a: T81BigInt = -17;
+    let b: T81BigInt = 5;
+    (a / b) * b + (a % b) == a
+}
+
+// Note: Division-by-zero fault test requires @expect_fault(DivideByZero).
+// That annotation is proposed in RFC-0027 §5 but not yet in T81Lang spec.
+// The fault is normatively specified in tisc-spec.md §5.2 DIV.
+
+@axion_verify
+fn main() -> void {
+    assert check_div_positive();
+    assert check_div_negative_dividend();
+    assert check_div_negative_divisor();
+    assert check_div_both_negative();
+    assert check_mod_sign_follows_dividend();
+    assert check_div_mod_identity();
+    assert check_div_mod_identity_negative();
+}

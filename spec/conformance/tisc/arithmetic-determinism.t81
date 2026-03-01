@@ -1,0 +1,69 @@
+// spec/conformance/tisc/arithmetic-determinism.t81
+// Normative ref: spec/tisc-spec.md §5.2 (Arithmetic Instructions)
+// Invariant: ADD, SUB, MUL, NEG produce canonical T81BigInt results with
+//            unbounded precision and no faults. Results are bit-exact for any
+//            identical inputs on any conformant T81VM implementation.
+//
+// @spec-ref: spec/tisc-spec.md §5.2
+// @invariant: arithmetic-canonical-determinism
+// @input-domain: T81BigInt(selected values)
+// @expected: canonical T81BigInt output; bit-exact across platforms
+
+@tier(1) @pure
+fn check_add_canonical() -> bool {
+    // ADD must produce canonical output — no leading zeros, correct sign.
+    let a: T81BigInt = 81;       // base-81: one digit
+    let b: T81BigInt = 81;
+    a + b == 162
+}
+
+@tier(1) @pure
+fn check_sub_canonical() -> bool {
+    // SUB must produce canonical output including the zero case.
+    let a: T81BigInt = 100;
+    let b: T81BigInt = 100;
+    let c: T81BigInt = 200;
+    a - a == 0 && c - a == 100
+}
+
+@tier(1) @pure
+fn check_mul_canonical() -> bool {
+    // MUL must produce canonical output with unbounded precision.
+    // 81 × 81 = 6561 (two base-81 digits: 81^1 × 1 + 81^0 × 0 = one full cycle)
+    let a: T81BigInt = 81;
+    let b: T81BigInt = 81;
+    a * b == 6561
+}
+
+@tier(1) @pure
+fn check_neg_canonical() -> bool {
+    // NEG must produce the canonical negative form.
+    let a: T81BigInt = 42;
+    let n: T81BigInt = -a;
+    n == -42 && -n == 42
+}
+
+@tier(1) @pure
+fn check_neg_zero_identity() -> bool {
+    // NEG of zero MUST still be canonical zero — not "-0".
+    let z: T81BigInt = 0;
+    -z == 0
+}
+
+@tier(1) @pure
+fn check_large_mul_precision() -> bool {
+    // T81BigInt arithmetic is unbounded — large products must not overflow.
+    let a: T81BigInt = 6561;   // 81^2
+    let b: T81BigInt = 6561;
+    a * b == 43_046_721         // 81^4
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_add_canonical();
+    assert check_sub_canonical();
+    assert check_mul_canonical();
+    assert check_neg_canonical();
+    assert check_neg_zero_identity();
+    assert check_large_mul_precision();
+}

@@ -1,0 +1,80 @@
+// spec/conformance/tisc/ternary-logic-canonical.t81
+// Normative ref: spec/tisc-spec.md §5.3 (Ternary Logic Instructions)
+// Invariant: TNOT maps +1↔-1 and preserves 0. TAND/TOR/TXOR follow balanced-
+//            ternary min/max/XOR definitions and produce canonical results.
+//            Mismatched-length operands are deterministically padded.
+//
+// @spec-ref: spec/tisc-spec.md §5.3
+// @invariant: ternary-logic-canonical
+// @input-domain: T81Qutrit({-1, 0, +1}) single trits; T81BigInt trit vectors
+// @expected: canonical trit mappings; no faults; consistent with ternary truth tables
+
+@tier(1) @pure
+fn check_tnot_plus_one() -> bool {
+    // TNOT(+1) = -1
+    let a: T81Qutrit = 1t;
+    !a == -1t
+}
+
+@tier(1) @pure
+fn check_tnot_minus_one() -> bool {
+    // TNOT(-1) = +1
+    let a: T81Qutrit = -1t;
+    !a == 1t
+}
+
+@tier(1) @pure
+fn check_tnot_zero() -> bool {
+    // TNOT(0) = 0 (zero is self-symmetric under ternary negation)
+    let a: T81Qutrit = 0t;
+    !a == 0t
+}
+
+@tier(1) @pure
+fn check_tnot_involution() -> bool {
+    // TNOT is an involution: !!a = a for all trit values
+    let a: T81Qutrit = 1t;
+    let b: T81Qutrit = 0t;
+    let c: T81Qutrit = -1t;
+    !!a == a && !!b == b && !!c == c
+}
+
+@tier(1) @pure
+fn check_tand_min_semantics() -> bool {
+    // TAND is ternary min: min(a, b)
+    // min(+1, -1) = -1; min(0, +1) = 0; min(-1, -1) = -1
+    let p: T81Qutrit = 1t;
+    let z: T81Qutrit = 0t;
+    let n: T81Qutrit = -1t;
+    (p & n) == n && (z & p) == z && (n & n) == n
+}
+
+@tier(1) @pure
+fn check_tor_max_semantics() -> bool {
+    // TOR is ternary max: max(a, b)
+    // max(+1, -1) = +1; max(0, -1) = 0; max(-1, -1) = -1
+    let p: T81Qutrit = 1t;
+    let z: T81Qutrit = 0t;
+    let n: T81Qutrit = -1t;
+    (p | n) == p && (z | n) == z && (n | n) == n
+}
+
+@tier(1) @pure
+fn check_ternary_demorgan() -> bool {
+    // De Morgan's law holds in balanced ternary:
+    // !(a & b) == !a | !b
+    let a: T81Qutrit = 1t;
+    let b: T81Qutrit = -1t;
+    !(a & b) == (!a | !b)
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_tnot_plus_one();
+    assert check_tnot_minus_one();
+    assert check_tnot_zero();
+    assert check_tnot_involution();
+    assert check_tand_min_semantics();
+    assert check_tor_max_semantics();
+    assert check_ternary_demorgan();
+}

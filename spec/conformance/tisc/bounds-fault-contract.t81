@@ -1,0 +1,60 @@
+// spec/conformance/tisc/bounds-fault-contract.t81
+// Normative ref: spec/tisc-spec.md §5.6 (LOAD, STORE)
+// Invariant: LOAD or STORE at an out-of-bounds address MUST raise a deterministic
+//            BoundsFault. The fault MUST fire at the correct address — not silently
+//            corrupt memory or access adjacent data. BoundsFault is never suppressed.
+//
+// @spec-ref: spec/tisc-spec.md §5.6
+// @invariant: bounds-fault-fires-at-out-of-bounds-address
+// @input-domain: Vector[T81BigInt](length=3); access at index 3 (out-of-bounds)
+// @expected: BoundsFault on out-of-bounds access; in-bounds access succeeds
+
+// Note: This program requires @expect_fault(BoundsFault) for the negative conformance
+// test. That annotation is proposed in RFC-0027 §5 but not yet in the T81Lang spec.
+// The positive conformance assertions (in-bounds accesses succeed) are fully runnable.
+
+@tier(1) @pure
+fn check_in_bounds_access_succeeds() -> bool {
+    // A LOAD within the valid index range MUST succeed without fault.
+    let v: Vector[T81BigInt] = [10, 20, 30];
+    v[0] == 10 && v[1] == 20 && v[2] == 30
+}
+
+@tier(1) @pure
+fn check_in_bounds_last_element() -> bool {
+    // The last valid index (length - 1) MUST succeed.
+    let v: Vector[T81BigInt] = [1, 2, 3, 4, 5];
+    v[4] == 5
+}
+
+@tier(1) @pure
+fn check_zero_length_vector_has_no_valid_index() -> bool {
+    // An empty vector has no valid index. Accessing index 0 would be out-of-bounds.
+    // We verify the length is 0 without accessing any element.
+    let v: Vector[T81BigInt] = [];
+    v.len() == 0
+}
+
+// --- Negative conformance tests (pending @expect_fault) ---
+//
+// When @expect_fault(BoundsFault) is implemented, add:
+//
+// @tier(1) @pure @expect_fault(BoundsFault)
+// fn check_oob_access_faults() -> void {
+//     let v: Vector[T81BigInt] = [10, 20, 30];
+//     let _ = v[3];   // index 3 is out of bounds for length 3
+// }
+//
+// @tier(1) @pure @expect_fault(BoundsFault)
+// fn check_negative_index_faults() -> void {
+//     let v: Vector[T81BigInt] = [10, 20, 30];
+//     let _ = v[-1];  // negative index is always out of bounds
+// }
+
+@axion_verify
+fn main() -> void {
+    assert check_in_bounds_access_succeeds();
+    assert check_in_bounds_last_element();
+    assert check_zero_length_vector_has_no_valid_index();
+    // Axion MUST emit: spec_conformance pass segment=meta
+}
