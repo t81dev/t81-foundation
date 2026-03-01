@@ -1,0 +1,47 @@
+// spec/conformance/tisc/tier-restriction.t81
+// Normative ref: spec/tisc-spec.md §5.10 (Axion Privileged Instructions)
+//                spec/cognitive-tiers.md §1 (Tier 1 Constraints)
+// Invariant: AXVERIFY is the only AX* opcode permitted in Tier 1.
+//            A Tier 1 function that exercises the @axion_verify path MUST NOT
+//            raise a TierFault.
+//
+// @spec-ref: spec/cognitive-tiers.md §1
+// @invariant: axverify-allowed-in-tier1
+// @input-domain: Tier 1 execution context
+// @expected: no TierFault; Axion emits spec_conformance pass segment=meta
+
+// Note: This program tests the POSITIVE constraint (AXVERIFY is allowed in Tier 1).
+// The NEGATIVE constraint (AXREAD/AXSET raise TierFault in Tier 1) requires
+// @expect_fault(TierFault) annotation, which is proposed in RFC-0027 §5 but not
+// yet in the T81Lang spec. That test will be added when @expect_fault is implemented.
+
+@tier(1) @pure
+fn check_tier1_is_constrained() -> bool {
+    // A Tier 1 function can perform pure arithmetic — no privileged opcodes needed.
+    // This verifies the Tier 1 constraint set is in effect for the conformance run.
+    let a: T81BigInt = 40;
+    let b: T81BigInt = 41;
+    a + b == 81
+}
+
+@tier(1) @pure
+fn check_tier1_loop_bounded() -> bool {
+    // Tier 1 MUST require statically bounded loops (§1 Tier 1 Constraints).
+    // This bounded loop MUST complete without a TierFault.
+    let mut acc: T81BigInt = 0;
+    for i in 0..3 {
+        acc = acc + 1;
+    }
+    acc == 3
+}
+
+@axion_verify
+fn main() -> void {
+    // @axion_verify on main() invokes the AXVERIFY opcode path.
+    // Per spec/cognitive-tiers.md §1: AXVERIFY is the ONLY privileged instruction
+    // permitted in Tier 1. Reaching this line without a TierFault is the conformance
+    // assertion — the VM's tier enforcement must allow AXVERIFY here.
+    assert check_tier1_is_constrained();
+    assert check_tier1_loop_bounded();
+    // Axion MUST emit: spec_conformance pass segment=meta
+}

@@ -1,0 +1,147 @@
+# spec/conformance — Spec-as-Executable Conformance Suite
+
+**Authority:** RFC-0027 (Spec-as-Executable Conformance Model)\
+**Status:** SE-M1 scaffold — programs authored; CI activation pending T81Lang compiler readiness (SE-M6)\
+**Last Revised:** 2026-03-01
+
+---
+
+## What This Is
+
+T81's identity claim — *conceived by AI, for AI* — requires that the specification itself be
+machine-verifiable, not merely human-readable. This directory contains the **Spec-as-Executable**
+conformance suite: normative invariants from the core spec documents expressed as T81Lang programs
+that constitute the canonical conformance standard for T81VM.
+
+Any conformant T81VM implementation can be verified by an AI that reads the spec and derives test
+inputs from it, without depending on a hand-written test suite.
+
+---
+
+## Directory Structure
+
+```
+spec/conformance/
+  README.md                        ← this file
+  CMakeLists.txt                   ← CMake target: spec_conformance_all
+  t81-data-types/                  ← Invariants from spec/t81-data-types.md
+    widening-order.t81             ← §11.8 numeric widening invariants
+    canonical-encoding.t81         ← §5.1 canonicalization rules
+    type-kind-completeness.t81     ← §11 all type kinds reachable (SE-M2)
+  tisc/                            ← Invariants from spec/tisc-spec.md
+    tier-restriction.t81           ← §5.10 AX* opcodes fault in Tier 1 (except AXVERIFY)
+    opcode-determinism.t81         ← §5 each opcode produces bit-exact output (SE-M3)
+    bounds-fault-contract.t81      ← §5 bounds fault fires at correct address (SE-M3)
+  t81vm/                           ← Invariants from spec/t81vm-spec.md
+    determinism-profile.t81        ← §1 identical input → identical output (SE-M3)
+    axion-log-completeness.t81     ← §5 every privileged op emits an AxionEvent (SE-M3)
+  axion-kernel/                    ← Invariants from spec/axion-kernel.md
+    policy-deny-requires-reason.t81  ← §1.9 every Deny verdict has canonical reason
+    segment-trace-strings.t81       ← §1.8 canonical segment=X addr=Y action=Z (SE-M4)
+  cognitive-tiers/                 ← Invariants from spec/cognitive-tiers.md
+    tier-annotation-enforcement.t81  ← §1 @tier(N) blocks N+1 opcodes (SE-M6)
+```
+
+---
+
+## Annotation Conventions
+
+Every spec program MUST use the following conventions (per RFC-0027 §2–3):
+
+### Required Annotations
+
+| Annotation | Meaning |
+| :--- | :--- |
+| `@tier(N)` | Cognitive tier constraint (1 or 2 for spec programs) |
+| `@pure` | Function is side-effect-free and deterministic |
+| `@axion_verify` | On `main()` — causes Axion to record a `spec_conformance pass\|fail segment=meta` event |
+
+### Required Comment Header (per program)
+
+```t81
+// spec/conformance/<domain>/<name>.t81
+// Normative ref: spec/<doc>.md §N.M
+// Invariant: <one-line description>
+//
+// @spec-ref: spec/<doc>.md §N.M
+// @invariant: <slug>
+// @input-domain: <type description>
+// @expected: <outcome description>
+```
+
+### Optional Annotations (proposed — see RFC-0027 §5)
+
+| Annotation | Meaning | Status |
+| :--- | :--- | :--- |
+| `@expect_fault(F)` | Program expects deterministic fault `F` | Proposed — not yet in T81Lang spec |
+
+---
+
+## Conformance Program Rules
+
+Each program MUST:
+
+1. Reference the normative section it encodes in the comment header
+2. Use `@axion_verify` on `main()` so Axion records the conformance event
+3. Be pure and deterministic (`@tier(1)` or `@tier(2)` only)
+4. Produce a single boolean assertion result (pass = `assert true`, fail = assertion error)
+5. Not access CanonFS, perform I/O, or use any non-deterministic primitive
+
+---
+
+## How to Run
+
+When the CMake target is active:
+
+```bash
+cmake --preset ci
+ctest --test-dir build -R spec_conformance_ --output-on-failure
+```
+
+Or build the specific target:
+
+```bash
+cmake --build build --target spec_conformance_all
+```
+
+Each passing program emits a `spec_conformance pass segment=meta` AxionEvent
+visible in the CI trace log. This is the audit record that the invariant holds.
+
+> **Status:** The CMake `spec_conformance_all` target is present as a stub (SE-M1).
+> CI activation (`ctest` invocation blocks merge) is SE-M6, pending T81Lang compiler
+> support for `@axion_verify` and `@pure` annotations.
+
+---
+
+## Coverage Matrix
+
+| Program | Normative Ref | Status | Milestone |
+| :--- | :--- | :--- | :--- |
+| `t81-data-types/widening-order.t81` | §11.8 | Authored | SE-M1 |
+| `t81-data-types/canonical-encoding.t81` | §5.1 | Authored | SE-M1 |
+| `t81-data-types/type-kind-completeness.t81` | §11 | Planned | SE-M2 |
+| `tisc/tier-restriction.t81` | §5.10 + cog §1 | Authored | SE-M1 |
+| `tisc/opcode-determinism.t81` | §5 | Planned | SE-M3 |
+| `tisc/bounds-fault-contract.t81` | §5 | Planned | SE-M3 |
+| `t81vm/determinism-profile.t81` | §1 | Planned | SE-M3 |
+| `t81vm/axion-log-completeness.t81` | §5 | Planned | SE-M3 |
+| `axion-kernel/policy-deny-requires-reason.t81` | §1.9 | Authored | SE-M1 |
+| `axion-kernel/segment-trace-strings.t81` | §1.8 | Planned | SE-M4 |
+| `cognitive-tiers/tier-annotation-enforcement.t81` | §1 | Planned | SE-M6 |
+
+Acceptance target: **21 passing programs** covering `t81-data-types.md`, `tisc-spec.md`,
+and `axion-kernel.md` (RFC-0027 acceptance criterion).
+
+---
+
+## Relationship to C++ Tests
+
+Spec programs and C++ tests are complementary, not duplicative:
+
+- **Spec programs** cover the *spec surface* — what the spec guarantees across any
+  conformant T81VM implementation, in any host language.
+- **C++ tests** (`tests/cpp/`) cover the *implementation surface* — how the reference
+  VM achieves those guarantees internally.
+
+A spec program that compiles and passes on an independent T81VM port is stronger
+evidence of conformance than a C++ test of the reference implementation.

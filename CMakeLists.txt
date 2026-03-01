@@ -1495,6 +1495,10 @@ if(DOXYGEN_FOUND)
     VERBATIM)
 endif()
 
+# =============================================================================
+# Spec Conformance Suite (RFC-0027 SE-M1)
+# =============================================================================
+add_subdirectory(spec/conformance)
 
 if(T81_BUILD_TESTS)
   add_executable(t81_graph_test tests/cpp/test_T81Graph.cpp)

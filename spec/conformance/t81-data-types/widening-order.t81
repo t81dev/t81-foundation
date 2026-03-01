@@ -1,0 +1,46 @@
+// spec/conformance/t81-data-types/widening-order.t81
+// Normative ref: spec/t81-data-types.md §11.8
+// Invariant: T81Qutrit widens to i2 widens to i8 widens to T81BigInt widens to T81Float
+//            without fault; widening preserves value identity.
+//
+// @spec-ref: spec/t81-data-types.md §11.8
+// @invariant: widening-monotone
+// @input-domain: T81Qutrit({-1, 0, +1})
+// @expected: no TypeFault; result bit-exact at each widening step
+
+@tier(1) @pure
+fn check_widening_positive() -> bool {
+    // Widen +1 through the full rank chain.
+    let q: T81Qutrit = 1t;
+    let i: i8 = q as i8;         // T81Qutrit → i8 (must not fault)
+    let b: T81BigInt = i as T81BigInt;
+    let f: T81Float = b as T81Float;
+    f == 1.0f
+}
+
+@tier(1) @pure
+fn check_widening_zero() -> bool {
+    // Widening 0t must preserve the zero identity at every step.
+    let q: T81Qutrit = 0t;
+    let i: i8 = q as i8;
+    let b: T81BigInt = i as T81BigInt;
+    let f: T81Float = b as T81Float;
+    f == 0.0f
+}
+
+@tier(1) @pure
+fn check_widening_negative() -> bool {
+    // Widening -1t must preserve the negative identity.
+    let q: T81Qutrit = -1t;
+    let i: i8 = q as i8;
+    let b: T81BigInt = i as T81BigInt;
+    let f: T81Float = b as T81Float;
+    f == -1.0f
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_widening_positive();
+    assert check_widening_zero();
+    assert check_widening_negative();
+}

@@ -1,0 +1,64 @@
+// spec/conformance/t81-data-types/canonical-encoding.t81
+// Normative ref: spec/t81-data-types.md §5.1
+// Invariant: every type has exactly one canonical encoding; no redundant forms permitted.
+//            Zero T81BigInt MUST equal zero after any round-trip.
+//            T81Fraction MUST reduce to lowest terms automatically.
+//
+// @spec-ref: spec/t81-data-types.md §5.1
+// @invariant: canonical-uniqueness
+// @input-domain: T81BigInt(0), T81BigInt(81), T81Fraction(2/4)
+// @expected: equality holds across canonical forms; no leading-zero forms survive
+
+@tier(1) @pure
+fn check_zero_canonical() -> bool {
+    // Zero T81BigInt MUST encode as [+][0] with no leading digit variants.
+    // Structural equality of two independently constructed zeros.
+    let a: T81BigInt = 0;
+    let b: T81BigInt = 0;
+    a == b
+}
+
+@tier(1) @pure
+fn check_arithmetic_canonical() -> bool {
+    // Arithmetic result MUST produce a canonical form (no leading zeros in base-81).
+    // 81 + 81 = 162; result must be the canonical two-digit base-81 representation.
+    let a: T81BigInt = 81;
+    let b: T81BigInt = 81;
+    let sum: T81BigInt = a + b;
+    sum == 162
+}
+
+@tier(1) @pure
+fn check_subtract_to_zero() -> bool {
+    // Subtracting a value from itself MUST produce canonical zero — not a leading-zero form.
+    let a: T81BigInt = 12345;
+    let z: T81BigInt = a - a;
+    z == 0
+}
+
+@tier(1) @pure
+fn check_fraction_reduces() -> bool {
+    // T81Fraction MUST reduce to lowest terms on construction (§5.1 — no redundant forms).
+    // 2/4 and 1/2 MUST compare equal because both normalize to the same canonical fraction.
+    let f: T81Fraction = 2 / 4;
+    let g: T81Fraction = 1 / 2;
+    f == g
+}
+
+@tier(1) @pure
+fn check_fraction_negative_canonical() -> bool {
+    // Negative fractions MUST carry the sign on the numerator only.
+    // -1/2 == -(1/2).
+    let f: T81Fraction = -1 / 2;
+    let g: T81Fraction = -(1 / 2);
+    f == g
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_zero_canonical();
+    assert check_arithmetic_canonical();
+    assert check_subtract_to_zero();
+    assert check_fraction_reduces();
+    assert check_fraction_negative_canonical();
+}
