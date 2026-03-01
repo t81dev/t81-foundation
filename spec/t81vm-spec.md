@@ -122,6 +122,8 @@ Implementations MUST ensure:
    - All values in registers and memory MUST adhere to the canonicalization rules in the Data Types spec.
    - Non-canonical values MUST either be normalized or rejected with a fault.
 
+> **Conformance program:** [`spec/conformance/t81vm/determinism-profile.t81`](../conformance/t81vm/determinism-profile.t81)
+
 ______________________________________________________________________
 
 ## 3. Concurrency Model
@@ -405,6 +407,8 @@ Requirements:
 Symbol pools follow the same handle rules but are primarily used by language
 constructs; opcodes that accept symbol handles MUST enforce the same validation
 behavior.
+
+> **Conformance program:** [`spec/conformance/t81vm/axion-log-completeness.t81`](../conformance/t81vm/axion-log-completeness.t81)
 
 ______________________________________________________________________
 

@@ -102,6 +102,8 @@ Tier 1 is the most restrictive and the easiest to fully certify.
 
 Axion expects Tier 1 code to be provably safe.
 
+> **Conformance program:** [`spec/conformance/cognitive-tiers/tier-annotation-enforcement.t81`](../conformance/cognitive-tiers/tier-annotation-enforcement.t81)
+
 ______________________________________________________________________
 
 ## Tier 2 — Structured Algorithms

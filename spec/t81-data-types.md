@@ -393,6 +393,8 @@ Canonicalization MUST occur after:
 
    - Axion MUST be able to inspect normalized representation
 
+> **Conformance programs:** [`spec/conformance/t81-data-types/canonical-encoding.t81`](conformance/t81-data-types/canonical-encoding.t81) · [`canonical-ordering.t81`](conformance/t81-data-types/canonical-ordering.t81)
+
 ______________________________________________________________________
 
 # 6. Interoperability Rules
@@ -504,6 +506,8 @@ ______________________________________________________________________
 > full set of type kinds currently implemented in the T81 semantic analyzer
 > (`lang/frontend/semantic_analyzer.cpp`). The four tiers mirror the structure
 > in `spec/t81lang-spec.md §2`.
+>
+> **Conformance program:** [`spec/conformance/t81-data-types/type-kind-completeness.t81`](conformance/t81-data-types/type-kind-completeness.t81)
 
 ## 11.1 Ternary Core (Tier 1 — Fully Deterministic)
 
@@ -599,6 +603,8 @@ T81Qutrit < i2 < i8 < i16 < i32 < T81Uint < T81BigInt
 Widening is always explicit at the TISC level (conversion opcodes `I2F`,
 `I2FRAC`, etc.). T81Lang performs widening implicitly within the same
 rank group but requires explicit casts across group boundaries.
+
+> **Conformance programs:** [`spec/conformance/t81-data-types/widening-order.t81`](conformance/t81-data-types/widening-order.t81) · [`widening-upper-chain.t81`](conformance/t81-data-types/widening-upper-chain.t81) · [`widening-binary-interop.t81`](conformance/t81-data-types/widening-binary-interop.t81)
 
 ______________________________________________________________________
 

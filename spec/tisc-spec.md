@@ -467,6 +467,8 @@ image). Any opcode that dereferences a handle MUST fault with
 - **Faults**: Invalid registers, non-result source, or attempting to unwrap an
   `Ok` handle.
 
+> **Conformance programs:** [`spec/conformance/tisc/arithmetic-determinism.t81`](../conformance/tisc/arithmetic-determinism.t81) · [`division-truncation.t81`](../conformance/tisc/division-truncation.t81) · [`fraction-normalization.t81`](../conformance/tisc/fraction-normalization.t81)
+
 ______________________________________________________________________
 
 ### 5.3 Ternary Logic Instructions
@@ -487,6 +489,8 @@ Logical operations operate over Trits or T81BigInt viewed as vectors of trits.
 - **Semantics**:
   Applied tritwise using ternary min/max/XOR definitions.
 - **Faults**: None; lengths must match; if mismatched, VM MUST canonicalize via padding rule specified in Data Types (implementation MUST be deterministic).
+
+> **Conformance program:** [`spec/conformance/tisc/ternary-logic-canonical.t81`](../conformance/tisc/ternary-logic-canonical.t81)
 
 ______________________________________________________________________
 
@@ -516,6 +520,8 @@ ______________________________________________________________________
   `R[RD] := FLAGS` encoded as a canonical small integer. The VM MUST encode `NEG`
   as `-1`, `ZERO` as `0`, and `POS` as `+1`.
 - **Faults**: None.
+
+> **Conformance program:** [`spec/conformance/tisc/comparison-total-order.t81`](../conformance/tisc/comparison-total-order.t81)
 
 ______________________________________________________________________
 
@@ -561,6 +567,8 @@ ______________________________________________________________________
   `PUSH`: decrement SP, store `R[RS]` at `MEM[SP]`
   `POP`: load from `MEM[SP]` into `R[RD]`, increment SP
 - **Faults**: Stack overflow/underflow.
+
+> **Conformance program:** [`spec/conformance/tisc/bounds-fault-contract.t81`](../conformance/tisc/bounds-fault-contract.t81)
 
 ______________________________________________________________________
 
@@ -644,6 +652,8 @@ Conversions MUST be explicit and deterministic.
     and write the canonical integer into `R[RD]`.
 - **Faults**: Invalid fraction (e.g., denominator zero).
 
+> **Conformance program:** [`spec/conformance/tisc/conversion-determinism.t81`](../conformance/tisc/conversion-determinism.t81)
+
 ______________________________________________________________________
 
 ### 5.10 Axion-Privileged Instructions
@@ -676,6 +686,8 @@ Any attempt to execute Axion instructions from non-privileged context MUST be tr
 **Tier restriction (cross-reference):** `AXREAD` and `AXSET` are restricted to
 Tier 2 and above per [`cognitive-tiers.md §1`](cognitive-tiers.md#tier-1--pure-deterministic-computation).
 `AXVERIFY` is the only Axion privileged instruction permitted in Tier 1.
+
+> **Conformance program:** [`spec/conformance/tisc/tier-restriction.t81`](../conformance/tisc/tier-restriction.t81)
 
 ______________________________________________________________________
 
@@ -795,6 +807,8 @@ the purpose of bit-level manipulation; the result is stored as a canonical
 - **Semantics**: `R[RD] := canonical(unsigned_right_shift(R[RS], R[R_AMT] & 0x3F))` —
   logical (unsigned, zero-fill) right shift.
 - **Faults**: None.
+
+> **Conformance programs:** [`spec/conformance/tisc/bitwise-determinism.t81`](../conformance/tisc/bitwise-determinism.t81) · [`bitwise-shift-masking.t81`](../conformance/tisc/bitwise-shift-masking.t81)
 
 ______________________________________________________________________
 
