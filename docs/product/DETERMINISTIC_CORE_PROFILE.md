@@ -11,7 +11,7 @@ This document defines the product boundary for the T81 Deterministic Core Profil
 
 Normative references:
 
-- `docs/spec/DETERMINISTIC_CORE_PROFILE_v1.md`
+- `spec/supplemental/deterministic-core-profile-v1.md`
 - `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`
 - `docs/governance/FREEZE_ENFORCEMENT.md`
 - `docs/governance/DETERMINISM_THREAT_MODEL.md`

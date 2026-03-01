@@ -2,7 +2,7 @@
 
 **Status:** Active Inventory
 **Last Updated:** 2026-02-25
-**Reference:** `docs/spec/DETERMINISTIC_CORE_PROFILE_v1.md`
+**Reference:** `spec/supplemental/deterministic-core-profile-v1.md`
 
 This document lists all components, features, and subsystems that are **NOT**
 part of the frozen, verified core. These areas are subject to change without
@@ -41,7 +41,7 @@ governance and registry status upgrade.
 ## Deterministic Core Boundary
 
 The modules in this document are explicitly out of deterministic core profile
-scope (`docs/spec/DETERMINISTIC_CORE_PROFILE_v1.md`) and are non-verified by
+scope (`spec/supplemental/deterministic-core-profile-v1.md`) and are non-verified by
 default. Promotion requires governance review and determinism registry status
 upgrade.
 

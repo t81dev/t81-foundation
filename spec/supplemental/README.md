@@ -13,6 +13,7 @@ requirements as the core tier.
 
 | Document | Description |
 | :--- | :--- |
+| `deterministic-core-profile-v1.md` | DCP component table — what is frozen/verified (v1.0) |
 | `canonfs-spec.md` | CanonFS deterministic filesystem storage model |
 | `hanoi-kernel-spec.md` | Hanoi kernel archived reference (non-normative) |
 | `axion-policy-grammar.md` | APL grammar and verification targets |

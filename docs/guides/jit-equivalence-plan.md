@@ -1,7 +1,7 @@
 # JIT Equivalence Plan
 
 **Status:** **Experimental / Planned**
-**Reference:** `docs/spec/t81vm-spec.md`
+**Reference:** `spec/t81vm-spec.md`
 **Objective:** Formalize the criteria for adopting Just-In-Time compilation into the Verified Core.
 
 This document defines the rigorous equivalence requirements that any JIT implementation (e.g., Trace JIT, Method JIT) MUST satisfy before being enabled by default or considered "stable".

@@ -36,7 +36,7 @@ The T81 documentation ecosystem is stratified by authority. In the event of a co
 Freeze boundaries are defined exclusively in `FREEZE_ENFORCEMENT.md` and itemized in the **Deterministic Core Profile**.
 
 *   **Enforcement**: `docs/governance/FREEZE_ENFORCEMENT.md`
-*   **Profile**: `docs/spec/DETERMINISTIC_CORE_PROFILE_v1.md`
+*   **Profile**: `spec/supplemental/deterministic-core-profile-v1.md`
 *   **Audit**: `docs/status/VERIFIED_SURFACE_AUDIT.md`
 
 Changes to "Frozen" subsystems (as defined in the Core Profile) are restricted to preserve stability and determinism.
@@ -115,7 +115,7 @@ Subsystems own specific directories. New files must be placed accordingly.
 | **VM** | `core/vm/` | `core/vm/` | `spec/t81vm-spec.md` |
 | **Language** | `lang/stdlib/` | `lang/stdlib/` | `spec/t81lang-spec.md` |
 | **Axion** | `kernel/axion/` | `kernel/axion/` | `spec/axion-kernel.md` |
-| **Docs** | `docs/` | N/A | `docs/spec/INDEX.md` |
+| **Docs** | `docs/` | N/A | `spec/index.md` |
 | **Book** | `book/` | N/A | N/A |
 
 ---
