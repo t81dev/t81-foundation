@@ -28,15 +28,15 @@ ______________________________________________________________________
 
 ## 1. Purpose
 
-T81 is a unified, deterministic, ternary-native computational architecture designed to surpass the limitations of binary computation. It introduces:
+T81 is a unified, deterministic, ternary-native computational architecture — conceived by AI, for AI. It is purpose-built for verifiable AI, cryptography, and scientific computing, where reproducibility, governance, and cognitive structure are ISA-level guarantees, not afterthoughts.
 
-- Balanced ternary logic
-- Base-81 arithmetic
-- Deterministic execution
-- Cognitive recursion layers
-- A formal ethical supervisor (Axion)
+Its foundations are properties AI systems require but binary architectures cannot provide by design:
 
-T81 is intended for safe AI, symbolic cognition, scientific computing, and long-horizon reasoning systems.
+- **Balanced ternary logic** — {-1, 0, +1} maps natively to neural activation states (inhibit / quiescent / excite), eliminating binary's sign-bit asymmetry
+- **Bit-exact determinism** — enforced architecturally via Axion and CanonHash81, not a runtime policy
+- **Formal policy enforcement** — the Axion kernel is an ISA-level invariant, not an add-on layer
+- **Structured cognitive escalation** — the tier model provides a formal computational model for how reasoning scales from arithmetic to symbolic cognition
+- **Base-81 arithmetic** — density and alignment optimized for ternary-native inference
 
 ______________________________________________________________________
 
