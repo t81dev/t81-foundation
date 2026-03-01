@@ -1,106 +1,96 @@
-# Status documentation index
+# /docs/status — Control Surface
 
-Status: Active
 Last Updated: 2026-02-28
+Authority: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 
-## Purpose
+This directory is a cockpit, not an archive.
 
-Operational status, implementation matrix, execution plans, and control-center docs.
+If someone clones this repo and reads only `/docs/status`, they should know —
+in under 5 minutes — exactly what is safe, what is experimental, and what is drifting.
 
-## Scope
+Narrative documents, temporal plans, and time-bound reports live in `docs/records/`.
 
-This README is a navigation aid for this directory. It does not change
-specification authority, freeze boundaries, or determinism claim scope.
+---
 
-## Active Operational Docs
+## The Six Questions
 
-**Control Plane:**
+| Question | Document |
+| :--- | :--- |
+| What is frozen? | `FROZEN_CORE_PROFILE.md` |
+| What is drifting? | `DRIFT_DECOMPOSITION.md` |
+| What is risky? | `ACTIVE_RISKS.md` |
+| What is blocked / being hardened? | `HARDENING_BACKLOG.md` |
+| What is experimental and explicitly non-DCP? | `EXTENSION_PROFILE.md` |
+| What is the review protocol? | `GOVERNANCE_REVIEW_CADENCE.md` |
 
-- PROJECT_CONTROL_CENTER.md
-- TASKS.md
-- EXECUTION_PLAN_2026-03.md
-- SYSTEM_STATUS.md
-- IMPLEMENTATION_MATRIX.md
+---
 
-**Risk and Decisions:**
+## Full Index
 
-- RISK_REGISTER.md
-- DECISION_LOG.md
+### Dashboard
 
-**Release / Governance:**
+- `PROJECT_CONTROL_CENTER.md` — phase, health, gates, drift summary, top risks, next decisions
 
-- RELEASE_READINESS_PACKET_2026-03.md
-- RELEASE_DISCIPLINE_CHECKLIST.md
-- C2_MONTH_CLOSE_RUNBOOK_2026-03-31.md
-- C2_MONTH_CLOSE_CHECK_2026-03-31.md
-- C2_MONTH_CLOSE_PREFLIGHT_2026-03-31.md
+### Constitutional
 
-**CI and Dependencies:**
+- `FROZEN_CORE_PROFILE.md` — directory boundary, opcode whitelist, determinism guarantees, exclusions, firewall
 
-- CI_GATE_STATUS.md
-- DEPENDENCY_HEALTH.md
+### Alignment Truth
 
-**Subsystem Status:**
+- `IMPLEMENTATION_MATRIX.md` — spec authority, implementation maturity, promotion state, drift risk, last review date per subsystem
 
-- AXION_STATUS.md
+### Risk and Decisions
 
-**Language Surface:**
+- `ACTIVE_RISKS.md` — short risk table; refreshed weekly
+- `DECISION_LOG.md` — what was decided, by whom, when, alternatives considered
 
-- T81LANG_ENGINEERING_BACKLOG_2026-03.md
-- T81LANG_SURFACE_INVENTORY.md
-- T81LANG_PROMOTION_GATE.md
-- T81LANG_PROMOTION_GATE_SNAPSHOT.md
+### Drift and Hardening
 
-**Standard Library:**
+- `DRIFT_DECOMPOSITION.md` — spec claim → implementation reality → closure plan, per surface
+- `HARDENING_BACKLOG.md` — structural hardening and determinism tightening only (no features)
+- `DETERMINISM_AUDIT_LOG.md` — chronological: what was audited, what failed, what was patched, what remains open
 
-- STDLIB_STABILIZATION_PLAN_2026-03.md
-- STDLIB_PROMOTION_SNAPSHOT_2026-03.md
+### Experimental Boundary
 
-**Strategic:**
+- `EXTENSION_PROFILE.md` — what is not frozen, what can break, what has no determinism guarantees
 
-- FULL_SYSTEM_ARCHITECTURAL_STRATEGIC_AUDIT_2026-03.md
+### Governance Protocol
 
-**Determinism / Integrity:**
+- `GOVERNANCE_REVIEW_CADENCE.md` — monthly review checklist, drift protocol, registry update procedure, promotion gate
 
-- VERIFIED_SURFACE_AUDIT.md
-- STRUCTURAL_INTEGRITY_REPORT.md
-- DETERMINISTIC_CORPUS_MANIFEST.md
-- DETERMINISM_VERIFICATION_REPORT_LANGUAGE_SURFACE.md
+### Operational
 
-**Living Inventories:**
+- `CI_GATE_STATUS.md` — required gates, informational gates, known failures, benchmark guardrail, flaky-test inventory
+- `DEPENDENCY_HEALTH.md` — dependency versions, upgrade policy, CVE tracking, determinism impact
+- `TASKS.md` — active implementation tasks (C2 close, stdlib fixture suites)
 
-- EXPERIMENTAL_SURFACE_INVENTORY.md
-- GOVERNED_AGI_PROMOTION_PIPELINE.md
+---
 
-## Active Workstream Plans
+## What Is Not Here
 
-- BEHAVIORAL_CONFORMANCE_EXPANSION_PHASE3_2026-02-26.md
-- STDLIB_STABILIZATION_PLAN_2026-03.md
+These were archived to `docs/records/` because they are temporal, aspirational,
+or absorbed into the documents above:
 
-## Historical Status Docs (Moved)
-
-Archived under `docs/records/status-history/`:
-
-- PROGRAM_CHECKPOINT_2026-02-25.md
-- LLAMA_CPP_GOVERNED_INFERENCE_PROGRESS_2026-02-25.md
-- COGNITIVE_TIERS_SPEC_COMPLIANCE_2026-02-26.md
-- BEHAVIORAL_CONFORMANCE_EXPANSION_SPRINT_2026-02-26.md
-- VM_MONOLITH_DECOMPOSITION_PLAN_2026-02-26.md
-- COHESION_ARCHITECTURE_PLAN_2026-02-26.md
-- RELEASE_READINESS_PACKET_2026-02.md
-- DETERMINISM_SURFACE_REPORT_2025-05-20.md
-- AXION_PARTIAL_COVERAGE_ALIGNMENT_2026-03.md
-- T81LANG_DRIFT_DECOMPOSITION_2026-03.md
-- T81LANG_IMPLEMENTATION_TASK_QUEUE_2026-03.md
-- DOCS_TRIAGE_REPORT_2026-02-26.md
-
-Archived under `docs/records/audits/`:
-
-- FULL_SYSTEM_ARCHITECTURAL_STRATEGIC_AUDIT_2026-02-26.md
-- FULL_SYSTEM_ARCHITECTURAL_STRATEGIC_AUDIT_2026-02-28.md
-- TEST_SUITE_DEDUP_AUDIT_2026-02-28.md
-
-## Versioning Statement
-
-Operational index only. Authority hierarchy remains:
-/spec > docs/architecture/OVERVIEW.md > /docs > /book.
+| Archived | Absorbed Into |
+| :--- | :--- |
+| EXPERIMENTAL_SURFACE_INVENTORY.md | `EXTENSION_PROFILE.md` |
+| GOVERNED_AGI_PROMOTION_PIPELINE.md | `EXTENSION_PROFILE.md` + `GOVERNANCE_REVIEW_CADENCE.md` |
+| RISK_REGISTER.md | `ACTIVE_RISKS.md` |
+| SYSTEM_STATUS.md | `PROJECT_CONTROL_CENTER.md` + `IMPLEMENTATION_MATRIX.md` |
+| STRUCTURAL_INTEGRITY_REPORT.md | `DETERMINISM_AUDIT_LOG.md` |
+| VERIFIED_SURFACE_AUDIT.md | `DETERMINISM_AUDIT_LOG.md` |
+| DETERMINISM_VERIFICATION_REPORT_LANGUAGE_SURFACE.md | `DETERMINISM_AUDIT_LOG.md` |
+| DETERMINISTIC_CORPUS_MANIFEST.md | `FROZEN_CORE_PROFILE.md §7` |
+| RELEASE_DISCIPLINE_CHECKLIST.md | `GOVERNANCE_REVIEW_CADENCE.md §1` |
+| T81LANG_PROMOTION_GATE.md | `GOVERNANCE_REVIEW_CADENCE.md §5` |
+| T81LANG_SURFACE_INVENTORY.md | `DRIFT_DECOMPOSITION.md` |
+| T81LANG_ENGINEERING_BACKLOG_2026-03.md | `HARDENING_BACKLOG.md` |
+| AXION_STATUS.md | `DRIFT_DECOMPOSITION.md` + `IMPLEMENTATION_MATRIX.md` |
+| EXECUTION_PLAN_2026-03.md | (completed; records only) |
+| RELEASE_READINESS_PACKET_2026-03.md | (time-bound; records/audits/) |
+| C2_MONTH_CLOSE_* | (records/status-history/) |
+| FULL_SYSTEM_ARCHITECTURAL_STRATEGIC_AUDIT_2026-03.md | (records/audits/) |
+| BEHAVIORAL_CONFORMANCE_EXPANSION_PHASE3_*.md | (records/status-history/) |
+| STDLIB_STABILIZATION_PLAN_2026-03.md | (records/status-history/) |
+| T81LANG_PROMOTION_GATE_SNAPSHOT.md | (records/status-history/) |
+| STDLIB_PROMOTION_SNAPSHOT_2026-03.md | (records/status-history/) |
