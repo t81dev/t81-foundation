@@ -37,6 +37,13 @@ void log_memory_segment_access(State& state, std::size_t current_context, t81::t
 void log_bounds_fault(State& state, std::size_t current_context, t81::tisc::Opcode opcode,
                       MemorySegmentKind kind, int addr, std::string_view action);
 
+/// Emit a canonical CanonFS meta-segment audit event (AX-M7).
+/// Used by the AXSET handler to record a Write trace event when a CanonFS
+/// driver is attached.  The reason string is produced by the AX-M6 canonical
+/// builder: "meta slot axion event segment=meta addr=<meta_ptr> action=<action>".
+void log_canonfs_operation(State& state, std::size_t current_context,
+                           t81::tisc::Opcode opcode, std::string_view action);
+
 void record_axion_event(State& state, std::size_t current_context, t81::tisc::Opcode opcode,
                         std::int32_t tag_val, std::int64_t val_data,
                         const t81::axion::Verdict& verdict);

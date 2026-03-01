@@ -2378,6 +2378,12 @@ public:
         record_axion_event(insn.opcode, insn.a, value, verdict);
         if (verdict.kind == t81::axion::VerdictKind::Deny) {
           trap = Trap::SecurityFault;
+        } else if (canonfs_driver_) {
+          // AX-M7: emit canonical CanonFS Write audit event into the axion log.
+          // This fires after the AXSET event and before any disk I/O, satisfying
+          // the meta-event ordering requirement.
+          t81::vm::internal::log_canonfs_operation(
+              state_, state_.current_context, insn.opcode, "Write");
         }
         break;
       }

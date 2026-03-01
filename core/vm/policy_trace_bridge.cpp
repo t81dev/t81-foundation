@@ -96,6 +96,16 @@ void log_bounds_fault(State& state, std::size_t current_context, t81::tisc::Opco
                      static_cast<std::int64_t>(addr), verdict);
 }
 
+void log_canonfs_operation(State& state, std::size_t current_context,
+                           t81::tisc::Opcode opcode, std::string_view action) {
+  t81::axion::Verdict verdict;
+  verdict.kind = t81::axion::VerdictKind::Allow;
+  verdict.reason = t81::axion::reasons::canonical_meta_slot_reason(state.meta_ptr, action);
+  record_axion_event(state, current_context, opcode,
+                     static_cast<std::int32_t>(MemorySegmentKind::Meta),
+                     static_cast<std::int64_t>(state.meta_ptr), verdict);
+}
+
 namespace {
 
 void push_axion_event(State& state, const AxionEvent& event) {
