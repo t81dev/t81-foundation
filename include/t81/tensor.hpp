@@ -158,14 +158,15 @@ public:
 
 private:
   static bool valid_shape_(const std::vector<int>& s) {
-    return std::all_of(s.begin(), s.end(), [](int d) { return d > 0; });
+    return std::all_of(s.begin(), s.end(), [](int d) { return d >= 0; });
   }
 
   static std::size_t size_from_shape_(const std::vector<int>& s) {
     if (s.empty()) return 0;
     std::size_t n = 1;
     for (int d : s) {
-      if (d <= 0) throw std::invalid_argument("size_from_shape_: non-positive dim");
+      if (d < 0) throw std::invalid_argument("size_from_shape_: negative dim");
+      if (d == 0) return 0;  // Any zero dimension → empty tensor
       if (n != 0 && static_cast<std::size_t>(d) > std::numeric_limits<std::size_t>::max() / n) {
         throw std::overflow_error("size_from_shape_: overflow");
       }

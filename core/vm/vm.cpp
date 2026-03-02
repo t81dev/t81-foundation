@@ -947,7 +947,22 @@ public:
         case ValueTag::InfiniteHandle:
           if (lhs_val == rhs_val) return 0;
           return (lhs_val < rhs_val) ? -1 : 1;
-        case ValueTag::TensorHandle:
+        case ValueTag::TensorHandle: {
+          if (lhs_val == rhs_val) return 0;
+          auto* lhs_t = tensor_ptr(lhs_val);
+          auto* rhs_t = tensor_ptr(rhs_val);
+          if (!lhs_t || !rhs_t) return std::nullopt;
+          if (lhs_t->shape() != rhs_t->shape()) {
+            return (lhs_t->shape() < rhs_t->shape()) ? -1 : 1;
+          }
+          const auto& ld = lhs_t->data();
+          const auto& rd = rhs_t->data();
+          for (std::size_t i = 0; i < ld.size(); ++i) {
+            if (ld[i] < rd[i]) return -1;
+            if (ld[i] > rd[i]) return 1;
+          }
+          return 0;
+        }
         case ValueTag::ShapeHandle:
         case ValueTag::WeightsTensorHandle:
         case ValueTag::ReflectionHandle:
@@ -1266,9 +1281,19 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
-        double n = frac->num.to_float<72, 9>().to_double();
-        double d = frac->den.to_float<72, 9>().to_double();
-        ctx.registers[insn.a] = alloc_float(n / d);
+        double result;
+        try {
+          // Use exact integer arithmetic for values that fit in int64_t.
+          const std::int64_t n_i = frac->num.to_int64();
+          const std::int64_t d_i = frac->den.to_int64();
+          result = static_cast<double>(n_i) / static_cast<double>(d_i);
+        } catch (...) {
+          // Fallback for BigInt values that exceed int64 range.
+          const double n = frac->num.to_float<72, 9>().to_double();
+          const double d = frac->den.to_float<72, 9>().to_double();
+          result = n / d;
+        }
+        ctx.registers[insn.a] = alloc_float(result);
         ctx.register_tags[insn.a] = ValueTag::FloatHandle;
         break;
       }
@@ -2018,11 +2043,16 @@ public:
         }
         auto tag_b = ctx.register_tags[insn.b];
         auto tag_c = ctx.register_tags[insn.c];
-        if (tag_b != tag_c) {
+        // Allow Int/Bool mixed comparisons — both store 0/1 values.
+        auto normalize_tag = [](ValueTag t) {
+          return (t == ValueTag::Bool) ? ValueTag::Int : t;
+        };
+        if (normalize_tag(tag_b) != normalize_tag(tag_c)) {
           trap = Trap::TypeFault;
           break;
         }
-        auto relation_opt = compare_value(tag_b, ctx.registers[insn.b], ctx.registers[insn.c]);
+        auto relation_opt = compare_value(normalize_tag(tag_b), ctx.registers[insn.b],
+                                          ctx.registers[insn.c]);
         if (!relation_opt.has_value()) {
           trap = Trap::DecodeFault;
           break;

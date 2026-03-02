@@ -329,6 +329,12 @@ Opcode map_opcode(const ir::Instruction& instr) {
       return Opcode::SetSize;
     case O::AXVERIFY:
       return Opcode::AxVerify;
+    case O::TAND:
+      return Opcode::TAnd;
+    case O::TOR:
+      return Opcode::TOr;
+    case O::TXOR:
+      return Opcode::TXor;
     default:
       // Fallback for Tier 4 opcodes if they have direct mapping
       switch (instr.opcode) {

@@ -103,7 +103,12 @@ inline std::string strip_t81_suffix(std::string_view literal) {
 }
 
 // Use std::from_chars for locale-independent, deterministic float parsing.
+// Strips trailing 'f'/'F' suffix (C-style float literal suffix) before parsing.
 inline double parse_canonical_float(std::string_view literal) {
+  // Strip trailing 'f' or 'F' suffix (e.g. "1.0f" → "1.0")
+  if (!literal.empty() && (literal.back() == 'f' || literal.back() == 'F')) {
+    literal.remove_suffix(1);
+  }
   double value = 0.0;
 #if defined(__cpp_lib_to_chars) && __cpp_lib_to_chars >= 201611L && !defined(__APPLE__)
   auto res = std::from_chars(literal.data(), literal.data() + literal.size(), value);
@@ -112,14 +117,7 @@ inline double parse_canonical_float(std::string_view literal) {
   }
 #else
   // Fallback for platforms without float std::from_chars (e.g. older libc++ on macOS)
-  // std::strtod is locale-dependent, so we force "C" locale.
-  // Note: This is less efficient but necessary for compatibility.
   std::string s(literal);
-  char* end;
-  // Ensure we use C locale
-  // Optimization: assumes current locale is C or handles '.' correctly.
-  // For strict correctness in a library, we should use uselocale/strtod_l if available,
-  // but std::istringstream is standard C++.
   std::istringstream iss(s);
   iss.imbue(std::locale::classic());
   iss >> value;
@@ -131,6 +129,20 @@ inline double parse_canonical_float(std::string_view literal) {
 inline int64_t parse_base81_integer_literal(std::string_view literal) {
   std::string value = strip_t81_suffix(literal);
   return std::stoll(value);
+}
+
+// Parse an integer literal lexeme, stripping '_' separators and handling 0x hex prefix.
+// Stops at unknown suffix characters (e.g. trit 't') so "1t" → 1.
+inline int64_t parse_integer_literal_raw(std::string_view lexeme) {
+  std::string s;
+  s.reserve(lexeme.size());
+  for (char c : lexeme) {
+    if (c == '_') continue;  // skip digit separators
+    s += c;
+  }
+  // base 0 auto-detects 0x prefix for hex literals; stoll stops at first invalid char.
+  std::size_t idx = 0;
+  return std::stoll(s, &idx, 0);
 }
 
 inline double parse_base81_float_literal(std::string_view literal) {
@@ -559,6 +571,19 @@ public:
     // Emit startup code: CALL main if exists, then HALT
     auto main_it = _function_labels.find("main");
     if (main_it != _function_labels.end()) {
+      // Determine if main() returns void (no result to pop after call)
+      bool main_returns_void = false;
+      for (const auto* func : functions) {
+        if (func->name.lexeme == "main") {
+          if (func->return_type) {
+            if (auto* st = dynamic_cast<const SimpleTypeExpr*>(func->return_type.get())) {
+              main_returns_void = (st->name.lexeme == "void");
+            }
+          }
+          break;
+        }
+      }
+
       tisc::ir::Instruction load;
       auto addr_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
       load.opcode = tisc::ir::Opcode::LOADI;
@@ -570,12 +595,14 @@ public:
       call.operands = {tisc::ir::Register{0}, addr_reg.reg};
       emit(call);
 
-      // Pop main result (i32)
-      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
-      tisc::ir::Instruction pop;
-      pop.opcode = tisc::ir::Opcode::POP;
-      pop.operands = {dest.reg};
-      emit(pop);
+      // Pop main result only for non-void main
+      if (!main_returns_void) {
+        auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        tisc::ir::Instruction pop;
+        pop.opcode = tisc::ir::Opcode::POP;
+        pop.operands = {dest.reg};
+        emit(pop);
+      }
     }
 
     emit_simple(tisc::ir::Opcode::HALT);
@@ -604,11 +631,33 @@ public:
   }
 
   std::any visit(const VarStmt& stmt) override {
-    bind_variable_from_initializer(stmt.name, stmt.initializer.get());
+    TypedRegister reg{};
+    if (stmt.initializer) {
+      stmt.initializer->accept(*this);
+      reg = ensure_expr_result(stmt.initializer.get());
+    } else {
+      reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+    }
+    tisc::ir::PrimitiveKind expected = primitive_kind_from_type_expr(stmt.type.get());
+    if (expected != tisc::ir::PrimitiveKind::Unknown) {
+      reg = ensure_kind(reg, expected);
+    }
+    bind_variable(std::string(stmt.name.lexeme), reg);
     return {};
   }
   std::any visit(const LetStmt& stmt) override {
-    bind_variable_from_initializer(stmt.name, stmt.initializer.get());
+    TypedRegister reg{};
+    if (stmt.initializer) {
+      stmt.initializer->accept(*this);
+      reg = ensure_expr_result(stmt.initializer.get());
+    } else {
+      reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+    }
+    tisc::ir::PrimitiveKind expected = primitive_kind_from_type_expr(stmt.type.get());
+    if (expected != tisc::ir::PrimitiveKind::Unknown) {
+      reg = ensure_kind(reg, expected);
+    }
+    bind_variable(std::string(stmt.name.lexeme), reg);
     return {};
   }
   std::any visit(const IfStmt& stmt) override {
@@ -657,7 +706,8 @@ public:
     auto entry_label = new_label();
     auto exit_label = new_label();
     if (auto binary = dynamic_cast<const BinaryExpr*>(stmt.iterable.get())) {
-      if (binary->op.type == TokenType::DotDot) {
+      const bool is_inclusive = (binary->op.type == TokenType::DotDotEq);
+      if (binary->op.type == TokenType::DotDot || is_inclusive) {
         auto start = evaluate_expr(binary->left.get());
         auto end = evaluate_expr(binary->right.get());
         auto iterator_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
@@ -669,7 +719,8 @@ public:
             tisc::ir::Instruction{tisc::ir::Opcode::CMP, {cond.reg, iterator_reg.reg, end.reg}};
         instr.primitive = tisc::ir::PrimitiveKind::Boolean;
         instr.boolean_result = true;
-        instr.relation = tisc::ir::ComparisonRelation::Less;
+        instr.relation = is_inclusive ? tisc::ir::ComparisonRelation::LessEqual
+                                      : tisc::ir::ComparisonRelation::Less;
         emit(instr);
         emit_jump_if_zero(exit_label, cond);
         LoopInfo info;
@@ -791,6 +842,15 @@ public:
     emit_simple(tisc::ir::Opcode::RET);
     return {};
   }
+  std::any visit(const AssertStmt& stmt) override {
+    stmt.expr->accept(*this);
+    auto cond = ensure_expr_result(stmt.expr.get());
+    auto pass_label = new_label();
+    emit_jump_if_not_zero(pass_label, cond);
+    emit_simple(tisc::ir::Opcode::TRAP);
+    emit_label(pass_label);
+    return {};
+  }
   std::any visit(const BreakStmt&) override {
     if (!_loop_stack.empty()) {
       emit_jump(_loop_stack.back().exit_label);
@@ -836,12 +896,40 @@ public:
       emit(axverify);
     }
 
-    for (const auto& statement : stmt.body) {
-      statement->accept(*this);
+    // Determine if the function has a non-void return type.
+    // For non-void functions the last ExpressionStmt is the implicit return value.
+    bool is_void_return = true;
+    if (stmt.return_type) {
+      if (auto* st = dynamic_cast<const SimpleTypeExpr*>(stmt.return_type.get())) {
+        is_void_return = (st->name.lexeme == "void");
+      }
     }
 
-    // Implicit return (void)
-    // Must push ret_addr back before RET
+    // Identify the tail expression (implicit return) for non-void functions.
+    const ExpressionStmt* tail_expr_stmt = nullptr;
+    std::size_t body_limit = stmt.body.size();
+    if (!is_void_return && body_limit > 0) {
+      if (auto* es = dynamic_cast<const ExpressionStmt*>(stmt.body.back().get())) {
+        tail_expr_stmt = es;
+        --body_limit;
+      }
+    }
+
+    for (std::size_t i = 0; i < body_limit; ++i) {
+      stmt.body[i]->accept(*this);
+    }
+
+    // For non-void implicit return: push result value before ret_addr.
+    if (tail_expr_stmt) {
+      tail_expr_stmt->expression->accept(*this);
+      auto result = ensure_expr_result(tail_expr_stmt->expression.get());
+      tisc::ir::Instruction push_val;
+      push_val.opcode = tisc::ir::Opcode::PUSH;
+      push_val.operands = {result.reg};
+      emit(push_val);
+    }
+
+    // Push return address back and return.
     tisc::ir::Instruction push_ret;
     push_ret.opcode = tisc::ir::Opcode::PUSH;
     push_ret.operands = {ret_reg.reg};
@@ -1064,15 +1152,42 @@ public:
       case TokenType::Percent:
         opcode = O::MOD;
         break;
-      case TokenType::Amp:
-        opcode = O::BITAND;
+      case TokenType::Amp: {
+        // Qutrit TAND = min(a, b) — route to TAnd IR opcode
+        const Type* lt = typed_expr(expr.left.get());
+        const Type* rt = typed_expr(expr.right.get());
+        if ((lt && lt->kind == Type::Kind::Qutrit) ||
+            (rt && rt->kind == Type::Kind::Qutrit)) {
+          opcode = O::TAND;
+        } else {
+          opcode = O::BITAND;
+        }
         break;
-      case TokenType::Pipe:
-        opcode = O::BITOR;
+      }
+      case TokenType::Pipe: {
+        // Qutrit TOR = max(a, b) — route to TOr IR opcode
+        const Type* lt = typed_expr(expr.left.get());
+        const Type* rt = typed_expr(expr.right.get());
+        if ((lt && lt->kind == Type::Kind::Qutrit) ||
+            (rt && rt->kind == Type::Kind::Qutrit)) {
+          opcode = O::TOR;
+        } else {
+          opcode = O::BITOR;
+        }
         break;
-      case TokenType::Caret:
-        opcode = O::BITXOR;
+      }
+      case TokenType::Caret: {
+        // Qutrit TXOR — route to TXor IR opcode
+        const Type* lt = typed_expr(expr.left.get());
+        const Type* rt = typed_expr(expr.right.get());
+        if ((lt && lt->kind == Type::Kind::Qutrit) ||
+            (rt && rt->kind == Type::Kind::Qutrit)) {
+          opcode = O::TXOR;
+        } else {
+          opcode = O::BITXOR;
+        }
         break;
+      }
       case TokenType::LessLess:
         opcode = O::BITSHL;
         break;
@@ -1160,7 +1275,7 @@ public:
 
     const int64_t value = (expr.value.type == TokenType::Base81Integer)
                               ? parse_base81_integer_literal(expr.value.lexeme)
-                              : std::stoll(std::string(expr.value.lexeme));
+                              : parse_integer_literal_raw(expr.value.lexeme);
     auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
     auto instr =
         tisc::ir::Instruction{tisc::ir::Opcode::LOADI, {dest.reg, tisc::ir::Immediate{value}}};
@@ -1178,7 +1293,24 @@ public:
 
   std::any visit(const UnaryExpr& expr) override {
     if (expr.op.type == TokenType::Bang) {
+      // Check if operand is T81Qutrit — trit-NOT is integer NEG
+      bool is_qutrit = false;
+      if (_semantic) {
+        const Type* sem_type = _semantic->type_of(expr.right.get());
+        is_qutrit = sem_type && sem_type->kind == Type::Kind::Qutrit;
+      }
       auto right = evaluate_expr(expr.right.get());
+      if (is_qutrit) {
+        // TNOT(t) = -t for t in {-1, 0, +1}; integer NEG achieves this.
+        auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        tisc::ir::Instruction neg;
+        neg.opcode = tisc::ir::Opcode::NEG;
+        neg.operands = {dest.reg, right.reg};
+        neg.primitive = tisc::ir::PrimitiveKind::Integer;
+        emit(neg);
+        record_result(&expr, dest);
+        return {};
+      }
       auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Boolean);
       auto zero = allocate_typed_register(tisc::ir::PrimitiveKind::Boolean);
       tisc::ir::Instruction load_zero;
@@ -1201,17 +1333,57 @@ public:
 
     auto right = evaluate_expr(expr.right.get());
     auto dest = allocate_typed_register(right.primitive);
-    tisc::ir::Opcode opcode;
     if (expr.op.type == TokenType::Minus) {
-      opcode = tisc::ir::Opcode::NEG;
+      // Float negation: 0.0 - right (TISC Neg is integer-only)
+      if (right.primitive == tisc::ir::PrimitiveKind::Float) {
+        auto zero = allocate_typed_register(tisc::ir::PrimitiveKind::Float);
+        tisc::ir::Instruction load_zero;
+        load_zero.opcode = tisc::ir::Opcode::LOADI;
+        load_zero.operands = {zero.reg};
+        load_zero.literal_kind = tisc::LiteralKind::FloatHandle;
+        load_zero.text_literal = "0";
+        load_zero.primitive = tisc::ir::PrimitiveKind::Float;
+        emit(load_zero);
+        tisc::ir::Instruction fsub;
+        fsub.opcode = tisc::ir::Opcode::FSUB;
+        fsub.operands = {dest.reg, zero.reg, right.reg};
+        fsub.primitive = tisc::ir::PrimitiveKind::Float;
+        emit(fsub);
+        record_result(&expr, dest);
+        return {};
+      }
+      // Fraction negation: 0/1 - right (TISC Neg is integer-only)
+      if (right.primitive == tisc::ir::PrimitiveKind::Fraction) {
+        auto zero_int = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        tisc::ir::Instruction load_zero_int;
+        load_zero_int.opcode = tisc::ir::Opcode::LOADI;
+        load_zero_int.operands = {zero_int.reg, tisc::ir::Immediate{0}};
+        load_zero_int.primitive = tisc::ir::PrimitiveKind::Integer;
+        emit(load_zero_int);
+        auto zero_frac = allocate_typed_register(tisc::ir::PrimitiveKind::Fraction);
+        tisc::ir::Instruction i2frac;
+        i2frac.opcode = tisc::ir::Opcode::I2FRAC;
+        i2frac.operands = {zero_frac.reg, zero_int.reg};
+        i2frac.primitive = tisc::ir::PrimitiveKind::Fraction;
+        emit(i2frac);
+        tisc::ir::Instruction fracsub;
+        fracsub.opcode = tisc::ir::Opcode::FRACSUB;
+        fracsub.operands = {dest.reg, zero_frac.reg, right.reg};
+        fracsub.primitive = tisc::ir::PrimitiveKind::Fraction;
+        emit(fracsub);
+        record_result(&expr, dest);
+        return {};
+      }
+      auto instr = tisc::ir::Instruction{tisc::ir::Opcode::NEG, {dest.reg, right.reg}};
+      instr.primitive = right.primitive;
+      emit(instr);
     } else if (expr.op.type == TokenType::Tilde) {
-      opcode = tisc::ir::Opcode::BITNOT;
+      auto instr = tisc::ir::Instruction{tisc::ir::Opcode::BITNOT, {dest.reg, right.reg}};
+      instr.primitive = right.primitive;
+      emit(instr);
     } else {
       throw std::runtime_error("Unsupported unary operator");
     }
-    auto instr = tisc::ir::Instruction{opcode, {dest.reg, right.reg}};
-    instr.primitive = right.primitive;
-    emit(instr);
     record_result(&expr, dest);
     return {};
   }
@@ -1458,6 +1630,15 @@ public:
 
         auto obj_reg = lookup_variable(obj_name);
         if (obj_reg) {
+          // Get semantic type of the object for dispatch
+          const Type* obj_sem_type = nullptr;
+          if (_semantic) {
+            if (const auto* fa = dynamic_cast<const FieldAccessExpr*>(expr.callee.get())) {
+              obj_sem_type = _semantic->type_of(fa->object.get());
+            }
+          }
+          auto obj_kind = obj_sem_type ? obj_sem_type->kind : Type::Kind::Unknown;
+
           if (method_name == "matmul") {
             if (expr.arguments.size() != 1) {
               throw std::runtime_error("matmul expects 1 argument");
@@ -1468,6 +1649,126 @@ public:
             tisc::ir::Instruction instr;
             instr.opcode = tisc::ir::Opcode::TMATMUL;
             instr.operands = {dest.reg, obj_reg->reg, arg_reg.reg};
+            emit(instr);
+            record_result(&expr, dest);
+            return {};
+          }
+
+          // .len() → VECLEN (Vector/Tensor) or STRLEN (String)
+          if (method_name == "len" && expr.arguments.empty()) {
+            auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction instr;
+            if (obj_kind == Type::Kind::String || obj_kind == Type::Kind::Bytes) {
+              instr.opcode = tisc::ir::Opcode::STRLEN;
+            } else {
+              instr.opcode = tisc::ir::Opcode::VECLEN;
+            }
+            instr.operands = {dest.reg, obj_reg->reg};
+            emit(instr);
+            record_result(&expr, dest);
+            return {};
+          }
+
+          // .is_some() → OPTION_IS_SOME
+          if (method_name == "is_some" && expr.arguments.empty()) {
+            auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction instr;
+            instr.opcode = tisc::ir::Opcode::OPTION_IS_SOME;
+            instr.operands = {dest.reg, obj_reg->reg};
+            emit(instr);
+            record_result(&expr, dest);
+            return {};
+          }
+
+          // .is_none() → OPTION_IS_SOME then logical NOT
+          if (method_name == "is_none" && expr.arguments.empty()) {
+            auto some_dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction some_instr;
+            some_instr.opcode = tisc::ir::Opcode::OPTION_IS_SOME;
+            some_instr.operands = {some_dest.reg, obj_reg->reg};
+            emit(some_instr);
+            // NOT: load 1, subtract (1 - is_some)
+            auto one = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction load_one;
+            load_one.opcode = tisc::ir::Opcode::LOADI;
+            load_one.operands = {one.reg, tisc::ir::Immediate{1}};
+            emit(load_one);
+            auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction sub_instr;
+            sub_instr.opcode = tisc::ir::Opcode::SUB;
+            sub_instr.operands = {dest.reg, one.reg, some_dest.reg};
+            emit(sub_instr);
+            record_result(&expr, dest);
+            return {};
+          }
+
+          // .is_ok() → RESULT_IS_OK
+          if (method_name == "is_ok" && expr.arguments.empty()) {
+            auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction instr;
+            instr.opcode = tisc::ir::Opcode::RESULT_IS_OK;
+            instr.operands = {dest.reg, obj_reg->reg};
+            emit(instr);
+            record_result(&expr, dest);
+            return {};
+          }
+
+          // .is_err() → RESULT_IS_OK then NOT
+          if (method_name == "is_err" && expr.arguments.empty()) {
+            auto ok_dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction ok_instr;
+            ok_instr.opcode = tisc::ir::Opcode::RESULT_IS_OK;
+            ok_instr.operands = {ok_dest.reg, obj_reg->reg};
+            emit(ok_instr);
+            auto one = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction load_one;
+            load_one.opcode = tisc::ir::Opcode::LOADI;
+            load_one.operands = {one.reg, tisc::ir::Immediate{1}};
+            emit(load_one);
+            auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction sub_instr;
+            sub_instr.opcode = tisc::ir::Opcode::SUB;
+            sub_instr.operands = {dest.reg, one.reg, ok_dest.reg};
+            emit(sub_instr);
+            record_result(&expr, dest);
+            return {};
+          }
+
+          // .unwrap() / .unwrap_ok() → OPTION_UNWRAP or RESULT_UNWRAP_OK
+          if ((method_name == "unwrap" || method_name == "unwrap_ok") && expr.arguments.empty()) {
+            auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction instr;
+            if (obj_kind == Type::Kind::Result) {
+              instr.opcode = tisc::ir::Opcode::RESULT_UNWRAP_OK;
+            } else {
+              instr.opcode = tisc::ir::Opcode::OPTION_UNWRAP;
+            }
+            instr.operands = {dest.reg, obj_reg->reg};
+            emit(instr);
+            record_result(&expr, dest);
+            return {};
+          }
+
+          // .unwrap_err() → RESULT_UNWRAP_ERR
+          if (method_name == "unwrap_err" && expr.arguments.empty() &&
+              obj_kind == Type::Kind::Result) {
+            auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction instr;
+            instr.opcode = tisc::ir::Opcode::RESULT_UNWRAP_ERR;
+            instr.operands = {dest.reg, obj_reg->reg};
+            emit(instr);
+            record_result(&expr, dest);
+            return {};
+          }
+
+          // .unsigned_shr(n) → BITUSHR
+          if (method_name == "unsigned_shr" && expr.arguments.size() == 1) {
+            expr.arguments[0]->accept(*this);
+            auto shift = ensure_expr_result(expr.arguments[0].get());
+            auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction instr;
+            instr.opcode = tisc::ir::Opcode::BITUSHR;
+            instr.operands = {dest.reg, obj_reg->reg, shift.reg};
             emit(instr);
             record_result(&expr, dest);
             return {};
@@ -4897,6 +5198,21 @@ private:
     }
   }
 
+  // Map a TypeExpr annotation (from the AST) to a PrimitiveKind for coercion.
+  tisc::ir::PrimitiveKind primitive_kind_from_type_expr(const TypeExpr* te) const {
+    if (!te) return tisc::ir::PrimitiveKind::Unknown;
+    if (auto* st = dynamic_cast<const SimpleTypeExpr*>(te)) {
+      auto n = st->name.lexeme;
+      if (n == "T81Float") return tisc::ir::PrimitiveKind::Float;
+      if (n == "T81Fraction") return tisc::ir::PrimitiveKind::Fraction;
+      if (n == "bool") return tisc::ir::PrimitiveKind::Boolean;
+      if (n == "T81BigInt" || n == "T81Uint" || n == "T81Fixed" || n == "T81Complex" ||
+          n == "T81Qutrit" || n == "i32" || n == "i16" || n == "i8" || n == "i2")
+        return tisc::ir::PrimitiveKind::Integer;
+    }
+    return tisc::ir::PrimitiveKind::Unknown;
+  }
+
   tisc::ir::Opcode select_opcode(NumericCategory kind, tisc::ir::Opcode integer_op,
                                  tisc::ir::Opcode float_op, tisc::ir::Opcode fraction_op) const {
     switch (kind) {
@@ -5038,8 +5354,37 @@ private:
         target == tisc::ir::PrimitiveKind::Integer) {
       return source;
     }
+    // Handle Float/Fraction → Integer (reverse coercions from `as` casts)
+    if (target == tisc::ir::PrimitiveKind::Integer) {
+      if (source.primitive == tisc::ir::PrimitiveKind::Float ||
+          source.primitive == tisc::ir::PrimitiveKind::Fraction) {
+        return ensure_integer(source);
+      }
+      return source;  // already integer-like
+    }
+    // Handle Float → Fraction
+    if (source.primitive == tisc::ir::PrimitiveKind::Float &&
+        target == tisc::ir::PrimitiveKind::Fraction) {
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Fraction);
+      auto instr = tisc::ir::Instruction{tisc::ir::Opcode::F2FRAC, {dest.reg, source.reg}};
+      instr.primitive = tisc::ir::PrimitiveKind::Fraction;
+      instr.is_conversion = true;
+      emit(instr);
+      return dest;
+    }
+    // Handle Fraction → Float
+    if (source.primitive == tisc::ir::PrimitiveKind::Fraction &&
+        target == tisc::ir::PrimitiveKind::Float) {
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Float);
+      auto instr = tisc::ir::Instruction{tisc::ir::Opcode::FRAC2F, {dest.reg, source.reg}};
+      instr.primitive = tisc::ir::PrimitiveKind::Float;
+      instr.is_conversion = true;
+      emit(instr);
+      return dest;
+    }
     if (source.primitive != tisc::ir::PrimitiveKind::Integer) {
-      throw std::runtime_error("Implicit conversion only supported from integers");
+      // Unknown coercion — return as-is
+      return source;
     }
     tisc::ir::Opcode opcode;
     switch (target) {
@@ -5050,7 +5395,7 @@ private:
         opcode = tisc::ir::Opcode::I2FRAC;
         break;
       default:
-        throw std::runtime_error("Unsupported conversion target");
+        return source;  // Unknown target — return as-is
     }
     auto dest = allocate_typed_register(target);
     auto instr = tisc::ir::Instruction{opcode, {dest.reg, source.reg}};

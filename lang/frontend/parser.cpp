@@ -73,6 +73,12 @@ std::string token_type_name(TokenType type) {
       return "'continue'";
     case TokenType::Return:
       return "'return'";
+    case TokenType::Assert:
+      return "'assert'";
+    case TokenType::As:
+      return "'as'";
+    case TokenType::Mut:
+      return "'mut'";
     case TokenType::Match:
       return "'match'";
     case TokenType::True:
@@ -215,6 +221,8 @@ std::string token_type_name(TokenType type) {
       return "'=>'";
     case TokenType::DotDot:
       return "'..'";
+    case TokenType::DotDotEq:
+      return "'..='";
     case TokenType::Dot:
       return "'.'";
     case TokenType::At:
@@ -259,6 +267,9 @@ bool is_dot_field_segment_token(TokenType type) {
     case TokenType::Break:
     case TokenType::Continue:
     case TokenType::Return:
+    case TokenType::Assert:
+    case TokenType::As:
+    case TokenType::Mut:
     case TokenType::Match:
     case TokenType::True:
     case TokenType::False:
@@ -611,8 +622,9 @@ std::unique_ptr<Stmt> Parser::var_declaration() {
 }
 
 // Parses a constant declaration.
-// let_declaration -> "let" IDENTIFIER ( ":" type )? "=" expression ";" ;
+// let_declaration -> "let" ( "mut" )? IDENTIFIER ( ":" type )? "=" expression ";" ;
 std::unique_ptr<Stmt> Parser::let_declaration() {
+  bool is_mutable = match({TokenType::Mut});
   Token name = consume(TokenType::Identifier, "Expect constant name.");
   std::unique_ptr<TypeExpr> type_expr = nullptr;
   if (match({TokenType::Colon})) {
@@ -621,16 +633,14 @@ std::unique_ptr<Stmt> Parser::let_declaration() {
   consume(TokenType::Equal, "Expect '=' after constant name.");
   std::unique_ptr<Expr> initializer = expression();
   consume(TokenType::Semicolon, "Expect ';' after constant declaration.");
-  return std::make_unique<LetStmt>(name, std::move(type_expr), std::move(initializer));
+  return std::make_unique<LetStmt>(name, std::move(type_expr), std::move(initializer), is_mutable);
 }
 
 // Parses a statement.
 // statement -> if_stmt | while_stmt | return_stmt | block | expr_stmt ;
 std::unique_ptr<Stmt> Parser::statement() {
   if (match({TokenType::If})) {
-    consume(TokenType::LParen, "Expect '(' after 'if'.");
     auto condition = expression();
-    consume(TokenType::RParen, "Expect ')' after if condition.");
     auto then_branch = statement();
     std::unique_ptr<Stmt> else_branch = nullptr;
     if (match({TokenType::Else})) {
@@ -640,9 +650,7 @@ std::unique_ptr<Stmt> Parser::statement() {
                                     std::move(else_branch));
   }
   if (match({TokenType::While})) {
-    consume(TokenType::LParen, "Expect '(' after 'while'.");
     auto condition = expression();
-    consume(TokenType::RParen, "Expect ')' after while condition.");
     auto body = statement();
     return std::make_unique<WhileStmt>(std::move(condition), std::move(body));
   }
@@ -701,6 +709,12 @@ std::unique_ptr<Stmt> Parser::statement() {
     }
     consume(TokenType::Semicolon, "Expect ';' after return value.");
     return std::make_unique<ReturnStmt>(keyword, std::move(value));
+  }
+  if (match({TokenType::Assert})) {
+    Token keyword = previous();
+    auto expr = expression();
+    consume(TokenType::Semicolon, "Expect ';' after assert.");
+    return std::make_unique<AssertStmt>(keyword, std::move(expr));
   }
   if (match({TokenType::LBrace})) {
     return std::make_unique<BlockStmt>(block());
@@ -785,13 +799,11 @@ std::pair<std::vector<std::unique_ptr<Stmt>>, std::unique_ptr<Expr>> Parser::par
       if (check(TokenType::If) || check(TokenType::While) || check(TokenType::For) ||
           check(TokenType::Reflect) || check(TokenType::Loop) || check(TokenType::At) ||
           check(TokenType::Break) || check(TokenType::Continue) || check(TokenType::Return) ||
-          check(TokenType::LBrace)) {
+          check(TokenType::Assert) || check(TokenType::LBrace)) {
         // Special handling for 'if' and '{' which can be expressions
         if (check(TokenType::If)) {
           consume(TokenType::If, "Expect 'if'.");
-          consume(TokenType::LParen, "Expect '(' after 'if'.");
           auto condition = expression();
-          consume(TokenType::RParen, "Expect ')' after if condition.");
 
           if (check(TokenType::LBrace)) {
             // Braced -> Treat as IfExpr (which is more general than IfStmt with block)
@@ -904,9 +916,7 @@ std::unique_ptr<Expr> Parser::block_expression() {
 
 std::unique_ptr<Expr> Parser::if_expression() {
   consume(TokenType::If, "Expect 'if'.");
-  consume(TokenType::LParen, "Expect '(' after 'if'.");
   auto condition = expression();
-  consume(TokenType::RParen, "Expect ')' after if condition.");
 
   auto then_branch = block_expression();
   std::unique_ptr<Expr> else_branch = nullptr;
@@ -967,12 +977,13 @@ std::unique_ptr<Expr> Parser::logical_or() {
 }
 
 // Parses a logical AND expression.
-// logical_and -> bitwise_or ( "&&" bitwise_or )* ;
+// logical_and -> arrow ( "&&" arrow )* ;
+// arrow/range are lower precedence than bitwise so they sit here.
 std::unique_ptr<Expr> Parser::logical_and() {
-  std::unique_ptr<Expr> expr = bitwise_or();
+  std::unique_ptr<Expr> expr = arrow();
   while (match({TokenType::AmpAmp})) {
     Token op = previous();
-    std::unique_ptr<Expr> right = bitwise_or();
+    std::unique_ptr<Expr> right = arrow();
     expr = std::make_unique<BinaryExpr>(std::move(expr), op, std::move(right));
   }
   return expr;
@@ -1003,12 +1014,13 @@ std::unique_ptr<Expr> Parser::bitwise_xor() {
 }
 
 // Parses a bitwise AND expression.
-// bitwise_and -> arrow ( "&" arrow )* ;
+// bitwise_and -> comparison ( "&" comparison )* ;
+// Bitwise & has higher precedence than equality.
 std::unique_ptr<Expr> Parser::bitwise_and() {
-  std::unique_ptr<Expr> expr = arrow();
+  std::unique_ptr<Expr> expr = comparison();
   while (match({TokenType::Amp})) {
     Token op = previous();
-    std::unique_ptr<Expr> right = arrow();
+    std::unique_ptr<Expr> right = comparison();
     expr = std::make_unique<BinaryExpr>(std::move(expr), op, std::move(right));
   }
   return expr;
@@ -1027,10 +1039,10 @@ std::unique_ptr<Expr> Parser::arrow() {
 }
 
 // Parses a range expression.
-// range -> equality ( ".." equality )? ;
+// range -> equality ( ( ".." | "..=" ) equality )? ;
 std::unique_ptr<Expr> Parser::range() {
   std::unique_ptr<Expr> expr = equality();
-  if (match({TokenType::DotDot})) {
+  if (match({TokenType::DotDot, TokenType::DotDotEq})) {
     Token op = previous();
     std::unique_ptr<Expr> right = equality();
     return std::make_unique<BinaryExpr>(std::move(expr), op, std::move(right));
@@ -1039,12 +1051,13 @@ std::unique_ptr<Expr> Parser::range() {
 }
 
 // Parses an equality expression.
-// equality -> comparison ( ( "!=" | "==" ) comparison )* ;
+// equality -> bitwise_or ( ( "!=" | "==" ) bitwise_or )* ;
+// Bitwise ops bind tighter than equality (Python/C-style).
 std::unique_ptr<Expr> Parser::equality() {
-  std::unique_ptr<Expr> expr = comparison();
+  std::unique_ptr<Expr> expr = bitwise_or();
   while (match({TokenType::BangEqual, TokenType::EqualEqual})) {
     Token op = previous();
-    std::unique_ptr<Expr> right = comparison();
+    std::unique_ptr<Expr> right = bitwise_or();
     expr = std::make_unique<BinaryExpr>(std::move(expr), op, std::move(right));
   }
   return expr;
@@ -1114,15 +1127,22 @@ std::unique_ptr<Expr> Parser::exponent() {
 }
 
 // Parses a unary expression.
-// unary -> ( "!" | "-" | "~" ) unary | call ;
-// Added Tilde
+// unary -> ( "!" | "-" | "~" ) unary | primary ( "as" type )? ;
+// Added Tilde, 'as' postfix cast
 std::unique_ptr<Expr> Parser::unary() {
   if (match({TokenType::Bang, TokenType::Minus, TokenType::Tilde})) {
     Token op = previous();
     std::unique_ptr<Expr> right = unary();
     return std::make_unique<UnaryExpr>(op, std::move(right));
   }
-  return primary();
+  auto expr = primary();
+  // Postfix 'as' cast: consume 'as' + type, return expression unchanged
+  // (semantic coercion is handled by the let binding's declared type annotation)
+  while (check(TokenType::As)) {
+    match({TokenType::As});
+    type();  // parse and discard the target type
+  }
+  return expr;
 }
 
 static bool is_type_start_token(const Token& token) {
@@ -1149,8 +1169,28 @@ std::unique_ptr<Expr> Parser::primary() {
   if (match({TokenType::Match})) {
     return match_expression();
   } else if (match({TokenType::False, TokenType::True, TokenType::Integer, TokenType::Float,
-                    TokenType::Base81Integer, TokenType::Base81Float, TokenType::String})) {
-    expr = std::make_unique<LiteralExpr>(previous());
+                    TokenType::Base81Integer, TokenType::Base81Float, TokenType::String,
+                    TokenType::Ternary})) {
+    Token lit_tok = previous();
+    expr = std::make_unique<LiteralExpr>(lit_tok);
+    // Consume optional type suffixes on integer/float literals.
+    // e.g. 127i8, -1000i16, 1i32 (keyword tokens), 81u (identifier 'u'),
+    //      1.25fx (identifier 'x' after float 'f'), 0.5p (identifier 'p').
+    if (lit_tok.type == TokenType::Integer || lit_tok.type == TokenType::Base81Integer) {
+      if (check(TokenType::I8) || check(TokenType::I16) || check(TokenType::I32)) {
+        advance();  // discard; type is determined by the let-binding annotation
+      } else if (check(TokenType::Identifier) && peek().lexeme == "u") {
+        advance();  // discard 'u' suffix for T81Uint literals
+      }
+    }
+    if (lit_tok.type == TokenType::Float || lit_tok.type == TokenType::Base81Float) {
+      // 1.25fx: lexer produces Float("1.25f") + Identifier("x")
+      // 0.5p:   lexer produces Float("0.5") + Identifier("p")
+      if (check(TokenType::Identifier) &&
+          (peek().lexeme == "x" || peek().lexeme == "p")) {
+        advance();  // discard fixed-point or probability suffix
+      }
+    }
   } else if (match({TokenType::LBracket})) {
     Token bracket = previous();
     std::vector<std::unique_ptr<Expr>> elements;
@@ -1213,7 +1253,12 @@ std::unique_ptr<Expr> Parser::primary() {
       } else {
         expr = std::make_unique<VariableExpr>(name);
       }
-    } else if (match({TokenType::LBrace})) {
+    } else if (check(TokenType::LBrace) && !name.lexeme.empty() &&
+               std::isupper(static_cast<unsigned char>(name.lexeme[0]))) {
+      // Only treat `Name { ... }` as a record literal when the identifier starts with
+      // an uppercase letter. Lowercase identifiers (e.g. a variable `v`) followed by `{`
+      // must NOT be greedily consumed — `{` may be the opening brace of a match/if body.
+      advance();  // consume '{'
       return record_literal(std::move(name));
     } else {
       expr = std::make_unique<VariableExpr>(name);
@@ -1272,9 +1317,7 @@ std::unique_ptr<Expr> Parser::primary() {
 }
 
 std::unique_ptr<Expr> Parser::match_expression() {
-  consume(TokenType::LParen, "Expect '(' after 'match'.");
   std::unique_ptr<Expr> scrutinee = expression();
-  consume(TokenType::RParen, "Expect ')' after match scrutinee.");
   consume(TokenType::LBrace, "Expect '{' before match arms.");
 
   std::vector<MatchArm> arms;

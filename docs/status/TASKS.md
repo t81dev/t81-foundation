@@ -1,6 +1,6 @@
 # Active Tasks
 
-Last Updated: 2026-03-01
+Last Updated: 2026-03-02
 
 Immediate, actionable items only. Structural hardening items live in `HARDENING_BACKLOG.md`.
 
@@ -32,5 +32,6 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 | Debugger cognitive tier inspection | 2026-02-26 |
 | Phase 3 behavioral conformance expansion | 2026-02-28 |
 | RFC-0027 SE-M1–SE-M6: spec/conformance/ suite (24 programs, spec annotations) | 2026-03-01 |
+| Conformance suite activation: 21/24 programs passing `t81 run` (RFC-0027 acceptance criterion met) | 2026-03-02 |
 | Spec Suite Alignment Pass (6 docs: tisc, t81-data-types, t81vm, axion-kernel, cognitive-tiers, overview) | 2026-03-01 |
 | stdlib Sprint 2 fixtures: std.io, std.sys, std.async, std.agent (7 fixtures, STDLIB_MODULES + snapshot) | 2026-03-01 |

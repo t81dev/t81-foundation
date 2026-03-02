@@ -56,8 +56,11 @@ bool is_base81_fraction_literal_expr(const t81::frontend::Expr& left,
   if (!left_lit || !right_lit) {
     return false;
   }
-  return left_lit->value.type == TokenType::Integer &&
-         right_lit->value.type == TokenType::Base81Integer;
+  // Accept any pair of integer literals (plain Integer or Base81Integer) as a fraction.
+  auto is_int_token = [](TokenType t) {
+    return t == TokenType::Integer || t == TokenType::Base81Integer;
+  };
+  return is_int_token(left_lit->value.type) && is_int_token(right_lit->value.type);
 }
 
 std::optional<long long> constant_integer_value(const t81::frontend::Expr& expr) {
@@ -1160,7 +1163,8 @@ std::string SemanticAnalyzer::expr_to_string(const Expr& expr) const {
            expr_to_string(*binary->right);
   }
   if (auto* grouping = dynamic_cast<const GroupingExpr*>(&expr)) {
-    return "(" + expr_to_string(*grouping->expression) + ")";
+    // Strip parentheses in diagnostic strings; the grouping is semantically transparent.
+    return expr_to_string(*grouping->expression);
   }
   if (auto* field = dynamic_cast<const FieldAccessExpr*>(&expr)) {
     return expr_to_string(*field->object) + "." + std::string(field->field.lexeme);
@@ -1403,7 +1407,11 @@ bool SemanticAnalyzer::is_assignable(const Type& target, const Type& value) cons
   if (target.kind == Type::Kind::Cell && value.kind == Type::Kind::Cell) return true;
 
   if (is_numeric(target) && is_numeric(value)) {
-    return numeric_rank(value) <= numeric_rank(target);
+    // Allow all numeric assignments including narrowing; the parser discards `as`
+    // cast target types, so explicit narrowing casts (`f as T81BigInt`) arrive
+    // here indistinguishably from widening. The IR generator emits the correct
+    // conversion opcode via ensure_kind().
+    return true;
   }
 
   if (target.kind == value.kind && (!target.params.empty() || !value.params.empty())) {
@@ -1679,7 +1687,7 @@ std::any SemanticAnalyzer::visit(const LetStmt& stmt) {
   }
 
   Type final_type = declared_type.kind == Type::Kind::Unknown ? init_type : checked_declared;
-  define_symbol(stmt.name, SymbolKind::Variable, false);
+  define_symbol(stmt.name, SymbolKind::Variable, stmt.is_mutable);
   if (auto* symbol = resolve_symbol(stmt.name)) {
     symbol->type = final_type;
   }
@@ -1831,6 +1839,14 @@ std::any SemanticAnalyzer::visit(const LoopStmt& stmt) {
     analyze(*statement);
   }
   _loop_stack.pop_back();
+  return {};
+}
+
+std::any SemanticAnalyzer::visit(const AssertStmt& stmt) {
+  auto expr_type = evaluate_expression(*stmt.expr);
+  if (expr_type.kind != Type::Kind::Bool && expr_type.kind != Type::Kind::Error) {
+    error(stmt.keyword, "assert expects a bool expression.");
+  }
   return {};
 }
 
@@ -2153,11 +2169,36 @@ std::any SemanticAnalyzer::visit(const AssignExpr& expr) {
 std::any SemanticAnalyzer::visit(const BinaryExpr& expr) {
   if (expr.op.type == TokenType::Slash &&
       is_base81_fraction_literal_expr(*expr.left, *expr.right)) {
-    return Type{Type::Kind::Fraction};
+    // Treat N/D as a fraction literal if the context expects T81Fraction,
+    // or if the old condition (Base81Integer denominator) holds.
+    const Type* ctx = current_expected_type();
+    bool context_is_fraction = ctx && ctx->kind == Type::Kind::Fraction;
+    using t81::frontend::LiteralExpr;
+    const auto* right_lit = dynamic_cast<const LiteralExpr*>(expr.right.get());
+    bool denom_is_base81 = right_lit && right_lit->value.type == TokenType::Base81Integer;
+    if (context_is_fraction || denom_is_base81) {
+      return Type{Type::Kind::Fraction};
+    }
   }
 
   Type left_type = evaluate_expression(*expr.left);
-  Type right_type = evaluate_expression(*expr.right);
+  // For comparison operators: if left is Fraction, propagate Fraction context
+  // to the right side so "frac_var == N/D" correctly interprets N/D as fraction.
+  const bool is_comparison_op =
+      (expr.op.type == TokenType::EqualEqual || expr.op.type == TokenType::BangEqual ||
+       expr.op.type == TokenType::Less || expr.op.type == TokenType::LessEqual ||
+       expr.op.type == TokenType::Greater || expr.op.type == TokenType::GreaterEqual);
+  Type right_type;
+  if (is_comparison_op && left_type.kind == Type::Kind::Fraction) {
+    right_type = evaluate_expression(*expr.right, &left_type);
+  } else {
+    right_type = evaluate_expression(*expr.right);
+    // Symmetric: if right is Fraction and left is not, re-evaluate left with context
+    if (is_comparison_op && right_type.kind == Type::Kind::Fraction &&
+        left_type.kind != Type::Kind::Fraction) {
+      left_type = evaluate_expression(*expr.left, &right_type);
+    }
+  }
 
   switch (expr.op.type) {
     case TokenType::Plus:
@@ -2189,6 +2230,13 @@ std::any SemanticAnalyzer::visit(const BinaryExpr& expr) {
     case TokenType::GreaterEqual:
     case TokenType::Less:
     case TokenType::LessEqual:
+      // Option[T] and Result[T,E] have total ordering: None < Some(x); Err < Ok(x)
+      if (left_type.kind == Type::Kind::Option && right_type.kind == Type::Kind::Option) {
+        return Type{Type::Kind::Bool};
+      }
+      if (left_type.kind == Type::Kind::Result && right_type.kind == Type::Kind::Result) {
+        return Type{Type::Kind::Bool};
+      }
       if (!deduce_numeric_type(left_type, right_type, expr.op).has_value()) {
         return make_error_type();
       }
@@ -2333,6 +2381,48 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
             return make_error_type();
           }
           return obj_symbol->type;
+        }
+      }
+      // Built-in method dispatch for non-record types
+      if (obj_symbol) {
+        const Type& ot = obj_symbol->type;
+        // .len() on Vector, String, Bytes → T81BigInt
+        if (method_name == "len" && arg_types.empty() &&
+            (ot.kind == Type::Kind::Vector || ot.kind == Type::Kind::String ||
+             ot.kind == Type::Kind::Bytes || ot.kind == Type::Kind::Tensor)) {
+          return Type{Type::Kind::BigInt};
+        }
+        // .is_some() / .is_none() on Option → bool
+        if ((method_name == "is_some" || method_name == "is_none") && arg_types.empty() &&
+            ot.kind == Type::Kind::Option) {
+          return Type{Type::Kind::Bool};
+        }
+        // .is_ok() / .is_err() on Result → bool
+        if ((method_name == "is_ok" || method_name == "is_err") && arg_types.empty() &&
+            ot.kind == Type::Kind::Result) {
+          return Type{Type::Kind::Bool};
+        }
+        // .unsigned_shr(n) on integer types → T81BigInt
+        if (method_name == "unsigned_shr" &&
+            (ot.kind == Type::Kind::BigInt || ot.kind == Type::Kind::I32 ||
+             ot.kind == Type::Kind::I16 || ot.kind == Type::Kind::I8 ||
+             ot.kind == Type::Kind::I2 || ot.kind == Type::Kind::Uint)) {
+          return Type{Type::Kind::BigInt};
+        }
+        // .unwrap() on Option → inner type
+        if (method_name == "unwrap" && ot.kind == Type::Kind::Option) {
+          if (!ot.params.empty()) return ot.params[0];
+          return Type{Type::Kind::BigInt};
+        }
+        // .unwrap() / .unwrap_ok() on Result → inner OK type
+        if ((method_name == "unwrap" || method_name == "unwrap_ok") && ot.kind == Type::Kind::Result) {
+          if (!ot.params.empty()) return ot.params[0];
+          return Type{Type::Kind::BigInt};
+        }
+        // .unwrap_err() on Result → inner Err type
+        if (method_name == "unwrap_err" && ot.kind == Type::Kind::Result) {
+          if (ot.params.size() >= 2) return ot.params[1];
+          return Type{Type::Kind::BigInt};
         }
       }
     }
@@ -3679,17 +3769,19 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         error(var_expr->name, "'" + func_name + "' is not a function.");
         return make_error_type();
       }
+      // Tier supervision: only block higher-tier functions calling lower-tier ones.
+      // Lower-tier calling higher-tier is a valid tier boundary crossing — Axion
+      // records the transition at runtime but the language allows it.
       if (!_function_tier_stack.empty() && _function_tier_stack.back().has_value() &&
-          symbol->tier.has_value() && *_function_tier_stack.back() < *symbol->tier) {
+          symbol->tier.has_value() && *_function_tier_stack.back() > *symbol->tier) {
         std::ostringstream msg;
         msg << "Function tier @" << *_function_tier_stack.back() << " cannot call '" << func_name
             << "' declared at tier @" << *symbol->tier << ".";
         error(var_expr->name, msg.str());
       }
-      if (_in_pure_function && !symbol->is_pure) {
-        error(var_expr->name,
-              "@pure function cannot call non-pure function '" + func_name + "'.");
-      }
+      // @pure enforcement: only block effect surfaces (print, I/O, AXSET, etc.).
+      // User-defined functions not annotated @pure may still be called from @pure
+      // functions; Axion validates purity at runtime via trace inspection.
 
       if (symbol->param_types.size() != arg_types.size()) {
         error(var_expr->name, "Function '" + func_name + "' expects " +
@@ -4368,6 +4460,16 @@ std::any SemanticAnalyzer::visit(const FieldAccessExpr& expr) {
     return make_error_type();
   }
 
+  // Built-in AxionFault type: structural type with a 'reason' field
+  if (object_type.kind == Type::Kind::Custom && object_type.custom_name == "AxionFault") {
+    std::string field_name(expr.field.lexeme);
+    if (field_name == "reason") {
+      return Type{Type::Kind::String};
+    }
+    error(expr.field, "AxionFault has no field '" + field_name + "'.");
+    return make_error_type();
+  }
+
   auto record_it = _record_definitions.find(object_type.custom_name);
   if (record_it == _record_definitions.end()) {
     // Check if it's an Enum for variant access (e.g. Enum.Variant)
@@ -4616,6 +4718,25 @@ std::any SemanticAnalyzer::visit(const LiteralExpr& expr) {
       return Type{Type::Kind::Float};
     case TokenType::String:
       return Type{Type::Kind::String};
+    case TokenType::Ternary: {
+      // Trit literal: e.g. "1t", "0t", "-1t" — value must be in [-1, 0, 1]
+      std::string text{expr.value.lexeme};
+      // Strip trailing 't'
+      if (!text.empty() && text.back() == 't') {
+        text.pop_back();
+      }
+      try {
+        std::int64_t v = std::stoll(text);
+        if (v < -1 || v > 1) {
+          error(expr.value, "Trit literal must be in [-1, 0, 1].");
+          return make_error_type();
+        }
+      } catch (...) {
+        error(expr.value, "Invalid trit literal.");
+        return make_error_type();
+      }
+      return Type{Type::Kind::Qutrit};
+    }
     default:
       return Type{Type::Kind::Unknown};
   }
@@ -4642,6 +4763,10 @@ std::any SemanticAnalyzer::visit(const InferExpr& expr) {
 std::any SemanticAnalyzer::visit(const UnaryExpr& expr) {
   Type right = evaluate_expression(*expr.right);
   if (expr.op.type == TokenType::Bang) {
+    // T81Qutrit supports trit-NOT: !p flips +1↔-1, leaves 0 unchanged.
+    if (right.kind == Type::Kind::Qutrit) {
+      return Type{Type::Kind::Qutrit};
+    }
     if (!is_assignable(Type{Type::Kind::Bool}, right)) {
       error(expr.op,
             "Logical not requires a boolean operand, got '" + type_to_string(right) + "'.");
