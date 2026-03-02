@@ -10,6 +10,8 @@ The problem class is deterministic execution under governance constraints. In pr
 - reproducible virtual-machine execution,
 - enforceable policy controls at runtime.
 
+By treating these three pillars as foundational, T81 aligns directly with the core tenets of **NIST SP 800-218 (SSDF)** and **NIST SP 800-53** controls. This deliberate alignment establishes T81 as a high-assurance, auditable AI infrastructure where security and policy enforcement are intrinsic to the instruction set, rather than bolted on.
+
 This is still poorly solved in most mainstream systems because the typical stack is layered from components that optimize for throughput and convenience first, then attempt to patch determinism and auditability afterward. Binary/IEEE-754 ecosystems, host math libraries, runtime scheduling variance, and weak policy enforcement boundaries all contribute to drift. The result is familiar in AI and systems research: outputs that are "close enough" but not bit-identical, and governance policies that are advisory rather than mandatory.
 
 T81's architecture attempts to invert that order: determinism and policy observability are first-class system constraints, and performance/experimental features are explicitly separated from guaranteed surfaces.
@@ -116,6 +118,7 @@ Primary fit:
 - VM and ISA designers evaluating total semantics and fault contracts.
 - Language/runtime engineers interested in canonical lowering and replayable behavior.
 - Governance-aware infrastructure builders needing enforceable policy boundaries.
+- Organizations requiring NIST SP 800-218 and 800-53 compliant execution environments for high-assurance AI deployments.
 - Experimental computing researchers working on ternary-native or nonstandard compute models.
 
 Not a good fit:
