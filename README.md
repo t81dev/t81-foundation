@@ -200,6 +200,10 @@ Required Pull Request checks enforce reproducibility and conformance gates for s
 
 ---
 
+“T81 was architected to support Secure-by-Design and reproducible forensic traceability.”
+
+---
+
 ## 📄 License
 
 T81 is open-source software licensed under the **[MIT License](LICENSE)**.
