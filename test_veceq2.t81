@@ -1,0 +1,5 @@
+fn main() -> void {
+    let v1: Vector[T81BigInt] = [1, 2];
+    let v2: Vector[T81BigInt] = [3, 4];
+    assert v1 != v2;
+}

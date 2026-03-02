@@ -1,0 +1,4 @@
+fn main() -> void {
+    let fr: T81Fraction = 1 / 2;
+    assert fr == 1 / 2;
+}

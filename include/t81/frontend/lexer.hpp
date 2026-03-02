@@ -34,6 +34,9 @@ enum class TokenType {
   Break,
   Continue,
   Return,
+  Assert,
+  As,
+  Mut,
   Match,
   True,
   False,
@@ -118,6 +121,7 @@ enum class TokenType {
   Arrow,
   FatArrow,
   DotDot,
+  DotDotEq,
   Dot,
 
   // Special

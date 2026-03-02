@@ -102,6 +102,10 @@ public:
     return std::string("(return)");
   }
 
+  std::any visit(const AssertStmt& stmt) override {
+    return parenthesize("assert", std::vector<const Expr*>{stmt.expr.get()});
+  }
+
   std::any visit(const BreakStmt& /*stmt*/) override { return std::string("(break)"); }
 
   std::any visit(const ContinueStmt& /*stmt*/) override { return std::string("(continue)"); }

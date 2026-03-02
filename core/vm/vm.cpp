@@ -3469,6 +3469,8 @@ public:
           break;
         }
         if (ctx.register_tags[insn.b] != ValueTag::ResultHandle) {
+          fprintf(stderr, "[DBG ResultUnwrapOk] TypeFault: reg=%d tag=%d val=%lld\n",
+                  insn.b, (int)ctx.register_tags[insn.b], (long long)ctx.registers[insn.b]);
           trap = Trap::TypeFault;
           break;
         }

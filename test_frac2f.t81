@@ -1,0 +1,5 @@
+fn main() -> void {
+    let fr: T81Fraction = 3 / 1;
+    let fl: T81Float = fr as T81Float;
+    assert fl == 3.0f;
+}

@@ -1,0 +1,4 @@
+fn main() -> void {
+    let v: Vector[T81BigInt] = [];
+    assert v.len() == 0;
+}

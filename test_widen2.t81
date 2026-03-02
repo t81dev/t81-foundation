@@ -1,0 +1,6 @@
+fn main() -> void {
+    // Test T81BigInt → T81Float (I2F)
+    let b: T81BigInt = 1;
+    let f: T81Float = b as T81Float;
+    assert f == 1.0f;
+}

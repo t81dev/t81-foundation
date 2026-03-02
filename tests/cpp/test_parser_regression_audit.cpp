@@ -188,6 +188,7 @@ int main() {
         std::any visit(const TrainStmt&) override { return {}; }
         std::any visit(const LoopStmt&) override { return {}; }
         std::any visit(const ReturnStmt&) override { return {}; }
+        std::any visit(const AssertStmt&) override { return {}; }
         std::any visit(const BreakStmt&) override { return {}; }
         std::any visit(const ContinueStmt&) override { return {}; }
         std::any visit(const FunctionStmt&) override { return {}; }

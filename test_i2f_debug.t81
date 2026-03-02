@@ -1,0 +1,8 @@
+fn main() -> void {
+    let b: T81BigInt = 1;
+    let f1: T81Float = b as T81Float;
+    // f2 is also converted from the same integer
+    let f2: T81Float = b as T81Float;
+    // Should be equal: both are I2F(1)
+    assert f1 == f2;
+}

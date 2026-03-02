@@ -139,6 +139,7 @@ public:
   std::any visit(const ReflectStmt& stmt) override;
   std::any visit(const LoopStmt& stmt) override;
   std::any visit(const ReturnStmt& stmt) override;
+  std::any visit(const AssertStmt& stmt) override;
   std::any visit(const BreakStmt& stmt) override;
   std::any visit(const ContinueStmt& stmt) override;
   std::any visit(const RecurseStmt& stmt) override;

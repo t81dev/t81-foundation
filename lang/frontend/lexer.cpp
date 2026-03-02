@@ -1,4 +1,5 @@
 #include "t81/frontend/lexer.hpp"
+#include <cctype>
 #include <unordered_map>
 
 namespace t81 {
@@ -40,6 +41,9 @@ const std::unordered_map<std::string_view, TokenType> KEYWORDS = {
     {"break", TokenType::Break},
     {"continue", TokenType::Continue},
     {"return", TokenType::Return},
+    {"assert", TokenType::Assert},
+    {"as", TokenType::As},
+    {"mut", TokenType::Mut},
     {"match", TokenType::Match},
     {"true", TokenType::True},
     {"false", TokenType::False},
@@ -140,7 +144,10 @@ Token Lexer::next_token() {
     case '-':
       return make_token(match('>') ? TokenType::Arrow : TokenType::Minus);
     case '.':
-      return make_token(match('.') ? TokenType::DotDot : TokenType::Dot);
+      if (match('.')) {
+        return make_token(match('=') ? TokenType::DotDotEq : TokenType::DotDot);
+      }
+      return make_token(TokenType::Dot);
     case '=':
       if (match('>')) return make_token(TokenType::FatArrow);
       return make_token(match('=') ? TokenType::EqualEqual : TokenType::Equal);
@@ -214,13 +221,23 @@ Token Lexer::string() {
 }
 
 Token Lexer::number() {
-  while (is_digit(peek())) advance();
+  // Check for hex literal: 0x... or 0X...
+  if (*_token_start == '0' && (peek() == 'x' || peek() == 'X')) {
+    advance();  // consume 'x'/'X'
+    while (std::isxdigit(static_cast<unsigned char>(peek())) || peek() == '_') {
+      advance();  // consume hex digit or separator
+    }
+    return make_token(TokenType::Integer);
+  }
+
+  // Scan decimal digits, skipping '_' separators
+  while (is_digit(peek()) || peek() == '_') advance();
 
   bool is_float_literal = false;
   if (peek() == '.' && is_digit(peek_next())) {
     is_float_literal = true;
     advance();
-    while (is_digit(peek())) advance();
+    while (is_digit(peek()) || peek() == '_') advance();
   }
 
   if (peek() == 'e' || peek() == 'E') {
@@ -236,12 +253,25 @@ Token Lexer::number() {
     }
   }
 
+  // Float 'f' suffix: 0.0f -> Float
+  if (is_float_literal && peek() == 'f') {
+    advance();
+    return make_token(TokenType::Float);
+  }
+
+  // Base81 suffix: t81
   if (peek() == 't' && peek_next() == '8' && (_current + 2 < _source.end()) &&
       *(_current + 2) == '1') {
     advance();
     advance();
     advance();
     return make_token(is_float_literal ? TokenType::Base81Float : TokenType::Base81Integer);
+  }
+
+  // Trit 't' suffix: 1t -> Ternary (distinct from 't81' Base81 suffix)
+  if (peek() == 't' && peek_next() != '8') {
+    advance();
+    return make_token(TokenType::Ternary);
   }
 
   return make_token(is_float_literal ? TokenType::Float : TokenType::Integer);

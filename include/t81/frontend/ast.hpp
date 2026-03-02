@@ -53,6 +53,7 @@ struct DistributedStmt;
 struct InfiniteStmt;
 struct TrainStmt;
 struct ReturnStmt;
+struct AssertStmt;
 struct BreakStmt;
 struct ContinueStmt;
 struct FunctionStmt;
@@ -117,6 +118,7 @@ public:
   virtual std::any visit(const TrainStmt& stmt) = 0;
   virtual std::any visit(const LoopStmt& stmt) = 0;
   virtual std::any visit(const ReturnStmt& stmt) = 0;
+  virtual std::any visit(const AssertStmt& stmt) = 0;
   virtual std::any visit(const BreakStmt& stmt) = 0;
   virtual std::any visit(const ContinueStmt& stmt) = 0;
   virtual std::any visit(const FunctionStmt& stmt) = 0;
@@ -394,14 +396,17 @@ struct VarStmt : Stmt {
 };
 
 struct LetStmt : Stmt {
-  LetStmt(Token name, std::unique_ptr<TypeExpr> type, std::unique_ptr<Expr> initializer)
-      : name(name), type(std::move(type)), initializer(std::move(initializer)) {}
+  LetStmt(Token name, std::unique_ptr<TypeExpr> type, std::unique_ptr<Expr> initializer,
+          bool is_mutable = false)
+      : name(name), type(std::move(type)), initializer(std::move(initializer)),
+        is_mutable(is_mutable) {}
 
   std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
 
   const Token name;
   const std::unique_ptr<TypeExpr> type;
   const std::unique_ptr<Expr> initializer;
+  const bool is_mutable{false};
 };
 
 struct BlockStmt : Stmt {
@@ -524,6 +529,14 @@ struct ReturnStmt : Stmt {
 
   const Token keyword;
   const std::unique_ptr<Expr> value;
+};
+
+struct AssertStmt : Stmt {
+  AssertStmt(Token keyword, std::unique_ptr<Expr> expr)
+      : keyword(keyword), expr(std::move(expr)) {}
+  std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
+  const Token keyword;
+  const std::unique_ptr<Expr> expr;
 };
 
 struct BreakStmt : Stmt {

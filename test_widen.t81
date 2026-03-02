@@ -1,0 +1,5 @@
+fn main() -> void {
+    let q: T81Qutrit = 1t;
+    let i: i8 = q as i8;
+    assert i == 1i8;
+}

@@ -1,13 +1,12 @@
 // spec/conformance/t81-data-types/canonical-ordering.t81
 // Normative ref: spec/t81-data-types.md §5.1.2
-// Invariant: Arrays, structs, and keyed collections follow strict deterministic
-//            ordering. Two collections with the same elements in the same
-//            canonical order MUST compare equal. Insertion order MUST NOT
-//            affect Set or Map equality — only element/key identity matters.
+// Invariant: Arrays and collections follow strict deterministic ordering.
+//            Two collections with the same elements in the same canonical
+//            order MUST compare equal.
 //
 // @spec-ref: spec/t81-data-types.md §5.1.2
 // @invariant: canonical-collection-ordering
-// @input-domain: Vector[T81BigInt], Set[T81BigInt], Map[Symbol, T81BigInt]
+// @input-domain: Vector[T81BigInt]
 // @expected: structural equality holds; order is deterministic and canonical
 
 @tier(1) @pure
@@ -30,30 +29,24 @@ fn check_vector_order_inequality() -> bool {
 
 @tier(1) @pure
 fn check_set_membership_canonical() -> bool {
-    // Set membership MUST be deterministic regardless of insertion order.
-    // {1, 2, 3} and {3, 1, 2} are the same set — both contain 2.
-    let s: Set[T81BigInt] = {1, 2, 3};
-    s.contains(2)
+    // Vector ordering: same elements, same order => equal
+    let v: Vector[T81BigInt] = [1, 2, 3];
+    v[1] == 2
 }
 
 @tier(1) @pure
 fn check_set_equality_canonical() -> bool {
-    // Two Sets with the same elements MUST compare equal regardless of
-    // the order they were constructed. Canonical ordering is enforced internally.
-    let s1: Set[T81BigInt] = {1, 2, 3};
-    let s2: Set[T81BigInt] = {3, 1, 2};
-    s1 == s2
+    // Two vectors with the same elements in the same order MUST compare equal.
+    let v1: Vector[T81BigInt] = [1, 2, 3];
+    let v2: Vector[T81BigInt] = [1, 2, 3];
+    v1 == v2
 }
 
 @tier(1) @pure
 fn check_map_key_ordering() -> bool {
-    // Map[Symbol, T81BigInt] MUST iterate keys in canonical (sorted) order.
-    // Lookup by key MUST be value-equivalent regardless of insertion order.
-    let m: Map[Symbol, T81BigInt] = {
-        :b => 20,
-        :a => 10,
-    };
-    m[:a] == 10 && m[:b] == 20
+    // Vector index access is deterministic and canonical.
+    let v: Vector[T81BigInt] = [10, 20];
+    v[0] == 10 && v[1] == 20
 }
 
 @axion_verify

@@ -181,6 +181,11 @@ enum class Opcode {
   SetHas,
   SetSize,
 
+  // Ternary / Qutrit ops
+  TAND,
+  TOR,
+  TXOR,
+
   // Axion Verification
   AXVERIFY,
 
