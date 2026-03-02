@@ -142,6 +142,7 @@ enum class Opcode {
   TGET,
   TNEW,
   TSET,
+  TSHAPE,
 
   // Neural
   TNEURAL_FWD,

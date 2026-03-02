@@ -3469,8 +3469,6 @@ public:
           break;
         }
         if (ctx.register_tags[insn.b] != ValueTag::ResultHandle) {
-          fprintf(stderr, "[DBG ResultUnwrapOk] TypeFault: reg=%d tag=%d val=%lld\n",
-                  insn.b, (int)ctx.register_tags[insn.b], (long long)ctx.registers[insn.b]);
           trap = Trap::TypeFault;
           break;
         }
@@ -4970,6 +4968,37 @@ public:
           break;
         }
         ctx.registers[insn.a] = static_cast<std::int64_t>(vec->size());
+        ctx.register_tags[insn.a] = ValueTag::Int;
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::TShape: {
+        // TShape A, B, C — A = shape[R[C]] of tensor R[B]
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+        if (!tensor) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.c] != ValueTag::Int) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        std::int64_t dim_idx = ctx.registers[insn.c];
+        const auto& shape = tensor->shape();
+        if (dim_idx < 0 || static_cast<std::size_t>(dim_idx) >= shape.size()) {
+          trap = Trap::BoundsFault;
+          break;
+        }
+        ctx.registers[insn.a] =
+            static_cast<std::int64_t>(shape[static_cast<std::size_t>(dim_idx)]);
         ctx.register_tags[insn.a] = ValueTag::Int;
         update_flags(ctx.registers[insn.a]);
         break;

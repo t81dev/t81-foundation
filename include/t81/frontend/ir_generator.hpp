@@ -5013,6 +5013,41 @@ public:
 
   std::any visit(const VectorLiteralExpr& expr) override {
     const Type* vector_type = typed_expr(&expr);
+
+    // Matrix[T] literal: [[r0c0,r0c1,...],[r1c0,...],...] — build as 2D tensor
+    if (vector_type && vector_type->kind == Type::Kind::Matrix && !expr.elements.empty()) {
+      std::vector<float> flat_data;
+      int ncols = 0;
+      for (const auto& row_expr : expr.elements) {
+        const auto* row_data =
+            _semantic ? _semantic->vector_literal_data(
+                            dynamic_cast<const VectorLiteralExpr*>(row_expr.get()))
+                      : nullptr;
+        if (row_data) {
+          if (ncols == 0) ncols = static_cast<int>(row_data->size());
+          flat_data.insert(flat_data.end(), row_data->begin(), row_data->end());
+        } else {
+          // Non-literal row — fall through to default handling
+          flat_data.clear();
+          ncols = 0;
+          break;
+        }
+      }
+      if (!flat_data.empty() && ncols > 0) {
+        int nrows = static_cast<int>(expr.elements.size());
+        t81::T729DynamicTensor tensor({nrows, ncols}, flat_data);
+        int handle = _program.add_tensor(std::move(tensor));
+        auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        tisc::ir::Instruction instr;
+        instr.opcode = tisc::ir::Opcode::LOADI;
+        instr.operands = {dest.reg, tisc::ir::Immediate{handle}};
+        instr.literal_kind = tisc::LiteralKind::TensorHandle;
+        emit(instr);
+        record_result(&expr, dest);
+        return {};
+      }
+    }
+
     const bool is_string_vector = vector_type && vector_type->kind == Type::Kind::Vector &&
                                   !vector_type->params.empty() &&
                                   vector_type->params[0].kind == Type::Kind::String;
@@ -5092,6 +5127,89 @@ public:
   }
 
   std::any visit(const IndexExpr& expr) override {
+    // ── Matrix 2D indexing: (matrix[row])[col] ─────────────────────────────
+    // Detect (inner_IndexExpr)[col] where inner_IndexExpr.object : Matrix[T].
+    // Emit: TSHAPE ncols, matrix, 1; MUL prod, row, ncols; ADD flat, prod, col; TGET result, matrix, flat
+    if (_semantic) {
+      if (const auto* inner = dynamic_cast<const IndexExpr*>(expr.object.get())) {
+        const Type* inner_obj_type = _semantic->type_of(inner->object.get());
+        if (inner_obj_type && inner_obj_type->kind == Type::Kind::Matrix) {
+          inner->object->accept(*this);
+          auto matrix_reg = ensure_expr_result(inner->object.get());
+
+          inner->index->accept(*this);
+          auto row_reg = ensure_expr_result(inner->index.get());
+
+          expr.index->accept(*this);
+          auto col_reg = ensure_expr_result(expr.index.get());
+
+          // ncols = tensor.shape[1]
+          auto dim1_idx = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+          tisc::ir::Instruction load_one;
+          load_one.opcode = tisc::ir::Opcode::LOADI;
+          load_one.operands = {dim1_idx.reg, tisc::ir::Immediate{1}};
+          emit(load_one);
+
+          auto ncols_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+          tisc::ir::Instruction tshape;
+          tshape.opcode = tisc::ir::Opcode::TSHAPE;
+          tshape.operands = {ncols_reg.reg, matrix_reg.reg, dim1_idx.reg};
+          emit(tshape);
+
+          auto prod_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+          tisc::ir::Instruction imul;
+          imul.opcode = tisc::ir::Opcode::MUL;
+          imul.operands = {prod_reg.reg, row_reg.reg, ncols_reg.reg};
+          emit(imul);
+
+          auto flat_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+          tisc::ir::Instruction iadd;
+          iadd.opcode = tisc::ir::Opcode::ADD;
+          iadd.operands = {flat_reg.reg, prod_reg.reg, col_reg.reg};
+          emit(iadd);
+
+          auto temp_dest = allocate_typed_register(tisc::ir::PrimitiveKind::Float);
+          tisc::ir::Instruction tget;
+          tget.opcode = tisc::ir::Opcode::TGET;
+          tget.operands = {temp_dest.reg, matrix_reg.reg, flat_reg.reg};
+          emit(tget);
+
+          auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+          tisc::ir::Instruction conv;
+          conv.opcode = tisc::ir::Opcode::F2I;
+          conv.operands = {dest.reg, temp_dest.reg};
+          emit(conv);
+          record_result(&expr, dest);
+          return {};
+        }
+      }
+    }
+
+    // ── Map indexing: map[key] → OptionUnwrap(MapGet(map, key)) ────────────
+    if (_semantic) {
+      const Type* obj_sem_type = _semantic->type_of(expr.object.get());
+      if (obj_sem_type && obj_sem_type->kind == Type::Kind::Map) {
+        expr.object->accept(*this);
+        auto map_reg = ensure_expr_result(expr.object.get());
+        expr.index->accept(*this);
+        auto key_reg = ensure_expr_result(expr.index.get());
+
+        auto opt_dest = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+        tisc::ir::Instruction map_get;
+        map_get.opcode = tisc::ir::Opcode::MapGet;
+        map_get.operands = {opt_dest.reg, map_reg.reg, key_reg.reg};
+        emit(map_get);
+
+        auto val_dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        tisc::ir::Instruction unwrap;
+        unwrap.opcode = tisc::ir::Opcode::OPTION_UNWRAP;
+        unwrap.operands = {val_dest.reg, opt_dest.reg};
+        emit(unwrap);
+        record_result(&expr, val_dest);
+        return {};
+      }
+    }
+
     expr.object->accept(*this);
     auto obj = ensure_expr_result(expr.object.get());
     expr.index->accept(*this);

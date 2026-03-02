@@ -285,6 +285,8 @@ Opcode map_opcode(const ir::Instruction& instr) {
       return Opcode::TNew;
     case O::TSET:
       return Opcode::TSet;
+    case O::TSHAPE:
+      return Opcode::TShape;
     case O::TNEURAL_FWD:
       return Opcode::TNeuralFwd;
     case O::TNEURAL_BWD:

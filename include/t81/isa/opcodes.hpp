@@ -195,6 +195,7 @@ enum class Opcode : std::uint8_t {
   SetRemove,
   SetHas,
   SetSize,
+  TShape,  // Get tensor shape dimension: A=Dest, B=Tens, C=DimIdx
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -571,13 +572,15 @@ enum class Opcode : std::uint8_t {
       return "SetHas";
     case Opcode::SetSize:
       return "SetSize";
+    case Opcode::TShape:
+      return "TShape";
   }
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::SetSize) + 1> kAllOpcodes =
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::TShape) + 1> kAllOpcodes =
     [] {
-      std::array<Opcode, static_cast<std::size_t>(Opcode::SetSize) + 1> values{};
+      std::array<Opcode, static_cast<std::size_t>(Opcode::TShape) + 1> values{};
       for (std::size_t i = 0; i < values.size(); ++i) {
         values[i] = static_cast<Opcode>(i);
       }
@@ -585,6 +588,6 @@ inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::SetSize) + 
     }();
 
 [[nodiscard]] constexpr bool is_valid_opcode(std::uint8_t raw_opcode) {
-  return raw_opcode <= static_cast<std::uint8_t>(Opcode::SetSize);
+  return raw_opcode <= static_cast<std::uint8_t>(Opcode::TShape);
 }
 }  // namespace t81::tisc

@@ -2373,6 +2373,15 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       std::string method_name = func_name.substr(dot + 1);
 
       auto* obj_symbol = resolve_symbol(Token{TokenType::Identifier, obj_name, 0, 0});
+      // Cache the object expression's type so the IR generator can look it up
+      // via type_of(fa->object.get()) — the SA dispatches via resolve_symbol, so
+      // VarExpr("r") is never processed by evaluate_expression and would otherwise
+      // remain absent from _expr_type_cache.
+      if (obj_symbol) {
+        if (const auto* fa = dynamic_cast<const FieldAccessExpr*>(expr.callee.get())) {
+          _expr_type_cache[fa->object.get()] = obj_symbol->type;
+        }
+      }
       if (obj_symbol && (obj_symbol->type.kind == Type::Kind::Tensor ||
                          obj_symbol->type.kind == Type::Kind::I32)) {
         if (method_name == "matmul" || method_name == "vec_add") {
@@ -4444,6 +4453,19 @@ std::any SemanticAnalyzer::visit(const IndexExpr& expr) {
     }
   }
 
+  // Matrix[T][i] → Vector[T] (a row)
+  if (obj_type.kind == Type::Kind::Matrix) {
+    Type row_type{Type::Kind::Vector};
+    if (!obj_type.params.empty()) row_type.params.push_back(obj_type.params[0]);
+    return row_type;
+  }
+
+  // Map[K,V][K] → V (map lookup; IR emits MapGet + OptionUnwrap)
+  if (obj_type.kind == Type::Kind::Map) {
+    if (obj_type.params.size() >= 2) return obj_type.params[1];
+    return Type{Type::Kind::Unknown};
+  }
+
   error(expr.bracket, "Expression '" + expr_to_string(*expr.object) + "' of type '" +
                           type_to_string(obj_type) + "' does not support indexing.");
   return make_error_type();
@@ -4632,6 +4654,16 @@ std::any SemanticAnalyzer::visit(const VectorLiteralExpr& expr) {
   std::vector<float> values;
   values.reserve(expr.elements.size());
 
+  // Matrix[T] context: treat each element as a row (Vector[T])
+  if (expected && expected->kind == Type::Kind::Matrix) {
+    Type row_type{Type::Kind::Vector};
+    if (!expected->params.empty()) row_type.params.push_back(expected->params[0]);
+    for (const auto& element : expr.elements) {
+      evaluate_expression(*element, &row_type);
+    }
+    return *expected;  // Matrix[T]
+  }
+
   Type expected_element;
   bool has_expected_element = false;
   if (expected && (expected->kind == Type::Kind::Vector || expected->kind == Type::Kind::Tensor)) {
@@ -4810,6 +4842,7 @@ std::any SemanticAnalyzer::visit(const VariableExpr& expr) {
     error(expr.name, "Undefined variable '" + name_str + "'.");
     return make_error_type();
   }
+  _expr_type_cache[&expr] = symbol->type;
   return symbol->type;
 }
 
