@@ -206,7 +206,7 @@ jobs:
       - name: Run governance metrics
         run: python3 scripts/ci/governance_metrics.py
       - name: Upload report
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: governance-metrics
           path: artifacts/ci_reports/governance_metrics.json
@@ -503,7 +503,7 @@ jobs:
 
       - name: Upload build artifacts
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: ci-build-${{ matrix.platform }}-${{ matrix.compiler }}
           path: |
@@ -514,7 +514,7 @@ jobs:
 
       - name: Upload T3_K hash artifact
         if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform == 'linux-arm64')
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: t3k-hash-${{ matrix.platform }}-${{ matrix.compiler }}
           path: build/t3k-repro/hash.txt
@@ -522,7 +522,7 @@ jobs:
 
       - name: Upload T81Lang hash artifact
         if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform == 'linux-arm64')
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: t81lang-hash-${{ matrix.platform }}-${{ matrix.compiler }}
           path: build/t81lang-repro/hash.txt
@@ -530,7 +530,7 @@ jobs:
 
       - name: Upload llama.cpp hash artifact (optional)
         if: vars.T81_ENABLE_LLAMA_REPRO == '1' && matrix.compiler == 'clang' && matrix.platform == 'linux-x86_64' && hashFiles('tests/fixtures/llama_cpp_repro/model.gguf') != '' && hashFiles('tests/fixtures/llama_cpp_repro/model_hash.txt') != '' && hashFiles('tests/fixtures/llama_cpp_repro/policy.apl') != '' && hashFiles('tests/fixtures/llama_cpp_repro/prompt.txt') != ''
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: llama-cpp-hash-${{ matrix.platform }}-${{ matrix.compiler }}
           path: build/llama-cpp-repro/hash.txt
@@ -773,7 +773,7 @@ jobs:
 
       - name: Upload benchmark artifacts
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: ci-benchmarks-linux-x86_64
           path: |
