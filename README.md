@@ -30,6 +30,13 @@
 
 Where traditional systems drift across architectures, T81 delivers bit-exact reproducibility on explicitly verified surfaces. Its balanced ternary logic ({-1, 0, +1}) maps natively to neural activation states, its Axion kernel enforces policy at the opcode level, and its cognitive tier model provides a formal computational model for how AI reasoning scales.
 
+### High-Assurance & NIST Alignment
+T81 is aligned with **NIST SP 800-218 (SSDF)** and **NIST SP 800-53** controls, providing a high-assurance, auditable AI infrastructure.
+* **Deterministic Execution:** Bit-exact reproducibility guarantees for strict supply-chain and trace verification.
+* **Opcode-Level Policy:** The Axion Kernel enforces security and alignment limits natively.
+* **Supply Chain Integrity:** All release artifacts are signed and include comprehensive SBOMs.
+* **Formal Governance:** A strictly maintained threat model and vulnerability policy ensure predictable incident response.
+
 ### The Core Promise: Verified Determinism
 
 | Feature | The Problem (Binary/IEEE 754) | The T81 Solution |
@@ -197,6 +204,10 @@ We welcome contributors who share our passion for rigorous, deterministic system
 
 ### The "Repro Gate"
 Required Pull Request checks enforce reproducibility and conformance gates for scoped deterministic surfaces. If your change alters governed deterministic outputs, the corresponding gate should fail. This is a feature, not a bug.
+
+---
+
+“T81 was architected to support Secure-by-Design and reproducible forensic traceability.”
 
 ---
 
