@@ -167,6 +167,8 @@ public:
   std::any visit(const VariableExpr& expr) override;
   std::any visit(const MatchExpr& expr) override;
   std::any visit(const VectorLiteralExpr& expr) override;
+  std::any visit(const SetLiteralExpr& expr) override;
+  std::any visit(const MapLiteralExpr& expr) override;
   std::any visit(const BlockExpr& expr) override;
   std::any visit(const IfExpr& expr) override;
   std::any visit(const SimpleTypeExpr& expr) override;
@@ -256,6 +258,8 @@ private:
   };
   std::unordered_map<std::string, AliasInfo> _type_aliases;
   std::unordered_map<const VectorLiteralExpr*, std::vector<float>> _vector_literal_data;
+  std::unordered_map<const SetLiteralExpr*, std::vector<float>> _set_literal_data;
+  std::unordered_map<const MapLiteralExpr*, std::vector<float>> _map_literal_data;
   std::unordered_map<std::string, RecordInfo> _record_definitions;
   std::unordered_map<std::string, EnumInfo> _enum_definitions;
   const std::unordered_map<std::string, Type>* _current_type_env = nullptr;
@@ -314,6 +318,8 @@ private:
   Type instantiate_alias(const AliasInfo& alias, const std::vector<Type>& params,
                          const Token& location);
   const std::vector<float>* vector_literal_data(const VectorLiteralExpr* expr) const;
+  const std::vector<float>* set_literal_data(const SetLiteralExpr* expr) const;
+  const std::vector<float>* map_literal_data(const MapLiteralExpr* expr) const;
   bool bind_pattern_payload(const MatchPattern& pattern, const Type& payload_type,
                             const Token& keyword);
   bool analyze_nested_variant(const MatchPattern& pattern, const Type& payload_type);

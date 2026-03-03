@@ -54,7 +54,6 @@ enum class TokenType {
   T81Fixed,
   T81Complex,
   T81Quaternion,
-  T81Prob,
   Cell,
   T81Qutrit,
   T81Uint,
@@ -72,7 +71,9 @@ enum class TokenType {
   // Literals
   Integer,
   Float,
+  T81Prob,
   String,
+  ByteString,
   Ternary,
   Base81Integer,
   Base81Float,
@@ -155,6 +156,7 @@ private:
   Token make_token(TokenType type);
   Token error_token(const char* message);
   Token string();
+  Token byte_string();
   Token number();
   Token identifier();
   Token symbol();

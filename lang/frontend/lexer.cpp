@@ -103,6 +103,9 @@ Token Lexer::next_token() {
     }
   }
 
+  // Handle byte-string literals before identifier check
+  if (c == 'b' && match('"')) return byte_string();
+
   if (is_alpha(c)) return identifier();
   if (is_digit(c)) return number();
 
@@ -220,6 +223,21 @@ Token Lexer::string() {
   return make_token(TokenType::String);
 }
 
+Token Lexer::byte_string() {
+  while (peek() != '"' && !is_at_end()) {
+    if (peek() == '\n') {
+      _line++;
+      _line_start = _current;
+    }
+    advance();
+  }
+
+  if (is_at_end()) return error_token("Unterminated byte string.");
+
+  advance();  // closing quote
+  return make_token(TokenType::ByteString);
+}
+
 Token Lexer::number() {
   // Check for hex literal: 0x... or 0X...
   if (*_token_start == '0' && (peek() == 'x' || peek() == 'X')) {
@@ -292,6 +310,13 @@ Token Lexer::identifier() {
   if (auto it = KEYWORDS.find(text); it != KEYWORDS.end()) {
     return make_token(it->second);
   }
+  
+  // Check for T81Fixed suffix: 1.25fx -> T81Fixed
+  // Only treat as T81Fixed if it ends with 'fx' and contains a decimal point
+  if (text.length() > 2 && text.substr(text.length() - 2) == "fx" && text.find('.') != std::string_view::npos) {
+    return make_token(TokenType::T81Fixed);
+  }
+  
   return make_token(TokenType::Identifier);
 }
 

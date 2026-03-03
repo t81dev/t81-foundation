@@ -1241,6 +1241,19 @@ public:
       record_result(&expr, dest);
       return {};
     }
+    if (expr.value.type == TokenType::ByteString) {
+      std::string contents = decode_string_literal(expr.value);
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::LOADI;
+      instr.operands = {dest.reg};
+      instr.literal_kind = tisc::LiteralKind::SymbolHandle;
+      instr.text_literal = std::move(contents);
+      instr.primitive = tisc::ir::PrimitiveKind::Integer;
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
     if (expr.value.type == TokenType::True || expr.value.type == TokenType::False) {
       auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Boolean);
       auto instr = tisc::ir::Instruction{
@@ -1268,6 +1281,40 @@ public:
       instr.literal_kind = tisc::LiteralKind::FloatHandle;
       instr.text_literal = out.str();
       instr.primitive = tisc::ir::PrimitiveKind::Float;
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+    if (expr.value.type == TokenType::T81Prob) {
+      // T81Prob literal - treat as float for now
+      const double parsed = parse_canonical_float(expr.value.lexeme);
+      std::ostringstream out;
+      out.imbue(std::locale::classic());
+      out.precision(std::numeric_limits<double>::max_digits10);
+      out << parsed;
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Float);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::LOADI;
+      instr.operands = {dest.reg};
+      instr.literal_kind = tisc::LiteralKind::FloatHandle;
+      instr.text_literal = out.str();
+      instr.primitive = tisc::ir::PrimitiveKind::Float;
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+    if (expr.value.type == TokenType::T81Fixed) {
+      // T81Fixed literal - parse as fixed-point number
+      const std::string lexeme(expr.value.lexeme);
+      // Remove 'fx' suffix and parse as float
+      std::string num_str = lexeme.substr(0, lexeme.length() - 2);
+      const double parsed = std::stod(num_str);
+      
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::LOADI;
+      instr.operands = {dest.reg, tisc::ir::Immediate{static_cast<int64_t>(parsed * 1000)}}; // Fixed-point with 3 decimal places
+      instr.primitive = tisc::ir::PrimitiveKind::Integer;
       emit(instr);
       record_result(&expr, dest);
       return {};
@@ -4687,7 +4734,91 @@ public:
   }
   std::any visit(const SimpleTypeExpr&) override { return {}; }
   std::any visit(const GenericTypeExpr&) override { return {}; }
-
+  std::any visit(const SetLiteralExpr& expr) override {
+    // Use tensor-based approach like VectorLiteralExpr for better compatibility
+    
+    if (!_semantic) return {};
+    
+    // Try to get literal data from semantic analyzer
+    const auto* data = _semantic ? _semantic->set_literal_data(&expr) : nullptr;
+    if (data && !data->empty()) {
+      // Static constant optimization path - use tensor
+      t81::T729DynamicTensor tensor({static_cast<int>(data->size())}, *data);
+      int handle = _program.add_tensor(std::move(tensor));
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::LOADI;
+      instr.operands = {dest.reg, tisc::ir::Immediate{handle}};
+      instr.literal_kind = tisc::LiteralKind::TensorHandle;
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+    
+    // Fallback to dynamic construction using STRVEC (like VectorLiteralExpr)
+    auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+    tisc::ir::Instruction vec_new;
+    vec_new.opcode = tisc::ir::Opcode::STRVECNEW;
+    vec_new.operands = {dest.reg};
+    emit(vec_new);
+    
+    for (const auto& element : expr.elements) {
+      element->accept(*this);
+      auto value = ensure_expr_result(element.get());
+      tisc::ir::Instruction push;
+      push.opcode = tisc::ir::Opcode::STRVECPUSH;
+      push.operands = {dest.reg, value.reg};
+      emit(push);
+    }
+    
+    record_result(&expr, dest);
+    return {};
+  }
+  std::any visit(const MapLiteralExpr& expr) override {
+    // Use tensor-based approach like VectorLiteralExpr for better compatibility
+    
+    if (!_semantic) return {};
+    
+    // Try to get literal data from semantic analyzer
+    const auto* data = _semantic ? _semantic->map_literal_data(&expr) : nullptr;
+    if (data && !data->empty()) {
+      // Static constant optimization path - use tensor
+      // For maps, we store key-value pairs sequentially in the tensor
+      t81::T729DynamicTensor tensor({static_cast<int>(data->size())}, *data);
+      int handle = _program.add_tensor(std::move(tensor));
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::LOADI;
+      instr.operands = {dest.reg, tisc::ir::Immediate{handle}};
+      instr.literal_kind = tisc::LiteralKind::TensorHandle;
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+    
+    // Fallback to dynamic construction using STRVEC (like VectorLiteralExpr)
+    auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+    tisc::ir::Instruction vec_new;
+    vec_new.opcode = tisc::ir::Opcode::STRVECNEW;
+    vec_new.operands = {dest.reg};
+    emit(vec_new);
+    
+    for (const auto& [key, value] : expr.entries) {
+      key->accept(*this);
+      auto key_reg = ensure_expr_result(key.get());
+      value->accept(*this);
+      auto value_reg = ensure_expr_result(value.get());
+      tisc::ir::Instruction push;
+      push.opcode = tisc::ir::Opcode::STRVECPUSH;
+      push.operands = {dest.reg, key_reg.reg};
+      emit(push);
+      push.operands = {dest.reg, value_reg.reg};
+      emit(push);
+    }
+    
+    record_result(&expr, dest);
+    return {};
+  }
   std::any visit(const BlockExpr& expr) override {
     for (const auto& stmt : expr.statements) {
       stmt->accept(*this);

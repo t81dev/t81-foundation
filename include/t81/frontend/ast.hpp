@@ -28,6 +28,8 @@ struct CallExpr;
 struct AssignExpr;
 struct MatchExpr;
 struct VectorLiteralExpr;
+struct SetLiteralExpr;
+struct MapLiteralExpr;
 struct FieldAccessExpr;
 struct RecordLiteralExpr;
 struct EnumLiteralExpr;
@@ -88,6 +90,8 @@ public:
   virtual std::any visit(const AssignExpr& expr) = 0;
   virtual std::any visit(const MatchExpr& expr) = 0;
   virtual std::any visit(const VectorLiteralExpr& expr) = 0;
+  virtual std::any visit(const SetLiteralExpr& expr) = 0;
+  virtual std::any visit(const MapLiteralExpr& expr) = 0;
   virtual std::any visit(const FieldAccessExpr& expr) = 0;
   virtual std::any visit(const RecordLiteralExpr& expr) = 0;
   virtual std::any visit(const EnumLiteralExpr& expr) = 0;
@@ -167,6 +171,26 @@ struct VectorLiteralExpr : Expr {
   const Token token;
   const std::vector<std::unique_ptr<Expr>> elements;
   const std::unique_ptr<Expr> repeat_count;
+};
+
+struct SetLiteralExpr : Expr {
+  SetLiteralExpr(Token token, std::vector<std::unique_ptr<Expr>> elements)
+      : token(token), elements(std::move(elements)) {}
+
+  std::any accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
+
+  const Token token;
+  const std::vector<std::unique_ptr<Expr>> elements;
+};
+
+struct MapLiteralExpr : Expr {
+  MapLiteralExpr(Token token, std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> entries)
+      : token(token), entries(std::move(entries)) {}
+
+  std::any accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
+
+  const Token token;
+  const std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> entries;
 };
 
 struct GroupingExpr : Expr {

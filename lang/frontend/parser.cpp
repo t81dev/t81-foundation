@@ -101,16 +101,9 @@ std::string token_type_name(TokenType type) {
       return "'T81BigInt'";
     case TokenType::T81Float:
       return "'T81Float'";
-    case TokenType::T81Fraction:
-      return "'T81Fraction'";
-    case TokenType::T81Fixed:
-      return "'T81Fixed'";
-    case TokenType::T81Complex:
-      return "'T81Complex'";
-    case TokenType::T81Quaternion:
-      return "'T81Quaternion'";
     case TokenType::T81Prob:
       return "'T81Prob'";
+    case TokenType::T81Fraction:
     case TokenType::Cell:
       return "'Cell'";
     case TokenType::T81Qutrit:
@@ -141,12 +134,20 @@ std::string token_type_name(TokenType type) {
       return "float literal";
     case TokenType::String:
       return "string literal";
+    case TokenType::ByteString:
+      return "byte string literal";
     case TokenType::Ternary:
       return "ternary literal";
     case TokenType::Base81Integer:
       return "base81 integer literal";
     case TokenType::Base81Float:
       return "base81 float literal";
+    case TokenType::T81Fixed:
+      return "T81Fixed literal";
+    case TokenType::T81Complex:
+      return "T81Complex literal";
+    case TokenType::T81Quaternion:
+      return "T81Quaternion literal";
     case TokenType::Identifier:
       return "identifier";
     case TokenType::Plus:
@@ -1170,7 +1171,7 @@ std::unique_ptr<Expr> Parser::primary() {
     return match_expression();
   } else if (match({TokenType::False, TokenType::True, TokenType::Integer, TokenType::Float,
                     TokenType::Base81Integer, TokenType::Base81Float, TokenType::String,
-                    TokenType::Ternary})) {
+                    TokenType::ByteString, TokenType::Ternary})) {
     Token lit_tok = previous();
     expr = std::make_unique<LiteralExpr>(lit_tok);
     // Consume optional type suffixes on integer/float literals.
@@ -1189,6 +1190,17 @@ std::unique_ptr<Expr> Parser::primary() {
       if (check(TokenType::Identifier) &&
           (peek().lexeme == "x" || peek().lexeme == "p")) {
         advance();  // discard fixed-point or probability suffix
+        // Check if this was a probability literal (p suffix)
+        if (previous().lexeme == "p") {
+          // Create T81Prob literal from the float value
+          Token prob_token = Token{TokenType::T81Prob, lit_tok.lexeme, lit_tok.line, lit_tok.column};
+          expr = std::make_unique<LiteralExpr>(prob_token);
+        } else {
+          // Regular float with suffix (e.g., 1.25fx)
+          expr = std::make_unique<LiteralExpr>(lit_tok);
+        }
+      } else {
+        expr = std::make_unique<LiteralExpr>(lit_tok);
       }
     }
   } else if (match({TokenType::LBracket})) {
@@ -1209,6 +1221,46 @@ std::unique_ptr<Expr> Parser::primary() {
     consume(TokenType::RBracket, "Expect ']' after vector literal.");
     expr =
         std::make_unique<VectorLiteralExpr>(bracket, std::move(elements), std::move(repeat_count));
+  } else if (match({TokenType::LBrace})) {
+    Token brace = previous();
+    std::vector<std::unique_ptr<Expr>> elements;
+    std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> entries;
+    
+    // Check if this is a map literal by looking for => pattern
+    bool is_map_literal = false;
+    if (!check(TokenType::RBrace)) {
+      // Look ahead to see if we have Symbol => pattern
+      // If the first token is Symbol, assume it's a map literal
+      if (check(TokenType::Symbol)) {
+        is_map_literal = true;
+      }
+    }
+    
+    if (is_map_literal) {
+      // Parse map literal: {:key => value, :key2 => value2}
+      do {
+        auto key = primary();
+        consume(TokenType::FatArrow, "Expect '=>' after map key.");
+        auto value = expression();
+        entries.emplace_back(std::move(key), std::move(value));
+      } while (match({TokenType::Comma}) && !check(TokenType::RBrace));
+    } else {
+      // Parse set literal: {expr1, expr2, expr3}
+      if (!check(TokenType::RBrace)) {
+        elements.push_back(expression());
+        while (match({TokenType::Comma})) {
+          if (check(TokenType::RBrace)) break;
+          elements.push_back(expression());
+        }
+      }
+    }
+    
+    consume(TokenType::RBrace, "Expect '}' after literal.");
+    if (is_map_literal) {
+      expr = std::make_unique<MapLiteralExpr>(brace, std::move(entries));
+    } else {
+      expr = std::make_unique<SetLiteralExpr>(brace, std::move(elements));
+    }
   } else if (match({TokenType::LParen})) {
     std::unique_ptr<Expr> inner = expression();
     consume(TokenType::RParen, "Expect ')' after expression.");

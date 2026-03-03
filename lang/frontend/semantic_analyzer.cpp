@@ -1120,6 +1120,8 @@ Type SemanticAnalyzer::type_from_token(const Token& name) {
       return Type{Type::Kind::Tree};
     case TokenType::String:
       return Type{Type::Kind::String};
+    case TokenType::ByteString:
+      return Type{Type::Kind::Bytes};
     default:
       break;
   }
@@ -1148,6 +1150,20 @@ const std::vector<float>* SemanticAnalyzer::vector_literal_data(
     const VectorLiteralExpr* expr) const {
   auto it = _vector_literal_data.find(expr);
   if (it == _vector_literal_data.end()) return nullptr;
+  return &it->second;
+}
+
+const std::vector<float>* SemanticAnalyzer::set_literal_data(
+    const SetLiteralExpr* expr) const {
+  auto it = _set_literal_data.find(expr);
+  if (it == _set_literal_data.end()) return nullptr;
+  return &it->second;
+}
+
+const std::vector<float>* SemanticAnalyzer::map_literal_data(
+    const MapLiteralExpr* expr) const {
+  auto it = _map_literal_data.find(expr);
+  if (it == _map_literal_data.end()) return nullptr;
   return &it->second;
 }
 
@@ -1404,6 +1420,7 @@ bool SemanticAnalyzer::is_assignable(const Type& target, const Type& value) cons
   }
   if (target.kind == Type::Kind::Quaternion && value.kind == Type::Kind::Quaternion) return true;
   if (target.kind == Type::Kind::Prob && value.kind == Type::Kind::Prob) return true;
+  if (target.kind == Type::Kind::Prob && value.kind == Type::Kind::Float) return true;
   if (target.kind == Type::Kind::Cell && value.kind == Type::Kind::Cell) return true;
 
   if (is_numeric(target) && is_numeric(value)) {
@@ -4732,6 +4749,189 @@ std::any SemanticAnalyzer::visit(const VectorLiteralExpr& expr) {
   return result;
 }
 
+std::any SemanticAnalyzer::visit(const SetLiteralExpr& expr) {
+  const Type* expected = current_expected_type();
+
+  if (expr.elements.empty()) {
+    if (expected &&
+        (expected->kind == Type::Kind::Set || expected->kind == Type::Kind::Tensor)) {
+      Type result;
+      if (expected->kind == Type::Kind::Set) {
+        result = *expected;
+      } else {
+        result.kind = Type::Kind::Set;
+        if (!expected->params.empty()) {
+          result.params.push_back(expected->params[0]);
+        } else {
+          result.params.push_back(Type{Type::Kind::Unknown});
+        }
+      }
+      _set_literal_data[&expr] = std::vector<float>{};
+      return result;
+    }
+    // Empty set literal {} - infer as Set[T] where T is unknown
+    Type result{Type::Kind::Set};
+    if (expected && !expected->params.empty()) {
+      result.params.push_back(expected->params[0]);
+    } else {
+      result.params.push_back(Type{Type::Kind::Unknown});
+    }
+    _set_literal_data[&expr] = std::vector<float>{};
+    return result;
+  }
+
+  // Non-empty set literal: infer element type from elements
+  Type element_type{Type::Kind::Unknown};
+  std::vector<float> values;
+  values.reserve(expr.elements.size());
+  
+  for (const auto& element : expr.elements) {
+    Type elem_type = evaluate_expression(*element);
+    if (elem_type.kind == Type::Kind::Error) {
+      return make_error_type();
+    }
+
+    if (element_type.kind == Type::Kind::Unknown) {
+      element_type = elem_type;
+    } else if (element_type != elem_type) {
+      if (is_numeric(element_type) && is_numeric(elem_type)) {
+        auto merged = deduce_numeric_type(element_type, elem_type, expr.token);
+        if (!merged.has_value()) {
+          return make_error_type();
+        }
+        element_type = *merged;
+      } else {
+        error(expr.token, "Set literal elements must share a compatible type.");
+        return make_error_type();
+      }
+    }
+
+    // Collect numeric data like VectorLiteralExpr does
+    auto* literal = dynamic_cast<const LiteralExpr*>(element.get());
+    if (literal) {
+      auto parsed = parse_numeric_literal_value(literal->value);
+      if (parsed.has_value()) {
+        values.push_back(*parsed);
+      }
+    }
+  }
+
+  Type result_type{Type::Kind::Set};
+  result_type.params.push_back(element_type.kind == Type::Kind::Unknown ? Type{Type::Kind::Unknown}
+                                                                   : element_type);
+  merge_expected_params(result_type, current_expected_type());
+
+  _set_literal_data[&expr] = std::move(values);
+  return result_type;
+}
+
+std::any SemanticAnalyzer::visit(const MapLiteralExpr& expr) {
+  const Type* expected = current_expected_type();
+
+  if (expr.entries.empty()) {
+    if (expected &&
+        (expected->kind == Type::Kind::Map || expected->kind == Type::Kind::Tensor)) {
+      Type result;
+      if (expected->kind == Type::Kind::Map) {
+        result = *expected;
+      } else {
+        result.kind = Type::Kind::Map;
+        if (!expected->params.empty()) {
+          result.params.push_back(expected->params[0]);
+          result.params.push_back(expected->params[1]);
+        } else {
+          result.params.push_back(Type{Type::Kind::Unknown});
+          result.params.push_back(Type{Type::Kind::Unknown});
+        }
+      }
+      _map_literal_data[&expr] = std::vector<float>{};
+      return result;
+    }
+    // Empty map literal {} - infer as Map[K,V] where K,V are unknown
+    Type result{Type::Kind::Map};
+    if (expected && expected->params.size() >= 2) {
+      result.params.push_back(expected->params[0]);
+      result.params.push_back(expected->params[1]);
+    } else {
+      result.params.push_back(Type{Type::Kind::Unknown});
+      result.params.push_back(Type{Type::Kind::Unknown});
+    }
+    _map_literal_data[&expr] = std::vector<float>{};
+    return result;
+  }
+
+  // Non-empty map literal: infer key and value types from entries
+  Type key_type{Type::Kind::Unknown};
+  Type value_type{Type::Kind::Unknown};
+  std::vector<float> values;
+  values.reserve(expr.entries.size() * 2); // Store key-value pairs
+  
+  for (const auto& [key, value] : expr.entries) {
+    Type key_elem_type = evaluate_expression(*key);
+    Type value_elem_type = evaluate_expression(*value);
+    if (key_elem_type.kind == Type::Kind::Error || value_elem_type.kind == Type::Kind::Error) {
+      return make_error_type();
+    }
+
+    if (key_type.kind == Type::Kind::Unknown) {
+      key_type = key_elem_type;
+    } else if (key_type != key_elem_type) {
+      if (is_numeric(key_type) && is_numeric(key_elem_type)) {
+        auto merged = deduce_numeric_type(key_type, key_elem_type, expr.token);
+        if (!merged.has_value()) {
+          return make_error_type();
+        }
+        key_type = *merged;
+      } else {
+        error(expr.token, "Map literal keys must share a compatible type.");
+        return make_error_type();
+      }
+    }
+
+    if (value_type.kind == Type::Kind::Unknown) {
+      value_type = value_elem_type;
+    } else if (value_type != value_elem_type) {
+      if (is_numeric(value_type) && is_numeric(value_elem_type)) {
+        auto merged = deduce_numeric_type(value_type, value_elem_type, expr.token);
+        if (!merged.has_value()) {
+          return make_error_type();
+        }
+        value_type = *merged;
+      } else {
+        error(expr.token, "Map literal values must share a compatible type.");
+        return make_error_type();
+      }
+    }
+
+    // Collect numeric data for keys and values
+    auto* key_literal = dynamic_cast<const LiteralExpr*>(key.get());
+    if (key_literal) {
+      auto parsed = parse_numeric_literal_value(key_literal->value);
+      if (parsed.has_value()) {
+        values.push_back(*parsed);
+      }
+    }
+    
+    auto* value_literal = dynamic_cast<const LiteralExpr*>(value.get());
+    if (value_literal) {
+      auto parsed = parse_numeric_literal_value(value_literal->value);
+      if (parsed.has_value()) {
+        values.push_back(*parsed);
+      }
+    }
+  }
+
+  Type result_type{Type::Kind::Map};
+  result_type.params.push_back(key_type.kind == Type::Kind::Unknown ? Type{Type::Kind::Unknown}
+                                                                   : key_type);
+  result_type.params.push_back(value_type.kind == Type::Kind::Unknown ? Type{Type::Kind::Unknown}
+                                                                     : value_type);
+  merge_expected_params(result_type, current_expected_type());
+
+  _map_literal_data[&expr] = std::move(values);
+  return result_type;
+}
+
 std::any SemanticAnalyzer::visit(const GroupingExpr& expr) {
   return evaluate_expression(*expr.expression);
 }
@@ -4750,6 +4950,8 @@ std::any SemanticAnalyzer::visit(const LiteralExpr& expr) {
       return Type{Type::Kind::Float};
     case TokenType::String:
       return Type{Type::Kind::String};
+    case TokenType::ByteString:
+      return Type{Type::Kind::Bytes};
     case TokenType::Ternary: {
       // Trit literal: e.g. "1t", "0t", "-1t" — value must be in [-1, 0, 1]
       std::string text{expr.value.lexeme};
@@ -4768,6 +4970,10 @@ std::any SemanticAnalyzer::visit(const LiteralExpr& expr) {
         return make_error_type();
       }
       return Type{Type::Kind::Qutrit};
+    }
+    case TokenType::T81Fixed: {
+      // Fixed-point literal: e.g. "1.25fx" - value with 'fx' suffix
+      return Type{Type::Kind::Fixed};
     }
     default:
       return Type{Type::Kind::Unknown};
