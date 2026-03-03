@@ -1,6 +1,0 @@
-fn main() -> void {
-    let n: T81BigInt = 3;
-    let fr: T81Fraction = n as T81Fraction;  // I2FRAC: integer to fraction
-    let fl: T81Float = fr as T81Float;       // FRAC2F: fraction to float
-    assert fl == 3.0f;
-}

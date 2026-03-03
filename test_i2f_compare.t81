@@ -1,7 +1,0 @@
-fn main() -> void {
-    let b: T81BigInt = 1;
-    let f1: T81Float = b as T81Float;
-    let f2: T81Float = 1.0f;
-    // Test each comparison type:
-    assert f1 == f2;   // should be true
-}

@@ -1,7 +1,0 @@
-fn main() -> void {
-    // Direct integer → float: no intermediate casts
-    let b: T81BigInt = 1;
-    let f: T81Float = b as T81Float;
-    // Test 1: same handle comparison (f == f)
-    assert f == f;
-}

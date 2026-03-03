@@ -1,6 +1,0 @@
-fn main() -> void {
-    let n: T81BigInt = 7;
-    let f: T81Fraction = n as T81Fraction;
-    let fl: T81Float = f as T81Float;
-    assert fl == 7.0f;
-}

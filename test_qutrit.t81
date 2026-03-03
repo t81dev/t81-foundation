@@ -1,6 +1,0 @@
-fn main() -> void {
-    let a: T81Qutrit = 1t;
-    let b: T81Qutrit = -1t;
-    let c: T81Qutrit = a & b;
-    assert c == -1t;
-}

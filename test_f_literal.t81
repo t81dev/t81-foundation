@@ -1,6 +1,0 @@
-fn main() -> void {
-    // Test that float literals work in comparisons
-    let f: T81Float = 1.0f;
-    let g: T81Float = 1.0f;
-    assert f == g;
-}

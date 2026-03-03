@@ -1,6 +1,0 @@
-fn main() -> void {
-    // Test what conversion-determinism tests
-    let n: T81BigInt = 0;
-    let f: T81Float = n as T81Float;
-    assert f == 0.0f;
-}

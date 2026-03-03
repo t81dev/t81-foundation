@@ -1,5 +1,0 @@
-fn main() -> void {
-    let n: T81BigInt = 7;
-    let f: T81Fraction = n as T81Fraction;
-    assert f == 7 / 1;
-}
