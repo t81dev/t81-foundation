@@ -2,7 +2,7 @@
 
 ## Source set and approach
 
-This synthesis compares six model-generated deep research reports (Gemini, DeepSeek, Mistral, Jules, Grok, ChatGPT), all dated March 2, 2026, that analyze the same repository hosted on :contentReference[oaicite:0]{index=0} and owned by :contentReference[oaicite:1]{index=1}.
+This synthesis compares six model-generated deep research reports (Gemini, DeepSeek, Mistral, Jules, Grok, ChatGPT), all dated March 2, 2026, that analyze the same repository hosted on https://github.com/t81dev/t81-foundation/ and owned by @t81dev.
 
 Each report covers a similar checklist:
 
