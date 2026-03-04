@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "t81/axion/context.hpp"
-#include "t81/axion/engine.hpp"
 #include "t81/axion/policy.hpp"
 
 namespace t81::axion {
@@ -16,10 +15,20 @@ struct LoopRequirement {
   std::string_view expected_reason;
 };
 
+struct PolicyViolation {
+    std::string rule;
+    std::string reason;
+    bool is_violation;
+};
+
 class PolicyEngine : public Engine {
 public:
   explicit PolicyEngine(std::optional<Policy> policy);
   Verdict evaluate(const SyscallContext& ctx) override;
+  static std::optional<PolicyViolation> validate_policy(const std::string& policy_text);
+  static std::optional<PolicyViolation> validate_tensor_hash(const std::string& model_hash, 
+                                                         const std::string& policy_text);
+  static std::string generate_policy_report(const PolicyViolation& violation);
 
 private:
   bool loop_hint_satisfied(const SyscallContext& ctx, size_t requirement_idx) const;

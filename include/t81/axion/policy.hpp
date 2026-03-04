@@ -2,12 +2,14 @@
 
 #include <cctype>
 #include <cstdint>
+#include <filesystem>
 #include <iostream>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
-#include "t81/support/expected.hpp"
+#include "t81/axion/context.hpp"
+#include "t81/support/expected_simple.hpp"
 
 namespace t81::axion {
 
@@ -198,10 +200,12 @@ private:
 };
 }  // namespace detail
 
+inline static expected<Policy, std::string> parse_error(const std::string& message) {
+    return expected<Policy, std::string>(message);
+}
+
 inline t81::expected<Policy, std::string> parse_policy(std::string_view text) {
-  auto make_error = [](std::string msg) {
-    return t81::expected<Policy, std::string>(t81::unexpect, std::move(msg));
-  };
+  auto make_error = parse_error;
   detail::PolicyLexer lex(text);
   auto tok = lex.next();
   if (tok.kind != detail::PolicyToken::Kind::LParen) {

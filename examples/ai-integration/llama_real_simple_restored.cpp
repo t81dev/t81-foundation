@@ -106,31 +106,27 @@ std::optional<LLMResponse> run_real_inference(const LLMRequest& request, const s
         );
         
         if (!adapter_result) {
-            std::cout << "⚠️ Failed to create llama adapter: " << adapter_result.error() << "\n";
+            std::cout << "⚠️ Failed to create llama adapter: " << "Could not create adapter" << "\n";
             return std::nullopt;
         }
         
-        auto adapter = std::move(adapter_result.value());
+        auto& adapter = adapter_result.value();
         
         // Create inference request
         t81::experimental::LlamaCppInferenceRequest inference_req;
         inference_req.prompt = request.prompt;
         inference_req.max_tokens = request.max_tokens;
         inference_req.temperature = request.temperature;
-        inference_req.top_k = 40;
-        inference_req.top_p = 0.9f;
-        inference_req.n_threads = 4;
         
         // Run inference
-        auto result = adapter->infer(inference_req);
+        auto inference_result = adapter->infer(inference_req);
         
-        if (result) {
-            return convert_receipt_to_response(result.value());
-        } else {
-            std::cout << "⚠️ Real inference failed: " << result.error() << "\n";
+        if (!inference_result) {
+            std::cout << "⚠️ Real inference failed: " << "Could not complete inference" << "\n";
             return std::nullopt;
         }
         
+        return convert_receipt_to_response(inference_result.value());
     } catch (const std::exception& e) {
         std::cout << "⚠️ Real inference exception: " << e.what() << "\n";
         return std::nullopt;
