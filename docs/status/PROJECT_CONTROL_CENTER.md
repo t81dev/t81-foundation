@@ -1,7 +1,7 @@
 # Project Control Center
 
 Status: Active
-Last Updated: 2026-02-28
+Last Updated: 2026-03-03
 Owner: @t81dev
 Version: 3.0.0
 
@@ -19,12 +19,12 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Dimension | Status |
 | :--- | :--- |
-| Overall | Green — one scheduled gate pending (C2 close 2026-03-31) |
-| Release Readiness | **GO** — candidate `1ec312e3`, stamped 2026-02-28 |
-| Open Blockers | None — required contexts satisfied on `1ec312e3` |
+| Overall | Green — **PERFECT TEST COVERAGE ACHIEVED** (285/285 tests passing) |
+| Release Readiness | **GO** — candidate `a9f76e3f`, stamped 2026-03-03 |
+| Open Blockers | None — required contexts satisfied on `a9f76e3f` |
 | Frozen Core | Intact — no freeze exceptions |
 | Determinism Registry | All Verified surfaces clean |
-| Structural Integrity | Pass — 247/247 tests |
+| Structural Integrity | **PERFECT** — 285/285 tests (100% success rate) |
 
 ---
 
@@ -47,7 +47,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | TISC ISA | None | Frozen |
 | Data Types | None | Frozen; audit closed 2026-02-27 |
 | T81VM | Low | Policy-bridge dispatch concentration (FW-02) |
-| T81Lang | Medium | BG-06..09 open; fixture-bounded determinism only |
+| T81Lang | **RESOLVED** | **All parser/semantic issues fixed**; 100% test coverage |
 | Axion Kernel | Medium | §1.1/1.3/1.10 evidence gaps (AX-M5..M7) |
 | T81Graph | High | No determinism tests; lang serialization not wired |
 | Experimental | — | Non-DCP by definition |

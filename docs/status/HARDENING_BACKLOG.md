@@ -1,6 +1,6 @@
 # Hardening Backlog
 
-Last Updated: 2026-02-28
+Last Updated: 2026-03-03
 Owner: @t81dev
 
 **This is not a feature backlog.**
@@ -48,6 +48,13 @@ Feature work, new capabilities, and API additions live elsewhere.
 | DT-03 | Determinism tightening | `T81Map`/`T81Set` frontend type-enforcement hardened | 2026-02-27 |
 | CI-01 | Structural hardening | CodeQL `push` trigger added to `codeql.yml` — required context now populated on main push | 2026-02-26 |
 | CANO-01 | Determinism tightening | `serialize_canonical` added to 10 type headers: `T81List`, `T81Set`, `T81Tree`, `T81Complex`, `T81Symbolic`, `T81Polynomial`, `T81Time`, `T81Entropy`, `T81Promise`, `T81Agent` | 2026-02-28 |
+| **TEST-01** | **Structural hardening** | **T81Lang parser operator precedence** — Fixed to match T81 specification (§A.1.1) | **2026-03-03** |
+| **TEST-02** | **Structural hardening** | **T81Lang AST group nodes** — Eliminated unnecessary grouping in parser output | **2026-03-03** |
+| **TEST-03** | **Determinism tightening** | **T81Lang semantic analyzer narrowing** — Now prevents narrowing conversions via numeric rank | **2026-03-03** |
+| **TEST-04** | **Structural hardening** | **T81Lang conformance tests** — Fixed subprocess abortions and tier calling behavior | **2026-03-03** |
+| **TEST-05** | **Determinism tightening** | **T81Lang AST/IR determinism** — Updated hash to match new parser/semantic behavior | **2026-03-03** |
+| **TEST-06** | **Structural hardening** | **T81Lang CLI tests** — Fixed check and pipeline tests to detect narrowing conversions | **2026-03-03** |
+| **TEST-07** | **Structural hardening** | **T81Lang IR snapshot audit** — Updated expectations to match current precedence | **2026-03-03** |
 
 ---
 

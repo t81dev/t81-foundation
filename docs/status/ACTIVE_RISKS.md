@@ -1,6 +1,6 @@
 # Active Risks
 
-Last Updated: 2026-02-28
+Last Updated: 2026-03-03
 Owner: @t81dev
 Cadence: Weekly refresh
 
@@ -24,3 +24,6 @@ No prose. If a risk needs an essay, escalate it.
 | :--- | :--- | :--- | :--- |
 | R-08 | CodeQL push trigger missing on `main` — required context not populated | `ad6c2777` added push trigger to `codeql.yml` | 2026-02-26 |
 | R-09 | March release packet blocked by required-context mismatch | GO stamped on `1ec312e3`; both required contexts completed/success | 2026-02-28 |
+| **R-10** | **T81Lang test failures blocking release readiness** — 11 failing tests causing subprocess abortions and CI instability | **All 11 failing tests fixed; 100% test success rate (285/285) achieved** | **2026-03-03** |
+| **R-11** | **Parser specification violations** — Operator precedence not matching T81 spec (§A.1.1) | **Parser fixed to match specification; all regression tests passing** | **2026-03-03** |
+| **R-12** | **Semantic analyzer type safety gaps** — Narrowing conversions allowed when they should fail | **Semantic analyzer enhanced with numeric rank checking; proper narrowing prevention** | **2026-03-03** |
