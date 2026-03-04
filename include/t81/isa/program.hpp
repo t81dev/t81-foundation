@@ -9,6 +9,7 @@
 #include "t81/isa/opcodes.hpp"
 #include "t81/isa/type_alias.hpp"
 #include "t81/tensor.hpp"
+#include "t81/types/T81Complex.hpp"
 #include "t81/weights.hpp"
 
 namespace t81::tisc {
@@ -20,6 +21,7 @@ enum class LiteralKind : std::uint8_t {
   SymbolHandle,
   TensorHandle,
   ShapeHandle,
+  ComplexHandle,
 };
 
 struct Insn {
@@ -54,6 +56,7 @@ struct Program {
   std::vector<std::string> symbol_pool;
   std::vector<t81::T729DynamicTensor> tensor_pool;
   std::vector<std::vector<int>> shape_pool;
+  std::vector<t81::T81Complex<18>> complex_pool;
   std::string axion_policy_text;
   std::string match_metadata_text;
   std::shared_ptr<t81::weights::ModelFile> weights_model;

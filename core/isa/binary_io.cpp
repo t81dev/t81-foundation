@@ -8,6 +8,7 @@
 #include "t81/fraction.hpp"
 #include "t81/isa/type_alias.hpp"
 #include "t81/tensor.hpp"
+#include "t81/types/T81Complex.hpp"
 
 namespace t81 {
 namespace tisc {
@@ -275,6 +276,7 @@ void save_program(const Program& program, const std::string& path) {
   write_vector_string(file, program.symbol_pool);
   write_serializable_vector(file, program.tensor_pool);
   write_vector_vector_int(file, program.shape_pool);
+  write_serializable_vector(file, program.complex_pool);
   write_string(file, program.axion_policy_text);
   uint64_t alias_count = program.type_aliases.size();
   file.write(reinterpret_cast<const char*>(&alias_count), sizeof(alias_count));
@@ -302,6 +304,7 @@ Program load_program(const std::string& path) {
   read_vector_string(file, program.symbol_pool);
   read_serializable_vector(file, program.tensor_pool);
   read_vector_vector_int(file, program.shape_pool);
+  read_serializable_vector(file, program.complex_pool);
   read_string(file, program.axion_policy_text);
 
   uint64_t alias_count = 0;

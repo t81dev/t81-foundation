@@ -167,6 +167,17 @@ public:
     out += std::to_string(std::abs(iv)) + "i)";
     return out;
   }
+
+  // --- Binary Serialization ---
+  void serialize(std::ostream& os) const {
+    re.serialize(os);
+    im.serialize(os);
+  }
+
+  void deserialize(std::istream& is) {
+    re.deserialize(is);
+    im.deserialize(is);
+  }
 };
 
 // ======================================================================

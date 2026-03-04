@@ -563,6 +563,15 @@ public:
   template <std::size_t MM, std::size_t EE>
   friend T81Float<MM, EE> fma(T81Float<MM, EE> a, T81Float<MM, EE> b, T81Float<MM, EE> c) noexcept;
 
+  // --- Binary Serialization ---
+  void serialize(std::ostream& os) const {
+    bits_.serialize(os);
+  }
+
+  void deserialize(std::istream& is) {
+    bits_.deserialize(is);
+  }
+
 private:
   // ---------------------------------------------------------------------
   // Raw field accessors

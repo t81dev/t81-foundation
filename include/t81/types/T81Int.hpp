@@ -528,6 +528,23 @@ public:
 
   // P2: Canonical serialization
   std::string to_canonical_string() const { return to_trit_string(); }
+
+  // --- Binary Serialization ---
+  void serialize(std::ostream& os) const {
+    uint64_t len = data_.size();
+    os.write(reinterpret_cast<const char*>(&len), sizeof(len));
+    os.write(reinterpret_cast<const char*>(data_.data()), static_cast<std::streamsize>(len));
+  }
+
+  void deserialize(std::istream& is) {
+    uint64_t len;
+    is.read(reinterpret_cast<char*>(&len), sizeof(len));
+    if (!is) return;
+    if (len != data_.size()) {
+      throw std::runtime_error("T81Int deserialize: size mismatch");
+    }
+    is.read(reinterpret_cast<char*>(data_.data()), static_cast<std::streamsize>(len));
+  }
 };
 
 template <std::size_t N>
