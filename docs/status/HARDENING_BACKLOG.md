@@ -1,6 +1,6 @@
 # Hardening Backlog
 
-Last Updated: 2026-03-03
+Last Updated: 2026-03-04
 Owner: @t81dev
 
 **This is not a feature backlog.**
@@ -55,6 +55,9 @@ Feature work, new capabilities, and API additions live elsewhere.
 | **TEST-05** | **Determinism tightening** | **T81Lang AST/IR determinism** — Updated hash to match new parser/semantic behavior | **2026-03-03** |
 | **TEST-06** | **Structural hardening** | **T81Lang CLI tests** — Fixed check and pipeline tests to detect narrowing conversions | **2026-03-03** |
 | **TEST-07** | **Structural hardening** | **T81Lang IR snapshot audit** — Updated expectations to match current precedence | **2026-03-03** |
+| **CI-02** | **Structural hardening** | **CI lychee link checking** — Fixed broken internal/external links causing CI failures | **2026-03-04** |
+| **CI-03** | **Structural hardening** | **CI documentation references** — Updated all broken cross-references in status docs | **2026-03-04** |
+| **TEST-08** | **Structural hardening** | **Parser test expectations** — Updated all parser tests for new AST structure (100% test success) | **2026-03-04** |
 
 ---
 

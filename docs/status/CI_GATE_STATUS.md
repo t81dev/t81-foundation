@@ -1,9 +1,9 @@
 # CI Gate Status
 
 Status: Active
-Last Updated: 2026-03-03
+Last Updated: 2026-03-04
 Owner: @t81dev
-Reference Candidate: `a9f76e3f` (origin/main, 2026-03-03)
+Reference Candidate: `b6fb4651` (origin/main, 2026-03-04)
 
 ## Purpose
 
@@ -22,8 +22,8 @@ GO decision can be stamped.
 
 | Context | Workflow | Required | Last Known Status |
 | :--- | :--- | :--- | :--- |
-| `quality gate / required` | `ci.yml` | **Yes** | completed / success ✅ (`a9f76e3f`) |
-| `Analyze (cpp)` | `codeql.yml` | **Yes** | completed / success ✅ (`a9f76e3f`) |
+| `quality gate / required` | `ci.yml` | **Yes** | completed / success ✅ (`b6fb4651`) |
+| `Analyze (cpp)` | `codeql.yml` | **Yes** | completed / success ✅ (`b6fb4651`) |
 
 Verification command:
 
