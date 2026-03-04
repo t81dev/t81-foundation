@@ -34,7 +34,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | :--- | :--- | :--- |
 | C2 Month-Close execution | 2026-03-31 | Scheduled |
 | Axion Beta candidacy review | 2026-04-30 | Open |
-| T81Graph lang-side serialization (BG-09) | 2026-05-15 | Open |
+| T81Graph lang-side serialization (BG-09) | 2026-05-15 | **Closed** |
 | T3K spec document (T3K-S1) | 2026-04-30 | Open |
 | Deputy-approval policy (GOV-01) | 2026-04-30 | Open |
 
