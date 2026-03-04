@@ -156,9 +156,7 @@ module surface of `lang/stdlib/std/` matches the declared baseline.
 
 - `docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md`
 - `docs/status/DECISION_LOG.md` (DEC-005 — Jekyll deferred)
-- `docs/status/RISK_REGISTER.md` (RISK-006 — benchmark variability; RISK-007 — Jekyll)
-- `docs/status/C2_MONTH_CLOSE_CHECK_2026-03-31.md`
-- `docs/status/C2_MONTH_CLOSE_PREFLIGHT_2026-03-31.md`
+- `docs/status/ACTIVE_RISKS.md` (RISK-006 — benchmark variability; RISK-007 — Jekyll)
 - `.github/workflows/ci.yml`
 - `.github/workflows/codeql.yml`
 - `.github/workflows/bench.yml`
