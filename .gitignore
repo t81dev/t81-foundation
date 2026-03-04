@@ -116,3 +116,6 @@ benchmarks/results/
 benchmark*.txt
 dummy.*
 generate_dummy_safetensors
+
+# ── Model Files (too large for GitHub) ───────────────────────
+models/
