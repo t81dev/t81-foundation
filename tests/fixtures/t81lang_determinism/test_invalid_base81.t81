@@ -1,0 +1,7 @@
+fn main() -> i32 {
+  // Test invalid base-81 number to see if our error handling works
+  let invalid: T81BigInt = 999t81;  // 999 is not a valid base-81 digit
+  print(invalid);
+  
+  return 0;
+}

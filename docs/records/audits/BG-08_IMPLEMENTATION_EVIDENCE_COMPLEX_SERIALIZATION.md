@@ -123,13 +123,13 @@ void deserialize(std::istream& is) {
 ## 📊 **Test Coverage Evidence**
 
 ### **✅ Functionality Test Results**
-- **Test File**: `test_complex_serialization.cpp`
+- **Test File**: `tests/cpp/test_complex_serialization.cpp`
 - **Results**: ✅ PASSED
 - **Coverage**: Basic serialization/deserialization functionality
 - **Complex Numbers Tested**: 0, 1, i, (3, 4i)
 
 ### **✅ Determinism Test Results**
-- **Test File**: `test_complex_determinism.cpp`  
+- **Test File**: `tests/cpp/test_complex_determinism.cpp`  
 - **Results**: ✅ PASSED
 - **Coverage**: Multiple runs, round-trip consistency
 - **Complex Numbers Tested**: Various values including negative and fractional

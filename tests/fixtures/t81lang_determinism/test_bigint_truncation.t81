@@ -1,0 +1,14 @@
+fn main() -> i32 {
+  // Test large base-81 numbers to check for 64-bit truncation
+  let small: T81BigInt = 12t81;
+  let large: T81BigInt = 123456789012345678901234567890t81;
+  
+  print(small);
+  print(large);
+  
+  // Test arithmetic with large numbers
+  let result = large + small;
+  print(result);
+  
+  return 0;
+}

@@ -1,0 +1,7 @@
+fn main() -> i32 {
+  // Test invalid base-81 number with invalid character
+  let invalid: T81BigInt = XYZt81;  // XYZ contains invalid characters
+  print(invalid);
+  
+  return 0;
+}
