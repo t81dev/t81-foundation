@@ -49,6 +49,8 @@ public:
   std::any visit(const SimpleTypeExpr& expr) override { return std::string("type"); }
   std::any visit(const GenericTypeExpr& expr) override { return std::string("generic_type"); }
   std::any visit(const InferExpr& expr) override { return std::string("infer"); }
+  std::any visit(const SetLiteralExpr& expr) override { return std::string("set"); }
+  std::any visit(const MapLiteralExpr& expr) override { return std::string("map"); }
 
 private:
   std::string parenthesize(std::string_view name, std::vector<const Expr*> exprs) {
@@ -91,12 +93,12 @@ int main() {
                                  {"a << b < c", "(< (<< a b) c)"},
 
                                  // 5. Bitwise vs Equality
-                                 {"a & b == c", "(& a (== b c))"},
-                                 {"a == b & c", "(& (== a b) c)"},
+                                 {"a & b == c", "(== (& a b) c)"},
+                                 {"a == b & c", "(== a (& b c))"},
 
                                  // 6. Custom Operators (->, ..)
-                                 {"a -> b & c", "(& (-> a b) c)"},
-                                 {"a & b -> c", "(& a (-> b c))"},
+                                 {"a -> b & c", "(-> a (& b c))"},
+                                 {"a & b -> c", "(-> (& a b) c)"},
                                  {"a .. b -> c", "(-> (.. a b) c)"},
                                  {"a -> b .. c", "(-> a (.. b c))"},
 

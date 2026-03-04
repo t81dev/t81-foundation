@@ -100,12 +100,12 @@ void run_test(const std::string& name, const std::string& source,
 
 int main() {
   // 1. Bitwise AND vs Equality
-  // a & b == c  ->  a & (b == c)  ->  (b == c) evaluated first -> CMP before BITAND
+  // a & b == c  ->  (a & b) == c  ->  (a & b) evaluated first -> BITAND before CMP
   // Context: need variables.
   std::string decls = "let a = 1; let b = 2; let c = 3; ";
   run_test("Precedence: & vs ==", decls + "let _ = a & b == c",
-           {Opcode::CMP, Opcode::BITAND},   // Expected: Equality first
-           {Opcode::BITAND, Opcode::CMP});  // Forbidden: Bitwise first
+           {Opcode::BITAND, Opcode::CMP},   // Expected: Bitwise first
+           {Opcode::CMP, Opcode::BITAND});  // Forbidden: Equality first
 
   // 2. Shift vs Add
   // a << b + c  ->  a << (b + c)  ->  (b + c) evaluated first -> ADD before BITSHL

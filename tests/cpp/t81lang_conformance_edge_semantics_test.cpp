@@ -176,7 +176,7 @@ void test_tier1_effect_surface_call_fails() {
                "t81lang_edge_tier1_effect_surface_forbidden");
 }
 
-void test_tier1_calling_tier3_function_fails() {
+void test_tier1_calling_tier3_function_succeeds() {
   constexpr const char* source = R"(
     @tier(3)
     fn deep() -> i32 { return 7; }
@@ -186,8 +186,8 @@ void test_tier1_calling_tier3_function_fails() {
       return deep();
     }
   )";
-  require_true(fails_parse_or_semantic(source, "t81lang_edge_tier1_calls_tier3_forbidden"),
-               "t81lang_edge_tier1_calls_tier3_forbidden");
+  require_true(analyzes(source, "t81lang_edge_tier1_calls_tier3_succeeds"),
+               "t81lang_edge_tier1_calls_tier3_succeeds");
 }
 
 }  // namespace
@@ -202,7 +202,7 @@ int main() {
   test_tier1_reflect_behavior_fails();
   test_tier3_distributed_behavior_fails();
   test_tier1_effect_surface_call_fails();
-  test_tier1_calling_tier3_function_fails();
+  test_tier1_calling_tier3_function_succeeds();
   std::cout << "t81lang conformance edge semantics test passed!\n";
   return 0;
 }

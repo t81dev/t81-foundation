@@ -1424,11 +1424,9 @@ bool SemanticAnalyzer::is_assignable(const Type& target, const Type& value) cons
   if (target.kind == Type::Kind::Cell && value.kind == Type::Kind::Cell) return true;
 
   if (is_numeric(target) && is_numeric(value)) {
-    // Allow all numeric assignments including narrowing; the parser discards `as`
-    // cast target types, so explicit narrowing casts (`f as T81BigInt`) arrive
-    // here indistinguishably from widening. The IR generator emits the correct
-    // conversion opcode via ensure_kind().
-    return true;
+    // Allow widening but prevent narrowing
+    // Higher rank = more precise/larger numeric type
+    return numeric_rank(target) >= numeric_rank(value);
   }
 
   if (target.kind == value.kind && (!target.params.empty() || !value.params.empty())) {
