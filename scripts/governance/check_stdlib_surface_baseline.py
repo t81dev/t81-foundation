@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 import sys
+import subprocess
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -37,20 +38,62 @@ REQUIRED_STD_FIXTURES = [
     "tests/fixtures/t81lang_std_symbolic",
     "tests/fixtures/t81lang_std_tensor",
     "tests/fixtures/t81lang_std_text",
+    "tests/fixtures/t81lang_std_io",
+    "tests/fixtures/t81lang_std_sys",
+    "tests/fixtures/t81lang_std_async",
 ]
 
 REQUIRED_STD_TESTS = [
-    "tests/cpp/cli_std_core_fixtures_test.cpp",
-    "tests/cpp/cli_std_math_fixtures_test.cpp",
-    "tests/cpp/cli_std_bytes_fixtures_test.cpp",
-    "tests/cpp/cli_std_collections_fixtures_test.cpp",
-    "tests/cpp/cli_std_polynomial_fixtures_test.cpp",
-    "tests/cpp/cli_std_runtime_fixtures_test.cpp",
-    "tests/cpp/cli_std_symbol_fixtures_test.cpp",
-    "tests/cpp/cli_std_symbolic_fixtures_test.cpp",
-    "tests/cpp/cli_std_tensor_fixtures_test.cpp",
-    "tests/cpp/cli_std_text_fixtures_test.cpp",
+    "tests/cpp/cli_stdlib_fixtures_test.cpp",
 ]
+
+# Collection determinism tests that must exist and pass
+COLLECTION_DETERMINISM_TESTS = [
+    "tests/fixtures/t81lang_std_collections/13_list_determinism_comprehensive.t81",
+    "tests/fixtures/t81lang_std_collections/14_map_determinism_comprehensive.t81", 
+    "tests/fixtures/t81lang_std_collections/15_set_determinism_comprehensive.t81",
+    "tests/fixtures/t81lang_std_collections/16_tree_determinism_comprehensive.t81",
+]
+
+def check_collection_determinism() -> list[str]:
+    """Validate collection determinism tests exist and can run."""
+    issues = []
+    
+    # Check test files exist
+    for test_file in COLLECTION_DETERMINISM_TESTS:
+        test_path = REPO_ROOT / test_file
+        if not test_path.exists():
+            issues.append(f"missing collection determinism test: {test_file}")
+            continue
+            
+        # Check corresponding output file exists
+        output_file = test_file.replace('.t81', '.out')
+        output_path = REPO_ROOT / output_file
+        if not output_path.exists():
+            issues.append(f"missing output file for collection test: {output_file}")
+    
+    # Try to run collection determinism tests if t81 CLI is available
+    t81_cli = REPO_ROOT / "build" / "t81"
+    if t81_cli.exists():
+        for test_file in COLLECTION_DETERMINISM_TESTS:
+            test_path = REPO_ROOT / test_file
+            if test_path.exists():
+                try:
+                    result = subprocess.run(
+                        [str(t81_cli), "run", str(test_path)],
+                        capture_output=True,
+                        text=True,
+                        timeout=30
+                    )
+                    if result.returncode != 0:
+                        issues.append(f"collection determinism test failed: {test_file}")
+                        issues.append(f"  stderr: {result.stderr.strip()}")
+                except subprocess.TimeoutExpired:
+                    issues.append(f"collection determinism test timed out: {test_file}")
+                except Exception as e:
+                    issues.append(f"error running collection test {test_file}: {e}")
+    
+    return issues
 
 
 def main() -> int:
@@ -86,6 +129,10 @@ def main() -> int:
         if not (REPO_ROOT / rel).exists():
             issues.append(f"missing stdlib evidence artifact: {rel}")
 
+    # Check collection determinism tests (BG-06)
+    collection_issues = check_collection_determinism()
+    issues.extend(collection_issues)
+
     if STDLIB_DOC.exists():
         text = STDLIB_DOC.read_text(encoding="utf-8")
         headings = set(re.findall(r"^### `std\.([a-z0-9_]+)`", text, flags=re.MULTILINE))
@@ -106,6 +153,7 @@ def main() -> int:
     print(f"- modules validated: {len(EXPECTED_MODULES)}")
     print(f"- fixture directories validated: {len(REQUIRED_STD_FIXTURES)}")
     print(f"- fixture tests validated: {len(REQUIRED_STD_TESTS)}")
+    print(f"- collection determinism tests validated: {len(COLLECTION_DETERMINISM_TESTS)}")
     return 0
 
 

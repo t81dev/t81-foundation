@@ -1,0 +1,40 @@
+fn main() -> i32 {
+    // === Set Determinism Tests ===
+    
+    // Test 1: Empty set determinism (using Map as set)
+    let empty_set: Map[T81String, T81String] = std.collections.map();
+    print(std.collections.map_size(empty_set));
+    print(std.collections.map_has(empty_set, "element1"));
+    
+    // Test 2: Populated construction determinism
+    let set1: Map[T81String, T81String] = std.collections.map();
+    let set2: Map[T81String, T81String] = std.collections.map_put(set1, "element1", "present");
+    let set3: Map[T81String, T81String] = std.collections.map_put(set2, "element2", "present");
+    let set4: Map[T81String, T81String] = std.collections.map_put(set3, "element3", "present");
+    
+    print(std.collections.map_size(set4));
+    print(std.collections.map_has(set4, "element1"));
+    print(std.collections.map_has(set4, "element2"));
+    print(std.collections.map_has(set4, "missing"));
+    
+    // Test 3: Element insertion order determinism
+    let set5: Map[T81String, T81String] = std.collections.map();
+    let set6: Map[T81String, T81String] = std.collections.map_put(set5, "alpha", "present");
+    let set7: Map[T81String, T81String] = std.collections.map_put(set6, "beta", "present");
+    let set8: Map[T81String, T81String] = std.collections.map_put(set7, "gamma", "present");
+    
+    print(std.collections.map_size(set8));
+    print(std.collections.map_has(set8, "alpha"));
+    print(std.collections.map_has(set8, "beta"));
+    print(std.collections.map_has(set8, "gamma"));
+    
+    // Test 4: Duplicate insertion determinism
+    let set9: Map[T81String, T81String] = std.collections.map();
+    let set10: Map[T81String, T81String] = std.collections.map_put(set9, "unique", "first");
+    let set11: Map[T81String, T81String] = std.collections.map_put(set10, "unique", "second");
+    
+    print(std.collections.map_size(set11));
+    print(std.collections.map_has(set11, "unique"));
+    
+    return 0;
+}

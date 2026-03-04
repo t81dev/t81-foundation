@@ -1,0 +1,34 @@
+fn main() -> i32 {
+    // === Vector (List) Determinism Tests ===
+    
+    // Test 1: Populated construction determinism
+    let vec1: Vector[i32] = [10, 20, 30];
+    print(std.collections.len(vec1));
+    print(std.collections.is_empty(vec1));
+    
+    // Test 2: Iteration order stability - first and last elements
+    print(std.collections.first(vec1));
+    print(std.collections.last(vec1));
+    
+    // Test 3: Push determinism
+    let vec2: Vector[i32] = std.collections.push(vec1, 40);
+    print(std.collections.len(vec2));
+    print(std.collections.last(vec2));
+    
+    // Test 4: Pop determinism
+    let vec3: Vector[i32] = std.collections.pop(vec2);
+    print(std.collections.len(vec3));
+    print(std.collections.last(vec3));
+    print(std.collections.is_empty(vec3));
+    
+    // Test 5: Multiple operations determinism
+    let vec4: Vector[i32] = [1, 2, 3];
+    let vec5: Vector[i32] = std.collections.push(vec4, 4);
+    let vec6: Vector[i32] = std.collections.push(vec5, 5);
+    let vec7: Vector[i32] = std.collections.pop(vec6);
+    print(std.collections.len(vec7));
+    print(std.collections.first(vec7));
+    print(std.collections.last(vec7));
+    
+    return 0;
+}

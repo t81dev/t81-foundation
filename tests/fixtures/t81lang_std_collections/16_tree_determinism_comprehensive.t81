@@ -1,0 +1,53 @@
+fn main() -> i32 {
+    // === Tree Determinism Tests ===
+    // Using Map to simulate tree operations for determinism testing
+    
+    // Test 1: Empty tree determinism (using Map as tree)
+    let empty_tree: Map[T81String, T81String] = std.collections.map();
+    print(std.collections.map_size(empty_tree));
+    print(std.collections.map_has(empty_tree, "root"));
+    
+    // Test 2: Tree-like construction determinism
+    let tree1: Map[T81String, T81String] = std.collections.map();
+    let tree2: Map[T81String, T81String] = std.collections.map_put(tree1, "root", "value");
+    let tree3: Map[T81String, T81String] = std.collections.map_put(tree2, "left", "left_value");
+    let tree4: Map[T81String, T81String] = std.collections.map_put(tree3, "right", "right_value");
+    
+    print(std.collections.map_size(tree4));
+    print(std.collections.map_has(tree4, "root"));
+    print(std.collections.map_has(tree4, "left"));
+    print(std.collections.map_has(tree4, "right"));
+    
+    // Test 3: Tree insertion order determinism
+    let tree5: Map[T81String, T81String] = std.collections.map();
+    let tree6: Map[T81String, T81String] = std.collections.map_put(tree5, "node1", "data1");
+    let tree7: Map[T81String, T81String] = std.collections.map_put(tree6, "node2", "data2");
+    let tree8: Map[T81String, T81String] = std.collections.map_put(tree7, "node3", "data3");
+    
+    print(std.collections.map_size(tree8));
+    print(std.collections.map_has(tree8, "node1"));
+    print(std.collections.map_has(tree8, "node2"));
+    print(std.collections.map_has(tree8, "node3"));
+    
+    // Test 4: Tree update determinism
+    let tree9: Map[T81String, T81String] = std.collections.map();
+    let tree10: Map[T81String, T81String] = std.collections.map_put(tree9, "root", "original");
+    let tree11: Map[T81String, T81String] = std.collections.map_put(tree10, "root", "updated");
+    
+    print(std.collections.map_size(tree11));
+    print(std.collections.map_has(tree11, "root"));
+    
+    // Test 5: Complex tree operations determinism
+    let tree12: Map[T81String, T81String] = std.collections.map();
+    let tree13: Map[T81String, T81String] = std.collections.map_put(tree12, "a", "1");
+    let tree14: Map[T81String, T81String] = std.collections.map_put(tree13, "b", "2");
+    let tree15: Map[T81String, T81String] = std.collections.map_put(tree14, "c", "3");
+    let tree16: Map[T81String, T81String] = std.collections.map_put(tree15, "a", "new1");
+    
+    print(std.collections.map_size(tree16));
+    print(std.collections.map_has(tree16, "a"));
+    print(std.collections.map_has(tree16, "b"));
+    print(std.collections.map_has(tree16, "c"));
+    
+    return 0;
+}

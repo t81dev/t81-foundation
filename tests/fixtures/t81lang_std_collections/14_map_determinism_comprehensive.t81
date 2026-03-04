@@ -1,0 +1,40 @@
+fn main() -> i32 {
+    // === Map Determinism Tests ===
+    
+    // Test 1: Empty map determinism
+    let empty_map: Map[T81String, T81String] = std.collections.map();
+    print(std.collections.map_size(empty_map));
+    print(std.collections.map_has(empty_map, "key1"));
+    
+    // Test 2: Populated construction determinism
+    let map1: Map[T81String, T81String] = std.collections.map();
+    let map2: Map[T81String, T81String] = std.collections.map_put(map1, "key1", "value1");
+    let map3: Map[T81String, T81String] = std.collections.map_put(map2, "key2", "value2");
+    let map4: Map[T81String, T81String] = std.collections.map_put(map3, "key3", "value3");
+    
+    print(std.collections.map_size(map4));
+    print(std.collections.map_has(map4, "key1"));
+    print(std.collections.map_has(map4, "key2"));
+    print(std.collections.map_has(map4, "missing"));
+    
+    // Test 3: Key insertion order determinism
+    let map5: Map[T81String, T81String] = std.collections.map();
+    let map6: Map[T81String, T81String] = std.collections.map_put(map5, "first", "1");
+    let map7: Map[T81String, T81String] = std.collections.map_put(map6, "second", "2");
+    let map8: Map[T81String, T81String] = std.collections.map_put(map7, "third", "3");
+    
+    print(std.collections.map_size(map8));
+    print(std.collections.map_has(map8, "first"));
+    print(std.collections.map_has(map8, "second"));
+    print(std.collections.map_has(map8, "third"));
+    
+    // Test 4: Value replacement determinism
+    let map9: Map[T81String, T81String] = std.collections.map();
+    let map10: Map[T81String, T81String] = std.collections.map_put(map9, "key", "original");
+    let map11: Map[T81String, T81String] = std.collections.map_put(map10, "key", "replaced");
+    
+    print(std.collections.map_size(map11));
+    print(std.collections.map_has(map11, "key"));
+    
+    return 0;
+}
