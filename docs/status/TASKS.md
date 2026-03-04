@@ -10,36 +10,30 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 ### Production Readiness Sprint
 
-- [ ] **BG-06 Collection Determinism** - **BLOCKER**
-  - Implement `cli_stdlib_fixtures_test` for List/Map/Set/Tree determinism
-  - Create `check_stdlib_surface_baseline.py` validation script
-  - Target: 2026-03-18
-  - Status: **CRITICAL** - Blocks T81Lang production readiness
+- [x] **BG-06 Collection Determinism** - **✅ COMPLETED**
+  - ✅ Implement `cli_stdlib_fixtures_test` for List/Map/Set/Tree determinism
+  - ✅ Create `check_stdlib_surface_baseline.py` validation script
+  - Completed: 2026-03-04 (ahead of schedule)
+  - Status: **✅ RESOLVED** - Critical path blocker removed
 
-- [ ] **AX-M5/M6/M7 Axion Beta Evidence** - **HIGH PRIORITY**
-  - Map determinism stewardship transitions (AX-M5)
-  - Document CanonFS observability evidence paths (AX-M6) 
-  - Create complexity measurement evidence (AX-M7)
-  - Target: 2026-03-25
-  - Status: **TIME-SENSITIVE** - Beta review deadline 2026-04-30
+- [x] **AX-M5/M6/M7 Axion Beta Evidence** - **✅ COMPLETED**
+  - ✅ Map determinism stewardship transitions (AX-M5)
+  - ✅ Document CanonFS observability evidence paths (AX-M6) 
+  - ✅ Create complexity measurement evidence (AX-M7)
+  - Completed: 2026-03-04 (ahead of schedule)
+  - Status: **✅ RESOLVED** - Time-sensitive deadline met
 
-- [ ] **T3K-S1 Quantization Specification**
-  - Author `spec/t3k-quantization-spec.md` OR mark as governed non-spec
-  - Target: 2026-03-15
-  - Status: **QUICK WIN**
+- [x] **T3K-S1 Quantization Specification** - **✅ COMPLETED**
+  - ✅ Author `spec/t3k-quantization-spec.md` - Governed non-spec surface
+  - Completed: 2026-03-04 (ahead of schedule)
+  - Status: **✅ RESOLVED** - Quick win achieved
 
-### Immediate Actions (Next 7 Days)
+### Immediate Actions (Updated)
 
-- [ ] **Day 1-2: Collection Determinism Framework**
-  - Set up `cli_stdlib_fixtures_test` infrastructure
-  - Implement basic List/Map/Set/Tree determinism tests
-
-- [ ] **Day 3-4: Axion Evidence Collection**
-  - Complete AX-M5 determinism stewardship mapping
-  - Begin AX-M6 CanonFS observability documentation
-
-- [ ] **Day 5-7: Quick Wins**
-  - Resolve T3K-S1 quantization spec gap
+- [x] **Day 1-2: Collection Determinism Framework** - ✅ COMPLETED
+- [x] **Day 3-4: Axion Evidence Collection** - ✅ COMPLETED
+- [x] **Day 5-7: Quick Wins** - ✅ COMPLETED
+  - ✅ Resolve T3K-S1 quantization spec gap
   - Begin BG-07 BigInt precision governance decision
 
 ---
