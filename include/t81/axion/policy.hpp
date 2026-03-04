@@ -650,7 +650,18 @@ inline t81::expected<Policy, std::string> parse_policy(std::string_view text) {
       policy.alignment_requirements.push_back(std::move(req));
       continue;
     }
-    return make_error("unknown policy clause: " + key.text);
+    // Unknown clause -> skip forms deterministically.
+    int depth = 1;
+    while (depth > 0) {
+      auto skip_tok = lex.next();
+      if (skip_tok.kind == detail::PolicyToken::Kind::LParen)
+        ++depth;
+      else if (skip_tok.kind == detail::PolicyToken::Kind::RParen)
+        --depth;
+      else if (skip_tok.kind == detail::PolicyToken::Kind::End) {
+        return make_error("unterminated policy clause");
+      }
+    }
   }
   return policy;
 }

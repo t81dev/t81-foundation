@@ -16,7 +16,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 # Find required packages
-find_package(ggml REQUIRED QUIET)
+find_package(PkgConfig REQUIRED QUIET ggml)
 
 # Core T81 libraries
 add_library(t81_core STATIC
@@ -34,6 +34,7 @@ add_library(t81_isa STATIC
   core/isa/binary_emitter.cpp
   core/isa/binary_io.cpp
   core/isa/base81_view.cpp
+  src/isa/ai_native_opcodes.cpp
 )
 
 target_link_libraries(t81_core PUBLIC t81_isa)
@@ -41,19 +42,21 @@ target_include_directories(t81_isa PUBLIC include)
 
 # Llama adapter library
 add_library(t81_llama_adapter STATIC
-  tooling/model/llama_cpp_adapter_working.cpp
+  tooling/model/llama_cpp_adapter.cpp
 )
 
 target_link_libraries(t81_llama_adapter PUBLIC t81_core t81_isa ggml::ggml)
 target_include_directories(t81_llama_adapter PUBLIC include tooling/model third_party/llama.cpp)
 
 # AI integration examples
-add_executable(llama_runner_real examples/ai-integration/llama_real_simple_restored.cpp)
+add_executable(llama_runner_real examples/ai-integration/llama_real_simple.cpp)
 target_link_libraries(llama_runner_real PRIVATE t81_core t81_isa t81_llama_adapter)
 
-add_executable(llama_cpp_governed_demo examples/llama_cpp_governed_demo.cpp)
-target_link_libraries(llama_cpp_governed_demo PRIVATE t81_core t81_isa t81_llama_adapter)
+# Include directories
+target_include_directories(t81_core PUBLIC include)
+target_include_directories(t81_isa PUBLIC include)
+target_include_directories(t81_llama_adapter PUBLIC include)
 
 # Installation
-install(TARGETS t81_core t81_isa t81_llama_adapter llama_runner_real)
+install(TARGETS t81_core t81_isa t81_llama_adapter llama_runner_real
 install(DIRECTORY include/ DESTINATION include/t81)

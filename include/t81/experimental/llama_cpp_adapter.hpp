@@ -41,13 +41,14 @@ public:
 
   const std::string& model_hash() const { return model_hash_; }
 
-private:
+public:
   LlamaCppAdapter() = default;
 
   void* model_{nullptr};
   void* ctx_{nullptr};
   std::string model_hash_;
   std::string policy_text_;
+  std::string model_path_;
 };
 
 }  // namespace t81::experimental
