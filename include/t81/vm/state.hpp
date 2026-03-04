@@ -234,6 +234,102 @@ struct State {
     double memory_efficiency{0.0};  // used / allocated ratio
   } memory_stats;
 
+  // Dynamic Memory Pool Configuration (BG-10 Phase 2)
+  struct DynamicPoolConfig {
+    bool enable_dynamic_sizing{false};
+    double expansion_threshold{0.8};     // Expand when 80% full
+    double contraction_threshold{0.3};    // Contract when 30% used
+    std::size_t min_stack_size{64};      // Minimum stack size
+    std::size_t min_heap_size{128};      // Minimum heap size
+    std::size_t min_tensor_size{64};     // Minimum tensor size
+    std::size_t min_meta_size{64};      // Minimum meta size
+    std::size_t max_expansion_factor{4}; // Max 4x initial size
+    std::size_t expansion_increment{128}; // Expand by 128 words
+  } pool_config;
+
+  // Unified Memory System (BG-10 Phase 3)
+  struct UnifiedMemory {
+    bool enable_unified_memory{false};
+    std::vector<std::int64_t> unified_pool;
+    std::vector<ValueTag> unified_tags;
+    std::vector<bool> allocation_map;  // true = allocated, false = free
+    std::size_t total_size{0};
+    std::size_t allocated_size{0};
+    std::size_t free_size{0};
+    std::size_t fragmentation_count{0};
+    
+    // Memory block tracking
+    struct MemoryBlock {
+      std::size_t start{0};
+      std::size_t size{0};
+      MemorySegmentKind type{MemorySegmentKind::Unknown};
+      bool allocated{false};
+      
+      bool operator==(const MemoryBlock& other) const {
+        return start == other.start && size == other.size && 
+               type == other.type && allocated == other.allocated;
+      }
+    };
+    std::vector<MemoryBlock> memory_blocks;
+  } unified_memory;
+
+  // Performance Monitoring (BG-10 Phase 4)
+  struct PerformanceMetrics {
+    std::size_t allocation_count{0};
+    std::size_t deallocation_count{0};
+    std::size_t compaction_count{0};
+    std::size_t expansion_count{0};
+    std::size_t contraction_count{0};
+    double total_allocation_time{0.0};
+    double total_deallocation_time{0.0};
+    double total_compaction_time{0.0};
+    std::size_t peak_memory_usage{0};
+    double average_fragmentation{0.0};
+    std::size_t fragmentation_samples{0};
+  } performance_metrics;
+
+  // Memory Configuration Options (BG-10 Phase 4)
+  struct MemoryConfig {
+    bool enable_performance_monitoring{false};
+    bool auto_compaction{false};
+    double compaction_threshold{0.5};  // Compact when fragmentation > 50%
+    std::size_t compaction_interval{1000};  // Check every 1000 operations
+    bool enable_allocation_cache{false};
+    std::size_t cache_size{64};  // Cache recent allocations
+    bool prefer_contiguous_allocation{true};
+    std::size_t max_fragmentation_before_compact{25};  // Max 25% fragmentation
+  } memory_config;
+
+  // Advanced Memory Management (BG-10 Phase 5)
+  struct MemoryLeakDetector {
+    bool enabled{false};
+    std::vector<std::size_t> active_allocations;
+    std::vector<std::size_t> allocation_sizes;
+    std::vector<MemorySegmentKind> allocation_types;
+    std::size_t total_leaked_bytes{0};
+    std::size_t leak_count{0};
+  } leak_detector;
+
+  struct GCMetrics {
+    std::size_t gc_cycles{0};
+    std::size_t objects_collected{0};
+    std::size_t bytes_collected{0};
+    double total_gc_time{0.0};
+    std::size_t forced_gc_count{0};
+    std::size_t automatic_gc_count{0};
+  } gc_metrics;
+
+  struct MemoryPoolHierarchy {
+    bool enabled{false};
+    std::size_t small_pool_size{64};     // < 64 words
+    std::size_t medium_pool_size{256};   // 64-256 words  
+    std::size_t large_pool_size{1024};   // > 256 words
+    std::size_t tiny_allocations{0};
+    std::size_t small_allocations{0};
+    std::size_t medium_allocations{0};
+    std::size_t large_allocations{0};
+  } pool_hierarchy;
+
   // Concurrency
   std::vector<ThreadContext> contexts;
   std::size_t current_context{0};
