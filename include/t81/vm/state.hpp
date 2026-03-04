@@ -222,6 +222,18 @@ struct ThreadContext {
 struct State {
   ResourceMetrics metrics;
 
+  // Memory Pool Statistics (BG-10 Optimization)
+  struct MemoryStats {
+    std::size_t stack_peak_usage{0};
+    std::size_t heap_peak_usage{0};
+    std::size_t tensor_peak_usage{0};
+    std::size_t meta_peak_usage{0};
+    std::size_t total_allocations{0};
+    std::size_t total_deallocations{0};
+    std::size_t fragmentation_count{0};
+    double memory_efficiency{0.0};  // used / allocated ratio
+  } memory_stats;
+
   // Concurrency
   std::vector<ThreadContext> contexts;
   std::size_t current_context{0};
