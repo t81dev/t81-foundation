@@ -7,7 +7,7 @@ created: 2025-11-22
 updated: 2025-11-22
 ---
 
-> **Archive Note:** This document is historical and experimental. It is **not normative** for current T81 behavior. For authoritative definitions of ISA/VM behavior, refer to [`tisc-spec.md`](tisc-spec.md) and [`t81vm-spec.md`](t81vm-spec.md).
+> **Archive Note:** This document is historical and experimental. It is **not normative** for current T81 behavior. For authoritative definitions of ISA/VM behavior, refer to [`../tisc-spec.md`](../tisc-spec.md) and [`../t81vm-spec.md`](../t81vm-spec.md).
 
 # Hanoi Kernel v0.1.1
 

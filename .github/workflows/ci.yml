@@ -46,6 +46,8 @@ jobs:
             --exclude "http://localhost*"
             --exclude "https://github.com/t81dev/t81-foundation/edit*"
             --exclude "https://github.com/t81dev/t81-foundation/stargazers"
+            --exclude "https://www.mdpi.com/*"
+            --exclude "https://fossies.org/*"
             .github/**/*.md spec/**/*.md docs/**/*.md README.md docs/policies/AGENTS.md CONTRIBUTING.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
