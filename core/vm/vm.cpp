@@ -14,6 +14,7 @@
 #include <string_view>
 #include <utility>
 #include "t81/fraction.hpp"
+#include "t81/support/expected.hpp"
 #include "t81/tensor.hpp"
 #include "t81/tensor/llama.hpp"
 #include "t81/tensor/matmul.hpp"
@@ -5226,7 +5227,7 @@ public:
         v.kind = t81::axion::VerdictKind::Deny;
         v.reason = report.reason;
         record_axion_event(t81::tisc::Opcode::Halt, 0, 0, v);
-        return std::unexpected(Trap::SecurityFault);
+        return t81::unexpected(Trap::SecurityFault);
       }
     }
     return {};
