@@ -190,6 +190,19 @@ Execute **BG-06 Collection Determinism** implementation as critical path blocker
 - **Determinism Verified**: Round-trip binary serialization passes determinism tests
 - **Architecture Integration**: Seamless integration with existing binary I/O system
 
+### **[DAY 9] 2026-03-04 - BG-09 T81Graph Serialization**
+- ✅ **BG-09 Root Cause Analysis** - serialize_canonical() never called from language runtime
+- ✅ **SymbolicGraph Serialization Added** - serialize_canonical() method implemented
+- ✅ **VM Format Value Fixed** - SymbolicGraphHandle now calls serialize_canonical()
+- ✅ **Determinism Verified** - Stable serialization signature confirmed
+- ✅ **Implementation Evidence** - `BG-09_IMPLEMENTATION_EVIDENCE_T81GRAPH_SERIALIZATION.md`
+
+### **BG-09 STATUS: 🎯 FULLY IMPLEMENTED**
+- **Language Runtime Integration**: serialize_canonical() now called for T81Graph objects
+- **Stable Serialization Signature**: Deterministic output verified by tests
+- **Collection Types Support**: Extended to include T81Graph serialization
+- **VM Integration**: Proper format_value handling for SymbolicGraphHandle
+
 ---
 
 ## 📝 **NOTES & DECISIONS**

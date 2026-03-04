@@ -1044,8 +1044,11 @@ public:
           if (!ptr_val) return std::nullopt;
           return "<strvec#" + std::to_string(val_data) + ">";
         }
-        case ValueTag::SymbolicGraphHandle:
-          return "<graph#" + std::to_string(val_data) + ">";
+        case ValueTag::SymbolicGraphHandle: {
+          auto* graph = symbolic_graph_ptr(val_data);
+          if (!graph) return std::nullopt;
+          return graph->serialize_canonical();
+        }
         case ValueTag::Tier2FrameHandle:
           return "<tier2_frame#" + std::to_string(val_data) + ">";
         case ValueTag::InfiniteHandle:

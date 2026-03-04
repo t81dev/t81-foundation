@@ -1,6 +1,8 @@
 #pragma once
 
+#include <algorithm>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <vector>
 #include "t81/types/T81Symbol.hpp"
@@ -40,6 +42,43 @@ struct SymbolicGraph {
   void apply_rewrite(const RewriteRule& rule);
   bool is_confluent() const;
   void canonicalize();
+  
+  // P2: Canonical serialization
+  [[nodiscard]] std::string serialize_canonical() const {
+    std::stringstream ss;
+    ss << "{\n";
+    
+    // Sort nodes by ID for deterministic output
+    std::vector<SymbolicAtom> sorted_nodes = nodes;
+    std::sort(sorted_nodes.begin(), sorted_nodes.end(),
+              [](const auto& a, const auto& b) { return a.id < b.id; });
+    
+    // Sort edges by (from, to, label) for deterministic output
+    std::vector<SymbolicEdge> sorted_edges = edges;
+    std::sort(sorted_edges.begin(), sorted_edges.end(),
+              [](const auto& a, const auto& b) {
+                if (a.from != b.from) return a.from < b.from;
+                if (a.to != b.to) return a.to < b.to;
+                return a.label < b.label;
+              });
+    
+    // Output nodes
+    for (const auto& node : sorted_nodes) {
+      ss << "  " << node.id.to_string() << ": \"" << node.label << "\",\n";
+    }
+    
+    // Output edges
+    for (const auto& edge : sorted_edges) {
+      ss << "  " << edge.from.to_string() << " -> " << edge.to.to_string();
+      if (!edge.label.empty()) {
+        ss << " [\"" << edge.label << "\"]";
+      }
+      ss << ",\n";
+    }
+    
+    ss << "}";
+    return ss.str();
+  }
 };
 
 }  // namespace t81::cog::v1
