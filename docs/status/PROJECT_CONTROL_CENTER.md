@@ -11,7 +11,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 ## Phase
 
-**Hardening** — March governance close + stdlib Sprint 2 + collection/type determinism tightening (BG-06..09)
+**Hardening** — March governance close + stdlib Sprint 2 + collection/type determinism tightening (BG-06..09) ✅ **COMPLETED** + PR-426 determinism hardening ✅ **COMPLETED**
 
 ---
 
