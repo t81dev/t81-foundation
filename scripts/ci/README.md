@@ -21,6 +21,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - AI benchmark spec contract gate: `check_ai_benchmark_spec_contract.py`
 - AI quantization codec contract gate: `check_ai_quantization_codec_contract.py`
 - AI UX contract gate: `check_ai_ux_contract.py`
+- AI cross-lane evidence lock gate: `check_ai_cross_lane_evidence.py`
 - RFC-0025 canonize-tensor toolchain gate: `check_ai_tloadhash_toolchain.py`
 - Governed llama runtime evidence runner: `run_governed_llama_flow.py`
 
@@ -32,7 +33,7 @@ python3 scripts/ci/check_cli_docs_parity.py --t81-bin build/t81 --manual docs/gu
 python3 scripts/ci/check_cli_docs_smoke.py --manual docs/guides/cli-user-manual.md --cwd . --timeout-sec 20
 python3 scripts/ci/check_cli_json_contracts.py --t81-bin build/t81 --repo-root .
 python3 scripts/ci/check_ai_experiment_boundary.py
-python3 scripts/ci/collect_ai_evidence_bundle.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-evidence --runs 3
+python3 scripts/ci/collect_ai_evidence_bundle.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-evidence --runs 3 --model-fixture tests/fixtures/llama_cpp_repro/model.gguf
 python3 scripts/ci/check_ai_model_provenance_gate.py --model build/ai-provenance/test_model.gguf --manifest build/ai-provenance/test_model.manifest.json --self-test-deny
 python3 scripts/ci/check_ai_policy_event_contract.py --out-dir build/ai-policy
 python3 scripts/ci/check_ai_backend_adapter_contract.py --out-dir build/ai-backend
@@ -40,7 +41,8 @@ python3 scripts/ci/check_ai_opcode_subset_contract.py --out-dir build/ai-opcodes
 python3 scripts/ci/generate_ai_opcode_runtime_report.py --repo-root . --out-dir build/ai-opcodes-runtime
 python3 scripts/ci/check_ai_benchmark_spec_contract.py --out-dir build/ai-benchmark
 python3 scripts/ci/check_ai_quantization_codec_contract.py --out-dir build/ai-quantization
-python3 scripts/ci/check_ai_ux_contract.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-ux
+python3 scripts/ci/check_ai_ux_contract.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-ux --runtime-model tests/fixtures/llama_cpp_repro/model.gguf
+python3 scripts/ci/check_ai_cross_lane_evidence.py --out-dir build/ai-cross-lane --evidence-bundle build/ai-evidence/ai_evidence_bundle.json --ux-contract build/ai-ux/ai_ux_contract.json --ux-inference build/ai-ux/ai_inference_run.json --ux-quantization build/ai-ux/ai_quantization_inspect.json --ux-benchmark build/ai-ux/ai_benchmark_run.json --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json
 python3 scripts/ci/check_ai_tloadhash_toolchain.py --t81-bin build/t81 --input-file tests/fixtures/llama_cpp_repro/model.gguf --out-dir build/ai-rfc0025
 python3 scripts/ci/run_governed_llama_flow.py --t81-bin build-llama-local/t81 --model models/tinyllama-1.1b.Q2_K.gguf --out-dir build/ai-governed
 python3 scripts/ci/t81lang_repro_gate.py --help

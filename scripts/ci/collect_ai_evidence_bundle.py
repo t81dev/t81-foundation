@@ -79,7 +79,27 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--ai-bin", required=True, help="Path to t81_ai executable")
     p.add_argument("--out-dir", required=True, help="Output directory for evidence artifacts")
     p.add_argument("--runs", type=int, default=3, help="Number of repeated runs for determinism checking")
+    p.add_argument(
+        "--model-fixture",
+        default="",
+        help="Optional GGUF fixture path for fixture-locked replay vectors.",
+    )
     return p.parse_args()
+
+
+def resolve_model_fixture(out_dir: Path, arg_value: str) -> tuple[Path, str]:
+    if arg_value:
+        p = Path(arg_value).resolve()
+        return p, "user"
+
+    repo_root = Path(__file__).resolve().parents[2]
+    preferred = repo_root / "tests/fixtures/llama_cpp_repro/model.gguf"
+    if preferred.exists():
+        return preferred, "tests_fixture"
+
+    generated = out_dir / "test_model.gguf"
+    generated.write_text("t81-ai-evidence-fixture\n", encoding="utf-8")
+    return generated, "generated"
 
 
 def main() -> int:
@@ -93,17 +113,43 @@ def main() -> int:
     if args.runs < 1:
         raise SystemExit("--runs must be >= 1")
 
-    model_path = out_dir / "test_model.gguf"
-    model_path.write_text("t81-ai-evidence-fixture\n", encoding="utf-8")
+    model_path, model_source = resolve_model_fixture(out_dir, args.model_fixture)
+    if not model_path.exists():
+        raise SystemExit(f"model fixture not found: {model_path}")
 
     missing_path = out_dir / "missing.gguf"
     if missing_path.exists():
         missing_path.unlink()
 
+    replay_path = out_dir / "ai_evidence_replay_vector.json"
+
     specs = [
         CommandSpec("help", [str(ai_bin), "--help"], 0),
         CommandSpec("model_inspect", [str(ai_bin), "model", "inspect", str(model_path)], 0),
         CommandSpec("verify_existing", [str(ai_bin), "verify", str(model_path)], 0),
+        CommandSpec("verify_determinism_existing", [str(ai_bin), "verify", "determinism", str(model_path)], 0),
+        CommandSpec(
+            "inference_vector",
+            [
+                str(ai_bin),
+                "inference",
+                "run",
+                "--model",
+                "rfc00a1-fixture",
+                "--model-file",
+                str(model_path),
+                "--prompt",
+                "rfc00a1 vector prompt",
+            ],
+            0,
+        ),
+        CommandSpec(
+            "workflow_run_vector",
+            [str(ai_bin), "workflow", "run", "rfc00a1-vector", "--seed", "0", "--out", str(replay_path)],
+            0,
+        ),
+        CommandSpec("workflow_replay_vector", [str(ai_bin), "workflow", "replay", str(replay_path)], 0),
+        CommandSpec("workflow_report_vector", [str(ai_bin), "workflow", "report", str(replay_path)], 0),
         CommandSpec("verify_missing", [str(ai_bin), "verify", str(missing_path)], 1),
     ]
 
@@ -138,7 +184,9 @@ def main() -> int:
             "ai_bin": str(ai_bin),
             "ai_bin_sha256": sha256_file(ai_bin),
             "model_fixture": str(model_path),
+            "model_fixture_source": model_source,
             "model_fixture_sha256": sha256_file(model_path),
+            "replay_vector_artifact": str(replay_path),
             "runs": args.runs,
         },
         "checks": {
@@ -149,6 +197,11 @@ def main() -> int:
         },
         "runs": runs,
     }
+    if replay_path.exists():
+        bundle["fixture_locked_replay_vector"] = {
+            "artifact_path": str(replay_path),
+            "artifact_sha256": sha256_file(replay_path),
+        }
 
     # Canonical hash excludes timestamp only.
     canonical_payload = dict(bundle)

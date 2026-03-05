@@ -17,6 +17,7 @@ on:
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - 'scripts/ci/check_ai_ux_contract.py'
+      - 'scripts/ci/check_ai_cross_lane_evidence.py'
       - 'scripts/ci/generate_ai_opcode_runtime_report.py'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - 'scripts/ci/run_governed_llama_flow.py'
@@ -37,6 +38,7 @@ on:
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - 'scripts/ci/check_ai_ux_contract.py'
+      - 'scripts/ci/check_ai_cross_lane_evidence.py'
       - 'scripts/ci/generate_ai_opcode_runtime_report.py'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - 'scripts/ci/run_governed_llama_flow.py'
@@ -191,7 +193,8 @@ jobs:
         python3 scripts/ci/collect_ai_evidence_bundle.py \
           --ai-bin build/experiments/ai/ux_tools/t81_ai \
           --out-dir build/ai-evidence \
-          --runs 3
+          --runs 3 \
+          --model-fixture tests/fixtures/llama_cpp_repro/model.gguf
 
     - name: Enforce model provenance hash gate (RFC-00A3 baseline)
       if: steps.build_ai.outputs.has_target == 'true'
@@ -296,6 +299,25 @@ jobs:
           --out-dir build/ai-ux \
           --runtime-model tests/fixtures/llama_cpp_repro/model.gguf
 
+    - name: Validate AI cross-lane evidence lock (RFC-00A1 promotion slice)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-cross-lane
+        cmd=(
+          python3 scripts/ci/check_ai_cross_lane_evidence.py
+          --out-dir build/ai-cross-lane
+          --evidence-bundle build/ai-evidence/ai_evidence_bundle.json
+          --ux-contract build/ai-ux/ai_ux_contract.json
+          --ux-inference build/ai-ux/ai_inference_run.json
+          --ux-quantization build/ai-ux/ai_quantization_inspect.json
+          --ux-benchmark build/ai-ux/ai_benchmark_run.json
+          --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json
+        )
+        if [ -f "build/ai-governed/governed_llama_flow.json" ]; then
+          cmd+=(--governed-flow build/ai-governed/governed_llama_flow.json)
+        fi
+        "${cmd[@]}"
+
     - name: Append AI evidence summary
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -315,6 +337,7 @@ jobs:
         cat build/ai-benchmark/ai_benchmark_spec_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-quantization/ai_quantization_codec_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-ux/ai_ux_contract.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-cross-lane/ai_cross_lane_evidence.md >> "$GITHUB_STEP_SUMMARY"
         {
           echo "# RFC-0025 TLOADHASH Conformance"
           echo ""
@@ -335,6 +358,7 @@ jobs:
           build/ai-evidence/ai_evidence_bundle.json
           build/ai-evidence/ai_evidence_bundle.sha256
           build/ai-evidence/ai_evidence_summary.md
+          build/ai-evidence/ai_evidence_replay_vector.json
           build/ai-vm-trace/ai_vm_trace_ctest.log
           build/ai-vm-trace/ai_vm_trace_evidence.json
           build/ai-vm-trace/ai_vm_trace_evidence.md
@@ -363,6 +387,8 @@ jobs:
           build/ai-ux/ai_policy_test.json
           build/ai-ux/ai_workflow_replay.json
           build/ai-ux/ai_observability_trace.json
+          build/ai-cross-lane/ai_cross_lane_evidence.json
+          build/ai-cross-lane/ai_cross_lane_evidence.md
           build/ai-rfc0025/tloadhash-ctest.log
           build/ai-rfc0025/ai_tloadhash_toolchain.json
           build/ai-rfc0025/ai_tloadhash_toolchain.md
