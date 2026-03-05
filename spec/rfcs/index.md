@@ -25,7 +25,7 @@ This index tracks RFC status and intended disposition.
 | RFC-0007 | T81Lang Standard Library | draft | Stdlib contract definition |
 | RFC-0008 | Formal Verification Harness | superseded | Superseded by RFC-0027 (spec-as-executable is the concrete realization) |
 | RFC-0009 | Axion Policy Language (APL) | draft | Superseded path by RFC-0022 once accepted |
-| RFC-0010 | TISC Float/Fraction Ops | draft | Non-integer opcode plan |
+| RFC-0010 | TISC Float/Fraction Ops | accepted | Accepted with caveat: host `double` path for `FDIV`/transcendentals is not yet cross-arch bit-deterministic |
 | RFC-0011 | T81Lang Grammar Modernization | draft | Grammar evolution proposal |
 | RFC-0012 | Ternary Tensor Quantization | superseded | Superseded by RFC-0026 (QMATMUL covers quantized matmul path) |
 | RFC-0013 | Ternary Matmul | superseded | Superseded by RFC-0026 (QMATMUL) |

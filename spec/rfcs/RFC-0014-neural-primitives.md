@@ -7,6 +7,11 @@ applies_to:
 - T81Lang Specification
 - TISC Specification
 - Axion Kernel Specification
+Status: Superseded
+Type: standards-track
+Created: 2026-02-26
+Updated: 2026-03-05
+Superseded-By: RFC-0026
 
 ______________________________________________________________________
 

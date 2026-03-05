@@ -42,5 +42,5 @@
 # --- end SE-M6 block ---
 
 add_custom_target(spec_conformance_all
-    COMMENT "Spec conformance suite — SE-M1–SE-M6 complete (24 programs, spec annotations); CI activation pending T81Lang @axion_verify support"
+    COMMENT "Spec conformance suite stub — corpus authored, ctest activation pending missing @axion_verify/feature support"
 )

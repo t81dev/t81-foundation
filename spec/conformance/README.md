@@ -1,8 +1,8 @@
 # spec/conformance — Spec-as-Executable Conformance Suite
 
 **Authority:** RFC-0027 (Spec-as-Executable Conformance Model)\
-**Status:** SE-M1–SE-M6 complete — 24 programs authored; **21/24 passing** as of 2026-03-02; 3 remaining require language features not yet implemented (Matrix type, byte-string literals, Result.unwrap\_ok() runtime fix)\
-**Last Revised:** 2026-03-02
+**Status:** Authoring complete for current corpus (24 programs); CI target activation still pending (`spec_conformance_all` is a stub) due missing language/runtime features for 3 programs\
+**Last Revised:** 2026-03-05
 
 ---
 
@@ -107,14 +107,12 @@ cmake --build build --target spec_conformance_all
 Each passing program emits a `spec_conformance pass segment=meta` AxionEvent
 visible in the CI trace log. This is the audit record that the invariant holds.
 
-> **Status (SE-M1–SE-M6 complete; 21/24 running):** The CMake `spec_conformance_all` target is present
-> as a stub (SE-M1). All 24 programs carry the four required AI-derivable metadata
-> annotations (`@spec-ref`, `@invariant`, `@input-domain`, `@expected`) — SE-M5 complete.
-> All spec sections with companion programs carry RFC-0027 §6 cross-reference annotations
-> (SE-M6 complete). **21 of 24 programs pass `t81 run` as of 2026-03-02.** The 3 remaining
-> failures require new language features: Matrix type 2D indexing (`tier-annotation-enforcement`),
-> byte-string / Set / Map literals (`type-kind-completeness`), and `Result.unwrap_ok()` runtime
-> fix (`policy-enforcement-allow-deny`).
+> **Activation status:** `spec_conformance_all` remains a CMake documentation stub and is not yet
+> wired as runnable `ctest` coverage. All 24 programs are authored with metadata annotations and
+> section links, and **21 of 24** are known to pass `t81 run` as of 2026-03-02 in ad-hoc execution.
+> The remaining 3 require missing language/runtime features: Matrix type 2D indexing
+> (`tier-annotation-enforcement`), byte-string / Set / Map literals (`type-kind-completeness`),
+> and `Result.unwrap_ok()` runtime behavior (`policy-enforcement-allow-deny`).
 
 ---
 

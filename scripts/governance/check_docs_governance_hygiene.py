@@ -142,6 +142,7 @@ def main() -> int:
         ("stdlib promotion snapshot", "scripts/governance/check_stdlib_promotion_snapshot.py"),
         ("cognitive-tier boundary", "scripts/governance/check_cognitive_tier_boundary.py"),
         ("overclaim guardrails", "scripts/governance/check_overclaim_guardrails.py"),
+        ("rfc lifecycle hygiene", "scripts/governance/check_rfc_lifecycle_hygiene.py"),
         ("target name drift", "scripts/governance/check_target_name_drift.py"),
     ]
     for label, rel_script in supplemental_checks:
@@ -176,7 +177,7 @@ def main() -> int:
     print("- status label coherence checked")
     print(
         "- supplemental governance checks "
-        "(structure/readme/translation/staleness/semantic/license/artifact/api/spec-boundary/stdlib/snapshot/overclaim) checked"
+        "(structure/readme/translation/staleness/semantic/license/artifact/api/spec-boundary/stdlib/snapshot/overclaim/rfc-lifecycle) checked"
     )
     return 0
 

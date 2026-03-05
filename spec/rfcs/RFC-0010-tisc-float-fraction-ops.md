@@ -9,6 +9,13 @@ applies_to:
 - T81 Virtual Machine
 - T81Lang
 
+Status: Accepted
+Type: standards-track
+Created: 2026-02-26
+Updated: 2026-03-05
+Supersedes: —
+Superseded-By: —
+
 ______________________________________________________________________
 
 # Summary

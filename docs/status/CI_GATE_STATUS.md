@@ -150,6 +150,7 @@ module surface of `lang/stdlib/std/` matches the declared baseline.
 | Governance policy structure / license / artifact | `check_root_structure.py`, `check_readme_naming.py` | Pass ✅ |
 | Docs governance hygiene | `check_docs_governance_hygiene.py` | Pass ✅ |
 | Public API semver lock | `check_public_api_semver.py` | Pass ✅ (lock refreshed 2026-03-05) |
+| RFC lifecycle hygiene | `check_rfc_lifecycle_hygiene.py` | Pass ✅ |
 | TISC v1.1.0 freeze integrity | `check_tisc_freeze_integrity.py` | Pass ✅ |
 | Architecture target table vs. CMake | `check_architecture_targets.py` | Pass ✅ |
 | Workflow action pinning policy | `audit_workflow_actions.py` | Pass ✅ |

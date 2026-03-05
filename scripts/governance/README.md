@@ -1,7 +1,7 @@
 # Governance scripts index
 
 Status: Active
-Last Updated: 2026-02-26
+Last Updated: 2026-03-05
 
 ## Purpose
 
@@ -31,6 +31,7 @@ specification authority, freeze boundaries, or determinism claim scope.
 - check_stdlib_promotion_snapshot.py
 - check_cognitive_tier_boundary.py
 - check_overclaim_guardrails.py
+- check_rfc_lifecycle_hygiene.py
 - t81lang_promotion_gate_snapshot.py
 - c2_month_close_check.py
 - c2_month_close_preflight.py

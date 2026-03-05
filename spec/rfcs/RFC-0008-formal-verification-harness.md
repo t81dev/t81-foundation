@@ -3,9 +3,10 @@ ______________________________________________________________________
 # RFC-0008 — T81 Formal Verification Harness
 
 Version 0.1 — Draft (Standards Track)\
-Status: Draft\
+Status: Superseded\
 Author: Verification Working Group\
 Applies to: Spec Suite, Tooling, Axion, T81Lang
+Superseded-By: RFC-0027
 
 ______________________________________________________________________
 
