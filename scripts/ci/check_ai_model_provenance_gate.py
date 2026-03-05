@@ -154,14 +154,21 @@ def expected_canonfs_object_id(model_hash_hex: str) -> str:
     return f"canonfs://model/sha256/{model_hash_hex}"
 
 
-def build_chain_entry(model_hash_hex: str, canonfs_object_id: str, key_entry: dict[str, Any]) -> dict[str, Any]:
+def build_chain_entry(
+    seq: int,
+    event: str,
+    prev_entry_sha256: str,
+    model_hash_hex: str,
+    canonfs_object_id: str,
+    key_entry: dict[str, Any],
+) -> dict[str, Any]:
     entry_core = {
-        "seq": 1,
-        "event": "artifact_ingest",
+        "seq": seq,
+        "event": event,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "model_hash": f"sha256:{model_hash_hex}",
         "canonfs_object_id": canonfs_object_id,
-        "prev_entry_sha256": "",
+        "prev_entry_sha256": prev_entry_sha256,
     }
     entry_sha256 = sha256_text(canonical_json(entry_core))
     sig_payload = {
@@ -186,7 +193,23 @@ def write_manifest(path: Path, model_path: Path, model_hash_hex: str, keyring_pa
         raise RuntimeError("invalid provenance keyring: " + "; ".join(errors))
 
     canonfs_object_id = expected_canonfs_object_id(model_hash_hex)
-    entry = build_chain_entry(model_hash_hex, canonfs_object_id, active_key)
+    chain_events = [
+        "artifact_ingest",
+        "artifact_promotion_candidate",
+    ]
+    entries: list[dict[str, Any]] = []
+    prev_sha = ""
+    for seq, event in enumerate(chain_events, start=1):
+        entry = build_chain_entry(
+            seq=seq,
+            event=event,
+            prev_entry_sha256=prev_sha,
+            model_hash_hex=model_hash_hex,
+            canonfs_object_id=canonfs_object_id,
+            key_entry=active_key,
+        )
+        entries.append(entry)
+        prev_sha = str(entry.get("entry_sha256", "")).strip()
 
     payload = {
         "schema": SCHEMA_VERSION,
@@ -200,7 +223,7 @@ def write_manifest(path: Path, model_path: Path, model_hash_hex: str, keyring_pa
             "schema": "t81.ai.model-provenance-chain.v1",
             "keyring_path": str(keyring_path),
             "keyring_sha256": sha256_file(keyring_path),
-            "entries": [entry],
+            "entries": entries,
         },
     }
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -211,6 +234,7 @@ def gate_model_load(
     manifest_path: Path,
     keyring_path: Path,
     expected_hash: str | None = None,
+    min_lineage_entries: int = 1,
 ) -> GateResult:
     if not model_path.exists():
         return GateResult(False, f"missing model file: {model_path}")
@@ -260,6 +284,11 @@ def gate_model_load(
     entries = chain.get("entries")
     if not isinstance(entries, list) or not entries:
         return GateResult(False, "provenance_chain.entries must be a non-empty list")
+    if len(entries) < min_lineage_entries:
+        return GateResult(
+            False,
+            f"provenance_chain.entries must contain at least {min_lineage_entries} entries (found {len(entries)})",
+        )
 
     prev_sha = ""
     for idx, entry in enumerate(entries, start=1):
@@ -329,6 +358,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Also run a negative test with a bad hash and require deterministic denial.",
     )
+    p.add_argument(
+        "--min-lineage-entries",
+        type=int,
+        default=2,
+        help="Require at least this many provenance_chain entries (default: 2).",
+    )
     return p.parse_args()
 
 
@@ -353,6 +388,7 @@ def main() -> int:
         manifest_path,
         keyring_path,
         args.expected_hash if args.expected_hash else None,
+        max(1, int(args.min_lineage_entries)),
     )
     if not positive.ok:
         print(f"[FAIL] positive gate check: {positive.reason}")
@@ -360,7 +396,13 @@ def main() -> int:
     print(f"[PASS] positive gate check: {positive.reason}")
 
     if args.self_test_deny:
-        negative = gate_model_load(model_path, manifest_path, keyring_path, "sha256:" + ("0" * 64))
+        negative = gate_model_load(
+            model_path,
+            manifest_path,
+            keyring_path,
+            "sha256:" + ("0" * 64),
+            max(1, int(args.min_lineage_entries)),
+        )
         if negative.ok:
             print("[FAIL] negative gate check: expected denial but gate passed")
             return 1

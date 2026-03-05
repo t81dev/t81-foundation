@@ -262,6 +262,7 @@ jobs:
           --model build/ai-provenance/test_model.gguf \
           --manifest build/ai-provenance/test_model.manifest.json \
           --signing-keyring scripts/ci/ai_model_provenance_keyring.json \
+          --min-lineage-entries 2 \
           --self-test-deny
 
     - name: Validate AI policy event contract (RFC-00A6 baseline)
