@@ -30,6 +30,28 @@ struct SymbolicEdge {
 struct RewriteRule {
   T81Symbol match_node;
   T81Symbol replace_node;
+
+  bool operator==(const RewriteRule& other) const;
+  bool operator<(const RewriteRule& other) const;
+};
+
+struct RewriteProgram {
+  std::vector<RewriteRule> rules;
+  std::size_t max_passes = 1;
+  bool canonical_rule_order = true;
+};
+
+struct RewriteExecutionResult {
+  std::size_t passes_executed = 0;
+  std::size_t rewrites_applied = 0;
+  bool converged = true;
+};
+
+struct ConfluenceReport {
+  bool confluent = true;
+  std::optional<std::size_t> left_rule_index;
+  std::optional<std::size_t> right_rule_index;
+  std::string reason;
 };
 
 struct SymbolicGraph {
@@ -40,7 +62,9 @@ struct SymbolicGraph {
   void add_edge(const T81Symbol& from, const T81Symbol& to, const std::string& label = "");
 
   void apply_rewrite(const RewriteRule& rule);
+  RewriteExecutionResult apply_program(const RewriteProgram& program);
   bool is_confluent() const;
+  static ConfluenceReport check_rule_confluence(const RewriteProgram& program);
   void canonicalize();
 
   // P2: Canonical serialization

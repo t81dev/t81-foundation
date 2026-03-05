@@ -1622,6 +1622,10 @@ if(T81_BUILD_TESTS)
   target_link_libraries(t81_symbolic_vm_test PRIVATE t81_core t81_isa t81_vm)
   add_test(NAME t81_symbolic_vm_test COMMAND t81_symbolic_vm_test)
 
+  add_executable(tier1_rewrite_confluence_test tests/cpp/tier1_rewrite_confluence_test.cpp)
+  target_link_libraries(tier1_rewrite_confluence_test PRIVATE t81_core)
+  add_test(NAME tier1_rewrite_confluence_test COMMAND tier1_rewrite_confluence_test)
+
   add_executable(test_t81float_scientific tests/cpp/test_t81float_scientific.cpp)
   target_link_libraries(test_t81float_scientific PRIVATE t81_core t81_isa t81_lang_frontend)
   add_test(NAME test_t81float_scientific COMMAND test_t81float_scientific)

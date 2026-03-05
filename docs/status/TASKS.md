@@ -132,7 +132,23 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - Symbolic (T243): Graph rewriting, confluence checking
   - Reflective (T729): Justification chains, trace capture
   - Target: Begin Q2 2026
-  - Status: **STRATEGIC**
+  - Status: **IN PROGRESS**
+
+### Cognitive Tier Backlog (Execution Slices)
+
+- [x] **CTI-01: T243 Deterministic Rewrite Core** - **✅ COMPLETED**
+  - ✅ Added bounded `RewriteProgram` IR for Tier-1 symbolic rewrite execution
+  - ✅ Added deterministic canonical-rule ordering path in rewrite application
+  - ✅ Added bounded confluence checker with conflict/cycle diagnostics
+  - ✅ Added regression test target: `tier1_rewrite_confluence_test`
+  - Completed: 2026-03-05
+  - Status: **✅ RESOLVED**
+
+- [ ] **CTI-02: T729 Reflective Evidence Chains**
+  - Capture structured justification chains with deterministic serialization constraints
+  - Add replay/verification tests over reflective frame evidence
+  - Target: 2026-03-12
+  - Status: **NEXT**
 
 - [x] **CLI Workflow Expansion** - **✅ COMPLETED**
   - Enhance `compile`, `run`, `disasm`, `debug`, `trace replay`, `weights`
