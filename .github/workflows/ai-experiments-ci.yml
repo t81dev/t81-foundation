@@ -326,12 +326,14 @@ jobs:
           --runtime-model tests/fixtures/llama_cpp_repro/model.gguf \
           --thresholds-file scripts/ci/ai_benchmark_thresholds.json
 
-    - name: Validate AI quantization codec contract (RFC-00A4 baseline)
+    - name: Validate AI quantization runtime fixture corpus (RFC-00A4 promotion slice)
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
         mkdir -p build/ai-quantization
         python3 scripts/ci/check_ai_quantization_codec_contract.py \
-          --out-dir build/ai-quantization
+          --out-dir build/ai-quantization \
+          --ai-bin build/experiments/ai/ux_tools/t81_ai \
+          --runtime-model tests/fixtures/llama_cpp_repro/model.gguf
 
     - name: Validate AI UX contract (RFC-00A7 baseline)
       if: steps.build_ai.outputs.has_target == 'true'

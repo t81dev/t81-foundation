@@ -47,6 +47,7 @@
 - Enforces signed backend-selection manifest bound to policy/runtime evidence snapshots (`build/ai-backend/runtime_backend_selection_manifest.json`)
 - Enforces direct backend execution attestation replay (governed `t81 llama-run`) under deterministic evidence constraints (`build/ai-ux/ai_direct_backend_execution_attestation.json`)
 - Enforces runtime benchmark execution replay and regression/trend thresholds (`build/ai-benchmark/ai_benchmark_spec_contract.json`)
+- Enforces runtime quantization inspect replay + encode/decode fixture corpus roundtrip validation (`build/ai-quantization/ai_quantization_codec_contract.json`)
 
 ### How It Prevents Regressions
 
