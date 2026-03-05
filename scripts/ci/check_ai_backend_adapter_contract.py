@@ -113,6 +113,16 @@ def run_cmd(argv: list[str]) -> dict[str, Any]:
     }
 
 
+def parse_backend_select_output(text: str) -> dict[str, Any] | None:
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    return payload
+
+
 def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list[str], dict[str, Any]]:
     errors: list[str] = []
     binding: dict[str, Any] = {"ai_bin": str(ai_bin), "model_path": str(model_path)}
@@ -288,6 +298,77 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
             if select_onnx.get("status") != "pass":
                 errors.append("runtime binding: backend select onnx status must be pass")
             binding["backend_selection_onnx_trace_sha256"] = sha256_text(canonical_json(select_onnx))
+
+    matrix_specs = [
+        ("gguf", "strict_deterministic"),
+        ("gguf", "reproducible_nondeterministic"),
+        ("onnx", "strict_deterministic"),
+        ("onnx", "statistical_deterministic"),
+        ("t81_canonical", "strict_deterministic"),
+    ]
+    replay_runs: list[list[dict[str, Any]]] = []
+    for _ in range(2):
+        run_payload: list[dict[str, Any]] = []
+        for fmt, mode in matrix_specs:
+            res = run_cmd([str(ai_bin), "backend", "select", "--format", fmt, "--mode", mode])
+            entry: dict[str, Any] = {
+                "format": fmt,
+                "mode": mode,
+                "rc": res["rc"],
+                "stdout_sha256": res["stdout_sha256"],
+            }
+            parsed = parse_backend_select_output(res["stdout"])
+            if parsed is not None:
+                entry["parsed"] = {
+                    "schema": parsed.get("schema"),
+                    "selected_backend": parsed.get("selected_backend"),
+                    "decision_reason": parsed.get("decision_reason"),
+                    "trace_sha256": parsed.get("trace_sha256"),
+                    "status": parsed.get("status"),
+                }
+            run_payload.append(entry)
+        replay_runs.append(run_payload)
+
+    expected_backend = {
+        ("gguf", "strict_deterministic"): "llama.cpp",
+        ("gguf", "reproducible_nondeterministic"): "llama.cpp",
+        ("onnx", "strict_deterministic"): "onnx_runtime",
+        ("onnx", "statistical_deterministic"): "onnx_runtime",
+        ("t81_canonical", "strict_deterministic"): "llama.cpp",
+    }
+    replay_errors: list[str] = []
+    for entry in replay_runs[0]:
+        key = (entry["format"], entry["mode"])
+        if entry["rc"] != 0:
+            replay_errors.append(f"backend selection replay: rc!=0 for {key[0]}/{key[1]}")
+            continue
+        parsed = entry.get("parsed", {})
+        if parsed.get("schema") != "t81.ai.backend-selection-trace.v1":
+            replay_errors.append(f"backend selection replay: schema mismatch for {key[0]}/{key[1]}")
+        if parsed.get("selected_backend") != expected_backend.get(key):
+            replay_errors.append(f"backend selection replay: selected_backend mismatch for {key[0]}/{key[1]}")
+        if parsed.get("status") != "pass":
+            replay_errors.append(f"backend selection replay: status!=pass for {key[0]}/{key[1]}")
+
+    deterministic_replay = replay_runs[0] == replay_runs[1]
+    if not deterministic_replay:
+        replay_errors.append("backend selection replay: run#1 != run#2")
+
+    replay_payload = {
+        "schema": "t81.ai.backend-selection-replay.v1",
+        "status": "pass" if not replay_errors else "fail",
+        "deterministic_replay": deterministic_replay,
+        "runs": replay_runs,
+    }
+    replay_path = model_path.parent / "runtime_backend_selection_replay.json"
+    replay_path.write_text(json.dumps(replay_payload, indent=2, sort_keys=True), encoding="utf-8")
+    binding["backend_selection_replay"] = {
+        "artifact": str(replay_path),
+        "sha256": sha256_text(canonical_json(replay_payload)),
+        "deterministic_replay": deterministic_replay,
+    }
+    if replay_errors:
+        errors.extend(replay_errors)
 
     if "Status: Inspection completed" not in inspect_res["stdout"]:
         errors.append("runtime binding: model inspect output missing completion marker")

@@ -373,6 +373,7 @@ jobs:
           build/ai-backend/ai_backend_adapter_contract.md
           build/ai-backend/runtime_backend_probe_model.gguf
           build/ai-backend/runtime_backend_selection_trace.json
+          build/ai-backend/runtime_backend_selection_replay.json
           build/ai-opcodes/ai_opcode_subset_contract.json
           build/ai-opcodes/ai_opcode_subset_contract.md
           build/ai-opcodes/ai_phase1_opcode_ctest.log
