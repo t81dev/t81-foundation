@@ -384,7 +384,8 @@ jobs:
           --ai-bin build/experiments/ai/ux_tools/t81_ai \
           --runtime-model tests/fixtures/llama_cpp_repro/model.gguf \
           --thresholds-file scripts/ci/ai_benchmark_thresholds.json \
-          --thresholds-history-file scripts/ci/ai_benchmark_thresholds_history.json
+          --thresholds-history-file scripts/ci/ai_benchmark_thresholds_history.json \
+          --trend-window-count 3
 
     - name: Validate AI quantization runtime fixture corpus (RFC-00A4 promotion slice)
       if: steps.build_ai.outputs.has_target == 'true'

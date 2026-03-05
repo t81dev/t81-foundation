@@ -95,6 +95,12 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Optional YYYY-MM-DD date to select active threshold window (defaults to today UTC).",
     )
+    p.add_argument(
+        "--trend-window-count",
+        type=int,
+        default=3,
+        help="Number of governed history windows to include in rolling trend analysis (default: 3).",
+    )
     return p.parse_args()
 
 
@@ -292,6 +298,120 @@ def evaluate_thresholds(
     return len(errs) == 0, evaluation, errs
 
 
+def compute_rolling_trend_analysis(
+    observed: dict[str, float],
+    history_path: Path | None,
+    as_of: date,
+    window_count: int,
+) -> dict[str, Any]:
+    analysis = {
+        "enabled": False,
+        "window_count": max(1, window_count),
+        "windows": [],
+        "summary": {
+            "latency": "unknown",
+            "throughput": "unknown",
+            "determinism": "stable",
+        },
+    }
+    if history_path is None or not history_path.exists():
+        return analysis
+
+    history = parse_json(history_path)
+    if history.get("schema") != "t81.ai.benchmark-thresholds-history.v1":
+        return analysis
+    windows = history.get("windows")
+    if not isinstance(windows, list):
+        return analysis
+
+    eligible: list[tuple[date, dict[str, Any]]] = []
+    for win in windows:
+        if not isinstance(win, dict):
+            continue
+        start_raw = str(win.get("window_start", "")).strip()
+        end_raw = str(win.get("window_end", "")).strip()
+        if not start_raw or not end_raw:
+            continue
+        try:
+            start = parse_iso_date(start_raw, "window_start")
+            end = parse_iso_date(end_raw, "window_end")
+        except ValueError:
+            continue
+        if start <= as_of:
+            eligible.append((start, win))
+
+    if not eligible:
+        return analysis
+    eligible.sort(key=lambda item: item[0], reverse=True)
+    selected = [win for _, win in eligible[: max(1, window_count)]]
+
+    latency_trends: list[str] = []
+    throughput_trends: list[str] = []
+    for win in selected:
+        thresholds = win.get("thresholds", {})
+        if not isinstance(thresholds, dict):
+            continue
+        baseline = thresholds.get("baseline", {})
+        if not isinstance(baseline, dict):
+            continue
+        gates = thresholds.get("gates", {})
+        if not isinstance(gates, dict):
+            gates = {}
+        baseline_latency = float(baseline.get("latency_ms", 0.0))
+        baseline_throughput = float(baseline.get("throughput_tokens_per_sec", 0.0))
+        stable_band_pct = float(gates.get("stable_band_pct", 5.0))
+
+        def classify(value: float, baseline_value: float, lower_is_better: bool) -> str:
+            if baseline_value <= 0:
+                return "unknown"
+            delta_pct = ((value - baseline_value) / baseline_value) * 100.0
+            if abs(delta_pct) <= stable_band_pct:
+                return "stable"
+            if lower_is_better:
+                return "improved" if delta_pct < 0 else "regressed"
+            return "improved" if delta_pct > 0 else "regressed"
+
+        lat_trend = classify(observed["latency_ms"], baseline_latency, lower_is_better=True)
+        thr_trend = classify(observed["throughput_tokens_per_sec"], baseline_throughput, lower_is_better=False)
+        latency_trends.append(lat_trend)
+        throughput_trends.append(thr_trend)
+        analysis["windows"].append(
+            {
+                "window_id": str(win.get("window_id", "")),
+                "window_start": str(win.get("window_start", "")),
+                "window_end": str(win.get("window_end", "")),
+                "baseline_latency_ms": baseline_latency,
+                "baseline_throughput_tokens_per_sec": baseline_throughput,
+                "trend": {
+                    "latency": lat_trend,
+                    "throughput": thr_trend,
+                    "determinism": "stable",
+                },
+            }
+        )
+
+    def summarize(values: list[str]) -> str:
+        if not values:
+            return "unknown"
+        if any(v == "regressed" for v in values):
+            return "regressed"
+        if all(v == "improved" for v in values):
+            return "improved"
+        if any(v == "improved" for v in values):
+            return "improved_or_stable"
+        if all(v == "stable" for v in values):
+            return "stable"
+        return "unknown"
+
+    analysis["enabled"] = True
+    analysis["summary"] = {
+        "latency": summarize(latency_trends),
+        "throughput": summarize(throughput_trends),
+        "determinism": "stable",
+    }
+    return analysis
+
+
 def main() -> int:
     args = parse_args()
     out_dir = Path(args.out_dir).resolve()
@@ -381,6 +501,7 @@ def main() -> int:
         "throughput_tokens_per_sec": 0.0,
         "determinism_score": 0.0,
     }
+    rolling_trend_analysis: dict[str, Any] = {}
     if payloads:
         observed = {
             "latency_ms": float(payloads[0].get("latency_ms", 0.0)),
@@ -389,6 +510,12 @@ def main() -> int:
         }
         threshold_ok, threshold_eval, threshold_errors = evaluate_thresholds(observed, thresholds)
         errors.extend(threshold_errors)
+        rolling_trend_analysis = compute_rolling_trend_analysis(
+            observed=observed,
+            history_path=history_path if history_path.exists() else None,
+            as_of=as_of,
+            window_count=max(1, int(args.trend_window_count)),
+        )
 
     status = "pass" if deterministic_replay and threshold_ok and not errors else "fail"
     payload = {
@@ -404,6 +531,7 @@ def main() -> int:
         "runtime_runs": run_artifacts,
         "observed": observed,
         "threshold_evaluation": threshold_eval,
+        "rolling_trend_analysis": rolling_trend_analysis,
         "errors": errors,
     }
 
@@ -421,6 +549,8 @@ def main() -> int:
                 f"- latency_ms: `{observed['latency_ms']}`",
                 f"- throughput_tokens_per_sec: `{observed['throughput_tokens_per_sec']}`",
                 f"- determinism_score: `{observed['determinism_score']}`",
+                f"- rolling_latency_trend: `{rolling_trend_analysis.get('summary', {}).get('latency', 'unknown')}`",
+                f"- rolling_throughput_trend: `{rolling_trend_analysis.get('summary', {}).get('throughput', 'unknown')}`",
                 "",
             ]
         ),
