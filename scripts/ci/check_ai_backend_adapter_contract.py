@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -100,9 +101,70 @@ def check_contract(registry: dict[str, Any]) -> tuple[bool, list[str]]:
     return len(errors) == 0, errors
 
 
+def run_cmd(argv: list[str]) -> dict[str, Any]:
+    proc = subprocess.run(argv, capture_output=True, text=True, check=False)
+    return {
+        "argv": argv,
+        "rc": proc.returncode,
+        "stdout": proc.stdout,
+        "stderr": proc.stderr,
+        "stdout_sha256": sha256_text(proc.stdout),
+        "stderr_sha256": sha256_text(proc.stderr),
+    }
+
+
+def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list[str], dict[str, Any]]:
+    errors: list[str] = []
+    binding: dict[str, Any] = {"ai_bin": str(ai_bin), "model_path": str(model_path)}
+    if not ai_bin.exists():
+        errors.append(f"ai binary not found: {ai_bin}")
+        return False, errors, binding
+
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    if not model_path.exists():
+        model_path.write_text("t81-ai-backend-probe\n", encoding="utf-8")
+    binding["model_sha256"] = sha256_text(model_path.read_text(encoding="utf-8"))
+
+    help_res = run_cmd([str(ai_bin), "--help"])
+    inspect_res = run_cmd([str(ai_bin), "model", "inspect", str(model_path)])
+    verify_res = run_cmd([str(ai_bin), "verify", "determinism", str(model_path)])
+
+    binding["help"] = {"rc": help_res["rc"], "stdout_sha256": help_res["stdout_sha256"]}
+    binding["model_inspect"] = {"rc": inspect_res["rc"], "stdout_sha256": inspect_res["stdout_sha256"]}
+    binding["verify_determinism"] = {
+        "rc": verify_res["rc"],
+        "stdout_sha256": verify_res["stdout_sha256"],
+    }
+
+    if help_res["rc"] != 0:
+        errors.append("runtime binding: t81_ai --help failed")
+    if inspect_res["rc"] != 0:
+        errors.append("runtime binding: t81_ai model inspect failed")
+    if verify_res["rc"] != 0:
+        errors.append("runtime binding: t81_ai verify determinism failed")
+
+    required_help_markers = ("model inspect", "verify determinism")
+    for marker in required_help_markers:
+        if marker not in help_res["stdout"]:
+            errors.append(f"runtime binding: help output missing marker '{marker}'")
+
+    if "Status: Inspection completed" not in inspect_res["stdout"]:
+        errors.append("runtime binding: model inspect output missing completion marker")
+    if "Determinism mode: strict" not in verify_res["stdout"]:
+        errors.append("runtime binding: verify determinism output missing strict mode marker")
+
+    return len(errors) == 0, errors, binding
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Validate AI backend adapter contract determinism baseline (RFC-00A5).")
     p.add_argument("--out-dir", required=True, help="Directory to write artifacts")
+    p.add_argument("--ai-bin", default="", help="Optional path to t81_ai binary for runtime binding")
+    p.add_argument(
+        "--runtime-model",
+        default="",
+        help="Optional model path used during runtime binding probe (created if absent)",
+    )
     return p.parse_args()
 
 
@@ -118,7 +180,19 @@ def main() -> int:
     deterministic = hash_a == hash_b
 
     contract_ok, contract_errors = check_contract(registry_a)
-    status = "pass" if deterministic and contract_ok else "fail"
+    runtime_binding_ok = True
+    runtime_binding: dict[str, Any] = {}
+    runtime_errors: list[str] = []
+    if args.ai_bin:
+        ai_bin = Path(args.ai_bin).resolve()
+        runtime_model = (
+            Path(args.runtime_model).resolve()
+            if args.runtime_model
+            else (out_dir / "runtime_backend_probe_model.gguf")
+        )
+        runtime_binding_ok, runtime_errors, runtime_binding = validate_runtime_binding(ai_bin, runtime_model)
+
+    status = "pass" if deterministic and contract_ok and runtime_binding_ok else "fail"
 
     payload = {
         "schema": SCHEMA_VERSION,
@@ -126,8 +200,10 @@ def main() -> int:
         "deterministic_registry_hash": deterministic,
         "registry_sha256": hash_a,
         "contract_ok": contract_ok,
-        "errors": contract_errors,
+        "runtime_binding_ok": runtime_binding_ok,
+        "errors": contract_errors + runtime_errors,
         "registry": registry_a,
+        "runtime_binding": runtime_binding,
     }
 
     json_path = out_dir / "ai_backend_adapter_contract.json"
@@ -142,6 +218,7 @@ def main() -> int:
                 f"- status: `{status}`",
                 f"- deterministic_registry_hash: `{deterministic}`",
                 f"- contract_ok: `{contract_ok}`",
+                f"- runtime_binding_ok: `{runtime_binding_ok}`",
                 f"- registry_sha256: `{hash_a}`",
                 "",
             ]

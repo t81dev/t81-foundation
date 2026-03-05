@@ -202,7 +202,9 @@ jobs:
       run: |
         mkdir -p build/ai-backend
         python3 scripts/ci/check_ai_backend_adapter_contract.py \
-          --out-dir build/ai-backend
+          --out-dir build/ai-backend \
+          --ai-bin build/experiments/ai/ux_tools/t81_ai \
+          --runtime-model build/ai-backend/runtime_backend_probe_model.gguf
 
     - name: Collect VM trace-level evidence (RFC-00A1 runtime trace slice)
       if: steps.build_ai.outputs.has_target == 'true'
@@ -327,6 +329,7 @@ jobs:
           build/ai-policy/ai_runtime_trace.json
           build/ai-backend/ai_backend_adapter_contract.json
           build/ai-backend/ai_backend_adapter_contract.md
+          build/ai-backend/runtime_backend_probe_model.gguf
           build/ai-opcodes/ai_opcode_subset_contract.json
           build/ai-opcodes/ai_opcode_subset_contract.md
           build/ai-opcodes/ai_phase1_opcode_ctest.log
