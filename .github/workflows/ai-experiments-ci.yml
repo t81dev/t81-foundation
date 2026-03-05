@@ -12,6 +12,7 @@ on:
       - 'scripts/ci/check_ai_model_provenance_gate.py'
       - 'scripts/ci/check_ai_policy_event_contract.py'
       - 'scripts/ci/check_ai_backend_adapter_contract.py'
+      - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
@@ -31,6 +32,7 @@ on:
       - 'scripts/ci/check_ai_model_provenance_gate.py'
       - 'scripts/ci/check_ai_policy_event_contract.py'
       - 'scripts/ci/check_ai_backend_adapter_contract.py'
+      - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
@@ -200,6 +202,24 @@ jobs:
         python3 scripts/ci/check_ai_backend_adapter_contract.py \
           --out-dir build/ai-backend
 
+    - name: Collect VM trace-level evidence (RFC-00A1 runtime trace slice)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-vm-trace
+        if cmake --build build --target help | grep -qE '(^| )t81_vm_trace_test$' && \
+           cmake --build build --target help | grep -qE '(^| )canonfs_axion_trace_test$'; then
+          cmake --build build --target t81_vm_trace_test canonfs_axion_trace_test
+          ctest --test-dir build --output-on-failure --verbose \
+            -R 't81_vm_trace_test|canonfs_axion_trace_test' \
+            2>&1 | tee build/ai-vm-trace/ai_vm_trace_ctest.log
+        else
+          echo "❌ required VM trace targets not found (t81_vm_trace_test, canonfs_axion_trace_test)"
+          exit 1
+        fi
+        python3 scripts/ci/check_ai_vm_trace_evidence.py \
+          --out-dir build/ai-vm-trace \
+          --ctest-log build/ai-vm-trace/ai_vm_trace_ctest.log
+
     - name: Run RFC-0026 phase-1 opcode runtime conformance
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -261,6 +281,7 @@ jobs:
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
         cat build/ai-evidence/ai_evidence_summary.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-vm-trace/ai_vm_trace_evidence.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-policy/ai_policy_event_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-backend/ai_backend_adapter_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-opcodes/ai_opcode_subset_contract.md >> "$GITHUB_STEP_SUMMARY"
@@ -295,6 +316,9 @@ jobs:
           build/ai-evidence/ai_evidence_bundle.json
           build/ai-evidence/ai_evidence_bundle.sha256
           build/ai-evidence/ai_evidence_summary.md
+          build/ai-vm-trace/ai_vm_trace_ctest.log
+          build/ai-vm-trace/ai_vm_trace_evidence.json
+          build/ai-vm-trace/ai_vm_trace_evidence.md
           build/ai-provenance/test_model.manifest.json
           build/ai-policy/ai_policy_event_contract.json
           build/ai-policy/ai_policy_event_contract.md
