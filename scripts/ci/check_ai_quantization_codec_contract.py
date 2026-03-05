@@ -6,6 +6,7 @@ import hashlib
 import json
 import subprocess
 import sys
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +24,84 @@ def sha256_text(text: str) -> str:
 
 def parse_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def parse_iso_date(raw: str, label: str) -> date:
+    try:
+        return date.fromisoformat(raw)
+    except ValueError as exc:
+        raise ValueError(f"invalid {label} date: {raw} (expected YYYY-MM-DD)") from exc
+
+
+def select_codec_profile_window(
+    profile_path: Path,
+    history_path: Path | None,
+    as_of: date,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    profile = parse_json(profile_path)
+    metadata = {
+        "source": str(profile_path),
+        "history_file": str(history_path) if history_path else "",
+        "as_of_date": as_of.isoformat(),
+        "window_id": "",
+        "window_start": "",
+        "window_end": "",
+    }
+    if history_path is None or not history_path.exists():
+        return profile, metadata
+
+    history = parse_json(history_path)
+    if history.get("schema") != "t81.ai.quantization-codec-profile-history.v1":
+        raise ValueError(f"codec profile history schema mismatch: {history.get('schema')}")
+    windows = history.get("windows")
+    if not isinstance(windows, list) or not windows:
+        raise ValueError("codec profile history windows must be non-empty list")
+
+    selected: dict[str, Any] | None = None
+    for win in windows:
+        if not isinstance(win, dict):
+            continue
+        start_raw = str(win.get("window_start", "")).strip()
+        end_raw = str(win.get("window_end", "")).strip()
+        if not start_raw or not end_raw:
+            continue
+        start = parse_iso_date(start_raw, "window_start")
+        end = parse_iso_date(end_raw, "window_end")
+        if start <= as_of <= end:
+            selected = win
+            break
+    if selected is None:
+        candidates: list[tuple[date, dict[str, Any]]] = []
+        for win in windows:
+            if not isinstance(win, dict):
+                continue
+            start_raw = str(win.get("window_start", "")).strip()
+            if not start_raw:
+                continue
+            try:
+                start = parse_iso_date(start_raw, "window_start")
+            except ValueError:
+                continue
+            if start <= as_of:
+                candidates.append((start, win))
+        if candidates:
+            candidates.sort(key=lambda item: item[0], reverse=True)
+            selected = candidates[0][1]
+    if selected is None:
+        raise ValueError("no valid codec profile window found in history")
+
+    selected_profile = selected.get("profile")
+    if not isinstance(selected_profile, dict):
+        raise ValueError("selected codec profile window missing profile object")
+    metadata.update(
+        {
+            "source": str(history_path),
+            "window_id": str(selected.get("window_id", "")),
+            "window_start": str(selected.get("window_start", "")),
+            "window_end": str(selected.get("window_end", "")),
+        }
+    )
+    return selected_profile, metadata
 
 
 def run_cmd(argv: list[str]) -> dict[str, Any]:
@@ -114,6 +193,21 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--out-dir", required=True)
     p.add_argument("--ai-bin", required=True)
     p.add_argument("--runtime-model", default="")
+    p.add_argument(
+        "--codec-profile-file",
+        default="",
+        help="Path to quantization codec profile JSON (defaults to scripts/ci/ai_quantization_codec_profile.json).",
+    )
+    p.add_argument(
+        "--codec-profile-history-file",
+        default="",
+        help="Optional codec profile history file for active window selection.",
+    )
+    p.add_argument(
+        "--as-of-date",
+        default="",
+        help="Optional YYYY-MM-DD date to select active codec profile window (defaults to today UTC).",
+    )
     return p.parse_args()
 
 
@@ -128,6 +222,27 @@ def main() -> int:
 
     repo_root = Path.cwd().resolve()
     model_path, model_origin = resolve_runtime_model(repo_root, out_dir, args.runtime_model)
+    profile_path = (
+        Path(args.codec_profile_file).resolve()
+        if args.codec_profile_file
+        else Path(__file__).resolve().with_name("ai_quantization_codec_profile.json")
+    )
+    if not profile_path.exists():
+        raise SystemExit(f"quantization codec profile file not found: {profile_path}")
+    history_path = (
+        Path(args.codec_profile_history_file).resolve()
+        if args.codec_profile_history_file
+        else Path(__file__).resolve().with_name("ai_quantization_codec_profile_history.json")
+    )
+    as_of = parse_iso_date(args.as_of_date, "as_of_date") if args.as_of_date else datetime.now(UTC).date()
+    try:
+        codec_profile, codec_profile_source = select_codec_profile_window(
+            profile_path=profile_path,
+            history_path=history_path if history_path.exists() else None,
+            as_of=as_of,
+        )
+    except ValueError as exc:
+        raise SystemExit(str(exc))
 
     errors: list[str] = []
 
@@ -199,12 +314,17 @@ def main() -> int:
             errors.append("runtime quantization schema mismatch")
         if Path(str(runtime_payload_1.get("model_file", ""))).resolve() != model_path.resolve():
             errors.append("runtime quantization model_file mismatch")
-        if not str(runtime_payload_1.get("codec", "")).startswith("T3_K"):
-            errors.append("runtime quantization codec must be T3_K*")
-        if int(runtime_payload_1.get("bits_per_weight", 0)) <= 0:
-            errors.append("runtime quantization bits_per_weight must be > 0")
-        if not str(runtime_payload_1.get("quantization_profile", "")).startswith("runtime-"):
-            errors.append("runtime quantization profile must be runtime-bound")
+        expected_codec_prefix = str(codec_profile.get("codec_prefix", "T3_K"))
+        expected_profile_prefix = str(codec_profile.get("quantization_profile_prefix", "runtime-"))
+        min_bits = int(codec_profile.get("min_bits_per_weight", 1))
+        max_bits = int(codec_profile.get("max_bits_per_weight", 16))
+        if not str(runtime_payload_1.get("codec", "")).startswith(expected_codec_prefix):
+            errors.append(f"runtime quantization codec must start with {expected_codec_prefix}")
+        bits = int(runtime_payload_1.get("bits_per_weight", 0))
+        if bits < min_bits or bits > max_bits:
+            errors.append(f"runtime quantization bits_per_weight must be in [{min_bits},{max_bits}]")
+        if not str(runtime_payload_1.get("quantization_profile", "")).startswith(expected_profile_prefix):
+            errors.append(f"runtime quantization profile must start with {expected_profile_prefix}")
         if runtime_payload_1.get("status") != "pass":
             errors.append("runtime quantization status must be pass")
 
@@ -226,6 +346,11 @@ def main() -> int:
         "status": status,
         "runtime_model": str(model_path),
         "runtime_model_origin": model_origin,
+        "codec_profile_file": str(profile_path),
+        "codec_profile_sha256": sha256_text(canonical_json(codec_profile)),
+        "codec_profile_source": codec_profile_source,
+        "as_of_date": as_of.isoformat(),
+        "codec_profile": codec_profile,
         "runtime_quantization_deterministic_replay": deterministic_runtime,
         "runtime_runs": [
             {

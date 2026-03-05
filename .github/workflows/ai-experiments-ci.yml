@@ -21,6 +21,8 @@ on:
       - 'scripts/ci/ai_benchmark_thresholds.json'
       - 'scripts/ci/ai_benchmark_thresholds_history.json'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
+      - 'scripts/ci/ai_quantization_codec_profile.json'
+      - 'scripts/ci/ai_quantization_codec_profile_history.json'
       - 'scripts/ci/check_ai_ux_contract.py'
       - 'scripts/ci/ai_direct_backend_attestation_keyring.json'
       - 'scripts/ci/check_ai_cross_lane_evidence.py'
@@ -54,6 +56,8 @@ on:
       - 'scripts/ci/ai_benchmark_thresholds.json'
       - 'scripts/ci/ai_benchmark_thresholds_history.json'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
+      - 'scripts/ci/ai_quantization_codec_profile.json'
+      - 'scripts/ci/ai_quantization_codec_profile_history.json'
       - 'scripts/ci/check_ai_ux_contract.py'
       - 'scripts/ci/ai_direct_backend_attestation_keyring.json'
       - 'scripts/ci/check_ai_cross_lane_evidence.py'
@@ -389,7 +393,9 @@ jobs:
         python3 scripts/ci/check_ai_quantization_codec_contract.py \
           --out-dir build/ai-quantization \
           --ai-bin build/experiments/ai/ux_tools/t81_ai \
-          --runtime-model tests/fixtures/llama_cpp_repro/model.gguf
+          --runtime-model tests/fixtures/llama_cpp_repro/model.gguf \
+          --codec-profile-file scripts/ci/ai_quantization_codec_profile.json \
+          --codec-profile-history-file scripts/ci/ai_quantization_codec_profile_history.json
 
     - name: Validate AI UX contract (RFC-00A7 baseline)
       if: steps.build_ai.outputs.has_target == 'true'

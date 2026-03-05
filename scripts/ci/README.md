@@ -25,6 +25,8 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - AI benchmark runtime threshold baseline: `ai_benchmark_thresholds.json`
 - AI benchmark threshold history windows: `ai_benchmark_thresholds_history.json`
 - AI quantization codec contract gate: `check_ai_quantization_codec_contract.py`
+- AI quantization codec profile baseline: `ai_quantization_codec_profile.json`
+- AI quantization codec profile history windows: `ai_quantization_codec_profile_history.json`
 - AI UX contract gate: `check_ai_ux_contract.py`
 - Direct backend attestation signing keyring: `ai_direct_backend_attestation_keyring.json`
 - AI cross-lane evidence lock gate: `check_ai_cross_lane_evidence.py`
@@ -52,7 +54,7 @@ python3 scripts/ci/check_ai_backend_adapter_contract.py --out-dir build/ai-backe
 python3 scripts/ci/check_ai_opcode_subset_contract.py --out-dir build/ai-opcodes --runtime-report build/ai-opcodes-runtime/ai_opcode_runtime_report.json --ctest-log build/ai-opcodes/ai_phase1_opcode_ctest.log
 python3 scripts/ci/generate_ai_opcode_runtime_report.py --repo-root . --out-dir build/ai-opcodes-runtime
 python3 scripts/ci/check_ai_benchmark_spec_contract.py --out-dir build/ai-benchmark --ai-bin build/experiments/ai/ux_tools/t81_ai --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --thresholds-file scripts/ci/ai_benchmark_thresholds.json --thresholds-history-file scripts/ci/ai_benchmark_thresholds_history.json --as-of-date 2026-03-05
-python3 scripts/ci/check_ai_quantization_codec_contract.py --out-dir build/ai-quantization --ai-bin build/experiments/ai/ux_tools/t81_ai --runtime-model tests/fixtures/llama_cpp_repro/model.gguf
+python3 scripts/ci/check_ai_quantization_codec_contract.py --out-dir build/ai-quantization --ai-bin build/experiments/ai/ux_tools/t81_ai --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --codec-profile-file scripts/ci/ai_quantization_codec_profile.json --codec-profile-history-file scripts/ci/ai_quantization_codec_profile_history.json --as-of-date 2026-03-05
 python3 scripts/ci/check_ai_ux_contract.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-ux --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --t81-bin build-llama-ai/t81 --llama-hash-probe scripts/ci/llama_model_hash.py --direct-backend-signing-keyring scripts/ci/ai_direct_backend_attestation_keyring.json
 python3 scripts/ci/check_ai_cross_lane_evidence.py --out-dir build/ai-cross-lane --evidence-bundle build/ai-evidence/ai_evidence_bundle.json --ux-contract build/ai-ux/ai_ux_contract.json --ux-inference build/ai-ux/ai_inference_run.json --ux-quantization build/ai-ux/ai_quantization_inspect.json --ux-benchmark build/ai-ux/ai_benchmark_run.json --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json --governed-flow build/ai-governed/governed_llama_flow.json
 python3 scripts/ci/check_ai_evidence_manifest.py --out-dir build/ai-manifest --evidence-bundle build/ai-evidence/ai_evidence_bundle.json --vm-trace build/ai-vm-trace/ai_vm_trace_evidence.json --cross-lane build/ai-cross-lane/ai_cross_lane_evidence.json --backend-contract build/ai-backend/ai_backend_adapter_contract.json --ux-contract build/ai-ux/ai_ux_contract.json --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json --signing-keyring scripts/ci/ai_evidence_manifest_keyring.json --promotion-window-start 2026-03-01 --promotion-window-end 2026-03-31

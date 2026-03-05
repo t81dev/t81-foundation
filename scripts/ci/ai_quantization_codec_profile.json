@@ -1,0 +1,7 @@
+{
+  "schema": "t81.ai.quantization-codec-profile.v1",
+  "codec_prefix": "T3_K",
+  "quantization_profile_prefix": "runtime-",
+  "min_bits_per_weight": 1,
+  "max_bits_per_weight": 8
+}
