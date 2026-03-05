@@ -127,6 +127,31 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
 
     help_res = run_cmd([str(ai_bin), "--help"])
     caps_res = run_cmd([str(ai_bin), "backend", "capabilities"])
+    selection_trace_path = model_path.parent / "runtime_backend_selection_trace.json"
+    select_gguf_res = run_cmd(
+        [
+            str(ai_bin),
+            "backend",
+            "select",
+            "--format",
+            "gguf",
+            "--mode",
+            "strict_deterministic",
+            "--out",
+            str(selection_trace_path),
+        ]
+    )
+    select_onnx_res = run_cmd(
+        [
+            str(ai_bin),
+            "backend",
+            "select",
+            "--format",
+            "onnx",
+            "--mode",
+            "statistical_deterministic",
+        ]
+    )
     inspect_res = run_cmd([str(ai_bin), "model", "inspect", str(model_path)])
     verify_res = run_cmd([str(ai_bin), "verify", "determinism", str(model_path)])
 
@@ -134,6 +159,15 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
     binding["backend_capabilities"] = {
         "rc": caps_res["rc"],
         "stdout_sha256": caps_res["stdout_sha256"],
+    }
+    binding["backend_select_gguf_strict"] = {
+        "rc": select_gguf_res["rc"],
+        "stdout_sha256": select_gguf_res["stdout_sha256"],
+        "artifact": str(selection_trace_path),
+    }
+    binding["backend_select_onnx_statistical"] = {
+        "rc": select_onnx_res["rc"],
+        "stdout_sha256": select_onnx_res["stdout_sha256"],
     }
     binding["model_inspect"] = {"rc": inspect_res["rc"], "stdout_sha256": inspect_res["stdout_sha256"]}
     binding["verify_determinism"] = {
@@ -145,12 +179,16 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
         errors.append("runtime binding: t81_ai --help failed")
     if caps_res["rc"] != 0:
         errors.append("runtime binding: t81_ai backend capabilities failed")
+    if select_gguf_res["rc"] != 0:
+        errors.append("runtime binding: t81_ai backend select gguf/strict_deterministic failed")
+    if select_onnx_res["rc"] != 0:
+        errors.append("runtime binding: t81_ai backend select onnx/statistical_deterministic failed")
     if inspect_res["rc"] != 0:
         errors.append("runtime binding: t81_ai model inspect failed")
     if verify_res["rc"] != 0:
         errors.append("runtime binding: t81_ai verify determinism failed")
 
-    required_help_markers = ("model inspect", "verify determinism", "backend capabilities")
+    required_help_markers = ("model inspect", "verify determinism", "backend capabilities", "backend select")
     for marker in required_help_markers:
         if marker not in help_res["stdout"]:
             errors.append(f"runtime binding: help output missing marker '{marker}'")
@@ -198,6 +236,58 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
                         )
                 if caps.get("default_backend") not in backend_names:
                     errors.append("runtime binding: default_backend missing from backends list")
+
+    if select_gguf_res["rc"] == 0:
+        try:
+            select_gguf = json.loads(select_gguf_res["stdout"])
+        except json.JSONDecodeError:
+            select_gguf = None
+            errors.append("runtime binding: backend select gguf output is not valid JSON")
+        if isinstance(select_gguf, dict):
+            required_select_fields = {
+                "schema",
+                "requested_format",
+                "requested_mode",
+                "selection_policy",
+                "preferred_order",
+                "candidates",
+                "selected_backend",
+                "decision_reason",
+                "trace_sha256",
+                "status",
+            }
+            missing = sorted(required_select_fields - set(select_gguf.keys()))
+            if missing:
+                errors.append(
+                    "runtime binding: backend select gguf missing fields " + ", ".join(missing)
+                )
+            if select_gguf.get("schema") != "t81.ai.backend-selection-trace.v1":
+                errors.append("runtime binding: backend select gguf schema mismatch")
+            if select_gguf.get("selected_backend") != "llama.cpp":
+                errors.append("runtime binding: backend select gguf selected_backend mismatch")
+            if select_gguf.get("status") != "pass":
+                errors.append("runtime binding: backend select gguf status must be pass")
+            if not selection_trace_path.exists():
+                errors.append("runtime binding: backend selection trace artifact was not emitted")
+            else:
+                binding["backend_selection_trace_artifact_sha256"] = sha256_text(
+                    canonical_json(json.loads(selection_trace_path.read_text(encoding="utf-8")))
+                )
+
+    if select_onnx_res["rc"] == 0:
+        try:
+            select_onnx = json.loads(select_onnx_res["stdout"])
+        except json.JSONDecodeError:
+            select_onnx = None
+            errors.append("runtime binding: backend select onnx output is not valid JSON")
+        if isinstance(select_onnx, dict):
+            if select_onnx.get("schema") != "t81.ai.backend-selection-trace.v1":
+                errors.append("runtime binding: backend select onnx schema mismatch")
+            if select_onnx.get("selected_backend") != "onnx_runtime":
+                errors.append("runtime binding: backend select onnx selected_backend mismatch")
+            if select_onnx.get("status") != "pass":
+                errors.append("runtime binding: backend select onnx status must be pass")
+            binding["backend_selection_onnx_trace_sha256"] = sha256_text(canonical_json(select_onnx))
 
     if "Status: Inspection completed" not in inspect_res["stdout"]:
         errors.append("runtime binding: model inspect output missing completion marker")

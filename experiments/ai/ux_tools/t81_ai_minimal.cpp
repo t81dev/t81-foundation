@@ -62,6 +62,9 @@ public:
             if (subcommand == "capabilities") {
                 return backend_capabilities(argc, argv);
             }
+            if (subcommand == "select") {
+                return backend_select(argc, argv);
+            }
         }
 
         if (command == "inference" && argc >= 3) {
@@ -248,6 +251,7 @@ private:
         std::cout << "  t81_ai verify <file>                  Verify model integrity" << std::endl;
         std::cout << "  t81_ai verify determinism <file>      Verify deterministic model contract" << std::endl;
         std::cout << "  t81_ai backend capabilities [--out file]" << std::endl;
+        std::cout << "  t81_ai backend select [--format f] [--mode m] [--out file]" << std::endl;
         std::cout << "  t81_ai inference run [--model id] [--model-file path] [--prompt text] [--out file]" << std::endl;
         std::cout << "  t81_ai quantization inspect [--model id] [--model-file path] [--out file]" << std::endl;
         std::cout << "  t81_ai benchmark run [--model id] [--model-file path] [--out file]" << std::endl;
@@ -262,6 +266,7 @@ private:
         std::cout << "  t81_ai model inspect model.gguf" << std::endl;
         std::cout << "  t81_ai verify model.gguf" << std::endl;
         std::cout << "  t81_ai backend capabilities --out backend_caps.json" << std::endl;
+        std::cout << "  t81_ai backend select --format gguf --mode strict_deterministic --out backend_select.json" << std::endl;
         std::cout << "  t81_ai inference run --model mock-7b --model-file model.gguf --prompt \"hello\" --out inference.json" << std::endl;
         std::cout << "  t81_ai quantization inspect --model mock-7b --model-file model.gguf --out quant.json" << std::endl;
         std::cout << "  t81_ai benchmark run --model mock-7b --model-file model.gguf --out bench.json" << std::endl;
@@ -365,6 +370,106 @@ private:
 
         std::cout << json.str();
         return 0;
+    }
+
+    int backend_select(int argc, char* argv[]) {
+        std::string requested_format = "gguf";
+        std::string requested_mode = "strict_deterministic";
+        std::string out_path;
+        for (int i = 3; i < argc; ++i) {
+            const std::string arg = argv[i];
+            if (arg == "--format" && i + 1 < argc) {
+                requested_format = argv[++i];
+                continue;
+            }
+            if (arg == "--mode" && i + 1 < argc) {
+                requested_mode = argv[++i];
+                continue;
+            }
+            if (arg == "--out" && i + 1 < argc) {
+                out_path = argv[++i];
+                continue;
+            }
+            std::cerr << "Error: Unknown backend select option: " << arg << std::endl;
+            return 1;
+        }
+
+        struct Backend {
+            std::string name;
+            std::vector<std::string> formats;
+            std::vector<std::string> modes;
+        };
+        const std::vector<Backend> backends = {
+            {"llama.cpp", {"gguf", "t81_canonical"}, {"strict_deterministic", "reproducible_nondeterministic"}},
+            {"onnx_runtime", {"onnx", "t81_canonical"}, {"strict_deterministic", "statistical_deterministic"}},
+        };
+        const std::vector<std::string> preferred_order = {"llama.cpp", "onnx_runtime"};
+
+        auto supports = [](const std::vector<std::string>& vals, const std::string& v) {
+            for (const auto& x : vals) {
+                if (x == v) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        std::vector<std::string> candidates;
+        for (const auto& preferred : preferred_order) {
+            for (const auto& b : backends) {
+                if (b.name != preferred) {
+                    continue;
+                }
+                if (supports(b.formats, requested_format) && supports(b.modes, requested_mode)) {
+                    candidates.push_back(b.name);
+                }
+            }
+        }
+
+        const std::string selected = candidates.empty() ? "" : candidates.front();
+        const std::string status = selected.empty() ? "fail" : "pass";
+        const std::string decision_reason = selected.empty()
+            ? "no_backend_supporting_requested_format_and_mode"
+            : "first_backend_supporting_requested_format_and_mode";
+        const std::string trace_hash = "sha256:" + fnv1a64_hex(
+            requested_format + "|" + requested_mode + "|" + selected + "|" + decision_reason
+        );
+
+        std::ostringstream json;
+        json
+            << "{\n"
+            << "  \"schema\": \"t81.ai.backend-selection-trace.v1\",\n"
+            << "  \"requested_format\": \"" << json_escape(requested_format) << "\",\n"
+            << "  \"requested_mode\": \"" << json_escape(requested_mode) << "\",\n"
+            << "  \"selection_policy\": \"first_backend_supporting_requested_format_and_mode\",\n"
+            << "  \"preferred_order\": [\"llama.cpp\", \"onnx_runtime\"],\n"
+            << "  \"candidates\": [";
+        for (size_t i = 0; i < candidates.size(); ++i) {
+            if (i > 0) {
+                json << ", ";
+            }
+            json << "\"" << json_escape(candidates[i]) << "\"";
+        }
+        json
+            << "],\n"
+            << "  \"selected_backend\": \"" << json_escape(selected) << "\",\n"
+            << "  \"decision_reason\": \"" << decision_reason << "\",\n"
+            << "  \"trace_sha256\": \"" << trace_hash << "\",\n"
+            << "  \"status\": \"" << status << "\"\n"
+            << "}\n";
+
+        if (!out_path.empty()) {
+            std::ofstream out(out_path, std::ios::trunc);
+            if (!out) {
+                std::cerr << "Error: Unable to write backend selection trace: " << out_path << std::endl;
+                return 1;
+            }
+            out << json.str();
+            out.close();
+        }
+
+        std::cout << json.str();
+        return status == "pass" ? 0 : 1;
     }
 
     int inference_run(int argc, char* argv[]) {

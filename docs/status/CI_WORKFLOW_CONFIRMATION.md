@@ -26,6 +26,8 @@
 - **Help command**: `./t81_ai --help`
 - **Model inspection**: `./t81_ai model inspect test_file.gguf`
 - **Model verification**: `./t81_ai verify test_file.gguf`
+- **Backend capabilities**: `./t81_ai backend capabilities`
+- **Backend selection trace**: `./t81_ai backend select --format gguf --mode strict_deterministic`
 - **Error handling**: `./t81_ai verify nonexistent.gguf`
 
 **Official Smoke Test:**

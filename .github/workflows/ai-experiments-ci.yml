@@ -157,6 +157,8 @@ jobs:
         # Test backend capability introspection
         ./build/experiments/ai/ux_tools/t81_ai backend capabilities > /tmp/ai_backend_capabilities.json
         test -s /tmp/ai_backend_capabilities.json
+        ./build/experiments/ai/ux_tools/t81_ai backend select --format gguf --mode strict_deterministic > /tmp/ai_backend_selection.json
+        test -s /tmp/ai_backend_selection.json
 
         # Test expanded RFC-00A7 command surface
         ./build/experiments/ai/ux_tools/t81_ai inference run --model test --model-file test_model.gguf --prompt "smoke" > /tmp/ai_inference_run.json
@@ -370,6 +372,7 @@ jobs:
           build/ai-backend/ai_backend_adapter_contract.json
           build/ai-backend/ai_backend_adapter_contract.md
           build/ai-backend/runtime_backend_probe_model.gguf
+          build/ai-backend/runtime_backend_selection_trace.json
           build/ai-opcodes/ai_opcode_subset_contract.json
           build/ai-opcodes/ai_opcode_subset_contract.md
           build/ai-opcodes/ai_phase1_opcode_ctest.log
