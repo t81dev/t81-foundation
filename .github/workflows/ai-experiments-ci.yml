@@ -19,6 +19,7 @@ on:
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_benchmark_threshold_approvals.py'
+      - 'scripts/ci/ai_benchmark_threshold_approval_keyring.json'
       - 'scripts/ci/ai_benchmark_thresholds.json'
       - 'scripts/ci/ai_benchmark_thresholds_history.json'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
@@ -56,6 +57,7 @@ on:
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_benchmark_threshold_approvals.py'
+      - 'scripts/ci/ai_benchmark_threshold_approval_keyring.json'
       - 'scripts/ci/ai_benchmark_thresholds.json'
       - 'scripts/ci/ai_benchmark_thresholds_history.json'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
@@ -96,6 +98,8 @@ jobs:
       T81_AI_GOVERNED_REPLAY_KEY_2026Q2: ${{ secrets.T81_AI_GOVERNED_REPLAY_KEY_2026Q2 }}
       T81_AI_DIRECT_BACKEND_KEY_2026Q1: ${{ secrets.T81_AI_DIRECT_BACKEND_KEY_2026Q1 }}
       T81_AI_DIRECT_BACKEND_KEY_2026Q2: ${{ secrets.T81_AI_DIRECT_BACKEND_KEY_2026Q2 }}
+      T81_AI_BENCHMARK_APPROVAL_KEY_2026Q1: ${{ secrets.T81_AI_BENCHMARK_APPROVAL_KEY_2026Q1 }}
+      T81_AI_BENCHMARK_APPROVAL_KEY_2026Q2: ${{ secrets.T81_AI_BENCHMARK_APPROVAL_KEY_2026Q2 }}
     
     steps:
     - name: Checkout Repository
@@ -273,6 +277,7 @@ jobs:
           --keyring scripts/ci/ai_backend_selection_keyring.json \
           --keyring scripts/ci/ai_governed_replay_keyring.json \
           --keyring scripts/ci/ai_direct_backend_attestation_keyring.json \
+          --keyring scripts/ci/ai_benchmark_threshold_approval_keyring.json \
           --warn-days 30 \
           --fail-days 0 \
           --out-json build/ai-keyring/ai_keyring_expiry_report.json
@@ -288,6 +293,7 @@ jobs:
           --keyring scripts/ci/ai_backend_selection_keyring.json \
           --keyring scripts/ci/ai_governed_replay_keyring.json \
           --keyring scripts/ci/ai_direct_backend_attestation_keyring.json \
+          --keyring scripts/ci/ai_benchmark_threshold_approval_keyring.json \
           --max-active-days-limit 120 \
           --out-json build/ai-keyring/ai_keyring_kms_contract_report.json
 
@@ -397,6 +403,7 @@ jobs:
         mkdir -p build/ai-benchmark
         python3 scripts/ci/check_ai_benchmark_threshold_approvals.py \
           --history-file scripts/ci/ai_benchmark_thresholds_history.json \
+          --signing-keyring scripts/ci/ai_benchmark_threshold_approval_keyring.json \
           --out-json build/ai-benchmark/ai_benchmark_threshold_approval_report.json
 
     - name: Validate AI quantization runtime fixture corpus (RFC-00A4 promotion slice)

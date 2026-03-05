@@ -49,6 +49,7 @@
 - Enforces signed direct backend execution attestation replay (governed `t81 llama-run`) under deterministic evidence constraints (`build/ai-ux/ai_direct_backend_execution_attestation.json`)
 - Publishes machine-readable escalation mappings for signing/keyring/runtime-binding failures in policy/backend/evidence artifacts
 - Enforces runtime benchmark execution replay and regression/trend thresholds (`build/ai-benchmark/ai_benchmark_spec_contract.json`)
+- Enforces signed benchmark threshold promotion approval attestations via keyring-backed verification (`build/ai-benchmark/ai_benchmark_threshold_approval_report.json`)
 - Enforces runtime quantization inspect replay + encode/decode fixture corpus roundtrip validation (`build/ai-quantization/ai_quantization_codec_contract.json`)
 - Emits AI signing key expiry alert report for keyring rotation readiness (`build/ai-keyring/ai_keyring_expiry_report.json`)
 - Enforces AI keyring KMS metadata contract and emits report (`build/ai-keyring/ai_keyring_kms_contract_report.json`)
@@ -102,6 +103,7 @@
 - `scripts/ci/ai_backend_selection_keyring.json` - Triggers on backend-selection signing key rotation changes
 - `scripts/ci/ai_governed_replay_keyring.json` - Triggers on governed replay signing key rotation changes
 - `scripts/ci/ai_direct_backend_attestation_keyring.json` - Triggers on direct-backend attestation signing key rotation changes
+- `scripts/ci/ai_benchmark_threshold_approval_keyring.json` - Triggers on benchmark-threshold approval signing key rotation changes
 - `scripts/ci/check_ai_keyring_kms_contract.py` - Triggers on KMS metadata contract policy updates
 - `scripts/ci/ai_benchmark_thresholds.json` - Triggers on benchmark threshold baseline updates
 - `scripts/ci/ai_benchmark_thresholds_history.json` - Triggers on benchmark threshold history window updates

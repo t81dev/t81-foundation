@@ -8,6 +8,11 @@
         "change_ref": "rfc00a2-window-2026-02"
       },
       "promotion_approval_attestation_sha256": "d952b345e7cd193c3802fd6f92740cde5059a87f5e1a2e9e651eef1fc1273bab",
+      "promotion_approval_signature": {
+        "algorithm": "hmac-sha256",
+        "key_id": "ai-benchmark-threshold-approval-2026q1",
+        "signature_hex": "a8e812cec516e95fe1e0ceefba50cd0563e032299795a6684b7126a52e79a147"
+      },
       "thresholds": {
         "baseline": {
           "latency_ms": 2.2,
@@ -32,6 +37,11 @@
         "change_ref": "rfc00a2-window-2026-03"
       },
       "promotion_approval_attestation_sha256": "4fda70f0a8509f99e20839698ef1859dc92ec91ba6e1d98e64afd8136b35fcd0",
+      "promotion_approval_signature": {
+        "algorithm": "hmac-sha256",
+        "key_id": "ai-benchmark-threshold-approval-2026q1",
+        "signature_hex": "b242aab952308424d6b18d69bfc9c7f5baaf52b83e3eeaebfc044603dbdaf68d"
+      },
       "thresholds": {
         "baseline": {
           "latency_ms": 2.1,
