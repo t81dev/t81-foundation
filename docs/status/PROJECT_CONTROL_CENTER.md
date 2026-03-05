@@ -21,6 +21,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | :--- | :--- |
 | Overall | Green — **PERFECT TEST COVERAGE ACHIEVED** (285/285 tests passing) |
 | Release Readiness | **GO** — candidate `57f1a96c`, stamped 2026-03-05 |
+| Current Main | `674a7aa0` — post-recovery hardening/audit commits; CI running |
 | Open Blockers | None — required contexts satisfied on `57f1a96c` |
 | Frozen Core | Intact — no freeze exceptions |
 | Determinism Registry | All Verified surfaces clean |
@@ -77,6 +78,8 @@ Full register: `ACTIVE_RISKS.md`
 | FW-01 — dependency waiver maintenance/removal decision | @t81dev | Ongoing |
 
 Full backlog: `HARDENING_BACKLOG.md`
+
+Recent commit audit: `docs/records/audits/RECENT_COMMIT_AUDIT_2026-03-05.md`
 
 ---
 

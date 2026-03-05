@@ -4,6 +4,7 @@ Status: Active
 Last Updated: 2026-03-05
 Owner: @t81dev
 Reference Candidate: `57f1a96c` (origin/main, 2026-03-05)
+Current Main Head: `674a7aa0` (origin/main, 2026-03-05; CI in progress at last refresh)
 
 ## Purpose
 
@@ -101,7 +102,7 @@ tracked here and must be addressed unless explicitly deferred.
 
 **Variability note:** Benchmark results are sensitive to runner environment.
 If two consecutive runs on identical environments diverge by >5%, revisit the
-guardrail threshold. See RISK-006 in `docs/status/RISK_REGISTER.md`.
+guardrail threshold. See `R-06` in `docs/status/ACTIVE_RISKS.md`.
 
 ## Flaky Test Inventory
 
@@ -148,6 +149,7 @@ module surface of `lang/stdlib/std/` matches the declared baseline.
 | :--- | :--- | :--- |
 | Governance policy structure / license / artifact | `check_root_structure.py`, `check_readme_naming.py` | Pass ✅ |
 | Docs governance hygiene | `check_docs_governance_hygiene.py` | Pass ✅ |
+| Public API semver lock | `check_public_api_semver.py` | Pass ✅ (lock refreshed 2026-03-05) |
 | TISC v1.1.0 freeze integrity | `check_tisc_freeze_integrity.py` | Pass ✅ |
 | Architecture target table vs. CMake | `check_architecture_targets.py` | Pass ✅ |
 | Workflow action pinning policy | `audit_workflow_actions.py` | Pass ✅ |
@@ -166,8 +168,9 @@ module surface of `lang/stdlib/std/` matches the declared baseline.
 ## Cross-References
 
 - `docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md`
+- `docs/records/audits/RECENT_COMMIT_AUDIT_2026-03-05.md`
 - `docs/status/DECISION_LOG.md` (DEC-005 — Jekyll deferred)
-- `docs/status/ACTIVE_RISKS.md` (RISK-006 — benchmark variability; RISK-007 — Jekyll)
+- `docs/status/ACTIVE_RISKS.md` (`R-06` — benchmark variability; `R-07` — Jekyll)
 - `.github/workflows/ci.yml`
 - `.github/workflows/codeql.yml`
 - `.github/workflows/bench.yml`
