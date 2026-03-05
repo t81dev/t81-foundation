@@ -16,6 +16,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - AI model provenance hash gate: `check_ai_model_provenance_gate.py`
 - AI policy event contract gate: `check_ai_policy_event_contract.py`
 - AI backend adapter contract gate: `check_ai_backend_adapter_contract.py`
+- AI opcode subset contract gate: `check_ai_opcode_subset_contract.py`
 
 ## Local invocation examples
 ```bash
@@ -29,6 +30,7 @@ python3 scripts/ci/collect_ai_evidence_bundle.py --ai-bin build/experiments/ai/u
 python3 scripts/ci/check_ai_model_provenance_gate.py --model build/ai-provenance/test_model.gguf --manifest build/ai-provenance/test_model.manifest.json --self-test-deny
 python3 scripts/ci/check_ai_policy_event_contract.py --out-dir build/ai-policy
 python3 scripts/ci/check_ai_backend_adapter_contract.py --out-dir build/ai-backend
+python3 scripts/ci/check_ai_opcode_subset_contract.py --out-dir build/ai-opcodes
 python3 scripts/ci/t81lang_repro_gate.py --help
 python3 scripts/ci/t3k_repro_gate.py --help
 python3 scripts/ci/llama_cpp_repro_gate.py --help

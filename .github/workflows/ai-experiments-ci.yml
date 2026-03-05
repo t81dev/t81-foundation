@@ -12,6 +12,7 @@ on:
       - 'scripts/ci/check_ai_model_provenance_gate.py'
       - 'scripts/ci/check_ai_policy_event_contract.py'
       - 'scripts/ci/check_ai_backend_adapter_contract.py'
+      - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - '.github/workflows/ai-experiments-ci.yml'
   pull_request:
     branches: [ main ]
@@ -24,6 +25,7 @@ on:
       - 'scripts/ci/check_ai_model_provenance_gate.py'
       - 'scripts/ci/check_ai_policy_event_contract.py'
       - 'scripts/ci/check_ai_backend_adapter_contract.py'
+      - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - '.github/workflows/ai-experiments-ci.yml'
   workflow_dispatch:
 
@@ -151,12 +153,20 @@ jobs:
         python3 scripts/ci/check_ai_backend_adapter_contract.py \
           --out-dir build/ai-backend
 
+    - name: Validate AI opcode subset contract (RFC-0026 / RFC-00A8 baseline)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-opcodes
+        python3 scripts/ci/check_ai_opcode_subset_contract.py \
+          --out-dir build/ai-opcodes
+
     - name: Append AI evidence summary
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
         cat build/ai-evidence/ai_evidence_summary.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-policy/ai_policy_event_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-backend/ai_backend_adapter_contract.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-opcodes/ai_opcode_subset_contract.md >> "$GITHUB_STEP_SUMMARY"
         {
           echo "# RFC-0025 TLOADHASH Conformance"
           echo ""
@@ -179,4 +189,6 @@ jobs:
           build/ai-policy/ai_policy_event_contract.md
           build/ai-backend/ai_backend_adapter_contract.json
           build/ai-backend/ai_backend_adapter_contract.md
+          build/ai-opcodes/ai_opcode_subset_contract.json
+          build/ai-opcodes/ai_opcode_subset_contract.md
           build/ai-rfc0025/tloadhash-ctest.log
