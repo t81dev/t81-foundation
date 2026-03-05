@@ -5,6 +5,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include "t81/bigint.hpp"
 #include "t81/fraction.hpp"
 #include "t81/isa/opcodes.hpp"
 #include "t81/isa/type_alias.hpp"
@@ -22,6 +23,7 @@ enum class LiteralKind : std::uint8_t {
   TensorHandle,
   ShapeHandle,
   ComplexHandle,
+  BigIntHandle,
 };
 
 struct Insn {
@@ -52,6 +54,7 @@ struct FunctionMetadata {
 struct Program {
   std::vector<Insn> insns;
   std::vector<double> float_pool;
+  std::vector<t81::T81BigInt> bigint_pool;
   std::vector<t81::T81Fraction> fraction_pool;
   std::vector<std::string> symbol_pool;
   std::vector<t81::T729DynamicTensor> tensor_pool;

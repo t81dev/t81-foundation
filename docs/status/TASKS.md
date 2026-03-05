@@ -122,6 +122,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - Extend IR Immediate type for full BigInt support
   - Update binary emitter for arbitrary-precision literals
   - Phase-2 plan captured in `docs/status/BG07_PHASE2_IMPLEMENTATION_NOTES.md`
+  - Scaffolding landed: `LiteralKind::BigIntHandle`, `Program::bigint_pool`, emitter and binary I/O transport wiring
   - Phase-2 start: base-81 IR literal path now reports explicit overflow diagnostics
   - Target: Begin Q2 2026
   - Status: **ARCHITECTURAL ENHANCEMENT**

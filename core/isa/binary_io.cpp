@@ -289,6 +289,9 @@ void save_program(const Program& program, const std::string& path) {
   for (const auto& enum_meta : program.enum_metadata) {
     write_enum_metadata(file, enum_meta);
   }
+  if (!program.bigint_pool.empty()) {
+    write_serializable_vector(file, program.bigint_pool);
+  }
 }
 
 Program load_program(const std::string& path) {
@@ -324,6 +327,9 @@ Program load_program(const std::string& path) {
       for (auto& enum_meta : program.enum_metadata) {
         read_enum_metadata(file, enum_meta);
       }
+    }
+    if (file.peek() != std::char_traits<char>::eof()) {
+      read_serializable_vector(file, program.bigint_pool);
     }
   }
 

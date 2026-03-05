@@ -127,6 +127,26 @@ void test_float_literal_pool_mapping() {
   std::cout << "BinaryEmitterTest test_float_literal_pool_mapping passed!" << std::endl;
 }
 
+void test_bigint_literal_pool_mapping() {
+  IntermediateProgram ir_program;
+  Instruction load_bigint{Opcode::LOADI, {Register{1}}};
+  load_bigint.literal_kind = t81::tisc::LiteralKind::BigIntHandle;
+  load_bigint.text_literal = "9223372036854775808";
+  ir_program.add_instruction(load_bigint);
+  ir_program.add_instruction({Opcode::HALT, {}});
+
+  t81::tisc::BinaryEmitter emitter;
+  auto program = emitter.emit(ir_program);
+
+  assert(program.bigint_pool.size() == 1);
+  assert(program.bigint_pool[0].to_string() == "9223372036854775808");
+  assert(program.insns[0].opcode == t81::tisc::Opcode::LoadImm);
+  assert(program.insns[0].literal_kind == t81::tisc::LiteralKind::BigIntHandle);
+  assert(program.insns[0].b == 1);
+
+  std::cout << "BinaryEmitterTest test_bigint_literal_pool_mapping passed!" << std::endl;
+}
+
 void test_string_opcode_mappings() {
   IntermediateProgram ir_program;
   ir_program.add_instruction({Opcode::STRCONCAT, {Register{1}, Register{2}, Register{3}}});
@@ -210,6 +230,7 @@ int main() {
   test_all_comparison_relations();
   test_print_opcode_mapping();
   test_float_literal_pool_mapping();
+  test_bigint_literal_pool_mapping();
   test_string_opcode_mappings();
   test_bitwise_opcode_mappings();
   test_bitwise_pretty_printer();

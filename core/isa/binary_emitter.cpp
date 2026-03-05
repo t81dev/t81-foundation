@@ -1,4 +1,5 @@
 #include "t81/isa/binary_emitter.hpp"
+#include <cctype>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -90,6 +91,37 @@ Opcode map_relation(ir::ComparisonRelation relation) {
     default:
       return Opcode::Cmp;
   }
+}
+
+T81BigInt parse_decimal_bigint_literal(std::string_view text) {
+  if (text.empty()) {
+    throw std::runtime_error("Empty BigInt literal.");
+  }
+  bool neg = false;
+  std::size_t pos = 0;
+  if (text[pos] == '+' || text[pos] == '-') {
+    neg = (text[pos] == '-');
+    ++pos;
+    if (pos >= text.size()) {
+      throw std::runtime_error("Invalid BigInt literal sign.");
+    }
+  }
+  T81BigInt acc = T81BigInt::from_i64(0);
+  const T81BigInt ten = T81BigInt::from_i64(10);
+  bool have_digit = false;
+  for (; pos < text.size(); ++pos) {
+    const unsigned char ch = static_cast<unsigned char>(text[pos]);
+    if (!std::isdigit(ch)) {
+      throw std::runtime_error("Invalid character in BigInt literal.");
+    }
+    acc = acc * ten;
+    acc = acc + T81BigInt::from_i64(static_cast<std::int64_t>(text[pos] - '0'));
+    have_digit = true;
+  }
+  if (!have_digit) {
+    throw std::runtime_error("BigInt literal missing digits.");
+  }
+  return neg ? -acc : acc;
 }
 
 Opcode map_opcode(const ir::Instruction& instr) {
@@ -435,6 +467,11 @@ Program BinaryEmitter::emit(const ir::IntermediateProgram& ir_program) {
           case LiteralKind::SymbolHandle: {
             int symbol_index = ensure_symbol(*instr.text_literal);
             vm_insn.b = symbol_index;
+            break;
+          }
+          case LiteralKind::BigIntHandle: {
+            program.bigint_pool.push_back(parse_decimal_bigint_literal(*instr.text_literal));
+            vm_insn.b = static_cast<std::int64_t>(program.bigint_pool.size());
             break;
           }
           default:

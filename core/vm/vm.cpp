@@ -513,6 +513,7 @@ public:
           return ValueTag::TensorHandle;
         case t81::tisc::LiteralKind::ShapeHandle:
           return ValueTag::ShapeHandle;
+        case t81::tisc::LiteralKind::BigIntHandle:
         case t81::tisc::LiteralKind::Int:
         default:
           return ValueTag::Int;
