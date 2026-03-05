@@ -108,8 +108,37 @@ void test_i2frac_deterministic_extension() {
   std::cout << "I2Frac deterministic pool extension passed." << std::endl;
 }
 
+void test_loadimm_bigint_handle_extension() {
+  std::cout << "Testing LOADI BigIntHandle deterministic extension..." << std::endl;
+
+  t81::tisc::Program program;
+  program.bigint_pool.push_back(t81::T81BigInt::from_i64(9223372036854775807LL) +
+                                t81::T81BigInt::one());
+
+  program.insns.push_back({Opcode::LoadImm, 1, 1, 0, LiteralKind::BigIntHandle});
+  program.insns.push_back({Opcode::Halt, 0, 0, 0, LiteralKind::Int});
+
+  auto vm = make_interpreter_vm();
+  vm->load_program(program);
+
+  const auto& state = vm->state();
+  assert(state.fractions.empty());
+
+  auto res = vm->run_to_halt();
+  assert(res.has_value());
+
+  assert(state.fractions.size() == 1);
+  assert(state.fractions[0].num.to_string() == "9223372036854775808");
+  assert(state.fractions[0].den.to_int64() == 1);
+  assert(state.contexts[0].registers[1] == 1);
+  assert(state.contexts[0].register_tags[1] == ValueTag::FractionHandle);
+
+  std::cout << "LOADI BigIntHandle deterministic extension passed." << std::endl;
+}
+
 int main() {
   test_i2f_deterministic_extension();
   test_i2frac_deterministic_extension();
+  test_loadimm_bigint_handle_extension();
   return 0;
 }

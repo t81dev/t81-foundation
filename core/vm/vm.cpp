@@ -1236,6 +1236,19 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
+        if (insn.literal_kind == t81::tisc::LiteralKind::BigIntHandle) {
+          if (insn.b <= 0 ||
+              static_cast<std::size_t>(insn.b) > program_.bigint_pool.size()) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          const auto idx = static_cast<std::size_t>(insn.b - 1);
+          t81::T81Fraction frac(program_.bigint_pool[idx], t81::T81BigInt::one());
+          const std::int64_t handle = alloc_fraction(std::move(frac));
+          set_reg(insn.a, handle, ValueTag::FractionHandle);
+          update_flags(ctx.registers[insn.a]);
+          break;
+        }
         auto tag = literal_kind_to_tag(insn.literal_kind);
         std::int64_t value = insn.b;
         if (tag == ValueTag::SymbolHandle) {

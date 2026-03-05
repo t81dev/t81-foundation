@@ -24,6 +24,14 @@ Implement true arbitrary-precision integer literal transport from frontend IR to
    - binary round-trip for BigInt literal payloads
    - VM execution conformance for >64-bit literal paths
 
+## Progress (2026-03-05)
+
+- ✅ Item 1 landed: `LiteralKind::BigIntHandle` + `Program::bigint_pool`.
+- ✅ Item 3 landed: binary emitter and binary I/O wiring for BigInt literal pool transport.
+- ✅ Item 4 landed (incremental): VM `LOADI` materializes `BigIntHandle` as canonical `FractionHandle` (`BigInt/1`) to avoid lossy 64-bit conversion.
+- ✅ Partial item 5 landed: VM conformance coverage added in `tests/cpp/test_vm_literal_pool_extension.cpp`.
+- ⏳ Remaining primary gap: item 2 (frontend lowering of oversized literals to `BigIntHandle`) and full binary round-trip conformance coverage.
+
 ## Acceptance Signal
 
 - No >64-bit integer literal truncation on IR→binary→VM path.
