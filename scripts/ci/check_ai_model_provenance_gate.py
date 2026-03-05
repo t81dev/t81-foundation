@@ -229,12 +229,20 @@ def write_manifest(path: Path, model_path: Path, model_hash_hex: str, keyring_pa
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 
 
+def parse_required_lineage_events(raw: str) -> list[str]:
+    events = [part.strip() for part in raw.split(",") if part.strip()]
+    if not events:
+        raise ValueError("required lineage events list cannot be empty")
+    return events
+
+
 def gate_model_load(
     model_path: Path,
     manifest_path: Path,
     keyring_path: Path,
     expected_hash: str | None = None,
     min_lineage_entries: int = 1,
+    required_lineage_events: list[str] | None = None,
 ) -> GateResult:
     if not model_path.exists():
         return GateResult(False, f"missing model file: {model_path}")
@@ -289,6 +297,20 @@ def gate_model_load(
             False,
             f"provenance_chain.entries must contain at least {min_lineage_entries} entries (found {len(entries)})",
         )
+    if required_lineage_events:
+        if len(entries) < len(required_lineage_events):
+            return GateResult(
+                False,
+                "provenance_chain.entries shorter than required lineage event sequence: "
+                f"{len(entries)} < {len(required_lineage_events)}",
+            )
+        for idx, expected_event in enumerate(required_lineage_events, start=1):
+            observed_event = str(entries[idx - 1].get("event", "")).strip() if isinstance(entries[idx - 1], dict) else ""
+            if observed_event != expected_event:
+                return GateResult(
+                    False,
+                    f"chain entry {idx} event mismatch: {observed_event} != {expected_event}",
+                )
 
     prev_sha = ""
     for idx, entry in enumerate(entries, start=1):
@@ -364,6 +386,11 @@ def parse_args() -> argparse.Namespace:
         default=2,
         help="Require at least this many provenance_chain entries (default: 2).",
     )
+    p.add_argument(
+        "--required-lineage-events",
+        default="artifact_ingest,artifact_promotion_candidate",
+        help="Comma-separated required leading lineage events (default: artifact_ingest,artifact_promotion_candidate).",
+    )
     return p.parse_args()
 
 
@@ -383,12 +410,18 @@ def main() -> int:
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         write_manifest(manifest_path, model_path, computed, keyring_path)
 
+    try:
+        required_events = parse_required_lineage_events(args.required_lineage_events)
+    except ValueError as exc:
+        print(f"[FAIL] invalid --required-lineage-events: {exc}")
+        return 1
     positive = gate_model_load(
         model_path,
         manifest_path,
         keyring_path,
         args.expected_hash if args.expected_hash else None,
         max(1, int(args.min_lineage_entries)),
+        required_events,
     )
     if not positive.ok:
         print(f"[FAIL] positive gate check: {positive.reason}")
@@ -402,6 +435,7 @@ def main() -> int:
             keyring_path,
             "sha256:" + ("0" * 64),
             max(1, int(args.min_lineage_entries)),
+            required_events,
         )
         if negative.ok:
             print("[FAIL] negative gate check: expected denial but gate passed")
