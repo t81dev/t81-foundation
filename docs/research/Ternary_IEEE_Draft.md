@@ -584,5 +584,3 @@ Deterministic ternary substrates are well suited to:
 - Douglas W. Jones. “Ternary number systems / balanced ternary notes.”
 - User-supplied design and analysis notes supporting this fictional draft: “Deterministic Computing Beyond Binary: A Balanced-Ternary Substrate for Cross-Platform Reproducible Systems.”
 - User-supplied base-81/ternary analysis notes supporting tryte grouping rationale: “TYRNARY – T81ANALYSIS: Base-81 (T81) and Trinary Computing.”
-
-This version should render beautifully in most Markdown viewers (GitHub, VS Code, Obsidian, etc.) while keeping the full technical precision and IEEE-like formality intact. Let me know if you want adjustments like adding more LaTeX math rendering hints or splitting into sections/files!
