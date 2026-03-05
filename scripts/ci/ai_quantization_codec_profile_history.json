@@ -2,28 +2,40 @@
   "schema": "t81.ai.quantization-codec-profile-history.v1",
   "windows": [
     {
-      "window_id": "2026-02",
-      "window_start": "2026-02-01",
-      "window_end": "2026-02-28",
       "profile": {
-        "schema": "t81.ai.quantization-codec-profile.v1",
         "codec_prefix": "T3_K",
-        "quantization_profile_prefix": "runtime-",
+        "max_bits_per_weight": 8,
         "min_bits_per_weight": 1,
-        "max_bits_per_weight": 8
-      }
+        "quantization_profile_prefix": "runtime-",
+        "schema": "t81.ai.quantization-codec-profile.v1"
+      },
+      "promotion_approval": {
+        "approved_at": "2026-02-01",
+        "approved_by": "@t81dev",
+        "change_ref": "rfc00a4-window-2026-02"
+      },
+      "promotion_approval_attestation_sha256": "77ee4b834bc181d0c81c6f301d7ed693d40561e4146f9d7dc3bc4299445f235b",
+      "window_end": "2026-02-28",
+      "window_id": "2026-02",
+      "window_start": "2026-02-01"
     },
     {
-      "window_id": "2026-03",
-      "window_start": "2026-03-01",
-      "window_end": "2026-03-31",
       "profile": {
-        "schema": "t81.ai.quantization-codec-profile.v1",
         "codec_prefix": "T3_K",
-        "quantization_profile_prefix": "runtime-",
+        "max_bits_per_weight": 8,
         "min_bits_per_weight": 1,
-        "max_bits_per_weight": 8
-      }
+        "quantization_profile_prefix": "runtime-",
+        "schema": "t81.ai.quantization-codec-profile.v1"
+      },
+      "promotion_approval": {
+        "approved_at": "2026-03-01",
+        "approved_by": "@t81dev",
+        "change_ref": "rfc00a4-window-2026-03"
+      },
+      "promotion_approval_attestation_sha256": "823d4a583c41ed09d9479a7c4b117849747d396cd964879a147075436a14fa29",
+      "window_end": "2026-03-31",
+      "window_id": "2026-03",
+      "window_start": "2026-03-01"
     }
   ]
 }

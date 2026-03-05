@@ -21,6 +21,7 @@ on:
       - 'scripts/ci/ai_benchmark_thresholds.json'
       - 'scripts/ci/ai_benchmark_thresholds_history.json'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
+      - 'scripts/ci/check_ai_quantization_profile_approvals.py'
       - 'scripts/ci/ai_quantization_codec_profile.json'
       - 'scripts/ci/ai_quantization_codec_profile_history.json'
       - 'scripts/ci/check_ai_ux_contract.py'
@@ -56,6 +57,7 @@ on:
       - 'scripts/ci/ai_benchmark_thresholds.json'
       - 'scripts/ci/ai_benchmark_thresholds_history.json'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
+      - 'scripts/ci/check_ai_quantization_profile_approvals.py'
       - 'scripts/ci/ai_quantization_codec_profile.json'
       - 'scripts/ci/ai_quantization_codec_profile_history.json'
       - 'scripts/ci/check_ai_ux_contract.py'
@@ -398,6 +400,14 @@ jobs:
           --codec-profile-file scripts/ci/ai_quantization_codec_profile.json \
           --codec-profile-history-file scripts/ci/ai_quantization_codec_profile_history.json
 
+    - name: Validate quantization profile window approvals (RFC-00A4 promotion policy)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-quantization
+        python3 scripts/ci/check_ai_quantization_profile_approvals.py \
+          --history-file scripts/ci/ai_quantization_codec_profile_history.json \
+          --out-json build/ai-quantization/ai_quantization_profile_approval_report.json
+
     - name: Validate AI UX contract (RFC-00A7 baseline)
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -487,6 +497,12 @@ jobs:
         cat build/ai-opcodes-runtime/ai_opcode_runtime_report.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-benchmark/ai_benchmark_spec_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-quantization/ai_quantization_codec_contract.md >> "$GITHUB_STEP_SUMMARY"
+        {
+          echo "# RFC-00A4 Profile Approval Policy"
+          echo ""
+          echo "- report: \`build/ai-quantization/ai_quantization_profile_approval_report.json\`"
+          echo ""
+        } >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-ux/ai_ux_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-ux/ai_direct_backend_execution_attestation.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-cross-lane/ai_cross_lane_evidence.md >> "$GITHUB_STEP_SUMMARY"
@@ -543,6 +559,7 @@ jobs:
           build/ai-benchmark/ai_benchmark_spec_contract.md
           build/ai-quantization/ai_quantization_codec_contract.json
           build/ai-quantization/ai_quantization_codec_contract.md
+          build/ai-quantization/ai_quantization_profile_approval_report.json
           build/ai-ux/ai_ux_contract.json
           build/ai-ux/ai_ux_contract.md
           build/ai-ux/ai_backend_capabilities.json
