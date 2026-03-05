@@ -17,6 +17,7 @@ on:
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - 'scripts/ci/check_ai_ux_contract.py'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
+      - 'scripts/ci/run_governed_llama_flow.py'
       - '.github/workflows/ai-experiments-ci.yml'
   pull_request:
     branches: [ main ]
@@ -34,6 +35,7 @@ on:
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - 'scripts/ci/check_ai_ux_contract.py'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
+      - 'scripts/ci/run_governed_llama_flow.py'
       - '.github/workflows/ai-experiments-ci.yml'
   workflow_dispatch:
 
@@ -96,6 +98,32 @@ jobs:
           --t81-bin build/t81 \
           --input-file tests/fixtures/llama_cpp_repro/model.gguf \
           --out-dir build/ai-rfc0025
+
+    - name: Configure llama-enabled build (optional governed runtime evidence)
+      if: vars.T81_ENABLE_LLAMA_REPRO == '1' && steps.build_ai.outputs.has_target == 'true' && hashFiles('tests/fixtures/llama_cpp_repro/model.gguf') != ''
+      run: |
+        cmake -S . -B build-llama-ai -G Ninja \
+          -DT81_ENABLE_LLAMA_CPP=ON \
+          -DT81_BUILD_TESTS=OFF \
+          -DT81_BUILD_BENCHMARKS=OFF \
+          -DT81_BUILD_FUZZ_TESTS=OFF
+        cmake --build build-llama-ai --target t81 --parallel 2
+
+    - name: Run governed llama flow evidence (optional)
+      if: vars.T81_ENABLE_LLAMA_REPRO == '1' && steps.build_ai.outputs.has_target == 'true' && hashFiles('tests/fixtures/llama_cpp_repro/model.gguf') != ''
+      run: |
+        mkdir -p build/ai-governed
+        python3 scripts/ci/run_governed_llama_flow.py \
+          --t81-bin build-llama-ai/t81 \
+          --model tests/fixtures/llama_cpp_repro/model.gguf \
+          --prompt "Deterministic governed inference check." \
+          --out-dir build/ai-governed \
+          --max-tokens 8 \
+          --seed 0 \
+          --threads 1 \
+          --temperature 0 \
+          --top-k 1 \
+          --top-p 1.0
 
     - name: Verify Binary Exists
       if: steps.build_ai.outputs.has_target == 'true'
@@ -214,6 +242,7 @@ jobs:
           echo "- ctest regex: \`t81_vm_tloadhash_conformance_test|t81_vm_tloadhash_decodefault_determinism_matrix_test\`"
           echo "- log: \`build/ai-rfc0025/tloadhash-ctest.log\`"
           echo "- toolchain artifact: \`build/ai-rfc0025/ai_tloadhash_toolchain.json\`"
+          echo "- governed runtime artifact (optional lane): \`build/ai-governed/governed_llama_flow.json\`"
           echo ""
         } >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-rfc0025/ai_tloadhash_toolchain.md >> "$GITHUB_STEP_SUMMARY"
@@ -244,3 +273,9 @@ jobs:
           build/ai-rfc0025/ai_tloadhash_toolchain.json
           build/ai-rfc0025/ai_tloadhash_toolchain.md
           build/ai-rfc0025/policy.apl
+          build/ai-governed/governed_llama_flow.json
+          build/ai-governed/canonize.stdout.log
+          build/ai-governed/canonize.stderr.log
+          build/ai-governed/llama_run.stdout.log
+          build/ai-governed/llama_run.stderr.log
+          build/ai-governed/policy.apl
