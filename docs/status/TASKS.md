@@ -149,11 +149,12 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - Completed: 2026-03-05
   - Status: **✅ RESOLVED**
 
-- [ ] **CLI-02: Trace Replay UX Hardening**
-  - Improve `trace replay` mismatch diagnostics with actionable diff context
-  - Add JSON output mode for machine-readable CI triage
-  - Target: 2026-03-10
-  - Status: **PLANNED**
+- [x] **CLI-02: Trace Replay UX Hardening** - **✅ COMPLETED**
+  - ✅ `trace replay` mismatch diagnostics now include indexed expected/actual context
+  - ✅ Added `--json` machine-readable replay report (`t81.trace-replay.v1`) for CI triage
+  - ✅ Contract coverage added for replay success + mismatch JSON paths
+  - Completed: 2026-03-05
+  - Status: **✅ RESOLVED**
 
 - [ ] **CLI-03: Weights Workflow Guardrails**
   - Add format/extension validation matrix tests for `weights import/info/quantize`

@@ -1068,12 +1068,56 @@ int run_trace_diff(const TraceArgs& args) {
 }
 
 int run_trace_replay(const TraceArgs& args) {
-  if (args.args.size() < 2) {
+  bool as_json = false;
+  std::vector<std::string> positional;
+  positional.reserve(args.args.size());
+  for (const auto& token : args.args) {
+    if (token == "--json") {
+      as_json = true;
+      continue;
+    }
+    if (!token.empty() && token[0] == '-') {
+      error("trace replay: unknown option '" + token + "'");
+      return 1;
+    }
+    positional.push_back(token);
+  }
+
+  if (positional.size() < 2) {
     error("trace replay requires a .tisc file and a canonical trace file");
     return 1;
   }
-  fs::path tisc_path = args.args[0];
-  fs::path trace_path = args.args[1];
+
+  const auto json_escape_local = [](std::string_view text) {
+    std::string out;
+    out.reserve(text.size());
+    for (char c : text) {
+      switch (c) {
+        case '\\':
+          out += "\\\\";
+          break;
+        case '"':
+          out += "\\\"";
+          break;
+        case '\n':
+          out += "\\n";
+          break;
+        case '\r':
+          out += "\\r";
+          break;
+        case '\t':
+          out += "\\t";
+          break;
+        default:
+          out.push_back(c);
+          break;
+      }
+    }
+    return out;
+  };
+
+  fs::path tisc_path = positional[0];
+  fs::path trace_path = positional[1];
   auto program = t81::tisc::load_program(tisc_path.string());
   auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
@@ -1083,19 +1127,82 @@ int run_trace_replay(const TraceArgs& args) {
   std::vector<std::string> saved_trace;
   std::string line;
   while (std::getline(ifs, line)) saved_trace.push_back(line);
+
+  const auto print_json = [&](bool ok, std::string_view kind, std::size_t mismatch_index,
+                              const std::string* expected, const std::string* actual) {
+    std::cout << "{\n";
+    std::cout << "  \"schema\": \"t81.trace-replay.v1\",\n";
+    std::cout << "  \"ok\": " << (ok ? "true" : "false") << ",\n";
+    std::cout << "  \"kind\": \"" << kind << "\",\n";
+    std::cout << "  \"actual_entries\": " << current_trace.size() << ",\n";
+    std::cout << "  \"expected_entries\": " << saved_trace.size() << ",\n";
+    if (ok) {
+      std::cout << "  \"compared_entries\": " << current_trace.size() << ",\n";
+      std::cout << "  \"mismatch_index\": null,\n";
+      std::cout << "  \"expected\": null,\n";
+      std::cout << "  \"actual\": null\n";
+    } else {
+      std::cout << "  \"compared_entries\": " << mismatch_index << ",\n";
+      std::cout << "  \"mismatch_index\": " << mismatch_index << ",\n";
+      if (expected) {
+        std::cout << "  \"expected\": \"" << json_escape_local(*expected) << "\",\n";
+      } else {
+        std::cout << "  \"expected\": null,\n";
+      }
+      if (actual) {
+        std::cout << "  \"actual\": \"" << json_escape_local(*actual) << "\"\n";
+      } else {
+        std::cout << "  \"actual\": null\n";
+      }
+    }
+    std::cout << "}\n";
+  };
+
   if (current_trace.size() != saved_trace.size()) {
-    error("Trace size mismatch! Current: " + std::to_string(current_trace.size()) +
-          ", Saved: " + std::to_string(saved_trace.size()));
+    std::size_t mismatch_index = std::min(current_trace.size(), saved_trace.size());
+    std::optional<std::string> expected_line;
+    std::optional<std::string> actual_line;
+    if (mismatch_index < saved_trace.size()) {
+      expected_line = saved_trace[mismatch_index];
+    }
+    if (mismatch_index < current_trace.size()) {
+      actual_line = format_trace_entry(current_trace[mismatch_index]);
+    }
+    if (as_json) {
+      print_json(false, "size_mismatch", mismatch_index, expected_line ? &*expected_line : nullptr,
+                 actual_line ? &*actual_line : nullptr);
+    }
+    error("Trace size mismatch at entry " + std::to_string(mismatch_index) +
+          " (actual=" + std::to_string(current_trace.size()) +
+          ", expected=" + std::to_string(saved_trace.size()) + ")");
+    if (expected_line) std::cerr << "Expected[" << mismatch_index << "]: " << *expected_line << "\n";
+    if (actual_line) std::cerr << "Actual[" << mismatch_index << "]:   " << *actual_line << "\n";
     return 1;
   }
   for (size_t i = 0; i < current_trace.size(); ++i) {
     std::string cur = format_trace_entry(current_trace[i]);
     if (cur != saved_trace[i]) {
+      if (as_json) {
+        print_json(false, "entry_mismatch", i, &saved_trace[i], &cur);
+      }
       error("Trace mismatch at entry " + std::to_string(i));
-      std::cerr << "Expected: " << saved_trace[i] << "\n";
-      std::cerr << "Actual:   " << cur << "\n";
+      std::cerr << "Expected[" << i << "]: " << saved_trace[i] << "\n";
+      std::cerr << "Actual[" << i << "]:   " << cur << "\n";
+      if (i > 0) {
+        std::cerr << "Previous expected[" << (i - 1) << "]: " << saved_trace[i - 1] << "\n";
+        std::cerr << "Previous actual[" << (i - 1) << "]:   "
+                  << format_trace_entry(current_trace[i - 1]) << "\n";
+      }
+      if (i + 1 < current_trace.size()) {
+        std::cerr << "Next expected[" << (i + 1) << "]: " << saved_trace[i + 1] << "\n";
+        std::cerr << "Next actual[" << (i + 1) << "]:   " << format_trace_entry(current_trace[i + 1])
+                  << "\n";
+      }
       return 1;
     }
+  }
+  if (as_json) {
+    print_json(true, "identical", current_trace.size(), nullptr, nullptr);
   }
   info("Replay successful: traces are bit-identical");
   return 0;

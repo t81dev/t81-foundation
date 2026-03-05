@@ -211,6 +211,7 @@ Options:
   --format <json|csv>             Export format (default: json)
   -o, --out <file>                Output file path (default: stdout)
   --no-color                      Disable ANSI colors in show/diff output
+  --json                          Machine-readable output (replay only)
 
 Examples:
   t81 trace show trace.log
@@ -618,7 +619,7 @@ Usage: t81 trace diff <trace1.txt> <trace2.txt> [--no-color]
 
 void print_help_trace_replay() {
   std::cerr << R"(
-Usage: t81 trace replay <file.tisc> <trace.txt>
+Usage: t81 trace replay <file.tisc> <trace.txt> [--json]
 )";
 }
 

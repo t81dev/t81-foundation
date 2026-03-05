@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -478,6 +479,63 @@ int main(int argc, char* argv[]) {
     const auto debug_bad_ext = run_cli(t81_bin, {"debug", not_tisc_path.string()});
     T81_TEST_CHECK(debug_bad_ext.exit_code == 1);
     T81_TEST_CHECK(contains(debug_bad_ext.stderr_text, "debug expects .t81 or .tisc file"));
+
+    const auto trace_capture_result = run_cli(t81_bin, {"run", program_path.string(), "--trace"});
+    T81_TEST_CHECK(trace_capture_result.exit_code == 0);
+    T81_TEST_CHECK(contains(trace_capture_result.stderr_text, "legacy alias"));
+
+    std::vector<std::string> trace_lines;
+    {
+      std::istringstream in(trace_capture_result.stdout_text);
+      std::string trace_line;
+      while (std::getline(in, trace_line)) {
+        if (trace_line.rfind("PC=", 0) == 0) {
+          trace_lines.push_back(trace_line);
+        }
+      }
+    }
+    T81_TEST_CHECK(!trace_lines.empty());
+
+    const fs::path expected_trace_path = temp_dir / "hello.trace";
+    {
+      std::ofstream out(expected_trace_path);
+      for (const auto& trace_line : trace_lines) {
+        out << trace_line << '\n';
+      }
+    }
+
+    const auto replay_ok_result =
+        run_cli(t81_bin, {"trace", "replay", program_path.string(), expected_trace_path.string()});
+    T81_TEST_CHECK(replay_ok_result.exit_code == 0);
+    T81_TEST_CHECK(contains(replay_ok_result.stdout_text, "Replay successful: traces are bit-identical"));
+
+    const auto replay_ok_json =
+        run_cli(t81_bin, {"trace", "replay", program_path.string(), expected_trace_path.string(), "--json"});
+    T81_TEST_CHECK(replay_ok_json.exit_code == 0);
+    T81_TEST_CHECK(contains(replay_ok_json.stdout_text, "\"schema\": \"t81.trace-replay.v1\""));
+    T81_TEST_CHECK(contains(replay_ok_json.stdout_text, "\"ok\": true"));
+    T81_TEST_CHECK(contains(replay_ok_json.stdout_text, "\"kind\": \"identical\""));
+
+    const fs::path mismatch_trace_path = temp_dir / "hello-mismatch.trace";
+    {
+      std::ofstream out(mismatch_trace_path);
+      T81_TEST_CHECK(static_cast<bool>(out));
+      out << trace_lines[0] << " trap=DecodeFault\n";
+      for (size_t i = 1; i < trace_lines.size(); ++i) {
+        out << trace_lines[i] << '\n';
+      }
+    }
+
+    const auto replay_mismatch_json = run_cli(
+        t81_bin, {"trace", "replay", program_path.string(), mismatch_trace_path.string(), "--json"});
+    T81_TEST_CHECK(replay_mismatch_json.exit_code == 1);
+    T81_TEST_CHECK(contains(replay_mismatch_json.stdout_text, "\"schema\": \"t81.trace-replay.v1\""));
+    T81_TEST_CHECK(contains(replay_mismatch_json.stdout_text, "\"ok\": false"));
+    T81_TEST_CHECK(contains(replay_mismatch_json.stdout_text, "\"kind\": \"entry_mismatch\""));
+    T81_TEST_CHECK(contains(replay_mismatch_json.stdout_text, "\"mismatch_index\": 0"));
+    T81_TEST_CHECK(contains(replay_mismatch_json.stderr_text, "Trace mismatch at entry 0"));
+    T81_TEST_CHECK(contains(replay_mismatch_json.stderr_text, "Expected[0]:"));
+    T81_TEST_CHECK(contains(replay_mismatch_json.stderr_text, "Actual[0]:"));
 
     fs::remove_all(temp_dir, ignore_ec);
   }
