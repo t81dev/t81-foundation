@@ -32,7 +32,7 @@ Implement true arbitrary-precision integer literal transport from frontend IR to
 - ✅ Item 2 landed for oversized decimal/base81 integers: frontend IR lowering now emits `BigIntHandle` on 64-bit overflow instead of hard failing.
 - ✅ Partial item 5 landed: VM conformance coverage added in `tests/cpp/test_vm_literal_pool_extension.cpp`.
 - ✅ Partial item 5 landed: frontend lowering coverage added in `tests/cpp/frontend_ir_generator_test.cpp`.
-- ⏳ Remaining primary gap: full binary round-trip conformance coverage for BigInt literal transport path.
+- ✅ Item 5 landed (binary conformance slice): explicit BigInt literal pool round-trip determinism coverage added in `tests/cpp/tisc_binary_io_determinism_test.cpp` and `tests/cpp/tisc_binary_metadata_roundtrip_property_test.cpp`.
 
 ## Acceptance Signal
 

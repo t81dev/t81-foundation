@@ -112,6 +112,17 @@ t81::tisc::Program random_program(std::mt19937_64& rng) {
     p.fraction_pool.emplace_back(t81::T81BigInt::from_i64(num), t81::T81BigInt::from_i64(den));
   }
 
+  const auto bigint_count = static_cast<int>(rng() % 6);
+  for (int i = 0; i < bigint_count; ++i) {
+    const auto hi = t81::T81BigInt::from_i64(static_cast<std::int64_t>(rng() % 9000000000000000000ULL));
+    const auto lo = t81::T81BigInt::from_i64(static_cast<std::int64_t>(rng() % 9000000000000000000ULL));
+    t81::T81BigInt v = (hi * t81::T81BigInt::from_i64(10)) + lo;
+    if ((rng() & 1ULL) != 0ULL) {
+      v = t81::T81BigInt::neg(v);
+    }
+    p.bigint_pool.push_back(v);
+  }
+
   const auto symbol_count = static_cast<int>(rng() % 6);
   for (int i = 0; i < symbol_count; ++i) {
     p.symbol_pool.push_back(rand_ident(rng, "sym"));
@@ -160,6 +171,10 @@ bool program_equal(const t81::tisc::Program& a, const t81::tisc::Program& b) {
   }
 
   if (a.float_pool != b.float_pool) return false;
+  if (a.bigint_pool.size() != b.bigint_pool.size()) return false;
+  for (std::size_t i = 0; i < a.bigint_pool.size(); ++i) {
+    if (a.bigint_pool[i].to_string() != b.bigint_pool[i].to_string()) return false;
+  }
   if (a.symbol_pool != b.symbol_pool) return false;
   if (a.shape_pool != b.shape_pool) return false;
   if (a.axion_policy_text != b.axion_policy_text) return false;

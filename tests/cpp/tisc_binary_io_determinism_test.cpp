@@ -27,14 +27,30 @@ static std::vector<uint8_t> read_u8(const fs::path& path) {
   return std::vector<uint8_t>(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
 }
 
+static t81::T81BigInt make_repeated_digit_bigint(int digits, int digit) {
+  t81::T81BigInt value = t81::T81BigInt::from_i64(0);
+  const t81::T81BigInt ten = t81::T81BigInt::from_i64(10);
+  const t81::T81BigInt d = t81::T81BigInt::from_i64(digit);
+  for (int i = 0; i < digits; ++i) {
+    value = value * ten + d;
+  }
+  return value;
+}
+
 static bool test_save_program_is_bit_stable_for_same_program() {
   t81::tisc::Program program;
   program.insns.push_back({t81::tisc::Opcode::LoadImm, 1, 42, 0, t81::tisc::LiteralKind::Int});
   program.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 1, 0, t81::tisc::LiteralKind::Bool});
+  program.insns.push_back({t81::tisc::Opcode::LoadImm, 3, 1, 0, t81::tisc::LiteralKind::BigIntHandle});
   program.insns.push_back({t81::tisc::Opcode::Print, 1, 0, 0, t81::tisc::LiteralKind::Int});
   program.insns.push_back({t81::tisc::Opcode::Print, 2, 0, 0, t81::tisc::LiteralKind::Bool});
+  program.insns.push_back({t81::tisc::Opcode::Print, 3, 0, 0, t81::tisc::LiteralKind::Int});
   program.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0, t81::tisc::LiteralKind::Int});
   program.float_pool = {1.25, -2.5};
+  program.bigint_pool = {
+      t81::T81BigInt::from_i64(9223372036854775807LL) + t81::T81BigInt::one(),
+      t81::T81BigInt::neg(make_repeated_digit_bigint(60, 7)),
+  };
   program.symbol_pool = {"alpha", "beta"};
   program.axion_policy_text = "(policy (tier 1))";
   program.match_metadata_text = "(match-metadata)";
@@ -68,10 +84,35 @@ static bool test_save_program_is_bit_stable_for_same_program() {
               "literal kind roundtrip mismatch")) {
     return false;
   }
+  if (!expect(loaded.insns[2].literal_kind == t81::tisc::LiteralKind::BigIntHandle,
+              "bigint literal kind roundtrip mismatch")) {
+    return false;
+  }
+  if (!expect(loaded.bigint_pool.size() == program.bigint_pool.size(),
+              "bigint pool size roundtrip mismatch")) {
+    return false;
+  }
+  for (std::size_t i = 0; i < program.bigint_pool.size(); ++i) {
+    if (!expect(loaded.bigint_pool[i].to_string() == program.bigint_pool[i].to_string(),
+                "bigint pool payload roundtrip mismatch")) {
+      return false;
+    }
+  }
+
+  const fs::path f3 = fs::temp_directory_path() / "t81-binary-io-determinism-3.tisc";
+  t81::tisc::save_program(loaded, f3.string());
+  const auto b3 = read_u8(f3);
+  if (!expect(!b3.empty(), "reserialized output is unexpectedly empty")) {
+    return false;
+  }
+  if (!expect(b1 == b3, "binary output drift after load/save roundtrip")) {
+    return false;
+  }
 
   std::error_code ec;
   fs::remove(f1, ec);
   fs::remove(f2, ec);
+  fs::remove(f3, ec);
   return true;
 }
 
