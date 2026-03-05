@@ -47,6 +47,7 @@ Feature work, new capabilities, and API additions live elsewhere.
 | **FW-02 (Slice 2)** | **Structural hardening** | **VM policy bridge extraction advanced** - `AxRead`/`AxSet`/`AxVerify`/`AxHalt` handling moved to dedicated helpers in `core/vm/vm.cpp`; full dispatch concentration reduction still open | **2026-03-05** |
 | **FW-02 (Slice 3)** | **Structural hardening** | **Axion opcode routing centralized** - `Ax*` opcode handling now routes through `handle_axion_opcode` in `core/vm/vm.cpp`; residual concentration work still open | **2026-03-05** |
 | **FW-02 (Slice 4)** | **Structural hardening** | **Axion case consolidation** - duplicate `Ax*` switch-case blocks collapsed into grouped dispatch paths in `core/vm/vm.cpp`; residual concentration work still open | **2026-03-05** |
+| **FW-02 (Slice 5)** | **Structural hardening** | **Axion dispatch locality improved** - `AxHalt` case moved into consolidated `Ax*` switch block; Axion dispatch no longer split across distant switch regions | **2026-03-05** |
 | **AX-M5** | **Promotion evidence** | **Determinism stewardship evidence map completed** | **2026-03-04** |
 | **AX-M6** | **Promotion evidence** | **CanonFS observability lifecycle evidence completed** | **2026-03-04** |
 | **AX-M7** | **Promotion evidence** | **Complexity measurement evidence completed** | **2026-03-04** |

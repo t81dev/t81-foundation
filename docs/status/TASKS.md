@@ -105,7 +105,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - Extract `AxRead`/`AxSet`/`AxVerify`/`AxHalt` helpers from dispatch loop
   - Route `Ax*` opcode handling through centralized VM handler
   - Reduce opcode dispatch concentration
-  - Progress: AxCheck/AxReport + AxRead/AxSet/AxVerify/AxHalt extracted to dedicated VM helpers; Axion opcode routing centralized via `handle_axion_opcode` (`core/vm/vm.cpp`, 2026-03-05)
+  - Progress: AxCheck/AxReport + AxRead/AxSet/AxVerify/AxHalt extracted to dedicated VM helpers; Axion opcode routing centralized via `handle_axion_opcode`; `AxHalt` co-located in consolidated Axion switch block (`core/vm/vm.cpp`, 2026-03-05)
   - Target: 2026-04-15
   - Status: **TECHNICAL DEBT (ACTIVE)**
 

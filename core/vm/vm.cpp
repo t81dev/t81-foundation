@@ -3904,13 +3904,6 @@ public:
         }
         break;
       }
-      case t81::tisc::Opcode::AxHalt: {
-        if (auto ax_trap = handle_axion_opcode(insn, ctx, current_pc, symbol_like_text);
-            ax_trap.has_value()) {
-          trap = *ax_trap;
-        }
-        break;
-      }
       case t81::tisc::Opcode::Assert: {
         if (!reg_ok(insn.a)) {
           trap = Trap::DecodeFault;
@@ -4526,7 +4519,8 @@ public:
       case t81::tisc::Opcode::AxReport:
       case t81::tisc::Opcode::AxSign:
       case t81::tisc::Opcode::AxLineage:
-      case t81::tisc::Opcode::AxCanon: {
+      case t81::tisc::Opcode::AxCanon:
+      case t81::tisc::Opcode::AxHalt: {
         if (auto ax_trap = handle_axion_opcode(insn, ctx, current_pc, symbol_like_text);
             ax_trap.has_value()) {
           trap = *ax_trap;
