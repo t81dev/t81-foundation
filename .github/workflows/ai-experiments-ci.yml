@@ -193,7 +193,9 @@ jobs:
       run: |
         mkdir -p build/ai-policy
         python3 scripts/ci/check_ai_policy_event_contract.py \
-          --out-dir build/ai-policy
+          --out-dir build/ai-policy \
+          --runtime-trace build/ai-policy/ai_runtime_trace.json \
+          --ai-bin build/experiments/ai/ux_tools/t81_ai
 
     - name: Validate backend adapter contract (RFC-00A5 baseline)
       if: steps.build_ai.outputs.has_target == 'true'
@@ -322,6 +324,7 @@ jobs:
           build/ai-provenance/test_model.manifest.json
           build/ai-policy/ai_policy_event_contract.json
           build/ai-policy/ai_policy_event_contract.md
+          build/ai-policy/ai_runtime_trace.json
           build/ai-backend/ai_backend_adapter_contract.json
           build/ai-backend/ai_backend_adapter_contract.md
           build/ai-opcodes/ai_opcode_subset_contract.json
