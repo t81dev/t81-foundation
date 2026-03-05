@@ -40,6 +40,7 @@
 
 **Evidence Promotion Gate:**
 - Builds signed multi-lane AI evidence manifest with promotion-window attestation metadata (`build/ai-manifest/ai_evidence_manifest.json`)
+- Requires keyring-backed manifest signature verification and rotation-policy validation (`scripts/ci/ai_evidence_manifest_keyring.json`)
 
 ### How It Prevents Regressions
 
@@ -84,6 +85,7 @@
 - `experiments/ai/**` - Triggers on AI changes
 - `CMakeLists.txt` - Triggers on build integration
 - `scripts/test_ai_simple.sh` - Triggers on test changes
+- `scripts/ci/ai_evidence_manifest_keyring.json` - Triggers on manifest signing key rotation changes
 
 ### Failure Conditions
 

@@ -19,6 +19,7 @@ on:
       - 'scripts/ci/check_ai_ux_contract.py'
       - 'scripts/ci/check_ai_cross_lane_evidence.py'
       - 'scripts/ci/check_ai_evidence_manifest.py'
+      - 'scripts/ci/ai_evidence_manifest_keyring.json'
       - 'scripts/ci/generate_ai_opcode_runtime_report.py'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - 'scripts/ci/run_governed_llama_flow.py'
@@ -41,6 +42,7 @@ on:
       - 'scripts/ci/check_ai_ux_contract.py'
       - 'scripts/ci/check_ai_cross_lane_evidence.py'
       - 'scripts/ci/check_ai_evidence_manifest.py'
+      - 'scripts/ci/ai_evidence_manifest_keyring.json'
       - 'scripts/ci/generate_ai_opcode_runtime_report.py'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - 'scripts/ci/run_governed_llama_flow.py'
@@ -336,6 +338,7 @@ jobs:
           --backend-contract build/ai-backend/ai_backend_adapter_contract.json
           --ux-contract build/ai-ux/ai_ux_contract.json
           --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json
+          --signing-keyring scripts/ci/ai_evidence_manifest_keyring.json
           --promotion-window-start 2026-03-01
           --promotion-window-end 2026-03-31
         )

@@ -23,6 +23,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - AI UX contract gate: `check_ai_ux_contract.py`
 - AI cross-lane evidence lock gate: `check_ai_cross_lane_evidence.py`
 - AI signed multi-lane evidence manifest gate: `check_ai_evidence_manifest.py`
+- AI evidence manifest signing keyring: `ai_evidence_manifest_keyring.json`
 - RFC-0025 canonize-tensor toolchain gate: `check_ai_tloadhash_toolchain.py`
 - Governed llama runtime evidence runner: `run_governed_llama_flow.py`
 
@@ -44,7 +45,7 @@ python3 scripts/ci/check_ai_benchmark_spec_contract.py --out-dir build/ai-benchm
 python3 scripts/ci/check_ai_quantization_codec_contract.py --out-dir build/ai-quantization
 python3 scripts/ci/check_ai_ux_contract.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-ux --runtime-model tests/fixtures/llama_cpp_repro/model.gguf
 python3 scripts/ci/check_ai_cross_lane_evidence.py --out-dir build/ai-cross-lane --evidence-bundle build/ai-evidence/ai_evidence_bundle.json --ux-contract build/ai-ux/ai_ux_contract.json --ux-inference build/ai-ux/ai_inference_run.json --ux-quantization build/ai-ux/ai_quantization_inspect.json --ux-benchmark build/ai-ux/ai_benchmark_run.json --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json
-python3 scripts/ci/check_ai_evidence_manifest.py --out-dir build/ai-manifest --evidence-bundle build/ai-evidence/ai_evidence_bundle.json --vm-trace build/ai-vm-trace/ai_vm_trace_evidence.json --cross-lane build/ai-cross-lane/ai_cross_lane_evidence.json --backend-contract build/ai-backend/ai_backend_adapter_contract.json --ux-contract build/ai-ux/ai_ux_contract.json --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json --promotion-window-start 2026-03-01 --promotion-window-end 2026-03-31
+python3 scripts/ci/check_ai_evidence_manifest.py --out-dir build/ai-manifest --evidence-bundle build/ai-evidence/ai_evidence_bundle.json --vm-trace build/ai-vm-trace/ai_vm_trace_evidence.json --cross-lane build/ai-cross-lane/ai_cross_lane_evidence.json --backend-contract build/ai-backend/ai_backend_adapter_contract.json --ux-contract build/ai-ux/ai_ux_contract.json --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json --signing-keyring scripts/ci/ai_evidence_manifest_keyring.json --promotion-window-start 2026-03-01 --promotion-window-end 2026-03-31
 python3 scripts/ci/check_ai_tloadhash_toolchain.py --t81-bin build/t81 --input-file tests/fixtures/llama_cpp_repro/model.gguf --out-dir build/ai-rfc0025
 python3 scripts/ci/run_governed_llama_flow.py --t81-bin build-llama-local/t81 --model models/tinyllama-1.1b.Q2_K.gguf --out-dir build/ai-governed
 python3 scripts/ci/t81lang_repro_gate.py --help
