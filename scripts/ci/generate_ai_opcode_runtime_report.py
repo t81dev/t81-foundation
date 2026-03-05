@@ -67,12 +67,17 @@ def parse_phase1_conformance_log(ctest_log: Path) -> dict[str, Any]:
         raise FileNotFoundError(f"ctest log not found: {ctest_log}")
     text = read_text(ctest_log)
     tests_present = {name: (name in text) for name in PHASE1_TESTS.values()}
+    hash_rows = re.findall(r"AI_PHASE1_HASH\s+(ATTN|QMATMUL|EMBED)\s+([0-9a-fA-F]{16,64})", text)
+    output_hashes = {opcode: value.lower() for opcode, value in hash_rows}
+    hashes_present = {opcode: (opcode in output_hashes) for opcode in PHASE1}
     return {
         "ctest_log": str(ctest_log),
         "ctest_log_sha256": sha256_text(text),
         "tests_present": tests_present,
         "all_required_tests_present": all(tests_present.values()),
         "ctest_success_marker_present": "100% tests passed" in text,
+        "output_hashes": output_hashes,
+        "all_required_output_hashes_present": all(hashes_present.values()),
     }
 
 
@@ -99,7 +104,9 @@ def build_payload(repo_root: Path, ctest_log: Path | None) -> dict[str, Any]:
         conformance_test_present = (
             True if conformance is None else bool(conformance["tests_present"].get(test_name, False))
         )
-        runtime_ready = in_tisc_enum and in_vm_dispatch and conformance_test_present
+        output_hash = None if conformance is None else conformance["output_hashes"].get(opcode)
+        output_hash_present = True if conformance is None else output_hash is not None
+        runtime_ready = in_tisc_enum and in_vm_dispatch and conformance_test_present and output_hash_present
         phase_rows.append(
             {
                 "opcode": opcode,
@@ -108,6 +115,8 @@ def build_payload(repo_root: Path, ctest_log: Path | None) -> dict[str, Any]:
                 "present_vm_dispatch_case": in_vm_dispatch,
                 "phase1_conformance_test": test_name,
                 "phase1_conformance_test_present": conformance_test_present,
+                "phase1_output_hash": output_hash,
+                "phase1_output_hash_present": output_hash_present,
                 "runtime_ready": runtime_ready,
                 "status": "runtime_bound" if runtime_ready else "contract_only",
             }
@@ -117,7 +126,9 @@ def build_payload(repo_root: Path, ctest_log: Path | None) -> dict[str, Any]:
     conformance_valid = (
         True
         if conformance is None
-        else bool(conformance["all_required_tests_present"]) and bool(conformance["ctest_success_marker_present"])
+        else bool(conformance["all_required_tests_present"])
+        and bool(conformance["all_required_output_hashes_present"])
+        and bool(conformance["ctest_success_marker_present"])
     )
     phase_status = (
         "runtime_bound"
@@ -161,17 +172,18 @@ def write_markdown(path: Path, payload: dict[str, Any]) -> None:
         f"- phase_status: `{payload['phase_status']}`",
         f"- report_sha256: `{payload['report_sha256']}`",
         "",
-        "| Opcode | AI Header | TISC Enum | VM Dispatch | CTest Evidence | Status |",
-        "| :--- | :---: | :---: | :---: | :---: | :--- |",
+        "| Opcode | AI Header | TISC Enum | VM Dispatch | CTest Evidence | Output Hash | Status |",
+        "| :--- | :---: | :---: | :---: | :---: | :---: | :--- |",
     ]
     for row in payload["opcodes"]:
         lines.append(
-            "| {opcode} | {aih} | {tisc} | {vm} | {ctest} | {status} |".format(
+            "| {opcode} | {aih} | {tisc} | {vm} | {ctest} | `{hashv}` | {status} |".format(
                 opcode=row["opcode"],
                 aih="yes" if row["declared_ai_opcode_header"] else "no",
                 tisc="yes" if row["present_tisc_opcode_enum"] else "no",
                 vm="yes" if row["present_vm_dispatch_case"] else "no",
                 ctest="yes" if row["phase1_conformance_test_present"] else "no",
+                hashv=row["phase1_output_hash"] if row["phase1_output_hash"] is not None else "missing",
                 status=row["status"],
             )
         )
@@ -192,6 +204,7 @@ def write_markdown(path: Path, payload: dict[str, Any]) -> None:
                 "",
                 "Phase-1 Conformance Evidence:",
                 f"- all_required_tests_present: `{conformance['all_required_tests_present']}`",
+                f"- all_required_output_hashes_present: `{conformance['all_required_output_hashes_present']}`",
                 f"- ctest_success_marker_present: `{conformance['ctest_success_marker_present']}`",
                 "",
             ]

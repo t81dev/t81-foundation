@@ -5,6 +5,33 @@
 #include "t81/vm/vm.hpp"
 
 #include <cmath>
+#include <cstdint>
+#include <iomanip>
+#include <iostream>
+
+namespace {
+
+std::uint64_t tensor_hash(const t81::T729DynamicTensor& tensor) {
+  constexpr std::uint64_t kOffset = 1469598103934665603ULL;
+  constexpr std::uint64_t kPrime = 1099511628211ULL;
+  std::uint64_t h = kOffset;
+  auto mix = [&](std::uint64_t value) {
+    for (int i = 0; i < 8; ++i) {
+      h ^= (value >> (i * 8)) & 0xFFULL;
+      h *= kPrime;
+    }
+  };
+  for (int dim : tensor.shape()) {
+    mix(static_cast<std::uint64_t>(static_cast<std::int64_t>(dim)));
+  }
+  for (float value : tensor.data()) {
+    const auto q = static_cast<std::int64_t>(std::llround(static_cast<double>(value) * 1'000'000.0));
+    mix(static_cast<std::uint64_t>(q));
+  }
+  return h;
+}
+
+}  // namespace
 
 int main() {
   t81::tisc::Program p;
@@ -53,6 +80,9 @@ int main() {
   for (std::size_t i = 0; i < out1.data().size(); ++i) {
     T81_TEST_CHECK(out2.data()[i] == out1.data()[i]);
   }
+  const auto hash = tensor_hash(out1);
+  std::cout << "AI_PHASE1_HASH QMATMUL " << std::hex << std::setw(16) << std::setfill('0') << hash
+            << std::dec << "\n";
 
   // Shape fault check.
   t81::tisc::Program bad;
@@ -74,4 +104,3 @@ int main() {
 
   return 0;
 }
-
