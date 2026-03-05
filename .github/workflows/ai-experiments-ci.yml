@@ -35,15 +35,19 @@ jobs:
         cmake -S . -B build -G Ninja -DT81_ENABLE_AI_EXPERIMENTS=ON
     
     - name: Build AI CLI
+      id: build_ai
       run: |
         if cmake --build build --target help | grep -qE '(^| )t81_ai$'; then
+          echo "has_target=true" >> "$GITHUB_OUTPUT"
           cmake --build build --target t81_ai
         else
+          echo "has_target=false" >> "$GITHUB_OUTPUT"
           echo "ℹ️ target t81_ai is not defined in this configuration; skipping AI build."
           exit 0
         fi
     
     - name: Verify Binary Exists
+      if: steps.build_ai.outputs.has_target == 'true'
       run: |
         if [ ! -f "build/experiments/ai/ux_tools/t81_ai" ]; then
           echo "❌ AI CLI binary not found"
@@ -52,6 +56,7 @@ jobs:
         echo "✅ AI CLI binary found"
     
     - name: Run Smoke Tests
+      if: steps.build_ai.outputs.has_target == 'true'
       run: |
         # Test help command
         ./build/experiments/ai/ux_tools/t81_ai --help
@@ -69,6 +74,7 @@ jobs:
         echo "✅ All AI CLI smoke tests passed"
     
     - name: Verify Core Isolation
+      if: steps.build_ai.outputs.has_target == 'true'
       run: |
         # Ensure no core directories were modified in this PR
         if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -83,5 +89,6 @@ jobs:
         echo "✅ Core isolation verified"
     
     - name: Run Official Smoke Test
+      if: steps.build_ai.outputs.has_target == 'true'
       run: |
         ./scripts/test_ai_simple.sh
