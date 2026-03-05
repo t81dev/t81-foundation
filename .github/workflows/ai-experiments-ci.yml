@@ -56,7 +56,26 @@ jobs:
           echo "ℹ️ target t81_ai is not defined in this configuration; skipping AI build."
           exit 0
         fi
-    
+
+    - name: Build RFC-0025 TLOADHASH conformance targets
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-rfc0025
+        if cmake --build build --target help | grep -qE '(^| )t81_vm_tloadhash_conformance_test$'; then
+          cmake --build build --target t81_vm_tloadhash_conformance_test
+          cmake --build build --target t81_vm_tloadhash_decodefault_determinism_matrix_test
+        else
+          echo "❌ t81_vm_tloadhash_conformance_test target not found"
+          exit 1
+        fi
+
+    - name: Run RFC-0025 TLOADHASH conformance tests
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        ctest --test-dir build --output-on-failure --verbose \
+          -R 't81_vm_tloadhash_conformance_test|t81_vm_tloadhash_decodefault_determinism_matrix_test' \
+          2>&1 | tee build/ai-rfc0025/tloadhash-ctest.log
+
     - name: Verify Binary Exists
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -128,6 +147,13 @@ jobs:
       run: |
         cat build/ai-evidence/ai_evidence_summary.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-policy/ai_policy_event_contract.md >> "$GITHUB_STEP_SUMMARY"
+        {
+          echo "# RFC-0025 TLOADHASH Conformance"
+          echo ""
+          echo "- ctest regex: \`t81_vm_tloadhash_conformance_test|t81_vm_tloadhash_decodefault_determinism_matrix_test\`"
+          echo "- log: \`build/ai-rfc0025/tloadhash-ctest.log\`"
+          echo ""
+        } >> "$GITHUB_STEP_SUMMARY"
 
     - name: Upload AI evidence artifacts
       if: steps.build_ai.outputs.has_target == 'true'
@@ -141,3 +167,4 @@ jobs:
           build/ai-provenance/test_model.manifest.json
           build/ai-policy/ai_policy_event_contract.json
           build/ai-policy/ai_policy_event_contract.md
+          build/ai-rfc0025/tloadhash-ctest.log
