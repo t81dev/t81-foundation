@@ -11,6 +11,7 @@ on:
       - 'scripts/ci/collect_ai_evidence_bundle.py'
       - 'scripts/ci/check_ai_model_provenance_gate.py'
       - 'scripts/ci/check_ai_policy_event_contract.py'
+      - 'scripts/ci/check_ai_backend_adapter_contract.py'
       - '.github/workflows/ai-experiments-ci.yml'
   pull_request:
     branches: [ main ]
@@ -22,6 +23,7 @@ on:
       - 'scripts/ci/collect_ai_evidence_bundle.py'
       - 'scripts/ci/check_ai_model_provenance_gate.py'
       - 'scripts/ci/check_ai_policy_event_contract.py'
+      - 'scripts/ci/check_ai_backend_adapter_contract.py'
       - '.github/workflows/ai-experiments-ci.yml'
   workflow_dispatch:
 
@@ -142,11 +144,19 @@ jobs:
         python3 scripts/ci/check_ai_policy_event_contract.py \
           --out-dir build/ai-policy
 
+    - name: Validate backend adapter contract (RFC-00A5 baseline)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-backend
+        python3 scripts/ci/check_ai_backend_adapter_contract.py \
+          --out-dir build/ai-backend
+
     - name: Append AI evidence summary
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
         cat build/ai-evidence/ai_evidence_summary.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-policy/ai_policy_event_contract.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-backend/ai_backend_adapter_contract.md >> "$GITHUB_STEP_SUMMARY"
         {
           echo "# RFC-0025 TLOADHASH Conformance"
           echo ""
@@ -167,4 +177,6 @@ jobs:
           build/ai-provenance/test_model.manifest.json
           build/ai-policy/ai_policy_event_contract.json
           build/ai-policy/ai_policy_event_contract.md
+          build/ai-backend/ai_backend_adapter_contract.json
+          build/ai-backend/ai_backend_adapter_contract.md
           build/ai-rfc0025/tloadhash-ctest.log
