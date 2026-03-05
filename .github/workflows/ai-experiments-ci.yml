@@ -18,6 +18,7 @@ on:
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
+      - 'scripts/ci/ai_benchmark_thresholds.json'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - 'scripts/ci/check_ai_ux_contract.py'
       - 'scripts/ci/check_ai_cross_lane_evidence.py'
@@ -45,6 +46,7 @@ on:
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
+      - 'scripts/ci/ai_benchmark_thresholds.json'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - 'scripts/ci/check_ai_ux_contract.py'
       - 'scripts/ci/check_ai_cross_lane_evidence.py'
@@ -314,12 +316,15 @@ jobs:
           --runtime-report build/ai-opcodes-runtime/ai_opcode_runtime_report.json \
           --ctest-log build/ai-opcodes/ai_phase1_opcode_ctest.log
 
-    - name: Validate AI benchmark spec contract (RFC-00A2 baseline)
+    - name: Validate AI benchmark runtime thresholds (RFC-00A2 promotion slice)
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
         mkdir -p build/ai-benchmark
         python3 scripts/ci/check_ai_benchmark_spec_contract.py \
-          --out-dir build/ai-benchmark
+          --out-dir build/ai-benchmark \
+          --ai-bin build/experiments/ai/ux_tools/t81_ai \
+          --runtime-model tests/fixtures/llama_cpp_repro/model.gguf \
+          --thresholds-file scripts/ci/ai_benchmark_thresholds.json
 
     - name: Validate AI quantization codec contract (RFC-00A4 baseline)
       if: steps.build_ai.outputs.has_target == 'true'
