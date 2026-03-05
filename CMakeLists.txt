@@ -25,6 +25,9 @@ set(T81_LLAMA_REPRO_MODEL "" CACHE FILEPATH "Model path for llama.cpp reproducib
 set(T81_LLAMA_REPRO_POLICY "" CACHE FILEPATH "Policy path for llama.cpp reproducibility gate")
 set(T81_LLAMA_REPRO_PROMPT "" CACHE STRING "Prompt for llama.cpp reproducibility gate")
 
+# AI Experiments Option
+option(T81_ENABLE_AI_EXPERIMENTS "Build AI experiments in /experiments/ai" OFF)
+
 if(T81_TRITWISE_PROFILE)
   add_compile_definitions(T81_TRITWISE_PROFILE)
 endif()
@@ -1458,6 +1461,14 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   set_tests_properties(t81_v1_canonical_numeric_alias_usage_policy_test PROPERTIES
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
+endif()
+
+# =============================================================================
+# AI Experiments
+# =============================================================================
+if(T81_ENABLE_AI_EXPERIMENTS)
+    message(STATUS "Building AI experiments")
+    add_subdirectory(experiments/ai)
 endif()
 
 # =============================================================================
