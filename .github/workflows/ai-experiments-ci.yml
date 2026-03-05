@@ -24,6 +24,7 @@ on:
       - 'scripts/ci/generate_ai_opcode_runtime_report.py'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - 'scripts/ci/run_governed_llama_flow.py'
+      - 'scripts/ci/check_ai_governed_replay_attestation.py'
       - '.github/workflows/ai-experiments-ci.yml'
   pull_request:
     branches: [ main ]
@@ -48,6 +49,7 @@ on:
       - 'scripts/ci/generate_ai_opcode_runtime_report.py'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - 'scripts/ci/run_governed_llama_flow.py'
+      - 'scripts/ci/check_ai_governed_replay_attestation.py'
       - '.github/workflows/ai-experiments-ci.yml'
   workflow_dispatch:
 
@@ -137,6 +139,23 @@ jobs:
           --temperature 0 \
           --top-k 1 \
           --top-p 1.0
+
+    - name: Validate governed llama multi-seed replay attestation (RFC-0025 promotion slice)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        python3 scripts/ci/check_ai_governed_replay_attestation.py \
+          --t81-bin build-llama-ai/t81 \
+          --model tests/fixtures/llama_cpp_repro/model.gguf \
+          --prompt "Deterministic governed inference check." \
+          --out-dir build/ai-governed \
+          --max-tokens 8 \
+          --seeds 0,1,2 \
+          --replays-per-seed 2 \
+          --threads 1 \
+          --temperature 0 \
+          --top-k 1 \
+          --top-p 1.0 \
+          --baseline-governed-flow build/ai-governed/governed_llama_flow.json
 
     - name: Verify Binary Exists
       if: steps.build_ai.outputs.has_target == 'true'
@@ -378,9 +397,11 @@ jobs:
           echo "- log: \`build/ai-rfc0025/tloadhash-ctest.log\`"
           echo "- toolchain artifact: \`build/ai-rfc0025/ai_tloadhash_toolchain.json\`"
           echo "- governed runtime artifact (required lane): \`build/ai-governed/governed_llama_flow.json\`"
+          echo "- governed replay attestation artifact: \`build/ai-governed/governed_llama_replay_attestation.json\`"
           echo ""
         } >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-rfc0025/ai_tloadhash_toolchain.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-governed/governed_llama_replay_attestation.md >> "$GITHUB_STEP_SUMMARY"
 
     - name: Upload AI evidence artifacts
       if: steps.build_ai.outputs.has_target == 'true'
@@ -435,4 +456,9 @@ jobs:
           build/ai-governed/canonize.stderr.log
           build/ai-governed/llama_run.stdout.log
           build/ai-governed/llama_run.stderr.log
+          build/ai-governed/governed_llama_replay_attestation.json
+          build/ai-governed/governed_llama_replay_attestation.md
+          build/ai-governed/replay_policy.apl
+          build/ai-governed/replay_seed*.stdout.log
+          build/ai-governed/replay_seed*.stderr.log
           build/ai-governed/policy.apl
