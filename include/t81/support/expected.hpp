@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdlib>
 #include <functional>
 #include <type_traits>
 #include <utility>
@@ -64,32 +63,161 @@ public:
   expected(const T& value) : has_(true), storage_(std::in_place_index<0>, value) {}
   expected(T&& value) : has_(true), storage_(std::in_place_index<0>, std::move(value)) {}
 
+  template <typename Err = E, std::enable_if_t<!std::is_same_v<T, std::decay_t<Err>> &&
+                                                   !std::is_same_v<expected, std::decay_t<Err>> &&
+                                                   !std::is_same_v<unexpect_t, std::decay_t<Err>>,
+                                               int> = 0>
+  expected(Err&& error) : has_(false), storage_(std::in_place_index<1>, std::forward<Err>(error)) {}
+
+  template <typename... Args>
+  expected(unexpect_t, Args&&... args)
+      : has_(false), storage_(std::in_place_index<1>, std::forward<Args>(args)...) {}
+
+  expected(const unexpected<E>& unexp)
+      : has_(false), storage_(std::in_place_index<1>, unexp.error()) {}
+  expected(unexpected<E>&& unexp)
+      : has_(false), storage_(std::in_place_index<1>, std::move(unexp).error()) {}
+
+  [[nodiscard]] bool has_value() const noexcept { return has_; }
+  [[nodiscard]] explicit operator bool() const noexcept { return has_; }
+
+  T& value() { return std::get<0>(storage_); }
+  const T& value() const { return std::get<0>(storage_); }
+  T* operator->() { return &std::get<0>(storage_); }
+  const T* operator->() const { return &std::get<0>(storage_); }
+  T& operator*() { return value(); }
+  const T& operator*() const { return value(); }
+  E& error() { return std::get<1>(storage_); }
+  const E& error() const { return std::get<1>(storage_); }
+
+  template <typename F>
+  auto and_then(F&& f) & {
+    if (has_value()) return std::invoke(std::forward<F>(f), value());
+    return std::remove_cvref_t<std::invoke_result_t<F, T&>>(error());
+  }
+
+  template <typename F>
+  auto and_then(F&& f) const& {
+    if (has_value()) return std::invoke(std::forward<F>(f), value());
+    return std::remove_cvref_t<std::invoke_result_t<F, const T&>>(error());
+  }
+
+  template <typename F>
+  auto transform(F&& f) & {
+    using U = std::remove_cv_t<std::invoke_result_t<F, T&>>;
+    if (has_value()) return expected<U, E>(std::invoke(std::forward<F>(f), value()));
+    return expected<U, E>(error());
+  }
+
+  template <typename F>
+  auto transform(F&& f) const& {
+    using U = std::remove_cv_t<std::invoke_result_t<F, const T&>>;
+    if (has_value()) return expected<U, E>(std::invoke(std::forward<F>(f), value()));
+    return expected<U, E>(error());
   }
 
   template <typename F>
   auto or_else(F&& f) & {
     if (has_value()) return *this;
-    return std::forward<F>(f)(error());
+    return std::invoke(std::forward<F>(f), error());
   }
 
   template <typename F>
   auto or_else(F&& f) const& {
     if (has_value()) return *this;
-    return std::forward<F>(f)(error());
+    return std::invoke(std::forward<F>(f), error());
+  }
+
+  template <typename F>
+  auto transform_error(F&& f) & {
+    using G = std::remove_cv_t<std::invoke_result_t<F, E&>>;
+    if (has_value()) return expected<T, G>(value());
+    return expected<T, G>(std::invoke(std::forward<F>(f), error()));
+  }
+
+  template <typename F>
+  auto transform_error(F&& f) const& {
+    using G = std::remove_cv_t<std::invoke_result_t<F, const E&>>;
+    if (has_value()) return expected<T, G>(value());
+    return expected<T, G>(std::invoke(std::forward<F>(f), error()));
+  }
+
+private:
+  bool has_;
+  std::variant<T, E> storage_;
+};
+
+// Partial specialization for void success.
+template <typename E>
+class expected<void, E> {
+public:
+  expected() : has_(true) {}
+  expected(const E& error) : has_(false), error_(error) {}
+  expected(E&& error) : has_(false), error_(std::move(error)) {}
+
+  template <typename... Args>
+  expected(unexpect_t, Args&&... args) : has_(false), error_(std::forward<Args>(args)...) {}
+
+  expected(const unexpected<E>& unexp) : has_(false), error_(unexp.error()) {}
+  expected(unexpected<E>&& unexp) : has_(false), error_(std::move(unexp).error()) {}
+
+  [[nodiscard]] bool has_value() const noexcept { return has_; }
+  [[nodiscard]] explicit operator bool() const noexcept { return has_; }
+
+  void value() const noexcept {}
+  E& error() { return error_; }
+  const E& error() const { return error_; }
+
+  template <typename F>
+  auto and_then(F&& f) & {
+    if (has_value()) return std::invoke(std::forward<F>(f));
+    return std::remove_cvref_t<std::invoke_result_t<F>>(error());
+  }
+
+  template <typename F>
+  auto and_then(F&& f) const& {
+    if (has_value()) return std::invoke(std::forward<F>(f));
+    return std::remove_cvref_t<std::invoke_result_t<F>>(error());
+  }
+
+  template <typename F>
+  auto transform(F&& f) & {
+    using U = std::remove_cv_t<std::invoke_result_t<F>>;
+    if (has_value()) return expected<U, E>(std::invoke(std::forward<F>(f)));
+    return expected<U, E>(error());
+  }
+
+  template <typename F>
+  auto transform(F&& f) const& {
+    using U = std::remove_cv_t<std::invoke_result_t<F>>;
+    if (has_value()) return expected<U, E>(std::invoke(std::forward<F>(f)));
+    return expected<U, E>(error());
+  }
+
+  template <typename F>
+  auto or_else(F&& f) & {
+    if (has_value()) return *this;
+    return std::invoke(std::forward<F>(f), error());
+  }
+
+  template <typename F>
+  auto or_else(F&& f) const& {
+    if (has_value()) return *this;
+    return std::invoke(std::forward<F>(f), error());
   }
 
   template <typename F>
   auto transform_error(F&& f) & {
     using G = std::remove_cv_t<std::invoke_result_t<F, E&>>;
     if (has_value()) return expected<void, G>();
-    return expected<void, G>(std::forward<F>(f)(error()));
+    return expected<void, G>(std::invoke(std::forward<F>(f), error()));
   }
 
   template <typename F>
   auto transform_error(F&& f) const& {
     using G = std::remove_cv_t<std::invoke_result_t<F, const E&>>;
     if (has_value()) return expected<void, G>();
-    return expected<void, G>(std::forward<F>(f)(error()));
+    return expected<void, G>(std::invoke(std::forward<F>(f), error()));
   }
 
 private:
