@@ -60,6 +60,16 @@ python3 scripts/ci/llama_cpp_repro_gate.py --help
 bash scripts/ci/run_determinism_slice.sh build
 ```
 
+## Keyring material sources
+
+The AI signing keyring JSON files support two key material modes:
+
+- `material_b64`: inline base64 key material (current repository baseline).
+- `material_env`: environment variable name that supplies base64 key material at runtime.
+
+When both fields are present for an entry, `material_env` takes precedence. This allows CI
+to inject key material from repository/org secrets without storing raw signing bytes in git.
+
 ## Governed llama runtime evidence lane (RFC-0025 required)
 
 The llama.cpp governed runtime lane is required in AI Experiments CI and uses the sanctioned fixture set:

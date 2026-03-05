@@ -6,6 +6,7 @@ import base64
 import hashlib
 import hmac
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -32,6 +33,29 @@ def parse_json(path: Path) -> dict[str, Any]:
 
 def parse_key_material_b64(raw: str) -> bytes:
     return base64.b64decode(raw, validate=True)
+
+
+def resolve_key_material(key: dict[str, Any], errors: list[str] | None = None) -> bytes:
+    key_id = str(key.get("key_id", "")).strip()
+    env_name = str(key.get("material_env", "")).strip()
+    if env_name:
+        env_value = os.environ.get(env_name, "")
+        if not env_value:
+            if errors is not None:
+                errors.append(f"key {key_id}: material_env '{env_name}' is unset/empty")
+            return b""
+        try:
+            return parse_key_material_b64(env_value)
+        except Exception:
+            if errors is not None:
+                errors.append(f"key {key_id}: material_env '{env_name}' is not valid base64")
+            return b""
+    try:
+        return parse_key_material_b64(str(key.get("material_b64", "")))
+    except Exception:
+        if errors is not None:
+            errors.append(f"key {key_id}: invalid material_b64")
+        return b""
 
 
 def validate_keyring(path: Path) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
@@ -64,12 +88,9 @@ def validate_keyring(path: Path) -> tuple[dict[str, Any], dict[str, Any], list[s
             active_keys.append(key)
         if str(key.get("algorithm", "")).strip() != "hmac-sha256":
             errors.append(f"key {key_id}: unsupported algorithm")
-        try:
-            decoded = parse_key_material_b64(str(key.get("material_b64", "")))
-            if not decoded:
-                errors.append(f"key {key_id}: empty key material")
-        except Exception:
-            errors.append(f"key {key_id}: invalid material_b64")
+        decoded = resolve_key_material(key, errors)
+        if not decoded:
+            errors.append(f"key {key_id}: empty key material")
 
     active_key_id = str(payload.get("active_key_id", "")).strip()
     if not active_key_id:
@@ -93,7 +114,7 @@ def validate_keyring(path: Path) -> tuple[dict[str, Any], dict[str, Any], list[s
 
 
 def sign_payload_hex(payload: dict[str, Any], key_entry: dict[str, Any]) -> str:
-    material = parse_key_material_b64(str(key_entry.get("material_b64", "")))
+    material = resolve_key_material(key_entry, [])
     return hmac.new(material, canonical_json(payload).encode("utf-8"), hashlib.sha256).hexdigest()
 
 
@@ -106,9 +127,8 @@ def verify_payload_signature(payload: dict[str, Any], signature_hex: str, keyrin
         if not isinstance(key, dict):
             continue
         key_id = str(key.get("key_id", "")).strip()
-        try:
-            material = parse_key_material_b64(str(key.get("material_b64", "")))
-        except Exception:
+        material = resolve_key_material(key, [])
+        if not material:
             continue
         candidate = hmac.new(material, encoded, hashlib.sha256).hexdigest()
         if hmac.compare_digest(candidate, signature_hex):

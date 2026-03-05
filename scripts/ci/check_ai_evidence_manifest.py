@@ -6,6 +6,7 @@ import base64
 import hashlib
 import hmac
 import json
+import os
 import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -57,15 +58,26 @@ def _parse_iso_date(value: str, field_name: str, errors: list[str]) -> date | No
         return None
 
 
-def _parse_key_material_b64(raw: str, key_id: str, errors: list[str]) -> bytes:
+def _parse_key_material_b64(raw: str, key_id: str, field_name: str, errors: list[str]) -> bytes:
     try:
         decoded = base64.b64decode(raw, validate=True)
     except Exception:
-        errors.append(f"key {key_id}: material_b64 is not valid base64")
+        errors.append(f"key {key_id}: {field_name} is not valid base64")
         return b""
     if not decoded:
-        errors.append(f"key {key_id}: material_b64 decoded to empty bytes")
+        errors.append(f"key {key_id}: {field_name} decoded to empty bytes")
     return decoded
+
+
+def _resolve_key_material(entry: dict[str, Any], key_id: str, errors: list[str]) -> bytes:
+    env_name = str(entry.get("material_env", "")).strip()
+    if env_name:
+        env_value = os.environ.get(env_name, "")
+        if not env_value:
+            errors.append(f"key {key_id}: material_env '{env_name}' is unset/empty")
+            return b""
+        return _parse_key_material_b64(env_value, key_id, f"material_env '{env_name}'", errors)
+    return _parse_key_material_b64(str(entry.get("material_b64", "")), key_id, "material_b64", errors)
 
 
 def validate_and_select_keyring(keyring_path: Path) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
@@ -100,7 +112,7 @@ def validate_and_select_keyring(keyring_path: Path) -> tuple[dict[str, Any], dic
             active_keys.append(entry)
         if str(entry.get("algorithm", "")).strip() != "hmac-sha256":
             errors.append(f"key {key_id}: unsupported algorithm (expected hmac-sha256)")
-        _parse_key_material_b64(str(entry.get("material_b64", "")), key_id, errors)
+        _resolve_key_material(entry, key_id, errors)
 
     active_key_id = str(payload.get("active_key_id", "")).strip()
     if not active_key_id:
@@ -157,7 +169,7 @@ def validate_and_select_keyring(keyring_path: Path) -> tuple[dict[str, Any], dic
 
 def sign_manifest_payload(core_payload: dict[str, Any], key_entry: dict[str, Any]) -> str:
     key_id = str(key_entry.get("key_id", ""))
-    key_material = _parse_key_material_b64(str(key_entry.get("material_b64", "")), key_id, [])
+    key_material = _resolve_key_material(key_entry, key_id, [])
     return hmac.new(key_material, canonical_json(core_payload).encode("utf-8"), hashlib.sha256).hexdigest()
 
 
@@ -172,7 +184,7 @@ def verify_manifest_signature(
         if not isinstance(entry, dict):
             continue
         key_id = str(entry.get("key_id", "")).strip()
-        key_material = _parse_key_material_b64(str(entry.get("material_b64", "")), key_id, [])
+        key_material = _resolve_key_material(entry, key_id, [])
         if not key_material:
             continue
         candidate = hmac.new(key_material, payload_bytes, hashlib.sha256).hexdigest()
