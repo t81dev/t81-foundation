@@ -237,14 +237,14 @@ struct State {
   // Dynamic Memory Pool Configuration (BG-10 Phase 2)
   struct DynamicPoolConfig {
     bool enable_dynamic_sizing{false};
-    double expansion_threshold{0.8};     // Expand when 80% full
-    double contraction_threshold{0.3};    // Contract when 30% used
-    std::size_t min_stack_size{64};      // Minimum stack size
-    std::size_t min_heap_size{128};      // Minimum heap size
-    std::size_t min_tensor_size{64};     // Minimum tensor size
-    std::size_t min_meta_size{64};      // Minimum meta size
-    std::size_t max_expansion_factor{4}; // Max 4x initial size
-    std::size_t expansion_increment{128}; // Expand by 128 words
+    double expansion_threshold{0.8};       // Expand when 80% full
+    double contraction_threshold{0.3};     // Contract when 30% used
+    std::size_t min_stack_size{64};        // Minimum stack size
+    std::size_t min_heap_size{128};        // Minimum heap size
+    std::size_t min_tensor_size{64};       // Minimum tensor size
+    std::size_t min_meta_size{64};         // Minimum meta size
+    std::size_t max_expansion_factor{4};   // Max 4x initial size
+    std::size_t expansion_increment{128};  // Expand by 128 words
   } pool_config;
 
   // Unified Memory System (BG-10 Phase 3)
@@ -257,17 +257,17 @@ struct State {
     std::size_t allocated_size{0};
     std::size_t free_size{0};
     std::size_t fragmentation_count{0};
-    
+
     // Memory block tracking
     struct MemoryBlock {
       std::size_t start{0};
       std::size_t size{0};
       MemorySegmentKind type{MemorySegmentKind::Unknown};
       bool allocated{false};
-      
+
       bool operator==(const MemoryBlock& other) const {
-        return start == other.start && size == other.size && 
-               type == other.type && allocated == other.allocated;
+        return start == other.start && size == other.size && type == other.type &&
+               allocated == other.allocated;
       }
     };
     std::vector<MemoryBlock> memory_blocks;
@@ -292,7 +292,7 @@ struct State {
   struct MemoryConfig {
     bool enable_performance_monitoring{false};
     bool auto_compaction{false};
-    double compaction_threshold{0.5};  // Compact when fragmentation > 50%
+    double compaction_threshold{0.5};       // Compact when fragmentation > 50%
     std::size_t compaction_interval{1000};  // Check every 1000 operations
     bool enable_allocation_cache{false};
     std::size_t cache_size{64};  // Cache recent allocations
@@ -321,9 +321,9 @@ struct State {
 
   struct MemoryPoolHierarchy {
     bool enabled{false};
-    std::size_t small_pool_size{64};     // < 64 words
-    std::size_t medium_pool_size{256};   // 64-256 words  
-    std::size_t large_pool_size{1024};   // > 256 words
+    std::size_t small_pool_size{64};    // < 64 words
+    std::size_t medium_pool_size{256};  // 64-256 words
+    std::size_t large_pool_size{1024};  // > 256 words
     std::size_t tiny_allocations{0};
     std::size_t small_allocations{0};
     std::size_t medium_allocations{0};

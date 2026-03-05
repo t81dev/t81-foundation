@@ -585,13 +585,9 @@ public:
   friend T81Float<MM, EE> fma(T81Float<MM, EE> a, T81Float<MM, EE> b, T81Float<MM, EE> c) noexcept;
 
   // --- Binary Serialization ---
-  void serialize(std::ostream& os) const {
-    bits_.serialize(os);
-  }
+  void serialize(std::ostream& os) const { bits_.serialize(os); }
 
-  void deserialize(std::istream& is) {
-    bits_.deserialize(is);
-  }
+  void deserialize(std::istream& is) { bits_.deserialize(is); }
 
 private:
   // ---------------------------------------------------------------------

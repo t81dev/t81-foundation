@@ -184,7 +184,8 @@ struct SetLiteralExpr : Expr {
 };
 
 struct MapLiteralExpr : Expr {
-  MapLiteralExpr(Token token, std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> entries)
+  MapLiteralExpr(Token token,
+                 std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> entries)
       : token(token), entries(std::move(entries)) {}
 
   std::any accept(ExprVisitor& visitor) const override { return visitor.visit(*this); }
@@ -422,7 +423,9 @@ struct VarStmt : Stmt {
 struct LetStmt : Stmt {
   LetStmt(Token name, std::unique_ptr<TypeExpr> type, std::unique_ptr<Expr> initializer,
           bool is_mutable = false)
-      : name(name), type(std::move(type)), initializer(std::move(initializer)),
+      : name(name),
+        type(std::move(type)),
+        initializer(std::move(initializer)),
         is_mutable(is_mutable) {}
 
   std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
@@ -556,8 +559,7 @@ struct ReturnStmt : Stmt {
 };
 
 struct AssertStmt : Stmt {
-  AssertStmt(Token keyword, std::unique_ptr<Expr> expr)
-      : keyword(keyword), expr(std::move(expr)) {}
+  AssertStmt(Token keyword, std::unique_ptr<Expr> expr) : keyword(keyword), expr(std::move(expr)) {}
   std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
   const Token keyword;
   const std::unique_ptr<Expr> expr;

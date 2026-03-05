@@ -1156,8 +1156,7 @@ public:
         // Qutrit TAND = min(a, b) — route to TAnd IR opcode
         const Type* lt = typed_expr(expr.left.get());
         const Type* rt = typed_expr(expr.right.get());
-        if ((lt && lt->kind == Type::Kind::Qutrit) ||
-            (rt && rt->kind == Type::Kind::Qutrit)) {
+        if ((lt && lt->kind == Type::Kind::Qutrit) || (rt && rt->kind == Type::Kind::Qutrit)) {
           opcode = O::TAND;
         } else {
           opcode = O::BITAND;
@@ -1168,8 +1167,7 @@ public:
         // Qutrit TOR = max(a, b) — route to TOr IR opcode
         const Type* lt = typed_expr(expr.left.get());
         const Type* rt = typed_expr(expr.right.get());
-        if ((lt && lt->kind == Type::Kind::Qutrit) ||
-            (rt && rt->kind == Type::Kind::Qutrit)) {
+        if ((lt && lt->kind == Type::Kind::Qutrit) || (rt && rt->kind == Type::Kind::Qutrit)) {
           opcode = O::TOR;
         } else {
           opcode = O::BITOR;
@@ -1180,8 +1178,7 @@ public:
         // Qutrit TXOR — route to TXor IR opcode
         const Type* lt = typed_expr(expr.left.get());
         const Type* rt = typed_expr(expr.right.get());
-        if ((lt && lt->kind == Type::Kind::Qutrit) ||
-            (rt && rt->kind == Type::Kind::Qutrit)) {
+        if ((lt && lt->kind == Type::Kind::Qutrit) || (rt && rt->kind == Type::Kind::Qutrit)) {
           opcode = O::TXOR;
         } else {
           opcode = O::BITXOR;
@@ -1309,11 +1306,12 @@ public:
       // Remove 'fx' suffix and parse as float
       std::string num_str = lexeme.substr(0, lexeme.length() - 2);
       const double parsed = std::stod(num_str);
-      
+
       auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
       tisc::ir::Instruction instr;
       instr.opcode = tisc::ir::Opcode::LOADI;
-      instr.operands = {dest.reg, tisc::ir::Immediate{static_cast<int64_t>(parsed * 1000)}}; // Fixed-point with 3 decimal places
+      instr.operands = {dest.reg, tisc::ir::Immediate{static_cast<int64_t>(
+                                      parsed * 1000)}};  // Fixed-point with 3 decimal places
       instr.primitive = tisc::ir::PrimitiveKind::Integer;
       emit(instr);
       record_result(&expr, dest);
@@ -4736,9 +4734,9 @@ public:
   std::any visit(const GenericTypeExpr&) override { return {}; }
   std::any visit(const SetLiteralExpr& expr) override {
     // Use tensor-based approach like VectorLiteralExpr for better compatibility
-    
+
     if (!_semantic) return {};
-    
+
     // Try to get literal data from semantic analyzer
     const auto* data = _semantic ? _semantic->set_literal_data(&expr) : nullptr;
     if (data && !data->empty()) {
@@ -4754,14 +4752,14 @@ public:
       record_result(&expr, dest);
       return {};
     }
-    
+
     // Fallback to dynamic construction using STRVEC (like VectorLiteralExpr)
     auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
     tisc::ir::Instruction vec_new;
     vec_new.opcode = tisc::ir::Opcode::STRVECNEW;
     vec_new.operands = {dest.reg};
     emit(vec_new);
-    
+
     for (const auto& element : expr.elements) {
       element->accept(*this);
       auto value = ensure_expr_result(element.get());
@@ -4770,15 +4768,15 @@ public:
       push.operands = {dest.reg, value.reg};
       emit(push);
     }
-    
+
     record_result(&expr, dest);
     return {};
   }
   std::any visit(const MapLiteralExpr& expr) override {
     // Use tensor-based approach like VectorLiteralExpr for better compatibility
-    
+
     if (!_semantic) return {};
-    
+
     // Try to get literal data from semantic analyzer
     const auto* data = _semantic ? _semantic->map_literal_data(&expr) : nullptr;
     if (data && !data->empty()) {
@@ -4795,14 +4793,14 @@ public:
       record_result(&expr, dest);
       return {};
     }
-    
+
     // Fallback to dynamic construction using STRVEC (like VectorLiteralExpr)
     auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
     tisc::ir::Instruction vec_new;
     vec_new.opcode = tisc::ir::Opcode::STRVECNEW;
     vec_new.operands = {dest.reg};
     emit(vec_new);
-    
+
     for (const auto& [key, value] : expr.entries) {
       key->accept(*this);
       auto key_reg = ensure_expr_result(key.get());
@@ -4815,7 +4813,7 @@ public:
       push.operands = {dest.reg, value_reg.reg};
       emit(push);
     }
-    
+
     record_result(&expr, dest);
     return {};
   }
@@ -5150,10 +5148,10 @@ public:
       std::vector<float> flat_data;
       int ncols = 0;
       for (const auto& row_expr : expr.elements) {
-        const auto* row_data =
-            _semantic ? _semantic->vector_literal_data(
-                            dynamic_cast<const VectorLiteralExpr*>(row_expr.get()))
-                      : nullptr;
+        const auto* row_data = _semantic
+                                   ? _semantic->vector_literal_data(
+                                         dynamic_cast<const VectorLiteralExpr*>(row_expr.get()))
+                                   : nullptr;
         if (row_data) {
           if (ncols == 0) ncols = static_cast<int>(row_data->size());
           flat_data.insert(flat_data.end(), row_data->begin(), row_data->end());
@@ -5260,7 +5258,8 @@ public:
   std::any visit(const IndexExpr& expr) override {
     // ── Matrix 2D indexing: (matrix[row])[col] ─────────────────────────────
     // Detect (inner_IndexExpr)[col] where inner_IndexExpr.object : Matrix[T].
-    // Emit: TSHAPE ncols, matrix, 1; MUL prod, row, ncols; ADD flat, prod, col; TGET result, matrix, flat
+    // Emit: TSHAPE ncols, matrix, 1; MUL prod, row, ncols; ADD flat, prod, col; TGET result,
+    // matrix, flat
     if (_semantic) {
       if (const auto* inner = dynamic_cast<const IndexExpr*>(expr.object.get())) {
         const Type* inner_obj_type = _semantic->type_of(inner->object.get());

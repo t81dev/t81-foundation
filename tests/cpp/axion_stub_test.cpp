@@ -82,7 +82,7 @@ int main() {
   if (!expect(verdict_allow.kind == VerdictKind::Allow, "expected allow verdict at count=10"))
     return 1;
 
-    // Overflow traps must still throw when stderr logging is suppressed.
+  // Overflow traps must still throw when stderr logging is suppressed.
 #if defined(_WIN32)
   _putenv_s("T81_AXION_TRAP_STDERR", "0");
 #else

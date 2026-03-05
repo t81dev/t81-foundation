@@ -1058,8 +1058,8 @@ template <typename E, size_t N>
  * @brief Clamps all elements in the tensor to [min, max].
  */
 template <typename E, size_t Rank, size_t... Dims>
-[[nodiscard]] constexpr auto clamp(const T81Tensor<E, Rank, Dims...>& t, E min,
-                                   E max) noexcept -> T81Tensor<E, Rank, Dims...> {
+[[nodiscard]] constexpr auto clamp(const T81Tensor<E, Rank, Dims...>& t, E min, E max) noexcept
+    -> T81Tensor<E, Rank, Dims...> {
   T81Tensor<E, Rank, Dims...> out;
   for (size_t i = 0; i < t.size(); ++i) {
     E val = t.data[i];

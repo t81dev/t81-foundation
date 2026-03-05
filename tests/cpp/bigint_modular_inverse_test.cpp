@@ -50,12 +50,14 @@ void test_modular_inverse_extgcd() {
   try {
     T81BigInt::modular_inverse(T81BigInt(6), T81BigInt(9));
     check(false, "Should have thrown for non-coprime inputs");
-  } catch (const std::domain_error&) {}
+  } catch (const std::domain_error&) {
+  }
 
   try {
     T81BigInt::modular_inverse(T81BigInt(5), T81BigInt(1));
     check(false, "Should have thrown for mod <= 1");
-  } catch (const std::domain_error&) {}
+  } catch (const std::domain_error&) {
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -79,13 +81,14 @@ void test_modular_inverse_stein_basic() {
   try {
     T81BigInt::modular_inverse_stein(T81BigInt(6), T81BigInt(9));
     check(false, "Should have thrown for non-coprime inputs");
-  } catch (const std::domain_error&) {}
+  } catch (const std::domain_error&) {
+  }
 }
 
 void test_modular_inverse_stein_large() {
   std::cout << "Testing modular_inverse_stein (large)...\n";
 
-  T81BigInt m(241);   // prime, not divisible by 3
+  T81BigInt m(241);  // prime, not divisible by 3
   T81BigInt a(100);
   T81BigInt inv = T81BigInt::modular_inverse_stein(a, m);
   check((a * inv) % m == T81BigInt(1), "inv(100, 241) * 100 == 1 mod 241");

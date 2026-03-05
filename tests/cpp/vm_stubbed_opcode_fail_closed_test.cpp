@@ -78,15 +78,36 @@ void run_privileged_fail_closed(t81::tisc::Opcode opcode, std::string_view opnam
 
 int main() {
   // Async / network opcodes
-  { t81::tisc::Insn i{}; i.opcode = t81::tisc::Opcode::NSend;  i.b = 1;      run_async_fail_closed(i, "NSEND");  }
-  { t81::tisc::Insn i{}; i.opcode = t81::tisc::Opcode::NRecv;  i.a = 1;      run_async_fail_closed(i, "NRECV");  }
-  { t81::tisc::Insn i{}; i.opcode = t81::tisc::Opcode::VWait;  i.a = 1; i.b = 2; run_async_fail_closed(i, "VWAIT");  }
-  { t81::tisc::Insn i{}; i.opcode = t81::tisc::Opcode::VYield; i.b = 1;      run_async_fail_closed(i, "VYIELD"); }
+  {
+    t81::tisc::Insn i{};
+    i.opcode = t81::tisc::Opcode::NSend;
+    i.b = 1;
+    run_async_fail_closed(i, "NSEND");
+  }
+  {
+    t81::tisc::Insn i{};
+    i.opcode = t81::tisc::Opcode::NRecv;
+    i.a = 1;
+    run_async_fail_closed(i, "NRECV");
+  }
+  {
+    t81::tisc::Insn i{};
+    i.opcode = t81::tisc::Opcode::VWait;
+    i.a = 1;
+    i.b = 2;
+    run_async_fail_closed(i, "VWAIT");
+  }
+  {
+    t81::tisc::Insn i{};
+    i.opcode = t81::tisc::Opcode::VYield;
+    i.b = 1;
+    run_async_fail_closed(i, "VYIELD");
+  }
 
   // Privileged Axion opcodes
-  run_privileged_fail_closed(t81::tisc::Opcode::AxSign,    "AXSIGN");
+  run_privileged_fail_closed(t81::tisc::Opcode::AxSign, "AXSIGN");
   run_privileged_fail_closed(t81::tisc::Opcode::AxLineage, "AXLINEAGE");
-  run_privileged_fail_closed(t81::tisc::Opcode::AxCanon,   "AXCANON");
+  run_privileged_fail_closed(t81::tisc::Opcode::AxCanon, "AXCANON");
 
   return 0;
 }

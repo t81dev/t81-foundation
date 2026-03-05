@@ -15,14 +15,14 @@ rm -rf build_simple
 mkdir build_simple
 cd build_simple
 
-if cmake .. -DT81_ENABLE_AI_EXPERIMENTS=ON >/dev/null 2>&1; then
+if cmake .. -G Ninja -DT81_ENABLE_AI_EXPERIMENTS=ON >/dev/null 2>&1; then
     echo "✅ CMake config OK"
 else
     echo "❌ CMake config failed"
     exit 1
 fi
 
-if make t81_ai >/dev/null 2>&1; then
+if cmake --build . --target t81_ai >/dev/null 2>&1; then
     echo "✅ Build OK"
 else
     echo "❌ Build failed"

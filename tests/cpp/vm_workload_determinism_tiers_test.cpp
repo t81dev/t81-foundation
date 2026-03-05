@@ -24,9 +24,7 @@ bool expect(bool cond, const std::string& msg) {
 }
 
 // Alias kept for call-site readability within this file
-inline std::uint64_t mix(std::uint64_t seed, std::uint64_t value) {
-  return sig_mix(seed, value);
-}
+inline std::uint64_t mix(std::uint64_t seed, std::uint64_t value) { return sig_mix(seed, value); }
 
 std::uint64_t signature_for_program(const t81::tisc::Program& p, bool* ok) {
   auto vm = t81::vm::make_interpreter_vm();
@@ -177,11 +175,11 @@ int main() {
   std::ofstream log("artifacts/vm_workload_determinism_signatures.log", std::ios::trunc);
   if (!expect(static_cast<bool>(log), "failed to open signature artifact log")) return 1;
 
-  if (!validate_tier("workload",      workload_program(),      log)) return 1;
-  if (!validate_tier("micro",         micro_program(),         log)) return 1;
-  if (!validate_tier("meso",          meso_program(),          log)) return 1;
-  if (!validate_tier("mixed",         mixed_program(),         log)) return 1;
-  if (!validate_tier("policy-heavy",  policy_heavy_program(),  log)) return 1;
+  if (!validate_tier("workload", workload_program(), log)) return 1;
+  if (!validate_tier("micro", micro_program(), log)) return 1;
+  if (!validate_tier("meso", meso_program(), log)) return 1;
+  if (!validate_tier("mixed", mixed_program(), log)) return 1;
+  if (!validate_tier("policy-heavy", policy_heavy_program(), log)) return 1;
   if (!validate_tier("tensor-access", tensor_access_program(), log)) return 1;
 
   log.flush();
