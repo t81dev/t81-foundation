@@ -108,6 +108,23 @@ public:
     }
 
 private:
+    struct BackendSpec {
+        std::string name;
+        std::vector<std::string> formats;
+        std::vector<std::string> modes;
+    };
+
+    struct BackendSelectionResult {
+        std::string requested_format;
+        std::string requested_mode;
+        std::vector<std::string> preferred_order;
+        std::vector<std::string> candidates;
+        std::string selected_backend;
+        std::string decision_reason;
+        std::string status;
+        std::string trace_sha256;
+    };
+
     static uint64_t fnv1a64_bytes(const std::string& s) {
         uint64_t h = 14695981039346656037ull;
         for (unsigned char c : s) {
@@ -128,6 +145,55 @@ private:
         std::ostringstream contents;
         contents << in.rdbuf();
         return contents.str();
+    }
+
+    static std::vector<BackendSpec> backend_specs() {
+        return {
+            {"llama.cpp", {"gguf", "t81_canonical"}, {"strict_deterministic", "reproducible_nondeterministic"}},
+            {"onnx_runtime", {"onnx", "t81_canonical"}, {"strict_deterministic", "statistical_deterministic"}},
+        };
+    }
+
+    static std::vector<std::string> backend_preferred_order() {
+        return {"llama.cpp", "onnx_runtime"};
+    }
+
+    static bool supports_value(const std::vector<std::string>& vals, const std::string& v) {
+        for (const auto& x : vals) {
+            if (x == v) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    BackendSelectionResult resolve_backend_selection(const std::string& requested_format, const std::string& requested_mode) {
+        BackendSelectionResult r;
+        r.requested_format = requested_format;
+        r.requested_mode = requested_mode;
+        r.preferred_order = backend_preferred_order();
+        const auto backends = backend_specs();
+
+        for (const auto& preferred : r.preferred_order) {
+            for (const auto& b : backends) {
+                if (b.name != preferred) {
+                    continue;
+                }
+                if (supports_value(b.formats, requested_format) && supports_value(b.modes, requested_mode)) {
+                    r.candidates.push_back(b.name);
+                }
+            }
+        }
+
+        r.selected_backend = r.candidates.empty() ? "" : r.candidates.front();
+        r.status = r.selected_backend.empty() ? "fail" : "pass";
+        r.decision_reason = r.selected_backend.empty()
+            ? "no_backend_supporting_requested_format_and_mode"
+            : "first_backend_supporting_requested_format_and_mode";
+        r.trace_sha256 = "sha256:" + fnv1a64_hex(
+            requested_format + "|" + requested_mode + "|" + r.selected_backend + "|" + r.decision_reason
+        );
+        return r;
     }
 
     static std::string json_escape(const std::string& in) {
@@ -252,10 +318,10 @@ private:
         std::cout << "  t81_ai verify determinism <file>      Verify deterministic model contract" << std::endl;
         std::cout << "  t81_ai backend capabilities [--out file]" << std::endl;
         std::cout << "  t81_ai backend select [--format f] [--mode m] [--out file]" << std::endl;
-        std::cout << "  t81_ai inference run [--model id] [--model-file path] [--prompt text] [--out file]" << std::endl;
-        std::cout << "  t81_ai quantization inspect [--model id] [--model-file path] [--out file]" << std::endl;
-        std::cout << "  t81_ai benchmark run [--model id] [--model-file path] [--out file]" << std::endl;
-        std::cout << "  t81_ai policy test [--event-type name] [--out file]" << std::endl;
+        std::cout << "  t81_ai inference run [--model id] [--model-file path] [--format f] [--mode m] [--prompt text] [--out file]" << std::endl;
+        std::cout << "  t81_ai quantization inspect [--model id] [--model-file path] [--format f] [--mode m] [--out file]" << std::endl;
+        std::cout << "  t81_ai benchmark run [--model id] [--model-file path] [--format f] [--mode m] [--out file]" << std::endl;
+        std::cout << "  t81_ai policy test [--event-type name] [--model-file path] [--out file]" << std::endl;
         std::cout << "  t81_ai workflow run <id> [--seed N] [--out file]" << std::endl;
         std::cout << "  t81_ai workflow replay <file>         Verify replay artifact hash" << std::endl;
         std::cout << "  t81_ai workflow report <file>         Print replay artifact summary" << std::endl;
@@ -270,7 +336,7 @@ private:
         std::cout << "  t81_ai inference run --model mock-7b --model-file model.gguf --prompt \"hello\" --out inference.json" << std::endl;
         std::cout << "  t81_ai quantization inspect --model mock-7b --model-file model.gguf --out quant.json" << std::endl;
         std::cout << "  t81_ai benchmark run --model mock-7b --model-file model.gguf --out bench.json" << std::endl;
-        std::cout << "  t81_ai policy test --event-type model_load --out policy.json" << std::endl;
+        std::cout << "  t81_ai policy test --event-type model_load --model-file model.gguf --out policy.json" << std::endl;
         std::cout << "  t81_ai workflow run smoke --seed 0 --out replay.json" << std::endl;
         std::cout << "  t81_ai workflow replay replay.json" << std::endl;
         std::cout << "  t81_ai observability trace trace.json" << std::endl;
@@ -394,46 +460,7 @@ private:
             return 1;
         }
 
-        struct Backend {
-            std::string name;
-            std::vector<std::string> formats;
-            std::vector<std::string> modes;
-        };
-        const std::vector<Backend> backends = {
-            {"llama.cpp", {"gguf", "t81_canonical"}, {"strict_deterministic", "reproducible_nondeterministic"}},
-            {"onnx_runtime", {"onnx", "t81_canonical"}, {"strict_deterministic", "statistical_deterministic"}},
-        };
-        const std::vector<std::string> preferred_order = {"llama.cpp", "onnx_runtime"};
-
-        auto supports = [](const std::vector<std::string>& vals, const std::string& v) {
-            for (const auto& x : vals) {
-                if (x == v) {
-                    return true;
-                }
-            }
-            return false;
-        };
-
-        std::vector<std::string> candidates;
-        for (const auto& preferred : preferred_order) {
-            for (const auto& b : backends) {
-                if (b.name != preferred) {
-                    continue;
-                }
-                if (supports(b.formats, requested_format) && supports(b.modes, requested_mode)) {
-                    candidates.push_back(b.name);
-                }
-            }
-        }
-
-        const std::string selected = candidates.empty() ? "" : candidates.front();
-        const std::string status = selected.empty() ? "fail" : "pass";
-        const std::string decision_reason = selected.empty()
-            ? "no_backend_supporting_requested_format_and_mode"
-            : "first_backend_supporting_requested_format_and_mode";
-        const std::string trace_hash = "sha256:" + fnv1a64_hex(
-            requested_format + "|" + requested_mode + "|" + selected + "|" + decision_reason
-        );
+        const BackendSelectionResult selection = resolve_backend_selection(requested_format, requested_mode);
 
         std::ostringstream json;
         json
@@ -444,18 +471,18 @@ private:
             << "  \"selection_policy\": \"first_backend_supporting_requested_format_and_mode\",\n"
             << "  \"preferred_order\": [\"llama.cpp\", \"onnx_runtime\"],\n"
             << "  \"candidates\": [";
-        for (size_t i = 0; i < candidates.size(); ++i) {
+        for (size_t i = 0; i < selection.candidates.size(); ++i) {
             if (i > 0) {
                 json << ", ";
             }
-            json << "\"" << json_escape(candidates[i]) << "\"";
+            json << "\"" << json_escape(selection.candidates[i]) << "\"";
         }
         json
             << "],\n"
-            << "  \"selected_backend\": \"" << json_escape(selected) << "\",\n"
-            << "  \"decision_reason\": \"" << decision_reason << "\",\n"
-            << "  \"trace_sha256\": \"" << trace_hash << "\",\n"
-            << "  \"status\": \"" << status << "\"\n"
+            << "  \"selected_backend\": \"" << json_escape(selection.selected_backend) << "\",\n"
+            << "  \"decision_reason\": \"" << selection.decision_reason << "\",\n"
+            << "  \"trace_sha256\": \"" << selection.trace_sha256 << "\",\n"
+            << "  \"status\": \"" << selection.status << "\"\n"
             << "}\n";
 
         if (!out_path.empty()) {
@@ -469,13 +496,15 @@ private:
         }
 
         std::cout << json.str();
-        return status == "pass" ? 0 : 1;
+        return selection.status == "pass" ? 0 : 1;
     }
 
     int inference_run(int argc, char* argv[]) {
         std::string model_id = "mock-7b";
         std::string prompt = "deterministic prompt";
         std::string model_file;
+        std::string requested_format = "gguf";
+        std::string requested_mode = "strict_deterministic";
         std::string out_path;
         for (int i = 3; i < argc; ++i) {
             const std::string arg = argv[i];
@@ -485,6 +514,14 @@ private:
             }
             if (arg == "--model-file" && i + 1 < argc) {
                 model_file = argv[++i];
+                continue;
+            }
+            if (arg == "--format" && i + 1 < argc) {
+                requested_format = argv[++i];
+                continue;
+            }
+            if (arg == "--mode" && i + 1 < argc) {
+                requested_mode = argv[++i];
                 continue;
             }
             if (arg == "--prompt" && i + 1 < argc) {
@@ -506,7 +543,15 @@ private:
             }
             model_file_hash = "sha256:" + fnv1a64_hex(read_file_bytes(model_file));
         }
-        const std::string output = "deterministic-output:" + fnv1a64_hex(model_id + "|" + prompt + "|" + model_file_hash);
+        const BackendSelectionResult selection = resolve_backend_selection(requested_format, requested_mode);
+        if (selection.status != "pass") {
+            std::cerr << "Error: No backend supports requested format/mode" << std::endl;
+            return 1;
+        }
+        const std::string output = "deterministic-output:" + fnv1a64_hex(
+            model_id + "|" + prompt + "|" + model_file_hash + "|" + selection.selected_backend
+        );
+        const int generated_tokens = 8 + static_cast<int>(fnv1a64_bytes(prompt + "|" + selection.selected_backend) % 16);
         std::ostringstream json;
         json
             << "{\n"
@@ -514,8 +559,13 @@ private:
             << "  \"model_id\": \"" << json_escape(model_id) << "\",\n"
             << "  \"model_file\": \"" << json_escape(model_file) << "\",\n"
             << "  \"model_file_sha256\": \"" << model_file_hash << "\",\n"
+            << "  \"requested_format\": \"" << json_escape(requested_format) << "\",\n"
+            << "  \"requested_mode\": \"" << json_escape(requested_mode) << "\",\n"
+            << "  \"selected_backend\": \"" << selection.selected_backend << "\",\n"
+            << "  \"backend_selection_trace_sha256\": \"" << selection.trace_sha256 << "\",\n"
             << "  \"prompt_sha256\": \"sha256:" << fnv1a64_hex(prompt) << "\",\n"
             << "  \"output\": \"" << output << "\",\n"
+            << "  \"generated_tokens\": " << generated_tokens << ",\n"
             << "  \"status\": \"pass\"\n"
             << "}\n";
         if (!out_path.empty()) {
@@ -534,6 +584,8 @@ private:
     int quantization_inspect(int argc, char* argv[]) {
         std::string model_id = "mock-7b";
         std::string model_file;
+        std::string requested_format = "gguf";
+        std::string requested_mode = "strict_deterministic";
         std::string out_path;
         for (int i = 3; i < argc; ++i) {
             const std::string arg = argv[i];
@@ -543,6 +595,14 @@ private:
             }
             if (arg == "--model-file" && i + 1 < argc) {
                 model_file = argv[++i];
+                continue;
+            }
+            if (arg == "--format" && i + 1 < argc) {
+                requested_format = argv[++i];
+                continue;
+            }
+            if (arg == "--mode" && i + 1 < argc) {
+                requested_mode = argv[++i];
                 continue;
             }
             if (arg == "--out" && i + 1 < argc) {
@@ -560,6 +620,13 @@ private:
             }
             model_file_hash = "sha256:" + fnv1a64_hex(read_file_bytes(model_file));
         }
+        const BackendSelectionResult selection = resolve_backend_selection(requested_format, requested_mode);
+        if (selection.status != "pass") {
+            std::cerr << "Error: No backend supports requested format/mode" << std::endl;
+            return 1;
+        }
+        const int bits_per_weight = 2 + static_cast<int>(fnv1a64_bytes(model_file_hash) % 3);
+        const std::string profile = "runtime-" + selection.selected_backend + "-qprofile";
         std::ostringstream json;
         json
             << "{\n"
@@ -567,8 +634,13 @@ private:
             << "  \"model_id\": \"" << json_escape(model_id) << "\",\n"
             << "  \"model_file\": \"" << json_escape(model_file) << "\",\n"
             << "  \"model_file_sha256\": \"" << model_file_hash << "\",\n"
+            << "  \"requested_format\": \"" << json_escape(requested_format) << "\",\n"
+            << "  \"requested_mode\": \"" << json_escape(requested_mode) << "\",\n"
+            << "  \"selected_backend\": \"" << selection.selected_backend << "\",\n"
+            << "  \"backend_selection_trace_sha256\": \"" << selection.trace_sha256 << "\",\n"
             << "  \"codec\": \"T3_K2\",\n"
-            << "  \"bits_per_weight\": 2,\n"
+            << "  \"bits_per_weight\": " << bits_per_weight << ",\n"
+            << "  \"quantization_profile\": \"" << profile << "\",\n"
             << "  \"status\": \"pass\"\n"
             << "}\n";
         if (!out_path.empty()) {
@@ -587,6 +659,8 @@ private:
     int benchmark_run(int argc, char* argv[]) {
         std::string model_id = "mock-7b";
         std::string model_file;
+        std::string requested_format = "gguf";
+        std::string requested_mode = "strict_deterministic";
         std::string out_path;
         for (int i = 3; i < argc; ++i) {
             const std::string arg = argv[i];
@@ -596,6 +670,14 @@ private:
             }
             if (arg == "--model-file" && i + 1 < argc) {
                 model_file = argv[++i];
+                continue;
+            }
+            if (arg == "--format" && i + 1 < argc) {
+                requested_format = argv[++i];
+                continue;
+            }
+            if (arg == "--mode" && i + 1 < argc) {
+                requested_mode = argv[++i];
                 continue;
             }
             if (arg == "--out" && i + 1 < argc) {
@@ -613,8 +695,15 @@ private:
             }
             model_file_hash = "sha256:" + fnv1a64_hex(read_file_bytes(model_file));
         }
-        const double latency_ms = 1.0 + static_cast<double>(fnv1a64_bytes(model_id + "|" + model_file_hash) % 13) / 10.0;
-        const double throughput = 950.0 + static_cast<double>(fnv1a64_bytes(model_file_hash) % 200);
+        const BackendSelectionResult selection = resolve_backend_selection(requested_format, requested_mode);
+        if (selection.status != "pass") {
+            std::cerr << "Error: No backend supports requested format/mode" << std::endl;
+            return 1;
+        }
+        const double latency_ms = 1.0
+            + static_cast<double>(fnv1a64_bytes(model_id + "|" + model_file_hash + "|" + selection.selected_backend) % 13) / 10.0;
+        const double throughput = 950.0 + static_cast<double>(fnv1a64_bytes(model_file_hash + "|" + selection.selected_backend) % 200);
+        const double determinism_score = 1.0;
         std::ostringstream json;
         json
             << "{\n"
@@ -622,8 +711,13 @@ private:
             << "  \"model_id\": \"" << json_escape(model_id) << "\",\n"
             << "  \"model_file\": \"" << json_escape(model_file) << "\",\n"
             << "  \"model_file_sha256\": \"" << model_file_hash << "\",\n"
+            << "  \"requested_format\": \"" << json_escape(requested_format) << "\",\n"
+            << "  \"requested_mode\": \"" << json_escape(requested_mode) << "\",\n"
+            << "  \"selected_backend\": \"" << selection.selected_backend << "\",\n"
+            << "  \"backend_selection_trace_sha256\": \"" << selection.trace_sha256 << "\",\n"
             << "  \"latency_ms\": " << latency_ms << ",\n"
             << "  \"throughput_tokens_per_sec\": " << throughput << ",\n"
+            << "  \"determinism_score\": " << determinism_score << ",\n"
             << "  \"status\": \"pass\"\n"
             << "}\n";
         if (!out_path.empty()) {
@@ -641,11 +735,16 @@ private:
 
     int policy_test(int argc, char* argv[]) {
         std::string event_type = "model_load";
+        std::string model_file;
         std::string out_path;
         for (int i = 3; i < argc; ++i) {
             const std::string arg = argv[i];
             if (arg == "--event-type" && i + 1 < argc) {
                 event_type = argv[++i];
+                continue;
+            }
+            if (arg == "--model-file" && i + 1 < argc) {
+                model_file = argv[++i];
                 continue;
             }
             if (arg == "--out" && i + 1 < argc) {
@@ -655,14 +754,31 @@ private:
             std::cerr << "Error: Unknown policy test option: " << arg << std::endl;
             return 1;
         }
+        std::string model_file_hash = "";
+        if (!model_file.empty()) {
+            if (!std::filesystem::exists(model_file)) {
+                std::cerr << "Error: Model file does not exist: " << model_file << std::endl;
+                return 1;
+            }
+            model_file_hash = "sha256:" + fnv1a64_hex(read_file_bytes(model_file));
+        }
+        std::string decision = "deny";
+        std::string reason_code = "AI_POLICY_DENY_UNSUPPORTED_EVENT";
+        if (event_type == "model_load" && !model_file_hash.empty()) {
+            decision = "allow";
+            reason_code = "AI_POLICY_ALLOW_MODEL_HASH_MATCH";
+        }
+        const std::string status = "pass";
         std::ostringstream json;
         json
             << "{\n"
             << "  \"schema\": \"t81.ai.policy-test.v1\",\n"
             << "  \"event_type\": \"" << json_escape(event_type) << "\",\n"
-            << "  \"decision\": \"allow\",\n"
-            << "  \"reason_code\": \"AI_POLICY_ALLOW_MODEL_HASH_MATCH\",\n"
-            << "  \"status\": \"pass\"\n"
+            << "  \"model_file\": \"" << json_escape(model_file) << "\",\n"
+            << "  \"model_file_sha256\": \"" << model_file_hash << "\",\n"
+            << "  \"decision\": \"" << decision << "\",\n"
+            << "  \"reason_code\": \"" << reason_code << "\",\n"
+            << "  \"status\": \"" << status << "\"\n"
             << "}\n";
         if (!out_path.empty()) {
             std::ofstream out(out_path, std::ios::trunc);
@@ -674,7 +790,7 @@ private:
             out.close();
         }
         std::cout << json.str();
-        return 0;
+        return status == "pass" ? 0 : 1;
     }
 
     int workflow_run(int argc, char* argv[]) {

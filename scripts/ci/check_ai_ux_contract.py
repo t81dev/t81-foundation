@@ -198,6 +198,7 @@ def validate_runtime(ai_bin: Path, out_dir: Path, runtime_model: str) -> tuple[b
         "model inspect",
         "verify determinism",
         "backend capabilities",
+        "backend select",
         "inference run",
         "quantization inspect",
         "benchmark run",
@@ -325,7 +326,20 @@ def validate_runtime(ai_bin: Path, out_dir: Path, runtime_model: str) -> tuple[b
         errs.append("inference run did not emit artifact")
     else:
         inference = parse_json(inference_path)
-        req = {"schema", "model_id", "model_file", "model_file_sha256", "prompt_sha256", "output", "status"}
+        req = {
+            "schema",
+            "model_id",
+            "model_file",
+            "model_file_sha256",
+            "requested_format",
+            "requested_mode",
+            "selected_backend",
+            "backend_selection_trace_sha256",
+            "prompt_sha256",
+            "output",
+            "generated_tokens",
+            "status",
+        }
         missing = sorted(req - set(inference.keys()))
         if missing:
             errs.append(f"inference artifact missing fields: {', '.join(missing)}")
@@ -356,7 +370,20 @@ def validate_runtime(ai_bin: Path, out_dir: Path, runtime_model: str) -> tuple[b
         errs.append("quantization inspect did not emit artifact")
     else:
         quant = parse_json(quant_path)
-        req = {"schema", "model_id", "model_file", "model_file_sha256", "codec", "bits_per_weight", "status"}
+        req = {
+            "schema",
+            "model_id",
+            "model_file",
+            "model_file_sha256",
+            "requested_format",
+            "requested_mode",
+            "selected_backend",
+            "backend_selection_trace_sha256",
+            "codec",
+            "bits_per_weight",
+            "quantization_profile",
+            "status",
+        }
         missing = sorted(req - set(quant.keys()))
         if missing:
             errs.append(f"quantization artifact missing fields: {', '.join(missing)}")
@@ -392,8 +419,13 @@ def validate_runtime(ai_bin: Path, out_dir: Path, runtime_model: str) -> tuple[b
             "model_id",
             "model_file",
             "model_file_sha256",
+            "requested_format",
+            "requested_mode",
+            "selected_backend",
+            "backend_selection_trace_sha256",
             "latency_ms",
             "throughput_tokens_per_sec",
+            "determinism_score",
             "status",
         }
         missing = sorted(req - set(benchmark.keys()))
@@ -413,6 +445,8 @@ def validate_runtime(ai_bin: Path, out_dir: Path, runtime_model: str) -> tuple[b
             "test",
             "--event-type",
             "model_load",
+            "--model-file",
+            str(model_path),
             "--out",
             str(policy_path),
         ]
@@ -424,13 +458,36 @@ def validate_runtime(ai_bin: Path, out_dir: Path, runtime_model: str) -> tuple[b
         errs.append("policy test did not emit artifact")
     else:
         policy = parse_json(policy_path)
-        req = {"schema", "event_type", "decision", "reason_code", "status"}
+        req = {"schema", "event_type", "model_file", "model_file_sha256", "decision", "reason_code", "status"}
         missing = sorted(req - set(policy.keys()))
         if missing:
             errs.append(f"policy artifact missing fields: {', '.join(missing)}")
         if policy.get("schema") != "t81.ai.policy-test.v1":
             errs.append("policy artifact schema mismatch")
+        if Path(policy.get("model_file", "")).resolve() != model_path.resolve():
+            errs.append("policy artifact model_file does not match runtime model path")
+        if policy.get("decision") != "allow":
+            errs.append("policy artifact decision must be allow for model_load fixture path")
         runtime["policy_artifact_sha256"] = sha256_text(canonical_json(policy))
+
+    if inference_path.exists() and quant_path.exists() and benchmark_path.exists():
+        inference = parse_json(inference_path)
+        quant = parse_json(quant_path)
+        benchmark = parse_json(benchmark_path)
+        selected = {
+            inference.get("selected_backend"),
+            quant.get("selected_backend"),
+            benchmark.get("selected_backend"),
+        }
+        if len(selected) != 1:
+            errs.append("runtime semantics: selected_backend mismatch across inference/quantization/benchmark")
+        traces = {
+            inference.get("backend_selection_trace_sha256"),
+            quant.get("backend_selection_trace_sha256"),
+            benchmark.get("backend_selection_trace_sha256"),
+        }
+        if len(traces) != 1:
+            errs.append("runtime semantics: backend_selection_trace_sha256 mismatch across commands")
 
     inspect_result = run_cmd([str(ai_bin), "model", "inspect", str(model_path)])
     runtime["model_inspect"] = {"rc": inspect_result["rc"], "stdout_sha256": sha256_text(inspect_result["stdout"])}

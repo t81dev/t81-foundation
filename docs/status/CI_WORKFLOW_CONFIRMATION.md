@@ -28,6 +28,10 @@
 - **Model verification**: `./t81_ai verify test_file.gguf`
 - **Backend capabilities**: `./t81_ai backend capabilities`
 - **Backend selection trace**: `./t81_ai backend select --format gguf --mode strict_deterministic`
+- **Inference runtime command**: `./t81_ai inference run --model test --model-file test_file.gguf --prompt "smoke"`
+- **Quantization runtime command**: `./t81_ai quantization inspect --model test --model-file test_file.gguf`
+- **Benchmark runtime command**: `./t81_ai benchmark run --model test --model-file test_file.gguf`
+- **Policy runtime command**: `./t81_ai policy test --event-type model_load --model-file test_file.gguf`
 - **Error handling**: `./t81_ai verify nonexistent.gguf`
 
 **Official Smoke Test:**
