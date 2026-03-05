@@ -6,6 +6,7 @@ import hashlib
 import json
 import subprocess
 import sys
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +32,13 @@ def sha256_file(path: Path) -> str:
 
 def parse_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def parse_iso_date(raw: str, label: str) -> date:
+    try:
+        return date.fromisoformat(raw)
+    except ValueError as exc:
+        raise ValueError(f"invalid {label} date: {raw} (expected YYYY-MM-DD)") from exc
 
 
 def run_cmd(argv: list[str]) -> dict[str, Any]:
@@ -77,7 +85,88 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Path to benchmark threshold baseline JSON (defaults to scripts/ci/ai_benchmark_thresholds.json).",
     )
+    p.add_argument(
+        "--thresholds-history-file",
+        default="",
+        help="Optional benchmark threshold history file for active window selection.",
+    )
+    p.add_argument(
+        "--as-of-date",
+        default="",
+        help="Optional YYYY-MM-DD date to select active threshold window (defaults to today UTC).",
+    )
     return p.parse_args()
+
+
+def select_threshold_window(
+    thresholds_path: Path,
+    history_path: Path | None,
+    as_of: date,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    default_thresholds = parse_json(thresholds_path)
+    metadata = {
+        "source": str(thresholds_path),
+        "history_file": str(history_path) if history_path else "",
+        "as_of_date": as_of.isoformat(),
+        "window_id": "",
+        "window_start": "",
+        "window_end": "",
+    }
+    if history_path is None or not history_path.exists():
+        return default_thresholds, metadata
+
+    history = parse_json(history_path)
+    if history.get("schema") != "t81.ai.benchmark-thresholds-history.v1":
+        raise ValueError(f"benchmark thresholds history schema mismatch: {history.get('schema')}")
+    windows = history.get("windows")
+    if not isinstance(windows, list) or not windows:
+        raise ValueError("benchmark thresholds history windows must be non-empty list")
+
+    selected: dict[str, Any] | None = None
+    for win in windows:
+        if not isinstance(win, dict):
+            continue
+        start_raw = str(win.get("window_start", "")).strip()
+        end_raw = str(win.get("window_end", "")).strip()
+        if not start_raw or not end_raw:
+            continue
+        start = parse_iso_date(start_raw, "window_start")
+        end = parse_iso_date(end_raw, "window_end")
+        if start <= as_of <= end:
+            selected = win
+            break
+    if selected is None:
+        candidates: list[tuple[date, dict[str, Any]]] = []
+        for win in windows:
+            if not isinstance(win, dict):
+                continue
+            start_raw = str(win.get("window_start", "")).strip()
+            if not start_raw:
+                continue
+            try:
+                start = parse_iso_date(start_raw, "window_start")
+            except ValueError:
+                continue
+            if start <= as_of:
+                candidates.append((start, win))
+        if candidates:
+            candidates.sort(key=lambda item: item[0], reverse=True)
+            selected = candidates[0][1]
+    if selected is None:
+        raise ValueError("no valid threshold window found in history")
+
+    thresholds = selected.get("thresholds")
+    if not isinstance(thresholds, dict):
+        raise ValueError("selected threshold window missing thresholds object")
+    metadata.update(
+        {
+            "source": str(history_path),
+            "window_id": str(selected.get("window_id", "")),
+            "window_start": str(selected.get("window_start", "")),
+            "window_end": str(selected.get("window_end", "")),
+        }
+    )
+    return thresholds, metadata
 
 
 def validate_benchmark_payload(payload: dict[str, Any], model_path: Path) -> tuple[bool, list[str]]:
@@ -222,7 +311,20 @@ def main() -> int:
     )
     if not thresholds_path.exists():
         raise SystemExit(f"benchmark thresholds file not found: {thresholds_path}")
-    thresholds = parse_json(thresholds_path)
+    history_path = (
+        Path(args.thresholds_history_file).resolve()
+        if args.thresholds_history_file
+        else Path(__file__).resolve().with_name("ai_benchmark_thresholds_history.json")
+    )
+    as_of = parse_iso_date(args.as_of_date, "as_of_date") if args.as_of_date else datetime.now(UTC).date()
+    try:
+        thresholds, threshold_source = select_threshold_window(
+            thresholds_path=thresholds_path,
+            history_path=history_path if history_path.exists() else None,
+            as_of=as_of,
+        )
+    except ValueError as exc:
+        raise SystemExit(str(exc))
 
     run_artifacts: list[dict[str, Any]] = []
     payloads: list[dict[str, Any]] = []
@@ -296,6 +398,8 @@ def main() -> int:
         "model_origin": model_origin,
         "thresholds_file": str(thresholds_path),
         "thresholds_sha256": sha256_file(thresholds_path),
+        "threshold_source": threshold_source,
+        "as_of_date": as_of.isoformat(),
         "deterministic_replay": deterministic_replay,
         "runtime_runs": run_artifacts,
         "observed": observed,

@@ -23,6 +23,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - AI opcode runtime evidence report: `generate_ai_opcode_runtime_report.py`
 - AI benchmark spec contract gate: `check_ai_benchmark_spec_contract.py`
 - AI benchmark runtime threshold baseline: `ai_benchmark_thresholds.json`
+- AI benchmark threshold history windows: `ai_benchmark_thresholds_history.json`
 - AI quantization codec contract gate: `check_ai_quantization_codec_contract.py`
 - AI UX contract gate: `check_ai_ux_contract.py`
 - Direct backend attestation signing keyring: `ai_direct_backend_attestation_keyring.json`
@@ -50,7 +51,7 @@ python3 scripts/ci/check_ai_policy_event_contract.py --out-dir build/ai-policy -
 python3 scripts/ci/check_ai_backend_adapter_contract.py --out-dir build/ai-backend --ai-bin build/experiments/ai/ux_tools/t81_ai --runtime-model build/ai-backend/runtime_backend_probe_model.gguf --policy-contract build/ai-policy/ai_policy_event_contract.json --runtime-trace build/ai-policy/ai_runtime_trace.json --policy-ledger-snapshot build/ai-policy/ai_axion_policy_ledger_snapshot.json --selection-signing-keyring scripts/ci/ai_backend_selection_keyring.json
 python3 scripts/ci/check_ai_opcode_subset_contract.py --out-dir build/ai-opcodes --runtime-report build/ai-opcodes-runtime/ai_opcode_runtime_report.json --ctest-log build/ai-opcodes/ai_phase1_opcode_ctest.log
 python3 scripts/ci/generate_ai_opcode_runtime_report.py --repo-root . --out-dir build/ai-opcodes-runtime
-python3 scripts/ci/check_ai_benchmark_spec_contract.py --out-dir build/ai-benchmark --ai-bin build/experiments/ai/ux_tools/t81_ai --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --thresholds-file scripts/ci/ai_benchmark_thresholds.json
+python3 scripts/ci/check_ai_benchmark_spec_contract.py --out-dir build/ai-benchmark --ai-bin build/experiments/ai/ux_tools/t81_ai --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --thresholds-file scripts/ci/ai_benchmark_thresholds.json --thresholds-history-file scripts/ci/ai_benchmark_thresholds_history.json --as-of-date 2026-03-05
 python3 scripts/ci/check_ai_quantization_codec_contract.py --out-dir build/ai-quantization --ai-bin build/experiments/ai/ux_tools/t81_ai --runtime-model tests/fixtures/llama_cpp_repro/model.gguf
 python3 scripts/ci/check_ai_ux_contract.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-ux --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --t81-bin build-llama-ai/t81 --llama-hash-probe scripts/ci/llama_model_hash.py --direct-backend-signing-keyring scripts/ci/ai_direct_backend_attestation_keyring.json
 python3 scripts/ci/check_ai_cross_lane_evidence.py --out-dir build/ai-cross-lane --evidence-bundle build/ai-evidence/ai_evidence_bundle.json --ux-contract build/ai-ux/ai_ux_contract.json --ux-inference build/ai-ux/ai_inference_run.json --ux-quantization build/ai-ux/ai_quantization_inspect.json --ux-benchmark build/ai-ux/ai_benchmark_run.json --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json --governed-flow build/ai-governed/governed_llama_flow.json

@@ -104,6 +104,7 @@
 - `scripts/ci/ai_direct_backend_attestation_keyring.json` - Triggers on direct-backend attestation signing key rotation changes
 - `scripts/ci/check_ai_keyring_kms_contract.py` - Triggers on KMS metadata contract policy updates
 - `scripts/ci/ai_benchmark_thresholds.json` - Triggers on benchmark threshold baseline updates
+- `scripts/ci/ai_benchmark_thresholds_history.json` - Triggers on benchmark threshold history window updates
 
 ### Failure Conditions
 

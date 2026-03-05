@@ -1,0 +1,41 @@
+{
+  "schema": "t81.ai.benchmark-thresholds-history.v1",
+  "windows": [
+    {
+      "window_id": "2026-02",
+      "window_start": "2026-02-01",
+      "window_end": "2026-02-28",
+      "thresholds": {
+        "schema": "t81.ai.benchmark-thresholds.v1",
+        "baseline": {
+          "latency_ms": 2.2,
+          "throughput_tokens_per_sec": 490.0
+        },
+        "gates": {
+          "min_determinism_score": 1.0,
+          "max_latency_regression_pct": 25.0,
+          "max_throughput_regression_pct": 25.0,
+          "stable_band_pct": 5.0
+        }
+      }
+    },
+    {
+      "window_id": "2026-03",
+      "window_start": "2026-03-01",
+      "window_end": "2026-03-31",
+      "thresholds": {
+        "schema": "t81.ai.benchmark-thresholds.v1",
+        "baseline": {
+          "latency_ms": 2.1,
+          "throughput_tokens_per_sec": 500.0
+        },
+        "gates": {
+          "min_determinism_score": 1.0,
+          "max_latency_regression_pct": 25.0,
+          "max_throughput_regression_pct": 25.0,
+          "stable_band_pct": 5.0
+        }
+      }
+    }
+  ]
+}

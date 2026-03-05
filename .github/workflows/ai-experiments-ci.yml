@@ -19,6 +19,7 @@ on:
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/ai_benchmark_thresholds.json'
+      - 'scripts/ci/ai_benchmark_thresholds_history.json'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - 'scripts/ci/check_ai_ux_contract.py'
       - 'scripts/ci/ai_direct_backend_attestation_keyring.json'
@@ -51,6 +52,7 @@ on:
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/ai_benchmark_thresholds.json'
+      - 'scripts/ci/ai_benchmark_thresholds_history.json'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - 'scripts/ci/check_ai_ux_contract.py'
       - 'scripts/ci/ai_direct_backend_attestation_keyring.json'
@@ -377,7 +379,8 @@ jobs:
           --out-dir build/ai-benchmark \
           --ai-bin build/experiments/ai/ux_tools/t81_ai \
           --runtime-model tests/fixtures/llama_cpp_repro/model.gguf \
-          --thresholds-file scripts/ci/ai_benchmark_thresholds.json
+          --thresholds-file scripts/ci/ai_benchmark_thresholds.json \
+          --thresholds-history-file scripts/ci/ai_benchmark_thresholds_history.json
 
     - name: Validate AI quantization runtime fixture corpus (RFC-00A4 promotion slice)
       if: steps.build_ai.outputs.has_target == 'true'
