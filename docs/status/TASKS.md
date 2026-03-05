@@ -140,6 +140,26 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - Target: Ongoing
   - Status: **ECOSYSTEM**
 
+### CLI Workflow Expansion Backlog (Execution Slices)
+
+- [ ] **CLI-01: Command Contract Coverage**
+  - Add deterministic CLI integration tests for: `compile`, `run`, `disasm`, `debug`
+  - Lock expected exit codes, stderr diagnostics, and help text surface
+  - Target: 2026-03-08
+  - Status: **NEXT**
+
+- [ ] **CLI-02: Trace Replay UX Hardening**
+  - Improve `trace replay` mismatch diagnostics with actionable diff context
+  - Add JSON output mode for machine-readable CI triage
+  - Target: 2026-03-10
+  - Status: **PLANNED**
+
+- [ ] **CLI-03: Weights Workflow Guardrails**
+  - Add format/extension validation matrix tests for `weights import/info/quantize`
+  - Normalize user-facing error messages and `--help` docs parity
+  - Target: 2026-03-12
+  - Status: **PLANNED**
+
 ---
 
 ## 🚀 **CURRENT PRODUCTION READINESS STATUS**
