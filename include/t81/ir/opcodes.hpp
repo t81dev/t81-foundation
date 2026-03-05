@@ -190,20 +190,6 @@ inline OpcodeDesc get_opcode_desc(Opcode op) {
     case Opcode::TVecAdd:
       return {op, "tvecadd", OP_FLAG_NONE};
 
-    // --- AI-Native Inference Opcodes (RFC-0026) ---
-    case Opcode::ATTN:
-      return {op, "attn", OP_FLAG_NONE};
-    case Opcode::QMATMUL:
-      return {op, "qmatmul", OP_FLAG_NONE};
-    case Opcode::WLOAD:
-      return {op, "wload", OP_FLAG_PRIVILEGED};
-    case Opcode::EMBED:
-      return {op, "embed", OP_FLAG_NONE};
-    case Opcode::GATHER:
-      return {op, "gather", OP_FLAG_NONE};
-    case Opcode::SCATTER:
-      return {op, "scatter", OP_FLAG_NONE};
-
     // --- Memory / Stack / IO ---
     case Opcode::Load:
       return {op, "load", OP_FLAG_MEMORY};

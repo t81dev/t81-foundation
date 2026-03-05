@@ -20,7 +20,7 @@ Authority remains: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 | **T81Lang** | `spec/t81lang-spec.md` | Draft | **Beta** | Beta (impl) / Draft (spec) | Medium | Medium | 2026-02-28 | @t81dev | 2026-05-15 | 36 types tracked. BG-06..09 open. Fixture-bounded determinism only. |
 | **Axion Kernel** | `spec/axion-kernel.md` | Draft | **Alpha** | Alpha | Medium | Medium | 2026-02-28 | @t81dev | 2026-04-30 | §1.6/1.9 implemented (bounded). §1.1/1.3/1.10 partial. §2.5 deferred. AX-M5..M7 open. |
 | **T81Graph** | Surface inventory (non-normative) | Draft | Draft | Experimental | Low | High | 2026-02-28 | @t81dev | 2026-05-15 | VM opcode lowering complete. Lang-side serialization not wired (BG-09). No determinism tests. Non-DCP. |
-| **Cognitive Tiers** | `spec/cognitive-tiers.md` | Draft | Concept / Experimental | **Experimental** | Low | High | 2026-02-25 | @t81dev | 2026-06-15 | Non-DCP. Non-verified unless promoted. |
+| **Cognitive Tiers** | `spec/cognitive-tiers.md` | Draft | Concept / Experimental | **Experimental** | Low | High | 2026-02-25 | @t81dev | 2026-06-15 | Experimental, non-DCP, non-verified unless promoted through governance. |
 | **Hanoi VM** | — | — | Concept | **Experimental** | — | High | 2026-02-25 | @t81dev | — | Experimental only. No spec. Non-DCP. |
 | **Governed llama.cpp** | `docs/how-to/llama-governed-repro.md` (guidance) | Non-normative | Experimental | **Governed non-DCP** | Medium | Medium | 2026-02-28 | @t81dev | 2026-04-30 | Classified governed non-DCP (DEC-003). Practical reproducibility only. Promotion requires governed AGI pipeline. |
 

@@ -1,11 +1,13 @@
 #pragma once
 
 #include <optional>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
 
 #include "t81/axion/context.hpp"
+#include "t81/axion/engine.hpp"
 #include "t81/axion/policy.hpp"
 
 namespace t81::axion {

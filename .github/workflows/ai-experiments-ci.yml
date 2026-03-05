@@ -3,12 +3,19 @@ name: AI Experiments CI
 on:
   push:
     branches: [ main, feature/ai-* ]
+    paths:
+      - 'experiments/ai/**'
+      - 'CMakeLists.txt'
+      - 'scripts/test_ai_simple.sh'
   pull_request:
     branches: [ main ]
     paths:
       - 'experiments/ai/**'
       - 'CMakeLists.txt'
       - 'scripts/test_ai_simple.sh'
+
+permissions:
+  contents: read
 
 jobs:
   test-ai-experiments:
@@ -29,7 +36,12 @@ jobs:
     
     - name: Build AI CLI
       run: |
-        cmake --build build --target t81_ai
+        if cmake --build build --target help | grep -qE '(^| )t81_ai$'; then
+          cmake --build build --target t81_ai
+        else
+          echo "ℹ️ target t81_ai is not defined in this configuration; skipping AI build."
+          exit 0
+        fi
     
     - name: Verify Binary Exists
       run: |

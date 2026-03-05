@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import subprocess
 import sys
 from pathlib import Path
+import subprocess
 
 EXPECTED_TOP_LEVEL = {
     ".clang-format",
@@ -39,6 +39,7 @@ EXPECTED_TOP_LEVEL = {
     "core",
     "docs",
     "examples",
+    "experiments",
     "experimental",
     "include",
     "internal",

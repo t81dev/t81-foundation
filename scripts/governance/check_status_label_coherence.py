@@ -76,13 +76,24 @@ def _component_labels_from_system_status(path: Path) -> dict[str, str]:
 
 def _component_labels_from_matrix(path: Path) -> dict[str, str]:
     labels: dict[str, str] = {}
-    for row in _parse_markdown_table(path):
-        if len(row) < 3:
+    rows = _parse_markdown_table(path)
+    if not rows:
+        return labels
+    header = [h.strip().lower() for h in rows[0]]
+    component_idx = header.index("subsystem") if "subsystem" in header else 0
+    maturity_idx = (
+        header.index("implementation maturity")
+        if "implementation maturity" in header
+        else min(3, len(header) - 1)
+    )
+    for row in rows[1:]:
+        if len(row) <= max(component_idx, maturity_idx):
             continue
-        comp = re.sub(r"[*`]", "", row[0]).strip().lower()
+        comp = re.sub(r"[*`]", "", row[component_idx]).strip().lower()
+        maturity = row[maturity_idx]
         if comp in {"t81vm", "axion kernel", "t81lang"}:
             key = "axion" if comp == "axion kernel" else comp
-            labels[key] = _normalize(row[2])
+            labels[key] = _normalize(maturity)
     return labels
 
 
@@ -172,20 +183,28 @@ def main() -> int:
             )
 
     matrix_rows = _parse_markdown_table(MATRIX)
+    matrix_header = [h.strip().lower() for h in matrix_rows[0]] if matrix_rows else []
+    subsystem_idx = matrix_header.index("subsystem") if "subsystem" in matrix_header else 0
+    spec_authority_idx = (
+        matrix_header.index("spec authority")
+        if "spec authority" in matrix_header
+        else min(2, len(matrix_header) - 1)
+    )
     matrix_spec_surface: dict[str, str] = {}
-    for row in matrix_rows:
-        if len(row) < 2:
+    for row in matrix_rows[1:]:
+        if len(row) <= max(subsystem_idx, spec_authority_idx):
             continue
-        comp = re.sub(r"[*`]", "", row[0]).strip().lower()
+        comp = re.sub(r"[*`]", "", row[subsystem_idx]).strip().lower()
         if comp == "axion kernel":
             comp = "axion"
         if comp in canonical:
-            matrix_spec_surface[comp] = row[1]
+            matrix_spec_surface[comp] = row[spec_authority_idx]
 
     for comp, rules in canonical.items():
         expected_spec = rules["spec_authority"]
         surface = matrix_spec_surface.get(comp, "")
-        if f"({expected_spec})" not in surface.lower():
+        surface_norm = _normalize(surface)
+        if f"({expected_spec})" not in surface.lower() and surface_norm != expected_spec:
             issues.append(
                 f"implementation matrix spec-authority mismatch for {comp}: expected marker ({expected_spec}) in '{surface}'"
             )

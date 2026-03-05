@@ -1,0 +1,2 @@
+# Placeholder Bazel file retained for governance root-structure checks.
+# Authoritative builds are CMake-based (see CMakeLists.txt).

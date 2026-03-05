@@ -2,14 +2,12 @@
 
 #include <cctype>
 #include <cstdint>
-#include <filesystem>
 #include <iostream>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
-#include "t81/axion/context.hpp"
-#include "t81/support/expected_simple.hpp"
+#include "t81/support/expected.hpp"
 
 namespace t81::axion {
 
@@ -200,12 +198,10 @@ private:
 };
 }  // namespace detail
 
-inline static expected<Policy, std::string> parse_error(const std::string& message) {
-    return expected<Policy, std::string>(message);
-}
-
 inline t81::expected<Policy, std::string> parse_policy(std::string_view text) {
-  auto make_error = parse_error;
+  auto make_error = [](std::string msg) {
+    return t81::expected<Policy, std::string>(t81::unexpect, std::move(msg));
+  };
   detail::PolicyLexer lex(text);
   auto tok = lex.next();
   if (tok.kind != detail::PolicyToken::Kind::LParen) {
@@ -654,18 +650,7 @@ inline t81::expected<Policy, std::string> parse_policy(std::string_view text) {
       policy.alignment_requirements.push_back(std::move(req));
       continue;
     }
-    // Unknown clause -> skip forms deterministically.
-    int depth = 1;
-    while (depth > 0) {
-      auto skip_tok = lex.next();
-      if (skip_tok.kind == detail::PolicyToken::Kind::LParen)
-        ++depth;
-      else if (skip_tok.kind == detail::PolicyToken::Kind::RParen)
-        --depth;
-      else if (skip_tok.kind == detail::PolicyToken::Kind::End) {
-        return make_error("unterminated policy clause");
-      }
-    }
+    return make_error("unknown policy clause: " + key.text);
   }
   return policy;
 }
