@@ -1,6 +1,6 @@
 # Hardening Backlog
 
-Last Updated: 2026-03-04
+Last Updated: 2026-03-05
 Owner: @t81dev
 
 **This is not a feature backlog.**
@@ -23,13 +23,13 @@ Feature work, new capabilities, and API additions live elsewhere.
 | BG-07 | Scope reduction / determinism tightening | `T81BigInt` | VM aliases BigInt to 64-bit; >64-bit literals silently truncated — spec claims arbitrary-precision | Native arbitrary-precision opcode path OR explicit governance decision to narrow spec claim | @t81dev | 2026-05-15 | Open |
 | BG-08 | Determinism tightening | `T81Complex` | Binary pool serialization absent in `binary_io.cpp` — persistence gap | **Round-trip binary serialization for T81Complex passes determinism test; complete implementation with RFC-0024 compliance** | @t81dev | 2026-05-15 | **Closed** |
 | BG-09 | Determinism tightening | `T81Graph` + collection lang runtime | `serialize_canonical()` exists in C++ headers but is never called from the language runtime | **Language runtime invokes `serialize_canonical` for collection types and T81Graph; stable serialization signature verified by test** | @t81dev | 2026-05-15 | **Closed** |
-| AX-M5 | Promotion evidence | Axion §1.1 — Determinism Stewardship | Canonical-memory enforcement traceability incomplete across all Axion-visible transitions | Evidence map published covering all Axion-visible memory transitions; no uncovered transition in audit | @t81dev | 2026-03-10 | Open |
-| AX-M6 | Promotion evidence | Axion §1.10 — CanonFS Observability | End-to-end persistence lifecycle audit closure gap | Evidence path maps full persistence lifecycle audit beyond hook/segment-event trace | @t81dev | 2026-03-12 | Open |
-| AX-M7 | Promotion evidence | Axion §1.3 — Complexity Measurement | Call-graph and branch/path-divergence evidence not mapped | Evidence path maps call-graph complexity measurement; governance review accepts as Beta-gate evidence | @t81dev | 2026-03-14 | Open |
-| T3K-S1 | Scope reduction | T3K Quantization | No `spec/t3k-quantization-spec.md` — surface has registry evidence but no normative spec | Author `spec/t3k-quantization-spec.md` OR explicitly mark T3K as governed non-spec surface in registry | @t81dev | 2026-04-30 | Open |
+| AX-M5 | Promotion evidence | Axion §1.1 — Determinism Stewardship | Canonical-memory enforcement traceability incomplete across all Axion-visible transitions | **✅ Evidence map published covering all Axion-visible memory transitions; no uncovered transition in audit** | @t81dev | 2026-03-10 | **Closed** |
+| AX-M6 | Promotion evidence | Axion §1.10 — CanonFS Observability | End-to-end persistence lifecycle audit closure gap | **✅ Evidence path maps full persistence lifecycle audit beyond hook/segment-event trace** | @t81dev | 2026-03-12 | **Closed** |
+| AX-M7 | Promotion evidence | Axion §1.3 — Complexity Measurement | Call-graph and branch/path-divergence evidence not mapped | **✅ Evidence path maps call-graph complexity measurement; governance review accepted as Beta-gate evidence** | @t81dev | 2026-03-14 | **Closed** |
+| T3K-S1 | Scope reduction | T3K Quantization | No `spec/t3k-quantization-spec.md` — surface has registry evidence but no normative spec | **✅ `spec/t3k-quantization-spec.md` authored and tracked as governed non-spec surface** | @t81dev | 2026-04-30 | **Closed** |
 | FW-01 | Structural hardening | `core/vm/vm.cpp:24` | Controlled dependency waiver — policy hook cross-boundary include | Either eliminate the waiver through header restructuring, or explicitly re-affirm and re-document it in each release | @t81dev | Ongoing | Monitoring |
-| FW-02 | Structural hardening | VM policy-trace bridge | Opcode dispatch concentration in policy-trace bridge not fully extracted | `AxCheck`/`AxReport` helper paths fully extracted from dispatch loop; no dispatch path >threshold | @t81dev | 2026-04-15 | Open |
-| GOV-01 | Scope reduction | `docs/governance/` | No deputy-approval policy — single-owner concentration on all GO/HOLD decisions | `docs/governance/APPROVAL_DELEGATION.md` published with deputy-owner and delegation criteria | @t81dev | 2026-04-30 | Open |
+| FW-02 | Structural hardening | VM policy-trace bridge | Opcode dispatch concentration in policy-trace bridge not fully extracted | `AxCheck`/`AxReport` helper paths fully extracted from dispatch loop; no dispatch path >threshold | @t81dev | 2026-04-15 | **In Progress** |
+| GOV-01 | Scope reduction | `docs/governance/` | No deputy-approval policy — single-owner concentration on all GO/HOLD decisions | **✅ `docs/governance/APPROVAL_DELEGATION.md` published with deputy-owner and delegation criteria** | @t81dev | 2026-04-30 | **Closed** |
 
 ---
 
@@ -42,6 +42,12 @@ Feature work, new capabilities, and API additions live elsewhere.
 | **BG-09** | **Determinism tightening** | **T81Graph serialization completed** - Language runtime invokes `serialize_canonical` for T81Graph; stable serialization signature verified by test | **2026-03-04** |
 | **BG-10** | **Performance Enhancement** | **Memory Pool Optimization completed** - Complete 10-phase memory management transformation with 30-50% efficiency gains and production hardening | **2026-03-04** |
 | **PR-426** | **Determinism Hardening Phase 1** | **Comprehensive determinism hardening completed** - T81Float/T81Complex transcendental math gated behind T81_DETERMINISTIC; T81Map/T81Set canonical sorted vector storage; T81Entropy/T81Time seeded state requirements; explicit container iteration order guarantees; cross-platform determinism tests implemented | **2026-03-04** |
+| **GOV-01** | **Scope reduction** | **Deputy approval delegation policy published** - governance criteria and delegated GO/HOLD controls documented in `docs/governance/APPROVAL_DELEGATION.md` | **2026-03-05** |
+| **FW-02 (Slice 1)** | **Structural hardening** | **VM policy bridge extraction started** - `AxCheck`/`AxReport` handling moved to dedicated helpers in `core/vm/vm.cpp`; full dispatch concentration reduction still open | **2026-03-05** |
+| **AX-M5** | **Promotion evidence** | **Determinism stewardship evidence map completed** | **2026-03-04** |
+| **AX-M6** | **Promotion evidence** | **CanonFS observability lifecycle evidence completed** | **2026-03-04** |
+| **AX-M7** | **Promotion evidence** | **Complexity measurement evidence completed** | **2026-03-04** |
+| **T3K-S1** | **Scope reduction** | **T3K quantization spec authored (`spec/t3k-quantization-spec.md`)** | **2026-03-04** |
 | BG-01 | Determinism tightening | T81Lang §5 compile determinism — deterministic compile-profile traceability hardened | 2026-02-25 |
 | BG-02 | Determinism tightening | T81Lang §§3/6 control-flow purity rules hardened | 2026-02-25 |
 | BG-03 | Determinism tightening | T81Lang §4 name-resolution scoping gaps reduced | 2026-02-25 |
@@ -71,10 +77,10 @@ Feature work, new capabilities, and API additions live elsewhere.
 When ordering work from this backlog:
 
 1. **Verified-surface regressions** — fix immediately; do not defer.
-2. **Open AX-M* items** — time-sensitive; gated to Axion Beta review.
-3. **BG-06/BG-09** — collection determinism; required for T81Lang production posture.
-4. **BG-07/BG-08** — structural hardening; required before BigInt/Complex DCP candidacy.
-5. **T3K-S1/GOV-01** — governance discipline; no user-visible impact.
+2. **FW-02** — reduce VM dispatch concentration in policy-trace bridge.
+3. **BG-07** — resolve BigInt precision scope mismatch.
+4. **FW-01** — maintain/retire controlled dependency waiver with explicit documentation.
+5. **Post-close governance hygiene** — keep delegation and evidence artifacts current.
 
 ---
 

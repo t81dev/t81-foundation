@@ -1,7 +1,7 @@
 # Governance documentation index
 
 Status: Active
-Last Updated: 2026-02-25
+Last Updated: 2026-03-05
 
 ## Purpose
 
@@ -15,6 +15,7 @@ specification authority, freeze boundaries, or determinism claim scope.
 ## Navigation
 
 - SPEC_AUTHORITY_MODEL.md
+- APPROVAL_DELEGATION.md
 - FREEZE_ENFORCEMENT.md
 - DETERMINISM_SURFACE_REGISTRY.md
 - INCIDENT_RESPONSE.md

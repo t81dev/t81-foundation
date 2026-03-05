@@ -1,7 +1,7 @@
 # Project Control Center
 
 Status: Active
-Last Updated: 2026-03-04
+Last Updated: 2026-03-05
 Owner: @t81dev
 Version: 3.0.0
 
@@ -20,8 +20,8 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | Dimension | Status |
 | :--- | :--- |
 | Overall | Green — **PERFECT TEST COVERAGE ACHIEVED** (285/285 tests passing) |
-| Release Readiness | **GO** — candidate `b6fb4651`, stamped 2026-03-04 |
-| Open Blockers | None — required contexts satisfied on `b6fb4651` |
+| Release Readiness | **GO** — candidate `57f1a96c`, stamped 2026-03-05 |
+| Open Blockers | None — required contexts satisfied on `57f1a96c` |
 | Frozen Core | Intact — no freeze exceptions |
 | Determinism Registry | All Verified surfaces clean |
 | Structural Integrity | **PERFECT** — 285/285 tests (100% success rate) |
@@ -35,8 +35,8 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | C2 Month-Close execution | 2026-03-31 | Scheduled |
 | Axion Beta candidacy review | 2026-04-30 | Open |
 | T81Graph lang-side serialization (BG-09) | 2026-05-15 | **Closed** |
-| T3K spec document (T3K-S1) | 2026-04-30 | Open |
-| Deputy-approval policy (GOV-01) | 2026-04-30 | Open |
+| T3K spec document (T3K-S1) | 2026-04-30 | **Closed** |
+| Deputy-approval policy (GOV-01) | 2026-04-30 | **Closed** |
 
 ---
 
@@ -48,8 +48,8 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | Data Types | None | Frozen; audit closed 2026-02-27 |
 | T81VM | Low | Policy-bridge dispatch concentration (FW-02) |
 | T81Lang | **RESOLVED** | **All parser/semantic issues fixed**; 100% test coverage |
-| Axion Kernel | Medium | §1.1/1.3/1.10 evidence gaps (AX-M5..M7) |
-| T81Graph | High | No determinism tests; lang serialization not wired |
+| Axion Kernel | Low | AX-M5..M7 evidence landed; awaiting Beta review cycle |
+| T81Graph | Low | Lang-side serialization wired; determinism coverage in place |
 | Experimental | — | Non-DCP by definition |
 
 Full decomposition: `DRIFT_DECOMPOSITION.md`
@@ -72,11 +72,9 @@ Full register: `ACTIVE_RISKS.md`
 
 | Item | Owner | Target |
 | :--- | :--- | :--- |
-| AX-M5/M6/M7 — Axion evidence closure | @t81dev | 2026-03-14 |
-| BG-06 — Collection determinism tests | @t81dev | 2026-05-15 |
-| BG-09 — Lang-side serialization wiring | @t81dev | 2026-05-15 |
+| BG-07 — BigInt precision scope resolution (phase 2) | @t81dev | 2026-05-15 |
 | FW-02 — VM dispatch concentration reduction | @t81dev | 2026-04-15 |
-| std.io/sys/async/agent fixture suites | @t81dev | Ongoing |
+| FW-01 — dependency waiver maintenance/removal decision | @t81dev | Ongoing |
 
 Full backlog: `HARDENING_BACKLOG.md`
 
@@ -93,7 +91,7 @@ Full boundary: `EXTENSION_PROFILE.md`
 ## Next Decision Points
 
 1. **2026-03-31** — Execute C2 runbook; stamp outcome in `docs/records/audits/2026-03-governance-review.md`
-2. **2026-04-30** — Axion Beta candidacy review; GOV-01 deputy-approval policy deadline
+2. **2026-04-30** — Axion Beta candidacy review
 3. **Post-C2** — Re-evaluate Jekyll Pages deferred failure (R-07)
 
 ---

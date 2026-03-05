@@ -1,6 +1,6 @@
 # Active Tasks
 
-Last Updated: 2026-03-04
+Last Updated: 2026-03-05
 
 Immediate, actionable items only. Structural hardening items live in `HARDENING_BACKLOG.md`.
 
@@ -88,11 +88,11 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 ### Core Infrastructure - **🚀 IMMEDIATE PRIORITY**
 
-- [ ] **GOV-01 Deputy Approval Policy**
-  - Create `docs/governance/APPROVAL_DELEGATION.md`
-  - Define deputy-owner criteria and delegation rules
-  - Target: 2026-04-30
-  - Status: **RISK MITIGATION**
+- [x] **GOV-01 Deputy Approval Policy** - **✅ COMPLETED**
+  - ✅ Created `docs/governance/APPROVAL_DELEGATION.md`
+  - ✅ Defined deputy-owner criteria and delegation rules
+  - Completed: 2026-03-05
+  - Status: **✅ RESOLVED** - single-owner concentration risk reduced
 
 ---
 
@@ -100,11 +100,12 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 ### Governance Improvements - **🏛️ STRUCTURAL EXCELLENCE**
 
-- [ ] **FW-02 VM Policy Bridge Cleanup**
+- [ ] **FW-02 VM Policy Bridge Cleanup** - **🚧 IN PROGRESS**
   - Extract `AxCheck`/`AxReport` helpers from dispatch loop
   - Reduce opcode dispatch concentration
+  - Progress: AxCheck/AxReport handling extracted to dedicated VM helpers (`core/vm/vm.cpp`, 2026-03-05)
   - Target: 2026-04-15
-  - Status: **TECHNICAL DEBT**
+  - Status: **TECHNICAL DEBT (ACTIVE)**
 
 ### Strategic Enhancements - **🔬 INNOVATION PIPELINE**
 
