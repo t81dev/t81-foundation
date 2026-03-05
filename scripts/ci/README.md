@@ -20,6 +20,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - AI benchmark spec contract gate: `check_ai_benchmark_spec_contract.py`
 - AI quantization codec contract gate: `check_ai_quantization_codec_contract.py`
 - AI UX contract gate: `check_ai_ux_contract.py`
+- RFC-0025 canonize-tensor toolchain gate: `check_ai_tloadhash_toolchain.py`
 
 ## Local invocation examples
 ```bash
@@ -37,6 +38,7 @@ python3 scripts/ci/check_ai_opcode_subset_contract.py --out-dir build/ai-opcodes
 python3 scripts/ci/check_ai_benchmark_spec_contract.py --out-dir build/ai-benchmark
 python3 scripts/ci/check_ai_quantization_codec_contract.py --out-dir build/ai-quantization
 python3 scripts/ci/check_ai_ux_contract.py --out-dir build/ai-ux
+python3 scripts/ci/check_ai_tloadhash_toolchain.py --t81-bin build/t81 --input-file tests/fixtures/llama_cpp_repro/model.gguf --out-dir build/ai-rfc0025
 python3 scripts/ci/t81lang_repro_gate.py --help
 python3 scripts/ci/t3k_repro_gate.py --help
 python3 scripts/ci/llama_cpp_repro_gate.py --help

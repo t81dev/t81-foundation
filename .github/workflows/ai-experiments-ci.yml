@@ -16,6 +16,7 @@ on:
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - 'scripts/ci/check_ai_ux_contract.py'
+      - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - '.github/workflows/ai-experiments-ci.yml'
   pull_request:
     branches: [ main ]
@@ -32,6 +33,7 @@ on:
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - 'scripts/ci/check_ai_ux_contract.py'
+      - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - '.github/workflows/ai-experiments-ci.yml'
   workflow_dispatch:
 
@@ -85,6 +87,15 @@ jobs:
         ctest --test-dir build --output-on-failure --verbose \
           -R 't81_vm_tloadhash_conformance_test|t81_vm_tloadhash_decodefault_determinism_matrix_test' \
           2>&1 | tee build/ai-rfc0025/tloadhash-ctest.log
+
+    - name: Validate RFC-0025 canonize-tensor toolchain baseline
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-rfc0025
+        python3 scripts/ci/check_ai_tloadhash_toolchain.py \
+          --t81-bin build/t81 \
+          --input-file tests/fixtures/llama_cpp_repro/model.gguf \
+          --out-dir build/ai-rfc0025
 
     - name: Verify Binary Exists
       if: steps.build_ai.outputs.has_target == 'true'
@@ -202,8 +213,10 @@ jobs:
           echo ""
           echo "- ctest regex: \`t81_vm_tloadhash_conformance_test|t81_vm_tloadhash_decodefault_determinism_matrix_test\`"
           echo "- log: \`build/ai-rfc0025/tloadhash-ctest.log\`"
+          echo "- toolchain artifact: \`build/ai-rfc0025/ai_tloadhash_toolchain.json\`"
           echo ""
         } >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-rfc0025/ai_tloadhash_toolchain.md >> "$GITHUB_STEP_SUMMARY"
 
     - name: Upload AI evidence artifacts
       if: steps.build_ai.outputs.has_target == 'true'
@@ -228,3 +241,6 @@ jobs:
           build/ai-ux/ai_ux_contract.json
           build/ai-ux/ai_ux_contract.md
           build/ai-rfc0025/tloadhash-ctest.log
+          build/ai-rfc0025/ai_tloadhash_toolchain.json
+          build/ai-rfc0025/ai_tloadhash_toolchain.md
+          build/ai-rfc0025/policy.apl
