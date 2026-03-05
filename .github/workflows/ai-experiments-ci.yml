@@ -12,6 +12,7 @@ on:
       - 'scripts/ci/check_ai_model_provenance_gate.py'
       - 'scripts/ci/ai_model_provenance_keyring.json'
       - 'scripts/ci/check_ai_policy_event_contract.py'
+      - 'scripts/ci/ai_policy_ledger_keyring.json'
       - 'scripts/ci/check_ai_backend_adapter_contract.py'
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
@@ -37,6 +38,7 @@ on:
       - 'scripts/ci/check_ai_model_provenance_gate.py'
       - 'scripts/ci/ai_model_provenance_keyring.json'
       - 'scripts/ci/check_ai_policy_event_contract.py'
+      - 'scripts/ci/ai_policy_ledger_keyring.json'
       - 'scripts/ci/check_ai_backend_adapter_contract.py'
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
@@ -241,7 +243,8 @@ jobs:
         python3 scripts/ci/check_ai_policy_event_contract.py \
           --out-dir build/ai-policy \
           --runtime-trace build/ai-policy/ai_runtime_trace.json \
-          --ai-bin build/experiments/ai/ux_tools/t81_ai
+          --ai-bin build/experiments/ai/ux_tools/t81_ai \
+          --ledger-keyring scripts/ci/ai_policy_ledger_keyring.json
 
     - name: Validate backend adapter contract (RFC-00A5 baseline)
       if: steps.build_ai.outputs.has_target == 'true'
@@ -375,6 +378,8 @@ jobs:
         cat build/ai-evidence/ai_evidence_summary.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-vm-trace/ai_vm_trace_evidence.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-policy/ai_policy_event_contract.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-policy/ai_axion_policy_ledger_snapshot.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-policy/ai_axion_policy_ledger_replay_verification.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-backend/ai_backend_adapter_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-opcodes/ai_opcode_subset_contract.md >> "$GITHUB_STEP_SUMMARY"
         {
@@ -420,6 +425,10 @@ jobs:
           build/ai-policy/ai_policy_event_contract.json
           build/ai-policy/ai_policy_event_contract.md
           build/ai-policy/ai_runtime_trace.json
+          build/ai-policy/ai_axion_policy_ledger_snapshot.json
+          build/ai-policy/ai_axion_policy_ledger_snapshot.md
+          build/ai-policy/ai_axion_policy_ledger_replay_verification.json
+          build/ai-policy/ai_axion_policy_ledger_replay_verification.md
           build/ai-backend/ai_backend_adapter_contract.json
           build/ai-backend/ai_backend_adapter_contract.md
           build/ai-backend/runtime_backend_probe_model.gguf

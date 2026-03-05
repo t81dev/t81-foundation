@@ -16,6 +16,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - AI model provenance hash gate: `check_ai_model_provenance_gate.py`
 - AI model provenance signing keyring: `ai_model_provenance_keyring.json`
 - AI policy event contract gate: `check_ai_policy_event_contract.py`
+- AI policy Axion ledger signing keyring: `ai_policy_ledger_keyring.json`
 - AI backend adapter contract gate: `check_ai_backend_adapter_contract.py`
 - AI opcode subset contract gate: `check_ai_opcode_subset_contract.py`
 - AI opcode runtime evidence report: `generate_ai_opcode_runtime_report.py`
@@ -39,7 +40,7 @@ python3 scripts/ci/check_cli_json_contracts.py --t81-bin build/t81 --repo-root .
 python3 scripts/ci/check_ai_experiment_boundary.py
 python3 scripts/ci/collect_ai_evidence_bundle.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-evidence --runs 3 --model-fixture tests/fixtures/llama_cpp_repro/model.gguf
 python3 scripts/ci/check_ai_model_provenance_gate.py --model build/ai-provenance/test_model.gguf --manifest build/ai-provenance/test_model.manifest.json --signing-keyring scripts/ci/ai_model_provenance_keyring.json --self-test-deny
-python3 scripts/ci/check_ai_policy_event_contract.py --out-dir build/ai-policy
+python3 scripts/ci/check_ai_policy_event_contract.py --out-dir build/ai-policy --ledger-keyring scripts/ci/ai_policy_ledger_keyring.json
 python3 scripts/ci/check_ai_backend_adapter_contract.py --out-dir build/ai-backend
 python3 scripts/ci/check_ai_opcode_subset_contract.py --out-dir build/ai-opcodes --runtime-report build/ai-opcodes-runtime/ai_opcode_runtime_report.json --ctest-log build/ai-opcodes/ai_phase1_opcode_ctest.log
 python3 scripts/ci/generate_ai_opcode_runtime_report.py --repo-root . --out-dir build/ai-opcodes-runtime

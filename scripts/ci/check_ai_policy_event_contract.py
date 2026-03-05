@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
+import hmac
 import json
 import subprocess
 import sys
@@ -11,6 +13,9 @@ from typing import Any
 
 
 SCHEMA_VERSION = "t81.ai.policy-events.v1"
+LEDGER_SCHEMA_VERSION = "t81.ai.axion-policy-ledger.v1"
+LEDGER_REPLAY_SCHEMA_VERSION = "t81.ai.axion-policy-ledger-replay.v1"
+KEYRING_SCHEMA_VERSION = "t81.ai.policy-ledger-keyring.v1"
 
 
 def canonical_json(data: Any) -> str:
@@ -19,6 +24,96 @@ def canonical_json(data: Any) -> str:
 
 def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def parse_json(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def parse_key_material_b64(raw: str) -> bytes:
+    return base64.b64decode(raw, validate=True)
+
+
+def validate_keyring(path: Path) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
+    payload = parse_json(path)
+    errors: list[str] = []
+
+    if payload.get("schema") != KEYRING_SCHEMA_VERSION:
+        errors.append(f"keyring schema mismatch: {payload.get('schema')} != {KEYRING_SCHEMA_VERSION}")
+
+    keys = payload.get("keys")
+    if not isinstance(keys, list) or not keys:
+        errors.append("keyring keys must be a non-empty list")
+        return payload, {}, errors
+
+    active_keys: list[dict[str, Any]] = []
+    key_by_id: dict[str, dict[str, Any]] = {}
+    for key in keys:
+        if not isinstance(key, dict):
+            errors.append("key entry must be object")
+            continue
+        key_id = str(key.get("key_id", "")).strip()
+        if not key_id:
+            errors.append("key entry missing key_id")
+            continue
+        if key_id in key_by_id:
+            errors.append(f"duplicate key_id in keyring: {key_id}")
+            continue
+        key_by_id[key_id] = key
+        if str(key.get("status", "")).strip() == "active":
+            active_keys.append(key)
+        if str(key.get("algorithm", "")).strip() != "hmac-sha256":
+            errors.append(f"key {key_id}: unsupported algorithm")
+        try:
+            decoded = parse_key_material_b64(str(key.get("material_b64", "")))
+            if not decoded:
+                errors.append(f"key {key_id}: empty key material")
+        except Exception:
+            errors.append(f"key {key_id}: invalid material_b64")
+
+    active_key_id = str(payload.get("active_key_id", "")).strip()
+    if not active_key_id:
+        errors.append("keyring missing active_key_id")
+    if len(active_keys) != 1:
+        errors.append(f"keyring must have exactly one active key (found {len(active_keys)})")
+
+    active = key_by_id.get(active_key_id, {})
+    if not active:
+        errors.append(f"active_key_id not found: {active_key_id}")
+    elif str(active.get("status", "")).strip() != "active":
+        errors.append(f"active key {active_key_id} does not have status=active")
+
+    rotation = payload.get("rotation_policy", {})
+    if isinstance(rotation, dict) and bool(rotation.get("require_next_key", False)):
+        has_next = any(str(k.get("status", "")).strip() == "next" for k in key_by_id.values())
+        if not has_next:
+            errors.append("rotation_policy.require_next_key=true but no next key exists")
+
+    return payload, active, errors
+
+
+def sign_payload_hex(payload: dict[str, Any], key_entry: dict[str, Any]) -> str:
+    material = parse_key_material_b64(str(key_entry.get("material_b64", "")))
+    return hmac.new(material, canonical_json(payload).encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+def verify_payload_signature(payload: dict[str, Any], signature_hex: str, keyring: dict[str, Any]) -> tuple[bool, str]:
+    keys = keyring.get("keys")
+    if not isinstance(keys, list):
+        return False, ""
+    encoded = canonical_json(payload).encode("utf-8")
+    for key in keys:
+        if not isinstance(key, dict):
+            continue
+        key_id = str(key.get("key_id", "")).strip()
+        try:
+            material = parse_key_material_b64(str(key.get("material_b64", "")))
+        except Exception:
+            continue
+        candidate = hmac.new(material, encoded, hashlib.sha256).hexdigest()
+        if hmac.compare_digest(candidate, signature_hex):
+            return True, key_id
+    return False, ""
 
 
 def evaluate_event(policy: dict[str, Any], event: dict[str, Any]) -> dict[str, str]:
@@ -73,10 +168,6 @@ def run_trace(policy: dict[str, Any], events: list[dict[str, Any]]) -> list[dict
     return out
 
 
-def parse_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
 def validate_runtime_trace_binding(
     runtime_trace_path: Path, ai_bin: Path | None
 ) -> tuple[bool, list[str], dict[str, Any]]:
@@ -125,6 +216,7 @@ def validate_runtime_trace_binding(
         errs.append(f"runtime trace decision must be allow/deny (got {decision})")
     if reason_code == "":
         errs.append("runtime trace reason_code must be non-empty")
+
     alias_map = {
         "ALLOW_MODEL_LOAD": "AI_POLICY_ALLOW_MODEL_HASH_MATCH",
     }
@@ -147,11 +239,151 @@ def validate_runtime_trace_binding(
     return len(errs) == 0, errs, binding
 
 
+def build_signed_ledger_snapshot(
+    trace: list[dict[str, Any]], keyring_payload: dict[str, Any], key_entry: dict[str, Any], keyring_path: Path
+) -> dict[str, Any]:
+    entries: list[dict[str, Any]] = []
+    prev_sha = ""
+
+    for seq, event in enumerate(trace, start=1):
+        core = {
+            "seq": seq,
+            "event_type": event["event_type"],
+            "decision": event["decision"],
+            "reason_code": event["reason_code"],
+            "prev_entry_sha256": prev_sha,
+        }
+        entry_sha = sha256_text(canonical_json(core))
+        sig_payload = {"entry_sha256": entry_sha, "seq": seq}
+        signature_hex = sign_payload_hex(sig_payload, key_entry)
+
+        entry = {
+            **core,
+            "entry_sha256": entry_sha,
+            "signature": {
+                "algorithm": "hmac-sha256",
+                "key_id": str(key_entry.get("key_id", "")).strip(),
+                "signature_hex": signature_hex,
+            },
+        }
+        entries.append(entry)
+        prev_sha = entry_sha
+
+    snapshot_core = {
+        "schema": LEDGER_SCHEMA_VERSION,
+        "entry_count": len(entries),
+        "root_entry_sha256": prev_sha,
+        "entries": entries,
+    }
+    snapshot_sig_payload = {
+        "entry_count": snapshot_core["entry_count"],
+        "root_entry_sha256": snapshot_core["root_entry_sha256"],
+    }
+    snapshot_sig = sign_payload_hex(snapshot_sig_payload, key_entry)
+
+    return {
+        **snapshot_core,
+        "snapshot_sha256": sha256_text(canonical_json(snapshot_core)),
+        "signature": {
+            "algorithm": "hmac-sha256",
+            "key_id": str(key_entry.get("key_id", "")).strip(),
+            "signature_hex": snapshot_sig,
+            "verified": False,
+            "verified_by_key_id": "",
+        },
+        "keyring": {
+            "path": str(keyring_path),
+            "sha256": sha256_text(keyring_path.read_text(encoding="utf-8")),
+            "rotation_policy": keyring_payload.get("rotation_policy", {}),
+        },
+    }
+
+
+def verify_ledger_snapshot(snapshot: dict[str, Any], keyring_payload: dict[str, Any]) -> tuple[bool, list[str], dict[str, Any]]:
+    errs: list[str] = []
+    details: dict[str, Any] = {}
+
+    entries = snapshot.get("entries")
+    if not isinstance(entries, list) or not entries:
+        return False, ["ledger snapshot entries must be non-empty list"], details
+
+    prev_sha = ""
+    for idx, entry in enumerate(entries, start=1):
+        if not isinstance(entry, dict):
+            errs.append(f"entry {idx} is not object")
+            continue
+        core = {
+            "seq": entry.get("seq"),
+            "event_type": entry.get("event_type"),
+            "decision": entry.get("decision"),
+            "reason_code": entry.get("reason_code"),
+            "prev_entry_sha256": entry.get("prev_entry_sha256"),
+        }
+        if core["seq"] != idx:
+            errs.append(f"entry {idx} seq mismatch")
+        if core["prev_entry_sha256"] != prev_sha:
+            errs.append(f"entry {idx} prev_entry_sha256 mismatch")
+
+        entry_sha = str(entry.get("entry_sha256", "")).strip()
+        expected_entry_sha = sha256_text(canonical_json(core))
+        if entry_sha != expected_entry_sha:
+            errs.append(f"entry {idx} entry_sha256 mismatch")
+
+        sig = entry.get("signature")
+        if not isinstance(sig, dict):
+            errs.append(f"entry {idx} missing signature")
+        else:
+            payload = {"entry_sha256": entry_sha, "seq": idx}
+            ok, key_id = verify_payload_signature(payload, str(sig.get("signature_hex", "")), keyring_payload)
+            if not ok:
+                errs.append(f"entry {idx} signature verification failed")
+            else:
+                details[f"entry_{idx}_verified_by"] = key_id
+
+        prev_sha = entry_sha
+
+    snapshot_core = {
+        "schema": snapshot.get("schema"),
+        "entry_count": snapshot.get("entry_count"),
+        "root_entry_sha256": snapshot.get("root_entry_sha256"),
+        "entries": entries,
+    }
+    expected_snapshot_sha = sha256_text(canonical_json(snapshot_core))
+    if str(snapshot.get("snapshot_sha256", "")).strip() != expected_snapshot_sha:
+        errs.append("snapshot_sha256 mismatch")
+
+    if snapshot.get("root_entry_sha256") != prev_sha:
+        errs.append("root_entry_sha256 mismatch")
+    if snapshot.get("entry_count") != len(entries):
+        errs.append("entry_count mismatch")
+
+    sig = snapshot.get("signature")
+    if not isinstance(sig, dict):
+        errs.append("snapshot signature missing")
+    else:
+        payload = {
+            "entry_count": snapshot.get("entry_count"),
+            "root_entry_sha256": snapshot.get("root_entry_sha256"),
+        }
+        ok, key_id = verify_payload_signature(payload, str(sig.get("signature_hex", "")), keyring_payload)
+        details["snapshot_signature_verified"] = ok
+        details["snapshot_signature_verified_by"] = key_id
+        if not ok:
+            errs.append("snapshot signature verification failed")
+
+    return len(errs) == 0, errs, details
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Validate deterministic AI policy event reason-code contract.")
     p.add_argument("--out-dir", required=True, help="Directory to write policy contract artifacts")
     p.add_argument("--runtime-trace", default="", help="Optional path to runtime trace artifact json")
     p.add_argument("--ai-bin", default="", help="Optional AI binary path used to emit runtime trace if missing")
+    p.add_argument(
+        "--ledger-keyring",
+        default="",
+        help="Optional keyring path for signed Axion ledger snapshots (defaults to scripts/ci/ai_policy_ledger_keyring.json)",
+    )
     return p.parse_args()
 
 
@@ -207,23 +439,82 @@ def main() -> int:
     }
     observed = {entry["reason_code"] for entry in trace_a}
     reason_code_coverage_ok = required_reason_codes.issubset(observed)
+
+    errors: list[str] = []
     runtime_binding_valid = True
     runtime_binding: dict[str, Any] = {}
     if args.runtime_trace:
         runtime_trace_path = Path(args.runtime_trace).resolve()
         ai_bin = Path(args.ai_bin).resolve() if args.ai_bin else None
-        runtime_binding_valid, runtime_errors, runtime_binding = validate_runtime_trace_binding(
-            runtime_trace_path, ai_bin
-        )
-        reason_code_coverage_ok = reason_code_coverage_ok and runtime_binding_valid
+        runtime_binding_valid, runtime_errors, runtime_binding = validate_runtime_trace_binding(runtime_trace_path, ai_bin)
         if runtime_errors:
-            payload_errors = runtime_errors
-        else:
-            payload_errors = []
-    else:
-        payload_errors = []
+            errors.extend(runtime_errors)
 
-    status = "pass" if deterministic and reason_code_coverage_ok else "fail"
+    default_keyring = Path(__file__).resolve().with_name("ai_policy_ledger_keyring.json")
+    keyring_path = Path(args.ledger_keyring).resolve() if args.ledger_keyring else default_keyring
+    keyring_payload: dict[str, Any] = {}
+    active_key: dict[str, Any] = {}
+    keyring_errors: list[str] = []
+    if keyring_path.exists():
+        keyring_payload, active_key, keyring_errors = validate_keyring(keyring_path)
+    else:
+        keyring_errors = [f"ledger keyring file missing: {keyring_path}"]
+    errors.extend(keyring_errors)
+
+    ledger_snapshot: dict[str, Any] = {
+        "schema": LEDGER_SCHEMA_VERSION,
+        "status": "fail",
+        "errors": ["ledger generation skipped due to keyring validation errors"],
+    }
+    ledger_snapshot_valid = False
+    ledger_verification: dict[str, Any] = {
+        "schema": LEDGER_REPLAY_SCHEMA_VERSION,
+        "status": "fail",
+        "deterministic_replay": False,
+        "errors": ["ledger replay verification skipped"],
+    }
+
+    if not keyring_errors:
+        ledger_snapshot = build_signed_ledger_snapshot(trace_a, keyring_payload, active_key, keyring_path)
+        ledger_ok, ledger_errs, ledger_details = verify_ledger_snapshot(ledger_snapshot, keyring_payload)
+        ledger_snapshot["signature"]["verified"] = bool(ledger_details.get("snapshot_signature_verified", False))
+        ledger_snapshot["signature"]["verified_by_key_id"] = str(
+            ledger_details.get("snapshot_signature_verified_by", "")
+        )
+        ledger_snapshot["status"] = "pass" if ledger_ok else "fail"
+        ledger_snapshot["errors"] = ledger_errs
+        ledger_snapshot["verification"] = ledger_details
+        ledger_snapshot_valid = ledger_ok
+
+        replay_one = build_signed_ledger_snapshot(trace_a, keyring_payload, active_key, keyring_path)
+        replay_two = build_signed_ledger_snapshot(trace_a, keyring_payload, active_key, keyring_path)
+        replay_one_ok, replay_one_errs, _ = verify_ledger_snapshot(replay_one, keyring_payload)
+        replay_two_ok, replay_two_errs, _ = verify_ledger_snapshot(replay_two, keyring_payload)
+        deterministic_replay = (
+            replay_one_ok
+            and replay_two_ok
+            and replay_one.get("root_entry_sha256") == replay_two.get("root_entry_sha256")
+            and replay_one.get("snapshot_sha256") == replay_two.get("snapshot_sha256")
+            and replay_one.get("signature", {}).get("signature_hex")
+            == replay_two.get("signature", {}).get("signature_hex")
+        )
+        replay_errors = replay_one_errs + replay_two_errs
+        if not deterministic_replay:
+            replay_errors.append("ledger replay mismatch across deterministic replays")
+
+        ledger_verification = {
+            "schema": LEDGER_REPLAY_SCHEMA_VERSION,
+            "status": "pass" if deterministic_replay else "fail",
+            "deterministic_replay": deterministic_replay,
+            "root_entry_sha256": replay_one.get("root_entry_sha256", ""),
+            "snapshot_sha256": replay_one.get("snapshot_sha256", ""),
+            "signature_hex": replay_one.get("signature", {}).get("signature_hex", ""),
+            "errors": replay_errors,
+        }
+
+    reason_code_coverage_ok = reason_code_coverage_ok and runtime_binding_valid and ledger_snapshot_valid
+    status = "pass" if deterministic and reason_code_coverage_ok and ledger_verification.get("status") == "pass" else "fail"
+
     payload = {
         "schema": SCHEMA_VERSION,
         "status": status,
@@ -233,11 +524,18 @@ def main() -> int:
         "trace": trace_a,
         "runtime_binding_valid": runtime_binding_valid,
         "runtime_binding": runtime_binding,
-        "errors": payload_errors,
+        "axion_ledger_snapshot_status": ledger_snapshot.get("status", "fail"),
+        "axion_ledger_replay_status": ledger_verification.get("status", "fail"),
+        "errors": errors + ledger_snapshot.get("errors", []) + ledger_verification.get("errors", []),
     }
 
     json_path = out_dir / "ai_policy_event_contract.json"
     sum_path = out_dir / "ai_policy_event_contract.md"
+    ledger_json_path = out_dir / "ai_axion_policy_ledger_snapshot.json"
+    ledger_md_path = out_dir / "ai_axion_policy_ledger_snapshot.md"
+    replay_json_path = out_dir / "ai_axion_policy_ledger_replay_verification.json"
+    replay_md_path = out_dir / "ai_axion_policy_ledger_replay_verification.md"
+
     json_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
     sum_path.write_text(
         "\n".join(
@@ -249,7 +547,42 @@ def main() -> int:
                 f"- deterministic: `{deterministic}`",
                 f"- reason_code_coverage_ok: `{reason_code_coverage_ok}`",
                 f"- runtime_binding_valid: `{runtime_binding_valid}`",
+                f"- axion_ledger_snapshot_status: `{ledger_snapshot.get('status', 'fail')}`",
+                f"- axion_ledger_replay_status: `{ledger_verification.get('status', 'fail')}`",
                 f"- trace_sha256: `{hash_a}`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    ledger_json_path.write_text(json.dumps(ledger_snapshot, indent=2, sort_keys=True), encoding="utf-8")
+    ledger_md_path.write_text(
+        "\n".join(
+            [
+                "# Axion Policy Ledger Snapshot",
+                "",
+                f"- schema: `{LEDGER_SCHEMA_VERSION}`",
+                f"- status: `{ledger_snapshot.get('status', 'fail')}`",
+                f"- entry_count: `{ledger_snapshot.get('entry_count', 0)}`",
+                f"- root_entry_sha256: `{ledger_snapshot.get('root_entry_sha256', '')}`",
+                f"- snapshot_sha256: `{ledger_snapshot.get('snapshot_sha256', '')}`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    replay_json_path.write_text(json.dumps(ledger_verification, indent=2, sort_keys=True), encoding="utf-8")
+    replay_md_path.write_text(
+        "\n".join(
+            [
+                "# Axion Policy Ledger Replay Verification",
+                "",
+                f"- schema: `{LEDGER_REPLAY_SCHEMA_VERSION}`",
+                f"- status: `{ledger_verification.get('status', 'fail')}`",
+                f"- deterministic_replay: `{str(ledger_verification.get('deterministic_replay', False)).lower()}`",
+                f"- root_entry_sha256: `{ledger_verification.get('root_entry_sha256', '')}`",
                 "",
             ]
         ),
@@ -258,6 +591,8 @@ def main() -> int:
 
     print(f"ai policy contract status: {status}")
     print(f"artifact: {json_path}")
+    print(f"ledger:   {ledger_json_path}")
+    print(f"replay:   {replay_json_path}")
     print(f"summary:  {sum_path}")
     return 0 if status == "pass" else 1
 

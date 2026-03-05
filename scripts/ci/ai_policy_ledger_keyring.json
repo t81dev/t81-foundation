@@ -1,0 +1,26 @@
+{
+  "schema": "t81.ai.policy-ledger-keyring.v1",
+  "active_key_id": "ai-policy-ledger-2026q1",
+  "rotation_policy": {
+    "max_active_days": 120,
+    "require_next_key": true
+  },
+  "keys": [
+    {
+      "key_id": "ai-policy-ledger-2026q1",
+      "algorithm": "hmac-sha256",
+      "status": "active",
+      "not_before": "2026-01-01",
+      "not_after": "2026-03-31",
+      "material_b64": "dDgxLWFpLXBvbGljeS1sZWRnZXItMjAyNnExLXNpZ25pbmcta2V5"
+    },
+    {
+      "key_id": "ai-policy-ledger-2026q2",
+      "algorithm": "hmac-sha256",
+      "status": "next",
+      "not_before": "2026-03-15",
+      "not_after": "2026-06-30",
+      "material_b64": "dDgxLWFpLXBvbGljeS1sZWRnZXItMjAyNnEyLXNpZ25pbmcta2V5"
+    }
+  ]
+}
