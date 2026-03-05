@@ -124,6 +124,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - Phase-2 plan captured in `docs/status/BG07_PHASE2_IMPLEMENTATION_NOTES.md`
   - Scaffolding landed: `LiteralKind::BigIntHandle`, `Program::bigint_pool`, emitter and binary I/O transport wiring
   - Runtime slice landed: VM `LOADI` now materializes `BigIntHandle` as canonical `FractionHandle` (`BigInt/1`)
+  - Frontend slice landed: oversized decimal/base81 integer literals lower to `BigIntHandle`
   - Phase-2 start: base-81 IR literal path now reports explicit overflow diagnostics
   - Target: Begin Q2 2026
   - Status: **ARCHITECTURAL ENHANCEMENT**

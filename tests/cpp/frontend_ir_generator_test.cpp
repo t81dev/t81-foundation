@@ -1093,6 +1093,31 @@ void test_std_bytes_aliases_lower_to_string_opcodes() {
             << std::endl;
 }
 
+void test_oversized_integer_literal_lowers_to_bigint_handle() {
+  std::string source = "let x = 9223372036854775808;";
+  Lexer lexer(source);
+  Parser parser(lexer);
+  auto stmts = parser.parse();
+
+  IRGenerator generator;
+  auto program = generator.generate(stmts);
+  const auto& instructions = program.instructions();
+  EXPECT(!instructions.empty(), "oversized integer fixture produced no IR");
+
+  bool has_bigint_load = false;
+  for (const auto& inst : instructions) {
+    if (inst.opcode == Opcode::LOADI &&
+        inst.literal_kind == t81::tisc::LiteralKind::BigIntHandle &&
+        inst.text_literal.has_value() && *inst.text_literal == "9223372036854775808") {
+      has_bigint_load = true;
+      break;
+    }
+  }
+  EXPECT(has_bigint_load, "oversized integer should lower to BigIntHandle LOADI");
+  std::cout << "IRGeneratorTest test_oversized_integer_literal_lowers_to_bigint_handle passed!"
+            << std::endl;
+}
+
 int main() {
   test_simple_addition();
   test_if_statement();
@@ -1114,6 +1139,7 @@ int main() {
   test_std_tensor_matmul_alias_lowers_to_tmatmul();
   test_std_tensor_vec_add_alias_lowers_to_tvecadd();
   test_std_bytes_aliases_lower_to_string_opcodes();
+  test_oversized_integer_literal_lowers_to_bigint_handle();
 
   std::cout << "All IRGenerator integration tests completed!" << std::endl;
   return 0;

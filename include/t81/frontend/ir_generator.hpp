@@ -133,9 +133,7 @@ inline int64_t parse_base81_integer_literal(std::string_view literal) {
   } catch (const std::invalid_argument& e) {
     throw std::runtime_error("Invalid base-81 literal '" + value + "': " + e.what());
   } catch (const std::out_of_range&) {
-    throw std::runtime_error("Base-81 literal '" + value +
-                             "' exceeds 64-bit range in IR immediate path. Use BigInt "
-                             "construction helpers until BG-07 phase 2 lands.");
+    throw std::out_of_range("Base-81 literal '" + value + "' exceeds 64-bit range");
   }
 }
 
@@ -151,6 +149,41 @@ inline int64_t parse_integer_literal_raw(std::string_view lexeme) {
   // base 0 auto-detects 0x prefix for hex literals; stoll stops at first invalid char.
   std::size_t idx = 0;
   return std::stoll(s, &idx, 0);
+}
+
+inline std::optional<std::string> normalize_decimal_integer_literal_text(std::string_view lexeme,
+                                                                          bool strip_t81 = false) {
+  std::string raw = strip_t81 ? strip_t81_suffix(lexeme) : std::string(lexeme);
+  std::string s;
+  s.reserve(raw.size());
+  for (char c : raw) {
+    if (c == '_') continue;
+    s.push_back(c);
+  }
+  if (s.empty()) return std::nullopt;
+
+  bool neg = false;
+  std::size_t pos = 0;
+  if (s[pos] == '+' || s[pos] == '-') {
+    neg = (s[pos] == '-');
+    ++pos;
+    if (pos >= s.size()) return std::nullopt;
+  }
+
+  for (std::size_t i = pos; i < s.size(); ++i) {
+    if (s[i] < '0' || s[i] > '9') return std::nullopt;
+  }
+
+  while (pos + 1 < s.size() && s[pos] == '0') {
+    ++pos;
+  }
+
+  std::string out;
+  if (neg && s[pos] != '0') {
+    out.push_back('-');
+  }
+  out.append(s.begin() + static_cast<std::ptrdiff_t>(pos), s.end());
+  return out;
 }
 
 inline double parse_base81_float_literal(std::string_view literal) {
@@ -1326,16 +1359,34 @@ public:
       return {};
     }
 
-    const int64_t value = (expr.value.type == TokenType::Base81Integer)
-                              ? parse_base81_integer_literal(expr.value.lexeme)
-                              : parse_integer_literal_raw(expr.value.lexeme);
     auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
-    auto instr =
-        tisc::ir::Instruction{tisc::ir::Opcode::LOADI, {dest.reg, tisc::ir::Immediate{value}}};
-    instr.primitive = tisc::ir::PrimitiveKind::Integer;
-    emit(instr);
-    record_result(&expr, dest);
-    return {};
+    try {
+      const int64_t value = (expr.value.type == TokenType::Base81Integer)
+                                ? parse_base81_integer_literal(expr.value.lexeme)
+                                : parse_integer_literal_raw(expr.value.lexeme);
+      auto instr =
+          tisc::ir::Instruction{tisc::ir::Opcode::LOADI, {dest.reg, tisc::ir::Immediate{value}}};
+      instr.primitive = tisc::ir::PrimitiveKind::Integer;
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    } catch (const std::out_of_range&) {
+      auto normalized = normalize_decimal_integer_literal_text(
+          expr.value.lexeme, expr.value.type == TokenType::Base81Integer);
+      if (!normalized.has_value()) {
+        throw std::runtime_error("Integer literal exceeds 64-bit range and is not a supported "
+                                 "decimal form for BigInt literal lowering.");
+      }
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::LOADI;
+      instr.operands = {dest.reg};
+      instr.literal_kind = tisc::LiteralKind::BigIntHandle;
+      instr.text_literal = *normalized;
+      instr.primitive = tisc::ir::PrimitiveKind::Integer;
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
   }
 
   std::any visit(const GroupingExpr& expr) override {
