@@ -156,9 +156,9 @@ jobs:
         test -s /tmp/ai_backend_capabilities.json
 
         # Test expanded RFC-00A7 command surface
-        ./build/experiments/ai/ux_tools/t81_ai inference run --model test --prompt "smoke" > /tmp/ai_inference_run.json
-        ./build/experiments/ai/ux_tools/t81_ai quantization inspect --model test > /tmp/ai_quantization_inspect.json
-        ./build/experiments/ai/ux_tools/t81_ai benchmark run --model test > /tmp/ai_benchmark_run.json
+        ./build/experiments/ai/ux_tools/t81_ai inference run --model test --model-file test_model.gguf --prompt "smoke" > /tmp/ai_inference_run.json
+        ./build/experiments/ai/ux_tools/t81_ai quantization inspect --model test --model-file test_model.gguf > /tmp/ai_quantization_inspect.json
+        ./build/experiments/ai/ux_tools/t81_ai benchmark run --model test --model-file test_model.gguf > /tmp/ai_benchmark_run.json
         ./build/experiments/ai/ux_tools/t81_ai policy test --event-type model_load > /tmp/ai_policy_test.json
         test -s /tmp/ai_inference_run.json
         test -s /tmp/ai_quantization_inspect.json
@@ -293,7 +293,8 @@ jobs:
         mkdir -p build/ai-ux
         python3 scripts/ci/check_ai_ux_contract.py \
           --ai-bin build/experiments/ai/ux_tools/t81_ai \
-          --out-dir build/ai-ux
+          --out-dir build/ai-ux \
+          --runtime-model tests/fixtures/llama_cpp_repro/model.gguf
 
     - name: Append AI evidence summary
       if: steps.build_ai.outputs.has_target == 'true'

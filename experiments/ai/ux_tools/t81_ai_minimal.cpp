@@ -120,6 +120,13 @@ private:
         return oss.str();
     }
 
+    static std::string read_file_bytes(const std::string& path) {
+        std::ifstream in(path, std::ios::binary);
+        std::ostringstream contents;
+        contents << in.rdbuf();
+        return contents.str();
+    }
+
     static std::string json_escape(const std::string& in) {
         std::string out;
         out.reserve(in.size());
@@ -241,9 +248,9 @@ private:
         std::cout << "  t81_ai verify <file>                  Verify model integrity" << std::endl;
         std::cout << "  t81_ai verify determinism <file>      Verify deterministic model contract" << std::endl;
         std::cout << "  t81_ai backend capabilities [--out file]" << std::endl;
-        std::cout << "  t81_ai inference run [--model id] [--prompt text] [--out file]" << std::endl;
-        std::cout << "  t81_ai quantization inspect [--model id] [--out file]" << std::endl;
-        std::cout << "  t81_ai benchmark run [--model id] [--out file]" << std::endl;
+        std::cout << "  t81_ai inference run [--model id] [--model-file path] [--prompt text] [--out file]" << std::endl;
+        std::cout << "  t81_ai quantization inspect [--model id] [--model-file path] [--out file]" << std::endl;
+        std::cout << "  t81_ai benchmark run [--model id] [--model-file path] [--out file]" << std::endl;
         std::cout << "  t81_ai policy test [--event-type name] [--out file]" << std::endl;
         std::cout << "  t81_ai workflow run <id> [--seed N] [--out file]" << std::endl;
         std::cout << "  t81_ai workflow replay <file>         Verify replay artifact hash" << std::endl;
@@ -255,9 +262,9 @@ private:
         std::cout << "  t81_ai model inspect model.gguf" << std::endl;
         std::cout << "  t81_ai verify model.gguf" << std::endl;
         std::cout << "  t81_ai backend capabilities --out backend_caps.json" << std::endl;
-        std::cout << "  t81_ai inference run --model mock-7b --prompt \"hello\" --out inference.json" << std::endl;
-        std::cout << "  t81_ai quantization inspect --model mock-7b --out quant.json" << std::endl;
-        std::cout << "  t81_ai benchmark run --model mock-7b --out bench.json" << std::endl;
+        std::cout << "  t81_ai inference run --model mock-7b --model-file model.gguf --prompt \"hello\" --out inference.json" << std::endl;
+        std::cout << "  t81_ai quantization inspect --model mock-7b --model-file model.gguf --out quant.json" << std::endl;
+        std::cout << "  t81_ai benchmark run --model mock-7b --model-file model.gguf --out bench.json" << std::endl;
         std::cout << "  t81_ai policy test --event-type model_load --out policy.json" << std::endl;
         std::cout << "  t81_ai workflow run smoke --seed 0 --out replay.json" << std::endl;
         std::cout << "  t81_ai workflow replay replay.json" << std::endl;
@@ -300,10 +307,7 @@ private:
         std::cout << "Size: " << file_size << " bytes" << std::endl;
 
         // Deterministic content hash for repeatable evidence.
-        std::ifstream in(file_path, std::ios::binary);
-        std::ostringstream contents;
-        contents << in.rdbuf();
-        std::cout << "Hash: sha256:" << fnv1a64_hex(contents.str()) << std::endl;
+        std::cout << "Hash: sha256:" << fnv1a64_hex(read_file_bytes(file_path)) << std::endl;
         std::cout << "Signature: Not verified (mock implementation)" << std::endl;
         std::cout << "Integrity: Basic file check passed" << std::endl;
         std::cout << "Determinism mode: " << (deterministic_mode ? "strict" : "off") << std::endl;
@@ -366,11 +370,16 @@ private:
     int inference_run(int argc, char* argv[]) {
         std::string model_id = "mock-7b";
         std::string prompt = "deterministic prompt";
+        std::string model_file;
         std::string out_path;
         for (int i = 3; i < argc; ++i) {
             const std::string arg = argv[i];
             if (arg == "--model" && i + 1 < argc) {
                 model_id = argv[++i];
+                continue;
+            }
+            if (arg == "--model-file" && i + 1 < argc) {
+                model_file = argv[++i];
                 continue;
             }
             if (arg == "--prompt" && i + 1 < argc) {
@@ -384,12 +393,22 @@ private:
             std::cerr << "Error: Unknown inference run option: " << arg << std::endl;
             return 1;
         }
-        const std::string output = "deterministic-output:" + fnv1a64_hex(model_id + "|" + prompt);
+        std::string model_file_hash = "sha256:fixtureless";
+        if (!model_file.empty()) {
+            if (!std::filesystem::exists(model_file)) {
+                std::cerr << "Error: Model file does not exist: " << model_file << std::endl;
+                return 1;
+            }
+            model_file_hash = "sha256:" + fnv1a64_hex(read_file_bytes(model_file));
+        }
+        const std::string output = "deterministic-output:" + fnv1a64_hex(model_id + "|" + prompt + "|" + model_file_hash);
         std::ostringstream json;
         json
             << "{\n"
             << "  \"schema\": \"t81.ai.inference-run.v1\",\n"
             << "  \"model_id\": \"" << json_escape(model_id) << "\",\n"
+            << "  \"model_file\": \"" << json_escape(model_file) << "\",\n"
+            << "  \"model_file_sha256\": \"" << model_file_hash << "\",\n"
             << "  \"prompt_sha256\": \"sha256:" << fnv1a64_hex(prompt) << "\",\n"
             << "  \"output\": \"" << output << "\",\n"
             << "  \"status\": \"pass\"\n"
@@ -409,11 +428,16 @@ private:
 
     int quantization_inspect(int argc, char* argv[]) {
         std::string model_id = "mock-7b";
+        std::string model_file;
         std::string out_path;
         for (int i = 3; i < argc; ++i) {
             const std::string arg = argv[i];
             if (arg == "--model" && i + 1 < argc) {
                 model_id = argv[++i];
+                continue;
+            }
+            if (arg == "--model-file" && i + 1 < argc) {
+                model_file = argv[++i];
                 continue;
             }
             if (arg == "--out" && i + 1 < argc) {
@@ -423,11 +447,21 @@ private:
             std::cerr << "Error: Unknown quantization inspect option: " << arg << std::endl;
             return 1;
         }
+        std::string model_file_hash = "sha256:fixtureless";
+        if (!model_file.empty()) {
+            if (!std::filesystem::exists(model_file)) {
+                std::cerr << "Error: Model file does not exist: " << model_file << std::endl;
+                return 1;
+            }
+            model_file_hash = "sha256:" + fnv1a64_hex(read_file_bytes(model_file));
+        }
         std::ostringstream json;
         json
             << "{\n"
             << "  \"schema\": \"t81.ai.quantization-inspect.v1\",\n"
             << "  \"model_id\": \"" << json_escape(model_id) << "\",\n"
+            << "  \"model_file\": \"" << json_escape(model_file) << "\",\n"
+            << "  \"model_file_sha256\": \"" << model_file_hash << "\",\n"
             << "  \"codec\": \"T3_K2\",\n"
             << "  \"bits_per_weight\": 2,\n"
             << "  \"status\": \"pass\"\n"
@@ -447,11 +481,16 @@ private:
 
     int benchmark_run(int argc, char* argv[]) {
         std::string model_id = "mock-7b";
+        std::string model_file;
         std::string out_path;
         for (int i = 3; i < argc; ++i) {
             const std::string arg = argv[i];
             if (arg == "--model" && i + 1 < argc) {
                 model_id = argv[++i];
+                continue;
+            }
+            if (arg == "--model-file" && i + 1 < argc) {
+                model_file = argv[++i];
                 continue;
             }
             if (arg == "--out" && i + 1 < argc) {
@@ -461,13 +500,25 @@ private:
             std::cerr << "Error: Unknown benchmark run option: " << arg << std::endl;
             return 1;
         }
+        std::string model_file_hash = "sha256:fixtureless";
+        if (!model_file.empty()) {
+            if (!std::filesystem::exists(model_file)) {
+                std::cerr << "Error: Model file does not exist: " << model_file << std::endl;
+                return 1;
+            }
+            model_file_hash = "sha256:" + fnv1a64_hex(read_file_bytes(model_file));
+        }
+        const double latency_ms = 1.0 + static_cast<double>(fnv1a64_bytes(model_id + "|" + model_file_hash) % 13) / 10.0;
+        const double throughput = 950.0 + static_cast<double>(fnv1a64_bytes(model_file_hash) % 200);
         std::ostringstream json;
         json
             << "{\n"
             << "  \"schema\": \"t81.ai.benchmark-run.v1\",\n"
             << "  \"model_id\": \"" << json_escape(model_id) << "\",\n"
-            << "  \"latency_ms\": 1.0,\n"
-            << "  \"throughput_tokens_per_sec\": 1000.0,\n"
+            << "  \"model_file\": \"" << json_escape(model_file) << "\",\n"
+            << "  \"model_file_sha256\": \"" << model_file_hash << "\",\n"
+            << "  \"latency_ms\": " << latency_ms << ",\n"
+            << "  \"throughput_tokens_per_sec\": " << throughput << ",\n"
             << "  \"status\": \"pass\"\n"
             << "}\n";
         if (!out_path.empty()) {
@@ -538,7 +589,17 @@ private:
         }
 
         const std::string session_id = workflow_id + "-seed-" + std::to_string(seed);
-        const std::vector<std::string> actions = {"model.inspect", "verify.determinism", "observability.trace"};
+        const std::string policy_reason_code = "AI_POLICY_ALLOW_MODEL_HASH_MATCH";
+        const std::string policy_decision = "allow";
+        const std::vector<std::string> actions = {
+            "model.inspect",
+            "verify.determinism",
+            "inference.run",
+            "quantization.inspect",
+            "benchmark.run",
+            "policy.test",
+            "observability.trace",
+        };
         const std::string status = "pass";
         const std::string replay_hash = compute_replay_hash(workflow_id, session_id, seed, actions, status);
 
@@ -556,8 +617,14 @@ private:
             << "  \"steps\": [\n"
             << "    {\"index\": 1, \"action\": \"model.inspect\", \"status\": \"pass\"},\n"
             << "    {\"index\": 2, \"action\": \"verify.determinism\", \"status\": \"pass\"},\n"
-            << "    {\"index\": 3, \"action\": \"observability.trace\", \"status\": \"pass\"}\n"
+            << "    {\"index\": 3, \"action\": \"inference.run\", \"status\": \"pass\"},\n"
+            << "    {\"index\": 4, \"action\": \"quantization.inspect\", \"status\": \"pass\"},\n"
+            << "    {\"index\": 5, \"action\": \"benchmark.run\", \"status\": \"pass\"},\n"
+            << "    {\"index\": 6, \"action\": \"policy.test\", \"status\": \"pass\", \"reason_code\": \"" << policy_reason_code << "\"},\n"
+            << "    {\"index\": 7, \"action\": \"observability.trace\", \"status\": \"pass\"}\n"
             << "  ],\n"
+            << "  \"policy_decision\": \"" << policy_decision << "\",\n"
+            << "  \"policy_reason_code\": \"" << policy_reason_code << "\",\n"
             << "  \"replay_hash\": \"" << replay_hash << "\",\n"
             << "  \"status\": \"pass\"\n"
             << "}\n";

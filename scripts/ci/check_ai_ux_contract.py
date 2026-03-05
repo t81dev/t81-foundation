@@ -31,6 +31,28 @@ def run_cmd(argv: list[str]) -> dict[str, Any]:
     }
 
 
+def resolve_runtime_model(repo_root: Path, out_dir: Path, user_model: str) -> tuple[Path, str]:
+    if user_model:
+        p = Path(user_model).resolve()
+        return p, "user"
+
+    preferred = [
+        repo_root / "tests/fixtures/llama_cpp_repro/model.gguf",
+        repo_root / "artifacts/archive/dummy.gguf",
+    ]
+    for p in preferred:
+        if p.exists():
+            return p, "fixture"
+
+    model_candidates = sorted((repo_root / "models").glob("*.gguf"))
+    if model_candidates:
+        return model_candidates[0], "models"
+
+    fallback = out_dir / "ux_test_model.gguf"
+    fallback.write_text("t81-ai-ux-fixture\n", encoding="utf-8")
+    return fallback, "generated"
+
+
 def build_contract() -> dict[str, Any]:
     return {
         "schema": SCHEMA_VERSION,
@@ -83,6 +105,8 @@ def build_contract() -> dict[str, Any]:
                 "session_id",
                 "seed",
                 "steps",
+                "policy_decision",
+                "policy_reason_code",
                 "replay_hash",
                 "status",
             ],
@@ -121,7 +145,16 @@ def validate_static_contract(contract: dict[str, Any]) -> tuple[bool, list[str]]
 
     wr = contract["workflow_replay_contract"]
     required_fields = set(wr["required_fields"])
-    for field in ("workflow_id", "session_id", "seed", "steps", "replay_hash", "status"):
+    for field in (
+        "workflow_id",
+        "session_id",
+        "seed",
+        "steps",
+        "policy_decision",
+        "policy_reason_code",
+        "replay_hash",
+        "status",
+    ):
         if field not in required_fields:
             errs.append(f"workflow_replay_contract missing field: {field}")
 
@@ -148,9 +181,10 @@ def parse_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def validate_runtime(ai_bin: Path, out_dir: Path) -> tuple[bool, list[str], dict[str, Any]]:
+def validate_runtime(ai_bin: Path, out_dir: Path, runtime_model: str) -> tuple[bool, list[str], dict[str, Any]]:
     errs: list[str] = []
     runtime: dict[str, Any] = {}
+    repo_root = Path(__file__).resolve().parents[2]
 
     help_result = run_cmd([str(ai_bin), "--help"])
     runtime["help"] = {
@@ -178,8 +212,8 @@ def validate_runtime(ai_bin: Path, out_dir: Path) -> tuple[bool, list[str], dict
 
     replay_path = out_dir / "ai_workflow_replay.json"
     trace_path = out_dir / "ai_observability_trace.json"
-    model_path = out_dir / "ux_test_model.gguf"
-    model_path.write_text("t81-ai-ux-fixture\n", encoding="utf-8")
+    model_path, model_source = resolve_runtime_model(repo_root, out_dir, runtime_model)
+    runtime["runtime_model"] = {"path": str(model_path), "source": model_source}
 
     run_result = run_cmd(
         [
@@ -276,6 +310,8 @@ def validate_runtime(ai_bin: Path, out_dir: Path) -> tuple[bool, list[str], dict
             "run",
             "--model",
             "ci-ux-model",
+            "--model-file",
+            str(model_path),
             "--prompt",
             "deterministic prompt",
             "--out",
@@ -289,12 +325,14 @@ def validate_runtime(ai_bin: Path, out_dir: Path) -> tuple[bool, list[str], dict
         errs.append("inference run did not emit artifact")
     else:
         inference = parse_json(inference_path)
-        req = {"schema", "model_id", "prompt_sha256", "output", "status"}
+        req = {"schema", "model_id", "model_file", "model_file_sha256", "prompt_sha256", "output", "status"}
         missing = sorted(req - set(inference.keys()))
         if missing:
             errs.append(f"inference artifact missing fields: {', '.join(missing)}")
         if inference.get("schema") != "t81.ai.inference-run.v1":
             errs.append("inference artifact schema mismatch")
+        if Path(inference.get("model_file", "")).resolve() != model_path.resolve():
+            errs.append("inference artifact model_file does not match runtime model path")
         runtime["inference_artifact_sha256"] = sha256_text(canonical_json(inference))
 
     quant_path = out_dir / "ai_quantization_inspect.json"
@@ -305,6 +343,8 @@ def validate_runtime(ai_bin: Path, out_dir: Path) -> tuple[bool, list[str], dict
             "inspect",
             "--model",
             "ci-ux-model",
+            "--model-file",
+            str(model_path),
             "--out",
             str(quant_path),
         ]
@@ -316,12 +356,14 @@ def validate_runtime(ai_bin: Path, out_dir: Path) -> tuple[bool, list[str], dict
         errs.append("quantization inspect did not emit artifact")
     else:
         quant = parse_json(quant_path)
-        req = {"schema", "model_id", "codec", "bits_per_weight", "status"}
+        req = {"schema", "model_id", "model_file", "model_file_sha256", "codec", "bits_per_weight", "status"}
         missing = sorted(req - set(quant.keys()))
         if missing:
             errs.append(f"quantization artifact missing fields: {', '.join(missing)}")
         if quant.get("schema") != "t81.ai.quantization-inspect.v1":
             errs.append("quantization artifact schema mismatch")
+        if Path(quant.get("model_file", "")).resolve() != model_path.resolve():
+            errs.append("quantization artifact model_file does not match runtime model path")
         runtime["quantization_artifact_sha256"] = sha256_text(canonical_json(quant))
 
     benchmark_path = out_dir / "ai_benchmark_run.json"
@@ -332,6 +374,8 @@ def validate_runtime(ai_bin: Path, out_dir: Path) -> tuple[bool, list[str], dict
             "run",
             "--model",
             "ci-ux-model",
+            "--model-file",
+            str(model_path),
             "--out",
             str(benchmark_path),
         ]
@@ -343,12 +387,22 @@ def validate_runtime(ai_bin: Path, out_dir: Path) -> tuple[bool, list[str], dict
         errs.append("benchmark run did not emit artifact")
     else:
         benchmark = parse_json(benchmark_path)
-        req = {"schema", "model_id", "latency_ms", "throughput_tokens_per_sec", "status"}
+        req = {
+            "schema",
+            "model_id",
+            "model_file",
+            "model_file_sha256",
+            "latency_ms",
+            "throughput_tokens_per_sec",
+            "status",
+        }
         missing = sorted(req - set(benchmark.keys()))
         if missing:
             errs.append(f"benchmark artifact missing fields: {', '.join(missing)}")
         if benchmark.get("schema") != "t81.ai.benchmark-run.v1":
             errs.append("benchmark artifact schema mismatch")
+        if Path(benchmark.get("model_file", "")).resolve() != model_path.resolve():
+            errs.append("benchmark artifact model_file does not match runtime model path")
         runtime["benchmark_artifact_sha256"] = sha256_text(canonical_json(benchmark))
 
     policy_path = out_dir / "ai_policy_test.json"
@@ -390,7 +444,16 @@ def validate_runtime(ai_bin: Path, out_dir: Path) -> tuple[bool, list[str], dict
 
     if replay_path.exists():
         replay = parse_json(replay_path)
-        required_replay_fields = {"workflow_id", "session_id", "seed", "steps", "replay_hash", "status"}
+        required_replay_fields = {
+            "workflow_id",
+            "session_id",
+            "seed",
+            "steps",
+            "policy_decision",
+            "policy_reason_code",
+            "replay_hash",
+            "status",
+        }
         missing = sorted(required_replay_fields - set(replay.keys()))
         if missing:
             errs.append(f"workflow replay artifact missing fields: {', '.join(missing)}")
@@ -398,7 +461,16 @@ def validate_runtime(ai_bin: Path, out_dir: Path) -> tuple[bool, list[str], dict
             errs.append("workflow replay schema mismatch")
         if replay.get("status") not in {"pass", "fail"}:
             errs.append("workflow replay status must be pass/fail")
+        steps = replay.get("steps", [])
+        if not any(isinstance(s, dict) and s.get("action") == "policy.test" for s in steps):
+            errs.append("workflow replay missing policy.test step")
         runtime["workflow_artifact_sha256"] = sha256_text(canonical_json(replay))
+        if policy_path.exists():
+            policy = parse_json(policy_path)
+            if replay.get("policy_reason_code") != policy.get("reason_code"):
+                errs.append("workflow replay policy_reason_code does not match policy test reason_code")
+            if replay.get("policy_decision") != policy.get("decision"):
+                errs.append("workflow replay policy_decision does not match policy test decision")
 
     if trace_path.exists():
         trace = parse_json(trace_path)
@@ -415,6 +487,11 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Validate RFC-00A7 UX runtime contract.")
     p.add_argument("--ai-bin", required=True)
     p.add_argument("--out-dir", required=True)
+    p.add_argument(
+        "--runtime-model",
+        default="",
+        help="Optional GGUF model path for fixture-backed runtime UX commands",
+    )
     return p.parse_args()
 
 
@@ -432,7 +509,7 @@ def main() -> int:
     h2 = sha256_text(canonical_json(c2))
     deterministic = h1 == h2
     static_valid, static_errors = validate_static_contract(c1)
-    runtime_valid, runtime_errors, runtime_details = validate_runtime(ai_bin, out_dir)
+    runtime_valid, runtime_errors, runtime_details = validate_runtime(ai_bin, out_dir, args.runtime_model)
     errors = static_errors + runtime_errors
     valid = static_valid and runtime_valid
     status = "pass" if deterministic and valid else "fail"
