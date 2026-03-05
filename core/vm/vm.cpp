@@ -5356,10 +5356,8 @@ private:
     return std::nullopt;
   }
 
-  std::optional<Trap> handle_axion_opcode(
-      const t81::tisc::Insn& insn, ThreadContext& ctx, std::size_t current_pc,
-      const std::function<std::optional<std::string_view>(ValueTag, std::int64_t)>&
-          symbol_like_text) {
+  std::optional<Trap> handle_ax_memory_opcode(const t81::tisc::Insn& insn, ThreadContext& ctx,
+                                              std::size_t current_pc) {
     switch (insn.opcode) {
       case t81::tisc::Opcode::AxRead:
         return handle_axread(insn, ctx, current_pc);
@@ -5367,6 +5365,20 @@ private:
         return handle_axset(insn, ctx, current_pc);
       case t81::tisc::Opcode::AxVerify:
         return handle_axverify(insn, ctx, current_pc);
+      default:
+        return Trap::DecodeFault;
+    }
+  }
+
+  std::optional<Trap> handle_axion_opcode(
+      const t81::tisc::Insn& insn, ThreadContext& ctx, std::size_t current_pc,
+      const std::function<std::optional<std::string_view>(ValueTag, std::int64_t)>&
+          symbol_like_text) {
+    switch (insn.opcode) {
+      case t81::tisc::Opcode::AxRead:
+      case t81::tisc::Opcode::AxSet:
+      case t81::tisc::Opcode::AxVerify:
+        return handle_ax_memory_opcode(insn, ctx, current_pc);
       case t81::tisc::Opcode::AxCheck:
         return handle_axcheck(insn, ctx, current_pc, symbol_like_text);
       case t81::tisc::Opcode::AxReport:
