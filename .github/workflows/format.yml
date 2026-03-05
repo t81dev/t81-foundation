@@ -21,4 +21,24 @@ jobs:
 
       - name: Run clang-format
         run: |
-          find src include tests examples \( -name "*.cpp" -o -name "*.hpp" -o -name "*.c" -o -name "*.h" \) -print0 | xargs -0 clang-format-18 --dry-run --Werror
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            mapfile -t changed < <(git diff --name-only "origin/${{ github.base_ref }}...${{ github.sha }}" \
+              | grep -E '^(src|include|tests|examples)/.*\.(cpp|hpp|c|h)$' || true)
+          else
+            if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+              mapfile -t changed < <(git diff --name-only HEAD^ HEAD \
+                | grep -E '^(src|include|tests|examples)/.*\.(cpp|hpp|c|h)$' || true)
+            else
+              mapfile -t changed < <(git ls-files \
+                | grep -E '^(src|include|tests|examples)/.*\.(cpp|hpp|c|h)$' || true)
+            fi
+          fi
+
+          if [ "${#changed[@]}" -eq 0 ]; then
+            echo "No changed C/C++ source files in scope; skipping clang-format check."
+            exit 0
+          fi
+
+          printf '%s\0' "${changed[@]}" | xargs -0 clang-format-18 --dry-run --Werror
