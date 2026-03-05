@@ -22,6 +22,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - AI opcode subset contract gate: `check_ai_opcode_subset_contract.py`
 - AI opcode runtime evidence report: `generate_ai_opcode_runtime_report.py`
 - AI benchmark spec contract gate: `check_ai_benchmark_spec_contract.py`
+- AI benchmark threshold approval policy gate: `check_ai_benchmark_threshold_approvals.py`
 - AI benchmark runtime threshold baseline: `ai_benchmark_thresholds.json`
 - AI benchmark threshold history windows: `ai_benchmark_thresholds_history.json`
 - AI quantization codec contract gate: `check_ai_quantization_codec_contract.py`
@@ -55,6 +56,7 @@ python3 scripts/ci/check_ai_backend_adapter_contract.py --out-dir build/ai-backe
 python3 scripts/ci/check_ai_opcode_subset_contract.py --out-dir build/ai-opcodes --runtime-report build/ai-opcodes-runtime/ai_opcode_runtime_report.json --ctest-log build/ai-opcodes/ai_phase1_opcode_ctest.log
 python3 scripts/ci/generate_ai_opcode_runtime_report.py --repo-root . --out-dir build/ai-opcodes-runtime
 python3 scripts/ci/check_ai_benchmark_spec_contract.py --out-dir build/ai-benchmark --ai-bin build/experiments/ai/ux_tools/t81_ai --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --thresholds-file scripts/ci/ai_benchmark_thresholds.json --thresholds-history-file scripts/ci/ai_benchmark_thresholds_history.json --as-of-date 2026-03-05 --trend-window-count 3
+python3 scripts/ci/check_ai_benchmark_threshold_approvals.py --history-file scripts/ci/ai_benchmark_thresholds_history.json --out-json build/ai-benchmark/ai_benchmark_threshold_approval_report.json
 python3 scripts/ci/check_ai_quantization_codec_contract.py --out-dir build/ai-quantization --ai-bin build/experiments/ai/ux_tools/t81_ai --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --codec-profile-file scripts/ci/ai_quantization_codec_profile.json --codec-profile-history-file scripts/ci/ai_quantization_codec_profile_history.json --as-of-date 2026-03-05
 python3 scripts/ci/check_ai_quantization_profile_approvals.py --history-file scripts/ci/ai_quantization_codec_profile_history.json --out-json build/ai-quantization/ai_quantization_profile_approval_report.json
 python3 scripts/ci/check_ai_ux_contract.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-ux --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --t81-bin build-llama-ai/t81 --llama-hash-probe scripts/ci/llama_model_hash.py --direct-backend-signing-keyring scripts/ci/ai_direct_backend_attestation_keyring.json

@@ -2,40 +2,52 @@
   "schema": "t81.ai.benchmark-thresholds-history.v1",
   "windows": [
     {
-      "window_id": "2026-02",
-      "window_start": "2026-02-01",
-      "window_end": "2026-02-28",
+      "promotion_approval": {
+        "approved_at": "2026-02-01",
+        "approved_by": "@t81dev",
+        "change_ref": "rfc00a2-window-2026-02"
+      },
+      "promotion_approval_attestation_sha256": "d952b345e7cd193c3802fd6f92740cde5059a87f5e1a2e9e651eef1fc1273bab",
       "thresholds": {
-        "schema": "t81.ai.benchmark-thresholds.v1",
         "baseline": {
           "latency_ms": 2.2,
           "throughput_tokens_per_sec": 490.0
         },
         "gates": {
-          "min_determinism_score": 1.0,
           "max_latency_regression_pct": 25.0,
           "max_throughput_regression_pct": 25.0,
+          "min_determinism_score": 1.0,
           "stable_band_pct": 5.0
-        }
-      }
+        },
+        "schema": "t81.ai.benchmark-thresholds.v1"
+      },
+      "window_end": "2026-02-28",
+      "window_id": "2026-02",
+      "window_start": "2026-02-01"
     },
     {
-      "window_id": "2026-03",
-      "window_start": "2026-03-01",
-      "window_end": "2026-03-31",
+      "promotion_approval": {
+        "approved_at": "2026-03-01",
+        "approved_by": "@t81dev",
+        "change_ref": "rfc00a2-window-2026-03"
+      },
+      "promotion_approval_attestation_sha256": "4fda70f0a8509f99e20839698ef1859dc92ec91ba6e1d98e64afd8136b35fcd0",
       "thresholds": {
-        "schema": "t81.ai.benchmark-thresholds.v1",
         "baseline": {
           "latency_ms": 2.1,
           "throughput_tokens_per_sec": 500.0
         },
         "gates": {
-          "min_determinism_score": 1.0,
           "max_latency_regression_pct": 25.0,
           "max_throughput_regression_pct": 25.0,
+          "min_determinism_score": 1.0,
           "stable_band_pct": 5.0
-        }
-      }
+        },
+        "schema": "t81.ai.benchmark-thresholds.v1"
+      },
+      "window_end": "2026-03-31",
+      "window_id": "2026-03",
+      "window_start": "2026-03-01"
     }
   ]
 }
