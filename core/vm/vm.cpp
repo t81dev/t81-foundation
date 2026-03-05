@@ -3073,7 +3073,12 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
-        ctx.registers[insn.a] = ptr_val->num.to_int64();
+        try {
+          ctx.registers[insn.a] = ptr_val->num.to_int64();
+        } catch (...) {
+          trap = Trap::DecodeFault;
+          break;
+        }
         ctx.register_tags[insn.a] = ValueTag::Int;
         update_flags(ctx.registers[insn.a]);
         break;

@@ -125,6 +125,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - Runtime slice landed: VM `LOADI` now materializes `BigIntHandle` as canonical `FractionHandle` (`BigInt/1`)
   - Frontend slice landed: oversized decimal/base81 integer literals lower to `BigIntHandle`
   - Conformance slice landed: explicit BigInt binary round-trip coverage added in `tests/cpp/tisc_binary_io_determinism_test.cpp` and `tests/cpp/tisc_binary_metadata_roundtrip_property_test.cpp`
+  - Safety slice landed: `Frac2I` now fails closed on non-`int64` BigInt numerators; JIT `LoadImm` explicitly deopts for `BigIntHandle`
   - Phase-2 start: base-81 IR literal path now reports explicit overflow diagnostics
   - Target: Begin Q2 2026
   - Status: **ARCHITECTURAL ENHANCEMENT**

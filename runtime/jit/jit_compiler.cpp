@@ -277,6 +277,11 @@ public:
             case t81::tisc::LiteralKind::ShapeHandle:
               ctx.register_tags[insn.a] = ValueTag::ShapeHandle;
               break;
+            case t81::tisc::LiteralKind::BigIntHandle:
+              // Keep >64-bit literal semantics in interpreter path for now.
+              stop_trace = true;
+              guard_deopt = true;
+              break;
           }
           break;
         case t81::tisc::Opcode::Load:

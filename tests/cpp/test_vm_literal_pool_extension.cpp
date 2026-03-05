@@ -136,9 +136,31 @@ void test_loadimm_bigint_handle_extension() {
   std::cout << "LOADI BigIntHandle deterministic extension passed." << std::endl;
 }
 
+void test_frac2i_bigint_overflow_fails_closed() {
+  std::cout << "Testing Frac2I BigInt overflow fail-closed behavior..." << std::endl;
+
+  t81::tisc::Program program;
+  program.fraction_pool.emplace_back(
+      t81::T81BigInt::from_i64(9223372036854775807LL) + t81::T81BigInt::one(),
+      t81::T81BigInt::one());
+  program.insns.push_back({Opcode::LoadImm, 1, 1, 0, LiteralKind::FractionHandle});
+  program.insns.push_back({Opcode::Frac2I, 2, 1, 0, LiteralKind::Int});
+  program.insns.push_back({Opcode::Halt, 0, 0, 0, LiteralKind::Int});
+
+  auto vm = make_interpreter_vm();
+  vm->load_program(program);
+
+  auto res = vm->run_to_halt();
+  assert(!res.has_value());
+  assert(res.error() == Trap::DecodeFault);
+
+  std::cout << "Frac2I BigInt overflow fail-closed behavior passed." << std::endl;
+}
+
 int main() {
   test_i2f_deterministic_extension();
   test_i2frac_deterministic_extension();
   test_loadimm_bigint_handle_extension();
+  test_frac2i_bigint_overflow_fails_closed();
   return 0;
 }

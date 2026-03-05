@@ -33,6 +33,8 @@ Implement true arbitrary-precision integer literal transport from frontend IR to
 - ✅ Partial item 5 landed: VM conformance coverage added in `tests/cpp/test_vm_literal_pool_extension.cpp`.
 - ✅ Partial item 5 landed: frontend lowering coverage added in `tests/cpp/frontend_ir_generator_test.cpp`.
 - ✅ Item 5 landed (binary conformance slice): explicit BigInt literal pool round-trip determinism coverage added in `tests/cpp/tisc_binary_io_determinism_test.cpp` and `tests/cpp/tisc_binary_metadata_roundtrip_property_test.cpp`.
+- ✅ Runtime hardening slice landed: `Frac2I` now fails closed on non-`int64` BigInt numerators (deterministic `DecodeFault`) instead of relying on uncaught overflow behavior (`core/vm/vm.cpp`, `tests/cpp/test_vm_literal_pool_extension.cpp`).
+- ✅ JIT safety slice landed: JIT `LoadImm` now explicitly deopts on `LiteralKind::BigIntHandle`, preserving interpreter arbitrary-precision materialization path and avoiding lossy JIT literal handling (`runtime/jit/jit_compiler.cpp`).
 
 ## Acceptance Signal
 
