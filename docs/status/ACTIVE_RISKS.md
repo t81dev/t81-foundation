@@ -11,7 +11,7 @@ No prose. If a risk needs an essay, escalate it.
 | ID | Risk | Severity | Owner | Mitigation | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | R-01 | Determinism overclaim — external summaries omit registry boundary language | High | @t81dev | `governance-metrics` CI gate enforces registry-bounded claim language | Monitoring |
-| R-02 | Axion Alpha posture delays Beta promotion (partial spec coverage, evidence gaps in 1.1/1.3/1.10) | High | @t81dev | Evidence closure milestones M5–M7 active; target Beta review 2026-04-30 | Open |
+| R-02 | Axion Alpha posture delays Beta promotion (partial spec coverage, evidence gaps in 1.1/1.3/1.10) | High | @t81dev | M5–M7 evidence closures landed; remaining action is Beta candidacy review on 2026-04-30 | Open |
 | R-15 | VM dispatch concentration in policy bridge increases maintenance risk | Medium | @t81dev | Continue FW-02 extraction; AxCheck/AxReport slice completed 2026-03-05 | Open |
 | R-05 | AGI-facing surface growth outpacing promotion evidence updates | Medium | @t81dev | Surface inventory refreshed each monthly governance cadence | Monitoring |
 | R-06 | Benchmark variability — false signal in `vm workload gate` guardrail | Low | @t81dev | Alert threshold >5% regression; review guardrail if consecutive divergence detected | Monitoring |

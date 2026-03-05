@@ -1102,13 +1102,6 @@ public:
       return std::nullopt;
     };
 
-    auto handle_blocked_privileged_axion_opcode = [&](t81::tisc::Opcode opcode) {
-      t81::axion::Verdict verdict{t81::axion::VerdictKind::Deny,
-                                  "Blocked: unimplemented privileged Axion opcode"};
-      record_axion_event(opcode, 0, 0, verdict);
-      return Trap::SecurityFault;
-    };
-
     auto handle_blocked_neural_opcode = [&](bool require_b_operand) -> std::optional<Trap> {
       if (!reg_ok(insn.a) || (require_b_operand && !reg_ok(insn.b))) {
         return Trap::DecodeFault;
@@ -2329,66 +2322,21 @@ public:
         }
         break;
       case t81::tisc::Opcode::AxRead: {
-        if (!reg_ok(insn.a)) {
-          trap = Trap::DecodeFault;
-          break;
+        if (auto ax_trap = handle_axread(insn, ctx, current_pc); ax_trap.has_value()) {
+          trap = *ax_trap;
         }
-        auto verdict = eval_axion_call(t81::axion::reasons::kAxRead, current_pc, insn.opcode);
-        auto guard_addr = static_cast<std::size_t>(insn.b);
-        auto guard_kind = t81::vm::internal::segment_for_address(state_, guard_addr);
-        t81::vm::internal::apply_segment_reason(verdict, "AxRead guard", guard_kind, guard_addr);
-        if (verdict.kind == t81::axion::VerdictKind::Deny) {
-          record_axion_event(insn.opcode, insn.b, 0, verdict);
-          trap = Trap::SecurityFault;
-          break;
-        }
-        ctx.registers[insn.a] = insn.b;
-        ctx.register_tags[insn.a] = ValueTag::Int;
-        update_flags(ctx.registers[insn.a]);
-        record_axion_event(insn.opcode, insn.b, ctx.registers[insn.a], verdict);
         break;
       }
       case t81::tisc::Opcode::AxSet: {
-        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
-          trap = Trap::DecodeFault;
-          break;
-        }
-        auto value = ctx.registers[insn.b];
-        auto verdict = eval_axion_call(t81::axion::reasons::kAxSet, current_pc, insn.opcode);
-        std::size_t guard_addr = 0;
-        MemorySegmentKind guard_kind = MemorySegmentKind::Unknown;
-        if (ctx.registers[insn.a] >= 0) {
-          guard_addr = static_cast<std::size_t>(ctx.registers[insn.a]);
-          guard_kind = t81::vm::internal::segment_for_address(state_, guard_addr);
-        }
-        t81::vm::internal::apply_segment_reason(verdict, "AxSet guard", guard_kind, guard_addr);
-        record_axion_event(insn.opcode, insn.a, value, verdict);
-        if (verdict.kind == t81::axion::VerdictKind::Deny) {
-          trap = Trap::SecurityFault;
-        } else if (canonfs_driver_) {
-          // AX-M7: emit canonical CanonFS Write audit event into the axion log.
-          // This fires after the AXSET event and before any disk I/O, satisfying
-          // the meta-event ordering requirement.
-          t81::vm::internal::log_canonfs_operation(state_, state_.current_context, insn.opcode,
-                                                   "Write");
+        if (auto ax_trap = handle_axset(insn, ctx, current_pc); ax_trap.has_value()) {
+          trap = *ax_trap;
         }
         break;
       }
       case t81::tisc::Opcode::AxVerify: {
-        if (!reg_ok(insn.a)) {
-          trap = Trap::DecodeFault;
-          break;
+        if (auto ax_trap = handle_axverify(insn, ctx, current_pc); ax_trap.has_value()) {
+          trap = *ax_trap;
         }
-        auto verdict = eval_axion_call(t81::axion::reasons::kAxVerify, current_pc, insn.opcode);
-        if (verdict.kind == t81::axion::VerdictKind::Deny) {
-          record_axion_event(insn.opcode, insn.b, 0, verdict);
-          trap = Trap::SecurityFault;
-          break;
-        }
-        ctx.registers[insn.a] = (verdict.kind == t81::axion::VerdictKind::Defer) ? 1 : 0;
-        ctx.register_tags[insn.a] = ValueTag::Int;
-        update_flags(ctx.registers[insn.a]);
-        record_axion_event(insn.opcode, insn.b, ctx.registers[insn.a], verdict);
         break;
       }
       case t81::tisc::Opcode::Call: {
@@ -3966,11 +3914,9 @@ public:
         break;
       }
       case t81::tisc::Opcode::AxHalt: {
-        t81::axion::Verdict verdict;
-        verdict.kind = t81::axion::VerdictKind::Deny;
-        verdict.reason = "AXHALT instruction";
-        record_axion_event(insn.opcode, 0, 0, verdict);
-        state_.halted = true;
+        if (auto ax_trap = handle_axhalt(insn); ax_trap.has_value()) {
+          trap = *ax_trap;
+        }
         break;
       }
       case t81::tisc::Opcode::Assert: {
@@ -4601,7 +4547,7 @@ public:
       case t81::tisc::Opcode::AxSign:
       case t81::tisc::Opcode::AxLineage:
       case t81::tisc::Opcode::AxCanon: {
-        trap = handle_blocked_privileged_axion_opcode(insn.opcode);
+        trap = blocked_privileged_axion_opcode(insn.opcode);
         break;
       }
       case t81::tisc::Opcode::TNeuralFwd: {
@@ -5296,6 +5242,98 @@ private:
                           const t81::axion::Verdict& verdict) {
     t81::vm::internal::record_axion_event(state_, state_.current_context, opcode, tag_val, val_data,
                                           verdict);
+  }
+
+  Trap blocked_privileged_axion_opcode(t81::tisc::Opcode opcode) {
+    t81::axion::Verdict verdict{t81::axion::VerdictKind::Deny,
+                                "Blocked: unimplemented privileged Axion opcode"};
+    record_axion_event(opcode, 0, 0, verdict);
+    return Trap::SecurityFault;
+  }
+
+  std::optional<Trap> handle_axread(const t81::tisc::Insn& insn, ThreadContext& ctx,
+                                    std::size_t current_pc) {
+    const auto reg_ok = [&ctx](int r) {
+      return r >= 0 && static_cast<std::size_t>(r) < ctx.registers.size();
+    };
+    if (!reg_ok(insn.a)) {
+      return Trap::DecodeFault;
+    }
+    auto verdict = eval_axion_call(t81::axion::reasons::kAxRead, current_pc, insn.opcode);
+    auto guard_addr = static_cast<std::size_t>(insn.b);
+    auto guard_kind = t81::vm::internal::segment_for_address(state_, guard_addr);
+    t81::vm::internal::apply_segment_reason(verdict, "AxRead guard", guard_kind, guard_addr);
+    if (verdict.kind == t81::axion::VerdictKind::Deny) {
+      record_axion_event(insn.opcode, insn.b, 0, verdict);
+      return Trap::SecurityFault;
+    }
+    ctx.registers[insn.a] = insn.b;
+    ctx.register_tags[insn.a] = ValueTag::Int;
+    ctx.flags.zero = (ctx.registers[insn.a] == 0);
+    ctx.flags.negative = (ctx.registers[insn.a] < 0);
+    ctx.flags.positive = (ctx.registers[insn.a] > 0);
+    record_axion_event(insn.opcode, insn.b, ctx.registers[insn.a], verdict);
+    return std::nullopt;
+  }
+
+  std::optional<Trap> handle_axset(const t81::tisc::Insn& insn, ThreadContext& ctx,
+                                   std::size_t current_pc) {
+    const auto reg_ok = [&ctx](int r) {
+      return r >= 0 && static_cast<std::size_t>(r) < ctx.registers.size();
+    };
+    if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+      return Trap::DecodeFault;
+    }
+    auto value = ctx.registers[insn.b];
+    auto verdict = eval_axion_call(t81::axion::reasons::kAxSet, current_pc, insn.opcode);
+    std::size_t guard_addr = 0;
+    MemorySegmentKind guard_kind = MemorySegmentKind::Unknown;
+    if (ctx.registers[insn.a] >= 0) {
+      guard_addr = static_cast<std::size_t>(ctx.registers[insn.a]);
+      guard_kind = t81::vm::internal::segment_for_address(state_, guard_addr);
+    }
+    t81::vm::internal::apply_segment_reason(verdict, "AxSet guard", guard_kind, guard_addr);
+    record_axion_event(insn.opcode, insn.a, value, verdict);
+    if (verdict.kind == t81::axion::VerdictKind::Deny) {
+      return Trap::SecurityFault;
+    }
+    if (canonfs_driver_) {
+      // Emit CanonFS write audit event before any backing store write.
+      t81::vm::internal::log_canonfs_operation(state_, state_.current_context, insn.opcode,
+                                               "Write");
+    }
+    return std::nullopt;
+  }
+
+  std::optional<Trap> handle_axverify(const t81::tisc::Insn& insn, ThreadContext& ctx,
+                                      std::size_t current_pc) {
+    const auto reg_ok = [&ctx](int r) {
+      return r >= 0 && static_cast<std::size_t>(r) < ctx.registers.size();
+    };
+    if (!reg_ok(insn.a)) {
+      return Trap::DecodeFault;
+    }
+    auto verdict = eval_axion_call(t81::axion::reasons::kAxVerify, current_pc, insn.opcode);
+    if (verdict.kind == t81::axion::VerdictKind::Deny) {
+      record_axion_event(insn.opcode, insn.b, 0, verdict);
+      return Trap::SecurityFault;
+    }
+    ctx.registers[insn.a] = (verdict.kind == t81::axion::VerdictKind::Defer) ? 1 : 0;
+    ctx.register_tags[insn.a] = ValueTag::Int;
+    ctx.flags.zero = (ctx.registers[insn.a] == 0);
+    ctx.flags.negative = (ctx.registers[insn.a] < 0);
+    ctx.flags.positive = (ctx.registers[insn.a] > 0);
+    record_axion_event(insn.opcode, insn.b, ctx.registers[insn.a], verdict);
+    return std::nullopt;
+  }
+
+  std::optional<Trap> handle_axhalt(const t81::tisc::Insn& insn) {
+    t81::axion::Verdict verdict;
+    verdict.kind = t81::axion::VerdictKind::Deny;
+    verdict.reason = "AXHALT instruction";
+    record_axion_event(insn.opcode, 0, 0, verdict);
+    state_.halted = true;
+    return std::nullopt;
   }
 
   std::optional<Trap> handle_axcheck(

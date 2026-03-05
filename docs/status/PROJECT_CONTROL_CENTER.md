@@ -62,7 +62,7 @@ Full decomposition: `DRIFT_DECOMPOSITION.md`
 | :--- | :--- | :--- |
 | R-01 | Determinism overclaim — registry boundary language omitted externally | High |
 | R-02 | Axion Alpha posture delays Beta promotion | High |
-| R-03 | Single-owner concentration — all GO/HOLD gated on @t81dev | Medium |
+| R-15 | VM dispatch concentration in policy bridge increases maintenance risk | Medium |
 
 Full register: `ACTIVE_RISKS.md`
 

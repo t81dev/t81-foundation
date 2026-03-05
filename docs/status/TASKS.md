@@ -34,12 +34,12 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - Completed: 2026-03-04 (ahead of schedule)
   - Status: **✅ RESOLVED** - Quick win achieved
 
-- [x] **BG-07 BigInt Precision Resolution** - **✅ COMPLETED**
+- [x] **BG-07 BigInt Precision Resolution (Phase 1)** - **✅ COMPLETED**
   - ✅ Governance decision: Pragmatic approach with architectural roadmap
   - ✅ Enhanced semantic analyzer with better error messages
   - ✅ Phase 1 implementation complete
   - Completed: 2026-03-04 (ahead of schedule)
-  - Status: **✅ RESOLVED** - Pragmatic solution implemented
+  - Status: **✅ PHASE 1 RESOLVED** - Phase 2 arbitrary-precision implementation remains open
 
 - [x] **BG-08 Complex Number Serialization** - **✅ COMPLETED**
   - ✅ Complete binary pool serialization for T81Complex
@@ -74,7 +74,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 - [x] **Day 3-4: Axion Evidence Collection** - ✅ COMPLETED
 - [x] **Day 5-7: Quick Wins** - ✅ COMPLETED
   - ✅ Resolve T3K-S1 quantization spec gap
-  - ✅ Complete BG-07 BigInt precision resolution
+  - ✅ Complete BG-07 BigInt precision Phase 1 resolution
   - ✅ Complete BG-08 Complex number serialization
   - ✅ Complete BG-09 T81Graph serialization
 - [x] **Day 8-10: Memory Pool Optimization** - ✅ COMPLETED
@@ -102,10 +102,17 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 - [ ] **FW-02 VM Policy Bridge Cleanup** - **🚧 IN PROGRESS**
   - Extract `AxCheck`/`AxReport` helpers from dispatch loop
+  - Extract `AxRead`/`AxSet`/`AxVerify`/`AxHalt` helpers from dispatch loop
   - Reduce opcode dispatch concentration
-  - Progress: AxCheck/AxReport handling extracted to dedicated VM helpers (`core/vm/vm.cpp`, 2026-03-05)
+  - Progress: AxCheck/AxReport + AxRead/AxSet/AxVerify/AxHalt extracted to dedicated VM helpers (`core/vm/vm.cpp`, 2026-03-05)
   - Target: 2026-04-15
   - Status: **TECHNICAL DEBT (ACTIVE)**
+
+- [ ] **FW-01 Dependency Waiver Stewardship** - **🔎 MONITORING**
+  - Controlled dependency waiver remains at `core/vm/vm.cpp:24`
+  - Re-affirm or retire waiver each release cycle
+  - Target: Ongoing
+  - Status: **MONITORING**
 
 ### Strategic Enhancements - **🔬 INNOVATION PIPELINE**
 
@@ -181,7 +188,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 | **🏆 BG-10 Memory Pool Optimization** - Complete 10-phase memory management transformation | **2026-03-04** |
 | **🏆 BG-09 T81Graph Serialization** - Language runtime serialize_canonical integration | **2026-03-04** |
 | **🏆 BG-08 Complex Number Serialization** - Complete binary pool implementation | **2026-03-04** |
-| **🏆 BG-07 BigInt Precision Resolution** - Pragmatic approach with architectural roadmap | **2026-03-04** |
+| **🏆 BG-07 BigInt Precision Resolution (Phase 1)** - Pragmatic approach with architectural roadmap | **2026-03-04** |
 | **🏆 CLI Feature Testing** - Comprehensive validation with model integration | **2026-03-04** |
 | **🏆 Test File Organization** - Complete project structure cleanup | **2026-03-04** |
 | **🏆 100% Test Success Achievement** - All 285/285 tests passing | **2026-03-04** |
@@ -213,7 +220,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 - **BG-06 Collection Determinism** - ✅ COMPLETED
 - **AX-M5/M6/M7 Axion Beta Evidence** - ✅ COMPLETED  
 - **T3K-S1 Quantization Specification** - ✅ COMPLETED
-- **BG-07 BigInt Precision Resolution** - ✅ COMPLETED
+- **BG-07 BigInt Precision Resolution (Phase 1)** - ✅ COMPLETED
 - **BG-08 Complex Number Serialization** - ✅ COMPLETED
 - **BG-09 T81Graph Serialization** - ✅ COMPLETED
 - **BG-10 Memory Pool Optimization** - ✅ COMPLETED
