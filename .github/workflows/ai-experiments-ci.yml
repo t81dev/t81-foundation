@@ -224,6 +224,7 @@ jobs:
       run: |
         mkdir -p build/ai-ux
         python3 scripts/ci/check_ai_ux_contract.py \
+          --ai-bin build/experiments/ai/ux_tools/t81_ai \
           --out-dir build/ai-ux
 
     - name: Append AI evidence summary
@@ -269,6 +270,8 @@ jobs:
           build/ai-quantization/ai_quantization_codec_contract.md
           build/ai-ux/ai_ux_contract.json
           build/ai-ux/ai_ux_contract.md
+          build/ai-ux/ai_workflow_replay.json
+          build/ai-ux/ai_observability_trace.json
           build/ai-rfc0025/tloadhash-ctest.log
           build/ai-rfc0025/ai_tloadhash_toolchain.json
           build/ai-rfc0025/ai_tloadhash_toolchain.md

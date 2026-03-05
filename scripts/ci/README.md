@@ -38,7 +38,7 @@ python3 scripts/ci/check_ai_backend_adapter_contract.py --out-dir build/ai-backe
 python3 scripts/ci/check_ai_opcode_subset_contract.py --out-dir build/ai-opcodes
 python3 scripts/ci/check_ai_benchmark_spec_contract.py --out-dir build/ai-benchmark
 python3 scripts/ci/check_ai_quantization_codec_contract.py --out-dir build/ai-quantization
-python3 scripts/ci/check_ai_ux_contract.py --out-dir build/ai-ux
+python3 scripts/ci/check_ai_ux_contract.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-ux
 python3 scripts/ci/check_ai_tloadhash_toolchain.py --t81-bin build/t81 --input-file tests/fixtures/llama_cpp_repro/model.gguf --out-dir build/ai-rfc0025
 python3 scripts/ci/run_governed_llama_flow.py --t81-bin build-llama-local/t81 --model models/tinyllama-1.1b.Q2_K.gguf --out-dir build/ai-governed
 python3 scripts/ci/t81lang_repro_gate.py --help
