@@ -335,6 +335,21 @@ t81::T729DynamicTensor tensor_rope(const t81::T729DynamicTensor& tensor, int pos
 
 bool tensor_rope_compatible(const t81::T729DynamicTensor& tensor) { return tensor.rank() >= 2; }
 
+bool tensor_attention_compatible(const t81::T729DynamicTensor& q, const t81::T729DynamicTensor& k,
+                                 const t81::T729DynamicTensor& v) {
+  if (q.rank() != 2 || k.rank() != 2 || v.rank() != 2) {
+    return false;
+  }
+  if (q.shape().size() != 2 || k.shape().size() != 2 || v.shape().size() != 2) {
+    return false;
+  }
+  const int q_d = q.shape()[1];
+  const int k_d = k.shape()[1];
+  const int k_seq = k.shape()[0];
+  const int v_seq = v.shape()[0];
+  return q_d == k_d && k_seq == v_seq;
+}
+
 std::optional<t81::T729DynamicTensor> tensor_new_1d(std::int64_t size) {
   if (size <= 0) {
     return std::nullopt;
@@ -397,6 +412,33 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_contract_dot_checked
                                                                 t81::vm::Trap::ShapeFault);
   }
   return std::move(*out);
+}
+
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_attention_checked(
+    const t81::T729DynamicTensor& q, const t81::T729DynamicTensor& k, const t81::T729DynamicTensor& v) {
+  if (!tensor_attention_compatible(q, k, v)) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::ShapeFault);
+  }
+
+  // Deterministic phase-1 attention: softmax((Q*K^T)/sqrt(dk)) * V
+  const int dk = q.shape()[1];
+  if (dk <= 0) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::ShapeFault);
+  }
+  auto k_t = tensor_transpose_2d(k);
+  auto scores = tensor_matmul_2d(q, k_t);
+  const float inv_scale = 1.0f / std::sqrt(static_cast<float>(dk));
+  for (auto& x : scores.data()) {
+    x *= inv_scale;
+  }
+  auto probs = tensor_unary_softmax(scores);
+  if (!tensor_matmul_compatible(probs, v)) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::ShapeFault);
+  }
+  return tensor_matmul_2d(probs, v);
 }
 
 std::expected<float, t81::vm::Trap> tensor_get_checked(const t81::T729DynamicTensor& tensor,

@@ -81,6 +81,8 @@ bool tensor_rmsnorm_compatible(const t81::T729DynamicTensor& tensor,
                                const t81::T729DynamicTensor& weights);
 t81::T729DynamicTensor tensor_rope(const t81::T729DynamicTensor& tensor, int pos);
 bool tensor_rope_compatible(const t81::T729DynamicTensor& tensor);
+bool tensor_attention_compatible(const t81::T729DynamicTensor& q, const t81::T729DynamicTensor& k,
+                                 const t81::T729DynamicTensor& v);
 
 std::optional<t81::T729DynamicTensor> tensor_new_1d(std::int64_t size);
 t81::T729DynamicTensor tensor_identity_copy(const t81::T729DynamicTensor& tensor);
@@ -95,6 +97,8 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_matmul_checked(
     const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs);
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_contract_dot_checked(
     const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs);
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_attention_checked(
+    const t81::T729DynamicTensor& q, const t81::T729DynamicTensor& k, const t81::T729DynamicTensor& v);
 std::expected<float, t81::vm::Trap> tensor_get_checked(const t81::T729DynamicTensor& tensor,
                                                        std::int64_t index);
 std::expected<void, t81::vm::Trap> tensor_set_checked(t81::T729DynamicTensor& tensor,

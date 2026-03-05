@@ -4602,7 +4602,51 @@ public:
         }
         break;
       }
-      case t81::tisc::Opcode::ATTN:
+      case t81::tisc::Opcode::ATTN: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        // Phase-1 provisional encoding (until 4-source operand form lands):
+        // A holds V source handle before execution and destination handle after execution.
+        if (auto res = promote_to_tensor(insn.a); !res) {
+          trap = res.error();
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.c); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor_v = tensor_ptr(ctx.registers[insn.a]);
+        auto* tensor_q = tensor_ptr(ctx.registers[insn.b]);
+        auto* tensor_k = tensor_ptr(ctx.registers[insn.c]);
+        if (tensor_v == nullptr || tensor_q == nullptr || tensor_k == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto computed = t81::vm::internal::tensor_attention_checked(*tensor_q, *tensor_k, *tensor_v);
+        if (!computed.has_value()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, 0, "ATTN shape mismatch");
+          trap = computed.error();
+          break;
+        }
+        t81::axion::Verdict verdict{
+            t81::axion::VerdictKind::Allow,
+            "ATTN kernel execution (phase1 provisional encoding: V in destination register)"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b], verdict);
+        auto res_handle = alloc_tensor(std::move(*computed));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
       case t81::tisc::Opcode::QMATMUL:
       case t81::tisc::Opcode::EMBED: {
         if (auto ai_trap = handle_blocked_ai_phase1_opcode(); ai_trap.has_value()) {
