@@ -93,7 +93,7 @@ BridgeDiagnostic make_diag(BridgeError error, std::size_t line, std::string_view
                           std::string(source_line)};
 }
 
-std::expected<int, BridgeError> parse_register(std::string_view token) {
+t81::expected<int, BridgeError> parse_register(std::string_view token) {
   if (token.size() < 2) return t81::make_unexpected(BridgeError::InvalidRegister);
   if (token.front() != 'R' && token.front() != 'r') {
     return t81::make_unexpected(BridgeError::InvalidRegister);
@@ -111,7 +111,7 @@ std::expected<int, BridgeError> parse_register(std::string_view token) {
   return index;
 }
 
-std::expected<std::int64_t, BridgeError> parse_immediate(std::string_view token) {
+t81::expected<std::int64_t, BridgeError> parse_immediate(std::string_view token) {
   std::int64_t value = 0;
   const char* begin = token.data();
   const char* end = token.data() + token.size();
@@ -122,7 +122,7 @@ std::expected<std::int64_t, BridgeError> parse_immediate(std::string_view token)
   return value;
 }
 
-std::expected<ParsedLine, BridgeDiagnostic> parse_source_line(std::string_view raw_line,
+t81::expected<ParsedLine, BridgeDiagnostic> parse_source_line(std::string_view raw_line,
                                                               std::size_t line_no) {
   ParsedLine parsed;
   parsed.line_no = line_no;
@@ -154,7 +154,7 @@ std::expected<ParsedLine, BridgeDiagnostic> parse_source_line(std::string_view r
   return parsed;
 }
 
-std::expected<std::int64_t, BridgeDiagnostic> resolve_jump_target(
+t81::expected<std::int64_t, BridgeDiagnostic> resolve_jump_target(
     std::string_view token, std::size_t line_no, std::string_view source_line,
     const std::unordered_map<std::string, std::int32_t>* labels) {
   auto immediate = parse_immediate(token);
@@ -180,7 +180,7 @@ std::expected<std::int64_t, BridgeDiagnostic> resolve_jump_target(
   return static_cast<std::int64_t>(it->second);
 }
 
-std::expected<t81::tisc::Insn, BridgeDiagnostic> encode_tokens(
+t81::expected<t81::tisc::Insn, BridgeDiagnostic> encode_tokens(
     const std::vector<std::string>& tokens, std::size_t line_no, std::string_view source_line,
     const std::unordered_map<std::string, std::int32_t>* labels) {
   if (tokens.empty()) {
@@ -392,7 +392,7 @@ std::string_view bridge_error_message(BridgeError error) {
   return "unknown bridge error";
 }
 
-std::expected<t81::tisc::Insn, BridgeError> translate_line(std::string_view raw_line) {
+t81::expected<t81::tisc::Insn, BridgeError> translate_line(std::string_view raw_line) {
   auto parsed = parse_source_line(raw_line, 1);
   if (!parsed.has_value()) {
     return t81::make_unexpected(parsed.error().error);
@@ -408,7 +408,7 @@ std::expected<t81::tisc::Insn, BridgeError> translate_line(std::string_view raw_
   return insn.value();
 }
 
-std::expected<t81::tisc::Program, BridgeError> translate_program(std::string_view source) {
+t81::expected<t81::tisc::Program, BridgeError> translate_program(std::string_view source) {
   auto detailed = translate_program_diagnostic(source);
   if (!detailed.has_value()) {
     return t81::make_unexpected(detailed.error().error);
@@ -416,7 +416,7 @@ std::expected<t81::tisc::Program, BridgeError> translate_program(std::string_vie
   return detailed.value();
 }
 
-std::expected<t81::tisc::Program, BridgeDiagnostic> translate_program_diagnostic(
+t81::expected<t81::tisc::Program, BridgeDiagnostic> translate_program_diagnostic(
     std::string_view source) {
   t81::tisc::Program program{};
   std::vector<ParsedLine> lines;

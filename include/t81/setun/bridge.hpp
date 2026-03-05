@@ -5,7 +5,9 @@
 #include <utility>
 
 #include "t81/isa/program.hpp"
-#include "t81/support/expected.hpp"
+#include "t81/support/expected_simple.hpp"
+
+using t81::expected;
 
 namespace t81::setun {
 
@@ -79,15 +81,15 @@ struct BridgeDiagnostic {
 // Translate a single Setun-compatible source line into one TISC instruction.
 // Supported mnemonics: NOP, HALT, LOADI, MOV, ADD, SUB, LOAD, STORE, JMP,
 // JZ, JNZ, JN, JP.
-[[nodiscard]] std::expected<t81::tisc::Insn, BridgeError> translate_line(std::string_view line);
+[[nodiscard]] t81::expected<t81::tisc::Insn, BridgeError> translate_line(std::string_view line);
 
 // Translate a multi-line Setun-compatible program.
 // Comments start with ';' or '#'.
-[[nodiscard]] std::expected<t81::tisc::Program, BridgeError> translate_program(
+[[nodiscard]] t81::expected<t81::tisc::Program, BridgeError> translate_program(
     std::string_view source);
 
 // Detailed program translation with deterministic source location on failure.
-[[nodiscard]] std::expected<t81::tisc::Program, BridgeDiagnostic> translate_program_diagnostic(
+[[nodiscard]] t81::expected<t81::tisc::Program, BridgeDiagnostic> translate_program_diagnostic(
     std::string_view source);
 
 }  // namespace t81::setun
