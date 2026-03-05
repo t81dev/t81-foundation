@@ -128,7 +128,15 @@ inline double parse_canonical_float(std::string_view literal) {
 
 inline int64_t parse_base81_integer_literal(std::string_view literal) {
   std::string value = strip_t81_suffix(literal);
-  return std::stoll(value);
+  try {
+    return std::stoll(value);
+  } catch (const std::invalid_argument& e) {
+    throw std::runtime_error("Invalid base-81 literal '" + value + "': " + e.what());
+  } catch (const std::out_of_range&) {
+    throw std::runtime_error("Base-81 literal '" + value +
+                             "' exceeds 64-bit range in IR immediate path. Use BigInt "
+                             "construction helpers until BG-07 phase 2 lands.");
+  }
 }
 
 // Parse an integer literal lexeme, stripping '_' separators and handling 0x hex prefix.

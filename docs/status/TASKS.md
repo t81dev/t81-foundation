@@ -111,6 +111,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 - [ ] **FW-01 Dependency Waiver Stewardship** - **🔎 MONITORING**
   - Controlled dependency waiver remains at `core/vm/vm.cpp:24`
+  - Reaffirmed in current cycle (2026-03-05); remains explicitly tracked
   - Re-affirm or retire waiver each release cycle
   - Target: Ongoing
   - Status: **MONITORING**
@@ -120,6 +121,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 - [ ] **Phase 2 BigInt Arbitrary-Precision**
   - Extend IR Immediate type for full BigInt support
   - Update binary emitter for arbitrary-precision literals
+  - Phase-2 start: base-81 IR literal path now reports explicit overflow diagnostics
   - Target: Begin Q2 2026
   - Status: **ARCHITECTURAL ENHANCEMENT**
 
