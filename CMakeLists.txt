@@ -461,6 +461,10 @@ if(T81_BUILD_TESTS)
                  tests/cpp/vm_tloadhash_decodefault_determinism_matrix_test.cpp)
   target_link_libraries(t81_vm_tloadhash_decodefault_determinism_matrix_test PRIVATE t81_vm t81_core)
 
+  add_executable(t81_vm_ai_phase1_opcode_stub_conformance_test
+                 tests/cpp/vm_ai_phase1_opcode_stub_conformance_test.cpp)
+  target_link_libraries(t81_vm_ai_phase1_opcode_stub_conformance_test PRIVATE t81_vm t81_core)
+
   add_executable(t81_vm_tensor_shape_faults_test tests/cpp/vm_tensor_shape_faults_test.cpp)
   target_link_libraries(t81_vm_tensor_shape_faults_test PRIVATE t81_vm t81_core)
 
@@ -1295,6 +1299,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_vm_tensor_test
     t81_vm_tloadhash_conformance_test
     t81_vm_tloadhash_decodefault_determinism_matrix_test
+    t81_vm_ai_phase1_opcode_stub_conformance_test
     t81_vm_tensor_shape_faults_test
     t81_vm_tensor_get_set_conformance_test
     t81_vm_tensor_helper_predicates_test

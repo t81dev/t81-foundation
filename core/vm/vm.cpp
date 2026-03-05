@@ -1162,6 +1162,16 @@ public:
       return Trap::SecurityFault;
     };
 
+    auto handle_blocked_ai_phase1_opcode = [&]() -> std::optional<Trap> {
+      if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+        return Trap::DecodeFault;
+      }
+      t81::axion::Verdict verdict{t81::axion::VerdictKind::Deny,
+                                  "Blocked: unimplemented AI phase1 opcode"};
+      record_axion_event(insn.opcode, 0, 0, verdict);
+      return Trap::SecurityFault;
+    };
+
     auto handle_bitwise_binary = [&]() -> std::optional<Trap> {
       if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
         return Trap::DecodeFault;
@@ -4589,6 +4599,14 @@ public:
       case t81::tisc::Opcode::TNeuralBwd: {
         if (auto neural_trap = handle_blocked_neural_opcode(false); neural_trap.has_value()) {
           trap = *neural_trap;
+        }
+        break;
+      }
+      case t81::tisc::Opcode::ATTN:
+      case t81::tisc::Opcode::QMATMUL:
+      case t81::tisc::Opcode::EMBED: {
+        if (auto ai_trap = handle_blocked_ai_phase1_opcode(); ai_trap.has_value()) {
+          trap = *ai_trap;
         }
         break;
       }

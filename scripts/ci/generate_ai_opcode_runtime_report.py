@@ -23,10 +23,16 @@ def read_text(path: Path) -> str:
 
 
 def parse_enum_members(text: str, enum_name: str) -> set[str]:
-    m = re.search(rf"enum\s+class\s+{re.escape(enum_name)}\s*\{{(?P<body>.*?)\}};", text, re.S)
+    m = re.search(
+        rf"enum\s+class\s+{re.escape(enum_name)}(?:\s*:\s*[^{{]+)?\s*\{{(?P<body>.*?)\}};",
+        text,
+        re.S,
+    )
     if not m:
         return set()
     body = m.group("body")
+    body = re.sub(r"//.*?$", "", body, flags=re.M)
+    body = re.sub(r"/\*.*?\*/", "", body, flags=re.S)
     members: set[str] = set()
     for raw in body.split(","):
         token = raw.strip()
@@ -42,7 +48,9 @@ def parse_enum_members(text: str, enum_name: str) -> set[str]:
 
 
 def parse_vm_dispatch_cases(vm_text: str) -> set[str]:
-    return set(re.findall(r"case\s+Opcode::([A-Za-z_][A-Za-z0-9_]*)\s*:", vm_text))
+    return set(
+        re.findall(r"case\s+(?:t81::tisc::)?Opcode::([A-Za-z_][A-Za-z0-9_]*)\s*:", vm_text)
+    )
 
 
 def canonical_json(obj: Any) -> str:
@@ -168,4 +176,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

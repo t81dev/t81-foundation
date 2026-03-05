@@ -196,6 +196,10 @@ enum class Opcode : std::uint8_t {
   SetHas,
   SetSize,
   TShape,  // Get tensor shape dimension: A=Dest, B=Tens, C=DimIdx
+  // RFC-0026 phase-1 AI opcode subset (dispatch stubs initially fail-closed).
+  ATTN,
+  QMATMUL,
+  EMBED,
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -574,12 +578,18 @@ enum class Opcode : std::uint8_t {
       return "SetSize";
     case Opcode::TShape:
       return "TShape";
+    case Opcode::ATTN:
+      return "ATTN";
+    case Opcode::QMATMUL:
+      return "QMATMUL";
+    case Opcode::EMBED:
+      return "EMBED";
   }
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::TShape) + 1> kAllOpcodes = [] {
-  std::array<Opcode, static_cast<std::size_t>(Opcode::TShape) + 1> values{};
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::EMBED) + 1> kAllOpcodes = [] {
+  std::array<Opcode, static_cast<std::size_t>(Opcode::EMBED) + 1> values{};
   for (std::size_t i = 0; i < values.size(); ++i) {
     values[i] = static_cast<Opcode>(i);
   }
@@ -587,6 +597,6 @@ inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::TShape) + 1
 }();
 
 [[nodiscard]] constexpr bool is_valid_opcode(std::uint8_t raw_opcode) {
-  return raw_opcode <= static_cast<std::uint8_t>(Opcode::TShape);
+  return raw_opcode <= static_cast<std::uint8_t>(Opcode::EMBED);
 }
 }  // namespace t81::tisc
