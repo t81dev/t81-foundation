@@ -15,6 +15,7 @@ on:
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
+      - 'scripts/ci/check_ai_ux_contract.py'
       - '.github/workflows/ai-experiments-ci.yml'
   pull_request:
     branches: [ main ]
@@ -30,6 +31,7 @@ on:
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
+      - 'scripts/ci/check_ai_ux_contract.py'
       - '.github/workflows/ai-experiments-ci.yml'
   workflow_dispatch:
 
@@ -178,6 +180,13 @@ jobs:
         python3 scripts/ci/check_ai_quantization_codec_contract.py \
           --out-dir build/ai-quantization
 
+    - name: Validate AI UX contract (RFC-00A7 baseline)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-ux
+        python3 scripts/ci/check_ai_ux_contract.py \
+          --out-dir build/ai-ux
+
     - name: Append AI evidence summary
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -187,6 +196,7 @@ jobs:
         cat build/ai-opcodes/ai_opcode_subset_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-benchmark/ai_benchmark_spec_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-quantization/ai_quantization_codec_contract.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-ux/ai_ux_contract.md >> "$GITHUB_STEP_SUMMARY"
         {
           echo "# RFC-0025 TLOADHASH Conformance"
           echo ""
@@ -215,4 +225,6 @@ jobs:
           build/ai-benchmark/ai_benchmark_spec_contract.md
           build/ai-quantization/ai_quantization_codec_contract.json
           build/ai-quantization/ai_quantization_codec_contract.md
+          build/ai-ux/ai_ux_contract.json
+          build/ai-ux/ai_ux_contract.md
           build/ai-rfc0025/tloadhash-ctest.log
