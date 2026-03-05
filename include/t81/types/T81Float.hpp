@@ -249,8 +249,7 @@ public:
 
   [[nodiscard]] T81Float exp() const {
 #if defined(T81_DETERMINISTIC)
-    throw std::domain_error(
-        "DeterminismViolation: transcendental math not allowed in deterministic tier");
+    return core::detail::exp(*this);
 #else
     return core::detail::exp(*this);
 #endif
@@ -258,8 +257,7 @@ public:
 
   [[nodiscard]] T81Float log() const {
 #if defined(T81_DETERMINISTIC)
-    throw std::domain_error(
-        "DeterminismViolation: transcendental math not allowed in deterministic tier");
+    return core::detail::log(*this);
 #else
     return core::detail::log(*this);
 #endif
@@ -267,8 +265,7 @@ public:
 
   [[nodiscard]] T81Float sqrt() const {
 #if defined(T81_DETERMINISTIC)
-    throw std::domain_error(
-        "DeterminismViolation: transcendental math not allowed in deterministic tier");
+    return core::detail::sqrt(*this);
 #else
     return core::detail::sqrt(*this);
 #endif
