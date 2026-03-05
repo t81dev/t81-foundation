@@ -16,7 +16,7 @@ This backlog tracks active AI integration RFC work only. It is separate from str
 | P0 | RFC-00A1 | Deterministic Evidence and Reproducibility Protocol for AI Workloads | **Implemented (Baseline)** — canonical evidence bundle script + workflow artifact upload landed | Expand baseline to include trace-level VM evidence and promotion-grade fixture locking | @t81dev | 2026-03-10 |
 | P0 | RFC-00A3 | Model Artifact Identity and Provenance (GGUF/Safetensors Policy) | **Implemented (Baseline)** — CI provenance hash gate + deny-on-mismatch self-test landed | Extend to CanonFS-backed artifact identity and signed provenance chain | @t81dev | 2026-03-12 |
 | P1 | RFC-0025 | Policy-Gated Tensor Loading via CanonFS | **Draft only** | Implement `TLOADHASH`/policy hash allowlist path with deterministic deny reasons and conformance tests | @t81dev | 2026-03-15 |
-| P1 | RFC-00A6 | Axion Policy Hooks for Inference and Tooling Events | **Not started** | Add AI event hook taxonomy and deterministic audit events for model/inference/tool/resource actions | @t81dev | 2026-03-18 |
+| P1 | RFC-00A6 | Axion Policy Hooks for Inference and Tooling Events | **Implemented (Baseline)** — deterministic policy event contract gate with reason-code coverage artifact | Integrate baseline reason-code contract with runtime Axion event stream and signed audit ledger | @t81dev | 2026-03-18 |
 | P1 | RFC-00A5 | LLM Backend Adapter Interface (Engine-Agnostic) | **Not started** | Ship minimal engine-agnostic adapter contract and one conformance backend (llama.cpp experimental path) | @t81dev | 2026-03-20 |
 | P2 | RFC-00A7 | UX Integration for AI in T81 | **Partial** (experimental CLI exists) | Expand CLI to RFC command families and add deterministic workflow replay/reporting | @t81dev | 2026-03-22 |
 | P2 | RFC-00A2 | AI Benchmark Specification and Reporting Format | **Not started** | Add canonical benchmark spec doc + one CI benchmark workflow with reproducible report artifact | @t81dev | 2026-03-24 |
@@ -46,7 +46,7 @@ This backlog tracks active AI integration RFC work only. It is separate from str
 | AI-S1 | Sandbox governance automation | RFC-00A0 | **Completed (2026-03-05)** — CI fails when AI code escapes sandbox boundary |
 | AI-S2 | Determinism evidence baseline | RFC-00A1 | **Completed (2026-03-05)** — AI run emits canonical evidence bundle and hash-stable manifest |
 | AI-S3 | Model provenance gate | RFC-00A3, RFC-0025 | **Completed (2026-03-05)** — model load gate denies invalid provenance hash |
-| AI-S4 | Policy event instrumentation | RFC-00A6 | Axion logs deterministic AI event records with stable reason codes |
+| AI-S4 | Policy event instrumentation | RFC-00A6 | **Completed (2026-03-05)** — deterministic AI policy-event reason-code contract gate active in CI |
 
 ---
 
