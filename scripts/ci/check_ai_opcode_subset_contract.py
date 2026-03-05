@@ -115,9 +115,9 @@ def validate_runtime_evidence(runtime_report: Path, ctest_log: Path) -> tuple[bo
     log_text = ctest_log.read_text(encoding="utf-8", errors="replace")
     evidence["ctest_log_sha256"] = sha256_text(log_text)
     for test_name in (
-        "t81_vm_ai_phase1_opcode_stub_conformance_test",
         "t81_vm_ai_phase1_attention_conformance_test",
         "t81_vm_ai_phase1_embed_conformance_test",
+        "t81_vm_ai_phase1_qmatmul_conformance_test",
     ):
         if test_name not in log_text:
             errs.append(f"ctest log missing phase1 conformance test name: {test_name}")

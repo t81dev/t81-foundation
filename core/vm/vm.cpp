@@ -1162,16 +1162,6 @@ public:
       return Trap::SecurityFault;
     };
 
-    auto handle_blocked_ai_phase1_opcode = [&]() -> std::optional<Trap> {
-      if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
-        return Trap::DecodeFault;
-      }
-      t81::axion::Verdict verdict{t81::axion::VerdictKind::Deny,
-                                  "Blocked: unimplemented AI phase1 opcode"};
-      record_axion_event(insn.opcode, 0, 0, verdict);
-      return Trap::SecurityFault;
-    };
-
     auto handle_bitwise_binary = [&]() -> std::optional<Trap> {
       if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
         return Trap::DecodeFault;
@@ -4647,11 +4637,42 @@ public:
         ctx.register_tags[insn.a] = ValueTag::TensorHandle;
         break;
       }
-      case t81::tisc::Opcode::QMATMUL:
-      {
-        if (auto ai_trap = handle_blocked_ai_phase1_opcode(); ai_trap.has_value()) {
-          trap = *ai_trap;
+      case t81::tisc::Opcode::QMATMUL: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
         }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.c); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor_a = tensor_ptr(ctx.registers[insn.b]);
+        auto* tensor_b = tensor_ptr(ctx.registers[insn.c]);
+        if (tensor_a == nullptr || tensor_b == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto computed = t81::vm::internal::tensor_matmul_checked(*tensor_a, *tensor_b);
+        if (!computed.has_value()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, 0, "QMATMUL shape mismatch");
+          trap = computed.error();
+          break;
+        }
+        t81::axion::Verdict verdict{
+            t81::axion::VerdictKind::Allow,
+            "QMATMUL kernel execution (phase1 provisional path via deterministic matmul)"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b], verdict);
+        auto res_handle = alloc_tensor(std::move(*computed));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
         break;
       }
       case t81::tisc::Opcode::EMBED: {

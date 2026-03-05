@@ -2,7 +2,7 @@
 
 - schema: `t81.ai.opcode-runtime-report.v1`
 - phase_status: `runtime_bound`
-- report_sha256: `4993fd8e09a8c383599404a1a72167b326a51fe3e556272e125fd29223815830`
+- report_sha256: `7f7f92319e2fd7c317438a856d4388412c773dbd1284912f2500d6519d520073`
 
 | Opcode | AI Header | TISC Enum | VM Dispatch | Status |
 | :--- | :---: | :---: | :---: | :--- |
