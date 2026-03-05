@@ -48,6 +48,7 @@ Feature work, new capabilities, and API additions live elsewhere.
 | **FW-02 (Slice 3)** | **Structural hardening** | **Axion opcode routing centralized** - `Ax*` opcode handling now routes through `handle_axion_opcode` in `core/vm/vm.cpp`; residual concentration work still open | **2026-03-05** |
 | **FW-02 (Slice 4)** | **Structural hardening** | **Axion case consolidation** - duplicate `Ax*` switch-case blocks collapsed into grouped dispatch paths in `core/vm/vm.cpp`; residual concentration work still open | **2026-03-05** |
 | **FW-02 (Slice 5)** | **Structural hardening** | **Axion dispatch locality improved** - `AxHalt` case moved into consolidated `Ax*` switch block; Axion dispatch no longer split across distant switch regions | **2026-03-05** |
+| **FW-02 (Slice 6)** | **Structural hardening** | **Axion dispatch entrypoint unified** - `AxRead`/`AxSet`/`AxVerify` case labels moved into the same `Ax*` switch region as `AxCheck`/`AxReport`/`AxSign`/`AxLineage`/`AxCanon`/`AxHalt` | **2026-03-05** |
 | **FW-01** | **Structural hardening** | **Dependency firewall waiver retired** - `core/vm/vm.cpp` no longer includes `t81/experimental/cog/promotion.hpp`; tier promotion logic is now local and `scripts/architecture/dependency_firewall_waivers.tsv` has no active waivers | **2026-03-05** |
 | **AX-M5** | **Promotion evidence** | **Determinism stewardship evidence map completed** | **2026-03-04** |
 | **AX-M6** | **Promotion evidence** | **CanonFS observability lifecycle evidence completed** | **2026-03-04** |

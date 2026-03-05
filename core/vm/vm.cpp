@@ -2370,15 +2370,6 @@ public:
           update_flags(ctx.registers[insn.a]);
         }
         break;
-      case t81::tisc::Opcode::AxRead:
-      case t81::tisc::Opcode::AxSet:
-      case t81::tisc::Opcode::AxVerify: {
-        if (auto ax_trap = handle_axion_opcode(insn, ctx, current_pc, symbol_like_text);
-            ax_trap.has_value()) {
-          trap = *ax_trap;
-        }
-        break;
-      }
       case t81::tisc::Opcode::Call: {
         if (!reg_ok(insn.b)) {
           trap = Trap::DecodeFault;
@@ -4564,6 +4555,9 @@ public:
         record_axion_event(insn.opcode, 0, seal, verdict);
         break;
       }
+      case t81::tisc::Opcode::AxRead:
+      case t81::tisc::Opcode::AxSet:
+      case t81::tisc::Opcode::AxVerify:
       case t81::tisc::Opcode::AxCheck:
       case t81::tisc::Opcode::AxReport:
       case t81::tisc::Opcode::AxSign:
