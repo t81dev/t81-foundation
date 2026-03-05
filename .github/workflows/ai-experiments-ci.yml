@@ -103,6 +103,15 @@ jobs:
           --out-dir build/ai-evidence \
           --runs 3
 
+    - name: Enforce model provenance hash gate (RFC-00A3 baseline)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-provenance
+        python3 scripts/ci/check_ai_model_provenance_gate.py \
+          --model build/ai-provenance/test_model.gguf \
+          --manifest build/ai-provenance/test_model.manifest.json \
+          --self-test-deny
+
     - name: Append AI evidence summary
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -117,3 +126,4 @@ jobs:
           build/ai-evidence/ai_evidence_bundle.json
           build/ai-evidence/ai_evidence_bundle.sha256
           build/ai-evidence/ai_evidence_summary.md
+          build/ai-provenance/test_model.manifest.json
