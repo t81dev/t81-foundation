@@ -335,7 +335,9 @@ jobs:
         python3 scripts/ci/check_ai_ux_contract.py \
           --ai-bin build/experiments/ai/ux_tools/t81_ai \
           --out-dir build/ai-ux \
-          --runtime-model tests/fixtures/llama_cpp_repro/model.gguf
+          --runtime-model tests/fixtures/llama_cpp_repro/model.gguf \
+          --t81-bin build-llama-ai/t81 \
+          --llama-hash-probe scripts/ci/llama_model_hash.py
 
     - name: Validate AI cross-lane evidence lock (RFC-00A1 promotion slice)
       if: steps.build_ai.outputs.has_target == 'true'
@@ -400,6 +402,7 @@ jobs:
         cat build/ai-benchmark/ai_benchmark_spec_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-quantization/ai_quantization_codec_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-ux/ai_ux_contract.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-ux/ai_direct_backend_execution_attestation.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-cross-lane/ai_cross_lane_evidence.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-manifest/ai_evidence_manifest.md >> "$GITHUB_STEP_SUMMARY"
         {
@@ -461,6 +464,13 @@ jobs:
           build/ai-ux/ai_policy_test.json
           build/ai-ux/ai_workflow_replay.json
           build/ai-ux/ai_observability_trace.json
+          build/ai-ux/ai_direct_backend_execution_attestation.json
+          build/ai-ux/ai_direct_backend_execution_attestation.md
+          build/ai-ux/ai_direct_backend_policy.apl
+          build/ai-ux/ai_direct_backend_run1.stdout.log
+          build/ai-ux/ai_direct_backend_run1.stderr.log
+          build/ai-ux/ai_direct_backend_run2.stdout.log
+          build/ai-ux/ai_direct_backend_run2.stderr.log
           build/ai-cross-lane/ai_cross_lane_evidence.json
           build/ai-cross-lane/ai_cross_lane_evidence.md
           build/ai-manifest/ai_evidence_manifest.json

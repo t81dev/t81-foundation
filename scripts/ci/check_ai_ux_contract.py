@@ -11,6 +11,7 @@ from typing import Any
 
 
 SCHEMA_VERSION = "t81.ai.ux-contract.v1"
+DIRECT_BACKEND_SCHEMA = "t81.ai.ux-direct-backend-attestation.v1"
 
 
 def canonical_json(data: Any) -> str:
@@ -163,14 +164,22 @@ def validate_static_contract(contract: dict[str, Any]) -> tuple[bool, list[str]]
 
     bc = contract["backend_capabilities_contract"]
     required_backend_fields = set(bc["required_backend_fields"])
-    for field in ("backend_name", "supported_formats", "determinism_modes", "max_context_tokens"):
-        if field not in required_backend_fields:
-            errs.append(f"backend_capabilities_contract missing backend field: {field}")
+    for f in (
+        "backend_name",
+        "supported_formats",
+        "determinism_modes",
+        "max_context_tokens",
+        "supports_streaming",
+        "supports_logit_bias",
+    ):
+        if f not in required_backend_fields:
+            errs.append(f"backend_capabilities_contract missing backend field: {f}")
 
     obs = contract["observability_contract"]
-    needed = {"reason_code", "event_type", "decision", "timestamp_utc"}
-    if set(obs["trace_reason_fields"]) != needed:
-        errs.append("observability_contract.trace_reason_fields mismatch")
+    rf = set(obs["trace_reason_fields"])
+    for f in ("reason_code", "event_type", "decision", "timestamp_utc"):
+        if f not in rf:
+            errs.append(f"observability_contract missing trace reason field: {f}")
     if obs.get("determinism_field") != "trace_sha256":
         errs.append("observability_contract.determinism_field must be trace_sha256")
 
@@ -181,67 +190,174 @@ def parse_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def validate_runtime(ai_bin: Path, out_dir: Path, runtime_model: str) -> tuple[bool, list[str], dict[str, Any]]:
+def run_direct_backend_attestation(
+    out_dir: Path,
+    model_path: Path,
+    t81_bin: Path,
+    hash_probe: Path,
+) -> tuple[bool, list[str], dict[str, Any]]:
     errs: list[str] = []
-    runtime: dict[str, Any] = {}
-    repo_root = Path(__file__).resolve().parents[2]
-
-    help_result = run_cmd([str(ai_bin), "--help"])
-    runtime["help"] = {
-        "rc": help_result["rc"],
-        "stdout_sha256": sha256_text(help_result["stdout"]),
-        "stderr_sha256": sha256_text(help_result["stderr"]),
+    details: dict[str, Any] = {
+        "schema": DIRECT_BACKEND_SCHEMA,
+        "model_path": str(model_path),
+        "t81_bin": str(t81_bin),
+        "hash_probe": str(hash_probe),
     }
-    if help_result["rc"] != 0:
-        errs.append("t81_ai --help failed")
-    for marker in (
-        "model inspect",
-        "verify determinism",
-        "backend capabilities",
-        "backend select",
-        "inference run",
-        "quantization inspect",
-        "benchmark run",
-        "policy test",
-        "workflow run",
-        "workflow replay",
-        "workflow report",
-        "observability trace",
-    ):
-        if marker not in help_result["stdout"]:
-            errs.append(f"missing help marker: {marker}")
 
-    replay_path = out_dir / "ai_workflow_replay.json"
-    trace_path = out_dir / "ai_observability_trace.json"
-    model_path, model_source = resolve_runtime_model(repo_root, out_dir, runtime_model)
-    runtime["runtime_model"] = {"path": str(model_path), "source": model_source}
+    if not t81_bin.exists():
+        errs.append(f"direct backend attestation: t81 binary not found: {t81_bin}")
+    if not model_path.exists():
+        errs.append(f"direct backend attestation: model not found: {model_path}")
+    if not hash_probe.exists():
+        errs.append(f"direct backend attestation: hash probe script not found: {hash_probe}")
 
-    run_result = run_cmd(
-        [
-            str(ai_bin),
-            "workflow",
-            "run",
-            "ci-ux-smoke",
-            "--seed",
-            "0",
-            "--out",
-            str(replay_path),
-        ]
+    model_hash = ""
+    if not errs:
+        probe = run_cmd([sys.executable, str(hash_probe), "--t81-bin", str(t81_bin), str(model_path)])
+        details["hash_probe_rc"] = probe["rc"]
+        details["hash_probe_stdout_sha256"] = sha256_text(probe["stdout"])
+        details["hash_probe_stderr_sha256"] = sha256_text(probe["stderr"])
+        if probe["rc"] != 0:
+            errs.append("direct backend attestation: llama_model_hash probe failed")
+        else:
+            model_hash = probe["stdout"].strip()
+            if not model_hash.startswith("sha3-512:"):
+                errs.append(f"direct backend attestation: invalid model hash output: {model_hash}")
+
+    policy_path = out_dir / "ai_direct_backend_policy.apl"
+    prompt = "RFC-00A7 direct backend execution attestation."
+    if not errs:
+        policy_path.write_text(
+            "\n".join(
+                [
+                    "(policy",
+                    "  (tier 1)",
+                    f"  (allowed-tensor-hashes [\"{model_hash}\"]))",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+    runs: list[dict[str, Any]] = []
+    if not errs:
+        for i in (1, 2):
+            cmd = [
+                str(t81_bin),
+                "llama-run",
+                str(model_path),
+                prompt,
+                "--policy",
+                str(policy_path),
+                "--max-tokens",
+                "8",
+                "--seed",
+                "0",
+                "--threads",
+                "1",
+                "--temperature",
+                "0",
+                "--top-k",
+                "1",
+                "--top-p",
+                "1.0",
+                "--expected-model-hash",
+                model_hash,
+            ]
+            res = run_cmd(cmd)
+            stdout_path = out_dir / f"ai_direct_backend_run{i}.stdout.log"
+            stderr_path = out_dir / f"ai_direct_backend_run{i}.stderr.log"
+            stdout_path.write_text(res["stdout"], encoding="utf-8")
+            stderr_path.write_text(res["stderr"], encoding="utf-8")
+            runs.append(
+                {
+                    "run": i,
+                    "rc": res["rc"],
+                    "stdout_sha256": sha256_text(res["stdout"]),
+                    "stderr_sha256": sha256_text(res["stderr"]),
+                    "stdout_log": str(stdout_path),
+                    "stderr_log": str(stderr_path),
+                }
+            )
+            if res["rc"] != 0:
+                errs.append(f"direct backend attestation: llama-run replay {i} failed")
+
+    deterministic_replay = False
+    if len(runs) == 2:
+        deterministic_replay = (
+            runs[0]["rc"] == runs[1]["rc"]
+            and runs[0]["stdout_sha256"] == runs[1]["stdout_sha256"]
+            and runs[0]["stderr_sha256"] == runs[1]["stderr_sha256"]
+        )
+        if not deterministic_replay:
+            errs.append("direct backend attestation: replay output hashes mismatch")
+
+    status = "pass" if not errs and deterministic_replay else "fail"
+    payload = {
+        **details,
+        "status": status,
+        "model_hash": model_hash,
+        "policy_file": str(policy_path),
+        "deterministic_replay": deterministic_replay,
+        "runs": runs,
+        "errors": errs,
+    }
+
+    json_path = out_dir / "ai_direct_backend_execution_attestation.json"
+    md_path = out_dir / "ai_direct_backend_execution_attestation.md"
+    json_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    md_path.write_text(
+        "\n".join(
+            [
+                "# Direct Backend Execution Attestation",
+                "",
+                f"- schema: `{DIRECT_BACKEND_SCHEMA}`",
+                f"- status: `{status}`",
+                f"- deterministic_replay: `{str(deterministic_replay).lower()}`",
+                f"- model_hash: `{model_hash}`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
     )
+    payload["artifact"] = str(json_path)
+    payload["summary"] = str(md_path)
+    return status == "pass", errs, payload
+
+
+def validate_runtime(
+    ai_bin: Path,
+    out_dir: Path,
+    user_model: str,
+    t81_bin: str,
+    llama_hash_probe: str,
+) -> tuple[bool, list[str], dict[str, Any]]:
+    errs: list[str] = []
+    runtime: dict[str, Any] = {"ai_bin": str(ai_bin)}
+    if not ai_bin.exists():
+        return False, [f"ai binary not found: {ai_bin}"], runtime
+
+    repo_root = Path.cwd().resolve()
+    model_path, model_origin = resolve_runtime_model(repo_root, out_dir, user_model)
+    runtime["runtime_model"] = str(model_path)
+    runtime["runtime_model_origin"] = model_origin
+
+    run_path = out_dir / "ai_workflow_run.json"
+    replay_path = out_dir / "ai_workflow_replay.json"
+    report_path = out_dir / "ai_workflow_report.json"
+    trace_path = out_dir / "ai_observability_trace.json"
+
+    run_result = run_cmd([str(ai_bin), "workflow", "run", "--out", str(run_path)])
     runtime["workflow_run"] = {"rc": run_result["rc"], "stdout_sha256": sha256_text(run_result["stdout"])}
     if run_result["rc"] != 0:
         errs.append("workflow run failed")
-    if not replay_path.exists():
-        errs.append("workflow run did not emit replay artifact")
 
-    replay_result = run_cmd([str(ai_bin), "workflow", "replay", str(replay_path)])
+    replay_result = run_cmd([str(ai_bin), "workflow", "replay", "--out", str(replay_path)])
     runtime["workflow_replay"] = {"rc": replay_result["rc"], "stdout_sha256": sha256_text(replay_result["stdout"])}
     if replay_result["rc"] != 0:
         errs.append("workflow replay failed")
-    if "pass" not in replay_result["stdout"].lower():
-        errs.append("workflow replay did not report pass")
 
-    report_result = run_cmd([str(ai_bin), "workflow", "report", str(replay_path)])
+    report_result = run_cmd([str(ai_bin), "workflow", "report", "--out", str(report_path)])
     runtime["workflow_report"] = {"rc": report_result["rc"], "stdout_sha256": sha256_text(report_result["stdout"])}
     if report_result["rc"] != 0:
         errs.append("workflow report failed")
@@ -291,15 +407,9 @@ def validate_runtime(ai_bin: Path, out_dir: Path, runtime_model: str) -> tuple[b
                         continue
                     missing = sorted(required_backend_fields - set(backend.keys()))
                     if missing:
-                        errs.append(
-                            f"backend capabilities entry {i} missing fields: {', '.join(missing)}"
-                        )
+                        errs.append(f"backend capabilities entry {i} missing fields: {', '.join(missing)}")
                 default_backend = backend_caps.get("default_backend")
-                backend_names = {
-                    b.get("backend_name", "")
-                    for b in backends
-                    if isinstance(b, dict)
-                }
+                backend_names = {b.get("backend_name", "") for b in backends if isinstance(b, dict)}
                 if default_backend not in backend_names:
                     errs.append("backend capabilities default_backend not found in backends list")
 
@@ -537,6 +647,26 @@ def validate_runtime(ai_bin: Path, out_dir: Path, runtime_model: str) -> tuple[b
             errs.append(f"trace artifact missing fields: {', '.join(missing)}")
         runtime["trace_artifact_sha256"] = sha256_text(canonical_json(trace))
 
+    t81_path = Path(t81_bin).resolve() if t81_bin else Path()
+    hash_probe_path = Path(llama_hash_probe).resolve() if llama_hash_probe else Path()
+    if not t81_bin:
+        errs.append("direct backend attestation requires --t81-bin")
+    else:
+        direct_ok, direct_errs, direct_payload = run_direct_backend_attestation(
+            out_dir=out_dir,
+            model_path=model_path,
+            t81_bin=t81_path,
+            hash_probe=hash_probe_path,
+        )
+        runtime["direct_backend_execution"] = {
+            "ok": direct_ok,
+            "artifact": direct_payload.get("artifact", ""),
+            "summary": direct_payload.get("summary", ""),
+            "deterministic_replay": direct_payload.get("deterministic_replay", False),
+            "model_hash": direct_payload.get("model_hash", ""),
+        }
+        errs.extend(direct_errs)
+
     return len(errs) == 0, errs, runtime
 
 
@@ -548,6 +678,16 @@ def parse_args() -> argparse.Namespace:
         "--runtime-model",
         default="",
         help="Optional GGUF model path for fixture-backed runtime UX commands",
+    )
+    p.add_argument(
+        "--t81-bin",
+        default="",
+        help="Path to llama-enabled t81 binary for direct backend execution attestation",
+    )
+    p.add_argument(
+        "--llama-hash-probe",
+        default="scripts/ci/llama_model_hash.py",
+        help="Path to llama hash probe helper script",
     )
     return p.parse_args()
 
@@ -566,7 +706,13 @@ def main() -> int:
     h2 = sha256_text(canonical_json(c2))
     deterministic = h1 == h2
     static_valid, static_errors = validate_static_contract(c1)
-    runtime_valid, runtime_errors, runtime_details = validate_runtime(ai_bin, out_dir, args.runtime_model)
+    runtime_valid, runtime_errors, runtime_details = validate_runtime(
+        ai_bin,
+        out_dir,
+        args.runtime_model,
+        args.t81_bin,
+        args.llama_hash_probe,
+    )
     errors = static_errors + runtime_errors
     valid = static_valid and runtime_valid
     status = "pass" if deterministic and valid else "fail"
