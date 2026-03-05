@@ -53,6 +53,7 @@ Narrative documents, temporal plans, and time-bound reports live in `docs/record
 ### Experimental Boundary
 
 - `EXTENSION_PROFILE.md` — what is not frozen, what can break, what has no determinism guarantees
+- `AI_RFC_BACKLOG.md` — prioritized AI RFC execution order, ownership, dependencies, and compliance snapshot
 
 ### Governance Protocol
 
