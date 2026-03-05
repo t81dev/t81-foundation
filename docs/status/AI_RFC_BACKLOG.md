@@ -13,7 +13,7 @@ This backlog tracks active AI integration RFC work only. It is separate from str
 | Priority | RFC | Title | Current State | Next Deliverable | Owner | Target |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | P0 | RFC-00A0 | AI Experiment Sandbox and Repository Boundaries | **Implemented (Guard Active)** — CI boundary guard landed via `scripts/ci/check_ai_experiment_boundary.py` and workflow wiring | Monitor for violations and keep guard roots aligned with repository topology | @t81dev | 2026-03-08 |
-| P0 | RFC-00A1 | Deterministic Evidence and Reproducibility Protocol for AI Workloads | **Not started** (no canonical AI evidence pipeline in required CI) | Land canonical evidence schema + CLI export path + CI artifact upload for AI runs | @t81dev | 2026-03-10 |
+| P0 | RFC-00A1 | Deterministic Evidence and Reproducibility Protocol for AI Workloads | **Implemented (Baseline)** — canonical evidence bundle script + workflow artifact upload landed | Expand baseline to include trace-level VM evidence and promotion-grade fixture locking | @t81dev | 2026-03-10 |
 | P0 | RFC-00A3 | Model Artifact Identity and Provenance (GGUF/Safetensors Policy) | **Not started** | Implement model provenance manifest and hash verification gate wired to CanonFS policy path | @t81dev | 2026-03-12 |
 | P1 | RFC-0025 | Policy-Gated Tensor Loading via CanonFS | **Draft only** | Implement `TLOADHASH`/policy hash allowlist path with deterministic deny reasons and conformance tests | @t81dev | 2026-03-15 |
 | P1 | RFC-00A6 | Axion Policy Hooks for Inference and Tooling Events | **Not started** | Add AI event hook taxonomy and deterministic audit events for model/inference/tool/resource actions | @t81dev | 2026-03-18 |
@@ -44,7 +44,7 @@ This backlog tracks active AI integration RFC work only. It is separate from str
 | Slice ID | Scope | RFCs | Acceptance Signal |
 | :--- | :--- | :--- | :--- |
 | AI-S1 | Sandbox governance automation | RFC-00A0 | **Completed (2026-03-05)** — CI fails when AI code escapes sandbox boundary |
-| AI-S2 | Determinism evidence baseline | RFC-00A1 | AI run emits canonical evidence bundle and hash-stable manifest |
+| AI-S2 | Determinism evidence baseline | RFC-00A1 | **Completed (2026-03-05)** — AI run emits canonical evidence bundle and hash-stable manifest |
 | AI-S3 | Model provenance gate | RFC-00A3, RFC-0025 | Model load denied on missing/invalid provenance hash |
 | AI-S4 | Policy event instrumentation | RFC-00A6 | Axion logs deterministic AI event records with stable reason codes |
 

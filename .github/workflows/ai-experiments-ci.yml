@@ -7,12 +7,19 @@ on:
       - 'experiments/ai/**'
       - 'CMakeLists.txt'
       - 'scripts/test_ai_simple.sh'
+      - 'scripts/ci/check_ai_experiment_boundary.py'
+      - 'scripts/ci/collect_ai_evidence_bundle.py'
+      - '.github/workflows/ai-experiments-ci.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'experiments/ai/**'
       - 'CMakeLists.txt'
       - 'scripts/test_ai_simple.sh'
+      - 'scripts/ci/check_ai_experiment_boundary.py'
+      - 'scripts/ci/collect_ai_evidence_bundle.py'
+      - '.github/workflows/ai-experiments-ci.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -86,3 +93,27 @@ jobs:
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
         ./scripts/test_ai_simple.sh
+
+    - name: Collect AI deterministic evidence bundle (RFC-00A1 baseline)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-evidence
+        python3 scripts/ci/collect_ai_evidence_bundle.py \
+          --ai-bin build/experiments/ai/ux_tools/t81_ai \
+          --out-dir build/ai-evidence \
+          --runs 3
+
+    - name: Append AI evidence summary
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        cat build/ai-evidence/ai_evidence_summary.md >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Upload AI evidence artifacts
+      if: steps.build_ai.outputs.has_target == 'true'
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      with:
+        name: ai-evidence-bundle
+        path: |
+          build/ai-evidence/ai_evidence_bundle.json
+          build/ai-evidence/ai_evidence_bundle.sha256
+          build/ai-evidence/ai_evidence_summary.md
