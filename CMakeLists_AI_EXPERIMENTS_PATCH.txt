@@ -1,0 +1,11 @@
+# AI Experiments Integration Patch
+# Add these lines to main CMakeLists.txt after line 26 (after existing options)
+
+# AI Experiments Option
+option(T81_ENABLE_AI_EXPERIMENTS "Build AI experiments in /experiments/ai" OFF)
+
+# AI Experiments Integration (add after line 1709, before Python bindings)
+if(T81_ENABLE_AI_EXPERIMENTS)
+    message(STATUS "Building AI experiments")
+    add_subdirectory(experiments/ai)
+endif()
