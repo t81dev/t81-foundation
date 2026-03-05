@@ -19,8 +19,8 @@ This backlog tracks active AI integration RFC work only. It is separate from str
 | P1 | RFC-00A6 | Axion Policy Hooks for Inference and Tooling Events | **Implemented (Baseline)** — deterministic policy event contract gate with reason-code coverage artifact | Integrate baseline reason-code contract with runtime Axion event stream and signed audit ledger | @t81dev | 2026-03-18 |
 | P1 | RFC-00A5 | LLM Backend Adapter Interface (Engine-Agnostic) | **Implemented (Baseline)** — deterministic adapter-contract gate and artifact in AI CI | Bind contract to runtime adapter implementation and backend capability introspection from binary | @t81dev | 2026-03-20 |
 | P2 | RFC-00A7 | UX Integration for AI in T81 | **Partial** (experimental CLI exists) | Expand CLI to RFC command families and add deterministic workflow replay/reporting | @t81dev | 2026-03-22 |
-| P2 | RFC-00A2 | AI Benchmark Specification and Reporting Format | **Not started** | Add canonical benchmark spec doc + one CI benchmark workflow with reproducible report artifact | @t81dev | 2026-03-24 |
-| P2 | RFC-00A4 | Ternary Quantization Codec Contract | **Not started** | Implement codec header/metadata validator and deterministic encode/decode fixture corpus | @t81dev | 2026-03-27 |
+| P2 | RFC-00A2 | AI Benchmark Specification and Reporting Format | **Implemented (Baseline Contract)** — deterministic benchmark report contract gate + artifact active in AI CI | Replace baseline with runtime benchmark execution and trend/regression thresholds | @t81dev | 2026-03-24 |
+| P2 | RFC-00A4 | Ternary Quantization Codec Contract | **Implemented (Baseline Contract)** — deterministic codec manifest contract gate + artifact active in AI CI | Add encode/decode fixture corpus validation against runtime quantization pipeline | @t81dev | 2026-03-27 |
 | P3 | RFC-0026 | AI-Native Inference Opcodes | **Implemented (Baseline Contract)** — Phase-1 subset contract gate active in AI CI (`ATTN`, `QMATMUL`, `EMBED`) | Replace baseline contract with VM dispatch/conformance gates as opcode implementations land | @t81dev | 2026-03-30 |
 | P3 | RFC-00A8 | AI-Native VM Opcode Exploration | **Implemented (Alignment Baseline)** — RFC-00A8 exploration now constrained by RFC-0026 Phase-1 subset contract artifact | Publish `/experiments/ai/opcodes` implementation report tied to runtime evidence | @t81dev | 2026-04-02 |
 
@@ -52,8 +52,8 @@ This backlog tracks active AI integration RFC work only. It is separate from str
 
 ## Compliance Snapshot (2026-03-05)
 
-- RFCs with partial/active implementation evidence: `RFC-00A0`, `RFC-00A7`
-- RFCs still draft-only or exploratory: `RFC-0025`, `RFC-0026`, `RFC-00A1`, `RFC-00A2`, `RFC-00A3`, `RFC-00A4`, `RFC-00A5`, `RFC-00A6`, `RFC-00A8`
+- Baseline CI-gated RFCs: `RFC-00A0`, `RFC-00A1`, `RFC-00A2`, `RFC-00A3`, `RFC-00A4`, `RFC-00A5`, `RFC-00A6`, `RFC-0025`, `RFC-0026`, `RFC-00A8`
+- Partial RFCs: `RFC-00A7` (CLI exists; full workflow replay/reporting expansion still open)
 - Current gating principle: no AI feature promotion claims without deterministic evidence + provenance + policy enforcement
 
 ---

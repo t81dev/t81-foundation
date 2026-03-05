@@ -13,6 +13,8 @@ on:
       - 'scripts/ci/check_ai_policy_event_contract.py'
       - 'scripts/ci/check_ai_backend_adapter_contract.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
+      - 'scripts/ci/check_ai_benchmark_spec_contract.py'
+      - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - '.github/workflows/ai-experiments-ci.yml'
   pull_request:
     branches: [ main ]
@@ -26,6 +28,8 @@ on:
       - 'scripts/ci/check_ai_policy_event_contract.py'
       - 'scripts/ci/check_ai_backend_adapter_contract.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
+      - 'scripts/ci/check_ai_benchmark_spec_contract.py'
+      - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - '.github/workflows/ai-experiments-ci.yml'
   workflow_dispatch:
 
@@ -160,6 +164,20 @@ jobs:
         python3 scripts/ci/check_ai_opcode_subset_contract.py \
           --out-dir build/ai-opcodes
 
+    - name: Validate AI benchmark spec contract (RFC-00A2 baseline)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-benchmark
+        python3 scripts/ci/check_ai_benchmark_spec_contract.py \
+          --out-dir build/ai-benchmark
+
+    - name: Validate AI quantization codec contract (RFC-00A4 baseline)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-quantization
+        python3 scripts/ci/check_ai_quantization_codec_contract.py \
+          --out-dir build/ai-quantization
+
     - name: Append AI evidence summary
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -167,6 +185,8 @@ jobs:
         cat build/ai-policy/ai_policy_event_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-backend/ai_backend_adapter_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-opcodes/ai_opcode_subset_contract.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-benchmark/ai_benchmark_spec_contract.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-quantization/ai_quantization_codec_contract.md >> "$GITHUB_STEP_SUMMARY"
         {
           echo "# RFC-0025 TLOADHASH Conformance"
           echo ""
@@ -191,4 +211,8 @@ jobs:
           build/ai-backend/ai_backend_adapter_contract.md
           build/ai-opcodes/ai_opcode_subset_contract.json
           build/ai-opcodes/ai_opcode_subset_contract.md
+          build/ai-benchmark/ai_benchmark_spec_contract.json
+          build/ai-benchmark/ai_benchmark_spec_contract.md
+          build/ai-quantization/ai_quantization_codec_contract.json
+          build/ai-quantization/ai_quantization_codec_contract.md
           build/ai-rfc0025/tloadhash-ctest.log
