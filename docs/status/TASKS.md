@@ -142,11 +142,12 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 ### CLI Workflow Expansion Backlog (Execution Slices)
 
-- [ ] **CLI-01: Command Contract Coverage**
-  - Add deterministic CLI integration tests for: `compile`, `run`, `disasm`, `debug`
-  - Lock expected exit codes, stderr diagnostics, and help text surface
-  - Target: 2026-03-08
-  - Status: **NEXT**
+- [x] **CLI-01: Command Contract Coverage** - **✅ COMPLETED**
+  - ✅ Deterministic CLI integration coverage added for `compile`, `run`, `disasm`, `debug`
+  - ✅ Exit codes and stderr diagnostics locked for valid/invalid extension paths
+  - ✅ Verified via targeted runner: `t81_cli_contract_test_runner`
+  - Completed: 2026-03-05
+  - Status: **✅ RESOLVED**
 
 - [ ] **CLI-02: Trace Replay UX Hardening**
   - Improve `trace replay` mismatch diagnostics with actionable diff context

@@ -440,6 +440,45 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(run_result.stdout_text, "hello-cli-contract"));
     T81_TEST_CHECK(!contains(run_result.stderr_text, "hello-cli-contract"));
 
+    const auto legacy_run_result = run_cli(t81_bin, {"run", program_path.string()});
+    T81_TEST_CHECK(legacy_run_result.exit_code == 0);
+    T81_TEST_CHECK(contains(legacy_run_result.stdout_text, "hello-cli-contract"));
+    T81_TEST_CHECK(contains(legacy_run_result.stderr_text, "legacy alias"));
+    T81_TEST_CHECK(contains(legacy_run_result.stderr_text, "t81 code run"));
+
+    const auto disasm_result = run_cli(t81_bin, {"disasm", program_path.string()});
+    T81_TEST_CHECK(disasm_result.exit_code == 0);
+    T81_TEST_CHECK(contains(disasm_result.stdout_text, "; t81 disasm"));
+    T81_TEST_CHECK(contains(disasm_result.stdout_text, "; instructions="));
+    T81_TEST_CHECK(contains(disasm_result.stdout_text, "0000:"));
+
+    const auto debug_result = run_cli(t81_bin, {"debug", program_path.string()});
+    T81_TEST_CHECK(debug_result.exit_code == 0);
+    T81_TEST_CHECK(contains(debug_result.stdout_text, "HanoiVM Debugger active."));
+    T81_TEST_CHECK(contains(debug_result.stdout_text, "dbg>"));
+
+    const fs::path not_tisc_path = temp_dir / "not_tisc.txt";
+    {
+      std::ofstream out(not_tisc_path);
+      out << "not a tisc program\n";
+    }
+
+    const auto compile_bad_ext = run_cli(t81_bin, {"compile", not_tisc_path.string()});
+    T81_TEST_CHECK(compile_bad_ext.exit_code == 1);
+    T81_TEST_CHECK(contains(compile_bad_ext.stderr_text, "compile expects a .t81 or .t81w source file"));
+
+    const auto run_bad_ext = run_cli(t81_bin, {"run", not_tisc_path.string()});
+    T81_TEST_CHECK(run_bad_ext.exit_code == 1);
+    T81_TEST_CHECK(contains(run_bad_ext.stderr_text, "run expects .t81 or .tisc file"));
+
+    const auto disasm_bad_ext = run_cli(t81_bin, {"disasm", source_path.string()});
+    T81_TEST_CHECK(disasm_bad_ext.exit_code == 1);
+    T81_TEST_CHECK(contains(disasm_bad_ext.stderr_text, "disasm expects a .tisc file"));
+
+    const auto debug_bad_ext = run_cli(t81_bin, {"debug", not_tisc_path.string()});
+    T81_TEST_CHECK(debug_bad_ext.exit_code == 1);
+    T81_TEST_CHECK(contains(debug_bad_ext.stderr_text, "debug expects .t81 or .tisc file"));
+
     fs::remove_all(temp_dir, ignore_ec);
   }
 
