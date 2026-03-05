@@ -191,6 +191,46 @@ def verify_manifest_signature(
     return False, ""
 
 
+def build_manifest_escalation(errors: list[str]) -> dict[str, Any]:
+    rules: list[tuple[str, str, str, str]] = [
+        (
+            "keyring",
+            "AI_EVIDENCE_ESCALATE_KEYRING_INVALID",
+            "platform-oncall",
+            "fail_closed_and_review_manifest_keyring",
+        ),
+        (
+            "signature verification failed",
+            "AI_EVIDENCE_ESCALATE_SIGNATURE_INVALID",
+            "security-oncall",
+            "block_promotion_and_rotate_manifest_keys",
+        ),
+        (
+            "status=fail",
+            "AI_EVIDENCE_ESCALATE_LANE_FAILURE",
+            "ai-ci-oncall",
+            "block_promotion_and_remediate_failed_lane",
+        ),
+    ]
+    actions: list[dict[str, str]] = []
+    seen: set[str] = set()
+    joined = "\n".join(errors).lower()
+    for needle, reason_code, owner, action in rules:
+        if needle in joined and reason_code not in seen:
+            actions.append(
+                {
+                    "reason_code": reason_code,
+                    "owner": owner,
+                    "action": action,
+                }
+            )
+            seen.add(reason_code)
+    return {
+        "status": "triggered" if actions else "none",
+        "actions": actions,
+    }
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Build RFC-00A1 signed multi-lane evidence manifest.")
     p.add_argument("--out-dir", required=True)
@@ -261,10 +301,12 @@ def main() -> int:
             errors.append("manifest signature verification failed against provided keyring")
 
     status = "pass" if not errors else "fail"
+    escalation_policy = build_manifest_escalation(errors)
     manifest = {
         **manifest_core,
         "status": status,
         "errors": errors,
+        "escalation_policy": escalation_policy,
         "attestation_sha256": attestation_sha256,
         "signature": {
             "algorithm": "hmac-sha256",
@@ -293,6 +335,7 @@ def main() -> int:
                 f"- attestation_sha256: `{attestation_sha256}`",
                 f"- signature_key_id: `{signing_key_id or 'n/a'}`",
                 f"- signature_verified: `{str(signature_verified).lower()}`",
+                f"- escalation_status: `{escalation_policy['status']}`",
                 f"- lane_count: `{len(lanes)}`",
                 "",
             ]

@@ -46,6 +46,7 @@
 - Enforces signed multi-event Axion policy-ledger snapshot and deterministic replay verification (`build/ai-policy/ai_axion_policy_ledger_snapshot.json`, `build/ai-policy/ai_axion_policy_ledger_replay_verification.json`)
 - Enforces signed backend-selection manifest bound to policy/runtime evidence snapshots (`build/ai-backend/runtime_backend_selection_manifest.json`)
 - Enforces direct backend execution attestation replay (governed `t81 llama-run`) under deterministic evidence constraints (`build/ai-ux/ai_direct_backend_execution_attestation.json`)
+- Publishes machine-readable escalation mappings for signing/keyring/runtime-binding failures in policy/backend/evidence artifacts
 - Enforces runtime benchmark execution replay and regression/trend thresholds (`build/ai-benchmark/ai_benchmark_spec_contract.json`)
 - Enforces runtime quantization inspect replay + encode/decode fixture corpus roundtrip validation (`build/ai-quantization/ai_quantization_codec_contract.json`)
 - Emits AI signing key expiry alert report for keyring rotation readiness (`build/ai-keyring/ai_keyring_expiry_report.json`)

@@ -133,6 +133,46 @@ def verify_payload_signature(payload: dict[str, Any], signature_hex: str, keyrin
     return False, ""
 
 
+def build_ledger_escalation(errors: list[str]) -> dict[str, Any]:
+    rules: list[tuple[str, str, str, str]] = [
+        (
+            "keyring",
+            "AI_POLICY_ESCALATE_KEYRING_INVALID",
+            "platform-oncall",
+            "fail_closed_and_review_policy_ledger_keyring",
+        ),
+        (
+            "signature verification failed",
+            "AI_POLICY_ESCALATE_LEDGER_SIGNATURE_INVALID",
+            "security-oncall",
+            "block_promotion_and_rotate_policy_ledger_keys",
+        ),
+        (
+            "runtime trace",
+            "AI_POLICY_ESCALATE_RUNTIME_TRACE_BINDING_INVALID",
+            "policy-oncall",
+            "block_promotion_and_repair_runtime_trace_binding",
+        ),
+    ]
+    actions: list[dict[str, str]] = []
+    seen: set[str] = set()
+    joined = "\n".join(errors).lower()
+    for needle, reason_code, owner, action in rules:
+        if needle in joined and reason_code not in seen:
+            actions.append(
+                {
+                    "reason_code": reason_code,
+                    "owner": owner,
+                    "action": action,
+                }
+            )
+            seen.add(reason_code)
+    return {
+        "status": "triggered" if actions else "none",
+        "actions": actions,
+    }
+
+
 def evaluate_event(policy: dict[str, Any], event: dict[str, Any]) -> dict[str, str]:
     event_type = event["event_type"]
 
@@ -532,6 +572,8 @@ def main() -> int:
     reason_code_coverage_ok = reason_code_coverage_ok and runtime_binding_valid and ledger_snapshot_valid
     status = "pass" if deterministic and reason_code_coverage_ok and ledger_verification.get("status") == "pass" else "fail"
 
+    combined_errors = errors + ledger_snapshot.get("errors", []) + ledger_verification.get("errors", [])
+    escalation_policy = build_ledger_escalation(combined_errors)
     payload = {
         "schema": SCHEMA_VERSION,
         "status": status,
@@ -543,7 +585,8 @@ def main() -> int:
         "runtime_binding": runtime_binding,
         "axion_ledger_snapshot_status": ledger_snapshot.get("status", "fail"),
         "axion_ledger_replay_status": ledger_verification.get("status", "fail"),
-        "errors": errors + ledger_snapshot.get("errors", []) + ledger_verification.get("errors", []),
+        "errors": combined_errors,
+        "escalation_policy": escalation_policy,
     }
 
     json_path = out_dir / "ai_policy_event_contract.json"
@@ -566,6 +609,7 @@ def main() -> int:
                 f"- runtime_binding_valid: `{runtime_binding_valid}`",
                 f"- axion_ledger_snapshot_status: `{ledger_snapshot.get('status', 'fail')}`",
                 f"- axion_ledger_replay_status: `{ledger_verification.get('status', 'fail')}`",
+                f"- escalation_status: `{escalation_policy['status']}`",
                 f"- trace_sha256: `{hash_a}`",
                 "",
             ]

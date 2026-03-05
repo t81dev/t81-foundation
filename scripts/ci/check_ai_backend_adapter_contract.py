@@ -140,6 +140,46 @@ def verify_payload_signature(payload: dict[str, Any], signature_hex: str, keyrin
     return False, ""
 
 
+def build_signing_escalation(errors: list[str]) -> dict[str, Any]:
+    rules: list[tuple[str, str, str, str]] = [
+        (
+            "keyring",
+            "AI_BACKEND_ESCALATE_KEYRING_INVALID",
+            "platform-oncall",
+            "fail_closed_and_review_keyring",
+        ),
+        (
+            "signature verification failed",
+            "AI_BACKEND_ESCALATE_SELECTION_SIGNATURE_INVALID",
+            "security-oncall",
+            "block_promotion_and_rotate_selection_keys",
+        ),
+        (
+            "policy ledger signature is not verified",
+            "AI_BACKEND_ESCALATE_POLICY_LEDGER_UNVERIFIED",
+            "policy-oncall",
+            "block_promotion_and_verify_policy_ledger_chain",
+        ),
+    ]
+    actions: list[dict[str, str]] = []
+    seen: set[str] = set()
+    joined = "\n".join(errors).lower()
+    for needle, reason_code, owner, action in rules:
+        if needle in joined and reason_code not in seen:
+            actions.append(
+                {
+                    "reason_code": reason_code,
+                    "owner": owner,
+                    "action": action,
+                }
+            )
+            seen.add(reason_code)
+    return {
+        "status": "triggered" if actions else "none",
+        "actions": actions,
+    }
+
+
 def build_registry() -> dict[str, Any]:
     return {
         "schema": SCHEMA_VERSION,
@@ -595,10 +635,12 @@ def build_backend_selection_manifest(
         errors.append("backend selection manifest: no active signing key available")
 
     status = "pass" if not errors else "fail"
+    escalation_policy = build_signing_escalation(errors)
     manifest_payload = {
         **manifest_core,
         "status": status,
         "errors": errors,
+        "escalation_policy": escalation_policy,
         "signature": {
             "algorithm": "hmac-sha256",
             "key_id": key_id,
@@ -623,6 +665,7 @@ def build_backend_selection_manifest(
                 f"- status: `{status}`",
                 f"- key_id: `{key_id or 'n/a'}`",
                 f"- signature_verified: `{str(signature_verified).lower()}`",
+                f"- escalation_status: `{escalation_policy['status']}`",
                 f"- replay_sha256: `{manifest_core['runtime_binding_snapshot']['backend_selection_replay_sha256']}`",
                 "",
             ]
