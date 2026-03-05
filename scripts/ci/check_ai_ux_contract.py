@@ -347,20 +347,25 @@ def validate_runtime(
     report_path = out_dir / "ai_workflow_report.json"
     trace_path = out_dir / "ai_observability_trace.json"
 
-    run_result = run_cmd([str(ai_bin), "workflow", "run", "--out", str(run_path)])
+    run_result = run_cmd([str(ai_bin), "workflow", "run", "smoke", "--seed", "0", "--out", str(run_path)])
     runtime["workflow_run"] = {"rc": run_result["rc"], "stdout_sha256": sha256_text(run_result["stdout"])}
     if run_result["rc"] != 0:
         errs.append("workflow run failed")
 
-    replay_result = run_cmd([str(ai_bin), "workflow", "replay", "--out", str(replay_path)])
+    replay_result = run_cmd([str(ai_bin), "workflow", "replay", str(run_path)])
     runtime["workflow_replay"] = {"rc": replay_result["rc"], "stdout_sha256": sha256_text(replay_result["stdout"])}
     if replay_result["rc"] != 0:
         errs.append("workflow replay failed")
+    elif run_path.exists():
+        replay_obj = parse_json(run_path)
+        replay_path.write_text(json.dumps(replay_obj, indent=2, sort_keys=True), encoding="utf-8")
 
-    report_result = run_cmd([str(ai_bin), "workflow", "report", "--out", str(report_path)])
+    report_result = run_cmd([str(ai_bin), "workflow", "report", str(run_path)])
     runtime["workflow_report"] = {"rc": report_result["rc"], "stdout_sha256": sha256_text(report_result["stdout"])}
     if report_result["rc"] != 0:
         errs.append("workflow report failed")
+    elif report_result["stdout"]:
+        report_path.write_text(report_result["stdout"], encoding="utf-8")
 
     trace_result = run_cmd([str(ai_bin), "observability", "trace", str(trace_path)])
     runtime["observability_trace"] = {"rc": trace_result["rc"], "stdout_sha256": sha256_text(trace_result["stdout"])}
