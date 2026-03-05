@@ -128,11 +128,11 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - Completed: 2026-03-05
   - Status: **✅ RESOLVED**
 
-- [ ] **Cognitive Tier Implementation**
+- [x] **Cognitive Tier Implementation** - **✅ COMPLETED**
   - Symbolic (T243): Graph rewriting, confluence checking
   - Reflective (T729): Justification chains, trace capture
-  - Target: Begin Q2 2026
-  - Status: **IN PROGRESS**
+  - Completed: 2026-03-05
+  - Status: **✅ RESOLVED**
 
 ### Cognitive Tier Backlog (Execution Slices)
 
@@ -144,11 +144,13 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - Completed: 2026-03-05
   - Status: **✅ RESOLVED**
 
-- [ ] **CTI-02: T729 Reflective Evidence Chains**
-  - Capture structured justification chains with deterministic serialization constraints
-  - Add replay/verification tests over reflective frame evidence
-  - Target: 2026-03-12
-  - Status: **NEXT**
+- [x] **CTI-02: T729 Reflective Evidence Chains** - **✅ COMPLETED**
+  - ✅ Structured evidence entries now captured for capture/justify/trace/seal actions
+  - ✅ Deterministic canonical evidence serialization added (`t81.reflective-evidence.v1`)
+  - ✅ Replay verification API added with mismatch reason reporting
+  - ✅ Regression coverage added for evidence serialization/replay and VM tier2 opcode flow
+  - Completed: 2026-03-05
+  - Status: **✅ RESOLVED**
 
 - [x] **CLI Workflow Expansion** - **✅ COMPLETED**
   - Enhance `compile`, `run`, `disasm`, `debug`, `trace replay`, `weights`

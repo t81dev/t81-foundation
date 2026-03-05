@@ -63,6 +63,11 @@ int main() {
 
     T81_TEST_CHECK(frame.justification.steps[0] == "Captured state: MyDescription");
     T81_TEST_CHECK(frame.justification.steps[1] == "Because it is true");
+    T81_TEST_CHECK(frame.justification.entries.size() == 2);
+    T81_TEST_CHECK(frame.justification.entries[0].kind == "capture");
+    T81_TEST_CHECK(frame.justification.entries[1].kind == "justify");
+    T81_TEST_CHECK(frame.justification.entries[0].pc == 1);
+    T81_TEST_CHECK(frame.justification.entries[1].pc == 3);
 
     bool saw_tier2_capture_event = false;
     bool saw_tier2_justify_event = false;

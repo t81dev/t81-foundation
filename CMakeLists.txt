@@ -950,6 +950,10 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
 
   add_executable(vm_reflection_tier2_test tests/cpp/vm_reflection_tier2_test.cpp)
   target_link_libraries(vm_reflection_tier2_test PRIVATE t81_vm t81_isa t81_core)
+  add_test(NAME vm_reflection_tier2_test COMMAND vm_reflection_tier2_test)
+  add_executable(reflective_evidence_replay_test tests/cpp/reflective_evidence_replay_test.cpp)
+  target_link_libraries(reflective_evidence_replay_test PRIVATE t81_core)
+  add_test(NAME reflective_evidence_replay_test COMMAND reflective_evidence_replay_test)
 
   add_executable(t81_jit_test tests/cpp/jit_test.cpp)
   target_link_libraries(t81_jit_test PRIVATE t81_vm t81_core)

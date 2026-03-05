@@ -4143,7 +4143,8 @@ public:
             s.has_value()) {
           text = *s;
         }
-        frame->justification.add_step(text);
+        std::vector<std::int64_t> regs_snapshot(ctx.registers.begin(), ctx.registers.end());
+        frame->add_justification_step(text, current_pc, regs_snapshot);
 
         t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
                                     frame->axion_trace_event("justify")};
