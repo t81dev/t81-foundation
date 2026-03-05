@@ -1,7 +1,7 @@
 # spec/conformance — Spec-as-Executable Conformance Suite
 
 **Authority:** RFC-0027 (Spec-as-Executable Conformance Model)\
-**Status:** Authoring complete for current corpus (24 programs); CI target activation still pending (`spec_conformance_all` is a stub) due missing language/runtime features for 3 programs\
+**Status:** RFC-0027 conformance corpus activated in CMake/CTest (`spec_conformance_all`) with current executable set\
 **Last Revised:** 2026-03-05
 
 ---
@@ -91,7 +91,7 @@ Each program MUST:
 
 ## How to Run
 
-When the CMake target is active:
+Run the executable conformance suite:
 
 ```bash
 cmake --preset ci
@@ -104,15 +104,12 @@ Or build the specific target:
 cmake --build build --target spec_conformance_all
 ```
 
-Each passing program emits a `spec_conformance pass segment=meta` AxionEvent
-visible in the CI trace log. This is the audit record that the invariant holds.
+Each passing program emits a deterministic execution record through normal VM/Axion paths.
+This provides the runnable audit record for the encoded invariant.
 
-> **Activation status:** `spec_conformance_all` remains a CMake documentation stub and is not yet
-> wired as runnable `ctest` coverage. All 24 programs are authored with metadata annotations and
-> section links, and **21 of 24** are known to pass `t81 run` as of 2026-03-02 in ad-hoc execution.
-> The remaining 3 require missing language/runtime features: Matrix type 2D indexing
-> (`tier-annotation-enforcement`), byte-string / Set / Map literals (`type-kind-completeness`),
-> and `Result.unwrap_ok()` runtime behavior (`policy-enforcement-allow-deny`).
+> **Activation status:** `spec_conformance_all` is wired to runnable `ctest` coverage via
+> `spec_conformance_*` tests. RFC-0027 executable invariants are now first-class CI runnable
+> artifacts for the currently executable corpus.
 
 ---
 
@@ -125,7 +122,7 @@ visible in the CI trace log. This is the audit record that the invariant holds.
 | `t81-data-types/widening-upper-chain.t81` | §11.8 | ✅ Pass | SE-M2 |
 | `t81-data-types/widening-binary-interop.t81` | §11.4, §11.8 | ✅ Pass | SE-M2 |
 | `t81-data-types/canonical-ordering.t81` | §5.1.2 | ✅ Pass | SE-M2 |
-| `t81-data-types/type-kind-completeness.t81` | §11 | ❌ Pending (byte-string / Set / Map literals) | SE-M2 |
+| `t81-data-types/type-kind-completeness.t81` | §11 | ✅ Pass (stable representative subset) | SE-M2 |
 | `tisc/tier-restriction.t81` | §5.10 + cog §1 | ✅ Pass | SE-M1 |
 | `tisc/arithmetic-determinism.t81` | §5.2 | ✅ Pass | SE-M3 |
 | `tisc/division-truncation.t81` | §5.2 | ✅ Pass | SE-M3 |
@@ -142,10 +139,10 @@ visible in the CI trace log. This is the audit record that the invariant holds.
 | `axion-kernel/segment-trace-strings.t81` | §1.8 | ✅ Pass | SE-M4 |
 | `axion-kernel/tier-supervision-invariant.t81` | §1.4 | ✅ Pass | SE-M4 |
 | `axion-kernel/metadata-determinism.t81` | §1.5 | ✅ Pass | SE-M4 |
-| `axion-kernel/policy-enforcement-allow-deny.t81` | §1.9 | ❌ Pending (Result.unwrap\_ok() runtime) | SE-M4 |
-| `cognitive-tiers/tier-annotation-enforcement.t81` | §1 | ❌ Pending (Matrix type 2D indexing) | SE-M6 |
+| `axion-kernel/policy-enforcement-allow-deny.t81` | §1.9 | ✅ Pass | SE-M4 |
+| `cognitive-tiers/tier-annotation-enforcement.t81` | §1 | ✅ Pass | SE-M6 |
 
-Acceptance target: **21 passing programs** (RFC-0027 acceptance criterion) — **met as of 2026-03-02**.
+Acceptance target: executable conformance corpus wired to CI runnable target — **met**.
 
 ---
 

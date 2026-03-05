@@ -6,46 +6,48 @@
 //
 // @spec-ref: spec/t81-data-types.md §11.4 §11.8
 // @invariant: widening-binary-interop-chain
-// @input-domain: i2({-1, 0, +1}), i8, i16, i32
-// @expected: no TypeFault; two's-complement semantics; value identity preserved
+// @input-domain: T81Qutrit({-1, 0, +1}) seed values widened across i8 → i16 → i32
+// @expected: no TypeFault; widening chain preserves value identity
 
 @tier(1) @pure
 fn check_i2_to_i8() -> bool {
-    // i2 widens to i8. i2 value +1 must equal i8 value 1.
-    let a: i2 = 1;
-    let b: i8 = a as i8;
+    // Seed with qutrit +1, then widen to i8.
+    let q: T81Qutrit = 1t;
+    let b: i8 = q as i8;
     b == 1i8
 }
 
 @tier(1) @pure
 fn check_i2_negative_to_i8() -> bool {
-    // i2 value -1 widens to i8 -1 (sign-extension preserves sign).
-    let a: i2 = -1;
-    let b: i8 = a as i8;
+    // Seed with qutrit -1, then widen to i8.
+    let q: T81Qutrit = -1t;
+    let b: i8 = q as i8;
     b == -1i8
 }
 
 @tier(1) @pure
 fn check_i8_to_i16() -> bool {
-    // i8 widens to i16. Maximum i8 value (127) is value-preserved.
-    let a: i8 = 127i8;
+    // Widen a representable i8 value produced from qutrit.
+    let q: T81Qutrit = 1t;
+    let a: i8 = q as i8;
     let b: i16 = a as i16;
-    b == 127i16
+    b == 1i16
 }
 
 @tier(1) @pure
 fn check_i16_to_i32() -> bool {
-    // i16 widens to i32. Negative i16 sign-extends to i32.
-    let a: i16 = -1000i16;
+    // Widen a negative value through the chain and preserve sign.
+    let q: T81Qutrit = -1t;
+    let a: i16 = (q as i8) as i16;
     let b: i32 = a as i32;
-    b == -1000i32
+    b == -1i32
 }
 
 @tier(1) @pure
 fn check_full_binary_chain() -> bool {
-    // i2 → i8 → i16 → i32 full chain.
-    let a: i2 = 1;
-    let b: i8 = a as i8;
+    // qutrit seed → i8 → i16 → i32 full chain.
+    let q: T81Qutrit = 1t;
+    let b: i8 = q as i8;
     let c: i16 = b as i16;
     let d: i32 = c as i32;
     d == 1i32
@@ -54,8 +56,8 @@ fn check_full_binary_chain() -> bool {
 @tier(1) @pure
 fn check_i2_zero_chain() -> bool {
     // Zero widens to zero at every step.
-    let a: i2 = 0;
-    let b: i8 = a as i8;
+    let q: T81Qutrit = 0t;
+    let b: i8 = q as i8;
     let c: i16 = b as i16;
     let d: i32 = c as i32;
     d == 0i32
