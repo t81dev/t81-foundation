@@ -128,7 +128,7 @@
 ### Task 8: Implement AI Policy Hooks
 **Title**: Build Axion policy hooks for AI inference and tooling events
 **Description**: Extend Axion policy system with AI-specific event handling and audit logging
-**Affected Directories**: `/experiments/ai/policy`, `/src/axion/ai_hooks`
+**Affected Directories**: `/experiments/ai/policy`, `/kernel/axion/ai_hooks`
 **Dependencies**: RFC-00A0, RFC-00A3, RFC-00A5
 **Acceptance Criteria**:
 - AI policy hooks handle all specified event types (model load, inference, tool use)
@@ -175,7 +175,7 @@
 ### Task 11: Explore AI-Native VM Opcodes
 **Title**: Research and implement AI-native VM opcodes (QMATMUL, ATTN, EMBED)
 **Description**: Explore VM-level optimizations for AI operations with deterministic guarantees
-**Affected Directories**: `/experiments/ai/vm_opcodes`, `/src/vm`, `/include/t81/vm`
+**Affected Directories**: `/experiments/ai/vm_opcodes`, `/core/vm`, `/include/t81/vm`
 **Dependencies**: RFC-00A0, RFC-00A1, RFC-00A4, RFC-00A5
 **Acceptance Criteria**:
 - Basic AI opcodes implemented in VM (QMATMUL, ATTN, EMBED)
