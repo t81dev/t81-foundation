@@ -67,8 +67,19 @@ The AI signing keyring JSON files support two key material modes:
 - `material_b64`: inline base64 key material (current repository baseline).
 - `material_env`: environment variable name that supplies base64 key material at runtime.
 
-When both fields are present for an entry, `material_env` takes precedence. This allows CI
-to inject key material from repository/org secrets without storing raw signing bytes in git.
+When both fields are present for an entry, `material_env` takes precedence when set; if it is
+unset/empty, gates fall back to `material_b64` for compatibility.
+
+Current AI CI secret variable names:
+
+- `T81_AI_EVIDENCE_MANIFEST_KEY_2026Q1`
+- `T81_AI_EVIDENCE_MANIFEST_KEY_2026Q2`
+- `T81_AI_MODEL_PROVENANCE_KEY_2026Q1`
+- `T81_AI_MODEL_PROVENANCE_KEY_2026Q2`
+- `T81_AI_POLICY_LEDGER_KEY_2026Q1`
+- `T81_AI_POLICY_LEDGER_KEY_2026Q2`
+- `T81_AI_BACKEND_SELECTION_KEY_2026Q1`
+- `T81_AI_BACKEND_SELECTION_KEY_2026Q2`
 
 ## Governed llama runtime evidence lane (RFC-0025 required)
 

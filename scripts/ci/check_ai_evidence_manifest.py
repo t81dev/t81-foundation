@@ -73,10 +73,8 @@ def _resolve_key_material(entry: dict[str, Any], key_id: str, errors: list[str])
     env_name = str(entry.get("material_env", "")).strip()
     if env_name:
         env_value = os.environ.get(env_name, "")
-        if not env_value:
-            errors.append(f"key {key_id}: material_env '{env_name}' is unset/empty")
-            return b""
-        return _parse_key_material_b64(env_value, key_id, f"material_env '{env_name}'", errors)
+        if env_value:
+            return _parse_key_material_b64(env_value, key_id, f"material_env '{env_name}'", errors)
     return _parse_key_material_b64(str(entry.get("material_b64", "")), key_id, "material_b64", errors)
 
 

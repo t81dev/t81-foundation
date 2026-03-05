@@ -40,16 +40,13 @@ def resolve_key_material(key: dict[str, Any], errors: list[str] | None = None) -
     env_name = str(key.get("material_env", "")).strip()
     if env_name:
         env_value = os.environ.get(env_name, "")
-        if not env_value:
-            if errors is not None:
-                errors.append(f"key {key_id}: material_env '{env_name}' is unset/empty")
-            return b""
-        try:
-            return parse_key_material_b64(env_value)
-        except Exception:
-            if errors is not None:
-                errors.append(f"key {key_id}: material_env '{env_name}' is not valid base64")
-            return b""
+        if env_value:
+            try:
+                return parse_key_material_b64(env_value)
+            except Exception:
+                if errors is not None:
+                    errors.append(f"key {key_id}: material_env '{env_name}' is not valid base64")
+                return b""
     try:
         return parse_key_material_b64(str(key.get("material_b64", "")))
     except Exception:
