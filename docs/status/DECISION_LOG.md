@@ -1,7 +1,7 @@
 # Decision Log
 
 Status: Active
-Last Updated: 2026-02-28
+Last Updated: 2026-03-05
 Owner: Project Management / Governance
 Version: 1.0.0
 
@@ -239,6 +239,36 @@ unsatisfied or degrade security posture.
 **References:**
 - `.github/workflows/codeql.yml`
 - `docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md`
+
+---
+
+### DEC-009 — Restore `expected.hpp` Fallback and Harden Format Diff Logic
+
+**Date (UTC):** 2026-03-05
+**Approver:** @t81dev
+**Category:** CI / Implementation
+
+**Decision:** Restore `include/t81/support/expected.hpp` fallback implementation
+from a known-good revision and update `.github/workflows/format.yml` checkout
+configuration to `fetch-depth: 2` so push diff logic can reliably evaluate
+`HEAD^..HEAD`.
+
+**Alternatives Considered:**
+- Reconstruct `expected.hpp` manually from scratch.
+- Disable or relax failing CI lanes temporarily.
+- Run clang-format across entire repository as a one-off mitigation.
+
+**Rationale:** Multiple CI lanes were failing due to a malformed `expected`
+fallback implementation, while `Format Check` intermittently scanned the full
+tree because shallow checkout lacked `HEAD^` on push. Restoring a previously
+validated fallback and fixing checkout depth addressed both failure classes
+without reducing gate strictness.
+
+**References:**
+- `include/t81/support/expected.hpp` (commit `57f1a96c`)
+- `.github/workflows/format.yml` (commit `b20934be`)
+- `https://github.com/t81dev/t81-foundation/actions/runs/22722029938`
+- `https://github.com/t81dev/t81-foundation/actions/runs/22722029925`
 
 ---
 

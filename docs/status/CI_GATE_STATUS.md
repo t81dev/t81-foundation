@@ -1,9 +1,9 @@
 # CI Gate Status
 
 Status: Active
-Last Updated: 2026-03-04
+Last Updated: 2026-03-05
 Owner: @t81dev
-Reference Candidate: `b6fb4651` (origin/main, 2026-03-04)
+Reference Candidate: `57f1a96c` (origin/main, 2026-03-05)
 
 ## Purpose
 
@@ -22,8 +22,8 @@ GO decision can be stamped.
 
 | Context | Workflow | Required | Last Known Status |
 | :--- | :--- | :--- | :--- |
-| `quality gate / required` | `ci.yml` | **Yes** | completed / success ✅ (`b6fb4651`) |
-| `Analyze (cpp)` | `codeql.yml` | **Yes** | completed / success ✅ (`b6fb4651`) |
+| `quality gate / required` | `ci.yml` | **Yes** | completed / success ✅ (`57f1a96c`) |
+| `Analyze (cpp)` | `codeql.yml` | **Yes** | completed / success ✅ (`57f1a96c`) |
 
 Verification command:
 
@@ -81,6 +81,17 @@ tracked here and must be addressed unless explicitly deferred.
 | **Decision** | DEC-005 in `docs/status/DECISION_LOG.md` |
 | **Resolution Path** | Exclude `third_party/` from Jekyll rendering scope via `_config.yml` or Pages configuration |
 | **Blocking Release** | No |
+
+### 2026-03-05 CI Incident — Resolved
+
+| Field | Value |
+| :--- | :--- |
+| **Affected SHA(s)** | `401a049e`, `b20934be` pre-fix window |
+| **Observed Symptoms** | `T81 Foundation CI` matrix failures across clang/sanitizers/fuzz/clang-tidy; `Format Check` fallback scanning full tree |
+| **Primary Root Cause** | Corrupted `include/t81/support/expected.hpp` fallback implementation (malformed class body) |
+| **Secondary Root Cause** | `format.yml` checkout depth too shallow for `HEAD^..HEAD` diff on push |
+| **Fixes Applied** | `57f1a96c` (restore `expected.hpp` fallback), `b20934be` (`format.yml` `fetch-depth: 2`) |
+| **Validation** | Local clean build + `ctest` 285/285 pass; `T81 Foundation CI` success on run `22722029938`; `CodeQL` success on run `22722029925` |
 
 ## Benchmark Guardrail Signal
 

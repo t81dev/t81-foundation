@@ -1,7 +1,7 @@
 # System Status
 
 Status: Active
-Last Updated: 2026-02-28
+Last Updated: 2026-03-05
 Owner: Status / Governance
 
 ## Purpose
@@ -27,6 +27,14 @@ status boundaries.
 - Spec-implementation drift on draft/experimental surfaces.
 - Determinism overclaim risk outside Verified registry surfaces.
 - Governance maintenance risk if release/status artifacts are not refreshed on cadence.
+
+## Operational Notes (2026-03-05)
+
+- CI recovery completed on `main` after restoring `include/t81/support/expected.hpp`
+  fallback implementation (`57f1a96c`).
+- Format gate reliability hardened by increasing `actions/checkout` history depth
+  in `format.yml` (`b20934be`), preventing full-tree fallback checks on push.
+- Required CI contexts are passing on the reference candidate (`57f1a96c`).
 
 ## Control References
 
