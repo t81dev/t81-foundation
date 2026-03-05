@@ -1,0 +1,30 @@
+# Minimal AI Experiments CMakeLists.txt
+# Only builds t81_ai executable with minimal dependencies
+
+cmake_minimum_required(3.16)
+
+# Only build if AI experiments are enabled
+if(NOT T81_ENABLE_AI_EXPERIMENTS)
+    return()
+endif()
+
+message(STATUS "Building minimal AI experiments")
+
+# Minimal AI CLI executable
+add_executable(t81_ai
+    ux_tools/t81_ai_minimal.cpp
+)
+
+# Set target properties
+set_target_properties(t81_ai PROPERTIES
+    CXX_STANDARD 23
+    CXX_STANDARD_REQUIRED ON
+)
+
+# Installation
+install(TARGETS t81_ai
+    RUNTIME DESTINATION experiments/ai/bin
+    COMPONENT ai_experiments
+)
+
+message(STATUS "t81_ai executable will be built")
