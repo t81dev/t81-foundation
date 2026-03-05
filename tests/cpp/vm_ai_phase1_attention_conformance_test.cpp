@@ -46,6 +46,10 @@ std::uint64_t tensor_hash(const t81::T729DynamicTensor& tensor) {
   return h;
 }
 
+std::int32_t pack_reg_pair(std::int32_t first, std::int32_t second) {
+  return static_cast<std::int32_t>((first & 0xFF) | ((second & 0xFF) << 8));
+}
+
 }  // namespace
 
 int main() {
@@ -64,8 +68,9 @@ int main() {
   lv.literal_kind = t81::tisc::LiteralKind::TensorHandle;
   p.insns.push_back(lv);
 
-  // Phase-1 provisional ATTN encoding: A is both V source and destination.
-  p.insns.push_back({t81::tisc::Opcode::ATTN, 3, 1, 2});
+  // Phase-1 canonical packed-operand encoding:
+  // ATTN RD, RQ, PACK(RK,RV)
+  p.insns.push_back({t81::tisc::Opcode::ATTN, 4, 1, pack_reg_pair(2, 3)});
   p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
 
   auto vm1 = t81::vm::make_interpreter_vm();
@@ -74,9 +79,9 @@ int main() {
   T81_TEST_CHECK(r1.has_value());
 
   const auto& state1 = vm1->state();
-  auto out_handle1 = state1.contexts[0].registers[3];
+  auto out_handle1 = state1.contexts[0].registers[4];
   T81_TEST_CHECK(out_handle1 > 0);
-  T81_TEST_CHECK(state1.contexts[0].register_tags[3] == t81::vm::ValueTag::TensorHandle);
+  T81_TEST_CHECK(state1.contexts[0].register_tags[4] == t81::vm::ValueTag::TensorHandle);
   const auto& out_opt1 = state1.tensors[static_cast<std::size_t>(out_handle1 - 1)];
   T81_TEST_CHECK(out_opt1.has_value());
   const auto& out1 = out_opt1.value();
@@ -94,7 +99,7 @@ int main() {
   auto r2 = vm2->run_to_halt();
   T81_TEST_CHECK(r2.has_value());
   const auto& state2 = vm2->state();
-  auto out_handle2 = state2.contexts[0].registers[3];
+  auto out_handle2 = state2.contexts[0].registers[4];
   T81_TEST_CHECK(out_handle2 > 0);
   const auto& out_opt2 = state2.tensors[static_cast<std::size_t>(out_handle2 - 1)];
   T81_TEST_CHECK(out_opt2.has_value());

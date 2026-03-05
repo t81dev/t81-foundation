@@ -31,6 +31,10 @@ std::uint64_t tensor_hash(const t81::T729DynamicTensor& tensor) {
   return h;
 }
 
+std::int32_t pack_reg_pair(std::int32_t first, std::int32_t second) {
+  return static_cast<std::int32_t>((first & 0xFF) | ((second & 0xFF) << 8));
+}
+
 }  // namespace
 
 int main() {
@@ -44,7 +48,8 @@ int main() {
   t81::tisc::Insn lb{t81::tisc::Opcode::LoadImm, 2, 2, 0};
   lb.literal_kind = t81::tisc::LiteralKind::TensorHandle;
   p.insns.push_back(lb);
-  p.insns.push_back({t81::tisc::Opcode::QMATMUL, 3, 1, 2});
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 4, 1, 0});  // scale=1
+  p.insns.push_back({t81::tisc::Opcode::QMATMUL, 3, 1, pack_reg_pair(2, 4)});
   p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
 
   auto vm1 = t81::vm::make_interpreter_vm();
@@ -94,7 +99,8 @@ int main() {
   t81::tisc::Insn bad_lb{t81::tisc::Opcode::LoadImm, 2, 2, 0};
   bad_lb.literal_kind = t81::tisc::LiteralKind::TensorHandle;
   bad.insns.push_back(bad_lb);
-  bad.insns.push_back({t81::tisc::Opcode::QMATMUL, 3, 1, 2});
+  bad.insns.push_back({t81::tisc::Opcode::LoadImm, 4, 1, 0});  // scale=1
+  bad.insns.push_back({t81::tisc::Opcode::QMATMUL, 3, 1, pack_reg_pair(2, 4)});
   bad.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
   auto vm_bad = t81::vm::make_interpreter_vm();
   vm_bad->load_program(bad);

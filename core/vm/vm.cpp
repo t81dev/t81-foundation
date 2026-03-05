@@ -1211,6 +1211,19 @@ public:
       return std::nullopt;
     };
 
+    auto decode_ai_packed_reg_pair = [&](std::int32_t packed) -> std::optional<std::pair<int, int>> {
+      const auto raw = static_cast<std::uint32_t>(packed);
+      if ((raw & 0xFFFF0000U) != 0U) {
+        return std::nullopt;
+      }
+      const int first = static_cast<int>(raw & 0xFFU);
+      const int second = static_cast<int>((raw >> 8) & 0xFFU);
+      if (!reg_ok(first) || !reg_ok(second)) {
+        return std::nullopt;
+      }
+      return std::pair<int, int>{first, second};
+    };
+
     Trap trap = Trap::None;
     if (auto dispatched_trap =
             dispatch_axion_opcode_from_step(insn, ctx, current_pc, symbol_like_text);
@@ -4593,27 +4606,33 @@ public:
         break;
       }
       case t81::tisc::Opcode::ATTN: {
-        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
           trap = Trap::DecodeFault;
           break;
         }
-        // Phase-1 provisional encoding (until 4-source operand form lands):
-        // A holds V source handle before execution and destination handle after execution.
-        if (auto res = promote_to_tensor(insn.a); !res) {
+        auto regs = decode_ai_packed_reg_pair(insn.c);
+        if (!regs.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const int q_reg = insn.b;
+        const int k_reg = regs->first;
+        const int v_reg = regs->second;
+        if (auto res = promote_to_tensor(q_reg); !res) {
           trap = res.error();
           break;
         }
-        if (auto res = promote_to_tensor(insn.b); !res) {
+        if (auto res = promote_to_tensor(k_reg); !res) {
           trap = res.error();
           break;
         }
-        if (auto res = promote_to_tensor(insn.c); !res) {
+        if (auto res = promote_to_tensor(v_reg); !res) {
           trap = res.error();
           break;
         }
-        auto* tensor_v = tensor_ptr(ctx.registers[insn.a]);
-        auto* tensor_q = tensor_ptr(ctx.registers[insn.b]);
-        auto* tensor_k = tensor_ptr(ctx.registers[insn.c]);
+        auto* tensor_q = tensor_ptr(ctx.registers[q_reg]);
+        auto* tensor_k = tensor_ptr(ctx.registers[k_reg]);
+        auto* tensor_v = tensor_ptr(ctx.registers[v_reg]);
         if (tensor_v == nullptr || tensor_q == nullptr || tensor_k == nullptr) {
           trap = Trap::DecodeFault;
           break;
@@ -4626,8 +4645,8 @@ public:
         }
         t81::axion::Verdict verdict{
             t81::axion::VerdictKind::Allow,
-            "ATTN kernel execution (phase1 provisional encoding: V in destination register)"};
-        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b], verdict);
+            "ATTN kernel execution (phase1 packed operand encoding)"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(q_reg), ctx.registers[q_reg], verdict);
         auto res_handle = alloc_tensor(std::move(*computed));
         if (!res_handle) {
           trap = res_handle.error();
@@ -4638,25 +4657,51 @@ public:
         break;
       }
       case t81::tisc::Opcode::QMATMUL: {
-        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
           trap = Trap::DecodeFault;
           break;
         }
-        if (auto res = promote_to_tensor(insn.b); !res) {
-          trap = res.error();
-          break;
-        }
-        if (auto res = promote_to_tensor(insn.c); !res) {
-          trap = res.error();
-          break;
-        }
-        auto* tensor_a = tensor_ptr(ctx.registers[insn.b]);
-        auto* tensor_b = tensor_ptr(ctx.registers[insn.c]);
-        if (tensor_a == nullptr || tensor_b == nullptr) {
+        auto regs = decode_ai_packed_reg_pair(insn.c);
+        if (!regs.has_value()) {
           trap = Trap::DecodeFault;
           break;
         }
-        auto computed = t81::vm::internal::tensor_matmul_checked(*tensor_a, *tensor_b);
+        const int act_reg = insn.b;
+        const int wt_reg = regs->first;
+        const int scale_reg = regs->second;
+        if (auto res = promote_to_tensor(act_reg); !res) {
+          trap = res.error();
+          break;
+        }
+        if (auto res = promote_to_tensor(wt_reg); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor_act = tensor_ptr(ctx.registers[act_reg]);
+        auto* tensor_wt = tensor_ptr(ctx.registers[wt_reg]);
+        if (tensor_act == nullptr || tensor_wt == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        float scale = 0.0F;
+        if (ctx.register_tags[scale_reg] == ValueTag::Int) {
+          scale = static_cast<float>(ctx.registers[scale_reg]);
+        } else if (ctx.register_tags[scale_reg] == ValueTag::FloatHandle) {
+          auto* scale_ptr = float_ptr(ctx.registers[scale_reg]);
+          if (scale_ptr == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          scale = static_cast<float>(*scale_ptr);
+        } else {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto dequantized = *tensor_wt;
+        for (auto& x : dequantized.data()) {
+          x *= scale;
+        }
+        auto computed = t81::vm::internal::tensor_matmul_checked(*tensor_act, dequantized);
         if (!computed.has_value()) {
           log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, 0, "QMATMUL shape mismatch");
           trap = computed.error();
@@ -4664,8 +4709,8 @@ public:
         }
         t81::axion::Verdict verdict{
             t81::axion::VerdictKind::Allow,
-            "QMATMUL kernel execution (phase1 provisional path via deterministic matmul)"};
-        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b], verdict);
+            "QMATMUL kernel execution (phase1 packed operand encoding)"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(act_reg), ctx.registers[act_reg], verdict);
         auto res_handle = alloc_tensor(std::move(*computed));
         if (!res_handle) {
           trap = res_handle.error();
