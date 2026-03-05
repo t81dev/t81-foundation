@@ -2322,19 +2322,22 @@ public:
         }
         break;
       case t81::tisc::Opcode::AxRead: {
-        if (auto ax_trap = handle_axread(insn, ctx, current_pc); ax_trap.has_value()) {
+        if (auto ax_trap = handle_axion_opcode(insn, ctx, current_pc, symbol_like_text);
+            ax_trap.has_value()) {
           trap = *ax_trap;
         }
         break;
       }
       case t81::tisc::Opcode::AxSet: {
-        if (auto ax_trap = handle_axset(insn, ctx, current_pc); ax_trap.has_value()) {
+        if (auto ax_trap = handle_axion_opcode(insn, ctx, current_pc, symbol_like_text);
+            ax_trap.has_value()) {
           trap = *ax_trap;
         }
         break;
       }
       case t81::tisc::Opcode::AxVerify: {
-        if (auto ax_trap = handle_axverify(insn, ctx, current_pc); ax_trap.has_value()) {
+        if (auto ax_trap = handle_axion_opcode(insn, ctx, current_pc, symbol_like_text);
+            ax_trap.has_value()) {
           trap = *ax_trap;
         }
         break;
@@ -3914,7 +3917,8 @@ public:
         break;
       }
       case t81::tisc::Opcode::AxHalt: {
-        if (auto ax_trap = handle_axhalt(insn); ax_trap.has_value()) {
+        if (auto ax_trap = handle_axion_opcode(insn, ctx, current_pc, symbol_like_text);
+            ax_trap.has_value()) {
           trap = *ax_trap;
         }
         break;
@@ -4531,14 +4535,14 @@ public:
         break;
       }
       case t81::tisc::Opcode::AxCheck: {
-        if (auto ax_trap = handle_axcheck(insn, ctx, current_pc, symbol_like_text);
+        if (auto ax_trap = handle_axion_opcode(insn, ctx, current_pc, symbol_like_text);
             ax_trap.has_value()) {
           trap = *ax_trap;
         }
         break;
       }
       case t81::tisc::Opcode::AxReport: {
-        if (auto ax_trap = handle_axreport(insn, ctx, current_pc, symbol_like_text);
+        if (auto ax_trap = handle_axion_opcode(insn, ctx, current_pc, symbol_like_text);
             ax_trap.has_value()) {
           trap = *ax_trap;
         }
@@ -4547,7 +4551,10 @@ public:
       case t81::tisc::Opcode::AxSign:
       case t81::tisc::Opcode::AxLineage:
       case t81::tisc::Opcode::AxCanon: {
-        trap = blocked_privileged_axion_opcode(insn.opcode);
+        if (auto ax_trap = handle_axion_opcode(insn, ctx, current_pc, symbol_like_text);
+            ax_trap.has_value()) {
+          trap = *ax_trap;
+        }
         break;
       }
       case t81::tisc::Opcode::TNeuralFwd: {
@@ -5334,6 +5341,32 @@ private:
     record_axion_event(insn.opcode, 0, 0, verdict);
     state_.halted = true;
     return std::nullopt;
+  }
+
+  std::optional<Trap> handle_axion_opcode(
+      const t81::tisc::Insn& insn, ThreadContext& ctx, std::size_t current_pc,
+      const std::function<std::optional<std::string_view>(ValueTag, std::int64_t)>&
+          symbol_like_text) {
+    switch (insn.opcode) {
+      case t81::tisc::Opcode::AxRead:
+        return handle_axread(insn, ctx, current_pc);
+      case t81::tisc::Opcode::AxSet:
+        return handle_axset(insn, ctx, current_pc);
+      case t81::tisc::Opcode::AxVerify:
+        return handle_axverify(insn, ctx, current_pc);
+      case t81::tisc::Opcode::AxCheck:
+        return handle_axcheck(insn, ctx, current_pc, symbol_like_text);
+      case t81::tisc::Opcode::AxReport:
+        return handle_axreport(insn, ctx, current_pc, symbol_like_text);
+      case t81::tisc::Opcode::AxSign:
+      case t81::tisc::Opcode::AxLineage:
+      case t81::tisc::Opcode::AxCanon:
+        return blocked_privileged_axion_opcode(insn.opcode);
+      case t81::tisc::Opcode::AxHalt:
+        return handle_axhalt(insn);
+      default:
+        return Trap::DecodeFault;
+    }
   }
 
   std::optional<Trap> handle_axcheck(

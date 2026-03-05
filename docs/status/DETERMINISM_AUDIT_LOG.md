@@ -1,6 +1,6 @@
 # Determinism Audit Log
 
-Last Updated: 2026-02-28
+Last Updated: 2026-03-05
 Owner: @t81dev
 
 Chronological record of determinism audits: what was audited, what failed,
@@ -11,6 +11,24 @@ Entries are append-only. Do not edit past entries.
 ---
 
 ## Log
+
+### 2026-03-05 — Status Reconciliation Follow-Up
+
+**Scope:** Reconcile historical open findings with current hardening backlog closures.
+
+**Findings:**
+
+| Prior Open Item | Prior State | Current State | Source of Closure |
+| :--- | :--- | :--- | :--- |
+| BG-06 (collection determinism tests) | Open | **Closed** | `docs/status/HARDENING_BACKLOG.md` |
+| BG-08 (T81Complex binary serialization) | Open | **Closed** | `docs/status/HARDENING_BACKLOG.md` |
+| BG-09 (lang-side canonical serialization wiring) | Open | **Closed** | `docs/status/HARDENING_BACKLOG.md` |
+| AX-M5 / AX-M6 / AX-M7 (Axion evidence) | Open | **Closed** | `docs/status/HARDENING_BACKLOG.md` |
+| T3K-S1 (quantization spec gap) | Open | **Closed** | `docs/status/HARDENING_BACKLOG.md` |
+
+**Remaining Open:** BG-07 and FW-02/FW-01 tracking remains in `HARDENING_BACKLOG.md`.
+
+---
 
 ### 2026-02-27 — Data Types Determinism Audit
 

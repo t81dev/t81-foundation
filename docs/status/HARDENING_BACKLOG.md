@@ -28,7 +28,7 @@ Feature work, new capabilities, and API additions live elsewhere.
 | AX-M7 | Promotion evidence | Axion §1.3 — Complexity Measurement | Call-graph and branch/path-divergence evidence not mapped | **✅ Evidence path maps call-graph complexity measurement; governance review accepted as Beta-gate evidence** | @t81dev | 2026-03-14 | **Closed** |
 | T3K-S1 | Scope reduction | T3K Quantization | No `spec/t3k-quantization-spec.md` — surface has registry evidence but no normative spec | **✅ `spec/t3k-quantization-spec.md` authored and tracked as governed non-spec surface** | @t81dev | 2026-04-30 | **Closed** |
 | FW-01 | Structural hardening | `core/vm/vm.cpp:24` | Controlled dependency waiver — policy hook cross-boundary include | Either eliminate the waiver through header restructuring, or explicitly re-affirm and re-document it in each release | @t81dev | Ongoing | Monitoring |
-| FW-02 | Structural hardening | VM policy-trace bridge | Opcode dispatch concentration in policy-trace bridge not fully extracted | `AxCheck`/`AxReport`/`AxRead`/`AxSet`/`AxVerify`/`AxHalt` helper paths fully extracted from dispatch loop; no dispatch path >threshold | @t81dev | 2026-04-15 | **In Progress** |
+| FW-02 | Structural hardening | VM policy-trace bridge | Opcode dispatch concentration in policy-trace bridge not fully extracted | `AxCheck`/`AxReport`/`AxRead`/`AxSet`/`AxVerify`/`AxHalt` helper paths fully extracted from dispatch loop; Axion opcodes routed through centralized `handle_axion_opcode`; no dispatch path >threshold | @t81dev | 2026-04-15 | **In Progress** |
 | GOV-01 | Scope reduction | `docs/governance/` | No deputy-approval policy — single-owner concentration on all GO/HOLD decisions | **✅ `docs/governance/APPROVAL_DELEGATION.md` published with deputy-owner and delegation criteria** | @t81dev | 2026-04-30 | **Closed** |
 
 ---
@@ -45,6 +45,7 @@ Feature work, new capabilities, and API additions live elsewhere.
 | **GOV-01** | **Scope reduction** | **Deputy approval delegation policy published** - governance criteria and delegated GO/HOLD controls documented in `docs/governance/APPROVAL_DELEGATION.md` | **2026-03-05** |
 | **FW-02 (Slice 1)** | **Structural hardening** | **VM policy bridge extraction started** - `AxCheck`/`AxReport` handling moved to dedicated helpers in `core/vm/vm.cpp`; full dispatch concentration reduction still open | **2026-03-05** |
 | **FW-02 (Slice 2)** | **Structural hardening** | **VM policy bridge extraction advanced** - `AxRead`/`AxSet`/`AxVerify`/`AxHalt` handling moved to dedicated helpers in `core/vm/vm.cpp`; full dispatch concentration reduction still open | **2026-03-05** |
+| **FW-02 (Slice 3)** | **Structural hardening** | **Axion opcode routing centralized** - `Ax*` opcode handling now routes through `handle_axion_opcode` in `core/vm/vm.cpp`; residual concentration work still open | **2026-03-05** |
 | **AX-M5** | **Promotion evidence** | **Determinism stewardship evidence map completed** | **2026-03-04** |
 | **AX-M6** | **Promotion evidence** | **CanonFS observability lifecycle evidence completed** | **2026-03-04** |
 | **AX-M7** | **Promotion evidence** | **Complexity measurement evidence completed** | **2026-03-04** |

@@ -1,14 +1,17 @@
 # T81Lang Implementation Task Queue (2026-03)
 
-Status: Active
+Status: Completed (No Active Items)
 Owner: @t81dev
-Last Updated: 2026-02-25
+Last Updated: 2026-03-05
 Scope: Execution tasks derived from A1 drift decomposition
 
 ## Purpose
 
 Convert T81Lang drift decomposition into executable engineering tasks tied to
 spec anchors, code paths, and validation tests.
+
+This queue is closed for execution: all listed tasks are completed. New active
+work should be tracked in `HARDENING_BACKLOG.md` and `TASKS.md`.
 
 ## Task Queue
 

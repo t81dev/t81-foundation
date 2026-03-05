@@ -1,7 +1,7 @@
 # Implementation Matrix
 
 Status: Active
-Last Updated: 2026-02-28
+Last Updated: 2026-03-05
 Owner: @t81dev
 
 Alignment truth. One row per subsystem. No narrative.
@@ -16,10 +16,10 @@ Authority remains: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Data Types** | `spec/t81-data-types.md` | **Frozen** | Implemented | **Verified** | High | Low | 2026-02-27 | @t81dev | N/A (maintain) | Frozen DCP surface. Audit 2026-02-27: `Cell` signed-overflow UB fixed, `T81Float` signed-zero canonicalized, `T81Map`/`T81Set` enforcement hardened. |
 | **TISC ISA** | `spec/tisc-spec.md` | **Frozen** | Implemented | **Verified** | High | Low | 2026-02-28 | @t81dev | N/A (maintain) | Frozen DCP surface. Freeze integrity enforced by `check_tisc_freeze_integrity.py`. |
-| **T81VM** | `spec/t81vm-spec.md` | Beta | Beta | Beta | Medium | Medium | 2026-02-28 | @t81dev | 2026-04-15 | Non-JIT path DCP-verified. Policy-bridge dispatch concentration partially reduced (Phase 3). Open: FW-02. |
-| **T81Lang** | `spec/t81lang-spec.md` | Draft | **Beta** | Beta (impl) / Draft (spec) | Medium | Medium | 2026-02-28 | @t81dev | 2026-05-15 | 36 types tracked. BG-06..09 open. Fixture-bounded determinism only. |
-| **Axion Kernel** | `spec/axion-kernel.md` | Draft | **Alpha** | Alpha | Medium | Medium | 2026-02-28 | @t81dev | 2026-04-30 | §1.6/1.9 implemented (bounded). §1.1/1.3/1.10 partial. §2.5 deferred. AX-M5..M7 open. |
-| **T81Graph** | Surface inventory (non-normative) | Draft | Draft | Experimental | Low | High | 2026-02-28 | @t81dev | 2026-05-15 | VM opcode lowering complete. Lang-side serialization not wired (BG-09). No determinism tests. Non-DCP. |
+| **T81VM** | `spec/t81vm-spec.md` | Beta | Beta | Beta | Medium | Medium | 2026-03-05 | @t81dev | 2026-04-15 | Non-JIT path DCP-verified. FW-02 extraction advanced (AxCheck/AxReport/AxRead/AxSet/AxVerify/AxHalt helperized); residual dispatch concentration work remains. |
+| **T81Lang** | `spec/t81lang-spec.md` | Draft | **Beta** | Beta (impl) / Draft (spec) | Medium | Medium | 2026-03-05 | @t81dev | 2026-05-15 | BG-06/BG-08/BG-09 closed. Remaining major hardening gap: BG-07 phase-2 arbitrary-precision path. |
+| **Axion Kernel** | `spec/axion-kernel.md` | Draft | **Alpha** | Alpha | Medium | Medium | 2026-03-05 | @t81dev | 2026-04-30 | §1.6/1.9 implemented (bounded). AX-M5..M7 evidence closures landed; pending Beta candidacy review cycle. §2.5 remains deferred. |
+| **T81Graph** | Surface inventory (non-normative) | Draft | Draft | Experimental | Medium | Medium | 2026-03-05 | @t81dev | 2026-05-15 | VM opcode lowering and lang-side serialization wiring complete with determinism coverage. Surface remains governed non-DCP until promotion. |
 | **Cognitive Tiers** | `spec/cognitive-tiers.md` | Draft | Concept / Experimental | **Experimental** | Low | High | 2026-02-25 | @t81dev | 2026-06-15 | Experimental, non-DCP, non-verified unless promoted through governance. |
 | **Hanoi VM** | — | — | Concept | **Experimental** | — | High | 2026-02-25 | @t81dev | — | Experimental only. No spec. Non-DCP. |
 | **Governed llama.cpp** | `docs/how-to/llama-governed-repro.md` (guidance) | Non-normative | Experimental | **Governed non-DCP** | Medium | Medium | 2026-02-28 | @t81dev | 2026-04-30 | Classified governed non-DCP (DEC-003). Practical reproducibility only. Promotion requires governed AGI pipeline. |
