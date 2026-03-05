@@ -105,7 +105,7 @@ The dependency firewall is enforced by structural integrity checks:
 - `include/t81/` must not include experimental headers.
 - `core/` must not link against `runtime/jit/`, `experimental/`, or `kernel/axion/` except
   through the explicit, audited VM policy hook.
-- One controlled waiver exists: `core/vm/vm.cpp:24` — documented and tracked.
+- No active dependency firewall waivers. Historical waiver at `core/vm/vm.cpp` was retired on 2026-03-05.
 - CI enforcement: `scripts/ci/check_core_numeric_wrapper_thinness.py`
 - Status: **PASS** (as of 2026-02-28)
 

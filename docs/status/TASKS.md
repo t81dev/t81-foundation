@@ -109,12 +109,12 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - Target: 2026-04-15
   - Status: **TECHNICAL DEBT (ACTIVE)**
 
-- [ ] **FW-01 Dependency Waiver Stewardship** - **🔎 MONITORING**
-  - Controlled dependency waiver remains at `core/vm/vm.cpp:24`
-  - Reaffirmed in current cycle (2026-03-05); remains explicitly tracked
-  - Re-affirm or retire waiver each release cycle
-  - Target: Ongoing
-  - Status: **MONITORING**
+- [x] **FW-01 Dependency Waiver Retirement** - **✅ COMPLETED**
+  - Removed `t81/experimental/cog/promotion.hpp` include from `core/vm/vm.cpp`
+  - Tier promotion path now handled locally inside VM module
+  - `scripts/architecture/dependency_firewall_waivers.tsv` contains no active waivers
+  - Completed: 2026-03-05
+  - Status: **✅ RESOLVED**
 
 ### Strategic Enhancements - **🔬 INNOVATION PIPELINE**
 

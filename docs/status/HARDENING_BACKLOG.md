@@ -27,7 +27,7 @@ Feature work, new capabilities, and API additions live elsewhere.
 | AX-M6 | Promotion evidence | Axion §1.10 — CanonFS Observability | End-to-end persistence lifecycle audit closure gap | **✅ Evidence path maps full persistence lifecycle audit beyond hook/segment-event trace** | @t81dev | 2026-03-12 | **Closed** |
 | AX-M7 | Promotion evidence | Axion §1.3 — Complexity Measurement | Call-graph and branch/path-divergence evidence not mapped | **✅ Evidence path maps call-graph complexity measurement; governance review accepted as Beta-gate evidence** | @t81dev | 2026-03-14 | **Closed** |
 | T3K-S1 | Scope reduction | T3K Quantization | No `spec/t3k-quantization-spec.md` — surface has registry evidence but no normative spec | **✅ `spec/t3k-quantization-spec.md` authored and tracked as governed non-spec surface** | @t81dev | 2026-04-30 | **Closed** |
-| FW-01 | Structural hardening | `core/vm/vm.cpp:24` | Controlled dependency waiver — policy hook cross-boundary include | Either eliminate the waiver through header restructuring, or explicitly re-affirm and re-document it in each release. Latest reaffirmation recorded in active status cycle (2026-03-05). | @t81dev | Ongoing | Monitoring |
+| FW-01 | Structural hardening | `core/vm/vm.cpp` | Experimental promotion include reached through controlled waiver | **✅ COMPLETED** — VM tier-promotion path now uses an in-module helper; dependency firewall waiver retired and waiver table is empty (2026-03-05). | @t81dev | 2026-03-05 | **Closed** |
 | FW-02 | Structural hardening | VM policy-trace bridge | Opcode dispatch concentration in policy-trace bridge not fully extracted | `AxCheck`/`AxReport`/`AxRead`/`AxSet`/`AxVerify`/`AxHalt` helper paths fully extracted from dispatch loop; Axion opcodes routed through centralized `handle_axion_opcode`; no dispatch path >threshold | @t81dev | 2026-04-15 | **In Progress** |
 | GOV-01 | Scope reduction | `docs/governance/` | No deputy-approval policy — single-owner concentration on all GO/HOLD decisions | **✅ `docs/governance/APPROVAL_DELEGATION.md` published with deputy-owner and delegation criteria** | @t81dev | 2026-04-30 | **Closed** |
 
@@ -48,6 +48,7 @@ Feature work, new capabilities, and API additions live elsewhere.
 | **FW-02 (Slice 3)** | **Structural hardening** | **Axion opcode routing centralized** - `Ax*` opcode handling now routes through `handle_axion_opcode` in `core/vm/vm.cpp`; residual concentration work still open | **2026-03-05** |
 | **FW-02 (Slice 4)** | **Structural hardening** | **Axion case consolidation** - duplicate `Ax*` switch-case blocks collapsed into grouped dispatch paths in `core/vm/vm.cpp`; residual concentration work still open | **2026-03-05** |
 | **FW-02 (Slice 5)** | **Structural hardening** | **Axion dispatch locality improved** - `AxHalt` case moved into consolidated `Ax*` switch block; Axion dispatch no longer split across distant switch regions | **2026-03-05** |
+| **FW-01** | **Structural hardening** | **Dependency firewall waiver retired** - `core/vm/vm.cpp` no longer includes `t81/experimental/cog/promotion.hpp`; tier promotion logic is now local and `scripts/architecture/dependency_firewall_waivers.tsv` has no active waivers | **2026-03-05** |
 | **AX-M5** | **Promotion evidence** | **Determinism stewardship evidence map completed** | **2026-03-04** |
 | **AX-M6** | **Promotion evidence** | **CanonFS observability lifecycle evidence completed** | **2026-03-04** |
 | **AX-M7** | **Promotion evidence** | **Complexity measurement evidence completed** | **2026-03-04** |
@@ -83,7 +84,7 @@ When ordering work from this backlog:
 1. **Verified-surface regressions** — fix immediately; do not defer.
 2. **FW-02** — reduce VM dispatch concentration in policy-trace bridge.
 3. **BG-07** — resolve BigInt precision scope mismatch.
-4. **FW-01** — maintain/retire controlled dependency waiver with explicit documentation.
+4. **FW-01 closure guardrail** — keep dependency firewall waiver table empty unless a new exception is explicitly approved.
 5. **Post-close governance hygiene** — keep delegation and evidence artifacts current.
 
 ---

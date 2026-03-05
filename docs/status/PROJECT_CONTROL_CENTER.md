@@ -75,7 +75,7 @@ Full register: `ACTIVE_RISKS.md`
 | :--- | :--- | :--- |
 | BG-07 — BigInt precision scope resolution (phase 2) | @t81dev | 2026-05-15 |
 | FW-02 — VM dispatch concentration reduction | @t81dev | 2026-04-15 |
-| FW-01 — dependency waiver maintenance/removal decision | @t81dev | Ongoing |
+| FW-01 — dependency firewall waiver retirement | @t81dev | **Closed 2026-03-05** |
 
 Full backlog: `HARDENING_BACKLOG.md`
 

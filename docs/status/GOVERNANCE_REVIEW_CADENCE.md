@@ -52,7 +52,7 @@ Required contexts must be `completed` + `success`:
 
 - [ ] Run dependency firewall check: `scripts/ci/check_core_numeric_wrapper_thinness.py`
 - [ ] Verify `include/t81/` contains no experimental headers
-- [ ] Verify controlled waivers (`core/vm/vm.cpp:24`) are still documented
+- [ ] Verify dependency firewall waiver table is empty or all entries are explicitly justified
 
 ### 1e. Stdlib and Surface Baseline
 

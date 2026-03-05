@@ -1,2 +1,1 @@
 # code	path_glob	include_glob	reason
-CORE_DEPENDS_EXPERIMENTAL	core/vm/vm.cpp	t81/experimental/cog/promotion.hpp	Tier promotion opcode path not yet decoupled from experimental surface.

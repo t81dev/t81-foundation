@@ -26,7 +26,7 @@ Entries are append-only. Do not edit past entries.
 | AX-M5 / AX-M6 / AX-M7 (Axion evidence) | Open | **Closed** | `docs/status/HARDENING_BACKLOG.md` |
 | T3K-S1 (quantization spec gap) | Open | **Closed** | `docs/status/HARDENING_BACKLOG.md` |
 
-**Remaining Open:** BG-07 and FW-02/FW-01 tracking remains in `HARDENING_BACKLOG.md`.
+**Remaining Open:** BG-07 and FW-02 tracking remains in `HARDENING_BACKLOG.md`.
 
 ---
 
@@ -101,13 +101,13 @@ legacy path references, build and test pass status.
 
 | Check | Result | Notes |
 | :--- | :--- | :--- |
-| Dependency firewall | **PASS** | 1 controlled waiver: `core/vm/vm.cpp:24` — documented and accepted |
+| Dependency firewall | **PASS** | Controlled waiver existed at the time (`core/vm/vm.cpp:24`) and was documented |
 | Public API boundary (`include/t81/`) | **PASS** | No violations |
-| Experimental containment | **PASS** | 1 controlled include waiver |
+| Experimental containment | **PASS** | 1 controlled include waiver at audit time |
 | Legacy path references | **PASS** | No stale paths |
 | Build (CMake + CTest) | **PASS** | 247/247 tests passing |
 
-**Remaining Open:** None. Waiver at `core/vm/vm.cpp:24` is tracked and accepted.
+**Remaining Open:** None. Historical waiver retired on 2026-03-05.
 
 ---
 

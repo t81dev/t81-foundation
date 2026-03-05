@@ -26,6 +26,7 @@
 #include "internal/tensor_helpers.hpp"
 #include "internal/tier_limits.hpp"
 #include "internal/value_ops.hpp"
+#include "t81/axion/context.hpp"
 #include "t81/axion/engine.hpp"
 #include "t81/axion/nondeterminism_detector.hpp"
 #include "t81/axion/policy_engine.hpp"
@@ -33,7 +34,6 @@
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
 #include "t81/enum_meta.hpp"
-#include "t81/experimental/cog/promotion.hpp"
 #include "t81/jit/jit.hpp"
 #include "t81/types/T81Float.hpp"
 #include "t81/vm/vm.hpp"
@@ -45,6 +45,55 @@ constexpr std::size_t kDefaultHeapSize = 768;
 constexpr std::size_t kDefaultTensorSpace = 256;
 constexpr std::size_t kDefaultMetaSpace = 256;
 constexpr std::size_t kHardRecursionCeiling = T81_HARD_RECURSION_CEILING;
+
+enum class TierPromotionError {
+  NotEligible,
+  AxionDenied,
+};
+
+using TierPromotionResult = t81::expected<t81::cog::TierStatus, TierPromotionError>;
+
+TierPromotionResult try_promote_tier(
+    const t81::cog::TierStatus& status,
+    const std::function<t81::axion::Verdict(const t81::axion::SyscallContext&)>& callback) {
+  if (status.current == t81::cog::TierId::Tier5) {
+    return TierPromotionResult(t81::unexpect, TierPromotionError::NotEligible);
+  }
+
+  t81::axion::SyscallContext syscall{{},      "system", "promote", "",
+                                     nullptr, {},       0,         t81::tisc::Opcode::Nop};
+  const auto verdict = callback(syscall);
+  if (verdict.kind == t81::axion::VerdictKind::Deny) {
+    return TierPromotionResult(t81::unexpect, TierPromotionError::AxionDenied);
+  }
+
+  t81::cog::TierStatus next = status;
+  switch (status.current) {
+    case t81::cog::TierId::Tier0:
+      next.current = t81::cog::TierId::Tier1;
+      next.label = "Tier1";
+      break;
+    case t81::cog::TierId::Tier1:
+      next.current = t81::cog::TierId::Tier2;
+      next.label = "Tier2";
+      break;
+    case t81::cog::TierId::Tier2:
+      next.current = t81::cog::TierId::Tier3;
+      next.label = "Tier3";
+      break;
+    case t81::cog::TierId::Tier3:
+      next.current = t81::cog::TierId::Tier4;
+      next.label = "Tier4";
+      break;
+    case t81::cog::TierId::Tier4:
+      next.current = t81::cog::TierId::Tier5;
+      next.label = "Tier5";
+      break;
+    default:
+      return TierPromotionResult(t81::unexpect, TierPromotionError::NotEligible);
+  }
+  return next;
+}
 
 class DenyWithReasonEngine final : public t81::axion::Engine {
 public:
@@ -835,9 +884,9 @@ public:
     };
     auto ensure_min_tier = [&](t81::cog::TierId required_tier, std::string_view cause) -> bool {
       while (tier_rank(ctx.tier_status.current) < tier_rank(required_tier)) {
-        auto res = t81::cog::try_promote(
-            ctx.tier_status,
-            [&](const t81::axion::SyscallContext& pctx) { return axion_engine_->evaluate(pctx); });
+        auto res = try_promote_tier(ctx.tier_status, [&](const t81::axion::SyscallContext& pctx) {
+          return axion_engine_->evaluate(pctx);
+        });
         if (!res) {
           t81::axion::Verdict verdict;
           verdict.kind = t81::axion::VerdictKind::Deny;
