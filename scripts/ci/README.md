@@ -51,18 +51,16 @@ python3 scripts/ci/llama_cpp_repro_gate.py --help
 bash scripts/ci/run_determinism_slice.sh build
 ```
 
-## Optional llama.cpp repro gate
+## Governed llama runtime evidence lane (RFC-0025 required)
 
-The llama.cpp repro gate is optional and fixture-gated:
+The llama.cpp governed runtime lane is required in AI Experiments CI and uses the sanctioned fixture set:
 
 - Fixture directory: `tests/fixtures/llama_cpp_repro/`
-- Required files:
-  - `model.gguf` (not committed)
-  - `model_hash.txt` (not committed; expected `sha3-512:<hex>`)
+- Expected files:
+  - `model.gguf`
+  - `model_hash.txt` (`sha3-512:<hex>`)
   - `policy.apl`
   - `prompt.txt`
-- CI enable switch:
-  - repository variable `T81_ENABLE_LLAMA_REPRO=1`
 
 Helper:
 
