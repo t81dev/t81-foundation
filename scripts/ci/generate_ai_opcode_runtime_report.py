@@ -81,7 +81,21 @@ def parse_phase1_conformance_log(ctest_log: Path) -> dict[str, Any]:
     }
 
 
-def build_payload(repo_root: Path, ctest_log: Path | None) -> dict[str, Any]:
+def parse_phase1_baseline_hashes(path: Path) -> dict[str, str]:
+    payload = json.loads(read_text(path))
+    if payload.get("schema") != "t81.ai.phase1-hash-baseline.v1":
+        raise ValueError(f"invalid baseline schema in {path}")
+    hashes = payload.get("output_hashes", {})
+    result: dict[str, str] = {}
+    for opcode in PHASE1:
+        value = str(hashes.get(opcode, "")).strip().lower()
+        if not re.fullmatch(r"[0-9a-f]{16,64}", value):
+            raise ValueError(f"invalid or missing baseline hash for {opcode} in {path}")
+        result[opcode] = value
+    return result
+
+
+def build_payload(repo_root: Path, ctest_log: Path | None, baseline_hashes_path: Path | None) -> dict[str, Any]:
     ai_header = repo_root / "include/t81/isa/ai_native_opcodes.hpp"
     tisc_header = repo_root / "include/t81/isa/opcodes.hpp"
     vm_cpp = repo_root / "core/vm/vm.cpp"
@@ -94,6 +108,9 @@ def build_payload(repo_root: Path, ctest_log: Path | None) -> dict[str, Any]:
     tisc_enum = parse_enum_members(tisc_text, "Opcode")
     vm_cases = parse_vm_dispatch_cases(vm_text)
     conformance = parse_phase1_conformance_log(ctest_log) if ctest_log is not None else None
+    baseline_hashes = (
+        parse_phase1_baseline_hashes(baseline_hashes_path) if baseline_hashes_path is not None else None
+    )
 
     phase_rows: list[dict[str, Any]] = []
     for opcode in PHASE1:
@@ -123,6 +140,26 @@ def build_payload(repo_root: Path, ctest_log: Path | None) -> dict[str, Any]:
         )
 
     runtime_ready_count = sum(1 for r in phase_rows if r["runtime_ready"] and r["status"] == "runtime_bound")
+    baseline_comparison: dict[str, Any] | None = None
+    baseline_hashes_match = True
+    if baseline_hashes is not None and conformance is not None:
+        observed = conformance["output_hashes"]
+        per_opcode: dict[str, dict[str, Any]] = {}
+        for opcode in PHASE1:
+            expected = baseline_hashes[opcode]
+            actual = observed.get(opcode)
+            match = actual == expected
+            baseline_hashes_match = baseline_hashes_match and match
+            per_opcode[opcode] = {
+                "expected": expected,
+                "actual": actual,
+                "match": match,
+            }
+        baseline_comparison = {
+            "baseline_path": str(baseline_hashes_path),
+            "all_match": baseline_hashes_match,
+            "per_opcode": per_opcode,
+        }
     conformance_valid = (
         True
         if conformance is None
@@ -151,6 +188,7 @@ def build_payload(repo_root: Path, ctest_log: Path | None) -> dict[str, Any]:
             "tisc_opcode_header_sha256": sha256_text(tisc_text),
             "vm_dispatch_source_sha256": sha256_text(vm_text),
             "phase1_conformance": conformance,
+            "phase1_baseline_comparison": baseline_comparison,
         },
         "summary": {
             "phase1_opcode_count": len(PHASE1),
@@ -158,6 +196,8 @@ def build_payload(repo_root: Path, ctest_log: Path | None) -> dict[str, Any]:
             "contract_only_count": len(PHASE1) - runtime_ready_count,
             "phase1_conformance_evidence_present": conformance is not None,
             "phase1_conformance_valid": conformance_valid,
+            "phase1_baseline_hashes_provided": baseline_hashes is not None,
+            "phase1_baseline_hashes_match": baseline_hashes_match if baseline_hashes is not None else None,
         },
     }
     payload["report_sha256"] = sha256_text(canonical_json(payload))
@@ -188,6 +228,7 @@ def write_markdown(path: Path, payload: dict[str, Any]) -> None:
             )
         )
     conformance = payload["evidence"].get("phase1_conformance")
+    baseline = payload["evidence"].get("phase1_baseline_comparison")
     lines.extend(
         [
             "",
@@ -209,6 +250,20 @@ def write_markdown(path: Path, payload: dict[str, Any]) -> None:
                 "",
             ]
         )
+    if baseline is not None:
+        lines.extend(
+            [
+                "Phase-1 Baseline Hash Comparison:",
+                f"- baseline_path: `{baseline['baseline_path']}`",
+                f"- all_match: `{baseline['all_match']}`",
+            ]
+        )
+        for opcode in PHASE1:
+            row = baseline["per_opcode"][opcode]
+            lines.append(
+                f"- {opcode}: expected=`{row['expected']}` actual=`{row['actual']}` match=`{row['match']}`"
+            )
+        lines.append("")
     else:
         lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
@@ -219,6 +274,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--repo-root", default=".")
     p.add_argument("--out-dir", required=True)
     p.add_argument("--ctest-log", default="", help="Optional path to AI phase1 opcode ctest log.")
+    p.add_argument(
+        "--baseline-hashes",
+        default="",
+        help="Optional path to phase1 baseline output hashes json.",
+    )
     return p.parse_args()
 
 
@@ -229,7 +289,8 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     ctest_log = Path(args.ctest_log) if args.ctest_log else None
-    payload = build_payload(repo_root, ctest_log)
+    baseline_hashes = Path(args.baseline_hashes) if args.baseline_hashes else None
+    payload = build_payload(repo_root, ctest_log, baseline_hashes)
     json_path = out_dir / "ai_opcode_runtime_report.json"
     md_path = out_dir / "ai_opcode_runtime_report.md"
     json_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")

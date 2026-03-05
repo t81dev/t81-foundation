@@ -1,0 +1,9 @@
+{
+  "schema": "t81.ai.phase1-hash-baseline.v1",
+  "phase": "phase1",
+  "output_hashes": {
+    "ATTN": "db742b617767af01",
+    "QMATMUL": "14d41b8df3810394",
+    "EMBED": "8715026970757876"
+  }
+}

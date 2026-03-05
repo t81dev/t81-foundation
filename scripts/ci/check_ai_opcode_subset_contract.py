@@ -102,6 +102,11 @@ def validate_runtime_evidence(runtime_report: Path, ctest_log: Path) -> tuple[bo
     )
     if report.get("phase_status") != "runtime_bound":
         errs.append(f"runtime report phase_status must be runtime_bound (got {report.get('phase_status')})")
+    summary = report.get("summary", {})
+    evidence["phase1_baseline_hashes_provided"] = summary.get("phase1_baseline_hashes_provided")
+    evidence["phase1_baseline_hashes_match"] = summary.get("phase1_baseline_hashes_match")
+    if summary.get("phase1_baseline_hashes_provided") and summary.get("phase1_baseline_hashes_match") is False:
+        errs.append("runtime report baseline hash comparison failed: phase1_baseline_hashes_match=false")
 
     op_rows = {row.get("opcode", ""): row for row in report.get("opcodes", [])}
     for opname in ("ATTN", "QMATMUL", "EMBED"):
