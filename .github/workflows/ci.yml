@@ -69,6 +69,9 @@ jobs:
       - name: Verify TISC v1.1.0 Freeze Integrity
         run: python3 scripts/ci/check_tisc_freeze_integrity.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
+      - name: Enforce AI experiment sandbox boundary (RFC-00A0)
+        run: python3 scripts/ci/check_ai_experiment_boundary.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+
       - name: Enforce workflow action pinning policy
         run: |
           python3 scripts/ci/audit_workflow_actions.py --max-tagged 0 --max-unknown 0 2>&1 | tee -a .github/logs/spec-and-docs.log
