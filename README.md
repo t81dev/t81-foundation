@@ -205,6 +205,35 @@ We welcome contributors who share our passion for rigorous, deterministic system
 ### The "Repro Gate"
 Required Pull Request checks enforce reproducibility and conformance gates for scoped deterministic surfaces. If your change alters governed deterministic outputs, the corresponding gate should fail. This is a feature, not a bug.
 
+## 🧪 AI Experiments (Experimental)
+
+T81 includes an experimental AI CLI system isolated from the deterministic core.
+
+### Building AI Experiments
+
+```bash
+# Configure with AI experiments enabled
+cmake .. -DT81_ENABLE_AI_EXPERIMENTS=ON
+
+# Build AI CLI
+make t81_ai
+```
+
+### AI CLI Usage
+
+```bash
+# Show help
+./experiments/ai/ux_tools/t81_ai --help
+
+# Inspect model file
+./experiments/ai/ux_tools/t81_ai model inspect <file>
+
+# Verify model integrity
+./experiments/ai/ux_tools/t81_ai verify <file>
+```
+
+**Note**: AI experiments are isolated from T81's deterministic core. See [AI Experiments Documentation](docs/experiments/AI_EXPERIMENTS.md) for details.
+
 ---
 
 “T81 was architected to support Secure-by-Design and reproducible forensic traceability.”

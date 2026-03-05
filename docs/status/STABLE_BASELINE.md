@@ -191,3 +191,36 @@ A new stable baseline may be established when:
 
 Each baseline should be tagged and documented similarly to this file.
 
+---
+
+## AI Experiments Note (2026-03-05)
+
+**Experimental AI CLI introduced under `/experiments/ai`, isolated from deterministic core.**
+
+### Integration Details
+
+* **Location**: All AI code resides in `/experiments/ai/` directory only
+* **Build Integration**: Optional build via `-DT81_ENABLE_AI_EXPERIMENTS=ON`
+* **Core Protection**: No modifications to `/src`, `/include/t81`, `/spec`, `/tests`
+* **Deterministic Core**: T81's deterministic core remains completely untouched
+* **Status**: Experimental - not part of stable baseline guarantees
+
+### What This Means
+
+The stable baseline continues to guarantee deterministic execution of all core T81 components. The experimental AI CLI operates in a sandboxed environment and does not affect core determinism or stability.
+
+### Verification
+
+AI experiments can be verified independently without affecting baseline:
+
+```bash
+# Build AI experiments (optional)
+cmake .. -DT81_ENABLE_AI_EXPERIMENTS=ON
+make t81_ai
+
+# Test AI CLI
+./experiments/ai/ux_tools/t81_ai --help
+```
+
+**Core baseline remains unchanged and fully deterministic.**
+
