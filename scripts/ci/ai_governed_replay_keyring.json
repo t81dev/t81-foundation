@@ -1,0 +1,28 @@
+{
+  "schema": "t81.ai.governed-replay-keyring.v1",
+  "active_key_id": "ai-governed-replay-2026q1",
+  "rotation_policy": {
+    "max_active_days": 120,
+    "require_next_key": true
+  },
+  "keys": [
+    {
+      "key_id": "ai-governed-replay-2026q1",
+      "algorithm": "hmac-sha256",
+      "status": "active",
+      "not_before": "2026-01-01",
+      "not_after": "2026-03-31",
+      "material_env": "T81_AI_GOVERNED_REPLAY_KEY_2026Q1",
+      "material_b64": "dDgxLWFpLWdvdmVybmVkLXJlcGxheS0yMDI2cTEtc2lnbmluZy1rZXk="
+    },
+    {
+      "key_id": "ai-governed-replay-2026q2",
+      "algorithm": "hmac-sha256",
+      "status": "next",
+      "not_before": "2026-03-15",
+      "not_after": "2026-06-30",
+      "material_env": "T81_AI_GOVERNED_REPLAY_KEY_2026Q2",
+      "material_b64": "dDgxLWFpLWdvdmVybmVkLXJlcGxheS0yMDI2cTItc2lnbmluZy1rZXk="
+    }
+  ]
+}

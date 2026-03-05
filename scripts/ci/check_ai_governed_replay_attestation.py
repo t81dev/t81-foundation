@@ -2,8 +2,11 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
+import hmac
 import json
+import os
 import subprocess
 import sys
 from collections import Counter
@@ -12,6 +15,7 @@ from typing import Any
 
 
 SCHEMA_VERSION = "t81.ai.governed-llama-replay.v1"
+KEYRING_SCHEMA_VERSION = "t81.ai.governed-replay-keyring.v1"
 
 
 def canonical_json(data: Any) -> str:
@@ -20,6 +24,146 @@ def canonical_json(data: Any) -> str:
 
 def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def parse_key_material_b64(raw: str) -> bytes:
+    return base64.b64decode(raw, validate=True)
+
+
+def resolve_key_material(key: dict[str, Any], errors: list[str] | None = None) -> bytes:
+    key_id = str(key.get("key_id", "")).strip()
+    env_name = str(key.get("material_env", "")).strip()
+    if env_name:
+        env_value = os.environ.get(env_name, "")
+        if env_value:
+            try:
+                return parse_key_material_b64(env_value)
+            except Exception:
+                if errors is not None:
+                    errors.append(f"key {key_id}: material_env '{env_name}' is not valid base64")
+                return b""
+    try:
+        return parse_key_material_b64(str(key.get("material_b64", "")))
+    except Exception:
+        if errors is not None:
+            errors.append(f"key {key_id}: invalid material_b64")
+        return b""
+
+
+def validate_keyring(path: Path) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    errors: list[str] = []
+    if payload.get("schema") != KEYRING_SCHEMA_VERSION:
+        errors.append(f"keyring schema mismatch: {payload.get('schema')} != {KEYRING_SCHEMA_VERSION}")
+
+    keys = payload.get("keys")
+    if not isinstance(keys, list) or not keys:
+        errors.append("keyring keys must be a non-empty list")
+        return payload, {}, errors
+
+    active_keys: list[dict[str, Any]] = []
+    key_by_id: dict[str, dict[str, Any]] = {}
+    for key in keys:
+        if not isinstance(key, dict):
+            errors.append("key entry must be object")
+            continue
+        key_id = str(key.get("key_id", "")).strip()
+        if not key_id:
+            errors.append("key entry missing key_id")
+            continue
+        if key_id in key_by_id:
+            errors.append(f"duplicate key_id in keyring: {key_id}")
+            continue
+        key_by_id[key_id] = key
+        if str(key.get("status", "")).strip() == "active":
+            active_keys.append(key)
+        if str(key.get("algorithm", "")).strip() != "hmac-sha256":
+            errors.append(f"key {key_id}: unsupported algorithm")
+        decoded = resolve_key_material(key, errors)
+        if not decoded:
+            errors.append(f"key {key_id}: empty key material")
+
+    active_key_id = str(payload.get("active_key_id", "")).strip()
+    if not active_key_id:
+        errors.append("keyring missing active_key_id")
+    if len(active_keys) != 1:
+        errors.append(f"keyring must have exactly one active key (found {len(active_keys)})")
+
+    active = key_by_id.get(active_key_id, {})
+    if not active:
+        errors.append(f"active_key_id not found: {active_key_id}")
+    elif str(active.get("status", "")).strip() != "active":
+        errors.append(f"active key {active_key_id} does not have status=active")
+
+    rotation = payload.get("rotation_policy", {})
+    if isinstance(rotation, dict) and bool(rotation.get("require_next_key", False)):
+        has_next = any(str(k.get("status", "")).strip() == "next" for k in key_by_id.values())
+        if not has_next:
+            errors.append("rotation_policy.require_next_key=true but no next key exists")
+
+    return payload, active, errors
+
+
+def sign_payload_hex(payload: dict[str, Any], key_entry: dict[str, Any]) -> str:
+    material = resolve_key_material(key_entry, [])
+    return hmac.new(material, canonical_json(payload).encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+def verify_payload_signature(payload: dict[str, Any], signature_hex: str, keyring: dict[str, Any]) -> tuple[bool, str]:
+    keys = keyring.get("keys")
+    if not isinstance(keys, list):
+        return False, ""
+    encoded = canonical_json(payload).encode("utf-8")
+    for key in keys:
+        if not isinstance(key, dict):
+            continue
+        key_id = str(key.get("key_id", "")).strip()
+        material = resolve_key_material(key, [])
+        if not material:
+            continue
+        candidate = hmac.new(material, encoded, hashlib.sha256).hexdigest()
+        if hmac.compare_digest(candidate, signature_hex):
+            return True, key_id
+    return False, ""
+
+
+def build_replay_escalation(errors: list[str]) -> dict[str, Any]:
+    rules: list[tuple[str, str, str, str]] = [
+        (
+            "keyring",
+            "AI_GOVERNED_ESCALATE_KEYRING_INVALID",
+            "platform-oncall",
+            "fail_closed_and_review_governed_replay_keyring",
+        ),
+        (
+            "signature verification failed",
+            "AI_GOVERNED_ESCALATE_SIGNATURE_INVALID",
+            "security-oncall",
+            "block_promotion_and_rotate_governed_replay_keys",
+        ),
+        (
+            "nondeterministic_",
+            "AI_GOVERNED_ESCALATE_DETERMINISM_REGRESSION",
+            "ai-runtime-oncall",
+            "block_promotion_and_debug_replay_nondeterminism",
+        ),
+    ]
+    actions: list[dict[str, str]] = []
+    seen: set[str] = set()
+    joined = "\n".join(errors).lower()
+    for needle, reason_code, owner, action in rules:
+        if needle in joined and reason_code not in seen:
+            actions.append({"reason_code": reason_code, "owner": owner, "action": action})
+            seen.add(reason_code)
+    return {"status": "triggered" if actions else "none", "actions": actions}
 
 
 def run(cmd: list[str], cwd: Path) -> subprocess.CompletedProcess:
@@ -50,6 +194,11 @@ def parse_args() -> argparse.Namespace:
         "--baseline-governed-flow",
         default="",
         help="Optional path to governed_llama_flow.json for consistency checks",
+    )
+    p.add_argument(
+        "--signing-keyring",
+        default="",
+        help="Path to governed replay attestation keyring (defaults to scripts/ci/ai_governed_replay_keyring.json).",
     )
     return p.parse_args()
 
@@ -95,6 +244,8 @@ def main() -> int:
     t81_bin = Path(args.t81_bin).resolve()
     model = Path(args.model).resolve()
     probe_script = Path(args.llama_hash_probe).resolve()
+    default_keyring = Path(__file__).resolve().with_name("ai_governed_replay_keyring.json")
+    keyring_path = Path(args.signing_keyring).resolve() if args.signing_keyring else default_keyring
 
     errors: list[str] = []
     taxonomy_counts: Counter[str] = Counter()
@@ -250,10 +401,42 @@ def main() -> int:
 
     status = "pass" if not errors else "fail"
     deterministic_multi_seed = bool(per_seed) and all(item["deterministic_replay"] for item in per_seed.values())
+    keyring_payload: dict[str, Any] = {}
+    active_key: dict[str, Any] = {}
+    keyring_errors: list[str] = []
+    signature_hex = ""
+    signature_verified = False
+    signature_verified_by = ""
+    signing_key_id = ""
+    if keyring_path.exists():
+        keyring_payload, active_key, keyring_errors = validate_keyring(keyring_path)
+    else:
+        keyring_errors = [f"governed replay keyring missing: {keyring_path}"]
+    errors.extend(keyring_errors)
+
+    signature_payload = {
+        "schema": SCHEMA_VERSION,
+        "deterministic_multi_seed_replay": deterministic_multi_seed,
+        "model_hash": model_hash,
+        "seeds": seeds,
+        "replays_per_seed": args.replays_per_seed,
+        "failure_taxonomy_counts": dict(sorted(taxonomy_counts.items())),
+        "errors": errors,
+    }
+    if active_key:
+        signing_key_id = str(active_key.get("key_id", "")).strip()
+        signature_hex = sign_payload_hex(signature_payload, active_key)
+        signature_verified, signature_verified_by = verify_payload_signature(
+            signature_payload, signature_hex, keyring_payload
+        )
+        if not signature_verified:
+            errors.append("governed replay attestation signature verification failed")
+    else:
+        errors.append("governed replay attestation has no active signing key")
 
     payload = {
         "schema": SCHEMA_VERSION,
-        "status": status,
+        "status": "pass" if not errors else "fail",
         "deterministic_multi_seed_replay": deterministic_multi_seed,
         "model": str(model),
         "model_hash": model_hash,
@@ -268,7 +451,19 @@ def main() -> int:
             "details": taxonomy_details,
         },
         "errors": errors,
+        "escalation_policy": build_replay_escalation(errors),
+        "signature": {
+            "algorithm": "hmac-sha256",
+            "key_id": signing_key_id,
+            "signature_hex": signature_hex,
+            "verified": signature_verified,
+            "verified_by_key_id": signature_verified_by,
+            "keyring_path": str(keyring_path),
+            "keyring_sha256": sha256_file(keyring_path) if keyring_path.exists() else "",
+            "rotation_policy": keyring_payload.get("rotation_policy", {}),
+        },
     }
+    status = str(payload["status"])
 
     json_path = out_dir / "governed_llama_replay_attestation.json"
     md_path = out_dir / "governed_llama_replay_attestation.md"
@@ -284,6 +479,8 @@ def main() -> int:
                 f"- seeds: `{','.join(str(s) for s in seeds) if seeds else ''}`",
                 f"- replays_per_seed: `{args.replays_per_seed}`",
                 f"- taxonomy_categories: `{len(taxonomy_counts)}`",
+                f"- signature_verified: `{str(signature_verified).lower()}`",
+                f"- escalation_status: `{payload['escalation_policy']['status']}`",
                 "",
             ]
         ),
