@@ -156,11 +156,12 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - Completed: 2026-03-05
   - Status: **✅ RESOLVED**
 
-- [ ] **CLI-03: Weights Workflow Guardrails**
-  - Add format/extension validation matrix tests for `weights import/info/quantize`
-  - Normalize user-facing error messages and `--help` docs parity
-  - Target: 2026-03-12
-  - Status: **PLANNED**
+- [x] **CLI-03: Weights Workflow Guardrails** - **✅ COMPLETED**
+  - ✅ Added format/extension validation matrix for `weights import/info/quantize`
+  - ✅ Normalized user-facing diagnostics to include help-routing guidance
+  - ✅ Wired `weights import -o/--output` parsing parity with command docs
+  - Completed: 2026-03-05
+  - Status: **✅ RESOLVED**
 
 ---
 

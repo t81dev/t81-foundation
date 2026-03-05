@@ -1113,52 +1113,82 @@ struct WeightsImportOptions {
   std::string format = "safetensors";
 };
 
+bool has_extension_ci(const fs::path& path, std::string_view expected_ext) {
+  auto lower = [](std::string_view text) {
+    std::string out;
+    out.reserve(text.size());
+    for (char c : text) {
+      out.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+    }
+    return out;
+  };
+  std::string ext = lower(path.extension().string());
+  std::string expected = lower(expected_ext);
+  return ext == expected;
+}
+
 int run_weights_import(const Args& args) {
   if (args.command_args.size() < 2) {
-    error("weights import requires the input file");
+    error("weights import requires an input file. Run 't81 help weights import'.");
     return 1;
   }
   WeightsImportOptions opts;
   opts.input = fs::path(args.command_args[1]);
+  opts.output = args.output;
   size_t idx = 2;
   while (idx < args.command_args.size()) {
     const auto& token = args.command_args[idx++];
     if (token == "--format") {
       if (idx >= args.command_args.size()) {
-        error("weights import: missing argument for --format");
+        error("weights import: missing argument for --format. Run 't81 help weights import'.");
         return 1;
       }
       opts.format = args.command_args[idx++];
     } else if (token == "-o" || token == "--out") {
       if (idx >= args.command_args.size()) {
-        error("weights import: missing argument for " + token);
+        error("weights import: missing argument for " + token + ". Run 't81 help weights import'.");
         return 1;
       }
       opts.output = fs::path(args.command_args[idx++]);
     } else if (opts.input.empty()) {
       opts.input = fs::path(token);
     } else {
-      error("weights import: unexpected argument '" + token + "'");
+      error("weights import: unexpected argument '" + token + "'. Run 't81 help weights import'.");
       return 1;
     }
   }
   if (opts.input.empty()) {
-    error("weights import needs an input file");
+    error("weights import requires an input file. Run 't81 help weights import'.");
     return 1;
   }
   if (!opts.output) {
     opts.output = opts.input.stem();
     opts.output->replace_extension(".t81w");
   }
+  if (!has_extension_ci(*opts.output, ".t81w")) {
+    error("weights import: output must use .t81w extension. Run 't81 help weights import'.");
+    return 1;
+  }
 
   t81::weights::ModelFile mf;
   try {
     if (opts.format == "safetensors") {
+      if (!has_extension_ci(opts.input, ".safetensors")) {
+        error("weights import: --format safetensors requires a .safetensors input file. Run 't81 help "
+              "weights import'.");
+        return 1;
+      }
       mf = t81::weights::load_safetensors(opts.input);
     } else if (opts.format == "gguf") {
+      if (!has_extension_ci(opts.input, ".gguf")) {
+        error("weights import: --format gguf requires a .gguf input file. Run 't81 help weights "
+              "import'.");
+        return 1;
+      }
       mf = t81::weights::load_gguf(opts.input);
     } else {
-      error("weights import: unsupported format: " + opts.format);
+      error("weights import: unsupported format '" + opts.format +
+            "'. Supported: safetensors, gguf. Run 't81 help weights import'.");
       return 1;
     }
   } catch (const std::exception& e) {
@@ -1198,6 +1228,10 @@ int run_weights_info(const Args& args) {
   }
   if (path.empty()) {
     error("weights info requires a .t81w file path. Run 't81 help weights info'.");
+    return 1;
+  }
+  if (!has_extension_ci(path, ".t81w")) {
+    error("weights info expects a .t81w file path. Run 't81 help weights info'.");
     return 1;
   }
   auto emit_json_error = [&](std::string_view message) {
@@ -1277,6 +1311,14 @@ int run_weights_quantize(const Args& args) {
   }
   fs::path input = args.command_args[1];
   fs::path output = args.command_args[3];
+  if (!has_extension_ci(input, ".safetensors")) {
+    error("weights quantize expects a .safetensors input. Run 't81 help weights quantize'.");
+    return 1;
+  }
+  if (!has_extension_ci(output, ".gguf")) {
+    error("weights quantize expects a .gguf output path. Run 't81 help weights quantize'.");
+    return 1;
+  }
   try {
     t81::weights::quantize_safetensors_to_gguf(input, output);
   } catch (const std::exception& e) {

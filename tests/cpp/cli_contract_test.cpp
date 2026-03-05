@@ -341,10 +341,59 @@ int main(int argc, char* argv[]) {
   }
 
   {
+    const auto result = run_cli(t81_bin, {"weights", "import"});
+    T81_TEST_CHECK(result.exit_code == 1);
+    T81_TEST_CHECK(contains(result.stderr_text, "Run 't81 help weights import'"));
+  }
+
+  {
+    const auto bad_format = run_cli(
+        t81_bin, {"weights", "import", "model.safetensors", "--format", "onnx"});
+    T81_TEST_CHECK(bad_format.exit_code == 1);
+    T81_TEST_CHECK(contains(bad_format.stderr_text, "unsupported format"));
+    T81_TEST_CHECK(contains(bad_format.stderr_text, "Run 't81 help weights import'"));
+  }
+
+  {
+    const auto wrong_input_ext =
+        run_cli(t81_bin, {"weights", "import", "model.gguf", "--format", "safetensors"});
+    T81_TEST_CHECK(wrong_input_ext.exit_code == 1);
+    T81_TEST_CHECK(contains(wrong_input_ext.stderr_text, ".safetensors input file"));
+    T81_TEST_CHECK(contains(wrong_input_ext.stderr_text, "Run 't81 help weights import'"));
+  }
+
+  {
+    const auto wrong_out_ext = run_cli(
+        t81_bin, {"weights", "import", "model.safetensors", "--format", "safetensors", "-o", "out.gguf"});
+    T81_TEST_CHECK(wrong_out_ext.exit_code == 1);
+    T81_TEST_CHECK(contains(wrong_out_ext.stderr_text, "output must use .t81w extension"));
+  }
+
+  {
     const auto result = run_cli(t81_bin, {"weights", "info", "does-not-exist.t81w", "--json"});
     T81_TEST_CHECK(result.exit_code == 1);
     T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.weights-info.v1\""));
     T81_TEST_CHECK(contains(result.stdout_text, "\"ok\": false"));
+  }
+
+  {
+    const auto info_bad_ext = run_cli(t81_bin, {"weights", "info", "model.gguf"});
+    T81_TEST_CHECK(info_bad_ext.exit_code == 1);
+    T81_TEST_CHECK(contains(info_bad_ext.stderr_text, "weights info expects a .t81w file path"));
+  }
+
+  {
+    const auto quantize_bad_input = run_cli(
+        t81_bin, {"weights", "quantize", "model.gguf", "--to-gguf", "model.gguf"});
+    T81_TEST_CHECK(quantize_bad_input.exit_code == 1);
+    T81_TEST_CHECK(contains(quantize_bad_input.stderr_text, "expects a .safetensors input"));
+  }
+
+  {
+    const auto quantize_bad_output = run_cli(
+        t81_bin, {"weights", "quantize", "model.safetensors", "--to-gguf", "model.t81w"});
+    T81_TEST_CHECK(quantize_bad_output.exit_code == 1);
+    T81_TEST_CHECK(contains(quantize_bad_output.stderr_text, "expects a .gguf output path"));
   }
 
   {
