@@ -10,6 +10,7 @@ on:
       - 'scripts/ci/check_ai_experiment_boundary.py'
       - 'scripts/ci/collect_ai_evidence_bundle.py'
       - 'scripts/ci/check_ai_model_provenance_gate.py'
+      - 'scripts/ci/ai_model_provenance_keyring.json'
       - 'scripts/ci/check_ai_policy_event_contract.py'
       - 'scripts/ci/check_ai_backend_adapter_contract.py'
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
@@ -33,6 +34,7 @@ on:
       - 'scripts/ci/check_ai_experiment_boundary.py'
       - 'scripts/ci/collect_ai_evidence_bundle.py'
       - 'scripts/ci/check_ai_model_provenance_gate.py'
+      - 'scripts/ci/ai_model_provenance_keyring.json'
       - 'scripts/ci/check_ai_policy_event_contract.py'
       - 'scripts/ci/check_ai_backend_adapter_contract.py'
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
@@ -210,6 +212,7 @@ jobs:
         python3 scripts/ci/check_ai_model_provenance_gate.py \
           --model build/ai-provenance/test_model.gguf \
           --manifest build/ai-provenance/test_model.manifest.json \
+          --signing-keyring scripts/ci/ai_model_provenance_keyring.json \
           --self-test-deny
 
     - name: Validate AI policy event contract (RFC-00A6 baseline)
