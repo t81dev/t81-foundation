@@ -134,11 +134,11 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - Target: Begin Q2 2026
   - Status: **STRATEGIC**
 
-- [ ] **CLI Workflow Expansion**
+- [x] **CLI Workflow Expansion** - **✅ COMPLETED**
   - Enhance `compile`, `run`, `disasm`, `debug`, `trace replay`, `weights`
   - Improve developer experience
-  - Target: Ongoing
-  - Status: **ECOSYSTEM**
+  - Completed: 2026-03-05
+  - Status: **✅ RESOLVED**
 
 ### CLI Workflow Expansion Backlog (Execution Slices)
 
