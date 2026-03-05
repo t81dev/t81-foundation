@@ -51,6 +51,7 @@
 - Enforces runtime benchmark execution replay and regression/trend thresholds (`build/ai-benchmark/ai_benchmark_spec_contract.json`)
 - Enforces runtime quantization inspect replay + encode/decode fixture corpus roundtrip validation (`build/ai-quantization/ai_quantization_codec_contract.json`)
 - Emits AI signing key expiry alert report for keyring rotation readiness (`build/ai-keyring/ai_keyring_expiry_report.json`)
+- Enforces AI keyring KMS metadata contract and emits report (`build/ai-keyring/ai_keyring_kms_contract_report.json`)
 
 ### How It Prevents Regressions
 
@@ -101,6 +102,7 @@
 - `scripts/ci/ai_backend_selection_keyring.json` - Triggers on backend-selection signing key rotation changes
 - `scripts/ci/ai_governed_replay_keyring.json` - Triggers on governed replay signing key rotation changes
 - `scripts/ci/ai_direct_backend_attestation_keyring.json` - Triggers on direct-backend attestation signing key rotation changes
+- `scripts/ci/check_ai_keyring_kms_contract.py` - Triggers on KMS metadata contract policy updates
 - `scripts/ci/ai_benchmark_thresholds.json` - Triggers on benchmark threshold baseline updates
 
 ### Failure Conditions

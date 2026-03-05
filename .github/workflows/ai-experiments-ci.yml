@@ -26,6 +26,7 @@ on:
       - 'scripts/ci/check_ai_evidence_manifest.py'
       - 'scripts/ci/ai_evidence_manifest_keyring.json'
       - 'scripts/ci/check_ai_keyring_expiry.py'
+      - 'scripts/ci/check_ai_keyring_kms_contract.py'
       - 'scripts/ci/generate_ai_opcode_runtime_report.py'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - 'scripts/ci/run_governed_llama_flow.py'
@@ -57,6 +58,7 @@ on:
       - 'scripts/ci/check_ai_evidence_manifest.py'
       - 'scripts/ci/ai_evidence_manifest_keyring.json'
       - 'scripts/ci/check_ai_keyring_expiry.py'
+      - 'scripts/ci/check_ai_keyring_kms_contract.py'
       - 'scripts/ci/generate_ai_opcode_runtime_report.py'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - 'scripts/ci/run_governed_llama_flow.py'
@@ -265,6 +267,20 @@ jobs:
           --fail-days 0 \
           --out-json build/ai-keyring/ai_keyring_expiry_report.json
 
+    - name: Enforce AI keyring KMS metadata contract
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-keyring
+        python3 scripts/ci/check_ai_keyring_kms_contract.py \
+          --keyring scripts/ci/ai_evidence_manifest_keyring.json \
+          --keyring scripts/ci/ai_model_provenance_keyring.json \
+          --keyring scripts/ci/ai_policy_ledger_keyring.json \
+          --keyring scripts/ci/ai_backend_selection_keyring.json \
+          --keyring scripts/ci/ai_governed_replay_keyring.json \
+          --keyring scripts/ci/ai_direct_backend_attestation_keyring.json \
+          --max-active-days-limit 120 \
+          --out-json build/ai-keyring/ai_keyring_kms_contract_report.json
+
     - name: Enforce model provenance hash gate (RFC-00A3 baseline)
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -437,6 +453,13 @@ jobs:
           echo "- fail threshold: \`0\` days (already expired)"
           echo ""
         } >> "$GITHUB_STEP_SUMMARY"
+        {
+          echo "# AI Keyring KMS Contract"
+          echo ""
+          echo "- report: \`build/ai-keyring/ai_keyring_kms_contract_report.json\`"
+          echo "- max_active_days_limit: \`120\`"
+          echo ""
+        } >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-vm-trace/ai_vm_trace_evidence.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-policy/ai_policy_event_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-policy/ai_axion_policy_ledger_snapshot.md >> "$GITHUB_STEP_SUMMARY"
@@ -482,6 +505,7 @@ jobs:
           build/ai-evidence/ai_evidence_summary.md
           build/ai-evidence/ai_evidence_replay_vector.json
           build/ai-keyring/ai_keyring_expiry_report.json
+          build/ai-keyring/ai_keyring_kms_contract_report.json
           build/ai-vm-trace/ai_vm_trace_ctest.log
           build/ai-vm-trace/ai_vm_trace_evidence.json
           build/ai-vm-trace/ai_vm_trace_evidence.md

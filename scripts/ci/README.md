@@ -30,6 +30,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - AI signed multi-lane evidence manifest gate: `check_ai_evidence_manifest.py`
 - AI evidence manifest signing keyring: `ai_evidence_manifest_keyring.json`
 - AI keyring expiry alert gate: `check_ai_keyring_expiry.py`
+- AI keyring KMS metadata contract gate: `check_ai_keyring_kms_contract.py`
 - RFC-0025 canonize-tensor toolchain gate: `check_ai_tloadhash_toolchain.py`
 - Governed llama runtime evidence runner: `run_governed_llama_flow.py`
 - Governed llama multi-seed replay attestation gate: `check_ai_governed_replay_attestation.py`
@@ -55,6 +56,7 @@ python3 scripts/ci/check_ai_ux_contract.py --ai-bin build/experiments/ai/ux_tool
 python3 scripts/ci/check_ai_cross_lane_evidence.py --out-dir build/ai-cross-lane --evidence-bundle build/ai-evidence/ai_evidence_bundle.json --ux-contract build/ai-ux/ai_ux_contract.json --ux-inference build/ai-ux/ai_inference_run.json --ux-quantization build/ai-ux/ai_quantization_inspect.json --ux-benchmark build/ai-ux/ai_benchmark_run.json --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json --governed-flow build/ai-governed/governed_llama_flow.json
 python3 scripts/ci/check_ai_evidence_manifest.py --out-dir build/ai-manifest --evidence-bundle build/ai-evidence/ai_evidence_bundle.json --vm-trace build/ai-vm-trace/ai_vm_trace_evidence.json --cross-lane build/ai-cross-lane/ai_cross_lane_evidence.json --backend-contract build/ai-backend/ai_backend_adapter_contract.json --ux-contract build/ai-ux/ai_ux_contract.json --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json --signing-keyring scripts/ci/ai_evidence_manifest_keyring.json --promotion-window-start 2026-03-01 --promotion-window-end 2026-03-31
 python3 scripts/ci/check_ai_keyring_expiry.py --keyring scripts/ci/ai_evidence_manifest_keyring.json --keyring scripts/ci/ai_model_provenance_keyring.json --keyring scripts/ci/ai_policy_ledger_keyring.json --keyring scripts/ci/ai_backend_selection_keyring.json --keyring scripts/ci/ai_governed_replay_keyring.json --keyring scripts/ci/ai_direct_backend_attestation_keyring.json --warn-days 30 --fail-days 0 --out-json build/ai-keyring/ai_keyring_expiry_report.json
+python3 scripts/ci/check_ai_keyring_kms_contract.py --keyring scripts/ci/ai_evidence_manifest_keyring.json --keyring scripts/ci/ai_model_provenance_keyring.json --keyring scripts/ci/ai_policy_ledger_keyring.json --keyring scripts/ci/ai_backend_selection_keyring.json --keyring scripts/ci/ai_governed_replay_keyring.json --keyring scripts/ci/ai_direct_backend_attestation_keyring.json --max-active-days-limit 120 --out-json build/ai-keyring/ai_keyring_kms_contract_report.json
 python3 scripts/ci/check_ai_tloadhash_toolchain.py --t81-bin build/t81 --input-file tests/fixtures/llama_cpp_repro/model.gguf --out-dir build/ai-rfc0025
 python3 scripts/ci/run_governed_llama_flow.py --t81-bin build-llama-local/t81 --model models/tinyllama-1.1b.Q2_K.gguf --out-dir build/ai-governed
 python3 scripts/ci/check_ai_governed_replay_attestation.py --t81-bin build-llama-local/t81 --model tests/fixtures/llama_cpp_repro/model.gguf --out-dir build/ai-governed --seeds 0,1,2 --replays-per-seed 2 --baseline-governed-flow build/ai-governed/governed_llama_flow.json --signing-keyring scripts/ci/ai_governed_replay_keyring.json
@@ -70,6 +72,7 @@ The AI signing keyring JSON files support two key material modes:
 
 - `material_b64`: inline base64 key material (current repository baseline).
 - `material_env`: environment variable name that supplies base64 key material at runtime.
+- `kms_key_ref`: canonical KMS reference for the key material source (enforced by `check_ai_keyring_kms_contract.py`).
 
 When both fields are present for an entry, `material_env` takes precedence when set; if it is
 unset/empty, gates fall back to `material_b64` for compatibility.
