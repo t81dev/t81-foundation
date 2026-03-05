@@ -114,8 +114,10 @@ t81::tisc::Program random_program(std::mt19937_64& rng) {
 
   const auto bigint_count = static_cast<int>(rng() % 6);
   for (int i = 0; i < bigint_count; ++i) {
-    const auto hi = t81::T81BigInt::from_i64(static_cast<std::int64_t>(rng() % 9000000000000000000ULL));
-    const auto lo = t81::T81BigInt::from_i64(static_cast<std::int64_t>(rng() % 9000000000000000000ULL));
+    const auto hi =
+        t81::T81BigInt::from_i64(static_cast<std::int64_t>(rng() % 9000000000000000000ULL));
+    const auto lo =
+        t81::T81BigInt::from_i64(static_cast<std::int64_t>(rng() % 9000000000000000000ULL));
     t81::T81BigInt v = (hi * t81::T81BigInt::from_i64(10)) + lo;
     if ((rng() & 1ULL) != 0ULL) {
       v = t81::T81BigInt::neg(v);

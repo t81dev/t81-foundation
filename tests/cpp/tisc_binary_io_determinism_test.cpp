@@ -41,7 +41,8 @@ static bool test_save_program_is_bit_stable_for_same_program() {
   t81::tisc::Program program;
   program.insns.push_back({t81::tisc::Opcode::LoadImm, 1, 42, 0, t81::tisc::LiteralKind::Int});
   program.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 1, 0, t81::tisc::LiteralKind::Bool});
-  program.insns.push_back({t81::tisc::Opcode::LoadImm, 3, 1, 0, t81::tisc::LiteralKind::BigIntHandle});
+  program.insns.push_back(
+      {t81::tisc::Opcode::LoadImm, 3, 1, 0, t81::tisc::LiteralKind::BigIntHandle});
   program.insns.push_back({t81::tisc::Opcode::Print, 1, 0, 0, t81::tisc::LiteralKind::Int});
   program.insns.push_back({t81::tisc::Opcode::Print, 2, 0, 0, t81::tisc::LiteralKind::Bool});
   program.insns.push_back({t81::tisc::Opcode::Print, 3, 0, 0, t81::tisc::LiteralKind::Int});
