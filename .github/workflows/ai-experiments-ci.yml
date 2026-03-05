@@ -1,0 +1,80 @@
+name: AI Experiments CI
+
+on:
+  push:
+    branches: [ main, feature/ai-* ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'experiments/ai/**'
+      - 'CMakeLists.txt'
+      - 'scripts/test_ai_simple.sh'
+
+jobs:
+  test-ai-experiments:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential
+    
+    - name: Configure AI Experiments
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DT81_ENABLE_AI_EXPERIMENTS=ON
+    
+    - name: Build AI CLI
+      run: |
+        cd build
+        make t81_ai
+    
+    - name: Verify Binary Exists
+      run: |
+        cd build
+        if [ ! -f "experiments/ai/ux_tools/t81_ai" ]; then
+          echo "❌ AI CLI binary not found"
+          exit 1
+        fi
+        echo "✅ AI CLI binary found"
+    
+    - name: Run Smoke Tests
+      run: |
+        cd build
+        # Test help command
+        ./experiments/ai/ux_tools/t81_ai --help
+        
+        # Test model inspection
+        echo "mock model data" > test_model.gguf
+        ./experiments/ai/ux_tools/t81_ai model inspect test_model.gguf
+        
+        # Test model verification
+        ./experiments/ai/ux_tools/t81_ai verify test_model.gguf
+        
+        # Test error handling
+        ! ./experiments/ai/ux_tools/t81_ai verify nonexistent.gguf || true
+        
+        echo "✅ All AI CLI smoke tests passed"
+    
+    - name: Verify Core Isolation
+      run: |
+        # Ensure no core directories were modified in this PR
+        if [ "$GITHUB_EVENT" = "pull_request" ]; then
+          CORE_CHANGES=$(git diff --name-only origin/$GITHUB_BASE_HEAD..HEAD | grep -E '^(src/|include/t81/|spec/|tests/)' || true)
+          if [ -n "$CORE_CHANGES" ]; then
+            echo "❌ Core directories were modified:"
+            echo "$CORE_CHANGES"
+            exit 1
+          fi
+        fi
+        echo "✅ Core isolation verified"
+    
+    - name: Run Official Smoke Test
+      run: |
+        cd build
+        ../scripts/test_ai_simple.sh

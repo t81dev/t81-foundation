@@ -29,6 +29,16 @@ All AI features are **experimental** and may change without notice. They are not
 - C++23 compatible compiler
 - No external dependencies required
 
+### Compiler Compatibility
+
+**Supported Compilers:**
+- **Apple Clang 17.0.0**: ✅ Verified and tested
+- **GCC**: ⚠️ Untested (not available on test systems)
+
+**Known Issues:**
+- **Homebrew Clang 21.1.8**: ⚠️ Linker compatibility issues with newer libstdc++
+- **Recommendation**: Use system Apple Clang on macOS for best compatibility
+
 ### Build Commands
 
 ```bash
