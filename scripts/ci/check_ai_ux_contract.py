@@ -40,6 +40,10 @@ def build_contract() -> dict[str, Any]:
                 "model",
                 "verify",
                 "backend",
+                "inference",
+                "quantization",
+                "benchmark",
+                "policy",
                 "observability",
                 "workflow",
             ],
@@ -47,6 +51,10 @@ def build_contract() -> dict[str, Any]:
                 "model": ["inspect"],
                 "verify": ["determinism"],
                 "backend": ["capabilities"],
+                "inference": ["run"],
+                "quantization": ["inspect"],
+                "benchmark": ["run"],
+                "policy": ["test"],
                 "workflow": ["run", "replay", "report"],
                 "observability": ["trace"],
             },
@@ -96,6 +104,14 @@ def validate_static_contract(contract: dict[str, Any]) -> tuple[bool, list[str]]
         errs.append("required category missing: observability")
     if "backend" not in cats:
         errs.append("required category missing: backend")
+    if "inference" not in cats:
+        errs.append("required category missing: inference")
+    if "quantization" not in cats:
+        errs.append("required category missing: quantization")
+    if "benchmark" not in cats:
+        errs.append("required category missing: benchmark")
+    if "policy" not in cats:
+        errs.append("required category missing: policy")
 
     min_actions = contract["cli_surface"]["minimum_actions"]
     for category, required in min_actions.items():
@@ -148,6 +164,10 @@ def validate_runtime(ai_bin: Path, out_dir: Path) -> tuple[bool, list[str], dict
         "model inspect",
         "verify determinism",
         "backend capabilities",
+        "inference run",
+        "quantization inspect",
+        "benchmark run",
+        "policy test",
         "workflow run",
         "workflow replay",
         "workflow report",
@@ -247,6 +267,116 @@ def validate_runtime(ai_bin: Path, out_dir: Path) -> tuple[bool, list[str], dict
                 }
                 if default_backend not in backend_names:
                     errs.append("backend capabilities default_backend not found in backends list")
+
+    inference_path = out_dir / "ai_inference_run.json"
+    inference_result = run_cmd(
+        [
+            str(ai_bin),
+            "inference",
+            "run",
+            "--model",
+            "ci-ux-model",
+            "--prompt",
+            "deterministic prompt",
+            "--out",
+            str(inference_path),
+        ]
+    )
+    runtime["inference_run"] = {"rc": inference_result["rc"], "stdout_sha256": sha256_text(inference_result["stdout"])}
+    if inference_result["rc"] != 0:
+        errs.append("inference run failed")
+    if not inference_path.exists():
+        errs.append("inference run did not emit artifact")
+    else:
+        inference = parse_json(inference_path)
+        req = {"schema", "model_id", "prompt_sha256", "output", "status"}
+        missing = sorted(req - set(inference.keys()))
+        if missing:
+            errs.append(f"inference artifact missing fields: {', '.join(missing)}")
+        if inference.get("schema") != "t81.ai.inference-run.v1":
+            errs.append("inference artifact schema mismatch")
+        runtime["inference_artifact_sha256"] = sha256_text(canonical_json(inference))
+
+    quant_path = out_dir / "ai_quantization_inspect.json"
+    quant_result = run_cmd(
+        [
+            str(ai_bin),
+            "quantization",
+            "inspect",
+            "--model",
+            "ci-ux-model",
+            "--out",
+            str(quant_path),
+        ]
+    )
+    runtime["quantization_inspect"] = {"rc": quant_result["rc"], "stdout_sha256": sha256_text(quant_result["stdout"])}
+    if quant_result["rc"] != 0:
+        errs.append("quantization inspect failed")
+    if not quant_path.exists():
+        errs.append("quantization inspect did not emit artifact")
+    else:
+        quant = parse_json(quant_path)
+        req = {"schema", "model_id", "codec", "bits_per_weight", "status"}
+        missing = sorted(req - set(quant.keys()))
+        if missing:
+            errs.append(f"quantization artifact missing fields: {', '.join(missing)}")
+        if quant.get("schema") != "t81.ai.quantization-inspect.v1":
+            errs.append("quantization artifact schema mismatch")
+        runtime["quantization_artifact_sha256"] = sha256_text(canonical_json(quant))
+
+    benchmark_path = out_dir / "ai_benchmark_run.json"
+    benchmark_result = run_cmd(
+        [
+            str(ai_bin),
+            "benchmark",
+            "run",
+            "--model",
+            "ci-ux-model",
+            "--out",
+            str(benchmark_path),
+        ]
+    )
+    runtime["benchmark_run"] = {"rc": benchmark_result["rc"], "stdout_sha256": sha256_text(benchmark_result["stdout"])}
+    if benchmark_result["rc"] != 0:
+        errs.append("benchmark run failed")
+    if not benchmark_path.exists():
+        errs.append("benchmark run did not emit artifact")
+    else:
+        benchmark = parse_json(benchmark_path)
+        req = {"schema", "model_id", "latency_ms", "throughput_tokens_per_sec", "status"}
+        missing = sorted(req - set(benchmark.keys()))
+        if missing:
+            errs.append(f"benchmark artifact missing fields: {', '.join(missing)}")
+        if benchmark.get("schema") != "t81.ai.benchmark-run.v1":
+            errs.append("benchmark artifact schema mismatch")
+        runtime["benchmark_artifact_sha256"] = sha256_text(canonical_json(benchmark))
+
+    policy_path = out_dir / "ai_policy_test.json"
+    policy_result = run_cmd(
+        [
+            str(ai_bin),
+            "policy",
+            "test",
+            "--event-type",
+            "model_load",
+            "--out",
+            str(policy_path),
+        ]
+    )
+    runtime["policy_test"] = {"rc": policy_result["rc"], "stdout_sha256": sha256_text(policy_result["stdout"])}
+    if policy_result["rc"] != 0:
+        errs.append("policy test failed")
+    if not policy_path.exists():
+        errs.append("policy test did not emit artifact")
+    else:
+        policy = parse_json(policy_path)
+        req = {"schema", "event_type", "decision", "reason_code", "status"}
+        missing = sorted(req - set(policy.keys()))
+        if missing:
+            errs.append(f"policy artifact missing fields: {', '.join(missing)}")
+        if policy.get("schema") != "t81.ai.policy-test.v1":
+            errs.append("policy artifact schema mismatch")
+        runtime["policy_artifact_sha256"] = sha256_text(canonical_json(policy))
 
     inspect_result = run_cmd([str(ai_bin), "model", "inspect", str(model_path)])
     runtime["model_inspect"] = {"rc": inspect_result["rc"], "stdout_sha256": sha256_text(inspect_result["stdout"])}

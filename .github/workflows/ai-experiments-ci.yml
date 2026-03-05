@@ -154,6 +154,16 @@ jobs:
         # Test backend capability introspection
         ./build/experiments/ai/ux_tools/t81_ai backend capabilities > /tmp/ai_backend_capabilities.json
         test -s /tmp/ai_backend_capabilities.json
+
+        # Test expanded RFC-00A7 command surface
+        ./build/experiments/ai/ux_tools/t81_ai inference run --model test --prompt "smoke" > /tmp/ai_inference_run.json
+        ./build/experiments/ai/ux_tools/t81_ai quantization inspect --model test > /tmp/ai_quantization_inspect.json
+        ./build/experiments/ai/ux_tools/t81_ai benchmark run --model test > /tmp/ai_benchmark_run.json
+        ./build/experiments/ai/ux_tools/t81_ai policy test --event-type model_load > /tmp/ai_policy_test.json
+        test -s /tmp/ai_inference_run.json
+        test -s /tmp/ai_quantization_inspect.json
+        test -s /tmp/ai_benchmark_run.json
+        test -s /tmp/ai_policy_test.json
         
         # Test error handling
         ! ./build/experiments/ai/ux_tools/t81_ai verify nonexistent.gguf || true
@@ -346,6 +356,10 @@ jobs:
           build/ai-ux/ai_ux_contract.json
           build/ai-ux/ai_ux_contract.md
           build/ai-ux/ai_backend_capabilities.json
+          build/ai-ux/ai_inference_run.json
+          build/ai-ux/ai_quantization_inspect.json
+          build/ai-ux/ai_benchmark_run.json
+          build/ai-ux/ai_policy_test.json
           build/ai-ux/ai_workflow_replay.json
           build/ai-ux/ai_observability_trace.json
           build/ai-rfc0025/tloadhash-ctest.log
