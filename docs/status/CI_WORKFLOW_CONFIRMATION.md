@@ -38,6 +38,9 @@
 - Runs `scripts/test_ai_simple.sh`
 - Verifies all automated tests pass
 
+**Evidence Promotion Gate:**
+- Builds signed multi-lane AI evidence manifest with promotion-window attestation metadata (`build/ai-manifest/ai_evidence_manifest.json`)
+
 ### How It Prevents Regressions
 
 **Core Isolation Check:**

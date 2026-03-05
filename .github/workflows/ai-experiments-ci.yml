@@ -18,6 +18,7 @@ on:
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - 'scripts/ci/check_ai_ux_contract.py'
       - 'scripts/ci/check_ai_cross_lane_evidence.py'
+      - 'scripts/ci/check_ai_evidence_manifest.py'
       - 'scripts/ci/generate_ai_opcode_runtime_report.py'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - 'scripts/ci/run_governed_llama_flow.py'
@@ -39,6 +40,7 @@ on:
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - 'scripts/ci/check_ai_ux_contract.py'
       - 'scripts/ci/check_ai_cross_lane_evidence.py'
+      - 'scripts/ci/check_ai_evidence_manifest.py'
       - 'scripts/ci/generate_ai_opcode_runtime_report.py'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - 'scripts/ci/run_governed_llama_flow.py'
@@ -321,6 +323,27 @@ jobs:
         fi
         "${cmd[@]}"
 
+    - name: Build AI signed multi-lane evidence manifest (RFC-00A1 promotion slice)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-manifest
+        cmd=(
+          python3 scripts/ci/check_ai_evidence_manifest.py
+          --out-dir build/ai-manifest
+          --evidence-bundle build/ai-evidence/ai_evidence_bundle.json
+          --vm-trace build/ai-vm-trace/ai_vm_trace_evidence.json
+          --cross-lane build/ai-cross-lane/ai_cross_lane_evidence.json
+          --backend-contract build/ai-backend/ai_backend_adapter_contract.json
+          --ux-contract build/ai-ux/ai_ux_contract.json
+          --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json
+          --promotion-window-start 2026-03-01
+          --promotion-window-end 2026-03-31
+        )
+        if [ -f "build/ai-governed/governed_llama_flow.json" ]; then
+          cmd+=(--governed-flow build/ai-governed/governed_llama_flow.json)
+        fi
+        "${cmd[@]}"
+
     - name: Append AI evidence summary
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -341,6 +364,7 @@ jobs:
         cat build/ai-quantization/ai_quantization_codec_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-ux/ai_ux_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-cross-lane/ai_cross_lane_evidence.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-manifest/ai_evidence_manifest.md >> "$GITHUB_STEP_SUMMARY"
         {
           echo "# RFC-0025 TLOADHASH Conformance"
           echo ""
@@ -394,6 +418,8 @@ jobs:
           build/ai-ux/ai_observability_trace.json
           build/ai-cross-lane/ai_cross_lane_evidence.json
           build/ai-cross-lane/ai_cross_lane_evidence.md
+          build/ai-manifest/ai_evidence_manifest.json
+          build/ai-manifest/ai_evidence_manifest.md
           build/ai-rfc0025/tloadhash-ctest.log
           build/ai-rfc0025/ai_tloadhash_toolchain.json
           build/ai-rfc0025/ai_tloadhash_toolchain.md
