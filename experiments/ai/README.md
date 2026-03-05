@@ -13,7 +13,8 @@ This directory contains experimental AI integration work for the T81 Foundation.
 ├── quantization/       # RFC-00A4: Ternary quantization codecs
 ├── llm_backend/        # RFC-00A5: LLM backend adapter
 ├── policy_hooks/       # RFC-00A6: Axion policy hooks
-├── ux_tools/          # RFC-00A7: UX integration
+├── ux_tools/           # RFC-00A7: UX integration
+├── opcodes/            # RFC-00A8: published opcode implementation/runtime report
 └── vm_opcodes/         # RFC-00A8: AI-native VM opcodes
 ```
 

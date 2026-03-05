@@ -22,7 +22,7 @@ This backlog tracks active AI integration RFC work only. It is separate from str
 | P2 | RFC-00A2 | AI Benchmark Specification and Reporting Format | **Implemented (Baseline Contract)** — deterministic benchmark report contract gate + artifact active in AI CI | Replace baseline with runtime benchmark execution and trend/regression thresholds | @t81dev | 2026-03-24 |
 | P2 | RFC-00A4 | Ternary Quantization Codec Contract | **Implemented (Baseline Contract)** — deterministic codec manifest contract gate + artifact active in AI CI | Add encode/decode fixture corpus validation against runtime quantization pipeline | @t81dev | 2026-03-27 |
 | P3 | RFC-0026 | AI-Native Inference Opcodes | **Implemented (Baseline Contract)** — Phase-1 subset contract gate active in AI CI (`ATTN`, `QMATMUL`, `EMBED`) | Replace baseline contract with VM dispatch/conformance gates as opcode implementations land | @t81dev | 2026-03-30 |
-| P3 | RFC-00A8 | AI-Native VM Opcode Exploration | **Implemented (Alignment Baseline)** — RFC-00A8 exploration now constrained by RFC-0026 Phase-1 subset contract artifact | Publish `/experiments/ai/opcodes` implementation report tied to runtime evidence | @t81dev | 2026-04-02 |
+| P3 | RFC-00A8 | AI-Native VM Opcode Exploration | **Implemented (Alignment + Runtime Evidence Report)** — RFC-00A8 exploration constrained by RFC-0026 subset contract and CI-published opcode runtime report (`ai_opcode_runtime_report.*`) plus `/experiments/ai/opcodes/IMPLEMENTATION_REPORT.md` | Replace source-scan evidence with VM dispatch/conformance execution evidence as ATTN/QMATMUL/EMBED land in `tisc::Opcode` + VM handlers | @t81dev | 2026-04-02 |
 
 ---
 

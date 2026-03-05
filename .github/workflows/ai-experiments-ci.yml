@@ -16,6 +16,7 @@ on:
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - 'scripts/ci/check_ai_ux_contract.py'
+      - 'scripts/ci/generate_ai_opcode_runtime_report.py'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - 'scripts/ci/run_governed_llama_flow.py'
       - '.github/workflows/ai-experiments-ci.yml'
@@ -34,6 +35,7 @@ on:
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_quantization_codec_contract.py'
       - 'scripts/ci/check_ai_ux_contract.py'
+      - 'scripts/ci/generate_ai_opcode_runtime_report.py'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - 'scripts/ci/run_governed_llama_flow.py'
       - '.github/workflows/ai-experiments-ci.yml'
@@ -205,6 +207,14 @@ jobs:
         python3 scripts/ci/check_ai_opcode_subset_contract.py \
           --out-dir build/ai-opcodes
 
+    - name: Generate AI opcode runtime report (RFC-00A8 evidence)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-opcodes-runtime
+        python3 scripts/ci/generate_ai_opcode_runtime_report.py \
+          --repo-root . \
+          --out-dir build/ai-opcodes-runtime
+
     - name: Validate AI benchmark spec contract (RFC-00A2 baseline)
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -234,6 +244,7 @@ jobs:
         cat build/ai-policy/ai_policy_event_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-backend/ai_backend_adapter_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-opcodes/ai_opcode_subset_contract.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-opcodes-runtime/ai_opcode_runtime_report.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-benchmark/ai_benchmark_spec_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-quantization/ai_quantization_codec_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-ux/ai_ux_contract.md >> "$GITHUB_STEP_SUMMARY"
@@ -264,6 +275,8 @@ jobs:
           build/ai-backend/ai_backend_adapter_contract.md
           build/ai-opcodes/ai_opcode_subset_contract.json
           build/ai-opcodes/ai_opcode_subset_contract.md
+          build/ai-opcodes-runtime/ai_opcode_runtime_report.json
+          build/ai-opcodes-runtime/ai_opcode_runtime_report.md
           build/ai-benchmark/ai_benchmark_spec_contract.json
           build/ai-benchmark/ai_benchmark_spec_contract.md
           build/ai-quantization/ai_quantization_codec_contract.json
