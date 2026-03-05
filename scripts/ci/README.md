@@ -25,6 +25,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - AI benchmark runtime threshold baseline: `ai_benchmark_thresholds.json`
 - AI quantization codec contract gate: `check_ai_quantization_codec_contract.py`
 - AI UX contract gate: `check_ai_ux_contract.py`
+- Direct backend attestation signing keyring: `ai_direct_backend_attestation_keyring.json`
 - AI cross-lane evidence lock gate: `check_ai_cross_lane_evidence.py`
 - AI signed multi-lane evidence manifest gate: `check_ai_evidence_manifest.py`
 - AI evidence manifest signing keyring: `ai_evidence_manifest_keyring.json`
@@ -50,10 +51,10 @@ python3 scripts/ci/check_ai_opcode_subset_contract.py --out-dir build/ai-opcodes
 python3 scripts/ci/generate_ai_opcode_runtime_report.py --repo-root . --out-dir build/ai-opcodes-runtime
 python3 scripts/ci/check_ai_benchmark_spec_contract.py --out-dir build/ai-benchmark --ai-bin build/experiments/ai/ux_tools/t81_ai --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --thresholds-file scripts/ci/ai_benchmark_thresholds.json
 python3 scripts/ci/check_ai_quantization_codec_contract.py --out-dir build/ai-quantization --ai-bin build/experiments/ai/ux_tools/t81_ai --runtime-model tests/fixtures/llama_cpp_repro/model.gguf
-python3 scripts/ci/check_ai_ux_contract.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-ux --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --t81-bin build-llama-ai/t81 --llama-hash-probe scripts/ci/llama_model_hash.py
-python3 scripts/ci/check_ai_cross_lane_evidence.py --out-dir build/ai-cross-lane --evidence-bundle build/ai-evidence/ai_evidence_bundle.json --ux-contract build/ai-ux/ai_ux_contract.json --ux-inference build/ai-ux/ai_inference_run.json --ux-quantization build/ai-ux/ai_quantization_inspect.json --ux-benchmark build/ai-ux/ai_benchmark_run.json --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json
+python3 scripts/ci/check_ai_ux_contract.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-ux --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --t81-bin build-llama-ai/t81 --llama-hash-probe scripts/ci/llama_model_hash.py --direct-backend-signing-keyring scripts/ci/ai_direct_backend_attestation_keyring.json
+python3 scripts/ci/check_ai_cross_lane_evidence.py --out-dir build/ai-cross-lane --evidence-bundle build/ai-evidence/ai_evidence_bundle.json --ux-contract build/ai-ux/ai_ux_contract.json --ux-inference build/ai-ux/ai_inference_run.json --ux-quantization build/ai-ux/ai_quantization_inspect.json --ux-benchmark build/ai-ux/ai_benchmark_run.json --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json --governed-flow build/ai-governed/governed_llama_flow.json
 python3 scripts/ci/check_ai_evidence_manifest.py --out-dir build/ai-manifest --evidence-bundle build/ai-evidence/ai_evidence_bundle.json --vm-trace build/ai-vm-trace/ai_vm_trace_evidence.json --cross-lane build/ai-cross-lane/ai_cross_lane_evidence.json --backend-contract build/ai-backend/ai_backend_adapter_contract.json --ux-contract build/ai-ux/ai_ux_contract.json --tloadhash-toolchain build/ai-rfc0025/ai_tloadhash_toolchain.json --signing-keyring scripts/ci/ai_evidence_manifest_keyring.json --promotion-window-start 2026-03-01 --promotion-window-end 2026-03-31
-python3 scripts/ci/check_ai_keyring_expiry.py --keyring scripts/ci/ai_evidence_manifest_keyring.json --keyring scripts/ci/ai_model_provenance_keyring.json --keyring scripts/ci/ai_policy_ledger_keyring.json --keyring scripts/ci/ai_backend_selection_keyring.json --keyring scripts/ci/ai_governed_replay_keyring.json --warn-days 30 --fail-days 0 --out-json build/ai-keyring/ai_keyring_expiry_report.json
+python3 scripts/ci/check_ai_keyring_expiry.py --keyring scripts/ci/ai_evidence_manifest_keyring.json --keyring scripts/ci/ai_model_provenance_keyring.json --keyring scripts/ci/ai_policy_ledger_keyring.json --keyring scripts/ci/ai_backend_selection_keyring.json --keyring scripts/ci/ai_governed_replay_keyring.json --keyring scripts/ci/ai_direct_backend_attestation_keyring.json --warn-days 30 --fail-days 0 --out-json build/ai-keyring/ai_keyring_expiry_report.json
 python3 scripts/ci/check_ai_tloadhash_toolchain.py --t81-bin build/t81 --input-file tests/fixtures/llama_cpp_repro/model.gguf --out-dir build/ai-rfc0025
 python3 scripts/ci/run_governed_llama_flow.py --t81-bin build-llama-local/t81 --model models/tinyllama-1.1b.Q2_K.gguf --out-dir build/ai-governed
 python3 scripts/ci/check_ai_governed_replay_attestation.py --t81-bin build-llama-local/t81 --model tests/fixtures/llama_cpp_repro/model.gguf --out-dir build/ai-governed --seeds 0,1,2 --replays-per-seed 2 --baseline-governed-flow build/ai-governed/governed_llama_flow.json --signing-keyring scripts/ci/ai_governed_replay_keyring.json
@@ -85,6 +86,8 @@ Current AI CI secret variable names:
 - `T81_AI_BACKEND_SELECTION_KEY_2026Q2`
 - `T81_AI_GOVERNED_REPLAY_KEY_2026Q1`
 - `T81_AI_GOVERNED_REPLAY_KEY_2026Q2`
+- `T81_AI_DIRECT_BACKEND_KEY_2026Q1`
+- `T81_AI_DIRECT_BACKEND_KEY_2026Q2`
 
 ## Governed llama runtime evidence lane (RFC-0025 required)
 

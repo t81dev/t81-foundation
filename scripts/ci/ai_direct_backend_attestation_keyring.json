@@ -1,0 +1,28 @@
+{
+  "schema": "t81.ai.ux-direct-backend-keyring.v1",
+  "active_key_id": "ai-direct-backend-2026q1",
+  "rotation_policy": {
+    "max_active_days": 120,
+    "require_next_key": true
+  },
+  "keys": [
+    {
+      "key_id": "ai-direct-backend-2026q1",
+      "algorithm": "hmac-sha256",
+      "status": "active",
+      "not_before": "2026-01-01",
+      "not_after": "2026-03-31",
+      "material_env": "T81_AI_DIRECT_BACKEND_KEY_2026Q1",
+      "material_b64": "dDgxLWFpLWRpcmVjdC1iYWNrZW5kLTIwMjZxMS1zaWduaW5nLWtleQ=="
+    },
+    {
+      "key_id": "ai-direct-backend-2026q2",
+      "algorithm": "hmac-sha256",
+      "status": "next",
+      "not_before": "2026-03-15",
+      "not_after": "2026-06-30",
+      "material_env": "T81_AI_DIRECT_BACKEND_KEY_2026Q2",
+      "material_b64": "dDgxLWFpLWRpcmVjdC1iYWNrZW5kLTIwMjZxMi1zaWduaW5nLWtleQ=="
+    }
+  ]
+}

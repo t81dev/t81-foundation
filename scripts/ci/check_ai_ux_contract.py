@@ -2,8 +2,11 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
+import hmac
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -12,6 +15,7 @@ from typing import Any
 
 SCHEMA_VERSION = "t81.ai.ux-contract.v1"
 DIRECT_BACKEND_SCHEMA = "t81.ai.ux-direct-backend-attestation.v1"
+DIRECT_BACKEND_KEYRING_SCHEMA = "t81.ai.ux-direct-backend-keyring.v1"
 
 
 def canonical_json(data: Any) -> str:
@@ -20,6 +24,146 @@ def canonical_json(data: Any) -> str:
 
 def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def parse_key_material_b64(raw: str) -> bytes:
+    return base64.b64decode(raw, validate=True)
+
+
+def resolve_key_material(key: dict[str, Any], errors: list[str] | None = None) -> bytes:
+    key_id = str(key.get("key_id", "")).strip()
+    env_name = str(key.get("material_env", "")).strip()
+    if env_name:
+        env_value = os.environ.get(env_name, "")
+        if env_value:
+            try:
+                return parse_key_material_b64(env_value)
+            except Exception:
+                if errors is not None:
+                    errors.append(f"key {key_id}: material_env '{env_name}' is not valid base64")
+                return b""
+    try:
+        return parse_key_material_b64(str(key.get("material_b64", "")))
+    except Exception:
+        if errors is not None:
+            errors.append(f"key {key_id}: invalid material_b64")
+        return b""
+
+
+def validate_keyring(path: Path) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    errors: list[str] = []
+    if payload.get("schema") != DIRECT_BACKEND_KEYRING_SCHEMA:
+        errors.append(f"keyring schema mismatch: {payload.get('schema')} != {DIRECT_BACKEND_KEYRING_SCHEMA}")
+
+    keys = payload.get("keys")
+    if not isinstance(keys, list) or not keys:
+        errors.append("keyring keys must be a non-empty list")
+        return payload, {}, errors
+
+    active_keys: list[dict[str, Any]] = []
+    key_by_id: dict[str, dict[str, Any]] = {}
+    for key in keys:
+        if not isinstance(key, dict):
+            errors.append("key entry must be object")
+            continue
+        key_id = str(key.get("key_id", "")).strip()
+        if not key_id:
+            errors.append("key entry missing key_id")
+            continue
+        if key_id in key_by_id:
+            errors.append(f"duplicate key_id in keyring: {key_id}")
+            continue
+        key_by_id[key_id] = key
+        if str(key.get("status", "")).strip() == "active":
+            active_keys.append(key)
+        if str(key.get("algorithm", "")).strip() != "hmac-sha256":
+            errors.append(f"key {key_id}: unsupported algorithm")
+        decoded = resolve_key_material(key, errors)
+        if not decoded:
+            errors.append(f"key {key_id}: empty key material")
+
+    active_key_id = str(payload.get("active_key_id", "")).strip()
+    if not active_key_id:
+        errors.append("keyring missing active_key_id")
+    if len(active_keys) != 1:
+        errors.append(f"keyring must have exactly one active key (found {len(active_keys)})")
+
+    active = key_by_id.get(active_key_id, {})
+    if not active:
+        errors.append(f"active_key_id not found: {active_key_id}")
+    elif str(active.get("status", "")).strip() != "active":
+        errors.append(f"active key {active_key_id} does not have status=active")
+
+    rotation = payload.get("rotation_policy", {})
+    if isinstance(rotation, dict) and bool(rotation.get("require_next_key", False)):
+        has_next = any(str(k.get("status", "")).strip() == "next" for k in key_by_id.values())
+        if not has_next:
+            errors.append("rotation_policy.require_next_key=true but no next key exists")
+
+    return payload, active, errors
+
+
+def sign_payload_hex(payload: dict[str, Any], key_entry: dict[str, Any]) -> str:
+    material = resolve_key_material(key_entry, [])
+    return hmac.new(material, canonical_json(payload).encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+def verify_payload_signature(payload: dict[str, Any], signature_hex: str, keyring: dict[str, Any]) -> tuple[bool, str]:
+    keys = keyring.get("keys")
+    if not isinstance(keys, list):
+        return False, ""
+    encoded = canonical_json(payload).encode("utf-8")
+    for key in keys:
+        if not isinstance(key, dict):
+            continue
+        key_id = str(key.get("key_id", "")).strip()
+        material = resolve_key_material(key, [])
+        if not material:
+            continue
+        candidate = hmac.new(material, encoded, hashlib.sha256).hexdigest()
+        if hmac.compare_digest(candidate, signature_hex):
+            return True, key_id
+    return False, ""
+
+
+def build_direct_backend_escalation(errors: list[str]) -> dict[str, Any]:
+    rules: list[tuple[str, str, str, str]] = [
+        (
+            "keyring",
+            "AI_UX_ESCALATE_DIRECT_BACKEND_KEYRING_INVALID",
+            "platform-oncall",
+            "fail_closed_and_review_direct_backend_keyring",
+        ),
+        (
+            "signature verification failed",
+            "AI_UX_ESCALATE_DIRECT_BACKEND_SIGNATURE_INVALID",
+            "security-oncall",
+            "block_promotion_and_rotate_direct_backend_keys",
+        ),
+        (
+            "replay output hashes mismatch",
+            "AI_UX_ESCALATE_DIRECT_BACKEND_REPLAY_NONDETERMINISM",
+            "ai-runtime-oncall",
+            "block_promotion_and_debug_direct_backend_replay",
+        ),
+    ]
+    actions: list[dict[str, str]] = []
+    seen: set[str] = set()
+    joined = "\n".join(errors).lower()
+    for needle, reason_code, owner, action in rules:
+        if needle in joined and reason_code not in seen:
+            actions.append({"reason_code": reason_code, "owner": owner, "action": action})
+            seen.add(reason_code)
+    return {"status": "triggered" if actions else "none", "actions": actions}
 
 
 def run_cmd(argv: list[str]) -> dict[str, Any]:
@@ -195,6 +339,7 @@ def run_direct_backend_attestation(
     model_path: Path,
     t81_bin: Path,
     hash_probe: Path,
+    signing_keyring: Path,
 ) -> tuple[bool, list[str], dict[str, Any]]:
     errs: list[str] = []
     details: dict[str, Any] = {
@@ -202,6 +347,7 @@ def run_direct_backend_attestation(
         "model_path": str(model_path),
         "t81_bin": str(t81_bin),
         "hash_probe": str(hash_probe),
+        "signing_keyring": str(signing_keyring),
     }
 
     if not t81_bin.exists():
@@ -293,6 +439,46 @@ def run_direct_backend_attestation(
             errs.append("direct backend attestation: replay output hashes mismatch")
 
     status = "pass" if not errs and deterministic_replay else "fail"
+    keyring_payload: dict[str, Any] = {}
+    active_key: dict[str, Any] = {}
+    keyring_errors: list[str] = []
+    if signing_keyring.exists():
+        keyring_payload, active_key, keyring_errors = validate_keyring(signing_keyring)
+    else:
+        keyring_errors = [f"direct backend attestation keyring missing: {signing_keyring}"]
+    errs.extend(keyring_errors)
+
+    signature_payload = {
+        "schema": DIRECT_BACKEND_SCHEMA,
+        "model_hash": model_hash,
+        "deterministic_replay": deterministic_replay,
+        "runs": [
+            {
+                "run": r.get("run"),
+                "rc": r.get("rc"),
+                "stdout_sha256": r.get("stdout_sha256"),
+                "stderr_sha256": r.get("stderr_sha256"),
+            }
+            for r in runs
+        ],
+        "errors": errs,
+    }
+    signature_hex = ""
+    signature_verified = False
+    signature_verified_by = ""
+    signing_key_id = ""
+    if active_key:
+        signing_key_id = str(active_key.get("key_id", "")).strip()
+        signature_hex = sign_payload_hex(signature_payload, active_key)
+        signature_verified, signature_verified_by = verify_payload_signature(
+            signature_payload, signature_hex, keyring_payload
+        )
+        if not signature_verified:
+            errs.append("direct backend attestation signature verification failed")
+    else:
+        errs.append("direct backend attestation has no active signing key")
+
+    status = "pass" if not errs and deterministic_replay else "fail"
     payload = {
         **details,
         "status": status,
@@ -301,6 +487,17 @@ def run_direct_backend_attestation(
         "deterministic_replay": deterministic_replay,
         "runs": runs,
         "errors": errs,
+        "escalation_policy": build_direct_backend_escalation(errs),
+        "signature": {
+            "algorithm": "hmac-sha256",
+            "key_id": signing_key_id,
+            "signature_hex": signature_hex,
+            "verified": signature_verified,
+            "verified_by_key_id": signature_verified_by,
+            "keyring_path": str(signing_keyring),
+            "keyring_sha256": sha256_file(signing_keyring) if signing_keyring.exists() else "",
+            "rotation_policy": keyring_payload.get("rotation_policy", {}),
+        },
     }
 
     json_path = out_dir / "ai_direct_backend_execution_attestation.json"
@@ -315,6 +512,8 @@ def run_direct_backend_attestation(
                 f"- status: `{status}`",
                 f"- deterministic_replay: `{str(deterministic_replay).lower()}`",
                 f"- model_hash: `{model_hash}`",
+                f"- signature_verified: `{str(signature_verified).lower()}`",
+                f"- escalation_status: `{payload['escalation_policy']['status']}`",
                 "",
             ]
         ),
@@ -331,6 +530,7 @@ def validate_runtime(
     user_model: str,
     t81_bin: str,
     llama_hash_probe: str,
+    direct_backend_signing_keyring: str,
 ) -> tuple[bool, list[str], dict[str, Any]]:
     errs: list[str] = []
     runtime: dict[str, Any] = {"ai_bin": str(ai_bin)}
@@ -654,6 +854,11 @@ def validate_runtime(
 
     t81_path = Path(t81_bin).resolve() if t81_bin else Path()
     hash_probe_path = Path(llama_hash_probe).resolve() if llama_hash_probe else Path()
+    keyring_path = (
+        Path(direct_backend_signing_keyring).resolve()
+        if direct_backend_signing_keyring
+        else Path(__file__).resolve().with_name("ai_direct_backend_attestation_keyring.json")
+    )
     if not t81_bin:
         errs.append("direct backend attestation requires --t81-bin")
     else:
@@ -662,6 +867,7 @@ def validate_runtime(
             model_path=model_path,
             t81_bin=t81_path,
             hash_probe=hash_probe_path,
+            signing_keyring=keyring_path,
         )
         runtime["direct_backend_execution"] = {
             "ok": direct_ok,
@@ -694,6 +900,11 @@ def parse_args() -> argparse.Namespace:
         default="scripts/ci/llama_model_hash.py",
         help="Path to llama hash probe helper script",
     )
+    p.add_argument(
+        "--direct-backend-signing-keyring",
+        default="",
+        help="Path to direct backend attestation keyring (defaults to scripts/ci/ai_direct_backend_attestation_keyring.json).",
+    )
     return p.parse_args()
 
 
@@ -717,6 +928,7 @@ def main() -> int:
         args.runtime_model,
         args.t81_bin,
         args.llama_hash_probe,
+        args.direct_backend_signing_keyring,
     )
     errors = static_errors + runtime_errors
     valid = static_valid and runtime_valid

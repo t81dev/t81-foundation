@@ -46,7 +46,7 @@
 - Enforces signed governed replay attestation with keyring verification and escalation mapping (`build/ai-governed/governed_llama_replay_attestation.json`)
 - Enforces signed multi-event Axion policy-ledger snapshot and deterministic replay verification (`build/ai-policy/ai_axion_policy_ledger_snapshot.json`, `build/ai-policy/ai_axion_policy_ledger_replay_verification.json`)
 - Enforces signed backend-selection manifest bound to policy/runtime evidence snapshots (`build/ai-backend/runtime_backend_selection_manifest.json`)
-- Enforces direct backend execution attestation replay (governed `t81 llama-run`) under deterministic evidence constraints (`build/ai-ux/ai_direct_backend_execution_attestation.json`)
+- Enforces signed direct backend execution attestation replay (governed `t81 llama-run`) under deterministic evidence constraints (`build/ai-ux/ai_direct_backend_execution_attestation.json`)
 - Publishes machine-readable escalation mappings for signing/keyring/runtime-binding failures in policy/backend/evidence artifacts
 - Enforces runtime benchmark execution replay and regression/trend thresholds (`build/ai-benchmark/ai_benchmark_spec_contract.json`)
 - Enforces runtime quantization inspect replay + encode/decode fixture corpus roundtrip validation (`build/ai-quantization/ai_quantization_codec_contract.json`)
@@ -100,6 +100,7 @@
 - `scripts/ci/ai_policy_ledger_keyring.json` - Triggers on policy-ledger signing key rotation changes
 - `scripts/ci/ai_backend_selection_keyring.json` - Triggers on backend-selection signing key rotation changes
 - `scripts/ci/ai_governed_replay_keyring.json` - Triggers on governed replay signing key rotation changes
+- `scripts/ci/ai_direct_backend_attestation_keyring.json` - Triggers on direct-backend attestation signing key rotation changes
 - `scripts/ci/ai_benchmark_thresholds.json` - Triggers on benchmark threshold baseline updates
 
 ### Failure Conditions
