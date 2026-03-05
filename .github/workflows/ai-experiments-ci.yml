@@ -14,6 +14,7 @@ on:
       - 'scripts/ci/check_ai_policy_event_contract.py'
       - 'scripts/ci/ai_policy_ledger_keyring.json'
       - 'scripts/ci/check_ai_backend_adapter_contract.py'
+      - 'scripts/ci/ai_backend_selection_keyring.json'
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
@@ -40,6 +41,7 @@ on:
       - 'scripts/ci/check_ai_policy_event_contract.py'
       - 'scripts/ci/ai_policy_ledger_keyring.json'
       - 'scripts/ci/check_ai_backend_adapter_contract.py'
+      - 'scripts/ci/ai_backend_selection_keyring.json'
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
@@ -253,7 +255,11 @@ jobs:
         python3 scripts/ci/check_ai_backend_adapter_contract.py \
           --out-dir build/ai-backend \
           --ai-bin build/experiments/ai/ux_tools/t81_ai \
-          --runtime-model build/ai-backend/runtime_backend_probe_model.gguf
+          --runtime-model build/ai-backend/runtime_backend_probe_model.gguf \
+          --policy-contract build/ai-policy/ai_policy_event_contract.json \
+          --runtime-trace build/ai-policy/ai_runtime_trace.json \
+          --policy-ledger-snapshot build/ai-policy/ai_axion_policy_ledger_snapshot.json \
+          --selection-signing-keyring scripts/ci/ai_backend_selection_keyring.json
 
     - name: Collect VM trace-level evidence (RFC-00A1 runtime trace slice)
       if: steps.build_ai.outputs.has_target == 'true'
@@ -381,6 +387,7 @@ jobs:
         cat build/ai-policy/ai_axion_policy_ledger_snapshot.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-policy/ai_axion_policy_ledger_replay_verification.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-backend/ai_backend_adapter_contract.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-backend/runtime_backend_selection_manifest.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-opcodes/ai_opcode_subset_contract.md >> "$GITHUB_STEP_SUMMARY"
         {
           echo "# RFC-0026 Phase-1 Opcode Conformance"
@@ -434,6 +441,8 @@ jobs:
           build/ai-backend/runtime_backend_probe_model.gguf
           build/ai-backend/runtime_backend_selection_trace.json
           build/ai-backend/runtime_backend_selection_replay.json
+          build/ai-backend/runtime_backend_selection_manifest.json
+          build/ai-backend/runtime_backend_selection_manifest.md
           build/ai-opcodes/ai_opcode_subset_contract.json
           build/ai-opcodes/ai_opcode_subset_contract.md
           build/ai-opcodes/ai_phase1_opcode_ctest.log

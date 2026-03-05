@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
+import hmac
 import json
 import subprocess
 import sys
@@ -11,6 +13,8 @@ from typing import Any
 
 
 SCHEMA_VERSION = "t81.ai.backend-adapter.v1"
+SELECTION_MANIFEST_SCHEMA = "t81.ai.backend-selection-manifest.v1"
+KEYRING_SCHEMA_VERSION = "t81.ai.backend-selection-keyring.v1"
 
 
 def canonical_json(data: Any) -> str:
@@ -19,6 +23,104 @@ def canonical_json(data: Any) -> str:
 
 def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def parse_json(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def parse_key_material_b64(raw: str) -> bytes:
+    return base64.b64decode(raw, validate=True)
+
+
+def validate_keyring(path: Path) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
+    payload = parse_json(path)
+    errors: list[str] = []
+
+    if payload.get("schema") != KEYRING_SCHEMA_VERSION:
+        errors.append(f"keyring schema mismatch: {payload.get('schema')} != {KEYRING_SCHEMA_VERSION}")
+
+    keys = payload.get("keys")
+    if not isinstance(keys, list) or not keys:
+        errors.append("keyring keys must be a non-empty list")
+        return payload, {}, errors
+
+    key_by_id: dict[str, dict[str, Any]] = {}
+    active_keys: list[dict[str, Any]] = []
+    for key in keys:
+        if not isinstance(key, dict):
+            errors.append("key entry must be object")
+            continue
+        key_id = str(key.get("key_id", "")).strip()
+        if not key_id:
+            errors.append("key entry missing key_id")
+            continue
+        if key_id in key_by_id:
+            errors.append(f"duplicate key_id in keyring: {key_id}")
+            continue
+        key_by_id[key_id] = key
+        if str(key.get("status", "")).strip() == "active":
+            active_keys.append(key)
+        if str(key.get("algorithm", "")).strip() != "hmac-sha256":
+            errors.append(f"key {key_id}: unsupported algorithm")
+        try:
+            decoded = parse_key_material_b64(str(key.get("material_b64", "")))
+            if not decoded:
+                errors.append(f"key {key_id}: empty key material")
+        except Exception:
+            errors.append(f"key {key_id}: invalid material_b64")
+
+    active_key_id = str(payload.get("active_key_id", "")).strip()
+    if not active_key_id:
+        errors.append("keyring missing active_key_id")
+    if len(active_keys) != 1:
+        errors.append(f"keyring must have exactly one active key (found {len(active_keys)})")
+
+    active = key_by_id.get(active_key_id, {})
+    if not active:
+        errors.append(f"active_key_id not found: {active_key_id}")
+    elif str(active.get("status", "")).strip() != "active":
+        errors.append(f"active key {active_key_id} does not have status=active")
+
+    rotation = payload.get("rotation_policy", {})
+    if isinstance(rotation, dict) and bool(rotation.get("require_next_key", False)):
+        has_next = any(str(k.get("status", "")).strip() == "next" for k in key_by_id.values())
+        if not has_next:
+            errors.append("rotation_policy.require_next_key=true but no next key exists")
+
+    return payload, active, errors
+
+
+def sign_payload_hex(payload: dict[str, Any], key_entry: dict[str, Any]) -> str:
+    material = parse_key_material_b64(str(key_entry.get("material_b64", "")))
+    return hmac.new(material, canonical_json(payload).encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+def verify_payload_signature(payload: dict[str, Any], signature_hex: str, keyring: dict[str, Any]) -> tuple[bool, str]:
+    keys = keyring.get("keys")
+    if not isinstance(keys, list):
+        return False, ""
+    encoded = canonical_json(payload).encode("utf-8")
+    for key in keys:
+        if not isinstance(key, dict):
+            continue
+        key_id = str(key.get("key_id", "")).strip()
+        try:
+            material = parse_key_material_b64(str(key.get("material_b64", "")))
+        except Exception:
+            continue
+        candidate = hmac.new(material, encoded, hashlib.sha256).hexdigest()
+        if hmac.compare_digest(candidate, signature_hex):
+            return True, key_id
+    return False, ""
 
 
 def build_registry() -> dict[str, Any]:
@@ -214,10 +316,7 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
             required_top = {"schema", "default_backend", "selection_policy", "backends"}
             missing_top = sorted(required_top - set(caps.keys()))
             if missing_top:
-                errors.append(
-                    "runtime binding: backend capabilities missing fields "
-                    + ", ".join(missing_top)
-                )
+                errors.append("runtime binding: backend capabilities missing fields " + ", ".join(missing_top))
             if caps.get("schema") != "t81.ai.backend-capabilities.v1":
                 errors.append("runtime binding: backend capabilities schema mismatch")
             backends = caps.get("backends")
@@ -241,8 +340,7 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
                     missing = sorted(required_backend_fields - set(backend.keys()))
                     if missing:
                         errors.append(
-                            f"runtime binding: backend capabilities entry {idx} missing "
-                            + ", ".join(missing)
+                            f"runtime binding: backend capabilities entry {idx} missing " + ", ".join(missing)
                         )
                 if caps.get("default_backend") not in backend_names:
                     errors.append("runtime binding: default_backend missing from backends list")
@@ -268,9 +366,7 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
             }
             missing = sorted(required_select_fields - set(select_gguf.keys()))
             if missing:
-                errors.append(
-                    "runtime binding: backend select gguf missing fields " + ", ".join(missing)
-                )
+                errors.append("runtime binding: backend select gguf missing fields " + ", ".join(missing))
             if select_gguf.get("schema") != "t81.ai.backend-selection-trace.v1":
                 errors.append("runtime binding: backend select gguf schema mismatch")
             if select_gguf.get("selected_backend") != "llama.cpp":
@@ -281,7 +377,7 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
                 errors.append("runtime binding: backend selection trace artifact was not emitted")
             else:
                 binding["backend_selection_trace_artifact_sha256"] = sha256_text(
-                    canonical_json(json.loads(selection_trace_path.read_text(encoding="utf-8")))
+                    canonical_json(parse_json(selection_trace_path))
                 )
 
     if select_onnx_res["rc"] == 0:
@@ -378,6 +474,147 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
     return len(errors) == 0, errors, binding
 
 
+def detect_status(payload: dict[str, Any]) -> str:
+    status = str(payload.get("status", "")).strip()
+    if not status and isinstance(payload.get("checks"), dict):
+        status = str(payload["checks"].get("status", "")).strip()
+    return status
+
+
+def build_backend_selection_manifest(
+    out_dir: Path,
+    runtime_binding: dict[str, Any],
+    policy_contract_path: Path,
+    runtime_trace_path: Path,
+    policy_ledger_snapshot_path: Path,
+    signing_keyring_path: Path,
+) -> tuple[bool, list[str], dict[str, Any], Path, Path]:
+    errors: list[str] = []
+
+    replay_artifact = Path(str(runtime_binding.get("backend_selection_replay", {}).get("artifact", ""))).resolve()
+    selection_trace_artifact = Path(
+        str(runtime_binding.get("backend_select_gguf_strict", {}).get("artifact", ""))
+    ).resolve()
+    capabilities_sha = str(runtime_binding.get("backend_capabilities_artifact_sha256", "")).strip()
+    replay_sha = str(runtime_binding.get("backend_selection_replay", {}).get("sha256", "")).strip()
+
+    for path, label in [
+        (policy_contract_path, "policy_contract"),
+        (runtime_trace_path, "runtime_trace"),
+        (policy_ledger_snapshot_path, "policy_ledger_snapshot"),
+        (signing_keyring_path, "signing_keyring"),
+        (replay_artifact, "backend_selection_replay"),
+        (selection_trace_artifact, "backend_selection_trace"),
+    ]:
+        if not path.exists():
+            errors.append(f"backend selection manifest: missing {label} artifact: {path}")
+
+    policy_status = ""
+    runtime_trace_status = ""
+    ledger_status = ""
+    if policy_contract_path.exists():
+        policy_status = detect_status(parse_json(policy_contract_path))
+        if policy_status != "pass":
+            errors.append(f"backend selection manifest: policy contract status={policy_status} (expected pass)")
+    if runtime_trace_path.exists():
+        runtime_trace_status = "pass"
+    if policy_ledger_snapshot_path.exists():
+        ledger_payload = parse_json(policy_ledger_snapshot_path)
+        ledger_status = detect_status(ledger_payload)
+        if ledger_status != "pass":
+            errors.append(f"backend selection manifest: policy ledger status={ledger_status} (expected pass)")
+        sig = ledger_payload.get("signature", {})
+        if not isinstance(sig, dict) or not bool(sig.get("verified", False)):
+            errors.append("backend selection manifest: policy ledger signature is not verified")
+
+    keyring_payload: dict[str, Any] = {}
+    active_key: dict[str, Any] = {}
+    if signing_keyring_path.exists():
+        keyring_payload, active_key, key_errors = validate_keyring(signing_keyring_path)
+        errors.extend(key_errors)
+
+    manifest_core = {
+        "schema": SELECTION_MANIFEST_SCHEMA,
+        "runtime_binding_snapshot": {
+            "backend_capabilities_sha256": capabilities_sha,
+            "backend_selection_trace_sha256": sha256_file(selection_trace_artifact)
+            if selection_trace_artifact.exists()
+            else "",
+            "backend_selection_replay_sha256": replay_sha
+            if replay_sha
+            else (sha256_file(replay_artifact) if replay_artifact.exists() else ""),
+        },
+        "bound_evidence": {
+            "policy_contract": {
+                "path": str(policy_contract_path),
+                "sha256": sha256_file(policy_contract_path) if policy_contract_path.exists() else "",
+                "status": policy_status,
+            },
+            "runtime_trace": {
+                "path": str(runtime_trace_path),
+                "sha256": sha256_file(runtime_trace_path) if runtime_trace_path.exists() else "",
+                "status": runtime_trace_status,
+            },
+            "policy_ledger_snapshot": {
+                "path": str(policy_ledger_snapshot_path),
+                "sha256": sha256_file(policy_ledger_snapshot_path) if policy_ledger_snapshot_path.exists() else "",
+                "status": ledger_status,
+            },
+        },
+        "attestation_method": "hmac-sha256-keyring-signature.v1",
+    }
+
+    signature_hex = ""
+    signature_verified = False
+    verified_by = ""
+    key_id = ""
+    if active_key:
+        key_id = str(active_key.get("key_id", "")).strip()
+        signature_hex = sign_payload_hex(manifest_core, active_key)
+        signature_verified, verified_by = verify_payload_signature(manifest_core, signature_hex, keyring_payload)
+        if not signature_verified:
+            errors.append("backend selection manifest: signature verification failed")
+    else:
+        errors.append("backend selection manifest: no active signing key available")
+
+    status = "pass" if not errors else "fail"
+    manifest_payload = {
+        **manifest_core,
+        "status": status,
+        "errors": errors,
+        "signature": {
+            "algorithm": "hmac-sha256",
+            "key_id": key_id,
+            "signature_hex": signature_hex,
+            "verified": signature_verified,
+            "verified_by_key_id": verified_by,
+            "keyring_path": str(signing_keyring_path),
+            "keyring_sha256": sha256_file(signing_keyring_path) if signing_keyring_path.exists() else "",
+            "rotation_policy": keyring_payload.get("rotation_policy", {}),
+        },
+    }
+
+    json_path = out_dir / "runtime_backend_selection_manifest.json"
+    md_path = out_dir / "runtime_backend_selection_manifest.md"
+    json_path.write_text(json.dumps(manifest_payload, indent=2, sort_keys=True), encoding="utf-8")
+    md_path.write_text(
+        "\n".join(
+            [
+                "# Backend Selection Manifest",
+                "",
+                f"- schema: `{SELECTION_MANIFEST_SCHEMA}`",
+                f"- status: `{status}`",
+                f"- key_id: `{key_id or 'n/a'}`",
+                f"- signature_verified: `{str(signature_verified).lower()}`",
+                f"- replay_sha256: `{manifest_core['runtime_binding_snapshot']['backend_selection_replay_sha256']}`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    return status == "pass", errors, manifest_payload, json_path, md_path
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Validate AI backend adapter contract determinism baseline (RFC-00A5).")
     p.add_argument("--out-dir", required=True, help="Directory to write artifacts")
@@ -386,6 +623,18 @@ def parse_args() -> argparse.Namespace:
         "--runtime-model",
         default="",
         help="Optional model path used during runtime binding probe (created if absent)",
+    )
+    p.add_argument("--policy-contract", default="", help="Path to ai_policy_event_contract.json for manifest binding")
+    p.add_argument("--runtime-trace", default="", help="Path to ai_runtime_trace.json for manifest binding")
+    p.add_argument(
+        "--policy-ledger-snapshot",
+        default="",
+        help="Path to ai_axion_policy_ledger_snapshot.json for manifest binding",
+    )
+    p.add_argument(
+        "--selection-signing-keyring",
+        default="",
+        help="Path to backend selection keyring (defaults to scripts/ci/ai_backend_selection_keyring.json)",
     )
     return p.parse_args()
 
@@ -405,16 +654,43 @@ def main() -> int:
     runtime_binding_ok = True
     runtime_binding: dict[str, Any] = {}
     runtime_errors: list[str] = []
+    selection_manifest_ok = True
+    selection_manifest: dict[str, Any] = {}
+    selection_manifest_errors: list[str] = []
+    selection_manifest_artifact = ""
+    selection_manifest_summary = ""
+
     if args.ai_bin:
         ai_bin = Path(args.ai_bin).resolve()
-        runtime_model = (
-            Path(args.runtime_model).resolve()
-            if args.runtime_model
-            else (out_dir / "runtime_backend_probe_model.gguf")
-        )
+        runtime_model = Path(args.runtime_model).resolve() if args.runtime_model else (out_dir / "runtime_backend_probe_model.gguf")
         runtime_binding_ok, runtime_errors, runtime_binding = validate_runtime_binding(ai_bin, runtime_model)
+        if runtime_binding_ok:
+            policy_contract = Path(args.policy_contract).resolve() if args.policy_contract else Path()
+            runtime_trace = Path(args.runtime_trace).resolve() if args.runtime_trace else Path()
+            policy_ledger = Path(args.policy_ledger_snapshot).resolve() if args.policy_ledger_snapshot else Path()
+            default_keyring = Path(__file__).resolve().with_name("ai_backend_selection_keyring.json")
+            signing_keyring = Path(args.selection_signing_keyring).resolve() if args.selection_signing_keyring else default_keyring
 
-    status = "pass" if deterministic and contract_ok and runtime_binding_ok else "fail"
+            if not args.policy_contract or not args.runtime_trace or not args.policy_ledger_snapshot:
+                selection_manifest_ok = False
+                selection_manifest_errors = [
+                    "backend selection manifest requires --policy-contract, --runtime-trace, and --policy-ledger-snapshot"
+                ]
+            else:
+                selection_manifest_ok, selection_manifest_errors, selection_manifest, selection_json, selection_md = (
+                    build_backend_selection_manifest(
+                        out_dir=out_dir,
+                        runtime_binding=runtime_binding,
+                        policy_contract_path=policy_contract,
+                        runtime_trace_path=runtime_trace,
+                        policy_ledger_snapshot_path=policy_ledger,
+                        signing_keyring_path=signing_keyring,
+                    )
+                )
+                selection_manifest_artifact = str(selection_json)
+                selection_manifest_summary = str(selection_md)
+
+    status = "pass" if deterministic and contract_ok and runtime_binding_ok and selection_manifest_ok else "fail"
 
     payload = {
         "schema": SCHEMA_VERSION,
@@ -423,9 +699,13 @@ def main() -> int:
         "registry_sha256": hash_a,
         "contract_ok": contract_ok,
         "runtime_binding_ok": runtime_binding_ok,
-        "errors": contract_errors + runtime_errors,
+        "selection_manifest_ok": selection_manifest_ok,
+        "errors": contract_errors + runtime_errors + selection_manifest_errors,
         "registry": registry_a,
         "runtime_binding": runtime_binding,
+        "selection_manifest": selection_manifest,
+        "selection_manifest_artifact": selection_manifest_artifact,
+        "selection_manifest_summary": selection_manifest_summary,
     }
 
     json_path = out_dir / "ai_backend_adapter_contract.json"
@@ -441,6 +721,7 @@ def main() -> int:
                 f"- deterministic_registry_hash: `{deterministic}`",
                 f"- contract_ok: `{contract_ok}`",
                 f"- runtime_binding_ok: `{runtime_binding_ok}`",
+                f"- selection_manifest_ok: `{selection_manifest_ok}`",
                 f"- registry_sha256: `{hash_a}`",
                 "",
             ]
@@ -450,6 +731,8 @@ def main() -> int:
 
     print(f"ai backend adapter contract status: {status}")
     print(f"artifact: {json_path}")
+    if selection_manifest_artifact:
+        print(f"selection manifest: {selection_manifest_artifact}")
     print(f"summary:  {md_path}")
     return 0 if status == "pass" else 1
 

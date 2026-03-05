@@ -44,6 +44,7 @@
 - Enforces model provenance manifest with CanonFS object identity and signed provenance-chain verification (`build/ai-provenance/test_model.manifest.json`)
 - Enforces governed runtime deterministic multi-seed replay attestations with failure taxonomy artifact (`build/ai-governed/governed_llama_replay_attestation.json`)
 - Enforces signed multi-event Axion policy-ledger snapshot and deterministic replay verification (`build/ai-policy/ai_axion_policy_ledger_snapshot.json`, `build/ai-policy/ai_axion_policy_ledger_replay_verification.json`)
+- Enforces signed backend-selection manifest bound to policy/runtime evidence snapshots (`build/ai-backend/runtime_backend_selection_manifest.json`)
 
 ### How It Prevents Regressions
 
@@ -91,6 +92,7 @@
 - `scripts/ci/ai_evidence_manifest_keyring.json` - Triggers on manifest signing key rotation changes
 - `scripts/ci/ai_model_provenance_keyring.json` - Triggers on provenance signing key rotation changes
 - `scripts/ci/ai_policy_ledger_keyring.json` - Triggers on policy-ledger signing key rotation changes
+- `scripts/ci/ai_backend_selection_keyring.json` - Triggers on backend-selection signing key rotation changes
 
 ### Failure Conditions
 
