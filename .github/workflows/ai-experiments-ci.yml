@@ -207,8 +207,9 @@ jobs:
         if cmake --build build --target help | grep -qE '(^| )t81_vm_ai_phase1_opcode_stub_conformance_test$'; then
           cmake --build build --target t81_vm_ai_phase1_opcode_stub_conformance_test
           cmake --build build --target t81_vm_ai_phase1_attention_conformance_test
+          cmake --build build --target t81_vm_ai_phase1_embed_conformance_test
           ctest --test-dir build --output-on-failure --verbose \
-            -R 't81_vm_ai_phase1_opcode_stub_conformance_test|t81_vm_ai_phase1_attention_conformance_test' \
+            -R 't81_vm_ai_phase1_opcode_stub_conformance_test|t81_vm_ai_phase1_attention_conformance_test|t81_vm_ai_phase1_embed_conformance_test' \
             2>&1 | tee build/ai-opcodes/ai_phase1_opcode_ctest.log
         else
           echo "❌ t81_vm_ai_phase1_opcode_stub_conformance_test target not found"
@@ -264,7 +265,7 @@ jobs:
         {
           echo "# RFC-0026 Phase-1 Opcode Conformance"
           echo ""
-          echo "- ctest regex: \`t81_vm_ai_phase1_opcode_stub_conformance_test|t81_vm_ai_phase1_attention_conformance_test\`"
+          echo "- ctest regex: \`t81_vm_ai_phase1_opcode_stub_conformance_test|t81_vm_ai_phase1_attention_conformance_test|t81_vm_ai_phase1_embed_conformance_test\`"
           echo "- log: \`build/ai-opcodes/ai_phase1_opcode_ctest.log\`"
           echo ""
         } >> "$GITHUB_STEP_SUMMARY"

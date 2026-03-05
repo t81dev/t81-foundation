@@ -41,6 +41,5 @@ void run_fail_closed_case(t81::tisc::Opcode opcode, std::string_view opname) {
 
 int main() {
   run_fail_closed_case(t81::tisc::Opcode::QMATMUL, "QMATMUL");
-  run_fail_closed_case(t81::tisc::Opcode::EMBED, "EMBED");
   return 0;
 }

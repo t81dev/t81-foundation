@@ -4648,10 +4648,47 @@ public:
         break;
       }
       case t81::tisc::Opcode::QMATMUL:
-      case t81::tisc::Opcode::EMBED: {
+      {
         if (auto ai_trap = handle_blocked_ai_phase1_opcode(); ai_trap.has_value()) {
           trap = *ai_trap;
         }
+        break;
+      }
+      case t81::tisc::Opcode::EMBED: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        if (ctx.register_tags[insn.c] != ValueTag::Int) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto* table = tensor_ptr(ctx.registers[insn.b]);
+        if (table == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const std::int64_t index = ctx.registers[insn.c];
+        auto computed = t81::vm::internal::tensor_embed_checked(*table, index);
+        if (!computed.has_value()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, static_cast<int>(index),
+                           "EMBED index/table mismatch");
+          trap = computed.error();
+          break;
+        }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "EMBED kernel execution"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b], verdict);
+        auto res_handle = alloc_tensor(std::move(*computed));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
         break;
       }
       case t81::tisc::Opcode::BitAnd:

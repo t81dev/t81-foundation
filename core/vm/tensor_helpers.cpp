@@ -350,6 +350,13 @@ bool tensor_attention_compatible(const t81::T729DynamicTensor& q, const t81::T72
   return q_d == k_d && k_seq == v_seq;
 }
 
+bool tensor_embed_compatible(const t81::T729DynamicTensor& table, std::int64_t index) {
+  if (table.rank() != 2 || table.shape().size() != 2) {
+    return false;
+  }
+  return index >= 0 && index < static_cast<std::int64_t>(table.shape()[0]);
+}
+
 std::optional<t81::T729DynamicTensor> tensor_new_1d(std::int64_t size) {
   if (size <= 0) {
     return std::nullopt;
@@ -439,6 +446,21 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_attention_checked(
                                                                 t81::vm::Trap::ShapeFault);
   }
   return tensor_matmul_2d(probs, v);
+}
+
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_embed_checked(
+    const t81::T729DynamicTensor& table, std::int64_t index) {
+  if (!tensor_embed_compatible(table, index)) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                 t81::vm::Trap::BoundsFault);
+  }
+  const int dim = table.shape()[1];
+  std::vector<float> out(static_cast<std::size_t>(dim));
+  const std::size_t base = static_cast<std::size_t>(index) * static_cast<std::size_t>(dim);
+  for (int i = 0; i < dim; ++i) {
+    out[static_cast<std::size_t>(i)] = table.data()[base + static_cast<std::size_t>(i)];
+  }
+  return t81::T729DynamicTensor({dim}, std::move(out));
 }
 
 std::expected<float, t81::vm::Trap> tensor_get_checked(const t81::T729DynamicTensor& tensor,
