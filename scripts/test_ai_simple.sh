@@ -1,10 +1,16 @@
 #!/bin/bash
 
+set -euo pipefail
+
 echo "🧪 Simple AI CLI Test"
 echo "====================="
 
+# Determine repository root robustly
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO_ROOT"
+
 # Test 1: Build
-cd /Users/t81dev/Code/t81-foundation
 rm -rf build_simple
 mkdir build_simple
 cd build_simple

@@ -64,8 +64,9 @@ jobs:
     - name: Verify Core Isolation
       run: |
         # Ensure no core directories were modified in this PR
-        if [ "$GITHUB_EVENT" = "pull_request" ]; then
-          CORE_CHANGES=$(git diff --name-only origin/$GITHUB_BASE_HEAD..HEAD | grep -E '^(src/|include/t81/|spec/|tests/)' || true)
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          git fetch origin ${{ github.base_ref }} --depth=1
+          CORE_CHANGES=$(git diff --name-only origin/${{ github.base_ref }}...${{ github.sha }} | grep -E '^(src/|include/t81/|spec/|tests/)' || true)
           if [ -n "$CORE_CHANGES" ]; then
             echo "❌ Core directories were modified:"
             echo "$CORE_CHANGES"

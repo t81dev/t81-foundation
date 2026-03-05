@@ -25,6 +25,11 @@ set(T81_LLAMA_REPRO_MODEL "" CACHE FILEPATH "Model path for llama.cpp reproducib
 set(T81_LLAMA_REPRO_POLICY "" CACHE FILEPATH "Policy path for llama.cpp reproducibility gate")
 set(T81_LLAMA_REPRO_PROMPT "" CACHE STRING "Prompt for llama.cpp reproducibility gate")
 
+# Build Type Configuration
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
 # AI Experiments Option
 option(T81_ENABLE_AI_EXPERIMENTS "Build AI experiments in /experiments/ai" OFF)
 
