@@ -47,7 +47,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | :--- | :--- | :--- |
 | TISC ISA | None | Frozen |
 | Data Types | None | Frozen; audit closed 2026-02-27 |
-| T81VM | Low | Policy-bridge dispatch concentration (FW-02) |
+| T81VM | Low | FW-02 policy-bridge concentration closure landed; monitor BG-07 phase-2 completion |
 | T81Lang | **RESOLVED** | **All parser/semantic issues fixed**; 100% test coverage |
 | Axion Kernel | Low | AX-M5..M7 evidence landed; awaiting Beta review cycle |
 | T81Graph | Low | Lang-side serialization wired; determinism coverage in place |
@@ -63,7 +63,6 @@ Full decomposition: `DRIFT_DECOMPOSITION.md`
 | :--- | :--- | :--- |
 | R-01 | Determinism overclaim — registry boundary language omitted externally | High |
 | R-02 | Axion Alpha posture delays Beta promotion | High |
-| R-15 | VM dispatch concentration in policy bridge increases maintenance risk | Medium |
 
 Full register: `ACTIVE_RISKS.md`
 
@@ -74,7 +73,7 @@ Full register: `ACTIVE_RISKS.md`
 | Item | Owner | Target |
 | :--- | :--- | :--- |
 | BG-07 — BigInt precision scope resolution (phase 2) | @t81dev | 2026-05-15 |
-| FW-02 — VM dispatch concentration reduction | @t81dev | 2026-04-15 |
+| FW-02 — VM dispatch concentration reduction | @t81dev | **Closed 2026-03-05** |
 | FW-01 — dependency firewall waiver retirement | @t81dev | **Closed 2026-03-05** |
 
 Full backlog: `HARDENING_BACKLOG.md`

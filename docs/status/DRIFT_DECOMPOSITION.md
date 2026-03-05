@@ -25,7 +25,7 @@ No narrative. Each row is a falsifiable statement.
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **TISC ISA** | `spec/tisc-spec.md` (Frozen) | Opcode semantics are bit-exact and immutable under v1.x | Implemented; freeze integrity check runs in CI | None | Maintain | @t81dev | — | **Closed** |
 | **Data Types** | `spec/t81-data-types.md` (Frozen) | Canonical encoding is bit-stable; soft-float uses strict rounding | Implemented; 2026-02-27 audit fixed `Cell` overflow UB, `T81Float` signed-zero, `T81Map`/`T81Set` enforcement | None | Maintain; monitor for UB regressions | @t81dev | — | **Closed** |
-| **T81VM (non-JIT path)** | `spec/t81vm-spec.md` (Beta) | Reference interpreter is deterministic for all TISC opcodes | Beta — all DCP-scoped opcodes covered by tests; policy-trace bridge extraction advanced (`AxCheck`/`AxReport`/`AxRead`/`AxSet`/`AxVerify`/`AxHalt` moved to helpers) | Residual dispatch concentration work remains in policy-trace bridge | Continue FW-02 extraction slices and enforce dispatch concentration threshold | @t81dev | 2026-04-15 | **Open** |
+| **T81VM (non-JIT path)** | `spec/t81vm-spec.md` (Beta) | Reference interpreter is deterministic for all TISC opcodes | Beta — all DCP-scoped opcodes covered by tests; FW-02 closure landed with Axion opcode pre-dispatch isolation from the main VM switch | None in this cycle | Maintain; monitor regression signals in Axion/VM conformance suites | @t81dev | — | **Closed** |
 | **T81Lang — Compiler Bytecode** | `spec/t81lang-spec.md` §5 (Draft) | Compilation from source to TISC bytecode is bit-exact | Fixture-bounded: 16 corpus programs produce deterministic output; full spec-section traceability gap was partially closed 2026-02-25 | Bytecode emission is partially traceable — full deterministic compilation-profile language not yet complete | Extend fixture corpus and spec-section traceability linkage | @t81dev | 2026-05-15 | **Open** |
 | **T81Lang — Type Frontend** | `spec/t81lang-spec.md` §§2-4 (Draft) | All language-level types are exposed in lexer/parser/semantic analyzer with deterministic lowering | Beta — collection determinism and enforcement hardening landed (BG-06 closure) with determinism coverage in place | None in this cycle | Maintain; monitor regression signals in determinism suites | @t81dev | — | **Closed** |
 | **T81Lang — Serialization** | `spec/t81lang-spec.md` (Draft) | `serialize_canonical` is called from the language runtime for all types | Collection and T81Graph serialization wiring landed (BG-09 closure) and deterministic signatures verified | None in this cycle | Maintain; monitor serialization determinism regressions | @t81dev | — | **Closed** |
@@ -46,8 +46,8 @@ No narrative. Each row is a falsifiable statement.
 
 | State | Count |
 | :--- | :--- |
-| Closed | 10 |
-| Open | 3 |
+| Closed | 11 |
+| Open | 2 |
 | Deferred | 1 |
 | Monitoring | 2 |
 

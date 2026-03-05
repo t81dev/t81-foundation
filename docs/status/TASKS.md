@@ -100,14 +100,13 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 ### Governance Improvements - **🏛️ STRUCTURAL EXCELLENCE**
 
-- [ ] **FW-02 VM Policy Bridge Cleanup** - **🚧 IN PROGRESS**
-  - Extract `AxCheck`/`AxReport` helpers from dispatch loop
-  - Extract `AxRead`/`AxSet`/`AxVerify`/`AxHalt` helpers from dispatch loop
-  - Route `Ax*` opcode handling through centralized VM handler
-  - Reduce opcode dispatch concentration
-  - Progress: AxCheck/AxReport + AxRead/AxSet/AxVerify/AxHalt extracted to dedicated VM helpers; Axion opcode routing centralized via `handle_axion_opcode`; all `Ax*` case labels co-located in one switch region; AxRead/AxSet/AxVerify sub-dispatch isolated via `handle_ax_memory_opcode` (`core/vm/vm.cpp`, 2026-03-05)
-  - Target: 2026-04-15
-  - Status: **TECHNICAL DEBT (ACTIVE)**
+- [x] **FW-02 VM Policy Bridge Cleanup** - **✅ COMPLETED**
+  - ✅ Extracted `AxCheck`/`AxReport` helpers from dispatch loop
+  - ✅ Extracted `AxRead`/`AxSet`/`AxVerify`/`AxHalt` helpers from dispatch loop
+  - ✅ Routed `Ax*` opcode handling through centralized VM handlers
+  - ✅ Reduced dispatch concentration by pre-dispatching Axion opcodes via `dispatch_axion_opcode_from_step` before the main VM opcode switch (`core/vm/vm.cpp`, 2026-03-05)
+  - Completed: 2026-03-05
+  - Status: **✅ RESOLVED**
 
 - [x] **FW-01 Dependency Waiver Retirement** - **✅ COMPLETED**
   - Removed `t81/experimental/cog/promotion.hpp` include from `core/vm/vm.cpp`

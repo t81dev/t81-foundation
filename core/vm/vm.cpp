@@ -1212,7 +1212,12 @@ public:
     };
 
     Trap trap = Trap::None;
-    switch (insn.opcode) {
+    if (auto dispatched_trap =
+            dispatch_axion_opcode_from_step(insn, ctx, current_pc, symbol_like_text);
+        dispatched_trap.has_value()) {
+      trap = *dispatched_trap;
+    } else {
+      switch (insn.opcode) {
       case t81::tisc::Opcode::Nop: {
         if (insn.literal_kind == t81::tisc::LiteralKind::SymbolHandle && insn.b > 0) {
           auto idx = static_cast<std::size_t>(insn.b);
@@ -4569,21 +4574,6 @@ public:
         record_axion_event(insn.opcode, 0, seal, verdict);
         break;
       }
-      case t81::tisc::Opcode::AxRead:
-      case t81::tisc::Opcode::AxSet:
-      case t81::tisc::Opcode::AxVerify:
-      case t81::tisc::Opcode::AxCheck:
-      case t81::tisc::Opcode::AxReport:
-      case t81::tisc::Opcode::AxSign:
-      case t81::tisc::Opcode::AxLineage:
-      case t81::tisc::Opcode::AxCanon:
-      case t81::tisc::Opcode::AxHalt: {
-        if (auto ax_trap = handle_axion_opcode(insn, ctx, current_pc, symbol_like_text);
-            ax_trap.has_value()) {
-          trap = *ax_trap;
-        }
-        break;
-      }
       case t81::tisc::Opcode::TNeuralFwd: {
         if (auto neural_trap = handle_blocked_neural_opcode(true); neural_trap.has_value()) {
           trap = *neural_trap;
@@ -4940,9 +4930,10 @@ public:
         update_flags(ctx.registers[insn.a]);
         break;
       }
-      default:
-        trap = Trap::DecodeFault;
-        break;
+        default:
+          trap = Trap::DecodeFault;
+          break;
+      }
     }
     if (trap == Trap::None) {
       telemetry.epoch_steps += 1;
@@ -5405,6 +5396,33 @@ private:
         return handle_axhalt(insn);
       default:
         return Trap::DecodeFault;
+    }
+  }
+
+  // Returns nullopt when opcode is not Axion, Trap::None when handled without fault,
+  // and a non-None trap when Axion dispatch handled but faulted.
+  std::optional<Trap> dispatch_axion_opcode_from_step(
+      const t81::tisc::Insn& insn, ThreadContext& ctx, std::size_t current_pc,
+      const std::function<std::optional<std::string_view>(ValueTag, std::int64_t)>&
+          symbol_like_text) {
+    switch (insn.opcode) {
+      case t81::tisc::Opcode::AxRead:
+      case t81::tisc::Opcode::AxSet:
+      case t81::tisc::Opcode::AxVerify:
+      case t81::tisc::Opcode::AxCheck:
+      case t81::tisc::Opcode::AxReport:
+      case t81::tisc::Opcode::AxSign:
+      case t81::tisc::Opcode::AxLineage:
+      case t81::tisc::Opcode::AxCanon:
+      case t81::tisc::Opcode::AxHalt: {
+        if (auto trap = handle_axion_opcode(insn, ctx, current_pc, symbol_like_text);
+            trap.has_value()) {
+          return *trap;
+        }
+        return Trap::None;
+      }
+      default:
+        return std::nullopt;
     }
   }
 

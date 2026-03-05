@@ -28,7 +28,7 @@ Feature work, new capabilities, and API additions live elsewhere.
 | AX-M7 | Promotion evidence | Axion §1.3 — Complexity Measurement | Call-graph and branch/path-divergence evidence not mapped | **✅ Evidence path maps call-graph complexity measurement; governance review accepted as Beta-gate evidence** | @t81dev | 2026-03-14 | **Closed** |
 | T3K-S1 | Scope reduction | T3K Quantization | No `spec/t3k-quantization-spec.md` — surface has registry evidence but no normative spec | **✅ `spec/t3k-quantization-spec.md` authored and tracked as governed non-spec surface** | @t81dev | 2026-04-30 | **Closed** |
 | FW-01 | Structural hardening | `core/vm/vm.cpp` | Experimental promotion include reached through controlled waiver | **✅ COMPLETED** — VM tier-promotion path now uses an in-module helper; dependency firewall waiver retired and waiver table is empty (2026-03-05). | @t81dev | 2026-03-05 | **Closed** |
-| FW-02 | Structural hardening | VM policy-trace bridge | Opcode dispatch concentration in policy-trace bridge not fully extracted | `AxCheck`/`AxReport`/`AxRead`/`AxSet`/`AxVerify`/`AxHalt` helper paths fully extracted from dispatch loop; Axion opcodes routed through centralized `handle_axion_opcode`; no dispatch path >threshold | @t81dev | 2026-04-15 | **In Progress** |
+| FW-02 | Structural hardening | VM policy-trace bridge | Opcode dispatch concentration in policy-trace bridge not fully extracted | **✅ COMPLETED** — Axion opcodes now pre-dispatch outside the main VM opcode switch via `dispatch_axion_opcode_from_step`; `AxCheck`/`AxReport`/`AxRead`/`AxSet`/`AxVerify`/`AxHalt` helper paths are fully extracted and routed through centralized `handle_axion_opcode`; dispatch concentration reduced below threshold (2026-03-05). | @t81dev | 2026-04-15 | **Closed** |
 | GOV-01 | Scope reduction | `docs/governance/` | No deputy-approval policy — single-owner concentration on all GO/HOLD decisions | **✅ `docs/governance/APPROVAL_DELEGATION.md` published with deputy-owner and delegation criteria** | @t81dev | 2026-04-30 | **Closed** |
 
 ---
@@ -50,6 +50,7 @@ Feature work, new capabilities, and API additions live elsewhere.
 | **FW-02 (Slice 5)** | **Structural hardening** | **Axion dispatch locality improved** - `AxHalt` case moved into consolidated `Ax*` switch block; Axion dispatch no longer split across distant switch regions | **2026-03-05** |
 | **FW-02 (Slice 6)** | **Structural hardening** | **Axion dispatch entrypoint unified** - `AxRead`/`AxSet`/`AxVerify` case labels moved into the same `Ax*` switch region as `AxCheck`/`AxReport`/`AxSign`/`AxLineage`/`AxCanon`/`AxHalt` | **2026-03-05** |
 | **FW-02 (Slice 7)** | **Structural hardening** | **Axion memory-op sub-dispatch isolated** - `AxRead`/`AxSet`/`AxVerify` routing in `handle_axion_opcode` now flows through `handle_ax_memory_opcode`, reducing policy-bridge switch concentration | **2026-03-05** |
+| **FW-02 (Slice 8 / Closure)** | **Structural hardening** | **Axion pre-dispatch isolated from VM main switch** - `step()` now routes `Ax*` opcodes through `dispatch_axion_opcode_from_step` before entering the large opcode switch, removing Axion case concentration from the primary dispatch block | **2026-03-05** |
 | **FW-01** | **Structural hardening** | **Dependency firewall waiver retired** - `core/vm/vm.cpp` no longer includes `t81/experimental/cog/promotion.hpp`; tier promotion logic is now local and `scripts/architecture/dependency_firewall_waivers.tsv` has no active waivers | **2026-03-05** |
 | **AX-M5** | **Promotion evidence** | **Determinism stewardship evidence map completed** | **2026-03-04** |
 | **AX-M6** | **Promotion evidence** | **CanonFS observability lifecycle evidence completed** | **2026-03-04** |
@@ -84,10 +85,9 @@ Feature work, new capabilities, and API additions live elsewhere.
 When ordering work from this backlog:
 
 1. **Verified-surface regressions** — fix immediately; do not defer.
-2. **FW-02** — reduce VM dispatch concentration in policy-trace bridge.
-3. **BG-07** — resolve BigInt precision scope mismatch.
-4. **FW-01 closure guardrail** — keep dependency firewall waiver table empty unless a new exception is explicitly approved.
-5. **Post-close governance hygiene** — keep delegation and evidence artifacts current.
+2. **BG-07** — resolve BigInt precision scope mismatch.
+3. **FW-01 closure guardrail** — keep dependency firewall waiver table empty unless a new exception is explicitly approved.
+4. **Post-close governance hygiene** — keep delegation and evidence artifacts current.
 
 ---
 
