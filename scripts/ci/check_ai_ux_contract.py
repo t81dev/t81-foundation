@@ -39,15 +39,34 @@ def build_contract() -> dict[str, Any]:
             "required_categories": [
                 "model",
                 "verify",
+                "backend",
                 "observability",
                 "workflow",
             ],
             "minimum_actions": {
                 "model": ["inspect"],
                 "verify": ["determinism"],
+                "backend": ["capabilities"],
                 "workflow": ["run", "replay", "report"],
                 "observability": ["trace"],
             },
+        },
+        "backend_capabilities_contract": {
+            "schema": "t81.ai.backend-capabilities.v1",
+            "required_fields": [
+                "schema",
+                "default_backend",
+                "selection_policy",
+                "backends",
+            ],
+            "required_backend_fields": [
+                "backend_name",
+                "supported_formats",
+                "determinism_modes",
+                "max_context_tokens",
+                "supports_streaming",
+                "supports_logit_bias",
+            ],
         },
         "workflow_replay_contract": {
             "schema": "t81.ai.workflow-replay.v1",
@@ -75,6 +94,8 @@ def validate_static_contract(contract: dict[str, Any]) -> tuple[bool, list[str]]
         errs.append("required category missing: workflow")
     if "observability" not in cats:
         errs.append("required category missing: observability")
+    if "backend" not in cats:
+        errs.append("required category missing: backend")
 
     min_actions = contract["cli_surface"]["minimum_actions"]
     for category, required in min_actions.items():
@@ -90,6 +111,12 @@ def validate_static_contract(contract: dict[str, Any]) -> tuple[bool, list[str]]
 
     if set(wr["status_values"]) != {"pass", "fail"}:
         errs.append("workflow_replay_contract.status_values must be exactly pass/fail")
+
+    bc = contract["backend_capabilities_contract"]
+    required_backend_fields = set(bc["required_backend_fields"])
+    for field in ("backend_name", "supported_formats", "determinism_modes", "max_context_tokens"):
+        if field not in required_backend_fields:
+            errs.append(f"backend_capabilities_contract missing backend field: {field}")
 
     obs = contract["observability_contract"]
     needed = {"reason_code", "event_type", "decision", "timestamp_utc"}
@@ -120,6 +147,7 @@ def validate_runtime(ai_bin: Path, out_dir: Path) -> tuple[bool, list[str], dict
     for marker in (
         "model inspect",
         "verify determinism",
+        "backend capabilities",
         "workflow run",
         "workflow replay",
         "workflow report",
@@ -169,6 +197,56 @@ def validate_runtime(ai_bin: Path, out_dir: Path) -> tuple[bool, list[str], dict
         errs.append("observability trace failed")
     if not trace_path.exists():
         errs.append("observability trace did not emit artifact")
+
+    backend_result = run_cmd([str(ai_bin), "backend", "capabilities"])
+    runtime["backend_capabilities"] = {"rc": backend_result["rc"], "stdout_sha256": sha256_text(backend_result["stdout"])}
+    if backend_result["rc"] != 0:
+        errs.append("backend capabilities failed")
+    else:
+        try:
+            backend_caps = json.loads(backend_result["stdout"])
+        except json.JSONDecodeError:
+            backend_caps = None
+            errs.append("backend capabilities output is not valid JSON")
+        if isinstance(backend_caps, dict):
+            cap_out_path = out_dir / "ai_backend_capabilities.json"
+            cap_out_path.write_text(json.dumps(backend_caps, indent=2, sort_keys=True), encoding="utf-8")
+            runtime["backend_capabilities_artifact_sha256"] = sha256_text(canonical_json(backend_caps))
+            if backend_caps.get("schema") != "t81.ai.backend-capabilities.v1":
+                errs.append("backend capabilities schema mismatch")
+            required_fields = {"schema", "default_backend", "selection_policy", "backends"}
+            missing_fields = sorted(required_fields - set(backend_caps.keys()))
+            if missing_fields:
+                errs.append(f"backend capabilities missing fields: {', '.join(missing_fields)}")
+            backends = backend_caps.get("backends")
+            if not isinstance(backends, list) or not backends:
+                errs.append("backend capabilities backends must be a non-empty list")
+            else:
+                required_backend_fields = {
+                    "backend_name",
+                    "supported_formats",
+                    "determinism_modes",
+                    "max_context_tokens",
+                    "supports_streaming",
+                    "supports_logit_bias",
+                }
+                for i, backend in enumerate(backends):
+                    if not isinstance(backend, dict):
+                        errs.append(f"backend capabilities entry {i} is not an object")
+                        continue
+                    missing = sorted(required_backend_fields - set(backend.keys()))
+                    if missing:
+                        errs.append(
+                            f"backend capabilities entry {i} missing fields: {', '.join(missing)}"
+                        )
+                default_backend = backend_caps.get("default_backend")
+                backend_names = {
+                    b.get("backend_name", "")
+                    for b in backends
+                    if isinstance(b, dict)
+                }
+                if default_backend not in backend_names:
+                    errs.append("backend capabilities default_backend not found in backends list")
 
     inspect_result = run_cmd([str(ai_bin), "model", "inspect", str(model_path)])
     runtime["model_inspect"] = {"rc": inspect_result["rc"], "stdout_sha256": sha256_text(inspect_result["stdout"])}

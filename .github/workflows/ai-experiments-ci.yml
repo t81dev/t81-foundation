@@ -150,6 +150,10 @@ jobs:
         
         # Test model verification
         ./build/experiments/ai/ux_tools/t81_ai verify test_model.gguf
+
+        # Test backend capability introspection
+        ./build/experiments/ai/ux_tools/t81_ai backend capabilities > /tmp/ai_backend_capabilities.json
+        test -s /tmp/ai_backend_capabilities.json
         
         # Test error handling
         ! ./build/experiments/ai/ux_tools/t81_ai verify nonexistent.gguf || true
@@ -341,6 +345,7 @@ jobs:
           build/ai-quantization/ai_quantization_codec_contract.md
           build/ai-ux/ai_ux_contract.json
           build/ai-ux/ai_ux_contract.md
+          build/ai-ux/ai_backend_capabilities.json
           build/ai-ux/ai_workflow_replay.json
           build/ai-ux/ai_observability_trace.json
           build/ai-rfc0025/tloadhash-ctest.log

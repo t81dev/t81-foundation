@@ -126,10 +126,15 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
     binding["model_sha256"] = sha256_text(model_path.read_text(encoding="utf-8"))
 
     help_res = run_cmd([str(ai_bin), "--help"])
+    caps_res = run_cmd([str(ai_bin), "backend", "capabilities"])
     inspect_res = run_cmd([str(ai_bin), "model", "inspect", str(model_path)])
     verify_res = run_cmd([str(ai_bin), "verify", "determinism", str(model_path)])
 
     binding["help"] = {"rc": help_res["rc"], "stdout_sha256": help_res["stdout_sha256"]}
+    binding["backend_capabilities"] = {
+        "rc": caps_res["rc"],
+        "stdout_sha256": caps_res["stdout_sha256"],
+    }
     binding["model_inspect"] = {"rc": inspect_res["rc"], "stdout_sha256": inspect_res["stdout_sha256"]}
     binding["verify_determinism"] = {
         "rc": verify_res["rc"],
@@ -138,15 +143,61 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
 
     if help_res["rc"] != 0:
         errors.append("runtime binding: t81_ai --help failed")
+    if caps_res["rc"] != 0:
+        errors.append("runtime binding: t81_ai backend capabilities failed")
     if inspect_res["rc"] != 0:
         errors.append("runtime binding: t81_ai model inspect failed")
     if verify_res["rc"] != 0:
         errors.append("runtime binding: t81_ai verify determinism failed")
 
-    required_help_markers = ("model inspect", "verify determinism")
+    required_help_markers = ("model inspect", "verify determinism", "backend capabilities")
     for marker in required_help_markers:
         if marker not in help_res["stdout"]:
             errors.append(f"runtime binding: help output missing marker '{marker}'")
+
+    if caps_res["rc"] == 0:
+        try:
+            caps = json.loads(caps_res["stdout"])
+        except json.JSONDecodeError:
+            caps = None
+            errors.append("runtime binding: backend capabilities output is not valid JSON")
+        if isinstance(caps, dict):
+            binding["backend_capabilities_artifact_sha256"] = sha256_text(canonical_json(caps))
+            required_top = {"schema", "default_backend", "selection_policy", "backends"}
+            missing_top = sorted(required_top - set(caps.keys()))
+            if missing_top:
+                errors.append(
+                    "runtime binding: backend capabilities missing fields "
+                    + ", ".join(missing_top)
+                )
+            if caps.get("schema") != "t81.ai.backend-capabilities.v1":
+                errors.append("runtime binding: backend capabilities schema mismatch")
+            backends = caps.get("backends")
+            if not isinstance(backends, list) or not backends:
+                errors.append("runtime binding: backend capabilities backends must be non-empty list")
+            else:
+                required_backend_fields = {
+                    "backend_name",
+                    "supported_formats",
+                    "determinism_modes",
+                    "max_context_tokens",
+                    "supports_streaming",
+                    "supports_logit_bias",
+                }
+                backend_names: set[str] = set()
+                for idx, backend in enumerate(backends):
+                    if not isinstance(backend, dict):
+                        errors.append(f"runtime binding: backend capabilities entry {idx} is not object")
+                        continue
+                    backend_names.add(str(backend.get("backend_name", "")))
+                    missing = sorted(required_backend_fields - set(backend.keys()))
+                    if missing:
+                        errors.append(
+                            f"runtime binding: backend capabilities entry {idx} missing "
+                            + ", ".join(missing)
+                        )
+                if caps.get("default_backend") not in backend_names:
+                    errors.append("runtime binding: default_backend missing from backends list")
 
     if "Status: Inspection completed" not in inspect_res["stdout"]:
         errors.append("runtime binding: model inspect output missing completion marker")

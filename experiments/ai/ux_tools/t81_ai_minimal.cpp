@@ -1,5 +1,6 @@
 // T81 AI CLI - Minimal Implementation
-// Supports: --help, model inspect, verify, workflow run/replay/report, observability trace
+// Supports: --help, model inspect, verify, backend capabilities,
+// workflow run/replay/report, observability trace
 
 #include <cstdint>
 #include <filesystem>
@@ -52,6 +53,13 @@ public:
             }
             if (subcommand == "report" && argc >= 4) {
                 return workflow_report(argv[3]);
+            }
+        }
+
+        if (command == "backend" && argc >= 3) {
+            std::string subcommand = argv[2];
+            if (subcommand == "capabilities") {
+                return backend_capabilities(argc, argv);
             }
         }
 
@@ -203,6 +211,7 @@ private:
         std::cout << "  t81_ai model inspect <file>           Inspect model file" << std::endl;
         std::cout << "  t81_ai verify <file>                  Verify model integrity" << std::endl;
         std::cout << "  t81_ai verify determinism <file>      Verify deterministic model contract" << std::endl;
+        std::cout << "  t81_ai backend capabilities [--out file]" << std::endl;
         std::cout << "  t81_ai workflow run <id> [--seed N] [--out file]" << std::endl;
         std::cout << "  t81_ai workflow replay <file>         Verify replay artifact hash" << std::endl;
         std::cout << "  t81_ai workflow report <file>         Print replay artifact summary" << std::endl;
@@ -212,6 +221,7 @@ private:
         std::cout << "  t81_ai --help" << std::endl;
         std::cout << "  t81_ai model inspect model.gguf" << std::endl;
         std::cout << "  t81_ai verify model.gguf" << std::endl;
+        std::cout << "  t81_ai backend capabilities --out backend_caps.json" << std::endl;
         std::cout << "  t81_ai workflow run smoke --seed 0 --out replay.json" << std::endl;
         std::cout << "  t81_ai workflow replay replay.json" << std::endl;
         std::cout << "  t81_ai observability trace trace.json" << std::endl;
@@ -261,6 +271,58 @@ private:
         std::cout << "Integrity: Basic file check passed" << std::endl;
         std::cout << "Determinism mode: " << (deterministic_mode ? "strict" : "off") << std::endl;
         std::cout << "Status: Verification completed" << std::endl;
+        return 0;
+    }
+
+    int backend_capabilities(int argc, char* argv[]) {
+        std::string out_path;
+        for (int i = 3; i < argc; ++i) {
+            const std::string arg = argv[i];
+            if (arg == "--out" && i + 1 < argc) {
+                out_path = argv[++i];
+                continue;
+            }
+            std::cerr << "Error: Unknown backend capabilities option: " << arg << std::endl;
+            return 1;
+        }
+
+        std::ostringstream json;
+        json
+            << "{\n"
+            << "  \"schema\": \"t81.ai.backend-capabilities.v1\",\n"
+            << "  \"default_backend\": \"llama.cpp\",\n"
+            << "  \"selection_policy\": \"first_backend_supporting_requested_format_and_mode\",\n"
+            << "  \"backends\": [\n"
+            << "    {\n"
+            << "      \"backend_name\": \"llama.cpp\",\n"
+            << "      \"supported_formats\": [\"gguf\", \"t81_canonical\"],\n"
+            << "      \"determinism_modes\": [\"strict_deterministic\", \"reproducible_nondeterministic\"],\n"
+            << "      \"max_context_tokens\": 4096,\n"
+            << "      \"supports_streaming\": true,\n"
+            << "      \"supports_logit_bias\": true\n"
+            << "    },\n"
+            << "    {\n"
+            << "      \"backend_name\": \"onnx_runtime\",\n"
+            << "      \"supported_formats\": [\"onnx\", \"t81_canonical\"],\n"
+            << "      \"determinism_modes\": [\"strict_deterministic\", \"statistical_deterministic\"],\n"
+            << "      \"max_context_tokens\": 8192,\n"
+            << "      \"supports_streaming\": false,\n"
+            << "      \"supports_logit_bias\": false\n"
+            << "    }\n"
+            << "  ]\n"
+            << "}\n";
+
+        if (!out_path.empty()) {
+            std::ofstream out(out_path, std::ios::trunc);
+            if (!out) {
+                std::cerr << "Error: Unable to write backend capabilities artifact: " << out_path << std::endl;
+                return 1;
+            }
+            out << json.str();
+            out.close();
+        }
+
+        std::cout << json.str();
         return 0;
     }
 
