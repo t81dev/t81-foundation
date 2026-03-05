@@ -81,9 +81,52 @@ def validate_contract(contract: dict[str, Any]) -> tuple[bool, list[str]]:
     return len(errs) == 0, errs
 
 
+def validate_runtime_evidence(runtime_report: Path, ctest_log: Path) -> tuple[bool, list[str], dict[str, Any]]:
+    errs: list[str] = []
+    evidence: dict[str, Any] = {
+        "runtime_report": str(runtime_report),
+        "ctest_log": str(ctest_log),
+    }
+
+    if not runtime_report.exists():
+        errs.append(f"runtime report missing: {runtime_report}")
+        return False, errs, evidence
+    if not ctest_log.exists():
+        errs.append(f"ctest log missing: {ctest_log}")
+        return False, errs, evidence
+
+    report = json.loads(runtime_report.read_text(encoding="utf-8"))
+    evidence["runtime_phase_status"] = report.get("phase_status", "")
+    evidence["runtime_report_sha256"] = sha256_text(
+        json.dumps(report, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    )
+    if report.get("phase_status") != "runtime_bound":
+        errs.append(f"runtime report phase_status must be runtime_bound (got {report.get('phase_status')})")
+
+    op_rows = {row.get("opcode", ""): row for row in report.get("opcodes", [])}
+    for opname in ("ATTN", "QMATMUL", "EMBED"):
+        row = op_rows.get(opname)
+        if row is None:
+            errs.append(f"runtime report missing opcode row: {opname}")
+            continue
+        if row.get("status") != "runtime_bound":
+            errs.append(f"{opname}: runtime report status must be runtime_bound")
+
+    log_text = ctest_log.read_text(encoding="utf-8", errors="replace")
+    evidence["ctest_log_sha256"] = sha256_text(log_text)
+    if "t81_vm_ai_phase1_opcode_stub_conformance_test" not in log_text:
+        errs.append("ctest log missing phase1 conformance test name")
+    if "100% tests passed" not in log_text:
+        errs.append("ctest log missing success marker: 100% tests passed")
+
+    return len(errs) == 0, errs, evidence
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Validate RFC-0026/RFC-00A8 phase-1 opcode subset contract.")
     p.add_argument("--out-dir", required=True, help="Directory to write artifacts")
+    p.add_argument("--runtime-report", default="", help="Path to ai_opcode_runtime_report.json")
+    p.add_argument("--ctest-log", default="", help="Path to AI phase1 opcode ctest log")
     return p.parse_args()
 
 
@@ -98,7 +141,16 @@ def main() -> int:
     hash_b = sha256_text(canonical_json(contract_b))
     deterministic = hash_a == hash_b
 
-    valid, errors = validate_contract(contract_a)
+    valid_contract, errors = validate_contract(contract_a)
+    runtime_valid = True
+    runtime_evidence: dict[str, Any] = {}
+    if args.runtime_report or args.ctest_log:
+        runtime_report = Path(args.runtime_report).resolve()
+        ctest_log = Path(args.ctest_log).resolve()
+        runtime_valid, runtime_errors, runtime_evidence = validate_runtime_evidence(runtime_report, ctest_log)
+        errors.extend(runtime_errors)
+
+    valid = valid_contract and runtime_valid
     status = "pass" if deterministic and valid else "fail"
 
     payload = {
@@ -109,6 +161,7 @@ def main() -> int:
         "valid": valid,
         "errors": errors,
         "contract": contract_a,
+        "runtime_evidence": runtime_evidence,
     }
 
     json_path = out_dir / "ai_opcode_subset_contract.json"
@@ -124,6 +177,7 @@ def main() -> int:
                 f"- deterministic_contract_hash: `{deterministic}`",
                 f"- contract_sha256: `{hash_a}`",
                 f"- phase1 opcodes: `ATTN`, `QMATMUL`, `EMBED`",
+                f"- runtime_evidence_valid: `{runtime_valid}`",
                 "",
             ]
         ),

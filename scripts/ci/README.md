@@ -36,7 +36,7 @@ python3 scripts/ci/collect_ai_evidence_bundle.py --ai-bin build/experiments/ai/u
 python3 scripts/ci/check_ai_model_provenance_gate.py --model build/ai-provenance/test_model.gguf --manifest build/ai-provenance/test_model.manifest.json --self-test-deny
 python3 scripts/ci/check_ai_policy_event_contract.py --out-dir build/ai-policy
 python3 scripts/ci/check_ai_backend_adapter_contract.py --out-dir build/ai-backend
-python3 scripts/ci/check_ai_opcode_subset_contract.py --out-dir build/ai-opcodes
+python3 scripts/ci/check_ai_opcode_subset_contract.py --out-dir build/ai-opcodes --runtime-report build/ai-opcodes-runtime/ai_opcode_runtime_report.json --ctest-log build/ai-opcodes/ai_phase1_opcode_ctest.log
 python3 scripts/ci/generate_ai_opcode_runtime_report.py --repo-root . --out-dir build/ai-opcodes-runtime
 python3 scripts/ci/check_ai_benchmark_spec_contract.py --out-dir build/ai-benchmark
 python3 scripts/ci/check_ai_quantization_codec_contract.py --out-dir build/ai-quantization
