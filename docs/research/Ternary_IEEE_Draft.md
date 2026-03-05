@@ -1,464 +1,132 @@
-## Title
-**Deterministic Computing Beyond Binary: A Balanced-Ternary Substrate for Cross-Platform Reproducible Systems**
+# IEEE-T81: Standard for Deterministic Ternary Computing Systems
+
+**Front Matter**
+
+**Title Page**  
+IEEE-T81: Standard for Deterministic Ternary Computing Systems  
+Designation: Draft Standard (Fictional)  
+Fictional Approval Date: March 2026  
+Sponsor: IEEE Computer Society  
+Working Group: IEEE-T81 Working Group on Deterministic Ternary Computing Systems (Fictional)  
+Status: Draft for technical review and prototype implementation  
+
+**Intended audience**: CPU/ISA designers, VM/runtime implementers, compiler and tooling authors, verification and conformance engineers  
+
+**Note (informative)**: This is a creative draft standard intended to demonstrate IEEE-style specification structure and rigor. It contains fictional elements (e.g., “IEEE-T81”) while contrasting against real-world determinism challenges in conventional binary computing, including IEEE 754 floating-point variability.
 
 ## Abstract
-Reproducibility is an increasingly critical property in modern computing systems spanning scientific computing, distributed infrastructure, machine learning inference, and safety-critical environments. Conventional binary computing platforms often produce divergent results across compilers, operating systems, and processor architectures due to floating-point nondeterminism, instruction-level optimizations, serialization ambiguities, and undefined language semantics.
 
-This paper introduces a deterministic computing substrate based on balanced-ternary representation. Rather than treating ternary arithmetic as a performance optimization, the proposed approach treats determinism as a first-class architectural property. The system combines canonical numeric representation, deterministic instruction semantics, platform-independent serialization, and executable conformance specifications to establish a reproducible computational contract across heterogeneous environments.
+Reproducibility is increasingly required in scientific computing, machine learning inference, safety-critical control, and audit-oriented infrastructure. Nevertheless, conventional binary computing frequently exhibits cross-platform divergence due to floating-point evaluation differences, fused operations, compiler reassociation and vectorization, inconsistent math-library results, ambiguous serialization choices, and language-defined “undefined” or implementation-dependent behaviors.
 
-The paper presents the design principles of the substrate, formalizes determinism guarantees, and outlines a verification methodology that validates identical computational results across diverse hardware platforms. Preliminary emulation results demonstrate feasibility on binary hardware with acceptable overhead, positioning balanced-ternary systems as a practical foundation for reproducible computing infrastructures.
+This draft standard defines a deterministic computing substrate based on balanced ternary, using trits with values {−1, 0, +1}. Balanced ternary provides a symmetric signed-digit domain that supports unique canonical encodings for integers and deterministic normalization rules, facilitating identical results across heterogeneous platforms.
 
-## 1. Introduction
-Reproducibility has emerged as a central requirement for modern computational systems. Applications in distributed computing, scientific simulation, machine learning inference, and critical infrastructure increasingly require identical outputs when programs are executed across different hardware platforms.
+IEEE-T81 specifies:  
+(a) canonical balanced-ternary representations and a byte-stable packing strategy,  
+(b) deterministic, fully-defined instruction semantics (including edge-case behavior),  
+(c) a platform-independent runtime execution model for deterministic sequencing and environmental inputs,  
+(d) a canonical serialization format producing identical byte streams for equivalent structures, and  
+(e) conformance verification via executable specifications and hash-matched outputs.  
 
-Despite extensive engineering efforts, binary computing systems frequently produce divergent results across environments. Programs compiled with different compilers, executed on different processor architectures (e.g., x86 vs. ARM), or run under different runtime environments can produce numerically distinct outputs even when the underlying source code is identical.
+The goal is **D3 determinism**: identical outputs across operating systems, compilers, and CPU architectures for the same program and inputs, subject to conformance requirements.
 
-Several factors contribute to this behavior:
+**Keywords**  
+balanced ternary; trit; tryte; deterministic computing; reproducibility; canonical representation; canonical serialization; conformance verification; deterministic runtime; cross-platform trace hashing
 
-- Floating-point rounding differences and non-associativity (e.g., (a + b) + c ≠ a + (b + c) in finite precision)
-- Fused multiply-add (FMA) instructions and other algebraic optimizations that alter rounding
-- Compiler optimization variance (e.g., reordering, vectorization)
-- Undefined or implementation-defined language semantics (e.g., in C/C++)
-- Serialization inconsistencies (endianness, padding, NaN payloads)
-- Non-deterministic instruction ordering in parallel environments (e.g., reductions on GPUs)
+## Background and Goals
 
-While mitigation strategies exist—such as deterministic build systems (e.g., reproducible builds), restricted compiler flags (-ffp-contract=off), or fixed-point arithmetic—these approaches often address symptoms rather than underlying architectural assumptions. Binary computing systems were designed primarily for performance and hardware simplicity rather than strict reproducibility.
+### Introduction
 
-This paper explores an alternative approach: a deterministic computing substrate built around **balanced ternary** representation. Balanced ternary uses digits from the set {−1, 0, +1} (often denoted as {T, 0, 1} or {-, 0, +}).
+Modern computational practice increasingly treats bitwise-identical reproducibility not merely as a convenience but as a requirement: scientific replication, regulated audit trails, safety certification, distributed consensus, and ML deployment pipelines all benefit from deterministic outputs. However, typical binary platforms permit many degrees of freedom that can change results without changing source-level intent.
 
-This symmetric numeric representation allows signed values to be expressed without auxiliary sign encodings and provides opportunities for canonical arithmetic semantics.
+Common sources of nondeterminism include:
 
-The central premise of this work is that determinism can be enforced through coordinated design across four system layers:
+- Floating-point non-associativity and evaluation reordering. Reassociation or parallel reductions can change rounding points, producing divergent results even when each individual operation conforms to IEEE 754 formats.
+- Fused multiply-add (FMA) contraction and compiler policies. Whether expressions are contracted into fused operations depends on compiler flags and language modes (e.g., -ffp-contract in GCC). This can change rounding and produce different numeric results.
+- Divergent math-library function results. Many transcendental functions are not required to be correctly rounded across implementations, so CPU and GPU or different libm implementations may differ slightly.
+- Serialization ambiguities. Equivalent data may encode into different byte streams when key ordering, padding, endianness, or schema-dependent encodings vary; even “deterministic” modes in popular encodings are not necessarily canonical across time or implementations.
 
-- Canonical numeric representation
-- Deterministic instruction semantics
-- Deterministic runtime execution
-- Executable conformance verification
+IEEE-T81 responds by defining determinism as a first-class architectural invariant. It uses balanced ternary trits to ground canonical numeric representation and defines deterministic semantics and serialization to minimize degrees of freedom that otherwise vary by platform. Balanced ternary is a known signed-digit system using digits {−1, 0, +1}.
 
-Rather than attempting to retrofit determinism onto an inherently permissive binary architecture, the proposed system defines determinism as an explicit architectural invariant.
+### Scope
 
-The contributions of this work include:
+This standard specifies the following normative components:
 
-1. A canonical balanced-ternary representation model suitable for deterministic computation
-2. A deterministic instruction semantic framework eliminating undefined behavior
-3. A platform-independent canonical serialization scheme
-4. An executable specification model enabling cross-platform conformance verification
+- Canonical balanced-ternary representation for integers and fixed-point values, including normalization, truncation, and widening rules.
+- T81 packing and interchange encoding rules for embedding trits/trytes into octets for platform-neutral storage and transport.
+- Deterministic instruction semantics for core arithmetic, comparisons, and ternary logical operations, including precise edge-case behavior.
+- Deterministic runtime execution model for single-threaded execution and deterministically modeled environmental inputs.
+- Canonical serialization for structured data and execution artifacts, producing identical byte streams across implementations.
+- Conformance and verification requirements, including trace hashing and test suites.
 
-## 2. Background
-### 2.1 Binary Computing and Sources of Nondeterminism
-Modern computing platforms rely on binary arithmetic and IEEE-754 floating-point representation. While these systems provide high performance and widespread hardware compatibility, they introduce multiple sources of nondeterministic behavior.
+This standard explicitly excludes:
 
-Floating-point arithmetic is not associative due to rounding effects, meaning that different evaluation orders may produce different results. Compiler optimizations such as instruction fusion (e.g., FMA) or reordering may therefore alter program output.
+- Hardware circuit implementation details (voltage levels, transistor designs, memory cell technologies).
+- Concurrency, parallel scheduling, and nondeterministic interleavings (a future extension may address deterministic concurrency).
+- Real-time guarantees (timing determinism is distinct from functional determinism).
 
-In addition, IEEE-754 defines multiple encodings for certain values, particularly NaN representations (quiet vs. signaling, payload bits). Different processor architectures may produce distinct NaN encodings for equivalent operations.
+### Purpose
 
-Language specifications in common programming environments also allow undefined or implementation-defined behavior, enabling compilers to make optimization decisions that may change observable program behavior across builds.
+The purpose of IEEE-T81 is to enable reproducible computation across heterogeneous platforms by making representation, semantics, and serialization canonical.
 
-Serialization mechanisms introduce additional variability. Data structures encoded in binary formats may vary due to endianness, padding, or implementation-specific encoding decisions.
+This standard defines determinism levels as follows (see also “Determinism Levels” in the definitions clause):  
+D0 (single-process), D1 (cross-OS), D2 (cross-compiler/toolchain), D3 (cross-architecture), D4 (cross-hardware implementations).  
+This draft targets D3 determinism for conforming implementations under the defined runtime model.
 
-Collectively, these issues complicate attempts to guarantee reproducible computation across heterogeneous environments, particularly in distributed systems or ML inference pipelines.
+## Referenced Documents and Terminology
 
-### 2.2 Balanced-Ternary Representation
-Balanced ternary represents values using digits from the set T = {−1, 0, +1}. Each digit represents a power of three with a signed coefficient.
+### Normative References
 
-Examples:
+The following documents are referenced for contrast, alignment, or incorporated normative concepts. Where dated references are used, only the cited edition applies. Where undated, the latest edition applies.
 
-- 5₁₀ = 1·3² + (−1)·3¹ + (−1)·3⁰ = 1 T T (where T = −1)
-- −4₁₀ = (−1)·3¹ + (−1)·3⁰ = T T
-- 6₁₀ = 1·3² + (−1)·3¹ + 0·3⁰ = 1 T 0
+- IEEE, IEEE Standard for Floating-Point Arithmetic (IEEE 754-2019) (used for contrast; not normatively adopted by T81 arithmetic).
+- ISO/IEC 60559 (floating-point arithmetic standard aligned with IEEE 754; informational contrast).
+- IEEE 1666-2023, SystemC® Language Reference Manual (used as a simulation/conformance analogy for executable specification culture).
+- RFC 8785, JSON Canonicalization Scheme (JCS) (canonicalization and “hashable” representation principles).
+- RFC 8949, CBOR (deterministic encoding requirements and deterministic key ordering guidance).
+- NIST, FIPS 180-4, Secure Hash Standard (SHS) (hash requirements for canonical trace hashing).
+- Reproducible Builds Project, “Definition of reproducible builds” (terminology alignment for “bit-for-bit reproducibility”).
+- Historical balanced-ternary computing reference: Moscow State University Setun ternary computer background (informative contrast; not required).
 
-Balanced ternary offers several theoretical advantages:
+### Definitions, Acronyms, and Abbreviations
 
-- Symmetric numeric representation around zero (no separate sign bit)
-- Simplified sign handling (negation by flipping all signs: + ↔ −)
-- Unique representation for every integer (no redundant encodings like +0/−0 or multiple NaNs)
-- Reduced average carry propagation in addition (fewer cases propagate carry)
-- Rounding-by-truncation equivalence for fractions (truncation equals nearest rounding in many cases)
+**Normative language**. The terms *shall*, *should*, and *may* are used to express requirements, recommendations, and permissions, consistent with IEEE standards drafting conventions.
 
-Historically, balanced ternary has been explored in experimental computing systems (e.g., the Soviet Setun computer, 1958–1965) and theoretical number representations. However, most prior research has focused on arithmetic efficiency rather than deterministic execution semantics.
+**Definitions**
 
-This work instead focuses on balanced ternary as a **canonical numeric domain** capable of supporting reproducible computation by eliminating representational ambiguity and enforcing strict, platform-independent rules.
+- **balanced ternary**: A base-3 signed-digit representation using digits in the set {−1, 0, +1}.
+- **trit**: A ternary digit. In IEEE-T81, trits are balanced unless otherwise stated.
+- **tryte**: A fixed group of four trits. Because 3⁴ = 81, a tryte spans 81 distinct values and is the naming basis for “T81.”
+- **canonical representation**: A unique, normalization-constrained encoding of a value such that equivalent values do not have multiple encodings.
+- **canonical serialization**: A unique, platform-independent byte encoding that is identical for semantically equivalent values and structures (e.g., via deterministic ordering).
+- **determinism (functional)**: For a given program and input stream, the produced outputs (and where specified, the execution trace) are identical across conforming implementations.
+- **execution trace**: A canonical record of execution events (instruction steps, I/O events, exceptions) suitable for hashing and replay.
+- **T81-CS**: The canonical serialization format defined in this standard.
 
-## 3. Determinism Model
-To clarify determinism guarantees, this work defines multiple levels of determinism.
+**Determinism levels**
 
-| Level | Definition                                      | Achieved? |
-|-------|-------------------------------------------------|-----------|
-| D0    | Deterministic within a single process           | Yes       |
-| D1    | Deterministic across operating systems          | Yes       |
-| D2    | Deterministic across compiler toolchains        | Yes       |
-| D3    | Deterministic across CPU architectures          | Target    |
-| D4    | Deterministic across hardware implementations   | Future    |
+| Level | Determinism definition                              | Typical interpretation in IEEE-T81                          |
+|-------|-----------------------------------------------------|-------------------------------------------------------------|
+| D0    | Deterministic within a single process execution     | Same inputs → same outputs on one platform                  |
+| D1    | Deterministic across operating systems              | Cross-OS reproducibility for same build and CPU             |
+| D2    | Deterministic across compiler toolchains            | Cross-compiler reproducibility for same target              |
+| D3    | Deterministic across CPU architectures              | Cross-architecture reproducibility (e.g., x86 vs. Arm)      |
+| D4    | Deterministic across hardware implementations       | Cross-implementation equivalence at ISA+microarchitecture level |
 
-The deterministic substrate described in this paper targets determinism levels up to **D3**, enabling identical computational results across major processor architectures such as x86 and ARM when executed under conforming environments.
+This abstraction and tiering are consistent with the determinism model described in the accompanying design draft.
 
-Level D4 remains an open research challenge but may be achievable through strict adherence to canonical instruction semantics and formal verification of hardware equivalence.
+## Architecture Overview
 
-## 4. Deterministic Substrate Architecture
-The deterministic computing substrate is structured as a layered architecture consisting of four principal components.
+### Overview
 
-1. Representation layer
-2. Instruction semantics layer
-3. Runtime execution model
-4. Conformance verification system
+IEEE-T81 specifies a layered deterministic substrate. Each layer constrains degrees of freedom that otherwise cause divergence across platforms.
 
-Each layer contributes to enforcing deterministic computation.
+**Layer model**
 
-### 4.1 Representation Layer
-The representation layer defines canonical balanced-ternary encodings for numeric values. Every integer has a unique representation, eliminating ambiguities like signed zero or multiple NaN payloads in binary FP.
+- **Representation layer** — Defines canonical balanced-ternary encodings, normalization, widening/truncation rules, and tryte packing.
+- **Instruction semantics layer** — Defines fully specified behavior of operations, rounding, exceptions, and edge cases (no “undefined behavior”).
+- **Runtime execution model** — Defines deterministic sequencing and a controlled interface to environmental inputs.
+- **Conformance and verification** — Defines executable reference behavior, tests, and trace hashing to validate D0–D3 determinism targets.
 
-To enable compatibility with binary hardware, trits may be packed into binary storage (e.g., 2 trits per byte with one bit unused, or efficient 3-trit-per-5-bit schemes), while preserving canonical ordering and representation invariants.
+This layered view aligns with typical deterministic-substrate architectural framing described in the design draft (representation, semantics, runtime, conformance).
 
-Key representation properties include:
-
-- Unique encoding for each representable value
-- Deterministic normalization rules (e.g., no leading zeros except for zero itself)
-- Architecture-independent binary encoding (big-endian trit order by default)
-
-These properties eliminate representational ambiguity that can lead to divergent program behavior.
-
-### 4.2 Instruction Semantics
-The instruction semantics layer defines deterministic arithmetic and logical operations. All instructions are specified using explicit operational semantics (e.g., in a formal language like Why3 or Coq), eliminating undefined or implementation-dependent behavior.
-
-Arithmetic operations include:
-
-- Addition/subtraction with carry rules optimized for balanced ternary (carry is −1, 0, or +1)
-- Multiplication (direct table lookup for single trit, then positional)
-- Division with deterministic rounding rules (symmetric truncation to nearest)
-- Comparison and logical operations (three-valued logic: true, false, unknown/undefined)
-
-Instruction definitions specify precise behavior for edge cases such as overflow (trapping or saturating, configurable but fixed), division boundaries, and normalization.
-
-### 4.3 Runtime Execution Model
-The runtime environment enforces deterministic instruction execution and memory behavior.
-
-The runtime model provides:
-
-- Deterministic instruction sequencing (strict left-to-right evaluation, no reordering)
-- Canonical memory layout (trit-aligned, no padding)
-- Explicit handling of external nondeterministic sources (e.g., seeded RNG, time via deterministic simulation)
-
-Programs execute within a controlled environment that ensures instruction semantics are applied consistently across platforms.
-
-## 5. Canonical Serialization
-Serialization plays a crucial role in reproducible computation by ensuring that identical logical structures produce identical encoded representations.
-
-The deterministic substrate defines a canonical serialization format with the following properties:
-
-- Identical byte streams for equivalent data structures
-- Deterministic ordering of composite structures (e.g., sorted fields)
-- Elimination of platform-dependent padding or endianness variation (fixed trit-big-endian packing)
-
-Canonical serialization enables deterministic hashing of computational artifacts, supporting reproducible builds and content-addressed storage (e.g., IPFS-like for ML models).
-
-## 6. Executable Specification and Conformance Testing
-Traditional specifications describe system behavior using textual descriptions. However, textual specifications may be interpreted differently across implementations.
-
-To address this issue, the proposed substrate defines an **executable specification model**. Normative system behavior is expressed through executable programs (e.g., in a reference interpreter written in a formally verifiable subset) that serve simultaneously as documentation and verification tools.
-
-The conformance test suite validates:
-
-- Arithmetic correctness (against reference oracle)
-- Serialization round-trip invariants
-- Instruction semantic behavior (step-by-step traces)
-- Deterministic execution traces (hash of full trace must match)
-
-Independent implementations must pass the conformance suite to demonstrate compatibility with the deterministic computing contract.
-
-## 7. Evaluation Methodology
-Evaluation focuses on verifying deterministic behavior across heterogeneous computing environments. Three evaluation dimensions are considered.
-
-### 7.1 Determinism Verification
-Representative programs (e.g., matrix multiplication, scientific kernels, small ML inference) are executed on multiple platforms, including x86 and ARM systems, under different operating systems and emulated runtimes.
-
-Program outputs and execution traces are hashed (SHA-256) and compared to confirm identical computational results.
-
-### 7.2 Storage Efficiency
-Balanced-ternary encodings are evaluated against conventional binary formats for representative datasets (integers, fixed-point values) to measure storage efficiency and encoding overhead. Balanced ternary requires ≈ log₂(3) ≈ 1.585 bits per trit, offering theoretical density advantages for integer-heavy workloads.
-
-### 7.3 Performance Overhead
-The cost of enforcing deterministic semantics is measured relative to conventional binary execution models (e.g., via emulation on binary hardware). This evaluation quantifies the computational overhead introduced by canonical arithmetic semantics and deterministic runtime constraints, with optimizations like trit-packing and vectorized emulation.
-
-## 8. Applications
-Deterministic computing substrates may benefit several domains.
-
-### Machine Learning Inference
-Deterministic inference enables reproducible model evaluation, auditable pipelines, and consistent behavior in federated learning or safety-critical AI.
-
-### Critical Infrastructure
-Safety-critical systems (e.g., avionics, medical devices) benefit from predictable computational behavior and verifiable system state transitions.
-
-### Scientific Computing
-Deterministic computation improves the reproducibility of simulation and data analysis workflows, addressing crises in scientific reproducibility.
-
-## 9. Related Work
-Prior research has explored ternary computing architectures and alternative number systems. The Setun computer (1958, Moscow State University) demonstrated practical balanced-ternary hardware, achieving efficiency in arithmetic and reliability with ferrite-core implementations.
-
-Modern efforts include software simulators and theoretical analyses emphasizing radix economy (ternary closer to optimal base-e ≈ 2.718 than binary).
-
-Research in deterministic computing has focused on reproducible builds (e.g., Guix, Nix), deterministic runtime environments (e.g., deterministic reductions in HPC), and formal verification systems (e.g., CompCert for C semantics).
-
-Floating-point reproducibility efforts include restricted modes (-ffp-model=strict) and fixed-point alternatives, but struggle with performance.
-
-The approach presented in this paper integrates deterministic representation, instruction semantics, and verification infrastructure into a unified architectural framework centered on balanced ternary.
-
-## 10. Limitations and Future Work
-Several challenges remain for deterministic ternary computing systems.
-
-- Hardware support for native ternary operations remains limited, requiring efficient emulation on binary hardware (overhead ~2–5× in initial prototypes).
-- Integration with existing binary software ecosystems requires tooling (compilers, libraries) and interoperability mechanisms (e.g., binary ↔ ternary bridges).
-- Deterministic concurrency models represent another open research area, particularly for highly parallel systems (e.g., avoiding non-deterministic reductions).
-
-Future work includes exploring hardware acceleration for ternary arithmetic (e.g., modern ternary logic gates with 2D materials), extending deterministic execution models to concurrent environments, and expanding cross-platform validation experiments (including GPUs via emulation).
-
-## 11. Conclusion
-This paper introduces a deterministic computing substrate based on balanced-ternary representation.
-
-By combining canonical numeric representation, deterministic instruction semantics, platform-independent serialization, and executable conformance specifications, the proposed architecture establishes a reproducible computational contract across heterogeneous platforms.
-
-Balanced-ternary systems provide a promising foundation for deterministic computing infrastructures capable of supporting reproducible scientific computation, secure distributed systems, and verifiable machine learning workflows. While emulation overhead exists today, the architectural advantages in determinism and canonical behavior justify renewed exploration in an era demanding trust and auditability.
-
-This expanded version adds ~50–60% more content, making it more complete and publication-ready while staying faithful to your vision. If you'd like deeper focus on any section (e.g., formal semantics, more examples, or pseudocode), let me know!
-The contributions of this work include:
-
-1. A canonical balanced-ternary representation model suitable for deterministic computation
-2. A deterministic instruction semantic framework eliminating undefined behavior
-3. A platform-independent canonical serialization scheme
-4. An executable specification model enabling cross-platform conformance verification
-
----
-
-# 2. Background
-
-## 2.1 Binary Computing and Sources of Nondeterminism
-
-Modern computing platforms rely on binary arithmetic and IEEE-754 floating-point representation. While these systems provide high performance and widespread hardware compatibility, they introduce multiple sources of nondeterministic behavior.
-
-Floating-point arithmetic is not associative due to rounding effects, meaning that different evaluation orders may produce different results. Compiler optimizations such as instruction fusion or reordering may therefore alter program output.
-
-In addition, IEEE-754 defines multiple encodings for certain values, particularly NaN (Not-a-Number) representations. Different processor architectures may produce distinct NaN encodings for equivalent operations.
-
-Language specifications in common programming environments also allow undefined or implementation-defined behavior, enabling compilers to make optimization decisions that may change observable program behavior across builds.
-
-Serialization mechanisms introduce additional variability. Data structures encoded in binary formats may vary due to endianness, padding, or implementation-specific encoding decisions.
-
-Collectively, these issues complicate attempts to guarantee reproducible computation across heterogeneous environments.
-
----
-
-## 2.2 Balanced-Ternary Representation
-
-Balanced ternary represents values using digits from the set:
-
-[
-T = {-1, 0, +1}
-]
-
-Each digit represents a power of three with a signed coefficient. For example:
-
-[
-5_{10} = 1\cdot3^2 - 1\cdot3^1 - 1\cdot3^0
-]
-
-Balanced ternary offers several theoretical advantages:
-
-* symmetric numeric representation
-* simplified sign handling
-* potential reductions in carry propagation during arithmetic operations
-
-Historically, balanced ternary has been explored in experimental computing systems and theoretical number representations. However, most prior research has focused on arithmetic efficiency rather than deterministic execution semantics.
-
-This work instead focuses on balanced ternary as a **canonical numeric domain** capable of supporting reproducible computation.
-
----
-
-# 3. Determinism Model
-
-To clarify determinism guarantees, this work defines multiple levels of determinism.
-
-| Level | Definition                                    |
-| ----- | --------------------------------------------- |
-| D0    | Deterministic within a single process         |
-| D1    | Deterministic across operating systems        |
-| D2    | Deterministic across compiler toolchains      |
-| D3    | Deterministic across CPU architectures        |
-| D4    | Deterministic across hardware implementations |
-
-The deterministic substrate described in this paper targets determinism levels up to **D3**, enabling identical computational results across major processor architectures such as x86 and ARM when executed under conforming environments.
-
-Level D4, determinism across independent hardware implementations, remains an open research challenge but may be achievable through strict adherence to canonical instruction semantics.
-
----
-
-# 4. Deterministic Substrate Architecture
-
-The deterministic computing substrate is structured as a layered architecture consisting of four principal components.
-
-1. Representation layer
-2. Instruction semantics layer
-3. Runtime execution model
-4. Conformance verification system
-
-Each layer contributes to enforcing deterministic computation.
-
----
-
-## 4.1 Representation Layer
-
-The representation layer defines canonical balanced-ternary encodings for numeric values.
-
-To enable compatibility with binary hardware, trits may be packed into binary storage formats while preserving canonical ordering and representation invariants.
-
-Key representation properties include:
-
-* unique encoding for each representable value
-* deterministic normalization rules
-* architecture-independent binary encoding
-
-These properties eliminate representational ambiguity that can lead to divergent program behavior.
-
----
-
-## 4.2 Instruction Semantics
-
-The instruction semantics layer defines deterministic arithmetic and logical operations.
-
-All instructions are specified using explicit operational semantics, eliminating undefined or implementation-dependent behavior.
-
-Arithmetic operations include:
-
-* addition and subtraction
-* multiplication
-* division with deterministic rounding rules
-* comparison and logical operations
-
-Instruction definitions specify precise behavior for edge cases such as overflow, division boundaries, and normalization.
-
----
-
-## 4.3 Runtime Execution Model
-
-The runtime environment enforces deterministic instruction execution and memory behavior.
-
-The runtime model provides:
-
-* deterministic instruction sequencing
-* canonical memory layout
-* explicit handling of external nondeterministic sources
-
-Programs execute within a controlled environment that ensures instruction semantics are applied consistently across platforms.
-
----
-
-# 5. Canonical Serialization
-
-Serialization plays a crucial role in reproducible computation by ensuring that identical logical structures produce identical encoded representations.
-
-The deterministic substrate defines a canonical serialization format with the following properties:
-
-* identical byte streams for equivalent data structures
-* deterministic ordering of composite structures
-* elimination of platform-dependent padding or endianness variation
-
-Canonical serialization enables deterministic hashing of computational artifacts, supporting reproducible builds and content-addressed storage.
-
----
-
-# 6. Executable Specification and Conformance Testing
-
-Traditional specifications describe system behavior using textual descriptions. However, textual specifications may be interpreted differently across implementations.
-
-To address this issue, the proposed substrate defines an **executable specification model**.
-
-Normative system behavior is expressed through executable programs that serve simultaneously as documentation and verification tools.
-
-The conformance test suite validates:
-
-* arithmetic correctness
-* serialization round-trip invariants
-* instruction semantic behavior
-* deterministic execution traces
-
-Independent implementations must pass the conformance suite to demonstrate compatibility with the deterministic computing contract.
-
----
-
-# 7. Evaluation Methodology
-
-Evaluation focuses on verifying deterministic behavior across heterogeneous computing environments.
-
-Three evaluation dimensions are considered.
-
----
-
-## 7.1 Determinism Verification
-
-Representative programs are executed on multiple platforms, including x86 and ARM systems, under different operating systems and compiler toolchains.
-
-Program outputs and execution traces are hashed and compared to confirm identical computational results.
-
----
-
-## 7.2 Storage Efficiency
-
-Balanced-ternary encodings are evaluated against conventional binary formats for representative datasets to measure storage efficiency and encoding overhead.
-
----
-
-## 7.3 Performance Overhead
-
-The cost of enforcing deterministic semantics is measured relative to conventional binary execution models.
-
-This evaluation quantifies the computational overhead introduced by canonical arithmetic semantics and deterministic runtime constraints.
-
----
-
-# 8. Applications
-
-Deterministic computing substrates may benefit several domains.
-
-### Machine Learning Inference
-
-Deterministic inference enables reproducible model evaluation and auditable machine learning pipelines.
-
-### Critical Infrastructure
-
-Safety-critical systems benefit from predictable computational behavior and verifiable system state transitions.
-
-### Scientific Computing
-
-Deterministic computation improves the reproducibility of simulation and data analysis workflows.
-
----
-
-# 9. Related Work
-
-Prior research has explored ternary computing architectures and alternative number systems. Early experimental systems demonstrated the feasibility of ternary arithmetic hardware, although these designs were not widely adopted.
-
-Research in deterministic computing has focused on reproducible builds, deterministic runtime environments, and formal verification systems.
-
-The approach presented in this paper integrates deterministic representation, instruction semantics, and verification infrastructure into a unified architectural framework.
-
----
-
-# 10. Limitations and Future Work
-
-Several challenges remain for deterministic ternary computing systems.
-
-Hardware support for native ternary operations remains limited, requiring efficient emulation on binary hardware platforms.
-
-Integration with existing binary software ecosystems requires tooling and interoperability mechanisms.
-
-Deterministic concurrency models represent another open research area, particularly for highly parallel systems.
-
-Future work includes exploring hardware acceleration for ternary arithmetic, extending deterministic execution models to concurrent environments, and expanding cross-platform validation experiments.
-
----
-
-# 11. Conclusion
-
-This paper introduces a deterministic computing substrate based on balanced-ternary representation.
-
-By combining canonical numeric representation, deterministic instruction semantics, platform-independent serialization, and executable conformance specifications, the proposed architecture establishes a reproducible computational contract across heterogeneous platforms.
-
-Balanced-ternary systems provide a promising foundation for deterministic computing infrastructures capable of supporting reproducible scientific computation, secure distributed systems, and verifiable machine learning workflows.
+**Figure 1 — Layered architecture (informative ASCII)**
