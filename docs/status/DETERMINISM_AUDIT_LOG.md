@@ -26,7 +26,7 @@ Entries are append-only. Do not edit past entries.
 | AX-M5 / AX-M6 / AX-M7 (Axion evidence) | Open | **Closed** | `docs/status/HARDENING_BACKLOG.md` |
 | T3K-S1 (quantization spec gap) | Open | **Closed** | `docs/status/HARDENING_BACKLOG.md` |
 
-**Remaining Open:** BG-07 and FW-02 tracking remains in `HARDENING_BACKLOG.md`.
+**Remaining Open:** None. BG-07 and FW-02 were both closed on 2026-03-05 in `HARDENING_BACKLOG.md`.
 
 ---
 

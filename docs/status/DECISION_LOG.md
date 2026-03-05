@@ -272,6 +272,41 @@ without reducing gate strictness.
 
 ---
 
+### DEC-010 — Close BG-07 via Deterministic BigInt Transport and Fail-Closed Narrowing
+
+**Date (UTC):** 2026-03-05
+**Approver:** @t81dev
+**Category:** Governance / Implementation
+
+**Decision:** Mark backlog item BG-07 as closed. Oversized integer literals now
+lower to `LiteralKind::BigIntHandle`, persist through deterministic binary
+transport (`Program::bigint_pool`), materialize in VM as canonical
+`FractionHandle` (`BigInt/1`), and no longer silently truncate. Narrowing back
+to machine `Int` remains explicitly bounded and fail-closed (`Frac2I` decode
+fault on non-`int64` BigInt numerators). JIT explicitly deopts `BigIntHandle`
+literals to preserve interpreter precision semantics.
+
+**Alternatives Considered:**
+- Keep BG-07 open until full native arbitrary-precision arithmetic opcodes land.
+- Narrow language claim to fixed-width integers only and remove BigInt transport.
+- Permit best-effort narrowing/truncation for oversized values.
+
+**Rationale:** The primary determinism and safety defect was silent precision
+loss across IR->binary->VM boundaries. The implemented path eliminates silent
+truncation, preserves deterministic transport/materialization semantics, and
+makes precision boundaries explicit at conversion points. This satisfies BG-07
+hardening intent without deferring release hygiene on speculative opcode
+expansion.
+
+**References:**
+- `docs/status/HARDENING_BACKLOG.md`
+- `docs/status/BG07_PHASE2_IMPLEMENTATION_NOTES.md`
+- `core/vm/vm.cpp`
+- `runtime/jit/jit_compiler.cpp`
+- `tests/cpp/test_vm_literal_pool_extension.cpp`
+
+---
+
 ## Log Maintenance
 
 - New decisions must be logged within the same PR or governance window in which

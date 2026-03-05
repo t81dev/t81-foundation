@@ -29,7 +29,7 @@ No narrative. Each row is a falsifiable statement.
 | **T81Lang — Compiler Bytecode** | `spec/t81lang-spec.md` §5 (Draft) | Compilation from source to TISC bytecode is bit-exact | Fixture-bounded: 16 corpus programs produce deterministic output; full spec-section traceability gap was partially closed 2026-02-25 | Bytecode emission is partially traceable — full deterministic compilation-profile language not yet complete | Extend fixture corpus and spec-section traceability linkage | @t81dev | 2026-05-15 | **Open** |
 | **T81Lang — Type Frontend** | `spec/t81lang-spec.md` §§2-4 (Draft) | All language-level types are exposed in lexer/parser/semantic analyzer with deterministic lowering | Beta — collection determinism and enforcement hardening landed (BG-06 closure) with determinism coverage in place | None in this cycle | Maintain; monitor regression signals in determinism suites | @t81dev | — | **Closed** |
 | **T81Lang — Serialization** | `spec/t81lang-spec.md` (Draft) | `serialize_canonical` is called from the language runtime for all types | Collection and T81Graph serialization wiring landed (BG-09 closure) and deterministic signatures verified | None in this cycle | Maintain; monitor serialization determinism regressions | @t81dev | — | **Closed** |
-| **T81Lang — BigInt Precision** | `spec/t81lang-spec.md` (Draft) | T81BigInt supports arbitrary-precision integers | VM aliases BigInt to 64-bit; >64-bit literals are silently truncated | Precision gap: unbounded BigInt behavior unimplemented | BG-07: Implement native arbitrary-precision opcodes or define promotion path | @t81dev | 2026-05-15 | **Open** |
+| **T81Lang — BigInt Precision** | `spec/t81lang-spec.md` (Draft) | T81BigInt supports arbitrary-precision integers | Oversized literals lower to `BigIntHandle`, serialize deterministically via `bigint_pool`, materialize in VM as canonical `BigInt/1` fraction, and do not silently truncate; JIT deopts `BigIntHandle` to interpreter path | None in this cycle | Maintain fail-closed narrowing behavior (`Frac2I`) and regression coverage | @t81dev | — | **Closed** |
 | **T81Graph** | Surface inventory (non-normative) | T81Graph is lowered to VM native opcodes with deterministic serialization | VM lowering plus lang-side serialization wiring are complete; determinism coverage in place | None in this cycle | Maintain as governed non-DCP surface | @t81dev | — | **Closed** |
 | **Axion — Privileged Instruction Arbitration** | `spec/axion-kernel.md` §1.6 (Draft) | `AXREAD`/`AXSET`/`AXVERIFY` arbitration is governed through the policy engine | Implemented (bounded): policy engine and opcode-level arbitration hooks present | None in this cycle | Maintain | @t81dev | — | **Monitoring** |
 | **Axion — Policy Enforcement** | `spec/axion-kernel.md` §1.9 (Draft) | Policy parser, bytecode serialization, and verdict path are deterministic | Implemented (bounded): parser, serialization, and guard/trace paths present | None in this cycle | Maintain | @t81dev | — | **Monitoring** |
@@ -46,8 +46,8 @@ No narrative. Each row is a falsifiable statement.
 
 | State | Count |
 | :--- | :--- |
-| Closed | 11 |
-| Open | 2 |
+| Closed | 12 |
+| Open | 1 |
 | Deferred | 1 |
 | Monitoring | 2 |
 
