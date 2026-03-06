@@ -328,6 +328,7 @@ jobs:
             /tooling/**
             /examples/**
             /tools/**
+            /experimental/**
             /tests/**
             /scripts/**
             /benchmarks/**
