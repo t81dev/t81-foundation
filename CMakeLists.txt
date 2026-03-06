@@ -153,6 +153,7 @@ add_library(t81_axion STATIC
   kernel/axion/policy_engine.cpp
   kernel/axion/policy_serialization.cpp
   kernel/axion/canonfs_hook.cpp
+  src/axion/policy_validator.cpp
 )
 target_link_libraries(t81_axion PUBLIC t81_core)
 target_include_directories(t81_axion PUBLIC
@@ -1498,7 +1499,11 @@ endif()
 # Benchmarks
 # =============================================================================
 if(T81_BUILD_BENCHMARKS)
-  add_subdirectory(benchmarks)
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/CMakeLists.txt")
+    add_subdirectory(benchmarks)
+  else()
+    message(WARNING "T81_BUILD_BENCHMARKS=ON but benchmarks/ is unavailable in this checkout; skipping benchmark targets.")
+  endif()
 endif()
 
 # =============================================================================
@@ -1516,7 +1521,11 @@ endif()
 # =============================================================================
 # Spec Conformance Suite (RFC-0027 SE-M1)
 # =============================================================================
-add_subdirectory(spec/conformance)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/spec/conformance/CMakeLists.txt")
+  add_subdirectory(spec/conformance)
+else()
+  message(WARNING "spec/conformance is unavailable in this checkout; skipping spec conformance targets.")
+endif()
 
 if(T81_BUILD_TESTS)
   add_executable(t81_graph_test tests/cpp/test_T81Graph.cpp)

@@ -74,6 +74,9 @@ jobs:
       - name: Enforce AI experiment sandbox boundary (RFC-00A0)
         run: python3 scripts/ci/check_ai_experiment_boundary.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
+      - name: Enforce architecture coherence invariants
+        run: python3 scripts/ci/check_architecture_coherence.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+
       - name: Enforce workflow action pinning policy
         run: |
           python3 scripts/ci/audit_workflow_actions.py --max-tagged 0 --max-unknown 0 2>&1 | tee -a .github/logs/spec-and-docs.log
@@ -320,6 +323,8 @@ jobs:
             /src/**
             /tests/**
             /scripts/**
+            /benchmarks/**
+            /spec/**
             /third_party/**
             /README.md
             /LICENSE
@@ -383,13 +388,11 @@ jobs:
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
 
-      # THIS IS THE ONLY THING THAT MATTERS FOR WINDOWS
-      # Clean before configuration so the new build directory gets a fresh CMake configure.
       - name: Force clean build directory on Windows (fresh compile)
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          echo "Windows detected — forcing fresh compile to get the new type_to_string"
+          echo "Windows detected - forcing fresh configure to avoid stale build metadata"
           rm -rf build
 
       - name: Configure CMake
@@ -687,6 +690,56 @@ jobs:
         run: |
           set -eo pipefail
           scripts/ci/run_determinism_slice.sh build
+
+  ############################################################################
+  # JOB: determinism-repeatability
+  ############################################################################
+  determinism-repeatability:
+    name: " gate / determinism repeatability / linux-x86_64 / clang "
+    needs: spec-and-docs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Install Dependencies
+        run: |
+          set -eo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build clang-18 python3
+
+      - name: Configure CMake
+        run: |
+          set -eo pipefail
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=clang-18 \
+            -DCMAKE_CXX_COMPILER=clang++-18
+
+      - name: Build repeatability target
+        run: |
+          set -eo pipefail
+          cmake --build build --parallel --target t81_vm_workload_determinism_tiers_test
+
+      - name: Verify same-machine repeatability
+        run: |
+          set -eo pipefail
+          python3 scripts/ci/check_repeatable_vm_signature.py \
+            --build-dir build \
+            --out-json artifacts/ci_reports/vm_repeatability_report.json
+
+      - name: Upload repeatability artifacts
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: ci-determinism-repeatability
+          path: |
+            artifacts/ci_reports/vm_repeatability_report.json
+            build/artifacts/vm_workload_determinism_signatures.run1.log
+            build/artifacts/vm_workload_determinism_signatures.run2.log
+          if-no-files-found: warn
 
   ############################################################################
   # JOB: cxx-standard-compat
@@ -1131,7 +1184,10 @@ jobs:
     needs:
       - spec-and-docs
       - determinism-slice
+      - determinism-repeatability
       - build-and-test
+      - t3k-cross-arch-bit-identity
+      - t81lang-cross-arch-bit-identity
       - cxx-standard-compat
       - static-analysis
       - sanitizers
@@ -1146,7 +1202,10 @@ jobs:
         run: |
           if [[ "${{ needs.spec-and-docs.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.determinism-slice.result }}" != "success" ]]; then exit 1; fi
+          if [[ "${{ needs.determinism-repeatability.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.build-and-test.result }}" != "success" ]]; then exit 1; fi
+          if [[ "${{ needs.t3k-cross-arch-bit-identity.result }}" != "success" ]]; then exit 1; fi
+          if [[ "${{ needs.t81lang-cross-arch-bit-identity.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.cxx-standard-compat.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.static-analysis.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.sanitizers.result }}" != "success" ]]; then exit 1; fi

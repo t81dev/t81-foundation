@@ -14,7 +14,7 @@ No prose. If a risk needs an essay, escalate it.
 | R-02 | Axion Alpha posture delays Beta promotion (partial spec coverage, evidence gaps in 1.1/1.3/1.10) | High | @t81dev | M5–M7 evidence closures landed; remaining action is Beta candidacy review on 2026-04-30 | Open |
 | R-05 | AGI-facing surface growth outpacing promotion evidence updates | Medium | @t81dev | Surface inventory refreshed each monthly governance cadence | Monitoring |
 | R-06 | Benchmark variability — false signal in `vm workload gate` guardrail | Low | @t81dev | Alert threshold >5% regression; review guardrail if consecutive divergence detected | Monitoring |
-| R-07 | Jekyll Pages build failure — persistent noise on release candidates | Low | @t81dev | `third_party/` exclusion added to `docs/site/_config.yml` + `_config.yaml`; verify next Pages/Jekyll run and close if green | Mitigating |
+| R-07 | Jekyll Pages build failure — persistent noise on release candidates | Low | @t81dev | Root `_config.yml` excludes `third_party/`; verify next Pages/Jekyll run and close if green | Mitigating |
 
 ## Closed Risks
 

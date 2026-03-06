@@ -1,65 +1,33 @@
-// AI-Native Opcodes Header
-// Created for T81 LLM integration
-
 #pragma once
 
-#include <memory>
-#include <string>
+#include <cstdint>
+#include "t81/isa/opcodes.hpp"
 
 namespace t81::isa {
 
-// Forward declarations
-class OpcodeHandler;
-
-// AI-Native Opcodes (RFC-0026)
-enum class AIOpcode {
-    ATTN,
-    QMATMUL, 
-    WLOAD,
-    EMBED,
-    GATHER,
-    SCATTER
+// Compatibility alias for RFC-0026 phase-1 opcode subset.
+// Canonical opcode ownership is t81::tisc::Opcode.
+enum class AIOpcode : std::uint8_t {
+  ATTN,
+  QMATMUL,
+  EMBED,
 };
 
-// Base opcode handler class
-class OpcodeHandler {
-public:
-    virtual ~OpcodeHandler() = default;
-    virtual void execute() = 0;
-};
+[[nodiscard]] constexpr t81::tisc::Opcode to_tisc_opcode(AIOpcode op) {
+  switch (op) {
+    case AIOpcode::ATTN:
+      return t81::tisc::Opcode::ATTN;
+    case AIOpcode::QMATMUL:
+      return t81::tisc::Opcode::QMATMUL;
+    case AIOpcode::EMBED:
+      return t81::tisc::Opcode::EMBED;
+  }
+  return t81::tisc::Opcode::Nop;
+}
 
-// Specific opcode handler classes
-class ATTN_Handler : public OpcodeHandler {
-public:
-    void execute() override;
-};
-
-class QMATMUL_Handler : public OpcodeHandler {
-public:
-    void execute() override;
-};
-
-class WLOAD_Handler : public OpcodeHandler {
-public:
-    void execute() override;
-};
-
-class EMBED_Handler : public OpcodeHandler {
-public:
-    void execute() override;
-};
-
-class GATHER_Handler : public OpcodeHandler {
-public:
-    void execute() override;
-};
-
-class SCATTER_Handler : public OpcodeHandler {
-public:
-    void execute() override;
-};
-
-// Factory function
-std::unique_ptr<OpcodeHandler> create_opcode_handler(AIOpcode opcode);
+[[nodiscard]] constexpr bool is_phase1_ai_opcode(t81::tisc::Opcode op) {
+  return op == t81::tisc::Opcode::ATTN || op == t81::tisc::Opcode::QMATMUL ||
+         op == t81::tisc::Opcode::EMBED;
+}
 
 } // namespace t81::isa

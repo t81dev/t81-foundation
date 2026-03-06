@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include "t81/axion/ethics.hpp"
+#include "t81/axion/policy_validator.hpp"
 #include "t81/isa/opcodes.hpp"
 
 namespace t81::axion {
@@ -414,6 +415,19 @@ bool PolicyEngine::axion_event_satisfied(const SyscallContext& ctx,
     }
   }
   return false;
+}
+
+std::optional<PolicyViolation> PolicyEngine::validate_policy(const std::string& policy_text) {
+  return PolicyValidator::validate_policy(policy_text);
+}
+
+std::optional<PolicyViolation> PolicyEngine::validate_tensor_hash(const std::string& model_hash,
+                                                                  const std::string& policy_text) {
+  return PolicyValidator::validate_tensor_hash(model_hash, policy_text);
+}
+
+std::string PolicyEngine::generate_policy_report(const PolicyViolation& violation) {
+  return PolicyValidator::generate_policy_report(violation);
 }
 
 std::unique_ptr<Engine> make_policy_engine(std::optional<Policy> policy) {

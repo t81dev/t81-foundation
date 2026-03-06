@@ -1,7 +1,7 @@
 # System Status
 
 Status: Active
-Last Updated: 2026-03-05
+Last Updated: 2026-03-06
 Owner: Status / Governance
 
 ## Purpose
@@ -35,6 +35,15 @@ status boundaries.
 - Format gate reliability hardened by increasing `actions/checkout` history depth
   in `format.yml` (`b20934be`), preventing full-tree fallback checks on push.
 - Required CI contexts are passing on the reference candidate (`57f1a96c`).
+
+## Operational Notes (2026-03-06)
+
+- Main CI currently red on Windows configure lanes due sparse-checkout omissions;
+  patch queued to include `benchmarks/` and `spec/` in Windows sparse checkout.
+- Determinism hardening queued with a same-machine repeatability gate that
+  enforces bit-identical `vm_workload_determinism_signatures.log` across reruns.
+- Cross-arch bit-identity gates for `t3k` and `t81lang` promoted into required
+  quality-gate dependencies.
 
 ## Control References
 

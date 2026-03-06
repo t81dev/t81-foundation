@@ -1,0 +1,12 @@
+title: T81 Foundation
+theme: jekyll-theme-primer
+
+# GitHub Pages builds from repository root by default.
+# Exclude non-site trees that contain Liquid-like syntax and break rendering.
+exclude:
+  - third_party/
+  - build/
+  - build-*/
+  - artifacts/
+  - .github/
+  - node_modules/

@@ -9,18 +9,13 @@
 #include "t81/axion/context.hpp"
 #include "t81/axion/engine.hpp"
 #include "t81/axion/policy.hpp"
+#include "t81/axion/policy_validator.hpp"
 
 namespace t81::axion {
 
 struct LoopRequirement {
   const Policy::LoopHint* hint{nullptr};
   std::string_view expected_reason;
-};
-
-struct PolicyViolation {
-    std::string rule;
-    std::string reason;
-    bool is_violation;
 };
 
 class PolicyEngine : public Engine {

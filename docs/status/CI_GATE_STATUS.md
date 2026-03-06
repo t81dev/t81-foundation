@@ -3,8 +3,8 @@
 Status: Active
 Last Updated: 2026-03-06
 Owner: @t81dev
-Reference Candidate: `57f1a96c` (origin/main, 2026-03-05)
-Current Main Head: `674a7aa0` (origin/main, 2026-03-05; CI in progress at last refresh)
+Reference Candidate: `aab6c719` (origin/main, 2026-03-06)
+Current Main Head: `aab6c719` (origin/main, 2026-03-06; CI red at last refresh)
 
 ## Purpose
 
@@ -23,8 +23,8 @@ GO decision can be stamped.
 
 | Context | Workflow | Required | Last Known Status |
 | :--- | :--- | :--- | :--- |
-| `quality gate / required` | `ci.yml` | **Yes** | completed / success ✅ (`57f1a96c`) |
-| `Analyze (cpp)` | `codeql.yml` | **Yes** | completed / success ✅ (`57f1a96c`) |
+| `quality gate / required` | `ci.yml` | **Yes** | completed / failure ❌ (`aab6c719`) |
+| `Analyze (cpp)` | `codeql.yml` | **Yes** | in progress ⏳ (`aab6c719`) |
 
 Verification command:
 
@@ -52,6 +52,8 @@ tracked here and must be addressed unless explicitly deferred.
 | `build / linux-x86_64 / gcc` | `ci.yml` | success ✅ | |
 | `build / linux-x86_64 / clang` | `ci.yml` | success ✅ | |
 | `build / linux-arm64 / clang` | `ci.yml` | success ✅ | |
+| `build / windows-x86_64 / msvc` | `ci.yml` | failure ❌ | Configure failed due sparse checkout omission of `benchmarks/` + `spec/conformance/` |
+| `build / windows-x86_64 / clang-cl` | `ci.yml` | failure ❌ | Configure failed due sparse checkout omission of `benchmarks/` + `spec/conformance/` |
 | `build / sanitizers` | `ci.yml` | success ✅ | ASAN + UBSAN build |
 | `static analysis / clang-tidy` | `ci.yml` | success ✅ | |
 | `fuzzing / frontend` | `ci.yml` | success ✅ | Frontend fuzz harness |
@@ -66,7 +68,18 @@ tracked here and must be addressed unless explicitly deferred.
 | `format / clang-format` | `format.yml` | success ✅ | |
 | `architecture / invariants (informational)` | `ci.yml` | success ✅ | |
 | `product / dcp integrity (informational)` | `ci.yml` | success ✅ | |
-| `build` (GitHub Pages / Jekyll) | `documentation.yml` | **failure ⚠️** | **Mitigating** — third_party exclusion patch queued; awaiting next run |
+| `build` (GitHub Pages / Jekyll) | `documentation.yml` | **failure ⚠️** | **Mitigating** — root `_config.yml` third_party exclusion patch queued; awaiting next run |
+
+## Operational Notes (2026-03-06)
+
+- Added CI gate `gate / determinism repeatability / linux-x86_64 / clang` to
+  enforce same-machine bit-identity for
+  `vm_workload_determinism_signatures.log` across repeated runs.
+- Promoted `gate / t3k cross-arch bit-identity` and
+  `gate / t81lang cross-arch bit-identity` to required quality-gate
+  dependencies.
+- Added architecture coherence invariant check:
+  `scripts/ci/check_architecture_coherence.py`.
 
 ## Known Failures
 
@@ -80,7 +93,7 @@ tracked here and must be addressed unless explicitly deferred.
 | **Root Cause** | Jekyll renders `third_party/llama.cpp/examples/model-conversion/scripts/embedding/modelcard.template` — Liquid `{{ }}` syntax causes a Jekyll Liquid rendering error |
 | **Classification** | Mitigating — non-required workflow; no impact on C++ release artifact, determinism, or DCP guarantees |
 | **Decision** | DEC-005 in `docs/status/DECISION_LOG.md` |
-| **Resolution Path** | `third_party/` exclusion added in `docs/site/_config.yml` and `docs/site/_config.yaml`; verify on next Pages/Jekyll run |
+| **Resolution Path** | Root `_config.yml` now excludes `third_party/`; verify on next Pages/Jekyll run |
 | **Blocking Release** | No |
 
 ### 2026-03-05 CI Incident — Resolved
