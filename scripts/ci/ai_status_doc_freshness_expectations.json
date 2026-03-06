@@ -9,6 +9,15 @@
         "## Priority Order",
         "## Compliance Snapshot"
       ]
+    },
+    {
+      "path": "docs/status/CI_WORKFLOW_CONFIRMATION.md",
+      "max_age_days": 7,
+      "date_label": "Last Updated:",
+      "required_substrings": [
+        "## AI Experiments CI Workflow",
+        "### Triggers"
+      ]
     }
   ]
 }
