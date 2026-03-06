@@ -1,4 +1,4 @@
-# AI prompt use for audit
+# AI prompt used for audit
 
 You are a senior systems architect, language/runtime engineer, and deterministic computing auditor tasked with performing a full architectural coherence audit of the T81 deterministic ternary computing stack.
 
