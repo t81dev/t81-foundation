@@ -23,6 +23,8 @@ on:
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_benchmark_capability_matrix.py'
       - 'scripts/ci/ai_benchmark_capability_expectations.json'
+      - 'scripts/ci/check_ai_inference_capability_matrix.py'
+      - 'scripts/ci/ai_inference_capability_expectations.json'
       - 'scripts/ci/check_ai_benchmark_threshold_approvals.py'
       - 'scripts/ci/ai_benchmark_threshold_approval_keyring.json'
       - 'scripts/ci/ai_benchmark_thresholds.json'
@@ -68,6 +70,8 @@ on:
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_benchmark_capability_matrix.py'
       - 'scripts/ci/ai_benchmark_capability_expectations.json'
+      - 'scripts/ci/check_ai_inference_capability_matrix.py'
+      - 'scripts/ci/ai_inference_capability_expectations.json'
       - 'scripts/ci/check_ai_benchmark_threshold_approvals.py'
       - 'scripts/ci/ai_benchmark_threshold_approval_keyring.json'
       - 'scripts/ci/ai_benchmark_thresholds.json'
@@ -442,6 +446,19 @@ jobs:
           --signing-keyring scripts/ci/ai_benchmark_threshold_approval_keyring.json \
           --out-json build/ai-benchmark/ai_benchmark_threshold_approval_report.json
 
+    - name: Emit inference format/mode capability matrix (RFC-00A7 runtime visibility)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-ux
+        python3 scripts/ci/check_ai_inference_capability_matrix.py \
+          --out-dir build/ai-ux \
+          --ai-bin build/experiments/ai/ux_tools/t81_ai \
+          --model-file tests/fixtures/llama_cpp_repro/model.gguf \
+          --formats gguf,t3k \
+          --modes strict_deterministic \
+          --expectations-file scripts/ci/ai_inference_capability_expectations.json \
+          --required gguf:strict_deterministic
+
     - name: Track RFC-0026 runtime readiness signals
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -590,6 +607,7 @@ jobs:
           echo "- report: \`build/ai-quantization/ai_quantization_profile_approval_report.json\`"
           echo ""
         } >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-ux/ai_inference_capability_matrix.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-ux/ai_ux_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-ux/ai_direct_backend_execution_attestation.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-cross-lane/ai_cross_lane_evidence.md >> "$GITHUB_STEP_SUMMARY"
@@ -653,6 +671,8 @@ jobs:
           build/ai-quantization/ai_quantization_codec_contract.json
           build/ai-quantization/ai_quantization_codec_contract.md
           build/ai-quantization/ai_quantization_profile_approval_report.json
+          build/ai-ux/ai_inference_capability_matrix.json
+          build/ai-ux/ai_inference_capability_matrix.md
           build/ai-ux/ai_ux_contract.json
           build/ai-ux/ai_ux_contract.md
           build/ai-ux/ai_backend_capabilities.json
