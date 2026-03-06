@@ -490,7 +490,9 @@ def main() -> int:
         "allowed_tools": ["search", "calculator", "summarize"],
         "max_memory_mb": 4096,
         "blocked_severities": ["critical", "high"],
-        "allowed_wload_hashes": [],
+        "allowed_wload_hashes": [
+            "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        ],
     }
 
     events = [
@@ -505,6 +507,7 @@ def main() -> int:
         {"event_type": "content_emit", "safety_severity": "medium"},
         {"event_type": "content_emit", "safety_severity": "high"},
         {"event_type": "wload_request", "model_hash": policy["allowed_model_hashes"][0]},
+        {"event_type": "wload_request", "model_hash": "sha256:deadbeef"},
     ]
 
     trace_a = run_trace(policy, events)
