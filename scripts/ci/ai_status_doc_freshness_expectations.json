@@ -45,6 +45,15 @@
         "## The Rule",
         "## Experimental Surfaces (Non-DCP)"
       ]
+    },
+    {
+      "path": "docs/status/HARDENING_BACKLOG.md",
+      "max_age_days": 14,
+      "date_label": "Last Updated:",
+      "required_substrings": [
+        "## Open Items",
+        "## Closed Items"
+      ]
     }
   ]
 }

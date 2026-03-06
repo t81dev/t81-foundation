@@ -145,6 +145,7 @@ Last Updated: 2026-03-06
 - `docs/status/AI_CLI_MILESTONE_EVIDENCE.md` - Triggers on AI CLI milestone evidence status updates
 - `docs/status/CI_GATE_STATUS.md` - Triggers on CI gate status updates
 - `docs/status/EXTENSION_PROFILE.md` - Triggers on extension profile status updates
+- `docs/status/HARDENING_BACKLOG.md` - Triggers on hardening backlog status updates
 
 ### Failure Conditions
 
