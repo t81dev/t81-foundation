@@ -38,6 +38,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - AI inference capability expectation contract: `ai_inference_capability_expectations.json`
 - Runtime lane capability alignment gate: `check_ai_runtime_capability_alignment.py`
 - Runtime lane capability alignment expectation contract: `ai_runtime_capability_alignment_expectations.json`
+- Binary-vs-ternary lane benchmark comparator: `benchmark_binary_vs_ternary_inference.py`
 - AI benchmark threshold approval policy gate: `check_ai_benchmark_threshold_approvals.py`
 - RFC-0026 readiness expectation contract (readiness state, WLOAD evidence/status/reason signals, blocker taxonomy): `ai_rfc0026_readiness_expectations.json`
 - AI benchmark threshold approval signing keyring: `ai_benchmark_threshold_approval_keyring.json`
@@ -84,6 +85,7 @@ python3 scripts/ci/check_ai_benchmark_capability_matrix.py --out-dir build/ai-be
 python3 scripts/ci/check_ai_benchmark_threshold_approvals.py --history-file scripts/ci/ai_benchmark_thresholds_history.json --signing-keyring scripts/ci/ai_benchmark_threshold_approval_keyring.json --out-json build/ai-benchmark/ai_benchmark_threshold_approval_report.json
 python3 scripts/ci/check_ai_inference_capability_matrix.py --out-dir build/ai-ux --ai-bin build/experiments/ai/ux_tools/t81_ai --model-file tests/fixtures/llama_cpp_repro/model.gguf --formats gguf,t3k --modes strict_deterministic --expectations-file scripts/ci/ai_inference_capability_expectations.json --required gguf:strict_deterministic
 python3 scripts/ci/check_ai_runtime_capability_alignment.py --benchmark-matrix build/ai-benchmark/ai_benchmark_capability_matrix.json --inference-matrix build/ai-ux/ai_inference_capability_matrix.json --required-pairs gguf:strict_deterministic,t3k:strict_deterministic --expectations-file scripts/ci/ai_runtime_capability_alignment_expectations.json --out-json build/ai-opcodes-runtime/ai_runtime_capability_alignment.json
+python3 scripts/ci/benchmark_binary_vs_ternary_inference.py --ai-bin build/experiments/ai/ux_tools/t81_ai --gguf-model models/tinyllama-1.1b.Q2_K.gguf --out-dir build/ai-compare --runs 15
 python3 scripts/ci/check_ai_quantization_codec_contract.py --out-dir build/ai-quantization --ai-bin build/experiments/ai/ux_tools/t81_ai --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --codec-profile-file scripts/ci/ai_quantization_codec_profile.json --codec-profile-history-file scripts/ci/ai_quantization_codec_profile_history.json --as-of-date 2026-03-05 --trend-window-count 3
 python3 scripts/ci/check_ai_quantization_profile_approvals.py --history-file scripts/ci/ai_quantization_codec_profile_history.json --signing-keyring scripts/ci/ai_quantization_profile_approval_keyring.json --out-json build/ai-quantization/ai_quantization_profile_approval_report.json
 python3 scripts/ci/check_ai_ux_contract.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-ux --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --t81-bin build-llama-ai/t81 --llama-hash-probe scripts/ci/llama_model_hash.py --direct-backend-signing-keyring scripts/ci/ai_direct_backend_attestation_keyring.json
