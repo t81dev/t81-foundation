@@ -18,6 +18,15 @@
         "## AI Experiments CI Workflow",
         "### Triggers"
       ]
+    },
+    {
+      "path": "docs/status/AI_CLI_MILESTONE_EVIDENCE.md",
+      "max_age_days": 14,
+      "date_label": "Last Updated:",
+      "required_substrings": [
+        "## Purpose",
+        "## Build Evidence"
+      ]
     }
   ]
 }

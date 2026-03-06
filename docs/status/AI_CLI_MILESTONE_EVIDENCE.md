@@ -1,5 +1,7 @@
 # AI CLI Milestone Evidence
 
+Last Updated: 2026-03-06
+
 ## Purpose
 
 This document provides complete reproducibility evidence for the experimental AI CLI milestone. Reviewers can use this to independently verify that the implementation works as described.
