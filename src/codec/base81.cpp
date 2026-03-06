@@ -10,7 +10,7 @@ namespace t81::codec::base81 {
 
 // Canonical v1.1.0 alphabet (UTF-8). Indices 62..80 are the 19 symbols listed in the spec after
 // a–z.
-static const std::vector<std::string>& alphabet_vec() {
+const std::vector<std::string>& digit_strings() {
   static const std::vector<std::string> kAlphabet = {
       // 0..9
       "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -27,11 +27,27 @@ static const std::vector<std::string>& alphabet_vec() {
   return kAlphabet;
 }
 
+const std::vector<std::string>& signed_integer_digit_strings() {
+  static const std::vector<std::string> kAlphabet = {
+      // 0..9
+      "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+      // 10..35
+      "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S",
+      "T", "U", "V", "W", "X", "Y", "Z",
+      // 36..61
+      "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s",
+      "t", "u", "v", "w", "x", "y", "z",
+      // 62..80. `+` is used here so signed integer text remains unambiguous with `-` sign prefix.
+      "+", "−", "×", "÷", "=", "<", ">", "≤", "≥", "≠", "≈", "∞", "λ", "μ", "π", "σ", "τ", "ω",
+      "Γ"};
+  return kAlphabet;
+}
+
 std::string_view alphabet() {
   // Concatenate for compatibility; note: codepoints may be multi-byte.
   static const std::string joined = [] {
     std::string s;
-    for (const auto& cp : alphabet_vec()) s += cp;
+    for (const auto& cp : digit_strings()) s += cp;
     return s;
   }();
   return std::string_view(joined);
@@ -60,7 +76,7 @@ static std::string next_codepoint(const char* data, std::size_t len, std::size_t
 
 static const std::unordered_map<std::string, int>& alphabet_map() {
   static const std::unordered_map<std::string, int> kMap = [] {
-    const auto& alpha = alphabet_vec();
+    const auto& alpha = digit_strings();
     std::unordered_map<std::string, int> m;
     m.reserve(alpha.size());
     for (std::size_t i = 0; i < alpha.size(); ++i) {
@@ -96,7 +112,7 @@ std::string encode_bytes(const std::vector<std::uint8_t>& data) {
     buf.swap(next);
   }
 
-  const auto& alpha = alphabet_vec();
+  const auto& alpha = digit_strings();
   std::string out;
   for (auto it = digits.rbegin(); it != digits.rend(); ++it) {
     out += alpha[static_cast<std::size_t>(*it)];

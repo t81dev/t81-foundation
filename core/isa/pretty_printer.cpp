@@ -54,6 +54,8 @@ std::string opcode_to_string(ir::Opcode opcode) {
       return "CALL";
     case ir::Opcode::RET:
       return "RET";
+    case ir::Opcode::INT2BIGINT:
+      return "INT2BIGINT";
     case ir::Opcode::BITAND:
       return "BitAnd";
     case ir::Opcode::BITOR:

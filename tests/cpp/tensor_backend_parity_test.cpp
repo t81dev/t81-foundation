@@ -48,6 +48,33 @@ T729DynamicTensor reference_rmsnorm(const T729DynamicTensor& x, const T729Dynami
   return T729DynamicTensor(x.shape(), std::move(out));
 }
 
+T729DynamicTensor reference_attention(const T729DynamicTensor& q, const T729DynamicTensor& k,
+                                      const T729DynamicTensor& v) {
+  auto k_t = k.transpose2d();
+  auto scores = t81::ops::matmul(q, k_t);
+  const float inv_scale = 1.0f / std::sqrt(static_cast<float>(q.shape()[1]));
+  auto scaled = scores.snapshot_values();
+  for (auto& value : scaled) {
+    value *= inv_scale;
+  }
+  auto probs = t81::ops::softmax(T729DynamicTensor(scores.shape(), std::move(scaled)));
+  return t81::ops::matmul(probs, v);
+}
+
+T729DynamicTensor reference_embed(const T729DynamicTensor& table, std::int64_t index) {
+  const int dim = table.shape()[1];
+  const auto values = table.snapshot_values();
+  std::vector<float> out(static_cast<std::size_t>(dim));
+  const std::size_t base = static_cast<std::size_t>(index) * static_cast<std::size_t>(dim);
+  for (int i = 0; i < dim; ++i) {
+    out[static_cast<std::size_t>(i)] = values[base + static_cast<std::size_t>(i)];
+  }
+  auto result = T729DynamicTensor({dim}, std::move(out));
+  result.set_numeric_class(table.strict_core_eligible() ? table.numeric_class()
+                                                        : t81::TensorNumericClass::HostFloat);
+  return result;
+}
+
 void assert_tensor_near(const T729DynamicTensor& a, const T729DynamicTensor& b, float eps) {
   assert(a.shape() == b.shape());
   assert(a.data().size() == b.data().size());
@@ -76,6 +103,7 @@ void test_matmul_backend_parity() {
 
   const auto optimized = t81::ops::matmul(A, B);
   const auto reference = reference_matmul(A, B);
+  assert(optimized.canonical_fixed_authoritative());
   assert_tensor_near(optimized, reference, 1e-5f);
 }
 
@@ -91,6 +119,40 @@ void test_rmsnorm_backend_parity() {
 
   const auto optimized = t81::ops::rmsnorm(x, w);
   const auto reference = reference_rmsnorm(x, w);
+  assert(optimized.canonical_fixed_authoritative());
+  assert_tensor_near(optimized, reference, 1e-5f);
+}
+
+void test_attention_backend_parity() {
+  T729DynamicTensor q({2, 4});
+  T729DynamicTensor k({3, 4});
+  T729DynamicTensor v({3, 2});
+  for (int i = 0; i < 2 * 4; ++i) {
+    q.data()[static_cast<size_t>(i)] = ((i % 7) - 3) * 0.2f;
+  }
+  for (int i = 0; i < 3 * 4; ++i) {
+    k.data()[static_cast<size_t>(i)] = ((i % 5) - 2) * 0.25f;
+  }
+  for (int i = 0; i < 3 * 2; ++i) {
+    v.data()[static_cast<size_t>(i)] = ((i % 4) - 1) * 0.5f;
+  }
+
+  const auto optimized = t81::ops::attention(q, k, v);
+  const auto reference = reference_attention(q, k, v);
+  assert(optimized.canonical_fixed_authoritative());
+  assert_tensor_near(optimized, reference, 1e-5f);
+}
+
+void test_embed_backend_parity() {
+  T729DynamicTensor table({4, 3});
+  for (int i = 0; i < 4 * 3; ++i) {
+    table.data()[static_cast<std::size_t>(i)] = ((i % 8) - 3) * 0.375f;
+  }
+
+  const auto optimized = t81::ops::embed(table, 2);
+  const auto reference = reference_embed(table, 2);
+  assert(optimized.canonical_fixed_authoritative());
+  assert(optimized.numeric_class() == reference.numeric_class());
   assert_tensor_near(optimized, reference, 1e-5f);
 }
 
@@ -99,6 +161,8 @@ void test_rmsnorm_backend_parity() {
 int main() {
   test_matmul_backend_parity();
   test_rmsnorm_backend_parity();
+  test_attention_backend_parity();
+  test_embed_backend_parity();
   std::cout << "tensor backend parity test passed\n";
   return 0;
 }

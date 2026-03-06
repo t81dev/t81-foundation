@@ -200,6 +200,7 @@ enum class Opcode : std::uint8_t {
   ATTN,
   QMATMUL,
   EMBED,
+  Int2BigInt,
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -584,12 +585,14 @@ enum class Opcode : std::uint8_t {
       return "QMATMUL";
     case Opcode::EMBED:
       return "EMBED";
+    case Opcode::Int2BigInt:
+      return "Int2BigInt";
   }
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::EMBED) + 1> kAllOpcodes = [] {
-  std::array<Opcode, static_cast<std::size_t>(Opcode::EMBED) + 1> values{};
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::Int2BigInt) + 1> kAllOpcodes = [] {
+  std::array<Opcode, static_cast<std::size_t>(Opcode::Int2BigInt) + 1> values{};
   for (std::size_t i = 0; i < values.size(); ++i) {
     values[i] = static_cast<Opcode>(i);
   }
@@ -597,6 +600,6 @@ inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::EMBED) + 1>
 }();
 
 [[nodiscard]] constexpr bool is_valid_opcode(std::uint8_t raw_opcode) {
-  return raw_opcode <= static_cast<std::uint8_t>(Opcode::EMBED);
+  return raw_opcode <= static_cast<std::uint8_t>(Opcode::Int2BigInt);
 }
 }  // namespace t81::tisc

@@ -30,6 +30,7 @@ int main() {
   //  139 154]
   assert(cd.size() == 4);
   assert(cd[0] == 58 && cd[1] == 64 && cd[2] == 139 && cd[3] == 154);
+  assert(C.canonical_fixed_authoritative());
 
   // Sanity: A·A^T -> 2x2
   [[maybe_unused]] auto AT = t81::ops::transpose(A);
@@ -37,6 +38,7 @@ int main() {
   const auto& gd = G.data();
   // [1 2 3]·[1 2 3] = 14 ; [4 5 6]·[4 5 6] = 77 ; off-diag = 32
   assert((gd == std::vector<float>{14, 32, 32, 77}));
+  assert(G.canonical_fixed_authoritative());
 
   // Mismatch should throw
   [[maybe_unused]] bool threw = false;

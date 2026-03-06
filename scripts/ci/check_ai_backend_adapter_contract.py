@@ -195,6 +195,8 @@ def build_registry() -> dict[str, Any]:
                 "backend_name",
                 "supported_formats",
                 "determinism_modes",
+                "strict_core_eligible",
+                "numeric_kernel_class",
                 "max_context_tokens",
                 "supports_streaming",
                 "supports_logit_bias",
@@ -202,9 +204,21 @@ def build_registry() -> dict[str, Any]:
         },
         "backends": [
             {
+                "backend_name": "t81_reference_vm",
+                "supported_formats": ["gguf", "t3k", "t81_canonical"],
+                "determinism_modes": ["strict_deterministic"],
+                "strict_core_eligible": True,
+                "numeric_kernel_class": "deterministic_fixed",
+                "max_context_tokens": 243,
+                "supports_streaming": False,
+                "supports_logit_bias": False,
+            },
+            {
                 "backend_name": "llama.cpp",
-                "supported_formats": ["gguf", "t81_canonical"],
-                "determinism_modes": ["strict_deterministic", "reproducible_nondeterministic"],
+                "supported_formats": ["gguf", "t3k", "t81_canonical"],
+                "determinism_modes": ["reproducible_nondeterministic"],
+                "strict_core_eligible": False,
+                "numeric_kernel_class": "host_float",
                 "max_context_tokens": 4096,
                 "supports_streaming": True,
                 "supports_logit_bias": True,
@@ -212,14 +226,16 @@ def build_registry() -> dict[str, Any]:
             {
                 "backend_name": "onnx_runtime",
                 "supported_formats": ["onnx", "t81_canonical"],
-                "determinism_modes": ["strict_deterministic", "statistical_deterministic"],
+                "determinism_modes": ["statistical_deterministic"],
+                "strict_core_eligible": False,
+                "numeric_kernel_class": "host_float",
                 "max_context_tokens": 8192,
                 "supports_streaming": False,
                 "supports_logit_bias": False,
             },
         ],
         "negotiation": {
-            "preferred_order": ["llama.cpp", "onnx_runtime"],
+            "preferred_order": ["t81_reference_vm", "llama.cpp", "onnx_runtime"],
             "selection_policy": "first_backend_supporting_requested_format_and_mode",
         },
     }
@@ -246,8 +262,15 @@ def check_contract(registry: dict[str, Any]) -> tuple[bool, list[str]]:
         if "t81_canonical" not in backend.get("supported_formats", []):
             errors.append(f"{name}: must support t81_canonical format")
 
-        if "strict_deterministic" not in backend.get("determinism_modes", []):
-            errors.append(f"{name}: must include strict_deterministic mode")
+        modes = backend.get("determinism_modes", [])
+        strict_core_eligible = bool(backend.get("strict_core_eligible", False))
+        numeric_kernel_class = str(backend.get("numeric_kernel_class", "")).strip()
+        if strict_core_eligible and "strict_deterministic" not in modes:
+            errors.append(f"{name}: strict-core-eligible backend must include strict_deterministic mode")
+        if not strict_core_eligible and "strict_deterministic" in modes:
+            errors.append(f"{name}: float-host-backed backend must not advertise strict_deterministic mode")
+        if strict_core_eligible and numeric_kernel_class == "host_float":
+            errors.append(f"{name}: strict-core-eligible backend cannot report host_float numeric kernels")
 
         if int(backend.get("max_context_tokens", 0)) <= 0:
             errors.append(f"{name}: max_context_tokens must be > 0")
@@ -292,7 +315,7 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
     model_path.parent.mkdir(parents=True, exist_ok=True)
     if not model_path.exists():
         model_path.write_text("t81-ai-backend-probe\n", encoding="utf-8")
-    binding["model_sha256"] = sha256_text(model_path.read_text(encoding="utf-8"))
+    binding["model_sha256"] = sha256_file(model_path)
 
     help_res = run_cmd([str(ai_bin), "--help"])
     caps_res = run_cmd([str(ai_bin), "backend", "capabilities"])
@@ -305,9 +328,23 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
             "--format",
             "gguf",
             "--mode",
-            "strict_deterministic",
+            "reproducible_nondeterministic",
             "--out",
             str(selection_trace_path),
+        ]
+    )
+    strict_trace_path = model_path.parent / "runtime_backend_selection_strict_trace.json"
+    select_gguf_strict_res = run_cmd(
+        [
+            str(ai_bin),
+            "backend",
+            "select",
+            "--format",
+            "gguf",
+            "--mode",
+            "strict_deterministic",
+            "--out",
+            str(strict_trace_path),
         ]
     )
     select_onnx_res = run_cmd(
@@ -329,10 +366,15 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
         "rc": caps_res["rc"],
         "stdout_sha256": caps_res["stdout_sha256"],
     }
-    binding["backend_select_gguf_strict"] = {
+    binding["backend_select_gguf_reproducible"] = {
         "rc": select_gguf_res["rc"],
         "stdout_sha256": select_gguf_res["stdout_sha256"],
         "artifact": str(selection_trace_path),
+    }
+    binding["backend_select_gguf_strict"] = {
+        "rc": select_gguf_strict_res["rc"],
+        "stdout_sha256": select_gguf_strict_res["stdout_sha256"],
+        "artifact": str(strict_trace_path),
     }
     binding["backend_select_onnx_statistical"] = {
         "rc": select_onnx_res["rc"],
@@ -349,6 +391,8 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
     if caps_res["rc"] != 0:
         errors.append("runtime binding: t81_ai backend capabilities failed")
     if select_gguf_res["rc"] != 0:
+        errors.append("runtime binding: t81_ai backend select gguf/reproducible_nondeterministic failed")
+    if select_gguf_strict_res["rc"] != 0:
         errors.append("runtime binding: t81_ai backend select gguf/strict_deterministic failed")
     if select_onnx_res["rc"] != 0:
         errors.append("runtime binding: t81_ai backend select onnx/statistical_deterministic failed")
@@ -384,6 +428,8 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
                     "backend_name",
                     "supported_formats",
                     "determinism_modes",
+                    "strict_core_eligible",
+                    "numeric_kernel_class",
                     "max_context_tokens",
                     "supports_streaming",
                     "supports_logit_bias",
@@ -418,24 +464,70 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
                 "candidates",
                 "selected_backend",
                 "decision_reason",
+                "support_state",
+                "strict_core_eligible",
+                "numeric_kernel_class",
                 "trace_sha256",
                 "status",
             }
             missing = sorted(required_select_fields - set(select_gguf.keys()))
             if missing:
-                errors.append("runtime binding: backend select gguf missing fields " + ", ".join(missing))
+                errors.append("runtime binding: backend select gguf reproducible missing fields " + ", ".join(missing))
             if select_gguf.get("schema") != "t81.ai.backend-selection-trace.v1":
-                errors.append("runtime binding: backend select gguf schema mismatch")
+                errors.append("runtime binding: backend select gguf reproducible schema mismatch")
             if select_gguf.get("selected_backend") != "llama.cpp":
-                errors.append("runtime binding: backend select gguf selected_backend mismatch")
+                errors.append("runtime binding: backend select gguf reproducible selected_backend mismatch")
             if select_gguf.get("status") != "pass":
-                errors.append("runtime binding: backend select gguf status must be pass")
+                errors.append("runtime binding: backend select gguf reproducible status must be pass")
+            if select_gguf.get("support_state") != "supported":
+                errors.append("runtime binding: backend select gguf reproducible support_state must be supported")
             if not selection_trace_path.exists():
                 errors.append("runtime binding: backend selection trace artifact was not emitted")
             else:
                 binding["backend_selection_trace_artifact_sha256"] = sha256_text(
                     canonical_json(parse_json(selection_trace_path))
                 )
+
+    if strict_trace_path.exists():
+        binding["backend_selection_strict_trace_artifact_sha256"] = sha256_text(
+            canonical_json(parse_json(strict_trace_path))
+        )
+    try:
+        select_gguf_strict = json.loads(select_gguf_strict_res["stdout"])
+    except json.JSONDecodeError:
+        select_gguf_strict = None
+        errors.append("runtime binding: backend select gguf strict output is not valid JSON")
+    if isinstance(select_gguf_strict, dict):
+        if select_gguf_strict.get("schema") != "t81.ai.backend-selection-trace.v1":
+            errors.append("runtime binding: backend select gguf strict schema mismatch")
+        required_select_fields = {
+            "schema",
+            "requested_format",
+            "requested_mode",
+            "selection_policy",
+            "preferred_order",
+            "candidates",
+            "selected_backend",
+            "decision_reason",
+            "support_state",
+            "strict_core_eligible",
+            "numeric_kernel_class",
+            "trace_sha256",
+            "status",
+        }
+        missing = sorted(required_select_fields - set(select_gguf_strict.keys()))
+        if missing:
+            errors.append("runtime binding: backend select gguf strict missing fields " + ", ".join(missing))
+        if select_gguf_strict.get("selected_backend") != "t81_reference_vm":
+            errors.append("runtime binding: backend select gguf strict selected_backend mismatch")
+        if select_gguf_strict.get("status") != "pass":
+            errors.append("runtime binding: backend select gguf strict status must be pass")
+        if select_gguf_strict.get("support_state") != "supported":
+            errors.append("runtime binding: backend select gguf strict support_state must be supported")
+        if not bool(select_gguf_strict.get("strict_core_eligible", False)):
+            errors.append("runtime binding: backend select gguf strict must be strict_core_eligible")
+        if str(select_gguf_strict.get("numeric_kernel_class", "")).strip() == "host_float":
+            errors.append("runtime binding: backend select gguf strict cannot use host_float numeric kernels")
 
     if select_onnx_res["rc"] == 0:
         try:
@@ -453,10 +545,11 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
             binding["backend_selection_onnx_trace_sha256"] = sha256_text(canonical_json(select_onnx))
 
     matrix_specs = [
-        ("gguf", "strict_deterministic"),
         ("gguf", "reproducible_nondeterministic"),
-        ("onnx", "strict_deterministic"),
+        ("gguf", "strict_deterministic"),
         ("onnx", "statistical_deterministic"),
+        ("onnx", "strict_deterministic"),
+        ("t81_canonical", "reproducible_nondeterministic"),
         ("t81_canonical", "strict_deterministic"),
     ]
     replay_runs: list[list[dict[str, Any]]] = []
@@ -483,25 +576,36 @@ def validate_runtime_binding(ai_bin: Path, model_path: Path) -> tuple[bool, list
         replay_runs.append(run_payload)
 
     expected_backend = {
-        ("gguf", "strict_deterministic"): "llama.cpp",
         ("gguf", "reproducible_nondeterministic"): "llama.cpp",
-        ("onnx", "strict_deterministic"): "onnx_runtime",
+        ("gguf", "strict_deterministic"): "t81_reference_vm",
         ("onnx", "statistical_deterministic"): "onnx_runtime",
-        ("t81_canonical", "strict_deterministic"): "llama.cpp",
+        ("t81_canonical", "reproducible_nondeterministic"): "llama.cpp",
+        ("t81_canonical", "strict_deterministic"): "t81_reference_vm",
     }
     replay_errors: list[str] = []
     for entry in replay_runs[0]:
         key = (entry["format"], entry["mode"])
-        if entry["rc"] != 0:
-            replay_errors.append(f"backend selection replay: rc!=0 for {key[0]}/{key[1]}")
-            continue
         parsed = entry.get("parsed", {})
-        if parsed.get("schema") != "t81.ai.backend-selection-trace.v1":
-            replay_errors.append(f"backend selection replay: schema mismatch for {key[0]}/{key[1]}")
-        if parsed.get("selected_backend") != expected_backend.get(key):
-            replay_errors.append(f"backend selection replay: selected_backend mismatch for {key[0]}/{key[1]}")
-        if parsed.get("status") != "pass":
-            replay_errors.append(f"backend selection replay: status!=pass for {key[0]}/{key[1]}")
+        if key in expected_backend:
+            if entry["rc"] != 0:
+                replay_errors.append(f"backend selection replay: rc!=0 for {key[0]}/{key[1]}")
+                continue
+            if parsed.get("schema") != "t81.ai.backend-selection-trace.v1":
+                replay_errors.append(f"backend selection replay: schema mismatch for {key[0]}/{key[1]}")
+            if parsed.get("selected_backend") != expected_backend.get(key):
+                replay_errors.append(f"backend selection replay: selected_backend mismatch for {key[0]}/{key[1]}")
+            if parsed.get("status") != "pass":
+                replay_errors.append(f"backend selection replay: status!=pass for {key[0]}/{key[1]}")
+        else:
+            if entry["rc"] == 0:
+                replay_errors.append(f"backend selection replay: unsupported lane unexpectedly passed for {key[0]}/{key[1]}")
+                continue
+            if parsed.get("schema") != "t81.ai.backend-selection-trace.v1":
+                replay_errors.append(f"backend selection replay: strict unsupported schema mismatch for {key[0]}/{key[1]}")
+            if parsed.get("selected_backend") not in {"", None}:
+                replay_errors.append(f"backend selection replay: unsupported lane selected backend for {key[0]}/{key[1]}")
+            if parsed.get("status") != "fail":
+                replay_errors.append(f"backend selection replay: unsupported lane status!=fail for {key[0]}/{key[1]}")
 
     deterministic_replay = replay_runs[0] == replay_runs[1]
     if not deterministic_replay:
@@ -550,7 +654,7 @@ def build_backend_selection_manifest(
 
     replay_artifact = Path(str(runtime_binding.get("backend_selection_replay", {}).get("artifact", ""))).resolve()
     selection_trace_artifact = Path(
-        str(runtime_binding.get("backend_select_gguf_strict", {}).get("artifact", ""))
+        str(runtime_binding.get("backend_select_gguf_reproducible", {}).get("artifact", ""))
     ).resolve()
     capabilities_sha = str(runtime_binding.get("backend_capabilities_artifact_sha256", "")).strip()
     replay_sha = str(runtime_binding.get("backend_selection_replay", {}).get("sha256", "")).strip()

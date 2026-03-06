@@ -1,6 +1,8 @@
 # T81 LLM Backend Adapter - RFC-00A5 Task 7
 
-This directory contains the engine-agnostic adapter interface for LLM inference backends with deterministic execution guarantees.
+This directory contains the engine-agnostic adapter interface for LLM inference backends.
+
+Current repository state: the general-purpose AI runtime remains primarily host-float-backed. Host-float backends must not claim `strict_deterministic`; that governed lane is currently satisfied only by the minimal `t81_reference_vm` reference backend used by the AI contract/readiness surface.
 
 ## Components
 
@@ -26,7 +28,7 @@ CLI tool for managing multiple LLM inference backends with unified interface and
 ./t81_ai_backend infer model.gguf "Hello, world!" --max_tokens 100
 
 # Set inference mode
-./t81_ai_backend mode strict_deterministic
+./t81_ai_backend mode reproducible_non_deterministic
 ```
 
 ## Supported Backends
@@ -34,7 +36,7 @@ CLI tool for managing multiple LLM inference backends with unified interface and
 ### Llama.cpp
 - **Description**: Popular C++ implementation of LLaMA models
 - **Formats**: GGUF, T81 canonical
-- **Features**: Deterministic inference, quantization support, streaming
+- **Features**: Reproducible inference lanes, quantization support, streaming
 - **Performance**: CPU-optimized, good for edge deployment
 
 ### ONNX Runtime
@@ -59,8 +61,8 @@ CLI tool for managing multiple LLM inference backends with unified interface and
 
 ### Strict Deterministic
 - **Requirement**: Bit-exact reproducibility across all executions
-- **Use Case**: Critical applications requiring perfect reproducibility
-- **Validation**: Hash-based verification of input/output consistency
+- **Use Case**: Governed reference-backend lane for readiness/evidence; not satisfied by current host-float backends
+- **Validation**: Must bind to a non-host-float backend such as `t81_reference_vm`
 
 ### Statistical Deterministic
 - **Requirement**: Results within statistical tolerance bounds

@@ -111,10 +111,7 @@ def main() -> int:
     if wload_policy_evidence_status != "pass":
         errors.append(f"wload policy evidence gate failed (status={wload_policy_evidence_status})")
     wload_policy_gate_ready = bool(wload_policy_evidence_payload.get("wload_policy_gate_ready", False))
-    wload_policy_gate_reason = (
-        str(wload_policy_evidence_payload.get("wload_policy_gate_reason", "")).strip()
-        or "wload policy evidence report did not include reason"
-    )
+    wload_policy_gate_reason = str(wload_policy_evidence_payload.get("wload_policy_gate_reason", "")).strip()
 
     benchmark_matrix = benchmark_matrix_payload.get("matrix")
     if not isinstance(benchmark_matrix, list):
@@ -122,6 +119,7 @@ def main() -> int:
         benchmark_matrix = []
     benchmark_gguf_state = find_matrix_state(benchmark_matrix, "gguf", "strict_deterministic")
     benchmark_t3k_state = find_matrix_state(benchmark_matrix, "t3k", "strict_deterministic")
+    gguf_benchmark_supported = benchmark_gguf_state == "supported"
     t3k_benchmark_supported = benchmark_t3k_state == "supported"
 
     inference_matrix = inference_matrix_payload.get("matrix")
@@ -130,18 +128,8 @@ def main() -> int:
         inference_matrix = []
     inference_gguf_state = find_matrix_state(inference_matrix, "gguf", "strict_deterministic")
     inference_t3k_state = find_matrix_state(inference_matrix, "t3k", "strict_deterministic")
+    gguf_inference_supported = inference_gguf_state == "supported"
     t3k_inference_supported = inference_t3k_state == "supported"
-
-    if benchmark_gguf_state != "supported":
-        errors.append(
-            "required benchmark lane gguf:strict_deterministic unsupported "
-            f"(state={benchmark_gguf_state})"
-        )
-    if inference_gguf_state != "supported":
-        errors.append(
-            "required inference lane gguf:strict_deterministic unsupported "
-            f"(state={inference_gguf_state})"
-        )
     if t3k_benchmark_supported and not qmatmul_runtime_ready:
         errors.append(
             "inconsistent readiness: t3k benchmark lane is supported but QMATMUL runtime evidence is not ready"
@@ -170,6 +158,8 @@ def main() -> int:
     overall_ready = (
         qmatmul_runtime_ready
         and wload_policy_gate_ready
+        and gguf_benchmark_supported
+        and gguf_inference_supported
         and t3k_benchmark_supported
         and t3k_inference_supported
     )
@@ -179,6 +169,10 @@ def main() -> int:
         blockers.append("QMATMUL runtime evidence not ready")
     if not wload_policy_gate_ready:
         blockers.append("WLOAD policy-gate runtime evidence missing")
+    if not gguf_benchmark_supported:
+        blockers.append("gguf benchmark strict-deterministic lane unsupported")
+    if not gguf_inference_supported:
+        blockers.append("gguf inference strict-deterministic lane unsupported")
     if not t3k_benchmark_supported:
         blockers.append("t3k benchmark lane unsupported")
     if not t3k_inference_supported:
@@ -302,6 +296,8 @@ def main() -> int:
                 "gguf:strict_deterministic": inference_gguf_state,
                 "t3k:strict_deterministic": inference_t3k_state,
             },
+            "gguf_benchmark_supported": gguf_benchmark_supported,
+            "gguf_inference_supported": gguf_inference_supported,
             "t3k_benchmark_supported": t3k_benchmark_supported,
             "t3k_inference_supported": t3k_inference_supported,
             "runtime_capability_alignment_status": alignment_status,

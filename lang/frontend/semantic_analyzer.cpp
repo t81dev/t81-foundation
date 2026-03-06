@@ -8,6 +8,7 @@ thread_local int type_to_string_depth = 0;
 #endif
 
 #include "t81/frontend/semantic_analyzer.hpp"
+#include "t81/frontend/numeric_literals.hpp"
 #include "t81/types/T81BigInt.hpp"
 #include <algorithm>
 #include <cstdlib>
@@ -131,27 +132,13 @@ std::optional<long long> constant_integer_value(const t81::frontend::Expr& expr)
     }
     if (lit->value.type == TokenType::Base81Integer) {
       try {
-        // Use arbitrary-precision parsing for base-81 integers
-        auto bigint = t81::v1::T81BigInt::from_base81_string(lit->value.lexeme);
-        // Return as int64 only if it fits, otherwise return nullopt
-        // This preserves the function's contract while supporting arbitrary precision
-        try {
-          return bigint.to_int64();  // Throws if overflow
-        } catch (const std::logic_error&) {
-          // For large base-81 integers that don't fit in int64,
-          // we return nullopt to indicate this path can't handle them
-          // The actual BigInt value will be handled correctly in code generation
+        auto bigint = t81::frontend::numeric_literals::parse_t81_bigint_literal(lit->value.lexeme);
+        if (auto narrowed = bigint.maybe_int64(); narrowed.has_value()) {
+          return *narrowed;
+        } else {
           return std::nullopt;
         }
-      } catch (const std::invalid_argument& e) {
-        // Invalid base-81 literal - provide helpful error message
-        // Note: This is a standalone function, so we can't use error() here
-        // The error will be caught and handled by the caller
-        return std::nullopt;
-      } catch (const std::out_of_range& e) {
-        // Large base-81 literal - provide helpful guidance
-        // Note: This is a standalone function, so we can't use error() here
-        // The error will be caught and handled by the caller
+      } catch (const std::invalid_argument&) {
         return std::nullopt;
       } catch (...) {
         return std::nullopt;
@@ -4968,22 +4955,28 @@ std::any SemanticAnalyzer::visit(const LiteralExpr& expr) {
     case TokenType::True:
     case TokenType::False:
       return Type{Type::Kind::Bool};
-    case TokenType::Integer:
+    case TokenType::Integer: {
+      const Type* expected = current_expected_type();
+      if (expected && expected->kind == Type::Kind::BigInt) {
+        return Type{Type::Kind::BigInt};
+      }
       return Type{Type::Kind::I32};
+    }
     case TokenType::Base81Integer:
-      // Validate base-81 integer literal and provide helpful error messages
+      // Validate `t81` integer literal and provide helpful error messages.
       try {
-        auto bigint = t81::v1::T81BigInt::from_base81_string(expr.value.lexeme);
-        // Successfully parsed, return BigInt type
+        auto bigint = t81::frontend::numeric_literals::parse_t81_bigint_literal(expr.value.lexeme);
+        (void)bigint;
         return Type{Type::Kind::BigInt};
       } catch (const std::invalid_argument& e) {
-        error(expr.value, "Invalid base-81 literal: " + std::string(e.what()) + ". Base-81 literals must contain only digits 0-80.");
+        error(expr.value, "Invalid t81 integer literal: " + std::string(e.what()) + ".");
         return make_error_type();
       } catch (const std::out_of_range& e) {
-        error(expr.value, "Base-81 literal '" + std::string(expr.value.lexeme) + "' exceeds 64-bit range. For large base-81 integers, use BigInt construction methods instead of literals. See T81BigInt documentation for alternatives.");
+        error(expr.value, "t81 integer literal '" + std::string(expr.value.lexeme) +
+                              "' exceeds supported range: " + std::string(e.what()) + ".");
         return make_error_type();
       } catch (...) {
-        error(expr.value, "Invalid base-81 literal '" + std::string(expr.value.lexeme) + "'.");
+        error(expr.value, "Invalid t81 integer literal '" + std::string(expr.value.lexeme) + "'.");
         return make_error_type();
       }
     case TokenType::Float:

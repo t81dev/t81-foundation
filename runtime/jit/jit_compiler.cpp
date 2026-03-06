@@ -293,6 +293,10 @@ public:
           ctx.registers[insn.a] = state.memory[static_cast<std::size_t>(insn.b)];
           ctx.register_tags[insn.a] = state.memory_tags[static_cast<std::size_t>(insn.b)];
           break;
+        case t81::tisc::Opcode::Int2BigInt:
+          stop_trace = true;
+          guard_deopt = true;
+          break;
         case t81::tisc::Opcode::Store:
           if (!reg_ok(insn.b) || !mem_ok(insn.a)) {
             stop_trace = true;

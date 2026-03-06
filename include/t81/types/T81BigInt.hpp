@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "t81/codec/base81.hpp"
 #include "t81/types/T81Float.hpp"
 #include "t81/types/T81Int.hpp"
 
@@ -88,13 +89,7 @@ inline const std::array<int32_t, 65536>& get_word_to_ternary() {
 }
 
 inline const std::vector<std::string>& base81_alphabet_vec() {
-  static const std::vector<std::string> kAlphabet = {
-      "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G",
-      "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X",
-      "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
-      "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "+", "−", "×", "÷", "=", "<",
-      ">", "≤", "≥", "≠", "≈", "∞", "λ", "μ", "π", "σ", "τ", "ω", "Γ"};
-  return kAlphabet;
+  return t81::codec::base81::signed_integer_digit_strings();
 }
 
 inline const std::unordered_map<std::string, int>& base81_digit_map() {
@@ -437,6 +432,28 @@ public:
         return std::numeric_limits<std::int64_t>::min();
       }
       t81::axion::trap_overflow("T81BigInt::to_int64: overflow");
+    }
+  }
+
+  [[nodiscard]] std::optional<std::int64_t> maybe_int64() const {
+    if (limbs_.empty()) {
+      return std::nullopt;
+    }
+    if (limbs_.size() > 1) {
+      return std::nullopt;
+    }
+
+    try {
+      const std::int64_t mag = limbs_[0].to_int64();
+      if (negative_) {
+        return -mag;
+      }
+      return mag;
+    } catch (const std::overflow_error&) {
+      if (negative_ && limbs_[0] == -Limb(std::numeric_limits<std::int64_t>::min())) {
+        return std::numeric_limits<std::int64_t>::min();
+      }
+      return std::nullopt;
     }
   }
 
@@ -1501,7 +1518,7 @@ public:
 
     bool neg = false;
     std::size_t pos = 0;
-    if (s[pos] == '+' || s[pos] == '-') {
+    if (s[pos] == '-') {
       neg = (s[pos] == '-');
       ++pos;
       if (pos >= s.size()) throw std::invalid_argument("T81BigInt::from_base81_string: sign only");
@@ -1530,6 +1547,35 @@ public:
     }
     if (neg && !v.is_zero()) v = -v;
     return v;
+  }
+
+  static T81BigInt from_decimal_string(std::string_view s) {
+    if (s.empty()) throw std::invalid_argument("T81BigInt::from_decimal_string: empty input");
+
+    bool neg = false;
+    std::size_t pos = 0;
+    if (s[pos] == '+' || s[pos] == '-') {
+      neg = (s[pos] == '-');
+      ++pos;
+      if (pos >= s.size()) {
+        throw std::invalid_argument("T81BigInt::from_decimal_string: sign only");
+      }
+    }
+
+    T81BigInt value(0);
+    const T81BigInt ten(10);
+    for (; pos < s.size(); ++pos) {
+      const char c = s[pos];
+      if (c < '0' || c > '9') {
+        throw std::invalid_argument("T81BigInt::from_decimal_string: invalid character");
+      }
+      value = value * ten + T81BigInt(static_cast<std::int64_t>(c - '0'));
+    }
+
+    if (neg && !value.is_zero()) {
+      value = -value;
+    }
+    return value;
   }
 
   static T81BigInt from_base81_digit_string(std::string_view s) {

@@ -1,0 +1,15 @@
+{
+  "schema": "t81.ai.backend-selection-trace.v1",
+  "requested_format": "gguf",
+  "requested_mode": "strict_deterministic",
+  "selection_policy": "first_backend_supporting_requested_format_and_mode",
+  "preferred_order": ["llama.cpp", "onnx_runtime"],
+  "candidates": [],
+  "selected_backend": "",
+  "decision_reason": "no_backend_supporting_requested_format_and_mode",
+  "support_state": "unsupported",
+  "strict_core_eligible": false,
+  "numeric_kernel_class": "unknown",
+  "trace_sha256": "sha256:a97dd06c232811ad",
+  "status": "fail"
+}

@@ -283,7 +283,7 @@ jobs:
         # Test backend capability introspection
         ./build/experiments/ai/ux_tools/t81_ai backend capabilities > /tmp/ai_backend_capabilities.json
         test -s /tmp/ai_backend_capabilities.json
-        ./build/experiments/ai/ux_tools/t81_ai backend select --format gguf --mode strict_deterministic > /tmp/ai_backend_selection.json
+        ./build/experiments/ai/ux_tools/t81_ai backend select --format gguf --mode reproducible_nondeterministic > /tmp/ai_backend_selection.json
         test -s /tmp/ai_backend_selection.json
 
         # Test expanded RFC-00A7 command surface
@@ -432,8 +432,9 @@ jobs:
           cmake --build build --target t81_vm_ai_phase1_attention_conformance_test
           cmake --build build --target t81_vm_ai_phase1_embed_conformance_test
           cmake --build build --target t81_vm_ai_phase1_qmatmul_conformance_test
+          cmake --build build --target t81_vm_ai_phase1_shared_helper_parity_test
           ctest --test-dir build --output-on-failure --verbose \
-            -R 't81_vm_ai_phase1_attention_conformance_test|t81_vm_ai_phase1_embed_conformance_test|t81_vm_ai_phase1_qmatmul_conformance_test' \
+            -R 't81_vm_ai_phase1_attention_conformance_test|t81_vm_ai_phase1_embed_conformance_test|t81_vm_ai_phase1_qmatmul_conformance_test|t81_vm_ai_phase1_shared_helper_parity_test' \
             2>&1 | tee build/ai-opcodes/ai_phase1_opcode_ctest.log
         else
           echo "❌ t81_vm_ai_phase1_qmatmul_conformance_test target not found"
@@ -491,8 +492,7 @@ jobs:
           --model-file tests/fixtures/llama_cpp_repro/model.gguf \
           --formats gguf,t3k \
           --modes strict_deterministic \
-          --expectations-file scripts/ci/ai_benchmark_capability_expectations.json \
-          --required gguf:strict_deterministic
+          --expectations-file scripts/ci/ai_benchmark_capability_expectations.json
 
     - name: Validate benchmark threshold window approvals (RFC-00A2 promotion policy)
       if: steps.build_ai.outputs.has_target == 'true'
@@ -513,8 +513,7 @@ jobs:
           --model-file tests/fixtures/llama_cpp_repro/model.gguf \
           --formats gguf,t3k \
           --modes strict_deterministic \
-          --expectations-file scripts/ci/ai_inference_capability_expectations.json \
-          --required gguf:strict_deterministic
+          --expectations-file scripts/ci/ai_inference_capability_expectations.json
 
     - name: Enforce benchmark/inference capability alignment
       if: steps.build_ai.outputs.has_target == 'true'

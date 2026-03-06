@@ -17,7 +17,7 @@ inline T729DynamicTensor slice2d(const T729DynamicTensor& m, int r0, int r1, int
   const int out_c = c1 - c0;
   std::vector<float> out(static_cast<size_t>(out_r) * static_cast<size_t>(out_c));
 
-  const auto& d = m.data();
+  const auto d = m.snapshot_values();
   for (int r = 0; r < out_r; ++r) {
     const size_t src_base = static_cast<size_t>(r0 + r) * cols + static_cast<size_t>(c0);
     const size_t dst_base = static_cast<size_t>(r) * out_c;

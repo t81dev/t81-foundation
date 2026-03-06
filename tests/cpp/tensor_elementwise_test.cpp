@@ -19,6 +19,9 @@ int main() {
     [[maybe_unused]] auto D = t81::ops::sub(A, B);
     [[maybe_unused]] auto M = t81::ops::mul(A, B);
 
+    assert(S.numeric_class() == TensorNumericClass::ExactInt);
+    assert(D.numeric_class() == TensorNumericClass::ExactInt);
+    assert(M.numeric_class() == TensorNumericClass::ExactInt);
     assert((S.data() == std::vector<float>{7, 7, 7, 7, 7, 7}));
     assert((D.data() == std::vector<float>{-5, -3, -1, 1, 3, 5}));
     assert((M.data() == std::vector<float>{6, 10, 12, 12, 10, 6}));
@@ -32,8 +35,9 @@ int main() {
     A.data() = {1, 2, 3, 4, 5, 6};
 
     [[maybe_unused]] auto S = t81::ops::add(A, row);
+    assert(S.numeric_class() == TensorNumericClass::ExactInt);
     assert(S.rank() == 2 && S.shape()[0] == 2 && S.shape()[1] == 3);
-    const auto& sd = S.data();
+    [[maybe_unused]] const auto& sd = S.data();
     assert((sd == std::vector<float>{11, 22, 33, 14, 25, 36}));
   }
 
@@ -45,8 +49,17 @@ int main() {
     A.data() = {1, 2, 3, 4, 5, 6};
 
     [[maybe_unused]] auto P = t81::ops::mul(A, row);
-    const auto& pd = P.data();
+    assert(P.numeric_class() == TensorNumericClass::ExactInt);
+    [[maybe_unused]] const auto& pd = P.data();
     assert((pd == std::vector<float>{2, 6, 12, 8, 15, 24}));
+  }
+
+  // Mixed exact/float inputs must stay HostFloat even if output values are integral.
+  {
+    T729DynamicTensor exact({2}, {1, 2});
+    T729DynamicTensor host_float({2}, {0.5f, 1.5f});
+    [[maybe_unused]] auto S = t81::ops::add(exact, host_float);
+    assert(S.numeric_class() == TensorNumericClass::HostFloat);
   }
 
   // Division by zero should throw

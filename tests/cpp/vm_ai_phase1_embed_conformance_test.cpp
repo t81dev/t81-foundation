@@ -1,6 +1,7 @@
 #include "test_runtime_check.hpp"
 
 #include "t81/isa/program.hpp"
+#include "t81/tensor/llama.hpp"
 #include "t81/vm/vm.hpp"
 
 #include <cmath>
@@ -57,11 +58,18 @@ int main() {
     const auto& out_opt = vm->state().tensors[static_cast<std::size_t>(out_handle - 1)];
     T81_TEST_CHECK(out_opt.has_value());
     const auto& out = out_opt.value();
+    auto expected = t81::ops::embed(p.tensor_pool[0], 1);
     T81_TEST_CHECK(out.rank() == 1);
     T81_TEST_CHECK(out.shape().size() == 1);
     T81_TEST_CHECK(out.shape()[0] == 2);
+    T81_TEST_CHECK(out.canonical_fixed_authoritative());
+    T81_TEST_CHECK(out.numeric_class() == t81::TensorNumericClass::ExactInt);
+    T81_TEST_CHECK(out.shape() == expected.shape());
+    T81_TEST_CHECK(out.numeric_class() == expected.numeric_class());
     T81_TEST_CHECK(out.data()[0] == 10.0F);
     T81_TEST_CHECK(out.data()[1] == 20.0F);
+    T81_TEST_CHECK(out.data()[0] == expected.data()[0]);
+    T81_TEST_CHECK(out.data()[1] == expected.data()[1]);
     const auto hash = tensor_hash(out);
     std::cout << "AI_PHASE1_HASH EMBED " << std::hex << std::setw(16) << std::setfill('0') << hash
               << std::dec << "\n";

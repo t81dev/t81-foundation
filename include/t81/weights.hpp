@@ -11,7 +11,7 @@
 
 namespace t81::weights {
 
-enum class NativeFormat { BalancedTernary = 0, T3_K = 1 };
+enum class NativeFormat { BalancedTernary = 0, T3_K = 1, CanonicalFixed = 2 };
 
 struct TensorInfo {
   std::string name;

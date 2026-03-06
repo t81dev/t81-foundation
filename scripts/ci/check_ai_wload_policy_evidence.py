@@ -49,6 +49,16 @@ def collect_reason_codes(policy_contract: dict[str, Any], runtime_trace: dict[st
     return sorted(set(reason_codes))
 
 
+def runtime_trace_is_synthetic(runtime_trace: dict[str, Any]) -> bool:
+    trace_sha = str(runtime_trace.get("trace_sha256", "")).strip().lower()
+    return trace_sha in {"", "synthetic"}
+
+
+def runtime_binding_is_populated(policy_contract: dict[str, Any]) -> bool:
+    runtime_binding = policy_contract.get("runtime_binding")
+    return isinstance(runtime_binding, dict) and bool(runtime_binding)
+
+
 def main() -> int:
     args = parse_args()
     policy_contract_path = Path(args.policy_contract).resolve()
@@ -81,9 +91,16 @@ def main() -> int:
     observed_wload_codes = sorted([code for code in reason_codes if "WLOAD" in code.upper()])
     observed_allow_wload_codes = sorted([code for code in observed_wload_codes if code.startswith("AI_POLICY_ALLOW_WLOAD_")])
     observed_deny_wload_codes = sorted([code for code in observed_wload_codes if code.startswith("AI_POLICY_DENY_WLOAD_")])
-    wload_policy_gate_ready = bool(observed_allow_wload_codes)
+    populated_runtime_binding = runtime_binding_is_populated(policy_contract)
+    synthetic_runtime_trace = runtime_trace_is_synthetic(runtime_trace)
+    runtime_evidence_ready = populated_runtime_binding and not synthetic_runtime_trace
+    wload_policy_gate_ready = bool(observed_allow_wload_codes) and runtime_evidence_ready
     if wload_policy_gate_ready:
         wload_policy_gate_reason = ""
+    elif observed_allow_wload_codes and not populated_runtime_binding:
+        wload_policy_gate_reason = "WLOAD allow-path evidence is synthetic-only: runtime binding is empty."
+    elif observed_allow_wload_codes and synthetic_runtime_trace:
+        wload_policy_gate_reason = "WLOAD allow-path evidence is synthetic-only: runtime trace sha256 is synthetic."
     elif observed_wload_codes:
         wload_policy_gate_reason = DEFAULT_DENY_ONLY_REASON
     else:
@@ -162,6 +179,9 @@ def main() -> int:
         "expectations_file": str(expectations_path),
         "wload_policy_gate_ready": wload_policy_gate_ready,
         "wload_policy_gate_reason": wload_policy_gate_reason,
+        "runtime_evidence_ready": runtime_evidence_ready,
+        "runtime_binding_populated": populated_runtime_binding,
+        "runtime_trace_synthetic": synthetic_runtime_trace,
         "observed_reason_codes": reason_codes,
         "observed_wload_reason_codes": observed_wload_codes,
         "observed_allow_wload_reason_codes": observed_allow_wload_codes,

@@ -30,5 +30,5 @@ t81_ai observability trace trace.json
 
 - This is intentionally a minimal implementation for deterministic CI contract gating.
 - `workflow run` emits schema `t81.ai.workflow-replay.v1`.
-- `observability trace` emits schema `t81.ai.trace.v1` with required reason fields and `trace_sha256`.
-
+- `observability trace` emits schema `t81.ai.trace.v1` with required reason fields and a live WLOAD allow-path runtime binding used by the AI policy/WLOAD CI gates.
+- `backend capabilities` / `backend select` expose the governed `t81_reference_vm` strict-deterministic reference backend for the `gguf`/`t3k` lanes used by RFC-0026 readiness gating.

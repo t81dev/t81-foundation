@@ -73,9 +73,10 @@ int main() {
   const auto& expRes = mutable_state.tensors[static_cast<std::size_t>(expHandle - 1)];
   T81_TEST_CHECK(expRes.has_value());
   T81_TEST_CHECK(expRes.value().shape()[0] == 3);
-  T81_TEST_CHECK(std::fabs(expRes.value().data()[0] - std::exp(1.0f)) < 1e-6f);
-  T81_TEST_CHECK(std::fabs(expRes.value().data()[1] - std::exp(2.0f)) < 1e-6f);
-  T81_TEST_CHECK(std::fabs(expRes.value().data()[2] - std::exp(3.0f)) < 1e-6f);
+  T81_TEST_CHECK(expRes.value().has_canonical_fixed_data());
+  T81_TEST_CHECK(std::fabs(expRes.value().data()[0] - std::exp(1.0f)) < 1e-4f);
+  T81_TEST_CHECK(std::fabs(expRes.value().data()[1] - std::exp(2.0f)) < 1e-4f);
+  T81_TEST_CHECK(std::fabs(expRes.value().data()[2] - std::exp(3.0f)) < 1e-4f);
 
   // Vector multiplication
   [[maybe_unused]] auto mulHandle = vm->state().contexts[0].registers[14];
@@ -91,12 +92,14 @@ int main() {
   const auto& siluRes = mutable_state.tensors[static_cast<std::size_t>(siluHandle - 1)];
   T81_TEST_CHECK(siluRes.has_value());
   T81_TEST_CHECK(siluRes.value().shape()[0] == 3);
-  T81_TEST_CHECK(std::fabs(siluRes.value().data()[0] - (1.0f / (1.0f + std::exp(-1.0f)))) < 1e-6f);
+  T81_TEST_CHECK(siluRes.value().has_canonical_fixed_data());
+  T81_TEST_CHECK(std::fabs(siluRes.value().data()[0] - (1.0f / (1.0f + std::exp(-1.0f)))) < 1e-4f);
 
   [[maybe_unused]] auto softmaxHandle = vm->state().contexts[0].registers[16];
   const auto& softmaxRes = mutable_state.tensors[static_cast<std::size_t>(softmaxHandle - 1)];
   T81_TEST_CHECK(softmaxRes.has_value());
   T81_TEST_CHECK(softmaxRes.value().shape()[0] == 3);
+  T81_TEST_CHECK(softmaxRes.value().numeric_class() == t81::TensorNumericClass::HostFloat);
   const float softmax_sum =
       softmaxRes.value().data()[0] + softmaxRes.value().data()[1] + softmaxRes.value().data()[2];
   T81_TEST_CHECK(std::fabs(softmax_sum - 1.0f) < 1e-5f);
@@ -113,21 +116,23 @@ int main() {
   [[maybe_unused]] auto rmsHandle = vm->state().contexts[0].registers[18];
   const auto& rmsRes = mutable_state.tensors[static_cast<std::size_t>(rmsHandle - 1)];
   T81_TEST_CHECK(rmsRes.has_value());
+  T81_TEST_CHECK(rmsRes.value().numeric_class() == t81::TensorNumericClass::HostFloat);
   auto rmsExpected = t81::ops::rmsnorm(vecA, vecB);
   T81_TEST_CHECK(rmsRes.value().shape() == rmsExpected.shape());
   T81_TEST_CHECK(rmsRes.value().data().size() == rmsExpected.data().size());
   for (std::size_t i = 0; i < rmsExpected.data().size(); ++i) {
-    T81_TEST_CHECK(std::fabs(rmsRes.value().data()[i] - rmsExpected.data()[i]) < 1e-6f);
+    T81_TEST_CHECK(std::fabs(rmsRes.value().data()[i] - rmsExpected.data()[i]) < 1e-3f);
   }
 
   [[maybe_unused]] auto ropeHandle = vm->state().contexts[0].registers[19];
   const auto& ropeRes = mutable_state.tensors[static_cast<std::size_t>(ropeHandle - 1)];
   T81_TEST_CHECK(ropeRes.has_value());
+  T81_TEST_CHECK(ropeRes.value().numeric_class() == t81::TensorNumericClass::HostFloat);
   auto ropeExpected = t81::ops::rope(matA, 3);
   T81_TEST_CHECK(ropeRes.value().shape() == ropeExpected.shape());
   T81_TEST_CHECK(ropeRes.value().data().size() == ropeExpected.data().size());
   for (std::size_t i = 0; i < ropeExpected.data().size(); ++i) {
-    T81_TEST_CHECK(std::fabs(ropeRes.value().data()[i] - ropeExpected.data()[i]) < 1e-6f);
+    T81_TEST_CHECK(std::fabs(ropeRes.value().data()[i] - ropeExpected.data()[i]) < 1e-3f);
   }
 
   // Tensor unary sqrt
@@ -135,9 +140,10 @@ int main() {
   const auto& sqrtRes = mutable_state.tensors[static_cast<std::size_t>(sqrtHandle - 1)];
   T81_TEST_CHECK(sqrtRes.has_value());
   T81_TEST_CHECK(sqrtRes.value().shape()[0] == 3);
-  T81_TEST_CHECK(std::fabs(sqrtRes.value().data()[0] - std::sqrt(1.0f)) < 1e-6f);
-  T81_TEST_CHECK(std::fabs(sqrtRes.value().data()[1] - std::sqrt(2.0f)) < 1e-6f);
-  T81_TEST_CHECK(std::fabs(sqrtRes.value().data()[2] - std::sqrt(3.0f)) < 1e-6f);
+  T81_TEST_CHECK(sqrtRes.value().has_canonical_fixed_data());
+  T81_TEST_CHECK(std::fabs(sqrtRes.value().data()[0] - std::sqrt(1.0f)) < 1e-4f);
+  T81_TEST_CHECK(std::fabs(sqrtRes.value().data()[1] - std::sqrt(2.0f)) < 1e-4f);
+  T81_TEST_CHECK(std::fabs(sqrtRes.value().data()[2] - std::sqrt(3.0f)) < 1e-4f);
 
   // Shape checks via literal handles.
   [[maybe_unused]] tisc::Program chk;

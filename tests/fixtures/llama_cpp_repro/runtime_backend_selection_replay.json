@@ -1,0 +1,167 @@
+{
+  "deterministic_replay": true,
+  "runs": [
+    [
+      {
+        "format": "gguf",
+        "mode": "reproducible_nondeterministic",
+        "parsed": {
+          "decision_reason": "first_backend_supporting_requested_format_and_mode",
+          "schema": "t81.ai.backend-selection-trace.v1",
+          "selected_backend": "llama.cpp",
+          "status": "pass",
+          "trace_sha256": "sha256:2ae9e421ab794c96"
+        },
+        "rc": 0,
+        "stdout_sha256": "df4b949c14bcd9d857bdbffcf691588723fa16f1ef584b83fbebb0220c088963"
+      },
+      {
+        "format": "gguf",
+        "mode": "strict_deterministic",
+        "parsed": {
+          "decision_reason": "no_backend_supporting_requested_format_and_mode",
+          "schema": "t81.ai.backend-selection-trace.v1",
+          "selected_backend": "",
+          "status": "fail",
+          "trace_sha256": "sha256:a97dd06c232811ad"
+        },
+        "rc": 1,
+        "stdout_sha256": "721acf2d9172e1f462f6289370d51b30c5d35577ea1db96d5a774baaa31d0f9c"
+      },
+      {
+        "format": "onnx",
+        "mode": "statistical_deterministic",
+        "parsed": {
+          "decision_reason": "first_backend_supporting_requested_format_and_mode",
+          "schema": "t81.ai.backend-selection-trace.v1",
+          "selected_backend": "onnx_runtime",
+          "status": "pass",
+          "trace_sha256": "sha256:dbc1f680a2ec04c2"
+        },
+        "rc": 0,
+        "stdout_sha256": "e85450104ef2c3824c1334490a175e4b4dd43c22bd67b495e43001daf3d927f5"
+      },
+      {
+        "format": "onnx",
+        "mode": "strict_deterministic",
+        "parsed": {
+          "decision_reason": "no_backend_supporting_requested_format_and_mode",
+          "schema": "t81.ai.backend-selection-trace.v1",
+          "selected_backend": "",
+          "status": "fail",
+          "trace_sha256": "sha256:592acd84dd61d7cf"
+        },
+        "rc": 1,
+        "stdout_sha256": "f5e78a3829ee34b137c4870fb9803cb0384c683cb80af5f1f1e7bd390a211e7a"
+      },
+      {
+        "format": "t81_canonical",
+        "mode": "reproducible_nondeterministic",
+        "parsed": {
+          "decision_reason": "first_backend_supporting_requested_format_and_mode",
+          "schema": "t81.ai.backend-selection-trace.v1",
+          "selected_backend": "llama.cpp",
+          "status": "pass",
+          "trace_sha256": "sha256:9d0dedea50a092b5"
+        },
+        "rc": 0,
+        "stdout_sha256": "42c0e6a789a9064178bf68780e589a70cb6b7365a82827493223768f0609cb06"
+      },
+      {
+        "format": "t81_canonical",
+        "mode": "strict_deterministic",
+        "parsed": {
+          "decision_reason": "no_backend_supporting_requested_format_and_mode",
+          "schema": "t81.ai.backend-selection-trace.v1",
+          "selected_backend": "",
+          "status": "fail",
+          "trace_sha256": "sha256:44196d02d7d4872c"
+        },
+        "rc": 1,
+        "stdout_sha256": "ff02da473959f8930c22289f7af98f7e52c6ae956eb8c5858d344ee24d9ee169"
+      }
+    ],
+    [
+      {
+        "format": "gguf",
+        "mode": "reproducible_nondeterministic",
+        "parsed": {
+          "decision_reason": "first_backend_supporting_requested_format_and_mode",
+          "schema": "t81.ai.backend-selection-trace.v1",
+          "selected_backend": "llama.cpp",
+          "status": "pass",
+          "trace_sha256": "sha256:2ae9e421ab794c96"
+        },
+        "rc": 0,
+        "stdout_sha256": "df4b949c14bcd9d857bdbffcf691588723fa16f1ef584b83fbebb0220c088963"
+      },
+      {
+        "format": "gguf",
+        "mode": "strict_deterministic",
+        "parsed": {
+          "decision_reason": "no_backend_supporting_requested_format_and_mode",
+          "schema": "t81.ai.backend-selection-trace.v1",
+          "selected_backend": "",
+          "status": "fail",
+          "trace_sha256": "sha256:a97dd06c232811ad"
+        },
+        "rc": 1,
+        "stdout_sha256": "721acf2d9172e1f462f6289370d51b30c5d35577ea1db96d5a774baaa31d0f9c"
+      },
+      {
+        "format": "onnx",
+        "mode": "statistical_deterministic",
+        "parsed": {
+          "decision_reason": "first_backend_supporting_requested_format_and_mode",
+          "schema": "t81.ai.backend-selection-trace.v1",
+          "selected_backend": "onnx_runtime",
+          "status": "pass",
+          "trace_sha256": "sha256:dbc1f680a2ec04c2"
+        },
+        "rc": 0,
+        "stdout_sha256": "e85450104ef2c3824c1334490a175e4b4dd43c22bd67b495e43001daf3d927f5"
+      },
+      {
+        "format": "onnx",
+        "mode": "strict_deterministic",
+        "parsed": {
+          "decision_reason": "no_backend_supporting_requested_format_and_mode",
+          "schema": "t81.ai.backend-selection-trace.v1",
+          "selected_backend": "",
+          "status": "fail",
+          "trace_sha256": "sha256:592acd84dd61d7cf"
+        },
+        "rc": 1,
+        "stdout_sha256": "f5e78a3829ee34b137c4870fb9803cb0384c683cb80af5f1f1e7bd390a211e7a"
+      },
+      {
+        "format": "t81_canonical",
+        "mode": "reproducible_nondeterministic",
+        "parsed": {
+          "decision_reason": "first_backend_supporting_requested_format_and_mode",
+          "schema": "t81.ai.backend-selection-trace.v1",
+          "selected_backend": "llama.cpp",
+          "status": "pass",
+          "trace_sha256": "sha256:9d0dedea50a092b5"
+        },
+        "rc": 0,
+        "stdout_sha256": "42c0e6a789a9064178bf68780e589a70cb6b7365a82827493223768f0609cb06"
+      },
+      {
+        "format": "t81_canonical",
+        "mode": "strict_deterministic",
+        "parsed": {
+          "decision_reason": "no_backend_supporting_requested_format_and_mode",
+          "schema": "t81.ai.backend-selection-trace.v1",
+          "selected_backend": "",
+          "status": "fail",
+          "trace_sha256": "sha256:44196d02d7d4872c"
+        },
+        "rc": 1,
+        "stdout_sha256": "ff02da473959f8930c22289f7af98f7e52c6ae956eb8c5858d344ee24d9ee169"
+      }
+    ]
+  ],
+  "schema": "t81.ai.backend-selection-replay.v1",
+  "status": "pass"
+}

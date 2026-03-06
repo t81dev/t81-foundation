@@ -62,7 +62,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--out-dir", required=True, help="Output directory")
     p.add_argument("--runs", type=int, default=15, help="Benchmark runs per format (default: 15)")
     p.add_argument("--model-id", default="compare-model", help="Model id label")
-    p.add_argument("--mode", default="strict_deterministic", help="Determinism mode")
+    p.add_argument(
+        "--mode",
+        default="reproducible_nondeterministic",
+        help="Determinism mode for supported runtime comparison lanes",
+    )
     p.add_argument("--prompt", default="binary vs ternary comparison", help="Inference prompt")
     p.add_argument(
         "--t3k-model",
