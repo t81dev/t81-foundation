@@ -1,4 +1,4 @@
-# AI prompt used for audit
+# T81 Architectural Coherence Audit Prompt
 
 You are a senior systems architect, language/runtime engineer, and deterministic computing auditor tasked with performing a full architectural coherence audit of the T81 deterministic ternary computing stack.
 
@@ -219,7 +219,9 @@ The core (TISC, Axion, integer math) is stable and robust. The language (T81Lang
 4. **Complete Experimental Types:** Implement VM lowering and dedicated opcodes for `T81Quaternion` and direct object initialization `{}` for `T81Map`.
 5. **Formalize Packing Boundary:** Update architecture documentation to explicitly acknowledge that the 2-bit packed SWAR implementation is the permanent bridge between the ternary theoretical model and the binary hardware reality, rather than an "incomplete" feature.
 
-# Remediation Prompt
+---
+
+# T81 Architectural Coherence Audit - Remediation Prompt
 
 You are acting as a senior systems architect and deterministic runtime engineer working on the T81 Foundation repository.
 
