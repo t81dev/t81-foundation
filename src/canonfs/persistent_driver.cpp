@@ -103,7 +103,8 @@ bool write_all_fd(int fd, const std::byte* data, std::size_t size) {
   while (remaining > 0) {
 #ifdef _WIN32
     // Windows _write takes unsigned int and returns int
-    const int to_write = static_cast<int>(std::min(remaining, static_cast<std::size_t>(1024 * 1024 * 1024)));
+    const int to_write =
+        static_cast<int>(std::min(remaining, static_cast<std::size_t>(1024 * 1024 * 1024)));
     const int wrote = ::_write(fd, cursor, to_write);
 #else
     const ssize_t wrote = ::write(fd, cursor, remaining);
@@ -153,7 +154,8 @@ public:
 
     auto target = object_path(root_, ref.hash);
 #ifdef _WIN32
-    const int fd = ::_open(target.string().c_str(), _O_WRONLY | _O_CREAT | _O_EXCL | _O_BINARY, _S_IREAD | _S_IWRITE);
+    const int fd = ::_open(target.string().c_str(), _O_WRONLY | _O_CREAT | _O_EXCL | _O_BINARY,
+                           _S_IREAD | _S_IWRITE);
 #else
     const int fd = ::open(target.string().c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644);
 #endif
@@ -239,7 +241,8 @@ public:
     if (size > 0) {
 #ifdef _WIN32
       result.resize(size);
-      const int to_read = static_cast<int>(std::min(size, static_cast<std::size_t>(1024 * 1024 * 1024)));
+      const int to_read =
+          static_cast<int>(std::min(size, static_cast<std::size_t>(1024 * 1024 * 1024)));
       if (::_read(fd, result.data(), to_read) != to_read) {
         _close(fd);
         return Result<std::vector<std::byte>>(t81::unexpect, Error::DecodeError);
