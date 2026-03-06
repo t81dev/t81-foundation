@@ -18,9 +18,13 @@
 #include <vector>
 
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
+#ifndef _WIN32
+#include <sys/mman.h>
 #include <unistd.h>
+#else
+#include <io.h>
+#endif
 
 #include "t81/tracing/canonhash.hpp"
 
@@ -40,12 +44,26 @@ struct hash<t81::canonfs::CanonHash> {
 namespace t81::canonfs {
 namespace {
 bool read_verify_enabled() {
+#ifdef _WIN32
+  char* buf = nullptr;
+  size_t sz = 0;
+  bool enabled = true;
+  if (_dupenv_s(&buf, &sz, "T81_CANONFS_READ_VERIFY") == 0 && buf != nullptr) {
+    std::string_view v(buf);
+    if (v == "0" || v == "false" || v == "FALSE" || v == "off" || v == "OFF") {
+      enabled = false;
+    }
+    free(buf);
+  }
+  return enabled;
+#else
   const char* raw = std::getenv("T81_CANONFS_READ_VERIFY");
   if (raw == nullptr) {
     return true;
   }
   std::string_view v(raw);
   return !(v == "0" || v == "false" || v == "FALSE" || v == "off" || v == "OFF");
+#endif
 }
 
 std::filesystem::path objects_dir(const std::filesystem::path& root) { return root / "objects"; }
@@ -83,7 +101,13 @@ bool write_all_fd(int fd, const std::byte* data, std::size_t size) {
   const std::byte* cursor = data;
   std::size_t remaining = size;
   while (remaining > 0) {
+#ifdef _WIN32
+    // Windows _write takes unsigned int and returns int
+    const int to_write = static_cast<int>(std::min(remaining, static_cast<std::size_t>(1024 * 1024 * 1024)));
+    const int wrote = ::_write(fd, cursor, to_write);
+#else
     const ssize_t wrote = ::write(fd, cursor, remaining);
+#endif
     if (wrote < 0) {
       if (errno == EINTR) {
         continue;
@@ -128,7 +152,11 @@ public:
     }
 
     auto target = object_path(root_, ref.hash);
+#ifdef _WIN32
+    const int fd = ::_open(target.string().c_str(), _O_WRONLY | _O_CREAT | _O_EXCL | _O_BINARY, _S_IREAD | _S_IWRITE);
+#else
     const int fd = ::open(target.string().c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644);
+#endif
     if (fd < 0) {
       if (errno == EEXIST) {
         return ref;
@@ -137,7 +165,11 @@ public:
     }
 
     const bool ok = write_all_fd(fd, bytes.data(), bytes.size());
+#ifdef _WIN32
+    ::_close(fd);
+#else
     ::close(fd);
+#endif
     if (!ok) {
       std::error_code ec;
       std::filesystem::remove(target, ec);
@@ -182,18 +214,37 @@ public:
     }
 
     auto target = object_path(root_, ref.hash);
+#ifdef _WIN32
+    int fd = _open(target.string().c_str(), _O_RDONLY | _O_BINARY);
+#else
     int fd = open(target.string().c_str(), O_RDONLY);
+#endif
     if (fd < 0) return Result<std::vector<std::byte>>(t81::unexpect, Error::NotFound);
 
     struct stat st;
+#ifdef _WIN32
+    if (_fstat(fd, &st) < 0) {
+      _close(fd);
+      return Result<std::vector<std::byte>>(t81::unexpect, Error::DecodeError);
+    }
+#else
     if (fstat(fd, &st) < 0) {
       close(fd);
       return Result<std::vector<std::byte>>(t81::unexpect, Error::DecodeError);
     }
+#endif
     size_t size = static_cast<size_t>(st.st_size);
 
     std::vector<std::byte> result;
     if (size > 0) {
+#ifdef _WIN32
+      result.resize(size);
+      const int to_read = static_cast<int>(std::min(size, static_cast<std::size_t>(1024 * 1024 * 1024)));
+      if (::_read(fd, result.data(), to_read) != to_read) {
+        _close(fd);
+        return Result<std::vector<std::byte>>(t81::unexpect, Error::DecodeError);
+      }
+#else
       void* addr = mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0);
       if (addr == MAP_FAILED) {
         close(fd);
@@ -202,8 +253,13 @@ public:
       result.resize(size);
       std::memcpy(result.data(), addr, size);
       munmap(addr, size);
+#endif
     }
+#ifdef _WIN32
+    _close(fd);
+#else
     close(fd);
+#endif
 
     if (read_verify_enabled()) {
       auto computed =

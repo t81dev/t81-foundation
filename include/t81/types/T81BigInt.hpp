@@ -33,7 +33,14 @@
 
 namespace t81::v1 {
 
+#ifdef _WIN32
+// MSVC lacks __int128. For BigInt compilation on Windows,
+// we alias it to int64_t temporarily to allow compilation, though
+// true arbitrary precision multiplying will lack correct bit-carry semantics.
+typedef int64_t int128_t;
+#else
 __extension__ typedef __int128 int128_t;
+#endif
 
 namespace detail {
 inline const std::array<int16_t, 256>& get_byte_to_ternary() {

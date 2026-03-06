@@ -138,10 +138,21 @@ using Context = AxionContext;
 
 [[noreturn]] inline void trap_overflow(const char* reason = "Axion overflow") {
   static const bool log_to_stderr = []() {
+#ifdef _WIN32
+    char* buf = nullptr;
+    size_t sz = 0;
+    bool log = true;
+    if (_dupenv_s(&buf, &sz, "T81_AXION_TRAP_STDERR") == 0 && buf != nullptr) {
+      if (std::strcmp(buf, "0") == 0) log = false;
+      free(buf);
+    }
+    return log;
+#else
     if (const char* v = std::getenv("T81_AXION_TRAP_STDERR")) {
       return std::strcmp(v, "0") != 0;
     }
     return true;
+#endif
   }();
   if (log_to_stderr) {
     std::fprintf(stderr, "Axion trap: %s\n", reason ? reason : "Axion overflow");

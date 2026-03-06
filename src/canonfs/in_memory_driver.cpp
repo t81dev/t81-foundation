@@ -15,12 +15,26 @@
 namespace t81::canonfs {
 namespace {
 bool read_verify_enabled() {
+#ifdef _WIN32
+  char* buf = nullptr;
+  size_t sz = 0;
+  bool enabled = true;
+  if (_dupenv_s(&buf, &sz, "T81_CANONFS_READ_VERIFY") == 0 && buf != nullptr) {
+    std::string_view v(buf);
+    if (v == "0" || v == "false" || v == "FALSE" || v == "off" || v == "OFF") {
+      enabled = false;
+    }
+    free(buf);
+  }
+  return enabled;
+#else
   const char* raw = std::getenv("T81_CANONFS_READ_VERIFY");
   if (raw == nullptr) {
     return true;
   }
   std::string_view v(raw);
   return !(v == "0" || v == "false" || v == "FALSE" || v == "off" || v == "OFF");
+#endif
 }
 
 class InMemoryDriver : public Driver {
