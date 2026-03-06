@@ -48,6 +48,7 @@ Last Updated: 2026-03-06
 - Enforces governed runtime deterministic multi-seed replay attestations with failure taxonomy artifact (`build/ai-governed/governed_llama_replay_attestation.json`)
 - Enforces signed governed replay attestation with keyring verification and escalation mapping (`build/ai-governed/governed_llama_replay_attestation.json`)
 - Enforces signed multi-event Axion policy-ledger snapshot and deterministic replay verification (`build/ai-policy/ai_axion_policy_ledger_snapshot.json`, `build/ai-policy/ai_axion_policy_ledger_replay_verification.json`)
+- Enforces AI policy event reason-code expectation contract coverage/recognition (`scripts/ci/ai_policy_event_expectations.json`) during deterministic policy trace validation (`build/ai-policy/ai_policy_event_contract.json`)
 - Enforces signed backend-selection manifest bound to policy/runtime evidence snapshots (`build/ai-backend/runtime_backend_selection_manifest.json`)
 - Enforces signed direct backend execution attestation replay (governed `t81 llama-run`) under deterministic evidence constraints (`build/ai-ux/ai_direct_backend_execution_attestation.json`)
 - Publishes machine-readable escalation mappings for signing/keyring/runtime-binding failures in policy/backend/evidence artifacts
@@ -112,6 +113,7 @@ Last Updated: 2026-03-06
 - `scripts/ci/ai_evidence_manifest_keyring.json` - Triggers on manifest signing key rotation changes
 - `scripts/ci/ai_model_provenance_keyring.json` - Triggers on provenance signing key rotation changes
 - `scripts/ci/ai_policy_ledger_keyring.json` - Triggers on policy-ledger signing key rotation changes
+- `scripts/ci/ai_policy_event_expectations.json` - Triggers on policy reason-code expectation contract updates
 - `scripts/ci/ai_backend_selection_keyring.json` - Triggers on backend-selection signing key rotation changes
 - `scripts/ci/ai_governed_replay_keyring.json` - Triggers on governed replay signing key rotation changes
 - `scripts/ci/ai_direct_backend_attestation_keyring.json` - Triggers on direct-backend attestation signing key rotation changes

@@ -14,6 +14,7 @@ on:
       - 'scripts/ci/check_ai_model_provenance_gate.py'
       - 'scripts/ci/ai_model_provenance_keyring.json'
       - 'scripts/ci/check_ai_policy_event_contract.py'
+      - 'scripts/ci/ai_policy_event_expectations.json'
       - 'scripts/ci/check_ai_wload_policy_evidence.py'
       - 'scripts/ci/ai_wload_policy_evidence_expectations.json'
       - 'scripts/ci/ai_policy_ledger_keyring.json'
@@ -75,6 +76,7 @@ on:
       - 'scripts/ci/check_ai_model_provenance_gate.py'
       - 'scripts/ci/ai_model_provenance_keyring.json'
       - 'scripts/ci/check_ai_policy_event_contract.py'
+      - 'scripts/ci/ai_policy_event_expectations.json'
       - 'scripts/ci/check_ai_wload_policy_evidence.py'
       - 'scripts/ci/ai_wload_policy_evidence_expectations.json'
       - 'scripts/ci/ai_policy_ledger_keyring.json'
@@ -376,6 +378,7 @@ jobs:
         mkdir -p build/ai-policy
         python3 scripts/ci/check_ai_policy_event_contract.py \
           --out-dir build/ai-policy \
+          --expectations-file scripts/ci/ai_policy_event_expectations.json \
           --runtime-trace build/ai-policy/ai_runtime_trace.json \
           --ai-bin build/experiments/ai/ux_tools/t81_ai \
           --ledger-keyring scripts/ci/ai_policy_ledger_keyring.json

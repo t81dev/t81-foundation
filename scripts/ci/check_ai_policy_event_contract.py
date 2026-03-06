@@ -17,6 +17,7 @@ SCHEMA_VERSION = "t81.ai.policy-events.v1"
 LEDGER_SCHEMA_VERSION = "t81.ai.axion-policy-ledger.v1"
 LEDGER_REPLAY_SCHEMA_VERSION = "t81.ai.axion-policy-ledger-replay.v1"
 KEYRING_SCHEMA_VERSION = "t81.ai.policy-ledger-keyring.v1"
+EXPECTATIONS_SCHEMA_VERSION = "t81.ai.policy-event-expectations.v1"
 
 
 def canonical_json(data: Any) -> str:
@@ -29,6 +30,35 @@ def sha256_text(text: str) -> str:
 
 def parse_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_reason_code_expectations(path: Path) -> tuple[dict[str, Any], list[str], set[str], set[str]]:
+    errors: list[str] = []
+    payload = parse_json(path)
+    if payload.get("schema") != EXPECTATIONS_SCHEMA_VERSION:
+        errors.append(
+            f"expectations schema mismatch: {payload.get('schema')} != {EXPECTATIONS_SCHEMA_VERSION}"
+        )
+
+    required_raw = payload.get("required_reason_codes", [])
+    if not isinstance(required_raw, list):
+        errors.append("required_reason_codes must be an array")
+        required_raw = []
+    required_reason_codes = {str(code).strip() for code in required_raw if str(code).strip()}
+    if not required_reason_codes:
+        errors.append("required_reason_codes must contain at least one value")
+
+    recognized_raw = payload.get("recognized_reason_codes", [])
+    if not isinstance(recognized_raw, list):
+        errors.append("recognized_reason_codes must be an array when provided")
+        recognized_raw = []
+    recognized_reason_codes = {str(code).strip() for code in recognized_raw if str(code).strip()}
+    if not recognized_reason_codes:
+        recognized_reason_codes = set(required_reason_codes)
+    if not required_reason_codes.issubset(recognized_reason_codes):
+        errors.append("recognized_reason_codes must include all required_reason_codes")
+
+    return payload, errors, required_reason_codes, recognized_reason_codes
 
 
 def parse_key_material_b64(raw: str) -> bytes:
@@ -232,7 +262,7 @@ def run_trace(policy: dict[str, Any], events: list[dict[str, Any]]) -> list[dict
 
 
 def validate_runtime_trace_binding(
-    runtime_trace_path: Path, ai_bin: Path | None
+    runtime_trace_path: Path, ai_bin: Path | None, recognized_reason_codes: set[str]
 ) -> tuple[bool, list[str], dict[str, Any]]:
     errs: list[str] = []
     binding: dict[str, Any] = {"runtime_trace_path": str(runtime_trace_path)}
@@ -286,20 +316,7 @@ def validate_runtime_trace_binding(
     }
     mapped_reason_code = alias_map.get(reason_code, reason_code)
     binding["mapped_reason_code"] = mapped_reason_code
-    if mapped_reason_code not in {
-        "AI_POLICY_ALLOW_MODEL_HASH_MATCH",
-        "AI_POLICY_DENY_MODEL_HASH_NOT_ALLOWED",
-        "AI_POLICY_ALLOW_INFERENCE_BUDGET_OK",
-        "AI_POLICY_DENY_INFERENCE_BUDGET_EXCEEDED",
-        "AI_POLICY_ALLOW_TOOL_WHITELISTED",
-        "AI_POLICY_DENY_TOOL_NOT_WHITELISTED",
-        "AI_POLICY_ALLOW_RESOURCE_WITHIN_LIMIT",
-        "AI_POLICY_DENY_RESOURCE_LIMIT_EXCEEDED",
-        "AI_POLICY_ALLOW_CONTENT_SAFETY_OK",
-        "AI_POLICY_DENY_CONTENT_SAFETY_BLOCKED",
-        "AI_POLICY_ALLOW_WLOAD_POLICY_GATE",
-        "AI_POLICY_DENY_WLOAD_UNSUPPORTED",
-    }:
+    if mapped_reason_code not in recognized_reason_codes:
         errs.append(f"runtime trace reason_code not recognized by policy contract: {reason_code}")
 
     return len(errs) == 0, errs, binding
@@ -450,6 +467,12 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Optional keyring path for signed Axion ledger snapshots (defaults to scripts/ci/ai_policy_ledger_keyring.json)",
     )
+    p.add_argument(
+        "--expectations-file",
+        default="",
+        help="Optional policy reason-code expectations contract "
+        "(defaults to scripts/ci/ai_policy_event_expectations.json)",
+    )
     return p.parse_args()
 
 
@@ -493,29 +516,30 @@ def main() -> int:
     hash_b = sha256_text(canonical_b)
     deterministic = hash_a == hash_b
 
-    required_reason_codes = {
-        "AI_POLICY_ALLOW_MODEL_HASH_MATCH",
-        "AI_POLICY_DENY_MODEL_HASH_NOT_ALLOWED",
-        "AI_POLICY_ALLOW_INFERENCE_BUDGET_OK",
-        "AI_POLICY_DENY_INFERENCE_BUDGET_EXCEEDED",
-        "AI_POLICY_ALLOW_TOOL_WHITELISTED",
-        "AI_POLICY_DENY_TOOL_NOT_WHITELISTED",
-        "AI_POLICY_ALLOW_RESOURCE_WITHIN_LIMIT",
-        "AI_POLICY_DENY_RESOURCE_LIMIT_EXCEEDED",
-        "AI_POLICY_ALLOW_CONTENT_SAFETY_OK",
-        "AI_POLICY_DENY_CONTENT_SAFETY_BLOCKED",
-        "AI_POLICY_DENY_WLOAD_UNSUPPORTED",
-    }
+    default_expectations = Path(__file__).resolve().with_name("ai_policy_event_expectations.json")
+    expectations_path = Path(args.expectations_file).resolve() if args.expectations_file else default_expectations
+    expectations_payload: dict[str, Any] = {}
+    required_reason_codes: set[str] = set()
+    recognized_reason_codes: set[str] = set()
+    errors: list[str] = []
+    if not expectations_path.exists():
+        errors.append(f"expectations file missing: {expectations_path}")
+    else:
+        expectations_payload, expectation_errors, required_reason_codes, recognized_reason_codes = (
+            load_reason_code_expectations(expectations_path)
+        )
+        errors.extend(expectation_errors)
+
     observed = {entry["reason_code"] for entry in trace_a}
     reason_code_coverage_ok = required_reason_codes.issubset(observed)
-
-    errors: list[str] = []
     runtime_binding_valid = True
     runtime_binding: dict[str, Any] = {}
     if args.runtime_trace:
         runtime_trace_path = Path(args.runtime_trace).resolve()
         ai_bin = Path(args.ai_bin).resolve() if args.ai_bin else None
-        runtime_binding_valid, runtime_errors, runtime_binding = validate_runtime_trace_binding(runtime_trace_path, ai_bin)
+        runtime_binding_valid, runtime_errors, runtime_binding = validate_runtime_trace_binding(
+            runtime_trace_path, ai_bin, recognized_reason_codes
+        )
         if runtime_errors:
             errors.extend(runtime_errors)
 
@@ -591,6 +615,10 @@ def main() -> int:
         "status": status,
         "deterministic": deterministic,
         "reason_code_coverage_ok": reason_code_coverage_ok,
+        "expectations_path": str(expectations_path),
+        "expectations_schema": expectations_payload.get("schema", ""),
+        "required_reason_codes": sorted(required_reason_codes),
+        "recognized_reason_codes": sorted(recognized_reason_codes),
         "trace_sha256": hash_a,
         "trace": trace_a,
         "runtime_binding_valid": runtime_binding_valid,
