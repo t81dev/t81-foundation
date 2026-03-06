@@ -1,5 +1,7 @@
 {
   "schema": "t81.ai.status-doc-freshness-expectations.v1",
+  "default_max_age_days": 14,
+  "default_warn_age_days": 10,
   "documents": [
     {
       "path": "docs/status/AI_RFC_BACKLOG.md",
@@ -23,8 +25,6 @@
     },
     {
       "path": "docs/status/AI_CLI_MILESTONE_EVIDENCE.md",
-      "max_age_days": 14,
-      "warn_age_days": 10,
       "date_label": "Last Updated:",
       "required_substrings": [
         "## Purpose",
@@ -43,8 +43,6 @@
     },
     {
       "path": "docs/status/EXTENSION_PROFILE.md",
-      "max_age_days": 14,
-      "warn_age_days": 10,
       "date_label": "Last Updated:",
       "required_substrings": [
         "## The Rule",
@@ -53,8 +51,6 @@
     },
     {
       "path": "docs/status/HARDENING_BACKLOG.md",
-      "max_age_days": 14,
-      "warn_age_days": 10,
       "date_label": "Last Updated:",
       "required_substrings": [
         "## Open Items",

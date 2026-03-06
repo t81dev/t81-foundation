@@ -83,6 +83,20 @@ def main() -> int:
     if not isinstance(docs, list) or not docs:
         print("error: expectations.documents must be a non-empty list", file=sys.stderr)
         return 1
+    default_max_age_days = expectations.get("default_max_age_days", 0)
+    default_warn_age_days = expectations.get("default_warn_age_days", default_max_age_days)
+    try:
+        default_max_age_days = int(default_max_age_days)
+        default_warn_age_days = int(default_warn_age_days)
+    except Exception:
+        print("error: default_max_age_days/default_warn_age_days must be integers", file=sys.stderr)
+        return 1
+    if default_max_age_days < 0 or default_warn_age_days < 0:
+        print("error: default_max_age_days/default_warn_age_days must be >= 0", file=sys.stderr)
+        return 1
+    if default_warn_age_days > default_max_age_days:
+        print("error: default_warn_age_days must be <= default_max_age_days", file=sys.stderr)
+        return 1
 
     for idx, item in enumerate(docs, start=1):
         if not isinstance(item, dict):
@@ -92,7 +106,7 @@ def main() -> int:
         if not rel_path:
             errors.append(f"document[{idx}] missing path")
             continue
-        max_age_days_raw = item.get("max_age_days", 0)
+        max_age_days_raw = item.get("max_age_days", default_max_age_days)
         try:
             max_age_days = int(max_age_days_raw)
         except Exception:
@@ -101,7 +115,7 @@ def main() -> int:
         if max_age_days < 0:
             errors.append(f"{rel_path}: max_age_days must be >= 0")
             continue
-        warn_age_days_raw = item.get("warn_age_days", max_age_days)
+        warn_age_days_raw = item.get("warn_age_days", default_warn_age_days)
         try:
             warn_age_days = int(warn_age_days_raw)
         except Exception:
@@ -187,6 +201,8 @@ def main() -> int:
         "status": status,
         "expectations_file": str(expectations_path),
         "as_of_date": as_of.isoformat(),
+        "default_max_age_days": default_max_age_days,
+        "default_warn_age_days": default_warn_age_days,
         "documents": rows,
         "errors": errors,
         "warnings": warnings,
@@ -199,6 +215,8 @@ def main() -> int:
         f"- schema: `{SCHEMA_VERSION}`",
         f"- status: `{status}`",
         f"- as_of_date: `{as_of.isoformat()}`",
+        f"- default_max_age_days: `{default_max_age_days}`",
+        f"- default_warn_age_days: `{default_warn_age_days}`",
         "",
         "| Document | Last Updated | Age (days) | Max Age | Status |",
         "| :--- | :--- | ---: | ---: | :--- |",

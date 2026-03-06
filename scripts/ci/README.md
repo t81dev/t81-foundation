@@ -13,7 +13,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - CLI JSON contract guard: `check_cli_json_contracts.py`
 - AI sandbox boundary guard: `check_ai_experiment_boundary.py`
 - AI status document freshness guard: `check_ai_status_doc_freshness.py`
-- AI status document freshness expectation contract (max-age failures + warn-age near-stale warnings): `ai_status_doc_freshness_expectations.json`
+- AI status document freshness expectation contract (global default max/warn age with per-doc overrides): `ai_status_doc_freshness_expectations.json`
 - AI evidence bundle collector: `collect_ai_evidence_bundle.py`
 - AI model provenance hash gate: `check_ai_model_provenance_gate.py`
 - AI model provenance signing keyring: `ai_model_provenance_keyring.json`
