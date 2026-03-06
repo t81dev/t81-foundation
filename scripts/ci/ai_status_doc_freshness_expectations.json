@@ -27,6 +27,15 @@
         "## Purpose",
         "## Build Evidence"
       ]
+    },
+    {
+      "path": "docs/status/CI_GATE_STATUS.md",
+      "max_age_days": 7,
+      "date_label": "Last Updated:",
+      "required_substrings": [
+        "## Purpose",
+        "## Branch Protection: Required Contexts"
+      ]
     }
   ]
 }

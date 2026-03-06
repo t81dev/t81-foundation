@@ -58,6 +58,7 @@ on:
       - 'scripts/ci/ai_governed_replay_keyring.json'
       - 'docs/status/AI_RFC_BACKLOG.md'
       - 'docs/status/AI_CLI_MILESTONE_EVIDENCE.md'
+      - 'docs/status/CI_GATE_STATUS.md'
       - '.github/workflows/ai-experiments-ci.yml'
   pull_request:
     branches: [ main ]
@@ -116,6 +117,7 @@ on:
       - 'scripts/ci/ai_governed_replay_keyring.json'
       - 'docs/status/AI_RFC_BACKLOG.md'
       - 'docs/status/AI_CLI_MILESTONE_EVIDENCE.md'
+      - 'docs/status/CI_GATE_STATUS.md'
       - '.github/workflows/ai-experiments-ci.yml'
   workflow_dispatch:
 

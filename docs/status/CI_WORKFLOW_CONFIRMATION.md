@@ -143,6 +143,7 @@ Last Updated: 2026-03-06
 - `scripts/ci/ai_status_doc_freshness_expectations.json` - Triggers on AI status-document freshness expectation updates
 - `docs/status/AI_RFC_BACKLOG.md` - Triggers on AI backlog status updates
 - `docs/status/AI_CLI_MILESTONE_EVIDENCE.md` - Triggers on AI CLI milestone evidence status updates
+- `docs/status/CI_GATE_STATUS.md` - Triggers on CI gate status updates
 
 ### Failure Conditions
 
