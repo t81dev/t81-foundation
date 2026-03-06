@@ -17,6 +17,7 @@ on:
       - 'scripts/ci/ai_backend_selection_keyring.json'
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
+      - 'scripts/ci/check_ai_opcode_runtime_provenance.py'
       - 'scripts/ci/check_ai_rfc0026_readiness.py'
       - 'scripts/ci/check_ai_opcode_baseline_history_approvals.py'
       - 'scripts/ci/ai_opcode_baseline_approval_keyring.json'
@@ -68,6 +69,7 @@ on:
       - 'scripts/ci/ai_backend_selection_keyring.json'
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
+      - 'scripts/ci/check_ai_opcode_runtime_provenance.py'
       - 'scripts/ci/check_ai_rfc0026_readiness.py'
       - 'scripts/ci/check_ai_opcode_baseline_history_approvals.py'
       - 'scripts/ci/ai_opcode_baseline_approval_keyring.json'
@@ -420,6 +422,15 @@ jobs:
           --runtime-report build/ai-opcodes-runtime/ai_opcode_runtime_report.json \
           --ctest-log build/ai-opcodes/ai_phase1_opcode_ctest.log
 
+    - name: Validate opcode runtime provenance bindings (RFC-00A8 evidence policy)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-opcodes-runtime
+        python3 scripts/ci/check_ai_opcode_runtime_provenance.py \
+          --runtime-report build/ai-opcodes-runtime/ai_opcode_runtime_report.json \
+          --provenance-expectations scripts/ci/ai_opcode_baseline_provenance_expectations.json \
+          --out-json build/ai-opcodes-runtime/ai_opcode_runtime_provenance_report.json
+
     - name: Validate AI benchmark runtime thresholds (RFC-00A2 promotion slice)
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -619,6 +630,7 @@ jobs:
           echo "# RFC-00A8 Baseline Approval Policy"
           echo ""
           echo "- report: \`build/ai-opcodes-runtime/ai_opcode_baseline_approval_report.json\`"
+          echo "- runtime provenance report: \`build/ai-opcodes-runtime/ai_opcode_runtime_provenance_report.json\`"
           echo ""
         } >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-benchmark/ai_benchmark_spec_contract.md >> "$GITHUB_STEP_SUMMARY"
@@ -693,6 +705,7 @@ jobs:
           build/ai-opcodes-runtime/ai_rfc0026_readiness.md
           build/ai-opcodes-runtime/ai_runtime_capability_alignment.json
           build/ai-opcodes-runtime/ai_opcode_baseline_approval_report.json
+          build/ai-opcodes-runtime/ai_opcode_runtime_provenance_report.json
           build/ai-benchmark/ai_benchmark_spec_contract.json
           build/ai-benchmark/ai_benchmark_spec_contract.md
           build/ai-benchmark/ai_benchmark_capability_matrix.json
