@@ -26,6 +26,7 @@ on:
       - 'scripts/ci/check_ai_inference_capability_matrix.py'
       - 'scripts/ci/ai_inference_capability_expectations.json'
       - 'scripts/ci/check_ai_runtime_capability_alignment.py'
+      - 'scripts/ci/ai_runtime_capability_alignment_expectations.json'
       - 'scripts/ci/ai_rfc0026_readiness_expectations.json'
       - 'scripts/ci/check_ai_benchmark_threshold_approvals.py'
       - 'scripts/ci/ai_benchmark_threshold_approval_keyring.json'
@@ -75,6 +76,7 @@ on:
       - 'scripts/ci/check_ai_inference_capability_matrix.py'
       - 'scripts/ci/ai_inference_capability_expectations.json'
       - 'scripts/ci/check_ai_runtime_capability_alignment.py'
+      - 'scripts/ci/ai_runtime_capability_alignment_expectations.json'
       - 'scripts/ci/ai_rfc0026_readiness_expectations.json'
       - 'scripts/ci/check_ai_benchmark_threshold_approvals.py'
       - 'scripts/ci/ai_benchmark_threshold_approval_keyring.json'
@@ -470,6 +472,7 @@ jobs:
           --benchmark-matrix build/ai-benchmark/ai_benchmark_capability_matrix.json \
           --inference-matrix build/ai-ux/ai_inference_capability_matrix.json \
           --required-pairs gguf:strict_deterministic,t3k:strict_deterministic \
+          --expectations-file scripts/ci/ai_runtime_capability_alignment_expectations.json \
           --out-json build/ai-opcodes-runtime/ai_runtime_capability_alignment.json
 
     - name: Track RFC-0026 runtime readiness signals

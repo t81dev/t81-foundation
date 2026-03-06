@@ -52,7 +52,7 @@
 - Emits benchmark format/mode capability matrix with expectation-contract enforcement (including allowlisted unsupported `t3k` lane visibility) without blocking required baseline lane (`build/ai-benchmark/ai_benchmark_capability_matrix.json`)
 - Enforces signed benchmark threshold promotion approval attestations via keyring-backed verification (`build/ai-benchmark/ai_benchmark_threshold_approval_report.json`)
 - Emits RFC-0026 runtime readiness tracker binding opcode conformance evidence with benchmark/inference lane capability states, runtime capability-alignment gate status, and opcode baseline approval-policy gate status (`build/ai-opcodes-runtime/ai_rfc0026_readiness.json`)
-- Enforces benchmark/inference runtime capability alignment for governed format/mode pairs (`build/ai-opcodes-runtime/ai_runtime_capability_alignment.json`)
+- Enforces benchmark/inference runtime capability alignment for governed format/mode pairs with expectation-contract enforcement (`build/ai-opcodes-runtime/ai_runtime_capability_alignment.json`)
 - Enforces signed opcode baseline history window promotion approvals via keyring-backed verification (`build/ai-opcodes-runtime/ai_opcode_baseline_approval_report.json`)
 - Emits inference format/mode capability matrix with expectation-contract enforcement (including allowlisted unsupported `t3k` lane visibility) without blocking required baseline lane (`build/ai-ux/ai_inference_capability_matrix.json`)
 - Enforces runtime quantization inspect replay + encode/decode fixture corpus roundtrip validation with rolling profile trend analytics (`build/ai-quantization/ai_quantization_codec_contract.json`)
@@ -119,6 +119,7 @@
 - `scripts/ci/check_ai_inference_capability_matrix.py` - Triggers on inference capability-matrix policy updates
 - `scripts/ci/ai_inference_capability_expectations.json` - Triggers on inference capability expectation contract updates
 - `scripts/ci/check_ai_runtime_capability_alignment.py` - Triggers on runtime capability alignment policy updates
+- `scripts/ci/ai_runtime_capability_alignment_expectations.json` - Triggers on runtime capability alignment expectation contract updates
 - `scripts/ci/ai_rfc0026_readiness_expectations.json` - Triggers on RFC-0026 readiness expectation contract updates
 - `scripts/ci/check_ai_rfc0026_readiness.py` - Triggers on RFC-0026 runtime readiness tracker updates
 - `scripts/ci/check_ai_opcode_baseline_history_approvals.py` - Triggers on opcode baseline approval policy gate updates

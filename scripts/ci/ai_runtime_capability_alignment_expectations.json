@@ -1,0 +1,7 @@
+{
+  "schema": "t81.ai.runtime-capability-alignment-expectations.v1",
+  "required_pairs": [
+    "gguf:strict_deterministic",
+    "t3k:strict_deterministic"
+  ]
+}

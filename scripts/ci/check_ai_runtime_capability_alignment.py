@@ -11,6 +11,7 @@ from typing import Any
 
 
 SCHEMA_VERSION = "t81.ai.runtime-capability-alignment.v1"
+EXPECTATION_SCHEMA_VERSION = "t81.ai.runtime-capability-alignment-expectations.v1"
 
 
 def parse_json(path: Path) -> dict[str, Any]:
@@ -25,6 +26,11 @@ def parse_args() -> argparse.Namespace:
         "--required-pairs",
         default="gguf:strict_deterministic,t3k:strict_deterministic",
         help="Comma-separated format:mode pairs that must align across runtime lanes.",
+    )
+    p.add_argument(
+        "--expectations-file",
+        default="",
+        help="Optional runtime capability alignment expectation contract JSON.",
     )
     p.add_argument("--out-json", required=True, help="Output report path")
     return p.parse_args()
@@ -41,6 +47,11 @@ def main() -> int:
     args = parse_args()
     bench_path = Path(args.benchmark_matrix).resolve()
     infer_path = Path(args.inference_matrix).resolve()
+    expectations_path = (
+        Path(args.expectations_file).resolve()
+        if args.expectations_file
+        else Path(__file__).resolve().with_name("ai_runtime_capability_alignment_expectations.json")
+    )
     out_json = Path(args.out_json).resolve()
 
     errors: list[str] = []
@@ -50,6 +61,8 @@ def main() -> int:
         errors.append(f"missing benchmark matrix: {bench_path}")
     if not infer_path.exists():
         errors.append(f"missing inference matrix: {infer_path}")
+    if not expectations_path.exists():
+        errors.append(f"missing alignment expectations file: {expectations_path}")
     if errors:
         for err in errors:
             print(f"error: {err}", file=sys.stderr)
@@ -57,6 +70,7 @@ def main() -> int:
 
     bench = parse_json(bench_path)
     infer = parse_json(infer_path)
+    expectations = parse_json(expectations_path)
     bench_rows = bench.get("matrix") if isinstance(bench.get("matrix"), list) else []
     infer_rows = infer.get("matrix") if isinstance(infer.get("matrix"), list) else []
 
@@ -70,6 +84,23 @@ def main() -> int:
             continue
         fmt, mode = pair.split(":", 1)
         required_pairs.append((fmt.strip(), mode.strip()))
+
+    if expectations.get("schema") != EXPECTATION_SCHEMA_VERSION:
+        errors.append(
+            "alignment expectations schema mismatch: "
+            f"{expectations.get('schema')} != {EXPECTATION_SCHEMA_VERSION}"
+        )
+    else:
+        contract_pairs = expectations.get("required_pairs")
+        if isinstance(contract_pairs, list) and contract_pairs:
+            required_pairs = []
+            for raw in contract_pairs:
+                pair = str(raw).strip()
+                if ":" not in pair:
+                    warnings.append(f"ignored malformed contract required pair: {pair}")
+                    continue
+                fmt, mode = pair.split(":", 1)
+                required_pairs.append((fmt.strip(), mode.strip()))
 
     alignment_rows: list[dict[str, Any]] = []
     for fmt, mode in required_pairs:
@@ -97,6 +128,7 @@ def main() -> int:
         "status": status,
         "benchmark_matrix": str(bench_path),
         "inference_matrix": str(infer_path),
+        "expectations_file": str(expectations_path),
         "required_pairs": [f"{fmt}:{mode}" for fmt, mode in required_pairs],
         "alignment": alignment_rows,
         "errors": errors,
