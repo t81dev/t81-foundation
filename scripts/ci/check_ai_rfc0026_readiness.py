@@ -22,6 +22,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--opcode-report", required=True, help="Path to ai_opcode_runtime_report.json")
     p.add_argument("--benchmark-capability-matrix", required=True, help="Path to ai_benchmark_capability_matrix.json")
     p.add_argument("--inference-capability-matrix", required=True, help="Path to ai_inference_capability_matrix.json")
+    p.add_argument("--runtime-capability-alignment", required=True, help="Path to ai_runtime_capability_alignment.json")
     p.add_argument("--out-dir", required=True, help="Output directory")
     return p.parse_args()
 
@@ -38,6 +39,7 @@ def main() -> int:
     opcode_path = Path(args.opcode_report).resolve()
     benchmark_matrix_path = Path(args.benchmark_capability_matrix).resolve()
     inference_matrix_path = Path(args.inference_capability_matrix).resolve()
+    alignment_path = Path(args.runtime_capability_alignment).resolve()
     out_dir = Path(args.out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -49,6 +51,8 @@ def main() -> int:
         errors.append(f"missing benchmark capability matrix: {benchmark_matrix_path}")
     if not inference_matrix_path.exists():
         errors.append(f"missing inference capability matrix: {inference_matrix_path}")
+    if not alignment_path.exists():
+        errors.append(f"missing runtime capability alignment report: {alignment_path}")
     if errors:
         for err in errors:
             print(f"error: {err}", file=sys.stderr)
@@ -57,6 +61,7 @@ def main() -> int:
     opcode = parse_json(opcode_path)
     benchmark_matrix_payload = parse_json(benchmark_matrix_path)
     inference_matrix_payload = parse_json(inference_matrix_path)
+    alignment_payload = parse_json(alignment_path)
 
     phase_status = str(opcode.get("phase_status", "unknown")).strip() or "unknown"
     opcodes = opcode.get("opcodes")
@@ -116,6 +121,9 @@ def main() -> int:
             "inconsistent readiness: t3k benchmark and inference support states diverged "
             f"(benchmark={benchmark_t3k_state}, inference={inference_t3k_state})"
         )
+    alignment_status = str(alignment_payload.get("status", "unknown")).strip() or "unknown"
+    if alignment_status != "pass":
+        errors.append(f"runtime capability alignment gate failed (status={alignment_status})")
 
     overall_ready = (
         qmatmul_runtime_ready
@@ -144,6 +152,7 @@ def main() -> int:
             "opcode_report": str(opcode_path),
             "benchmark_capability_matrix": str(benchmark_matrix_path),
             "inference_capability_matrix": str(inference_matrix_path),
+            "runtime_capability_alignment": str(alignment_path),
         },
         "signals": {
             "phase_status": phase_status,
@@ -160,6 +169,7 @@ def main() -> int:
             },
             "t3k_benchmark_supported": t3k_benchmark_supported,
             "t3k_inference_supported": t3k_inference_supported,
+            "runtime_capability_alignment_status": alignment_status,
         },
         "blockers": blockers,
         "errors": errors,
@@ -185,6 +195,7 @@ def main() -> int:
         f"| `benchmark t3k:strict_deterministic` | `{benchmark_t3k_state}` |",
         f"| `inference gguf:strict_deterministic` | `{inference_gguf_state}` |",
         f"| `inference t3k:strict_deterministic` | `{inference_t3k_state}` |",
+        f"| `runtime_capability_alignment_status` | `{alignment_status}` |",
         "",
     ]
     if blockers:
