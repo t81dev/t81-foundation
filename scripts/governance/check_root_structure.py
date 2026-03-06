@@ -17,7 +17,6 @@ EXPECTED_TOP_LEVEL = {
     ".gitmodules",
     ".pre-commit-config.yaml",
     ".t81",
-    ".t81_canonfs",
     "BUILD.bazel",
     "CMakeLists.txt",
     "CMakePresets.json",
