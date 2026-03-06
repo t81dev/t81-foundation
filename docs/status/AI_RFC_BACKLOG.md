@@ -1,6 +1,6 @@
 # AI RFC Backlog
 
-Last Updated: 2026-03-05
+Last Updated: 2026-03-06
 Owner: @t81dev
 Scope: AI integration RFC implementation sequencing and compliance tracking
 
@@ -50,7 +50,7 @@ This backlog tracks active AI integration RFC work only. It is separate from str
 
 ---
 
-## Compliance Snapshot (2026-03-05)
+## Compliance Snapshot (2026-03-06)
 
 - Baseline CI-gated RFCs: `RFC-00A0`, `RFC-00A1`, `RFC-00A2`, `RFC-00A3`, `RFC-00A4`, `RFC-00A5`, `RFC-00A6`, `RFC-00A7`, `RFC-0025`, `RFC-0026`, `RFC-00A8`
 - Partial RFCs: none (all listed AI RFCs now have baseline CI gates; deep runtime integration remains open)

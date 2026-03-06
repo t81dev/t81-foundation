@@ -8,6 +8,8 @@ on:
       - 'CMakeLists.txt'
       - 'scripts/test_ai_simple.sh'
       - 'scripts/ci/check_ai_experiment_boundary.py'
+      - 'scripts/ci/check_ai_status_doc_freshness.py'
+      - 'scripts/ci/ai_status_doc_freshness_expectations.json'
       - 'scripts/ci/collect_ai_evidence_bundle.py'
       - 'scripts/ci/check_ai_model_provenance_gate.py'
       - 'scripts/ci/ai_model_provenance_keyring.json'
@@ -54,6 +56,7 @@ on:
       - 'scripts/ci/run_governed_llama_flow.py'
       - 'scripts/ci/check_ai_governed_replay_attestation.py'
       - 'scripts/ci/ai_governed_replay_keyring.json'
+      - 'docs/status/AI_RFC_BACKLOG.md'
       - '.github/workflows/ai-experiments-ci.yml'
   pull_request:
     branches: [ main ]
@@ -62,6 +65,8 @@ on:
       - 'CMakeLists.txt'
       - 'scripts/test_ai_simple.sh'
       - 'scripts/ci/check_ai_experiment_boundary.py'
+      - 'scripts/ci/check_ai_status_doc_freshness.py'
+      - 'scripts/ci/ai_status_doc_freshness_expectations.json'
       - 'scripts/ci/collect_ai_evidence_bundle.py'
       - 'scripts/ci/check_ai_model_provenance_gate.py'
       - 'scripts/ci/ai_model_provenance_keyring.json'
@@ -108,6 +113,7 @@ on:
       - 'scripts/ci/run_governed_llama_flow.py'
       - 'scripts/ci/check_ai_governed_replay_attestation.py'
       - 'scripts/ci/ai_governed_replay_keyring.json'
+      - 'docs/status/AI_RFC_BACKLOG.md'
       - '.github/workflows/ai-experiments-ci.yml'
   workflow_dispatch:
 
@@ -140,6 +146,13 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+    - name: Validate AI status document freshness
+      run: |
+        mkdir -p build/ai-status
+        python3 scripts/ci/check_ai_status_doc_freshness.py \
+          --expectations-file scripts/ci/ai_status_doc_freshness_expectations.json \
+          --out-json build/ai-status/ai_status_doc_freshness_report.json
       
     - name: Install Dependencies
       run: |
@@ -605,6 +618,12 @@ jobs:
       run: |
         cat build/ai-evidence/ai_evidence_summary.md >> "$GITHUB_STEP_SUMMARY"
         {
+          echo "# AI Status Docs"
+          echo ""
+          echo "- freshness report: \`build/ai-status/ai_status_doc_freshness_report.json\`"
+          echo ""
+        } >> "$GITHUB_STEP_SUMMARY"
+        {
           echo "# AI Keyring Expiry Alert"
           echo ""
           echo "- report: \`build/ai-keyring/ai_keyring_expiry_report.json\`"
@@ -692,6 +711,7 @@ jobs:
           build/ai-evidence/ai_evidence_bundle.sha256
           build/ai-evidence/ai_evidence_summary.md
           build/ai-evidence/ai_evidence_replay_vector.json
+          build/ai-status/ai_status_doc_freshness_report.json
           build/ai-keyring/ai_keyring_expiry_report.json
           build/ai-keyring/ai_keyring_kms_contract_report.json
           build/ai-vm-trace/ai_vm_trace_ctest.log

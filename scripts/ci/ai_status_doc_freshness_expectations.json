@@ -1,0 +1,14 @@
+{
+  "schema": "t81.ai.status-doc-freshness-expectations.v1",
+  "documents": [
+    {
+      "path": "docs/status/AI_RFC_BACKLOG.md",
+      "max_age_days": 7,
+      "date_label": "Last Updated:",
+      "required_substrings": [
+        "## Priority Order",
+        "## Compliance Snapshot"
+      ]
+    }
+  ]
+}
