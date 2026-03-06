@@ -207,6 +207,12 @@ def evaluate_event(policy: dict[str, Any], event: dict[str, Any]) -> dict[str, s
             return {"decision": "deny", "reason_code": "AI_POLICY_DENY_CONTENT_SAFETY_BLOCKED"}
         return {"decision": "allow", "reason_code": "AI_POLICY_ALLOW_CONTENT_SAFETY_OK"}
 
+    if event_type == "wload_request":
+        model_hash = str(event.get("model_hash", "")).strip()
+        if model_hash and model_hash in set(policy.get("allowed_wload_hashes", [])):
+            return {"decision": "allow", "reason_code": "AI_POLICY_ALLOW_WLOAD_POLICY_GATE"}
+        return {"decision": "deny", "reason_code": "AI_POLICY_DENY_WLOAD_UNSUPPORTED"}
+
     return {"decision": "deny", "reason_code": "AI_POLICY_DENY_UNKNOWN_EVENT_TYPE"}
 
 
@@ -267,6 +273,7 @@ def validate_runtime_trace_binding(
         "tool_use",
         "resource_allocate",
         "content_emit",
+        "wload_request",
     }:
         errs.append(f"runtime trace event_type not recognized by policy contract: {event_type}")
     if decision not in {"allow", "deny"}:
@@ -290,6 +297,8 @@ def validate_runtime_trace_binding(
         "AI_POLICY_DENY_RESOURCE_LIMIT_EXCEEDED",
         "AI_POLICY_ALLOW_CONTENT_SAFETY_OK",
         "AI_POLICY_DENY_CONTENT_SAFETY_BLOCKED",
+        "AI_POLICY_ALLOW_WLOAD_POLICY_GATE",
+        "AI_POLICY_DENY_WLOAD_UNSUPPORTED",
     }:
         errs.append(f"runtime trace reason_code not recognized by policy contract: {reason_code}")
 
@@ -458,6 +467,7 @@ def main() -> int:
         "allowed_tools": ["search", "calculator", "summarize"],
         "max_memory_mb": 4096,
         "blocked_severities": ["critical", "high"],
+        "allowed_wload_hashes": [],
     }
 
     events = [
@@ -471,6 +481,7 @@ def main() -> int:
         {"event_type": "resource_allocate", "memory_mb": 8192},
         {"event_type": "content_emit", "safety_severity": "medium"},
         {"event_type": "content_emit", "safety_severity": "high"},
+        {"event_type": "wload_request", "model_hash": policy["allowed_model_hashes"][0]},
     ]
 
     trace_a = run_trace(policy, events)
@@ -493,6 +504,7 @@ def main() -> int:
         "AI_POLICY_DENY_RESOURCE_LIMIT_EXCEEDED",
         "AI_POLICY_ALLOW_CONTENT_SAFETY_OK",
         "AI_POLICY_DENY_CONTENT_SAFETY_BLOCKED",
+        "AI_POLICY_DENY_WLOAD_UNSUPPORTED",
     }
     observed = {entry["reason_code"] for entry in trace_a}
     reason_code_coverage_ok = required_reason_codes.issubset(observed)

@@ -13,6 +13,7 @@ from typing import Any
 SCHEMA_VERSION = "t81.ai.wload-policy-evidence.v1"
 EXPECTATION_SCHEMA_VERSION = "t81.ai.wload-policy-evidence-expectations.v1"
 DEFAULT_MISSING_REASON = "WLOAD runtime/policy gate is not part of policy trace evidence yet."
+DEFAULT_DENY_ONLY_REASON = "WLOAD policy evidence observed deny-only outcomes; allow-path evidence missing."
 
 
 def parse_json(path: Path) -> dict[str, Any]:
@@ -78,8 +79,15 @@ def main() -> int:
 
     reason_codes = collect_reason_codes(policy_contract, runtime_trace)
     observed_wload_codes = sorted([code for code in reason_codes if "WLOAD" in code.upper()])
-    wload_policy_gate_ready = bool(observed_wload_codes)
-    wload_policy_gate_reason = "" if wload_policy_gate_ready else DEFAULT_MISSING_REASON
+    observed_allow_wload_codes = sorted([code for code in observed_wload_codes if code.startswith("AI_POLICY_ALLOW_WLOAD_")])
+    observed_deny_wload_codes = sorted([code for code in observed_wload_codes if code.startswith("AI_POLICY_DENY_WLOAD_")])
+    wload_policy_gate_ready = bool(observed_allow_wload_codes)
+    if wload_policy_gate_ready:
+        wload_policy_gate_reason = ""
+    elif observed_wload_codes:
+        wload_policy_gate_reason = DEFAULT_DENY_ONLY_REASON
+    else:
+        wload_policy_gate_reason = DEFAULT_MISSING_REASON
 
     expectation_results: dict[str, Any] = {}
     warnings: list[str] = []
@@ -156,6 +164,8 @@ def main() -> int:
         "wload_policy_gate_reason": wload_policy_gate_reason,
         "observed_reason_codes": reason_codes,
         "observed_wload_reason_codes": observed_wload_codes,
+        "observed_allow_wload_reason_codes": observed_allow_wload_codes,
+        "observed_deny_wload_reason_codes": observed_deny_wload_codes,
         "expectation_results": expectation_results,
         "errors": errors,
         "warnings": warnings,
@@ -183,6 +193,10 @@ def main() -> int:
         )
     if observed_wload_codes:
         lines.append(f"- observed_wload_reason_codes: `{', '.join(observed_wload_codes)}`")
+    if observed_allow_wload_codes:
+        lines.append(f"- observed_allow_wload_reason_codes: `{', '.join(observed_allow_wload_codes)}`")
+    if observed_deny_wload_codes:
+        lines.append(f"- observed_deny_wload_reason_codes: `{', '.join(observed_deny_wload_codes)}`")
     out_md.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     for err in errors:

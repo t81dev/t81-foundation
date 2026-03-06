@@ -18,7 +18,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - AI model provenance hash gate: `check_ai_model_provenance_gate.py`
 - AI model provenance signing keyring: `ai_model_provenance_keyring.json`
 - AI policy event contract gate: `check_ai_policy_event_contract.py`
-- RFC-0026 WLOAD policy-evidence readiness tracker gate: `check_ai_wload_policy_evidence.py`
+- RFC-0026 WLOAD policy-evidence readiness tracker gate (allow-path required; deny-only evidence remains blocked): `check_ai_wload_policy_evidence.py`
 - RFC-0026 WLOAD policy-evidence expectation contract (readiness, reason-code prefix policy, minimum observed count): `ai_wload_policy_evidence_expectations.json`
 - AI policy Axion ledger signing keyring: `ai_policy_ledger_keyring.json`
 - AI backend adapter contract gate: `check_ai_backend_adapter_contract.py`
