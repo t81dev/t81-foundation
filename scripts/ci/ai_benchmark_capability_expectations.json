@@ -1,0 +1,17 @@
+{
+  "schema": "t81.ai.benchmark-capability-expectations.v1",
+  "expectations": [
+    {
+      "format": "gguf",
+      "mode": "strict_deterministic",
+      "expected_support_state": "supported",
+      "enforcement": "required"
+    },
+    {
+      "format": "t3k",
+      "mode": "strict_deterministic",
+      "expected_support_state": "unsupported",
+      "enforcement": "allowlist"
+    }
+  ]
+}

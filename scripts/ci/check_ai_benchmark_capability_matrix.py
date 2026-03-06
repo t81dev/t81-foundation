@@ -14,6 +14,7 @@ from typing import Any
 
 
 SCHEMA_VERSION = "t81.ai.benchmark-capability-matrix.v1"
+EXPECTATION_SCHEMA_VERSION = "t81.ai.benchmark-capability-expectations.v1"
 UNSUPPORTED_SENTINEL = "No backend supports requested format/mode"
 
 
@@ -50,6 +51,11 @@ def parse_args() -> argparse.Namespace:
         default=[],
         help="Required format:mode entry (repeatable). Defaults to gguf:strict_deterministic.",
     )
+    p.add_argument(
+        "--expectations-file",
+        default="",
+        help="Optional capability expectation contract JSON.",
+    )
     return p.parse_args()
 
 
@@ -71,6 +77,11 @@ def main() -> int:
     if not formats or not modes:
         raise SystemExit("formats and modes must be non-empty")
     required = args.required if args.required else ["gguf:strict_deterministic"]
+    expectations_file = (
+        Path(args.expectations_file).resolve()
+        if args.expectations_file
+        else Path(__file__).resolve().with_name("ai_benchmark_capability_expectations.json")
+    )
 
     matrix_entries: list[dict[str, Any]] = []
     errors: list[str] = []
@@ -135,6 +146,46 @@ def main() -> int:
         if state != "supported":
             errors.append(f"required benchmark capability {req} not supported (state={state})")
 
+    expectation_results: list[dict[str, str]] = []
+    if expectations_file.exists():
+        expectations_payload = parse_json(expectations_file)
+        if expectations_payload.get("schema") != EXPECTATION_SCHEMA_VERSION:
+            errors.append(
+                "expectations schema mismatch: "
+                f"{expectations_payload.get('schema')} != {EXPECTATION_SCHEMA_VERSION}"
+            )
+        entries = expectations_payload.get("expectations")
+        if not isinstance(entries, list):
+            errors.append("expectations file must include expectations[]")
+        else:
+            for item in entries:
+                if not isinstance(item, dict):
+                    errors.append("expectation entry must be object")
+                    continue
+                fmt = str(item.get("format", "")).strip()
+                mode = str(item.get("mode", "")).strip()
+                expected_state = str(item.get("expected_support_state", "")).strip()
+                enforcement = str(item.get("enforcement", "required")).strip() or "required"
+                key = f"{fmt}:{mode}"
+                observed = required_lookup.get(key, "missing")
+                passed = observed == expected_state
+                expectation_results.append(
+                    {
+                        "key": key,
+                        "expected_support_state": expected_state,
+                        "observed_support_state": observed,
+                        "enforcement": enforcement,
+                        "result": "pass" if passed else "fail",
+                    }
+                )
+                if not passed and enforcement in {"required", "allowlist"}:
+                    errors.append(
+                        f"benchmark capability expectation mismatch for {key}: "
+                        f"expected={expected_state}, observed={observed}, enforcement={enforcement}"
+                    )
+    else:
+        errors.append(f"missing expectations file: {expectations_file}")
+
     status = "pass" if not errors else "fail"
     payload = {
         "schema": SCHEMA_VERSION,
@@ -145,6 +196,8 @@ def main() -> int:
         "formats": formats,
         "modes": modes,
         "required": required,
+        "expectations_file": str(expectations_file),
+        "expectation_results": expectation_results,
         "matrix": matrix_entries,
         "errors": errors,
     }
@@ -159,6 +212,7 @@ def main() -> int:
         f"- schema: `{SCHEMA_VERSION}`",
         f"- status: `{status}`",
         f"- required: `{', '.join(required)}`",
+        f"- expectations_file: `{expectations_file}`",
         "",
         "| Format | Mode | Support | Backend | RC |",
         "| :--- | :--- | :--- | :--- | :--- |",
@@ -168,6 +222,19 @@ def main() -> int:
             f"| `{item['format']}` | `{item['mode']}` | `{item['support_state']}` | "
             f"`{item['selected_backend'] or '-'}` | `{item['return_code']}` |"
         )
+    if expectation_results:
+        lines.extend(
+            [
+                "",
+                "| Expectation | Expected | Observed | Enforcement | Result |",
+                "| :--- | :--- | :--- | :--- | :--- |",
+            ]
+        )
+        for item in expectation_results:
+            lines.append(
+                f"| `{item['key']}` | `{item['expected_support_state']}` | "
+                f"`{item['observed_support_state']}` | `{item['enforcement']}` | `{item['result']}` |"
+            )
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     for err in errors:

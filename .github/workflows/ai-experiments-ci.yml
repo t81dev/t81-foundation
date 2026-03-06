@@ -19,6 +19,7 @@ on:
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_benchmark_capability_matrix.py'
+      - 'scripts/ci/ai_benchmark_capability_expectations.json'
       - 'scripts/ci/check_ai_benchmark_threshold_approvals.py'
       - 'scripts/ci/ai_benchmark_threshold_approval_keyring.json'
       - 'scripts/ci/ai_benchmark_thresholds.json'
@@ -59,6 +60,7 @@ on:
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_benchmark_capability_matrix.py'
+      - 'scripts/ci/ai_benchmark_capability_expectations.json'
       - 'scripts/ci/check_ai_benchmark_threshold_approvals.py'
       - 'scripts/ci/ai_benchmark_threshold_approval_keyring.json'
       - 'scripts/ci/ai_benchmark_thresholds.json'
@@ -415,6 +417,7 @@ jobs:
           --model-file tests/fixtures/llama_cpp_repro/model.gguf \
           --formats gguf,t3k \
           --modes strict_deterministic \
+          --expectations-file scripts/ci/ai_benchmark_capability_expectations.json \
           --required gguf:strict_deterministic
 
     - name: Validate benchmark threshold window approvals (RFC-00A2 promotion policy)

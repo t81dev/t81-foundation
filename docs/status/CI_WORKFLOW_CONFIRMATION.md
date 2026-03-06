@@ -49,7 +49,7 @@
 - Enforces signed direct backend execution attestation replay (governed `t81 llama-run`) under deterministic evidence constraints (`build/ai-ux/ai_direct_backend_execution_attestation.json`)
 - Publishes machine-readable escalation mappings for signing/keyring/runtime-binding failures in policy/backend/evidence artifacts
 - Enforces runtime benchmark execution replay and regression/trend thresholds (`build/ai-benchmark/ai_benchmark_spec_contract.json`)
-- Emits benchmark format/mode capability matrix (including unsupported-lane visibility for `t3k`) without blocking required baseline lane (`build/ai-benchmark/ai_benchmark_capability_matrix.json`)
+- Emits benchmark format/mode capability matrix with expectation-contract enforcement (including allowlisted unsupported `t3k` lane visibility) without blocking required baseline lane (`build/ai-benchmark/ai_benchmark_capability_matrix.json`)
 - Enforces signed benchmark threshold promotion approval attestations via keyring-backed verification (`build/ai-benchmark/ai_benchmark_threshold_approval_report.json`)
 - Enforces runtime quantization inspect replay + encode/decode fixture corpus roundtrip validation with rolling profile trend analytics (`build/ai-quantization/ai_quantization_codec_contract.json`)
 - Enforces signed quantization profile promotion approval attestations via keyring-backed verification (`build/ai-quantization/ai_quantization_profile_approval_report.json`)
@@ -111,6 +111,7 @@
 - `scripts/ci/ai_benchmark_thresholds.json` - Triggers on benchmark threshold baseline updates
 - `scripts/ci/ai_benchmark_thresholds_history.json` - Triggers on benchmark threshold history window updates
 - `scripts/ci/check_ai_benchmark_capability_matrix.py` - Triggers on benchmark capability-matrix policy updates
+- `scripts/ci/ai_benchmark_capability_expectations.json` - Triggers on benchmark capability expectation contract updates
 - `scripts/ci/check_ai_benchmark_threshold_approvals.py` - Triggers on benchmark threshold approval policy gate updates
 - `scripts/ci/ai_quantization_codec_profile.json` - Triggers on quantization codec profile baseline updates
 - `scripts/ci/ai_quantization_codec_profile_history.json` - Triggers on quantization codec profile history window updates
