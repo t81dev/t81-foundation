@@ -66,11 +66,11 @@ tracked here and must be addressed unless explicitly deferred.
 | `format / clang-format` | `format.yml` | success ✅ | |
 | `architecture / invariants (informational)` | `ci.yml` | success ✅ | |
 | `product / dcp integrity (informational)` | `ci.yml` | success ✅ | |
-| `build` (GitHub Pages / Jekyll) | `documentation.yml` | **failure ⚠️** | **Deferred** — see Known Failures |
+| `build` (GitHub Pages / Jekyll) | `documentation.yml` | **failure ⚠️** | **Mitigating** — third_party exclusion patch queued; awaiting next run |
 
 ## Known Failures
 
-### Jekyll Pages Build — Deferred
+### Jekyll Pages Build — Mitigating
 
 | Field | Value |
 | :--- | :--- |
@@ -78,9 +78,9 @@ tracked here and must be addressed unless explicitly deferred.
 | **Gate** | `build` (GitHub Pages / Jekyll) |
 | **Run** | `22514402961` |
 | **Root Cause** | Jekyll renders `third_party/llama.cpp/examples/model-conversion/scripts/embedding/modelcard.template` — Liquid `{{ }}` syntax causes a Jekyll Liquid rendering error |
-| **Classification** | Deferred — non-required workflow; no impact on C++ release artifact, determinism, or DCP guarantees |
+| **Classification** | Mitigating — non-required workflow; no impact on C++ release artifact, determinism, or DCP guarantees |
 | **Decision** | DEC-005 in `docs/status/DECISION_LOG.md` |
-| **Resolution Path** | Exclude `third_party/` from Jekyll rendering scope via `_config.yml` or Pages configuration |
+| **Resolution Path** | `third_party/` exclusion added in `docs/site/_config.yml` and `docs/site/_config.yaml`; verify on next Pages/Jekyll run |
 | **Blocking Release** | No |
 
 ### 2026-03-05 CI Incident — Resolved

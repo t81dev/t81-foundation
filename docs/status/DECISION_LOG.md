@@ -156,7 +156,7 @@ branch protection. Immediate scope-exclusion fix would require changes to
 `_config.yml` or Pages configuration outside the release window. Deferring is
 lower-risk than a last-minute Pages configuration change.
 
-**Follow-Up:** File issue to exclude `third_party/` from Jekyll rendering scope.
+**Follow-Up:** Implemented local patch to exclude `third_party/` from Jekyll scope (`docs/site/_config.yml`, `docs/site/_config.yaml`); pending CI verification before closing risk tracking.
 
 **References:**
 - `docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md` (§ Non-required failure)

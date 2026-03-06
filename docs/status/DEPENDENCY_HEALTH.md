@@ -64,7 +64,7 @@ permitted.
 | **DCP Classification** | **Governed non-DCP** (see DEC-003 in `docs/status/DECISION_LOG.md`) |
 | **CMake Flag** | `T81_ENABLE_LLAMA_CPP=OFF` (default disabled) |
 | **Export Status** | Internal / build-only; `T81_EXPORT_LLAMA_ADAPTER` guard active (see DEC-004) |
-| **Known Issues** | Modelcard templates use Liquid `{{ }}` syntax, breaking Jekyll Pages build (RISK-007, deferred) |
+| **Known Issues** | Modelcard templates use Liquid `{{ }}` syntax, breaking Jekyll Pages build (RISK-007, mitigation patch queued; pending CI verification) |
 | **Upgrade Trigger** | Security advisory, API breaking change, or governed AGI promotion pipeline advancement |
 | **Upgrade Process** | 1. Update submodule/clone commit. 2. Run `llama_kernels_test` and `llama_cpp_governed_demo`. 3. Re-run repro gate (`scripts/ci/llama_cpp_repro_gate.py`). 4. Log decision in `docs/status/DECISION_LOG.md`. 5. Update this document. |
 | **CVEs / Advisories** | None tracked as of 2026-02-28. Monitor upstream releases. |
