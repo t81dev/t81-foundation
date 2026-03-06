@@ -625,12 +625,7 @@ jobs:
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
         cat build/ai-evidence/ai_evidence_summary.md >> "$GITHUB_STEP_SUMMARY"
-        {
-          echo "# AI Status Docs"
-          echo ""
-          echo "- freshness report: \`build/ai-status/ai_status_doc_freshness_report.json\`"
-          echo ""
-        } >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-status/ai_status_doc_freshness_report.md >> "$GITHUB_STEP_SUMMARY"
         {
           echo "# AI Keyring Expiry Alert"
           echo ""
@@ -720,6 +715,7 @@ jobs:
           build/ai-evidence/ai_evidence_summary.md
           build/ai-evidence/ai_evidence_replay_vector.json
           build/ai-status/ai_status_doc_freshness_report.json
+          build/ai-status/ai_status_doc_freshness_report.md
           build/ai-keyring/ai_keyring_expiry_report.json
           build/ai-keyring/ai_keyring_kms_contract_report.json
           build/ai-vm-trace/ai_vm_trace_ctest.log

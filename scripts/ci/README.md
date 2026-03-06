@@ -67,7 +67,7 @@ python3 scripts/ci/check_cli_docs_parity.py --t81-bin build/t81 --manual docs/gu
 python3 scripts/ci/check_cli_docs_smoke.py --manual docs/guides/cli-user-manual.md --cwd . --timeout-sec 20
 python3 scripts/ci/check_cli_json_contracts.py --t81-bin build/t81 --repo-root .
 python3 scripts/ci/check_ai_experiment_boundary.py
-python3 scripts/ci/check_ai_status_doc_freshness.py --expectations-file scripts/ci/ai_status_doc_freshness_expectations.json --out-json build/ai-status/ai_status_doc_freshness_report.json
+python3 scripts/ci/check_ai_status_doc_freshness.py --expectations-file scripts/ci/ai_status_doc_freshness_expectations.json --out-json build/ai-status/ai_status_doc_freshness_report.json  # also writes .md summary
 python3 scripts/ci/collect_ai_evidence_bundle.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-evidence --runs 3 --model-fixture tests/fixtures/llama_cpp_repro/model.gguf
 python3 scripts/ci/check_ai_model_provenance_gate.py --model build/ai-provenance/test_model.gguf --manifest build/ai-provenance/test_model.manifest.json --signing-keyring scripts/ci/ai_model_provenance_keyring.json --min-lineage-entries 2 --required-lineage-events artifact_ingest,artifact_promotion_candidate --self-test-deny
 python3 scripts/ci/check_ai_policy_event_contract.py --out-dir build/ai-policy --ledger-keyring scripts/ci/ai_policy_ledger_keyring.json

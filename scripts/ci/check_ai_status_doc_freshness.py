@@ -59,6 +59,7 @@ def main() -> int:
         else Path(__file__).resolve().with_name("ai_status_doc_freshness_expectations.json")
     )
     out_json = Path(args.out_json).resolve()
+    out_md = out_json.with_suffix(".md")
     repo_root = Path(__file__).resolve().parents[2]
 
     errors: list[str] = []
@@ -172,6 +173,31 @@ def main() -> int:
     }
     out_json.parent.mkdir(parents=True, exist_ok=True)
     out_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    lines = [
+        "# AI Status Doc Freshness",
+        "",
+        f"- schema: `{SCHEMA_VERSION}`",
+        f"- status: `{status}`",
+        f"- as_of_date: `{as_of.isoformat()}`",
+        "",
+        "| Document | Last Updated | Age (days) | Max Age | Status |",
+        "| :--- | :--- | ---: | ---: | :--- |",
+    ]
+    for row in rows:
+        lines.append(
+            "| {path} | {last_updated} | {age_days} | {max_age} | {status} |".format(
+                path=row.get("path", ""),
+                last_updated=row.get("last_updated", ""),
+                age_days=row.get("age_days", ""),
+                max_age=row.get("max_age_days", ""),
+                status=row.get("status", ""),
+            )
+        )
+    if errors:
+        lines.extend(["", "Errors:"])
+        for err in errors:
+            lines.append(f"- {err}")
+    out_md.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     for warning in warnings:
         print(f"warning: {warning}", file=sys.stderr)
