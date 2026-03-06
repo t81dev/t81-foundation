@@ -218,3 +218,274 @@ The core (TISC, Axion, integer math) is stable and robust. The language (T81Lang
 3. **Native Container IR:** Lower `T81Tree` and `T81Graph` directly to dedicated VM handles instead of falling back to string vectors.
 4. **Complete Experimental Types:** Implement VM lowering and dedicated opcodes for `T81Quaternion` and direct object initialization `{}` for `T81Map`.
 5. **Formalize Packing Boundary:** Update architecture documentation to explicitly acknowledge that the 2-bit packed SWAR implementation is the permanent bridge between the ternary theoretical model and the binary hardware reality, rather than an "incomplete" feature.
+
+# Remediation Prompt
+
+You are acting as a senior systems architect and deterministic runtime engineer working on the T81 Foundation repository.
+
+Repository:
+https://github.com/t81dev/t81-foundation
+
+Your task is to perform a **targeted architectural remediation** based on the attached Architectural Coherence Audit Report.
+
+Goal:
+Upgrade the T81 stack from **“B — Mostly coherent but incomplete integration”**
+to **“A — Fully coherent deterministic ternary computing substrate running on binary hardware.”**
+
+You must fix the specific technical issues identified in the audit while preserving the core design philosophy of:
+
+• deterministic execution
+• bit-exact reproducibility
+• balanced ternary semantics
+• Axion policy enforcement
+• CanonFS canonicalization
+• CI reproducibility gates
+
+DO NOT introduce nondeterministic behavior.
+All changes must maintain compatibility with the existing determinism infrastructure and CI checks.
+
+---
+
+# PART 1 — Deterministic Container Hashing
+
+Problem:
+T81Map and T81Set currently use `std::hash`, which is implementation-defined and platform dependent.
+
+Task:
+Implement a **deterministic cross-platform hash function** called:
+
+CanonHash81
+
+Requirements:
+
+• stable across compilers and architectures  
+• identical results on x86, ARM, and future hardware  
+• no reliance on STL hashing  
+• canonical serialization before hashing  
+
+Implementation plan:
+
+1. Add new module:
+
+core/determinism/canon_hash81.hpp
+core/determinism/canon_hash81.cpp
+
+2. Use a stable hash primitive such as:
+
+SipHash-2-4 or BLAKE3-derived deterministic mode
+
+3. Hash input must use **canonical T81 serialization**:
+- canonical integer encoding
+- canonical string encoding
+- canonical container ordering
+
+4. Replace all instances of:
+
+std::hash
+
+within:
+
+T81Map
+T81Set
+T81Graph
+T81Tree
+
+5. Add CI validation:
+
+scripts/ci/hash_determinism_gate.py
+
+This script must verify identical hash outputs across test vectors.
+
+---
+
+# PART 2 — Deterministic Software Math Layer
+
+Problem:
+`cmath` transcendentals introduce host-dependent floating point behavior.
+
+Goal:
+Replace them with **bit-exact software math implementations**.
+
+Create new module:
+
+core/math/t81_soft_math/
+
+Functions to implement:
+
+t81_exp()
+t81_log()
+t81_sin()
+t81_cos()
+t81_sqrt()
+
+Requirements:
+
+• deterministic fixed-precision math
+• identical outputs across architectures
+• no dependency on host FPU
+
+Recommended approaches:
+
+• CORDIC algorithms
+• rational polynomial approximations
+• fixed-point or ternary-scaled representation
+
+Update VM behavior:
+
+When `T81_DETERMINISTIC` is enabled:
+
+ALL floating math must route through `t81_soft_math`.
+
+---
+
+# PART 3 — Native Container IR
+
+Problem:
+Certain containers degrade to frontend string-vector polyfills.
+
+Affected:
+
+T81Tree
+T81Graph
+
+Task:
+
+Create **native VM container handles**.
+
+Add new handle types:
+
+VM_HANDLE_TREE
+VM_HANDLE_GRAPH
+
+Add VM opcodes:
+
+TREE_NEW
+TREE_INSERT
+TREE_FIND
+
+GRAPH_NEW
+GRAPH_ADD_NODE
+GRAPH_ADD_EDGE
+
+Update:
+
+IR lowering
+VM dispatch loop
+serialization rules
+
+Ensure canonical traversal ordering.
+
+---
+
+# PART 4 — Complete Experimental Types
+
+Fix incomplete types:
+
+1. T81Quaternion
+
+Implement full IR lowering and VM opcodes:
+
+QUAT_NEW
+QUAT_MUL
+QUAT_ADD
+QUAT_NORMALIZE
+
+2. Direct Map Initialization
+
+Allow syntax:
+
+map = { "a":1, "b":2 }
+
+Add parser rule → IR lowering → VM construction.
+
+---
+
+# PART 5 — Formalize Binary Hardware Boundary
+
+The audit incorrectly frames SWAR and packed trits as incomplete.
+
+Update documentation to clarify:
+
+T81 is a **ternary semantic architecture executed on binary hardware**.
+
+Update:
+
+docs/architecture/
+spec/t81-data-types.md
+spec/tisc-spec.md
+
+Add section:
+
+"Binary Host Execution Boundary"
+
+Explain:
+
+• 2-bit packed trits
+• SWAR vectorization
+• binary substrate compatibility layer
+
+Make clear this is **intentional architecture**, not a compromise.
+
+---
+
+# PART 6 — CI Determinism Extensions
+
+Extend CI verification with:
+
+scripts/ci/math_repro_gate.py
+scripts/ci/hash_repro_gate.py
+scripts/ci/container_determinism_gate.py
+
+Verify:
+
+• identical math outputs
+• identical container iteration order
+• identical hash values
+• identical VM execution traces
+
+---
+
+# PART 7 — Validation
+
+After implementation:
+
+Run full validation suite.
+
+Required results:
+
+• all conformance tests pass
+• determinism tests pass
+• CI reproducibility gates pass
+• no platform divergence
+
+Add new tests:
+
+tests/determinism/hash_stability_test.cpp
+tests/determinism/math_stability_test.cpp
+
+---
+
+# PART 8 — Deliverables
+
+Provide:
+
+1. list of files modified
+2. new modules created
+3. CI scripts added
+4. test coverage added
+5. documentation updates
+6. summary of architectural impact
+
+---
+
+Important constraints:
+
+• preserve backward compatibility where possible
+• maintain current CI pipeline structure
+• keep performance regressions minimal
+• prioritize determinism over speed
+
+Do NOT redesign the architecture.
+Implement the smallest changes necessary to achieve full architectural coherence.
+
+Begin by scanning the repository and identifying all locations affected by the audit findings.
