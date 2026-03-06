@@ -18,6 +18,7 @@ from typing import Any
 SCHEMA_VERSION = "t81.ai.opcode-baseline-approval.v1"
 HISTORY_SCHEMA_VERSION = "t81.ai.phase1-hash-baseline-history.v1"
 KEYRING_SCHEMA_VERSION = "t81.ai.opcode-baseline-approval-keyring.v1"
+PROVENANCE_EXPECTATION_SCHEMA_VERSION = "t81.ai.opcode-baseline-provenance-expectations.v1"
 
 
 def canonical_json(data: Any) -> str:
@@ -118,6 +119,11 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Path to opcode baseline approval keyring (defaults to scripts/ci/ai_opcode_baseline_approval_keyring.json).",
     )
+    p.add_argument(
+        "--provenance-expectations",
+        default="",
+        help="Path to opcode baseline provenance expectation contract (defaults to scripts/ci/ai_opcode_baseline_provenance_expectations.json).",
+    )
     p.add_argument("--out-json", required=True, help="Output report path")
     return p.parse_args()
 
@@ -127,6 +133,14 @@ def main() -> int:
     history_path = Path(args.history_file).resolve()
     default_keyring = Path(__file__).resolve().with_name("ai_opcode_baseline_approval_keyring.json")
     keyring_path = Path(args.signing_keyring).resolve() if args.signing_keyring else default_keyring
+    default_provenance_expectations = (
+        Path(__file__).resolve().with_name("ai_opcode_baseline_provenance_expectations.json")
+    )
+    provenance_expectations_path = (
+        Path(args.provenance_expectations).resolve()
+        if args.provenance_expectations
+        else default_provenance_expectations
+    )
     out_json = Path(args.out_json).resolve()
 
     errors: list[str] = []
@@ -138,6 +152,22 @@ def main() -> int:
         errors.extend(keyring_errors)
     else:
         errors.append(f"missing signing keyring: {keyring_path}")
+    required_provenance_fields: list[str] = []
+    if provenance_expectations_path.exists():
+        provenance_expectations = parse_json(provenance_expectations_path)
+        if provenance_expectations.get("schema") != PROVENANCE_EXPECTATION_SCHEMA_VERSION:
+            errors.append(
+                "provenance expectations schema mismatch: "
+                f"{provenance_expectations.get('schema')} != {PROVENANCE_EXPECTATION_SCHEMA_VERSION}"
+            )
+        else:
+            raw_fields = provenance_expectations.get("required_provenance_fields")
+            if isinstance(raw_fields, list):
+                required_provenance_fields = [str(item).strip() for item in raw_fields if str(item).strip()]
+            if not required_provenance_fields:
+                errors.append("provenance expectations required_provenance_fields must be non-empty list")
+    else:
+        errors.append(f"missing provenance expectations file: {provenance_expectations_path}")
 
     if not history_path.exists():
         print(f"error: missing history file: {history_path}", file=sys.stderr)
@@ -163,6 +193,7 @@ def main() -> int:
         end_raw = str(win.get("window_end", "")).strip()
         baseline = win.get("baseline")
         approval = win.get("promotion_approval")
+        provenance = win.get("provenance")
         approval_hash = str(win.get("promotion_approval_attestation_sha256", "")).strip()
 
         try:
@@ -183,6 +214,9 @@ def main() -> int:
         if not isinstance(approval, dict):
             errors.append(f"{window_id}: promotion_approval must be object")
             approval = {}
+        if not isinstance(provenance, dict):
+            errors.append(f"{window_id}: provenance must be object")
+            provenance = {}
         approved_by = str(approval.get("approved_by", "")).strip()
         approved_at = str(approval.get("approved_at", "")).strip()
         change_ref = str(approval.get("change_ref", "")).strip()
@@ -197,12 +231,19 @@ def main() -> int:
                 errors.append(f"{window_id}: {exc}")
         if not change_ref:
             errors.append(f"{window_id}: promotion_approval.change_ref required")
+        missing_provenance_fields: list[str] = []
+        for field in required_provenance_fields:
+            value = str(provenance.get(field, "")).strip()
+            if not value:
+                missing_provenance_fields.append(field)
+                errors.append(f"{window_id}: provenance.{field} required by expectations contract")
 
         attestation_core = {
             "window_id": window_id,
             "window_start": start_raw,
             "window_end": end_raw,
             "baseline": baseline,
+            "provenance": provenance,
             "promotion_approval": {
                 "approved_by": approved_by,
                 "approved_at": approved_at,
@@ -250,6 +291,10 @@ def main() -> int:
                 "approval_attestation_valid": approval_hash == expected_hash and bool(approval_hash),
                 "approval_signature_valid": signature_valid,
                 "approval_signature_verified_by": signature_verified_by,
+                "provenance_fields_present": sorted(
+                    [field for field in required_provenance_fields if str(provenance.get(field, "")).strip()]
+                ),
+                "missing_provenance_fields": missing_provenance_fields,
             }
         )
 
@@ -259,6 +304,8 @@ def main() -> int:
         "status": status,
         "history_file": str(history_path),
         "signing_keyring": str(keyring_path),
+        "provenance_expectations_file": str(provenance_expectations_path),
+        "required_provenance_fields": required_provenance_fields,
         "window_count": len(windows),
         "windows": windows_report,
         "errors": errors,

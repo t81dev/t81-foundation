@@ -20,6 +20,7 @@ on:
       - 'scripts/ci/check_ai_rfc0026_readiness.py'
       - 'scripts/ci/check_ai_opcode_baseline_history_approvals.py'
       - 'scripts/ci/ai_opcode_baseline_approval_keyring.json'
+      - 'scripts/ci/ai_opcode_baseline_provenance_expectations.json'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_benchmark_capability_matrix.py'
       - 'scripts/ci/ai_benchmark_capability_expectations.json'
@@ -70,6 +71,7 @@ on:
       - 'scripts/ci/check_ai_rfc0026_readiness.py'
       - 'scripts/ci/check_ai_opcode_baseline_history_approvals.py'
       - 'scripts/ci/ai_opcode_baseline_approval_keyring.json'
+      - 'scripts/ci/ai_opcode_baseline_provenance_expectations.json'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_benchmark_capability_matrix.py'
       - 'scripts/ci/ai_benchmark_capability_expectations.json'
@@ -495,6 +497,7 @@ jobs:
         python3 scripts/ci/check_ai_opcode_baseline_history_approvals.py \
           --history-file experiments/ai/opcodes/PHASE1_BASELINE_HASHES_HISTORY.json \
           --signing-keyring scripts/ci/ai_opcode_baseline_approval_keyring.json \
+          --provenance-expectations scripts/ci/ai_opcode_baseline_provenance_expectations.json \
           --out-json build/ai-opcodes-runtime/ai_opcode_baseline_approval_report.json
 
     - name: Validate AI quantization runtime fixture corpus (RFC-00A4 promotion slice)

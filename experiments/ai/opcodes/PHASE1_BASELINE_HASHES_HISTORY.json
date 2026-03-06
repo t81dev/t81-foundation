@@ -16,11 +16,17 @@
         "approved_by": "@t81dev",
         "change_ref": "rfc00a8-baseline-window-2026-02"
       },
-      "promotion_approval_attestation_sha256": "e0e85c8796a4166c578d662d60c03e7228a196374bc0524b9a220adf64b24890",
+      "promotion_approval_attestation_sha256": "cf34cfbbda04634db331be876a9825cea8028eda19df111d73d4dcc779e008f5",
       "promotion_approval_signature": {
         "algorithm": "hmac-sha256",
         "key_id": "ai-opcode-baseline-approval-2026q1",
-        "signature_hex": "9594e0fc3367ddae0f960cb5e8f0f559038c87ef20b12a1b26c8e48d359733a9"
+        "signature_hex": "592178c0dc88497055e4c6d0c628763e247156e521281518532b39f3a1b60869"
+      },
+      "provenance": {
+        "cross_lane_evidence_ref": "build/ai-cross-lane/ai_cross_lane_evidence.json",
+        "ctest_log_ref": "build/ai-opcodes/ai_phase1_opcode_ctest.log",
+        "fixture_set_ref": "tests/fixtures/llama_cpp_repro",
+        "runtime_report_ref": "build/ai-opcodes-runtime/ai_opcode_runtime_report.json"
       },
       "window_end": "2026-02-28",
       "window_id": "2026-02",
@@ -41,11 +47,17 @@
         "approved_by": "@t81dev",
         "change_ref": "rfc00a8-baseline-window-2026-03"
       },
-      "promotion_approval_attestation_sha256": "0fa42ab995779e8274a9969ddb48c9d120ae8a5696092b2eeb11eff4eb442bb2",
+      "promotion_approval_attestation_sha256": "826a977aa6caa664bba1229070c4cfe8202f78031ddd61f72ad4ec23bb8671a8",
       "promotion_approval_signature": {
         "algorithm": "hmac-sha256",
         "key_id": "ai-opcode-baseline-approval-2026q1",
-        "signature_hex": "80c3db7b67fb811fe724b6b560450f75ffd267d38b17061b31b89630dacabc06"
+        "signature_hex": "4d4bba40592544217d1c109f9ce54538be0611187d0aafc85384642542c5eaa2"
+      },
+      "provenance": {
+        "cross_lane_evidence_ref": "build/ai-cross-lane/ai_cross_lane_evidence.json",
+        "ctest_log_ref": "build/ai-opcodes/ai_phase1_opcode_ctest.log",
+        "fixture_set_ref": "tests/fixtures/llama_cpp_repro",
+        "runtime_report_ref": "build/ai-opcodes-runtime/ai_opcode_runtime_report.json"
       },
       "window_end": "2026-03-31",
       "window_id": "2026-03",

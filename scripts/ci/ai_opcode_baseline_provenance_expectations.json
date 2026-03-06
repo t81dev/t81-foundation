@@ -1,0 +1,9 @@
+{
+  "schema": "t81.ai.opcode-baseline-provenance-expectations.v1",
+  "required_provenance_fields": [
+    "fixture_set_ref",
+    "ctest_log_ref",
+    "runtime_report_ref",
+    "cross_lane_evidence_ref"
+  ]
+}
