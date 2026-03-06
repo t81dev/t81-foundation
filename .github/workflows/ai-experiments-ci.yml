@@ -421,7 +421,8 @@ jobs:
           --ai-bin build/experiments/ai/ux_tools/t81_ai \
           --runtime-model tests/fixtures/llama_cpp_repro/model.gguf \
           --codec-profile-file scripts/ci/ai_quantization_codec_profile.json \
-          --codec-profile-history-file scripts/ci/ai_quantization_codec_profile_history.json
+          --codec-profile-history-file scripts/ci/ai_quantization_codec_profile_history.json \
+          --trend-window-count 3
 
     - name: Validate quantization profile window approvals (RFC-00A4 promotion policy)
       if: steps.build_ai.outputs.has_target == 'true'

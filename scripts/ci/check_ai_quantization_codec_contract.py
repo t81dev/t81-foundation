@@ -208,7 +208,123 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Optional YYYY-MM-DD date to select active codec profile window (defaults to today UTC).",
     )
+    p.add_argument(
+        "--trend-window-count",
+        type=int,
+        default=3,
+        help="Number of governed history windows to include in rolling profile trend analysis (default: 3).",
+    )
     return p.parse_args()
+
+
+def compute_rolling_profile_trend_analysis(
+    observed: dict[str, Any],
+    history_path: Path | None,
+    as_of: date,
+    window_count: int,
+) -> dict[str, Any]:
+    analysis: dict[str, Any] = {
+        "enabled": False,
+        "window_count": max(1, window_count),
+        "windows": [],
+        "summary": {
+            "codec_prefix_match": "unknown",
+            "profile_prefix_match": "unknown",
+            "bits_range_match": "unknown",
+            "profile_policy_drift": "unknown",
+        },
+    }
+    if history_path is None or not history_path.exists():
+        return analysis
+
+    history = parse_json(history_path)
+    if history.get("schema") != "t81.ai.quantization-codec-profile-history.v1":
+        return analysis
+    windows = history.get("windows")
+    if not isinstance(windows, list):
+        return analysis
+
+    eligible: list[tuple[date, dict[str, Any]]] = []
+    for win in windows:
+        if not isinstance(win, dict):
+            continue
+        start_raw = str(win.get("window_start", "")).strip()
+        if not start_raw:
+            continue
+        try:
+            start = parse_iso_date(start_raw, "window_start")
+        except ValueError:
+            continue
+        if start <= as_of:
+            eligible.append((start, win))
+
+    if not eligible:
+        return analysis
+    eligible.sort(key=lambda item: item[0], reverse=True)
+    selected = [win for _, win in eligible[: max(1, window_count)]]
+
+    codec_prefix_all = True
+    profile_prefix_all = True
+    bits_range_all = True
+    profile_hashes: list[str] = []
+    observed_codec = str(observed.get("codec", ""))
+    observed_profile = str(observed.get("quantization_profile", ""))
+    observed_bits = int(observed.get("bits_per_weight", 0))
+
+    for win in selected:
+        profile = win.get("profile")
+        if not isinstance(profile, dict):
+            continue
+        codec_prefix = str(profile.get("codec_prefix", ""))
+        profile_prefix = str(profile.get("quantization_profile_prefix", ""))
+        min_bits = int(profile.get("min_bits_per_weight", 0))
+        max_bits = int(profile.get("max_bits_per_weight", 0))
+
+        codec_match = observed_codec.startswith(codec_prefix) if codec_prefix else False
+        profile_match = observed_profile.startswith(profile_prefix) if profile_prefix else False
+        bits_match = min_bits <= observed_bits <= max_bits if max_bits >= min_bits else False
+
+        codec_prefix_all = codec_prefix_all and codec_match
+        profile_prefix_all = profile_prefix_all and profile_match
+        bits_range_all = bits_range_all and bits_match
+        profile_hashes.append(sha256_text(canonical_json(profile)))
+
+        analysis["windows"].append(
+            {
+                "window_id": str(win.get("window_id", "")),
+                "window_start": str(win.get("window_start", "")),
+                "window_end": str(win.get("window_end", "")),
+                "expected": {
+                    "codec_prefix": codec_prefix,
+                    "quantization_profile_prefix": profile_prefix,
+                    "min_bits_per_weight": min_bits,
+                    "max_bits_per_weight": max_bits,
+                },
+                "observed": {
+                    "codec": observed_codec,
+                    "quantization_profile": observed_profile,
+                    "bits_per_weight": observed_bits,
+                },
+                "match": {
+                    "codec_prefix": codec_match,
+                    "profile_prefix": profile_match,
+                    "bits_range": bits_match,
+                },
+            }
+        )
+
+    drift = "unknown"
+    if profile_hashes:
+        drift = "stable" if len(set(profile_hashes)) == 1 else "drifted"
+
+    analysis["enabled"] = True
+    analysis["summary"] = {
+        "codec_prefix_match": "pass" if codec_prefix_all else "mismatch",
+        "profile_prefix_match": "pass" if profile_prefix_all else "mismatch",
+        "bits_range_match": "pass" if bits_range_all else "mismatch",
+        "profile_policy_drift": drift,
+    }
+    return analysis
 
 
 def main() -> int:
@@ -328,6 +444,19 @@ def main() -> int:
         if runtime_payload_1.get("status") != "pass":
             errors.append("runtime quantization status must be pass")
 
+    rolling_trend_analysis: dict[str, Any] = {}
+    if runtime_payload_1:
+        rolling_trend_analysis = compute_rolling_profile_trend_analysis(
+            observed={
+                "codec": str(runtime_payload_1.get("codec", "")),
+                "quantization_profile": str(runtime_payload_1.get("quantization_profile", "")),
+                "bits_per_weight": int(runtime_payload_1.get("bits_per_weight", 0)),
+            },
+            history_path=history_path if history_path.exists() else None,
+            as_of=as_of,
+            window_count=max(1, int(args.trend_window_count)),
+        )
+
     deterministic_runtime = False
     if runtime_payload_1 and runtime_payload_2:
         deterministic_runtime = canonical_json(runtime_payload_1) == canonical_json(runtime_payload_2)
@@ -371,6 +500,7 @@ def main() -> int:
         "runtime_quantization_payload_sha256": sha256_text(canonical_json(runtime_payload_1))
         if runtime_payload_1
         else "",
+        "rolling_trend_analysis": rolling_trend_analysis,
         "fixture_corpus_roundtrip_ok": corpus_ok,
         "fixture_corpus": corpus,
         "errors": errors,
@@ -387,6 +517,7 @@ def main() -> int:
                 f"- schema: `{SCHEMA_VERSION}`",
                 f"- status: `{status}`",
                 f"- runtime_quantization_deterministic_replay: `{str(deterministic_runtime).lower()}`",
+                f"- rolling_profile_policy_drift: `{rolling_trend_analysis.get('summary', {}).get('profile_policy_drift', 'unknown')}`",
                 f"- fixture_corpus_roundtrip_ok: `{str(corpus_ok).lower()}`",
                 "",
             ]
