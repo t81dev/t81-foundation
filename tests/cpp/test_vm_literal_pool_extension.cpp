@@ -34,11 +34,11 @@ void test_i2f_deterministic_extension() {
   vm->load_program(program);
 
   // Initial state check
-  const auto& state = vm->state();
+  [[maybe_unused]] const auto& state = vm->state();
   assert(state.floats.empty());
 
   // Run step by step or run to halt
-  auto res = vm->run_to_halt();
+  [[maybe_unused]] auto res = vm->run_to_halt();
   assert(res.has_value());
 
   // Check state after run
@@ -82,10 +82,10 @@ void test_i2frac_deterministic_extension() {
   auto vm = make_interpreter_vm();
   vm->load_program(program);
 
-  const auto& state = vm->state();
+  [[maybe_unused]] const auto& state = vm->state();
   assert(state.fractions.empty());
 
-  auto res = vm->run_to_halt();
+  [[maybe_unused]] auto res = vm->run_to_halt();
   assert(res.has_value());
 
   // Expect 2 fractions
@@ -121,23 +121,22 @@ void test_loadimm_bigint_handle_extension() {
   auto vm = make_interpreter_vm();
   vm->load_program(program);
 
-  const auto& state = vm->state();
+  [[maybe_unused]] const auto& state = vm->state();
+  assert(state.bigints.size() == 1);
   assert(state.fractions.empty());
 
-  auto res = vm->run_to_halt();
+  [[maybe_unused]] auto res = vm->run_to_halt();
   assert(res.has_value());
 
-  assert(state.fractions.size() == 1);
-  assert(state.fractions[0].num.to_string() == "9223372036854775808");
-  assert(state.fractions[0].den.to_int64() == 1);
   assert(state.contexts[0].registers[1] == 1);
-  assert(state.contexts[0].register_tags[1] == ValueTag::FractionHandle);
+  assert(state.contexts[0].register_tags[1] == ValueTag::BigIntHandle);
+  assert(state.bigints[0].to_string() == "9223372036854775808");
 
   std::cout << "LOADI BigIntHandle deterministic extension passed." << std::endl;
 }
 
-void test_frac2i_bigint_overflow_fails_closed() {
-  std::cout << "Testing Frac2I BigInt overflow fail-closed behavior..." << std::endl;
+void test_frac2i_bigint_overflow_preserves_integer_class() {
+  std::cout << "Testing Frac2I BigInt overflow integer preservation..." << std::endl;
 
   t81::tisc::Program program;
   program.fraction_pool.emplace_back(
@@ -150,17 +149,96 @@ void test_frac2i_bigint_overflow_fails_closed() {
   auto vm = make_interpreter_vm();
   vm->load_program(program);
 
-  auto res = vm->run_to_halt();
-  assert(!res.has_value());
-  assert(res.error() == Trap::DecodeFault);
+  [[maybe_unused]] auto res = vm->run_to_halt();
+  assert(res.has_value());
+  [[maybe_unused]] const auto& state = vm->state();
+  assert(state.contexts[0].register_tags[2] == ValueTag::BigIntHandle);
+  assert(state.contexts[0].registers[2] == 1);
+  assert(state.bigints[0].to_string() == "9223372036854775808");
 
-  std::cout << "Frac2I BigInt overflow fail-closed behavior passed." << std::endl;
+  std::cout << "Frac2I BigInt overflow integer preservation passed." << std::endl;
+}
+
+void test_bigint_integer_arithmetic_extension() {
+  std::cout << "Testing BigInt integer arithmetic extension..." << std::endl;
+
+  t81::tisc::Program program;
+  program.bigint_pool.push_back(t81::T81BigInt::from_i64(9223372036854775807LL) + t81::T81BigInt::one());
+  program.insns.push_back({Opcode::LoadImm, 1, 1, 0, LiteralKind::BigIntHandle});
+  program.insns.push_back({Opcode::LoadImm, 2, 2, 0, LiteralKind::Int});
+  program.insns.push_back({Opcode::Add, 3, 1, 2, LiteralKind::Int});
+  program.insns.push_back({Opcode::Mul, 4, 3, 2, LiteralKind::Int});
+  program.insns.push_back({Opcode::Halt, 0, 0, 0, LiteralKind::Int});
+
+  auto vm = make_interpreter_vm();
+  vm->load_program(program);
+
+  [[maybe_unused]] auto res = vm->run_to_halt();
+  assert(res.has_value());
+
+  [[maybe_unused]] const auto& state = vm->state();
+  assert(state.contexts[0].register_tags[3] == ValueTag::BigIntHandle);
+  assert(state.contexts[0].register_tags[4] == ValueTag::BigIntHandle);
+  assert(state.bigints[1].to_string() == "9223372036854775810");
+  assert(state.bigints[2].to_string() == "18446744073709551620");
+
+  std::cout << "BigInt integer arithmetic extension passed." << std::endl;
+}
+
+void test_int2bigint_materializes_handle() {
+  std::cout << "Testing Int2BigInt materialization..." << std::endl;
+
+  t81::tisc::Program program;
+  program.insns.push_back({Opcode::LoadImm, 1, 42, 0, LiteralKind::Int});
+  program.insns.push_back({Opcode::Int2BigInt, 2, 1, 0, LiteralKind::Int});
+  program.insns.push_back({Opcode::Halt, 0, 0, 0, LiteralKind::Int});
+
+  auto vm = make_interpreter_vm();
+  vm->load_program(program);
+
+  [[maybe_unused]] auto res = vm->run_to_halt();
+  assert(res.has_value());
+
+  [[maybe_unused]] const auto& state = vm->state();
+  assert(state.bigints.size() == 1);
+  assert(state.contexts[0].register_tags[2] == ValueTag::BigIntHandle);
+  assert(state.contexts[0].registers[2] == 1);
+  assert(state.bigints[0].to_string() == "42");
+
+  std::cout << "Int2BigInt materialization passed." << std::endl;
+}
+
+void test_bigint_arithmetic_preserves_bigint_tag_for_small_results() {
+  std::cout << "Testing BigInt arithmetic tag preservation for small results..." << std::endl;
+
+  t81::tisc::Program program;
+  program.bigint_pool.push_back(t81::T81BigInt::from_i64(1));
+  program.bigint_pool.push_back(t81::T81BigInt::from_i64(-1));
+  program.insns.push_back({Opcode::LoadImm, 1, 1, 0, LiteralKind::BigIntHandle});
+  program.insns.push_back({Opcode::LoadImm, 2, 2, 0, LiteralKind::BigIntHandle});
+  program.insns.push_back({Opcode::Add, 3, 1, 2, LiteralKind::Int});
+  program.insns.push_back({Opcode::Halt, 0, 0, 0, LiteralKind::Int});
+
+  auto vm = make_interpreter_vm();
+  vm->load_program(program);
+
+  [[maybe_unused]] auto res = vm->run_to_halt();
+  assert(res.has_value());
+
+  [[maybe_unused]] const auto& state = vm->state();
+  assert(state.contexts[0].register_tags[3] == ValueTag::BigIntHandle);
+  assert(state.bigints[2].to_string() == "0");
+
+  std::cout << "BigInt arithmetic tag preservation passed." << std::endl;
 }
 
 int main() {
   test_i2f_deterministic_extension();
   test_i2frac_deterministic_extension();
   test_loadimm_bigint_handle_extension();
-  test_frac2i_bigint_overflow_fails_closed();
+  test_frac2i_bigint_overflow_preserves_integer_class();
+  test_bigint_integer_arithmetic_extension();
+  test_int2bigint_materializes_handle();
+  test_bigint_arithmetic_preserves_bigint_tag_for_small_results();
   return 0;
 }

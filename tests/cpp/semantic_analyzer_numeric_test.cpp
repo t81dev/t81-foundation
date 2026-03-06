@@ -71,6 +71,29 @@ int main() {
     )";
   if (!expect_semantic_success(bigint_float_success, "bigint_float_success")) return 1;
 
+  const std::string t81_integer_literal_success = R"(
+        fn main() -> T81BigInt {
+            let small: T81BigInt = 42t81;
+            let big: T81BigInt = 9223372036854775808t81;
+            return big + small;
+        }
+    )";
+  if (!expect_semantic_success(t81_integer_literal_success, "t81_integer_literal_success")) {
+    return 1;
+  }
+
+  const std::string contextual_bigint_integer_success = R"(
+        fn main() -> T81BigInt {
+            let small: T81BigInt = 7;
+            let via_call: T81BigInt = std.math.bigint.from_int(9);
+            return small + via_call;
+        }
+    )";
+  if (!expect_semantic_success(contextual_bigint_integer_success,
+                               "contextual_bigint_integer_success")) {
+    return 1;
+  }
+
   const std::string qutrit_arith_success = R"(
         fn main() -> i32 {
             let q: T81Qutrit = 1;

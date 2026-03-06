@@ -37,6 +37,7 @@ struct TraceEntry {
 enum class ValueTag : std::uint8_t {
   Int = 0,
   Bool,
+  BigIntHandle,
   FloatHandle,
   FractionHandle,
   SymbolHandle,
@@ -341,6 +342,7 @@ struct State {
   std::vector<std::size_t> free_tensor_indices;
   std::size_t total_tensor_elements{0};
   std::vector<double> floats;
+  std::vector<t81::T81BigInt> bigints;
   std::vector<t81::T81Fraction> fractions;
   std::vector<std::string> symbols;
   std::vector<std::vector<std::string>> string_vectors;

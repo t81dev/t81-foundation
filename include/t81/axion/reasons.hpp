@@ -63,6 +63,7 @@ constexpr std::string_view kJitTraceDeopt = "jit trace deopt";
 constexpr std::string_view kEnumGuard = "enum guard";
 constexpr std::string_view kEnumPayload = "enum payload";
 constexpr std::string_view kMetaSlotAxionEvent = "axion event";
+constexpr std::string_view kTensorProvenance = "tensor provenance";
 
 // ---------------------------------------------------------------------------
 // Canonical reason string builders (AX-M6)
@@ -148,6 +149,26 @@ inline std::string canonical_bounds_fault_reason(std::string_view segment, int a
   return result;
 }
 
+/// "tensor provenance segment=tensor addr=<addr> action=<action> storage=<storage> numeric=<numeric> strict=<strict>"
+inline std::string canonical_tensor_provenance_reason(std::size_t addr, std::string_view action,
+                                                      std::string_view storage,
+                                                      std::string_view numeric, bool strict) {
+  std::string result;
+  result.reserve(128);
+  result += kTensorProvenance;
+  result += " segment=tensor addr=";
+  result += std::to_string(addr);
+  result += " action=";
+  result += action;
+  result += " storage=";
+  result += storage;
+  result += " numeric=";
+  result += numeric;
+  result += " strict=";
+  result += strict ? "1" : "0";
+  return result;
+}
+
 }  // namespace reasons
 
 /**
@@ -160,6 +181,11 @@ struct StructuredEvent {
   std::uint64_t pc{0};
   std::int64_t handle_id{0};
   std::string_view decision;
+  std::string event_type;
+  std::string reason_code;
+  std::string storage_class;
+  std::string numeric_class;
+  bool strict_core_eligible{false};
 };
 
 }  // namespace t81::axion

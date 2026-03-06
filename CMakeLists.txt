@@ -458,6 +458,14 @@ if(T81_BUILD_TESTS)
   add_executable(t81_vm_tloadhash_conformance_test tests/cpp/vm_tloadhash_conformance_test.cpp)
   target_link_libraries(t81_vm_tloadhash_conformance_test PRIVATE t81_vm t81_core)
 
+  add_executable(t81_vm_tloadhash_canonical_fixed_test
+                 tests/cpp/vm_tloadhash_canonical_fixed_test.cpp)
+  target_link_libraries(t81_vm_tloadhash_canonical_fixed_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_canonfs_root_env_contract_test
+                 tests/cpp/vm_canonfs_root_env_contract_test.cpp)
+  target_link_libraries(t81_vm_canonfs_root_env_contract_test PRIVATE t81_vm t81_core)
+
   add_executable(t81_vm_tloadhash_decodefault_determinism_matrix_test
                  tests/cpp/vm_tloadhash_decodefault_determinism_matrix_test.cpp)
   target_link_libraries(t81_vm_tloadhash_decodefault_determinism_matrix_test PRIVATE t81_vm t81_core)
@@ -471,6 +479,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_vm_ai_phase1_qmatmul_conformance_test
                  tests/cpp/vm_ai_phase1_qmatmul_conformance_test.cpp)
   target_link_libraries(t81_vm_ai_phase1_qmatmul_conformance_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_ai_phase1_shared_helper_parity_test
+                 tests/cpp/vm_ai_phase1_shared_helper_parity_test.cpp)
+  target_link_libraries(t81_vm_ai_phase1_shared_helper_parity_test PRIVATE t81_vm t81_core)
 
   add_executable(t81_vm_tensor_shape_faults_test tests/cpp/vm_tensor_shape_faults_test.cpp)
   target_link_libraries(t81_vm_tensor_shape_faults_test PRIVATE t81_vm t81_core)
@@ -483,6 +494,10 @@ if(T81_BUILD_TESTS)
                  tests/cpp/vm_tensor_helper_predicates_test.cpp)
   target_link_libraries(t81_vm_tensor_helper_predicates_test PRIVATE t81_vm t81_core)
   target_include_directories(t81_vm_tensor_helper_predicates_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  add_executable(t81_vm_tensor_provenance_trace_test
+                 tests/cpp/vm_tensor_provenance_trace_test.cpp)
+  target_link_libraries(t81_vm_tensor_provenance_trace_test PRIVATE t81_vm t81_core)
+  target_include_directories(t81_vm_tensor_provenance_trace_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
   add_executable(t81_vm_predispatch_policy_deny_logging_test
                  tests/cpp/vm_predispatch_policy_deny_logging_test.cpp)
@@ -615,6 +630,13 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
 
   add_executable(t81_tensor_shape_test tests/cpp/tensor_shape_test.cpp)
   target_link_libraries(t81_tensor_shape_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_serialization_canonical_fixed_test
+                 tests/cpp/tensor_serialization_canonical_fixed_test.cpp)
+  target_link_libraries(t81_tensor_serialization_canonical_fixed_test PRIVATE t81_core)
+
+  add_executable(t81_tensor_native_decode_test tests/cpp/tensor_native_decode_test.cpp)
+  target_link_libraries(t81_tensor_native_decode_test PRIVATE t81_core)
 
   add_executable(t81_ternary_arith_test tests/cpp/ternary_arith_test.cpp)
   target_link_libraries(t81_ternary_arith_test PRIVATE t81_core)
@@ -1262,6 +1284,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     canonfs_read_verify_test
     canonfs_read_verify_env_contract_test
     canonfs_integrity_matrix_test
+    t81_vm_canonfs_root_env_contract_test
     t81_ir_encoding_test
     t81_isa_encoding_test
     t81_hash_stub_test
@@ -1283,6 +1306,8 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_numeric_format_test
     axion_recursion_guardrails_test
     t81_tensor_shape_test
+    t81_tensor_serialization_canonical_fixed_test
+    t81_tensor_native_decode_test
     t81_ternary_arith_test
     t81_tensor_matmul_test
     t81_tensor_reduce_test
@@ -1305,13 +1330,16 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_vm_bounds_test
     t81_vm_tensor_test
     t81_vm_tloadhash_conformance_test
+    t81_vm_tloadhash_canonical_fixed_test
     t81_vm_tloadhash_decodefault_determinism_matrix_test
     t81_vm_ai_phase1_attention_conformance_test
     t81_vm_ai_phase1_embed_conformance_test
     t81_vm_ai_phase1_qmatmul_conformance_test
+    t81_vm_ai_phase1_shared_helper_parity_test
     t81_vm_tensor_shape_faults_test
     t81_vm_tensor_get_set_conformance_test
     t81_vm_tensor_helper_predicates_test
+    t81_vm_tensor_provenance_trace_test
     t81_vm_predispatch_policy_deny_logging_test
     t81_vm_fault_test
     t81_vm_deterministic_fault_test

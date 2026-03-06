@@ -4,12 +4,85 @@
 #include <stdexcept>
 #include <vector>
 #include "t81/tensor.hpp"
+#include "t81/tensor/matmul.hpp"
+#include "t81/types/detail/dmath.hpp"
 
 #if defined(__AVX2__) || defined(__FMA__)
 #include <immintrin.h>
 #endif
 
 namespace t81::ops {
+
+namespace detail {
+
+using t81::core::detail::DFixed;
+
+inline DFixed fixed_from_int64(std::int64_t value) {
+  typename DFixed::Storage storage(value);
+  storage <<= DFixed::kFractionalTrits;
+  return DFixed(storage);
+}
+
+inline std::vector<DFixed> fixed_softmax_rows(const std::vector<DFixed>& input, int rows, int cols) {
+  std::vector<DFixed> out(static_cast<std::size_t>(rows) * static_cast<std::size_t>(cols),
+                          DFixed::zero());
+  for (int row = 0; row < rows; ++row) {
+    const std::size_t base = static_cast<std::size_t>(row) * static_cast<std::size_t>(cols);
+    DFixed max_val = input[base];
+    for (int col = 1; col < cols; ++col) {
+      const DFixed& candidate = input[base + static_cast<std::size_t>(col)];
+      if ((candidate <=> max_val) == std::strong_ordering::greater) {
+        max_val = candidate;
+      }
+    }
+
+    DFixed sum = DFixed::zero();
+    for (int col = 0; col < cols; ++col) {
+      const auto exp_val =
+          t81::core::detail::exp(input[base + static_cast<std::size_t>(col)] - max_val);
+      out[base + static_cast<std::size_t>(col)] = exp_val;
+      sum = sum + exp_val;
+    }
+
+    for (int col = 0; col < cols; ++col) {
+      out[base + static_cast<std::size_t>(col)] =
+          out[base + static_cast<std::size_t>(col)] / sum;
+    }
+  }
+  return out;
+}
+
+inline std::vector<DFixed> fixed_matmul(const std::vector<DFixed>& lhs,
+                                        const std::vector<DFixed>& rhs, int m, int k, int n) {
+  std::vector<DFixed> out(static_cast<std::size_t>(m) * static_cast<std::size_t>(n), DFixed::zero());
+  for (int i = 0; i < m; ++i) {
+    for (int p = 0; p < k; ++p) {
+      const DFixed& av = lhs[static_cast<std::size_t>(i) * static_cast<std::size_t>(k) +
+                             static_cast<std::size_t>(p)];
+      if (av.is_zero()) {
+        continue;
+      }
+      for (int j = 0; j < n; ++j) {
+        out[static_cast<std::size_t>(i) * static_cast<std::size_t>(n) + static_cast<std::size_t>(j)] =
+            out[static_cast<std::size_t>(i) * static_cast<std::size_t>(n) + static_cast<std::size_t>(j)] +
+            av * rhs[static_cast<std::size_t>(p) * static_cast<std::size_t>(n) +
+                     static_cast<std::size_t>(j)];
+      }
+    }
+  }
+  return out;
+}
+
+inline bool all_nonnegative(const T729DynamicTensor& tensor) {
+  if (!tensor.has_canonical_fixed_data()) {
+    return false;
+  }
+  const auto& fixed = tensor.canonical_fixed_data();
+  return std::all_of(fixed.begin(), fixed.end(),
+                     [](const DFixed& value) { return !value.is_negative(); });
+}
+
+}  // namespace detail
 
 #if defined(__AVX2__)
 // Fast SIMD exponential approximation for AVX2.
@@ -54,9 +127,34 @@ inline T729DynamicTensor rmsnorm(const T729DynamicTensor& x, const T729DynamicTe
   if (x.rank() == 0 || w.rank() != 1 || w.shape()[0] != x.shape().back()) {
     throw std::invalid_argument("rmsnorm: shape mismatch");
   }
+  if (x.has_canonical_fixed_data() && w.has_canonical_fixed_data()) {
+    const int dim = x.shape().back();
+    const auto& input = x.canonical_fixed_data();
+    const auto& weight = w.canonical_fixed_data();
+    const detail::DFixed dim_fixed = detail::fixed_from_int64(dim);
+    const detail::DFixed eps_fixed = detail::DFixed::from_decimal(0, 1, 6);
+    std::vector<detail::DFixed> out(input.size(), detail::DFixed::zero());
+
+    for (std::size_t base = 0; base < input.size(); base += static_cast<std::size_t>(dim)) {
+      detail::DFixed sumsq = detail::DFixed::zero();
+      for (int j = 0; j < dim; ++j) {
+        const auto& value = input[base + static_cast<std::size_t>(j)];
+        sumsq = sumsq + value * value;
+      }
+      const detail::DFixed mean = sumsq / dim_fixed;
+      const detail::DFixed inv = detail::DFixed::one() / t81::core::detail::sqrt(mean + eps_fixed);
+      for (int j = 0; j < dim; ++j) {
+        out[base + static_cast<std::size_t>(j)] =
+            input[base + static_cast<std::size_t>(j)] * inv * weight[static_cast<std::size_t>(j)];
+      }
+    }
+    return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out),
+                                                   TensorNumericClass::HostFloat);
+  }
   int dim = x.shape().back();
-  std::vector<float> out = x.data();
-  const float* w_ptr = w.data().data();
+  std::vector<float> out = x.snapshot_values();
+  const auto weights = w.snapshot_values();
+  const float* w_ptr = weights.data();
 
   for (size_t i = 0; i < out.size(); i += static_cast<size_t>(dim)) {
     float* row = &out[i];
@@ -99,7 +197,17 @@ inline T729DynamicTensor rmsnorm(const T729DynamicTensor& x, const T729DynamicTe
 }
 
 inline T729DynamicTensor silu(const T729DynamicTensor& x) {
-  std::vector<float> out = x.data();
+  if (x.has_canonical_fixed_data()) {
+    std::vector<detail::DFixed> out;
+    out.reserve(x.size());
+    for (const auto& value : x.canonical_fixed_data()) {
+      const auto denom = detail::DFixed::one() + t81::core::detail::exp(-value);
+      out.push_back(value / denom);
+    }
+    return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out),
+                                                   TensorNumericClass::HostFloat);
+  }
+  std::vector<float> out = x.snapshot_values();
   float* data = out.data();
   size_t size = out.size();
 
@@ -122,8 +230,15 @@ inline T729DynamicTensor silu(const T729DynamicTensor& x) {
 
 inline T729DynamicTensor softmax(const T729DynamicTensor& x) {
   if (x.rank() == 0) throw std::invalid_argument("softmax: rank 0");
+  if (x.has_canonical_fixed_data()) {
+    const int dim = x.shape().back();
+    const int rows = static_cast<int>(x.size() / static_cast<std::size_t>(dim));
+    auto out = detail::fixed_softmax_rows(x.canonical_fixed_data(), rows, dim);
+    return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out),
+                                                   TensorNumericClass::HostFloat);
+  }
   int dim = x.shape().back();
-  std::vector<float> out = x.data();
+  std::vector<float> out = x.snapshot_values();
   for (size_t i = 0; i < out.size(); i += static_cast<size_t>(dim)) {
     float* row = &out[i];
     float max_val = row[0];
@@ -190,10 +305,121 @@ inline T729DynamicTensor softmax(const T729DynamicTensor& x) {
   return T729DynamicTensor(x.shape(), std::move(out));
 }
 
+inline T729DynamicTensor attention(const T729DynamicTensor& q, const T729DynamicTensor& k,
+                                   const T729DynamicTensor& v) {
+  if (q.rank() != 2 || k.rank() != 2 || v.rank() != 2) {
+    throw std::invalid_argument("attention: all inputs must be rank-2");
+  }
+  if (q.shape()[1] != k.shape()[1] || k.shape()[0] != v.shape()[0]) {
+    throw std::invalid_argument("attention: shape mismatch");
+  }
+
+  const int q_rows = q.shape()[0];
+  const int dk = q.shape()[1];
+  const int k_rows = k.shape()[0];
+  const int v_cols = v.shape()[1];
+
+  if (q.has_canonical_fixed_data() && k.has_canonical_fixed_data() && v.has_canonical_fixed_data()) {
+    std::vector<detail::DFixed> k_transposed(static_cast<std::size_t>(dk) *
+                                                 static_cast<std::size_t>(k_rows),
+                                             detail::DFixed::zero());
+    const auto& q_fixed = q.canonical_fixed_data();
+    const auto& k_fixed = k.canonical_fixed_data();
+    const auto& v_fixed = v.canonical_fixed_data();
+    for (int r = 0; r < k_rows; ++r) {
+      for (int c = 0; c < dk; ++c) {
+        k_transposed[static_cast<std::size_t>(c) * static_cast<std::size_t>(k_rows) +
+                     static_cast<std::size_t>(r)] =
+            k_fixed[static_cast<std::size_t>(r) * static_cast<std::size_t>(dk) +
+                    static_cast<std::size_t>(c)];
+      }
+    }
+
+    auto scores = detail::fixed_matmul(q_fixed, k_transposed, q_rows, dk, k_rows);
+    const detail::DFixed inv_scale =
+        detail::DFixed::one() / t81::core::detail::sqrt(detail::fixed_from_int64(dk));
+    for (auto& score : scores) {
+      score = score * inv_scale;
+    }
+    auto probs = detail::fixed_softmax_rows(scores, q_rows, k_rows);
+    auto out = detail::fixed_matmul(probs, v_fixed, q_rows, k_rows, v_cols);
+    return T729DynamicTensor::from_canonical_fixed({q_rows, v_cols}, std::move(out),
+                                                   TensorNumericClass::HostFloat);
+  }
+
+  auto k_t = k.transpose2d();
+  auto scores = t81::ops::matmul(q, k_t);
+  const float inv_scale = 1.0f / std::sqrt(static_cast<float>(dk));
+  auto scaled = scores.snapshot_values();
+  for (auto& x : scaled) {
+    x *= inv_scale;
+  }
+  auto probs = t81::ops::softmax(T729DynamicTensor(scores.shape(), std::move(scaled)));
+  return t81::ops::matmul(probs, v);
+}
+
+inline T729DynamicTensor embed(const T729DynamicTensor& table, std::int64_t index) {
+  if (table.rank() != 2) {
+    throw std::invalid_argument("embed: table must be rank-2");
+  }
+  if (index < 0 || index >= static_cast<std::int64_t>(table.shape()[0])) {
+    throw std::out_of_range("embed: index out of range");
+  }
+
+  const int dim = table.shape()[1];
+  const TensorNumericClass result_class =
+      table.strict_core_eligible() ? table.numeric_class() : TensorNumericClass::HostFloat;
+  const std::size_t base = static_cast<std::size_t>(index) * static_cast<std::size_t>(dim);
+
+  if (table.has_canonical_fixed_data()) {
+    std::vector<detail::DFixed> out(static_cast<std::size_t>(dim));
+    const auto& fixed = table.canonical_fixed_data();
+    for (int i = 0; i < dim; ++i) {
+      out[static_cast<std::size_t>(i)] = fixed[base + static_cast<std::size_t>(i)];
+    }
+    return T729DynamicTensor::from_canonical_fixed({dim}, std::move(out), result_class);
+  }
+
+  const auto values = table.snapshot_values();
+  std::vector<float> out(static_cast<std::size_t>(dim));
+  for (int i = 0; i < dim; ++i) {
+    out[static_cast<std::size_t>(i)] = values[base + static_cast<std::size_t>(i)];
+  }
+  auto result = T729DynamicTensor({dim}, std::move(out));
+  result.set_numeric_class(result_class);
+  return result;
+}
+
 inline T729DynamicTensor rope(const T729DynamicTensor& x, int pos) {
   if (x.rank() < 2) throw std::invalid_argument("rope: rank must be at least 2");
+  if (x.has_canonical_fixed_data()) {
+    const int head_dim = x.shape().back();
+    if ((head_dim % 2) == 0) {
+      const detail::DFixed freq_base = detail::DFixed::from_decimal(10000, 0, 0);
+      const detail::DFixed pos_fixed = detail::fixed_from_int64(pos);
+      const detail::DFixed head_dim_fixed = detail::fixed_from_int64(head_dim);
+      const auto& input = x.canonical_fixed_data();
+      std::vector<detail::DFixed> out = input;
+
+      for (std::size_t base = 0; base < input.size(); base += static_cast<std::size_t>(head_dim)) {
+        for (int j = 0; j < head_dim; j += 2) {
+          const detail::DFixed exponent = detail::fixed_from_int64(j) / head_dim_fixed;
+          const detail::DFixed freq = detail::DFixed::one() / t81::core::detail::pow(freq_base, exponent);
+          const detail::DFixed angle = pos_fixed * freq;
+          const detail::DFixed f_cos = t81::core::detail::cos(angle);
+          const detail::DFixed f_sin = t81::core::detail::sin(angle);
+          const detail::DFixed v0 = input[base + static_cast<std::size_t>(j)];
+          const detail::DFixed v1 = input[base + static_cast<std::size_t>(j + 1)];
+          out[base + static_cast<std::size_t>(j)] = v0 * f_cos - v1 * f_sin;
+          out[base + static_cast<std::size_t>(j + 1)] = v0 * f_sin + v1 * f_cos;
+        }
+      }
+      return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out),
+                                                     TensorNumericClass::HostFloat);
+    }
+  }
   int head_dim = x.shape().back();
-  std::vector<float> data = x.data();
+  std::vector<float> data = x.snapshot_values();
   for (size_t i = 0; i < data.size(); i += static_cast<size_t>(head_dim)) {
     for (int j = 0; j < head_dim; j += 2) {
       float freq = 1.0f / std::pow(10000.0f, static_cast<float>(j) / head_dim);

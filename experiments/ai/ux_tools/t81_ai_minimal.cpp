@@ -121,6 +121,7 @@ private:
         std::vector<std::string> candidates;
         std::string selected_backend;
         std::string decision_reason;
+        std::string support_state;
         std::string status;
         std::string trace_sha256;
     };
@@ -149,13 +150,14 @@ private:
 
     static std::vector<BackendSpec> backend_specs() {
         return {
-            {"llama.cpp", {"gguf", "t3k", "t81_canonical"}, {"strict_deterministic", "reproducible_nondeterministic"}},
-            {"onnx_runtime", {"onnx", "t81_canonical"}, {"strict_deterministic", "statistical_deterministic"}},
+            {"t81_reference_vm", {"gguf", "t3k", "t81_canonical"}, {"strict_deterministic"}},
+            {"llama.cpp", {"gguf", "t3k", "t81_canonical"}, {"reproducible_nondeterministic"}},
+            {"onnx_runtime", {"onnx", "t81_canonical"}, {"statistical_deterministic"}},
         };
     }
 
     static std::vector<std::string> backend_preferred_order() {
-        return {"llama.cpp", "onnx_runtime"};
+        return {"t81_reference_vm", "llama.cpp", "onnx_runtime"};
     }
 
     static bool supports_value(const std::vector<std::string>& vals, const std::string& v) {
@@ -165,6 +167,39 @@ private:
             }
         }
         return false;
+    }
+
+    static bool backend_strict_core_eligible(const std::string& backend_name, const std::string& requested_format) {
+        if (backend_name == "t81_reference_vm") {
+            return requested_format == "gguf" || requested_format == "t3k" || requested_format == "t81_canonical";
+        }
+        if (backend_name == "llama.cpp" || backend_name == "onnx_runtime") {
+            return false;
+        }
+        return false;
+    }
+
+    static std::string backend_numeric_kernel_class(const std::string& backend_name, const std::string& requested_format) {
+        if (backend_name == "t81_reference_vm" &&
+            (requested_format == "gguf" || requested_format == "t3k" || requested_format == "t81_canonical")) {
+            return "deterministic_fixed";
+        }
+        if (backend_name == "llama.cpp" || backend_name == "onnx_runtime") {
+            return "host_float";
+        }
+        return "unknown";
+    }
+
+    static std::string effective_determinism_class(
+        const std::string& requested_mode,
+        const std::string& backend_name,
+        const std::string& requested_format
+    ) {
+        if (requested_mode == "strict_deterministic" &&
+            !backend_strict_core_eligible(backend_name, requested_format)) {
+            return "bounded_float_runtime";
+        }
+        return requested_mode;
     }
 
     BackendSelectionResult resolve_backend_selection(const std::string& requested_format, const std::string& requested_mode) {
@@ -186,6 +221,7 @@ private:
         }
 
         r.selected_backend = r.candidates.empty() ? "" : r.candidates.front();
+        r.support_state = r.selected_backend.empty() ? "unsupported" : "supported";
         r.status = r.selected_backend.empty() ? "fail" : "pass";
         r.decision_reason = r.selected_backend.empty()
             ? "no_backend_supporting_requested_format_and_mode"
@@ -332,7 +368,7 @@ private:
         std::cout << "  t81_ai model inspect model.gguf" << std::endl;
         std::cout << "  t81_ai verify model.gguf" << std::endl;
         std::cout << "  t81_ai backend capabilities --out backend_caps.json" << std::endl;
-        std::cout << "  t81_ai backend select --format gguf --mode strict_deterministic --out backend_select.json" << std::endl;
+        std::cout << "  t81_ai backend select --format gguf --mode reproducible_nondeterministic --out backend_select.json" << std::endl;
         std::cout << "  t81_ai inference run --model mock-7b --model-file model.gguf --prompt \"hello\" --out inference.json" << std::endl;
         std::cout << "  t81_ai quantization inspect --model mock-7b --model-file model.gguf --out quant.json" << std::endl;
         std::cout << "  t81_ai benchmark run --model mock-7b --model-file model.gguf --out bench.json" << std::endl;
@@ -406,9 +442,21 @@ private:
             << "  \"selection_policy\": \"first_backend_supporting_requested_format_and_mode\",\n"
             << "  \"backends\": [\n"
             << "    {\n"
+            << "      \"backend_name\": \"t81_reference_vm\",\n"
+            << "      \"supported_formats\": [\"gguf\", \"t3k\", \"t81_canonical\"],\n"
+            << "      \"determinism_modes\": [\"strict_deterministic\"],\n"
+            << "      \"strict_core_eligible\": true,\n"
+            << "      \"numeric_kernel_class\": \"deterministic_fixed\",\n"
+            << "      \"max_context_tokens\": 243,\n"
+            << "      \"supports_streaming\": false,\n"
+            << "      \"supports_logit_bias\": false\n"
+            << "    },\n"
+            << "    {\n"
             << "      \"backend_name\": \"llama.cpp\",\n"
             << "      \"supported_formats\": [\"gguf\", \"t3k\", \"t81_canonical\"],\n"
-            << "      \"determinism_modes\": [\"strict_deterministic\", \"reproducible_nondeterministic\"],\n"
+            << "      \"determinism_modes\": [\"reproducible_nondeterministic\"],\n"
+            << "      \"strict_core_eligible\": false,\n"
+            << "      \"numeric_kernel_class\": \"host_float\",\n"
             << "      \"max_context_tokens\": 4096,\n"
             << "      \"supports_streaming\": true,\n"
             << "      \"supports_logit_bias\": true\n"
@@ -416,7 +464,9 @@ private:
             << "    {\n"
             << "      \"backend_name\": \"onnx_runtime\",\n"
             << "      \"supported_formats\": [\"onnx\", \"t81_canonical\"],\n"
-            << "      \"determinism_modes\": [\"strict_deterministic\", \"statistical_deterministic\"],\n"
+            << "      \"determinism_modes\": [\"statistical_deterministic\"],\n"
+            << "      \"strict_core_eligible\": false,\n"
+            << "      \"numeric_kernel_class\": \"host_float\",\n"
             << "      \"max_context_tokens\": 8192,\n"
             << "      \"supports_streaming\": false,\n"
             << "      \"supports_logit_bias\": false\n"
@@ -440,7 +490,7 @@ private:
 
     int backend_select(int argc, char* argv[]) {
         std::string requested_format = "gguf";
-        std::string requested_mode = "strict_deterministic";
+        std::string requested_mode = "reproducible_nondeterministic";
         std::string out_path;
         for (int i = 3; i < argc; ++i) {
             const std::string arg = argv[i];
@@ -469,7 +519,7 @@ private:
             << "  \"requested_format\": \"" << json_escape(requested_format) << "\",\n"
             << "  \"requested_mode\": \"" << json_escape(requested_mode) << "\",\n"
             << "  \"selection_policy\": \"first_backend_supporting_requested_format_and_mode\",\n"
-            << "  \"preferred_order\": [\"llama.cpp\", \"onnx_runtime\"],\n"
+            << "  \"preferred_order\": [\"t81_reference_vm\", \"llama.cpp\", \"onnx_runtime\"],\n"
             << "  \"candidates\": [";
         for (size_t i = 0; i < selection.candidates.size(); ++i) {
             if (i > 0) {
@@ -481,6 +531,12 @@ private:
             << "],\n"
             << "  \"selected_backend\": \"" << json_escape(selection.selected_backend) << "\",\n"
             << "  \"decision_reason\": \"" << selection.decision_reason << "\",\n"
+            << "  \"support_state\": \"" << selection.support_state << "\",\n"
+            << "  \"strict_core_eligible\": "
+            << (backend_strict_core_eligible(selection.selected_backend, requested_format) ? "true" : "false") << ",\n"
+            << "  \"numeric_kernel_class\": \"" << json_escape(
+                backend_numeric_kernel_class(selection.selected_backend, requested_format)
+            ) << "\",\n"
             << "  \"trace_sha256\": \"" << selection.trace_sha256 << "\",\n"
             << "  \"status\": \"" << selection.status << "\"\n"
             << "}\n";
@@ -504,7 +560,7 @@ private:
         std::string prompt = "deterministic prompt";
         std::string model_file;
         std::string requested_format = "gguf";
-        std::string requested_mode = "strict_deterministic";
+        std::string requested_mode = "reproducible_nondeterministic";
         std::string out_path;
         for (int i = 3; i < argc; ++i) {
             const std::string arg = argv[i];
@@ -562,6 +618,14 @@ private:
             << "  \"requested_format\": \"" << json_escape(requested_format) << "\",\n"
             << "  \"requested_mode\": \"" << json_escape(requested_mode) << "\",\n"
             << "  \"selected_backend\": \"" << selection.selected_backend << "\",\n"
+            << "  \"strict_core_eligible\": "
+            << (backend_strict_core_eligible(selection.selected_backend, requested_format) ? "true" : "false") << ",\n"
+            << "  \"numeric_kernel_class\": \"" << json_escape(
+                backend_numeric_kernel_class(selection.selected_backend, requested_format)
+            ) << "\",\n"
+            << "  \"effective_determinism_class\": \"" << json_escape(
+                effective_determinism_class(requested_mode, selection.selected_backend, requested_format)
+            ) << "\",\n"
             << "  \"backend_selection_trace_sha256\": \"" << selection.trace_sha256 << "\",\n"
             << "  \"prompt_sha256\": \"sha256:" << fnv1a64_hex(prompt) << "\",\n"
             << "  \"output\": \"" << output << "\",\n"
@@ -585,7 +649,7 @@ private:
         std::string model_id = "mock-7b";
         std::string model_file;
         std::string requested_format = "gguf";
-        std::string requested_mode = "strict_deterministic";
+        std::string requested_mode = "reproducible_nondeterministic";
         std::string out_path;
         for (int i = 3; i < argc; ++i) {
             const std::string arg = argv[i];
@@ -637,6 +701,14 @@ private:
             << "  \"requested_format\": \"" << json_escape(requested_format) << "\",\n"
             << "  \"requested_mode\": \"" << json_escape(requested_mode) << "\",\n"
             << "  \"selected_backend\": \"" << selection.selected_backend << "\",\n"
+            << "  \"strict_core_eligible\": "
+            << (backend_strict_core_eligible(selection.selected_backend, requested_format) ? "true" : "false") << ",\n"
+            << "  \"numeric_kernel_class\": \"" << json_escape(
+                backend_numeric_kernel_class(selection.selected_backend, requested_format)
+            ) << "\",\n"
+            << "  \"effective_determinism_class\": \"" << json_escape(
+                effective_determinism_class(requested_mode, selection.selected_backend, requested_format)
+            ) << "\",\n"
             << "  \"backend_selection_trace_sha256\": \"" << selection.trace_sha256 << "\",\n"
             << "  \"codec\": \"T3_K2\",\n"
             << "  \"bits_per_weight\": " << bits_per_weight << ",\n"
@@ -660,7 +732,7 @@ private:
         std::string model_id = "mock-7b";
         std::string model_file;
         std::string requested_format = "gguf";
-        std::string requested_mode = "strict_deterministic";
+        std::string requested_mode = "reproducible_nondeterministic";
         std::string out_path;
         for (int i = 3; i < argc; ++i) {
             const std::string arg = argv[i];
@@ -714,6 +786,14 @@ private:
             << "  \"requested_format\": \"" << json_escape(requested_format) << "\",\n"
             << "  \"requested_mode\": \"" << json_escape(requested_mode) << "\",\n"
             << "  \"selected_backend\": \"" << selection.selected_backend << "\",\n"
+            << "  \"strict_core_eligible\": "
+            << (backend_strict_core_eligible(selection.selected_backend, requested_format) ? "true" : "false") << ",\n"
+            << "  \"numeric_kernel_class\": \"" << json_escape(
+                backend_numeric_kernel_class(selection.selected_backend, requested_format)
+            ) << "\",\n"
+            << "  \"effective_determinism_class\": \"" << json_escape(
+                effective_determinism_class(requested_mode, selection.selected_backend, requested_format)
+            ) << "\",\n"
             << "  \"backend_selection_trace_sha256\": \"" << selection.trace_sha256 << "\",\n"
             << "  \"latency_ms\": " << latency_ms << ",\n"
             << "  \"throughput_tokens_per_sec\": " << throughput << ",\n"
@@ -913,11 +993,13 @@ private:
     }
 
     int observability_trace(const std::string& out_path) {
-        const std::string reason_code = "ALLOW_MODEL_LOAD";
-        const std::string event_type = "model_load";
+        const std::string reason_code = "AI_POLICY_ALLOW_WLOAD_POLICY_GATE";
+        const std::string event_type = "wload_request";
         const std::string decision = "allow";
-        const std::string timestamp = "2026-01-01T00:00:00Z";
-        const std::string trace_hash = "sha256:" + fnv1a64_hex(reason_code + "|" + event_type + "|" + decision + "|" + timestamp);
+        const std::string timestamp = "2026-03-06T00:00:00Z";
+        const std::string model_hash = "sha256:9d4a4ce7f0f8c7db4e1d6f71e7d5f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6";
+        const std::string trace_hash =
+            "sha256:" + fnv1a64_hex(reason_code + "|" + event_type + "|" + decision + "|" + model_hash + "|" + timestamp);
 
         std::ofstream out(out_path, std::ios::trunc);
         if (!out) {
@@ -929,6 +1011,7 @@ private:
             << "  \"reason_code\": \"" << reason_code << "\",\n"
             << "  \"event_type\": \"" << event_type << "\",\n"
             << "  \"decision\": \"" << decision << "\",\n"
+            << "  \"model_hash\": \"" << model_hash << "\",\n"
             << "  \"timestamp_utc\": \"" << timestamp << "\",\n"
             << "  \"trace_sha256\": \"" << trace_hash << "\"\n"
             << "}\n";

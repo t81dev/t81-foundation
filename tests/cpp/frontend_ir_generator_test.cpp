@@ -1118,6 +1118,136 @@ void test_oversized_integer_literal_lowers_to_bigint_handle() {
             << std::endl;
 }
 
+void test_t81_integer_literals_lower_consistently() {
+  std::string source = R"(
+        fn main() -> T81BigInt {
+            let small: T81BigInt = 42t81;
+            let big: T81BigInt = 9223372036854775808t81;
+            return big;
+        }
+    )";
+  Lexer lexer(source);
+  Parser parser(lexer);
+  auto stmts = parser.parse();
+  EXPECT(!parser.had_error(), "parser failed for t81 integer literal fixture");
+
+  SemanticAnalyzer analyzer(stmts);
+  analyzer.analyze();
+  EXPECT(!analyzer.had_error(), "semantic analyzer failed for t81 integer literal fixture");
+
+  IRGenerator generator;
+  generator.attach_semantic_analyzer(&analyzer);
+  auto program = generator.generate(stmts);
+  const auto& instructions = program.instructions();
+  EXPECT(!instructions.empty(), "t81 integer literal fixture produced no IR");
+
+  bool has_small_bigint_handle = false;
+  bool has_bigint_handle = false;
+  for (const auto& inst : instructions) {
+    if (inst.opcode != Opcode::LOADI) {
+      continue;
+    }
+    if (inst.literal_kind == t81::tisc::LiteralKind::BigIntHandle && inst.text_literal.has_value()) {
+      if (*inst.text_literal == "42") {
+        has_small_bigint_handle = true;
+      } else if (*inst.text_literal == "9223372036854775808") {
+        has_bigint_handle = true;
+      }
+    }
+  }
+
+  EXPECT(has_small_bigint_handle, "42t81 in BigInt context should lower to a canonical BigIntHandle");
+  EXPECT(has_bigint_handle, "9223372036854775808t81 should lower to canonical BigIntHandle text");
+  std::cout << "IRGeneratorTest test_t81_integer_literals_lower_consistently passed!"
+            << std::endl;
+}
+
+void test_bigint_to_int_lowers_to_checked_i32_narrowing() {
+  std::string source = R"(
+        fn main() -> i32 {
+            let value: T81BigInt = 2147483648t81;
+            return std.math.bigint.to_int(value);
+        }
+    )";
+  Lexer lexer(source);
+  Parser parser(lexer);
+  auto stmts = parser.parse();
+  EXPECT(!parser.had_error(), "parser failed for bigint.to_int fixture");
+
+  SemanticAnalyzer analyzer(stmts);
+  analyzer.analyze();
+  EXPECT(!analyzer.had_error(), "semantic analyzer failed for bigint.to_int fixture");
+
+  IRGenerator generator;
+  generator.attach_semantic_analyzer(&analyzer);
+  auto program = generator.generate(stmts);
+  const auto& instructions = program.instructions();
+  EXPECT(!instructions.empty(), "bigint.to_int fixture produced no IR");
+
+  bool has_less_cmp = false;
+  bool has_greater_cmp = false;
+  int trap_count = 0;
+  bool has_i2frac = false;
+  bool has_frac2i = false;
+  for (const auto& inst : instructions) {
+    if (inst.opcode == Opcode::CMP && inst.boolean_result) {
+      if (inst.relation == t81::tisc::ir::ComparisonRelation::Less) {
+        has_less_cmp = true;
+      } else if (inst.relation == t81::tisc::ir::ComparisonRelation::Greater) {
+        has_greater_cmp = true;
+      }
+    } else if (inst.opcode == Opcode::TRAP) {
+      ++trap_count;
+    } else if (inst.opcode == Opcode::I2FRAC) {
+      has_i2frac = true;
+    } else if (inst.opcode == Opcode::FRAC2I) {
+      has_frac2i = true;
+    }
+  }
+
+  EXPECT(has_less_cmp, "bigint.to_int should emit lower-bound comparison");
+  EXPECT(has_greater_cmp, "bigint.to_int should emit upper-bound comparison");
+  EXPECT(trap_count >= 2, "bigint.to_int should trap on either out-of-range branch");
+  EXPECT(has_i2frac, "bigint.to_int should materialize narrowed integer via I2FRAC");
+  EXPECT(has_frac2i, "bigint.to_int should materialize narrowed integer via FRAC2I");
+  std::cout << "IRGeneratorTest test_bigint_to_int_lowers_to_checked_i32_narrowing passed!"
+            << std::endl;
+}
+
+void test_bigint_from_int_lowers_to_int2bigint() {
+  std::string source = R"(
+        fn main() -> T81BigInt {
+            let seed: i32 = 42;
+            return std.math.bigint.from_int(seed);
+        }
+    )";
+  Lexer lexer(source);
+  Parser parser(lexer);
+  auto stmts = parser.parse();
+  EXPECT(!parser.had_error(), "parser failed for bigint.from_int fixture");
+
+  SemanticAnalyzer analyzer(stmts);
+  analyzer.analyze();
+  EXPECT(!analyzer.had_error(), "semantic analyzer failed for bigint.from_int fixture");
+
+  IRGenerator generator;
+  generator.attach_semantic_analyzer(&analyzer);
+  auto program = generator.generate(stmts);
+  const auto& instructions = program.instructions();
+  EXPECT(!instructions.empty(), "bigint.from_int fixture produced no IR");
+
+  bool has_int2bigint = false;
+  for (const auto& inst : instructions) {
+    if (inst.opcode == Opcode::INT2BIGINT) {
+      has_int2bigint = true;
+      break;
+    }
+  }
+
+  EXPECT(has_int2bigint, "bigint.from_int should lower to INT2BIGINT");
+  std::cout << "IRGeneratorTest test_bigint_from_int_lowers_to_int2bigint passed!" << std::endl;
+}
+
 int main() {
   test_simple_addition();
   test_if_statement();
@@ -1140,6 +1270,9 @@ int main() {
   test_std_tensor_vec_add_alias_lowers_to_tvecadd();
   test_std_bytes_aliases_lower_to_string_opcodes();
   test_oversized_integer_literal_lowers_to_bigint_handle();
+  test_t81_integer_literals_lower_consistently();
+  test_bigint_from_int_lowers_to_int2bigint();
+  test_bigint_to_int_lowers_to_checked_i32_narrowing();
 
   std::cout << "All IRGenerator integration tests completed!" << std::endl;
   return 0;

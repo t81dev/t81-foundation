@@ -76,6 +76,8 @@ static void test_base81_roundtrip() {
   using t81::T81BigInt;
   std::vector<std::string> cases = {
       "0",   "1",
+      "+",    // 62
+      "+ω",   // leading digit 62 must remain parseable
       "Z",    // 35
       "a",    // 36
       "∞",    // multi-byte codepoint
@@ -103,6 +105,13 @@ static void test_base81_roundtrip() {
     threw = true;
   }
   assert(threw);
+
+  {
+    T81BigInt sixty_two = T81BigInt::from_base81_string("+");
+    assert(sixty_two.to_int64() == 62);
+    T81BigInt neg_sixty_two = T81BigInt::from_base81_string("-+");
+    assert(neg_sixty_two.to_int64() == -62);
+  }
 }
 
 static void test_pow_basic_cases() {

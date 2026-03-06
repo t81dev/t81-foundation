@@ -45,7 +45,7 @@ inline T729DynamicTensor reshape(const T729DynamicTensor& m, std::vector<int> ne
   if (new_sz != old_sz) throw std::invalid_argument("reshape: size mismatch");
 
   // data stays identical, only shape changes
-  return T729DynamicTensor(std::move(new_shape), m.data());
+  return T729DynamicTensor(std::move(new_shape), m.snapshot_values());
 }
 
 }  // namespace t81::ops

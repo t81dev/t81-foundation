@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include "t81/enum_meta.hpp"
 #include "t81/frontend/ast.hpp"
+#include "t81/frontend/numeric_literals.hpp"
 #include "t81/frontend/semantic_analyzer.hpp"
 #include "t81/frontend/symbol_table.hpp"
 #include "t81/isa/ir.hpp"
@@ -92,16 +93,6 @@ inline std::string escape_metadata_string(std::string_view input) {
   return out;
 }
 
-inline std::string strip_t81_suffix(std::string_view literal) {
-  std::string value(literal);
-  constexpr std::string_view suffix = "t81";
-  if (value.size() >= suffix.size() &&
-      value.compare(value.size() - suffix.size(), suffix.size(), suffix) == 0) {
-    value.erase(value.size() - suffix.size());
-  }
-  return value;
-}
-
 // Use std::from_chars for locale-independent, deterministic float parsing.
 // Strips trailing 'f'/'F' suffix (C-style float literal suffix) before parsing.
 inline double parse_canonical_float(std::string_view literal) {
@@ -127,13 +118,14 @@ inline double parse_canonical_float(std::string_view literal) {
 }
 
 inline int64_t parse_base81_integer_literal(std::string_view literal) {
-  std::string value = strip_t81_suffix(literal);
   try {
-    return std::stoll(value);
-  } catch (const std::invalid_argument& e) {
-    throw std::runtime_error("Invalid base-81 literal '" + value + "': " + e.what());
+    return numeric_literals::parse_t81_integer_literal(literal);
+  } catch (const std::runtime_error& e) {
+    throw std::runtime_error(e.what());
   } catch (const std::out_of_range&) {
-    throw std::out_of_range("Base-81 literal '" + value + "' exceeds 64-bit range");
+    auto normalized = numeric_literals::normalize_decimal_integer_literal_text(literal, true);
+    throw std::out_of_range("t81 integer literal '" + normalized.value_or(std::string(literal)) +
+                            "' exceeds 64-bit range");
   }
 }
 
@@ -151,43 +143,8 @@ inline int64_t parse_integer_literal_raw(std::string_view lexeme) {
   return std::stoll(s, &idx, 0);
 }
 
-inline std::optional<std::string> normalize_decimal_integer_literal_text(std::string_view lexeme,
-                                                                          bool strip_t81 = false) {
-  std::string raw = strip_t81 ? strip_t81_suffix(lexeme) : std::string(lexeme);
-  std::string s;
-  s.reserve(raw.size());
-  for (char c : raw) {
-    if (c == '_') continue;
-    s.push_back(c);
-  }
-  if (s.empty()) return std::nullopt;
-
-  bool neg = false;
-  std::size_t pos = 0;
-  if (s[pos] == '+' || s[pos] == '-') {
-    neg = (s[pos] == '-');
-    ++pos;
-    if (pos >= s.size()) return std::nullopt;
-  }
-
-  for (std::size_t i = pos; i < s.size(); ++i) {
-    if (s[i] < '0' || s[i] > '9') return std::nullopt;
-  }
-
-  while (pos + 1 < s.size() && s[pos] == '0') {
-    ++pos;
-  }
-
-  std::string out;
-  if (neg && s[pos] != '0') {
-    out.push_back('-');
-  }
-  out.append(s.begin() + static_cast<std::ptrdiff_t>(pos), s.end());
-  return out;
-}
-
 inline double parse_base81_float_literal(std::string_view literal) {
-  std::string value = strip_t81_suffix(literal);
+  std::string value = numeric_literals::strip_t81_suffix(literal);
   return parse_canonical_float(value);
 }
 
@@ -1359,7 +1316,29 @@ public:
       return {};
     }
 
+    const Type* semantic_type = _semantic ? _semantic->type_of(&expr) : nullptr;
+    const bool materialize_bigint =
+        semantic_type != nullptr && semantic_type->kind == Type::Kind::BigInt &&
+        (expr.value.type == TokenType::Integer || expr.value.type == TokenType::Base81Integer);
+
     auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+    if (materialize_bigint) {
+      auto normalized = numeric_literals::normalize_decimal_integer_literal_text(
+          expr.value.lexeme, expr.value.type == TokenType::Base81Integer);
+      if (!normalized.has_value()) {
+        throw std::runtime_error("BigInt literal lowering requires canonical decimal text.");
+      }
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::LOADI;
+      instr.operands = {dest.reg};
+      instr.literal_kind = tisc::LiteralKind::BigIntHandle;
+      instr.text_literal = *normalized;
+      instr.primitive = tisc::ir::PrimitiveKind::Integer;
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
     try {
       const int64_t value = (expr.value.type == TokenType::Base81Integer)
                                 ? parse_base81_integer_literal(expr.value.lexeme)
@@ -1371,7 +1350,7 @@ public:
       record_result(&expr, dest);
       return {};
     } catch (const std::out_of_range&) {
-      auto normalized = normalize_decimal_integer_literal_text(
+      auto normalized = numeric_literals::normalize_decimal_integer_literal_text(
           expr.value.lexeme, expr.value.type == TokenType::Base81Integer);
       if (!normalized.has_value()) {
         throw std::runtime_error("Integer literal exceeds 64-bit range and is not a supported "
@@ -2131,7 +2110,17 @@ public:
         expr.arguments[0]->accept(*this);
         auto val = ensure_expr_result(expr.arguments[0].get());
         auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
-        copy_to_dest(val, dest);
+        if (func_name == "bigint_from_int") {
+          tisc::ir::Instruction conv;
+          conv.opcode = tisc::ir::Opcode::INT2BIGINT;
+          conv.operands = {dest.reg, val.reg};
+          conv.primitive = tisc::ir::PrimitiveKind::Integer;
+          conv.is_conversion = true;
+          emit(conv);
+        } else {
+          auto narrowed = emit_checked_i32_narrow(val);
+          copy_to_dest(narrowed, dest);
+        }
         record_result(&expr, dest);
         return {};
       }
@@ -5756,6 +5745,65 @@ private:
     instr.operands = {dest.reg, source.reg};
     instr.primitive = dest.primitive;
     emit(instr);
+  }
+
+  TypedRegister emit_integer_literal(std::int64_t value) {
+    auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+    auto instr = tisc::ir::Instruction{tisc::ir::Opcode::LOADI, {dest.reg, tisc::ir::Immediate{value}}};
+    instr.primitive = tisc::ir::PrimitiveKind::Integer;
+    emit(instr);
+    return dest;
+  }
+
+  TypedRegister emit_checked_i32_narrow(TypedRegister source) {
+    if (source.primitive != tisc::ir::PrimitiveKind::Integer &&
+        source.primitive != tisc::ir::PrimitiveKind::Unknown) {
+      throw std::runtime_error("checked i32 narrowing requires integer-like input");
+    }
+
+    auto min_reg = emit_integer_literal(std::numeric_limits<std::int32_t>::min());
+    auto max_reg = emit_integer_literal(std::numeric_limits<std::int32_t>::max());
+
+    auto is_too_small = allocate_typed_register(tisc::ir::PrimitiveKind::Boolean);
+    tisc::ir::Instruction less_cmp;
+    less_cmp.opcode = tisc::ir::Opcode::CMP;
+    less_cmp.operands = {is_too_small.reg, source.reg, min_reg.reg};
+    less_cmp.primitive = tisc::ir::PrimitiveKind::Boolean;
+    less_cmp.boolean_result = true;
+    less_cmp.relation = tisc::ir::ComparisonRelation::Less;
+    emit(less_cmp);
+
+    auto lower_ok = new_label();
+    emit_jump_if_zero(lower_ok, is_too_small);
+    emit_simple(tisc::ir::Opcode::TRAP);
+    emit_label(lower_ok);
+
+    auto is_too_large = allocate_typed_register(tisc::ir::PrimitiveKind::Boolean);
+    tisc::ir::Instruction greater_cmp;
+    greater_cmp.opcode = tisc::ir::Opcode::CMP;
+    greater_cmp.operands = {is_too_large.reg, source.reg, max_reg.reg};
+    greater_cmp.primitive = tisc::ir::PrimitiveKind::Boolean;
+    greater_cmp.boolean_result = true;
+    greater_cmp.relation = tisc::ir::ComparisonRelation::Greater;
+    emit(greater_cmp);
+
+    auto upper_ok = new_label();
+    emit_jump_if_zero(upper_ok, is_too_large);
+    emit_simple(tisc::ir::Opcode::TRAP);
+    emit_label(upper_ok);
+
+    auto frac_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Fraction);
+    auto i2frac = tisc::ir::Instruction{tisc::ir::Opcode::I2FRAC, {frac_reg.reg, source.reg}};
+    i2frac.primitive = tisc::ir::PrimitiveKind::Fraction;
+    i2frac.is_conversion = true;
+    emit(i2frac);
+
+    auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+    auto frac2i = tisc::ir::Instruction{tisc::ir::Opcode::FRAC2I, {dest.reg, frac_reg.reg}};
+    frac2i.primitive = tisc::ir::PrimitiveKind::Integer;
+    frac2i.is_conversion = true;
+    emit(frac2i);
+    return dest;
   }
 
   void bind_variable(const std::string& name, TypedRegister reg) {

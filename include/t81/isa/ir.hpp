@@ -91,6 +91,7 @@ enum class Opcode {
   FRAC2I,
   F2FRAC,
   FRAC2F,
+  INT2BIGINT,
 
   // Option/Result Helpers
   MAKE_OPTION_SOME,

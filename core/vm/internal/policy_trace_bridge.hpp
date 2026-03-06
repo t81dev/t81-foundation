@@ -44,6 +44,10 @@ void log_bounds_fault(State& state, std::size_t current_context, t81::tisc::Opco
 void log_canonfs_operation(State& state, std::size_t current_context,
                            t81::tisc::Opcode opcode, std::string_view action);
 
+void log_tensor_provenance(State& state, std::size_t current_context, t81::tisc::Opcode opcode,
+                           std::size_t handle, const t81::T729DynamicTensor& tensor,
+                           std::string_view action);
+
 void record_axion_event(State& state, std::size_t current_context, t81::tisc::Opcode opcode,
                         std::int32_t tag_val, std::int64_t val_data,
                         const t81::axion::Verdict& verdict);

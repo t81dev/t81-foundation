@@ -53,6 +53,13 @@ enum class TierPromotionError {
 
 using TierPromotionResult = t81::expected<t81::cog::TierStatus, TierPromotionError>;
 
+std::filesystem::path resolve_canonfs_root() {
+  if (const char* raw = std::getenv("T81_CANONFS_ROOT"); raw != nullptr && raw[0] != '\0') {
+    return std::filesystem::path(raw);
+  }
+  return std::filesystem::current_path() / ".t81_canonfs";
+}
+
 TierPromotionResult try_promote_tier(
     const t81::cog::TierStatus& status,
     const std::function<t81::axion::Verdict(const t81::axion::SyscallContext&)>& callback) {
@@ -171,7 +178,7 @@ public:
     if (!axion_engine_) {
       axion_engine_ = t81::axion::make_allow_all_engine();
     }
-    std::filesystem::path canon_root = std::filesystem::current_path() / ".t81_canonfs";
+    std::filesystem::path canon_root = resolve_canonfs_root();
     std::error_code ec;
     std::filesystem::create_directories(canon_root, ec);
     canonfs_driver_ = t81::canonfs::make_persistent_driver(canon_root);
@@ -216,6 +223,7 @@ public:
     ctx.sp = ctx.stack_base;
 
     state_.floats = program_.float_pool;
+    state_.bigints = program_.bigint_pool;
     state_.fractions = program_.fraction_pool;
     state_.symbols = program_.symbol_pool;
     state_.string_vectors.clear();
@@ -514,6 +522,7 @@ public:
         case t81::tisc::LiteralKind::ShapeHandle:
           return ValueTag::ShapeHandle;
         case t81::tisc::LiteralKind::BigIntHandle:
+          return ValueTag::BigIntHandle;
         case t81::tisc::LiteralKind::Int:
         default:
           return ValueTag::Int;
@@ -551,7 +560,7 @@ public:
     };
     auto alloc_tensor = [this, current_pc, &telemetry](
                             t81::T729DynamicTensor tensor) -> std::expected<std::int64_t, Trap> {
-      const std::size_t tensor_elements = tensor.data().size();
+      const std::size_t tensor_elements = tensor.size();
       const std::size_t tensor_shape_complexity =
           t81::vm::internal::tensor_shape_complexity(tensor);
       const std::size_t tensor_rank = static_cast<std::size_t>(tensor.rank());
@@ -578,6 +587,11 @@ public:
 
       log_memory_segment_access(program_.insns[current_pc].opcode, MemorySegmentKind::Tensor,
                                 idx_handle, 1, t81::axion::reasons::kTensorAlloc);
+      if (const auto& stored = state_.tensors[idx_handle - 1]; stored.has_value()) {
+        t81::vm::internal::log_tensor_provenance(state_, state_.current_context,
+                                                 program_.insns[current_pc].opcode, idx_handle,
+                                                 stored.value(), "alloc");
+      }
       return static_cast<std::int64_t>(idx_handle);
     };
     auto promote_to_tensor = [&](int reg) -> std::expected<void, Trap> {
@@ -620,6 +634,12 @@ public:
       std::size_t idx = static_cast<std::size_t>(handle - 1);
       if (idx >= state_.fractions.size()) return nullptr;
       return &state_.fractions[idx];
+    };
+    auto bigint_ptr = [this](std::int64_t handle) -> t81::T81BigInt* {
+      if (handle <= 0) return nullptr;
+      std::size_t idx = static_cast<std::size_t>(handle - 1);
+      if (idx >= state_.bigints.size()) return nullptr;
+      return &state_.bigints[idx];
     };
     auto symbol_ptr = [this](std::int64_t handle) -> const std::string* {
       if (handle <= 0) return nullptr;
@@ -692,6 +712,13 @@ public:
     auto alloc_fraction = [this, current_pc](t81::T81Fraction frac) -> std::int64_t {
       state_.fractions.push_back(std::move(frac));
       auto idx = state_.fractions.size();
+      log_memory_segment_access(program_.insns[current_pc].opcode, MemorySegmentKind::Heap, idx, 1,
+                                t81::axion::reasons::kHeapAlloc);
+      return static_cast<std::int64_t>(idx);
+    };
+    auto alloc_bigint = [this, current_pc](t81::T81BigInt value) -> std::int64_t {
+      state_.bigints.push_back(std::move(value));
+      auto idx = state_.bigints.size();
       log_memory_segment_access(program_.insns[current_pc].opcode, MemorySegmentKind::Heap, idx, 1,
                                 t81::axion::reasons::kHeapAlloc);
       return static_cast<std::int64_t>(idx);
@@ -952,6 +979,61 @@ public:
       }
       return shannon * static_cast<double>(telemetry.branch_events);
     };
+    auto update_flags_for_integer_value = [&](ValueTag tag, std::int64_t value) {
+      if (tag == ValueTag::BigIntHandle) {
+        auto* bigint = bigint_ptr(value);
+        if (bigint == nullptr) {
+          ctx.flags.zero = false;
+          ctx.flags.negative = false;
+          ctx.flags.positive = false;
+          return;
+        }
+        ctx.flags.zero = bigint->is_zero();
+        ctx.flags.negative = bigint->is_negative();
+        ctx.flags.positive = !bigint->is_zero() && !bigint->is_negative();
+        return;
+      }
+      update_flags(value);
+    };
+    auto is_integer_like_tag = [](ValueTag tag) {
+      return tag == ValueTag::Int || tag == ValueTag::Bool || tag == ValueTag::BigIntHandle;
+    };
+    auto bigint_from_integer_like = [&](ValueTag tag, std::int64_t value) -> std::optional<t81::T81BigInt> {
+      switch (tag) {
+        case ValueTag::Int:
+        case ValueTag::Bool:
+          return t81::T81BigInt(value);
+        case ValueTag::BigIntHandle: {
+          auto* bigint = bigint_ptr(value);
+          if (bigint == nullptr) return std::nullopt;
+          return *bigint;
+        }
+        default:
+          return std::nullopt;
+      }
+    };
+    auto store_integer_result =
+        [&](int reg, t81::T81BigInt value, bool force_bigint = false) -> std::optional<Trap> {
+      if (!force_bigint) {
+        if (auto narrowed = value.maybe_int64(); narrowed.has_value()) {
+          const auto small = *narrowed;
+          set_reg(reg, small, ValueTag::Int);
+          update_flags_for_integer_value(ValueTag::Int, small);
+          return std::nullopt;
+        }
+      }
+      const auto handle = alloc_bigint(std::move(value));
+      set_reg(reg, handle, ValueTag::BigIntHandle);
+      update_flags_for_integer_value(ValueTag::BigIntHandle, handle);
+      return std::nullopt;
+    };
+    auto store_bigint_materialized =
+        [&](int reg, t81::T81BigInt value) -> std::optional<Trap> {
+      const auto handle = alloc_bigint(std::move(value));
+      set_reg(reg, handle, ValueTag::BigIntHandle);
+      update_flags_for_integer_value(ValueTag::BigIntHandle, handle);
+      return std::nullopt;
+    };
     auto infer_required_tier_for_recursion = [&]() -> int {
       const std::size_t depth = std::max<std::size_t>(
           ctx.call_depth, static_cast<std::size_t>(ctx.tier3_recursor.current_depth));
@@ -977,6 +1059,13 @@ public:
         case ValueTag::Bool:
           if (lhs_val == rhs_val) return 0;
           return (lhs_val < rhs_val) ? -1 : 1;
+        case ValueTag::BigIntHandle: {
+          auto* lhs = bigint_ptr(lhs_val);
+          auto* rhs = bigint_ptr(rhs_val);
+          if (lhs == nullptr || rhs == nullptr) return std::nullopt;
+          if (*lhs == *rhs) return 0;
+          return (*lhs < *rhs) ? -1 : 1;
+        }
         case ValueTag::FloatHandle: {
           auto* lhs = float_ptr(lhs_val);
           auto* rhs = float_ptr(rhs_val);
@@ -1072,6 +1161,11 @@ public:
           return std::to_string(val_data);
         case ValueTag::Bool:
           return val_data != 0 ? "true" : "false";
+        case ValueTag::BigIntHandle: {
+          auto* bigint = bigint_ptr(val_data);
+          if (!bigint) return std::nullopt;
+          return bigint->to_string();
+        }
         case ValueTag::FloatHandle: {
           auto* ptr_val = float_ptr(val_data);
           if (!ptr_val) return std::nullopt;
@@ -1260,11 +1354,8 @@ public:
             trap = Trap::DecodeFault;
             break;
           }
-          const auto idx = static_cast<std::size_t>(insn.b - 1);
-          t81::T81Fraction frac(program_.bigint_pool[idx], t81::T81BigInt::one());
-          const std::int64_t handle = alloc_fraction(std::move(frac));
-          set_reg(insn.a, handle, ValueTag::FractionHandle);
-          update_flags(ctx.registers[insn.a]);
+          set_reg(insn.a, insn.b, ValueTag::BigIntHandle);
+          update_flags_for_integer_value(ValueTag::BigIntHandle, ctx.registers[insn.a]);
           break;
         }
         auto tag = literal_kind_to_tag(insn.literal_kind);
@@ -1277,7 +1368,7 @@ public:
           }
         }
         set_reg(insn.a, value, tag);
-        update_flags(ctx.registers[insn.a]);
+        update_flags_for_integer_value(tag, ctx.registers[insn.a]);
         break;
       }
       case t81::tisc::Opcode::F2Frac: {
@@ -1342,38 +1433,96 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
-        ctx.registers[insn.a] += 1;
-        ctx.register_tags[insn.a] = ValueTag::Int;
-        update_flags(ctx.registers[insn.a]);
+        if (!is_integer_like_tag(ctx.register_tags[insn.a])) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (auto lhs = bigint_from_integer_like(ctx.register_tags[insn.a], ctx.registers[insn.a]);
+            lhs.has_value()) {
+          const bool preserve_bigint = ctx.register_tags[insn.a] == ValueTag::BigIntHandle;
+          if (auto op_trap =
+                  store_integer_result(insn.a, *lhs + t81::T81BigInt(1), preserve_bigint);
+              op_trap.has_value()) {
+            trap = *op_trap;
+          }
+        } else {
+          trap = Trap::DecodeFault;
+        }
         break;
       case t81::tisc::Opcode::Dec:
         if (!reg_ok(insn.a)) {
           trap = Trap::DecodeFault;
           break;
         }
-        ctx.registers[insn.a] -= 1;
-        ctx.register_tags[insn.a] = ValueTag::Int;
-        update_flags(ctx.registers[insn.a]);
+        if (!is_integer_like_tag(ctx.register_tags[insn.a])) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (auto lhs = bigint_from_integer_like(ctx.register_tags[insn.a], ctx.registers[insn.a]);
+            lhs.has_value()) {
+          const bool preserve_bigint = ctx.register_tags[insn.a] == ValueTag::BigIntHandle;
+          if (auto op_trap =
+                  store_integer_result(insn.a, *lhs - t81::T81BigInt(1), preserve_bigint);
+              op_trap.has_value()) {
+            trap = *op_trap;
+          }
+        } else {
+          trap = Trap::DecodeFault;
+        }
         break;
       case t81::tisc::Opcode::Add:
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
           trap = Trap::DecodeFault;
           break;
         }
-        ctx.registers[insn.a] =
-            t81::vm::internal::add_int(ctx.registers[insn.b], ctx.registers[insn.c]);
-        ctx.register_tags[insn.a] = ValueTag::Int;
-        update_flags(ctx.registers[insn.a]);
+        if (!is_integer_like_tag(ctx.register_tags[insn.b]) ||
+            !is_integer_like_tag(ctx.register_tags[insn.c])) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (auto lhs = bigint_from_integer_like(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+            lhs.has_value()) {
+          auto rhs = bigint_from_integer_like(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+          if (!rhs.has_value()) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          const bool preserve_bigint = ctx.register_tags[insn.b] == ValueTag::BigIntHandle ||
+                                       ctx.register_tags[insn.c] == ValueTag::BigIntHandle;
+          if (auto op_trap = store_integer_result(insn.a, *lhs + *rhs, preserve_bigint);
+              op_trap.has_value()) {
+            trap = *op_trap;
+          }
+        } else {
+          trap = Trap::DecodeFault;
+        }
         break;
       case t81::tisc::Opcode::Sub:
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
           trap = Trap::DecodeFault;
           break;
         }
-        ctx.registers[insn.a] =
-            t81::vm::internal::sub_int(ctx.registers[insn.b], ctx.registers[insn.c]);
-        ctx.register_tags[insn.a] = ValueTag::Int;
-        update_flags(ctx.registers[insn.a]);
+        if (!is_integer_like_tag(ctx.register_tags[insn.b]) ||
+            !is_integer_like_tag(ctx.register_tags[insn.c])) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (auto lhs = bigint_from_integer_like(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+            lhs.has_value()) {
+          auto rhs = bigint_from_integer_like(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+          if (!rhs.has_value()) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          const bool preserve_bigint = ctx.register_tags[insn.b] == ValueTag::BigIntHandle ||
+                                       ctx.register_tags[insn.c] == ValueTag::BigIntHandle;
+          if (auto op_trap = store_integer_result(insn.a, *lhs - *rhs, preserve_bigint);
+              op_trap.has_value()) {
+            trap = *op_trap;
+          }
+        } else {
+          trap = Trap::DecodeFault;
+        }
         break;
       case t81::tisc::Opcode::Load: {
         if (!reg_ok(insn.a)) {
@@ -1963,10 +2112,27 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
-        ctx.registers[insn.a] =
-            t81::vm::internal::mul_int(ctx.registers[insn.b], ctx.registers[insn.c]);
-        ctx.register_tags[insn.a] = ValueTag::Int;
-        update_flags(ctx.registers[insn.a]);
+        if (!is_integer_like_tag(ctx.register_tags[insn.b]) ||
+            !is_integer_like_tag(ctx.register_tags[insn.c])) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (auto lhs = bigint_from_integer_like(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+            lhs.has_value()) {
+          auto rhs = bigint_from_integer_like(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+          if (!rhs.has_value()) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          const bool preserve_bigint = ctx.register_tags[insn.b] == ValueTag::BigIntHandle ||
+                                       ctx.register_tags[insn.c] == ValueTag::BigIntHandle;
+          if (auto op_trap = store_integer_result(insn.a, *lhs * *rhs, preserve_bigint);
+              op_trap.has_value()) {
+            trap = *op_trap;
+          }
+        } else {
+          trap = Trap::DecodeFault;
+        }
         break;
       case t81::tisc::Opcode::Div:
       case t81::tisc::Opcode::Mod: {
@@ -1974,19 +2140,29 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
-        const auto divisor = ctx.registers[insn.c];
-        const auto lhs = ctx.registers[insn.b];
-        std::int64_t result = 0;
-        const bool ok = (insn.opcode == t81::tisc::Opcode::Div)
-                            ? t81::vm::internal::div_int(lhs, divisor, &result)
-                            : t81::vm::internal::mod_int(lhs, divisor, &result);
-        if (!ok) {
+        if (!is_integer_like_tag(ctx.register_tags[insn.b]) ||
+            !is_integer_like_tag(ctx.register_tags[insn.c])) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        auto lhs = bigint_from_integer_like(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+        auto rhs = bigint_from_integer_like(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+        if (!lhs.has_value() || !rhs.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (rhs->is_zero()) {
           trap = Trap::DivisionFault;
           break;
         }
-        ctx.registers[insn.a] = result;
-        ctx.register_tags[insn.a] = ValueTag::Int;
-        update_flags(ctx.registers[insn.a]);
+        t81::T81BigInt result =
+            (insn.opcode == t81::tisc::Opcode::Div) ? (*lhs / *rhs) : (*lhs % *rhs);
+        const bool preserve_bigint = ctx.register_tags[insn.b] == ValueTag::BigIntHandle ||
+                                     ctx.register_tags[insn.c] == ValueTag::BigIntHandle;
+        if (auto op_trap = store_integer_result(insn.a, std::move(result), preserve_bigint);
+            op_trap.has_value()) {
+          trap = *op_trap;
+        }
         break;
       }
       case t81::tisc::Opcode::Jump:
@@ -2035,9 +2211,20 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
-        ctx.registers[insn.a] = t81::vm::internal::neg_int(ctx.registers[insn.b]);
-        ctx.register_tags[insn.a] = ValueTag::Int;
-        update_flags(ctx.registers[insn.a]);
+        if (!is_integer_like_tag(ctx.register_tags[insn.b])) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (auto value = bigint_from_integer_like(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+            value.has_value()) {
+          const bool preserve_bigint = ctx.register_tags[insn.b] == ValueTag::BigIntHandle;
+          if (auto op_trap = store_integer_result(insn.a, -*value, preserve_bigint);
+              op_trap.has_value()) {
+            trap = *op_trap;
+          }
+        } else {
+          trap = Trap::DecodeFault;
+        }
         break;
       case t81::tisc::Opcode::JumpIfNegative: {
         const bool taken = ctx.flags.negative;
@@ -2076,13 +2263,33 @@ public:
         auto tag_b = ctx.register_tags[insn.b];
         auto tag_c = ctx.register_tags[insn.c];
         // Allow Int/Bool mixed comparisons — both store 0/1 values.
-        auto normalize_tag = [](ValueTag t) { return (t == ValueTag::Bool) ? ValueTag::Int : t; };
-        if (normalize_tag(tag_b) != normalize_tag(tag_c)) {
+        auto normalize_tag = [](ValueTag t) {
+          if (t == ValueTag::Bool) return ValueTag::Int;
+          return t;
+        };
+        const auto normalized_b = normalize_tag(tag_b);
+        const auto normalized_c = normalize_tag(tag_c);
+        const bool integer_mixed = is_integer_like_tag(normalized_b) && is_integer_like_tag(normalized_c);
+        if (!integer_mixed && normalized_b != normalized_c) {
           trap = Trap::TypeFault;
           break;
         }
-        auto relation_opt =
-            compare_value(normalize_tag(tag_b), ctx.registers[insn.b], ctx.registers[insn.c]);
+        std::optional<int> relation_opt;
+        if (integer_mixed) {
+          auto lhs = bigint_from_integer_like(normalized_b, ctx.registers[insn.b]);
+          auto rhs = bigint_from_integer_like(normalized_c, ctx.registers[insn.c]);
+          if (!lhs.has_value() || !rhs.has_value()) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          if (*lhs == *rhs) {
+            relation_opt = 0;
+          } else {
+            relation_opt = (*lhs < *rhs) ? -1 : 1;
+          }
+        } else {
+          relation_opt = compare_value(normalized_b, ctx.registers[insn.b], ctx.registers[insn.c]);
+        }
         if (!relation_opt.has_value()) {
           trap = Trap::DecodeFault;
           break;
@@ -2123,11 +2330,27 @@ public:
         }
         auto tag_a = ctx.register_tags[insn.a];
         auto tag_b = ctx.register_tags[insn.b];
-        if (tag_a != tag_b) {
+        const bool integer_mixed = is_integer_like_tag(tag_a) && is_integer_like_tag(tag_b);
+        if (!integer_mixed && tag_a != tag_b) {
           trap = Trap::TypeFault;
           break;
         }
-        auto relation_opt = compare_value(tag_a, ctx.registers[insn.a], ctx.registers[insn.b]);
+        std::optional<int> relation_opt;
+        if (integer_mixed) {
+          auto lhs = bigint_from_integer_like(tag_a, ctx.registers[insn.a]);
+          auto rhs = bigint_from_integer_like(tag_b, ctx.registers[insn.b]);
+          if (!lhs.has_value() || !rhs.has_value()) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          if (*lhs == *rhs) {
+            relation_opt = 0;
+          } else {
+            relation_opt = (*lhs < *rhs) ? -1 : 1;
+          }
+        } else {
+          relation_opt = compare_value(tag_a, ctx.registers[insn.a], ctx.registers[insn.b]);
+        }
         if (!relation_opt.has_value()) {
           trap = Trap::DecodeFault;
           break;
@@ -3038,7 +3261,21 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
-        auto value = static_cast<double>(ctx.registers[insn.b]);
+        if (!is_integer_like_tag(ctx.register_tags[insn.b])) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        double value = 0.0;
+        if (ctx.register_tags[insn.b] == ValueTag::BigIntHandle) {
+          auto* bigint = bigint_ptr(ctx.registers[insn.b]);
+          if (!bigint) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          value = bigint->to_float<72, 9>().to_double();
+        } else {
+          value = static_cast<double>(ctx.registers[insn.b]);
+        }
         ctx.registers[insn.a] = alloc_float(value);
         ctx.register_tags[insn.a] = ValueTag::FloatHandle;
         break;
@@ -3067,9 +3304,42 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
-        auto frac = t81::T81Fraction::from_int(ctx.registers[insn.b]);
+        if (!is_integer_like_tag(ctx.register_tags[insn.b])) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        t81::T81Fraction frac;
+        if (ctx.register_tags[insn.b] == ValueTag::BigIntHandle) {
+          auto* bigint = bigint_ptr(ctx.registers[insn.b]);
+          if (!bigint) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          frac = t81::T81Fraction(*bigint, t81::T81BigInt::one());
+        } else {
+          frac = t81::T81Fraction::from_int(ctx.registers[insn.b]);
+        }
         ctx.registers[insn.a] = alloc_fraction(std::move(frac));
         ctx.register_tags[insn.a] = ValueTag::FractionHandle;
+        break;
+      }
+      case t81::tisc::Opcode::Int2BigInt: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (!is_integer_like_tag(ctx.register_tags[insn.b])) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (auto value = bigint_from_integer_like(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+            value.has_value()) {
+          if (auto op_trap = store_bigint_materialized(insn.a, std::move(*value)); op_trap.has_value()) {
+            trap = *op_trap;
+          }
+        } else {
+          trap = Trap::DecodeFault;
+        }
         break;
       }
       case t81::tisc::Opcode::Frac2I: {
@@ -3086,14 +3356,9 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
-        try {
-          ctx.registers[insn.a] = ptr_val->num.to_int64();
-        } catch (...) {
-          trap = Trap::DecodeFault;
-          break;
+        if (auto op_trap = store_integer_result(insn.a, ptr_val->num); op_trap.has_value()) {
+          trap = *op_trap;
         }
-        ctx.register_tags[insn.a] = ValueTag::Int;
-        update_flags(ctx.registers[insn.a]);
         break;
       }
       case t81::tisc::Opcode::FAdd:
@@ -3827,13 +4092,19 @@ public:
           break;
         }
 
-        auto set_res = t81::vm::internal::tensor_set_checked(*tensor, idx, val);
+        const auto write_kind = val_tag == ValueTag::FloatHandle
+                                    ? t81::tensor_mutation::ScalarWriteKind::FloatValue
+                                    : t81::tensor_mutation::ScalarWriteKind::IntValue;
+        auto set_res = t81::vm::internal::tensor_set_checked(*tensor, idx, val, write_kind);
         if (!set_res.has_value()) {
           log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, static_cast<int>(idx),
                            "TSet OOB");
           trap = set_res.error();
           break;
         }
+        t81::vm::internal::log_tensor_provenance(state_, state_.current_context, insn.opcode,
+                                                 static_cast<std::size_t>(ctx.registers[insn.a]),
+                                                 *tensor, "set");
 
         t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TSet"};
         record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), 0, verdict);
@@ -4697,21 +4968,19 @@ public:
           trap = Trap::TypeFault;
           break;
         }
-        auto dequantized = *tensor_wt;
-        for (auto& x : dequantized.data()) {
-          x *= scale;
-        }
-        auto computed = t81::vm::internal::tensor_matmul_checked(*tensor_act, dequantized);
-        if (!computed.has_value()) {
+        t81::T729DynamicTensor computed;
+        try {
+          computed = t81::ops::qmatmul(*tensor_act, *tensor_wt, scale);
+        } catch (...) {
           log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, 0, "QMATMUL shape mismatch");
-          trap = computed.error();
+          trap = Trap::ShapeFault;
           break;
         }
         t81::axion::Verdict verdict{
             t81::axion::VerdictKind::Allow,
             "QMATMUL kernel execution (phase1 packed operand encoding)"};
         record_axion_event(insn.opcode, static_cast<int32_t>(act_reg), ctx.registers[act_reg], verdict);
-        auto res_handle = alloc_tensor(std::move(*computed));
+        auto res_handle = alloc_tensor(std::move(computed));
         if (!res_handle) {
           trap = res_handle.error();
           break;

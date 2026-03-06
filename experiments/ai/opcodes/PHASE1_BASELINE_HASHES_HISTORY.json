@@ -2,18 +2,27 @@
   "schema": "t81.ai.phase1-hash-baseline-history.v1",
   "windows": [
     {
+      "window_id": "2026-02",
+      "window_start": "2026-02-01",
+      "window_end": "2026-02-28",
       "baseline": {
+        "schema": "t81.ai.phase1-hash-baseline.v1",
+        "phase": "phase1",
         "output_hashes": {
           "ATTN": "db742b617767af01",
-          "EMBED": "8715026970757876",
-          "QMATMUL": "14d41b8df3810394"
-        },
-        "phase": "phase1",
-        "schema": "t81.ai.phase1-hash-baseline.v1"
+          "QMATMUL": "14d41b8df3810394",
+          "EMBED": "8715026970757876"
+        }
+      },
+      "provenance": {
+        "cross_lane_evidence_ref": "build/ai-cross-lane/ai_cross_lane_evidence.json",
+        "ctest_log_ref": "build/ai-opcodes/ai_phase1_opcode_ctest.log",
+        "fixture_set_ref": "tests/fixtures/llama_cpp_repro",
+        "runtime_report_ref": "build/ai-opcodes-runtime/ai_opcode_runtime_report.json"
       },
       "promotion_approval": {
-        "approved_at": "2026-02-01",
         "approved_by": "@t81dev",
+        "approved_at": "2026-02-01",
         "change_ref": "rfc00a8-baseline-window-2026-02"
       },
       "promotion_approval_attestation_sha256": "cf34cfbbda04634db331be876a9825cea8028eda19df111d73d4dcc779e008f5",
@@ -21,6 +30,20 @@
         "algorithm": "hmac-sha256",
         "key_id": "ai-opcode-baseline-approval-2026q1",
         "signature_hex": "592178c0dc88497055e4c6d0c628763e247156e521281518532b39f3a1b60869"
+      }
+    },
+    {
+      "window_id": "2026-03a",
+      "window_start": "2026-03-01",
+      "window_end": "2026-03-05",
+      "baseline": {
+        "schema": "t81.ai.phase1-hash-baseline.v1",
+        "phase": "phase1",
+        "output_hashes": {
+          "ATTN": "db742b617767af01",
+          "QMATMUL": "14d41b8df3810394",
+          "EMBED": "8715026970757876"
+        }
       },
       "provenance": {
         "cross_lane_evidence_ref": "build/ai-cross-lane/ai_cross_lane_evidence.json",
@@ -28,30 +51,30 @@
         "fixture_set_ref": "tests/fixtures/llama_cpp_repro",
         "runtime_report_ref": "build/ai-opcodes-runtime/ai_opcode_runtime_report.json"
       },
-      "window_end": "2026-02-28",
-      "window_id": "2026-02",
-      "window_start": "2026-02-01"
-    },
-    {
-      "baseline": {
-        "output_hashes": {
-          "ATTN": "db742b617767af01",
-          "EMBED": "8715026970757876",
-          "QMATMUL": "14d41b8df3810394"
-        },
-        "phase": "phase1",
-        "schema": "t81.ai.phase1-hash-baseline.v1"
-      },
       "promotion_approval": {
-        "approved_at": "2026-03-01",
         "approved_by": "@t81dev",
-        "change_ref": "rfc00a8-baseline-window-2026-03"
+        "approved_at": "2026-03-01",
+        "change_ref": "rfc00a8-baseline-window-2026-03a"
       },
-      "promotion_approval_attestation_sha256": "826a977aa6caa664bba1229070c4cfe8202f78031ddd61f72ad4ec23bb8671a8",
+      "promotion_approval_attestation_sha256": "a0e5111f6aa530a12e0d0d6c620627a869806ee9c5dd1ebf763d3f8bdf90bcd5",
       "promotion_approval_signature": {
         "algorithm": "hmac-sha256",
         "key_id": "ai-opcode-baseline-approval-2026q1",
-        "signature_hex": "4d4bba40592544217d1c109f9ce54538be0611187d0aafc85384642542c5eaa2"
+        "signature_hex": "913e5d5ff468970fbf0d2b29a44cc199a920b469284855a4cc75126e056b09c1"
+      }
+    },
+    {
+      "window_id": "2026-03b",
+      "window_start": "2026-03-06",
+      "window_end": "2026-03-31",
+      "baseline": {
+        "schema": "t81.ai.phase1-hash-baseline.v1",
+        "phase": "phase1",
+        "output_hashes": {
+          "ATTN": "d878d6629816575f",
+          "QMATMUL": "14d41b8df3810394",
+          "EMBED": "8715026970757876"
+        }
       },
       "provenance": {
         "cross_lane_evidence_ref": "build/ai-cross-lane/ai_cross_lane_evidence.json",
@@ -59,9 +82,17 @@
         "fixture_set_ref": "tests/fixtures/llama_cpp_repro",
         "runtime_report_ref": "build/ai-opcodes-runtime/ai_opcode_runtime_report.json"
       },
-      "window_end": "2026-03-31",
-      "window_id": "2026-03",
-      "window_start": "2026-03-01"
+      "promotion_approval": {
+        "approved_by": "@t81dev",
+        "approved_at": "2026-03-06",
+        "change_ref": "rfc00a8-baseline-window-2026-03b"
+      },
+      "promotion_approval_attestation_sha256": "b3606bd6404cf60516587adf21676a4fdc587681ce88dd638aecefc590126225",
+      "promotion_approval_signature": {
+        "algorithm": "hmac-sha256",
+        "key_id": "ai-opcode-baseline-approval-2026q1",
+        "signature_hex": "e0a4619e20dc9cd3b164db4ae10b6d2f3ac3c9fd045ad84912868d74b176bd90"
+      }
     }
   ]
 }

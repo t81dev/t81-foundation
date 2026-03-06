@@ -30,6 +30,17 @@ def parse_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def effective_support_state(payload: dict[str, Any], requested_mode: str, fallback_status: str) -> tuple[str, str]:
+    strict_core_eligible = bool(payload.get("strict_core_eligible", False))
+    effective_class = str(payload.get("effective_determinism_class", "")).strip()
+    if requested_mode == "strict_deterministic" and not strict_core_eligible:
+        return (
+            "unsupported",
+            effective_class or "strict_deterministic request downgraded by runtime boundary",
+        )
+    return fallback_status, effective_class
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Validate AI benchmark format/mode capability matrix.")
     p.add_argument("--out-dir", required=True, help="Output directory for matrix artifacts")
@@ -49,7 +60,7 @@ def parse_args() -> argparse.Namespace:
         "--required",
         action="append",
         default=[],
-        help="Required format:mode entry (repeatable). Defaults to gguf:strict_deterministic.",
+        help="Required format:mode entry (repeatable). Defaults to none.",
     )
     p.add_argument(
         "--expectations-file",
@@ -76,7 +87,7 @@ def main() -> int:
     modes = [item.strip() for item in str(args.modes).split(",") if item.strip()]
     if not formats or not modes:
         raise SystemExit("formats and modes must be non-empty")
-    required = args.required if args.required else ["gguf:strict_deterministic"]
+    required = args.required if args.required else []
     expectations_file = (
         Path(args.expectations_file).resolve()
         if args.expectations_file
@@ -116,12 +127,15 @@ def main() -> int:
                 payload = parse_json(out_json)
                 payload_status = str(payload.get("status", ""))
                 selected_backend = str(payload.get("selected_backend", ""))
-                support_state = "supported" if payload_status == "pass" else "degraded"
+                provisional = "supported" if payload_status == "pass" else "degraded"
+                support_state, effective_class = effective_support_state(payload, mode, provisional)
             elif proc.returncode != 0 and UNSUPPORTED_SENTINEL in stderr:
                 support_state = "unsupported"
                 artifact_path = ""
+                effective_class = ""
             else:
                 support_state = "error"
+                effective_class = ""
 
             matrix_entries.append(
                 {
@@ -131,6 +145,7 @@ def main() -> int:
                     "return_code": proc.returncode,
                     "selected_backend": selected_backend,
                     "payload_status": payload_status,
+                    "effective_determinism_class": effective_class,
                     "artifact": artifact_path,
                     "stdout_sha256": sha256_text(stdout),
                     "stderr_sha256": sha256_text(stderr),
@@ -211,15 +226,16 @@ def main() -> int:
         "",
         f"- schema: `{SCHEMA_VERSION}`",
         f"- status: `{status}`",
-        f"- required: `{', '.join(required)}`",
+        f"- required: `{', '.join(required) if required else '(none)'}`",
         f"- expectations_file: `{expectations_file}`",
         "",
-        "| Format | Mode | Support | Backend | RC |",
-        "| :--- | :--- | :--- | :--- | :--- |",
+        "| Format | Mode | Support | Effective Class | Backend | RC |",
+        "| :--- | :--- | :--- | :--- | :--- | :--- |",
     ]
     for item in matrix_entries:
         lines.append(
             f"| `{item['format']}` | `{item['mode']}` | `{item['support_state']}` | "
+            f"`{item.get('effective_determinism_class') or '-'}` | "
             f"`{item['selected_backend'] or '-'}` | `{item['return_code']}` |"
         )
     if expectation_results:

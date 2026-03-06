@@ -136,6 +136,10 @@ void log_meta_slot(State& state, const char* /*label*/) {
   ++state.meta_ptr;
 }
 
+const char* tensor_storage_class_name(const t81::T729DynamicTensor& tensor) {
+  return tensor.canonical_fixed_authoritative() ? "canonical_fixed" : "raw_host_float";
+}
+
 }  // namespace
 
 void record_axion_event(State& state, std::size_t current_context, t81::tisc::Opcode opcode,
@@ -163,6 +167,35 @@ void record_axion_event(State& state, std::size_t current_context, t81::tisc::Op
   } else {
     event.structured.decision = "deny";
   }
+  push_axion_event(state, event);
+}
+
+void log_tensor_provenance(State& state, std::size_t current_context, t81::tisc::Opcode opcode,
+                           std::size_t handle, const t81::T729DynamicTensor& tensor,
+                           std::string_view action) {
+  log_meta_slot(state, t81::axion::reasons::kMetaSlotAxionEvent.data());
+
+  AxionEvent event;
+  event.opcode = opcode;
+  event.tag = static_cast<std::int32_t>(MemorySegmentKind::Tensor);
+  event.value = static_cast<std::int64_t>(handle);
+  event.verdict.kind = t81::axion::VerdictKind::Allow;
+  event.verdict.reason = t81::axion::reasons::canonical_tensor_provenance_reason(
+      handle, action, tensor_storage_class_name(tensor),
+      t81::tensor_numeric_class_name(tensor.numeric_class()), tensor.strict_core_eligible());
+  event.structured.reason = event.verdict.reason;
+  event.structured.event_type = "tensor_provenance";
+  event.structured.reason_code = "VM_TENSOR_PROVENANCE";
+  event.structured.storage_class = tensor_storage_class_name(tensor);
+  event.structured.numeric_class = t81::tensor_numeric_class_name(tensor.numeric_class());
+  event.structured.strict_core_eligible = tensor.strict_core_eligible();
+  if (!state.contexts.empty() && current_context < state.contexts.size()) {
+    event.structured.pc = state.contexts[current_context].pc;
+  } else {
+    event.structured.pc = 0;
+  }
+  event.structured.handle_id = static_cast<std::int64_t>(handle);
+  event.structured.decision = "allow";
   push_axion_event(state, event);
 }
 

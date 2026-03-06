@@ -34,7 +34,7 @@ inline T729TensorBase<T> broadcast_to(const T729TensorBase<T>& src,
   const std::size_t out_sz = t81::shape::size_of(new_shape);
 
   std::vector<T> out(out_sz);
-  const auto& din = src.data();
+  const auto din = src.snapshot_values();
 
   // Iterate flat over output, remap to input index (clamp broadcasted dims to 0).
   std::vector<int> idx(static_cast<size_t>(r_out), 0);

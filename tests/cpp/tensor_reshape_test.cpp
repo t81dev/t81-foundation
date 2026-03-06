@@ -19,11 +19,13 @@ int main() {
   const auto& d = r.data();
   (void)d;
   assert((d == std::vector<float>{1, 2, 3, 4, 5, 6}));
+  assert(r.canonical_fixed_authoritative());
 
   // Reshape using -1 inference: 2x3 -> {-1} => {6}
   [[maybe_unused]] auto v = t81::ops::reshape(m, {-1});
   assert(v.rank() == 1 && v.shape()[0] == 6);
   assert((v.data() == std::vector<float>{1, 2, 3, 4, 5, 6}));
+  assert(v.canonical_fixed_authoritative());
 
   // Infer middle dim: {2,3} -> {2,-1,1} -> {2,3,1}
   [[maybe_unused]] auto r3 = t81::ops::reshape(m, {2, -1, 1});

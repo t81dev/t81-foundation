@@ -2,7 +2,7 @@
 
 > **Source of Truth:** This document defines the **current operational state** of the project (what is true today). For future plans, see [../roadmaps-plans/ROADMAP.md](../roadmaps-plans/ROADMAP.md). For version history, see [CHANGELOG.md](CHANGELOG.md).
 
-**Last Updated:** February 26, 2026
+**Last Updated:** March 6, 2026
 **Status:** Active development (governance-controlled core with mixed maturity)
 
 ## 1. Snapshot
@@ -18,7 +18,7 @@
 | :--- | :--- | :--- | :--- | :--- |
 | **T81Lang** | Beta | Draft spec / Beta implementation | High | Implementation maturity is Beta under active drift/governance controls. |
 | **TISC** | Stable | v1.1.0 | High | Binary serialization and opcode matrix complete. |
-| **T81VM** | Beta | v1.1 surface | High | Core execution loop active with continued verification and governance controls. |
+| **T81VM** | Beta | v1.1 surface | High | Core execution loop active with continued verification and governance controls; integer/BigInt paths now have explicit runtime materialization, tensor helpers preserve an explicit exact-int/exact-trit subset through integer-safe ops, finite tensors now use canonical fixed backing as the authoritative deterministic storage lane while retaining compatibility host-float views, generic tensor serialization can emit versioned canonical-fixed payloads with legacy-read compatibility, native tensor decode now routes through a shared tensor-native decoder, CanonFS tensor objects accept `CanonicalFixed` payloads, `softmax`, attention, `rmsnorm`, and `rope` use deterministic fixed math across canonical finite inputs before host-float materialization, and Axion traces emit structured tensor provenance events for storage/numeric-class transitions. Broad tensor/AI determinism claims remain scoped to governed/verified surfaces rather than the entire runtime. |
 | **Axion** | Alpha | Draft surface coverage | High | Policy enforcement active with partial draft-surface coverage. |
 | **CanonFS** | Beta | v0.9.x | Medium | Persistent/In-memory drivers implemented; integrity/performance hardening ongoing. |
 | **CLI** | Beta | - | Medium | `run`/`compile` stable; `debug`/`trace` improving. |

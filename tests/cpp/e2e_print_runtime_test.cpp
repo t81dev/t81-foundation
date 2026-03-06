@@ -117,6 +117,41 @@ static void test_runtime_arithmetic_for_t81_numeric_families() {
   T81_TEST_CHECK(output[2] == "3/1t81");
 }
 
+static void test_runtime_preserves_oversized_bigint_literals() {
+  const std::string source = R"(
+    fn main() -> i32 {
+      let big: T81BigInt = 9223372036854775808t81;
+      let delta: T81BigInt = 2t81;
+      let sum: T81BigInt = big + delta;
+      print(big);
+      print(sum);
+      return 0;
+    }
+  )";
+
+  const auto output = run_and_capture_prints(source);
+  T81_TEST_CHECK(output.size() == 2);
+  T81_TEST_CHECK(output[0] == "9223372036854775808");
+  T81_TEST_CHECK(output[1] == "9223372036854775810");
+}
+
+static void test_runtime_materializes_bigint_construction_paths() {
+  const std::string source = R"(
+    fn main() -> i32 {
+      let from_context: T81BigInt = 7;
+      let from_call: T81BigInt = std.math.bigint.from_int(42);
+      print(from_context);
+      print(from_call);
+      return 0;
+    }
+  )";
+
+  const auto output = run_and_capture_prints(source);
+  T81_TEST_CHECK(output.size() == 2);
+  T81_TEST_CHECK(output[0] == "7");
+  T81_TEST_CHECK(output[1] == "42");
+}
+
 static void test_base81_float_parse_print_roundtrip_is_stable() {
   const std::vector<std::string_view> literals = {
       "1.20t81", "0.5t81", "-2.25t81", "123456.5t81", "0.1t81",
@@ -140,6 +175,8 @@ int main() {
   test_print_runtime_captures_scalars_in_order();
   test_print_runtime_supports_t81_literals_and_bool();
   test_runtime_arithmetic_for_t81_numeric_families();
+  test_runtime_preserves_oversized_bigint_literals();
+  test_runtime_materializes_bigint_construction_paths();
   test_base81_float_parse_print_roundtrip_is_stable();
   std::cout << "e2e print runtime test passed!\n";
   return 0;

@@ -14,23 +14,14 @@ concurrency:
 
 jobs:
   benchmark:
-    name: ${{ matrix.os }} • ${{ matrix.arch || 'native' }}
-    runs-on: ${{ matrix.runs_on }}
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu
-            runs_on: ubuntu-24.04
-            arch: zen4
-            cxx_flags: -O3 -mtune=znver4 -DNDEBUG
-          - os: ubuntu
-            runs_on: ubuntu-24.04
-            arch: native
-            cxx_flags: -O3 -march=native -DNDEBUG
-          - os: macos
-            runs_on: macos-14
-            arch: apple-m2
-            cxx_flags: -O3 -DNDEBUG
+    name: ubuntu • badge refresh
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      T81_BENCHMARK_SMOKE_FILTER: >-
+        BM_(ArithThroughput|NegationSpeed|RoundtripAccuracy|overflow|PackingDensity|MemoryBandwidth|Add_1024_bit|Add_2048_bit|T81LangCompile|LimbArithThroughput|LimbAdd_T81Native|LimbAdd_T81Limb|LimbAdd_Int128|vs_).*
+      T81_VM_BENCHMARK_FILTER: BM_VMSimulation_Dispatch|BM_NativeCall_Loop
+      T81_BADGE_BENCHMARK: BM_ArithThroughput_T81Cell
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -48,54 +39,102 @@ jobs:
         run: >
           cmake -S . -B build -G Ninja
           -DCMAKE_BUILD_TYPE=Release
-          -DT81_BENCHMARK=ON
-          -DCMAKE_CXX_FLAGS="${{ matrix.cxx_flags }}"
+          -DT81_BUILD_BENCHMARKS=ON
+          -DT81_BUILD_TESTS=OFF
+          -DT81_BUILD_EXAMPLES=OFF
+          -DT81_BUILD_FUZZ_TESTS=OFF
+          -DCMAKE_CXX_FLAGS="-O3 -march=native -DNDEBUG"
 
       - name: Build benchmark runner
         run: cmake --build build --target benchmark_runner --parallel
 
-      - name: Run benchmarks
-        run: ./build/benchmarks/benchmark_runner --benchmark_format=json --benchmark_out=bench.json
+      - name: Run badge benchmark slice
+        run: |
+          ./build/benchmarks/benchmark_runner \
+            --benchmark_filter="${T81_BENCHMARK_SMOKE_FILTER}" \
+            --benchmark_format=json \
+            --benchmark_out=bench-smoke.json
+
+      - name: Run VM workload benchmark slice
+        run: |
+          ./build/benchmarks/benchmark_runner \
+            --benchmark_filter="${T81_VM_BENCHMARK_FILTER}" \
+            --benchmark_min_time=0.02s \
+            --benchmark_format=json \
+            --benchmark_out=bench-vm-workload.json
 
       - name: Enforce VM workload benchmark guardrail
-        run: python3 scripts/ci/check_vm_workload_benchmark_regression.py bench.json
+        run: python3 scripts/ci/check_vm_workload_benchmark_regression.py bench-vm-workload.json
+
+      - name: Generate live badge
+        run: |
+          mkdir -p .github/badges
+          python3 - <<'PY'
+          import json
+          import math
+          import os
+          from pathlib import Path
+
+          bench_path = Path("bench-smoke.json")
+          badge_path = Path(".github/badges/t81-speed.json")
+          target_name = os.environ["T81_BADGE_BENCHMARK"]
+          data = json.loads(bench_path.read_text(encoding="utf-8"))
+
+          target = None
+          for bench in data.get("benchmarks", []):
+              if str(bench.get("name")) == target_name:
+                  target = bench
+                  break
+
+          if target is None:
+              raise SystemExit(f"missing benchmark {target_name} in {bench_path}")
+
+          items_per_second = float(target.get("items_per_second", 0.0))
+          if not math.isfinite(items_per_second) or items_per_second <= 0.0:
+              raise SystemExit(
+                  f"benchmark {target_name} did not emit a valid items_per_second counter"
+              )
+
+          if items_per_second >= 1e9:
+              message = f"arith {items_per_second / 1e9:.2f} Gops/s"
+          elif items_per_second >= 1e6:
+              message = f"arith {items_per_second / 1e6:.2f} Mops/s"
+          elif items_per_second >= 1e3:
+              message = f"arith {items_per_second / 1e3:.2f} Kops/s"
+          else:
+              message = f"arith {items_per_second:.0f} ops/s"
+
+          if items_per_second >= 5e6:
+              color = "brightgreen"
+          elif items_per_second >= 2e6:
+              color = "green"
+          elif items_per_second >= 1e6:
+              color = "yellow"
+          elif items_per_second >= 5e5:
+              color = "orange"
+          else:
+              color = "red"
+
+          badge = {
+              "schemaVersion": 1,
+              "label": "T81 Speed",
+              "message": message,
+              "color": color,
+              "style": "for-the-badge",
+          }
+          badge_path.write_text(json.dumps(badge, indent=2) + "\n", encoding="utf-8")
+          PY
 
       - name: Upload benchmark artifacts
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          name: speed-oracle-${{ matrix.os }}-${{ matrix.arch }}
+          name: speed-oracle-ubuntu
           path: |
-            bench.json
+            bench-smoke.json
+            bench-vm-workload.json
             .github/badges/t81-speed.json
           if-no-files-found: warn
-
-      - name: Generate live badge
-        run: |
-          mkdir -p .github/badges
-          # Extract key metric (example: fastest matmul in ns)
-          BEST=$(jq -r '.benchmarks[] | select(.name | contains("MatMul/4096")) | .real_time' bench.json | sort -n | head -1)
-          PERF=$(echo "scale=1; 1000000 / $BEST" | bc -l 2>/dev/null || echo "∞")
-          
-          COLOR="red"
-          if [[ "$PERF" == "∞" ]]; then
-            COLOR="brightgreen"
-          else
-            awk "BEGIN { exit !($PERF > 10) }" && COLOR="orange"
-            awk "BEGIN { exit !($PERF > 25) }" && COLOR="yellow"
-            awk "BEGIN { exit !($PERF > 50) }" && COLOR="green"
-            awk "BEGIN { exit !($PERF > 100) }" && COLOR="brightgreen"
-          fi
-
-          cat > .github/badges/t81-speed.json <<EOF
-          {
-            "schemaVersion": 1,
-            "label": "T81 Speed",
-            "message": "${PERF} Gops/s",
-            "color": "$COLOR",
-            "style": "for-the-badge"
-          }
-          EOF
 
       - name: Update README
         run: |

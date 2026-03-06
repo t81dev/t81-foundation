@@ -33,6 +33,15 @@ int main() {
   assert(mx1.rank() == 1 && mx1.shape()[0] == 2);
   assert((mx1.data() == std::vector<float>{3, 6}));
 
+  auto dot_exact = t81::ops::contract_dot(T729DynamicTensor({3}, {1.0f, 2.0f, 3.0f}),
+                                          T729DynamicTensor({3}, {4.0f, 5.0f, 6.0f}));
+  assert(dot_exact.data()[0] == 32.0f);
+  assert(dot_exact.numeric_class() == TensorNumericClass::ExactInt);
+
+  auto dot_float = t81::ops::contract_dot(T729DynamicTensor({2}, {1.0f, 2.0f}),
+                                          T729DynamicTensor({2}, {0.5f, 1.5f}));
+  assert(dot_float.numeric_class() == TensorNumericClass::HostFloat);
+
   // Bad axis should throw
   [[maybe_unused]] bool threw = false;
   try {

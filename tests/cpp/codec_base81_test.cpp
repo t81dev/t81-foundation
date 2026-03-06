@@ -9,6 +9,11 @@
 int main() {
   using namespace t81::codec::base81;
 
+  assert(digit_strings().size() == 81);
+  assert(signed_integer_digit_strings().size() == 81);
+  assert(digit_strings()[62] == "-");
+  assert(signed_integer_digit_strings()[62] == "+");
+
   // Roundtrip bytes (leading zeros are not preserved by the canonical integer codec)
   {
     [[maybe_unused]] std::vector<std::uint8_t> bytes = {0xFFu, 0x10u};
@@ -31,7 +36,7 @@ int main() {
   // Invalid character
   {
     [[maybe_unused]] std::vector<std::uint8_t> out;
-    bool ok = decode_bytes("~", out);  // '~' not in canonical alphabet
+    [[maybe_unused]] bool ok = decode_bytes("~", out);  // '~' not in canonical alphabet
     assert(!ok);
     assert(!t81::core::is_base81("~"));
   }

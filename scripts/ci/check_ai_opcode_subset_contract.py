@@ -32,21 +32,21 @@ def build_subset_contract() -> dict[str, Any]:
                 "category": "attention",
                 "tier_min": 2,
                 "requires_axion_guard": True,
-                "determinism_class": "strict_deterministic",
+                "determinism_class": "bounded_float_runtime",
             },
             {
                 "name": "QMATMUL",
                 "category": "linear_algebra",
                 "tier_min": 2,
                 "requires_axion_guard": True,
-                "determinism_class": "strict_deterministic",
+                "determinism_class": "bounded_float_runtime",
             },
             {
                 "name": "EMBED",
                 "category": "embedding",
                 "tier_min": 2,
                 "requires_axion_guard": True,
-                "determinism_class": "strict_deterministic",
+                "determinism_class": "bounded_float_runtime",
             },
         ],
         "explicitly_deferred": ["WLOAD", "GATHER", "SCATTER"],
@@ -70,8 +70,8 @@ def validate_contract(contract: dict[str, Any]) -> tuple[bool, list[str]]:
             errs.append(f"{op.get('name','?')}: tier_min must be >= 2")
         if not bool(op.get("requires_axion_guard", False)):
             errs.append(f"{op.get('name','?')}: requires_axion_guard must be true")
-        if op.get("determinism_class") != "strict_deterministic":
-            errs.append(f"{op.get('name','?')}: determinism_class must be strict_deterministic")
+        if op.get("determinism_class") != "bounded_float_runtime":
+            errs.append(f"{op.get('name','?')}: determinism_class must be bounded_float_runtime")
 
     deferred = set(contract.get("explicitly_deferred", []))
     for required in ("WLOAD", "GATHER", "SCATTER"):

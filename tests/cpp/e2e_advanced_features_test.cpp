@@ -57,6 +57,36 @@ int64_t run_e2e_test(const std::string& source) {
   return vm->state().contexts[0].registers[2];
 }
 
+vm::Trap run_e2e_expect_trap(const std::string& source) {
+  frontend::Lexer lexer(source);
+  frontend::Parser parser(lexer);
+  [[maybe_unused]] auto stmts = parser.parse();
+  if (parser.had_error()) {
+    throw std::runtime_error("Parser error in trap fixture");
+  }
+
+  frontend::SemanticAnalyzer analyzer(stmts);
+  analyzer.analyze();
+  if (analyzer.had_error()) {
+    throw std::runtime_error("Semantic analyzer error in trap fixture");
+  }
+
+  [[maybe_unused]] frontend::IRGenerator ir_gen;
+  ir_gen.attach_semantic_analyzer(&analyzer);
+  [[maybe_unused]] tisc::ir::IntermediateProgram ir = ir_gen.generate(stmts);
+
+  [[maybe_unused]] tisc::BinaryEmitter emitter;
+  [[maybe_unused]] tisc::Program program = emitter.emit(ir);
+
+  [[maybe_unused]] auto vm = vm::make_interpreter_vm();
+  vm->load_program(program);
+  auto res = vm->run_to_halt();
+  if (res.has_value()) {
+    throw std::runtime_error("Expected VM trap but execution succeeded");
+  }
+  return res.error();
+}
+
 void test_while_break() {
   const std::string source = R"(
         fn main() -> i32 {
@@ -650,6 +680,21 @@ void test_bigint_stdlib_pipeline() {
   }
 }
 
+void test_bigint_to_int_out_of_range_traps() {
+  const std::string source = R"(
+        fn main() -> i32 {
+            let value: T81BigInt = 2147483648t81;
+            return std.math.bigint.to_int(value);
+        }
+    )";
+  const auto trap = run_e2e_expect_trap(source);
+  if (trap != vm::Trap::TrapInstruction) {
+    std::cerr << "test_bigint_to_int_out_of_range_traps failed: expected TrapInstruction, got "
+              << vm::to_string(trap) << std::endl;
+    throw std::runtime_error("test_bigint_to_int_out_of_range_traps failed");
+  }
+}
+
 void test_advanced_tensor_ops_pipeline() {
   const std::string source = R"(
         fn main() -> i32 {
@@ -729,6 +774,8 @@ int main() {
   test_fraction_stdlib_pipeline();
   std::cout << "Running test_bigint_stdlib_pipeline..." << std::endl;
   test_bigint_stdlib_pipeline();
+  std::cout << "Running test_bigint_to_int_out_of_range_traps..." << std::endl;
+  test_bigint_to_int_out_of_range_traps();
   std::cout << "Running test_advanced_tensor_ops_pipeline..." << std::endl;
   test_advanced_tensor_ops_pipeline();
   std::cout << "Running test_symbolic_polynomial_pipeline..." << std::endl;

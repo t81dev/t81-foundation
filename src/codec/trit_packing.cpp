@@ -1,3 +1,4 @@
+#include "t81/codec/base81.hpp"
 #include "t81/codec/trit_packing.hpp"
 #include <deque>
 #include <string>
@@ -7,13 +8,7 @@
 namespace t81::codec::trit_packing {
 
 static const std::vector<std::string>& b81_alphabet_vec() {
-  static const std::vector<std::string> kAlphabet = {
-      "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G",
-      "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X",
-      "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
-      "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "-", "−", "×", "÷", "=", "<",
-      ">", "≤", "≥", "≠", "≈", "∞", "λ", "μ", "π", "σ", "τ", "ω", "Γ"};
-  return kAlphabet;
+  return t81::codec::base81::digit_strings();
 }
 
 static const std::unordered_map<std::string, uint8_t>& b81_alphabet_map() {

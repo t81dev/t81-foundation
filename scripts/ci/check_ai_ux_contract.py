@@ -238,6 +238,8 @@ def build_contract() -> dict[str, Any]:
                 "backend_name",
                 "supported_formats",
                 "determinism_modes",
+                "strict_core_eligible",
+                "numeric_kernel_class",
                 "max_context_tokens",
                 "supports_streaming",
                 "supports_logit_bias",
@@ -312,6 +314,8 @@ def validate_static_contract(contract: dict[str, Any]) -> tuple[bool, list[str]]
         "backend_name",
         "supported_formats",
         "determinism_modes",
+        "strict_core_eligible",
+        "numeric_kernel_class",
         "max_context_tokens",
         "supports_streaming",
         "supports_logit_bias",
@@ -602,6 +606,8 @@ def validate_runtime(
                     "backend_name",
                     "supported_formats",
                     "determinism_modes",
+                    "strict_core_eligible",
+                    "numeric_kernel_class",
                     "max_context_tokens",
                     "supports_streaming",
                     "supports_logit_bias",
@@ -628,6 +634,8 @@ def validate_runtime(
             "ci-ux-model",
             "--model-file",
             str(model_path),
+            "--mode",
+            "reproducible_nondeterministic",
             "--prompt",
             "deterministic prompt",
             "--out",
@@ -649,6 +657,9 @@ def validate_runtime(
             "requested_format",
             "requested_mode",
             "selected_backend",
+            "strict_core_eligible",
+            "numeric_kernel_class",
+            "effective_determinism_class",
             "backend_selection_trace_sha256",
             "prompt_sha256",
             "output",
@@ -660,6 +671,8 @@ def validate_runtime(
             errs.append(f"inference artifact missing fields: {', '.join(missing)}")
         if inference.get("schema") != "t81.ai.inference-run.v1":
             errs.append("inference artifact schema mismatch")
+        if inference.get("requested_mode") != "reproducible_nondeterministic":
+            errs.append("inference artifact requested_mode must be reproducible_nondeterministic for current smoke lane")
         if Path(inference.get("model_file", "")).resolve() != model_path.resolve():
             errs.append("inference artifact model_file does not match runtime model path")
         runtime["inference_artifact_sha256"] = sha256_text(canonical_json(inference))
@@ -674,6 +687,8 @@ def validate_runtime(
             "ci-ux-model",
             "--model-file",
             str(model_path),
+            "--mode",
+            "reproducible_nondeterministic",
             "--out",
             str(quant_path),
         ]
@@ -693,6 +708,9 @@ def validate_runtime(
             "requested_format",
             "requested_mode",
             "selected_backend",
+            "strict_core_eligible",
+            "numeric_kernel_class",
+            "effective_determinism_class",
             "backend_selection_trace_sha256",
             "codec",
             "bits_per_weight",
@@ -704,6 +722,8 @@ def validate_runtime(
             errs.append(f"quantization artifact missing fields: {', '.join(missing)}")
         if quant.get("schema") != "t81.ai.quantization-inspect.v1":
             errs.append("quantization artifact schema mismatch")
+        if quant.get("requested_mode") != "reproducible_nondeterministic":
+            errs.append("quantization artifact requested_mode must be reproducible_nondeterministic for current smoke lane")
         if Path(quant.get("model_file", "")).resolve() != model_path.resolve():
             errs.append("quantization artifact model_file does not match runtime model path")
         runtime["quantization_artifact_sha256"] = sha256_text(canonical_json(quant))
@@ -718,6 +738,8 @@ def validate_runtime(
             "ci-ux-model",
             "--model-file",
             str(model_path),
+            "--mode",
+            "reproducible_nondeterministic",
             "--out",
             str(benchmark_path),
         ]
@@ -737,6 +759,9 @@ def validate_runtime(
             "requested_format",
             "requested_mode",
             "selected_backend",
+            "strict_core_eligible",
+            "numeric_kernel_class",
+            "effective_determinism_class",
             "backend_selection_trace_sha256",
             "latency_ms",
             "throughput_tokens_per_sec",
@@ -748,6 +773,8 @@ def validate_runtime(
             errs.append(f"benchmark artifact missing fields: {', '.join(missing)}")
         if benchmark.get("schema") != "t81.ai.benchmark-run.v1":
             errs.append("benchmark artifact schema mismatch")
+        if benchmark.get("requested_mode") != "reproducible_nondeterministic":
+            errs.append("benchmark artifact requested_mode must be reproducible_nondeterministic for current smoke lane")
         if Path(benchmark.get("model_file", "")).resolve() != model_path.resolve():
             errs.append("benchmark artifact model_file does not match runtime model path")
         runtime["benchmark_artifact_sha256"] = sha256_text(canonical_json(benchmark))

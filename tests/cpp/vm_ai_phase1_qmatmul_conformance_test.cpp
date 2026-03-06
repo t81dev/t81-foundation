@@ -63,9 +63,10 @@ int main() {
   T81_TEST_CHECK(out1_opt.has_value());
   const auto& out1 = out1_opt.value();
 
-  auto expected = t81::ops::matmul(p.tensor_pool[0], p.tensor_pool[1]);
+  auto expected = t81::ops::qmatmul(p.tensor_pool[0], p.tensor_pool[1], 1.0F);
   T81_TEST_CHECK(out1.shape() == expected.shape());
   T81_TEST_CHECK(out1.data().size() == expected.data().size());
+  T81_TEST_CHECK(out1.numeric_class() == expected.numeric_class());
   for (std::size_t i = 0; i < out1.data().size(); ++i) {
     T81_TEST_CHECK(std::fabs(out1.data()[i] - expected.data()[i]) < 1e-6F);
   }
