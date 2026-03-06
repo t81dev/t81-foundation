@@ -52,6 +52,7 @@
 - Emits benchmark format/mode capability matrix with expectation-contract enforcement (including allowlisted unsupported `t3k` lane visibility) without blocking required baseline lane (`build/ai-benchmark/ai_benchmark_capability_matrix.json`)
 - Enforces signed benchmark threshold promotion approval attestations via keyring-backed verification (`build/ai-benchmark/ai_benchmark_threshold_approval_report.json`)
 - Emits RFC-0026 runtime readiness tracker binding opcode conformance evidence with benchmark/inference lane capability states, runtime capability-alignment gate status, and opcode baseline approval-policy gate status (`build/ai-opcodes-runtime/ai_rfc0026_readiness.json`)
+- Emits opcode runtime evidence with baseline-window provenance metadata bound to promotion history windows (`build/ai-opcodes-runtime/ai_opcode_runtime_report.json`)
 - Enforces benchmark/inference runtime capability alignment for governed format/mode pairs with expectation-contract enforcement (`build/ai-opcodes-runtime/ai_runtime_capability_alignment.json`)
 - Enforces signed opcode baseline history window promotion approvals via keyring-backed verification plus provenance-reference expectation contract (`build/ai-opcodes-runtime/ai_opcode_baseline_approval_report.json`)
 - Emits inference format/mode capability matrix with expectation-contract enforcement (including allowlisted unsupported `t3k` lane visibility) without blocking required baseline lane (`build/ai-ux/ai_inference_capability_matrix.json`)

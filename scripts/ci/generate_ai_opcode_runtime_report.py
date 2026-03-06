@@ -160,6 +160,7 @@ def select_phase1_baseline_window(history_path: Path, as_of: date) -> tuple[dict
         "window_start": str(selected.get("window_start", "")),
         "window_end": str(selected.get("window_end", "")),
         "as_of_date": as_of.isoformat(),
+        "provenance": selected.get("provenance", {}) if isinstance(selected.get("provenance"), dict) else {},
     }
     return hashes, metadata
 
@@ -279,6 +280,9 @@ def build_payload(
             "phase1_conformance": conformance,
             "phase1_baseline_comparison": baseline_comparison,
             "phase1_baseline_selection": baseline_selection,
+            "phase1_vector_provenance": (
+                baseline_selection.get("provenance", {}) if isinstance(baseline_selection, dict) else {}
+            ),
         },
         "summary": {
             "phase1_opcode_count": len(PHASE1),
@@ -358,6 +362,11 @@ def write_markdown(path: Path, payload: dict[str, Any]) -> None:
                     f"- baseline_as_of_date: `{selection.get('as_of_date', '')}`",
                 ]
             )
+            provenance = selection.get("provenance")
+            if isinstance(provenance, dict) and provenance:
+                lines.append("- baseline_window_provenance:")
+                for key in sorted(provenance.keys()):
+                    lines.append(f"  - {key}: `{provenance.get(key)}`")
         for opcode in PHASE1:
             row = baseline["per_opcode"][opcode]
             lines.append(
