@@ -1,0 +1,5 @@
+{
+  "schema": "t81.ai.wload-policy-evidence-expectations.v1",
+  "expected_wload_policy_gate_ready": false,
+  "required_observed_wload_reason_codes": []
+}

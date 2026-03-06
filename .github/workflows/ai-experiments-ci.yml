@@ -12,6 +12,8 @@ on:
       - 'scripts/ci/check_ai_model_provenance_gate.py'
       - 'scripts/ci/ai_model_provenance_keyring.json'
       - 'scripts/ci/check_ai_policy_event_contract.py'
+      - 'scripts/ci/check_ai_wload_policy_evidence.py'
+      - 'scripts/ci/ai_wload_policy_evidence_expectations.json'
       - 'scripts/ci/ai_policy_ledger_keyring.json'
       - 'scripts/ci/check_ai_backend_adapter_contract.py'
       - 'scripts/ci/ai_backend_selection_keyring.json'
@@ -64,6 +66,8 @@ on:
       - 'scripts/ci/check_ai_model_provenance_gate.py'
       - 'scripts/ci/ai_model_provenance_keyring.json'
       - 'scripts/ci/check_ai_policy_event_contract.py'
+      - 'scripts/ci/check_ai_wload_policy_evidence.py'
+      - 'scripts/ci/ai_wload_policy_evidence_expectations.json'
       - 'scripts/ci/ai_policy_ledger_keyring.json'
       - 'scripts/ci/check_ai_backend_adapter_contract.py'
       - 'scripts/ci/ai_backend_selection_keyring.json'
@@ -368,6 +372,16 @@ jobs:
           --policy-ledger-snapshot build/ai-policy/ai_axion_policy_ledger_snapshot.json \
           --selection-signing-keyring scripts/ci/ai_backend_selection_keyring.json
 
+    - name: Track WLOAD policy evidence readiness (RFC-0026 dependency tracker)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-policy
+        python3 scripts/ci/check_ai_wload_policy_evidence.py \
+          --policy-contract build/ai-policy/ai_policy_event_contract.json \
+          --runtime-trace build/ai-policy/ai_runtime_trace.json \
+          --expectations-file scripts/ci/ai_wload_policy_evidence_expectations.json \
+          --out-json build/ai-policy/ai_wload_policy_evidence.json
+
     - name: Collect VM trace-level evidence (RFC-00A1 runtime trace slice)
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -497,6 +511,7 @@ jobs:
           --benchmark-capability-matrix build/ai-benchmark/ai_benchmark_capability_matrix.json \
           --inference-capability-matrix build/ai-ux/ai_inference_capability_matrix.json \
           --runtime-capability-alignment build/ai-opcodes-runtime/ai_runtime_capability_alignment.json \
+          --wload-policy-evidence-report build/ai-policy/ai_wload_policy_evidence.json \
           --opcode-baseline-approval-report build/ai-opcodes-runtime/ai_opcode_baseline_approval_report.json \
           --expectations-file scripts/ci/ai_rfc0026_readiness_expectations.json \
           --out-dir build/ai-opcodes-runtime
@@ -620,6 +635,7 @@ jobs:
         } >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-opcodes-runtime/ai_opcode_runtime_report.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-opcodes-runtime/ai_rfc0026_readiness.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-policy/ai_wload_policy_evidence.md >> "$GITHUB_STEP_SUMMARY"
         {
           echo "# Runtime Capability Alignment"
           echo ""
@@ -685,6 +701,8 @@ jobs:
           build/ai-policy/ai_policy_event_contract.json
           build/ai-policy/ai_policy_event_contract.md
           build/ai-policy/ai_runtime_trace.json
+          build/ai-policy/ai_wload_policy_evidence.json
+          build/ai-policy/ai_wload_policy_evidence.md
           build/ai-policy/ai_axion_policy_ledger_snapshot.json
           build/ai-policy/ai_axion_policy_ledger_snapshot.md
           build/ai-policy/ai_axion_policy_ledger_replay_verification.json

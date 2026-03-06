@@ -24,6 +24,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--benchmark-capability-matrix", required=True, help="Path to ai_benchmark_capability_matrix.json")
     p.add_argument("--inference-capability-matrix", required=True, help="Path to ai_inference_capability_matrix.json")
     p.add_argument("--runtime-capability-alignment", required=True, help="Path to ai_runtime_capability_alignment.json")
+    p.add_argument("--wload-policy-evidence-report", required=True, help="Path to ai_wload_policy_evidence.json")
     p.add_argument(
         "--opcode-baseline-approval-report",
         required=True,
@@ -51,6 +52,7 @@ def main() -> int:
     benchmark_matrix_path = Path(args.benchmark_capability_matrix).resolve()
     inference_matrix_path = Path(args.inference_capability_matrix).resolve()
     alignment_path = Path(args.runtime_capability_alignment).resolve()
+    wload_policy_evidence_path = Path(args.wload_policy_evidence_report).resolve()
     opcode_baseline_approval_path = Path(args.opcode_baseline_approval_report).resolve()
     expectations_path = (
         Path(args.expectations_file).resolve()
@@ -70,6 +72,8 @@ def main() -> int:
         errors.append(f"missing inference capability matrix: {inference_matrix_path}")
     if not alignment_path.exists():
         errors.append(f"missing runtime capability alignment report: {alignment_path}")
+    if not wload_policy_evidence_path.exists():
+        errors.append(f"missing wload policy evidence report: {wload_policy_evidence_path}")
     if not opcode_baseline_approval_path.exists():
         errors.append(f"missing opcode baseline approval report: {opcode_baseline_approval_path}")
     if not expectations_path.exists():
@@ -83,6 +87,7 @@ def main() -> int:
     benchmark_matrix_payload = parse_json(benchmark_matrix_path)
     inference_matrix_payload = parse_json(inference_matrix_path)
     alignment_payload = parse_json(alignment_path)
+    wload_policy_evidence_payload = parse_json(wload_policy_evidence_path)
     opcode_baseline_approval_payload = parse_json(opcode_baseline_approval_path)
     expectations_payload = parse_json(expectations_path)
 
@@ -100,9 +105,15 @@ def main() -> int:
             qmatmul_runtime_ready = bool(item.get("runtime_ready", False))
             break
 
-    wload_policy_gate_ready = False
+    wload_policy_evidence_status = (
+        str(wload_policy_evidence_payload.get("status", "unknown")).strip() or "unknown"
+    )
+    if wload_policy_evidence_status != "pass":
+        errors.append(f"wload policy evidence gate failed (status={wload_policy_evidence_status})")
+    wload_policy_gate_ready = bool(wload_policy_evidence_payload.get("wload_policy_gate_ready", False))
     wload_policy_gate_reason = (
-        "WLOAD runtime/policy gate is not part of phase-1 opcode conformance evidence yet."
+        str(wload_policy_evidence_payload.get("wload_policy_gate_reason", "")).strip()
+        or "wload policy evidence report did not include reason"
     )
 
     benchmark_matrix = benchmark_matrix_payload.get("matrix")
@@ -221,6 +232,7 @@ def main() -> int:
             "benchmark_capability_matrix": str(benchmark_matrix_path),
             "inference_capability_matrix": str(inference_matrix_path),
             "runtime_capability_alignment": str(alignment_path),
+            "wload_policy_evidence_report": str(wload_policy_evidence_path),
             "opcode_baseline_approval_report": str(opcode_baseline_approval_path),
             "expectations_file": str(expectations_path),
         },
@@ -240,6 +252,7 @@ def main() -> int:
             "t3k_benchmark_supported": t3k_benchmark_supported,
             "t3k_inference_supported": t3k_inference_supported,
             "runtime_capability_alignment_status": alignment_status,
+            "wload_policy_evidence_status": wload_policy_evidence_status,
             "opcode_baseline_approval_status": opcode_baseline_approval_status,
         },
         "expectation_results": expectation_results,
@@ -268,6 +281,7 @@ def main() -> int:
         f"| `inference gguf:strict_deterministic` | `{inference_gguf_state}` |",
         f"| `inference t3k:strict_deterministic` | `{inference_t3k_state}` |",
         f"| `runtime_capability_alignment_status` | `{alignment_status}` |",
+        f"| `wload_policy_evidence_status` | `{wload_policy_evidence_status}` |",
         f"| `opcode_baseline_approval_status` | `{opcode_baseline_approval_status}` |",
         "",
     ]
