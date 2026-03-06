@@ -26,6 +26,7 @@ on:
       - 'scripts/ci/check_ai_inference_capability_matrix.py'
       - 'scripts/ci/ai_inference_capability_expectations.json'
       - 'scripts/ci/check_ai_runtime_capability_alignment.py'
+      - 'scripts/ci/ai_rfc0026_readiness_expectations.json'
       - 'scripts/ci/check_ai_benchmark_threshold_approvals.py'
       - 'scripts/ci/ai_benchmark_threshold_approval_keyring.json'
       - 'scripts/ci/ai_benchmark_thresholds.json'
@@ -74,6 +75,7 @@ on:
       - 'scripts/ci/check_ai_inference_capability_matrix.py'
       - 'scripts/ci/ai_inference_capability_expectations.json'
       - 'scripts/ci/check_ai_runtime_capability_alignment.py'
+      - 'scripts/ci/ai_rfc0026_readiness_expectations.json'
       - 'scripts/ci/check_ai_benchmark_threshold_approvals.py'
       - 'scripts/ci/ai_benchmark_threshold_approval_keyring.json'
       - 'scripts/ci/ai_benchmark_thresholds.json'
@@ -480,6 +482,7 @@ jobs:
           --inference-capability-matrix build/ai-ux/ai_inference_capability_matrix.json \
           --runtime-capability-alignment build/ai-opcodes-runtime/ai_runtime_capability_alignment.json \
           --opcode-baseline-approval-report build/ai-opcodes-runtime/ai_opcode_baseline_approval_report.json \
+          --expectations-file scripts/ci/ai_rfc0026_readiness_expectations.json \
           --out-dir build/ai-opcodes-runtime
 
     - name: Validate opcode baseline history window approvals (RFC-00A8 promotion policy)

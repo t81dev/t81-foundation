@@ -119,6 +119,7 @@
 - `scripts/ci/check_ai_inference_capability_matrix.py` - Triggers on inference capability-matrix policy updates
 - `scripts/ci/ai_inference_capability_expectations.json` - Triggers on inference capability expectation contract updates
 - `scripts/ci/check_ai_runtime_capability_alignment.py` - Triggers on runtime capability alignment policy updates
+- `scripts/ci/ai_rfc0026_readiness_expectations.json` - Triggers on RFC-0026 readiness expectation contract updates
 - `scripts/ci/check_ai_rfc0026_readiness.py` - Triggers on RFC-0026 runtime readiness tracker updates
 - `scripts/ci/check_ai_opcode_baseline_history_approvals.py` - Triggers on opcode baseline approval policy gate updates
 - `scripts/ci/ai_opcode_baseline_approval_keyring.json` - Triggers on opcode baseline approval key rotation updates

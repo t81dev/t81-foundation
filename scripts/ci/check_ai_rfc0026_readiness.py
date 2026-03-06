@@ -11,6 +11,7 @@ from typing import Any
 
 
 SCHEMA_VERSION = "t81.ai.rfc0026-readiness.v1"
+EXPECTATION_SCHEMA_VERSION = "t81.ai.rfc0026-readiness-expectations.v1"
 
 
 def parse_json(path: Path) -> dict[str, Any]:
@@ -27,6 +28,11 @@ def parse_args() -> argparse.Namespace:
         "--opcode-baseline-approval-report",
         required=True,
         help="Path to ai_opcode_baseline_approval_report.json",
+    )
+    p.add_argument(
+        "--expectations-file",
+        default="",
+        help="Optional readiness expectation contract JSON.",
     )
     p.add_argument("--out-dir", required=True, help="Output directory")
     return p.parse_args()
@@ -46,6 +52,11 @@ def main() -> int:
     inference_matrix_path = Path(args.inference_capability_matrix).resolve()
     alignment_path = Path(args.runtime_capability_alignment).resolve()
     opcode_baseline_approval_path = Path(args.opcode_baseline_approval_report).resolve()
+    expectations_path = (
+        Path(args.expectations_file).resolve()
+        if args.expectations_file
+        else Path(__file__).resolve().with_name("ai_rfc0026_readiness_expectations.json")
+    )
     out_dir = Path(args.out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -61,6 +72,8 @@ def main() -> int:
         errors.append(f"missing runtime capability alignment report: {alignment_path}")
     if not opcode_baseline_approval_path.exists():
         errors.append(f"missing opcode baseline approval report: {opcode_baseline_approval_path}")
+    if not expectations_path.exists():
+        errors.append(f"missing readiness expectations file: {expectations_path}")
     if errors:
         for err in errors:
             print(f"error: {err}", file=sys.stderr)
@@ -71,6 +84,7 @@ def main() -> int:
     inference_matrix_payload = parse_json(inference_matrix_path)
     alignment_payload = parse_json(alignment_path)
     opcode_baseline_approval_payload = parse_json(opcode_baseline_approval_path)
+    expectations_payload = parse_json(expectations_path)
 
     phase_status = str(opcode.get("phase_status", "unknown")).strip() or "unknown"
     opcodes = opcode.get("opcodes")
@@ -160,6 +174,43 @@ def main() -> int:
         blockers.append("t3k inference lane unsupported")
 
     gate_status = "pass" if not errors else "fail"
+    expectation_results: dict[str, Any] = {}
+    expected_readiness_state = ""
+    expected_blockers: list[str] = []
+    if expectations_payload.get("schema") != EXPECTATION_SCHEMA_VERSION:
+        errors.append(
+            f"readiness expectations schema mismatch: "
+            f"{expectations_payload.get('schema')} != {EXPECTATION_SCHEMA_VERSION}"
+        )
+    else:
+        expected_readiness_state = str(expectations_payload.get("expected_readiness_state", "")).strip()
+        blockers_raw = expectations_payload.get("required_blockers", [])
+        if isinstance(blockers_raw, list):
+            expected_blockers = [str(item).strip() for item in blockers_raw if str(item).strip()]
+        if expected_readiness_state and readiness_state != expected_readiness_state:
+            errors.append(
+                f"readiness state mismatch: expected={expected_readiness_state}, observed={readiness_state}"
+            )
+        missing_required_blockers = [item for item in expected_blockers if item not in blockers]
+        unexpected_blockers = [item for item in blockers if item not in expected_blockers]
+        if missing_required_blockers:
+            errors.append(
+                "missing required readiness blockers: " + ", ".join(missing_required_blockers)
+            )
+        if unexpected_blockers:
+            errors.append(
+                "unexpected readiness blockers detected: " + ", ".join(unexpected_blockers)
+            )
+        expectation_results = {
+            "expected_readiness_state": expected_readiness_state,
+            "required_blockers": expected_blockers,
+            "missing_required_blockers": missing_required_blockers,
+            "unexpected_blockers": unexpected_blockers,
+            "match": not missing_required_blockers and not unexpected_blockers
+            and (not expected_readiness_state or readiness_state == expected_readiness_state),
+        }
+
+    gate_status = "pass" if not errors else "fail"
     payload = {
         "schema": SCHEMA_VERSION,
         "gate_status": gate_status,
@@ -171,6 +222,7 @@ def main() -> int:
             "inference_capability_matrix": str(inference_matrix_path),
             "runtime_capability_alignment": str(alignment_path),
             "opcode_baseline_approval_report": str(opcode_baseline_approval_path),
+            "expectations_file": str(expectations_path),
         },
         "signals": {
             "phase_status": phase_status,
@@ -190,6 +242,7 @@ def main() -> int:
             "runtime_capability_alignment_status": alignment_status,
             "opcode_baseline_approval_status": opcode_baseline_approval_status,
         },
+        "expectation_results": expectation_results,
         "blockers": blockers,
         "errors": errors,
     }
@@ -218,6 +271,16 @@ def main() -> int:
         f"| `opcode_baseline_approval_status` | `{opcode_baseline_approval_status}` |",
         "",
     ]
+    if expectation_results:
+        lines.extend(
+            [
+                "Expectation Contract:",
+                f"- expected_readiness_state: `{expectation_results.get('expected_readiness_state', '')}`",
+                f"- required_blockers: `{', '.join(expectation_results.get('required_blockers', []))}`",
+                f"- match: `{str(expectation_results.get('match', False)).lower()}`",
+                "",
+            ]
+        )
     if blockers:
         lines.append("Blockers:")
         for item in blockers:
