@@ -42,7 +42,7 @@ Last Updated: 2026-03-06
 
 **Evidence Promotion Gate:**
 - Builds signed multi-lane AI evidence manifest with promotion-window attestation metadata (`build/ai-manifest/ai_evidence_manifest.json`)
-- Enforces AI status documentation freshness against governed update windows (`build/ai-status/ai_status_doc_freshness_report.json`, `build/ai-status/ai_status_doc_freshness_report.md`)
+- Enforces AI status documentation freshness against governed update windows with near-stale warning thresholds (`build/ai-status/ai_status_doc_freshness_report.json`, `build/ai-status/ai_status_doc_freshness_report.md`)
 - Requires keyring-backed manifest signature verification and rotation-policy validation (`scripts/ci/ai_evidence_manifest_keyring.json`), including `material_env` support for secret-injected key material via workflow env/`secrets.*`
 - Enforces model provenance manifest with CanonFS object identity, signed multi-entry provenance-chain verification, and required lineage-event sequence checks (`build/ai-provenance/test_model.manifest.json`)
 - Enforces governed runtime deterministic multi-seed replay attestations with failure taxonomy artifact (`build/ai-governed/governed_llama_replay_attestation.json`)

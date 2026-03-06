@@ -101,6 +101,18 @@ def main() -> int:
         if max_age_days < 0:
             errors.append(f"{rel_path}: max_age_days must be >= 0")
             continue
+        warn_age_days_raw = item.get("warn_age_days", max_age_days)
+        try:
+            warn_age_days = int(warn_age_days_raw)
+        except Exception:
+            errors.append(f"{rel_path}: warn_age_days must be integer")
+            continue
+        if warn_age_days < 0:
+            errors.append(f"{rel_path}: warn_age_days must be >= 0")
+            continue
+        if warn_age_days > max_age_days:
+            errors.append(f"{rel_path}: warn_age_days must be <= max_age_days")
+            continue
         date_label = str(item.get("date_label", "Last Updated:")).strip() or "Last Updated:"
         required_substrings_raw = item.get("required_substrings", [])
         required_substrings = (
@@ -114,10 +126,12 @@ def main() -> int:
             "path": rel_path,
             "exists": doc_path.exists(),
             "max_age_days": max_age_days,
+            "warn_age_days": warn_age_days,
             "as_of_date": as_of.isoformat(),
             "status": "pass",
             "last_updated": "",
             "age_days": None,
+            "near_stale": False,
             "missing_required_substrings": [],
         }
         if not doc_path.exists():
@@ -151,6 +165,12 @@ def main() -> int:
             row["status"] = "fail"
             errors.append(
                 f"{rel_path}: stale status doc (age_days={age_days}, max_age_days={max_age_days})"
+            )
+        elif age_days >= warn_age_days:
+            row["near_stale"] = True
+            warnings.append(
+                f"{rel_path}: approaching staleness (age_days={age_days}, "
+                f"warn_age_days={warn_age_days}, max_age_days={max_age_days})"
             )
 
         missing = [s for s in required_substrings if s not in content]
@@ -193,6 +213,18 @@ def main() -> int:
                 status=row.get("status", ""),
             )
         )
+    near_stale_rows = [row for row in rows if bool(row.get("near_stale", False))]
+    if near_stale_rows:
+        lines.extend(["", "Warnings:"])
+        for row in near_stale_rows:
+            lines.append(
+                "- {path}: age_days={age_days}, warn_age_days={warn_age_days}, max_age_days={max_age_days}".format(
+                    path=row.get("path", ""),
+                    age_days=row.get("age_days", ""),
+                    warn_age_days=row.get("warn_age_days", ""),
+                    max_age_days=row.get("max_age_days", ""),
+                )
+            )
     if errors:
         lines.extend(["", "Errors:"])
         for err in errors:

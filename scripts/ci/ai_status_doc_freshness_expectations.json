@@ -4,6 +4,7 @@
     {
       "path": "docs/status/AI_RFC_BACKLOG.md",
       "max_age_days": 7,
+      "warn_age_days": 5,
       "date_label": "Last Updated:",
       "required_substrings": [
         "## Priority Order",
@@ -13,6 +14,7 @@
     {
       "path": "docs/status/CI_WORKFLOW_CONFIRMATION.md",
       "max_age_days": 7,
+      "warn_age_days": 5,
       "date_label": "Last Updated:",
       "required_substrings": [
         "## AI Experiments CI Workflow",
@@ -22,6 +24,7 @@
     {
       "path": "docs/status/AI_CLI_MILESTONE_EVIDENCE.md",
       "max_age_days": 14,
+      "warn_age_days": 10,
       "date_label": "Last Updated:",
       "required_substrings": [
         "## Purpose",
@@ -31,6 +34,7 @@
     {
       "path": "docs/status/CI_GATE_STATUS.md",
       "max_age_days": 7,
+      "warn_age_days": 5,
       "date_label": "Last Updated:",
       "required_substrings": [
         "## Purpose",
@@ -40,6 +44,7 @@
     {
       "path": "docs/status/EXTENSION_PROFILE.md",
       "max_age_days": 14,
+      "warn_age_days": 10,
       "date_label": "Last Updated:",
       "required_substrings": [
         "## The Rule",
@@ -49,6 +54,7 @@
     {
       "path": "docs/status/HARDENING_BACKLOG.md",
       "max_age_days": 14,
+      "warn_age_days": 10,
       "date_label": "Last Updated:",
       "required_substrings": [
         "## Open Items",
