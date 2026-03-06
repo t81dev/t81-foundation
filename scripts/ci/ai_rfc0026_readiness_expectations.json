@@ -3,6 +3,7 @@
   "expected_readiness_state": "blocked",
   "expected_wload_policy_evidence_status": "pass",
   "expected_wload_policy_gate_ready": false,
+  "expected_wload_policy_gate_reason_contains": "allow-path evidence missing",
   "required_blockers": [
     "WLOAD policy-gate runtime evidence missing",
     "t3k benchmark lane unsupported",

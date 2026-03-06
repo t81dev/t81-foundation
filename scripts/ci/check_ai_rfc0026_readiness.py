@@ -189,6 +189,7 @@ def main() -> int:
     expected_readiness_state = ""
     expected_wload_policy_evidence_status = ""
     expected_wload_policy_gate_ready: bool | None = None
+    expected_wload_policy_gate_reason_contains = ""
     expected_blockers: list[str] = []
     if expectations_payload.get("schema") != EXPECTATION_SCHEMA_VERSION:
         errors.append(
@@ -204,6 +205,9 @@ def main() -> int:
             expected_wload_policy_gate_ready = bool(
                 expectations_payload.get("expected_wload_policy_gate_ready")
             )
+        expected_wload_policy_gate_reason_contains = str(
+            expectations_payload.get("expected_wload_policy_gate_reason_contains", "")
+        ).strip()
         blockers_raw = expectations_payload.get("required_blockers", [])
         if isinstance(blockers_raw, list):
             expected_blockers = [str(item).strip() for item in blockers_raw if str(item).strip()]
@@ -228,6 +232,14 @@ def main() -> int:
                 f"expected={str(expected_wload_policy_gate_ready).lower()}, "
                 f"observed={str(wload_policy_gate_ready).lower()}"
             )
+        if (
+            expected_wload_policy_gate_reason_contains
+            and expected_wload_policy_gate_reason_contains not in wload_policy_gate_reason
+        ):
+            errors.append(
+                "wload policy gate reason mismatch: expected substring "
+                f"'{expected_wload_policy_gate_reason_contains}' not found in '{wload_policy_gate_reason}'"
+            )
         missing_required_blockers = [item for item in expected_blockers if item not in blockers]
         unexpected_blockers = [item for item in blockers if item not in expected_blockers]
         if missing_required_blockers:
@@ -242,6 +254,7 @@ def main() -> int:
             "expected_readiness_state": expected_readiness_state,
             "expected_wload_policy_evidence_status": expected_wload_policy_evidence_status,
             "expected_wload_policy_gate_ready": expected_wload_policy_gate_ready,
+            "expected_wload_policy_gate_reason_contains": expected_wload_policy_gate_reason_contains,
             "required_blockers": expected_blockers,
             "missing_required_blockers": missing_required_blockers,
             "unexpected_blockers": unexpected_blockers,
@@ -254,6 +267,10 @@ def main() -> int:
             and (
                 expected_wload_policy_gate_ready is None
                 or wload_policy_gate_ready == expected_wload_policy_gate_ready
+            )
+            and (
+                not expected_wload_policy_gate_reason_contains
+                or expected_wload_policy_gate_reason_contains in wload_policy_gate_reason
             ),
         }
 
@@ -330,6 +347,8 @@ def main() -> int:
                 f"`{expectation_results.get('expected_wload_policy_evidence_status', '')}`",
                 "- expected_wload_policy_gate_ready: "
                 f"`{str(expectation_results.get('expected_wload_policy_gate_ready', False)).lower()}`",
+                "- expected_wload_policy_gate_reason_contains: "
+                f"`{expectation_results.get('expected_wload_policy_gate_reason_contains', '')}`",
                 f"- required_blockers: `{', '.join(expectation_results.get('required_blockers', []))}`",
                 f"- match: `{str(expectation_results.get('match', False)).lower()}`",
                 "",
