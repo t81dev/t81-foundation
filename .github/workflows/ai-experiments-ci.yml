@@ -17,6 +17,7 @@ on:
       - 'scripts/ci/ai_backend_selection_keyring.json'
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
+      - 'scripts/ci/check_ai_rfc0026_readiness.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_benchmark_capability_matrix.py'
       - 'scripts/ci/ai_benchmark_capability_expectations.json'
@@ -58,6 +59,7 @@ on:
       - 'scripts/ci/ai_backend_selection_keyring.json'
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
+      - 'scripts/ci/check_ai_rfc0026_readiness.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_benchmark_capability_matrix.py'
       - 'scripts/ci/ai_benchmark_capability_expectations.json'
@@ -429,6 +431,15 @@ jobs:
           --signing-keyring scripts/ci/ai_benchmark_threshold_approval_keyring.json \
           --out-json build/ai-benchmark/ai_benchmark_threshold_approval_report.json
 
+    - name: Track RFC-0026 runtime readiness signals
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-opcodes-runtime
+        python3 scripts/ci/check_ai_rfc0026_readiness.py \
+          --opcode-report build/ai-opcodes-runtime/ai_opcode_runtime_report.json \
+          --benchmark-capability-matrix build/ai-benchmark/ai_benchmark_capability_matrix.json \
+          --out-dir build/ai-opcodes-runtime
+
     - name: Validate AI quantization runtime fixture corpus (RFC-00A4 promotion slice)
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -537,6 +548,7 @@ jobs:
           echo ""
         } >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-opcodes-runtime/ai_opcode_runtime_report.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-opcodes-runtime/ai_rfc0026_readiness.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-benchmark/ai_benchmark_spec_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-benchmark/ai_benchmark_capability_matrix.md >> "$GITHUB_STEP_SUMMARY"
         {
@@ -604,6 +616,8 @@ jobs:
           build/ai-opcodes/ai_phase1_opcode_ctest.log
           build/ai-opcodes-runtime/ai_opcode_runtime_report.json
           build/ai-opcodes-runtime/ai_opcode_runtime_report.md
+          build/ai-opcodes-runtime/ai_rfc0026_readiness.json
+          build/ai-opcodes-runtime/ai_rfc0026_readiness.md
           build/ai-benchmark/ai_benchmark_spec_contract.json
           build/ai-benchmark/ai_benchmark_spec_contract.md
           build/ai-benchmark/ai_benchmark_capability_matrix.json

@@ -51,6 +51,7 @@
 - Enforces runtime benchmark execution replay and regression/trend thresholds (`build/ai-benchmark/ai_benchmark_spec_contract.json`)
 - Emits benchmark format/mode capability matrix with expectation-contract enforcement (including allowlisted unsupported `t3k` lane visibility) without blocking required baseline lane (`build/ai-benchmark/ai_benchmark_capability_matrix.json`)
 - Enforces signed benchmark threshold promotion approval attestations via keyring-backed verification (`build/ai-benchmark/ai_benchmark_threshold_approval_report.json`)
+- Emits RFC-0026 runtime readiness tracker binding opcode conformance evidence with benchmark lane capability state (`build/ai-opcodes-runtime/ai_rfc0026_readiness.json`)
 - Enforces runtime quantization inspect replay + encode/decode fixture corpus roundtrip validation with rolling profile trend analytics (`build/ai-quantization/ai_quantization_codec_contract.json`)
 - Enforces signed quantization profile promotion approval attestations via keyring-backed verification (`build/ai-quantization/ai_quantization_profile_approval_report.json`)
 - Emits AI signing key expiry alert report for keyring rotation readiness (`build/ai-keyring/ai_keyring_expiry_report.json`)
@@ -112,6 +113,7 @@
 - `scripts/ci/ai_benchmark_thresholds_history.json` - Triggers on benchmark threshold history window updates
 - `scripts/ci/check_ai_benchmark_capability_matrix.py` - Triggers on benchmark capability-matrix policy updates
 - `scripts/ci/ai_benchmark_capability_expectations.json` - Triggers on benchmark capability expectation contract updates
+- `scripts/ci/check_ai_rfc0026_readiness.py` - Triggers on RFC-0026 runtime readiness tracker updates
 - `scripts/ci/check_ai_benchmark_threshold_approvals.py` - Triggers on benchmark threshold approval policy gate updates
 - `scripts/ci/ai_quantization_codec_profile.json` - Triggers on quantization codec profile baseline updates
 - `scripts/ci/ai_quantization_codec_profile_history.json` - Triggers on quantization codec profile history window updates
