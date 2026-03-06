@@ -149,7 +149,7 @@ private:
 
     static std::vector<BackendSpec> backend_specs() {
         return {
-            {"llama.cpp", {"gguf", "t81_canonical"}, {"strict_deterministic", "reproducible_nondeterministic"}},
+            {"llama.cpp", {"gguf", "t3k", "t81_canonical"}, {"strict_deterministic", "reproducible_nondeterministic"}},
             {"onnx_runtime", {"onnx", "t81_canonical"}, {"strict_deterministic", "statistical_deterministic"}},
         };
     }
@@ -407,7 +407,7 @@ private:
             << "  \"backends\": [\n"
             << "    {\n"
             << "      \"backend_name\": \"llama.cpp\",\n"
-            << "      \"supported_formats\": [\"gguf\", \"t81_canonical\"],\n"
+            << "      \"supported_formats\": [\"gguf\", \"t3k\", \"t81_canonical\"],\n"
             << "      \"determinism_modes\": [\"strict_deterministic\", \"reproducible_nondeterministic\"],\n"
             << "      \"max_context_tokens\": 4096,\n"
             << "      \"supports_streaming\": true,\n"

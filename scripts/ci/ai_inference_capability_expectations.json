@@ -10,8 +10,8 @@
     {
       "format": "t3k",
       "mode": "strict_deterministic",
-      "expected_support_state": "unsupported",
-      "enforcement": "allowlist"
+      "expected_support_state": "supported",
+      "enforcement": "required"
     }
   ]
 }

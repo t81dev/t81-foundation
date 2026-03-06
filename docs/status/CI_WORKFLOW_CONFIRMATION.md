@@ -53,7 +53,7 @@ Last Updated: 2026-03-06
 - Enforces signed direct backend execution attestation replay (governed `t81 llama-run`) under deterministic evidence constraints (`build/ai-ux/ai_direct_backend_execution_attestation.json`)
 - Publishes machine-readable escalation mappings for signing/keyring/runtime-binding failures in policy/backend/evidence artifacts
 - Enforces runtime benchmark execution replay and regression/trend thresholds (`build/ai-benchmark/ai_benchmark_spec_contract.json`)
-- Emits benchmark format/mode capability matrix with expectation-contract enforcement (including allowlisted unsupported `t3k` lane visibility) without blocking required baseline lane (`build/ai-benchmark/ai_benchmark_capability_matrix.json`)
+- Emits benchmark format/mode capability matrix with expectation-contract enforcement across governed `gguf` + `t3k` strict-deterministic lanes (`build/ai-benchmark/ai_benchmark_capability_matrix.json`)
 - Enforces signed benchmark threshold promotion approval attestations via keyring-backed verification (`build/ai-benchmark/ai_benchmark_threshold_approval_report.json`)
 - Emits RFC-0026 runtime readiness tracker binding opcode conformance evidence with benchmark/inference lane capability states, runtime capability-alignment gate status, WLOAD policy-evidence gate status/readiness/reason signals, and opcode baseline approval-policy gate status (`build/ai-opcodes-runtime/ai_rfc0026_readiness.json`)
 - Emits RFC-0026 WLOAD policy-evidence readiness tracker artifact bound to policy-contract/runtime-trace evidence with governed required reason-codes, prefix policy, and minimum-count expectations (including allow + deny path coverage) (`build/ai-policy/ai_wload_policy_evidence.json`)
@@ -61,7 +61,7 @@ Last Updated: 2026-03-06
 - Enforces opcode runtime provenance consistency between baseline-selection metadata and vector-level evidence bindings (`build/ai-opcodes-runtime/ai_opcode_runtime_provenance_report.json`)
 - Enforces benchmark/inference runtime capability alignment for governed format/mode pairs with expectation-contract enforcement (`build/ai-opcodes-runtime/ai_runtime_capability_alignment.json`)
 - Enforces signed opcode baseline history window promotion approvals via keyring-backed verification plus provenance-reference expectation contract (safe relative paths, prefix policy, fixture existence) (`build/ai-opcodes-runtime/ai_opcode_baseline_approval_report.json`)
-- Emits inference format/mode capability matrix with expectation-contract enforcement (including allowlisted unsupported `t3k` lane visibility) without blocking required baseline lane (`build/ai-ux/ai_inference_capability_matrix.json`)
+- Emits inference format/mode capability matrix with expectation-contract enforcement across governed `gguf` + `t3k` strict-deterministic lanes (`build/ai-ux/ai_inference_capability_matrix.json`)
 - Enforces runtime quantization inspect replay + encode/decode fixture corpus roundtrip validation with rolling profile trend analytics (`build/ai-quantization/ai_quantization_codec_contract.json`)
 - Enforces signed quantization profile promotion approval attestations via keyring-backed verification (`build/ai-quantization/ai_quantization_profile_approval_report.json`)
 - Emits AI signing key expiry alert report for keyring rotation readiness (`build/ai-keyring/ai_keyring_expiry_report.json`)
