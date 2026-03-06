@@ -491,3 +491,458 @@ Do NOT redesign the architecture.
 Implement the smallest changes necessary to achieve full architectural coherence.
 
 Begin by scanning the repository and identifying all locations affected by the audit findings.
+
+---
+
+#T81 Deterministic Ternary Architecture Audit Report - Second Pass
+
+Executive Summary
+The T81 Foundation project aims to provide a deterministic, ternary-native computing stack comprising a language frontend (T81Lang), an instruction set architecture (TISC), a virtual machine (T81VM), a policy engine (Axion), and integration with AI components (RFC-0026).
+
+Based on a comprehensive architectural review of specifications (/spec), implementations (/src, /core, /include), CI infrastructure (/scripts/ci), and determinism tests, the repository demonstrates a highly ambitious and sophisticated design. The boundaries between the deterministic core profile (DCP) and experimental surfaces are well-documented. However, actual execution reveals that the architecture is not yet a fully integrated substrate. Significant gaps exist in the language lowering layer (e.g., incomplete parsing of hexadecimal BigInt literals), and runtime execution faults occur in core division truncation semantics. The CI build suffers from timeouts, and not all determinism gates pass cleanly in practice. Therefore, the system is mostly coherent but suffers from incomplete integration at the implementation level.
+
+Architecture Overview
+The canonical architecture stack is structured as a "Layer Cake":
+
+T81Lang / Stdlib: Language frontend compiling to TISC.
+TISC ISA: The Ternary Instruction Set Computer, providing deterministic bytecodes.
+T81VM: The reference interpreter executing TISC instructions.
+Axion: The governance policy engine mediating VM execution (e.g., AXREAD, AXSET, AXVERIFY).
+CanonFS: Deterministic persistence.
+AI Surfaces (RFC-0026): Integration with AI/LLaMA workflows (ATTN, QMATMUL opcodes).
+Layer-by-Layer Findings
+Balanced Ternary Representation
+Findings: The system encodes ternary logic via a packed 2-bit-per-trit representation (-1, 0, +1 mapped to N, Z, P). This is a practical compromise running on binary hosts, relying on SIMD Within A Register (SWAR). Mathematical primitives (T81Int, Fraction, BigInt) are correctly designed. Recent audits have closed gaps like Cell overflow undefined behavior (UB) and T81Float signed-zero canonicalization.
+Inconsistencies: The architecture relies heavily on host-binary execution (C++23) for performance, simulating ternary logic.
+Language Layer (T81Lang)
+Findings: The frontend parses a robust set of types (BigInt, Fraction, Option, Result, collections) and supports semantic purity checks via @tier and @pure annotations.
+Inconsistencies: The compiler/IR generator struggles with some structural representations. For instance, the lowering of BigInt literals strictly demands canonical decimal text (via normalize_decimal_integer_literal_text). TISC conformance tests involving bitwise operations fail because the parser chokes on 0x hexadecimal literals assigned to T81BigInt.
+Instruction Set (TISC)
+Findings: Opcodes (FAdd, TVecAdd, TMatMul, etc.) exist and encode the ternary arithmetic primitives. AI-native opcodes (ATTN, QMATMUL, EMBED) are formally specified and checked by architecture coherence scripts.
+Inconsistencies: There are execution faults in TISC tests. The division-truncation test triggers an unexpected TrapInstruction, indicating that the VM or ISA implementation of DIV does not perfectly match the spec's truncation semantics yet.
+Virtual Machine (T81VM)
+Findings: The VM dispatch mechanism works, and recent hardening (FW-02) correctly isolates Axion opcode pre-dispatch from the main switch to improve security and auditability.
+Inconsistencies: The runtime suffers from unhandled execution traps during conformance testing, proving that deterministic runtime behavior is not universally sound for all basic instructions.
+Determinism Risk Analysis
+Canonical Serialization: Serialization is heavily constrained and audited (e.g., T81Map sorts keys deterministically).
+Floating Point Drift: Non-deterministic math functions (cmath) are correctly gated behind #ifndef T81_DETERMINISTIC.
+Memory Allocation: Canonical allocation exists but is difficult to enforce strictly across the entire C++ STL surface used in the VM.
+Reproducible Builds: Reproducibility hashes and gates are enforced in CI, but the scope is limited to 16 canonical fixture programs.
+Integration Gaps
+Language to VM Lowering: The frontend fails to lower valid numeric representations (hex) into the VM's LOADI instruction for BigInt.
+Build System: The full CMake test build times out in CI environments unless heavily filtered, indicating integration bloat.
+Runtime Traps: Conformance tests like canonical-encoding and division-truncation fail with TrapInstruction, breaking the promise of bit-exact results across all platforms.
+Governance Coverage (Axion)
+Findings: Axion is actively governing execution. CI scripts (check_architecture_coherence.py) strictly enforce the presence of policy hooks (log_tensor_provenance, AI_POLICY_ALLOW_WLOAD_POLICY_GATE).
+Status: The governance layer is Alpha-level, with Beta promotion blocked until deeper testing guarantees are met.
+CI Enforcement Coverage
+Findings: The repository employs an exhaustive array of Python scripts (check_ai_*.py, t81lang_repro_gate.py) verifying everything from signature histories and KMS contracts to bit-exact hashes of the T81Lang AST/IR.
+Gaps: While the CI architecture is imposing, it relies on small fixture bounds rather than fuzzing the entire instruction set.
+Evidence of Deterministic Behavior
+Findings: Benchmarking and cross-platform verification tools exist (t3k_repro_gate.py, llama_cpp_repro_gate.py). They provide strong evidence for the specifically audited paths (the "Deterministic Core Profile").
+Gaps: Test failures in tisc_bitwise-determinism and tisc_division-truncation are direct evidence that the deterministic substrate is not mathematically sound out-of-the-box for all primitives.
+System Maturity Assessment
+Frozen: TISC ISA boundaries, Core Data Types.
+Beta: T81Lang compiler frontend, T81VM reference interpreter, CanonFS.
+Alpha: Axion policy engine.
+Experimental: Cognitive Tiers, Hanoi Kernel concepts, T81Graph.
+Final Verdict
+B. Mostly coherent but incomplete integration
+
+Justification: The project has exceptionally rigorous specifications, governance mechanisms, and CI gate infrastructure. The distinction between the Deterministic Core Profile (DCP) and experimental tiers is architecturally sound. However, at the implementation level, the system suffers from integration faults: the language frontend cannot parse hex literals for BigInt correctly, the T81VM throws unexpected trap faults during basic arithmetic conformance (division/truncation), and the build system struggles under load. It is a highly coherent design that requires further engineering to function flawlessly as a single substrate.
+
+Recommendations
+Fix Compiler Lowering for Literals: Update normalize_decimal_integer_literal_text in numeric_literals.hpp or introduce a hex-aware parser to support 0x prefixes for T81BigInt literals, unblocking the bitwise conformance tests.
+Resolve VM Traps on Arithmetic: Investigate the TrapInstruction thrown in spec_conformance_tisc_division-truncation. Ensure DIV and MOD perfectly map to the spec's truncation toward zero semantics.
+Expand the Reproducibility Fixture Bound: The 16 canonical programs are insufficient to prove total compile-profile determinism. Expand the corpus.
+Optimize CI Build Pipeline: The cmake --build process times out under standard configurations. Refactor the CMake dependency graph or split tests into smaller parallel suites to ensure full coverage runs successfully.
+Promote Axion to Beta: Complete the deferred tier-transition orchestration logic (§2.5) to clear the path for Axion's promotion out of Alpha.
+
+#T81 Deterministic Ternary Architecture Audit Report - Remediation AI Prompt - Second Pass
+
+You are acting as a **deterministic systems engineer and compiler/runtime architect** working on the T81 Foundation repository.
+
+Repository:
+https://github.com/t81dev/t81-foundation
+
+Your task is to **repair all architectural and integration issues identified in the attached audit report** so that the T81 stack operates as a coherent deterministic ternary computing substrate.
+
+You must implement fixes while preserving the project’s core principles:
+
+• bit-exact deterministic execution
+• balanced ternary semantics (-1, 0, +1)
+• reproducible compilation and execution
+• Axion governance enforcement
+• CanonFS canonical persistence
+• CI determinism gates
+
+Do not introduce nondeterministic behavior or rely on host-specific undefined behavior.
+
+---
+
+# OBJECTIVE
+
+Upgrade the repository from:
+
+“B — Mostly coherent but incomplete integration”
+
+to:
+
+“A — Fully integrated deterministic ternary computing substrate running on binary hosts.”
+
+This requires eliminating runtime faults, fixing language-to-VM lowering gaps, improving CI reliability, and expanding determinism verification.
+
+---
+
+# PART 1 — Fix BigInt Literal Parsing (Compiler Layer)
+
+Problem:
+The T81Lang frontend fails to parse hexadecimal literals when assigning values to T81BigInt.
+
+Example failure:
+
+```
+let x: BigInt = 0xFF
+```
+
+The parser currently requires canonical decimal normalization through:
+
+normalize_decimal_integer_literal_text()
+
+This blocks valid bitwise conformance tests.
+
+Tasks:
+
+1. Extend numeric literal parsing to support prefixes:
+
+```
+0x  → hexadecimal
+0b  → binary
+0o  → octal
+```
+
+2. Update the following components:
+
+lexer
+parser
+numeric_literals.hpp
+IR generator
+
+3. Add a new function:
+
+```
+normalize_integer_literal_text()
+```
+
+Capabilities:
+
+• detect numeric base
+• normalize to canonical decimal representation
+• preserve determinism
+• reject malformed inputs
+
+4. Ensure the IR lowering produces the same LOADI instruction regardless of input base.
+
+Example:
+
+```
+0xFF
+255
+0b11111111
+```
+
+must lower identically.
+
+5. Add conformance tests:
+
+```
+tests/lang/bigint_hex_literals.t81
+tests/lang/bigint_binary_literals.t81
+```
+
+---
+
+# PART 2 — Repair VM Arithmetic Semantics
+
+Problem:
+The conformance test:
+
+```
+spec_conformance_tisc_division-truncation
+```
+
+triggers a TrapInstruction.
+
+This indicates the VM’s DIV implementation does not match spec semantics.
+
+Spec requirement:
+
+Integer division must **truncate toward zero**.
+
+Examples:
+
+```
+7 / 3   = 2
+-7 / 3  = -2
+7 / -3  = -2
+-7 / -3 = 2
+```
+
+Tasks:
+
+1. Audit implementation:
+
+```
+core/vm/opcodes_div.cpp
+or equivalent
+```
+
+2. Implement explicit truncation logic independent of host compiler behavior.
+
+Correct implementation pattern:
+
+```
+q = abs(a) / abs(b)
+sign = sign(a) * sign(b)
+return sign * q
+```
+
+3. Ensure MOD matches spec definition:
+
+```
+a = (a/b)*b + r
+```
+
+4. Add deterministic tests:
+
+```
+tests/vm/division_semantics_test.cpp
+tests/vm/mod_semantics_test.cpp
+```
+
+Include positive and negative operand cases.
+
+5. Confirm no TrapInstruction occurs for valid operands.
+
+---
+
+# PART 3 — Eliminate Runtime Trap Failures
+
+Problem:
+Unexpected TrapInstruction during conformance tests indicates incomplete opcode handling.
+
+Tasks:
+
+1. Audit all arithmetic opcodes:
+
+```
+ADD
+SUB
+MUL
+DIV
+MOD
+BITWISE
+SHIFT
+```
+
+2. Verify:
+
+• bounds checks
+• operand type validation
+• correct register usage
+• spec-conforming behavior
+
+3. Replace generic traps with structured VM errors where appropriate.
+
+4. Ensure deterministic error codes.
+
+---
+
+# PART 4 — Expand Determinism Verification Corpus
+
+Problem:
+Current determinism gates rely on only 16 canonical programs.
+
+This is insufficient coverage.
+
+Tasks:
+
+1. Expand reproducibility fixture corpus to **100+ deterministic programs**.
+
+Categories:
+
+• arithmetic edge cases
+• container operations
+• recursion
+• BigInt operations
+• VM control flow
+• AI opcode invocations
+
+2. Add directory:
+
+```
+tests/repro_corpus/
+```
+
+3. Update CI gate:
+
+```
+scripts/ci/t81lang_repro_gate.py
+```
+
+to compile and hash all programs.
+
+4. Ensure AST hash, IR hash, and bytecode hash remain identical across runs.
+
+---
+
+# PART 5 — Improve CI Build Reliability
+
+Problem:
+CMake build and test suite time out in CI.
+
+Tasks:
+
+1. Split CI tests into separate parallel jobs:
+
+```
+build-core
+test-lang
+test-vm
+test-determinism
+test-ai
+```
+
+2. Use GitHub Actions matrix builds.
+
+3. Add incremental test filtering:
+
+```
+ctest -L deterministic
+ctest -L conformance
+ctest -L ai
+```
+
+4. Cache build artifacts to reduce rebuild times.
+
+5. Ensure CI completes under standard GitHub runner limits.
+
+---
+
+# PART 6 — Strengthen Deterministic Memory Behavior
+
+Problem:
+The VM relies on STL containers whose allocation behavior can vary.
+
+Tasks:
+
+1. Audit usage of:
+
+```
+std::map
+std::unordered_map
+std::vector
+```
+
+2. Replace nondeterministic containers where needed.
+
+Examples:
+
+```
+unordered_map → ordered_map
+```
+
+3. Ensure canonical iteration ordering.
+
+4. Document memory allocation determinism boundaries.
+
+---
+
+# PART 7 — Axion Governance Promotion
+
+Goal:
+Promote Axion from Alpha → Beta.
+
+Tasks:
+
+1. Implement deferred tier-transition orchestration described in spec §2.5.
+
+2. Ensure enforcement coverage:
+
+```
+AXREAD
+AXSET
+AXVERIFY
+AI_POLICY_ALLOW_WLOAD_POLICY_GATE
+```
+
+3. Add policy execution tests:
+
+```
+tests/governance/axion_policy_enforcement_test.cpp
+```
+
+4. Ensure policy violations halt VM deterministically.
+
+---
+
+# PART 8 — Documentation Alignment
+
+Update documentation to clarify:
+
+• Deterministic Core Profile (DCP)
+• experimental surfaces
+• binary host execution boundary
+
+Files to update:
+
+```
+docs/architecture/
+spec/tisc-spec.md
+spec/t81-data-types.md
+docs/status/IMPLEMENTATION_MATRIX.md
+```
+
+Ensure documentation reflects the actual implementation state.
+
+---
+
+# PART 9 — Validation
+
+After implementing fixes:
+
+Run full validation:
+
+```
+cmake --build
+ctest
+scripts/ci/*
+```
+
+All results must satisfy:
+
+• conformance tests pass
+• determinism gates pass
+• CI completes successfully
+• no unexpected VM traps
+
+---
+
+# DELIVERABLES
+
+Provide a structured report containing:
+
+1. Files modified
+2. New modules created
+3. Test suites added
+4. CI workflow improvements
+5. Determinism guarantees verified
+6. Summary of architectural impact
+
+Do not redesign the architecture.
+
+Apply **minimal, surgical fixes** necessary to make the system operate as a fully integrated deterministic ternary computing substrate.
+
+Begin by scanning the repository and locating all failing conformance tests referenced in the audit report.
+
+---
