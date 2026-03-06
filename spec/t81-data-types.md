@@ -34,6 +34,10 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## Binary Host Execution Boundary
+
+T81 is a **ternary semantic architecture executed on binary hardware**. This is an intentional design choice. The platform guarantees exact ternary correctness while leveraging 2-bit packed trits and SWAR (SIMD Within A Register) vectorization to map naturally and efficiently onto binary host CPUs.
+
 # 0. Scope
 
 This document defines:

@@ -100,6 +100,8 @@ add_library(t81_core STATIC
   core/isa/encoding.cpp
   src/canonfs/in_memory_driver.cpp
   src/canonfs/persistent_driver.cpp
+  core/determinism/canon_hash81.cpp
+  core/math/t81_soft_math/t81_soft_math.cpp
   experimental/hanoi/error.cpp
   experimental/hanoi/in_memory_kernel.cpp
   experimental/tiers/cog/promotion.cpp

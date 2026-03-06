@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include "t81/tracing/canonhash.hpp"
+#include "t81/determinism/canon_hash81.hpp"
 
 namespace std {
 template <>
@@ -30,7 +31,7 @@ struct hash<t81::canonfs::CanonHash> {
   size_t operator()(const t81::canonfs::CanonHash& h) const noexcept {
     size_t seed = 0;
     for (uint8_t b : h.h.bytes) {
-      seed ^= std::hash<uint8_t>{}(b) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+      seed ^= t81::CanonHash<uint8_t>{}(b) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
     return seed;
   }

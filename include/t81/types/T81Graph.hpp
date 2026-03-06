@@ -19,6 +19,7 @@
 #include "t81/types/T81Int.hpp"
 #include "t81/types/T81Symbol.hpp"
 #include "t81/types/T81Tensor.hpp"
+#include "t81/determinism/canon_hash81.hpp"
 
 namespace t81 {
 

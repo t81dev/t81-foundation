@@ -22,6 +22,7 @@
 #include <type_traits>
 #include <utility>
 #include "t81/axion/api.hpp"
+#include "t81/determinism/canon_hash81.hpp"
 
 namespace t81 {
 
@@ -610,7 +611,7 @@ struct hash<t81::T81Int<N>> {
     const auto& data = val.raw_data();
     size_t seed = 0;
     for (const auto& byte : data)
-      seed ^= std::hash<std::uint8_t>{}(byte) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+      seed ^= t81::CanonHash<std::uint8_t>{}(static_cast<std::uint8_t>(byte)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     return seed;
   }
 };

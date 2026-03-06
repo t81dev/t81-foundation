@@ -206,7 +206,7 @@ public:
       if constexpr (requires(const E& x) { x.hash(); }) {
         part = static_cast<std::uint64_t>(e.hash());
       } else {
-        std::hash<E> hasher;
+        t81::CanonHash<E> hasher;
         part = static_cast<std::uint64_t>(hasher(e));
       }
 
