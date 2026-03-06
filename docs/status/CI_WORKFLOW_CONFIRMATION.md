@@ -118,6 +118,7 @@
 - `scripts/ci/ai_quantization_codec_profile.json` - Triggers on quantization codec profile baseline updates
 - `scripts/ci/ai_quantization_codec_profile_history.json` - Triggers on quantization codec profile history window updates
 - `scripts/ci/check_ai_quantization_profile_approvals.py` - Triggers on quantization profile approval policy gate updates
+- `experiments/ai/opcodes/PHASE1_BASELINE_HASHES_HISTORY.json` - Triggers on opcode baseline history-window updates
 
 ### Failure Conditions
 

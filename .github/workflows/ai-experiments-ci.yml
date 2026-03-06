@@ -38,6 +38,7 @@ on:
       - 'scripts/ci/check_ai_keyring_expiry.py'
       - 'scripts/ci/check_ai_keyring_kms_contract.py'
       - 'scripts/ci/generate_ai_opcode_runtime_report.py'
+      - 'experiments/ai/opcodes/PHASE1_BASELINE_HASHES_HISTORY.json'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - 'scripts/ci/run_governed_llama_flow.py'
       - 'scripts/ci/check_ai_governed_replay_attestation.py'
@@ -80,6 +81,7 @@ on:
       - 'scripts/ci/check_ai_keyring_expiry.py'
       - 'scripts/ci/check_ai_keyring_kms_contract.py'
       - 'scripts/ci/generate_ai_opcode_runtime_report.py'
+      - 'experiments/ai/opcodes/PHASE1_BASELINE_HASHES_HISTORY.json'
       - 'scripts/ci/check_ai_tloadhash_toolchain.py'
       - 'scripts/ci/run_governed_llama_flow.py'
       - 'scripts/ci/check_ai_governed_replay_attestation.py'
@@ -386,7 +388,8 @@ jobs:
           --repo-root . \
           --out-dir build/ai-opcodes-runtime \
           --ctest-log build/ai-opcodes/ai_phase1_opcode_ctest.log \
-          --baseline-hashes experiments/ai/opcodes/PHASE1_BASELINE_HASHES.json
+          --baseline-hashes experiments/ai/opcodes/PHASE1_BASELINE_HASHES.json \
+          --baseline-hashes-history experiments/ai/opcodes/PHASE1_BASELINE_HASHES_HISTORY.json
 
     - name: Validate AI opcode subset contract (RFC-0026 / RFC-00A8 runtime-bound)
       if: steps.build_ai.outputs.has_target == 'true'

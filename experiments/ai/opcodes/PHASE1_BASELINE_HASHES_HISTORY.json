@@ -1,0 +1,33 @@
+{
+  "schema": "t81.ai.phase1-hash-baseline-history.v1",
+  "windows": [
+    {
+      "window_id": "2026-02",
+      "window_start": "2026-02-01",
+      "window_end": "2026-02-28",
+      "baseline": {
+        "schema": "t81.ai.phase1-hash-baseline.v1",
+        "phase": "phase1",
+        "output_hashes": {
+          "ATTN": "db742b617767af01",
+          "QMATMUL": "14d41b8df3810394",
+          "EMBED": "8715026970757876"
+        }
+      }
+    },
+    {
+      "window_id": "2026-03",
+      "window_start": "2026-03-01",
+      "window_end": "2026-03-31",
+      "baseline": {
+        "schema": "t81.ai.phase1-hash-baseline.v1",
+        "phase": "phase1",
+        "output_hashes": {
+          "ATTN": "db742b617767af01",
+          "QMATMUL": "14d41b8df3810394",
+          "EMBED": "8715026970757876"
+        }
+      }
+    }
+  ]
+}

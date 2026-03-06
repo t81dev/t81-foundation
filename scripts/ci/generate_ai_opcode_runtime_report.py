@@ -6,6 +6,7 @@ import hashlib
 import json
 import re
 import sys
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -62,6 +63,13 @@ def canonical_json(obj: Any) -> str:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
 
+def parse_iso_date(raw: str, label: str) -> date:
+    try:
+        return date.fromisoformat(raw)
+    except ValueError as exc:
+        raise ValueError(f"invalid {label} date: {raw} (expected YYYY-MM-DD)") from exc
+
+
 def parse_phase1_conformance_log(ctest_log: Path) -> dict[str, Any]:
     if not ctest_log.exists():
         raise FileNotFoundError(f"ctest log not found: {ctest_log}")
@@ -81,21 +89,88 @@ def parse_phase1_conformance_log(ctest_log: Path) -> dict[str, Any]:
     }
 
 
-def parse_phase1_baseline_hashes(path: Path) -> dict[str, str]:
-    payload = json.loads(read_text(path))
+def parse_phase1_baseline_hashes_payload(payload: dict[str, Any], label: str) -> dict[str, str]:
     if payload.get("schema") != "t81.ai.phase1-hash-baseline.v1":
-        raise ValueError(f"invalid baseline schema in {path}")
+        raise ValueError(f"invalid baseline schema in {label}")
     hashes = payload.get("output_hashes", {})
     result: dict[str, str] = {}
     for opcode in PHASE1:
         value = str(hashes.get(opcode, "")).strip().lower()
         if not re.fullmatch(r"[0-9a-f]{16,64}", value):
-            raise ValueError(f"invalid or missing baseline hash for {opcode} in {path}")
+            raise ValueError(f"invalid or missing baseline hash for {opcode} in {label}")
         result[opcode] = value
     return result
 
 
-def build_payload(repo_root: Path, ctest_log: Path | None, baseline_hashes_path: Path | None) -> dict[str, Any]:
+def parse_phase1_baseline_hashes(path: Path) -> dict[str, str]:
+    payload = json.loads(read_text(path))
+    return parse_phase1_baseline_hashes_payload(payload, str(path))
+
+
+def select_phase1_baseline_window(history_path: Path, as_of: date) -> tuple[dict[str, str], dict[str, Any]]:
+    history = json.loads(read_text(history_path))
+    if history.get("schema") != "t81.ai.phase1-hash-baseline-history.v1":
+        raise ValueError(f"invalid baseline history schema in {history_path}")
+    windows = history.get("windows")
+    if not isinstance(windows, list) or not windows:
+        raise ValueError(f"baseline history windows must be non-empty in {history_path}")
+
+    selected: dict[str, Any] | None = None
+    for win in windows:
+        if not isinstance(win, dict):
+            continue
+        start_raw = str(win.get("window_start", "")).strip()
+        end_raw = str(win.get("window_end", "")).strip()
+        if not start_raw or not end_raw:
+            continue
+        start = parse_iso_date(start_raw, "window_start")
+        end = parse_iso_date(end_raw, "window_end")
+        if start <= as_of <= end:
+            selected = win
+            break
+    if selected is None:
+        candidates: list[tuple[date, dict[str, Any]]] = []
+        for win in windows:
+            if not isinstance(win, dict):
+                continue
+            start_raw = str(win.get("window_start", "")).strip()
+            if not start_raw:
+                continue
+            try:
+                start = parse_iso_date(start_raw, "window_start")
+            except ValueError:
+                continue
+            if start <= as_of:
+                candidates.append((start, win))
+        if candidates:
+            candidates.sort(key=lambda item: item[0], reverse=True)
+            selected = candidates[0][1]
+    if selected is None:
+        raise ValueError(f"no valid baseline history window found in {history_path}")
+
+    baseline_payload = selected.get("baseline")
+    if not isinstance(baseline_payload, dict):
+        raise ValueError(f"selected baseline window missing baseline object in {history_path}")
+    hashes = parse_phase1_baseline_hashes_payload(
+        baseline_payload, f"{history_path} window {selected.get('window_id', '')}"
+    )
+    metadata = {
+        "history_path": str(history_path),
+        "window_id": str(selected.get("window_id", "")),
+        "window_start": str(selected.get("window_start", "")),
+        "window_end": str(selected.get("window_end", "")),
+        "as_of_date": as_of.isoformat(),
+    }
+    return hashes, metadata
+
+
+def build_payload(
+    repo_root: Path,
+    ctest_log: Path | None,
+    baseline_hashes_path: Path | None,
+    baseline_history_path: Path | None,
+    as_of_date: date,
+) -> dict[str, Any]:
     ai_header = repo_root / "include/t81/isa/ai_native_opcodes.hpp"
     tisc_header = repo_root / "include/t81/isa/opcodes.hpp"
     vm_cpp = repo_root / "core/vm/vm.cpp"
@@ -108,9 +183,22 @@ def build_payload(repo_root: Path, ctest_log: Path | None, baseline_hashes_path:
     tisc_enum = parse_enum_members(tisc_text, "Opcode")
     vm_cases = parse_vm_dispatch_cases(vm_text)
     conformance = parse_phase1_conformance_log(ctest_log) if ctest_log is not None else None
-    baseline_hashes = (
-        parse_phase1_baseline_hashes(baseline_hashes_path) if baseline_hashes_path is not None else None
-    )
+    baseline_hashes: dict[str, str] | None = None
+    baseline_source_path = ""
+    baseline_selection: dict[str, Any] | None = None
+    if baseline_history_path is not None and baseline_history_path.exists():
+        baseline_hashes, baseline_selection = select_phase1_baseline_window(baseline_history_path, as_of_date)
+        baseline_source_path = str(baseline_history_path)
+    elif baseline_hashes_path is not None:
+        baseline_hashes = parse_phase1_baseline_hashes(baseline_hashes_path)
+        baseline_source_path = str(baseline_hashes_path)
+        baseline_selection = {
+            "history_path": "",
+            "window_id": "",
+            "window_start": "",
+            "window_end": "",
+            "as_of_date": as_of_date.isoformat(),
+        }
 
     phase_rows: list[dict[str, Any]] = []
     for opcode in PHASE1:
@@ -156,9 +244,10 @@ def build_payload(repo_root: Path, ctest_log: Path | None, baseline_hashes_path:
                 "match": match,
             }
         baseline_comparison = {
-            "baseline_path": str(baseline_hashes_path),
+            "baseline_path": baseline_source_path,
             "all_match": baseline_hashes_match,
             "per_opcode": per_opcode,
+            "selection": baseline_selection,
         }
     conformance_valid = (
         True
@@ -189,6 +278,7 @@ def build_payload(repo_root: Path, ctest_log: Path | None, baseline_hashes_path:
             "vm_dispatch_source_sha256": sha256_text(vm_text),
             "phase1_conformance": conformance,
             "phase1_baseline_comparison": baseline_comparison,
+            "phase1_baseline_selection": baseline_selection,
         },
         "summary": {
             "phase1_opcode_count": len(PHASE1),
@@ -258,6 +348,16 @@ def write_markdown(path: Path, payload: dict[str, Any]) -> None:
                 f"- all_match: `{baseline['all_match']}`",
             ]
         )
+        selection = baseline.get("selection")
+        if isinstance(selection, dict):
+            lines.extend(
+                [
+                    f"- baseline_window_id: `{selection.get('window_id', '')}`",
+                    f"- baseline_window_start: `{selection.get('window_start', '')}`",
+                    f"- baseline_window_end: `{selection.get('window_end', '')}`",
+                    f"- baseline_as_of_date: `{selection.get('as_of_date', '')}`",
+                ]
+            )
         for opcode in PHASE1:
             row = baseline["per_opcode"][opcode]
             lines.append(
@@ -279,6 +379,16 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Optional path to phase1 baseline output hashes json.",
     )
+    p.add_argument(
+        "--baseline-hashes-history",
+        default="",
+        help="Optional path to phase1 baseline history windows json.",
+    )
+    p.add_argument(
+        "--as-of-date",
+        default="",
+        help="Optional YYYY-MM-DD date for baseline history window selection (default: today UTC).",
+    )
     return p.parse_args()
 
 
@@ -289,8 +399,10 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     ctest_log = Path(args.ctest_log) if args.ctest_log else None
-    baseline_hashes = Path(args.baseline_hashes) if args.baseline_hashes else None
-    payload = build_payload(repo_root, ctest_log, baseline_hashes)
+    baseline_hashes = Path(args.baseline_hashes).resolve() if args.baseline_hashes else None
+    baseline_history = Path(args.baseline_hashes_history).resolve() if args.baseline_hashes_history else None
+    as_of = parse_iso_date(args.as_of_date, "as_of_date") if args.as_of_date else datetime.now(UTC).date()
+    payload = build_payload(repo_root, ctest_log, baseline_hashes, baseline_history, as_of)
     json_path = out_dir / "ai_opcode_runtime_report.json"
     md_path = out_dir / "ai_opcode_runtime_report.md"
     json_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
