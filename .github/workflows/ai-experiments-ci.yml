@@ -18,6 +18,7 @@ on:
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
+      - 'scripts/ci/check_ai_benchmark_capability_matrix.py'
       - 'scripts/ci/check_ai_benchmark_threshold_approvals.py'
       - 'scripts/ci/ai_benchmark_threshold_approval_keyring.json'
       - 'scripts/ci/ai_benchmark_thresholds.json'
@@ -57,6 +58,7 @@ on:
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
+      - 'scripts/ci/check_ai_benchmark_capability_matrix.py'
       - 'scripts/ci/check_ai_benchmark_threshold_approvals.py'
       - 'scripts/ci/ai_benchmark_threshold_approval_keyring.json'
       - 'scripts/ci/ai_benchmark_thresholds.json'
@@ -403,6 +405,18 @@ jobs:
           --thresholds-history-file scripts/ci/ai_benchmark_thresholds_history.json \
           --trend-window-count 3
 
+    - name: Emit benchmark format/mode capability matrix (RFC-00A2 runtime visibility)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-benchmark
+        python3 scripts/ci/check_ai_benchmark_capability_matrix.py \
+          --out-dir build/ai-benchmark \
+          --ai-bin build/experiments/ai/ux_tools/t81_ai \
+          --model-file tests/fixtures/llama_cpp_repro/model.gguf \
+          --formats gguf,t3k \
+          --modes strict_deterministic \
+          --required gguf:strict_deterministic
+
     - name: Validate benchmark threshold window approvals (RFC-00A2 promotion policy)
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -521,6 +535,7 @@ jobs:
         } >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-opcodes-runtime/ai_opcode_runtime_report.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-benchmark/ai_benchmark_spec_contract.md >> "$GITHUB_STEP_SUMMARY"
+        cat build/ai-benchmark/ai_benchmark_capability_matrix.md >> "$GITHUB_STEP_SUMMARY"
         {
           echo "# RFC-00A2 Threshold Approval Policy"
           echo ""
@@ -588,6 +603,8 @@ jobs:
           build/ai-opcodes-runtime/ai_opcode_runtime_report.md
           build/ai-benchmark/ai_benchmark_spec_contract.json
           build/ai-benchmark/ai_benchmark_spec_contract.md
+          build/ai-benchmark/ai_benchmark_capability_matrix.json
+          build/ai-benchmark/ai_benchmark_capability_matrix.md
           build/ai-benchmark/ai_benchmark_threshold_approval_report.json
           build/ai-quantization/ai_quantization_codec_contract.json
           build/ai-quantization/ai_quantization_codec_contract.md
