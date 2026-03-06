@@ -2,32 +2,54 @@
   "schema": "t81.ai.phase1-hash-baseline-history.v1",
   "windows": [
     {
-      "window_id": "2026-02",
-      "window_start": "2026-02-01",
-      "window_end": "2026-02-28",
       "baseline": {
-        "schema": "t81.ai.phase1-hash-baseline.v1",
-        "phase": "phase1",
         "output_hashes": {
           "ATTN": "db742b617767af01",
-          "QMATMUL": "14d41b8df3810394",
-          "EMBED": "8715026970757876"
-        }
-      }
+          "EMBED": "8715026970757876",
+          "QMATMUL": "14d41b8df3810394"
+        },
+        "phase": "phase1",
+        "schema": "t81.ai.phase1-hash-baseline.v1"
+      },
+      "promotion_approval": {
+        "approved_at": "2026-02-01",
+        "approved_by": "@t81dev",
+        "change_ref": "rfc00a8-baseline-window-2026-02"
+      },
+      "promotion_approval_attestation_sha256": "e0e85c8796a4166c578d662d60c03e7228a196374bc0524b9a220adf64b24890",
+      "promotion_approval_signature": {
+        "algorithm": "hmac-sha256",
+        "key_id": "ai-opcode-baseline-approval-2026q1",
+        "signature_hex": "9594e0fc3367ddae0f960cb5e8f0f559038c87ef20b12a1b26c8e48d359733a9"
+      },
+      "window_end": "2026-02-28",
+      "window_id": "2026-02",
+      "window_start": "2026-02-01"
     },
     {
-      "window_id": "2026-03",
-      "window_start": "2026-03-01",
-      "window_end": "2026-03-31",
       "baseline": {
-        "schema": "t81.ai.phase1-hash-baseline.v1",
-        "phase": "phase1",
         "output_hashes": {
           "ATTN": "db742b617767af01",
-          "QMATMUL": "14d41b8df3810394",
-          "EMBED": "8715026970757876"
-        }
-      }
+          "EMBED": "8715026970757876",
+          "QMATMUL": "14d41b8df3810394"
+        },
+        "phase": "phase1",
+        "schema": "t81.ai.phase1-hash-baseline.v1"
+      },
+      "promotion_approval": {
+        "approved_at": "2026-03-01",
+        "approved_by": "@t81dev",
+        "change_ref": "rfc00a8-baseline-window-2026-03"
+      },
+      "promotion_approval_attestation_sha256": "0fa42ab995779e8274a9969ddb48c9d120ae8a5696092b2eeb11eff4eb442bb2",
+      "promotion_approval_signature": {
+        "algorithm": "hmac-sha256",
+        "key_id": "ai-opcode-baseline-approval-2026q1",
+        "signature_hex": "80c3db7b67fb811fe724b6b560450f75ffd267d38b17061b31b89630dacabc06"
+      },
+      "window_end": "2026-03-31",
+      "window_id": "2026-03",
+      "window_start": "2026-03-01"
     }
   ]
 }

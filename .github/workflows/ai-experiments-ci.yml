@@ -18,6 +18,8 @@ on:
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_rfc0026_readiness.py'
+      - 'scripts/ci/check_ai_opcode_baseline_history_approvals.py'
+      - 'scripts/ci/ai_opcode_baseline_approval_keyring.json'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_benchmark_capability_matrix.py'
       - 'scripts/ci/ai_benchmark_capability_expectations.json'
@@ -61,6 +63,8 @@ on:
       - 'scripts/ci/check_ai_vm_trace_evidence.py'
       - 'scripts/ci/check_ai_opcode_subset_contract.py'
       - 'scripts/ci/check_ai_rfc0026_readiness.py'
+      - 'scripts/ci/check_ai_opcode_baseline_history_approvals.py'
+      - 'scripts/ci/ai_opcode_baseline_approval_keyring.json'
       - 'scripts/ci/check_ai_benchmark_spec_contract.py'
       - 'scripts/ci/check_ai_benchmark_capability_matrix.py'
       - 'scripts/ci/ai_benchmark_capability_expectations.json'
@@ -112,6 +116,8 @@ jobs:
       T81_AI_BENCHMARK_APPROVAL_KEY_2026Q2: ${{ secrets.T81_AI_BENCHMARK_APPROVAL_KEY_2026Q2 }}
       T81_AI_QUANTIZATION_APPROVAL_KEY_2026Q1: ${{ secrets.T81_AI_QUANTIZATION_APPROVAL_KEY_2026Q1 }}
       T81_AI_QUANTIZATION_APPROVAL_KEY_2026Q2: ${{ secrets.T81_AI_QUANTIZATION_APPROVAL_KEY_2026Q2 }}
+      T81_AI_OPCODE_BASELINE_APPROVAL_KEY_2026Q1: ${{ secrets.T81_AI_OPCODE_BASELINE_APPROVAL_KEY_2026Q1 }}
+      T81_AI_OPCODE_BASELINE_APPROVAL_KEY_2026Q2: ${{ secrets.T81_AI_OPCODE_BASELINE_APPROVAL_KEY_2026Q2 }}
     
     steps:
     - name: Checkout Repository
@@ -291,6 +297,7 @@ jobs:
           --keyring scripts/ci/ai_direct_backend_attestation_keyring.json \
           --keyring scripts/ci/ai_benchmark_threshold_approval_keyring.json \
           --keyring scripts/ci/ai_quantization_profile_approval_keyring.json \
+          --keyring scripts/ci/ai_opcode_baseline_approval_keyring.json \
           --warn-days 30 \
           --fail-days 0 \
           --out-json build/ai-keyring/ai_keyring_expiry_report.json
@@ -308,6 +315,7 @@ jobs:
           --keyring scripts/ci/ai_direct_backend_attestation_keyring.json \
           --keyring scripts/ci/ai_benchmark_threshold_approval_keyring.json \
           --keyring scripts/ci/ai_quantization_profile_approval_keyring.json \
+          --keyring scripts/ci/ai_opcode_baseline_approval_keyring.json \
           --max-active-days-limit 120 \
           --out-json build/ai-keyring/ai_keyring_kms_contract_report.json
 
@@ -443,6 +451,15 @@ jobs:
           --benchmark-capability-matrix build/ai-benchmark/ai_benchmark_capability_matrix.json \
           --out-dir build/ai-opcodes-runtime
 
+    - name: Validate opcode baseline history window approvals (RFC-00A8 promotion policy)
+      if: steps.build_ai.outputs.has_target == 'true'
+      run: |
+        mkdir -p build/ai-opcodes-runtime
+        python3 scripts/ci/check_ai_opcode_baseline_history_approvals.py \
+          --history-file experiments/ai/opcodes/PHASE1_BASELINE_HASHES_HISTORY.json \
+          --signing-keyring scripts/ci/ai_opcode_baseline_approval_keyring.json \
+          --out-json build/ai-opcodes-runtime/ai_opcode_baseline_approval_report.json
+
     - name: Validate AI quantization runtime fixture corpus (RFC-00A4 promotion slice)
       if: steps.build_ai.outputs.has_target == 'true'
       run: |
@@ -552,6 +569,12 @@ jobs:
         } >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-opcodes-runtime/ai_opcode_runtime_report.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-opcodes-runtime/ai_rfc0026_readiness.md >> "$GITHUB_STEP_SUMMARY"
+        {
+          echo "# RFC-00A8 Baseline Approval Policy"
+          echo ""
+          echo "- report: \`build/ai-opcodes-runtime/ai_opcode_baseline_approval_report.json\`"
+          echo ""
+        } >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-benchmark/ai_benchmark_spec_contract.md >> "$GITHUB_STEP_SUMMARY"
         cat build/ai-benchmark/ai_benchmark_capability_matrix.md >> "$GITHUB_STEP_SUMMARY"
         {
@@ -621,6 +644,7 @@ jobs:
           build/ai-opcodes-runtime/ai_opcode_runtime_report.md
           build/ai-opcodes-runtime/ai_rfc0026_readiness.json
           build/ai-opcodes-runtime/ai_rfc0026_readiness.md
+          build/ai-opcodes-runtime/ai_opcode_baseline_approval_report.json
           build/ai-benchmark/ai_benchmark_spec_contract.json
           build/ai-benchmark/ai_benchmark_spec_contract.md
           build/ai-benchmark/ai_benchmark_capability_matrix.json
