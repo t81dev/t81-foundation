@@ -15,6 +15,11 @@
         "change_ref": "rfc00a4-window-2026-02"
       },
       "promotion_approval_attestation_sha256": "77ee4b834bc181d0c81c6f301d7ed693d40561e4146f9d7dc3bc4299445f235b",
+      "promotion_approval_signature": {
+        "algorithm": "hmac-sha256",
+        "key_id": "ai-quantization-profile-approval-2026q1",
+        "signature_hex": "e48b3e72ebe6d69fb40dfae8485746efa76c9c9b1f3e475e25c0beb08fba5953"
+      },
       "window_end": "2026-02-28",
       "window_id": "2026-02",
       "window_start": "2026-02-01"
@@ -33,6 +38,11 @@
         "change_ref": "rfc00a4-window-2026-03"
       },
       "promotion_approval_attestation_sha256": "823d4a583c41ed09d9479a7c4b117849747d396cd964879a147075436a14fa29",
+      "promotion_approval_signature": {
+        "algorithm": "hmac-sha256",
+        "key_id": "ai-quantization-profile-approval-2026q1",
+        "signature_hex": "2a0e046b6ce4ffd931940d9949b33f329a804d10cc21d0945f4743709125fa16"
+      },
       "window_end": "2026-03-31",
       "window_id": "2026-03",
       "window_start": "2026-03-01"

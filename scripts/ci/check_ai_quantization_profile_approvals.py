@@ -4,8 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
+import hmac
 import json
+import os
 import sys
 from datetime import date
 from pathlib import Path
@@ -13,6 +16,7 @@ from typing import Any
 
 
 SCHEMA_VERSION = "t81.ai.quantization-profile-approval.v1"
+KEYRING_SCHEMA_VERSION = "t81.ai.quantization-profile-approval-keyring.v1"
 
 
 def canonical_json(data: Any) -> str:
@@ -27,6 +31,77 @@ def parse_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def parse_key_material_b64(raw: str) -> bytes:
+    return base64.b64decode(raw, validate=True)
+
+
+def resolve_key_material(key: dict[str, Any], errors: list[str] | None = None) -> bytes:
+    key_id = str(key.get("key_id", "")).strip()
+    env_name = str(key.get("material_env", "")).strip()
+    if env_name:
+        env_value = os.environ.get(env_name, "")
+        if env_value:
+            try:
+                return parse_key_material_b64(env_value)
+            except Exception:
+                if errors is not None:
+                    errors.append(f"key {key_id}: material_env '{env_name}' is not valid base64")
+                return b""
+    try:
+        return parse_key_material_b64(str(key.get("material_b64", "")))
+    except Exception:
+        if errors is not None:
+            errors.append(f"key {key_id}: invalid material_b64")
+        return b""
+
+
+def validate_keyring(path: Path) -> tuple[dict[str, Any], list[str]]:
+    payload = parse_json(path)
+    errors: list[str] = []
+    if payload.get("schema") != KEYRING_SCHEMA_VERSION:
+        errors.append(f"keyring schema mismatch: {payload.get('schema')} != {KEYRING_SCHEMA_VERSION}")
+    keys = payload.get("keys")
+    if not isinstance(keys, list) or not keys:
+        errors.append("keyring keys must be a non-empty list")
+        return payload, errors
+    for key in keys:
+        if not isinstance(key, dict):
+            errors.append("key entry must be object")
+            continue
+        key_id = str(key.get("key_id", "")).strip()
+        if not key_id:
+            errors.append("key entry missing key_id")
+            continue
+        if str(key.get("algorithm", "")).strip() != "hmac-sha256":
+            errors.append(f"key {key_id}: unsupported algorithm")
+        decoded = resolve_key_material(key, errors)
+        if not decoded:
+            errors.append(f"key {key_id}: empty key material")
+    return payload, errors
+
+
+def verify_payload_signature(
+    payload: dict[str, Any], signature_hex: str, keyring: dict[str, Any], expected_key_id: str
+) -> tuple[bool, str]:
+    keys = keyring.get("keys")
+    if not isinstance(keys, list):
+        return False, ""
+    encoded = canonical_json(payload).encode("utf-8")
+    for key in keys:
+        if not isinstance(key, dict):
+            continue
+        key_id = str(key.get("key_id", "")).strip()
+        if expected_key_id and key_id != expected_key_id:
+            continue
+        material = resolve_key_material(key, [])
+        if not material:
+            continue
+        candidate = hmac.new(material, encoded, hashlib.sha256).hexdigest()
+        if hmac.compare_digest(candidate, signature_hex):
+            return True, key_id
+    return False, ""
+
+
 def parse_iso_date(raw: str, label: str) -> date:
     try:
         return date.fromisoformat(raw)
@@ -37,6 +112,11 @@ def parse_iso_date(raw: str, label: str) -> date:
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Validate quantization profile history promotion approvals.")
     p.add_argument("--history-file", required=True, help="Path to ai_quantization_codec_profile_history.json")
+    p.add_argument(
+        "--signing-keyring",
+        default="",
+        help="Path to quantization profile approval keyring (defaults to scripts/ci/ai_quantization_profile_approval_keyring.json).",
+    )
     p.add_argument("--out-json", required=True, help="Output report path")
     return p.parse_args()
 
@@ -44,11 +124,19 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     history_path = Path(args.history_file).resolve()
+    default_keyring = Path(__file__).resolve().with_name("ai_quantization_profile_approval_keyring.json")
+    keyring_path = Path(args.signing_keyring).resolve() if args.signing_keyring else default_keyring
     out_json = Path(args.out_json).resolve()
 
     errors: list[str] = []
     warnings: list[str] = []
     windows_report: list[dict[str, Any]] = []
+    keyring_payload: dict[str, Any] = {}
+    if keyring_path.exists():
+        keyring_payload, keyring_errors = validate_keyring(keyring_path)
+        errors.extend(keyring_errors)
+    else:
+        errors.append(f"missing signing keyring: {keyring_path}")
 
     if not history_path.exists():
         print(f"error: missing history file: {history_path}", file=sys.stderr)
@@ -127,6 +215,32 @@ def main() -> int:
             errors.append(f"{window_id}: promotion_approval_attestation_sha256 required")
         elif approval_hash != expected_hash:
             errors.append(f"{window_id}: promotion_approval_attestation_sha256 mismatch")
+        signature = win.get("promotion_approval_signature")
+        signature_valid = False
+        signature_verified_by = ""
+        if not isinstance(signature, dict):
+            errors.append(f"{window_id}: promotion_approval_signature required")
+        else:
+            if str(signature.get("algorithm", "")).strip() != "hmac-sha256":
+                errors.append(f"{window_id}: promotion_approval_signature algorithm mismatch")
+            signature_key_id = str(signature.get("key_id", "")).strip()
+            if not signature_key_id:
+                errors.append(f"{window_id}: promotion_approval_signature.key_id required")
+            sig_hex = str(signature.get("signature_hex", "")).strip()
+            if not sig_hex:
+                errors.append(f"{window_id}: promotion_approval_signature.signature_hex required")
+            elif keyring_payload:
+                signature_valid, signature_verified_by = verify_payload_signature(
+                    {
+                        "window_id": window_id,
+                        "promotion_approval_attestation_sha256": approval_hash,
+                    },
+                    sig_hex,
+                    keyring_payload,
+                    signature_key_id,
+                )
+                if not signature_valid:
+                    errors.append(f"{window_id}: promotion_approval_signature verification failed")
 
         windows_report.append(
             {
@@ -134,6 +248,8 @@ def main() -> int:
                 "window_start": start_raw,
                 "window_end": end_raw,
                 "approval_attestation_valid": approval_hash == expected_hash and bool(approval_hash),
+                "approval_signature_valid": signature_valid,
+                "approval_signature_verified_by": signature_verified_by,
             }
         )
 
@@ -142,6 +258,7 @@ def main() -> int:
         "schema": SCHEMA_VERSION,
         "status": status,
         "history_file": str(history_path),
+        "signing_keyring": str(keyring_path),
         "window_count": len(windows),
         "windows": windows_report,
         "errors": errors,
