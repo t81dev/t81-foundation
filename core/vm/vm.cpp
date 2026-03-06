@@ -2155,8 +2155,27 @@ public:
           trap = Trap::DivisionFault;
           break;
         }
-        t81::T81BigInt result =
-            (insn.opcode == t81::tisc::Opcode::Div) ? (*lhs / *rhs) : (*lhs % *rhs);
+
+        t81::T81BigInt result;
+        if (insn.opcode == t81::tisc::Opcode::Div) {
+          // Explicit truncation towards zero independent of host
+          auto q = lhs->abs() / rhs->abs();
+          if ((lhs->is_negative() && !rhs->is_negative()) || (!lhs->is_negative() && rhs->is_negative())) {
+            result = -q;
+          } else {
+            result = q;
+          }
+        } else {
+          // MOD definition: a = (a/b)*b + r
+          auto q = lhs->abs() / rhs->abs();
+          t81::T81BigInt trunc_div;
+          if ((lhs->is_negative() && !rhs->is_negative()) || (!lhs->is_negative() && rhs->is_negative())) {
+            trunc_div = -q;
+          } else {
+            trunc_div = q;
+          }
+          result = *lhs - (trunc_div * *rhs);
+        }
         const bool preserve_bigint = ctx.register_tags[insn.b] == ValueTag::BigIntHandle ||
                                      ctx.register_tags[insn.c] == ValueTag::BigIntHandle;
         if (auto op_trap = store_integer_result(insn.a, std::move(result), preserve_bigint);

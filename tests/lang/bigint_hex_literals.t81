@@ -1,0 +1,5 @@
+let x: T81BigInt = 0xFFt81;
+let y: T81BigInt = 255t81;
+if (x != y) {
+    print("Failed");
+}
