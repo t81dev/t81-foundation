@@ -36,6 +36,15 @@
         "## Purpose",
         "## Branch Protection: Required Contexts"
       ]
+    },
+    {
+      "path": "docs/status/EXTENSION_PROFILE.md",
+      "max_age_days": 14,
+      "date_label": "Last Updated:",
+      "required_substrings": [
+        "## The Rule",
+        "## Experimental Surfaces (Non-DCP)"
+      ]
     }
   ]
 }

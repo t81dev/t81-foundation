@@ -1,6 +1,6 @@
 # Extension Profile
 
-Last Updated: 2026-02-28
+Last Updated: 2026-03-06
 Owner: @t81dev
 
 **What is explicitly not frozen. What can break. What has no determinism guarantees.**
