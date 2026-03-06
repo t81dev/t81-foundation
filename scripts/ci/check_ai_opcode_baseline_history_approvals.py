@@ -111,6 +111,13 @@ def parse_iso_date(raw: str, label: str) -> date:
         raise ValueError(f"invalid {label}: {raw} (expected YYYY-MM-DD)") from exc
 
 
+def validate_safe_relative_path(value: str) -> bool:
+    path = Path(value)
+    if path.is_absolute():
+        return False
+    return ".." not in path.parts
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Validate opcode baseline history promotion approvals.")
     p.add_argument("--history-file", required=True, help="Path to PHASE1_BASELINE_HASHES_HISTORY.json")
@@ -153,6 +160,10 @@ def main() -> int:
     else:
         errors.append(f"missing signing keyring: {keyring_path}")
     required_provenance_fields: list[str] = []
+    path_safety_fields: list[str] = []
+    must_exist_in_repo_fields: list[str] = []
+    allowed_prefix_by_field: dict[str, list[str]] = {}
+    repo_root = Path(__file__).resolve().parents[2]
     if provenance_expectations_path.exists():
         provenance_expectations = parse_json(provenance_expectations_path)
         if provenance_expectations.get("schema") != PROVENANCE_EXPECTATION_SCHEMA_VERSION:
@@ -166,6 +177,22 @@ def main() -> int:
                 required_provenance_fields = [str(item).strip() for item in raw_fields if str(item).strip()]
             if not required_provenance_fields:
                 errors.append("provenance expectations required_provenance_fields must be non-empty list")
+            raw_path_fields = provenance_expectations.get("path_safety_fields")
+            if isinstance(raw_path_fields, list):
+                path_safety_fields = [str(item).strip() for item in raw_path_fields if str(item).strip()]
+            raw_exist_fields = provenance_expectations.get("must_exist_in_repo_fields")
+            if isinstance(raw_exist_fields, list):
+                must_exist_in_repo_fields = [str(item).strip() for item in raw_exist_fields if str(item).strip()]
+            raw_prefix_map = provenance_expectations.get("allowed_prefix_by_field")
+            if isinstance(raw_prefix_map, dict):
+                for field_name, prefixes in raw_prefix_map.items():
+                    fname = str(field_name).strip()
+                    if not fname:
+                        continue
+                    if isinstance(prefixes, list):
+                        clean = [str(item).strip() for item in prefixes if str(item).strip()]
+                        if clean:
+                            allowed_prefix_by_field[fname] = clean
     else:
         errors.append(f"missing provenance expectations file: {provenance_expectations_path}")
 
@@ -232,11 +259,30 @@ def main() -> int:
         if not change_ref:
             errors.append(f"{window_id}: promotion_approval.change_ref required")
         missing_provenance_fields: list[str] = []
+        invalid_provenance_fields: list[str] = []
         for field in required_provenance_fields:
             value = str(provenance.get(field, "")).strip()
             if not value:
                 missing_provenance_fields.append(field)
                 errors.append(f"{window_id}: provenance.{field} required by expectations contract")
+                continue
+            if field in path_safety_fields and not validate_safe_relative_path(value):
+                invalid_provenance_fields.append(field)
+                errors.append(
+                    f"{window_id}: provenance.{field} must be a safe relative path (no absolute/.. segments)"
+                )
+            prefixes = allowed_prefix_by_field.get(field, [])
+            if prefixes and not any(value.startswith(prefix) for prefix in prefixes):
+                invalid_provenance_fields.append(field)
+                errors.append(
+                    f"{window_id}: provenance.{field} must start with one of: {', '.join(prefixes)}"
+                )
+            if field in must_exist_in_repo_fields:
+                if not (repo_root / value).exists():
+                    invalid_provenance_fields.append(field)
+                    errors.append(
+                        f"{window_id}: provenance.{field} path does not exist in repo: {(repo_root / value)}"
+                    )
 
         attestation_core = {
             "window_id": window_id,
@@ -295,6 +341,7 @@ def main() -> int:
                     [field for field in required_provenance_fields if str(provenance.get(field, "")).strip()]
                 ),
                 "missing_provenance_fields": missing_provenance_fields,
+                "invalid_provenance_fields": sorted(set(invalid_provenance_fields)),
             }
         )
 
@@ -306,6 +353,9 @@ def main() -> int:
         "signing_keyring": str(keyring_path),
         "provenance_expectations_file": str(provenance_expectations_path),
         "required_provenance_fields": required_provenance_fields,
+        "path_safety_fields": path_safety_fields,
+        "must_exist_in_repo_fields": must_exist_in_repo_fields,
+        "allowed_prefix_by_field": allowed_prefix_by_field,
         "window_count": len(windows),
         "windows": windows_report,
         "errors": errors,

@@ -54,7 +54,7 @@
 - Emits RFC-0026 runtime readiness tracker binding opcode conformance evidence with benchmark/inference lane capability states, runtime capability-alignment gate status, and opcode baseline approval-policy gate status (`build/ai-opcodes-runtime/ai_rfc0026_readiness.json`)
 - Emits opcode runtime evidence with baseline-window provenance metadata bound to promotion history windows (`build/ai-opcodes-runtime/ai_opcode_runtime_report.json`)
 - Enforces benchmark/inference runtime capability alignment for governed format/mode pairs with expectation-contract enforcement (`build/ai-opcodes-runtime/ai_runtime_capability_alignment.json`)
-- Enforces signed opcode baseline history window promotion approvals via keyring-backed verification plus provenance-reference expectation contract (`build/ai-opcodes-runtime/ai_opcode_baseline_approval_report.json`)
+- Enforces signed opcode baseline history window promotion approvals via keyring-backed verification plus provenance-reference expectation contract (safe relative paths, prefix policy, fixture existence) (`build/ai-opcodes-runtime/ai_opcode_baseline_approval_report.json`)
 - Emits inference format/mode capability matrix with expectation-contract enforcement (including allowlisted unsupported `t3k` lane visibility) without blocking required baseline lane (`build/ai-ux/ai_inference_capability_matrix.json`)
 - Enforces runtime quantization inspect replay + encode/decode fixture corpus roundtrip validation with rolling profile trend analytics (`build/ai-quantization/ai_quantization_codec_contract.json`)
 - Enforces signed quantization profile promotion approval attestations via keyring-backed verification (`build/ai-quantization/ai_quantization_profile_approval_report.json`)

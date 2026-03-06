@@ -24,7 +24,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - RFC-0026 runtime readiness tracker gate: `check_ai_rfc0026_readiness.py`
 - AI opcode baseline history approval policy gate: `check_ai_opcode_baseline_history_approvals.py`
 - AI opcode baseline approval signing keyring: `ai_opcode_baseline_approval_keyring.json`
-- AI opcode baseline provenance expectation contract: `ai_opcode_baseline_provenance_expectations.json`
+- AI opcode baseline provenance expectation contract (required fields, safe-path, prefix/existence policy): `ai_opcode_baseline_provenance_expectations.json`
 - AI benchmark spec contract gate: `check_ai_benchmark_spec_contract.py`
 - AI benchmark format/mode capability matrix gate: `check_ai_benchmark_capability_matrix.py`
 - AI benchmark capability expectation contract: `ai_benchmark_capability_expectations.json`

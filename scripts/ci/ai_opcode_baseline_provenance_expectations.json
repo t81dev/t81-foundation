@@ -5,5 +5,28 @@
     "ctest_log_ref",
     "runtime_report_ref",
     "cross_lane_evidence_ref"
-  ]
+  ],
+  "path_safety_fields": [
+    "fixture_set_ref",
+    "ctest_log_ref",
+    "runtime_report_ref",
+    "cross_lane_evidence_ref"
+  ],
+  "must_exist_in_repo_fields": [
+    "fixture_set_ref"
+  ],
+  "allowed_prefix_by_field": {
+    "fixture_set_ref": [
+      "tests/fixtures/"
+    ],
+    "ctest_log_ref": [
+      "build/"
+    ],
+    "runtime_report_ref": [
+      "build/"
+    ],
+    "cross_lane_evidence_ref": [
+      "build/"
+    ]
+  }
 }
