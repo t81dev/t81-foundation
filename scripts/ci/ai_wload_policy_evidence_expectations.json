@@ -1,10 +1,12 @@
 {
   "schema": "t81.ai.wload-policy-evidence-expectations.v1",
   "expected_wload_policy_gate_ready": false,
-  "required_observed_wload_reason_codes": [],
+  "required_observed_wload_reason_codes": [
+    "AI_POLICY_DENY_WLOAD_UNSUPPORTED"
+  ],
   "allowed_wload_reason_code_prefixes": [
     "AI_POLICY_ALLOW_WLOAD_",
     "AI_POLICY_DENY_WLOAD_"
   ],
-  "min_observed_wload_reason_code_count": 0
+  "min_observed_wload_reason_code_count": 1
 }
