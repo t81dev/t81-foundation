@@ -245,6 +245,43 @@ Token Lexer::number() {
     while (std::isxdigit(static_cast<unsigned char>(peek())) || peek() == '_') {
       advance();  // consume hex digit or separator
     }
+    // Check for BigInt Base81 t81 suffix
+    if (peek() == 't' && peek_next() == '8' && (_current + 2 < _source.end()) && *(_current + 2) == '1') {
+      advance();
+      advance();
+      advance();
+      return make_token(TokenType::Base81Integer);
+    }
+    return make_token(TokenType::Integer);
+  }
+
+  // Check for binary literal: 0b... or 0B...
+  if (*_token_start == '0' && (peek() == 'b' || peek() == 'B')) {
+    advance();
+    while (peek() == '0' || peek() == '1' || peek() == '_') {
+      advance();
+    }
+    if (peek() == 't' && peek_next() == '8' && (_current + 2 < _source.end()) && *(_current + 2) == '1') {
+      advance();
+      advance();
+      advance();
+      return make_token(TokenType::Base81Integer);
+    }
+    return make_token(TokenType::Integer);
+  }
+
+  // Check for octal literal: 0o... or 0O...
+  if (*_token_start == '0' && (peek() == 'o' || peek() == 'O')) {
+    advance();
+    while ((peek() >= '0' && peek() <= '7') || peek() == '_') {
+      advance();
+    }
+    if (peek() == 't' && peek_next() == '8' && (_current + 2 < _source.end()) && *(_current + 2) == '1') {
+      advance();
+      advance();
+      advance();
+      return make_token(TokenType::Base81Integer);
+    }
     return make_token(TokenType::Integer);
   }
 
