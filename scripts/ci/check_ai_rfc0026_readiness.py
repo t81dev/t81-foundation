@@ -21,6 +21,7 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Emit RFC-0026 runtime readiness tracker artifact.")
     p.add_argument("--opcode-report", required=True, help="Path to ai_opcode_runtime_report.json")
     p.add_argument("--benchmark-capability-matrix", required=True, help="Path to ai_benchmark_capability_matrix.json")
+    p.add_argument("--inference-capability-matrix", required=True, help="Path to ai_inference_capability_matrix.json")
     p.add_argument("--out-dir", required=True, help="Output directory")
     return p.parse_args()
 
@@ -35,7 +36,8 @@ def find_matrix_state(matrix: list[dict[str, Any]], fmt: str, mode: str) -> str:
 def main() -> int:
     args = parse_args()
     opcode_path = Path(args.opcode_report).resolve()
-    matrix_path = Path(args.benchmark_capability_matrix).resolve()
+    benchmark_matrix_path = Path(args.benchmark_capability_matrix).resolve()
+    inference_matrix_path = Path(args.inference_capability_matrix).resolve()
     out_dir = Path(args.out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -43,15 +45,18 @@ def main() -> int:
 
     if not opcode_path.exists():
         errors.append(f"missing opcode report: {opcode_path}")
-    if not matrix_path.exists():
-        errors.append(f"missing benchmark capability matrix: {matrix_path}")
+    if not benchmark_matrix_path.exists():
+        errors.append(f"missing benchmark capability matrix: {benchmark_matrix_path}")
+    if not inference_matrix_path.exists():
+        errors.append(f"missing inference capability matrix: {inference_matrix_path}")
     if errors:
         for err in errors:
             print(f"error: {err}", file=sys.stderr)
         return 1
 
     opcode = parse_json(opcode_path)
-    matrix_payload = parse_json(matrix_path)
+    benchmark_matrix_payload = parse_json(benchmark_matrix_path)
+    inference_matrix_payload = parse_json(inference_matrix_path)
 
     phase_status = str(opcode.get("phase_status", "unknown")).strip() or "unknown"
     opcodes = opcode.get("opcodes")
@@ -72,22 +77,52 @@ def main() -> int:
         "WLOAD runtime/policy gate is not part of phase-1 opcode conformance evidence yet."
     )
 
-    matrix = matrix_payload.get("matrix")
-    if not isinstance(matrix, list):
+    benchmark_matrix = benchmark_matrix_payload.get("matrix")
+    if not isinstance(benchmark_matrix, list):
         errors.append("benchmark capability matrix missing matrix[]")
-        matrix = []
-    gguf_state = find_matrix_state(matrix, "gguf", "strict_deterministic")
-    t3k_state = find_matrix_state(matrix, "t3k", "strict_deterministic")
-    t3k_benchmark_supported = t3k_state == "supported"
+        benchmark_matrix = []
+    benchmark_gguf_state = find_matrix_state(benchmark_matrix, "gguf", "strict_deterministic")
+    benchmark_t3k_state = find_matrix_state(benchmark_matrix, "t3k", "strict_deterministic")
+    t3k_benchmark_supported = benchmark_t3k_state == "supported"
 
-    if gguf_state != "supported":
-        errors.append(f"required benchmark lane gguf:strict_deterministic unsupported (state={gguf_state})")
+    inference_matrix = inference_matrix_payload.get("matrix")
+    if not isinstance(inference_matrix, list):
+        errors.append("inference capability matrix missing matrix[]")
+        inference_matrix = []
+    inference_gguf_state = find_matrix_state(inference_matrix, "gguf", "strict_deterministic")
+    inference_t3k_state = find_matrix_state(inference_matrix, "t3k", "strict_deterministic")
+    t3k_inference_supported = inference_t3k_state == "supported"
+
+    if benchmark_gguf_state != "supported":
+        errors.append(
+            "required benchmark lane gguf:strict_deterministic unsupported "
+            f"(state={benchmark_gguf_state})"
+        )
+    if inference_gguf_state != "supported":
+        errors.append(
+            "required inference lane gguf:strict_deterministic unsupported "
+            f"(state={inference_gguf_state})"
+        )
     if t3k_benchmark_supported and not qmatmul_runtime_ready:
         errors.append(
             "inconsistent readiness: t3k benchmark lane is supported but QMATMUL runtime evidence is not ready"
         )
+    if t3k_inference_supported and not qmatmul_runtime_ready:
+        errors.append(
+            "inconsistent readiness: t3k inference lane is supported but QMATMUL runtime evidence is not ready"
+        )
+    if t3k_benchmark_supported != t3k_inference_supported:
+        errors.append(
+            "inconsistent readiness: t3k benchmark and inference support states diverged "
+            f"(benchmark={benchmark_t3k_state}, inference={inference_t3k_state})"
+        )
 
-    overall_ready = qmatmul_runtime_ready and wload_policy_gate_ready and t3k_benchmark_supported
+    overall_ready = (
+        qmatmul_runtime_ready
+        and wload_policy_gate_ready
+        and t3k_benchmark_supported
+        and t3k_inference_supported
+    )
     readiness_state = "ready" if overall_ready else "blocked"
     blockers: list[str] = []
     if not qmatmul_runtime_ready:
@@ -96,6 +131,8 @@ def main() -> int:
         blockers.append("WLOAD policy-gate runtime evidence missing")
     if not t3k_benchmark_supported:
         blockers.append("t3k benchmark lane unsupported")
+    if not t3k_inference_supported:
+        blockers.append("t3k inference lane unsupported")
 
     gate_status = "pass" if not errors else "fail"
     payload = {
@@ -105,7 +142,8 @@ def main() -> int:
         "source_rfc": "RFC-0026",
         "evidence": {
             "opcode_report": str(opcode_path),
-            "benchmark_capability_matrix": str(matrix_path),
+            "benchmark_capability_matrix": str(benchmark_matrix_path),
+            "inference_capability_matrix": str(inference_matrix_path),
         },
         "signals": {
             "phase_status": phase_status,
@@ -113,10 +151,15 @@ def main() -> int:
             "wload_policy_gate_ready": wload_policy_gate_ready,
             "wload_policy_gate_reason": wload_policy_gate_reason,
             "benchmark_lanes": {
-                "gguf:strict_deterministic": gguf_state,
-                "t3k:strict_deterministic": t3k_state,
+                "gguf:strict_deterministic": benchmark_gguf_state,
+                "t3k:strict_deterministic": benchmark_t3k_state,
+            },
+            "inference_lanes": {
+                "gguf:strict_deterministic": inference_gguf_state,
+                "t3k:strict_deterministic": inference_t3k_state,
             },
             "t3k_benchmark_supported": t3k_benchmark_supported,
+            "t3k_inference_supported": t3k_inference_supported,
         },
         "blockers": blockers,
         "errors": errors,
@@ -138,8 +181,10 @@ def main() -> int:
         f"| `phase_status` | `{phase_status}` |",
         f"| `qmatmul_runtime_ready` | `{str(qmatmul_runtime_ready).lower()}` |",
         f"| `wload_policy_gate_ready` | `{str(wload_policy_gate_ready).lower()}` |",
-        f"| `gguf:strict_deterministic` | `{gguf_state}` |",
-        f"| `t3k:strict_deterministic` | `{t3k_state}` |",
+        f"| `benchmark gguf:strict_deterministic` | `{benchmark_gguf_state}` |",
+        f"| `benchmark t3k:strict_deterministic` | `{benchmark_t3k_state}` |",
+        f"| `inference gguf:strict_deterministic` | `{inference_gguf_state}` |",
+        f"| `inference t3k:strict_deterministic` | `{inference_t3k_state}` |",
         "",
     ]
     if blockers:

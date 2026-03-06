@@ -51,7 +51,7 @@
 - Enforces runtime benchmark execution replay and regression/trend thresholds (`build/ai-benchmark/ai_benchmark_spec_contract.json`)
 - Emits benchmark format/mode capability matrix with expectation-contract enforcement (including allowlisted unsupported `t3k` lane visibility) without blocking required baseline lane (`build/ai-benchmark/ai_benchmark_capability_matrix.json`)
 - Enforces signed benchmark threshold promotion approval attestations via keyring-backed verification (`build/ai-benchmark/ai_benchmark_threshold_approval_report.json`)
-- Emits RFC-0026 runtime readiness tracker binding opcode conformance evidence with benchmark lane capability state (`build/ai-opcodes-runtime/ai_rfc0026_readiness.json`)
+- Emits RFC-0026 runtime readiness tracker binding opcode conformance evidence with benchmark and inference lane capability states (`build/ai-opcodes-runtime/ai_rfc0026_readiness.json`)
 - Enforces signed opcode baseline history window promotion approvals via keyring-backed verification (`build/ai-opcodes-runtime/ai_opcode_baseline_approval_report.json`)
 - Emits inference format/mode capability matrix with expectation-contract enforcement (including allowlisted unsupported `t3k` lane visibility) without blocking required baseline lane (`build/ai-ux/ai_inference_capability_matrix.json`)
 - Enforces runtime quantization inspect replay + encode/decode fixture corpus roundtrip validation with rolling profile trend analytics (`build/ai-quantization/ai_quantization_codec_contract.json`)

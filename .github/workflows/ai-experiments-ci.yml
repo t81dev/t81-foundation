@@ -466,6 +466,7 @@ jobs:
         python3 scripts/ci/check_ai_rfc0026_readiness.py \
           --opcode-report build/ai-opcodes-runtime/ai_opcode_runtime_report.json \
           --benchmark-capability-matrix build/ai-benchmark/ai_benchmark_capability_matrix.json \
+          --inference-capability-matrix build/ai-ux/ai_inference_capability_matrix.json \
           --out-dir build/ai-opcodes-runtime
 
     - name: Validate opcode baseline history window approvals (RFC-00A8 promotion policy)
