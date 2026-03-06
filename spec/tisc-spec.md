@@ -36,7 +36,11 @@ It is **normative** for all instruction encoding, execution semantics, and VM in
 
 ______________________________________________________________________
 
-## 0. Design Principles
+## 0. Binary Host Execution Boundary
+
+T81 is a **ternary semantic architecture executed on binary hardware**. This is an intentional architectural layer. TISC operates semantically as a ternary computer, yet the implementation relies on 2-bit packed trits and SWAR vectorization to interface with the binary substrate of host systems. This approach achieves maximum performance on x86 and ARM while preserving bit-exact, deterministic ternary state.
+
+## 0.5. Design Principles
 
 TISC MUST satisfy:
 

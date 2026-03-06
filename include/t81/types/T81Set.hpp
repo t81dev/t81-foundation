@@ -17,6 +17,7 @@
 #include <type_traits>
 #include <utility>
 #include <variant>
+#include "t81/determinism/canon_hash81.hpp"
 
 namespace t81 {
 

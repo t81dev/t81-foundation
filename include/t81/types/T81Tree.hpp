@@ -20,6 +20,7 @@
 #include <sstream>
 #include <string>
 #include <utility>
+#include "t81/determinism/canon_hash81.hpp"
 
 namespace t81 {
 

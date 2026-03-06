@@ -36,6 +36,28 @@ class T81Float;
 #include "t81/types/detail/dmath.hpp"
 
 namespace t81::v1 {
+template <std::size_t M, std::size_t E>
+class T81Float;
+}
+
+namespace t81::core::math::t81_soft_math {
+template <std::size_t M, std::size_t E>
+t81::v1::T81Float<M, E> t81_sin(const t81::v1::T81Float<M, E>&);
+
+template <std::size_t M, std::size_t E>
+t81::v1::T81Float<M, E> t81_cos(const t81::v1::T81Float<M, E>&);
+
+template <std::size_t M, std::size_t E>
+t81::v1::T81Float<M, E> t81_exp(const t81::v1::T81Float<M, E>&);
+
+template <std::size_t M, std::size_t E>
+t81::v1::T81Float<M, E> t81_log(const t81::v1::T81Float<M, E>&);
+
+template <std::size_t M, std::size_t E>
+t81::v1::T81Float<M, E> t81_sqrt(const t81::v1::T81Float<M, E>&);
+}
+
+namespace t81::v1 {
 
 // Forward declarations (arithmetic surface)
 template <std::size_t M, std::size_t E>
@@ -240,34 +262,59 @@ public:
   // ---------------------------------------------------------------------
 
   // Deterministic implementations via dmath (Phase 1)
+  // Now routing to t81_soft_math explicitly for Phase 2 determinism.
 
-  [[nodiscard]] T81Float sin() const noexcept { return core::detail::sin(*this); }
+  [[nodiscard]] T81Float sin() const noexcept {
+#if defined(T81_DETERMINISTIC)
+    return core::math::t81_soft_math::t81_sin(*this);
+#else
+    if (is_nae()) return *this;
+    return from_double(std::sin(to_double()));
+#endif
+  }
 
-  [[nodiscard]] T81Float cos() const noexcept { return core::detail::cos(*this); }
+  [[nodiscard]] T81Float cos() const noexcept {
+#if defined(T81_DETERMINISTIC)
+    return core::math::t81_soft_math::t81_cos(*this);
+#else
+    if (is_nae()) return *this;
+    return from_double(std::cos(to_double()));
+#endif
+  }
 
-  [[nodiscard]] T81Float tan() const noexcept { return core::detail::tan(*this); }
+  [[nodiscard]] T81Float tan() const noexcept {
+#if defined(T81_DETERMINISTIC)
+    return core::math::t81_soft_math::t81_sin(*this) / core::math::t81_soft_math::t81_cos(*this);
+#else
+    if (is_nae()) return *this;
+    return from_double(std::tan(to_double()));
+#endif
+  }
 
   [[nodiscard]] T81Float exp() const {
 #if defined(T81_DETERMINISTIC)
-    return core::detail::exp(*this);
+    return core::math::t81_soft_math::t81_exp(*this);
 #else
-    return core::detail::exp(*this);
+    if (is_nae()) return *this;
+    return from_double(std::exp(to_double()));
 #endif
   }
 
   [[nodiscard]] T81Float log() const {
 #if defined(T81_DETERMINISTIC)
-    return core::detail::log(*this);
+    return core::math::t81_soft_math::t81_log(*this);
 #else
-    return core::detail::log(*this);
+    if (is_nae()) return *this;
+    return from_double(std::log(to_double()));
 #endif
   }
 
   [[nodiscard]] T81Float sqrt() const {
 #if defined(T81_DETERMINISTIC)
-    return core::detail::sqrt(*this);
+    return core::math::t81_soft_math::t81_sqrt(*this);
 #else
-    return core::detail::sqrt(*this);
+    if (is_nae()) return *this;
+    return from_double(std::sqrt(to_double()));
 #endif
   }
 

@@ -43,6 +43,13 @@ Diagram source: [`diagrams/overview-layer-cake.mmd`](./diagrams/overview-layer-c
 | CanonFS | `src/canonfs/` + `include/t81/canonfs/` | [`spec/supplemental/canonfs-spec.md`](../../spec/supplemental/canonfs-spec.md) | Stable (bounded) | Integrity controls implemented; claims remain bounded. |
 | Experimental tiers/kernel concepts | `experimental/` | [`spec/cognitive-tiers.md`](../../spec/cognitive-tiers.md), [`spec/supplemental/hanoi-kernel-spec.md`](../../spec/supplemental/hanoi-kernel-spec.md) | Experimental / Stubbed | Not part of DCP guarantees. |
 
+## Binary Host Execution Boundary
+
+T81 is a **ternary semantic architecture executed on binary hardware**. This is an intentional design choice, not a compromise.
+The platform implements native ternary semantics through a binary substrate compatibility layer:
+* **2-Bit Packed Trits**: Trits are packed using 2 bits per trit (0=N, 1=Z, 2=P), allowing 4 trits per byte, naturally aligning with binary storage.
+* **SWAR Vectorization**: Operations on these packed trits use SIMD Within A Register (SWAR) techniques, delivering extreme performance on modern x86 and ARM processors without sacrificing ternary correctness.
+
 ## Key Invariants
 
 1. Determinism claims are bounded to verified surfaces in [`DETERMINISTIC_CORE_PROFILE.md`](../product/DETERMINISTIC_CORE_PROFILE.md) and [`DETERMINISM_SURFACE_REGISTRY.md`](../governance/DETERMINISM_SURFACE_REGISTRY.md).

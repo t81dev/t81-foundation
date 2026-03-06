@@ -25,6 +25,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
+#include "t81/determinism/canon_hash81.hpp"
 
 namespace t81 {
 
@@ -60,7 +61,7 @@ class T81Map {
   template <typename T>
   [[nodiscard]] static std::size_t generic_hash(const T& key, std::size_t bucket_count) noexcept {
     if (bucket_count == 0) return 0;
-    std::hash<T> hasher;
+    t81::CanonHash<T> hasher;
     std::uint64_t h = static_cast<std::uint64_t>(hasher(key));
     return static_cast<std::size_t>(h % bucket_count);
   }
