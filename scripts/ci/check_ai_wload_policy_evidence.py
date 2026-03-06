@@ -82,6 +82,7 @@ def main() -> int:
     wload_policy_gate_reason = "" if wload_policy_gate_ready else DEFAULT_MISSING_REASON
 
     expectation_results: dict[str, Any] = {}
+    warnings: list[str] = []
     if expectations.get("schema") != EXPECTATION_SCHEMA_VERSION:
         errors.append(
             "wload policy evidence expectations schema mismatch: "
@@ -95,19 +96,53 @@ def main() -> int:
             if isinstance(required_codes_raw, list)
             else []
         )
+        allowed_prefixes_raw = expectations.get("allowed_wload_reason_code_prefixes", [])
+        allowed_prefixes = (
+            [str(item).strip() for item in allowed_prefixes_raw if str(item).strip()]
+            if isinstance(allowed_prefixes_raw, list)
+            else []
+        )
+        min_observed_count = int(expectations.get("min_observed_wload_reason_code_count", 0))
         missing_codes = [code for code in required_codes if code not in observed_wload_codes]
+        invalid_prefix_codes = [
+            code
+            for code in observed_wload_codes
+            if allowed_prefixes and not any(code.startswith(prefix) for prefix in allowed_prefixes)
+        ]
+        if min_observed_count < 0:
+            errors.append("min_observed_wload_reason_code_count must be >= 0")
+            min_observed_count = 0
         if wload_policy_gate_ready != expected_ready:
             errors.append(
                 "wload policy gate readiness mismatch: "
                 f"expected={str(expected_ready).lower()}, observed={str(wload_policy_gate_ready).lower()}"
             )
+        if len(observed_wload_codes) < min_observed_count:
+            errors.append(
+                "insufficient observed WLOAD reason codes: "
+                f"required_min={min_observed_count}, observed={len(observed_wload_codes)}"
+            )
         if missing_codes:
             errors.append("missing required WLOAD reason codes: " + ", ".join(missing_codes))
+        if invalid_prefix_codes:
+            errors.append(
+                "observed WLOAD reason codes violate allowed prefix policy: "
+                + ", ".join(invalid_prefix_codes)
+            )
+        for code in required_codes:
+            if "WLOAD" not in code.upper():
+                warnings.append(f"required code does not include WLOAD marker: {code}")
         expectation_results = {
             "expected_wload_policy_gate_ready": expected_ready,
             "required_observed_wload_reason_codes": required_codes,
+            "allowed_wload_reason_code_prefixes": allowed_prefixes,
+            "min_observed_wload_reason_code_count": min_observed_count,
             "missing_required_observed_wload_reason_codes": missing_codes,
-            "match": (wload_policy_gate_ready == expected_ready) and not missing_codes,
+            "invalid_prefix_observed_wload_reason_codes": invalid_prefix_codes,
+            "match": (wload_policy_gate_ready == expected_ready)
+            and not missing_codes
+            and not invalid_prefix_codes
+            and len(observed_wload_codes) >= min_observed_count,
         }
 
     status = "pass" if not errors else "fail"
@@ -123,6 +158,7 @@ def main() -> int:
         "observed_wload_reason_codes": observed_wload_codes,
         "expectation_results": expectation_results,
         "errors": errors,
+        "warnings": warnings,
     }
     out_json.parent.mkdir(parents=True, exist_ok=True)
     out_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -151,6 +187,8 @@ def main() -> int:
 
     for err in errors:
         print(f"error: {err}", file=sys.stderr)
+    for warning in warnings:
+        print(f"warning: {warning}", file=sys.stderr)
     print(f"ai wload policy evidence status: {status}")
     return 0 if status == "pass" else 1
 
