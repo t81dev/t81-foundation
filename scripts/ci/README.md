@@ -36,7 +36,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - Runtime lane capability alignment gate: `check_ai_runtime_capability_alignment.py`
 - Runtime lane capability alignment expectation contract: `ai_runtime_capability_alignment_expectations.json`
 - AI benchmark threshold approval policy gate: `check_ai_benchmark_threshold_approvals.py`
-- RFC-0026 readiness expectation contract: `ai_rfc0026_readiness_expectations.json`
+- RFC-0026 readiness expectation contract (readiness state, WLOAD evidence signal, blocker taxonomy): `ai_rfc0026_readiness_expectations.json`
 - AI benchmark threshold approval signing keyring: `ai_benchmark_threshold_approval_keyring.json`
 - AI benchmark runtime threshold baseline: `ai_benchmark_thresholds.json`
 - AI benchmark threshold history windows: `ai_benchmark_thresholds_history.json`

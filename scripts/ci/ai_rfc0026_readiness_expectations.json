@@ -1,6 +1,8 @@
 {
   "schema": "t81.ai.rfc0026-readiness-expectations.v1",
   "expected_readiness_state": "blocked",
+  "expected_wload_policy_evidence_status": "pass",
+  "expected_wload_policy_gate_ready": false,
   "required_blockers": [
     "WLOAD policy-gate runtime evidence missing",
     "t3k benchmark lane unsupported",

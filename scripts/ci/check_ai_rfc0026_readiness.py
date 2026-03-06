@@ -187,6 +187,8 @@ def main() -> int:
     gate_status = "pass" if not errors else "fail"
     expectation_results: dict[str, Any] = {}
     expected_readiness_state = ""
+    expected_wload_policy_evidence_status = ""
+    expected_wload_policy_gate_ready: bool | None = None
     expected_blockers: list[str] = []
     if expectations_payload.get("schema") != EXPECTATION_SCHEMA_VERSION:
         errors.append(
@@ -195,12 +197,36 @@ def main() -> int:
         )
     else:
         expected_readiness_state = str(expectations_payload.get("expected_readiness_state", "")).strip()
+        expected_wload_policy_evidence_status = str(
+            expectations_payload.get("expected_wload_policy_evidence_status", "")
+        ).strip()
+        if "expected_wload_policy_gate_ready" in expectations_payload:
+            expected_wload_policy_gate_ready = bool(
+                expectations_payload.get("expected_wload_policy_gate_ready")
+            )
         blockers_raw = expectations_payload.get("required_blockers", [])
         if isinstance(blockers_raw, list):
             expected_blockers = [str(item).strip() for item in blockers_raw if str(item).strip()]
         if expected_readiness_state and readiness_state != expected_readiness_state:
             errors.append(
                 f"readiness state mismatch: expected={expected_readiness_state}, observed={readiness_state}"
+            )
+        if (
+            expected_wload_policy_evidence_status
+            and wload_policy_evidence_status != expected_wload_policy_evidence_status
+        ):
+            errors.append(
+                "wload policy evidence status mismatch: "
+                f"expected={expected_wload_policy_evidence_status}, observed={wload_policy_evidence_status}"
+            )
+        if (
+            expected_wload_policy_gate_ready is not None
+            and wload_policy_gate_ready != expected_wload_policy_gate_ready
+        ):
+            errors.append(
+                "wload policy gate readiness mismatch: "
+                f"expected={str(expected_wload_policy_gate_ready).lower()}, "
+                f"observed={str(wload_policy_gate_ready).lower()}"
             )
         missing_required_blockers = [item for item in expected_blockers if item not in blockers]
         unexpected_blockers = [item for item in blockers if item not in expected_blockers]
@@ -214,11 +240,21 @@ def main() -> int:
             )
         expectation_results = {
             "expected_readiness_state": expected_readiness_state,
+            "expected_wload_policy_evidence_status": expected_wload_policy_evidence_status,
+            "expected_wload_policy_gate_ready": expected_wload_policy_gate_ready,
             "required_blockers": expected_blockers,
             "missing_required_blockers": missing_required_blockers,
             "unexpected_blockers": unexpected_blockers,
             "match": not missing_required_blockers and not unexpected_blockers
-            and (not expected_readiness_state or readiness_state == expected_readiness_state),
+            and (not expected_readiness_state or readiness_state == expected_readiness_state)
+            and (
+                not expected_wload_policy_evidence_status
+                or wload_policy_evidence_status == expected_wload_policy_evidence_status
+            )
+            and (
+                expected_wload_policy_gate_ready is None
+                or wload_policy_gate_ready == expected_wload_policy_gate_ready
+            ),
         }
 
     gate_status = "pass" if not errors else "fail"
@@ -290,6 +326,10 @@ def main() -> int:
             [
                 "Expectation Contract:",
                 f"- expected_readiness_state: `{expectation_results.get('expected_readiness_state', '')}`",
+                "- expected_wload_policy_evidence_status: "
+                f"`{expectation_results.get('expected_wload_policy_evidence_status', '')}`",
+                "- expected_wload_policy_gate_ready: "
+                f"`{str(expectation_results.get('expected_wload_policy_gate_ready', False)).lower()}`",
                 f"- required_blockers: `{', '.join(expectation_results.get('required_blockers', []))}`",
                 f"- match: `{str(expectation_results.get('match', False)).lower()}`",
                 "",
