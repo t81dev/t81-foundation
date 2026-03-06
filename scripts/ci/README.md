@@ -29,6 +29,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - AI benchmark capability expectation contract: `ai_benchmark_capability_expectations.json`
 - AI inference format/mode capability matrix gate: `check_ai_inference_capability_matrix.py`
 - AI inference capability expectation contract: `ai_inference_capability_expectations.json`
+- Runtime lane capability alignment gate: `check_ai_runtime_capability_alignment.py`
 - AI benchmark threshold approval policy gate: `check_ai_benchmark_threshold_approvals.py`
 - AI benchmark threshold approval signing keyring: `ai_benchmark_threshold_approval_keyring.json`
 - AI benchmark runtime threshold baseline: `ai_benchmark_thresholds.json`
@@ -70,6 +71,7 @@ python3 scripts/ci/check_ai_benchmark_spec_contract.py --out-dir build/ai-benchm
 python3 scripts/ci/check_ai_benchmark_capability_matrix.py --out-dir build/ai-benchmark --ai-bin build/experiments/ai/ux_tools/t81_ai --model-file tests/fixtures/llama_cpp_repro/model.gguf --formats gguf,t3k --modes strict_deterministic --expectations-file scripts/ci/ai_benchmark_capability_expectations.json --required gguf:strict_deterministic
 python3 scripts/ci/check_ai_benchmark_threshold_approvals.py --history-file scripts/ci/ai_benchmark_thresholds_history.json --signing-keyring scripts/ci/ai_benchmark_threshold_approval_keyring.json --out-json build/ai-benchmark/ai_benchmark_threshold_approval_report.json
 python3 scripts/ci/check_ai_inference_capability_matrix.py --out-dir build/ai-ux --ai-bin build/experiments/ai/ux_tools/t81_ai --model-file tests/fixtures/llama_cpp_repro/model.gguf --formats gguf,t3k --modes strict_deterministic --expectations-file scripts/ci/ai_inference_capability_expectations.json --required gguf:strict_deterministic
+python3 scripts/ci/check_ai_runtime_capability_alignment.py --benchmark-matrix build/ai-benchmark/ai_benchmark_capability_matrix.json --inference-matrix build/ai-ux/ai_inference_capability_matrix.json --required-pairs gguf:strict_deterministic,t3k:strict_deterministic --out-json build/ai-opcodes-runtime/ai_runtime_capability_alignment.json
 python3 scripts/ci/check_ai_quantization_codec_contract.py --out-dir build/ai-quantization --ai-bin build/experiments/ai/ux_tools/t81_ai --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --codec-profile-file scripts/ci/ai_quantization_codec_profile.json --codec-profile-history-file scripts/ci/ai_quantization_codec_profile_history.json --as-of-date 2026-03-05 --trend-window-count 3
 python3 scripts/ci/check_ai_quantization_profile_approvals.py --history-file scripts/ci/ai_quantization_codec_profile_history.json --signing-keyring scripts/ci/ai_quantization_profile_approval_keyring.json --out-json build/ai-quantization/ai_quantization_profile_approval_report.json
 python3 scripts/ci/check_ai_ux_contract.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-ux --runtime-model tests/fixtures/llama_cpp_repro/model.gguf --t81-bin build-llama-ai/t81 --llama-hash-probe scripts/ci/llama_model_hash.py --direct-backend-signing-keyring scripts/ci/ai_direct_backend_attestation_keyring.json
