@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: "0 3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -40,16 +42,18 @@ jobs:
       - name: Check Markdown links (lychee)
         uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2
         with:
+          lycheeVersion: v0.18.1
           fail: true
           args: >-
             --verbose --no-progress
-            --root-dir .
+            --root-dir ${{ github.workspace }}
             --exclude "http://localhost*"
             --exclude "https://github.com/t81dev/t81-foundation/edit*"
             --exclude "https://github.com/t81dev/t81-foundation/stargazers"
             --exclude "https://www.mdpi.com/*"
             --exclude "https://fossies.org/*"
-            .github/**/*.md spec/**/*.md docs/**/*.md README.md docs/policies/AGENTS.md CONTRIBUTING.md
+            --exclude "https://github.com/ggerganov/*"
+            .github/**/*.md spec/**/*.md docs/**/*.md README.md CONTRIBUTING.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         id: lychee
@@ -68,6 +72,12 @@ jobs:
 
       - name: Verify TISC v1.1.0 Freeze Integrity
         run: python3 scripts/ci/check_tisc_freeze_integrity.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+
+      - name: Enforce AI experiment sandbox boundary (RFC-00A0)
+        run: python3 scripts/ci/check_ai_experiment_boundary.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+
+      - name: Enforce architecture coherence invariants
+        run: python3 scripts/ci/check_architecture_coherence.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Enforce workflow action pinning policy
         run: |
@@ -204,6 +214,7 @@ jobs:
   ############################################################################
   governance-metrics:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Run governance metrics
@@ -258,6 +269,7 @@ jobs:
     name: " build / ${{ matrix.platform }} / ${{ matrix.compiler }}"
     needs: spec-and-docs
     runs-on: ${{ matrix.runs_on }}
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
@@ -287,10 +299,40 @@ jobs:
             compiler: gcc
             c_compiler: gcc-14
             cpp_compiler: g++-14
+          - platform: windows-x86_64
+            runs_on: windows-latest
+            compiler: msvc
+            c_compiler: cl
+            cpp_compiler: cl
+          - platform: windows-x86_64
+            runs_on: windows-latest
+            compiler: clang-cl
+            c_compiler: clang-cl
+            cpp_compiler: clang-cl
 
     steps:
       - name: Checkout repository
+        if: runner.os != 'Windows'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Checkout repository (Windows sparse)
+        if: runner.os == 'Windows'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          sparse-checkout: |
+            /CMakeLists.txt
+            /CMakePresets.json
+            /cmake/**
+            /include/**
+            /src/**
+            /tests/**
+            /scripts/**
+            /benchmarks/**
+            /spec/**
+            /third_party/**
+            /README.md
+            /LICENSE
+          sparse-checkout-cone-mode: false
 
       - name: Start log capture
         run: mkdir -p .github/logs
@@ -317,9 +359,9 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           set -eo pipefail
-          choco install ccache
+          choco install ninja cmake ccache
           if [ "${{ matrix.compiler }}" = "clang-cl" ]; then
-            winget install -e --id LLVM.LLVM --source winget
+            choco install llvm
           fi
         shell: bash
 
@@ -350,13 +392,11 @@ jobs:
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
 
-      # THIS IS THE ONLY THING THAT MATTERS FOR WINDOWS
-      # Clean before configuration so the new build directory gets a fresh CMake configure.
       - name: Force clean build directory on Windows (fresh compile)
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          echo "Windows detected — forcing fresh compile to get the new type_to_string"
+          echo "Windows detected - forcing fresh configure to avoid stale build metadata"
           rm -rf build
 
       - name: Configure CMake
@@ -383,7 +423,7 @@ jobs:
           set -eo pipefail
           python3 scripts/ci/check_cli_docs_parity.py \
             --t81-bin build/t81 \
-            --manual docs/guides/cli-user-manual.md 2>&1 | tee -a .github/logs/build-and-test.log
+            --manual docs/user-guide/reference/cli-user-manual.md 2>&1 | tee -a .github/logs/build-and-test.log
 
       - name: Run CLI docs smoke examples (single matrix lane)
         if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
@@ -391,7 +431,7 @@ jobs:
         run: |
           set -eo pipefail
           python3 scripts/ci/check_cli_docs_smoke.py \
-            --manual docs/guides/cli-user-manual.md \
+            --manual docs/user-guide/reference/cli-user-manual.md \
             --cwd . \
             --timeout-sec 20 2>&1 | tee -a .github/logs/build-and-test.log
 
@@ -564,6 +604,57 @@ jobs:
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
   ############################################################################
+  # JOB: cross-compile-armv9 (informational)
+  ############################################################################
+  cross-compile-armv9:
+    name: " cross-compile / linux-armv9 / gcc (informational) "
+    needs: build-and-test
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Start log capture
+        run: mkdir -p .github/logs
+
+      - name: Install ARMv9 cross toolchain dependencies
+        shell: bash
+        run: |
+          set -eo pipefail
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu ninja-build cmake
+
+      - name: Configure CMake for ARMv9 cross-compile
+        shell: bash
+        run: |
+          set -eo pipefail
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_SYSTEM_NAME=Linux \
+            -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+            -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
+            -DCMAKE_C_FLAGS="-march=armv9-a" \
+            -DCMAKE_CXX_FLAGS="-march=armv9-a" \
+            -DT81_BUILD_TESTS=OFF \
+            -DT81_BUILD_FUZZ_TESTS=OFF \
+            -DT81_BUILD_BENCHMARKS=OFF 2>&1 | tee -a .github/logs/cross-compile-armv9.log
+
+      - name: Build (cross-compile only)
+        shell: bash
+        run: |
+          set -eo pipefail
+          cmake --build build 2>&1 | tee -a .github/logs/cross-compile-armv9.log
+
+      - name: Upload ARMv9 cross-compile logs
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: cross-compile-armv9-logs
+          path: .github/logs/cross-compile-armv9.log
+          if-no-files-found: warn
+
+  ############################################################################
   # JOB: determinism-slice
   ############################################################################
   determinism-slice:
@@ -605,12 +696,63 @@ jobs:
           scripts/ci/run_determinism_slice.sh build
 
   ############################################################################
+  # JOB: determinism-repeatability
+  ############################################################################
+  determinism-repeatability:
+    name: " gate / determinism repeatability / linux-x86_64 / clang "
+    needs: spec-and-docs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Install Dependencies
+        run: |
+          set -eo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build clang-18 python3
+
+      - name: Configure CMake
+        run: |
+          set -eo pipefail
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=clang-18 \
+            -DCMAKE_CXX_COMPILER=clang++-18
+
+      - name: Build repeatability target
+        run: |
+          set -eo pipefail
+          cmake --build build --parallel --target t81_vm_workload_determinism_tiers_test
+
+      - name: Verify same-machine repeatability
+        run: |
+          set -eo pipefail
+          python3 scripts/ci/check_repeatable_vm_signature.py \
+            --build-dir build \
+            --out-json artifacts/ci_reports/vm_repeatability_report.json
+
+      - name: Upload repeatability artifacts
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: ci-determinism-repeatability
+          path: |
+            artifacts/ci_reports/vm_repeatability_report.json
+            build/artifacts/vm_workload_determinism_signatures.run1.log
+            build/artifacts/vm_workload_determinism_signatures.run2.log
+          if-no-files-found: warn
+
+  ############################################################################
   # JOB: cxx-standard-compat
   ############################################################################
   cxx-standard-compat:
     name: " cxx-std / linux-x86_64 / clang / ${{ matrix.cxx23 }}"
     needs: spec-and-docs
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -656,6 +798,7 @@ jobs:
     name: " gate / t3k cross-arch bit-identity "
     needs: build-and-test
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Download x86_64 T3_K hash
@@ -701,6 +844,7 @@ jobs:
     name: " gate / t81lang cross-arch bit-identity "
     needs: build-and-test
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Download x86_64 T81Lang hash
@@ -746,6 +890,7 @@ jobs:
     name: " benchmark / linux-x86_64 "
     needs: spec-and-docs
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -792,6 +937,7 @@ jobs:
     name: " static analysis / clang-tidy "
     needs: spec-and-docs
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -847,6 +993,7 @@ jobs:
     name: " build / sanitizers "
     needs: spec-and-docs
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -876,6 +1023,7 @@ jobs:
     name: " fuzzing / frontend "
     needs: spec-and-docs
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -904,6 +1052,7 @@ jobs:
     name: " formal verification / ternary logic "
     needs: spec-and-docs
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -935,6 +1084,7 @@ jobs:
     name: " gate / tritwise-determinism / ${{ matrix.config.name }}"
     needs: spec-and-docs
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -974,15 +1124,84 @@ jobs:
         run: ${{ matrix.config.smoke_cmd }}
 
   ############################################################################
+  # JOB GROUP: experimental-architectures (nightly only, informational)
+  ############################################################################
+  experimental-architectures:
+    name: " experimental architectures / group anchor "
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Experimental architecture group anchor
+        run: echo "Nightly-only experimental architecture sanity jobs."
+
+  ############################################################################
+  # JOB: oneapi-sycl-sanity (nightly only, informational)
+  ############################################################################
+  oneapi-sycl-sanity:
+    name: " experimental / oneapi sycl sanity "
+    if: github.event_name == 'schedule'
+    needs: experimental-architectures
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    timeout-minutes: 20
+    steps:
+      - name: Install minimal Intel oneAPI toolchain
+        shell: bash
+        run: |
+          set -eo pipefail
+          wget -qO- https://apt.repos.intel.com/oneapi/intel-oneapi-apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/oneapi-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+          sudo apt-get install -y intel-oneapi-compiler-dpcpp-cpp
+
+      - name: Compile SYCL hello world
+        shell: bash
+        run: |
+          cat > hello_sycl.cpp <<'CPP'
+          #include <sycl/sycl.hpp>
+          int main() {
+            sycl::queue q;
+            q.single_task([=]() {}).wait();
+            return 0;
+          }
+          CPP
+          source /opt/intel/oneapi/setvars.sh
+          icpx -fsycl hello_sycl.cpp
+
+  ############################################################################
+  # JOB: ascend-cann-sanity (nightly only, informational)
+  ############################################################################
+  ascend-cann-sanity:
+    name: " experimental / ascend cann sanity "
+    if: github.event_name == 'schedule' && vars.T81_ENABLE_ASCEND_CI == '1'
+    needs: experimental-architectures
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    timeout-minutes: 15
+    container:
+      image: swr.cn-southwest-2.myhuaweicloud.com/ascendhub/ascend-toolkit:latest
+    steps:
+      - name: Check Ascend CANN toolchain availability
+        shell: bash
+        run: |
+          set -eo pipefail
+          atc --version
+
+  ############################################################################
   # JOB: quality-gate
   ############################################################################
   quality-gate:
     name: " quality gate / required "
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs:
       - spec-and-docs
       - determinism-slice
+      - determinism-repeatability
       - build-and-test
+      - t3k-cross-arch-bit-identity
+      - t81lang-cross-arch-bit-identity
       - cxx-standard-compat
       - static-analysis
       - sanitizers
@@ -997,7 +1216,10 @@ jobs:
         run: |
           if [[ "${{ needs.spec-and-docs.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.determinism-slice.result }}" != "success" ]]; then exit 1; fi
+          if [[ "${{ needs.determinism-repeatability.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.build-and-test.result }}" != "success" ]]; then exit 1; fi
+          if [[ "${{ needs.t3k-cross-arch-bit-identity.result }}" != "success" ]]; then exit 1; fi
+          if [[ "${{ needs.t81lang-cross-arch-bit-identity.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.cxx-standard-compat.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.static-analysis.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.sanitizers.result }}" != "success" ]]; then exit 1; fi
