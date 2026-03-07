@@ -61,7 +61,11 @@ void test_compilation_stability() {
     // Verify all programs are identical
     bool identical = true;
     for (size_t i = 1; i < programs.size(); ++i) {
-        if (programs[0].bytecode != programs[i].bytecode) {
+        if (programs[0].insns.size() != programs[i].insns.size() || 
+            !std::equal(programs[0].insns.begin(), programs[0].insns.end(), programs[i].insns.begin(),
+                      [](const t81::tisc::Insn& x, const t81::tisc::Insn& y) {
+                          return x.opcode == y.opcode && x.a == y.a && x.b == y.b && x.c == y.c;
+                      })) {
             identical = false;
             break;
         }
@@ -92,14 +96,14 @@ void test_construct_to_opcode_mapping() {
     
     // Analyze bytecode characteristics
     BytecodeCharacteristics characteristics{};
-    characteristics.instruction_count = program.bytecode.size();
+    characteristics.instruction_count = program.insns.size();
     
     // Check for expected opcodes based on source constructs
     bool has_add = false;
     bool has_mul = false;
     bool has_constants = false;
     
-    for (const auto& insn : program.bytecode) {
+    for (const auto& insn : program.insns) {
         // Check for arithmetic operations
         if (insn.opcode == t81::tisc::Opcode::Add) has_add = true;
         if (insn.opcode == t81::tisc::Opcode::Mul) has_mul = true;
@@ -166,12 +170,16 @@ fn main() -> i32 {
     auto program2 = *program2_opt;
     
     // Programs should be identical since only variable names differ
-    if (program1.bytecode == program2.bytecode) {
+    if (program1.insns.size() == program2.insns.size() &&
+        std::equal(program1.insns.begin(), program1.insns.end(), program2.insns.begin(),
+                  [](const t81::tisc::Insn& x, const t81::tisc::Insn& y) {
+                      return x.opcode == y.opcode && x.a == y.a && x.b == y.b && x.c == y.c;
+                  })) {
         std::cout << "✓ Bytecode is deterministic for equivalent sources\n";
     } else {
         std::cout << "⚠️ Bytecode differs for equivalent sources (may be expected)\n";
-        std::cout << "  Program 1 size: " << program1.bytecode.size() << "\n";
-        std::cout << "  Program 2 size: " << program2.bytecode.size() << "\n";
+        std::cout << "  Program 1 size: " << program1.insns.size() << "\n";
+        std::cout << "  Program 2 size: " << program2.insns.size() << "\n";
     }
 }
 
@@ -205,7 +213,7 @@ void test_runtime_semantics_consistency() {
         
         const auto& state = vm->state();
         // Get return value from register 0 (convention)
-        int return_value = static_cast<int>(state.registers[0].value);
+        int return_value = static_cast<int>(state.contexts[state.current_context].registers[0]);
         results.push_back(return_value);
     }
     
@@ -248,13 +256,13 @@ void save_golden_fixture() {
     
     if (fixture_file.is_open()) {
         // Write bytecode size and checksum
-        fixture_file << "BYTECODE_SIZE: " << program.bytecode.size() << "\n";
+        fixture_file << "BYTECODE_SIZE: " << program.insns.size() << "\n";
         
         // Write simple checksum
         uint32_t checksum = 0;
-        for (const auto& insn : program.bytecode) {
+        for (const auto& insn : program.insns) {
             checksum ^= static_cast<uint32_t>(insn.opcode);
-            checksum ^= static_cast<uint32_t>(insn.immediate);
+            checksum ^= static_cast<uint32_t>(insn.b);
         }
         fixture_file << "BYTECODE_CHECKSUM: " << checksum << "\n";
         

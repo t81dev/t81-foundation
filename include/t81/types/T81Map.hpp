@@ -303,6 +303,12 @@ public:
     std::vector<std::pair<K, V>> sorted_items;
     std::size_t index = 0;
 
+    using iterator_category = std::input_iterator_tag;
+    using value_type = std::pair<K, V>;
+    using difference_type = std::ptrdiff_t;
+    using pointer = const std::pair<K, V>*;
+    using reference = const std::pair<K, V>&;
+
     deterministic_iterator(const T81Map* map, std::size_t start_idx = 0) {
       if (map) {
         sorted_items = map->iter_sorted();
@@ -321,6 +327,10 @@ public:
 
     [[nodiscard]] value_type operator*() const noexcept {
       return sorted_items[index];
+    }
+
+    [[nodiscard]] pointer operator->() const noexcept {
+      return &sorted_items[index];
     }
 
     [[nodiscard]] const K& key() const noexcept { return sorted_items[index].first; }
