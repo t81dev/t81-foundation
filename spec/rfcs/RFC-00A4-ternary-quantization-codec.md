@@ -394,7 +394,7 @@ ______________________________________________________________________
 
 ## References
 
-- [Ternary Tensor Type](/spec/rfc/RFC-0012-ternary-tensor-quantization.md)
-- [T81 Data Types Specification](/spec/t81-data-types.md)
-- [CanonFS Specification](/spec/supplemental/canonfs-spec.md)
-- [Deterministic Evidence Protocol](/spec/rfc/RFC-00A1-deterministic-evidence-protocol.md)
+- [Ternary Tensor Type](RFC-0012-ternary-tensor-quantization.md)
+- [T81 Data Types Specification](../t81-data-types.md)
+- [CanonFS Specification](../supplemental/canonfs-spec.md)
+- [Deterministic Evidence Protocol](RFC-00A1-deterministic-evidence-protocol.md)

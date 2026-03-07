@@ -17,7 +17,7 @@ This is achieved by enforcing strict boundaries and deterministic contracts at e
 To ensure systemic coalescence, the T81 architecture adheres to a set of formal specifications regarding its environment, dependencies, and internal interactions.
 
 ### 2.1 Architectural Assumptions
-The following conditions are assumed to be true for the system to maintain bounded determinism guarantees on verified surfaces, as defined in the [Strict Determinism Profile](../../spec/determinism-profile.md):
+The following conditions are assumed to be true for the system to maintain bounded determinism guarantees on verified surfaces, as defined in the [Strict Determinism Profile](../../../../../spec/determinism-profile.md):
 1.  **Semantic Invariance:** The host CPU's floating-point or integer behavior does *not* leak into the T81 runtime. All calculations are performed using the `T81Int` or `T729Tensor` libraries (Tier A Determinism).
 2.  **Input Provenance:** All non-trivial data inputs (e.g., model weights) are retrieved via `CanonFS` and verified by their `CanonHash81`.
 3.  **Host Cooperation:** While the system is designed to be auditable, it assumes a cooperative host OS that does not perform adversarial memory tampering or non-deterministic thread scheduling on the HanoiVM worker.

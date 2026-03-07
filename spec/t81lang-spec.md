@@ -576,7 +576,7 @@ record Box[T] {
     content: T;
 }
 
-fn open_box[T](b: Box[T]) -> T {
+fn open_box[T](#b-boxt) -> T {
     return b.content;
 }
 

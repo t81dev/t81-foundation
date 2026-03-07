@@ -523,7 +523,7 @@ t81 axion monitor-violations --alert-email security@t81.dev
 
 ## References
 
-- [Axion Policy Language](/spec/rfc/RFC-0009-axion-policy-language.md)
-- [Axion Safety Model](/spec/rfc/RFC-0003-axion-safety-model.md)
-- [Model Artifact Provenance](/spec/rfc/RFC-00A3-model-artifact-provenance.md)
-- [Deterministic Evidence Protocol](/spec/rfc/RFC-00A1-deterministic-evidence-protocol.md)
+- [Axion Policy Language](RFC-0009-axion-policy-language.md)
+- [Axion Safety Model](RFC-0003-axion-safety-model.md)
+- [Model Artifact Provenance](RFC-00A3-model-artifact-provenance.md)
+- [Deterministic Evidence Protocol](RFC-00A1-deterministic-evidence-protocol.md)

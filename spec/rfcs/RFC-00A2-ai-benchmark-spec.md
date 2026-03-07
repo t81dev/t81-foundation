@@ -360,5 +360,5 @@ ______________________________________________________________________
 ## References
 
 - [MLPerf Reference](https://mlcommons.org/en/benchmark/)
-- [T81 Determinism Guarantees](/spec/rfc/RFC-0002-deterministic-execution-contract.md)
-- [Deterministic Evidence Protocol](/spec/rfc/RFC-00A1-deterministic-evidence-protocol.md)
+- [T81 Determinism Guarantees](RFC-0002-deterministic-execution-contract.md)
+- [Deterministic Evidence Protocol](RFC-00A1-deterministic-evidence-protocol.md)

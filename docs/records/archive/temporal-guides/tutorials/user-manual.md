@@ -9,8 +9,8 @@ T81 prioritizes **bit-exact reproducibility**, **runtime governance** via Axion,
 - Floating-point transcendental functions are **bit-exact** via the `dmath` backend.
 - Axion policies **cannot be bypassed** — violations trigger explicit events/verdicts.
 
-For foundational concepts → see [spec/t81-overview.md](../../spec/t81-overview.md)
-For normative specs → see [spec/index.md](../../spec/index.md)
+For foundational concepts → see [spec/t81-overview.md](../../../../../spec/t81-overview.md)
+For normative specs → see [spec/index.md](../../../../../spec/README.md)
 
 ## Table of Contents
 
@@ -126,7 +126,7 @@ Typical edit-compile-debug loop:
 
 T81 provides ternary-native types with bounded determinism on verified surfaces.
 
-Common types (see [spec/t81-data-types.md](../../spec/t81-data-types.md)):
+Common types (see [spec/t81-data-types.md](../../../../../spec/t81-data-types.md)):
 
 ```t81
 let i   : i32          = 42;
@@ -300,10 +300,10 @@ Report issues → GitHub Issues.
 ## Next Steps & Resources
 
 - Explore all examples → `examples/`
-- Read architecture → [docs/explanation/ARCHITECTURE.md](../explanation/ARCHITECTURE.md)
-- Deep dive specs → [spec/index.md](../../spec/index.md)
+- Read architecture → [docs/explanation/ARCHITECTURE.md](../../../../explanation/ARCHITECTURE.md)
+- Deep dive specs → [spec/index.md](../../../../../spec/README.md)
 - AI/research quickstarts → `docs/tutorials/ai-quickstart.md`, `docs/how-to/research-guide.md`
-- Contribute → [CONTRIBUTING.md](../../CONTRIBUTING.md)
+- Contribute → [CONTRIBUTING.md](../../../../../CONTRIBUTING.md)
 
 Welcome to deterministic ternary computing.
 
