@@ -181,7 +181,7 @@ T81 生态文档按多个权威层级组织。
 
 | 资源 | 描述 | 权威级别 |
 | :--- | :--- | :--- |
-| **[The Monograph](book/book-en/README.md)** | 关于 T81 哲学、架构与使用方式的权威书籍。**从这里开始。** | 高 |
+| **[The Monograph](docs/developer-guide/book/book-en/README.md)** | 关于 T81 哲学、架构与使用方式的权威书籍。**从这里开始。** | 高 |
 | **[Normative Specs](spec/)** | 规范层面的事实来源。定义 TISC ISA、数据类型与 VM 行为。 | **绝对** |
 | **[Architecture](docs/architecture/OVERVIEW.md)** | 定义系统边界与不变量的 “North Star” 文档。 | 高 |
 | **[Status Dashboard](docs/status/PROJECT_CONTROL_CENTER.md)** | 实时追踪系统健康状态、活动关卡与已验证表面。 | 实时 |

@@ -181,7 +181,7 @@ El ecosistema T81 está documentado en varios niveles de autoridad.
 
 | Recurso | Descripción | Autoridad |
 | :--- | :--- | :--- |
-| **[The Monograph](book/book-en/README.md)** | El libro definitivo sobre filosofía, arquitectura y uso de T81. **Empieza aquí.** | Alta |
+| **[The Monograph](docs/developer-guide/book/book-en/README.md)** | El libro definitivo sobre filosofía, arquitectura y uso de T81. **Empieza aquí.** | Alta |
 | **[Normative Specs](spec/)** | Fuente normativa de verdad de las especificaciones. Define la ISA TISC, Tipos de Datos y comportamiento de VM. | **Absoluta** |
 | **[Architecture](docs/architecture/OVERVIEW.md)** | Documento "North Star" que define límites del sistema e invariantes. | Alta |
 | **[Status Dashboard](docs/status/PROJECT_CONTROL_CENTER.md)** | Seguimiento en vivo de salud del sistema, compuertas activas y superficies verificadas. | En vivo |

@@ -22,7 +22,7 @@ The following links were already correct and required no changes:
 - `./docs/index.md` ✅
 - `./docs/reference/REPRODUCIBILITY.md` ✅
 - `./spec/` ✅
-- `./book/book-en/README.md` ✅
+- `./docs/developer-guide/book/book-en/README.md` ✅
 - `./docs/architecture/OVERVIEW.md` ✅
 - `./docs/status/PROJECT_CONTROL_CENTER.md` ✅
 - `./docs/reference/SUPPORT.md` ✅

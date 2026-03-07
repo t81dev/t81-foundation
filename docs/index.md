@@ -61,23 +61,23 @@ For contributors looking to modify the codebase, these resources provide detaile
   - An end-to-end guide to building, securing with Axion policies, and auditing T81 applications.
 - **[Guide: Weight & Model Integration](./guides/weights-integration.md)**
   - How `t81 weights load`, the new `weights.load("<tensor>")` builtin, and the HanoiVM `WeightsLoad` opcode cooperate to keep `.t81w` tensors zero-copy inside the interpreter.
-- **[Guide: Data Types Overview](./guides/data-types-overview.md)**
+- **[Guide: Data Types Overview](./developer-guide/internals/data-types-overview.md)**
   - A runnable sample that exercises primitive and structural data types inside `examples/data_types.t81`, plus dedicated high-rank tensor and graph demos for exploring multidimensional indexing behaviors.
-- **[Demo Gallery](./guides/demo-gallery.md)**
+- **[Demo Gallery](./records/archive/temporal-guides/guides/demo-gallery.md)**
   - A quick menu of the match/data-type demos, the `scripts/run-demos.sh` automation, and the IR inspector utility.
 - **[Benchmark Report](reference/benchmarks.md)**
   - Auto-generated archive of T81/binary throughput/latency comparisons produced by `./build/t81 benchmark`.
 - **Benchmark Highlights (README)**(`../README.md#benchmark-highlights`)
 -  - Summary badges and table excerpted from the latest `docs/reference/benchmarks.md` results so visitors see at-a-glance which families currently lead.
 
-- **[Guide: VM Opcodes](./guides/vm-opcodes.md)**
+- **[Guide: VM Opcodes](./developer-guide/internals/vm-opcodes.md)**
   - The process for extending the virtual machine with new instructions.
-- **[Guide: Setun Bridge](./guides/setun-bridge.md)**
+- **[Guide: Setun Bridge](./records/archive/temporal-guides/guides/setun-bridge.md)**
   - Setun-style assembly translation to TISC, including label resolution and deterministic diagnostics.
-- **[Guide: Runtime Contract Helpers](./guides/runtime-contract-helpers.md)**
+- **[Guide: Runtime Contract Helpers](./records/archive/temporal-guides/guides/runtime-contract-helpers.md)**
   - Opcode matrix helpers and VM recursion/contradiction safety counters used by hardened runtime checks.
 
-- **[C++ API overview](guides/public-api-overview.md)** – describes the canonical headers and the `t81::v1` surface; run `cmake --build build --target docs` to generate the Doxygen HTML under `build/api/html/index.html`.
+- **[C++ API overview](user-guide/reference/public-api-overview.md)** – describes the canonical headers and the `t81::v1` surface; run `cmake --build build --target docs` to generate the Doxygen HTML under `build/api/html/index.html`.
   - Auto-generated, detailed reference for every class and method in the source code. *(Run `cmake --build build --target docs` to generate).*
 
 ______________________________________________________________________
