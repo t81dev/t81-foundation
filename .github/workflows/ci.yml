@@ -206,6 +206,7 @@ jobs:
   ############################################################################
   governance-metrics:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Run governance metrics
@@ -614,6 +615,7 @@ jobs:
     name: " cxx-std / linux-x86_64 / clang / ${{ matrix.cxx23 }}"
     needs: spec-and-docs
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -659,6 +661,7 @@ jobs:
     name: " gate / t3k cross-arch bit-identity "
     needs: build-and-test
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Download x86_64 T3_K hash
@@ -704,6 +707,7 @@ jobs:
     name: " gate / t81lang cross-arch bit-identity "
     needs: build-and-test
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Download x86_64 T81Lang hash
@@ -749,6 +753,7 @@ jobs:
     name: " benchmark / linux-x86_64 "
     needs: spec-and-docs
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -795,6 +800,7 @@ jobs:
     name: " static analysis / clang-tidy "
     needs: spec-and-docs
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -850,6 +856,7 @@ jobs:
     name: " build / sanitizers "
     needs: spec-and-docs
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -879,6 +886,7 @@ jobs:
     name: " fuzzing / frontend "
     needs: spec-and-docs
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -907,6 +915,7 @@ jobs:
     name: " formal verification / ternary logic "
     needs: spec-and-docs
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -938,6 +947,7 @@ jobs:
     name: " gate / tritwise-determinism / ${{ matrix.config.name }}"
     needs: spec-and-docs
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -982,6 +992,7 @@ jobs:
   quality-gate:
     name: " quality gate / required "
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs:
       - spec-and-docs
       - determinism-slice
