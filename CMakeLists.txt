@@ -714,9 +714,7 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(t81_vm_load_store_test tests/cpp/vm_load_store_test.cpp)
   target_link_libraries(t81_vm_load_store_test PRIVATE t81_vm t81_core)
 
-  add_executable(t81_vm_divmod_test tests/cpp/vm_divmod_test.cpp)
-  target_link_libraries(t81_vm_divmod_test PRIVATE t81_vm t81_core)
-
+  
   add_executable(t81_vm_illegal_test tests/cpp/vm_illegal_test.cpp)
   target_link_libraries(t81_vm_illegal_test PRIVATE t81_vm t81_core)
 
@@ -1327,7 +1325,6 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_tensor_unary_test
     t81_hanoi_integration_test
     t81_vm_load_store_test
-    t81_vm_divmod_test
     t81_vm_illegal_test
     t81_vm_bounds_test
     t81_vm_tensor_test

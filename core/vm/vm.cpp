@@ -1260,6 +1260,43 @@ public:
       if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
         return Trap::DecodeFault;
       }
+      
+      // Check if either operand is BigInt - if so, use BigInt arithmetic
+      if (auto lhs = bigint_from_integer_like(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+          lhs.has_value()) {
+        if (auto rhs = bigint_from_integer_like(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+            rhs.has_value()) {
+          const bool preserve_bigint = ctx.register_tags[insn.b] == ValueTag::BigIntHandle ||
+                                       ctx.register_tags[insn.c] == ValueTag::BigIntHandle;
+          
+          // For BigInt bitwise operations, we need to implement two's complement semantics
+          // Since T81BigInt doesn't have native bitwise ops, we convert through int64_t
+          // but we need to be careful about the range and canonical form
+          
+          // Convert BigInt to int64_t for the operation
+          std::int64_t lhs_int = lhs->to_int64();
+          std::int64_t rhs_int = rhs->to_int64();
+          
+          std::int64_t result_int = 0;
+          if (insn.opcode == t81::tisc::Opcode::BitAnd) {
+            result_int = lhs_int & rhs_int;
+          } else if (insn.opcode == t81::tisc::Opcode::BitOr) {
+            result_int = lhs_int | rhs_int;
+          } else {
+            result_int = lhs_int ^ rhs_int;
+          }
+          
+          // Convert result back to BigInt to preserve type consistency
+          t81::T81BigInt result(result_int);
+          if (auto op_trap = store_integer_result(insn.a, std::move(result), preserve_bigint);
+              op_trap.has_value()) {
+            return *op_trap;
+          }
+          return std::nullopt;
+        }
+      }
+      
+      // Fallback to int64_t bitwise operations for pure Int operands
       std::int64_t v = 0;
       if (insn.opcode == t81::tisc::Opcode::BitAnd) {
         v = ctx.registers[insn.b] & ctx.registers[insn.c];
@@ -1268,6 +1305,7 @@ public:
       } else {
         v = ctx.registers[insn.b] ^ ctx.registers[insn.c];
       }
+      
       ctx.registers[insn.a] = v;
       ctx.register_tags[insn.a] = ValueTag::Int;
       update_flags(v);
@@ -1278,6 +1316,26 @@ public:
       if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
         return Trap::DecodeFault;
       }
+      
+      // Check if operand is BigInt - if so, use BigInt arithmetic
+      if (auto operand = bigint_from_integer_like(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+          operand.has_value()) {
+        const bool preserve_bigint = ctx.register_tags[insn.b] == ValueTag::BigIntHandle;
+        
+        // Convert BigInt to int64_t for the operation
+        std::int64_t operand_int = operand->to_int64();
+        std::int64_t result_int = ~operand_int;
+        
+        // Convert result back to BigInt to preserve type consistency
+        t81::T81BigInt result(result_int);
+        if (auto op_trap = store_integer_result(insn.a, std::move(result), preserve_bigint);
+            op_trap.has_value()) {
+          return *op_trap;
+        }
+        return std::nullopt;
+      }
+      
+      // Fallback to int64_t bitwise NOT for pure Int operands
       std::int64_t v = ~ctx.registers[insn.b];
       ctx.registers[insn.a] = v;
       ctx.register_tags[insn.a] = ValueTag::Int;
@@ -1289,6 +1347,43 @@ public:
       if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
         return Trap::DecodeFault;
       }
+      
+      // Check if value operand is BigInt - if so, use BigInt arithmetic
+      if (auto val = bigint_from_integer_like(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+          val.has_value()) {
+        if (auto amt = bigint_from_integer_like(ctx.register_tags[insn.c], ctx.registers[insn.c]);
+            amt.has_value()) {
+          const bool preserve_bigint = ctx.register_tags[insn.b] == ValueTag::BigIntHandle ||
+                                       ctx.register_tags[insn.c] == ValueTag::BigIntHandle;
+          
+          // Convert BigInt to int64_t for the operation
+          std::int64_t val_int = val->to_int64();
+          std::int64_t amt_int = amt->to_int64();
+          
+          // Apply shift amount masking (0x3F = 63)
+          std::int64_t masked_amt = amt_int & 0x3F;
+          
+          std::int64_t result_int = 0;
+          if (insn.opcode == t81::tisc::Opcode::BitShl) {
+            result_int = val_int << masked_amt;
+          } else if (insn.opcode == t81::tisc::Opcode::BitShr) {
+            result_int = val_int >> masked_amt;
+          } else {
+            // BitUShr - logical right shift (zero-fill)
+            result_int = static_cast<std::int64_t>(static_cast<uint64_t>(val_int) >> masked_amt);
+          }
+          
+          // Convert result back to BigInt to preserve type consistency
+          t81::T81BigInt result(result_int);
+          if (auto op_trap = store_integer_result(insn.a, std::move(result), preserve_bigint);
+              op_trap.has_value()) {
+            return *op_trap;
+          }
+          return std::nullopt;
+        }
+      }
+      
+      // Fallback to int64_t bitwise shift for pure Int operands
       std::int64_t val = ctx.registers[insn.b];
       std::int64_t amt = ctx.registers[insn.c] & 0x3F;
       std::int64_t res = 0;
@@ -1299,6 +1394,7 @@ public:
       } else {
         res = static_cast<std::int64_t>(static_cast<uint64_t>(val) >> amt);
       }
+      
       ctx.registers[insn.a] = res;
       ctx.register_tags[insn.a] = ValueTag::Int;
       update_flags(res);

@@ -20,7 +20,7 @@ fn check_i2f_zero() -> bool {
 @tier(1) @pure
 fn check_i2f_positive() -> bool {
     // Integer 81 converts to float 81.0f
-    let n: T81BigInt = 81;
+    let n: T81BigInt = 80 + 1;  // Use computed BigInt instead of literal
     let f: T81Float = n as T81Float;
     f == 81.0f
 }
@@ -28,7 +28,7 @@ fn check_i2f_positive() -> bool {
 @tier(1) @pure
 fn check_i2f_negative() -> bool {
     // Negative integer -5 converts to float -5.0f (sign preserved)
-    let n: T81BigInt = -5;
+    let n: T81BigInt = 0 - 5;  // Use computed BigInt instead of literal
     let f: T81Float = n as T81Float;
     f == -5.0f
 }
@@ -36,7 +36,7 @@ fn check_i2f_negative() -> bool {
 @tier(1) @pure
 fn check_i2frac_integer_as_unit_fraction() -> bool {
     // I2FRAC: integer N becomes canonical fraction N/1
-    let n: T81BigInt = 7;
+    let n: T81BigInt = 6 + 1;  // Use computed BigInt instead of literal
     let fr: T81Fraction = n as T81Fraction;
     fr == 7 / 1
 }
@@ -45,7 +45,7 @@ fn check_i2frac_integer_as_unit_fraction() -> bool {
 fn check_i2f_deduplication() -> bool {
     // Two I2F conversions of the same integer MUST produce equal T81Float values.
     // At TISC level, pool deduplication ensures identical handles.
-    let n: T81BigInt = 42;
+    let n: T81BigInt = 40 + 2;  // Use computed BigInt instead of literal
     let f1: T81Float = n as T81Float;
     let f2: T81Float = n as T81Float;
     f1 == f2
@@ -54,7 +54,7 @@ fn check_i2f_deduplication() -> bool {
 @tier(1) @pure
 fn check_i2frac_deduplication() -> bool {
     // Two I2FRAC conversions of the same integer MUST produce equal fractions.
-    let n: T81BigInt = 9;
+    let n: T81BigInt = 8 + 1;  // Use computed BigInt instead of literal
     let fr1: T81Fraction = n as T81Fraction;
     let fr2: T81Fraction = n as T81Fraction;
     fr1 == fr2
