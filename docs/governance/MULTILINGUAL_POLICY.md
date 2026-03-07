@@ -50,7 +50,7 @@ translator: @username
 
 ### 4.1. Structural Integrity Check
 A CI job will run on every PR to ensure that:
-*   For every file in `book/book-en/`, a corresponding file exists in `book/book-*/` (or is explicitly ignored via `.t81ignore`).
+*   For every file in `docs/developer-guide/book/book-en/`, a corresponding file exists in `docs/developer-guide/book/book-*/` (or is explicitly ignored via `.t81ignore`).
 *   No "orphan" files exist in translation directories that do not have an English counterpart.
 
 ### 4.2. Staleness Detection
@@ -67,4 +67,4 @@ The CI system will flag translations that are significantly behind the canonical
 To propose a new language:
 1.  Submit an RFC.
 2.  Commit to maintaining the translation for at least 6 months.
-3.  Demonstrate a complete translation of the `README.md` and `book/book-en/chapter-01`.
+3.  Demonstrate a complete translation of `README.md` and `docs/developer-guide/book/book-en/chapter-01`.

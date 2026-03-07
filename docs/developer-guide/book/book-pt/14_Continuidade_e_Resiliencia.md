@@ -32,7 +32,7 @@ O T81 identifica e mitiga a dependência de infraestrutura centralizada.
 
 Os seguintes artefatos constituem o "Kit de Continuidade" necessário para reconstruir o T81:
 
-1.  **O Livro**: `book/book-pt/*.md` (Este documento).
+1.  **O Livro**: `docs/developer-guide/book/book-pt/*.md` (Este documento).
 2.  **A Especificação**: `spec/*.md` (Especificações formais TISC/Axion).
 3.  **O Código**: `src/` e `include/` (Implementação de referência).
 4.  **Os Testes**: `tests/cpp/` (Lógica de validação).

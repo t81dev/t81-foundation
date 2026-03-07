@@ -16,7 +16,7 @@ The T81 documentation ecosystem is stratified by authority. In the event of a co
 | **1** | `/spec/**` | **Normative Specs** | **Absolute**. Defines the "law" of the system. |
 | **2** | `/docs/architecture/OVERVIEW.md` | **Architecture** | **High**. Defines system boundaries and invariants. |
 | **3** | `/docs/**` | **Descriptive Docs** | **Medium**. Explains the specs and architecture. |
-| **4** | `/book/**` | **Narrative** | **Low**. Educational and illustrative. |
+| **4** | `/docs/developer-guide/book/**` | **Narrative** | **Low**. Educational and illustrative. |
 | **5** | `/notebooks/**`, `/examples/**` | **Experimental** | **None**. Use at your own risk. |
 | **N/A** | `/artifacts/**`, `/benchmarks/results/**` | **Generated** | **None**. Ephemeral outputs. |
 
@@ -116,6 +116,6 @@ Subsystems own specific directories. New files must be placed accordingly.
 | **Language** | `lang/stdlib/` | `lang/stdlib/` | `spec/t81lang-spec.md` |
 | **Axion** | `kernel/axion/` | `kernel/axion/` | `spec/axion-kernel.md` |
 | **Docs** | `docs/` | N/A | `spec/index.md` |
-| **Book** | `book/` | N/A | N/A |
+| **Book** | `/docs/developer-guide/book/` | N/A | N/A |
 
 ---
