@@ -260,6 +260,7 @@ jobs:
     name: " build / ${{ matrix.platform }} / ${{ matrix.compiler }}"
     needs: spec-and-docs
     runs-on: ${{ matrix.runs_on }}
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
