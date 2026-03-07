@@ -13,7 +13,7 @@ Version: 3.1.0
   - Bytes 5-8: Operand B (`int32_t`, little-endian)
   - Bytes 9-12: Operand C (`int32_t`, little-endian)
 - **Operands**: All instructions encode three 32-bit signed integer operands. Unused operands are encoded but ignored (typically zeroed).
-- **Reserved Ranges**: `0xAE` through `0xFF` (174-255) reserved for future expansion.
+- **Reserved Ranges**: `0xC2` through `0xFF` (194-255) reserved for future expansion. `0xAE`–`0xC1` (174–193) are assigned: Map/Set scaffolding (174–185), TShape (186), AI-Native Inference RFC-0026 (187–193).
 - **Determinism Rule**: Implemented opcodes must exhibit bit-exact deterministic behavior across platforms.
 
 ## 3. Notation (Semantic Layer)
@@ -283,20 +283,57 @@ Version: 3.1.0
 | InfConverge | 156 | `0x9C` | A, B, C | `A: Dest, B: Form` | - | Infinite Converge | Checks if infinite form converges. | BoundsFault | Yes | Implemented | core/vm/vm.cpp |
 | InfSignature | 157 | `0x9D` | A, B, C | `A: Dest, B: Form` | - | Infinite Signature | Generates signature hash for the infinite form. | BoundsFault | Yes | Implemented | core/vm/vm.cpp |
 
+## 5.16 Map / Set Scaffolding
+
+| Mnemonic | Dec | Hex | Canonical Operands | Semantic Operands | Stack | Description | Semantics | Traps / Side Effects | Deterministic | Status | Impl |
+| :--- | ---: | :---: | :--- | :--- | :---: | :--- | :--- | :--- | :---: | :--- | :--- |
+| MapNew | 174 | `0xAE` | A, B, C | `A: Dest` | - | Create Map | Creates a new empty Map; handle stored in `R[A]`. | TypeFault | Yes | Implemented | core/vm/vm.cpp |
+| MapPut | 175 | `0xAF` | A, B, C | `A: Map, B: Key, C: Val` | - | Map Insert | Inserts `R[C]` at key `R[B]` in map `R[A]`. | TypeFault | Yes | Implemented | core/vm/vm.cpp |
+| MapGet | 176 | `0xB0` | A, B, C | `A: Dest, B: Map, C: Key` | - | Map Lookup | Stores value at key `R[C]` from map `R[B]` into `R[A]`. | BoundsFault, TypeFault | Yes | Implemented | core/vm/vm.cpp |
+| MapHas | 177 | `0xB1` | A, B, C | `A: Dest, B: Map, C: Key` | - | Map Contains | `R[A] = 1` if key `R[C]` exists in map `R[B]`, else 0. | TypeFault | Yes | Implemented | core/vm/vm.cpp |
+| MapRemove | 178 | `0xB2` | A, B, C | `A: Map, B: Key` | - | Map Remove | Removes key `R[B]` from map `R[A]`. | TypeFault | Yes | Implemented | core/vm/vm.cpp |
+| MapKeys | 179 | `0xB3` | A, B, C | `A: Dest, B: Map` | - | Map Keys | Stores vector of all keys from map `R[B]` into `R[A]`. | TypeFault | Yes | Implemented | core/vm/vm.cpp |
+| MapSize | 180 | `0xB4` | A, B, C | `A: Dest, B: Map` | - | Map Size | `R[A] = number of entries in map R[B]`. | TypeFault | Yes | Implemented | core/vm/vm.cpp |
+| SetNew | 181 | `0xB5` | A, B, C | `A: Dest` | - | Create Set | Creates a new empty Set; handle stored in `R[A]`. | TypeFault | Yes | Implemented | core/vm/vm.cpp |
+| SetAdd | 182 | `0xB6` | A, B, C | `A: Set, B: Val` | - | Set Insert | Inserts `R[B]` into set `R[A]`. | TypeFault | Yes | Implemented | core/vm/vm.cpp |
+| SetRemove | 183 | `0xB7` | A, B, C | `A: Set, B: Val` | - | Set Remove | Removes `R[B]` from set `R[A]`. | TypeFault | Yes | Implemented | core/vm/vm.cpp |
+| SetHas | 184 | `0xB8` | A, B, C | `A: Dest, B: Set, C: Val` | - | Set Contains | `R[A] = 1` if `R[C]` is in set `R[B]`, else 0. | TypeFault | Yes | Implemented | core/vm/vm.cpp |
+| SetSize | 185 | `0xB9` | A, B, C | `A: Dest, B: Set` | - | Set Size | `R[A] = number of elements in set R[B]`. | TypeFault | Yes | Implemented | core/vm/vm.cpp |
+
+## 5.17 Tensor Shape
+
+| Mnemonic | Dec | Hex | Canonical Operands | Semantic Operands | Stack | Description | Semantics | Traps / Side Effects | Deterministic | Status | Impl |
+| :--- | ---: | :---: | :--- | :--- | :---: | :--- | :--- | :--- | :---: | :--- | :--- |
+| TShape | 186 | `0xBA` | A, B, C | `A: Dest, B: Tensor, C: DimIdx` | - | Tensor Shape | `R[A] = shape[R[B]][C]` — size of dimension `C` of tensor handle `R[B]`. | BoundsFault, TypeFault | Yes | Implemented | core/vm/vm.cpp |
+
+## 5.18 AI-Native Inference (RFC-0026 §5.15)
+
+All opcodes in this class operate on TensorHandle registers and are Tier 2+ only. All are subject to Axion pre-instruction verification. PACK(X,Y) encodes two 8-bit register indices into the 32-bit `C` operand field.
+
+| Mnemonic | Dec | Hex | Canonical Operands | Semantic Operands | Stack | Description | Semantics | Traps / Side Effects | Deterministic | Status | Impl |
+| :--- | ---: | :---: | :--- | :--- | :---: | :--- | :--- | :--- | :---: | :--- | :--- |
+| ATTN | 187 | `0xBB` | A, PACK(B,C) | `A: Dest, B: Q+K, C: V` | - | Scaled Dot-Product Attention | `R[A] = softmax(Q·Kᵀ/√dₖ)·V`; Q/K packed in B, V in C. T81Float soft-float only. | TypeFault (shape mismatch), ShapeFault | Yes | Implemented (AI-M2) | core/vm/vm.cpp |
+| QMATMUL | 188 | `0xBC` | A, PACK(B,C) | `A: Dest, B: ACT+WT, C: SCALE` | - | Quantized Matrix Multiply | `R[A] = dequantize(R_WT, R_SCALE) · R_ACT`; dequantize-then-multiply order enforced. | TypeFault, CanonFault (scale out of range) | Yes | Implemented (AI-M3) | core/vm/vm.cpp |
+| EMBED | 189 | `0xBD` | A, B, C | `A: Dest, B: Table, C: Idx` | - | Embedding Lookup | `R[A] = rows of R[B] at indices R[C]`; output shape `[len(idx), dim]`. | BoundsFault (index OOB) | Yes | Implemented (AI-M1 stub) | core/vm/vm.cpp |
+| WLOAD | 190 | `0xBE` | A, B, C | `A: Dest, B: SrcHandle, C: Policy` | - | Weight Load | Materializes weight tensor from handle `R[B]` with policy gate `R[C]`. CanonFS emits `meta slot axion event … action=WeightLoad` when driver attached (AI-M4). | SecurityFault (policy denial), TypeFault | Yes | Implemented (AI-M4) | core/vm/vm.cpp |
+| GATHER | 191 | `0xBF` | A, B, PACK(IDX,AXIS) | `A: Dest, B: Src, IDX: index reg, AXIS: axis reg` | - | Sparse Gather | Gathers slice from tensor `R[B]` at index `R[IDX]` along axis `R[AXIS]`. Rank-2: axis=0 gathers row, axis=1 gathers column (AI-M5). | BoundsFault (index OOB), TypeFault | Yes | Implemented (AI-M5) | core/vm/vm.cpp |
+| SCATTER | 192 | `0xC0` | A, B, PACK(IDX,SRC) | `A: Dest, B: DstHandle, IDX: index reg, SRC: src tensor reg` | - | Sparse Scatter-Add | Scatter-adds `R[SRC]` into `R[B]` at index `R[IDX]`; result in `R[A]`. Aliasing detection: re-use of `(dst, axis, index)` in same frame → SecurityFault (AI-M5). | SecurityFault (aliasing), BoundsFault, TypeFault | Yes | Implemented (AI-M5) | core/vm/vm.cpp |
+| Int2BigInt | 193 | `0xC1` | A, B, C | `A: Dest, B: Src` | - | Integer to BigInt | Converts integer register `R[B]` to a BigInt handle stored in `R[A]`. | TypeFault | Yes | Implemented | core/vm/vm.cpp |
+
 ## 6. Reconciliation Summary
-- **Canonical opcode rows merged from v1 categories**: 173 (opcodes `0x01`-`0xAD` plus `0x00` NOP handled separately)
-- **Canonical rows with semantic coverage**: 174/174 (Full Parity)
+- **Canonical opcode rows merged from v1 categories**: 193 (opcodes `0x01`-`0xC1` plus `0x00` NOP handled separately)
+- **Canonical rows with semantic coverage**: 194/194 (Full Parity)
 - **Rows marked Stub/Placeholder**: 12 (documented as Functional Stubs)
 
 ### 6.2 Reserved / Unused
 - `0x00` = `NOP` (semantically documented; not listed in v1 category tables).
-- `0xAE` through `0xFF` reserved for future standardization.
+- `0xC2` through `0xFF` reserved for future standardization.
 
 ## 7. Implementation Consistency Audit (carried from v1)
-- **VM Opcode Count**: 174 defined opcodes (`0x00`-`0xAD`).
-- **Header Enum Count**: 174 entries.
+- **VM Opcode Count**: 194 defined opcodes (`0x00`-`0xC1`).
+- **Header Enum Count**: 194 entries.
 - **Coverage**: All opcodes defined in `include/t81/isa/opcodes.hpp` are present in `core/vm/vm.cpp` dispatch switch.
-- **Discrepancies**: None found (per v1 audit).
+- **Discrepancies**: None found (per v1 audit, extended for RFC-0026 AI opcodes).
 
 ## 8. Deferred Extensions
 

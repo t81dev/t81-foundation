@@ -816,6 +816,105 @@ the purpose of bit-level manipulation; the result is stored as a canonical
 
 ______________________________________________________________________
 
+### 5.15 AI-Native Inference Operations (RFC-0026)
+
+These instructions are **Tier 2+ only**. All operate on TensorHandle registers.
+All are subject to Axion pre-instruction verification before execution begins.
+Hardware floating-point is prohibited; all arithmetic uses the canonical
+**T81Float soft-float** path defined in `spec/t81-data-types.md §4`.
+
+> *Freeze Exception addition — 2026-03-07 (RFC-0026 AI-M1–M5). These opcodes
+> are emitted by AI inference workload compilation paths and implemented in
+> `core/vm/vm.cpp`. Opcode byte assignments: ATTN=0xBB, QMATMUL=0xBC,
+> EMBED=0xBD, WLOAD=0xBE, GATHER=0xBF, SCATTER=0xC0.*
+
+#### Packed Operand Encoding
+
+When two register indices must be passed in a single 32-bit operand field,
+the **PACK(X, Y)** encoding is used:
+
+```text
+packed = (X & 0xFF) | ((Y & 0xFF) << 8)
+```
+
+Both `X` and `Y` are decoded as unsigned 8-bit values. This encoding is used
+by ATTN, QMATMUL, GATHER, and SCATTER.
+
+#### ATTN — Scaled Dot-Product Attention
+
+- **Form**: `ATTN RD, PACK(R_QK, R_V), 0`
+- **Semantics**: `R[RD] := softmax(Q · Kᵀ / √dₖ) · V`
+  where `R_QK` holds Q and K handles (packed), `R_V` holds the value tensor.
+- **Determinism**: `√dₖ` MUST use the canonical T81Float square-root algorithm
+  from `spec/t81-data-types.md §4`. Hardware FPU is prohibited.
+- **Axion**: Emits `attn guard` AxionEvent with shape metadata before execution.
+- **Faults**: `TypeFault` on incompatible head dimensions; `ShapeFault` on
+  shape mismatch.
+
+#### QMATMUL — Quantized Matrix Multiply
+
+- **Form**: `QMATMUL RD, PACK(R_ACT, R_WT), R_SCALE`
+- **Semantics**: `R[RD] := dequantize(R[R_WT], R[R_SCALE]) · R[R_ACT]`
+  Dequantize-then-multiply order is normative; multiply-then-dequantize is
+  non-conformant.
+- **Axion**: Enforces that `R_WT` provenance matches the loaded model policy.
+- **Faults**: `TypeFault` on shape mismatch; `CanonFault` if scale is outside
+  the canonical range defined by the active Axion policy.
+
+#### EMBED — Embedding Lookup
+
+- **Form**: `EMBED RD, R_TABLE, R_IDX`
+- **Semantics**: `R[RD] := gather_rows(R[R_TABLE], R[R_IDX])`
+  `R_TABLE` has shape `[vocab, dim]`; `R_IDX` is a `T81BigInt` or
+  `Vector[T81BigInt]` of token indices. Output shape: `[len(R_IDX), dim]`.
+- **Faults**: `BoundsFault` on any out-of-bounds index.
+
+#### WLOAD — Weight Load with Policy Gate
+
+- **Form**: `WLOAD RD, R_SRC, R_POLICY`
+- **Semantics**: Materializes a weight tensor from the source handle `R[R_SRC]`
+  under the Axion policy `R[R_POLICY]`. Axion MUST verify shape, precision,
+  and provenance metadata before the weight handle is materialized.
+- **CanonFS audit (AI-M4)**: When a CanonFS driver is attached to the VM,
+  WLOAD emits `meta slot axion event segment=meta addr=<n> action=WeightLoad`
+  via `log_canonfs_operation()`. This audit event is absent when no CanonFS
+  driver is present.
+- **On policy denial**: `SecurityFault`; the weight handle is never
+  materialized.
+- **Faults**: `SecurityFault` (policy denial), `TypeFault`.
+
+#### GATHER — Sparse Gather
+
+- **Form**: `GATHER RD, R_SRC, PACK(R_IDX, R_AXIS)`
+- **Semantics**: Gathers a slice from tensor `R[R_SRC]` at index `R[R_IDX]`
+  along axis `R[R_AXIS]`. For rank-2 tensors:
+  - axis=0: output is row `R[R_IDX]` of `R[R_SRC]`
+  - axis=1: output is column `R[R_IDX]` of `R[R_SRC]`
+- **Determinism**: Given identical source tensor and index, output is
+  bit-exact.
+- **Faults**: `BoundsFault` on out-of-bounds index; `TypeFault` if index or
+  axis registers hold non-integer values.
+
+#### SCATTER — Sparse Scatter-Add
+
+- **Form**: `SCATTER RD, R_DST, PACK(R_IDX, R_SRC)`
+- **Semantics**: `R[RD] := scatter_add(R[R_DST], R[R_IDX], R[R_SRC])`
+  Adds `R[R_SRC]` into `R[R_DST]` at index `R[R_IDX]`; `R[R_DST]` is not
+  mutated in-place. `R[RD]` receives the updated tensor.
+- **Aliasing detection (AI-M5)**: The VM MUST detect re-use of the same
+  `(dst_handle, axis, index)` tuple within a single execution frame.
+  Detection raises `SecurityFault` before any state mutation occurs. The
+  tracking set (`ThreadContext::scatter_used`) is scoped to the current
+  execution frame.
+- **Faults**: `SecurityFault` (aliasing violation), `BoundsFault`,
+  `TypeFault`.
+
+> **Tests:** `tests/cpp/vm_ai_phase1_wload_canonfs_audit_test.cpp` ·
+> `tests/cpp/vm_ai_phase1_gather_axis1_test.cpp` ·
+> `tests/cpp/vm_ai_phase1_scatter_aliasing_test.cpp`
+
+______________________________________________________________________
+
 ## 6. Fault Semantics
 
 All faults are **deterministic** and **Axion-visible**.

@@ -51,4 +51,29 @@ inline bool linear_index_in_bounds(const T729DynamicTensor& tensor, std::int64_t
   return index >= 0 && static_cast<std::size_t>(index) < tensor.size();
 }
 
+// RFC-0026: WLOAD — weight tensor must be at least rank-1.
+inline bool wload_compatible(const T729DynamicTensor& src) {
+  return src.rank() >= 1;
+}
+
+// RFC-0026: GATHER — src must be rank-2; index in bounds along the given axis (AI-M5).
+inline bool gather_compatible(const T729DynamicTensor& src, std::int64_t index, int axis = 0) {
+  return src.rank() == 2 &&
+         axis >= 0 && axis < static_cast<int>(src.rank()) &&
+         index >= 0 &&
+         index < static_cast<std::int64_t>(src.shape()[static_cast<std::size_t>(axis)]);
+}
+
+// RFC-0026: SCATTER — dst must be rank-2; src must be rank-1 matching the slice
+// dimension perpendicular to axis; index in bounds along axis (AI-M5).
+inline bool scatter_compatible(const T729DynamicTensor& dst, std::int64_t index, int axis,
+                               const T729DynamicTensor& src) {
+  if (dst.rank() != 2 || src.rank() != 1) return false;
+  if (axis < 0 || axis >= static_cast<int>(dst.rank())) return false;
+  const int expected_src_len = dst.shape()[static_cast<std::size_t>(1 - axis)];
+  return src.shape()[0] == expected_src_len &&
+         index >= 0 &&
+         index < static_cast<std::int64_t>(dst.shape()[static_cast<std::size_t>(axis)]);
+}
+
 }  // namespace t81::tensor_contracts

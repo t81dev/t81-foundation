@@ -1,8 +1,8 @@
-# RFC-0029: AI Subsystem Promotion Pathway
+# RFC-0032: AI Subsystem Promotion Pathway
 
 **Status:** proposed
 **Type:** standards-track
-**Applies-To:** `spec/tisc-spec.md`, `spec/t81vm-spec.md`, `spec/supplemental/axion-policy-grammar.md`, `spec/supplemental/canonfs-spec.md`, `RFC-0002`, `RFC-0003`, `RFC-0004`, `RFC-0025`, `RFC-0026`, `RFC-0028`, `RFC-00A0`
+**Applies-To:** `spec/tisc-spec.md`, `spec/t81vm-spec.md`, `spec/supplemental/axion-policy-grammar.md`, `spec/supplemental/canonfs-spec.md`, `RFC-0002`, `RFC-0003`, `RFC-0004`, `RFC-0025`, `RFC-0026`, `RFC-0031`, `RFC-00A0`
 **Created:** 2026-03-07
 **Updated:** 2026-03-07
 **Supersedes:** —

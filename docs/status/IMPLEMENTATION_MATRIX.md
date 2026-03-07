@@ -1,7 +1,7 @@
 # Implementation Matrix
 
 Status: Active
-Last Updated: 2026-03-06
+Last Updated: 2026-03-07
 Owner: @t81dev
 
 Alignment truth. One row per subsystem. No narrative.
@@ -16,7 +16,7 @@ Authority remains: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Data Types** | `spec/t81-data-types.md` | **Frozen** | Implemented | **Verified** | High | Low | 2026-03-06 | @t81dev | N/A (maintain) | Frozen DCP surface. Audit 2026-02-27: `Cell` signed-overflow UB fixed, `T81Float` signed-zero canonicalized, `T81Map`/`T81Set` enforcement hardened. Documentation reorganization completed 2026-03-06. |
 | **TISC ISA** | `spec/tisc-spec.md` | **Frozen** | Implemented | **Verified** | High | Low | 2026-03-06 | @t81dev | N/A (maintain) | Frozen DCP surface. Freeze integrity enforced by `check_tisc_freeze_integrity.py`. Documentation reorganization completed 2026-03-06. |
-| **T81VM** | `spec/t81vm-spec.md` | Beta | Beta | Beta | Medium | Low | 2026-03-06 | @t81dev | 2026-04-15 | Non-JIT path DCP-verified. FW-02 closure landed: Axion opcode pre-dispatch moved outside main VM switch with centralized helper routing retained (`dispatch_axion_opcode_from_step`). Documentation reorganization completed 2026-03-06. |
+| **T81VM** | `spec/t81vm-spec.md` | Beta | Beta | Beta | Medium | Low | 2026-03-07 | @t81dev | 2026-04-15 | Non-JIT path DCP-verified. FW-02 closure landed: Axion opcode pre-dispatch moved outside main VM switch with centralized helper routing retained (`dispatch_axion_opcode_from_step`). RFC-0026 phase-1 extended (2026-03-07): `WLOAD`/`GATHER`/`SCATTER` opcodes added to TISC, VM dispatch, tensor kernel (`t81::ops`), checked wrappers, and conformance tests — all six RFC-0026 phase-1 opcodes now have runtime semantics. Documentation reorganization completed 2026-03-06. |
 | **T81Lang** | `spec/t81lang-spec.md` | Draft | **Beta** | Beta (impl) / Draft (spec) | Medium | Low | 2026-03-06 | @t81dev | 2026-05-15 | BG-06/BG-07/BG-08/BG-09 closed. BigInt literals now transport and materialize without silent truncation; narrowing boundaries are explicit and fail-closed. Documentation reorganization completed 2026-03-06. |
 | **Axion Kernel** | `spec/axion-kernel.md` | Draft | **Alpha** | Alpha | Medium | Medium | 2026-03-06 | @t81dev | 2026-04-30 | §1.6/1.9 implemented (bounded). AX-M5..M7 evidence closures landed; pending Beta candidacy review cycle. §2.5 remains deferred. Documentation reorganization completed 2026-03-06. |
 | **T81Graph** | Surface inventory (non-normative) | Draft | Draft | Experimental | Medium | Medium | 2026-03-06 | @t81dev | 2026-05-15 | VM opcode lowering and lang-side serialization wiring complete with determinism coverage. Surface remains governed non-DCP until promotion. Documentation reorganization completed 2026-03-06. |

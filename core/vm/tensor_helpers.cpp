@@ -392,6 +392,55 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_embed_checked(
   }
 }
 
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_wload_checked(
+    const t81::T729DynamicTensor& src) {
+  if (!t81::tensor_contracts::wload_compatible(src)) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::TypeFault);
+  }
+  try {
+    return t81::ops::wload(src);
+  } catch (...) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::TypeFault);
+  }
+}
+
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_gather_checked(
+    const t81::T729DynamicTensor& src, std::int64_t index, int axis) {
+  if (!t81::tensor_contracts::gather_compatible(src, index, axis)) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::BoundsFault);
+  }
+  try {
+    return t81::ops::gather(src, index, axis);
+  } catch (const std::out_of_range&) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::BoundsFault);
+  } catch (...) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::ShapeFault);
+  }
+}
+
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_scatter_checked(
+    const t81::T729DynamicTensor& dst, std::int64_t index, const t81::T729DynamicTensor& src,
+    int axis) {
+  if (!t81::tensor_contracts::scatter_compatible(dst, index, axis, src)) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::BoundsFault);
+  }
+  try {
+    return t81::ops::scatter_add(dst, index, src, axis);
+  } catch (const std::out_of_range&) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::BoundsFault);
+  } catch (...) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::ShapeFault);
+  }
+}
+
 std::expected<float, t81::vm::Trap> tensor_get_checked(const t81::T729DynamicTensor& tensor,
                                                        std::int64_t index) {
   auto out = tensor_get_at(tensor, index);

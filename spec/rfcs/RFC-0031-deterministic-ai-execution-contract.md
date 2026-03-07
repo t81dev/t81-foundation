@@ -1,4 +1,4 @@
-# RFC-0028: Deterministic AI Execution Contract
+# RFC-0031: Deterministic AI Execution Contract
 
 **Status:** draft
 **Type:** standards-track

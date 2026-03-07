@@ -65,6 +65,12 @@ constexpr std::string_view kEnumPayload = "enum payload";
 constexpr std::string_view kMetaSlotAxionEvent = "axion event";
 constexpr std::string_view kTensorProvenance = "tensor provenance";
 
+// --- AI-Native Inference (RFC-0026) ---
+// Canonical CanonFS action string for WLOAD weight materialization audit events.
+// Produces "meta slot axion event segment=meta addr=<n> action=WeightLoad"
+// via log_canonfs_operation() when a CanonFS driver is attached (AI-M4).
+constexpr std::string_view kWeightLoad = "WeightLoad";
+
 // ---------------------------------------------------------------------------
 // Canonical reason string builders (AX-M6)
 //

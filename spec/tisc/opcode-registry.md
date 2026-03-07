@@ -10,7 +10,7 @@ Source of Truth: VM + opcode headers
   - Bytes 5-8: Operand B (`int32_t`, little-endian)
   - Bytes 9-12: Operand C (`int32_t`, little-endian)
 - **Operands**: All instructions encode three 32-bit signed integer operands (A, B, C). Unused operands for a specific opcode are ignored by the VM but must be present in the binary stream (typically zeroed).
-- **Reserved Ranges**: Opcodes 174 (0xAE) through 255 (0xFF) are reserved for future expansion.
+- **Reserved Ranges**: Opcodes 194 (0xC2) through 255 (0xFF) are reserved for future expansion. Opcodes 174 (0xAE)–193 (0xC1) are assigned: Map/Set scaffolding (174–185), TShape (186), AI-Native Inference / RFC-0026 (187–193).
 - **Determinism**: All implemented opcodes must exhibit bit-exact deterministic behavior across all platforms. Floating point operations (FAdd, etc.) use `T81Float` or deterministic software implementations where hardware checks fail.
 
 ## 2. Opcode Categories
@@ -248,12 +248,49 @@ Source of Truth: VM + opcode headers
 | VWait | 125 (0x7D) | A, B, C | Async Wait (Unimplemented; fail-closed) | Yes | core/vm/vm.cpp |
 | VYield | 126 (0x7E) | A, B, C | Async Yield (Unimplemented; fail-closed) | Yes | core/vm/vm.cpp |
 
+### 2.16 Map / Set Scaffolding
+
+| Mnemonic | Numeric Encoding | Operands | Description | Deterministic | Implementation Location |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| MapNew | 174 (0xAE) | A, B, C | Create new Map | Yes | core/vm/vm.cpp |
+| MapPut | 175 (0xAF) | A, B, C | Insert key-value into Map | Yes | core/vm/vm.cpp |
+| MapGet | 176 (0xB0) | A, B, C | Get value from Map by key | Yes | core/vm/vm.cpp |
+| MapHas | 177 (0xB1) | A, B, C | Check key presence in Map | Yes | core/vm/vm.cpp |
+| MapRemove | 178 (0xB2) | A, B, C | Remove key from Map | Yes | core/vm/vm.cpp |
+| MapKeys | 179 (0xB3) | A, B, C | Get all keys from Map | Yes | core/vm/vm.cpp |
+| MapSize | 180 (0xB4) | A, B, C | Get Map size | Yes | core/vm/vm.cpp |
+| SetNew | 181 (0xB5) | A, B, C | Create new Set | Yes | core/vm/vm.cpp |
+| SetAdd | 182 (0xB6) | A, B, C | Add element to Set | Yes | core/vm/vm.cpp |
+| SetRemove | 183 (0xB7) | A, B, C | Remove element from Set | Yes | core/vm/vm.cpp |
+| SetHas | 184 (0xB8) | A, B, C | Check element in Set | Yes | core/vm/vm.cpp |
+| SetSize | 185 (0xB9) | A, B, C | Get Set size | Yes | core/vm/vm.cpp |
+
+### 2.17 Tensor Shape
+
+| Mnemonic | Numeric Encoding | Operands | Description | Deterministic | Implementation Location |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| TShape | 186 (0xBA) | A, B, C | Get tensor dimension size: `R[A] = shape[R[B]][C]` | Yes | core/vm/vm.cpp |
+
+### 2.18 AI-Native Inference (RFC-0026)
+
+All opcodes in this class operate on TensorHandle registers. All are Tier 2+ only. All are subject to Axion pre-instruction verification.
+
+| Mnemonic | Numeric Encoding | Operands | Description | Deterministic | Implementation Location |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| ATTN | 187 (0xBB) | A, PACK(B,C) | Scaled dot-product attention: `R[A] = softmax(Q·Kᵀ/√dₖ)·V` | Yes | core/vm/vm.cpp |
+| QMATMUL | 188 (0xBC) | A, PACK(B,C) | Quantized matmul: `R[A] = dequantize(R_WT, R_SCALE) · R_ACT` | Yes | core/vm/vm.cpp |
+| EMBED | 189 (0xBD) | A, B, C | Embedding lookup: gather rows from table `R[B]` at indices `R[C]` | Yes | core/vm/vm.cpp |
+| WLOAD | 190 (0xBE) | A, B, C | Weight load with Axion policy gate; emits CanonFS WeightLoad audit event (AI-M4) | Yes | core/vm/vm.cpp |
+| GATHER | 191 (0xBF) | A, B, PACK(IDX,AXIS) | Sparse gather: gather index `R[IDX]` from tensor `R[B]` along axis `R[AXIS]` (AI-M5) | Yes | core/vm/vm.cpp |
+| SCATTER | 192 (0xC0) | A, B, PACK(IDX,SRC) | Sparse scatter-add: scatter `R[SRC]` into `R[B]` at `R[IDX]`; aliasing detection enforced (AI-M5) | Yes | core/vm/vm.cpp |
+| Int2BigInt | 193 (0xC1) | A, B, C | Convert integer register to BigInt handle | Yes | core/vm/vm.cpp |
+
 ## 3. Reserved / Unused Opcodes
 - **Nop (0x00)**: No Operation.
-- **Reserved**: Opcodes 174 (0xAE) through 255 (0xFF) are reserved for future standardization.
+- **Reserved**: Opcodes 194 (0xC2) through 255 (0xFF) are reserved for future standardization.
 
 ## 4. Implementation Consistency Audit
-- **VM Opcode Count**: 174 defined opcodes (0-173).
-- **Header Enum Count**: 174 entries.
+- **VM Opcode Count**: 194 defined opcodes (0–193).
+- **Header Enum Count**: 194 entries.
 - **Coverage**: All opcodes defined in `include/t81/isa/opcodes.hpp` are present in `core/vm/vm.cpp` dispatch switch.
 - **Discrepancies**: None found.
