@@ -194,7 +194,7 @@ For methodology and benchmark-specific notes, see [`./benchmarks/README.md`](./b
 - CMake consumption guide: [`./docs/developer-guide/building/CONSUMING_T81_CMAKE.md`](./docs/developer-guide/building/CONSUMING_T81_CMAKE.md)
 - Reproducibility guide: [`./docs/reference/REPRODUCIBILITY.md`](./docs/reference/REPRODUCIBILITY.md)
 - Formal specs: [`./spec/`](./spec/)
-- Long-form book: [`./docs/developer-guide/book/book-en/README.md`](./docs/developer-guide/book/book-en/README.md)
+- Long-form book: [`./book/book-en/README.md`](./book/book-en/README.md)
 - Architecture overview: [`./docs/architecture/OVERVIEW.md`](./docs/architecture/OVERVIEW.md)
 - Status and maturity tracking: [`./docs/status/PROJECT_CONTROL_CENTER.md`](./docs/status/PROJECT_CONTROL_CENTER.md)
 - Support channels: [`./docs/reference/SUPPORT.md`](./docs/reference/SUPPORT.md)
