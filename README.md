@@ -118,7 +118,7 @@ python3 scripts/ci/t81lang_repro_gate.py --t81-bin build/t81 --check
 ./build/t81 code run build/hello_world.tisc
 ```
 
-Other common entry points include `./build/t81 project init`, `./build/t81 env doctor`, `./build/t81 weights ...`, and `./build/t81 trace ...`. See [`./docs/guides/cli-user-manual.md`](./docs/guides/cli-user-manual.md) for the current command surface.
+Other common entry points include `./build/t81 project init`, `./build/t81 env doctor`, `./build/t81 weights ...`, and `./build/t81 trace ...`. See [`./docs/user-guide/reference/cli-user-manual.md`](./docs/user-guide/reference/cli-user-manual.md) for the current command surface.
 
 **Minimal consumer example**
 
@@ -184,14 +184,14 @@ cmake --build build --target benchmark_runner
 ./build/t81 benchmark --benchmark_filter='BM_(ArithThroughput|T81LangCompile).*'
 ```
 
-For methodology and benchmark-specific notes, see [`./benchmarks/README.md`](./benchmarks/README.md) and [`./docs/benchmarks/README.md`](./docs/benchmarks/README.md). Treat published benchmark snapshots as trend data rather than hard guarantees for every platform or configuration.
+For methodology and benchmark-specific notes, see [`./benchmarks/README.md`](./benchmarks/README.md) and [`./docs/developer-guide/tools/README.md`](./docs/developer-guide/tools/README.md). Treat published benchmark snapshots as trend data rather than hard guarantees for every platform or configuration.
 
 ## Documentation
 
 - General docs: [`./docs/index.md`](./docs/index.md)
-- CLI manual: [`./docs/guides/cli-user-manual.md`](./docs/guides/cli-user-manual.md)
-- Public C++ API overview: [`./docs/guides/public-api-overview.md`](./docs/guides/public-api-overview.md) and generated Doxygen via `cmake --build build --target docs`
-- CMake consumption guide: [`./docs/guides/CONSUMING_T81_CMAKE.md`](./docs/guides/CONSUMING_T81_CMAKE.md)
+- CLI manual: [`./docs/user-guide/reference/cli-user-manual.md`](./docs/user-guide/reference/cli-user-manual.md)
+- Public C++ API overview: [`./docs/user-guide/reference/public-api-overview.md`](./docs/user-guide/reference/public-api-overview.md) and generated Doxygen via `cmake --build build --target docs`
+- CMake consumption guide: [`./docs/developer-guide/building/CONSUMING_T81_CMAKE.md`](./docs/developer-guide/building/CONSUMING_T81_CMAKE.md)
 - Reproducibility guide: [`./docs/reference/REPRODUCIBILITY.md`](./docs/reference/REPRODUCIBILITY.md)
 - Formal specs: [`./spec/`](./spec/)
 - Long-form book: [`./book/book-en/README.md`](./book/book-en/README.md)
@@ -213,7 +213,7 @@ T81 is in active development with mixed maturity across the stack.
 
 Supported toolchains currently verified in CI include Ubuntu 24.04 with GCC 14 and Clang 18, Ubuntu 24.04 ARM64 with Clang 18, macOS 14 ARM64 with Apple Clang, and Windows Server 2022 with MSVC on a best-effort basis.
 
-Roadmap priorities include hardening the reproducibility surface, expanding cognitive-tier logic, improving performance, and keeping CLI/docs/examples aligned. For current status and roadmap detail, see [`./docs/reference/STATUS.md`](./docs/reference/STATUS.md) and [`./docs/roadmaps-plans/ROADMAP.md`](./docs/roadmaps-plans/ROADMAP.md).
+Roadmap priorities include hardening the reproducibility surface, expanding cognitive-tier logic, improving performance, and keeping CLI/docs/examples aligned. For current status and roadmap detail, see [`./docs/reference/STATUS.md`](./docs/reference/STATUS.md) and [`./docs/process/roadmaps-plans/ROADMAP.md`](./docs/process/roadmaps-plans/ROADMAP.md).
 
 ## Contributing
 

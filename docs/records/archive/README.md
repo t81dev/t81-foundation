@@ -1,13 +1,24 @@
-# `docs/records/archive`
+# Release documentation index
 
-Archived documentation retained for historical context.
+Status: Active
+Last Updated: 2026-02-25
 
-## What Goes Here
-- Superseded guides, proposals, and snapshots that should remain discoverable.
-- Content no longer authoritative but still useful for provenance.
-- Sub-archives by topic (for example `architecture/` and `reference/`).
+## Purpose
 
-## Rules
-- Mark archived docs clearly as non-current.
-- Link to the current replacement when available.
-- Do not delete audit-relevant history without explicit decision.
+Release packets, notes, and release-readiness references.
+
+## Scope
+
+This README is a navigation aid for this directory. It does not change
+specification authority, freeze boundaries, or determinism claim scope.
+
+## Navigation
+
+- ../product/RELEASE_DISCIPLINE.md
+- ../status/RELEASE_DISCIPLINE_CHECKLIST.md
+- ../records/audits/
+
+## Versioning Statement
+
+Operational index only. Authority hierarchy remains:
+/spec > docs/architecture/OVERVIEW.md > /docs > /book.

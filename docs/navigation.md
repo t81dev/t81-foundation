@@ -1,18 +1,24 @@
 - Home: index.md
-- Tutorials
-  - AI Quickstart: tutorials/ai-quickstart.md
-  - C++ Quickstart: tutorials/cpp-quickstart.md
-- How-to Guides
-  - Debugger: how-to/debugger-guide.md
+- User Guide
+  - Getting Started: user-guide/getting-started/
+  - Tutorials: user-guide/tutorials/
+  - How-to Guides: user-guide/how-to/
+  - Reference: user-guide/reference/
+- Developer Guide
+  - Building: developer-guide/building/
+  - Contributing: developer-guide/contributing/
+  - Internals: developer-guide/internals/
+  - Tools: developer-guide/tools/
+- Process
+  - RFCs: process/rfcs/
+  - Proposals: process/proposals/
+  - Roadmaps: process/roadmaps/
+  - Policies: process/policies/
 - Explanation
-  - Architecture Overview: explanation/architecture-overview.md
+  - Architecture Overview: explanation/ARCHITECTURE.md
   - Whitepaper: explanation/t81-whitepaper.md
 - Reference
   - Changelog: reference/CHANGELOG.md
   - Versioning: reference/VERSIONING.md
-- Policies
-  - Alignment Policy: policies/alignment-policy.md
-- Roadmaps
-  - Main Roadmap: roadmaps-plans/ROADMAP.md
 - Research
   - Formal Verification: research/formal-verification.md

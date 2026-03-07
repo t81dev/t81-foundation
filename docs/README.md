@@ -15,6 +15,30 @@ This directory is the canonical documentation surface below `/spec` and
 - [Implementation Matrix](status/IMPLEMENTATION_MATRIX.md)
 - [Spec Index](spec/INDEX.md)
 
+## Documentation Structure
+
+### 📚 User Documentation
+- [User Guide](user-guide/) - Getting started, tutorials, how-to guides, reference
+
+### 🔧 Developer Documentation  
+- [Developer Guide](developer-guide/) - Building, contributing, internals, tools
+
+### 📋 Process & Planning
+- [Process](process/) - RFCs, proposals, roadmaps, policies, migration
+
+### 🏛️ Core Documentation
+- [Architecture](architecture/) - High-level architecture and ADR system
+- [Governance](governance/) - Governance policy and authority model
+- [Status](status/) - Project status and control center
+
+### 🔬 Research & Reference
+- [Explanation](explanation/) - Conceptual documentation and whitepapers
+- [Reference](reference/) - Technical reference and changelogs
+- [Research](research/) - Research papers and formal verification
+
+### 📊 Archives & Records
+- [Records](records/) - Audit trails, archived artifacts, and inventory records
+
 ## Records and Site Build
 
 - [Records](records/) contains audits, inventories, status-history, and archive artifacts.
