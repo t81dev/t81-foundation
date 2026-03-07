@@ -43,7 +43,7 @@ jobs:
           fail: true
           args: >-
             --verbose --no-progress
-            --concurrency 8
+            --max-concurrency 8
             --root-dir .
             --exclude "http://localhost*"
             --exclude "https://github.com/t81dev/t81-foundation/edit*"
