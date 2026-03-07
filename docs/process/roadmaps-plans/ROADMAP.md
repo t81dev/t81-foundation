@@ -1,6 +1,6 @@
 # Project Roadmap
 
-> **Source of Truth:** This document defines the **strategic forward-looking milestones** for the project. For current operational status, see [../reference/STATUS.md](../reference/STATUS.md). For past changes, see [../reference/CHANGELOG.md](../reference/CHANGELOG.md).
+> **Source of Truth:** This document defines the **strategic forward-looking milestones** for the project. For current operational status, see [../../reference/STATUS.md](../../reference/STATUS.md). For past changes, see [../../reference/CHANGELOG.md](../../reference/CHANGELOG.md).
 
 **Last Updated:** February 17, 2026
 

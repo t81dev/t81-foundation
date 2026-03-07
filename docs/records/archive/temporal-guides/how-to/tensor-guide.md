@@ -8,8 +8,8 @@ title: C++ Tensor Guide
 This guide summarizes the lightweight `T729Tensor` implementation plus the supporting APIs shipped in `include/t81/tensor`. It is the practical reference for developers working with the current C++ tensor utilities.
 
 **Companion Documents:**
-- **Specification:** [`spec/t81-data-types.md`](../../spec/t81-data-types.md)
-- **API Reference:** [`include/t81/tensor.hpp`](../../include/t81/tensor.hpp) and the headers under `include/t81/tensor/`
+- **Specification:** [`spec/t81-data-types.md`](../../../../../spec/t81-data-types.md)
+- **API Reference:** [`include/t81/tensor.hpp`](../../../../../include/t81/tensor.hpp) and the headers under `include/t81/tensor/`
 - **Tests:** `tests/cpp/tensor_*_test.cpp`
 - **Examples:** `examples/tensor_ops.cpp`, `examples/demo.cpp`
 
@@ -69,7 +69,7 @@ t81::T729Tensor B({3, 2}, std::vector<float>{7, 8, 9, 10, 11, 12});
 auto C = t81::ops::matmul(A, B); // 2×2
 ```
 
-**Test:** [`tests/cpp/tensor_matmul_test.cpp`](../../tests/cpp/tensor_matmul_test.cpp)
+**Test:** [`tests/cpp/tensor_matmul_test.cpp`](../../../../../tests/cpp/tensor_matmul_test.cpp)
 
 ### Transpose & Reshape
 
@@ -81,7 +81,7 @@ auto transposed = t81::ops::transpose(A);
 auto reshaped = t81::ops::reshape(A, {3, 2});
 ```
 
-**Tests:** [`tests/cpp/tensor_transpose_test.cpp`](../../tests/cpp/tensor_transpose_test.cpp), [`tests/cpp/tensor_reshape_test.cpp`](../../tests/cpp/tensor_reshape_test.cpp)
+**Tests:** [`tests/cpp/tensor_transpose_test.cpp`](../../../../../tests/cpp/tensor_transpose_test.cpp), [`tests/cpp/tensor_reshape_test.cpp`](../../../../../tests/cpp/tensor_reshape_test.cpp)
 
 ### Slicing & Indexing
 
@@ -91,7 +91,7 @@ auto reshaped = t81::ops::reshape(A, {3, 2});
 auto patch = t81::ops::slice2d(A, 0, 1, 1, 3); // 1×2 block
 ```
 
-**Test:** [`tests/cpp/tensor_slice_test.cpp`](../../tests/cpp/tensor_slice_test.cpp)
+**Test:** [`tests/cpp/tensor_slice_test.cpp`](../../../../../tests/cpp/tensor_slice_test.cpp)
 
 ### Reduction
 
@@ -104,7 +104,7 @@ auto col_min = t81::ops::reduce_min_2d(A, 0);
 auto row_mean = t81::ops::reduce_mean_2d(A, 1);
 ```
 
-**Test:** [`tests/cpp/tensor_reduce_test.cpp`](../../tests/cpp/tensor_reduce_test.cpp)
+**Test:** [`tests/cpp/tensor_reduce_test.cpp`](../../../../../tests/cpp/tensor_reduce_test.cpp)
 
 ### Broadcasting & Elementwise Ops
 
@@ -115,19 +115,19 @@ t81::T729Tensor broadcasted = t81::ops::broadcast_to(A, {2, 3});
 auto summed = t81::ops::add(A, broadcasted);
 ```
 
-**Tests:** [`tests/cpp/tensor_broadcast_test.cpp`](../../tests/cpp/tensor_broadcast_test.cpp), [`tests/cpp/tensor_elementwise_test.cpp`](../../tests/cpp/tensor_elementwise_test.cpp)
+**Tests:** [`tests/cpp/tensor_broadcast_test.cpp`](../../../../../tests/cpp/tensor_broadcast_test.cpp), [`tests/cpp/tensor_elementwise_test.cpp`](../../../../../tests/cpp/tensor_elementwise_test.cpp)
 
 ### Unary Functions
 
 `t81::ops::unary_map` supports applying any `float(float)` functor to every element. The convenience helpers `relu`, `tanh`, `exp`, and `log` demonstrate common activation-style transforms with safety guards (e.g., `log` throws on negative inputs).
 
-**Test:** [`tests/cpp/tensor_unary_test.cpp`](../../tests/cpp/tensor_unary_test.cpp)
+**Test:** [`tests/cpp/tensor_unary_test.cpp`](../../../../../tests/cpp/tensor_unary_test.cpp)
 
 ### IO & Serialization
 
 Use `t81::io::load_tensor_txt` / `save_tensor_txt` (and their `_file` helpers) to stream tensors in a simple text format. `T729Tensor` also exposes `serialize`/`deserialize` for binary persistence, keeping the header/int64 counts for shape and data.
 
-**Test:** [`tests/cpp/tensor_loader_test.cpp`](../../tests/cpp/tensor_loader_test.cpp)
+**Test:** [`tests/cpp/tensor_loader_test.cpp`](../../../../../tests/cpp/tensor_loader_test.cpp)
 
 ______________________________________________________________________
 
@@ -137,4 +137,4 @@ The tensor API is now feature-complete for v1.0: base storage for both float and
 
 - **Next Steps:** Upstream more specialized operations (scatter/gather, advanced cognitive kernels) once `T81Lang` reaches greater maturity.
 
-For a full list of planned work, see [`TASKS.md`](../status/TASKS.md).
+For a full list of planned work, see [`TASKS.md`](../../../../status/TASKS.md).

@@ -13,7 +13,7 @@ This directory is the canonical documentation surface below `/spec` and
 - [Project Control Center](status/PROJECT_CONTROL_CENTER.md)
 - [Drift Decomposition](status/DRIFT_DECOMPOSITION.md)
 - [Implementation Matrix](status/IMPLEMENTATION_MATRIX.md)
-- [Spec Index](spec/INDEX.md)
+- [Spec Index](../spec/README.md)
 
 ## Documentation Structure
 

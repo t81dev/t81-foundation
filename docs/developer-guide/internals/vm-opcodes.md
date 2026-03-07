@@ -27,10 +27,10 @@ This guide provides an overview of the TISC instruction set and the T81 Virtual 
 **Last Updated:** February 17, 2026
 
 **Companion Documents:**
-- **Specification:** [`spec/tisc-spec.md`](../../spec/tisc-spec.md), [`spec/t81vm-spec.md`](../../spec/t81vm-spec.md)
+- **Specification:** [`spec/tisc-spec.md`](../../../spec/tisc-spec.md), [`spec/t81vm-spec.md`](../../../spec/t81vm-spec.md)
 - **Key Source Files:**
-    - [`include/t81/isa/opcodes.hpp`](../../include/t81/isa/opcodes.hpp): The `Opcode` enum.
-    - [`core/vm/vm.cpp`](../../core/vm/vm.cpp): The VM implementation.
+    - [`include/t81/isa/opcodes.hpp`](../../../include/t81/isa/opcodes.hpp): The `Opcode` enum.
+    - [`core/vm/vm.cpp`](../../../core/vm/vm.cpp): The VM implementation.
 - **Tests:** `tests/cpp/t81_vm_*_test.cpp`, `tests/cpp/e2e_*_test.cpp`
 
 ______________________________________________________________________
@@ -83,7 +83,7 @@ ______________________________________________________________________
 
 ### Stack/Heap Allocator Opcodes
 
-- `StackAlloc`, `StackFree`, `HeapAlloc`, `HeapFree` encode the deterministic allocator model described in [`spec/t81vm-spec.md`](../../spec/t81vm-spec.md#memory-model). Every stack allocation is bounded by the current stack limit (Axion policy layers may adjust the limit via hints) and must pair `StackAlloc` with a matching `StackFree` within the same lexical scope; missing frees raise deterministic traps rather than silently overflow. Heap allocations obey the same Axion-guided guards—VM state keeps per-program counters and faults when any request would exceed the configured heap cap.
+- `StackAlloc`, `StackFree`, `HeapAlloc`, `HeapFree` encode the deterministic allocator model described in [`spec/t81vm-spec.md`](../../../spec/t81vm-spec.md). Every stack allocation is bounded by the current stack limit (Axion policy layers may adjust the limit via hints) and must pair `StackAlloc` with a matching `StackFree` within the same lexical scope; missing frees raise deterministic traps rather than silently overflow. Heap allocations obey the same Axion-guided guards—VM state keeps per-program counters and faults when any request would exceed the configured heap cap.
 - These opcodes are deterministic, so they avoid hidden nondeterminism: every allocation/deallocation is recorded in the Axion trace, and the Hanoi engine can replay or veto the operation if it would violate the spec's `+∞` / `-∞` invariants. The VM also uses them when lowering `loop`/`match` constructs that require temporary buffers or when the new `weights.load` builtin materializes handles.
 - Use `StackAlloc`/`StackFree` for all short-lived temporaries so the Axion trace can track stack depth precisely. Heap paths (`HeapAlloc`/`HeapFree`) are reserved for long-lived state such as tensors stored across invocations or weights handles; the VM tracks these with the same deterministic telemetry used by Axion's policy text and loop metadata.
 
@@ -114,7 +114,7 @@ When the frontend lowers this loop, it emits `StackAlloc`/`StackFree` around any
     (bound infinite)))
 ```
 
-This policy text is emitted whenever `./build/t81 run` executes the TISC program, giving downstream consumers deterministic diagnostics (`file:line:column`) and exposing Axion's loop-tracking hooks. If the loop tries to grow the stack beyond the configured limit, the VM traps before Axion ever allows a `+∞` overflow; the Axion log entry and the policy text show the same metadata used by diagnostics, closing the trace from source to runtime. For a concrete CLI command/output pair you can copy into logs or release notes, see the **Axion CLI Trace Example** in the [demo gallery guide](./demo-gallery.md#axion-loop-trace).
+This policy text is emitted whenever `./build/t81 run` executes the TISC program, giving downstream consumers deterministic diagnostics (`file:line:column`) and exposing Axion's loop-tracking hooks. If the loop tries to grow the stack beyond the configured limit, the VM traps before Axion ever allows a `+∞` overflow; the Axion log entry and the policy text show the same metadata used by diagnostics, closing the trace from source to runtime. For a concrete CLI command/output pair you can copy into logs or release notes, see the **Axion CLI Trace Example** in the [demo gallery guide](../../records/archive/temporal-guides/guides/demo-gallery.md).
 
 The comparison boolean opcodes produce canonical `0/1` values, so a simple relational expression such as:
 

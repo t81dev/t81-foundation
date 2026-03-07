@@ -3,8 +3,8 @@
 This guide explains how to observe the deterministic `AxionEvent.verdict.reason`
 strings that document segment transitions and guard evaluations inside the
 HanoiVM. These strings are the authority for Axion policies that `require`
-segment coverage (see [RFC-0020](../../spec/rfcs/RFC-0020-axion-segment-trace.md)
-and [RFC-0009](../../spec/rfcs/RFC-0009-axion-policy-language.md#segment-trace-predicates)).
+segment coverage (see [RFC-0020](../../../spec/rfcs/RFC-0020-axion-segment-trace.md)
+and [RFC-0009](../../../spec/rfcs/RFC-0009-axion-policy-language.md)).
 
 ## 1. Command-line trace sample
 
@@ -151,7 +151,7 @@ verdict.reason="stack frame allocated stack addr=243 size=16"
 ```
 
 The `docs/governance/archive/policy/guards.axion` snippet should include the `(require-match-guard ...)`
-and `(require-segment-event ...)` s-expressions from `[RFC-0009](../../spec/rfcs/RFC-0009-axion-policy-language.md)` so the CLI output matches the strings recorded by the regressions and the CanonFS audit logs.
+and `(require-segment-event ...)` s-expressions from `[RFC-0009](../../../spec/rfcs/RFC-0009-axion-policy-language.md)` so the CLI output matches the strings recorded by the regressions and the CanonFS audit logs.
 
 ### 3.3 Reference policy file
 
@@ -231,9 +231,9 @@ For more context, see `docs/guides/cli-toolkit.md` and `spec/axion-kernel.md`.
 ## 5. Policy runner trace
 
 The new `examples/axion_policy_runner.cpp` implements a minimal Axion policy
-runner that mirrors the requirements described in [RFC-0020](../../spec/rfcs/RFC-0020-axion-segment-trace.md)
+runner that mirrors the requirements described in [RFC-0020](../../../spec/rfcs/RFC-0020-axion-segment-trace.md)
 and the `require-segment-event` predicates of
-[RFC-0009](../../spec/rfcs/RFC-0009-axion-policy-language.md#segment-trace-predicates).
+[RFC-0009](../../../spec/rfcs/RFC-0009-axion-policy-language.md).
 Build it with
 
 ```

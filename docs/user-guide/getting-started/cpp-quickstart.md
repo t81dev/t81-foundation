@@ -81,17 +81,17 @@ ______________________________________________________________________
 
 ## 4. Where to Go Next
 
-- **To understand the code's structure:** Read the [`../explanation/ARCHITECTURE.md`](../explanation/ARCHITECTURE.md) to see how the different libraries (`t81_core`, `t81_lang_frontend`, etc.) fit together in the deterministic ledger.
-- **To find a task to work on:** See the prioritized list of needed contributions in [`TASKS.md`](../status/TASKS.md).
-- **To understand the onboarding flow:** See [`onboarding.md`](onboarding.md).
+- **To understand the code's structure:** Read the [`../../explanation/ARCHITECTURE.md`](../../explanation/ARCHITECTURE.md) to see how the different libraries (`t81_core`, `t81_lang_frontend`, etc.) fit together in the deterministic ledger.
+- **To find a task to work on:** See the prioritized list of needed contributions in [`TASKS.md`](../../status/TASKS.md).
+- **To understand the onboarding flow:** See [`../../records/archive/temporal-guides/tutorials/onboarding.md`](../../records/archive/temporal-guides/tutorials/onboarding.md).
 - **To explore the API:** Generate the Doxygen documentation by running `cmake --build build --target docs` and opening `build/api/html/index.html`.
 
 ______________________________________________________________________
 
 ## 5. Notes & Caveats
 
-- **Status evolves quickly:** prefer `../reference/system-status.md` and `../explanation/ANALYSIS.md` for current implementation parity against spec.
+- **Status evolves quickly:** prefer `../../reference/system-status.md` and `../explanation/ANALYSIS.md` for current implementation parity against spec.
 - **Use the deterministic ritual:** run configure/build/test exactly as documented above before trusting local behavior.
 - **Compatibility lane:** C++23 is default; run the optional C++20 lane (`-DT81_USE_CXX23=OFF`) when validating cross-toolchain compatibility.
 
-For a detailed status of all components, see the [`System Status Report`](../reference/system-status.md).
+For a detailed status of all components, see the [`System Status Report`](../../reference/system-status.md).

@@ -11,8 +11,8 @@ Reference companion:
 
 User-defined generic functions support both inferred and explicit call-site type arguments:
 - Inferred: `id(7)`
-- Explicit: `id[i32](7)`
-- Partial explicit with inference fallback: `first[i32](7, "tail")`
+- Explicit: `id[i32](#7)`
+- Partial explicit with inference fallback: `first[i32](#7-tail)`
 
 Explicit type arguments must match the function generic arity and argument types deterministically.
 Calls that leave return-affecting generic parameters unresolved fail deterministically, for example:

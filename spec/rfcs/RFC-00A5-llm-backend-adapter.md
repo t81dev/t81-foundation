@@ -488,7 +488,7 @@ ______________________________________________________________________
 
 ## References
 
-- [Model Artifact Provenance](/spec/rfc/RFC-00A3-model-artifact-provenance.md)
-- [Deterministic Evidence Protocol](/spec/rfc/RFC-00A1-deterministic-evidence-protocol.md)
-- [Ternary Quantization Codec](/spec/rfc/RFC-00A4-ternary-quantization-codec.md)
+- [Model Artifact Provenance](RFC-00A3-model-artifact-provenance.md)
+- [Deterministic Evidence Protocol](RFC-00A1-deterministic-evidence-protocol.md)
+- [Ternary Quantization Codec](RFC-00A4-ternary-quantization-codec.md)
 - [llama.cpp Documentation](https://github.com/ggerganov/llama.cpp)

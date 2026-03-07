@@ -167,8 +167,8 @@ title: "Guide: Adding a Language Feature"
 This guide provides a step-by-step walkthrough for adding a new feature to the T81Lang language. We will use the example of adding a new binary operator, the modulo operator (`%`), to illustrate the process.
 
 **Companion Documents:**
-- **Specification:** [`spec/t81lang-spec.md`](../../spec/t81lang-spec.md)
-- **Architecture:** [`ARCHITECTURE.md`](../../docs/explanation/ARCHITECTURE.md)
+- **Specification:** [`spec/t81lang-spec.md`](../../../spec/t81lang-spec.md)
+- **Architecture:** [`ARCHITECTURE.md`](../../explanation/ARCHITECTURE.md)
 - **Key Source Files:**
     - `include/t81/frontend/lexer.hpp`, `parser.hpp`, `ir_generator.hpp`
     - `lang/frontend/lexer.cpp`, `parser.cpp`, `ir_generator.cpp`
@@ -286,7 +286,7 @@ This process—**Lexer -> Parser -> IR Generator -> E2E Test**—is the standard
 
 ## 6. Step 5: Reinforce the Semantic Analyzer
 
-The semantic analyzer enforces the invariants described in [`spec/t81lang-spec.md`](../../spec/t81lang-spec.md)
+The semantic analyzer enforces the invariants described in [`spec/t81lang-spec.md`](../../../spec/t81lang-spec.md)
 (sections §2.1 on generic types and §6.2 on `match` semantics). When you evolve the grammar
 (see `RFC-0011` for the modern generic syntax) you must also extend `SemanticAnalyzer` so
 generic inference, `Option`/`Result` exhaustiveness, and match lowering remain correct.

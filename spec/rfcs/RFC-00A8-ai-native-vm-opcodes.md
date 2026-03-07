@@ -497,7 +497,7 @@ ______________________________________________________________________
 
 ## References
 
-- [TISC Specification](/spec/tisc-spec.md)
-- [T81VM Specification](/spec/t81vm-spec.md)
-- [Ternary Quantization Codec](/spec/rfc/RFC-00A4-ternary-quantization-codec.md)
-- [Deterministic Evidence Protocol](/spec/rfc/RFC-00A1-deterministic-evidence-protocol.md)
+- [TISC Specification](../tisc-spec.md)
+- [T81VM Specification](../t81vm-spec.md)
+- [Ternary Quantization Codec](RFC-00A4-ternary-quantization-codec.md)
+- [Deterministic Evidence Protocol](RFC-00A1-deterministic-evidence-protocol.md)

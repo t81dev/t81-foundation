@@ -19,7 +19,7 @@ This page lists the runnable demos and utilities available in the repository, gi
 ## 1. CLI Demos
 
 - **Match Demo** (`../../examples/match_demo.t81`): Covers `Option`/`Result` `match` expressions. See [match-example.md](./match-example.md).
-- **Data-Type Demo** (`../../examples/data_types.t81`): Exercises primitives, strings, and structural matches. See [data-types-overview.md](./data-types-overview.md).
+- **Data-Type Demo** (`../../examples/data_types.t81`): Exercises primitives, strings, and structural matches. See [data-types-overview.md](../../../../developer-guide/internals/data-types-overview.md).
 - **Fraction Demo** (`../../examples/fraction_demo.t81`) + **Tensor Demo** (`../../examples/tensor_demo.t81`): Focused examples for rational numbers and typed tensors; expand the guide to explore them further under “Next Steps.”
 - **BigInt, Float, String Demos** (`../../examples/bigint_demo.t81`, `../../examples/float_demo.t81`, `../../examples/string_demo.t81`): Show canonical usage of `T81BigInt`, `T81Float`, and `T81String` values respectively; link back to the overview guide for instructions.
 - **Vector, Matrix, Cell, Quaternion Demos** (`../../examples/vector_demo.t81`, `../../examples/matrix_demo.t81`, `../../examples/cell_demo.t81`, `../../examples/quaternion_demo.t81`): Focus on the next wave of numerics—vectors/matrices for shape-aware operations and handles like cells/quaternions for the balanced ternary core.
@@ -56,7 +56,7 @@ This tool walks the usual frontend pipeline (lexer → parser → semantic analy
 
 ## Axion Loop Trace
 
-Follow the **Axion Loop Metadata Example** in [`vm-opcodes.md`](./vm-opcodes.md) to see how allocator ops (`StackAlloc`/`StackFree`) and loop hints end up in the Hanoi policy text. Compile and run any loop-bearing demo (e.g., `../../examples/high_rank_tensor_demo.t81`) with `./build/t81 compile …` and `./build/t81 run …`; the terminal will print a `(policy … (loop … (file …) (line …) (column …)))` block that matches the diagnostics shipped by `t81`. Together, the doc plus this CLI trace show the deterministic path from source loop → Axion policy output.
+Follow the **Axion Loop Metadata Example** in [`vm-opcodes.md`](../../../../developer-guide/internals/vm-opcodes.md) to see how allocator ops (`StackAlloc`/`StackFree`) and loop hints end up in the Hanoi policy text. Compile and run any loop-bearing demo (e.g., `../../examples/high_rank_tensor_demo.t81`) with `./build/t81 compile …` and `./build/t81 run …`; the terminal will print a `(policy … (loop … (file …) (line …) (column …)))` block that matches the diagnostics shipped by `t81`. Together, the doc plus this CLI trace show the deterministic path from source loop → Axion policy output.
 
 ### Axion CLI Trace Example
 
@@ -76,7 +76,7 @@ axion loop metadata: file=../../examples/weights_load_demo.t81 line=12 column=5 
 
 Copy this `(policy …)` block into logs or release notes to prove the deterministic trace from the T81 source to Axion’s policy engine; the reported `file:line:column` matches the diagnostics `t81` already prints when a semantic error occurs.
 
-Read the [Axion Trace Reference](./axion-trace.md) guide to replay the same sequence of `AxionEvent.verdict.reason` strings inside the CI logs and Axion policy runners.
+Read the [Axion Trace Reference](../../../../developer-guide/internals/axion-trace.md) guide to replay the same sequence of `AxionEvent.verdict.reason` strings inside the CI logs and Axion policy runners.
 
 ## 4. What’s Next?
 
