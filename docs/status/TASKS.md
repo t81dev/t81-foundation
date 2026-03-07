@@ -1,12 +1,13 @@
 # Active Tasks
 
-Last Updated: 2026-03-05
+Last Updated: 2026-03-06
 
 Immediate, actionable items only. Structural hardening items live in `HARDENING_BACKLOG.md`.
 
 **🎉 REMARKABLE ACHIEVEMENT: ALL PRIORITY 1 TASKS COMPLETED!**
 **✅ 8/8 P1 tasks completed with 100% test success rate**
-**🚀 T81 Foundation now optimally positioned for production scaling and DCP candidacy**
+**� Documentation reorganization completed - content-based structure implemented**
+**� T81 Foundation now optimally positioned for production scaling and DCP candidacy**
 
 ---
 
@@ -231,6 +232,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 | Task | Completed |
 | :--- | :--- |
+| **🏆 Documentation Reorganization** - Content-based documentation structure with user-guide/ and developer-guide/ separation | **2026-03-06** |
 | **🏆 PR-426 Determinism Hardening Phase 1** - Comprehensive determinism hardening with T81_DETERMINISTIC enforcement, canonical containers, and cross-platform tests | **2026-03-04** |
 | **🏆 Recent Commit + Recovery Audit** - Post-rollback commit-window audit completed; public API lock refreshed; governance lock check restored | **2026-03-05** |
 | **🏆 BG-10 Memory Pool Optimization** - Complete 10-phase memory management transformation | **2026-03-04** |

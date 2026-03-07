@@ -1,6 +1,6 @@
 # Governance Review Cadence
 
-Last Updated: 2026-02-28
+Last Updated: 2026-03-06
 Owner: @t81dev
 
 Defines: monthly review checklist, drift review protocol, registry update

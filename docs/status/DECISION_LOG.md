@@ -1,7 +1,7 @@
 # Decision Log
 
 Status: Active
-Last Updated: 2026-03-05
+Last Updated: 2026-03-06
 Owner: Project Management / Governance
 Version: 1.0.0
 
@@ -51,6 +51,28 @@ provides the foundation for the Deterministic Core Profile (DCP) guarantee.
 - `spec/tisc-spec.md`
 - `docs/governance/FREEZE_ENFORCEMENT.md`
 - `docs/product/DETERMINISTIC_CORE_PROFILE.md`
+
+---
+
+### DEC-003 — Documentation Content-Based Reorganization
+
+**Date (UTC):** 2026-03-06 21:00:00Z
+**Approver:** @t81dev
+**Category:** Operational
+
+**Decision:** Reorganize `/docs/` directory structure based on actual content rather than legacy naming conventions. Create `user-guide/`, `developer-guide/`, and `process/` directories to improve navigation and maintainability.
+
+**Alternatives Considered:**
+- Keep existing directory structure with only link fixes
+- Minimal reorganization with only top-level directories
+- Complete flattening of all documentation into single level
+
+**Rationale:** Content-based organization improves user experience by separating user-facing documentation from developer internals. Reduces cognitive overhead and makes documentation more discoverable. Legacy structure mixed user tutorials with developer guides and process documents, creating confusion.
+
+**References:**
+- `docs/REORGANIZATION_SUMMARY.md`
+- `docs/README_LINK_VERIFICATION.md`
+- `docs/STATUS_FILES_AUDIT_SUMMARY.md`
 
 ---
 

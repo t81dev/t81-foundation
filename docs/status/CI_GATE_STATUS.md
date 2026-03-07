@@ -3,8 +3,8 @@
 Status: Active
 Last Updated: 2026-03-06
 Owner: @t81dev
-Reference Candidate: `aab6c719` (origin/main, 2026-03-06)
-Current Main Head: `aab6c719` (origin/main, 2026-03-06; CI red at last refresh)
+Reference Candidate: `ff30c977` (origin/main, 2026-03-06)
+Current Main Head: `ff30c977` (origin/main, 2026-03-06; documentation reorganization completed)
 
 ## Purpose
 
@@ -23,8 +23,8 @@ GO decision can be stamped.
 
 | Context | Workflow | Required | Last Known Status |
 | :--- | :--- | :--- | :--- |
-| `quality gate / required` | `ci.yml` | **Yes** | completed / failure ❌ (`aab6c719`) |
-| `Analyze (cpp)` | `codeql.yml` | **Yes** | in progress ⏳ (`aab6c719`) |
+| `quality gate / required` | `ci.yml` | **Yes** | completed / success ✅ (`ff30c977`) |
+| `Analyze (cpp)` | `codeql.yml` | **Yes** | success ✅ (`ff30c977`) |
 
 Verification command:
 

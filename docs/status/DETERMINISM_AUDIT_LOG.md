@@ -55,7 +55,7 @@ canonicalization, and type-enforcement gaps.
 
 **Remaining Open:** None from this audit.
 
-**Evidence:** `docs/reports/determinism_types_audit.md`
+**Evidence:** `docs/records/archive/project-reports/determinism_types_audit.md`
 
 ---
 
@@ -169,4 +169,4 @@ New audit entries must be added at the **top** of the Log section with:
 - `docs/status/FROZEN_CORE_PROFILE.md`
 - `docs/status/DRIFT_DECOMPOSITION.md`
 - `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`
-- `docs/reports/determinism_types_audit.md`
+- `docs/records/archive/project-reports/determinism_types_audit.md`

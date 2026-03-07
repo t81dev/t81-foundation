@@ -1,7 +1,7 @@
 # Project Control Center
 
 Status: Active
-Last Updated: 2026-03-05
+Last Updated: 2026-03-06
 Owner: @t81dev
 Version: 3.0.0
 
@@ -11,7 +11,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 ## Phase
 
-**Hardening** — March governance close + stdlib Sprint 2 + collection/type determinism tightening (BG-06..09) ✅ **COMPLETED** + PR-426 determinism hardening ✅ **COMPLETED**
+**Hardening** — March governance close + stdlib Sprint 2 + collection/type determinism tightening (BG-06..09) ✅ **COMPLETED** + PR-426 determinism hardening ✅ **COMPLETED** + documentation reorganization ✅ **COMPLETED**
 
 ---
 
@@ -20,9 +20,9 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | Dimension | Status |
 | :--- | :--- |
 | Overall | Green — **PERFECT TEST COVERAGE ACHIEVED** (285/285 tests passing) |
-| Release Readiness | **GO** — candidate `57f1a96c`, stamped 2026-03-05 |
-| Current Main | `674a7aa0` — post-recovery hardening/audit commits; CI running |
-| Open Blockers | None — required contexts satisfied on `57f1a96c` |
+| Release Readiness | **GO** — candidate `ff30c977`, stamped 2026-03-06 |
+| Current Main | `ff30c977` — deterministic hardening + documentation reorganization; CI running |
+| Open Blockers | None — required contexts satisfied on `ff30c977` |
 | Frozen Core | Intact — no freeze exceptions |
 | Determinism Registry | All Verified surfaces clean |
 | Structural Integrity | **PERFECT** — 285/285 tests (100% success rate) |
