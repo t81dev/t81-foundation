@@ -2,7 +2,7 @@
   <img src="assets/banner.png" alt="T81 Foundation — Deterministic Ternary Architecture" width="100%">
 </p>
 
-# T81 Foundation - Deterministic Ternary Architecture
+# T81: A Deterministic Ternary Architecture
 
 <p align="center">
   <a href="https://github.com/t81dev/t81-foundation/releases/latest"><img src="https://img.shields.io/github/v/release/t81dev/t81-foundation?style=for-the-badge&label=Latest%20Release" alt="Latest Release"></a>
