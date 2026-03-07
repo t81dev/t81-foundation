@@ -59,7 +59,7 @@ t81::v1::T81Float<M, E> t81_log(const t81::v1::T81Float<M, E>&);
 
 template <std::size_t M, std::size_t E>
 t81::v1::T81Float<M, E> t81_sqrt(const t81::v1::T81Float<M, E>&);
-}
+}  // namespace t81::core::math::t81_soft_math
 
 namespace t81::v1 {
 
