@@ -385,7 +385,7 @@ jobs:
           set -eo pipefail
           python3 scripts/ci/check_cli_docs_parity.py \
             --t81-bin build/t81 \
-            --manual docs/guides/cli-user-manual.md 2>&1 | tee -a .github/logs/build-and-test.log
+            --manual docs/user-guide/reference/cli-user-manual.md 2>&1 | tee -a .github/logs/build-and-test.log
 
       - name: Run CLI docs smoke examples (single matrix lane)
         if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
@@ -393,7 +393,7 @@ jobs:
         run: |
           set -eo pipefail
           python3 scripts/ci/check_cli_docs_smoke.py \
-            --manual docs/guides/cli-user-manual.md \
+            --manual docs/user-guide/reference/cli-user-manual.md \
             --cwd . \
             --timeout-sec 20 2>&1 | tee -a .github/logs/build-and-test.log
 
