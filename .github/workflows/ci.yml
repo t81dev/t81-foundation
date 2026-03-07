@@ -40,7 +40,7 @@ jobs:
         run: pip install mdformat mdformat-gfm mdformat-frontmatter mdformat-toc 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Check Markdown links (lychee)
-        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2
+        uses: lycheeverse/lychee-action@v2.1.0 # v2
         with:
           fail: true
           args: >-
