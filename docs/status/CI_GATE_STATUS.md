@@ -1,10 +1,10 @@
 # CI Gate Status
 
 Status: Active
-Last Updated: 2026-03-06
+Last Updated: 2026-03-07
 Owner: @t81dev
-Reference Candidate: `03112f6c` (origin/main, 2026-03-06)
-Current Main Head: `03112f6c` (origin/main, 2026-03-06; deterministic math fixes completed; 100% test coverage achieved)
+Reference Candidate: `b566bff8` (origin/main, 2026-03-07)
+Current Main Head: `b566bff8` (origin/main, 2026-03-07; CI workflow canonical restore + lychee/timeout/path fixes; 325/325 tests)
 
 ## Purpose
 
@@ -46,14 +46,19 @@ tracked here and must be addressed unless explicitly deferred.
 | `gate / t3k cross-arch bit-identity` | `ci.yml` | success ✅ | T3K workload bit-identical across architectures |
 | `gate / tritwise-determinism / no-simd` | `ci.yml` | success ✅ | Tritwise ops deterministic without SIMD |
 | `gate / tritwise-determinism / avx2-asan` | `ci.yml` | success ✅ | Tritwise ops deterministic with AVX2 + ASAN |
+| `gate / determinism repeatability / linux-x86_64 / clang` | `ci.yml` | unknown ⏳ | Same-machine bit-identity for VM workload signatures; new gate added in PR #448 |
 | `gate / determinism slice / linux-x86_64 / clang` | `ci.yml` | success ✅ | Full determinism slice on Linux/x86_64/clang |
+| `cross-compile / linux-armv9 / gcc (informational)` | `ci.yml` | unknown ⏳ | ARMv9 cross-compile build; new gate added in PR #448; `continue-on-error: true` |
+| `experimental architectures / group anchor` | `ci.yml` | skipped (nightly only) | Schedule-only anchor job for nightly experimental gates |
+| `experimental / oneapi sycl sanity` | `ci.yml` | skipped (nightly only) | Intel oneAPI SYCL hello-world compile check; `continue-on-error: true` |
+| `experimental / ascend cann sanity` | `ci.yml` | skipped (nightly only) | Ascend CANN toolchain check; requires `T81_ENABLE_ASCEND_CI == '1'`; `continue-on-error: true` |
 | `build / macos-x86_64 / gcc` | `ci.yml` | success ✅ | |
 | `build / macos-arm64 / clang` | `ci.yml` | success ✅ | |
 | `build / linux-x86_64 / gcc` | `ci.yml` | success ✅ | |
 | `build / linux-x86_64 / clang` | `ci.yml` | success ✅ | |
 | `build / linux-arm64 / clang` | `ci.yml` | success ✅ | |
-| `build / windows-x86_64 / msvc` | `ci.yml` | failure ❌ | Configure failed due sparse checkout omission of `benchmarks/` + `spec/conformance/` |
-| `build / windows-x86_64 / clang-cl` | `ci.yml` | failure ❌ | Configure failed due sparse checkout omission of `benchmarks/` + `spec/conformance/` |
+| `build / windows-x86_64 / msvc` | `ci.yml` | unknown ⏳ | Sparse checkout now includes `benchmarks/` and `spec/`; awaiting first clean run post-PR #448 |
+| `build / windows-x86_64 / clang-cl` | `ci.yml` | unknown ⏳ | Sparse checkout now includes `benchmarks/` and `spec/`; awaiting first clean run post-PR #448 |
 | `build / sanitizers` | `ci.yml` | success ✅ | ASAN + UBSAN build |
 | `static analysis / clang-tidy` | `ci.yml` | success ✅ | |
 | `fuzzing / frontend` | `ci.yml` | success ✅ | Frontend fuzz harness |
@@ -69,6 +74,15 @@ tracked here and must be addressed unless explicitly deferred.
 | `architecture / invariants (informational)` | `ci.yml` | success ✅ | |
 | `product / dcp integrity (informational)` | `ci.yml` | success ✅ | |
 | `build` (GitHub Pages / Jekyll) | `documentation.yml` | **failure ⚠️** | **Mitigating** — root `_config.yml` third_party exclusion patch queued; awaiting next run |
+
+## Operational Notes (2026-03-07)
+
+- **PR #448 merged** — Restored canonical `ci.yml` from `restore-to-main-293223a8` with three targeted fixes:
+  - lychee pinned to v0.18.1; `--root-dir` set to absolute `${{ github.workspace }}`; `github.com/ggerganov/*` excluded (GitHub rate-limits CI runners); `docs/policies/AGENTS.md` removed from inputs (covered by glob)
+  - CLI manual path corrected: `docs/guides/cli-user-manual.md` → `docs/user-guide/reference/cli-user-manual.md`
+  - `timeout-minutes` added to all jobs that were missing them (prevents Homebrew/runner hangs blocking the queue)
+- **New gates in canonical workflow**: `gate / determinism repeatability`, `cross-compile / linux-armv9 / gcc`, nightly experimental gates (`oneapi-sycl-sanity`, `ascend-cann-sanity`)
+- **`T81String::serialize_canonical()` added** (PR #446 / `bda2f089`) — fixed `CanonHash<T81String>` falling to raw-bytes SSO-buffer fallback, causing non-deterministic hashes; resolved `t81_determinism_containers_test` failure; test count now 325/325
 
 ## Operational Notes (2026-03-06)
 
@@ -95,6 +109,16 @@ tracked here and must be addressed unless explicitly deferred.
 | **Decision** | DEC-005 in `docs/status/DECISION_LOG.md` |
 | **Resolution Path** | Root `_config.yml` now excludes `third_party/`; verify on next Pages/Jekyll run |
 | **Blocking Release** | No |
+
+### 2026-03-07 CI Incident — Resolved
+
+| Field | Value |
+| :--- | :--- |
+| **Affected SHA(s)** | Multiple pre-PR #448 runs on `fix-ci-broken-links-lychee` |
+| **Observed Symptoms** | (1) lychee v0.23.0 tokio channel panic (exit 101, `SendError`); (2) `--root-dir .` rejected as non-absolute path in lychee v0.18.1; (3) `docs/policies/AGENTS.md` treated as URL; (4) GitHub 429 rate-limit on `github.com/ggerganov/*` links; (5) CLI docs steps failing with `missing CLI manual: docs/guides/cli-user-manual.md`; (6) `t81_determinism_containers_test` failing — `CanonHash<T81String>` falling to SSO raw-bytes hash; (7) macOS x86_64 GCC benchmark job hanging 26+ min on `brew install` |
+| **Root Causes** | lychee version not pinned (defaulted to v0.23.0 which has a tokio panic bug); relative `--root-dir`; CLI manual moved but path not updated; `T81String` had no `serialize_canonical()`, causing non-deterministic hash via uninitialized SSO bytes; no `timeout-minutes` on benchmark and other jobs |
+| **Fixes Applied** | `bda2f089` (T81String::serialize_canonical() + CI fixes); PR #448 (canonical ci.yml restore with lychee v0.18.1 pin, absolute root-dir, ggerganov exclude, correct CLI path, all job timeouts) |
+| **Validation** | PR #448 merged to main as `b566bff8`; 325/325 tests passing |
 
 ### 2026-03-05 CI Incident — Resolved
 

@@ -1,7 +1,7 @@
 # Decision Log
 
 Status: Active
-Last Updated: 2026-03-06
+Last Updated: 2026-03-07
 Owner: Project Management / Governance
 Version: 1.0.0
 
@@ -375,6 +375,66 @@ The deterministic math implementation preserves the project's core commitment to
 - `core/math/t81_soft_math/t81_soft_math.cpp`
 - `docs/status/PROJECT_CONTROL_CENTER.md`
 - `docs/status/ACTIVE_RISKS.md`
+
+---
+
+### DEC-011 — Fix CanonHash\<T81String\> Non-Determinism via serialize_canonical()
+
+**Date (UTC):** 2026-03-07
+**Approver:** @t81dev
+**Category:** Implementation / Determinism
+
+**Decision:** Add `serialize_canonical()` to `T81String` returning `storage_`
+(the normalized string content), so `CanonHash<T>` dispatches through the
+content-based path rather than the raw-bytes fallback.
+
+**Problem:** `CanonHash<T81String>` had no specialization and no `serialize_canonical()` method. The generic `CanonHash<T>` fell through to `canon_hash81(reinterpret_cast<const void*>(&value), sizeof(T))`, which hashes `sizeof(std::string)` bytes including uninitialized SSO buffer bytes. Different `T81String` instances with identical content produced different hashes, causing `t81_determinism_containers_test` to fail (test 294 of 325).
+
+**Alternatives Considered:**
+- Add a `std::hash<T81String>` specialization using `CanonHash`.
+- Specialize `CanonHash<T81String>` directly.
+- Fix the raw-bytes fallback to zero-pad uninitialized bytes.
+
+**Rationale:** Adding `serialize_canonical()` is the minimal correct fix that
+aligns with the existing `CanonHash<T>` dispatch convention used by all other
+T81 types. It is semantically correct (hash is over normalized content), does not
+require changes to the hash infrastructure, and makes `T81String` consistent with
+the rest of the type system.
+
+**References:**
+- `include/t81/types/T81String.hpp` (line 176)
+- `include/t81/determinism/canon_hash81.hpp`
+- Commit `bda2f089`
+
+---
+
+### DEC-012 — Restore Canonical ci.yml and Apply CI Hardening Fixes
+
+**Date (UTC):** 2026-03-07
+**Approver:** @t81dev
+**Category:** CI / Operational
+
+**Decision:** Restore `ci.yml` from commit `restore-to-main-293223a8` (the canonical version) and apply three targeted fixes on top: (1) pin lychee to v0.18.1 with absolute `--root-dir`, exclude `github.com/ggerganov/*`, remove `docs/policies/AGENTS.md` from inputs; (2) correct CLI manual path from `docs/guides/` to `docs/user-guide/reference/`; (3) add `timeout-minutes` to all jobs that were missing them.
+
+**Problem:** Multiple CI failures observed:
+- lychee defaulted to v0.23.0 which has a tokio channel panic bug (exit 101)
+- `--root-dir .` rejected as non-absolute path in lychee v0.18.1
+- `docs/policies/AGENTS.md` treated as a URL
+- `github.com/ggerganov/*` links returned HTTP 429 (GitHub rate-limits CI runner IPs)
+- CLI steps failed with `missing CLI manual: docs/guides/cli-user-manual.md`
+- macOS x86_64 GCC benchmark job hung for 26+ minutes on `brew install` with no timeout
+
+**Alternatives Considered:**
+- Cherry-pick individual fixes onto the previous ci.yml without restoring canonical.
+- Disable lychee entirely and rely on manual link review.
+- Remove the macOS GCC matrix entry.
+
+**Rationale:** Restoring the canonical version preserves all new jobs (determinism-repeatability, cross-compile-armv9, Windows matrix, nightly experimental arch) that were missing from the prior working version. Applying fixes as a diff makes the change reviewable and reversible. Pinning lychee to a known-good version is preferable to disabling link checking.
+
+**References:**
+- `.github/workflows/ci.yml`
+- PR #448 (merged `b566bff8`)
+- DEC-011 (T81String fix applied in same window)
 
 ---
 
