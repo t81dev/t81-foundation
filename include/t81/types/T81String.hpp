@@ -172,6 +172,9 @@ public:
 
   [[nodiscard]] static constexpr std::array<char, 27> alphabet() noexcept { return kAlphabet; }
 
+  // P2: Canonical serialization (string content, not raw object bytes)
+  [[nodiscard]] std::string serialize_canonical() const { return storage_; }
+
   [[nodiscard]] static bool is_valid_char(char c) noexcept {
     c = normalize_char(c);
     return (c >= 'A' && c <= 'Z') || c == ' ';
