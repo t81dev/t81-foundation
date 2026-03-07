@@ -201,6 +201,7 @@ public:
   // Element access
   //===================================================================
   [[nodiscard]] V& operator[](const K& key) {
+    // Ensure capacity BEFORE any slot lookup to prevent reference invalidation
     rehash_if_needed();
 
     const std::size_t n = buckets_.size();
@@ -214,13 +215,12 @@ public:
       idx = (idx + probe_step(attempt++)) % n;
     }
 
-    // Insert new
+    // Insert new element - no further rehashing needed since capacity is guaranteed
     buckets_[idx].key = key;
     buckets_[idx].value = V{};
     buckets_[idx].occupied = true;
     ++size_;
 
-    rehash_if_needed();
     return buckets_[idx].value;
   }
 
