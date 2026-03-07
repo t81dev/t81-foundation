@@ -54,6 +54,44 @@ provides the foundation for the Deterministic Core Profile (DCP) guarantee.
 
 ---
 
+### DEC-004 — RFC-0026 Phase-1 Opcode Set Extended: WLOAD, GATHER, SCATTER
+
+**Date (UTC):** 2026-03-07
+**Approver:** @t81dev
+**Category:** Implementation
+
+**Decision:** Extend the RFC-0026 AI-Native Inference Opcodes phase-1 implementation to
+include the three remaining opcodes: `WLOAD` (weight tensor load with Axion policy gate),
+`GATHER` (sparse row-gather from rank-2 tensor), and `SCATTER` (non-mutating scatter-add
+of rank-1 source into rank-2 destination). All six phase-1 opcodes (`ATTN`, `QMATMUL`,
+`EMBED`, `WLOAD`, `GATHER`, `SCATTER`) now have full VM dispatch, tensor kernel
+implementations, checked wrappers, contract predicates, and dedicated conformance tests
+with deterministic output hashes.
+
+**Alternatives Considered:**
+- Defer WLOAD/GATHER/SCATTER to a separate RFC-0026 phase-2 milestone.
+- Implement only WLOAD and leave gather/scatter for later.
+
+**Rationale:** RFC-0026 explicitly specifies all six opcodes as the phase-1 set. Delivering
+them together ensures the conformance suite is complete, the Axion policy event path is
+exercised for all AI opcodes, and downstream work (T81Lang lowering in AI-M6) can proceed
+with a full target opcode surface.
+
+**References:**
+
+- `spec/rfcs/RFC-0026-ai-native-inference-opcodes.md`
+- `include/t81/isa/opcodes.hpp` — `WLOAD`, `GATHER`, `SCATTER` enum entries
+- `include/t81/tensor/llama.hpp` — `t81::ops::wload`, `gather`, `scatter_add` kernels
+- `include/t81/tensor/contracts.hpp` — `wload_compatible`, `gather_compatible`, `scatter_compatible`
+- `core/vm/tensor_helpers.cpp` — `tensor_wload_checked`, `tensor_gather_checked`, `tensor_scatter_checked`
+- `core/vm/vm.cpp` — VM dispatch for WLOAD/GATHER/SCATTER
+- `tests/cpp/vm_ai_phase1_wload_conformance_test.cpp`
+- `tests/cpp/vm_ai_phase1_gather_conformance_test.cpp`
+- `tests/cpp/vm_ai_phase1_scatter_conformance_test.cpp`
+- `docs/status/AI_RFC_BACKLOG.md`
+
+---
+
 ### DEC-003 — Documentation Content-Based Reorganization
 
 **Date (UTC):** 2026-03-06 21:00:00Z

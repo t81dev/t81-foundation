@@ -5141,6 +5141,171 @@ public:
         ctx.register_tags[insn.a] = ValueTag::TensorHandle;
         break;
       }
+      case t81::tisc::Opcode::WLOAD: {
+        // WLOAD RD, R_SRC, R_POLICY — AI-M4: CanonFS audit gate active.
+        // R_POLICY register is reserved for phase-2 ambient policy dispatch.
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* wload_src = tensor_ptr(ctx.registers[insn.b]);
+        if (wload_src == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto wload_computed = t81::vm::internal::tensor_wload_checked(*wload_src);
+        if (!wload_computed.has_value()) {
+          trap = wload_computed.error();
+          break;
+        }
+        auto wload_handle = alloc_tensor(std::move(*wload_computed));
+        if (!wload_handle) {
+          trap = wload_handle.error();
+          break;
+        }
+        // AI-M4: CanonFS audit — "meta slot axion event segment=meta addr=<n> action=WeightLoad"
+        if (canonfs_driver_) {
+          t81::vm::internal::log_canonfs_operation(state_, state_.current_context, insn.opcode,
+                                                   t81::axion::reasons::kWeightLoad);
+        }
+        // Tensor provenance record for the materialized weight handle.
+        const auto wload_out_h = static_cast<std::size_t>(*wload_handle);
+        if (const auto& wload_stored = state_.tensors[wload_out_h - 1]; wload_stored.has_value()) {
+          t81::vm::internal::log_tensor_provenance(state_, state_.current_context, insn.opcode,
+                                                   wload_out_h, wload_stored.value(), "wload");
+        }
+        t81::axion::Verdict wload_verdict{t81::axion::VerdictKind::Allow,
+                                          "WLOAD weight materialization"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b],
+                           wload_verdict);
+        ctx.registers[insn.a] = *wload_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::GATHER: {
+        // GATHER RD, R_SRC, PACK(R_IDX, R_AXIS) — AI-M5: axis register now active.
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto gather_regs = decode_ai_packed_reg_pair(insn.c);
+        if (!gather_regs.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const int gather_idx_reg = gather_regs->first;
+        const int gather_axis_reg = gather_regs->second;
+        if (ctx.register_tags[gather_idx_reg] != ValueTag::Int ||
+            ctx.register_tags[gather_axis_reg] != ValueTag::Int) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* gather_src = tensor_ptr(ctx.registers[insn.b]);
+        if (gather_src == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const std::int64_t gather_index = ctx.registers[gather_idx_reg];
+        const int gather_axis = static_cast<int>(ctx.registers[gather_axis_reg]);
+        auto gather_computed =
+            t81::vm::internal::tensor_gather_checked(*gather_src, gather_index, gather_axis);
+        if (!gather_computed.has_value()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, static_cast<int>(gather_index),
+                           "GATHER index/axis mismatch");
+          trap = gather_computed.error();
+          break;
+        }
+        t81::axion::Verdict gather_verdict{t81::axion::VerdictKind::Allow,
+                                           "GATHER kernel execution"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b],
+                           gather_verdict);
+        auto gather_handle = alloc_tensor(std::move(*gather_computed));
+        if (!gather_handle) {
+          trap = gather_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *gather_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::SCATTER: {
+        // SCATTER RD, R_DST, PACK(R_IDX, R_SRC) — AI-M5: aliasing detection active.
+        // Phase-1 packed encoding convention: axis is fixed to 0.
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto scatter_regs = decode_ai_packed_reg_pair(insn.c);
+        if (!scatter_regs.has_value()) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const int scatter_idx_reg = scatter_regs->first;
+        const int scatter_src_reg = scatter_regs->second;
+        if (ctx.register_tags[scatter_idx_reg] != ValueTag::Int) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        if (auto res = promote_to_tensor(scatter_src_reg); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* scatter_dst = tensor_ptr(ctx.registers[insn.b]);
+        auto* scatter_src_ptr = tensor_ptr(ctx.registers[scatter_src_reg]);
+        if (scatter_dst == nullptr || scatter_src_ptr == nullptr) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        const std::int64_t scatter_dst_handle = ctx.registers[insn.b];
+        const std::int64_t scatter_index = ctx.registers[scatter_idx_reg];
+        constexpr int scatter_axis = 0;  // Phase-1 packed encoding convention.
+
+        // AI-M5: aliasing detection — RFC §5.15.6 MUST enforcement.
+        const auto alias_key = std::make_tuple(scatter_dst_handle, scatter_axis, scatter_index);
+        if (ctx.scatter_used.count(alias_key) != 0) {
+          t81::axion::Verdict alias_verdict{
+              t81::axion::VerdictKind::Deny,
+              "SCATTER aliasing violation: same (dst, axis, index) reused in execution frame"};
+          record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), scatter_dst_handle,
+                             alias_verdict);
+          trap = Trap::SecurityFault;
+          break;
+        }
+        ctx.scatter_used.insert(alias_key);
+
+        auto scatter_computed = t81::vm::internal::tensor_scatter_checked(
+            *scatter_dst, scatter_index, *scatter_src_ptr, scatter_axis);
+        if (!scatter_computed.has_value()) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, static_cast<int>(scatter_index),
+                           "SCATTER index/shape mismatch");
+          trap = scatter_computed.error();
+          break;
+        }
+        t81::axion::Verdict scatter_verdict{t81::axion::VerdictKind::Allow,
+                                            "SCATTER kernel execution"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b],
+                           scatter_verdict);
+        auto scatter_handle = alloc_tensor(std::move(*scatter_computed));
+        if (!scatter_handle) {
+          trap = scatter_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *scatter_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
       case t81::tisc::Opcode::BitAnd:
       case t81::tisc::Opcode::BitOr:
       case t81::tisc::Opcode::BitXor: {

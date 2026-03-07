@@ -4,7 +4,9 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -217,6 +219,11 @@ struct ThreadContext {
 
   // Cognitive Tier Status (per thread)
   t81::cog::TierStatus tier_status;
+
+  // RFC-0026 AI-M5: SCATTER aliasing detection.
+  // Tracks (dst_handle, axis, index) tuples used in this execution frame.
+  // A second SCATTER to the same tuple raises SecurityFault via Axion deny.
+  std::set<std::tuple<std::int64_t, int, std::int64_t>> scatter_used;
 };
 
 // Virtual machine register file per spec/t81vm-spec.md.

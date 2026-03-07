@@ -200,6 +200,10 @@ enum class Opcode : std::uint8_t {
   ATTN,
   QMATMUL,
   EMBED,
+  // RFC-0026 phase-1 extension: weight load + sparse gather/scatter.
+  WLOAD,    // Weight load with Axion policy gate: WLOAD RD, R_SRC, R_POLICY
+  GATHER,   // Sparse gather: GATHER RD, R_SRC, PACK(R_IDX, R_AXIS)
+  SCATTER,  // Sparse scatter-add: SCATTER RD, R_DST, PACK(R_IDX, R_SRC)
   Int2BigInt,
 };
 
@@ -585,6 +589,12 @@ enum class Opcode : std::uint8_t {
       return "QMATMUL";
     case Opcode::EMBED:
       return "EMBED";
+    case Opcode::WLOAD:
+      return "WLOAD";
+    case Opcode::GATHER:
+      return "GATHER";
+    case Opcode::SCATTER:
+      return "SCATTER";
     case Opcode::Int2BigInt:
       return "Int2BigInt";
   }

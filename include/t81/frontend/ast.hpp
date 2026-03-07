@@ -599,7 +599,7 @@ struct FunctionStmt : Stmt {
   FunctionStmt(Token name, std::vector<Token> generic_params, std::vector<Parameter> params,
                std::unique_ptr<TypeExpr> return_type, std::vector<std::unique_ptr<Stmt>> body,
                std::optional<std::int64_t> tier = std::nullopt, bool is_pure = false,
-               bool is_axion_verify = false)
+               bool is_axion_verify = false, bool is_attention = false, bool is_qmatmul = false)
       : name(name),
         generic_params(std::move(generic_params)),
         params(std::move(params)),
@@ -607,7 +607,9 @@ struct FunctionStmt : Stmt {
         body(std::move(body)),
         tier(tier),
         is_pure(is_pure),
-        is_axion_verify(is_axion_verify) {}
+        is_axion_verify(is_axion_verify),
+        is_attention(is_attention),
+        is_qmatmul(is_qmatmul) {}
 
   std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
 
@@ -619,6 +621,8 @@ struct FunctionStmt : Stmt {
   const std::optional<std::int64_t> tier;
   const bool is_pure{false};
   const bool is_axion_verify{false};
+  const bool is_attention{false};  // @attention — RFC-0026 AI-M6: lower call sites to ATTN
+  const bool is_qmatmul{false};    // @qmatmul  — RFC-0026 AI-M6: lower call sites to QMATMUL
 };
 
 struct TypeDecl : Stmt {

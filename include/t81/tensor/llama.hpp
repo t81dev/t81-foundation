@@ -435,4 +435,150 @@ inline T729DynamicTensor rope(const T729DynamicTensor& x, int pos) {
   return T729DynamicTensor(x.shape(), std::move(data));
 }
 
+// RFC-0026: WLOAD — policy-gate copy of a weight tensor.
+// Phase-1: verifies src is non-empty and returns an independent copy.
+// Full CanonFS integration is deferred to AI-M4.
+inline T729DynamicTensor wload(const T729DynamicTensor& src) {
+  if (src.rank() < 1) {
+    throw std::invalid_argument("wload: source tensor must be at least rank-1");
+  }
+  if (src.has_canonical_fixed_data()) {
+    return T729DynamicTensor::from_canonical_fixed(src.shape(),
+                                                   std::vector<detail::DFixed>(src.canonical_fixed_data()),
+                                                   src.numeric_class());
+  }
+  return T729DynamicTensor(src.shape(), src.snapshot_values());
+}
+
+// RFC-0026: GATHER — gathers a slice from a rank-2 tensor at index along axis.
+// AI-M5: axis parameter active (0 = gather row, 1 = gather column).
+// Deterministic on canonical fixed-point data.
+inline T729DynamicTensor gather(const T729DynamicTensor& src, std::int64_t index, int axis = 0) {
+  if (src.rank() != 2) {
+    throw std::invalid_argument("gather: source must be rank-2 (phase-1)");
+  }
+  if (axis < 0 || axis >= static_cast<int>(src.rank())) {
+    throw std::out_of_range("gather: axis out of range");
+  }
+  if (index < 0 ||
+      index >= static_cast<std::int64_t>(src.shape()[static_cast<std::size_t>(axis)])) {
+    throw std::out_of_range("gather: index out of range for axis");
+  }
+  const int rows = src.shape()[0];
+  const int cols = src.shape()[1];
+  const TensorNumericClass result_class =
+      src.strict_core_eligible() ? src.numeric_class() : TensorNumericClass::HostFloat;
+
+  if (axis == 0) {
+    // Gather row `index` → output shape [cols].
+    const std::size_t base = static_cast<std::size_t>(index) * static_cast<std::size_t>(cols);
+    if (src.has_canonical_fixed_data()) {
+      const auto& fixed = src.canonical_fixed_data();
+      std::vector<detail::DFixed> out(static_cast<std::size_t>(cols));
+      for (int i = 0; i < cols; ++i) {
+        out[static_cast<std::size_t>(i)] = fixed[base + static_cast<std::size_t>(i)];
+      }
+      return T729DynamicTensor::from_canonical_fixed({cols}, std::move(out), result_class);
+    }
+    const auto values = src.snapshot_values();
+    std::vector<float> out(static_cast<std::size_t>(cols));
+    for (int i = 0; i < cols; ++i) {
+      out[static_cast<std::size_t>(i)] = values[base + static_cast<std::size_t>(i)];
+    }
+    auto result = T729DynamicTensor({cols}, std::move(out));
+    result.set_numeric_class(result_class);
+    return result;
+  } else {
+    // axis == 1: gather column `index` → output shape [rows].
+    // out[r] = src[r, index] = data[r * cols + index]
+    if (src.has_canonical_fixed_data()) {
+      const auto& fixed = src.canonical_fixed_data();
+      std::vector<detail::DFixed> out(static_cast<std::size_t>(rows));
+      for (int r = 0; r < rows; ++r) {
+        out[static_cast<std::size_t>(r)] =
+            fixed[static_cast<std::size_t>(r) * static_cast<std::size_t>(cols) +
+                  static_cast<std::size_t>(index)];
+      }
+      return T729DynamicTensor::from_canonical_fixed({rows}, std::move(out), result_class);
+    }
+    const auto values = src.snapshot_values();
+    std::vector<float> out(static_cast<std::size_t>(rows));
+    for (int r = 0; r < rows; ++r) {
+      out[static_cast<std::size_t>(r)] =
+          values[static_cast<std::size_t>(r) * static_cast<std::size_t>(cols) +
+                 static_cast<std::size_t>(index)];
+    }
+    auto result = T729DynamicTensor({rows}, std::move(out));
+    result.set_numeric_class(result_class);
+    return result;
+  }
+}
+
+// RFC-0026: SCATTER — scatter-adds src (rank-1) into dst (rank-2) at index along axis.
+// Returns a new tensor; dst is not mutated.
+// AI-M5: axis parameter active (0 = scatter into row, 1 = scatter into column).
+// Aliasing detection is enforced at the VM level by the SCATTER handler (AI-M5).
+inline T729DynamicTensor scatter_add(const T729DynamicTensor& dst, std::int64_t index,
+                                     const T729DynamicTensor& src, int axis = 0) {
+  if (dst.rank() != 2 || src.rank() != 1) {
+    throw std::invalid_argument("scatter_add: dst must be rank-2, src must be rank-1 (phase-1)");
+  }
+  if (axis < 0 || axis >= static_cast<int>(dst.rank())) {
+    throw std::out_of_range("scatter_add: axis out of range");
+  }
+  const int rows = dst.shape()[0];
+  const int cols = dst.shape()[1];
+  // src length must match the dimension perpendicular to the scatter axis.
+  const int expected_src_len = dst.shape()[static_cast<std::size_t>(1 - axis)];
+  if (src.shape()[0] != expected_src_len) {
+    throw std::invalid_argument("scatter_add: src length must match dst slice dimension");
+  }
+  if (index < 0 ||
+      index >= static_cast<std::int64_t>(dst.shape()[static_cast<std::size_t>(axis)])) {
+    throw std::out_of_range("scatter_add: index out of range for axis");
+  }
+
+  if (axis == 0) {
+    // Scatter-add src into row `index`.
+    const std::size_t base = static_cast<std::size_t>(index) * static_cast<std::size_t>(cols);
+    if (dst.has_canonical_fixed_data() && src.has_canonical_fixed_data()) {
+      std::vector<detail::DFixed> out(dst.canonical_fixed_data());
+      const auto& src_fixed = src.canonical_fixed_data();
+      for (int i = 0; i < cols; ++i) {
+        out[base + static_cast<std::size_t>(i)] =
+            out[base + static_cast<std::size_t>(i)] + src_fixed[static_cast<std::size_t>(i)];
+      }
+      return T729DynamicTensor::from_canonical_fixed({rows, cols}, std::move(out),
+                                                     dst.numeric_class());
+    }
+    std::vector<float> out = dst.snapshot_values();
+    const auto src_vals = src.snapshot_values();
+    for (int i = 0; i < cols; ++i) {
+      out[base + static_cast<std::size_t>(i)] += src_vals[static_cast<std::size_t>(i)];
+    }
+    return T729DynamicTensor({rows, cols}, std::move(out));
+  } else {
+    // axis == 1: scatter-add src (len=rows) into column `index`.
+    // dst_new[r, index] += src[r] for all r.
+    if (dst.has_canonical_fixed_data() && src.has_canonical_fixed_data()) {
+      std::vector<detail::DFixed> out(dst.canonical_fixed_data());
+      const auto& src_fixed = src.canonical_fixed_data();
+      for (int r = 0; r < rows; ++r) {
+        const std::size_t pos = static_cast<std::size_t>(r) * static_cast<std::size_t>(cols) +
+                                static_cast<std::size_t>(index);
+        out[pos] = out[pos] + src_fixed[static_cast<std::size_t>(r)];
+      }
+      return T729DynamicTensor::from_canonical_fixed({rows, cols}, std::move(out),
+                                                     dst.numeric_class());
+    }
+    std::vector<float> out = dst.snapshot_values();
+    const auto src_vals = src.snapshot_values();
+    for (int r = 0; r < rows; ++r) {
+      out[static_cast<std::size_t>(r) * static_cast<std::size_t>(cols) +
+          static_cast<std::size_t>(index)] += src_vals[static_cast<std::size_t>(r)];
+    }
+    return T729DynamicTensor({rows, cols}, std::move(out));
+  }
+}
+
 }  // namespace t81::ops

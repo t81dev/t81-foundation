@@ -326,6 +326,7 @@ jobs:
             /include/**
             /src/**
             /core/**
+            /experimental/**
             /runtime/**
             /kernel/**
             /tooling/**

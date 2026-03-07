@@ -363,6 +363,16 @@ Opcode map_opcode(const ir::Instruction& instr) {
       return Opcode::SetHas;
     case O::SetSize:
       return Opcode::SetSize;
+    case O::ATTN:
+      return Opcode::ATTN;
+    case O::QMATMUL:
+      return Opcode::QMATMUL;
+    case O::WLOAD:
+      return Opcode::WLOAD;
+    case O::GATHER:
+      return Opcode::GATHER;
+    case O::SCATTER:
+      return Opcode::SCATTER;
     case O::AXVERIFY:
       return Opcode::AxVerify;
     case O::TAND:

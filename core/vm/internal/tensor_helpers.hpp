@@ -105,6 +105,14 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_attention_checked(
     const t81::T729DynamicTensor& q, const t81::T729DynamicTensor& k, const t81::T729DynamicTensor& v);
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_embed_checked(
     const t81::T729DynamicTensor& table, std::int64_t index);
+// RFC-0026 phase-1 extension (AI-M5: axis-aware gather/scatter).
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_wload_checked(
+    const t81::T729DynamicTensor& src);
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_gather_checked(
+    const t81::T729DynamicTensor& src, std::int64_t index, int axis = 0);
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_scatter_checked(
+    const t81::T729DynamicTensor& dst, std::int64_t index, const t81::T729DynamicTensor& src,
+    int axis = 0);
 std::expected<float, t81::vm::Trap> tensor_get_checked(const t81::T729DynamicTensor& tensor,
                                                        std::int64_t index);
 std::expected<void, t81::vm::Trap> tensor_set_checked(t81::T729DynamicTensor& tensor,

@@ -169,6 +169,13 @@ enum class Opcode {
   SYMCANON,
   SYMCONFLUENCE,
 
+  // RFC-0026 AI-Native Inference (AI-M6)
+  ATTN,     // Scaled dot-product attention: A=dest, B=q_reg, C=PACK(k_reg,v_reg)
+  QMATMUL,  // Quantized matmul:             A=dest, B=act_reg, C=PACK(wt_reg,scale_reg)
+  WLOAD,    // Weight load:                  A=dest, B=src_handle, C=policy
+  GATHER,   // Sparse gather:                A=dest, B=src, C=PACK(idx_reg,axis_reg)
+  SCATTER,  // Sparse scatter-add:           A=dest, B=dst, C=PACK(idx_reg,src_reg)
+
   // Map/Set Scaffolding
   MapNew,
   MapPut,

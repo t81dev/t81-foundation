@@ -22,6 +22,8 @@ struct FunctionAttributes {
   std::optional<std::int64_t> tier;
   bool is_pure{false};
   bool is_axion_verify{false};
+  bool is_attention{false};   // @attention — lower call sites to ATTN opcode (RFC-0026 AI-M6)
+  bool is_qmatmul{false};     // @qmatmul  — lower call sites to QMATMUL opcode (RFC-0026 AI-M6)
   std::optional<Token> anchor;
 };
 

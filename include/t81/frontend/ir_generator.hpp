@@ -885,6 +885,14 @@ public:
       bind_variable(std::string(it->name.lexeme), reg);
     }
 
+    // RFC-0026 AI-M6: register @attention / @qmatmul annotated functions so call
+    // sites are lowered to ATTN / QMATMUL instead of a regular CALL sequence.
+    if (stmt.is_attention) {
+      _ai_intrinsic_map[name] = tisc::ir::Opcode::ATTN;
+    } else if (stmt.is_qmatmul) {
+      _ai_intrinsic_map[name] = tisc::ir::Opcode::QMATMUL;
+    }
+
     // @axion_verify: emit AxVerify opcode at function entry (AX-M7 conformance hook).
     if (stmt.is_axion_verify) {
       auto verify_result = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
@@ -1686,6 +1694,46 @@ public:
         instr.opcode = tisc::ir::Opcode::TMATMUL;
         instr.operands = {dest.reg, left.reg, right.reg};
         emit(instr);
+        record_result(&expr, dest);
+        return {};
+      }
+      // RFC-0026 AI-M6: Tensor.attention(q, k, v) → ATTN dest, q, PACK(k, v)
+      if (func_name == "Tensor.attention") {
+        if (expr.arguments.size() != 3) {
+          throw std::runtime_error("Tensor.attention expects exactly 3 arguments (q, k, v).");
+        }
+        expr.arguments[0]->accept(*this);
+        auto q_reg = ensure_expr_result(expr.arguments[0].get());
+        expr.arguments[1]->accept(*this);
+        auto k_reg = ensure_expr_result(expr.arguments[1].get());
+        expr.arguments[2]->accept(*this);
+        auto v_reg = ensure_expr_result(expr.arguments[2].get());
+        auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        const int32_t packed_kv = (k_reg.reg & 0xFF) | ((v_reg.reg & 0xFF) << 8);
+        tisc::ir::Instruction attn;
+        attn.opcode = tisc::ir::Opcode::ATTN;
+        attn.operands = {dest.reg, q_reg.reg, packed_kv};
+        emit(attn);
+        record_result(&expr, dest);
+        return {};
+      }
+      // RFC-0026 AI-M6: Tensor.qmatmul(act, wt, scale) → QMATMUL dest, act, PACK(wt, scale)
+      if (func_name == "Tensor.qmatmul") {
+        if (expr.arguments.size() != 3) {
+          throw std::runtime_error("Tensor.qmatmul expects exactly 3 arguments (act, wt, scale).");
+        }
+        expr.arguments[0]->accept(*this);
+        auto act_reg = ensure_expr_result(expr.arguments[0].get());
+        expr.arguments[1]->accept(*this);
+        auto wt_reg = ensure_expr_result(expr.arguments[1].get());
+        expr.arguments[2]->accept(*this);
+        auto scale_reg = ensure_expr_result(expr.arguments[2].get());
+        auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        const int32_t packed_ws = (wt_reg.reg & 0xFF) | ((scale_reg.reg & 0xFF) << 8);
+        tisc::ir::Instruction qmm;
+        qmm.opcode = tisc::ir::Opcode::QMATMUL;
+        qmm.operands = {dest.reg, act_reg.reg, packed_ws};
+        emit(qmm);
         record_result(&expr, dest);
         return {};
       }
@@ -4388,6 +4436,57 @@ public:
 
       if (dynamic_cast<const VariableExpr*>(expr.callee.get()) ||
           dynamic_cast<const GenericTypeExpr*>(expr.callee.get())) {
+        // RFC-0026 AI-M6: @attention / @qmatmul annotated function call sites are lowered
+        // to ATTN / QMATMUL opcodes with packed operand encoding rather than CALL.
+        auto ai_it = _ai_intrinsic_map.find(func_name);
+        if (ai_it != _ai_intrinsic_map.end()) {
+          const tisc::ir::Opcode ai_op = ai_it->second;
+          if (ai_op == tisc::ir::Opcode::ATTN) {
+            // ATTN RD, R_Q, PACK(R_K, R_V) — expects exactly 3 args: q, k, v
+            if (expr.arguments.size() != 3) {
+              throw std::runtime_error("@attention function '" + func_name +
+                                       "' requires exactly 3 arguments (q, k, v).");
+            }
+            expr.arguments[0]->accept(*this);
+            auto q_reg = ensure_expr_result(expr.arguments[0].get());
+            expr.arguments[1]->accept(*this);
+            auto k_reg = ensure_expr_result(expr.arguments[1].get());
+            expr.arguments[2]->accept(*this);
+            auto v_reg = ensure_expr_result(expr.arguments[2].get());
+            auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            const int32_t packed_kv =
+                (k_reg.reg & 0xFF) | ((v_reg.reg & 0xFF) << 8);
+            tisc::ir::Instruction attn;
+            attn.opcode = tisc::ir::Opcode::ATTN;
+            attn.operands = {dest.reg, q_reg.reg, packed_kv};
+            emit(attn);
+            record_result(&expr, dest);
+            return {};
+          }
+          if (ai_op == tisc::ir::Opcode::QMATMUL) {
+            // QMATMUL RD, R_ACT, PACK(R_WT, R_SCALE) — expects exactly 3 args
+            if (expr.arguments.size() != 3) {
+              throw std::runtime_error("@qmatmul function '" + func_name +
+                                       "' requires exactly 3 arguments (act, wt, scale).");
+            }
+            expr.arguments[0]->accept(*this);
+            auto act_reg = ensure_expr_result(expr.arguments[0].get());
+            expr.arguments[1]->accept(*this);
+            auto wt_reg = ensure_expr_result(expr.arguments[1].get());
+            expr.arguments[2]->accept(*this);
+            auto scale_reg = ensure_expr_result(expr.arguments[2].get());
+            auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            const int32_t packed_ws =
+                (wt_reg.reg & 0xFF) | ((scale_reg.reg & 0xFF) << 8);
+            tisc::ir::Instruction qmm;
+            qmm.opcode = tisc::ir::Opcode::QMATMUL;
+            qmm.operands = {dest.reg, act_reg.reg, packed_ws};
+            emit(qmm);
+            record_result(&expr, dest);
+            return {};
+          }
+        }
+
         // Check for user-defined function
         auto label_it = _function_labels.find(func_name);
         if (label_it != _function_labels.end()) {
@@ -5959,6 +6058,8 @@ private:
   std::unordered_map<const Expr*, TypedRegister> _expr_registers;
   std::unordered_map<std::string, TypedRegister> _variable_registers;
   std::unordered_map<std::string, tisc::ir::Label> _function_labels;
+  // RFC-0026 AI-M6: maps @attention/@qmatmul function names to their AI IR opcode.
+  std::unordered_map<std::string, tisc::ir::Opcode> _ai_intrinsic_map;
   std::vector<std::vector<std::pair<std::string, std::optional<TypedRegister>>>> _pattern_scopes;
   std::vector<LoopInfo> _loop_infos;
   std::vector<LoopInfo> _loop_stack;

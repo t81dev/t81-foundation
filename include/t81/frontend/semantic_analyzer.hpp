@@ -81,7 +81,9 @@ struct SemanticSymbol {
   std::optional<std::int64_t> tier;         // Optional @tier(n) intent on functions
   bool is_mutable = true;   // `let` bindings are immutable, `var` bindings are mutable
   bool is_defined = false;  // Functions get declared first, defined later
-  bool is_pure = false;     // @pure annotation: function must have no observable side effects
+  bool is_pure = false;      // @pure annotation: function must have no observable side effects
+  bool is_attention = false; // @attention — RFC-0026 AI-M6: call sites lower to ATTN opcode
+  bool is_qmatmul = false;   // @qmatmul  — RFC-0026 AI-M6: call sites lower to QMATMUL opcode
 };
 
 struct Diagnostic {

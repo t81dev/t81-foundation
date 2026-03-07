@@ -1600,6 +1600,8 @@ void SemanticAnalyzer::register_function_signatures() {
     symbol->type = return_type;
     symbol->tier = func->tier;
     symbol->is_pure = func->is_pure;
+    symbol->is_attention = func->is_attention;
+    symbol->is_qmatmul = func->is_qmatmul;
     symbol->generic_params.clear();
     symbol->generic_params.reserve(func->generic_params.size());
     for (const auto& generic_param : func->generic_params) {
@@ -1945,6 +1947,15 @@ std::any SemanticAnalyzer::visit(const FunctionStmt& stmt) {
 
   if (symbol && symbol->param_types.size() != stmt.params.size()) {
     error(stmt.name, "Function parameter count mismatch between declaration and definition.");
+  }
+
+  // RFC-0026 AI-M6: @attention / @qmatmul are Tier 2+ only.
+  if (stmt.is_attention || stmt.is_qmatmul) {
+    const int effective_tier = static_cast<int>(active_tier.value_or(1));
+    if (effective_tier < 2) {
+      const std::string attr_name = stmt.is_attention ? "@attention" : "@qmatmul";
+      error(stmt.name, attr_name + " requires Tier 2 or higher (add @tier(2) annotation).");
+    }
   }
 
   if (stmt.tier.has_value()) {

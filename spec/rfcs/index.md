@@ -43,6 +43,8 @@ This index tracks RFC status and intended disposition.
 | RFC-0025 | Policy-Gated Tensor Loading via CanonFS | draft | WLOAD supply-chain gate; requires RFC-0004, 0020, 0022 |
 | RFC-0026 | AI-Native Inference Opcodes | draft | ATTN, QMATMUL, WLOAD, EMBED, GATHER, SCATTER — AI-native ISA surface |
 | RFC-0027 | Spec-as-Executable Conformance Model | draft | Normative invariants as runnable T81Lang programs; AI-derivable test vectors |
+| RFC-0028 | Deterministic AI Execution Contract | draft | Composes RFC-0002/0003/0004/0025/0026/00A0 into a single AI execution contract |
+| RFC-0029 | AI Subsystem Promotion Pathway | proposed | Normative promotion specification for `experiments/ai/` components; 5-phase roadmap |
 
 ## Active Consolidations
 
