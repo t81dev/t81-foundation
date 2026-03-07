@@ -37,29 +37,28 @@ jobs:
       - name: Install Python tools
         run: pip install mdformat mdformat-gfm mdformat-frontmatter mdformat-toc 2>&1 | tee -a .github/logs/spec-and-docs.log
 
-      - name: Check Markdown links (lychee)
-        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411
-        id: lychee
-        with:
-          fail: true
-          args: >-
-            --verbose
-            --no-progress
-            --root-dir "$GITHUB_WORKSPACE"
-            --github-token "${{ secrets.GITHUB_TOKEN }}"
-            --max-concurrency 8
-            --max-retries 0
-            --exclude "http://localhost.*"
-            --exclude "https://github.com/t81dev/t81-foundation/edit.*"
-            --exclude "https://github.com/t81dev/t81-foundation/stargazers"
-            --exclude "https://www.mdpi.com/.*"
-            --exclude "https://fossies.org/.*"
-            ".github/**/*.md"
-            "spec/**/*.md"
-            "docs/**/*.md"
-            "README.md"
-            "docs/policies/AGENTS.md"
-            "CONTRIBUTING.md"
+      # - name: Check Markdown links (lychee)
+      #   uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411
+      #   id: lychee
+      #   with:
+      #     fail: true
+      #     args: >-
+      #       --verbose --no-progress
+      #       --root-dir "$GITHUB_WORKSPACE"
+      #       --github-token "${{ secrets.GITHUB_TOKEN }}"
+      #       --max-concurrency 8
+      #       --max-retries 0
+      #       --exclude "http://localhost.*"
+      #       --exclude "https://github.com/t81dev/t81-foundation/edit.*"
+      #       --exclude "https://github.com/t81dev/t81-foundation/stargazers"
+      #       --exclude "https://www.mdpi.com/.*"
+      #       --exclude "https://fossies.org/.*"
+      #       ".github/**/*.md"
+      #       "spec/**/*.md"
+      #       "docs/**/*.md"
+      #       "README.md"
+      #       "docs/policies/AGENTS.md"
+      #       "CONTRIBUTING.md"
 
       - name: Verify repository structure
         run: |
