@@ -43,8 +43,25 @@ This index tracks RFC status and intended disposition.
 | RFC-0025 | Policy-Gated Tensor Loading via CanonFS | draft | WLOAD supply-chain gate; requires RFC-0004, 0020, 0022 |
 | RFC-0026 | AI-Native Inference Opcodes | draft | ATTN, QMATMUL, WLOAD, EMBED, GATHER, SCATTER — AI-native ISA surface |
 | RFC-0027 | Spec-as-Executable Conformance Model | draft | Normative invariants as runnable T81Lang programs; AI-derivable test vectors |
-| RFC-0028 | Deterministic AI Execution Contract | draft | Composes RFC-0002/0003/0004/0025/0026/00A0 into a single AI execution contract |
-| RFC-0029 | AI Subsystem Promotion Pathway | proposed | Normative promotion specification for `experiments/ai/` components; 5-phase roadmap |
+| RFC-0028 | Deterministic Trace JIT | draft | Trace-JIT deterministic execution model |
+| RFC-0029 | T81Lang Feature Registry Drift Prevention | draft | Feature registry consistency mechanisms |
+| RFC-0030 | Deterministic Math Subsystem | draft | Canonical arithmetic operations |
+| RFC-0031 | Deterministic AI Execution Contract | draft | Composes RFC-0002/0003/0004/0025/0026/00A0 into a single AI execution contract |
+| RFC-0032 | AI Subsystem Promotion Pathway | proposed | Normative promotion specification for `experiments/ai/` components; 5-phase roadmap |
+
+## Experimental RFCs (A-series)
+
+| RFC | Title | Status | Notes |
+| :--- | :--- | :--- | :--- |
+| RFC-00A0 | AI Experiment Sandbox | draft | Formal boundaries for AI experimentation in `/experiments/ai/` |
+| RFC-00A1 | Deterministic Evidence Protocol | draft | Evidence collection and verification for AI determinism |
+| RFC-00A2 | AI Benchmark Specification | draft | Standardized AI performance benchmarks |
+| RFC-00A3 | Model Artifact Provenance | draft | Model supply chain provenance tracking |
+| RFC-00A4 | Ternary Quantization Codec | draft | Ternary-native quantization codecs |
+| RFC-00A5 | LLM Backend Adapter | draft | Engine-agnostic LLM backend interface |
+| RFC-00A6 | Axion Policy Hooks | draft | Policy enforcement hooks for AI operations |
+| RFC-00A7 | UX Integration | draft | User experience integration for AI features |
+| RFC-00A8 | AI Native VM Opcodes | draft | Additional AI-specific VM opcodes |
 
 ## Active Consolidations
 

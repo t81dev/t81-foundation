@@ -3,7 +3,7 @@
 **Status:** Draft\
 **Type:** Standards Track\
 **Created:** 2025-11-24\
-**Updated:** 2025-11-24\
+**Updated:** 2026-03-07\
 **Requires:** —\
 **Supersedes:** —\
 **Discussion:** https://github.com/t81dev/t81-foundation/discussions (TBD thread)
@@ -29,7 +29,7 @@ The T81 stack layers are:
 5. **CanonFS** — Immutable, content‑addressed filesystem using **CanonHash‑81**, **CapabilityGrant v2**, **CanonParity** (e.g., **3+2**), and **CanonLink**.
 6. **Axion Governor** — Immutable, non‑self‑modifying AI that enforces Θ‑overlays, monitors entropy, vetoes unsafe transitions, and orchestrates snapshot/rollback.
 
-All durable state **MUST** be persisted in CanonFS. Syscalls are total, deterministic, and subject to Axion veto. Tier promotions embed ethics overlays (Θ₁–Θ₉).
+All durable state **MUST** be persisted in CanonFS. Syscalls are total, deterministic, and subject to Axion veto. Tier promotions embed ethics overlays (Θ₁–Θ₉). AI execution follows the deterministic contract defined in RFC-0031, ensuring bit-exact reproducibility across platforms.
 
 ## Reference‑Level Explanation
 
@@ -123,6 +123,9 @@ This RFC introduces a new stack; no backwards compatibility is required. Profile
 
 - Canonical specs in this repository: `spec/index.md`, `spec/supplemental/hanoi-kernel-spec.md`, `spec/supplemental/canonfs-spec.md`
 - RFC catalog: `spec/rfcs/index.md`
+- AI execution model: `RFC-0031` (Deterministic AI Execution Contract)
+- AI-native opcodes: `RFC-0026` (AI-Native Inference Opcodes)
+- Policy-gated tensor loading: `RFC-0025` (Policy-Gated Tensor Loading via CanonFS)
 
 ## Decision
 
