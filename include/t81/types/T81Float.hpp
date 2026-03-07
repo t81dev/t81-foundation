@@ -24,6 +24,10 @@
 #include <cstdint>
 #include <cstdlib>  // fabsl, powl
 #include <limits>
+#include <numbers>
+#include <string>
+#include "t81/math/t81_soft_math/t81_soft_math.hpp"
+#include "t81/types/detail/dmath.hpp"
 
 namespace t81::v1 {
 
@@ -428,9 +432,8 @@ public:
    */
   [[nodiscard]] T81Float pow(T81Float exponent) const noexcept {
 #if defined(T81_DETERMINISTIC)
-    // Deterministic path: pow not available in current dmath implementation
-    // Explicitly reject rather than silently fall back to host math
-    return nae();
+    // In deterministic mode, use the deterministic math implementation
+    return t81::core::math::t81_soft_math::t81_pow(*this, exponent);
 #else
     if (is_nae() || exponent.is_nae()) return nae();
     return from_double(std::pow(to_double(), exponent.to_double()));
@@ -626,9 +629,8 @@ public:
     if (a.is_zero()) return zero();
 
 #if defined(T81_DETERMINISTIC)
-    // In deterministic mode, reject division as native implementation is not available
-    // This prevents silent fallback to host math which would violate determinism
-    return nae();
+    // In deterministic mode, use the deterministic math implementation
+    return t81::core::math::t81_soft_math::t81_div(a, b);
 #else
     // Non-deterministic mode: fall back to double conversion
     return from_double(a.to_double() / b.to_double());

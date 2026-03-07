@@ -18,6 +18,7 @@
 #include "t81/types/T81Fixed.hpp"
 #include "t81/types/T81Float.hpp"
 #include "t81/types/T81Int.hpp"
+#include "t81/math/t81_soft_math/t81_soft_math.hpp"
 
 namespace t81 {
 

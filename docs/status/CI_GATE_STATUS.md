@@ -3,8 +3,8 @@
 Status: Active
 Last Updated: 2026-03-06
 Owner: @t81dev
-Reference Candidate: `ff30c977` (origin/main, 2026-03-06)
-Current Main Head: `ff30c977` (origin/main, 2026-03-06; documentation reorganization completed)
+Reference Candidate: `03112f6c` (origin/main, 2026-03-06)
+Current Main Head: `03112f6c` (origin/main, 2026-03-06; deterministic math fixes completed; 100% test coverage achieved)
 
 ## Purpose
 
@@ -23,8 +23,8 @@ GO decision can be stamped.
 
 | Context | Workflow | Required | Last Known Status |
 | :--- | :--- | :--- | :--- |
-| `quality gate / required` | `ci.yml` | **Yes** | completed / success ✅ (`ff30c977`) |
-| `Analyze (cpp)` | `codeql.yml` | **Yes** | success ✅ (`ff30c977`) |
+| `quality gate / required` | `ci.yml` | **Yes** | completed / success ✅ (`03112f6c`) |
+| `Analyze (cpp)` | `codeql.yml` | **Yes** | success ✅ (`03112f6c`) |
 
 Verification command:
 

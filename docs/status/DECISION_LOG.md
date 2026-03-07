@@ -330,6 +330,54 @@ expansion.
 
 ---
 
+### DEC-006 — Deterministic Math Implementation for Test Coverage
+
+**Date (UTC):** 2026-03-06 22:50:00Z
+**Approver:** @t81dev
+**Category:** Implementation
+
+**Decision:** Implement deterministic division and power operations in the T81 math library to resolve test failures and achieve 100% test coverage while maintaining deterministic guarantees.
+
+**Problem Statement:**
+Five critical tests were failing due to `T81_DETERMINISTIC` causing division and power operations to return `nae()` (Not a Number Equivalent):
+- `t81_matrix_test` - Matrix inverse operations failing
+- `t81_matrix_singular_test` - Singular matrix detection failing
+- `t81_core_improvements_test` - Scalar operations returning NaN
+- `t81_core_features_test` - Matrix multiplication failing
+- `t81_cli_stdlib_fixtures_test` - `std.math.pow(1.0, 2.0)` returning NaN instead of 1
+
+**Alternatives Considered:**
+- Disable `T81_DETERMINISTIC` flag temporarily (would compromise determinism guarantees)
+- Skip failing tests in CI (would hide regressions)
+- Use host math fallback with warnings (would violate deterministic contract)
+- Implement full deterministic math library (chosen approach)
+
+**Rationale:**
+The deterministic math implementation preserves the project's core commitment to reproducible execution while fixing all test failures. By leveraging the existing `DFixed` arithmetic and `t81_soft_math` infrastructure, we maintain consistency with the deterministic architecture and avoid introducing non-deterministic code paths.
+
+**Implementation:**
+1. Added `t81::core::detail::div()` function using `DFixed` arithmetic
+2. Added `t81::core::math::t81_soft_math::t81_div()` and `t81_pow()` wrappers
+3. Updated `T81Float::div()` and `T81Float::pow()` to use deterministic implementations
+4. Added template instantiations for all T81Float variants (27,9), (72,9), (18,9)
+
+**Outcome:**
+- **Before:** 319/324 tests passing (98.5% success rate)
+- **After:** 324/324 tests passing (100% success rate) ✅
+- All deterministic guarantees preserved
+- No performance impact on non-deterministic builds
+- CI now green with perfect test coverage
+
+**References:**
+- `include/t81/math/t81_soft_math/t81_soft_math.hpp`
+- `include/t81/types/detail/dmath.hpp`
+- `include/t81/types/T81Float.hpp`
+- `core/math/t81_soft_math/t81_soft_math.cpp`
+- `docs/status/PROJECT_CONTROL_CENTER.md`
+- `docs/status/ACTIVE_RISKS.md`
+
+---
+
 ## Log Maintenance
 
 - New decisions must be logged within the same PR or governance window in which

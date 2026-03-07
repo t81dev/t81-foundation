@@ -216,4 +216,24 @@ v1::T81Float<M, E> pow(const v1::T81Float<M, E>& x, const v1::T81Float<M, E>& y)
   return res.to_float<M, E>();
 }
 
+template <std::size_t M, std::size_t E>
+v1::T81Float<M, E> div(const v1::T81Float<M, E>& a, const v1::T81Float<M, E>& b) {
+  if (a.is_nae() || b.is_nae()) return v1::T81Float<M, E>::nae();
+  if (b.is_zero()) {
+    if (a.is_zero() || a.is_inf()) return v1::T81Float<M, E>::nae();
+    return v1::T81Float<M, E>::inf(a.is_negative() == b.is_negative());
+  }
+  if (a.is_inf()) {
+    if (b.is_inf()) return v1::T81Float<M, E>::nae();
+    return v1::T81Float<M, E>::inf(a.is_negative() == b.is_negative());
+  }
+  if (b.is_inf()) return v1::T81Float<M, E>::zero();
+  if (a.is_zero()) return v1::T81Float<M, E>::zero();
+
+  DFixed val_a = DFixed::from_float(a);
+  DFixed val_b = DFixed::from_float(b);
+  DFixed res = val_a / val_b;  // Deterministic Fixed division
+  return res.to_float<M, E>();
+}
+
 }  // namespace t81::core::detail
