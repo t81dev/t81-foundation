@@ -4,7 +4,7 @@
 
 *   **Status:** **Closed / Not Adopted**
 *   **Resolution:** Library-level acceleration is sufficient; ISA extension not justified at this time.
-*   **Evidence:** See [Tritwise Extension Gate Evidence](../../../docs/rfcs/rfc-tritwise-extension-gate-evidence.md).
+*   **Evidence:** See [Tritwise Extension Gate Evidence](../../../docs/process/rfcs/rfc-tritwise-extension-gate-evidence.md).
 *   **Core ISA Note:** The TISC v1.1.0 core ISA remains frozen and unchanged. This document explores potential *future* extensions or library patterns and does not propose modifications to the existing canonical opcode set.
 *   **Audit Update:** An audit of existing packed representations has been completed. See [Packed-Trit Representation Audit and Comparison](packed-trit-representation-audit-and-comparison.md).
 

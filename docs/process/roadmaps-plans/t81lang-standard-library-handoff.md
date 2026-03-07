@@ -22,10 +22,10 @@ Implemented and validated end-to-end (semantic + IR + VM + CLI coverage):
 - `std.sys` / `std.io` / `std.async`: fixture-driven CLI goldens for runtime observable behavior are now present under `tests/fixtures/t81lang_std_runtime/*` and `tests/cpp/cli_std_runtime_fixtures_test.cpp` (including deterministic `std.sys.reflect` execution coverage)
 
 Generic function work now supported:
-- Generic declarations: `fn id[T](x: T) -> T`
+- Generic declarations: `fn id[T](#x-t) -> T`
 - Inferred calls: `id(7)`
-- Explicit calls: `id[i32](7)`
-- Partial explicit calls with inference fallback: `first[i32](7, "tail")`
+- Explicit calls: `id[i32](#7)`
+- Partial explicit calls with inference fallback: `first[i32](#7-tail)`
 - Deterministic unresolved inference diagnostics for unbound generics:
   - Example: `fn none_of[T]() -> Option[T] { return None; }` then `none_of()`
   - Diagnostic: `Cannot infer generic parameter 'T' for function 'none_of'.`

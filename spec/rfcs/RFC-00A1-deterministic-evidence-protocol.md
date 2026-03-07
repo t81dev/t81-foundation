@@ -256,6 +256,6 @@ ______________________________________________________________________
 
 ## References
 
-- [T81 Determinism Guarantees](/spec/rfc/RFC-0002-deterministic-execution-contract.md)
-- [Axion Safety Model](/spec/rfc/RFC-0003-axion-safety-model.md)
-- [CanonFS Specification](/spec/supplemental/canonfs-spec.md)
+- [T81 Determinism Guarantees](RFC-0002-deterministic-execution-contract.md)
+- [Axion Safety Model](RFC-0003-axion-safety-model.md)
+- [CanonFS Specification](../supplemental/canonfs-spec.md)

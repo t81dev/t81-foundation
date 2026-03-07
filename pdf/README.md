@@ -29,7 +29,7 @@ The following table classifies each document relative to the current codebase.
 | **SEPTANARY - T6561DataTypes.pdf** | Base-6561 types | **Aspirational** | N/A |
 | **OCTANARY - T19683DataTypes.pdf** | Base-19683 types | **Aspirational** | N/A |
 | **SEENARY - T81Bridge.pdf** | Bridge concepts | **Historical** | N/A |
-| **SETNARY - T81Setun.pdf** | Setun emulation notes | **Historical** | [`docs/guides/setun-bridge.md`](../docs/guides/setun-bridge.md) |
+| **SETNARY - T81Setun.pdf** | Setun emulation notes | **Historical** | [`docs/guides/setun-bridge.md`](../docs/records/archive/temporal-guides/guides/setun-bridge.md) |
 | **TANNARY - T81Applications.pdf** | Application concepts | **Historical** | N/A |
 | **TENNARY - T81Promo.pdf** | Promotional material | **Historical** | N/A |
 | **TRCNARY - T81TrinaryExplorations.pdf**| Exploratory notes | **Historical** | N/A |

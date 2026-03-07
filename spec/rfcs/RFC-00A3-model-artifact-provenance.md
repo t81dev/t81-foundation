@@ -383,8 +383,8 @@ ______________________________________________________________________
 
 ## References
 
-- [CanonFS Specification](/spec/supplemental/canonfs-spec.md)
-- [Policy-Gated Tensor Loading](/spec/rfc/RFC-0025-policy-gated-tensor-loading.md)
-- [Axion Safety Model](/spec/rfc/RFC-0003-axion-safety-model.md)
+- [CanonFS Specification](../supplemental/canonfs-spec.md)
+- [Policy-Gated Tensor Loading](RFC-0025-policy-gated-tensor-loading.md)
+- [Axion Safety Model](RFC-0003-axion-safety-model.md)
 - [GGUF Specification](https://github.com/ggerganov/ggml/blob/master/docs/gguf.md)
 - [Safetensors Specification](https://huggingface.co/docs/safetensors/index)

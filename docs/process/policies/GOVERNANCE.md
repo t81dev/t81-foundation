@@ -33,4 +33,4 @@ See `spec/README.md` for more details.
 
 ## 4. Code of Conduct
 
-We enforce the [Contributor Covenant Code of Conduct](../../CODE_OF_CONDUCT.md). All interactions must be respectful and constructive.
+We enforce the [Contributor Covenant Code of Conduct](../../../CODE_OF_CONDUCT.md). All interactions must be respectful and constructive.

@@ -37,4 +37,4 @@ Our testing strategy covers:
 - **Property:** Ring properties for `T81BigInt`, `T81Float`, `T81Prob`.
 - **Fuzzing:** Frontend parser and TISC decoder resilience.
 
-See [TESTING.md](../reference/TESTING.md) for detailed strategy.
+See [TESTING.md](../../reference/TESTING.md) for detailed strategy.

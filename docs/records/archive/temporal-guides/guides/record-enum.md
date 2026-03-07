@@ -11,7 +11,7 @@
 
 <!-- T81-TOC:END -->
 
-Record and enum declarations are now first-class structural types in the C++ frontend. They follow the canonical rules from [`spec/t81lang-spec.md` §2.4](../../spec/t81lang-spec.md#2-4-composite-types) and feed precise metadata into later stages of the toolchain.
+Record and enum declarations are now first-class structural types in the C++ frontend. They follow the canonical rules from [`spec/t81lang-spec.md` §2.4](../../../../../spec/t81lang-spec.md) and feed precise metadata into later stages of the toolchain.
 
 ## Record Declarations & Literals
 
@@ -26,6 +26,6 @@ Record and enum declarations are now first-class structural types in the C++ fro
 
 ## CLI Coverage
 
-The structural types guide the new [Structural Types CLI regression](../tests/cpp/cli_structural_types_test.cpp), which compiles and runs a small program that declares both a `record` and an `enum`, builds a record literal, touches a field, and returns a fixed value. The `t81` CLI now serializes record layouts and enum discriminants as metadata in the compiled TISC binary, so downstream tools can reason about structured layout without rerunning the analyzer. Use that test as a reference when extending downstream tooling so every new structural invariant is surfaced in the CLI and VM.
+The structural types guide the new [Structural Types CLI regression](../../../../../tests/cpp/cli_structural_types_test.cpp), which compiles and runs a small program that declares both a `record` and an `enum`, builds a record literal, touches a field, and returns a fixed value. The `t81` CLI now serializes record layouts and enum discriminants as metadata in the compiled TISC binary, so downstream tools can reason about structured layout without rerunning the analyzer. Use that test as a reference when extending downstream tooling so every new structural invariant is surfaced in the CLI and VM.
 
 Refer to `docs/guides/vector-literals.md` for tensor literal canonicalization; together, these guides explain how structured, deterministic data enters the IR and the VM.

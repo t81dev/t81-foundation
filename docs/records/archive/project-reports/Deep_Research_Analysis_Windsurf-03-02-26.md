@@ -8,7 +8,7 @@ The T81 Foundation demonstrates exceptional code quality and architectural sophi
 - **3,615 C++ header files** and **95 CMakeLists.txt** build configurations
 - **192 T81Lang source files** with comprehensive examples
 - **745 Markdown documentation files** indicating extensive specification coverage
-- **Core VM implementation**: [vm.cpp](cci:7://file:///Users/t81dev/Code/t81-foundation/core/vm/vm.cpp:0:0-0:0) spans **5,432 lines** of well-structured C++23 code
+- **Core VM implementation**: [vm.cpp](#) spans **5,432 lines** of well-structured C++23 code
 
 ### **Implementation Quality**
 The VM implementation reveals several strengths:
@@ -82,7 +82,7 @@ make -j$(nproc)
 
 ### **Quick Start Examples**
 
-**Basic "Hello World"** ([examples/hello_world.t81](cci:7://file:///Users/t81dev/Code/t81-foundation/examples/hello_world.t81:0:0-0:0)):
+**Basic "Hello World"** ([examples/hello_world.t81](#)):
 ```t81
 fn main() -> i32 {
   print("Hello, World!");
@@ -90,7 +90,7 @@ fn main() -> i32 {
 }
 ```
 
-**Ternary Arithmetic** ([examples/bigint_demo.t81](cci:7://file:///Users/t81dev/Code/t81-foundation/examples/bigint_demo.t81:0:0-0:0)):
+**Ternary Arithmetic** ([examples/bigint_demo.t81](#)):
 ```t81
 fn main() -> i32 {
     let a: T81BigInt = 42t81;

@@ -121,8 +121,8 @@ Always run the regression suite (`ctest --test-dir build -R axion_policy_* --out
 
 ## 6. Related RFCs and docs
 
-- `[RFC-0009](../spec/rfcs/RFC-0009-axion-policy-language.md)` – Syntax, predicates, and security semantics for APL.  
-- `[RFC-0020](../spec/rfcs/RFC-0020-axion-segment-trace.md)` – Canonical segment trace strings that `require-segment-event` clauses check.  
-- `[RFC-0019](../spec/rfcs/RFC-0019-axion-match-logging.md)` – Enum/match metadata that powers `require-match-guard`.  
+- `[RFC-0009](../../../spec/rfcs/RFC-0009-axion-policy-language.md)` – Syntax, predicates, and security semantics for APL.
+- `[RFC-0020](../../../spec/rfcs/RFC-0020-axion-segment-trace.md)` – Canonical segment trace strings that `require-segment-event` clauses check.
+- `[RFC-0019](../../../spec/rfcs/RFC-0019-axion-match-logging.md)` – Enum/match metadata that powers `require-match-guard`.
 - `docs/guides/axion-trace.md` / `docs/guides/axion-tracing-manual.md` – CLI samples showing the required strings in action.  
 - `include/t81/axion/policy.hpp` and `kernel/axion/policy_engine.cpp` – Implementation reference for how S-expressions are parsed and enforced.  

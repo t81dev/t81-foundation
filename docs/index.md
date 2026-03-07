@@ -8,7 +8,7 @@ ______________________________________________________________________
 
 If you are new to the project, start here. These documents provide the high-level overview and practical steps needed to get started with the C++ codebase.
 
-- **[C++ Quickstart Guide](tutorials/cpp-quickstart.md)**
+- **[C++ Quickstart Guide](user-guide/getting-started/cpp-quickstart.md)**
   - A hands-on guide to cloning, building, and running the core tests and demos. The fastest way to get the code working.
 
 - **[System Status Report](reference/system-status.md)**
@@ -17,7 +17,7 @@ If you are new to the project, start here. These documents provide the high-leve
 - **[Architecture Overview](architecture/OVERVIEW.md)**
   - Canonical architecture summary with layer boundaries, maturity labels, and evidence links.
 
-- **[Researcher's Guide](how-to/research-guide.md)**
+- **[Researcher's Guide](records/archive/temporal-guides/how-to/research-guide.md)**
   - An in-depth exploration of the mathematical foundations of balanced ternary and the five cognitive tiers of execution.
 
 ______________________________________________________________________
@@ -36,10 +36,10 @@ These documents are the "constitution" of the T81 Foundation. They define the no
   - The core design philosophy, including balanced ternary, spec-first development, and deterministic semantics.
 - **[Runtime Semantics Boundary](explanation/runtime-semantics-boundary.md)**
   - Defines ownership boundaries between normative semantics in this repo and executable compatibility in `t81-vm`.
-- **[Terminology Alignment Notes](policies/terminology-alignment.md)**
+- **[Terminology Alignment Notes](process/policies/terminology-alignment.md)**
   - Canonical term map aligned with `duotronic-whitepaper` and `t81-docs`.
 
-- **[Tensor Library Guide](how-to/tensor-guide.md)**
+- **[Tensor Library Guide](records/archive/temporal-guides/how-to/tensor-guide.md)**
   - An in-depth guide to the concepts and API of the T81 tensor library.
 
 ______________________________________________________________________
@@ -48,36 +48,36 @@ ______________________________________________________________________
 
 For contributors looking to modify the codebase, these resources provide detailed information.
 
-- **[Guide: Adding a Language Feature](./guides/adding-a-language-feature.md)**
+- **[Guide: Adding a Language Feature](developer-guide/contributing/adding-a-language-feature.md)**
   - The lifecycle of a T81Lang feature, from lexer to IR generator.
 
-- **[CLI User Manual](./guides/cli-user-manual.md)**
+- **[CLI User Manual](user-guide/reference/cli-user-manual.md)**
   - Command and operator reference for the shipped `t81` binary.
 
-- **[Guide: Match Expression Demo](./guides/match-example.md)**
+- **[Guide: Match Expression Demo](records/archive/temporal-guides/guides/match-example.md)**
   - A live example that compiles and runs an `Option`/`Result` match through the CLI and HanoiVM.
 
-- **[Tutorial: Secure Deployment](./guides/secure-deployment-tutorial.md)**
+- **[Tutorial: Secure Deployment](records/archive/temporal-guides/guides/secure-deployment-tutorial.md)**
   - An end-to-end guide to building, securing with Axion policies, and auditing T81 applications.
-- **[Guide: Weight & Model Integration](./guides/weights-integration.md)**
+- **[Guide: Weight & Model Integration](records/archive/temporal-guides/guides/weights-integration.md)**
   - How `t81 weights load`, the new `weights.load("<tensor>")` builtin, and the HanoiVM `WeightsLoad` opcode cooperate to keep `.t81w` tensors zero-copy inside the interpreter.
-- **[Guide: Data Types Overview](./guides/data-types-overview.md)**
+- **[Guide: Data Types Overview](developer-guide/internals/data-types-overview.md)**
   - A runnable sample that exercises primitive and structural data types inside `examples/data_types.t81`, plus dedicated high-rank tensor and graph demos for exploring multidimensional indexing behaviors.
-- **[Demo Gallery](./guides/demo-gallery.md)**
+- **[Demo Gallery](records/archive/temporal-guides/guides/demo-gallery.md)**
   - A quick menu of the match/data-type demos, the `scripts/run-demos.sh` automation, and the IR inspector utility.
-- **[Benchmark Report](reference/benchmarks.md)**
+- **[Benchmark Report](../benchmarks/results/archive/benchmarks.md)**
   - Auto-generated archive of T81/binary throughput/latency comparisons produced by `./build/t81 benchmark`.
 - **Benchmark Highlights (README)**(`../README.md#benchmark-highlights`)
--  - Summary badges and table excerpted from the latest `docs/reference/benchmarks.md` results so visitors see at-a-glance which families currently lead.
+-  - Summary badges and table excerpted from the latest `docs/../benchmarks/results/archive/benchmarks.md` results so visitors see at-a-glance which families currently lead.
 
-- **[Guide: VM Opcodes](./guides/vm-opcodes.md)**
+- **[Guide: VM Opcodes](developer-guide/internals/vm-opcodes.md)**
   - The process for extending the virtual machine with new instructions.
-- **[Guide: Setun Bridge](./guides/setun-bridge.md)**
+- **[Guide: Setun Bridge](records/archive/temporal-guides/guides/setun-bridge.md)**
   - Setun-style assembly translation to TISC, including label resolution and deterministic diagnostics.
-- **[Guide: Runtime Contract Helpers](./guides/runtime-contract-helpers.md)**
+- **[Guide: Runtime Contract Helpers](records/archive/temporal-guides/guides/runtime-contract-helpers.md)**
   - Opcode matrix helpers and VM recursion/contradiction safety counters used by hardened runtime checks.
 
-- **[C++ API overview](guides/public-api-overview.md)** – describes the canonical headers and the `t81::v1` surface; run `cmake --build build --target docs` to generate the Doxygen HTML under `build/api/html/index.html`.
+- **[C++ API overview](user-guide/reference/public-api-overview.md)** – describes the canonical headers and the `t81::v1` surface; run `cmake --build build --target docs` to generate the Doxygen HTML under `build/api/html/index.html`.
   - Auto-generated, detailed reference for every class and method in the source code. *(Run `cmake --build build --target docs` to generate).*
 
 ______________________________________________________________________
@@ -87,5 +87,5 @@ ______________________________________________________________________
 - **[CONTRIBUTING.md](../CONTRIBUTING.md)**
   - The rules and guidelines for contributing code, including the RFC process for proposing changes.
 
-- **[ROADMAP.md](roadmaps-plans/ROADMAP.md)**
+- **[ROADMAP.md](process/roadmaps-plans/ROADMAP.md)**
   - The high-level plan and priorities for the project's development.

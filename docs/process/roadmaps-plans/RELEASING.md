@@ -14,7 +14,7 @@
 
 We guarantee the integrity of our release artifacts:
 
-- **Reproducible Builds:** Release binaries are built using the [Reproducibility Guide](../reference/REPRODUCIBILITY.md).
+- **Reproducible Builds:** Release binaries are built using the [Reproducibility Guide](../../reference/REPRODUCIBILITY.md).
 - **Checksums:** All artifacts are accompanied by SHA256 checksums (`SHA256SUMS.txt`).
 - **Provenance:** We use GitHub Actions with `id-token: write` for attestations (future).
 

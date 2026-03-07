@@ -490,7 +490,7 @@ ______________________________________________________________________
 
 ## References
 
-- [AI Experiment Sandbox](/spec/rfc/RFC-00A0-ai-experiment-sandbox.md)
-- [Deterministic Evidence Protocol](/spec/rfc/RFC-00A1-deterministic-evidence-protocol.md)
-- [Axion Policy Hooks](/spec/rfc/RFC-00A6-axion-policy-hooks.md)
-- [LLM Backend Adapter](/spec/rfc/RFC-00A5-llm-backend-adapter.md)
+- [AI Experiment Sandbox](RFC-00A0-ai-experiment-sandbox.md)
+- [Deterministic Evidence Protocol](RFC-00A1-deterministic-evidence-protocol.md)
+- [Axion Policy Hooks](RFC-00A6-axion-policy-hooks.md)
+- [LLM Backend Adapter](RFC-00A5-llm-backend-adapter.md)

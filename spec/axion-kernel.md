@@ -125,7 +125,7 @@ Axion:
 
 Tier rules are defined in `cognitive-tiers.md`.
 
-> **Conformance program:** [`spec/conformance/axion-kernel/tier-supervision-invariant.t81`](../conformance/axion-kernel/tier-supervision-invariant.t81)
+> **Conformance program:** [`spec/conformance/axion-kernel/tier-supervision-invariant.t81`](conformance/axion-kernel/tier-supervision-invariant.t81)
 
 ## 1.5 Metadata Hosting
 
@@ -140,7 +140,7 @@ Axion maintains the META segment:
 
 Axion MUST keep metadata deterministic and canonical.
 
-> **Conformance program:** [`spec/conformance/axion-kernel/metadata-determinism.t81`](../conformance/axion-kernel/metadata-determinism.t81)
+> **Conformance program:** [`spec/conformance/axion-kernel/metadata-determinism.t81`](conformance/axion-kernel/metadata-determinism.t81)
 
 Axion also ingests the loop hints, match metadata s-expressions, and enum metadata described in [RFC-0019](../spec/rfcs/RFC-0019-axion-match-logging.md). The compiler populates `tisc::Program.axion_policy_text`, `match_metadata_text`, and `enum_metadata` so the runtime can emit deterministic `EnumIsVariant`/`EnumUnwrapPayload` events whose `AxionEvent.verdict.reason` strings include `enum=<name>`, `variant=<name>`, `payload=<type>`, and the guard result (`match=pass`/`match=fail`). These entries give DTS/VS the canonical guard context they need to enforce safety and determinism.
 
@@ -168,7 +168,7 @@ Axion also receives a deterministic trace of every segment transition and guarde
 > structured `AxionEvent` fields; verbatim concatenated string construction is
 > AX-M6, targeting 2026-03-14.
 >
-> **Conformance program:** [`spec/conformance/axion-kernel/segment-trace-strings.t81`](../conformance/axion-kernel/segment-trace-strings.t81)
+> **Conformance program:** [`spec/conformance/axion-kernel/segment-trace-strings.t81`](conformance/axion-kernel/segment-trace-strings.t81)
 
 ## 1.9 Axion API & Policy Enforcement
 
@@ -189,7 +189,7 @@ trace strings already exist in `State::axion_log`.
 
 Because the policy lexer is deterministic and the verdict strings are canonical (per RFC-0020/RFC-0019), Axion's policy enforcement remains purely declarative: it denies unless the runtime has already emitted the expected strings.
 
-> **Conformance programs:** [`spec/conformance/axion-kernel/policy-deny-requires-reason.t81`](../conformance/axion-kernel/policy-deny-requires-reason.t81) · [`policy-enforcement-allow-deny.t81`](../conformance/axion-kernel/policy-enforcement-allow-deny.t81)
+> **Conformance programs:** [`spec/conformance/axion-kernel/policy-deny-requires-reason.t81`](conformance/axion-kernel/policy-deny-requires-reason.t81) · [`policy-enforcement-allow-deny.t81`](conformance/axion-kernel/policy-enforcement-allow-deny.t81)
 
 ## 1.10 CanonFS Observability
 
