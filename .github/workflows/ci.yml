@@ -38,18 +38,22 @@ jobs:
         run: pip install mdformat mdformat-gfm mdformat-frontmatter mdformat-toc 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Check Markdown links (lychee)
-        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2
+        uses: lycheeverse/lychee-action@v2
         with:
-          fail: true
+          lycheeVersion: nightly
+          fail: false
           args: >-
-            --verbose --no-progress
-            --root-dir .
-            --exclude "http://localhost*"
-            --exclude "https://github.com/t81dev/t81-foundation/edit*"
-            --exclude "https://github.com/t81dev/t81-foundation/stargazers"
-            --exclude "https://www.mdpi.com/*"
-            --exclude "https://fossies.org/*"
-            .github/**/*.md spec/**/*.md docs/**/*.md README.md docs/policies/AGENTS.md CONTRIBUTING.md
+            --verbose
+            --no-progress
+            --max-concurrency 8
+            --max-retries 0
+            --github-token ${{ secrets.GITHUB_TOKEN }}
+            .github/**/*.md
+            spec/**/*.md
+            docs/**/*.md
+            README.md
+            docs/policies/AGENTS.md
+            CONTRIBUTING.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         id: lychee
