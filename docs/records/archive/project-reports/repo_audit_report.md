@@ -9,7 +9,7 @@
 | `.github/` | CI/Governance | Medium (Critical Workflows) | Review Actions |
 | `.t81_canonfs/` | Generated Artifact | High (Should not be in repo) | Add to .gitignore |
 | `benchmarks/` | Canonical Source | Low | Move results to docs |
-| `book/` | Canonical Documentation | Medium (Multilingual drift) | Implement policy |
+| `docs/developer-guide/book/` | Canonical Documentation | Medium (Multilingual drift) | Implement policy |
 | `cmake/` | Build/Config | Low | No |
 | `contracts/` | Canonical Source | Medium | Verify relevance |
 | `docs/` | Canonical Documentation | High (Sprawl) | Restructure |

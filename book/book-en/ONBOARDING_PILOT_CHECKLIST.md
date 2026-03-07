@@ -9,7 +9,7 @@ Use this script to run a real onboarding pilot before external publication.
 - Facilitator (knows T81)
 - New user (no prior T81 context)
 - Materials:
-- This book (`book/book-en/`)
+- This book (`docs/developer-guide/book/book-en/`)
 - Local repository checkout
 - Terminal with build/test access
 

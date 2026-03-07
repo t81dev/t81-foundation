@@ -64,7 +64,7 @@ flowchart LR
 - [`./include/t81/`](./include/t81/) contains the public headers for library consumers.
 - [`./examples/`](./examples/) contains C++ demos, T81Lang samples, and consumer examples.
 - [`./docs/`](./docs/) is the documentation hub for quickstarts, architecture, status, and governance.
-- [`./book/`](./book/) contains the longer-form monograph and tutorial-style material.
+- [`./docs/developer-guide/book/`](./docs/developer-guide/book/) contains longer-form monograph and tutorial-style material.
 - [`./spec/`](./spec/) holds the normative specifications and RFCs.
 - [`./tests/`](./tests/) contains the unit, integration, conformance, and determinism-oriented tests.
 - [`./core/`](./core/) contains core type, ISA, and VM implementation modules.

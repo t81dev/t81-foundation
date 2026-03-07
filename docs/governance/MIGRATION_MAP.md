@@ -9,7 +9,7 @@ This document outlines the planned movement of files and directories to achieve 
 | `/dummy.*` | `(Delete or Ignore)` | Generated artifacts should not be committed. |
 | `/policy/` (historical) | `/docs/governance/archive/policy/` | Consolidate governance docs. |
 | `/HANOIVM_OPCODE_REFERENCE.md` | `spec/tisc/opcode-unified-reference.md` | Canonical spec location (consolidated). |
-| `/README.*.md` | `/book/book-*/README.md` | (Optional) Can stay at root if policy allows, but preferably mirrored. |
+| `/README.*.md` | `/docs/developer-guide/book/book-*/README.md` | (Optional) Can stay at root if policy allows, but preferably mirrored. |
 | `/CODE_OF_CONDUCT.md` | `/docs/governance/CODE_OF_CONDUCT.md` | Centralize governance. |
 | `/CONTRIBUTING.md` | `/docs/governance/CONTRIBUTING.md` | Centralize governance. |
 | `/SECURITY.md` | `/docs/governance/SECURITY.md` | Centralize governance. |
