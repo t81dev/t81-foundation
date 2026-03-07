@@ -141,7 +141,7 @@ AI CLI minimal integration is working!
 .github/workflows/ai-experiments-ci.yml
 CMakeLists.txt
 docs/experiments/AI_EXPERIMENTS.md
-docs/status/STABLE_BASELINE.md
+docs/records/STABLE_BASELINE.md
 scripts/test_ai_simple.sh
 experiments/ai/
 ```
