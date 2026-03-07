@@ -325,6 +325,13 @@ jobs:
             /cmake/**
             /include/**
             /src/**
+            /core/**
+            /runtime/**
+            /kernel/**
+            /tooling/**
+            /lang/**
+            /examples/**
+            /tools/**
             /tests/**
             /scripts/**
             /benchmarks/**
