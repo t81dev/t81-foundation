@@ -45,7 +45,7 @@ jobs:
           fail: true
           args: >-
             --verbose --no-progress
-            --root-dir .
+            --root-dir "$GITHUB_WORKSPACE"
             --exclude "http://localhost*"
             --exclude "https://github.com/t81dev/t81-foundation/edit*"
             --exclude "https://github.com/t81dev/t81-foundation/stargazers"
@@ -975,7 +975,7 @@ jobs:
           test -s /tmp/clang_tidy_files.txt
           xargs -a /tmp/clang_tidy_files.txt clang-tidy-18 -p build \
             --header-filter='^.*/(include/t81|core|kernel|runtime|lang)/.*' \
-            --checks='-*,clang-analyzer-core.*,clang-analyzer-cplusplus.*,clang-analyzer-deadcode.*,clang-analyzer-security.*,clang-analyzer-unix.*' \
+            --checks='-*,clang-analyzer-core.*,clang-analyzer-cplusplus.*,clang-analyzer-deadcode.*,clang-analyzer-security.*,clang-analyzer-unix.*'
 
   ############################################################################
   # JOB: sanitizers
