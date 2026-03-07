@@ -1,0 +1,150 @@
+name: Deterministic Core Profile Enforcement
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  checks: read
+
+jobs:
+  deterministic-profile-compliance:
+    name: "Deterministic Profile Compliance Check"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v2.0
+        with:
+          cmake-version: '3.20.x'
+
+      - name: Set up GCC
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          version: latest
+          platform: x64
+
+      - name: Build project
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DT81_BUILD_TESTS=ON
+          make -j4
+
+      - name: Run deterministic float boundary test
+        run: |
+          cd build
+          ctest --output-on-failure -R test_deterministic_float_boundaries
+
+      - name: Run map determinism test
+        run: |
+          cd build
+          ctest --output-on-failure -R test_map_determinism
+
+      - name: Run T81Lang traceability test
+        run: |
+          cd build
+          ctest --output-on-failure -R test_t81lang_traceability_enforcement
+
+      - name: Run Axion evidence test
+        run: |
+          cd build
+          ctest --output-on-failure -R test_axion_evidence_loop_closure_corrected
+
+      - name: Check for undefined macros
+        run: |
+          echo "Checking for undefined deterministic macros..."
+          if grep -r "T81_DETERMINISTIC_.*_AVAILABLE" include/; then
+            echo "❌ Found undefined deterministic macros"
+            exit 1
+          else
+            echo "✓ No undefined deterministic macros found"
+          fi
+
+      - name: Verify deterministic boundary documentation
+        run: |
+          echo "Checking deterministic boundary documentation..."
+          if [ -f "docs/status/AUDIT_REMEDIATION_CROSSWALK.md" ]; then
+            echo "✓ Audit crosswalk exists"
+          else
+            echo "❌ Audit crosswalk missing"
+            exit 1
+          fi
+
+      - name: Check for non-compiling test references
+        run: |
+          echo "Checking for removed non-compiling tests..."
+          if [ -f "tests/cpp/test_axion_evidence_loop_closure.cpp" ]; then
+            echo "❌ Non-compiling test still exists"
+            exit 1
+          else
+            echo "✓ Non-compiling test removed"
+          fi
+
+      - name: Verify new test files exist
+        run: |
+          echo "Checking for new test files..."
+          test_files=(
+            "tests/cpp/test_deterministic_float_boundaries.cpp"
+            "tests/cpp/test_map_determinism.cpp"
+            "tests/cpp/test_t81lang_traceability_enforcement.cpp"
+            "tests/cpp/test_axion_evidence_loop_closure_corrected.cpp"
+          )
+          
+          for file in "${test_files[@]}"; do
+            if [ -f "$file" ]; then
+              echo "✓ $file exists"
+            else
+              echo "❌ $file missing"
+              exit 1
+            fi
+          done
+
+      - name: Verify deterministic iterator implementation
+        run: |
+          echo "Checking deterministic iterator implementation..."
+          if grep -q "deterministic_iterator" include/t81/types/T81Map.hpp; then
+            echo "✓ Deterministic iterator implemented"
+          else
+            echo "❌ Deterministic iterator missing"
+            exit 1
+          fi
+
+      - name: Check T81Float deterministic guards
+        run: |
+          echo "Checking T81Float deterministic guards..."
+          if grep -q "not available in current dmath implementation" include/t81/types/T81Float.hpp; then
+            echo "✓ T81Float has explicit rejection comments"
+          else
+            echo "❌ T81Float missing explicit rejection comments"
+            exit 1
+          fi
+
+      - name: Verify status documents updated
+        run: |
+          echo "Checking status document updates..."
+          status_docs=(
+            "docs/status/AUDIT_REMEDIATION_CROSSWALK.md"
+            "docs/status/T81LANG_TRACEABILITY_MATRIX.md"
+            "docs/status/JIT_EQUIVALENCE_GAP.md"
+            "docs/status/GOVERNANCE_BOUNDARIES_CLARIFICATION.md"
+            "docs/records/status-history/AXION_STATUS.md"
+          )
+          
+          for doc in "${status_docs[@]}"; do
+            if [ -f "$doc" ]; then
+              echo "✓ $doc exists"
+            else
+              echo "❌ $doc missing"
+              exit 1
+            fi
+          done

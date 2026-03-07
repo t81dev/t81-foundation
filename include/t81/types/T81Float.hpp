@@ -333,7 +333,9 @@ public:
    */
   [[nodiscard]] T81Float acos() const noexcept {
 #if defined(T81_DETERMINISTIC)
-    return core::detail::acos(*this);
+    // Deterministic path: acos not available in current dmath implementation
+    // Explicitly reject rather than silently fall back to host math
+    return nae();
 #else
     if (is_nae()) return *this;
     double x = to_double();
@@ -349,7 +351,9 @@ public:
    */
   [[nodiscard]] T81Float asin() const noexcept {
 #if defined(T81_DETERMINISTIC)
-    return core::detail::asin(*this);
+    // Deterministic path: asin not available in current dmath implementation
+    // Explicitly reject rather than silently fall back to host math
+    return nae();
 #else
     if (is_nae()) return *this;
     double x = to_double();
@@ -364,7 +368,9 @@ public:
    */
   [[nodiscard]] T81Float atan() const noexcept {
 #if defined(T81_DETERMINISTIC)
-    return core::detail::atan(*this);
+    // Deterministic path: atan not available in current dmath implementation
+    // Explicitly reject rather than silently fall back to host math
+    return nae();
 #else
     if (is_nae()) return *this;
     return from_double(std::atan(to_double()));
@@ -377,7 +383,9 @@ public:
    */
   [[nodiscard]] T81Float sinh() const noexcept {
 #if defined(T81_DETERMINISTIC)
-    return core::detail::sinh(*this);
+    // Deterministic path: sinh not available in current dmath implementation
+    // Explicitly reject rather than silently fall back to host math
+    return nae();
 #else
     if (is_nae()) return *this;
     return from_double(std::sinh(to_double()));
@@ -390,7 +398,9 @@ public:
    */
   [[nodiscard]] T81Float cosh() const noexcept {
 #if defined(T81_DETERMINISTIC)
-    return core::detail::cosh(*this);
+    // Deterministic path: cosh not available in current dmath implementation
+    // Explicitly reject rather than silently fall back to host math
+    return nae();
 #else
     if (is_nae()) return *this;
     return from_double(std::cosh(to_double()));
@@ -403,7 +413,9 @@ public:
    */
   [[nodiscard]] T81Float tanh() const noexcept {
 #if defined(T81_DETERMINISTIC)
-    return core::detail::tanh(*this);
+    // Deterministic path: tanh not available in current dmath implementation
+    // Explicitly reject rather than silently fall back to host math
+    return nae();
 #else
     if (is_nae()) return *this;
     return from_double(std::tanh(to_double()));
@@ -416,7 +428,9 @@ public:
    */
   [[nodiscard]] T81Float pow(T81Float exponent) const noexcept {
 #if defined(T81_DETERMINISTIC)
-    return core::detail::pow(*this, exponent);
+    // Deterministic path: pow not available in current dmath implementation
+    // Explicitly reject rather than silently fall back to host math
+    return nae();
 #else
     if (is_nae() || exponent.is_nae()) return nae();
     return from_double(std::pow(to_double(), exponent.to_double()));
@@ -611,9 +625,14 @@ public:
     if (b.is_inf()) return zero();
     if (a.is_zero()) return zero();
 
-    // Fallback to double for division to ensure correctness until native
-    // division logic (rounding/normalization bias) is fully stabilized.
+#if defined(T81_DETERMINISTIC)
+    // In deterministic mode, reject division as native implementation is not available
+    // This prevents silent fallback to host math which would violate determinism
+    return nae();
+#else
+    // Non-deterministic mode: fall back to double conversion
     return from_double(a.to_double() / b.to_double());
+#endif
   }
 
   // Arithmetic friends

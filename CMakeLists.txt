@@ -1853,3 +1853,20 @@ add_test(NAME t81_graph_algorithms_test COMMAND t81_graph_algorithms_test)
   add_executable(t81_determinism_new_types_test tests/determinism/test_new_types.cpp)
   target_link_libraries(t81_determinism_new_types_test PRIVATE t81_core)
   add_test(NAME t81_determinism_new_types_test COMMAND t81_determinism_new_types_test)
+
+  # Repository Hardening Deterministic Tests
+  add_executable(test_deterministic_float_boundaries tests/cpp/test_deterministic_float_boundaries.cpp)
+  target_link_libraries(test_deterministic_float_boundaries PRIVATE t81_core)
+  add_test(NAME test_deterministic_float_boundaries COMMAND test_deterministic_float_boundaries)
+
+  add_executable(test_map_determinism tests/cpp/test_map_determinism.cpp)
+  target_link_libraries(test_map_determinism PRIVATE t81_core)
+  add_test(NAME test_map_determinism COMMAND test_map_determinism)
+
+  add_executable(test_t81lang_traceability_enforcement tests/cpp/test_t81lang_traceability_enforcement.cpp)
+  target_link_libraries(test_t81lang_traceability_enforcement PRIVATE t81_core t81_isa t81_vm t81_tool_cli)
+  add_test(NAME test_t81lang_traceability_enforcement COMMAND test_t81lang_traceability_enforcement)
+
+  add_executable(test_axion_evidence_loop_closure_corrected tests/cpp/test_axion_evidence_loop_closure_corrected.cpp)
+  target_link_libraries(test_axion_evidence_loop_closure_corrected PRIVATE t81_core t81_isa t81_vm t81_tool_cli t81_axion)
+  add_test(NAME test_axion_evidence_loop_closure_corrected COMMAND test_axion_evidence_loop_closure_corrected)

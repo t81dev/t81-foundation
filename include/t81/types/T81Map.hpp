@@ -268,8 +268,13 @@ public:
   }
 
   //===================================================================
-  // Iterators (read-only view)
+  // Iterators (deterministically ordered)
   //===================================================================
+  // NOTE: Default iterator order is NOT guaranteed to be deterministic for performance.
+  // Internal hash-based optimization may cause different iteration orders.
+  // For deterministic iteration, use deterministic_iterator or iter_sorted().
+  
+  // Non-deterministic iterator (internal hash order)
   struct const_iterator {
     const T81Map* map = nullptr;
     std::size_t index = 0;
@@ -290,10 +295,39 @@ public:
     }
 
     [[nodiscard]] const K& key() const noexcept { return map->buckets_[index].key; }
-
     [[nodiscard]] const V& value() const noexcept { return map->buckets_[index].value; }
   };
 
+  // Deterministic iterator (sorted order)
+  struct deterministic_iterator {
+    std::vector<std::pair<K, V>> sorted_items;
+    std::size_t index = 0;
+
+    deterministic_iterator(const T81Map* map, std::size_t start_idx = 0) {
+      if (map) {
+        sorted_items = map->iter_sorted();
+        index = start_idx;
+      }
+    }
+
+    [[nodiscard]] bool operator==(const deterministic_iterator& o) const noexcept = default;
+
+    deterministic_iterator& operator++() noexcept {
+      if (index < sorted_items.size()) {
+        ++index;
+      }
+      return *this;
+    }
+
+    [[nodiscard]] value_type operator*() const noexcept {
+      return sorted_items[index];
+    }
+
+    [[nodiscard]] const K& key() const noexcept { return sorted_items[index].first; }
+    [[nodiscard]] const V& value() const noexcept { return sorted_items[index].second; }
+  };
+
+  // Non-deterministic iterators (internal hash order)
   [[nodiscard]] const_iterator begin() const noexcept {
     const_iterator it{this, 0};
     const std::size_t n = buckets_.size();
@@ -307,6 +341,15 @@ public:
     return const_iterator{this, buckets_.size()};
   }
 
+  // Deterministic iterators (sorted order)
+  [[nodiscard]] deterministic_iterator dbegin() const noexcept {
+    return deterministic_iterator{this, 0};
+  }
+
+  [[nodiscard]] deterministic_iterator dend() const noexcept {
+    return deterministic_iterator{this, size()};
+  }
+
   //===================================================================
   // Size & Capacity
   //===================================================================
@@ -314,19 +357,46 @@ public:
   [[nodiscard]] bool empty() const noexcept { return size_ == 0; }
 
   //===================================================================
-  // Canonical Serialization (P2)
+  // Deterministic Iteration (P2 Guarantee)
   //===================================================================
+  
+  /**
+   * @brief Returns items in deterministic sorted order by key.
+   * 
+   * This method provides the P2 determinism guarantee by sorting all items
+   * by key before returning them. For T81Symbol keys, uses canonical string
+   * order. For other keys, uses the key's natural ordering.
+   * 
+   * @return std::vector<std::pair<K, V>> with deterministically ordered items
+   */
   [[nodiscard]] std::vector<std::pair<K, V>> iter_sorted() const {
     std::vector<std::pair<K, V>> items;
     items.reserve(size_);
-    // Iterate using const_iterator
+    // Iterate using const_iterator (internal order may be non-deterministic)
     for (const auto& kv : *this) {
       items.emplace_back(kv.first, kv.second);
     }
+    // Sort to ensure deterministic order
     std::sort(items.begin(), items.end(),
               [](const auto& a, const auto& b) { return a.first < b.first; });
     return items;
   }
+
+  /**
+   * @brief Deterministic iteration that guarantees stable ordering.
+   * 
+   * Unlike the default iterator which may use hash-dependent internal ordering,
+   * this method ensures the same iteration order across all platforms and runs.
+   * 
+   * @return std::vector<std::pair<K, V>> with deterministically ordered items
+   */
+  [[nodiscard]] std::vector<std::pair<K, V>> iter_deterministic() const {
+    return iter_sorted();  // Alias for clarity
+  }
+
+  //===================================================================
+  // Canonical Serialization (P2)
+  //===================================================================
 
   [[nodiscard]] std::string serialize_canonical() const {
     auto items = iter_sorted();
