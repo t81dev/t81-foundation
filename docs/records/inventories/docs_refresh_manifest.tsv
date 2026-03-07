@@ -5,5 +5,5 @@ docs/explanation/ARCHITECTURE.md	accurate	none	high	Verified against CI gates an
 docs/explanation/ANALYSIS.md	accurate	none	high	Correctly identifies host-dependent float behavior.
 docs/reference/benchmarks.md	accurate	none	medium	Auto-generated file reflects run environment (ARM/NEON in example).
 docs/explanation/performance-strategy.md	accurate	none	high	Claims align with implemented code (AVX2/Karatsuba).
-docs/records/STABLE_BASELINE.md	accurate	none	high	Correctly identifies Cognitive Tier logic as ongoing P0 work.
+docs/roadmaps-plans/ROADMAP.md	accurate	none	high	Correctly identifies Cognitive Tier logic as ongoing P0 work.
 docs/roadmaps-plans/TASKS.md	accurate	none	high	Tracks Infinite Tier stub as current sprint task.

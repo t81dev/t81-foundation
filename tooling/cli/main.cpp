@@ -270,13 +270,39 @@ Compiles T81Lang source (or T81 weight module source) into TISC bytecode.
 
 Example:
   t81 compile program.t81 -o program.tisc
+)";
+}
 
 void print_help_run() {
   std::cerr << R"(
-Usage: t81 run <file.t81|file.tisc> [--policy <policy.apl>] [--trace] [--trace-out <file>] [--hash-out <file>] [--weights-model <model.t81w>]
+Usage: t81 run <file.t81|file.tisc> [--policy <policy.apl>] [--trace] [--weights-model <model.t81w>]
 
 Compiles (if needed) and executes a program via the VM.
 
+Example:
+  t81 run program.tisc --policy policy.apl
+)";
+}
+
+void print_help_disasm() {
+  std::cerr << R"(
+Usage: t81 disasm <file.tisc>
+
+Prints human-readable TISC disassembly.
+
+Example:
+  t81 disasm program.tisc
+)";
+}
+
+void print_help_debug() {
+  std::cerr << R"(
+Usage: t81 debug <file.t81|file.tisc> [--policy <policy.apl>] [--weights-model <model.t81w>]
+
+Compiles (if needed) and starts the interactive debugger.
+
+Example:
+  t81 debug program.tisc
 )";
 }
 
@@ -866,8 +892,6 @@ struct Args {
   std::optional<fs::path> weights_model;
   std::optional<fs::path> policy;
   bool trace = false;
-  std::optional<fs::path> trace_out;
-  std::optional<fs::path> hash_out;
 };
 
 Args parse_args(int argc, char* argv[]) {
@@ -942,18 +966,6 @@ Args parse_args(int argc, char* argv[]) {
       a.policy = fs::path(argv[i]);
     } else if (arg == "--trace") {
       a.trace = true;
-    } else if (arg == "--trace-out") {
-      if (++i >= argc) {
-        error("Missing argument after --trace-out");
-        std::exit(1);
-      }
-      a.trace_out = fs::path(argv[i]);
-    } else if (arg == "--hash-out") {
-      if (++i >= argc) {
-        error("Missing argument after --hash-out");
-        std::exit(1);
-      }
-      a.hash_out = fs::path(argv[i]);
     } else if (arg == "-h" || arg == "--help") {
       a.need_help = true;
     } else if (arg == "-V" || arg == "--version") {

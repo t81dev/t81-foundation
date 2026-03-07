@@ -389,6 +389,70 @@ const char* ir_opcode_name(tisc::ir::Opcode op) {
       return "FADD";
     case O::FSUB:
       return "FSUB";
+    case t81::tisc::ir::Opcode::F2FRAC:
+      return "F2FRAC";
+    case t81::tisc::ir::Opcode::FRAC2F:
+      return "FRAC2F";
+    case t81::tisc::ir::Opcode::INT2BIGINT:
+      return "INT2BIGINT";
+    case t81::tisc::ir::Opcode::TTENDOT:
+      return "TTENDOT";
+    case t81::tisc::ir::Opcode::TSHAPE:
+      return "TSHAPE";
+    case t81::tisc::ir::Opcode::BITAND:
+      return "BITAND";
+    case t81::tisc::ir::Opcode::BITOR:
+      return "BITOR";
+    case t81::tisc::ir::Opcode::BITXOR:
+      return "BITXOR";
+    case t81::tisc::ir::Opcode::BITNOT:
+      return "BITNOT";
+    case t81::tisc::ir::Opcode::BITSHL:
+      return "BITSHL";
+    case t81::tisc::ir::Opcode::BITSHR:
+      return "BITSHR";
+    case t81::tisc::ir::Opcode::BITUSHR:
+      return "BITUSHR";
+    case t81::tisc::ir::Opcode::SYMLOAD:
+      return "SYMLOAD";
+    case t81::tisc::ir::Opcode::SYMREWRITE:
+      return "SYMREWRITE";
+    case t81::tisc::ir::Opcode::SYMCANON:
+      return "SYMCANON";
+    case t81::tisc::ir::Opcode::SYMCONFLUENCE:
+      return "SYMCONFLUENCE";
+    case t81::tisc::ir::Opcode::MapNew:
+      return "MapNew";
+    case t81::tisc::ir::Opcode::MapPut:
+      return "MapPut";
+    case t81::tisc::ir::Opcode::MapGet:
+      return "MapGet";
+    case t81::tisc::ir::Opcode::MapHas:
+      return "MapHas";
+    case t81::tisc::ir::Opcode::MapRemove:
+      return "MapRemove";
+    case t81::tisc::ir::Opcode::MapKeys:
+      return "MapKeys";
+    case t81::tisc::ir::Opcode::MapSize:
+      return "MapSize";
+    case t81::tisc::ir::Opcode::SetNew:
+      return "SetNew";
+    case t81::tisc::ir::Opcode::SetAdd:
+      return "SetAdd";
+    case t81::tisc::ir::Opcode::SetRemove:
+      return "SetRemove";
+    case t81::tisc::ir::Opcode::SetHas:
+      return "SetHas";
+    case t81::tisc::ir::Opcode::SetSize:
+      return "SetSize";
+    case t81::tisc::ir::Opcode::TAND:
+      return "TAND";
+    case t81::tisc::ir::Opcode::TOR:
+      return "TOR";
+    case t81::tisc::ir::Opcode::TXOR:
+      return "TXOR";
+    case t81::tisc::ir::Opcode::AXVERIFY:
+      return "AXVERIFY";
     case O::FMUL:
       return "FMUL";
     case O::FDIV:
