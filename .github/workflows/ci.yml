@@ -540,6 +540,16 @@ jobs:
             --expected-model-hash "$EXPECTED_MODEL_HASH" \
             --hash-out build/llama-cpp-repro/hash.txt 2>&1 | tee -a .github/logs/build-and-test.log
 
+      - name: Run canonical TISC repro workload
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/repro
+          ./build/t81 \
+            scripts/repro/canonical_workload.t81 \
+            --trace-out build/repro/vm_trace.log \
+            --hash-out build/repro/base81_hash.txt
+
       - name: Upload build artifacts
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
@@ -574,6 +584,14 @@ jobs:
           name: llama-cpp-hash-${{ matrix.platform }}-${{ matrix.compiler }}
           path: build/llama-cpp-repro/hash.txt
           if-no-files-found: error
+
+      - name: Upload repro oracle artifact
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: repro-${{ matrix.platform }}-${{ matrix.compiler }}
+          path: |
+            build/repro/vm_trace.log
+            build/repro/base81_hash.txt
 
       - name: Show ccache stats
         shell: bash
@@ -875,6 +893,50 @@ jobs:
             echo "- arm64: \`${arm_hash}\`"
             echo "- verdict: PASS"
           } >> "$GITHUB_STEP_SUMMARY"
+
+  ############################################################################
+  # JOB: repro-oracle
+  ############################################################################
+  repro-oracle:
+    name: " gate / repro oracle "
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Download all repro artifacts
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
+        with:
+          path: repro
+
+      - name: Verify bit-identical traces and hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Scanning repro artifacts..."
+          mapfile -t hashes < <(find repro -name base81_hash.txt | sort)
+
+          if [ "${#hashes[@]}" -lt 2 ]; then
+            echo "::error::Not enough repro artifacts"
+            exit 1
+          fi
+
+          reference="$(cat "${hashes[0]}" | tr -d '\n\r ')"
+          echo "Reference hash: $reference"
+
+          for f in "${hashes[@]}"; do
+            h="$(cat "$f" | tr -d '\n\r ')"
+            echo "$(basename "$f"): $h"
+            if [ "$h" != "$reference" ]; then
+              echo "::error::Determinism violation detected"
+              exit 1
+            fi
+          done
+
+          echo "All VM traces produced identical Base-81 hashes."
 
   ############################################################################
   # JOB: benchmarks
@@ -1186,6 +1248,7 @@ jobs:
       - determinism-slice
       - determinism-repeatability
       - build-and-test
+      - repro-oracle
       - t3k-cross-arch-bit-identity
       - t81lang-cross-arch-bit-identity
       - cxx-standard-compat
@@ -1204,6 +1267,7 @@ jobs:
           if [[ "${{ needs.determinism-slice.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.determinism-repeatability.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.build-and-test.result }}" != "success" ]]; then exit 1; fi
+          if [[ "${{ needs.repro-oracle.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.t3k-cross-arch-bit-identity.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.t81lang-cross-arch-bit-identity.result }}" != "success" ]]; then exit 1; fi
           if [[ "${{ needs.cxx-standard-compat.result }}" != "success" ]]; then exit 1; fi

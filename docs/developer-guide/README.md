@@ -15,7 +15,7 @@ Developers should start with [contributing/adding-a-language-feature.md](contrib
 
 ## Build Requirements
 
-See [book/book-en/05_Installation.md](../book/book-en/05_Installation.md) for build system information.
+See [book/book-en/05_Installation.md](book/book-en/05_Installation.md) for build system information.
 
 ## Navigation
 
