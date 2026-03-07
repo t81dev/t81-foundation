@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.11)
 include(FetchContent)
 FetchContent_Declare(
     googlebenchmark
-    URL https://codeload.github.com/google/benchmark/tar.gz/refs/tags/v1.9.5
+    URL https://github.com/google/benchmark/archive/refs/tags/v1.9.5.tar.gz
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
