@@ -44,7 +44,7 @@ jobs:
           fail: true
           args: >-
             --verbose --no-progress
-            --root-dir .
+            --root-dir ${{ github.workspace }}
             --exclude "http://localhost*"
             --exclude "https://github.com/t81dev/t81-foundation/edit*"
             --exclude "https://github.com/t81dev/t81-foundation/stargazers"
