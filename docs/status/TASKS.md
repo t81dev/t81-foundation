@@ -232,6 +232,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 | Task | Completed |
 | :--- | :--- |
+| **🏆 CI Workflow Stabilization** — Restored canonical `ci.yml` (PR #448); pinned lychee v0.18.1; fixed CLI manual path; added job timeouts; fixed `CanonHash<T81String>` non-determinism via `serialize_canonical()`; 325/325 tests passing | **2026-03-07** |
 | **🏆 Documentation Reorganization** - Content-based documentation structure with user-guide/ and developer-guide/ separation | **2026-03-06** |
 | **🏆 PR-426 Determinism Hardening Phase 1** - Comprehensive determinism hardening with T81_DETERMINISTIC enforcement, canonical containers, and cross-platform tests | **2026-03-04** |
 | **🏆 Recent Commit + Recovery Audit** - Post-rollback commit-window audit completed; public API lock refreshed; governance lock check restored | **2026-03-05** |
