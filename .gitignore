@@ -1,6 +1,6 @@
 # ── Build artifacts ─────────────────────────────────────────
-build/
-cmake-build/
+build*/
+cmake-build-*/
 out/
 bin/
 obj/

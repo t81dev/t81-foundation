@@ -34,7 +34,15 @@ namespace t81::v1 {
 template <std::size_t M, std::size_t E>
 class T81Float;
 
-}  // namespace t81::v1
+} // namespace t81::v1
+
+namespace t81::core::math::t81_soft_math {
+template <std::size_t M, std::size_t E>
+t81::v1::T81Float<M, E> t81_pow(const t81::v1::T81Float<M, E>& a, const t81::v1::T81Float<M, E>& b);
+
+template <std::size_t M, std::size_t E>
+t81::v1::T81Float<M, E> t81_div(const t81::v1::T81Float<M, E>& a, const t81::v1::T81Float<M, E>& b);
+} // namespace t81::core::math::t81_soft_math
 
 // Deterministic Math Backend
 #include "t81/types/detail/dmath.hpp"

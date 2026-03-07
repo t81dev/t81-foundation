@@ -13,7 +13,7 @@
 | `./docs/guides/public-api-overview.md` | `./docs/user-guide/reference/public-api-overview.md` | ✅ Fixed |
 | `./docs/guides/CONSUMING_T81_CMAKE.md` | `./docs/developer-guide/building/CONSUMING_T81_CMAKE.md` | ✅ Fixed |
 | `./docs/benchmarks/README.md` | `./docs/developer-guide/tools/README.md` | ✅ Fixed |
-| `./docs/process/roadmaps-plans/ROADMAP.md` | ✅ Fixed |
+| `./docs/roadmaps-plans/ROADMAP.md` | `./docs/process/roadmaps-plans/ROADMAP.md` | ✅ Fixed |
 
 ### ✅ All Other Links Verified
 

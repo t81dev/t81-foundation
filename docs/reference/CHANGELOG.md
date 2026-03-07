@@ -1,6 +1,6 @@
 # Changelog
 
-> **Source of Truth:** This document defines the **history of changes** released to the public. For future plans, see [../roadmaps-plans/ROADMAP.md](../roadmaps-plans/ROADMAP.md).
+> **Source of Truth:** This document defines the **history of changes** released to the public. For future plans, see [../process/roadmaps-plans/ROADMAP.md](../process/roadmaps-plans/ROADMAP.md).
 
 All notable changes to this project are documented in this file.
 

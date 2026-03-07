@@ -127,6 +127,6 @@ ______________________________________________________________________
 
 ## References
 
-- [Stable Baseline Policy](/docs/status/STABLE_BASELINE.md)
+- [Stable Baseline Policy](../../docs/records/STABLE_BASELINE.md)
 - [T81 Determinism Guarantees](/spec/rfc/RFC-0002-deterministic-execution-contract.md)
 - [Axion Safety Model](/spec/rfc/RFC-0003-axion-safety-model.md)
