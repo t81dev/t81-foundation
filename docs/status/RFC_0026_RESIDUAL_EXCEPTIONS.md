@@ -41,7 +41,7 @@ be reviewed before calling RFC-0026 operationally closed.
 | Surface | Current State | Why It Still Matters For RFC-0026 | Key Paths |
 | :--- | :--- | :--- | :--- |
 | Residual AI fallback inventory | The AI opcode family has both strict-core and host-float lanes, but there is no single status document describing where the boundary currently sits | Without that inventory, repo behavior can drift ahead of the written promotion/determinism story | This document plus `include/t81/tensor/llama.hpp`, `include/t81/tensor/matmul.hpp`, `core/vm/vm.cpp` |
-| `WLOAD` promotion boundary | `WLOAD` is functionally present and audited, but remains a copy/materialization path rather than a richer deterministic load pipeline | This is more about promotion/hardening than math, but it is still part of the phase-1 AI opcode contract | `include/t81/tensor/llama.hpp:447`, `core/vm/vm.cpp:5180` |
+| `WLOAD` promotion boundary | `WLOAD` is functionally present and audited, but phase-1 behavior is still handle-to-handle materialization rather than true policy-gated CanonFS-backed loading | This is the main remaining gap between current implementation and the fuller promotion target described in follow-on AI execution docs | `include/t81/tensor/llama.hpp:447`, `core/vm/vm.cpp:5180`, `spec/tisc-spec.md` |
 
 ## Category C: RFC-0030 Deterministic Math Dependencies
 
@@ -73,8 +73,9 @@ The next implementation work should be one of:
    additional hardening to match the claimed phase-1 boundary.
 
 2. `RFC-0030` work:
-   continue with the remaining genuine host-float tensor/runtime surfaces,
-   starting with deterministic division or broader float-domain parity rules.
+   continue with the remaining float-domain tensor/runtime policy questions,
+   starting with non-fixed matmul promotion/parity rules rather than more
+   isolated kernel arithmetic cleanup.
 
 Until one of those starts, the current repo state is coherent:
 

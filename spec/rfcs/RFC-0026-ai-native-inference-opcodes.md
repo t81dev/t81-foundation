@@ -14,9 +14,10 @@
 ## Summary
 
 Status note: accepted for the phase-1 opcode surface (`ATTN`, `QMATMUL`,
-`EMBED`, `WLOAD`, `GATHER`, `SCATTER`) now present in the repo. Remaining
-strict-core work on host-float elimination stays in backlog as implementation
-closure, not design uncertainty.
+`EMBED`, `WLOAD`, `GATHER`, `SCATTER`) now present in the repo. Deterministic
+math tightening for the current opcode/kernel surface is substantially closed;
+remaining follow-on work is primarily `WLOAD` promotion/hardening review and
+broader float-domain policy tracked under `RFC-0030`, not design uncertainty.
 
 T81 is conceived by AI, for AI. This RFC defines a new TISC opcode class —
 **AI-Native Inference Opcodes** — that elevates attention, quantized matrix

@@ -16,7 +16,7 @@ promotion claims, or determinism statements.
 | RFC-0020 | Complete status/integration closure | Runtime/spec/CLI already rely on canonical segment-trace strings | Keep verbatim trace strings stable and route incompatible changes through a new RFC |
 | RFC-0022 | Complete status/integration closure | `t81 policy compile/run`, grammar, and binary policy flow already exist | Treat RFC-0009 as historical provenance and evolve APL through RFC-0022 |
 | RFC-0025 | Complete operational closure | `TLOADHASH` and `allowed-tensor-hashes` are active repo surfaces | Continue CI/provenance hardening without reopening design status |
-| RFC-0026 | Complete implementation closure | Opcode/spec/runtime surface is real and partially promoted; remaining work splits between release-critical strict-core cleanup and follow-on deterministic math replacement | Finish phase-1 strict-core classification cleanup, document residual host-float fallback exceptions on AI opcode paths, and route true soft-math replacements through RFC-0030 |
+| RFC-0026 | Complete operational closure | Opcode/spec/runtime surface is real, deterministic kernel tightening is in place, and the remaining open item is narrow phase-1 promotion review rather than broad math cleanup | Keep the residual inventory current, decide whether `WLOAD` needs additional hardening before final closure, and treat broader float-domain work as RFC-0030 scope |
 | RFC-0027 | Complete status/integration closure | `spec/conformance` is wired into CMake/CTest and used as executable conformance infrastructure | Advance optional language annotations separately from the core acceptance status |
 
 ## Keep In Backlog

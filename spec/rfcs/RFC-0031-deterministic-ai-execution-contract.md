@@ -134,7 +134,11 @@ QMATMUL (RFC-0026 §5.15.2) MUST satisfy:
 
 ### WLOAD Opcode Execution
 
-WLOAD (RFC-0026 §5.15.3) MUST satisfy:
+WLOAD (RFC-0026 §5.15.3) currently satisfies only the phase-1 audited
+materialization contract. Full policy-gated CanonFS-backed loading remains a
+follow-on promotion item and therefore is not yet a repo-level invariant.
+
+Promotion target:
 
 - Validate model hash against RFC-0025 `allowed-tensor-hashes` policy
 - Use CanonFS content-addressed storage exclusively

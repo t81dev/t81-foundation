@@ -872,16 +872,17 @@ by ATTN, QMATMUL, GATHER, and SCATTER.
 #### WLOAD — Weight Load with Policy Gate
 
 - **Form**: `WLOAD RD, R_SRC, R_POLICY`
-- **Semantics**: Materializes a weight tensor from the source handle `R[R_SRC]`
-  under the Axion policy `R[R_POLICY]`. Axion MUST verify shape, precision,
-  and provenance metadata before the weight handle is materialized.
+- **Semantics**: Phase-1 materializes an independent weight-tensor copy from
+  the source handle `R[R_SRC]`. `R[R_POLICY]` is reserved for follow-on policy
+  dispatch and is not yet enforced by the current VM implementation.
 - **CanonFS audit (AI-M4)**: When a CanonFS driver is attached to the VM,
   WLOAD emits `meta slot axion event segment=meta addr=<n> action=WeightLoad`
   via `log_canonfs_operation()`. This audit event is absent when no CanonFS
   driver is present.
-- **On policy denial**: `SecurityFault`; the weight handle is never
-  materialized.
-- **Faults**: `SecurityFault` (policy denial), `TypeFault`.
+- **Status note**: Full policy-gated CanonFS-backed weight loading remains a
+  follow-on promotion step. Current phase-1 behavior provides deterministic
+  materialization plus audit visibility, not final provenance enforcement.
+- **Faults**: `TypeFault`.
 
 #### GATHER — Sparse Gather
 
