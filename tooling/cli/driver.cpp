@@ -1172,7 +1172,12 @@ int run_tisc(const fs::path& path, const std::optional<fs::path>& policy_path, b
       info("Trace written to " + trace_output_path->string());
     }
   } else {
-    info("Program terminated normally");
+    if (!vm->state().axion_log.empty()) {
+      info("Program terminated normally (" + std::to_string(vm->state().axion_log.size()) +
+           " axion event(s))");
+    } else {
+      info("Program terminated normally");
+    }
   }
   return 0;
 }

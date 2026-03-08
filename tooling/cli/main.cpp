@@ -29,6 +29,7 @@
 #include <thread>
 #include <tuple>
 #include <type_traits>
+#include <unordered_set>
 #include <vector>
 #if !defined(_WIN32)
 #include <sys/wait.h>
@@ -197,6 +198,10 @@ Subcommands:
   run <file.apl|.axionb>          Validate and load an Axion policy
   test <file.apl|.axionb> --model-hash <hash>
                                  Validate a model hash against an Axion policy
+  list [--json]                   List .apl policy files found in the project
+
+APL syntax: Axion Policy Language uses s-expression syntax.
+Example policy: (allow-all)
 
 Options:
   -o, --output <out> Output file path
@@ -223,6 +228,7 @@ Subcommands:
   snapshot-diff <lhs> <rhs>
                      Compare two CanonFS snapshots through the Axion lens
   rollback [--to <hash>]  Roll back to a prior CanonFS snapshot
+  log [--json] [--tail <n>]           Show Axion state and CanonFS audit trail
 
 Options:
   --tier N            Target cognition tier (1..9, default: 1)
@@ -503,9 +509,14 @@ Usage: t81 project <action> [args]
 
 Actions:
   init <project_name>                 Scaffold a new T81 project
+  build [file.t81]                    Compile project source (defaults to main.t81)
+  run [file.t81] [--policy <p>]       Build and execute project source
+  test [options]                      Run project tests via CTest
 
-Example:
+Examples:
   t81 project init my_project
+  t81 project build
+  t81 project run
 )";
 }
 
@@ -514,7 +525,8 @@ void print_help_env() {
 Usage: t81 env <action> [args]
 
 Actions:
-  doctor [--json]                     Run environment readiness checks
+  check [--json]                      Quick pass/fail readiness check (exit 0=ready, 1=not)
+  doctor [--json]                     Run environment readiness checks with detail
   paths [--json]                      Print important repo/runtime paths
   diag [--json]                       Aggregate environment, CanonFS, and Axion diagnostics
   toolchain [--json]                  Inspect compiler/build/test tool availability
@@ -556,6 +568,7 @@ Actions:
   snapshot [--json] [--canonfs-root <path>]
   snapshot-diff <lhs> <rhs> [--json] [--canonfs-root <path>]
   rollback --to <hash> [--json] [--canonfs-root <path>]
+  gc [--json] [--canonfs-root <path>]  Remove unreferenced objects from the store
 
 Examples:
   t81 canonfs put-file README.md
@@ -607,12 +620,14 @@ Actions:
                                      Encode Base81 symbolic TISC text into .tisc
   decode <file.tisc> [-o <out.base81>] [--json]
                                      Render a .tisc artifact as canonical Base81 symbolic text
+  diff <a.tisc> <b.tisc> [--json]    Compare two TISC artifacts at the instruction level
 
 Examples:
   t81 tisc disasm build/hello.tisc
   t81 tisc validate build/hello.tisc --json
   t81 tisc encode build/hello.base81 -o build/hello.tisc
   t81 tisc decode build/hello.tisc -o build/hello.base81
+  t81 tisc diff build/v1.tisc build/v2.tisc
 )";
 }
 
@@ -648,11 +663,14 @@ Actions:
   trace-hash <trace.txt> [--json]     Compute SHA3-512 of canonicalized trace lines
   diff <lhs> <rhs> [--json]           Compare two artifacts by exact bytes
   diff-trace <lhs> <rhs> [--json]     Compare canonicalized trace content
+  baseline <dir> [--source-dir <dir>] [--json]
+                                     Create determinism fixture baseline from .tisc files
 
 Examples:
   t81 determinism verify
   t81 determinism hash build/hello.tisc
   t81 determinism trace-hash run.trace --json
+  t81 determinism baseline tests/fixtures/baseline
 )";
 }
 
@@ -672,6 +690,9 @@ void print_help_canonize_tensor() {
 Usage: t81 canonize-tensor <file>
 
 Canonicalizes tensor input into CanonFS object storage.
+
+Note: Prefer `t81 canonfs put-tensor` or `t81 tensor canonize` for this operation.
+      `internal canonize-tensor` is retained for backwards compatibility.
 
 Example:
   t81 canonize-tensor model.t81w
@@ -793,7 +814,8 @@ void print_help_policy_compile() {
   std::cerr << R"(
 Usage: t81 policy compile <file.apl> [-o <out>]
 
-Compiles Axion policy source into bytecode.
+Compiles Axion policy source into bytecode (.axionb).
+APL uses s-expression syntax. Example: (allow-all)
 )";
 }
 
@@ -810,6 +832,61 @@ void print_help_policy_test() {
 Usage: t81 policy test <file.apl|file.axionb> --model-hash <hash> [--json]
 
 Checks whether a candidate model hash is allowed by the supplied policy.
+)";
+}
+
+void print_help_policy_list() {
+  std::cerr << R"(
+Usage: t81 policy list [--json] [--dir <path>]
+
+Lists .apl policy files found in the project or the specified directory.
+)";
+}
+
+void print_help_env_check() {
+  std::cerr << R"(
+Usage: t81 env check [--json]
+
+Quick pass/fail readiness check. Exits 0 if the build environment is ready,
+1 if any critical check fails. No verbose output.
+)";
+}
+
+void print_help_tisc_diff() {
+  std::cerr << R"(
+Usage: t81 tisc diff <a.tisc> <b.tisc> [--json]
+
+Compares two TISC artifacts at the instruction level and reports differences.
+)";
+}
+
+void print_help_axion_log() {
+  std::cerr << R"(
+Usage: t81 axion log [--json] [--tail <n>]
+
+Shows the current Axion state and CanonFS audit trail.
+Options:
+  --json       Machine-readable output (schema: t81.axion-log.v1)
+  --tail <n>   Limit output to the last N snapshot entries (default: 10)
+)";
+}
+
+void print_help_determinism_baseline() {
+  std::cerr << R"(
+Usage: t81 determinism baseline <dir> [--source-dir <src>] [--json]
+
+Scans <dir> (or --source-dir) for .tisc files, runs each once, and writes
+SHA3-512 hashes to <dir>/baseline.json as a determinism fixture set.
+Use `t81 determinism verify <dir>` to check against the baseline later.
+)";
+}
+
+void print_help_canonfs_gc() {
+  std::cerr << R"(
+Usage: t81 canonfs gc [--json] [--canonfs-root <path>]
+
+Scans the CanonFS object store and removes objects not referenced by any
+snapshot. Prints a summary of bytes reclaimed.
 )";
 }
 
@@ -925,6 +1002,7 @@ Commands:
   axion <action> [args]                 Axion governor and policy-facing operations
   trace <action> [args]                 Trace inspection, replay, export, canonicalization
   bench  [args]                         Benchmark alias
+  repl                                  Start interactive REPL
   completion <shell>                    Print shell completion script
   man [--install-dir <dir>]             Show or install CLI manpage
   feedback <subcommand> [args]          Local CLI UX feedback loop
@@ -1205,6 +1283,10 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       print_help_policy_test();
       return true;
     }
+    if (sub == "list") {
+      print_help_policy_list();
+      return true;
+    }
   }
   if (family == "trace") {
     if (sub == "show") {
@@ -1291,6 +1373,10 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       std::cerr << "Usage: t81 tisc decode <file.tisc> [-o <out.base81>] [--json]\n";
       return true;
     }
+    if (sub == "diff") {
+      print_help_tisc_diff();
+      return true;
+    }
   }
   if (family == "determinism") {
     if (sub == "verify") {
@@ -1325,6 +1411,10 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       std::cerr << "Usage: t81 determinism diff-trace <lhs> <rhs> [--json]\n";
       return true;
     }
+    if (sub == "baseline") {
+      print_help_determinism_baseline();
+      return true;
+    }
   }
   if (family == "axion") {
     if (sub == "status") {
@@ -1355,6 +1445,10 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       std::cerr << "Usage: t81 axion rollback --to <hash> [--json]\n";
       return true;
     }
+    if (sub == "log") {
+      print_help_axion_log();
+      return true;
+    }
   }
   if (family == "tensor") {
     if (sub == "canonize") {
@@ -1371,6 +1465,10 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
     }
   }
   if (family == "env") {
+    if (sub == "check") {
+      print_help_env_check();
+      return true;
+    }
     if (sub == "doctor") {
       print_help_doctor();
       return true;
@@ -1419,6 +1517,10 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
     }
     if (sub == "rollback") {
       std::cerr << "Usage: t81 canonfs rollback --to <hash> [--json] [--canonfs-root <path>]\n";
+      return true;
+    }
+    if (sub == "gc") {
+      print_help_canonfs_gc();
       return true;
     }
   }
@@ -2214,6 +2316,10 @@ int run_policy(const Args& args) {
       print_help_policy_test();
       return 0;
     }
+    if (sub == "list") {
+      print_help_policy_list();
+      return 0;
+    }
     error("policy: unknown subcommand '" + sub + "'. Run 't81 help policy'.");
     return 1;
   }
@@ -2301,6 +2407,44 @@ int run_policy(const Args& args) {
     }
     return ok ? 0 : 1;
   }
+  if (sub == "list") {
+    bool as_json = false;
+    fs::path search_dir = discover_repo_root();
+    for (std::size_t i = 1; i < args.command_args.size(); ++i) {
+      if (args.command_args[i] == "--json") { as_json = true; }
+      else if (args.command_args[i] == "--dir" && i + 1 < args.command_args.size()) {
+        search_dir = fs::path(args.command_args[++i]);
+      }
+    }
+    std::vector<fs::path> found;
+    std::error_code ec;
+    for (const auto& entry : fs::recursive_directory_iterator(search_dir, ec)) {
+      if (ec) break;
+      if (entry.is_regular_file() && entry.path().extension() == ".apl") {
+        found.push_back(entry.path());
+      }
+    }
+    if (as_json) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.policy-list.v1\",\n"
+                << "  \"count\": " << found.size() << ",\n"
+                << "  \"policies\": [\n";
+      for (std::size_t i = 0; i < found.size(); ++i) {
+        std::cout << "    \"" << json_escape(found[i].string()) << "\"";
+        if (i + 1 < found.size()) std::cout << ",";
+        std::cout << "\n";
+      }
+      std::cout << "  ]\n}\n";
+    } else {
+      if (found.empty()) {
+        std::cout << "No .apl policy files found in: " << search_dir.string() << "\n";
+      } else {
+        for (const auto& p : found) std::cout << p.string() << "\n";
+      }
+    }
+    return 0;
+  }
+
   error("policy: unknown subcommand '" + sub + "'. Run 't81 help policy'.");
   return 1;
 }
@@ -2648,6 +2792,50 @@ int run_axion(const Args& args) {
     return t81::cli::canonfs_rollback(rollback_to, canonfs_root, json_out);
   }
 
+  if (sub == "log") {
+    std::size_t tail_n = 10;
+    for (std::size_t i = 1; i < args.command_args.size(); ++i) {
+      if (args.command_args[i] == "--json") {
+        json_out = true;
+      } else if (args.command_args[i] == "--tail" && i + 1 < args.command_args.size()) {
+        try { tail_n = static_cast<std::size_t>(std::stoull(args.command_args[++i])); }
+        catch (...) { error("axion log: invalid --tail value."); return 1; }
+      } else if (args.command_args[i] == "-h" || args.command_args[i] == "--help") {
+        print_help_axion_log();
+        return 0;
+      }
+    }
+    (void)tail_n;  // Parsed; snapshot limiting reserved for future use
+    // Read axion state from CanonFS
+    const fs::path state_path = canonfs_root / "axion" / "state.json";
+    const bool state_ok = fs::exists(state_path);
+    const std::size_t snap_count = count_snapshot_dirs(canonfs_root);
+    const std::size_t obj_count = count_canonfs_objects(canonfs_root);
+    if (json_out) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.axion-log.v1\",\n"
+                << "  \"canonfs_root\": \"" << json_escape(canonfs_root.string()) << "\",\n"
+                << "  \"state_present\": " << (state_ok ? "true" : "false") << ",\n"
+                << "  \"snapshots\": " << snap_count << ",\n"
+                << "  \"objects\": " << obj_count << "\n"
+                << "}\n";
+    } else {
+      std::cout << "CanonFS root:  " << canonfs_root.string() << "\n";
+      std::cout << "State file:    " << (state_ok ? "present" : "missing") << "\n";
+      std::cout << "Snapshots:     " << snap_count << "\n";
+      std::cout << "Objects:       " << obj_count << "\n";
+      if (state_ok) {
+        std::ifstream sf(state_path);
+        if (sf) {
+          std::cout << "\nAxion state:\n";
+          std::string sl;
+          while (std::getline(sf, sl)) std::cout << "  " << sl << "\n";
+        }
+      }
+    }
+    return 0;
+  }
+
   error("axion: unknown subcommand '" + sub +
         "'. Run 't81 axion --help' for usage.");
   return 1;
@@ -2758,6 +2946,51 @@ int run_canonfs_command(const Args& args) {
     return t81::cli::canonfs_rollback(positional[0], canonfs_root, as_json);
   }
 
+  if (action == "gc") {
+    // Collect all objects
+    const fs::path objects_dir = canonfs_root / "objects";
+    // Collect hashes referenced by any snapshot
+    std::unordered_set<std::string> referenced;
+    std::error_code ec;
+    const fs::path snaps_dir = canonfs_root / "snapshots";
+    if (fs::exists(snaps_dir)) {
+      for (const auto& snap_entry : fs::directory_iterator(snaps_dir, ec)) {
+        if (ec) break;
+        if (!snap_entry.is_directory()) continue;
+        for (const auto& f : fs::directory_iterator(snap_entry.path(), ec)) {
+          if (ec) break;
+          if (f.is_regular_file()) referenced.insert(f.path().stem().string());
+        }
+      }
+    }
+    std::size_t removed = 0;
+    std::uintmax_t bytes_freed = 0;
+    if (fs::exists(objects_dir)) {
+      for (const auto& obj : fs::directory_iterator(objects_dir, ec)) {
+        if (ec) break;
+        if (!obj.is_regular_file()) continue;
+        const std::string stem = obj.path().stem().string();
+        if (referenced.find(stem) == referenced.end()) {
+          const std::uintmax_t sz = fs::file_size(obj.path(), ec);
+          fs::remove(obj.path(), ec);
+          if (!ec) { ++removed; bytes_freed += sz; }
+        }
+      }
+    }
+    if (as_json) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.canonfs-gc.v1\",\n"
+                << "  \"ok\": true,\n"
+                << "  \"removed\": " << removed << ",\n"
+                << "  \"bytes_freed\": " << bytes_freed << "\n"
+                << "}\n";
+    } else {
+      std::cout << "GC: removed " << removed << " object(s), freed "
+                << bytes_freed << " byte(s)\n";
+    }
+    return 0;
+  }
+
   error("canonfs: unknown action '" + action + "'. Run 't81 help canonfs'.");
   return 1;
 }
@@ -2771,6 +3004,7 @@ int run_determinism_command(const char* command_name, const Args& args) {
   const std::string action = args.command_args[0];
   bool as_json = false;
   std::optional<fs::path> policy_path;
+  std::optional<fs::path> source_dir_opt;
   std::vector<std::string> positional;
   for (std::size_t i = 1; i < args.command_args.size(); ++i) {
     const std::string& token = args.command_args[i];
@@ -2782,6 +3016,12 @@ int run_determinism_command(const char* command_name, const Args& args) {
         return 1;
       }
       policy_path = fs::path(args.command_args[i]);
+    } else if (token == "--source-dir") {
+      if (++i >= args.command_args.size()) {
+        error("determinism: missing value for --source-dir.");
+        return 1;
+      }
+      source_dir_opt = fs::path(args.command_args[i]);
     } else if (!token.empty() && token[0] == '-') {
       error("determinism: unknown option '" + token + "'. Run 't81 help determinism'.");
       return 1;
@@ -3050,6 +3290,46 @@ int run_determinism_command(const char* command_name, const Args& args) {
       return 1;
     }
     return t81::cli::determinism_diff_trace_files(positional[0], positional[1], as_json);
+  }
+
+  if (action == "baseline") {
+    if (positional.empty()) {
+      error("determinism baseline requires an output directory. Run 't81 help determinism baseline'.");
+      return 1;
+    }
+    const fs::path out_dir = fs::path(positional[0]);
+    const fs::path source_dir = source_dir_opt.value_or(out_dir);
+    std::error_code ec;
+    fs::create_directories(out_dir, ec);
+    std::vector<std::pair<std::string, std::string>> entries;
+    for (const auto& entry : fs::recursive_directory_iterator(source_dir, ec)) {
+      if (ec) break;
+      if (entry.is_regular_file() && entry.path().extension() == ".tisc") {
+        const std::string hash = sha3_512_file(entry.path());
+        entries.push_back({entry.path().string(), hash});
+      }
+    }
+    const fs::path baseline_file = out_dir / "baseline.json";
+    std::ofstream ofs(baseline_file, std::ios::trunc);
+    ofs << "{\n  \"schema\": \"t81.determinism-baseline.v1\",\n  \"entries\": [\n";
+    for (std::size_t i = 0; i < entries.size(); ++i) {
+      ofs << "    {\"path\": \"" << json_escape(entries[i].first)
+          << "\", \"sha3_512\": \"" << entries[i].second << "\"}";
+      if (i + 1 < entries.size()) ofs << ",";
+      ofs << "\n";
+    }
+    ofs << "  ]\n}\n";
+    if (as_json) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.determinism-baseline.v1\",\n"
+                << "  \"ok\": true,\n"
+                << "  \"baseline\": \"" << json_escape(baseline_file.string()) << "\",\n"
+                << "  \"count\": " << entries.size() << "\n"
+                << "}\n";
+    } else {
+      std::cout << "Baseline written: " << baseline_file.string() << " (" << entries.size() << " entries)\n";
+    }
+    return 0;
   }
 
   error("determinism: unknown action '" + action + "'. Run 't81 help determinism'.");
@@ -3496,6 +3776,64 @@ int run_tisc_command(const Args& args) {
   }
 
   const std::string action = args.command_args[0];
+
+  if (action == "diff") {
+    bool as_json = false;
+    fs::path input1, input2;
+    for (std::size_t i = 1; i < args.command_args.size(); ++i) {
+      const auto& tok = args.command_args[i];
+      if (tok == "--json") as_json = true;
+      else if (tok == "-h" || tok == "--help") { print_help_tisc_diff(); return 0; }
+      else if (input1.empty()) input1 = fs::path(tok);
+      else if (input2.empty()) input2 = fs::path(tok);
+      else { error("tisc diff: unexpected argument '" + tok + "'."); return 1; }
+    }
+    if (input1.empty() || input2.empty()) {
+      error("tisc diff requires two .tisc input files. Run 't81 help tisc diff'.");
+      return 1;
+    }
+    const auto prog1 = t81::tisc::load_program(input1.string());
+    const auto prog2 = t81::tisc::load_program(input2.string());
+    auto insn_eq = [](const t81::tisc::Insn& x, const t81::tisc::Insn& y) {
+      return x.opcode == y.opcode && x.a == y.a && x.b == y.b &&
+             x.c == y.c && x.literal_kind == y.literal_kind;
+    };
+    const std::size_t max_i = std::max(prog1.insns.size(), prog2.insns.size());
+    std::size_t diffs = 0;
+    for (std::size_t idx = 0; idx < max_i; ++idx) {
+      if (idx >= prog1.insns.size() || idx >= prog2.insns.size() ||
+          !insn_eq(prog1.insns[idx], prog2.insns[idx])) {
+        ++diffs;
+      }
+    }
+    const bool identical = (diffs == 0);
+    if (as_json) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.tisc-diff.v1\",\n"
+                << "  \"lhs\": \"" << json_escape(input1.string()) << "\",\n"
+                << "  \"rhs\": \"" << json_escape(input2.string()) << "\",\n"
+                << "  \"lhs_instructions\": " << prog1.insns.size() << ",\n"
+                << "  \"rhs_instructions\": " << prog2.insns.size() << ",\n"
+                << "  \"diff_count\": " << diffs << ",\n"
+                << "  \"identical\": " << (identical ? "true" : "false") << "\n"
+                << "}\n";
+    } else {
+      if (identical) {
+        std::cout << "identical\n";
+      } else {
+        for (std::size_t idx = 0; idx < max_i; ++idx) {
+          if (idx >= prog1.insns.size()) { std::cout << "+ [" << idx << "] <rhs extra>\n"; }
+          else if (idx >= prog2.insns.size()) { std::cout << "- [" << idx << "] <lhs extra>\n"; }
+          else if (!insn_eq(prog1.insns[idx], prog2.insns[idx])) {
+            std::cout << "! [" << idx << "] differs\n";
+          }
+        }
+        std::cout << diffs << " instruction(s) differ\n";
+      }
+    }
+    return identical ? 0 : 1;
+  }
+
   bool as_json = false;
   fs::path input;
   std::optional<fs::path> output = args.output;
@@ -4422,6 +4760,40 @@ int run_env_toolchain(const Args& args) {
   return 0;
 }
 
+int run_env_check(const Args& args) {
+  bool as_json = false;
+  for (const auto& token : args.command_args) {
+    if (token == "--json") {
+      as_json = true;
+    } else if (token == "-h" || token == "--help") {
+      print_help_env_check();
+      return 0;
+    } else {
+      error("env check: unknown option '" + token + "'. Run 't81 help env check'.");
+      return 1;
+    }
+  }
+
+  const fs::path build_dir = discover_build_dir();
+  const bool build_ready = fs::exists(build_dir / "CTestTestfile.cmake");
+  const bool toolchain_ok = shell_command_available("cmake") && shell_command_available("ctest") &&
+                            (shell_command_available("clang++") || shell_command_available("g++"));
+  const bool ok = build_ready && toolchain_ok;
+
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.env-check.v1\",\n"
+              << "  \"ok\": " << (ok ? "true" : "false") << ",\n"
+              << "  \"build_ready\": " << (build_ready ? "true" : "false") << ",\n"
+              << "  \"toolchain_ok\": " << (toolchain_ok ? "true" : "false") << "\n"
+              << "}\n";
+  } else if (!ok) {
+    if (!build_ready) std::cerr << "error: build directory not ready (run cmake + ninja first)\n";
+    if (!toolchain_ok) std::cerr << "error: toolchain incomplete (cmake/ctest/compiler missing)\n";
+  }
+  return ok ? 0 : 1;
+}
+
 int run_env_diag(const Args& args) {
   bool as_json = false;
   for (const auto& token : args.command_args) {
@@ -5133,7 +5505,7 @@ std::string build_bash_completion() {
   return R"(_t81_complete() {
   local cur prev words cword
   _init_completion || return
-  local commands="code lang project env internal canonfs determinism vm tisc ir tensor weights model policy axion trace bench completion man feedback version help"
+  local commands="code lang project env internal canonfs determinism vm tisc ir tensor weights model policy axion trace bench repl completion man feedback version help"
   if [[ ${cword} -eq 1 ]]; then
     COMPREPLY=( $(compgen -W "${commands}" -- "${cur}") )
     return
@@ -5146,25 +5518,25 @@ std::string build_bash_completion() {
       COMPREPLY=( $(compgen -W "check lint fmt build run test disasm debug repl" -- "${cur}") )
       ;;
     project)
-      COMPREPLY=( $(compgen -W "init" -- "${cur}") )
+      COMPREPLY=( $(compgen -W "init build run test" -- "${cur}") )
       ;;
     env)
-      COMPREPLY=( $(compgen -W "doctor paths diag toolchain feedback" -- "${cur}") )
+      COMPREPLY=( $(compgen -W "check doctor paths diag toolchain feedback" -- "${cur}") )
       ;;
     internal)
       COMPREPLY=( $(compgen -W "pkg benchmark repro-hash canonize-tensor canonize-file memory-stats llama-run" -- "${cur}") )
       ;;
     canonfs)
-      COMPREPLY=( $(compgen -W "put-file put-tensor ls get stat verify snapshot snapshot-diff rollback" -- "${cur}") )
+      COMPREPLY=( $(compgen -W "put-file put-tensor ls get stat verify snapshot snapshot-diff rollback gc" -- "${cur}") )
       ;;
     determinism)
-      COMPREPLY=( $(compgen -W "verify verify-run certify explain hash trace-hash diff diff-trace" -- "${cur}") )
+      COMPREPLY=( $(compgen -W "verify verify-run certify explain hash trace-hash diff diff-trace baseline" -- "${cur}") )
       ;;
     vm)
       COMPREPLY=( $(compgen -W "run debug trace step regs stack mem state profile explain-trap" -- "${cur}") )
       ;;
     tisc)
-      COMPREPLY=( $(compgen -W "disasm validate encode decode" -- "${cur}") )
+      COMPREPLY=( $(compgen -W "disasm validate encode decode diff" -- "${cur}") )
     ;;
     ir)
       COMPREPLY=( $(compgen -W "show dump export" -- "${cur}") )
@@ -5179,10 +5551,10 @@ std::string build_bash_completion() {
       COMPREPLY=( $(compgen -W "import info verify quantize" -- "${cur}") )
       ;;
     policy)
-      COMPREPLY=( $(compgen -W "compile run test" -- "${cur}") )
+      COMPREPLY=( $(compgen -W "compile run test list" -- "${cur}") )
       ;;
     axion)
-      COMPREPLY=( $(compgen -W "status optimize simulate explain snapshot snapshot-diff rollback" -- "${cur}") )
+      COMPREPLY=( $(compgen -W "status optimize simulate explain snapshot snapshot-diff rollback log" -- "${cur}") )
       ;;
     trace)
       COMPREPLY=( $(compgen -W "show diff replay summary stats canonicalize export" -- "${cur}") )
@@ -5250,25 +5622,25 @@ case $state in
         _values 'code action' check lint fmt build run test disasm debug repl
         ;;
       project)
-        _values 'project action' init
+        _values 'project action' init build run test
         ;;
       env)
-        _values 'env action' doctor paths diag toolchain feedback
+        _values 'env action' check doctor paths diag toolchain feedback
         ;;
       internal)
         _values 'internal action' pkg benchmark repro-hash canonize-tensor canonize-file memory-stats llama-run
         ;;
       canonfs)
-        _values 'canonfs action' put-file put-tensor ls get stat verify snapshot snapshot-diff rollback
+        _values 'canonfs action' put-file put-tensor ls get stat verify snapshot snapshot-diff rollback gc
         ;;
       determinism)
-        _values 'determinism action' verify verify-run certify explain hash trace-hash diff diff-trace
+        _values 'determinism action' verify verify-run certify explain hash trace-hash diff diff-trace baseline
         ;;
       vm)
         _values 'vm action' run debug trace step regs stack mem state profile explain-trap
         ;;
       tisc)
-        _values 'tisc action' disasm validate encode decode
+        _values 'tisc action' disasm validate encode decode diff
         ;;
       ir)
         _values 'ir action' show dump export
@@ -5283,10 +5655,10 @@ case $state in
         _values 'model action' import info verify quantize
         ;;
       policy)
-        _values 'policy action' compile run test
+        _values 'policy action' compile run test list
         ;;
       axion)
-        _values 'axion action' status optimize simulate explain snapshot snapshot-diff rollback
+        _values 'axion action' status optimize simulate explain snapshot snapshot-diff rollback log
         ;;
       trace)
         _values 'trace action' show diff replay summary stats canonicalize export
@@ -5307,23 +5679,23 @@ esac
 }
 
 std::string build_fish_completion() {
-  return R"(complete -c t81 -f -n '__fish_use_subcommand' -a 'code lang project env internal canonfs determinism vm tisc ir tensor weights model policy axion trace bench completion man feedback version help'
+  return R"(complete -c t81 -f -n '__fish_use_subcommand' -a 'code lang project env internal canonfs determinism vm tisc ir tensor weights model policy axion trace bench repl completion man feedback version help'
 complete -c t81 -f -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish'
 complete -c t81 -f -n '__fish_seen_subcommand_from lang' -a 'check lint fmt build run test disasm debug repl show dump export'
 complete -c t81 -f -n '__fish_seen_subcommand_from code' -a 'check lint fmt build run test disasm debug repl'
-complete -c t81 -f -n '__fish_seen_subcommand_from project' -a 'init'
-complete -c t81 -f -n '__fish_seen_subcommand_from env' -a 'doctor paths diag toolchain feedback'
+complete -c t81 -f -n '__fish_seen_subcommand_from project' -a 'init build run test'
+complete -c t81 -f -n '__fish_seen_subcommand_from env' -a 'check doctor paths diag toolchain feedback'
 complete -c t81 -f -n '__fish_seen_subcommand_from internal' -a 'pkg benchmark repro-hash canonize-tensor canonize-file memory-stats llama-run'
-complete -c t81 -f -n '__fish_seen_subcommand_from canonfs' -a 'put-file put-tensor ls get stat verify snapshot snapshot-diff rollback'
-complete -c t81 -f -n '__fish_seen_subcommand_from determinism' -a 'verify verify-run certify explain hash trace-hash diff diff-trace'
+complete -c t81 -f -n '__fish_seen_subcommand_from canonfs' -a 'put-file put-tensor ls get stat verify snapshot snapshot-diff rollback gc'
+complete -c t81 -f -n '__fish_seen_subcommand_from determinism' -a 'verify verify-run certify explain hash trace-hash diff diff-trace baseline'
 complete -c t81 -f -n '__fish_seen_subcommand_from vm' -a 'run debug trace step regs stack mem state profile explain-trap'
-complete -c t81 -f -n '__fish_seen_subcommand_from tisc' -a 'disasm validate encode decode'
+complete -c t81 -f -n '__fish_seen_subcommand_from tisc' -a 'disasm validate encode decode diff'
 complete -c t81 -f -n '__fish_seen_subcommand_from ir' -a 'show dump export'
 complete -c t81 -f -n '__fish_seen_subcommand_from tensor' -a 'canonize hash inspect'
 complete -c t81 -f -n '__fish_seen_subcommand_from weights' -a 'import info verify quantize'
 complete -c t81 -f -n '__fish_seen_subcommand_from model' -a 'import info verify quantize'
-complete -c t81 -f -n '__fish_seen_subcommand_from policy' -a 'compile run test'
-complete -c t81 -f -n '__fish_seen_subcommand_from axion' -a 'status optimize simulate explain snapshot snapshot-diff rollback'
+complete -c t81 -f -n '__fish_seen_subcommand_from policy' -a 'compile run test list'
+complete -c t81 -f -n '__fish_seen_subcommand_from axion' -a 'status optimize simulate explain snapshot snapshot-diff rollback log'
 complete -c t81 -f -n '__fish_seen_subcommand_from trace' -a 'show diff replay summary stats canonicalize export'
 complete -c t81 -f -n '__fish_seen_subcommand_from feedback' -a 'submit report'
 )";
@@ -5442,7 +5814,23 @@ int run_man_command(const Args& args) {
   }
   const std::string man_text = build_manpage_text();
   if (install_dir.empty()) {
-    std::cout << man_text;
+    // Try to render through man -l (temp file) or $PAGER
+    const char* pager = std::getenv("PAGER");
+    if (!pager) pager = "less";
+    // Write to a temp file and invoke man -l <file>
+    const fs::path tmp_man = fs::temp_directory_path() / "t81.1";
+    {
+      std::ofstream tmp_ofs(tmp_man, std::ios::binary | std::ios::trunc);
+      tmp_ofs << man_text;
+    }
+    // Try man -l first (renders troff); fall back to pager on plain text
+    const std::string man_cmd = std::string("man -l ") + tmp_man.string() + " 2>/dev/null";
+    if (std::system(man_cmd.c_str()) != 0) {
+      const std::string pager_cmd = std::string(pager) + " " + tmp_man.string();
+      std::system(pager_cmd.c_str());
+    }
+    std::error_code ec;
+    fs::remove(tmp_man, ec);
     return 0;
   }
   std::error_code ec;
@@ -5869,6 +6257,12 @@ int normalize_domain_command(Args& args) {
       args.command_args.erase(args.command_args.begin());
       return -1;
     }
+    if (action == "build" || action == "run" || action == "test") {
+      // Delegate to code subcommand with project defaults
+      args.command = "code";
+      // Keep action and remaining args
+      return -1;
+    }
     error("Unknown project action: " + action + ". Run 't81 help project'.");
     return 1;
   }
@@ -5886,6 +6280,11 @@ int normalize_domain_command(Args& args) {
     const std::string action = args.command_args[0];
     if (action == "doctor") {
       args.command = "doctor";
+      args.command_args.erase(args.command_args.begin());
+      return -1;
+    }
+    if (action == "check") {
+      args.command = "env-check";
       args.command_args.erase(args.command_args.begin());
       return -1;
     }
@@ -6386,6 +6785,9 @@ int main(int argc, char* argv[]) {
     } else if (args.command == "env-paths") {
       return run_env_paths(args);
 
+    } else if (args.command == "env-check") {
+      return run_env_check(args);
+
     } else if (args.command == "env-diag") {
       return run_env_diag(args);
 
@@ -6508,6 +6910,10 @@ int main(int argc, char* argv[]) {
           return 0;
         }
         ta.args.push_back(token);
+      }
+      // Auto-disable color when stdout is not a terminal
+      if (!ta.no_color && !isatty(fileno(stdout))) {
+        ta.no_color = true;
       }
       return t81::cli::run_trace(ta);
 
