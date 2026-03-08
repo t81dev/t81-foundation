@@ -5363,38 +5363,65 @@ public:
     if (!_semantic) return {};
     const auto* data = _semantic->vector_literal_data(&expr);
     if (!data) {
-      // Dynamic vector construction - FIXED: Use tensor operations for T81Vector[T, N]
+      // Dynamic vector construction - FIXED: Check if this is T81Vector[T, N]
       // T81Vector[T, N] should always be treated as a tensor, not string vector
       // regardless of whether elements are constants or variables
       
+      const Type* vector_type = typed_expr(&expr);
+      const bool is_t81_vector = vector_type && 
+                                   vector_type->kind == Type::Kind::Vector &&
+                                   !vector_type->params.empty() &&
+                                   vector_type->params[0].kind != Type::Kind::String;
+      
+      if (is_t81_vector) {
+        auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+        tisc::ir::Instruction vec_new;
+        vec_new.opcode = tisc::ir::Opcode::TNEW;
+        vec_new.operands = {dest.reg};
+        emit(vec_new);
+
+        // Use TSET with index parameter for sequential element setting
+        auto index_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        tisc::ir::Instruction zero_reg;
+        zero_reg.opcode = tisc::ir::Opcode::LOADI;
+        zero_reg.operands = {index_reg.reg, tisc::ir::Immediate{0}};
+        emit(zero_reg);
+
+        for (int i = 0; i < static_cast<int>(expr.elements.size()); ++i) {
+          auto idx = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+          tisc::ir::Instruction set_idx;
+          set_idx.opcode = tisc::ir::Opcode::LOADI;
+          set_idx.operands = {idx.reg, tisc::ir::Immediate{i}};
+          emit(set_idx);
+
+          const auto& element = expr.elements[i];
+          element->accept(*this);
+          auto value = ensure_expr_result(element.get());
+          
+          // Use tensor set operations with proper index
+          tisc::ir::Instruction push;
+          push.opcode = tisc::ir::Opcode::TSET;
+          push.operands = {dest.reg, idx.reg, value.reg};
+          emit(push);
+        }
+
+        record_result(&expr, dest);
+        return {};
+      }
+      
+      // Fall back to original string vector behavior for other vector types
       auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
       tisc::ir::Instruction vec_new;
-      vec_new.opcode = tisc::ir::Opcode::TNEW;
+      vec_new.opcode = tisc::ir::Opcode::STRVECNEW;
       vec_new.operands = {dest.reg};
       emit(vec_new);
 
-      // Use TSET with index parameter for sequential element setting
-      auto index_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
-      tisc::ir::Instruction zero_reg;
-      zero_reg.opcode = tisc::ir::Opcode::LOADI;
-      zero_reg.operands = {index_reg.reg, tisc::ir::Immediate{0}};
-      emit(zero_reg);
-
-      for (int i = 0; i < static_cast<int>(expr.elements.size()); ++i) {
-        auto idx = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
-        tisc::ir::Instruction set_idx;
-        set_idx.opcode = tisc::ir::Opcode::LOADI;
-        set_idx.operands = {idx.reg, tisc::ir::Immediate{i}};
-        emit(set_idx);
-
-        const auto& element = expr.elements[i];
+      for (const auto& element : expr.elements) {
         element->accept(*this);
         auto value = ensure_expr_result(element.get());
-        
-        // Use tensor set operations with proper index
         tisc::ir::Instruction push;
-        push.opcode = tisc::ir::Opcode::TSET;
-        push.operands = {dest.reg, idx.reg, value.reg};
+        push.opcode = tisc::ir::Opcode::STRVECPUSH;
+        push.operands = {dest.reg, value.reg};
         emit(push);
       }
 
