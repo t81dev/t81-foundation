@@ -3,7 +3,7 @@
 Status: Active
 Last Updated: 2026-03-08
 Owner: @t81dev
-Version: 3.2.0
+Version: 3.2.1
 
 This is the dashboard. One page. If you need detail, follow a cross-reference.
 
@@ -20,8 +20,8 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | Dimension | Status |
 | :--- | :--- |
 | Overall | Green — **PERFECT TEST COVERAGE ACHIEVED** (332/332 tests passing, 100% success rate) |
-| Release Readiness | **GO** — v1.3.0 released 2026-03-08 |
-| Current Main | `7d92bb09` — Fix TLOADHASH null-canonfs SEGFAULT; add set_canonfs_root() VM API |
+| Release Readiness | **GO** — v1.3.1 released 2026-03-08 |
+| Current Main | `8f7250f9` — Expand CLI command surface: 13 new commands, bug fixes, docs |
 | Open Blockers | None |
 | Frozen Core | Intact — no freeze exceptions |
 | Determinism Registry | All Verified surfaces clean |
