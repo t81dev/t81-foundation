@@ -320,6 +320,7 @@ Parser::Parser(Lexer& lexer, std::string source_name)
 
 void Parser::report_error(const Token& token, const std::string& message) {
   const std::string file = _source_name.empty() ? "<source>" : _source_name;
+  _diagnostics.push_back(ParseDiagnostic{file, token.line, token.column, message});
   std::cerr << file << ':' << token.line << ':' << token.column << ": error: " << message << '\n';
   _had_error = true;
 }

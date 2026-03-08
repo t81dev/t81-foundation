@@ -15,7 +15,10 @@ int main() {
   fs::path temp_dir = fs::temp_directory_path() / "t81_canonize_test";
   fs::create_directories(temp_dir);
   fs::path t81w_path = temp_dir / "model.t81w";
-  fs::path canon_root = fs::current_path() / ".t81_canonfs";
+  fs::path work_dir = temp_dir / "workspace";
+  fs::create_directories(work_dir);
+  fs::path canon_root = work_dir / ".t81_canonfs";
+  const fs::path original_cwd = fs::current_path();
 
   // Create a dummy NativeModel
   t81::weights::NativeModel model;
@@ -35,10 +38,11 @@ int main() {
     return 1;
   }
 
-  // Run canonize-tensor CLI command
-  // Note: t81::cli::canonize_tensor uses ".t81_canonfs" in current_path.
-  // We ensure it exists (created by main or previous runs)
+  // Run canonize-tensor CLI command in an isolated working directory because the
+  // implementation stores objects under <cwd>/.t81_canonfs.
+  fs::current_path(work_dir);
   int res = t81::cli::canonize_tensor(t81w_path.string());
+  fs::current_path(original_cwd);
   T81_TEST_CHECK(res == 0);
 
   // Verify the object exists in CanonFS
@@ -48,12 +52,12 @@ int main() {
   // Re-serialize to get hash
   // Actually save_t81w does not modify model in place destructive enough to prevent checking.
   // Wait, map access `model["test_tensor"]` creates if not exists, but we moved it in.
-  // Let's reconstruct the tensor for verification.
-  t81::weights::NativeTensor check_tensor;
-  check_tensor.shape = {2, 2};
-  check_tensor.trits = 4;
-  check_tensor.format = t81::weights::NativeFormat::BalancedTernary;
-  check_tensor.data = {10, 20};
+  // Reload the model so the expected serialized shape matches the actual persisted
+  // tensor representation rather than the constructor-side placeholder data vector.
+  auto reloaded_model = t81::weights::load_t81w(t81w_path);
+  auto tensor_it = reloaded_model.native.find("test_tensor");
+  T81_TEST_CHECK(tensor_it != reloaded_model.native.end());
+  const auto& check_tensor = tensor_it->second;
 
   // We need the `serialize_tensor` logic which is internal to `canonize_tensor.cpp`.
   // Since we can't easily link/call that internal function without exposing it,
@@ -61,7 +65,6 @@ int main() {
   // A robust test would verify the content.
 
   auto driver = t81::canonfs::make_persistent_driver(canon_root);
-  // We can't iterate easily with the public API of driver unless we scan the directory.
 
   bool found_any = false;
   if (fs::exists(canon_root / "objects")) {
@@ -74,9 +77,21 @@ int main() {
         ch.h = t81::hash::CanonHash81::from_string(hash_str);
         auto data_res = driver->read_object_bytes({ch});
         T81_TEST_CHECK(data_res.has_value());
-        auto data = data_res.value();
-        T81_TEST_CHECK(data.size() > 72);
+        const auto& data = data_res.value();
+        T81_TEST_CHECK(data.size() == 72 + (check_tensor.data.size() * sizeof(uint64_t)));
         T81_TEST_CHECK(static_cast<uint8_t>(data[0]) == 0x20);  // Type ID
+        T81_TEST_CHECK(static_cast<uint8_t>(data[1]) == 1);     // Version
+        T81_TEST_CHECK(static_cast<uint8_t>(data[2]) ==
+                       static_cast<uint8_t>(check_tensor.format));
+        T81_TEST_CHECK(static_cast<uint8_t>(data[3]) == check_tensor.shape.size());
+        uint64_t dim0 = 0;
+        uint64_t dim1 = 0;
+        for (int i = 0; i < 8; ++i) {
+          dim0 |= static_cast<uint64_t>(static_cast<unsigned char>(data[8 + i])) << (i * 8);
+          dim1 |= static_cast<uint64_t>(static_cast<unsigned char>(data[16 + i])) << (i * 8);
+        }
+        T81_TEST_CHECK(dim0 == 2);
+        T81_TEST_CHECK(dim1 == 2);
         break;
       }
     }
@@ -84,7 +99,8 @@ int main() {
   T81_TEST_CHECK(found_any);
 
   // Cleanup
-  fs::remove_all(temp_dir);
+  std::error_code ignore_ec;
+  fs::remove_all(temp_dir, ignore_ec);
   // Optional: Clean up .t81_canonfs if we want to be polite, but it might be used by other tests?
   // Usually tests should use a unique temp dir for canonfs if possible, but the CLI function
   // hardcodes it. For now we leave it.

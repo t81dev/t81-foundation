@@ -24,7 +24,8 @@ int compile(const std::filesystem::path& input, const std::filesystem::path& out
             std::shared_ptr<t81::weights::ModelFile> weights_model = nullptr);
 int run_tisc(const std::filesystem::path& path,
              const std::optional<std::filesystem::path>& policy_path = std::nullopt,
-             bool trace_enabled = false);
+             bool trace_enabled = false,
+             const std::optional<std::filesystem::path>& trace_output_path = std::nullopt);
 int disasm_tisc(const std::filesystem::path& path);
 int debug_tisc(const std::filesystem::path& path,
                const std::optional<std::filesystem::path>& policy_path = std::nullopt);
@@ -35,6 +36,37 @@ int repl(const std::shared_ptr<t81::weights::ModelFile>& weights_model = nullptr
 int init_project(const std::string& name);
 int init_package(const std::string& name);
 int canonize_tensor(const std::string& input_file);
+int canonfs_put_file(const std::filesystem::path& input,
+                     const std::filesystem::path& canonfs_root = ".t81_canonfs");
+int canonfs_list(const std::filesystem::path& canonfs_root = ".t81_canonfs", bool as_json = false);
+int canonfs_get(const std::string& canonical_hash,
+                const std::optional<std::filesystem::path>& output_path = std::nullopt,
+                const std::filesystem::path& canonfs_root = ".t81_canonfs",
+                bool as_json = false);
+int canonfs_stat(const std::string& canonical_hash,
+                 const std::filesystem::path& canonfs_root = ".t81_canonfs",
+                 bool as_json = false);
+int canonfs_verify(const std::string& canonical_hash,
+                   const std::filesystem::path& canonfs_root = ".t81_canonfs",
+                   bool as_json = false);
+std::optional<std::string> canonfs_capture_snapshot_hash(
+    const std::filesystem::path& canonfs_root = ".t81_canonfs",
+    std::string* error_message = nullptr);
+int canonfs_snapshot(const std::filesystem::path& canonfs_root = ".t81_canonfs",
+                     bool as_json = false);
+int canonfs_snapshot_diff(const std::string& lhs_snapshot_hash, const std::string& rhs_snapshot_hash,
+                          const std::filesystem::path& canonfs_root = ".t81_canonfs",
+                          bool as_json = false);
+int canonfs_rollback(const std::string& snapshot_hash,
+                     const std::filesystem::path& canonfs_root = ".t81_canonfs",
+                     bool as_json = false);
+
+int determinism_hash_file(const std::filesystem::path& input, bool as_json = false);
+int determinism_hash_trace(const std::filesystem::path& input, bool as_json = false);
+int determinism_diff_files(const std::filesystem::path& lhs, const std::filesystem::path& rhs,
+                           bool as_json = false);
+int determinism_diff_trace_files(const std::filesystem::path& lhs, const std::filesystem::path& rhs,
+                                 bool as_json = false);
 
 struct TraceArgs {
   std::string subcommand;

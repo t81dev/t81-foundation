@@ -12,6 +12,13 @@
 namespace t81 {
 namespace frontend {
 
+struct ParseDiagnostic {
+  std::string file;
+  int line{0};
+  int column{0};
+  std::string message;
+};
+
 struct StructuralAttributes {
   std::optional<std::int64_t> schema_version;
   std::optional<std::string> module_path;
@@ -34,6 +41,7 @@ public:
   std::vector<std::unique_ptr<Stmt>> parse();
 
   bool had_error() const { return _had_error; }
+  const std::vector<ParseDiagnostic>& diagnostics() const { return _diagnostics; }
 
 private:
   // Grammar rule methods
@@ -102,6 +110,7 @@ private:
   Token _previous;
   bool _had_error = false;
   std::string _source_name;
+  std::vector<ParseDiagnostic> _diagnostics;
   void report_error(const Token& token, const std::string& message);
 };
 
