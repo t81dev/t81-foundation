@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include "t81/enum_meta.hpp"
 #include "t81/frontend/ast.hpp"
+#include "t81/frontend/builtin_registry.hpp"
 #include "t81/frontend/numeric_literals.hpp"
 #include "t81/frontend/semantic_analyzer.hpp"
 #include "t81/frontend/symbol_table.hpp"
@@ -165,7 +166,14 @@ inline std::optional<std::string> qualified_call_name(const Expr& expr) {
   return std::nullopt;
 }
 
+// ── Delegated to builtin_registry.hpp / kBuiltinTable ──────────────────────
+// The old 377-line if-chain lived here.  It is now the single source of truth.
 inline std::string canonical_stdlib_call_name(std::string_view name) {
+  return std::string(t81::frontend::canonical_name_for(name));
+}
+
+// Dead-code archive — removed next cleanup pass.
+[[maybe_unused]] inline std::string canonical_stdlib_call_name_old(std::string_view name) {
   if (name == "std.core.assert") {
     return "core_assert";
   }
@@ -543,6 +551,7 @@ inline std::string canonical_stdlib_call_name(std::string_view name) {
   }
   return std::string(name);
 }
+// ── End of dead-code archive ────────────────────────────────────────────────
 
 class IRGenerator : public ExprVisitor, public StmtVisitor {
 public:

@@ -8,6 +8,7 @@ thread_local int type_to_string_depth = 0;
 #endif
 
 #include "t81/frontend/semantic_analyzer.hpp"
+#include "t81/frontend/builtin_registry.hpp"
 #include "t81/frontend/numeric_literals.hpp"
 #include "t81/types/T81BigInt.hpp"
 #include <algorithm>
@@ -220,6 +221,12 @@ std::optional<std::string> qualified_call_name(const t81::frontend::Expr& expr) 
 }
 
 std::string canonical_stdlib_call_name(std::string_view name) {
+  // Derived from the single source of truth: builtin_registry.hpp / kBuiltinTable.
+  return std::string(t81::frontend::canonical_name_for(name));
+}
+
+// ── DEAD CODE BELOW — kept temporarily for grep-ability, removed next pass ──
+[[maybe_unused]] static std::string canonical_stdlib_call_name_old(std::string_view name) {
   if (name == "std.core.assert") {
     return "core_assert";
   }
@@ -584,27 +591,21 @@ std::string canonical_stdlib_call_name(std::string_view name) {
 }
 
 std::optional<int> minimum_tier_for_call_surface(std::string_view canonical_name) {
-  if (canonical_name == "Tensor.matmul" || canonical_name == "tensor_dot" ||
-      canonical_name == "weights.load" || canonical_name == "Tensor.load" ||
-      canonical_name == "sys_reflect" || canonical_name == "agent_self_reflect") {
-    return 2;
+  // Derived from kBuiltinTable.  Legacy alias "Tensor.load" preserved.
+  if (const auto* def = t81::frontend::lookup_builtin_by_canonical(canonical_name)) {
+    return def->min_tier;
   }
-  if (canonical_name == "io_stream" || canonical_name == "io_net" ||
-      canonical_name == "async_thread" || canonical_name == "async_promise") {
-    return 2;
-  }
+  if (canonical_name == "Tensor.load") return 2;  // legacy alias
   return std::nullopt;
 }
 
 bool is_effect_surface_call(std::string_view canonical_name) {
-  return canonical_name == "print" || canonical_name == "sys_exit" ||
-         canonical_name == "sys_time" || canonical_name == "sys_entropy" ||
-         canonical_name == "sys_proof" || canonical_name == "sys_reflect" ||
-         canonical_name == "io_stream" || canonical_name == "io_net" ||
-         canonical_name == "async_yield" || canonical_name == "async_sleep" ||
-         canonical_name == "async_thread" || canonical_name == "async_promise" ||
-         canonical_name == "agent_self_reflect" || canonical_name == "weights.load" ||
-         canonical_name == "Tensor.load";
+  // Derived from kBuiltinTable.  Legacy alias "Tensor.load" preserved.
+  if (const auto* def = t81::frontend::lookup_builtin_by_canonical(canonical_name)) {
+    return def->is_effect_surface;
+  }
+  if (canonical_name == "Tensor.load") return true;  // legacy alias
+  return false;
 }
 
 int minimum_tier_for_stmt(const t81::frontend::Stmt& stmt) {
@@ -2483,6 +2484,35 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         }
       }
     }
+    // ── Table-driven dispatch ──────────────────────────────────────────────
+    // For builtins where the registry is the sole source of truth (arity + return
+    // type are fixed, no polymorphic type inference needed), short-circuit here.
+    // Builtins with needs_custom_sa_check=true fall through to the per-canonical
+    // blocks below.
+    if (const auto* reg_def = t81::frontend::lookup_builtin_by_canonical(func_name);
+        reg_def && !reg_def->needs_custom_sa_check) {
+      const int8_t expected_arity = reg_def->arity;
+      if (expected_arity != t81::frontend::kArityAny &&
+          static_cast<int8_t>(arg_types.size()) != expected_arity) {
+        error(call_token, std::string(func_name) + " expects " +
+                              std::to_string(expected_arity) + " argument(s), got " +
+                              std::to_string(arg_types.size()) + ".");
+        return make_error_type();
+      }
+      if (reg_def->return_kind == Type::Kind::Custom &&
+          !reg_def->return_custom_name.empty()) {
+        Type ret{Type::Kind::Custom, {}, std::string(reg_def->return_custom_name)};
+        _expr_type_cache[&expr] = ret;
+        return ret;
+      }
+      if (reg_def->return_kind != Type::Kind::Unknown) {
+        Type ret{reg_def->return_kind};
+        _expr_type_cache[&expr] = ret;
+        return ret;
+      }
+    }
+    // ──────────────────────────────────────────────────────────────────────
+
     const Type* expected = current_expected_type();
 
     auto build_result_template = [&](const Type* context) {
