@@ -1,0 +1,166 @@
+// cisa_integrity_demo.t81
+//
+// T81 Foundation v1.3.1 — Critical Infrastructure Integrity Demo
+// Audience: CISA (Cybersecurity and Infrastructure Security Agency)
+//
+// Overview
+// ─────────
+// Models a deterministic industrial control system (ICS) sensor triage
+// engine using balanced ternary three-valued logic:
+//
+//   DENY    (-1)  reading outside safety envelope → escalate immediately
+//   ABSTAIN ( 0)  reading in warning band         → flag for monitoring
+//   ALLOW   (+1)  reading in nominal band         → proceed normally
+//
+// Balanced ternary represents uncertainty as a first-class value — not a
+// binary fallback — which is critical when acting on ambiguous sensor data.
+//
+// Key properties demonstrated
+// ────────────────────────────
+//   Determinism   — identical output on every execution; verify with:
+//                     t81 determinism verify-run cisa_demo.tisc --json
+//
+//   Auditability  — every instruction traced:
+//                     t81 vm run cisa_demo.tisc --policy cisa_integrity_demo.apl \
+//                                               --trace -o audit_trace.txt
+//
+//   Integrity     — canonicalize + hash artifact:
+//                     t81 canonfs put-file cisa_demo.tisc
+//
+//   Policy        — Axion enforces hard instruction budget and stack cap;
+//                   the program cannot spin, overflow, or escape its envelope:
+//                     t81 vm run cisa_demo.tisc --policy cisa_integrity_demo.apl
+//
+//   Precision     — T81BigInt accumulators guarantee no silent integer
+//                   overflow regardless of event volume.
+//
+// Build and run
+// ─────────────
+//   t81 code build cisa_integrity_demo.t81 -o cisa_demo.tisc
+//   t81 vm run cisa_demo.tisc --policy cisa_integrity_demo.apl
+//
+// Exit codes
+//   0  — all governance gates passed
+//   2  — governance gate tripped; net trit sum negative; session flagged
+
+// ── Ternary classifier ──────────────────────────────────────────────────────
+//
+// Classifies a sensor reading against a two-band threshold:
+//   normal band  [normal_lo, normal_hi]  → +1 ALLOW
+//   warning band [warn_lo,   warn_hi]    →  0 ABSTAIN  (wider than normal)
+//   outside both                         → -1 DENY
+//
+fn classify_reading(val: i32, normal_lo: i32, normal_hi: i32,
+                    warn_lo: i32, warn_hi: i32) -> i32 {
+    if (val >= normal_lo && val <= normal_hi) { return 1; }
+    if (val >= warn_lo   && val <= warn_hi)   { return 0; }
+    return -1;
+}
+
+// ── Human-readable verdict label ────────────────────────────────────────────
+fn verdict_label(t: i32) -> T81String {
+    if (t ==  1) { return "ALLOW   [+1]"; }
+    if (t ==  0) { return "ABSTAIN [ 0]"; }
+    return               "DENY    [-1]";
+}
+
+// ── Main ────────────────────────────────────────────────────────────────────
+fn main() -> i32 {
+    print("══════════════════════════════════════════════════════");
+    print("  T81 Foundation — CISA Critical Infrastructure Demo  ");
+    print("  Version 1.3.1  |  Balanced Ternary Integrity Engine ");
+    print("══════════════════════════════════════════════════════");
+    print("");
+
+    // Simulated ICS pressure telemetry  (PSI × 10, 10 readings).
+    // Normal operating band : [600, 800]
+    // Warning band          : [550, 850]   (outside → DENY)
+    let readings = [720, 780, 840, 920, 610, 540, 700, 800, 860, 630];
+
+    // T81BigInt counters — precision arithmetic ensures no silent overflow
+    // even under sustained high-volume event streams.
+    var allow_count:   T81BigInt = 0;
+    var abstain_count: T81BigInt = 0;
+    var deny_count:    T81BigInt = 0;
+
+    // i32 net trit sum used for the governance gate comparison.
+    // Positive → more ALLOW than DENY; negative → escalate.
+    var net_trit_sum: i32 = 0;
+
+    print("Sensor Event Classification (PSI × 10):");
+    print("──────────────────────────────────────────────────────");
+
+    var idx: i32 = 0;
+    @bounded(32)
+    loop {
+        if (idx >= std.collections.len(readings)) { break; }
+
+        let r: i32 = readings[idx];
+        let verdict: i32 = classify_reading(r, 600, 800, 550, 850);
+        print(verdict_label(verdict));
+
+        if (verdict == 1) {
+            allow_count  = allow_count  + 1;
+            net_trit_sum = net_trit_sum + 1;
+        }
+        if (verdict == 0) {
+            abstain_count = abstain_count + 1;
+            // ABSTAIN is the zero trit — net sum unchanged intentionally
+        }
+        if (verdict == -1) {
+            deny_count   = deny_count   + 1;
+            net_trit_sum = net_trit_sum - 1;
+        }
+
+        idx = idx + 1;
+    }
+
+    print("");
+    print("──────────────────────────────────────────────────────");
+    print("Triage Summary");
+    print("──────────────────────────────────────────────────────");
+    print("  ALLOW   (+1) : ");
+    print(allow_count);
+    print("  ABSTAIN ( 0) : ");
+    print(abstain_count);
+    print("  DENY    (-1) : ");
+    print(deny_count);
+    print("  Net Trit Sum : ");
+    print(net_trit_sum);
+    print("");
+
+    // ── Governance gate ─────────────────────────────────────────────────────
+    // A negative net trit sum means DENY events outweigh ALLOW events.
+    // The Axion kernel records this decision to the CanonFS audit log;
+    // the record is immutable and cryptographically addressable.
+    if (net_trit_sum < 0) {
+        print("GOVERNANCE GATE TRIPPED");
+        print("  Net trit sum is negative — DENY events outweigh ALLOW.");
+        print("  Session flagged for mandatory human review.");
+        print("  Axion event recorded to CanonFS audit log.");
+        print("");
+        print("  Retrieve audit record:");
+        print("    t81 axion log --json");
+        print("    t81 canonfs snapshot --json");
+        return 2;
+    }
+
+    // ── Attestation block ────────────────────────────────────────────────────
+    print("Governance gate : PASSED");
+    print("");
+    print("Reproducibility attestation:");
+    print("  This output is bit-exact across every architecture and run.");
+    print("  The CanonHash of the compiled artifact is stable.");
+    print("");
+    print("  Verify determinism:");
+    print("    t81 determinism verify-run cisa_demo.tisc --json");
+    print("");
+    print("  Canonicalize and store artifact hash:");
+    print("    t81 canonfs put-file cisa_demo.tisc");
+    print("");
+    print("  Diff two runs to confirm identical instruction streams:");
+    print("    t81 tisc diff run_a.tisc run_b.tisc --json");
+    print("");
+
+    return 0;
+}
