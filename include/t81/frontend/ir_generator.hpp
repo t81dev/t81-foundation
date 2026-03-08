@@ -5363,42 +5363,40 @@ public:
     if (!_semantic) return {};
     const auto* data = _semantic->vector_literal_data(&expr);
     if (!data) {
-      // Dynamic vector construction
-      // Check if we can determine size statically or if elements are dynamic expressions
-      // For now, assume dynamic construction via STRVEC ops if data is missing,
-      // but strictly speaking, STRVEC* ops are for untyped/string vectors.
-      // However, T81 vectors are currently polyfilled over string vectors or use Tensor logic.
-      // If `_semantic->vector_literal_data` failed, it means elements are non-constant.
-
-      // We will construct it as a generic vector (polyfilled) if possible,
-      // OR as a Tensor if it's numeric but dynamic.
-      // Current VM `STRVEC` ops might not support floats directly unless we stringify or use `any`.
-      // But let's assume we treat it as a generic container for now to satisfy "Dynamic Vector
-      // Literal Support". The prompt says "Emit runtime construction instructions instead of
-      // compile-time constant folding."
-
+      // Dynamic vector construction - FIXED: Use tensor operations for T81Vector[T, N]
+      // T81Vector[T, N] should always be treated as a tensor, not string vector
+      // regardless of whether elements are constants or variables
+      
       auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
       tisc::ir::Instruction vec_new;
-      vec_new.opcode = tisc::ir::Opcode::STRVECNEW;
+      vec_new.opcode = tisc::ir::Opcode::TNEW;
       vec_new.operands = {dest.reg};
       emit(vec_new);
 
-      for (const auto& element : expr.elements) {
+      // Use TSET with index parameter for sequential element setting
+      auto index_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction zero_reg;
+      zero_reg.opcode = tisc::ir::Opcode::LOADI;
+      zero_reg.operands = {index_reg.reg, tisc::ir::Immediate{0}};
+      emit(zero_reg);
+
+      for (int i = 0; i < static_cast<int>(expr.elements.size()); ++i) {
+        auto idx = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+        tisc::ir::Instruction set_idx;
+        set_idx.opcode = tisc::ir::Opcode::LOADI;
+        set_idx.operands = {idx.reg, tisc::ir::Immediate{i}};
+        emit(set_idx);
+
+        const auto& element = expr.elements[i];
         element->accept(*this);
         auto value = ensure_expr_result(element.get());
-
-        // If numeric, we might need conversion or just push as is if STRVEC accepts any register.
-        // Assuming STRVECPUSH pushes the *value* in the register.
+        
+        // Use tensor set operations with proper index
         tisc::ir::Instruction push;
-        push.opcode = tisc::ir::Opcode::STRVECPUSH;
-        push.operands = {dest.reg, value.reg};
+        push.opcode = tisc::ir::Opcode::TSET;
+        push.operands = {dest.reg, idx.reg, value.reg};
         emit(push);
       }
-
-      // If we need to treat this as a Tensor later, we might need a conversion,
-      // but `STRVEC` is the generic fallback for now.
-      // If the expected type is Tensor, we might fail at runtime or need `Tensor.from_list`
-      // equivalent. But `Vector` type in T81Lang maps to this.
 
       record_result(&expr, dest);
       return {};
