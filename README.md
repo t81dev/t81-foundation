@@ -104,7 +104,7 @@ python3 scripts/ci/t81lang_repro_gate.py --t81-bin build/t81 --check
 ./build/t81 code run build/hello_world.tisc
 ```
 
-*Other common entry points include `./build/t81 project init`, `./build/t81 env doctor`, `./build/t81 weights ...`, and `./build/t81 trace ...`. See [`./docs/user-guide/reference/cli-user-manual.md`](./docs/user-guide/reference/cli-user-manual.md) for the current command surface.*
+*Other common entry points include `./build/t81 project init`, `./build/t81 env doctor`, `./build/t81 weights ...`, `./build/t81 trace ...`, `./build/t81 canonfs ...`, `./build/t81 determinism ...`, `./build/t81 vm ...`, `./build/t81 tisc ...`, and `./build/t81 ir ...`. See [`./docs/user-guide/reference/cli-user-manual.md`](./docs/user-guide/reference/cli-user-manual.md) for the current command surface.*
 
 ### Minimal Consumer Example (C++)
 
@@ -153,7 +153,8 @@ cmake --build build --target benchmark_runner
 ```
 
 ```bash
-# Full suite: generates JSON and benchmark reports under docs/reference/
+# Full suite: generates JSON output. Markdown reports are only written if
+# T81_BENCHMARK_WRITE_REPORTS=1 is set.
 ./build/benchmarks/benchmark_runner \
   --benchmark_format=json \
   --benchmark_out=bench.json
@@ -168,6 +169,9 @@ cmake --build build --target benchmark_runner
 
 # or through the CLI wrapper
 ./build/t81 benchmark --benchmark_filter='BM_(ArithThroughput|T81LangCompile).*'
+
+# CLI wrapper keeps report generation off by default
+T81_BENCHMARK_WRITE_REPORTS=1 ./build/t81 benchmark --benchmark_filter='BM_(ArithThroughput|T81LangCompile).*'
 ```
 
 For methodology and benchmark-specific notes, see [`./benchmarks/README.md`](./benchmarks/README.md) and [`./docs/developer-guide/tools/README.md`](./docs/developer-guide/tools/README.md).

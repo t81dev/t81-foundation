@@ -1,7 +1,10 @@
 #include "t81/cli/driver.hpp"
 #include "debugger.hpp"
 #include "internal/tooling/logging.hpp"
+#include "t81/canonfs/canon_driver.hpp"
+#include "t81/canonfs/canon_types.hpp"
 #include "t81/config.hpp"
+#include "t81/crypto/sha3.hpp"
 #include "t81/frontend/ir_generator.hpp"
 #include "t81/frontend/lexer.hpp"
 #include "t81/frontend/parser.hpp"
@@ -9,17 +12,23 @@
 #include "t81/isa/binary_emitter.hpp"
 #include "t81/isa/binary_io.hpp"
 #include "t81/isa/opcodes.hpp"
+#include "t81/tracing/canonhash.hpp"
 #include "t81/vm/vm.hpp"
 #include "t81/weights.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <charconv>
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
+#include <map>
 #include <optional>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -86,6 +95,29 @@ void print_semantic_diagnostics(const t81::frontend::SemanticAnalyzer& analyzer,
   }
 }
 
+void print_parse_diagnostics(const t81::frontend::Parser& parser, std::string_view primary_source,
+                             const std::string* source) {
+  std::vector<std::string> lines;
+  if (source) {
+    lines = split_lines(*source);
+  }
+  for (const auto& diag : parser.diagnostics()) {
+    std::cerr << diag.file << ':' << diag.line << ':' << diag.column << ": error: " << diag.message
+              << '\n';
+    const bool print_context =
+        source && (diag.file == primary_source || diag.file == "<source>" || primary_source.empty());
+    if (print_context && diag.line > 0 && diag.line <= static_cast<int>(lines.size())) {
+      const std::string& context = lines[diag.line - 1];
+      std::cerr << "    " << context << '\n';
+      int indent = std::max(0, diag.column - 1);
+      if (indent > static_cast<int>(context.size())) {
+        indent = static_cast<int>(context.size());
+      }
+      std::cerr << "    " << std::string(indent, ' ') << "^\n";
+    }
+  }
+}
+
 std::string structural_kind_name(t81::tisc::StructuralKind kind) {
   switch (kind) {
     case t81::tisc::StructuralKind::TypeAlias:
@@ -139,6 +171,34 @@ std::string trim_copy(std::string_view text) {
     --end;
   }
   return std::string(text.substr(start, end - start));
+}
+
+std::string escape_json_text(std::string_view text) {
+  std::string out;
+  out.reserve(text.size() + 8);
+  for (char c : text) {
+    switch (c) {
+      case '\\':
+        out += "\\\\";
+        break;
+      case '"':
+        out += "\\\"";
+        break;
+      case '\n':
+        out += "\\n";
+        break;
+      case '\r':
+        out += "\\r";
+        break;
+      case '\t':
+        out += "\\t";
+        break;
+      default:
+        out.push_back(c);
+        break;
+    }
+  }
+  return out;
 }
 
 std::vector<std::string> split_lines(std::string_view content) {
@@ -242,6 +302,233 @@ bool is_valid_package_name(const std::string& name) {
     }
   }
   return true;
+}
+
+std::string sha3_512_hex_text(std::span<const std::byte> bytes) {
+  std::vector<std::uint8_t> raw;
+  raw.reserve(bytes.size());
+  for (std::byte b : bytes) {
+    raw.push_back(static_cast<std::uint8_t>(b));
+  }
+  return t81::crypto::sha3_512_hex(raw);
+}
+
+std::string sha3_512_hex_text(std::string_view text) {
+  std::vector<std::uint8_t> raw;
+  raw.reserve(text.size());
+  for (char c : text) {
+    raw.push_back(static_cast<std::uint8_t>(c));
+  }
+  return t81::crypto::sha3_512_hex(raw);
+}
+
+std::string read_file_binary(const fs::path& path) {
+  std::ifstream in(path, std::ios::binary);
+  if (!in) {
+    throw std::runtime_error("Could not open file: " + path.string());
+  }
+  return std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+}
+
+std::vector<std::byte> read_file_bytes(const fs::path& path) {
+  std::ifstream in(path, std::ios::binary);
+  if (!in) {
+    throw std::runtime_error("Could not open file: " + path.string());
+  }
+  std::vector<std::byte> out;
+  char ch = 0;
+  while (in.get(ch)) {
+    out.push_back(static_cast<std::byte>(static_cast<unsigned char>(ch)));
+  }
+  return out;
+}
+
+std::string normalize_trace_content(std::string_view content) {
+  std::istringstream in{std::string(content)};
+  std::ostringstream out;
+  std::string line;
+  while (std::getline(in, line)) {
+    const std::string trimmed = trim_copy(line);
+    if (trimmed.rfind("PC=", 0) == 0) {
+      out << trimmed << '\n';
+    }
+  }
+  return out.str();
+}
+
+struct CanonFsObjectInfo {
+  std::size_t size_bytes = 0;
+  std::string sha3_512;
+};
+
+bool parse_canonical_hash(std::string_view prefixed_hash, t81::canonfs::CanonRef& ref,
+                          std::string& error_message) {
+  std::string text = trim_copy(prefixed_hash);
+  constexpr std::string_view prefix = "sha3-256:";
+  if (text.rfind(prefix, 0) != 0) {
+    error_message = "canonical hash must use sha3-256:<hash> form";
+    return false;
+  }
+  try {
+    ref.hash.h = t81::hash::CanonHash81::from_string(text.substr(prefix.size()));
+  } catch (const std::exception& e) {
+    error_message = e.what();
+    return false;
+  }
+  return true;
+}
+
+bool load_canonfs_object(const fs::path& canonfs_root, std::string_view prefixed_hash,
+                         std::vector<std::byte>& bytes, CanonFsObjectInfo& info,
+                         std::string& error_message) {
+  t81::canonfs::CanonRef ref;
+  if (!parse_canonical_hash(prefixed_hash, ref, error_message)) {
+    return false;
+  }
+  auto driver = t81::canonfs::make_persistent_driver(canonfs_root);
+  auto read_res = driver->read_object_bytes(ref);
+  if (!read_res) {
+    error_message = "object not found or failed verification";
+    return false;
+  }
+  bytes = std::move(read_res.value());
+  info.size_bytes = bytes.size();
+  info.sha3_512 = sha3_512_hex_text(bytes);
+  return true;
+}
+
+struct SnapshotManifestEntry {
+  std::string relative_path;
+  std::string content_hash;
+};
+
+struct CanonFsListEntry {
+  std::string hash;
+  std::uintmax_t size_bytes = 0;
+};
+
+std::vector<SnapshotManifestEntry> collect_snapshot_manifest(const fs::path& root) {
+  std::vector<SnapshotManifestEntry> entries;
+  if (!fs::exists(root)) {
+    return entries;
+  }
+  for (auto it = fs::recursive_directory_iterator(root); it != fs::recursive_directory_iterator();
+       ++it) {
+    const auto& path = it->path();
+    if (!it->is_regular_file()) {
+      continue;
+    }
+    if (path.string().find("/snapshots/") != std::string::npos ||
+        path.string().find("\\snapshots\\") != std::string::npos) {
+      continue;
+    }
+    auto bytes = read_file_bytes(path);
+    SnapshotManifestEntry entry;
+    entry.relative_path = fs::relative(path, root).generic_string();
+    entry.content_hash = t81::hash::hash_bytes(std::span<const std::byte>(bytes.data(), bytes.size())).to_string();
+    entries.push_back(std::move(entry));
+  }
+  std::sort(entries.begin(), entries.end(), [](const auto& lhs, const auto& rhs) {
+    return lhs.relative_path < rhs.relative_path;
+  });
+  return entries;
+}
+
+std::string render_snapshot_manifest(const std::vector<SnapshotManifestEntry>& entries) {
+  std::ostringstream manifest;
+  for (const auto& entry : entries) {
+    manifest << entry.relative_path << '\t' << entry.content_hash << '\n';
+  }
+  return manifest.str();
+}
+
+bool copy_directory_contents(const fs::path& from, const fs::path& to, std::string& error_message) {
+  std::error_code ec;
+  fs::create_directories(to, ec);
+  if (ec) {
+    error_message = "failed to create directory: " + to.string();
+    return false;
+  }
+  for (auto it = fs::recursive_directory_iterator(from); it != fs::recursive_directory_iterator();
+       ++it) {
+    const auto& src = it->path();
+    const fs::path rel = fs::relative(src, from);
+    if (!rel.empty() && *rel.begin() == "snapshots") {
+      if (it->is_directory()) {
+        it.disable_recursion_pending();
+      }
+      continue;
+    }
+    const fs::path dst = to / rel;
+    if (it->is_directory()) {
+      fs::create_directories(dst, ec);
+      if (ec) {
+        error_message = "failed to create directory: " + dst.string();
+        return false;
+      }
+      continue;
+    }
+    if (!it->is_regular_file()) {
+      continue;
+    }
+    fs::create_directories(dst.parent_path(), ec);
+    if (ec) {
+      error_message = "failed to create directory: " + dst.parent_path().string();
+      return false;
+    }
+    fs::copy_file(src, dst, fs::copy_options::overwrite_existing, ec);
+    if (ec) {
+      error_message = "failed to copy file: " + src.string();
+      return false;
+    }
+  }
+  return true;
+}
+
+bool clear_directory_except_snapshots(const fs::path& root, std::string& error_message) {
+  if (!fs::exists(root)) {
+    return true;
+  }
+  std::error_code ec;
+  for (const auto& entry : fs::directory_iterator(root)) {
+    if (entry.path().filename() == "snapshots") {
+      continue;
+    }
+    fs::remove_all(entry.path(), ec);
+    if (ec) {
+      error_message = "failed to remove path: " + entry.path().string();
+      return false;
+    }
+  }
+  return true;
+}
+
+std::vector<CanonFsListEntry> collect_canonfs_objects(const fs::path& canonfs_root) {
+  std::vector<CanonFsListEntry> entries;
+  const fs::path objects_dir = canonfs_root / "objects";
+  if (!fs::exists(objects_dir)) {
+    return entries;
+  }
+  for (const auto& entry : fs::directory_iterator(objects_dir)) {
+    if (!entry.is_regular_file()) {
+      continue;
+    }
+    if (entry.path().extension() != ".blk") {
+      continue;
+    }
+    CanonFsListEntry item;
+    item.hash = "sha3-256:" + entry.path().stem().string();
+    std::error_code ec;
+    item.size_bytes = entry.file_size(ec);
+    if (ec) {
+      item.size_bytes = 0;
+    }
+    entries.push_back(std::move(item));
+  }
+  std::sort(entries.begin(), entries.end(), [](const auto& lhs, const auto& rhs) {
+    return lhs.hash < rhs.hash;
+  });
+  return entries;
 }
 
 }  // namespace
@@ -458,6 +745,7 @@ std::optional<t81::tisc::Program> build_program_from_source(
   t81::frontend::Parser parser(parser_lexer, diag_name);
   auto stmts = parser.parse();
   if (parser.had_error()) {
+    print_parse_diagnostics(parser, diag_name, &source);
     error("Parse errors encountered");
     return std::nullopt;
   }
@@ -833,7 +1121,8 @@ int repl(const std::shared_ptr<t81::weights::ModelFile>& weights_model,
   return 0;
 }
 
-int run_tisc(const fs::path& path, const std::optional<fs::path>& policy_path, bool trace_enabled) {
+int run_tisc(const fs::path& path, const std::optional<fs::path>& policy_path, bool trace_enabled,
+             const std::optional<fs::path>& trace_output_path) {
   verbose("Loading TISC program: " + path.string());
 
   auto program = t81::tisc::load_program(path.string());
@@ -866,8 +1155,21 @@ int run_tisc(const fs::path& path, const std::optional<fs::path>& policy_path, b
   }
 
   if (trace_enabled) {
+    std::ostream* trace_stream = &std::cout;
+    std::ofstream trace_file;
+    if (trace_output_path) {
+      trace_file.open(*trace_output_path, std::ios::binary | std::ios::trunc);
+      if (!trace_file) {
+        error("Could not open trace output path: " + trace_output_path->string());
+        return 1;
+      }
+      trace_stream = &trace_file;
+    }
     for (const auto& entry : vm->state().trace) {
-      std::cout << format_trace_entry(entry) << "\n";
+      *trace_stream << format_trace_entry(entry) << "\n";
+    }
+    if (trace_output_path) {
+      info("Trace written to " + trace_output_path->string());
     }
   } else {
     info("Program terminated normally");
@@ -951,6 +1253,405 @@ int check_syntax(const fs::path& path) {
 
   info("No syntax or semantic errors");
   return 0;
+}
+
+int canonfs_put_file(const fs::path& input, const fs::path& canonfs_root) {
+  if (!fs::exists(input)) {
+    error("Could not open input file: " + input.string());
+    return 1;
+  }
+  auto bytes = read_file_bytes(input);
+  auto driver = t81::canonfs::make_persistent_driver(canonfs_root);
+  auto write_res = driver->write_object(t81::canonfs::ObjectType::RawBlock, bytes);
+  if (!write_res) {
+    error("canonfs put-file: failed to write CanonFS object");
+    return 1;
+  }
+  std::cout << "sha3-256:" << write_res->hash.h.to_string() << "\n";
+  return 0;
+}
+
+int canonfs_list(const fs::path& canonfs_root, bool as_json) {
+  const auto entries = collect_canonfs_objects(canonfs_root);
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.canonfs-list.v1\",\n"
+              << "  \"canonfs_root\": \"" << escape_json_text(canonfs_root.string()) << "\",\n"
+              << "  \"count\": " << entries.size() << ",\n"
+              << "  \"objects\": [\n";
+    for (std::size_t i = 0; i < entries.size(); ++i) {
+      const auto& entry = entries[i];
+      std::cout << "    {\"hash\": \"" << escape_json_text(entry.hash)
+                << "\", \"size_bytes\": " << entry.size_bytes << "}";
+      if (i + 1 < entries.size()) {
+        std::cout << ",";
+      }
+      std::cout << "\n";
+    }
+    std::cout << "  ]\n}\n";
+  } else {
+    if (entries.empty()) {
+      std::cout << "CanonFS object store is empty: " << canonfs_root.string() << "\n";
+      return 0;
+    }
+    for (const auto& entry : entries) {
+      std::cout << entry.hash << "  " << entry.size_bytes << " bytes\n";
+    }
+  }
+  return 0;
+}
+
+int canonfs_get(const std::string& canonical_hash, const std::optional<fs::path>& output_path,
+                const fs::path& canonfs_root, bool as_json) {
+  std::vector<std::byte> bytes;
+  CanonFsObjectInfo info;
+  std::string error_message;
+  if (!load_canonfs_object(canonfs_root, canonical_hash, bytes, info, error_message)) {
+    if (as_json) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.canonfs-get.v1\",\n"
+                << "  \"ok\": false,\n"
+                << "  \"hash\": \"" << escape_json_text(canonical_hash) << "\",\n"
+                << "  \"error\": \"" << escape_json_text(error_message) << "\"\n"
+                << "}\n";
+    } else {
+      error("canonfs get: " + error_message);
+    }
+    return 1;
+  }
+  if (output_path) {
+    std::ofstream out(*output_path, std::ios::binary | std::ios::trunc);
+    if (!out) {
+      error("canonfs get: could not open output file: " + output_path->string());
+      return 1;
+    }
+    for (std::byte b : bytes) {
+      out.put(static_cast<char>(std::to_integer<unsigned char>(b)));
+    }
+    if (!out.good()) {
+      error("canonfs get: failed writing output file: " + output_path->string());
+      return 1;
+    }
+  } else {
+    for (std::byte b : bytes) {
+      std::cout.put(static_cast<char>(std::to_integer<unsigned char>(b)));
+    }
+  }
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.canonfs-get.v1\",\n"
+              << "  \"ok\": true,\n"
+              << "  \"hash\": \"" << escape_json_text(canonical_hash) << "\",\n"
+              << "  \"size_bytes\": " << info.size_bytes << ",\n"
+              << "  \"output\": ";
+    if (output_path) {
+      std::cout << "\"" << escape_json_text(output_path->string()) << "\"\n";
+    } else {
+      std::cout << "null\n";
+    }
+    std::cout << "}\n";
+  }
+  return 0;
+}
+
+int canonfs_stat(const std::string& canonical_hash, const fs::path& canonfs_root, bool as_json) {
+  std::vector<std::byte> bytes;
+  CanonFsObjectInfo info;
+  std::string error_message;
+  if (!load_canonfs_object(canonfs_root, canonical_hash, bytes, info, error_message)) {
+    if (as_json) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.canonfs-stat.v1\",\n"
+                << "  \"ok\": false,\n"
+                << "  \"hash\": \"" << escape_json_text(canonical_hash) << "\",\n"
+                << "  \"canonfs_root\": \"" << escape_json_text(canonfs_root.string()) << "\",\n"
+                << "  \"error\": \"" << escape_json_text(error_message) << "\"\n"
+                << "}\n";
+    } else {
+      error("canonfs stat: " + error_message);
+    }
+    return 1;
+  }
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.canonfs-stat.v1\",\n"
+              << "  \"ok\": true,\n"
+              << "  \"hash\": \"" << escape_json_text(canonical_hash) << "\",\n"
+              << "  \"canonfs_root\": \"" << escape_json_text(canonfs_root.string()) << "\",\n"
+              << "  \"size_bytes\": " << info.size_bytes << ",\n"
+              << "  \"sha3_512\": \"" << info.sha3_512 << "\"\n"
+              << "}\n";
+  } else {
+    std::cout << "Hash:       " << canonical_hash << "\n";
+    std::cout << "Root:       " << canonfs_root << "\n";
+    std::cout << "Size:       " << info.size_bytes << " bytes\n";
+    std::cout << "SHA3-512:   " << info.sha3_512 << "\n";
+  }
+  return 0;
+}
+
+int canonfs_verify(const std::string& canonical_hash, const fs::path& canonfs_root, bool as_json) {
+  std::vector<std::byte> bytes;
+  CanonFsObjectInfo info;
+  std::string error_message;
+  const bool ok = load_canonfs_object(canonfs_root, canonical_hash, bytes, info, error_message);
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.canonfs-verify.v1\",\n"
+              << "  \"ok\": " << (ok ? "true" : "false") << ",\n"
+              << "  \"hash\": \"" << escape_json_text(canonical_hash) << "\",\n"
+              << "  \"canonfs_root\": \"" << escape_json_text(canonfs_root.string()) << "\"";
+    if (ok) {
+      std::cout << ",\n  \"size_bytes\": " << info.size_bytes << ",\n"
+                << "  \"sha3_512\": \"" << info.sha3_512 << "\"\n";
+    } else {
+      std::cout << ",\n  \"error\": \"" << escape_json_text(error_message) << "\"\n";
+    }
+    std::cout << "}\n";
+  } else if (ok) {
+    std::cout << "verified: " << canonical_hash << "\n";
+  } else {
+    error("canonfs verify: " + error_message);
+  }
+  return ok ? 0 : 1;
+}
+
+std::optional<std::string> canonfs_capture_snapshot_hash(const fs::path& canonfs_root,
+                                                         std::string* error_message) {
+  std::error_code ec;
+  fs::create_directories(canonfs_root, ec);
+  if (ec) {
+    if (error_message) *error_message = "could not create root: " + canonfs_root.string();
+    return std::nullopt;
+  }
+  const auto entries = collect_snapshot_manifest(canonfs_root);
+  const std::string manifest = render_snapshot_manifest(entries);
+  const std::string snapshot_hash =
+      t81::hash::hash_bytes(std::span<const std::byte>(
+                                reinterpret_cast<const std::byte*>(manifest.data()),
+                                manifest.size()))
+          .to_string();
+
+  const fs::path snapshots_root = canonfs_root / "snapshots";
+  const fs::path snapshot_dir = snapshots_root / snapshot_hash;
+  fs::create_directories(snapshots_root, ec);
+  if (ec) {
+    if (error_message) *error_message = "could not create snapshots directory";
+    return std::nullopt;
+  }
+  std::string copy_error;
+  if (!fs::exists(snapshot_dir) && !copy_directory_contents(canonfs_root, snapshot_dir, copy_error)) {
+    if (error_message) *error_message = copy_error;
+    return std::nullopt;
+  }
+  {
+    std::ofstream out(snapshot_dir / "MANIFEST.txt", std::ios::binary | std::ios::trunc);
+    if (!out) {
+      if (error_message) *error_message = "failed to write manifest";
+      return std::nullopt;
+    }
+    out << manifest;
+  }
+  return snapshot_hash;
+}
+
+int canonfs_snapshot(const fs::path& canonfs_root, bool as_json) {
+  std::string snapshot_error;
+  const auto snapshot_hash = canonfs_capture_snapshot_hash(canonfs_root, &snapshot_error);
+  if (!snapshot_hash) {
+    error("canonfs snapshot: " + snapshot_error);
+    return 1;
+  }
+  const auto entries = collect_snapshot_manifest(canonfs_root);
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.canonfs-snapshot.v1\",\n"
+              << "  \"ok\": true,\n"
+              << "  \"hash\": \"" << *snapshot_hash << "\",\n"
+              << "  \"canonfs_root\": \"" << escape_json_text(canonfs_root.string()) << "\",\n"
+              << "  \"entries\": " << entries.size() << "\n"
+              << "}\n";
+  } else {
+    std::cout << "CanonFS snapshot captured.\nHash: " << *snapshot_hash << "\n";
+  }
+  return 0;
+}
+
+int canonfs_snapshot_diff(const std::string& lhs_snapshot_hash, const std::string& rhs_snapshot_hash,
+                          const fs::path& canonfs_root, bool as_json) {
+  const fs::path lhs_manifest = canonfs_root / "snapshots" / lhs_snapshot_hash / "MANIFEST.txt";
+  const fs::path rhs_manifest = canonfs_root / "snapshots" / rhs_snapshot_hash / "MANIFEST.txt";
+  if (!fs::exists(lhs_manifest)) {
+    error("canonfs snapshot-diff: snapshot not found: " + lhs_snapshot_hash);
+    return 1;
+  }
+  if (!fs::exists(rhs_manifest)) {
+    error("canonfs snapshot-diff: snapshot not found: " + rhs_snapshot_hash);
+    return 1;
+  }
+  const std::string lhs_text = read_file_binary(lhs_manifest);
+  const std::string rhs_text = read_file_binary(rhs_manifest);
+  const auto lhs_lines = split_lines(lhs_text);
+  const auto rhs_lines = split_lines(rhs_text);
+  std::set<std::string> lhs_set(lhs_lines.begin(), lhs_lines.end());
+  std::set<std::string> rhs_set(rhs_lines.begin(), rhs_lines.end());
+  std::vector<std::string> only_lhs;
+  std::vector<std::string> only_rhs;
+  std::set_difference(lhs_set.begin(), lhs_set.end(), rhs_set.begin(), rhs_set.end(),
+                      std::back_inserter(only_lhs));
+  std::set_difference(rhs_set.begin(), rhs_set.end(), lhs_set.begin(), lhs_set.end(),
+                      std::back_inserter(only_rhs));
+  const bool identical = only_lhs.empty() && only_rhs.empty();
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.canonfs-snapshot-diff.v1\",\n"
+              << "  \"ok\": " << (identical ? "true" : "false") << ",\n"
+              << "  \"lhs\": \"" << escape_json_text(lhs_snapshot_hash) << "\",\n"
+              << "  \"rhs\": \"" << escape_json_text(rhs_snapshot_hash) << "\",\n"
+              << "  \"only_lhs\": [";
+    for (std::size_t i = 0; i < only_lhs.size(); ++i) {
+      if (i) std::cout << ", ";
+      std::cout << "\"" << escape_json_text(only_lhs[i]) << "\"";
+    }
+    std::cout << "],\n  \"only_rhs\": [";
+    for (std::size_t i = 0; i < only_rhs.size(); ++i) {
+      if (i) std::cout << ", ";
+      std::cout << "\"" << escape_json_text(only_rhs[i]) << "\"";
+    }
+    std::cout << "]\n}\n";
+  } else if (identical) {
+    std::cout << "Snapshots are identical.\n";
+  } else {
+    for (const auto& line : only_lhs) {
+      std::cout << "- " << line << "\n";
+    }
+    for (const auto& line : only_rhs) {
+      std::cout << "+ " << line << "\n";
+    }
+  }
+  return identical ? 0 : 1;
+}
+
+int canonfs_rollback(const std::string& snapshot_hash, const fs::path& canonfs_root, bool as_json) {
+  const fs::path snapshot_dir = canonfs_root / "snapshots" / snapshot_hash;
+  if (!fs::exists(snapshot_dir)) {
+    error("canonfs rollback: snapshot not found: " + snapshot_hash);
+    return 1;
+  }
+  std::string error_message;
+  if (!clear_directory_except_snapshots(canonfs_root, error_message)) {
+    error("canonfs rollback: " + error_message);
+    return 1;
+  }
+  for (auto it = fs::recursive_directory_iterator(snapshot_dir); it != fs::recursive_directory_iterator();
+       ++it) {
+    const auto& src = it->path();
+    if (src.filename() == "MANIFEST.txt") {
+      continue;
+    }
+    const fs::path rel = fs::relative(src, snapshot_dir);
+    const fs::path dst = canonfs_root / rel;
+    std::error_code ec;
+    if (it->is_directory()) {
+      fs::create_directories(dst, ec);
+    } else if (it->is_regular_file()) {
+      fs::create_directories(dst.parent_path(), ec);
+      if (!ec) {
+        fs::copy_file(src, dst, fs::copy_options::overwrite_existing, ec);
+      }
+    }
+    if (ec) {
+      error("canonfs rollback: failed copying " + src.string());
+      return 1;
+    }
+  }
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.canonfs-rollback.v1\",\n"
+              << "  \"ok\": true,\n"
+              << "  \"hash\": \"" << snapshot_hash << "\",\n"
+              << "  \"canonfs_root\": \"" << escape_json_text(canonfs_root.string()) << "\"\n"
+              << "}\n";
+  } else {
+    std::cout << "Rollback complete. Active snapshot: " << snapshot_hash << "\n";
+  }
+  return 0;
+}
+
+int determinism_hash_file(const fs::path& input, bool as_json) {
+  auto bytes = read_file_bytes(input);
+  const std::string hash = sha3_512_hex_text(bytes);
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.determinism-hash.v1\",\n"
+              << "  \"path\": \"" << escape_json_text(input.string()) << "\",\n"
+              << "  \"sha3_512\": \"" << hash << "\"\n"
+              << "}\n";
+  } else {
+    std::cout << hash << "  " << input.string() << "\n";
+  }
+  return 0;
+}
+
+int determinism_hash_trace(const fs::path& input, bool as_json) {
+  const std::string normalized = normalize_trace_content(read_file_binary(input));
+  const std::string hash = sha3_512_hex_text(normalized);
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.determinism-trace-hash.v1\",\n"
+              << "  \"path\": \"" << escape_json_text(input.string()) << "\",\n"
+              << "  \"normalized_entries\": "
+              << std::count(normalized.begin(), normalized.end(), '\n') << ",\n"
+              << "  \"sha3_512\": \"" << hash << "\"\n"
+              << "}\n";
+  } else {
+    std::cout << hash << "  " << input.string() << "\n";
+  }
+  return 0;
+}
+
+int determinism_diff_files(const fs::path& lhs, const fs::path& rhs, bool as_json) {
+  const std::string lhs_bytes = read_file_binary(lhs);
+  const std::string rhs_bytes = read_file_binary(rhs);
+  const bool identical = lhs_bytes == rhs_bytes;
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.determinism-diff.v1\",\n"
+              << "  \"ok\": " << (identical ? "true" : "false") << ",\n"
+              << "  \"lhs\": \"" << escape_json_text(lhs.string()) << "\",\n"
+              << "  \"rhs\": \"" << escape_json_text(rhs.string()) << "\",\n"
+              << "  \"lhs_sha3_512\": \"" << sha3_512_hex_text(lhs_bytes) << "\",\n"
+              << "  \"rhs_sha3_512\": \"" << sha3_512_hex_text(rhs_bytes) << "\"\n"
+              << "}\n";
+  } else if (identical) {
+    std::cout << "files are identical\n";
+  } else {
+    std::cout << "files differ\n";
+    std::cout << "lhs sha3-512: " << sha3_512_hex_text(lhs_bytes) << "\n";
+    std::cout << "rhs sha3-512: " << sha3_512_hex_text(rhs_bytes) << "\n";
+  }
+  return identical ? 0 : 1;
+}
+
+int determinism_diff_trace_files(const fs::path& lhs, const fs::path& rhs, bool as_json) {
+  const std::string lhs_normalized = normalize_trace_content(read_file_binary(lhs));
+  const std::string rhs_normalized = normalize_trace_content(read_file_binary(rhs));
+  const bool identical = lhs_normalized == rhs_normalized;
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.determinism-trace-diff.v1\",\n"
+              << "  \"ok\": " << (identical ? "true" : "false") << ",\n"
+              << "  \"lhs\": \"" << escape_json_text(lhs.string()) << "\",\n"
+              << "  \"rhs\": \"" << escape_json_text(rhs.string()) << "\",\n"
+              << "  \"lhs_sha3_512\": \"" << sha3_512_hex_text(lhs_normalized) << "\",\n"
+              << "  \"rhs_sha3_512\": \"" << sha3_512_hex_text(rhs_normalized) << "\"\n"
+              << "}\n";
+  } else if (identical) {
+    std::cout << "trace-normalized-identical\n";
+  } else {
+    std::cout << "trace-normalized-different\n";
+  }
+  return identical ? 0 : 1;
 }
 
 int init_project(const std::string& name) {
@@ -1063,8 +1764,34 @@ int run_trace_diff(const TraceArgs& args) {
     }
     line_num++;
   }
+  while (std::getline(f1, l1)) {
+    if (args.no_color) {
+      std::cout << "Difference at line " << line_num << ":\n";
+      std::cout << "- " << l1 << "\n";
+      std::cout << "+ <missing>\n";
+    } else {
+      std::cout << COLOR_BOLD << "Difference at line " << line_num << ":" << COLOR_RESET << "\n";
+      std::cout << COLOR_RED << "- " << l1 << COLOR_RESET << "\n";
+      std::cout << COLOR_GREEN << "+ <missing>" << COLOR_RESET << "\n";
+    }
+    found_diff = true;
+    ++line_num;
+  }
+  while (std::getline(f2, l2)) {
+    if (args.no_color) {
+      std::cout << "Difference at line " << line_num << ":\n";
+      std::cout << "- <missing>\n";
+      std::cout << "+ " << l2 << "\n";
+    } else {
+      std::cout << COLOR_BOLD << "Difference at line " << line_num << ":" << COLOR_RESET << "\n";
+      std::cout << COLOR_RED << "- <missing>" << COLOR_RESET << "\n";
+      std::cout << COLOR_GREEN << "+ " << l2 << COLOR_RESET << "\n";
+    }
+    found_diff = true;
+    ++line_num;
+  }
   if (!found_diff) info("Traces are identical");
-  return 0;
+  return found_diff ? 1 : 0;
 }
 
 int run_trace_replay(const TraceArgs& args) {
@@ -1124,6 +1851,25 @@ int run_trace_replay(const TraceArgs& args) {
   vm->run_to_halt();
   const auto& current_trace = vm->state().trace;
   std::ifstream ifs(trace_path);
+  if (!ifs) {
+    if (as_json) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.trace-replay.v1\",\n"
+                << "  \"ok\": false,\n"
+                << "  \"kind\": \"open_error\",\n"
+                << "  \"actual_entries\": " << current_trace.size() << ",\n"
+                << "  \"expected_entries\": 0,\n"
+                << "  \"compared_entries\": 0,\n"
+                << "  \"mismatch_index\": null,\n"
+                << "  \"expected\": null,\n"
+                << "  \"actual\": null,\n"
+                << "  \"error\": \"could not open trace file\"\n"
+                << "}\n";
+      return 1;
+    }
+    error("trace replay: could not open trace file: " + trace_path.string());
+    return 1;
+  }
   std::vector<std::string> saved_trace;
   std::string line;
   while (std::getline(ifs, line)) saved_trace.push_back(line);
@@ -1171,6 +1917,7 @@ int run_trace_replay(const TraceArgs& args) {
     if (as_json) {
       print_json(false, "size_mismatch", mismatch_index, expected_line ? &*expected_line : nullptr,
                  actual_line ? &*actual_line : nullptr);
+      return 1;
     }
     error("Trace size mismatch at entry " + std::to_string(mismatch_index) +
           " (actual=" + std::to_string(current_trace.size()) +
@@ -1184,6 +1931,7 @@ int run_trace_replay(const TraceArgs& args) {
     if (cur != saved_trace[i]) {
       if (as_json) {
         print_json(false, "entry_mismatch", i, &saved_trace[i], &cur);
+        return 1;
       }
       error("Trace mismatch at entry " + std::to_string(i));
       std::cerr << "Expected[" << i << "]: " << saved_trace[i] << "\n";
@@ -1203,6 +1951,7 @@ int run_trace_replay(const TraceArgs& args) {
   }
   if (as_json) {
     print_json(true, "identical", current_trace.size(), nullptr, nullptr);
+    return 0;
   }
   info("Replay successful: traces are bit-identical");
   return 0;
@@ -1330,7 +2079,7 @@ int run_trace_export(const TraceArgs& args) {
       }
       continue;
     }
-    if (token == "-o" || token == "--out") {
+    if (token == "-o" || token == "--out" || token == "--output") {
       if (i + 1 >= args.args.size()) {
         error(token + " requires a file path");
         return 1;
@@ -1420,16 +2169,164 @@ int run_trace_export(const TraceArgs& args) {
   std::cout << rendered.str();
   return 0;
 }
+
+int run_trace_summary(const TraceArgs& args) {
+  bool as_json = false;
+  std::vector<std::string> positional;
+  positional.reserve(args.args.size());
+  for (const auto& token : args.args) {
+    if (token == "--json") {
+      as_json = true;
+      continue;
+    }
+    if (!token.empty() && token[0] == '-') {
+      error("trace summary: unknown option '" + token + "'");
+      return 1;
+    }
+    positional.push_back(token);
+  }
+
+  if (positional.size() != 1) {
+    error("trace summary requires exactly one input trace file");
+    return 1;
+  }
+
+  std::ifstream input(positional[0]);
+  if (!input) {
+    error("Could not open trace file: " + positional[0]);
+    return 1;
+  }
+
+  std::size_t line_count = 0;
+  std::size_t canonical_entries = 0;
+  std::size_t trap_entries = 0;
+  std::optional<std::uint64_t> first_pc;
+  std::optional<std::uint64_t> last_pc;
+  std::map<std::string, std::size_t> opcode_counts;
+  std::string line;
+  while (std::getline(input, line)) {
+    ++line_count;
+    ParsedTraceEntry entry = parse_trace_line(line);
+    if (!entry.pc.has_value()) {
+      continue;
+    }
+    ++canonical_entries;
+    if (!first_pc) {
+      first_pc = entry.pc;
+    }
+    last_pc = entry.pc;
+    if (!entry.opcode.empty()) {
+      ++opcode_counts[entry.opcode];
+    }
+    if (entry.trap.has_value()) {
+      ++trap_entries;
+    }
+  }
+
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.trace-summary.v1\",\n"
+              << "  \"path\": \"" << json_escape(positional[0]) << "\",\n"
+              << "  \"line_count\": " << line_count << ",\n"
+              << "  \"canonical_entries\": " << canonical_entries << ",\n"
+              << "  \"trap_entries\": " << trap_entries << ",\n"
+              << "  \"first_pc\": ";
+    if (first_pc) {
+      std::cout << *first_pc << ",\n";
+    } else {
+      std::cout << "null,\n";
+    }
+    std::cout << "  \"last_pc\": ";
+    if (last_pc) {
+      std::cout << *last_pc << ",\n";
+    } else {
+      std::cout << "null,\n";
+    }
+    std::cout << "  \"opcodes\": [\n";
+    std::size_t emitted = 0;
+    for (const auto& [opcode, count] : opcode_counts) {
+      std::cout << "    {\"opcode\":\"" << json_escape(opcode) << "\",\"count\":" << count << "}";
+      if (++emitted < opcode_counts.size()) {
+        std::cout << ",";
+      }
+      std::cout << "\n";
+    }
+    std::cout << "  ]\n}\n";
+    return 0;
+  }
+
+  std::cout << "Trace:             " << positional[0] << "\n";
+  std::cout << "Lines:             " << line_count << "\n";
+  std::cout << "Canonical entries: " << canonical_entries << "\n";
+  std::cout << "Trap entries:      " << trap_entries << "\n";
+  std::cout << "First PC:          " << (first_pc ? std::to_string(*first_pc) : std::string("<none>"))
+            << "\n";
+  std::cout << "Last PC:           " << (last_pc ? std::to_string(*last_pc) : std::string("<none>"))
+            << "\n";
+  std::cout << "Opcodes:\n";
+  for (const auto& [opcode, count] : opcode_counts) {
+    std::cout << "  " << opcode << ": " << count << "\n";
+  }
+  return 0;
+}
+
+int run_trace_canonicalize(const TraceArgs& args) {
+  std::optional<std::string> out_path;
+  std::vector<std::string> positional;
+  positional.reserve(args.args.size());
+  for (std::size_t i = 0; i < args.args.size(); ++i) {
+    const std::string& token = args.args[i];
+    if (token == "-o" || token == "--out" || token == "--output") {
+      if (i + 1 >= args.args.size()) {
+        error(token + " requires a file path");
+        return 1;
+      }
+      out_path = args.args[++i];
+      continue;
+    }
+    if (!token.empty() && token[0] == '-') {
+      error("unknown trace canonicalize option: " + token);
+      return 1;
+    }
+    positional.push_back(token);
+  }
+
+  if (positional.size() != 1) {
+    error("trace canonicalize requires exactly one input trace file");
+    return 1;
+  }
+
+  const std::string normalized = normalize_trace_content(read_file_binary(positional[0]));
+  if (out_path) {
+    std::ofstream out(*out_path, std::ios::binary | std::ios::trunc);
+    if (!out) {
+      error("Could not open output file: " + *out_path);
+      return 1;
+    }
+    out << normalized;
+    if (!out.good()) {
+      error("Failed writing output file: " + *out_path);
+      return 1;
+    }
+    info("Canonical trace written to " + *out_path);
+    return 0;
+  }
+
+  std::cout << normalized;
+  return 0;
+}
 }  // namespace
 
 int run_trace(const TraceArgs& args) {
   if (args.subcommand.empty()) {
-    error("trace requires a subcommand (show|diff|replay|export). Run 't81 help trace'.");
+    error("trace requires a subcommand (show|diff|replay|canonicalize|export). Run 't81 help trace'.");
     return 1;
   }
   if (args.subcommand == "show") return run_trace_show(args);
   if (args.subcommand == "diff") return run_trace_diff(args);
   if (args.subcommand == "replay") return run_trace_replay(args);
+  if (args.subcommand == "summary" || args.subcommand == "stats") return run_trace_summary(args);
+  if (args.subcommand == "canonicalize") return run_trace_canonicalize(args);
   if (args.subcommand == "export") return run_trace_export(args);
   error("Unknown trace subcommand: " + args.subcommand + ". Run 't81 help trace'.");
   return 1;

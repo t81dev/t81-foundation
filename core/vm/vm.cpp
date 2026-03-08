@@ -171,6 +171,75 @@ t81::T81Fraction fraction_from_double(double x) {
   return t81::T81Fraction(neg ? -p1 : p1, q1);
 }
 
+}  // namespace
+}  // namespace t81::vm
+
+namespace t81::axion {
+
+std::size_t DeterminismDetector::hash_event(const t81::vm::AxionEvent& ev, std::size_t seed) {
+  const auto mix = [](std::size_t acc, std::size_t value) {
+    acc ^= value + 0x9e3779b97f4a7c15ULL + (acc << 6U) + (acc >> 2U);
+    return acc;
+  };
+  seed = mix(seed, static_cast<std::size_t>(ev.opcode));
+  seed = mix(seed, static_cast<std::size_t>(ev.tag));
+  seed = mix(seed, static_cast<std::size_t>(ev.value));
+  seed = mix(seed, static_cast<std::size_t>(ev.verdict.kind));
+  seed = mix(seed, std::hash<std::string>{}(ev.verdict.reason));
+  seed = mix(seed, std::hash<std::string>{}(ev.structured.reason));
+  seed = mix(seed, static_cast<std::size_t>(ev.structured.policy_id));
+  seed = mix(seed, static_cast<std::size_t>(ev.structured.pc));
+  seed = mix(seed, static_cast<std::size_t>(ev.structured.handle_id));
+  seed = mix(seed, std::hash<std::string_view>{}(ev.structured.decision));
+  seed = mix(seed, std::hash<std::string>{}(ev.structured.event_type));
+  seed = mix(seed, std::hash<std::string>{}(ev.structured.reason_code));
+  seed = mix(seed, std::hash<std::string>{}(ev.structured.storage_class));
+  seed = mix(seed, std::hash<std::string>{}(ev.structured.numeric_class));
+  seed = mix(seed, ev.structured.strict_core_eligible ? 1U : 0U);
+  return seed;
+}
+
+void DeterminismDetector::record_run(const std::vector<t81::vm::AxionEvent>& log) {
+  prev_hashes_ = std::move(curr_hashes_);
+  curr_hashes_.clear();
+  curr_hashes_.reserve(log.size());
+
+  std::size_t rolling = 0;
+  for (const auto& event : log) {
+    rolling = hash_event(event, rolling);
+    curr_hashes_.push_back(rolling);
+  }
+}
+
+DivergenceReport DeterminismDetector::check_against_previous() const {
+  DivergenceReport report;
+  if (prev_hashes_.empty() || curr_hashes_.empty()) {
+    return report;
+  }
+
+  const std::size_t shared = std::min(prev_hashes_.size(), curr_hashes_.size());
+  for (std::size_t i = 0; i < shared; ++i) {
+    if (prev_hashes_[i] != curr_hashes_[i]) {
+      report.diverged = true;
+      report.event_index = i;
+      report.reason = "Nondeterministic divergence at event " + std::to_string(i);
+      return report;
+    }
+  }
+
+  if (prev_hashes_.size() != curr_hashes_.size()) {
+    report.diverged = true;
+    report.event_index = shared;
+    report.reason = "Nondeterministic divergence in event count at event " + std::to_string(shared);
+  }
+  return report;
+}
+
+}  // namespace t81::axion
+
+namespace t81::vm {
+namespace {
+
 class Interpreter : public IVirtualMachine {
 public:
   explicit Interpreter(std::unique_ptr<t81::axion::Engine> engine)

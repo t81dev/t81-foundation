@@ -1372,6 +1372,13 @@ void GenerateMarkdownReport() {
         }
     };
 
+    const char* write_reports_env = std::getenv("T81_BENCHMARK_WRITE_REPORTS");
+    const bool write_reports = write_reports_env != nullptr && std::string(write_reports_env) == "1";
+    if (!write_reports) {
+        std::cout << "Skipping benchmark report generation (set T81_BENCHMARK_WRITE_REPORTS=1 to enable)\n";
+        return;
+    }
+
     std::ofstream public_file("docs/reference/benchmarks.md");
     if (!public_file.is_open()) {
         std::cerr << "Error: Could not open docs/reference/benchmarks.md for writing.\n";
