@@ -198,6 +198,14 @@ struct ResourceMetrics {
   std::size_t total_infinite_forms{0};
 };
 
+// Saved register snapshot for one activation frame.
+// Pushed on CALL, popped on RET.  Return values travel via the push/pop
+// stack (not registers), so restoring the full register file is safe.
+struct RegisterFrame {
+  std::array<std::int64_t, 243> registers;
+  std::array<ValueTag, 243> register_tags;
+};
+
 struct ThreadContext {
   std::array<std::int64_t, 243> registers{};  // R0..R242
   std::array<ValueTag, 243> register_tags{};
@@ -206,6 +214,8 @@ struct ThreadContext {
   std::size_t sp{0};
   std::vector<std::pair<std::int64_t, std::int64_t>> stack_frames;
   std::size_t call_depth{0};
+  // Shadow register stack — one frame per active function call.
+  std::vector<RegisterFrame> register_frame_stack;
   bool halted{false};
   bool active{true};
   std::size_t stack_base{0};

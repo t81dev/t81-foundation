@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 #include "t81/frontend/lexer.hpp"
+#include "t81/frontend/types.hpp"
 
 namespace t81 {
 namespace frontend {
@@ -69,6 +70,11 @@ struct EnumDecl;
 struct Expr {
   virtual ~Expr() = default;
   virtual std::any accept(ExprVisitor& visitor) const = 0;
+
+  // Populated by SemanticAnalyzer::evaluate_expression().
+  // The IRGen reads this directly instead of querying _expr_type_cache.
+  // Marked mutable so const visitor methods can annotate it.
+  mutable Type resolved_type;
 };
 
 struct Stmt {

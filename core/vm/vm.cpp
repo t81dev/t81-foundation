@@ -2797,6 +2797,10 @@ public:
           trap = Trap::StackFault;
           break;
         }
+        // NOTE: register save/restore for recursive isolation is deferred.
+        // The calling convention mixes register and stack return channels;
+        // proper caller-save discipline requires IRGen cooperation.
+        // See: docs/architecture/OVERVIEW.md — "Recursive Register Isolation" work item.
         ++ctx.call_depth;
         ctx.pc = static_cast<std::size_t>(target);
         break;
