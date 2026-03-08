@@ -8,6 +8,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-03-08
+
+### Added
+- `code profile` compile-and-profile workflow for `.t81` and `.tisc` inputs.
+- `tisc stats`, `trace filter`, `determinism multi-run`, `ir validate`, `axion audit`, `env clean`, `weights export`, and the `tier` command family.
+- `--dry-run` support for `canonfs rollback` and `canonfs gc`.
+
+### Fixed
+- `project build`, `project run`, and `project test` now dispatch correctly instead of falling through to `Unknown command: code`.
+- `memory-stats` is accepted consistently by argument parsing and now emits the expected legacy alias warning.
+- Help routing for `env check`, `env diag`, `env feedback`, and `project build/run/test` now resolves to the correct subcommand help.
+- CLI help output now goes to `stdout`, restoring normal pipe and redirection behavior.
+- Global parse errors no longer call `std::exit(1)` directly.
+- `--json` failures now emit a JSON error envelope with schema `t81.error.v1`.
+
+### Changed
+- Help dispatch is deduplicated across `help` and `--help` entry paths.
+- `lang` help now explicitly documents that it is a compatibility alias for `code` plus `ir`.
+- CLI reference manual and contract tests were updated to match the shipped command surface and help/output behavior.
+
 ### Added
 - Support for assignment to array indices (e.g., `arr[i] = x`) and object fields (e.g., `obj.field = x`).
 - `T81Int::significant_trits()` method to determine the number of used trits.

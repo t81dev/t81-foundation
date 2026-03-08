@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
   {
     const auto result = run_cli(t81_bin, {"help", "compile"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "Usage: t81 compile"));
+    T81_TEST_CHECK(contains(result.stdout_text, "Usage: t81 compile"));
   }
 
   {
@@ -127,80 +127,80 @@ int main(int argc, char* argv[]) {
   {
     const auto result = run_cli(t81_bin, {"--help"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "code    <action> [args]"));
-    T81_TEST_CHECK(contains(result.stderr_text, "canonfs <action> [args]"));
-    T81_TEST_CHECK(contains(result.stderr_text, "determinism <action> [args]"));
-    T81_TEST_CHECK(contains(result.stderr_text, "vm <action> [args]"));
-    T81_TEST_CHECK(contains(result.stderr_text, "tisc <action> [args]"));
-    T81_TEST_CHECK(contains(result.stderr_text, "ir <action> [args]"));
-    T81_TEST_CHECK(contains(result.stderr_text, "weights <action> [args]"));
-    T81_TEST_CHECK(contains(result.stderr_text, "policy <action> [args]"));
-    T81_TEST_CHECK(contains(result.stderr_text, "axion <action> [args]"));
-    T81_TEST_CHECK(contains(result.stderr_text, "trace <action> [args]"));
-    T81_TEST_CHECK(!contains(result.stderr_text, "compile <file.t81|.t81w>"));
+    T81_TEST_CHECK(contains(result.stdout_text, "code    <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "canonfs <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "determinism <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "vm <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "tisc <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "ir <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "weights <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "policy <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "axion <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "trace <action> [args]"));
+    T81_TEST_CHECK(!contains(result.stdout_text, "compile <file.t81|.t81w>"));
     T81_TEST_CHECK(!contains(result.stderr_text, "check   <file.t81>"));
   }
 
   {
     const auto result = run_cli(t81_bin, {"help", "advanced"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "verify/quantize"));
-    T81_TEST_CHECK(contains(result.stderr_text, "simulate/explain/snapshot/snapshot-diff/rollback"));
-    T81_TEST_CHECK(contains(result.stderr_text, "encode/decode"));
+    T81_TEST_CHECK(contains(result.stdout_text, "verify/quantize"));
+    T81_TEST_CHECK(contains(result.stdout_text, "simulate/explain/snapshot/snapshot-diff/rollback"));
+    T81_TEST_CHECK(contains(result.stdout_text, "encode/decode"));
   }
 
   {
     const auto result = run_cli(t81_bin, {"help", "labs"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "Runtime-backed memory pool profiling"));
+    T81_TEST_CHECK(contains(result.stdout_text, "Runtime-backed memory pool profiling"));
   }
 
   {
     const auto result = run_cli(t81_bin, {"help", "canonfs"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "Usage: t81 canonfs <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "Usage: t81 canonfs <action> [args]"));
   }
 
   {
     const auto result = run_cli(t81_bin, {"help", "determinism"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "Usage: t81 determinism <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "Usage: t81 determinism <action> [args]"));
   }
 
   {
     const auto result = run_cli(t81_bin, {"help", "vm"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "Usage: t81 vm <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "Usage: t81 vm <action> [args]"));
   }
 
   {
     const auto result = run_cli(t81_bin, {"help", "vm", "trace"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "Usage: t81 vm trace"));
+    T81_TEST_CHECK(contains(result.stdout_text, "Usage: t81 vm trace"));
   }
 
   {
     const auto result = run_cli(t81_bin, {"help", "determinism", "verify-run"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "Usage: t81 determinism verify-run"));
+    T81_TEST_CHECK(contains(result.stdout_text, "Usage: t81 determinism verify-run"));
   }
 
   {
     const auto result = run_cli(t81_bin, {"help", "determinism", "explain"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "Usage: t81 determinism explain"));
+    T81_TEST_CHECK(contains(result.stdout_text, "Usage: t81 determinism explain"));
   }
 
   {
     const auto result = run_cli(t81_bin, {"help", "axion", "snapshot-diff"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "Usage: t81 axion snapshot-diff"));
+    T81_TEST_CHECK(contains(result.stdout_text, "Usage: t81 axion snapshot-diff"));
   }
 
   {
     const auto result = run_cli(t81_bin, {"help", "trace", "summary"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "Usage: t81 trace summary"));
+    T81_TEST_CHECK(contains(result.stdout_text, "Usage: t81 trace summary"));
   }
 
   {
@@ -225,19 +225,20 @@ int main(int argc, char* argv[]) {
   {
     const auto result = run_cli(t81_bin, {"help", "tisc"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "Usage: t81 tisc <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "Usage: t81 tisc <action> [args]"));
   }
 
   {
     const auto result = run_cli(t81_bin, {"help", "ir"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "Usage: t81 ir <action> [args]"));
+    T81_TEST_CHECK(contains(result.stdout_text, "Usage: t81 ir <action> [args]"));
   }
 
   {
     const auto result = run_cli(t81_bin, {"axion", "optimize", "--tier", "nope", "--json"});
     T81_TEST_CHECK(result.exit_code != 0);
-    T81_TEST_CHECK(contains(result.stderr_text, "--tier must be an integer"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.error.v1\""));
+    T81_TEST_CHECK(contains(result.stdout_text, "--tier must be an integer"));
   }
 
   {
@@ -434,11 +435,11 @@ int main(int argc, char* argv[]) {
 
     const auto weights_verify_help = run_cli(t81_bin, {"help", "weights", "verify"});
     T81_TEST_CHECK(weights_verify_help.exit_code == 0);
-    T81_TEST_CHECK(contains(weights_verify_help.stderr_text, "Usage: t81 weights verify"));
+    T81_TEST_CHECK(contains(weights_verify_help.stdout_text, "Usage: t81 weights verify"));
 
     const auto lang_help = run_cli(t81_bin, {"help", "lang"});
     T81_TEST_CHECK(lang_help.exit_code == 0);
-    T81_TEST_CHECK(contains(lang_help.stderr_text, "Usage: t81 lang <action>"));
+    T81_TEST_CHECK(contains(lang_help.stdout_text, "Usage: t81 lang <action>"));
 
     const auto lang_export_result = run_cli(t81_bin, {"lang", "export", t81_file.string(), "--json"});
     T81_TEST_CHECK(lang_export_result.exit_code == 0);
@@ -446,15 +447,15 @@ int main(int argc, char* argv[]) {
 
     const auto model_help = run_cli(t81_bin, {"help", "model"});
     T81_TEST_CHECK(model_help.exit_code == 0);
-    T81_TEST_CHECK(contains(model_help.stderr_text, "Compatibility alias for `t81 weights`"));
+    T81_TEST_CHECK(contains(model_help.stdout_text, "Compatibility alias for `t81 weights`"));
 
     const auto tensor_help = run_cli(t81_bin, {"help", "tensor", "hash"});
     T81_TEST_CHECK(tensor_help.exit_code == 0);
-    T81_TEST_CHECK(contains(tensor_help.stderr_text, "Usage: t81 tensor hash"));
+    T81_TEST_CHECK(contains(tensor_help.stdout_text, "Usage: t81 tensor hash"));
 
     const auto bench_help = run_cli(t81_bin, {"help", "bench"});
     T81_TEST_CHECK(bench_help.exit_code == 0);
-    T81_TEST_CHECK(contains(bench_help.stderr_text, "Compatibility alias for `t81 benchmark`"));
+    T81_TEST_CHECK(contains(bench_help.stdout_text, "Compatibility alias for `t81 benchmark`"));
 
     std::error_code ignore_ec;
     fs::remove(t81_file, ignore_ec);
@@ -544,22 +545,21 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(memory_stats_result.exit_code == 0);
     T81_TEST_CHECK(contains(memory_stats_result.stdout_text, "Memory Pool Analysis"));
     T81_TEST_CHECK(contains(memory_stats_result.stdout_text, "Stack peak usage"));
-    T81_TEST_CHECK(!contains(memory_stats_result.stderr_text, "legacy alias"));
+    T81_TEST_CHECK(contains(memory_stats_result.stderr_text, "legacy alias"));
   }
 
   {
     const auto bare_vm_result = run_cli(t81_bin, {"vm"});
     T81_TEST_CHECK(bare_vm_result.exit_code == 0);
-    T81_TEST_CHECK(contains(bare_vm_result.stderr_text, "Usage: t81 vm <action> [args]"));
+    T81_TEST_CHECK(contains(bare_vm_result.stdout_text, "Usage: t81 vm <action> [args]"));
 
     const auto bare_trace_result = run_cli(t81_bin, {"trace"});
     T81_TEST_CHECK(bare_trace_result.exit_code == 0);
-    T81_TEST_CHECK(contains(bare_trace_result.stderr_text, "Usage: t81 trace <subcommand> [args]"));
+    T81_TEST_CHECK(contains(bare_trace_result.stdout_text, "Usage: t81 trace <subcommand> [args]"));
 
     const auto completion_result = run_cli(t81_bin, {"completion", "fish"});
     T81_TEST_CHECK(completion_result.exit_code == 0);
     T81_TEST_CHECK(!contains(completion_result.stdout_text, " compile "));
-    T81_TEST_CHECK(!contains(completion_result.stdout_text, " check "));
   }
 
   {

@@ -1829,7 +1829,7 @@ configure_package_config_file(
 
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/T81ConfigVersion.cmake"
-  VERSION 1.1.0
+  VERSION 1.3.2
   COMPATIBILITY SameMajorVersion
 )
 
@@ -1841,7 +1841,7 @@ configure_package_config_file(
 
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/T81FoundationConfigVersion.cmake"
-  VERSION 1.1.0
+  VERSION 1.3.2
   COMPATIBILITY SameMajorVersion
 )
 

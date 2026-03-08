@@ -2281,6 +2281,122 @@ int run_trace_summary(const TraceArgs& args) {
   return 0;
 }
 
+int run_trace_filter(const TraceArgs& args) {
+  bool as_json = false;
+  std::optional<std::string> opcode_filter;
+  std::optional<std::string> trap_filter;
+  std::optional<std::uint64_t> pc_start;
+  std::optional<std::uint64_t> pc_end;
+  std::vector<std::string> positional;
+
+  for (std::size_t i = 0; i < args.args.size(); ++i) {
+    const std::string& token = args.args[i];
+    if (token == "--json") {
+      as_json = true;
+    } else if (token == "--opcode") {
+      if (i + 1 >= args.args.size()) {
+        error("trace filter: missing value for --opcode");
+        return 1;
+      }
+      opcode_filter = args.args[++i];
+    } else if (token == "--trap") {
+      if (i + 1 >= args.args.size()) {
+        error("trace filter: missing value for --trap");
+        return 1;
+      }
+      trap_filter = args.args[++i];
+    } else if (token == "--pc-start" || token == "--pc-end") {
+      if (i + 1 >= args.args.size()) {
+        error("trace filter: missing value for " + token);
+        return 1;
+      }
+      try {
+        auto value = static_cast<std::uint64_t>(std::stoull(args.args[++i]));
+        if (token == "--pc-start") {
+          pc_start = value;
+        } else {
+          pc_end = value;
+        }
+      } catch (...) {
+        error("trace filter: invalid numeric value for " + token);
+        return 1;
+      }
+    } else if (!token.empty() && token[0] == '-') {
+      error("trace filter: unknown option '" + token + "'");
+      return 1;
+    } else {
+      positional.push_back(token);
+    }
+  }
+
+  if (positional.size() != 1) {
+    error("trace filter requires exactly one input trace file");
+    return 1;
+  }
+
+  std::ifstream input(positional[0]);
+  if (!input) {
+    error("Could not open trace file: " + positional[0]);
+    return 1;
+  }
+
+  std::vector<ParsedTraceEntry> matches;
+  std::string line;
+  while (std::getline(input, line)) {
+    ParsedTraceEntry entry = parse_trace_line(line);
+    if (opcode_filter && entry.opcode != *opcode_filter) {
+      continue;
+    }
+    if (trap_filter) {
+      if (!entry.trap || *entry.trap != *trap_filter) {
+        continue;
+      }
+    }
+    if (pc_start && (!entry.pc || *entry.pc < *pc_start)) {
+      continue;
+    }
+    if (pc_end && (!entry.pc || *entry.pc > *pc_end)) {
+      continue;
+    }
+    matches.push_back(std::move(entry));
+  }
+
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.trace-filter.v1\",\n"
+              << "  \"path\": \"" << json_escape(positional[0]) << "\",\n"
+              << "  \"count\": " << matches.size() << ",\n"
+              << "  \"entries\": [\n";
+    for (std::size_t i = 0; i < matches.size(); ++i) {
+      const auto& entry = matches[i];
+      std::cout << "    {\"raw\":\"" << json_escape(entry.raw) << "\",\"pc\":";
+      if (entry.pc) {
+        std::cout << *entry.pc;
+      } else {
+        std::cout << "null";
+      }
+      std::cout << ",\"opcode\":\"" << json_escape(entry.opcode) << "\",\"trap\":";
+      if (entry.trap) {
+        std::cout << "\"" << json_escape(*entry.trap) << "\"";
+      } else {
+        std::cout << "null";
+      }
+      std::cout << "}";
+      if (i + 1 < matches.size()) {
+        std::cout << ",";
+      }
+      std::cout << "\n";
+    }
+    std::cout << "  ]\n}\n";
+    return 0;
+  }
+
+  for (const auto& entry : matches) {
+    std::cout << entry.raw << "\n";
+  }
+  return 0;
+}
+
 int run_trace_canonicalize(const TraceArgs& args) {
   std::optional<std::string> out_path;
   std::vector<std::string> positional;
@@ -2330,13 +2446,14 @@ int run_trace_canonicalize(const TraceArgs& args) {
 
 int run_trace(const TraceArgs& args) {
   if (args.subcommand.empty()) {
-    error("trace requires a subcommand (show|diff|replay|summary|stats|canonicalize|export). Run 't81 help trace'.");
+    error("trace requires a subcommand (show|diff|replay|summary|stats|filter|canonicalize|export). Run 't81 help trace'.");
     return 1;
   }
   if (args.subcommand == "show") return run_trace_show(args);
   if (args.subcommand == "diff") return run_trace_diff(args);
   if (args.subcommand == "replay") return run_trace_replay(args);
   if (args.subcommand == "summary" || args.subcommand == "stats") return run_trace_summary(args);
+  if (args.subcommand == "filter") return run_trace_filter(args);
   if (args.subcommand == "canonicalize") return run_trace_canonicalize(args);
   if (args.subcommand == "export") return run_trace_export(args);
   error("Unknown trace subcommand: " + args.subcommand + ". Run 't81 help trace'.");

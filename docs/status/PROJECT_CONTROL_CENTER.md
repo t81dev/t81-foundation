@@ -20,7 +20,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | Dimension | Status |
 | :--- | :--- |
 | Overall | Green — **PERFECT TEST COVERAGE ACHIEVED** (332/332 tests passing, 100% success rate) |
-| Release Readiness | **GO** — v1.3.1 released 2026-03-08 |
+| Release Readiness | **GO** — v1.3.2 released 2026-03-08 |
 | Current Main | `8f7250f9` — Expand CLI command surface: 13 new commands, bug fixes, docs |
 | Open Blockers | None |
 | Frozen Core | Intact — no freeze exceptions |

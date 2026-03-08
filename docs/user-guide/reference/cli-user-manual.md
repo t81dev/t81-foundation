@@ -73,6 +73,7 @@ Domain-first command families:
 - `t81 vm <action> [args]`
 - `t81 tisc <action> [args]`
 - `t81 ir <action> [args]`
+- `t81 tier <action> [args]`
 - `t81 weights <action> [args]`
 - `t81 policy <action> [args]`
 - `t81 axion <action> [args]`
@@ -100,6 +101,7 @@ t81 determinism <action> [args]
 t81 vm <action> [args]
 t81 tisc <action> [args]
 t81 ir <action> [args]
+t81 tier <action> [args]
 t81 weights <action> [args]
 t81 policy <action> [args]
 t81 axion <action> [args]
@@ -114,11 +116,13 @@ Primary workflow actions:
 ```text
 t81 lang check <file.t81>
 t81 lang build <file.t81|file.t81w> [-o <file.tisc>] [--weights-model <model.t81w>]
+t81 lang validate <file.t81> [--json]
 t81 lang export <file.t81> [--json] [-o <file>]
 t81 code check <file.t81>
 t81 code fmt [options] <file...>
 t81 code build <file.t81|file.t81w> [-o <file.tisc>] [--weights-model <model.t81w>]
 t81 code run <file.t81|file.tisc> [--policy <policy.apl>] [--trace] [--trace-out <file>] [--weights-model <model.t81w>]
+t81 code profile <file.t81|file.tisc> [--policy <policy.apl>] [--json]
 t81 code test [options] [-- <ctest args...>]
 t81 code disasm <file.tisc>
 t81 code debug <file.t81|file.tisc> [--policy <policy.apl>] [--weights-model <model.t81w>]
@@ -131,8 +135,8 @@ t81 canonfs stat <sha3-256:hash> [--json] [--canonfs-root <path>]
 t81 canonfs verify <sha3-256:hash> [--json] [--canonfs-root <path>]
 t81 canonfs snapshot [--json] [--canonfs-root <path>]
 t81 canonfs snapshot-diff <lhs> <rhs> [--json] [--canonfs-root <path>]
-t81 canonfs rollback --to <hash> [--json] [--canonfs-root <path>]
-t81 canonfs gc [--json] [--canonfs-root <path>]
+t81 canonfs rollback --to <hash> [--dry-run] [--json] [--canonfs-root <path>]
+t81 canonfs gc [--dry-run] [--json] [--canonfs-root <path>]
 t81 determinism verify [fixtures_dir]
 t81 determinism verify-run <file.tisc> [--policy <policy.apl>] [--json]
 t81 determinism certify <file.tisc> [--policy <policy.apl>] [--json]
@@ -141,6 +145,7 @@ t81 determinism hash <file> [--json]
 t81 determinism trace-hash <trace.txt> [--json]
 t81 determinism diff <lhs> <rhs> [--json]
 t81 determinism diff-trace <lhs> <rhs> [--json]
+t81 determinism multi-run <file.tisc> --count <n> [--policy <policy.apl>] [--json]
 t81 determinism baseline <dir> [--source-dir <src>] [--json]
 t81 vm run <file.tisc> [--policy <policy.apl>] [-o <trace.txt>]
 t81 vm debug <file.tisc> [--policy <policy.apl>]
@@ -154,22 +159,29 @@ t81 vm profile <file.tisc> [--policy <policy.apl>] [--json]
 t81 vm explain-trap <file.tisc> [--policy <policy.apl>] [--json]
 t81 tisc disasm <file.tisc>
 t81 tisc validate <file.tisc> [--json]
+t81 tisc stats <file.tisc> [--json]
 t81 tisc encode <file.base81> [-o <out.tisc>] [--json]
 t81 tisc decode <file.tisc> [-o <out.base81>] [--json]
 t81 tisc diff <a.tisc> <b.tisc> [--json]
 t81 ir show <file.t81>
 t81 ir dump <file.t81>
+t81 ir validate <file.t81> [--json]
 t81 ir export <file.t81> [--json] [-o <file>]
+t81 tier info [--json]
+t81 tier check <file.tisc> [--json]
+t81 tier gate <file.tisc> --max-tier <n> [--json]
 t81 tensor canonize <file>
 t81 tensor hash <file> [--json]
 t81 tensor inspect <model.t81w> [--json]
 t81 weights import <file> [-o <out>] [--format <fmt>]
 t81 weights info <model.t81w> [--json]
 t81 weights verify <model.t81w> [--json]
+t81 weights export <model.t81w> --to-safetensors <out> [--json]
 t81 weights quantize <input> --to-gguf <out>
 t81 model import <file> [-o <out>] [--format <fmt>]
 t81 model info <model.t81w> [--json]
 t81 model verify <model.t81w> [--json]
+t81 model export <model.t81w> --to-safetensors <out> [--json]
 t81 model quantize <input> --to-gguf <out>
 t81 policy compile <file.apl> [-o <out>]
 t81 policy run <file.apl|file.axionb> [--json]
@@ -183,11 +195,13 @@ t81 axion snapshot [--json]
 t81 axion snapshot-diff <lhs> <rhs> [--json]
 t81 axion rollback --to <hash> [--json]
 t81 axion log [--json] [--tail <n>]
+t81 axion audit [--from <hash>] [--to <hash>] [--json]
 t81 trace show <trace.txt> [--no-color]
 t81 trace diff <trace1.txt> <trace2.txt> [--no-color]
 t81 trace replay <file.tisc> <trace.txt> [--json]
 t81 trace summary <trace.txt> [--json]
 t81 trace stats <trace.txt> [--json]
+t81 trace filter <trace.txt> [--opcode <name>] [--trap <name>] [--pc-start <n>] [--pc-end <n>] [--json]
 t81 trace canonicalize <trace.txt> [-o <file>]
 t81 trace export <trace.txt> [--format <json|csv>] [-o <file>]
 t81 project init <project_name>
@@ -200,6 +214,7 @@ t81 env doctor [--json]
 t81 env paths [--json]
 t81 env diag [--json]
 t81 env toolchain [--json]
+t81 env clean [--build-dir <path>] [--json]
 t81 env feedback <submit|report> [options]
 t81 internal pkg <subcommand> [args]
 t81 internal benchmark [benchmark_runner_flags...]
@@ -396,13 +411,15 @@ t81 weights <subcommand> [options]
 t81 weights import <file> [-o <out>] [--format <fmt>]
 t81 weights info <model.t81w> [--json]
 t81 weights verify <model.t81w> [--json]
+t81 weights export <model.t81w> --to-safetensors <out> [--json]
 t81 weights quantize <input> --to-gguf <out>
 ```
 
-Weight import/info/quantization helpers.
+Weight import/info/export/quantization helpers.
 `weights info --json` uses schema `t81.weights-info.v1` and returns `ok: false` with
 an `error` field on load failures.
 `weights verify --json` uses schema `t81.weights-verify.v1`.
+`weights export --json` uses schema `t81.weights-export.v1`.
 
 ### 4.17 `policy`
 
@@ -434,6 +451,7 @@ t81 axion snapshot [--json]
 t81 axion snapshot-diff <lhs> <rhs> [--json]
 t81 axion rollback --to <hash> [--json]
 t81 axion log [--json] [--tail <n>]
+t81 axion audit [--from <hash>] [--to <hash>] [--json]
 ```
 
 Axion governor and policy-diagnostics helpers.
@@ -444,6 +462,7 @@ entries. `--json` uses schema `t81.axion-log.v1`.
 `axion status --json` uses schema `t81.axion-status.v1`.
 `axion optimize --json` uses schema `t81.axion-optimize.v1`.
 `axion simulate --json` uses schema `t81.axion-simulate.v1`.
+`axion audit --json` uses schema `t81.axion-audit.v1`.
 `axion snapshot-diff --json` reuses schema `t81.canonfs-snapshot-diff.v1`.
 
 ### 4.18 `trace`
@@ -455,6 +474,7 @@ t81 trace diff <trace1.txt> <trace2.txt> [--no-color]
 t81 trace replay <file.tisc> <trace.txt> [--json]
 t81 trace summary <trace.txt> [--json]
 t81 trace stats <trace.txt> [--json]
+t81 trace filter <trace.txt> [--opcode <name>] [--trap <name>] [--pc-start <n>] [--pc-end <n>] [--json]
 t81 trace canonicalize <trace.txt> [-o <file>]
 t81 trace export <trace.txt> [--format <json|csv>] [-o <file>]
 ```
@@ -464,6 +484,7 @@ Trace inspection and export utilities.
 `trace replay` expects a clean trace file; `t81 run --trace-out <file>` produces the intended input.
 If the trace file cannot be opened, `trace replay --json` returns `kind: "open_error"` without extra human-readable stderr noise.
 `trace summary --json` uses schema `t81.trace-summary.v1`.
+`trace filter --json` uses schema `t81.trace-filter.v1`.
 `trace canonicalize` normalizes ad hoc traces into replay-safe canonical form.
 
 ### 4.18a `canonfs`
@@ -477,7 +498,8 @@ t81 canonfs stat <sha3-256:hash> [--json] [--canonfs-root <path>]
 t81 canonfs verify <sha3-256:hash> [--json] [--canonfs-root <path>]
 t81 canonfs snapshot [--json] [--canonfs-root <path>]
 t81 canonfs snapshot-diff <lhs> <rhs> [--json] [--canonfs-root <path>]
-t81 canonfs rollback --to <hash> [--json] [--canonfs-root <path>]
+t81 canonfs rollback --to <hash> [--dry-run] [--json] [--canonfs-root <path>]
+t81 canonfs gc [--dry-run] [--json] [--canonfs-root <path>]
 ```
 
 CanonFS inspection and snapshot tooling.
@@ -486,7 +508,8 @@ CanonFS inspection and snapshot tooling.
 `canonfs stat --json` uses schema `t81.canonfs-stat.v1`.
 `canonfs verify --json` uses schema `t81.canonfs-verify.v1`.
 `canonfs snapshot-diff --json` uses schema `t81.canonfs-snapshot-diff.v1`.
-`canonfs gc` removes unreferenced objects from the store; `--json` uses schema `t81.canonfs-gc.v1`.
+`canonfs rollback --dry-run` previews the target snapshot without mutating HEAD.
+`canonfs gc --dry-run` previews removable objects; `--json` uses schema `t81.canonfs-gc.v1`.
 
 ### 4.18b `determinism`
 
@@ -499,6 +522,7 @@ t81 determinism hash <file> [--json]
 t81 determinism trace-hash <trace.txt> [--json]
 t81 determinism diff <lhs> <rhs> [--json]
 t81 determinism diff-trace <lhs> <rhs> [--json]
+t81 determinism multi-run <file.tisc> --count <n> [--policy <policy.apl>] [--json]
 ```
 
 Determinism verification and artifact hashing tools.
@@ -509,6 +533,7 @@ Determinism verification and artifact hashing tools.
 `determinism trace-hash --json` uses schema `t81.determinism-trace-hash.v1`.
 `determinism diff --json` uses schema `t81.determinism-diff.v1`.
 `determinism diff-trace --json` uses schema `t81.determinism-trace-diff.v1`.
+`determinism multi-run --json` uses schema `t81.determinism-multi-run.v1`.
 `determinism baseline` scans a directory for `.tisc` files and writes `baseline.json` with
 SHA3-512 hashes for use with `determinism verify`; `--json` uses schema `t81.determinism-baseline.v1`.
 
@@ -541,6 +566,7 @@ VM-oriented entry points for execution, replay-safe trace capture, debugging, an
 ```text
 t81 tisc disasm <file.tisc>
 t81 tisc validate <file.tisc> [--json]
+t81 tisc stats <file.tisc> [--json]
 t81 tisc encode <file.base81> [-o <out.tisc>] [--json]
 t81 tisc decode <file.tisc> [-o <out.base81>] [--json]
 t81 tisc diff <a.tisc> <b.tisc> [--json]
@@ -548,6 +574,7 @@ t81 tisc diff <a.tisc> <b.tisc> [--json]
 
 TISC-oriented artifact inspection commands.
 `tisc validate --json` uses schema `t81.tisc-validate.v1`.
+`tisc stats --json` uses schema `t81.tisc-stats.v1`.
 `tisc encode --json` uses schema `t81.tisc-encode.v1`.
 `tisc decode --json` uses schema `t81.tisc-decode.v1`.
 `tisc diff` compares two TISC artifacts at the instruction level; exits 0 if identical, 1 if they differ.
@@ -558,11 +585,26 @@ TISC-oriented artifact inspection commands.
 ```text
 t81 ir show <file.t81>
 t81 ir dump <file.t81>
+t81 ir validate <file.t81> [--json]
 t81 ir export <file.t81> [--json] [-o <file>]
 ```
 
 Prints or exports frontend IR after parse + semantic analysis and before final bytecode emission.
+`ir validate --json` uses schema `t81.ir-validate.v1`.
 `ir export --json` uses schema `t81.ir-export.v1`.
+
+### 4.18f `tier`
+
+```text
+t81 tier info [--json]
+t81 tier check <file.tisc> [--json]
+t81 tier gate <file.tisc> --max-tier <n> [--json]
+```
+
+Cognitive tier inspection and policy-gating helpers.
+`tier info --json` uses schema `t81.tier-info.v1`.
+`tier check --json` uses schema `t81.tier-check.v1`.
+`tier gate --json` uses schema `t81.tier-gate.v1`.
 
 ### 4.19 `llama-run` (experimental)
 
@@ -610,7 +652,7 @@ Report emits schema `t81.feedback-report.v1`.
 
 ## 5. Help Contract
 
-Supported help forms:
+Supported help forms. Help text is written to `stdout`, so piping works as expected:
 
 ```bash
 ./build/t81 --help # docs-smoke
@@ -642,6 +684,8 @@ domain-first equivalent (for example, `compile` -> `code build`).
 - `2` on environment/runtime tool execution failures for selected commands.
 - command result output is written to `stdout`.
 - diagnostics/errors are written to `stderr` and prefixed with `error:`.
+- when `--json` is present and a command fails before emitting a domain-specific JSON result,
+  the CLI emits `t81.error.v1` on `stdout`.
 
 Command-specific non-zero exits:
 
