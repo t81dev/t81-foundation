@@ -71,7 +71,7 @@ Deferred: host-float math determinism and content-addressable symbol identity.
 | :--- | :--- | :--- | :--- |
 | `T81Int` | Yes | Base-81 String (e.g. `12A`) | **Implemented** (trit string) |
 | `T81BigInt` | Yes | Base-81 String | Existing |
-| `T81Float` | Yes | Scientific Base-81 (e.g. `1.2A^B`) | **Implemented** (Trit representation). Canonical serialization does not call double; representation may differ if constructed via host-float path. |
+| `T81Float` | Yes | Scientific Base-81 (e.g. `1.2A^B`) | **Implemented** (Trit representation). Canonical serialization does not call double; arithmetic determinism depends on the active math backend rather than the serialization format itself. |
 | `T81Symbol` | Yes | String Name | **Implemented** |
 | `T81Map` | Yes | Sorted Key-Value List | **Implemented** |
 | `T81Graph` | Yes | Adjacency List (Sorted) | **Implemented** |

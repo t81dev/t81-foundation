@@ -68,14 +68,14 @@ Purely deterministic logic for all operators `+`, `-`, `*`, `/`, `%`. Division i
 ## `T81Float`
 
 **Layer:** Storage
-**Determinism Class:** Host-Dependent
+**Determinism Class:** Conditional
 **Primary Invariants:**
 - $M \ge 4$, $E \ge 4$, $M+E+1 \le 2048$.
 - Backed by `T81Int`.
 - Explicit NaE (Not-an-Entity) state.
 **Memory Model:** Stack-allocated, fixed size.
 **Failure Modes:** NaE propagation.
-**Canonical Representation:** Canonical serialization is stable for a given internal representation. Construction via host-float paths remains Host-Dependent.
+**Canonical Representation:** Canonical serialization is stable for a given internal representation. Arithmetic determinism depends on the active math path; canonical encoding itself is stable.
 **Entropy Semantics:** None.
 **Reflection Exposure:** None.
 **Governance Exposure:** None.
@@ -89,7 +89,8 @@ Purely deterministic logic for all operators `+`, `-`, `*`, `/`, `%`. Division i
 
 ### Determinism Notes
 - Addition, subtraction, and multiplication are native and deterministic.
-- **Division, sqrt, and transcendental functions (sin, cos, log) fall back to host `double`**, introducing potential architecture-dependent drift.
+- Division and transcendental coverage remain conditional on the active math backend.
+- Deterministic software-math paths now exist for significant portions of the tensor/AI execution surface even when results remain in a float-domain class.
 
 ### Architectural Risks
 - Division fallback to `double` breaks strict determinism guarantees across different FPUs.

@@ -56,4 +56,4 @@
 3.  **WASM/Python Bindings:** Ensure the Python bindings (`t81_python`) and potential WASM targets are first-class citizens to broaden adoption.
 
 ## OVERALL HEALTH SCORE: 9/10
-**Justification:** The project is a masterclass in modern C++ engineering. It delivers on its core promise of a deterministic, ternary-native runtime with a level of rigor (CI, fuzzing, property testing) rarely seen in open-source projects. The only deduction is for the remaining host-float dependencies, which are acknowledged and planned for.
+**Justification:** The project is a masterclass in modern C++ engineering. It delivers on its core promise of a deterministic, ternary-native runtime with a level of rigor (CI, fuzzing, property testing) rarely seen in open-source projects. The remaining deductions are concentrated in broader float-domain policy and math-backend completeness, not in the already-tightened AI/tensor kernel surface.
