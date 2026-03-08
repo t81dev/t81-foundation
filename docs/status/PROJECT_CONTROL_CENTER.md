@@ -1,9 +1,9 @@
 # Project Control Center
 
 Status: Active
-Last Updated: 2026-03-07
+Last Updated: 2026-03-08
 Owner: @t81dev
-Version: 3.1.0
+Version: 3.2.0
 
 This is the dashboard. One page. If you need detail, follow a cross-reference.
 
@@ -19,13 +19,13 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Dimension | Status |
 | :--- | :--- |
-| Overall | Green — **PERFECT TEST COVERAGE ACHIEVED** (325/325 tests passing, 100% success rate) |
-| Release Readiness | **GO** — candidate `b566bff8`, stamped 2026-03-07 |
-| Current Main | `b566bff8` — CI workflow canonical restore + lychee/timeout/path fixes (PR #448) |
+| Overall | Green — **PERFECT TEST COVERAGE ACHIEVED** (332/332 tests passing, 100% success rate) |
+| Release Readiness | **GO** — v1.3.0 released 2026-03-08 |
+| Current Main | `7d92bb09` — Fix TLOADHASH null-canonfs SEGFAULT; add set_canonfs_root() VM API |
 | Open Blockers | None |
 | Frozen Core | Intact — no freeze exceptions |
 | Determinism Registry | All Verified surfaces clean |
-| Structural Integrity | **PERFECT** — 324/324 tests (100% success rate); all test failures resolved |
+| Structural Integrity | **PERFECT** — 332/332 tests (100% success rate); all test failures resolved |
 
 ---
 
@@ -47,8 +47,8 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | :--- | :--- | :--- |
 | TISC ISA | None | Frozen |
 | Data Types | None | Frozen; audit closed 2026-02-27 |
-| T81VM | Low | FW-02 policy-bridge concentration closure landed; BG-07 precision closure landed (monitor regressions) |
-| T81Lang | **RESOLVED** | **All parser/semantic issues fixed**; 325/325 test coverage |
+| T81VM | Low | FW-02 policy-bridge concentration closure landed; BG-07 precision closure landed; TLOADHASH null-canonfs SEGFAULT fixed; set_canonfs_root() API added |
+| T81Lang | **RESOLVED** | Frontend refactor complete: typed AST, unified builtin registry, IRGen to .cpp; 332/332 test coverage |
 | Axion Kernel | Low | AX-M5..M7 evidence landed; awaiting Beta review cycle |
 | T81Graph | Low | Lang-side serialization wired; determinism coverage in place |
 | Experimental | — | Non-DCP by definition |

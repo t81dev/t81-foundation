@@ -243,6 +243,9 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 | Task | Completed |
 | :--- | :--- |
+| **🏆 v1.3.0 Release** — Tagged and published ([release notes](https://github.com/t81dev/t81-foundation/releases/tag/v1.3.0)); 332/332 tests passing | **2026-03-08** |
+| **🏆 TLOADHASH Null-CanonFS SEGFAULT Fix** — Added null-guard with hash-format validation; introduced `set_canonfs_root()` VM API; updated all TLOADHASH tests; BoundsFault/DecodeFault taxonomy enforced | **2026-03-08** |
+| **🏆 Frontend Architecture Refactor** — Typed AST (`Expr::resolved_type`), unified builtin registry (`kBuiltinTable`, 130 entries), IRGen extracted to `ir_generator.cpp`; SA dispatch ordering fixed (table-driven fallback after custom handlers); 332/332 tests passing | **2026-03-08** |
 | **🏆 CI Workflow Stabilization** — Restored canonical `ci.yml` (PR #448); pinned lychee v0.18.1; fixed CLI manual path; added job timeouts; fixed `CanonHash<T81String>` non-determinism via `serialize_canonical()`; 325/325 tests passing | **2026-03-07** |
 | **🏆 Documentation Reorganization** - Content-based documentation structure with user-guide/ and developer-guide/ separation | **2026-03-06** |
 | **🏆 PR-426 Determinism Hardening Phase 1** - Comprehensive determinism hardening with T81_DETERMINISTIC enforcement, canonical containers, and cross-platform tests | **2026-03-04** |

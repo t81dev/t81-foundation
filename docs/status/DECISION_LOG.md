@@ -1,7 +1,7 @@
 # Decision Log
 
 Status: Active
-Last Updated: 2026-03-07
+Last Updated: 2026-03-08
 Owner: Project Management / Governance
 Version: 1.0.0
 
@@ -473,6 +473,53 @@ the rest of the type system.
 - `.github/workflows/ci.yml`
 - PR #448 (merged `b566bff8`)
 - DEC-011 (T81String fix applied in same window)
+
+---
+
+---
+
+### DEC-013 — Extract IRGenerator to .cpp and Fix SA Dispatch Ordering
+
+**Date (UTC):** 2026-03-08
+**Approver:** @t81dev
+**Category:** Architecture / Implementation
+
+**Decision:** Extract all `IRGenerator` method implementations from `ir_generator.hpp` into a new `lang/frontend/ir_generator.cpp` translation unit. Simultaneously fix the semantic analyzer's builtin dispatch ordering: move the table-driven (`kBuiltinTable`) fallback block to *after* all custom per-function SA handlers, so custom type-checking code always runs first.
+
+**Alternatives Considered:**
+- Keep IRGen as header-only (rejected — excessive compile-time cost, poor separation of concerns).
+- Set `needs_custom_sa_check = true` per-function in the registry to suppress early table dispatch (rejected — fragile; requires per-function flag maintenance and still allows ordering bugs to reappear).
+
+**Rationale:** Placing the table-driven dispatch before custom handlers silently bypassed argument-type validation (e.g., `std.math.cos("oops")` passed SA without error). Moving it to a fallback is architecturally correct: custom handlers own their type semantics; the table handles anything not covered. The `needs_custom_sa_check` field is now advisory documentation, not operative gating logic.
+
+**References:**
+- `lang/frontend/ir_generator.cpp` (new file, ~5,500 lines)
+- `lang/frontend/semantic_analyzer.cpp` (table-driven fallback after custom handlers)
+- commit `ccc93563`
+
+---
+
+### DEC-014 — TLOADHASH Null-CanonFS: set_canonfs_root() API + Explicit Driver Attachment
+
+**Date (UTC):** 2026-03-08
+**Approver:** @t81dev
+**Category:** Architecture / Implementation
+
+**Decision:** Fix the TLOADHASH null-`canonfs_driver_` SEGFAULT by adding a null-guard with hash-format validation in the VM dispatcher. Introduce `set_canonfs_root()` as a new virtual method on `IVirtualMachine` so tests and harnesses can explicitly attach a CanonFS driver without relying on env-var or CWD ambient state.
+
+Trap taxonomy: invalid hash format → `DecodeFault`; valid hash with no driver (canonical miss) → `BoundsFault` + miss event in axion log.
+
+**Alternatives Considered:**
+- CWD auto-discovery (fall back to `.t81_canonfs` in current directory) — rejected; broke `t81_vm_ai_phase1_wload_canonfs_audit_test` when the build directory contained a stale `.t81_canonfs` from prior test runs.
+- Env-var-only initialization (status quo) — insufficient; tests cannot set env vars without risking cross-test pollution.
+
+**Rationale:** Explicit `set_canonfs_root()` avoids all ambient-state problems. Tests declare exactly what CanonFS driver they use; the VM default (no driver) is well-defined and safe. Correctly distinguishes program errors (bad hash format) from runtime misses (valid hash, no content), matching the AI-M4 contract.
+
+**References:**
+- `include/t81/vm/vm.hpp` — `set_canonfs_root()` virtual method
+- `core/vm/vm.cpp` — null-guard + `Interpreter::set_canonfs_root()` implementation
+- `tests/cpp/vm_tloadhash_conformance_test.cpp`, `vm_tloadhash_canonical_fixed_test.cpp`, `vm_tloadhash_decodefault_determinism_matrix_test.cpp`
+- commit `7d92bb09`
 
 ---
 
