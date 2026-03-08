@@ -288,6 +288,26 @@ ______________________________________________________________________
 - All values MUST be normalized
 - Out-of-bounds MUST be deterministic fault
 
+### Numeric Classification Note
+
+Tensor implementations may distinguish between:
+
+- semantically exact tensors (`ExactTrit`, `ExactInt`)
+- non-exact float-domain tensors (`HostFloat`)
+
+This classification is a semantic/result-class boundary, not a complete
+description of the arithmetic path used to compute the tensor.
+
+In particular, a `HostFloat` tensor MAY still be produced through deterministic
+software-defined math in strict or deterministic execution modes. Current tensor
+contracts therefore treat:
+
+- exactness / strict-core promotion
+- canonical fixed storage availability
+- deterministic arithmetic provenance
+
+as related but separate concerns.
+
 ### Operations
 
 - reshape (dimensionally consistent only)

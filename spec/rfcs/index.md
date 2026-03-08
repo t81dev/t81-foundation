@@ -41,7 +41,7 @@ This index tracks RFC status and intended disposition.
 | RFC-0023 | T81Lang Print Canonical Runtime | draft | Deterministic print/runtime surface |
 | RFC-0024 | C++23 Wording Alignment | draft | Documentation/process wording alignment |
 | RFC-0025 | Policy-Gated Tensor Loading via CanonFS | accepted | `TLOADHASH` + `allowed-tensor-hashes` are active; operational hardening continues |
-| RFC-0026 | AI-Native Inference Opcodes | accepted | Phase-1 opcode surface is implemented; host-float strict-core closure remains |
+| RFC-0026 | AI-Native Inference Opcodes | accepted | Phase-1 opcode surface is implemented; remaining follow-on work is narrow `WLOAD` promotion review plus RFC-0030 float-domain policy |
 | RFC-0027 | Spec-as-Executable Conformance Model | accepted | Conformance suite is wired into CMake/CTest; optional annotation follow-ons remain |
 | RFC-0028 | Deterministic Trace JIT | draft | Trace-JIT deterministic execution model |
 | RFC-0029 | T81Lang Feature Registry Drift Prevention | draft | Feature registry consistency mechanisms |

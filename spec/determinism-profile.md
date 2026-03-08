@@ -70,6 +70,27 @@ Under the Strict Profile, types are classified as Safe, Conditional, or Forbidde
     *   **Allowed:** If K is comparable.
     *   **Constraint:** Iteration order MUST be sorted by K. Runtime pointer-order iteration is **Forbidden**.
 
+### 2.2.1 Tensor Float-Domain Classification
+
+Tensor numeric classification and arithmetic provenance are related but not
+identical.
+
+- `ExactTrit` and `ExactInt` denote semantically exact tensor values that are
+  eligible for strict-core promotion under current tensor rules.
+- `HostFloat` denotes a non-exact float-domain tensor result class.
+
+In deterministic builds, a tensor classified as `HostFloat` MAY still be
+produced by deterministic software math rather than host `<cmath>` or hardware
+FPU behavior. Therefore:
+
+- `HostFloat` does **not** automatically mean host-dependent arithmetic
+- deterministic arithmetic does **not** automatically imply promotion to
+  `ExactInt`
+
+This distinction covers tensor kernels such as non-fixed `matmul` and other
+float-domain operations that now execute with stronger deterministic guarantees
+while remaining outside the exact integer/trit domain.
+
 ## 2.3 Forbidden Types
 
 *   `RawPointer` / `HostAddress`
