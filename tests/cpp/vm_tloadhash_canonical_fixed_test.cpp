@@ -89,8 +89,8 @@ int main() {
   const auto native = canonical_fixed_native(source);
   const auto serialized = serialize_tensor(native);
 
-  auto driver =
-      t81::canonfs::make_persistent_driver(std::filesystem::current_path() / ".t81_canonfs");
+  auto canon_root = std::filesystem::current_path() / ".t81_canonfs";
+  auto driver = t81::canonfs::make_persistent_driver(canon_root);
   auto write = driver->write_object(t81::canonfs::ObjectType::CanonTensor,
                                     std::span<const std::byte>(serialized.data(), serialized.size()));
   T81_TEST_CHECK(write.has_value());
@@ -107,6 +107,7 @@ int main() {
   auto program = make_tloadhash_program(hash_symbol);
 
   auto vm = t81::vm::make_interpreter_vm();
+  vm->set_canonfs_root(canon_root);
   vm->load_program(program);
   auto result = vm->run_to_halt();
   T81_TEST_CHECK(result.has_value());
@@ -126,6 +127,7 @@ int main() {
 
   auto exact_program = make_tloadhash_program("sha3-256:" + exact_write->hash.h.to_string());
   auto exact_vm = t81::vm::make_interpreter_vm();
+  exact_vm->set_canonfs_root(canon_root);
   exact_vm->load_program(exact_program);
   auto exact_result = exact_vm->run_to_halt();
   T81_TEST_CHECK(exact_result.has_value());

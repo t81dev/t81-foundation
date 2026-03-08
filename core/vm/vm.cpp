@@ -181,6 +181,7 @@ public:
     // Only attach a CanonFS driver when T81_CANONFS_ROOT is explicitly set.
     // Without the env var the driver remains null and all canonfs_driver_ guards
     // correctly suppress audit events (AI-M4 contract).
+    // Tests that need CanonFS should call set_canonfs_root() after construction.
     if (const char* raw = std::getenv("T81_CANONFS_ROOT"); raw != nullptr && raw[0] != '\0') {
       std::filesystem::path canon_root(raw);
       std::error_code ec;
@@ -1683,6 +1684,19 @@ public:
           break;
         }
 
+        if (!canonfs_driver_) {
+          // No CanonFS driver: validate hash format first, then treat as a miss.
+          if (!t81::vm::internal::parse_canon_tensor_ref(hash_str).has_value()) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          t81::axion::Verdict miss_verdict;
+          miss_verdict.kind = t81::axion::VerdictKind::Allow;
+          miss_verdict.reason = "TLOADHASH canonfs_miss hash=" + hash_str;
+          record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), 0, miss_verdict);
+          trap = Trap::BoundsFault;
+          break;
+        }
         auto load_res = t81::vm::internal::load_canon_tensor_by_hash(*canonfs_driver_, hash_str);
         if (load_res.status == t81::vm::internal::TensorLoadHashStatus::InvalidHash) {
           trap = Trap::DecodeFault;
@@ -5887,6 +5901,12 @@ public:
       }
     }
     return {};
+  }
+
+  void set_canonfs_root(const std::filesystem::path& root) override {
+    std::error_code ec;
+    std::filesystem::create_directories(root, ec);
+    canonfs_driver_ = t81::canonfs::make_persistent_driver(root);
   }
 
   void set_determinism_detector(t81::axion::DeterminismDetector* detector) override {

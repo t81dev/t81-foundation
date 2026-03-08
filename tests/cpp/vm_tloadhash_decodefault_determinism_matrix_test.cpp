@@ -69,8 +69,10 @@ struct RunSummary {
   std::uint64_t signature{0};
 };
 
-RunSummary run_once(const t81::tisc::Program& program) {
+RunSummary run_once(const t81::tisc::Program& program,
+                    const std::filesystem::path& canon_root = {}) {
   auto vm = t81::vm::make_interpreter_vm();
+  if (!canon_root.empty()) vm->set_canonfs_root(canon_root);
   vm->load_program(program);
   auto run = vm->run_to_halt(256);
 
@@ -163,13 +165,14 @@ int main() {
                    t81::vm::Trap::DecodeFault, false});
 
   for (const auto& c : cases) {
-    RunSummary baseline = run_once(c.program);
+    RunSummary baseline = run_once(c.program, workdir / ".t81_canonfs");
     if (!expect(!baseline.ok, c.id + ": expected trap")) return 1;
     if (!expect(baseline.trap == c.expected_trap, c.id + ": trap classification mismatch")) {
       return 1;
     }
 
     auto vm = t81::vm::make_interpreter_vm();
+    vm->set_canonfs_root(workdir / ".t81_canonfs");
     vm->load_program(c.program);
     auto run = vm->run_to_halt(256);
     if (!expect(!run.has_value(), c.id + ": expected trap on classification replay")) return 1;
@@ -183,7 +186,7 @@ int main() {
     }
 
     for (int i = 0; i < 8; ++i) {
-      RunSummary repeat = run_once(c.program);
+      RunSummary repeat = run_once(c.program, workdir / ".t81_canonfs");
       if (!expect(repeat.ok == baseline.ok, c.id + ": outcome drift")) return 1;
       if (!expect(repeat.trap == baseline.trap, c.id + ": trap drift")) return 1;
       if (!expect(repeat.signature == baseline.signature, c.id + ": signature drift")) return 1;

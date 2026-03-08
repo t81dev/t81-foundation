@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <memory>
 #include <string_view>
 #include <t81/support/expected.hpp>
@@ -29,6 +30,10 @@ public:
   virtual void set_register(int idx, std::int64_t value, ValueTag tag = ValueTag::Int) = 0;
   virtual std::int64_t load_weights_tensor(std::string_view name) = 0;
   virtual const t81::weights::NativeTensor* weights_tensor(std::int64_t handle) const = 0;
+
+  /// Attach a CanonFS driver rooted at the given path.
+  /// Overrides T81_CANONFS_ROOT for this VM instance.
+  virtual void set_canonfs_root(const std::filesystem::path& /*root*/) {}
 
   /// Opt-in hook for CI harnesses: inject a DeterminismDetector to compare
   /// axion_log hash chains across successive runs (AX-M5).
