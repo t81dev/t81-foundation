@@ -406,6 +406,12 @@ std::string canonical_stdlib_call_name(std::string_view name) {
   if (name == "std.tensor.vec_add") {
     return "Tensor.vec_add";
   }
+  if (name == "std.tensor.attention") {
+    return "Tensor.attention";
+  }
+  if (name == "std.tensor.qmatmul") {
+    return "Tensor.qmatmul";
+  }
   if (name == "std.tensor.dot_product") {
     return "tensor_dot";
   }
@@ -2694,6 +2700,20 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
           arg_types[1].kind == Type::Kind::Tensor || arg_types[1].kind == Type::Kind::I32;
       if (!left_ok || !right_ok) {
         error(call_token, "Tensor.vec_add expects Tensor or tensor-handle arguments.");
+        return make_error_type();
+      }
+      return Type{Type::Kind::Tensor};
+    }
+    if (func_name == "Tensor.attention") {
+      if (arg_types.size() != 3) {
+        error(call_token, "Tensor.attention expects three arguments (q, k, v).");
+        return make_error_type();
+      }
+      return Type{Type::Kind::Tensor};
+    }
+    if (func_name == "Tensor.qmatmul") {
+      if (arg_types.size() != 3) {
+        error(call_token, "Tensor.qmatmul expects three arguments (activations, weights, scale).");
         return make_error_type();
       }
       return Type{Type::Kind::Tensor};

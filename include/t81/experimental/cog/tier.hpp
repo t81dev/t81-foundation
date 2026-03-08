@@ -10,6 +10,7 @@ enum class TierId {
   Tier3,
   Tier4,
   Tier5,
+  Tier6,  // RFC-0000 §6: T6561 (3^8) — Universal Cognition Tier (Θ₇), distributed recursive monads.
 };
 
 struct TierStatus {

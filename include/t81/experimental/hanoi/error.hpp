@@ -13,6 +13,7 @@ enum class Error {
   OutOfMemory,
   RepairError,
   SealError,
+  SchedulerFull,  // RFC-0000 §4: 81-slot scheduler limit exceeded.
 };
 
 std::string to_string(Error error);

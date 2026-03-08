@@ -731,7 +731,7 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   target_link_libraries(t81_tensor_unary_test PRIVATE t81_core)
 
   add_executable(t81_hanoi_integration_test tests/cpp/hanoi_integration_test.cpp)
-  target_link_libraries(t81_hanoi_integration_test PRIVATE t81_core)
+  target_link_libraries(t81_hanoi_integration_test PRIVATE t81_core t81_axion)
 
   add_executable(t81_vm_load_store_test tests/cpp/vm_load_store_test.cpp)
   target_link_libraries(t81_vm_load_store_test PRIVATE t81_vm t81_core)
@@ -749,6 +749,11 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
 
   add_executable(t81_canonfs_driver_test tests/cpp/canonfs_driver_test.cpp)
   target_link_libraries(t81_canonfs_driver_test PRIVATE t81_core)
+
+  # RFC-0000 §1: CanonHash-81 reference vector tests.
+  add_executable(t81_canonhash81_reference_vectors_test
+                 tests/cpp/canonhash81_reference_vectors_test.cpp)
+  target_link_libraries(t81_canonhash81_reference_vectors_test PRIVATE t81_core)
 
   add_executable(t81_vm_trace_test tests/cpp/vm_trace_test.cpp)
   target_link_libraries(t81_vm_trace_test PRIVATE t81_vm t81_core)
@@ -1376,6 +1381,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_axion_log_determinism_test
     t81_reflection_non_interference_test
     t81_canonfs_driver_test
+    t81_canonhash81_reference_vectors_test
     t81_weights_load_test
     t81_vm_trace_test
     t81_vm_determinism_property_test

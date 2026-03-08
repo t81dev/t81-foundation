@@ -4,7 +4,8 @@
 
 namespace t81::cog {
 Result<TierStatus> try_promote(const TierStatus& status, AxionCallback callback) {
-  if (status.current == TierId::Tier5) {
+  if (status.current == TierId::Tier6) {
+    // RFC-0000 §6: Tier6 (T6561) is the highest defined tier; no further promotion.
     return Result<TierStatus>(t81::unexpect, PromotionError::NotEligible);
   }
 
@@ -36,6 +37,11 @@ Result<TierStatus> try_promote(const TierStatus& status, AxionCallback callback)
     case TierId::Tier4:
       next.current = TierId::Tier5;
       next.label = "Tier5";
+      break;
+    case TierId::Tier5:
+      // RFC-0000 §6: Promote to T6561 — distributed recursive monads (Θ₇).
+      next.current = TierId::Tier6;
+      next.label = "Tier6";
       break;
     default:
       return Result<TierStatus>(t81::unexpect, PromotionError::NotEligible);

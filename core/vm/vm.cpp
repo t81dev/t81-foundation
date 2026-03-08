@@ -178,10 +178,15 @@ public:
     if (!axion_engine_) {
       axion_engine_ = t81::axion::make_allow_all_engine();
     }
-    std::filesystem::path canon_root = resolve_canonfs_root();
-    std::error_code ec;
-    std::filesystem::create_directories(canon_root, ec);
-    canonfs_driver_ = t81::canonfs::make_persistent_driver(canon_root);
+    // Only attach a CanonFS driver when T81_CANONFS_ROOT is explicitly set.
+    // Without the env var the driver remains null and all canonfs_driver_ guards
+    // correctly suppress audit events (AI-M4 contract).
+    if (const char* raw = std::getenv("T81_CANONFS_ROOT"); raw != nullptr && raw[0] != '\0') {
+      std::filesystem::path canon_root(raw);
+      std::error_code ec;
+      std::filesystem::create_directories(canon_root, ec);
+      canonfs_driver_ = t81::canonfs::make_persistent_driver(canon_root);
+    }
   }
 
   std::int64_t load_weights_tensor(std::string_view name) override {
@@ -6075,9 +6080,18 @@ private:
   std::optional<Trap> handle_axhalt(const t81::tisc::Insn& insn) {
     t81::axion::Verdict verdict;
     verdict.kind = t81::axion::VerdictKind::Deny;
-    verdict.reason = "AXHALT instruction";
+    // RFC-0000 §4: AXHALT carries an ethics violation reason in operand A.
+    // A == 0 → generic halt; A == 1 → EthicsViolation (Θ-overlay breach);
+    // A == 2 → CapabilityDenied (capability grant absent or revoked).
+    const bool ethics_halt = (insn.a == 1);
+    const bool cap_denied  = (insn.a == 2);
+    verdict.reason = ethics_halt ? "AXHALT: EthicsViolation (Theta-overlay breach)"
+                   : cap_denied  ? "AXHALT: CapabilityDenied (grant absent or revoked)"
+                                 : "AXHALT instruction";
     record_axion_event(insn.opcode, 0, 0, verdict);
     state_.halted = true;
+    if (ethics_halt) return Trap::EthicsViolation;
+    if (cap_denied)  return Trap::CapabilityDenied;
     return std::nullopt;
   }
 

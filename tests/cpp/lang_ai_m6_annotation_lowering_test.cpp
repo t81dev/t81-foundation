@@ -70,10 +70,10 @@ int main() {
     const std::string src = R"(
 @tier(2)
 fn main() -> Tensor {
-    var q: Tensor = Tensor.matmul(q, q);
-    var k: Tensor = Tensor.matmul(q, q);
-    var v: Tensor = Tensor.matmul(q, q);
-    return Tensor.attention(q, k, v);
+    let q: Tensor = std.tensor.from_list([1, 2, 3]);
+    let k: Tensor = std.tensor.from_list([4, 5, 6]);
+    let v: Tensor = std.tensor.from_list([7, 8, 9]);
+    return std.tensor.attention(q, k, v);
 }
 )";
     auto res = compile(src);
@@ -90,10 +90,10 @@ fn main() -> Tensor {
     const std::string src = R"(
 @tier(2)
 fn main() -> Tensor {
-    var act: Tensor = Tensor.matmul(act, act);
-    var wt: Tensor  = Tensor.matmul(act, act);
-    var scale: T81Int = 1t81;
-    return Tensor.qmatmul(act, wt, scale);
+    let act: Tensor   = std.tensor.from_list([1, 2, 3]);
+    let wt: Tensor    = std.tensor.from_list([4, 5, 6]);
+    let scale: Tensor = std.tensor.from_list([1]);
+    return std.tensor.qmatmul(act, wt, scale);
 }
 )";
     auto res = compile(src);
@@ -111,14 +111,14 @@ fn main() -> Tensor {
 @tier(2)
 @attention
 fn my_attn(q: Tensor, k: Tensor, v: Tensor) -> Tensor {
-    return Tensor.matmul(q, k);
+    return std.tensor.attention(q, k, v);
 }
 
 @tier(2)
 fn main() -> Tensor {
-    var q: Tensor = Tensor.matmul(q, q);
-    var k: Tensor = Tensor.matmul(q, q);
-    var v: Tensor = Tensor.matmul(q, q);
+    let q: Tensor = std.tensor.from_list([1, 2, 3]);
+    let k: Tensor = std.tensor.from_list([4, 5, 6]);
+    let v: Tensor = std.tensor.from_list([7, 8, 9]);
     return my_attn(q, k, v);
 }
 )";
@@ -137,15 +137,15 @@ fn main() -> Tensor {
     const std::string src = R"(
 @tier(2)
 @qmatmul
-fn my_qmm(act: Tensor, wt: Tensor, scale: T81Int) -> Tensor {
-    return Tensor.matmul(act, wt);
+fn my_qmm(act: Tensor, wt: Tensor, scale: Tensor) -> Tensor {
+    return std.tensor.qmatmul(act, wt, scale);
 }
 
 @tier(2)
 fn main() -> Tensor {
-    var act: Tensor   = Tensor.matmul(act, act);
-    var wt: Tensor    = Tensor.matmul(act, act);
-    var scale: T81Int = 1t81;
+    let act: Tensor   = std.tensor.from_list([1, 2, 3]);
+    let wt: Tensor    = std.tensor.from_list([4, 5, 6]);
+    let scale: Tensor = std.tensor.from_list([1]);
     return my_qmm(act, wt, scale);
 }
 )";
@@ -163,9 +163,9 @@ fn main() -> Tensor {
     const std::string src = R"(
 @attention
 fn bad_attn(q: Tensor, k: Tensor, v: Tensor) -> Tensor {
-    return Tensor.matmul(q, k);
+    return std.tensor.matmul(q, k);
 }
-fn main() -> T81Int { return 0t81; }
+fn main() -> i32 { return 0; }
 )";
     Lexer lexer(src);
     Parser parser(lexer, "<test-tier1-reject>");

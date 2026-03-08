@@ -1,7 +1,7 @@
 # Implementation Matrix
 
 Status: Active
-Last Updated: 2026-03-07
+Last Updated: 2026-03-08
 Owner: @t81dev
 
 Alignment truth. One row per subsystem. No narrative.
@@ -20,8 +20,8 @@ Authority remains: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 | **T81Lang** | `spec/t81lang-spec.md` | Draft | **Beta** | Beta (impl) / Draft (spec) | Medium | Low | 2026-03-06 | @t81dev | 2026-05-15 | BG-06/BG-07/BG-08/BG-09 closed. BigInt literals now transport and materialize without silent truncation; narrowing boundaries are explicit and fail-closed. Documentation reorganization completed 2026-03-06. |
 | **Axion Kernel** | `spec/axion-kernel.md` | Draft | **Alpha** | Alpha | Medium | Medium | 2026-03-06 | @t81dev | 2026-04-30 | §1.6/1.9 implemented (bounded). AX-M5..M7 evidence closures landed; pending Beta candidacy review cycle. §2.5 remains deferred. Documentation reorganization completed 2026-03-06. |
 | **T81Graph** | Surface inventory (non-normative) | Draft | Draft | Experimental | Medium | Medium | 2026-03-06 | @t81dev | 2026-05-15 | VM opcode lowering and lang-side serialization wiring complete with determinism coverage. Surface remains governed non-DCP until promotion. Documentation reorganization completed 2026-03-06. |
-| **Cognitive Tiers** | `spec/cognitive-tiers.md` | Draft | Concept / Experimental | **Experimental** | Low | High | 2026-02-25 | @t81dev | 2026-06-15 | Experimental, non-DCP, non-verified unless promoted through governance. |
-| **Hanoi VM** | — | — | Concept | **Experimental** | — | High | 2026-02-25 | @t81dev | — | Experimental only. No spec. Non-DCP. |
+| **Cognitive Tiers** | `spec/cognitive-tiers.md` | Draft | Concept / Experimental | **Experimental** | Low | High | 2026-03-08 | @t81dev | 2026-06-15 | Experimental, non-DCP. RFC-0000 §6 (2026-03-08): `TierId::Tier6` (T6561, 3^8) added; `MeshReflector`/`MonadState` types in `tier6/distributed_monad.hpp`; Θ₇ entropy containment gate; `promotion.cpp` Tier5→Tier6 promotion path. Tiers 0–6 now modelled. |
+| **Hanoi VM** | `spec/rfcs/RFC-0000` | Draft | **Alpha** | **Experimental** | Low | Medium | 2026-03-08 | @t81dev | 2026-06-30 | RFC-0000 §4 (2026-03-08): `Kernel::boot()` interface added; `InMemoryKernel` evaluates Θ₁–Θ₉ via `check_ethics()` before first spawn; 81-slot scheduler cap enforced (`Error::SchedulerFull`); `EthicsViolation`/`CapabilityDenied` traps in `vm::Trap` enum. Still experimental/non-DCP; no formal spec beyond RFC-0000 normative clauses. |
 | **Governed llama.cpp** | `docs/records/archive/project-reports/llama-governed-repro.md` (guidance) | Non-normative | Experimental | **Governed non-DCP** | Medium | Medium | 2026-02-28 | @t81dev | 2026-04-30 | Classified governed non-DCP (DEC-003). Practical reproducibility only. Promotion requires governed AGI pipeline. |
 
 ---

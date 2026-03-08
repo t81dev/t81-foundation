@@ -14,6 +14,8 @@ using Result = std::expected<T, Error>;
 class Kernel {
 public:
   virtual ~Kernel() = default;
+  // RFC-0000 §4: Ethics-first boot — runs Θ₁–Θ₉ checks; MUST succeed before spawn().
+  virtual Result<void> boot() = 0;
   virtual Result<SnapshotRef> fork_snapshot(const SnapshotRef& base) = 0;
   virtual Result<SnapshotRef> commit_snapshot(const SnapshotRef& snapshot) = 0;
   virtual Result<void> switch_root(const SnapshotRef& snapshot) = 0;

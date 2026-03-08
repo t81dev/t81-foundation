@@ -1,8 +1,10 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <map>
 #include <optional>
+#include <span>
 #include <string>
 #include <vector>
 #include "t81/tracing/canonhash.hpp"
@@ -36,6 +38,45 @@ enum class ObjectType : std::uint8_t {
 
 struct CanonRef {
   CanonHash hash;  // Content address (spec/supplemental/canonfs-spec.md §2).
+};
+
+// RFC-0000 §1: CanonBlock — the fundamental block unit for CanonFS storage.
+// A block holds exactly 729 trytes (3^6). Compression/encryption does not
+// change logical identity; the hash is always computed over the raw tryte payload.
+//
+// Layout: [ trytes[729] ] → CanonHash-81 content address
+struct CanonBlock {
+  static constexpr std::size_t kTryteCount = 729;  // 3^6
+
+  // Raw tryte payload (one byte per tryte; values in {0,1,2} for ternary, or
+  // extended to {0..80} for Base-81 digits in practice).
+  std::array<std::uint8_t, kTryteCount> trytes{};
+
+  // Compute the canonical CanonHash-81 of this block's tryte payload.
+  [[nodiscard]] CanonHash hash() const {
+    std::vector<std::uint8_t> raw(trytes.begin(), trytes.end());
+    return CanonHash{t81::hash::hash_bytes(raw)};
+  }
+
+  // Serialize to raw bytes for storage (one byte per tryte).
+  [[nodiscard]] std::vector<std::byte> to_bytes() const {
+    std::vector<std::byte> out;
+    out.reserve(kTryteCount);
+    for (auto t : trytes) {
+      out.push_back(static_cast<std::byte>(t));
+    }
+    return out;
+  }
+
+  // Deserialize from a raw byte span; returns nullopt if size != kTryteCount.
+  [[nodiscard]] static std::optional<CanonBlock> from_bytes(std::span<const std::byte> raw) {
+    if (raw.size() != kTryteCount) return std::nullopt;
+    CanonBlock b;
+    for (std::size_t i = 0; i < kTryteCount; ++i) {
+      b.trytes[i] = static_cast<std::uint8_t>(raw[i]);
+    }
+    return b;
+  }
 };
 
 struct CapabilityGrant {

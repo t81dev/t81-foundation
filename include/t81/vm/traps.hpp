@@ -16,6 +16,9 @@ enum class Trap {
   TrapInstruction,
   Unimplemented,
   AssertionFailed,
+  // RFC-0000 §3: Axion ethics / capability fault types (normative).
+  EthicsViolation,   // Raised when a Θ-overlay (Θ₁–Θ₉) is violated; triggers AXHALT.
+  CapabilityDenied,  // Raised when an operation is attempted without a valid CapabilityGrant.
 };
 
 inline std::string to_string(Trap trap) {
@@ -44,6 +47,10 @@ inline std::string to_string(Trap trap) {
       return "Unimplemented";
     case Trap::AssertionFailed:
       return "AssertionFailed";
+    case Trap::EthicsViolation:
+      return "EthicsViolation";
+    case Trap::CapabilityDenied:
+      return "CapabilityDenied";
   }
   return "UnknownTrap";
 }

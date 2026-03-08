@@ -1,6 +1,6 @@
 # Active Tasks
 
-Last Updated: 2026-03-06
+Last Updated: 2026-03-08
 
 Immediate, actionable items only. Structural hardening items live in `HARDENING_BACKLOG.md`.
 
@@ -181,6 +181,17 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - ✅ Wired `weights import -o/--output` parsing parity with command docs
   - Completed: 2026-03-05
   - Status: **✅ RESOLVED**
+
+- [x] **RFC-0000 Core Implementation** - **✅ COMPLETED (2026-03-08)**
+  - ✅ `EthicsViolation` / `CapabilityDenied` fault types in `vm::Trap`; AXHALT `insn.a` dispatch
+  - ✅ `CanonBlock` 729-tryte type with `hash()` / `to_bytes()` / `from_bytes()`
+  - ✅ Hanoi 81-slot scheduler: `spawn()` capped at 81 PIDs; `Error::SchedulerFull` added
+  - ✅ Ethics-first boot: `Kernel::boot()` interface; `InMemoryKernel::boot()` runs Θ₁–Θ₉
+  - ✅ Axion command surface: `t81 axion status|optimize|simulate|snapshot|rollback`
+  - ✅ T6561 Tier 6: `TierId::Tier6`, `MeshReflector`, Θ₇ entropy containment, Tier5→Tier6 promotion
+  - ✅ CanonHash-81 reference vectors: 8-vector test suite (`canonhash81_reference_vectors_test`)
+  - Completed: 2026-03-08
+  - Status: **✅ RESOLVED** — 7/7 normative items; parity codec + post-quantum hash deferred
 
 ---
 

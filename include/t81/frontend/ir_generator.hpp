@@ -367,6 +367,12 @@ inline std::string canonical_stdlib_call_name(std::string_view name) {
   if (name == "std.tensor.vec_add") {
     return "Tensor.vec_add";
   }
+  if (name == "std.tensor.attention") {
+    return "Tensor.attention";
+  }
+  if (name == "std.tensor.qmatmul") {
+    return "Tensor.qmatmul";
+  }
   if (name == "std.tensor.dot_product") {
     return "tensor_dot";
   }
@@ -1709,10 +1715,10 @@ public:
         expr.arguments[2]->accept(*this);
         auto v_reg = ensure_expr_result(expr.arguments[2].get());
         auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
-        const int32_t packed_kv = (k_reg.reg & 0xFF) | ((v_reg.reg & 0xFF) << 8);
+        const int32_t packed_kv = (k_reg.reg.index & 0xFF) | ((v_reg.reg.index & 0xFF) << 8);
         tisc::ir::Instruction attn;
         attn.opcode = tisc::ir::Opcode::ATTN;
-        attn.operands = {dest.reg, q_reg.reg, packed_kv};
+        attn.operands = {dest.reg, q_reg.reg, tisc::ir::Immediate{packed_kv}};
         emit(attn);
         record_result(&expr, dest);
         return {};
@@ -1729,10 +1735,10 @@ public:
         expr.arguments[2]->accept(*this);
         auto scale_reg = ensure_expr_result(expr.arguments[2].get());
         auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
-        const int32_t packed_ws = (wt_reg.reg & 0xFF) | ((scale_reg.reg & 0xFF) << 8);
+        const int32_t packed_ws = (wt_reg.reg.index & 0xFF) | ((scale_reg.reg.index & 0xFF) << 8);
         tisc::ir::Instruction qmm;
         qmm.opcode = tisc::ir::Opcode::QMATMUL;
-        qmm.operands = {dest.reg, act_reg.reg, packed_ws};
+        qmm.operands = {dest.reg, act_reg.reg, tisc::ir::Immediate{packed_ws}};
         emit(qmm);
         record_result(&expr, dest);
         return {};
@@ -4455,10 +4461,10 @@ public:
             auto v_reg = ensure_expr_result(expr.arguments[2].get());
             auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
             const int32_t packed_kv =
-                (k_reg.reg & 0xFF) | ((v_reg.reg & 0xFF) << 8);
+                (k_reg.reg.index & 0xFF) | ((v_reg.reg.index & 0xFF) << 8);
             tisc::ir::Instruction attn;
             attn.opcode = tisc::ir::Opcode::ATTN;
-            attn.operands = {dest.reg, q_reg.reg, packed_kv};
+            attn.operands = {dest.reg, q_reg.reg, tisc::ir::Immediate{packed_kv}};
             emit(attn);
             record_result(&expr, dest);
             return {};
@@ -4477,10 +4483,10 @@ public:
             auto scale_reg = ensure_expr_result(expr.arguments[2].get());
             auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
             const int32_t packed_ws =
-                (wt_reg.reg & 0xFF) | ((scale_reg.reg & 0xFF) << 8);
+                (wt_reg.reg.index & 0xFF) | ((scale_reg.reg.index & 0xFF) << 8);
             tisc::ir::Instruction qmm;
             qmm.opcode = tisc::ir::Opcode::QMATMUL;
-            qmm.operands = {dest.reg, act_reg.reg, packed_ws};
+            qmm.operands = {dest.reg, act_reg.reg, tisc::ir::Immediate{packed_ws}};
             emit(qmm);
             record_result(&expr, dest);
             return {};

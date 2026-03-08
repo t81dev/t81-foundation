@@ -21,6 +21,8 @@ std::string to_string(Error error) {
       return "RepairError";
     case Error::SealError:
       return "SealError";
+    case Error::SchedulerFull:
+      return "SchedulerFull";
   }
   return "Unknown";
 }
