@@ -9,7 +9,7 @@ namespace t81::canonfs {
 /**
  * @class GF3_9
  * @brief Finite field GF(3^9) arithmetic for Reed-Solomon parity.
- * Primitive polynomial: x^9 + 2x^4 + x^3 + 2x + 1
+ * Primitive polynomial: x^9 + 2x^3 + x^2 + 1
  */
 class GF3_9 {
 public:
@@ -47,29 +47,27 @@ public:
     value_type p3a = 1;
     for (int i = 0; i < 9; ++i) {
       int da = (a / p3a) % 3;
-      if (da == 0) {
-        p3a *= 3;
-        continue;
-      }
-      value_type p3b = 1;
-      for (int j = 0; j < 9; ++j) {
-        int db = (b / p3b) % 3;
-        product[i + j] = (product[i + j] + da * db) % 3;
-        p3b *= 3;
+      if (da != 0) {
+          value_type p3b = 1;
+          for (int j = 0; j < 9; ++j) {
+            int db = (b / p3b) % 3;
+            product[i + j] = (product[i + j] + da * db) % 3;
+            p3b *= 3;
+          }
       }
       p3a *= 3;
     }
 
-    // Reduce modulo x^9 + 2x^4 + x^3 + 2x + 1
-    // x^9 = x^4 + 2x^3 + x + 2 (mod 3)
+    // primitive polynomial: P(x) = x^9 + 2x^3 + x^2 + 1
+    // in GF(3):
+    // x^9 = -2x^3 - x^2 - 1 = x^3 + 2x^2 + 2 (mod 3)
     for (int i = 17; i >= 9; --i) {
       int coeff = product[i];
       if (coeff == 0) continue;
-      // x^i = x^{i-9} * (x^4 + 2x^3 + x + 2)
-      product[i - 9 + 4] = (product[i - 9 + 4] + coeff) % 3;
-      product[i - 9 + 3] = (product[i - 9 + 3] + 2 * coeff) % 3;
-      product[i - 9 + 1] = (product[i - 9 + 1] + coeff) % 3;
-      product[i - 9 + 0] = (product[i - 9 + 0] + 2 * coeff) % 3;
+
+      product[i - 6] = (product[i - 6] + coeff) % 3;          // x^{i-9} * x^3
+      product[i - 7] = (product[i - 7] + 2 * coeff) % 3;      // x^{i-9} * 2x^2
+      product[i - 9] = (product[i - 9] + 2 * coeff) % 3;      // x^{i-9} * 2
       product[i] = 0;
     }
 
@@ -83,10 +81,11 @@ public:
   }
 
   static value_type inv(value_type a) {
-    if (a == 0) return 0;  // Should handle error
-    // a^(3^9 - 2)
+    if (a == 0) return 0;
     value_type res = 1;
     value_type base = a;
+    // Multiplicative group has order 3^9 - 1 = 19682
+    // So a^(3^9 - 2) is the inverse.
     uint32_t exp = kOrder - 2;
     while (exp > 0) {
       if (exp % 2 == 1) res = mul(res, base);

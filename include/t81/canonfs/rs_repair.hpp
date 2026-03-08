@@ -60,15 +60,22 @@ public:
     // Need exactly kDataShards for the matrix inversion
     std::vector<int> used_indices(avail_indices.begin(), avail_indices.begin() + kDataShards);
 
-    // Matrix A: A[i][j] = (used_indices[i] + 1)^j
+    // Matrix A: rows depend on whether it's a data shard or parity shard
     std::vector<std::vector<GF3_9::value_type>> matrix(kDataShards,
-                                                       std::vector<GF3_9::value_type>(kDataShards));
+                                                       std::vector<GF3_9::value_type>(kDataShards, 0));
     for (int i = 0; i < kDataShards; ++i) {
-      GF3_9::value_type x = static_cast<GF3_9::value_type>(used_indices[i] + 1);
-      GF3_9::value_type x_pow = 1;
-      for (int j = 0; j < kDataShards; ++j) {
-        matrix[i][j] = x_pow;
-        x_pow = GF3_9::mul(x_pow, x);
+      int idx = used_indices[i];
+      if (idx < kDataShards) {
+        // Data shard row: identity matrix
+        matrix[i][idx] = 1;
+      } else {
+        // Parity shard row: Vandermonde
+        GF3_9::value_type x = static_cast<GF3_9::value_type>(idx + 1);
+        GF3_9::value_type x_pow = 1;
+        for (int j = 0; j < kDataShards; ++j) {
+          matrix[i][j] = x_pow;
+          x_pow = GF3_9::mul(x_pow, x);
+        }
       }
     }
 

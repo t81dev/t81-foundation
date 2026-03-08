@@ -191,7 +191,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - ✅ T6561 Tier 6: `TierId::Tier6`, `MeshReflector`, Θ₇ entropy containment, Tier5→Tier6 promotion
   - ✅ CanonHash-81 reference vectors: 8-vector test suite (`canonhash81_reference_vectors_test`)
   - Completed: 2026-03-08
-  - Status: **✅ RESOLVED** — 7/7 normative items; parity codec + post-quantum hash deferred
+  - Status: **✅ RESOLVED** — 10/10 normative items; parity codec, proofs, PQ hash completed
 
 ---
 
