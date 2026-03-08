@@ -34,15 +34,15 @@ This index tracks RFC status and intended disposition.
 | RFC-0016 | SIMD Limb | proposed | SIMD arithmetic proposal |
 | RFC-0017 | Introduce T81 Native | proposed | Register-native type proposal |
 | RFC-0018 | T81 Native SIMD Arithmetic | proposed | Follow-on SIMD arithmetic details |
-| RFC-0019 | Axion Match Logging | draft | Guard/loop metadata auditing |
-| RFC-0020 | Axion Segment Trace | draft | Segment trace semantics |
+| RFC-0019 | Axion Match Logging | accepted | Runtime/spec/CLI depend on canonical match metadata and guard-audit strings |
+| RFC-0020 | Axion Segment Trace | accepted | Runtime/spec/CLI depend on canonical segment-trace strings |
 | RFC-0021 | Tier4 Cognition | draft | Tier-4 reflection/cognition proposal |
-| RFC-0022 | Axion Policy Language Evolution | draft | Preferred evolution track for APL |
+| RFC-0022 | Axion Policy Language Evolution | accepted | CLI/compiler/runtime policy surface is active; supersedes RFC-0009 in practice |
 | RFC-0023 | T81Lang Print Canonical Runtime | draft | Deterministic print/runtime surface |
 | RFC-0024 | C++23 Wording Alignment | draft | Documentation/process wording alignment |
-| RFC-0025 | Policy-Gated Tensor Loading via CanonFS | draft | WLOAD supply-chain gate; requires RFC-0004, 0020, 0022 |
-| RFC-0026 | AI-Native Inference Opcodes | draft | ATTN, QMATMUL, WLOAD, EMBED, GATHER, SCATTER — AI-native ISA surface |
-| RFC-0027 | Spec-as-Executable Conformance Model | draft | Normative invariants as runnable T81Lang programs; AI-derivable test vectors |
+| RFC-0025 | Policy-Gated Tensor Loading via CanonFS | accepted | `TLOADHASH` + `allowed-tensor-hashes` are active; operational hardening continues |
+| RFC-0026 | AI-Native Inference Opcodes | accepted | Phase-1 opcode surface is implemented; host-float strict-core closure remains |
+| RFC-0027 | Spec-as-Executable Conformance Model | accepted | Conformance suite is wired into CMake/CTest; optional annotation follow-ons remain |
 | RFC-0028 | Deterministic Trace JIT | draft | Trace-JIT deterministic execution model |
 | RFC-0029 | T81Lang Feature Registry Drift Prevention | draft | Feature registry consistency mechanisms |
 | RFC-0030 | Deterministic Math Subsystem | draft | Canonical arithmetic operations |

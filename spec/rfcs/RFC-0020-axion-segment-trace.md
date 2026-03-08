@@ -4,8 +4,8 @@ vote: +1
 
 # RFC-0020 — Axion Segment Trace Semantics
 
-Version 0.1 — Draft (Standards Track)\
-Status: Draft\
+Version 0.1 — Accepted (Standards Track)\
+Status: Accepted\
 Author: Axion Governance Council\
 Applies to: Axion, T81VM, T81Lang, Cognitive Tiers
 

@@ -2,6 +2,7 @@
 
 #include "t81/isa/program.hpp"
 #include "t81/tensor/matmul.hpp"
+#include "t81/types/detail/dmath_types.hpp"
 #include "t81/vm/vm.hpp"
 
 #include <cmath>
@@ -63,7 +64,8 @@ int main() {
   T81_TEST_CHECK(out1_opt.has_value());
   const auto& out1 = out1_opt.value();
 
-  auto expected = t81::ops::qmatmul(p.tensor_pool[0], p.tensor_pool[1], 1.0F);
+  auto expected =
+      t81::ops::qmatmul(p.tensor_pool[0], p.tensor_pool[1], t81::core::detail::DFixed(1));
   T81_TEST_CHECK(out1.shape() == expected.shape());
   T81_TEST_CHECK(out1.data().size() == expected.data().size());
   T81_TEST_CHECK(out1.numeric_class() == expected.numeric_class());

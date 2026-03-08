@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <vector>
 #include "t81/tensor.hpp"
+#include "t81/types/T81Float.hpp"
 #include "t81/types/detail/dmath.hpp"
 
 #if defined(__AVX2__)
@@ -14,6 +15,7 @@ namespace t81::ops {
 namespace matmul_detail {
 
 using t81::core::detail::DFixed;
+using TensorFloat = t81::v1::T81Float<72, 9>;
 
 inline TensorNumericClass matmul_result_class(const T729DynamicTensor& lhs,
                                               const T729DynamicTensor& rhs) {
@@ -44,6 +46,45 @@ inline std::vector<DFixed> fixed_matmul(const std::vector<DFixed>& lhs,
   return out;
 }
 
+inline std::vector<DFixed> fixed_scale(const std::vector<DFixed>& input, const DFixed& scale) {
+  std::vector<DFixed> out;
+  out.reserve(input.size());
+  for (const auto& value : input) {
+    out.push_back(value * scale);
+  }
+  return out;
+}
+
+inline float host_float_from_fixed(const DFixed& value) {
+  if (value.is_zero()) {
+    return 0.0F;
+  }
+  const auto& raw = value.v;
+  float result = 0.0F;
+  for (std::size_t i = DFixed::Storage::kNumTrits; i-- > DFixed::kFractionalTrits;) {
+    result = result * 3.0F + static_cast<float>(trit_to_int(raw[i]));
+  }
+
+  float factor = 1.0F / 3.0F;
+  for (std::size_t i = DFixed::kFractionalTrits; i-- > 0;) {
+    result += static_cast<float>(trit_to_int(raw[i])) * factor;
+    factor /= 3.0F;
+  }
+  return result;
+}
+
+inline float deterministic_mul(float lhs, float rhs) {
+  return static_cast<float>(
+      (TensorFloat::from_double(lhs) * TensorFloat::from_double(rhs)).to_double());
+}
+
+inline float deterministic_fma(float acc, float lhs, float rhs) {
+  return static_cast<float>(
+      (TensorFloat::from_double(acc) +
+       TensorFloat::from_double(lhs) * TensorFloat::from_double(rhs))
+          .to_double());
+}
+
 }  // namespace matmul_detail
 
 // Optimized matrix multiply: (m×k) · (k×n) → (m×n)
@@ -72,7 +113,7 @@ inline T729DynamicTensor matmul(const T729DynamicTensor& A, const T729DynamicTen
       if (av == 0.0f) continue;
       const size_t b_row = static_cast<size_t>(p) * n;
 
-#if defined(__AVX2__)
+#if defined(__AVX2__) && !defined(T81_DETERMINISTIC)
       const __m256 va = _mm256_set1_ps(av);
       int j = 0;
       // Unroll by 4 for better throughput
@@ -99,7 +140,7 @@ inline T729DynamicTensor matmul(const T729DynamicTensor& A, const T729DynamicTen
       }
 #else
       for (int j = 0; j < n; ++j) {
-        c[c_row + j] += av * b[b_row + j];
+        c[c_row + j] = matmul_detail::deterministic_fma(c[c_row + j], av, b[b_row + j]);
       }
 #endif
     }
@@ -114,10 +155,24 @@ inline T729DynamicTensor qmatmul(const T729DynamicTensor& activations, const T72
                                  float scale) {
   auto dequantized = weights.snapshot_values();
   for (auto& value : dequantized) {
-    value *= scale;
+    value = matmul_detail::deterministic_mul(value, scale);
   }
   T729DynamicTensor dequantized_tensor(weights.shape(), std::move(dequantized));
   return matmul(activations, dequantized_tensor);
+}
+
+inline T729DynamicTensor qmatmul(const T729DynamicTensor& activations, const T729DynamicTensor& weights,
+                                 const t81::core::detail::DFixed& scale) {
+  if (activations.has_canonical_fixed_data() && weights.has_canonical_fixed_data() &&
+      activations.strict_core_eligible() && weights.strict_core_eligible()) {
+    auto dequantized = matmul_detail::fixed_scale(weights.canonical_fixed_data(), scale);
+    auto dequantized_tensor =
+        T729DynamicTensor::from_canonical_fixed(weights.shape(), std::move(dequantized),
+                                                weights.numeric_class());
+    return matmul(activations, dequantized_tensor);
+  }
+
+  return qmatmul(activations, weights, matmul_detail::host_float_from_fixed(scale));
 }
 
 }  // namespace t81::ops

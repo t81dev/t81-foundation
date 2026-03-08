@@ -208,27 +208,19 @@ TensorLoadHashResult load_canon_tensor_by_hash(t81::canonfs::Driver& driver,
 }
 
 t81::T729DynamicTensor tensor_unary_exp(const t81::T729DynamicTensor& tensor) {
-  auto out = t81::ops::exp(tensor);
-  out.set_numeric_class(TensorNumericClass::HostFloat);
-  return out;
+  return t81::ops::exp(tensor);
 }
 
 t81::T729DynamicTensor tensor_unary_sqrt(const t81::T729DynamicTensor& tensor) {
-  auto out = t81::ops::sqrt(tensor);
-  out.set_numeric_class(TensorNumericClass::HostFloat);
-  return out;
+  return t81::ops::sqrt(tensor);
 }
 
 t81::T729DynamicTensor tensor_unary_silu(const t81::T729DynamicTensor& tensor) {
-  auto out = t81::ops::silu(tensor);
-  out.set_numeric_class(TensorNumericClass::HostFloat);
-  return out;
+  return t81::ops::silu(tensor);
 }
 
 t81::T729DynamicTensor tensor_unary_softmax(const t81::T729DynamicTensor& tensor) {
-  auto out = t81::ops::softmax(tensor);
-  out.set_numeric_class(TensorNumericClass::HostFloat);
-  return out;
+  return t81::ops::softmax(tensor);
 }
 
 bool tensor_elementwise_compatible(const t81::T729DynamicTensor& lhs,
@@ -274,9 +266,7 @@ std::optional<t81::T729DynamicTensor> tensor_contract_dot(const t81::T729Dynamic
 
 t81::T729DynamicTensor tensor_rmsnorm(const t81::T729DynamicTensor& tensor,
                                       const t81::T729DynamicTensor& weights) {
-  auto out = t81::ops::rmsnorm(tensor, weights);
-  out.set_numeric_class(TensorNumericClass::HostFloat);
-  return out;
+  return t81::ops::rmsnorm(tensor, weights);
 }
 
 bool tensor_rmsnorm_compatible(const t81::T729DynamicTensor& tensor,
@@ -285,9 +275,7 @@ bool tensor_rmsnorm_compatible(const t81::T729DynamicTensor& tensor,
 }
 
 t81::T729DynamicTensor tensor_rope(const t81::T729DynamicTensor& tensor, int pos) {
-  auto out = t81::ops::rope(tensor, pos);
-  out.set_numeric_class(TensorNumericClass::HostFloat);
-  return out;
+  return t81::ops::rope(tensor, pos);
 }
 
 bool tensor_rope_compatible(const t81::T729DynamicTensor& tensor) {

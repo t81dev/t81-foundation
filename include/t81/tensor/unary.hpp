@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <vector>
 #include "t81/tensor.hpp"
+#include "t81/types/T81Float.hpp"
 #include "t81/types/detail/dmath.hpp"
 
 namespace t81::ops {
@@ -12,6 +13,7 @@ namespace t81::ops {
 namespace detail {
 
 using t81::core::detail::DFixed;
+using TensorFloat = t81::v1::T81Float<72, 9>;
 
 inline bool unary_all_nonnegative(const T729DynamicTensor& tensor) {
   if (!tensor.has_canonical_fixed_data()) {
@@ -48,10 +50,13 @@ inline T729DynamicTensor exp(const T729DynamicTensor& x) {
     for (const auto& value : x.canonical_fixed_data()) {
       out.push_back(t81::core::detail::exp(value));
     }
-    return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out),
-                                                   TensorNumericClass::HostFloat);
+    const auto result_class =
+        x.strict_core_eligible() ? TensorNumericClass::ExactInt : TensorNumericClass::HostFloat;
+    return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out), result_class);
   }
-  return unary_map(x, [](float v) { return std::exp(v); });
+  return unary_map(x, [](float v) {
+    return static_cast<float>(t81::core::detail::exp(detail::TensorFloat::from_double(v)).to_double());
+  });
 }
 
 inline T729DynamicTensor sqrt(const T729DynamicTensor& x) {
@@ -64,19 +69,35 @@ inline T729DynamicTensor sqrt(const T729DynamicTensor& x) {
     for (const auto& value : x.canonical_fixed_data()) {
       out.push_back(t81::core::detail::sqrt(value));
     }
-    return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out),
-                                                   TensorNumericClass::HostFloat);
+    const auto result_class =
+        x.strict_core_eligible() ? TensorNumericClass::ExactInt : TensorNumericClass::HostFloat;
+    return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out), result_class);
   }
   return unary_map(x, [](float v) {
     if (v < 0.0f) throw std::domain_error("unary sqrt: negative input");
-    return std::sqrt(v);
+    return static_cast<float>(t81::core::detail::sqrt(detail::TensorFloat::from_double(v)).to_double());
   });
 }
 
 inline T729DynamicTensor log(const T729DynamicTensor& x) {
+  if (x.has_canonical_fixed_data()) {
+    if (!detail::unary_all_nonnegative(x) ||
+        std::any_of(x.canonical_fixed_data().begin(), x.canonical_fixed_data().end(),
+                    [](const detail::DFixed& value) { return value.is_zero(); })) {
+      throw std::domain_error("unary log: non-positive input");
+    }
+    std::vector<detail::DFixed> out;
+    out.reserve(x.size());
+    for (const auto& value : x.canonical_fixed_data()) {
+      out.push_back(t81::core::detail::log(value));
+    }
+    const auto result_class =
+        x.strict_core_eligible() ? TensorNumericClass::ExactInt : TensorNumericClass::HostFloat;
+    return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out), result_class);
+  }
   return unary_map(x, [](float v) {
     if (v <= 0.0f) throw std::domain_error("unary log: non-positive input");
-    return std::log(v);
+    return static_cast<float>(t81::core::detail::log(detail::TensorFloat::from_double(v)).to_double());
   });
 }
 

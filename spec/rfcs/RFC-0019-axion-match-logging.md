@@ -2,8 +2,8 @@ ______________________________________________________________________
 
 # RFC-0019 — Axion Match & Loop Metadata Enforcement
 
-Version 0.1 — Draft (Standards Track)\
-Status: Draft\
+Version 0.1 — Accepted (Standards Track)\
+Status: Accepted\
 Author: T81 Foundation Compiler Council\
 Applies to: Axion Kernel, T81VM, TISC, T81Lang
 
@@ -73,4 +73,3 @@ ______________________________________________________________________
 3. How should Axion handle match metadata when multiple enums share variant ids? (Encoded ids should prevent collisions.)
 
 ______________________________________________________________________
-

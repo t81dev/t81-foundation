@@ -4,10 +4,13 @@
 #include "t81/tensor.hpp"
 #include "t81/tensor/broadcast.hpp"
 #include "t81/tensor/shape.hpp"
+#include "t81/types/T81Float.hpp"
 
 namespace t81::ops {
 
 namespace elemwise_detail {
+
+using TensorFloat = t81::v1::T81Float<72, 9>;
 
 inline TensorNumericClass binary_result_class(const T729DynamicTensor& lhs,
                                               const T729DynamicTensor& rhs, bool multiply) {
@@ -67,7 +70,9 @@ inline T729DynamicTensor mul(const T729DynamicTensor& A, const T729DynamicTensor
 inline T729DynamicTensor div(const T729DynamicTensor& A, const T729DynamicTensor& B) {
   auto out = elemwise_binary(A, B, [](float x, float y) {
     if (y == 0.0f) throw std::domain_error("elemwise div: divide by zero");
-    return x / y;
+    return static_cast<float>((elemwise_detail::TensorFloat::from_double(x) /
+                               elemwise_detail::TensorFloat::from_double(y))
+                                  .to_double());
   });
   out.set_numeric_class(TensorNumericClass::HostFloat);
   return out;

@@ -1,15 +1,19 @@
 # RFC-0025: Policy-Gated Tensor Loading via CanonFS
 
-**Status:** draft
+**Status:** accepted
 **Type:** standards-track
 **Applies-To:** `spec/tisc-spec.md`, `spec/t81vm-spec.md`, `spec/supplemental/axion-policy-grammar.md`, `spec/supplemental/canonfs-spec.md`
 **Created:** 2026-02-11
-**Updated:** 2026-02-11
+**Updated:** 2026-03-08
 **Requires:** `RFC-0004`, `RFC-0009`, `RFC-0020`, `RFC-0022`
 
 ---
 
 ## 1. Summary
+
+Status note: accepted for the `TLOADHASH` policy-gated load path and active
+`allowed-tensor-hashes` policy surface. Operational hardening and CI evidence
+tracking remain backlog work, not blockers to design acceptance.
 
 This RFC specifies a new, formally-verified mechanism for loading tensors into the T81 Virtual Machine. It introduces a privileged TISC instruction, `TLOADHASH`, which loads a tensor `CanonObject` from the `CanonFS` content-addressed storage system by its cryptographic hash. The entire operation is supervised by the Axion kernel, which MUST validate the tensor's hash against a new `allowed-tensor-hashes` list in the active Axion policy.
 

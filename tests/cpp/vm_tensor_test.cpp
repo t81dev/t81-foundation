@@ -99,7 +99,7 @@ int main() {
   const auto& softmaxRes = mutable_state.tensors[static_cast<std::size_t>(softmaxHandle - 1)];
   T81_TEST_CHECK(softmaxRes.has_value());
   T81_TEST_CHECK(softmaxRes.value().shape()[0] == 3);
-  T81_TEST_CHECK(softmaxRes.value().numeric_class() == t81::TensorNumericClass::HostFloat);
+  T81_TEST_CHECK(softmaxRes.value().numeric_class() == t81::TensorNumericClass::ExactInt);
   const float softmax_sum =
       softmaxRes.value().data()[0] + softmaxRes.value().data()[1] + softmaxRes.value().data()[2];
   T81_TEST_CHECK(std::fabs(softmax_sum - 1.0f) < 1e-5f);
@@ -116,7 +116,7 @@ int main() {
   [[maybe_unused]] auto rmsHandle = vm->state().contexts[0].registers[18];
   const auto& rmsRes = mutable_state.tensors[static_cast<std::size_t>(rmsHandle - 1)];
   T81_TEST_CHECK(rmsRes.has_value());
-  T81_TEST_CHECK(rmsRes.value().numeric_class() == t81::TensorNumericClass::HostFloat);
+  T81_TEST_CHECK(rmsRes.value().numeric_class() == t81::TensorNumericClass::ExactInt);
   auto rmsExpected = t81::ops::rmsnorm(vecA, vecB);
   T81_TEST_CHECK(rmsRes.value().shape() == rmsExpected.shape());
   T81_TEST_CHECK(rmsRes.value().data().size() == rmsExpected.data().size());
@@ -127,7 +127,7 @@ int main() {
   [[maybe_unused]] auto ropeHandle = vm->state().contexts[0].registers[19];
   const auto& ropeRes = mutable_state.tensors[static_cast<std::size_t>(ropeHandle - 1)];
   T81_TEST_CHECK(ropeRes.has_value());
-  T81_TEST_CHECK(ropeRes.value().numeric_class() == t81::TensorNumericClass::HostFloat);
+  T81_TEST_CHECK(ropeRes.value().numeric_class() == t81::TensorNumericClass::ExactInt);
   auto ropeExpected = t81::ops::rope(matA, 3);
   T81_TEST_CHECK(ropeRes.value().shape() == ropeExpected.shape());
   T81_TEST_CHECK(ropeRes.value().data().size() == ropeExpected.data().size());

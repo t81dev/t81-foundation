@@ -3,6 +3,7 @@
 #include "t81/isa/program.hpp"
 #include "t81/tensor/llama.hpp"
 #include "t81/tensor/matmul.hpp"
+#include "t81/types/detail/dmath_types.hpp"
 #include "t81/vm/vm.hpp"
 
 #include <cmath>
@@ -104,7 +105,8 @@ void test_qmatmul_parity() {
   auto result = vm->run_to_halt();
   T81_TEST_CHECK(result.has_value());
 
-  const auto expected = t81::ops::qmatmul(p.tensor_pool[0], p.tensor_pool[1], 2.0F);
+  const auto expected =
+      t81::ops::qmatmul(p.tensor_pool[0], p.tensor_pool[1], t81::core::detail::DFixed(2));
   const auto& actual = tensor_result(vm->state(), 4);
   assert_tensor_near(actual, expected);
 }
@@ -132,9 +134,11 @@ void test_qmatmul_fractional_scale_parity() {
   auto result = vm->run_to_halt();
   T81_TEST_CHECK(result.has_value());
 
-  const auto expected = t81::ops::qmatmul(p.tensor_pool[0], p.tensor_pool[1], 0.5F);
+  const auto expected = t81::ops::qmatmul(
+      p.tensor_pool[0], p.tensor_pool[1], t81::core::detail::DFixed::from_decimal(0, 5, 1));
   const auto& actual = tensor_result(vm->state(), 4);
-  T81_TEST_CHECK(actual.numeric_class() == t81::TensorNumericClass::HostFloat);
+  T81_TEST_CHECK(actual.numeric_class() == expected.numeric_class());
+  T81_TEST_CHECK(actual.strict_core_eligible());
   assert_tensor_near(actual, expected);
 }
 

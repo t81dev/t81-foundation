@@ -5,6 +5,7 @@
 #include <vector>
 #include "t81/tensor.hpp"
 #include "t81/tensor/matmul.hpp"
+#include "t81/types/T81Float.hpp"
 #include "t81/types/detail/dmath.hpp"
 
 #if defined(__AVX2__) || defined(__FMA__)
@@ -16,6 +17,17 @@ namespace t81::ops {
 namespace detail {
 
 using t81::core::detail::DFixed;
+using TensorFloat = t81::v1::T81Float<72, 9>;
+
+inline float deterministic_exp(float value) {
+  return static_cast<float>(t81::core::detail::exp(TensorFloat::from_double(value)).to_double());
+}
+
+inline float deterministic_inv_sqrt(float value) {
+  return static_cast<float>(
+      (TensorFloat::from_double(1.0) / t81::core::detail::sqrt(TensorFloat::from_double(value)))
+          .to_double());
+}
 
 inline DFixed fixed_from_int64(std::int64_t value) {
   typename DFixed::Storage storage(value);
@@ -127,6 +139,10 @@ inline T729DynamicTensor rmsnorm(const T729DynamicTensor& x, const T729DynamicTe
   if (x.rank() == 0 || w.rank() != 1 || w.shape()[0] != x.shape().back()) {
     throw std::invalid_argument("rmsnorm: shape mismatch");
   }
+  const TensorNumericClass result_class =
+      x.strict_core_eligible() && w.strict_core_eligible()
+          ? TensorNumericClass::ExactInt
+          : TensorNumericClass::HostFloat;
   if (x.has_canonical_fixed_data() && w.has_canonical_fixed_data()) {
     const int dim = x.shape().back();
     const auto& input = x.canonical_fixed_data();
@@ -148,8 +164,7 @@ inline T729DynamicTensor rmsnorm(const T729DynamicTensor& x, const T729DynamicTe
             input[base + static_cast<std::size_t>(j)] * inv * weight[static_cast<std::size_t>(j)];
       }
     }
-    return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out),
-                                                   TensorNumericClass::HostFloat);
+    return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out), result_class);
   }
   int dim = x.shape().back();
   std::vector<float> out = x.snapshot_values();
@@ -176,7 +191,8 @@ inline T729DynamicTensor rmsnorm(const T729DynamicTensor& x, const T729DynamicTe
 #else
     for (int j = 0; j < dim; ++j) ss += row[j] * row[j];
 #endif
-    float inv_ss = 1.0f / std::sqrt(ss / dim + eps);
+    const float mean_ss = ss / static_cast<float>(dim) + eps;
+    const float inv_ss = detail::deterministic_inv_sqrt(mean_ss);
 
 #if defined(__AVX2__)
     __m256 vinv = _mm256_set1_ps(inv_ss);
@@ -204,15 +220,16 @@ inline T729DynamicTensor silu(const T729DynamicTensor& x) {
       const auto denom = detail::DFixed::one() + t81::core::detail::exp(-value);
       out.push_back(value / denom);
     }
-    return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out),
-                                                   TensorNumericClass::HostFloat);
+    const auto result_class =
+        x.strict_core_eligible() ? TensorNumericClass::ExactInt : TensorNumericClass::HostFloat;
+    return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out), result_class);
   }
   std::vector<float> out = x.snapshot_values();
   float* data = out.data();
   size_t size = out.size();
 
   size_t i = 0;
-#if defined(__AVX2__)
+#if defined(__AVX2__) && !defined(T81_DETERMINISTIC)
   __m256 vone = _mm256_set1_ps(1.0f);
   for (; i + 8 <= size; i += 8) {
     __m256 vx = _mm256_loadu_ps(&data[i]);
@@ -223,7 +240,7 @@ inline T729DynamicTensor silu(const T729DynamicTensor& x) {
   }
 #endif
   for (; i < size; ++i) {
-    data[i] = data[i] / (1.0f + std::exp(-data[i]));
+    data[i] = data[i] / (1.0f + detail::deterministic_exp(-data[i]));
   }
   return T729DynamicTensor(x.shape(), std::move(out));
 }
@@ -234,8 +251,9 @@ inline T729DynamicTensor softmax(const T729DynamicTensor& x) {
     const int dim = x.shape().back();
     const int rows = static_cast<int>(x.size() / static_cast<std::size_t>(dim));
     auto out = detail::fixed_softmax_rows(x.canonical_fixed_data(), rows, dim);
-    return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out),
-                                                   TensorNumericClass::HostFloat);
+    const auto result_class =
+        x.strict_core_eligible() ? TensorNumericClass::ExactInt : TensorNumericClass::HostFloat;
+    return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out), result_class);
   }
   int dim = x.shape().back();
   std::vector<float> out = x.snapshot_values();
@@ -261,7 +279,7 @@ inline T729DynamicTensor softmax(const T729DynamicTensor& x) {
 #endif
 
     float sum = 0.0f;
-#if defined(__AVX2__)
+#if defined(__AVX2__) && !defined(T81_DETERMINISTIC)
     __m256 vsum = _mm256_setzero_ps();
     const __m256 vmax_v = _mm256_set1_ps(max_val);
     int j_sum = 0;
@@ -278,12 +296,12 @@ inline T729DynamicTensor softmax(const T729DynamicTensor& x) {
     sum = _mm_cvtss_f32(vsum_h);
 
     for (; j_sum < dim; ++j_sum) {
-      row[j_sum] = std::exp(row[j_sum] - max_val);
+      row[j_sum] = detail::deterministic_exp(row[j_sum] - max_val);
       sum += row[j_sum];
     }
 #else
     for (int j = 0; j < dim; ++j) {
-      row[j] = std::exp(row[j] - max_val);
+      row[j] = detail::deterministic_exp(row[j] - max_val);
       sum += row[j];
     }
 #endif
@@ -318,6 +336,10 @@ inline T729DynamicTensor attention(const T729DynamicTensor& q, const T729Dynamic
   const int dk = q.shape()[1];
   const int k_rows = k.shape()[0];
   const int v_cols = v.shape()[1];
+  const TensorNumericClass result_class =
+      q.strict_core_eligible() && k.strict_core_eligible() && v.strict_core_eligible()
+          ? TensorNumericClass::ExactInt
+          : TensorNumericClass::HostFloat;
 
   if (q.has_canonical_fixed_data() && k.has_canonical_fixed_data() && v.has_canonical_fixed_data()) {
     std::vector<detail::DFixed> k_transposed(static_cast<std::size_t>(dk) *
@@ -343,13 +365,12 @@ inline T729DynamicTensor attention(const T729DynamicTensor& q, const T729Dynamic
     }
     auto probs = detail::fixed_softmax_rows(scores, q_rows, k_rows);
     auto out = detail::fixed_matmul(probs, v_fixed, q_rows, k_rows, v_cols);
-    return T729DynamicTensor::from_canonical_fixed({q_rows, v_cols}, std::move(out),
-                                                   TensorNumericClass::HostFloat);
+    return T729DynamicTensor::from_canonical_fixed({q_rows, v_cols}, std::move(out), result_class);
   }
 
   auto k_t = k.transpose2d();
   auto scores = t81::ops::matmul(q, k_t);
-  const float inv_scale = 1.0f / std::sqrt(static_cast<float>(dk));
+  const float inv_scale = detail::deterministic_inv_sqrt(static_cast<float>(dk));
   auto scaled = scores.snapshot_values();
   for (auto& x : scaled) {
     x *= inv_scale;
@@ -414,18 +435,25 @@ inline T729DynamicTensor rope(const T729DynamicTensor& x, int pos) {
           out[base + static_cast<std::size_t>(j + 1)] = v0 * f_sin + v1 * f_cos;
         }
       }
-      return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out),
-                                                     TensorNumericClass::HostFloat);
+      const auto result_class =
+          x.strict_core_eligible() ? TensorNumericClass::ExactInt : TensorNumericClass::HostFloat;
+      return T729DynamicTensor::from_canonical_fixed(x.shape(), std::move(out), result_class);
     }
   }
   int head_dim = x.shape().back();
   std::vector<float> data = x.snapshot_values();
+  const detail::TensorFloat freq_base = detail::TensorFloat::from_double(10000.0);
+  const detail::TensorFloat pos_float = detail::TensorFloat::from_double(static_cast<double>(pos));
+  const detail::TensorFloat head_dim_float = detail::TensorFloat::from_double(static_cast<double>(head_dim));
   for (size_t i = 0; i < data.size(); i += static_cast<size_t>(head_dim)) {
     for (int j = 0; j < head_dim; j += 2) {
-      float freq = 1.0f / std::pow(10000.0f, static_cast<float>(j) / head_dim);
-      float val = static_cast<float>(pos) * freq;
-      float f_cos = std::cos(val);
-      float f_sin = std::sin(val);
+      const detail::TensorFloat exponent =
+          detail::TensorFloat::from_double(static_cast<double>(j)) / head_dim_float;
+      const detail::TensorFloat freq =
+          detail::TensorFloat::from_double(1.0) / t81::core::detail::pow(freq_base, exponent);
+      const detail::TensorFloat angle = pos_float * freq;
+      const float f_cos = static_cast<float>(t81::core::detail::cos(angle).to_double());
+      const float f_sin = static_cast<float>(t81::core::detail::sin(angle).to_double());
       float v0 = data[i + static_cast<size_t>(j)];
       float v1 = data[i + static_cast<size_t>(j + 1)];
       data[i + static_cast<size_t>(j)] = v0 * f_cos - v1 * f_sin;

@@ -105,16 +105,19 @@ int main() {
   T81_TEST_CHECK(std::fabs(embedded->data()[2] - 6.0f) < 1e-6f);
 
   const auto softmax = tensor_unary_softmax(trits);
-  T81_TEST_CHECK(softmax.numeric_class() == TensorNumericClass::HostFloat);
+  T81_TEST_CHECK(softmax.numeric_class() == TensorNumericClass::ExactInt);
+  T81_TEST_CHECK(softmax.strict_core_eligible());
   T81_TEST_CHECK(softmax.has_canonical_fixed_data());
 
   const auto rmsnorm = tensor_rmsnorm(mat23, vec3);
-  T81_TEST_CHECK(rmsnorm.numeric_class() == TensorNumericClass::HostFloat);
+  T81_TEST_CHECK(rmsnorm.numeric_class() == TensorNumericClass::ExactInt);
+  T81_TEST_CHECK(rmsnorm.strict_core_eligible());
   T81_TEST_CHECK(rmsnorm.shape() == mat23.shape());
   T81_TEST_CHECK(rmsnorm.has_canonical_fixed_data());
 
   const auto rope = tensor_rope(mat22, 3);
-  T81_TEST_CHECK(rope.numeric_class() == TensorNumericClass::HostFloat);
+  T81_TEST_CHECK(rope.numeric_class() == TensorNumericClass::ExactInt);
+  T81_TEST_CHECK(rope.strict_core_eligible());
   T81_TEST_CHECK(rope.shape() == mat22.shape());
   T81_TEST_CHECK(rope.has_canonical_fixed_data());
 

@@ -1,10 +1,10 @@
 # RFC-0026: AI-Native Inference Opcodes
 
-**Status:** draft
+**Status:** accepted
 **Type:** standards-track
 **Applies-To:** `spec/tisc-spec.md` §5, `spec/t81-data-types.md` §11, `spec/t81vm-spec.md`
 **Created:** 2026-03-01
-**Updated:** 2026-03-01
+**Updated:** 2026-03-08
 **Supersedes:** —
 **Superseded-By:** —
 **Discussion:** —
@@ -12,6 +12,11 @@
 ---
 
 ## Summary
+
+Status note: accepted for the phase-1 opcode surface (`ATTN`, `QMATMUL`,
+`EMBED`, `WLOAD`, `GATHER`, `SCATTER`) now present in the repo. Remaining
+strict-core work on host-float elimination stays in backlog as implementation
+closure, not design uncertainty.
 
 T81 is conceived by AI, for AI. This RFC defines a new TISC opcode class —
 **AI-Native Inference Opcodes** — that elevates attention, quantized matrix

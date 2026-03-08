@@ -78,10 +78,11 @@ int main() {
   const auto& out_opt1 = state1.tensors[static_cast<std::size_t>(out_handle1 - 1)];
   T81_TEST_CHECK(out_opt1.has_value());
   const auto& out1 = out_opt1.value();
-  T81_TEST_CHECK(out1.numeric_class() == t81::TensorNumericClass::HostFloat);
+  T81_TEST_CHECK(out1.strict_core_eligible());
 
   auto expected = attention_expected(p.tensor_pool[0], p.tensor_pool[1], p.tensor_pool[2]);
   T81_TEST_CHECK(expected.canonical_fixed_authoritative());
+  T81_TEST_CHECK(expected.numeric_class() == out1.numeric_class());
   T81_TEST_CHECK(out1.shape() == expected.shape());
   T81_TEST_CHECK(out1.data().size() == expected.data().size());
   for (std::size_t i = 0; i < out1.data().size(); ++i) {
@@ -99,7 +100,7 @@ int main() {
   const auto& out_opt2 = state2.tensors[static_cast<std::size_t>(out_handle2 - 1)];
   T81_TEST_CHECK(out_opt2.has_value());
   const auto& out2 = out_opt2.value();
-  T81_TEST_CHECK(out2.numeric_class() == t81::TensorNumericClass::HostFloat);
+  T81_TEST_CHECK(out2.numeric_class() == out1.numeric_class());
   T81_TEST_CHECK(out2.shape() == out1.shape());
   T81_TEST_CHECK(out2.data().size() == out1.data().size());
   for (std::size_t i = 0; i < out1.data().size(); ++i) {

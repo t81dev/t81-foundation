@@ -5092,23 +5092,36 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
+        t81::core::detail::DFixed fixed_scale = t81::core::detail::DFixed::zero();
         float scale = 0.0F;
         if (ctx.register_tags[scale_reg] == ValueTag::Int) {
           scale = static_cast<float>(ctx.registers[scale_reg]);
+          fixed_scale = t81::core::detail::DFixed(static_cast<int>(ctx.registers[scale_reg]));
         } else if (ctx.register_tags[scale_reg] == ValueTag::FloatHandle) {
           auto* scale_ptr = float_ptr(ctx.registers[scale_reg]);
           if (scale_ptr == nullptr) {
             trap = Trap::DecodeFault;
             break;
           }
+          if (!std::isfinite(*scale_ptr)) {
+            trap = Trap::TypeFault;
+            break;
+          }
           scale = static_cast<float>(*scale_ptr);
+          using VMFloat = t81::T81Float<72, 9>;
+          fixed_scale = t81::core::detail::DFixed::from_float(VMFloat::from_double(*scale_ptr));
         } else {
           trap = Trap::TypeFault;
           break;
         }
         t81::T729DynamicTensor computed;
         try {
-          computed = t81::ops::qmatmul(*tensor_act, *tensor_wt, scale);
+          if (tensor_act->has_canonical_fixed_data() && tensor_wt->has_canonical_fixed_data() &&
+              tensor_act->strict_core_eligible() && tensor_wt->strict_core_eligible()) {
+            computed = t81::ops::qmatmul(*tensor_act, *tensor_wt, fixed_scale);
+          } else {
+            computed = t81::ops::qmatmul(*tensor_act, *tensor_wt, scale);
+          }
         } catch (...) {
           log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor, 0, "QMATMUL shape mismatch");
           trap = Trap::ShapeFault;

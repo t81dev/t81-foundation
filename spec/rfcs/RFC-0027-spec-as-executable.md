@@ -1,10 +1,10 @@
 # RFC-0027: Spec-as-Executable Conformance Model
 
-**Status:** draft
+**Status:** accepted
 **Type:** standards-track
 **Applies-To:** `spec/` (all normative docs), `spec/rfcs/`, T81Lang compiler, Axion policy engine
 **Created:** 2026-03-01
-**Updated:** 2026-03-01
+**Updated:** 2026-03-08
 **Supersedes:** —
 **Superseded-By:** —
 **Discussion:** —
@@ -12,6 +12,10 @@
 ---
 
 ## Summary
+
+Status note: accepted because the executable conformance corpus is now wired
+into repository build/test workflows. Proposed annotation extensions remain
+follow-on work and do not block the core model.
 
 T81's identity claim — *conceived by AI, for AI* — requires that the
 specification itself be machine-verifiable, not merely human-readable. This

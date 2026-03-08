@@ -72,6 +72,9 @@ int main() {
     p.data() = {0.5f, 1.f, 10.f};
     [[maybe_unused]] auto y = t81::ops::log(p);
     [[maybe_unused]] const auto& d = y.data();
+    assert(y.canonical_fixed_authoritative());
+    assert(y.numeric_class() == TensorNumericClass::ExactInt);
+    assert(y.strict_core_eligible());
     assert(approx(d[0], std::log(0.5f)));
     assert(approx(d[1], std::log(1.f)));
     assert(approx(d[2], std::log(10.f)));

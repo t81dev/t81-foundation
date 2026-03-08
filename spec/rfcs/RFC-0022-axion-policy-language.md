@@ -1,10 +1,10 @@
 ---
 title: "Axion Policy Language: A Deterministic DSL for Safety and Auditing"
-status: draft
+status: accepted
 author: Jules
-date: 2026-02-10
+date: 2026-03-08
 vote: +1
-supersedes: RFC-0009 (upon acceptance)
+supersedes: RFC-0009
 ---
 
 ## 1. Abstract
