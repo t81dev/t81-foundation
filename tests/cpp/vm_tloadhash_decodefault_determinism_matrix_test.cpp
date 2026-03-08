@@ -154,16 +154,29 @@ int main() {
     t81::tisc::Program program;
     t81::vm::Trap expected_trap;
     bool expect_canonfs_miss_reason;
+    bool expect_policy_violation_reason;
+    bool expect_empty_allowlist_reason;
   };
   std::vector<MatrixCase> cases;
   cases.push_back({"invalid-hash-string", make_tloadhash_program(invalid_long_hash),
-                   t81::vm::Trap::DecodeFault, false});
-  cases.push_back({"canonfs-miss", canonfs_miss_program, t81::vm::Trap::BoundsFault, true});
-  cases.push_back({"malformed-short-object", make_tloadhash_program(malformed_short_hash),
-                   t81::vm::Trap::DecodeFault, false});
-  cases.push_back({"malformed-rank-object", make_tloadhash_program(malformed_rank_hash),
-                   t81::vm::Trap::DecodeFault, false});
+                   t81::vm::Trap::DecodeFault, false, false, false});
+  cases.push_back(
+      {"canonfs-miss", canonfs_miss_program, t81::vm::Trap::BoundsFault, true, false, false});
+  t81::tisc::Program empty_allowlist_program = make_tloadhash_program(invalid_long_hash);
+  empty_allowlist_program.axion_policy_text = "(policy (tier 1) (allowed-tensor-hashes []))";
+  cases.push_back({"empty-allowlist-deny", empty_allowlist_program, t81::vm::Trap::SecurityFault,
+                   false, false, true});
 
+  t81::tisc::Program policy_violation_program = make_tloadhash_program(canonfs_miss_hash);
+  policy_violation_program.axion_policy_text =
+      "(policy (tier 1) (allowed-tensor-hashes [\"sha3-256:"
+      "0000000000000000000000000000000000000000000000000000000000000000\"]))";
+  cases.push_back({"policy-violation-deny", policy_violation_program,
+                   t81::vm::Trap::SecurityFault, false, true, false});
+  cases.push_back({"malformed-short-object", make_tloadhash_program(malformed_short_hash),
+                   t81::vm::Trap::DecodeFault, false, false, false});
+  cases.push_back({"malformed-rank-object", make_tloadhash_program(malformed_rank_hash),
+                   t81::vm::Trap::DecodeFault, false, false, false});
   for (const auto& c : cases) {
     RunSummary baseline = run_once(c.program, workdir / ".t81_canonfs");
     if (!expect(!baseline.ok, c.id + ": expected trap")) return 1;
@@ -182,6 +195,21 @@ int main() {
     });
     if (!expect(has_canonfs_miss == c.expect_canonfs_miss_reason,
                 c.id + ": canonfs-miss reason classification mismatch")) {
+      return 1;
+    }
+    const auto has_policy_violation = std::any_of(events.begin(), events.end(), [](const auto& ev) {
+      return ev.verdict.reason.find("TLOADHASH policy_violation hash=") != std::string::npos;
+    });
+    if (!expect(has_policy_violation == c.expect_policy_violation_reason,
+                c.id + ": policy-violation reason classification mismatch")) {
+      return 1;
+    }
+    const auto has_empty_allowlist = std::any_of(events.begin(), events.end(), [](const auto& ev) {
+      return ev.verdict.reason.find("TLOADHASH denied (allowed-tensor-hashes empty)") !=
+             std::string::npos;
+    });
+    if (!expect(has_empty_allowlist == c.expect_empty_allowlist_reason,
+                c.id + ": empty-allowlist reason classification mismatch")) {
       return 1;
     }
 
