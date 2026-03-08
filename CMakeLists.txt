@@ -204,6 +204,7 @@ endif()
 
 add_library(t81_lang_frontend STATIC
   lang/frontend/builtin_registry.cpp
+  lang/frontend/ir_generator.cpp
   lang/frontend/lexer.cpp
   lang/frontend/parser.cpp
   lang/frontend/semantic_analyzer.cpp

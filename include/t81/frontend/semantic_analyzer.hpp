@@ -11,63 +11,14 @@
 #include <vector>
 #include "t81/frontend/ast.hpp"
 #include "t81/frontend/lexer.hpp"
+#include "t81/frontend/types.hpp"
 
 namespace t81 {
 namespace frontend {
 
 class IRGenerator;
 
-// Simple type system representation for semantic analysis
-struct Type {
-  enum class Kind {
-    Void,
-    Bool,
-    I2,
-    I8,
-    I16,
-    I32,
-    BigInt,
-    Float,
-    Fraction,
-    Fixed,
-    Complex,
-    Quaternion,
-    Prob,
-    Cell,
-    Qutrit,
-    Uint,
-    Vector,
-    Matrix,
-    Tensor,
-    Graph,
-    List,
-    Map,
-    Set,
-    Tree,
-    Symbol,
-    InfiniteCanonicalForm,
-    Option,
-    Result,
-    String,
-    Bytes,
-    Constant,
-    Custom,
-    Unknown,
-    Error
-  };
-
-  Kind kind = Kind::Unknown;
-  std::vector<Type> params;
-  std::string custom_name;
-
-  explicit Type(Kind kind_ = Kind::Unknown, std::vector<Type> params_ = {},
-                std::string custom_name_ = {})
-      : kind(kind_), params(std::move(params_)), custom_name(std::move(custom_name_)) {}
-  [[nodiscard]] static Type constant(std::string repr);
-
-  [[nodiscard]] bool operator==(const Type& other) const;
-  [[nodiscard]] bool operator!=(const Type& other) const { return !(*this == other); }
-};
+// Type is now defined in types.hpp — included above.
 
 // Simple symbol information for semantic analysis
 enum class SymbolKind { Variable, Function };

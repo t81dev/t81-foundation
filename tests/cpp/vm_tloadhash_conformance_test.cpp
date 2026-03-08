@@ -64,8 +64,8 @@ void run_tloadhash_success_case() {
   tensor.trits = 4;
   tensor.data = {40};
 
-  auto driver =
-      t81::canonfs::make_persistent_driver(std::filesystem::current_path() / ".t81_canonfs");
+  auto canon_root = std::filesystem::current_path() / ".t81_canonfs";
+  auto driver = t81::canonfs::make_persistent_driver(canon_root);
   auto serialized = serialize_tensor(tensor);
   auto write =
       driver->write_object(t81::canonfs::ObjectType::CanonTensor,
@@ -76,6 +76,7 @@ void run_tloadhash_success_case() {
   auto program = make_tloadhash_program(hash_symbol);
 
   auto vm = t81::vm::make_interpreter_vm();
+  vm->set_canonfs_root(canon_root);
   vm->load_program(program);
   auto result = vm->run_to_halt();
   T81_TEST_CHECK(result.has_value());
@@ -103,8 +104,8 @@ void run_tloadhash_success_case() {
 void run_tloadhash_decode_fault_case() {
   std::vector<std::byte> malformed = {std::byte{0x20}, std::byte{0x01}, std::byte{0x00}};
 
-  auto driver =
-      t81::canonfs::make_persistent_driver(std::filesystem::current_path() / ".t81_canonfs");
+  auto canon_root = std::filesystem::current_path() / ".t81_canonfs";
+  auto driver = t81::canonfs::make_persistent_driver(canon_root);
   auto write = driver->write_object(t81::canonfs::ObjectType::CanonTensor,
                                     std::span<const std::byte>(malformed.data(), malformed.size()));
   T81_TEST_CHECK(write.has_value());
@@ -113,6 +114,7 @@ void run_tloadhash_decode_fault_case() {
   auto program = make_tloadhash_program(hash_symbol);
 
   auto vm = t81::vm::make_interpreter_vm();
+  vm->set_canonfs_root(canon_root);
   vm->load_program(program);
   auto result = vm->run_to_halt();
   T81_TEST_CHECK(!result.has_value());
@@ -126,8 +128,8 @@ void run_tloadhash_ambiguous_payload_fail_closed_case() {
   tensor.trits = 1;
   tensor.data = {1};
 
-  auto driver =
-      t81::canonfs::make_persistent_driver(std::filesystem::current_path() / ".t81_canonfs");
+  auto canon_root = std::filesystem::current_path() / ".t81_canonfs";
+  auto driver = t81::canonfs::make_persistent_driver(canon_root);
   auto serialized = serialize_tensor(tensor);
   auto write =
       driver->write_object(t81::canonfs::ObjectType::CanonTensor,
@@ -138,6 +140,7 @@ void run_tloadhash_ambiguous_payload_fail_closed_case() {
   auto program = make_tloadhash_program(hash_symbol);
 
   auto vm = t81::vm::make_interpreter_vm();
+  vm->set_canonfs_root(canon_root);
   vm->load_program(program);
   auto result = vm->run_to_halt();
   T81_TEST_CHECK(!result.has_value());
@@ -157,8 +160,8 @@ void run_tloadhash_invalid_header_cases() {
   auto malformed_rank = serialize_tensor(base);
   malformed_rank[3] = std::byte{9};
 
-  auto driver =
-      t81::canonfs::make_persistent_driver(std::filesystem::current_path() / ".t81_canonfs");
+  auto canon_root = std::filesystem::current_path() / ".t81_canonfs";
+  auto driver = t81::canonfs::make_persistent_driver(canon_root);
 
   {
     auto write = driver->write_object(
@@ -168,6 +171,7 @@ void run_tloadhash_invalid_header_cases() {
     std::string hash_symbol = "sha3-256:" + write->hash.h.to_string();
     auto program = make_tloadhash_program(hash_symbol);
     auto vm = t81::vm::make_interpreter_vm();
+    vm->set_canonfs_root(canon_root);
     vm->load_program(program);
     auto result = vm->run_to_halt();
     T81_TEST_CHECK(!result.has_value());
@@ -182,6 +186,7 @@ void run_tloadhash_invalid_header_cases() {
     std::string hash_symbol = "sha3-256:" + write->hash.h.to_string();
     auto program = make_tloadhash_program(hash_symbol);
     auto vm = t81::vm::make_interpreter_vm();
+    vm->set_canonfs_root(canon_root);
     vm->load_program(program);
     auto result = vm->run_to_halt();
     T81_TEST_CHECK(!result.has_value());
@@ -210,6 +215,7 @@ void run_tloadhash_canonfs_miss_case() {
   program.axion_policy_text = "(policy (tier 1) (allowed-tensor-hashes [\"" + hash_symbol + "\"]))";
 
   auto vm = t81::vm::make_interpreter_vm();
+  vm->set_canonfs_root(std::filesystem::current_path() / ".t81_canonfs");
   vm->load_program(program);
   auto result = vm->run_to_halt();
   T81_TEST_CHECK(!result.has_value());
@@ -229,6 +235,7 @@ void run_tloadhash_policy_deny_case() {
   program.axion_policy_text = "(policy (tier 1) (allowed-tensor-hashes []))";
 
   auto vm = t81::vm::make_interpreter_vm();
+  vm->set_canonfs_root(std::filesystem::current_path() / ".t81_canonfs");
   vm->load_program(program);
   auto result = vm->run_to_halt();
   T81_TEST_CHECK(!result.has_value());
@@ -265,6 +272,7 @@ void run_tloadhash_policy_violation_case() {
       "000000000000000000000000000000000000000000000000000000000000000000000000000000000\"]))";
 
   auto vm = t81::vm::make_interpreter_vm();
+  vm->set_canonfs_root(std::filesystem::current_path() / ".t81_canonfs");
   vm->load_program(program);
   auto result = vm->run_to_halt();
   T81_TEST_CHECK(!result.has_value());

@@ -8,7 +8,7 @@
 // DO NOT add to canonical_stdlib_call_name, minimum_tier_for_call_surface, or
 // is_effect_surface_call — those functions now derive from this table.
 
-#include "t81/frontend/semantic_analyzer.hpp"
+#include "t81/frontend/types.hpp"
 #include "t81/isa/ir.hpp"
 
 #include <cstdint>

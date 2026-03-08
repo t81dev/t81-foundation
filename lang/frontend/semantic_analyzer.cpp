@@ -225,371 +225,6 @@ std::string canonical_stdlib_call_name(std::string_view name) {
   return std::string(t81::frontend::canonical_name_for(name));
 }
 
-// ── DEAD CODE BELOW — kept temporarily for grep-ability, removed next pass ──
-[[maybe_unused]] static std::string canonical_stdlib_call_name_old(std::string_view name) {
-  if (name == "std.core.assert") {
-    return "core_assert";
-  }
-  if (name == "std.core.debug") {
-    return "print";
-  }
-  if (name == "std.core.unwrap_or") {
-    return "option_unwrap_or";
-  }
-  if (name == "std.option.is_some") {
-    return "option_is_some";
-  }
-  if (name == "std.option.is_none") {
-    return "option_is_none";
-  }
-  if (name == "std.option.unwrap") {
-    return "option_unwrap";
-  }
-  if (name == "std.result.is_ok") {
-    return "result_is_ok";
-  }
-  if (name == "std.result.is_err") {
-    return "result_is_err";
-  }
-  if (name == "std.result.unwrap") {
-    return "result_unwrap";
-  }
-  if (name == "std.result.unwrap_err") {
-    return "result_unwrap_err";
-  }
-  if (name == "std.io.println" || name == "std.io.print_int" || name == "std.io.print_float") {
-    return "print";
-  }
-  if (name == "std.io.stream") {
-    return "io_stream";
-  }
-  if (name == "std.io.net") {
-    return "io_net";
-  }
-  if (name == "std.math.sin") {
-    return "sin";
-  }
-  if (name == "std.math.cos") {
-    return "cos";
-  }
-  if (name == "std.math.tan") {
-    return "tan";
-  }
-  if (name == "std.math.asin") {
-    return "asin";
-  }
-  if (name == "std.math.acos") {
-    return "acos";
-  }
-  if (name == "std.math.atan") {
-    return "atan";
-  }
-  if (name == "std.math.sinh") {
-    return "sinh";
-  }
-  if (name == "std.math.cosh") {
-    return "cosh";
-  }
-  if (name == "std.math.tanh") {
-    return "tanh";
-  }
-  if (name == "std.math.exp") {
-    return "exp";
-  }
-  if (name == "std.math.log") {
-    return "log";
-  }
-  if (name == "std.math.pow") {
-    return "pow";
-  }
-  if (name == "std.math.sqrt") {
-    return "sqrt";
-  }
-  if (name == "std.math.clamp") {
-    return "clamp";
-  }
-  if (name == "std.math.abs") {
-    return "abs";
-  }
-  if (name == "std.math.bigint.from_int") {
-    return "bigint_from_int";
-  }
-  if (name == "std.math.bigint.to_int") {
-    return "bigint_to_int";
-  }
-  if (name == "std.math.bigint.add") {
-    return "bigint_add";
-  }
-  if (name == "std.math.bigint.mul") {
-    return "bigint_mul";
-  }
-  if (name == "std.math.fraction.add") {
-    return "frac_add";
-  }
-  if (name == "std.math.fraction.sub") {
-    return "frac_sub";
-  }
-  if (name == "std.math.fraction.mul") {
-    return "frac_mul";
-  }
-  if (name == "std.math.fraction.div") {
-    return "frac_div";
-  }
-  if (name == "std.math.fraction.from_int") {
-    return "frac_from_int";
-  }
-  if (name == "std.math.fraction.to_int") {
-    return "frac_to_int";
-  }
-  if (name == "std.math.fraction.from_float") {
-    return "frac_from_float";
-  }
-  if (name == "std.math.fraction.to_float") {
-    return "frac_to_float";
-  }
-  if (name == "std.sys.exit") {
-    return "sys_exit";
-  }
-  if (name == "std.sys.time") {
-    return "sys_time";
-  }
-  if (name == "std.sys.entropy") {
-    return "sys_entropy";
-  }
-  if (name == "std.sys.proof") {
-    return "sys_proof";
-  }
-  if (name == "std.sys.reflect") {
-    return "sys_reflect";
-  }
-  if (name == "std.async.yield") {
-    return "async_yield";
-  }
-  if (name == "std.async.sleep") {
-    return "async_sleep";
-  }
-  if (name == "std.async.thread") {
-    return "async_thread";
-  }
-  if (name == "std.async.promise") {
-    return "async_promise";
-  }
-  if (name == "std.agent.self_reflect") {
-    return "agent_self_reflect";
-  }
-  if (name == "std.symbolic.load") {
-    return "symbolic_load";
-  }
-  if (name == "std.symbolic.rewrite") {
-    return "symbolic_rewrite";
-  }
-  if (name == "std.symbolic.canon") {
-    return "symbolic_canon";
-  }
-  if (name == "std.symbolic.confluent") {
-    return "symbolic_confluent";
-  }
-  if (name == "std.polynomial.load") {
-    return "polynomial_load";
-  }
-  if (name == "std.polynomial.rewrite") {
-    return "polynomial_rewrite";
-  }
-  if (name == "std.polynomial.canon") {
-    return "polynomial_canon";
-  }
-  if (name == "std.polynomial.confluent") {
-    return "polynomial_confluent";
-  }
-  if (name == "std.tensor.load") {
-    return "weights.load";
-  }
-  if (name == "std.tensor.from_list") {
-    return "Tensor.from_list";
-  }
-  if (name == "std.tensor.matmul") {
-    return "Tensor.matmul";
-  }
-  if (name == "std.tensor.vec_add") {
-    return "Tensor.vec_add";
-  }
-  if (name == "std.tensor.attention") {
-    return "Tensor.attention";
-  }
-  if (name == "std.tensor.qmatmul") {
-    return "Tensor.qmatmul";
-  }
-  if (name == "std.tensor.dot_product") {
-    return "tensor_dot";
-  }
-  if (name == "std.text.str_len") {
-    return "str_len";
-  }
-  if (name == "std.text.str_is_empty") {
-    return "str_is_empty";
-  }
-  if (name == "std.text.concat") {
-    return "str_concat";
-  }
-  if (name == "std.text.starts_with") {
-    return "str_starts_with";
-  }
-  if (name == "std.text.ends_with") {
-    return "str_ends_with";
-  }
-  if (name == "std.text.contains") {
-    return "str_contains";
-  }
-  if (name == "std.text.index_of") {
-    return "str_index_of";
-  }
-  if (name == "std.text.replace") {
-    return "str_replace";
-  }
-  if (name == "std.text.to_string") {
-    return "str_to_string";
-  }
-  if (name == "std.text.from_bytes") {
-    return "str_to_string";
-  }
-  if (name == "std.text.split") {
-    return "str_split";
-  }
-  if (name == "std.text.join") {
-    return "str_join";
-  }
-  if (name == "std.bytes.len") {
-    return "bytes_len";
-  }
-  if (name == "std.bytes.is_empty") {
-    return "bytes_is_empty";
-  }
-  if (name == "std.bytes.concat") {
-    return "bytes_concat";
-  }
-  if (name == "std.bytes.starts_with") {
-    return "bytes_starts_with";
-  }
-  if (name == "std.bytes.ends_with") {
-    return "bytes_ends_with";
-  }
-  if (name == "std.bytes.contains") {
-    return "bytes_contains";
-  }
-  if (name == "std.bytes.index_of") {
-    return "bytes_index_of";
-  }
-  if (name == "std.bytes.replace") {
-    return "bytes_replace";
-  }
-  if (name == "std.bytes.split") {
-    return "bytes_split";
-  }
-  if (name == "std.bytes.join") {
-    return "bytes_join";
-  }
-  if (name == "std.bytes.to_string") {
-    return "str_to_string";
-  }
-  if (name == "std.bytes.from_string") {
-    return "T81Bytes";
-  }
-  if (name == "std.collections.len") {
-    return "collections_len";
-  }
-  if (name == "std.collections.is_empty") {
-    return "collections_is_empty";
-  }
-  if (name == "std.collections.first") {
-    return "collections_first";
-  }
-  if (name == "std.collections.last") {
-    return "collections_last";
-  }
-  if (name == "std.collections.push") {
-    return "collections_push";
-  }
-  if (name == "std.collections.pop") {
-    return "collections_pop";
-  }
-  if (name == "std.collections.list") {
-    return "collections_list";
-  }
-  if (name == "std.collections.map") {
-    return "collections_map";
-  }
-  if (name == "std.collections.map_put") {
-    return "collections_map_put";
-  }
-  if (name == "std.collections.map_get") {
-    return "collections_map_get";
-  }
-  if (name == "std.collections.map_has") {
-    return "collections_map_has";
-  }
-  if (name == "std.collections.map_remove") {
-    return "collections_map_remove";
-  }
-  if (name == "std.collections.map_size") {
-    return "collections_map_size";
-  }
-  if (name == "std.collections.map_keys") {
-    return "collections_map_keys";
-  }
-  if (name == "std.collections.set") {
-    return "collections_set";
-  }
-  if (name == "std.collections.set_size") {
-    return "collections_set_size";
-  }
-  if (name == "std.collections.set_has") {
-    return "collections_set_has";
-  }
-  if (name == "std.collections.set_add") {
-    return "collections_set_add";
-  }
-  if (name == "std.collections.set_remove") {
-    return "collections_set_remove";
-  }
-  if (name == "std.collections.tree") {
-    return "collections_tree";
-  }
-  if (name == "std.collections.graph") {
-    return "collections_graph";
-  }
-  if (name == "std.collections.graph_edge_count") {
-    return "collections_graph_edge_count";
-  }
-  if (name == "std.collections.graph_has_edge") {
-    return "collections_graph_has_edge";
-  }
-  if (name == "std.collections.graph_add_edge") {
-    return "collections_graph_add_edge";
-  }
-  if (name == "std.collections.graph_remove_edge") {
-    return "collections_graph_remove_edge";
-  }
-  if (name == "std.collections.graph_neighbors") {
-    return "collections_graph_neighbors";
-  }
-  if (name == "std.collections.graph_canonical") {
-    return "collections_graph_canonical";
-  }
-  if (name == "std.symbol.intern") {
-    return "symbol_intern";
-  }
-  if (name == "std.symbol.to_string") {
-    return "symbol_to_string";
-  }
-  if (name == "std.symbol.eq") {
-    return "symbol_eq";
-  }
-  if (name == "std.symbol.ne") {
-    return "symbol_ne";
-  }
-  return std::string(name);
-}
-
 std::optional<int> minimum_tier_for_call_surface(std::string_view canonical_name) {
   // Derived from kBuiltinTable.  Legacy alias "Tensor.load" preserved.
   if (const auto* def = t81::frontend::lookup_builtin_by_canonical(canonical_name)) {
@@ -1501,10 +1136,14 @@ Type SemanticAnalyzer::evaluate_expression(const Expr& expr, const Type* expecte
   }
   try {
     Type casted = std::any_cast<Type>(result);
+    // Annotate the AST node directly (typed AST) and also maintain the
+    // legacy cache for backwards compatibility during the transition.
+    expr.resolved_type    = casted;
     _expr_type_cache[&expr] = casted;
     return casted;
   } catch (const std::bad_any_cast&) {
     Type err = make_error_type();
+    expr.resolved_type    = err;
     _expr_type_cache[&expr] = err;
     return err;
   }
@@ -1519,6 +1158,10 @@ const Type* SemanticAnalyzer::current_expected_type() const {
 
 const Type* SemanticAnalyzer::type_of(const Expr* expr) const {
   if (!expr) return nullptr;
+  // Prefer the typed-AST annotation; fall back to the legacy cache.
+  if (expr->resolved_type.kind != Type::Kind::Unknown) {
+    return &expr->resolved_type;
+  }
   auto it = _expr_type_cache.find(expr);
   if (it == _expr_type_cache.end()) return nullptr;
   return &it->second;
@@ -2484,35 +2127,6 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         }
       }
     }
-    // ── Table-driven dispatch ──────────────────────────────────────────────
-    // For builtins where the registry is the sole source of truth (arity + return
-    // type are fixed, no polymorphic type inference needed), short-circuit here.
-    // Builtins with needs_custom_sa_check=true fall through to the per-canonical
-    // blocks below.
-    if (const auto* reg_def = t81::frontend::lookup_builtin_by_canonical(func_name);
-        reg_def && !reg_def->needs_custom_sa_check) {
-      const int8_t expected_arity = reg_def->arity;
-      if (expected_arity != t81::frontend::kArityAny &&
-          static_cast<int8_t>(arg_types.size()) != expected_arity) {
-        error(call_token, std::string(func_name) + " expects " +
-                              std::to_string(expected_arity) + " argument(s), got " +
-                              std::to_string(arg_types.size()) + ".");
-        return make_error_type();
-      }
-      if (reg_def->return_kind == Type::Kind::Custom &&
-          !reg_def->return_custom_name.empty()) {
-        Type ret{Type::Kind::Custom, {}, std::string(reg_def->return_custom_name)};
-        _expr_type_cache[&expr] = ret;
-        return ret;
-      }
-      if (reg_def->return_kind != Type::Kind::Unknown) {
-        Type ret{reg_def->return_kind};
-        _expr_type_cache[&expr] = ret;
-        return ret;
-      }
-    }
-    // ──────────────────────────────────────────────────────────────────────
-
     const Type* expected = current_expected_type();
 
     auto build_result_template = [&](const Type* context) {
@@ -3859,6 +3473,33 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       }
       return Type{Type::Kind::Bool};
     }
+
+    // ── Table-driven fallback ──────────────────────────────────────────────
+    // Handles builtins not covered by the custom blocks above.  Custom blocks
+    // always run first, so type-checking logic in them is never short-circuited.
+    if (const auto* reg_def = t81::frontend::lookup_builtin_by_canonical(func_name);
+        reg_def && !reg_def->needs_custom_sa_check) {
+      const int8_t expected_arity = reg_def->arity;
+      if (expected_arity != t81::frontend::kArityAny &&
+          static_cast<int8_t>(arg_types.size()) != expected_arity) {
+        error(call_token, std::string(func_name) + " expects " +
+                              std::to_string(expected_arity) + " argument(s), got " +
+                              std::to_string(arg_types.size()) + ".");
+        return make_error_type();
+      }
+      if (reg_def->return_kind == Type::Kind::Custom &&
+          !reg_def->return_custom_name.empty()) {
+        Type ret{Type::Kind::Custom, {}, std::string(reg_def->return_custom_name)};
+        _expr_type_cache[&expr] = ret;
+        return ret;
+      }
+      if (reg_def->return_kind != Type::Kind::Unknown) {
+        Type ret{reg_def->return_kind};
+        _expr_type_cache[&expr] = ret;
+        return ret;
+      }
+    }
+    // ──────────────────────────────────────────────────────────────────────
 
     if (auto* var_expr = dynamic_cast<const VariableExpr*>(expr.callee.get())) {
       auto* symbol = resolve_symbol(var_expr->name);
