@@ -162,6 +162,31 @@ Then, if the naming or contract becomes too confusing, open a focused follow-on
 RFC for numeric-class expansion rather than folding that change into RFC-0030
 kernel work.
 
+## Current Decision
+
+Effective as of 2026-03-08:
+
+- `strict_core_eligible()` remains tied to `numeric_class`
+- no separate arithmetic-provenance bit is introduced at this time
+- deterministic float-domain tensors continue to use `HostFloat`
+- deterministic arithmetic strengthening may continue without changing the
+  public tensor class model
+
+This is an intentional deferral, not an omission.
+
+## Reopen Conditions
+
+Revisit the decision only if one of these becomes true:
+
+1. a public API or conformance contract needs to distinguish deterministic
+   float-domain tensors from host-tolerant ones
+2. Axion policy/audit surfaces need arithmetic provenance as a first-class
+   predicate
+3. `strict_core_eligible()` starts blocking legitimate deterministic use cases
+   that should not require exact-int promotion
+4. the name `HostFloat` causes repeated spec or user confusion that cannot be
+   addressed by documentation alone
+
 ## Concrete Next Step
 
 The next work item should be a small contract pass, not a kernel rewrite:
@@ -172,3 +197,5 @@ The next work item should be a small contract pass, not a kernel rewrite:
    `HostFloat` implies host-dependent arithmetic
 3. only after that, decide whether `matmul` or other float-domain kernels need
    further promotion behavior changes
+
+Status: items 1 and 2 are complete in the current repo checkpoint.
