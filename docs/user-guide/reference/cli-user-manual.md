@@ -124,6 +124,7 @@ t81 code disasm <file.tisc>
 t81 code debug <file.t81|file.tisc> [--policy <policy.apl>] [--weights-model <model.t81w>]
 t81 code repl [--weights-model <model.t81w>] [--policy <policy.apl>]
 t81 canonfs put-file <file> [--canonfs-root <path>]
+t81 canonfs put-tensor <file> [--canonfs-root <path>]
 t81 canonfs ls [--json] [--canonfs-root <path>]
 t81 canonfs get <sha3-256:hash> [-o <file>] [--json] [--canonfs-root <path>]
 t81 canonfs stat <sha3-256:hash> [--json] [--canonfs-root <path>]
@@ -133,12 +134,13 @@ t81 canonfs snapshot-diff <lhs> <rhs> [--json] [--canonfs-root <path>]
 t81 canonfs rollback --to <hash> [--json] [--canonfs-root <path>]
 t81 determinism verify [fixtures_dir]
 t81 determinism verify-run <file.tisc> [--policy <policy.apl>] [--json]
+t81 determinism certify <file.tisc> [--policy <policy.apl>] [--json]
 t81 determinism explain <file.tisc> [--policy <policy.apl>] [--json]
 t81 determinism hash <file> [--json]
 t81 determinism trace-hash <trace.txt> [--json]
 t81 determinism diff <lhs> <rhs> [--json]
 t81 determinism diff-trace <lhs> <rhs> [--json]
-t81 vm run <file.tisc> [--policy <policy.apl>]
+t81 vm run <file.tisc> [--policy <policy.apl>] [-o <trace.txt>]
 t81 vm debug <file.tisc> [--policy <policy.apl>]
 t81 vm trace <file.tisc> [--policy <policy.apl>] [-o <trace.txt>]
 t81 vm step <file.tisc> [--policy <policy.apl>] [--count <n>] [--json]
@@ -186,6 +188,7 @@ t81 trace export <trace.txt> [--format <json|csv>] [-o <file>]
 t81 project init <project_name>
 t81 env doctor [--json]
 t81 env paths [--json]
+t81 env diag [--json]
 t81 env toolchain [--json]
 t81 env feedback <submit|report> [options]
 t81 internal pkg <subcommand> [args]
@@ -203,6 +206,9 @@ t81 feedback report [--path <file>]
 ```
 
 ### 4.2 Legacy Top-Level Aliases
+
+Legacy aliases remain supported for compatibility, but they are intentionally hidden from
+the default `t81 --help` and shell completion surfaces.
 
 ### 4.1 `compile`
 
@@ -317,16 +323,19 @@ t81 doctor [--json]
 Runs environment/toolchain readiness checks and prints actionable fixes.
 `--json` uses schema `t81.doctor.v1`.
 
-### 4.12a `env paths` / `env toolchain`
+### 4.12a `env paths` / `env diag` / `env toolchain`
 
 ```text
 t81 env paths [--json]
+t81 env diag [--json]
 t81 env toolchain [--json]
 ```
 
 `env paths` reports important working directories such as the current repo root, build dir,
-CanonFS root, temp dir, and home directory. `env toolchain` probes common developer tools
-and reports availability/version data with schema `t81.env-toolchain.v1` when `--json` is used.
+CanonFS root, temp dir, and home directory. `env diag` aggregates repo/build discovery,
+toolchain readiness, CanonFS readiness, and Axion state with schema `t81.env-diag.v1`.
+`env toolchain` probes common developer tools and reports availability/version data with
+schema `t81.env-toolchain.v1` when `--json` is used.
 
 ### 4.13 `fmt`
 
@@ -405,6 +414,7 @@ Axion governor and policy-diagnostics helpers.
 `axion explain --json` uses schema `t81.axion-explain.v1`.
 `axion status --json` uses schema `t81.axion-status.v1`.
 `axion optimize --json` uses schema `t81.axion-optimize.v1`.
+`axion simulate --json` uses schema `t81.axion-simulate.v1`.
 `axion snapshot-diff --json` reuses schema `t81.canonfs-snapshot-diff.v1`.
 
 ### 4.18 `trace`
@@ -431,7 +441,7 @@ If the trace file cannot be opened, `trace replay --json` returns `kind: "open_e
 
 ```text
 t81 canonfs put-file <file> [--canonfs-root <path>]
-t81 canonfs put-tensor <file>
+t81 canonfs put-tensor <file> [--canonfs-root <path>]
 t81 canonfs ls [--json] [--canonfs-root <path>]
 t81 canonfs get <sha3-256:hash> [-o <file>] [--json] [--canonfs-root <path>]
 t81 canonfs stat <sha3-256:hash> [--json] [--canonfs-root <path>]
@@ -453,6 +463,7 @@ CanonFS inspection and snapshot tooling.
 ```text
 t81 determinism verify [fixtures_dir]
 t81 determinism verify-run <file.tisc> [--policy <policy.apl>] [--json]
+t81 determinism certify <file.tisc> [--policy <policy.apl>] [--json]
 t81 determinism explain <file.tisc> [--policy <policy.apl>] [--json]
 t81 determinism hash <file> [--json]
 t81 determinism trace-hash <trace.txt> [--json]
@@ -462,6 +473,7 @@ t81 determinism diff-trace <lhs> <rhs> [--json]
 
 Determinism verification and artifact hashing tools.
 `determinism verify-run --json` uses schema `t81.determinism-verify-run.v1`.
+`determinism certify --json` uses schema `t81.determinism-certificate.v1`.
 `determinism explain --json` uses schema `t81.determinism-explain.v1`.
 `determinism hash --json` uses schema `t81.determinism-hash.v1`.
 `determinism trace-hash --json` uses schema `t81.determinism-trace-hash.v1`.
@@ -471,7 +483,7 @@ Determinism verification and artifact hashing tools.
 ### 4.18c `vm`
 
 ```text
-t81 vm run <file.tisc> [--policy <policy.apl>]
+t81 vm run <file.tisc> [--policy <policy.apl>] [-o <trace.txt>]
 t81 vm debug <file.tisc> [--policy <policy.apl>]
 t81 vm trace <file.tisc> [--policy <policy.apl>] [-o <trace.txt>]
 t81 vm step <file.tisc> [--policy <policy.apl>] [--count <n>] [--json]

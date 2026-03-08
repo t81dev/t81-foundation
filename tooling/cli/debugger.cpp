@@ -36,7 +36,7 @@ Debugger::Debugger(std::unique_ptr<t81::vm::IVirtualMachine> vm, t81::tisc::Prog
     : vm_(std::move(vm)), program_(std::move(program)) {}
 
 void Debugger::run() {
-  info("HanoiVM Debugger active. Type 'h' for help.");
+  info("T81VM Debugger active. Type 'h' for help.");
 
   std::string line;
   while (!quit_ && !vm_->state().halted) {

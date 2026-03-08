@@ -35,7 +35,8 @@ int repl(const std::shared_ptr<t81::weights::ModelFile>& weights_model = nullptr
          std::istream& input = std::cin);
 int init_project(const std::string& name);
 int init_package(const std::string& name);
-int canonize_tensor(const std::string& input_file);
+int canonize_tensor(const std::string& input_file,
+                    const std::filesystem::path& canonfs_root = ".t81_canonfs");
 int canonfs_put_file(const std::filesystem::path& input,
                      const std::filesystem::path& canonfs_root = ".t81_canonfs");
 int canonfs_list(const std::filesystem::path& canonfs_root = ".t81_canonfs", bool as_json = false);

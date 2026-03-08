@@ -1291,6 +1291,12 @@ int canonfs_list(const fs::path& canonfs_root, bool as_json) {
     std::cout << "  ]\n}\n";
   } else {
     if (entries.empty()) {
+      const bool store_exists = fs::exists(canonfs_root);
+      if (!store_exists) {
+        std::cerr << "CanonFS store not found: " << canonfs_root.string()
+                  << " (use --canonfs-root or set T81_CANONFS_ROOT)\n";
+        return 1;
+      }
       std::cout << "CanonFS object store is empty: " << canonfs_root.string() << "\n";
       return 0;
     }
@@ -2319,7 +2325,7 @@ int run_trace_canonicalize(const TraceArgs& args) {
 
 int run_trace(const TraceArgs& args) {
   if (args.subcommand.empty()) {
-    error("trace requires a subcommand (show|diff|replay|canonicalize|export). Run 't81 help trace'.");
+    error("trace requires a subcommand (show|diff|replay|summary|stats|canonicalize|export). Run 't81 help trace'.");
     return 1;
   }
   if (args.subcommand == "show") return run_trace_show(args);

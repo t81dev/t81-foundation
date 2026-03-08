@@ -70,7 +70,7 @@ std::vector<std::byte> serialize_tensor(const t81::weights::NativeTensor& tensor
   return buffer;
 }
 
-int canonize_tensor(const std::string& input_file) {
+int canonize_tensor(const std::string& input_file, const fs::path& canonfs_root) {
   fs::path input_path(input_file);
   if (!fs::exists(input_path)) {
     std::cerr << "Input file not found: " << input_file << "\n";
@@ -93,17 +93,15 @@ int canonize_tensor(const std::string& input_file) {
     return 1;
   }
 
-  // Use local .t81_canonfs directory for storage
-  fs::path canon_root = fs::current_path() / ".t81_canonfs";
   std::error_code ec;
-  fs::create_directories(canon_root, ec);
+  fs::create_directories(canonfs_root, ec);
   if (ec) {
-    std::cerr << "Failed to create directory " << canon_root << ": " << ec.message() << "\n";
+    std::cerr << "Failed to create directory " << canonfs_root << ": " << ec.message() << "\n";
     return 1;
   }
-  auto driver = t81::canonfs::make_persistent_driver(canon_root);
+  auto driver = t81::canonfs::make_persistent_driver(canonfs_root);
 
-  std::cout << "Canonizing tensors from " << input_file << " into " << canon_root.string()
+  std::cout << "Canonizing tensors from " << input_file << " into " << canonfs_root.string()
             << "...\n";
 
   for (const auto& [name, tensor] : model.native) {

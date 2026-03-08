@@ -137,6 +137,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(result.stderr_text, "policy <action> [args]"));
     T81_TEST_CHECK(contains(result.stderr_text, "axion <action> [args]"));
     T81_TEST_CHECK(contains(result.stderr_text, "trace <action> [args]"));
+    T81_TEST_CHECK(!contains(result.stderr_text, "compile <file.t81|.t81w>"));
+    T81_TEST_CHECK(!contains(result.stderr_text, "check   <file.t81>"));
   }
 
   {
@@ -211,6 +213,13 @@ int main(int argc, char* argv[]) {
     const auto result = run_cli(t81_bin, {"env", "toolchain", "--json"});
     T81_TEST_CHECK(result.exit_code == 0);
     T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.env-toolchain.v1\""));
+  }
+
+  {
+    const auto result = run_cli(t81_bin, {"env", "diag", "--json"});
+    T81_TEST_CHECK(result.exit_code == 0 || result.exit_code == 2);
+    T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.env-diag.v1\""));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"repo_root\":"));
   }
 
   {
@@ -314,6 +323,13 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(verify_run_result.exit_code == 0);
     T81_TEST_CHECK(
         contains(verify_run_result.stdout_text, "\"schema\": \"t81.determinism-verify-run.v1\""));
+
+    const auto certify_result = run_cli(
+        t81_bin, {"determinism", "certify", tisc_file.string(), "--json"});
+    T81_TEST_CHECK(certify_result.exit_code == 0);
+    T81_TEST_CHECK(
+        contains(certify_result.stdout_text, "\"schema\": \"t81.determinism-certificate.v1\""));
+    T81_TEST_CHECK(contains(certify_result.stdout_text, "\"deterministic\": true"));
 
     const auto explain_result = run_cli(
         t81_bin, {"determinism", "explain", tisc_file.string(), "--json"});
@@ -529,6 +545,21 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(memory_stats_result.stdout_text, "Memory Pool Analysis"));
     T81_TEST_CHECK(contains(memory_stats_result.stdout_text, "Stack peak usage"));
     T81_TEST_CHECK(!contains(memory_stats_result.stderr_text, "legacy alias"));
+  }
+
+  {
+    const auto bare_vm_result = run_cli(t81_bin, {"vm"});
+    T81_TEST_CHECK(bare_vm_result.exit_code == 0);
+    T81_TEST_CHECK(contains(bare_vm_result.stderr_text, "Usage: t81 vm <action> [args]"));
+
+    const auto bare_trace_result = run_cli(t81_bin, {"trace"});
+    T81_TEST_CHECK(bare_trace_result.exit_code == 0);
+    T81_TEST_CHECK(contains(bare_trace_result.stderr_text, "Usage: t81 trace <subcommand> [args]"));
+
+    const auto completion_result = run_cli(t81_bin, {"completion", "fish"});
+    T81_TEST_CHECK(completion_result.exit_code == 0);
+    T81_TEST_CHECK(!contains(completion_result.stdout_text, " compile "));
+    T81_TEST_CHECK(!contains(completion_result.stdout_text, " check "));
   }
 
   {

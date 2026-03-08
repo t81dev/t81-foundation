@@ -83,7 +83,7 @@ void test_basic() {
 
   std::string out_str = output.str();
 
-  assert(out_str.find("HanoiVM Debugger active") != std::string::npos);
+  assert(out_str.find("T81VM Debugger active") != std::string::npos);
   assert(out_str.find("LoadImm 1, 1, 0") != std::string::npos);
   assert(out_str.find("Add 3, 1, 2") != std::string::npos);
   assert(out_str.find("R3: 3") != std::string::npos);
