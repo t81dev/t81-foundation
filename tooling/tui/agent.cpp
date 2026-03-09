@@ -1,16 +1,5 @@
 // SPDX-License-Identifier: MIT
-// RFC-0033: Dual TUI Frontends — AI-Native / Agentic Interface (t81 agent)
-//
-// Phase 3:
-//   • Context panel state wired from command output (axion mode, trace hash,
-//     tier, last compiled artifact path)
-//   • Default session auto-save path: ~/.t81/sessions/<iso-timestamp>.jsonl
-//   • /write <file> <content> — write proposed patches to disk
-//   • /allow <hash>           — append hash to active Axion policy whitelist
-//   • /check <file>           — syntax-check without compiling
-//   • /disasm <file>          — disassemble TISC bytecode
-//   • History scroll: PgUp / PgDn in conversation pane
-//   • Welcome message updated to Phase 3
+// T81 TUI — AI-Native / Agentic Interface (t81 agent)
 #include "tooling/tui/agent.hpp"
 #include "tooling/tui/common.hpp"
 
@@ -23,6 +12,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -90,6 +80,21 @@ static void update_trace_state(SessionState& state, const std::string& out) {
         state.trace_hash = h.substr(0, 12) + "…";
 }
 
+static std::vector<std::string> prepend_args(
+    std::initializer_list<std::string> prefix, const std::vector<std::string>& tail)
+{
+    std::vector<std::string> argv(prefix);
+    argv.insert(argv.end(), tail.begin(), tail.end());
+    return argv;
+}
+
+static std::string compact_session_path(const std::string& path) {
+    constexpr size_t kMax = 38;
+    if (path.size() <= kMax)
+        return path;
+    return "..." + path.substr(path.size() - (kMax - 3));
+}
+
 // ── Slash-command dispatch ─────────────────────────────────────────────────
 
 static std::string handle_slash(
@@ -109,21 +114,23 @@ static std::string handle_slash(
     if (verb == "help") {
         return
             "Slash commands:\n"
-            "  /compile <file>         Compile .t81 → TISC (updates trace hash)\n"
-            "  /run <file>             Compile and execute a .t81 file\n"
-            "  /check <file>           Syntax-check without compiling\n"
-            "  /disasm <file>          Disassemble TISC bytecode\n"
-            "  /trace <file>           Show execution trace\n"
-            "  /hash <file>            Compute determinism hash (updates context)\n"
-            "  /axion                  Show Axion policy status (updates context)\n"
-            "  /policy <action>        Policy: list | validate <f> | status\n"
-            "  /allow <hash>           Append hash to active Axion policy whitelist\n"
-            "  /write <file> <content> Write content to file on disk\n"
-            "  /tier <n>               Set cognitive tier display (1-5)\n"
-            "  /trits                  Toggle trit-probability display\n"
-            "  /save                   Save session to disk\n"
-            "  /clear                  Clear conversation history\n"
-            "  /quit                   Exit\n"
+            "  /compile <file>                  Compile .t81 → TISC (updates trace hash)\n"
+            "  /run <file>                      Compile and execute a .t81 file\n"
+            "  /check <file>                    Syntax-check without compiling\n"
+            "  /disasm <file>                   Disassemble TISC bytecode\n"
+            "  /trace <file>                    Show execution trace\n"
+            "  /hash <file>                     Compute determinism hash (updates context)\n"
+            "  /infer <model> --policy <p> <q>  Run governed llama-run inference\n"
+            "                                   (updates trit-probability display)\n"
+            "  /axion                           Show Axion policy status (updates context)\n"
+            "  /policy <action>                 Policy: list | validate <f> | status\n"
+            "  /allow <hash>                    Append hash to active Axion policy whitelist\n"
+            "  /write <file> <content>          Write content to file on disk\n"
+            "  /tier <n>                        Set cognitive tier display (1-5)\n"
+            "  /trits                           Toggle trit-probability display\n"
+            "  /save                            Save session to disk\n"
+            "  /clear                           Clear conversation history\n"
+            "  /quit                            Exit\n"
             "\n"
             "Keyboard shortcuts:\n"
             "  PgUp / PgDn             Scroll conversation history\n"
@@ -132,7 +139,8 @@ static std::string handle_slash(
 
     // ── Code lifecycle ───────────────────────────────────────────────────────
     if (verb == "compile" && !rest.empty()) {
-        const std::string out = exec_command("t81 code build " + rest + " 2>&1");
+        const std::string out = exec_argv(
+            prepend_args({"t81", "code", "build"}, split_command_words(rest)));
         update_trace_state(state, out);
         // Also capture the artifact name for context
         auto h = extract_token(out, "hash");
@@ -141,38 +149,95 @@ static std::string handle_slash(
         return out;
     }
     if (verb == "run" && !rest.empty()) {
-        const std::string out = exec_command("t81 code run " + rest + " 2>&1");
+        const std::string out = exec_argv(
+            prepend_args({"t81", "code", "run"}, split_command_words(rest)));
         update_trace_state(state, out);
         return out;
     }
     if (verb == "check" && !rest.empty()) {
-        return exec_command("t81 code check " + rest + " 2>&1");
+        return exec_argv(prepend_args({"t81", "code", "check"}, split_command_words(rest)));
     }
     if (verb == "disasm" && !rest.empty()) {
-        return exec_command("t81 code disasm " + rest + " 2>&1");
+        return exec_argv(prepend_args({"t81", "code", "disasm"}, split_command_words(rest)));
+    }
+
+    // ── Inference (/infer <model> [--policy <p>] <prompt>) ───────────────────
+    if (verb == "infer") {
+        if (rest.empty())
+            return "[/infer requires: <model.gguf|sha3-256:hash> --policy <p> <prompt>]";
+        const auto infer_args = split_command_words(rest);
+        if (infer_args.empty())
+            return "[/infer requires: <model.gguf|sha3-256:hash> --policy <p> <prompt>]";
+        const std::string out =
+            exec_argv(prepend_args({"t81", "internal", "llama-run"}, infer_args));
+        // Parse model name from the first positional token
+        {
+            const std::string& m = infer_args.front();
+            if (!m.empty()) {
+                const auto slash = m.rfind('/');
+                state.model_name = (slash != std::string::npos) ? m.substr(slash + 1) : m;
+            }
+        }
+        // Update trace hash if provided
+        update_trace_state(state, out);
+        // Parse token_ids_csv → trit distribution
+        // Each token_id % 3: 0→P(0), 1→P(+1), 2→P(-1)
+        {
+            const std::string needle = "token_ids_csv:";
+            auto pos = out.find(needle);
+            if (pos != std::string::npos) {
+                pos += needle.size();
+                size_t end = out.find('\n', pos);
+                const std::string csv = out.substr(pos,
+                    end == std::string::npos ? std::string::npos : end - pos);
+                int cnt_pos = 0, cnt_zero = 0, cnt_neg = 0, total = 0;
+                std::istringstream ts(csv);
+                std::string tok;
+                while (std::getline(ts, tok, ',')) {
+                    try {
+                        const int id = std::stoi(tok);
+                        const int r  = ((id % 3) + 3) % 3;
+                        if (r == 1)      ++cnt_pos;
+                        else if (r == 0) ++cnt_zero;
+                        else             ++cnt_neg;
+                        ++total;
+                    } catch (...) {}
+                }
+                if (total > 0) {
+                    state.trit_pos   = static_cast<float>(cnt_pos)  / total;
+                    state.trit_zero  = static_cast<float>(cnt_zero) / total;
+                    state.trit_neg   = static_cast<float>(cnt_neg)  / total;
+                    state.infer_tokens = total;
+                }
+            }
+        }
+        return out;
     }
 
     // ── Determinism & tracing ────────────────────────────────────────────────
     if (verb == "trace" && !rest.empty()) {
-        const std::string out = exec_command("t81 trace show " + rest + " 2>&1");
+        const std::string out = exec_argv(
+            prepend_args({"t81", "trace", "show"}, split_command_words(rest)));
         update_trace_state(state, out);
         return out;
     }
     if (verb == "hash" && !rest.empty()) {
-        const std::string out = exec_command("t81 determinism hash " + rest + " 2>&1");
+        const std::string out = exec_argv(
+            prepend_args({"t81", "determinism", "hash"}, split_command_words(rest)));
         update_trace_state(state, out);
         return out;
     }
 
     // ── Axion / policy ───────────────────────────────────────────────────────
     if (verb == "axion") {
-        const std::string out = exec_command("t81 axion status 2>&1");
+        const std::string out = exec_argv({"t81", "axion", "status"});
         update_axion_state(state, out);
         return out;
     }
     if (verb == "policy") {
         if (rest.empty()) rest = "list";
-        const std::string out = exec_command("t81 policy " + rest + " 2>&1");
+        const std::string out = exec_argv(
+            prepend_args({"t81", "policy"}, split_command_words(rest)));
         // If it was a status query, update axion state too
         if (rest == "status") update_axion_state(state, out);
         return out;
@@ -180,8 +245,8 @@ static std::string handle_slash(
     if (verb == "allow" && !rest.empty()) {
         // Append the hash to the active policy's allowed-tensor-hashes list.
         // Delegates to the CLI which knows the policy file location.
-        const std::string out =
-            exec_command("t81 policy allow-hash " + rest + " 2>&1");
+        const std::string out = exec_argv(
+            prepend_args({"t81", "policy", "allow-hash"}, split_command_words(rest)));
         if (out.find("error") == std::string::npos &&
             out.find("Error") == std::string::npos)
             return "Hash " + rest.substr(0, 16) + "… added to allowed-tensor-hashes.\n" + out;
@@ -279,7 +344,7 @@ int run_agent(const std::vector<std::string>& args) {
 
     // Bootstrap: sync context panel from live system state
     {
-        const std::string ax = exec_command("t81 axion status 2>&1");
+        const std::string ax = exec_argv({"t81", "axion", "status"});
         update_axion_state(state, ax);
     }
 
@@ -288,7 +353,7 @@ int run_agent(const std::vector<std::string>& args) {
         std::lock_guard<std::mutex> lk(history_mutex);
         history.push_back({Message::Role::System,
             resume_path.empty()
-                ? "T81 Agentic Interface (RFC-0033 Phase 3). Type /help for commands."
+                ? "T81 Agentic Interface. Type /help for commands."
                 : "Session resumed from " + resume_path + ". Type /help for commands."});
         history_scroll = std::max(0,
             static_cast<int>(history.size()) - VISIBLE_MSGS);
@@ -355,8 +420,12 @@ int run_agent(const std::vector<std::string>& args) {
 
         // Auto-save after every turn
         if (!session_path.empty()) {
-            std::lock_guard<std::mutex> lk(history_mutex);
-            save_session(session_path, history);
+            std::vector<Message> snapshot;
+            {
+                std::lock_guard<std::mutex> lk(history_mutex);
+                snapshot = history;
+            }
+            save_session(session_path, snapshot);
         }
         return true;
     });
@@ -397,54 +466,67 @@ int run_agent(const std::vector<std::string>& args) {
             separator(),
             text(" Trit Probs:") | color(Color::GrayDark),
             show_trits
-                ? trit_bar(0.62f, 0.22f, 0.16f)
+                ? (state.infer_tokens > 0
+                    ? vbox({
+                        trit_bar(state.trit_pos, state.trit_zero, state.trit_neg),
+                        text(" n=" + std::to_string(state.infer_tokens) + " tokens")
+                            | color(Color::GrayDark),
+                      })
+                    : vbox({
+                        trit_bar(state.trit_pos, state.trit_zero, state.trit_neg),
+                        text(" run /infer to populate") | color(Color::GrayDark),
+                      }))
                 : (text(" [/trits to enable]") | color(Color::GrayDark)),
             filler(),
             separator(),
             text(" Session:") | color(Color::GrayDark),
-            paragraph(session_path.empty() ? "(none)" : session_path)
+            paragraph(session_path.empty() ? "(none)" : compact_session_path(session_path))
                 | color(Color::GrayDark),
-        }) | border | size(WIDTH, EQUAL, 30);
+        }) | border | size(WIDTH, LESS_THAN, 30);
 
         // Conversation history (scrollable)
         Elements msgs;
+        std::vector<Message> history_snapshot;
+        int history_start = 0;
+        int history_end = 0;
+        int history_size = 0;
         {
             std::lock_guard<std::mutex> lk(history_mutex);
-            const int n     = static_cast<int>(history.size());
-            const int start = std::max(0, std::min(history_scroll, n - 1));
-            const int end   = std::min(n, start + VISIBLE_MSGS);
-            for (int i = start; i < end; ++i) {
-                const auto& m = history[i];
-                switch (m.role) {
-                case Message::Role::User:
-                    msgs.push_back(hbox({
-                        text("[You]   ") | bold | color(Color::Green),
-                        paragraph(m.text),
-                    }));
-                    break;
-                case Message::Role::Agent:
-                    msgs.push_back(hbox({
-                        text("[Agent] ") | bold | color(Color::Cyan),
-                        paragraph(m.text),
-                    }));
-                    break;
-                case Message::Role::System:
-                    msgs.push_back(
-                        text("* " + m.text) | color(Color::GrayDark) | dim
-                    );
-                    break;
-                }
-                msgs.push_back(text(""));
-            }
-            if (n > VISIBLE_MSGS) {
+            history_size = static_cast<int>(history.size());
+            history_start = std::max(0, std::min(history_scroll, history_size - 1));
+            history_end = std::min(history_size, history_start + VISIBLE_MSGS);
+            history_snapshot.assign(history.begin() + history_start, history.begin() + history_end);
+        }
+        for (const auto& m : history_snapshot) {
+            switch (m.role) {
+            case Message::Role::User:
                 msgs.push_back(hbox({
-                    filler(),
-                    text(" msg " + std::to_string(start + 1) + "-" +
-                         std::to_string(end) + "/" + std::to_string(n) +
-                         "  PgUp/PgDn ")
-                        | color(Color::GrayDark),
+                    text("[You]   ") | bold | color(Color::Green),
+                    paragraph(m.text),
                 }));
+                break;
+            case Message::Role::Agent:
+                msgs.push_back(hbox({
+                    text("[Agent] ") | bold | color(Color::Cyan),
+                    paragraph(m.text),
+                }));
+                break;
+            case Message::Role::System:
+                msgs.push_back(
+                    text("* " + m.text) | color(Color::GrayDark) | dim
+                );
+                break;
             }
+            msgs.push_back(text(""));
+        }
+        if (history_size > VISIBLE_MSGS) {
+            msgs.push_back(hbox({
+                filler(),
+                text(" msg " + std::to_string(history_start + 1) + "-" +
+                     std::to_string(history_end) + "/" + std::to_string(history_size) +
+                     "  PgUp/PgDn ")
+                    | color(Color::GrayDark),
+            }));
         }
 
         auto history_pane = vbox({
@@ -491,8 +573,12 @@ int run_agent(const std::vector<std::string>& args) {
 
     // Final save on clean exit
     if (!quit_requested && !session_path.empty()) {
-        std::lock_guard<std::mutex> lk(history_mutex);
-        save_session(session_path, history);
+        std::vector<Message> snapshot;
+        {
+            std::lock_guard<std::mutex> lk(history_mutex);
+            snapshot = history;
+        }
+        save_session(session_path, snapshot);
     }
     return 0;
 }

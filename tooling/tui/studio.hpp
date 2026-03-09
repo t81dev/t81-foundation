@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// RFC-0033: Dual TUI Frontends — Human Operator Interface
+// T81 TUI — Human Operator Interface
 #pragma once
 
 #include <string>

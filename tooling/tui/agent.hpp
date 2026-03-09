@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// RFC-0033: Dual TUI Frontends — AI-Native / Agentic Interface
+// T81 TUI — AI-Native / Agentic Interface
 #pragma once
 
 #include <string>
