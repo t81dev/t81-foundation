@@ -35,8 +35,8 @@
 namespace t81::v1 {
 
 #if defined(_MSC_VER) && !defined(__clang__)
-#include "t81/config.hpp" // Ensure basic standard headers are available
 #include <cstdint>
+#include "t81/config.hpp"  // Ensure basic standard headers are available
 // MSVC doesn't support __int128. For now, alias to int64_t to make it compile.
 // NOTE: This severely breaks arbitrary precision logic and correctness on MSVC
 // but follows project memory/directives. A real soft-128 is required for production MSVC.

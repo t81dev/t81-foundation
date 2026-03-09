@@ -31,8 +31,8 @@
 #include <io.h>
 #endif
 
-#include "t81/tracing/canonhash.hpp"
 #include "t81/determinism/canon_hash81.hpp"
+#include "t81/tracing/canonhash.hpp"
 
 namespace std {
 template <>
@@ -144,7 +144,8 @@ public:
 
     auto target = object_path(root_, ref.hash);
 #ifdef _WIN32
-    const int fd = ::_open(target.string().c_str(), _O_WRONLY | _O_CREAT | _O_EXCL | _O_BINARY, _S_IREAD | _S_IWRITE);
+    const int fd = ::_open(target.string().c_str(), _O_WRONLY | _O_CREAT | _O_EXCL | _O_BINARY,
+                           _S_IREAD | _S_IWRITE);
 #else
     const int fd = ::open(target.string().c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644);
 #endif
@@ -240,7 +241,7 @@ public:
           ::_close(fd);
           return Result<std::vector<std::byte>>(t81::unexpect, Error::DecodeError);
         }
-        if (bytes_read == 0) break; // EOF
+        if (bytes_read == 0) break;  // EOF
         cursor += bytes_read;
         remaining -= bytes_read;
       }
