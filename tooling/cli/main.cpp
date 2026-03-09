@@ -936,8 +936,10 @@ Options:
   -h, --help             Show this help
 
 Current subset v0:
-  - exactly one function: int main()
+  - exactly one entry function: int main()
+  - additional int helper functions with int parameters
   - local int variables with initializers
+  - same-translation-unit calls without recursion
   - integer literals, assignment, arithmetic, and comparisons
   - compound blocks, if, while, and reachable return
 

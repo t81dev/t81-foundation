@@ -15,16 +15,22 @@ int main() {
 #ifdef T81_HAS_C_FRONTEND
   {
     const std::string source =
-        "int main() {\n"
+        "int twice(int x) {\n"
+        "  return x * 2;\n"
+        "}\n"
+        "int climb(int limit) {\n"
         "  int x = 0;\n"
-        "  int y = 3;\n"
-        "  while (x < y) {\n"
+        "  while (x < limit) {\n"
         "    x = x + 1;\n"
         "  }\n"
-        "  if (x == y) {\n"
-        "    x = x * 2;\n"
-        "  }\n"
         "  return x;\n"
+        "}\n"
+        "int main() {\n"
+        "  int y = climb(3);\n"
+        "  if (y == 3) {\n"
+        "    y = twice(y);\n"
+        "  }\n"
+        "  return y;\n"
         "}\n";
     std::string output;
     std::string error;
@@ -64,6 +70,26 @@ int main() {
     check(!error.empty() &&
               (error.find("int") != std::string::npos || error.find("main") != std::string::npos),
           "expected float-return rejection diagnostic");
+  }
+
+  {
+    const std::string source =
+        "int loop(int x) {\n"
+        "  if (x == 0) {\n"
+        "    return 0;\n"
+        "  }\n"
+        "  return loop(x - 1);\n"
+        "}\n"
+        "int main() {\n"
+        "  return loop(3);\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_recursive.c", output, {},
+                                                        &error),
+          "expected recursive example to be rejected");
+    check(error.find("recursive calls are not supported") != std::string::npos,
+          "expected recursion rejection diagnostic");
   }
 
   std::cout << "C frontend MLIR smoke test PASSED\n";

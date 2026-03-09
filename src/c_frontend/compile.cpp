@@ -7,12 +7,14 @@
 #include <cctype>
 #include <cstdlib>
 #include <filesystem>
+#include <functional>
 #include <fstream>
 #include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -97,11 +99,29 @@ bool is_supported_int_type(CXType type) {
   return type.kind == CXType_Int;
 }
 
-struct LoweringContext {
+struct FunctionInfo {
+  std::string name;
+  CXCursor cursor{clang_getNullCursor()};
+  std::vector<std::string> param_names;
+  std::vector<int32_t> param_regs;
+  size_t start_pc{0};
+  bool is_main{false};
+};
+
+struct PendingCallPatch {
+  size_t load_pc_insn_index{0};
+  std::string caller_name;
+  std::string callee_name;
+};
+
+struct GlobalLoweringState {
   const std::string& source;
   std::string diag_name;
   t81::tisc::Program program;
-  std::unordered_map<std::string, int32_t> vars;
+  std::unordered_map<std::string, FunctionInfo> functions;
+  std::vector<std::string> function_order;
+  std::vector<PendingCallPatch> call_patches;
+  std::vector<std::pair<std::string, std::string>> call_edges;
   int32_t next_reg = 1;
 
   int32_t alloc_reg() {
@@ -117,19 +137,37 @@ struct LoweringContext {
     }
     return alloc_reg();
   }
+};
+
+struct LoweringContext {
+  GlobalLoweringState& global;
+  FunctionInfo& function;
+  std::unordered_map<std::string, int32_t> vars;
+
+  const std::string& source() const {
+    return global.source;
+  }
 
   size_t emit(t81::tisc::Opcode opcode, int32_t a = 0, int64_t b = 0, int32_t c = 0) {
-    program.insns.push_back({opcode, a, b, c});
-    return program.insns.size() - 1;
+    global.program.insns.push_back({opcode, a, b, c});
+    return global.program.insns.size() - 1;
+  }
+
+  int32_t alloc_reg() {
+    return global.alloc_reg();
+  }
+
+  int32_t ensure_target(int32_t preferred = -1) {
+    return global.ensure_target(preferred);
   }
 
   size_t pc() const {
-    return program.insns.size();
+    return global.program.insns.size();
   }
 
   void patch_jump_target(size_t insn_index, size_t target_pc) {
-    if (insn_index < program.insns.size()) {
-      program.insns[insn_index].a = static_cast<int32_t>(target_pc);
+    if (insn_index < global.program.insns.size()) {
+      global.program.insns[insn_index].a = static_cast<int32_t>(target_pc);
     }
   }
 
@@ -139,7 +177,7 @@ struct LoweringContext {
     unsigned column = 0;
     clang_getSpellingLocation(loc, nullptr, &line, &column, nullptr);
     std::ostringstream oss;
-    oss << diag_name << ':' << line << ':' << column << ": ";
+    oss << global.diag_name << ':' << line << ':' << column << ": ";
     return oss.str();
   }
 
@@ -169,7 +207,7 @@ bool copy_if_needed(LoweringContext& ctx, int32_t target, int32_t value_reg, std
 
 bool compile_integer_literal(LoweringContext& ctx, CXCursor cursor, int32_t target,
                              std::string* error) {
-  const std::string text = trim_copy(cursor_text(cursor, ctx.source));
+  const std::string text = trim_copy(cursor_text(cursor, ctx.source()));
   char* end = nullptr;
   const long long value = std::strtoll(text.c_str(), &end, 0);
   if (!end || *end != '\0') {
@@ -222,10 +260,10 @@ bool compile_unary_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, s
       !source_offsets(clang_getCursorExtent(operand), operand_begin, ignored)) {
     return ctx.fail(cursor, "unsupported unary expression", error);
   }
-  if (operand_begin > ctx.source.size()) operand_begin = static_cast<unsigned>(ctx.source.size());
+  if (operand_begin > ctx.source().size()) operand_begin = static_cast<unsigned>(ctx.source().size());
   if (cursor_begin > operand_begin) cursor_begin = operand_begin;
   const std::string prefix = trim_copy(
-      std::string_view(ctx.source).substr(cursor_begin, operand_begin - cursor_begin));
+      std::string_view(ctx.source()).substr(cursor_begin, operand_begin - cursor_begin));
   if (prefix != "-") {
     return ctx.fail(cursor, "only unary minus is supported", error);
   }
@@ -250,7 +288,7 @@ bool compile_binary_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, 
   }
   CXCursor lhs = unwrap_expr(children[0]);
   CXCursor rhs = unwrap_expr(children[1]);
-  const auto op = binary_operator_spelling(cursor, lhs, rhs, ctx.source);
+  const auto op = binary_operator_spelling(cursor, lhs, rhs, ctx.source());
   if (!op.has_value()) {
     return ctx.fail(cursor, "unable to determine binary operator", error);
   }
@@ -315,6 +353,46 @@ bool compile_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, std::st
       }
       return copy_if_needed(ctx, target, it->second, error);
     }
+    case CXCursor_CallExpr: {
+      auto children = cursor_children(cursor);
+      if (children.empty()) {
+        return ctx.fail(cursor, "unsupported call expression shape", error);
+      }
+      CXCursor callee_cursor = unwrap_expr(children.front());
+      if (clang_getCursorKind(callee_cursor) != CXCursor_DeclRefExpr) {
+        return ctx.fail(callee_cursor, "only direct same-translation-unit calls are supported",
+                        error);
+      }
+      const std::string callee_name = to_string_and_dispose(clang_getCursorSpelling(callee_cursor));
+      if (callee_name == "main") {
+        return ctx.fail(callee_cursor, "calling 'main' is not supported in the C subset v0",
+                        error);
+      }
+      const auto func_it = ctx.global.functions.find(callee_name);
+      if (func_it == ctx.global.functions.end()) {
+        return ctx.fail(callee_cursor, "unknown function '" + callee_name + "'", error);
+      }
+      const FunctionInfo& callee = func_it->second;
+      const size_t arg_count = children.size() - 1;
+      if (arg_count != callee.param_regs.size()) {
+        return ctx.fail(cursor, "call argument count does not match function signature", error);
+      }
+      for (size_t i = 0; i < arg_count; ++i) {
+        if (!compile_expr(ctx, children[i + 1], callee.param_regs[i], error)) {
+          return false;
+        }
+      }
+      const int32_t target_reg = ctx.alloc_reg();
+      if (target_reg < 0) {
+        if (error) *error = "internal register allocation failure";
+        return false;
+      }
+      const size_t load_pc_insn_index = ctx.emit(t81::tisc::Opcode::LoadImm, target_reg, 0, 0);
+      ctx.global.call_patches.push_back({load_pc_insn_index, ctx.function.name, callee_name});
+      ctx.global.call_edges.emplace_back(ctx.function.name, callee_name);
+      ctx.emit(t81::tisc::Opcode::Call, 0, target_reg, 0);
+      return copy_if_needed(ctx, target, 0, error);
+    }
     case CXCursor_UnaryOperator:
       return compile_unary_expr(ctx, cursor, target, error);
     case CXCursor_BinaryOperator:
@@ -358,7 +436,7 @@ bool compile_assignment_stmt(LoweringContext& ctx, CXCursor cursor, std::string*
   }
   CXCursor lhs = unwrap_expr(children[0]);
   CXCursor rhs = unwrap_expr(children[1]);
-  const auto op = binary_operator_spelling(cursor, lhs, rhs, ctx.source);
+  const auto op = binary_operator_spelling(cursor, lhs, rhs, ctx.source());
   if (!op.has_value() || *op != "=") {
     return ctx.fail(cursor, "only simple '=' assignment is supported", error);
   }
@@ -381,7 +459,7 @@ bool compile_return_stmt(LoweringContext& ctx, CXCursor cursor, std::string* err
   if (!compile_expr(ctx, children.front(), 0, error)) {
     return false;
   }
-  ctx.emit(t81::tisc::Opcode::Halt, 0, 0, 0);
+  ctx.emit(ctx.function.is_main ? t81::tisc::Opcode::Halt : t81::tisc::Opcode::Ret, 0, 0, 0);
   return true;
 }
 
@@ -410,7 +488,7 @@ bool compile_expr_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error
     auto binary_children = cursor_children(expr);
     if (binary_children.size() == 2) {
       const auto op = binary_operator_spelling(expr, unwrap_expr(binary_children[0]),
-                                               unwrap_expr(binary_children[1]), ctx.source);
+                                               unwrap_expr(binary_children[1]), ctx.source());
       if (op.has_value() && *op == "=") {
         return compile_assignment_stmt(ctx, expr, error);
       }
@@ -503,16 +581,17 @@ bool compile_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
   }
 }
 
-bool compile_main_function(LoweringContext& ctx, CXCursor cursor, std::string* error) {
-  const std::string name = to_string_and_dispose(clang_getCursorSpelling(cursor));
-  if (name != "main") {
-    return ctx.fail(cursor, "only 'int main()' is supported in the C subset v0", error);
-  }
+bool compile_function(GlobalLoweringState& global, FunctionInfo& function, std::string* error) {
+  LoweringContext ctx{global, function, {}};
+  CXCursor cursor = function.cursor;
   if (!is_supported_int_type(clang_getCursorResultType(cursor))) {
-    return ctx.fail(cursor, "main must return 'int'", error);
+    return ctx.fail(cursor, "functions must return 'int' in the C subset v0", error);
   }
-  if (clang_Cursor_getNumArguments(cursor) != 0) {
-    return ctx.fail(cursor, "function parameters are not supported in the C subset v0", error);
+  if (function.is_main && clang_Cursor_getNumArguments(cursor) != 0) {
+    return ctx.fail(cursor, "main may not accept parameters in the C subset v0", error);
+  }
+  for (size_t i = 0; i < function.param_names.size(); ++i) {
+    ctx.vars.emplace(function.param_names[i], function.param_regs[i]);
   }
 
   auto children = cursor_children(cursor);
@@ -524,13 +603,92 @@ bool compile_main_function(LoweringContext& ctx, CXCursor cursor, std::string* e
     }
   }
   if (clang_Cursor_isNull(body)) {
-    return ctx.fail(cursor, "main must have a compound statement body", error);
+    return ctx.fail(cursor, "functions must have a compound statement body", error);
   }
+  function.start_pc = global.program.insns.size();
   if (!compile_block_stmt(ctx, body, error)) {
     return false;
   }
-  if (ctx.program.insns.empty() || ctx.program.insns.back().opcode != t81::tisc::Opcode::Halt) {
-    return ctx.fail(body, "main must end in a reachable return statement", error);
+  const t81::tisc::Opcode expected =
+      function.is_main ? t81::tisc::Opcode::Halt : t81::tisc::Opcode::Ret;
+  if (global.program.insns.empty() || global.program.insns.back().opcode != expected) {
+    return ctx.fail(body, "function must end in a reachable return statement", error);
+  }
+  return true;
+}
+
+bool collect_function_info(GlobalLoweringState& global, CXCursor cursor, std::string* error) {
+  FunctionInfo info;
+  info.name = to_string_and_dispose(clang_getCursorSpelling(cursor));
+  info.cursor = cursor;
+  info.is_main = (info.name == "main");
+  if (info.name.empty()) {
+    if (error) {
+      *error = global.diag_name + ":1:1: unnamed functions are not supported in the C subset v0";
+    }
+    return false;
+  }
+  if (global.functions.find(info.name) != global.functions.end()) {
+    LoweringContext dummy{global, info, {}};
+    return dummy.fail(cursor, "duplicate function definition '" + info.name + "'", error);
+  }
+  std::unordered_set<std::string> seen_params;
+  const int arg_count = clang_Cursor_getNumArguments(cursor);
+  for (int i = 0; i < arg_count; ++i) {
+    CXCursor arg = clang_Cursor_getArgument(cursor, i);
+    if (!is_supported_int_type(clang_getCursorType(arg))) {
+      LoweringContext dummy{global, info, {}};
+      return dummy.fail(arg, "only 'int' parameters are supported in the C subset v0", error);
+    }
+    const std::string param_name = to_string_and_dispose(clang_getCursorSpelling(arg));
+    if (param_name.empty()) {
+      LoweringContext dummy{global, info, {}};
+      return dummy.fail(arg, "parameter names are required in the C subset v0", error);
+    }
+    if (!seen_params.emplace(param_name).second) {
+      LoweringContext dummy{global, info, {}};
+      return dummy.fail(arg, "duplicate parameter '" + param_name + "'", error);
+    }
+    const int32_t reg = global.alloc_reg();
+    if (reg < 0) {
+      if (error) *error = "internal register allocation failure";
+      return false;
+    }
+    info.param_names.push_back(param_name);
+    info.param_regs.push_back(reg);
+  }
+  global.function_order.push_back(info.name);
+  global.functions.emplace(info.name, std::move(info));
+  return true;
+}
+
+bool detect_recursive_calls(const GlobalLoweringState& global, std::string* error) {
+  std::unordered_map<std::string, std::vector<std::string>> graph;
+  for (const auto& edge : global.call_edges) {
+    graph[edge.first].push_back(edge.second);
+  }
+  std::unordered_map<std::string, int> color;
+  std::function<bool(const std::string&)> visit = [&](const std::string& name) -> bool {
+    color[name] = 1;
+    for (const std::string& next : graph[name]) {
+      if (color[next] == 0) {
+        if (!visit(next)) {
+          return false;
+        }
+      } else if (color[next] == 1) {
+        if (error) {
+          *error = global.diag_name + ":1:1: recursive calls are not supported in the C subset v0";
+        }
+        return false;
+      }
+    }
+    color[name] = 2;
+    return true;
+  };
+  for (const auto& [name, _] : global.functions) {
+    if (color[name] == 0 && !visit(name)) {
+      return false;
+    }
   }
   return true;
 }
@@ -542,36 +700,73 @@ bool build_program_from_translation_unit(CXTranslationUnit tu,
                                          std::string* error) {
   CXCursor root = clang_getTranslationUnitCursor(tu);
   auto children = cursor_children(root);
-  std::vector<CXCursor> functions;
+  GlobalLoweringState global{source, diag_name, {}, {}, {}, {}, {}, 1};
   for (CXCursor child : children) {
     const CXCursorKind kind = clang_getCursorKind(child);
     if (kind == CXCursor_FunctionDecl && clang_isCursorDefinition(child)) {
-      functions.push_back(child);
+      if (!collect_function_info(global, child, error)) {
+        return false;
+      }
       continue;
     }
     if (kind == CXCursor_VarDecl) {
       if (error) {
-        LoweringContext dummy{source, diag_name, {}, {}, 1};
+        FunctionInfo dummy_function;
+        LoweringContext dummy{global, dummy_function, {}};
         return dummy.fail(child, "global variables are not supported in the C subset v0", error);
       }
       return false;
     }
   }
 
-  if (functions.size() != 1) {
+  if (global.functions.find("main") == global.functions.end()) {
     if (error) {
       std::ostringstream oss;
-      oss << diag_name << ":1:1: expected exactly one defined function in the C subset v0";
+      oss << diag_name << ":1:1: expected a defined 'int main()' entry point in the C subset v0";
       *error = oss.str();
     }
     return false;
   }
 
-  LoweringContext ctx{source, diag_name, {}, {}, 1};
-  if (!compile_main_function(ctx, functions.front(), error)) {
+  std::vector<std::string> compile_order;
+  compile_order.push_back("main");
+  for (const std::string& name : global.function_order) {
+    if (name != "main") {
+      compile_order.push_back(name);
+    }
+  }
+
+  for (const std::string& name : compile_order) {
+    auto it = global.functions.find(name);
+    if (it == global.functions.end()) {
+      continue;
+    }
+    if (!compile_function(global, it->second, error)) {
+      return false;
+    }
+    global.program.function_metadata.push_back({name, false});
+  }
+
+  if (!detect_recursive_calls(global, error)) {
     return false;
   }
-  program = std::move(ctx.program);
+
+  for (const auto& patch : global.call_patches) {
+    auto func_it = global.functions.find(patch.callee_name);
+    if (func_it == global.functions.end()) {
+      if (error) *error = diag_name + ":1:1: internal function patching failure";
+      return false;
+    }
+    if (patch.load_pc_insn_index >= global.program.insns.size() ||
+        global.program.insns[patch.load_pc_insn_index].opcode != t81::tisc::Opcode::LoadImm) {
+      if (error) *error = diag_name + ":1:1: internal call target patching failure";
+      return false;
+    }
+    global.program.insns[patch.load_pc_insn_index].b =
+        static_cast<std::int64_t>(func_it->second.start_pc);
+  }
+
+  program = std::move(global.program);
   return true;
 }
 

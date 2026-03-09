@@ -2795,8 +2795,10 @@ int run_c(const CArgs& ca) {
       "  --no-comments     Omit PC annotations in generated block names\n"
       "\n"
       "Current subset v0:\n"
-      "  - exactly one function: int main()\n"
+      "  - exactly one entry function: int main()\n"
+      "  - additional int helper functions with int parameters\n"
       "  - local int variables with initializers\n"
+      "  - same-translation-unit calls without recursion\n"
       "  - integer literals, assignment, arithmetic, and comparisons\n"
       "  - compound blocks, if, while, and reachable return\n";
     return 0;

@@ -260,11 +260,11 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 - [x] **LLVM-03: Experimental C Frontend PoC** — **✅ COMPLETED (2026-03-09)**
   - ✅ CMake: `T81_ENABLE_C_FRONTEND` option; `libclang`-gated `t81_c_frontend` target
   - ✅ CLI: `t81 c compile <input.c> [-o out.mlir] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>]`
-  - ✅ Frontend scope v0: fail-closed, integer-only subset (`int main()`, initialized local `int` vars, assignment, arithmetic/comparisons, compound blocks, `if`, `while`, reachable `return`)
+  - ✅ Frontend scope v0: fail-closed, integer-only subset (`int main()` entry, helper `int` functions with `int` parameters, same-TU calls without recursion, initialized local `int` vars, assignment, arithmetic/comparisons, compound blocks, `if`, `while`, reachable `return`)
   - ✅ Integration path: restricted C parsed via `libclang`, lowered into TISC, then reused through the existing TISC → MLIR pipeline
   - ✅ Verification: `t81_c_frontend_mlir_smoke_test`; CLI contract coverage for `help c` and `t81 c compile`
   - Status: **✅ RESOLVED** — build requires `-DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON`
-  - **Deferred**: parameters, multi-function lowering, `for`, and richer deterministic subset diagnostics
+  - **Deferred**: `for`, arrays/pointers, richer deterministic subset diagnostics, and broader function-call semantics
 
 ---
 
