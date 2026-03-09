@@ -107,8 +107,9 @@ part of the canonical CI artifact.
   opcode=108 reason="heap compaction heap_frames=0 heap_ptr=267"
   opcode=109 reason="heap relocation from=267 to=512 size=32"
   ```
-- Enable `--verbose` on `t81 compile` to watch the CLI print the match/loop/enum
-  metadata strings before `axion_policy_trace` or policy runners verify them.
+- Enable `--verbose` on `t81 code build` to inspect lowering context before
+  `t81 code run --policy ...`, `axion_policy_trace`, or policy runners verify
+  the runtime strings.
 
 ### 3.1 Guard-heavy match sample
 
@@ -125,7 +126,7 @@ match (maybe) {
 }
 EOF
 
-$ t81 compile --verbose match_guard.t81 -o match_guard.tisc
+$ t81 --verbose code build match_guard.t81 -o match_guard.tisc
 AxionEvent[EnumIsVariant]: opcode=111 reason="enum=Option variant=Some match=pass guard=pass payload=i32"
 AxionEvent[EnumUnwrapPayload]: opcode=112 reason="enum=Option variant=Some payload=i32 value=42"
 AxionEvent[AxRead guard]: opcode=22 reason="AxRead guard segment=stack addr=5"
@@ -138,14 +139,16 @@ guard metadata without touching the Axion source.
 
 ### 3.2 Axion policy CLI sample
 
-Use `t81 compile --verbose` with a policy that includes `require-segment-event`
-and `require-match-guard` to verify the runtime logs the audited verdict string
-before the program halts. `axion_policy_runner` and
+Use `t81 --verbose code build` followed by `t81 code run --policy ...` with a
+policy that includes `require-segment-event` and `require-match-guard` to
+verify the runtime logs the audited verdict string before the program halts.
+`axion_policy_runner` and
 `scripts/capture-axion-trace.sh` already exercise these predicates, but you can
 reuse the same commands locally:
 
 ```
-$ t81 compile --verbose match_guard.t81 -P docs/governance/archive/policy/guards.axion
+$ t81 --verbose code build match_guard.t81 -o match_guard.tisc
+$ t81 code run match_guard.tisc --policy docs/governance/archive/policy/guards.axion
 verdict.reason="enum=Option variant=Some match=pass guard=pass payload=i32"
 verdict.reason="stack frame allocated stack addr=243 size=16"
 ```
@@ -175,7 +178,8 @@ manually typing policy clauses. The file mirrors the regression requirements:
 )
 ```
 
-Running `t81 compile --verbose match_guard.t81 -P docs/governance/archive/policy/guards.axion` or
+Running `t81 --verbose code build match_guard.t81 -o match_guard.tisc` followed by
+`t81 code run match_guard.tisc --policy docs/governance/archive/policy/guards.axion` or
 `axion_policy_runner` produces the same `enum guard` / `segment trace` strings
 that RFC-0009 and RFC-0020 mandate. Auditors can inspect this file to confirm
 the CLI output matches the trace snippets collected by the regressions.
@@ -286,7 +290,7 @@ can replay the canonical `verdict.reason` strings without reading the VM code:
    into the release bundle or CI artifact store alongside the `ctest` logs.
 2. Store the `ctest --test-dir build -R axion_segment_trace_test --output-on-failure`
    block (prints the bounds/segment `verdict.reason` snippet) in the same artifact so segment coverage can be audited.
-3. Include the CLI sample (`t81 compile --verbose ... -P docs/governance/archive/policy/guards.axion`) transcript and the guard-heavy `match_guard.t81` source so reviewers can reproduce the `enum=Option ...` strings without rebuilding the VM.
+3. Include the CLI sample (`t81 --verbose code build ...` plus `t81 code run ... --policy ...`) transcript and the guard-heavy `match_guard.t81` source so reviewers can reproduce the `enum=Option ...` strings without rebuilding the VM.
 
 Together these extracts document every guard, segment, and policy trace string that RFC-0009/0013/0019 cite, delivering a deterministic artifact that auditors can inspect before diving into the codebase.
 ## 4. Copyrighted

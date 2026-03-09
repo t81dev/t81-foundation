@@ -121,7 +121,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 
 # 3. Проверить установку (запускает determinism gate)
-python3 scripts/ci/t81lang_repro_gate.py --t81-bin build/t81 --check
+python3 scripts/ci/t81lang_repro_gate.py --t81-bin build/t81 --fixtures-dir tests/fixtures/t81lang_determinism --workdir build/t81lang-repro --hash-out build/t81lang-repro/hash.txt --expected-hash-file tests/fixtures/t81lang_determinism/t81lang_repro_hash.txt
 ```
 
 ### Hello World (в троичном стиле)
@@ -141,10 +141,10 @@ fn main() {
 
 ```bash
 # Компиляция в TISC-байткод
-./build/t81 compile hello.t81 -o hello.tisc
+./build/t81 code build hello.t81 -o hello.tisc
 
 # Выполнение в VM
-./build/t81 run hello.tisc
+./build/t81 code run hello.tisc
 ```
 
 ---
@@ -162,14 +162,14 @@ fn main() {
 
 ```bash
 # Разработка
-./build/t81 compile src.t81 -o out.tisc
-./build/t81 run out.tisc
-./build/t81 disasm out.tisc
+./build/t81 code build src.t81 -o out.tisc
+./build/t81 code run out.tisc
+./build/t81 tisc disasm out.tisc
 
 # Диагностика и качество
-./build/t81 doctor --json
-./build/t81 test --list
-./build/t81 fmt --check src.t81
+./build/t81 env doctor --json
+./build/t81 code test --list
+./build/t81 code fmt --check src.t81
 ```
 
 ---

@@ -21,8 +21,8 @@ A: - C++20 compatible compiler (GCC 10+, Clang 12+)
 **Q: How do I run basic T81 programs?**
 A: Use the t81 CLI:
 ```bash
-./build/t81 run program.t81
-./build/t81 compile source.t81 -o program.t81
+./build/t81 code run program.t81
+./build/t81 code build source.t81 -o program.tisc
 ```
 
 ## 2. Core Concepts

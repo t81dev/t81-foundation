@@ -11,7 +11,7 @@ int main() {
   using Fixed = T81Fixed<18, 9>;  // 18 integer trits, 9 fractional trits
 
   // Construction
-  Fixed zero;  // Default constructor creates zero
+  [[maybe_unused]] Fixed zero;  // Default constructor creates zero
   [[maybe_unused]] Fixed one = Fixed::from_double(1.0);
   [[maybe_unused]] Fixed half = Fixed::from_double(0.5);
 

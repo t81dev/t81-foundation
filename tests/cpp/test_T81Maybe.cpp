@@ -20,7 +20,7 @@ int main() {
   assert(something.value().to_int64() == 42);
 
   // Explicit nothing
-  T81Maybe<T81Int<27>> explicit_nothing(nullptr);
+  [[maybe_unused]] T81Maybe<T81Int<27>> explicit_nothing(nullptr);
   assert(!explicit_nothing.has_value());
 
   // Nothing with reason

@@ -39,7 +39,7 @@ int main() {
   assert(handle0 > 0);
   assert(handle0 == handle1);
   assert(vm->state().weights_tensor_refs.size() == 1);
-  const auto* native = vm->weights_tensor(handle0);
+  [[maybe_unused]] const auto* native = vm->weights_tensor(handle0);
   assert(native != nullptr);
   std::vector<uint64_t> expected_shape{2, 2};
   assert(native->shape == expected_shape);

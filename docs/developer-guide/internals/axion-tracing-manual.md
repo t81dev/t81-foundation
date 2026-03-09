@@ -44,13 +44,17 @@ enum payload enum=Option variant=Some payload=i32
 
 ## 3. Observing traces via CLI
 
-### 3.1 Compile-time tracing
+### 3.1 Build + run tracing
 
 ```
-t81 compile --verbose match_guard.t81 -P docs/governance/archive/policy/guards.axion
+t81 --verbose code build match_guard.t81 -o match_guard.tisc
+t81 code run match_guard.tisc --policy docs/governance/archive/policy/guards.axion
 ```
 
-The CLI prints each trace string before running the policy, so you can verify the emitted `enum=Option variant=Some match=pass guard=pass payload=i32` line matches the canonical string in RFC-0019.
+Use the verbose build step for lowering context and the `code run --policy`
+step for the actual policy-enforced trace. Verify the emitted
+`enum=Option variant=Some match=pass guard=pass payload=i32` line matches the
+canonical string in RFC-0019.
 
 ### 3.2 REPL tracing
 
@@ -79,7 +83,8 @@ before privileged opcodes execute.
 For any Axion policy clause:
 
 1. Identify the `verdict.reason` string it requires (`enum=…`, `segment=…`, `bounds fault …`).
-2. Run `t81 compile --verbose` or `axion_policy_runner` to capture the string.
+2. Run `t81 --verbose code build` plus `t81 code run --policy ...`, or use
+   `axion_policy_runner`, to capture the string.
 3. Store the output (CLI transcript, log file) as a release artifact so auditors can verify the string even if they don't run the code.
 
 If the policy fails because a string is missing, inspect `State::axion_log` or rerun `:trace` in the REPL; the policy engine checks that the canonical string already exists before allowing the privileged opcode.

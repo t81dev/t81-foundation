@@ -164,41 +164,41 @@ The example showcases:
 ## Run the Demos
 
 ```bash
-./build/t81 compile examples/data_types.t81 -o /tmp/data_types.tisc
-./build/t81 run /tmp/data_types.tisc
+./build/t81 code build examples/data_types.t81 -o /tmp/data_types.tisc
+./build/t81 code run /tmp/data_types.tisc
 
-./build/t81 compile examples/fraction_demo.t81 -o /tmp/fraction_demo.tisc
-./build/t81 run /tmp/fraction_demo.tisc
+./build/t81 code build examples/fraction_demo.t81 -o /tmp/fraction_demo.tisc
+./build/t81 code run /tmp/fraction_demo.tisc
 
-./build/t81 compile examples/tensor_demo.t81 -o /tmp/tensor_demo.tisc
-./build/t81 run /tmp/tensor_demo.tisc
+./build/t81 code build examples/tensor_demo.t81 -o /tmp/tensor_demo.tisc
+./build/t81 code run /tmp/tensor_demo.tisc
 
-./build/t81 compile examples/bigint_demo.t81 -o /tmp/bigint_demo.tisc
-./build/t81 run /tmp/bigint_demo.tisc
+./build/t81 code build examples/bigint_demo.t81 -o /tmp/bigint_demo.tisc
+./build/t81 code run /tmp/bigint_demo.tisc
 
-./build/t81 compile examples/float_demo.t81 -o /tmp/float_demo.tisc
-./build/t81 run /tmp/float_demo.tisc
+./build/t81 code build examples/float_demo.t81 -o /tmp/float_demo.tisc
+./build/t81 code run /tmp/float_demo.tisc
 
-./build/t81 compile examples/string_demo.t81 -o /tmp/string_demo.tisc
-./build/t81 run /tmp/string_demo.tisc
+./build/t81 code build examples/string_demo.t81 -o /tmp/string_demo.tisc
+./build/t81 code run /tmp/string_demo.tisc
 
-./build/t81 compile examples/vector_demo.t81 -o /tmp/vector_demo.tisc
-./build/t81 run /tmp/vector_demo.tisc
+./build/t81 code build examples/vector_demo.t81 -o /tmp/vector_demo.tisc
+./build/t81 code run /tmp/vector_demo.tisc
 
-./build/t81 compile examples/matrix_demo.t81 -o /tmp/matrix_demo.tisc
-./build/t81 run /tmp/matrix_demo.tisc
+./build/t81 code build examples/matrix_demo.t81 -o /tmp/matrix_demo.tisc
+./build/t81 code run /tmp/matrix_demo.tisc
 
-./build/t81 compile examples/cell_demo.t81 -o /tmp/cell_demo.tisc
-./build/t81 run /tmp/cell_demo.tisc
+./build/t81 code build examples/cell_demo.t81 -o /tmp/cell_demo.tisc
+./build/t81 code run /tmp/cell_demo.tisc
 
-./build/t81 compile examples/quaternion_demo.t81 -o /tmp/quaternion_demo.tisc
-./build/t81 run /tmp/quaternion_demo.tisc
+./build/t81 code build examples/quaternion_demo.t81 -o /tmp/quaternion_demo.tisc
+./build/t81 code run /tmp/quaternion_demo.tisc
 
-./build/t81 compile examples/high_rank_tensor_demo.t81 -o /tmp/high_rank_tensor_demo.tisc
-./build/t81 run /tmp/high_rank_tensor_demo.tisc
+./build/t81 code build examples/high_rank_tensor_demo.t81 -o /tmp/high_rank_tensor_demo.tisc
+./build/t81 code run /tmp/high_rank_tensor_demo.tisc
 
-./build/t81 compile examples/graph_demo.t81 -o /tmp/graph_demo.tisc
-./build/t81 run /tmp/graph_demo.tisc
+./build/t81 code build examples/graph_demo.t81 -o /tmp/graph_demo.tisc
+./build/t81 code run /tmp/graph_demo.tisc
 ```
 
 Use `scripts/run-demos.sh` (which now runs match, primitive, fraction, tensor, bigint, float, string, vector, matrix, cell, quaternion, high-rank tensor, and graph demos) to execute the entire suite in sequence.

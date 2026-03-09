@@ -12,7 +12,7 @@ void test_basic_operations() {
   g.add_edge(0, 2, Weight81(1.0));
   assert(std::abs(g.weight(0, 1).to_double() - 0.5) < 1e-6);
   assert(std::abs(g.weight(0, 2).to_double() - 1.0) < 1e-6);
-  auto outgoing = g.outgoing(0);
+  [[maybe_unused]] auto outgoing = g.outgoing(0);
   assert(outgoing.size() == 2);
   std::cout << "test_basic_operations PASSED\n";
 }
@@ -43,7 +43,7 @@ void test_symbolic_graph() {
   // Default constructed symbol should be empty/null
   assert(g.weight(0, 2) == T81Symbol());
 
-  auto outgoing = g.outgoing(0);
+  [[maybe_unused]] auto outgoing = g.outgoing(0);
   assert(outgoing.size() == 1);
   assert(outgoing[0].first == 1);
   assert(outgoing[0].second == loves);

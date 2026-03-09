@@ -66,7 +66,7 @@ For contributors looking to modify the codebase, these resources provide detaile
 - **[Demo Gallery](records/archive/temporal-guides/guides/demo-gallery.md)**
   - A quick menu of the match/data-type demos, the `scripts/run-demos.sh` automation, and the IR inspector utility.
 - **[Benchmark Report](../benchmarks/results/archive/benchmarks.md)**
-  - Auto-generated archive of T81/binary throughput/latency comparisons produced by `./build/t81 benchmark`.
+  - Auto-generated archive of T81/binary throughput/latency comparisons produced by `./build/t81 internal benchmark`.
 - **Benchmark Highlights (README)**(`../README.md#benchmark-highlights`)
 -  - Summary badges and table excerpted from the latest `docs/../benchmarks/results/archive/benchmarks.md` results so visitors see at-a-glance which families currently lead.
 

@@ -114,7 +114,7 @@ When the frontend lowers this loop, it emits `StackAlloc`/`StackFree` around any
     (bound infinite)))
 ```
 
-This policy text is emitted whenever `./build/t81 run` executes the TISC program, giving downstream consumers deterministic diagnostics (`file:line:column`) and exposing Axion's loop-tracking hooks. If the loop tries to grow the stack beyond the configured limit, the VM traps before Axion ever allows a `+∞` overflow; the Axion log entry and the policy text show the same metadata used by diagnostics, closing the trace from source to runtime. For a concrete CLI command/output pair you can copy into logs or release notes, see the **Axion CLI Trace Example** in the [demo gallery guide](../../records/archive/temporal-guides/guides/demo-gallery.md).
+This policy text is emitted whenever `./build/t81 code run` executes the TISC program, giving downstream consumers deterministic diagnostics (`file:line:column`) and exposing Axion's loop-tracking hooks. If the loop tries to grow the stack beyond the configured limit, the VM traps before Axion ever allows a `+∞` overflow; the Axion log entry and the policy text show the same metadata used by diagnostics, closing the trace from source to runtime. For a concrete CLI command/output pair you can copy into logs or release notes, see the **Axion CLI Trace Example** in the [demo gallery guide](../../records/archive/temporal-guides/guides/demo-gallery.md).
 
 The comparison boolean opcodes produce canonical `0/1` values, so a simple relational expression such as:
 

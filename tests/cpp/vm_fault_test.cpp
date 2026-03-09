@@ -108,7 +108,7 @@ int main() {
   [[maybe_unused]] auto trap_invalid_mem = run_expected_trap({load_bad, halt});
   T81_TEST_CHECK(trap_invalid_mem == t81::vm::Trap::BoundsFault);
 
-  t81::tisc::Insn pop{t81::tisc::Opcode::Pop, {1}};
+  t81::tisc::Insn pop{t81::tisc::Opcode::Pop, 1, 0, 0};
   [[maybe_unused]] auto trap_bounds = run_expected_trap({pop, halt});
   T81_TEST_CHECK(trap_bounds == t81::vm::Trap::StackFault);
 

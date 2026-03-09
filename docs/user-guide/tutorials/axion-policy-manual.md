@@ -45,7 +45,7 @@ Use the shipped `docs/governance/archive/policy/guards.axion` to begin. Its cont
     (action "AxRead guard")))
 ```
 
-It demands the guard string `enum=Option variant=Some match=pass guard=pass payload=i32` and the segment strings recorded by RFC-0020 (`stack frame allocated` and `AxRead guard`). Embed this policy via `-P docs/governance/archive/policy/guards.axion` during `t81 compile` or run `axion_policy_runner` directly; the policy engine will automatically reject the program if the strings are missing.
+It demands the guard string `enum=Option variant=Some match=pass guard=pass payload=i32` and the segment strings recorded by RFC-0020 (`stack frame allocated` and `AxRead guard`). In the current CLI, build the program with `t81 --verbose code build ...`, then execute it with `t81 code run ... --policy docs/governance/archive/policy/guards.axion` or run `axion_policy_runner` directly; the policy engine will automatically reject the program if the strings are missing.
 
 ### 2.1 `require-axion-event` for GC/trace verification
 
@@ -93,17 +93,18 @@ This clause performs a substring match on each `AxionEvent.verdict.reason`; it l
 
 ## 3. Embedding policies in builds
 
-### 3.1 `t81 compile`
+### 3.1 `t81 code build` + `t81 code run`
 
 ```
-t81 compile --verbose --axion-policy docs/governance/archive/policy/guards.axion match_guard.t81 -o match_guard.tisc
+t81 --verbose code build match_guard.t81 -o match_guard.tisc
+t81 code run match_guard.tisc --policy docs/governance/archive/policy/guards.axion
 ```
 
-The CLI prints the `verdict.reason` strings before Axion enforces the policy, making it easy to verify the emitted strings match the policy clauses. Use `--axion-policy-text` to inline the s-expression if you prefer not to have a file.
+Use the verbose build step for lowering context and the `code run --policy` step for the actual policy-enforced execution. The resulting Axion log and policy failures should match the canonical `verdict.reason` strings documented here.
 
-### 3.2 `t81 run` / REPL
+### 3.2 `t81 code run` / REPL
 
-When running `.tisc` programs produced by the compiler, Axion uses the embedded policy header even if you execute via `t81 run` or `t81 repl`. Use `:rules` in the REPL to inspect the parsed policy and `:trace` to confirm the required strings already exist in `State::axion_log`.
+When running `.tisc` programs produced by the compiler, attach the policy explicitly via `t81 code run ... --policy <file>` or inspect behavior interactively via `t81 repl`. Use `:rules` in the REPL to inspect the parsed policy and `:trace` to confirm the required strings already exist in `State::axion_log`.
 
 ## 4. Diagnosing policy failures
 
@@ -115,7 +116,7 @@ Always run the regression suite (`ctest --test-dir build -R axion_policy_* --out
 
 ## 5. Policy integration tips
 
-1. **Document the required strings** in release notes (see `docs/guides/axion-trace.md` §5 and `docs/guides/cli-user-manual.md` §7). Include the `t81 compile --verbose` transcripts showing exactly the `verdict.reason` strings demanded by your policy.
+1. **Document the required strings** in release notes (see `docs/guides/axion-trace.md` §5 and `docs/guides/cli-user-manual.md` §7). Include the `t81 --verbose code build` transcript plus the `t81 code run --policy ...` output showing exactly the `verdict.reason` strings demanded by your policy.
 2. **Archive Axion logs** (`scripts/capture-axion-trace.sh` produces `build/artifacts/axion_policy_runner.log`) so auditors can replay what the policy engine saw.
 3. **Use Axion regressions** as examples—the tests named `axion_policy_match_guard_test` and `axion_policy_segment_event_test` show how to embed policies, run them, and expect `Trap::SecurityFault` when requirements are unmet.
 

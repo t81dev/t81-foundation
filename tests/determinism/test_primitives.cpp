@@ -26,7 +26,7 @@ void test_cell_determinism() {
   std::cout << "Testing Cell determinism..." << std::endl;
 
   // 1. Boundary values
-  Cell min = Cell::from_int(-121);
+  [[maybe_unused]] Cell min = Cell::from_int(-121);
   Cell max = Cell::from_int(121);
   // TEST_CHECK(min.to_int() == -121);
   // TEST_CHECK(max.to_int() == 121);
@@ -36,21 +36,21 @@ void test_cell_determinism() {
   // 40 + 2 = 42. Range is [-121, 121].
   Cell a = Cell::from_int(40);
   Cell b = Cell::from_int(2);
-  Cell sum = a + b;
+  [[maybe_unused]] Cell sum = a + b;
   // TEST_CHECK(sum.to_int() == 42); // Debug failure
-  Cell diff = a - b;
+  [[maybe_unused]] Cell diff = a - b;
   // TEST_CHECK(diff.to_int() == 38);
-  Cell prod = a * b;
+  [[maybe_unused]] Cell prod = a * b;
   // TEST_CHECK(prod.to_int() == 80);
-  Cell quot = a / b;
+  [[maybe_unused]] Cell quot = a / b;
   // TEST_CHECK(quot.to_int() == 20);
 
   // 3. Overflow behavior (should throw deterministically)
-  bool caught = false;
+  [[maybe_unused]] bool caught = false;
   try {
     // 121 + 1 = 122. Range is [-121, 121].
     // This should definitely overflow.
-    Cell ov = max + Cell::from_int(1);
+    [[maybe_unused]] Cell ov = max + Cell::from_int(1);
   } catch (const std::overflow_error&) {
     caught = true;
   }
@@ -67,7 +67,7 @@ void test_cell_determinism() {
     // Let's try to shift something at index 4 left by 1.
     // 81 = 3^4. Cell::from_int(81) is P0000.
     Cell high = Cell::from_int(81);
-    Cell ov = high << 1;
+    [[maybe_unused]] Cell ov = high << 1;
   } catch (const std::overflow_error&) {
     caught = true;
   }
@@ -75,7 +75,7 @@ void test_cell_determinism() {
 
   // 5. Roundtrip
   for (int i = -121; i <= 121; ++i) {
-    Cell c = Cell::from_int(i);
+    [[maybe_unused]] Cell c = Cell::from_int(i);
     // TEST_CHECK(c.to_int() == i);
   }
 }

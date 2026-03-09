@@ -21,8 +21,6 @@ int main() {
   Scalar one = Scalar::from_double(1.0);
   Scalar two = Scalar::from_double(2.0);
   Scalar half = Scalar::from_double(0.5);
-  Scalar zero = Scalar::from_double(0.0);
-
   log("Scalars constructed. Checking values...");
   if (std::abs(one.to_double() - 1.0) > 1e-9) log("ERROR: one != 1.0");
   if (std::abs(two.to_double() - 2.0) > 1e-9) log("ERROR: two != 2.0");
@@ -77,7 +75,7 @@ int main() {
   if (std::abs(detP.to_double() - (-1.0)) > 1e-9) log("ERROR: detP != -1.0");
 
   log("5. Calculating Permutation Inverse");
-  Mat4 Pinv = P.inverse();
+  [[maybe_unused]] Mat4 Pinv = P.inverse();
   log("Permutation Inverse calculated");
 
   // 6. Matrix 5x5
@@ -96,7 +94,7 @@ int main() {
   if (std::abs(det5.to_double() - 4.0) > 1e-9) log("ERROR: det5 != 4.0");
 
   log("6. Calculating 5x5 Inverse");
-  Mat5 Dinv = D.inverse();
+  [[maybe_unused]] Mat5 Dinv = D.inverse();
   log("5x5 Inverse calculated");
 
   log("DONE");

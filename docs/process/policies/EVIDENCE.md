@@ -2,7 +2,7 @@
 
 > **Source of Truth:** This document maps our **claims** to their **specifications**, **tests**, and **CI artifacts**. It serves as a proof-of-correctness index.
 
-**Last Updated:** February 10, 2026
+**Last Updated:** March 8, 2026
 
 ## 1. Core Claims
 
@@ -21,11 +21,13 @@
 
 ## 2. Artifacts & Reproducibility
 
-We guarantee the following artifacts are bit-identical across all supported platforms when built with the same compiler version.
+The following table summarizes the currently supported reproducibility evidence
+surfaces. Treat the checked-in fixture hash and CI artifacts as the source of
+truth, not hand-maintained example hashes.
 
 | Artifact | Source | Hash Validation | Expected SHA256 (Canonical) |
 | :--- | :--- | :--- | :--- |
-| **TISC Binary (.tisc)** | `t81 compile` | `t81 repro-hash` | *Varies by version (see CI logs)* |
+| **TISC Binary (.tisc)** | `t81 code build` | `t81 internal repro-hash` / `t81lang_repro_gate.py` | *Varies by version (see CI logs)* |
 | **T3_K Quantized Model** | `t81 weights` | `scripts/ci/t3k_repro_gate.py` | *Varies by version (see CI logs)* |
 | **Trace Log** | `t81 trace` | `tests/cpp/vm_trace_test.cpp` | *Stable per minor version* |
 
@@ -33,7 +35,7 @@ We guarantee the following artifacts are bit-identical across all supported plat
 
 Our testing strategy covers:
 - **Unit:** 100% of public numeric API (`include/t81/types/`).
-- **Integration:** End-to-end CLI workflows (`compile` -> `run` -> `trace`).
+- **Integration:** End-to-end CLI workflows (`code build` -> `code run` -> `trace`).
 - **Property:** Ring properties for `T81BigInt`, `T81Float`, `T81Prob`.
 - **Fuzzing:** Frontend parser and TISC decoder resilience.
 

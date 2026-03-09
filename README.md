@@ -87,7 +87,13 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 
 # Verify the reproducibility gate
-python3 scripts/ci/t81lang_repro_gate.py --t81-bin build/t81 --check
+mkdir -p build/t81lang-repro
+python3 scripts/ci/t81lang_repro_gate.py \
+  --t81-bin build/t81 \
+  --fixtures-dir tests/fixtures/t81lang_determinism \
+  --workdir build/t81lang-repro \
+  --hash-out build/t81lang-repro/hash.txt \
+  --expected-hash-file tests/fixtures/t81lang_determinism/t81lang_repro_hash.txt
 ```
 
 ### Run Shipped Examples
@@ -168,10 +174,10 @@ cmake --build build --target benchmark_runner
   --benchmark_out=bench-smoke.json
 
 # or through the CLI wrapper
-./build/t81 benchmark --benchmark_filter='BM_(ArithThroughput|T81LangCompile).*'
+./build/t81 internal benchmark --benchmark_filter='BM_(ArithThroughput|T81LangCompile).*'
 
 # CLI wrapper keeps report generation off by default
-T81_BENCHMARK_WRITE_REPORTS=1 ./build/t81 benchmark --benchmark_filter='BM_(ArithThroughput|T81LangCompile).*'
+T81_BENCHMARK_WRITE_REPORTS=1 ./build/t81 internal benchmark --benchmark_filter='BM_(ArithThroughput|T81LangCompile).*'
 ```
 
 For methodology and benchmark-specific notes, see [`./benchmarks/README.md`](./benchmarks/README.md) and [`./docs/developer-guide/tools/README.md`](./docs/developer-guide/tools/README.md).

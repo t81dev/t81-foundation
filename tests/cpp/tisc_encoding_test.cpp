@@ -20,8 +20,8 @@ int main() {
   const Program& round = decoded.value();
   assert(round.insns.size() == program.insns.size());
   for (std::size_t i = 0; i < program.insns.size(); ++i) {
-    const auto& lhs = program.insns[i];
-    const auto& rhs = round.insns[i];
+    [[maybe_unused]] const auto& lhs = program.insns[i];
+    [[maybe_unused]] const auto& rhs = round.insns[i];
     assert(lhs.opcode == rhs.opcode);
     assert(lhs.a == rhs.a);
     assert(lhs.b == rhs.b);

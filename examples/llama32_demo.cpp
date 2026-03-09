@@ -147,10 +147,7 @@ int main() {
   program.tensor_pool.emplace_back(std::vector<int>{hidden_dim}, std::move(input_data));
 
   std::vector<Insn> insns;
-  int reg_x = 0;     // Current residual state
-  int reg_norm = 1;  // Normed x
-  int reg_q = 2, reg_k = 3, reg_v = 4;
-  int reg_attn = 5;
+  int reg_x = 0;  // Current residual state
   int reg_out = 6;
   int reg_tmp1 = 7, reg_tmp2 = 8;
 

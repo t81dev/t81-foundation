@@ -14,17 +14,17 @@ using Scalar = t81::T81Float<18, 9>;
 using Vec3 = t81::T81Vector<3, Scalar>;
 
 inline Scalar s(double x) { return Scalar::from_double(x); }
-inline double d(const Scalar& v) { return v.to_double(); }
+[[maybe_unused]] inline double d(const Scalar& v) { return v.to_double(); }
 
 // Slightly relaxed epsilon for ternary float ↔ double
-constexpr double kEps = 1e-4;
+[[maybe_unused]] constexpr double kEps = 1e-4;
 
 void run_vector_tests() {
   std::cout << "Running T81Vector tests...\n";
 
   // 1) Default construction → zero
   {
-    Vec3 v{};
+    [[maybe_unused]] Vec3 v{};
     for (int i = 0; i < 3; ++i) {
       assert(std::fabs(d(v[i])) < 1e-10);
     }
@@ -33,7 +33,7 @@ void run_vector_tests() {
 
   // 2) Fill constructor — (≈1.5, ≈1.5, ≈1.5)
   {
-    Vec3 v(s(1.5));
+    [[maybe_unused]] Vec3 v(s(1.5));
     for (int i = 0; i < 3; ++i) {
       assert(std::fabs(d(v[i]) - 1.5) < kEps);
     }
@@ -42,7 +42,7 @@ void run_vector_tests() {
 
   // 3) Component-wise construction
   {
-    Vec3 v(s(1.0), s(2.0), s(3.0));
+    [[maybe_unused]] Vec3 v(s(1.0), s(2.0), s(3.0));
     assert(std::fabs(d(v[0]) - 1.0) < kEps);
     assert(std::fabs(d(v[1]) - 2.0) < kEps);
     assert(std::fabs(d(v[2]) - 3.0) < kEps);

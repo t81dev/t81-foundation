@@ -7,7 +7,6 @@
 using namespace t81;
 
 void test_basic() {
-  using Scalar = T81Quaternion::Scalar;
   T81Quaternion id = T81Quaternion::identity();
   assert(id.w().to_double() > 0.9 && id.w().to_double() < 1.1);
   assert(id.x().is_zero());

@@ -337,7 +337,7 @@ void test_trailing_byte_masking() {
 
   // What if we have invalid padding? We can't inject it easily.
   // But we can ensure that valid ops don't dirty the padding.
-  uint8_t byte = v_not.data()[0];
+  [[maybe_unused]] uint8_t byte = v_not.data()[0];
   assert((byte & 0xFC) == 0);  // Top 6 bits must be 0
 }
 
