@@ -17,9 +17,11 @@ Already landed on `main`:
 - CLI contract coverage for `help python`, fish completion, and
   `t81 python compile`
 
-Latest implementation commit:
+Latest implementation commits:
 
-- current follow-up in workspace: Python scalar subset lowering
+- `68158f87` `Add minimal scalar Python frontend lowering`
+- `2bcd50e6` `Add while support to Python frontend subset`
+- `36434b67` `Add fixed-list support to Python frontend subset`
 
 ## Supported Python Subset v0
 
@@ -67,15 +69,16 @@ adapter seam across C, Rust, and Python instead of three separate backends.
 
 ## Last Verified Locally
 
-- `t81_python_frontend_mlir_smoke_test`
-- `t81_cli_contract_test ./build_python_frontend_subset/t81`
-- direct smoke compile of a helper-call Python example to MLIR with `--dialect=t81`
+- `./build_codex/t81_python_frontend_mlir_smoke_test`
+- `./build_codex/t81 help python`
+- direct smoke compile of a fixed-list Python example to MLIR with `--dialect=t81`
 
 ## Recommended Resume Point
 
 1. decide whether to deepen Python first with constrained `for range(...)`
    iteration or stop here and consolidate the shared adapter boundary
-   note: fixed local lists with compile-time constant indexing are now in
+   note: fixed local lists with compile-time constant indexing and `while`
+   loops are now in
 2. if Python deepens next, keep the subset fail-closed and deterministic
 3. if the three frontends start to drift, introduce a more explicit shared IR
    seam instead of extending C-as-adapter indefinitely
