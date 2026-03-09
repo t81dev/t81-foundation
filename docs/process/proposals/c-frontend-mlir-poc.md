@@ -195,7 +195,7 @@ Implemented and verified:
 - entry-point model: `int main()`
 - helper `int` functions with named `int` parameters
 - local initialized `int` variables
-- statement-only `++`/`--`, arithmetic/bitwise/comparisons/logical integer expressions
+- statement-only `++`/`--`, arithmetic/bitwise/comparisons/logical integer expressions, loop-local `break`/`continue`
 - assignment statements
 - structured control flow: `if`, `while`, `for`
 - same-translation-unit direct calls

@@ -139,9 +139,16 @@ struct GlobalLoweringState {
 };
 
 struct LoweringContext {
+  struct LoopControl {
+    size_t continue_target_pc{0};
+    std::vector<size_t> break_jumps;
+    std::vector<size_t> continue_jumps;
+  };
+
   GlobalLoweringState& global;
   FunctionInfo& function;
   std::unordered_map<std::string, int32_t> vars;
+  std::vector<LoopControl> loop_stack;
 
   const std::string& source() const {
     return global.source;
@@ -190,6 +197,24 @@ struct LoweringContext {
 
 bool compile_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, std::string* error);
 bool compile_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error);
+
+bool compile_break_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
+  if (ctx.loop_stack.empty()) {
+    return ctx.fail(cursor, "'break' is only supported inside loops", error);
+  }
+  auto& loop = ctx.loop_stack.back();
+  loop.break_jumps.push_back(ctx.emit(t81::tisc::Opcode::Jump, 0, 0, 0));
+  return true;
+}
+
+bool compile_continue_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
+  if (ctx.loop_stack.empty()) {
+    return ctx.fail(cursor, "'continue' is only supported inside loops", error);
+  }
+  auto& loop = ctx.loop_stack.back();
+  loop.continue_jumps.push_back(ctx.emit(t81::tisc::Opcode::Jump, 0, 0, 0));
+  return true;
+}
 
 bool copy_if_needed(LoweringContext& ctx, int32_t target, int32_t value_reg, std::string* error) {
   if (target < 0 || value_reg < 0) {
@@ -685,20 +710,33 @@ bool compile_while_stmt(LoweringContext& ctx, CXCursor cursor, std::string* erro
     return ctx.fail(cursor, "unsupported while statement shape", error);
   }
   const size_t loop_start = ctx.pc();
+  ctx.loop_stack.push_back({loop_start, {}, {}});
   const int32_t cond_reg = ctx.alloc_reg();
   if (cond_reg < 0) {
     if (error) *error = "internal register allocation failure";
+    ctx.loop_stack.pop_back();
     return false;
   }
   if (!compile_expr(ctx, children[0], cond_reg, error)) {
+    ctx.loop_stack.pop_back();
     return false;
   }
   const size_t exit_jump = ctx.emit(t81::tisc::Opcode::JumpIfZero, 0, cond_reg, 0);
   if (!compile_stmt(ctx, children[1], error)) {
+    ctx.loop_stack.pop_back();
     return false;
   }
+  auto loop = std::move(ctx.loop_stack.back());
+  ctx.loop_stack.pop_back();
+  for (size_t continue_jump : loop.continue_jumps) {
+    ctx.patch_jump_target(continue_jump, loop_start);
+  }
   ctx.emit(t81::tisc::Opcode::Jump, static_cast<int32_t>(loop_start), 0, 0);
-  ctx.patch_jump_target(exit_jump, ctx.pc());
+  const size_t end_pc = ctx.pc();
+  ctx.patch_jump_target(exit_jump, end_pc);
+  for (size_t break_jump : loop.break_jumps) {
+    ctx.patch_jump_target(break_jump, end_pc);
+  }
   return true;
 }
 
@@ -784,23 +822,37 @@ bool compile_for_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error)
   }
 
   const size_t loop_start = ctx.pc();
+  ctx.loop_stack.push_back({loop_start, {}, {}});
   const int32_t cond_reg = ctx.alloc_reg();
   if (cond_reg < 0) {
     if (error) *error = "internal register allocation failure";
+    ctx.loop_stack.pop_back();
     return false;
   }
   if (!compile_expr(ctx, cond, cond_reg, error)) {
+    ctx.loop_stack.pop_back();
     return false;
   }
   const size_t exit_jump = ctx.emit(t81::tisc::Opcode::JumpIfZero, 0, cond_reg, 0);
   if (!compile_stmt(ctx, body, error)) {
+    ctx.loop_stack.pop_back();
     return false;
+  }
+  auto loop = std::move(ctx.loop_stack.back());
+  ctx.loop_stack.pop_back();
+  const size_t continue_target_pc = clang_Cursor_isNull(step) ? loop_start : ctx.pc();
+  for (size_t continue_jump : loop.continue_jumps) {
+    ctx.patch_jump_target(continue_jump, continue_target_pc);
   }
   if (!clang_Cursor_isNull(step) && !compile_stmt(ctx, step, error)) {
     return false;
   }
   ctx.emit(t81::tisc::Opcode::Jump, static_cast<int32_t>(loop_start), 0, 0);
-  ctx.patch_jump_target(exit_jump, ctx.pc());
+  const size_t end_pc = ctx.pc();
+  ctx.patch_jump_target(exit_jump, end_pc);
+  for (size_t break_jump : loop.break_jumps) {
+    ctx.patch_jump_target(break_jump, end_pc);
+  }
   return true;
 }
 
@@ -827,9 +879,9 @@ bool compile_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
     case CXCursor_LabelStmt:
       return ctx.fail(cursor, "labels are not supported in the C subset v0", error);
     case CXCursor_BreakStmt:
-      return ctx.fail(cursor, "'break' is not supported in the C subset v0", error);
+      return compile_break_stmt(ctx, cursor, error);
     case CXCursor_ContinueStmt:
-      return ctx.fail(cursor, "'continue' is not supported in the C subset v0", error);
+      return compile_continue_stmt(ctx, cursor, error);
     case CXCursor_BinaryOperator:
     case CXCursor_UnaryOperator:
     case CXCursor_UnexposedStmt:
@@ -842,7 +894,7 @@ bool compile_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
 }
 
 bool compile_function(GlobalLoweringState& global, FunctionInfo& function, std::string* error) {
-  LoweringContext ctx{global, function, {}};
+  LoweringContext ctx{global, function, {}, {}};
   CXCursor cursor = function.cursor;
   if (!is_supported_int_type(clang_getCursorResultType(cursor))) {
     return ctx.fail(cursor, "functions must return 'int' in the C subset v0", error);
@@ -889,7 +941,7 @@ bool collect_function_info(GlobalLoweringState& global, CXCursor cursor, std::st
     return false;
   }
   if (global.functions.find(info.name) != global.functions.end()) {
-    LoweringContext dummy{global, info, {}};
+    LoweringContext dummy{global, info, {}, {}};
     return dummy.fail(cursor, "duplicate function definition '" + info.name + "'", error);
   }
   std::unordered_set<std::string> seen_params;
@@ -898,24 +950,24 @@ bool collect_function_info(GlobalLoweringState& global, CXCursor cursor, std::st
     CXCursor arg = clang_Cursor_getArgument(cursor, i);
     const CXType arg_type = clang_getCursorType(arg);
     if (arg_type.kind == CXType_Pointer) {
-      LoweringContext dummy{global, info, {}};
+      LoweringContext dummy{global, info, {}, {}};
       return dummy.fail(arg, "pointer parameters are not supported in the C subset v0", error);
     }
     if (arg_type.kind == CXType_ConstantArray) {
-      LoweringContext dummy{global, info, {}};
+      LoweringContext dummy{global, info, {}, {}};
       return dummy.fail(arg, "array parameters are not supported in the C subset v0", error);
     }
     if (!is_supported_int_type(arg_type)) {
-      LoweringContext dummy{global, info, {}};
+      LoweringContext dummy{global, info, {}, {}};
       return dummy.fail(arg, "only 'int' parameters are supported in the C subset v0", error);
     }
     const std::string param_name = to_string_and_dispose(clang_getCursorSpelling(arg));
     if (param_name.empty()) {
-      LoweringContext dummy{global, info, {}};
+      LoweringContext dummy{global, info, {}, {}};
       return dummy.fail(arg, "parameter names are required in the C subset v0", error);
     }
     if (!seen_params.emplace(param_name).second) {
-      LoweringContext dummy{global, info, {}};
+      LoweringContext dummy{global, info, {}, {}};
       return dummy.fail(arg, "duplicate parameter '" + param_name + "'", error);
     }
     const int32_t reg = global.alloc_reg();
@@ -981,7 +1033,7 @@ bool build_program_from_translation_unit(CXTranslationUnit tu,
     if (kind == CXCursor_VarDecl) {
       if (error) {
         FunctionInfo dummy_function;
-        LoweringContext dummy{global, dummy_function, {}};
+        LoweringContext dummy{global, dummy_function, {}, {}};
         return dummy.fail(child, "global variables are not supported in the C subset v0", error);
       }
       return false;

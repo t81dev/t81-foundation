@@ -21,8 +21,14 @@ int main() {
         "int climb(int limit) {\n"
         "  int x = 0;\n"
         "  for (; x < limit; x = x + 1) {\n"
+        "    if (x == 1) {\n"
+        "      continue;\n"
+        "    }\n"
         "  }\n"
         "  for (int i = 0; i < 2; ++i) {\n"
+        "    if (i == 1) {\n"
+        "      break;\n"
+        "    }\n"
         "    x = x + 1;\n"
         "  }\n"
         "  x = x << 1;\n"
@@ -156,25 +162,22 @@ int main() {
   {
     const std::string source =
         "int main() {\n"
-        "  while (1) {\n"
-        "    break;\n"
-        "  }\n"
+        "  break;\n"
         "  return 0;\n"
         "}\n";
     std::string output;
     std::string error;
     check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_break.c", output, {}, &error),
           "expected break example to be rejected");
-    check(error.find("'break' is not supported") != std::string::npos,
+    check(error.find("'break' is only supported inside loops") != std::string::npos ||
+              error.find("'break' statement not in loop or switch statement") != std::string::npos,
           "expected break rejection diagnostic");
   }
 
   {
     const std::string source =
         "int main() {\n"
-        "  for (int i = 0; i < 3; i = i + 1) {\n"
-        "    continue;\n"
-        "  }\n"
+        "  continue;\n"
         "  return 0;\n"
         "}\n";
     std::string output;
@@ -182,7 +185,8 @@ int main() {
     check(
         !t81::c_frontend::compile_source_to_mlir_text(source, "bad_continue.c", output, {}, &error),
         "expected continue example to be rejected");
-    check(error.find("'continue' is not supported") != std::string::npos,
+    check(error.find("'continue' is only supported inside loops") != std::string::npos ||
+              error.find("'continue' statement not in loop statement") != std::string::npos,
           "expected continue rejection diagnostic");
   }
 
