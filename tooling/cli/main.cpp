@@ -1798,6 +1798,14 @@ std::optional<fs::path> find_repo_root(fs::path start);
 fs::path discover_repo_root();
 fs::path discover_build_dir();
 fs::path discover_canonfs_root();
+struct ProcessCaptureResult {
+  int exit_code = -1;
+  std::string stdout_text;
+  std::string stderr_text;
+};
+ProcessCaptureResult run_process_capture(
+    const std::vector<std::string>& argv, const std::optional<fs::path>& cwd = std::nullopt,
+    const std::vector<std::pair<std::string, std::string>>& env_overrides = {});
 const char* ir_opcode_name(t81::tisc::ir::Opcode op);
 const char* ir_primitive_name(t81::tisc::ir::PrimitiveKind kind);
 const char* ir_relation_name(t81::tisc::ir::ComparisonRelation relation);
@@ -2044,14 +2052,6 @@ int run_benchmark(const char* command_name, const Args& args) {
     return 1;
   }
 
-  // Benchmarks intentionally trigger many overflow traps (BM_overflow_*).
-  // Mute trap stderr for this subprocess so benchmark runs don't flood logs.
-#if defined(_WIN32)
-  std::string cmd = "set T81_AXION_TRAP_STDERR=0&& set T81_BENCHMARK_WRITE_REPORTS=0&& ";
-#else
-  std::string cmd = "T81_AXION_TRAP_STDERR=0 T81_BENCHMARK_WRITE_REPORTS=0 ";
-#endif
-  cmd += shell_escape(runner_path->string());
   std::vector<std::string> benchmark_args = args.benchmark_args;
   if (!benchmark_args.empty() && !benchmark_args.front().empty() &&
       benchmark_args.front()[0] != '-') {
@@ -2084,13 +2084,20 @@ int run_benchmark(const char* command_name, const Args& args) {
     }
   }
 
+  std::vector<std::string> runner_argv;
+  runner_argv.push_back(runner_path->string());
   for (const auto& extra : benchmark_args) {
-    cmd += ' ';
-    cmd += shell_escape(extra);
+    runner_argv.push_back(extra);
   }
 
   info("Running benchmarks via " + runner_path->string());
 #if defined(_WIN32)
+  std::string cmd = "set T81_AXION_TRAP_STDERR=0&& set T81_BENCHMARK_WRITE_REPORTS=0&& " +
+                    shell_escape(runner_path->string());
+  for (const auto& extra : benchmark_args) {
+    cmd += ' ';
+    cmd += shell_escape(extra);
+  }
   int status = std::system(cmd.c_str());
   if (status == -1) {
     error("Failed to execute benchmark_runner");
@@ -2110,7 +2117,16 @@ int run_benchmark(const char* command_name, const Args& args) {
   const auto start = std::chrono::steady_clock::now();
   pid_t child = fork();
   if (child == 0) {
-    execl("/bin/sh", "sh", "-c", cmd.c_str(), static_cast<char*>(nullptr));
+    setenv("T81_AXION_TRAP_STDERR", "0", 1);
+    setenv("T81_BENCHMARK_WRITE_REPORTS", "0", 1);
+    std::vector<std::string> argv_storage = runner_argv;
+    std::vector<char*> argv_ptrs;
+    argv_ptrs.reserve(argv_storage.size() + 1);
+    for (auto& item : argv_storage) {
+      argv_ptrs.push_back(item.data());
+    }
+    argv_ptrs.push_back(nullptr);
+    execv(argv_ptrs[0], argv_ptrs.data());
     _exit(127);
   }
   if (child < 0) {
@@ -5840,19 +5856,31 @@ int run_repro_hash(const char* command_name, const Args& args) {
   fs::path workdir = fs::temp_directory_path() / ("t81-repro-hash-" + std::to_string(dist(gen)));
   fs::path hash_out = workdir / "hash.txt";
 
-  std::string cmd = "cd " + shell_escape(repo_root.string()) + " && python3 " +
-                    shell_escape(script_path->string()) + " --t81-bin " +
-                    shell_escape(exe_path.string()) + " --fixtures-dir " +
-                    shell_escape(fixtures_arg) + " --workdir " + shell_escape(workdir.string()) +
-                    " --hash-out " + shell_escape(hash_out.string()) + " --expected-hash-file " +
-                    shell_escape(expected_arg);
+  std::vector<std::string> argv = {"python3",
+                                   script_path->string(),
+                                   "--t81-bin",
+                                   exe_path.string(),
+                                   "--fixtures-dir",
+                                   fixtures_arg,
+                                   "--workdir",
+                                   workdir.string(),
+                                   "--hash-out",
+                                   hash_out.string(),
+                                   "--expected-hash-file",
+                                   expected_arg};
 
-  int status = std::system(cmd.c_str());
-  if (status == -1) {
+  const auto capture = run_process_capture(argv, repo_root);
+  if (!capture.stdout_text.empty()) {
+    std::cout << capture.stdout_text;
+  }
+  if (!capture.stderr_text.empty()) {
+    std::cerr << capture.stderr_text;
+  }
+  int rc = capture.exit_code;
+  if (rc == -1) {
     error("Failed to execute t81lang_repro_gate.py");
     return 1;
   }
-  int rc = decode_system_status(status);
   if (rc != 0) {
     return rc;
   }
@@ -6313,15 +6341,9 @@ bool shell_command_available(const std::string& command) {
 #endif
 }
 
-struct ProcessCaptureResult {
-  int exit_code = -1;
-  std::string stdout_text;
-  std::string stderr_text;
-};
-
 ProcessCaptureResult run_process_capture(
-    const std::vector<std::string>& argv, const std::optional<fs::path>& cwd = std::nullopt,
-    const std::vector<std::pair<std::string, std::string>>& env_overrides = {}) {
+    const std::vector<std::string>& argv, const std::optional<fs::path>& cwd,
+    const std::vector<std::pair<std::string, std::string>>& env_overrides) {
   ProcessCaptureResult result;
   if (argv.empty()) {
     return result;
@@ -7731,23 +7753,7 @@ int run_man_command(const Args& args) {
   }
   const std::string man_text = build_manpage_text();
   if (install_dir.empty()) {
-    // Try to render through man -l (temp file) or $PAGER
-    const char* pager = std::getenv("PAGER");
-    if (!pager) pager = "less";
-    // Write to a temp file and invoke man -l <file>
-    const fs::path tmp_man = fs::temp_directory_path() / "t81.1";
-    {
-      std::ofstream tmp_ofs(tmp_man, std::ios::binary | std::ios::trunc);
-      tmp_ofs << man_text;
-    }
-    // Try man -l first (renders troff); fall back to pager on plain text
-    const std::string man_cmd = std::string("man -l ") + tmp_man.string() + " 2>/dev/null";
-    if (std::system(man_cmd.c_str()) != 0) {
-      const std::string pager_cmd = std::string(pager) + " " + tmp_man.string();
-      std::system(pager_cmd.c_str());
-    }
-    std::error_code ec;
-    fs::remove(tmp_man, ec);
+    std::cout << man_text;
     return 0;
   }
   std::error_code ec;

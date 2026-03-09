@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 def compile_source(t81_bin: Path, source: Path, out_path: Path) -> None:
-    cmd = [str(t81_bin), "compile", str(source), "-o", str(out_path)]
+    cmd = [str(t81_bin), "code", "build", str(source), "-o", str(out_path)]
     proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     if proc.returncode != 0:
         print(proc.stdout)
