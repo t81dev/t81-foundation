@@ -28,7 +28,7 @@ class LowerT81RegisterOpsPass
 
   llvm::StringRef getArgument() const final { return "t81-lower-register-ops"; }
   llvm::StringRef getDescription() const final {
-    return "Lower custom t81 register access ops to memref load/store";
+    return "Lower custom t81 register and memory ops to memref load/store";
   }
 
   void runOnOperation() override {
@@ -73,6 +73,49 @@ class LowerT81RegisterOpsPass
         }
         builder.create<mlir::memref::StoreOp>(
             op->getLoc(), op->getOperands()[1], op->getOperands()[0], mlir::ValueRange{reg_idx});
+      }
+
+      op->erase();
+    }
+
+    worklist.clear();
+    func.walk([&](mlir::Operation* op) {
+      llvm::StringRef name = op->getName().getStringRef();
+      if (name == kMemLoadOpName || name == kMemStoreOpName) {
+        worklist.push_back(op);
+      }
+    });
+
+    for (mlir::Operation* op : worklist) {
+      auto addr_attr = op->getAttrOfType<mlir::IntegerAttr>("addr");
+      if (!addr_attr) {
+        op->emitError("expected integer 'addr' attribute");
+        signalPassFailure();
+        return;
+      }
+
+      const auto addr = static_cast<int64_t>(addr_attr.getInt());
+      builder.setInsertionPoint(op);
+      auto addr_idx = builder.create<mlir::arith::ConstantIndexOp>(op->getLoc(), addr);
+      llvm::StringRef name = op->getName().getStringRef();
+
+      if (name == kMemLoadOpName) {
+        if (op->getNumOperands() != 1 || op->getNumResults() != 1) {
+          op->emitError("expected 1 operand and 1 result");
+          signalPassFailure();
+          return;
+        }
+        auto load = builder.create<mlir::memref::LoadOp>(
+            op->getLoc(), op->getOperands()[0], mlir::ValueRange{addr_idx});
+        op->getResult(0).replaceAllUsesWith(load.getResult());
+      } else {
+        if (op->getNumOperands() != 2 || op->getNumResults() != 0) {
+          op->emitError("expected 2 operands and 0 results");
+          signalPassFailure();
+          return;
+        }
+        builder.create<mlir::memref::StoreOp>(
+            op->getLoc(), op->getOperands()[1], op->getOperands()[0], mlir::ValueRange{addr_idx});
       }
 
       op->erase();

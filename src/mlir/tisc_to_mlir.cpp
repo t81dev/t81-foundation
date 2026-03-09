@@ -88,7 +88,7 @@ class TISCToMLIRTranslator {
       (*module_)->setAttr("t81.runtime", builder_.getStringAttr("t81_dmath_runtime"));
     }
     if (cfg_.use_t81_dialect) {
-      (*module_)->setAttr("t81.dialect", builder_.getStringAttr("register"));
+      (*module_)->setAttr("t81.dialect", builder_.getStringAttr("t81"));
     }
     setup_main_function();
     find_leaders();
@@ -298,12 +298,27 @@ class TISCToMLIRTranslator {
 
   mlir::Value mem_load(int64_t addr) {
     int64_t clamped = (addr >= 0 && addr < kMemSize) ? addr : 0;
+    if (cfg_.use_t81_dialect) {
+      mlir::OperationState state(loc_, kMemLoadOpName);
+      state.addOperands(mem_);
+      state.addAttribute("addr", builder_.getI64IntegerAttr(clamped));
+      state.addTypes(i64_ty_);
+      auto* op = builder_.insert(mlir::Operation::create(state));
+      return op->getResult(0);
+    }
     return builder_.create<mlir::memref::LoadOp>(
         loc_, mem_, mlir::ValueRange{idx(clamped)});
   }
 
   void mem_store(int64_t addr, mlir::Value v) {
     int64_t clamped = (addr >= 0 && addr < kMemSize) ? addr : 0;
+    if (cfg_.use_t81_dialect) {
+      mlir::OperationState state(loc_, kMemStoreOpName);
+      state.addOperands({mem_, v});
+      state.addAttribute("addr", builder_.getI64IntegerAttr(clamped));
+      builder_.insert(mlir::Operation::create(state));
+      return;
+    }
     builder_.create<mlir::memref::StoreOp>(
         loc_, v, mem_, mlir::ValueRange{idx(clamped)});
   }

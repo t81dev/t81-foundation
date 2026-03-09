@@ -1374,6 +1374,11 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   add_executable(e2e_axion_trace_test tests/cpp/e2e_axion_trace_test.cpp)
   target_link_libraries(e2e_axion_trace_test PRIVATE t81_tool_cli t81_vm)
 
+  if(T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND MLIR_FOUND)
+    add_executable(t81_mlir_t81_dialect_memory_ops_test tests/cpp/mlir_t81_dialect_memory_ops_test.cpp)
+    target_link_libraries(t81_mlir_t81_dialect_memory_ops_test PRIVATE t81_mlir t81_core t81_isa)
+  endif()
+
   enable_testing()
   set(T81_TEST_TARGETS
     t81_float_test
@@ -1611,6 +1616,9 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   )
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
     list(APPEND T81_TEST_TARGETS t81_base81_simd_test)
+  endif()
+  if(T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND MLIR_FOUND)
+    list(APPEND T81_TEST_TARGETS t81_mlir_t81_dialect_memory_ops_test)
   endif()
   if(T81_BUILD_FUZZ_TESTS AND T81_RUN_FRONTEND_FUZZ_IN_CTEST)
     list(APPEND T81_TEST_TARGETS t81_frontend_fuzz_test)

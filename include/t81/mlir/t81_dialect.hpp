@@ -20,6 +20,8 @@ inline constexpr const char* kRegGetIOpName = "t81.reg_get_i";
 inline constexpr const char* kRegSetIOpName = "t81.reg_set_i";
 inline constexpr const char* kRegGetFOpName = "t81.reg_get_f";
 inline constexpr const char* kRegSetFOpName = "t81.reg_set_f";
+inline constexpr const char* kMemLoadOpName = "t81.mem_load";
+inline constexpr const char* kMemStoreOpName = "t81.mem_store";
 
 std::unique_ptr<mlir::Pass> createLowerT81RegisterOpsPass();
 
