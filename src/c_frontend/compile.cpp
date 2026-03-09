@@ -316,7 +316,7 @@ bool evaluate_const_int_expr(LoweringContext& ctx, CXCursor cursor, int64_t& val
       }
       CXCursor lhs = unwrap_expr(children[0]);
       CXCursor rhs = unwrap_expr(children[1]);
-      const auto op = binary_operator_spelling(cursor, lhs, rhs, ctx.source());
+      const auto op = binary_operator_spelling(cursor, children[0], children[1], ctx.source());
       if (!op.has_value()) {
         return ctx.fail(cursor, "unable to determine constant expression operator", error);
       }
@@ -522,7 +522,7 @@ bool compile_binary_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, 
   }
   CXCursor lhs = unwrap_expr(children[0]);
   CXCursor rhs = unwrap_expr(children[1]);
-  const auto op = binary_operator_spelling(cursor, lhs, rhs, ctx.source());
+  const auto op = binary_operator_spelling(cursor, children[0], children[1], ctx.source());
   if (!op.has_value()) {
     return ctx.fail(cursor, "unable to determine binary operator", error);
   }
@@ -823,7 +823,7 @@ bool compile_assignment_stmt(LoweringContext& ctx, CXCursor cursor, std::string*
   }
   CXCursor lhs = unwrap_expr(children[0]);
   CXCursor rhs = unwrap_expr(children[1]);
-  const auto op = binary_operator_spelling(cursor, lhs, rhs, ctx.source());
+  const auto op = binary_operator_spelling(cursor, children[0], children[1], ctx.source());
   if (!op.has_value() || *op != "=") {
     return ctx.fail(cursor, "only simple '=' assignment is supported", error);
   }
@@ -887,6 +887,13 @@ bool compile_decl_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error
 bool compile_expr_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
   CXCursor expr = cursor;
   const CXCursorKind cursor_kind = clang_getCursorKind(cursor);
+  if (cursor_kind == CXCursor_UnexposedStmt) {
+    auto children = cursor_children(cursor);
+    if (children.size() != 1) {
+      return ctx.fail(cursor, "unsupported expression statement", error);
+    }
+    return compile_expr_stmt(ctx, children.front(), error);
+  }
   if (cursor_kind != CXCursor_BinaryOperator && cursor_kind != CXCursor_UnaryOperator) {
     auto children = cursor_children(cursor);
     if (children.size() != 1) {
@@ -897,8 +904,8 @@ bool compile_expr_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error
   if (clang_getCursorKind(expr) == CXCursor_BinaryOperator) {
     auto binary_children = cursor_children(expr);
     if (binary_children.size() == 2) {
-      const auto op = binary_operator_spelling(expr, unwrap_expr(binary_children[0]),
-                                               unwrap_expr(binary_children[1]), ctx.source());
+      const auto op = binary_operator_spelling(expr, binary_children[0], binary_children[1],
+                                               ctx.source());
       if (op.has_value() && *op == "=") {
         return compile_assignment_stmt(ctx, expr, error);
       }
@@ -1047,8 +1054,8 @@ bool compile_for_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error)
     if (binary_children.size() != 2) {
       return false;
     }
-    const auto op = binary_operator_spelling(expr, unwrap_expr(binary_children[0]),
-                                             unwrap_expr(binary_children[1]), ctx.source());
+    const auto op = binary_operator_spelling(expr, binary_children[0], binary_children[1],
+                                             ctx.source());
     return op.has_value() && *op == "=";
   };
   auto is_expr_like = [](CXCursor child) {

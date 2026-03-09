@@ -36,12 +36,13 @@ Allowed:
 - comparisons: `==`, `!=`, `<`, `<=`, `>`, `>=`
 - boolean operators: `not`, `and`, `or`
 - `if` / `else`
+- `while`
 - same-file helper calls
 - reachable `return`
 
 Rejected:
 
-- loops
+- `for`
 - lists, indexing, attributes
 - objects/classes/modules/imports
 - floats, strings, containers
@@ -72,6 +73,8 @@ adapter seam across C, Rust, and Python instead of three separate backends.
 
 1. decide whether to deepen Python first with loops / constrained list-style
    memory or stop here and consolidate the shared adapter boundary
+   note: `while` is now in; the next real semantic widening is list/array
+   modeling or a constrained `for` story
 2. if Python deepens next, keep the subset fail-closed and deterministic
 3. if the three frontends start to drift, introduce a more explicit shared IR
    seam instead of extending C-as-adapter indefinitely

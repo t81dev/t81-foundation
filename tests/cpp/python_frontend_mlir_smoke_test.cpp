@@ -41,16 +41,34 @@ int main() {
   {
     const std::string source =
         "def main() -> int:\n"
-        "    while True:\n"
-        "        return 1\n"
+        "    x: int = 0\n"
+        "    while x < 3:\n"
+        "        x = x + 1\n"
+        "    return x\n";
+    std::string output;
+    std::string error;
+    t81::python_frontend::CompileOptions options;
+    options.use_t81_dialect = true;
+    check(t81::python_frontend::compile_source_to_mlir_text(source, "ok_while.py", output,
+                                                            options, &error),
+          error.c_str());
+    check(output.find("cf.cond_br") != std::string::npos,
+          "expected Python while lowering to emit conditional branches");
+  }
+
+  {
+    const std::string source =
+        "def main() -> int:\n"
+        "    for x in range(3):\n"
+        "        return x\n"
         "    return 0\n";
     std::string output;
     std::string error;
-    check(!t81::python_frontend::compile_source_to_mlir_text(source, "bad_while.py", output, {},
+    check(!t81::python_frontend::compile_source_to_mlir_text(source, "bad_for.py", output, {},
                                                              &error),
-          "expected while example to be rejected");
-    check(error.find("'while' is not supported") != std::string::npos,
-          "expected while rejection diagnostic");
+          "expected for example to be rejected");
+    check(error.find("'for' is not supported") != std::string::npos,
+          "expected for rejection diagnostic");
   }
 
   {

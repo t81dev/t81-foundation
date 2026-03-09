@@ -75,10 +75,13 @@ class Lowerer:
                     text += "".join(self.lower_stmt(child, depth + 1) for child in stmt.orelse)
                     text += f"{ind}}}"
             return text + "\n"
+        if isinstance(stmt, ast.While):
+            text = f"{ind}while ({self.lower_expr(stmt.test)}) {{\n"
+            text += "".join(self.lower_stmt(child, depth + 1) for child in stmt.body)
+            text += f"{ind}}}\n"
+            return text
         if isinstance(stmt, ast.Expr):
             return f"{ind}{self.lower_expr(stmt.value)};\n"
-        if isinstance(stmt, ast.While):
-            self.fail(stmt, "'while' is not supported in Python subset v0")
         if isinstance(stmt, ast.For):
             self.fail(stmt, "'for' is not supported in Python subset v0")
         self.fail(stmt, "unsupported statement in Python subset v0")

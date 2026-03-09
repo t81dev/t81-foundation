@@ -821,7 +821,7 @@ Current status:
 
 - requires `-DT81_ENABLE_PYTHON_FRONTEND=ON -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON`
 - also requires `python3` on `PATH`
-- current subset v0: `def main() -> int`, helper `int` functions, annotated local bindings, assignment, integer and boolean literals, arithmetic, bitwise, comparisons, logical `not` / `and` / `or`, `if` / `else`, same-file helper calls, and reachable `return`
+- current subset v0: `def main() -> int`, helper `int` functions, annotated local bindings, assignment, integer and boolean literals, arithmetic, bitwise, comparisons, logical `not` / `and` / `or`, `if` / `else`, `while`, same-file helper calls, and reachable `return`
 - unsupported constructs fail closed with explicit diagnostics
 
 ### 4.24 `llvm`
