@@ -242,18 +242,20 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - Status: **✅ RESOLVED** — LLVM 21.1.8 (Homebrew) confirmed available; build requires `-DT81_ENABLE_LLVM=ON`
 
 - [x] **LLVM-02: MLIR Frontend** — **✅ COMPLETED (2026-03-09)**
-  - **Design**: standard dialects only (no custom TableGen); two float modes: `compat` (IEEE-754 math.*) and `dcp` (func.call @t81_dmath_*). Non-DCP surface; DCP-adjacent in `--mode=dcp` with T81 runtime linked.
+  - **Design**: standard dialects plus a lightweight custom `t81` dialect layer (no TableGen); two float modes: `compat` (IEEE-754 math.*) and `dcp` (func.call @t81_dmath_*).
   - ✅ CMake: `T81_ENABLE_MLIR` option; `find_package(MLIR CONFIG)` with Homebrew hint; `t81_mlir` STATIC library linking MLIRArith/Math/Func/CF/MemRef/LLVM/Pass/Transforms
   - ✅ Public header: `include/t81/mlir/tisc_to_mlir.hpp` — `FloatMode`, `TranslationConfig`, `translate()`, `emit_mlir_text()`, `lower_to_llvm_ir()`, `lower_mlir_file()`, `pipeline_to_llvm()`
   - ✅ Translator: `src/mlir/tisc_to_mlir.cpp` — two-pass CFG; memref<243xi64/f64> register files; memref<65536xi64> flat memory; full integer/bitwise/comparison/control-flow/float opcode coverage
   - ✅ Float modes: compat → `math.sin/cos/tan/...`; DCP → `func.call @t81_dmath_*` externals (dmath-backed when T81 runtime linked)
-  - ✅ Lowering: `src/mlir/mlir_to_llvm.cpp` — FinalizeMemRefToLLVM → ArithToLLVM → MathToLLVM → CFToLLVM → FuncToLLVM → CSE → Canonicalize → `translateModuleToLLVMIR`
+  - ✅ Lowering: `src/mlir/mlir_to_llvm.cpp` — lower custom `t81.*` ops → canonicalize/CFG cleanup → register-slot SROA + mem2reg SSA promotion → FinalizeMemRefToLLVM → ArithToLLVM → MathToLLVM → CFToLLVM → FuncToLLVM → CSE → Canonicalize → `translateModuleToLLVMIR`
   - ✅ CLI: `t81 mlir compile/lower/pipeline` via `driver.cpp` `run_mlir()` + `main.cpp` dispatch
+  - ✅ Custom dialect: `--dialect=t81` emits `t81.reg_*` and direct-memory `t81.mem_*` ops; current scope covers register access plus immediate-address `Load`/`Store`
+  - ✅ Runtime linkage: DCP-mode modules now advertise `t81.float_mode = "dcp"` and `t81.runtime = "t81_dmath_runtime"`; CLI guidance points downstream users at `t81_dmath_runtime` (or aggregate `t81_mlir`)
   - ✅ Help: `print_help_mlir()`, `t81 help mlir`, listed in `print_usage()` and `print_help_advanced()`
   - ✅ Shell completions: `mlir` added to bash/zsh/fish with `compile lower pipeline help` subcommands
-  - Verification: smoke-tested with `t81 mlir compile`, `t81 mlir lower`, and `t81 mlir pipeline` on `examples/hello_world.t81`; CLI contract coverage passed via `t81_cli_contract_test`
+  - Verification: smoke-tested with `t81 mlir compile`, `t81 mlir lower`, and `t81 mlir pipeline` on `examples/hello_world.t81`; custom dialect paths verified with `--dialect=t81`; direct-memory dialect lowering covered by `t81_mlir_t81_dialect_memory_ops_test`; CLI contract coverage passed via `t81_cli_contract_test`
   - Status: **✅ RESOLVED** — build requires `-DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON`
-  - **Deferred**: SSA lifting pass (mem2reg), custom `t81.*` dialect ops
+  - **Deferred**: broaden `t81.*` beyond register/immediate-memory ops (for example stack semantics and richer VM-surface ops)
 
 ---
 
@@ -281,6 +283,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 | Task | Completed |
 | :--- | :--- |
 | **🏆 LLVM-01 LLVM IR Backend** — `T81_ENABLE_LLVM` CMake option; `src/llvm/tisc_to_llvm.cpp` two-pass CFG translator; `t81 llvm compile` CLI; bash/zsh/fish completions; bug fixes (FPow arity, Load/Store memory model, 6 missing float transcendentals) | **2026-03-09** |
+| **🏆 LLVM-02 MLIR Frontend** — `T81_ENABLE_MLIR` CMake option; `t81 mlir compile/lower/pipeline`; DCP runtime guidance via `t81_dmath_runtime`; SSA promotion through SROA + mem2reg; custom `--dialect=t81` support for `t81.reg_*` and direct-memory `t81.mem_*` ops | **2026-03-09** |
 | **🏆 T81Float Determinism Gap Closure** — Wired `acos`/`asin`/`atan`/`sinh`/`cosh`/`tanh` to dmath (deterministic Taylor/Newton series) in `T81_DETERMINISTIC` mode; replaced `floor`/`ceil`/`round` host-math calls with pure trit-manipulation (`trunc_impl()`, `make_int_one()`) | **2026-03-09** |
 | **🏆 T81Symbolic Completeness** — Added `serialize_canonical()` and `eval()` free functions; fixed unary constant folding to cover Sin/Cos/Exp/Log; added `Sub` identity rules; fixed `Pow` constant folding; corrected misplaced stub inside `SimpVisitor` | **2026-03-09** |
 | **🏆 v1.3.0 Release** — Tagged and published ([release notes](https://github.com/t81dev/t81-foundation/releases/tag/v1.3.0)); 332/332 tests passing | **2026-03-08** |

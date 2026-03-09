@@ -3,7 +3,7 @@
 This is the operator manual for the `t81` CLI.
 Everything in this document is intended to match the current shipped binary behavior.
 
-**Last Updated:** March 8, 2026
+**Last Updated:** March 9, 2026
 
 ## 1. Quick Start
 
@@ -107,6 +107,8 @@ Domain-first command families:
 - `t81 vm <action> [args]`
 - `t81 tisc <action> [args]`
 - `t81 ir <action> [args]`
+- `t81 llvm <action> [args]`
+- `t81 mlir <action> [args]`
 - `t81 tier <action> [args]`
 - `t81 weights <action> [args]`
 - `t81 policy <action> [args]`
@@ -138,6 +140,8 @@ t81 determinism <action> [args]
 t81 vm <action> [args]
 t81 tisc <action> [args]
 t81 ir <action> [args]
+t81 llvm <action> [args]
+t81 mlir <action> [args]
 t81 tier <action> [args]
 t81 weights <action> [args]
 t81 policy <action> [args]
@@ -208,6 +212,10 @@ t81 ir show <file.t81>
 t81 ir dump <file.t81>
 t81 ir validate <file.t81> [--json]
 t81 ir export <file.t81> [--json] [-o <file>]
+t81 llvm compile <file.t81|file.tisc> [-o <file.ll|file.bc>] [--bitcode] [--no-comments]
+t81 mlir compile <file.t81|file.tisc> [-o <file.mlir>] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
+t81 mlir lower <file.mlir> [-o <file.ll>]
+t81 mlir pipeline <file.t81|file.tisc> [-o <file.ll>] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
 t81 tier info [--json]
 t81 tier check <file.tisc> [--json]
 t81 tier gate <file.tisc> --max-tier <n> [--json]
@@ -609,7 +617,51 @@ t81 completion <bash|zsh|fish>
 
 Prints shell completion script to `stdout`.
 
-### 4.21 `man`
+### 4.21 `llvm`
+
+```text
+t81 llvm compile <file.t81|file.tisc> [-o <file.ll|file.bc>] [--bitcode] [--no-comments]
+```
+
+Compiles TISC input to LLVM IR text by default, or LLVM bitcode when `--bitcode`
+is present.
+
+Options:
+
+- `-o`, `--output <file>`
+- `--bitcode`
+- `--no-comments`
+
+### 4.22 `mlir`
+
+```text
+t81 mlir compile <file.t81|file.tisc> [-o <file.mlir>] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
+t81 mlir lower <file.mlir> [-o <file.ll>]
+t81 mlir pipeline <file.t81|file.tisc> [-o <file.ll>] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
+```
+
+MLIR frontend and lowering surface.
+
+- `compile` emits MLIR text.
+- `lower` lowers an existing `.mlir` file to LLVM IR text.
+- `pipeline` performs one-shot TISC → MLIR → LLVM IR lowering.
+
+Options:
+
+- `-o`, `--output <file>`
+- `--mode <compat|dcp>`
+- `--dialect <standard|t81>`
+- `--no-comments`
+
+Behavior notes:
+
+- `--mode=dcp` emits `func.call @t81_dmath_*` and module attributes that identify
+  `t81_dmath_runtime` as the runtime support library.
+- `--dialect=t81` emits custom `t81.*` ops for register access and direct
+  immediate-address memory `Load`/`Store` traffic before lowering them back to
+  standard MLIR.
+
+### 4.23 `man`
 
 ```text
 t81 man [--install-dir <dir>]
@@ -617,7 +669,7 @@ t81 man [--install-dir <dir>]
 
 Shows embedded manpage text or installs `t81.1`.
 
-### 4.22 `feedback`
+### 4.24 `feedback`
 
 ```text
 t81 feedback submit --rating <1-5> [--note <text>] [--path <file>]
@@ -642,6 +694,8 @@ Supported help forms. Help text is written to `stdout`, so piping works as expec
 ./build/t81 help code test # docs-smoke
 ./build/t81 help env doctor # docs-smoke
 ./build/t81 help code fmt # docs-smoke
+./build/t81 help llvm # docs-smoke
+./build/t81 help mlir # docs-smoke
 ./build/t81 help completion # docs-smoke
 ./build/t81 help man # docs-smoke
 ./build/t81 help feedback # docs-smoke
