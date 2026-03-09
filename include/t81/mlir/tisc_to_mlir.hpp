@@ -3,7 +3,9 @@
  * @brief TISC → MLIR translator public API.
  *
  * Lowers a TISC program to MLIR using standard dialects (arith, math, func,
- * cf, memref).  Two float modes are available:
+ * cf, memref). Constant-index register-file memrefs are scalar-replaced and
+ * promoted to SSA during the MLIR → LLVM lowering pipeline. Two float modes
+ * are available:
  *
  *   FloatMode::Compat  — standard math.* ops (IEEE-754 f64, non-DCP surface)
  *   FloatMode::DCP     — func.call @t81_dmath_* (dmath, DCP-compatible when

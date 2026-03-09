@@ -9,7 +9,9 @@
  *   cf      — unconditional/conditional branches
  *   memref  — register file allocation and memory load/store
  *
- * Register file model (Phase 1): memref-based (not SSA-lifted).
+ * Register file model: memref-based at translation time.
+ * The lowering pipeline scalar-replaces constant-index register accesses and
+ * then promotes the resulting slots to SSA with SROA + mem2reg.
  *   Integer registers : memref<243xi64>
  *   Float   registers : memref<243xf64>
  *   Flat memory       : memref<65536xi64>

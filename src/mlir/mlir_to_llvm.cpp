@@ -3,6 +3,8 @@
  * @brief MLIR standard dialects → LLVM IR lowering pipeline.
  *
  * Runs the standard MLIR conversion pass pipeline:
+ *   sroa    — scalar-replace constant-index register-file memrefs
+ *   mem2reg — promote scalarized register slots to SSA block arguments
  *   arith   → LLVM dialect
  *   math    → LLVM dialect (via intrinsics or libm)
  *   func    → LLVM dialect
@@ -30,6 +32,7 @@
 #include "mlir/Dialect/MemRef/IR/MemRef.h"
 #include "mlir/IR/AsmState.h"
 #include "mlir/Pass/PassManager.h"
+#include "mlir/Pass/PassRegistry.h"
 #include "mlir/Parser/Parser.h"
 #include "mlir/Target/LLVMIR/Dialect/Builtin/BuiltinToLLVMIRTranslation.h"
 #include "mlir/Target/LLVMIR/Dialect/LLVMIR/LLVMToLLVMIRTranslation.h"
@@ -51,11 +54,18 @@ bool lower_to_llvm_ir(
   // Register translation interfaces required by translateModuleToLLVMIR.
   mlir::registerBuiltinDialectTranslation(ctx);
   mlir::registerLLVMDialectTranslation(ctx);
+  mlir::registerTransformsPasses();
 
   // Build and run the lowering pass pipeline.
   mlir::PassManager pm(&ctx);
   // The first-pass CFG lowering can leave unreachable basic blocks behind.
-  // Canonicalization removes them so FuncToLLVM sees a reachable CFG.
+  // Canonicalization removes them so SROA/mem2reg and FuncToLLVM see a
+  // reachable CFG.
+  pm.addPass(mlir::createCanonicalizerPass());
+  pm.addPass(mlir::createCSEPass());
+  // Scalarize constant-index register-file accesses, then promote the resulting
+  // per-register stack slots to SSA values / block arguments.
+  if (mlir::failed(mlir::parsePassPipeline("sroa,mem2reg", pm))) return false;
   pm.addPass(mlir::createCanonicalizerPass());
   pm.addPass(mlir::createCSEPass());
   // FinalizeMemRef must run before Func→LLVM.
