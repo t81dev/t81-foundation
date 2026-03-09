@@ -1,6 +1,6 @@
 # Active Tasks
 
-Last Updated: 2026-03-08
+Last Updated: 2026-03-09
 
 Immediate, actionable items only. Structural hardening items live in `HARDENING_BACKLOG.md`.
 
@@ -25,7 +25,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 - [x] **AX-M5/M6/M7 Axion Beta Evidence** - **✅ COMPLETED**
   - ✅ Map determinism stewardship transitions (AX-M5)
-  - ✅ Document CanonFS observability evidence paths (AX-M6) 
+  - ✅ Document CanonFS observability evidence paths (AX-M6)
   - ✅ Create complexity measurement evidence (AX-M7)
   - Completed: 2026-03-04 (ahead of schedule)
   - Status: **✅ RESOLVED** - Time-sensitive deadline met
@@ -198,6 +198,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 ## 🚀 **CURRENT PRODUCTION READINESS STATUS**
 
 ### **✅ REMARKABLE ACHIEVEMENTS COMPLETED:**
+
 - **Memory Pool Optimization**: 10-phase complete with 30-50% efficiency gains
 - **All P1 Tasks**: 8/8 completed ahead of schedule  
 - **Test Success Rate**: 100% (285/285 tests passing)
@@ -206,17 +207,53 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 - **AI-Native Features**: Ethical agents, cognitive tiers, policy enforcement
 
 ### **🎯 STRATEGIC FOCUS AREAS:**
+
 - **P2 - Production Hardening**: Deputy approval policy, infrastructure robustness
 - **P3 - Governance & Scaling**: Technical debt cleanup, BigInt enhancement, cognitive tiers
 - **Innovation Pipeline**: AI-native opcodes, quantum-hybrid computing, AGI foundation
 
 ### **🏆 PRODUCTION READINESS METRICS:**
+
 - **Critical Path**: ✅ ALL BLOCKERS REMOVED
 - **Test Coverage**: ✅ 100% SUCCESS RATE
 - **Memory Management**: ✅ OPTIMIZED & HARDENED
 - **AI Safety**: ✅ ETHICAL GOVERNANCE ACTIVE
 - **Determinism**: ✅ BIT-EXACT REPRODUCIBILITY
 - **Cross-Platform**: ✅ CONSISTENT BEHAVIOR
+
+---
+
+## 🎯 PRIORITY 2 (CONTINUED): COMPILER ECOSYSTEM — **🔥 ACTIVE**
+
+### LLVM / MLIR Frontend Integration
+
+**Goal**: Provide a real TISC → LLVM IR translator and an MLIR dialect layer, replacing the empty `t81_llvm` INTERFACE stub. Enables native code generation, JIT compilation via LLVM ORC, and MLIR-based analysis passes for TISC programs.
+
+- [x] **LLVM-01: LLVM IR Backend** — **✅ COMPLETED (2026-03-09)**
+  - ✅ CMake: `T81_ENABLE_LLVM` option; `find_package(LLVM CONFIG)` with Homebrew hint; conditional STATIC vs INTERFACE library
+  - ✅ Public header: `include/t81/llvm/tisc_to_llvm.hpp` — `TranslationConfig`, `translate()`, `emit_ir_text()`, `emit_ir_bitcode()`
+  - ✅ Translator: `src/llvm/tisc_to_llvm.cpp` (~600 LOC) — two-pass CFG, `[243 x i64]` integer regfile, `[243 x double]` float regfile, `[65536 x i64]` flat memory
+  - ✅ Opcode coverage: Nop/Halt, LoadImm, Mov, integer arithmetic, bitwise, comparison, control flow (Jump/JumpIf*/Call/Ret), float arithmetic, full transcendentals (sin/cos/tan/exp/log/sqrt/pow/asin/acos/atan/sinh/cosh/tanh), I2F/F2I, Print, Load/Store, Push/Pop
+  - ✅ Bug fixes: `FPow` two-argument intrinsic; `Load`/`Store` memory model; missing `FAsin`/`FAcos`/`FAtan`/`FSinh`/`FCosh`/`FTanh`
+  - ✅ CLI: `t81 llvm compile <input> [-o <out>] [--bitcode] [--no-comments]` via `driver.cpp` `run_llvm()` + `main.cpp` dispatch
+  - ✅ Help: `print_help_llvm()`, `t81 help llvm`, listed in `print_usage()` and `print_help_advanced()`
+  - ✅ Shell completions: `llvm` added to bash / zsh / fish completion scripts with `compile help` subcommands
+  - Verification: smoke-tested with `t81 llvm compile examples/hello_world.t81 -o /tmp/t81_hello_smoke.ll`; CLI contract coverage passed via `t81_cli_contract_test`
+  - Status: **✅ RESOLVED** — LLVM 21.1.8 (Homebrew) confirmed available; build requires `-DT81_ENABLE_LLVM=ON`
+
+- [x] **LLVM-02: MLIR Frontend** — **✅ COMPLETED (2026-03-09)**
+  - **Design**: standard dialects only (no custom TableGen); two float modes: `compat` (IEEE-754 math.*) and `dcp` (func.call @t81_dmath_*). Non-DCP surface; DCP-adjacent in `--mode=dcp` with T81 runtime linked.
+  - ✅ CMake: `T81_ENABLE_MLIR` option; `find_package(MLIR CONFIG)` with Homebrew hint; `t81_mlir` STATIC library linking MLIRArith/Math/Func/CF/MemRef/LLVM/Pass/Transforms
+  - ✅ Public header: `include/t81/mlir/tisc_to_mlir.hpp` — `FloatMode`, `TranslationConfig`, `translate()`, `emit_mlir_text()`, `lower_to_llvm_ir()`, `lower_mlir_file()`, `pipeline_to_llvm()`
+  - ✅ Translator: `src/mlir/tisc_to_mlir.cpp` — two-pass CFG; memref<243xi64/f64> register files; memref<65536xi64> flat memory; full integer/bitwise/comparison/control-flow/float opcode coverage
+  - ✅ Float modes: compat → `math.sin/cos/tan/...`; DCP → `func.call @t81_dmath_*` externals (dmath-backed when T81 runtime linked)
+  - ✅ Lowering: `src/mlir/mlir_to_llvm.cpp` — FinalizeMemRefToLLVM → ArithToLLVM → MathToLLVM → CFToLLVM → FuncToLLVM → CSE → Canonicalize → `translateModuleToLLVMIR`
+  - ✅ CLI: `t81 mlir compile/lower/pipeline` via `driver.cpp` `run_mlir()` + `main.cpp` dispatch
+  - ✅ Help: `print_help_mlir()`, `t81 help mlir`, listed in `print_usage()` and `print_help_advanced()`
+  - ✅ Shell completions: `mlir` added to bash/zsh/fish with `compile lower pipeline help` subcommands
+  - Verification: smoke-tested with `t81 mlir compile`, `t81 mlir lower`, and `t81 mlir pipeline` on `examples/hello_world.t81`; CLI contract coverage passed via `t81_cli_contract_test`
+  - Status: **✅ RESOLVED** — build requires `-DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON`
+  - **Deferred**: SSA lifting pass (mem2reg), custom `t81.*` dialect ops
 
 ---
 
@@ -243,6 +280,9 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 | Task | Completed |
 | :--- | :--- |
+| **🏆 LLVM-01 LLVM IR Backend** — `T81_ENABLE_LLVM` CMake option; `src/llvm/tisc_to_llvm.cpp` two-pass CFG translator; `t81 llvm compile` CLI; bash/zsh/fish completions; bug fixes (FPow arity, Load/Store memory model, 6 missing float transcendentals) | **2026-03-09** |
+| **🏆 T81Float Determinism Gap Closure** — Wired `acos`/`asin`/`atan`/`sinh`/`cosh`/`tanh` to dmath (deterministic Taylor/Newton series) in `T81_DETERMINISTIC` mode; replaced `floor`/`ceil`/`round` host-math calls with pure trit-manipulation (`trunc_impl()`, `make_int_one()`) | **2026-03-09** |
+| **🏆 T81Symbolic Completeness** — Added `serialize_canonical()` and `eval()` free functions; fixed unary constant folding to cover Sin/Cos/Exp/Log; added `Sub` identity rules; fixed `Pow` constant folding; corrected misplaced stub inside `SimpVisitor` | **2026-03-09** |
 | **🏆 v1.3.0 Release** — Tagged and published ([release notes](https://github.com/t81dev/t81-foundation/releases/tag/v1.3.0)); 332/332 tests passing | **2026-03-08** |
 | **🏆 TLOADHASH Null-CanonFS SEGFAULT Fix** — Added null-guard with hash-format validation; introduced `set_canonfs_root()` VM API; updated all TLOADHASH tests; BoundsFault/DecodeFault taxonomy enforced | **2026-03-08** |
 | **🏆 Frontend Architecture Refactor** — Typed AST (`Expr::resolved_type`), unified builtin registry (`kBuiltinTable`, 130 entries), IRGen extracted to `ir_generator.cpp`; SA dispatch ordering fixed (table-driven fallback after custom handlers); 332/332 tests passing | **2026-03-08** |
@@ -282,6 +322,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 ## 🎉 **SESSION ACHIEVEMENT SUMMARY**
 
 ### **✅ ALL PRIORITY 1 TASKS COMPLETED (8/8)**
+
 - **BG-06 Collection Determinism** - ✅ COMPLETED
 - **AX-M5/M6/M7 Axion Beta Evidence** - ✅ COMPLETED  
 - **T3K-S1 Quantization Specification** - ✅ COMPLETED
@@ -292,6 +333,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 - **CLI Feature Testing** - ✅ COMPLETED
 
 ### **🚀 PRODUCTION READINESS STATUS:**
+
 - **Critical Path**: ✅ ALL BLOCKERS REMOVED
 - **Test Success Rate**: ✅ 100% (285/285 tests)
 - **Infrastructure**: ✅ FULLY HARDENED

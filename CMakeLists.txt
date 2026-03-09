@@ -412,9 +412,6 @@ target_link_libraries(axion_guard_trace PRIVATE t81_tool_cli t81_vm)
 add_executable(axion_policy_trace examples/axion_policy_trace.cpp)
 target_link_libraries(axion_policy_trace PRIVATE t81_tool_cli t81_vm)
 
-add_executable(axion_heap_compaction_trace_test tests/cpp/axion_heap_compaction_trace_test.cpp)
-target_link_libraries(axion_heap_compaction_trace_test PRIVATE t81_tool_cli t81_isa t81_vm)
-
 add_executable(axion_policy_runner examples/axion_policy_runner.cpp)
 target_link_libraries(axion_policy_runner PRIVATE t81_tool_cli t81_vm)
 
@@ -428,12 +425,6 @@ endif()
 
 add_executable(canonfs_trace_demo examples/canonfs_trace_demo.cpp)
 target_link_libraries(canonfs_trace_demo PRIVATE t81_core t81_axion)
-
-add_executable(axion_nested_guard_test tests/cpp/axion_nested_guard_test.cpp)
-target_link_libraries(axion_nested_guard_test PRIVATE t81_tool_cli t81_vm)
-
-add_executable(e2e_axion_trace_test tests/cpp/e2e_axion_trace_test.cpp)
-target_link_libraries(e2e_axion_trace_test PRIVATE t81_tool_cli t81_vm)
 
 add_executable(complex_demo examples/complex_demo.cpp)
 target_link_libraries(complex_demo PRIVATE t81_core asio)
@@ -1366,6 +1357,15 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   add_executable(t81_code_protection_test tests/cpp/test_code_protection.cpp)
   target_link_libraries(t81_code_protection_test PRIVATE t81_vm t81_core)
 
+  add_executable(axion_heap_compaction_trace_test tests/cpp/axion_heap_compaction_trace_test.cpp)
+  target_link_libraries(axion_heap_compaction_trace_test PRIVATE t81_tool_cli t81_isa t81_vm)
+
+  add_executable(axion_nested_guard_test tests/cpp/axion_nested_guard_test.cpp)
+  target_link_libraries(axion_nested_guard_test PRIVATE t81_tool_cli t81_vm)
+
+  add_executable(e2e_axion_trace_test tests/cpp/e2e_axion_trace_test.cpp)
+  target_link_libraries(e2e_axion_trace_test PRIVATE t81_tool_cli t81_vm)
+
   enable_testing()
   set(T81_TEST_TARGETS
     t81_float_test
@@ -1565,6 +1565,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_cli_diagnostic_context_test
     t81_cli_trace_export_test
     cli_canonize_tensor_test
+    axion_heap_compaction_trace_test
     axion_policy_match_guard_test
     axion_policy_segment_event_test
     axion_policy_invariants_test
