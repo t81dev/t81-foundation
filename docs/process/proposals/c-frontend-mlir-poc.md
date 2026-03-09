@@ -69,7 +69,7 @@ Allowed:
 - boolean operators lowered as integer predicates
 - `if`, `while`, `for`
 - simple function calls within the same translation unit
-- fixed-size local arrays lowered to explicit T81 memory slots, with literal-only indexing in v0
+- fixed-size local arrays lowered to explicit T81 memory slots, with compile-time constant indexing in v0
 
 Rejected:
 
@@ -195,7 +195,8 @@ Implemented and verified:
 - entry-point model: `int main()`
 - helper `int` functions with named `int` parameters
 - local initialized `int` variables
-- fixed local `int[N]` arrays with integer-literal initializers/indexing lowered to T81 memory
+- fixed local `int[N]` arrays with compile-time integer initializers/indexing lowered to T81 memory
+- compile-time constant array expressions accepted for fixed local indexing/initialization
 - statement-only `++`/`--`, arithmetic/bitwise/comparisons/logical integer expressions, loop-local `break`/`continue`
 - assignment statements
 - structured control flow: `if`, `while`, `for`
@@ -204,7 +205,7 @@ Implemented and verified:
 - explicit rejection diagnostics for pointers, pointer parameters, globals,
   float returns, conditionless `for` loops, prototypes/`extern` declarations,
   variadic helpers, non-`int main()` signatures, `switch`, `do-while`, `goto`,
-  labels, address-of/dereference, casts, non-literal array indices, ternary,
+  labels, address-of/dereference, casts, runtime array indices, ternary,
   member access, `sizeof`, and compound assignment
 
 Verified in targeted builds:
@@ -228,13 +229,15 @@ Latest implementation commits on `main`:
 - `1a8c4602` `Add loop break and continue to C frontend subset`
 - `95b32961` `Add fixed arrays to C frontend subset`
 - `904d1ae5` `Harden C frontend declaration surfaces`
+- `05f45fce` `Add Rust frontend PoC proposal`
+- local follow-up (uncommitted at proposal refresh time): compile-time constant array expression support
 - `4b54c254` `Add Rust frontend CLI scaffold`
 
 Recommended resume point:
 
-1. decide whether array indexing should remain literal-only or grow into a
-   broader T81 memory/addressing surface
-2. if C is considered sufficient at literal-only indexing, the next major
+1. decide whether compile-time constant array expressions are the intended end-state for C v0
+   or whether array indexing should grow into a broader T81 memory/addressing surface
+2. if C is considered sufficient at compile-time-constant indexing, the next major
    resume point is the Rust ingress path using the already-landed CLI/build
    scaffold (`t81 rust compile`, `T81_ENABLE_RUST_FRONTEND`)
 3. implement real Rust lowering only once a Rust toolchain is available in the

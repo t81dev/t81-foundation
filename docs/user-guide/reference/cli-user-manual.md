@@ -637,7 +637,7 @@ Current subset v0:
 - no separate prototypes or `extern` declarations
 - no variadic helpers
 - same-translation-unit calls without recursion
-- integer literals, fixed local `int[N]` arrays with literal indexing, assignment, statement-only `++` / `--`, arithmetic, bitwise integer ops, comparisons, logical `!` / `&&` / `||`, and loop-local `break` / `continue`
+- integer literals, fixed local `int[N]` arrays with compile-time constant indexing, assignment, statement-only `++` / `--`, arithmetic, bitwise integer ops, comparisons, logical `!` / `&&` / `||`, and loop-local `break` / `continue`
 - compound blocks, `if`, `while`, `for`, and reachable `return`
 
 Behavior notes:

@@ -37,9 +37,9 @@ int main() {
         "}\n"
         "int main() {\n"
         "  int y = climb(3);\n"
-        "  int cells[4] = {1, 2, 3};\n"
+        "  int cells[4] = {1, 1 + 1, 1 << 1};\n"
         "  cells[3] = y;\n"
-        "  y = cells[1] + cells[3];\n"
+        "  y = cells[1 + 0] + cells[2 + 1];\n"
         "  y = y & 7;\n"
         "  int z = 0;\n"
         "  if (y == 7) {\n"
@@ -92,7 +92,8 @@ int main() {
     std::string error;
     check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_array.c", output, {}, &error),
           "expected array example to be rejected");
-    check(error.find("only integer-literal array indices are supported") != std::string::npos,
+    check(error.find("only compile-time constant array indices are supported") !=
+              std::string::npos,
           "expected array-index rejection diagnostic");
   }
 

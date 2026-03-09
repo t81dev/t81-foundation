@@ -272,6 +272,120 @@ bool compile_integer_literal(LoweringContext& ctx, CXCursor cursor, int32_t targ
 std::optional<std::string> binary_operator_spelling(CXCursor cursor,
                                                     CXCursor lhs,
                                                     CXCursor rhs,
+                                                    std::string_view source);
+std::optional<std::string> unary_operator_spelling(CXCursor cursor,
+                                                   CXCursor operand,
+                                                   std::string_view source);
+
+bool evaluate_const_int_expr(LoweringContext& ctx, CXCursor cursor, int64_t& value,
+                             std::string* error) {
+  cursor = unwrap_expr(cursor);
+  switch (clang_getCursorKind(cursor)) {
+    case CXCursor_IntegerLiteral:
+      return compile_integer_literal_value(ctx, cursor, value, error);
+    case CXCursor_UnaryOperator: {
+      auto children = cursor_children(cursor);
+      if (children.size() != 1) {
+        return ctx.fail(cursor, "unsupported constant integer expression", error);
+      }
+      CXCursor operand = unwrap_expr(children.front());
+      const auto op = unary_operator_spelling(cursor, operand, ctx.source());
+      if (!op.has_value()) {
+        return ctx.fail(cursor, "unsupported constant integer expression", error);
+      }
+      int64_t operand_value = 0;
+      if (!evaluate_const_int_expr(ctx, operand, operand_value, error)) {
+        return false;
+      }
+      if (*op == "-") {
+        value = -operand_value;
+        return true;
+      }
+      if (*op == "!") {
+        value = operand_value == 0 ? 1 : 0;
+        return true;
+      }
+      return ctx.fail(
+          cursor,
+          "only unary minus and logical not are supported in constant array expressions", error);
+    }
+    case CXCursor_BinaryOperator: {
+      auto children = cursor_children(cursor);
+      if (children.size() != 2) {
+        return ctx.fail(cursor, "unsupported constant integer expression", error);
+      }
+      CXCursor lhs = unwrap_expr(children[0]);
+      CXCursor rhs = unwrap_expr(children[1]);
+      const auto op = binary_operator_spelling(cursor, lhs, rhs, ctx.source());
+      if (!op.has_value()) {
+        return ctx.fail(cursor, "unable to determine constant expression operator", error);
+      }
+      int64_t lhs_value = 0;
+      int64_t rhs_value = 0;
+      if (!evaluate_const_int_expr(ctx, lhs, lhs_value, error) ||
+          !evaluate_const_int_expr(ctx, rhs, rhs_value, error)) {
+        return false;
+      }
+      if (*op == "+") {
+        value = lhs_value + rhs_value;
+      } else if (*op == "-") {
+        value = lhs_value - rhs_value;
+      } else if (*op == "*") {
+        value = lhs_value * rhs_value;
+      } else if (*op == "/") {
+        if (rhs_value == 0) {
+          return ctx.fail(rhs, "constant integer expression divides by zero", error);
+        }
+        value = lhs_value / rhs_value;
+      } else if (*op == "%") {
+        if (rhs_value == 0) {
+          return ctx.fail(rhs, "constant integer expression divides by zero", error);
+        }
+        value = lhs_value % rhs_value;
+      } else if (*op == "==") {
+        value = lhs_value == rhs_value ? 1 : 0;
+      } else if (*op == "!=") {
+        value = lhs_value != rhs_value ? 1 : 0;
+      } else if (*op == "<") {
+        value = lhs_value < rhs_value ? 1 : 0;
+      } else if (*op == "<=") {
+        value = lhs_value <= rhs_value ? 1 : 0;
+      } else if (*op == ">") {
+        value = lhs_value > rhs_value ? 1 : 0;
+      } else if (*op == ">=") {
+        value = lhs_value >= rhs_value ? 1 : 0;
+      } else if (*op == "&") {
+        value = lhs_value & rhs_value;
+      } else if (*op == "|") {
+        value = lhs_value | rhs_value;
+      } else if (*op == "^") {
+        value = lhs_value ^ rhs_value;
+      } else if (*op == "<<") {
+        value = lhs_value << rhs_value;
+      } else if (*op == ">>") {
+        value = lhs_value >> rhs_value;
+      } else if (*op == "&&") {
+        value = (lhs_value != 0 && rhs_value != 0) ? 1 : 0;
+      } else if (*op == "||") {
+        value = (lhs_value != 0 || rhs_value != 0) ? 1 : 0;
+      } else {
+        return ctx.fail(
+            cursor,
+            "only integer arithmetic, comparison, bitwise, and logical operators are supported in constant array expressions",
+            error);
+      }
+      return true;
+    }
+    default:
+      return ctx.fail(cursor,
+                      "array indices and fixed-array initializers must be compile-time integer expressions",
+                      error);
+  }
+}
+
+std::optional<std::string> binary_operator_spelling(CXCursor cursor,
+                                                    CXCursor lhs,
+                                                    CXCursor rhs,
                                                     std::string_view source) {
   unsigned expr_begin = 0;
   unsigned expr_end = 0;
@@ -343,9 +457,8 @@ std::optional<std::pair<std::string, int64_t>> parse_array_subscript(LoweringCon
   }
   int64_t index = 0;
   CXCursor index_cursor = unwrap_expr(children[1]);
-  if (clang_getCursorKind(index_cursor) != CXCursor_IntegerLiteral ||
-      !compile_integer_literal_value(ctx, index_cursor, index, error)) {
-    ctx.fail(index_cursor, "only integer-literal array indices are supported", error);
+  if (!evaluate_const_int_expr(ctx, index_cursor, index, error)) {
+    ctx.fail(index_cursor, "only compile-time constant array indices are supported", error);
     return std::nullopt;
   }
   if (index < 0 || index >= array_it->second.size) {
@@ -660,10 +773,10 @@ bool compile_var_decl(LoweringContext& ctx, CXCursor cursor, std::string* error)
         }
         int64_t literal = 0;
         CXCursor literal_cursor = unwrap_expr(init_value);
-        if (clang_getCursorKind(literal_cursor) != CXCursor_IntegerLiteral ||
-            !compile_integer_literal_value(ctx, literal_cursor, literal, error)) {
+        if (!evaluate_const_int_expr(ctx, literal_cursor, literal, error)) {
           return ctx.fail(init_value,
-                          "fixed local array initializers must be integer literals", error);
+                          "fixed local array initializers must be compile-time integer expressions",
+                          error);
         }
         ctx.emit(t81::tisc::Opcode::LoadImm, value_reg, literal, 0);
         ctx.emit(t81::tisc::Opcode::Store, static_cast<int32_t>(base_addr + init_index), value_reg,
