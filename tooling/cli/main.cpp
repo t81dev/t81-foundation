@@ -119,6 +119,44 @@ struct TempTiscFile {
   }
 };
 
+struct TempCaptureFile {
+  fs::path path;
+
+  explicit TempCaptureFile(const std::string& hint, const std::string& ext) {
+    std::random_device rd;
+    std::mt19937_64 gen(rd());
+    std::uniform_int_distribution<uint64_t> dist;
+
+    while (true) {
+      path = fs::temp_directory_path() / ("t81-" + hint + "-" + std::to_string(dist(gen)) + ext);
+      std::string path_str = path.string();
+#if defined(_WIN32)
+      int fd =
+          _open(path_str.c_str(), _O_CREAT | _O_EXCL | _O_RDWR | _O_BINARY, _S_IREAD | _S_IWRITE);
+#else
+      int fd = open(path_str.c_str(), O_CREAT | O_EXCL | O_RDWR, 0600);
+#endif
+      if (fd != -1) {
+#if defined(_WIN32)
+        _close(fd);
+#else
+        close(fd);
+#endif
+        break;
+      }
+      if (errno != EEXIST) {
+        throw std::runtime_error("Failed to create temporary file: " + path_str +
+                                 " (errno: " + std::to_string(errno) + ")");
+      }
+    }
+  }
+
+  ~TempCaptureFile() {
+    std::error_code ec;
+    fs::remove(path, ec);
+  }
+};
+
 struct TempBinaryFile {
   fs::path path;
 
@@ -580,7 +618,8 @@ Actions:
   paths [--json]                      Print important repo/runtime paths
   diag [--json]                       Aggregate environment, CanonFS, and Axion diagnostics
   toolchain [--json]                  Inspect compiler/build/test tool availability
-  clean [--build-dir <path>] [--json] Remove local build artifacts
+  clean [--build-dir <path>] [--force] [--json]
+                                     Remove local build artifacts
   feedback <subcommand> [args]        Record/report local CLI UX feedback
 
 Example:
@@ -1646,7 +1685,7 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       return true;
     }
     if (sub == "clean") {
-      std::cerr << "Usage: t81 env clean [--build-dir <path>] [--json]\n";
+      std::cerr << "Usage: t81 env clean [--build-dir <path>] [--force] [--json]\n";
       return true;
     }
   }
@@ -6247,44 +6286,126 @@ fs::path discover_canonfs_root() {
 bool shell_command_available(const std::string& command) {
 #if defined(_WIN32)
   std::string probe = "where " + command + " >nul 2>nul";
-#else
-  std::string probe = "command -v " + shell_escape(command) + " >/dev/null 2>&1";
-#endif
   const int status = std::system(probe.c_str());
   if (status == -1) {
     return false;
   }
   return decode_system_status(status) == 0;
+#else
+  if (command.empty() || command.find('/') != std::string::npos) {
+    return false;
+  }
+  const char* path_env = std::getenv("PATH");
+  if (!path_env) {
+    return false;
+  }
+  std::stringstream ss(path_env);
+  std::string dir;
+  while (std::getline(ss, dir, ':')) {
+    const fs::path candidate = (dir.empty() ? fs::current_path() : fs::path(dir)) / command;
+    std::error_code ec;
+    if (fs::exists(candidate, ec) && !fs::is_directory(candidate, ec) &&
+        ::access(candidate.c_str(), X_OK) == 0) {
+      return true;
+    }
+  }
+  return false;
+#endif
 }
 
-std::optional<std::string> capture_command_stdout(const std::string& command) {
-  const fs::path out_path =
-      fs::temp_directory_path() / ("t81-capture-" + std::to_string(std::rand()) + ".out");
-  const fs::path err_path =
-      fs::temp_directory_path() / ("t81-capture-" + std::to_string(std::rand()) + ".err");
-  const std::string cmd = command + " > " + shell_escape(out_path.string()) + " 2> " +
-                          shell_escape(err_path.string());
+struct ProcessCaptureResult {
+  int exit_code = -1;
+  std::string stdout_text;
+  std::string stderr_text;
+};
+
+ProcessCaptureResult run_process_capture(
+    const std::vector<std::string>& argv, const std::optional<fs::path>& cwd = std::nullopt,
+    const std::vector<std::pair<std::string, std::string>>& env_overrides = {}) {
+  ProcessCaptureResult result;
+  if (argv.empty()) {
+    return result;
+  }
+#if defined(_WIN32)
+  std::string cmd;
+  for (std::size_t i = 0; i < argv.size(); ++i) {
+    if (i != 0) {
+      cmd.push_back(' ');
+    }
+    cmd += shell_escape(argv[i]);
+  }
+  TempCaptureFile out_file("capture", ".out");
+  TempCaptureFile err_file("capture", ".err");
+  cmd += " > " + shell_escape(out_file.path.string()) + " 2> " + shell_escape(err_file.path.string());
   const int status = std::system(cmd.c_str());
-  if (status == -1 || decode_system_status(status) != 0) {
-    std::error_code ignore_ec;
-    fs::remove(out_path, ignore_ec);
-    fs::remove(err_path, ignore_ec);
+  if (status == -1) {
+    return result;
+  }
+  result.exit_code = decode_system_status(status);
+  std::ifstream out_stream(out_file.path, std::ios::binary);
+  std::ifstream err_stream(err_file.path, std::ios::binary);
+  result.stdout_text.assign((std::istreambuf_iterator<char>(out_stream)), std::istreambuf_iterator<char>());
+  result.stderr_text.assign((std::istreambuf_iterator<char>(err_stream)), std::istreambuf_iterator<char>());
+  return result;
+#else
+  TempCaptureFile out_file("capture", ".out");
+  TempCaptureFile err_file("capture", ".err");
+
+  std::vector<std::string> argv_storage = argv;
+  std::vector<char*> argv_ptrs;
+  argv_ptrs.reserve(argv_storage.size() + 1);
+  for (auto& item : argv_storage) {
+    argv_ptrs.push_back(item.data());
+  }
+  argv_ptrs.push_back(nullptr);
+
+  pid_t pid = fork();
+  if (pid == 0) {
+    int out_fd = open(out_file.path.c_str(), O_WRONLY | O_TRUNC);
+    int err_fd = open(err_file.path.c_str(), O_WRONLY | O_TRUNC);
+    if (out_fd == -1 || err_fd == -1) {
+      _exit(127);
+    }
+    if (dup2(out_fd, STDOUT_FILENO) == -1 || dup2(err_fd, STDERR_FILENO) == -1) {
+      _exit(127);
+    }
+    close(out_fd);
+    close(err_fd);
+    if (cwd && chdir(cwd->c_str()) != 0) {
+      _exit(127);
+    }
+    for (const auto& [key, value] : env_overrides) {
+      setenv(key.c_str(), value.c_str(), 1);
+    }
+    execvp(argv_ptrs[0], argv_ptrs.data());
+    _exit(127);
+  }
+  if (pid < 0) {
+    return result;
+  }
+
+  int status = 0;
+  if (waitpid(pid, &status, 0) == -1) {
+    return result;
+  }
+  result.exit_code = decode_system_status(status);
+  std::ifstream out_stream(out_file.path, std::ios::binary);
+  std::ifstream err_stream(err_file.path, std::ios::binary);
+  result.stdout_text.assign((std::istreambuf_iterator<char>(out_stream)), std::istreambuf_iterator<char>());
+  result.stderr_text.assign((std::istreambuf_iterator<char>(err_stream)), std::istreambuf_iterator<char>());
+  return result;
+#endif
+}
+
+std::optional<std::string> capture_command_stdout(const std::vector<std::string>& argv) {
+  const auto result = run_process_capture(argv);
+  if (result.exit_code != 0) {
     return std::nullopt;
   }
-  std::ifstream in(out_path, std::ios::binary);
-  if (!in) {
-    std::error_code ignore_ec;
-    fs::remove(out_path, ignore_ec);
-    fs::remove(err_path, ignore_ec);
-    return std::nullopt;
-  }
-  std::string text((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+  std::string text = result.stdout_text;
   while (!text.empty() && (text.back() == '\n' || text.back() == '\r')) {
     text.pop_back();
   }
-  std::error_code ignore_ec;
-  fs::remove(out_path, ignore_ec);
-  fs::remove(err_path, ignore_ec);
   return text;
 }
 
@@ -6360,23 +6481,22 @@ int run_env_toolchain(const Args& args) {
   struct ToolProbe {
     std::string name;
     std::string command;
-    std::string version_probe;
     bool available = false;
     std::optional<std::string> version;
   };
 
   std::vector<ToolProbe> probes = {
-      {"cmake", "cmake", "cmake --version", false, std::nullopt},
-      {"ctest", "ctest", "ctest --version", false, std::nullopt},
-      {"python3", "python3", "python3 --version", false, std::nullopt},
-      {"clang++", "clang++", "clang++ --version", false, std::nullopt},
-      {"g++", "g++", "g++ --version", false, std::nullopt},
+      {"cmake", "cmake", false, std::nullopt},
+      {"ctest", "ctest", false, std::nullopt},
+      {"python3", "python3", false, std::nullopt},
+      {"clang++", "clang++", false, std::nullopt},
+      {"g++", "g++", false, std::nullopt},
   };
 
   for (auto& probe : probes) {
     probe.available = shell_command_available(probe.command);
     if (probe.available) {
-      probe.version = capture_command_stdout(probe.version_probe);
+      probe.version = capture_command_stdout({probe.command, "--version"});
     }
   }
 
@@ -6390,8 +6510,8 @@ int run_env_toolchain(const Args& args) {
   if (as_json) {
     std::cout << "{\n"
               << "  \"schema\": \"t81.env-toolchain.v1\",\n"
-              << "  \"ok\": " << ((shell_command_available("cmake") && shell_command_available("ctest") &&
-                                      shell_command_available("python3") && any_compiler)
+              << "  \"ok\": " << ((probes[0].available && probes[1].available &&
+                                      probes[2].available && any_compiler)
                                          ? "true"
                                          : "false")
               << ",\n"
@@ -6515,11 +6635,14 @@ int run_env_diag(const Args& args) {
 
 int run_env_clean(const Args& args) {
   bool as_json = false;
+  bool force = false;
   fs::path build_dir = discover_build_dir();
   for (std::size_t i = 0; i < args.command_args.size(); ++i) {
     const auto& token = args.command_args[i];
     if (token == "--json") {
       as_json = true;
+    } else if (token == "--force") {
+      force = true;
     } else if (token == "--build-dir") {
       if (i + 1 >= args.command_args.size()) {
         error("env clean: missing value for --build-dir.");
@@ -6527,19 +6650,44 @@ int run_env_clean(const Args& args) {
       }
       build_dir = fs::path(args.command_args[++i]);
     } else if (token == "-h" || token == "--help") {
-      return emit_help([&] { std::cerr << "Usage: t81 env clean [--build-dir <path>] [--json]\n"; });
+      return emit_help(
+          [&] { std::cerr << "Usage: t81 env clean [--build-dir <path>] [--force] [--json]\n"; });
     } else {
       error("env clean: unknown option '" + token + "'. Run 't81 help env clean'.");
       return 1;
     }
   }
 
-  std::vector<fs::path> removed_paths;
+  const fs::path repo_root = discover_repo_root();
   std::error_code ec;
+  const fs::path abs_repo_root = fs::weakly_canonical(repo_root, ec);
+  ec.clear();
+  const fs::path abs_build_dir =
+      fs::exists(build_dir, ec) ? fs::weakly_canonical(build_dir, ec) : fs::absolute(build_dir, ec);
+  if (ec) {
+    error("env clean: could not resolve build dir: " + build_dir.string());
+    return 1;
+  }
+  if (abs_build_dir.empty() || abs_build_dir == abs_build_dir.root_path()) {
+    error("env clean: refusing to clean an unsafe root path.");
+    return 1;
+  }
+  if (abs_build_dir == abs_repo_root) {
+    error("env clean: refusing to clean the repository root.");
+    return 1;
+  }
+  const auto rel_to_repo = fs::relative(abs_build_dir, abs_repo_root, ec);
+  const bool inside_repo = !ec && !rel_to_repo.empty() && *rel_to_repo.begin() != "..";
+  if (!force && !inside_repo) {
+    error("env clean: target is outside the repository root; rerun with --force to allow it.");
+    return 1;
+  }
+
+  std::vector<fs::path> removed_paths;
   const std::vector<fs::path> targets = {
-      build_dir / "CMakeCache.txt", build_dir / "CMakeFiles", build_dir / "CTestTestfile.cmake",
-      build_dir / "Testing",        build_dir / "build.ninja", build_dir / ".ninja_deps",
-      build_dir / ".ninja_log"};
+      abs_build_dir / "CMakeCache.txt", abs_build_dir / "CMakeFiles", abs_build_dir / "CTestTestfile.cmake",
+      abs_build_dir / "Testing",        abs_build_dir / "build.ninja", abs_build_dir / ".ninja_deps",
+      abs_build_dir / ".ninja_log"};
 
   for (const auto& target : targets) {
     std::uintmax_t count = fs::remove_all(target, ec);
@@ -6556,7 +6704,8 @@ int run_env_clean(const Args& args) {
     std::cout << "{\n"
               << "  \"schema\": \"t81.env-clean.v1\",\n"
               << "  \"ok\": true,\n"
-              << "  \"build_dir\": \"" << json_escape(build_dir.string()) << "\",\n"
+              << "  \"build_dir\": \"" << json_escape(abs_build_dir.string()) << "\",\n"
+              << "  \"forced\": " << (force ? "true" : "false") << ",\n"
               << "  \"removed\": [\n";
     for (std::size_t i = 0; i < removed_paths.size(); ++i) {
       std::cout << "    \"" << json_escape(removed_paths[i].string()) << "\"";
@@ -6569,7 +6718,7 @@ int run_env_clean(const Args& args) {
     return 0;
   }
 
-  std::cout << "Cleaned build artifacts under " << build_dir.string() << "\n";
+  std::cout << "Cleaned build artifacts under " << abs_build_dir.string() << "\n";
   for (const auto& path : removed_paths) {
     std::cout << "  removed " << path.string() << "\n";
   }
@@ -6672,17 +6821,14 @@ int run_doctor(const Args& args) {
     bool temp_writable = false;
     std::string temp_detail;
     try {
-      const fs::path probe =
-          fs::temp_directory_path() / ("t81-doctor-probe-" + std::to_string(std::rand()) + ".tmp");
+      TempCaptureFile probe("doctor-probe", ".tmp");
       {
-        std::ofstream out(probe);
+        std::ofstream out(probe.path);
         temp_writable = static_cast<bool>(out);
         if (temp_writable) {
           out << "ok";
         }
       }
-      std::error_code ignore_ec;
-      fs::remove(probe, ignore_ec);
       temp_detail = temp_writable ? "temp directory writable" : "temp directory not writable";
     } catch (...) {
       temp_writable = false;
@@ -6795,61 +6941,33 @@ int run_test_command(const Args& args) {
     return 2;
   }
 
-  std::string base_cmd = "ctest --test-dir " + shell_escape(build_dir.string());
+  std::vector<std::string> ctest_argv = {"ctest", "--test-dir", build_dir.string()};
   if (list_only) {
-    base_cmd += " -N";
+    ctest_argv.push_back("-N");
   } else {
-    base_cmd += " --output-on-failure";
+    ctest_argv.push_back("--output-on-failure");
   }
   if (filter) {
-    base_cmd += " -R " + shell_escape(*filter);
+    ctest_argv.push_back("-R");
+    ctest_argv.push_back(*filter);
   }
-  for (const auto& token : passthrough) {
-    base_cmd += " ";
-    base_cmd += shell_escape(token);
-  }
-
-  auto read_file = [](const fs::path& p) -> std::string {
-    std::ifstream in(p, std::ios::binary);
-    if (!in) return {};
-    return std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-  };
-  auto read_size = [](const fs::path& p) -> std::uintmax_t {
-    std::error_code ec;
-    auto sz = fs::file_size(p, ec);
-    return ec ? 0 : sz;
-  };
-
-  auto run_ctest_capture = [&](const std::string& effective_cmd) {
-    const fs::path out_path = fs::temp_directory_path() / "t81-test.out";
-    const fs::path err_path = fs::temp_directory_path() / "t81-test.err";
-    std::string cmd = effective_cmd + " > " + shell_escape(out_path.string()) + " 2> " +
-                      shell_escape(err_path.string());
-    const int status = std::system(cmd.c_str());
-    if (status == -1) {
-      return std::tuple<int, std::string, std::string, std::uintmax_t, std::uintmax_t>{
-          -1, {}, {}, 0, 0};
-    }
-    const int rc = decode_system_status(status);
-    const std::string stdout_text = read_file(out_path);
-    const std::string stderr_text = read_file(err_path);
-    const auto stdout_bytes = read_size(out_path);
-    const auto stderr_bytes = read_size(err_path);
-    std::error_code ignore_ec;
-    fs::remove(out_path, ignore_ec);
-    fs::remove(err_path, ignore_ec);
-    return std::tuple<int, std::string, std::string, std::uintmax_t, std::uintmax_t>{
-        rc, stdout_text, stderr_text, stdout_bytes, stderr_bytes};
-  };
-
+  TempCaptureFile junit_file("ctest-junit", ".xml");
   bool used_junit = false;
-  fs::path junit_path = fs::temp_directory_path() / "t81-test-junit.xml";
-  std::string effective_cmd = base_cmd;
   if (!list_only) {
-    effective_cmd += " --output-junit " + shell_escape(junit_path.string());
+    ctest_argv.push_back("--output-junit");
+    ctest_argv.push_back(junit_file.path.string());
     used_junit = true;
   }
-  auto [rc, stdout_text, stderr_text, stdout_bytes, stderr_bytes] = run_ctest_capture(effective_cmd);
+  for (const auto& token : passthrough) {
+    ctest_argv.push_back(token);
+  }
+
+  auto capture = run_process_capture(ctest_argv);
+  int rc = capture.exit_code;
+  std::string stdout_text = capture.stdout_text;
+  std::string stderr_text = capture.stderr_text;
+  std::uintmax_t stdout_bytes = stdout_text.size();
+  std::uintmax_t stderr_bytes = stderr_text.size();
   if (rc == -1) {
     error("test: failed to invoke ctest.");
     return 2;
@@ -6861,7 +6979,16 @@ int run_test_command(const Args& args) {
         (lowered.find("unknown") != std::string::npos || lowered.find("unrecognized") != std::string::npos ||
          lowered.find("invalid") != std::string::npos)) {
       used_junit = false;
-      std::tie(rc, stdout_text, stderr_text, stdout_bytes, stderr_bytes) = run_ctest_capture(base_cmd);
+      ctest_argv.erase(std::remove(ctest_argv.begin(), ctest_argv.end(), "--output-junit"),
+                       ctest_argv.end());
+      ctest_argv.erase(std::remove(ctest_argv.begin(), ctest_argv.end(), junit_file.path.string()),
+                       ctest_argv.end());
+      capture = run_process_capture(ctest_argv);
+      rc = capture.exit_code;
+      stdout_text = capture.stdout_text;
+      stderr_text = capture.stderr_text;
+      stdout_bytes = stdout_text.size();
+      stderr_bytes = stderr_text.size();
       if (rc == -1) {
         error("test: failed to invoke ctest.");
         return 2;
@@ -6900,8 +7027,9 @@ int run_test_command(const Args& args) {
     return summary;
   };
   TestSummary summary = parse_summary(stdout_text + "\n" + stderr_text);
-  if (used_junit && fs::exists(junit_path)) {
-    const std::string xml = read_file(junit_path);
+  if (used_junit && fs::exists(junit_file.path)) {
+    std::ifstream junit_in(junit_file.path, std::ios::binary);
+    const std::string xml((std::istreambuf_iterator<char>(junit_in)), std::istreambuf_iterator<char>());
     std::smatch m;
     if (std::regex_search(xml, m, std::regex("tests=\"([0-9]+)\"")) && m.size() == 2) {
       summary.total = std::atoi(m[1].str().c_str());
@@ -6919,8 +7047,6 @@ int run_test_command(const Args& args) {
         m.size() == 2) {
       summary.duration_sec = std::atof(m[1].str().c_str());
     }
-    std::error_code ignore_ec;
-    fs::remove(junit_path, ignore_ec);
   }
 
   if (as_json) {

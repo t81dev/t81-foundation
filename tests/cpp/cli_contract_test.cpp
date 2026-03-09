@@ -60,10 +60,15 @@ std::string read_file(const fs::path& path) {
   return std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
 }
 
+fs::path make_temp_path(const std::string& prefix, const std::string& extension) {
+  static std::mt19937_64 rng{std::random_device{}()};
+  std::uniform_int_distribution<uint64_t> dist;
+  return fs::temp_directory_path() / (prefix + "-" + std::to_string(dist(rng)) + extension);
+}
+
 CommandResult run_cli(const fs::path& bin_path, const std::vector<std::string>& args) {
-  const fs::path temp_root = fs::temp_directory_path();
-  const fs::path out_path = temp_root / "t81-cli-contract.out";
-  const fs::path err_path = temp_root / "t81-cli-contract.err";
+  const fs::path out_path = make_temp_path("t81-cli-contract", ".out");
+  const fs::path err_path = make_temp_path("t81-cli-contract", ".err");
   std::vector<std::string> argv_storage;
   argv_storage.push_back(fs::absolute(bin_path).string());
   argv_storage.insert(argv_storage.end(), args.begin(), args.end());
@@ -135,12 +140,6 @@ CommandResult run_cli(const fs::path& bin_path, const std::vector<std::string>& 
 
 bool contains(std::string_view text, std::string_view pattern) {
   return text.find(pattern) != std::string_view::npos;
-}
-
-fs::path make_temp_path(const std::string& prefix, const std::string& extension) {
-  static std::mt19937_64 rng{std::random_device{}()};
-  std::uniform_int_distribution<uint64_t> dist;
-  return fs::temp_directory_path() / (prefix + "-" + std::to_string(dist(rng)) + extension);
 }
 
 int main(int argc, char* argv[]) {
@@ -316,6 +315,23 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(result.exit_code == 0 || result.exit_code == 2);
     T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.doctor.v1\""));
     T81_TEST_CHECK(contains(result.stdout_text, "\"scope\": \"toolchain\""));
+  }
+
+  {
+    const fs::path outside_dir = make_temp_path("t81-cli-contract-clean-outside", "");
+    std::error_code ignore_ec;
+    fs::create_directories(outside_dir, ignore_ec);
+    T81_TEST_CHECK(!ignore_ec);
+    const auto result = run_cli(t81_bin, {"env", "clean", "--build-dir", outside_dir.string(), "--json"});
+    T81_TEST_CHECK(result.exit_code != 0);
+    T81_TEST_CHECK(contains(result.stdout_text, "outside the repository root"));
+
+    const auto force_result =
+        run_cli(t81_bin, {"env", "clean", "--build-dir", outside_dir.string(), "--force", "--json"});
+    T81_TEST_CHECK(force_result.exit_code == 0);
+    T81_TEST_CHECK(contains(force_result.stdout_text, "\"schema\": \"t81.env-clean.v1\""));
+    T81_TEST_CHECK(contains(force_result.stdout_text, "\"forced\": true"));
+    fs::remove_all(outside_dir, ignore_ec);
   }
 
   {
