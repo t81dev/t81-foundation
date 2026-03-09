@@ -854,6 +854,61 @@ Example:
 )";
 }
 
+void print_help_mlir() {
+  std::cerr << R"(
+Usage: t81 mlir <subcommand> <input> [-o <output>] [options]
+
+Translate TISC programs to MLIR using standard dialects (arith, math, func,
+cf, memref), then optionally lower to LLVM IR.
+
+Subcommands:
+  compile  <input.tisc|input.t81>  [-o out.mlir]   Emit MLIR text
+  lower    <input.mlir>            [-o out.ll]      Lower MLIR → LLVM IR
+  pipeline <input.tisc|input.t81>  [-o out.ll]      TISC → MLIR → LLVM IR
+
+Options:
+  -o <path>         Output file (default: derived from input extension)
+  --mode=dcp        DCP float mode: replace math.* ops with func.call
+                    @t81_dmath_* — bit-exact when linked against T81 runtime
+  --mode=compat     Standard math.* dialect (IEEE-754 f64, default)
+  --no-comments     Omit PC annotations from basic block names
+  -h, --help        Show this help
+
+Float modes:
+  compat (default)  Uses math.sin, math.cos, etc. — non-DCP surface.
+                    Maximum toolchain compatibility; any mlir-opt can process.
+  dcp               Replaces math.* with func.call @t81_dmath_* externals.
+                    Preserves T81 determinism when the T81 runtime is linked.
+                    The MLIR text is still valid standard MLIR.
+
+Notes:
+  Requires build with -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON.
+  MLIR output is compatible with: mlir-opt, mlir-cpu-runner, LLVM ORC JIT.
+  Use 't81 llvm compile' for direct TISC → LLVM IR (no MLIR intermediate).
+)";}
+
+void print_help_llvm() {
+  std::cerr << R"(
+Usage: t81 llvm compile <input.tisc|input.t81> -o <output> [options]
+
+Translate a TISC program to LLVM IR or bitcode.
+
+Arguments:
+  <input>                Input file: .tisc binary or .t81 source (compiled first)
+  -o <output>            Output file (.ll for IR text, .bc for bitcode)
+
+Options:
+  --bitcode              Emit LLVM bitcode (.bc) instead of IR text (.ll)
+  --no-comments          Suppress metadata comments in generated IR
+  -h, --help             Show this help
+
+Notes:
+  Requires build with -DT81_ENABLE_LLVM=ON.
+  The generated @t81_main() function uses a flat [243 x i64] integer register
+  file and [243 x double] float register file mirroring the T81VM layout.
+  Invoke the IR with: lli output.ll  or compile with: llc -o output.s output.ll
+)";}
+
 void print_help_advanced() {
   std::cerr << R"(
 Advanced commands (supported expert workflows):
@@ -866,6 +921,8 @@ Advanced commands (supported expert workflows):
   vm <action> [args]                  VM-focused run/debug/trace/state/profile entry points
   tisc <action> [args]                TISC artifact inspection, validation, encode/decode
   ir <action> [args]                  IR inspection and export for frontend lowering
+  llvm <subcommand> [args]            LLVM IR backend: translate TISC to LLVM IR/bitcode
+  mlir <subcommand> [args]            MLIR frontend: translate TISC to MLIR / LLVM IR
 
 Use:
   t81 help weights
@@ -877,6 +934,8 @@ Use:
   t81 help vm
   t81 help tisc
   t81 help ir
+  t81 help llvm
+  t81 help mlir
 )";
 }
 
@@ -1164,6 +1223,8 @@ Commands:
   policy <action> [args]                Axion policy compile, validate, and test
   axion <action> [args]                 Axion governor and policy-facing operations
   trace <action> [args]                 Trace inspection, replay, export, canonicalization
+  llvm  <subcommand> [args]             LLVM IR backend: translate TISC to LLVM IR/bitcode
+  mlir  <subcommand> [args]             MLIR frontend: translate TISC to MLIR / LLVM IR
   repl                                  Start interactive REPL
   completion <shell>                    Print shell completion script
   man [--install-dir <dir>]             Show or install CLI manpage
@@ -1199,6 +1260,8 @@ More command groups:
   t81 help policy
   t81 help axion
   t81 help trace
+  t81 help llvm
+  t81 help mlir
   t81 help labs
 
 )";
@@ -1323,6 +1386,14 @@ bool print_help_topic(std::string_view topic, const char* prog) {
   }
   if (topic == "labs") {
     print_help_labs();
+    return true;
+  }
+  if (topic == "llvm") {
+    print_help_llvm();
+    return true;
+  }
+  if (topic == "mlir") {
+    print_help_mlir();
     return true;
   }
   if (topic == "help" || topic.empty()) {
@@ -1981,7 +2052,8 @@ Args parse_args(int argc, char* argv[]) {
     } else if (arg == "-V" || arg == "--version") {
       if (a.command == "fmt" || a.command == "code" || a.command == "project" ||
           a.command == "env" || a.command == "internal" || a.command == "completion" ||
-          a.command == "man" || a.command == "feedback") {
+          a.command == "man" || a.command == "feedback" || a.command == "llvm" ||
+          a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         a.need_version = true;
@@ -2000,7 +2072,8 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "project" || a.command == "env" || a.command == "internal" ||
                  a.command == "completion" || a.command == "man" || a.command == "feedback" ||
                  a.command == "canonize-tensor" || a.command == "canonize-file" ||
-                 a.command == "memory-stats" || a.command == "tier" || a.command == "profile") {
+                 a.command == "memory-stats" || a.command == "tier" || a.command == "profile" ||
+                 a.command == "llvm" || a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         throw_usage_error("Unknown option: " + std::string(arg));
@@ -2018,7 +2091,8 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "project" || a.command == "env" || a.command == "internal" ||
                  a.command == "completion" || a.command == "man" || a.command == "feedback" ||
                  a.command == "canonize-tensor" || a.command == "canonize-file" ||
-                 a.command == "memory-stats" || a.command == "tier") {
+                 a.command == "memory-stats" || a.command == "tier" ||
+                 a.command == "llvm" || a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         if (!a.input.empty()) {
@@ -7459,7 +7533,7 @@ std::string build_bash_completion() {
   return R"(_t81_complete() {
   local cur prev words cword
   _init_completion || return
-  local commands="code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace repl completion man feedback version help"
+  local commands="code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace llvm mlir repl completion man feedback version help"
   if [[ ${cword} -eq 1 ]]; then
     COMPREPLY=( $(compgen -W "${commands}" -- "${cur}") )
     return
@@ -7513,6 +7587,12 @@ std::string build_bash_completion() {
     trace)
       COMPREPLY=( $(compgen -W "show diff replay summary stats filter canonicalize export" -- "${cur}") )
       ;;
+    llvm)
+      COMPREPLY=( $(compgen -W "compile help" -- "${cur}") )
+      ;;
+    mlir)
+      COMPREPLY=( $(compgen -W "compile lower pipeline help" -- "${cur}") )
+      ;;
     completion)
       COMPREPLY=( $(compgen -W "bash zsh fish" -- "${cur}") )
       ;;
@@ -7548,6 +7628,8 @@ commands=(
   'policy:Axion policy tools'
   'axion:Axion governor tools'
   'trace:trace inspection tools'
+  'llvm:LLVM IR backend — translate TISC to LLVM IR/bitcode'
+  'mlir:MLIR frontend — translate TISC to MLIR or LLVM IR'
   'completion:print completion script'
   'man:show or install man page'
   'feedback:local CLI feedback loop'
@@ -7613,6 +7695,12 @@ case $state in
       trace)
         _values 'trace action' show diff replay summary stats filter canonicalize export
         ;;
+      llvm)
+        _values 'llvm action' compile help
+        ;;
+      mlir)
+        _values 'mlir action' compile lower pipeline help
+        ;;
       feedback)
         _values 'feedback action' submit report
         ;;
@@ -7626,7 +7714,7 @@ esac
 }
 
 std::string build_fish_completion() {
-  return R"(complete -c t81 -f -n '__fish_use_subcommand' -a 'code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace repl completion man feedback version help'
+  return R"(complete -c t81 -f -n '__fish_use_subcommand' -a 'code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace llvm mlir repl completion man feedback version help'
 complete -c t81 -f -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish'
 complete -c t81 -f -n '__fish_seen_subcommand_from lang' -a 'check lint fmt build run test disasm debug repl show dump export validate profile'
 complete -c t81 -f -n '__fish_seen_subcommand_from code' -a 'check lint fmt build run test disasm debug repl profile'
@@ -7644,6 +7732,8 @@ complete -c t81 -f -n '__fish_seen_subcommand_from weights' -a 'import info veri
 complete -c t81 -f -n '__fish_seen_subcommand_from policy' -a 'compile validate run test list'
 complete -c t81 -f -n '__fish_seen_subcommand_from axion' -a 'status optimize simulate explain snapshot snapshot-diff rollback log audit'
 complete -c t81 -f -n '__fish_seen_subcommand_from trace' -a 'show diff replay summary stats filter canonicalize export'
+complete -c t81 -f -n '__fish_seen_subcommand_from llvm' -a 'compile help'
+complete -c t81 -f -n '__fish_seen_subcommand_from mlir' -a 'compile lower pipeline help'
 complete -c t81 -f -n '__fish_seen_subcommand_from feedback' -a 'submit report'
 )";
 }
@@ -8661,6 +8751,64 @@ int main(int argc, char* argv[]) {
 
     } else if (args.command == "llama-run") {
       return run_llama_run(args);
+
+    } else if (args.command == "llvm") {
+      t81::cli::LLVMArgs la;
+      if (args.output) la.output = *args.output;
+      if (args.command_args.empty() || args.command_args[0] == "--help" ||
+          args.command_args[0] == "-h") {
+        return emit_help([&] { print_help_llvm(); });
+      }
+      la.subcommand = args.command_args[0];
+      for (size_t i = 1; i < args.command_args.size(); ++i) {
+        const std::string& tok = args.command_args[i];
+        if (tok == "--bitcode") {
+          la.bitcode = true;
+        } else if (tok == "--no-comments") {
+          la.no_comments = true;
+        } else if ((tok == "-o" || tok == "--output") && i + 1 < args.command_args.size()) {
+          la.output = args.command_args[++i];
+        } else if ((tok == "--help" || tok == "-h")) {
+          return emit_help([&] { print_help_llvm(); });
+        } else if (tok[0] != '-') {
+          if (la.input.empty()) la.input = tok;
+          else la.output = tok;
+        } else {
+          error("llvm: unknown option '" + tok + "'. Run 't81 help llvm'.");
+          return 1;
+        }
+      }
+      return t81::cli::run_llvm(la);
+
+    } else if (args.command == "mlir") {
+      t81::cli::MlirArgs ma;
+      if (args.output) ma.output = *args.output;
+      if (args.command_args.empty() || args.command_args[0] == "--help" ||
+          args.command_args[0] == "-h") {
+        return emit_help([&] { print_help_mlir(); });
+      }
+      ma.subcommand = args.command_args[0];
+      for (size_t i = 1; i < args.command_args.size(); ++i) {
+        const std::string& tok = args.command_args[i];
+        if (tok == "--mode=dcp") {
+          ma.dcp_floats = true;
+        } else if (tok == "--mode=compat") {
+          ma.dcp_floats = false;
+        } else if (tok == "--no-comments") {
+          ma.no_comments = true;
+        } else if ((tok == "-o" || tok == "--output") && i + 1 < args.command_args.size()) {
+          ma.output = args.command_args[++i];
+        } else if (tok == "--help" || tok == "-h") {
+          return emit_help([&] { print_help_mlir(); });
+        } else if (tok[0] != '-') {
+          if (ma.input.empty()) ma.input = tok;
+          else ma.output = tok;
+        } else {
+          error("mlir: unknown option '" + tok + "'. Run 't81 help mlir'.");
+          return 1;
+        }
+      }
+      return t81::cli::run_mlir(ma);
 
     } else {
       error("Unknown command: " + args.command + ". Run 't81 --help' to list commands.");

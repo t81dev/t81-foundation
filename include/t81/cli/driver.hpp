@@ -76,4 +76,30 @@ struct TraceArgs {
 };
 int run_trace(const TraceArgs& args);
 
+// LLVM backend subcommand: `t81 llvm <subcommand> [args]`
+// Only meaningful when T81_HAS_LLVM is defined; otherwise always returns 1.
+struct LLVMArgs {
+  std::string              subcommand;   // "compile" | "help"
+  std::filesystem::path    input;
+  std::filesystem::path    output;       // default: <input>.ll or <input>.bc
+  bool                     bitcode = false;
+  bool                     no_comments = false;
+};
+int run_llvm(const LLVMArgs& args);
+
+// ---------------------------------------------------------------------------
+// MLIR frontend CLI  (requires -DT81_ENABLE_MLIR=ON)
+// ---------------------------------------------------------------------------
+
+struct MlirArgs {
+  std::string              subcommand;   // "compile" | "lower" | "pipeline" | "help"
+  std::filesystem::path    input;
+  std::filesystem::path    output;       // default: <input>.mlir or <input>.ll
+  bool                     dcp_floats  = false;  // --mode=dcp: func.call @t81_dmath_*
+  bool                     no_comments = false;
+  // For "lower" / "pipeline" subcommands:
+  std::string              passes;       // comma-separated extra pass names (future)
+};
+int run_mlir(const MlirArgs& args);
+
 }  // namespace t81::cli

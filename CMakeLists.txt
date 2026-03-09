@@ -252,12 +252,118 @@ target_include_directories(t81_jit PRIVATE
 target_sources(t81_vm PRIVATE $<TARGET_OBJECTS:t81_jit>)
 target_link_libraries(t81_vm PUBLIC t81_core t81_isa t81_axion)
 
-add_library(t81_llvm INTERFACE)
-target_include_directories(t81_llvm INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-)
-target_link_libraries(t81_llvm INTERFACE t81_core)
+# =============================================================================
+# LLVM IR Backend (optional)
+# Enable with: cmake -DT81_ENABLE_LLVM=ON
+# Requires LLVM 18+ installed (e.g. brew install llvm).
+# When enabled, `t81 llvm compile` lowers TISC bytecode to LLVM IR / bitcode.
+# =============================================================================
+option(T81_ENABLE_LLVM "Enable LLVM IR backend" OFF)
+
+if(T81_ENABLE_LLVM)
+  find_package(LLVM CONFIG
+    HINTS /opt/homebrew/opt/llvm/lib/cmake/llvm
+          /usr/local/opt/llvm/lib/cmake/llvm
+          /usr/lib/llvm-18/lib/cmake/llvm)
+  if(LLVM_FOUND)
+    message(STATUS "[t81] LLVM ${LLVM_PACKAGE_VERSION} — building LLVM IR backend")
+    include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
+    add_definitions(${LLVM_DEFINITIONS})
+    llvm_map_components_to_libnames(t81_llvm_libs
+      core support irreader bitwriter analysis passes)
+    add_library(t81_llvm STATIC
+      src/llvm/tisc_to_llvm.cpp)
+    target_include_directories(t81_llvm PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+      ${LLVM_INCLUDE_DIRS})
+    target_link_libraries(t81_llvm PUBLIC t81_core ${t81_llvm_libs})
+    target_compile_definitions(t81_llvm PUBLIC T81_HAS_LLVM=1)
+    target_compile_features(t81_llvm PUBLIC ${T81_CXX_STD_FEATURE})
+    set(T81_HAS_LLVM_BACKEND ON CACHE INTERNAL "LLVM backend compiled")
+  else()
+    message(STATUS "[t81] LLVM not found — t81_llvm remains a stub")
+    add_library(t81_llvm INTERFACE)
+    target_include_directories(t81_llvm INTERFACE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+    target_link_libraries(t81_llvm INTERFACE t81_core)
+  endif()
+else()
+  add_library(t81_llvm INTERFACE)
+  target_include_directories(t81_llvm INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+  target_link_libraries(t81_llvm INTERFACE t81_core)
+endif()
+
+# =============================================================================
+# MLIR Frontend (optional)
+# Enable with: cmake -DT81_ENABLE_MLIR=ON  (also requires T81_ENABLE_LLVM=ON)
+# Requires LLVM/MLIR 18+ installed (e.g. brew install llvm).
+# When enabled, `t81 mlir compile` lowers TISC to MLIR text; `t81 mlir lower`
+# lowers MLIR to LLVM IR.  Float ops use standard math.* dialect by default
+# (non-DCP); --mode=dcp emits func.call @t81_dmath_* for bit-exact float math.
+# =============================================================================
+option(T81_ENABLE_MLIR "Enable MLIR frontend (requires T81_ENABLE_LLVM=ON)" OFF)
+
+if(T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND LLVM_FOUND)
+  find_package(MLIR CONFIG
+    HINTS /opt/homebrew/opt/llvm/lib/cmake/mlir
+          /usr/local/opt/llvm/lib/cmake/mlir
+          /usr/lib/llvm-18/lib/cmake/mlir)
+  if(MLIR_FOUND)
+    message(STATUS "[t81] MLIR ${MLIR_PACKAGE_VERSION} — building MLIR frontend")
+    include_directories(SYSTEM ${MLIR_INCLUDE_DIRS})
+    add_definitions(${MLIR_DEFINITIONS})
+    add_library(t81_mlir STATIC
+      src/mlir/tisc_to_mlir.cpp
+      src/mlir/mlir_to_llvm.cpp
+      src/mlir/dmath_c_wrappers.cpp)
+    target_include_directories(t81_mlir PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+      ${MLIR_INCLUDE_DIRS}
+      ${LLVM_INCLUDE_DIRS})
+    target_link_libraries(t81_mlir PUBLIC
+      t81_core
+      MLIRAnalysis
+      MLIRArithDialect
+      MLIRArithToLLVM
+      MLIRBuiltinToLLVMIRTranslation
+      MLIRControlFlowDialect
+      MLIRControlFlowToLLVM
+      MLIRFuncDialect
+      MLIRFuncToLLVM
+      MLIRLLVMDialect
+      MLIRLLVMToLLVMIRTranslation
+      MLIRLLVMIRTransforms
+      MLIRMathDialect
+      MLIRMathToLLVM
+      MLIRMemRefDialect
+      MLIRMemRefToLLVM
+      MLIRPass
+      MLIRTargetLLVMIRExport
+      MLIRTransforms
+      ${t81_llvm_libs})
+    target_compile_definitions(t81_mlir PUBLIC T81_HAS_MLIR=1 T81_HAS_LLVM=1)
+    target_compile_features(t81_mlir PUBLIC ${T81_CXX_STD_FEATURE})
+    set(T81_HAS_MLIR_BACKEND ON CACHE INTERNAL "MLIR backend compiled")
+  else()
+    message(STATUS "[t81] MLIR not found — t81_mlir remains a stub")
+    add_library(t81_mlir INTERFACE)
+    target_include_directories(t81_mlir INTERFACE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+    target_link_libraries(t81_mlir INTERFACE t81_core)
+  endif()
+else()
+  add_library(t81_mlir INTERFACE)
+  target_include_directories(t81_mlir INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+  target_link_libraries(t81_mlir INTERFACE t81_core)
+endif()
 
 # =============================================================================
 # CLI & Examples
@@ -268,6 +374,7 @@ add_library(t81_tool_cli STATIC
   tooling/cli/canonize_tensor.cpp
 )
 target_link_libraries(t81_tool_cli PUBLIC t81_lang_frontend t81_isa t81_vm t81_tool_model)
+target_link_libraries(t81_tool_cli PUBLIC t81_llvm t81_mlir)
 target_include_directories(t81_tool_cli PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -1780,6 +1887,7 @@ set(T81_INSTALL_TARGETS
   t81_isa
   t81_vm
   t81_llvm
+  t81_mlir
   t81_tool_cli
   t81
 )

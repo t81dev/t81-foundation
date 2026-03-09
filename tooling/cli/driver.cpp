@@ -1,4 +1,10 @@
 #include "t81/cli/driver.hpp"
+#ifdef T81_HAS_LLVM
+#include "t81/llvm/tisc_to_llvm.hpp"
+#endif
+#ifdef T81_HAS_MLIR
+#include "t81/mlir/tisc_to_mlir.hpp"
+#endif
 #include "debugger.hpp"
 #include "internal/tooling/logging.hpp"
 #include "t81/canonfs/canon_driver.hpp"
@@ -2554,6 +2560,200 @@ int init_package(const std::string& name) {
     error("Failed to initialize package: " + std::string(e.what()));
     return 1;
   }
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// LLVM backend CLI
+// ──────────────────────────────────────────────────────────────────────────
+
+int run_llvm(const LLVMArgs& la) {
+#ifndef T81_HAS_LLVM
+  (void)la;
+  error("t81 was built without the LLVM backend.\n"
+        "Re-configure with: cmake -DT81_ENABLE_LLVM=ON");
+  return 1;
+#else
+  if (la.subcommand == "help" || la.subcommand.empty()) {
+    std::cout <<
+      "Usage: t81 llvm compile <file.tisc|file.t81> [-o <out>] [--bitcode] [--no-comments]\n"
+      "\n"
+      "Translate a TISC program to LLVM IR.\n"
+      "\n"
+      "Options:\n"
+      "  -o <path>       Output path (default: <input>.ll or <input>.bc)\n"
+      "  --bitcode       Emit LLVM bitcode (.bc) instead of text IR (.ll)\n"
+      "  --no-comments   Omit per-instruction annotation in the IR\n"
+      "\n"
+      "Examples:\n"
+      "  t81 llvm compile hello.tisc\n"
+      "  t81 llvm compile hello.t81 -o hello.ll\n"
+      "  t81 llvm compile hello.tisc --bitcode -o hello.bc\n";
+    return 0;
+  }
+
+  if (la.subcommand != "compile") {
+    error("t81 llvm: unknown subcommand '" + la.subcommand + "'. Try 't81 llvm help'.");
+    return 1;
+  }
+
+  if (la.input.empty()) {
+    error("t81 llvm compile: no input file specified.");
+    return 1;
+  }
+
+  // Load or compile the program.
+  t81::tisc::Program prog;
+  const auto ext = la.input.extension().string();
+  if (ext == ".tisc") {
+    prog = t81::tisc::load_program(la.input.string());
+  } else if (ext == ".t81") {
+    std::ifstream f(la.input);
+    if (!f) { error("Cannot open " + la.input.string()); return 1; }
+    std::ostringstream ss;
+    ss << f.rdbuf();
+    auto maybe = t81::cli::build_program_from_source(ss.str(), la.input.string());
+    if (!maybe) { error("Compilation failed: " + la.input.string()); return 1; }
+    prog = std::move(*maybe);
+  } else {
+    error("t81 llvm compile: expected .tisc or .t81 input, got: " + la.input.string());
+    return 1;
+  }
+
+  // Determine output path.
+  fs::path out = la.output;
+  if (out.empty()) {
+    out = la.input;
+    out.replace_extension(la.bitcode ? ".bc" : ".ll");
+  }
+
+  t81::llvm_backend::TranslationConfig cfg;
+  cfg.module_name   = la.input.stem().string();
+  cfg.emit_comments = !la.no_comments;
+
+  bool ok = la.bitcode
+      ? t81::llvm_backend::emit_ir_bitcode(prog, out, cfg)
+      : t81::llvm_backend::emit_ir_text(prog, out, cfg);
+
+  if (!ok) {
+    error("LLVM IR emission failed for: " + la.input.string());
+    return 1;
+  }
+
+  std::cout << "LLVM IR written to: " << out.string() << "\n";
+  return 0;
+#endif  // T81_HAS_LLVM
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// MLIR frontend CLI
+// ──────────────────────────────────────────────────────────────────────────
+
+int run_mlir(const MlirArgs& ma) {
+#ifndef T81_HAS_MLIR
+  (void)ma;
+  error("t81 was built without the MLIR frontend.\n"
+        "Re-configure with: cmake -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON");
+  return 1;
+#else
+  using FM = t81::mlir_frontend::FloatMode;
+
+  if (ma.subcommand == "help" || ma.subcommand.empty()) {
+    std::cout <<
+      "Usage: t81 mlir <subcommand> <input> [-o <out>] [options]\n"
+      "\n"
+      "Subcommands:\n"
+      "  compile  <input.tisc|input.t81>  [-o out.mlir]   TISC → MLIR text\n"
+      "  lower    <input.mlir>            [-o out.ll]     MLIR → LLVM IR\n"
+      "  pipeline <input.tisc|input.t81>  [-o out.ll]     TISC → MLIR → LLVM IR\n"
+      "\n"
+      "Options:\n"
+      "  -o <path>         Output file (default: derived from input)\n"
+      "  --mode=dcp        DCP float mode: func.call @t81_dmath_* (requires T81 runtime)\n"
+      "  --mode=compat     Standard math.* dialect ops — IEEE-754 (default)\n"
+      "  --no-comments     Omit PC annotations in block names\n"
+      "\n"
+      "Examples:\n"
+      "  t81 mlir compile hello.tisc\n"
+      "  t81 mlir compile hello.t81 -o hello.mlir --mode=dcp\n"
+      "  t81 mlir lower hello.mlir -o hello.ll\n"
+      "  t81 mlir pipeline hello.t81 -o hello.ll\n";
+    return 0;
+  }
+
+  const bool is_compile  = (ma.subcommand == "compile");
+  const bool is_lower    = (ma.subcommand == "lower");
+  const bool is_pipeline = (ma.subcommand == "pipeline");
+
+  if (!is_compile && !is_lower && !is_pipeline) {
+    error("t81 mlir: unknown subcommand '" + ma.subcommand +
+          "'. Try 't81 mlir help'.");
+    return 1;
+  }
+
+  if (ma.input.empty()) {
+    error("t81 mlir " + ma.subcommand + ": no input file specified.");
+    return 1;
+  }
+
+  t81::mlir_frontend::TranslationConfig cfg;
+  cfg.float_mode    = ma.dcp_floats ? FM::DCP : FM::Compat;
+  cfg.emit_comments = !ma.no_comments;
+
+  // ── lower: parse existing .mlir → LLVM IR ────────────────────────────
+  if (is_lower) {
+    fs::path out = ma.output.empty()
+        ? fs::path(ma.input).replace_extension(".ll")
+        : ma.output;
+    if (!t81::mlir_frontend::lower_mlir_file(ma.input, out)) {
+      error("MLIR lowering failed for: " + ma.input.string());
+      return 1;
+    }
+    std::cout << "LLVM IR written to: " << out.string() << "\n";
+    return 0;
+  }
+
+  // ── compile / pipeline: load or compile TISC program ─────────────────
+  t81::tisc::Program prog;
+  const auto ext = ma.input.extension().string();
+  if (ext == ".tisc") {
+    prog = t81::tisc::load_program(ma.input.string());
+  } else if (ext == ".t81") {
+    std::ifstream f(ma.input);
+    if (!f) { error("Cannot open " + ma.input.string()); return 1; }
+    std::ostringstream ss;
+    ss << f.rdbuf();
+    auto maybe = t81::cli::build_program_from_source(ss.str(), ma.input.string());
+    if (!maybe) { error("Compilation failed: " + ma.input.string()); return 1; }
+    prog = std::move(*maybe);
+  } else {
+    error("t81 mlir " + ma.subcommand +
+          ": expected .tisc or .t81 input, got: " + ma.input.string());
+    return 1;
+  }
+
+  if (is_compile) {
+    fs::path out = ma.output.empty()
+        ? fs::path(ma.input).replace_extension(".mlir")
+        : ma.output;
+    if (!t81::mlir_frontend::emit_mlir_text(prog, out, cfg)) {
+      error("MLIR emission failed for: " + ma.input.string());
+      return 1;
+    }
+    std::cout << "MLIR written to: " << out.string() << "\n";
+    return 0;
+  }
+
+  // pipeline
+  fs::path out = ma.output.empty()
+      ? fs::path(ma.input).replace_extension(".ll")
+      : ma.output;
+  if (!t81::mlir_frontend::pipeline_to_llvm(prog, out, cfg)) {
+    error("MLIR pipeline failed for: " + ma.input.string());
+    return 1;
+  }
+  std::cout << "LLVM IR written to: " << out.string() << "\n";
+  return 0;
+#endif  // T81_HAS_MLIR
 }
 
 }  // namespace t81::cli

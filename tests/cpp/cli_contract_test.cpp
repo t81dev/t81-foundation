@@ -780,11 +780,28 @@ int main(int argc, char* argv[]) {
 
     const auto completion_result = run_cli(t81_bin, {"completion", "fish"});
     T81_TEST_CHECK(completion_result.exit_code == 0);
-    T81_TEST_CHECK(!contains(completion_result.stdout_text, " compile "));
+    T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from llvm"));
+    T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from mlir"));
+    T81_TEST_CHECK(contains(completion_result.stdout_text, "compile help"));
+    T81_TEST_CHECK(contains(completion_result.stdout_text, "compile lower pipeline help"));
     T81_TEST_CHECK(contains(completion_result.stdout_text, "fsck"));
     T81_TEST_CHECK(contains(completion_result.stdout_text, "repair"));
     T81_TEST_CHECK(!contains(completion_result.stdout_text, " model "));
     T81_TEST_CHECK(!contains(completion_result.stdout_text, " bench "));
+  }
+
+  {
+    const fs::path hello_world = fs::absolute(t81_bin).parent_path().parent_path() / "examples" / "hello_world.t81";
+
+    const auto llvm_result = run_cli(t81_bin, {"llvm", "compile", hello_world.string()});
+    T81_TEST_CHECK(!contains(llvm_result.stderr_text, "Multiple input files not supported"));
+    T81_TEST_CHECK(llvm_result.exit_code == 0 ||
+                   contains(llvm_result.stderr_text, "built without the LLVM backend."));
+
+    const auto mlir_result = run_cli(t81_bin, {"mlir", "compile", hello_world.string()});
+    T81_TEST_CHECK(!contains(mlir_result.stderr_text, "Multiple input files not supported"));
+    T81_TEST_CHECK(mlir_result.exit_code == 0 ||
+                   contains(mlir_result.stderr_text, "built without the MLIR frontend."));
   }
 
   {
