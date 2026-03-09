@@ -1,5 +1,10 @@
 #include "t81/canonfs/canon_driver.hpp"
 
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
+
 #include <cstdlib>
 #include <cstring>
 #include <functional>
@@ -136,3 +141,7 @@ private:
 
 std::unique_ptr<Driver> make_in_memory_driver() { return std::make_unique<InMemoryDriver>(); }
 }  // namespace t81::canonfs
+
+#ifdef _WIN32
+#pragma warning(pop)
+#endif
