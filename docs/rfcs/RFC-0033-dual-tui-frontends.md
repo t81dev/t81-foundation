@@ -84,7 +84,7 @@ Designed for the daily workflow of developers, researchers, and systems engineer
 | > Execution Trace| ✓ Compiled to main.tisc (1.2KB)         |
 | > REPL          |                                           |
 +-----------------+-------------------------------------------+
-| Status: VM [Tier 2] | Axion: [Strict] | Active Trace: [A4F9]|
+| 🛡️ VM [Tier 2] | ✓ Axion: [Strict] | ⇄ Active Trace: [A4F9] |
 +-------------------------------------------------------------+
 ```
 
@@ -103,6 +103,7 @@ A specialized environment optimized for interaction with Large Language Models a
 * **Contextual Side Panels:** Persistent displays of critical system state—such as active AI model weights, Axion policy tier, and determinism verification status.
 * **Multi-Turn Experimentation:** The agent can iteratively propose code changes, trigger the compiler, observe trace outputs, adjust Axion policies, and retry execution within a single session.
 * **Deep `llama-run` Integration:** Controls for managing internal LLM inference tasks, adjusting parameters, and observing raw output of `MAKE_COMPLEX` or `QMATMUL` operations.
+* **Ternary-Native Visualization Hooks:** Optional side-panes to display live trit-probability distributions (e.g., `P(+1)=0.72, P(0)=0.18, P(-1)=0.10`) or entropy readouts during inference operations, providing a killer differentiator versus binary substrates.
 * **Session Persistence & Resumability:** The ability to save a session's interaction history and state (e.g., to disk as JSONL and binary blobs referencing CanonFS) and resume it later. This includes deep-linking and attachment capabilities (e.g., `t81 agent --resume session-uuid.jsonl` or `t81 agent --attach <pid>` to inspect hung, mid-flight agent sessions).
 * **Command Palette Consistency:** The AI TUI will mirror the Human TUI's command palette shortcut (`Ctrl+P`) for muscle memory, while also supporting standard chat-like slash commands (e.g., `/policy allow <hash>`) for rapid agent/operator interactions.
 
@@ -119,11 +120,12 @@ A specialized environment optimized for interaction with Large Language Models a
 |         TLOADHASH operation.            | Axion: [Audit]    |
 |                                         |-------------------|
 | [User]  Update the policy to allow      | Active Trace      |
-|         that specific hash.             | Hash: 9A2B...     |
-|                                         | Status: Diverged  |
-| > [Input Prompt...]                     |                   |
+|         that specific hash.             | ⇄ Status: Diverged|
+|                                         |                   |
+| > [Input Prompt...]                     | Trit Probs:       |
+|                                         | ────▇▇▇────       |
 +-----------------------------------------+-------------------+
-| System Log: Axion evaluation deferred to runtime constraints|
+| ✗ System Log: Axion evaluation denied. Policy violation.    |
 +-------------------------------------------------------------+
 ```
 
@@ -190,6 +192,7 @@ A specialized environment optimized for interaction with Large Language Models a
 * Integrate TUI build, smoke tests, and binary size delta checks into the existing CI pipeline.
 * Add an animated terminal recording or GIF showcasing the `t81 ui` entry point and basic compile/REPL workflows to the primary `README.md` and user guides to enhance project discoverability.
 * Write detailed documentation, user guides, and integration examples.
+* Update the RFC Implementation Audit doc to list RFC-0033 as "Accepted → In Progress" and establish a symlink or direct inclusion within the `/spec/rfcs/` directory if required by the T81 Specification Authority Model.
 
 ---
 
