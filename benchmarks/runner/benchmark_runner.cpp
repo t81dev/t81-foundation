@@ -17,6 +17,83 @@
 #include <cstdlib>
 #include <cstring>
 
+namespace {
+
+enum class BenchmarkProfile {
+    Smoke,
+    Full,
+    Deep,
+};
+
+constexpr const char* kDefaultSmokeFilter =
+    "BM_(ArithThroughput|NegationSpeed|RoundtripAccuracy|overflow|PackingDensity|"
+    "MemoryBandwidth|Add_1024_bit|Add_2048_bit|T81LangCompile|LimbArithThroughput|"
+    "LimbAdd_T81Native|LimbAdd_T81Limb|LimbAdd_Int128|vs_).*";
+constexpr const char* kDefaultFullFilter =
+    "BM_(ArithThroughput|NegationSpeed|RoundtripAccuracy|overflow|PackingDensity|"
+    "MemoryBandwidth|Add_.*|T81LangCompile|LimbArithThroughput|LimbAdd_.*|vs_.*|"
+    "VMSimulation_.*|NativeCall_.*|TensorPromotion.*|Lexer_.*|Base81_.*|Overhead_.*)";
+constexpr const char* kDefaultSmokeMinTime = "0.02s";
+constexpr const char* kDefaultFullMinTime = "0.01s";
+
+bool HasBenchmarkArg(int argc, char** argv, std::string_view flag_prefix, std::string_view exact_flag) {
+    for (int i = 1; i < argc; ++i) {
+        const std::string_view arg(argv[i]);
+        if (arg == exact_flag || arg.rfind(flag_prefix, 0) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+BenchmarkProfile ResolveBenchmarkProfile() {
+    const char* profile = std::getenv("T81_BENCHMARK_PROFILE");
+    if (profile == nullptr) return BenchmarkProfile::Smoke;
+    std::string lowered;
+    for (const unsigned char c : std::string_view(profile)) {
+        lowered.push_back(static_cast<char>(std::tolower(c)));
+    }
+    if (lowered == "deep" || lowered == "all" || lowered == "exhaustive") {
+        return BenchmarkProfile::Deep;
+    }
+    if (lowered == "full") {
+        return BenchmarkProfile::Full;
+    }
+    return BenchmarkProfile::Smoke;
+}
+
+std::vector<std::string> BuildEffectiveBenchmarkArgs(int argc, char** argv) {
+    std::vector<std::string> effective_args;
+    effective_args.reserve(static_cast<std::size_t>(argc) + 3U);
+    for (int i = 0; i < argc; ++i) {
+        effective_args.emplace_back(argv[i]);
+    }
+
+    const BenchmarkProfile profile = ResolveBenchmarkProfile();
+    if (profile == BenchmarkProfile::Deep) {
+        return effective_args;
+    }
+
+    const bool has_filter =
+        HasBenchmarkArg(argc, argv, "--benchmark_filter=", "--benchmark_filter");
+    const bool has_min_time =
+        HasBenchmarkArg(argc, argv, "--benchmark_min_time=", "--benchmark_min_time");
+
+    if (!has_filter) {
+        const char* filter =
+            profile == BenchmarkProfile::Full ? kDefaultFullFilter : kDefaultSmokeFilter;
+        effective_args.emplace_back(std::string("--benchmark_filter=") + filter);
+    }
+    if (!has_min_time) {
+        const char* min_time =
+            profile == BenchmarkProfile::Full ? kDefaultFullMinTime : kDefaultSmokeMinTime;
+        effective_args.emplace_back(std::string("--benchmark_min_time=") + min_time);
+    }
+    return effective_args;
+}
+
+}  // namespace
+
 struct BenchmarkResult {
     std::string name;
     std::string t81_result_str;
@@ -740,7 +817,18 @@ static void ConfigureBenchmarkTrapLogging() {
 
 int main(int argc, char** argv) {
     ConfigureBenchmarkTrapLogging();
-    ::benchmark::Initialize(&argc, argv);
+    auto effective_args = BuildEffectiveBenchmarkArgs(argc, argv);
+    std::vector<char*> effective_argv;
+    effective_argv.reserve(effective_args.size() + 1U);
+    for (auto& arg : effective_args) {
+        effective_argv.push_back(arg.data());
+    }
+    effective_argv.push_back(nullptr);
+
+    int effective_argc = static_cast<int>(effective_args.size());
+    ::benchmark::Initialize(&effective_argc, effective_argv.data());
+    argc = effective_argc;
+    argv = effective_argv.data();
     if (::benchmark::ReportUnrecognizedArguments(argc, argv)) return 1;
 
     CustomReporter reporter;

@@ -18,6 +18,20 @@ specification authority, freeze boundaries, or determinism claim scope.
 - ../reference/
 - ../status/
 
+## Documents
+
+| File | Description |
+| --- | --- |
+| [ANALYSIS.md](ANALYSIS.md) | System analysis notes |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Architecture explanation |
+| [CROSSROADS.md](CROSSROADS.md) | Strategic decision points |
+| [DESIGN.md](DESIGN.md) | Design principles |
+| [USE_CASES.md](USE_CASES.md) | Architecture deep dive & use case discovery report |
+| [WHITEPAPER.md](WHITEPAPER.md) | Project whitepaper |
+| [ecosystem.md](ecosystem.md) | Ecosystem overview |
+| [performance-strategy.md](performance-strategy.md) | Performance strategy |
+| [runtime-semantics-boundary.md](runtime-semantics-boundary.md) | Runtime semantics boundary |
+
 ## Versioning Statement
 
 Operational index only. Authority hierarchy remains:

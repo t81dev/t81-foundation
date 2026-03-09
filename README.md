@@ -152,22 +152,32 @@ target_link_libraries(t81_consumer PRIVATE T81::t81_core)
 
 ## Benchmarks
 
-T81 ships a benchmark suite for core numerics, tensor paths, SIMD/base81 work, CanonFS, and VM kernels. The default runner is a full performance pass, not a quick smoke test. For local iteration, start with a filtered subset and reserve the full run for perf-focused environments.
+T81 ships a benchmark suite for core numerics, tensor paths, SIMD/base81 work, CanonFS, and VM kernels. The runner now has explicit local profiles: `smoke` by default, bounded `full` for human use, and exhaustive `deep` for research/nightly runs.
 
 ```bash
 cmake --build build --target benchmark_runner
 ```
 
 ```bash
-# Full suite: generates JSON output. Markdown reports are only written if
-# T81_BENCHMARK_WRITE_REPORTS=1 is set.
+# Default local smoke profile: generates JSON output. Markdown reports are only
+# written if T81_BENCHMARK_WRITE_REPORTS=1 is set.
 ./build/benchmarks/benchmark_runner \
   --benchmark_format=json \
   --benchmark_out=bench.json
 ```
 
 ```bash
-# Faster local iteration:
+# Human-usable full profile:
+T81_BENCHMARK_PROFILE=full ./build/benchmarks/benchmark_runner \
+  --benchmark_format=json \
+  --benchmark_out=bench-full.json
+
+# Exhaustive research/nightly profile:
+T81_BENCHMARK_PROFILE=deep ./build/benchmarks/benchmark_runner \
+  --benchmark_format=json \
+  --benchmark_out=bench-deep.json
+
+# Custom filtered local iteration:
 ./build/benchmarks/benchmark_runner \
   --benchmark_filter='BM_(ArithThroughput|NegationSpeed|RoundtripAccuracy|overflow|PackingDensity|MemoryBandwidth|Add_1024_bit|Add_2048_bit|T81LangCompile|LimbArithThroughput|LimbAdd_T81Native|LimbAdd_T81Limb|LimbAdd_Int128|vs_).*' \
   --benchmark_format=json \

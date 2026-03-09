@@ -838,7 +838,9 @@ void print_help_benchmark() {
   std::cerr << R"(
 Usage: t81 internal benchmark [vm|canonfs|weights|determinism] [benchmark_runner_flags...]
 
-Runs the core benchmark suite.
+Runs the core benchmark suite. By default this uses the benchmark runner's smoke
+profile. Set `T81_BENCHMARK_PROFILE=full` for the bounded human-usable full
+profile, or `T81_BENCHMARK_PROFILE=deep` for the exhaustive research pass.
 Benchmark report files are not written unless `T81_BENCHMARK_WRITE_REPORTS=1`.
 Subsystem selectors expand to benchmark filters:
   vm            BM_VMSimulation.*

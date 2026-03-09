@@ -13,6 +13,11 @@ cmake --build build --target benchmark_runner
 ./build/benchmarks/benchmark_runner
 ```
 
+By default `benchmark_runner` applies a local smoke profile.
+
+- `T81_BENCHMARK_PROFILE=full` enables the bounded human-usable full profile.
+- `T81_BENCHMARK_PROFILE=deep` enables the exhaustive research/nightly profile.
+
 Or via CLI wrapper:
 ```bash
 t81 benchmark
