@@ -938,8 +938,8 @@ Options:
 Current subset v0:
   - exactly one function: int main()
   - local int variables with initializers
-  - integer literals and +, -, *, /, % expressions
-  - final return statement only
+  - integer literals, assignment, arithmetic, and comparisons
+  - compound blocks, if, while, and reachable return
 
 Notes:
   Requires build with -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON.

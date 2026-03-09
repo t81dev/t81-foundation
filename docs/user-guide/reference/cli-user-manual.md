@@ -632,8 +632,8 @@ Current subset v0:
 
 - exactly one function: `int main()`
 - local `int` variables with initializers
-- integer literals and `+`, `-`, `*`, `/`, `%`
-- final `return` statement only
+- integer literals, assignment, arithmetic, and comparisons
+- compound blocks, `if`, `while`, and reachable `return`
 
 Behavior notes:
 

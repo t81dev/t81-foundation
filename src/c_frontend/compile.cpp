@@ -118,8 +118,19 @@ struct LoweringContext {
     return alloc_reg();
   }
 
-  void emit(t81::tisc::Opcode opcode, int32_t a = 0, int64_t b = 0, int32_t c = 0) {
+  size_t emit(t81::tisc::Opcode opcode, int32_t a = 0, int64_t b = 0, int32_t c = 0) {
     program.insns.push_back({opcode, a, b, c});
+    return program.insns.size() - 1;
+  }
+
+  size_t pc() const {
+    return program.insns.size();
+  }
+
+  void patch_jump_target(size_t insn_index, size_t target_pc) {
+    if (insn_index < program.insns.size()) {
+      program.insns[insn_index].a = static_cast<int32_t>(target_pc);
+    }
   }
 
   std::string error_prefix(CXCursor cursor) const {
@@ -141,6 +152,7 @@ struct LoweringContext {
 };
 
 bool compile_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, std::string* error);
+bool compile_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error);
 
 bool copy_if_needed(LoweringContext& ctx, int32_t target, int32_t value_reg, std::string* error) {
   if (target < 0 || value_reg < 0) {
@@ -254,8 +266,20 @@ bool compile_binary_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, 
     opcode = t81::tisc::Opcode::Div;
   } else if (*op == "%") {
     opcode = t81::tisc::Opcode::Mod;
+  } else if (*op == "==") {
+    opcode = t81::tisc::Opcode::Equal;
+  } else if (*op == "!=") {
+    opcode = t81::tisc::Opcode::NotEqual;
+  } else if (*op == "<") {
+    opcode = t81::tisc::Opcode::Less;
+  } else if (*op == "<=") {
+    opcode = t81::tisc::Opcode::LessEqual;
+  } else if (*op == ">") {
+    opcode = t81::tisc::Opcode::Greater;
+  } else if (*op == ">=") {
+    opcode = t81::tisc::Opcode::GreaterEqual;
   } else {
-    return ctx.fail(cursor, "only +, -, *, /, and % are supported", error);
+    return ctx.fail(cursor, "only arithmetic and comparison operators are supported", error);
   }
 
   const int32_t lhs_reg = ctx.alloc_reg();
@@ -327,6 +351,28 @@ bool compile_var_decl(LoweringContext& ctx, CXCursor cursor, std::string* error)
   return true;
 }
 
+bool compile_assignment_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
+  auto children = cursor_children(cursor);
+  if (children.size() != 2) {
+    return ctx.fail(cursor, "unsupported assignment shape", error);
+  }
+  CXCursor lhs = unwrap_expr(children[0]);
+  CXCursor rhs = unwrap_expr(children[1]);
+  const auto op = binary_operator_spelling(cursor, lhs, rhs, ctx.source);
+  if (!op.has_value() || *op != "=") {
+    return ctx.fail(cursor, "only simple '=' assignment is supported", error);
+  }
+  if (clang_getCursorKind(lhs) != CXCursor_DeclRefExpr) {
+    return ctx.fail(lhs, "assignment target must be a local variable", error);
+  }
+  const std::string name = to_string_and_dispose(clang_getCursorSpelling(lhs));
+  const auto it = ctx.vars.find(name);
+  if (it == ctx.vars.end()) {
+    return ctx.fail(lhs, "unknown variable '" + name + "'", error);
+  }
+  return compile_expr(ctx, rhs, it->second, error);
+}
+
 bool compile_return_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
   auto children = cursor_children(cursor);
   if (children.size() != 1) {
@@ -337,6 +383,124 @@ bool compile_return_stmt(LoweringContext& ctx, CXCursor cursor, std::string* err
   }
   ctx.emit(t81::tisc::Opcode::Halt, 0, 0, 0);
   return true;
+}
+
+bool compile_decl_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
+  for (CXCursor decl_child : cursor_children(cursor)) {
+    if (clang_getCursorKind(decl_child) != CXCursor_VarDecl) {
+      return ctx.fail(decl_child, "only local variable declarations are supported", error);
+    }
+    if (!compile_var_decl(ctx, decl_child, error)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool compile_expr_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
+  CXCursor expr = cursor;
+  if (clang_getCursorKind(cursor) != CXCursor_BinaryOperator) {
+    auto children = cursor_children(cursor);
+    if (children.size() != 1) {
+      return ctx.fail(cursor, "unsupported expression statement", error);
+    }
+    expr = unwrap_expr(children.front());
+  }
+  if (clang_getCursorKind(expr) == CXCursor_BinaryOperator) {
+    auto binary_children = cursor_children(expr);
+    if (binary_children.size() == 2) {
+      const auto op = binary_operator_spelling(expr, unwrap_expr(binary_children[0]),
+                                               unwrap_expr(binary_children[1]), ctx.source);
+      if (op.has_value() && *op == "=") {
+        return compile_assignment_stmt(ctx, expr, error);
+      }
+    }
+  }
+  return ctx.fail(expr, "only assignment expression statements are supported", error);
+}
+
+bool compile_block_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
+  for (CXCursor stmt : cursor_children(cursor)) {
+    if (!compile_stmt(ctx, stmt, error)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool compile_if_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
+  auto children = cursor_children(cursor);
+  if (children.size() < 2 || children.size() > 3) {
+    return ctx.fail(cursor, "unsupported if statement shape", error);
+  }
+  const int32_t cond_reg = ctx.alloc_reg();
+  if (cond_reg < 0) {
+    if (error) *error = "internal register allocation failure";
+    return false;
+  }
+  if (!compile_expr(ctx, children[0], cond_reg, error)) {
+    return false;
+  }
+  const size_t jump_to_else = ctx.emit(t81::tisc::Opcode::JumpIfZero, 0, cond_reg, 0);
+  if (!compile_stmt(ctx, children[1], error)) {
+    return false;
+  }
+  if (children.size() == 2) {
+    ctx.patch_jump_target(jump_to_else, ctx.pc());
+    return true;
+  }
+  const size_t jump_to_end = ctx.emit(t81::tisc::Opcode::Jump, 0, 0, 0);
+  ctx.patch_jump_target(jump_to_else, ctx.pc());
+  if (!compile_stmt(ctx, children[2], error)) {
+    return false;
+  }
+  ctx.patch_jump_target(jump_to_end, ctx.pc());
+  return true;
+}
+
+bool compile_while_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
+  auto children = cursor_children(cursor);
+  if (children.size() != 2) {
+    return ctx.fail(cursor, "unsupported while statement shape", error);
+  }
+  const size_t loop_start = ctx.pc();
+  const int32_t cond_reg = ctx.alloc_reg();
+  if (cond_reg < 0) {
+    if (error) *error = "internal register allocation failure";
+    return false;
+  }
+  if (!compile_expr(ctx, children[0], cond_reg, error)) {
+    return false;
+  }
+  const size_t exit_jump = ctx.emit(t81::tisc::Opcode::JumpIfZero, 0, cond_reg, 0);
+  if (!compile_stmt(ctx, children[1], error)) {
+    return false;
+  }
+  ctx.emit(t81::tisc::Opcode::Jump, static_cast<int32_t>(loop_start), 0, 0);
+  ctx.patch_jump_target(exit_jump, ctx.pc());
+  return true;
+}
+
+bool compile_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
+  switch (clang_getCursorKind(cursor)) {
+    case CXCursor_DeclStmt:
+      return compile_decl_stmt(ctx, cursor, error);
+    case CXCursor_ReturnStmt:
+      return compile_return_stmt(ctx, cursor, error);
+    case CXCursor_CompoundStmt:
+      return compile_block_stmt(ctx, cursor, error);
+    case CXCursor_IfStmt:
+      return compile_if_stmt(ctx, cursor, error);
+    case CXCursor_WhileStmt:
+      return compile_while_stmt(ctx, cursor, error);
+    case CXCursor_BinaryOperator:
+    case CXCursor_UnexposedStmt:
+      return compile_expr_stmt(ctx, cursor, error);
+    case CXCursor_NullStmt:
+      return true;
+    default:
+      return ctx.fail(cursor, "unsupported statement in C subset v0", error);
+  }
 }
 
 bool compile_main_function(LoweringContext& ctx, CXCursor cursor, std::string* error) {
@@ -362,37 +526,13 @@ bool compile_main_function(LoweringContext& ctx, CXCursor cursor, std::string* e
   if (clang_Cursor_isNull(body)) {
     return ctx.fail(cursor, "main must have a compound statement body", error);
   }
-
-  auto statements = cursor_children(body);
-  if (statements.empty()) {
-    return ctx.fail(body, "main must contain a return statement", error);
+  if (!compile_block_stmt(ctx, body, error)) {
+    return false;
   }
-
-  for (size_t i = 0; i < statements.size(); ++i) {
-    const CXCursor stmt = statements[i];
-    switch (clang_getCursorKind(stmt)) {
-      case CXCursor_DeclStmt: {
-        for (CXCursor decl_child : cursor_children(stmt)) {
-          if (clang_getCursorKind(decl_child) != CXCursor_VarDecl) {
-            return ctx.fail(decl_child, "only local variable declarations are supported", error);
-          }
-          if (!compile_var_decl(ctx, decl_child, error)) {
-            return false;
-          }
-        }
-        break;
-      }
-      case CXCursor_ReturnStmt:
-        if (i + 1 != statements.size()) {
-          return ctx.fail(stmt, "return must be the final statement in main", error);
-        }
-        return compile_return_stmt(ctx, stmt, error);
-      default:
-        return ctx.fail(stmt, "unsupported statement in C subset v0", error);
-    }
+  if (ctx.program.insns.empty() || ctx.program.insns.back().opcode != t81::tisc::Opcode::Halt) {
+    return ctx.fail(body, "main must end in a reachable return statement", error);
   }
-
-  return ctx.fail(body, "main must end with a return statement", error);
+  return true;
 }
 
 bool build_program_from_translation_unit(CXTranslationUnit tu,

@@ -16,9 +16,15 @@ int main() {
   {
     const std::string source =
         "int main() {\n"
-        "  int x = 2;\n"
-        "  int y = 5;\n"
-        "  return x * y;\n"
+        "  int x = 0;\n"
+        "  int y = 3;\n"
+        "  while (x < y) {\n"
+        "    x = x + 1;\n"
+        "  }\n"
+        "  if (x == y) {\n"
+        "    x = x * 2;\n"
+        "  }\n"
+        "  return x;\n"
         "}\n";
     std::string output;
     std::string error;
@@ -28,6 +34,8 @@ int main() {
           error.c_str());
     check(output.find("\"t81.reg_set_i\"") != std::string::npos,
           "expected custom t81 register ops in emitted MLIR");
+    check(output.find("cf.cond_br") != std::string::npos,
+          "expected structured control flow to lower to conditional branches");
   }
 
   {

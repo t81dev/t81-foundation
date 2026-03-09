@@ -2797,8 +2797,8 @@ int run_c(const CArgs& ca) {
       "Current subset v0:\n"
       "  - exactly one function: int main()\n"
       "  - local int variables with initializers\n"
-      "  - integer literals and +, -, *, /, % expressions\n"
-      "  - final return statement only\n";
+      "  - integer literals, assignment, arithmetic, and comparisons\n"
+      "  - compound blocks, if, while, and reachable return\n";
     return 0;
   }
 
