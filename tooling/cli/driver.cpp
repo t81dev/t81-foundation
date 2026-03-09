@@ -2800,7 +2800,7 @@ int run_c(const CArgs& ca) {
       "  - local int variables with initializers\n"
       "  - same-translation-unit calls without recursion\n"
       "  - integer literals, assignment, arithmetic, and comparisons\n"
-      "  - compound blocks, if, while, and reachable return\n";
+      "  - compound blocks, if, while, for, and reachable return\n";
     return 0;
   }
 

@@ -20,7 +20,9 @@ int main() {
         "}\n"
         "int climb(int limit) {\n"
         "  int x = 0;\n"
-        "  while (x < limit) {\n"
+        "  for (; x < limit; x = x + 1) {\n"
+        "  }\n"
+        "  for (int i = 0; i < 2; i = i + 1) {\n"
         "    x = x + 1;\n"
         "  }\n"
         "  return x;\n"
@@ -90,6 +92,23 @@ int main() {
           "expected recursive example to be rejected");
     check(error.find("recursive calls are not supported") != std::string::npos,
           "expected recursion rejection diagnostic");
+  }
+
+  {
+    const std::string source =
+        "int main() {\n"
+        "  int x = 0;\n"
+        "  for (;; x = x + 1) {\n"
+        "    x = x + 1;\n"
+        "  }\n"
+        "  return x;\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_for.c", output, {}, &error),
+          "expected conditionless for-loop example to be rejected");
+    check(error.find("for statements must include a condition") != std::string::npos,
+          "expected for-loop rejection diagnostic");
   }
 
   std::cout << "C frontend MLIR smoke test PASSED\n";

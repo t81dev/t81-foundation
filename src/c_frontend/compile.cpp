@@ -559,6 +559,99 @@ bool compile_while_stmt(LoweringContext& ctx, CXCursor cursor, std::string* erro
   return true;
 }
 
+bool compile_for_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
+  auto children = cursor_children(cursor);
+  if (children.size() < 2 || children.size() > 4) {
+    return ctx.fail(cursor, "unsupported for statement shape", error);
+  }
+
+  auto is_assignment_stmt_like = [&](CXCursor child) {
+    const CXCursorKind kind = clang_getCursorKind(child);
+    if (kind == CXCursor_DeclStmt || kind == CXCursor_NullStmt) {
+      return true;
+    }
+    CXCursor expr = child;
+    if (kind != CXCursor_BinaryOperator) {
+      auto stmt_children = cursor_children(child);
+      if (stmt_children.size() != 1) {
+        return false;
+      }
+      expr = unwrap_expr(stmt_children.front());
+    }
+    if (clang_getCursorKind(expr) != CXCursor_BinaryOperator) {
+      return false;
+    }
+    auto binary_children = cursor_children(expr);
+    if (binary_children.size() != 2) {
+      return false;
+    }
+    const auto op = binary_operator_spelling(expr, unwrap_expr(binary_children[0]),
+                                             unwrap_expr(binary_children[1]), ctx.source());
+    return op.has_value() && *op == "=";
+  };
+  auto is_expr_like = [](CXCursor child) {
+    const CXCursorKind kind = clang_getCursorKind(child);
+    return kind == CXCursor_BinaryOperator || kind == CXCursor_UnaryOperator ||
+           kind == CXCursor_DeclRefExpr || kind == CXCursor_IntegerLiteral ||
+           kind == CXCursor_CallExpr || kind == CXCursor_UnexposedExpr ||
+           kind == CXCursor_ParenExpr;
+  };
+
+  CXCursor init = clang_getNullCursor();
+  CXCursor cond = clang_getNullCursor();
+  CXCursor step = clang_getNullCursor();
+  CXCursor body = children.back();
+
+  if (children.size() == 4) {
+    init = children[0];
+    cond = children[1];
+    step = children[2];
+  } else if (children.size() == 3) {
+    if (is_assignment_stmt_like(children[0]) && is_expr_like(children[1])) {
+      init = children[0];
+      cond = children[1];
+    } else if (is_expr_like(children[0]) && is_assignment_stmt_like(children[1])) {
+      cond = children[0];
+      step = children[1];
+    } else {
+      return ctx.fail(cursor, "unsupported for statement shape", error);
+    }
+  } else {
+    if (is_assignment_stmt_like(children[0])) {
+      return ctx.fail(cursor, "for statements must include a condition in the C subset v0", error);
+    }
+    cond = children[0];
+  }
+
+  if (clang_Cursor_isNull(cond)) {
+    return ctx.fail(cursor, "for statements must include a condition in the C subset v0", error);
+  }
+
+  if (!clang_Cursor_isNull(init) && !compile_stmt(ctx, init, error)) {
+    return false;
+  }
+
+  const size_t loop_start = ctx.pc();
+  const int32_t cond_reg = ctx.alloc_reg();
+  if (cond_reg < 0) {
+    if (error) *error = "internal register allocation failure";
+    return false;
+  }
+  if (!compile_expr(ctx, cond, cond_reg, error)) {
+    return false;
+  }
+  const size_t exit_jump = ctx.emit(t81::tisc::Opcode::JumpIfZero, 0, cond_reg, 0);
+  if (!compile_stmt(ctx, body, error)) {
+    return false;
+  }
+  if (!clang_Cursor_isNull(step) && !compile_stmt(ctx, step, error)) {
+    return false;
+  }
+  ctx.emit(t81::tisc::Opcode::Jump, static_cast<int32_t>(loop_start), 0, 0);
+  ctx.patch_jump_target(exit_jump, ctx.pc());
+  return true;
+}
+
 bool compile_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
   switch (clang_getCursorKind(cursor)) {
     case CXCursor_DeclStmt:
@@ -571,6 +664,8 @@ bool compile_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
       return compile_if_stmt(ctx, cursor, error);
     case CXCursor_WhileStmt:
       return compile_while_stmt(ctx, cursor, error);
+    case CXCursor_ForStmt:
+      return compile_for_stmt(ctx, cursor, error);
     case CXCursor_BinaryOperator:
     case CXCursor_UnexposedStmt:
       return compile_expr_stmt(ctx, cursor, error);

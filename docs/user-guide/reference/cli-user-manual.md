@@ -635,7 +635,7 @@ Current subset v0:
 - local `int` variables with initializers
 - same-translation-unit calls without recursion
 - integer literals, assignment, arithmetic, and comparisons
-- compound blocks, `if`, `while`, and reachable `return`
+- compound blocks, `if`, `while`, `for`, and reachable `return`
 
 Behavior notes:
 
