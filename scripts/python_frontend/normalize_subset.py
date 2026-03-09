@@ -56,9 +56,16 @@ class Lowerer:
                 self.fail(stmt, "local bindings must have an initializer in Python subset v0")
             return f"{ind}int {stmt.target.id} = {self.lower_expr(stmt.value)};\n"
         if isinstance(stmt, ast.Assign):
-            if len(stmt.targets) != 1 or not isinstance(stmt.targets[0], ast.Name):
-                self.fail(stmt, "only simple assignment targets are supported in Python subset v0")
-            return f"{ind}{stmt.targets[0].id} = {self.lower_expr(stmt.value)};\n"
+            if len(stmt.targets) != 1:
+                self.fail(stmt, "only a single assignment target is supported in Python subset v0")
+            target = stmt.targets[0]
+            if isinstance(target, ast.Name):
+                if isinstance(stmt.value, ast.List):
+                    return self.lower_list_binding(target, stmt.value, ind)
+                return f"{ind}{target.id} = {self.lower_expr(stmt.value)};\n"
+            if isinstance(target, ast.Subscript):
+                return f"{ind}{self.lower_subscript(target, for_target=True)} = {self.lower_expr(stmt.value)};\n"
+            self.fail(stmt, "only local variables and fixed-list elements are assignable in Python subset v0")
         if isinstance(stmt, ast.Return):
             if stmt.value is None:
                 self.fail(stmt, "return statements must return an expression in Python subset v0")
@@ -150,12 +157,61 @@ class Lowerer:
                 self.fail(expr, "keyword arguments are not supported in Python subset v0")
             return f"{expr.func.id}({', '.join(self.lower_expr(arg) for arg in expr.args)})"
         if isinstance(expr, ast.Subscript):
-            self.fail(expr, "indexing is not supported in Python subset v0")
+            return self.lower_subscript(expr, for_target=False)
         if isinstance(expr, ast.Attribute):
             self.fail(expr, "attribute access is not supported in Python subset v0")
         if isinstance(expr, ast.List):
-            self.fail(expr, "lists are not supported in Python subset v0")
+            self.fail(expr, "list expressions are only supported as fixed local initializers in Python subset v0")
         self.fail(expr, "unsupported expression in Python subset v0")
+
+    def lower_list_binding(self, target: ast.Name, value: ast.List, ind: str) -> str:
+        if not value.elts:
+            self.fail(value, "empty lists are not supported in Python subset v0")
+        elements = [self.lower_const_int_expr(elt) for elt in value.elts]
+        return f"{ind}int {target.id}[{len(elements)}] = {{{', '.join(elements)}}};\n"
+
+    def lower_subscript(self, expr: ast.Subscript, for_target: bool) -> str:
+        if not isinstance(expr.value, ast.Name):
+            self.fail(expr, "only direct local fixed-list indexing is supported in Python subset v0")
+        if expr.ctx and isinstance(expr.ctx, ast.Del):
+            self.fail(expr, "deletion is not supported in Python subset v0")
+        index = self.lower_const_int_expr(self.subscript_index(expr))
+        return f"{expr.value.id}[{index}]"
+
+    def subscript_index(self, expr: ast.Subscript) -> ast.expr:
+        index = expr.slice
+        if isinstance(index, ast.Tuple):
+            self.fail(expr, "multi-dimensional indexing is not supported in Python subset v0")
+        return index
+
+    def lower_const_int_expr(self, expr: ast.expr) -> str:
+        if not self.is_const_int_expr(expr):
+            self.fail(expr, "only compile-time constant integer expressions are supported for fixed-list elements and indices in Python subset v0")
+        return self.lower_expr(expr)
+
+    def is_const_int_expr(self, expr: ast.expr) -> bool:
+        if isinstance(expr, ast.Constant):
+            return isinstance(expr.value, (int, bool))
+        if isinstance(expr, ast.UnaryOp):
+            return isinstance(expr.op, (ast.USub, ast.Not)) and self.is_const_int_expr(expr.operand)
+        if isinstance(expr, ast.BoolOp):
+            return all(self.is_const_int_expr(value) for value in expr.values)
+        if isinstance(expr, ast.BinOp):
+            return (
+                isinstance(expr.op, (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Mod,
+                                     ast.BitAnd, ast.BitOr, ast.BitXor, ast.LShift, ast.RShift))
+                and self.is_const_int_expr(expr.left)
+                and self.is_const_int_expr(expr.right)
+            )
+        if isinstance(expr, ast.Compare):
+            return (
+                len(expr.ops) == 1
+                and len(expr.comparators) == 1
+                and isinstance(expr.ops[0], (ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE))
+                and self.is_const_int_expr(expr.left)
+                and self.is_const_int_expr(expr.comparators[0])
+            )
+        return False
 
     @staticmethod
     def is_name(node: ast.AST, ident: str) -> bool:

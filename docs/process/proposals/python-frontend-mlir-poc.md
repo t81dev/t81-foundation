@@ -12,7 +12,7 @@ Already landed on `main`:
 - `t81_python_frontend` target, gated on `python3` availability plus the
   experimental C frontend adapter path
 - `t81 python compile` CLI/help/completion surface
-- fail-closed scalar-subset lowering through a Python `ast` normalizer
+- fail-closed subset lowering through a Python `ast` normalizer
   script and the existing C-subset adapter
 - CLI contract coverage for `help python`, fish completion, and
   `t81 python compile`
@@ -29,6 +29,8 @@ Allowed:
 - one entry function: `def main() -> int`
 - helper functions with explicit `int` parameters and `int` return type
 - annotated local bindings like `x: int = 2`
+- fixed local list literals like `xs = [1, 2, 3]`
+- compile-time constant fixed-list indexing like `xs[1 + 0]`
 - simple assignment
 - integer and boolean literals
 - arithmetic: `+`, `-`, `*`, `/`, `%`
@@ -43,7 +45,7 @@ Allowed:
 Rejected:
 
 - `for`
-- lists, indexing, attributes
+- runtime list indices, attributes
 - objects/classes/modules/imports
 - floats, strings, containers
 - keyword arguments and decorators
@@ -71,10 +73,9 @@ adapter seam across C, Rust, and Python instead of three separate backends.
 
 ## Recommended Resume Point
 
-1. decide whether to deepen Python first with loops / constrained list-style
-   memory or stop here and consolidate the shared adapter boundary
-   note: `while` is now in; the next real semantic widening is list/array
-   modeling or a constrained `for` story
+1. decide whether to deepen Python first with constrained `for range(...)`
+   iteration or stop here and consolidate the shared adapter boundary
+   note: fixed local lists with compile-time constant indexing are now in
 2. if Python deepens next, keep the subset fail-closed and deterministic
 3. if the three frontends start to drift, introduce a more explicit shared IR
    seam instead of extending C-as-adapter indefinitely

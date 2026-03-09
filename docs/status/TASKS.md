@@ -283,14 +283,13 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 - [x] **LLVM-05: Experimental Python Frontend Subset** — **✅ COMPLETED (2026-03-09)**
   - ✅ CMake: `T81_ENABLE_PYTHON_FRONTEND` option; real build requires `python3` plus the experimental C frontend adapter path
   - ✅ CLI/help/completion: `t81 python compile <input.py> [-o out.mlir] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>]`
-  - ✅ Frontend scope v0: fail-closed scalar subset (`def main() -> int`, helper `int` functions with explicit `int` parameters/returns, annotated local bindings, assignment, integer/boolean literals, arithmetic/bitwise/comparison/logical expressions, `if`/`else`, reachable `return`, same-file helper calls)
   - ✅ Integration path: restricted Python parsed by a dedicated `ast`-based subset normalizer script, normalized through the existing C-subset adapter, then lowered via the TISC → MLIR pipeline
-  - ✅ Frontend scope v0: fail-closed integer subset with helper `int` functions, annotated local `int` bindings, assignment, arithmetic/bitwise/comparison/logical expressions, `if`, `while`, same-file helper calls, and reachable `return`
-  - ✅ Guardrails: explicit rejection diagnostics for `for`, lists/indexing, attributes, unsupported statements, and syntax outside the scalar subset
+  - ✅ Frontend scope v0: fail-closed integer subset with helper `int` functions, annotated local `int` bindings, fixed local list literals lowered to C-style fixed arrays with compile-time constant indices, assignment, arithmetic/bitwise/comparison/logical expressions, `if`, `while`, same-file helper calls, and reachable `return`
+  - ✅ Guardrails: explicit rejection diagnostics for `for`, runtime list indices, attributes, unsupported statements, and syntax outside the subset
   - ✅ Verification: `t81_python_frontend_mlir_smoke_test`; `t81_cli_contract_test` covers `help python`, fish completion entries, and `t81 python compile`
-  - Status: **✅ RESOLVED** — real Python ingress path exists for the minimal scalar subset
-  - **Resume Point**: decide whether to deepen Python next with constrained list/array memory and `for`-style iteration, or consolidate the three frontend adapters behind a more explicit shared IR seam
-  - **Deferred**: richer Python control flow, constrained Python memory/modeling, broader Python type surfaces, and frontend-neutral IR generalization
+  - Status: **✅ RESOLVED** — real Python ingress path exists for a constrained scalar-plus-fixed-list subset
+  - **Resume Point**: decide whether to deepen Python next with constrained `for range(...)` iteration, or consolidate the three frontend adapters behind a more explicit shared IR seam
+  - **Deferred**: richer Python control flow, runtime-indexed memory/modeling, broader Python type surfaces, and frontend-neutral IR generalization
 
 ---
 

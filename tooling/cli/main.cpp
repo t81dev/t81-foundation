@@ -1049,6 +1049,7 @@ Status:
   - minimal scalar Python subset is implemented experimentally
   - build requires -DT81_ENABLE_PYTHON_FRONTEND=ON -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON
   - accepted subset v0: def main() -> int, int helpers, annotated local bindings,
+    fixed local list literals with compile-time constant indexing,
     assignment, arithmetic/bitwise/comparison/logical expressions,
     if/else, while, same-file helper calls, and return
   - unsupported constructs fail closed with explicit diagnostics
