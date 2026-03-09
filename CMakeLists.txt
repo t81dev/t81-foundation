@@ -18,6 +18,7 @@ option(T81_USE_CXX23 "Build with C++23 language mode (fallback: C++20)" ON)
 option(T81_TRITWISE_PROFILE "Enable profiling for tritwise operations" OFF)
 option(T81_STRICT_DETERMINISTIC_FLOAT "Use deterministic float math paths where available" ON)
 option(T81_ENABLE_LLAMA_CPP "Enable experimental llama.cpp adapter (non-DCP)" OFF)
+option(T81_BUILD_TUI "Build TUI frontends: t81 studio (human) and t81 agent (AI-native) — RFC-0033" ON)
 option(T81_EXPORT_LLAMA_ADAPTER
   "Export/install t81_llama_adapter (currently unsupported with vendored llama.cpp)"
   OFF)
@@ -55,6 +56,24 @@ if(T81_ENABLE_LLAMA_CPP)
   set(LLAMA_BUILD_SERVER OFF CACHE BOOL "llama.cpp server" FORCE)
   add_subdirectory("${T81_LLAMA_CPP_DIR}" "${CMAKE_BINARY_DIR}/third_party/llama.cpp" EXCLUDE_FROM_ALL)
   message(STATUS "T81_ENABLE_LLAMA_CPP=ON (using ${T81_LLAMA_CPP_DIR})")
+endif()
+
+# =============================================================================
+# FTXUI — TUI frontends (RFC-0033)
+# =============================================================================
+if(T81_BUILD_TUI)
+  include(FetchContent)
+  FetchContent_Declare(
+    ftxui
+    GIT_REPOSITORY https://github.com/ArthurSonzogni/FTXUI.git
+    GIT_TAG        v5.0.0
+    GIT_SHALLOW    TRUE
+  )
+  set(FTXUI_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+  set(FTXUI_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
+  set(FTXUI_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
+  FetchContent_MakeAvailable(ftxui)
+  message(STATUS "T81_BUILD_TUI=ON (FTXUI v5.0.0)")
 endif()
 
 # CPU feature gating used for SIMD source/flags.
@@ -428,10 +447,10 @@ endif()
 # =============================================================================
 option(T81_ENABLE_RUST_FRONTEND "Enable experimental Rust-subset frontend scaffold (requires MLIR/LLVM/rustc)" OFF)
 
-if(T81_ENABLE_RUST_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND LLVM_FOUND AND MLIR_FOUND)
+if(T81_ENABLE_RUST_FRONTEND AND T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND LLVM_FOUND AND MLIR_FOUND AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY)
   find_program(T81_RUSTC_EXECUTABLE NAMES rustc)
   if(T81_RUSTC_EXECUTABLE)
-    message(STATUS "[t81] rustc — building experimental Rust frontend scaffold")
+    message(STATUS "[t81] rustc — building experimental Rust frontend subset")
     add_library(t81_rust_frontend STATIC
       src/rust_frontend/compile.cpp)
     target_include_directories(t81_rust_frontend PUBLIC
@@ -439,6 +458,7 @@ if(T81_ENABLE_RUST_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND LLVM_FOU
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
     target_link_libraries(t81_rust_frontend PUBLIC
       t81_core
+      t81_c_frontend
       t81_mlir)
     target_compile_definitions(t81_rust_frontend PUBLIC T81_HAS_RUST_FRONTEND=1 T81_HAS_MLIR=1 T81_HAS_LLVM=1)
     target_compile_features(t81_rust_frontend PUBLIC ${T81_CXX_STD_FEATURE})
@@ -476,6 +496,22 @@ target_include_directories(t81_tool_cli PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# TUI library (RFC-0033) — built only when T81_BUILD_TUI=ON
+if(T81_BUILD_TUI)
+  add_library(t81_tui STATIC
+    tooling/tui/common.cpp
+    tooling/tui/studio.cpp
+    tooling/tui/agent.cpp
+  )
+  target_link_libraries(t81_tui PUBLIC t81_tool_cli ftxui::screen ftxui::dom ftxui::component)
+  target_include_directories(t81_tui PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  )
+  target_include_directories(t81_tui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  target_compile_features(t81_tui PUBLIC ${T81_CXX_STD_FEATURE})
+endif()
+
 add_executable(t81 tooling/cli/main.cpp)
 target_link_libraries(t81 PRIVATE t81_lang_frontend t81_isa t81_vm t81_tool_cli)
 target_include_directories(t81 PRIVATE
@@ -484,6 +520,10 @@ target_include_directories(t81 PRIVATE
 if(T81_ENABLE_LLAMA_CPP)
   target_link_libraries(t81 PRIVATE t81_llama_adapter)
   target_compile_definitions(t81 PRIVATE T81_HAS_LLAMA_CPP=1)
+endif()
+if(T81_BUILD_TUI)
+  target_link_libraries(t81 PRIVATE t81_tui)
+  target_compile_definitions(t81 PRIVATE T81_HAS_TUI=1)
 endif()
 
 if(T81_BUILD_EXAMPLES)
@@ -1165,6 +1205,10 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
     add_executable(t81_c_frontend_mlir_smoke_test tests/cpp/c_frontend_mlir_smoke_test.cpp)
     target_link_libraries(t81_c_frontend_mlir_smoke_test PRIVATE t81_c_frontend)
   endif()
+  if(T81_ENABLE_RUST_FRONTEND AND T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY AND T81_RUSTC_EXECUTABLE)
+    add_executable(t81_rust_frontend_mlir_smoke_test tests/cpp/rust_frontend_mlir_smoke_test.cpp)
+    target_link_libraries(t81_rust_frontend_mlir_smoke_test PRIVATE t81_rust_frontend)
+  endif()
 
   add_executable(t81_cli_structural_types_test tests/cpp/cli_structural_types_test.cpp)
   target_link_libraries(t81_cli_structural_types_test PRIVATE t81_tool_cli t81_isa t81_vm)
@@ -1712,6 +1756,9 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   endif()
   if(T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY)
     list(APPEND T81_TEST_TARGETS t81_c_frontend_mlir_smoke_test)
+  endif()
+  if(T81_ENABLE_RUST_FRONTEND AND T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY AND T81_RUSTC_EXECUTABLE)
+    list(APPEND T81_TEST_TARGETS t81_rust_frontend_mlir_smoke_test)
   endif()
   if(T81_BUILD_FUZZ_TESTS AND T81_RUN_FRONTEND_FUZZ_IN_CTEST)
     list(APPEND T81_TEST_TARGETS t81_frontend_fuzz_test)

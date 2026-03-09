@@ -268,15 +268,17 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - **Resume Point**: next useful slice is deciding whether compile-time constant array expressions are the intended end-state for the C v0 subset or whether T81 needs a larger memory/addressing surface for real runtime indexing. After that, the next strategic choice is whether to deepen C further or start a Rust ingress proof of concept.
   - **Deferred**: runtime array/addressing semantics, broader function/declaration semantics, and non-C frontends (Rust/Python)
 
-- [x] **LLVM-04: Experimental Rust Frontend Scaffold** — **✅ COMPLETED (2026-03-09)**
-  - ✅ CMake: `T81_ENABLE_RUST_FRONTEND` option; `rustc`-gated `t81_rust_frontend` target
+- [x] **LLVM-04: Experimental Rust Frontend Subset** — **✅ COMPLETED (2026-03-09)**
+  - ✅ CMake: `T81_ENABLE_RUST_FRONTEND` option; real build now requires `rustc` plus the experimental C frontend adapter path
   - ✅ CLI/help/completion: `t81 rust compile <input.rs> [-o out.mlir] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>]`
-  - ✅ Contract: fail-closed when the Rust frontend is not built; fail-closed with an explicit “not implemented yet” message when the scaffold is built without a real lowering pipeline
-  - ✅ Verification: `t81_cli_contract_test` covers `help rust`, fish completion entries, and `t81 rust compile`
-  - ✅ Proposal: `docs/process/proposals/rust-frontend-mlir-poc.md` records the intended subset and milestone plan once `rustc` is available
-  - Status: **✅ RESOLVED** — ingress seam is present; real Rust lowering remains deferred
-  - **Resume Point**: implement a restricted Rust subset lowering path once a Rust toolchain is available in the build environment
-  - **Deferred**: actual Rust parsing/lowering, Rust subset definition, and deterministic runtime restrictions/diagnostics
+  - ✅ Frontend scope v0: fail-closed scalar subset (`fn main() -> i32`, helper `i32` functions with explicit `i32` parameters/returns, local `let`/`let mut` bindings, assignment, integer literals, arithmetic/bitwise/comparison/logical expressions, `if`/`else`, reachable `return`, same-file helper calls)
+  - ✅ Integration path: restricted Rust parsed by a dedicated handwritten subset parser, normalized through the existing C-subset adapter, then lowered via the TISC → MLIR pipeline
+  - ✅ Guardrails: explicit rejection diagnostics for `while`, `for`, `loop`, `match`, `unsafe`, references/dereference, arrays, and other unsupported syntax outside the scalar subset
+  - ✅ Verification: `t81_rust_frontend_mlir_smoke_test`; `t81_cli_contract_test` covers `help rust`, fish completion entries, and `t81 rust compile`
+  - ✅ Proposal: `docs/process/proposals/rust-frontend-mlir-poc.md` records the intended subset and next milestones beyond scalar lowering
+  - Status: **✅ RESOLVED** — real Rust ingress path exists for the minimal scalar subset
+  - **Resume Point**: decide whether to deepen Rust first (loops/helpers beyond scalar subset, arrays aligned with the C memory model) or start Python ingress work
+  - **Deferred**: richer Rust control flow, constrained Rust arrays/memory, broader type surfaces, and non-Rust non-C frontends (Python)
 
 ---
 

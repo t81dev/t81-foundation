@@ -842,7 +842,11 @@ int main(int argc, char* argv[]) {
     {
       std::ofstream out(rust_input);
       out << "fn main() -> i32 {\n"
-             "    5\n"
+             "    let x: i32 = 2;\n"
+             "    if x == 2 {\n"
+             "        return x + 3;\n"
+             "    }\n"
+             "    return 0;\n"
              "}\n";
     }
     const auto rust_result =
@@ -850,7 +854,7 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(rust_result.exit_code != 0 || contains(rust_result.stdout_text, "MLIR written to:"));
     T81_TEST_CHECK(
         contains(rust_result.stderr_text, "built without the experimental Rust frontend.") ||
-        contains(rust_result.stderr_text, "compile pipeline is not implemented yet"));
+        rust_result.exit_code == 0);
     std::error_code ignore_ec;
     fs::remove(c_input, ignore_ec);
     fs::remove(c_output, ignore_ec);

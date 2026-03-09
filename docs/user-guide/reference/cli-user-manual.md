@@ -798,14 +798,13 @@ If behavior changes, update this file in the same change set as the CLI implemen
 t81 rust compile <file.rs> [-o <file.mlir>] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
 ```
 
-Experimental Rust-subset frontend scaffold.
+Experimental Rust-subset frontend.
 
 Current status:
 
-- optional build surface only
-- requires `-DT81_ENABLE_RUST_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON`
+- requires `-DT81_ENABLE_RUST_FRONTEND=ON -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON`
 - also requires `rustc` on `PATH`
-- CLI/help/completion contract is wired
-- compile path fails closed with an explicit "not implemented yet" diagnostic
+- current subset v0: `fn main() -> i32`, helper `i32` functions, local `let` / `let mut` bindings, assignment, integer literals, arithmetic, bitwise, comparisons, logical `!` / `&&` / `||`, `if` / `else`, same-file helper calls, and reachable `return`
+- unsupported constructs fail closed with explicit diagnostics
 
 ### 4.23 `llvm`

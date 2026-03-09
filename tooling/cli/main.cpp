@@ -64,6 +64,15 @@
 #if defined(T81_HAS_LLAMA_CPP)
 #include "t81/experimental/llama_cpp_adapter.hpp"
 #endif
+#if defined(T81_HAS_TUI)
+#include "tooling/tui/studio.hpp"
+#include "tooling/tui/agent.hpp"
+#include <ftxui/component/component.hpp>
+#include <ftxui/component/event.hpp>
+#include <ftxui/component/screen_interactive.hpp>
+#include <ftxui/dom/elements.hpp>
+#include <ftxui/screen/color.hpp>
+#endif
 
 namespace fs = std::filesystem;
 
@@ -968,10 +977,11 @@ Options:
   -h, --help             Show this help
 
 Status:
-  - this is an experimental scaffold only
-  - build requires -DT81_ENABLE_RUST_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON
+  - minimal scalar Rust subset is implemented experimentally
+  - build requires -DT81_ENABLE_RUST_FRONTEND=ON -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON
   - a Rust toolchain with rustc on PATH is required
-  - the compile pipeline is not implemented yet
+  - accepted subset v0: fn main() -> i32, i32 helpers, let bindings, assignment, arithmetic/bitwise/comparison/logical expressions, if/else, return
+  - unsupported constructs fail closed with explicit diagnostics
 )";}
 
 void print_help_advanced() {
@@ -8979,6 +8989,54 @@ int main(int argc, char* argv[]) {
         }
       }
       return t81::cli::run_mlir(ma);
+
+    // ── RFC-0033: TUI frontends ────────────────────────────────────────────
+    } else if (args.command == "studio" || args.command == "agent" ||
+               args.command == "ui") {
+#if defined(T81_HAS_TUI)
+      if (args.command == "studio") {
+        return t81::tui::run_studio(args.command_args);
+      }
+      if (args.command == "agent") {
+        return t81::tui::run_agent(args.command_args);
+      }
+      // "ui" — interactive launcher: choose Studio or Agent
+      {
+        using namespace ftxui;
+        std::vector<std::string> choices = {
+          "Studio  —  Human Operator Interface",
+          "Agent   —  AI-Native / Agentic Interface",
+          "Cancel",
+        };
+        int selected = 0;
+        auto screen  = ScreenInteractive::Fullscreen();
+        auto menu_c  = Menu(&choices, &selected);
+        auto root    = Renderer(menu_c, [&]() -> Element {
+          return vbox({
+            text("  T81 Foundation  —  Choose Interface") | bold
+              | color(Color::Cyan),
+            separator(),
+            menu_c->Render(),
+            separator(),
+            text("  Arrow keys, Enter to select, Escape to cancel.")
+              | color(Color::GrayDark),
+          }) | border | size(WIDTH, EQUAL, 52) | center;
+        });
+        root = CatchEvent(root, [&](Event e) -> bool {
+          if (e == Event::Escape) { screen.ExitLoopClosure()(); return true; }
+          if (e == Event::Return) { screen.ExitLoopClosure()(); return true; }
+          return false;
+        });
+        screen.Loop(root);
+        if (selected == 0) return t81::tui::run_studio({});
+        if (selected == 1) return t81::tui::run_agent({});
+        return 0;
+      }
+#else
+      error("TUI frontends are not available in this build. "
+            "Reconfigure with -DT81_BUILD_TUI=ON and rebuild.");
+      return 1;
+#endif
 
     } else {
       error("Unknown command: " + args.command + ". Run 't81 --help' to list commands.");

@@ -2842,8 +2842,8 @@ int run_rust(const RustArgs& ra) {
 #ifndef T81_HAS_RUST_FRONTEND
   (void)ra;
   error("t81 was built without the experimental Rust frontend.\n"
-        "Re-configure with: cmake -DT81_ENABLE_RUST_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON\n"
-        "A Rust toolchain with 'rustc' on PATH is also required.");
+        "Re-configure with: cmake -DT81_ENABLE_RUST_FRONTEND=ON -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON\n"
+        "A Rust toolchain with 'rustc' on PATH and the experimental C frontend adapter are also required.");
   return 1;
 #else
   if (ra.subcommand == "help" || ra.subcommand.empty()) {
@@ -2862,8 +2862,11 @@ int run_rust(const RustArgs& ra) {
       "  --no-comments     Omit PC annotations in generated block names\n"
       "\n"
       "Status:\n"
-      "  - the Rust frontend scaffold is present\n"
-      "  - the compile pipeline is not implemented yet\n";
+      "  - minimal scalar Rust subset is implemented experimentally\n"
+      "  - accepted subset v0: fn main() -> i32, i32 helpers, let bindings,\n"
+      "    assignment, arithmetic/bitwise/comparison/logical expressions,\n"
+      "    if/else, and return\n"
+      "  - unsupported constructs fail closed with explicit diagnostics\n";
     return 0;
   }
 

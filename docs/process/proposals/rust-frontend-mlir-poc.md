@@ -37,18 +37,19 @@ Already landed on `main`:
 - `t81_rust_frontend` target, gated on `rustc` availability
 - `t81 rust compile` CLI/help/completion surface
 - fail-closed contract when the Rust frontend is not built
-- fail-closed contract when the scaffold is built but lowering is not implemented
+- fail-closed scalar-subset lowering through the existing C frontend adapter
 - CLI contract coverage for `help rust`, fish completion, and `t81 rust compile`
 
-Latest implementation commit:
+Latest implementation commits:
 
 - `4b54c254` `Add Rust frontend CLI scaffold`
+- `6053c17b` `Expand constant-expression array support in C frontend`
+- current follow-up: real scalar Rust lowering using the C-subset adapter
 
 Important environment note:
 
-- the current workspace does not have `rustc` or `cargo` on `PATH`
-- real Rust lowering should not start until that toolchain exists in the build
-  environment
+- real Rust lowering depends on a Rust toolchain plus the experimental C frontend
+  adapter path in the build environment
 
 ## 4. Non-Goals
 
@@ -165,10 +166,11 @@ Milestone D: constrained memory
 
 ## 10. Recommended Resume Point
 
-1. install a Rust toolchain in the build environment
-2. decide whether to parse through `rustc` JSON/HIR-facing tooling or another
-   stable adapter path
-3. implement Milestone B only, not the full feature list
+1. decide whether to deepen Rust first with loops and constrained arrays, or
+   keep Rust at scalar subset v0 and start Python ingress work
+2. if Rust deepens next, keep using the current adapter seam unless a real
+   `rustc` AST/HIR integration becomes necessary
+3. align any future Rust array work with the existing constrained C memory model
 4. keep the subset and diagnostics at least as explicit as the current C
    frontend
 
