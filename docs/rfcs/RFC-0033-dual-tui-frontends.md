@@ -88,7 +88,7 @@ Designed for the daily workflow of developers, researchers, and systems engineer
 +-------------------------------------------------------------+
 ```
 
-**Integration Approach:** The TUI will primarily link directly against T81 core C++ libraries (`libt81_compiler`, `libt81_vm`, `libt81_axion`), invoking internal functions. Where direct API integration is premature, it will execute the `t81` binary as a subprocess, parsing structured `--json` output.
+**Integration Approach:** The Human Operator TUI (accessible via a shortened command like `t81 studio`) will primarily link directly against T81 core C++ libraries (`libt81_compiler`, `libt81_vm`, `libt81_axion`), invoking internal functions. Where direct API integration is premature, it will execute the `t81` binary as a subprocess, parsing structured `--json` output. A top-level discoverability command (`t81 ui`) will act as an entry point, prompting the user to launch either the human or AI interface.
 
 ### TUI 2 – AI-Native / Agentic Interface
 
@@ -99,10 +99,11 @@ A specialized environment optimized for interaction with Large Language Models a
 **Core Capabilities:**
 
 * **Persistent Conversational Session:** A continuous chat-like interface where agents can respond with actions, code snippets, or system queries.
-* **Machine-Readable UI Surfaces:** Layouts optimized for structured extraction (e.g., clear JSON blocks, concise trace summaries) allowing LLMs to parse system state effortlessly.
+* **Machine-Readable UI Surfaces:** Layouts optimized for structured extraction (e.g., aggressively normalized JSON blocks, concise trace summaries). This ensures LLMs can parse system state effortlessly, minimizing hallucinations compared to parsing raw markdown or unstructured text.
 * **Contextual Side Panels:** Persistent displays of critical system state—such as active AI model weights, Axion policy tier, and determinism verification status.
 * **Multi-Turn Experimentation:** The agent can iteratively propose code changes, trigger the compiler, observe trace outputs, adjust Axion policies, and retry execution within a single session.
 * **Deep `llama-run` Integration:** Controls for managing internal LLM inference tasks, adjusting parameters, and observing raw output of `MAKE_COMPLEX` or `QMATMUL` operations.
+* **Session Persistence & Resumability:** The ability to save a session's interaction history and state (e.g., to disk as JSONL and binary blobs referencing CanonFS) and resume it later. This is critical for long-lived agent runs and debugging overnight failures.
 
 **Conceptual Layout:**
 
@@ -125,7 +126,7 @@ A specialized environment optimized for interaction with Large Language Models a
 +-------------------------------------------------------------+
 ```
 
-**Integration Model:** This TUI relies on a robust session management layer. It utilizes structured logging and tightly controlled standard IO streams to ensure automated harnesses or remote LLMs can easily attach, send commands, and ingest structured state updates.
+**Integration Model:** This TUI (accessible via a shortened command like `t81 agent`) relies on a robust session management layer. It utilizes structured logging and tightly controlled standard IO streams to ensure automated harnesses or remote LLMs can easily attach, send commands, and ingest structured state updates.
 
 ---
 
@@ -152,10 +153,11 @@ A specialized environment optimized for interaction with Large Language Models a
 
 ## Risks & Drawbacks
 
-* **Increased Binary Size:** Linking FTXUI will increase the size of the final executables. This is minor given typical storage constraints but must be monitored for embedded usage.
+* **Increased Binary Size:** Linking FTXUI will increase the size of the final executables. Given T81's target environments (embedded/headless/server reproducibility), we will implement a CI check that compares stripped binary sizes and warns if the delta exceeds 10-15%.
 * **Maintenance Burden:** Introducing two new UI surfaces expands the surface area of the project. The UI code must be maintained alongside the core API to prevent regressions.
 * **Contributor Learning Curve:** Developers accustomed strictly to CLI tool development will need to familiarize themselves with declarative UI paradigms and FTXUI's functional API.
 * **Platform Compatibility Edge Cases:** Certain legacy terminal emulators or heavily customized shells might exhibit rendering artifacts or input handling bugs.
+* **Testing Story:** TUIs are notoriously difficult to unit-test. To mitigate this risk, the implementation will require comprehensive testing, specifically utilizing snapshot-style golden-output testing for layout rendering (text + ANSI) under different terminal widths and scripted input sequences.
 
 ---
 
@@ -182,15 +184,15 @@ A specialized environment optimized for interaction with Large Language Models a
 
 ### Phase 4: Refinement, CI, and Documentation
 
-* Establish comprehensive testing for the UI logic.
-* Integrate TUI build and smoke tests into the existing CI pipeline.
+* Establish comprehensive snapshot-style golden-output testing for the UI layout rendering and scripted input sequences.
+* Integrate TUI build, smoke tests, and binary size delta checks into the existing CI pipeline.
 * Write detailed documentation, user guides, and integration examples.
 
 ---
 
 ## Future Work
 
-* **Custom Theming Engine:** Allowing users to define color palettes and layout preferences via configuration files.
+* **Custom Theming Engine:** While a high-contrast "researcher dark mode" (black background + distinct accent colors for verdicts/trace diffs) will be prioritized as the default, we plan to allow users to define color palettes and layout preferences via configuration files to improve accessibility.
 * **Mouse Support Optimization:** Enhancing mouse interaction (scrolling, clicking tabs) to further improve usability.
 * **TUI Plugin System:** Exposing an API for developers to write custom FTXUI components.
 * **Distributed Monitoring:** Extending the TUI to connect to remote T81 instances to monitor CanonFS or Axion state on production servers.
