@@ -378,6 +378,26 @@ bool parse_canonical_hash(std::string_view prefixed_hash, t81::canonfs::CanonRef
   return true;
 }
 
+bool parse_snapshot_hash(std::string_view snapshot_hash, std::string& error_message) {
+  const std::string text = trim_copy(snapshot_hash);
+  if (text.empty()) {
+    error_message = "snapshot hash must not be empty";
+    return false;
+  }
+  try {
+    (void)t81::hash::CanonHash81::from_string(text);
+  } catch (const std::exception& e) {
+    error_message = std::string("invalid snapshot hash: ") + e.what();
+    return false;
+  }
+  return true;
+}
+
+bool is_symlink_path(const fs::path& path) {
+  std::error_code ec;
+  return fs::is_symlink(fs::symlink_status(path, ec)) && !ec;
+}
+
 bool load_canonfs_object(const fs::path& canonfs_root, std::string_view prefixed_hash,
                          std::vector<std::byte>& bytes, CanonFsObjectInfo& info,
                          std::string& error_message) {
@@ -407,7 +427,8 @@ struct CanonFsListEntry {
   std::uintmax_t size_bytes = 0;
 };
 
-std::vector<SnapshotManifestEntry> collect_snapshot_manifest(const fs::path& root) {
+std::vector<SnapshotManifestEntry> collect_snapshot_manifest(const fs::path& root,
+                                                            std::string* error_message = nullptr) {
   std::vector<SnapshotManifestEntry> entries;
   if (!fs::exists(root)) {
     return entries;
@@ -421,6 +442,12 @@ std::vector<SnapshotManifestEntry> collect_snapshot_manifest(const fs::path& roo
         it.disable_recursion_pending();
       }
       continue;
+    }
+    if (is_symlink_path(path)) {
+      if (error_message) {
+        *error_message = "symlinks are not permitted in CanonFS snapshot trees: " + rel.generic_string();
+      }
+      return {};
     }
     if (!it->is_regular_file()) {
       continue;
@@ -467,6 +494,10 @@ bool copy_directory_contents(const fs::path& from, const fs::path& to, std::stri
       }
       continue;
     }
+    if (is_symlink_path(src)) {
+      error_message = "symlinks are not permitted in CanonFS snapshot trees: " + rel.generic_string();
+      return false;
+    }
     const fs::path dst = to / rel;
     if (it->is_directory()) {
       fs::create_directories(dst, ec);
@@ -501,6 +532,10 @@ bool clear_directory_except_snapshots(const fs::path& root, std::string& error_m
   for (const auto& entry : fs::directory_iterator(root)) {
     if (entry.path().filename() == "snapshots" || entry.path().filename() == "objects") {
       continue;
+    }
+    if (is_symlink_path(entry.path())) {
+      error_message = "refusing to mutate symlinked path under CanonFS root: " + entry.path().string();
+      return false;
     }
     fs::remove_all(entry.path(), ec);
     if (ec) {
@@ -1443,7 +1478,12 @@ std::optional<std::string> canonfs_capture_snapshot_hash(const fs::path& canonfs
     if (error_message) *error_message = "could not create root: " + canonfs_root.string();
     return std::nullopt;
   }
-  const auto entries = collect_snapshot_manifest(canonfs_root);
+  std::string manifest_error;
+  const auto entries = collect_snapshot_manifest(canonfs_root, &manifest_error);
+  if (!manifest_error.empty()) {
+    if (error_message) *error_message = manifest_error;
+    return std::nullopt;
+  }
   const std::string manifest = render_snapshot_manifest(entries);
   const std::string snapshot_hash =
       t81::hash::hash_bytes(std::span<const std::byte>(
@@ -1498,6 +1538,15 @@ int canonfs_snapshot(const fs::path& canonfs_root, bool as_json) {
 
 int canonfs_snapshot_diff(const std::string& lhs_snapshot_hash, const std::string& rhs_snapshot_hash,
                           const fs::path& canonfs_root, bool as_json) {
+  std::string hash_error;
+  if (!parse_snapshot_hash(lhs_snapshot_hash, hash_error)) {
+    error("canonfs snapshot-diff: " + hash_error);
+    return 1;
+  }
+  if (!parse_snapshot_hash(rhs_snapshot_hash, hash_error)) {
+    error("canonfs snapshot-diff: " + hash_error);
+    return 1;
+  }
   const fs::path lhs_manifest = canonfs_root / "snapshots" / lhs_snapshot_hash / "MANIFEST.txt";
   const fs::path rhs_manifest = canonfs_root / "snapshots" / rhs_snapshot_hash / "MANIFEST.txt";
   if (!fs::exists(lhs_manifest)) {
@@ -1552,6 +1601,11 @@ int canonfs_snapshot_diff(const std::string& lhs_snapshot_hash, const std::strin
 }
 
 int canonfs_rollback(const std::string& snapshot_hash, const fs::path& canonfs_root, bool as_json) {
+  std::string hash_error;
+  if (!parse_snapshot_hash(snapshot_hash, hash_error)) {
+    error("canonfs rollback: " + hash_error);
+    return 1;
+  }
   const fs::path snapshot_dir = canonfs_root / "snapshots" / snapshot_hash;
   if (!fs::exists(snapshot_dir)) {
     error("canonfs rollback: snapshot not found: " + snapshot_hash);
@@ -1569,6 +1623,10 @@ int canonfs_rollback(const std::string& snapshot_hash, const fs::path& canonfs_r
       continue;
     }
     const fs::path rel = fs::relative(src, snapshot_dir);
+    if (is_symlink_path(src)) {
+      error("canonfs rollback: symlinks are not permitted in snapshots: " + rel.generic_string());
+      return 1;
+    }
     const fs::path dst = canonfs_root / rel;
     std::error_code ec;
     if (it->is_directory()) {

@@ -439,6 +439,7 @@ CanonFS inspection and snapshot tooling.
 `canonfs verify --json` uses schema `t81.canonfs-verify.v1`.
 `canonfs snapshot-diff --json` uses schema `t81.canonfs-snapshot-diff.v1`.
 `canonfs snapshot` records canonical manifest state and mutable metadata without duplicating the immutable object store.
+Symlinked paths under the CanonFS root are rejected by `snapshot`, `rollback`, and related audit flows.
 `canonfs rollback --dry-run` previews the target snapshot without mutating HEAD.
 `canonfs gc --dry-run` previews removable objects; `--json` uses schema `t81.canonfs-gc.v1`.
 `canonfs fsck --json` uses schema `t81.canonfs-fsck.v1` and validates object/blob readability plus snapshot manifests.

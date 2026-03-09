@@ -989,6 +989,7 @@ Usage: t81 canonfs repair [--dry-run] [--json] [--canonfs-root <path>]
 
 Removes legacy snapshot-local `objects/` directories left behind by older snapshot implementations.
 The immutable object store at `<canonfs-root>/objects` is preserved.
+Symlinked paths under snapshot storage are rejected.
 )";
 }
 
@@ -2938,6 +2939,18 @@ int run_policy(const Args& args) {
 // RFC-0000 §7: Axion command surface — status|optimize|simulate|snapshot|rollback.
 int run_repro_hash(const char* command_name, const Args& args);
 
+bool is_valid_snapshot_hash_text(std::string_view text) {
+  if (text.empty()) {
+    return false;
+  }
+  try {
+    (void)t81::hash::CanonHash81::from_string(std::string(text));
+    return true;
+  } catch (...) {
+    return false;
+  }
+}
+
 int run_axion(const Args& args) {
   if (args.command_args.empty() || args.command_args[0] == "-h" ||
       args.command_args[0] == "--help") {
@@ -3176,6 +3189,24 @@ int run_axion(const Args& args) {
   if (tier_provided && tier_invalid) {
     error("axion: --tier must be an integer in the range 1..9.");
     return 1;
+  }
+  if (!rollback_to.empty() && !is_valid_snapshot_hash_text(rollback_to)) {
+    error("axion rollback: invalid snapshot hash.");
+    return 1;
+  }
+  if (!audit_from.empty() && !is_valid_snapshot_hash_text(audit_from)) {
+    error("axion audit: invalid --from snapshot hash.");
+    return 1;
+  }
+  if (!audit_to.empty() && !is_valid_snapshot_hash_text(audit_to)) {
+    error("axion audit: invalid --to snapshot hash.");
+    return 1;
+  }
+  for (const auto& hash : snapshot_diff_hashes) {
+    if (!is_valid_snapshot_hash_text(hash)) {
+      error("axion snapshot-diff: invalid snapshot hash.");
+      return 1;
+    }
   }
 
   if (sub == "status") {
@@ -3751,6 +3782,10 @@ int run_canonfs_command(const Args& args) {
           errors.push_back("failed reading objects directory");
           break;
         }
+        if (fs::is_symlink(obj.symlink_status())) {
+          errors.push_back(obj.path().filename().string() + ": symlinked objects are not permitted");
+          continue;
+        }
         if (!obj.is_regular_file() || obj.path().extension() != ".blk") {
           continue;
         }
@@ -3773,6 +3808,11 @@ int run_canonfs_command(const Args& args) {
           errors.push_back("failed reading snapshots directory");
           break;
         }
+        if (fs::is_symlink(snap.symlink_status())) {
+          errors.push_back("snapshot entry " + snap.path().filename().string() +
+                           ": symlinked snapshots are not permitted");
+          continue;
+        }
         if (!snap.is_directory()) {
           continue;
         }
@@ -3781,6 +3821,18 @@ int run_canonfs_command(const Args& args) {
         if (!fs::exists(manifest)) {
           errors.push_back("snapshot " + snap.path().filename().string() + ": missing MANIFEST.txt");
           continue;
+        }
+        for (auto it = fs::recursive_directory_iterator(snap.path(), ec);
+             it != fs::recursive_directory_iterator(); ++it) {
+          if (ec) {
+            errors.push_back("snapshot " + snap.path().filename().string() + ": scan failed");
+            break;
+          }
+          if (fs::is_symlink(it->symlink_status())) {
+            errors.push_back("snapshot " + snap.path().filename().string() +
+                             ": symlinked content is not permitted");
+            break;
+          }
         }
         std::ifstream in(manifest, std::ios::binary);
         if (!in) {
@@ -3838,6 +3890,10 @@ int run_canonfs_command(const Args& args) {
         const fs::path legacy_objects = snap.path() / "objects";
         if (!fs::exists(legacy_objects)) {
           continue;
+        }
+        if (fs::is_symlink(fs::symlink_status(legacy_objects, ec))) {
+          error("canonfs repair: refusing to operate on symlinked path " + legacy_objects.string());
+          return 1;
         }
         std::uintmax_t dir_bytes = 0;
         for (auto it = fs::recursive_directory_iterator(legacy_objects, ec);

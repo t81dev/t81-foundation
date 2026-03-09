@@ -226,6 +226,12 @@ int main(int argc, char* argv[]) {
   }
 
   {
+    const auto result = run_cli(t81_bin, {"canonfs", "snapshot-diff", "../bad", "../bad", "--json"});
+    T81_TEST_CHECK(result.exit_code != 0);
+    T81_TEST_CHECK(contains(result.stdout_text, "invalid snapshot hash"));
+  }
+
+  {
     const auto result = run_cli(t81_bin, {"help", "determinism"});
     T81_TEST_CHECK(result.exit_code == 0);
     T81_TEST_CHECK(contains(result.stdout_text, "Usage: t81 determinism <action> [args]"));
@@ -663,6 +669,24 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(fsck_result.stdout_text, "\"schema\": \"t81.canonfs-fsck.v1\""));
 
     std::error_code ignore_ec;
+    const fs::path outside_payload = make_temp_path("t81-cli-contract-outside", ".txt");
+    {
+      std::ofstream out(outside_payload);
+      out << "outside";
+    }
+    const fs::path symlink_root = make_temp_path("t81-cli-contract-canonfs-symlink", "");
+    fs::create_directories(symlink_root, ignore_ec);
+    T81_TEST_CHECK(!ignore_ec);
+#if !defined(_WIN32)
+    fs::create_symlink(outside_payload, symlink_root / "leak.txt", ignore_ec);
+    if (!ignore_ec) {
+      const auto symlink_snapshot_result =
+          run_cli(t81_bin, {"canonfs", "snapshot", "--canonfs-root", symlink_root.string(), "--json"});
+      T81_TEST_CHECK(symlink_snapshot_result.exit_code != 0);
+      T81_TEST_CHECK(contains(symlink_snapshot_result.stdout_text, "symlinks are not permitted"));
+    }
+    ignore_ec.clear();
+#endif
     const fs::path repair_root = make_temp_path("t81-cli-contract-canonfs-repair", "");
     const fs::path legacy_objects_dir = repair_root / "snapshots" / "legacy-snap" / "objects";
     fs::create_directories(legacy_objects_dir, ignore_ec);
@@ -684,10 +708,41 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(repair_result.exit_code == 0);
     T81_TEST_CHECK(contains(repair_result.stdout_text, "\"schema\": \"t81.canonfs-repair.v1\""));
     T81_TEST_CHECK(!fs::exists(legacy_objects_dir));
+
+    const fs::path rollback_root = make_temp_path("t81-cli-contract-canonfs-rollback", "");
+    fs::create_directories(rollback_root, ignore_ec);
+    T81_TEST_CHECK(!ignore_ec);
+    {
+      std::ofstream out(rollback_root / "payload.txt");
+      out << "rollback";
+    }
+    const auto rollback_snapshot_result =
+        run_cli(t81_bin, {"canonfs", "snapshot", "--canonfs-root", rollback_root.string(), "--json"});
+    T81_TEST_CHECK(rollback_snapshot_result.exit_code == 0);
+#if !defined(_WIN32)
+    const auto rollback_hash_pos = rollback_snapshot_result.stdout_text.find("\"hash\": \"");
+    T81_TEST_CHECK(rollback_hash_pos != std::string::npos);
+    const auto rollback_hash_start = rollback_hash_pos + std::string("\"hash\": \"").size();
+    const auto rollback_hash_end = rollback_snapshot_result.stdout_text.find('"', rollback_hash_start);
+    T81_TEST_CHECK(rollback_hash_end != std::string::npos);
+    const std::string rollback_hash = rollback_snapshot_result.stdout_text.substr(
+        rollback_hash_start, rollback_hash_end - rollback_hash_start);
+    fs::create_symlink(outside_payload, rollback_root / "snapshots" / rollback_hash / "leak.txt", ignore_ec);
+    if (!ignore_ec) {
+      const auto rollback_result = run_cli(
+          t81_bin, {"canonfs", "rollback", "--canonfs-root", rollback_root.string(), "--to", rollback_hash, "--json"});
+      T81_TEST_CHECK(rollback_result.exit_code != 0);
+      T81_TEST_CHECK(contains(rollback_result.stdout_text, "symlinks are not permitted"));
+    }
+    ignore_ec.clear();
+#endif
     fs::remove(payload, ignore_ec);
     fs::remove(restored, ignore_ec);
     fs::remove(payload_two, ignore_ec);
+    fs::remove(outside_payload, ignore_ec);
+    fs::remove_all(symlink_root, ignore_ec);
     fs::remove_all(repair_root, ignore_ec);
+    fs::remove_all(rollback_root, ignore_ec);
   }
 
   {
