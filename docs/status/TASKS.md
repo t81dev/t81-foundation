@@ -280,6 +280,17 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - **Resume Point**: decide whether to deepen Rust first (loops/helpers beyond scalar subset, arrays aligned with the C memory model) or start Python ingress work
   - **Deferred**: richer Rust control flow, constrained Rust arrays/memory, broader type surfaces, and non-Rust non-C frontends (Python)
 
+- [x] **LLVM-05: Experimental Python Frontend Subset** — **✅ COMPLETED (2026-03-09)**
+  - ✅ CMake: `T81_ENABLE_PYTHON_FRONTEND` option; real build requires `python3` plus the experimental C frontend adapter path
+  - ✅ CLI/help/completion: `t81 python compile <input.py> [-o out.mlir] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>]`
+  - ✅ Frontend scope v0: fail-closed scalar subset (`def main() -> int`, helper `int` functions with explicit `int` parameters/returns, annotated local bindings, assignment, integer/boolean literals, arithmetic/bitwise/comparison/logical expressions, `if`/`else`, reachable `return`, same-file helper calls)
+  - ✅ Integration path: restricted Python parsed by a dedicated `ast`-based subset normalizer script, normalized through the existing C-subset adapter, then lowered via the TISC → MLIR pipeline
+  - ✅ Guardrails: explicit rejection diagnostics for `while`, `for`, lists/indexing, attributes, unsupported statements, and syntax outside the scalar subset
+  - ✅ Verification: `t81_python_frontend_mlir_smoke_test`; `t81_cli_contract_test` covers `help python`, fish completion entries, and `t81 python compile`
+  - Status: **✅ RESOLVED** — real Python ingress path exists for the minimal scalar subset
+  - **Resume Point**: decide whether to deepen Python first (loops, constrained lists/arrays, stricter determinism boundaries) or consolidate the three frontend adapters behind a more explicit shared IR seam
+  - **Deferred**: richer Python control flow, constrained Python memory/modeling, broader Python type surfaces, and frontend-neutral IR generalization
+
 ---
 
 ## Governance

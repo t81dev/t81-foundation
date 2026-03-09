@@ -44,7 +44,7 @@ Latest implementation commits:
 
 - `4b54c254` `Add Rust frontend CLI scaffold`
 - `6053c17b` `Expand constant-expression array support in C frontend`
-- current follow-up: real scalar Rust lowering using the C-subset adapter
+- `86aee19a` `Add minimal scalar Rust frontend lowering`
 
 Important environment note:
 
@@ -81,6 +81,16 @@ once the frontend half is stable.
 ## 6. Supported Rust Subset v0
 
 The first accepted subset should be intentionally austere.
+
+Implemented and verified on `main`:
+
+- `t81 rust compile` now lowers a real fail-closed scalar Rust subset
+- lowering path uses a dedicated handwritten Rust subset parser
+- accepted Rust is normalized through the existing C-subset adapter before the
+  TISC -> MLIR pipeline
+- dedicated regression coverage exists in `t81_rust_frontend_mlir_smoke_test`
+- CLI contract coverage accepts a successful `t81 rust compile` path when the
+  frontend is built
 
 Allowed:
 
@@ -152,6 +162,10 @@ Milestone B: minimal scalar Rust subset
 - `return`
 - MLIR output only
 
+Status:
+
+- done
+
 Milestone C: structured control flow and helpers
 
 - helper functions
@@ -173,6 +187,12 @@ Milestone D: constrained memory
 3. align any future Rust array work with the existing constrained C memory model
 4. keep the subset and diagnostics at least as explicit as the current C
    frontend
+
+Last verified locally:
+
+- `t81_rust_frontend_mlir_smoke_test`
+- `t81_cli_contract_test ./build_rust_frontend_subset/t81`
+- direct smoke compile of a helper-call Rust example to MLIR with `--dialect=t81`
 
 ## 11. Success Criteria
 

@@ -782,6 +782,7 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(completion_result.exit_code == 0);
     T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from c"));
     T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from rust"));
+    T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from python"));
     T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from llvm"));
     T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from mlir"));
     T81_TEST_CHECK(contains(completion_result.stdout_text, "compile help"));
@@ -821,6 +822,10 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(rust_help_result.exit_code == 0);
     T81_TEST_CHECK(contains(rust_help_result.stdout_text, "Usage: t81 rust compile"));
 
+    const auto python_help_result = run_cli(t81_bin, {"help", "python"});
+    T81_TEST_CHECK(python_help_result.exit_code == 0);
+    T81_TEST_CHECK(contains(python_help_result.stdout_text, "Usage: t81 python compile"));
+
     const fs::path c_input = make_temp_path("t81-cli-contract", ".c");
     const fs::path c_output = make_temp_path("t81-cli-contract", ".mlir");
     {
@@ -855,11 +860,30 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(rust_result.stderr_text, "built without the experimental Rust frontend.") ||
         rust_result.exit_code == 0);
+
+    const fs::path python_input = make_temp_path("t81-cli-contract", ".py");
+    const fs::path python_output = make_temp_path("t81-cli-contract", ".mlir");
+    {
+      std::ofstream out(python_input);
+      out << "def main() -> int:\n"
+             "    x: int = 2\n"
+             "    if x == 2:\n"
+             "        return x + 3\n"
+             "    return 0\n";
+    }
+    const auto python_result =
+        run_cli(t81_bin, {"python", "compile", python_input.string(), "-o", python_output.string()});
+    T81_TEST_CHECK(python_result.exit_code != 0 || contains(python_result.stdout_text, "MLIR written to:"));
+    T81_TEST_CHECK(
+        contains(python_result.stderr_text, "built without the experimental Python frontend.") ||
+        python_result.exit_code == 0);
     std::error_code ignore_ec;
     fs::remove(c_input, ignore_ec);
     fs::remove(c_output, ignore_ec);
     fs::remove(rust_input, ignore_ec);
     fs::remove(rust_output, ignore_ec);
+    fs::remove(python_input, ignore_ec);
+    fs::remove(python_output, ignore_ec);
   }
 
   {

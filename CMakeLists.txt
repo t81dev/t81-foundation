@@ -65,9 +65,7 @@ if(T81_BUILD_TUI)
   include(FetchContent)
   FetchContent_Declare(
     ftxui
-    GIT_REPOSITORY https://github.com/ArthurSonzogni/FTXUI.git
-    GIT_TAG        v5.0.0
-    GIT_SHALLOW    TRUE
+    URL      https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v5.0.0.tar.gz
   )
   set(FTXUI_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
   set(FTXUI_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
@@ -479,6 +477,50 @@ else()
 endif()
 
 # =============================================================================
+# Experimental Python Frontend (optional)
+# Enable with: cmake -DT81_ENABLE_PYTHON_FRONTEND=ON
+# Requires Python 3 plus the experimental C frontend adapter.
+# =============================================================================
+option(T81_ENABLE_PYTHON_FRONTEND "Enable experimental Python-subset frontend (requires Python3 + C frontend + MLIR/LLVM)" OFF)
+
+if(T81_ENABLE_PYTHON_FRONTEND AND T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND LLVM_FOUND AND MLIR_FOUND AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY)
+  find_package(Python3 COMPONENTS Interpreter REQUIRED)
+  if(Python3_EXECUTABLE)
+    message(STATUS "[t81] python3 — building experimental Python frontend subset")
+    add_library(t81_python_frontend STATIC
+      src/python_frontend/compile.cpp)
+    target_include_directories(t81_python_frontend PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+    target_link_libraries(t81_python_frontend PUBLIC
+      t81_core
+      t81_c_frontend
+      t81_mlir)
+    target_compile_definitions(t81_python_frontend PUBLIC
+      T81_HAS_PYTHON_FRONTEND=1
+      T81_HAS_C_FRONTEND=1
+      T81_HAS_MLIR=1
+      T81_HAS_LLVM=1
+      T81_PYTHON3_EXECUTABLE="${Python3_EXECUTABLE}"
+      T81_PYTHON_FRONTEND_SCRIPT_PATH="${CMAKE_CURRENT_SOURCE_DIR}/scripts/python_frontend/normalize_subset.py")
+    target_compile_features(t81_python_frontend PUBLIC ${T81_CXX_STD_FEATURE})
+  else()
+    message(STATUS "[t81] python3 not found — t81_python_frontend remains a stub")
+    add_library(t81_python_frontend INTERFACE)
+    target_include_directories(t81_python_frontend INTERFACE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+    target_link_libraries(t81_python_frontend INTERFACE t81_core)
+  endif()
+else()
+  add_library(t81_python_frontend INTERFACE)
+  target_include_directories(t81_python_frontend INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+  target_link_libraries(t81_python_frontend INTERFACE t81_core)
+endif()
+
+# =============================================================================
 # CLI & Examples
 # =============================================================================
 add_library(t81_tool_cli STATIC
@@ -487,7 +529,7 @@ add_library(t81_tool_cli STATIC
   tooling/cli/canonize_tensor.cpp
 )
 target_link_libraries(t81_tool_cli PUBLIC t81_lang_frontend t81_isa t81_vm t81_tool_model)
-target_link_libraries(t81_tool_cli PUBLIC t81_llvm t81_mlir t81_c_frontend t81_rust_frontend)
+target_link_libraries(t81_tool_cli PUBLIC t81_llvm t81_mlir t81_c_frontend t81_rust_frontend t81_python_frontend)
 target_include_directories(t81_tool_cli PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -1209,6 +1251,10 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
     add_executable(t81_rust_frontend_mlir_smoke_test tests/cpp/rust_frontend_mlir_smoke_test.cpp)
     target_link_libraries(t81_rust_frontend_mlir_smoke_test PRIVATE t81_rust_frontend)
   endif()
+  if(T81_ENABLE_PYTHON_FRONTEND AND T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY AND Python3_EXECUTABLE)
+    add_executable(t81_python_frontend_mlir_smoke_test tests/cpp/python_frontend_mlir_smoke_test.cpp)
+    target_link_libraries(t81_python_frontend_mlir_smoke_test PRIVATE t81_python_frontend)
+  endif()
 
   add_executable(t81_cli_structural_types_test tests/cpp/cli_structural_types_test.cpp)
   target_link_libraries(t81_cli_structural_types_test PRIVATE t81_tool_cli t81_isa t81_vm)
@@ -1760,6 +1806,9 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   if(T81_ENABLE_RUST_FRONTEND AND T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY AND T81_RUSTC_EXECUTABLE)
     list(APPEND T81_TEST_TARGETS t81_rust_frontend_mlir_smoke_test)
   endif()
+  if(T81_ENABLE_PYTHON_FRONTEND AND T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY AND Python3_EXECUTABLE)
+    list(APPEND T81_TEST_TARGETS t81_python_frontend_mlir_smoke_test)
+  endif()
   if(T81_BUILD_FUZZ_TESTS AND T81_RUN_FRONTEND_FUZZ_IN_CTEST)
     list(APPEND T81_TEST_TARGETS t81_frontend_fuzz_test)
   endif()
@@ -2057,6 +2106,9 @@ if(TARGET t81_c_frontend)
 endif()
 if(TARGET t81_rust_frontend)
   list(APPEND T81_INSTALL_TARGETS t81_rust_frontend)
+endif()
+if(TARGET t81_python_frontend)
+  list(APPEND T81_INSTALL_TARGETS t81_python_frontend)
 endif()
 if(T81_ENABLE_LLAMA_CPP)
   if(T81_EXPORT_LLAMA_ADAPTER)

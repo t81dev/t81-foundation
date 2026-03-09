@@ -6,6 +6,7 @@
 #include "t81/mlir/tisc_to_mlir.hpp"
 #endif
 #include "t81/c_frontend/compile.hpp"
+#include "t81/python_frontend/compile.hpp"
 #include "t81/rust_frontend/compile.hpp"
 #include "debugger.hpp"
 #include "internal/tooling/logging.hpp"
@@ -2895,6 +2896,71 @@ int run_rust(const RustArgs& ra) {
   options.emit_comments = !ra.no_comments;
   std::string error_message;
   if (!t81::rust_frontend::compile_file_to_mlir(ra.input, out, options, &error_message)) {
+    error(error_message);
+    return 1;
+  }
+  std::cout << "MLIR written to: " << out.string() << "\n";
+  return 0;
+#endif
+}
+
+int run_python(const PythonArgs& pa) {
+#ifndef T81_HAS_PYTHON_FRONTEND
+  (void)pa;
+  error("t81 was built without the experimental Python frontend.\n"
+        "Re-configure with: cmake -DT81_ENABLE_PYTHON_FRONTEND=ON -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON\n"
+        "Python 3 on PATH and the experimental C frontend adapter are also required.");
+  return 1;
+#else
+  if (pa.subcommand == "help" || pa.subcommand.empty()) {
+    std::cout <<
+      "Usage: t81 python compile <file.py> [-o <out.mlir>] [--emit mlir] [options]\n"
+      "\n"
+      "Compile an experimental Python-subset ingress path to MLIR.\n"
+      "\n"
+      "Options:\n"
+      "  -o <path>         Output file (default: <input>.mlir)\n"
+      "  --emit mlir       Emit MLIR text (the only planned mode in v0)\n"
+      "  --dialect=t81     Emit custom t81.* ops in the generated MLIR\n"
+      "  --dialect=std     Emit standard memref-based MLIR (default)\n"
+      "  --mode=dcp        Route float lowering to t81_dmath_* when supported\n"
+      "  --mode=compat     Use standard math lowering mode (default)\n"
+      "  --no-comments     Omit PC annotations in generated block names\n"
+      "\n"
+      "Status:\n"
+      "  - minimal scalar Python subset is implemented experimentally\n"
+      "  - accepted subset v0: def main() -> int, int helpers, annotated local bindings,\n"
+      "    assignment, arithmetic/bitwise/comparison/logical expressions,\n"
+      "    if/else, same-file helper calls, and return\n"
+      "  - unsupported constructs fail closed with explicit diagnostics\n";
+    return 0;
+  }
+
+  if (pa.subcommand != "compile") {
+    error("t81 python: unknown subcommand '" + pa.subcommand + "'. Try 't81 python help'.");
+    return 1;
+  }
+  if (pa.emit != "mlir") {
+    error("t81 python compile: only '--emit mlir' is planned in Python subset v0.");
+    return 1;
+  }
+  if (pa.input.empty()) {
+    error("t81 python compile: no input file specified.");
+    return 1;
+  }
+  if (pa.input.extension() != ".py") {
+    error("t81 python compile: expected .py input, got: " + pa.input.string());
+    return 1;
+  }
+
+  fs::path out = pa.output.empty() ? fs::path(pa.input).replace_extension(".mlir") : pa.output;
+  t81::python_frontend::CompileOptions options;
+  options.module_name = pa.input.stem().string();
+  options.dcp_floats = pa.dcp_floats;
+  options.use_t81_dialect = pa.use_t81_dialect;
+  options.emit_comments = !pa.no_comments;
+  std::string error_message;
+  if (!t81::python_frontend::compile_file_to_mlir(pa.input, out, options, &error_message)) {
     error(error_message);
     return 1;
   }

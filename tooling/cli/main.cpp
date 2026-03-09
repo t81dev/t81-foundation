@@ -563,6 +563,48 @@ Examples:
 )";
 }
 
+void print_help_tui() {
+  std::cerr << R"(
+RFC-0033: Dual TUI Frontends for T81
+
+COMMANDS
+  t81 studio                            Human Operator Interface
+  t81 agent [--resume <f>]              AI-Native / Agentic Interface
+             [--session <f>]
+  t81 ui                                Interactive launcher (choose studio/agent)
+
+STUDIO (t81 studio)
+  Navigation sidebar  7 views: Workspace, Compiler, Determinism,
+                      CanonFS, Axion, Trace, REPL
+  Ctrl+P              Command palette — fuzzy search all t81 commands
+  Enter               Activate selected item / submit REPL input
+  q / Escape          Quit
+
+AGENT (t81 agent)
+  /help               List all slash commands
+  /compile <file>     Compile a .t81 source file
+  /run <file>         Compile and execute a .t81 file
+  /trace <file>       Show execution trace
+  /axion              Show Axion policy status
+  /policy <action>    Axion policy commands
+  /hash <file>        Compute determinism hash
+  /tier <n>           Set displayed cognitive tier
+  /trits              Toggle trit-probability display
+  /save               Save session to --session path
+  /clear              Clear conversation history
+  /quit               Exit
+  Escape              Exit
+
+FLAGS (t81 agent)
+  --resume <path>     Resume a saved JSONL session file
+  --session <path>    Auto-save session to this file on exit
+
+BUILD
+  Requires -DT81_BUILD_TUI=ON (default: ON).
+  Disable with -DT81_BUILD_TUI=OFF; commands remain but print an error.
+)";
+}
+
 void print_help_feedback() {
   std::cerr << R"(
 Usage: t81 feedback <submit|report> [options]
@@ -984,6 +1026,34 @@ Status:
   - unsupported constructs fail closed with explicit diagnostics
 )";}
 
+void print_help_python() {
+  std::cerr << R"(
+Usage: t81 python compile <input.py> [-o <output>] [options]
+
+Compile an experimental Python-subset ingress path to MLIR.
+
+Arguments:
+  <input>                Input Python source file (.py)
+  -o <output>            Output MLIR file (.mlir)
+
+Options:
+  --emit mlir            Emit MLIR text (the only planned mode in v0)
+  --dialect=t81          Emit custom t81.* ops where applicable
+  --dialect=std          Emit standard MLIR ops (default)
+  --mode=dcp             Select DCP float lowering mode when supported
+  --mode=compat          Select standard math lowering mode (default)
+  --no-comments          Suppress metadata comments in generated MLIR
+  -h, --help             Show this help
+
+Status:
+  - minimal scalar Python subset is implemented experimentally
+  - build requires -DT81_ENABLE_PYTHON_FRONTEND=ON -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON
+  - accepted subset v0: def main() -> int, int helpers, annotated local bindings,
+    assignment, arithmetic/bitwise/comparison/logical expressions,
+    if/else, same-file helper calls, and return
+  - unsupported constructs fail closed with explicit diagnostics
+)";}
+
 void print_help_advanced() {
   std::cerr << R"(
 Advanced commands (supported expert workflows):
@@ -997,7 +1067,8 @@ Advanced commands (supported expert workflows):
   tisc <action> [args]                TISC artifact inspection, validation, encode/decode
   ir <action> [args]                  IR inspection and export for frontend lowering
   c <subcommand> [args]               Experimental C-subset frontend to MLIR
-  rust <subcommand> [args]            Experimental Rust-subset frontend scaffold
+  rust <subcommand> [args]            Experimental Rust-subset frontend to MLIR
+  python <subcommand> [args]          Experimental Python-subset frontend to MLIR
   llvm <subcommand> [args]            LLVM IR backend: translate TISC to LLVM IR/bitcode
   mlir <subcommand> [args]            MLIR frontend: translate TISC to MLIR / LLVM IR
 
@@ -1302,10 +1373,14 @@ Commands:
   axion <action> [args]                 Axion governor and policy-facing operations
   trace <action> [args]                 Trace inspection, replay, export, canonicalization
   c     <subcommand> [args]             Experimental C-subset frontend to MLIR
-  rust  <subcommand> [args]             Experimental Rust-subset frontend scaffold
+  rust  <subcommand> [args]             Experimental Rust-subset frontend to MLIR
+  python <subcommand> [args]            Experimental Python-subset frontend to MLIR
   llvm  <subcommand> [args]             LLVM IR backend: translate TISC to LLVM IR/bitcode
   mlir  <subcommand> [args]             MLIR frontend: translate TISC to MLIR / LLVM IR
   repl                                  Start interactive REPL
+  studio                                Human Operator TUI (RFC-0033)
+  agent   [--resume <f>] [--session <f>] AI-Native / Agentic TUI (RFC-0033)
+  ui                                    Interactive TUI launcher (choose studio/agent)
   completion <shell>                    Print shell completion script
   man [--install-dir <dir>]             Show or install CLI manpage
   feedback <subcommand> [args]          Local CLI UX feedback loop
@@ -1342,6 +1417,7 @@ More command groups:
   t81 help trace
   t81 help c
   t81 help rust
+  t81 help python
   t81 help llvm
   t81 help mlir
   t81 help labs
@@ -1430,6 +1506,10 @@ bool print_help_topic(std::string_view topic, const char* prog) {
     print_help_feedback();
     return true;
   }
+  if (topic == "tui" || topic == "studio" || topic == "agent" || topic == "ui") {
+    print_help_tui();
+    return true;
+  }
   if (topic == "benchmark") {
     print_help_benchmark();
     return true;
@@ -1456,6 +1536,10 @@ bool print_help_topic(std::string_view topic, const char* prog) {
   }
   if (topic == "rust") {
     print_help_rust();
+    return true;
+  }
+  if (topic == "python") {
+    print_help_python();
     return true;
   }
   if (topic == "tier") {
@@ -2142,7 +2226,7 @@ Args parse_args(int argc, char* argv[]) {
     } else if (arg == "-V" || arg == "--version") {
       if (a.command == "fmt" || a.command == "code" || a.command == "project" ||
           a.command == "env" || a.command == "internal" || a.command == "completion" ||
-          a.command == "man" || a.command == "feedback" || a.command == "c" || a.command == "rust" ||
+          a.command == "man" || a.command == "feedback" || a.command == "c" || a.command == "rust" || a.command == "python" ||
           a.command == "llvm" || a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
@@ -2163,7 +2247,7 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "completion" || a.command == "man" || a.command == "feedback" ||
                  a.command == "canonize-tensor" || a.command == "canonize-file" ||
                  a.command == "memory-stats" || a.command == "tier" || a.command == "profile" ||
-                 a.command == "c" || a.command == "rust" || a.command == "llvm" || a.command == "mlir") {
+                 a.command == "c" || a.command == "rust" || a.command == "python" || a.command == "llvm" || a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         throw_usage_error("Unknown option: " + std::string(arg));
@@ -2182,7 +2266,7 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "completion" || a.command == "man" || a.command == "feedback" ||
                  a.command == "canonize-tensor" || a.command == "canonize-file" ||
                  a.command == "memory-stats" || a.command == "tier" ||
-                 a.command == "c" || a.command == "rust" || a.command == "llvm" || a.command == "mlir") {
+                 a.command == "c" || a.command == "rust" || a.command == "python" || a.command == "llvm" || a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         if (!a.input.empty()) {
@@ -7623,7 +7707,7 @@ std::string build_bash_completion() {
   return R"(_t81_complete() {
   local cur prev words cword
   _init_completion || return
-  local commands="code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace c llvm mlir repl completion man feedback version help"
+  local commands="code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace c rust python llvm mlir repl completion man feedback version help"
   if [[ ${cword} -eq 1 ]]; then
     COMPREPLY=( $(compgen -W "${commands}" -- "${cur}") )
     return
@@ -7680,6 +7764,12 @@ std::string build_bash_completion() {
     c)
       COMPREPLY=( $(compgen -W "compile help" -- "${cur}") )
       ;;
+    rust)
+      COMPREPLY=( $(compgen -W "compile help" -- "${cur}") )
+      ;;
+    python)
+      COMPREPLY=( $(compgen -W "compile help" -- "${cur}") )
+      ;;
     llvm)
       COMPREPLY=( $(compgen -W "compile help" -- "${cur}") )
       ;;
@@ -7722,7 +7812,8 @@ commands=(
   'axion:Axion governor tools'
   'trace:trace inspection tools'
   'c:Experimental C-subset frontend to MLIR'
-  'rust:Experimental Rust-subset frontend scaffold'
+  'rust:Experimental Rust-subset frontend to MLIR'
+  'python:Experimental Python-subset frontend to MLIR'
   'llvm:LLVM IR backend — translate TISC to LLVM IR/bitcode'
   'mlir:MLIR frontend — translate TISC to MLIR or LLVM IR'
   'completion:print completion script'
@@ -7793,6 +7884,12 @@ case $state in
       c)
         _values 'c action' compile help
         ;;
+      rust)
+        _values 'rust action' compile help
+        ;;
+      python)
+        _values 'python action' compile help
+        ;;
       llvm)
         _values 'llvm action' compile help
         ;;
@@ -7812,7 +7909,7 @@ esac
 }
 
 std::string build_fish_completion() {
-  return R"(complete -c t81 -f -n '__fish_use_subcommand' -a 'code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace c llvm mlir repl completion man feedback version help'
+  return R"(complete -c t81 -f -n '__fish_use_subcommand' -a 'code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace c rust python llvm mlir repl completion man feedback version help'
 complete -c t81 -f -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish'
 complete -c t81 -f -n '__fish_seen_subcommand_from lang' -a 'check lint fmt build run test disasm debug repl show dump export validate profile'
 complete -c t81 -f -n '__fish_seen_subcommand_from code' -a 'check lint fmt build run test disasm debug repl profile'
@@ -7832,6 +7929,7 @@ complete -c t81 -f -n '__fish_seen_subcommand_from axion' -a 'status optimize si
 complete -c t81 -f -n '__fish_seen_subcommand_from trace' -a 'show diff replay summary stats filter canonicalize export'
 complete -c t81 -f -n '__fish_seen_subcommand_from c' -a 'compile help'
 complete -c t81 -f -n '__fish_seen_subcommand_from rust' -a 'compile help'
+complete -c t81 -f -n '__fish_seen_subcommand_from python' -a 'compile help'
 complete -c t81 -f -n '__fish_seen_subcommand_from llvm' -a 'compile help'
 complete -c t81 -f -n '__fish_seen_subcommand_from mlir' -a 'compile lower pipeline help'
 complete -c t81 -f -n '__fish_seen_subcommand_from feedback' -a 'submit report'
@@ -8955,6 +9053,44 @@ int main(int argc, char* argv[]) {
         }
       }
       return t81::cli::run_rust(ra);
+
+    } else if (args.command == "python") {
+      t81::cli::PythonArgs pa;
+      if (args.output) pa.output = *args.output;
+      if (args.command_args.empty() || args.command_args[0] == "--help" ||
+          args.command_args[0] == "-h") {
+        return emit_help([&] { print_help_python(); });
+      }
+      pa.subcommand = args.command_args[0];
+      for (size_t i = 1; i < args.command_args.size(); ++i) {
+        const std::string& tok = args.command_args[i];
+        if (tok == "--mode=dcp") {
+          pa.dcp_floats = true;
+        } else if (tok == "--mode=compat") {
+          pa.dcp_floats = false;
+        } else if (tok == "--dialect=t81") {
+          pa.use_t81_dialect = true;
+        } else if (tok == "--dialect=std") {
+          pa.use_t81_dialect = false;
+        } else if (tok == "--emit" && i + 1 < args.command_args.size()) {
+          pa.emit = args.command_args[++i];
+        } else if (tok.rfind("--emit=", 0) == 0) {
+          pa.emit = tok.substr(7);
+        } else if (tok == "--no-comments") {
+          pa.no_comments = true;
+        } else if ((tok == "-o" || tok == "--output") && i + 1 < args.command_args.size()) {
+          pa.output = args.command_args[++i];
+        } else if (tok == "--help" || tok == "-h") {
+          return emit_help([&] { print_help_python(); });
+        } else if (tok[0] != '-') {
+          if (pa.input.empty()) pa.input = tok;
+          else pa.output = tok;
+        } else {
+          error("python: unknown option '" + tok + "'. Run 't81 help python'.");
+          return 1;
+        }
+      }
+      return t81::cli::run_python(pa);
 
     } else if (args.command == "mlir") {
       t81::cli::MlirArgs ma;
