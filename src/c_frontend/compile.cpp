@@ -269,6 +269,9 @@ bool compile_unary_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, s
   if (prefix == "*") {
     return ctx.fail(cursor, "pointer dereference is not supported in the C subset v0", error);
   }
+  if (prefix == "!") {
+    return ctx.fail(cursor, "logical not is not supported in the C subset v0", error);
+  }
   if (prefix != "-") {
     return ctx.fail(cursor, "only unary minus is supported", error);
   }
@@ -321,6 +324,8 @@ bool compile_binary_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, 
     opcode = t81::tisc::Opcode::Greater;
   } else if (*op == ">=") {
     opcode = t81::tisc::Opcode::GreaterEqual;
+  } else if (*op == "&&" || *op == "||") {
+    return ctx.fail(cursor, "logical operators are not supported in the C subset v0", error);
   } else {
     return ctx.fail(cursor, "only arithmetic and comparison operators are supported", error);
   }
@@ -350,8 +355,18 @@ bool compile_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, std::st
   switch (kind) {
     case CXCursor_IntegerLiteral:
       return compile_integer_literal(ctx, cursor, target, error);
+    case CXCursor_UnaryExpr:
+      return ctx.fail(cursor, "'sizeof' is not supported in the C subset v0", error);
     case CXCursor_CStyleCastExpr:
       return ctx.fail(cursor, "casts are not supported in the C subset v0", error);
+    case CXCursor_MemberRefExpr:
+      return ctx.fail(cursor, "member access is not supported in the C subset v0", error);
+    case CXCursor_ArraySubscriptExpr:
+      return ctx.fail(cursor, "array indexing is not supported in the C subset v0", error);
+    case CXCursor_ConditionalOperator:
+      return ctx.fail(cursor, "ternary conditionals are not supported in the C subset v0", error);
+    case CXCursor_CompoundAssignOperator:
+      return ctx.fail(cursor, "compound assignment is not supported in the C subset v0", error);
     case CXCursor_DeclRefExpr: {
       const std::string name = to_string_and_dispose(clang_getCursorSpelling(cursor));
       const auto it = ctx.vars.find(name);
