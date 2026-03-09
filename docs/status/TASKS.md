@@ -261,10 +261,12 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - ✅ CMake: `T81_ENABLE_C_FRONTEND` option; `libclang`-gated `t81_c_frontend` target
   - ✅ CLI: `t81 c compile <input.c> [-o out.mlir] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>]`
   - ✅ Frontend scope v0: fail-closed, integer-only subset (`int main()` entry, helper `int` functions with `int` parameters, same-TU calls without recursion, initialized local `int` vars, assignment, arithmetic/comparisons, compound blocks, `if`, `while`, `for`, reachable `return`)
+  - ✅ Guardrails: explicit rejection diagnostics for pointers, local arrays, pointer parameters, `break`, `continue`, globals, recursion, and conditionless `for` loops
   - ✅ Integration path: restricted C parsed via `libclang`, lowered into TISC, then reused through the existing TISC → MLIR pipeline
   - ✅ Verification: `t81_c_frontend_mlir_smoke_test`; CLI contract coverage for `help c` and `t81 c compile`
   - Status: **✅ RESOLVED** — build requires `-DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON`
-  - **Deferred**: `for`, arrays/pointers, richer deterministic subset diagnostics, and broader function-call semantics
+  - **Resume Point**: next useful slices are broader unsupported-C diagnostics (`switch`, `do-while`, `goto`, address-of/deref, casts) and a deliberate decision on whether fixed local arrays should remain rejected or lower to explicit T81 memory
+  - **Deferred**: arrays/memory modeling, broader function-call semantics, richer unsupported-C diagnostics, and non-C frontends (Rust/Python)
 
 ---
 

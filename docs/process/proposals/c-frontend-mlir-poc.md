@@ -187,6 +187,45 @@ Acceptance:
 
 - array examples compile only when they fit the constrained model
 
+## 9.1 Current Status (2026-03-09)
+
+Implemented and verified:
+
+- `t81 c compile` CLI wired through the existing MLIR path
+- entry-point model: `int main()`
+- helper `int` functions with named `int` parameters
+- local initialized `int` variables
+- arithmetic/comparisons
+- assignment statements
+- structured control flow: `if`, `while`, `for`
+- same-translation-unit direct calls
+- explicit recursion rejection
+- explicit rejection diagnostics for pointers, local arrays, pointer parameters,
+  `break`, `continue`, globals, float returns, and conditionless `for` loops
+
+Verified in targeted builds:
+
+- `t81_c_frontend_mlir_smoke_test`
+- `t81_cli_contract_test ./build_c_frontend_next/t81`
+- `t81 help c`
+
+Latest implementation commits on `main`:
+
+- `78d92d84` `Add experimental C-subset frontend PoC`
+- `ccf8b311` `Expand C frontend subset with structured control flow`
+- `eb9743d1` `Add C frontend parameters and helper calls`
+- `3c8034c8` `Add for-loop support to C frontend subset`
+- `ae533560` `Harden C frontend rejection diagnostics`
+
+Recommended resume point:
+
+1. add explicit fail-closed diagnostics for more unsupported C surfaces:
+   `switch`, `do-while`, `goto`, address-of/dereference, casts
+2. decide whether fixed local arrays stay rejected or become an intentional
+   T81-memory lowering surface
+3. only after that, choose whether to deepen C further or start a Rust ingress
+   proof of concept
+
 ## 10. File/Module Sketch
 
 Suggested initial layout:
