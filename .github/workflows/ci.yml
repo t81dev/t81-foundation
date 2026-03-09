@@ -663,6 +663,81 @@ jobs:
           if-no-files-found: warn
 
   ############################################################################
+  # JOB: tui-binary-size-gate
+  # Warns (continue-on-error) if TUI adds >15% to the stripped t81 binary.
+  ############################################################################
+  tui-binary-size-gate:
+    name: " gate / TUI binary size delta "
+    needs: build-and-test
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Install Dependencies
+        run: |
+          set -eo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build binutils
+
+      - name: Build t81 WITHOUT TUI (baseline)
+        shell: bash
+        run: |
+          set -eo pipefail
+          cmake -S . -B build-notui -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DT81_BUILD_TUI=OFF \
+            -DT81_BUILD_TESTS=OFF \
+            -DT81_BUILD_EXAMPLES=OFF \
+            -DT81_BUILD_BENCHMARKS=OFF
+          cmake --build build-notui --target t81 --parallel
+          strip build-notui/t81
+          du -b build-notui/t81 | awk '{print $1}' > /tmp/size_notui.txt
+          echo "Baseline (no-TUI) size: $(cat /tmp/size_notui.txt) bytes"
+
+      - name: Build t81 WITH TUI
+        shell: bash
+        run: |
+          set -eo pipefail
+          cmake -S . -B build-withtui -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DT81_BUILD_TUI=ON \
+            -DT81_BUILD_TESTS=OFF \
+            -DT81_BUILD_EXAMPLES=OFF \
+            -DT81_BUILD_BENCHMARKS=OFF
+          cmake --build build-withtui --target t81 --parallel
+          strip build-withtui/t81
+          du -b build-withtui/t81 | awk '{print $1}' > /tmp/size_withtui.txt
+          echo "With-TUI size: $(cat /tmp/size_withtui.txt) bytes"
+
+      - name: Check binary size delta
+        shell: bash
+        run: |
+          set -eo pipefail
+          BASE=$(cat /tmp/size_notui.txt)
+          TUI=$(cat /tmp/size_withtui.txt)
+          DELTA=$((TUI - BASE))
+          PCT=$(python3 -c "print(f'{($TUI - $BASE) / $BASE * 100:.1f}')")
+          echo "Binary size delta: +${DELTA} bytes (+${PCT}%)"
+          echo "| Variant | Size (bytes) |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---------|-------------|"  >> "$GITHUB_STEP_SUMMARY"
+          echo "| No TUI  | ${BASE}     |"  >> "$GITHUB_STEP_SUMMARY"
+          echo "| With TUI| ${TUI}      |"  >> "$GITHUB_STEP_SUMMARY"
+          echo "| Delta   | +${DELTA} (+${PCT}%) |" >> "$GITHUB_STEP_SUMMARY"
+          # Warn (not fail — continue-on-error: true) if delta exceeds 15%
+          python3 - <<PY
+          base, tui = $BASE, $TUI
+          pct = (tui - base) / base * 100
+          if pct > 15.0:
+              print(f"::warning::TUI binary size delta is {pct:.1f}% (threshold: 15%). Consider investigating FTXUI link bloat.")
+          else:
+              print(f"TUI binary size delta {pct:.1f}% is within the 15% threshold.")
+          PY
+
+  ############################################################################
   # JOB: determinism-slice
   ############################################################################
   determinism-slice:

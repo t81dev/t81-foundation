@@ -538,7 +538,7 @@ target_include_directories(t81_tool_cli PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# TUI library (RFC-0033) — built only when T81_BUILD_TUI=ON
+# TUI library — built only when T81_BUILD_TUI=ON
 if(T81_BUILD_TUI)
   add_library(t81_tui STATIC
     tooling/tui/common.cpp
@@ -552,6 +552,17 @@ if(T81_BUILD_TUI)
   )
   target_include_directories(t81_tui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   target_compile_features(t81_tui PUBLIC ${T81_CXX_STD_FEATURE})
+
+  if(T81_BUILD_TESTS)
+    add_executable(tui_snapshot_test tests/cpp/tui_snapshot_test.cpp)
+    target_link_libraries(tui_snapshot_test PRIVATE t81_tui ftxui::screen ftxui::dom)
+    target_include_directories(tui_snapshot_test PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}
+      ${CMAKE_CURRENT_SOURCE_DIR}/tests/cpp
+    )
+    target_compile_features(tui_snapshot_test PRIVATE ${T81_CXX_STD_FEATURE})
+    add_test(NAME tui_snapshot_test COMMAND tui_snapshot_test)
+  endif()
 endif()
 
 add_executable(t81 tooling/cli/main.cpp)

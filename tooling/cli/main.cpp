@@ -565,7 +565,7 @@ Examples:
 
 void print_help_tui() {
   std::cerr << R"(
-RFC-0033: Dual TUI Frontends for T81
+T81 Dual TUI Frontends
 
 COMMANDS
   t81 studio                            Human Operator Interface
@@ -1382,8 +1382,8 @@ Commands:
   llvm  <subcommand> [args]             LLVM IR backend: translate TISC to LLVM IR/bitcode
   mlir  <subcommand> [args]             MLIR frontend: translate TISC to MLIR / LLVM IR
   repl                                  Start interactive REPL
-  studio                                Human Operator TUI (RFC-0033)
-  agent   [--resume <f>] [--session <f>] AI-Native / Agentic TUI (RFC-0033)
+  studio                                Human Operator TUI
+  agent   [--resume <f>] [--session <f>] AI-Native / Agentic TUI
   ui                                    Interactive TUI launcher (choose studio/agent)
   completion <shell>                    Print shell completion script
   man [--install-dir <dir>]             Show or install CLI manpage
@@ -9130,7 +9130,7 @@ int main(int argc, char* argv[]) {
       }
       return t81::cli::run_mlir(ma);
 
-    // ── RFC-0033: TUI frontends ────────────────────────────────────────────
+    // ── TUI frontends ─────────────────────────────────────────────────────
     } else if (args.command == "studio" || args.command == "agent" ||
                args.command == "ui") {
 #if defined(T81_HAS_TUI)
