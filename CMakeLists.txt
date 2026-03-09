@@ -374,6 +374,54 @@ else()
 endif()
 
 # =============================================================================
+# Experimental C Frontend (optional)
+# Enable with: cmake -DT81_ENABLE_C_FRONTEND=ON
+# Requires MLIR/LLVM plus libclang.
+# =============================================================================
+option(T81_ENABLE_C_FRONTEND "Enable experimental C-subset frontend (requires MLIR/LLVM/libclang)" OFF)
+
+if(T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND LLVM_FOUND AND MLIR_FOUND)
+  find_path(T81_CLANG_C_INCLUDE_DIR
+    NAMES clang-c/Index.h
+    HINTS /opt/homebrew/opt/llvm/include
+          /usr/local/opt/llvm/include
+          /usr/lib/llvm-18/include)
+  find_library(T81_CLANG_C_LIBRARY
+    NAMES clang libclang
+    HINTS /opt/homebrew/opt/llvm/lib
+          /usr/local/opt/llvm/lib
+          /usr/lib/llvm-18/lib)
+  if(T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY)
+    message(STATUS "[t81] libclang — building experimental C frontend")
+    add_library(t81_c_frontend STATIC
+      src/c_frontend/compile.cpp)
+    target_include_directories(t81_c_frontend PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+      ${T81_CLANG_C_INCLUDE_DIR})
+    target_link_libraries(t81_c_frontend PUBLIC
+      t81_core
+      t81_mlir
+      ${T81_CLANG_C_LIBRARY})
+    target_compile_definitions(t81_c_frontend PUBLIC T81_HAS_C_FRONTEND=1 T81_HAS_MLIR=1 T81_HAS_LLVM=1)
+    target_compile_features(t81_c_frontend PUBLIC ${T81_CXX_STD_FEATURE})
+  else()
+    message(STATUS "[t81] libclang not found — t81_c_frontend remains a stub")
+    add_library(t81_c_frontend INTERFACE)
+    target_include_directories(t81_c_frontend INTERFACE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+    target_link_libraries(t81_c_frontend INTERFACE t81_core)
+  endif()
+else()
+  add_library(t81_c_frontend INTERFACE)
+  target_include_directories(t81_c_frontend INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+  target_link_libraries(t81_c_frontend INTERFACE t81_core)
+endif()
+
+# =============================================================================
 # CLI & Examples
 # =============================================================================
 add_library(t81_tool_cli STATIC
@@ -382,7 +430,7 @@ add_library(t81_tool_cli STATIC
   tooling/cli/canonize_tensor.cpp
 )
 target_link_libraries(t81_tool_cli PUBLIC t81_lang_frontend t81_isa t81_vm t81_tool_model)
-target_link_libraries(t81_tool_cli PUBLIC t81_llvm t81_mlir)
+target_link_libraries(t81_tool_cli PUBLIC t81_llvm t81_mlir t81_c_frontend)
 target_include_directories(t81_tool_cli PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -1076,6 +1124,11 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(t81_cli_contract_test tests/cpp/cli_contract_test.cpp)
   target_compile_features(t81_cli_contract_test PRIVATE ${T81_CXX_STD_FEATURE})
 
+  if(T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY)
+    add_executable(t81_c_frontend_mlir_smoke_test tests/cpp/c_frontend_mlir_smoke_test.cpp)
+    target_link_libraries(t81_c_frontend_mlir_smoke_test PRIVATE t81_c_frontend)
+  endif()
+
   add_executable(t81_cli_structural_types_test tests/cpp/cli_structural_types_test.cpp)
   target_link_libraries(t81_cli_structural_types_test PRIVATE t81_tool_cli t81_isa t81_vm)
 
@@ -1620,6 +1673,9 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   if(T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND MLIR_FOUND)
     list(APPEND T81_TEST_TARGETS t81_mlir_t81_dialect_memory_ops_test)
   endif()
+  if(T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY)
+    list(APPEND T81_TEST_TARGETS t81_c_frontend_mlir_smoke_test)
+  endif()
   if(T81_BUILD_FUZZ_TESTS AND T81_RUN_FRONTEND_FUZZ_IN_CTEST)
     list(APPEND T81_TEST_TARGETS t81_frontend_fuzz_test)
   endif()
@@ -1911,6 +1967,9 @@ set(T81_INSTALL_TARGETS
 )
 if(TARGET t81_dmath_runtime)
   list(APPEND T81_INSTALL_TARGETS t81_dmath_runtime)
+endif()
+if(TARGET t81_c_frontend)
+  list(APPEND T81_INSTALL_TARGETS t81_c_frontend)
 endif()
 if(T81_ENABLE_LLAMA_CPP)
   if(T81_EXPORT_LLAMA_ADAPTER)

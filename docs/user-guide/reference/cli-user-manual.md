@@ -107,6 +107,7 @@ Domain-first command families:
 - `t81 vm <action> [args]`
 - `t81 tisc <action> [args]`
 - `t81 ir <action> [args]`
+- `t81 c <action> [args]`
 - `t81 llvm <action> [args]`
 - `t81 mlir <action> [args]`
 - `t81 tier <action> [args]`
@@ -140,6 +141,7 @@ t81 determinism <action> [args]
 t81 vm <action> [args]
 t81 tisc <action> [args]
 t81 ir <action> [args]
+t81 c <action> [args]
 t81 llvm <action> [args]
 t81 mlir <action> [args]
 t81 tier <action> [args]
@@ -212,6 +214,7 @@ t81 ir show <file.t81>
 t81 ir dump <file.t81>
 t81 ir validate <file.t81> [--json]
 t81 ir export <file.t81> [--json] [-o <file>]
+t81 c compile <file.c> [-o <file.mlir>] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
 t81 llvm compile <file.t81|file.tisc> [-o <file.ll|file.bc>] [--bitcode] [--no-comments]
 t81 mlir compile <file.t81|file.tisc> [-o <file.mlir>] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
 t81 mlir lower <file.mlir> [-o <file.ll>]
@@ -617,7 +620,28 @@ t81 completion <bash|zsh|fish>
 
 Prints shell completion script to `stdout`.
 
-### 4.21 `llvm`
+### 4.21 `c`
+
+```text
+t81 c compile <file.c> [-o <file.mlir>] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
+```
+
+Experimental C-subset frontend.
+
+Current subset v0:
+
+- exactly one function: `int main()`
+- local `int` variables with initializers
+- integer literals and `+`, `-`, `*`, `/`, `%`
+- final `return` statement only
+
+Behavior notes:
+
+- unsupported constructs fail closed with explicit diagnostics
+- only `--emit mlir` is supported in v0
+- `--dialect=t81` routes accepted programs through the custom `t81.*` MLIR surface
+
+### 4.22 `llvm`
 
 ```text
 t81 llvm compile <file.t81|file.tisc> [-o <file.ll|file.bc>] [--bitcode] [--no-comments]
@@ -632,7 +656,7 @@ Options:
 - `--bitcode`
 - `--no-comments`
 
-### 4.22 `mlir`
+### 4.23 `mlir`
 
 ```text
 t81 mlir compile <file.t81|file.tisc> [-o <file.mlir>] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
@@ -661,7 +685,7 @@ Behavior notes:
   immediate-address memory `Load`/`Store` traffic, and stack-semantic
   `Push`/`Pop` lowering before converting them back to standard MLIR.
 
-### 4.23 `man`
+### 4.24 `man`
 
 ```text
 t81 man [--install-dir <dir>]
@@ -669,7 +693,7 @@ t81 man [--install-dir <dir>]
 
 Shows embedded manpage text or installs `t81.1`.
 
-### 4.24 `feedback`
+### 4.25 `feedback`
 
 ```text
 t81 feedback submit --rating <1-5> [--note <text>] [--path <file>]

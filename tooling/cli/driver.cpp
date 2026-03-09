@@ -5,6 +5,7 @@
 #ifdef T81_HAS_MLIR
 #include "t81/mlir/tisc_to_mlir.hpp"
 #endif
+#include "t81/c_frontend/compile.hpp"
 #include "debugger.hpp"
 #include "internal/tooling/logging.hpp"
 #include "t81/canonfs/canon_driver.hpp"
@@ -2765,6 +2766,73 @@ int run_mlir(const MlirArgs& ma) {
   }
   return 0;
 #endif  // T81_HAS_MLIR
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Experimental C frontend CLI
+// ──────────────────────────────────────────────────────────────────────────
+
+int run_c(const CArgs& ca) {
+#ifndef T81_HAS_C_FRONTEND
+  (void)ca;
+  error("t81 was built without the experimental C frontend.\n"
+        "Re-configure with: cmake -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON");
+  return 1;
+#else
+  if (ca.subcommand == "help" || ca.subcommand.empty()) {
+    std::cout <<
+      "Usage: t81 c compile <file.c> [-o <out.mlir>] [--emit mlir] [options]\n"
+      "\n"
+      "Compile a tightly restricted deterministic-safe C subset to MLIR.\n"
+      "\n"
+      "Options:\n"
+      "  -o <path>         Output file (default: <input>.mlir)\n"
+      "  --emit mlir       Emit MLIR text (the only supported mode in v0)\n"
+      "  --dialect=t81     Emit custom t81.* ops in the generated MLIR\n"
+      "  --dialect=std     Emit standard memref-based MLIR (default)\n"
+      "  --mode=dcp        Route float lowering to t81_dmath_* when supported\n"
+      "  --mode=compat     Use standard math lowering mode (default)\n"
+      "  --no-comments     Omit PC annotations in generated block names\n"
+      "\n"
+      "Current subset v0:\n"
+      "  - exactly one function: int main()\n"
+      "  - local int variables with initializers\n"
+      "  - integer literals and +, -, *, /, % expressions\n"
+      "  - final return statement only\n";
+    return 0;
+  }
+
+  if (ca.subcommand != "compile") {
+    error("t81 c: unknown subcommand '" + ca.subcommand + "'. Try 't81 c help'.");
+    return 1;
+  }
+  if (ca.emit != "mlir") {
+    error("t81 c compile: only '--emit mlir' is supported in C subset v0.");
+    return 1;
+  }
+  if (ca.input.empty()) {
+    error("t81 c compile: no input file specified.");
+    return 1;
+  }
+  if (ca.input.extension() != ".c") {
+    error("t81 c compile: expected .c input, got: " + ca.input.string());
+    return 1;
+  }
+
+  fs::path out = ca.output.empty() ? fs::path(ca.input).replace_extension(".mlir") : ca.output;
+  t81::c_frontend::CompileOptions options;
+  options.module_name = ca.input.stem().string();
+  options.dcp_floats = ca.dcp_floats;
+  options.use_t81_dialect = ca.use_t81_dialect;
+  options.emit_comments = !ca.no_comments;
+  std::string error_message;
+  if (!t81::c_frontend::compile_file_to_mlir(ca.input, out, options, &error_message)) {
+    error(error_message);
+    return 1;
+  }
+  std::cout << "MLIR written to: " << out.string() << "\n";
+  return 0;
+#endif
 }
 
 }  // namespace t81::cli

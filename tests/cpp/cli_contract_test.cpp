@@ -780,6 +780,7 @@ int main(int argc, char* argv[]) {
 
     const auto completion_result = run_cli(t81_bin, {"completion", "fish"});
     T81_TEST_CHECK(completion_result.exit_code == 0);
+    T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from c"));
     T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from llvm"));
     T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from mlir"));
     T81_TEST_CHECK(contains(completion_result.stdout_text, "compile help"));
@@ -810,6 +811,29 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(mlir_t81_dialect_result.exit_code == 0 ||
                    contains(mlir_t81_dialect_result.stderr_text,
                             "built without the MLIR frontend."));
+
+    const auto c_help_result = run_cli(t81_bin, {"help", "c"});
+    T81_TEST_CHECK(c_help_result.exit_code == 0);
+    T81_TEST_CHECK(contains(c_help_result.stdout_text, "Usage: t81 c compile"));
+
+    const fs::path c_input = make_temp_path("t81-cli-contract", ".c");
+    const fs::path c_output = make_temp_path("t81-cli-contract", ".mlir");
+    {
+      std::ofstream out(c_input);
+      out << "int main() {\n"
+             "  int x = 2;\n"
+             "  int y = 3;\n"
+             "  return x + y;\n"
+             "}\n";
+    }
+    const auto c_result =
+        run_cli(t81_bin, {"c", "compile", c_input.string(), "-o", c_output.string(), "--dialect=t81"});
+    T81_TEST_CHECK(!contains(c_result.stderr_text, "Multiple input files not supported"));
+    T81_TEST_CHECK(c_result.exit_code == 0 ||
+                   contains(c_result.stderr_text, "built without the experimental C frontend."));
+    std::error_code ignore_ec;
+    fs::remove(c_input, ignore_ec);
+    fs::remove(c_output, ignore_ec);
   }
 
   {
