@@ -36,10 +36,12 @@ int main(int argc, char* argv[]) {
   }
 
   const fs::path out_path = fs::temp_directory_path() / "t81-cli-repro-hash.out";
-  const std::string cmd = "\"" + t81_bin.string() + "\" repro-hash > \"" + out_path.string() + "\"";
+  const std::string cmd =
+      "\"" + t81_bin.string() + "\" internal repro-hash tests/fixtures/t81lang_determinism > \"" +
+      out_path.string() + "\"";
   const int rc = std::system(cmd.c_str());
   if (rc != 0) {
-    std::cerr << "t81 repro-hash returned non-zero: " << rc << "\n";
+    std::cerr << "t81 internal repro-hash returned non-zero: " << rc << "\n";
     return 1;
   }
 

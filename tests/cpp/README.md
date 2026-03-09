@@ -7,7 +7,7 @@ Main C++ test suite for language, runtime, determinism, and policy behavior.
 - TISC: encoding, metadata, determinism, binary IO
 - VM: interpreter behavior, traps, memory/load-store, tensor ops
 - Axion: policy, recursion/loop/match guards, segment/trace behavior
-- CLI/e2e: compile/run/disasm/check/repro-hash workflows
+- CLI/e2e: compile/run/disasm/check/internal repro-hash workflows
 - Numerics: bigint/fraction/tensor correctness and perf guardrails
 
 ## Running targeted slices
