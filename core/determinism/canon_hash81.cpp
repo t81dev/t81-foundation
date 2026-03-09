@@ -45,7 +45,6 @@ std::uint64_t siphash(const std::uint8_t *in, const std::size_t inlen, const std
     std::uint64_t k0 = U8TO64_LE(k);
     std::uint64_t k1 = U8TO64_LE(k + 8);
     std::uint64_t m;
-    int i;
     const std::uint8_t *end = in + inlen - (inlen % sizeof(std::uint64_t));
     const int left = inlen & 7;
     std::uint64_t b = ((std::uint64_t)inlen) << 56;

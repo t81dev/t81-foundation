@@ -224,7 +224,7 @@ Disposition KEEP EXPERIMENTAL does not prevent future re-audit if the component 
 **Normative integration requirements on promotion:**
 
 - The document MUST be promoted to `docs/architecture/ai-opcode-phase1-conformance.md`.
-- Claims in the document regarding deterministic execution of ATTN, QMATMUL, and EMBED MUST be cross-referenced against the spec-as-executable conformance programs required by RFC-0027 and RFC-0028.
+- Claims in the document regarding deterministic execution of ATTN, QMATMUL, and EMBED MUST be cross-referenced against the spec-as-executable conformance programs required by RFC-0027 and RFC-0031.
 - The document MUST not be modified after promotion without an RFC amendment or a new conformance report covering the modified claims.
 
 ---
@@ -235,9 +235,9 @@ All components promoted to the deterministic core MUST satisfy the following req
 
 ### 7.1 Arithmetic
 
-- All promoted code paths MUST use integer or T81Float soft-float arithmetic exclusively (RFC-0004 §3.2, RFC-0028 §Deterministic AI Arithmetic Contract).
+- All promoted code paths MUST use integer or T81Float soft-float arithmetic exclusively (RFC-0004 §3.2, RFC-0031 §Deterministic AI Arithmetic Contract).
 - Hardware FPU instructions MUST NOT appear in any promoted translation unit. This includes calls to `std::sqrt`, `std::log`, `std::pow`, `std::exp`, and any other `<cmath>` function that may lower to an SSE or NEON floating-point instruction.
-- Quantization operations MUST satisfy the round-trip invariant: `dequantize(quantize(x, scale), scale) == x` for all `x` in the representable range (RFC-0028).
+- Quantization operations MUST satisfy the round-trip invariant: `dequantize(quantize(x, scale), scale) == x` for all `x` in the representable range (RFC-0031).
 
 ### 7.2 Time and System State
 
@@ -539,7 +539,7 @@ The prohibition on `llama.cpp`, `onnx_runtime`, and similar runtimes in promoted
 - [RFC-0025](RFC-0025-policy-gated-tensor-loading.md) — Policy-Gated Tensor Loading via CanonFS
 - [RFC-0026](RFC-0026-ai-native-inference-opcodes.md) — AI-Native Inference Opcodes (ATTN, QMATMUL, WLOAD, EMBED, GATHER, SCATTER)
 - [RFC-0027](RFC-0027-spec-as-executable.md) — Spec-as-Executable Conformance Model
-- [RFC-0028](RFC-0028-deterministic-ai-execution-contract.md) — Deterministic AI Execution Contract
+- [RFC-0031](RFC-0031-deterministic-ai-execution-contract.md) — Deterministic AI Execution Contract
 - [RFC-00A0](RFC-00A0-ai-experiment-sandbox.md) — AI Experiment Sandbox and Repository Boundaries
 - `spec/supplemental/canonfs-spec.md` — CanonFS Content-Addressed Storage Specification
 - `spec/supplemental/axion-policy-grammar.md` — Axion Policy Language Grammar
