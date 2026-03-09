@@ -32,10 +32,13 @@ static std::string module_to_string(mlir::ModuleOp module) {
 int main() {
   t81::tisc::Program prog;
   prog.insns = {
+      {t81::tisc::Opcode::LoadImm, 242, 100, 0},
       {t81::tisc::Opcode::LoadImm, 5, 42, 0},
+      {t81::tisc::Opcode::Push, 5, 0, 0},
+      {t81::tisc::Opcode::Pop, 7, 0, 0},
       {t81::tisc::Opcode::Store, 90, 5, 0},
       {t81::tisc::Opcode::Load, 6, 90, 0},
-      {t81::tisc::Opcode::Mov, 0, 6, 0},
+      {t81::tisc::Opcode::Add, 0, 6, 7},
       {t81::tisc::Opcode::Halt, 0, 0, 0},
   };
 
@@ -51,6 +54,10 @@ int main() {
         "expected emitted MLIR to contain t81.mem_store");
   check(text.find("\"t81.mem_load\"") != std::string::npos,
         "expected emitted MLIR to contain t81.mem_load");
+  check(text.find("\"t81.stack_push\"") != std::string::npos,
+        "expected emitted MLIR to contain t81.stack_push");
+  check(text.find("\"t81.stack_pop\"") != std::string::npos,
+        "expected emitted MLIR to contain t81.stack_pop");
   check(text.find("t81.dialect = \"t81\"") != std::string::npos,
         "expected emitted MLIR to advertise the t81 dialect");
 
@@ -66,6 +73,10 @@ int main() {
         "expected lowering to eliminate t81.mem_load");
   check(lowered_text.find("t81.mem_store") == std::string::npos,
         "expected lowering to eliminate t81.mem_store");
+  check(lowered_text.find("t81.stack_push") == std::string::npos,
+        "expected lowering to eliminate t81.stack_push");
+  check(lowered_text.find("t81.stack_pop") == std::string::npos,
+        "expected lowering to eliminate t81.stack_pop");
 
   std::error_code ignore_ec;
   fs::remove(out, ignore_ec);

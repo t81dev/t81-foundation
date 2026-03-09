@@ -657,9 +657,9 @@ Behavior notes:
 
 - `--mode=dcp` emits `func.call @t81_dmath_*` and module attributes that identify
   `t81_dmath_runtime` as the runtime support library.
-- `--dialect=t81` emits custom `t81.*` ops for register access and direct
-  immediate-address memory `Load`/`Store` traffic before lowering them back to
-  standard MLIR.
+- `--dialect=t81` emits custom `t81.*` ops for register access, direct
+  immediate-address memory `Load`/`Store` traffic, and stack-semantic
+  `Push`/`Pop` lowering before converting them back to standard MLIR.
 
 ### 4.23 `man`
 

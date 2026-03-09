@@ -323,6 +323,35 @@ class TISCToMLIRTranslator {
         loc_, v, mem_, mlir::ValueRange{idx(clamped)});
   }
 
+  mlir::Value stack_push(mlir::Value sp, mlir::Value v) {
+    if (cfg_.use_t81_dialect) {
+      mlir::OperationState state(loc_, kStackPushOpName);
+      state.addOperands({mem_, v, sp});
+      state.addTypes(i64_ty_);
+      auto* op = builder_.insert(mlir::Operation::create(state));
+      return op->getResult(0);
+    }
+
+    auto sp_idx = builder_.create<mlir::arith::IndexCastOp>(loc_, idx_ty_, sp);
+    builder_.create<mlir::memref::StoreOp>(loc_, v, mem_, mlir::ValueRange{sp_idx});
+    return builder_.create<mlir::arith::SubIOp>(loc_, sp, ci64(1));
+  }
+
+  std::pair<mlir::Value, mlir::Value> stack_pop(mlir::Value sp) {
+    if (cfg_.use_t81_dialect) {
+      mlir::OperationState state(loc_, kStackPopOpName);
+      state.addOperands({mem_, sp});
+      state.addTypes({i64_ty_, i64_ty_});
+      auto* op = builder_.insert(mlir::Operation::create(state));
+      return {op->getResult(0), op->getResult(1)};
+    }
+
+    auto new_sp = builder_.create<mlir::arith::AddIOp>(loc_, sp, ci64(1));
+    auto sp_idx = builder_.create<mlir::arith::IndexCastOp>(loc_, idx_ty_, new_sp);
+    auto value = builder_.create<mlir::memref::LoadOp>(loc_, mem_, mlir::ValueRange{sp_idx});
+    return {value, new_sp};
+  }
+
   // ── Constant helpers ─────────────────────────────────────────────────────
 
   mlir::Value ci64(int64_t v) {
@@ -609,23 +638,13 @@ class TISCToMLIRTranslator {
       // ── Stack ops (R[242] = SP) ──────────────────────────────────────
       case Op::Push: {
         auto sp = load_ireg(242);
-        // Cast SP from i64 to index for memref access.
-        auto sp_idx = builder_.create<mlir::arith::IndexCastOp>(
-            loc_, idx_ty_, sp);
-        builder_.create<mlir::memref::StoreOp>(
-            loc_, load_ireg(a), mem_, mlir::ValueRange{sp_idx});
-        store_ireg(242, builder_.create<mlir::arith::SubIOp>(
-            loc_, sp, ci64(1)));
+        store_ireg(242, stack_push(sp, load_ireg(a)));
         break;
       }
       case Op::Pop: {
-        auto sp = builder_.create<mlir::arith::AddIOp>(
-            loc_, load_ireg(242), ci64(1));
-        store_ireg(242, sp);
-        auto sp_idx = builder_.create<mlir::arith::IndexCastOp>(
-            loc_, idx_ty_, sp);
-        store_ireg(a, builder_.create<mlir::memref::LoadOp>(
-            loc_, mem_, mlir::ValueRange{sp_idx}));
+        auto [value, new_sp] = stack_pop(load_ireg(242));
+        store_ireg(242, new_sp);
+        store_ireg(a, value);
         break;
       }
 

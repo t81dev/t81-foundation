@@ -28,7 +28,7 @@ class LowerT81RegisterOpsPass
 
   llvm::StringRef getArgument() const final { return "t81-lower-register-ops"; }
   llvm::StringRef getDescription() const final {
-    return "Lower custom t81 register and memory ops to memref load/store";
+    return "Lower custom t81 register, memory, and stack ops to standard MLIR";
   }
 
   void runOnOperation() override {
@@ -116,6 +116,54 @@ class LowerT81RegisterOpsPass
         }
         builder.create<mlir::memref::StoreOp>(
             op->getLoc(), op->getOperands()[1], op->getOperands()[0], mlir::ValueRange{addr_idx});
+      }
+
+      op->erase();
+    }
+
+    worklist.clear();
+    func.walk([&](mlir::Operation* op) {
+      llvm::StringRef name = op->getName().getStringRef();
+      if (name == kStackPushOpName || name == kStackPopOpName) {
+        worklist.push_back(op);
+      }
+    });
+
+    for (mlir::Operation* op : worklist) {
+      builder.setInsertionPoint(op);
+      llvm::StringRef name = op->getName().getStringRef();
+
+      if (name == kStackPushOpName) {
+        if (op->getNumOperands() != 3 || op->getNumResults() != 1) {
+          op->emitError("expected 3 operands and 1 result");
+          signalPassFailure();
+          return;
+        }
+
+        auto sp_idx = builder.create<mlir::arith::IndexCastOp>(
+            op->getLoc(), builder.getIndexType(), op->getOperands()[2]);
+        builder.create<mlir::memref::StoreOp>(
+            op->getLoc(), op->getOperands()[1], op->getOperands()[0], mlir::ValueRange{sp_idx});
+        auto new_sp = builder.create<mlir::arith::SubIOp>(
+            op->getLoc(), op->getOperands()[2],
+            builder.create<mlir::arith::ConstantOp>(op->getLoc(), builder.getI64IntegerAttr(1)));
+        op->getResult(0).replaceAllUsesWith(new_sp.getResult());
+      } else {
+        if (op->getNumOperands() != 2 || op->getNumResults() != 2) {
+          op->emitError("expected 2 operands and 2 results");
+          signalPassFailure();
+          return;
+        }
+
+        auto new_sp = builder.create<mlir::arith::AddIOp>(
+            op->getLoc(), op->getOperands()[1],
+            builder.create<mlir::arith::ConstantOp>(op->getLoc(), builder.getI64IntegerAttr(1)));
+        auto sp_idx = builder.create<mlir::arith::IndexCastOp>(
+            op->getLoc(), builder.getIndexType(), new_sp.getResult());
+        auto load = builder.create<mlir::memref::LoadOp>(
+            op->getLoc(), op->getOperands()[0], mlir::ValueRange{sp_idx});
+        op->getResult(0).replaceAllUsesWith(load.getResult());
+        op->getResult(1).replaceAllUsesWith(new_sp.getResult());
       }
 
       op->erase();
