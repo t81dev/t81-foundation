@@ -9,6 +9,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <variant>
 #include "t81/types/T81Float.hpp"
 #include "t81/types/T81Symbol.hpp"
@@ -80,6 +81,14 @@ ExprPtr diff(ExprPtr e, T81Symbol var);
 // Simplification
 ExprPtr simplify(ExprPtr e);
 
+// Canonical serialization: produces a human-readable, unambiguous string.
+std::string serialize_canonical(const ExprPtr& e);
+
+// Evaluation: substitute all variables via the provided mapping and reduce to
+// a single constant.  Returns NaE-valued constant if a variable is unbound.
+using EvalEnv = std::unordered_map<T81Symbol, T81Float<72, 9>>;
+T81Float<72, 9> eval(const ExprPtr& e, const EvalEnv& env);
+
 // Implementation details for diff
 inline ExprPtr diff(ExprPtr e, T81Symbol var) {
   struct DiffVisitor {
@@ -150,12 +159,16 @@ inline ExprPtr simplify(ExprPtr e) {
 
     ExprPtr operator()(const UnaryOp& u) {
       ExprPtr s = simplify(u.operand);
-      // Constant folding
       if (std::holds_alternative<Constant>(s->node)) {
         T81Float<72, 9> val = std::get<Constant>(s->node).val;
-        if (u.op == Op::Neg) return Expr::make_const(-val);
-        // Other ops would require T81Float math functions which might not be fully exposed or
-        // constexpr
+        switch (u.op) {
+          case Op::Neg: return Expr::make_const(-val);
+          case Op::Sin: return Expr::make_const(val.sin());
+          case Op::Cos: return Expr::make_const(val.cos());
+          case Op::Exp: return Expr::make_const(val.exp());
+          case Op::Log: return Expr::make_const(val.log());
+          default: break;
+        }
       }
       return Expr::make_unary(u.op, s);
     }
@@ -178,7 +191,8 @@ inline ExprPtr simplify(ExprPtr e) {
             return Expr::make_const(lv * rv);
           case Op::Div:
             return Expr::make_const(lv / rv);
-          // Pow...
+          case Op::Pow:
+            return Expr::make_const(lv.pow(rv));
           default:
             break;
         }
@@ -201,6 +215,10 @@ inline ExprPtr simplify(ExprPtr e) {
         if (l_is_0) return r;
         if (r_is_0) return l;
       }
+      if (b.op == Op::Sub) {
+        if (r_is_0) return l;
+        if (l_is_0) return Expr::make_unary(Op::Neg, r);
+      }
       if (b.op == Op::Mul) {
         if (l_is_0 || r_is_0) return Expr::make_const(T81Float<72, 9>(0));
         if (l_is_1) return r;
@@ -215,10 +233,90 @@ inline ExprPtr simplify(ExprPtr e) {
 
       return Expr::make_binary(b.op, l, r);
     }
-    [[nodiscard]] std::string serialize_canonical() const { return "Symbolic()"; }
   };
 
   return std::visit(SimpVisitor{}, e->node);
+}
+
+// Implementation of serialize_canonical
+inline std::string serialize_canonical(const ExprPtr& e) {
+  if (!e) return "null";
+
+  struct SerVisitor {
+    std::string operator()(const Constant& c) const { return c.val.to_canonical_string(); }
+
+    std::string operator()(const Variable& v) const { return v.sym.to_string(); }
+
+    std::string operator()(const UnaryOp& u) const {
+      std::string inner = serialize_canonical(u.operand);
+      switch (u.op) {
+        case Op::Neg: return "(-" + inner + ")";
+        case Op::Sin: return "sin(" + inner + ")";
+        case Op::Cos: return "cos(" + inner + ")";
+        case Op::Exp: return "exp(" + inner + ")";
+        case Op::Log: return "log(" + inner + ")";
+        default:      return "op(" + inner + ")";
+      }
+    }
+
+    std::string operator()(const BinaryOp& b) const {
+      std::string l = serialize_canonical(b.lhs);
+      std::string r = serialize_canonical(b.rhs);
+      switch (b.op) {
+        case Op::Add: return "(" + l + " + " + r + ")";
+        case Op::Sub: return "(" + l + " - " + r + ")";
+        case Op::Mul: return "(" + l + " * " + r + ")";
+        case Op::Div: return "(" + l + " / " + r + ")";
+        case Op::Pow: return "(" + l + " ^ " + r + ")";
+        default:      return "(" + l + " ? " + r + ")";
+      }
+    }
+  };
+
+  return std::visit(SerVisitor{}, e->node);
+}
+
+// Implementation of eval: substitute variables, reduce to a constant.
+inline T81Float<72, 9> eval(const ExprPtr& e, const EvalEnv& env) {
+  if (!e) return T81Float<72, 9>::nae();
+
+  struct EvalVisitor {
+    const EvalEnv& env;
+
+    T81Float<72, 9> operator()(const Constant& c) const { return c.val; }
+
+    T81Float<72, 9> operator()(const Variable& v) const {
+      auto it = env.find(v.sym);
+      return (it != env.end()) ? it->second : T81Float<72, 9>::nae();
+    }
+
+    T81Float<72, 9> operator()(const UnaryOp& u) const {
+      T81Float<72, 9> v = eval(u.operand, env);
+      switch (u.op) {
+        case Op::Neg: return -v;
+        case Op::Sin: return v.sin();
+        case Op::Cos: return v.cos();
+        case Op::Exp: return v.exp();
+        case Op::Log: return v.log();
+        default:      return T81Float<72, 9>::nae();
+      }
+    }
+
+    T81Float<72, 9> operator()(const BinaryOp& b) const {
+      T81Float<72, 9> l = eval(b.lhs, env);
+      T81Float<72, 9> r = eval(b.rhs, env);
+      switch (b.op) {
+        case Op::Add: return l + r;
+        case Op::Sub: return l - r;
+        case Op::Mul: return l * r;
+        case Op::Div: return l / r;
+        case Op::Pow: return l.pow(r);
+        default:      return T81Float<72, 9>::nae();
+      }
+    }
+  };
+
+  return std::visit(EvalVisitor{env}, e->node);
 }
 
 }  // namespace t81

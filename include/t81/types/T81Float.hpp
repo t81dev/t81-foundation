@@ -343,9 +343,7 @@ public:
    */
   [[nodiscard]] T81Float acos() const noexcept {
 #if defined(T81_DETERMINISTIC)
-    // Deterministic path: acos not available in current dmath implementation
-    // Explicitly reject rather than silently fall back to host math
-    return nae();
+    return core::detail::acos(*this);
 #else
     if (is_nae()) return *this;
     double x = to_double();
@@ -355,15 +353,9 @@ public:
 #endif
   }
 
-  /**
-   * @brief Arc sine of the value.
-   * @warning NON-DETERMINISTIC: Relies on host platform math unless T81_DETERMINISTIC is defined.
-   */
   [[nodiscard]] T81Float asin() const noexcept {
 #if defined(T81_DETERMINISTIC)
-    // Deterministic path: asin not available in current dmath implementation
-    // Explicitly reject rather than silently fall back to host math
-    return nae();
+    return core::detail::asin(*this);
 #else
     if (is_nae()) return *this;
     double x = to_double();
@@ -372,60 +364,36 @@ public:
 #endif
   }
 
-  /**
-   * @brief Arc tangent of the value.
-   * @warning NON-DETERMINISTIC: Relies on host platform math unless T81_DETERMINISTIC is defined.
-   */
   [[nodiscard]] T81Float atan() const noexcept {
 #if defined(T81_DETERMINISTIC)
-    // Deterministic path: atan not available in current dmath implementation
-    // Explicitly reject rather than silently fall back to host math
-    return nae();
+    return core::detail::atan(*this);
 #else
     if (is_nae()) return *this;
     return from_double(std::atan(to_double()));
 #endif
   }
 
-  /**
-   * @brief Hyperbolic sine.
-   * @warning NON-DETERMINISTIC: Relies on host platform math unless T81_DETERMINISTIC is defined.
-   */
   [[nodiscard]] T81Float sinh() const noexcept {
 #if defined(T81_DETERMINISTIC)
-    // Deterministic path: sinh not available in current dmath implementation
-    // Explicitly reject rather than silently fall back to host math
-    return nae();
+    return core::detail::sinh(*this);
 #else
     if (is_nae()) return *this;
     return from_double(std::sinh(to_double()));
 #endif
   }
 
-  /**
-   * @brief Hyperbolic cosine.
-   * @warning NON-DETERMINISTIC: Relies on host platform math unless T81_DETERMINISTIC is defined.
-   */
   [[nodiscard]] T81Float cosh() const noexcept {
 #if defined(T81_DETERMINISTIC)
-    // Deterministic path: cosh not available in current dmath implementation
-    // Explicitly reject rather than silently fall back to host math
-    return nae();
+    return core::detail::cosh(*this);
 #else
     if (is_nae()) return *this;
     return from_double(std::cosh(to_double()));
 #endif
   }
 
-  /**
-   * @brief Hyperbolic tangent.
-   * @warning NON-DETERMINISTIC: Relies on host platform math unless T81_DETERMINISTIC is defined.
-   */
   [[nodiscard]] T81Float tanh() const noexcept {
 #if defined(T81_DETERMINISTIC)
-    // Deterministic path: tanh not available in current dmath implementation
-    // Explicitly reject rather than silently fall back to host math
-    return nae();
+    return core::detail::tanh(*this);
 #else
     if (is_nae()) return *this;
     return from_double(std::tanh(to_double()));
@@ -451,18 +419,33 @@ public:
   // ---------------------------------------------------------------------
 
   [[nodiscard]] T81Float floor() const noexcept {
-    if (is_nae()) return *this;
-    return from_double(std::floor(to_double()));
+    if (is_nae() || is_inf() || is_zero()) return *this;
+    auto [tr, had_frac] = trunc_impl();
+    if (!had_frac || !is_negative()) return tr;
+    // Negative with fractional part: floor is one step more negative.
+    return tr - make_int_one(true);
   }
 
   [[nodiscard]] T81Float ceil() const noexcept {
-    if (is_nae()) return *this;
-    return from_double(std::ceil(to_double()));
+    if (is_nae() || is_inf() || is_zero()) return *this;
+    auto [tr, had_frac] = trunc_impl();
+    if (!had_frac || is_negative()) return tr;
+    // Positive with fractional part: ceil is one step more positive.
+    return tr + make_int_one(true);
   }
 
+  // In balanced ternary the fractional part of any finite representable value
+  // is strictly in (-1/2, +1/2), so round-half-away-from-zero always equals
+  // truncation toward zero.
   [[nodiscard]] T81Float round() const noexcept {
-    if (is_nae()) return *this;
-    return from_double(std::round(to_double()));
+    if (is_nae() || is_inf() || is_zero()) return *this;
+    auto [tr, had_frac] = trunc_impl();
+    if (!had_frac) return tr;
+
+    const T81Float one = make_int_one(true);
+    const T81Float frac = (*this - tr).abs();
+    if ((frac + frac) < one) return tr;
+    return is_negative() ? (tr - one) : (tr + one);
   }
 
   [[nodiscard]] T81Float clamp(T81Float min, T81Float max) const noexcept {
@@ -722,6 +705,52 @@ private:
       }
     }
     return std::numeric_limits<size_type>::max();
+  }
+
+  // Construct ±1 without any host math. Used by floor/ceil.
+  // value = 3^(M-1) * 3^(0 - (M-1)) = 1.
+  static T81Float make_int_one(bool positive) noexcept {
+    T81Float f;
+    f.set_sign(positive);
+    f.set_exp(0);
+    T81Int<M> m;
+    m[M - 1] = Trit::P;
+    f.set_mantissa(m);
+    return f;
+  }
+
+  // Zero out fractional trits (those below the units position) and return
+  // {truncated, had_fraction}.  Purely ternary — no host math.
+  //
+  // The units trit is at mantissa index (M-1-e) where e = get_exp(), because
+  // trit[i] represents mant[i] * 3^(e - (M-1) + i), which equals 3^0 when
+  // i = M-1-e.
+  std::pair<T81Float, bool> trunc_impl() const noexcept {
+    const std::int64_t e = get_exp();
+    const std::int64_t units_idx = static_cast<std::int64_t>(M) - 1 - e;
+
+    if (units_idx <= 0) return {*this, false};  // All trits are integer trits.
+
+    const size_type frac_end = (units_idx >= static_cast<std::int64_t>(M))
+                                   ? M
+                                   : static_cast<size_type>(units_idx);
+
+    T81Int<M> mant = get_mantissa();
+    bool had_fraction = false;
+    for (size_type i = 0; i < frac_end; ++i) {
+      if (mant[i] != Trit::Z) had_fraction = true;
+      mant[i] = Trit::Z;
+    }
+
+    // When all trits were fractional, |value| < 1/2 < 1 — integer part is 0.
+    if (units_idx >= static_cast<std::int64_t>(M)) {
+      return {zero(), had_fraction};
+    }
+
+    if (mant.is_zero()) return {zero(), had_fraction};
+
+    T81Float result = from_components(get_sign(), e, mant);
+    return {result, had_fraction};
   }
 
   // Normalization helper used by future pure-ternary arithmetic

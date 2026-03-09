@@ -152,14 +152,64 @@ void test_symbolic_simplify() {
     check(false, "Constant folding failed");
   }
 
+  // 0 - x -> -x
+  ExprPtr e4 = Expr::make_const(TF(0)) - x_expr;
+  ExprPtr s4 = simplify(e4);
+  auto* neg = std::get_if<UnaryOp>(&s4->node);
+  check(neg && neg->op == Op::Neg, "0 - x -> -x");
+  auto* neg_var = neg ? std::get_if<Variable>(&neg->operand->node) : nullptr;
+  check(neg_var && neg_var->sym == x, "-x operand is x");
+
+  // 2 ^ 3 -> 8
+  ExprPtr e5 = pow(Expr::make_const(TF(2)), Expr::make_const(TF(3)));
+  ExprPtr s5 = simplify(e5);
+  if (auto* c = std::get_if<Constant>(&s5->node)) {
+    check(approx_eq(c->val.to_double(), 8.0), "2 ^ 3 -> 8");
+  } else {
+    check(false, "Pow constant folding failed");
+  }
+
   std::cout << "test_symbolic_simplify passed\n";
 }
 
+void test_symbolic_serialize_and_eval() {
+  using TF = T81Float<72, 9>;
+
+  T81Symbol x = T81Symbol::intern("x");
+  ExprPtr x_expr = Expr::make_var(x);
+
+  ExprPtr expr = pow(x_expr + Expr::make_const(TF(1)), Expr::make_const(TF(2)));
+  std::string serialized = serialize_canonical(expr);
+  const std::string expected =
+      "((" + x.to_string() + " + " + TF(1).to_canonical_string() + ") ^ " +
+      TF(2).to_canonical_string() + ")";
+  check(serialized == expected, "Canonical serialization is stable");
+
+  EvalEnv env;
+  env.emplace(x, TF(2));
+  TF value = eval(expr, env);
+  check(!value.is_nae(), "Bound expression evaluates");
+  check(approx_eq(value.to_double(), 9.0), "(x + 1)^2 at x=2 -> 9");
+
+  TF missing = eval(expr, {});
+  check(missing.is_nae(), "Unbound variable evaluates to NaE");
+
+  ExprPtr folded = simplify(exp(log(Expr::make_const(TF(3)))));
+  if (auto* c = std::get_if<Constant>(&folded->node)) {
+    check(!c->val.is_nae(), "Unary constant folding produces value");
+    check(approx_eq(c->val.to_double(), 3.0), "exp(log(3)) -> 3");
+  } else {
+    check(false, "Unary constant folding failed");
+  }
+
+  std::cout << "test_symbolic_serialize_and_eval passed\n";
+}
+
 int main() {
-  return 0;
   test_polynomial_roots();
   test_polynomial_integral();
   test_symbolic_diff();
   test_symbolic_simplify();
+  test_symbolic_serialize_and_eval();
   return 0;
 }
