@@ -273,6 +273,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - ✅ CLI/help/completion: `t81 rust compile <input.rs> [-o out.mlir] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>]`
   - ✅ Contract: fail-closed when the Rust frontend is not built; fail-closed with an explicit “not implemented yet” message when the scaffold is built without a real lowering pipeline
   - ✅ Verification: `t81_cli_contract_test` covers `help rust`, fish completion entries, and `t81 rust compile`
+  - ✅ Proposal: `docs/process/proposals/rust-frontend-mlir-poc.md` records the intended subset and milestone plan once `rustc` is available
   - Status: **✅ RESOLVED** — ingress seam is present; real Rust lowering remains deferred
   - **Resume Point**: implement a restricted Rust subset lowering path once a Rust toolchain is available in the build environment
   - **Deferred**: actual Rust parsing/lowering, Rust subset definition, and deterministic runtime restrictions/diagnostics
