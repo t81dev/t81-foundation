@@ -1177,7 +1177,7 @@ Global options:
   -h, --help                           Show help
 
 Diagnostics:
-  `t81 compile` now prints any semantic or parsing errors with the originating
+  `t81 code build` now prints any semantic or parsing errors with the originating
   source file, line, and column so you can jump directly to the issue without
   rerunning separate diagnostics.
 

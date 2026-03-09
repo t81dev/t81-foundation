@@ -28,6 +28,42 @@ Minimal compile/run flow:
 ./build/t81 code run hello.tisc
 ```
 
+## 1.1 Reviewer Notes
+
+This manual is the support contract for the shipped `t81` binary. If a command,
+flag, or output shape is not documented here or in
+[`docs/product/CLI_JSON_SCHEMA_CONTRACTS.md`](../../../product/CLI_JSON_SCHEMA_CONTRACTS.md),
+it is not part of the stable public automation contract.
+
+Support boundary:
+
+- Domain-first command families such as `code`, `project`, `env`, `canonfs`,
+  `determinism`, `vm`, `tisc`, `ir`, `weights`, `policy`, `axion`, and `trace`
+  are the primary supported operator surface.
+- `internal ...` commands are available, but they are operations-focused or
+  experimental and should not be treated as beginner or long-term product UX.
+- `llama-run` is explicitly experimental and non-DCP.
+
+Determinism scope:
+
+- Determinism claims apply only to the surfaces called out in the determinism
+  registry and related governance docs, not to the entire CLI.
+- Commands that inspect the host environment, install files, or depend on local
+  workstation state such as `env`, `completion`, `man`, `feedback`, and most
+  `internal` flows are operational tooling, not deterministic proof surfaces.
+- Reviewer entry points for determinism scope and residual risk are
+  [`docs/governance/DETERMINISM_THREAT_MODEL.md`](../../../governance/DETERMINISM_THREAT_MODEL.md),
+  [`docs/reference/CAPABILITY_CONTRACT.md`](../../../reference/CAPABILITY_CONTRACT.md),
+  and [`docs/reference/REPRODUCIBILITY.md`](../../../reference/REPRODUCIBILITY.md).
+
+Machine-readable contract:
+
+- `--json` output is versioned by schema ID.
+- When a command fails before producing a domain-specific JSON payload, the CLI
+  emits `t81.error.v1` on `stdout`.
+- Exit code expectations are listed in section 6 and should be treated as part
+  of the automation contract.
+
 ## 2. Global Options
 
 These options are accepted before or after the command token:
@@ -84,6 +120,9 @@ Additional curated help topics are available via:
 
 Current Labs commands include `pkg`, `benchmark`, `repro-hash`,
 `canonize-tensor`, `canonize-file`, `memory-stats`, and `llama-run`.
+`code` is the preferred general workflow surface. `lang` exposes the same
+frontend workflow plus direct IR-oriented helpers, and `tensor` is a narrow
+artifact utility family for canonicalization and inspection.
 
 ## 4. Commands
 
@@ -621,6 +660,9 @@ Unknown help topics return non-zero.
 - diagnostics/errors are written to `stderr` and prefixed with `error:`.
 - when `--json` is present and a command fails before emitting a domain-specific JSON result,
   the CLI emits `t81.error.v1` on `stdout`.
+- domain-specific JSON payloads always include a top-level `schema` field.
+- schema compatibility is tied to the canonical command family documentation,
+  not to historical aliases or shorthand spellings.
 
 Command-specific non-zero exits:
 
