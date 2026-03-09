@@ -112,6 +112,68 @@ int main() {
 
   {
     const std::string source =
+        "int helper(int x);\n"
+        "int helper(int x) {\n"
+        "  return x + 1;\n"
+        "}\n"
+        "int main() {\n"
+        "  return helper(1);\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_proto.c", output, {}, &error),
+          "expected prototype example to be rejected");
+    check(error.find("function prototypes and extern declarations are not supported") !=
+              std::string::npos,
+          "expected prototype rejection diagnostic");
+  }
+
+  {
+    const std::string source =
+        "extern int ext(int x);\n"
+        "int main() {\n"
+        "  return ext(1);\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_extern.c", output, {}, &error),
+          "expected extern example to be rejected");
+    check(error.find("function prototypes and extern declarations are not supported") !=
+              std::string::npos,
+          "expected extern rejection diagnostic");
+  }
+
+  {
+    const std::string source =
+        "int helper(int first, ...) {\n"
+        "  return first;\n"
+        "}\n"
+        "int main() {\n"
+        "  return helper(1, 2);\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_varargs.c", output, {}, &error),
+          "expected variadic helper example to be rejected");
+    check(error.find("variadic functions are not supported") != std::string::npos,
+          "expected variadic rejection diagnostic");
+  }
+
+  {
+    const std::string source =
+        "int main(int argc) {\n"
+        "  return argc;\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_main_sig.c", output, {}, &error),
+          "expected main-signature example to be rejected");
+    check(error.find("'main' must have the exact signature 'int main()'") != std::string::npos,
+          "expected main-signature rejection diagnostic");
+  }
+
+  {
+    const std::string source =
         "int loop(int x) {\n"
         "  if (x == 0) {\n"
         "    return 0;\n"

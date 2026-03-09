@@ -1105,6 +1105,15 @@ bool collect_function_info(GlobalLoweringState& global, CXCursor cursor, std::st
   }
   std::unordered_set<std::string> seen_params;
   const int arg_count = clang_Cursor_getNumArguments(cursor);
+  if (clang_Cursor_isVariadic(cursor) && arg_count > 0) {
+    LoweringContext dummy{global, info, {}, {}, {}};
+    return dummy.fail(cursor, "variadic functions are not supported in the C subset v0", error);
+  }
+  if (info.is_main && arg_count != 0) {
+    LoweringContext dummy{global, info, {}, {}, {}};
+    return dummy.fail(cursor, "'main' must have the exact signature 'int main()' in the C subset v0",
+                      error);
+  }
   for (int i = 0; i < arg_count; ++i) {
     CXCursor arg = clang_Cursor_getArgument(cursor, i);
     const CXType arg_type = clang_getCursorType(arg);
@@ -1183,7 +1192,14 @@ bool build_program_from_translation_unit(CXTranslationUnit tu,
   GlobalLoweringState global{source, diag_name, {}, {}, {}, {}, {}, 1};
   for (CXCursor child : children) {
     const CXCursorKind kind = clang_getCursorKind(child);
-    if (kind == CXCursor_FunctionDecl && clang_isCursorDefinition(child)) {
+    if (kind == CXCursor_FunctionDecl) {
+      if (!clang_isCursorDefinition(child)) {
+        FunctionInfo dummy_function;
+        LoweringContext dummy{global, dummy_function, {}, {}, {}};
+        return dummy.fail(child,
+                          "function prototypes and extern declarations are not supported in the C subset v0",
+                          error);
+      }
       if (!collect_function_info(global, child, error)) {
         return false;
       }

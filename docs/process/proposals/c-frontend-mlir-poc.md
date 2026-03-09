@@ -202,7 +202,8 @@ Implemented and verified:
 - same-translation-unit direct calls
 - explicit recursion rejection
 - explicit rejection diagnostics for pointers, pointer parameters, globals,
-  float returns, conditionless `for` loops, `switch`, `do-while`, `goto`,
+  float returns, conditionless `for` loops, prototypes/`extern` declarations,
+  variadic helpers, non-`int main()` signatures, `switch`, `do-while`, `goto`,
   labels, address-of/dereference, casts, non-literal array indices, ternary,
   member access, `sizeof`, and compound assignment
 
@@ -228,12 +229,9 @@ Latest implementation commits on `main`:
 
 Recommended resume point:
 
-1. harden declaration/call-surface guardrails for likely next user attempts:
-   prototypes, `extern`, unsupported helper signatures, and other non-local
-   declaration forms
-2. decide whether array indexing should remain literal-only or grow into a
+1. decide whether array indexing should remain literal-only or grow into a
    broader T81 memory/addressing surface
-3. only after that, choose whether to deepen C further or start a Rust ingress
+2. only after that, choose whether to deepen C further or start a Rust ingress
    proof of concept
 
 ## 10. File/Module Sketch
