@@ -1,5 +1,10 @@
 #include "t81/canonfs/canon_driver.hpp"
 
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
+
 #include <cerrno>
 #include <cstddef>
 #include <cstdlib>
@@ -18,9 +23,13 @@
 #include <vector>
 
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
+#ifndef _WIN32
+#include <sys/mman.h>
 #include <unistd.h>
+#else
+#include <io.h>
+#endif
 
 #include "t81/tracing/canonhash.hpp"
 #include "t81/determinism/canon_hash81.hpp"
@@ -84,7 +93,12 @@ bool write_all_fd(int fd, const std::byte* data, std::size_t size) {
   const std::byte* cursor = data;
   std::size_t remaining = size;
   while (remaining > 0) {
+#ifdef _WIN32
+    int to_write = remaining > INT_MAX ? INT_MAX : static_cast<int>(remaining);
+    int wrote = ::_write(fd, cursor, to_write);
+#else
     const ssize_t wrote = ::write(fd, cursor, remaining);
+#endif
     if (wrote < 0) {
       if (errno == EINTR) {
         continue;
@@ -129,7 +143,11 @@ public:
     }
 
     auto target = object_path(root_, ref.hash);
+#ifdef _WIN32
+    const int fd = ::_open(target.string().c_str(), _O_WRONLY | _O_CREAT | _O_EXCL | _O_BINARY, _S_IREAD | _S_IWRITE);
+#else
     const int fd = ::open(target.string().c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644);
+#endif
     if (fd < 0) {
       if (errno == EEXIST) {
         return ref;
@@ -138,7 +156,11 @@ public:
     }
 
     const bool ok = write_all_fd(fd, bytes.data(), bytes.size());
+#ifdef _WIN32
+    ::_close(fd);
+#else
     ::close(fd);
+#endif
     if (!ok) {
       std::error_code ec;
       std::filesystem::remove(target, ec);
@@ -183,28 +205,60 @@ public:
     }
 
     auto target = object_path(root_, ref.hash);
-    int fd = open(target.string().c_str(), O_RDONLY);
+#ifdef _WIN32
+    int fd = ::_open(target.string().c_str(), _O_RDONLY | _O_BINARY);
+#else
+    int fd = ::open(target.string().c_str(), O_RDONLY);
+#endif
     if (fd < 0) return Result<std::vector<std::byte>>(t81::unexpect, Error::NotFound);
 
     struct stat st;
-    if (fstat(fd, &st) < 0) {
-      close(fd);
+#ifdef _WIN32
+    if (::_fstat(fd, &st) < 0) {
+      ::_close(fd);
       return Result<std::vector<std::byte>>(t81::unexpect, Error::DecodeError);
     }
+#else
+    if (::fstat(fd, &st) < 0) {
+      ::close(fd);
+      return Result<std::vector<std::byte>>(t81::unexpect, Error::DecodeError);
+    }
+#endif
     size_t size = static_cast<size_t>(st.st_size);
 
     std::vector<std::byte> result;
     if (size > 0) {
-      void* addr = mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0);
+      result.resize(size);
+#ifdef _WIN32
+      std::size_t remaining = size;
+      std::byte* cursor = result.data();
+      while (remaining > 0) {
+        int to_read = remaining > INT_MAX ? INT_MAX : static_cast<int>(remaining);
+        int bytes_read = ::_read(fd, cursor, to_read);
+        if (bytes_read < 0) {
+          if (errno == EINTR) continue;
+          ::_close(fd);
+          return Result<std::vector<std::byte>>(t81::unexpect, Error::DecodeError);
+        }
+        if (bytes_read == 0) break; // EOF
+        cursor += bytes_read;
+        remaining -= bytes_read;
+      }
+#else
+      void* addr = ::mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0);
       if (addr == MAP_FAILED) {
-        close(fd);
+        ::close(fd);
         return Result<std::vector<std::byte>>(t81::unexpect, Error::DecodeError);
       }
-      result.resize(size);
       std::memcpy(result.data(), addr, size);
-      munmap(addr, size);
+      ::munmap(addr, size);
+#endif
     }
-    close(fd);
+#ifdef _WIN32
+    ::_close(fd);
+#else
+    ::close(fd);
+#endif
 
     if (read_verify_enabled()) {
       auto computed =
@@ -311,3 +365,7 @@ std::unique_ptr<Driver> make_persistent_driver(std::filesystem::path root) {
 }
 
 }  // namespace t81::canonfs
+
+#ifdef _WIN32
+#pragma warning(pop)
+#endif

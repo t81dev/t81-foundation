@@ -12,6 +12,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
 #include <memory>
 #include <optional>
 #include <string>
@@ -148,5 +153,9 @@ using Context = AxionContext;
   }
   throw std::overflow_error(reason ? reason : "Axion overflow");
 }
+
+#ifdef _WIN32
+#pragma warning(pop)
+#endif
 
 }  // namespace t81::axion
