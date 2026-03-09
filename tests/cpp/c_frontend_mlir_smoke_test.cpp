@@ -174,6 +174,102 @@ int main() {
           "expected continue rejection diagnostic");
   }
 
+  {
+    const std::string source =
+        "int main() {\n"
+        "  int x = 1;\n"
+        "  switch (x) {\n"
+        "    case 1: return 1;\n"
+        "    default: return 0;\n"
+        "  }\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_switch.c", output, {}, &error),
+          "expected switch example to be rejected");
+    check(error.find("'switch' is not supported") != std::string::npos,
+          "expected switch rejection diagnostic");
+  }
+
+  {
+    const std::string source =
+        "int main() {\n"
+        "  int x = 0;\n"
+        "  do {\n"
+        "    x = x + 1;\n"
+        "  } while (x < 3);\n"
+        "  return x;\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_do.c", output, {}, &error),
+          "expected do-while example to be rejected");
+    check(error.find("'do-while' is not supported") != std::string::npos,
+          "expected do-while rejection diagnostic");
+  }
+
+  {
+    const std::string source =
+        "int main() {\n"
+        "  goto done;\n"
+        "done:\n"
+        "  return 0;\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_goto.c", output, {}, &error),
+          "expected goto example to be rejected");
+    check(error.find("'goto' is not supported") != std::string::npos ||
+              error.find("labels are not supported") != std::string::npos,
+          "expected goto rejection diagnostic");
+  }
+
+  {
+    const std::string source =
+        "int main() {\n"
+        "  int x = 1;\n"
+        "  int *p = &x;\n"
+        "  return x;\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_addr.c", output, {}, &error),
+          "expected address-of example to be rejected");
+    check(error.find("address-of is not supported") != std::string::npos ||
+              error.find("pointers are not supported") != std::string::npos,
+          "expected address-of rejection diagnostic");
+  }
+
+  {
+    const std::string source =
+        "int main() {\n"
+        "  int *p = 0;\n"
+        "  return *p;\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(
+        !t81::c_frontend::compile_source_to_mlir_text(source, "bad_deref.c", output, {}, &error),
+        "expected dereference example to be rejected");
+    check(error.find("pointer dereference is not supported") != std::string::npos ||
+              error.find("pointers are not supported") != std::string::npos,
+          "expected dereference rejection diagnostic");
+  }
+
+  {
+    const std::string source =
+        "int main() {\n"
+        "  int x = (int) 3;\n"
+        "  return x;\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_cast.c", output, {}, &error),
+          "expected cast example to be rejected");
+    check(error.find("casts are not supported") != std::string::npos,
+          "expected cast rejection diagnostic");
+  }
+
   std::cout << "C frontend MLIR smoke test PASSED\n";
 #else
   std::cout << "C frontend not enabled; skipping smoke test\n";

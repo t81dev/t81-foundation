@@ -83,8 +83,7 @@ std::vector<CXCursor> cursor_children(CXCursor cursor) {
 CXCursor unwrap_expr(CXCursor cursor) {
   while (true) {
     const CXCursorKind kind = clang_getCursorKind(cursor);
-    if (kind != CXCursor_UnexposedExpr && kind != CXCursor_ParenExpr &&
-        kind != CXCursor_CStyleCastExpr) {
+    if (kind != CXCursor_UnexposedExpr && kind != CXCursor_ParenExpr) {
       return cursor;
     }
     auto children = cursor_children(cursor);
@@ -264,6 +263,12 @@ bool compile_unary_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, s
   if (cursor_begin > operand_begin) cursor_begin = operand_begin;
   const std::string prefix = trim_copy(
       std::string_view(ctx.source()).substr(cursor_begin, operand_begin - cursor_begin));
+  if (prefix == "&") {
+    return ctx.fail(cursor, "address-of is not supported in the C subset v0", error);
+  }
+  if (prefix == "*") {
+    return ctx.fail(cursor, "pointer dereference is not supported in the C subset v0", error);
+  }
   if (prefix != "-") {
     return ctx.fail(cursor, "only unary minus is supported", error);
   }
@@ -345,6 +350,8 @@ bool compile_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, std::st
   switch (kind) {
     case CXCursor_IntegerLiteral:
       return compile_integer_literal(ctx, cursor, target, error);
+    case CXCursor_CStyleCastExpr:
+      return ctx.fail(cursor, "casts are not supported in the C subset v0", error);
     case CXCursor_DeclRefExpr: {
       const std::string name = to_string_and_dispose(clang_getCursorSpelling(cursor));
       const auto it = ctx.vars.find(name);
@@ -673,6 +680,14 @@ bool compile_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
       return compile_while_stmt(ctx, cursor, error);
     case CXCursor_ForStmt:
       return compile_for_stmt(ctx, cursor, error);
+    case CXCursor_SwitchStmt:
+      return ctx.fail(cursor, "'switch' is not supported in the C subset v0", error);
+    case CXCursor_DoStmt:
+      return ctx.fail(cursor, "'do-while' is not supported in the C subset v0", error);
+    case CXCursor_GotoStmt:
+      return ctx.fail(cursor, "'goto' is not supported in the C subset v0", error);
+    case CXCursor_LabelStmt:
+      return ctx.fail(cursor, "labels are not supported in the C subset v0", error);
     case CXCursor_BreakStmt:
       return ctx.fail(cursor, "'break' is not supported in the C subset v0", error);
     case CXCursor_ContinueStmt:
