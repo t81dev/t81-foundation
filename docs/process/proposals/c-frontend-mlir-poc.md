@@ -69,7 +69,7 @@ Allowed:
 - boolean operators lowered as integer predicates
 - `if`, `while`, `for`
 - simple function calls within the same translation unit
-- fixed-size local arrays only if lowered to explicit T81 memory slots
+- fixed-size local arrays lowered to explicit T81 memory slots, with literal-only indexing in v0
 
 Rejected:
 
@@ -195,14 +195,15 @@ Implemented and verified:
 - entry-point model: `int main()`
 - helper `int` functions with named `int` parameters
 - local initialized `int` variables
+- fixed local `int[N]` arrays with integer-literal initializers/indexing lowered to T81 memory
 - statement-only `++`/`--`, arithmetic/bitwise/comparisons/logical integer expressions, loop-local `break`/`continue`
 - assignment statements
 - structured control flow: `if`, `while`, `for`
 - same-translation-unit direct calls
 - explicit recursion rejection
-- explicit rejection diagnostics for pointers, local arrays, pointer parameters,
-  globals, float returns, conditionless `for` loops, `switch`, `do-while`,
-  `goto`, labels, address-of/dereference, casts, ternary, array indexing,
+- explicit rejection diagnostics for pointers, pointer parameters, globals,
+  float returns, conditionless `for` loops, `switch`, `do-while`, `goto`,
+  labels, address-of/dereference, casts, non-literal array indices, ternary,
   member access, `sizeof`, and compound assignment
 
 Verified in targeted builds:
@@ -227,11 +228,11 @@ Latest implementation commits on `main`:
 
 Recommended resume point:
 
-1. decide whether fixed local arrays stay rejected or become an intentional
-   T81-memory lowering surface
-2. harden declaration/call-surface guardrails for likely next user attempts:
+1. harden declaration/call-surface guardrails for likely next user attempts:
    prototypes, `extern`, unsupported helper signatures, and other non-local
    declaration forms
+2. decide whether array indexing should remain literal-only or grow into a
+   broader T81 memory/addressing surface
 3. only after that, choose whether to deepen C further or start a Rust ingress
    proof of concept
 

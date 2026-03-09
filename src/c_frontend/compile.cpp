@@ -98,6 +98,11 @@ bool is_supported_int_type(CXType type) {
   return type.kind == CXType_Int;
 }
 
+struct ArrayInfo {
+  int64_t base_addr{0};
+  int64_t size{0};
+};
+
 struct FunctionInfo {
   std::string name;
   CXCursor cursor{clang_getNullCursor()};
@@ -114,6 +119,8 @@ struct PendingCallPatch {
 };
 
 struct GlobalLoweringState {
+  static constexpr int64_t kMemorySize = 65536;
+
   const std::string& source;
   std::string diag_name;
   t81::tisc::Program program;
@@ -122,6 +129,7 @@ struct GlobalLoweringState {
   std::vector<PendingCallPatch> call_patches;
   std::vector<std::pair<std::string, std::string>> call_edges;
   int32_t next_reg = 1;
+  int64_t next_mem = 0;
 
   int32_t alloc_reg() {
     if (next_reg >= 242) {
@@ -136,6 +144,15 @@ struct GlobalLoweringState {
     }
     return alloc_reg();
   }
+
+  int64_t alloc_mem(int64_t size) {
+    if (size < 0 || next_mem + size > kMemorySize) {
+      return -1;
+    }
+    const int64_t base = next_mem;
+    next_mem += size;
+    return base;
+  }
 };
 
 struct LoweringContext {
@@ -148,6 +165,7 @@ struct LoweringContext {
   GlobalLoweringState& global;
   FunctionInfo& function;
   std::unordered_map<std::string, int32_t> vars;
+  std::unordered_map<std::string, ArrayInfo> arrays;
   std::vector<LoopControl> loop_stack;
 
   const std::string& source() const {
@@ -198,6 +216,18 @@ struct LoweringContext {
 bool compile_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, std::string* error);
 bool compile_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error);
 
+bool compile_integer_literal_value(LoweringContext& ctx, CXCursor cursor, int64_t& value,
+                                   std::string* error) {
+  const std::string text = trim_copy(cursor_text(cursor, ctx.source()));
+  char* end = nullptr;
+  const long long parsed = std::strtoll(text.c_str(), &end, 0);
+  if (!end || *end != '\0') {
+    return ctx.fail(cursor, "unsupported integer literal", error);
+  }
+  value = parsed;
+  return true;
+}
+
 bool compile_break_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
   if (ctx.loop_stack.empty()) {
     return ctx.fail(cursor, "'break' is only supported inside loops", error);
@@ -231,11 +261,9 @@ bool copy_if_needed(LoweringContext& ctx, int32_t target, int32_t value_reg, std
 
 bool compile_integer_literal(LoweringContext& ctx, CXCursor cursor, int32_t target,
                              std::string* error) {
-  const std::string text = trim_copy(cursor_text(cursor, ctx.source()));
-  char* end = nullptr;
-  const long long value = std::strtoll(text.c_str(), &end, 0);
-  if (!end || *end != '\0') {
-    return ctx.fail(cursor, "unsupported integer literal", error);
+  int64_t value = 0;
+  if (!compile_integer_literal_value(ctx, cursor, value, error)) {
+    return false;
   }
   ctx.emit(t81::tisc::Opcode::LoadImm, target, value, 0);
   return true;
@@ -292,6 +320,39 @@ std::optional<std::string> unary_operator_spelling(CXCursor cursor,
   const std::string prefix = trim_copy(source.substr(expr_begin, operand_begin - expr_begin));
   const std::string suffix = trim_copy(source.substr(operand_end, expr_end - operand_end));
   return trim_copy(prefix + suffix);
+}
+
+std::optional<std::pair<std::string, int64_t>> parse_array_subscript(LoweringContext& ctx,
+                                                                     CXCursor cursor,
+                                                                     std::string* error) {
+  auto children = cursor_children(cursor);
+  if (children.size() != 2) {
+    ctx.fail(cursor, "unsupported array subscript shape", error);
+    return std::nullopt;
+  }
+  CXCursor base = unwrap_expr(children[0]);
+  if (clang_getCursorKind(base) != CXCursor_DeclRefExpr) {
+    ctx.fail(base, "only direct local array indexing is supported", error);
+    return std::nullopt;
+  }
+  const std::string name = to_string_and_dispose(clang_getCursorSpelling(base));
+  const auto array_it = ctx.arrays.find(name);
+  if (array_it == ctx.arrays.end()) {
+    ctx.fail(base, "unknown array '" + name + "'", error);
+    return std::nullopt;
+  }
+  int64_t index = 0;
+  CXCursor index_cursor = unwrap_expr(children[1]);
+  if (clang_getCursorKind(index_cursor) != CXCursor_IntegerLiteral ||
+      !compile_integer_literal_value(ctx, index_cursor, index, error)) {
+    ctx.fail(index_cursor, "only integer-literal array indices are supported", error);
+    return std::nullopt;
+  }
+  if (index < 0 || index >= array_it->second.size) {
+    ctx.fail(index_cursor, "array index is out of bounds for the declared fixed array", error);
+    return std::nullopt;
+  }
+  return std::make_pair(name, index);
 }
 
 bool compile_unary_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, std::string* error) {
@@ -469,8 +530,19 @@ bool compile_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, std::st
       return ctx.fail(cursor, "casts are not supported in the C subset v0", error);
     case CXCursor_MemberRefExpr:
       return ctx.fail(cursor, "member access is not supported in the C subset v0", error);
-    case CXCursor_ArraySubscriptExpr:
-      return ctx.fail(cursor, "array indexing is not supported in the C subset v0", error);
+    case CXCursor_ArraySubscriptExpr: {
+      const auto parsed = parse_array_subscript(ctx, cursor, error);
+      if (!parsed.has_value()) {
+        return false;
+      }
+      const auto& [name, index] = *parsed;
+      const auto array_it = ctx.arrays.find(name);
+      if (array_it == ctx.arrays.end()) {
+        return ctx.fail(cursor, "unknown array '" + name + "'", error);
+      }
+      ctx.emit(t81::tisc::Opcode::Load, target, array_it->second.base_addr + index, 0);
+      return true;
+    }
     case CXCursor_ConditionalOperator:
       return ctx.fail(cursor, "ternary conditionals are not supported in the C subset v0", error);
     case CXCursor_CompoundAssignOperator:
@@ -535,7 +607,72 @@ bool compile_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, std::st
 bool compile_var_decl(LoweringContext& ctx, CXCursor cursor, std::string* error) {
   const CXType type = clang_getCursorType(cursor);
   if (type.kind == CXType_ConstantArray) {
-    return ctx.fail(cursor, "local arrays are not supported in the C subset v0", error);
+    const CXType elem_type = clang_getArrayElementType(type);
+    if (!is_supported_int_type(elem_type)) {
+      return ctx.fail(cursor, "only fixed local 'int' arrays are supported", error);
+    }
+    const std::string name = to_string_and_dispose(clang_getCursorSpelling(cursor));
+    if (name.empty()) {
+      return ctx.fail(cursor, "unnamed local arrays are not supported", error);
+    }
+    if (ctx.vars.find(name) != ctx.vars.end() || ctx.arrays.find(name) != ctx.arrays.end()) {
+      return ctx.fail(cursor, "duplicate local name '" + name + "'", error);
+    }
+    const long long array_size = clang_getArraySize(type);
+    if (array_size <= 0) {
+      return ctx.fail(cursor, "fixed local arrays must have a positive constant size", error);
+    }
+    const int64_t base_addr = ctx.global.alloc_mem(array_size);
+    if (base_addr < 0) {
+      return ctx.fail(cursor, "fixed local arrays exceed the available T81 memory surface", error);
+    }
+    const int32_t value_reg = ctx.alloc_reg();
+    if (value_reg < 0) {
+      if (error) *error = "internal register allocation failure";
+      return false;
+    }
+    for (long long i = 0; i < array_size; ++i) {
+      ctx.emit(t81::tisc::Opcode::LoadImm, value_reg, 0, 0);
+      ctx.emit(t81::tisc::Opcode::Store, static_cast<int32_t>(base_addr + i), value_reg, 0);
+    }
+    auto children = cursor_children(cursor);
+    CXCursor init = clang_getNullCursor();
+    for (CXCursor child : children) {
+      const CXCursorKind child_kind = clang_getCursorKind(child);
+      if (child_kind == CXCursor_IntegerLiteral) {
+        continue;
+      }
+      if (child_kind == CXCursor_InitListExpr && clang_Cursor_isNull(init)) {
+        init = child;
+        continue;
+      }
+      return ctx.fail(child, "fixed local arrays may only use an integer initializer list", error);
+    }
+    if (!clang_Cursor_isNull(init)) {
+      if (clang_getCursorKind(init) != CXCursor_InitListExpr) {
+        return ctx.fail(init, "fixed local arrays must use an integer initializer list", error);
+      }
+      auto init_values = cursor_children(init);
+      long long init_index = 0;
+      for (CXCursor init_value : init_values) {
+        if (init_index >= array_size) {
+          return ctx.fail(init_value, "initializer list exceeds the declared fixed array size", error);
+        }
+        int64_t literal = 0;
+        CXCursor literal_cursor = unwrap_expr(init_value);
+        if (clang_getCursorKind(literal_cursor) != CXCursor_IntegerLiteral ||
+            !compile_integer_literal_value(ctx, literal_cursor, literal, error)) {
+          return ctx.fail(init_value,
+                          "fixed local array initializers must be integer literals", error);
+        }
+        ctx.emit(t81::tisc::Opcode::LoadImm, value_reg, literal, 0);
+        ctx.emit(t81::tisc::Opcode::Store, static_cast<int32_t>(base_addr + init_index), value_reg,
+                 0);
+        ++init_index;
+      }
+    }
+    ctx.arrays.emplace(name, ArrayInfo{base_addr, array_size});
+    return true;
   }
   if (type.kind == CXType_Pointer) {
     return ctx.fail(cursor, "pointers are not supported in the C subset v0", error);
@@ -547,8 +684,8 @@ bool compile_var_decl(LoweringContext& ctx, CXCursor cursor, std::string* error)
   if (name.empty()) {
     return ctx.fail(cursor, "unnamed local variables are not supported", error);
   }
-  if (ctx.vars.find(name) != ctx.vars.end()) {
-    return ctx.fail(cursor, "duplicate local variable '" + name + "'", error);
+  if (ctx.vars.find(name) != ctx.vars.end() || ctx.arrays.find(name) != ctx.arrays.end()) {
+    return ctx.fail(cursor, "duplicate local name '" + name + "'", error);
   }
   auto children = cursor_children(cursor);
   if (children.size() != 1) {
@@ -577,8 +714,30 @@ bool compile_assignment_stmt(LoweringContext& ctx, CXCursor cursor, std::string*
   if (!op.has_value() || *op != "=") {
     return ctx.fail(cursor, "only simple '=' assignment is supported", error);
   }
+  if (clang_getCursorKind(lhs) == CXCursor_ArraySubscriptExpr) {
+    const auto parsed = parse_array_subscript(ctx, lhs, error);
+    if (!parsed.has_value()) {
+      return false;
+    }
+    const auto& [name, index] = *parsed;
+    const auto array_it = ctx.arrays.find(name);
+    if (array_it == ctx.arrays.end()) {
+      return ctx.fail(lhs, "unknown array '" + name + "'", error);
+    }
+    const int32_t value_reg = ctx.alloc_reg();
+    if (value_reg < 0) {
+      if (error) *error = "internal register allocation failure";
+      return false;
+    }
+    if (!compile_expr(ctx, rhs, value_reg, error)) {
+      return false;
+    }
+    ctx.emit(t81::tisc::Opcode::Store, static_cast<int32_t>(array_it->second.base_addr + index),
+             value_reg, 0);
+    return true;
+  }
   if (clang_getCursorKind(lhs) != CXCursor_DeclRefExpr) {
-    return ctx.fail(lhs, "assignment target must be a local variable", error);
+    return ctx.fail(lhs, "assignment target must be a local variable or fixed array element", error);
   }
   const std::string name = to_string_and_dispose(clang_getCursorSpelling(lhs));
   const auto it = ctx.vars.find(name);
@@ -894,7 +1053,7 @@ bool compile_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
 }
 
 bool compile_function(GlobalLoweringState& global, FunctionInfo& function, std::string* error) {
-  LoweringContext ctx{global, function, {}, {}};
+  LoweringContext ctx{global, function, {}, {}, {}};
   CXCursor cursor = function.cursor;
   if (!is_supported_int_type(clang_getCursorResultType(cursor))) {
     return ctx.fail(cursor, "functions must return 'int' in the C subset v0", error);
@@ -941,7 +1100,7 @@ bool collect_function_info(GlobalLoweringState& global, CXCursor cursor, std::st
     return false;
   }
   if (global.functions.find(info.name) != global.functions.end()) {
-    LoweringContext dummy{global, info, {}, {}};
+    LoweringContext dummy{global, info, {}, {}, {}};
     return dummy.fail(cursor, "duplicate function definition '" + info.name + "'", error);
   }
   std::unordered_set<std::string> seen_params;
@@ -950,24 +1109,24 @@ bool collect_function_info(GlobalLoweringState& global, CXCursor cursor, std::st
     CXCursor arg = clang_Cursor_getArgument(cursor, i);
     const CXType arg_type = clang_getCursorType(arg);
     if (arg_type.kind == CXType_Pointer) {
-      LoweringContext dummy{global, info, {}, {}};
+      LoweringContext dummy{global, info, {}, {}, {}};
       return dummy.fail(arg, "pointer parameters are not supported in the C subset v0", error);
     }
     if (arg_type.kind == CXType_ConstantArray) {
-      LoweringContext dummy{global, info, {}, {}};
+      LoweringContext dummy{global, info, {}, {}, {}};
       return dummy.fail(arg, "array parameters are not supported in the C subset v0", error);
     }
     if (!is_supported_int_type(arg_type)) {
-      LoweringContext dummy{global, info, {}, {}};
+      LoweringContext dummy{global, info, {}, {}, {}};
       return dummy.fail(arg, "only 'int' parameters are supported in the C subset v0", error);
     }
     const std::string param_name = to_string_and_dispose(clang_getCursorSpelling(arg));
     if (param_name.empty()) {
-      LoweringContext dummy{global, info, {}, {}};
+      LoweringContext dummy{global, info, {}, {}, {}};
       return dummy.fail(arg, "parameter names are required in the C subset v0", error);
     }
     if (!seen_params.emplace(param_name).second) {
-      LoweringContext dummy{global, info, {}, {}};
+      LoweringContext dummy{global, info, {}, {}, {}};
       return dummy.fail(arg, "duplicate parameter '" + param_name + "'", error);
     }
     const int32_t reg = global.alloc_reg();
@@ -1033,7 +1192,7 @@ bool build_program_from_translation_unit(CXTranslationUnit tu,
     if (kind == CXCursor_VarDecl) {
       if (error) {
         FunctionInfo dummy_function;
-        LoweringContext dummy{global, dummy_function, {}, {}};
+        LoweringContext dummy{global, dummy_function, {}, {}, {}};
         return dummy.fail(child, "global variables are not supported in the C subset v0", error);
       }
       return false;

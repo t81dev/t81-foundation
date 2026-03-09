@@ -37,6 +37,9 @@ int main() {
         "}\n"
         "int main() {\n"
         "  int y = climb(3);\n"
+        "  int cells[4] = {1, 2, 3};\n"
+        "  cells[3] = y;\n"
+        "  y = cells[1] + cells[3];\n"
         "  y = y & 7;\n"
         "  int z = 0;\n"
         "  if (y == 7) {\n"
@@ -81,15 +84,16 @@ int main() {
   {
     const std::string source =
         "int main() {\n"
-        "  int a[4] = {0};\n"
-        "  return 0;\n"
+        "  int a[4] = {0, 1, 2, 3};\n"
+        "  int i = 1;\n"
+        "  return a[i];\n"
         "}\n";
     std::string output;
     std::string error;
     check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_array.c", output, {}, &error),
           "expected array example to be rejected");
-    check(error.find("local arrays are not supported") != std::string::npos,
-          "expected array rejection diagnostic");
+    check(error.find("only integer-literal array indices are supported") != std::string::npos,
+          "expected array-index rejection diagnostic");
   }
 
   {

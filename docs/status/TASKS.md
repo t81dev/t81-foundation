@@ -260,13 +260,13 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 - [x] **LLVM-03: Experimental C Frontend PoC** — **✅ COMPLETED (2026-03-09)**
   - ✅ CMake: `T81_ENABLE_C_FRONTEND` option; `libclang`-gated `t81_c_frontend` target
   - ✅ CLI: `t81 c compile <input.c> [-o out.mlir] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>]`
-  - ✅ Frontend scope v0: fail-closed, integer-only subset (`int main()` entry, helper `int` functions with `int` parameters, same-TU calls without recursion, initialized local `int` vars, assignment, statement-only `++`/`--`, arithmetic/bitwise/comparison/logical integer expressions, compound blocks, `if`, `while`, `for`, loop-local `break`/`continue`, reachable `return`)
-  - ✅ Guardrails: explicit rejection diagnostics for pointers, local arrays, pointer parameters, globals, recursion, conditionless `for` loops, `switch`, `do-while`, `goto`, labels, address-of/dereference, casts, ternary, array indexing, member access, `sizeof`, and compound assignment
+  - ✅ Frontend scope v0: fail-closed, integer-only subset (`int main()` entry, helper `int` functions with `int` parameters, same-TU calls without recursion, initialized local `int` vars, fixed local `int[N]` arrays lowered to explicit T81 memory, assignment, statement-only `++`/`--`, arithmetic/bitwise/comparison/logical integer expressions, compound blocks, `if`, `while`, `for`, loop-local `break`/`continue`, reachable `return`)
+  - ✅ Guardrails: explicit rejection diagnostics for pointers, pointer parameters, globals, recursion, conditionless `for` loops, `switch`, `do-while`, `goto`, labels, address-of/dereference, casts, non-literal array indices, ternary, member access, `sizeof`, and compound assignment
   - ✅ Integration path: restricted C parsed via `libclang`, lowered into TISC, then reused through the existing TISC → MLIR pipeline
   - ✅ Verification: `t81_c_frontend_mlir_smoke_test`; CLI contract coverage for `help c` and `t81 c compile`
   - Status: **✅ RESOLVED** — build requires `-DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON`
-  - **Resume Point**: next useful slice is a deliberate decision on fixed local arrays and memory modeling: keep arrays rejected, or lower a constrained subset into explicit T81 memory. After that, broaden declaration/call-surface guardrails (prototypes, `extern`, unsupported helper signatures) before starting another frontend.
-  - **Deferred**: arrays/memory modeling, broader function-call/declaration semantics, and non-C frontends (Rust/Python)
+  - **Resume Point**: next useful slice is broadening declaration/call-surface guardrails around prototypes, `extern`, unsupported helper signatures, and other non-local declarations. After that, decide whether array indexing should remain literal-only or grow into a larger memory/addressing surface.
+  - **Deferred**: broader array/addressing semantics, broader function-call/declaration semantics, and non-C frontends (Rust/Python)
 
 ---
 
