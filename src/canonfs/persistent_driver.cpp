@@ -213,13 +213,14 @@ public:
 #endif
     if (fd < 0) return Result<std::vector<std::byte>>(t81::unexpect, Error::NotFound);
 
-    struct stat st;
 #ifdef _WIN32
+    struct _stat st;
     if (::_fstat(fd, &st) < 0) {
       ::_close(fd);
       return Result<std::vector<std::byte>>(t81::unexpect, Error::DecodeError);
     }
 #else
+    struct stat st;
     if (::fstat(fd, &st) < 0) {
       ::close(fd);
       return Result<std::vector<std::byte>>(t81::unexpect, Error::DecodeError);

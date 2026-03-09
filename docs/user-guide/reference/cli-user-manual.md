@@ -210,6 +210,12 @@ t81 tisc stats <file.tisc> [--json]
 t81 tisc encode <file.base81> [-o <out.tisc>] [--json]
 t81 tisc decode <file.tisc> [-o <out.base81>] [--json]
 t81 tisc diff <a.tisc> <b.tisc> [--json]
+t81 tier <info|check|gate> [args]
+t81 tensor <subcommand> [args]
+t81 axion <subcommand> [options]
+t81 c compile <input.c> [-o <output>] [options]
+t81 llvm compile <input.tisc|input.t81> -o <output> [options]
+t81 mlir <subcommand> <input> [-o <output>] [options]
 t81 ir show <file.t81>
 t81 ir dump <file.t81>
 t81 ir validate <file.t81> [--json]
@@ -256,7 +262,7 @@ t81 project init <project_name>
 t81 project build [file.t81]
 t81 project run [file.t81] [--policy <p>]
 t81 project test [options]
-t81 repl
+t81 repl [--weights-model <model.t81w>] [--policy <policy.apl>]
 t81 env check [--json]
 t81 env doctor [toolchain|canonfs|vm] [--json]
 t81 env paths [--json]
