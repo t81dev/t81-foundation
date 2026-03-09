@@ -49,8 +49,6 @@ Examples:
 ./build/t81 help completion # docs-smoke
 ./build/t81 help man # docs-smoke
 ./build/t81 help feedback # docs-smoke
-./build/t81 compile --help # docs-smoke
-./build/t81 help compile # docs-smoke
 ./build/t81 code test --json --list # docs-smoke
 ./build/t81 env doctor --json # docs-smoke
 ./build/t81 completion bash # docs-smoke
@@ -121,7 +119,7 @@ t81 lang export <file.t81> [--json] [-o <file>]
 t81 code check <file.t81>
 t81 code fmt [options] <file...>
 t81 code build <file.t81|file.t81w> [-o <file.tisc>] [--weights-model <model.t81w>]
-t81 code run <file.t81|file.tisc> [--policy <policy.apl>] [--trace] [--trace-out <file>] [--weights-model <model.t81w>]
+t81 code run <file.t81|file.tisc> [--policy <policy.apl>] [--trace] [-o <file>|--output <file>] [--weights-model <model.t81w>]
 t81 code profile <file.t81|file.tisc> [--policy <policy.apl>] [--json]
 t81 code test [options] [-- <ctest args...>]
 t81 code disasm <file.tisc>
@@ -137,8 +135,10 @@ t81 canonfs snapshot [--json] [--canonfs-root <path>]
 t81 canonfs snapshot-diff <lhs> <rhs> [--json] [--canonfs-root <path>]
 t81 canonfs rollback --to <hash> [--dry-run] [--json] [--canonfs-root <path>]
 t81 canonfs gc [--dry-run] [--json] [--canonfs-root <path>]
-t81 determinism verify [fixtures_dir]
+t81 canonfs repair [--dry-run] [--json] [--canonfs-root <path>]
+t81 determinism verify [dir]
 t81 determinism verify-run <file.tisc> [--policy <policy.apl>] [--json]
+t81 determinism compare-run <file.tisc> [--policy <policy.apl>] [--json]
 t81 determinism certify <file.tisc> [--policy <policy.apl>] [--json]
 t81 determinism explain <file.tisc> [--policy <policy.apl>] [--json]
 t81 determinism hash <file> [--json]
@@ -147,9 +147,11 @@ t81 determinism diff <lhs> <rhs> [--json]
 t81 determinism diff-trace <lhs> <rhs> [--json]
 t81 determinism multi-run <file.tisc> --count <n> [--policy <policy.apl>] [--json]
 t81 determinism baseline <dir> [--source-dir <src>] [--json]
+t81 determinism bisect <dir> [--json]
 t81 vm run <file.tisc> [--policy <policy.apl>] [-o <trace.txt>]
 t81 vm debug <file.tisc> [--policy <policy.apl>]
 t81 vm trace <file.tisc> [--policy <policy.apl>] [-o <trace.txt>]
+t81 vm until <file.tisc> --pc <n> [--policy <policy.apl>] [--steps <n>] [--json]
 t81 vm step <file.tisc> [--policy <policy.apl>] [--count <n>] [--json]
 t81 vm regs <file.tisc> [--policy <policy.apl>] [--steps <n>] [--json]
 t81 vm stack <file.tisc> [--policy <policy.apl>] [--steps <n>] [--limit <n>] [--json]
@@ -178,12 +180,8 @@ t81 weights info <model.t81w> [--json]
 t81 weights verify <model.t81w> [--json]
 t81 weights export <model.t81w> --to-safetensors <out> [--json]
 t81 weights quantize <input> --to-gguf <out>
-t81 model import <file> [-o <out>] [--format <fmt>]
-t81 model info <model.t81w> [--json]
-t81 model verify <model.t81w> [--json]
-t81 model export <model.t81w> --to-safetensors <out> [--json]
-t81 model quantize <input> --to-gguf <out>
 t81 policy compile <file.apl> [-o <out>]
+t81 policy validate <file.apl|file.axionb> [--json]
 t81 policy run <file.apl|file.axionb> [--json]
 t81 policy test <file.apl|file.axionb> --model-hash <hash> [--json]
 t81 policy list [--json] [--dir <path>]
@@ -210,7 +208,7 @@ t81 project run [file.t81] [--policy <p>]
 t81 project test [options]
 t81 repl
 t81 env check [--json]
-t81 env doctor [--json]
+t81 env doctor [toolchain|canonfs|vm] [--json]
 t81 env paths [--json]
 t81 env diag [--json]
 t81 env toolchain [--json]
@@ -223,112 +221,33 @@ t81 internal canonize-tensor <file>
 t81 internal canonize-file <file> [--canonfs-root <path>]
 t81 internal memory-stats [file]
 t81 internal llama-run <model.gguf|sha3-256:hash> <prompt> --policy <policy.apl> [options]
-t81 bench [benchmark_runner_flags...]
 t81 completion bash|zsh|fish
 t81 man [--install-dir <dir>]
 t81 feedback submit --rating <1-5> [--note <text>] [--path <file>]
 t81 feedback report [--path <file>]
 ```
 
-### 4.2 Legacy Top-Level Aliases
-
-Legacy aliases remain supported for compatibility, but they are intentionally hidden from
-the default `t81 --help` and shell completion surfaces.
-
-### 4.1 `compile`
+### 4.2 `project`
 
 ```text
-t81 compile <file.t81|file.t81w> [-o <file.tisc>] [--weights-model <model.t81w>]
-```
-
-Compiles source into TISC bytecode.
-
-### 4.2 `run`
-
-```text
-t81 run <file.t81|file.tisc> [--policy <policy.apl>] [--trace] [--trace-out <file>] [--weights-model <model.t81w>]
-```
-
-Compiles if needed and executes via VM.
-`--trace-out` writes replay-compatible trace lines to a file without mixing them into program stdout.
-
-### 4.3 `disasm`
-
-```text
-t81 disasm <file.tisc>
-```
-
-Prints human-readable disassembly.
-
-### 4.4 `debug`
-
-```text
-t81 debug <file.t81|file.tisc> [--policy <policy.apl>] [--weights-model <model.t81w>]
-```
-
-Compiles if needed and starts debugger.
-
-### 4.5 `check` / `lint`
-
-```text
-t81 check <file.t81>
-t81 lint <file.t81>
-```
-
-Syntax + semantic validation without bytecode emission.
-
-### 4.6 `repl`
-
-```text
-t81 repl [--weights-model <model.t81w>] [--policy <policy.apl>]
-```
-
-Starts the interactive REPL.
-
-### 4.7 `repro-hash`
-
-```text
-t81 repro-hash [fixtures_dir]
-```
-
-Runs the T81Lang reproducibility fixture hash gate.
-
-### 4.8 `canonize-tensor`
-
-```text
-t81 canonize-tensor <file>
-```
-
-Canonicalizes tensor input into CanonFS object storage.
-
-### 4.9 `canonize-file`
-
-```text
-t81 canonize-file <file> [--canonfs-root <path>]
-```
-
-Writes raw file bytes to CanonFS and prints `sha3-256:<hash>`.
-
-### 4.10 `init` / `project`
-
-```text
-t81 init <project_name>
 t81 project init <project_name>
 t81 project build [file.t81]
 t81 project run [file.t81] [--policy <policy.apl>]
 t81 project test [options]
 ```
 
-`init` (and `project init`) creates a project directory with `main.t81` and `README.md`.
-`project build` compiles the project's T81 source to TISC bytecode via `code build`.
-`project run` compiles (if needed) and executes via `code run`; accepts `--policy` to attach
+`project init` creates a project directory with `main.t81` and `README.md`.
+`project build` compiles the project's T81 source to TISC bytecode via `code build`; if no file
+is supplied it defaults to `main.t81` in the current working directory.
+`project run` compiles (if needed) and executes via `code run`; if no file is supplied it defaults
+to `main.t81` in the current working directory. It accepts `--policy` to attach
 an Axion policy file.
 `project test` delegates to `code test` and runs the project test suite through CTest.
 
 ### 4.10a `memory-stats`
 
 ```text
-t81 memory-stats [file]
+t81 internal memory-stats [file]
 ```
 
 Shows memory pool configuration. If a file is supplied, the current implementation reports
@@ -337,11 +256,11 @@ runtime memory footprint, allocation counters, and peak pool usage after executi
 ### 4.11 `test`
 
 ```text
-t81 test [options] [-- <ctest args...>]
-t81 test --build-dir <path>
-t81 test --filter <regex>
-t81 test --json
-t81 test --list
+t81 code test [options] [-- <ctest args...>]
+t81 code test --build-dir <path>
+t81 code test --filter <regex>
+t81 code test --json
+t81 code test --list
 ```
 
 Runs project tests through CTest.
@@ -350,10 +269,11 @@ Runs project tests through CTest.
 ### 4.12 `doctor`
 
 ```text
-t81 doctor [--json]
+t81 env doctor [toolchain|canonfs|vm] [--json]
 ```
 
 Runs environment/toolchain readiness checks and prints actionable fixes.
+Optional scopes narrow the checks to toolchain availability, CanonFS readiness, or VM/build readiness.
 `--json` uses schema `t81.doctor.v1`.
 
 ### 4.12a `env check` / `env paths` / `env diag` / `env toolchain`
@@ -374,10 +294,10 @@ toolchain readiness, CanonFS readiness, and Axion state with schema `t81.env-dia
 ### 4.13 `fmt`
 
 ```text
-t81 fmt [options] <file...>
-t81 fmt --check <file...>
-t81 fmt --json <file...>
-t81 fmt --version
+t81 code fmt [options] <file...>
+t81 code fmt --check <file...>
+t81 code fmt --json <file...>
+t81 code fmt --version
 ```
 
 Normalizes whitespace and applies parser-aware `.t81` indentation formatting.
@@ -387,9 +307,9 @@ For `.t81`, formatting runs syntax validation before and after rewrite and enfor
 ### 4.14 `pkg` (labs)
 
 ```text
-t81 pkg <subcommand> [args]
-t81 pkg init [package_name]
-t81 pkg check [package.t81] [--json]
+t81 internal pkg <subcommand> [args]
+t81 internal pkg init [package_name]
+t81 internal pkg check [package.t81] [--json]
 ```
 
 Creates/validates `package.t81`.
@@ -399,10 +319,12 @@ This surface is currently experimental and not part of the default core help vie
 ### 4.15 `benchmark`
 
 ```text
-t81 benchmark [benchmark_runner_flags...]
+t81 internal benchmark [vm|canonfs|weights|determinism] [benchmark_runner_flags...]
 ```
 
 Runs benchmark runner with forwarded benchmark flags.
+Optional subsystem selectors expand to benchmark filters for common suites:
+`vm`, `canonfs`, `weights`, and `determinism`.
 
 ### 4.16 `weights`
 
@@ -455,9 +377,15 @@ t81 axion audit [--from <hash>] [--to <hash>] [--json]
 ```
 
 Axion governor and policy-diagnostics helpers.
-`axion log` reads the persisted Axion event journal from `<canonfs-root>/axion/state.json`
-and prints a summary of recorded policy events. `--tail <n>` limits output to the last `n`
-entries. `--json` uses schema `t81.axion-log.v1`.
+`axion status` reports current governor state plus any detected issues such as a missing
+state file or a recorded active snapshot that no longer exists.
+`axion optimize` captures a fresh snapshot, records the requested tier, and reports manifest
+delta counts against the previous active snapshot.
+`axion log` reads the persisted Axion state from `<canonfs-root>/axion/state.json` and
+prints the current tier, active snapshot, and recent snapshot receipts. `--tail <n>` limits
+output to the last `n` entries. `--json` uses schema `t81.axion-log.v1`.
+`axion audit` defaults to diffing the recorded active snapshot against the latest snapshot,
+which makes it useful as a quick “what changed since last governor state” check.
 `axion explain --json` uses schema `t81.axion-explain.v1`.
 `axion status --json` uses schema `t81.axion-status.v1`.
 `axion optimize --json` uses schema `t81.axion-optimize.v1`.
@@ -481,7 +409,7 @@ t81 trace export <trace.txt> [--format <json|csv>] [-o <file>]
 
 Trace inspection and export utilities.
 `trace export --format json` emits entries with schema `t81.trace-export-entry.v1`.
-`trace replay` expects a clean trace file; `t81 run --trace-out <file>` produces the intended input.
+`trace replay` expects a clean trace file; `t81 code run <file.tisc> -o <trace>` produces the intended input.
 If the trace file cannot be opened, `trace replay --json` returns `kind: "open_error"` without extra human-readable stderr noise.
 `trace summary --json` uses schema `t81.trace-summary.v1`.
 `trace filter --json` uses schema `t81.trace-filter.v1`.
@@ -500,6 +428,8 @@ t81 canonfs snapshot [--json] [--canonfs-root <path>]
 t81 canonfs snapshot-diff <lhs> <rhs> [--json] [--canonfs-root <path>]
 t81 canonfs rollback --to <hash> [--dry-run] [--json] [--canonfs-root <path>]
 t81 canonfs gc [--dry-run] [--json] [--canonfs-root <path>]
+t81 canonfs fsck [--json] [--canonfs-root <path>]
+t81 canonfs repair [--dry-run] [--json] [--canonfs-root <path>]
 ```
 
 CanonFS inspection and snapshot tooling.
@@ -508,13 +438,17 @@ CanonFS inspection and snapshot tooling.
 `canonfs stat --json` uses schema `t81.canonfs-stat.v1`.
 `canonfs verify --json` uses schema `t81.canonfs-verify.v1`.
 `canonfs snapshot-diff --json` uses schema `t81.canonfs-snapshot-diff.v1`.
+`canonfs snapshot` records canonical manifest state and mutable metadata without duplicating the immutable object store.
 `canonfs rollback --dry-run` previews the target snapshot without mutating HEAD.
 `canonfs gc --dry-run` previews removable objects; `--json` uses schema `t81.canonfs-gc.v1`.
+`canonfs fsck --json` uses schema `t81.canonfs-fsck.v1` and validates object/blob readability plus snapshot manifests.
+`canonfs repair --json` uses schema `t81.canonfs-repair.v1` and removes legacy snapshot-local
+`objects/` trees created by older snapshot implementations.
 
 ### 4.18b `determinism`
 
 ```text
-t81 determinism verify [fixtures_dir]
+t81 determinism verify [dir]
 t81 determinism verify-run <file.tisc> [--policy <policy.apl>] [--json]
 t81 determinism certify <file.tisc> [--policy <policy.apl>] [--json]
 t81 determinism explain <file.tisc> [--policy <policy.apl>] [--json]
@@ -534,8 +468,12 @@ Determinism verification and artifact hashing tools.
 `determinism diff --json` uses schema `t81.determinism-diff.v1`.
 `determinism diff-trace --json` uses schema `t81.determinism-trace-diff.v1`.
 `determinism multi-run --json` uses schema `t81.determinism-multi-run.v1`.
-`determinism baseline` scans a directory for `.tisc` files and writes `baseline.json` with
-SHA3-512 hashes for use with `determinism verify`; `--json` uses schema `t81.determinism-baseline.v1`.
+`determinism verify` checks a `baseline.json` directory when one is supplied; otherwise it falls
+back to the existing reproducibility fixture gate.
+
+`determinism baseline` scans a directory for `.tisc` files, executes each artifact once, and writes
+artifact/output/trace SHA3-512 hashes to `baseline.json`; `--json` uses schema
+`t81.determinism-baseline.v1`.
 
 ### 4.18c `vm`
 
@@ -609,7 +547,7 @@ Cognitive tier inspection and policy-gating helpers.
 ### 4.19 `llama-run` (experimental)
 
 ```text
-t81 llama-run <model.gguf|sha3-256:hash> <prompt> --policy <policy.apl> [options]
+t81 internal llama-run <model.gguf|sha3-256:hash> <prompt> --policy <policy.apl> [options]
 ```
 
 Options:
@@ -660,22 +598,18 @@ Supported help forms. Help text is written to `stdout`, so piping works as expec
 ./build/t81 help code # docs-smoke
 ./build/t81 help code build # docs-smoke
 ./build/t81 code build --help # docs-smoke
-./build/t81 help compile # docs-smoke
-./build/t81 help test # docs-smoke
-./build/t81 help doctor # docs-smoke
-./build/t81 help fmt # docs-smoke
+./build/t81 help internal benchmark # docs-smoke
+./build/t81 help code test # docs-smoke
+./build/t81 help env doctor # docs-smoke
+./build/t81 help code fmt # docs-smoke
 ./build/t81 help completion # docs-smoke
 ./build/t81 help man # docs-smoke
 ./build/t81 help feedback # docs-smoke
-./build/t81 compile --help # docs-smoke
 ./build/t81 help advanced # docs-smoke
 ./build/t81 help labs # docs-smoke
 ```
 
 Unknown help topics return non-zero.
-
-Legacy top-level aliases print a deprecation warning on `stderr` with the
-domain-first equivalent (for example, `compile` -> `code build`).
 
 ## 6. Exit and Output Behavior
 
@@ -691,11 +625,11 @@ Command-specific non-zero exits:
 
 | Command | Exit Code | Meaning |
 | :--- | :--- | :--- |
-| `test` | `2` | `ctest` not available, build metadata missing, or tests failed |
-| `doctor` | `2` | one or more readiness checks failed |
-| `fmt --check` | `2` | formatting drift detected |
-| `fmt` | `1` | invalid input or formatter write/read failures |
-| `pkg check` | `2` | manifest invalid |
+| `code test` | `2` | `ctest` not available, build metadata missing, or tests failed |
+| `env doctor` | `2` | one or more readiness checks failed |
+| `code fmt --check` | `2` | formatting drift detected |
+| `code fmt` | `1` | invalid input or formatter write/read failures |
+| `internal pkg check` | `2` | manifest invalid |
 | `trace export` | `1` | invalid args/format/path |
 | `weights info` | `1` | usage or file-loading failure |
 | `policy run` | `1` | usage or policy parse/load failure |
@@ -706,7 +640,7 @@ Command-specific non-zero exits:
 | `man` | `2` | install directory/file write failure |
 | `feedback` | `2` | feedback file read/write failure |
 
-Runtime trap exit codes used by `t81 run` / `t81 debug`:
+Runtime trap exit codes used by `t81 code run` / `t81 code debug`:
 
 | Code | Meaning |
 | :--- | :--- |

@@ -415,17 +415,25 @@ std::vector<SnapshotManifestEntry> collect_snapshot_manifest(const fs::path& roo
   for (auto it = fs::recursive_directory_iterator(root); it != fs::recursive_directory_iterator();
        ++it) {
     const auto& path = it->path();
+    const fs::path rel = fs::relative(path, root);
+    if (!rel.empty() && *rel.begin() == "snapshots") {
+      if (it->is_directory()) {
+        it.disable_recursion_pending();
+      }
+      continue;
+    }
     if (!it->is_regular_file()) {
       continue;
     }
-    if (path.string().find("/snapshots/") != std::string::npos ||
-        path.string().find("\\snapshots\\") != std::string::npos) {
-      continue;
-    }
-    auto bytes = read_file_bytes(path);
     SnapshotManifestEntry entry;
-    entry.relative_path = fs::relative(path, root).generic_string();
-    entry.content_hash = t81::hash::hash_bytes(std::span<const std::byte>(bytes.data(), bytes.size())).to_string();
+    entry.relative_path = rel.generic_string();
+    if (*rel.begin() == "objects" && path.extension() == ".blk") {
+      entry.content_hash = "sha3-256:" + path.stem().string();
+    } else {
+      auto bytes = read_file_bytes(path);
+      entry.content_hash =
+          t81::hash::hash_bytes(std::span<const std::byte>(bytes.data(), bytes.size())).to_string();
+    }
     entries.push_back(std::move(entry));
   }
   std::sort(entries.begin(), entries.end(), [](const auto& lhs, const auto& rhs) {
@@ -453,7 +461,7 @@ bool copy_directory_contents(const fs::path& from, const fs::path& to, std::stri
        ++it) {
     const auto& src = it->path();
     const fs::path rel = fs::relative(src, from);
-    if (!rel.empty() && *rel.begin() == "snapshots") {
+    if (!rel.empty() && (*rel.begin() == "snapshots" || *rel.begin() == "objects")) {
       if (it->is_directory()) {
         it.disable_recursion_pending();
       }
@@ -491,7 +499,7 @@ bool clear_directory_except_snapshots(const fs::path& root, std::string& error_m
   }
   std::error_code ec;
   for (const auto& entry : fs::directory_iterator(root)) {
-    if (entry.path().filename() == "snapshots") {
+    if (entry.path().filename() == "snapshots" || entry.path().filename() == "objects") {
       continue;
     }
     fs::remove_all(entry.path(), ec);
