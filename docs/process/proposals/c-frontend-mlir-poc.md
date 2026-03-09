@@ -201,7 +201,9 @@ Implemented and verified:
 - same-translation-unit direct calls
 - explicit recursion rejection
 - explicit rejection diagnostics for pointers, local arrays, pointer parameters,
-  `break`, `continue`, globals, float returns, and conditionless `for` loops
+  globals, float returns, conditionless `for` loops, `switch`, `do-while`,
+  `goto`, labels, address-of/dereference, casts, ternary, array indexing,
+  member access, `sizeof`, and compound assignment
 
 Verified in targeted builds:
 
@@ -216,13 +218,20 @@ Latest implementation commits on `main`:
 - `eb9743d1` `Add C frontend parameters and helper calls`
 - `3c8034c8` `Add for-loop support to C frontend subset`
 - `ae533560` `Harden C frontend rejection diagnostics`
+- `eee73c34` `Reject unsupported C control and cast syntax`
+- `cdf5d857` `Clarify unsupported C expression diagnostics`
+- `671aea46` `Add bitwise ops to C frontend subset`
+- `7da0fa7e` `Add logical operators to C frontend subset`
+- `d3c6bf6c` `Add increment and decrement to C frontend subset`
+- `1a8c4602` `Add loop break and continue to C frontend subset`
 
 Recommended resume point:
 
-1. add explicit fail-closed diagnostics for more unsupported C surfaces:
-   `switch`, `do-while`, `goto`, address-of/dereference, casts
-2. decide whether fixed local arrays stay rejected or become an intentional
+1. decide whether fixed local arrays stay rejected or become an intentional
    T81-memory lowering surface
+2. harden declaration/call-surface guardrails for likely next user attempts:
+   prototypes, `extern`, unsupported helper signatures, and other non-local
+   declaration forms
 3. only after that, choose whether to deepen C further or start a Rust ingress
    proof of concept
 
