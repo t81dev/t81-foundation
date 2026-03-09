@@ -270,7 +270,18 @@ bool compile_unary_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, s
     return ctx.fail(cursor, "pointer dereference is not supported in the C subset v0", error);
   }
   if (prefix == "!") {
-    return ctx.fail(cursor, "logical not is not supported in the C subset v0", error);
+    const int32_t operand_reg = ctx.alloc_reg();
+    const int32_t zero_reg = ctx.alloc_reg();
+    if (operand_reg < 0 || zero_reg < 0) {
+      if (error) *error = "internal register allocation failure";
+      return false;
+    }
+    if (!compile_expr(ctx, operand, operand_reg, error)) {
+      return false;
+    }
+    ctx.emit(t81::tisc::Opcode::LoadImm, zero_reg, 0, 0);
+    ctx.emit(t81::tisc::Opcode::Equal, target, operand_reg, zero_reg);
+    return true;
   }
   if (prefix != "-") {
     return ctx.fail(cursor, "only unary minus is supported", error);
@@ -302,6 +313,54 @@ bool compile_binary_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, 
   }
 
   t81::tisc::Opcode opcode = t81::tisc::Opcode::Nop;
+  if (*op == "&&") {
+    const int32_t lhs_reg = ctx.alloc_reg();
+    const int32_t rhs_reg = ctx.alloc_reg();
+    if (lhs_reg < 0 || rhs_reg < 0) {
+      if (error) *error = "internal register allocation failure";
+      return false;
+    }
+    if (!compile_expr(ctx, lhs, lhs_reg, error)) {
+      return false;
+    }
+    ctx.emit(t81::tisc::Opcode::LoadImm, target, 0, 0);
+    const size_t lhs_false_jump = ctx.emit(t81::tisc::Opcode::JumpIfZero, 0, lhs_reg, 0);
+    if (!compile_expr(ctx, rhs, rhs_reg, error)) {
+      return false;
+    }
+    const size_t rhs_false_jump = ctx.emit(t81::tisc::Opcode::JumpIfZero, 0, rhs_reg, 0);
+    ctx.emit(t81::tisc::Opcode::LoadImm, target, 1, 0);
+    const size_t end_pc = ctx.pc();
+    ctx.patch_jump_target(lhs_false_jump, end_pc);
+    ctx.patch_jump_target(rhs_false_jump, end_pc);
+    return true;
+  }
+  if (*op == "||") {
+    const int32_t lhs_reg = ctx.alloc_reg();
+    const int32_t rhs_reg = ctx.alloc_reg();
+    if (lhs_reg < 0 || rhs_reg < 0) {
+      if (error) *error = "internal register allocation failure";
+      return false;
+    }
+    if (!compile_expr(ctx, lhs, lhs_reg, error)) {
+      return false;
+    }
+    ctx.emit(t81::tisc::Opcode::LoadImm, target, 1, 0);
+    const size_t lhs_true_jump = ctx.emit(t81::tisc::Opcode::JumpIfZero, 0, lhs_reg, 0);
+    const size_t end_jump = ctx.emit(t81::tisc::Opcode::Jump, 0, 0, 0);
+    const size_t rhs_start = ctx.pc();
+    ctx.patch_jump_target(lhs_true_jump, rhs_start);
+    if (!compile_expr(ctx, rhs, rhs_reg, error)) {
+      return false;
+    }
+    ctx.emit(t81::tisc::Opcode::LoadImm, target, 0, 0);
+    const size_t rhs_false_jump = ctx.emit(t81::tisc::Opcode::JumpIfZero, 0, rhs_reg, 0);
+    ctx.emit(t81::tisc::Opcode::LoadImm, target, 1, 0);
+    const size_t end_pc = ctx.pc();
+    ctx.patch_jump_target(rhs_false_jump, end_pc);
+    ctx.patch_jump_target(end_jump, end_pc);
+    return true;
+  }
   if (*op == "+") {
     opcode = t81::tisc::Opcode::Add;
   } else if (*op == "-") {
@@ -334,8 +393,6 @@ bool compile_binary_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, 
     opcode = t81::tisc::Opcode::BitShl;
   } else if (*op == ">>") {
     opcode = t81::tisc::Opcode::BitShr;
-  } else if (*op == "&&" || *op == "||") {
-    return ctx.fail(cursor, "logical operators are not supported in the C subset v0", error);
   } else {
     return ctx.fail(cursor, "only arithmetic and comparison operators are supported", error);
   }

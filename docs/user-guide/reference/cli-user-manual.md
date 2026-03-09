@@ -634,7 +634,7 @@ Current subset v0:
 - additional `int` helper functions with `int` parameters
 - local `int` variables with initializers
 - same-translation-unit calls without recursion
-- integer literals, assignment, arithmetic, and comparisons
+- integer literals, assignment, arithmetic, bitwise integer ops, comparisons, and logical `!` / `&&` / `||`
 - compound blocks, `if`, `while`, `for`, and reachable `return`
 
 Behavior notes:
