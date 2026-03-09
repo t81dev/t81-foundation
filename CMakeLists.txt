@@ -1566,6 +1566,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_cli_trace_export_test
     cli_canonize_tensor_test
     axion_heap_compaction_trace_test
+    axion_policy_gc_trace_test
     axion_policy_match_guard_test
     axion_policy_segment_event_test
     axion_policy_invariants_test

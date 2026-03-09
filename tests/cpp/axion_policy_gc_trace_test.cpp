@@ -34,7 +34,7 @@ int main() {
 (policy
   (tier 1)
   (require-axion-event
-    (reason "interval stack_frames="))
+    (reason "GC cycle reason=interval"))
   (require-axion-event
     (reason "heap compaction heap_frames="))
   (require-axion-event
@@ -44,7 +44,10 @@ int main() {
   vm_ok->load_program(program_ok);
   [[maybe_unused]] auto result = vm_ok->run_to_halt();
   if (!result) {
-    std::cerr << "GC policy run trapped: " << static_cast<int>(result.error()) << '\n';
+    std::cerr << "GC policy run trapped: " << t81::vm::to_string(result.error()) << '\n';
+    for (const auto& event : vm_ok->state().axion_log) {
+      std::cerr << "  axion: " << event.verdict.reason << '\n';
+    }
     return 1;
   }
 
@@ -63,7 +66,8 @@ int main() {
     return 1;
   }
   if (fail_result.error() != t81::vm::Trap::SecurityFault) {
-    std::cerr << "Expected security fault, got " << static_cast<int>(fail_result.error()) << '\n';
+    std::cerr << "Expected security fault, got " << t81::vm::to_string(fail_result.error())
+              << '\n';
     return 1;
   }
 
