@@ -82,6 +82,14 @@ class TISCToMLIRTranslator {
     if (prog_.insns.empty()) return {};
 
     module_ = mlir::ModuleOp::create(loc_, cfg_.module_name);
+    (*module_)->setAttr("t81.float_mode",
+                        builder_.getStringAttr(cfg_.float_mode == FloatMode::DCP ? "dcp" : "compat"));
+    if (cfg_.float_mode == FloatMode::DCP) {
+      (*module_)->setAttr("t81.runtime", builder_.getStringAttr("t81_dmath_runtime"));
+    }
+    if (cfg_.use_t81_dialect) {
+      (*module_)->setAttr("t81.dialect", builder_.getStringAttr("register"));
+    }
     setup_main_function();
     find_leaders();
     create_blocks();

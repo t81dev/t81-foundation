@@ -12,7 +12,8 @@
  *                        linked against the T81 runtime library)
  *
  * The MLIR text output (.mlir) is compatible with any MLIR toolchain.
- * DCP mode is opt-in and requires the T81 runtime at link time.
+ * DCP mode is opt-in and requires linking the emitted IR against the
+ * `t81_dmath_runtime` support library (or the aggregate `t81_mlir` library).
  *
  * Build with: cmake -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON
  */

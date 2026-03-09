@@ -316,11 +316,17 @@ if(T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND LLVM_FOUND)
     message(STATUS "[t81] MLIR ${MLIR_PACKAGE_VERSION} — building MLIR frontend")
     include_directories(SYSTEM ${MLIR_INCLUDE_DIRS})
     add_definitions(${MLIR_DEFINITIONS})
+    add_library(t81_dmath_runtime STATIC
+      src/mlir/dmath_c_wrappers.cpp)
+    target_include_directories(t81_dmath_runtime PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+    target_link_libraries(t81_dmath_runtime PUBLIC t81_core)
+    target_compile_features(t81_dmath_runtime PUBLIC ${T81_CXX_STD_FEATURE})
     add_library(t81_mlir STATIC
       src/mlir/t81_dialect.cpp
       src/mlir/tisc_to_mlir.cpp
-      src/mlir/mlir_to_llvm.cpp
-      src/mlir/dmath_c_wrappers.cpp)
+      src/mlir/mlir_to_llvm.cpp)
     target_include_directories(t81_mlir PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -328,6 +334,7 @@ if(T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND LLVM_FOUND)
       ${LLVM_INCLUDE_DIRS})
     target_link_libraries(t81_mlir PUBLIC
       t81_core
+      t81_dmath_runtime
       MLIRAnalysis
       MLIRArithDialect
       MLIRArithToLLVM
@@ -1894,6 +1901,9 @@ set(T81_INSTALL_TARGETS
   t81_tool_cli
   t81
 )
+if(TARGET t81_dmath_runtime)
+  list(APPEND T81_INSTALL_TARGETS t81_dmath_runtime)
+endif()
 if(T81_ENABLE_LLAMA_CPP)
   if(T81_EXPORT_LLAMA_ADAPTER)
     message(FATAL_ERROR

@@ -871,7 +871,7 @@ Options:
   --dialect=t81     Emit custom t81.reg_* register access ops
   --dialect=std     Emit standard memref register accesses (default)
   --mode=dcp        DCP float mode: replace math.* ops with func.call
-                    @t81_dmath_* — bit-exact when linked against T81 runtime
+                    @t81_dmath_* — bit-exact when linked against t81_dmath_runtime
   --mode=compat     Standard math.* dialect (IEEE-754 f64, default)
   --no-comments     Omit PC annotations from basic block names
   -h, --help        Show this help
@@ -880,7 +880,7 @@ Float modes:
   compat (default)  Uses math.sin, math.cos, etc. — non-DCP surface.
                     Maximum toolchain compatibility; any mlir-opt can process.
   dcp               Replaces math.* with func.call @t81_dmath_* externals.
-                    Preserves T81 determinism when the T81 runtime is linked.
+                    Preserves T81 determinism when t81_dmath_runtime is linked.
                     The MLIR text is still valid standard MLIR.
 
 Dialect modes:

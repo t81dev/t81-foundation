@@ -15,6 +15,7 @@
  * No MLIR headers are required here — these are pure C++ wrapping dmath.hpp.
  */
 
+#include "t81/mlir/dmath_runtime.hpp"
 #include "t81/types/T81Float.hpp"
 #include "t81/types/detail/dmath.hpp"
 

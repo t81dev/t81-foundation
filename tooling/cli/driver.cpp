@@ -2743,6 +2743,10 @@ int run_mlir(const MlirArgs& ma) {
       return 1;
     }
     std::cout << "MLIR written to: " << out.string() << "\n";
+    if (cfg.float_mode == FM::DCP) {
+      std::cout << "DCP runtime: link downstream artifacts against t81_dmath_runtime "
+                   "(or t81_mlir).\n";
+    }
     return 0;
   }
 
@@ -2755,6 +2759,10 @@ int run_mlir(const MlirArgs& ma) {
     return 1;
   }
   std::cout << "LLVM IR written to: " << out.string() << "\n";
+  if (cfg.float_mode == FM::DCP) {
+    std::cout << "DCP runtime: link downstream artifacts against t81_dmath_runtime "
+                 "(or t81_mlir).\n";
+  }
   return 0;
 #endif  // T81_HAS_MLIR
 }
