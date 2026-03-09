@@ -1796,13 +1796,25 @@ int init_project(const std::string& name) {
 #define COLOR_CYAN "\033[36m"
 
 int run_trace_show(const TraceArgs& args) {
-  if (args.args.empty()) {
+  std::vector<std::string> positional;
+  positional.reserve(args.args.size());
+  for (const auto& token : args.args) {
+    if (token == "--no-color") {
+      continue;
+    }
+    if (!token.empty() && token[0] == '-') {
+      error("trace show: unknown option '" + token + "'");
+      return 1;
+    }
+    positional.push_back(token);
+  }
+  if (positional.size() != 1) {
     error("trace show requires a trace file");
     return 1;
   }
-  std::ifstream ifs(args.args[0]);
+  std::ifstream ifs(positional[0]);
   if (!ifs) {
-    error("Could not open trace file: " + args.args[0]);
+    error("Could not open trace file: " + positional[0]);
     return 1;
   }
   std::string line;
@@ -1823,11 +1835,23 @@ int run_trace_show(const TraceArgs& args) {
 }
 
 int run_trace_diff(const TraceArgs& args) {
-  if (args.args.size() < 2) {
+  std::vector<std::string> positional;
+  positional.reserve(args.args.size());
+  for (const auto& token : args.args) {
+    if (token == "--no-color") {
+      continue;
+    }
+    if (!token.empty() && token[0] == '-') {
+      error("trace diff: unknown option '" + token + "'");
+      return 1;
+    }
+    positional.push_back(token);
+  }
+  if (positional.size() != 2) {
     error("trace diff requires two trace files");
     return 1;
   }
-  std::ifstream f1(args.args[0]), f2(args.args[1]);
+  std::ifstream f1(positional[0]), f2(positional[1]);
   if (!f1 || !f2) {
     error("Could not open trace files");
     return 1;

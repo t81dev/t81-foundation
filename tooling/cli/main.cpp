@@ -65,6 +65,7 @@
 #include "t81/experimental/llama_cpp_adapter.hpp"
 #endif
 #if defined(T81_HAS_TUI)
+#include "tooling/tui/common.hpp"
 #include "tooling/tui/studio.hpp"
 #include "tooling/tui/agent.hpp"
 #include <ftxui/component/component.hpp>
@@ -9134,6 +9135,15 @@ int main(int argc, char* argv[]) {
     } else if (args.command == "studio" || args.command == "agent" ||
                args.command == "ui") {
 #if defined(T81_HAS_TUI)
+      {
+        std::error_code ec;
+        fs::path cli_path = argc > 0 ? fs::path(argv[0]) : fs::path("t81");
+        if (!cli_path.is_absolute()) {
+          const fs::path abs = fs::absolute(cli_path, ec);
+          if (!ec) cli_path = abs;
+        }
+        t81::tui::set_cli_program_path(cli_path.string());
+      }
       if (args.command == "studio") {
         return t81::tui::run_studio(args.command_args);
       }
@@ -9149,6 +9159,7 @@ int main(int argc, char* argv[]) {
           "Cancel",
         };
         int selected = 0;
+        bool cancelled = false;
         auto screen  = ScreenInteractive::Fullscreen();
         auto menu_c  = Menu(&choices, &selected);
         auto root    = Renderer(menu_c, [&]() -> Element {
@@ -9163,11 +9174,16 @@ int main(int argc, char* argv[]) {
           }) | border | size(WIDTH, EQUAL, 52) | center;
         });
         root = CatchEvent(root, [&](Event e) -> bool {
-          if (e == Event::Escape) { screen.ExitLoopClosure()(); return true; }
+          if (e == Event::Escape) {
+            cancelled = true;
+            screen.ExitLoopClosure()();
+            return true;
+          }
           if (e == Event::Return) { screen.ExitLoopClosure()(); return true; }
           return false;
         });
         screen.Loop(root);
+        if (cancelled) return 0;
         if (selected == 0) return t81::tui::run_studio({});
         if (selected == 1) return t81::tui::run_agent({});
         return 0;

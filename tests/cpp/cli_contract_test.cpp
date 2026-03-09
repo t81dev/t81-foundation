@@ -402,6 +402,11 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(trace_hash_result.exit_code == 0);
     T81_TEST_CHECK(contains(trace_hash_result.stdout_text, "\"schema\": \"t81.determinism-trace-hash.v1\""));
 
+    const auto trace_show_result =
+        run_cli(t81_bin, {"trace", "show", trace_file.string(), "--no-color"});
+    T81_TEST_CHECK(trace_show_result.exit_code == 0);
+    T81_TEST_CHECK(contains(trace_show_result.stdout_text, "PC="));
+
     const auto trace_summary_result =
         run_cli(t81_bin, {"trace", "summary", trace_file.string(), "--json"});
     T81_TEST_CHECK(trace_summary_result.exit_code == 0);
