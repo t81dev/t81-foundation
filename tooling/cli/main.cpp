@@ -1019,10 +1019,13 @@ Options:
   -h, --help             Show this help
 
 Status:
-  - minimal scalar Rust subset is implemented experimentally
+  - constrained Rust subset is implemented experimentally
   - build requires -DT81_ENABLE_RUST_FRONTEND=ON -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON
   - a Rust toolchain with rustc on PATH is required
-  - accepted subset v0: fn main() -> i32, i32 helpers, let bindings, assignment, arithmetic/bitwise/comparison/logical expressions, if/else, return
+  - accepted subset v0: fn main() -> i32, i32 helpers, let bindings,
+    fixed local [i32; N] arrays with compile-time constant indexing,
+    assignment, arithmetic/bitwise/comparison/logical expressions,
+    if/else, while, and return
   - unsupported constructs fail closed with explicit diagnostics
 )";}
 

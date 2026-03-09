@@ -45,6 +45,7 @@ Latest implementation commits:
 - `4b54c254` `Add Rust frontend CLI scaffold`
 - `6053c17b` `Expand constant-expression array support in C frontend`
 - `86aee19a` `Add minimal scalar Rust frontend lowering`
+- current follow-up in workspace: Rust `while` and fixed-array subset support
 
 Important environment note:
 
@@ -84,7 +85,7 @@ The first accepted subset should be intentionally austere.
 
 Implemented and verified on `main`:
 
-- `t81 rust compile` now lowers a real fail-closed scalar Rust subset
+- `t81 rust compile` now lowers a real fail-closed constrained Rust subset
 - lowering path uses a dedicated handwritten Rust subset parser
 - accepted Rust is normalized through the existing C-subset adapter before the
   TISC -> MLIR pipeline
@@ -99,16 +100,16 @@ Allowed:
 - additional helper functions with explicit `i32` parameters and `i32` return
   types
 - local `let mut` bindings of `i32`
+- fixed local arrays `[i32; N]` with compile-time constant indices
 - integer literals
 - arithmetic: `+`, `-`, `*`, `/`, `%`
 - bitwise ops: `&`, `|`, `^`, `<<`, `>>`
 - comparisons: `==`, `!=`, `<`, `<=`, `>`, `>=`
 - boolean operators lowered as integer predicates: `!`, `&&`, `||`
-- `if`, `while`, and simple `loop` only if it can be normalized to `while`
-- bounded `for` only if it can be reduced into an integer loop surface
+- `if` and `while`
 - same-file helper calls without recursion
-- fixed local arrays `[i32; N]` only if lowered to the same constrained T81
-  memory surface used by the C frontend
+- fixed local arrays `[i32; N]` lowered to the same constrained T81 memory
+  surface used by the C frontend
 
 Rejected:
 
@@ -180,8 +181,8 @@ Milestone D: constrained memory
 
 ## 10. Recommended Resume Point
 
-1. decide whether to deepen Rust first with loops and constrained arrays, or
-   keep Rust at scalar subset v0 and start Python ingress work
+1. decide whether to deepen Rust first with constrained `for`/`loop` forms, or
+   stop here and consolidate the shared adapter boundary
 2. if Rust deepens next, keep using the current adapter seam unless a real
    `rustc` AST/HIR integration becomes necessary
 3. align any future Rust array work with the existing constrained C memory model
@@ -190,9 +191,8 @@ Milestone D: constrained memory
 
 Last verified locally:
 
-- `t81_rust_frontend_mlir_smoke_test`
-- `t81_cli_contract_test ./build_rust_frontend_subset/t81`
-- direct smoke compile of a helper-call Rust example to MLIR with `--dialect=t81`
+- `./build_codex/t81_rust_frontend_mlir_smoke_test`
+- direct smoke compile of a `while` + fixed-array Rust example to MLIR with `--dialect=t81`
 
 ## 11. Success Criteria
 

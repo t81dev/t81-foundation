@@ -43,18 +43,60 @@ int main() {
   {
     const std::string source =
         "fn main() -> i32 {\n"
-        "    while true {\n"
-        "        return 1;\n"
+        "    let mut x: i32 = 0;\n"
+        "    while x < 3 {\n"
+        "        x = x + 1;\n"
         "    }\n"
-        "    return 0;\n"
+        "    return x;\n"
         "}\n";
     std::string output;
     std::string error;
-    check(!t81::rust_frontend::compile_source_to_mlir_text(source, "bad_while.rs", output, {},
+    t81::rust_frontend::CompileOptions options;
+    options.use_t81_dialect = true;
+    check(t81::rust_frontend::compile_source_to_mlir_text(source, "ok_while.rs", output, options,
+                                                          &error),
+          error.c_str());
+    check(output.find("cf.cond_br") != std::string::npos,
+          "expected Rust while lowering to emit conditional branches");
+  }
+
+  {
+    const std::string source =
+        "fn main() -> i32 {\n"
+        "    let mut xs: [i32; 3] = [1, 2 + 0, 3];\n"
+        "    xs[1] = xs[1] + 4;\n"
+        "    return xs[1 + 0];\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    t81::rust_frontend::CompileOptions options;
+    options.use_t81_dialect = true;
+    check(t81::rust_frontend::compile_source_to_mlir_text(source, "ok_array.rs", output, options,
+                                                          &error),
+          error.c_str());
+    check(output.find("\"t81.mem_store\"") != std::string::npos ||
+              output.find("memref.store") != std::string::npos,
+          "expected Rust fixed-array lowering to emit memory stores");
+    check(output.find("\"t81.mem_load\"") != std::string::npos ||
+              output.find("memref.load") != std::string::npos,
+          "expected Rust fixed-array lowering to emit memory loads");
+  }
+
+  {
+    const std::string source =
+        "fn main() -> i32 {\n"
+        "    let mut xs: [i32; 3] = [1, 2, 3];\n"
+        "    let i: i32 = 1;\n"
+        "    return xs[i];\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::rust_frontend::compile_source_to_mlir_text(source, "bad_array.rs", output, {},
                                                            &error),
-          "expected while example to be rejected");
-    check(error.find("'while' is not supported") != std::string::npos,
-          "expected while rejection diagnostic");
+          "expected runtime-indexed array example to be rejected");
+    check(error.find("only compile-time constant Rust array indices are supported") !=
+              std::string::npos,
+          "expected array-index rejection diagnostic");
   }
 
   {

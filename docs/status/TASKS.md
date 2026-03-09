@@ -271,14 +271,14 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 - [x] **LLVM-04: Experimental Rust Frontend Subset** — **✅ COMPLETED (2026-03-09)**
   - ✅ CMake: `T81_ENABLE_RUST_FRONTEND` option; real build now requires `rustc` plus the experimental C frontend adapter path
   - ✅ CLI/help/completion: `t81 rust compile <input.rs> [-o out.mlir] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>]`
-  - ✅ Frontend scope v0: fail-closed scalar subset (`fn main() -> i32`, helper `i32` functions with explicit `i32` parameters/returns, local `let`/`let mut` bindings, assignment, integer literals, arithmetic/bitwise/comparison/logical expressions, `if`/`else`, reachable `return`, same-file helper calls)
+  - ✅ Frontend scope v0: fail-closed constrained subset (`fn main() -> i32`, helper `i32` functions with explicit `i32` parameters/returns, local `let`/`let mut` bindings, fixed local `[i32; N]` arrays lowered to the existing C-style fixed-memory surface with compile-time constant indexing, assignment, integer literals, arithmetic/bitwise/comparison/logical expressions, `if`/`else`, `while`, reachable `return`, same-file helper calls)
   - ✅ Integration path: restricted Rust parsed by a dedicated handwritten subset parser, normalized through the existing C-subset adapter, then lowered via the TISC → MLIR pipeline
-  - ✅ Guardrails: explicit rejection diagnostics for `while`, `for`, `loop`, `match`, `unsafe`, references/dereference, arrays, and other unsupported syntax outside the scalar subset
+  - ✅ Guardrails: explicit rejection diagnostics for `for`, `loop`, `match`, `unsafe`, references/dereference, runtime Rust array indices, and other unsupported syntax outside the constrained subset
   - ✅ Verification: `t81_rust_frontend_mlir_smoke_test`; `t81_cli_contract_test` covers `help rust`, fish completion entries, and `t81 rust compile`
   - ✅ Proposal: `docs/process/proposals/rust-frontend-mlir-poc.md` records the intended subset and next milestones beyond scalar lowering
-  - Status: **✅ RESOLVED** — real Rust ingress path exists for the minimal scalar subset
-  - **Resume Point**: decide whether to deepen Rust first (loops/helpers beyond scalar subset, arrays aligned with the C memory model) or start Python ingress work
-  - **Deferred**: richer Rust control flow, constrained Rust arrays/memory, broader type surfaces, and non-Rust non-C frontends (Python)
+  - Status: **✅ RESOLVED** — real Rust ingress path exists for a constrained scalar-plus-fixed-array subset
+  - **Resume Point**: decide whether to deepen Rust next with constrained `for`/`loop` forms or stop here and consolidate the shared frontend adapter boundary
+  - **Deferred**: richer Rust control flow beyond `while`, runtime-indexed memory/modeling, broader type surfaces, and frontend-neutral IR generalization
 
 - [x] **LLVM-05: Experimental Python Frontend Subset** — **✅ COMPLETED (2026-03-09)**
   - ✅ CMake: `T81_ENABLE_PYTHON_FRONTEND` option; real build requires `python3` plus the experimental C frontend adapter path

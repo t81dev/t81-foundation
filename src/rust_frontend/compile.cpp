@@ -353,6 +353,7 @@ class Parser {
  private:
   struct Expr {
     std::string rendered;
+    bool is_const_int{false};
   };
 
   bool parse_function(std::string& out, std::string* error) {
@@ -455,7 +456,7 @@ class Parser {
       return true;
     }
     if (at(TokenKind::KwWhile)) {
-      return fail_here(error, "'while' is not supported in Rust subset v0");
+      return parse_while_stmt(out, depth, error);
     }
     if (at(TokenKind::KwFor)) {
       return fail_here(error, "'for' is not supported in Rust subset v0");
@@ -472,10 +473,16 @@ class Parser {
     if (at(TokenKind::LBracket)) {
       return fail_here(error, "arrays are not supported in Rust subset v0");
     }
-    if (at(TokenKind::Identifier) && peek().kind == TokenKind::Assign) {
+    if (at(TokenKind::Identifier) &&
+        (peek().kind == TokenKind::Assign || peek().kind == TokenKind::LBracket)) {
+      Expr target;
+      if (!parse_assign_target(target, error)) {
+        return false;
+      }
+      if (!expect(TokenKind::Assign, "expected '=' in assignment", error)) {
+        return false;
+      }
       Token name = current();
-      ++index_;
-      ++index_;
       Expr value;
       if (!parse_expr(value, 1, error)) {
         return false;
@@ -483,7 +490,7 @@ class Parser {
       if (!expect(TokenKind::Semicolon, "expected ';' after assignment", error)) {
         return false;
       }
-      out = indent(depth) + name.text + " = " + value.rendered + ";\n";
+      out = indent(depth) + target.rendered + " = " + value.rendered + ";\n";
       return true;
     }
 
@@ -505,14 +512,43 @@ class Parser {
     if (!expect(TokenKind::Identifier, name, "expected local variable name after 'let'", error)) {
       return false;
     }
-    if (consume(TokenKind::Colon) &&
-        !expect(TokenKind::KwI32, "only 'i32' local bindings are supported in Rust subset v0",
-                error)) {
-      return false;
+    bool is_array = false;
+    std::string array_size;
+    if (consume(TokenKind::Colon)) {
+      if (consume(TokenKind::KwI32)) {
+        is_array = false;
+      } else if (consume(TokenKind::LBracket)) {
+        is_array = true;
+        if (!expect(TokenKind::KwI32,
+                    "only '[i32; N]' fixed local arrays are supported in Rust subset v0", error) ||
+            !expect(TokenKind::Semicolon,
+                    "expected ';' inside fixed local array type '[i32; N]'", error)) {
+          return false;
+        }
+        Token size_token;
+        if (!expect(TokenKind::Integer, size_token,
+                    "fixed local arrays must use an integer constant size in Rust subset v0",
+                    error) ||
+            !expect(TokenKind::RBracket, "expected ']' after fixed array type", error)) {
+          return false;
+        }
+        array_size = size_token.text;
+      } else {
+        return fail_here(error, "only 'i32' and fixed local '[i32; N]' bindings are supported in Rust subset v0");
+      }
     }
     if (!expect(TokenKind::Assign, "local bindings must have an initializer in Rust subset v0",
                 error)) {
       return false;
+    }
+    if (is_array) {
+      std::string initializer;
+      if (!parse_array_initializer(initializer, error) ||
+          !expect(TokenKind::Semicolon, "expected ';' after local binding", error)) {
+        return false;
+      }
+      out = indent(depth) + "int " + name.text + "[" + array_size + "] = " + initializer + ";\n";
+      return true;
     }
     Expr value;
     if (!parse_expr(value, 1, error) ||
@@ -567,6 +603,82 @@ class Parser {
     return true;
   }
 
+  bool parse_while_stmt(std::string& out, int depth, std::string* error) {
+    consume(TokenKind::KwWhile);
+    Expr condition;
+    if (!parse_expr(condition, 1, error)) {
+      return false;
+    }
+    std::string body;
+    if (!parse_block(body, depth + 1, error)) {
+      return false;
+    }
+    std::ostringstream rendered;
+    rendered << indent(depth) << "while (" << condition.rendered << ") {\n"
+             << body << indent(depth) << "}\n";
+    out = rendered.str();
+    return true;
+  }
+
+  bool parse_assign_target(Expr& out, std::string* error) {
+    Token name;
+    if (!expect(TokenKind::Identifier, name, "expected assignment target", error)) {
+      return false;
+    }
+    out.rendered = name.text;
+    out.is_const_int = false;
+    if (consume(TokenKind::LBracket)) {
+      Expr index;
+      if (!parse_expr(index, 1, error)) {
+        return false;
+      }
+      if (!index.is_const_int) {
+        return fail_here(error, "only compile-time constant Rust array indices are supported in subset v0");
+      }
+      if (!expect(TokenKind::RBracket, "expected ']' after array index", error)) {
+        return false;
+      }
+      out.rendered += "[" + index.rendered + "]";
+    }
+    return true;
+  }
+
+  bool parse_array_initializer(std::string& out, std::string* error) {
+    if (!expect(TokenKind::LBracket, "expected '[' to start fixed array initializer", error)) {
+      return false;
+    }
+    std::vector<std::string> values;
+    if (!at(TokenKind::RBracket)) {
+      while (true) {
+        Expr value;
+        if (!parse_expr(value, 1, error)) {
+          return false;
+        }
+        if (!value.is_const_int) {
+          return fail_here(error, "fixed Rust array initializers must use compile-time constant integer expressions");
+        }
+        values.push_back(value.rendered);
+        if (!consume(TokenKind::Comma)) {
+          break;
+        }
+      }
+    }
+    if (!expect(TokenKind::RBracket, "expected ']' after fixed array initializer", error)) {
+      return false;
+    }
+    std::ostringstream rendered;
+    rendered << "{";
+    for (size_t i = 0; i < values.size(); ++i) {
+      if (i) {
+        rendered << ", ";
+      }
+      rendered << values[i];
+    }
+    rendered << "}";
+    out = rendered.str();
+    return true;
+  }
+
   bool parse_expr(Expr& out, int min_prec, std::string* error) {
     Expr lhs;
     if (!parse_unary(lhs, error)) {
@@ -585,6 +697,7 @@ class Parser {
         return false;
       }
       lhs.rendered = "(" + lhs.rendered + " " + op + " " + rhs.rendered + ")";
+      lhs.is_const_int = lhs.is_const_int && rhs.is_const_int;
     }
     out = std::move(lhs);
     return true;
@@ -597,6 +710,7 @@ class Parser {
         return false;
       }
       out.rendered = "(-" + operand.rendered + ")";
+      out.is_const_int = operand.is_const_int;
       return true;
     }
     if (consume(TokenKind::Bang)) {
@@ -605,6 +719,7 @@ class Parser {
         return false;
       }
       out.rendered = "(!" + operand.rendered + ")";
+      out.is_const_int = operand.is_const_int;
       return true;
     }
     if (at(TokenKind::Amp)) {
@@ -619,36 +734,56 @@ class Parser {
   bool parse_postfix(Expr& out, std::string* error) {
     Token name;
     if (expect(TokenKind::Identifier, name, "", nullptr)) {
-      if (consume(TokenKind::LParen)) {
-        std::vector<std::string> args;
-        if (!at(TokenKind::RParen)) {
-          while (true) {
-            Expr arg;
-            if (!parse_expr(arg, 1, error)) {
-              return false;
-            }
-            args.push_back(arg.rendered);
-            if (!consume(TokenKind::Comma)) {
-              break;
-            }
-          }
-        }
-        if (!expect(TokenKind::RParen, "expected ')' after function call arguments", error)) {
-          return false;
-        }
-        std::ostringstream call;
-        call << name.text << '(';
-        for (size_t i = 0; i < args.size(); ++i) {
-          if (i) {
-            call << ", ";
-          }
-          call << args[i];
-        }
-        call << ')';
-        out.rendered = call.str();
-        return true;
-      }
       out.rendered = name.text;
+      out.is_const_int = false;
+      while (true) {
+        if (consume(TokenKind::LParen)) {
+          std::vector<std::string> args;
+          if (!at(TokenKind::RParen)) {
+            while (true) {
+              Expr arg;
+              if (!parse_expr(arg, 1, error)) {
+                return false;
+              }
+              args.push_back(arg.rendered);
+              if (!consume(TokenKind::Comma)) {
+                break;
+              }
+            }
+          }
+          if (!expect(TokenKind::RParen, "expected ')' after function call arguments", error)) {
+            return false;
+          }
+          std::ostringstream call;
+          call << out.rendered << '(';
+          for (size_t i = 0; i < args.size(); ++i) {
+            if (i) {
+              call << ", ";
+            }
+            call << args[i];
+          }
+          call << ')';
+          out.rendered = call.str();
+          out.is_const_int = false;
+          continue;
+        }
+        if (consume(TokenKind::LBracket)) {
+          Expr index;
+          if (!parse_expr(index, 1, error)) {
+            return false;
+          }
+          if (!index.is_const_int) {
+            return fail_here(error, "only compile-time constant Rust array indices are supported in subset v0");
+          }
+          if (!expect(TokenKind::RBracket, "expected ']' after array index", error)) {
+            return false;
+          }
+          out.rendered += "[" + index.rendered + "]";
+          out.is_const_int = false;
+          continue;
+        }
+        break;
+      }
       return true;
     }
     return parse_primary(out, error);
@@ -657,15 +792,18 @@ class Parser {
   bool parse_primary(Expr& out, std::string* error) {
     if (at(TokenKind::Integer)) {
       out.rendered = current().text;
+      out.is_const_int = true;
       ++index_;
       return true;
     }
     if (consume(TokenKind::KwTrue)) {
       out.rendered = "1";
+      out.is_const_int = true;
       return true;
     }
     if (consume(TokenKind::KwFalse)) {
       out.rendered = "0";
+      out.is_const_int = true;
       return true;
     }
     if (consume(TokenKind::LParen)) {
@@ -675,6 +813,7 @@ class Parser {
         return false;
       }
       out.rendered = "(" + nested.rendered + ")";
+      out.is_const_int = nested.is_const_int;
       return true;
     }
     if (at(TokenKind::LBracket)) {
@@ -682,6 +821,7 @@ class Parser {
     }
     if (at(TokenKind::Identifier)) {
       out.rendered = current().text;
+      out.is_const_int = false;
       ++index_;
       return true;
     }
