@@ -22,7 +22,7 @@ int main() {
         "  int x = 0;\n"
         "  for (; x < limit; x = x + 1) {\n"
         "  }\n"
-        "  for (int i = 0; i < 2; i = i + 1) {\n"
+        "  for (int i = 0; i < 2; ++i) {\n"
         "    x = x + 1;\n"
         "  }\n"
         "  x = x << 1;\n"
@@ -42,6 +42,8 @@ int main() {
         "  if (0 || z) {\n"
         "    y = y + 1;\n"
         "  }\n"
+        "  y++;\n"
+        "  --y;\n"
         "  return y;\n"
         "}\n";
     std::string output;

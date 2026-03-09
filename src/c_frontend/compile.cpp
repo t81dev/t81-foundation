@@ -246,30 +246,46 @@ std::optional<std::string> binary_operator_spelling(CXCursor cursor,
   return between;
 }
 
+std::optional<std::string> unary_operator_spelling(CXCursor cursor,
+                                                   CXCursor operand,
+                                                   std::string_view source) {
+  unsigned expr_begin = 0;
+  unsigned expr_end = 0;
+  unsigned operand_begin = 0;
+  unsigned operand_end = 0;
+  if (!source_offsets(clang_getCursorExtent(cursor), expr_begin, expr_end) ||
+      !source_offsets(clang_getCursorExtent(operand), operand_begin, operand_end)) {
+    return std::nullopt;
+  }
+  if (expr_begin > source.size()) expr_begin = static_cast<unsigned>(source.size());
+  if (expr_end > source.size()) expr_end = static_cast<unsigned>(source.size());
+  if (operand_begin > source.size()) operand_begin = static_cast<unsigned>(source.size());
+  if (operand_end > source.size()) operand_end = static_cast<unsigned>(source.size());
+  if (operand_begin < expr_begin || operand_end > expr_end || operand_end < operand_begin) {
+    return std::nullopt;
+  }
+  const std::string prefix = trim_copy(source.substr(expr_begin, operand_begin - expr_begin));
+  const std::string suffix = trim_copy(source.substr(operand_end, expr_end - operand_end));
+  return trim_copy(prefix + suffix);
+}
+
 bool compile_unary_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, std::string* error) {
   auto children = cursor_children(cursor);
   if (children.size() != 1) {
     return ctx.fail(cursor, "unsupported unary expression", error);
   }
   CXCursor operand = unwrap_expr(children.front());
-  unsigned cursor_begin = 0;
-  unsigned operand_begin = 0;
-  unsigned ignored = 0;
-  if (!source_offsets(clang_getCursorExtent(cursor), cursor_begin, ignored) ||
-      !source_offsets(clang_getCursorExtent(operand), operand_begin, ignored)) {
+  const auto op = unary_operator_spelling(cursor, operand, ctx.source());
+  if (!op.has_value()) {
     return ctx.fail(cursor, "unsupported unary expression", error);
   }
-  if (operand_begin > ctx.source().size()) operand_begin = static_cast<unsigned>(ctx.source().size());
-  if (cursor_begin > operand_begin) cursor_begin = operand_begin;
-  const std::string prefix = trim_copy(
-      std::string_view(ctx.source()).substr(cursor_begin, operand_begin - cursor_begin));
-  if (prefix == "&") {
+  if (*op == "&") {
     return ctx.fail(cursor, "address-of is not supported in the C subset v0", error);
   }
-  if (prefix == "*") {
+  if (*op == "*") {
     return ctx.fail(cursor, "pointer dereference is not supported in the C subset v0", error);
   }
-  if (prefix == "!") {
+  if (*op == "!") {
     const int32_t operand_reg = ctx.alloc_reg();
     const int32_t zero_reg = ctx.alloc_reg();
     if (operand_reg < 0 || zero_reg < 0) {
@@ -283,7 +299,7 @@ bool compile_unary_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, s
     ctx.emit(t81::tisc::Opcode::Equal, target, operand_reg, zero_reg);
     return true;
   }
-  if (prefix != "-") {
+  if (*op != "-") {
     return ctx.fail(cursor, "only unary minus is supported", error);
   }
   const int32_t operand_reg = ctx.alloc_reg();
@@ -573,7 +589,8 @@ bool compile_decl_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error
 
 bool compile_expr_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
   CXCursor expr = cursor;
-  if (clang_getCursorKind(cursor) != CXCursor_BinaryOperator) {
+  const CXCursorKind cursor_kind = clang_getCursorKind(cursor);
+  if (cursor_kind != CXCursor_BinaryOperator && cursor_kind != CXCursor_UnaryOperator) {
     auto children = cursor_children(cursor);
     if (children.size() != 1) {
       return ctx.fail(cursor, "unsupported expression statement", error);
@@ -589,6 +606,36 @@ bool compile_expr_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error
         return compile_assignment_stmt(ctx, expr, error);
       }
     }
+  }
+  if (clang_getCursorKind(expr) == CXCursor_UnaryOperator) {
+    auto unary_children = cursor_children(expr);
+    if (unary_children.size() != 1) {
+      return ctx.fail(expr, "unsupported unary expression statement", error);
+    }
+    CXCursor operand = unwrap_expr(unary_children.front());
+    if (clang_getCursorKind(operand) != CXCursor_DeclRefExpr) {
+      return ctx.fail(operand, "increment/decrement target must be a local variable", error);
+    }
+    const auto op = unary_operator_spelling(expr, operand, ctx.source());
+    if (!op.has_value() || (*op != "++" && *op != "--")) {
+      return ctx.fail(expr,
+                      "only assignment and increment/decrement expression statements are supported",
+                      error);
+    }
+    const std::string name = to_string_and_dispose(clang_getCursorSpelling(operand));
+    const auto it = ctx.vars.find(name);
+    if (it == ctx.vars.end()) {
+      return ctx.fail(operand, "unknown variable '" + name + "'", error);
+    }
+    const int32_t delta_reg = ctx.alloc_reg();
+    if (delta_reg < 0) {
+      if (error) *error = "internal register allocation failure";
+      return false;
+    }
+    ctx.emit(t81::tisc::Opcode::LoadImm, delta_reg, 1, 0);
+    ctx.emit(*op == "++" ? t81::tisc::Opcode::Add : t81::tisc::Opcode::Sub, it->second, it->second,
+             delta_reg);
+    return true;
   }
   return ctx.fail(expr, "only assignment expression statements are supported", error);
 }
@@ -673,6 +720,15 @@ bool compile_for_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error)
         return false;
       }
       expr = unwrap_expr(stmt_children.front());
+    }
+    if (clang_getCursorKind(expr) == CXCursor_UnaryOperator) {
+      auto unary_children = cursor_children(expr);
+      if (unary_children.size() != 1) {
+        return false;
+      }
+      const auto op = unary_operator_spelling(expr, unwrap_expr(unary_children.front()),
+                                              ctx.source());
+      return op.has_value() && (*op == "++" || *op == "--");
     }
     if (clang_getCursorKind(expr) != CXCursor_BinaryOperator) {
       return false;
@@ -775,6 +831,7 @@ bool compile_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
     case CXCursor_ContinueStmt:
       return ctx.fail(cursor, "'continue' is not supported in the C subset v0", error);
     case CXCursor_BinaryOperator:
+    case CXCursor_UnaryOperator:
     case CXCursor_UnexposedStmt:
       return compile_expr_stmt(ctx, cursor, error);
     case CXCursor_NullStmt:
