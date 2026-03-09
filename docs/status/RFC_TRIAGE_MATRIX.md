@@ -1,6 +1,6 @@
 # RFC Triage Matrix
 
-Last Updated: 2026-03-08
+Last Updated: 2026-03-09
 Owner: @t81dev
 Purpose: distinguish release-critical RFC closure from backlog RFC tracking.
 
@@ -30,6 +30,7 @@ promotion claims, or determinism statements.
 | RFC-0004 | Backlog contract maintenance | Large semantic surface; only specific dependent deltas should block work | Use focused follow-on RFCs/issues for concrete tensor semantic changes |
 | RFC-0007 | Backlog surface expansion | Standard-library scope is broad and not a single release gate | Deliver per-module promotion and fixture coverage incrementally |
 | RFC-0032 | Backlog roadmap/governance | Useful promotion roadmap, but should reflect implementation reality rather than block it | Update as promotion decisions change; do not treat as a prerequisite for core fixes |
+| RFC-0033 | **In Progress** — Phase 1 & 2 complete | `t81 studio`, `t81 agent`, `t81 ui` shipped and building; FTXUI v5.0.0 via FetchContent; CanonFS Browser, Axion Dashboard, Trace Visualizer, scrollable log, command palette all implemented | Complete Phase 3 (session management, structured `--json` state feeds, llama-run integration) then Phase 4 (golden-output tests, binary-size CI gate, README screenshots) |
 | RFC-0030 | Backlog deterministic math subsystem | Necessary for true cross-arch deterministic replacement of host-float transcendental and similar math, but broader than current phase-1 AI opcode closure | Use it to track dmath/soft-math replacements (`exp`, `sqrt`, `log`, division-heavy float paths) rather than treating those as simple RFC-0026 cleanup |
 | RFC-00A0 to RFC-00A8 | Backlog experimental track | These RFCs govern experiment lanes; implementation presence alone does not imply core-promotion urgency | Keep sandboxed unless a specific component is being promoted into core |
 
