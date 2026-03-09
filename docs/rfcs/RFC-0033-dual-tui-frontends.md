@@ -103,13 +103,14 @@ A specialized environment optimized for interaction with Large Language Models a
 * **Contextual Side Panels:** Persistent displays of critical system state—such as active AI model weights, Axion policy tier, and determinism verification status.
 * **Multi-Turn Experimentation:** The agent can iteratively propose code changes, trigger the compiler, observe trace outputs, adjust Axion policies, and retry execution within a single session.
 * **Deep `llama-run` Integration:** Controls for managing internal LLM inference tasks, adjusting parameters, and observing raw output of `MAKE_COMPLEX` or `QMATMUL` operations.
-* **Session Persistence & Resumability:** The ability to save a session's interaction history and state (e.g., to disk as JSONL and binary blobs referencing CanonFS) and resume it later. This is critical for long-lived agent runs and debugging overnight failures.
+* **Session Persistence & Resumability:** The ability to save a session's interaction history and state (e.g., to disk as JSONL and binary blobs referencing CanonFS) and resume it later. This includes deep-linking and attachment capabilities (e.g., `t81 agent --resume session-uuid.jsonl` or `t81 agent --attach <pid>` to inspect hung, mid-flight agent sessions).
+* **Command Palette Consistency:** The AI TUI will mirror the Human TUI's command palette shortcut (`Ctrl+P`) for muscle memory, while also supporting standard chat-like slash commands (e.g., `/policy allow <hash>`) for rapid agent/operator interactions.
 
 **Conceptual Layout:**
 
 ```text
 +-------------------------------------------------------------+
-| T81 Agentic Interface                             [Session] |
+| T81 Agentic Interface                    [Cmd: Ctrl+P / + /]|
 +-----------------------------------------+-------------------+
 | Interaction History                     | Context View      |
 |                                         |                   |
@@ -134,7 +135,7 @@ A specialized environment optimized for interaction with Large Language Models a
 
 * **Improving the CLI Only:** Enhancing the CLI with more verbose output and formatting. This does not solve discoverability, statefulness, and the need for persistent context during complex debugging or AI interactions.
 * **Web Dashboard (React/Vue):** Building a local web server to serve a modern web application. This was rejected because it introduces architectural bloat, violates the terminal-native philosophy of T81, and complicates deployment in headless server environments.
-* **Go Bubble Tea / Python Textual:** Utilizing excellent TUI frameworks from other languages. This would introduce a massive new language dependency, violating the strict C++23, dependency-firewalled architecture of T81.
+* **Go Bubble Tea / Python Textual / Rust Ratatui:** Utilizing excellent TUI frameworks from other languages. While Ratatui is highly regarded, adopting any of these would force a language bridge or a complete rewrite, introducing a massive new dependency and violating the strict C++23 dependency-firewalled architecture of T81.
 * **Raw Ncurses:** Building a TUI from scratch using the legacy `ncurses` library. Dismissed due to the low-level API, lack of modern layout paradigms, and significant developer overhead compared to modern C++ frameworks.
 
 ---
@@ -181,11 +182,13 @@ A specialized environment optimized for interaction with Large Language Models a
 * Design and implement the chat pane and context sidebars.
 * Integrate structured logging and `--json` parsing necessary to feed the UI state reliably.
 * Test the interface extensively with internal AI tooling (`llama-run`) and external agent harnesses.
+* **Dogfooding Milestone:** Successfully run an end-to-end agent workflow entirely within the TUI ("propose patch → compile → observe trace delta → auto-allow hash via policy adjustment → retry execution") before declaring this phase complete.
 
 ### Phase 4: Refinement, CI, and Documentation
 
 * Establish comprehensive snapshot-style golden-output testing for the UI layout rendering and scripted input sequences.
 * Integrate TUI build, smoke tests, and binary size delta checks into the existing CI pipeline.
+* Add an animated terminal recording or GIF showcasing the `t81 ui` entry point and basic compile/REPL workflows to the primary `README.md` and user guides to enhance project discoverability.
 * Write detailed documentation, user guides, and integration examples.
 
 ---
