@@ -226,13 +226,19 @@ Latest implementation commits on `main`:
 - `7da0fa7e` `Add logical operators to C frontend subset`
 - `d3c6bf6c` `Add increment and decrement to C frontend subset`
 - `1a8c4602` `Add loop break and continue to C frontend subset`
+- `95b32961` `Add fixed arrays to C frontend subset`
+- `904d1ae5` `Harden C frontend declaration surfaces`
+- `4b54c254` `Add Rust frontend CLI scaffold`
 
 Recommended resume point:
 
 1. decide whether array indexing should remain literal-only or grow into a
    broader T81 memory/addressing surface
-2. only after that, choose whether to deepen C further or start a Rust ingress
-   proof of concept
+2. if C is considered sufficient at literal-only indexing, the next major
+   resume point is the Rust ingress path using the already-landed CLI/build
+   scaffold (`t81 rust compile`, `T81_ENABLE_RUST_FRONTEND`)
+3. implement real Rust lowering only once a Rust toolchain is available in the
+   build environment
 
 ## 10. File/Module Sketch
 
