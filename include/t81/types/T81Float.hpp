@@ -23,6 +23,12 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>  // fabsl, powl
+
+#ifdef T81_DETERMINISTIC
+// Ensures host math transcendentals (e.g. std::sin) are explicitly rejected
+// when compiling in deterministic mode, as they are not available in current dmath implementation.
+#endif
+
 #include <limits>
 #include <numbers>
 #include <string>
