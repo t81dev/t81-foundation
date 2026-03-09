@@ -6,6 +6,7 @@
 #include "t81/mlir/tisc_to_mlir.hpp"
 #endif
 #include "t81/c_frontend/compile.hpp"
+#include "t81/rust_frontend/compile.hpp"
 #include "debugger.hpp"
 #include "internal/tooling/logging.hpp"
 #include "t81/canonfs/canon_driver.hpp"
@@ -2829,6 +2830,68 @@ int run_c(const CArgs& ca) {
   options.emit_comments = !ca.no_comments;
   std::string error_message;
   if (!t81::c_frontend::compile_file_to_mlir(ca.input, out, options, &error_message)) {
+    error(error_message);
+    return 1;
+  }
+  std::cout << "MLIR written to: " << out.string() << "\n";
+  return 0;
+#endif
+}
+
+int run_rust(const RustArgs& ra) {
+#ifndef T81_HAS_RUST_FRONTEND
+  (void)ra;
+  error("t81 was built without the experimental Rust frontend.\n"
+        "Re-configure with: cmake -DT81_ENABLE_RUST_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON\n"
+        "A Rust toolchain with 'rustc' on PATH is also required.");
+  return 1;
+#else
+  if (ra.subcommand == "help" || ra.subcommand.empty()) {
+    std::cout <<
+      "Usage: t81 rust compile <file.rs> [-o <out.mlir>] [--emit mlir] [options]\n"
+      "\n"
+      "Compile an experimental Rust-subset ingress path to MLIR.\n"
+      "\n"
+      "Options:\n"
+      "  -o <path>         Output file (default: <input>.mlir)\n"
+      "  --emit mlir       Emit MLIR text (the only planned mode in v0)\n"
+      "  --dialect=t81     Emit custom t81.* ops in the generated MLIR\n"
+      "  --dialect=std     Emit standard memref-based MLIR (default)\n"
+      "  --mode=dcp        Route float lowering to t81_dmath_* when supported\n"
+      "  --mode=compat     Use standard math lowering mode (default)\n"
+      "  --no-comments     Omit PC annotations in generated block names\n"
+      "\n"
+      "Status:\n"
+      "  - the Rust frontend scaffold is present\n"
+      "  - the compile pipeline is not implemented yet\n";
+    return 0;
+  }
+
+  if (ra.subcommand != "compile") {
+    error("t81 rust: unknown subcommand '" + ra.subcommand + "'. Try 't81 rust help'.");
+    return 1;
+  }
+  if (ra.emit != "mlir") {
+    error("t81 rust compile: only '--emit mlir' is planned in Rust subset v0.");
+    return 1;
+  }
+  if (ra.input.empty()) {
+    error("t81 rust compile: no input file specified.");
+    return 1;
+  }
+  if (ra.input.extension() != ".rs") {
+    error("t81 rust compile: expected .rs input, got: " + ra.input.string());
+    return 1;
+  }
+
+  fs::path out = ra.output.empty() ? fs::path(ra.input).replace_extension(".mlir") : ra.output;
+  t81::rust_frontend::CompileOptions options;
+  options.module_name = ra.input.stem().string();
+  options.dcp_floats = ra.dcp_floats;
+  options.use_t81_dialect = ra.use_t81_dialect;
+  options.emit_comments = !ra.no_comments;
+  std::string error_message;
+  if (!t81::rust_frontend::compile_file_to_mlir(ra.input, out, options, &error_message)) {
     error(error_message);
     return 1;
   }

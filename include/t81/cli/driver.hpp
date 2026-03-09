@@ -114,4 +114,15 @@ struct CArgs {
 };
 int run_c(const CArgs& args);
 
+struct RustArgs {
+  std::string           subcommand;   // "compile" | "help"
+  std::filesystem::path input;
+  std::filesystem::path output;       // default: <input>.mlir
+  std::string           emit = "mlir";
+  bool                  dcp_floats = false;
+  bool                  use_t81_dialect = false;
+  bool                  no_comments = false;
+};
+int run_rust(const RustArgs& args);
+
 }  // namespace t81::cli

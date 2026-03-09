@@ -268,6 +268,15 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - **Resume Point**: next useful slice is deciding whether array indexing should remain literal-only or grow into a larger T81 memory/addressing surface. After that, the next strategic choice is whether to deepen C further or start a Rust ingress proof of concept.
   - **Deferred**: broader array/addressing semantics, broader function/declaration semantics, and non-C frontends (Rust/Python)
 
+- [x] **LLVM-04: Experimental Rust Frontend Scaffold** — **✅ COMPLETED (2026-03-09)**
+  - ✅ CMake: `T81_ENABLE_RUST_FRONTEND` option; `rustc`-gated `t81_rust_frontend` target
+  - ✅ CLI/help/completion: `t81 rust compile <input.rs> [-o out.mlir] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>]`
+  - ✅ Contract: fail-closed when the Rust frontend is not built; fail-closed with an explicit “not implemented yet” message when the scaffold is built without a real lowering pipeline
+  - ✅ Verification: `t81_cli_contract_test` covers `help rust`, fish completion entries, and `t81 rust compile`
+  - Status: **✅ RESOLVED** — ingress seam is present; real Rust lowering remains deferred
+  - **Resume Point**: implement a restricted Rust subset lowering path once a Rust toolchain is available in the build environment
+  - **Deferred**: actual Rust parsing/lowering, Rust subset definition, and deterministic runtime restrictions/diagnostics
+
 ---
 
 ## Governance
@@ -296,6 +305,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 | **🏆 LLVM-01 LLVM IR Backend** — `T81_ENABLE_LLVM` CMake option; `src/llvm/tisc_to_llvm.cpp` two-pass CFG translator; `t81 llvm compile` CLI; bash/zsh/fish completions; bug fixes (FPow arity, Load/Store memory model, 6 missing float transcendentals) | **2026-03-09** |
 | **🏆 LLVM-02 MLIR Frontend** — `T81_ENABLE_MLIR` CMake option; `t81 mlir compile/lower/pipeline`; DCP runtime guidance via `t81_dmath_runtime`; SSA promotion through SROA + mem2reg; custom `--dialect=t81` support for `t81.reg_*`, `t81.mem_*`, and `t81.stack_*` ops | **2026-03-09** |
 | **🏆 LLVM-03 Experimental C Frontend PoC** — `T81_ENABLE_C_FRONTEND` CMake option; `libclang`-backed `t81 c compile`; integer-only fail-closed subset lowered through the existing TISC → MLIR pipeline; CLI/help/completion coverage added | **2026-03-09** |
+| **🏆 LLVM-04 Experimental Rust Frontend Scaffold** — `T81_ENABLE_RUST_FRONTEND` CMake option; `rustc`-gated `t81 rust compile` scaffold; CLI/help/completion coverage and fail-closed contract for unbuilt or unimplemented Rust ingress | **2026-03-09** |
 | **🏆 T81Float Determinism Gap Closure** — Wired `acos`/`asin`/`atan`/`sinh`/`cosh`/`tanh` to dmath (deterministic Taylor/Newton series) in `T81_DETERMINISTIC` mode; replaced `floor`/`ceil`/`round` host-math calls with pure trit-manipulation (`trunc_impl()`, `make_int_one()`) | **2026-03-09** |
 | **🏆 T81Symbolic Completeness** — Added `serialize_canonical()` and `eval()` free functions; fixed unary constant folding to cover Sin/Cos/Exp/Log; added `Sub` identity rules; fixed `Pow` constant folding; corrected misplaced stub inside `SimpVisitor` | **2026-03-09** |
 | **🏆 v1.3.0 Release** — Tagged and published ([release notes](https://github.com/t81dev/t81-foundation/releases/tag/v1.3.0)); 332/332 tests passing | **2026-03-08** |

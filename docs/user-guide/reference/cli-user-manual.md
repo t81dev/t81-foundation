@@ -215,6 +215,7 @@ t81 ir dump <file.t81>
 t81 ir validate <file.t81> [--json]
 t81 ir export <file.t81> [--json] [-o <file>]
 t81 c compile <file.c> [-o <file.mlir>] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
+t81 rust compile <file.rs> [-o <file.mlir>] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
 t81 llvm compile <file.t81|file.tisc> [-o <file.ll|file.bc>] [--bitcode] [--no-comments]
 t81 mlir compile <file.t81|file.tisc> [-o <file.mlir>] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
 t81 mlir lower <file.mlir> [-o <file.ll>]
@@ -791,3 +792,20 @@ Runtime trap exit codes used by `t81 code run` / `t81 code debug`:
 
 This manual intentionally excludes deprecated or non-shipping flags.
 If behavior changes, update this file in the same change set as the CLI implementation.
+### 4.22 `rust`
+
+```bash
+t81 rust compile <file.rs> [-o <file.mlir>] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
+```
+
+Experimental Rust-subset frontend scaffold.
+
+Current status:
+
+- optional build surface only
+- requires `-DT81_ENABLE_RUST_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON`
+- also requires `rustc` on `PATH`
+- CLI/help/completion contract is wired
+- compile path fails closed with an explicit "not implemented yet" diagnostic
+
+### 4.23 `llvm`

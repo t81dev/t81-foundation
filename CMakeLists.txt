@@ -422,6 +422,43 @@ else()
 endif()
 
 # =============================================================================
+# Experimental Rust Frontend (optional)
+# Enable with: cmake -DT81_ENABLE_RUST_FRONTEND=ON
+# Requires MLIR/LLVM plus a Rust toolchain on PATH.
+# =============================================================================
+option(T81_ENABLE_RUST_FRONTEND "Enable experimental Rust-subset frontend scaffold (requires MLIR/LLVM/rustc)" OFF)
+
+if(T81_ENABLE_RUST_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND LLVM_FOUND AND MLIR_FOUND)
+  find_program(T81_RUSTC_EXECUTABLE NAMES rustc)
+  if(T81_RUSTC_EXECUTABLE)
+    message(STATUS "[t81] rustc — building experimental Rust frontend scaffold")
+    add_library(t81_rust_frontend STATIC
+      src/rust_frontend/compile.cpp)
+    target_include_directories(t81_rust_frontend PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+    target_link_libraries(t81_rust_frontend PUBLIC
+      t81_core
+      t81_mlir)
+    target_compile_definitions(t81_rust_frontend PUBLIC T81_HAS_RUST_FRONTEND=1 T81_HAS_MLIR=1 T81_HAS_LLVM=1)
+    target_compile_features(t81_rust_frontend PUBLIC ${T81_CXX_STD_FEATURE})
+  else()
+    message(STATUS "[t81] rustc not found — t81_rust_frontend remains a stub")
+    add_library(t81_rust_frontend INTERFACE)
+    target_include_directories(t81_rust_frontend INTERFACE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+    target_link_libraries(t81_rust_frontend INTERFACE t81_core)
+  endif()
+else()
+  add_library(t81_rust_frontend INTERFACE)
+  target_include_directories(t81_rust_frontend INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+  target_link_libraries(t81_rust_frontend INTERFACE t81_core)
+endif()
+
+# =============================================================================
 # CLI & Examples
 # =============================================================================
 add_library(t81_tool_cli STATIC
@@ -430,7 +467,7 @@ add_library(t81_tool_cli STATIC
   tooling/cli/canonize_tensor.cpp
 )
 target_link_libraries(t81_tool_cli PUBLIC t81_lang_frontend t81_isa t81_vm t81_tool_model)
-target_link_libraries(t81_tool_cli PUBLIC t81_llvm t81_mlir t81_c_frontend)
+target_link_libraries(t81_tool_cli PUBLIC t81_llvm t81_mlir t81_c_frontend t81_rust_frontend)
 target_include_directories(t81_tool_cli PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -1970,6 +2007,9 @@ if(TARGET t81_dmath_runtime)
 endif()
 if(TARGET t81_c_frontend)
   list(APPEND T81_INSTALL_TARGETS t81_c_frontend)
+endif()
+if(TARGET t81_rust_frontend)
+  list(APPEND T81_INSTALL_TARGETS t81_rust_frontend)
 endif()
 if(T81_ENABLE_LLAMA_CPP)
   if(T81_EXPORT_LLAMA_ADAPTER)

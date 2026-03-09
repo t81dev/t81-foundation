@@ -948,6 +948,32 @@ Notes:
   Unsupported constructs fail closed with explicit diagnostics.
 )";}
 
+void print_help_rust() {
+  std::cerr << R"(
+Usage: t81 rust compile <input.rs> [-o <output>] [options]
+
+Compile an experimental Rust-subset ingress path to MLIR.
+
+Arguments:
+  <input>                Input Rust source file (.rs)
+  -o <output>            Output MLIR file (.mlir)
+
+Options:
+  --emit mlir            Emit MLIR text (the only planned mode in v0)
+  --dialect=t81          Emit custom t81.* ops where applicable
+  --dialect=std          Emit standard MLIR ops (default)
+  --mode=dcp             Select DCP float lowering mode when supported
+  --mode=compat          Select standard math lowering mode (default)
+  --no-comments          Suppress metadata comments in generated MLIR
+  -h, --help             Show this help
+
+Status:
+  - this is an experimental scaffold only
+  - build requires -DT81_ENABLE_RUST_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON
+  - a Rust toolchain with rustc on PATH is required
+  - the compile pipeline is not implemented yet
+)";}
+
 void print_help_advanced() {
   std::cerr << R"(
 Advanced commands (supported expert workflows):
@@ -961,6 +987,7 @@ Advanced commands (supported expert workflows):
   tisc <action> [args]                TISC artifact inspection, validation, encode/decode
   ir <action> [args]                  IR inspection and export for frontend lowering
   c <subcommand> [args]               Experimental C-subset frontend to MLIR
+  rust <subcommand> [args]            Experimental Rust-subset frontend scaffold
   llvm <subcommand> [args]            LLVM IR backend: translate TISC to LLVM IR/bitcode
   mlir <subcommand> [args]            MLIR frontend: translate TISC to MLIR / LLVM IR
 
@@ -1265,6 +1292,7 @@ Commands:
   axion <action> [args]                 Axion governor and policy-facing operations
   trace <action> [args]                 Trace inspection, replay, export, canonicalization
   c     <subcommand> [args]             Experimental C-subset frontend to MLIR
+  rust  <subcommand> [args]             Experimental Rust-subset frontend scaffold
   llvm  <subcommand> [args]             LLVM IR backend: translate TISC to LLVM IR/bitcode
   mlir  <subcommand> [args]             MLIR frontend: translate TISC to MLIR / LLVM IR
   repl                                  Start interactive REPL
@@ -1303,6 +1331,7 @@ More command groups:
   t81 help axion
   t81 help trace
   t81 help c
+  t81 help rust
   t81 help llvm
   t81 help mlir
   t81 help labs
@@ -1413,6 +1442,10 @@ bool print_help_topic(std::string_view topic, const char* prog) {
   }
   if (topic == "c") {
     print_help_c();
+    return true;
+  }
+  if (topic == "rust") {
+    print_help_rust();
     return true;
   }
   if (topic == "tier") {
@@ -2099,8 +2132,8 @@ Args parse_args(int argc, char* argv[]) {
     } else if (arg == "-V" || arg == "--version") {
       if (a.command == "fmt" || a.command == "code" || a.command == "project" ||
           a.command == "env" || a.command == "internal" || a.command == "completion" ||
-          a.command == "man" || a.command == "feedback" || a.command == "c" || a.command == "llvm" ||
-          a.command == "mlir") {
+          a.command == "man" || a.command == "feedback" || a.command == "c" || a.command == "rust" ||
+          a.command == "llvm" || a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         a.need_version = true;
@@ -2120,7 +2153,7 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "completion" || a.command == "man" || a.command == "feedback" ||
                  a.command == "canonize-tensor" || a.command == "canonize-file" ||
                  a.command == "memory-stats" || a.command == "tier" || a.command == "profile" ||
-                 a.command == "c" || a.command == "llvm" || a.command == "mlir") {
+                 a.command == "c" || a.command == "rust" || a.command == "llvm" || a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         throw_usage_error("Unknown option: " + std::string(arg));
@@ -2139,7 +2172,7 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "completion" || a.command == "man" || a.command == "feedback" ||
                  a.command == "canonize-tensor" || a.command == "canonize-file" ||
                  a.command == "memory-stats" || a.command == "tier" ||
-                 a.command == "c" || a.command == "llvm" || a.command == "mlir") {
+                 a.command == "c" || a.command == "rust" || a.command == "llvm" || a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         if (!a.input.empty()) {
@@ -7679,6 +7712,7 @@ commands=(
   'axion:Axion governor tools'
   'trace:trace inspection tools'
   'c:Experimental C-subset frontend to MLIR'
+  'rust:Experimental Rust-subset frontend scaffold'
   'llvm:LLVM IR backend — translate TISC to LLVM IR/bitcode'
   'mlir:MLIR frontend — translate TISC to MLIR or LLVM IR'
   'completion:print completion script'
@@ -7787,6 +7821,7 @@ complete -c t81 -f -n '__fish_seen_subcommand_from policy' -a 'compile validate 
 complete -c t81 -f -n '__fish_seen_subcommand_from axion' -a 'status optimize simulate explain snapshot snapshot-diff rollback log audit'
 complete -c t81 -f -n '__fish_seen_subcommand_from trace' -a 'show diff replay summary stats filter canonicalize export'
 complete -c t81 -f -n '__fish_seen_subcommand_from c' -a 'compile help'
+complete -c t81 -f -n '__fish_seen_subcommand_from rust' -a 'compile help'
 complete -c t81 -f -n '__fish_seen_subcommand_from llvm' -a 'compile help'
 complete -c t81 -f -n '__fish_seen_subcommand_from mlir' -a 'compile lower pipeline help'
 complete -c t81 -f -n '__fish_seen_subcommand_from feedback' -a 'submit report'
@@ -8872,6 +8907,44 @@ int main(int argc, char* argv[]) {
         }
       }
       return t81::cli::run_c(ca);
+
+    } else if (args.command == "rust") {
+      t81::cli::RustArgs ra;
+      if (args.output) ra.output = *args.output;
+      if (args.command_args.empty() || args.command_args[0] == "--help" ||
+          args.command_args[0] == "-h") {
+        return emit_help([&] { print_help_rust(); });
+      }
+      ra.subcommand = args.command_args[0];
+      for (size_t i = 1; i < args.command_args.size(); ++i) {
+        const std::string& tok = args.command_args[i];
+        if (tok == "--mode=dcp") {
+          ra.dcp_floats = true;
+        } else if (tok == "--mode=compat") {
+          ra.dcp_floats = false;
+        } else if (tok == "--dialect=t81") {
+          ra.use_t81_dialect = true;
+        } else if (tok == "--dialect=std") {
+          ra.use_t81_dialect = false;
+        } else if (tok == "--emit" && i + 1 < args.command_args.size()) {
+          ra.emit = args.command_args[++i];
+        } else if (tok.rfind("--emit=", 0) == 0) {
+          ra.emit = tok.substr(7);
+        } else if (tok == "--no-comments") {
+          ra.no_comments = true;
+        } else if ((tok == "-o" || tok == "--output") && i + 1 < args.command_args.size()) {
+          ra.output = args.command_args[++i];
+        } else if (tok == "--help" || tok == "-h") {
+          return emit_help([&] { print_help_rust(); });
+        } else if (tok[0] != '-') {
+          if (ra.input.empty()) ra.input = tok;
+          else ra.output = tok;
+        } else {
+          error("rust: unknown option '" + tok + "'. Run 't81 help rust'.");
+          return 1;
+        }
+      }
+      return t81::cli::run_rust(ra);
 
     } else if (args.command == "mlir") {
       t81::cli::MlirArgs ma;

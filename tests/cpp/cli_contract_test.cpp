@@ -781,6 +781,7 @@ int main(int argc, char* argv[]) {
     const auto completion_result = run_cli(t81_bin, {"completion", "fish"});
     T81_TEST_CHECK(completion_result.exit_code == 0);
     T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from c"));
+    T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from rust"));
     T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from llvm"));
     T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from mlir"));
     T81_TEST_CHECK(contains(completion_result.stdout_text, "compile help"));
@@ -816,6 +817,10 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(c_help_result.exit_code == 0);
     T81_TEST_CHECK(contains(c_help_result.stdout_text, "Usage: t81 c compile"));
 
+    const auto rust_help_result = run_cli(t81_bin, {"help", "rust"});
+    T81_TEST_CHECK(rust_help_result.exit_code == 0);
+    T81_TEST_CHECK(contains(rust_help_result.stdout_text, "Usage: t81 rust compile"));
+
     const fs::path c_input = make_temp_path("t81-cli-contract", ".c");
     const fs::path c_output = make_temp_path("t81-cli-contract", ".mlir");
     {
@@ -831,9 +836,26 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(!contains(c_result.stderr_text, "Multiple input files not supported"));
     T81_TEST_CHECK(c_result.exit_code == 0 ||
                    contains(c_result.stderr_text, "built without the experimental C frontend."));
+
+    const fs::path rust_input = make_temp_path("t81-cli-contract", ".rs");
+    const fs::path rust_output = make_temp_path("t81-cli-contract", ".mlir");
+    {
+      std::ofstream out(rust_input);
+      out << "fn main() -> i32 {\n"
+             "    5\n"
+             "}\n";
+    }
+    const auto rust_result =
+        run_cli(t81_bin, {"rust", "compile", rust_input.string(), "-o", rust_output.string()});
+    T81_TEST_CHECK(rust_result.exit_code != 0 || contains(rust_result.stdout_text, "MLIR written to:"));
+    T81_TEST_CHECK(
+        contains(rust_result.stderr_text, "built without the experimental Rust frontend.") ||
+        contains(rust_result.stderr_text, "compile pipeline is not implemented yet"));
     std::error_code ignore_ec;
     fs::remove(c_input, ignore_ec);
     fs::remove(c_output, ignore_ec);
+    fs::remove(rust_input, ignore_ec);
+    fs::remove(rust_output, ignore_ec);
   }
 
   {
