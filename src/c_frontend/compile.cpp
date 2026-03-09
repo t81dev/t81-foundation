@@ -324,6 +324,16 @@ bool compile_binary_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, 
     opcode = t81::tisc::Opcode::Greater;
   } else if (*op == ">=") {
     opcode = t81::tisc::Opcode::GreaterEqual;
+  } else if (*op == "&") {
+    opcode = t81::tisc::Opcode::BitAnd;
+  } else if (*op == "|") {
+    opcode = t81::tisc::Opcode::BitOr;
+  } else if (*op == "^") {
+    opcode = t81::tisc::Opcode::BitXor;
+  } else if (*op == "<<") {
+    opcode = t81::tisc::Opcode::BitShl;
+  } else if (*op == ">>") {
+    opcode = t81::tisc::Opcode::BitShr;
   } else if (*op == "&&" || *op == "||") {
     return ctx.fail(cursor, "logical operators are not supported in the C subset v0", error);
   } else {
