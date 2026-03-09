@@ -737,9 +737,8 @@ private:
 
     if (units_idx <= 0) return {*this, false};  // All trits are integer trits.
 
-    const size_type frac_end = (units_idx >= static_cast<std::int64_t>(M))
-                                   ? M
-                                   : static_cast<size_type>(units_idx);
+    const size_type frac_end =
+        (units_idx >= static_cast<std::int64_t>(M)) ? M : static_cast<size_type>(units_idx);
 
     T81Int<M> mant = get_mantissa();
     bool had_fraction = false;
