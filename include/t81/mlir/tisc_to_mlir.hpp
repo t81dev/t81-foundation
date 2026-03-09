@@ -52,6 +52,7 @@ enum class FloatMode {
 struct TranslationConfig {
   std::string module_name   = "t81_program";
   FloatMode   float_mode    = FloatMode::Compat;
+  bool        use_t81_dialect = false;  ///< emit custom t81.reg_* ops for register access
   bool        emit_comments = true;  ///< embed PC annotations in block names
   bool        verify_module = true;  ///< run MLIR verifier after translation
 };

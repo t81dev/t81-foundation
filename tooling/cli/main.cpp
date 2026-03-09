@@ -868,6 +868,8 @@ Subcommands:
 
 Options:
   -o <path>         Output file (default: derived from input extension)
+  --dialect=t81     Emit custom t81.reg_* register access ops
+  --dialect=std     Emit standard memref register accesses (default)
   --mode=dcp        DCP float mode: replace math.* ops with func.call
                     @t81_dmath_* — bit-exact when linked against T81 runtime
   --mode=compat     Standard math.* dialect (IEEE-754 f64, default)
@@ -880,6 +882,11 @@ Float modes:
   dcp               Replaces math.* with func.call @t81_dmath_* externals.
                     Preserves T81 determinism when the T81 runtime is linked.
                     The MLIR text is still valid standard MLIR.
+
+Dialect modes:
+  std (default)     Emits only standard dialect ops.
+  t81               Emits custom t81.reg_* ops for register-file access, then
+                    lowers them back to memref before LLVM conversion.
 
 Notes:
   Requires build with -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON.
@@ -8794,6 +8801,10 @@ int main(int argc, char* argv[]) {
           ma.dcp_floats = true;
         } else if (tok == "--mode=compat") {
           ma.dcp_floats = false;
+        } else if (tok == "--dialect=t81") {
+          ma.use_t81_dialect = true;
+        } else if (tok == "--dialect=std") {
+          ma.use_t81_dialect = false;
         } else if (tok == "--no-comments") {
           ma.no_comments = true;
         } else if ((tok == "-o" || tok == "--output") && i + 1 < args.command_args.size()) {

@@ -317,6 +317,7 @@ if(T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND LLVM_FOUND)
     include_directories(SYSTEM ${MLIR_INCLUDE_DIRS})
     add_definitions(${MLIR_DEFINITIONS})
     add_library(t81_mlir STATIC
+      src/mlir/t81_dialect.cpp
       src/mlir/tisc_to_mlir.cpp
       src/mlir/mlir_to_llvm.cpp
       src/mlir/dmath_c_wrappers.cpp)

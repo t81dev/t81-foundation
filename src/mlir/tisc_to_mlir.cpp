@@ -17,6 +17,7 @@
  *   Flat memory       : memref<65536xi64>
  */
 #include "t81/mlir/tisc_to_mlir.hpp"
+#include "t81/mlir/t81_dialect.hpp"
 
 #ifdef T81_HAS_MLIR
 
@@ -62,6 +63,9 @@ class TISCToMLIRTranslator {
     ctx_.loadDialect<mlir::func::FuncDialect>();
     ctx_.loadDialect<mlir::cf::ControlFlowDialect>();
     ctx_.loadDialect<mlir::memref::MemRefDialect>();
+    if (cfg_.use_t81_dialect) {
+      ctx_.loadDialect<t81::mlir_frontend::T81Dialect>();
+    }
 
     // Common types.
     i64_ty_  = builder_.getI64Type();
@@ -235,21 +239,51 @@ class TISCToMLIRTranslator {
   }
 
   mlir::Value load_ireg(int32_t i) {
+    if (cfg_.use_t81_dialect) {
+      mlir::OperationState state(loc_, kRegGetIOpName);
+      state.addOperands(iregs_);
+      state.addAttribute("reg", builder_.getI32IntegerAttr(i));
+      state.addTypes(i64_ty_);
+      auto* op = builder_.insert(mlir::Operation::create(state));
+      return op->getResult(0);
+    }
     return builder_.create<mlir::memref::LoadOp>(
         loc_, iregs_, mlir::ValueRange{idx(i)});
   }
 
   void store_ireg(int32_t i, mlir::Value v) {
+    if (cfg_.use_t81_dialect) {
+      mlir::OperationState state(loc_, kRegSetIOpName);
+      state.addOperands({iregs_, v});
+      state.addAttribute("reg", builder_.getI32IntegerAttr(i));
+      builder_.insert(mlir::Operation::create(state));
+      return;
+    }
     builder_.create<mlir::memref::StoreOp>(
         loc_, v, iregs_, mlir::ValueRange{idx(i)});
   }
 
   mlir::Value load_freg(int32_t i) {
+    if (cfg_.use_t81_dialect) {
+      mlir::OperationState state(loc_, kRegGetFOpName);
+      state.addOperands(fregs_);
+      state.addAttribute("reg", builder_.getI32IntegerAttr(i));
+      state.addTypes(f64_ty_);
+      auto* op = builder_.insert(mlir::Operation::create(state));
+      return op->getResult(0);
+    }
     return builder_.create<mlir::memref::LoadOp>(
         loc_, fregs_, mlir::ValueRange{idx(i)});
   }
 
   void store_freg(int32_t i, mlir::Value v) {
+    if (cfg_.use_t81_dialect) {
+      mlir::OperationState state(loc_, kRegSetFOpName);
+      state.addOperands({fregs_, v});
+      state.addAttribute("reg", builder_.getI32IntegerAttr(i));
+      builder_.insert(mlir::Operation::create(state));
+      return;
+    }
     builder_.create<mlir::memref::StoreOp>(
         loc_, v, fregs_, mlir::ValueRange{idx(i)});
   }

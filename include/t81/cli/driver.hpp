@@ -96,6 +96,7 @@ struct MlirArgs {
   std::filesystem::path    input;
   std::filesystem::path    output;       // default: <input>.mlir or <input>.ll
   bool                     dcp_floats  = false;  // --mode=dcp: func.call @t81_dmath_*
+  bool                     use_t81_dialect = false;  // --dialect=t81
   bool                     no_comments = false;
   // For "lower" / "pipeline" subcommands:
   std::string              passes;       // comma-separated extra pass names (future)

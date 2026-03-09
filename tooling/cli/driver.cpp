@@ -2668,6 +2668,8 @@ int run_mlir(const MlirArgs& ma) {
       "\n"
       "Options:\n"
       "  -o <path>         Output file (default: derived from input)\n"
+      "  --dialect=t81     Emit custom t81.reg_* register access ops\n"
+      "  --dialect=std     Emit standard memref register accesses (default)\n"
       "  --mode=dcp        DCP float mode: func.call @t81_dmath_* (requires T81 runtime)\n"
       "  --mode=compat     Standard math.* dialect ops — IEEE-754 (default)\n"
       "  --no-comments     Omit PC annotations in block names\n"
@@ -2697,6 +2699,7 @@ int run_mlir(const MlirArgs& ma) {
 
   t81::mlir_frontend::TranslationConfig cfg;
   cfg.float_mode    = ma.dcp_floats ? FM::DCP : FM::Compat;
+  cfg.use_t81_dialect = ma.use_t81_dialect;
   cfg.emit_comments = !ma.no_comments;
 
   // ── lower: parse existing .mlir → LLVM IR ────────────────────────────

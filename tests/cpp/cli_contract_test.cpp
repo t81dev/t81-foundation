@@ -802,6 +802,14 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(!contains(mlir_result.stderr_text, "Multiple input files not supported"));
     T81_TEST_CHECK(mlir_result.exit_code == 0 ||
                    contains(mlir_result.stderr_text, "built without the MLIR frontend."));
+
+    const auto mlir_t81_dialect_result =
+        run_cli(t81_bin, {"mlir", "compile", hello_world.string(), "--dialect=t81"});
+    T81_TEST_CHECK(!contains(mlir_t81_dialect_result.stderr_text,
+                             "Multiple input files not supported"));
+    T81_TEST_CHECK(mlir_t81_dialect_result.exit_code == 0 ||
+                   contains(mlir_t81_dialect_result.stderr_text,
+                            "built without the MLIR frontend."));
   }
 
   {

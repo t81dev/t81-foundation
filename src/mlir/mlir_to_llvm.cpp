@@ -15,6 +15,7 @@
  * and writes LLVM IR text (.ll).
  */
 #include "t81/mlir/tisc_to_mlir.hpp"
+#include "t81/mlir/t81_dialect.hpp"
 
 #ifdef T81_HAS_MLIR
 
@@ -58,6 +59,7 @@ bool lower_to_llvm_ir(
 
   // Build and run the lowering pass pipeline.
   mlir::PassManager pm(&ctx);
+  pm.addNestedPass<mlir::func::FuncOp>(t81::mlir_frontend::createLowerT81RegisterOpsPass());
   // The first-pass CFG lowering can leave unreachable basic blocks behind.
   // Canonicalization removes them so SROA/mem2reg and FuncToLLVM see a
   // reachable CFG.
@@ -104,6 +106,7 @@ bool lower_mlir_file(
   ctx.loadDialect<mlir::func::FuncDialect>();
   ctx.loadDialect<mlir::cf::ControlFlowDialect>();
   ctx.loadDialect<mlir::memref::MemRefDialect>();
+  ctx.loadDialect<t81::mlir_frontend::T81Dialect>();
 
   mlir::ParserConfig parse_cfg(&ctx);
   auto module = mlir::parseSourceFile<mlir::ModuleOp>(
