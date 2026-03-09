@@ -56,8 +56,22 @@ int main() {
     std::string error;
     check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_pointer.c", output, {}, &error),
           "expected pointer example to be rejected");
-    check(error.find("only 'int' local variables are supported") != std::string::npos,
+    check(error.find("pointers are not supported") != std::string::npos,
           "expected pointer rejection diagnostic");
+  }
+
+  {
+    const std::string source =
+        "int main() {\n"
+        "  int a[4] = {0};\n"
+        "  return 0;\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_array.c", output, {}, &error),
+          "expected array example to be rejected");
+    check(error.find("local arrays are not supported") != std::string::npos,
+          "expected array rejection diagnostic");
   }
 
   {
@@ -96,6 +110,22 @@ int main() {
 
   {
     const std::string source =
+        "int helper(int *p) {\n"
+        "  return 0;\n"
+        "}\n"
+        "int main() {\n"
+        "  return helper(0);\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_param.c", output, {}, &error),
+          "expected pointer parameter example to be rejected");
+    check(error.find("pointer parameters are not supported") != std::string::npos,
+          "expected pointer-parameter rejection diagnostic");
+  }
+
+  {
+    const std::string source =
         "int main() {\n"
         "  int x = 0;\n"
         "  for (;; x = x + 1) {\n"
@@ -109,6 +139,39 @@ int main() {
           "expected conditionless for-loop example to be rejected");
     check(error.find("for statements must include a condition") != std::string::npos,
           "expected for-loop rejection diagnostic");
+  }
+
+  {
+    const std::string source =
+        "int main() {\n"
+        "  while (1) {\n"
+        "    break;\n"
+        "  }\n"
+        "  return 0;\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(!t81::c_frontend::compile_source_to_mlir_text(source, "bad_break.c", output, {}, &error),
+          "expected break example to be rejected");
+    check(error.find("'break' is not supported") != std::string::npos,
+          "expected break rejection diagnostic");
+  }
+
+  {
+    const std::string source =
+        "int main() {\n"
+        "  for (int i = 0; i < 3; i = i + 1) {\n"
+        "    continue;\n"
+        "  }\n"
+        "  return 0;\n"
+        "}\n";
+    std::string output;
+    std::string error;
+    check(
+        !t81::c_frontend::compile_source_to_mlir_text(source, "bad_continue.c", output, {}, &error),
+        "expected continue example to be rejected");
+    check(error.find("'continue' is not supported") != std::string::npos,
+          "expected continue rejection diagnostic");
   }
 
   std::cout << "C frontend MLIR smoke test PASSED\n";

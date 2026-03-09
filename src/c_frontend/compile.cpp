@@ -403,7 +403,14 @@ bool compile_expr(LoweringContext& ctx, CXCursor cursor, int32_t target, std::st
 }
 
 bool compile_var_decl(LoweringContext& ctx, CXCursor cursor, std::string* error) {
-  if (!is_supported_int_type(clang_getCursorType(cursor))) {
+  const CXType type = clang_getCursorType(cursor);
+  if (type.kind == CXType_ConstantArray) {
+    return ctx.fail(cursor, "local arrays are not supported in the C subset v0", error);
+  }
+  if (type.kind == CXType_Pointer) {
+    return ctx.fail(cursor, "pointers are not supported in the C subset v0", error);
+  }
+  if (!is_supported_int_type(type)) {
     return ctx.fail(cursor, "only 'int' local variables are supported", error);
   }
   const std::string name = to_string_and_dispose(clang_getCursorSpelling(cursor));
@@ -666,6 +673,10 @@ bool compile_stmt(LoweringContext& ctx, CXCursor cursor, std::string* error) {
       return compile_while_stmt(ctx, cursor, error);
     case CXCursor_ForStmt:
       return compile_for_stmt(ctx, cursor, error);
+    case CXCursor_BreakStmt:
+      return ctx.fail(cursor, "'break' is not supported in the C subset v0", error);
+    case CXCursor_ContinueStmt:
+      return ctx.fail(cursor, "'continue' is not supported in the C subset v0", error);
     case CXCursor_BinaryOperator:
     case CXCursor_UnexposedStmt:
       return compile_expr_stmt(ctx, cursor, error);
@@ -731,7 +742,16 @@ bool collect_function_info(GlobalLoweringState& global, CXCursor cursor, std::st
   const int arg_count = clang_Cursor_getNumArguments(cursor);
   for (int i = 0; i < arg_count; ++i) {
     CXCursor arg = clang_Cursor_getArgument(cursor, i);
-    if (!is_supported_int_type(clang_getCursorType(arg))) {
+    const CXType arg_type = clang_getCursorType(arg);
+    if (arg_type.kind == CXType_Pointer) {
+      LoweringContext dummy{global, info, {}};
+      return dummy.fail(arg, "pointer parameters are not supported in the C subset v0", error);
+    }
+    if (arg_type.kind == CXType_ConstantArray) {
+      LoweringContext dummy{global, info, {}};
+      return dummy.fail(arg, "array parameters are not supported in the C subset v0", error);
+    }
+    if (!is_supported_int_type(arg_type)) {
       LoweringContext dummy{global, info, {}};
       return dummy.fail(arg, "only 'int' parameters are supported in the C subset v0", error);
     }
