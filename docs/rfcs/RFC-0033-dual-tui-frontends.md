@@ -103,7 +103,7 @@ A specialized environment optimized for interaction with Large Language Models a
 * **Contextual Side Panels:** Persistent displays of critical system state—such as active AI model weights, Axion policy tier, and determinism verification status.
 * **Multi-Turn Experimentation:** The agent can iteratively propose code changes, trigger the compiler, observe trace outputs, adjust Axion policies, and retry execution within a single session.
 * **Deep `llama-run` Integration:** Controls for managing internal LLM inference tasks, adjusting parameters, and observing raw output of `MAKE_COMPLEX` or `QMATMUL` operations.
-* **Ternary-Native Visualization Hooks:** Optional side-panes to display live trit-probability distributions (e.g., `P(+1)=0.72, P(0)=0.18, P(-1)=0.10`) or entropy readouts during inference operations, providing a killer differentiator versus binary substrates.
+* **Ternary-Native Visualization Hooks:** Optional, toggleable side-panes (via `/trits` slash command or hotkey) to display live trit-probability distributions (e.g., `P(+1)=0.72, P(0)=0.18, P(-1)=0.10`) or entropy readouts during inference operations, providing a killer differentiator versus binary substrates without overwhelming non-inference workflows.
 * **Session Persistence & Resumability:** The ability to save a session's interaction history and state (e.g., to disk as JSONL and binary blobs referencing CanonFS) and resume it later. This includes deep-linking and attachment capabilities (e.g., `t81 agent --resume session-uuid.jsonl` or `t81 agent --attach <pid>` to inspect hung, mid-flight agent sessions).
 * **Command Palette Consistency:** The AI TUI will mirror the Human TUI's command palette shortcut (`Ctrl+P`) for muscle memory, while also supporting standard chat-like slash commands (e.g., `/policy allow <hash>`) for rapid agent/operator interactions.
 
@@ -159,7 +159,7 @@ A specialized environment optimized for interaction with Large Language Models a
 * **Increased Binary Size:** Linking FTXUI will increase the size of the final executables. Given T81's target environments (embedded/headless/server reproducibility), we will implement a CI check that compares stripped binary sizes and warns if the delta exceeds 10-15%.
 * **Maintenance Burden:** Introducing two new UI surfaces expands the surface area of the project. The UI code must be maintained alongside the core API to prevent regressions.
 * **Contributor Learning Curve:** Developers accustomed strictly to CLI tool development will need to familiarize themselves with declarative UI paradigms and FTXUI's functional API.
-* **Platform Compatibility Edge Cases:** Certain legacy terminal emulators or heavily customized shells might exhibit rendering artifacts or input handling bugs.
+* **Platform Compatibility Edge Cases:** Certain legacy terminal emulators or heavily customized shells might exhibit rendering artifacts or input handling bugs. To mitigate this, we will include a configuration fallback to plain ASCII equivalents for UI glyphs (e.g., `[Tier]` instead of `🛡️ Tier`) for older terminals without full Unicode support.
 * **Testing Story:** TUIs are notoriously difficult to unit-test. To mitigate this risk, the implementation will require comprehensive testing, specifically utilizing snapshot-style golden-output testing for layout rendering (text + ANSI) under different terminal widths and scripted input sequences.
 
 ---
@@ -190,7 +190,7 @@ A specialized environment optimized for interaction with Large Language Models a
 
 * Establish comprehensive snapshot-style golden-output testing for the UI layout rendering and scripted input sequences.
 * Integrate TUI build, smoke tests, and binary size delta checks into the existing CI pipeline.
-* Add an animated terminal recording or GIF showcasing the `t81 ui` entry point and basic compile/REPL workflows to the primary `README.md` and user guides to enhance project discoverability.
+* Add static screenshots of the dual layouts side-by-side, along with an animated terminal recording or GIF showcasing the `t81 ui` entry point and basic compile/REPL workflows, to the primary `README.md` and user guides to enhance project discoverability.
 * Write detailed documentation, user guides, and integration examples.
 * Update the RFC Implementation Audit doc to list RFC-0033 as "Accepted → In Progress" and establish a symlink or direct inclusion within the `/spec/rfcs/` directory if required by the T81 Specification Authority Model.
 
