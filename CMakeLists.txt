@@ -556,6 +556,7 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/dev/hosted_block_dev.cpp
     experimental/ternaryos/dev/canon_store.cpp
     experimental/ternaryos/dev/framebuffer.cpp
+    experimental/ternaryos/dev/ttf.cpp
     experimental/ternaryos/mmu/ternary_page_alloc.cpp
     experimental/ternaryos/mmu/page_table.cpp
     experimental/ternaryos/sched/context_switch.cpp
@@ -570,6 +571,10 @@ if(T81_ENABLE_TERNARYOS)
 
   target_link_libraries(t81_ternaryos_hal PUBLIC t81_core t81_axion)
   target_compile_features(t81_ternaryos_hal PUBLIC ${T81_CXX_STD_FEATURE})
+
+  add_executable(t81_ternaryos_demo
+    experimental/ternaryos/demo.cpp)
+  target_link_libraries(t81_ternaryos_demo PRIVATE t81_ternaryos_hal)
 
   if(T81_BUILD_TESTS)
     add_executable(t81_ternaryos_hal_boot_test

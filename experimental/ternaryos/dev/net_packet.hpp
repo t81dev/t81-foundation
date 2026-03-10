@@ -73,6 +73,63 @@ struct TernaryEthernetPacket {
   std::size_t trit_word_count() const noexcept {
     return trit_payload.size() / 3;
   }
+
+  /// Serialize to a binary Ethernet-like frame:
+  ///   dst[6] + src[6] + ethertype[2 BE] + trit_count[2 BE] + payload bytes
+  std::optional<std::vector<uint8_t>> to_frame() const {
+    if (!valid()) return std::nullopt;
+    if (trit_payload.size() > 0xFFFFu) return std::nullopt;
+
+    std::vector<uint8_t> frame;
+    frame.reserve(16 + trit_payload.size());
+    frame.insert(frame.end(), dst_mac.begin(), dst_mac.end());
+    frame.insert(frame.end(), src_mac.begin(), src_mac.end());
+    frame.push_back(static_cast<uint8_t>((ethertype >> 8) & 0xFF));
+    frame.push_back(static_cast<uint8_t>(ethertype & 0xFF));
+
+    const uint16_t trit_count = static_cast<uint16_t>(trit_payload.size());
+    frame.push_back(static_cast<uint8_t>((trit_count >> 8) & 0xFF));
+    frame.push_back(static_cast<uint8_t>(trit_count & 0xFF));
+
+    for (int8_t t : trit_payload) {
+      frame.push_back(static_cast<uint8_t>(t + 1));  // {-1,0,+1} -> {0,1,2}
+    }
+    return frame;
+  }
+
+  /// Parse a binary Ethernet-like frame produced by to_frame().
+  static std::optional<TernaryEthernetPacket> from_frame(
+      const std::vector<uint8_t>& frame) {
+    if (frame.size() < 16) return std::nullopt;
+
+    const uint16_t trit_count =
+        static_cast<uint16_t>((static_cast<uint16_t>(frame[14]) << 8) | frame[15]);
+    if (frame.size() != static_cast<std::size_t>(16 + trit_count)) {
+      return std::nullopt;
+    }
+
+    TernaryEthernetPacket pkt;
+    std::copy_n(frame.begin(), 6, pkt.dst_mac.begin());
+    std::copy_n(frame.begin() + 6, 6, pkt.src_mac.begin());
+    pkt.ethertype =
+        static_cast<uint16_t>((static_cast<uint16_t>(frame[12]) << 8) | frame[13]);
+
+    pkt.trit_payload.reserve(trit_count);
+    for (std::size_t i = 16; i < frame.size(); ++i) {
+      const uint8_t raw = frame[i];
+      if (raw > 2) return std::nullopt;
+      pkt.trit_payload.push_back(static_cast<int8_t>(raw) - 1);
+    }
+    if (!pkt.valid()) return std::nullopt;
+
+    std::vector<uint8_t> raw(pkt.trit_payload.size());
+    for (std::size_t i = 0; i < raw.size(); ++i) {
+      raw[i] = static_cast<uint8_t>(pkt.trit_payload[i] & 0xFF);
+    }
+    pkt.content_ref = t81::canonfs::CanonRef{
+        t81::canonfs::CanonHash{t81::hash::hash_bytes(raw)}};
+    return pkt;
+  }
 };
 
 }  // namespace t81::ternaryos::dev

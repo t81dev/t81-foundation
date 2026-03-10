@@ -85,18 +85,21 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `dev/hosted_block_dev.hpp/.cpp` | File-backed hosted block device; read/write/flush/save/load for reboot simulation | 15 |
 | `dev/canon_store.hpp/.cpp` | Content-addressed CanonBlock store over `IBlockDevice`; dedup, flush, rebuild, corruption detection | 29 |
 | `dev/framebuffer.hpp/.cpp` | 81×27 ternary framebuffer with ASCII dump | 18 |
-| `dev/net_packet.hpp` | Ternary Ethernet packet wrapper with payload validation + canonical content hash | 9 |
-| `tests/device_driver_test.cpp` | Phase 4 acceptance tests AC-D1 through AC-D7 | 83 |
+| `dev/ttf.hpp/.cpp` | Minimal Ternary Text Format codec + framebuffer text renderer for ASCII terminal output | 12 |
+| `dev/net_packet.hpp` | Ternary Ethernet packet wrapper with payload validation, canonical content hash, and binary frame encode/decode | 18 |
+| `demo.cpp` | Hosted presentation demo: reboot-persistent CanonStore + TTF framebuffer + Ethernet frame round-trip | — |
+| `tests/device_driver_test.cpp` | Phase 4 acceptance tests AC-D1 through AC-D8 plus hosted TTF rendering and Ethernet frame translation checks | 104 |
 
 #### Design notes
 
 - Logical block size is fixed at 729 bytes (one CanonBlock / 3^6 trytes), keeping device I/O aligned with CanonFS primitives.
 - `CanonStore` reserves LBA 0 for a single-block index header (`CST1`), leaving data blocks at LBA 1+; the current Phase 4 cap is 17 unique entries.
 - `HostedBlockDev::save()` / `load()` provides the current reboot-cycle simulation path for the v2.0 gate.
-- The network layer is a value-type wrapper only; no RX/TX device path exists yet.
-- TTF terminal rendering and real NVMe/ethernet hardware adapters remain open.
+- `ttf_encode_ascii()` / `ttf_render_text()` now provide a minimal hosted TTF terminal path over the ternary framebuffer.
+- The network layer now translates between ternary packet structs and a binary Ethernet-like frame format, but no RX/TX device path exists yet.
+- Real NVMe/ethernet hardware adapters remain open.
 
-**Phase 4 test total: 83 / 83**
+**Phase 4 test total: 104 / 104**
 
 ---
 
@@ -117,8 +120,8 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_mmu_test` | 47 | 2 |
 | `t81_ternaryos_scheduler_test` | 120 | 3 |
 | `t81_ternaryos_ipc_test` | 73 | 3 |
-| `t81_ternaryos_device_driver_test` | 83 | 4 |
-| **Total** | **403** | |
+| `t81_ternaryos_device_driver_test` | 104 | 4 |
+| **Total** | **424** | |
 
 Run all TernOS tests:
 

@@ -8,6 +8,7 @@
 #include "../dev/canon_store.hpp"
 #include "../dev/framebuffer.hpp"
 #include "../dev/net_packet.hpp"
+#include "../dev/ttf.hpp"
 
 #include <cassert>
 #include <cstdio>
@@ -259,6 +260,51 @@ static void test_framebuffer() {
   check(s.find('-') != std::string::npos, "dump_ascii contains '-'");
 }
 
+// ─── AC-D5b: TTF encode/decode and framebuffer text rendering ───────────────
+
+static void test_ttf_rendering() {
+  std::printf("\n[D5b] TTF encode/decode and text rendering\n");
+
+  auto encoded = ttf_encode_ascii('A');
+  check(encoded.has_value(), "encode_ascii('A') succeeds");
+  if (encoded) {
+    auto decoded = ttf_decode_ascii(*encoded);
+    check(decoded.has_value(), "decode_ascii(encoded 'A') succeeds");
+    if (decoded) {
+      check(*decoded == 'A', "encode/decode round-trip preserves 'A'");
+    }
+  }
+
+  auto bad = ttf_encode_ascii(static_cast<char>(0xFF));
+  check(!bad.has_value(), "encode_ascii rejects non-ASCII byte");
+
+  TtfGlyph invalid = {0, 0, 0, 0, 0, 2};
+  check(!ttf_decode_ascii(invalid).has_value(),
+        "decode_ascii rejects out-of-range trit");
+
+  TernaryFramebuffer fb(12, 8);
+  check(ttf_render_char(fb, 0, 0, 'A'), "render_char('A') succeeds");
+  check(fb.get_pixel(0, 0).value != 0 || fb.get_pixel(1, 0).value != 0 ||
+            fb.get_pixel(2, 0).value != 0 || fb.get_pixel(0, 1).value != 0 ||
+            fb.get_pixel(1, 1).value != 0 || fb.get_pixel(2, 1).value != 0,
+        "render_char writes non-zero glyph pixels");
+  check(fb.get_pixel(0, 2).value == 0 && fb.get_pixel(1, 2).value == 0 &&
+            fb.get_pixel(2, 2).value == 0,
+        "render_char leaves third row blank");
+
+  fb.clear();
+  auto n = ttf_render_text(fb, 0, 0, "AB\nC");
+  check(n == 3, "render_text renders 3 ASCII characters");
+  check(fb.count(1) + fb.count(-1) > 0, "render_text produces visible pixels");
+  check(fb.get_pixel(0, 4).value != 0 || fb.get_pixel(1, 4).value != 0 ||
+            fb.get_pixel(2, 4).value != 0 || fb.get_pixel(0, 5).value != 0 ||
+            fb.get_pixel(1, 5).value != 0 || fb.get_pixel(2, 5).value != 0,
+        "render_text newline advances to the next glyph row");
+
+  check(!ttf_render_char(fb, 10, 0, 'Z'),
+        "render_char fails when full glyph cell would overflow");
+}
+
 // ─── AC-D6: TernaryEthernetPacket ────────────────────────────────────────────
 
 static void test_net_packet() {
@@ -278,6 +324,22 @@ static void test_net_packet() {
     bool nonzero = false;
     for (auto b : pkt->content_ref.hash.h.bytes) if (b) { nonzero = true; break; }
     check(nonzero, "content_ref hash is non-zero");
+
+    auto frame = pkt->to_frame();
+    check(frame.has_value(), "to_frame() succeeds for valid packet");
+    if (frame) {
+      check(frame->size() == 16 + payload.size(), "frame size matches header + payload");
+      auto parsed = TernaryEthernetPacket::from_frame(*frame);
+      check(parsed.has_value(), "from_frame() parses serialized frame");
+      if (parsed) {
+        check(parsed->dst_mac == pkt->dst_mac, "parsed dst_mac matches");
+        check(parsed->src_mac == pkt->src_mac, "parsed src_mac matches");
+        check(parsed->ethertype == pkt->ethertype, "parsed ethertype matches");
+        check(parsed->trit_payload == pkt->trit_payload, "parsed payload matches");
+        check(parsed->content_ref.hash.h.bytes == pkt->content_ref.hash.h.bytes,
+              "parsed content_ref matches");
+      }
+    }
   }
 
   // Invalid: payload size not multiple of 3
@@ -289,6 +351,15 @@ static void test_net_packet() {
   std::vector<int8_t> bad_val = {1, 2, -1};  // 2 is out of {-1,0,+1}
   auto bad_pkt2 = TernaryEthernetPacket::build(dst, src, 0x0081, bad_val);
   check(!bad_pkt2.has_value(), "build() fails for out-of-range trit value (2)");
+
+  std::vector<uint8_t> bad_frame = {
+      0x01,0x02,0x03,0x04,0x05,0x06,
+      0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,
+      0x00,0x81,
+      0x00,0x03,
+      0x00,0x01,0x04};
+  check(!TernaryEthernetPacket::from_frame(bad_frame).has_value(),
+        "from_frame() rejects out-of-range encoded trit");
 
   // Same payload → same content_ref (deterministic hash)
   auto pkt2 = TernaryEthernetPacket::build(dst, src, 0x0081, payload);
@@ -340,6 +411,7 @@ int main() {
   test_canon_store_reboot();
   test_canon_store_corruption_detection();
   test_framebuffer();
+  test_ttf_rendering();
   test_net_packet();
   test_canon_store_capacity();
 

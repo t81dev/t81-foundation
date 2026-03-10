@@ -15,8 +15,9 @@ This RFC defines the device driver interfaces for TernOS Phase 4:
 | :--- | :--- | :--- |
 | Block storage | `IBlockDevice` | NVMe in bare-metal; file-backed in hosted sim |
 | CanonFS store | `CanonStore` | `IBlockDevice` + content-addressed index |
-| Framebuffer | `TernaryFramebuffer` | Linear `TritPixel` array; stub I/O in Phase 4 |
-| Network | `TernaryEthernetPacket` | Binary Ethernet frame + ternary payload |
+| Framebuffer | `TernaryFramebuffer` | Linear `TritPixel` array; hosted rendering in Phase 4 |
+| TTF terminal | `ttf_encode_ascii`, `ttf_render_text` | ASCII to balanced-trit glyphs over `TernaryFramebuffer` |
+| Network | `TernaryEthernetPacket` | Binary Ethernet-like frame + ternary payload |
 
 ---
 
@@ -108,7 +109,26 @@ Phase 4 output target: `hal_log()`.  No hardware MMIO in hosted simulation.
 
 ---
 
-## 5  Ternary Ethernet Packet
+## 5  Ternary Text Format (TTF)
+
+Phase 4 includes a minimal hosted-simulation text path for rendering ASCII into
+the ternary framebuffer.
+
+```cpp
+std::optional<TtfGlyph> ttf_encode_ascii(char ch);
+std::optional<char>     ttf_decode_ascii(const TtfGlyph& glyph);
+bool                    ttf_render_char(TernaryFramebuffer&, uint32_t x, uint32_t y, char ch);
+std::size_t             ttf_render_text(TernaryFramebuffer&, uint32_t x, uint32_t y, std::string_view text);
+```
+
+- Each ASCII byte is encoded into six balanced trits.
+- A glyph occupies a `3 x 3` cell; the top two rows store the six trits and the
+  bottom row is blank padding.
+- Newlines advance by one glyph row plus one spacer row.
+
+---
+
+## 6  Ternary Ethernet Packet
 
 Compatibility layer bridging binary Ethernet (IEEE 802.3) to ternary payloads.
 
@@ -125,9 +145,18 @@ struct TernaryEthernetPacket {
 `trit_payload.size()` must be a multiple of 3 (ternary word alignment).
 `content_ref` is computed by the sender and verified by the receiver.
 
+Phase 4 hosted simulation also defines a binary frame translation:
+
+```text
+dst[6] + src[6] + ethertype[2 BE] + trit_count[2 BE] + payload[trit_count]
+```
+
+Each payload byte stores one ternary digit encoded as `{0,1,2}` for
+`{-1,0,+1}` respectively.
+
 ---
 
-## 6  Acceptance Criteria
+## 7  Acceptance Criteria
 
 | ID | Criterion |
 | :-- | :--- |
@@ -136,5 +165,6 @@ struct TernaryEthernetPacket {
 | AC-D3 | `CanonStore::flush` + reopen + `rebuild_index` recovers all stored blocks by hash |
 | AC-D4 | `CanonStore::get` returns `nullopt` for an unknown `CanonRef` |
 | AC-D5 | `TernaryFramebuffer::dump_ascii` produces non-empty output after `set_pixel` |
-| AC-D6 | `TernaryEthernetPacket` with trit_payload not a multiple of 3 is rejected |
+| AC-D6 | `TernaryEthernetPacket` with trit_payload not a multiple of 3 is rejected, and frame encode/decode preserves header + payload |
 | AC-D7 | `CanonStore::get` verifies hash on read; a block with a corrupted tryte returns `nullopt` |
+| AC-D8 | TTF encode/decode round-trips ASCII and `ttf_render_text` produces visible framebuffer output |

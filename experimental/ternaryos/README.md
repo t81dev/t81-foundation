@@ -5,9 +5,11 @@
 **Roadmap:** [docs/research/ternary_os_roadmap.md](../../docs/research/ternary_os_roadmap.md)
 **RFC-00B0 (HAL):** [docs/rfcs/RFC-00B0-hal-spec.md](../../docs/rfcs/RFC-00B0-hal-spec.md)
 **RFC-00B1 (MMU):** [docs/rfcs/RFC-00B1-ternary-mmu.md](../../docs/rfcs/RFC-00B1-ternary-mmu.md)
+**RFC-00B2 (Drivers):** [docs/rfcs/RFC-00B2-device-drivers.md](../../docs/rfcs/RFC-00B2-device-drivers.md)
 
 Prototype implementation of TernOS — a ternary-native OS kernel for the T81VM
-runtime. Phases 1 and 2 are complete. Phase 3 (pre-emptive scheduler) is next.
+runtime. Phases 1 through 3 are complete, and Phase 4 device-driver work is in
+progress.
 
 ## Structure
 
@@ -28,12 +30,28 @@ mmu/
 sched/
   tisc_context.hpp     TiscContext: full TISC thread snapshot for pre-emption
   context_switch.hpp/.cpp  context_save / context_restore / context_yield
+  run_queue.hpp/.cpp   81-slot deterministic run queue
+  scheduler.hpp/.cpp   Round-robin scheduler over TISC contexts
+
+ipc/
+  canon_message.hpp/.cpp  CanonRef-safe FIFO message bus
+
+dev/
+  block_device.hpp     CanonBlock-aligned block device interface
+  hosted_block_dev.hpp/.cpp  File-backed hosted block device
+  canon_store.hpp/.cpp Content-addressed CanonBlock store + reboot rebuild
+  framebuffer.hpp/.cpp 81x27 ternary framebuffer with ASCII dump
+  ttf.hpp/.cpp         Minimal ASCII ↔ balanced-ternary text codec + renderer
+  net_packet.hpp       Ternary Ethernet packet wrapper + binary frame codec
 
 tests/
   hal_boot_test.cpp          Phase 1 — 9 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
   mmu_test.cpp               Phase 2 — 47 assertions
+  scheduler_test.cpp         Phase 3 — 120 assertions
+  ipc_test.cpp               Phase 3 — 73 assertions
+  device_driver_test.cpp     Phase 4 — 104 assertions
 ```
 
 ## Build & Test
@@ -42,8 +60,24 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 127/127 assertions, 4/4 tests pass
+# Expected: 424/424 assertions, 7/7 tests pass
 ```
+
+## Demo
+
+For a short presentation-oriented walkthrough:
+
+```sh
+cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
+cmake --build build --target t81_ternaryos_demo
+./build/t81_ternaryos_demo
+```
+
+The demo shows three Phase 4 hosted behaviors:
+
+- CanonStore persists a CanonBlock across a simulated reboot.
+- TTF renders ASCII text into the ternary framebuffer.
+- TernaryEthernetPacket round-trips through a binary Ethernet-like frame.
 
 ## Promotion Path
 
