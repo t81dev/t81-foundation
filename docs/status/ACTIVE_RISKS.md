@@ -11,7 +11,6 @@ No prose. If a risk needs an essay, escalate it.
 | ID | Risk | Severity | Owner | Mitigation | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | R-01 | Determinism overclaim — external summaries omit registry boundary language | High | @t81dev | `governance-metrics` CI gate enforces registry-bounded claim language | Monitoring |
-| R-02 | Axion Alpha posture delays Beta promotion (partial spec coverage, evidence gaps in 1.1/1.3/1.10) | High | @t81dev | M5–M7 evidence closures landed; remaining action is Beta candidacy review on 2026-04-30 | Open |
 | R-05 | AGI-facing surface growth outpacing promotion evidence updates | Medium | @t81dev | Surface inventory refreshed each monthly governance cadence | Monitoring |
 | R-06 | Documentation maintenance burden after reorganization | Low | @t81dev | Content-based structure reduces maintenance overhead; automated link checking in CI | Monitoring |
 | R-07 | Benchmark variability — false signal in `vm workload gate` guardrail | Low | @t81dev | Alert threshold >5% regression; review guardrail if consecutive divergence detected | Monitoring |
@@ -21,6 +20,7 @@ No prose. If a risk needs an essay, escalate it.
 
 | ID | Risk | Resolution | Closed |
 | :--- | :--- | :--- | :--- |
+| **R-02** | **Axion Alpha posture delays Beta promotion** | **Resolved through successful 2026-03-10 Beta candidacy review and promotion** | **2026-03-10** |
 | R-07 | CodeQL push trigger missing on `main` — required context not populated | `ad6c2777` added push trigger to `codeql.yml` | 2026-02-26 |
 | R-09 | March release packet blocked by required-context mismatch | GO stamped on `1ec312e3`; both required contexts completed/success | 2026-02-28 |
 | R-03 | Single-owner concentration — all GO/HOLD decisions gated on @t81dev | `docs/governance/APPROVAL_DELEGATION.md` published (GOV-01) | 2026-03-05 |
