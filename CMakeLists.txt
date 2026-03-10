@@ -541,6 +541,35 @@ else()
 endif()
 
 # =============================================================================
+# TernOS Phase 1 — HAL experimental scaffold (RFC-00B0)
+# Enable with -DT81_ENABLE_TERNARYOS=ON
+# =============================================================================
+option(T81_ENABLE_TERNARYOS "Enable experimental TernOS HAL scaffold (non-DCP)" OFF)
+
+if(T81_ENABLE_TERNARYOS)
+  message(STATUS "[t81] T81_ENABLE_TERNARYOS=ON — building experimental TernOS HAL")
+
+  add_library(t81_ternaryos_hal STATIC
+    experimental/ternaryos/hal/hal_main.cpp
+    experimental/ternaryos/hal/interrupt_table.cpp
+    experimental/ternaryos/hal/hosted_stub.cpp)
+
+  target_include_directories(t81_ternaryos_hal PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+
+  target_link_libraries(t81_ternaryos_hal PUBLIC t81_core t81_axion)
+  target_compile_features(t81_ternaryos_hal PUBLIC ${T81_CXX_STD_FEATURE})
+
+  if(T81_BUILD_TESTS)
+    add_executable(t81_ternaryos_hal_boot_test
+      experimental/ternaryos/tests/hal_boot_test.cpp)
+    target_link_libraries(t81_ternaryos_hal_boot_test PRIVATE t81_ternaryos_hal)
+    add_test(NAME t81_ternaryos_hal_boot_test COMMAND t81_ternaryos_hal_boot_test)
+  endif()
+endif()
+
+# =============================================================================
 # CLI & Examples
 # =============================================================================
 add_library(t81_tool_cli STATIC
