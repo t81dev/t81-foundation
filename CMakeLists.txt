@@ -26,6 +26,25 @@ set(T81_LLAMA_REPRO_MODEL "" CACHE FILEPATH "Model path for llama.cpp reproducib
 set(T81_LLAMA_REPRO_POLICY "" CACHE FILEPATH "Policy path for llama.cpp reproducibility gate")
 set(T81_LLAMA_REPRO_PROMPT "" CACHE STRING "Prompt for llama.cpp reproducibility gate")
 
+# =============================================================================
+# Detect Homebrew/non-system LLVM libc++ directory
+# When using Homebrew LLVM on macOS, libc++ lives in <compiler-root>/lib/c++
+# rather than the system library path.  Static archives compiled with LLVM 21+
+# reference std::__1::__hash_memory as an out-of-line symbol, so executables
+# that link those archives must have the LLVM lib/c++ dir on their search path.
+# =============================================================================
+if(APPLE)
+  get_filename_component(_T81_CXX_BIN_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+  get_filename_component(_T81_CXX_ROOT    "${_T81_CXX_BIN_DIR}"  DIRECTORY)
+  if(EXISTS "${_T81_CXX_ROOT}/lib/c++/libc++.dylib")
+    set(T81_LLVM_LIBCXX_DIR "${_T81_CXX_ROOT}/lib/c++")
+    message(STATUS "[t81] Detected LLVM libc++ at ${T81_LLVM_LIBCXX_DIR}")
+    # Apply globally: every executable in this build needs the LLVM lib/c++ dir
+    # on its linker search path so std::__1::__hash_memory resolves correctly.
+    add_link_options("-L${T81_LLVM_LIBCXX_DIR}")
+  endif()
+endif()
+
 if(T81_TRITWISE_PROFILE)
   add_compile_definitions(T81_TRITWISE_PROFILE)
 endif()
@@ -1388,6 +1407,13 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   if(T81_BUILD_FUZZ_TESTS)
     add_executable(t81_frontend_fuzz_test tests/cpp/frontend_fuzz_test.cpp)
     target_link_libraries(t81_frontend_fuzz_test PRIVATE t81_lang_frontend)
+
+    add_executable(fuzz_parser tests/fuzz/fuzz_parser.cpp)
+    target_link_libraries(fuzz_parser PRIVATE t81_lang_frontend t81_core)
+
+    add_executable(fuzz_vm tests/fuzz/fuzz_vm.cpp)
+    target_link_libraries(fuzz_vm PRIVATE t81_vm t81_core t81_isa)
+
   endif()
 
   add_executable(t81_t81int_test tests/cpp/test_t81int.cpp)

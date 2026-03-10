@@ -62,7 +62,6 @@ Full decomposition: `DRIFT_DECOMPOSITION.md`
 | ID | Risk | Severity |
 | :--- | :--- | :--- |
 | R-01 | Determinism overclaim — registry boundary language omitted externally | High |
-| R-02 | Axion Alpha posture delays Beta promotion | High |
 
 Full register: `ACTIVE_RISKS.md`
 
@@ -93,8 +92,7 @@ Full boundary: `EXTENSION_PROFILE.md`
 ## Next Decision Points
 
 1. **2026-03-31** — Execute C2 runbook; stamp outcome in `docs/records/audits/2026-03-governance-review.md`
-2. **2026-04-30** — Axion Beta candidacy review
-3. **Post-C2** — Re-evaluate Jekyll Pages deferred failure (R-07)
+2. **Post-C2 Release Prep** — Cut v1.4.0-Stable RC versions and scale-up fuzzing infra
 
 ---
 

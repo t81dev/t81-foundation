@@ -4475,7 +4475,7 @@ public:
       }
       // Cognitive Tier Stubs
       case t81::tisc::Opcode::SymLoad: {
-        if (!reg_ok(insn.a)) {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
           trap = Trap::DecodeFault;
           break;
         }
@@ -4586,7 +4586,7 @@ public:
           trap = Trap::TierFault;
           break;
         }
-        if (!reg_ok(insn.a)) {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
           trap = Trap::DecodeFault;
           break;
         }
@@ -4616,7 +4616,7 @@ public:
           trap = Trap::TierFault;
           break;
         }
-        if (!reg_ok(insn.b)) {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
           trap = Trap::DecodeFault;
           break;
         }
