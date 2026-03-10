@@ -554,6 +554,7 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/hal/interrupt_table.cpp
     experimental/ternaryos/hal/hosted_stub.cpp
     experimental/ternaryos/mmu/ternary_page_alloc.cpp
+    experimental/ternaryos/mmu/page_table.cpp
     experimental/ternaryos/sched/context_switch.cpp)
 
   target_include_directories(t81_ternaryos_hal PUBLIC
@@ -578,6 +579,11 @@ if(T81_ENABLE_TERNARYOS)
       experimental/ternaryos/tests/context_switch_test.cpp)
     target_link_libraries(t81_ternaryos_context_switch_test PRIVATE t81_ternaryos_hal)
     add_test(NAME t81_ternaryos_context_switch_test COMMAND t81_ternaryos_context_switch_test)
+
+    add_executable(t81_ternaryos_mmu_test
+      experimental/ternaryos/tests/mmu_test.cpp)
+    target_link_libraries(t81_ternaryos_mmu_test PRIVATE t81_ternaryos_hal)
+    add_test(NAME t81_ternaryos_mmu_test COMMAND t81_ternaryos_mmu_test)
   endif()
 endif()
 
