@@ -45,11 +45,11 @@ def parse_bg_statuses(backlog_text: str) -> dict[str, str]:
         if not line.startswith("|"):
             continue
         parts = [part.strip() for part in line.split("|")]
-        if len(parts) < 9:
+        if len(parts) < 5:
             continue
-        item_id = parts[2]
-        status = parts[8]
-        if re.match(r"BG-\d+", item_id):
+        item_id = parts[1].replace("*", "")
+        status = parts[-2].replace("*", "")
+        if re.match(r"^BG-\d+", item_id):
             statuses[item_id] = status
     return statuses
 
