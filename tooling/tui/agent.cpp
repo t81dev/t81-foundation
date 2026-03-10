@@ -485,8 +485,6 @@ int run_agent(const std::vector<std::string>& args) {
     bool                 resume_loaded  = resume_path.empty();
     std::string          busy_status;
     std::string          last_error;
-    int                  history_scroll = 0;   // first visible message index
-    static const int     VISIBLE_MSGS   = 28;
     {
         WorkspaceState workspace;
         if (!workspace_path.empty() && load_workspace_state(workspace_path, workspace)) {
@@ -512,9 +510,6 @@ int run_agent(const std::vector<std::string>& args) {
         } else {
             resume_loaded = true;
         }
-        if (!history.empty())
-            history_scroll = std::max(0,
-                static_cast<int>(history.size()) - VISIBLE_MSGS);
     }
 
     // Welcome / resume message
@@ -524,8 +519,6 @@ int run_agent(const std::vector<std::string>& args) {
             (!resume_path.empty() && resume_loaded)
                 ? "Session resumed from " + resume_path + ". Type /help for commands."
                 : "T81 Agentic Interface. Type /help for commands."});
-        history_scroll = std::max(0,
-            static_cast<int>(history.size()) - VISIBLE_MSGS);
     }
 
     std::string input_buf;
@@ -535,6 +528,39 @@ int run_agent(const std::vector<std::string>& args) {
     auto input_c = Input(&input_buf, "Type a message or /command…");
     std::mutex task_mutex;
     std::vector<std::function<void()>> pending_ui_tasks;
+
+    auto history_log_viewer = LogViewer([&]() {
+        Elements msgs;
+        std::vector<Message> history_snapshot;
+        {
+            std::lock_guard<std::mutex> lk(history_mutex);
+            history_snapshot = history;
+        }
+        for (const auto& m : history_snapshot) {
+            switch (m.role) {
+            case Message::Role::User:
+                msgs.push_back(render_message_block(
+                    "[You]   ", Color::Green, m.text, Color::White));
+                break;
+            case Message::Role::Agent:
+                msgs.push_back(render_message_block(
+                    "[Agent] ", Color::Cyan, m.text,
+                    line_looks_like_error(m.text) ? Color::Red : Color::White));
+                break;
+            case Message::Role::System:
+                msgs.push_back(
+                    text("* " + m.text)
+                        | color(line_looks_like_error(m.text)
+                            ? Color::Red
+                            : Color::GrayDark)
+                        | dim
+                );
+                break;
+            }
+            msgs.push_back(text(""));
+        }
+        return msgs;
+    });
 
     auto queue_ui = [&](std::function<void()> fn) {
         {
@@ -618,7 +644,6 @@ int run_agent(const std::vector<std::string>& args) {
             history.clear();
             history.push_back({Message::Role::System,
                 "Conversation cleared. Type /help for commands."});
-            history_scroll = 0;
             return true;
         }
         if (text_in == "/trits") {
@@ -634,8 +659,6 @@ int run_agent(const std::vector<std::string>& args) {
         {
             std::lock_guard<std::mutex> lk(history_mutex);
             history.push_back({Message::Role::User, text_in});
-            history_scroll = std::max(0,
-                static_cast<int>(history.size()) - VISIBLE_MSGS);
         }
 
         // Dispatch
@@ -709,8 +732,6 @@ int run_agent(const std::vector<std::string>& args) {
                 {
                     std::lock_guard<std::mutex> lk(history_mutex);
                     history.push_back({Message::Role::Agent, reply});
-                    history_scroll = std::max(0,
-                        static_cast<int>(history.size()) - VISIBLE_MSGS);
                 }
                 if (!session_path.empty()) {
                     std::vector<Message> snapshot;
@@ -722,8 +743,6 @@ int run_agent(const std::vector<std::string>& args) {
                         std::lock_guard<std::mutex> lk(history_mutex);
                         history.push_back({Message::Role::System,
                             "[error: failed to save session]"});
-                        history_scroll = std::max(0,
-                            static_cast<int>(history.size()) - VISIBLE_MSGS);
                         last_error = "save failed";
                     }
                 }
@@ -777,8 +796,6 @@ int run_agent(const std::vector<std::string>& args) {
                     {
                         std::lock_guard<std::mutex> lk(history_mutex);
                         history.push_back({Message::Role::Agent, reply});
-                        history_scroll = std::max(0,
-                            static_cast<int>(history.size()) - VISIBLE_MSGS);
                     }
                     pending_jobs = std::max(0, pending_jobs - 1);
                     if (pending_jobs == 0)
@@ -794,8 +811,6 @@ int run_agent(const std::vector<std::string>& args) {
                             std::lock_guard<std::mutex> lk(history_mutex);
                             history.push_back({Message::Role::System,
                                 "[error: failed to save session]"});
-                            history_scroll = std::max(0,
-                                static_cast<int>(history.size()) - VISIBLE_MSGS);
                             last_error = "save failed";
                         }
                     }
@@ -809,8 +824,6 @@ int run_agent(const std::vector<std::string>& args) {
                     "Use slash commands to interact with T81 subsystems:\n"
                     "  /compile /run /check /disasm /trace /hash\n"
                     "  /axion /policy /allow /write /tier /trits /help"});
-                history_scroll = std::max(0,
-                    static_cast<int>(history.size()) - VISIBLE_MSGS);
             }
             if (!session_path.empty()) {
                 std::vector<Message> snapshot;
@@ -822,8 +835,6 @@ int run_agent(const std::vector<std::string>& args) {
                     std::lock_guard<std::mutex> lk(history_mutex);
                     history.push_back({Message::Role::System,
                         "[error: failed to save session]"});
-                    history_scroll = std::max(0,
-                        static_cast<int>(history.size()) - VISIBLE_MSGS);
                     last_error = "save failed";
                 }
             }
@@ -831,7 +842,7 @@ int run_agent(const std::vector<std::string>& args) {
         return true;
     });
 
-    auto layout = Container::Vertical({ input_c });
+    auto layout = Container::Vertical({ history_log_viewer, input_c });
 
     // ── Renderer ─────────────────────────────────────────────────────────────
     auto renderer = Renderer(layout, [&]() -> Element {
@@ -923,56 +934,10 @@ int run_agent(const std::vector<std::string>& args) {
                 | color(Color::GrayDark),
         }) | border | size(WIDTH, LESS_THAN, 24);
 
-        // Conversation history (scrollable)
-        Elements msgs;
-        std::vector<Message> history_snapshot;
-        int history_start = 0;
-        int history_end = 0;
-        int history_size = 0;
-        {
-            std::lock_guard<std::mutex> lk(history_mutex);
-            history_size = static_cast<int>(history.size());
-            history_start = std::max(0, std::min(history_scroll, history_size - 1));
-            history_end = std::min(history_size, history_start + VISIBLE_MSGS);
-            history_snapshot.assign(history.begin() + history_start, history.begin() + history_end);
-        }
-        for (const auto& m : history_snapshot) {
-            switch (m.role) {
-            case Message::Role::User:
-                msgs.push_back(render_message_block(
-                    "[You]   ", Color::Green, m.text, Color::White));
-                break;
-            case Message::Role::Agent:
-                msgs.push_back(render_message_block(
-                    "[Agent] ", Color::Cyan, m.text,
-                    line_looks_like_error(m.text) ? Color::Red : Color::White));
-                break;
-            case Message::Role::System:
-                msgs.push_back(
-                    text("* " + m.text)
-                        | color(line_looks_like_error(m.text)
-                            ? Color::Red
-                            : Color::GrayDark)
-                        | dim
-                );
-                break;
-            }
-            msgs.push_back(text(""));
-        }
-        if (history_size > VISIBLE_MSGS) {
-            msgs.push_back(hbox({
-                filler(),
-                text(" msg " + std::to_string(history_start + 1) + "-" +
-                     std::to_string(history_end) + "/" + std::to_string(history_size) +
-                     "  PgUp/PgDn ")
-                    | color(Color::GrayDark),
-            }));
-        }
-
         auto history_pane = vbox({
             text(" Interaction History") | bold | color(Color::White),
             separator(),
-            vbox(std::move(msgs)) | flex,
+            history_log_viewer->Render() | flex,
             separator(),
             hbox({
                 text(" >> ") | color(Color::Green),
@@ -1079,8 +1044,6 @@ int run_agent(const std::vector<std::string>& args) {
                     std::lock_guard<std::mutex> history_lk(history_mutex);
                     history.push_back({Message::Role::System,
                         "Selected target: " + selected.path});
-                    history_scroll = std::max(0,
-                        static_cast<int>(history.size()) - VISIBLE_MSGS);
                 }
                 target_overlay_open = false;
                 return true;
@@ -1092,20 +1055,8 @@ int run_agent(const std::vector<std::string>& args) {
             show_context = !show_context;
             return true;
         }
-        // History scroll
-        {
-            std::lock_guard<std::mutex> lk(history_mutex);
-            const int n = static_cast<int>(history.size());
-            if (e == Event::PageUp) {
-                history_scroll = std::max(0, history_scroll - (VISIBLE_MSGS / 2));
-                return true;
-            }
-            if (e == Event::PageDown) {
-                history_scroll = std::min(std::max(0, n - VISIBLE_MSGS),
-                                          history_scroll + (VISIBLE_MSGS / 2));
-                return true;
-            }
-        }
+
+        // Log Viewer handled natively by FTXUI Component system
         return false;
     });
 

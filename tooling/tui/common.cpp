@@ -412,7 +412,9 @@ std::string exec_argv(const std::vector<std::string>& argv) {
         execvp(cargv[0], cargv.data());
         // exec failed — write a diagnostic and exit.
         const char* msg = "[error: execvp failed]\n";
-        (void)write(STDERR_FILENO, msg, std::strlen(msg));
+        if (write(STDERR_FILENO, msg, std::strlen(msg)) < 0) {
+            // Ignore error since we are aborting anyway.
+        }
         _exit(127);
     }
 
