@@ -117,8 +117,65 @@ static bool test_save_program_is_bit_stable_for_same_program() {
   return true;
 }
 
+static bool test_corrupt_size_throws() {
+  const fs::path f = fs::temp_directory_path() / "t81-binary-io-corrupt-size.tisc";
+  {
+    std::ofstream out(f, std::ios::binary);
+    uint64_t bad_size = 17000000;
+    out.write(reinterpret_cast<const char*>(&bad_size), sizeof(bad_size));
+  }
+
+  bool caught = false;
+  try {
+    t81::tisc::load_program(f.string());
+  } catch (const std::runtime_error& e) {
+    caught = true;
+    if (!expect(std::string(e.what()).find("unreasonable element count") != std::string::npos,
+                "corrupt size throw message mismatch")) {
+      return false;
+    }
+  }
+
+  std::error_code ec;
+  fs::remove(f, ec);
+
+  return expect(caught, "corrupt size failed to throw");
+}
+
+static bool test_truncated_stream_throws() {
+  const fs::path f = fs::temp_directory_path() / "t81-binary-io-truncated.tisc";
+  {
+    std::ofstream out(f, std::ios::binary);
+    // Write only 4 bytes of an 8 byte size
+    uint32_t partial_size = 42;
+    out.write(reinterpret_cast<const char*>(&partial_size), sizeof(partial_size));
+  }
+
+  bool caught = false;
+  try {
+    t81::tisc::load_program(f.string());
+  } catch (const std::runtime_error& e) {
+    caught = true;
+    if (!expect(std::string(e.what()).find("unexpected end of file reading length prefix") != std::string::npos,
+                "truncated throw message mismatch")) {
+      return false;
+    }
+  }
+
+  std::error_code ec;
+  fs::remove(f, ec);
+
+  return expect(caught, "truncated stream failed to throw");
+}
+
 int main() {
   if (!test_save_program_is_bit_stable_for_same_program()) {
+    return 1;
+  }
+  if (!test_corrupt_size_throws()) {
+    return 1;
+  }
+  if (!test_truncated_stream_throws()) {
     return 1;
   }
   std::cout << "tisc binary io determinism test passed!\n";
