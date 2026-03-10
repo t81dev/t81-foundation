@@ -3,7 +3,7 @@
 Status: Active
 Last Updated: 2026-03-10
 Owner: @t81dev
-Version: 3.2.1
+Version: 3.2.2
 
 This is the dashboard. One page. If you need detail, follow a cross-reference.
 
@@ -19,13 +19,13 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Dimension | Status |
 | :--- | :--- |
-| Overall | Green — **PERFECT TEST COVERAGE ACHIEVED** (335/335 tests passing, 100% success rate) |
-| Release Readiness | **GO** — v1.3.2 released 2026-03-08 |
-| Current Main | `84576fe4` — RFC-0033 dual TUI frontends and README restructuring |
+| Overall | Green — **336/336 tests passing** (100% success rate) |
+| Release Readiness | **GO** — v1.4.0-beta tagged; v1.3.2 stable released 2026-03-08 |
+| Current Main | `85a0b438` — CLI stress test + binary_io OOM hardening |
 | Open Blockers | None |
 | Frozen Core | Intact — no freeze exceptions |
 | Determinism Registry | All Verified surfaces clean |
-| Structural Integrity | **PERFECT** — 335/335 tests (100% success rate); all test failures resolved |
+| Structural Integrity | **PERFECT** — 336/336 tests; CLI stress test now covers full command surface |
 
 ---
 
@@ -47,8 +47,8 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | :--- | :--- | :--- |
 | TISC ISA | None | Frozen |
 | Data Types | None | Frozen; audit closed 2026-02-27 |
-| T81VM | Low | FW-02 policy-bridge concentration closure landed; BG-07 precision closure landed; TLOADHASH null-canonfs SEGFAULT fixed; set_canonfs_root() API added |
-| T81Lang | **RESOLVED** | Frontend refactor complete: typed AST, unified builtin registry, IRGen to .cpp; 335/335 test coverage |
+| T81VM | Low | FW-02 closure landed; BG-07 closure landed; 3 OOB reg-index bugs fixed (SymLoad, ReflCap, ReflJustify); binary_io OOM-on-corrupt-input hardened |
+| T81Lang | **RESOLVED** | Frontend refactor complete: typed AST, unified builtin registry, IRGen to .cpp; 336/336 test coverage |
 | Axion Kernel | Low | AX-M5..M7 evidence landed; awaiting Beta review cycle |
 | T81Graph | Low | Lang-side serialization wired; determinism coverage in place |
 | Experimental | — | Non-DCP by definition |
@@ -74,6 +74,9 @@ Full register: `ACTIVE_RISKS.md`
 | BG-07 — BigInt precision scope resolution (phase 2) | @t81dev | **Closed 2026-03-05** |
 | FW-02 — VM dispatch concentration reduction | @t81dev | **Closed 2026-03-05** |
 | FW-01 — dependency firewall waiver retirement | @t81dev | **Closed 2026-03-05** |
+| SEC-01 — Fuzz infrastructure (fuzz_parser, fuzz_vm) + 3 OOB VM fixes | @t81dev | **Closed 2026-03-10** |
+| SEC-02 — binary_io OOM-on-corrupt-input (read_checked_size guard) | @t81dev | **Closed 2026-03-10** |
+| QA-01 — CLI stress test covering full command surface (336th test) | @t81dev | **Closed 2026-03-10** |
 
 Full backlog: `HARDENING_BACKLOG.md`
 
@@ -92,7 +95,7 @@ Full boundary: `EXTENSION_PROFILE.md`
 ## Next Decision Points
 
 1. **2026-03-31** — Execute C2 runbook; stamp outcome in `docs/records/audits/2026-03-governance-review.md`
-2. **Post-C2 Release Prep** — Cut v1.4.0-Stable RC versions and scale-up fuzzing infra
+2. **Post-C2 Release Prep** — Cut v1.4.0-Stable from v1.4.0-beta; fuzz corpus growth; determinism coverage for new binary_io guard path
 
 ---
 
