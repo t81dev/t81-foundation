@@ -1,6 +1,6 @@
 # C2 Month-Close Check Report (2026-03-31 Runbook)
 
-Generated (UTC): 2026-03-10 16:28:50Z
+Generated (UTC): 2026-03-10 17:31:15Z
 Generator: `scripts/governance/c2_month_close_check.py`
 Overall: PASS
 
@@ -14,7 +14,7 @@ Overall: PASS
 
 ## Derived Fields
 
-- Promotion snapshot timestamp: 2026-03-10 16:28:50Z
+- Promotion snapshot timestamp: 2026-03-10 17:31:15Z
 
 ## Command Outputs
 

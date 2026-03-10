@@ -1,6 +1,6 @@
 # T81Lang Promotion Gate Snapshot
 
-Generated (UTC): 2026-03-10 16:28:50Z
+Generated (UTC): 2026-03-10 17:31:15Z
 Generator: `scripts/governance/t81lang_promotion_gate_snapshot.py`
 
 ## Gate Criteria Status
@@ -57,7 +57,7 @@ Test project /Users/t81dev/Code/t81-foundation/build
     Start 186: t81_semantic_analyzer_match_test
 3/7 Test #186: t81_semantic_analyzer_match_test ..................   Passed    0.00 sec
     Start 191: t81_semantic_analyzer_loop_test
-4/7 Test #191: t81_semantic_analyzer_loop_test ...................   Passed    0.01 sec
+4/7 Test #191: t81_semantic_analyzer_loop_test ...................   Passed    0.00 sec
     Start 193: t81_semantic_analyzer_diagnostic_location_test
 5/7 Test #193: t81_semantic_analyzer_diagnostic_location_test ....   Passed    0.00 sec
     Start 194: t81_semantic_analyzer_cascade_suppression_test
@@ -78,7 +78,7 @@ Total Test time (real) =   0.04 sec
 ```text
 Test project /Users/t81dev/Code/t81-foundation/build
     Start 207: e2e_compile_determinism_test
-1/3 Test #207: e2e_compile_determinism_test ............   Passed    0.02 sec
+1/3 Test #207: e2e_compile_determinism_test ............   Passed    0.01 sec
     Start 209: e2e_ast_ir_canonical_determinism_test
 2/3 Test #209: e2e_ast_ir_canonical_determinism_test ...   Passed    0.01 sec
     Start 210: e2e_enum_metadata_determinism_test
@@ -86,7 +86,7 @@ Test project /Users/t81dev/Code/t81-foundation/build
 
 100% tests passed, 0 tests failed out of 3
 
-Total Test time (real) =   0.04 sec
+Total Test time (real) =   0.03 sec
 ```
 
 ### Axion Metadata Slice
