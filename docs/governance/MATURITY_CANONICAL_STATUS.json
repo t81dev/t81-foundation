@@ -15,7 +15,7 @@
     },
     "axion": {
       "display_name": "Axion Kernel",
-      "maturity": "Alpha",
+      "maturity": "Beta",
       "spec_authority": "Draft",
       "spec_path": "spec/axion-kernel.md"
     }

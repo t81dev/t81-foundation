@@ -5,7 +5,7 @@ Green
 | :--- | :--- | :--- |
 | `t81lang` | Beta | Stable |
 | `t81vm` | Beta | Stable |
-| `axion kernel` | Alpha | Alpha |
+| `axion kernel` | Beta | Beta |
 
 ## Cognitive Tiers
 Experimental / non-DCP / non-verified unless promoted through governance

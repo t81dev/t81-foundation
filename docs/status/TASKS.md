@@ -304,11 +304,11 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 ### Beta Preparation
 
-- [x] **Axion Beta Candidacy Review** - **✅ READY**
+- [x] **Axion Beta Candidacy Review** - **✅ COMPLETED**
   - ✅ All AX-M* evidence items completed
   - ✅ Beta review evidence prepared
   - ✅ Governance review scheduled
-  - Status: **✅ READY FOR BETA**
+  - Status: **✅ PROMOTED TO BETA**
 
 ---
 

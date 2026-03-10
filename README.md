@@ -40,7 +40,7 @@ T81 is vertically integrated, moving from high-level language APIs down to a gov
 | **T81VM** | The reference runtime path for reproducible execution. | **Beta** |
 | **CanonFS** | Deterministic persistence and identity boundaries. | **Beta** |
 | **T81Lang** | Frontend compiling down to the TISC ISA. | **Beta** |
-| **Axion** | Runtime policy engine integrated into the VM step path. | **Alpha** |
+| **Axion** | Runtime policy engine integrated into the VM step path. | **Beta** |
 
 ```mermaid
 flowchart LR
