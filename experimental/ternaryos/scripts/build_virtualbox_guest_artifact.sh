@@ -108,11 +108,7 @@ fi
 image_path="$output_dir/${artifact_base}.img"
 vdi_path="$output_dir/${artifact_base}.vdi"
 rm -f "$image_path" "$vdi_path" "$image_path.sha256" "$vdi_path.sha256"
-
-dd if=/dev/zero of="$image_path" bs=1m count=64 status=none
-
-dev=$(hdiutil attach -nomount "$image_path" | awk 'NR==1{print $1}')
-rdev=${dev/\/dev\/disk/\/dev\/rdisk}
+dev=""
 cleanup() {
   if [[ -n "${dev:-}" ]]; then
     hdiutil detach "$dev" >/dev/null 2>&1 || true
@@ -120,19 +116,55 @@ cleanup() {
 }
 trap cleanup EXIT
 
-/sbin/newfs_msdos -F 32 -v TERNOSGUEST "$rdev" >/dev/null
-diskutil mountDisk "$dev" >/dev/null
-mount_point=$(diskutil info "$dev" | awk -F': *' '/Mount Point/ {print $2}')
-if [[ -z "$mount_point" || ! -d "$mount_point" ]]; then
-  echo "failed to resolve mount point for $dev" >&2
-  exit 1
-fi
+if [[ "$guest_arch" == "armv8" ]]; then
+  temp_dmg="$output_dir/${artifact_base}.build.dmg"
+  temp_raw="$output_dir/${artifact_base}.build.raw"
+  rm -f "$temp_dmg" "$temp_raw" "$temp_raw.dmg"
 
-cp -R "$staging_dir/." "$mount_point/"
-sync
-hdiutil detach "$dev" >/dev/null
-dev=""
-trap - EXIT
+  hdiutil create -quiet -size 64m -layout GPTSPUD -partitionType EFI "$temp_dmg"
+  attach_output=$(hdiutil attach -nomount "$temp_dmg")
+  dev=$(printf '%s\n' "$attach_output" | awk '/GUID_partition_scheme/{print $1; exit}')
+  mount_dev=$(printf '%s\n' "$attach_output" | awk '/EFI/{print $1; exit}')
+  if [[ -z "$dev" || -z "$mount_dev" ]]; then
+    echo "failed to resolve ARMv8 EFI image devices" >&2
+    exit 1
+  fi
+  /sbin/newfs_msdos -F 32 -v TERNOSGUEST "$mount_dev" >/dev/null
+  diskutil mount "$mount_dev" >/dev/null
+  mount_point=$(diskutil info "$mount_dev" | awk -F': *' '/Mount Point/ {print $2}')
+  if [[ -z "$mount_point" || ! -d "$mount_point" ]]; then
+    echo "failed to resolve mount point for $mount_dev" >&2
+    exit 1
+  fi
+  cp -R "$staging_dir/." "$mount_point/"
+  sync
+  hdiutil detach "$dev" >/dev/null
+  dev=""
+  hdiutil convert -quiet "$temp_dmg" -format UFBI -o "$temp_raw"
+  mv "${temp_raw}.dmg" "$image_path"
+  current_size=$(stat -f '%z' "$image_path")
+  padded_size=$(( ((current_size + 511) / 512) * 512 ))
+  if [[ "$padded_size" -ne "$current_size" ]]; then
+    /usr/bin/truncate -s "$padded_size" "$image_path"
+  fi
+  rm -f "$temp_dmg"
+else
+  dd if=/dev/zero of="$image_path" bs=1m count=64 status=none
+  dev=$(hdiutil attach -nomount "$image_path" | awk 'NR==1{print $1}')
+  rdev=${dev/\/dev\/disk/\/dev\/rdisk}
+  /sbin/newfs_msdos -F 32 -v TERNOSGUEST "$rdev" >/dev/null
+  mount_dev="$dev"
+  diskutil mountDisk "$dev" >/dev/null
+  mount_point=$(diskutil info "$mount_dev" | awk -F': *' '/Mount Point/ {print $2}')
+  if [[ -z "$mount_point" || ! -d "$mount_point" ]]; then
+    echo "failed to resolve mount point for $mount_dev" >&2
+    exit 1
+  fi
+  cp -R "$staging_dir/." "$mount_point/"
+  sync
+  hdiutil detach "$dev" >/dev/null
+  dev=""
+fi
 
 VBoxManage convertfromraw "$image_path" "$vdi_path" --format=VDI >/dev/null
 shasum -a 256 "$image_path" > "$image_path.sha256"

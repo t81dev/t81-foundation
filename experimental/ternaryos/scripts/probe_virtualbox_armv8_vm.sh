@@ -24,16 +24,24 @@ probe_root="$artifact_dir/vm_probe"
 vm_name="TernOS-ARMv8-Dev-Probe-$$"
 log_copy="$artifact_dir/armv8_boot_probe.log"
 summary_copy="$artifact_dir/armv8_boot_probe_summary.txt"
+probe_img="$artifact_dir/armv8_boot_probe_${$}.img"
+marker_copy="$artifact_dir/armv8_boot_marker.txt"
+marker_path="TERNOS/efi-ran.txt"
 
 mkdir -p "$probe_root"
 
 vm_uuid=""
+disk_dev=""
 cleanup() {
+  if [[ -n "$disk_dev" ]]; then
+    hdiutil detach "$disk_dev" >/dev/null 2>&1 || true
+  fi
   if [[ -n "$vm_uuid" ]]; then
     VBoxManage controlvm "$vm_uuid" poweroff >/dev/null 2>&1 || true
     sleep 2
-    VBoxManage unregistervm "$vm_uuid" --delete >/dev/null 2>&1 || true
+    VBoxManage unregistervm "$vm_uuid" >/dev/null 2>&1 || true
   fi
+  rm -f "$probe_img"
 }
 trap cleanup EXIT
 
@@ -75,6 +83,9 @@ VBoxManage storageattach "$vm_uuid" \
 VBoxManage startvm "$vm_uuid" --type headless >/dev/null
 sleep "$boot_wait"
 
+VBoxManage controlvm "$vm_uuid" poweroff >/dev/null 2>&1 || true
+sleep 2
+
 log_dir=$(VBoxManage showvminfo "$vm_uuid" --machinereadable | awk -F= '/^LogFldr=/{gsub(/"/, "", $2); print $2}')
 if [[ -z "$log_dir" || ! -d "$log_dir" ]]; then
   echo "VirtualBox ARMv8 probe: failed to resolve log directory" >&2
@@ -98,6 +109,31 @@ if rg -q "AHCI: LUN#0: disk" "$log_file"; then
   disk_seen=1
 fi
 
+rm -f "$probe_img" "$marker_copy"
+VBoxManage clonemedium disk "$artifact_vdi" "$probe_img" --format RAW >/dev/null
+disk_dev=$(hdiutil attach -readonly -nomount "$probe_img" | awk 'NR==1{print $1}')
+if [[ -z "$disk_dev" ]]; then
+  echo "VirtualBox ARMv8 probe: failed to attach cloned probe image" >&2
+  exit 1
+fi
+
+diskutil mountDisk "$disk_dev" >/dev/null
+mount_dev="${disk_dev}s1"
+mount_point=$(diskutil info "$mount_dev" | awk -F': *' '/Mount Point/ {print $2}')
+if [[ -z "$mount_point" || ! -d "$mount_point" ]]; then
+  echo "VirtualBox ARMv8 probe: failed to mount cloned probe image" >&2
+  exit 1
+fi
+
+marker_seen=0
+if [[ -f "$mount_point/$marker_path" ]]; then
+  cp "$mount_point/$marker_path" "$marker_copy"
+  marker_seen=1
+fi
+
+hdiutil detach "$disk_dev" >/dev/null 2>&1 || true
+disk_dev=""
+
 cat > "$summary_copy" <<EOF
 vm_name=$vm_name
 vm_uuid=$vm_uuid
@@ -105,11 +141,13 @@ artifact_vdi=$artifact_vdi
 boot_wait_seconds=$boot_wait
 firmware_seen=$firmware_seen
 ahci_disk_seen=$disk_seen
+efi_execution_marker_seen=$marker_seen
+efi_execution_marker_copy=$marker_copy
 log_copy=$log_copy
 EOF
 
-if [[ "$firmware_seen" -ne 1 || "$disk_seen" -ne 1 ]]; then
-  echo "VirtualBox ARMv8 probe: firmware boot or AHCI disk visibility check failed" >&2
+if [[ "$firmware_seen" -ne 1 || "$disk_seen" -ne 1 || "$marker_seen" -ne 1 ]]; then
+  echo "VirtualBox ARMv8 probe: firmware boot, AHCI disk visibility, or EFI execution marker check failed" >&2
   cat "$summary_copy" >&2
   exit 1
 fi
