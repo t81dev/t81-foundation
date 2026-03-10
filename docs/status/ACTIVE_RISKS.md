@@ -10,7 +10,6 @@ No prose. If a risk needs an essay, escalate it.
 
 | ID | Risk | Severity | Owner | Mitigation | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| R-01 | Determinism overclaim — external summaries omit registry boundary language | High | @t81dev | `governance-metrics` CI gate enforces registry-bounded claim language | Monitoring |
 | R-05 | AGI-facing surface growth outpacing promotion evidence updates | Medium | @t81dev | Surface inventory refreshed each monthly governance cadence | Monitoring |
 | R-06 | Documentation maintenance burden after reorganization | Low | @t81dev | Content-based structure reduces maintenance overhead; automated link checking in CI | Monitoring |
 | R-07 | Benchmark variability — false signal in `vm workload gate` guardrail | Low | @t81dev | Alert threshold >5% regression; review guardrail if consecutive divergence detected | Monitoring |
@@ -20,6 +19,7 @@ No prose. If a risk needs an essay, escalate it.
 
 | ID | Risk | Resolution | Closed |
 | :--- | :--- | :--- | :--- |
+| **R-01** | **Determinism overclaim — external summaries omit registry boundary language** | `check_determinism_claims.py` CI gate implemented and wired to enforce registry-bounded claims; all external summaries appended with boundary link | **2026-03-10** |
 | **R-16** | **VM OOB register-index crashes** — SymLoad, ReflCap, ReflJustify accessed `register_tags[insn.b]` without `reg_ok()` guard, discovered by fuzz_vm | Added `!reg_ok(insn.b)` guard to all three dispatch cases; `85a0b438` | **2026-03-10** |
 | **R-17** | **binary_io OOM on corrupt/empty .tisc** — length-prefix read without sanity check allowed attacker-controlled allocation up to 2⁶⁴ elements (→ OOM-kill, exit 137) | `read_checked_size()` helper added; throws on EOF or count > 16M; `85a0b438` | **2026-03-10** |
 | **R-02** | **Axion Alpha posture delays Beta promotion** | **Resolved through successful 2026-03-10 Beta candidacy review and promotion** | **2026-03-10** |

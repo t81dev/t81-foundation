@@ -132,3 +132,5 @@ Ve al portal de contacto [`CONTRIBUTING.md`](CONTRIBUTING.md) antes de publicar 
 
 ---
 *La entrega completa o el aporte principal de codificación nativa del software T81 Foundation corresponde enteramente con la Licencia General [MIT License](LICENSE).*
+
+> **Note:** All determinism guarantees are strictly bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).

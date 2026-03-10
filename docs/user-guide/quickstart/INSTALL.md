@@ -111,3 +111,5 @@ target_link_libraries(my_consumer_app PRIVATE T81::t81_core)
 ```
 
 See `examples/consumer_cmake/` for a minimal, fully working downstream project.
+
+> **Note:** All determinism guarantees are strictly bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).

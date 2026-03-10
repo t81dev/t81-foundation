@@ -133,3 +133,5 @@ int main() {
 
 ---
 *T81 Foundation 基于开源的 [MIT License](LICENSE) 证书发行。*
+
+> **Note:** All determinism guarantees are strictly bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).

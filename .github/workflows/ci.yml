@@ -217,6 +217,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Enforce determinism registry claims
+        run: python3 scripts/governance/check_determinism_claims.py
       - name: Run governance metrics
         run: python3 scripts/ci/governance_metrics.py
       - name: Upload report

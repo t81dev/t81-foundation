@@ -132,3 +132,5 @@ Inicialize condicionado modelado a formadora base as matrizes formatadoras de op
 
 ---
 *A Distribuição Condicionada Aos Requisitos Formadores Padrão da Engenharia Base Engenharia Preexistente Orientado Dos Formadores das Políticas Pre-estabelecidas do Repositório Preexistente Da Ferramenta Base e Original T81 Foundation Em Processos e Submissões e Entregas Está Estritamente Definida Em Conformidade Orientada Ao Conjunto Preexistente Regulamentador Limitante Documentado Conforme Formativo Expresso Orientado Pelos Amparos da Matriz de Proteção Na Documentação Preexistente Englobada Sob Distribuição Originada e Base Em Parâmetros Limitados Amortizados sob O Limitador Open Source [MIT License](LICENSE).*
+
+> **Note:** All determinism guarantees are strictly bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).

@@ -132,3 +132,5 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`SECURITY.md`](SECURITY.md) to rep
 
 ---
 *T81 Foundation is released as Open Source under the [MIT License](LICENSE).*
+
+> **Note:** All determinism guarantees are strictly bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).

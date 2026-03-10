@@ -131,3 +131,5 @@ int main() {
 
 ---
 *T81 Foundation предоставляется по принципам Open Source под [лицензией MIT](LICENSE).*
+
+> **Note:** All determinism guarantees are strictly bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).
