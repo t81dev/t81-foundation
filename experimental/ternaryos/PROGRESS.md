@@ -30,6 +30,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 | `hal/virtualbox_guest_devices.hpp/.cpp` | VirtualBox guest-device binding seam: maps the first supported HAL storage, network, and display profile onto AHCI/E1000/VMSVGA-shaped Phase 4 adapters, rejects unsupported NVMe/PCNet/VGA promotion paths, and bootstraps the first guest profile as a reusable runtime bundle | 39 |
 | `hal/virtualbox_efi_stub.c` | Freestanding VBox EFI guest stub source: constructs the first guest `BootContext` via the C ABI bridge and serves as the source for the staged `BOOTX64.obj` artifact | — |
 | `scripts/build_virtualbox_guest_artifact.sh` | Reproducible VirtualBox guest-artifact pipeline: captures demo evidence, stages a FAT guest disk layout, emits raw `.img`, VBox `.vdi`, and the compiled `BOOTX64.obj`, and records the current boot gap (`BOOTX64.EFI` still missing) | — |
+| `scripts/check_virtualbox_host.sh` | Host-capability check for local VirtualBox validation: reports whether the current machine can run the roadmap’s `x86_64` guest target | — |
 | `mmu/ternary_page_alloc.hpp/.cpp` | Physical page allocator; balanced-ternary `PageState` {Free=-1, Reserved=0, Allocated=+1}; `alloc_page`, `alloc_contiguous`, `free_page` | 28 |
 | `sched/tisc_context.hpp` | `TiscContext` — full TISC thread snapshot; `ThreadState` {Sleeping=-1, Ready=0, Running=+1} | — |
 | `sched/context_switch.hpp/.cpp` | `context_save` / `context_restore` / `context_yield` over `t81::vm::ThreadContext` | 43 |
@@ -40,6 +41,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - The first supported VM profile is intentionally narrow: VBox EFI firmware, AHCI storage, E1000 networking, VMSVGA display, and HPET/IOAPIC timing.
 - NVMe remains visible in the upstream VirtualBox source tree but is explicitly deferred behind AHCI for the first persistence gate.
 - A reproducible VirtualBox disk-artifact target now exists (`t81_ternaryos_virtualbox_guest_artifact`) and stages metadata, demo evidence, and a compiled `BOOTX64.obj` stub object; final `.efi` linking remains the blocking gap.
+- Local boot validation is blocked on this Apple Silicon development host because `VBoxManage list systemproperties` currently reports `Supported platform architectures: ARMv8`, while the roadmap target remains `x86_64`.
 
 **Phase 1 test total: 155 / 155**
 
@@ -158,7 +160,7 @@ ctest --test-dir build -R ternaryos -V
 | # | Question | Blocking |
 | :-- | :--- | :--- |
 | OQ-1 | Guest artifact format is now narrowed to raw FAT disk + VBox VDI wrapper; the remaining question is final EFI application linking and boot handoff shape | Phase 1 promotion |
-| OQ-2 | First supported VirtualBox device profile is intentionally narrow (VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC); implementation still needs to be scoped into concrete tasks | Phase 1 promotion |
+| OQ-2 | First supported VirtualBox device profile is intentionally narrow (VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC); implementation is now scaffolded, but host/target architecture mismatch blocks local boot proof | Phase 1 promotion |
 | OQ-3 | CI target remains unresolved: headless VirtualBox vs. QEMU for automation, with VirtualBox reserved for demo/dev validation | Phase 1 promotion |
 | OQ-4 | TISC interrupt semantics — frozen ISA has no trap-return opcode; shadow dispatch table is the current workaround | Phase 4 |
 | OQ-5 | Axion determinism under pre-emption — governance model must be extended for async context switches | Phase 3 |

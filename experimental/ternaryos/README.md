@@ -104,11 +104,19 @@ Outputs:
 - `build/ternaryos/virtualbox/staging/TERNOS/profile.txt`
 - `build/ternaryos/virtualbox/staging/TERNOS/demo-output.txt`
 
+To check whether the local VirtualBox host can validate the current `x86_64`
+guest target:
+
+```sh
+cmake --build build --target t81_ternaryos_virtualbox_host_check
+```
+
 Current status:
 
 - the image is FAT-formatted and VirtualBox-ready as a disk artifact
 - it stages the current guest profile, captured demo evidence, and a compiled `BOOTX64.obj` stub object
 - it is not EFI-bootable yet; final PE/COFF `.efi` linking is still missing, so `BOOTX64.EFI` is not produced yet
+- on this Apple Silicon host, `VBoxManage list systemproperties` currently reports `Supported platform architectures: ARMv8`, so the `x86_64` guest target cannot be boot-validated locally
 
 ## Promotion Path
 

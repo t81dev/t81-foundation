@@ -616,6 +616,13 @@ if(T81_ENABLE_TERNARYOS)
     DEPENDS ${T81_TERNARYOS_GUEST_ARTIFACT_DEPS}
     USES_TERMINAL)
 
+  add_custom_target(t81_ternaryos_virtualbox_host_check
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/check_virtualbox_host.sh
+            --soft
+            x86_64
+    USES_TERMINAL)
+
   if(T81_BUILD_TESTS)
     add_executable(t81_ternaryos_hal_boot_test
       experimental/ternaryos/tests/hal_boot_test.cpp)
