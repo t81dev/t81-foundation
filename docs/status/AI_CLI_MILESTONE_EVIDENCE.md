@@ -65,15 +65,15 @@ are satisfied through the `t81_reference_vm` capability lane.
 ## Key Material Status
 
 Key material referenced in this document uses `material_env` secret injection
-with CI secret-env wiring. Production KMS-backed rotation is **open** (target:
-next C2 cycle, 2026-03-31).
+with CI secret-env wiring. Production KMS-backed rotation automation is **Implemented** 
+via `rotate_ai_kms_keys.py` and GitHub Actions.
 
 | Keyring | KMS-Backed | Target |
 | :--- | :--- | :--- |
-| `ai_governed_replay_keyring.json` | Pending | 2026-03-31 |
-| `ai_benchmark_threshold_approval_keyring.json` | Pending | 2026-03-31 |
-| `ai_quantization_profile_approval_keyring.json` | Pending | 2026-03-31 |
-| `ai_opcode_baseline_approval_keyring.json` | Pending | 2026-03-31 |
+| `ai_governed_replay_keyring.json` | Active | 2026-03-31 |
+| `ai_benchmark_threshold_approval_keyring.json` | Active | 2026-03-31 |
+| `ai_quantization_profile_approval_keyring.json` | Active | 2026-03-31 |
+| `ai_opcode_baseline_approval_keyring.json` | Active | 2026-03-31 |
 
 ---
 
