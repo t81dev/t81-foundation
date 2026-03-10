@@ -1,7 +1,7 @@
 # TernOS Implementation Progress
 
 **Last updated:** 2026-03-10
-**Commit:** `fbd837c4`
+**Commit:** (Phase 3 commit pending)
 **Branch:** `main`
 
 Reference docs:
@@ -52,20 +52,25 @@ Status: flat page table implemented and tested; 3-ary radix trie deferred to Pha
 
 ---
 
-### Phase 3 — Kernel Scheduling & IPC 🔲 NOT STARTED
+### Phase 3 — Kernel Scheduling & IPC ✅ COMPLETE
 
 **Gate condition (v1.7):** Two concurrent TISC threads run deterministically.
+Status: all deliverables implemented and passing; 193 assertions green.
 
-Planned deliverables:
-1. **`sched/run_queue.hpp/.cpp`** — Pre-emptive round-robin run queue wrapping `TiscContext` slots (≤ 81, matching Hanoi `kMaxSlots`). Balances three `ThreadState` buckets: Sleeping, Ready, Running.
-2. **`sched/scheduler.hpp/.cpp`** — `Scheduler::tick()` — pops the next Ready context, saves the current (via `context_save`), restores the next (via `context_restore`). Timer IRQ from `interrupt_table` calls `tick()`.
-3. **`ipc/canon_message.hpp`** — IPC message passing via CanonFS `CanonRef` handles; no raw pointers cross process boundaries.
-4. **`tests/scheduler_test.cpp`** — Two interleaved TISC threads; verify deterministic round-robin order and register isolation.
-5. **`tests/ipc_test.cpp`** — Send/receive a CanonRef between two TiscContexts.
+| File | Purpose | Tests |
+| :--- | :--- | :---: |
+| `sched/run_queue.hpp/.cpp` | 81-slot round-robin run queue; `add_thread`, `remove_thread`, `next_ready`, `set_running`, `preempt_running`, `sleep_thread`, `wake_thread` | 102 |
+| `sched/scheduler.hpp/.cpp` | `Scheduler::tick()` — save current → preempt → next_ready → set_running → restore; `spawn`, `terminate`, `sleep`, `wake` | 18 |
+| `ipc/canon_message.hpp/.cpp` | `CanonMessage` (sender + `CanonRef` + payload + tag); `MessageBus` (per-Tid inbox deques, depth ≤ 81, FIFO, peek) | 73 |
 
-Key design constraints:
-- Scheduler must remain deterministic: round-robin with a fixed 81-slot cap preserves determinism without a hardware timer (cooperative `tick()` at yield points in Phase 3; async IRQ in Phase 4).
-- Axion extension needed: `check_ethics` currently assumes cooperative execution. Pre-emptive interleaving requires an audit-trail mechanism that can reconstruct the interleaved sequence deterministically.
+#### Design notes
+
+- `Scheduler::tick()` returns `false` when only one thread exists (same-thread re-schedule detected); returns `true` only on a genuine context switch.
+- Round-robin is deterministic: `rr_index_` advances through `slots_` in insertion order; 81-slot cap mirrors Hanoi scheduler.
+- `CanonRef` handles (not raw pointers) cross IPC boundaries, preserving CanonFS audit trail invariants.
+- OQ-5 (Axion determinism under pre-emption) is still open — governance audit trail not yet extended for async interleaving.
+
+**Phase 3 test total: 193 / 193**
 
 ---
 
@@ -95,7 +100,9 @@ Planned deliverables:
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 47 | 2 |
-| **Total** | **127** | |
+| `t81_ternaryos_scheduler_test` | 120 | 3 |
+| `t81_ternaryos_ipc_test` | 73 | 3 |
+| **Total** | **320** | |
 
 Run all TernOS tests:
 
