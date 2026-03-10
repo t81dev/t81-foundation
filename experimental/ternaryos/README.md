@@ -20,6 +20,8 @@ hal/
   hal_main.cpp         Ethics-first boot (Θ₁–Θ₉ via Axion) → T81VM handoff
   interrupt_table.cpp  Shadow binary interrupt dispatch table
   hosted_stub.cpp      Hosted (macOS/Linux) simulation — stand-in for UEFI stub
+  virtualbox_platform.hpp/.cpp  First-target VirtualBox VM profile scaffold
+  virtualbox_guest_devices.hpp/.cpp  VirtualBox profile-to-device binding helpers
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,
@@ -39,19 +41,20 @@ ipc/
 dev/
   block_device.hpp     CanonBlock-aligned block device interface
   hosted_block_dev.hpp/.cpp  File-backed hosted block device
+  virtualbox_ahci_dev.hpp/.cpp  VirtualBox-first AHCI adapter scaffold
   canon_store.hpp/.cpp Content-addressed CanonBlock store + reboot rebuild
   framebuffer.hpp/.cpp 81x27 ternary framebuffer with ASCII dump
   ttf.hpp/.cpp         Minimal ASCII ↔ balanced-ternary text codec + renderer
   net_packet.hpp       Ternary Ethernet packet wrapper + binary frame codec
 
 tests/
-  hal_boot_test.cpp          Phase 1 — 9 assertions
+  hal_boot_test.cpp          Phase 1 — 53 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
   mmu_test.cpp               Phase 2 — 47 assertions
   scheduler_test.cpp         Phase 3 — 120 assertions
   ipc_test.cpp               Phase 3 — 73 assertions
-  device_driver_test.cpp     Phase 4 — 104 assertions
+  device_driver_test.cpp     Phase 4 — 120 assertions
 ```
 
 ## Build & Test
@@ -60,7 +63,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 424/424 assertions, 7/7 tests pass
+# Expected: 484/484 assertions, 7/7 tests pass
 ```
 
 ## Demo

@@ -5,6 +5,7 @@
 
 #include "../dev/block_device.hpp"
 #include "../dev/hosted_block_dev.hpp"
+#include "../dev/virtualbox_ahci_dev.hpp"
 #include "../dev/canon_store.hpp"
 #include "../dev/framebuffer.hpp"
 #include "../dev/net_packet.hpp"
@@ -99,6 +100,41 @@ static void test_hosted_block_dev_persist() {
   check(!bad.has_value(), "load of nonexistent file returns nullopt");
 
   std::filesystem::remove(path);
+}
+
+// ─── AC-D1c: VirtualBox AHCI adapter over hosted backing ────────────────────
+
+static void test_virtualbox_ahci_adapter() {
+  std::printf("\n[D1c] VirtualBox AHCI adapter scaffold\n");
+
+  HostedBlockDev backing(24, "hosted-ahci-backing");
+  VirtualBoxAhciDev dev(backing);
+
+  auto info = dev.info();
+  check(info.total_blocks == 24,      "AHCI adapter total_blocks == 24");
+  check(info.block_size_bytes == 729, "AHCI adapter block size == 729");
+  check(info.device_id == "vbox-ahci0", "AHCI adapter device id == vbox-ahci0");
+
+  const auto& ahci = dev.ahci_info();
+  check(ahci.abar_base == 0xF0400000ULL, "AHCI ABAR base matches profile");
+  check(ahci.abar_span_bytes == 0x2000ULL, "AHCI ABAR span matches profile");
+  check(ahci.irq == 19, "AHCI IRQ == 19");
+  check(ahci.port_count == 1, "AHCI scaffold exposes one port");
+  check(ahci.bootable, "AHCI scaffold marked bootable");
+
+  BlockData wr{};
+  wr.fill(0x5A);
+  check(dev.write_block(2, wr), "AHCI adapter write_block succeeds");
+
+  BlockData rd{};
+  check(dev.read_block(2, rd), "AHCI adapter read_block succeeds");
+  check(rd == wr, "AHCI adapter round-trips block data");
+  check(dev.flush(), "AHCI adapter flush succeeds");
+
+  check(dev.read_ops() == 1, "AHCI adapter read op count increments");
+  check(dev.write_ops() == 1, "AHCI adapter write op count increments");
+  check(dev.flush_ops() == 1, "AHCI adapter flush op count increments");
+  check(backing.block_count() == dev.block_count(), "backing and adapter block counts match");
 }
 
 // ─── AC-D2: CanonStore put / deduplication ───────────────────────────────────
@@ -406,6 +442,7 @@ int main() {
 
   test_hosted_block_dev_rw();
   test_hosted_block_dev_persist();
+  test_virtualbox_ahci_adapter();
   test_canon_store_put();
   test_canon_store_get_unknown();
   test_canon_store_reboot();
