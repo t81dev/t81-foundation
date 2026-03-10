@@ -54,25 +54,6 @@ static Element log_line(const std::string& line) {
     return text(line);
 }
 
-// Render a scrollable log block capped at `visible` rows.
-static Element scrollable_log(const std::vector<std::string>& lines,
-                               int scroll_offset, int visible = 22)
-{
-    Elements elems;
-    const int n     = static_cast<int>(lines.size());
-    const int start = std::max(0, std::min(scroll_offset, n - visible));
-    const int end   = std::min(n, start + visible);
-    for (int i = start; i < end; ++i)
-        elems.push_back(log_line(lines[i]));
-    if (elems.empty()) elems.push_back(text("(empty)") | color(Color::GrayDark));
-    elems.push_back(hbox({
-        filler(),
-        text(scroll_indicator_text(start, n, visible, " ↑↓/PgUp/PgDn "))
-            | color(Color::GrayDark),
-    }));
-    return vbox(std::move(elems));
-}
-
 // ── CanonFS browser helpers ────────────────────────────────────────────────
 
 struct CanonEntry {
@@ -365,6 +346,15 @@ int run_studio(const std::vector<std::string>& /*args*/) {
     std::string busy_status;
     std::string last_error;
 
+    auto output_log_viewer = LogViewer([&]() {
+        std::lock_guard<std::mutex> lk(log_mutex);
+        Elements elems;
+        for (const auto& line : output_log) {
+            elems.push_back(log_line(line));
+        }
+        return elems;
+    });
+
     auto push_log = [&](const std::string& s) {
         std::lock_guard<std::mutex> lk(log_mutex);
         for (const auto& l : split_lines(s))
@@ -486,6 +476,18 @@ int run_studio(const std::vector<std::string>& /*args*/) {
     bool axion_loading = false;
     std::mutex axion_mutex;
 
+    auto axion_log_viewer = LogViewer([&]() {
+        std::lock_guard<std::mutex> lk(axion_mutex);
+        Elements elems;
+        for (const auto& line : axion_lines) {
+            elems.push_back(text(line.text) | color(line.color));
+        }
+        if (axion_loading) {
+            elems.push_back(text("Refreshing Axion status…") | color(Color::Yellow));
+        }
+        return elems;
+    });
+
     auto refresh_axion = [&]() {
         {
             std::lock_guard<std::mutex> lk(axion_mutex);
@@ -513,6 +515,22 @@ int run_studio(const std::vector<std::string>& /*args*/) {
     bool                     trace_diff_mode = false;  // false=summary, true=diff
     bool                     trace_loading = false;
     std::mutex               trace_mutex;
+
+    auto trace_log_viewer = LogViewer([&]() {
+        std::lock_guard<std::mutex> lk(trace_mutex);
+        Elements elems;
+        for (const auto& line : trace_lines) {
+            Color c = line.diverged ? Color::Red : Color::White;
+            elems.push_back(text(line.text) | color(c));
+        }
+        if (elems.empty()) {
+            elems.push_back(text("(no trace data)") | color(Color::GrayDark));
+        }
+        if (trace_loading) {
+            elems.push_back(text("Refreshing trace output…") | color(Color::Yellow));
+        }
+        return elems;
+    });
 
     auto refresh_trace = [&]() {
         {
@@ -841,6 +859,7 @@ int run_studio(const std::vector<std::string>& /*args*/) {
             nav_component, canon_menu,
             compiler_comp, determ_comp, repl_component,
             trace_a_input, trace_b_input,
+            output_log_viewer, axion_log_viewer, trace_log_viewer,
         }),
         palette_input_c,
     });
@@ -999,9 +1018,8 @@ int run_studio(const std::vector<std::string>& /*args*/) {
         // ── Per-view content ─────────────────────────────────────────────────
 
         if (view == "REPL") {
-            std::lock_guard<std::mutex> lk(log_mutex);
             content_body = vbox({
-                scrollable_log(output_log, log_scroll) | flex,
+                output_log_viewer->Render() | flex,
                 separator(),
                 hbox({
                     text("-> ") | color(Color::Green),
@@ -1010,9 +1028,8 @@ int run_studio(const std::vector<std::string>& /*args*/) {
             });
 
         } else if (view == "Compiler") {
-            std::lock_guard<std::mutex> lk(log_mutex);
             content_body = vbox({
-                scrollable_log(output_log, log_scroll) | flex,
+                output_log_viewer->Render() | flex,
                 separator(),
                 hbox({
                     text("File: ") | color(Color::Cyan),
@@ -1027,9 +1044,8 @@ int run_studio(const std::vector<std::string>& /*args*/) {
             });
 
         } else if (view == "Determinism") {
-            std::lock_guard<std::mutex> lk(log_mutex);
             content_body = vbox({
-                scrollable_log(output_log, log_scroll) | flex,
+                output_log_viewer->Render() | flex,
                 separator(),
                 hbox({
                     text("File: ") | color(Color::Cyan),
@@ -1068,66 +1084,14 @@ int run_studio(const std::vector<std::string>& /*args*/) {
             });
 
         } else if (view == "Axion") {
-            // Color-coded policy status, scrollable.
-            const int vis = 22;
-            std::vector<AxionLine> axion_snapshot;
-            int axion_scroll_now = 0;
-            bool axion_loading_now = false;
-            {
-                std::lock_guard<std::mutex> lk(axion_mutex);
-                axion_snapshot = axion_lines;
-                axion_scroll_now = axion_scroll;
-                axion_loading_now = axion_loading;
-            }
-            const int n   = static_cast<int>(axion_snapshot.size());
-            const int start = std::max(0, std::min(axion_scroll_now, n - vis));
-            const int end   = std::min(n, start + vis);
-            Elements elems;
-            for (int i = start; i < end; ++i)
-                elems.push_back(text(axion_snapshot[i].text) | color(axion_snapshot[i].color));
-            if (axion_loading_now)
-                elems.push_back(text("Refreshing Axion status…") | color(Color::Yellow));
-            elems.push_back(hbox({
-                filler(),
-                text(scroll_indicator_text(start, n, vis, " ↑↓/PgUp/PgDn  r: refresh "))
-                    | color(Color::GrayDark),
-            }));
             content_body = vbox({
                 text(" Axion Policy Status  (r: refresh)") | bold | color(Color::Cyan),
                 separator(),
-                vbox(std::move(elems)) | flex,
+                axion_log_viewer->Render() | flex,
             });
 
         } else if (view == "Trace") {
             // Two-pane: controls top, diff/summary below.
-            const int vis   = 18;
-            std::vector<TraceLine> trace_snapshot;
-            int trace_scroll_now = 0;
-            bool trace_loading_now = false;
-            {
-                std::lock_guard<std::mutex> lk(trace_mutex);
-                trace_snapshot = trace_lines;
-                trace_scroll_now = trace_scroll;
-                trace_loading_now = trace_loading;
-            }
-            const int n     = static_cast<int>(trace_snapshot.size());
-            const int start = std::max(0, std::min(trace_scroll_now, n - vis));
-            const int end   = std::min(n, start + vis);
-            Elements elems;
-            for (int i = start; i < end; ++i) {
-                Color c = trace_snapshot[i].diverged ? Color::Red : Color::White;
-                elems.push_back(text(trace_snapshot[i].text) | color(c));
-            }
-            if (elems.empty())
-                elems.push_back(text("(no trace data)") | color(Color::GrayDark));
-            if (trace_loading_now)
-                elems.push_back(text("Refreshing trace output…") | color(Color::Yellow));
-            elems.push_back(hbox({
-                filler(),
-                text(scroll_indicator_text(start, n, vis, "  r: refresh "))
-                    | color(Color::GrayDark),
-            }));
-
             content_body = vbox({
                 vbox({
                     hbox({
@@ -1144,13 +1108,12 @@ int run_studio(const std::vector<std::string>& /*args*/) {
                         | color(Color::GrayDark),
                 }) | border,
                 separator(),
-                vbox(std::move(elems)) | flex,
+                trace_log_viewer->Render() | flex,
             });
 
         } else {
             // Workspace: scrollable general output log
-            std::lock_guard<std::mutex> lk(log_mutex);
-            content_body = scrollable_log(output_log, log_scroll);
+            content_body = output_log_viewer->Render() | flex;
         }
 
         auto content_panel = vbox({
@@ -1255,7 +1218,7 @@ int run_studio(const std::vector<std::string>& /*args*/) {
 
         const std::string& view = nav_entries[nav_selected];
         const bool canon_focused = canon_menu->Focused();
-        const bool nav_focused = nav_component->Focused();
+        (void)nav_component->Focused(); // Remove unused variable warning but maintain semantic completeness
 
         // True when any text-input field currently holds keyboard focus.
         // Single-character hotkeys must be suppressed in that case so that
@@ -1544,51 +1507,8 @@ int run_studio(const std::vector<std::string>& /*args*/) {
             }
         }
 
-        // ── Scroll: PgDn / PgUp / j / k ──────────────────────────────────
-        auto scroll = [&](int& offset, int delta, int max_lines) {
-            offset = std::max(0, std::min(offset + delta, max_lines - 1));
-        };
-
-        if (view == "Workspace" || view == "Compiler" ||
-            view == "Determinism" || view == "REPL") {
-            std::lock_guard<std::mutex> lk(log_mutex);
-            const int n = static_cast<int>(output_log.size());
-            if (nav_focused && (e == Event::ArrowDown || e == Event::ArrowUp))
-                return false;
-            if (e == Event::PageDown || (!input_focused && e == Event::Character('J'))) {
-                scroll(log_scroll, 10, n); return true;
-            }
-            if (e == Event::PageUp   || (!input_focused && e == Event::Character('K'))) {
-                scroll(log_scroll, -10, n); return true;
-            }
-            if (!input_focused && e == Event::Character('j')) { scroll(log_scroll, 1, n);  return true; }
-            if (!input_focused && e == Event::Character('k')) { scroll(log_scroll, -1, n); return true; }
-        }
-        if (view == "Axion") {
-            std::lock_guard<std::mutex> lk(axion_mutex);
-            const int n = static_cast<int>(axion_lines.size());
-            if (nav_focused && (e == Event::ArrowDown || e == Event::ArrowUp))
-                return false;
-            if (e == Event::PageDown || (!input_focused && e == Event::Character('j'))) {
-                scroll(axion_scroll, 5, n); return true;
-            }
-            if (e == Event::PageUp   || (!input_focused && e == Event::Character('k'))) {
-                scroll(axion_scroll, -5, n); return true;
-            }
-        }
-        if (view == "Trace") {
-            std::lock_guard<std::mutex> lk(trace_mutex);
-            const int n = static_cast<int>(trace_lines.size());
-            if (nav_focused && (e == Event::ArrowDown || e == Event::ArrowUp))
-                return false;
-            if (e == Event::PageDown || (!input_focused && e == Event::Character('j'))) {
-                scroll(trace_scroll, 5, n); return true;
-            }
-            if (e == Event::PageUp   || (!input_focused && e == Event::Character('k'))) {
-                scroll(trace_scroll, -5, n); return true;
-            }
-        }
-
+        // ── Non-Log Component Interceptions ──────────────────────────────
+        // Notice: Logs are now handled by LogViewer which hooks its own events.
         return false;
     });
 

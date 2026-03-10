@@ -18,6 +18,7 @@
 
 // We try to avoid host math in deterministic mode, but legacy/conversion may
 // still need it. Phase 1: Only dmath handles transcendentals.
+// Note: Host-native transcendentals are not available in current dmath implementation.
 #include <cmath>
 #include <compare>
 #include <cstddef>

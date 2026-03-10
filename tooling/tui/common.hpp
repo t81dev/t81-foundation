@@ -8,6 +8,10 @@
 #include <utility>
 #include <vector>
 
+#include <ftxui/component/component_base.hpp>
+#include <ftxui/dom/elements.hpp>
+#include <ftxui/component/event.hpp>
+
 namespace t81::tui {
 
 // ── Command palette entry ──────────────────────────────────────────────────
@@ -112,5 +116,106 @@ bool load_session(const std::string& path, std::vector<Message>& msgs);
 std::string default_workspace_state_path();
 bool save_workspace_state(const std::string& path, const WorkspaceState& state);
 bool load_workspace_state(const std::string& path, WorkspaceState& state);
+
+// ── LogViewer Component ────────────────────────────────────────────────────
+class LogViewerBase : public ftxui::ComponentBase {
+public:
+    LogViewerBase(std::function<ftxui::Elements()> content_generator)
+        : content_generator_(std::move(content_generator)) {}
+
+    ftxui::Element Render() override {
+        ftxui::Elements items = content_generator_();
+        const int total_items = static_cast<int>(items.size());
+
+        if (items.empty()) {
+            items.push_back(ftxui::text("(empty)") | ftxui::color(ftxui::Color::GrayDark));
+        } else {
+            // Apply slicing for manual scrolling
+            // We use box_.y_max - box_.y_min as an estimate of visible lines, or default to 20
+            int visible = std::max(10, box_.y_max - box_.y_min);
+
+            // Adjust scroll to be valid
+            if (auto_scroll_ && total_items > visible) {
+                scroll_idx_ = total_items - visible;
+            } else {
+                scroll_idx_ = std::max(0, std::min(scroll_idx_, total_items - visible));
+            }
+
+            int end_idx = std::min(total_items, scroll_idx_ + visible);
+            ftxui::Elements sliced;
+            for (int i = scroll_idx_; i < end_idx; ++i) {
+                sliced.push_back(std::move(items[i]));
+            }
+
+            // Add scroll indicator text natively to the bottom of the list
+            if (total_items > visible) {
+                std::string ind = scroll_indicator_text(scroll_idx_, total_items, visible, " ↑↓/PgUp/PgDn ");
+                sliced.push_back(ftxui::hbox({
+                    ftxui::filler(),
+                    ftxui::text(ind) | ftxui::color(ftxui::Color::GrayDark)
+                }));
+            }
+
+            items = std::move(sliced);
+        }
+
+        auto inner = ftxui::vbox(std::move(items)) | ftxui::reflect(box_);
+
+        // Return without yframe because we manually sliced to fit the box
+        return inner | (Focused() ? ftxui::focus : ftxui::nothing);
+    }
+
+    bool OnEvent(ftxui::Event event) override {
+        if (!Focused()) return false;
+
+        int visible = std::max(10, box_.y_max - box_.y_min);
+
+        if (event == ftxui::Event::ArrowUp || event == ftxui::Event::Character('k')) {
+            scroll_idx_ -= 1;
+            if (scroll_idx_ < 0) scroll_idx_ = 0;
+            auto_scroll_ = false;
+            return true;
+        }
+        if (event == ftxui::Event::ArrowDown || event == ftxui::Event::Character('j')) {
+            scroll_idx_ += 1;
+            auto_scroll_ = false;
+            return true;
+        }
+        if (event == ftxui::Event::PageUp) {
+            scroll_idx_ -= visible / 2;
+            if (scroll_idx_ < 0) scroll_idx_ = 0;
+            auto_scroll_ = false;
+            return true;
+        }
+        if (event == ftxui::Event::PageDown) {
+            scroll_idx_ += visible / 2;
+            auto_scroll_ = false;
+            return true;
+        }
+        if (event == ftxui::Event::Home) {
+            scroll_idx_ = 0;
+            auto_scroll_ = false;
+            return true;
+        }
+        if (event == ftxui::Event::End) {
+            auto_scroll_ = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool Focusable() const override { return true; }
+
+private:
+    std::function<ftxui::Elements()> content_generator_;
+    int scroll_idx_ = 0;
+    bool auto_scroll_ = true;
+    ftxui::Box box_;
+};
+
+inline ftxui::Component LogViewer(std::function<ftxui::Elements()> content_generator) {
+    return std::make_shared<LogViewerBase>(std::move(content_generator));
+}
 
 } // namespace t81::tui
