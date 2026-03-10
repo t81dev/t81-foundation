@@ -9,6 +9,7 @@ fi
 build_dir=$1
 output_dir=$2
 demo_bin="$build_dir/t81_ternaryos_demo"
+efi_obj="$build_dir/ternaryos/virtualbox/BOOTX64.obj"
 
 if [[ ! -x "$demo_bin" ]]; then
   echo "missing demo binary: $demo_bin" >&2
@@ -62,6 +63,10 @@ echo This disk stages the first guest profile and captured demo evidence.
 echo The real BOOTX64.EFI guest stub has not been implemented yet.
 echo Inspect \TERNOS\profile.txt and \TERNOS\demo-output.txt for details.
 EOF
+
+if [[ -f "$efi_obj" ]]; then
+  cp "$efi_obj" "$staging_dir/EFI/BOOT/BOOTX64.OBJ"
+fi
 
 image_path="$output_dir/ternos_virtualbox_guest.img"
 vdi_path="$output_dir/ternos_virtualbox_guest.vdi"

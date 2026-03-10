@@ -22,12 +22,14 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 | File | Purpose | Tests |
 | :--- | :--- | :---: |
 | `hal/hal.hpp` | Public interface: `MemoryRegion`, `HardwareInterrupt`, `BootContext`, `hal_main`, I/O stubs | — |
+| `hal/hal_c_abi.h/.cpp` | C-compatible HAL handoff bridge so freestanding guest stubs can construct a boot context without C++ STL dependencies | 2 |
 | `hal/hal_main.cpp` | Ethics-first boot — validates `BootContext`, evaluates Θ₁–Θ₉, stubs T81VM handoff | 9 |
 | `hal/interrupt_table.cpp` | Shadow binary dispatch table; `register_interrupt_handler`, `dispatch_interrupt`, `fire_simulated_interrupt` | (above) |
 | `hal/hosted_stub.cpp` | macOS/Linux UEFI stub simulation; synthetic memory map; calls `hal_main` | (above) |
 | `hal/virtualbox_platform.hpp/.cpp` | First-target VirtualBox promotion scaffold: VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC profile validation, device-map descriptors, timer-tick simulation, and `BootContext` construction | 43 |
 | `hal/virtualbox_guest_devices.hpp/.cpp` | VirtualBox guest-device binding seam: maps the first supported HAL storage, network, and display profile onto AHCI/E1000/VMSVGA-shaped Phase 4 adapters, rejects unsupported NVMe/PCNet/VGA promotion paths, and bootstraps the first guest profile as a reusable runtime bundle | 39 |
-| `scripts/build_virtualbox_guest_artifact.sh` | Reproducible VirtualBox guest-artifact pipeline: captures demo evidence, stages a FAT guest disk layout, emits raw `.img` and VBox `.vdi`, and records the current boot gap (`BOOTX64.EFI` still missing) | — |
+| `hal/virtualbox_efi_stub.c` | Freestanding VBox EFI guest stub source: constructs the first guest `BootContext` via the C ABI bridge and serves as the source for the staged `BOOTX64.obj` artifact | — |
+| `scripts/build_virtualbox_guest_artifact.sh` | Reproducible VirtualBox guest-artifact pipeline: captures demo evidence, stages a FAT guest disk layout, emits raw `.img`, VBox `.vdi`, and the compiled `BOOTX64.obj`, and records the current boot gap (`BOOTX64.EFI` still missing) | — |
 | `mmu/ternary_page_alloc.hpp/.cpp` | Physical page allocator; balanced-ternary `PageState` {Free=-1, Reserved=0, Allocated=+1}; `alloc_page`, `alloc_contiguous`, `free_page` | 28 |
 | `sched/tisc_context.hpp` | `TiscContext` — full TISC thread snapshot; `ThreadState` {Sleeping=-1, Ready=0, Running=+1} | — |
 | `sched/context_switch.hpp/.cpp` | `context_save` / `context_restore` / `context_yield` over `t81::vm::ThreadContext` | 43 |
@@ -37,9 +39,9 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - Hosted HAL remains the executable path today, but Phase 1 promotion is now encoded as a concrete VirtualBox x86_64 hardware profile rather than a generic future boot target.
 - The first supported VM profile is intentionally narrow: VBox EFI firmware, AHCI storage, E1000 networking, VMSVGA display, and HPET/IOAPIC timing.
 - NVMe remains visible in the upstream VirtualBox source tree but is explicitly deferred behind AHCI for the first persistence gate.
-- A reproducible VirtualBox disk-artifact target now exists (`t81_ternaryos_virtualbox_guest_artifact`), but it stages metadata and demo evidence only; the first true EFI guest stub remains the blocking gap.
+- A reproducible VirtualBox disk-artifact target now exists (`t81_ternaryos_virtualbox_guest_artifact`) and stages metadata, demo evidence, and a compiled `BOOTX64.obj` stub object; final `.efi` linking remains the blocking gap.
 
-**Phase 1 test total: 153 / 153**
+**Phase 1 test total: 155 / 155**
 
 ---
 
@@ -132,14 +134,14 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 82 | 1 |
+| `t81_ternaryos_hal_boot_test` | 84 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 47 | 2 |
 | `t81_ternaryos_scheduler_test` | 120 | 3 |
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 151 | 4 |
-| **Total** | **544** | |
+| **Total** | **546** | |
 
 Run all TernOS tests:
 
@@ -155,7 +157,7 @@ ctest --test-dir build -R ternaryos -V
 
 | # | Question | Blocking |
 | :-- | :--- | :--- |
-| OQ-1 | Guest image format for the first VirtualBox target: raw disk, ISO, or another VBox-friendly package | Phase 1 promotion |
+| OQ-1 | Guest artifact format is now narrowed to raw FAT disk + VBox VDI wrapper; the remaining question is final EFI application linking and boot handoff shape | Phase 1 promotion |
 | OQ-2 | First supported VirtualBox device profile is intentionally narrow (VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC); implementation still needs to be scoped into concrete tasks | Phase 1 promotion |
 | OQ-3 | CI target remains unresolved: headless VirtualBox vs. QEMU for automation, with VirtualBox reserved for demo/dev validation | Phase 1 promotion |
 | OQ-4 | TISC interrupt semantics — frozen ISA has no trap-return opcode; shadow dispatch table is the current workaround | Phase 4 |

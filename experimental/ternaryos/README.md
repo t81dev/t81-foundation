@@ -17,11 +17,13 @@ progress.
 hal/
   hal.hpp              HAL public interface (MemoryRegion, HardwareInterrupt,
                        BootContext, hal_main)
+  hal_c_abi.h/.cpp     C ABI bridge for freestanding guest stubs
   hal_main.cpp         Ethics-first boot (Θ₁–Θ₉ via Axion) → T81VM handoff
   interrupt_table.cpp  Shadow binary interrupt dispatch table
   hosted_stub.cpp      Hosted (macOS/Linux) simulation — stand-in for UEFI stub
   virtualbox_platform.hpp/.cpp  First-target VirtualBox VM profile scaffold
   virtualbox_guest_devices.hpp/.cpp  VirtualBox profile-to-device binding helpers
+  virtualbox_efi_stub.c  Freestanding VBox EFI stub source for BOOTX64 handoff
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,
@@ -50,7 +52,7 @@ dev/
   net_packet.hpp       Ternary Ethernet packet wrapper + binary frame codec
 
 tests/
-  hal_boot_test.cpp          Phase 1 — 82 assertions
+  hal_boot_test.cpp          Phase 1 — 84 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
   mmu_test.cpp               Phase 2 — 47 assertions
@@ -65,7 +67,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 544/544 assertions, 7/7 tests pass
+# Expected: 546/546 assertions, 7/7 tests pass
 ```
 
 ## Demo
@@ -98,14 +100,15 @@ Outputs:
 
 - `build/ternaryos/virtualbox/ternos_virtualbox_guest.img`
 - `build/ternaryos/virtualbox/ternos_virtualbox_guest.vdi`
+- `build/ternaryos/virtualbox/BOOTX64.obj`
 - `build/ternaryos/virtualbox/staging/TERNOS/profile.txt`
 - `build/ternaryos/virtualbox/staging/TERNOS/demo-output.txt`
 
 Current status:
 
 - the image is FAT-formatted and VirtualBox-ready as a disk artifact
-- it stages the current guest profile and captured demo evidence
-- it is not EFI-bootable yet; the real `BOOTX64.EFI` guest stub is still missing
+- it stages the current guest profile, captured demo evidence, and a compiled `BOOTX64.obj` stub object
+- it is not EFI-bootable yet; final PE/COFF `.efi` linking is still missing, so `BOOTX64.EFI` is not produced yet
 
 ## Promotion Path
 

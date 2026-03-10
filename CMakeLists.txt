@@ -551,6 +551,7 @@ if(T81_ENABLE_TERNARYOS)
 
   add_library(t81_ternaryos_hal STATIC
     experimental/ternaryos/hal/hal_main.cpp
+    experimental/ternaryos/hal/hal_c_abi.cpp
     experimental/ternaryos/hal/interrupt_table.cpp
     experimental/ternaryos/hal/hosted_stub.cpp
     experimental/ternaryos/hal/virtualbox_platform.cpp
@@ -581,13 +582,38 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/demo.cpp)
   target_link_libraries(t81_ternaryos_demo PRIVATE t81_ternaryos_hal)
 
+  set(T81_TERNARYOS_GUEST_ARTIFACT_DEPS t81_ternaryos_demo)
+  find_program(T81_LLVM_CLANG NAMES clang PATHS /opt/homebrew/opt/llvm/bin NO_DEFAULT_PATH)
+  if(T81_LLVM_CLANG)
+    set(T81_TERNARYOS_EFI_OBJ ${CMAKE_BINARY_DIR}/ternaryos/virtualbox/BOOTX64.obj)
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_EFI_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
+      COMMAND ${T81_LLVM_CLANG}
+              --target=x86_64-pc-windows-msvc
+              -ffreestanding
+              -fshort-wchar
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_efi_stub.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos
+              -o ${T81_TERNARYOS_EFI_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_efi_stub.c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/hal_c_abi.h)
+    add_custom_target(t81_ternaryos_virtualbox_efi_obj
+      DEPENDS ${T81_TERNARYOS_EFI_OBJ})
+    list(APPEND T81_TERNARYOS_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_efi_obj)
+  endif()
+
   add_custom_target(t81_ternaryos_virtualbox_guest_artifact
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
     COMMAND /bin/zsh
             ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/build_virtualbox_guest_artifact.sh
             ${CMAKE_BINARY_DIR}
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
-    DEPENDS t81_ternaryos_demo
+    DEPENDS ${T81_TERNARYOS_GUEST_ARTIFACT_DEPS}
     USES_TERMINAL)
 
   if(T81_BUILD_TESTS)

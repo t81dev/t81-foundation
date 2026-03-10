@@ -12,6 +12,7 @@
 //   [AC-7] ternaryos_hosted_boot(true) succeeds end-to-end.
 
 #include "../hal/hal.hpp"
+#include "../hal/hal_c_abi.h"
 #include "../hal/virtualbox_guest_devices.hpp"
 #include "../hal/virtualbox_platform.hpp"
 #include "../dev/hosted_block_dev.hpp"
@@ -143,6 +144,36 @@ static void test_hosted_boot_end_to_end() {
   std::printf("\n[AC-7] ternaryos_hosted_boot end-to-end\n");
   int rc = ternaryos_hosted_boot(/*ethics_required=*/true);
   check(rc == 0, "hosted_boot with ethics returns 0");
+}
+
+static void test_hal_c_abi_bridge() {
+  std::printf("\n[AC-7b] hal_main C ABI bridge\n");
+
+  const TernaryOsMemoryRegion memory_map[] = {
+      {
+          .base_phys = 0x0000000000100000ULL,
+          .size_bytes = 64ULL * 1024ULL * 1024ULL,
+          .writable = true,
+          .executable = false,
+      },
+      {
+          .base_phys = 0x0000000008000000ULL,
+          .size_bytes = 4ULL * 1024ULL * 1024ULL,
+          .writable = true,
+          .executable = true,
+      },
+  };
+  const TernaryOsBootContext ctx{
+      .memory_map = memory_map,
+      .memory_map_len = 2,
+      .kernel_load_address = 0x0000000008000000ULL,
+      .stack_top = 0x0000000007FFF000ULL,
+      .ethics_boot_required = true,
+      .platform_id = "c-abi-test",
+  };
+
+  check(ternaryos_hal_main_c(&ctx) == 0, "ternaryos_hal_main_c accepts a valid C boot context");
+  check(ternaryos_hal_main_c(nullptr) != 0, "ternaryos_hal_main_c rejects null context");
 }
 
 static void test_virtualbox_profile_defaults() {
@@ -388,6 +419,7 @@ int main() {
   test_unknown_interrupt_fallback();
   test_ternary_page_count();
   test_hosted_boot_end_to_end();
+  test_hal_c_abi_bridge();
   test_virtualbox_profile_defaults();
   test_virtualbox_profile_rejects_nvme_without_opt_in();
   test_virtualbox_boot_context();
