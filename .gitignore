@@ -109,6 +109,9 @@ bazel-*
 .bazelrc
 # ── Hygiene / Root Containment ──────────────────────────────
 build_test/
+build_fuzz/
+build_temp/
+.cache/
 .t81_canonfs/
 logs/
 artifacts/
