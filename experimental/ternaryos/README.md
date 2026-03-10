@@ -42,19 +42,20 @@ dev/
   block_device.hpp     CanonBlock-aligned block device interface
   hosted_block_dev.hpp/.cpp  File-backed hosted block device
   virtualbox_ahci_dev.hpp/.cpp  VirtualBox-first AHCI adapter scaffold
+  virtualbox_e1000_dev.hpp/.cpp  VirtualBox-first E1000 adapter scaffold
   canon_store.hpp/.cpp Content-addressed CanonBlock store + reboot rebuild
   framebuffer.hpp/.cpp 81x27 ternary framebuffer with ASCII dump
   ttf.hpp/.cpp         Minimal ASCII ↔ balanced-ternary text codec + renderer
   net_packet.hpp       Ternary Ethernet packet wrapper + binary frame codec
 
 tests/
-  hal_boot_test.cpp          Phase 1 — 60 assertions
+  hal_boot_test.cpp          Phase 1 — 71 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
   mmu_test.cpp               Phase 2 — 47 assertions
   scheduler_test.cpp         Phase 3 — 120 assertions
   ipc_test.cpp               Phase 3 — 73 assertions
-  device_driver_test.cpp     Phase 4 — 120 assertions
+  device_driver_test.cpp     Phase 4 — 138 assertions
 ```
 
 ## Build & Test
@@ -63,7 +64,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 491/491 assertions, 7/7 tests pass
+# Expected: 517/517 assertions, 7/7 tests pass
 ```
 
 ## Demo
@@ -79,10 +80,10 @@ cmake --build build --target t81_ternaryos_demo
 The demo shows a VirtualBox-first hosted simulation path:
 
 - the HAL boots a first-target VirtualBox guest profile
-- the guest profile binds its first storage device through the AHCI wrapper
+- the guest profile binds its first storage and network devices through AHCI and E1000 wrappers
 - CanonStore persists a CanonBlock across a simulated reboot through that binding
 - TTF renders ASCII text into the ternary framebuffer.
-- TernaryEthernetPacket round-trips through a binary Ethernet-like frame.
+- TernaryEthernetPacket round-trips through the VirtualBox E1000 scaffold.
 
 ## Promotion Path
 

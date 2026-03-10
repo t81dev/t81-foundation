@@ -26,7 +26,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 | `hal/interrupt_table.cpp` | Shadow binary dispatch table; `register_interrupt_handler`, `dispatch_interrupt`, `fire_simulated_interrupt` | (above) |
 | `hal/hosted_stub.cpp` | macOS/Linux UEFI stub simulation; synthetic memory map; calls `hal_main` | (above) |
 | `hal/virtualbox_platform.hpp/.cpp` | First-target VirtualBox promotion scaffold: VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC profile validation, device-map descriptors, timer-tick simulation, and `BootContext` construction | 43 |
-| `hal/virtualbox_guest_devices.hpp/.cpp` | VirtualBox guest-device binding seam: maps the first supported HAL storage profile onto the AHCI-shaped Phase 4 block-device adapter, rejects unsupported NVMe-first promotion paths, and bootstraps the first guest profile as a reusable runtime bundle | 17 |
+| `hal/virtualbox_guest_devices.hpp/.cpp` | VirtualBox guest-device binding seam: maps the first supported HAL storage and network profile onto AHCI/E1000-shaped Phase 4 adapters, rejects unsupported NVMe/PCNet promotion paths, and bootstraps the first guest profile as a reusable runtime bundle | 28 |
 | `mmu/ternary_page_alloc.hpp/.cpp` | Physical page allocator; balanced-ternary `PageState` {Free=-1, Reserved=0, Allocated=+1}; `alloc_page`, `alloc_contiguous`, `free_page` | 28 |
 | `sched/tisc_context.hpp` | `TiscContext` — full TISC thread snapshot; `ThreadState` {Sleeping=-1, Ready=0, Running=+1} | — |
 | `sched/context_switch.hpp/.cpp` | `context_save` / `context_restore` / `context_yield` over `t81::vm::ThreadContext` | 43 |
@@ -37,7 +37,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - The first supported VM profile is intentionally narrow: VBox EFI firmware, AHCI storage, E1000 networking, VMSVGA display, and HPET/IOAPIC timing.
 - NVMe remains visible in the upstream VirtualBox source tree but is explicitly deferred behind AHCI for the first persistence gate.
 
-**Phase 1 test total: 131 / 131**
+**Phase 1 test total: 142 / 142**
 
 ---
 
@@ -93,12 +93,13 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `dev/block_device.hpp` | Abstract 729-byte CanonBlock-aligned block device interface (`IBlockDevice`, `BlockDeviceInfo`) | — |
 | `dev/hosted_block_dev.hpp/.cpp` | File-backed hosted block device; read/write/flush/save/load for reboot simulation | 15 |
 | `dev/virtualbox_ahci_dev.hpp/.cpp` | VirtualBox-first AHCI block-device adapter scaffold over an existing `IBlockDevice`; ABAR/IRQ metadata + op accounting | 16 |
+| `dev/virtualbox_e1000_dev.hpp/.cpp` | VirtualBox-first E1000 NIC scaffold with MMIO/IRQ/MAC metadata, frame TX/RX queues, and ternary-packet send/receive helpers | 18 |
 | `dev/canon_store.hpp/.cpp` | Content-addressed CanonBlock store over `IBlockDevice`; dedup, flush, rebuild, corruption detection | 29 |
 | `dev/framebuffer.hpp/.cpp` | 81×27 ternary framebuffer with ASCII dump | 18 |
 | `dev/ttf.hpp/.cpp` | Minimal Ternary Text Format codec + framebuffer text renderer for ASCII terminal output | 12 |
 | `dev/net_packet.hpp` | Ternary Ethernet packet wrapper with payload validation, canonical content hash, and binary frame encode/decode | 18 |
 | `demo.cpp` | Presentation demo: VirtualBox guest bootstrap over hosted storage binding, reboot-persistent CanonStore, TTF framebuffer output, and Ethernet frame round-trip | — |
-| `tests/device_driver_test.cpp` | Phase 4 acceptance tests AC-D1 through AC-D8 plus VirtualBox AHCI adapter, hosted TTF rendering, and Ethernet frame translation checks | 120 |
+| `tests/device_driver_test.cpp` | Phase 4 acceptance tests AC-D1 through AC-D8 plus VirtualBox AHCI/E1000 adapter scaffolds, hosted TTF rendering, and Ethernet frame translation checks | 138 |
 
 #### Design notes
 
@@ -108,10 +109,11 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 - `ttf_encode_ascii()` / `ttf_render_text()` now provide a minimal hosted TTF terminal path over the ternary framebuffer.
 - The network layer now translates between ternary packet structs and a binary Ethernet-like frame format, but no RX/TX device path exists yet.
 - AHCI is now represented as a first-target VirtualBox adapter scaffold, and the HAL-side VirtualBox profile can bind its storage path through that adapter while still delegating to hosted storage underneath.
+- E1000 is now represented as a first-target VirtualBox NIC scaffold, and the HAL-side VirtualBox profile can bind its guest network path through that adapter while still using hosted loopback queues underneath.
 - The demo path now boots through the VirtualBox guest bootstrap twice, showing the same hosted persistence story through the VM-targeted HAL/device seam rather than through a manually assembled hosted device stack.
 - Real NVMe/ethernet hardware adapters remain open.
 
-**Phase 4 test total: 120 / 120**
+**Phase 4 test total: 138 / 138**
 
 ---
 
@@ -126,14 +128,14 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 60 | 1 |
+| `t81_ternaryos_hal_boot_test` | 71 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 47 | 2 |
 | `t81_ternaryos_scheduler_test` | 120 | 3 |
 | `t81_ternaryos_ipc_test` | 73 | 3 |
-| `t81_ternaryos_device_driver_test` | 120 | 4 |
-| **Total** | **491** | |
+| `t81_ternaryos_device_driver_test` | 138 | 4 |
+| **Total** | **517** | |
 
 Run all TernOS tests:
 

@@ -6,6 +6,7 @@
 #include "../dev/block_device.hpp"
 #include "../dev/hosted_block_dev.hpp"
 #include "../dev/virtualbox_ahci_dev.hpp"
+#include "../dev/virtualbox_e1000_dev.hpp"
 #include "../dev/canon_store.hpp"
 #include "../dev/framebuffer.hpp"
 #include "../dev/net_packet.hpp"
@@ -135,6 +136,46 @@ static void test_virtualbox_ahci_adapter() {
   check(dev.write_ops() == 1, "AHCI adapter write op count increments");
   check(dev.flush_ops() == 1, "AHCI adapter flush op count increments");
   check(backing.block_count() == dev.block_count(), "backing and adapter block counts match");
+}
+
+// ─── AC-D1d: VirtualBox E1000 adapter scaffold ─────────────────────────────
+
+static void test_virtualbox_e1000_adapter() {
+  std::printf("\n[D1d] VirtualBox E1000 adapter scaffold\n");
+
+  VirtualBoxE1000Dev dev;
+  check(dev.device_id() == "vbox-e10000", "E1000 adapter device id == vbox-e10000");
+
+  const auto& nic = dev.e1000_info();
+  check(nic.abar_base == 0xF0200000ULL, "E1000 MMIO base matches profile");
+  check(nic.abar_span_bytes == 0x20000ULL, "E1000 MMIO span matches profile");
+  check(nic.irq == 11, "E1000 IRQ == 11");
+  check(nic.mac[0] == 0x08 && nic.mac[2] == 0x27, "E1000 scaffold exposes VBox-style MAC prefix");
+  check(nic.link_up, "E1000 scaffold starts link-up");
+
+  auto packet = TernaryEthernetPacket::build(
+      {0x01, 0x02, 0x03, 0x04, 0x05, 0x06},
+      nic.mac,
+      0x0081,
+      {1, 0, -1, 1, 0, -1});
+  check(packet.has_value(), "E1000 test packet builds");
+
+  auto frame = packet ? dev.send_packet(*packet) : std::nullopt;
+  check(frame.has_value(), "E1000 send_packet serializes a frame");
+  check(dev.tx_frames() == 1, "E1000 tx frame count increments");
+  check(dev.tx_bytes() == (frame ? frame->size() : 0), "E1000 tx byte count increments");
+  check(dev.pending_tx_frames() == 1, "E1000 queues one transmitted frame");
+
+  check(frame && dev.inject_frame(*frame), "E1000 loopback frame injection succeeds");
+  check(dev.rx_frames() == 1, "E1000 rx frame count increments");
+  check(dev.pending_rx_frames() == 1, "E1000 queues one received frame");
+
+  auto parsed = dev.receive_packet();
+  check(parsed.has_value(), "E1000 receive_packet parses queued frame");
+  check(parsed && parsed->trit_payload == packet->trit_payload, "E1000 preserves ternary payload");
+  check(parsed && parsed->content_ref.hash.h.bytes == packet->content_ref.hash.h.bytes,
+        "E1000 preserves packet content hash");
+  check(dev.pending_rx_frames() == 0, "E1000 receive_packet drains RX queue");
 }
 
 // ─── AC-D2: CanonStore put / deduplication ───────────────────────────────────
@@ -443,6 +484,7 @@ int main() {
   test_hosted_block_dev_rw();
   test_hosted_block_dev_persist();
   test_virtualbox_ahci_adapter();
+  test_virtualbox_e1000_adapter();
   test_canon_store_put();
   test_canon_store_get_unknown();
   test_canon_store_reboot();

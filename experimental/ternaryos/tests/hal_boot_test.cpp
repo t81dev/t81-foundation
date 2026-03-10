@@ -303,9 +303,44 @@ static void test_virtualbox_guest_bootstrap() {
           "guest bootstrap binds AHCI storage");
     check(guest->storage.device->info().total_blocks == 18,
           "guest bootstrap storage exposes backing block count");
+    check(guest->network.binding_name == "virtualbox-e1000",
+          "guest bootstrap binds E1000 networking");
+    check(guest->network.device->device_id() == "vbox-e1000",
+          "guest bootstrap network device id matches E1000 adapter");
     check(hal_main(guest->boot_context) == 0,
           "guest bootstrap BootContext is accepted by hal_main");
   }
+}
+
+static void test_virtualbox_network_binding() {
+  std::printf("\n[AC-15] VirtualBox network binding\n");
+
+  VBoxProfile profile;
+  auto binding_err = validate_virtualbox_network_binding(profile);
+  check(!binding_err.has_value(), "E1000-first profile has a valid network binding");
+
+  auto binding = create_virtualbox_network_binding(profile);
+  check(binding.has_value(), "create_virtualbox_network_binding returns a device");
+  if (binding) {
+    check(binding->binding_name == "virtualbox-e1000", "binding name identifies E1000 path");
+    check(binding->device->device_id() == "vbox-e1000", "bound network device id matches E1000 adapter");
+    auto pkt = t81::ternaryos::dev::TernaryEthernetPacket::build(
+        {0x01, 0x02, 0x03, 0x04, 0x05, 0x06},
+        binding->device->e1000_info().mac,
+        0x0081,
+        {1, 0, -1});
+    check(pkt.has_value(), "network binding can build a ternary packet");
+    auto frame = pkt ? binding->device->send_packet(*pkt) : std::nullopt;
+    check(frame.has_value(), "bound network device can serialize a packet");
+    check(binding->device->tx_frames() == 1, "bound network device records one TX frame");
+  }
+
+  VBoxProfile pcnet = profile;
+  pcnet.network = VBoxNetwork::PcNet;
+  check(validate_virtualbox_network_binding(pcnet).has_value(),
+        "PCNet profile rejected until a VirtualBox PCNet adapter exists");
+  check(!create_virtualbox_network_binding(pcnet).has_value(),
+        "PCNet binding is not created yet");
 }
 
 // ─── main ────────────────────────────────────────────────────────────────────
@@ -328,6 +363,7 @@ int main() {
   test_virtualbox_timer_tick_scaffold();
   test_virtualbox_storage_binding();
   test_virtualbox_guest_bootstrap();
+  test_virtualbox_network_binding();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

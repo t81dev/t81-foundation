@@ -56,10 +56,11 @@ int main() {
       return 1;
     }
 
-    std::printf("VirtualBox: profile=%s devices=%zu storage=%s\n",
+    std::printf("VirtualBox: profile=%s devices=%zu storage=%s network=%s\n",
                 guest->profile_summary.c_str(),
                 guest->device_map.size(),
-                guest->storage.binding_name.c_str());
+                guest->storage.binding_name.c_str(),
+                guest->network.binding_name.c_str());
 
     CanonStore store(*guest->storage.device);
 
@@ -118,10 +119,24 @@ int main() {
     return 1;
   }
 
-  auto frame = packet->to_frame();
-  auto parsed = frame ? TernaryEthernetPacket::from_frame(*frame) : std::nullopt;
-  std::printf("Ethernet: serialized %zu-byte frame, parse %s, words=%zu\n",
-              frame ? frame->size() : 0,
+  auto net_guest = bootstrap_virtualbox_guest(spec, *loaded);
+  if (!net_guest.has_value()) {
+    std::fputs("bootstrap_virtualbox_guest failed for network path\n", stderr);
+    return 1;
+  }
+  auto frame = net_guest->network.device->send_packet(*packet);
+  if (!frame.has_value()) {
+    std::fputs("send_packet failed\n", stderr);
+    return 1;
+  }
+  if (!net_guest->network.device->inject_frame(*frame)) {
+    std::fputs("inject_frame failed\n", stderr);
+    return 1;
+  }
+  auto parsed = net_guest->network.device->receive_packet();
+  std::printf("Ethernet: %s serialized %zu-byte frame, parse %s, words=%zu\n",
+              net_guest->network.binding_name.c_str(),
+              frame->size(),
               parsed.has_value() ? "ok" : "failed",
               parsed ? parsed->trit_word_count() : 0);
 
