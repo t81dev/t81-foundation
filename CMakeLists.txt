@@ -553,6 +553,9 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/hal/hal_main.cpp
     experimental/ternaryos/hal/interrupt_table.cpp
     experimental/ternaryos/hal/hosted_stub.cpp
+    experimental/ternaryos/dev/hosted_block_dev.cpp
+    experimental/ternaryos/dev/canon_store.cpp
+    experimental/ternaryos/dev/framebuffer.cpp
     experimental/ternaryos/mmu/ternary_page_alloc.cpp
     experimental/ternaryos/mmu/page_table.cpp
     experimental/ternaryos/sched/context_switch.cpp
@@ -599,6 +602,11 @@ if(T81_ENABLE_TERNARYOS)
       experimental/ternaryos/tests/ipc_test.cpp)
     target_link_libraries(t81_ternaryos_ipc_test PRIVATE t81_ternaryos_hal)
     add_test(NAME t81_ternaryos_ipc_test COMMAND t81_ternaryos_ipc_test)
+
+    add_executable(t81_ternaryos_device_driver_test
+      experimental/ternaryos/tests/device_driver_test.cpp)
+    target_link_libraries(t81_ternaryos_device_driver_test PRIVATE t81_ternaryos_hal)
+    add_test(NAME t81_ternaryos_device_driver_test COMMAND t81_ternaryos_device_driver_test)
   endif()
 endif()
 
