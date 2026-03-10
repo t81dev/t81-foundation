@@ -307,6 +307,10 @@ static void test_virtualbox_guest_bootstrap() {
           "guest bootstrap binds E1000 networking");
     check(guest->network.device->device_id() == "vbox-e1000",
           "guest bootstrap network device id matches E1000 adapter");
+    check(guest->display.binding_name == "virtualbox-vmsvga",
+          "guest bootstrap binds VMSVGA display");
+    check(guest->display.device->device_id() == "vbox-vmsvga0",
+          "guest bootstrap display device id matches VMSVGA adapter");
     check(hal_main(guest->boot_context) == 0,
           "guest bootstrap BootContext is accepted by hal_main");
   }
@@ -343,6 +347,34 @@ static void test_virtualbox_network_binding() {
         "PCNet binding is not created yet");
 }
 
+static void test_virtualbox_display_binding() {
+  std::printf("\n[AC-16] VirtualBox display binding\n");
+
+  VBoxProfile profile;
+  auto binding_err = validate_virtualbox_display_binding(profile);
+  check(!binding_err.has_value(), "VMSVGA-first profile has a valid display binding");
+
+  auto binding = create_virtualbox_display_binding(profile);
+  check(binding.has_value(), "create_virtualbox_display_binding returns a device");
+  if (binding) {
+    check(binding->binding_name == "virtualbox-vmsvga", "binding name identifies VMSVGA path");
+    check(binding->device->device_id() == "vbox-vmsvga0",
+          "bound display device id matches VMSVGA adapter");
+    auto& fb = binding->device->framebuffer();
+    check(fb.set_pixel(0, 0, t81::ternaryos::dev::TritPixel{1}),
+          "bound display framebuffer accepts writes");
+    check(binding->device->present(), "bound display device can present a frame");
+    check(binding->device->present_count() == 1, "bound display device records one present");
+  }
+
+  VBoxProfile vga = profile;
+  vga.display = VBoxDisplay::Vga;
+  check(validate_virtualbox_display_binding(vga).has_value(),
+        "VGA profile rejected until a VirtualBox VGA adapter exists");
+  check(!create_virtualbox_display_binding(vga).has_value(),
+        "VGA binding is not created yet");
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -364,6 +396,7 @@ int main() {
   test_virtualbox_storage_binding();
   test_virtualbox_guest_bootstrap();
   test_virtualbox_network_binding();
+  test_virtualbox_display_binding();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

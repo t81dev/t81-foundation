@@ -75,6 +75,40 @@ std::optional<VBoxNetworkBinding> create_virtualbox_network_binding(
   return std::nullopt;
 }
 
+std::optional<std::string> validate_virtualbox_display_binding(
+    const VBoxProfile& profile) noexcept {
+  if (const auto profile_err = validate_virtualbox_profile(profile); profile_err) {
+    return profile_err;
+  }
+
+  switch (profile.display) {
+    case VBoxDisplay::Vmsvga:
+      return std::nullopt;
+    case VBoxDisplay::Vga:
+      return std::string("VirtualBox guest binding does not expose VGA yet; VMSVGA is the only supported display binding");
+  }
+  return std::string("unknown VirtualBox display profile");
+}
+
+std::optional<VBoxDisplayBinding> create_virtualbox_display_binding(
+    const VBoxProfile& profile) {
+  if (validate_virtualbox_display_binding(profile).has_value()) {
+    return std::nullopt;
+  }
+
+  switch (profile.display) {
+    case VBoxDisplay::Vmsvga:
+      return VBoxDisplayBinding{
+          .device = std::make_unique<t81::ternaryos::dev::VirtualBoxVmsvgaDev>(
+              "vbox-vmsvga0"),
+          .binding_name = "virtualbox-vmsvga",
+      };
+    case VBoxDisplay::Vga:
+      break;
+  }
+  return std::nullopt;
+}
+
 std::optional<VBoxGuestBootstrap> bootstrap_virtualbox_guest(
     const VBoxBootSpec& spec,
     t81::ternaryos::dev::IBlockDevice& backing) {
@@ -90,12 +124,17 @@ std::optional<VBoxGuestBootstrap> bootstrap_virtualbox_guest(
   if (!network.has_value()) {
     return std::nullopt;
   }
+  auto display = create_virtualbox_display_binding(spec.profile);
+  if (!display.has_value()) {
+    return std::nullopt;
+  }
 
   return VBoxGuestBootstrap{
       .boot_context = make_virtualbox_boot_context(spec),
       .device_map = virtualbox_device_map(spec.profile),
       .storage = std::move(*storage),
       .network = std::move(*network),
+      .display = std::move(*display),
       .profile_summary = virtualbox_profile_summary(spec.profile),
   };
 }

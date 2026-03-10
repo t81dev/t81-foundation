@@ -7,6 +7,7 @@
 #include "../dev/hosted_block_dev.hpp"
 #include "../dev/virtualbox_ahci_dev.hpp"
 #include "../dev/virtualbox_e1000_dev.hpp"
+#include "../dev/virtualbox_vmsvga_dev.hpp"
 #include "../dev/canon_store.hpp"
 #include "../dev/framebuffer.hpp"
 #include "../dev/net_packet.hpp"
@@ -176,6 +177,33 @@ static void test_virtualbox_e1000_adapter() {
   check(parsed && parsed->content_ref.hash.h.bytes == packet->content_ref.hash.h.bytes,
         "E1000 preserves packet content hash");
   check(dev.pending_rx_frames() == 0, "E1000 receive_packet drains RX queue");
+}
+
+// ─── AC-D1e: VirtualBox VMSVGA adapter scaffold ────────────────────────────
+
+static void test_virtualbox_vmsvga_adapter() {
+  std::printf("\n[D1e] VirtualBox VMSVGA adapter scaffold\n");
+
+  VirtualBoxVmsvgaDev dev;
+  check(dev.device_id() == "vbox-vmsvga0", "VMSVGA adapter device id == vbox-vmsvga0");
+
+  const auto& display = dev.vmsvga_info();
+  check(display.mmio_base == 0xE0000000ULL, "VMSVGA MMIO base matches profile");
+  check(display.mmio_span_bytes == 0x01000000ULL, "VMSVGA MMIO span matches profile");
+  check(display.irq == 16, "VMSVGA IRQ == 16");
+  check(display.width == 81, "VMSVGA default width == 81");
+  check(display.height == 27, "VMSVGA default height == 27");
+
+  auto& fb = dev.framebuffer();
+  check(fb.set_pixel(1, 1, TritPixel{1}), "VMSVGA framebuffer accepts pixel writes");
+  check(fb.set_pixel(2, 1, TritPixel{-1}), "VMSVGA framebuffer accepts second pixel write");
+  check(dev.present(), "VMSVGA present succeeds");
+  check(dev.present_count() == 1, "VMSVGA present count increments");
+
+  const auto presented = dev.last_present_ascii();
+  check(!presented.empty(), "VMSVGA present captures an ASCII frame");
+  check(presented.find('+') != std::string::npos, "VMSVGA present includes + pixel");
+  check(presented.find('-') != std::string::npos, "VMSVGA present includes - pixel");
 }
 
 // ─── AC-D2: CanonStore put / deduplication ───────────────────────────────────
@@ -485,6 +513,7 @@ int main() {
   test_hosted_block_dev_persist();
   test_virtualbox_ahci_adapter();
   test_virtualbox_e1000_adapter();
+  test_virtualbox_vmsvga_adapter();
   test_canon_store_put();
   test_canon_store_get_unknown();
   test_canon_store_reboot();

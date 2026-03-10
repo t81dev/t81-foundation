@@ -103,11 +103,23 @@ int main() {
   print_hash_prefix(stored_ref);
   std::puts("");
 
-  TernaryFramebuffer fb(20, 8);
+  auto display_guest = bootstrap_virtualbox_guest(spec, *loaded);
+  if (!display_guest.has_value()) {
+    std::fputs("bootstrap_virtualbox_guest failed for display path\n", stderr);
+    return 1;
+  }
+  auto& fb = display_guest->display.device->framebuffer();
+  fb = TernaryFramebuffer(20, 8);
   const auto chars = ttf_render_text(fb, 0, 0, "T81\nOS");
-  std::printf("TTF: rendered %zu glyphs\n", chars);
+  if (!display_guest->display.device->present()) {
+    std::fputs("display present failed\n", stderr);
+    return 1;
+  }
+  std::printf("TTF: rendered %zu glyphs through %s\n",
+              chars,
+              display_guest->display.binding_name.c_str());
   std::puts("Framebuffer:");
-  std::puts(fb.dump_ascii().c_str());
+  std::puts(display_guest->display.device->last_present_ascii().c_str());
 
   auto packet = TernaryEthernetPacket::build(
       {0x01, 0x02, 0x03, 0x04, 0x05, 0x06},

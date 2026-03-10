@@ -558,6 +558,7 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/dev/hosted_block_dev.cpp
     experimental/ternaryos/dev/virtualbox_ahci_dev.cpp
     experimental/ternaryos/dev/virtualbox_e1000_dev.cpp
+    experimental/ternaryos/dev/virtualbox_vmsvga_dev.cpp
     experimental/ternaryos/dev/canon_store.cpp
     experimental/ternaryos/dev/framebuffer.cpp
     experimental/ternaryos/dev/ttf.cpp

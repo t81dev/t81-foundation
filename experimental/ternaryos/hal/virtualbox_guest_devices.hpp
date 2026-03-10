@@ -10,6 +10,7 @@
 
 #include "../dev/block_device.hpp"
 #include "../dev/virtualbox_e1000_dev.hpp"
+#include "../dev/virtualbox_vmsvga_dev.hpp"
 
 #include <memory>
 #include <optional>
@@ -28,11 +29,17 @@ struct VBoxNetworkBinding {
   std::string                                              binding_name;
 };
 
+struct VBoxDisplayBinding {
+  std::unique_ptr<t81::ternaryos::dev::VirtualBoxVmsvgaDev> device;
+  std::string                                               binding_name;
+};
+
 struct VBoxGuestBootstrap {
   BootContext                       boot_context;
   std::vector<VBoxDeviceDescriptor> device_map;
   VBoxStorageBinding                storage;
   VBoxNetworkBinding                network;
+  VBoxDisplayBinding                display;
   std::string                       profile_summary;
 };
 
@@ -47,6 +54,12 @@ std::optional<std::string> validate_virtualbox_network_binding(
     const VBoxProfile& profile) noexcept;
 
 std::optional<VBoxNetworkBinding> create_virtualbox_network_binding(
+    const VBoxProfile& profile);
+
+std::optional<std::string> validate_virtualbox_display_binding(
+    const VBoxProfile& profile) noexcept;
+
+std::optional<VBoxDisplayBinding> create_virtualbox_display_binding(
     const VBoxProfile& profile);
 
 std::optional<VBoxGuestBootstrap> bootstrap_virtualbox_guest(
