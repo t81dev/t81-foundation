@@ -49,13 +49,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
         uint8_t raw_op = p[0] % kOpcodeMax;
 
-        // TLoadHash has a pre-existing SEGFAULT (known issue, unrelated to VM
-        // dispatch logic).  Replace with Nop so fuzz runs don't produce noise
-        // that masks real VM bugs.
-        if (static_cast<t81::tisc::Opcode>(raw_op) == t81::tisc::Opcode::TLoadHash) {
-            raw_op = static_cast<uint8_t>(t81::tisc::Opcode::Nop);
-        }
-
         t81::tisc::Insn insn;
         insn.opcode = static_cast<t81::tisc::Opcode>(raw_op);
         // Clamp register operands to the flat register file (R0..R242).
