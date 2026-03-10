@@ -1,13 +1,14 @@
 # TernOS Implementation Progress
 
 **Last updated:** 2026-03-10
-**Commit:** `e9627ba4`
+**Commit:** `d6df5224`
 **Branch:** `main`
 
 Reference docs:
 - Roadmap: [docs/research/ternary_os_roadmap.md](../../docs/research/ternary_os_roadmap.md)
 - RFC-00B0 (HAL): [docs/rfcs/RFC-00B0-hal-spec.md](../../docs/rfcs/RFC-00B0-hal-spec.md)
 - RFC-00B1 (MMU): [docs/rfcs/RFC-00B1-ternary-mmu.md](../../docs/rfcs/RFC-00B1-ternary-mmu.md)
+- RFC-00B2 (Drivers): [docs/rfcs/RFC-00B2-device-drivers.md](../../docs/rfcs/RFC-00B2-device-drivers.md)
 
 ---
 
@@ -16,7 +17,7 @@ Reference docs:
 ### Phase 1 — Bootloader & HAL ✅ COMPLETE
 
 **Gate condition (v1.5):** TISC `NOP`/`HALT` executes with no host OS.
-Status: hosted simulation passing; bare-metal UEFI stub deferred to promotion.
+Status: hosted simulation passing; VirtualBox guest promotion is now the first concrete non-hosted target.
 
 | File | Purpose | Tests |
 | :--- | :--- | :---: |
@@ -137,14 +138,15 @@ ctest --test-dir build -R ternaryos -V
 
 | # | Question | Blocking |
 | :-- | :--- | :--- |
-| OQ-1 | UEFI toolchain choice (gnu-efi vs EDK2) for bare-metal Phase 1 promotion | Phase 1 promotion |
-| OQ-2 | QEMU vs. real hardware for CI gate (v1.5) | Phase 1 promotion |
-| OQ-3 | ARM AArch64 support for bootloader (x86_64 only for now) | Phase 1 promotion |
+| OQ-1 | Guest image format for the first VirtualBox target: raw disk, ISO, or another VBox-friendly package | Phase 1 promotion |
+| OQ-2 | First supported VirtualBox device profile is intentionally narrow (VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC); implementation still needs to be scoped into concrete tasks | Phase 1 promotion |
+| OQ-3 | CI target remains unresolved: headless VirtualBox vs. QEMU for automation, with VirtualBox reserved for demo/dev validation | Phase 1 promotion |
 | OQ-4 | TISC interrupt semantics — frozen ISA has no trap-return opcode; shadow dispatch table is the current workaround | Phase 4 |
 | OQ-5 | Axion determinism under pre-emption — governance model must be extended for async context switches | Phase 3 |
 | OQ-6 | Phase 3 radix-trie page table (3-ary, 10-trit levels) — not yet designed | Phase 3 |
-| OQ-7 | Real NVMe / framebuffer / ethernet device adapters are not implemented; Phase 4 currently satisfies the gate only in hosted simulation | Phase 4 promotion |
+| OQ-7 | Real AHCI / E1000 / VMSVGA-facing adapters are not implemented; Phase 4 currently satisfies the gate only in hosted simulation | Phase 4 promotion |
 | OQ-8 | CanonStore index is single-block and capped at 17 entries; chained index pages or a larger metadata format are deferred | Phase 4 scaling |
+| OQ-9 | VirtualBox should remain a tactical promotion target, not a permanent HAL dependency; portability boundaries must stay explicit | Cross-phase portability |
 
 ---
 

@@ -111,6 +111,7 @@ bazel-*
 build_test/
 build_fuzz/
 build_temp/
+.deps/
 .cache/
 .t81_canonfs/
 logs/

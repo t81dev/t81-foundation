@@ -12,7 +12,7 @@ As of **2026-03-10**, the project has completed:
 - **Phase 2:** Ternary MMU prototype
 - **Phase 3:** Kernel scheduling and IPC
 
-The roadmap is now centered on promotion of those layers from `experimental/` into mainline, plus delivery of the Phase 4 driver layer needed for a reboot-persistent CanonFS system.
+The roadmap is now centered on promotion of those layers from `experimental/` into mainline, plus delivery of the Phase 4 driver layer needed for a reboot-persistent CanonFS system. The concrete promotion environment is a **VirtualBox-first virtual machine target**: TernOS should graduate from hosted process simulation into a bootable guest image that runs under VirtualBox before any real-hardware push.
 
 ---
 
@@ -64,10 +64,35 @@ The foundational computational, storage, and process primitives already exist in
 
 TernOS still follows a five-phase dependency chain, but the first three phases are now implemented in hosted form.
 
+### Promotion Track — Hosted to VirtualBox
+
+The practical near-term execution path is no longer "hosted prototype -> immediate bare metal". It is:
+
+1. **Hosted simulation (current):** macOS/Linux process validates HAL, MMU, scheduler, IPC, and Phase 4 wrappers.
+2. **VirtualBox guest image:** bootable x86_64 image with synthetic-but-real VM hardware boundaries (RAM map, timer, storage, framebuffer, NIC) and no host OS process boundary inside the guest.
+3. **Bare-metal / alternate hypervisor promotion:** only after the VirtualBox gate is stable.
+
+Why VirtualBox first:
+
+- It provides a repeatable x86_64 environment with well-understood virtual devices.
+- It is materially closer to the roadmap's "no host OS residual" goal than the current hosted stub.
+- It reduces early hardware-portability noise while forcing the HAL and driver layers to cross a real VM boundary.
+- It gives a concrete demo/distribution target: a VM image others can boot locally.
+
+Initial VirtualBox hardware profile (confirmed against the upstream source tree):
+
+- **Firmware:** VBox EFI firmware (`src/VBox/Devices/EFI/DevEFI.cpp`, `Firmware/`)
+- **Storage:** AHCI first, NVMe second (`src/VBox/Devices/Storage/DevAHCI.cpp`, `DevNVMe.cpp`)
+- **Network:** E1000 first (`src/VBox/Devices/Network/DevE1000.cpp`)
+- **Display:** VMSVGA / VGA path (`src/VBox/Devices/Graphics/DevVGA-SVGA.cpp`, `DevVGA.cpp`)
+- **Timers / interrupts:** HPET and IOAPIC (`src/VBox/Devices/PC/DevHPET.cpp`, `DevIoApic.cpp`)
+
+The first bootable guest should deliberately target this conservative profile rather than trying to support every VirtualBox device model on day one.
+
 ### Phase 1 — Bootloader & HAL
 
 **Status:** Complete in hosted simulation.  
-**Gate:** v1.5 hosted equivalent satisfied; bare-metal UEFI promotion remains open.
+**Gate:** v1.5 hosted equivalent satisfied; VirtualBox guest promotion is the next concrete target, with bare-metal UEFI still deferred.
 
 - **Binary-to-Ternary Bootstrap:** A minimalist Type-1 hypervisor guest or UEFI bootloader that initializes hardware (CPU, memory, storage, network) and transfers full control to `T81VM` with no host OS residual.
 - **Hardware Abstraction Layer (HAL):** Translates binary CPU interrupts, I/O port signals, and physical memory addresses into canonical TISC representations. See [RFC-00B0: HAL Specification](../rfcs/RFC-00B0-hal-spec.md) for the scoping decision between unikernel, Type-1 hypervisor, and raw UEFI approaches.
@@ -77,6 +102,13 @@ Implemented outcome:
 - `hal_main` validates `BootContext`, performs ethics-first boot checks, and stubs T81VM handoff.
 - A hosted macOS/Linux boot stub provides a synthetic memory map and invokes the HAL entrypoint.
 - Shadow binary interrupt dispatch is implemented without modifying the frozen TISC ISA.
+
+VirtualBox promotion deliverables:
+
+- Replace the purely hosted stub with a bootable guest entry path suitable for a VirtualBox VM.
+- Enumerate the VM memory map and timer/interrupt surfaces from the guest environment rather than synthesizing them in-process.
+- Produce a guest image and documented VirtualBox boot recipe for repeatable external testing.
+- Lock the first supported VM configuration to VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC.
 
 ### Phase 2 — Ternary Memory Management
 
@@ -122,6 +154,13 @@ Near-term deliverables:
 - Ethernet wrapper and ternary packet representation
 - Reboot-cycle validation for CanonFS durability
 
+VirtualBox-specific promotion scope:
+
+- Block storage should first target the VirtualBox AHCI controller, with NVMe treated as a follow-on optimization once the CanonFS reboot gate is stable.
+- Framebuffer output should first target the VirtualBox VMSVGA/VGA guest display path before any physical GPU/MMIO strategy.
+- Network promotion should first target the VirtualBox E1000 device with deterministic frame translation at the guest boundary.
+- Timer and interrupt wiring should first target the HPET + IOAPIC path the guest can observe consistently.
+
 ### Phase 5 — Userland Ecosystem (deferred to v2.x)
 
 **Status:** Deferred until the driver layer is stable.
@@ -138,8 +177,13 @@ Near-term deliverables:
 | 1 | HAL RFC + Bootloader PoC | Hosted HAL, boot validation, interrupt shim | TISC `NOP`/`HALT` executes with no host OS-equivalent supervisor path | v1.5 |
 | 2 | Ternary MMU | TVA model, page allocator, flat page table | T81VM allocates from ternary page boundaries | v1.6 |
 | 3 | Pre-emptive Scheduler | 81-slot run queue, context-switch, IPC | Two concurrent TISC threads run deterministically | v1.7 |
-| 4 | Driver Layer | NVMe + framebuffer + network wrappers | CanonFS read/write survives a reboot cycle | v2.0 |
+| 4 | Driver Layer | VirtualBox guest storage + framebuffer + network wrappers | CanonFS read/write survives a reboot cycle inside a VirtualBox guest | v2.0 |
 | 5 | Userland | Ternary shell + network stack | Interactive TISC session over bare metal | v2.x |
+
+VirtualBox promotion checkpoint:
+
+- **v1.8 / pre-v2.0 promotion goal:** a bootable VirtualBox guest image executes the existing Phase 1-3 stack and exposes the Phase 4 hosted wrappers through VM devices.
+- **First supported VM profile:** x86_64, VBox EFI, AHCI boot/storage, E1000 NIC, VMSVGA display, HPET/IOAPIC timing.
 
 Current completion snapshot:
 
@@ -153,22 +197,23 @@ Current completion snapshot:
 
 The original v1.5 boot criterion has been met in hosted form. The next material success criteria are:
 
-> **Phase 4 (v2.0): CanonFS read/write survives a reboot cycle through the device-wrapper layer.**
+> **Phase 4 (v2.0): CanonFS read/write survives a reboot cycle through the device-wrapper layer inside a VirtualBox guest.**
 
 That gate turns the current in-memory TernOS substrate into a minimally persistent operating system. In parallel, a promotion track remains open for the stricter bare-metal interpretation of the Phase 1 gate:
 
-> **A UEFI or Type-1 hypervisor guest loads the T81VM binary, executes a TISC program (`NOP` loop or `HALT`), and terminates cleanly with no Linux/macOS host process involved.**
+> **A VirtualBox-bootable guest image loads the T81VM binary, executes a TISC program (`NOP` loop or `HALT`), and terminates cleanly with no Linux/macOS host process involved inside the guest.**
 
 ---
 
 ## 6. Open Questions & Risks
 
-1. **Phase 1 promotion target remains unresolved:** RFC-00B0 still leaves open the concrete UEFI toolchain choice (`gnu-efi` vs. EDK2), QEMU-vs-hardware CI policy, and AArch64 scope for bare-metal promotion.
+1. **Phase 1 promotion target is now concrete but still incomplete:** the roadmap now assumes a VirtualBox x86_64 guest using VBox EFI, AHCI, E1000, VMSVGA, and HPET/IOAPIC, but the guest image format and boot packaging flow still need to be implemented.
 2. **The physical/virtual address gap is resolved only for the current prototype:** RFC-00B1 adopts a "narrow virtual" TVA design. If future requirements exceed the current 30-trit/205 TB space, a wider VPN design will be needed.
 3. **TISC interrupt semantics remain a long-term architectural constraint:** The frozen ISA still has no trap-return opcode; the shadow dispatch table is sufficient for the prototype but may constrain richer interrupt handling in later phases.
 4. **Determinism under pre-emption is not fully closed:** Scheduling is deterministic today, but Axion governance has not yet been fully extended to model async interleavings.
 5. **The Phase 2 radix-trie page table is deferred:** The flat hash-map MMU is adequate for the current milestone but is not the final structure.
-6. **Driver correctness becomes the next systems risk:** NVMe, framebuffer, and Ethernet wrappers must preserve canonical ternary representations at the boundary without leaking binary host assumptions upward.
+6. **Driver correctness becomes the next systems risk:** AHCI/E1000/VMSVGA-facing wrappers must preserve canonical ternary representations at the VirtualBox guest boundary without leaking binary host assumptions upward.
+7. **VirtualBox coupling must stay tactical:** the VM target should accelerate promotion, not become a permanent architectural dependency. The HAL and driver contracts must remain portable to QEMU, other hypervisors, and eventual bare metal.
 
 ---
 
@@ -176,4 +221,4 @@ That gate turns the current in-memory TernOS substrate into a minimally persiste
 
 The most mathematically complex components — TISC ISA, compiler toolchain, CanonHash-81, Reed-Solomon parity, and the Axion policy engine — are already shipped and Beta-stable. On the TernOS path specifically, the foundational OS substrate is now in place: hosted boot/HAL, ternary paging, deterministic scheduling, context switching, and CanonRef-safe IPC are implemented and tested.
 
-The critical path has moved. The next milestone is the device-wrapper layer and reboot-persistent CanonFS validation, while Phase 1 promotion, Axion pre-emption semantics, and the radix-trie MMU remain follow-on engineering tracks.
+The critical path has moved. The next milestone is no longer an abstract "driver layer" in isolation; it is a **VirtualBox-bootable TernOS guest** with reboot-persistent CanonFS validation. That makes the remaining work concrete: close the VM boot path, bind Phase 4 wrappers to VirtualBox-visible devices, and preserve portability so later promotion to other hypervisors or bare metal remains viable.
