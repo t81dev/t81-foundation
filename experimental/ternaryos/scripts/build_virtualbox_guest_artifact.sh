@@ -1,15 +1,17 @@
 #!/bin/zsh
 set -euo pipefail
 
-if [[ $# -ne 2 ]]; then
-  echo "usage: $0 <build-dir> <output-dir>" >&2
+if [[ $# -ne 3 ]]; then
+  echo "usage: $0 <build-dir> <output-dir> <guest-arch>" >&2
   exit 2
 fi
 
 build_dir=$1
 output_dir=$2
+guest_arch=$3
 demo_bin="$build_dir/t81_ternaryos_demo"
 efi_obj="$build_dir/ternaryos/virtualbox/BOOTX64.obj"
+armv8_efi_obj="$build_dir/ternaryos/virtualbox_armv8/BOOTAA64.obj"
 
 if [[ ! -x "$demo_bin" ]]; then
   echo "missing demo binary: $demo_bin" >&2
@@ -34,6 +36,27 @@ demo_output="$staging_dir/TERNOS/demo-output.txt"
 git_rev=$(git -C "$(dirname "$0")/../../.." rev-parse --short HEAD 2>/dev/null || echo "unknown")
 build_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
+case "$guest_arch" in
+  x86_64)
+    artifact_base="ternos_virtualbox_guest"
+    profile_id="VBoxEFI/AHCI/E1000/VMSVGA/HPET+IOAPIC"
+    validation_lane="primary-acceptance"
+    boot_gap="missing-real-bootx64-efi"
+    readme_note="This artifact tracks the official x86_64 VirtualBox roadmap target."
+    ;;
+  armv8)
+    artifact_base="ternos_virtualbox_armv8_dev_guest"
+    profile_id="ARMv8Virtual/developer-lane"
+    validation_lane="secondary-developer"
+    boot_gap="missing-real-bootaa64-efi"
+    readme_note="This artifact is a temporary ARMv8 developer-lane package for Apple Silicon hosts. It does not replace the official x86_64 roadmap target."
+    ;;
+  *)
+    echo "unsupported guest architecture: $guest_arch" >&2
+    exit 2
+    ;;
+esac
+
 cat > "$staging_dir/README.txt" <<EOF
 TernOS VirtualBox guest artifact
 ================================
@@ -45,31 +68,36 @@ current hosted simulation path. It contains:
 - captured demo output
 - a placeholder EFI shell startup script
 
-Important: this artifact is not yet a true EFI-bootable guest image. The real
-VBox EFI guest stub described in RFC-00B0 still needs to be implemented.
+${readme_note}
+
+Important: this artifact is not yet a true EFI-bootable guest image.
 EOF
 
 cat > "$staging_dir/TERNOS/profile.txt" <<EOF
-profile=VBoxEFI/AHCI/E1000/VMSVGA/HPET+IOAPIC
+profile=$profile_id
+guest_arch=$guest_arch
+validation_lane=$validation_lane
 git_commit=$git_rev
 generated_utc=$build_date
 artifact_status=staged-not-bootable
-boot_gap=missing-real-bootx64-efi
+boot_gap=$boot_gap
 EOF
 
 cat > "$staging_dir/EFI/BOOT/STARTUP.NSH" <<'EOF'
 echo TernOS VirtualBox guest artifact
 echo This disk stages the first guest profile and captured demo evidence.
-echo The real BOOTX64.EFI guest stub has not been implemented yet.
+echo The final EFI application is not linked yet.
 echo Inspect \TERNOS\profile.txt and \TERNOS\demo-output.txt for details.
 EOF
 
-if [[ -f "$efi_obj" ]]; then
+if [[ "$guest_arch" == "x86_64" && -f "$efi_obj" ]]; then
   cp "$efi_obj" "$staging_dir/EFI/BOOT/BOOTX64.OBJ"
+elif [[ "$guest_arch" == "armv8" && -f "$armv8_efi_obj" ]]; then
+  cp "$armv8_efi_obj" "$staging_dir/EFI/BOOT/BOOTAA64.OBJ"
 fi
 
-image_path="$output_dir/ternos_virtualbox_guest.img"
-vdi_path="$output_dir/ternos_virtualbox_guest.vdi"
+image_path="$output_dir/${artifact_base}.img"
+vdi_path="$output_dir/${artifact_base}.vdi"
 rm -f "$image_path" "$vdi_path" "$image_path.sha256" "$vdi_path.sha256"
 
 dd if=/dev/zero of="$image_path" bs=1m count=64 status=none

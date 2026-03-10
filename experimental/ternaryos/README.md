@@ -24,6 +24,7 @@ hal/
   virtualbox_platform.hpp/.cpp  First-target VirtualBox VM profile scaffold
   virtualbox_guest_devices.hpp/.cpp  VirtualBox profile-to-device binding helpers
   virtualbox_efi_stub.c  Freestanding VBox EFI stub source for BOOTX64 handoff
+  virtualbox_armv8_efi_stub.c  Freestanding VBox EFI stub source for BOOTAA64 handoff
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,
@@ -104,6 +105,21 @@ Outputs:
 - `build/ternaryos/virtualbox/staging/TERNOS/profile.txt`
 - `build/ternaryos/virtualbox/staging/TERNOS/demo-output.txt`
 
+To generate the temporary ARMv8 developer-lane artifact for Apple Silicon
+VirtualBox hosts:
+
+```sh
+cmake --build build --target t81_ternaryos_virtualbox_armv8_dev_artifact
+```
+
+Outputs:
+
+- `build/ternaryos/virtualbox_armv8/ternos_virtualbox_armv8_dev_guest.img`
+- `build/ternaryos/virtualbox_armv8/ternos_virtualbox_armv8_dev_guest.vdi`
+- `build/ternaryos/virtualbox_armv8/BOOTAA64.obj`
+- `build/ternaryos/virtualbox_armv8/staging/TERNOS/profile.txt`
+- `build/ternaryos/virtualbox_armv8/staging/TERNOS/demo-output.txt`
+
 To check whether the local VirtualBox host can validate the current `x86_64`
 guest target:
 
@@ -111,12 +127,44 @@ guest target:
 cmake --build build --target t81_ternaryos_virtualbox_host_check
 ```
 
+To check whether the local VirtualBox host can validate the temporary `ARMv8`
+developer lane:
+
+```sh
+cmake --build build --target t81_ternaryos_virtualbox_armv8_host_check
+```
+
+To boot-probe the temporary ARMv8 developer lane headlessly in local
+VirtualBox:
+
+```sh
+cmake --build build --target t81_ternaryos_virtualbox_armv8_boot_probe
+```
+
+Outputs:
+
+- `build/ternaryos/virtualbox_armv8/armv8_boot_probe.log`
+- `build/ternaryos/virtualbox_armv8/armv8_boot_probe_summary.txt`
+
 Current status:
 
 - the image is FAT-formatted and VirtualBox-ready as a disk artifact
 - it stages the current guest profile, captured demo evidence, and a compiled `BOOTX64.obj` stub object
 - it is not EFI-bootable yet; final PE/COFF `.efi` linking is still missing, so `BOOTX64.EFI` is not produced yet
 - on this Apple Silicon host, `VBoxManage list systemproperties` currently reports `Supported platform architectures: ARMv8`, so the `x86_64` guest target cannot be boot-validated locally
+- the ARMv8 developer lane now goes one step further locally: VirtualBox firmware can boot headless, open the staged VDI through AHCI, and emit a captured `VBox.log`; the remaining gap is still a final `BOOTAA64.EFI`
+
+## Validation Lanes
+
+- Primary acceptance lane: `x86_64` VirtualBox host capable of boot-validating the roadmap target (`VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC`)
+- Secondary developer lane: Apple Silicon / `ARMv8` VirtualBox host used for artifact generation, host checks, and boot-pipeline preparation only
+- The ARMv8 lane now reaches a compiled `BOOTAA64.obj` EFI-stub object, packaged `.img`/`.vdi`, and a headless VirtualBox boot probe that confirms firmware-visible AHCI disk attachment, but it still stops short of a final `BOOTAA64.EFI` application
+
+Program rule:
+
+- do not retarget the roadmap to `ARMv8`
+- use the local ARMv8 host to keep artifact/tooling work moving
+- reserve final VirtualBox guest boot proof for an `x86_64`-capable host
 
 ## Promotion Path
 

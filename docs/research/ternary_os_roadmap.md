@@ -72,6 +72,14 @@ The practical near-term execution path is no longer "hosted prototype -> immedia
 2. **VirtualBox guest image:** bootable x86_64 image with synthetic-but-real VM hardware boundaries (RAM map, timer, storage, framebuffer, NIC) and no host OS process boundary inside the guest.
 3. **Bare-metal / alternate hypervisor promotion:** only after the VirtualBox gate is stable.
 
+Validation lanes:
+
+1. **Primary acceptance lane:** an `x86_64` VirtualBox host that can boot-validate the official guest target.
+2. **Secondary developer lane:** ARMv8/Apple Silicon VirtualBox hosts used for artifact generation, host-capability checks, and boot-pipeline preparation only.
+   That developer lane now reaches compiled EFI-stub objects, packaged guest artifacts (`BOOTAA64.obj`, `.img`, `.vdi`), and a headless boot probe that confirms VBox EFI can see the staged AHCI disk even though it is still not the acceptance target.
+
+The roadmap target does not change because a developer workstation lacks `x86_64` guest validation. The host mismatch is treated as a program-execution constraint, not as an architectural reason to retarget TernOS.
+
 Why VirtualBox first:
 
 - It provides a repeatable x86_64 environment with well-understood virtual devices.
@@ -208,6 +216,7 @@ That gate turns the current in-memory TernOS substrate into a minimally persiste
 ## 6. Open Questions & Risks
 
 1. **Phase 1 promotion target is now concrete but still incomplete:** the roadmap now assumes a VirtualBox x86_64 guest using VBox EFI, AHCI, E1000, VMSVGA, and HPET/IOAPIC, but the guest image format and boot packaging flow still need to be implemented.
+   The local Apple Silicon VirtualBox host can help stage artifacts, but final boot proof still requires an `x86_64`-capable validation host.
 2. **The physical/virtual address gap is resolved only for the current prototype:** RFC-00B1 adopts a "narrow virtual" TVA design. If future requirements exceed the current 30-trit/205 TB space, a wider VPN design will be needed.
 3. **TISC interrupt semantics remain a long-term architectural constraint:** The frozen ISA still has no trap-return opcode; the shadow dispatch table is sufficient for the prototype but may constrain richer interrupt handling in later phases.
 4. **Determinism under pre-emption is not fully closed:** Scheduling is deterministic today, but Axion governance has not yet been fully extended to model async interleavings.
