@@ -2,233 +2,215 @@
   <img src="assets/banner.png" alt="T81 Foundation — Arquitectura Ternaria Determinista" width="100%">
 </p>
 
-<p align="center">
-  <a href="https://github.com/t81dev/t81-foundation/releases/latest"><img src="https://img.shields.io/github/v/release/t81dev/t81-foundation?style=for-the-badge&label=Latest%20Release&color=blueviolet" alt="Última versión"></a>
-  <a href="https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI" alt="Estado de CI"></a>
-  <a href="https://github.com/t81dev/t81-foundation/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="Licencia: MIT"></a>
-  <a href="https://en.cppreference.com/w/cpp/23"><img src="https://img.shields.io/badge/Language-C%2B%2B23-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="Lenguaje: C++23"></a>
-</p>
+# T81: Una Arquitectura Ternaria Determinista
 
 <p align="center">
-  <strong>La pila de computación ternaria determinista</strong><br>
-  <em>Reproducibilidad bit a bit. Lógica nativa ternaria. Gobernanza de IA auditable.</em>
+  <a href="https://github.com/t81dev/t81-foundation/releases/latest"><img src="https://img.shields.io/github/v/release/t81dev/t81-foundation?style=for-the-badge&label=Latest%20Release" alt="Última Versión"></a>
+  <a href="https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI" alt="CI"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="Licencia: MIT"></a>
+  <img src="https://img.shields.io/badge/Language-C%2B%2B23-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="Lenguaje: C++23">
 </p>
 
-<p align="center">
-  <a href="README.md">English</a> •
-  <a href="README.zh-CN.md">简体中文</a> •
-  <a href="README.es.md">Español</a> •
-  <a href="README.ru.md">Русский</a> •
-  <a href="README.pt-BR.md">Português</a>
-</p>
+[English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
 
----
+<!-- T81-SPEED-START -->
+<!-- T81-SPEED-END -->
 
-## Características
+T81 Foundation es una pila de computación nativa ternaria y determinista diseñada para ingenieros, investigadores y programadores de sistemas que requieren una ejecución matemáticamente reproducible, un manejo de datos canónico y políticas de tiempo de ejecución aplicables.
 
-### ¿Qué es T81?
+Combina un conjunto de instrucciones estable, una máquina virtual gobernada, un frontend de lenguaje y una API pública de C++ en un solo repositorio. El proyecto está dirigido a aquellos que construyen tiempos de ejecución (runtimes), herramientas de lenguaje, sistemas con auditorías exhaustivas y experimentos reproducibles.
 
-**T81** es una pila de computación soberana construida desde cero para la **determinación** y la **lógica ternaria**. Reduce el no determinismo en superficies explícitamente verificadas y proporciona una base matemáticamente rigurosa para IA de alto riesgo, criptografía y modelado científico.
+## ¿Por qué T81?
 
-Donde los sistemas tradicionales divergen entre arquitecturas, T81 apunta a reproducibilidad bit a bit en superficies explícitamente verificadas, con garantías acotadas por el registro de determinismo y el perfil del núcleo.
+La mayoría de las pilas tecnológicas modernas tratan el determinismo, la auditabilidad y la gobernanza como preocupaciones secundarias, añadiéndolas después de que el tiempo de ejecución ya existe. T81 adopta el enfoque opuesto:
+- **Construido para el Determinismo:** Construimos en torno a representaciones canónicas y comportamientos de falla explícitos desde el principio.
+- **Nativo Ternario:** El sistema ternario balanceado y las codificaciones en base 81 son parte de la base. A través de la vectorización SWAR y los *trits* empaquetados en 2 bits, T81 logra semánticas ternarias nativas con alto rendimiento en hardware binario.
+- **Ejecución Consciente de Políticas:** El motor de políticas Axion hace cumplir las decisiones dinámicamente en tiempo de ejecución dentro del flujo de ejecución, asegurando que la gobernanza no sea solo una verificación consultiva.
+- **Límites Estrictos:** Las afirmaciones de determinismo están explícitamente limitadas al **Perfil Principal Determinista (DCP)**. Las características experimentales están rígidamente aisladas para prevenir comportamientos indefinidos.
 
-### La promesa central: determinismo verificado
+## Arquitectura y Estado del Sistema
 
-| Característica | El problema (Binario/IEEE 754) | La solución T81 |
+T81 está integrado verticalmente, desde APIs de lenguajes de alto nivel hasta un sustrato de ejecución gobernado. Nuestra madurez es explícita: los límites principales están *Congelados*, mientras que las superficies experimentales están claramente marcadas. T81 se encuentra en desarrollo activo con madurez mixta en toda la pila.
+
+| Componente | Rol | Estado de Madurez |
 | :--- | :--- | :--- |
-| **Aritmética** | Deriva de punto flotante entre arquitecturas CPU/GPU. | **Soft-float determinista (acotado):** Comportamiento bit a bit en superficies explícitamente verificadas bajo el registro/perfil de determinismo. |
-| **Lógica** | Booleano (Verdadero/Falso) pierde matices. | **Ternario balanceado:** {-1, 0, +1} para árboles de decisión eficientes y sin deriva. |
-| **Seguridad** | Los modelos de IA son cajas negras sin garantías de ejecución. | **Kernel Axion:** Políticas de gobernanza aplicables y auditables a nivel de opcode. |
-| **Estabilidad** | Cambios incompatibles constantes y caos de dependencias. | **Especificaciones congeladas:** TISC ISA y Tipos de Datos son estándares inmutables. |
-
----
-
-## Arquitectura
-
-T81 está organizado en capas estrictas de autoridad y abstracción.
+| **`include/t81/`** | Superficie de la API pública de C++ para consumidores y compilaciones *downstream*. | **Mixto** |
+| **Data Types** | Números principales, representaciones canónicas (`core/types/`). | **Congelado** (Verificado DCP) |
+| **TISC ISA** | El contrato estable de la máquina para serialización y ejecución. | **Congelado** (Verificado DCP) |
+| **T81VM** | La ruta de tiempo de ejecución de referencia para la ejecución reproducible. | **Beta** |
+| **CanonFS** | Persistencia determinista y límites de identidad. | **Beta** |
+| **T81Lang** | Frontend que compila hacia TISC ISA. | **Beta** |
+| **Axion** | Motor de políticas de tiempo de ejecución integrado en la ruta de pasos de la máquina virtual. | **Alpha** |
 
 ```mermaid
-flowchart TD
-
-    %% ─────────────────────────────────────
-    %% Application Layer
-    %% ─────────────────────────────────────
-    subgraph A["Application Layer"]
-        Lang["T81Lang Source"]
-        Cognitive["Cognitive Tiers"]
-    end
-
-    %% ─────────────────────────────────────
-    %% Governance Layer
-    %% ─────────────────────────────────────
-    subgraph G["Governance Layer"]
-        Axion["Axion Policy Kernel"]
-    end
-
-    %% ─────────────────────────────────────
-    %% Execution Layer
-    %% ─────────────────────────────────────
-    subgraph E["Execution Layer"]
-        VM["T81VM Interpreter"]
-        JIT["Trace-JIT (Experimental)"]
-    end
-
-    %% ─────────────────────────────────────
-    %% Foundation Layer
-    %% ─────────────────────────────────────
-    subgraph F["Foundation Layer (Frozen)"]
-        ISA["TISC ISA"]
-        Types["Ternary Data Types"]
-    end
-
-    %% Primary execution flow
-    Lang --> VM
-    VM --> ISA
-    ISA --> Types
-
-    %% Governance enforcement
-    VM --> Axion
-    Cognitive --> Axion
-    Axion --> ISA
-
-    %% Experimental path
-    VM -. optional .-> JIT
-
+flowchart LR
+    A[T81Lang / API C++] -->|compila a| B[TISC ISA]
+    B -->|se ejecuta en| C[T81VM]
+    C -->|protegido por| D[Motor de Políticas Axion]
+    C -->|persiste vía| E[CanonFS]
 ```
 
-*   **Capa base:** El núcleo "congelado". `T81BigInt`, `T81Float` y la ISA **TISC** (Ternary Instruction Set Computer). Los cambios aquí requieren un incremento de versión mayor.
-*   **Capa de ejecución:** **T81VM** ejecuta bytecode TISC. Incluye un intérprete determinista y un Trace-JIT experimental, con reclamos de determinismo acotados a superficies gobernadas/verificadas.
-*   **Capa de gobernanza:** El **Kernel Axion** intercepta la ejecución para aplicar políticas de seguridad, límites de recursos y guardrails éticos definidos en la configuración.
+*Las cadenas de herramientas (toolchains) compatibles actualmente verificadas en CI incluyen Ubuntu 24.04 con GCC 14 y Clang 18, Ubuntu 24.04 ARM64 con Clang 18, macOS 14 ARM64 con Apple Clang y Windows Server 2022 con MSVC sobre una base de mejor esfuerzo (best-effort).*
 
----
+## Estructura del Repositorio
 
-## Inicio Rápido
+- [`./include/t81/`](./include/t81/) contiene los encabezados públicos para los consumidores de la biblioteca.
+- [`./examples/`](./examples/) contiene demostraciones de C++, ejemplos de T81Lang y ejemplos de consumidores.
+- [`./docs/`](./docs/) es el centro de documentación para guías de inicio rápido, arquitectura, estado y gobernanza.
+- [`./book/`](./book/) contiene material más extenso en forma de monografía y de estilo tutorial.
+- [`./spec/`](./spec/) contiene las especificaciones normativas y RFCs.
+- [`./tests/`](./tests/) contiene las pruebas unitarias, de integración, de conformidad y orientadas al determinismo.
+- [`./core/`](./core/) contiene los módulos del tipo principal, implementación de ISA y VM.
+- [`./src/`](./src/) contiene componentes de tiempo de ejecución como códecs, E/S (IO) y CanonFS.
+- [`./tooling/`](./tooling/) contiene CLI y código de herramientas de modelos utilizados en los flujos de trabajo enviados para desarrolladores.
+- [`./.github/workflows/`](./.github/workflows/) contiene automatización para CI, reproducibilidad, documentación, evaluación comparativa (benchmarks) y lanzamientos (releases).
 
-Construye la pila T81 desde el código fuente.
+## Empezando
 
 ### Requisitos previos
-*   **CMake** 3.16+
-*   **Compilador C++** con soporte C++20/23 (probado en AppleClang 17+, Clang 18+, GCC 14+, MSVC)
+- CMake 3.16+
+- Un compilador con capacidad para C++23 (C++20 soportado mediante `-DT81_USE_CXX23=OFF`)
+- Python 3.10+ (para puertas de reproducibilidad)
+- Ninja o Make
 
-### Instalación
-
+### Clonar y Construir
 ```bash
-# 1. Clonar el repositorio
 git clone https://github.com/t81dev/t81-foundation.git
 cd t81-foundation
-
-# 2. Configurar y compilar
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
-
-# 3. Verificar instalación (ejecuta la compuerta de determinismo)
-python3 scripts/ci/t81lang_repro_gate.py --t81-bin build/t81 --fixtures-dir tests/fixtures/t81lang_determinism --workdir build/t81lang-repro --hash-out build/t81lang-repro/hash.txt --expected-hash-file tests/fixtures/t81lang_determinism/t81lang_repro_hash.txt
 ```
 
-### Hello World (estilo ternario)
+### Ejecutar Pruebas y Verificar Determinismo
+```bash
+# Ejecutar el conjunto de pruebas principal
+ctest --test-dir build --output-on-failure
 
-Crea un archivo llamado `hello.t81`:
+# Verificar la puerta de reproducibilidad
+mkdir -p build/t81lang-repro
+python3 scripts/ci/t81lang_repro_gate.py \
+  --t81-bin build/t81 \
+  --fixtures-dir tests/fixtures/t81lang_determinism \
+  --workdir build/t81lang-repro \
+  --hash-out build/t81lang-repro/hash.txt \
+  --expected-hash-file tests/fixtures/t81lang_determinism/t81lang_repro_hash.txt
+```
 
-```t81
-fn main() {
-    print("Hello, Deterministic World!");
-    let a: trit = 1;
-    let b: trit = -1;
-    print(a + b); // Muestra "0"
+### Ejecutar Ejemplos Incluidos
+```bash
+./build/t81_demo
+./build/t81_tensor_ops
+./build/t81_ir_roundtrip
+```
+
+### Compilar y ejecutar un ejemplo de T81Lang
+```bash
+./build/t81 code check examples/hello_world.t81
+./build/t81 code build examples/hello_world.t81 -o build/hello_world.tisc
+./build/t81 code run build/hello_world.tisc
+```
+
+*Otros puntos de entrada comunes incluyen `./build/t81 project init`, `./build/t81 env doctor`, `./build/t81 weights ...`, `./build/t81 trace ...`, `./build/t81 canonfs ...`, `./build/t81 determinism ...`, `./build/t81 vm ...`, `./build/t81 tisc ...` e `./build/t81 ir ...`. Consulte [`./docs/user-guide/reference/cli-user-manual.md`](./docs/user-guide/reference/cli-user-manual.md) para ver la superficie actual de comandos.*
+
+### Ejemplo Mínimo de Consumidor (C++)
+
+```cpp
+#include <iostream>
+#include <t81/types/T81Int.hpp>
+
+int main() {
+  t81::T81Int<9> value(42);
+  std::cout << value.to_int64() << "\n";
 }
 ```
 
-Compila y ejecuta:
+Para el uso de CMake intermedio, consulte [`./examples/consumer_cmake/`](./examples/consumer_cmake/).
+
+**Instalar y consumir como un paquete de CMake**
 
 ```bash
-# Compilar a bytecode TISC
-./build/t81 code build hello.t81 -o hello.tisc
-
-# Ejecutar en la VM
-./build/t81 code run hello.tisc
+cmake --install build --prefix /tmp/t81_install
+cmake -S examples/consumer_cmake -B /tmp/t81_consumer_build -DCMAKE_PREFIX_PATH=/tmp/t81_install
+cmake --build /tmp/t81_consumer_build --parallel
+/tmp/t81_consumer_build/t81_consumer
 ```
 
----
+```cmake
+find_package(T81Foundation CONFIG REQUIRED)
+target_link_libraries(t81_consumer PRIVATE T81::t81_core)
+```
 
-## Plataformas Soportadas
+## Ejemplos
 
-| Plataforma | Arq | Compilador | Estado |
-| :--- | :--- | :--- | :--- |
-| **Linux** | x86_64 | Clang 18+, GCC 14+ | ✅ Verificado |
-| **Linux** | ARM64 | Clang 18+ | ✅ Verificado |
-| **macOS** | Intel | Apple Clang / GCC | ✅ Verificado |
-| **macOS** | Apple Silicon | Apple Clang | ✅ Verificado |
+- [`./examples/hello_world.t81`](./examples/hello_world.t81) es el ejemplo de compilación y ejecución de T81Lang de extremo a extremo más pequeño.
+- [`./examples/option_result_match.t81`](./examples/option_result_match.t81) demuestra control de flujo con tipo estático con `Option` y `Result`.
+- [`./examples/tensor_ops.cpp`](./examples/tensor_ops.cpp) demuestra remodelar (reshape), dividir (slice), transponer tensores y otras operaciones relacionadas.
+- [`./examples/axion_policy_runner.cpp`](./examples/axion_policy_runner.cpp) destaca la ejecución consciente de políticas y la generación de seguimientos (traces).
+- [`./examples/system-integration/inference.t81`](./examples/system-integration/inference.t81) junto con [`./examples/system-integration/secure_model.apl`](./examples/system-integration/secure_model.apl) muestra un flujo de trabajo más completo de T81Lang + Axion.
+- [`./examples/tisc/`](./examples/tisc/) contiene muestras precompiladas `.tisc` para desensamblaje, depuración e inspección del tiempo de ejecución.
+- [`./examples/consumer_cmake/`](./examples/consumer_cmake/) muestra cómo un proyecto de CMake *downstream* puede consumir los encabezados y *targets* públicos.
 
-## Ejemplos CLI
+## Pruebas de Rendimiento (Benchmarks)
+
+T81 incluye un conjunto de pruebas de rendimiento (benchmarks) para números centrales, rutas de tensores, trabajo SIMD/base81, CanonFS y *kernels* de la VM. El ejecutor ahora tiene perfiles locales explícitos: `smoke` de forma predeterminada, `full` acotado para uso humano y `deep` exhaustivo para investigaciones o ejecuciones nocturnas.
 
 ```bash
-# Desarrollo
-./build/t81 code build src.t81 -o out.tisc
-./build/t81 code run out.tisc
-./build/t81 tisc disasm out.tisc
-
-# Diagnóstico y calidad
-./build/t81 env doctor --json
-./build/t81 code test --list
-./build/t81 fmt --check src.t81
+cmake --build build --target benchmark_runner
 ```
 
----
+```bash
+# Perfil smoke de forma predeterminada: genera un archivo JSON. Los informes Markdown 
+# solo se escriben si se establece T81_BENCHMARK_WRITE_REPORTS=1.
+./build/benchmarks/benchmark_runner \
+  --benchmark_format=json \
+  --benchmark_out=bench.json
+```
 
-## 📚 Documentación
+```bash
+# Perfil full para uso humano:
+T81_BENCHMARK_PROFILE=full ./build/benchmarks/benchmark_runner \
+  --benchmark_format=json \
+  --benchmark_out=bench-full.json
 
-El ecosistema T81 está documentado en varios niveles de autoridad.
+# Perfil deep exhaustivo para investigación/ejecución nocturna:
+T81_BENCHMARK_PROFILE=deep ./build/benchmarks/benchmark_runner \
+  --benchmark_format=json \
+  --benchmark_out=bench-deep.json
 
-| Recurso | Descripción | Autoridad |
-| :--- | :--- | :--- |
-| **[The Monograph](book/book-en/README.md)** | El libro definitivo sobre filosofía, arquitectura y uso de T81. **Empieza aquí.** | Alta |
-| **[Normative Specs](spec/)** | Fuente normativa de verdad de las especificaciones. Define la ISA TISC, Tipos de Datos y comportamiento de VM. | **Absoluta** |
-| **[Architecture](docs/architecture/OVERVIEW.md)** | Documento "North Star" que define límites del sistema e invariantes. | Alta |
-| **[Status Dashboard](docs/status/PROJECT_CONTROL_CENTER.md)** | Seguimiento en vivo de salud del sistema, compuertas activas y superficies verificadas. | En vivo |
-| **[Governance](docs/governance/)** | Políticas de deriva de especificaciones, disciplina de release y modelos de amenazas. | Alta |
+# Iteración local con filtrado personalizado:
+./build/benchmarks/benchmark_runner \
+  --benchmark_filter='BM_(ArithThroughput|NegationSpeed|RoundtripAccuracy|overflow|PackingDensity|MemoryBandwidth|Add_1024_bit|Add_2048_bit|T81LangCompile|LimbArithThroughput|LimbAdd_T81Native|LimbAdd_T81Limb|LimbAdd_Int128|vs_).*' \
+  --benchmark_format=json \
+  --benchmark_out=bench-smoke.json
 
-### Temas clave
-*   **[TISC Instruction Set](spec/tisc-spec.md)** - Especificación de ISA congelada.
-*   **[Ternary Data Types](spec/t81-data-types.md)** - Entender `trit`, `tryte` y `T81Float`.
-*   **[Axion Policy Engine](spec/axion-kernel.md)** - Configuración de seguridad en ejecución.
+# o por medio de la envoltura (wrapper) CLI
+./build/t81 internal benchmark --benchmark_filter='BM_(ArithThroughput|T81LangCompile).*'
 
-## Mapa de Autoridad Documental
+# La envoltura CLI mantiene por defecto apagada la generación de reportería
+T81_BENCHMARK_WRITE_REPORTS=1 ./build/t81 internal benchmark --benchmark_filter='BM_(ArithThroughput|T81LangCompile).*'
+```
 
-La autoridad normativa está en `spec/`; el estado operativo y de gobierno se rastrea en `docs/status/` y `docs/governance/`.
+Para metodología y notas específicas sobre las pruebas de rendimiento, consulte [`./benchmarks/README.md`](./benchmarks/README.md) y [`./docs/developer-guide/tools/README.md`](./docs/developer-guide/tools/README.md).
 
----
+## Documentación
 
-## 🧩 Componentes y estado
+T81 mantiene una jerarquía de documentación estricta. **El directorio `/spec` es normativo.**
+- **Visión General de la Arquitectura:** [`docs/architecture/OVERVIEW.md`](docs/architecture/OVERVIEW.md)
+- **Estado y Centro de Control:** [`docs/status/PROJECT_CONTROL_CENTER.md`](docs/status/PROJECT_CONTROL_CENTER.md)
+- **Manual de Usuario CLI:** [`docs/user-guide/reference/cli-user-manual.md`](docs/user-guide/reference/cli-user-manual.md)
+- **Guía de Reproducibilidad:** [`docs/reference/REPRODUCIBILITY.md`](docs/reference/REPRODUCIBILITY.md)
+- **Especificaciones Formales:** [`spec/`](spec/)
+- **Libro extenso:** [`book/book-en/README.md`](book/book-en/README.md)
 
-| Componente | Estado | Descripción |
-| :--- | :--- | :--- |
-| **TISC ISA** | 🧊 **Congelado** | El conjunto de instrucciones está verificado e inmutable (v1). |
-| **Tipos de Datos** | 🧊 **Congelado** | Los tipos aritméticos del núcleo son estables; las garantías bit a bit están acotadas a superficies deterministas verificadas. |
-| **T81VM** | 🚧 **Beta** | La superficie de runtime está activa y bajo verificación continua. |
-| **Axion** | ⚠️ **Alpha** | El motor de políticas está activo con cobertura parcial sobre superficies en borrador. |
-| **T81Lang** | 🚧 **Beta** | La madurez de implementación es Beta; la especificación normativa del lenguaje sigue en Draft. |
-| **Trace-JIT** | 🧪 **Experimental** | Compilación JIT para rendimiento (opt-in). |
-| **Hanoi Kernel** | 🗃️ **Concepto archivado** | Concepto histórico experimental mantenido solo como referencia de diseño. |
+## Contribuciones
 
-> **Nota:** Los componentes "congelados" tienen garantía contractual de no cambiar sin un incremento de versión mayor (por ejemplo, 2.0).
+Las contribuciones son bienvenidas, pero por favor tenga en cuenta nuestra filosofía principal:
+1. **Autoridad Primero-la-Especificación (Spec-First):** El directorio `/spec` dicta la implementación, y no al revés.
+2. **Determinismo Primero:** Cualquier cambio debe preservar el comportamiento canónico y pasar compuertas de reproducibilidad estrictas.
+3. **Gobernanza Acotada:** Las características experimentales (como las Capas Cognitivas) no deben filtrarse dentro del Perfil Determinista Principal (DCP).
 
----
+Comience leyendo [`CONTRIBUTING.md`](CONTRIBUTING.md) y [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). Para detalles sobre gobernanza, revise el material en [`docs/governance/`](docs/governance/). Para reportes privados de vulnerabilidades, siga [`SECURITY.md`](SECURITY.md).
 
-## 🤝 Comunidad y contribución
+## Licencia
 
-Damos la bienvenida a colaboradores que compartan nuestra pasión por sistemas rigurosos y deterministas.
-
-*   **[Contributing Guide](CONTRIBUTING.md):** Léelo antes de abrir un PR.
-*   **[Code of Conduct](CODE_OF_CONDUCT.md):** Seguimos un estándar estricto de conducta profesional.
-*   **[Discussions](https://github.com/t81dev/t81-foundation/discussions):** Haz preguntas y comparte ideas.
-
-### La "Repro Gate"
-Los checks requeridos de Pull Request aplican compuertas de reproducibilidad y conformidad para superficies deterministas acotadas. Si tu cambio altera salidas deterministas gobernadas, la compuerta correspondiente debe fallar. Esto es una feature, no un bug.
-
----
-
-## 📄 Licencia
-
-T81 es software de código abierto bajo la **[Licencia MIT](LICENSE)**.
-
-Copyright © 2024-2026 T81 Foundation.
+La Fundación T81 se publica bajo la Licencia MIT. Consulte [`LICENSE`](LICENSE).

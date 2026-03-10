@@ -1,234 +1,216 @@
 <p align="center">
-  <img src="assets/banner.png" alt="T81 Foundation — 确定性三元架构" width="100%">
+  <img src="assets/banner.png" alt="T81 Foundation — 确定性三进制架构" width="100%">
 </p>
+
+# T81：一种确定性的三进制架构
 
 <p align="center">
-  <a href="https://github.com/t81dev/t81-foundation/releases/latest"><img src="https://img.shields.io/github/v/release/t81dev/t81-foundation?style=for-the-badge&label=Latest%20Release&color=blueviolet" alt="最新版本"></a>
-  <a href="https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI" alt="CI 状态"></a>
-  <a href="https://github.com/t81dev/t81-foundation/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="许可证: MIT"></a>
-  <a href="https://en.cppreference.com/w/cpp/23"><img src="https://img.shields.io/badge/Language-C%2B%2B23-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="语言: C++23"></a>
+  <a href="https://github.com/t81dev/t81-foundation/releases/latest"><img src="https://img.shields.io/github/v/release/t81dev/t81-foundation?style=for-the-badge&label=Latest%20Release" alt="最新发布"></a>
+  <a href="https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI" alt="CI"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="许可证: MIT"></a>
+  <img src="https://img.shields.io/badge/Language-C%2B%2B23-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="语言: C++23">
 </p>
 
-<p align="center">
-  <strong>确定性的三元计算栈</strong><br>
-  <em>比特级可复现。原生三元逻辑。可审计的 AI 治理。</em>
-</p>
+[English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
 
-<p align="center">
-  <a href="README.md">English</a> •
-  <a href="README.zh-CN.md">简体中文</a> •
-  <a href="README.es.md">Español</a> •
-  <a href="README.ru.md">Русский</a> •
-  <a href="README.pt-BR.md">Português</a>
-</p>
+<!-- T81-SPEED-START -->
+<!-- T81-SPEED-END -->
 
----
+T81 Foundation 是一个确定性的、原生三进制的计算栈，专为需要数学上可重现的执行、规范的数据处理和可强制执行的运行时策略的工程师、研究人员和系统程序员而设计。
 
-## 特性
+它在一个代码库中结合了稳定的指令集、受治理的虚拟机、语言前端和公共的 C++ API。该项目主要面向构建运行时、语言工具、具有严格审计的系统和可重现实验的开发者。
 
-### 什么是 T81？
+## 为什么选择 T81？
 
-**T81** 是一个从零构建、面向**确定性**与**三元逻辑**的主权计算栈。它在明确验证的表面上降低非确定性，并为高风险 AI、密码学和科学建模提供数学上严谨的基础。
+大多数现代技术栈在运行时已经存在之后，才将确定性、可审计性和治理视为次要关注点附加其上。T81 则采取了相反的方法：
+- **为确定性而生：** 我们从一开始就围绕规范的数据表示和明确的故障行为进行构建。
+- **原生三进制：** 平衡三进制和基底为 81 的编码是底层基础设施的一部分。通过 SWAR 向量化和 2-bit 打包的 trit，T81 在二进制硬件上实现了原生三进制语义，并具备高性能。
+- **策略感知型执行：** Axion 策略引擎在执行流中动态地做出运行时决策，确保治理不仅仅是一种建议性的检查。
+- **严格的有界性：** 确定性声明被明确限制在 **确定性核心配置文件（DCP）** 的范围内。实验性功能被严格隔离，以防止未定义行为。
 
-传统系统会在不同架构上出现漂移，而 T81 的目标是在明确验证的表面上实现比特级可复现，其保证范围由确定性注册表与核心配置文件约束。
+## 架构与系统状态
 
-### 核心承诺：已验证的确定性
+T81 是垂直集成的，涵盖从高级语言 API 到受治理的执行底层。我们的成熟度是显式声明的：核心边界已被*冻结（Frozen）*，而实验性接口则有清晰的标记。T81 处于积极开发阶段，整个技术栈具有混合的成熟度。
 
-| 特性 | 问题（Binary/IEEE 754） | T81 方案 |
+| 组件 | 角色 | 成熟度状态 |
 | :--- | :--- | :--- |
-| **算术** | CPU/GPU 架构之间的浮点漂移。 | **确定性软浮点（有边界）：** 在确定性注册表/核心配置约束下，于明确验证的表面实现比特级行为。 |
-| **逻辑** | 布尔（True/False）缺乏细粒度表达。 | **平衡三元：** {-1, 0, +1}，用于高效、无漂移的决策逻辑。 |
-| **安全** | AI 模型是黑盒，缺乏运行时保证。 | **Axion 内核：** 在操作码级别执行可审计、可强制的治理策略。 |
-| **稳定性** | 频繁破坏性变更与依赖混乱。 | **冻结规范：** TISC ISA 与数据类型为不可变标准。 |
-
----
-
-## 架构
-
-T81 以严格的权威层级与抽象边界组织。
+| **`include/t81/`** | 供消费者和下游构建使用的公共 C++ API 层。 | **混合** |
+| **数据类型 (Data Types)** | 核心数值类型，规范数据表示（`core/types/`）。 | **已冻结** (经过 DCP 验证) |
+| **TISC ISA** | 用于序列化和执行的稳定机器契约。 | **已冻结** (经过 DCP 验证) |
+| **T81VM** | 可重现执行的参考运行时路径。 | **Beta** |
+| **CanonFS** | 确定性持久化和身份边界。 | **Beta** |
+| **T81Lang** | 编译到 TISC ISA 的语言前端。 | **Beta** |
+| **Axion** | 集成在 VM 步进路径中的运行时策略引擎。 | **Alpha** |
 
 ```mermaid
- flowchart TD
-
-    %% ─────────────────────────────────────
-    %% Application Layer
-    %% ─────────────────────────────────────
-    subgraph A["Application Layer"]
-        Lang["T81Lang Source"]
-        Cognitive["Cognitive Tiers"]
-    end
-
-    %% ─────────────────────────────────────
-    %% Governance Layer
-    %% ─────────────────────────────────────
-    subgraph G["Governance Layer"]
-        Axion["Axion Policy Kernel"]
-    end
-
-    %% ─────────────────────────────────────
-    %% Execution Layer
-    %% ─────────────────────────────────────
-    subgraph E["Execution Layer"]
-        VM["T81VM Interpreter"]
-        JIT["Trace-JIT (Experimental)"]
-    end
-
-    %% ─────────────────────────────────────
-    %% Foundation Layer
-    %% ─────────────────────────────────────
-    subgraph F["Foundation Layer (Frozen)"]
-        ISA["TISC ISA"]
-        Types["Ternary Data Types"]
-    end
-
-    %% Primary execution flow
-    Lang --> VM
-    VM --> ISA
-    ISA --> Types
-
-    %% Governance enforcement
-    VM --> Axion
-    Cognitive --> Axion
-    Axion --> ISA
-
-    %% Experimental path
-    VM -. optional .-> JIT
-
+flowchart LR
+    A[T81Lang / C++ API] -->|编译至| B[TISC ISA]
+    B -->|执行于| C[T81VM]
+    C -->|受保护于| D[Axion 策略引擎]
+    C -->|持久化通过| E[CanonFS]
 ```
 
-*   **基础层：** “冻结”核心。`T81BigInt`、`T81Float` 与 **TISC**（Ternary Instruction Set Computer）ISA。此层改动需要提升主版本号。
-*   **执行层：** **T81VM** 执行 TISC 字节码。包含确定性解释器与实验性 Trace-JIT；确定性声明仅限于受治理/已验证表面。
-*   **治理层：** **Axion 内核**拦截执行，执行配置中定义的安全策略、资源限制与伦理护栏。
+*目前在 CI 中已验证支持的工具链包括 Ubuntu 24.04 配合 GCC 14 和 Clang 18，Ubuntu 24.04 ARM64 配合 Clang 18，macOS 14 ARM64 配合 Apple Clang，以及在尽力而为（best-effort）基础上的 Windows Server 2022 配合 MSVC。*
 
----
+## 仓库结构
 
-## 快速开始
+- [`./include/t81/`](./include/t81/) 包含库消费者的公共头文件。
+- [`./examples/`](./examples/) 包含 C++ 演示、T81Lang 示例和消费者示例。
+- [`./docs/`](./docs/) 快速入门、架构、状态和治理的文档中心。
+- [`./book/`](./book/) 包含篇幅较长的专题著作和教程风格的材料。
+- [`./spec/`](./spec/) 包含规范性的说明书和 RFC。
+- [`./tests/`](./tests/) 包含单元测试、集成测试、一致性测试和以确定性为导向的测试。
+- [`./core/`](./core/) 包含核心类型、ISA 和 VM 实施模块。
+- [`./src/`](./src/) 包含诸如编解码器、IO 和 CanonFS 这样的运行时组件。
+- [`./tooling/`](./tooling/) 包含提供的开发者工作流中使用的 CLI 以及模型工具代码。
+- [`./.github/workflows/`](./.github/workflows/) 包含 CI、可重现性、文档、基准测试以及发布自动化的工作流。
 
-从源码构建 T81 栈。
+## 快速上手
 
-### 前置要求
-*   **CMake** 3.16+
-*   **支持 C++20/23 的 C++ 编译器**（已在 AppleClang 17+、Clang 18+、GCC 14+、MSVC 上验证）
+### 环境前提
+- CMake 3.16+
+- 具备 C++23 能力的编译器（通过 `-DT81_USE_CXX23=OFF` 也支持 C++20）
+- Python 3.10+（用于可重现性检查）
+- Ninja 或 Make
 
-### 安装
-
+### 克隆并构建
 ```bash
-# 1. 克隆仓库
 git clone https://github.com/t81dev/t81-foundation.git
 cd t81-foundation
-
-# 2. 配置并构建
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
-
-# 3. 验证安装（运行确定性关卡）
-python3 scripts/ci/t81lang_repro_gate.py --t81-bin build/t81 --fixtures-dir tests/fixtures/t81lang_determinism --workdir build/t81lang-repro --hash-out build/t81lang-repro/hash.txt --expected-hash-file tests/fixtures/t81lang_determinism/t81lang_repro_hash.txt
 ```
 
-### Hello World（三元风格）
+### 运行测试 & 验证确定性
+```bash
+# 运行核心测试套件
+ctest --test-dir build --output-on-failure
 
-创建文件 `hello.t81`：
+# 验证可重现性关卡
+mkdir -p build/t81lang-repro
+python3 scripts/ci/t81lang_repro_gate.py \
+  --t81-bin build/t81 \
+  --fixtures-dir tests/fixtures/t81lang_determinism \
+  --workdir build/t81lang-repro \
+  --hash-out build/t81lang-repro/hash.txt \
+  --expected-hash-file tests/fixtures/t81lang_determinism/t81lang_repro_hash.txt
+```
 
-```t81
-fn main() {
-    print("Hello, Deterministic World!");
-    let a: trit = 1;
-    let b: trit = -1;
-    print(a + b); // 输出 "0"
+### 运行附带的示例
+```bash
+./build/t81_demo
+./build/t81_tensor_ops
+./build/t81_ir_roundtrip
+```
+
+### 编译并运行一例 T81Lang 示例程序
+```bash
+./build/t81 code check examples/hello_world.t81
+./build/t81 code build examples/hello_world.t81 -o build/hello_world.tisc
+./build/t81 code run build/hello_world.tisc
+```
+
+*其他常用的通用入口包含 `./build/t81 project init`，`./build/t81 env doctor`，`./build/t81 weights ...`，`./build/t81 trace ...`，`./build/t81 canonfs ...`，`./build/t81 determinism ...`，`./build/t81 vm ...`，`./build/t81 tisc ...`，以及 `./build/t81 ir ...`。完整的当前 CLI 命令参考指南见：[`./docs/user-guide/reference/cli-user-manual.md`](./docs/user-guide/reference/cli-user-manual.md)。*
+
+### 极简消费者示例（C++）
+
+```cpp
+#include <iostream>
+#include <t81/types/T81Int.hpp>
+
+int main() {
+  t81::T81Int<9> value(42);
+  std::cout << value.to_int64() << "\n";
 }
 ```
 
-编译并运行：
+关于下游的 CMake 使用案例，请参见 [`./examples/consumer_cmake/`](./examples/consumer_cmake/)。
+
+**作为 CMake 包进行安装与使用**
 
 ```bash
-# 编译为 TISC 字节码
-./build/t81 code build hello.t81 -o hello.tisc
-
-# 通过 VM 执行
-./build/t81 code run hello.tisc
+cmake --install build --prefix /tmp/t81_install
+cmake -S examples/consumer_cmake -B /tmp/t81_consumer_build -DCMAKE_PREFIX_PATH=/tmp/t81_install
+cmake --build /tmp/t81_consumer_build --parallel
+/tmp/t81_consumer_build/t81_consumer
 ```
 
----
+```cmake
+find_package(T81Foundation CONFIG REQUIRED)
+target_link_libraries(t81_consumer PRIVATE T81::t81_core)
+```
 
-## 支持平台
+## 示例
 
-| 平台 | 架构 | 编译器 | 状态 |
-| :--- | :--- | :--- | :--- |
-| **Linux** | x86_64 | Clang 18+, GCC 14+ | ✅ 已验证 |
-| **Linux** | ARM64 | Clang 18+ | ✅ 已验证 |
-| **macOS** | Intel | Apple Clang / GCC | ✅ 已验证 |
-| **macOS** | Apple Silicon | Apple Clang | ✅ 已验证 |
+- [`./examples/hello_world.t81`](./examples/hello_world.t81) 是规模最小的 T81Lang 端到端编译和运行实例。
+- [`./examples/option_result_match.t81`](./examples/option_result_match.t81) 演示了基于 `Option` 和 `Result` 的显式类型的控制流。
+- [`./examples/tensor_ops.cpp`](./examples/tensor_ops.cpp) 演示了张量的重塑（reshape）、切片（slice）、转置（transpose）及其相关操作。
+- [`./examples/axion_policy_runner.cpp`](./examples/axion_policy_runner.cpp) 突出了策略感知型的执行及调试跟踪的生成方式。
+- 将 [`./examples/system-integration/inference.t81`](./examples/system-integration/inference.t81) 与 [`./examples/system-integration/secure_model.apl`](./examples/system-integration/secure_model.apl) 结合，展示了一个更完整的 T81Lang + Axion 工作流。
+- [`./examples/tisc/`](./examples/tisc/) 包含了经过预编译处理的 `.tisc` 样本，主要用于执行反汇编、调试与运行时的探查核对。
+- [`./examples/consumer_cmake/`](./examples/consumer_cmake/) 展示了下游 CMake 项目消费公共库和目标的方式。
 
-## CLI 示例
+## 性能基准测试（Benchmarks）
+
+T81 集成了一套分别适用于核心数域运算、张量路径测算、SIMD/基底81（base81）工作负载、CanonFS 以及各 VM 计算核心模块使用的基准检测套件。测试运行器现在具有明确的本地配置文件：默认的 `smoke`，便于人工阅读且运行有限的 `full`，以及面向深度剖析研究/隔夜构建的 `deep`。
 
 ```bash
-# 开发
-./build/t81 code build src.t81 -o out.tisc
-./build/t81 code run out.tisc
-./build/t81 tisc disasm out.tisc
-
-# 诊断与质量
-./build/t81 env doctor --json
-./build/t81 code test --list
-./build/t81 fmt --check src.t81
+cmake --build build --target benchmark_runner
 ```
 
----
+```bash
+# 本地缺省环境 smoke 配置文件：生成 JSON 格式报告。
+# 仅当设置了 T81_BENCHMARK_WRITE_REPORTS=1 后，才会编写 Markdown 报告。
+./build/benchmarks/benchmark_runner \
+  --benchmark_format=json \
+  --benchmark_out=bench.json
+```
 
-## 📚 文档
+```bash
+# 方便普通开发者快速运行排查的 full 配置文件环境：
+T81_BENCHMARK_PROFILE=full ./build/benchmarks/benchmark_runner \
+  --benchmark_format=json \
+  --benchmark_out=bench-full.json
 
-T81 生态文档按多个权威层级组织。
+# 倾向实验室、深度解析研究与过夜计算的 deep 配置文件环境：
+T81_BENCHMARK_PROFILE=deep ./build/benchmarks/benchmark_runner \
+  --benchmark_format=json \
+  --benchmark_out=bench-deep.json
 
-| 资源 | 描述 | 权威级别 |
-| :--- | :--- | :--- |
-| **[The Monograph](book/book-en/README.md)** | 关于 T81 哲学、架构与使用方式的权威书籍。**从这里开始。** | 高 |
-| **[Normative Specs](spec/)** | 规范层面的事实来源。定义 TISC ISA、数据类型与 VM 行为。 | **绝对** |
-| **[Architecture](docs/architecture/OVERVIEW.md)** | 定义系统边界与不变量的 “North Star” 文档。 | 高 |
-| **[Status Dashboard](docs/status/PROJECT_CONTROL_CENTER.md)** | 实时追踪系统健康状态、活动关卡与已验证表面。 | 实时 |
-| **[Governance](docs/governance/)** | 规范漂移、发布纪律与威胁模型相关策略。 | 高 |
+# 配设筛件执行针对自定义滤镜本地循环测试操作方式：
+./build/benchmarks/benchmark_runner \
+  --benchmark_filter='BM_(ArithThroughput|NegationSpeed|RoundtripAccuracy|overflow|PackingDensity|MemoryBandwidth|Add_1024_bit|Add_2048_bit|T81LangCompile|LimbArithThroughput|LimbAdd_T81Native|LimbAdd_T81Limb|LimbAdd_Int128|vs_).*' \
+  --benchmark_format=json \
+  --benchmark_out=bench-smoke.json
 
-### 关键主题
-*   **[TISC Instruction Set](spec/tisc-spec.md)** - 冻结 ISA 规范。
-*   **[Ternary Data Types](spec/t81-data-types.md)** - 理解 `trit`、`tryte` 与 `T81Float`。
-*   **[Axion Policy Engine](spec/axion-kernel.md)** - 配置运行时安全策略。
+# 或者由 CLI 工具代理调用
+./build/t81 internal benchmark --benchmark_filter='BM_(ArithThroughput|T81LangCompile).*'
 
-## 文档权威地图
+# CLI 封装命令行默认会关闭自动报告文本的导出生效操作
+T81_BENCHMARK_WRITE_REPORTS=1 ./build/t81 internal benchmark --benchmark_filter='BM_(ArithThroughput|T81LangCompile).*'
+```
 
-规范权威来源是 `spec/`；运行与治理状态在 `docs/status/` 与 `docs/governance/` 中追踪。
+要了解测评方法设计思路及特殊基准相关注释，参见 [`./benchmarks/README.md`](./benchmarks/README.md) 并查阅 [`./docs/developer-guide/tools/README.md`](./docs/developer-guide/tools/README.md)。
 
----
+## 文档
 
-## 🧩 组件与状态
+T81 维持着严格保守的文档层次标准。**`/spec` 目录下的内容是规范性的（normative）。**
+- **架构概览:** [`docs/architecture/OVERVIEW.md`](docs/architecture/OVERVIEW.md)
+- **项目状态与控制中心:** [`docs/status/PROJECT_CONTROL_CENTER.md`](docs/status/PROJECT_CONTROL_CENTER.md)
+- **CLI 用户手册:** [`docs/user-guide/reference/cli-user-manual.md`](docs/user-guide/reference/cli-user-manual.md)
+- **可重现性指南:** [`docs/reference/REPRODUCIBILITY.md`](docs/reference/REPRODUCIBILITY.md)
+- **正式规格说明书:** [`spec/`](spec/)
+- **长篇专著材料:** [`book/book-en/README.md`](book/book-en/README.md)
 
-| 组件 | 状态 | 描述 |
-| :--- | :--- | :--- |
-| **TISC ISA** | 🧊 **Frozen** | 指令集已验证且不可变（v1）。 |
-| **Data Types** | 🧊 **Frozen** | 核心算术类型稳定；比特级保证仅限于已验证的确定性表面。 |
-| **T81VM** | 🚧 **Beta** | 运行时表面处于活跃状态并持续验证中。 |
-| **Axion** | ⚠️ **Alpha** | 策略引擎已激活，但对 draft 表面的覆盖仍为部分。 |
-| **T81Lang** | 🚧 **Beta** | 实现成熟度为 Beta；语言规范仍为 Draft。 |
-| **Trace-JIT** | 🧪 **Experimental** | 用于性能优化的 JIT 编译（可选启用）。 |
-| **Hanoi Kernel** | 🗃️ **Archived Concept** | 历史实验概念，仅作设计参考保留。 |
+## 参与贡献
 
-> **说明：**“冻结”组件受合同约束，不可在不提升主版本号的情况下变更（例如 2.0）。
+我们始终热烈欢迎各位有识之士倾力参与并付出您的志愿协助，但请时刻铭记我们在贡献方面推行的核心准则哲理：
+1. **规格说明优先的权威性 (Spec-First Authority):** `/spec` 目录下的设定决定着一切执行方面的构建实施逻辑，而不是反过来用实现定义规范。
+2. **确定性第一 (Determinism-First):** 任何对于整体结构上的变动调整都必须完美保有最初规定的典范性行为模式，并顺利一次性跑通严密的可复现测试关卡。
+3. **有界的治理 (Bounded Governance):** 凡划归实验性质尝试的内容（如认知层等方向事务）坚决不受准跨位越界突破且破坏进入了被封堵保护状态内的核心设定参数，即 确定性核心配置文件 (DCP)。
 
----
+推荐新手第一步优先参读 [`CONTRIBUTING.md`](CONTRIBUTING.md) 和 [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)。如果需要了解关于治理机制的具体实施细节，请检阅 [`docs/governance/`](docs/governance/) 项目里的文献档案。若报告具高级机密隐疾性漏洞问题，务必直接通过 [`SECURITY.md`](SECURITY.md) 下给出的合法官方渠道。
 
-## 🤝 社区与贡献
+## 开源协议许可
 
-欢迎所有热爱严谨、确定性系统的贡献者。
-
-*   **[Contributing Guide](CONTRIBUTING.md)：** 提交 PR 前请先阅读。
-*   **[Code of Conduct](CODE_OF_CONDUCT.md)：** 我们遵循严格的专业行为准则。
-*   **[Discussions](https://github.com/t81dev/t81-foundation/discussions)：** 欢迎提问与讨论。
-
-### “Repro Gate”
-Pull Request 的必需检查会在有边界的确定性表面上执行可复现性与一致性关卡。如果你的改动影响了受治理的确定性输出，对应关卡应当失败。这是特性，不是缺陷。
-
----
-
-## 📄 许可证
-
-T81 是在 **[MIT 许可证](LICENSE)** 下发布的开源软件。
-
-Copyright © 2024-2026 T81 Foundation.
+T81 Foundation 基于 MIT 开源协议开放使用。完整许可凭证请研读阅览详见 [`LICENSE`](LICENSE)。
