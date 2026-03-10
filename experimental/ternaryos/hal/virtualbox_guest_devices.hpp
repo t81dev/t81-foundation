@@ -13,6 +13,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace t81::ternaryos::hal {
 
@@ -21,11 +22,22 @@ struct VBoxStorageBinding {
   std::string                                        binding_name;
 };
 
+struct VBoxGuestBootstrap {
+  BootContext                       boot_context;
+  std::vector<VBoxDeviceDescriptor> device_map;
+  VBoxStorageBinding                storage;
+  std::string                       profile_summary;
+};
+
 std::optional<std::string> validate_virtualbox_storage_binding(
     const VBoxProfile& profile) noexcept;
 
 std::optional<VBoxStorageBinding> create_virtualbox_storage_binding(
     const VBoxProfile& profile,
+    t81::ternaryos::dev::IBlockDevice& backing);
+
+std::optional<VBoxGuestBootstrap> bootstrap_virtualbox_guest(
+    const VBoxBootSpec& spec,
     t81::ternaryos::dev::IBlockDevice& backing);
 
 }  // namespace t81::ternaryos::hal

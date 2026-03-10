@@ -41,4 +41,24 @@ std::optional<VBoxStorageBinding> create_virtualbox_storage_binding(
   return std::nullopt;
 }
 
+std::optional<VBoxGuestBootstrap> bootstrap_virtualbox_guest(
+    const VBoxBootSpec& spec,
+    t81::ternaryos::dev::IBlockDevice& backing) {
+  if (validate_virtualbox_profile(spec.profile).has_value()) {
+    return std::nullopt;
+  }
+
+  auto storage = create_virtualbox_storage_binding(spec.profile, backing);
+  if (!storage.has_value()) {
+    return std::nullopt;
+  }
+
+  return VBoxGuestBootstrap{
+      .boot_context = make_virtualbox_boot_context(spec),
+      .device_map = virtualbox_device_map(spec.profile),
+      .storage = std::move(*storage),
+      .profile_summary = virtualbox_profile_summary(spec.profile),
+  };
+}
+
 }  // namespace t81::ternaryos::hal

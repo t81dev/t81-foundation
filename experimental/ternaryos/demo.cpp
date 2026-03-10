@@ -5,6 +5,8 @@
 #include "dev/hosted_block_dev.hpp"
 #include "dev/net_packet.hpp"
 #include "dev/ttf.hpp"
+#include "hal/hal.hpp"
+#include "hal/virtualbox_guest_devices.hpp"
 
 #include <cstdio>
 #include <filesystem>
@@ -12,6 +14,7 @@
 #include <vector>
 
 using namespace t81::ternaryos::dev;
+using namespace t81::ternaryos::hal;
 
 namespace {
 
@@ -30,17 +33,35 @@ void print_hash_prefix(const t81::canonfs::CanonRef& ref) {
 }  // namespace
 
 int main() {
-  std::puts("=== TernOS Phase 4 Hosted Demo ===");
+  std::puts("=== TernOS Phase 4 Hosted + VirtualBox Demo ===");
 
   const std::string path = "/tmp/ternos_demo_store.blk";
 
   auto block = make_block(0x51);
   t81::canonfs::CanonRef stored_ref;
+  VBoxBootSpec spec;
+  spec.ram_bytes = 128ULL * 1024 * 1024;
 
   {
-    HostedBlockDev dev(32, "demo-nvme0");
-    dev.set_backing_file(path);
-    CanonStore store(dev);
+    HostedBlockDev backing(32, "demo-ahci-backing");
+    backing.set_backing_file(path);
+
+    auto guest = bootstrap_virtualbox_guest(spec, backing);
+    if (!guest.has_value()) {
+      std::fputs("bootstrap_virtualbox_guest failed\n", stderr);
+      return 1;
+    }
+    if (hal_main(guest->boot_context) != 0) {
+      std::fputs("hal_main failed for VirtualBox bootstrap\n", stderr);
+      return 1;
+    }
+
+    std::printf("VirtualBox: profile=%s devices=%zu storage=%s\n",
+                guest->profile_summary.c_str(),
+                guest->device_map.size(),
+                guest->storage.binding_name.c_str());
+
+    CanonStore store(*guest->storage.device);
 
     auto ref = store.put(block);
     if (!ref.has_value()) {
@@ -61,11 +82,22 @@ int main() {
     return 1;
   }
 
-  CanonStore recovered_store(*loaded);
+  auto rebooted_guest = bootstrap_virtualbox_guest(spec, *loaded);
+  if (!rebooted_guest.has_value()) {
+    std::fputs("bootstrap_virtualbox_guest failed after reboot\n", stderr);
+    return 1;
+  }
+  if (hal_main(rebooted_guest->boot_context) != 0) {
+    std::fputs("hal_main failed for rebooted VirtualBox bootstrap\n", stderr);
+    return 1;
+  }
+
+  CanonStore recovered_store(*rebooted_guest->storage.device);
   const auto recovered = recovered_store.rebuild_index();
   auto recovered_block = recovered_store.get(stored_ref);
-  std::printf("CanonStore: recovered %zu entry(ies), block lookup %s, ref=",
+  std::printf("CanonStore: recovered %zu entry(ies) through %s, block lookup %s, ref=",
               recovered,
+              rebooted_guest->storage.binding_name.c_str(),
               recovered_block.has_value() ? "ok" : "failed");
   print_hash_prefix(stored_ref);
   std::puts("");

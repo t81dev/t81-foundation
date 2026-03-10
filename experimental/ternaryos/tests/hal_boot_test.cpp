@@ -284,6 +284,30 @@ static void test_virtualbox_storage_binding() {
         "NVMe binding is not created yet");
 }
 
+static void test_virtualbox_guest_bootstrap() {
+  std::printf("\n[AC-14] VirtualBox guest bootstrap\n");
+
+  VBoxBootSpec spec;
+  spec.ram_bytes = 128ULL * 1024 * 1024;
+
+  t81::ternaryos::dev::HostedBlockDev backing(18, "guest-bootstrap-backing");
+  auto guest = bootstrap_virtualbox_guest(spec, backing);
+  check(guest.has_value(), "bootstrap_virtualbox_guest succeeds for first-target profile");
+  if (guest) {
+    check(guest->profile_summary == "VBoxEFI/AHCI/E1000/VMSVGA/HPET+IOAPIC",
+          "guest bootstrap preserves profile summary");
+    check(guest->boot_context.platform_id.find("virtualbox-x86_64:") == 0,
+          "guest bootstrap produces a VirtualBox boot context");
+    check(guest->device_map.size() == 5, "guest bootstrap carries the VirtualBox device map");
+    check(guest->storage.binding_name == "virtualbox-ahci",
+          "guest bootstrap binds AHCI storage");
+    check(guest->storage.device->info().total_blocks == 18,
+          "guest bootstrap storage exposes backing block count");
+    check(hal_main(guest->boot_context) == 0,
+          "guest bootstrap BootContext is accepted by hal_main");
+  }
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -303,6 +327,7 @@ int main() {
   test_virtualbox_device_map_defaults();
   test_virtualbox_timer_tick_scaffold();
   test_virtualbox_storage_binding();
+  test_virtualbox_guest_bootstrap();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

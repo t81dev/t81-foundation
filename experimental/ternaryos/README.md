@@ -48,7 +48,7 @@ dev/
   net_packet.hpp       Ternary Ethernet packet wrapper + binary frame codec
 
 tests/
-  hal_boot_test.cpp          Phase 1 — 53 assertions
+  hal_boot_test.cpp          Phase 1 — 60 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
   mmu_test.cpp               Phase 2 — 47 assertions
@@ -63,7 +63,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 484/484 assertions, 7/7 tests pass
+# Expected: 491/491 assertions, 7/7 tests pass
 ```
 
 ## Demo
@@ -76,9 +76,11 @@ cmake --build build --target t81_ternaryos_demo
 ./build/t81_ternaryos_demo
 ```
 
-The demo shows three Phase 4 hosted behaviors:
+The demo shows a VirtualBox-first hosted simulation path:
 
-- CanonStore persists a CanonBlock across a simulated reboot.
+- the HAL boots a first-target VirtualBox guest profile
+- the guest profile binds its first storage device through the AHCI wrapper
+- CanonStore persists a CanonBlock across a simulated reboot through that binding
 - TTF renders ASCII text into the ternary framebuffer.
 - TernaryEthernetPacket round-trips through a binary Ethernet-like frame.
 
