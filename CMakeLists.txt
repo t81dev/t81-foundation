@@ -585,9 +585,12 @@ if(T81_ENABLE_TERNARYOS)
   set(T81_TERNARYOS_GUEST_ARTIFACT_DEPS t81_ternaryos_demo)
   set(T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_demo)
   find_program(T81_LLVM_CLANG NAMES clang PATHS /opt/homebrew/opt/llvm/bin NO_DEFAULT_PATH)
+  find_program(T81_LLD_LINK NAMES lld-link PATHS /opt/homebrew/bin /opt/homebrew/opt/lld/bin NO_DEFAULT_PATH)
   if(T81_LLVM_CLANG)
     set(T81_TERNARYOS_EFI_OBJ ${CMAKE_BINARY_DIR}/ternaryos/virtualbox/BOOTX64.obj)
     set(T81_TERNARYOS_ARMV8_EFI_OBJ ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/BOOTAA64.obj)
+    set(T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/BOOTAA64_shim.obj)
+    set(T81_TERNARYOS_ARMV8_EFI ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/BOOTAA64.EFI)
     add_custom_command(
       OUTPUT ${T81_TERNARYOS_EFI_OBJ}
       COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
@@ -627,6 +630,45 @@ if(T81_ENABLE_TERNARYOS)
     add_custom_target(t81_ternaryos_virtualbox_armv8_efi_obj
       DEPENDS ${T81_TERNARYOS_ARMV8_EFI_OBJ})
     list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_obj)
+
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fshort-wchar
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_armv8_efi_shim.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos
+              -o ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_armv8_efi_shim.c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/hal_c_abi.h)
+    add_custom_target(t81_ternaryos_virtualbox_armv8_efi_shim_obj
+      DEPENDS ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ})
+    list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_shim_obj)
+
+    if(T81_LLD_LINK)
+      add_custom_command(
+        OUTPUT ${T81_TERNARYOS_ARMV8_EFI}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
+        COMMAND ${T81_LLD_LINK}
+                /subsystem:efi_application
+                /entry:efi_main
+                /machine:arm64
+                /nodefaultlib
+                /out:${T81_TERNARYOS_ARMV8_EFI}
+                ${T81_TERNARYOS_ARMV8_EFI_OBJ}
+                ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ}
+        DEPENDS ${T81_TERNARYOS_ARMV8_EFI_OBJ}
+                ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ})
+      add_custom_target(t81_ternaryos_virtualbox_armv8_efi
+        DEPENDS ${T81_TERNARYOS_ARMV8_EFI})
+      list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi)
+    endif()
   endif()
 
   add_custom_target(t81_ternaryos_virtualbox_guest_artifact
@@ -663,6 +705,13 @@ if(T81_ENABLE_TERNARYOS)
             ARMv8
     USES_TERMINAL)
 
+  add_custom_target(t81_ternaryos_virtualbox_armv8_efi_link_check
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/check_efi_link_toolchain.sh
+            armv8
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/efi-link-status.txt
+    USES_TERMINAL)
+
   add_custom_target(t81_ternaryos_virtualbox_armv8_boot_probe
     COMMAND /bin/zsh
             ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/probe_virtualbox_armv8_vm.sh
@@ -671,6 +720,7 @@ if(T81_ENABLE_TERNARYOS)
             5
     DEPENDS t81_ternaryos_virtualbox_armv8_dev_artifact
             t81_ternaryos_virtualbox_armv8_host_check
+            t81_ternaryos_virtualbox_armv8_efi_link_check
     USES_TERMINAL)
 
   if(T81_BUILD_TESTS)

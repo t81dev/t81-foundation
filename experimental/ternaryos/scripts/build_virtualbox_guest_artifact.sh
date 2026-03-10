@@ -12,6 +12,7 @@ guest_arch=$3
 demo_bin="$build_dir/t81_ternaryos_demo"
 efi_obj="$build_dir/ternaryos/virtualbox/BOOTX64.obj"
 armv8_efi_obj="$build_dir/ternaryos/virtualbox_armv8/BOOTAA64.obj"
+armv8_efi_bin="$build_dir/ternaryos/virtualbox_armv8/BOOTAA64.EFI"
 
 if [[ ! -x "$demo_bin" ]]; then
   echo "missing demo binary: $demo_bin" >&2
@@ -42,6 +43,7 @@ case "$guest_arch" in
     profile_id="VBoxEFI/AHCI/E1000/VMSVGA/HPET+IOAPIC"
     validation_lane="primary-acceptance"
     boot_gap="missing-real-bootx64-efi"
+    artifact_status="staged-not-bootable"
     readme_note="This artifact tracks the official x86_64 VirtualBox roadmap target."
     ;;
   armv8)
@@ -49,6 +51,7 @@ case "$guest_arch" in
     profile_id="ARMv8Virtual/developer-lane"
     validation_lane="secondary-developer"
     boot_gap="missing-real-bootaa64-efi"
+    artifact_status="staged-not-bootable"
     readme_note="This artifact is a temporary ARMv8 developer-lane package for Apple Silicon hosts. It does not replace the official x86_64 roadmap target."
     ;;
   *)
@@ -79,7 +82,7 @@ guest_arch=$guest_arch
 validation_lane=$validation_lane
 git_commit=$git_rev
 generated_utc=$build_date
-artifact_status=staged-not-bootable
+artifact_status=$artifact_status
 boot_gap=$boot_gap
 EOF
 
@@ -94,6 +97,12 @@ if [[ "$guest_arch" == "x86_64" && -f "$efi_obj" ]]; then
   cp "$efi_obj" "$staging_dir/EFI/BOOT/BOOTX64.OBJ"
 elif [[ "$guest_arch" == "armv8" && -f "$armv8_efi_obj" ]]; then
   cp "$armv8_efi_obj" "$staging_dir/EFI/BOOT/BOOTAA64.OBJ"
+fi
+
+if [[ "$guest_arch" == "armv8" && -f "$armv8_efi_bin" ]]; then
+  cp "$armv8_efi_bin" "$staging_dir/EFI/BOOT/BOOTAA64.EFI"
+  perl -0pi -e 's/artifact_status=staged-not-bootable/artifact_status=efi-boot-candidate/' "$staging_dir/TERNOS/profile.txt"
+  perl -0pi -e 's/boot_gap=missing-real-bootaa64-efi/boot_gap=developer-lane-shim-efi-present/' "$staging_dir/TERNOS/profile.txt"
 fi
 
 image_path="$output_dir/${artifact_base}.img"

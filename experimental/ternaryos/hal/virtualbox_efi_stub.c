@@ -19,6 +19,17 @@ typedef struct EFI_SYSTEM_TABLE EFI_SYSTEM_TABLE;
 #define EFI_SUCCESS 0
 #define EFI_LOAD_ERROR 1
 
+void* memcpy(void* dest, const void* src, unsigned long n) {
+  unsigned char*       dst = (unsigned char*)dest;
+  const unsigned char* in = (const unsigned char*)src;
+  unsigned long        i = 0;
+  while (i < n) {
+    dst[i] = in[i];
+    ++i;
+  }
+  return dest;
+}
+
 static const TernaryOsMemoryRegion kVirtualBoxMemoryMap[] = {
     {
         .base_phys = 0x0000000000100000ULL,
@@ -47,14 +58,13 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_tab
   (void)image_handle;
   (void)system_table;
 
-  TernaryOsBootContext ctx = {
-      .memory_map = kVirtualBoxMemoryMap,
-      .memory_map_len = sizeof(kVirtualBoxMemoryMap) / sizeof(kVirtualBoxMemoryMap[0]),
-      .kernel_load_address = 0x0000000008000000ULL,
-      .stack_top = 0x0000000007FFF000ULL,
-      .ethics_boot_required = 1,
-      .platform_id = kPlatformId,
-  };
+  TernaryOsBootContext ctx;
+  ctx.memory_map = kVirtualBoxMemoryMap;
+  ctx.memory_map_len = sizeof(kVirtualBoxMemoryMap) / sizeof(kVirtualBoxMemoryMap[0]);
+  ctx.kernel_load_address = 0x0000000008000000ULL;
+  ctx.stack_top = 0x0000000007FFF000ULL;
+  ctx.ethics_boot_required = true;
+  ctx.platform_id = kPlatformId;
 
   return ternaryos_hal_main_c(&ctx) == 0 ? EFI_SUCCESS : EFI_LOAD_ERROR;
 }

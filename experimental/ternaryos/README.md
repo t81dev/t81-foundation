@@ -25,6 +25,7 @@ hal/
   virtualbox_guest_devices.hpp/.cpp  VirtualBox profile-to-device binding helpers
   virtualbox_efi_stub.c  Freestanding VBox EFI stub source for BOOTX64 handoff
   virtualbox_armv8_efi_stub.c  Freestanding VBox EFI stub source for BOOTAA64 handoff
+  virtualbox_armv8_efi_shim.c  Temporary ARMv8 developer-lane EFI link shim
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,
@@ -117,6 +118,7 @@ Outputs:
 - `build/ternaryos/virtualbox_armv8/ternos_virtualbox_armv8_dev_guest.img`
 - `build/ternaryos/virtualbox_armv8/ternos_virtualbox_armv8_dev_guest.vdi`
 - `build/ternaryos/virtualbox_armv8/BOOTAA64.obj`
+- `build/ternaryos/virtualbox_armv8/BOOTAA64.EFI`
 - `build/ternaryos/virtualbox_armv8/staging/TERNOS/profile.txt`
 - `build/ternaryos/virtualbox_armv8/staging/TERNOS/demo-output.txt`
 
@@ -145,6 +147,7 @@ Outputs:
 
 - `build/ternaryos/virtualbox_armv8/armv8_boot_probe.log`
 - `build/ternaryos/virtualbox_armv8/armv8_boot_probe_summary.txt`
+- `build/ternaryos/virtualbox_armv8/efi-link-status.txt`
 
 Current status:
 
@@ -152,13 +155,14 @@ Current status:
 - it stages the current guest profile, captured demo evidence, and a compiled `BOOTX64.obj` stub object
 - it is not EFI-bootable yet; final PE/COFF `.efi` linking is still missing, so `BOOTX64.EFI` is not produced yet
 - on this Apple Silicon host, `VBoxManage list systemproperties` currently reports `Supported platform architectures: ARMv8`, so the `x86_64` guest target cannot be boot-validated locally
-- the ARMv8 developer lane now goes one step further locally: VirtualBox firmware can boot headless, open the staged VDI through AHCI, and emit a captured `VBox.log`; the remaining gap is still a final `BOOTAA64.EFI`
+- the ARMv8 developer lane now goes one step further locally: VirtualBox firmware can boot headless, open the staged VDI through AHCI, and emit a captured `VBox.log`
+- with `lld` installed, the ARMv8 lane now emits a real `BOOTAA64.EFI`, but it is still a developer-lane shim rather than the true C++ HAL bridge
 
 ## Validation Lanes
 
 - Primary acceptance lane: `x86_64` VirtualBox host capable of boot-validating the roadmap target (`VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC`)
 - Secondary developer lane: Apple Silicon / `ARMv8` VirtualBox host used for artifact generation, host checks, and boot-pipeline preparation only
-- The ARMv8 lane now reaches a compiled `BOOTAA64.obj` EFI-stub object, packaged `.img`/`.vdi`, and a headless VirtualBox boot probe that confirms firmware-visible AHCI disk attachment, but it still stops short of a final `BOOTAA64.EFI` application
+- The ARMv8 lane now reaches a compiled `BOOTAA64.obj`, a linkable `BOOTAA64.EFI` developer-lane shim, packaged `.img`/`.vdi`, and a headless VirtualBox boot probe that confirms firmware-visible AHCI disk attachment
 
 Program rule:
 
