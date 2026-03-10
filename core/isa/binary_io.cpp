@@ -13,6 +13,24 @@
 namespace t81 {
 namespace tisc {
 
+// Maximum number of elements allowed when deserialising a length-prefixed
+// field. This prevents a corrupt or truncated file from triggering a
+// multi-gigabyte allocation and OOM-kill.
+static constexpr uint64_t kMaxDeserialiseCount = 1u << 24;  // 16 million elements
+
+static uint64_t read_checked_size(std::istream& is) {
+  uint64_t size = 0;
+  is.read(reinterpret_cast<char*>(&size), sizeof(size));
+  if (!is) {
+    throw std::runtime_error("TISC: unexpected end of file reading length prefix");
+  }
+  if (size > kMaxDeserialiseCount) {
+    throw std::runtime_error("TISC: corrupt file — unreasonable element count " +
+                             std::to_string(size));
+  }
+  return size;
+}
+
 // --- Generic Helpers for Simple Types ---
 template <typename T>
 void write_vector(std::ostream& os, const std::vector<T>& vec) {
@@ -25,8 +43,7 @@ void write_vector(std::ostream& os, const std::vector<T>& vec) {
 
 template <typename T>
 void read_vector(std::istream& is, std::vector<T>& vec) {
-  uint64_t size;
-  is.read(reinterpret_cast<char*>(&size), sizeof(size));
+  const uint64_t size = read_checked_size(is);
   vec.resize(size);
   if (size > 0) {
     is.read(reinterpret_cast<char*>(vec.data()), size * sizeof(T));
@@ -48,8 +65,7 @@ void write_insn_vector(std::ostream& os, const std::vector<t81::tisc::Insn>& vec
 }
 
 void read_insn_vector(std::istream& is, std::vector<t81::tisc::Insn>& vec) {
-  uint64_t size = 0;
-  is.read(reinterpret_cast<char*>(&size), sizeof(size));
+  const uint64_t size = read_checked_size(is);
   vec.resize(size);
   for (auto& insn : vec) {
     uint8_t opcode = 0;
@@ -74,10 +90,11 @@ void write_string(std::ostream& os, const std::string& str) {
 }
 
 void read_string(std::istream& is, std::string& str) {
-  uint64_t size;
-  is.read(reinterpret_cast<char*>(&size), sizeof(size));
+  const uint64_t size = read_checked_size(is);
   str.resize(size);
-  is.read(&str[0], size);
+  if (size > 0) {
+    is.read(&str[0], size);
+  }
 }
 
 template <typename T>
@@ -91,8 +108,7 @@ void write_serializable_vector(std::ostream& os, const std::vector<T>& vec) {
 
 template <typename T>
 void read_serializable_vector(std::istream& is, std::vector<T>& vec) {
-  uint64_t size;
-  is.read(reinterpret_cast<char*>(&size), sizeof(size));
+  const uint64_t size = read_checked_size(is);
   vec.resize(size);
   for (uint64_t i = 0; i < size; ++i) {
     vec[i].deserialize(is);
@@ -108,8 +124,7 @@ void write_vector_string(std::ostream& os, const std::vector<std::string>& vec) 
 }
 
 void read_vector_string(std::istream& is, std::vector<std::string>& vec) {
-  uint64_t size;
-  is.read(reinterpret_cast<char*>(&size), sizeof(size));
+  const uint64_t size = read_checked_size(is);
   vec.resize(size);
   for (uint64_t i = 0; i < size; ++i) {
     read_string(is, vec[i]);
@@ -126,8 +141,7 @@ void write_vector_vector_int(std::ostream& os, const std::vector<std::vector<int
 }
 
 void read_vector_vector_int(std::istream& is, std::vector<std::vector<int>>& vec) {
-  uint64_t size;
-  is.read(reinterpret_cast<char*>(&size), sizeof(size));
+  const uint64_t size = read_checked_size(is);
   vec.resize(size);
   for (uint64_t i = 0; i < size; ++i) {
     read_vector(is, vec[i]);
@@ -204,8 +218,7 @@ static void write_enum_metadata(std::ostream& os, const t81::tisc::EnumMetadata&
 static void read_enum_metadata(std::istream& is, t81::tisc::EnumMetadata& meta) {
   is.read(reinterpret_cast<char*>(&meta.enum_id), sizeof(meta.enum_id));
   read_string(is, meta.name);
-  uint64_t variant_count = 0;
-  is.read(reinterpret_cast<char*>(&variant_count), sizeof(variant_count));
+  const uint64_t variant_count = read_checked_size(is);
   meta.variants.resize(variant_count);
   for (auto& variant : meta.variants) {
     read_enum_variant_metadata(is, variant);
@@ -247,15 +260,13 @@ static void read_type_alias_metadata(std::istream& is, t81::tisc::TypeAliasMetad
   meta.schema_version = schema;
   read_string(is, meta.module_path);
 
-  uint64_t field_count = 0;
-  is.read(reinterpret_cast<char*>(&field_count), sizeof(field_count));
+  const uint64_t field_count = read_checked_size(is);
   meta.fields.resize(field_count);
   for (auto& field : meta.fields) {
     read_field_info(is, field);
   }
 
-  uint64_t variant_count = 0;
-  is.read(reinterpret_cast<char*>(&variant_count), sizeof(variant_count));
+  const uint64_t variant_count = read_checked_size(is);
   meta.variants.resize(variant_count);
   for (auto& variant : meta.variants) {
     read_variant_info(is, variant);
@@ -310,9 +321,8 @@ Program load_program(const std::string& path) {
   read_serializable_vector(file, program.complex_pool);
   read_string(file, program.axion_policy_text);
 
-  uint64_t alias_count = 0;
   if (file.peek() != std::char_traits<char>::eof()) {
-    file.read(reinterpret_cast<char*>(&alias_count), sizeof(alias_count));
+    const uint64_t alias_count = read_checked_size(file);
     program.type_aliases.resize(alias_count);
     for (auto& alias : program.type_aliases) {
       read_type_alias_metadata(file, alias);
@@ -321,8 +331,7 @@ Program load_program(const std::string& path) {
       read_string(file, program.match_metadata_text);
     }
     if (file.peek() != std::char_traits<char>::eof()) {
-      uint64_t enum_count = 0;
-      file.read(reinterpret_cast<char*>(&enum_count), sizeof(enum_count));
+      const uint64_t enum_count = read_checked_size(file);
       program.enum_metadata.resize(enum_count);
       for (auto& enum_meta : program.enum_metadata) {
         read_enum_metadata(file, enum_meta);

@@ -1270,6 +1270,9 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(t81_cli_contract_test tests/cpp/cli_contract_test.cpp)
   target_compile_features(t81_cli_contract_test PRIVATE ${T81_CXX_STD_FEATURE})
 
+  add_executable(t81_cli_stress_test tests/cpp/cli_stress_test.cpp)
+  target_compile_features(t81_cli_stress_test PRIVATE ${T81_CXX_STD_FEATURE})
+
   if(T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY)
     add_executable(t81_c_frontend_mlir_smoke_test tests/cpp/c_frontend_mlir_smoke_test.cpp)
     target_link_libraries(t81_c_frontend_mlir_smoke_test PRIVATE t81_c_frontend)
@@ -1851,6 +1854,8 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   endforeach()
   add_test(NAME t81_cli_repro_hash_test COMMAND $<TARGET_FILE:cli_repro_hash_test> $<TARGET_FILE:t81>)
   add_test(NAME t81_cli_contract_test_runner COMMAND $<TARGET_FILE:t81_cli_contract_test> $<TARGET_FILE:t81>)
+  add_test(NAME t81_cli_stress_test_runner COMMAND $<TARGET_FILE:t81_cli_stress_test> $<TARGET_FILE:t81>)
+  set_tests_properties(t81_cli_stress_test_runner PROPERTIES TIMEOUT 300)
   add_test(NAME t81_cli_stdlib_fixtures_test COMMAND $<TARGET_FILE:cli_stdlib_fixtures_test>)
   add_test(NAME cli_std_collections_determinism_test COMMAND $<TARGET_FILE:cli_std_collections_determinism_test>)
   add_test(
