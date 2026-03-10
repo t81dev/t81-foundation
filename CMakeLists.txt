@@ -581,6 +581,15 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/demo.cpp)
   target_link_libraries(t81_ternaryos_demo PRIVATE t81_ternaryos_hal)
 
+  add_custom_target(t81_ternaryos_virtualbox_guest_artifact
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/build_virtualbox_guest_artifact.sh
+            ${CMAKE_BINARY_DIR}
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
+    DEPENDS t81_ternaryos_demo
+    USES_TERMINAL)
+
   if(T81_BUILD_TESTS)
     add_executable(t81_ternaryos_hal_boot_test
       experimental/ternaryos/tests/hal_boot_test.cpp)

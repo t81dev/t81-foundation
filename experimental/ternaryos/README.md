@@ -86,6 +86,27 @@ The demo shows a VirtualBox-first hosted simulation path:
 - TTF renders ASCII text into the VirtualBox VMSVGA-backed ternary framebuffer.
 - TernaryEthernetPacket round-trips through the VirtualBox E1000 scaffold.
 
+## VirtualBox Artifact
+
+To generate the first reproducible VirtualBox guest artifact bundle:
+
+```sh
+cmake --build build --target t81_ternaryos_virtualbox_guest_artifact
+```
+
+Outputs:
+
+- `build/ternaryos/virtualbox/ternos_virtualbox_guest.img`
+- `build/ternaryos/virtualbox/ternos_virtualbox_guest.vdi`
+- `build/ternaryos/virtualbox/staging/TERNOS/profile.txt`
+- `build/ternaryos/virtualbox/staging/TERNOS/demo-output.txt`
+
+Current status:
+
+- the image is FAT-formatted and VirtualBox-ready as a disk artifact
+- it stages the current guest profile and captured demo evidence
+- it is not EFI-bootable yet; the real `BOOTX64.EFI` guest stub is still missing
+
 ## Promotion Path
 
 Each layer graduates from `experimental/ternaryos/` to the mainline when its
