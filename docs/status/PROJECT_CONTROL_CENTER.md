@@ -11,7 +11,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 ## Phase
 
-**Post-Hardening** — Documentation reorganization completed; focus on maintenance and optimization
+**Maintenance** — v1.4.0-Stable cut complete; focus on maintenance and optimization
 
 ---
 
@@ -20,7 +20,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | Dimension | Status |
 | :--- | :--- |
 | Overall | Green — **336/336 tests passing** (100% success rate) |
-| Release Readiness | **GO** — v1.4.0-beta tagged; v1.3.2 stable released 2026-03-08 |
+| Release Readiness | **GO** — v1.4.0-Stable tagged; v1.3.2 stable released 2026-03-08 |
 | Current Main | `85a0b438` — CLI stress test + binary_io OOM hardening |
 | Open Blockers | None |
 | Frozen Core | Intact — no freeze exceptions |
@@ -94,7 +94,7 @@ Full boundary: `EXTENSION_PROFILE.md`
 
 ## Next Decision Points
 
-1. **2026-03-31** — Execute C2 runbook; stamp outcome in `docs/records/audits/2026-03-governance-review.md`
+1. **2026-03-31** — C2 Month-Close runbook executed and stamped in `docs/records/audits/2026-03-governance-review.md` (**Completed 2026-03-10**)
 2. **Pre-C2 / Active now** — Axion Beta candidacy evidence for P4 (§1.2 Safety & Ethics) and P5 (§1.6 Privileged Instruction); both explicitly mapped to existing verified surfaces (Owner: @t81dev, Date: 2026-03-10), fully satisfying AX-G01.
 3. **Active now** — Fuzz corpus growth: run libFuzzer for hours on `fuzz_parser` / `fuzz_vm`; commit any crash inputs
 4. **Post-C2 Release Prep** — Cut v1.4.0-Stable from v1.4.0-beta; determinism coverage for new binary_io guard path (**Completed 2026-03-10**)
