@@ -33,7 +33,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Gate | Date | State |
 | :--- | :--- | :--- |
-| C2 Month-Close execution | 2026-03-31 | Scheduled |
+| C2 Month-Close execution | 2026-03-31 | Scheduled — preflight PASS 2026-03-10 |
 | Axion Beta candidacy review | 2026-04-30 | Open |
 | T81Graph lang-side serialization (BG-09) | 2026-05-15 | **Closed** |
 | T3K spec document (T3K-S1) | 2026-04-30 | **Closed** |

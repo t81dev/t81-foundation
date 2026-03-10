@@ -3,7 +3,7 @@
 Status: Draft (In Progress)
 Review Window: 2026-03
 Owner: @t81dev
-Last Updated: 2026-02-28
+Last Updated: 2026-03-10
 Review Date (UTC): 2026-02-26
 Reviewers: @t81dev
 
@@ -264,6 +264,25 @@ Execution state:
   16 files removed, −1,780 LOC; 285/285 tests passing; parameterized stdlib
   fixture harness (`cli_stdlib_fixtures_test`) and shared utility headers
   extracted; audit archived at `docs/records/audits/TEST_SUITE_DEDUP_AUDIT_2026-02-28.md`.
+- Technical hardening completed 2026-03-10:
+  - Fuzz infrastructure: `fuzz_parser` and `fuzz_vm` build targets added
+    to CMake; LLVM libc++ linker path auto-detected for Homebrew macOS.
+  - Three VM OOB register-index bugs fixed (SymLoad, ReflCap, ReflJustify):
+    `reg_ok(insn.b)` guard missing; found by `fuzz_vm` standalone driver.
+    Commit: `d4251246` (in `85a0b438`).
+  - `binary_io` OOM-on-corrupt-input hardened: `read_checked_size()` now
+    validates length-prefix ≤ 16M before any `vector::resize()`; empty or
+    corrupt `.tisc` files now exit 1 instead of OOM-killing (exit 137).
+  - CLI stress test (`tests/cpp/cli_stress_test.cpp`) added as 336th test
+    covering full CLI command surface; 336/336 tests now pass (100%).
+  - TLoadHash fuzz workaround removed: all 3 conformance tests pass; 1000
+    standalone fuzz iterations with TLoadHash enabled are clean. Commit: `160997cd`.
+- C2 month-close preflight run 2026-03-10 at 10:08Z: FAIL (hygiene and
+  stdlib baseline were not yet resolved at that timestamp).
+- C2 month-close preflight re-run 2026-03-10 (end of day): **PASS** — all
+  5 checks green (C2 consolidated, CTest 336/336, determinism slice,
+  stdlib surface baseline, stdlib promotion snapshot).
+  Report written to `docs/status/C2_MONTH_CLOSE_PREFLIGHT_2026-03-31.md`.
 
 Cadence and navigation checks:
 
