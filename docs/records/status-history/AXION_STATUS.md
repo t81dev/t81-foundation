@@ -1,7 +1,7 @@
 # Axion Kernel Status
 
 Status: Active
-Last Updated: 2026-02-28
+Last Updated: 2026-03-10
 Owner: @t81dev
 Version: 1.1.0
 
@@ -98,11 +98,11 @@ the full Phase 3 scope.
 
 | Priority | Spec Area | Gap Description | Owner | Target |
 | :--- | :--- | :--- | :--- | :--- |
-| P1 | 1.1 Determinism Stewardship | **PARTIALLY CLOSED** - Basic deterministic logging verified, comprehensive traceability remains | @t81dev | 2026-03-21 |
-| P2 | 1.10 CanonFS Observability | **PARTIALLY CLOSED** - Basic meta segment events verified, full lifecycle audit remains | @t81dev | 2026-03-21 |
-| P3 | 1.3 Complexity Measurement | Call-graph and branch/path-divergence evidence mapping (remaining gap) | @t81dev | 2026-03-14 |
-| P4 | 1.2 Safety & Ethics Enforcement | Full policy-surface closure (partial evidence exists) | @t81dev | 2026-03-21 |
-| P5 | 1.6 Privileged Instruction Arbitration | Advanced privileged instruction verification beyond basic loading | @t81dev | 2026-03-28 |
+| ~~P1~~ | ~~1.1 Determinism Stewardship~~ | **✅ CLOSED** — AX-M5: canonical-memory enforcement traceability mapped across all Axion-visible transitions | @t81dev | **2026-03-04** |
+| ~~P2~~ | ~~1.10 CanonFS Observability~~ | **✅ CLOSED** — AX-M6: end-to-end persistence lifecycle audit evidence path complete | @t81dev | **2026-03-04** |
+| ~~P3~~ | ~~1.3 Complexity Measurement~~ | **✅ CLOSED** — AX-M7: call-graph complexity measurement evidence mapped; governance review accepted | @t81dev | **2026-03-04** |
+| P4 | 1.2 Safety & Ethics Enforcement | **✅ CLOSED** — evidence mapped to `kernel/axion/ethics.cpp` and `axion_recursion_guardrails_test.cpp` | @t81dev | **2026-03-10** |
+| P5 | 1.6 Privileged Instruction Arbitration | **✅ CLOSED** — evidence mapped to `kernel/axion/axion_api.cpp`, `test_axion_opcodes.cpp`, and `axion_segment_trace_test.cpp` | @t81dev | **2026-03-10** |
 | Deferred | 2.5 Tier Transition Subsystem | Full cognitive-tier transition orchestration — non-DCP/non-verified unless promoted through governance | @t81dev | Post-2026-04-30 |
 
 ## Beta Promotion Gate Criteria (Updated)
@@ -111,13 +111,13 @@ The following criteria must be satisfied before Axion Beta candidacy review:
 
 | ID | Criterion | Current State |
 | :--- | :--- | :--- |
-| AX-G01 | All P1/P2/P3 coverage gaps have evidence paths mapped or explicitly deferred with owner + date | ⚠️ P1/P2 partially closed, P3 partial, P4/P5 added |
+| AX-G01 | All P1/P2/P3 coverage gaps have evidence paths mapped or explicitly deferred with owner + date | ✅ P1 closed (AX-M5); P2 closed (AX-M6); P3 closed (AX-M7); P4 closed (AX-M8a); P5 closed (AX-M8b). Gate closed. |
 | AX-G02 | Axion conformance matrix green across VM/Axion baseline suites | ✅ Phase 3 expanded + basic evidence tests |
 | AX-G03 | No spec sections 1.1–1.9 remain Missing (all buckets at Partial or better) | ✅ Met - all sections at Partial or better |
-| AX-G04 | Opcode dispatch concentration below threshold (no single VM dispatch path > defined threshold) | ✅ Advancing - Phase 3 helper extractions complete |
+| AX-G04 | Opcode dispatch concentration below threshold (no single VM dispatch path > defined threshold) | ✅ FW-02 closed 2026-03-05; Axion pre-dispatch fully isolated from VM main switch |
 | AX-G05 | Implementation Maturity synchronized in `IMPLEMENTATION_MATRIX.md` and `SYSTEM_STATUS.md` | ✅ Met |
 
-Overall Beta readiness: **NOT READY** - Basic evidence verified but comprehensive coverage gaps remain.
+Overall Beta readiness: **READY** — AX-G01 satisfied (P1..P5 fully mapped and closed before 2026-04-30 Beta candidacy review).
 
 ## Planning Milestones (Active)
 
@@ -127,10 +127,12 @@ Overall Beta readiness: **NOT READY** - Basic evidence verified but comprehensiv
 | M2 — Coverage Gap Prioritization | Top-3 gaps with owners and dated targets | 2026-03-10 | Completed (2026-02-25) |
 | M3 — Evidence Mapping | Map tests/checks to prioritized segments | 2026-03-14 | Completed (2026-02-25); updated 2026-02-28 |
 | M4 — Matrix and Review Sync | Sync into matrix and March governance review | 2026-03-19 | Completed (2026-02-25) |
-| M5 — P1 Evidence Closure | Close 1.1 Determinism Stewardship evidence gap | 2026-03-10 | In Progress |
-| M6 — P2 Evidence Closure | Close 1.10 CanonFS lifecycle gap | 2026-03-12 | Open |
-| M7 — P3 Evidence Closure | Close 1.3 Complexity Measurement call-graph gap | 2026-03-14 | Open |
-| M8 — Beta Candidacy Review | All AX-G01..AX-G05 satisfied; governance review | 2026-04-30 | Open |
+| M5 — P1 Evidence Closure | Close 1.1 Determinism Stewardship evidence gap | 2026-03-10 | **Completed 2026-03-04** |
+| M6 — P2 Evidence Closure | Close 1.10 CanonFS lifecycle gap | 2026-03-12 | **Completed 2026-03-04** |
+| M7 — P3 Evidence Closure | Close 1.3 Complexity Measurement call-graph gap | 2026-03-14 | **Completed 2026-03-04** |
+| M8a — P4 Evidence Closure | Close §1.2 Safety & Ethics trace evidence gap | 2026-04-15 | **Completed 2026-03-10** |
+| M8b — P5 Evidence Closure | Close §1.6 Privileged Instruction trace evidence gap | 2026-04-15 | **Completed 2026-03-10** |
+| M9 — Beta Candidacy Review | All AX-G01..AX-G05 fully satisfied; governance review | 2026-04-30 | Open |
 
 ## Governance Notes
 

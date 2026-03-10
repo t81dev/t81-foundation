@@ -1,6 +1,6 @@
 # T81Lang Promotion Gate Snapshot
 
-Generated (UTC): 2026-03-10 13:06:45Z
+Generated (UTC): 2026-03-10 16:28:50Z
 Generator: `scripts/governance/t81lang_promotion_gate_snapshot.py`
 
 ## Gate Criteria Status
@@ -55,7 +55,7 @@ Test project /Users/t81dev/Code/t81-foundation/build
     Start  93: t81lang_conformance_baseline_test
 2/7 Test  #93: t81lang_conformance_baseline_test .................   Passed    0.01 sec
     Start 186: t81_semantic_analyzer_match_test
-3/7 Test #186: t81_semantic_analyzer_match_test ..................   Passed    0.01 sec
+3/7 Test #186: t81_semantic_analyzer_match_test ..................   Passed    0.00 sec
     Start 191: t81_semantic_analyzer_loop_test
 4/7 Test #191: t81_semantic_analyzer_loop_test ...................   Passed    0.01 sec
     Start 193: t81_semantic_analyzer_diagnostic_location_test
@@ -67,7 +67,7 @@ Test project /Users/t81dev/Code/t81-foundation/build
 
 100% tests passed, 0 tests failed out of 7
 
-Total Test time (real) =   0.05 sec
+Total Test time (real) =   0.04 sec
 ```
 
 ### Compile Determinism Slice

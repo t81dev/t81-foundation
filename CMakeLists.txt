@@ -12,6 +12,7 @@ option(T81_BUILD_TESTS    "Build T81 C++ unit tests" ON)
 option(T81_BUILD_BENCHMARKS "Build T81 benchmark suite" ON)
 option(T81_BUILD_FUZZ_TESTS "Build frontend fuzz target" ON)
 option(T81_RUN_FRONTEND_FUZZ_IN_CTEST "Run frontend fuzz target via ctest matrix" OFF)
+option(T81_ENABLE_LIBFUZZER "Link fuzz_parser/fuzz_vm with libFuzzer driver (-fsanitize=fuzzer); requires Clang with libFuzzer support" OFF)
 option(T81_ENABLE_ASAN "Enable AddressSanitizer for supported compilers" OFF)
 option(T81_ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer for supported compilers" OFF)
 option(T81_USE_CXX23 "Build with C++23 language mode (fallback: C++20)" ON)
@@ -1416,6 +1417,13 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
 
     add_executable(fuzz_vm tests/fuzz/fuzz_vm.cpp)
     target_link_libraries(fuzz_vm PRIVATE t81_vm t81_core t81_isa)
+
+    if(T81_ENABLE_LIBFUZZER)
+      foreach(_fuzz_target fuzz_parser fuzz_vm)
+        target_compile_options(${_fuzz_target} PRIVATE -fsanitize=fuzzer -DT81_FUZZ_TARGET)
+        target_link_options(${_fuzz_target} PRIVATE -fsanitize=fuzzer)
+      endforeach()
+    endif()
 
   endif()
 

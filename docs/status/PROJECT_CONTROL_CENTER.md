@@ -3,7 +3,7 @@
 Status: Active
 Last Updated: 2026-03-10
 Owner: @t81dev
-Version: 3.2.2
+Version: 3.2.3
 
 This is the dashboard. One page. If you need detail, follow a cross-reference.
 
@@ -33,7 +33,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Gate | Date | State |
 | :--- | :--- | :--- |
-| C2 Month-Close execution | 2026-03-31 | Scheduled — preflight PASS 2026-03-10 |
+| C2 Month-Close execution | 2026-03-31 | Scheduled — preflight PASS 2026-03-10; re-confirmed 3× same day |
 | Axion Beta candidacy review | 2026-04-30 | Open |
 | T81Graph lang-side serialization (BG-09) | 2026-05-15 | **Closed** |
 | T3K spec document (T3K-S1) | 2026-04-30 | **Closed** |
@@ -95,7 +95,9 @@ Full boundary: `EXTENSION_PROFILE.md`
 ## Next Decision Points
 
 1. **2026-03-31** — Execute C2 runbook; stamp outcome in `docs/records/audits/2026-03-governance-review.md`
-2. **Post-C2 Release Prep** — Cut v1.4.0-Stable from v1.4.0-beta; fuzz corpus growth; determinism coverage for new binary_io guard path
+2. **Pre-C2 / Active now** — Axion Beta candidacy evidence for P4 (§1.2 Safety & Ethics) and P5 (§1.6 Privileged Instruction); both explicitly mapped to existing verified surfaces (Owner: @t81dev, Date: 2026-03-10), fully satisfying AX-G01.
+3. **Active now** — Fuzz corpus growth: run libFuzzer for hours on `fuzz_parser` / `fuzz_vm`; commit any crash inputs
+4. **Post-C2 Release Prep** — Cut v1.4.0-Stable from v1.4.0-beta; determinism coverage for new binary_io guard path
 
 ---
 
