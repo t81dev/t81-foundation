@@ -864,21 +864,13 @@ int run_agent(const std::vector<std::string>& args) {
         }
         // Status bar
         auto status = hbox({
-            text(" [Tier " + std::to_string(state_snapshot.vm_tier) + "]")
-                | color(Color::Cyan),
-            text("  |  ") | color(Color::GrayDark),
-            text("Axion: " + state_snapshot.axion_mode)
-                | color(Color::Yellow),
-            text("  |  ") | color(Color::GrayDark),
-            text("Trace: " + state_snapshot.trace_hash)
-                | color(Color::Green),
-            pending_jobs > 0
-                ? text("  |  Busy: " + busy_status) | color(Color::Yellow)
-                : text(""),
             !last_error.empty()
-                ? text("  |  Last error: " + last_error) | color(Color::Red)
-                : text(""),
+                ? text(" ✗ System Log: " + last_error) | color(Color::Red)
+                : text(" ✓ System Log: OK") | color(Color::GrayDark),
             filler(),
+            pending_jobs > 0
+                ? text(" Busy: " + busy_status + "  |  ") | color(Color::Yellow)
+                : text(""),
             text("PgUp/PgDn: scroll   F2: context   F3: targets   /help   Esc: exit ")
                 | color(Color::GrayDark),
         }) | bgcolor(Color::Black);
@@ -945,7 +937,14 @@ int run_agent(const std::vector<std::string>& args) {
             }),
         }) | border | flex;
 
+        auto top_bar = hbox({
+            text(" T81 Agentic Interface") | bold | color(Color::Cyan),
+            filler(),
+            text("[Cmd: Ctrl+P / + /] ") | color(Color::GrayDark),
+        });
+
         auto main = vbox({
+            top_bar,
             show_context ? hbox({ history_pane, context_panel }) | flex : history_pane,
             status,
         });

@@ -333,7 +333,7 @@ int run_studio(const std::vector<std::string>& /*args*/) {
 
     // ── Output log (scrollable) ──────────────────────────────────────────────
     std::vector<std::string> output_log = {
-        "T81 Studio  —  Human Operator Interface",
+        "T81 Foundation Workspace  —  Human Operator Interface",
         "Navigate with arrow keys, Enter to activate, Ctrl+P for palette.",
         "PgUp/PgDn or j/k scroll the log.  'q' or Escape to quit.",
         "Bootstrapping runtime status…",
@@ -877,13 +877,13 @@ int run_studio(const std::vector<std::string>& /*args*/) {
         }
         // Status bar
         auto status = hbox({
-            text(" [VM Tier " + std::to_string(state.vm_tier) + "]")
+            text(" 🛡️ VM [Tier " + std::to_string(state.vm_tier) + "]")
                 | color(Color::Cyan),
             text("  |  ") | color(Color::GrayDark),
-            text("Axion: " + state.axion_mode)
+            text("✓ Axion: [" + state.axion_mode + "]")
                 | color(Color::Yellow),
             text("  |  ") | color(Color::GrayDark),
-            text("Trace: " + state.trace_hash)
+            text("⇄ Active Trace: [" + state.trace_hash + "]")
                 | color(Color::Green),
             busy_count > 0
                 ? text("  |  Busy: " + busy_text + " ")
@@ -1142,7 +1142,16 @@ int run_studio(const std::vector<std::string>& /*args*/) {
             content_body | flex,
         }) | border | flex;
 
-        auto main_area = hbox({ sidebar, browser_panel, content_panel }) | flex;
+        auto top_bar = hbox({
+            text(" T81 Foundation Workspace") | bold | color(Color::Cyan),
+            filler(),
+            text("[Cmd: Ctrl+P] ") | color(Color::GrayDark),
+        });
+
+        auto main_area = vbox({
+            top_bar,
+            hbox({ sidebar, browser_panel, content_panel }) | flex,
+        }) | flex;
 
         // ── Command palette overlay ──────────────────────────────────────────
         if (palette_open) {
