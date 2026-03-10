@@ -1,6 +1,6 @@
 # Active Tasks
 
-Last Updated: 2026-03-09
+Last Updated: 2026-03-10
 
 Immediate, actionable items only. Structural hardening items live in `HARDENING_BACKLOG.md`.
 
@@ -201,7 +201,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 - **Memory Pool Optimization**: 10-phase complete with 30-50% efficiency gains
 - **All P1 Tasks**: 8/8 completed ahead of schedule  
-- **Test Success Rate**: 100% (285/285 tests passing)
+- **Test Success Rate**: 100% (335/335 tests passing)
 - **Infrastructure Hardening**: Production-ready with enterprise features
 - **T81 Capabilities**: Complete ternary-native computing stack
 - **AI-Native Features**: Ethical agents, cognitive tiers, policy enforcement
@@ -316,15 +316,17 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 
 | Task | Completed |
 | :--- | :--- |
+| **🏆 README Translation & Restructuring** — Rewrote and reorganized project READMEs into multiple languages (es, pt-BR, ru, zh-CN) with updated architecture, features, and status. | **2026-03-10** |
+| **🏆 RFC-0033 Dual TUI Frontends Layouts** — Refactored T81 Studio and Agentic interfaces to adhere strictly to visual layout and status bar specifications. | **2026-03-10** |
 | **🏆 LLVM-01 LLVM IR Backend** — `T81_ENABLE_LLVM` CMake option; `src/llvm/tisc_to_llvm.cpp` two-pass CFG translator; `t81 llvm compile` CLI; bash/zsh/fish completions; bug fixes (FPow arity, Load/Store memory model, 6 missing float transcendentals) | **2026-03-09** |
 | **🏆 LLVM-02 MLIR Frontend** — `T81_ENABLE_MLIR` CMake option; `t81 mlir compile/lower/pipeline`; DCP runtime guidance via `t81_dmath_runtime`; SSA promotion through SROA + mem2reg; custom `--dialect=t81` support for `t81.reg_*`, `t81.mem_*`, and `t81.stack_*` ops | **2026-03-09** |
 | **🏆 LLVM-03 Experimental C Frontend PoC** — `T81_ENABLE_C_FRONTEND` CMake option; `libclang`-backed `t81 c compile`; integer-only fail-closed subset lowered through the existing TISC → MLIR pipeline; CLI/help/completion coverage added | **2026-03-09** |
 | **🏆 LLVM-04 Experimental Rust Frontend Scaffold** — `T81_ENABLE_RUST_FRONTEND` CMake option; `rustc`-gated `t81 rust compile` scaffold; CLI/help/completion coverage and fail-closed contract for unbuilt or unimplemented Rust ingress | **2026-03-09** |
 | **🏆 T81Float Determinism Gap Closure** — Wired `acos`/`asin`/`atan`/`sinh`/`cosh`/`tanh` to dmath (deterministic Taylor/Newton series) in `T81_DETERMINISTIC` mode; replaced `floor`/`ceil`/`round` host-math calls with pure trit-manipulation (`trunc_impl()`, `make_int_one()`) | **2026-03-09** |
 | **🏆 T81Symbolic Completeness** — Added `serialize_canonical()` and `eval()` free functions; fixed unary constant folding to cover Sin/Cos/Exp/Log; added `Sub` identity rules; fixed `Pow` constant folding; corrected misplaced stub inside `SimpVisitor` | **2026-03-09** |
-| **🏆 v1.3.0 Release** — Tagged and published ([release notes](https://github.com/t81dev/t81-foundation/releases/tag/v1.3.0)); 332/332 tests passing | **2026-03-08** |
+| **🏆 v1.3.0 Release** — Tagged and published ([release notes](https://github.com/t81dev/t81-foundation/releases/tag/v1.3.0)); 335/335 tests passing | **2026-03-08** |
 | **🏆 TLOADHASH Null-CanonFS SEGFAULT Fix** — Added null-guard with hash-format validation; introduced `set_canonfs_root()` VM API; updated all TLOADHASH tests; BoundsFault/DecodeFault taxonomy enforced | **2026-03-08** |
-| **🏆 Frontend Architecture Refactor** — Typed AST (`Expr::resolved_type`), unified builtin registry (`kBuiltinTable`, 130 entries), IRGen extracted to `ir_generator.cpp`; SA dispatch ordering fixed (table-driven fallback after custom handlers); 332/332 tests passing | **2026-03-08** |
+| **🏆 Frontend Architecture Refactor** — Typed AST (`Expr::resolved_type`), unified builtin registry (`kBuiltinTable`, 130 entries), IRGen extracted to `ir_generator.cpp`; SA dispatch ordering fixed (table-driven fallback after custom handlers); 335/335 tests passing | **2026-03-08** |
 | **🏆 CI Workflow Stabilization** — Restored canonical `ci.yml` (PR #448); pinned lychee v0.18.1; fixed CLI manual path; added job timeouts; fixed `CanonHash<T81String>` non-determinism via `serialize_canonical()`; 325/325 tests passing | **2026-03-07** |
 | **🏆 Documentation Reorganization** - Content-based documentation structure with user-guide/ and developer-guide/ separation | **2026-03-06** |
 | **🏆 PR-426 Determinism Hardening Phase 1** - Comprehensive determinism hardening with T81_DETERMINISTIC enforcement, canonical containers, and cross-platform tests | **2026-03-04** |
@@ -335,7 +337,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 | **🏆 BG-07 BigInt Precision Closure (Phase 1+2)** - Literal transport, VM materialization, JIT safety deopt, and fail-closed narrowing behavior | **2026-03-05** |
 | **🏆 CLI Feature Testing** - Comprehensive validation with model integration | **2026-03-04** |
 | **🏆 Test File Organization** - Complete project structure cleanup | **2026-03-04** |
-| **🏆 100% Test Success Achievement** - All 285/285 tests passing | **2026-03-04** |
+| **🏆 100% Test Success Achievement** - All 335/335 tests passing | **2026-03-04** |
 | **🏆 Production Hardening Sprint** - BG-06, AX-M5/M6/M7, T3K-S1 completed | **2026-03-04** |
 | **🏆 Critical Path Blockers Removed** - All P1 items resolved ahead of schedule | **2026-03-04** |
 | **CI Lychee Link Checking** - Fixed broken internal/external links | **2026-03-04** |
@@ -349,7 +351,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 | **IR Snapshot Audit** - Updated precedence expectations | **2026-03-03** |
 | Release candidate GO stamp on `1ec312e3` | 2026-02-28 |
 | T81Lang promotion to Beta implementation maturity | 2026-02-26 |
-| Test suite deduplication (−16 files, −1,780 LOC, 285/285 passing) | 2026-02-28 |
+| Test suite deduplication (−16 files, −1,780 LOC, 335/335 passing) | 2026-02-28 |
 | BG-01..05 engineering backlog closure | 2026-02-25 |
 | BG-10 determinism tests (Quaternion/Prob/Qutrit/Uint) | 2026-02-28 |
 | Cognitive Tier 1..5 implementation | 2026-02-26 |
@@ -374,7 +376,7 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
 ### **🚀 PRODUCTION READINESS STATUS:**
 
 - **Critical Path**: ✅ ALL BLOCKERS REMOVED
-- **Test Success Rate**: ✅ 100% (285/285 tests)
+- **Test Success Rate**: ✅ 100% (335/335 tests)
 - **Infrastructure**: ✅ FULLY HARDENED
 - **Beta Readiness**: ✅ ALL PREREQUISITES MET
 

@@ -80,7 +80,7 @@ def check_collection_determinism() -> list[str]:
             if test_path.exists():
                 try:
                     result = subprocess.run(
-                        [str(t81_cli), "run", str(test_path)],
+                        [str(t81_cli), "code", "run", str(test_path)],
                         capture_output=True,
                         text=True,
                         timeout=30

@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
-BACKLOG_FILE = REPO_ROOT / "docs/status/T81LANG_ENGINEERING_BACKLOG_2026-03.md"
+BACKLOG_FILE = REPO_ROOT / "docs/status/HARDENING_BACKLOG.md"
 GATE_FILE = REPO_ROOT / "docs/status/T81LANG_PROMOTION_GATE.md"
 MATRIX_FILE = REPO_ROOT / "docs/status/IMPLEMENTATION_MATRIX.md"
 AUDIT_FILE = REPO_ROOT / "docs/records/audits/2026-03-governance-review.md"
@@ -75,7 +75,7 @@ def main() -> int:
     fixtures_dir = REPO_ROOT / args.fixtures_dir
     output_path = REPO_ROOT / args.output
 
-    commands = [
+    commands: list[CommandResult] = [
         run_command(
             "Docs Governance Hygiene",
             [sys.executable, "scripts/governance/check_docs_governance_hygiene.py"],
@@ -151,7 +151,7 @@ def main() -> int:
     backlog_text = BACKLOG_FILE.read_text(encoding="utf-8")
     bg_statuses = parse_bg_statuses(backlog_text)
     bg_complete = all(
-        bg_statuses.get(item, "").startswith("Completed")
+        bg_statuses.get(item, "").startswith("2026-")
         for item in ("BG-01", "BG-02", "BG-03", "BG-04", "BG-05")
     )
 

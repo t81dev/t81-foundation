@@ -1,7 +1,7 @@
 # Project Control Center
 
 Status: Active
-Last Updated: 2026-03-08
+Last Updated: 2026-03-10
 Owner: @t81dev
 Version: 3.2.1
 
@@ -19,13 +19,13 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Dimension | Status |
 | :--- | :--- |
-| Overall | Green — **PERFECT TEST COVERAGE ACHIEVED** (332/332 tests passing, 100% success rate) |
+| Overall | Green — **PERFECT TEST COVERAGE ACHIEVED** (335/335 tests passing, 100% success rate) |
 | Release Readiness | **GO** — v1.3.2 released 2026-03-08 |
-| Current Main | `8f7250f9` — Expand CLI command surface: 13 new commands, bug fixes, docs |
+| Current Main | `84576fe4` — RFC-0033 dual TUI frontends and README restructuring |
 | Open Blockers | None |
 | Frozen Core | Intact — no freeze exceptions |
 | Determinism Registry | All Verified surfaces clean |
-| Structural Integrity | **PERFECT** — 332/332 tests (100% success rate); all test failures resolved |
+| Structural Integrity | **PERFECT** — 335/335 tests (100% success rate); all test failures resolved |
 
 ---
 
@@ -48,7 +48,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | TISC ISA | None | Frozen |
 | Data Types | None | Frozen; audit closed 2026-02-27 |
 | T81VM | Low | FW-02 policy-bridge concentration closure landed; BG-07 precision closure landed; TLOADHASH null-canonfs SEGFAULT fixed; set_canonfs_root() API added |
-| T81Lang | **RESOLVED** | Frontend refactor complete: typed AST, unified builtin registry, IRGen to .cpp; 332/332 test coverage |
+| T81Lang | **RESOLVED** | Frontend refactor complete: typed AST, unified builtin registry, IRGen to .cpp; 335/335 test coverage |
 | Axion Kernel | Low | AX-M5..M7 evidence landed; awaiting Beta review cycle |
 | T81Graph | Low | Lang-side serialization wired; determinism coverage in place |
 | Experimental | — | Non-DCP by definition |

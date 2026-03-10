@@ -59,3 +59,4 @@ Authority remains: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 ## Versioning Statement
 
 Descriptive control artifact; does not override `/spec` or freeze policy.
+Experimental, non-DCP, non-verified unless promoted through governance

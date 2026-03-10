@@ -54,11 +54,11 @@ def _parse_markdown_table(path: Path) -> list[list[str]]:
 def _component_labels_from_readme(path: Path) -> dict[str, str]:
     labels: dict[str, str] = {}
     for row in _parse_markdown_table(path):
-        if len(row) < 2:
+        if len(row) < 3:
             continue
         comp = re.sub(r"[*`]", "", row[0]).strip().lower()
         if comp in {"t81vm", "axion", "t81lang"}:
-            labels[comp] = _normalize(row[1])
+            labels[comp] = _normalize(row[2])
     return labels
 
 
