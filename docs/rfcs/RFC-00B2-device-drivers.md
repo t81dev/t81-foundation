@@ -70,25 +70,39 @@ rebuild()   → scan all allocated LBAs, re-hash, repopulate index
 ### 3.1  Index
 
 In-memory `std::map<CanonHash, uint64_t>` (hash → LBA).
-LBA 0 is reserved for the index header (see §3.2).
-Data blocks start at LBA 1.
+LBA 0 is reserved for the root index header (see §3.2).
+Data blocks start at LBA 1. If the root header overflows, additional index
+blocks are reserved contiguously from the tail of the device downward.
 
 ### 3.2  Index persistence (LBA 0 header block)
 
 ```
 Bytes  0–3   : magic  "CST1"  (4 bytes)
 Bytes  4–7   : entry_count  (uint32_t LE)
-Bytes  8–727 : entries; each entry = 32-byte hash + 8-byte LBA (40 bytes)
-               → max 17 entries per single-block index (Phase 4 cap)
-Byte   728   : 0x00 padding
+Bytes  8–687 : entries; each entry = 32-byte hash + 8-byte LBA (40 bytes)
+               → 17 entries in the root block
+Bytes 688–695: overflow_block_count (uint64_t LE)
+Bytes 696–728: reserved / zero
 ```
 
-If `entry_count > 17`, additional index blocks are chained (Phase 5; not implemented here).
+Each overflow block stored at the device tail uses:
+
+```
+Bytes  0–3   : magic  "CSI1"  (4 bytes)
+Bytes  4–7   : block_entry_count (uint32_t LE, <= 17)
+Bytes  8–687 : entries; each entry = 32-byte hash + 8-byte LBA (40 bytes)
+Bytes 688–728: reserved / zero
+```
+
+Overflow blocks are read in ascending tail order:
+`block_count - overflow_block_count` through `block_count - 1`.
 
 ### 3.3  Durability contract
 
 `CanonStore::flush()` writes the in-memory index to LBA 0, then calls `IBlockDevice::flush()`.
 After flush, a new `CanonStore` opened on the same device can `rebuild_index()` and recover all blocks.
+If the header is missing, torn, or advertises an impossible entry count,
+`rebuild_index()` falls back to scanning the data region and recomputing hashes.
 
 ---
 
@@ -160,7 +174,7 @@ Each payload byte stores one ternary digit encoded as `{0,1,2}` for
 
 | ID | Criterion |
 | :-- | :--- |
-| AC-D1 | `HostedBlockDev` write/read round-trip for all 17 index-cap blocks is bit-exact |
+| AC-D1 | `HostedBlockDev` write/read round-trip is bit-exact across the supported CanonStore metadata threshold and beyond |
 | AC-D2 | `CanonStore::put` assigns distinct LBAs to distinct content; identical content deduplicates |
 | AC-D3 | `CanonStore::flush` + reopen + `rebuild_index` recovers all stored blocks by hash |
 | AC-D4 | `CanonStore::get` returns `nullopt` for an unknown `CanonRef` |

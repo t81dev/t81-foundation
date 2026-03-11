@@ -22,13 +22,15 @@ namespace t81::ternaryos::dev {
 /**
  * @brief Content-addressed CanonBlock store layered on an IBlockDevice.
  *
- * LBA 0 is reserved for the index header (RFC-00B2 §3.2).
- * Data blocks start at LBA 1.  Maximum index entries per single header
- * block: 17 (Phase 4 cap; chained index pages planned for Phase 5).
+ * LBA 0 is reserved for the root index header (RFC-00B2 §3.2).
+ * Data blocks start at LBA 1. Additional index blocks, when needed, are
+ * reserved from the tail of the device downward so the data region can keep
+ * growing contiguously from the low end.
  */
 class CanonStore {
 public:
-  inline static constexpr std::size_t kMaxIndexEntries = 17;
+  inline static constexpr std::size_t kIndexEntriesPerBlock = 17;
+  inline static constexpr std::size_t kMaxIndexEntries = kIndexEntriesPerBlock;
 
   explicit CanonStore(IBlockDevice& dev);
 
@@ -64,6 +66,10 @@ public:
   uint64_t next_lba() const noexcept { return next_lba_; }
 
 private:
+  static std::size_t overflow_index_blocks_for(std::size_t entry_count) noexcept;
+  static uint64_t metadata_tail_start(uint64_t block_count,
+                                      std::size_t entry_count) noexcept;
+
   IBlockDevice& dev_;
   std::map<t81::canonfs::CanonHash, uint64_t> index_;  ///< hash → LBA
   uint64_t next_lba_{1};  ///< next free data LBA (LBA 0 = index header)

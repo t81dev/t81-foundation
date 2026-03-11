@@ -124,12 +124,12 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `dev/ttf.hpp/.cpp` | Minimal Ternary Text Format codec + framebuffer text renderer for ASCII terminal output | 12 |
 | `dev/net_packet.hpp` | Ternary Ethernet packet wrapper with payload validation, canonical content hash, and binary frame encode/decode | 18 |
 | `demo.cpp` | Presentation demo: VirtualBox guest bootstrap over hosted storage binding, reboot-persistent CanonStore, TTF framebuffer output, and Ethernet frame round-trip | — |
-| `tests/device_driver_test.cpp` | Phase 4 acceptance tests AC-D1 through AC-D8 plus VirtualBox AHCI/E1000/VMSVGA adapter scaffolds, hosted TTF rendering, Ethernet frame translation checks, repeated guest-bootstrap reboot persistence, recovery after index-header and payload corruption, full-cap persistence at the current 17-entry Phase 4 metadata limit, and torn-header fallback recovery | 259 |
+| `tests/device_driver_test.cpp` | Phase 4 acceptance tests AC-D1 through AC-D8 plus VirtualBox AHCI/E1000/VMSVGA adapter scaffolds, hosted TTF rendering, Ethernet frame translation checks, repeated guest-bootstrap reboot persistence, recovery after index-header and payload corruption, multi-block CanonStore persistence beyond the 17-entry root-header threshold, and torn-header fallback recovery | 322 |
 
 #### Design notes
 
 - Logical block size is fixed at 729 bytes (one CanonBlock / 3^6 trytes), keeping device I/O aligned with CanonFS primitives.
-- `CanonStore` reserves LBA 0 for a single-block index header (`CST1`), leaving data blocks at LBA 1+; the current Phase 4 cap is 17 unique entries.
+- `CanonStore` still roots its metadata at LBA 0 (`CST1`), but overflow index blocks now spill into the tail of the device so the data region can continue growing contiguously from LBA 1 upward.
 - `HostedBlockDev::save()` / `load()` provides the current reboot-cycle simulation path for the v2.0 gate.
 - `ttf_encode_ascii()` / `ttf_render_text()` now provide a minimal hosted TTF terminal path over the ternary framebuffer.
 - The network layer now translates between ternary packet structs and a binary Ethernet-like frame format, and the first hosted RX/TX path is modeled through the VirtualBox E1000 scaffold.
@@ -139,11 +139,12 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 - The demo path now boots through the VirtualBox guest bootstrap for storage, display, and network, showing the same hosted story through the VM-targeted HAL/device seam rather than through manually assembled hosted device objects.
 - The Phase 4 persistence proof is now stronger than a raw `CanonStore` reboot cycle alone: the device-driver suite also verifies that the same CanonRef survives across two hosted reboot cycles when storage is reached through the VirtualBox guest bootstrap and AHCI-shaped binding.
 - The hosted recovery story is stronger too: when the persisted CanonStore header is damaged and one payload block is corrupted, the guest-bootstrap path now proves `rebuild_index()` falls back to scanning AHCI-backed payload blocks, preserves the intact CanonRef, and rejects the stale pre-corruption CanonRef for the damaged payload.
-- The current Phase 4 cap is now exercised end to end through the guest path as well: the hosted suite fills all 17 CanonStore index entries behind the VirtualBox bootstrap, flushes, reboots, rebuilds, and verifies every capped CanonRef survives intact.
+- The old 17-entry single-block threshold is no longer the effective store limit: the hosted suite now pushes CanonStore through multiple metadata blocks behind the VirtualBox bootstrap, flushes, reboots, rebuilds, and verifies every stored CanonRef survives intact.
 - Interrupted persistence is covered more directly now: when the header keeps its magic but advertises an impossible entry count, the guest-bootstrap path rejects the torn index and still recovers every intact payload block by rescanning the AHCI-backed data region.
+- Threshold crossing is covered directly too: the suite now proves CanonStore can persist and rebuild entries that spill past the root header into tail-resident overflow metadata blocks without changing the guest-bootstrap seam.
 - Real NVMe/ethernet hardware adapters remain open.
 
-**Phase 4 test total: 259 / 259**
+**Phase 4 test total: 322 / 322**
 
 ---
 
@@ -164,8 +165,8 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_mmu_test` | 47 | 2 |
 | `t81_ternaryos_scheduler_test` | 120 | 3 |
 | `t81_ternaryos_ipc_test` | 73 | 3 |
-| `t81_ternaryos_device_driver_test` | 259 | 4 |
-| **Total** | **654** | |
+| `t81_ternaryos_device_driver_test` | 322 | 4 |
+| **Total** | **717** | |
 
 Run all TernOS tests:
 
@@ -188,7 +189,7 @@ ctest --test-dir build -R ternaryos -V
 | OQ-5 | Axion determinism under pre-emption — governance model must be extended for async context switches | Phase 3 |
 | OQ-6 | Phase 3 radix-trie page table (3-ary, 10-trit levels) — not yet designed | Phase 3 |
 | OQ-7 | Real AHCI / E1000 / VMSVGA-facing adapters are not implemented; Phase 4 currently satisfies the gate only in hosted simulation despite the new guest-artifact packaging target | Phase 4 promotion |
-| OQ-8 | CanonStore index is single-block and capped at 17 entries; chained index pages or a larger metadata format are deferred | Phase 4 scaling |
+| OQ-8 | CanonStore now scales past the root header via tail-resident overflow metadata blocks, but compaction/rewrite strategy for long-lived stores is still deferred | Phase 4 scaling |
 | OQ-9 | VirtualBox should remain a tactical promotion target, not a permanent HAL dependency; portability boundaries must stay explicit | Cross-phase portability |
 
 ---

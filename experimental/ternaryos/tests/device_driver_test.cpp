@@ -480,17 +480,19 @@ static void test_virtualbox_guest_rebuild_after_corruption() {
   std::filesystem::remove(path);
 }
 
-// ─── AC-D3d: Guest bootstrap persistence at Phase 4 index cap ──────────────
+// ─── AC-D3d: Guest bootstrap persistence across multiple index blocks ──────
 
 static void test_virtualbox_guest_capacity_reboot() {
-  std::printf("\n[D3d] VirtualBox guest persistence at Phase 4 index cap\n");
+  std::printf("\n[D3d] VirtualBox guest persistence across multiple index blocks\n");
 
   const std::string path = "/tmp/ternos_test_vbox_guest_capacity.blk";
   VBoxBootSpec spec;
   spec.ram_bytes = 128ULL * 1024 * 1024;
+  constexpr std::size_t kTargetEntries =
+      CanonStore::kIndexEntriesPerBlock * 2 + 3;
 
-  std::array<t81::canonfs::CanonBlock, CanonStore::kMaxIndexEntries> blocks{};
-  std::array<t81::canonfs::CanonRef, CanonStore::kMaxIndexEntries> refs{};
+  std::array<t81::canonfs::CanonBlock, kTargetEntries> blocks{};
+  std::array<t81::canonfs::CanonRef, kTargetEntries> refs{};
 
   {
     HostedBlockDev backing(48, "vbox-guest-capacity");
@@ -504,10 +506,10 @@ static void test_virtualbox_guest_capacity_reboot() {
     }
 
     CanonStore store(*guest->storage.device);
-    for (std::size_t i = 0; i < CanonStore::kMaxIndexEntries; ++i) {
+    for (std::size_t i = 0; i < kTargetEntries; ++i) {
       blocks[i] = make_block(static_cast<uint8_t>(i + 1));
       auto ref = store.put(blocks[i]);
-      check(ref.has_value(), "guest store accepts block within Phase 4 cap");
+      check(ref.has_value(), "guest store accepts block across multi-block index threshold");
       if (!ref) {
         std::filesystem::remove(path);
         return;
@@ -515,9 +517,9 @@ static void test_virtualbox_guest_capacity_reboot() {
       refs[i] = *ref;
     }
 
-    check(store.size() == CanonStore::kMaxIndexEntries,
-          "guest store reaches Phase 4 index cap");
-    check(store.flush(), "guest storage flush succeeds at capacity");
+    check(store.size() == kTargetEntries,
+          "guest store reaches the multi-block persistence target");
+    check(store.flush(), "guest storage flush succeeds with overflow index blocks");
   }
 
   auto loaded = HostedBlockDev::load(path);
@@ -535,15 +537,15 @@ static void test_virtualbox_guest_capacity_reboot() {
   }
 
   CanonStore rebuilt(*guest->storage.device);
-  check(rebuilt.rebuild_index() == CanonStore::kMaxIndexEntries,
-        "rebuild_index recovers every capped entry");
+  check(rebuilt.rebuild_index() == kTargetEntries,
+        "rebuild_index recovers every multi-block entry");
 
-  for (std::size_t i = 0; i < CanonStore::kMaxIndexEntries; ++i) {
+  for (std::size_t i = 0; i < kTargetEntries; ++i) {
     auto block = rebuilt.get(refs[i]);
-    check(block.has_value(), "recovered capped CanonRef remains readable");
+    check(block.has_value(), "recovered multi-block CanonRef remains readable");
     if (block) {
       check(block->trytes == blocks[i].trytes,
-            "recovered capped payload remains exact");
+            "recovered multi-block payload remains exact");
     }
   }
 
@@ -814,27 +816,34 @@ static void test_net_packet() {
   }
 }
 
-// ─── CanonStore capacity limit ───────────────────────────────────────────────
+// ─── CanonStore single-block threshold extension ────────────────────────────
 
 static void test_canon_store_capacity() {
-  std::printf("\n[D2b] CanonStore Phase 4 index cap (17 entries)\n");
+  std::printf("\n[D2b] CanonStore extends beyond the single-block threshold\n");
   HostedBlockDev dev(64);
   CanonStore store(dev);
 
-  for (std::size_t i = 0; i < CanonStore::kMaxIndexEntries; ++i) {
+  for (std::size_t i = 0; i < CanonStore::kIndexEntriesPerBlock; ++i) {
     t81::canonfs::CanonBlock b;
     b.trytes.fill(static_cast<uint8_t>(i + 1));
     auto ref = store.put(b);
-    check(ref.has_value(), "put within cap succeeds");
+    check(ref.has_value(), "put within first index block succeeds");
     if (!ref.has_value()) break;
   }
-  check(store.size() == CanonStore::kMaxIndexEntries, "store at Phase 4 cap");
+  check(store.size() == CanonStore::kIndexEntriesPerBlock,
+        "store fills the first index block");
 
-  // One more should fail
   t81::canonfs::CanonBlock overflow;
   overflow.trytes.fill(0xFF);
   auto ov = store.put(overflow);
-  check(!ov.has_value(), "put beyond Phase 4 cap returns nullopt");
+  check(ov.has_value(), "put beyond the first index block succeeds");
+  check(store.size() == CanonStore::kIndexEntriesPerBlock + 1,
+        "store grows past 17 entries");
+  check(store.flush(), "flush succeeds after crossing the single-block threshold");
+
+  CanonStore rebuilt(dev);
+  check(rebuilt.rebuild_index() == CanonStore::kIndexEntriesPerBlock + 1,
+        "rebuild_index recovers entries that spill into overflow metadata blocks");
 }
 
 // ─── main ────────────────────────────────────────────────────────────────────
