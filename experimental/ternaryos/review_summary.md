@@ -67,6 +67,8 @@ ARM diagnostic result:
 - local QEMU guest probes now also recover `startup-ref.txt`, exposing a
   backend-generated `show ref <canonref>` object retrieval snapshot from the
   same shell backend
+- local QEMU guest probes now also recover `startup-report.txt`, exposing a
+  consolidated backend-generated shell/session/history/store/ref proof surface
 - local VirtualBox ARM remains non-observable for EFI execution and is now only
   a secondary diagnostic lane
 - conclusion: the remaining blind spot is the local VirtualBox ARM path, not

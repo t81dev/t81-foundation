@@ -114,6 +114,27 @@ std::optional<std::string> make_startup_ref_text() {
   return stream.str();
 }
 
+std::optional<std::string> make_startup_report_text() {
+  const auto shell_state = t81::ternaryos::build_scripted_shell_session(true);
+  if (!shell_state.has_value()) return std::nullopt;
+
+  const auto history_text = make_startup_history_text();
+  const auto store_text = make_startup_store_text();
+  const auto ref_text = make_startup_ref_text();
+  if (!history_text.has_value() || !store_text.has_value() || !ref_text.has_value()) {
+    return std::nullopt;
+  }
+
+  std::ostringstream stream;
+  stream << "AXION_STARTUP_REPORT\n";
+  stream << "[session]\n" << make_startup_session_text(*shell_state);
+  stream << "[shell]\n" << make_startup_shell_text(*shell_state);
+  stream << "[history]\n" << *history_text;
+  stream << "[store]\n" << *store_text;
+  stream << "[ref]\n" << *ref_text;
+  return stream.str();
+}
+
 std::string c_string_literal(std::string_view text) {
   std::ostringstream stream;
   stream << "\"";
@@ -153,8 +174,8 @@ bool write_file(const std::string& path, const std::string& contents) {
 }  // namespace
 
 int main(int argc, char** argv) {
-  if (argc != 11) {
-    std::fputs("usage: shell_startup_snapshot <shell-text> <shell-header> <session-text> <session-header> <history-text> <history-header> <store-text> <store-header> <ref-text> <ref-header>\n", stderr);
+  if (argc != 13) {
+    std::fputs("usage: shell_startup_snapshot <shell-text> <shell-header> <session-text> <session-header> <history-text> <history-header> <store-text> <store-header> <ref-text> <ref-header> <report-text> <report-header>\n", stderr);
     return 2;
   }
 
@@ -201,6 +222,15 @@ int main(int argc, char** argv) {
       "#pragma once\n"
       "static const char kGeneratedStartupRef[] = " +
       c_string_literal(*ref_text) + ";\n";
+  const auto report_text = make_startup_report_text();
+  if (!report_text.has_value()) {
+    std::fputs("failed to build startup report text\n", stderr);
+    return 1;
+  }
+  const std::string report_header =
+      "#pragma once\n"
+      "static const char kGeneratedStartupReport[] = " +
+      c_string_literal(*report_text) + ";\n";
 
   if (!write_file(argv[1], shell_text)) {
     std::fputs("failed to write startup shell text\n", stderr);
@@ -240,6 +270,14 @@ int main(int argc, char** argv) {
   }
   if (!write_file(argv[10], ref_header)) {
     std::fputs("failed to write startup ref header\n", stderr);
+    return 1;
+  }
+  if (!write_file(argv[11], *report_text)) {
+    std::fputs("failed to write startup report text\n", stderr);
+    return 1;
+  }
+  if (!write_file(argv[12], report_header)) {
+    std::fputs("failed to write startup report header\n", stderr);
     return 1;
   }
   return 0;
