@@ -582,6 +582,10 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/demo.cpp)
   target_link_libraries(t81_ternaryos_demo PRIVATE t81_ternaryos_hal)
 
+  add_executable(t81_ternaryos_shell_demo
+    experimental/ternaryos/shell_demo.cpp)
+  target_link_libraries(t81_ternaryos_shell_demo PRIVATE t81_ternaryos_hal)
+
   set(T81_TERNARYOS_GUEST_ARTIFACT_DEPS t81_ternaryos_demo)
   set(T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_demo)
   find_program(T81_LLVM_CLANG NAMES clang PATHS /opt/homebrew/opt/llvm/bin NO_DEFAULT_PATH)

@@ -1,7 +1,7 @@
 # TernOS Implementation Progress
 
 **Last updated:** 2026-03-10
-**Commit:** `40968ac2`
+**Commit:** `62cd149a`
 **Branch:** `main`
 
 Reference docs:
@@ -149,10 +149,18 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 ---
 
-### Phase 5 — Userland Ecosystem 🔲 NOT STARTED (deferred v2.x)
+### Phase 5 — Userland Ecosystem 🟡 STARTED (early v2.x scaffold)
 
-1. Ternary Shell (TUI) — pure TISC CLI
-2. Canonical TCP/IP translation stack
+| File | Purpose | Tests |
+| :--- | :--- | :---: |
+| `shell_demo.cpp` | First scripted shell/TUI scaffold: boots through the VirtualBox guest-bootstrap path, persists one shell transcript through CanonStore, reboots, recovers it, and renders the resulting screen through the VMSVGA-backed ternary framebuffer | — |
+
+#### Design notes
+
+- Phase 5 is now started, but only as a deterministic hosted scaffold.
+- The current shell path is intentionally narrow: it is not interactive, does not execute TISC userland yet, and does not introduce a syscall surface.
+- Its value is architectural: user-facing output now rides the same guest-bootstrap storage and display seams already proven in Phase 4.
+- The next real Phase 5 milestone should be replacing the scripted transcript with a minimal command model rather than adding more presentation-only screens.
 
 ---
 

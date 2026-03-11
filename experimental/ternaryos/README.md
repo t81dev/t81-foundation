@@ -10,8 +10,9 @@
 **RFC-00B2 (Drivers):** [docs/rfcs/RFC-00B2-device-drivers.md](../../docs/rfcs/RFC-00B2-device-drivers.md)
 
 Prototype implementation of TernOS — a ternary-native OS kernel for the T81VM
-runtime. Phases 1 through 3 are complete, and Phase 4 device-driver work is in
-progress.
+runtime. Phases 1 through 3 are complete, Phase 4 device-driver work is in
+progress, and Phase 5 now has a first scripted shell/TUI demo on top of the
+hosted guest-bootstrap path.
 
 ## Structure
 
@@ -56,6 +57,9 @@ dev/
   ttf.hpp/.cpp         Minimal ASCII ↔ balanced-ternary text codec + renderer
   net_packet.hpp       Ternary Ethernet packet wrapper + binary frame codec
 
+demo.cpp               Phase 4 hosted presentation demo
+shell_demo.cpp         Phase 5 scripted shell/TUI demo over guest bootstrap
+
 tests/
   hal_boot_test.cpp          Phase 1 — 84 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
@@ -94,6 +98,30 @@ The demo shows a VirtualBox-first hosted simulation path:
 - interrupted flushes preserve only the last durable state until a retry succeeds
 - TTF renders ASCII text into the VirtualBox VMSVGA-backed ternary framebuffer.
 - TernaryEthernetPacket round-trips through the VirtualBox E1000 scaffold.
+
+## Shell Demo
+
+To run the first minimal Phase 5 shell/TUI scaffold:
+
+```sh
+cmake --build build --target t81_ternaryos_shell_demo
+./build/t81_ternaryos_shell_demo
+```
+
+What it proves today:
+
+- the shell path boots through the same VirtualBox guest bootstrap seam as the
+  Phase 4 demo
+- one scripted shell transcript is persisted through CanonStore over the
+  AHCI-shaped storage binding
+- that transcript survives reboot and is recovered before rendering
+- the shell page is rendered through the VMSVGA-backed ternary framebuffer
+
+What it is not yet:
+
+- interactive
+- TISC userland code
+- a real command parser or process manager
 
 Local hosted proof as of the current branch:
 

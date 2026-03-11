@@ -169,12 +169,18 @@ VirtualBox-specific promotion scope:
 - Network promotion should first target the VirtualBox E1000 device with deterministic frame translation at the guest boundary.
 - Timer and interrupt wiring should first target the HPET + IOAPIC path the guest can observe consistently.
 
-### Phase 5 — Userland Ecosystem (deferred to v2.x)
+### Phase 5 — Userland Ecosystem (early v2.x)
 
-**Status:** Deferred until the driver layer is stable.
+**Status:** Started as a minimal hosted scaffold; still deferred for real interactive userland until the driver layer is stable.
 
 - **Ternary Shell (TUI):** Deterministic CLI running pure TISC code for process, volume, and policy management.
 - **Network Stack:** Canonical TCP/IP translation layer for deterministic network routing over binary hardware.
+
+Current starting point:
+
+- A first scripted shell/TUI demo now exists over the hosted VirtualBox guest-bootstrap path.
+- It persists one shell transcript through CanonStore, reboots, recovers that transcript, and renders a shell page through the VMSVGA-backed ternary framebuffer.
+- It is intentionally not yet interactive and does not claim TISC userland execution; it only establishes the first user-facing seam on top of the Phase 4 storage/display path.
 
 ---
 
@@ -197,7 +203,7 @@ Current completion snapshot:
 
 - **Phases 1-3:** Implemented and passing in hosted tests
 - **Phase 4:** In progress / next major milestone
-- **Phase 5:** Deferred
+- **Phase 5:** Started as a scripted shell/TUI scaffold
 
 ---
 
