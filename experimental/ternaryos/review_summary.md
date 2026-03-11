@@ -51,6 +51,9 @@ ARM diagnostic result:
   `hal_main_result=0`
 - local QEMU serial output now also includes `Axion ARMv8 EFI stub`, giving the
   staged ARM guest a direct live boot signal
+- local QEMU guest probes now also recover `startup-status.txt`, exposing
+  guest-visible Axion state and confirming the current staged bindings for
+  shell, storage, display, and network
 - local VirtualBox ARM remains non-observable for EFI execution and is now only
   a secondary diagnostic lane
 - conclusion: the remaining blind spot is the local VirtualBox ARM path, not

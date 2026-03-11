@@ -293,6 +293,7 @@ Outputs:
 - `build/ternaryos/qemu_armv8_guest/qemu-armv8-guest-serial.log`
 - `build/ternaryos/qemu_armv8_guest/qemu-armv8-guest-probe.img`
 - `build/ternaryos/qemu_armv8_guest/boot-report.txt`
+- `build/ternaryos/qemu_armv8_guest/startup-status.txt`
 
 Current status:
 
@@ -307,6 +308,13 @@ Current status:
 - the QEMU lane is now usable for actual staged guest bring-up too: it can boot the staged ARM guest image, capture serial output, and inspect the mutated probe image; current local probes show `efi-ran.txt`, `boot-report.txt`, and `boot_path_inference=default-bootaa64-efi`, so QEMU is reaching the staged `BOOTAA64.EFI` directly rather than via shell fallback
 - the current `boot-report.txt` confirms the staged ARM guest reaches the Axion handoff stub with `platform_id=virtualbox-armv8:ARMv8Virtual/developer-lane` and `hal_main_result=0`
 - the QEMU serial log now also includes a visible boot banner, `Axion ARMv8 EFI stub`, so the developer lane has a direct live boot signal as well as file-based proof
+- the current `startup-status.txt` exposes guest-visible Axion state from the staged ARM guest:
+  - `os_name=Axion`
+  - `phase=5`
+  - `shell_mode=typed-builtins`
+  - `storage_binding=virtualbox-ahci`
+  - `display_binding=virtualbox-vmsvga`
+  - `network_binding=virtualbox-e1000`
 
 For an external reviewer, the current evidence split is:
 

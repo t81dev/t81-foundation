@@ -178,6 +178,7 @@ static const EFI_GUID kEfiSimpleFileSystemProtocolGuid = {
     0x964E5B22, 0x6459, 0x11D2, {0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B}};
 static const CHAR16 kMarkerPath[] = L"\\TERNOS\\efi-ran.txt";
 static const CHAR16 kReportPath[] = L"\\TERNOS\\boot-report.txt";
+static const CHAR16 kStartupStatusPath[] = L"\\TERNOS\\startup-status.txt";
 static const char kMarkerText[] = "TERNOS_ARMV8_EFI_EXECUTED\n";
 static const char kBootBanner[] = "Axion ARMv8 EFI stub\r\n";
 
@@ -398,6 +399,36 @@ static EFI_STATUS write_boot_report(EFI_HANDLE image_handle,
   return status;
 }
 
+static EFI_STATUS write_startup_status(EFI_HANDLE image_handle,
+                                       EFI_SYSTEM_TABLE* system_table,
+                                       const TernaryOsBootContext* ctx) {
+  char status_report[768];
+  unsigned long cursor = 0;
+  EFI_FILE_PROTOCOL* root = 0;
+  EFI_STATUS status = open_root_volume(image_handle, system_table, &root);
+  if (status != EFI_SUCCESS) {
+    return status;
+  }
+
+  status_report[0] = 0;
+  append_cstr(status_report, sizeof(status_report), &cursor, "AXION_STARTUP_STATUS\n");
+  append_cstr(status_report, sizeof(status_report), &cursor, "os_name=Axion\n");
+  append_cstr(status_report, sizeof(status_report), &cursor, "platform_id=");
+  append_cstr(status_report, sizeof(status_report), &cursor, ctx->platform_id);
+  append_cstr(status_report, sizeof(status_report), &cursor, "\nphase=5\n");
+  append_cstr(status_report, sizeof(status_report), &cursor, "shell_mode=typed-builtins\n");
+  append_cstr(status_report, sizeof(status_report), &cursor, "storage_binding=virtualbox-ahci\n");
+  append_cstr(status_report, sizeof(status_report), &cursor, "display_binding=virtualbox-vmsvga\n");
+  append_cstr(status_report, sizeof(status_report), &cursor, "network_binding=virtualbox-e1000\n");
+  append_cstr(status_report, sizeof(status_report), &cursor, "memory_map_len=");
+  append_u64_dec(status_report, sizeof(status_report), &cursor, ctx->memory_map_len);
+  append_cstr(status_report, sizeof(status_report), &cursor, "\n");
+
+  status = write_root_file(root, kStartupStatusPath, status_report, ascii_length(status_report));
+  root->Close(root);
+  return status;
+}
+
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
   TernaryOsBootContext ctx;
   ctx.memory_map = kArmv8VirtualBoxMemoryMap;
@@ -415,6 +446,10 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_tab
   }
 
   const int hal_result = ternaryos_hal_main_c(&ctx);
+  const EFI_STATUS startup_status = write_startup_status(image_handle, system_table, &ctx);
+  if (startup_status != EFI_SUCCESS) {
+    return startup_status;
+  }
   const EFI_STATUS report_status = write_boot_report(image_handle, system_table, &ctx, hal_result);
   if (report_status != EFI_SUCCESS) {
     return report_status;

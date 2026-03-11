@@ -28,11 +28,12 @@ serial_log="$output_dir/qemu-armv8-guest-serial.log"
 pid_file="$output_dir/qemu-armv8-guest.pid"
 summary_file="$output_dir/qemu-armv8-guest-summary.txt"
 boot_report_copy="$output_dir/boot-report.txt"
+startup_status_copy="$output_dir/startup-status.txt"
 boot_banner_seen=0
 
 /bin/cp "$arm_image" "$probe_image"
 /bin/cp "$edk2_vars_template" "$vars_copy"
-/bin/rm -f "$serial_log" "$pid_file" "$summary_file" "$boot_report_copy"
+/bin/rm -f "$serial_log" "$pid_file" "$summary_file" "$boot_report_copy" "$startup_status_copy"
 
 qemu_pid=""
 disk_dev=""
@@ -85,11 +86,13 @@ startup_marker_path="$mount_point/TERNOS/startup-ran.txt"
 ctrl_marker_path="$mount_point/TERNOS/efi-ctrl-ran.txt"
 efi_marker_path="$mount_point/TERNOS/efi-ran.txt"
 boot_report_path="$mount_point/TERNOS/boot-report.txt"
+startup_status_path="$mount_point/TERNOS/startup-status.txt"
 
 startup_seen=0
 ctrl_seen=0
 efi_seen=0
 boot_report_seen=0
+startup_status_seen=0
 
 [[ -f "$startup_marker_path" ]] && startup_seen=1
 [[ -f "$ctrl_marker_path" ]] && ctrl_seen=1
@@ -97,6 +100,10 @@ boot_report_seen=0
 if [[ -f "$boot_report_path" ]]; then
   /bin/cp "$boot_report_path" "$boot_report_copy"
   boot_report_seen=1
+fi
+if [[ -f "$startup_status_path" ]]; then
+  /bin/cp "$startup_status_path" "$startup_status_copy"
+  startup_status_seen=1
 fi
 
 boot_path_inference="unknown"
@@ -127,6 +134,8 @@ efi_marker_seen=$efi_seen
 efi_marker_path=$efi_marker_path
 boot_report_seen=$boot_report_seen
 boot_report_copy=$boot_report_copy
+startup_status_seen=$startup_status_seen
+startup_status_copy=$startup_status_copy
 boot_banner_seen=$boot_banner_seen
 boot_path_inference=$boot_path_inference
 EOF
@@ -134,8 +143,8 @@ EOF
 /usr/bin/hdiutil detach "$disk_dev" >/dev/null 2>&1 || true
 disk_dev=""
 
-if [[ "$efi_seen" -ne 1 || "$boot_report_seen" -ne 1 || "$boot_banner_seen" -ne 1 ]]; then
-  echo "QEMU ARMv8 guest probe did not observe the staged BOOTAA64.EFI marker, boot report, and serial banner" >&2
+if [[ "$efi_seen" -ne 1 || "$boot_report_seen" -ne 1 || "$startup_status_seen" -ne 1 || "$boot_banner_seen" -ne 1 ]]; then
+  echo "QEMU ARMv8 guest probe did not observe the staged BOOTAA64.EFI marker, startup status, boot report, and serial banner" >&2
   /bin/cat "$summary_file" >&2
   exit 1
 fi
@@ -153,6 +162,22 @@ if ! /usr/bin/grep -q '^hal_main_result=0$' "$boot_report_copy"; then
   /bin/cat "$boot_report_copy" >&2
   exit 1
 fi
+
+for expected in \
+  '^os_name=Axion$' \
+  '^phase=5$' \
+  '^shell_mode=typed-builtins$' \
+  '^storage_binding=virtualbox-ahci$' \
+  '^display_binding=virtualbox-vmsvga$' \
+  '^network_binding=virtualbox-e1000$'
+do
+  if ! /usr/bin/grep -q "$expected" "$startup_status_copy"; then
+    echo "QEMU ARMv8 guest probe found startup status, but expected field was missing: $expected" >&2
+    /bin/cat "$summary_file" >&2
+    /bin/cat "$startup_status_copy" >&2
+    exit 1
+  fi
+done
 
 echo "QEMU ARMv8 guest probe succeeded."
 echo "summary: $summary_file"
