@@ -1329,6 +1329,8 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status tracks the ready queued address space blocked behind the active item");
     check(runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_cycle == 1,
           "runtime status tracks the stall ordinal that exposed the ready queued address space");
+    check(runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_count == 1,
+          "runtime status tracks the ready-backlog depth observed at that stall");
     check(runtime_after_first_activation.runtime->pager_resolutions == 0,
           "runtime status does not resolve the second address space out of order");
   }
@@ -1409,6 +1411,8 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status retains the last ready queued address space after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_cycle == 1,
           "runtime status retains the stall ordinal for the last ready queued address space");
+    check(runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_count == 1,
+          "runtime status retains the ready-backlog depth for the last ready queued address");
     check(runtime_after_second_resolution.runtime->pager_worker_resolutions_completed == 2,
           "runtime status counts two completed worker resolutions after backlog drain");
   }
@@ -1451,6 +1455,8 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary tracks the last ready queued address space after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_last_ready_backlog_cycle == 1,
           "fault summary retains the stall ordinal for the last ready queued address space");
+    check(fault_after_second_resolution.fault_summary->pager_worker_last_ready_backlog_count == 1,
+          "fault summary retains the ready-backlog depth for the last ready queued address");
   }
 }
 

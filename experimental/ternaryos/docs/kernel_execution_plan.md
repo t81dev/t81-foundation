@@ -174,6 +174,15 @@ The twelfth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves that retained blocked-address stall ordinal
   stays stable after backlog drain
 
+The thirteenth pager-groundwork slice is now also complete:
+
+- runtime and fault diagnostics now retain the ready-backlog depth observed at
+  the same deterministic stall event as the retained blocked queued address
+- postmortem pager-worker summaries can now explain not only which queued
+  address was blocked, but how much ready backlog existed with it
+- HAL/kernel coverage now proves that retained blocked-side backlog depth stays
+  stable after backlog drain
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable

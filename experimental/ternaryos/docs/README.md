@@ -355,6 +355,8 @@ Local hosted proof as of the current branch:
   event that produced that blocker/blocked relationship
 - runtime and fault diagnostics now also retain the exact stall ordinal that
   exposed the retained ready queued address space
+- runtime and fault diagnostics now also retain the ready-backlog depth
+  observed at that same stall event
 - the first narrow service-facing action now exists through that same boundary:
   supervisor fault-group acknowledgement
 - supervisor-facing recovery/report flows are now exposed through that same boundary:
