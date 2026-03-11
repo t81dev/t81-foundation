@@ -41,9 +41,9 @@ including deterministic pending-group, acknowledgement, and recovered-group
 views. Deterministic device claim/release requests now exist through that same
 boundary as the second narrow action. Request-side and action-side rejection
 semantics are now explicit across that contract, and stable audit/device detail
-views are exposed through it. The next steps are to keep that service-facing
-contract stable while continuing to converge the runtime toward fuller kernel
-behavior.
+views are exposed through it. The next steps are to converge that stable
+boundary into a small service-runtime layer while continuing to move the
+runtime toward fuller kernel behavior.
 
 That near-term kernel slice is now tracked explicitly in:
 

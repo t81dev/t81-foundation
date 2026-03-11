@@ -60,6 +60,7 @@ Kernel integration proof now also includes:
 - deterministic device claim/release requests now exist through that same service boundary, with healthy groups allowed to arbitrate devices and faulted groups rejected consistently
 - request-side and action-side rejection semantics are now explicit across the stable kernel service boundary
 - stable audit summaries and per-device ownership details are now exposed through that same service boundary for healthy callers
+- the next kernel slice is a small service-runtime layer above the current supervisor/process-group contract, not a wider action surface
 
 Phase 4 storage proof now covers:
 

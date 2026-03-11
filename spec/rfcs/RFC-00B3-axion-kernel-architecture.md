@@ -257,20 +257,25 @@ also now implemented:
 
 The next implementation slice after it is:
 
-1. keep the contract stable before widening it further
-2. preserve recovery/report, audit, and device-action semantics as the service surface grows
-3. add another narrow action only if the stabilized contract still needs it
+1. define a small kernel-owned service runtime model above the current
+   supervisor/process-group boundary
+2. route service-facing requests through that model with deterministic blocked
+   vs healthy behavior
+3. expose stable service diagnostics before widening the action surface again
 
-That hardening step specifically means:
+That convergence step specifically means:
 
-- make rejection causes more explicit where `InvalidRequest` is still too coarse
-- keep action/result payload shapes stable while clarifying semantics
-- avoid widening the contract with unrelated runtime verbs before the current
-  request/action model is settled
+- keep the existing request/result shapes stable where possible
+- preserve deterministic request outcomes for healthy vs blocked services
+- preserve stable diagnostics for runtime, process-group, supervisor, fault,
+  audit, device ownership, and service state
+- avoid widening the contract with unrelated runtime verbs before the service
+  model is settled
 
 That request/action rejection hardening is now implemented for the current
-contract surface. The next step is to keep the diagnostic views stable and only
-then consider any further action or boundary growth.
+contract surface. The next step is to turn that stable boundary into a small
+service-runtime layer and only then consider any further action or boundary
+growth.
 
 The working execution note for this slice is:
 

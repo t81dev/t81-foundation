@@ -297,11 +297,11 @@ Local hosted proof as of the current branch:
 - a second narrow service-facing action now exists through that same boundary:
   deterministic device claim/release requests with healthy-vs-faulted group
   enforcement
-- the current kernel slice is now contract stabilization for the stable service
-  boundary: request/action rejection semantics, audit summaries, and device
-  ownership detail views are now explicit across that contract. The next step
-  is to converge on a stable service-facing runtime contract before widening
-  the boundary again, tracked explicitly in:
+- the current kernel slice is now a stable service boundary foundation:
+  request/action rejection semantics, audit summaries, and device ownership
+  detail views are now explicit across that contract. The next step is to
+  converge on a small kernel-owned service runtime model before widening the
+  boundary again, tracked explicitly in:
   - `docs/kernel_execution_plan.md`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence

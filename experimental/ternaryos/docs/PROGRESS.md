@@ -136,7 +136,7 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - The first narrow service-facing runtime action is now implemented too: supervisor fault-group acknowledgement through the same contract.
 - Supervisor-facing recovery/report flows are now implemented on top of that action: the service boundary exposes deterministic pending-group, acknowledgement, and recovered-group state for each supervisor.
 - A second narrow service-facing action is now implemented too: deterministic device claim/release requests through the same contract, with healthy-vs-faulted group enforcement.
-- The next kernel slice is now contract stabilization above the current stable request/action/result surface, as tracked in `kernel_execution_plan.md`.
+- The next kernel slice is now service-runtime convergence above the current stable request/action/result surface, as tracked in `kernel_execution_plan.md`.
 
 **Phase 3 test total: 193 / 193**
 
