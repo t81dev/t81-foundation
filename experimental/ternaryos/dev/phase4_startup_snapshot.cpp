@@ -13,6 +13,7 @@
 #include <optional>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -38,16 +39,18 @@ std::optional<std::string> build_phase4_report() {
 
   VBoxBootSpec spec;
   spec.ram_bytes = 128ULL * 1024ULL * 1024ULL;
+  constexpr std::size_t kTargetEntries = CanonStore::kIndexEntriesPerBlock + 3;
 
-  const auto first_block = make_block(0x51);
-  const auto second_block = make_block(0x52);
-  const auto third_block = make_block(0x53);
-  std::optional<t81::canonfs::CanonRef> first_ref;
-  std::optional<t81::canonfs::CanonRef> second_ref;
-  std::optional<t81::canonfs::CanonRef> third_ref;
+  std::vector<t81::canonfs::CanonBlock> blocks;
+  blocks.reserve(kTargetEntries);
+  std::vector<t81::canonfs::CanonRef> refs;
+  refs.reserve(kTargetEntries);
+  for (std::size_t i = 0; i < kTargetEntries; ++i) {
+    blocks.push_back(make_block(static_cast<uint8_t>(0x51 + i)));
+  }
 
   {
-    HostedBlockDev backing(32, "phase4-startup-ahci");
+    HostedBlockDev backing(48, "phase4-startup-ahci");
     backing.set_backing_file(backing_path);
 
     auto guest = bootstrap_virtualbox_guest(spec, backing);
@@ -55,11 +58,10 @@ std::optional<std::string> build_phase4_report() {
     if (hal_main(guest->boot_context) != 0) return std::nullopt;
 
     CanonStore store(*guest->storage.device);
-    first_ref = store.put(first_block);
-    second_ref = store.put(second_block);
-    third_ref = store.put(third_block);
-    if (!first_ref.has_value() || !second_ref.has_value() || !third_ref.has_value()) {
-      return std::nullopt;
+    for (const auto& block : blocks) {
+      auto ref = store.put(block);
+      if (!ref.has_value()) return std::nullopt;
+      refs.push_back(*ref);
     }
     if (!store.flush()) return std::nullopt;
   }
@@ -73,9 +75,10 @@ std::optional<std::string> build_phase4_report() {
 
   CanonStore store(*guest->storage.device);
   const std::size_t recovered_entries = store.rebuild_index();
-  const auto recovered_first = store.get(*first_ref);
-  const auto recovered_second = store.get(*second_ref);
-  const auto recovered_third = store.get(*third_ref);
+  std::size_t recovered_ok = 0;
+  for (const auto& ref : refs) {
+    if (store.get(ref).has_value()) ++recovered_ok;
+  }
 
   auto loaded_second_cycle = HostedBlockDev::load(backing_path);
   if (!loaded_second_cycle.has_value()) return std::nullopt;
@@ -85,9 +88,10 @@ std::optional<std::string> build_phase4_report() {
 
   CanonStore second_cycle_store(*guest_second_cycle->storage.device);
   const std::size_t second_cycle_entries = second_cycle_store.rebuild_index();
-  const auto second_cycle_first = second_cycle_store.get(*first_ref);
-  const auto second_cycle_second = second_cycle_store.get(*second_ref);
-  const auto second_cycle_third = second_cycle_store.get(*third_ref);
+  std::size_t second_cycle_ok = 0;
+  for (const auto& ref : refs) {
+    if (second_cycle_store.get(ref).has_value()) ++second_cycle_ok;
+  }
 
   auto damaged = HostedBlockDev::load(backing_path);
   if (!damaged.has_value()) return std::nullopt;
@@ -108,9 +112,10 @@ std::optional<std::string> build_phase4_report() {
 
   CanonStore torn_store(*guest_torn->storage.device);
   const std::size_t torn_entries = torn_store.rebuild_index();
-  const auto torn_first = torn_store.get(*first_ref);
-  const auto torn_second = torn_store.get(*second_ref);
-  const auto torn_third = torn_store.get(*third_ref);
+  std::size_t torn_ok = 0;
+  for (const auto& ref : refs) {
+    if (torn_store.get(ref).has_value()) ++torn_ok;
+  }
 
   auto& display = *guest->display.device;
   auto& framebuffer = display.framebuffer();
@@ -145,22 +150,17 @@ std::optional<std::string> build_phase4_report() {
   report << "storage_write_ops=" << ahci->write_ops() << "\n";
   report << "storage_flush_ops=" << ahci->flush_ops() << "\n";
   report << "ahci_irq=" << static_cast<unsigned>(ahci->ahci_info().irq) << "\n";
+  report << "canonstore_index_entries_per_block=" << CanonStore::kIndexEntriesPerBlock << "\n";
   report << "canonstore_recovered_entries=" << recovered_entries << "\n";
   report << "canonstore_second_cycle_entries=" << second_cycle_entries << "\n";
   report << "canonstore_torn_header_entries=" << torn_entries << "\n";
-  report << "canonstore_inventory_count=3\n";
-  report << "canonstore_lookup_first=" << (recovered_first.has_value() ? "ok" : "missing") << "\n";
-  report << "canonstore_lookup_second=" << (recovered_second.has_value() ? "ok" : "missing") << "\n";
-  report << "canonstore_lookup_third=" << (recovered_third.has_value() ? "ok" : "missing") << "\n";
-  report << "canonstore_second_cycle_first=" << (second_cycle_first.has_value() ? "ok" : "missing") << "\n";
-  report << "canonstore_second_cycle_second=" << (second_cycle_second.has_value() ? "ok" : "missing") << "\n";
-  report << "canonstore_second_cycle_third=" << (second_cycle_third.has_value() ? "ok" : "missing") << "\n";
-  report << "canonstore_torn_header_first=" << (torn_first.has_value() ? "ok" : "missing") << "\n";
-  report << "canonstore_torn_header_second=" << (torn_second.has_value() ? "ok" : "missing") << "\n";
-  report << "canonstore_torn_header_third=" << (torn_third.has_value() ? "ok" : "missing") << "\n";
-  report << "canonref_first=" << first_ref->hash.h.to_string() << "\n";
-  report << "canonref_second=" << second_ref->hash.h.to_string() << "\n";
-  report << "canonref_third=" << third_ref->hash.h.to_string() << "\n";
+  report << "canonstore_inventory_count=" << refs.size() << "\n";
+  report << "canonstore_overflow_active=" << (refs.size() > CanonStore::kIndexEntriesPerBlock ? "true" : "false") << "\n";
+  report << "canonstore_lookup_ok=" << recovered_ok << "\n";
+  report << "canonstore_second_cycle_ok=" << second_cycle_ok << "\n";
+  report << "canonstore_torn_header_ok=" << torn_ok << "\n";
+  report << "canonref_first=" << refs.front().hash.h.to_string() << "\n";
+  report << "canonref_last=" << refs.back().hash.h.to_string() << "\n";
   report << "display_binding=" << guest->display.binding_name << "\n";
   report << "display_present_count=" << display.present_count() << "\n";
   report << "display_rendered_glyphs=" << rendered_glyphs << "\n";

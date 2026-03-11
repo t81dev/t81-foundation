@@ -245,19 +245,15 @@ done
 for expected in \
   '^AXION_PHASE4_STARTUP$' \
   '^storage_binding=virtualbox-ahci$' \
-  '^canonstore_recovered_entries=3$' \
-  '^canonstore_second_cycle_entries=3$' \
-  '^canonstore_torn_header_entries=3$' \
-  '^canonstore_inventory_count=3$' \
-  '^canonstore_lookup_first=ok$' \
-  '^canonstore_lookup_second=ok$' \
-  '^canonstore_lookup_third=ok$' \
-  '^canonstore_second_cycle_first=ok$' \
-  '^canonstore_second_cycle_second=ok$' \
-  '^canonstore_second_cycle_third=ok$' \
-  '^canonstore_torn_header_first=ok$' \
-  '^canonstore_torn_header_second=ok$' \
-  '^canonstore_torn_header_third=ok$' \
+  '^canonstore_index_entries_per_block=17$' \
+  '^canonstore_recovered_entries=20$' \
+  '^canonstore_second_cycle_entries=20$' \
+  '^canonstore_torn_header_entries=20$' \
+  '^canonstore_inventory_count=20$' \
+  '^canonstore_overflow_active=true$' \
+  '^canonstore_lookup_ok=20$' \
+  '^canonstore_second_cycle_ok=20$' \
+  '^canonstore_torn_header_ok=20$' \
   '^display_binding=virtualbox-vmsvga$' \
   '^display_present_count=1$' \
   '^network_binding=virtualbox-e1000$' \

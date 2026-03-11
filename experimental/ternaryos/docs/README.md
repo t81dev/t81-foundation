@@ -361,11 +361,14 @@ Current status:
 - the current QEMU lane also recovers backend-generated `startup-phase4.txt`, so the staged ARM guest now exposes a pure Phase 4 device-layer proof in addition to the shell/runtime artifacts
 - the current `startup-phase4.txt` proves guest-bootstrap behavior from the actual Phase 4 seam:
   - `storage_binding=virtualbox-ahci`
-  - `canonstore_recovered_entries=3`
-  - `canonstore_second_cycle_entries=3`
-  - `canonstore_torn_header_entries=3`
-  - all three stored CanonRefs resolve successfully across both guest cycles
-  - all three stored CanonRefs resolve successfully after a torn-header fallback rebuild
+  - `canonstore_inventory_count=20`
+  - `canonstore_index_entries_per_block=17`
+  - `canonstore_overflow_active=true`
+  - `canonstore_recovered_entries=20`
+  - `canonstore_second_cycle_entries=20`
+  - `canonstore_torn_header_entries=20`
+  - all 20 stored CanonRefs resolve successfully across both guest cycles
+  - all 20 stored CanonRefs resolve successfully after a torn-header fallback rebuild
   - `display_binding=virtualbox-vmsvga`
   - `display_present_count=1`
   - `network_binding=virtualbox-e1000`
