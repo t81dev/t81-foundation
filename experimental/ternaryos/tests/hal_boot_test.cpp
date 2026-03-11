@@ -1328,83 +1328,105 @@ static void test_kernel_pager_worker_backlog() {
   check(runtime_after_first_activation.runtime.has_value(),
         "runtime status exposes first worker activation");
   if (runtime_after_first_activation.runtime) {
-    check(runtime_after_first_activation.runtime->pager_worker_busy,
-          "runtime status reports busy worker after first activation");
-    check(runtime_after_first_activation.runtime->pager_worker_active_address_space_id ==
-              first_address_space_id,
-          "runtime status activates the first queued address space first");
-    check(runtime_after_first_activation.runtime->pager_worker_active_handoff_sequence == 1,
-          "runtime status tracks the active pager-worker handoff ordinal");
+    check(!runtime_after_first_activation.runtime->pager_worker_busy,
+          "runtime status returns worker to idle after ready-bypass resolution");
+    check(!runtime_after_first_activation.runtime->pager_worker_active_address_space_id.has_value(),
+          "runtime status exposes no active worker address after ready-bypass resolution");
+    check(!runtime_after_first_activation.runtime->pager_worker_active_handoff_sequence.has_value(),
+          "runtime status exposes no active handoff after ready-bypass resolution");
     check(runtime_after_first_activation.runtime->pager_worker_inbox_count == 1,
-          "runtime status leaves one queued work item after first activation");
+          "runtime status leaves one queued stalled item after ready-bypass resolution");
     check(runtime_after_first_activation.runtime
               ->pager_worker_next_queued_address_space_id ==
-              second_address_space_id,
-          "runtime status tracks the next queued pager-worker address behind the active item");
-    check(runtime_after_first_activation.runtime
-              ->pager_worker_next_queued_handoff_sequence == 2,
-          "runtime status tracks the next queued pager-worker handoff ordinal behind the active item");
-    check(runtime_after_first_activation.runtime->pager_worker_activations == 1,
-          "runtime status counts one worker activation after first activation");
-    check(runtime_after_first_activation.runtime->pager_worker_last_activated_address_space_id ==
               first_address_space_id,
-          "runtime status tracks the first activated address space");
+          "runtime status keeps the stalled original item at the queue head after ready bypass");
+    check(runtime_after_first_activation.runtime
+              ->pager_worker_next_queued_handoff_sequence == 1,
+          "runtime status keeps the stalled original handoff ordinal at the queue head after ready bypass");
+    check(runtime_after_first_activation.runtime->pager_worker_activations == 1,
+          "runtime status counts one worker activation after ready bypass");
+    check(runtime_after_first_activation.runtime->pager_worker_ready_bypass_activations == 1,
+          "runtime status counts one ready-bypass activation");
+    check(runtime_after_first_activation.runtime
+              ->pager_worker_last_ready_bypass_blocked_address_space_id ==
+              first_address_space_id,
+          "runtime status tracks the blocked FIFO head used for ready bypass");
+    check(runtime_after_first_activation.runtime
+              ->pager_worker_last_ready_bypass_promoted_address_space_id ==
+              second_address_space_id,
+          "runtime status tracks the promoted ready queued address space");
+    check(runtime_after_first_activation.runtime->pager_worker_last_ready_bypass_cycle == 1,
+          "runtime status tracks the ready-bypass ordinal");
+    check(runtime_after_first_activation.runtime->pager_worker_last_activated_address_space_id ==
+              second_address_space_id,
+          "runtime status tracks the promoted ready address space as the first activation");
     check(runtime_after_first_activation.runtime->pager_worker_last_activation_cycle == 1,
           "runtime status tracks the first activation ordinal");
-    check(runtime_after_first_activation.runtime->pager_worker_stall_cycles == 1,
-          "runtime status counts one worker stall cycle while the first item remains unresolved");
-    check(runtime_after_first_activation.runtime->pager_worker_backlog_blocked_cycles == 1,
-          "runtime status counts one backlog-blocked cycle while FIFO preserves the first item");
-    check(runtime_after_first_activation.runtime->pager_worker_ready_backlog_cycles == 1,
-          "runtime status counts one ready-behind-active backlog cycle under FIFO stall");
-    check(runtime_after_first_activation.runtime->pager_worker_ready_backlog_count == 1,
-          "runtime status reports one ready queued address space behind the stalled active item");
-    check(runtime_after_first_activation.runtime->pager_worker_ready_backlog_high_watermark == 1,
-          "runtime status records the ready-backlog high watermark under FIFO stall");
-    check(runtime_after_first_activation.runtime->pager_worker_last_stalled_address_space_id ==
-              first_address_space_id,
-          "runtime status tracks the stalled active address space behind the ready backlog");
-    check(runtime_after_first_activation.runtime->pager_worker_last_stall_cycle == 1,
-          "runtime status tracks the ordinal of the latest pager worker stall");
-    check(runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_address_space_id ==
+    check(runtime_after_first_activation.runtime->pager_worker_stall_cycles == 0,
+          "runtime status avoids a stall when ready bypass can select mapped work first");
+    check(runtime_after_first_activation.runtime->pager_worker_backlog_blocked_cycles == 0,
+          "runtime status avoids backlog-blocked accounting under ready bypass");
+    check(runtime_after_first_activation.runtime->pager_worker_ready_backlog_cycles == 0,
+          "runtime status avoids ready-backlog stall accounting under ready bypass");
+    check(runtime_after_first_activation.runtime->pager_worker_ready_backlog_count == 0,
+          "runtime status reports no live ready backlog after ready-bypass resolution");
+    check(runtime_after_first_activation.runtime->pager_worker_ready_backlog_high_watermark == 0,
+          "runtime status leaves ready-backlog watermark clear when bypass avoids the stall");
+    check(!runtime_after_first_activation.runtime->pager_worker_last_stalled_address_space_id.has_value(),
+          "runtime status records no stalled active address space under ready bypass");
+    check(!runtime_after_first_activation.runtime->pager_worker_last_stall_cycle.has_value(),
+          "runtime status records no stall ordinal under ready bypass");
+    check(!runtime_after_first_activation.runtime
+                ->pager_worker_last_ready_backlog_address_space_id.has_value(),
+          "runtime status records no blocked ready queued address under ready bypass");
+    check(!runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_cycle.has_value(),
+          "runtime status records no blocked-ready stall ordinal under ready bypass");
+    check(!runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_count.has_value(),
+          "runtime status records no blocked-ready depth under ready bypass");
+    check(runtime_after_first_activation.runtime->pager_resolutions == 1,
+          "runtime status resolves the promoted ready address space immediately under ready bypass");
+  }
+
+  auto fault_after_first_resolution = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_after_first_resolution.fault_summary.has_value(),
+        "fault summary exposes first ready-bypass resolution");
+  if (fault_after_first_resolution.fault_summary) {
+    check(fault_after_first_resolution.fault_summary->pager_resolutions == 1,
+          "fault summary counts the first ready-bypass resolution");
+    check(fault_after_first_resolution.fault_summary
+              ->pager_worker_last_completed_address_space_id ==
               second_address_space_id,
-          "runtime status tracks the ready queued address space blocked behind the active item");
-    check(runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_cycle == 1,
-          "runtime status tracks the stall ordinal that exposed the ready queued address space");
-    check(runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_count == 1,
-          "runtime status tracks the ready-backlog depth observed at that stall");
-    check(runtime_after_first_activation.runtime->pager_resolutions == 0,
-          "runtime status does not resolve the second address space out of order");
+          "fault summary tracks the promoted ready address space as the first completion");
+    check(fault_after_first_resolution.fault_summary
+              ->pager_worker_last_completed_resolution_sequence == 1,
+          "fault summary tracks the first completed pager-worker resolution ordinal");
+    check(fault_after_first_resolution.fault_summary->pager_worker_ready_bypass_activations == 1,
+          "fault summary counts one ready-bypass activation");
+    check(fault_after_first_resolution.fault_summary
+              ->pager_worker_last_ready_bypass_blocked_address_space_id ==
+              first_address_space_id,
+          "fault summary tracks the blocked FIFO head used for ready bypass");
+    check(fault_after_first_resolution.fault_summary
+              ->pager_worker_last_ready_bypass_promoted_address_space_id ==
+              second_address_space_id,
+          "fault summary tracks the promoted ready address space");
+    check(fault_after_first_resolution.fault_summary->pager_worker_last_ready_bypass_cycle == 1,
+          "fault summary tracks the ready-bypass ordinal");
+    check(fault_after_first_resolution.fault_summary->last_pager_resolution.has_value(),
+          "fault summary exposes the first ready-bypass resolution record");
+    if (fault_after_first_resolution.fault_summary->last_pager_resolution) {
+      check(fault_after_first_resolution.fault_summary->last_pager_resolution->address_space_id ==
+                *second_address_space_id,
+            "fault summary resolves the promoted ready address space first");
+    }
   }
 
   check(mmu::mmu_map(state->page_table,
                      state->allocator,
                      first_tva,
                      *first_address_space_id),
-        "first backlog address space accepts its mapping before first resolution");
-  (void)axion_kernel_step(*state);
-  auto fault_after_first_resolution = axion_kernel_service_request(
-      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
-  check(fault_after_first_resolution.fault_summary.has_value(),
-        "fault summary exposes first backlog resolution");
-  if (fault_after_first_resolution.fault_summary) {
-    check(fault_after_first_resolution.fault_summary->pager_resolutions == 1,
-          "fault summary counts the first pager backlog resolution");
-    check(fault_after_first_resolution.fault_summary
-              ->pager_worker_last_completed_address_space_id ==
-              first_address_space_id,
-          "fault summary tracks the first completed pager-worker address space");
-    check(fault_after_first_resolution.fault_summary
-              ->pager_worker_last_completed_resolution_sequence == 1,
-          "fault summary tracks the first completed pager-worker resolution ordinal");
-    check(fault_after_first_resolution.fault_summary->last_pager_resolution.has_value(),
-          "fault summary exposes the first backlog resolution record");
-    if (fault_after_first_resolution.fault_summary->last_pager_resolution) {
-      check(fault_after_first_resolution.fault_summary->last_pager_resolution->address_space_id ==
-                *first_address_space_id,
-            "fault summary resolves the first queued address space first");
-    }
-  }
+        "first backlog address space accepts its mapping before final resolution");
 
   (void)axion_kernel_step(*state);
   auto runtime_after_second_activation = axion_kernel_service_request(
@@ -1413,7 +1435,7 @@ static void test_kernel_pager_worker_backlog() {
         "runtime status exposes second worker activation/resolution step");
   if (runtime_after_second_activation.runtime) {
     check(runtime_after_second_activation.runtime->pager_resolutions == 2,
-          "runtime status resolves the second queued address space on its activation step");
+          "runtime status resolves the remaining stalled address space on its activation step");
     check(!runtime_after_second_activation.runtime->pager_worker_busy,
           "runtime status returns worker to idle after second activation step");
     check(!runtime_after_second_activation.runtime->pager_worker_active_address_space_id.has_value(),
@@ -1428,9 +1450,11 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status drains the worker inbox by the second activation");
     check(runtime_after_second_activation.runtime->pager_worker_activations == 2,
           "runtime status counts two worker activations after backlog drain");
+    check(runtime_after_second_activation.runtime->pager_worker_ready_bypass_activations == 1,
+          "runtime status retains one ready-bypass activation after backlog drain");
     check(runtime_after_second_activation.runtime->pager_worker_last_activated_address_space_id ==
-              second_address_space_id,
-          "runtime status tracks the second activated address space");
+              first_address_space_id,
+          "runtime status tracks the remaining stalled address space as the final activation");
     check(runtime_after_second_activation.runtime->pager_worker_last_activation_cycle == 2,
           "runtime status tracks the second activation ordinal");
   }
@@ -1457,33 +1481,34 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status retains inbox watermark after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_activations == 2,
           "runtime status retains worker activation count after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_ready_bypass_activations == 1,
+          "runtime status retains one ready-bypass activation after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_last_activated_address_space_id ==
-              second_address_space_id,
+              first_address_space_id,
           "runtime status retains the last activated address space after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_last_activation_cycle == 2,
           "runtime status retains the last activation ordinal after backlog drain");
-    check(runtime_after_second_resolution.runtime->pager_worker_stall_cycles == 1,
-          "runtime status retains the worker stall count after backlog drain");
-    check(runtime_after_second_resolution.runtime->pager_worker_backlog_blocked_cycles == 1,
-          "runtime status retains the backlog-blocked count after backlog drain");
-    check(runtime_after_second_resolution.runtime->pager_worker_ready_backlog_cycles == 1,
-          "runtime status retains the ready-backlog count after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_stall_cycles == 0,
+          "runtime status retains zero worker stall cycles after ready-bypass drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_backlog_blocked_cycles == 0,
+          "runtime status retains zero backlog-blocked cycles after ready-bypass drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_ready_backlog_cycles == 0,
+          "runtime status retains zero ready-backlog stall cycles after ready-bypass drain");
     check(runtime_after_second_resolution.runtime->pager_worker_ready_backlog_count == 0,
           "runtime status clears current ready-backlog depth after backlog drain");
-    check(runtime_after_second_resolution.runtime->pager_worker_ready_backlog_high_watermark == 1,
-          "runtime status retains the ready-backlog high watermark after backlog drain");
-    check(runtime_after_second_resolution.runtime->pager_worker_last_stalled_address_space_id ==
-              first_address_space_id,
-          "runtime status retains the last stalled active address space after backlog drain");
-    check(runtime_after_second_resolution.runtime->pager_worker_last_stall_cycle == 1,
-          "runtime status retains the last pager worker stall ordinal after backlog drain");
-    check(runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_address_space_id ==
-              second_address_space_id,
-          "runtime status retains the last ready queued address space after backlog drain");
-    check(runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_cycle == 1,
-          "runtime status retains the stall ordinal for the last ready queued address space");
-    check(runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_count == 1,
-          "runtime status retains the ready-backlog depth for the last ready queued address");
+    check(runtime_after_second_resolution.runtime->pager_worker_ready_backlog_high_watermark == 0,
+          "runtime status retains zero ready-backlog high watermark after ready-bypass drain");
+    check(!runtime_after_second_resolution.runtime->pager_worker_last_stalled_address_space_id.has_value(),
+          "runtime status retains no stalled active address after ready-bypass drain");
+    check(!runtime_after_second_resolution.runtime->pager_worker_last_stall_cycle.has_value(),
+          "runtime status retains no stall ordinal after ready-bypass drain");
+    check(!runtime_after_second_resolution.runtime
+                ->pager_worker_last_ready_backlog_address_space_id.has_value(),
+          "runtime status retains no blocked ready queued address after ready-bypass drain");
+    check(!runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_cycle.has_value(),
+          "runtime status retains no blocked-ready stall ordinal after ready-bypass drain");
+    check(!runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_count.has_value(),
+          "runtime status retains no blocked-ready depth after ready-bypass drain");
     check(runtime_after_second_resolution.runtime->pager_worker_resolutions_completed == 2,
           "runtime status counts two completed worker resolutions after backlog drain");
     check(runtime_after_second_resolution.runtime
@@ -1495,7 +1520,7 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status retains the last received pager-worker handoff ordinal");
     check(runtime_after_second_resolution.runtime
               ->pager_worker_last_completed_address_space_id ==
-              second_address_space_id,
+              first_address_space_id,
           "runtime status retains the last completed pager-worker address after backlog drain");
     check(runtime_after_second_resolution.runtime
               ->pager_worker_last_completed_resolution_sequence == 2,
@@ -1511,8 +1536,8 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary exposes the second backlog resolution record");
     if (fault_after_second_resolution.fault_summary->last_pager_resolution) {
       check(fault_after_second_resolution.fault_summary->last_pager_resolution->address_space_id ==
-                *second_address_space_id,
-            "fault summary resolves the second queued address space second");
+                *first_address_space_id,
+            "fault summary resolves the originally blocked address space second");
     }
     check(fault_after_second_resolution.fault_summary->pending_pager_handoff_high_watermark == 2,
           "fault summary retains pending handoff watermark after backlog drain");
@@ -1520,21 +1545,23 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary retains inbox watermark after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_activations == 2,
           "fault summary counts two worker activations after backlog drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_ready_bypass_activations == 1,
+          "fault summary retains one ready-bypass activation after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_last_activated_address_space_id ==
-              second_address_space_id,
+              first_address_space_id,
           "fault summary retains the last activated address space after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_last_activation_cycle == 2,
           "fault summary retains the last activation ordinal after backlog drain");
-    check(fault_after_second_resolution.fault_summary->pager_worker_stall_cycles == 1,
-          "fault summary counts one worker stall cycle after backlog drain");
-    check(fault_after_second_resolution.fault_summary->pager_worker_backlog_blocked_cycles == 1,
-          "fault summary counts one backlog-blocked cycle after backlog drain");
-    check(fault_after_second_resolution.fault_summary->pager_worker_ready_backlog_cycles == 1,
-          "fault summary counts one ready-backlog cycle after backlog drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_stall_cycles == 0,
+          "fault summary counts zero worker stall cycles after ready-bypass drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_backlog_blocked_cycles == 0,
+          "fault summary counts zero backlog-blocked cycles after ready-bypass drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_ready_backlog_cycles == 0,
+          "fault summary counts zero ready-backlog stall cycles after ready-bypass drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_ready_backlog_count == 0,
           "fault summary clears current ready-backlog depth after backlog drain");
-    check(fault_after_second_resolution.fault_summary->pager_worker_ready_backlog_high_watermark == 1,
-          "fault summary retains the ready-backlog high watermark after backlog drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_ready_backlog_high_watermark == 0,
+          "fault summary retains zero ready-backlog high watermark after ready-bypass drain");
     check(!fault_after_second_resolution.fault_summary->pager_worker_active_handoff_sequence.has_value(),
           "fault summary retains no active handoff ordinal after backlog drain");
     check(!fault_after_second_resolution.fault_summary
@@ -1543,18 +1570,20 @@ static void test_kernel_pager_worker_backlog() {
     check(!fault_after_second_resolution.fault_summary
                 ->pager_worker_next_queued_handoff_sequence.has_value(),
           "fault summary retains no queued pager-worker handoff ordinal after backlog drain");
-    check(fault_after_second_resolution.fault_summary->pager_worker_last_stalled_address_space_id ==
-              first_address_space_id,
-          "fault summary tracks the last stalled active address space after backlog drain");
-    check(fault_after_second_resolution.fault_summary->pager_worker_last_stall_cycle == 1,
-          "fault summary retains the last pager worker stall ordinal after backlog drain");
-    check(fault_after_second_resolution.fault_summary->pager_worker_last_ready_backlog_address_space_id ==
-              second_address_space_id,
-          "fault summary tracks the last ready queued address space after backlog drain");
-    check(fault_after_second_resolution.fault_summary->pager_worker_last_ready_backlog_cycle == 1,
-          "fault summary retains the stall ordinal for the last ready queued address space");
-    check(fault_after_second_resolution.fault_summary->pager_worker_last_ready_backlog_count == 1,
-          "fault summary retains the ready-backlog depth for the last ready queued address");
+    check(!fault_after_second_resolution.fault_summary
+                ->pager_worker_last_stalled_address_space_id.has_value(),
+          "fault summary retains no stalled active address after ready-bypass drain");
+    check(!fault_after_second_resolution.fault_summary->pager_worker_last_stall_cycle.has_value(),
+          "fault summary retains no stall ordinal after ready-bypass drain");
+    check(!fault_after_second_resolution.fault_summary
+                ->pager_worker_last_ready_backlog_address_space_id.has_value(),
+          "fault summary retains no blocked ready queued address after ready-bypass drain");
+    check(!fault_after_second_resolution.fault_summary
+                ->pager_worker_last_ready_backlog_cycle.has_value(),
+          "fault summary retains no blocked-ready stall ordinal after ready-bypass drain");
+    check(!fault_after_second_resolution.fault_summary
+                ->pager_worker_last_ready_backlog_count.has_value(),
+          "fault summary retains no blocked-ready depth after ready-bypass drain");
     check(fault_after_second_resolution.fault_summary
               ->pager_worker_last_received_address_space_id ==
               second_address_space_id,
@@ -1564,7 +1593,7 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary retains the last received pager-worker handoff ordinal");
     check(fault_after_second_resolution.fault_summary
               ->pager_worker_last_completed_address_space_id ==
-              second_address_space_id,
+              first_address_space_id,
           "fault summary retains the last completed pager-worker address after backlog drain");
     check(fault_after_second_resolution.fault_summary
               ->pager_worker_last_completed_resolution_sequence == 2,

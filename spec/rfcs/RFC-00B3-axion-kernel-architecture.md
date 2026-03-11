@@ -357,6 +357,9 @@ They now also expose the active pager-worker handoff ordinal while work is in
 flight and clear it again once the worker goes idle.
 They now also expose the next queued pager-worker address space and handoff
 ordinal at the head of the FIFO inbox.
+When the worker is idle and the FIFO head is still unresolved, the kernel now
+also selects the earliest already-ready queued item instead of activating the
+blocked head first; diagnostics retain the latest blocked/promoted bypass pair.
 The next kernel slice is to keep that pager surface private while expanding
 backlog/load scheduling behavior before any public pager ABI or syscall design.
 

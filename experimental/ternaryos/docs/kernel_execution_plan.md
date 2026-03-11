@@ -228,6 +228,16 @@ The eighteenth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves that queued-head provenance advances and
   drains deterministically through FIFO backlog execution
 
+The nineteenth pager-groundwork slice is now also complete:
+
+- when the worker is idle and the FIFO head is still unresolved, the kernel
+  now selects the earliest already-ready queued item instead of activating the
+  blocked head first
+- runtime and fault diagnostics now expose ready-bypass activation counts plus
+  the blocked head and promoted ready address space for the latest bypass
+- HAL/kernel coverage now proves that this first deterministic ready-bypass
+  rule advances progress without widening the pager surface
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
@@ -241,9 +251,8 @@ The next real kernel work is now:
 
 - pager integration
 - richer kernel-owned pager work after the first worker model
-- explicit transition handling for prioritization or richer scheduling policy
-  once the new FIFO stall/backlog-blocked/ready-backlog depth diagnostics are
-  no longer sufficient
+- explicit transition handling for scheduling beyond the new ready-bypass
+  activation rule once the current worker diagnostics are no longer sufficient
 - stable diagnostics proving pager worker behavior remains deterministic under
   deeper load
 

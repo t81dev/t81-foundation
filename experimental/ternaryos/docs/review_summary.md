@@ -120,6 +120,9 @@ Kernel integration proof now also includes:
   handoff ordinal while work remains in flight
 - runtime and fault diagnostics now also expose the queued-head pager-worker
   address space and handoff ordinal while work remains in the inbox
+- when the worker is idle and the FIFO head is unresolved, the kernel now
+  selects the earliest already-ready queued item instead of activating the
+  blocked head first
 - runtime and fault diagnostics now also retain the last completed
   pager-worker address space and resolution ordinal after the worker goes idle
 - the supervisor/service-runtime convergence slice is now complete for the
