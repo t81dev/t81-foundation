@@ -270,13 +270,10 @@ Outputs:
 - `build/ternaryos/virtualbox_armv8/armv8_boot_probe_summary.txt`
 - `build/ternaryos/virtualbox_armv8/efi-link-status.txt`
 
-To run the ARM EFI control app in a more observable local AArch64 EFI
-environment under QEMU:
+To run the primary local ARM EFI developer probe under QEMU:
 
 ```sh
-/bin/zsh experimental/ternaryos/scripts/run_qemu_armv8_efi_control.sh \
-  build/ternaryos/virtualbox_armv8/ternos_virtualbox_armv8_dev_guest.img \
-  build/ternaryos/qemu_armv8_control
+cmake --build build --target t81_ternaryos_qemu_armv8_efi_control_probe
 ```
 
 Outputs:
@@ -303,13 +300,15 @@ For an external reviewer, the current evidence split is:
 ## Validation Lanes
 
 - Primary acceptance lane: `x86_64` VirtualBox host capable of boot-validating the roadmap target (`VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC`)
-- Secondary developer lane: Apple Silicon / `ARMv8` VirtualBox host used for artifact generation, host checks, and boot-pipeline preparation only
-- The ARMv8 lane now reaches a compiled `BOOTAA64.obj`, a linkable `BOOTAA64.EFI` developer-lane shim, packaged `.img`/`.vdi`, and a headless VirtualBox boot probe that confirms firmware-visible AHCI disk attachment
+- Primary local developer lane: QEMU AArch64 + EDK2 on Apple Silicon for observable EFI execution and early guest bring-up
+- Secondary diagnostic lane: Apple Silicon / `ARMv8` VirtualBox host used only for artifact generation, host checks, and narrow VirtualBox-specific boot-path investigation
+- The local ARMv8 lane now reaches a compiled `BOOTAA64.obj`, a linkable `BOOTAA64.EFI` developer-lane shim, packaged `.img`/`.vdi`, and a first-class QEMU EFI control probe that proves the ARM EFI artifact executes on this machine
 
 Program rule:
 
 - do not retarget the roadmap to `ARMv8`
-- use the local ARMv8 host to keep artifact/tooling work moving
+- use QEMU AArch64 as the primary local EFI/guest debugging lane
+- keep local VirtualBox ARM work tactical and diagnostic only
 - reserve final VirtualBox guest boot proof for an `x86_64`-capable host
 
 If no local `x86_64` host is available, use the handoff runbook:

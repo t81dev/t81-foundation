@@ -43,8 +43,10 @@ Other locally proven Phase 4 behavior:
 
 ARM diagnostic result:
 
-- local VirtualBox ARM remains non-observable for EFI execution
-- local QEMU AArch64 + EDK2 does execute the ARM EFI control app
+- local QEMU AArch64 + EDK2 does execute the ARM EFI control app and is now
+  the primary local developer lane
+- local VirtualBox ARM remains non-observable for EFI execution and is now only
+  a secondary diagnostic lane
 - conclusion: the remaining blind spot is the local VirtualBox ARM path, not
   the basic ARM EFI artifact shape
 

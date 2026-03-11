@@ -60,7 +60,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - NVMe remains visible in the upstream VirtualBox source tree but is explicitly deferred behind AHCI for the first persistence gate.
 - A reproducible VirtualBox disk-artifact target now exists (`t81_ternaryos_virtualbox_guest_artifact`) and stages metadata, demo evidence, and a compiled `BOOTX64.obj` stub object; final `.efi` linking remains the blocking gap.
 - Local boot validation is blocked on this Apple Silicon development host because `VBoxManage list systemproperties` currently reports `Supported platform architectures: ARMv8`, while the roadmap target remains `x86_64`.
-- Program split is now explicit: `x86_64` VirtualBox remains the acceptance lane, while ARMv8 hosts are a secondary developer lane for artifact generation and tooling work only.
+- Program split is now explicit: `x86_64` VirtualBox remains the acceptance lane, QEMU AArch64 is the primary local developer lane for observable EFI execution, and ARMv8 VirtualBox is a secondary diagnostic lane for artifact generation and narrow host-specific investigation.
 - A temporary ARMv8 developer-lane artifact now exists to keep local VirtualBox iteration moving on Apple Silicon without redefining the official promotion target, and it now includes a compiled `BOOTAA64.obj` EFI-stub object.
 - That ARMv8 developer lane now goes one step further locally: a headless VirtualBox boot probe can start VBox EFI on this host, attach the staged VDI through AHCI, and capture a log proving the disk is firmware-visible.
 - With `lld` installed locally, the ARMv8 developer lane can now emit a real `BOOTAA64.EFI`; however, that image is still linked through a developer-lane shim rather than the true C++ HAL bridge.
@@ -68,7 +68,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - Even with that stronger shell fallback, current Apple Silicon VirtualBox runs still show no execution evidence: the VM attaches the VDI correctly, but local probes still produce an empty UART log and no `startup-ran.txt` or `efi-ran.txt` markers on the post-boot disk.
 - The ARM control experiment is now in place as a stricter discriminator: `BOOTAA64_CTRL.EFI` is staged ahead of the shim-backed app and only attempts to leave `efi-ctrl-ran.txt`, but current probes still show no `startup-ran.txt`, `efi-ctrl-ran.txt`, or `efi-ran.txt` markers and no UART output.
 - A separate QEMU AArch64 EFI control probe is now available locally. Under QEMU + EDK2 on this Apple Silicon host, the staged ARM image does execute the EFI control application and leaves `TERNOS/efi-ran.txt`, proving the ARM PE/COFF artifact is viable in an observable AArch64 EFI environment.
-- Program decision: stop escalating local ARMv8 boot-layout experiments and prepare the official `x86_64` acceptance lane as a handoff package instead; the runbook for that external validation path is now checked in.
+- Program decision: stop escalating local ARMv8 VirtualBox boot-layout experiments, use QEMU AArch64 as the primary local EFI/debug lane, and prepare the official `x86_64` acceptance lane as a handoff package instead; the runbook for that external validation path is now checked in.
 - That handoff path is now reproducible as a single build target: the `x86_64` VirtualBox artifact, profile summary, demo transcript, and runbook can be packaged into a tarball for external validation on a real `x86_64` host.
 
 **Phase 1 test total: 155 / 155**
@@ -212,8 +212,8 @@ ctest --test-dir build -R ternaryos -V
 | # | Question | Blocking |
 | :-- | :--- | :--- |
 | OQ-1 | Guest artifact format is now narrowed to a GPT EFI-partitioned raw disk + VBox VDI wrapper; EFI linking now works for the ARMv8 developer lane, and QEMU AArch64 proves the ARM EFI control app executes, but actual VirtualBox ARM boot selection / handoff remains unproven | Phase 1 promotion |
-| OQ-2 | First supported VirtualBox device profile is intentionally narrow (VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC); implementation is now scaffolded, but host/target architecture mismatch still blocks acceptance-lane local boot proof and ARM developer-lane EFI execution remains unobserved | Phase 1 promotion |
-| OQ-3 | CI target remains unresolved: headless VirtualBox vs. QEMU for automation, with VirtualBox reserved for demo/dev validation | Phase 1 promotion |
+| OQ-2 | First supported VirtualBox device profile is intentionally narrow (VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC); implementation is now scaffolded, but host/target architecture mismatch still blocks acceptance-lane local boot proof | Phase 1 promotion |
+| OQ-3 | CI target now leans toward QEMU for local ARM automation, with VirtualBox reserved for acceptance/demo validation and host-specific diagnostics | Phase 1 promotion |
 | OQ-4 | TISC interrupt semantics — frozen ISA has no trap-return opcode; shadow dispatch table is the current workaround | Phase 4 |
 | OQ-5 | Axion determinism under pre-emption — governance model must be extended for async context switches | Phase 3 |
 | OQ-6 | Phase 3 radix-trie page table (3-ary, 10-trit levels) — not yet designed | Phase 3 |

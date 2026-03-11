@@ -12,8 +12,9 @@ Validate the official promotion lane:
 - milestone: prove the guest artifact boots far enough to expose the current
   HAL / Phase 4 seams
 
-This is not the same as the local Apple Silicon ARMv8 developer lane. That lane
-is only for artifact generation and negative-result boot-path debugging.
+This is not the same as the local Apple Silicon developer lanes. QEMU AArch64
+is the primary local EFI/debug lane, while VirtualBox ARM is only a secondary
+diagnostic lane for artifact generation and negative-result boot-path debugging.
 
 For a short reviewer-oriented overview, pair this runbook with:
 
@@ -153,6 +154,7 @@ If someone runs this externally, ask them to return:
 As of the latest Apple Silicon investigation:
 
 - the ARMv8 developer lane can generate `.img` / `.vdi`
+- local QEMU AArch64 proves the ARM EFI control app executes
 - `BOOTAA64.EFI` links locally through a temporary shim
 - VirtualBox ARM firmware sees the staged AHCI disk
 - local probes still show no execution evidence for `startup.nsh` or
