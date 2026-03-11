@@ -60,6 +60,7 @@ mmu/
                        kPageSize=59049, kMaxTva=3^30-1, trit utilities
   ternary_page_alloc.hpp/.cpp  Physical page allocator (balanced-ternary PageState)
   page_table.hpp/.cpp  20-trit ternary radix page table; mmu_map/translate/unmap
+                       plus page_table_stats/page_table_trace diagnostics
 
 sched/
   tisc_context.hpp     TiscContext: full TISC thread snapshot for pre-emption
@@ -90,7 +91,7 @@ tests/
   hal_boot_test.cpp          Phase 1 — 84 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
-  mmu_test.cpp               Phase 2 — 60 assertions
+  mmu_test.cpp               Phase 2 — 72 assertions
   scheduler_test.cpp         Phase 3 — 120 assertions
   ipc_test.cpp               Phase 3 — 73 assertions
   device_driver_test.cpp     Phase 4 — 342 assertions
@@ -255,8 +256,8 @@ Local hosted proof as of the current branch:
 - all 8 TernOS test binaries pass
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
-- `t81_ternaryos_mmu_test` is `60/60`
-- total TernOS assertions are `1004`
+- `t81_ternaryos_mmu_test` is `72/72`
+- total TernOS assertions are `1016`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback

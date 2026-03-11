@@ -69,6 +69,30 @@ std::size_t PageTable::count_nodes(const Node* node) {
   return total;
 }
 
+void PageTable::accumulate_stats(const Node* node, unsigned depth,
+                                 PageTableStats& stats) {
+  if (!node) {
+    return;
+  }
+
+  ++stats.radix_nodes;
+  stats.max_depth = std::max(stats.max_depth, depth);
+
+  bool has_child = false;
+  for (const auto& child : node->children) {
+    if (child) {
+      has_child = true;
+      accumulate_stats(child.get(), depth + 1, stats);
+    }
+  }
+  if (has_child) {
+    ++stats.branch_nodes;
+  }
+  if (node->entry.has_value()) {
+    ++stats.leaf_entries;
+  }
+}
+
 // ─── tva_to_string ───────────────────────────────────────────────────────────
 
 std::string tva_to_string(uint64_t tva) {
@@ -145,6 +169,43 @@ std::string page_table_dump(const PageTable& pt) {
     ss << "  VPN 0x" << std::hex << std::setw(12) << std::setfill('0') << vpn
        << " → phys 0x" << std::setw(12) << entry.phys_base
        << " (pid=" << std::dec << entry.owner_pid << ")\n";
+  }
+  return ss.str();
+}
+
+PageTableStats page_table_stats(const PageTable& pt) {
+  PageTableStats stats;
+  stats.mapped_entries = pt.size();
+  PageTable::accumulate_stats(pt.root_.get(), 0, stats);
+  return stats;
+}
+
+std::string page_table_trace(const PageTable& pt, uint64_t tva) {
+  std::ostringstream ss;
+  ss << "PageTableTrace(tva=" << tva << ")";
+  if (!tva_valid(tva)) {
+    ss << " invalid\n";
+    return ss.str();
+  }
+
+  const uint64_t vpn = tva_vpn(tva);
+  const auto* node = pt.root_.get();
+  ss << " vpn=" << vpn << " path=";
+  for (unsigned depth = 0; depth < PageTable::kVpnTrits; ++depth) {
+    const auto branch = PageTable::vpn_trit_at(vpn, depth);
+    ss << static_cast<unsigned>(branch);
+    if (!node || !node->children[branch]) {
+      ss << " miss@" << depth << "\n";
+      return ss.str();
+    }
+    node = node->children[branch].get();
+  }
+
+  if (node && node->entry.has_value()) {
+    ss << " hit phys=0x" << std::hex << node->entry->phys_base
+       << std::dec << " pid=" << node->entry->owner_pid << "\n";
+  } else {
+    ss << " empty\n";
   }
   return ss.str();
 }

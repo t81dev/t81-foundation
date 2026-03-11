@@ -91,6 +91,10 @@ std::optional<uint64_t> mmu_translate(const PageTable& pt, uint64_t tva);
 // Unmap the virtual page containing tva; frees the physical page.
 bool mmu_unmap(PageTable& pt, TernaryPageAllocator& alloc, uint64_t tva);
 
+// Structural diagnostics for the radix tree.
+PageTableStats page_table_stats(const PageTable& pt);
+std::string page_table_trace(const PageTable& pt, uint64_t tva);
+
 } // namespace
 ```
 
@@ -106,4 +110,6 @@ bool mmu_unmap(PageTable& pt, TernaryPageAllocator& alloc, uint64_t tva);
 - [ ] Sparse far-apart VPNs translate correctly through the radix walk.
 - [ ] Unmapping one VPN prunes its empty radix branch without affecting siblings.
 - [ ] `page_table_dump()` exposes radix structural diagnostics.
+- [ ] `page_table_stats()` reports mapped entries and radix shape.
+- [ ] `page_table_trace()` reports hit, miss, and invalid-TVAs deterministically.
 - [ ] All existing TernOS tests continue to pass.

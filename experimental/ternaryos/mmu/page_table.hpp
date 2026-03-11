@@ -31,6 +31,14 @@ struct PageTableEntry {
   uint32_t owner_pid{0};   ///< Hanoi PID that owns this mapping (0 = kernel)
 };
 
+struct PageTableStats {
+  std::size_t mapped_entries{0};
+  std::size_t radix_nodes{0};
+  std::size_t branch_nodes{0};
+  std::size_t leaf_entries{0};
+  unsigned max_depth{0};
+};
+
 class PageTable {
 public:
   // Number of mapped pages.
@@ -50,6 +58,8 @@ private:
   friend std::optional<uint64_t> mmu_translate(const PageTable&, uint64_t);
   friend bool mmu_unmap(PageTable&, TernaryPageAllocator&, uint64_t);
   friend std::string page_table_dump(const PageTable&);
+  friend PageTableStats page_table_stats(const PageTable&);
+  friend std::string page_table_trace(const PageTable&, uint64_t);
 
   struct Node {
     std::array<std::unique_ptr<Node>, 3> children{};
@@ -61,6 +71,8 @@ private:
   const Node* find_leaf(uint64_t vpn) const noexcept;
   static bool prune_leaf(Node* node, uint64_t vpn, unsigned depth);
   static std::size_t count_nodes(const Node* node);
+  static void accumulate_stats(const Node* node, unsigned depth,
+                               PageTableStats& stats);
 
   std::unique_ptr<Node> root_;
   std::unordered_map<uint64_t, PageTableEntry> entries_;  // keyed by VPN
@@ -99,5 +111,15 @@ bool mmu_unmap(PageTable& pt, TernaryPageAllocator& alloc, uint64_t tva);
  * @brief Human-readable dump of the page table for diagnostics.
  */
 std::string page_table_dump(const PageTable& pt);
+
+/**
+ * @brief Structural statistics for the radix page table.
+ */
+PageTableStats page_table_stats(const PageTable& pt);
+
+/**
+ * @brief Human-readable radix walk for the TVA's VPN.
+ */
+std::string page_table_trace(const PageTable& pt, uint64_t tva);
 
 }  // namespace t81::ternaryos::mmu

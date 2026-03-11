@@ -89,7 +89,7 @@ Status: ternary radix page table implemented and tested behind the stable MMU AP
 | File | Purpose | Tests |
 | :--- | :--- | :---: |
 | `mmu/tva.hpp` | `TernaryVirtualAddress` as `uint64_t` base-3 number; `kPageSize=59049` (3¹⁰), `kMaxVpn=3²⁰−1`, `kMaxTva=3³⁰−1`; `tva_vpn`, `tva_offset`, `tva_from_vpn_offset`, `tva_valid`, `trit_at`, `trit_weight`, `tva_to_string` | 22 |
-| `mmu/page_table.hpp/.cpp` | 20-trit ternary radix page table with a 3-way branch per trit; `mmu_map` (alloc + insert), `mmu_translate` (walk + offset), `mmu_unmap` (erase + prune), `page_table_dump` | 38 |
+| `mmu/page_table.hpp/.cpp` | 20-trit ternary radix page table with a 3-way branch per trit; `mmu_map` (alloc + insert), `mmu_translate` (walk + offset), `mmu_unmap` (erase + prune), `page_table_dump`, `page_table_stats`, `page_table_trace` | 50 |
 
 **Address space design (RFC-00B1 §2):**
 - Page offset: lower 10 trits → 3¹⁰ = 59,049 positions within a page
@@ -97,7 +97,7 @@ Status: ternary radix page table implemented and tested behind the stable MMU AP
 - Total virtual space: 3³⁰ ≈ 205 TB (fits in `uint64_t`)
 - Binary↔ternary gap: "narrow virtual" strategy — physical addresses stay as plain `uint64_t`; ternary structure lives entirely in the virtual address
 
-**Phase 2 test total: 47 / 47**
+**Phase 2 test total: 72 / 72**
 
 ---
 
@@ -198,12 +198,12 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_hal_boot_test` | 84 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
-| `t81_ternaryos_mmu_test` | 60 | 2 |
+| `t81_ternaryos_mmu_test` | 72 | 2 |
 | `t81_ternaryos_scheduler_test` | 120 | 3 |
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **1004** | |
+| **Total** | **1016** | |
 
 Run all TernOS tests:
 

@@ -259,6 +259,40 @@ static void test_unmap_prunes_without_affecting_siblings() {
         "remaining sibling still translates");
 }
 
+static void test_page_table_stats() {
+  std::printf("\n[M17] page_table_stats reflects radix structure\n");
+  auto alloc = make_alloc(8);
+  PageTable pt;
+  check(mmu_map(pt, alloc, tva_from_vpn_offset(1, 0), /*pid=*/31),
+        "first stats mapping succeeds");
+  check(mmu_map(pt, alloc, tva_from_vpn_offset(2, 0), /*pid=*/32),
+        "second stats mapping succeeds");
+
+  const auto stats = page_table_stats(pt);
+  check(stats.mapped_entries == 2, "stats count mapped entries");
+  check(stats.leaf_entries == 2, "stats count leaf entries");
+  check(stats.radix_nodes > stats.leaf_entries, "radix has internal structure");
+  check(stats.branch_nodes >= 1, "stats count at least one branch node");
+  check(stats.max_depth == 20, "stats report full 20-trit walk depth");
+}
+
+static void test_page_table_trace() {
+  std::printf("\n[M18] page_table_trace exposes hit and miss paths\n");
+  auto alloc = make_alloc(8);
+  PageTable pt;
+  const uint64_t mapped_tva = tva_from_vpn_offset(5, 7);
+  check(mmu_map(pt, alloc, mapped_tva, /*pid=*/41), "trace mapping succeeds");
+
+  const auto hit = page_table_trace(pt, mapped_tva);
+  const auto miss = page_table_trace(pt, tva_from_vpn_offset(6, 7));
+  const auto invalid = page_table_trace(pt, kMaxTva + 1);
+
+  check(hit.find("hit phys=0x") != std::string::npos, "trace reports hit");
+  check(hit.find("pid=41") != std::string::npos, "trace includes owner pid");
+  check(miss.find("miss@") != std::string::npos, "trace reports miss depth");
+  check(invalid.find("invalid") != std::string::npos, "trace reports invalid TVA");
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -280,6 +314,8 @@ int main() {
   test_page_table_dump();
   test_sparse_radix_mappings();
   test_unmap_prunes_without_affecting_siblings();
+  test_page_table_stats();
+  test_page_table_trace();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;
