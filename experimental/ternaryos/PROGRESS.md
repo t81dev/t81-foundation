@@ -19,6 +19,7 @@ Reference docs:
 - RFC-00B1 (MMU): [docs/rfcs/RFC-00B1-ternary-mmu.md](../../docs/rfcs/RFC-00B1-ternary-mmu.md)
 - RFC-00B2 (Drivers): [docs/rfcs/RFC-00B2-device-drivers.md](../../docs/rfcs/RFC-00B2-device-drivers.md)
 - x86_64 handoff: [virtualbox_x86_64_handoff.md](virtualbox_x86_64_handoff.md)
+- Axion shell design: [axion_shell_design.md](axion_shell_design.md)
 
 ---
 
@@ -165,6 +166,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `shell_session.hpp/.cpp` | Shared Phase 5 shell-session backend: executes a minimal built-in shell command model (`help`, `profile`, `store put`, `history`) through the VirtualBox guest-bootstrap path, persists shell history through CanonStore, reboots, recovers it, and exposes deterministic transcript/framebuffer state to frontends | — |
 | `shell_demo.cpp` | Verbose Phase 5 backend proof: prints the built-in shell session and framebuffer evidence directly to stdout | — |
 | `shell_tui.cpp` | First FTXUI-based TernOS shell frontend with transcript pane, session pane, builtins pane, framebuffer preview, interactive built-in execution, and `--snapshot` render mode | — |
+| `axion_shell_design.md` | Phase 5 shell design note: positioning, grammar, screen model, and milestone sequence for evolving the current built-in shell into a real Axion shell | — |
 
 #### Design notes
 

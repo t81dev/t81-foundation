@@ -4,6 +4,7 @@
 **Progress:** [PROGRESS.md](PROGRESS.md) ← start here
 **Review Summary:** [review_summary.md](review_summary.md)
 **x86_64 Handoff:** [virtualbox_x86_64_handoff.md](virtualbox_x86_64_handoff.md)
+**Shell Design:** [axion_shell_design.md](axion_shell_design.md)
 **Roadmap:** [docs/research/ternary_os_roadmap.md](../../docs/research/ternary_os_roadmap.md)
 **RFC-00B0 (HAL):** [docs/rfcs/RFC-00B0-hal-spec.md](../../docs/rfcs/RFC-00B0-hal-spec.md)
 **RFC-00B1 (MMU):** [docs/rfcs/RFC-00B1-ternary-mmu.md](../../docs/rfcs/RFC-00B1-ternary-mmu.md)
