@@ -1,7 +1,7 @@
 # TernOS Implementation Progress
 
 **Last updated:** 2026-03-10
-**Commit:** `07b67c23`
+**Commit:** `40968ac2`
 **Branch:** `main`
 
 Reference docs:
@@ -38,6 +38,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 | `scripts/check_virtualbox_host.sh` | Host-capability check for local VirtualBox validation: reports whether the current machine can run the roadmap’s `x86_64` guest target or the temporary ARMv8 developer lane | — |
 | `scripts/check_efi_link_toolchain.sh` | EFI-link capability check: records whether the current host has a PE/COFF linker (`lld-link` / `ld.lld`) available to turn staged EFI stub objects into final `.efi` applications | — |
 | `scripts/probe_virtualbox_armv8_vm.sh` | Headless ARMv8 VirtualBox boot probe: registers a temporary VM, attaches the staged developer-lane VDI, boots VBox EFI, captures `VBox.log`, and confirms firmware-visible AHCI disk attachment before cleanup | — |
+| `scripts/run_qemu_armv8_efi_control.sh` | QEMU AArch64 EFI control probe: boots the ARM developer-lane raw image under EDK2, captures serial output, and verifies whether the staged control EFI leaves its execution marker | — |
 | `mmu/ternary_page_alloc.hpp/.cpp` | Physical page allocator; balanced-ternary `PageState` {Free=-1, Reserved=0, Allocated=+1}; `alloc_page`, `alloc_contiguous`, `free_page` | 28 |
 | `sched/tisc_context.hpp` | `TiscContext` — full TISC thread snapshot; `ThreadState` {Sleeping=-1, Ready=0, Running=+1} | — |
 | `sched/context_switch.hpp/.cpp` | `context_save` / `context_restore` / `context_yield` over `t81::vm::ThreadContext` | 43 |
@@ -56,6 +57,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - The ARMv8 artifact layout has been tightened for local debugging: the staged disk now places `STARTUP.NSH` at both `/STARTUP.NSH` and `/EFI/BOOT/STARTUP.NSH`, and the shell script attempts to leave a `TERNOS/startup-ran.txt` marker before chaining to `BOOTAA64.EFI`.
 - Even with that stronger shell fallback, current Apple Silicon VirtualBox runs still show no execution evidence: the VM attaches the VDI correctly, but local probes still produce an empty UART log and no `startup-ran.txt` or `efi-ran.txt` markers on the post-boot disk.
 - The ARM control experiment is now in place as a stricter discriminator: `BOOTAA64_CTRL.EFI` is staged ahead of the shim-backed app and only attempts to leave `efi-ctrl-ran.txt`, but current probes still show no `startup-ran.txt`, `efi-ctrl-ran.txt`, or `efi-ran.txt` markers and no UART output.
+- A separate QEMU AArch64 EFI control probe is now available locally. Under QEMU + EDK2 on this Apple Silicon host, the staged ARM image does execute the EFI control application and leaves `TERNOS/efi-ran.txt`, proving the ARM PE/COFF artifact is viable in an observable AArch64 EFI environment.
 - Program decision: stop escalating local ARMv8 boot-layout experiments and prepare the official `x86_64` acceptance lane as a handoff package instead; the runbook for that external validation path is now checked in.
 - That handoff path is now reproducible as a single build target: the `x86_64` VirtualBox artifact, profile summary, demo transcript, and runbook can be packaged into a tarball for external validation on a real `x86_64` host.
 
@@ -176,7 +178,7 @@ ctest --test-dir build -R ternaryos -V
 
 | # | Question | Blocking |
 | :-- | :--- | :--- |
-| OQ-1 | Guest artifact format is now narrowed to a GPT EFI-partitioned raw disk + VBox VDI wrapper; EFI linking now works for the ARMv8 developer lane, but actual VirtualBox ARM boot selection / handoff remains unproven | Phase 1 promotion |
+| OQ-1 | Guest artifact format is now narrowed to a GPT EFI-partitioned raw disk + VBox VDI wrapper; EFI linking now works for the ARMv8 developer lane, and QEMU AArch64 proves the ARM EFI control app executes, but actual VirtualBox ARM boot selection / handoff remains unproven | Phase 1 promotion |
 | OQ-2 | First supported VirtualBox device profile is intentionally narrow (VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC); implementation is now scaffolded, but host/target architecture mismatch still blocks acceptance-lane local boot proof and ARM developer-lane EFI execution remains unobserved | Phase 1 promotion |
 | OQ-3 | CI target remains unresolved: headless VirtualBox vs. QEMU for automation, with VirtualBox reserved for demo/dev validation | Phase 1 promotion |
 | OQ-4 | TISC interrupt semantics — frozen ISA has no trap-return opcode; shadow dispatch table is the current workaround | Phase 4 |

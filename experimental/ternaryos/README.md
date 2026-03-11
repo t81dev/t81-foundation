@@ -26,6 +26,7 @@ hal/
   virtualbox_guest_devices.hpp/.cpp  VirtualBox profile-to-device binding helpers
   virtualbox_efi_stub.c  Freestanding VBox EFI stub source for BOOTX64 handoff
   virtualbox_armv8_efi_stub.c  Freestanding VBox EFI stub source for BOOTAA64 handoff
+  virtualbox_armv8_efi_control.c  Minimal ARMv8 EFI control app for execution probes
   virtualbox_armv8_efi_shim.c  Temporary ARMv8 developer-lane EFI link shim
 
 mmu/
@@ -162,6 +163,20 @@ Outputs:
 - `build/ternaryos/virtualbox_armv8/armv8_boot_probe_summary.txt`
 - `build/ternaryos/virtualbox_armv8/efi-link-status.txt`
 
+To run the ARM EFI control app in a more observable local AArch64 EFI
+environment under QEMU:
+
+```sh
+/bin/zsh experimental/ternaryos/scripts/run_qemu_armv8_efi_control.sh \
+  build/ternaryos/virtualbox_armv8/ternos_virtualbox_armv8_dev_guest.img \
+  build/ternaryos/qemu_armv8_control
+```
+
+Outputs:
+
+- `build/ternaryos/qemu_armv8_control/qemu-armv8-control-serial.log`
+- `build/ternaryos/qemu_armv8_control/edk2-aarch64-vars.fd`
+
 Current status:
 
 - the image is FAT-formatted and VirtualBox-ready as a disk artifact
@@ -171,6 +186,7 @@ Current status:
 - the ARMv8 developer lane now goes one step further locally: VirtualBox firmware can boot headless, open the staged VDI through AHCI, and emit a captured `VBox.log`
 - with `lld` installed, the ARMv8 lane now emits a real `BOOTAA64.EFI`, but it is still a developer-lane shim rather than the true C++ HAL bridge
 - a separate control `BOOTAA64_CTRL.EFI` now exists for the ARMv8 lane and is staged ahead of the shim-backed app in `STARTUP.NSH`; current local probes still show no `startup-ran.txt`, `efi-ctrl-ran.txt`, or `efi-ran.txt` markers, which strongly suggests the local blocker is VirtualBox ARM EFI execution/boot selection rather than the TernOS HAL bridge
+- that VirtualBox-specific conclusion is now stronger because the same ARM image executes under local QEMU AArch64 + EDK2 and leaves `TERNOS/efi-ran.txt`; the current blind spot is therefore the local VirtualBox ARM path, not the basic ARM EFI control artifact
 
 ## Validation Lanes
 
