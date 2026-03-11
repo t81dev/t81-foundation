@@ -32,7 +32,9 @@ std::vector<std::string> split_lines(const std::string& text) {
   return out;
 }
 
-Element shell_tui_document(const t81::ternaryos::ShellSessionState& state) {
+Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
+                           std::size_t selected_command,
+                           const std::string& status_line) {
   Elements transcript;
   for (const auto& line : state.transcript_lines) {
     const bool is_prompt = line.rfind("tsh>", 0) == 0;
@@ -49,8 +51,14 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state) {
   };
 
   Elements commands;
-  for (const auto& command : state.available_commands) {
-    commands.push_back(text(command) | color(Color::Magenta));
+  for (std::size_t i = 0; i < state.available_commands.size(); ++i) {
+    auto command = text(state.available_commands[i]);
+    if (i == selected_command) {
+      command = command | bold | color(Color::Black) | bgcolor(Color::Magenta);
+    } else {
+      command = command | color(Color::Magenta);
+    }
+    commands.push_back(command);
   }
 
   Elements framebuffer;
@@ -60,9 +68,9 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state) {
 
   auto header = hbox({
       text(" TernOS Shell ") | bold | color(Color::Black) | bgcolor(Color::Cyan),
-      text("  Phase 5 scripted TUI ") | color(Color::White),
+      text("  Phase 5 builtins TUI ") | color(Color::White),
       filler(),
-      text(" q quit ") | color(Color::GrayDark),
+      text(" arrows/jk move  enter run  q quit ") | color(Color::GrayDark),
   });
 
   auto transcript_panel = window(
@@ -71,7 +79,11 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state) {
 
   auto status_panel = window(
       text(" Session ") | bold | color(Color::Green),
-      vbox(std::move(status)) | flex);
+      vbox({
+          vbox(std::move(status)) | flex,
+          separator(),
+          text(status_line) | color(Color::Yellow),
+      }) | flex);
 
   auto commands_panel = window(
       text(" Builtins ") | bold | color(Color::Magenta),
@@ -99,24 +111,55 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state) {
 }  // namespace
 
 int main(int argc, char** argv) {
-  const auto state = t81::ternaryos::build_scripted_shell_session(true);
-  if (!state.has_value()) {
+  auto scripted = t81::ternaryos::build_scripted_shell_session(true);
+  if (!scripted.has_value()) {
     std::fputs("build_scripted_shell_session failed\n", stderr);
     return 1;
   }
 
   if (argc > 1 && std::string(argv[1]) == "--snapshot") {
     auto screen = Screen::Create(Dimension::Fixed(100), Dimension::Fixed(30));
-    Render(screen, shell_tui_document(*state));
+    Render(screen, shell_tui_document(*scripted, 0, "snapshot replay"));
     std::printf("%s", screen.ToString().c_str());
     return 0;
   }
 
-  auto renderer = Renderer([&] { return shell_tui_document(*state); });
+  auto session = t81::ternaryos::ShellSession::create(true);
+  if (!session.has_value()) {
+    std::fputs("ShellSession::create failed\n", stderr);
+    return 1;
+  }
+
+  std::size_t selected_command = 0;
+  std::string status_line = "ready";
+
+  auto renderer = Renderer([&] {
+    return shell_tui_document(session->state(), selected_command, status_line);
+  });
   auto screen = ScreenInteractive::Fullscreen();
   auto app = CatchEvent(renderer, [&](Event event) {
+    const auto command_count = session->state().available_commands.size();
     if (event == Event::Character('q') || event == Event::Escape) {
       screen.ExitLoopClosure()();
+      return true;
+    }
+    if (command_count == 0) return false;
+    if (event == Event::ArrowUp || event == Event::Character('k')) {
+      selected_command =
+          selected_command == 0 ? command_count - 1 : selected_command - 1;
+      return true;
+    }
+    if (event == Event::ArrowDown || event == Event::Character('j')) {
+      selected_command = (selected_command + 1) % command_count;
+      return true;
+    }
+    if (event == Event::Return || event == Event::Character(' ')) {
+      const auto& command = session->state().available_commands[selected_command];
+      if (session->execute_command(command)) {
+        status_line = "executed: " + command;
+      } else {
+        status_line = "execution failed: " + command;
+      }
       return true;
     }
     return false;

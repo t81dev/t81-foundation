@@ -11,7 +11,7 @@
 
 Prototype implementation of TernOS — a ternary-native OS kernel for the T81VM
 runtime. Phases 1 through 3 are complete, Phase 4 device-driver work is in
-progress, and Phase 5 now has a first scripted shell/TUI path on top of the
+progress, and Phase 5 now has a first built-in shell/TUI path on top of the
 hosted guest-bootstrap path.
 
 ## Structure
@@ -58,7 +58,7 @@ dev/
   net_packet.hpp       Ternary Ethernet packet wrapper + binary frame codec
 
 demo.cpp               Phase 4 hosted presentation demo
-shell_session.hpp/.cpp Phase 5 scripted shell session backend over guest bootstrap
+shell_session.hpp/.cpp Phase 5 shell session backend over guest bootstrap
 shell_demo.cpp         Phase 5 verbose shell backend proof
 shell_tui.cpp          Phase 5 FTXUI shell frontend with snapshot mode
 
@@ -144,10 +144,12 @@ What the TUI adds:
   - `profile`
   - `store put`
   - `history`
+- a live selection/execution loop in the interactive TUI:
+  - `Up` / `Down` or `j` / `k` selects a built-in
+  - `Enter` or `Space` executes it into the transcript
 
 What it is not yet:
 
-- interactive
 - TISC userland code
 - a general command parser or process manager
 

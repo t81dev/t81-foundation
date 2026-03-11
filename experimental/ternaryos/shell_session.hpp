@@ -3,7 +3,10 @@
 #include <cstddef>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
+
+#include "t81/canonfs/canon_types.hpp"
 
 namespace t81::ternaryos {
 
@@ -26,6 +29,26 @@ struct ShellSessionState {
 };
 
 std::vector<std::string> default_shell_command_sequence();
+
+class ShellSession {
+public:
+  static std::optional<ShellSession> create(bool quiet_boot = false);
+
+  const ShellSessionState& state() const { return state_; }
+
+  bool execute_command(std::string_view command);
+
+private:
+  explicit ShellSession(bool quiet_boot);
+
+  bool initialize();
+  bool refresh_render();
+
+  bool        quiet_boot_{false};
+  std::string store_path_;
+  ShellSessionState state_;
+  std::optional<t81::canonfs::CanonRef> history_ref_;
+};
 
 std::optional<ShellSessionState> build_scripted_shell_session(bool quiet_boot = false);
 

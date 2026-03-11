@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <array>
 #include <cctype>
+#include <chrono>
 #include <cstring>
 #include <filesystem>
 #include <sstream>
@@ -56,6 +57,11 @@ std::string join_lines(const std::vector<std::string>& lines) {
     joined += lines[i];
   }
   return joined;
+}
+
+std::string unique_store_path() {
+  const auto ticks = std::chrono::steady_clock::now().time_since_epoch().count();
+  return "/tmp/ternos_shell_session_" + std::to_string(ticks) + ".blk";
 }
 
 std::vector<std::string> split_words(const std::string& command) {
@@ -125,98 +131,126 @@ std::vector<std::string> default_shell_command_sequence() {
   return {kBuiltinCommands.begin(), kBuiltinCommands.end()};
 }
 
-std::optional<ShellSessionState> build_scripted_shell_session(bool quiet_boot) {
-  const std::string path = "/tmp/ternos_shell_demo_store.blk";
-  StdoutSilencer silencer(quiet_boot);
+ShellSession::ShellSession(bool quiet_boot) : quiet_boot_(quiet_boot), store_path_(unique_store_path()) {
+  state_.available_commands = {kBuiltinCommands.begin(), kBuiltinCommands.end()};
+}
+
+bool ShellSession::initialize() {
+  HostedBlockDev backing(48, "shell-demo-ahci");
+  backing.set_backing_file(store_path_);
 
   VBoxBootSpec spec;
   spec.ram_bytes = 128ULL * 1024 * 1024;
 
-  t81::canonfs::CanonRef history_ref;
-  std::vector<ShellStep> steps;
-  const auto command_sequence = default_shell_command_sequence();
-  const std::vector<std::string> available_commands = {
-      kBuiltinCommands.begin(), kBuiltinCommands.end()};
+  StdoutSilencer silencer(quiet_boot_);
+  auto guest = bootstrap_virtualbox_guest(spec, backing);
+  if (!guest.has_value()) return false;
+  if (hal_main(guest->boot_context) != 0) return false;
 
-  {
-    HostedBlockDev backing(48, "shell-demo-ahci");
-    backing.set_backing_file(path);
+  state_.profile_summary = guest->profile_summary;
+  state_.storage_binding_name = guest->storage.binding_name;
+  state_.display_binding_name = guest->display.binding_name;
+  if (!backing.flush()) return false;
+  return refresh_render();
+}
 
-    auto guest = bootstrap_virtualbox_guest(spec, backing);
-    if (!guest.has_value()) return std::nullopt;
-    if (hal_main(guest->boot_context) != 0) return std::nullopt;
+bool ShellSession::refresh_render() {
+  auto loaded = HostedBlockDev::load(store_path_);
+  if (!loaded.has_value()) return false;
 
-    CanonStore store(*guest->storage.device);
-    for (const auto& command : command_sequence) {
-      const auto words = split_words(command);
-      if (words.empty()) continue;
-
-      if (words[0] == "help") {
-        steps.push_back({command, "builtins help profile store put history"});
-        continue;
-      }
-
-      if (words[0] == "profile") {
-        steps.push_back({command, guest->profile_summary});
-        continue;
-      }
-
-      if (words.size() == 2 && words[0] == "store" && words[1] == "put") {
-        const auto persisted_lines = render_transcript_lines(steps);
-        const auto persisted_text = join_lines(persisted_lines);
-        auto ref = store.put(make_text_block(persisted_text));
-        if (!ref.has_value()) return std::nullopt;
-        history_ref = *ref;
-        if (!store.flush()) return std::nullopt;
-        steps.push_back({command, "canon durable ok"});
-        continue;
-      }
-    }
-  }
-
-  auto loaded = HostedBlockDev::load(path);
-  if (!loaded.has_value()) return std::nullopt;
-
+  VBoxBootSpec spec;
+  spec.ram_bytes = 128ULL * 1024 * 1024;
+  StdoutSilencer silencer(quiet_boot_);
   auto guest = bootstrap_virtualbox_guest(spec, *loaded);
-  if (!guest.has_value()) return std::nullopt;
-  if (hal_main(guest->boot_context) != 0) return std::nullopt;
+  if (!guest.has_value()) return false;
+  if (hal_main(guest->boot_context) != 0) return false;
 
-  CanonStore recovered_store(*guest->storage.device);
-  const auto recovered = recovered_store.rebuild_index();
-  const auto history = recovered_store.get(history_ref);
-  if (!history.has_value()) return std::nullopt;
-
-  for (const auto& command : command_sequence) {
-    const auto words = split_words(command);
-    if (words.size() == 1 && words[0] == "history") {
-      steps.push_back({command, "reboot recovered " + std::to_string(recovered)});
+  auto lines = render_transcript_lines([&] {
+    std::vector<ShellStep> steps;
+    for (const auto& record : state_.command_records) {
+      steps.push_back({record.command, record.result});
     }
-  }
-
-  const auto lines = render_transcript_lines(steps);
-  const std::string transcript = join_lines(lines);
+    return steps;
+  }());
+  state_.transcript_lines = std::move(lines);
+  state_.transcript_text = join_lines(state_.transcript_lines);
 
   auto& fb = guest->display.device->framebuffer();
   fb.clear();
-  const auto rendered = ttf_render_text(fb, 0, 0, transcript);
-  if (!guest->display.device->present()) return std::nullopt;
+  state_.rendered_glyphs = ttf_render_text(fb, 0, 0, state_.transcript_text);
+  if (!guest->display.device->present()) return false;
+  state_.framebuffer_ascii = guest->display.device->last_present_ascii();
+  return true;
+}
 
-  ShellSessionState state;
-  state.profile_summary = guest->profile_summary;
-  state.storage_binding_name = guest->storage.binding_name;
-  state.display_binding_name = guest->display.binding_name;
-  state.recovered_entries = recovered;
-  state.rendered_glyphs = rendered;
-  state.available_commands = available_commands;
-  for (const auto& step : steps) {
-    state.command_records.push_back({step.command, step.result});
+std::optional<ShellSession> ShellSession::create(bool quiet_boot) {
+  ShellSession session(quiet_boot);
+  if (!session.initialize()) return std::nullopt;
+  return std::optional<ShellSession>(std::move(session));
+}
+
+bool ShellSession::execute_command(std::string_view command_view) {
+  const std::string command(command_view);
+  const auto words = split_words(command);
+  if (words.empty()) return false;
+
+  if (words[0] == "help") {
+    state_.command_records.push_back({command, "builtins help profile store put history"});
+    return refresh_render();
   }
-  state.transcript_lines = lines;
-  state.transcript_text = transcript;
-  state.framebuffer_ascii = guest->display.device->last_present_ascii();
 
-  std::filesystem::remove(path);
-  return state;
+  if (words[0] == "profile") {
+    state_.command_records.push_back({command, state_.profile_summary});
+    return refresh_render();
+  }
+
+  VBoxBootSpec spec;
+  spec.ram_bytes = 128ULL * 1024 * 1024;
+  auto loaded = HostedBlockDev::load(store_path_);
+  if (!loaded.has_value()) return false;
+
+  StdoutSilencer silencer(quiet_boot_);
+  auto guest = bootstrap_virtualbox_guest(spec, *loaded);
+  if (!guest.has_value()) return false;
+  if (hal_main(guest->boot_context) != 0) return false;
+
+  CanonStore store(*guest->storage.device);
+
+  if (words.size() == 2 && words[0] == "store" && words[1] == "put") {
+    const auto payload = state_.transcript_text.empty() ? std::string("TSH PHASE5 READY")
+                                                        : state_.transcript_text;
+    auto ref = store.put(make_text_block(payload));
+    if (!ref.has_value()) return false;
+    history_ref_ = *ref;
+    if (!store.flush()) return false;
+    state_.command_records.push_back({command, "canon durable ok"});
+    return refresh_render();
+  }
+
+  if (words[0] == "history") {
+    std::string result = "reboot recovered 0";
+    if (history_ref_.has_value()) {
+      const auto recovered = store.rebuild_index();
+      const auto history = store.get(*history_ref_);
+      if (history.has_value()) result = "reboot recovered " + std::to_string(recovered);
+    }
+    state_.recovered_entries = store.rebuild_index();
+    state_.command_records.push_back({command, result});
+    return refresh_render();
+  }
+
+  return false;
+}
+
+std::optional<ShellSessionState> build_scripted_shell_session(bool quiet_boot) {
+  auto session = ShellSession::create(quiet_boot);
+  if (!session.has_value()) return std::nullopt;
+
+  const auto command_sequence = default_shell_command_sequence();
+  for (const auto& command : command_sequence) {
+    if (!session->execute_command(command)) return std::nullopt;
+  }
+  return session->state();
 }
 
 }  // namespace t81::ternaryos
