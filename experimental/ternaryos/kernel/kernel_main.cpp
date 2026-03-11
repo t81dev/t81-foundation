@@ -67,6 +67,13 @@ KernelRuntimeState::ProcessGroupState* create_process_group(KernelRuntimeState& 
   return inserted ? &it->second : nullptr;
 }
 
+KernelRuntimeState::SupervisorState* create_supervisor(KernelRuntimeState& state) {
+  const SupervisorId id = state.next_supervisor_id++;
+  auto [it, inserted] =
+      state.supervisors.emplace(id, KernelRuntimeState::SupervisorState{.id = id});
+  return inserted ? &it->second : nullptr;
+}
+
 KernelRuntimeState::ProcessGroupState* assign_thread_to_group(
     KernelRuntimeState& state, sched::Tid tid, ProcessGroupId process_group_id) {
   auto* thread_state = state.find_thread_runtime_mut(tid);
@@ -77,6 +84,50 @@ KernelRuntimeState::ProcessGroupState* assign_thread_to_group(
   thread_state->process_group_id = process_group_id;
   group_state->member_tids.push_back(tid);
   return group_state;
+}
+
+KernelRuntimeState::SupervisorState* assign_group_to_supervisor(
+    KernelRuntimeState& state, ProcessGroupId process_group_id, SupervisorId supervisor_id) {
+  auto* supervisor_state = state.find_supervisor_mut(supervisor_id);
+  auto* group_state = state.find_process_group_mut(process_group_id);
+  if (!supervisor_state || !group_state) {
+    return nullptr;
+  }
+  supervisor_state->managed_groups.push_back(process_group_id);
+  state.process_group_supervisors[process_group_id] = supervisor_id;
+  return supervisor_state;
+}
+
+bool queue_supervisor_pending_group(KernelRuntimeState& state,
+                                    ProcessGroupId process_group_id,
+                                    sched::Tid subject_tid,
+                                    mmu::MmuFault fault) {
+  const auto supervisor_id = state.find_process_group_supervisor(process_group_id);
+  if (!supervisor_id.has_value()) {
+    return false;
+  }
+  auto* supervisor_state = state.find_supervisor_mut(*supervisor_id);
+  if (!supervisor_state) {
+    return false;
+  }
+  bool already_pending = false;
+  for (auto pending_group_id : supervisor_state->pending_groups) {
+    if (pending_group_id == process_group_id) {
+      already_pending = true;
+      break;
+    }
+  }
+  if (!already_pending) {
+    supervisor_state->pending_groups.push_back(process_group_id);
+  }
+  ++supervisor_state->fault_notifications;
+  ++state.counters.supervisor_fault_notifications;
+  record_audit_event(state,
+                     KernelAuditEventKind::SupervisorFaultNotified,
+                     subject_tid,
+                     process_group_id,
+                     fault);
+  return true;
 }
 
 void record_fault(KernelRuntimeState& state,
@@ -176,6 +227,14 @@ std::optional<KernelRuntimeState> axion_kernel_bootstrap(
           .id = KernelRuntimeState::kKernelProcessGroup,
           .member_tids = {KernelRuntimeState::kKernelTid},
       });
+  state.supervisors.emplace(
+      KernelRuntimeState::kKernelSupervisor,
+      KernelRuntimeState::SupervisorState{
+          .id = KernelRuntimeState::kKernelSupervisor,
+          .managed_groups = {KernelRuntimeState::kKernelProcessGroup},
+      });
+  state.process_group_supervisors.emplace(KernelRuntimeState::kKernelProcessGroup,
+                                          KernelRuntimeState::kKernelSupervisor);
   state.device_arbitration = bootstrap_device_arbitration(ctx.platform_id);
   return state;
 }
@@ -206,7 +265,14 @@ std::optional<sched::Tid> axion_kernel_spawn_thread(
     KernelRuntimeState& state,
     sched::TiscContext ctx) noexcept {
   auto* group = create_process_group(state);
-  if (!group) {
+  auto* supervisor = create_supervisor(state);
+  if (!group || !supervisor) {
+    if (group) {
+      state.process_groups.erase(group->id);
+    }
+    if (supervisor) {
+      state.supervisors.erase(supervisor->id);
+    }
     return std::nullopt;
   }
   auto tid = state.scheduler.spawn(std::move(ctx));
@@ -218,8 +284,10 @@ std::optional<sched::Tid> axion_kernel_spawn_thread(
                                      .process_group_id = group->id,
                                  });
     assign_thread_to_group(state, *tid, group->id);
+    assign_group_to_supervisor(state, group->id, supervisor->id);
   } else {
     state.process_groups.erase(group->id);
+    state.supervisors.erase(supervisor->id);
   }
   return tid;
 }
@@ -291,6 +359,8 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
                              group_state->id,
                              state.last_delivered_fault->fault);
         }
+        queue_supervisor_pending_group(
+            state, group_state->id, subject_tid, state.last_delivered_fault->fault);
       }
 
       if (subject_tid != KernelRuntimeState::kKernelTid && !thread_state->quarantined) {
@@ -396,7 +466,8 @@ bool axion_kernel_ack_thread_fault(KernelRuntimeState& state,
 bool axion_kernel_ack_process_group_fault(KernelRuntimeState& state,
                                           ProcessGroupId process_group_id) noexcept {
   auto* group_state = state.find_process_group_mut(process_group_id);
-  if (!group_state || !group_state->faulted || !group_state->acknowledgement_pending) {
+  if (!group_state || !group_state->faulted || !group_state->acknowledgement_pending ||
+      group_state->pending_fault_count != 0) {
     return false;
   }
 
@@ -420,6 +491,52 @@ bool axion_kernel_ack_process_group_fault(KernelRuntimeState& state,
       recovered_any = maybe_recover_thread(state, *thread_state) || recovered_any;
     }
   }
+  return true;
+}
+
+bool axion_kernel_ack_supervisor_group_fault(KernelRuntimeState& state,
+                                             SupervisorId supervisor_id,
+                                             ProcessGroupId process_group_id) noexcept {
+  auto* supervisor_state = state.find_supervisor_mut(supervisor_id);
+  if (!supervisor_state) {
+    return false;
+  }
+  const auto mapped_supervisor = state.find_process_group_supervisor(process_group_id);
+  if (!mapped_supervisor.has_value() || *mapped_supervisor != supervisor_id) {
+    return false;
+  }
+  auto pending_it = supervisor_state->pending_groups.end();
+  for (auto it = supervisor_state->pending_groups.begin();
+       it != supervisor_state->pending_groups.end();
+       ++it) {
+    if (*it == process_group_id) {
+      pending_it = it;
+      break;
+    }
+  }
+  if (pending_it == supervisor_state->pending_groups.end()) {
+    return false;
+  }
+  ++supervisor_state->acknowledgements;
+  ++state.counters.supervisor_acknowledgements;
+  record_audit_event(state,
+                     KernelAuditEventKind::SupervisorGroupAcknowledged,
+                     KernelRuntimeState::kKernelTid,
+                     process_group_id);
+  if (!axion_kernel_ack_process_group_fault(state, process_group_id)) {
+    --supervisor_state->acknowledgements;
+    --state.counters.supervisor_acknowledgements;
+    state.audit_log.pop_back();
+    state.last_audit_event =
+        state.audit_log.empty() ? std::nullopt : std::optional<KernelAuditRecord>(state.audit_log.back());
+    --state.counters.audit_events_recorded;
+    return false;
+  }
+  supervisor_state = state.find_supervisor_mut(supervisor_id);
+  if (!supervisor_state) {
+    return false;
+  }
+  supervisor_state->pending_groups.erase(pending_it);
   return true;
 }
 

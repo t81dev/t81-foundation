@@ -18,6 +18,7 @@
 namespace t81::ternaryos::kernel {
 
 using ProcessGroupId = uint32_t;
+using SupervisorId = uint32_t;
 
 struct KernelFaultRecord {
   std::string platform_id;
@@ -31,8 +32,10 @@ enum class KernelAuditEventKind : uint8_t {
   FaultDelivered = 0,
   ThreadQuarantined,
   ProcessGroupFaultEntered,
+  SupervisorFaultNotified,
   ThreadFaultAcknowledged,
   ProcessGroupAcknowledged,
+  SupervisorGroupAcknowledged,
   ThreadRecovered,
 };
 
@@ -86,6 +89,14 @@ struct KernelRuntimeState {
     ProcessGroupAuditCounters counters{};
   };
 
+  struct SupervisorState {
+    SupervisorId id{0};
+    std::vector<ProcessGroupId> managed_groups;
+    std::deque<ProcessGroupId> pending_groups;
+    uint64_t fault_notifications{0};
+    uint64_t acknowledgements{0};
+  };
+
   struct Counters {
     uint64_t loop_iterations{0};
     uint64_t scheduler_ticks{0};
@@ -101,6 +112,8 @@ struct KernelRuntimeState {
     uint64_t process_group_fault_entries{0};
     uint64_t process_group_acknowledgements{0};
     uint64_t process_group_recoveries{0};
+    uint64_t supervisor_fault_notifications{0};
+    uint64_t supervisor_acknowledgements{0};
     uint64_t audit_events_recorded{0};
   };
 
@@ -118,11 +131,14 @@ struct KernelRuntimeState {
   std::deque<KernelAuditRecord> audit_log;
   std::unordered_map<sched::Tid, ThreadRuntimeState> thread_runtime;
   std::unordered_map<ProcessGroupId, ProcessGroupState> process_groups;
+  std::unordered_map<SupervisorId, SupervisorState> supervisors;
+  std::unordered_map<ProcessGroupId, SupervisorId> process_group_supervisors;
   t81::vm::ThreadContext cpu_context{};
   Counters counters{};
   std::optional<KernelFaultRecord> last_delivered_fault{};
   std::optional<KernelAuditRecord> last_audit_event{};
   ProcessGroupId next_process_group_id{1};
+  SupervisorId next_supervisor_id{1};
   uint64_t next_audit_sequence{1};
 
   KernelRuntimeState(std::string platform_id_in,
@@ -138,6 +154,7 @@ struct KernelRuntimeState {
 
   static constexpr sched::Tid kKernelTid = 0;
   static constexpr ProcessGroupId kKernelProcessGroup = 0;
+  static constexpr SupervisorId kKernelSupervisor = 0;
   static constexpr std::size_t kMaxFaultLog = 27;
   static constexpr std::size_t kMaxAuditLog = 81;
 
@@ -145,6 +162,7 @@ struct KernelRuntimeState {
   std::size_t pending_fault_count() const noexcept { return pending_faults.size(); }
   std::size_t audit_count() const noexcept { return audit_log.size(); }
   std::size_t process_group_count() const noexcept { return process_groups.size(); }
+  std::size_t supervisor_count() const noexcept { return supervisors.size(); }
   bool has_device_arbitration() const noexcept { return device_arbitration.has_value(); }
 
   const ThreadRuntimeState* find_thread_runtime(sched::Tid tid) const noexcept {
@@ -165,6 +183,25 @@ struct KernelRuntimeState {
   ProcessGroupState* find_process_group_mut(ProcessGroupId id) noexcept {
     auto it = process_groups.find(id);
     return it == process_groups.end() ? nullptr : &it->second;
+  }
+
+  const SupervisorState* find_supervisor(SupervisorId id) const noexcept {
+    auto it = supervisors.find(id);
+    return it == supervisors.end() ? nullptr : &it->second;
+  }
+
+  SupervisorState* find_supervisor_mut(SupervisorId id) noexcept {
+    auto it = supervisors.find(id);
+    return it == supervisors.end() ? nullptr : &it->second;
+  }
+
+  std::optional<SupervisorId> find_process_group_supervisor(
+      ProcessGroupId process_group_id) const noexcept {
+    auto it = process_group_supervisors.find(process_group_id);
+    if (it == process_group_supervisors.end()) {
+      return std::nullopt;
+    }
+    return it->second;
   }
 };
 
@@ -215,6 +252,10 @@ bool axion_kernel_ack_thread_fault(KernelRuntimeState& state,
 
 bool axion_kernel_ack_process_group_fault(KernelRuntimeState& state,
                                           ProcessGroupId process_group_id) noexcept;
+
+bool axion_kernel_ack_supervisor_group_fault(KernelRuntimeState& state,
+                                             SupervisorId supervisor_id,
+                                             ProcessGroupId process_group_id) noexcept;
 
 int axion_kernel_main(const hal::BootContext& ctx) noexcept;
 

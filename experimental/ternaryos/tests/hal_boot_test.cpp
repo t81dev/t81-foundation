@@ -1032,25 +1032,219 @@ static void test_kernel_process_group_audit_log() {
     }
   }
   check(observed.size() >= 6, "audit log exposes at least six relevant events");
-  if (observed.size() >= 6) {
+  if (observed.size() >= 7) {
     check(observed[0] == KernelAuditEventKind::FaultDelivered,
           "audit event[0] is fault delivered");
     check(observed[1] == KernelAuditEventKind::ProcessGroupFaultEntered,
           "audit event[1] is process-group fault entry");
-    check(observed[2] == KernelAuditEventKind::ThreadQuarantined,
-          "audit event[2] is thread quarantined");
-    check(observed[3] == KernelAuditEventKind::ThreadFaultAcknowledged,
-          "audit event[3] is thread acknowledgement");
-    check(observed[4] == KernelAuditEventKind::ProcessGroupAcknowledged,
-          "audit event[4] is process-group acknowledgement");
-    check(observed[5] == KernelAuditEventKind::ThreadRecovered,
-          "audit event[5] is thread recovery");
+    check(observed[2] == KernelAuditEventKind::SupervisorFaultNotified,
+          "audit event[2] is supervisor fault notification");
+    check(observed[3] == KernelAuditEventKind::ThreadQuarantined,
+          "audit event[3] is thread quarantined");
+    check(observed[4] == KernelAuditEventKind::ThreadFaultAcknowledged,
+          "audit event[4] is thread acknowledgement");
+    check(observed[5] == KernelAuditEventKind::ProcessGroupAcknowledged,
+          "audit event[5] is process-group acknowledgement");
+    check(observed[6] == KernelAuditEventKind::ThreadRecovered,
+          "audit event[6] is thread recovery");
   }
 
   uint64_t last_sequence = 0;
   for (const auto& entry : state->audit_log) {
     check(entry.sequence > last_sequence, "audit event sequences are strictly increasing");
     last_sequence = entry.sequence;
+  }
+}
+
+static void test_kernel_supervisor_fault_boundary() {
+  std::printf("\n[AC-27] Axion kernel assigns deterministic supervisor ownership to process groups\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for supervisor boundary");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext leader;
+  leader.label = "supervisor-leader";
+  leader.registers[0] = 601;
+  auto leader_tid = axion_kernel_spawn_thread(*state, leader);
+  check(leader_tid.has_value(), "leader thread spawns successfully");
+  if (!leader_tid) {
+    return;
+  }
+
+  const auto* leader_runtime = state->find_thread_runtime(*leader_tid);
+  check(leader_runtime != nullptr, "leader runtime exists");
+  if (!leader_runtime) {
+    return;
+  }
+  const auto group_a = leader_runtime->process_group_id;
+
+  t81::ternaryos::sched::TiscContext sibling;
+  sibling.label = "supervisor-sibling";
+  sibling.registers[0] = 602;
+  auto sibling_tid = axion_kernel_spawn_thread_in_group(*state, sibling, group_a);
+  check(sibling_tid.has_value(), "sibling thread spawns into leader group");
+
+  t81::ternaryos::sched::TiscContext outsider;
+  outsider.label = "supervisor-outsider";
+  outsider.registers[0] = 603;
+  auto outsider_tid = axion_kernel_spawn_thread(*state, outsider);
+  check(outsider_tid.has_value(), "outsider thread spawns successfully");
+  if (!sibling_tid || !outsider_tid) {
+    return;
+  }
+
+  const auto* outsider_runtime = state->find_thread_runtime(*outsider_tid);
+  check(outsider_runtime != nullptr, "outsider runtime exists");
+  if (!outsider_runtime) {
+    return;
+  }
+  const auto group_b = outsider_runtime->process_group_id;
+
+  auto supervisor_a = state->find_process_group_supervisor(group_a);
+  auto supervisor_b = state->find_process_group_supervisor(group_b);
+  check(supervisor_a.has_value(), "leader group resolves to a supervisor");
+  check(supervisor_b.has_value(), "outsider group resolves to a supervisor");
+  if (!supervisor_a || !supervisor_b) {
+    return;
+  }
+  check(*supervisor_a != *supervisor_b, "distinct process groups get distinct supervisors");
+  check(state->supervisor_count() == 3,
+        "kernel runtime tracks kernel supervisor plus two user supervisors");
+
+  const auto* supervisor_a_state = state->find_supervisor(*supervisor_a);
+  const auto* supervisor_b_state = state->find_supervisor(*supervisor_b);
+  check(supervisor_a_state != nullptr, "supervisor A state exists");
+  check(supervisor_b_state != nullptr, "supervisor B state exists");
+  if (!supervisor_a_state || !supervisor_b_state) {
+    return;
+  }
+  check(supervisor_a_state->managed_groups.size() == 1,
+        "supervisor A manages exactly one process group");
+  check(supervisor_b_state->managed_groups.size() == 1,
+        "supervisor B manages exactly one process group");
+
+  check(axion_kernel_step(*state), "supervisor boundary step dispatches leader");
+  check(state->scheduler.current_tid() == *leader_tid, "leader runs before supervisor fault");
+
+  auto fault_report = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(51, 0), mmu::MmuAccessMode::Read);
+  check(fault_report.fault.has_value(), "supervisor boundary records leader fault");
+  check(axion_kernel_step(*state), "supervisor boundary delivers the leader fault");
+
+  supervisor_a_state = state->find_supervisor(*supervisor_a);
+  supervisor_b_state = state->find_supervisor(*supervisor_b);
+  check(supervisor_a_state->pending_groups.size() == 1,
+        "faulted group is queued exactly once for its supervisor");
+  check(supervisor_a_state->pending_groups.front() == group_a,
+        "supervisor pending queue records the owning process group");
+  check(supervisor_b_state->pending_groups.empty(),
+        "unrelated supervisor remains unaffected");
+  check(state->counters.supervisor_fault_notifications == 1,
+        "runtime counts one supervisor fault notification");
+}
+
+static void test_kernel_supervisor_acknowledgement_flow() {
+  std::printf("\n[AC-28] Axion kernel requires supervisor acknowledgement for group recovery\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for supervisor acknowledgement");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext worker;
+  worker.label = "supervisor-worker";
+  worker.registers[0] = 611;
+  auto worker_tid = axion_kernel_spawn_thread(*state, worker);
+  check(worker_tid.has_value(), "worker thread spawns successfully");
+  if (!worker_tid) {
+    return;
+  }
+
+  const auto* worker_runtime = state->find_thread_runtime(*worker_tid);
+  check(worker_runtime != nullptr, "worker runtime exists");
+  if (!worker_runtime) {
+    return;
+  }
+  const auto group_id = worker_runtime->process_group_id;
+  auto supervisor_id = state->find_process_group_supervisor(group_id);
+  check(supervisor_id.has_value(), "worker group resolves to a supervisor");
+  if (!supervisor_id) {
+    return;
+  }
+
+  check(axion_kernel_step(*state), "supervisor ack step dispatches the worker");
+  auto fault_report = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(57, 0), mmu::MmuAccessMode::Read);
+  check(fault_report.fault.has_value(), "supervisor ack path records a fault");
+  check(axion_kernel_step(*state), "supervisor ack step delivers the fault");
+
+  check(!axion_kernel_ack_supervisor_group_fault(*state,
+                                                 KernelRuntimeState::kKernelSupervisor,
+                                                 group_id),
+        "wrong supervisor cannot acknowledge a foreign process group");
+  check(!axion_kernel_ack_supervisor_group_fault(*state, *supervisor_id, group_id),
+        "supervisor acknowledgement is gated until thread inbox drains");
+  check(axion_kernel_ack_thread_fault(*state, *worker_tid),
+        "thread acknowledgement drains the worker fault inbox");
+
+  worker_runtime = state->find_thread_runtime(*worker_tid);
+  check(worker_runtime->quarantined,
+        "worker remains quarantined until supervisor acknowledges the group");
+  check(axion_kernel_ack_supervisor_group_fault(*state, *supervisor_id, group_id),
+        "owning supervisor acknowledges the faulted group");
+
+  const auto* supervisor_state = state->find_supervisor(*supervisor_id);
+  const auto* group_state = state->find_process_group(group_id);
+  worker_runtime = state->find_thread_runtime(*worker_tid);
+  check(supervisor_state != nullptr, "supervisor state remains visible");
+  check(group_state != nullptr, "group state remains visible");
+  if (!supervisor_state || !group_state || !worker_runtime) {
+    return;
+  }
+
+  check(supervisor_state->pending_groups.empty(),
+        "supervisor pending queue drains after acknowledgement");
+  check(supervisor_state->acknowledgements == 1,
+        "supervisor acknowledgement counter increments");
+  check(state->counters.supervisor_acknowledgements == 1,
+        "runtime counts supervisor acknowledgements");
+  check(!group_state->faulted, "group fault state clears after supervisor acknowledgement");
+  check(!worker_runtime->quarantined, "worker recovers after supervisor-mediated acknowledgement");
+
+  std::vector<KernelAuditEventKind> observed;
+  for (const auto& entry : state->audit_log) {
+    if (entry.subject_tid == *worker_tid || entry.process_group_id == group_id) {
+      observed.push_back(entry.kind);
+    }
+  }
+  check(observed.size() >= 8, "audit log records supervisor-facing events");
+  if (observed.size() >= 8) {
+    check(observed[0] == KernelAuditEventKind::FaultDelivered,
+          "audit event[0] is fault delivered");
+    check(observed[1] == KernelAuditEventKind::ProcessGroupFaultEntered,
+          "audit event[1] is process-group fault entry");
+    check(observed[2] == KernelAuditEventKind::SupervisorFaultNotified,
+          "audit event[2] is supervisor fault notification");
+    check(observed[3] == KernelAuditEventKind::ThreadQuarantined,
+          "audit event[3] is thread quarantined");
+    check(observed[4] == KernelAuditEventKind::ThreadFaultAcknowledged,
+          "audit event[4] is thread acknowledgement");
+    check(observed[5] == KernelAuditEventKind::SupervisorGroupAcknowledged,
+          "audit event[5] is supervisor acknowledgement");
+    check(observed[6] == KernelAuditEventKind::ProcessGroupAcknowledged,
+          "audit event[6] is process-group acknowledgement");
+    check(observed[7] == KernelAuditEventKind::ThreadRecovered,
+          "audit event[7] is thread recovery");
   }
 }
 
@@ -1087,6 +1281,8 @@ int main() {
   test_kernel_fault_acknowledgement_and_recovery();
   test_kernel_process_group_fault_gate();
   test_kernel_process_group_audit_log();
+  test_kernel_supervisor_fault_boundary();
+  test_kernel_supervisor_acknowledgement_flow();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

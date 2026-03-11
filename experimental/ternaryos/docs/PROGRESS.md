@@ -131,7 +131,7 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - Active device arbitration for the first supported VirtualBox storage/display/network profile is now attached to that same owned boundary.
 - The kernel runtime now also exposes a deterministic loop step plus runtime counters for scheduler and IPC activity.
 - The loop-owned fault delivery path now feeds a real kernel policy boundary: delivered faults are routed into per-thread runtime state, the faulting thread is quarantined deterministically, the owning process group enters a blocked fault state, explicit group acknowledgement gates recovery, and audit-only governance events are recorded in deterministic order.
-- The next kernel step is a small supervisor/service-facing layer above the new process-group boundary rather than another thread-local expansion.
+- The supervisor layer above the process-group boundary is now implemented; the next kernel step is the first service-facing runtime contract above that boundary rather than another kernel-internal fault expansion.
 
 **Phase 3 test total: 193 / 193**
 
@@ -217,7 +217,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **1178** | |
+| **Total** | **1230** | |
 
 Run all TernOS tests:
 

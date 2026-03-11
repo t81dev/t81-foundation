@@ -34,9 +34,10 @@ order. That loop-owned path now feeds a real kernel policy boundary: delivered
 faults are routed into per-thread runtime state, the faulting thread is
 quarantined deterministically, the owning process group enters a blocked fault
 state, explicit group acknowledgement gates recovery, and audit-only governance
-events are recorded in deterministic order. The next steps are to grow that
-boundary into a small supervisor/service-facing layer while continuing to
-converge the runtime toward fuller kernel behavior.
+events are recorded in deterministic order. That boundary now includes a small
+audit-only supervisor layer above the process-group gate. The next steps are to
+define the first service-facing runtime contract on top of that boundary while
+continuing to converge the runtime toward fuller kernel behavior.
 
 The roadmap is now centered on promotion of those layers from `experimental/` into mainline, plus delivery of the Phase 4 driver layer needed for a reboot-persistent CanonFS system. The concrete promotion environment is a **VirtualBox-first virtual machine target**: Axion should graduate from hosted process simulation into a bootable guest image that runs under VirtualBox before any real-hardware push.
 
