@@ -1793,6 +1793,8 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "runtime status tracks the first ready-bypass deferral ordinal");
     check(runtime_after_capped_activation.runtime->pager_worker_parked_cycles == 1,
           "runtime status counts one parked worker cycle after the cap fires");
+    check(runtime_after_capped_activation.runtime->pager_worker_parked_resumptions == 0,
+          "runtime status does not count a parked resumption before the blocked head becomes ready");
     check(runtime_after_capped_activation.runtime
               ->pager_worker_last_parked_blocked_address_space_id ==
               first_address_space_id,
@@ -1831,6 +1833,8 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "fault summary counts one ready-bypass deferral after the cap parks the worker");
     check(fault_after_capped_deferral.fault_summary->pager_worker_parked_cycles == 1,
           "fault summary counts one parked worker cycle after the cap parks the worker");
+    check(fault_after_capped_deferral.fault_summary->pager_worker_parked_resumptions == 0,
+          "fault summary does not count a parked resumption while the head is still parked");
     check(fault_after_capped_deferral.fault_summary->pager_worker_parked_ready_count == 1,
           "fault summary reports one ready item behind the parked blocked head");
     check(fault_after_capped_deferral.fault_summary->pager_worker_parked_ready_high_watermark == 1,
@@ -1857,6 +1861,8 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "runtime status keeps one ready-bypass deferral for the same parked episode");
     check(runtime_after_second_park.runtime->pager_worker_parked_cycles == 2,
           "runtime status counts a second parked worker cycle");
+    check(runtime_after_second_park.runtime->pager_worker_parked_resumptions == 0,
+          "runtime status still reports no parked resumption on repeated parked cycles");
     check(runtime_after_second_park.runtime->pager_worker_parked_ready_count == 1,
           "runtime status keeps one ready item behind the blocked head on repeated parked cycles");
     check(runtime_after_second_park.runtime->pager_worker_parked_ready_high_watermark == 1,
@@ -1891,6 +1897,14 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "runtime status returns worker to idle after blocked-head resolution");
     check(runtime_after_head_resolution.runtime->pager_worker_inbox_count == 1,
           "runtime status keeps the third item queued after blocked-head resolution");
+    check(runtime_after_head_resolution.runtime->pager_worker_parked_resumptions == 1,
+          "runtime status counts one parked resumption when the blocked head becomes ready");
+    check(runtime_after_head_resolution.runtime
+              ->pager_worker_last_parked_resumed_address_space_id ==
+              first_address_space_id,
+          "runtime status tracks the blocked head resumed from parked state");
+    check(runtime_after_head_resolution.runtime->pager_worker_last_parked_resumption_cycle == 1,
+          "runtime status tracks the first parked resumption ordinal");
   }
 
   (void)axion_kernel_step(*state);
@@ -1907,6 +1921,8 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "fault summary retains one ready-bypass deferral for the parked capped episode");
     check(fault_after_final_resolution.fault_summary->pager_worker_parked_cycles == 2,
           "fault summary retains two parked worker cycles under the parked capped policy");
+    check(fault_after_final_resolution.fault_summary->pager_worker_parked_resumptions == 1,
+          "fault summary retains one parked resumption after the blocked head drains");
     check(fault_after_final_resolution.fault_summary->pager_worker_parked_ready_count == 0,
           "fault summary clears live parked-ready backlog after the parked head drains");
     check(fault_after_final_resolution.fault_summary->pager_worker_parked_ready_high_watermark == 1,
@@ -1937,6 +1953,12 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "fault summary retains the latest parked cycle ordinal");
     check(fault_after_final_resolution.fault_summary->pager_worker_last_parked_ready_count == 1,
           "fault summary retains one ready item behind the parked head");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_parked_resumed_address_space_id ==
+              first_address_space_id,
+          "fault summary retains the blocked head resumed from parked state");
+    check(fault_after_final_resolution.fault_summary->pager_worker_last_parked_resumption_cycle == 1,
+          "fault summary retains the parked resumption ordinal");
     check(fault_after_final_resolution.fault_summary->pager_worker_last_activated_address_space_id ==
               third_address_space_id,
           "fault summary retains the third item as the final activation after the head drains");

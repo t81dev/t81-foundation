@@ -286,6 +286,16 @@ The twenty-fourth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves parked-ready backlog accounting advances while
   the worker stays parked and clears once the blocked head drains
 
+The twenty-fifth pager-groundwork slice is now also complete:
+
+- parked capped-deferral state now records explicit parked-resumption
+  transitions once the blocked head finally becomes ready again
+- runtime and fault diagnostics now retain parked-resumption counts plus the
+  latest resumed blocked-head identity and resumption ordinal
+- HAL/kernel coverage now proves the worker stays at zero resumptions while the
+  head remains parked, then records one deterministic resumption when that head
+  drains
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable

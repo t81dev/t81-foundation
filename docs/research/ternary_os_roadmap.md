@@ -103,7 +103,8 @@ unresolved, followed by parked deferral once that single bypass has been used,
 plus retained parked-cycle diagnostics while that blocked head remains
 unresolved, with deferral counts now tracking parked episodes instead of every
 parked loop tick, plus live parked-ready backlog diagnostics while that head
-still blocks the worker, before later pager integration.
+still blocks the worker, plus explicit parked-resumption diagnostics once that
+head becomes ready again, before later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 

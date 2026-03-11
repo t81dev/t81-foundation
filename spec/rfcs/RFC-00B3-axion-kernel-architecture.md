@@ -368,7 +368,9 @@ parked cycles are now retained explicitly alongside the latest blocked/ready
 pair observed during that parked state, while deferral counts track parked
 episodes rather than every idle parked loop tick. Live parked-ready backlog
 count and its retained high-water mark are now tracked separately from
-ready-behind-active backlog state.
+ready-behind-active backlog state. Once that blocked head finally becomes
+ready again, parked-resumption transitions are also retained explicitly with
+their latest resumed blocked-head identity and resumption ordinal.
 The next kernel slice is to keep that pager surface private while expanding
 backlog/load scheduling behavior before any public pager ABI or syscall design.
 

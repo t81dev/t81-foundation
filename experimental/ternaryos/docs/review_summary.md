@@ -89,6 +89,8 @@ Kernel integration proof now also includes:
   while parked-cycle counters capture how long the worker remained parked
 - parked worker state now also exposes the live ready backlog trapped behind
   that blocked head, plus a retained high-water mark for that parked backlog
+- parked worker state now also retains explicit parked-resumption transitions
+  once that blocked head becomes ready again
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

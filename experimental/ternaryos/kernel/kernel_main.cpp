@@ -1073,6 +1073,7 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .pager_worker_last_ready_bypass_deferred_cycle =
           state.pager_worker.last_ready_bypass_deferred_cycle,
       .pager_worker_parked_cycles = state.pager_worker.parked_cycles,
+      .pager_worker_parked_resumptions = state.pager_worker.parked_resumptions,
       .pager_worker_last_parked_blocked_address_space_id =
           state.pager_worker.last_parked_blocked_address_space_id,
       .pager_worker_last_parked_ready_address_space_id =
@@ -1080,6 +1081,10 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .pager_worker_last_parked_cycle = state.pager_worker.last_parked_cycle,
       .pager_worker_last_parked_ready_count =
           state.pager_worker.last_parked_ready_count,
+      .pager_worker_last_parked_resumed_address_space_id =
+          state.pager_worker.last_parked_resumed_address_space_id,
+      .pager_worker_last_parked_resumption_cycle =
+          state.pager_worker.last_parked_resumption_cycle,
       .pager_worker_activations = state.pager_worker.activations,
       .pager_worker_last_activated_address_space_id =
           state.pager_worker.last_activated_address_space_id,
@@ -1582,6 +1587,18 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
           }
         }
         if (activate_selected_work) {
+          if (selected_index == 0 &&
+              state.pager_worker.parked_blocked_address_space_id.has_value() &&
+              *state.pager_worker.parked_blocked_address_space_id ==
+                  state.pager_worker.inbox.front().handoff.address_space_id &&
+              is_pager_work_item_ready(state, state.pager_worker.inbox.front())) {
+            ++state.pager_worker.parked_resumptions;
+            ++state.counters.pager_worker_parked_resumptions;
+            state.pager_worker.last_parked_resumed_address_space_id =
+                state.pager_worker.inbox.front().handoff.address_space_id;
+            state.pager_worker.last_parked_resumption_cycle =
+                state.pager_worker.parked_resumptions;
+          }
           state.pager_worker.parked_blocked_address_space_id.reset();
           state.pager_worker.active_work = state.pager_worker.inbox[selected_index];
           state.pager_worker.inbox.erase(state.pager_worker.inbox.begin() +
@@ -1807,6 +1824,8 @@ KernelServiceResult axion_kernel_service_request(
           .pager_worker_last_ready_bypass_deferred_cycle =
               state.pager_worker.last_ready_bypass_deferred_cycle,
           .pager_worker_parked_cycles = state.pager_worker.parked_cycles,
+          .pager_worker_parked_resumptions =
+              state.pager_worker.parked_resumptions,
           .pager_worker_last_parked_blocked_address_space_id =
               state.pager_worker.last_parked_blocked_address_space_id,
           .pager_worker_last_parked_ready_address_space_id =
@@ -1815,6 +1834,10 @@ KernelServiceResult axion_kernel_service_request(
               state.pager_worker.last_parked_cycle,
           .pager_worker_last_parked_ready_count =
               state.pager_worker.last_parked_ready_count,
+          .pager_worker_last_parked_resumed_address_space_id =
+              state.pager_worker.last_parked_resumed_address_space_id,
+          .pager_worker_last_parked_resumption_cycle =
+              state.pager_worker.last_parked_resumption_cycle,
           .pager_worker_activations = state.pager_worker.activations,
           .pager_worker_last_activated_address_space_id =
               state.pager_worker.last_activated_address_space_id,
