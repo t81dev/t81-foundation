@@ -154,17 +154,21 @@ What the TUI adds:
 - a minimal built-in command model behind the transcript:
   - `help`
   - `profile`
+  - `show profile`
   - `session status`
+  - `session show durable`
   - `show session`
+  - `session refs`
   - `store put <text>`
+  - `store put ref <ref>`
   - `store ls`
   - `store get <ref>`
   - `show ref <canonref>`
   - `store rm <ref>`
   - `history`
+  - `history show session`
   - `history show durable`
   - `clear`
-  - `session refs`
 - a live typed-input loop in the interactive TUI:
   - printable characters append to the command buffer
   - `Backspace` edits
@@ -177,9 +181,15 @@ What the TUI adds:
 - the shell now has explicit durable-state inspection commands:
   - `session refs` for the shell-tracked durable ref set
   - `history show durable` for the current durable history anchor
+  - `session show durable` for the current durable anchor/ref view
+- the shell now has an explicit session-history inspection command:
+  - `history show session` for the current session command window
 - the shell now has its first object-native read surface:
+  - `show profile` for a structured profile view
   - `show session` for a structured session object view
   - `show ref <canonref>` for direct canonical-object lookup
+- the shell now has its first object-native write/composition surface:
+  - `store put ref <ref>` for canonical object composition
 
 What it is not yet:
 
@@ -191,8 +201,8 @@ Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
 - `t81_ternaryos_device_driver_test` is `342/342`
-- `t81_ternaryos_shell_session_test` is `69/69`
-- total TernOS assertions are `806`
+- `t81_ternaryos_shell_session_test` is `91/91`
+- total TernOS assertions are `828`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback
@@ -334,7 +344,7 @@ Current status:
   - `mode=typed-builtins`
   - `history_anchor=durable`
   - `session_view=local+durable`
-  - command surface including `show session`, `show ref <canonref>`, and `history show durable`
+  - command surface including `show profile`, `show session`, `show ref <canonref>`, `session show durable`, `history show session`, and `history show durable`
 - the current `startup-session.txt` exposes backend-generated shell session state under QEMU:
   - `profile=VBoxEFI/AHCI/E1000/VMSVGA/HPET+IOAPIC`
   - `session_command_count=6`

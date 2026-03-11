@@ -181,11 +181,15 @@ The shell grammar should stay intentionally small at first.
 ```text
 help
 profile
+show profile
 history
+history show session
 session status
+session show durable
 show session
 session refs
 store put <text>
+store put ref <ref>
 store ls
 store get <ref>
 show ref <canonref>
@@ -201,13 +205,12 @@ Rules:
 - errors should be explicit and short
 - command output should be deterministic text
 
-### Near-Term Additions
+### Next Additions
 
 ```text
-store put ref <ref>
-session show durable
-history show session
-show profile
+store cp <ref>
+history show object <ref>
+session export
 ```
 
 ### Later Object-Native Direction

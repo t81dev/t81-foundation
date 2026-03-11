@@ -30,18 +30,22 @@ namespace t81::ternaryos {
 
 namespace {
 
-constexpr std::array<const char*, 13> kBuiltinCommands = {
+constexpr std::array<const char*, 17> kBuiltinCommands = {
     "help",
     "profile",
     "session status",
+    "session show durable",
     "session refs",
+    "show profile",
     "show session",
     "show ref <canonref>",
     "store put <text>",
+    "store put ref <ref>",
     "store ls",
     "store get <ref>",
     "store rm <ref>",
     "history",
+    "history show session",
     "history show durable",
     "clear",
 };
@@ -288,12 +292,17 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words[0] == "help") {
     state_.command_records.push_back(
         {command,
-         "builtins help profile session status session refs show session show ref <canonref> store put <text> store ls store get <ref> store rm <ref> history history show durable clear"});
+         "builtins help profile session status session show durable session refs show profile show session show ref <canonref> store put <text> store put ref <ref> store ls store get <ref> store rm <ref> history history show session history show durable clear"});
     return refresh_render();
   }
 
   if (words[0] == "profile") {
     state_.command_records.push_back({command, state_.profile_summary});
+    return refresh_render();
+  }
+
+  if (words.size() == 2 && words[0] == "show" && words[1] == "profile") {
+    state_.command_records.push_back({command, "show profile\n" + state_.profile_summary});
     return refresh_render();
   }
 
@@ -307,6 +316,19 @@ bool ShellSession::execute_command(std::string_view command_view) {
         << "durable anchor " << (history_ref_.has_value() ? "tracked" : "none") << '\n'
         << "recovered " << state_.recovered_entries << '\n'
         << "glyphs " << state_.rendered_glyphs;
+    state_.command_records.push_back({command, out.str()});
+    return refresh_render();
+  }
+
+  if (words.size() == 3 && words[0] == "session" && words[1] == "show" &&
+      words[2] == "durable") {
+    std::ostringstream out;
+    out << "session durable" << '\n'
+        << "refs " << state_.durable_ref_count << '\n'
+        << "anchor " << (state_.durable_anchor_present ? "present" : "missing");
+    if (history_ref_.has_value()) {
+      out << '\n' << canon_ref_text(*history_ref_);
+    }
     state_.command_records.push_back({command, out.str()});
     return refresh_render();
   }
@@ -350,6 +372,36 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (hal_main(guest->boot_context) != 0) return false;
 
   CanonStore store(*guest->storage.device);
+
+  if (words.size() == 4 && words[0] == "store" && words[1] == "put" && words[2] == "ref") {
+    const auto ref = parse_canon_ref_text(words[3]);
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "store put ref invalid ref"});
+      return refresh_render();
+    }
+
+    state_.recovered_entries = store.rebuild_index();
+    const auto source = store.get(*ref);
+    if (!source.has_value()) {
+      state_.command_records.push_back({command, "store put ref missing"});
+      return refresh_render();
+    }
+
+    auto copied_ref = store.put(*source);
+    if (!copied_ref.has_value()) {
+      state_.command_records.push_back({command, "store put ref failed"});
+      return refresh_render();
+    }
+    history_ref_ = *copied_ref;
+    if (!canon_ref_known(stored_refs_, *copied_ref)) stored_refs_.push_back(*copied_ref);
+    if (!store.flush()) {
+      state_.command_records.push_back({command, "store put ref flush failed"});
+      return refresh_render();
+    }
+    state_.command_records.push_back(
+        {command, "canon durable ref ok " + canon_ref_text(*copied_ref)});
+    return refresh_render();
+  }
 
   if (words.size() >= 3 && words[0] == "store" && words[1] == "put") {
     std::string payload = words[2];
@@ -452,6 +504,16 @@ bool ShellSession::execute_command(std::string_view command_view) {
   }
 
   if (words[0] == "history") {
+    if (words.size() == 3 && words[1] == "show" && words[2] == "session") {
+      std::ostringstream out;
+      out << "history session " << state_.command_records.size();
+      for (const auto& record : state_.command_records) {
+        out << '\n' << record.command;
+      }
+      state_.command_records.push_back({command, out.str()});
+      return refresh_render();
+    }
+
     if (words.size() == 3 && words[1] == "show" && words[2] == "durable") {
       state_.recovered_entries = store.rebuild_index();
       if (!history_ref_.has_value()) {
