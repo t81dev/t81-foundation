@@ -76,6 +76,19 @@ KernelRuntimeState::SupervisorState* create_supervisor(KernelRuntimeState& state
   return inserted ? &it->second : nullptr;
 }
 
+KernelRuntimeState::AddressSpaceState* create_address_space(
+    KernelRuntimeState& state,
+    ProcessGroupId process_group_id) {
+  const AddressSpaceId id = state.next_address_space_id++;
+  auto [it, inserted] = state.address_spaces.emplace(
+      id,
+      KernelRuntimeState::AddressSpaceState{
+          .id = id,
+          .process_group_id = process_group_id,
+      });
+  return inserted ? &it->second : nullptr;
+}
+
 KernelRuntimeState::ProcessGroupState* assign_thread_to_group(
     KernelRuntimeState& state, sched::Tid tid, ProcessGroupId process_group_id) {
   auto* thread_state = state.find_thread_runtime_mut(tid);
@@ -98,6 +111,20 @@ KernelRuntimeState::SupervisorState* assign_group_to_supervisor(
   supervisor_state->managed_groups.push_back(process_group_id);
   state.process_group_supervisors[process_group_id] = supervisor_id;
   return supervisor_state;
+}
+
+KernelRuntimeState::AddressSpaceState* assign_group_to_address_space(
+    KernelRuntimeState& state,
+    ProcessGroupId process_group_id,
+    AddressSpaceId address_space_id) {
+  auto* address_space = state.find_address_space_mut(address_space_id);
+  auto* group_state = state.find_process_group_mut(process_group_id);
+  if (!address_space || !group_state) {
+    return nullptr;
+  }
+  address_space->process_group_id = process_group_id;
+  state.process_group_address_spaces[process_group_id] = address_space_id;
+  return address_space;
 }
 
 KernelRuntimeState::ServiceState* create_service(KernelRuntimeState& state,
@@ -222,6 +249,38 @@ RuntimeServiceSummary runtime_service_summary(const KernelRuntimeState& state) {
         supervisor_state.service_lifecycle_transitions;
   }
   return summary;
+}
+
+std::size_t count_mapped_pages_for_address_space(const KernelRuntimeState& state,
+                                                 AddressSpaceId address_space_id) {
+  return std::count_if(
+      state.page_table.entries().begin(),
+      state.page_table.entries().end(),
+      [&](const auto& entry) { return entry.second.owner_pid == address_space_id; });
+}
+
+std::size_t count_managed_address_spaces(const KernelRuntimeState& state,
+                                         const KernelRuntimeState::SupervisorState& supervisor) {
+  std::size_t count = 0;
+  for (auto group_id : supervisor.managed_groups) {
+    if (state.find_process_group_address_space(group_id).has_value()) {
+      ++count;
+    }
+  }
+  return count;
+}
+
+std::size_t count_managed_mapped_pages(const KernelRuntimeState& state,
+                                       const KernelRuntimeState::SupervisorState& supervisor) {
+  std::size_t total = 0;
+  for (auto group_id : supervisor.managed_groups) {
+    const auto address_space_id = state.find_process_group_address_space(group_id);
+    if (!address_space_id.has_value()) {
+      continue;
+    }
+    total += count_mapped_pages_for_address_space(state, *address_space_id);
+  }
+  return total;
 }
 
 bool queue_supervisor_pending_group(KernelRuntimeState& state,
@@ -408,8 +467,13 @@ bool group_has_pending_thread_faults(const KernelRuntimeState& state,
 KernelProcessGroupStatusView make_process_group_view(const KernelRuntimeState& state,
                                                      ProcessGroupId process_group_id) {
   const auto* group_state = state.find_process_group(process_group_id);
+  const auto address_space_id = state.find_process_group_address_space(process_group_id);
   return KernelProcessGroupStatusView{
       .id = group_state ? group_state->id : process_group_id,
+      .address_space_id = address_space_id,
+      .owned_page_count = address_space_id.has_value()
+                              ? count_mapped_pages_for_address_space(state, *address_space_id)
+                              : 0,
       .member_count = group_state ? group_state->member_tids.size() : 0,
       .quarantined_thread_count =
           group_state ? count_quarantined_threads(state, process_group_id) : 0,
@@ -434,6 +498,10 @@ KernelSupervisorStatusView make_supervisor_view(const KernelRuntimeState& state,
       .id = supervisor_state ? supervisor_state->id : supervisor_id,
       .managed_group_count =
           supervisor_state ? supervisor_state->managed_groups.size() : 0,
+      .managed_address_space_count =
+          supervisor_state ? count_managed_address_spaces(state, *supervisor_state) : 0,
+      .managed_mapped_page_count =
+          supervisor_state ? count_managed_mapped_pages(state, *supervisor_state) : 0,
       .managed_faulted_group_count =
           supervisor_state ? count_faulted_groups(state, *supervisor_state) : 0,
       .managed_service_count = service_inventory.service_count,
@@ -467,6 +535,10 @@ KernelSupervisorRecoveryStatusView make_supervisor_recovery_view(
       .id = supervisor_state ? supervisor_state->id : supervisor_id,
       .pending_group_count =
           supervisor_state ? supervisor_state->pending_groups.size() : 0,
+      .managed_address_space_count =
+          supervisor_state ? count_managed_address_spaces(state, *supervisor_state) : 0,
+      .managed_mapped_page_count =
+          supervisor_state ? count_managed_mapped_pages(state, *supervisor_state) : 0,
       .managed_service_count = service_inventory.service_count,
       .blocked_service_count = service_inventory.blocked_service_count,
       .suspended_service_count = service_inventory.suspended_service_count,
@@ -495,11 +567,19 @@ KernelServiceStatusView make_service_view(const KernelRuntimeState& state,
   const auto* service_state = state.find_service(service_id);
   const auto* group_state =
       service_state ? state.find_process_group(service_state->process_group_id) : nullptr;
+  const auto address_space_id = service_state
+                                    ? state.find_process_group_address_space(
+                                          service_state->process_group_id)
+                                    : std::nullopt;
   return KernelServiceStatusView{
       .id = service_state ? service_state->id : service_id,
       .name = service_state ? service_state->name : std::string{},
       .supervisor_id = service_state ? service_state->supervisor_id : 0,
       .process_group_id = service_state ? service_state->process_group_id : 0,
+      .address_space_id = address_space_id,
+      .owned_page_count = address_space_id.has_value()
+                              ? count_mapped_pages_for_address_space(state, *address_space_id)
+                              : 0,
       .primary_tid =
           service_state ? primary_tid_for_group(state, service_state->process_group_id)
                         : std::nullopt,
@@ -560,6 +640,15 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
         .id = service_state->id,
         .name = service_state->name,
         .process_group_id = service_state->process_group_id,
+        .address_space_id =
+            state.find_process_group_address_space(service_state->process_group_id),
+        .owned_page_count = [&]() -> std::size_t {
+          const auto address_space_id =
+              state.find_process_group_address_space(service_state->process_group_id);
+          return address_space_id.has_value()
+                     ? count_mapped_pages_for_address_space(state, *address_space_id)
+                     : 0;
+        }(),
         .blocked = service_state->blocked,
         .suspended = service_state->suspended,
         .unhealthy = service_state->unhealthy,
@@ -777,6 +866,12 @@ std::optional<KernelRuntimeState> axion_kernel_bootstrap(
           .id = KernelRuntimeState::kKernelProcessGroup,
           .member_tids = {KernelRuntimeState::kKernelTid},
       });
+  state.address_spaces.emplace(
+      KernelRuntimeState::kKernelAddressSpace,
+      KernelRuntimeState::AddressSpaceState{
+          .id = KernelRuntimeState::kKernelAddressSpace,
+          .process_group_id = KernelRuntimeState::kKernelProcessGroup,
+      });
   state.supervisors.emplace(
       KernelRuntimeState::kKernelSupervisor,
       KernelRuntimeState::SupervisorState{
@@ -785,6 +880,8 @@ std::optional<KernelRuntimeState> axion_kernel_bootstrap(
       });
   state.process_group_supervisors.emplace(KernelRuntimeState::kKernelProcessGroup,
                                           KernelRuntimeState::kKernelSupervisor);
+  state.process_group_address_spaces.emplace(KernelRuntimeState::kKernelProcessGroup,
+                                             KernelRuntimeState::kKernelAddressSpace);
   state.device_arbitration = bootstrap_device_arbitration(ctx.platform_id);
   return state;
 }
@@ -816,12 +913,16 @@ std::optional<sched::Tid> axion_kernel_spawn_thread(
     sched::TiscContext ctx) noexcept {
   auto* group = create_process_group(state);
   auto* supervisor = create_supervisor(state);
-  if (!group || !supervisor) {
+  auto* address_space = group ? create_address_space(state, group->id) : nullptr;
+  if (!group || !supervisor || !address_space) {
     if (group) {
       state.process_groups.erase(group->id);
     }
     if (supervisor) {
       state.supervisors.erase(supervisor->id);
+    }
+    if (address_space) {
+      state.address_spaces.erase(address_space->id);
     }
     return std::nullopt;
   }
@@ -835,9 +936,11 @@ std::optional<sched::Tid> axion_kernel_spawn_thread(
                                  });
     assign_thread_to_group(state, *tid, group->id);
     assign_group_to_supervisor(state, group->id, supervisor->id);
+    assign_group_to_address_space(state, group->id, address_space->id);
   } else {
     state.process_groups.erase(group->id);
     state.supervisors.erase(supervisor->id);
+    state.address_spaces.erase(address_space->id);
   }
   return tid;
 }
@@ -870,12 +973,17 @@ std::optional<sched::Tid> axion_kernel_spawn_thread_under_supervisor(
     return std::nullopt;
   }
   auto* group = create_process_group(state);
-  if (!group) {
+  auto* address_space = group ? create_address_space(state, group->id) : nullptr;
+  if (!group || !address_space) {
+    if (group) {
+      state.process_groups.erase(group->id);
+    }
     return std::nullopt;
   }
   auto tid = state.scheduler.spawn(std::move(ctx));
   if (!tid.has_value()) {
     state.process_groups.erase(group->id);
+    state.address_spaces.erase(address_space->id);
     return std::nullopt;
   }
   state.ipc_bus.register_thread(*tid);
@@ -888,6 +996,13 @@ std::optional<sched::Tid> axion_kernel_spawn_thread_under_supervisor(
   if (!assign_group_to_supervisor(state, group->id, supervisor_id)) {
     state.thread_runtime.erase(*tid);
     state.process_groups.erase(group->id);
+    state.address_spaces.erase(address_space->id);
+    return std::nullopt;
+  }
+  if (!assign_group_to_address_space(state, group->id, address_space->id)) {
+    state.thread_runtime.erase(*tid);
+    state.process_groups.erase(group->id);
+    state.address_spaces.erase(address_space->id);
     return std::nullopt;
   }
   return tid;
@@ -1014,6 +1129,8 @@ KernelServiceResult axion_kernel_service_request(
           .platform_id = state.platform_id,
           .memory_region_count = state.memory_region_count,
           .total_ternary_pages = state.total_ternary_pages,
+          .address_space_count = state.address_space_count(),
+          .mapped_pages = state.page_table.size(),
           .loop_iterations = state.counters.loop_iterations,
           .scheduler_ticks = state.counters.scheduler_ticks,
           .ipc_messages_sent = state.counters.ipc_messages_sent,

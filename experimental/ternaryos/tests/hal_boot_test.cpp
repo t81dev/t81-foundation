@@ -430,12 +430,17 @@ static void test_kernel_runtime_bootstrap() {
     check(state->ipc_bus.pending(KernelRuntimeState::kKernelTid) == 0,
           "kernel IPC inbox starts empty");
     check(state->process_group_count() == 1, "kernel runtime starts with one kernel process group");
+    check(state->address_space_count() == 1,
+          "kernel runtime starts with one kernel address space");
     const auto* kernel_runtime = state->find_thread_runtime(KernelRuntimeState::kKernelTid);
     check(kernel_runtime != nullptr, "kernel thread runtime state exists");
     if (kernel_runtime) {
       check(kernel_runtime->process_group_id == KernelRuntimeState::kKernelProcessGroup,
             "kernel thread belongs to the kernel process group");
     }
+    check(state->find_process_group_address_space(KernelRuntimeState::kKernelProcessGroup) ==
+              KernelRuntimeState::kKernelAddressSpace,
+          "kernel process group resolves to the kernel address space");
     check(!state->has_device_arbitration(),
           "generic hosted test context does not install device arbitration");
     check(state->fault_count() == 0, "kernel runtime starts with an empty fault log");
@@ -578,6 +583,16 @@ static void test_kernel_runtime_scheduler_and_ipc() {
           "thread A process group exists");
     check(state->find_process_group(runtime_b->process_group_id) != nullptr,
           "thread B process group exists");
+    const auto address_space_a =
+        state->find_process_group_address_space(runtime_a->process_group_id);
+    const auto address_space_b =
+        state->find_process_group_address_space(runtime_b->process_group_id);
+    check(address_space_a.has_value(), "thread A process group resolves to an address space");
+    check(address_space_b.has_value(), "thread B process group resolves to an address space");
+    if (address_space_a && address_space_b) {
+      check(*address_space_a != *address_space_b,
+            "independent process groups receive distinct address spaces");
+    }
   }
 
   check(state->scheduler.thread_count() == 2, "runtime-owned scheduler tracks two threads");
@@ -1270,6 +1285,10 @@ static void test_kernel_service_runtime_views() {
           "runtime status reports deterministic memory-map count");
     check(runtime_result.runtime->platform_id == hosted_ctx.platform_id,
           "runtime status reports platform id");
+    check(runtime_result.runtime->address_space_count == 1,
+          "runtime status starts with one kernel address space");
+    check(runtime_result.runtime->mapped_pages == 0,
+          "runtime status starts with zero mapped pages");
     check(runtime_result.runtime->managed_service_count == 0,
           "runtime status starts with zero managed services");
     check(runtime_result.runtime->service_lifecycle_transitions == 0,
@@ -1398,6 +1417,18 @@ static void test_kernel_service_group_fault_visibility() {
   }
   const auto faulted_group_id = faulted_runtime->process_group_id;
   const auto healthy_group_id = healthy_runtime->process_group_id;
+  const auto faulted_address_space_id =
+      state->find_process_group_address_space(faulted_group_id);
+  check(faulted_address_space_id.has_value(),
+        "faulted group resolves to an address space");
+  if (!faulted_address_space_id) {
+    return;
+  }
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     mmu::tva_from_vpn_offset(92, 0),
+                     *faulted_address_space_id),
+        "faulted group address space accepts an owned mapping");
   auto healthy_before = axion_kernel_service_request(
       *state,
       KernelServiceRequest{
@@ -1430,6 +1461,10 @@ static void test_kernel_service_group_fault_visibility() {
         "faulted subject group status still returns a concrete group view");
   check(faulted_group.process_group.has_value(), "faulted group view is returned");
   if (faulted_group.process_group) {
+    check(faulted_group.process_group->address_space_id == faulted_address_space_id,
+          "faulted group view reports address-space ownership");
+    check(faulted_group.process_group->owned_page_count == 1,
+          "faulted group view reports one owned mapped page");
     check(faulted_group.process_group->member_count == 1,
           "faulted group view reports one member");
     check(faulted_group.process_group->quarantined_thread_count == 1,
@@ -1458,6 +1493,8 @@ static void test_kernel_service_group_fault_visibility() {
         "unaffected group request remains OK");
   check(healthy_after.process_group.has_value(), "healthy group view remains available");
   if (healthy_after.process_group) {
+    check(healthy_after.process_group->owned_page_count == 0,
+          "unaffected group keeps zero owned mapped pages");
     check(!healthy_after.process_group->faulted, "unaffected group remains healthy");
     check(healthy_after.process_group->quarantined_thread_count == 0,
           "unaffected group has no quarantined threads");
@@ -2198,6 +2235,18 @@ static void test_kernel_service_runtime_layer() {
   if (!supervisor_id) {
     return;
   }
+  const auto owner_address_space_id =
+      state->find_process_group_address_space(owner_runtime->process_group_id);
+  check(owner_address_space_id.has_value(),
+        "service owner group resolves to an address space");
+  if (!owner_address_space_id) {
+    return;
+  }
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     mmu::tva_from_vpn_offset(104, 0),
+                     *owner_address_space_id),
+        "service owner address space accepts an owned mapping");
 
   auto register_service = axion_kernel_service_action(
       *state,
@@ -2226,6 +2275,10 @@ static void test_kernel_service_runtime_layer() {
           "registered service preserves supervisor");
     check(register_service.service->process_group_id == owner_runtime->process_group_id,
           "registered service preserves backing process group");
+    check(register_service.service->address_space_id == owner_address_space_id,
+          "registered service preserves backing address space");
+    check(register_service.service->owned_page_count == 1,
+          "registered service reports one owned mapped page");
     check(register_service.service->registered,
           "registered service reports registered state");
     check(!register_service.service->blocked,
@@ -2238,6 +2291,11 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory exposes one service id");
     check(register_service.supervisor_services->services.size() == 1,
           "supervisor inventory exposes one service entry");
+    check(register_service.supervisor_services->services.front().address_space_id ==
+              owner_address_space_id,
+          "supervisor inventory entry preserves the backing address space");
+    check(register_service.supervisor_services->services.front().owned_page_count == 1,
+          "supervisor inventory entry reports one owned mapped page");
     check(register_service.supervisor_services->services.front().state_transitions == 0,
           "supervisor inventory entry starts with zero state mutations after registration");
     check(register_service.supervisor_services->services.front().last_transition_kind ==
@@ -2272,6 +2330,10 @@ static void test_kernel_service_runtime_layer() {
   check(supervisor_status_after_register.supervisor.has_value(),
         "supervisor status after registration returns a supervisor view");
   if (supervisor_status_after_register.supervisor) {
+    check(supervisor_status_after_register.supervisor->managed_address_space_count == 1,
+          "supervisor status reports one managed address space after registration");
+    check(supervisor_status_after_register.supervisor->managed_mapped_page_count == 1,
+          "supervisor status reports one managed mapped page after registration");
     check(supervisor_status_after_register.supervisor->managed_service_count == 1,
           "supervisor status reports one managed service after registration");
     check(supervisor_status_after_register.supervisor->blocked_service_count == 0,
@@ -2313,6 +2375,10 @@ static void test_kernel_service_runtime_layer() {
         "healthy service request clears rejection");
   check(service_view.service.has_value(), "service status request returns service view");
   if (service_view.service) {
+    check(service_view.service->address_space_id == owner_address_space_id,
+          "service view preserves backing address-space ownership");
+    check(service_view.service->owned_page_count == 1,
+          "service view reports one owned mapped page");
     check(service_view.service->primary_tid == *owner_tid,
           "service view exposes primary group thread");
     check(!service_view.service->faulted_group,

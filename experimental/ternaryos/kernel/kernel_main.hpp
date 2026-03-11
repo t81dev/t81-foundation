@@ -20,6 +20,7 @@ namespace t81::ternaryos::kernel {
 using ProcessGroupId = uint32_t;
 using SupervisorId = uint32_t;
 using ServiceId = uint32_t;
+using AddressSpaceId = uint32_t;
 
 struct KernelFaultRecord {
   std::string platform_id;
@@ -112,6 +113,11 @@ struct KernelRuntimeState {
     std::optional<uint64_t> last_service_transition_sequence{};
   };
 
+  struct AddressSpaceState {
+    AddressSpaceId id{0};
+    ProcessGroupId process_group_id{0};
+  };
+
   struct ServiceState {
     ServiceId id{0};
     std::string name;
@@ -163,7 +169,9 @@ struct KernelRuntimeState {
   std::unordered_map<sched::Tid, ThreadRuntimeState> thread_runtime;
   std::unordered_map<ProcessGroupId, ProcessGroupState> process_groups;
   std::unordered_map<SupervisorId, SupervisorState> supervisors;
+  std::unordered_map<AddressSpaceId, AddressSpaceState> address_spaces;
   std::unordered_map<ProcessGroupId, SupervisorId> process_group_supervisors;
+  std::unordered_map<ProcessGroupId, AddressSpaceId> process_group_address_spaces;
   std::unordered_map<ServiceId, ServiceState> services;
   std::unordered_map<ProcessGroupId, ServiceId> process_group_services;
   t81::vm::ThreadContext cpu_context{};
@@ -173,6 +181,7 @@ struct KernelRuntimeState {
   ProcessGroupId next_process_group_id{1};
   SupervisorId next_supervisor_id{1};
   ServiceId next_service_id{1};
+  AddressSpaceId next_address_space_id{1};
   uint64_t next_audit_sequence{1};
 
   KernelRuntimeState(std::string platform_id_in,
@@ -189,6 +198,7 @@ struct KernelRuntimeState {
   static constexpr sched::Tid kKernelTid = 0;
   static constexpr ProcessGroupId kKernelProcessGroup = 0;
   static constexpr SupervisorId kKernelSupervisor = 0;
+  static constexpr AddressSpaceId kKernelAddressSpace = 0;
   static constexpr std::size_t kMaxFaultLog = 27;
   static constexpr std::size_t kMaxAuditLog = 81;
 
@@ -197,6 +207,7 @@ struct KernelRuntimeState {
   std::size_t audit_count() const noexcept { return audit_log.size(); }
   std::size_t process_group_count() const noexcept { return process_groups.size(); }
   std::size_t supervisor_count() const noexcept { return supervisors.size(); }
+  std::size_t address_space_count() const noexcept { return address_spaces.size(); }
   std::size_t service_count() const noexcept { return services.size(); }
   bool has_device_arbitration() const noexcept { return device_arbitration.has_value(); }
 
@@ -218,6 +229,16 @@ struct KernelRuntimeState {
   ProcessGroupState* find_process_group_mut(ProcessGroupId id) noexcept {
     auto it = process_groups.find(id);
     return it == process_groups.end() ? nullptr : &it->second;
+  }
+
+  const AddressSpaceState* find_address_space(AddressSpaceId id) const noexcept {
+    auto it = address_spaces.find(id);
+    return it == address_spaces.end() ? nullptr : &it->second;
+  }
+
+  AddressSpaceState* find_address_space_mut(AddressSpaceId id) noexcept {
+    auto it = address_spaces.find(id);
+    return it == address_spaces.end() ? nullptr : &it->second;
   }
 
   const SupervisorState* find_supervisor(SupervisorId id) const noexcept {
@@ -244,6 +265,15 @@ struct KernelRuntimeState {
       ProcessGroupId process_group_id) const noexcept {
     auto it = process_group_supervisors.find(process_group_id);
     if (it == process_group_supervisors.end()) {
+      return std::nullopt;
+    }
+    return it->second;
+  }
+
+  std::optional<AddressSpaceId> find_process_group_address_space(
+      ProcessGroupId process_group_id) const noexcept {
+    auto it = process_group_address_spaces.find(process_group_id);
+    if (it == process_group_address_spaces.end()) {
       return std::nullopt;
     }
     return it->second;
@@ -336,6 +366,8 @@ struct KernelRuntimeStatusView {
   std::string platform_id;
   std::size_t memory_region_count{0};
   uint64_t total_ternary_pages{0};
+  std::size_t address_space_count{0};
+  std::size_t mapped_pages{0};
   uint64_t loop_iterations{0};
   uint64_t scheduler_ticks{0};
   uint64_t ipc_messages_sent{0};
@@ -352,6 +384,8 @@ struct KernelRuntimeStatusView {
 
 struct KernelProcessGroupStatusView {
   ProcessGroupId id{0};
+  std::optional<AddressSpaceId> address_space_id{};
+  std::size_t owned_page_count{0};
   std::size_t member_count{0};
   std::size_t quarantined_thread_count{0};
   bool faulted{false};
@@ -368,6 +402,8 @@ struct KernelProcessGroupStatusView {
 struct KernelSupervisorStatusView {
   SupervisorId id{0};
   std::size_t managed_group_count{0};
+  std::size_t managed_address_space_count{0};
+  std::size_t managed_mapped_page_count{0};
   std::size_t managed_faulted_group_count{0};
   std::size_t managed_service_count{0};
   std::size_t blocked_service_count{0};
@@ -386,6 +422,8 @@ struct KernelSupervisorStatusView {
 struct KernelSupervisorRecoveryStatusView {
   SupervisorId id{0};
   std::size_t pending_group_count{0};
+  std::size_t managed_address_space_count{0};
+  std::size_t managed_mapped_page_count{0};
   std::size_t managed_service_count{0};
   std::size_t blocked_service_count{0};
   std::size_t suspended_service_count{0};
@@ -406,6 +444,8 @@ struct KernelServiceStatusView {
   std::string name;
   SupervisorId supervisor_id{0};
   ProcessGroupId process_group_id{0};
+  std::optional<AddressSpaceId> address_space_id{};
+  std::size_t owned_page_count{0};
   std::optional<sched::Tid> primary_tid{};
   bool blocked{false};
   bool suspended{false};
@@ -425,6 +465,8 @@ struct KernelSupervisorServiceEntryView {
   ServiceId id{0};
   std::string name;
   ProcessGroupId process_group_id{0};
+  std::optional<AddressSpaceId> address_space_id{};
+  std::size_t owned_page_count{0};
   bool blocked{false};
   bool suspended{false};
   bool unhealthy{false};

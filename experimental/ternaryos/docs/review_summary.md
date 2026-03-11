@@ -34,9 +34,9 @@ The next kernel slice is now tracked explicitly in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1767`
+- total assertions: `1789`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `855/855`
+- `t81_ternaryos_hal_boot_test`: `877/877`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -75,10 +75,14 @@ Kernel integration proof now also includes:
 - service status now also exposes the latest service lifecycle kind and sequence
 - supervisor inventory entries now also expose each managed service's latest
   lifecycle kind and sequence
+- process groups now also bind to explicit kernel-owned address spaces
+- runtime, process-group, supervisor, and service diagnostics now also expose
+  address-space ownership plus mapped-page counts
 - the supervisor/service-runtime convergence slice is now complete for the
   current contract surface
+- the first process-memory ownership slice is now complete as well
 - the next kernel slice is to keep this service-runtime layer stable and move
-  into process-memory ownership and pager integration, not a broad ABI or
+  into pager integration and fault-to-pager handoff work, not a broad ABI or
   syscall surface
 
 Phase 4 storage proof now covers:

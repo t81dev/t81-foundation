@@ -312,6 +312,11 @@ That supervisor/service-runtime convergence step is now complete for the
 current contract. The next step is to keep that layer stable and shift kernel
 work downward into process-memory ownership and pager integration before any
 syscall, capability, or broader process ABI design.
+The first process-memory ownership slice is now in place as well: process
+groups now bind to explicit kernel-owned address-space objects, and the stable
+diagnostic views expose address-space ownership plus mapped-page counts. That
+gives pager work a concrete runtime object to target without widening the
+public service contract.
 
 The working execution note for this slice is:
 

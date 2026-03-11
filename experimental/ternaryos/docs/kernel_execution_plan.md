@@ -36,6 +36,7 @@ Implemented:
 - the stable service-facing contract is now ready to back a small service
   runtime layer
 - kernel-owned service registration/liveness state for the first service layer
+- kernel-owned address-space objects bound to process groups
 - supervisor-owned service inventory
 - service-facing request routing above raw process-group ids
 - service blocked/faulted state at the service layer
@@ -46,7 +47,6 @@ Implemented:
 Not yet implemented:
 
 - capability or syscall semantics
-- process address-space ownership
 - pager integration
 
 ## Slice Result
@@ -62,6 +62,14 @@ contract surface:
   views
 - HAL/kernel coverage now proves that aligned lifecycle surface end-to-end
 
+The first process-memory ownership slice is now also complete:
+
+- each process group now has an explicit kernel-owned address-space object
+- runtime, process-group, supervisor, and service diagnostics now expose
+  address-space ownership and mapped-page counts
+- page-table ownership can now attach to a stable runtime object before pager
+  work begins
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
@@ -73,9 +81,8 @@ need appears.
 
 The next real kernel work is now:
 
-- process address-space ownership
 - pager integration
-- the memory/runtime boundary needed before any syscall or capability design
+- the fault-to-pager handoff needed before any syscall or capability design
 
 ### 3. Do not add new lifecycle verbs opportunistically
 

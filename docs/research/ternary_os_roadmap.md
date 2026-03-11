@@ -67,9 +67,13 @@ Service status now also exposes the latest service lifecycle kind and
 sequence.
 Supervisor inventory entries now also expose each managed service's latest
 lifecycle kind and sequence.
-That lifecycle convergence slice is now complete for the current contract.
-The next steps are to keep that lifecycle contract stable while moving the
-kernel toward process-memory ownership and pager integration.
+Process groups now also bind to explicit kernel-owned address spaces, and the
+stable runtime/process-group/supervisor/service diagnostics expose
+address-space ownership plus mapped-page counts.
+That lifecycle convergence slice is now complete for the current contract,
+and the first process-memory ownership slice is in place. The next steps are
+to keep that lifecycle contract stable while moving the kernel toward pager
+integration.
 
 That near-term kernel slice is now tracked explicitly in:
 
