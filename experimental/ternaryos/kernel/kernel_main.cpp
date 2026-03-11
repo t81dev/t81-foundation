@@ -1085,6 +1085,8 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
           state.pager_worker.last_parked_resumed_address_space_id,
       .pager_worker_last_parked_resumption_cycle =
           state.pager_worker.last_parked_resumption_cycle,
+      .pager_worker_last_parked_resumed_ready_count =
+          state.pager_worker.last_parked_resumed_ready_count,
       .pager_worker_activations = state.pager_worker.activations,
       .pager_worker_last_activated_address_space_id =
           state.pager_worker.last_activated_address_space_id,
@@ -1592,12 +1594,20 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
               *state.pager_worker.parked_blocked_address_space_id ==
                   state.pager_worker.inbox.front().handoff.address_space_id &&
               is_pager_work_item_ready(state, state.pager_worker.inbox.front())) {
+            std::size_t resumed_ready_count = 0;
+            for (std::size_t i = 1; i < state.pager_worker.inbox.size(); ++i) {
+              if (is_pager_work_item_ready(state, state.pager_worker.inbox[i])) {
+                ++resumed_ready_count;
+              }
+            }
             ++state.pager_worker.parked_resumptions;
             ++state.counters.pager_worker_parked_resumptions;
             state.pager_worker.last_parked_resumed_address_space_id =
                 state.pager_worker.inbox.front().handoff.address_space_id;
             state.pager_worker.last_parked_resumption_cycle =
                 state.pager_worker.parked_resumptions;
+            state.pager_worker.last_parked_resumed_ready_count =
+                resumed_ready_count;
           }
           state.pager_worker.parked_blocked_address_space_id.reset();
           state.pager_worker.active_work = state.pager_worker.inbox[selected_index];
@@ -1838,6 +1848,8 @@ KernelServiceResult axion_kernel_service_request(
               state.pager_worker.last_parked_resumed_address_space_id,
           .pager_worker_last_parked_resumption_cycle =
               state.pager_worker.last_parked_resumption_cycle,
+          .pager_worker_last_parked_resumed_ready_count =
+              state.pager_worker.last_parked_resumed_ready_count,
           .pager_worker_activations = state.pager_worker.activations,
           .pager_worker_last_activated_address_space_id =
               state.pager_worker.last_activated_address_space_id,

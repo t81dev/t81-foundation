@@ -76,8 +76,9 @@ kernel/
                        internal pager worker with retained backlog/load,
                        receipt, active-work, queued-head, bounded ready-bypass,
                        parked capped deferral, parked-cycle, parked-episode,
-                       parked-ready backlog, parked-resumption, blocker/blocked,
-                       activation, and completion diagnostics
+                       parked-ready backlog, parked-resumption, parked-resume
+                       backlog, blocker/blocked, activation, and completion
+                       diagnostics
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,

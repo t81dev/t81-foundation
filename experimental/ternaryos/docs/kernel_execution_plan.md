@@ -296,6 +296,15 @@ The twenty-fifth pager-groundwork slice is now also complete:
   head remains parked, then records one deterministic resumption when that head
   drains
 
+The twenty-sixth pager-groundwork slice is now also complete:
+
+- parked-resumption diagnostics now also retain how much ready backlog was
+  still queued behind the resumed blocked head at the moment the worker resumed
+- runtime and fault diagnostics can now distinguish "resumed from parked state"
+  from "resumed with trailing ready work still waiting behind that head"
+- HAL/kernel coverage now proves the parked head resumes first while one ready
+  item remains queued behind it
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable

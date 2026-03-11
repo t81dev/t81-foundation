@@ -370,7 +370,8 @@ episodes rather than every idle parked loop tick. Live parked-ready backlog
 count and its retained high-water mark are now tracked separately from
 ready-behind-active backlog state. Once that blocked head finally becomes
 ready again, parked-resumption transitions are also retained explicitly with
-their latest resumed blocked-head identity and resumption ordinal.
+their latest resumed blocked-head identity and resumption ordinal, plus the
+count of still-ready queued work that remained behind that resumed head.
 The next kernel slice is to keep that pager surface private while expanding
 backlog/load scheduling behavior before any public pager ABI or syscall design.
 

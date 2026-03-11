@@ -91,6 +91,8 @@ Kernel integration proof now also includes:
   that blocked head, plus a retained high-water mark for that parked backlog
 - parked worker state now also retains explicit parked-resumption transitions
   once that blocked head becomes ready again
+- parked resumptions now also retain how much ready work was still queued
+  behind the resumed blocked head at that transition point
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

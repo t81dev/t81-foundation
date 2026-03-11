@@ -104,7 +104,8 @@ plus retained parked-cycle diagnostics while that blocked head remains
 unresolved, with deferral counts now tracking parked episodes instead of every
 parked loop tick, plus live parked-ready backlog diagnostics while that head
 still blocks the worker, plus explicit parked-resumption diagnostics once that
-head becomes ready again, before later pager integration.
+head becomes ready again, including how much ready work still remained queued
+behind it at resumption time, before later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 
