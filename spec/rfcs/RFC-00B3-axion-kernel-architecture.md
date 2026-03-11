@@ -287,6 +287,9 @@ broader control surface.
 The compact supervisor-status view now also carries managed-service lifecycle
 counts and latest-transition metadata so supervisor health checks do not have
 to depend on the richer inventory request.
+The supervisor-recovery view now also carries the same managed-service
+lifecycle metadata so recovery polling stays aligned with service-runtime
+state.
 The next step is to keep that layer stable and only then consider any further
 lifecycle action or boundary growth.
 

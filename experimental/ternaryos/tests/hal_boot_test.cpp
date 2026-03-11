@@ -1774,6 +1774,10 @@ static void test_kernel_service_supervisor_recovery_status() {
   if (pre_ack.supervisor_recovery) {
     check(pre_ack.supervisor_recovery->pending_group_count == 1,
           "recovery status shows one pending group before acknowledgement");
+    check(pre_ack.supervisor_recovery->managed_service_count == 0,
+          "recovery status starts with zero managed services in a pure fault flow");
+    check(pre_ack.supervisor_recovery->service_lifecycle_transitions == 0,
+          "recovery status starts with zero service lifecycle transitions in a pure fault flow");
     check(pre_ack.supervisor_recovery->pending_group_ids.size() == 1,
           "recovery status exposes one pending group id");
     if (!pre_ack.supervisor_recovery->pending_group_ids.empty()) {
@@ -1788,6 +1792,8 @@ static void test_kernel_service_supervisor_recovery_status() {
           "recovery status has no last acknowledged group before recovery");
     check(!pre_ack.supervisor_recovery->last_recovered_group.has_value(),
           "recovery status has no last recovered group before recovery");
+    check(!pre_ack.supervisor_recovery->last_service_transition_kind.has_value(),
+          "recovery status has no last service transition before any service lifecycle work");
   }
 
   check(axion_kernel_ack_thread_fault(*state, *worker_tid),
@@ -1807,6 +1813,8 @@ static void test_kernel_service_supervisor_recovery_status() {
   if (ack_action.supervisor_recovery) {
     check(ack_action.supervisor_recovery->pending_group_count == 0,
           "updated recovery view clears pending groups");
+    check(ack_action.supervisor_recovery->managed_service_count == 0,
+          "updated recovery view keeps managed service count at zero in a pure fault flow");
     check(ack_action.supervisor_recovery->acknowledgements == 1,
           "updated recovery view reports one acknowledgement");
     check(ack_action.supervisor_recovery->recovered_groups == 1,
@@ -1834,6 +1842,8 @@ static void test_kernel_service_supervisor_recovery_status() {
   if (post_ack.supervisor_recovery) {
     check(post_ack.supervisor_recovery->pending_group_count == 0,
           "post-recovery status keeps pending group count at zero");
+    check(post_ack.supervisor_recovery->managed_service_count == 0,
+          "post-recovery status keeps managed service count at zero in a pure fault flow");
     check(post_ack.supervisor_recovery->recovered_groups == 1,
           "post-recovery status keeps recovered group count at one");
     check(post_ack.supervisor_recovery->last_acknowledged_group.has_value() &&
@@ -1842,6 +1852,8 @@ static void test_kernel_service_supervisor_recovery_status() {
     check(post_ack.supervisor_recovery->last_recovered_group.has_value() &&
               *post_ack.supervisor_recovery->last_recovered_group == group_id,
           "post-recovery status preserves last recovered group");
+    check(!post_ack.supervisor_recovery->last_service_transition_sequence.has_value(),
+          "post-recovery status has no service transition sequence in a pure fault flow");
   }
 }
 
@@ -2583,6 +2595,35 @@ static void test_kernel_service_runtime_layer() {
           "supervisor status exposes the latest lifecycle audit sequence");
   }
 
+  auto recovery_status_after_heal = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::SupervisorRecoveryStatus,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .supervisor_id = *supervisor_id,
+      });
+  check(recovery_status_after_heal.status == KernelServiceStatus::Ok,
+        "healthy group can request supervisor recovery status after service heal");
+  check(recovery_status_after_heal.rejection == KernelServiceRequestRejection::None,
+        "supervisor recovery status after heal clears rejection");
+  check(recovery_status_after_heal.supervisor_recovery.has_value(),
+        "supervisor recovery status after heal returns a recovery view");
+  if (recovery_status_after_heal.supervisor_recovery) {
+    check(recovery_status_after_heal.supervisor_recovery->managed_service_count == 1,
+          "recovery status retains one managed service after heal");
+    check(recovery_status_after_heal.supervisor_recovery->blocked_service_count == 0,
+          "recovery status reports zero blocked services after heal");
+    check(recovery_status_after_heal.supervisor_recovery->unhealthy_service_count == 0,
+          "recovery status reports zero unhealthy services after heal");
+    check(recovery_status_after_heal.supervisor_recovery->service_lifecycle_transitions == 7,
+          "recovery status aggregates service lifecycle transitions after heal");
+    check(recovery_status_after_heal.supervisor_recovery->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceMarkedHealthy,
+          "recovery status tracks heal as the latest service lifecycle event");
+    check(recovery_status_after_heal.supervisor_recovery->last_service_transition_sequence.has_value(),
+          "recovery status exposes the latest service lifecycle audit sequence after heal");
+  }
+
   auto audit_summary = axion_kernel_service_request(
       *state,
       KernelServiceRequest{
@@ -2794,6 +2835,34 @@ static void test_kernel_service_runtime_layer() {
           "supervisor status tracks unregister as the latest lifecycle event");
     check(supervisor_status_after_unregister.supervisor->last_service_transition_sequence.has_value(),
           "supervisor status retains the latest lifecycle audit sequence after unregister");
+  }
+  auto recovery_status_after_unregister = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::SupervisorRecoveryStatus,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .supervisor_id = *supervisor_id,
+      });
+  check(recovery_status_after_unregister.status == KernelServiceStatus::Ok,
+        "healthy group can request supervisor recovery status after unregister");
+  check(recovery_status_after_unregister.rejection == KernelServiceRequestRejection::None,
+        "supervisor recovery status after unregister clears rejection");
+  check(recovery_status_after_unregister.supervisor_recovery.has_value(),
+        "supervisor recovery status after unregister returns a recovery view");
+  if (recovery_status_after_unregister.supervisor_recovery) {
+    check(recovery_status_after_unregister.supervisor_recovery->managed_service_count == 0,
+          "recovery status reports zero managed services after unregister");
+    check(recovery_status_after_unregister.supervisor_recovery->service_lifecycle_transitions == 8,
+          "recovery status retains lifecycle transition count after unregister");
+    check(recovery_status_after_unregister.supervisor_recovery->last_service_transition_id ==
+              service_id,
+          "recovery status retains the last transitioned service after unregister");
+    check(recovery_status_after_unregister.supervisor_recovery->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceUnregistered,
+          "recovery status tracks unregister as the latest service lifecycle event");
+    check(recovery_status_after_unregister.supervisor_recovery->last_service_transition_sequence
+              .has_value(),
+          "recovery status retains the latest service lifecycle audit sequence after unregister");
   }
   check(!state->audit_log.empty(), "service lifecycle actions produce audit records");
   if (!state->audit_log.empty()) {

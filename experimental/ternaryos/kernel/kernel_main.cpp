@@ -402,12 +402,19 @@ KernelSupervisorRecoveryStatusView make_supervisor_recovery_view(
     const KernelRuntimeState& state,
     SupervisorId supervisor_id) {
   const auto* supervisor_state = state.find_supervisor(supervisor_id);
+  const auto service_inventory = build_supervisor_services_view(state, supervisor_id);
   return KernelSupervisorRecoveryStatusView{
       .id = supervisor_state ? supervisor_state->id : supervisor_id,
       .pending_group_count =
           supervisor_state ? supervisor_state->pending_groups.size() : 0,
+      .managed_service_count = service_inventory.service_count,
+      .blocked_service_count = service_inventory.blocked_service_count,
+      .suspended_service_count = service_inventory.suspended_service_count,
+      .unhealthy_service_count = service_inventory.unhealthy_service_count,
       .acknowledgements = supervisor_state ? supervisor_state->acknowledgements : 0,
       .recovered_groups = supervisor_state ? supervisor_state->recovered_groups : 0,
+      .service_lifecycle_transitions =
+          supervisor_state ? supervisor_state->service_lifecycle_transitions : 0,
       .pending_group_ids = supervisor_state
                                ? std::vector<ProcessGroupId>(supervisor_state->pending_groups.begin(),
                                                              supervisor_state->pending_groups.end())
@@ -416,6 +423,10 @@ KernelSupervisorRecoveryStatusView make_supervisor_recovery_view(
           supervisor_state ? supervisor_state->last_acknowledged_group : std::nullopt,
       .last_recovered_group =
           supervisor_state ? supervisor_state->last_recovered_group : std::nullopt,
+      .last_service_transition_id = service_inventory.last_service_transition_id,
+      .last_service_transition_kind = service_inventory.last_service_transition_kind,
+      .last_service_transition_sequence =
+          service_inventory.last_service_transition_sequence,
   };
 }
 
