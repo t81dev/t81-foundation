@@ -1,6 +1,10 @@
 # RFC-00B2 — TernOS Device Driver Architecture
 
-**Status:** Draft
+**Status:** accepted
+**Type:** standards-track
+**Applies-To:** Axion device layer, storage/display/network guest bindings
+**Created:** 2026-03-10
+**Updated:** 2026-03-11
 **Phase:** 4 (v2.0 gate)
 **Gate condition:** CanonFS read/write survives a simulated reboot cycle.
 **Depends on:** RFC-00B0 (HAL), RFC-00B1 (Ternary MMU)

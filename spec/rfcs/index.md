@@ -48,6 +48,10 @@ This index tracks RFC status and intended disposition.
 | RFC-0030 | Deterministic Math Subsystem | draft | Canonical arithmetic operations |
 | RFC-0031 | Deterministic AI Execution Contract | draft | Composes RFC-0002/0003/0004/0025/0026/00A0 into a single AI execution contract |
 | RFC-0032 | AI Subsystem Promotion Pathway | proposed | Normative promotion specification for `experiments/ai/` components; 5-phase roadmap |
+| RFC-00B0 | Axion HAL Specification | accepted | First non-hosted promotion path and HAL contract for the Axion OS stack |
+| RFC-00B1 | Ternary MMU | accepted | TVA layout, radix page table, and MMU fault model for Axion |
+| RFC-00B2 | Device Driver Architecture | accepted | Phase 4 storage/display/network boundary and guest-device model |
+| RFC-00B3 | Axion Kernel Architecture | draft | Kernel boundary and integration path after subsystem bring-up |
 
 ## Experimental RFCs (A-series)
 

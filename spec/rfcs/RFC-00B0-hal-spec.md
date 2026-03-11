@@ -1,7 +1,10 @@
 # RFC-00B0: Hardware Abstraction Layer (HAL) for TernOS
 
-**Status:** Draft
-**Date:** 2026-03-10
+**Status:** accepted
+**Type:** standards-track
+**Applies-To:** Axion HAL, boot handoff, guest/host boot context validation
+**Created:** 2026-03-10
+**Updated:** 2026-03-11
 **Author:** @t81dev
 **Depends on:** TISC ISA (frozen, `spec/tisc-spec.md`), Axion Policy Kernel (`kernel/axion/`)
 **Blocks:** TernOS Phase 1 (bootloader PoC, v1.5 gate)

@@ -1,7 +1,10 @@
 # RFC-00B3: Axion Kernel Architecture
 
-**Status:** Draft
-**Date:** 2026-03-11
+**Status:** draft
+**Type:** standards-track
+**Applies-To:** Axion kernel core, kernel/runtime boundary, HAL-to-kernel handoff
+**Created:** 2026-03-11
+**Updated:** 2026-03-11
 **Author:** @t81dev
 **Depends on:** RFC-00B0 (HAL), RFC-00B1 (MMU), RFC-00B2 (Drivers)
 **Blocks:** Axion kernel integration after Phases 1-4 subsystem bring-up
