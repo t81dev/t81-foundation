@@ -172,9 +172,11 @@ struct KernelRuntimeState {
     uint64_t activations{0};
     uint64_t stall_cycles{0};
     uint64_t backlog_blocked_cycles{0};
+    uint64_t ready_backlog_cycles{0};
     uint64_t resolutions_completed{0};
     std::optional<AddressSpaceId> last_completed_address_space_id{};
     std::optional<uint64_t> last_completed_resolution_sequence{};
+    std::optional<AddressSpaceId> last_ready_backlog_address_space_id{};
   };
 
   struct Counters {
@@ -203,6 +205,7 @@ struct KernelRuntimeState {
     uint64_t pager_worker_activations{0};
     uint64_t pager_worker_stall_cycles{0};
     uint64_t pager_worker_backlog_blocked_cycles{0};
+    uint64_t pager_worker_ready_backlog_cycles{0};
     uint64_t audit_events_recorded{0};
   };
 
@@ -450,7 +453,9 @@ struct KernelRuntimeStatusView {
   uint64_t pager_worker_activations{0};
   uint64_t pager_worker_stall_cycles{0};
   uint64_t pager_worker_backlog_blocked_cycles{0};
+  uint64_t pager_worker_ready_backlog_cycles{0};
   uint64_t pager_worker_resolutions_completed{0};
+  std::optional<AddressSpaceId> pager_worker_last_ready_backlog_address_space_id{};
   std::size_t managed_service_count{0};
   std::size_t blocked_service_count{0};
   std::size_t suspended_service_count{0};
@@ -631,7 +636,9 @@ struct KernelFaultSummaryView {
   uint64_t pager_worker_activations{0};
   uint64_t pager_worker_stall_cycles{0};
   uint64_t pager_worker_backlog_blocked_cycles{0};
+  uint64_t pager_worker_ready_backlog_cycles{0};
   uint64_t pager_worker_resolutions_completed{0};
+  std::optional<AddressSpaceId> pager_worker_last_ready_backlog_address_space_id{};
   uint64_t service_lifecycle_transitions{0};
   std::optional<KernelFaultRecord> last_delivered_fault{};
   std::optional<AddressSpaceId> last_pager_address_space_id{};

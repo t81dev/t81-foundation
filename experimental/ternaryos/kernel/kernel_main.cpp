@@ -960,8 +960,12 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .pager_worker_stall_cycles = state.pager_worker.stall_cycles,
       .pager_worker_backlog_blocked_cycles =
           state.pager_worker.backlog_blocked_cycles,
+      .pager_worker_ready_backlog_cycles =
+          state.pager_worker.ready_backlog_cycles,
       .pager_worker_resolutions_completed =
           state.pager_worker.resolutions_completed,
+      .pager_worker_last_ready_backlog_address_space_id =
+          state.pager_worker.last_ready_backlog_address_space_id,
       .last_audit_event = state.last_audit_event,
       .last_service_transition_id = latest_service_transition.service_id,
       .last_service_transition_kind = latest_service_transition.kind,
@@ -1398,6 +1402,25 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
             if (!state.pager_worker.inbox.empty()) {
               ++state.pager_worker.backlog_blocked_cycles;
               ++state.counters.pager_worker_backlog_blocked_cycles;
+              for (const auto& work_item : state.pager_worker.inbox) {
+                auto* queued_address_space =
+                    state.find_address_space_mut(work_item.handoff.address_space_id);
+                if (!queued_address_space ||
+                    !queued_address_space->last_pager_fault.has_value()) {
+                  continue;
+                }
+                const auto queued_translation = mmu::mmu_translate_checked(
+                    state.page_table,
+                    queued_address_space->last_pager_fault->tva,
+                    queued_address_space->last_pager_fault->access_mode);
+                if (queued_translation.fault == mmu::MmuFault::None) {
+                  ++state.pager_worker.ready_backlog_cycles;
+                  ++state.counters.pager_worker_ready_backlog_cycles;
+                  state.pager_worker.last_ready_backlog_address_space_id =
+                      work_item.handoff.address_space_id;
+                  break;
+                }
+              }
             }
           }
         }
@@ -1522,8 +1545,12 @@ KernelServiceResult axion_kernel_service_request(
           .pager_worker_stall_cycles = state.pager_worker.stall_cycles,
           .pager_worker_backlog_blocked_cycles =
               state.pager_worker.backlog_blocked_cycles,
+          .pager_worker_ready_backlog_cycles =
+              state.pager_worker.ready_backlog_cycles,
           .pager_worker_resolutions_completed =
               state.pager_worker.resolutions_completed,
+          .pager_worker_last_ready_backlog_address_space_id =
+              state.pager_worker.last_ready_backlog_address_space_id,
           .managed_service_count = service_summary.managed_service_count,
           .blocked_service_count = service_summary.blocked_service_count,
           .suspended_service_count = service_summary.suspended_service_count,

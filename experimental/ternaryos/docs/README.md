@@ -345,6 +345,8 @@ Local hosted proof as of the current branch:
 - runtime and fault diagnostics now also retain worker stall cycles and the
   narrower backlog-blocked subset when FIFO ordering holds queued work behind
   an unresolved active item
+- runtime and fault diagnostics now also retain the ready-backlog subset when
+  queued work is already mappable behind that stalled active item
 - the first narrow service-facing action now exists through that same boundary:
   supervisor fault-group acknowledgement
 - supervisor-facing recovery/report flows are now exposed through that same boundary:

@@ -1313,6 +1313,11 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status counts one worker stall cycle while the first item remains unresolved");
     check(runtime_after_first_activation.runtime->pager_worker_backlog_blocked_cycles == 1,
           "runtime status counts one backlog-blocked cycle while FIFO preserves the first item");
+    check(runtime_after_first_activation.runtime->pager_worker_ready_backlog_cycles == 1,
+          "runtime status counts one ready-behind-active backlog cycle under FIFO stall");
+    check(runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_address_space_id ==
+              second_address_space_id,
+          "runtime status tracks the ready queued address space blocked behind the active item");
     check(runtime_after_first_activation.runtime->pager_resolutions == 0,
           "runtime status does not resolve the second address space out of order");
   }
@@ -1377,6 +1382,11 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status retains the worker stall count after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_backlog_blocked_cycles == 1,
           "runtime status retains the backlog-blocked count after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_ready_backlog_cycles == 1,
+          "runtime status retains the ready-backlog count after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_address_space_id ==
+              second_address_space_id,
+          "runtime status retains the last ready queued address space after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_resolutions_completed == 2,
           "runtime status counts two completed worker resolutions after backlog drain");
   }
@@ -1403,6 +1413,11 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary counts one worker stall cycle after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_backlog_blocked_cycles == 1,
           "fault summary counts one backlog-blocked cycle after backlog drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_ready_backlog_cycles == 1,
+          "fault summary counts one ready-backlog cycle after backlog drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_last_ready_backlog_address_space_id ==
+              second_address_space_id,
+          "fault summary tracks the last ready queued address space after backlog drain");
   }
 }
 

@@ -129,6 +129,16 @@ The seventh pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves those stall/backlog-blocked counters advance
   deterministically under FIFO backlog pressure
 
+The eighth pager-groundwork slice is now also complete:
+
+- runtime and fault diagnostics now also retain ready-backlog cycles for the
+  narrower case where queued work is already mappable behind a stalled active
+  item
+- diagnostics now preserve the last ready queued address space observed behind
+  that active stall
+- HAL/kernel coverage now proves ready-behind-active FIFO pressure is tracked
+  deterministically without changing scheduling policy yet
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
@@ -143,7 +153,8 @@ The next real kernel work is now:
 - pager integration
 - richer kernel-owned pager work after the first worker model
 - explicit transition handling for prioritization or richer scheduling policy
-  once the new FIFO stall/backlog-blocked behavior is no longer sufficient
+  once the new FIFO stall/backlog-blocked/ready-backlog diagnostics are no
+  longer sufficient
 - stable diagnostics proving pager worker behavior remains deterministic under
   deeper load
 

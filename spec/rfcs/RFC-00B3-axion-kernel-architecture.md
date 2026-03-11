@@ -339,9 +339,11 @@ now also retain pending-handoff and worker-inbox high-water marks plus worker
 activation counts, and HAL coverage proves deterministic FIFO backlog handling
 across two queued address spaces. Those diagnostics now also retain worker
 stall cycles plus the narrower backlog-blocked subset when FIFO ordering holds
-queued work behind an unresolved active item. The next kernel slice is to keep
-that pager surface private while expanding backlog/load scheduling behavior
-before any public pager ABI or syscall design.
+queued work behind an unresolved active item. They now also retain the even
+narrower ready-backlog case when queued work is already mappable behind that
+stalled active item. The next kernel slice is to keep that pager surface
+private while expanding backlog/load scheduling behavior before any public
+pager ABI or syscall design.
 
 The working execution note for this slice is:
 
