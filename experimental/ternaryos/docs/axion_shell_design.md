@@ -187,6 +187,7 @@ history show session
 session status
 session checkpoint
 session export
+session import <ref>
 session show durable
 show session
 session refs
@@ -216,6 +217,7 @@ Rules:
 store cp <ref>
 history show object <ref>
 session export
+session import <ref>
 history use <ref>
 ```
 
@@ -228,6 +230,7 @@ show ref <canonref>
 show session
 show profile
 session export
+session import <ref>
 store put text "<payload>"
 store cp <ref>
 store get ref <canonref>

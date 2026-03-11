@@ -30,12 +30,13 @@ namespace t81::ternaryos {
 
 namespace {
 
-constexpr std::array<const char*, 22> kBuiltinCommands = {
+constexpr std::array<const char*, 23> kBuiltinCommands = {
     "help",
     "profile",
     "session status",
     "session checkpoint",
     "session export",
+    "session import <ref>",
     "session show durable",
     "session refs",
     "show profile",
@@ -80,6 +81,21 @@ std::string join_lines(const std::vector<std::string>& lines) {
     joined += lines[i];
   }
   return joined;
+}
+
+std::vector<std::string> split_lines(std::string_view text) {
+  std::vector<std::string> lines;
+  std::string current;
+  for (char ch : text) {
+    if (ch == '\n') {
+      lines.push_back(current);
+      current.clear();
+      continue;
+    }
+    current.push_back(ch);
+  }
+  if (!current.empty() || text.empty()) lines.push_back(current);
+  return lines;
 }
 
 std::string unique_store_path() {
@@ -159,7 +175,18 @@ bool canon_ref_known(const std::vector<t81::canonfs::CanonRef>& refs,
   return false;
 }
 
-std::vector<std::string> render_transcript_lines(const std::vector<ShellStep>& steps) {
+std::vector<std::string> render_transcript_lines(const std::vector<ShellStep>& steps,
+                                                 const std::vector<std::string>& imported_lines) {
+  if (!imported_lines.empty()) {
+    std::vector<std::string> lines = imported_lines;
+    lines.push_back("IMPORTED SESSION ACTIVE");
+    for (const auto& step : steps) {
+      lines.push_back("tsh> " + step.command);
+      lines.push_back(upper_ascii(step.result));
+    }
+    return lines;
+  }
+
   std::vector<std::string> lines;
   lines.push_back("TSH PHASE5 READY");
   lines.push_back("SESSION TRANSCRIPT");
@@ -266,7 +293,7 @@ bool ShellSession::refresh_render() {
       steps.push_back({record.command, record.result});
     }
     return steps;
-  }());
+  }(), imported_transcript_lines_);
   state_.transcript_lines = std::move(lines);
   state_.transcript_text = join_lines(state_.transcript_lines);
 
@@ -297,7 +324,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words[0] == "help") {
     state_.command_records.push_back(
         {command,
-         "builtins help profile session status session checkpoint session export session show durable session refs show profile show session show ref <canonref> store put <text> store put ref <ref> store cp <ref> store ls store get <ref> store rm <ref> history history show session history show object <ref> history use <ref> history show durable clear"});
+         "builtins help profile session status session checkpoint session export session import <ref> session show durable session refs show profile show session show ref <canonref> store put <text> store put ref <ref> store cp <ref> store ls store get <ref> store rm <ref> history history show session history show object <ref> history use <ref> history show durable clear"});
     return refresh_render();
   }
 
@@ -409,6 +436,25 @@ bool ShellSession::execute_command(std::string_view command_view) {
       return refresh_render();
     }
     state_.command_records.push_back({command, "session export ok " + canon_ref_text(*ref)});
+    return refresh_render();
+  }
+
+  if (words.size() == 3 && words[0] == "session" && words[1] == "import") {
+    const auto ref = parse_canon_ref_text(words[2]);
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "session import invalid ref"});
+      return refresh_render();
+    }
+
+    state_.recovered_entries = store.rebuild_index();
+    const auto block = store.get(*ref);
+    if (!block.has_value()) {
+      state_.command_records.push_back({command, "session import missing"});
+      return refresh_render();
+    }
+
+    imported_transcript_lines_ = split_lines(decode_text_block(*block));
+    state_.command_records.push_back({command, "session import ok " + canon_ref_text(*ref)});
     return refresh_render();
   }
 
@@ -657,6 +703,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   }
 
   if (words[0] == "clear") {
+    imported_transcript_lines_.clear();
     state_.command_records.clear();
     state_.command_records.push_back({command, "session transcript cleared"});
     return refresh_render();

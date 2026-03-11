@@ -36,7 +36,7 @@ static void test_scripted_shell_session() {
   check(state.has_value(), "scripted shell session builds");
   if (!state.has_value()) return;
 
-  check(state->available_commands.size() == 22, "twenty-two builtins are exposed");
+  check(state->available_commands.size() == 23, "twenty-three builtins are exposed");
   check(state->command_records.size() == 6, "scripted session records six commands");
   check(state->command_records[2].result.starts_with("session profile "),
         "scripted session status reports shell state");
@@ -217,9 +217,11 @@ static void test_typed_shell_commands() {
   check(session->execute_command("session refs"), "session refs executes after clear");
   check(session->execute_command("history show session"), "history show session executes after clear");
   check(session->execute_command("history show durable"), "history show durable executes after clear");
+  check(session->execute_command(std::string("session import ") + checkpoint_ref),
+        "session import <ref> executes after clear");
 
   const auto& state_after_clear = session->state();
-  check(state_after_clear.command_records.size() == 8, "clear resets transcript to the new session window");
+  check(state_after_clear.command_records.size() == 9, "clear resets transcript to the new session window");
   check(state_after_clear.command_records[0].result == "session transcript cleared",
         "clear reports transcript reset");
   check(state_after_clear.command_records[1].result.find("commands 1") != std::string::npos,
@@ -244,12 +246,20 @@ static void test_typed_shell_commands() {
         "post-clear history show durable sees rebound checkpoint anchor");
   check(state_after_clear.command_records[7].result.find("SESSION TRANSCRIPT") != std::string::npos,
         "post-clear history show durable exposes rebound checkpoint transcript");
-  check(state_after_clear.session_command_count == 8,
+  check(state_after_clear.command_records[8].result == "session import ok " + checkpoint_ref,
+        "session import reports success with the checkpoint ref");
+  check(state_after_clear.session_command_count == 9,
         "post-clear state tracks new session command window");
   check(state_after_clear.transcript_text.find("UNKNOWN COMMAND") == std::string::npos,
         "cleared transcript no longer shows pre-clear shell history");
   check(state_after_clear.transcript_text.find("SESSION TRANSCRIPT") != std::string::npos,
         "transcript keeps the session header after clear");
+  check(state_after_clear.transcript_text.find("IMPORTED SESSION ACTIVE") != std::string::npos,
+        "session import marks imported transcript mode");
+  check(state_after_clear.transcript_text.find("SESSION EXPORT") != std::string::npos,
+        "session import restores exported transcript content");
+  check(state_after_clear.transcript_text.find("tsh> session import ") != std::string::npos,
+        "session import appends the new command to the imported transcript");
 }
 
 int main() {
