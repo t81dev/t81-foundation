@@ -1,4 +1,4 @@
-// experimental/ternaryos/shell_session.cpp
+// experimental/ternaryos/shell/shell_session.cpp
 
 #include "shell_session.hpp"
 

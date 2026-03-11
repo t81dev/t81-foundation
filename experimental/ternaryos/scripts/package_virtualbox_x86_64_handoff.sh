@@ -20,7 +20,7 @@ required_files=(
   "$artifact_dir/ternos_virtualbox_guest.vdi"
   "$artifact_dir/staging/TERNOS/profile.txt"
   "$artifact_dir/staging/TERNOS/demo-output.txt"
-  "$script_dir/../virtualbox_x86_64_handoff.md"
+  "$script_dir/../docs/virtualbox_x86_64_handoff.md"
 )
 
 for path in "${required_files[@]}"; do
@@ -45,10 +45,10 @@ done
 /bin/cp "$artifact_dir/ternos_virtualbox_guest.vdi" "$bundle_dir/"
 /bin/cp "$artifact_dir/staging/TERNOS/profile.txt" "$bundle_dir/"
 /bin/cp "$artifact_dir/staging/TERNOS/demo-output.txt" "$bundle_dir/"
-/bin/cp "$script_dir/../virtualbox_x86_64_handoff.md" "$bundle_dir/"
+/bin/cp "$script_dir/../docs/virtualbox_x86_64_handoff.md" "$bundle_dir/"
 
 {
-  print -r -- 'TernOS VirtualBox x86_64 handoff bundle'
+  print -r -- 'Axion VirtualBox x86_64 handoff bundle'
   print -r -- '======================================'
   print -r -- ''
   print -r -- 'This bundle is intended for validation on an x86_64 VirtualBox host.'

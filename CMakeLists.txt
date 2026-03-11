@@ -579,7 +579,7 @@ if(T81_ENABLE_TERNARYOS)
   target_compile_features(t81_ternaryos_hal PUBLIC ${T81_CXX_STD_FEATURE})
 
   add_library(t81_ternaryos_shell STATIC
-    experimental/ternaryos/shell_session.cpp)
+    experimental/ternaryos/shell/shell_session.cpp)
   target_include_directories(t81_ternaryos_shell PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
@@ -587,20 +587,20 @@ if(T81_ENABLE_TERNARYOS)
   target_compile_features(t81_ternaryos_shell PUBLIC ${T81_CXX_STD_FEATURE})
 
   add_executable(t81_ternaryos_demo
-    experimental/ternaryos/demo.cpp)
+    experimental/ternaryos/apps/demo.cpp)
   target_link_libraries(t81_ternaryos_demo PRIVATE t81_ternaryos_hal)
 
   add_executable(t81_ternaryos_shell_demo
-    experimental/ternaryos/shell_demo.cpp)
+    experimental/ternaryos/apps/shell_demo.cpp)
   target_link_libraries(t81_ternaryos_shell_demo PRIVATE t81_ternaryos_shell)
 
   add_executable(t81_ternaryos_shell_startup_snapshot
-    experimental/ternaryos/shell_startup_snapshot.cpp)
+    experimental/ternaryos/shell/shell_startup_snapshot.cpp)
   target_link_libraries(t81_ternaryos_shell_startup_snapshot PRIVATE t81_ternaryos_shell)
 
   if(T81_BUILD_TUI)
     add_executable(t81_ternaryos_shell_tui
-      experimental/ternaryos/shell_tui.cpp)
+      experimental/ternaryos/apps/shell_tui.cpp)
     target_link_libraries(t81_ternaryos_shell_tui PRIVATE
       t81_ternaryos_shell
       ftxui::screen
@@ -814,7 +814,7 @@ if(T81_ENABLE_TERNARYOS)
             ${CMAKE_BINARY_DIR}
             ${CMAKE_BINARY_DIR}/ternaryos/handoff
     DEPENDS t81_ternaryos_virtualbox_guest_artifact
-            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/virtualbox_x86_64_handoff.md
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/docs/virtualbox_x86_64_handoff.md
     USES_TERMINAL)
 
   add_custom_target(t81_ternaryos_virtualbox_armv8_dev_artifact

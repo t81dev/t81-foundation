@@ -3,7 +3,7 @@
 // Phase 5 acceptance tests: Axion Shell typed command execution and durable
 // history over the hosted VirtualBox guest bootstrap seam.
 
-#include "../shell_session.hpp"
+#include "../shell/shell_session.hpp"
 
 #include <cstdio>
 #include <optional>

@@ -1,4 +1,4 @@
-// experimental/ternaryos/shell_startup_snapshot.cpp
+// experimental/ternaryos/shell/shell_startup_snapshot.cpp
 
 #include "shell_session.hpp"
 

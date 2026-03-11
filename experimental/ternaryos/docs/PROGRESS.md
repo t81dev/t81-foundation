@@ -11,15 +11,15 @@ Current naming split:
 - `Axion` = operating system
 - `CanonFS` / `TISC` remain subsystem names
 
-**Last updated:** 2026-03-10
-**Commit:** `257359ad`
+**Last updated:** 2026-03-11
+**Commit:** `e1dfb42c`
 **Branch:** `main`
 
 Reference docs:
-- Roadmap: [docs/research/ternary_os_roadmap.md](../../docs/research/ternary_os_roadmap.md)
-- RFC-00B0 (HAL): [docs/rfcs/RFC-00B0-hal-spec.md](../../docs/rfcs/RFC-00B0-hal-spec.md)
-- RFC-00B1 (MMU): [docs/rfcs/RFC-00B1-ternary-mmu.md](../../docs/rfcs/RFC-00B1-ternary-mmu.md)
-- RFC-00B2 (Drivers): [docs/rfcs/RFC-00B2-device-drivers.md](../../docs/rfcs/RFC-00B2-device-drivers.md)
+- Roadmap: [docs/research/ternary_os_roadmap.md](../../../docs/research/ternary_os_roadmap.md)
+- RFC-00B0 (HAL): [docs/rfcs/RFC-00B0-hal-spec.md](../../../docs/rfcs/RFC-00B0-hal-spec.md)
+- RFC-00B1 (MMU): [docs/rfcs/RFC-00B1-ternary-mmu.md](../../../docs/rfcs/RFC-00B1-ternary-mmu.md)
+- RFC-00B2 (Drivers): [docs/rfcs/RFC-00B2-device-drivers.md](../../../docs/rfcs/RFC-00B2-device-drivers.md)
 - x86_64 handoff: [virtualbox_x86_64_handoff.md](virtualbox_x86_64_handoff.md)
 - Axion shell design: [axion_shell_design.md](axion_shell_design.md)
 
@@ -138,7 +138,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `dev/framebuffer.hpp/.cpp` | 81×27 ternary framebuffer with ASCII dump | 18 |
 | `dev/ttf.hpp/.cpp` | Minimal Ternary Text Format codec + framebuffer text renderer for ASCII terminal output | 12 |
 | `dev/net_packet.hpp` | Ternary Ethernet packet wrapper with payload validation, canonical content hash, and binary frame encode/decode | 18 |
-| `demo.cpp` | Presentation demo: VirtualBox guest bootstrap over hosted storage binding, reboot-persistent CanonStore, TTF framebuffer output, and Ethernet frame round-trip | — |
+| `apps/demo.cpp` | Presentation demo: VirtualBox guest bootstrap over hosted storage binding, reboot-persistent CanonStore, TTF framebuffer output, and Ethernet frame round-trip | — |
 | `tests/device_driver_test.cpp` | Phase 4 acceptance tests AC-D1 through AC-D8 plus VirtualBox AHCI/E1000/VMSVGA adapter scaffolds, hosted TTF rendering, Ethernet frame translation checks, repeated guest-bootstrap reboot persistence, recovery after index-header and payload corruption, multi-block CanonStore persistence beyond the 17-entry root-header threshold, torn-header fallback recovery, and interrupted-flush durability through the guest path | 342 |
 
 #### Design notes
@@ -168,12 +168,12 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | File | Purpose | Tests |
 | :--- | :--- | :---: |
-| `shell_session.hpp/.cpp` | Shared Phase 5 shell-session backend: executes a minimal typed shell command model (`help`, `profile`, `show profile`, `session status`, `session show durable`, `show session`, `session refs`, `store put <text>`, `store put ref <ref>`, `store ls`, `store get <ref>`, `show ref <canonref>`, `store rm <ref>`, `history`, `history show session`, `history show durable`, `clear`) through the VirtualBox guest-bootstrap path, persists shell history through CanonStore, reboots, recovers it, and exposes deterministic transcript/framebuffer state to frontends | — |
-| `shell_demo.cpp` | Verbose Phase 5 backend proof: prints the built-in shell session and framebuffer evidence directly to stdout | — |
-| `shell_tui.cpp` | First FTXUI-based TernOS shell frontend with transcript pane, command buffer, session pane, builtins pane, framebuffer preview, interactive typed command execution, and `--snapshot` render mode | — |
-| `shell_startup_snapshot.cpp` | Build-time Axion shell snapshot generator: runs the real Phase 5 shell backend, emits compact startup-shell, startup-session, startup-history, startup-store, startup-ref, and startup-report artifacts, and produces the generated headers embedded by the ARM EFI developer-lane stub | — |
+| `shell/shell_session.hpp/.cpp` | Shared Phase 5 shell-session backend: executes a minimal typed shell command model (`help`, `profile`, `show profile`, `session status`, `session show durable`, `show session`, `session refs`, `store put <text>`, `store put ref <ref>`, `store ls`, `store get <ref>`, `show ref <canonref>`, `store rm <ref>`, `history`, `history show session`, `history show durable`, `clear`) through the VirtualBox guest-bootstrap path, persists shell history through CanonStore, reboots, recovers it, and exposes deterministic transcript/framebuffer state to frontends | — |
+| `apps/shell_demo.cpp` | Verbose Phase 5 backend proof: prints the built-in shell session and framebuffer evidence directly to stdout | — |
+| `apps/shell_tui.cpp` | First FTXUI-based TernOS shell frontend with transcript pane, command buffer, session pane, builtins pane, framebuffer preview, interactive typed command execution, and `--snapshot` render mode | — |
+| `shell/shell_startup_snapshot.cpp` | Build-time Axion shell snapshot generator: runs the real Phase 5 shell backend, emits compact startup-shell, startup-session, startup-history, startup-store, startup-ref, and startup-report artifacts, and produces the generated headers embedded by the ARM EFI developer-lane stub | — |
 | `tests/shell_session_test.cpp` | Phase 5 shell acceptance test: scripted durable-history path plus interactive typed-command execution, object-native profile/session inspection, durable-anchor inspection, quoted payload parsing, canonical object composition via `store put ref <ref>`, session-history inspection, store ref listing, store ref retrieval, durable ref removal, explicit durable-history inspection, transcript clearing, and parse-error handling through the guest-bootstrap seam | 91 |
-| `axion_shell_design.md` | Phase 5 shell design note: positioning, grammar, screen model, and milestone sequence for evolving the current built-in shell into a real Axion shell | — |
+| `docs/axion_shell_design.md` | Phase 5 shell design note: positioning, grammar, screen model, and milestone sequence for evolving the current built-in shell into a real Axion shell | — |
 
 #### Design notes
 

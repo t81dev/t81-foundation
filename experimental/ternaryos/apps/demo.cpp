@@ -1,4 +1,4 @@
-// experimental/ternaryos/demo.cpp
+// experimental/ternaryos/apps/demo.cpp
 
 #include "dev/canon_store.hpp"
 #include "dev/framebuffer.hpp"

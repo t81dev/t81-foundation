@@ -1,6 +1,6 @@
-// experimental/ternaryos/shell_demo.cpp
+// experimental/ternaryos/apps/shell_demo.cpp
 
-#include "shell_session.hpp"
+#include "shell/shell_session.hpp"
 
 #include <cstdio>
 

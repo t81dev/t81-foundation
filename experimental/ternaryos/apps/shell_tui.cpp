@@ -1,6 +1,6 @@
-// experimental/ternaryos/shell_tui.cpp
+// experimental/ternaryos/apps/shell_tui.cpp
 
-#include "shell_session.hpp"
+#include "shell/shell_session.hpp"
 
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>

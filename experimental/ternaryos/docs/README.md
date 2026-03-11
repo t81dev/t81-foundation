@@ -5,10 +5,10 @@
 **Review Summary:** [review_summary.md](review_summary.md)
 **x86_64 Handoff:** [virtualbox_x86_64_handoff.md](virtualbox_x86_64_handoff.md)
 **Shell Design:** [axion_shell_design.md](axion_shell_design.md)
-**Roadmap:** [docs/research/ternary_os_roadmap.md](../../docs/research/ternary_os_roadmap.md)
-**RFC-00B0 (HAL):** [docs/rfcs/RFC-00B0-hal-spec.md](../../docs/rfcs/RFC-00B0-hal-spec.md)
-**RFC-00B1 (MMU):** [docs/rfcs/RFC-00B1-ternary-mmu.md](../../docs/rfcs/RFC-00B1-ternary-mmu.md)
-**RFC-00B2 (Drivers):** [docs/rfcs/RFC-00B2-device-drivers.md](../../docs/rfcs/RFC-00B2-device-drivers.md)
+**Roadmap:** [docs/research/ternary_os_roadmap.md](../../../docs/research/ternary_os_roadmap.md)
+**RFC-00B0 (HAL):** [docs/rfcs/RFC-00B0-hal-spec.md](../../../docs/rfcs/RFC-00B0-hal-spec.md)
+**RFC-00B1 (MMU):** [docs/rfcs/RFC-00B1-ternary-mmu.md](../../../docs/rfcs/RFC-00B1-ternary-mmu.md)
+**RFC-00B2 (Drivers):** [docs/rfcs/RFC-00B2-device-drivers.md](../../../docs/rfcs/RFC-00B2-device-drivers.md)
 
 Prototype implementation of Axion, the current working name for the ternary-native
 OS kernel on the T81VM runtime. Phases 1 through 3 are complete, Phase 4
@@ -29,6 +29,18 @@ Naming rule for now:
 ## Structure
 
 ```
+apps/
+  demo.cpp              Phase 4 hosted presentation demo
+  shell_demo.cpp        Phase 5 verbose shell backend proof
+  shell_tui.cpp         Phase 5 FTXUI shell frontend with snapshot mode
+
+docs/
+  README.md             Entry point, structure, build/run guidance
+  PROGRESS.md           Phase-by-phase implementation log
+  review_summary.md     Reviewer-facing current-state summary
+  axion_shell_design.md Phase 5 shell design note
+  virtualbox_x86_64_handoff.md External x86_64 VirtualBox runbook
+
 hal/
   hal.hpp              HAL public interface (MemoryRegion, HardwareInterrupt,
                        BootContext, hal_main)
@@ -69,14 +81,12 @@ dev/
   ttf.hpp/.cpp         Minimal ASCII ↔ balanced-ternary text codec + renderer
   net_packet.hpp       Ternary Ethernet packet wrapper + binary frame codec
 
-demo.cpp               Phase 4 hosted presentation demo
-shell_session.hpp/.cpp Phase 5 shell session backend over guest bootstrap
-shell_demo.cpp         Phase 5 verbose shell backend proof
-shell_tui.cpp          Phase 5 FTXUI shell frontend with snapshot mode
-shell_startup_snapshot.cpp Build-time shell snapshot generator for ARM EFI
-shell_session_test.cpp Phase 5 shell command / durable-history test
+shell/
+  shell_session.hpp/.cpp Phase 5 shell session backend over guest bootstrap
+  shell_startup_snapshot.cpp Build-time shell snapshot generator for ARM EFI
 
 tests/
+  shell_session_test.cpp     Phase 5 shell command / durable-history test
   hal_boot_test.cpp          Phase 1 — 84 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
