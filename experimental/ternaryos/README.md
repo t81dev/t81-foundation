@@ -62,7 +62,7 @@ tests/
   mmu_test.cpp               Phase 2 — 47 assertions
   scheduler_test.cpp         Phase 3 — 120 assertions
   ipc_test.cpp               Phase 3 — 73 assertions
-  device_driver_test.cpp     Phase 4 — 241 assertions
+  device_driver_test.cpp     Phase 4 — 259 assertions
 ```
 
 ## Build & Test
@@ -71,7 +71,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 636/636 assertions, 7/7 tests pass
+# Expected: 654/654 assertions, 7/7 tests pass
 ```
 
 ## Demo

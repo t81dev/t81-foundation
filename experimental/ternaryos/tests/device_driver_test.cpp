@@ -550,6 +550,94 @@ static void test_virtualbox_guest_capacity_reboot() {
   std::filesystem::remove(path);
 }
 
+// ─── AC-D3e: Guest bootstrap recovery after torn index header ──────────────
+
+static void test_virtualbox_guest_torn_header_recovery() {
+  std::printf("\n[D3e] VirtualBox guest recovery after torn index header\n");
+
+  const std::string path = "/tmp/ternos_test_vbox_guest_torn_header.blk";
+  VBoxBootSpec spec;
+  spec.ram_bytes = 128ULL * 1024 * 1024;
+
+  auto block_a = make_block(0x81);
+  auto block_b = make_block(0x82);
+  auto block_c = make_block(0x83);
+  t81::canonfs::CanonRef ref_a, ref_b, ref_c;
+
+  {
+    HostedBlockDev backing(32, "vbox-guest-torn-header");
+    backing.set_backing_file(path);
+
+    auto guest = bootstrap_virtualbox_guest(spec, backing);
+    check(guest.has_value(), "bootstrap_virtualbox_guest succeeds before torn-header injection");
+    if (!guest) {
+      std::filesystem::remove(path);
+      return;
+    }
+
+    CanonStore store(*guest->storage.device);
+    auto a = store.put(block_a);
+    auto b = store.put(block_b);
+    auto c = store.put(block_c);
+    check(a.has_value(), "first block stores before torn-header injection");
+    check(b.has_value(), "second block stores before torn-header injection");
+    check(c.has_value(), "third block stores before torn-header injection");
+    if (!a || !b || !c) {
+      std::filesystem::remove(path);
+      return;
+    }
+    ref_a = *a;
+    ref_b = *b;
+    ref_c = *c;
+    check(store.flush(), "guest storage flush succeeds before torn-header injection");
+  }
+
+  auto damaged = HostedBlockDev::load(path);
+  check(damaged.has_value(), "device reloads for torn-header injection");
+  if (!damaged) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  BlockData header{};
+  check(damaged->read_block(0, header), "reads persisted header for torn-header injection");
+  uint32_t impossible_count = static_cast<uint32_t>(CanonStore::kMaxIndexEntries + 5);
+  std::memcpy(header.data() + 4, &impossible_count, sizeof(impossible_count));
+  std::memset(header.data() + 8 + 40, 0xEE, 16);
+  check(damaged->write_block(0, header), "writes torn header with impossible entry count");
+  check(damaged->save(path), "saves torn-header guest backing file");
+
+  auto loaded = HostedBlockDev::load(path);
+  check(loaded.has_value(), "device reloads after torn-header injection");
+  if (!loaded) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  auto guest = bootstrap_virtualbox_guest(spec, *loaded);
+  check(guest.has_value(), "bootstrap_virtualbox_guest succeeds after torn-header injection");
+  if (!guest) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  CanonStore rebuilt(*guest->storage.device);
+  check(rebuilt.rebuild_index() == 3,
+        "rebuild_index falls back to payload scan after impossible entry count");
+
+  auto recovered_a = rebuilt.get(ref_a);
+  auto recovered_b = rebuilt.get(ref_b);
+  auto recovered_c = rebuilt.get(ref_c);
+  check(recovered_a.has_value(), "first CanonRef survives torn-header recovery");
+  check(recovered_b.has_value(), "second CanonRef survives torn-header recovery");
+  check(recovered_c.has_value(), "third CanonRef survives torn-header recovery");
+  if (recovered_a) check(recovered_a->trytes == block_a.trytes, "first payload intact after torn-header recovery");
+  if (recovered_b) check(recovered_b->trytes == block_b.trytes, "second payload intact after torn-header recovery");
+  if (recovered_c) check(recovered_c->trytes == block_c.trytes, "third payload intact after torn-header recovery");
+
+  std::filesystem::remove(path);
+}
+
 // ─── AC-D7: hash verification on corrupted block ─────────────────────────────
 
 static void test_canon_store_corruption_detection() {
@@ -765,6 +853,7 @@ int main() {
   test_virtualbox_guest_reboot_persistence();
   test_virtualbox_guest_rebuild_after_corruption();
   test_virtualbox_guest_capacity_reboot();
+  test_virtualbox_guest_torn_header_recovery();
   test_canon_store_corruption_detection();
   test_framebuffer();
   test_ttf_rendering();
