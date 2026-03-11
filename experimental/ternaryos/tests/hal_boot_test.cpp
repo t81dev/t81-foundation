@@ -1798,6 +1798,9 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
     check(!runtime_after_capped_activation.runtime->pager_worker_last_parked_resumed_ready_count.has_value(),
           "runtime status has no resumed ready-backlog count before the blocked head resumes");
     check(!runtime_after_capped_activation.runtime
+               ->pager_worker_last_parked_resumed_handoff_sequence.has_value(),
+          "runtime status has no resumed blocked-head handoff ordinal before the blocked head resumes");
+    check(!runtime_after_capped_activation.runtime
                ->pager_worker_last_parked_resumed_ready_address_space_id.has_value(),
           "runtime status has no resumed trailing ready item before the blocked head resumes");
     check(!runtime_after_capped_activation.runtime
@@ -1846,6 +1849,9 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
     check(!fault_after_capped_deferral.fault_summary->pager_worker_last_parked_resumed_ready_count.has_value(),
           "fault summary has no resumed ready-backlog count while the head is still parked");
     check(!fault_after_capped_deferral.fault_summary
+               ->pager_worker_last_parked_resumed_handoff_sequence.has_value(),
+          "fault summary has no resumed blocked-head handoff ordinal while the head is still parked");
+    check(!fault_after_capped_deferral.fault_summary
                ->pager_worker_last_parked_resumed_ready_address_space_id.has_value(),
           "fault summary has no resumed trailing ready item while the head is still parked");
     check(!fault_after_capped_deferral.fault_summary
@@ -1881,6 +1887,9 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "runtime status still reports no parked resumption on repeated parked cycles");
     check(!runtime_after_second_park.runtime->pager_worker_last_parked_resumed_ready_count.has_value(),
           "runtime status still has no resumed ready-backlog count on repeated parked cycles");
+    check(!runtime_after_second_park.runtime
+               ->pager_worker_last_parked_resumed_handoff_sequence.has_value(),
+          "runtime status still has no resumed blocked-head handoff ordinal on repeated parked cycles");
     check(!runtime_after_second_park.runtime
                ->pager_worker_last_parked_resumed_ready_address_space_id.has_value(),
           "runtime status still has no resumed trailing ready item on repeated parked cycles");
@@ -1927,6 +1936,9 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
               ->pager_worker_last_parked_resumed_address_space_id ==
               first_address_space_id,
           "runtime status tracks the blocked head resumed from parked state");
+    check(runtime_after_head_resolution.runtime
+              ->pager_worker_last_parked_resumed_handoff_sequence == 1,
+          "runtime status tracks the resumed blocked-head handoff ordinal");
     check(runtime_after_head_resolution.runtime->pager_worker_last_parked_resumption_cycle == 1,
           "runtime status tracks the first parked resumption ordinal");
     check(runtime_after_head_resolution.runtime->pager_worker_last_parked_resumed_ready_count == 1,
@@ -1990,6 +2002,9 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
               ->pager_worker_last_parked_resumed_address_space_id ==
               first_address_space_id,
           "fault summary retains the blocked head resumed from parked state");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_parked_resumed_handoff_sequence == 1,
+          "fault summary retains the resumed blocked-head handoff ordinal");
     check(fault_after_final_resolution.fault_summary->pager_worker_last_parked_resumption_cycle == 1,
           "fault summary retains the parked resumption ordinal");
     check(fault_after_final_resolution.fault_summary->pager_worker_last_parked_resumed_ready_count == 1,

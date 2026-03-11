@@ -1083,6 +1083,8 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
           state.pager_worker.last_parked_ready_count,
       .pager_worker_last_parked_resumed_address_space_id =
           state.pager_worker.last_parked_resumed_address_space_id,
+      .pager_worker_last_parked_resumed_handoff_sequence =
+          state.pager_worker.last_parked_resumed_handoff_sequence,
       .pager_worker_last_parked_resumption_cycle =
           state.pager_worker.last_parked_resumption_cycle,
       .pager_worker_last_parked_resumed_ready_count =
@@ -1614,6 +1616,8 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
             ++state.counters.pager_worker_parked_resumptions;
             state.pager_worker.last_parked_resumed_address_space_id =
                 state.pager_worker.inbox.front().handoff.address_space_id;
+            state.pager_worker.last_parked_resumed_handoff_sequence =
+                state.pager_worker.inbox.front().handoff.sequence;
             state.pager_worker.last_parked_resumption_cycle =
                 state.pager_worker.parked_resumptions;
             state.pager_worker.last_parked_resumed_ready_count =
@@ -1860,6 +1864,8 @@ KernelServiceResult axion_kernel_service_request(
               state.pager_worker.last_parked_ready_count,
           .pager_worker_last_parked_resumed_address_space_id =
               state.pager_worker.last_parked_resumed_address_space_id,
+          .pager_worker_last_parked_resumed_handoff_sequence =
+              state.pager_worker.last_parked_resumed_handoff_sequence,
           .pager_worker_last_parked_resumption_cycle =
               state.pager_worker.last_parked_resumption_cycle,
           .pager_worker_last_parked_resumed_ready_count =

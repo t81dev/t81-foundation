@@ -190,6 +190,7 @@ struct KernelRuntimeState {
   std::optional<uint64_t> last_parked_cycle{};
   std::optional<std::size_t> last_parked_ready_count{};
   std::optional<AddressSpaceId> last_parked_resumed_address_space_id{};
+  std::optional<uint64_t> last_parked_resumed_handoff_sequence{};
   std::optional<uint64_t> last_parked_resumption_cycle{};
   std::optional<std::size_t> last_parked_resumed_ready_count{};
   std::optional<AddressSpaceId> last_parked_resumed_ready_address_space_id{};
@@ -509,6 +510,7 @@ struct KernelRuntimeStatusView {
   std::optional<uint64_t> pager_worker_last_parked_cycle{};
   std::optional<std::size_t> pager_worker_last_parked_ready_count{};
   std::optional<AddressSpaceId> pager_worker_last_parked_resumed_address_space_id{};
+  std::optional<uint64_t> pager_worker_last_parked_resumed_handoff_sequence{};
   std::optional<uint64_t> pager_worker_last_parked_resumption_cycle{};
   std::optional<std::size_t> pager_worker_last_parked_resumed_ready_count{};
   std::optional<AddressSpaceId> pager_worker_last_parked_resumed_ready_address_space_id{};
@@ -728,6 +730,7 @@ struct KernelFaultSummaryView {
   std::optional<uint64_t> pager_worker_last_parked_cycle{};
   std::optional<std::size_t> pager_worker_last_parked_ready_count{};
   std::optional<AddressSpaceId> pager_worker_last_parked_resumed_address_space_id{};
+  std::optional<uint64_t> pager_worker_last_parked_resumed_handoff_sequence{};
   std::optional<uint64_t> pager_worker_last_parked_resumption_cycle{};
   std::optional<std::size_t> pager_worker_last_parked_resumed_ready_count{};
   std::optional<AddressSpaceId> pager_worker_last_parked_resumed_ready_address_space_id{};

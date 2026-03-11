@@ -372,7 +372,8 @@ ready-behind-active backlog state. Once that blocked head finally becomes
 ready again, parked-resumption transitions are also retained explicitly with
 their latest resumed blocked-head identity and resumption ordinal, plus the
 count of still-ready queued work that remained behind that resumed head, along
-with the latest queued address space and handoff ordinal retained there.
+with the latest queued address space and handoff ordinal retained there. The
+resumed blocked head's own handoff ordinal is now retained too.
 The next kernel slice is to keep that pager surface private while expanding
 backlog/load scheduling behavior before any public pager ABI or syscall design.
 

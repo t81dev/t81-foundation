@@ -105,8 +105,8 @@ unresolved, with deferral counts now tracking parked episodes instead of every
 parked loop tick, plus live parked-ready backlog diagnostics while that head
 still blocks the worker, plus explicit parked-resumption diagnostics once that
 head becomes ready again, including how much ready work still remained queued
-behind it at resumption time and which queued handoff it was, before later
-pager integration.
+behind it at resumption time, which queued handoff it was, and the resumed
+blocked head's own handoff ordinal, before later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 

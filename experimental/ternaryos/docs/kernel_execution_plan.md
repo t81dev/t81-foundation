@@ -314,6 +314,15 @@ The twenty-seventh pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves the resumed head snapshots the third queued
   handoff as trailing ready work at parked resumption time
 
+The twenty-eighth pager-groundwork slice is now also complete:
+
+- parked-resumption diagnostics now also retain the resumed blocked head's own
+  handoff ordinal alongside its resumption ordinal
+- runtime and fault diagnostics can now identify both sides of the parked
+  resumption snapshot: the resumed head and the trailing ready handoff behind it
+- HAL/kernel coverage now proves the resumed head retains its original first
+  handoff ordinal at parked resumption time
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
