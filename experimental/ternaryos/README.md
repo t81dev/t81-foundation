@@ -281,6 +281,18 @@ Outputs:
 - `build/ternaryos/qemu_armv8_control/qemu-armv8-control-serial.log`
 - `build/ternaryos/qemu_armv8_control/edk2-aarch64-vars.fd`
 
+To boot-probe the staged ARM guest image under the real Axion QEMU developer lane:
+
+```sh
+cmake --build build --target t81_ternaryos_qemu_armv8_guest_probe
+```
+
+Outputs:
+
+- `build/ternaryos/qemu_armv8_guest/qemu-armv8-guest-summary.txt`
+- `build/ternaryos/qemu_armv8_guest/qemu-armv8-guest-serial.log`
+- `build/ternaryos/qemu_armv8_guest/qemu-armv8-guest-probe.img`
+
 Current status:
 
 - the image is FAT-formatted and VirtualBox-ready as a disk artifact
@@ -291,6 +303,7 @@ Current status:
 - with `lld` installed, the ARMv8 lane now emits a real `BOOTAA64.EFI`, but it is still a developer-lane shim rather than the true C++ HAL bridge
 - a separate control `BOOTAA64_CTRL.EFI` now exists for the ARMv8 lane and is staged ahead of the shim-backed app in `STARTUP.NSH`; current local probes still show no `startup-ran.txt`, `efi-ctrl-ran.txt`, or `efi-ran.txt` markers, which strongly suggests the local blocker is VirtualBox ARM EFI execution/boot selection rather than the TernOS HAL bridge
 - that VirtualBox-specific conclusion is now stronger because the same ARM image executes under local QEMU AArch64 + EDK2 and leaves `TERNOS/efi-ran.txt`; the current blind spot is therefore the local VirtualBox ARM path, not the basic ARM EFI control artifact
+- the QEMU lane is now usable for actual staged guest bring-up too: it can boot the staged ARM guest image, capture serial output, and inspect the mutated probe image; current local probes show `efi-ran.txt` with `boot_path_inference=default-bootaa64-efi`, so QEMU is reaching the staged `BOOTAA64.EFI` directly rather than via shell fallback
 
 For an external reviewer, the current evidence split is:
 
@@ -302,7 +315,7 @@ For an external reviewer, the current evidence split is:
 - Primary acceptance lane: `x86_64` VirtualBox host capable of boot-validating the roadmap target (`VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC`)
 - Primary local developer lane: QEMU AArch64 + EDK2 on Apple Silicon for observable EFI execution and early guest bring-up
 - Secondary diagnostic lane: Apple Silicon / `ARMv8` VirtualBox host used only for artifact generation, host checks, and narrow VirtualBox-specific boot-path investigation
-- The local ARMv8 lane now reaches a compiled `BOOTAA64.obj`, a linkable `BOOTAA64.EFI` developer-lane shim, packaged `.img`/`.vdi`, and a first-class QEMU EFI control probe that proves the ARM EFI artifact executes on this machine
+- The local ARMv8 lane now reaches a compiled `BOOTAA64.obj`, a linkable `BOOTAA64.EFI` developer-lane shim, packaged `.img`/`.vdi`, a first-class QEMU EFI control probe, and a QEMU guest probe that confirms the staged ARM image reaches `BOOTAA64.EFI` on this machine
 
 Program rule:
 

@@ -1,0 +1,131 @@
+#!/bin/zsh
+set -euo pipefail
+
+if [[ $# -lt 2 || $# -gt 3 ]]; then
+  echo "usage: $0 <arm-image> <output-dir> [boot-wait-seconds]" >&2
+  exit 2
+fi
+
+arm_image=$1
+output_dir=$2
+boot_wait=${3:-8}
+
+qemu_bin=/opt/homebrew/bin/qemu-system-aarch64
+edk2_code=/opt/homebrew/share/qemu/edk2-aarch64-code.fd
+edk2_vars_template=/opt/homebrew/share/qemu/edk2-arm-vars.fd
+
+for path in "$qemu_bin" "$edk2_code" "$edk2_vars_template" "$arm_image"; do
+  if [[ ! -e "$path" ]]; then
+    echo "missing required path: $path" >&2
+    exit 1
+  fi
+done
+
+/bin/mkdir -p "$output_dir"
+probe_image="$output_dir/qemu-armv8-guest-probe.img"
+vars_copy="$output_dir/edk2-aarch64-vars.fd"
+serial_log="$output_dir/qemu-armv8-guest-serial.log"
+pid_file="$output_dir/qemu-armv8-guest.pid"
+summary_file="$output_dir/qemu-armv8-guest-summary.txt"
+
+/bin/cp "$arm_image" "$probe_image"
+/bin/cp "$edk2_vars_template" "$vars_copy"
+/bin/rm -f "$serial_log" "$pid_file" "$summary_file"
+
+qemu_pid=""
+disk_dev=""
+cleanup() {
+  if [[ -n "$qemu_pid" ]]; then
+    kill "$qemu_pid" >/dev/null 2>&1 || true
+    wait "$qemu_pid" >/dev/null 2>&1 || true
+  fi
+  if [[ -n "$disk_dev" ]]; then
+    /usr/bin/hdiutil detach "$disk_dev" >/dev/null 2>&1 || true
+  fi
+}
+trap cleanup EXIT
+
+"$qemu_bin" \
+  -machine virt,accel=hvf \
+  -cpu host \
+  -smp 1 \
+  -m 512 \
+  -nographic \
+  -serial "file:$serial_log" \
+  -drive if=pflash,format=raw,readonly=on,file="$edk2_code" \
+  -drive if=pflash,format=raw,file="$vars_copy" \
+  -drive if=virtio,format=raw,file="$probe_image" \
+  >/dev/null 2>&1 &
+
+qemu_pid=$!
+echo "$qemu_pid" > "$pid_file"
+/bin/sleep "$boot_wait"
+kill "$qemu_pid" >/dev/null 2>&1 || true
+wait "$qemu_pid" >/dev/null 2>&1 || true
+qemu_pid=""
+
+attach_output=$(/usr/bin/hdiutil attach -readonly -nomount "$probe_image")
+disk_dev=$(printf '%s\n' "$attach_output" | /usr/bin/awk '/GUID_partition_scheme/{print $1; exit}')
+mount_dev=$(printf '%s\n' "$attach_output" | /usr/bin/awk '/EFI/{print $1; exit}')
+if [[ -z "$disk_dev" || -z "$mount_dev" ]]; then
+  echo "failed to resolve QEMU probe image devices" >&2
+  exit 1
+fi
+
+/usr/sbin/diskutil mount "$mount_dev" >/dev/null
+mount_point=$(/usr/sbin/diskutil info "$mount_dev" | /usr/bin/awk -F': *' '/Mount Point/ {print $2}')
+if [[ -z "$mount_point" || ! -d "$mount_point" ]]; then
+  echo "failed to resolve mount point for $mount_dev" >&2
+  exit 1
+fi
+
+startup_marker_path="$mount_point/TERNOS/startup-ran.txt"
+ctrl_marker_path="$mount_point/TERNOS/efi-ctrl-ran.txt"
+efi_marker_path="$mount_point/TERNOS/efi-ran.txt"
+
+startup_seen=0
+ctrl_seen=0
+efi_seen=0
+
+[[ -f "$startup_marker_path" ]] && startup_seen=1
+[[ -f "$ctrl_marker_path" ]] && ctrl_seen=1
+[[ -f "$efi_marker_path" ]] && efi_seen=1
+
+boot_path_inference="unknown"
+if [[ "$efi_seen" -eq 1 && "$startup_seen" -eq 0 && "$ctrl_seen" -eq 0 ]]; then
+  boot_path_inference="default-bootaa64-efi"
+elif [[ "$efi_seen" -eq 1 && "$ctrl_seen" -eq 1 ]]; then
+  boot_path_inference="startup-or-control-chain"
+fi
+
+serial_bytes=0
+if [[ -f "$serial_log" ]]; then
+  serial_bytes=$(/usr/bin/wc -c < "$serial_log" | /usr/bin/tr -d ' ')
+fi
+
+/bin/cat > "$summary_file" <<EOF
+probe_image=$probe_image
+boot_wait_seconds=$boot_wait
+serial_log=$serial_log
+serial_bytes=$serial_bytes
+startup_marker_seen=$startup_seen
+startup_marker_path=$startup_marker_path
+control_marker_seen=$ctrl_seen
+control_marker_path=$ctrl_marker_path
+efi_marker_seen=$efi_seen
+efi_marker_path=$efi_marker_path
+boot_path_inference=$boot_path_inference
+EOF
+
+/usr/bin/hdiutil detach "$disk_dev" >/dev/null 2>&1 || true
+disk_dev=""
+
+if [[ "$efi_seen" -ne 1 ]]; then
+  echo "QEMU ARMv8 guest probe did not observe the staged BOOTAA64.EFI marker" >&2
+  /bin/cat "$summary_file" >&2
+  exit 1
+fi
+
+echo "QEMU ARMv8 guest probe succeeded."
+echo "summary: $summary_file"
+echo "serial: $serial_log"
