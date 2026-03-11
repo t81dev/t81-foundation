@@ -1,5 +1,7 @@
 #include "kernel_main.hpp"
 
+#include <algorithm>
+
 namespace t81::ternaryos::kernel {
 
 namespace {
@@ -354,13 +356,22 @@ KernelSupervisorRecoveryStatusView make_supervisor_recovery_view(
 KernelServiceStatusView make_service_view(const KernelRuntimeState& state,
                                          ServiceId service_id) {
   const auto* service_state = state.find_service(service_id);
+  const auto* group_state =
+      service_state ? state.find_process_group(service_state->process_group_id) : nullptr;
   return KernelServiceStatusView{
       .id = service_state ? service_state->id : service_id,
       .name = service_state ? service_state->name : std::string{},
       .supervisor_id = service_state ? service_state->supervisor_id : 0,
       .process_group_id = service_state ? service_state->process_group_id : 0,
+      .primary_tid =
+          service_state ? primary_tid_for_group(state, service_state->process_group_id)
+                        : std::nullopt,
       .blocked = service_state ? service_state->blocked : false,
       .registered = service_state ? service_state->registered : false,
+      .faulted_group = group_state ? group_state->faulted : false,
+      .quarantined_thread_count =
+          group_state ? count_quarantined_threads(state, group_state->id) : 0,
+      .pending_fault_count = group_state ? group_state->pending_fault_count : 0,
       .requests = service_state ? service_state->requests : 0,
       .rejected_requests = service_state ? service_state->rejected_requests : 0,
       .state_transitions = service_state ? service_state->state_transitions : 0,
@@ -374,11 +385,42 @@ KernelSupervisorServiceInventoryView make_supervisor_services_view(
   return KernelSupervisorServiceInventoryView{
       .supervisor_id = supervisor_state ? supervisor_state->id : supervisor_id,
       .service_count = supervisor_state ? supervisor_state->managed_services.size() : 0,
-      .service_ids = supervisor_state
-                         ? std::vector<ServiceId>(supervisor_state->managed_services.begin(),
-                                                  supervisor_state->managed_services.end())
-                         : std::vector<ServiceId>{},
+      .service_ids = {},
+      .services = {},
   };
+}
+
+KernelSupervisorServiceInventoryView build_supervisor_services_view(
+    const KernelRuntimeState& state,
+    SupervisorId supervisor_id) {
+  auto view = make_supervisor_services_view(state, supervisor_id);
+  const auto* supervisor_state = state.find_supervisor(supervisor_id);
+  if (!supervisor_state) {
+    return view;
+  }
+  for (auto service_id : supervisor_state->managed_services) {
+    const auto* service_state = state.find_service(service_id);
+    if (!service_state || !service_state->registered) {
+      continue;
+    }
+    view.service_ids.push_back(service_id);
+    view.services.push_back(KernelSupervisorServiceEntryView{
+        .id = service_state->id,
+        .name = service_state->name,
+        .process_group_id = service_state->process_group_id,
+        .blocked = service_state->blocked,
+        .registered = service_state->registered,
+        .requests = service_state->requests,
+        .rejected_requests = service_state->rejected_requests,
+    });
+    if (service_state->blocked) {
+      ++view.blocked_service_count;
+    }
+    view.total_service_requests += service_state->requests;
+    view.total_service_rejections += service_state->rejected_requests;
+  }
+  view.service_count = view.service_ids.size();
+  return view;
 }
 
 KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) {
@@ -876,7 +918,7 @@ KernelServiceResult axion_kernel_service_request(
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceRequestRejection::None;
       result.supervisor_services =
-          make_supervisor_services_view(state, supervisor_state->id);
+          build_supervisor_services_view(state, supervisor_state->id);
       return result;
     }
     case KernelServiceRequestKind::FaultSummary: {
@@ -1088,7 +1130,69 @@ KernelServiceActionResult axion_kernel_service_action(
           make_process_group_view(state, *action.requesting_process_group_id);
       result.service = make_service_view(state, service_state->id);
       result.supervisor_services =
-          make_supervisor_services_view(state, *supervisor_id);
+          build_supervisor_services_view(state, *supervisor_id);
+      return result;
+    }
+    case KernelServiceActionKind::UnregisterService: {
+      if (auto denied = validate_requesting_group(state, action); denied.has_value()) {
+        result.status = *denied;
+        result.rejection = denied == KernelServiceStatus::NotFound
+                               ? KernelServiceActionRejection::MissingRequestingGroup
+                               : KernelServiceActionRejection::FaultedRequestingGroup;
+        return result;
+      }
+      if (!action.requesting_process_group_id.has_value()) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = KernelServiceActionRejection::MissingRequestingGroup;
+        return result;
+      }
+      if (!action.service_id.has_value()) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = KernelServiceActionRejection::MissingService;
+        return result;
+      }
+      auto* service_state = state.find_service_mut(*action.service_id);
+      if (!service_state || !service_state->registered) {
+        result.status = KernelServiceStatus::NotFound;
+        result.rejection = KernelServiceActionRejection::MissingService;
+        return result;
+      }
+      if (service_state->process_group_id != *action.requesting_process_group_id) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = KernelServiceActionRejection::ServiceProcessGroupMismatch;
+        return result;
+      }
+      const auto supervisor_id =
+          state.find_process_group_supervisor(*action.requesting_process_group_id);
+      if (!supervisor_id.has_value()) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = KernelServiceActionRejection::MissingSupervisor;
+        return result;
+      }
+      if (service_state->supervisor_id != *supervisor_id) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = KernelServiceActionRejection::ServiceSupervisorMismatch;
+        return result;
+      }
+      service_state->registered = false;
+      service_state->blocked = false;
+      ++service_state->state_transitions;
+      state.process_group_services.erase(service_state->process_group_id);
+      if (auto* supervisor_state = state.find_supervisor_mut(*supervisor_id)) {
+        supervisor_state->managed_services.erase(
+            std::remove(supervisor_state->managed_services.begin(),
+                        supervisor_state->managed_services.end(),
+                        service_state->id),
+            supervisor_state->managed_services.end());
+      }
+      result.status = KernelServiceStatus::Ok;
+      result.rejection = KernelServiceActionRejection::None;
+      result.action_performed = true;
+      result.process_group =
+          make_process_group_view(state, *action.requesting_process_group_id);
+      result.service = make_service_view(state, service_state->id);
+      result.supervisor_services =
+          build_supervisor_services_view(state, *supervisor_id);
       return result;
     }
   }

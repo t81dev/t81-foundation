@@ -119,7 +119,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1484/1484 assertions, 8/8 tests pass
+# Expected: 1548/1548 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -280,18 +280,18 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `608/608`
+- `t81_ternaryos_hal_boot_test` is `636/636`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1484`
+- total TernOS assertions are `1548`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state
 - stable service-facing audit summaries and per-device ownership details now exist through that same boundary
 - a kernel-owned service runtime layer now exists above the supervisor/process-group boundary:
   service ids, supervisor ownership, backing process-group linkage, blocked state,
-  service counters, and supervisor-owned service inventory
+  stable service detail, lifecycle counters, and richer supervisor-owned service inventory
 - the first narrow service-facing action now exists through that same boundary:
   supervisor fault-group acknowledgement
 - supervisor-facing recovery/report flows are now exposed through that same boundary:
@@ -302,10 +302,14 @@ Local hosted proof as of the current branch:
   enforcement
 - a third narrow service-facing action now exists through that same boundary:
   deterministic service registration with supervisor-owned inventory
-- the current kernel slice is now service-runtime convergence:
-  service request routing and registration exist above the stable supervisor/process-group
-  contract. The next step is to expose richer service diagnostics and add at
-  most one more narrow service action, tracked explicitly in:
+- a fourth narrow service-facing action now exists through that same boundary:
+  deterministic service unregister with stable post-unregister service/detail state
+- the current kernel slice is now service-runtime stabilization:
+  service request routing, stable service detail, richer supervisor inventory,
+  registration, and unregister lifecycle behavior now exist above the stable
+  supervisor/process-group contract. The next step is to keep that contract
+  stable and only add another lifecycle action if it is truly needed, tracked
+  explicitly in:
   - `docs/kernel_execution_plan.md`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence

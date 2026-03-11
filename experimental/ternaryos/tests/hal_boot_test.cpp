@@ -2202,6 +2202,12 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory reports one service after registration");
     check(register_service.supervisor_services->service_ids.size() == 1,
           "supervisor inventory exposes one service id");
+    check(register_service.supervisor_services->services.size() == 1,
+          "supervisor inventory exposes one service entry");
+    check(register_service.supervisor_services->blocked_service_count == 0,
+          "supervisor inventory starts with zero blocked services");
+    check(register_service.supervisor_services->total_service_requests == 0,
+          "supervisor inventory starts with zero service requests");
   }
   if (!service_id) {
     return;
@@ -2232,6 +2238,14 @@ static void test_kernel_service_runtime_layer() {
         "healthy service request clears rejection");
   check(service_view.service.has_value(), "service status request returns service view");
   if (service_view.service) {
+    check(service_view.service->primary_tid == *owner_tid,
+          "service view exposes primary group thread");
+    check(!service_view.service->faulted_group,
+          "healthy service view reports non-faulted group");
+    check(service_view.service->quarantined_thread_count == 0,
+          "healthy service view reports zero quarantined threads");
+    check(service_view.service->pending_fault_count == 0,
+          "healthy service view reports zero pending group faults");
     check(service_view.service->requests >= 1,
           "service view tracks request count");
     check(service_view.service->rejected_requests == 0,
@@ -2285,7 +2299,78 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory retains one service while blocked");
     check(supervisor_inventory.supervisor_services->service_ids.size() == 1,
           "supervisor inventory retains service id while blocked");
+    check(supervisor_inventory.supervisor_services->services.size() == 1,
+          "supervisor inventory retains service entry while blocked");
+    check(supervisor_inventory.supervisor_services->blocked_service_count == 1,
+          "supervisor inventory reports one blocked service");
+    check(supervisor_inventory.supervisor_services->total_service_requests >= 1,
+          "supervisor inventory aggregates service requests");
+    check(supervisor_inventory.supervisor_services->total_service_rejections >= 1,
+          "supervisor inventory aggregates rejected service requests");
+    check(supervisor_inventory.supervisor_services->services.front().blocked,
+          "supervisor inventory entry reports blocked service");
   }
+
+  auto bad_unregister = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::UnregisterService,
+          .service_id = *service_id,
+      });
+  check(bad_unregister.status == KernelServiceStatus::InvalidRequest,
+        "missing-group unregister path is rejected");
+  check(bad_unregister.rejection == KernelServiceActionRejection::MissingRequestingGroup,
+        "missing-group unregister reports missing requesting group");
+
+  check(axion_kernel_ack_thread_fault(*state, *fault_tid),
+        "service runtime fault thread acknowledgement drains inbox");
+  check(axion_kernel_ack_supervisor_group_fault(*state, *supervisor_id,
+                                                owner_runtime->process_group_id),
+        "service runtime supervisor acknowledgement completes recovery gate");
+
+  auto unregister_service = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::UnregisterService,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(unregister_service.status == KernelServiceStatus::Ok,
+        "healthy owner group can unregister its service");
+  check(unregister_service.rejection == KernelServiceActionRejection::None,
+        "successful unregister clears rejection");
+  check(unregister_service.action_performed,
+        "service unregister reports work performed");
+  check(unregister_service.service.has_value(),
+        "service unregister returns final service status");
+  check(unregister_service.supervisor_services.has_value(),
+        "service unregister returns final supervisor inventory");
+  if (unregister_service.service) {
+    check(!unregister_service.service->registered,
+          "unregistered service reports unregistered state");
+    check(!unregister_service.service->blocked,
+          "unregistered service is no longer blocked");
+    check(unregister_service.service->state_transitions >= 2,
+          "unregistered service increments lifecycle transitions");
+  }
+  if (unregister_service.supervisor_services) {
+    check(unregister_service.supervisor_services->service_count == 0,
+          "supervisor inventory empties after unregister");
+    check(unregister_service.supervisor_services->services.empty(),
+          "supervisor inventory removes service entries after unregister");
+  }
+
+  auto missing_service_view = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::ServiceStatus,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(missing_service_view.status == KernelServiceStatus::NotFound,
+        "service status rejects unregistered service");
+  check(missing_service_view.rejection == KernelServiceRequestRejection::MissingService,
+        "service status reports missing service after unregister");
 }
 
 // ─── main ────────────────────────────────────────────────────────────────────

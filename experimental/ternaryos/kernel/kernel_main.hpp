@@ -285,6 +285,7 @@ enum class KernelServiceActionKind : uint8_t {
   ClaimDevice,
   ReleaseDevice,
   RegisterService,
+  UnregisterService,
 };
 
 enum class KernelServiceActionRejection : uint8_t {
@@ -295,6 +296,7 @@ enum class KernelServiceActionRejection : uint8_t {
   MissingService,
   DuplicateService,
   ServiceSupervisorMismatch,
+  ServiceProcessGroupMismatch,
   MissingDeviceName,
   MissingServiceName,
   MissingDeviceArbitration,
@@ -356,17 +358,35 @@ struct KernelServiceStatusView {
   std::string name;
   SupervisorId supervisor_id{0};
   ProcessGroupId process_group_id{0};
+  std::optional<sched::Tid> primary_tid{};
   bool blocked{false};
   bool registered{false};
+  bool faulted_group{false};
+  std::size_t quarantined_thread_count{0};
+  std::size_t pending_fault_count{0};
   uint64_t requests{0};
   uint64_t rejected_requests{0};
   uint64_t state_transitions{0};
 };
 
+struct KernelSupervisorServiceEntryView {
+  ServiceId id{0};
+  std::string name;
+  ProcessGroupId process_group_id{0};
+  bool blocked{false};
+  bool registered{false};
+  uint64_t requests{0};
+  uint64_t rejected_requests{0};
+};
+
 struct KernelSupervisorServiceInventoryView {
   SupervisorId supervisor_id{0};
   std::size_t service_count{0};
+  std::size_t blocked_service_count{0};
+  uint64_t total_service_requests{0};
+  uint64_t total_service_rejections{0};
   std::vector<ServiceId> service_ids;
+  std::vector<KernelSupervisorServiceEntryView> services;
 };
 
 struct KernelFaultSummaryView {

@@ -40,36 +40,38 @@ Implemented:
 - service-facing request routing above raw process-group ids
 - service blocked/faulted state at the service layer
 - first narrow service-facing service action: deterministic service registration
+- richer stable service diagnostics for service detail and supervisor inventory
+- second narrow service-facing service action: deterministic service unregister
 
 Not yet implemented:
 
-- richer stable service diagnostics above the current service layer
-- a second narrow service action for service lifecycle control
 - capability or syscall semantics
 - process address-space ownership
 - pager integration
 
 ## Next Sequence
 
-### 1. Service diagnostics stabilization
+### 1. Keep the service contract stable
 
-Keep the first service layer narrow and make its views stable:
+Do not widen the surface into syscalls, capabilities, or a process ABI yet.
+
+### 2. Preserve deterministic service lifecycle behavior
+
+The current service layer now covers:
 
 - registered service summaries
 - supervisor-owned service inventory
 - blocked/faulted service visibility
 - service request/rejection counters
+- deterministic service registration
+- deterministic service unregister
 
-### 2. One additional narrow service action
+### 3. Only add new actions if a stable service runtime truly needs them
 
-If the stabilized service model still needs one more action, keep it narrow:
+Any further action should remain narrow and lifecycle-oriented:
 
-- service unregister
 - service suspend / resume
-
-### 3. Keep the service contract stable
-
-Do not widen the surface into syscalls, capabilities, or a process ABI yet.
+- explicit service health transition
 
 ## Non-Goals For This Slice
 
@@ -86,19 +88,18 @@ Do not add:
 
 ## Acceptance Criteria
 
-The next kernel slice is complete when:
+The current service-runtime slice is complete when:
 
 1. stable service-facing diagnostics exist for service, supervisor, fault,
    audit, and device ownership state
-2. HAL/kernel tests prove service registration/state visibility and blocked
-   behavior
-3. one additional narrow service action exists only if the current service
-   layer needs it
-4. RFC-00B3 can shift to service-runtime stabilization as the next step
+2. HAL/kernel tests prove service registration, blocked behavior, and
+   unregister lifecycle behavior
+3. the service contract remains narrower than a syscall or process ABI
+4. RFC-00B3 can shift to supervisor/service runtime convergence as the next step
 
 ## Recommended Order
 
-1. stabilize the service-facing diagnostics
-2. add one narrow service action only if needed
-3. keep HAL/kernel acceptance coverage ahead of any new surface growth
+1. keep HAL/kernel acceptance coverage ahead of any new surface growth
+2. keep service registration + unregister semantics stable
+3. add a further lifecycle action only if the service runtime truly needs it
 4. update RFC-00B3 and status/docs

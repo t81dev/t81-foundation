@@ -34,9 +34,9 @@ The next kernel slice is now tracked explicitly in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1484`
+- total assertions: `1548`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `608/608`
+- `t81_ternaryos_hal_boot_test`: `636/636`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -60,8 +60,8 @@ Kernel integration proof now also includes:
 - deterministic device claim/release requests now exist through that same service boundary, with healthy groups allowed to arbitrate devices and faulted groups rejected consistently
 - request-side and action-side rejection semantics are now explicit across the stable kernel service boundary
 - stable audit summaries and per-device ownership details are now exposed through that same service boundary for healthy callers
-- a first kernel-owned service runtime layer now exists above the current supervisor/process-group contract, including deterministic service registration and supervisor-owned inventory
-- the next kernel slice is service-runtime diagnostics and one more narrow service action, not a broad ABI or syscall surface
+- a first kernel-owned service runtime layer now exists above the current supervisor/process-group contract, now including deterministic service registration, deterministic service unregister, stable service detail, and richer supervisor-owned inventory
+- the next kernel slice is to keep this service-runtime layer stable and only add another narrow lifecycle action if it is truly needed, not a broad ABI or syscall surface
 
 Phase 4 storage proof now covers:
 

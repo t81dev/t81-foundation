@@ -260,7 +260,7 @@ The next implementation slice after it is:
 1. stabilize the new kernel-owned service runtime model above the current
    supervisor/process-group boundary
 2. preserve deterministic blocked-vs-healthy service behavior
-3. add at most one more narrow service action before any broader boundary growth
+3. keep lifecycle actions narrow before any broader boundary growth
 
 That stabilization step specifically means:
 
@@ -272,8 +272,10 @@ That stabilization step specifically means:
   model is settled
 
 That service-runtime convergence step is now implemented for the current
-contract surface. The next step is to stabilize the service layer and only then
-consider any further action or boundary growth.
+contract surface. The service layer now includes deterministic registration,
+stable service detail and supervisor inventory views, and deterministic service
+unregister. The next step is to keep that layer stable and only then consider
+any further lifecycle action or boundary growth.
 
 The working execution note for this slice is:
 
