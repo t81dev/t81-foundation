@@ -8,6 +8,7 @@
 #include "axion_startup_history.h"
 #include "axion_startup_shell.h"
 #include "axion_startup_session.h"
+#include "axion_startup_store.h"
 
 #include <stdint.h>
 
@@ -185,6 +186,7 @@ static const CHAR16 kStartupStatusPath[] = L"\\TERNOS\\startup-status.txt";
 static const CHAR16 kStartupShellPath[] = L"\\TERNOS\\startup-shell.txt";
 static const CHAR16 kStartupSessionPath[] = L"\\TERNOS\\startup-session.txt";
 static const CHAR16 kStartupHistoryPath[] = L"\\TERNOS\\startup-history.txt";
+static const CHAR16 kStartupStorePath[] = L"\\TERNOS\\startup-store.txt";
 static const char kMarkerText[] = "TERNOS_ARMV8_EFI_EXECUTED\n";
 static const char kBootBanner[] = "Axion ARMv8 EFI stub\r\n";
 
@@ -483,6 +485,22 @@ static EFI_STATUS write_startup_history(EFI_HANDLE image_handle,
   return status;
 }
 
+static EFI_STATUS write_startup_store(EFI_HANDLE image_handle,
+                                      EFI_SYSTEM_TABLE* system_table) {
+  EFI_FILE_PROTOCOL* root = 0;
+  EFI_STATUS status = open_root_volume(image_handle, system_table, &root);
+  if (status != EFI_SUCCESS) {
+    return status;
+  }
+
+  status = write_root_file(root,
+                           kStartupStorePath,
+                           kGeneratedStartupStore,
+                           ascii_length(kGeneratedStartupStore));
+  root->Close(root);
+  return status;
+}
+
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
   TernaryOsBootContext ctx;
   ctx.memory_map = kArmv8VirtualBoxMemoryMap;
@@ -515,6 +533,10 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_tab
   const EFI_STATUS startup_history = write_startup_history(image_handle, system_table);
   if (startup_history != EFI_SUCCESS) {
     return startup_history;
+  }
+  const EFI_STATUS startup_store = write_startup_store(image_handle, system_table);
+  if (startup_store != EFI_SUCCESS) {
+    return startup_store;
   }
   const EFI_STATUS report_status = write_boot_report(image_handle, system_table, &ctx, hal_result);
   if (report_status != EFI_SUCCESS) {

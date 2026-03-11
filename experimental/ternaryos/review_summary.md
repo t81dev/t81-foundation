@@ -62,6 +62,8 @@ ARM diagnostic result:
   state counts
 - local QEMU guest probes now also recover `startup-history.txt`, exposing a
   backend-generated durable-history view derived from the real Axion shell backend
+- local QEMU guest probes now also recover `startup-store.txt`, exposing a
+  backend-generated `store ls` inventory snapshot from the same shell backend
 - local VirtualBox ARM remains non-observable for EFI execution and is now only
   a secondary diagnostic lane
 - conclusion: the remaining blind spot is the local VirtualBox ARM path, not

@@ -626,6 +626,8 @@ if(T81_ENABLE_TERNARYOS)
     set(T81_TERNARYOS_ARMV8_STARTUP_SESSION_HDR ${CMAKE_BINARY_DIR}/ternaryos/generated/axion_startup_session.h)
     set(T81_TERNARYOS_ARMV8_STARTUP_HISTORY_TXT ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/startup-history-generated.txt)
     set(T81_TERNARYOS_ARMV8_STARTUP_HISTORY_HDR ${CMAKE_BINARY_DIR}/ternaryos/generated/axion_startup_history.h)
+    set(T81_TERNARYOS_ARMV8_STARTUP_STORE_TXT ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/startup-store-generated.txt)
+    set(T81_TERNARYOS_ARMV8_STARTUP_STORE_HDR ${CMAKE_BINARY_DIR}/ternaryos/generated/axion_startup_store.h)
     add_custom_command(
       OUTPUT ${T81_TERNARYOS_EFI_OBJ}
       COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
@@ -653,6 +655,8 @@ if(T81_ENABLE_TERNARYOS)
              ${T81_TERNARYOS_ARMV8_STARTUP_SESSION_HDR}
              ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_TXT}
              ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_HDR}
+             ${T81_TERNARYOS_ARMV8_STARTUP_STORE_TXT}
+             ${T81_TERNARYOS_ARMV8_STARTUP_STORE_HDR}
       COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
       COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/generated
       COMMAND $<TARGET_FILE:t81_ternaryos_shell_startup_snapshot>
@@ -662,6 +666,8 @@ if(T81_ENABLE_TERNARYOS)
               ${T81_TERNARYOS_ARMV8_STARTUP_SESSION_HDR}
               ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_TXT}
               ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_STORE_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_STORE_HDR}
       DEPENDS t81_ternaryos_shell_startup_snapshot)
     add_custom_target(t81_ternaryos_shell_startup_snapshot_artifact
       DEPENDS ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_TXT}
@@ -669,7 +675,9 @@ if(T81_ENABLE_TERNARYOS)
               ${T81_TERNARYOS_ARMV8_STARTUP_SESSION_TXT}
               ${T81_TERNARYOS_ARMV8_STARTUP_SESSION_HDR}
               ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_TXT}
-              ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_HDR})
+              ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_STORE_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_STORE_HDR})
     list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_shell_startup_snapshot_artifact)
 
     add_custom_command(
@@ -691,7 +699,8 @@ if(T81_ENABLE_TERNARYOS)
               ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/hal_c_abi.h
               ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_HDR}
               ${T81_TERNARYOS_ARMV8_STARTUP_SESSION_HDR}
-              ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_HDR})
+              ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_STORE_HDR})
     add_custom_target(t81_ternaryos_virtualbox_armv8_efi_obj
       DEPENDS ${T81_TERNARYOS_ARMV8_EFI_OBJ})
     list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_obj)
