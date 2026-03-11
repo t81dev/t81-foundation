@@ -334,9 +334,12 @@ repeated pager-needed cycles can flow through a concrete internal consumer
 without adding a public pager ABI. Repeated unresolved faults on a
 worker-owned address space now coalesce instead of creating duplicate pager
 work items, and diagnostics expose worker-owned state plus coalesced
-pager-fault counts without widening the contract. The next kernel slice is to
-keep that pager surface private while expanding backlog/load behavior before
-any public pager ABI or syscall design.
+pager-fault counts without widening the contract. Runtime and fault summaries
+now also retain pending-handoff and worker-inbox high-water marks plus worker
+activation counts, and HAL coverage proves deterministic FIFO backlog handling
+across two queued address spaces. The next kernel slice is to keep that pager
+surface private while expanding backlog/load scheduling behavior before any
+public pager ABI or syscall design.
 
 The working execution note for this slice is:
 

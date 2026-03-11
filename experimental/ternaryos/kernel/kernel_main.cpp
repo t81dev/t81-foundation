@@ -293,6 +293,9 @@ void record_pager_fault_state(KernelRuntimeState& state,
   } else {
     address_space->pager_handoff_pending = true;
     state.pending_pager_handoffs.push_back(*address_space_id);
+    state.pending_pager_handoff_high_watermark =
+        std::max(state.pending_pager_handoff_high_watermark,
+                 state.pending_pager_handoffs.size());
     ++state.counters.pager_handoffs_queued;
   }
   ++address_space->pending_pager_fault_count;
@@ -926,6 +929,8 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .policy_faults = state.counters.policy_faults,
       .pager_needed_address_spaces = count_pager_needed_address_spaces(state),
       .pending_pager_handoffs = count_pending_pager_handoff_address_spaces(state),
+      .pending_pager_handoff_high_watermark =
+          state.pending_pager_handoff_high_watermark,
       .pager_handoffs_dispatched = state.counters.pager_handoffs_dispatched,
       .pager_resolutions = state.counters.pager_resolutions,
       .pager_faults_coalesced = state.counters.pager_faults_coalesced,
@@ -943,6 +948,7 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .last_pager_handoff = state.last_pager_handoff,
       .last_pager_resolution = state.last_pager_resolution,
       .pager_worker_inbox_count = state.pager_worker.inbox.size(),
+      .pager_worker_inbox_high_watermark = state.pager_worker.inbox_high_watermark,
       .pager_worker_busy = state.pager_worker.active_work.has_value(),
       .pager_worker_active_address_space_id =
           state.pager_worker.active_work.has_value()
@@ -950,6 +956,7 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
                     state.pager_worker.active_work->handoff.address_space_id}
               : std::nullopt,
       .pager_worker_handoffs_received = state.pager_worker.handoffs_received,
+      .pager_worker_activations = state.pager_worker.activations,
       .pager_worker_resolutions_completed =
           state.pager_worker.resolutions_completed,
       .last_audit_event = state.last_audit_event,
@@ -1355,6 +1362,9 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
         };
         state.pager_worker.inbox.push_back(
             KernelPagerWorkItem{.handoff = *state.last_pager_handoff});
+        state.pager_worker.inbox_high_watermark =
+            std::max(state.pager_worker.inbox_high_watermark,
+                     state.pager_worker.inbox.size());
         address_space->pager_worker_owned = true;
         ++state.pager_worker.handoffs_received;
         ++state.counters.pager_handoffs_dispatched;
@@ -1364,6 +1374,8 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
           !state.pager_worker.inbox.empty()) {
         state.pager_worker.active_work = state.pager_worker.inbox.front();
         state.pager_worker.inbox.pop_front();
+        ++state.pager_worker.activations;
+        ++state.counters.pager_worker_activations;
       }
       for (AddressSpaceId address_space_id = 0;
            address_space_id < state.next_address_space_id;
@@ -1460,7 +1472,11 @@ KernelServiceResult axion_kernel_service_request(
           .mapped_pages = state.page_table.size(),
           .pager_needed_address_space_count = count_pager_needed_address_spaces(state),
           .pending_pager_handoff_count = count_pending_pager_handoff_address_spaces(state),
+          .pending_pager_handoff_high_watermark =
+              state.pending_pager_handoff_high_watermark,
           .pager_worker_inbox_count = state.pager_worker.inbox.size(),
+          .pager_worker_inbox_high_watermark =
+              state.pager_worker.inbox_high_watermark,
           .pager_worker_busy = state.pager_worker.active_work.has_value(),
           .pager_worker_active_address_space_id =
               state.pager_worker.active_work.has_value()
@@ -1477,6 +1493,7 @@ KernelServiceResult axion_kernel_service_request(
           .pager_resolutions = state.counters.pager_resolutions,
           .pager_faults_coalesced = state.counters.pager_faults_coalesced,
           .pager_worker_handoffs_received = state.pager_worker.handoffs_received,
+          .pager_worker_activations = state.pager_worker.activations,
           .pager_worker_resolutions_completed =
               state.pager_worker.resolutions_completed,
           .managed_service_count = service_summary.managed_service_count,

@@ -80,9 +80,12 @@ handoff-pending from handoff-dispatched state. Once the missing mapping
 appears, the kernel loop now also resolves one handed-off pager-needed address
 space at a time and exposes that resolved state deterministically. Repeated
 unresolved faults on a worker-owned address space now also coalesce instead of
-creating duplicate pager work items. The next steps are to keep that
-lifecycle contract stable while moving the kernel toward richer kernel-owned
-pager-worker backlog/load behavior and later pager integration.
+creating duplicate pager work items. Runtime and fault diagnostics now also
+retain backlog/load high-water marks plus worker activation counts, and HAL
+coverage proves FIFO handling across two queued address spaces. The next steps
+are to keep that lifecycle contract stable while moving the kernel toward
+richer kernel-owned pager-worker scheduling behavior and later pager
+integration.
 
 That near-term kernel slice is now tracked explicitly in:
 

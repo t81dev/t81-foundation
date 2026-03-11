@@ -94,6 +94,9 @@ Kernel integration proof now also includes:
 - repeated unresolved faults on a worker-owned address space now coalesce
   instead of creating duplicate pager work items, and diagnostics expose that
   worker-owned/coalesced state
+- runtime and fault diagnostics now also retain pending-handoff and worker-inbox
+  high-water marks plus worker activation counts, and HAL coverage proves FIFO
+  backlog handling across two queued address spaces
 - the supervisor/service-runtime convergence slice is now complete for the
   current contract surface
 - the first process-memory ownership slice is now complete as well
@@ -102,9 +105,9 @@ Kernel integration proof now also includes:
 - the third pager-groundwork slice is now complete as well
 - the fourth pager-groundwork slice is now complete as well
 - the next kernel slice is to keep this service-runtime layer stable and move
-  into richer kernel-owned pager-worker backlog/load behavior after handoff,
-  resolution, and duplicate-fault coalescing, not a broad ABI or syscall
-  surface
+  into richer kernel-owned pager-worker scheduling behavior after handoff,
+  resolution, duplicate-fault coalescing, and backlog-load diagnostics, not a
+  broad ABI or syscall surface
 
 Phase 4 storage proof now covers:
 

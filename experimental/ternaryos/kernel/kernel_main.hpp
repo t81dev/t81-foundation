@@ -167,7 +167,9 @@ struct KernelRuntimeState {
   struct PagerWorkerState {
     std::deque<KernelPagerWorkItem> inbox;
     std::optional<KernelPagerWorkItem> active_work{};
+    std::size_t inbox_high_watermark{0};
     uint64_t handoffs_received{0};
+    uint64_t activations{0};
     uint64_t resolutions_completed{0};
     std::optional<AddressSpaceId> last_completed_address_space_id{};
     std::optional<uint64_t> last_completed_resolution_sequence{};
@@ -196,6 +198,7 @@ struct KernelRuntimeState {
     uint64_t pager_handoffs_dispatched{0};
     uint64_t pager_resolutions{0};
     uint64_t pager_faults_coalesced{0};
+    uint64_t pager_worker_activations{0};
     uint64_t audit_events_recorded{0};
   };
 
@@ -211,6 +214,7 @@ struct KernelRuntimeState {
   std::deque<KernelFaultRecord> fault_log;
   std::deque<KernelFaultRecord> pending_faults;
   std::deque<AddressSpaceId> pending_pager_handoffs;
+  std::size_t pending_pager_handoff_high_watermark{0};
   std::deque<KernelAuditRecord> audit_log;
   std::unordered_map<sched::Tid, ThreadRuntimeState> thread_runtime;
   std::unordered_map<ProcessGroupId, ProcessGroupState> process_groups;
@@ -424,7 +428,9 @@ struct KernelRuntimeStatusView {
   std::size_t mapped_pages{0};
   std::size_t pager_needed_address_space_count{0};
   std::size_t pending_pager_handoff_count{0};
+  std::size_t pending_pager_handoff_high_watermark{0};
   std::size_t pager_worker_inbox_count{0};
+  std::size_t pager_worker_inbox_high_watermark{0};
   bool pager_worker_busy{false};
   std::optional<AddressSpaceId> pager_worker_active_address_space_id{};
   uint64_t loop_iterations{0};
@@ -437,6 +443,7 @@ struct KernelRuntimeStatusView {
   uint64_t pager_resolutions{0};
   uint64_t pager_faults_coalesced{0};
   uint64_t pager_worker_handoffs_received{0};
+  uint64_t pager_worker_activations{0};
   uint64_t pager_worker_resolutions_completed{0};
   std::size_t managed_service_count{0};
   std::size_t blocked_service_count{0};
@@ -606,13 +613,16 @@ struct KernelFaultSummaryView {
   uint64_t policy_faults{0};
   std::size_t pager_needed_address_spaces{0};
   std::size_t pending_pager_handoffs{0};
+  std::size_t pending_pager_handoff_high_watermark{0};
   std::size_t pager_worker_inbox_count{0};
+  std::size_t pager_worker_inbox_high_watermark{0};
   bool pager_worker_busy{false};
   std::optional<AddressSpaceId> pager_worker_active_address_space_id{};
   uint64_t pager_handoffs_dispatched{0};
   uint64_t pager_resolutions{0};
   uint64_t pager_faults_coalesced{0};
   uint64_t pager_worker_handoffs_received{0};
+  uint64_t pager_worker_activations{0};
   uint64_t pager_worker_resolutions_completed{0};
   uint64_t service_lifecycle_transitions{0};
   std::optional<KernelFaultRecord> last_delivered_fault{};

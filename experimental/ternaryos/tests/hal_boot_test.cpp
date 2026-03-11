@@ -1162,6 +1162,238 @@ static void test_kernel_pager_fault_state() {
   }
 }
 
+static void test_kernel_pager_worker_backlog() {
+  std::printf("\n[AC-22c] Axion kernel tracks deterministic pager backlog under load\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for pager backlog test");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext first_thread;
+  first_thread.label = "pager-backlog-a";
+  first_thread.registers[0] = 221;
+  t81::ternaryos::sched::TiscContext second_thread;
+  second_thread.label = "pager-backlog-b";
+  second_thread.registers[0] = 222;
+
+  auto first_tid = axion_kernel_spawn_thread(*state, first_thread);
+  auto second_tid = axion_kernel_spawn_thread(*state, second_thread);
+  check(first_tid.has_value(), "first backlog thread spawns successfully");
+  check(second_tid.has_value(), "second backlog thread spawns successfully");
+  if (!first_tid || !second_tid) {
+    return;
+  }
+
+  const auto* first_runtime = state->find_thread_runtime(*first_tid);
+  const auto* second_runtime = state->find_thread_runtime(*second_tid);
+  check(first_runtime != nullptr, "first backlog runtime state exists");
+  check(second_runtime != nullptr, "second backlog runtime state exists");
+  if (!first_runtime || !second_runtime) {
+    return;
+  }
+
+  const auto first_group_id = first_runtime->process_group_id;
+  const auto second_group_id = second_runtime->process_group_id;
+  const auto first_address_space_id =
+      state->find_process_group_address_space(first_group_id);
+  const auto second_address_space_id =
+      state->find_process_group_address_space(second_group_id);
+  check(first_address_space_id.has_value(),
+        "first backlog process group resolves to an address space");
+  check(second_address_space_id.has_value(),
+        "second backlog process group resolves to an address space");
+  if (!first_address_space_id || !second_address_space_id) {
+    return;
+  }
+
+  const auto first_tva = mmu::tva_from_vpn_offset(70, 0);
+  const auto second_tva = mmu::tva_from_vpn_offset(71, 0);
+  state->pending_faults.push_back(KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva = first_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault = mmu::MmuFault::Unmapped,
+      .subject_tid = *first_tid,
+  });
+  state->pending_faults.push_back(KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva = second_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault = mmu::MmuFault::Unmapped,
+      .subject_tid = *second_tid,
+  });
+
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+
+  auto runtime_after_delivery = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_after_delivery.runtime.has_value(),
+        "runtime status exposes pager backlog after fault delivery");
+  if (runtime_after_delivery.runtime) {
+    check(runtime_after_delivery.runtime->pager_needed_address_space_count == 2,
+          "runtime status reports two pager-needed address spaces under backlog");
+    check(runtime_after_delivery.runtime->pending_pager_handoff_count == 2,
+          "runtime status reports two pending pager handoffs under backlog");
+    check(runtime_after_delivery.runtime->pending_pager_handoff_high_watermark == 2,
+          "runtime status records pending handoff high watermark under backlog");
+    check(runtime_after_delivery.runtime->pager_worker_inbox_count == 0,
+          "runtime status keeps worker inbox empty before dispatching backlog");
+    check(runtime_after_delivery.runtime->pager_worker_activations == 0,
+          "runtime status starts with zero pager worker activations under backlog");
+  }
+
+  (void)axion_kernel_step(*state);
+  auto fault_after_first_dispatch = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_after_first_dispatch.fault_summary.has_value(),
+        "fault summary exposes first pager backlog dispatch");
+  if (fault_after_first_dispatch.fault_summary) {
+    check(fault_after_first_dispatch.fault_summary->pending_pager_handoffs == 1,
+          "fault summary drains one pending handoff on first backlog dispatch");
+    check(fault_after_first_dispatch.fault_summary->pager_worker_inbox_count == 1,
+          "fault summary queues one work item after first backlog dispatch");
+    check(fault_after_first_dispatch.fault_summary->pager_worker_inbox_high_watermark == 1,
+          "fault summary records one-item worker inbox watermark initially");
+    check(fault_after_first_dispatch.fault_summary->last_pager_handoff.has_value(),
+          "fault summary exposes first backlog handoff");
+    if (fault_after_first_dispatch.fault_summary->last_pager_handoff) {
+      check(fault_after_first_dispatch.fault_summary->last_pager_handoff->address_space_id ==
+                *first_address_space_id,
+            "fault summary dispatches the first queued address space first");
+    }
+  }
+
+  (void)axion_kernel_step(*state);
+  auto runtime_after_second_dispatch = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_after_second_dispatch.runtime.has_value(),
+        "runtime status exposes second pager backlog dispatch");
+  if (runtime_after_second_dispatch.runtime) {
+    check(runtime_after_second_dispatch.runtime->pending_pager_handoff_count == 0,
+          "runtime status drains pending handoffs after second backlog dispatch");
+    check(runtime_after_second_dispatch.runtime->pending_pager_handoff_high_watermark == 2,
+          "runtime status retains pending handoff high watermark after dispatch");
+    check(runtime_after_second_dispatch.runtime->pager_worker_inbox_count == 2,
+          "runtime status exposes two queued worker items under backlog");
+    check(runtime_after_second_dispatch.runtime->pager_worker_inbox_high_watermark == 2,
+          "runtime status records worker inbox high watermark under backlog");
+    check(runtime_after_second_dispatch.runtime->pager_handoffs_dispatched == 2,
+          "runtime status counts two dispatched pager handoffs under backlog");
+    check(runtime_after_second_dispatch.runtime->pager_worker_handoffs_received == 2,
+          "runtime status counts two handoffs received by the worker under backlog");
+  }
+
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     second_tva,
+                     *second_address_space_id),
+        "second backlog address space accepts its mapping before activation");
+  (void)axion_kernel_step(*state);
+  auto runtime_after_first_activation = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_after_first_activation.runtime.has_value(),
+        "runtime status exposes first worker activation");
+  if (runtime_after_first_activation.runtime) {
+    check(runtime_after_first_activation.runtime->pager_worker_busy,
+          "runtime status reports busy worker after first activation");
+    check(runtime_after_first_activation.runtime->pager_worker_active_address_space_id ==
+              first_address_space_id,
+          "runtime status activates the first queued address space first");
+    check(runtime_after_first_activation.runtime->pager_worker_inbox_count == 1,
+          "runtime status leaves one queued work item after first activation");
+    check(runtime_after_first_activation.runtime->pager_worker_activations == 1,
+          "runtime status counts one worker activation after first activation");
+    check(runtime_after_first_activation.runtime->pager_resolutions == 0,
+          "runtime status does not resolve the second address space out of order");
+  }
+
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     first_tva,
+                     *first_address_space_id),
+        "first backlog address space accepts its mapping before first resolution");
+  (void)axion_kernel_step(*state);
+  auto fault_after_first_resolution = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_after_first_resolution.fault_summary.has_value(),
+        "fault summary exposes first backlog resolution");
+  if (fault_after_first_resolution.fault_summary) {
+    check(fault_after_first_resolution.fault_summary->pager_resolutions == 1,
+          "fault summary counts the first pager backlog resolution");
+    check(fault_after_first_resolution.fault_summary->last_pager_resolution.has_value(),
+          "fault summary exposes the first backlog resolution record");
+    if (fault_after_first_resolution.fault_summary->last_pager_resolution) {
+      check(fault_after_first_resolution.fault_summary->last_pager_resolution->address_space_id ==
+                *first_address_space_id,
+            "fault summary resolves the first queued address space first");
+    }
+  }
+
+  (void)axion_kernel_step(*state);
+  auto runtime_after_second_activation = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_after_second_activation.runtime.has_value(),
+        "runtime status exposes second worker activation/resolution step");
+  if (runtime_after_second_activation.runtime) {
+    check(runtime_after_second_activation.runtime->pager_resolutions == 2,
+          "runtime status resolves the second queued address space on its activation step");
+    check(!runtime_after_second_activation.runtime->pager_worker_busy,
+          "runtime status returns worker to idle after second activation step");
+    check(!runtime_after_second_activation.runtime->pager_worker_active_address_space_id.has_value(),
+          "runtime status clears active worker address after second activation step");
+    check(runtime_after_second_activation.runtime->pager_worker_inbox_count == 0,
+          "runtime status drains the worker inbox by the second activation");
+    check(runtime_after_second_activation.runtime->pager_worker_activations == 2,
+          "runtime status counts two worker activations after backlog drain");
+  }
+  auto runtime_after_second_resolution = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_after_second_resolution.runtime.has_value(),
+        "runtime status exposes second backlog resolution");
+  if (runtime_after_second_resolution.runtime) {
+    check(runtime_after_second_resolution.runtime->pager_resolutions == 2,
+          "runtime status counts two pager resolutions after backlog drain");
+    check(!runtime_after_second_resolution.runtime->pager_worker_busy,
+          "runtime status reports idle worker after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_inbox_count == 0,
+          "runtime status leaves no queued work after backlog drain");
+    check(runtime_after_second_resolution.runtime->pending_pager_handoff_high_watermark == 2,
+          "runtime status retains pending handoff watermark after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_inbox_high_watermark == 2,
+          "runtime status retains inbox watermark after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_activations == 2,
+          "runtime status retains worker activation count after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_resolutions_completed == 2,
+          "runtime status counts two completed worker resolutions after backlog drain");
+  }
+
+  auto fault_after_second_resolution = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_after_second_resolution.fault_summary.has_value(),
+        "fault summary exposes final backlog resolution");
+  if (fault_after_second_resolution.fault_summary) {
+    check(fault_after_second_resolution.fault_summary->last_pager_resolution.has_value(),
+          "fault summary exposes the second backlog resolution record");
+    if (fault_after_second_resolution.fault_summary->last_pager_resolution) {
+      check(fault_after_second_resolution.fault_summary->last_pager_resolution->address_space_id ==
+                *second_address_space_id,
+            "fault summary resolves the second queued address space second");
+    }
+    check(fault_after_second_resolution.fault_summary->pending_pager_handoff_high_watermark == 2,
+          "fault summary retains pending handoff watermark after backlog drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_inbox_high_watermark == 2,
+          "fault summary retains inbox watermark after backlog drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_activations == 2,
+          "fault summary counts two worker activations after backlog drain");
+  }
+}
+
 static void test_kernel_fault_process_boundary() {
   std::printf("\n[AC-23] Axion kernel loop routes faults into thread runtime state\n");
 
@@ -3686,6 +3918,7 @@ int main() {
   test_kernel_loop_and_active_device_arbitration();
   test_kernel_loop_fault_delivery();
   test_kernel_pager_fault_state();
+  test_kernel_pager_worker_backlog();
   test_kernel_fault_process_boundary();
   test_kernel_fault_acknowledgement_and_recovery();
   test_kernel_process_group_fault_gate();

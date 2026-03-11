@@ -112,6 +112,14 @@ The fifth pager-groundwork slice is now also complete:
 - stable diagnostics now expose worker-owned state and coalesced pager-fault
   counts across runtime, process-group, service, supervisor, and fault views
 
+The sixth pager-groundwork slice is now also complete:
+
+- runtime and fault diagnostics now retain pending-handoff and worker-inbox
+  high-water marks for deeper pager backlog/load visibility
+- the internal pager worker now records deterministic activation counts
+- HAL/kernel coverage now proves FIFO backlog handling across two queued
+  address spaces without widening the pager surface
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
@@ -125,8 +133,8 @@ The next real kernel work is now:
 
 - pager integration
 - richer kernel-owned pager work after the first worker model
-- explicit transition handling for backlog, prioritization, or multiple queued
-  address spaces
+- explicit transition handling for prioritization or richer scheduling policy
+  across multiple queued address spaces
 - stable diagnostics proving pager worker behavior remains deterministic under
   deeper load
 
