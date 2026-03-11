@@ -113,7 +113,7 @@ std::string tva_to_string(uint64_t tva) {
 // ─── mmu_map ─────────────────────────────────────────────────────────────────
 
 bool mmu_map(PageTable& pt, TernaryPageAllocator& alloc,
-             uint64_t tva, uint32_t owner_pid) {
+             uint64_t tva, uint32_t owner_pid, PagePermissions perms) {
   if (!tva_valid(tva)) return false;
 
   uint64_t vpn = tva_vpn(tva);
@@ -123,23 +123,47 @@ bool mmu_map(PageTable& pt, TernaryPageAllocator& alloc,
   if (!phys.has_value()) return false;       // OOM
 
   auto* leaf = pt.ensure_leaf(vpn);
-  leaf->entry = PageTableEntry{*phys, owner_pid};
-  pt.entries_[vpn] = PageTableEntry{*phys, owner_pid};
+  leaf->entry = PageTableEntry{
+    .phys_base = *phys,
+    .owner_pid = owner_pid,
+    .readable = perms.readable,
+    .writable = perms.writable,
+    .executable = perms.executable,
+  };
+  pt.entries_[vpn] = *leaf->entry;
   return true;
 }
 
 // ─── mmu_translate ───────────────────────────────────────────────────────────
 
 std::optional<uint64_t> mmu_translate(const PageTable& pt, uint64_t tva) {
-  if (!tva_valid(tva)) return std::nullopt;
+  return mmu_translate_checked(pt, tva, MmuAccessMode::Read).phys_addr;
+}
+
+MmuAccessResult mmu_translate_checked(const PageTable& pt, uint64_t tva,
+                                      MmuAccessMode mode) {
+  if (!tva_valid(tva)) {
+    return {.phys_addr = std::nullopt, .fault = MmuFault::InvalidTva};
+  }
 
   uint64_t vpn    = tva_vpn(tva);
   uint64_t offset = tva_offset(tva);
 
   const auto* leaf = pt.find_leaf(vpn);
-  if (!leaf || !leaf->entry.has_value()) return std::nullopt;
+  if (!leaf || !leaf->entry.has_value()) {
+    return {.phys_addr = std::nullopt, .fault = MmuFault::Unmapped};
+  }
 
-  return leaf->entry->phys_base + offset;
+  const auto& entry = *leaf->entry;
+  const bool allowed =
+      (mode == MmuAccessMode::Read && entry.readable) ||
+      (mode == MmuAccessMode::Write && entry.writable) ||
+      (mode == MmuAccessMode::Execute && entry.executable);
+  if (!allowed) {
+    return {.phys_addr = std::nullopt, .fault = MmuFault::PermissionDenied};
+  }
+
+  return {.phys_addr = entry.phys_base + offset, .fault = MmuFault::None};
 }
 
 // ─── mmu_unmap ───────────────────────────────────────────────────────────────
@@ -168,7 +192,11 @@ std::string page_table_dump(const PageTable& pt) {
   for (const auto& [vpn, entry] : pt.entries()) {
     ss << "  VPN 0x" << std::hex << std::setw(12) << std::setfill('0') << vpn
        << " → phys 0x" << std::setw(12) << entry.phys_base
-       << " (pid=" << std::dec << entry.owner_pid << ")\n";
+       << " (pid=" << std::dec << entry.owner_pid
+       << ", perms="
+       << (entry.readable ? 'r' : '-')
+       << (entry.writable ? 'w' : '-')
+       << (entry.executable ? 'x' : '-') << ")\n";
   }
   return ss.str();
 }
@@ -203,7 +231,11 @@ std::string page_table_trace(const PageTable& pt, uint64_t tva) {
 
   if (node && node->entry.has_value()) {
     ss << " hit phys=0x" << std::hex << node->entry->phys_base
-       << std::dec << " pid=" << node->entry->owner_pid << "\n";
+       << std::dec << " pid=" << node->entry->owner_pid
+       << " perms="
+       << (node->entry->readable ? 'r' : '-')
+       << (node->entry->writable ? 'w' : '-')
+       << (node->entry->executable ? 'x' : '-') << "\n";
   } else {
     ss << " empty\n";
   }

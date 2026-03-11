@@ -29,6 +29,33 @@ namespace t81::ternaryos::mmu {
 struct PageTableEntry {
   uint64_t phys_base{0};   ///< Physical byte address of the mapped page
   uint32_t owner_pid{0};   ///< Hanoi PID that owns this mapping (0 = kernel)
+  bool readable{true};     ///< Read access allowed
+  bool writable{true};     ///< Write access allowed
+  bool executable{false};  ///< Execute access allowed
+};
+
+struct PagePermissions {
+  bool readable{true};
+  bool writable{true};
+  bool executable{false};
+};
+
+enum class MmuAccessMode {
+  Read,
+  Write,
+  Execute,
+};
+
+enum class MmuFault {
+  None,
+  InvalidTva,
+  Unmapped,
+  PermissionDenied,
+};
+
+struct MmuAccessResult {
+  std::optional<uint64_t> phys_addr{};
+  MmuFault fault{MmuFault::None};
 };
 
 struct PageTableStats {
@@ -54,8 +81,10 @@ private:
   static constexpr unsigned kVpnTrits = 20;
 
   friend bool mmu_map(PageTable&, TernaryPageAllocator&,
-                      uint64_t, uint32_t);
+                      uint64_t, uint32_t, PagePermissions);
   friend std::optional<uint64_t> mmu_translate(const PageTable&, uint64_t);
+  friend MmuAccessResult mmu_translate_checked(const PageTable&, uint64_t,
+                                               MmuAccessMode);
   friend bool mmu_unmap(PageTable&, TernaryPageAllocator&, uint64_t);
   friend std::string page_table_dump(const PageTable&);
   friend PageTableStats page_table_stats(const PageTable&);
@@ -88,7 +117,8 @@ private:
  * @return false if the VPN is already mapped, or the allocator is OOM.
  */
 bool mmu_map(PageTable& pt, TernaryPageAllocator& alloc,
-             uint64_t tva, uint32_t owner_pid = 0);
+             uint64_t tva, uint32_t owner_pid = 0,
+             PagePermissions perms = {});
 
 /**
  * @brief Translate a TVA to a physical byte address.
@@ -99,6 +129,12 @@ bool mmu_map(PageTable& pt, TernaryPageAllocator& alloc,
  *         exceeds kMaxTva.
  */
 std::optional<uint64_t> mmu_translate(const PageTable& pt, uint64_t tva);
+
+/**
+ * @brief Translate a TVA with explicit access mode and fault classification.
+ */
+MmuAccessResult mmu_translate_checked(const PageTable& pt, uint64_t tva,
+                                      MmuAccessMode mode);
 
 /**
  * @brief Unmap the virtual page containing `tva` and free its physical page.

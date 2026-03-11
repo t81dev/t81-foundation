@@ -293,6 +293,60 @@ static void test_page_table_trace() {
   check(invalid.find("invalid") != std::string::npos, "trace reports invalid TVA");
 }
 
+static void test_permission_checked_translation() {
+  std::printf("\n[M19] checked translation classifies permission faults\n");
+  auto alloc = make_alloc(8);
+  PageTable pt;
+  const uint64_t tva = tva_from_vpn_offset(12, 9);
+  check(mmu_map(pt, alloc, tva, /*pid=*/51,
+                {.readable = true, .writable = false, .executable = false}),
+        "readonly mapping succeeds");
+
+  const auto read = mmu_translate_checked(pt, tva, MmuAccessMode::Read);
+  const auto write = mmu_translate_checked(pt, tva, MmuAccessMode::Write);
+  const auto exec = mmu_translate_checked(pt, tva, MmuAccessMode::Execute);
+
+  check(read.phys_addr.has_value(), "read access translates");
+  check(read.fault == MmuFault::None, "read access reports no fault");
+  check(!write.phys_addr.has_value(), "write access denied");
+  check(write.fault == MmuFault::PermissionDenied, "write reports permission fault");
+  check(!exec.phys_addr.has_value(), "exec access denied");
+  check(exec.fault == MmuFault::PermissionDenied, "exec reports permission fault");
+}
+
+static void test_checked_translation_fault_classes() {
+  std::printf("\n[M20] checked translation distinguishes invalid and unmapped\n");
+  auto alloc = make_alloc(8);
+  PageTable pt;
+  check(mmu_map(pt, alloc, tva_from_vpn_offset(2, 0), /*pid=*/61),
+        "baseline mapping succeeds");
+
+  const auto unmapped =
+      mmu_translate_checked(pt, tva_from_vpn_offset(77, 0), MmuAccessMode::Read);
+  const auto invalid =
+      mmu_translate_checked(pt, kMaxTva + 1, MmuAccessMode::Read);
+
+  check(!unmapped.phys_addr.has_value(), "unmapped access has no physical address");
+  check(unmapped.fault == MmuFault::Unmapped, "unmapped access reports unmapped");
+  check(!invalid.phys_addr.has_value(), "invalid TVA has no physical address");
+  check(invalid.fault == MmuFault::InvalidTva, "invalid TVA reports invalid fault");
+}
+
+static void test_page_table_dump_permissions() {
+  std::printf("\n[M21] page_table diagnostics expose permissions\n");
+  auto alloc = make_alloc(8);
+  PageTable pt;
+  const uint64_t tva = tva_from_vpn_offset(8, 0);
+  check(mmu_map(pt, alloc, tva, /*pid=*/71,
+                {.readable = true, .writable = true, .executable = true}),
+        "rwx mapping succeeds");
+
+  const auto dump = page_table_dump(pt);
+  const auto trace = page_table_trace(pt, tva);
+  check(dump.find("perms=rwx") != std::string::npos, "dump includes rwx permissions");
+  check(trace.find("perms=rwx") != std::string::npos, "trace includes rwx permissions");
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -316,6 +370,9 @@ int main() {
   test_unmap_prunes_without_affecting_siblings();
   test_page_table_stats();
   test_page_table_trace();
+  test_permission_checked_translation();
+  test_checked_translation_fault_classes();
+  test_page_table_dump_permissions();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

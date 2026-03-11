@@ -59,8 +59,10 @@ mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,
                        kPageSize=59049, kMaxTva=3^30-1, trit utilities
   ternary_page_alloc.hpp/.cpp  Physical page allocator (balanced-ternary PageState)
-  page_table.hpp/.cpp  20-trit ternary radix page table; mmu_map/translate/unmap
-                       plus page_table_stats/page_table_trace diagnostics
+  page_table.hpp/.cpp  20-trit ternary radix page table; permission-aware
+                       mmu_map/translate/unmap with checked read/write/exec
+                       translation plus page_table_stats/page_table_trace
+                       diagnostics
 
 sched/
   tisc_context.hpp     TiscContext: full TISC thread snapshot for pre-emption
@@ -91,7 +93,7 @@ tests/
   hal_boot_test.cpp          Phase 1 — 84 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
-  mmu_test.cpp               Phase 2 — 72 assertions
+  mmu_test.cpp               Phase 2 — 87 assertions
   scheduler_test.cpp         Phase 3 — 120 assertions
   ipc_test.cpp               Phase 3 — 73 assertions
   device_driver_test.cpp     Phase 4 — 342 assertions
@@ -103,7 +105,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 858/858 assertions, 8/8 tests pass
+# Expected: 1031/1031 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -123,6 +125,7 @@ The demo shows a VirtualBox-first hosted simulation path:
 - CanonStore persists a CanonBlock across a simulated reboot through that binding
 - CanonStore metadata now scales past the root 17-entry header and still rebuilds correctly after reboot
 - interrupted flushes preserve only the last durable state until a retry succeeds
+- the radix MMU now classifies invalid-TVA, unmapped, and permission-denied access faults
 - TTF renders ASCII text into the VirtualBox VMSVGA-backed ternary framebuffer.
 - TernaryEthernetPacket round-trips through the VirtualBox E1000 scaffold.
 

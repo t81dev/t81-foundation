@@ -62,6 +62,9 @@ leaf stores:
 
 - `phys_base`
 - `owner_pid`
+- `readable`
+- `writable`
+- `executable`
 
 This makes the page-table shape match the ternary virtual-address model while
 preserving the same external MMU API.
@@ -78,15 +81,34 @@ compatibility, but the radix tree is the canonical translation structure.
 ```cpp
 namespace t81::ternaryos::mmu {
 
+struct PagePermissions {
+  bool readable{true};
+  bool writable{true};
+  bool executable{false};
+};
+
+enum class MmuAccessMode { Read, Write, Execute };
+enum class MmuFault { None, InvalidTva, Unmapped, PermissionDenied };
+
+struct MmuAccessResult {
+  std::optional<uint64_t> phys_addr;
+  MmuFault fault{MmuFault::None};
+};
+
 // Map one virtual page (VPN derived from tva) to a physical page.
 // Allocates a physical page from TernaryPageAllocator if phys_base is 0.
 // Returns false if VPN is already mapped or OOM.
 bool mmu_map(PageTable& pt, TernaryPageAllocator& alloc,
-             uint64_t tva, uint32_t owner_pid = 0);
+             uint64_t tva, uint32_t owner_pid = 0,
+             PagePermissions perms = {});
 
 // Translate a TVA to a physical byte address.
 // Returns nullopt if the VPN is not mapped or the offset is out of range.
 std::optional<uint64_t> mmu_translate(const PageTable& pt, uint64_t tva);
+
+// Translate a TVA for a specific access class and classify failures.
+MmuAccessResult mmu_translate_checked(const PageTable& pt, uint64_t tva,
+                                     MmuAccessMode mode);
 
 // Unmap the virtual page containing tva; frees the physical page.
 bool mmu_unmap(PageTable& pt, TernaryPageAllocator& alloc, uint64_t tva);
@@ -112,4 +134,8 @@ std::string page_table_trace(const PageTable& pt, uint64_t tva);
 - [ ] `page_table_dump()` exposes radix structural diagnostics.
 - [ ] `page_table_stats()` reports mapped entries and radix shape.
 - [ ] `page_table_trace()` reports hit, miss, and invalid-TVAs deterministically.
+- [ ] Read-only mappings reject writes with `PermissionDenied`.
+- [ ] Non-executable mappings reject execute translations with `PermissionDenied`.
+- [ ] Checked translation distinguishes invalid TVA, unmapped TVA, and permission faults.
+- [ ] Diagnostics expose per-leaf permission state.
 - [ ] All existing TernOS tests continue to pass.
