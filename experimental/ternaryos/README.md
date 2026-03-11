@@ -154,6 +154,8 @@ What the TUI adds:
   - `help`
   - `profile`
   - `store put <text>`
+  - `store ls`
+  - `store get <ref>`
   - `history`
 - a live typed-input loop in the interactive TUI:
   - printable characters append to the command buffer
@@ -165,13 +167,14 @@ What it is not yet:
 
 - TISC userland code
 - a general command parser or process manager
+- arbitrary command piping or process composition
 
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
 - `t81_ternaryos_device_driver_test` is `342/342`
-- `t81_ternaryos_shell_session_test` is `17/17`
-- total TernOS assertions are `754`
+- `t81_ternaryos_shell_session_test` is `27/27`
+- total TernOS assertions are `764`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback

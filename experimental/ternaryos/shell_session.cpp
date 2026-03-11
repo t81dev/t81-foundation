@@ -30,16 +30,23 @@ namespace t81::ternaryos {
 
 namespace {
 
-constexpr std::array<const char*, 4> kBuiltinCommands = {
+constexpr std::array<const char*, 6> kBuiltinCommands = {
     "help",
     "profile",
     "store put <text>",
+    "store ls",
+    "store get <ref>",
     "history",
 };
 
 struct ShellStep {
   std::string command;
   std::string result;
+};
+
+struct ParsedCommand {
+  std::vector<std::string> words;
+  std::optional<std::string> error;
 };
 
 t81::canonfs::CanonBlock make_text_block(std::string_view text) {
@@ -71,12 +78,32 @@ std::optional<HostedBlockDev> load_backed_device(const std::string& path) {
   return loaded;
 }
 
-std::vector<std::string> split_words(const std::string& command) {
-  std::istringstream stream(command);
-  std::vector<std::string> out;
-  std::string word;
-  while (stream >> word) out.push_back(word);
-  return out;
+ParsedCommand parse_shell_command(const std::string& command) {
+  ParsedCommand parsed;
+  std::string current;
+  bool in_quotes = false;
+
+  for (char ch : command) {
+    if (ch == '"') {
+      in_quotes = !in_quotes;
+      continue;
+    }
+    if (!in_quotes && std::isspace(static_cast<unsigned char>(ch))) {
+      if (!current.empty()) {
+        parsed.words.push_back(current);
+        current.clear();
+      }
+      continue;
+    }
+    current.push_back(ch);
+  }
+
+  if (in_quotes) {
+    parsed.error = "parse error: unmatched quote";
+    return parsed;
+  }
+  if (!current.empty()) parsed.words.push_back(current);
+  return parsed;
 }
 
 std::string upper_ascii(std::string text) {
@@ -84,6 +111,36 @@ std::string upper_ascii(std::string text) {
     ch = static_cast<char>(std::toupper(static_cast<unsigned char>(ch)));
   }
   return text;
+}
+
+std::string canon_ref_text(const t81::canonfs::CanonRef& ref) {
+  return ref.hash.h.to_string();
+}
+
+std::optional<t81::canonfs::CanonRef> parse_canon_ref_text(std::string_view text) {
+  try {
+    return t81::canonfs::CanonRef{
+        t81::canonfs::CanonHash{t81::hash::CanonHash81::from_string(text)}};
+  } catch (...) {
+    return std::nullopt;
+  }
+}
+
+std::string decode_text_block(const t81::canonfs::CanonBlock& block) {
+  std::string text;
+  for (auto tryte : block.trytes) {
+    if (tryte == 0) break;
+    text.push_back(static_cast<char>(tryte));
+  }
+  return text.empty() ? "<empty>" : text;
+}
+
+bool canon_ref_known(const std::vector<t81::canonfs::CanonRef>& refs,
+                     const t81::canonfs::CanonRef& ref) {
+  for (const auto& candidate : refs) {
+    if (candidate.hash == ref.hash) return true;
+  }
+  return false;
 }
 
 std::vector<std::string> render_transcript_lines(const std::vector<ShellStep>& steps) {
@@ -138,7 +195,8 @@ std::vector<std::string> default_shell_command_sequence() {
   return {
       "help",
       "profile",
-      "store put phase5 durable transcript",
+      "store put \"phase5 durable transcript\"",
+      "store ls",
       "history",
   };
 }
@@ -203,11 +261,17 @@ std::optional<ShellSession> ShellSession::create(bool quiet_boot) {
 
 bool ShellSession::execute_command(std::string_view command_view) {
   const std::string command(command_view);
-  const auto words = split_words(command);
+  const auto parsed = parse_shell_command(command);
+  if (parsed.error.has_value()) {
+    state_.command_records.push_back({command, *parsed.error});
+    return refresh_render();
+  }
+  const auto& words = parsed.words;
   if (words.empty()) return refresh_render();
 
   if (words[0] == "help") {
-    state_.command_records.push_back({command, "builtins help profile store put <text> history"});
+    state_.command_records.push_back(
+        {command, "builtins help profile store put <text> store ls store get <ref> history"});
     return refresh_render();
   }
 
@@ -229,18 +293,55 @@ bool ShellSession::execute_command(std::string_view command_view) {
   CanonStore store(*guest->storage.device);
 
   if (words.size() >= 3 && words[0] == "store" && words[1] == "put") {
-    const auto payload = command.substr(std::string("store put ").size());
+    std::string payload = words[2];
+    for (std::size_t i = 3; i < words.size(); ++i) {
+      payload += " " + words[i];
+    }
     auto ref = store.put(make_text_block(payload));
     if (!ref.has_value()) {
       state_.command_records.push_back({command, "canon store put failed"});
       return refresh_render();
     }
     history_ref_ = *ref;
+    if (!canon_ref_known(stored_refs_, *ref)) stored_refs_.push_back(*ref);
     if (!store.flush()) {
       state_.command_records.push_back({command, "canon flush failed"});
       return refresh_render();
     }
-    state_.command_records.push_back({command, "canon durable ok"});
+    state_.command_records.push_back({command, "canon durable ok " + canon_ref_text(*ref)});
+    return refresh_render();
+  }
+
+  if (words.size() == 2 && words[0] == "store" && words[1] == "ls") {
+    state_.recovered_entries = store.rebuild_index();
+    if (stored_refs_.empty()) {
+      state_.command_records.push_back({command, "store refs 0"});
+      return refresh_render();
+    }
+
+    std::string result = "store refs " + std::to_string(stored_refs_.size());
+    for (const auto& ref : stored_refs_) {
+      result += "\n" + canon_ref_text(ref);
+    }
+    state_.command_records.push_back({command, result});
+    return refresh_render();
+  }
+
+  if (words.size() == 3 && words[0] == "store" && words[1] == "get") {
+    const auto ref = parse_canon_ref_text(words[2]);
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "store get invalid ref"});
+      return refresh_render();
+    }
+
+    state_.recovered_entries = store.rebuild_index();
+    const auto block = store.get(*ref);
+    if (!block.has_value()) {
+      state_.command_records.push_back({command, "store get missing"});
+      return refresh_render();
+    }
+
+    state_.command_records.push_back({command, "store get " + decode_text_block(*block)});
     return refresh_render();
   }
 

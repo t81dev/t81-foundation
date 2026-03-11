@@ -183,6 +183,8 @@ help
 profile
 history
 store put <text>
+store ls
+store get <ref>
 ```
 
 Rules:
@@ -195,10 +197,9 @@ Rules:
 ### Near-Term Additions
 
 ```text
-store get <ref>
-store list
 session status
 clear
+store rm <ref>
 ```
 
 ### Later Object-Native Direction
@@ -258,9 +259,10 @@ automation shell, Axion should feel like a canonical state shell.
 1. Replace menu-only command execution with typed input.
 2. Keep the current built-ins and make them parse from a command line.
 3. Add shell-focused tests for parse and transcript behavior.
-4. Add `store list` and `store get <ref>`.
-5. Introduce clearer durable-history semantics.
-6. Only then expand toward richer session/process/userland features.
+4. Add `store ls` and `store get <ref>`.
+5. Introduce quoted payload parsing and explicit parse errors.
+6. Introduce clearer durable-history semantics.
+7. Only then expand toward richer session/process/userland features.
 
 ## Acceptance For The Next Milestone
 
@@ -271,6 +273,13 @@ The next shell milestone should be considered complete when:
 - transcript updates deterministically
 - persisted history still survives reboot through the existing Axion storage path
 - snapshot mode remains stable for review/testing
+
+This milestone is now complete. The next shell milestone should add:
+
+- session-focused status commands
+- clearer separation between session transcript and durable store state
+- store mutation beyond append-only `store put`
+- groundwork for a broader object-oriented command surface
 
 ## Summary
 

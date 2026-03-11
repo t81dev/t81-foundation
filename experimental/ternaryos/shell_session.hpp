@@ -48,6 +48,7 @@ private:
   std::string store_path_;
   ShellSessionState state_;
   std::optional<t81::canonfs::CanonRef> history_ref_;
+  std::vector<t81::canonfs::CanonRef> stored_refs_;
 };
 
 std::optional<ShellSessionState> build_scripted_shell_session(bool quiet_boot = false);
