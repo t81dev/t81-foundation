@@ -372,8 +372,10 @@ Current status:
   - `display_binding=virtualbox-vmsvga`
   - `display_present_count=1`
   - `network_binding=virtualbox-e1000`
-  - `network_tx_frames=1`
-  - `network_rx_frames=1`
+  - `network_tx_frames=3`
+  - `network_rx_frames=3`
+  - `network_roundtrip_ok=3`
+  - `network_roundtrip_total=3`
 - the current `startup-status.txt` exposes guest-visible Axion state from the staged ARM guest:
   - `os_name=Axion`
   - `phase=5`

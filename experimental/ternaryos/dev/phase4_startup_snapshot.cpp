@@ -123,18 +123,34 @@ std::optional<std::string> build_phase4_report() {
   const std::size_t rendered_glyphs = ttf_render_text(framebuffer, 0, 0, "AXION\nP4");
   if (!display.present()) return std::nullopt;
 
-  auto packet = TernaryEthernetPacket::build(
-      {0x01, 0x02, 0x03, 0x04, 0x05, 0x06},
-      {0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F},
-      0x0081,
-      {1, 0, -1, -1, 1, 0});
-  if (!packet.has_value()) return std::nullopt;
+  std::vector<std::vector<int8_t>> payloads{
+      {1, 0, -1, -1, 1, 0},
+      {0, 1, 1, -1, 0, -1},
+      {-1, -1, 0, 1, 1, 0},
+  };
+  std::size_t network_roundtrip_ok = 0;
+  std::size_t network_total_words = 0;
+  std::size_t network_total_frame_bytes = 0;
+  for (std::size_t i = 0; i < payloads.size(); ++i) {
+    auto packet = TernaryEthernetPacket::build(
+        {0x01, 0x02, 0x03, 0x04, 0x05, static_cast<uint8_t>(0x06 + i)},
+        {0x0A, 0x0B, 0x0C, 0x0D, 0x0E, static_cast<uint8_t>(0x0F + i)},
+        0x0081,
+        payloads[i]);
+    if (!packet.has_value()) return std::nullopt;
 
-  auto frame = guest->network.device->send_packet(*packet);
-  if (!frame.has_value()) return std::nullopt;
-  if (!guest->network.device->inject_frame(*frame)) return std::nullopt;
-  auto parsed_packet = guest->network.device->receive_packet();
-  if (!parsed_packet.has_value()) return std::nullopt;
+    auto frame = guest->network.device->send_packet(*packet);
+    if (!frame.has_value()) return std::nullopt;
+    network_total_frame_bytes += frame->size();
+    if (!guest->network.device->inject_frame(*frame)) return std::nullopt;
+    auto parsed_packet = guest->network.device->receive_packet();
+    if (!parsed_packet.has_value()) return std::nullopt;
+    network_total_words += parsed_packet->trit_word_count();
+    if (parsed_packet->trit_payload == packet->trit_payload &&
+        parsed_packet->content_ref.hash == packet->content_ref.hash) {
+      ++network_roundtrip_ok;
+    }
+  }
 
   auto* ahci = dynamic_cast<VirtualBoxAhciDev*>(guest->storage.device.get());
   if (ahci == nullptr) return std::nullopt;
@@ -168,7 +184,12 @@ std::optional<std::string> build_phase4_report() {
   report << "network_binding=" << guest->network.binding_name << "\n";
   report << "network_tx_frames=" << guest->network.device->tx_frames() << "\n";
   report << "network_rx_frames=" << guest->network.device->rx_frames() << "\n";
-  report << "network_roundtrip_words=" << parsed_packet->trit_word_count() << "\n";
+  report << "network_pending_tx_frames=" << guest->network.device->pending_tx_frames() << "\n";
+  report << "network_pending_rx_frames=" << guest->network.device->pending_rx_frames() << "\n";
+  report << "network_roundtrip_ok=" << network_roundtrip_ok << "\n";
+  report << "network_roundtrip_total=" << payloads.size() << "\n";
+  report << "network_roundtrip_words=" << network_total_words << "\n";
+  report << "network_total_frame_bytes=" << network_total_frame_bytes << "\n";
 
   std::filesystem::remove(backing_path);
   return report.str();

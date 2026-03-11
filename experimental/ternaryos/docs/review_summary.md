@@ -77,7 +77,7 @@ ARM diagnostic result:
   20-object CanonStore recovery across two guest cycles, active overflow
   metadata past the 17-entry root-header threshold, successful torn-header
   recovery for the same 20 objects, through `virtualbox-ahci`, one VMSVGA
-  present, and one E1000 round-trip
+  present, and a three-frame E1000 round-trip workload
 - local VirtualBox ARM remains non-observable for EFI execution and is now only
   a secondary diagnostic lane
 - conclusion: the remaining blind spot is the local VirtualBox ARM path, not

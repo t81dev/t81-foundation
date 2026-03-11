@@ -257,9 +257,13 @@ for expected in \
   '^display_binding=virtualbox-vmsvga$' \
   '^display_present_count=1$' \
   '^network_binding=virtualbox-e1000$' \
-  '^network_tx_frames=1$' \
-  '^network_rx_frames=1$' \
-  '^network_roundtrip_words=2$'
+  '^network_tx_frames=3$' \
+  '^network_rx_frames=3$' \
+  '^network_pending_tx_frames=3$' \
+  '^network_pending_rx_frames=0$' \
+  '^network_roundtrip_ok=3$' \
+  '^network_roundtrip_total=3$' \
+  '^network_roundtrip_words=6$'
 do
   if ! /usr/bin/grep -q "$expected" "$startup_phase4_copy"; then
     echo "QEMU ARMv8 guest probe found startup phase4 report, but expected field was missing: $expected" >&2
