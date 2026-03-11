@@ -75,7 +75,11 @@ Kernel integration proof now also includes:
 - service status now also exposes the latest service lifecycle kind and sequence
 - supervisor inventory entries now also expose each managed service's latest
   lifecycle kind and sequence
-- the next kernel slice is to keep this service-runtime layer stable and only add another narrow lifecycle action if it is truly needed, not a broad ABI or syscall surface
+- the supervisor/service-runtime convergence slice is now complete for the
+  current contract surface
+- the next kernel slice is to keep this service-runtime layer stable and move
+  into process-memory ownership and pager integration, not a broad ABI or
+  syscall surface
 
 Phase 4 storage proof now covers:
 

@@ -2,11 +2,11 @@
 
 Current working release label: `Axion v0.1.0-alpha`
 
-This note captures the next narrow kernel slice after the currently
+This note captured the next narrow kernel slice after the currently
 implemented stable supervisor/process-group service boundary from
 [RFC-00B3](../../../spec/rfcs/RFC-00B3-axion-kernel-architecture.md).
 
-It is intentionally small. It exists so the next kernel work follows an
+It was intentionally small. It exists so the next kernel work follows an
 explicit sequence instead of growing organically.
 
 ## Current Kernel Position
@@ -49,42 +49,38 @@ Not yet implemented:
 - process address-space ownership
 - pager integration
 
+## Slice Result
+
+The service-runtime convergence slice is now complete for the current
+contract surface:
+
+- the service contract stayed narrower than a syscall or process ABI
+- lifecycle control remained limited to deterministic register, unregister,
+  suspend, resume, and health transitions
+- lifecycle diagnostics now align across service detail, supervisor inventory,
+  supervisor status, supervisor recovery, runtime, fault, audit, and device
+  views
+- HAL/kernel coverage now proves that aligned lifecycle surface end-to-end
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
 
-Do not widen the surface into syscalls, capabilities, or a process ABI yet.
+Do not widen the existing service surface further unless a concrete runtime
+need appears.
 
-### 2. Preserve deterministic service lifecycle behavior
+### 2. Shift the next kernel slice below the service layer
 
-The current service layer now covers:
+The next real kernel work is now:
 
-- registered service summaries
-- supervisor-owned service inventory
-- blocked/faulted service visibility
-- service request/rejection counters
-- deterministic service registration
-- deterministic service unregister
-- deterministic service suspend / resume
-- same-supervisor suspend / resume control over managed services
-- explicit service health transitions with stable unhealthy-state diagnostics
-- audit-visible service lifecycle transitions through the existing audit summary
-  surface
-- supervisor inventory visibility for the latest managed-service lifecycle
-  transition
-- per-entry supervisor inventory visibility for each managed service's latest
-  lifecycle transition
-- compact supervisor-status visibility for managed-service lifecycle state
-- supervisor-recovery visibility for managed-service lifecycle state
-- fault-summary visibility for managed-service lifecycle state
-- runtime-status visibility for managed-service lifecycle state
-- audit-summary visibility for managed-service lifecycle state
-- device-summary visibility for managed-service lifecycle state
-- service-status visibility for the latest managed-service lifecycle transition
+- process address-space ownership
+- pager integration
+- the memory/runtime boundary needed before any syscall or capability design
 
-### 3. Only add new actions if a stable service runtime truly needs them
+### 3. Do not add new lifecycle verbs opportunistically
 
-Any further action should remain narrow and lifecycle-oriented.
+Any further service action should require a concrete runtime need, not just
+surface symmetry.
 
 ## Non-Goals For This Slice
 
@@ -108,11 +104,12 @@ The current service-runtime slice is complete when:
 2. HAL/kernel tests prove service registration, blocked behavior, and
    unregister lifecycle behavior
 3. the service contract remains narrower than a syscall or process ABI
-4. RFC-00B3 can shift to supervisor/service runtime convergence as the next step
+4. RFC-00B3 can shift from supervisor/service runtime convergence to
+   process-memory ownership and pager work as the next step
 
 ## Recommended Order
 
-1. keep HAL/kernel acceptance coverage ahead of any new surface growth
-2. keep service registration + unregister semantics stable
-3. add a further lifecycle action only if the service runtime truly needs it
-4. update RFC-00B3 and status/docs
+1. preserve the current service-runtime contract without widening it casually
+2. define kernel-owned process memory semantics
+3. integrate pager behavior at the runtime boundary
+4. only then evaluate syscall or capability design

@@ -67,9 +67,9 @@ Service status now also exposes the latest service lifecycle kind and
 sequence.
 Supervisor inventory entries now also expose each managed service's latest
 lifecycle kind and sequence.
-The next steps are to keep that lifecycle
-contract stable while continuing to move the runtime toward fuller kernel
-behavior.
+That lifecycle convergence slice is now complete for the current contract.
+The next steps are to keep that lifecycle contract stable while moving the
+kernel toward process-memory ownership and pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 

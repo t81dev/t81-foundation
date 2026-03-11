@@ -332,12 +332,12 @@ Local hosted proof as of the current branch:
   deterministic service registration with supervisor-owned inventory
 - a fourth narrow service-facing action now exists through that same boundary:
   deterministic service unregister with stable post-unregister service/detail state
-- the current kernel slice is now service-runtime stabilization:
+- the current kernel slice is now complete for service-runtime stabilization:
   service request routing, stable service detail, richer supervisor inventory,
-  registration, and unregister lifecycle behavior now exist above the stable
+  and deterministic lifecycle behavior now exist above the stable
   supervisor/process-group contract. The next step is to keep that contract
-  stable and only add another lifecycle action if it is truly needed, tracked
-  explicitly in:
+  stable and move kernel work into process-memory ownership and pager
+  integration, tracked explicitly in:
   - `docs/kernel_execution_plan.md`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence

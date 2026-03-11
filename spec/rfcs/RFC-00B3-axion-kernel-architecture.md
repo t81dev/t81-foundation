@@ -308,8 +308,10 @@ surface.
 The service-status view now also carries explicit last-transition metadata so a
 service can observe its own latest lifecycle state without consulting broader
 supervisor summaries.
-The next step is to keep that layer stable and only then consider any further
-lifecycle action or boundary growth.
+That supervisor/service-runtime convergence step is now complete for the
+current contract. The next step is to keep that layer stable and shift kernel
+work downward into process-memory ownership and pager integration before any
+syscall, capability, or broader process ABI design.
 
 The working execution note for this slice is:
 
