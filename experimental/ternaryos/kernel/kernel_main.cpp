@@ -233,6 +233,21 @@ std::optional<sched::Tid> primary_tid_for_group(const KernelRuntimeState& state,
                            group_state->member_tids.end());
 }
 
+bool group_has_pending_thread_faults(const KernelRuntimeState& state,
+                                     ProcessGroupId process_group_id) {
+  const auto* group_state = state.find_process_group(process_group_id);
+  if (!group_state) {
+    return false;
+  }
+  for (const auto tid : group_state->member_tids) {
+    const auto* thread_state = state.find_thread_runtime(tid);
+    if (thread_state && !thread_state->fault_inbox.empty()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 KernelProcessGroupStatusView make_process_group_view(const KernelRuntimeState& state,
                                                      ProcessGroupId process_group_id) {
   const auto* group_state = state.find_process_group(process_group_id);
@@ -682,23 +697,39 @@ KernelServiceActionResult axion_kernel_service_action(
     case KernelServiceActionKind::AcknowledgeSupervisorFaultGroup: {
       if (auto denied = validate_requesting_group(state, action); denied.has_value()) {
         result.status = *denied;
+        result.rejection = denied == KernelServiceStatus::NotFound
+                               ? KernelServiceActionRejection::MissingRequestingGroup
+                               : KernelServiceActionRejection::FaultedRequestingGroup;
         return result;
       }
       if (!action.supervisor_id.has_value() || !action.process_group_id.has_value()) {
         result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = !action.supervisor_id.has_value()
+                               ? KernelServiceActionRejection::MissingSupervisor
+                               : KernelServiceActionRejection::MissingProcessGroup;
         return result;
       }
-      if (!state.find_supervisor(*action.supervisor_id) ||
-          !state.find_process_group(*action.process_group_id)) {
+      if (!state.find_supervisor(*action.supervisor_id)) {
         result.status = KernelServiceStatus::NotFound;
+        result.rejection = KernelServiceActionRejection::MissingSupervisor;
+        return result;
+      }
+      if (!state.find_process_group(*action.process_group_id)) {
+        result.status = KernelServiceStatus::NotFound;
+        result.rejection = KernelServiceActionRejection::MissingProcessGroup;
         return result;
       }
       if (!axion_kernel_ack_supervisor_group_fault(
               state, *action.supervisor_id, *action.process_group_id)) {
         result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = group_has_pending_thread_faults(
+                               state, *action.process_group_id)
+                               ? KernelServiceActionRejection::SupervisorGatePendingThreadFault
+                               : KernelServiceActionRejection::SupervisorGroupNotPending;
         return result;
       }
       result.status = KernelServiceStatus::Ok;
+      result.rejection = KernelServiceActionRejection::None;
       result.action_performed = true;
       result.process_group =
           make_process_group_view(state, *action.process_group_id);
@@ -712,27 +743,36 @@ KernelServiceActionResult axion_kernel_service_action(
     case KernelServiceActionKind::ReleaseDevice: {
       if (auto denied = validate_requesting_group(state, action); denied.has_value()) {
         result.status = *denied;
+        result.rejection = denied == KernelServiceStatus::NotFound
+                               ? KernelServiceActionRejection::MissingRequestingGroup
+                               : KernelServiceActionRejection::FaultedRequestingGroup;
         return result;
       }
       if (!state.device_arbitration.has_value()) {
         result.status = KernelServiceStatus::NoDeviceArbitration;
+        result.rejection = KernelServiceActionRejection::MissingDeviceArbitration;
         return result;
       }
       if (!action.requesting_process_group_id.has_value() ||
           !action.device_name.has_value()) {
         result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = !action.requesting_process_group_id.has_value()
+                               ? KernelServiceActionRejection::MissingRequestingGroup
+                               : KernelServiceActionRejection::MissingDeviceName;
         return result;
       }
       const auto* group_state =
           state.find_process_group(*action.requesting_process_group_id);
       if (!group_state) {
         result.status = KernelServiceStatus::NotFound;
+        result.rejection = KernelServiceActionRejection::MissingRequestingGroup;
         return result;
       }
       const auto owner_tid =
           primary_tid_for_group(state, *action.requesting_process_group_id);
       if (!owner_tid.has_value()) {
         result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = KernelServiceActionRejection::NoPrimaryThread;
         return result;
       }
 
@@ -742,10 +782,15 @@ KernelServiceActionResult axion_kernel_service_action(
               : axion_kernel_release_device(state, *action.device_name, *owner_tid);
       if (!ok) {
         result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection =
+            action.kind == KernelServiceActionKind::ClaimDevice
+                ? KernelServiceActionRejection::DeviceConflict
+                : KernelServiceActionRejection::DeviceNotOwned;
         return result;
       }
 
       result.status = KernelServiceStatus::Ok;
+      result.rejection = KernelServiceActionRejection::None;
       result.action_performed = true;
       result.process_group =
           make_process_group_view(state, *action.requesting_process_group_id);

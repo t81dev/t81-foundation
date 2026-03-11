@@ -1564,6 +1564,9 @@ static void test_kernel_service_fault_ack_action() {
       });
   check(premature_action.status == KernelServiceStatus::InvalidRequest,
         "service action rejects supervisor acknowledgement before thread inbox drain");
+  check(premature_action.rejection ==
+            KernelServiceActionRejection::SupervisorGatePendingThreadFault,
+        "premature supervisor acknowledgement reports pending-thread-fault rejection");
 
   check(axion_kernel_ack_thread_fault(*state, *worker_tid),
         "thread-local acknowledgement drains the worker inbox");
@@ -1577,6 +1580,9 @@ static void test_kernel_service_fault_ack_action() {
       });
   check(missing_supervisor.status == KernelServiceStatus::NotFound,
         "service action returns NotFound for missing supervisor");
+  check(missing_supervisor.rejection ==
+            KernelServiceActionRejection::MissingSupervisor,
+        "missing supervisor reports MissingSupervisor rejection");
 
   auto missing_requester = axion_kernel_service_action(
       *state,
@@ -1588,6 +1594,9 @@ static void test_kernel_service_fault_ack_action() {
       });
   check(missing_requester.status == KernelServiceStatus::NotFound,
         "service action returns NotFound for missing requesting group");
+  check(missing_requester.rejection ==
+            KernelServiceActionRejection::MissingRequestingGroup,
+        "missing requester reports MissingRequestingGroup rejection");
 
   auto ack_action = axion_kernel_service_action(
       *state,
@@ -1598,6 +1607,8 @@ static void test_kernel_service_fault_ack_action() {
       });
   check(ack_action.status == KernelServiceStatus::Ok,
         "service action acknowledges the supervisor fault gate");
+  check(ack_action.rejection == KernelServiceActionRejection::None,
+        "successful supervisor acknowledgement clears rejection reason");
   check(ack_action.action_performed, "service action reports work performed");
   check(ack_action.process_group.has_value(), "service action returns updated group view");
   check(ack_action.supervisor.has_value(), "service action returns updated supervisor view");
@@ -1810,6 +1821,8 @@ static void test_kernel_service_device_actions() {
       });
   check(preclaim.status == KernelServiceStatus::Ok,
         "healthy owner group can claim a device");
+  check(preclaim.rejection == KernelServiceActionRejection::None,
+        "successful claim clears rejection reason");
   check(preclaim.action_performed, "claim action reports work performed");
   check(preclaim.device_summary.has_value(), "claim action returns device summary");
   if (preclaim.device_summary) {
@@ -1826,6 +1839,8 @@ static void test_kernel_service_device_actions() {
       });
   check(conflicting_claim.status == KernelServiceStatus::InvalidRequest,
         "another healthy group cannot steal a claimed device");
+  check(conflicting_claim.rejection == KernelServiceActionRejection::DeviceConflict,
+        "conflicting claim reports DeviceConflict rejection");
 
   check(axion_kernel_step(*state), "device action path dispatches owner thread");
   check(axion_kernel_step(*state), "device action path dispatches contender thread");
@@ -1845,6 +1860,9 @@ static void test_kernel_service_device_actions() {
       });
   check(faulted_claim.status == KernelServiceStatus::FaultedGroup,
         "faulted group cannot claim a device through the service boundary");
+  check(faulted_claim.rejection ==
+            KernelServiceActionRejection::FaultedRequestingGroup,
+        "faulted claim reports FaultedRequestingGroup rejection");
 
   auto bad_release = axion_kernel_service_action(
       *state,
@@ -1855,6 +1873,9 @@ static void test_kernel_service_device_actions() {
       });
   check(bad_release.status == KernelServiceStatus::FaultedGroup,
         "faulted group cannot release a device through the service boundary");
+  check(bad_release.rejection ==
+            KernelServiceActionRejection::FaultedRequestingGroup,
+        "faulted release reports FaultedRequestingGroup rejection");
 
   auto release = axion_kernel_service_action(
       *state,
@@ -1865,12 +1886,48 @@ static void test_kernel_service_device_actions() {
       });
   check(release.status == KernelServiceStatus::Ok,
         "owning healthy group can release a device");
+  check(release.rejection == KernelServiceActionRejection::None,
+        "successful release clears rejection reason");
   check(release.action_performed, "release action reports work performed");
   check(release.device_summary.has_value(), "release action returns device summary");
   if (release.device_summary) {
     check(release.device_summary->claimed_device_count == 0,
           "device summary reports zero claimed devices after release");
   }
+
+  auto hosted_state = axion_kernel_bootstrap(make_valid_ctx(/*ethics=*/false));
+  check(hosted_state.has_value(),
+        "generic hosted runtime bootstraps without device arbitration");
+  if (!hosted_state.has_value()) {
+    return;
+  }
+  t81::ternaryos::sched::TiscContext hosted_ctx;
+  hosted_ctx.label = "hosted-requester";
+  hosted_ctx.registers[0] = 701;
+  const auto hosted_thread = axion_kernel_spawn_thread(*hosted_state, hosted_ctx);
+  check(hosted_thread.has_value(),
+        "generic hosted runtime can spawn a requester group for arbitration checks");
+  if (!hosted_thread.has_value()) {
+    return;
+  }
+  const auto* hosted_runtime = hosted_state->find_thread_runtime(*hosted_thread);
+  check(hosted_runtime != nullptr,
+        "generic hosted runtime exposes requester thread runtime state");
+  if (hosted_runtime == nullptr) {
+    return;
+  }
+  auto missing_arbitration = axion_kernel_service_action(
+      *hosted_state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::ClaimDevice,
+          .requesting_process_group_id = hosted_runtime->process_group_id,
+          .device_name = std::string{"ahci"},
+      });
+  check(missing_arbitration.status == KernelServiceStatus::NoDeviceArbitration,
+        "hosted generic runtime reports missing device arbitration");
+  check(missing_arbitration.rejection ==
+            KernelServiceActionRejection::MissingDeviceArbitration,
+        "missing device arbitration reports explicit rejection");
 }
 
 // ─── main ────────────────────────────────────────────────────────────────────

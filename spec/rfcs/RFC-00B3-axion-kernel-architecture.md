@@ -259,6 +259,13 @@ The next implementation slice after it is:
 2. keep recovery/report and device-action semantics stable as the service surface grows
 3. add another narrow action only if the hardened contract still needs it
 
+That hardening step specifically means:
+
+- make rejection causes more explicit where `InvalidRequest` is still too coarse
+- keep action/result payload shapes stable while clarifying semantics
+- avoid widening the contract with unrelated runtime verbs before the current
+  request/action model is settled
+
 The working execution note for this slice is:
 
 - `experimental/ternaryos/docs/kernel_execution_plan.md`

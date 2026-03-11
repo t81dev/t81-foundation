@@ -34,9 +34,9 @@ The next kernel slice is now tracked explicitly in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1375`
+- total assertions: `1389`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `499/499`
+- `t81_ternaryos_hal_boot_test`: `513/513`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -58,6 +58,7 @@ Kernel integration proof now also includes:
 - audit-only governance events are now recorded deterministically for fault delivery, quarantine, process-group fault entry, acknowledgement, and recovery
 - supervisor-facing recovery/report status is now exposed through the same service boundary, including pending-group state, acknowledgement counts, recovered-group counts, and deterministic last-acknowledged/last-recovered group tracking
 - deterministic device claim/release requests now exist through that same service boundary, with healthy groups allowed to arbitrate devices and faulted groups rejected consistently
+- the next kernel step is contract hardening, not another immediate boundary expansion
 
 Phase 4 storage proof now covers:
 

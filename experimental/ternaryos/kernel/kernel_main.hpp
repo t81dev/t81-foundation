@@ -236,6 +236,21 @@ enum class KernelServiceActionKind : uint8_t {
   ReleaseDevice,
 };
 
+enum class KernelServiceActionRejection : uint8_t {
+  None = 0,
+  MissingRequestingGroup,
+  MissingProcessGroup,
+  MissingSupervisor,
+  MissingDeviceName,
+  MissingDeviceArbitration,
+  FaultedRequestingGroup,
+  NoPrimaryThread,
+  DeviceConflict,
+  DeviceNotOwned,
+  SupervisorGatePendingThreadFault,
+  SupervisorGroupNotPending,
+};
+
 struct KernelRuntimeStatusView {
   std::string platform_id;
   std::size_t memory_region_count{0};
@@ -326,6 +341,7 @@ struct KernelServiceAction {
 
 struct KernelServiceActionResult {
   KernelServiceStatus status{KernelServiceStatus::InvalidRequest};
+  KernelServiceActionRejection rejection{KernelServiceActionRejection::None};
   bool action_performed{false};
   std::optional<KernelProcessGroupStatusView> process_group{};
   std::optional<KernelSupervisorStatusView> supervisor{};
