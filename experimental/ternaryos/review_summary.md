@@ -49,6 +49,8 @@ ARM diagnostic result:
   its execution markers directly; current probes show the staged image reaches
   `BOOTAA64.EFI` without needing shell fallback and writes a boot report with
   `hal_main_result=0`
+- local QEMU serial output now also includes `Axion ARMv8 EFI stub`, giving the
+  staged ARM guest a direct live boot signal
 - local VirtualBox ARM remains non-observable for EFI execution and is now only
   a secondary diagnostic lane
 - conclusion: the remaining blind spot is the local VirtualBox ARM path, not

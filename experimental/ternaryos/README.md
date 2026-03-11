@@ -306,6 +306,7 @@ Current status:
 - that VirtualBox-specific conclusion is now stronger because the same ARM image executes under local QEMU AArch64 + EDK2 and leaves `TERNOS/efi-ran.txt`; the current blind spot is therefore the local VirtualBox ARM path, not the basic ARM EFI control artifact
 - the QEMU lane is now usable for actual staged guest bring-up too: it can boot the staged ARM guest image, capture serial output, and inspect the mutated probe image; current local probes show `efi-ran.txt`, `boot-report.txt`, and `boot_path_inference=default-bootaa64-efi`, so QEMU is reaching the staged `BOOTAA64.EFI` directly rather than via shell fallback
 - the current `boot-report.txt` confirms the staged ARM guest reaches the Axion handoff stub with `platform_id=virtualbox-armv8:ARMv8Virtual/developer-lane` and `hal_main_result=0`
+- the QEMU serial log now also includes a visible boot banner, `Axion ARMv8 EFI stub`, so the developer lane has a direct live boot signal as well as file-based proof
 
 For an external reviewer, the current evidence split is:
 

@@ -19,6 +19,7 @@ typedef unsigned short CHAR16;
 typedef struct EFI_SYSTEM_TABLE EFI_SYSTEM_TABLE;
 typedef struct EFI_BOOT_SERVICES EFI_BOOT_SERVICES;
 typedef struct EFI_FILE_PROTOCOL EFI_FILE_PROTOCOL;
+typedef struct EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL;
 
 typedef struct {
   uint32_t Data1;
@@ -108,6 +109,11 @@ struct EFI_BOOT_SERVICES {
   EFI_STATUS(EFIAPI* HandleProtocol)(EFI_HANDLE handle, EFI_GUID* protocol, void** interface);
 };
 
+struct EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL {
+  void* Reset;
+  EFI_STATUS(EFIAPI* OutputString)(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* self, CHAR16* string);
+};
+
 struct EFI_SYSTEM_TABLE {
   EFI_TABLE_HEADER Hdr;
   CHAR16* FirmwareVendor;
@@ -173,6 +179,7 @@ static const EFI_GUID kEfiSimpleFileSystemProtocolGuid = {
 static const CHAR16 kMarkerPath[] = L"\\TERNOS\\efi-ran.txt";
 static const CHAR16 kReportPath[] = L"\\TERNOS\\boot-report.txt";
 static const char kMarkerText[] = "TERNOS_ARMV8_EFI_EXECUTED\n";
+static const char kBootBanner[] = "Axion ARMv8 EFI stub\r\n";
 
 static unsigned long ascii_length(const char* text) {
   unsigned long count = 0;
@@ -257,6 +264,35 @@ static void append_bool(char* buffer,
                         unsigned long* cursor,
                         bool value) {
   append_cstr(buffer, capacity, cursor, value ? "true" : "false");
+}
+
+static void ascii_to_char16(CHAR16* dest, unsigned long capacity, const char* text) {
+  unsigned long i = 0;
+  if (capacity == 0) {
+    return;
+  }
+  while (i + 1 < capacity && text[i] != 0) {
+    dest[i] = (CHAR16)((unsigned char)text[i]);
+    ++i;
+  }
+  dest[i] = 0;
+}
+
+static void emit_boot_banner(EFI_SYSTEM_TABLE* system_table) {
+  CHAR16 banner[64];
+  EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* con_out = 0;
+
+  if (system_table == 0 || system_table->ConOut == 0) {
+    return;
+  }
+
+  con_out = (EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL*)system_table->ConOut;
+  if (con_out->OutputString == 0) {
+    return;
+  }
+
+  ascii_to_char16(banner, sizeof(banner) / sizeof(banner[0]), kBootBanner);
+  con_out->OutputString(con_out, banner);
 }
 
 static EFI_STATUS open_root_volume(EFI_HANDLE image_handle,
@@ -370,6 +406,8 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_tab
   ctx.stack_top = 0x0000000047FFF000ULL;
   ctx.ethics_boot_required = true;
   ctx.platform_id = kPlatformId;
+
+  emit_boot_banner(system_table);
 
   const EFI_STATUS marker_status = write_execution_marker(image_handle, system_table);
   if (marker_status != EFI_SUCCESS) {

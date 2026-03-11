@@ -28,6 +28,7 @@ serial_log="$output_dir/qemu-armv8-guest-serial.log"
 pid_file="$output_dir/qemu-armv8-guest.pid"
 summary_file="$output_dir/qemu-armv8-guest-summary.txt"
 boot_report_copy="$output_dir/boot-report.txt"
+boot_banner_seen=0
 
 /bin/cp "$arm_image" "$probe_image"
 /bin/cp "$edk2_vars_template" "$vars_copy"
@@ -108,6 +109,9 @@ fi
 serial_bytes=0
 if [[ -f "$serial_log" ]]; then
   serial_bytes=$(/usr/bin/wc -c < "$serial_log" | /usr/bin/tr -d ' ')
+  if /usr/bin/grep -q 'Axion ARMv8 EFI stub' "$serial_log"; then
+    boot_banner_seen=1
+  fi
 fi
 
 /bin/cat > "$summary_file" <<EOF
@@ -123,14 +127,15 @@ efi_marker_seen=$efi_seen
 efi_marker_path=$efi_marker_path
 boot_report_seen=$boot_report_seen
 boot_report_copy=$boot_report_copy
+boot_banner_seen=$boot_banner_seen
 boot_path_inference=$boot_path_inference
 EOF
 
 /usr/bin/hdiutil detach "$disk_dev" >/dev/null 2>&1 || true
 disk_dev=""
 
-if [[ "$efi_seen" -ne 1 || "$boot_report_seen" -ne 1 ]]; then
-  echo "QEMU ARMv8 guest probe did not observe the staged BOOTAA64.EFI marker and boot report" >&2
+if [[ "$efi_seen" -ne 1 || "$boot_report_seen" -ne 1 || "$boot_banner_seen" -ne 1 ]]; then
+  echo "QEMU ARMv8 guest probe did not observe the staged BOOTAA64.EFI marker, boot report, and serial banner" >&2
   /bin/cat "$summary_file" >&2
   exit 1
 fi
