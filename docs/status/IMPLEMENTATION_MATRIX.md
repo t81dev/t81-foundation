@@ -1,7 +1,7 @@
 # Implementation Matrix
 
 Status: Active
-Last Updated: 2026-03-08
+Last Updated: 2026-03-11
 Owner: @t81dev
 
 Alignment truth. One row per subsystem. No narrative.
@@ -18,7 +18,8 @@ Authority remains: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 | **TISC ISA** | `spec/tisc-spec.md` | **Frozen** | Implemented | **Verified** | High | Low | 2026-03-06 | @t81dev | N/A (maintain) | Frozen DCP surface. Freeze integrity enforced by `check_tisc_freeze_integrity.py`. Documentation reorganization completed 2026-03-06. |
 | **T81VM** | `spec/t81vm-spec.md` | Beta | Beta | Beta | Medium | Low | 2026-03-08 | @t81dev | 2026-04-15 | Non-JIT path DCP-verified. FW-02 closure landed: Axion opcode pre-dispatch moved outside main VM switch. RFC-0026 phase-1 extended: all six opcodes have runtime semantics. TLOADHASH null-canonfs SEGFAULT fixed (2026-03-08): null-guard with hash-format validation; `set_canonfs_root()` API added to `IVirtualMachine`; DecodeFault/BoundsFault taxonomy enforced. 332/332 tests passing. |
 | **T81Lang** | `spec/t81lang-spec.md` | Draft | **Beta** | Beta (impl) / Draft (spec) | Medium | Low | 2026-03-08 | @t81dev | 2026-05-15 | BG-06/BG-07/BG-08/BG-09 closed. Frontend refactor complete (2026-03-08): typed AST (`Expr::resolved_type`), unified builtin registry (`kBuiltinTable`, 130 entries), IRGen extracted to `ir_generator.cpp`; SA dispatch ordering fixed (table-driven fallback after custom handlers). 332/332 tests passing. |
-| **Axion Kernel** | `spec/axion-kernel.md` | Draft | **Beta** | Beta | Medium | Medium | 2026-03-10 | @t81dev | 2026-04-30 | §1.6/1.9 implemented (bounded). AX-M5..M7 evidence closures landed; pending Beta candidacy review cycle. §2.5 remains deferred. Documentation reorganization completed 2026-03-06. |
+| **Axion Governance Kernel** | `spec/axion-kernel.md` | Draft | **Beta** | Beta | Medium | Medium | 2026-03-10 | @t81dev | 2026-04-30 | §1.6/1.9 implemented (bounded). AX-M5..M7 evidence closures landed; pending Beta candidacy review cycle. §2.5 remains deferred. Documentation reorganization completed 2026-03-06. |
+| **Axion OS Kernel** | `spec/rfcs/RFC-00B3-axion-kernel-architecture.md` | Draft | **Alpha** | Experimental | Medium | Medium | 2026-03-11 | @t81dev | 2026-05-15 | Experimental ternary-native OS kernel path in `experimental/ternaryos/`. HAL/MMU/scheduler/IPC/device seams implemented; first kernel-owned handoff from `hal_main` to `axion_kernel_main(...)` now verified; next milestone is kernel-facing page-fault reporting on top of checked MMU translation. |
 | **T81Graph** | Surface inventory (non-normative) | Draft | Draft | Experimental | Medium | Medium | 2026-03-06 | @t81dev | 2026-05-15 | VM opcode lowering and lang-side serialization wiring complete with determinism coverage. Surface remains governed non-DCP until promotion. Documentation reorganization completed 2026-03-06. |
 | **Cognitive Tiers** | `spec/cognitive-tiers.md` | Draft | Concept / Experimental | **Experimental** | Low | High | 2026-03-08 | @t81dev | 2026-06-15 | Experimental, non-DCP. RFC-0000 §6 (2026-03-08): `TierId::Tier6` (T6561, 3^8) added; `MeshReflector`/`MonadState` types in `tier6/distributed_monad.hpp`; Θ₇ entropy containment gate; `promotion.cpp` Tier5→Tier6 promotion path. Tiers 0–6 now modelled. |
 | **Hanoi VM** | `spec/rfcs/RFC-0000` | Draft | **Alpha** | **Experimental** | Low | Medium | 2026-03-08 | @t81dev | 2026-06-30 | RFC-0000 §4 (2026-03-08): `Kernel::boot()` interface added; `InMemoryKernel` evaluates Θ₁–Θ₉ via `check_ethics()` before first spawn; 81-slot scheduler cap enforced (`Error::SchedulerFull`); `EthicsViolation`/`CapabilityDenied` traps in `vm::Trap` enum. Still experimental/non-DCP; no formal spec beyond RFC-0000 normative clauses. |
@@ -32,6 +33,7 @@ Authority remains: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 | :--- | :--- | :--- | :--- | :--- |
 | Deterministic Substrate | `core/types`, `core/isa`, `core/vm`, `include/t81/**` | DCP / registry Verified | Verified | Freeze enforcement + DCP release discipline |
 | Governance Kernel | `kernel/axion` | Partially verified, scope-bounded | Alpha | Axion evidence milestones + incident-response |
+| Axion OS Kernel | `experimental/ternaryos/`, `spec/rfcs/RFC-00B3-axion-kernel-architecture.md` | Experimental, non-DCP | Alpha | RFC-00B3 kernel-integration milestones + external x86_64 promotion validation |
 | AGI Runtime / Research | `runtime/tracing`, `experimental/*`, cognitive tiers | Non-DCP unless promoted | Experimental | Governed AGI promotion pipeline |
 | Governed Inference | `third_party/llama.cpp`, `tooling/model/`, CLI `llama-run` | Governed non-DCP | Experimental | Governed AGI pipeline + release boundary classification |
 

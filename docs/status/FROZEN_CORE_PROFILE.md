@@ -88,7 +88,8 @@ The following are **outside the Frozen Core** and carry **no DCP guarantees**:
 | Cognitive Tiers | `experimental/tiers/` | Non-DCP | Experimental; consensus determinism not verified |
 | Hanoi VM | `experimental/hanoi/` | Non-DCP | Experimental kernel surface |
 | Distributed Compute | `experimental/distributed/` | Non-DCP | Network-layer; non-deterministic by design |
-| Axion Kernel | `kernel/axion/` | Partially Verified | Alpha; scope-bounded — see `DRIFT_DECOMPOSITION.md` |
+| Axion Governance Kernel | `kernel/axion/` | Partially Verified | Alpha; scope-bounded — see `DRIFT_DECOMPOSITION.md` |
+| Axion OS Kernel | `experimental/ternaryos/` | Non-DCP | Alpha; experimental OS kernel path governed by RFC-00B3 and external promotion gates |
 | T81Lang Frontend | `lang/frontend/` | Beta | Draft spec; determinism partial (fixture-bounded) |
 | T81Graph | `lang/frontend/` (graph surface) | Draft | No determinism tests; no DCP scope |
 | llama.cpp adapter | `third_party/llama.cpp`, `tooling/model/` | Governed non-DCP | AGI inference; practical reproducibility only |

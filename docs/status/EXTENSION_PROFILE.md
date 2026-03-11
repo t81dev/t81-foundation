@@ -1,6 +1,6 @@
 # Extension Profile
 
-Last Updated: 2026-03-06
+Last Updated: 2026-03-11
 Owner: @t81dev
 
 **What is explicitly not frozen. What can break. What has no determinism guarantees.**
@@ -41,7 +41,8 @@ evidence, policy classification) but are explicitly **not** in the DCP and carry
 | Surface | Path | Governance | Determinism | Notes |
 | :--- | :--- | :--- | :--- | :--- |
 | **llama.cpp adapter** | `third_party/llama.cpp`, `tooling/model/llama_cpp_adapter.cpp`, CLI `llama-run` | `T81_ENABLE_LLAMA_CPP=OFF` default; `T81_EXPORT_LLAMA_ADAPTER` guard prevents package export | Practical reproducibility only (controlled model + policy fixture) | Classified governed non-DCP (DEC-003). Promotion requires governed AGI pipeline. |
-| **Axion Kernel** | `kernel/axion/` | Alpha; policy engine and opcode arbitration present | Scope-bounded partial verification | §1.6 and §1.9 are Implemented (bounded); §1.1/1.3/1.10 are Partial; §2.5 is Deferred. See `DRIFT_DECOMPOSITION.md`. |
+| **Axion Governance Kernel** | `kernel/axion/` | Alpha; policy engine and opcode arbitration present | Scope-bounded partial verification | §1.6 and §1.9 are Implemented (bounded); §1.1/1.3/1.10 are Partial; §2.5 is Deferred. See `DRIFT_DECOMPOSITION.md`. |
+| **Axion OS Kernel** | `experimental/ternaryos/`, `spec/rfcs/RFC-00B3-axion-kernel-architecture.md` | Alpha; first kernel-owned handoff implemented | Experimental developer-lane verification only | Runtime handoff from `hal_main` to `axion_kernel_main(...)` is implemented and tested, but promotion remains non-DCP and the next kernel milestone is fault-path integration. |
 
 ---
 
