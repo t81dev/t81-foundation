@@ -250,12 +250,13 @@ diagnostics above kernel-owned state. The first narrow service-facing action is
 also now implemented:
 
 - supervisor fault-group acknowledgement through the same service boundary
+- supervisor-facing recovery/report status through the same contract
 
 The next implementation slice after it is:
 
-1. expose supervisor-facing recovery/report flows through the same contract
-2. add another narrow action only if needed
-3. harden the contract before widening it further
+1. add another narrow action only if needed
+2. harden the contract before widening it further
+3. keep recovery/report semantics stable as the service surface grows
 
 The working execution note for this slice is:
 

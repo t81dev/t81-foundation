@@ -12,7 +12,7 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-11
-**Commit:** `810b9cdd` onward; kernel process-group policy work continues past this checkpoint
+**Commit:** `e0f182db` onward; kernel supervisor/service policy work continues past this checkpoint
 **Branch:** `main`
 
 Reference docs:
@@ -134,7 +134,8 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - The loop-owned fault delivery path now feeds a real kernel policy boundary: delivered faults are routed into per-thread runtime state, the faulting thread is quarantined deterministically, the owning process group enters a blocked fault state, explicit group acknowledgement gates recovery, and audit-only governance events are recorded in deterministic order.
 - The first service-facing runtime contract above the supervisor/process-group boundary is now implemented, including deterministic healthy/faulted-group behavior and stable diagnostics.
 - The first narrow service-facing runtime action is now implemented too: supervisor fault-group acknowledgement through the same contract.
-- The next kernel slice is now supervisor-facing recovery/report flows on top of that action, as tracked in `kernel_execution_plan.md`.
+- Supervisor-facing recovery/report flows are now implemented on top of that action: the service boundary exposes deterministic pending-group, acknowledgement, and recovered-group state for each supervisor.
+- The next kernel slice is now one more narrow service-facing action above the stable contract, as tracked in `kernel_execution_plan.md`.
 
 **Phase 3 test total: 193 / 193**
 
@@ -212,7 +213,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 302 | 1 |
+| `t81_ternaryos_hal_boot_test` | 478 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -220,7 +221,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **1323** | |
+| **Total** | **1354** | |
 
 Run all TernOS tests:
 

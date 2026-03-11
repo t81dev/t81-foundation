@@ -95,6 +95,9 @@ struct KernelRuntimeState {
     std::deque<ProcessGroupId> pending_groups;
     uint64_t fault_notifications{0};
     uint64_t acknowledgements{0};
+    uint64_t recovered_groups{0};
+    std::optional<ProcessGroupId> last_acknowledged_group{};
+    std::optional<ProcessGroupId> last_recovered_group{};
   };
 
   struct Counters {
@@ -214,6 +217,7 @@ enum class KernelServiceRequestKind : uint8_t {
   RuntimeStatus = 0,
   ProcessGroupStatus,
   SupervisorStatus,
+  SupervisorRecoveryStatus,
   FaultSummary,
   DeviceSummary,
 };
@@ -265,6 +269,16 @@ struct KernelSupervisorStatusView {
   std::optional<ProcessGroupId> last_pending_group{};
 };
 
+struct KernelSupervisorRecoveryStatusView {
+  SupervisorId id{0};
+  std::size_t pending_group_count{0};
+  uint64_t acknowledgements{0};
+  uint64_t recovered_groups{0};
+  std::vector<ProcessGroupId> pending_group_ids;
+  std::optional<ProcessGroupId> last_acknowledged_group{};
+  std::optional<ProcessGroupId> last_recovered_group{};
+};
+
 struct KernelFaultSummaryView {
   std::size_t recorded_faults{0};
   std::size_t pending_faults{0};
@@ -294,6 +308,7 @@ struct KernelServiceResult {
   std::optional<KernelRuntimeStatusView> runtime{};
   std::optional<KernelProcessGroupStatusView> process_group{};
   std::optional<KernelSupervisorStatusView> supervisor{};
+  std::optional<KernelSupervisorRecoveryStatusView> supervisor_recovery{};
   std::optional<KernelFaultSummaryView> fault_summary{};
   std::optional<KernelDeviceSummaryView> device_summary{};
 };
@@ -311,6 +326,7 @@ struct KernelServiceActionResult {
   bool action_performed{false};
   std::optional<KernelProcessGroupStatusView> process_group{};
   std::optional<KernelSupervisorStatusView> supervisor{};
+  std::optional<KernelSupervisorRecoveryStatusView> supervisor_recovery{};
   std::optional<KernelFaultSummaryView> fault_summary{};
 };
 

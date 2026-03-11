@@ -27,30 +27,21 @@ Implemented:
 - stable service-facing diagnostics for group, supervisor, fault, and device
   state
 - first service-facing runtime action: supervisor fault-group acknowledgement
+- supervisor-facing recovery/report flows through the current contract
 
 Not yet implemented:
 
+- a second narrow action above the current service boundary
 - capability or syscall semantics
 - process address-space ownership
 - pager integration
 
 ## Next Sequence
 
-### 1. Supervisor-facing recovery/report flows
+### 1. Additional narrow actions
 
-After one narrow action exists, expose the smallest supervisor-facing
-recovery/report sequence above it.
-
-Initial candidates:
-
-- request-visible fault acknowledgement results
-- deterministic recovery status after acknowledgement
-- supervisor-visible pending-group drains
-
-### 2. Additional narrow actions
-
-Only after supervisor-facing recovery/report flows are stable, add one more
-narrow action.
+Now that supervisor-facing recovery/report flows are stable, add one more
+narrow action above the current boundary.
 
 Likely candidates:
 
@@ -58,7 +49,7 @@ Likely candidates:
 - deterministic device release requests
 - supervisor-visible action rejection for faulted groups
 
-### 3. Contract hardening
+### 2. Contract hardening
 
 Once one action path exists, harden the contract instead of widening it:
 
@@ -88,11 +79,12 @@ The current kernel slice is complete when:
    device state
 5. HAL/kernel tests prove the request path and its interaction with fault state
 6. one narrow service-facing action exists above the contract
-7. RFC-00B3 can mark the action layer as started
+7. supervisor-facing recovery/report flows are exposed through the same contract
+8. RFC-00B3 can mark the recovery/report layer as started
 
 ## Recommended Order
 
-1. expose supervisor-facing recovery/report flows through the current contract
-2. add HAL/kernel acceptance coverage for those flows
+1. add one more narrow action through the stable contract
+2. add HAL/kernel acceptance coverage for that action
 3. update RFC-00B3 and status/docs
-4. only then add another narrow action
+4. only then widen the service-facing surface again

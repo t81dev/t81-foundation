@@ -35,8 +35,10 @@ faults are routed into per-thread runtime state, the faulting thread is
 quarantined deterministically, the owning process group enters a blocked fault
 state, explicit group acknowledgement gates recovery, and audit-only governance
 events are recorded in deterministic order. That boundary now includes a small
-audit-only supervisor layer above the process-group gate. The next steps are to
-define supervisor-facing recovery/report flows on top of that boundary while
+audit-only supervisor layer above the process-group gate. Supervisor-facing
+recovery/report flows are now exposed through the same service boundary,
+including deterministic pending-group, acknowledgement, and recovered-group
+views. The next steps are to add one more narrow service-facing action while
 continuing to converge the runtime toward fuller kernel behavior.
 
 That near-term kernel slice is now tracked explicitly in:

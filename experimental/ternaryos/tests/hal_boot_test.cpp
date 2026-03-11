@@ -1639,6 +1639,128 @@ static void test_kernel_service_fault_ack_action() {
         "group request returns Ok after service acknowledgement");
 }
 
+static void test_kernel_service_supervisor_recovery_status() {
+  std::printf("\n[AC-32] Axion kernel service contract exposes supervisor recovery status\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for supervisor recovery status");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext worker_ctx;
+  worker_ctx.label = "supervisor-recovery-worker";
+  worker_ctx.registers[0] = 901;
+  auto worker_tid = axion_kernel_spawn_thread(*state, worker_ctx);
+  check(worker_tid.has_value(), "worker thread spawns for recovery status");
+  if (!worker_tid) {
+    return;
+  }
+
+  const auto* worker_runtime = state->find_thread_runtime(*worker_tid);
+  check(worker_runtime != nullptr, "worker runtime exists for recovery status");
+  if (!worker_runtime) {
+    return;
+  }
+  const auto group_id = worker_runtime->process_group_id;
+  auto supervisor_id = state->find_process_group_supervisor(group_id);
+  check(supervisor_id.has_value(), "worker group resolves to supervisor");
+  if (!supervisor_id) {
+    return;
+  }
+
+  check(axion_kernel_step(*state), "recovery status dispatches worker thread");
+  check(state->scheduler.current_tid() == *worker_tid, "worker runs before fault");
+  auto access_result = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(181, 0), mmu::MmuAccessMode::Read);
+  check(access_result.fault.has_value(), "worker records MMU fault for recovery status");
+  check(axion_kernel_step(*state), "recovery status delivers fault to runtime");
+
+  auto pre_ack = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::SupervisorRecoveryStatus,
+          .supervisor_id = *supervisor_id,
+      });
+  check(pre_ack.status == KernelServiceStatus::Ok,
+        "supervisor recovery status succeeds before acknowledgement");
+  check(pre_ack.supervisor_recovery.has_value(),
+        "supervisor recovery status view is returned");
+  if (pre_ack.supervisor_recovery) {
+    check(pre_ack.supervisor_recovery->pending_group_count == 1,
+          "recovery status shows one pending group before acknowledgement");
+    check(pre_ack.supervisor_recovery->pending_group_ids.size() == 1,
+          "recovery status exposes one pending group id");
+    if (!pre_ack.supervisor_recovery->pending_group_ids.empty()) {
+      check(pre_ack.supervisor_recovery->pending_group_ids.front() == group_id,
+            "recovery status reports the faulted group id");
+    }
+    check(pre_ack.supervisor_recovery->acknowledgements == 0,
+          "recovery status shows zero acknowledgements before recovery");
+    check(pre_ack.supervisor_recovery->recovered_groups == 0,
+          "recovery status shows zero recovered groups before recovery");
+    check(!pre_ack.supervisor_recovery->last_acknowledged_group.has_value(),
+          "recovery status has no last acknowledged group before recovery");
+    check(!pre_ack.supervisor_recovery->last_recovered_group.has_value(),
+          "recovery status has no last recovered group before recovery");
+  }
+
+  check(axion_kernel_ack_thread_fault(*state, *worker_tid),
+        "thread-local acknowledgement drains inbox before supervisor recovery");
+
+  auto ack_action = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
+          .supervisor_id = *supervisor_id,
+          .process_group_id = group_id,
+      });
+  check(ack_action.status == KernelServiceStatus::Ok,
+        "supervisor recovery action succeeds after thread acknowledgement");
+  check(ack_action.supervisor_recovery.has_value(),
+        "supervisor recovery action returns updated recovery view");
+  if (ack_action.supervisor_recovery) {
+    check(ack_action.supervisor_recovery->pending_group_count == 0,
+          "updated recovery view clears pending groups");
+    check(ack_action.supervisor_recovery->acknowledgements == 1,
+          "updated recovery view reports one acknowledgement");
+    check(ack_action.supervisor_recovery->recovered_groups == 1,
+          "updated recovery view reports one recovered group");
+    check(ack_action.supervisor_recovery->last_acknowledged_group.has_value() &&
+              *ack_action.supervisor_recovery->last_acknowledged_group == group_id,
+          "updated recovery view tracks the last acknowledged group");
+    check(ack_action.supervisor_recovery->last_recovered_group.has_value() &&
+              *ack_action.supervisor_recovery->last_recovered_group == group_id,
+          "updated recovery view tracks the last recovered group");
+  }
+
+  auto post_ack = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::SupervisorRecoveryStatus,
+          .supervisor_id = *supervisor_id,
+      });
+  check(post_ack.status == KernelServiceStatus::Ok,
+        "supervisor recovery status succeeds after recovery");
+  check(post_ack.supervisor_recovery.has_value(),
+        "post-recovery supervisor recovery status view is returned");
+  if (post_ack.supervisor_recovery) {
+    check(post_ack.supervisor_recovery->pending_group_count == 0,
+          "post-recovery status keeps pending group count at zero");
+    check(post_ack.supervisor_recovery->recovered_groups == 1,
+          "post-recovery status keeps recovered group count at one");
+    check(post_ack.supervisor_recovery->last_acknowledged_group.has_value() &&
+              *post_ack.supervisor_recovery->last_acknowledged_group == group_id,
+          "post-recovery status preserves last acknowledged group");
+    check(post_ack.supervisor_recovery->last_recovered_group.has_value() &&
+              *post_ack.supervisor_recovery->last_recovered_group == group_id,
+          "post-recovery status preserves last recovered group");
+  }
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -1677,6 +1799,7 @@ int main() {
   test_kernel_service_runtime_views();
   test_kernel_service_group_fault_visibility();
   test_kernel_service_fault_ack_action();
+  test_kernel_service_supervisor_recovery_status();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

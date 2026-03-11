@@ -265,6 +265,27 @@ KernelSupervisorStatusView make_supervisor_view(const KernelRuntimeState& state,
   };
 }
 
+KernelSupervisorRecoveryStatusView make_supervisor_recovery_view(
+    const KernelRuntimeState& state,
+    SupervisorId supervisor_id) {
+  const auto* supervisor_state = state.find_supervisor(supervisor_id);
+  return KernelSupervisorRecoveryStatusView{
+      .id = supervisor_state ? supervisor_state->id : supervisor_id,
+      .pending_group_count =
+          supervisor_state ? supervisor_state->pending_groups.size() : 0,
+      .acknowledgements = supervisor_state ? supervisor_state->acknowledgements : 0,
+      .recovered_groups = supervisor_state ? supervisor_state->recovered_groups : 0,
+      .pending_group_ids = supervisor_state
+                               ? std::vector<ProcessGroupId>(supervisor_state->pending_groups.begin(),
+                                                             supervisor_state->pending_groups.end())
+                               : std::vector<ProcessGroupId>{},
+      .last_acknowledged_group =
+          supervisor_state ? supervisor_state->last_acknowledged_group : std::nullopt,
+      .last_recovered_group =
+          supervisor_state ? supervisor_state->last_recovered_group : std::nullopt,
+  };
+}
+
 KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) {
   return KernelFaultSummaryView{
       .recorded_faults = state.fault_count(),
@@ -597,6 +618,25 @@ KernelServiceResult axion_kernel_service_request(
       result.supervisor = make_supervisor_view(state, supervisor_state->id);
       return result;
     }
+    case KernelServiceRequestKind::SupervisorRecoveryStatus: {
+      if (auto denied = validate_requesting_group(state, request); denied.has_value()) {
+        result.status = *denied;
+        return result;
+      }
+      if (!request.supervisor_id.has_value()) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        return result;
+      }
+      const auto* supervisor_state = state.find_supervisor(*request.supervisor_id);
+      if (!supervisor_state) {
+        result.status = KernelServiceStatus::NotFound;
+        return result;
+      }
+      result.status = KernelServiceStatus::Ok;
+      result.supervisor_recovery =
+          make_supervisor_recovery_view(state, supervisor_state->id);
+      return result;
+    }
     case KernelServiceRequestKind::FaultSummary: {
       if (auto denied = validate_requesting_group(state, request); denied.has_value()) {
         result.status = *denied;
@@ -653,6 +693,8 @@ KernelServiceActionResult axion_kernel_service_action(
       result.process_group =
           make_process_group_view(state, *action.process_group_id);
       result.supervisor = make_supervisor_view(state, *action.supervisor_id);
+      result.supervisor_recovery =
+          make_supervisor_recovery_view(state, *action.supervisor_id);
       result.fault_summary = make_fault_summary_view(state);
       return result;
     }
@@ -769,6 +811,7 @@ bool axion_kernel_ack_supervisor_group_fault(KernelRuntimeState& state,
     return false;
   }
   ++supervisor_state->acknowledgements;
+  supervisor_state->last_acknowledged_group = process_group_id;
   ++state.counters.supervisor_acknowledgements;
   record_audit_event(state,
                      KernelAuditEventKind::SupervisorGroupAcknowledged,
@@ -776,6 +819,7 @@ bool axion_kernel_ack_supervisor_group_fault(KernelRuntimeState& state,
                      process_group_id);
   if (!axion_kernel_ack_process_group_fault(state, process_group_id)) {
     --supervisor_state->acknowledgements;
+    supervisor_state->last_acknowledged_group.reset();
     --state.counters.supervisor_acknowledgements;
     state.audit_log.pop_back();
     state.last_audit_event =
@@ -788,6 +832,8 @@ bool axion_kernel_ack_supervisor_group_fault(KernelRuntimeState& state,
     return false;
   }
   supervisor_state->pending_groups.erase(pending_it);
+  ++supervisor_state->recovered_groups;
+  supervisor_state->last_recovered_group = process_group_id;
   return true;
 }
 
