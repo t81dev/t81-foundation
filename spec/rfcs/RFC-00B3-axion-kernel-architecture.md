@@ -279,11 +279,11 @@ This RFC does not retarget the project away from that profile.
 
 ## 6. Implementation Plan
 
-1. extend the new kernel-owned entry routine beyond bootstrap summary state
-2. connect deterministic thread dispatch to the owned kernel runtime state
-3. prove CanonRef-safe IPC remains functional across the kernel-owned runtime
-4. move the current minimal device seams from ownership to active arbitration
-5. only then expand syscall/userland semantics further
+1. extend the new kernel-owned entry routine into a fuller deterministic kernel loop
+2. move the current minimal device seams from ownership to active arbitration
+3. attach richer fault delivery and runtime accounting to the same kernel state
+4. only then expand syscall/userland semantics further
+5. defer pager/lazy-allocation work until the kernel loop consumes the current fault model
 
 ## 7. Open Questions
 
@@ -298,7 +298,7 @@ This RFC does not retarget the project away from that profile.
 - [x] Kernel entry initializes the allocator, MMU, scheduler, and IPC substrate from `BootContext`.
 - [x] Checked MMU translation is consumed by a kernel-facing fault/reporting path.
 - [x] Fault records distinguish `InvalidTva`, `Unmapped`, and `PermissionDenied`.
-- [ ] The scheduler can continue running deterministic thread dispatch after kernel entry initialization.
-- [ ] CanonRef-safe IPC remains functional across the kernel-integrated runtime path.
+- [x] The scheduler can continue running deterministic thread dispatch after kernel entry initialization.
+- [x] CanonRef-safe IPC remains functional across the kernel-integrated runtime path.
 - [x] Device arbitration state is initialized for the first supported storage/display/network profile.
-- [ ] Hosted and QEMU developer lanes continue to pass after kernel entry integration.
+- [x] Hosted and QEMU developer lanes continue to pass after kernel entry integration.

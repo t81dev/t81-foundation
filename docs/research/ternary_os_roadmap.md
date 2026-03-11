@@ -28,8 +28,9 @@ through a kernel-facing fault/reporting path, and the first persistent kernel
 runtime state object now owns allocator, MMU, scheduler substrate, IPC bus,
 fault-log state. Minimal device arbitration for the supported VirtualBox
 storage/display/network profile is now attached to that same owned boundary.
-The next steps are to make scheduler and IPC behavior flow through that runtime
-object and keep converging the runtime into a fuller kernel.
+The next steps are to grow that runtime into a fuller deterministic kernel loop,
+attach richer runtime accounting to it, and move device handling from owned
+state toward more active arbitration.
 
 The roadmap is now centered on promotion of those layers from `experimental/` into mainline, plus delivery of the Phase 4 driver layer needed for a reboot-persistent CanonFS system. The concrete promotion environment is a **VirtualBox-first virtual machine target**: Axion should graduate from hosted process simulation into a bootable guest image that runs under VirtualBox before any real-hardware push.
 
@@ -130,7 +131,7 @@ Implemented outcome:
 - `hal_main` validates `BootContext`, performs ethics-first boot checks, and now hands off to the first Axion kernel-owned runtime entry.
 - A hosted macOS/Linux boot stub provides a synthetic memory map and invokes the HAL entrypoint.
 - Shadow binary interrupt dispatch is implemented without modifying the frozen TISC ISA.
-- `axion_kernel_main(...)` now exists as the first kernel-owned runtime handoff target and bootstraps basic runtime state from `BootContext`.
+- `axion_kernel_main(...)` now exists as the first kernel-owned runtime handoff target, bootstraps runtime state from `BootContext`, and now drives deterministic scheduler dispatch plus CanonRef-safe IPC through that owned runtime state.
 
 VirtualBox promotion deliverables:
 

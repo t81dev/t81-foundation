@@ -106,6 +106,32 @@ KernelAccessReport axion_kernel_check_access(
   };
 }
 
+std::optional<sched::Tid> axion_kernel_spawn_thread(
+    KernelRuntimeState& state,
+    sched::TiscContext ctx) noexcept {
+  auto tid = state.scheduler.spawn(std::move(ctx));
+  if (tid.has_value()) {
+    state.ipc_bus.register_thread(*tid);
+  }
+  return tid;
+}
+
+bool axion_kernel_tick(KernelRuntimeState& state) noexcept {
+  return state.scheduler.tick(state.cpu_context);
+}
+
+bool axion_kernel_ipc_send(KernelRuntimeState& state,
+                           sched::Tid dst,
+                           ipc::CanonMessage msg) noexcept {
+  return state.ipc_bus.ipc_send(dst, std::move(msg));
+}
+
+std::optional<ipc::CanonMessage> axion_kernel_ipc_recv(
+    KernelRuntimeState& state,
+    sched::Tid tid) noexcept {
+  return state.ipc_bus.ipc_recv(tid);
+}
+
 int axion_kernel_main(const hal::BootContext& ctx) noexcept {
   return axion_kernel_bootstrap(ctx).has_value() ? 0 : 1;
 }

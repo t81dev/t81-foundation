@@ -534,6 +534,63 @@ static void test_kernel_device_arbitration() {
         "device arbitration preserves VMSVGA ordering");
 }
 
+static void test_kernel_runtime_scheduler_and_ipc() {
+  std::printf("\n[AC-20] Axion runtime drives scheduler and IPC through owned state\n");
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for runtime scheduler/ipc test");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext thread_a;
+  thread_a.label = "A";
+  thread_a.registers[0] = 10;
+
+  t81::ternaryos::sched::TiscContext thread_b;
+  thread_b.label = "B";
+  thread_b.registers[0] = 20;
+
+  auto tid_a = axion_kernel_spawn_thread(*state, thread_a);
+  auto tid_b = axion_kernel_spawn_thread(*state, thread_b);
+  check(tid_a.has_value(), "kernel runtime spawns thread A");
+  check(tid_b.has_value(), "kernel runtime spawns thread B");
+  if (!tid_a || !tid_b) {
+    return;
+  }
+
+  check(state->scheduler.thread_count() == 2, "runtime-owned scheduler tracks two threads");
+  check(state->ipc_bus.is_registered(*tid_a), "runtime-owned IPC registers thread A inbox");
+  check(state->ipc_bus.is_registered(*tid_b), "runtime-owned IPC registers thread B inbox");
+
+  check(axion_kernel_tick(*state), "first kernel tick dispatches the first runnable thread");
+  check(state->scheduler.current_tid() == *tid_a, "runtime tick makes thread A current");
+  check(state->cpu_context.registers[0] == 10, "runtime CPU context restores thread A register state");
+
+  check(axion_kernel_tick(*state), "second kernel tick switches to thread B");
+  check(state->scheduler.current_tid() == *tid_b, "runtime tick advances to thread B");
+  check(state->cpu_context.registers[0] == 20, "runtime CPU context restores thread B register state");
+
+  t81::ternaryos::ipc::CanonMessage msg;
+  msg.sender = *tid_a;
+  msg.ref.hash.h.bytes.fill(0x2A);
+  msg.payload = 81;
+  msg.tag = "kernel-msg";
+
+  check(axion_kernel_ipc_send(*state, *tid_b, msg), "runtime-owned IPC sends CanonRef message");
+  check(state->ipc_bus.pending(*tid_b) == 1, "thread B inbox sees one pending message");
+
+  auto recv = axion_kernel_ipc_recv(*state, *tid_b);
+  check(recv.has_value(), "runtime-owned IPC receives the queued message");
+  if (recv) {
+    check(recv->sender == *tid_a, "received message preserves sender Tid");
+    check(recv->payload == 81, "received message preserves payload");
+    check(recv->tag == "kernel-msg", "received message preserves tag");
+  }
+  check(state->ipc_bus.pending(*tid_b) == 0, "thread B inbox drains after receive");
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -560,6 +617,7 @@ int main() {
   test_kernel_runtime_bootstrap();
   test_kernel_fault_reporting();
   test_kernel_device_arbitration();
+  test_kernel_runtime_scheduler_and_ipc();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

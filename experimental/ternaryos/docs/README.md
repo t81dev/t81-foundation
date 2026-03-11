@@ -63,7 +63,9 @@ hal/
   virtualbox_armv8_efi_shim.c  Temporary ARMv8 developer-lane EFI link shim
 
 kernel/
-  kernel_main.hpp/.cpp First Axion kernel-owned runtime entry/bootstrap
+  kernel_main.hpp/.cpp First Axion kernel-owned runtime entry/bootstrap;
+                       runtime-owned allocator/MMU/scheduler/IPC/device state
+                       plus deterministic scheduler + IPC execution helpers
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,
@@ -100,7 +102,7 @@ shell/
 
 tests/
   shell_session_test.cpp     Phase 5 shell command / durable-history test
-  hal_boot_test.cpp          Phase 1 — 90 assertions
+  hal_boot_test.cpp          Phase 1 — 146 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
   mmu_test.cpp               Phase 2 — 87 assertions
@@ -115,7 +117,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1074/1074 assertions, 8/8 tests pass
+# Expected: 1093/1093 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -139,6 +141,7 @@ The demo shows a VirtualBox-first hosted simulation path:
 - the radix MMU now classifies invalid-TVA, unmapped, and permission-denied access faults
 - the kernel runtime now owns allocator, page table, scheduler, IPC bus, and fault log state from `BootContext`
 - the kernel runtime now also owns minimal device arbitration state for the first supported VirtualBox storage/display/network profile
+- scheduler execution and CanonRef-safe IPC now flow through that runtime-owned kernel state via kernel-facing APIs
 - TTF renders ASCII text into the VirtualBox VMSVGA-backed ternary framebuffer.
 - TernaryEthernetPacket round-trips through the VirtualBox E1000 scaffold.
 
@@ -270,11 +273,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `127/127`
+- `t81_ternaryos_hal_boot_test` is `146/146`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1074`
+- total TernOS assertions are `1093`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback
@@ -290,6 +293,9 @@ Local hosted proof as of the current branch:
   - runtime-owned scheduler and IPC bus
   - persistent kernel fault log
   - minimal device arbitration for the first supported VirtualBox profile
+- kernel-runtime behavior now includes:
+  - deterministic scheduler dispatch through `axion_kernel_tick(...)`
+  - CanonRef-safe IPC send/receive through runtime-owned kernel APIs
 
 ## VirtualBox Artifact
 

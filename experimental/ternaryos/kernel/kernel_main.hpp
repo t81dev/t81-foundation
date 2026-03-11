@@ -48,6 +48,7 @@ struct KernelRuntimeState {
   ipc::MessageBus ipc_bus;
   std::optional<KernelDeviceArbitrationState> device_arbitration;
   std::deque<KernelFaultRecord> fault_log;
+  t81::vm::ThreadContext cpu_context{};
 
   KernelRuntimeState(std::string platform_id_in,
                      std::size_t memory_region_count_in,
@@ -79,6 +80,20 @@ KernelAccessReport axion_kernel_check_access(
     KernelRuntimeState& state,
     uint64_t tva,
     mmu::MmuAccessMode mode) noexcept;
+
+std::optional<sched::Tid> axion_kernel_spawn_thread(
+    KernelRuntimeState& state,
+    sched::TiscContext ctx) noexcept;
+
+bool axion_kernel_tick(KernelRuntimeState& state) noexcept;
+
+bool axion_kernel_ipc_send(KernelRuntimeState& state,
+                           sched::Tid dst,
+                           ipc::CanonMessage msg) noexcept;
+
+std::optional<ipc::CanonMessage> axion_kernel_ipc_recv(
+    KernelRuntimeState& state,
+    sched::Tid tid) noexcept;
 
 int axion_kernel_main(const hal::BootContext& ctx) noexcept;
 
