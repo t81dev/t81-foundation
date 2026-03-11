@@ -71,7 +71,7 @@ kernel/
                        and a narrow service runtime lifecycle with deterministic
                        register/unregister/suspend/resume actions plus
                        audit-visible lifecycle transitions and supervisor
-                       inventory/supervisor-status/recovery/fault/runtime lifecycle metadata
+                       inventory/supervisor-status/recovery/fault/runtime/audit lifecycle metadata
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,
@@ -123,7 +123,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1722/1722 assertions, 8/8 tests pass
+# Expected: 1735/1735 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -284,11 +284,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `810/810`
+- `t81_ternaryos_hal_boot_test` is `823/823`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1722`
+- total TernOS assertions are `1735`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state
@@ -311,6 +311,8 @@ Local hosted proof as of the current branch:
 - fault summary now also exposes managed-service lifecycle counts and
   latest-transition metadata
 - runtime status now also exposes managed-service lifecycle counts and
+  latest-transition metadata
+- audit summary now also exposes managed-service lifecycle counts and
   latest-transition metadata
 - the first narrow service-facing action now exists through that same boundary:
   supervisor fault-group acknowledgement

@@ -602,6 +602,7 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
 }
 
 KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) {
+  const auto latest_service_transition = latest_service_transition_view(state);
   KernelAuditSummaryView view{
       .audit_events = state.audit_count(),
       .fault_deliveries = state.counters.faults_delivered,
@@ -612,6 +613,10 @@ KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) 
       .process_group_acknowledgements = state.counters.process_group_acknowledgements,
       .supervisor_acknowledgements = state.counters.supervisor_acknowledgements,
       .thread_recoveries = state.counters.thread_fault_recoveries,
+      .service_lifecycle_transitions = runtime_service_summary(state).service_lifecycle_transitions,
+      .last_service_transition_id = latest_service_transition.service_id,
+      .last_service_transition_kind = latest_service_transition.kind,
+      .last_service_transition_sequence = latest_service_transition.sequence,
   };
   for (const auto& record : state.audit_log) {
     view.recent_events.push_back(record);

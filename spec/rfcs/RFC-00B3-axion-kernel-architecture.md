@@ -296,6 +296,9 @@ surface.
 The runtime-status view now also carries aggregate managed-service lifecycle
 metadata so the top-level runtime summary stays aligned with the same stable
 service state.
+The audit-summary view now also carries explicit managed-service lifecycle
+metadata so audit polling no longer needs to infer that state only from recent
+events.
 The next step is to keep that layer stable and only then consider any further
 lifecycle action or boundary growth.
 

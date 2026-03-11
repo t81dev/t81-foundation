@@ -59,6 +59,8 @@ Fault summary now also exposes managed-service lifecycle counts and
 latest-transition metadata.
 Runtime status now also exposes managed-service lifecycle counts and
 latest-transition metadata.
+Audit summary now also exposes managed-service lifecycle counts and
+latest-transition metadata.
 The next steps are to keep that lifecycle
 contract stable while continuing to move the runtime toward fuller kernel
 behavior.

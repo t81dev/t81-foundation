@@ -1349,6 +1349,10 @@ static void test_kernel_service_runtime_views() {
   if (audit_result.audit_summary) {
     check(audit_result.audit_summary->audit_events == 0,
           "audit summary starts with zero audit events");
+    check(audit_result.audit_summary->service_lifecycle_transitions == 0,
+          "audit summary starts with zero service lifecycle transitions");
+    check(!audit_result.audit_summary->last_service_transition_kind.has_value(),
+          "audit summary starts without service transition metadata");
     check(audit_result.audit_summary->recent_events.empty(),
           "audit summary starts with zero recent events");
   }
@@ -2724,6 +2728,15 @@ static void test_kernel_service_runtime_layer() {
     }
     check(service_lifecycle_events.size() == 7,
           "audit summary captures seven successful service lifecycle transitions before unregister");
+    check(audit_summary.audit_summary->service_lifecycle_transitions == 7,
+          "audit summary aggregates service lifecycle transitions before unregister");
+    check(audit_summary.audit_summary->last_service_transition_id == service_id,
+          "audit summary tracks the last transitioned service before unregister");
+    check(audit_summary.audit_summary->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceMarkedHealthy,
+          "audit summary tracks heal as the latest service lifecycle event before unregister");
+    check(audit_summary.audit_summary->last_service_transition_sequence.has_value(),
+          "audit summary exposes the latest service lifecycle audit sequence before unregister");
     if (service_lifecycle_events.size() == 7) {
       check(service_lifecycle_events[0] == KernelAuditEventKind::ServiceRegistered,
             "audit summary records service registration first");
@@ -2981,6 +2994,30 @@ static void test_kernel_service_runtime_layer() {
           "runtime status tracks unregister as the latest service lifecycle event");
     check(runtime_status_after_unregister.runtime->last_service_transition_sequence.has_value(),
           "runtime status retains the latest service lifecycle audit sequence after unregister");
+  }
+  auto audit_summary_after_unregister = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::AuditSummary,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+      });
+  check(audit_summary_after_unregister.status == KernelServiceStatus::Ok,
+        "healthy group can request audit summary after unregister");
+  check(audit_summary_after_unregister.rejection == KernelServiceRequestRejection::None,
+        "audit summary after unregister clears rejection");
+  check(audit_summary_after_unregister.audit_summary.has_value(),
+        "audit summary after unregister returns an audit view");
+  if (audit_summary_after_unregister.audit_summary) {
+    check(audit_summary_after_unregister.audit_summary->service_lifecycle_transitions == 8,
+          "audit summary retains lifecycle transition count after unregister");
+    check(audit_summary_after_unregister.audit_summary->last_service_transition_id == service_id,
+          "audit summary retains the last transitioned service after unregister");
+    check(audit_summary_after_unregister.audit_summary->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceUnregistered,
+          "audit summary tracks unregister as the latest service lifecycle event");
+    check(audit_summary_after_unregister.audit_summary->last_service_transition_sequence
+              .has_value(),
+          "audit summary retains the latest service lifecycle audit sequence after unregister");
   }
   check(!state->audit_log.empty(), "service lifecycle actions produce audit records");
   if (!state->audit_log.empty()) {

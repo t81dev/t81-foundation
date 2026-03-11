@@ -470,6 +470,10 @@ struct KernelAuditSummaryView {
   uint64_t process_group_acknowledgements{0};
   uint64_t supervisor_acknowledgements{0};
   uint64_t thread_recoveries{0};
+  uint64_t service_lifecycle_transitions{0};
+  std::optional<ServiceId> last_service_transition_id{};
+  std::optional<KernelAuditEventKind> last_service_transition_kind{};
+  std::optional<uint64_t> last_service_transition_sequence{};
   std::vector<KernelAuditRecord> recent_events;
 };
 

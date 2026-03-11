@@ -76,6 +76,7 @@ The current service layer now covers:
 - supervisor-recovery visibility for managed-service lifecycle state
 - fault-summary visibility for managed-service lifecycle state
 - runtime-status visibility for managed-service lifecycle state
+- audit-summary visibility for managed-service lifecycle state
 
 ### 3. Only add new actions if a stable service runtime truly needs them
 
