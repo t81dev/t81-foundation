@@ -444,8 +444,12 @@ struct KernelFaultSummaryView {
   std::size_t routed_thread_faults{0};
   std::size_t quarantined_threads{0};
   std::size_t audit_events{0};
+  uint64_t service_lifecycle_transitions{0};
   std::optional<KernelFaultRecord> last_delivered_fault{};
   std::optional<KernelAuditRecord> last_audit_event{};
+  std::optional<ServiceId> last_service_transition_id{};
+  std::optional<KernelAuditEventKind> last_service_transition_kind{};
+  std::optional<uint64_t> last_service_transition_sequence{};
 };
 
 struct KernelAuditSummaryView {

@@ -1325,8 +1325,12 @@ static void test_kernel_service_runtime_views() {
           "fault summary starts with zero delivered faults");
     check(fault_result.fault_summary->routed_thread_faults == 0,
           "fault summary starts with zero routed thread faults");
+    check(fault_result.fault_summary->service_lifecycle_transitions == 0,
+          "fault summary starts with zero service lifecycle transitions");
     check(!fault_result.fault_summary->last_audit_event.has_value(),
           "fault summary starts without audit events");
+    check(!fault_result.fault_summary->last_service_transition_kind.has_value(),
+          "fault summary starts without service transition metadata");
   }
 
   auto audit_result = axion_kernel_service_request(
@@ -1547,6 +1551,10 @@ static void test_kernel_service_group_fault_visibility() {
                 KernelAuditEventKind::ThreadQuarantined,
             "fault summary last audit event is thread quarantine");
     }
+    check(healthy_faults.fault_summary->service_lifecycle_transitions == 0,
+          "fault summary keeps service lifecycle transitions at zero in a pure fault flow");
+    check(!healthy_faults.fault_summary->last_service_transition_sequence.has_value(),
+          "fault summary has no service transition metadata in a pure fault flow");
   }
 
   auto missing_group = axion_kernel_service_request(
@@ -2624,6 +2632,30 @@ static void test_kernel_service_runtime_layer() {
           "recovery status exposes the latest service lifecycle audit sequence after heal");
   }
 
+  auto fault_summary_after_heal = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::FaultSummary,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+      });
+  check(fault_summary_after_heal.status == KernelServiceStatus::Ok,
+        "healthy group can request fault summary after service heal");
+  check(fault_summary_after_heal.rejection == KernelServiceRequestRejection::None,
+        "fault summary after service heal clears rejection");
+  check(fault_summary_after_heal.fault_summary.has_value(),
+        "fault summary after service heal returns a fault view");
+  if (fault_summary_after_heal.fault_summary) {
+    check(fault_summary_after_heal.fault_summary->service_lifecycle_transitions == 7,
+          "fault summary aggregates service lifecycle transitions after heal");
+    check(fault_summary_after_heal.fault_summary->last_service_transition_id == service_id,
+          "fault summary tracks the last transitioned service after heal");
+    check(fault_summary_after_heal.fault_summary->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceMarkedHealthy,
+          "fault summary tracks heal as the latest service lifecycle event");
+    check(fault_summary_after_heal.fault_summary->last_service_transition_sequence.has_value(),
+          "fault summary exposes the latest service lifecycle audit sequence after heal");
+  }
+
   auto audit_summary = axion_kernel_service_request(
       *state,
       KernelServiceRequest{
@@ -2863,6 +2895,29 @@ static void test_kernel_service_runtime_layer() {
     check(recovery_status_after_unregister.supervisor_recovery->last_service_transition_sequence
               .has_value(),
           "recovery status retains the latest service lifecycle audit sequence after unregister");
+  }
+  auto fault_summary_after_unregister = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::FaultSummary,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+      });
+  check(fault_summary_after_unregister.status == KernelServiceStatus::Ok,
+        "healthy group can request fault summary after unregister");
+  check(fault_summary_after_unregister.rejection == KernelServiceRequestRejection::None,
+        "fault summary after unregister clears rejection");
+  check(fault_summary_after_unregister.fault_summary.has_value(),
+        "fault summary after unregister returns a fault view");
+  if (fault_summary_after_unregister.fault_summary) {
+    check(fault_summary_after_unregister.fault_summary->service_lifecycle_transitions == 8,
+          "fault summary retains lifecycle transition count after unregister");
+    check(fault_summary_after_unregister.fault_summary->last_service_transition_id == service_id,
+          "fault summary retains the last transitioned service after unregister");
+    check(fault_summary_after_unregister.fault_summary->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceUnregistered,
+          "fault summary tracks unregister as the latest service lifecycle event");
+    check(fault_summary_after_unregister.fault_summary->last_service_transition_sequence.has_value(),
+          "fault summary retains the latest service lifecycle audit sequence after unregister");
   }
   check(!state->audit_log.empty(), "service lifecycle actions produce audit records");
   if (!state->audit_log.empty()) {

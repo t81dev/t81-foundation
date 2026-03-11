@@ -169,6 +169,29 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
     const KernelRuntimeState& state,
     SupervisorId supervisor_id);
 
+struct LatestServiceTransitionView {
+  std::optional<ServiceId> service_id{};
+  std::optional<KernelAuditEventKind> kind{};
+  std::optional<uint64_t> sequence{};
+};
+
+LatestServiceTransitionView latest_service_transition_view(
+    const KernelRuntimeState& state) {
+  LatestServiceTransitionView latest;
+  for (const auto& [_, supervisor_state] : state.supervisors) {
+    if (!supervisor_state.last_service_transition_sequence.has_value()) {
+      continue;
+    }
+    if (!latest.sequence.has_value() ||
+        *supervisor_state.last_service_transition_sequence > *latest.sequence) {
+      latest.service_id = supervisor_state.last_service_transition_id;
+      latest.kind = supervisor_state.last_service_transition_kind;
+      latest.sequence = supervisor_state.last_service_transition_sequence;
+    }
+  }
+  return latest;
+}
+
 bool queue_supervisor_pending_group(KernelRuntimeState& state,
                                     ProcessGroupId process_group_id,
                                     sched::Tid subject_tid,
@@ -520,6 +543,7 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
 }
 
 KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) {
+  const auto latest_service_transition = latest_service_transition_view(state);
   return KernelFaultSummaryView{
       .recorded_faults = state.fault_count(),
       .pending_faults = state.pending_fault_count(),
@@ -529,8 +553,19 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .quarantined_threads =
           static_cast<std::size_t>(state.counters.thread_quarantines),
       .audit_events = state.audit_count(),
+      .service_lifecycle_transitions =
+          [&state]() {
+            uint64_t total = 0;
+            for (const auto& [_, supervisor_state] : state.supervisors) {
+              total += supervisor_state.service_lifecycle_transitions;
+            }
+            return total;
+          }(),
       .last_delivered_fault = state.last_delivered_fault,
       .last_audit_event = state.last_audit_event,
+      .last_service_transition_id = latest_service_transition.service_id,
+      .last_service_transition_kind = latest_service_transition.kind,
+      .last_service_transition_sequence = latest_service_transition.sequence,
   };
 }
 

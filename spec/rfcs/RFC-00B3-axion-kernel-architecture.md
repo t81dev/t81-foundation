@@ -290,6 +290,9 @@ to depend on the richer inventory request.
 The supervisor-recovery view now also carries the same managed-service
 lifecycle metadata so recovery polling stays aligned with service-runtime
 state.
+The fault-summary view now also carries the latest managed-service lifecycle
+metadata so fault-side polling can stay aligned with the same convergence
+surface.
 The next step is to keep that layer stable and only then consider any further
 lifecycle action or boundary growth.
 
