@@ -210,6 +210,15 @@ The sixteenth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves that retained receipt identity and ordinal
   advance deterministically through FIFO backlog dispatch and drain
 
+The seventeenth pager-groundwork slice is now also complete:
+
+- runtime and fault diagnostics now expose the active pager-worker handoff
+  ordinal while work is in flight and clear it again when the worker goes idle
+- live worker summaries can now correlate the currently active item directly
+  with the retained intake, activation, and completion provenance
+- HAL/kernel coverage now proves that active handoff ordinal tracks FIFO work
+  in flight without changing scheduling policy
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable

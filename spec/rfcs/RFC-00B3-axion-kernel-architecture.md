@@ -353,6 +353,8 @@ They now also retain the last completed pager-worker address space and its
 resolution ordinal after the worker goes idle.
 They now also retain the last received pager-worker address space and its
 handoff ordinal after the inbox drains.
+They now also expose the active pager-worker handoff ordinal while work is in
+flight and clear it again once the worker goes idle.
 The next kernel slice is to keep that pager surface private while expanding
 backlog/load scheduling behavior before any public pager ABI or syscall design.
 

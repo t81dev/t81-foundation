@@ -1319,6 +1319,8 @@ static void test_kernel_pager_worker_backlog() {
     check(runtime_after_first_activation.runtime->pager_worker_active_address_space_id ==
               first_address_space_id,
           "runtime status activates the first queued address space first");
+    check(runtime_after_first_activation.runtime->pager_worker_active_handoff_sequence == 1,
+          "runtime status tracks the active pager-worker handoff ordinal");
     check(runtime_after_first_activation.runtime->pager_worker_inbox_count == 1,
           "runtime status leaves one queued work item after first activation");
     check(runtime_after_first_activation.runtime->pager_worker_activations == 1,
@@ -1395,6 +1397,8 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status returns worker to idle after second activation step");
     check(!runtime_after_second_activation.runtime->pager_worker_active_address_space_id.has_value(),
           "runtime status clears active worker address after second activation step");
+    check(!runtime_after_second_activation.runtime->pager_worker_active_handoff_sequence.has_value(),
+          "runtime status clears active worker handoff ordinal after second activation step");
     check(runtime_after_second_activation.runtime->pager_worker_inbox_count == 0,
           "runtime status drains the worker inbox by the second activation");
     check(runtime_after_second_activation.runtime->pager_worker_activations == 2,
@@ -1414,6 +1418,8 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status counts two pager resolutions after backlog drain");
     check(!runtime_after_second_resolution.runtime->pager_worker_busy,
           "runtime status reports idle worker after backlog drain");
+    check(!runtime_after_second_resolution.runtime->pager_worker_active_handoff_sequence.has_value(),
+          "runtime status retains no active handoff ordinal after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_inbox_count == 0,
           "runtime status leaves no queued work after backlog drain");
     check(runtime_after_second_resolution.runtime->pending_pager_handoff_high_watermark == 2,
@@ -1500,6 +1506,8 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary clears current ready-backlog depth after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_ready_backlog_high_watermark == 1,
           "fault summary retains the ready-backlog high watermark after backlog drain");
+    check(!fault_after_second_resolution.fault_summary->pager_worker_active_handoff_sequence.has_value(),
+          "fault summary retains no active handoff ordinal after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_last_stalled_address_space_id ==
               first_address_space_id,
           "fault summary tracks the last stalled active address space after backlog drain");

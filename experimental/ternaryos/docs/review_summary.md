@@ -116,6 +116,8 @@ Kernel integration proof now also includes:
   space and activation ordinal after the worker goes idle
 - runtime and fault diagnostics now also retain the last received
   pager-worker address space and handoff ordinal after the inbox drains
+- runtime and fault diagnostics now also expose the active pager-worker
+  handoff ordinal while work remains in flight
 - runtime and fault diagnostics now also retain the last completed
   pager-worker address space and resolution ordinal after the worker goes idle
 - the supervisor/service-runtime convergence slice is now complete for the
