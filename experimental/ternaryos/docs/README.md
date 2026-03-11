@@ -172,10 +172,12 @@ What the TUI adds:
   - `session export`
   - `session import <ref>`
   - `session diff <ref>`
+  - `session run <ref>`
   - `session show durable`
   - `show session`
   - `session refs`
   - `store put <text>`
+  - `store put script <line>|<line>|...>`
   - `store put ref <ref>`
   - `store cp <ref>`
   - `store ls`
@@ -203,6 +205,8 @@ What the TUI adds:
   - `session export` for promoting the current transcript to the durable history anchor
   - `session import <ref>` for restoring a persisted transcript object into the active shell window
   - `session diff <ref>` for comparing the current session transcript against a persisted object
+  - `session run <ref>` for replaying a durable script object as a narrow command batch
+  - `store put script <line>|<line>|...>` for writing those durable script objects
   - `history show durable` for the current durable history anchor
   - `session show durable` for the current durable anchor/ref view
 - the shell now has an explicit session-history inspection command:

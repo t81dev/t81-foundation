@@ -189,10 +189,12 @@ session checkpoint
 session export
 session import <ref>
 session diff <ref>
+session run <ref>
 session show durable
 show session
 session refs
 store put <text>
+store put script <line>|<line>|...>
 store put ref <ref>
 store cp <ref>
 store ls
@@ -220,6 +222,7 @@ history show object <ref>
 session export
 session import <ref>
 session diff <ref>
+session run <ref>
 history use <ref>
 ```
 
@@ -234,6 +237,8 @@ show profile
 session export
 session import <ref>
 session diff <ref>
+session run <ref>
+store put script "<cmd>|<cmd>"
 store put text "<payload>"
 store cp <ref>
 store get ref <canonref>

@@ -30,7 +30,7 @@ namespace t81::ternaryos {
 
 namespace {
 
-constexpr std::array<const char*, 24> kBuiltinCommands = {
+constexpr std::array<const char*, 26> kBuiltinCommands = {
     "help",
     "profile",
     "session status",
@@ -38,12 +38,14 @@ constexpr std::array<const char*, 24> kBuiltinCommands = {
     "session export",
     "session import <ref>",
     "session diff <ref>",
+    "session run <ref>",
     "session show durable",
     "session refs",
     "show profile",
     "show session",
     "show ref <canonref>",
     "store put <text>",
+    "store put script <line>|<line>|...>",
     "store put ref <ref>",
     "store cp <ref>",
     "store ls",
@@ -99,6 +101,14 @@ std::vector<std::string> split_lines(std::string_view text) {
   return lines;
 }
 
+std::string normalize_script_payload(std::string_view payload) {
+  std::string text(payload);
+  for (char& ch : text) {
+    if (ch == '|') ch = '\n';
+  }
+  return text;
+}
+
 std::string diff_transcript_text(std::string_view current, std::string_view durable) {
   const auto current_lines = split_lines(current);
   const auto durable_lines = split_lines(durable);
@@ -126,6 +136,15 @@ std::string diff_transcript_text(std::string_view current, std::string_view dura
     out << '\n' << "durable> <end>";
   }
   return out.str();
+}
+
+bool is_script_block_text(std::string_view text) {
+  return text.starts_with("AXION_SCRIPT\n");
+}
+
+std::vector<std::string> script_lines(std::string_view text) {
+  if (!is_script_block_text(text)) return {};
+  return split_lines(text.substr(std::string_view("AXION_SCRIPT\n").size()));
 }
 
 std::string unique_store_path() {
@@ -354,7 +373,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words[0] == "help") {
     state_.command_records.push_back(
         {command,
-         "builtins help profile session status session checkpoint session export session import <ref> session diff <ref> session show durable session refs show profile show session show ref <canonref> store put <text> store put ref <ref> store cp <ref> store ls store get <ref> store rm <ref> history history show session history show object <ref> history use <ref> history show durable clear"});
+         "builtins help profile session status session checkpoint session export session import <ref> session diff <ref> session run <ref> session show durable session refs show profile show session show ref <canonref> store put <text> store put script <line>|<line>|...> store put ref <ref> store cp <ref> store ls store get <ref> store rm <ref> history history show session history show object <ref> history use <ref> history show durable clear"});
     return refresh_render();
   }
 
@@ -507,6 +526,54 @@ bool ShellSession::execute_command(std::string_view command_view) {
     return refresh_render();
   }
 
+  if (words.size() == 3 && words[0] == "session" && words[1] == "run") {
+    if (script_run_active_) {
+      state_.command_records.push_back({command, "session run nested unsupported"});
+      return refresh_render();
+    }
+
+    const auto ref = parse_canon_ref_text(words[2]);
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "session run invalid ref"});
+      return refresh_render();
+    }
+
+    state_.recovered_entries = store.rebuild_index();
+    const auto block = store.get(*ref);
+    if (!block.has_value()) {
+      state_.command_records.push_back({command, "session run missing"});
+      return refresh_render();
+    }
+
+    const auto text = decode_text_block(*block);
+    if (!is_script_block_text(text)) {
+      state_.command_records.push_back({command, "session run not-script"});
+      return refresh_render();
+    }
+
+    const auto lines = script_lines(text);
+    script_run_active_ = true;
+    std::size_t executed = 0;
+    for (const auto& line : lines) {
+      if (line.empty()) continue;
+      if (line.starts_with("session run ")) {
+        script_run_active_ = false;
+        state_.command_records.push_back({command, "session run nested unsupported"});
+        return refresh_render();
+      }
+      if (!execute_command(line)) {
+        script_run_active_ = false;
+        state_.command_records.push_back({command, "session run failed"});
+        return refresh_render();
+      }
+      ++executed;
+    }
+    script_run_active_ = false;
+    state_.command_records.push_back(
+        {command, "session run ok " + canon_ref_text(*ref) + " lines " + std::to_string(executed)});
+    return refresh_render();
+  }
+
   if (words.size() == 4 && words[0] == "store" && words[1] == "put" && words[2] == "ref") {
     state_.recovered_entries = store.rebuild_index();
     const auto ref = parse_canon_ref_text(words[3]);
@@ -562,6 +629,27 @@ bool ShellSession::execute_command(std::string_view command_view) {
       return refresh_render();
     }
     state_.command_records.push_back({command, "store cp ok " + canon_ref_text(*copied_ref)});
+    return refresh_render();
+  }
+
+  if (words.size() >= 4 && words[0] == "store" && words[1] == "put" && words[2] == "script") {
+    state_.recovered_entries = store.rebuild_index();
+    std::string payload = words[3];
+    for (std::size_t i = 4; i < words.size(); ++i) {
+      payload += " " + words[i];
+    }
+    payload = "AXION_SCRIPT\n" + normalize_script_payload(payload);
+    auto ref = store.put(make_text_block(payload));
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "canon script put failed"});
+      return refresh_render();
+    }
+    if (!canon_ref_known(stored_refs_, *ref)) stored_refs_.push_back(*ref);
+    if (!store.flush()) {
+      state_.command_records.push_back({command, "canon script flush failed"});
+      return refresh_render();
+    }
+    state_.command_records.push_back({command, "canon script ok " + canon_ref_text(*ref)});
     return refresh_render();
   }
 

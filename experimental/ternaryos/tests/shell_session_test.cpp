@@ -36,7 +36,7 @@ static void test_scripted_shell_session() {
   check(state.has_value(), "scripted shell session builds");
   if (!state.has_value()) return;
 
-  check(state->available_commands.size() == 24, "twenty-four builtins are exposed");
+  check(state->available_commands.size() == 26, "twenty-six builtins are exposed");
   check(state->command_records.size() == 6, "scripted session records six commands");
   check(state->command_records[2].result.starts_with("session profile "),
         "scripted session status reports shell state");
@@ -276,10 +276,40 @@ static void test_typed_shell_commands() {
         "session import appends the new command to the imported transcript");
 }
 
+static void test_shell_script_objects() {
+  std::printf("\n[S3] durable shell script objects\n");
+
+  auto session = t81::ternaryos::ShellSession::create(true);
+  check(session.has_value(), "script session creates");
+  if (!session.has_value()) return;
+
+  check(session->execute_command("store put script \"show profile|history\""),
+        "store put script executes");
+  const auto script_ref =
+      suffix_after(session->state().command_records[0].result, "canon script ok ");
+  check(!script_ref.empty(), "store put script returns a CanonRef");
+  check(session->execute_command(std::string("session run ") + script_ref),
+        "session run <ref> executes");
+
+  const auto& state = session->state();
+  check(state.command_records.size() == 4, "script run appends the scripted command results");
+  check(state.command_records[1].command == "show profile",
+        "script run executes first stored command");
+  check(state.command_records[1].result == "show profile\n" + state.profile_summary,
+        "script run exposes show profile output");
+  check(state.command_records[2].command == "history",
+        "script run executes second stored command");
+  check(state.command_records[2].result == "reboot recovered 0",
+        "script run preserves deterministic history output");
+  check(state.command_records[3].result == "session run ok " + script_ref + " lines 2",
+        "script run reports summary with executed line count");
+}
+
 int main() {
   std::printf("== Axion Shell Session Test ==\n");
   test_scripted_shell_session();
   test_typed_shell_commands();
+  test_shell_script_objects();
 
   std::printf("\nSummary: %d passed, %d failed\n", g_pass, g_fail);
   return g_fail == 0 ? 0 : 1;
