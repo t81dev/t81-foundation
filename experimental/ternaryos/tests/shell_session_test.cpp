@@ -36,7 +36,7 @@ static void test_scripted_shell_session() {
   check(state.has_value(), "scripted shell session builds");
   if (!state.has_value()) return;
 
-  check(state->available_commands.size() == 23, "twenty-three builtins are exposed");
+  check(state->available_commands.size() == 24, "twenty-four builtins are exposed");
   check(state->command_records.size() == 6, "scripted session records six commands");
   check(state->command_records[2].result.starts_with("session profile "),
         "scripted session status reports shell state");
@@ -78,6 +78,8 @@ static void test_typed_shell_commands() {
   const auto export_ref =
       suffix_after(session->state().command_records[8].result, "session export ok ");
   check(!export_ref.empty(), "session export result includes a CanonRef");
+  check(session->execute_command(std::string("session diff ") + checkpoint_ref),
+        "session diff <ref> executes");
   check(session->execute_command(std::string("history show object ") + checkpoint_ref),
         "history show object <canonref> executes");
   check(session->execute_command(std::string("show ref ") + checkpoint_ref),
@@ -86,10 +88,10 @@ static void test_typed_shell_commands() {
   check(session->execute_command(std::string("store get ") + stored_ref), "store get <ref> executes");
   check(session->execute_command(std::string("show ref ") + stored_ref), "show ref <canonref> executes");
   check(session->execute_command(std::string("store put ref ") + stored_ref), "store put ref <ref> executes");
-  const auto copied_ref = suffix_after(session->state().command_records[14].result, "canon durable ref ok ");
+  const auto copied_ref = suffix_after(session->state().command_records[15].result, "canon durable ref ok ");
   check(!copied_ref.empty(), "store put ref result includes a CanonRef");
   check(session->execute_command(std::string("store cp ") + stored_ref), "store cp <ref> executes");
-  const auto cp_ref = suffix_after(session->state().command_records[15].result, "store cp ok ");
+  const auto cp_ref = suffix_after(session->state().command_records[16].result, "store cp ok ");
   check(!cp_ref.empty(), "store cp result includes a CanonRef");
   check(session->execute_command(std::string("store get ") + copied_ref), "store get copied ref executes");
   check(session->execute_command("history show session"), "history show session executes");
@@ -109,7 +111,7 @@ static void test_typed_shell_commands() {
   check(session->execute_command("bogus"), "unknown command still refreshes state");
 
   const auto& state_before_clear = session->state();
-  check(state_before_clear.command_records.size() == 28, "interactive session records twenty-eight commands");
+  check(state_before_clear.command_records.size() == 29, "interactive session records twenty-nine commands");
   check(state_before_clear.command_records[1].result.starts_with("session profile "),
         "session status reports profile and shell metadata");
   check(state_before_clear.command_records[2].result == "show profile\n" + state_before_clear.profile_summary,
@@ -138,71 +140,77 @@ static void test_typed_shell_commands() {
         "session export returns a CanonRef");
   check(export_ref == checkpoint_ref,
         "session export reuses checkpoint identity for identical transcript");
-  check(state_before_clear.command_records[9].result.starts_with("history object " + checkpoint_ref),
+  check(state_before_clear.command_records[9].result.starts_with("session diff mismatch"),
+        "session diff reports transcript mismatch before clear");
+  check(state_before_clear.command_records[9].result.find("current>") != std::string::npos,
+        "session diff reports the current transcript side");
+  check(state_before_clear.command_records[9].result.find("durable>") != std::string::npos,
+        "session diff reports the durable transcript side");
+  check(state_before_clear.command_records[10].result.starts_with("history object " + checkpoint_ref),
         "history show object exposes the checkpoint CanonRef");
-  check(state_before_clear.command_records[9].result.find("SESSION TRANSCRIPT") != std::string::npos,
-        "history show object exposes the persisted transcript");
-  check(state_before_clear.command_records[10].result.starts_with("show ref " + checkpoint_ref),
-        "show ref exposes the checkpoint CanonRef");
   check(state_before_clear.command_records[10].result.find("SESSION TRANSCRIPT") != std::string::npos,
+        "history show object exposes the persisted transcript");
+  check(state_before_clear.command_records[11].result.starts_with("show ref " + checkpoint_ref),
+        "show ref exposes the checkpoint CanonRef");
+  check(state_before_clear.command_records[11].result.find("SESSION TRANSCRIPT") != std::string::npos,
         "show ref on checkpoint exposes the persisted transcript");
-  check(state_before_clear.command_records[11].result.starts_with("store refs 2"),
+  check(state_before_clear.command_records[12].result.starts_with("store refs 2"),
         "store ls reports both tracked refs");
-  check(state_before_clear.command_records[11].result.find(stored_ref) != std::string::npos,
+  check(state_before_clear.command_records[12].result.find(stored_ref) != std::string::npos,
         "store ls exposes the stored payload CanonRef");
-  check(state_before_clear.command_records[11].result.find(checkpoint_ref) != std::string::npos,
+  check(state_before_clear.command_records[12].result.find(checkpoint_ref) != std::string::npos,
         "store ls exposes the checkpoint CanonRef");
-  check(state_before_clear.command_records[12].result == "store get typed shell payload",
+  check(state_before_clear.command_records[13].result == "store get typed shell payload",
         "store get decodes stored payload");
-  check(state_before_clear.command_records[13].result.starts_with("show ref " + stored_ref),
+  check(state_before_clear.command_records[14].result.starts_with("show ref " + stored_ref),
         "show ref exposes the requested CanonRef");
-  check(state_before_clear.command_records[13].result.find("typed shell payload") != std::string::npos,
+  check(state_before_clear.command_records[14].result.find("typed shell payload") != std::string::npos,
         "show ref exposes the durable payload");
-  check(state_before_clear.command_records[14].result.starts_with("canon durable ref ok "),
+  check(state_before_clear.command_records[15].result.starts_with("canon durable ref ok "),
         "store put ref reports durable success");
-  check(state_before_clear.command_records[14].result.find(copied_ref) != std::string::npos,
+  check(state_before_clear.command_records[15].result.find(copied_ref) != std::string::npos,
         "store put ref returns a CanonRef");
   check(copied_ref == stored_ref,
         "store put ref preserves canonical identity for identical payload");
-  check(state_before_clear.command_records[15].result.starts_with("store cp ok "),
+  check(state_before_clear.command_records[16].result.starts_with("store cp ok "),
         "store cp reports durable success");
-  check(state_before_clear.command_records[15].result.find(cp_ref) != std::string::npos,
+  check(state_before_clear.command_records[16].result.find(cp_ref) != std::string::npos,
         "store cp returns a CanonRef");
   check(cp_ref == stored_ref,
         "store cp preserves canonical identity for identical payload");
-  check(state_before_clear.command_records[16].result == "store get typed shell payload",
+  check(state_before_clear.command_records[17].result == "store get typed shell payload",
         "store get on copied ref decodes stored payload");
-  check(state_before_clear.command_records[17].result.starts_with("history session 17"),
+  check(state_before_clear.command_records[18].result.starts_with("history session 18"),
         "history show session reports the current session window");
-  check(state_before_clear.command_records[17].result.find("store cp " + stored_ref) != std::string::npos,
+  check(state_before_clear.command_records[18].result.find("store cp " + stored_ref) != std::string::npos,
         "history show session includes object-copy command");
-  check(state_before_clear.command_records[17].result.find("store put ref " + stored_ref) != std::string::npos,
+  check(state_before_clear.command_records[18].result.find("store put ref " + stored_ref) != std::string::npos,
         "history show session includes object-composition command");
-  check(state_before_clear.command_records[18].result.starts_with("history durable " + copied_ref),
+  check(state_before_clear.command_records[19].result.starts_with("history durable " + copied_ref),
         "history show durable exposes the durable anchor ref");
-  check(state_before_clear.command_records[18].result.find("typed shell payload") != std::string::npos,
+  check(state_before_clear.command_records[19].result.find("typed shell payload") != std::string::npos,
         "history show durable exposes the durable payload");
-  check(state_before_clear.command_records[19].result == "store rm ok " + stored_ref,
+  check(state_before_clear.command_records[20].result == "store rm ok " + stored_ref,
         "store rm reports durable removal");
-  check(state_before_clear.command_records[20].result == "store get missing",
+  check(state_before_clear.command_records[21].result == "store get missing",
         "removed ref is no longer readable");
-  check(state_before_clear.command_records[21].result == "show ref missing",
+  check(state_before_clear.command_records[22].result == "show ref missing",
         "show ref reports missing after removal");
-  check(state_before_clear.command_records[22].result == "reboot history missing",
+  check(state_before_clear.command_records[23].result == "reboot history missing",
         "history reports missing durable anchor after removal");
-  check(state_before_clear.command_records[23].result == "history durable missing",
+  check(state_before_clear.command_records[24].result == "history durable missing",
         "history show durable reports missing anchor after removal");
-  check(state_before_clear.command_records[24].result == "history use ok " + checkpoint_ref,
+  check(state_before_clear.command_records[25].result == "history use ok " + checkpoint_ref,
         "history use rebinds the durable anchor to the checkpoint");
-  check(state_before_clear.command_records[25].result.starts_with("history durable " + checkpoint_ref),
+  check(state_before_clear.command_records[26].result.starts_with("history durable " + checkpoint_ref),
         "history show durable exposes rebound checkpoint anchor");
-  check(state_before_clear.command_records[25].result.find("SESSION TRANSCRIPT") != std::string::npos,
+  check(state_before_clear.command_records[26].result.find("SESSION TRANSCRIPT") != std::string::npos,
         "history show durable exposes rebound checkpoint transcript");
-  check(state_before_clear.command_records[26].result == "parse error: unmatched quote",
+  check(state_before_clear.command_records[27].result == "parse error: unmatched quote",
         "unmatched quote is surfaced as a parse error");
-  check(state_before_clear.command_records[27].result == "unknown command", "unknown command is surfaced");
+  check(state_before_clear.command_records[28].result == "unknown command", "unknown command is surfaced");
   check(state_before_clear.recovered_entries == 1, "interactive history refresh tracks current recovered_entries");
-  check(state_before_clear.session_command_count == 28,
+  check(state_before_clear.session_command_count == 29,
         "interactive state tracks session command count before clear");
   check(state_before_clear.durable_ref_count == 1,
         "interactive state tracks checkpoint ref after store rm");
@@ -219,9 +227,11 @@ static void test_typed_shell_commands() {
   check(session->execute_command("history show durable"), "history show durable executes after clear");
   check(session->execute_command(std::string("session import ") + checkpoint_ref),
         "session import <ref> executes after clear");
+  check(session->execute_command(std::string("session diff ") + checkpoint_ref),
+        "session diff <ref> executes after clear");
 
   const auto& state_after_clear = session->state();
-  check(state_after_clear.command_records.size() == 9, "clear resets transcript to the new session window");
+  check(state_after_clear.command_records.size() == 10, "clear resets transcript to the new session window");
   check(state_after_clear.command_records[0].result == "session transcript cleared",
         "clear reports transcript reset");
   check(state_after_clear.command_records[1].result.find("commands 1") != std::string::npos,
@@ -248,7 +258,11 @@ static void test_typed_shell_commands() {
         "post-clear history show durable exposes rebound checkpoint transcript");
   check(state_after_clear.command_records[8].result == "session import ok " + checkpoint_ref,
         "session import reports success with the checkpoint ref");
-  check(state_after_clear.session_command_count == 9,
+  check(state_after_clear.command_records[9].result.starts_with("session diff mismatch"),
+        "session diff reports mismatch after importing plus appending commands");
+  check(state_after_clear.command_records[9].result.find("current>") != std::string::npos,
+        "post-import session diff reports the current transcript side");
+  check(state_after_clear.session_command_count == 10,
         "post-clear state tracks new session command window");
   check(state_after_clear.transcript_text.find("UNKNOWN COMMAND") == std::string::npos,
         "cleared transcript no longer shows pre-clear shell history");

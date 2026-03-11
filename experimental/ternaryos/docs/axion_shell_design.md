@@ -188,6 +188,7 @@ session status
 session checkpoint
 session export
 session import <ref>
+session diff <ref>
 session show durable
 show session
 session refs
@@ -218,6 +219,7 @@ store cp <ref>
 history show object <ref>
 session export
 session import <ref>
+session diff <ref>
 history use <ref>
 ```
 
@@ -231,6 +233,7 @@ show session
 show profile
 session export
 session import <ref>
+session diff <ref>
 store put text "<payload>"
 store cp <ref>
 store get ref <canonref>

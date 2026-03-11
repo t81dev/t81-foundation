@@ -171,6 +171,7 @@ What the TUI adds:
   - `session checkpoint`
   - `session export`
   - `session import <ref>`
+  - `session diff <ref>`
   - `session show durable`
   - `show session`
   - `session refs`
@@ -201,6 +202,7 @@ What the TUI adds:
   - `session checkpoint` for persisting the current transcript as a canonical object
   - `session export` for promoting the current transcript to the durable history anchor
   - `session import <ref>` for restoring a persisted transcript object into the active shell window
+  - `session diff <ref>` for comparing the current session transcript against a persisted object
   - `history show durable` for the current durable history anchor
   - `session show durable` for the current durable anchor/ref view
 - the shell now has an explicit session-history inspection command:

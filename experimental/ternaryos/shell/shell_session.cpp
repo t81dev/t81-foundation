@@ -30,13 +30,14 @@ namespace t81::ternaryos {
 
 namespace {
 
-constexpr std::array<const char*, 23> kBuiltinCommands = {
+constexpr std::array<const char*, 24> kBuiltinCommands = {
     "help",
     "profile",
     "session status",
     "session checkpoint",
     "session export",
     "session import <ref>",
+    "session diff <ref>",
     "session show durable",
     "session refs",
     "show profile",
@@ -96,6 +97,35 @@ std::vector<std::string> split_lines(std::string_view text) {
   }
   if (!current.empty() || text.empty()) lines.push_back(current);
   return lines;
+}
+
+std::string diff_transcript_text(std::string_view current, std::string_view durable) {
+  const auto current_lines = split_lines(current);
+  const auto durable_lines = split_lines(durable);
+  if (current_lines == durable_lines) return "session diff equal";
+
+  const std::size_t shared = std::min(current_lines.size(), durable_lines.size());
+  std::size_t diff_index = 0;
+  while (diff_index < shared && current_lines[diff_index] == durable_lines[diff_index]) {
+    ++diff_index;
+  }
+
+  std::ostringstream out;
+  out << "session diff mismatch" << '\n'
+      << "current lines " << current_lines.size() << '\n'
+      << "durable lines " << durable_lines.size() << '\n'
+      << "first diff line " << (diff_index + 1);
+  if (diff_index < current_lines.size()) {
+    out << '\n' << "current> " << current_lines[diff_index];
+  } else {
+    out << '\n' << "current> <end>";
+  }
+  if (diff_index < durable_lines.size()) {
+    out << '\n' << "durable> " << durable_lines[diff_index];
+  } else {
+    out << '\n' << "durable> <end>";
+  }
+  return out.str();
 }
 
 std::string unique_store_path() {
@@ -324,7 +354,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words[0] == "help") {
     state_.command_records.push_back(
         {command,
-         "builtins help profile session status session checkpoint session export session import <ref> session show durable session refs show profile show session show ref <canonref> store put <text> store put ref <ref> store cp <ref> store ls store get <ref> store rm <ref> history history show session history show object <ref> history use <ref> history show durable clear"});
+         "builtins help profile session status session checkpoint session export session import <ref> session diff <ref> session show durable session refs show profile show session show ref <canonref> store put <text> store put ref <ref> store cp <ref> store ls store get <ref> store rm <ref> history history show session history show object <ref> history use <ref> history show durable clear"});
     return refresh_render();
   }
 
@@ -455,6 +485,25 @@ bool ShellSession::execute_command(std::string_view command_view) {
 
     imported_transcript_lines_ = split_lines(decode_text_block(*block));
     state_.command_records.push_back({command, "session import ok " + canon_ref_text(*ref)});
+    return refresh_render();
+  }
+
+  if (words.size() == 3 && words[0] == "session" && words[1] == "diff") {
+    const auto ref = parse_canon_ref_text(words[2]);
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "session diff invalid ref"});
+      return refresh_render();
+    }
+
+    state_.recovered_entries = store.rebuild_index();
+    const auto block = store.get(*ref);
+    if (!block.has_value()) {
+      state_.command_records.push_back({command, "session diff missing"});
+      return refresh_render();
+    }
+
+    state_.command_records.push_back(
+        {command, diff_transcript_text(state_.transcript_text, decode_text_block(*block))});
     return refresh_render();
   }
 
