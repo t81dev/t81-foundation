@@ -389,6 +389,97 @@ static void test_virtualbox_guest_reboot_persistence() {
   std::filesystem::remove(path);
 }
 
+// ─── AC-D3c: Guest bootstrap recovery after header + payload corruption ────
+
+static void test_virtualbox_guest_rebuild_after_corruption() {
+  std::printf("\n[D3c] VirtualBox guest rebuild after header + payload corruption\n");
+
+  const std::string path = "/tmp/ternos_test_vbox_guest_rebuild.blk";
+  VBoxBootSpec spec;
+  spec.ram_bytes = 128ULL * 1024 * 1024;
+
+  auto good_block = make_block(0x61);
+  auto bad_block = make_block(0x72);
+  t81::canonfs::CanonRef good_ref;
+  t81::canonfs::CanonRef bad_ref;
+
+  {
+    HostedBlockDev backing(32, "vbox-guest-rebuild");
+    backing.set_backing_file(path);
+
+    auto guest = bootstrap_virtualbox_guest(spec, backing);
+    check(guest.has_value(), "bootstrap_virtualbox_guest succeeds before corruption");
+    if (!guest) {
+      std::filesystem::remove(path);
+      return;
+    }
+
+    CanonStore store(*guest->storage.device);
+    auto ref1 = store.put(good_block);
+    auto ref2 = store.put(bad_block);
+    check(ref1.has_value(), "first guest block stores successfully");
+    check(ref2.has_value(), "second guest block stores successfully");
+    if (!ref1 || !ref2) {
+      std::filesystem::remove(path);
+      return;
+    }
+    good_ref = *ref1;
+    bad_ref = *ref2;
+    check(store.flush(), "guest storage flush succeeds before corruption");
+  }
+
+  auto damaged = HostedBlockDev::load(path);
+  check(damaged.has_value(), "device reloads for corruption injection");
+  if (!damaged) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  BlockData header{};
+  check(damaged->read_block(0, header), "reads persisted CanonStore header");
+  header[0] ^= 0xFF;
+  check(damaged->write_block(0, header), "corrupts persisted CanonStore header");
+
+  BlockData corrupted_payload{};
+  check(damaged->read_block(2, corrupted_payload), "reads second persisted payload block");
+  corrupted_payload[13] ^= 0x5A;
+  check(damaged->write_block(2, corrupted_payload), "corrupts second persisted payload block");
+  check(damaged->save(path), "saves corrupted guest backing file");
+
+  auto loaded = HostedBlockDev::load(path);
+  check(loaded.has_value(), "device reloads after corruption");
+  if (!loaded) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  auto guest = bootstrap_virtualbox_guest(spec, *loaded);
+  check(guest.has_value(), "bootstrap_virtualbox_guest succeeds after corruption");
+  if (!guest) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  CanonStore rebuilt(*guest->storage.device);
+  check(rebuilt.rebuild_index() == 2,
+        "rebuild_index scans payload blocks when header magic is damaged");
+
+  auto recovered_good = rebuilt.get(good_ref);
+  check(recovered_good.has_value(), "intact CanonRef survives guest rebuild");
+  if (recovered_good) {
+    check(recovered_good->trytes == good_block.trytes,
+          "intact payload remains exact after guest rebuild");
+  }
+
+  auto recovered_bad = rebuilt.get(bad_ref);
+  check(!recovered_bad.has_value(), "corrupted CanonRef is rejected after guest rebuild");
+  check(rebuilt.contains(good_ref), "rebuilt index still contains intact CanonRef");
+  check(!rebuilt.contains(bad_ref), "rebuilt index no longer matches the pre-corruption CanonRef");
+  check(rebuilt.size() == 2, "rebuilt index retains both physical payload blocks after scan");
+
+  std::filesystem::remove(path);
+}
+
 // ─── AC-D7: hash verification on corrupted block ─────────────────────────────
 
 static void test_canon_store_corruption_detection() {
@@ -602,6 +693,7 @@ int main() {
   test_canon_store_get_unknown();
   test_canon_store_reboot();
   test_virtualbox_guest_reboot_persistence();
+  test_virtualbox_guest_rebuild_after_corruption();
   test_canon_store_corruption_detection();
   test_framebuffer();
   test_ttf_rendering();
