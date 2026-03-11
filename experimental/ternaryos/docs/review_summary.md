@@ -76,8 +76,8 @@ ARM diagnostic result:
   pure Phase 4 device-layer proof surface derived from the real guest bootstrap:
   20-object CanonStore recovery across two guest cycles, active overflow
   metadata past the 17-entry root-header threshold, successful torn-header
-  recovery for the same 20 objects, through `virtualbox-ahci`, two distinct
-  VMSVGA presents, and a three-frame E1000 round-trip workload
+  recovery for the same 20 objects, through `virtualbox-ahci`, a mutable
+  three-present VMSVGA cycle, and a two-batch five-frame E1000 workload
 - local VirtualBox ARM remains non-observable for EFI execution and is now only
   a secondary diagnostic lane
 - conclusion: the remaining blind spot is the local VirtualBox ARM path, not

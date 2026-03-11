@@ -255,18 +255,24 @@ for expected in \
   '^canonstore_second_cycle_ok=20$' \
   '^canonstore_torn_header_ok=20$' \
   '^display_binding=virtualbox-vmsvga$' \
-  '^display_present_count=2$' \
+  '^display_present_count=3$' \
   '^display_first_rendered_glyphs=7$' \
   '^display_second_rendered_glyphs=9$' \
+  '^display_runtime_rendered_glyphs=8$' \
   '^display_changed=true$' \
+  '^display_runtime_changed=true$' \
   '^network_binding=virtualbox-e1000$' \
-  '^network_tx_frames=3$' \
-  '^network_rx_frames=3$' \
-  '^network_pending_tx_frames=3$' \
+  '^network_runtime_batches=2$' \
+  '^network_tx_frames=5$' \
+  '^network_rx_frames=5$' \
+  '^network_pending_tx_frames=5$' \
   '^network_pending_rx_frames=0$' \
   '^network_roundtrip_ok=3$' \
   '^network_roundtrip_total=3$' \
-  '^network_roundtrip_words=6$'
+  '^network_runtime_roundtrip_ok=2$' \
+  '^network_runtime_roundtrip_total=2$' \
+  '^network_roundtrip_words=10$' \
+  '^network_total_frame_bytes=110$'
 do
   if ! /usr/bin/grep -q "$expected" "$startup_phase4_copy"; then
     echo "QEMU ARMv8 guest probe found startup phase4 report, but expected field was missing: $expected" >&2

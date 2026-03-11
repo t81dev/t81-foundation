@@ -128,16 +128,27 @@ std::optional<std::string> build_phase4_report() {
   const std::size_t second_rendered_glyphs = ttf_render_text(framebuffer, 0, 0, "AXION\nQEMU");
   if (!display.present()) return std::nullopt;
   const std::size_t second_ascii_size = display.last_present_ascii().size();
-  const bool display_changed = first_ascii != display.last_present_ascii();
+  const auto second_ascii = display.last_present_ascii();
+  const bool display_changed = first_ascii != second_ascii;
+  display.clear(TritPixel{0});
+  const std::size_t runtime_rendered_glyphs = ttf_render_text(framebuffer, 0, 0, "AXION\nRUN");
+  if (!display.present()) return std::nullopt;
+  const std::size_t runtime_ascii_size = display.last_present_ascii().size();
+  const bool runtime_display_changed = second_ascii != display.last_present_ascii();
 
   std::vector<std::vector<int8_t>> payloads{
       {1, 0, -1, -1, 1, 0},
       {0, 1, 1, -1, 0, -1},
       {-1, -1, 0, 1, 1, 0},
   };
+  std::vector<std::vector<int8_t>> runtime_payloads{
+      {1, 1, 0, 0, -1, -1},
+      {-1, 0, 1, 1, 0, -1},
+  };
   std::size_t network_roundtrip_ok = 0;
   std::size_t network_total_words = 0;
   std::size_t network_total_frame_bytes = 0;
+  std::size_t network_runtime_roundtrip_ok = 0;
   for (std::size_t i = 0; i < payloads.size(); ++i) {
     auto packet = TernaryEthernetPacket::build(
         {0x01, 0x02, 0x03, 0x04, 0x05, static_cast<uint8_t>(0x06 + i)},
@@ -156,6 +167,27 @@ std::optional<std::string> build_phase4_report() {
     if (parsed_packet->trit_payload == packet->trit_payload &&
         parsed_packet->content_ref.hash == packet->content_ref.hash) {
       ++network_roundtrip_ok;
+    }
+  }
+
+  for (std::size_t i = 0; i < runtime_payloads.size(); ++i) {
+    auto packet = TernaryEthernetPacket::build(
+        {0x11, 0x12, 0x13, 0x14, 0x15, static_cast<uint8_t>(0x16 + i)},
+        {0x1A, 0x1B, 0x1C, 0x1D, 0x1E, static_cast<uint8_t>(0x1F + i)},
+        0x0082,
+        runtime_payloads[i]);
+    if (!packet.has_value()) return std::nullopt;
+
+    auto frame = guest->network.device->send_packet(*packet);
+    if (!frame.has_value()) return std::nullopt;
+    network_total_frame_bytes += frame->size();
+    if (!guest->network.device->inject_frame(*frame)) return std::nullopt;
+    auto parsed_packet = guest->network.device->receive_packet();
+    if (!parsed_packet.has_value()) return std::nullopt;
+    network_total_words += parsed_packet->trit_word_count();
+    if (parsed_packet->trit_payload == packet->trit_payload &&
+        parsed_packet->content_ref.hash == packet->content_ref.hash) {
+      ++network_runtime_roundtrip_ok;
     }
   }
 
@@ -188,16 +220,22 @@ std::optional<std::string> build_phase4_report() {
   report << "display_present_count=" << display.present_count() << "\n";
   report << "display_first_rendered_glyphs=" << first_rendered_glyphs << "\n";
   report << "display_second_rendered_glyphs=" << second_rendered_glyphs << "\n";
+  report << "display_runtime_rendered_glyphs=" << runtime_rendered_glyphs << "\n";
   report << "display_first_ascii_size=" << first_ascii_size << "\n";
   report << "display_second_ascii_size=" << second_ascii_size << "\n";
+  report << "display_runtime_ascii_size=" << runtime_ascii_size << "\n";
   report << "display_changed=" << (display_changed ? "true" : "false") << "\n";
+  report << "display_runtime_changed=" << (runtime_display_changed ? "true" : "false") << "\n";
   report << "network_binding=" << guest->network.binding_name << "\n";
+  report << "network_runtime_batches=2\n";
   report << "network_tx_frames=" << guest->network.device->tx_frames() << "\n";
   report << "network_rx_frames=" << guest->network.device->rx_frames() << "\n";
   report << "network_pending_tx_frames=" << guest->network.device->pending_tx_frames() << "\n";
   report << "network_pending_rx_frames=" << guest->network.device->pending_rx_frames() << "\n";
   report << "network_roundtrip_ok=" << network_roundtrip_ok << "\n";
   report << "network_roundtrip_total=" << payloads.size() << "\n";
+  report << "network_runtime_roundtrip_ok=" << network_runtime_roundtrip_ok << "\n";
+  report << "network_runtime_roundtrip_total=" << runtime_payloads.size() << "\n";
   report << "network_roundtrip_words=" << network_total_words << "\n";
   report << "network_total_frame_bytes=" << network_total_frame_bytes << "\n";
 

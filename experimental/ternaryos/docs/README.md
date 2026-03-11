@@ -370,11 +370,12 @@ Current status:
   - all 20 stored CanonRefs resolve successfully across both guest cycles
   - all 20 stored CanonRefs resolve successfully after a torn-header fallback rebuild
   - `display_binding=virtualbox-vmsvga`
-  - `display_present_count=2`
-  - two distinct framebuffer presents are captured from the same staged guest path
+  - `display_present_count=3`
+  - a mutable three-present framebuffer cycle is captured from the same staged guest path
   - `network_binding=virtualbox-e1000`
-  - `network_tx_frames=3`
-  - `network_rx_frames=3`
+  - `network_runtime_batches=2`
+  - `network_tx_frames=5`
+  - `network_rx_frames=5`
   - `network_roundtrip_ok=3`
   - `network_roundtrip_total=3`
 - the current `startup-status.txt` exposes guest-visible Axion state from the staged ARM guest:
