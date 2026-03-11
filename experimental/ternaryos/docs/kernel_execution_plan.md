@@ -2,11 +2,11 @@
 
 Current working release label: `Axion v0.1.0-alpha`
 
-This note captured the next narrow kernel slice after the currently
+This note now captures the next narrow kernel slice after the currently
 implemented stable supervisor/process-group service boundary from
 [RFC-00B3](../../../spec/rfcs/RFC-00B3-axion-kernel-architecture.md).
 
-It was intentionally small. It exists so the next kernel work follows an
+It remains intentionally small. It exists so the next kernel work follows an
 explicit sequence instead of growing organically.
 
 ## Current Kernel Position
@@ -49,10 +49,9 @@ Not yet implemented:
 - capability or syscall semantics
 - pager integration
 
-## Slice Result
+## Completed Groundwork
 
-The service-runtime convergence slice is now complete for the current
-contract surface:
+The previous service-runtime convergence slice is complete:
 
 - the service contract stayed narrower than a syscall or process ABI
 - lifecycle control remained limited to deterministic register, unregister,
@@ -60,14 +59,14 @@ contract surface:
 - lifecycle diagnostics now align across service detail, supervisor inventory,
   supervisor status, supervisor recovery, runtime, fault, audit, and device
   views
-- HAL/kernel coverage now proves that aligned lifecycle surface end-to-end
+- HAL/kernel coverage proves that aligned lifecycle surface end-to-end
 
-The first process-memory ownership slice is now also complete:
+The first process-memory ownership slice is also complete:
 
 - each process group now has an explicit kernel-owned address-space object
-- runtime, process-group, supervisor, and service diagnostics now expose
+- runtime, process-group, supervisor, and service diagnostics expose
   address-space ownership and mapped-page counts
-- page-table ownership can now attach to a stable runtime object before pager
+- page-table ownership now attaches to a stable runtime object before pager
   work begins
 
 ## Next Sequence
@@ -77,17 +76,19 @@ The first process-memory ownership slice is now also complete:
 Do not widen the existing service surface further unless a concrete runtime
 need appears.
 
-### 2. Shift the next kernel slice below the service layer
+### 2. Add pager-owned fault state below the service layer
 
 The next real kernel work is now:
 
 - pager integration
 - the fault-to-pager handoff needed before any syscall or capability design
+- explicit runtime state for pager-needed address spaces or groups
+- stable diagnostics proving when faults remain policy failures vs pager work
 
-### 3. Do not add new lifecycle verbs opportunistically
+### 3. Keep the pager surface internal first
 
-Any further service action should require a concrete runtime need, not just
-surface symmetry.
+Pager work should first land as kernel-owned runtime state and fault policy.
+Do not introduce a public pager ABI or syscall surface in the first slice.
 
 ## Non-Goals For This Slice
 
@@ -96,27 +97,29 @@ Do not add:
 - syscalls
 - userspace/kernel privilege modes
 - capabilities
-- process address spaces
-- pager or demand-fault machinery
+- public pager RPC or syscall interfaces
+- general lazy-allocation policy
+- full virtual memory object semantics
 - shell logic inside the kernel
 - general service graph orchestration
 - userland process ABI
 
 ## Acceptance Criteria
 
-The current service-runtime slice is complete when:
+The pager-groundwork slice is complete when:
 
-1. stable service-facing diagnostics exist for service, supervisor, fault,
-   audit, and device ownership state
-2. HAL/kernel tests prove service registration, blocked behavior, and
-   unregister lifecycle behavior
-3. the service contract remains narrower than a syscall or process ABI
-4. RFC-00B3 can shift from supervisor/service runtime convergence to
-   process-memory ownership and pager work as the next step
+1. explicit kernel-owned runtime state exists for address-space pager handling
+2. HAL/kernel tests prove deterministic pager-needed diagnostics without
+   widening the public contract
+3. MMU faults remain clearly separated between unrecoverable policy failures
+   and pager-eligible misses
+4. the public service contract remains narrower than a syscall, capability, or
+   pager ABI surface
 
 ## Recommended Order
 
 1. preserve the current service-runtime contract without widening it casually
-2. define kernel-owned process memory semantics
-3. integrate pager behavior at the runtime boundary
-4. only then evaluate syscall or capability design
+2. add pager-needed runtime state to address spaces and/or process groups
+3. classify MMU faults into pager-eligible vs unrecoverable kernel policy
+4. expose only stable diagnostics for that state first
+5. only then evaluate pager-facing ABI shape or syscall/capability design

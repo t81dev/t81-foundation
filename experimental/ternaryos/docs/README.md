@@ -339,8 +339,8 @@ Local hosted proof as of the current branch:
   service request routing, stable service detail, richer supervisor inventory,
   and deterministic lifecycle behavior now exist above the stable
   supervisor/process-group contract. The next step is to keep that contract
-  stable and continue downward into pager integration and fault-to-pager
-  handoff semantics, tracked explicitly in:
+  stable and continue downward into internal pager-owned fault state and
+  fault-to-pager handoff semantics, tracked explicitly in:
   - `docs/kernel_execution_plan.md`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence

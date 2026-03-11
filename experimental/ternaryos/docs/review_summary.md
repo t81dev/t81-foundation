@@ -82,8 +82,8 @@ Kernel integration proof now also includes:
   current contract surface
 - the first process-memory ownership slice is now complete as well
 - the next kernel slice is to keep this service-runtime layer stable and move
-  into pager integration and fault-to-pager handoff work, not a broad ABI or
-  syscall surface
+  into internal pager-owned fault state and fault-to-pager handoff work, not a
+  broad ABI or syscall surface
 
 Phase 4 storage proof now covers:
 

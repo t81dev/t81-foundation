@@ -72,8 +72,8 @@ stable runtime/process-group/supervisor/service diagnostics expose
 address-space ownership plus mapped-page counts.
 That lifecycle convergence slice is now complete for the current contract,
 and the first process-memory ownership slice is in place. The next steps are
-to keep that lifecycle contract stable while moving the kernel toward pager
-integration.
+to keep that lifecycle contract stable while moving the kernel toward
+internal pager-owned fault state and later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 

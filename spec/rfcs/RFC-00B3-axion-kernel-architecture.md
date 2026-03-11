@@ -317,6 +317,9 @@ groups now bind to explicit kernel-owned address-space objects, and the stable
 diagnostic views expose address-space ownership plus mapped-page counts. That
 gives pager work a concrete runtime object to target without widening the
 public service contract.
+The next kernel slice is to introduce internal pager-owned fault state on top
+of those address-space objects, keeping the pager surface private until the
+fault-to-pager handoff is stable and deterministic.
 
 The working execution note for this slice is:
 
