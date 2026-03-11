@@ -828,6 +828,11 @@ if(T81_ENABLE_TERNARYOS)
       experimental/ternaryos/tests/device_driver_test.cpp)
     target_link_libraries(t81_ternaryos_device_driver_test PRIVATE t81_ternaryos_hal)
     add_test(NAME t81_ternaryos_device_driver_test COMMAND t81_ternaryos_device_driver_test)
+
+    add_executable(t81_ternaryos_shell_session_test
+      experimental/ternaryos/tests/shell_session_test.cpp)
+    target_link_libraries(t81_ternaryos_shell_session_test PRIVATE t81_ternaryos_shell)
+    add_test(NAME t81_ternaryos_shell_session_test COMMAND t81_ternaryos_shell_session_test)
   endif()
 endif()
 

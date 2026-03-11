@@ -163,19 +163,21 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | File | Purpose | Tests |
 | :--- | :--- | :---: |
-| `shell_session.hpp/.cpp` | Shared Phase 5 shell-session backend: executes a minimal built-in shell command model (`help`, `profile`, `store put`, `history`) through the VirtualBox guest-bootstrap path, persists shell history through CanonStore, reboots, recovers it, and exposes deterministic transcript/framebuffer state to frontends | — |
+| `shell_session.hpp/.cpp` | Shared Phase 5 shell-session backend: executes a minimal typed shell command model (`help`, `profile`, `store put <text>`, `history`) through the VirtualBox guest-bootstrap path, persists shell history through CanonStore, reboots, recovers it, and exposes deterministic transcript/framebuffer state to frontends | — |
 | `shell_demo.cpp` | Verbose Phase 5 backend proof: prints the built-in shell session and framebuffer evidence directly to stdout | — |
-| `shell_tui.cpp` | First FTXUI-based TernOS shell frontend with transcript pane, session pane, builtins pane, framebuffer preview, interactive built-in execution, and `--snapshot` render mode | — |
+| `shell_tui.cpp` | First FTXUI-based TernOS shell frontend with transcript pane, command buffer, session pane, builtins pane, framebuffer preview, interactive typed command execution, and `--snapshot` render mode | — |
+| `tests/shell_session_test.cpp` | Phase 5 shell acceptance test: scripted durable-history path plus interactive typed-command execution through the guest-bootstrap seam | 17 |
 | `axion_shell_design.md` | Phase 5 shell design note: positioning, grammar, screen model, and milestone sequence for evolving the current built-in shell into a real Axion shell | — |
 
 #### Design notes
 
 - Phase 5 is now started, but still only as a narrow hosted scaffold.
-- The current shell path is intentionally narrow: it now supports interactive built-in execution in the TUI, but it still does not execute TISC userland and does not introduce a syscall surface.
+- The current shell path is intentionally narrow: it now supports interactive typed command execution in the TUI, but it still does not execute TISC userland and does not introduce a syscall surface.
 - Its value is architectural: user-facing output now rides the same guest-bootstrap storage and display seams already proven in Phase 4.
 - The shell UI now uses the repo's established FTXUI stack instead of a one-off terminal surface, and `--snapshot` still gives it a deterministic review/debug mode.
-- The old fixed transcript is gone: the current shell transcript now comes from built-in command handlers for `help`, `profile`, `store put`, and `history`.
-- Interactive built-in selection/execution now exists in the live TUI; the next real Phase 5 milestone is moving past menu-driven built-ins into a general shell input/parser model.
+- The old fixed transcript is gone: the current shell transcript now comes from command handlers for `help`, `profile`, `store put <text>`, and `history`.
+- The live TUI now accepts typed commands directly, and the new shell test target covers both the scripted durable-history proof and interactive typed command execution.
+- The next real Phase 5 milestone is moving past narrow built-ins into a broader parser and userland model.
 
 ---
 
@@ -190,7 +192,8 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_scheduler_test` | 120 | 3 |
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
-| **Total** | **737** | |
+| `t81_ternaryos_shell_session_test` | 17 | 5 |
+| **Total** | **754** | |
 
 Run all TernOS tests:
 

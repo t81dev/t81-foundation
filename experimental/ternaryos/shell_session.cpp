@@ -33,7 +33,7 @@ namespace {
 constexpr std::array<const char*, 4> kBuiltinCommands = {
     "help",
     "profile",
-    "store put",
+    "store put <text>",
     "history",
 };
 
@@ -62,6 +62,13 @@ std::string join_lines(const std::vector<std::string>& lines) {
 std::string unique_store_path() {
   const auto ticks = std::chrono::steady_clock::now().time_since_epoch().count();
   return "/tmp/ternos_shell_session_" + std::to_string(ticks) + ".blk";
+}
+
+std::optional<HostedBlockDev> load_backed_device(const std::string& path) {
+  auto loaded = HostedBlockDev::load(path);
+  if (!loaded.has_value()) return std::nullopt;
+  loaded->set_backing_file(path);
+  return loaded;
 }
 
 std::vector<std::string> split_words(const std::string& command) {
@@ -128,7 +135,12 @@ public:
 }  // namespace
 
 std::vector<std::string> default_shell_command_sequence() {
-  return {kBuiltinCommands.begin(), kBuiltinCommands.end()};
+  return {
+      "help",
+      "profile",
+      "store put phase5 durable transcript",
+      "history",
+  };
 }
 
 ShellSession::ShellSession(bool quiet_boot) : quiet_boot_(quiet_boot), store_path_(unique_store_path()) {
@@ -155,7 +167,7 @@ bool ShellSession::initialize() {
 }
 
 bool ShellSession::refresh_render() {
-  auto loaded = HostedBlockDev::load(store_path_);
+  auto loaded = load_backed_device(store_path_);
   if (!loaded.has_value()) return false;
 
   VBoxBootSpec spec;
@@ -192,10 +204,10 @@ std::optional<ShellSession> ShellSession::create(bool quiet_boot) {
 bool ShellSession::execute_command(std::string_view command_view) {
   const std::string command(command_view);
   const auto words = split_words(command);
-  if (words.empty()) return false;
+  if (words.empty()) return refresh_render();
 
   if (words[0] == "help") {
-    state_.command_records.push_back({command, "builtins help profile store put history"});
+    state_.command_records.push_back({command, "builtins help profile store put <text> history"});
     return refresh_render();
   }
 
@@ -206,7 +218,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
 
   VBoxBootSpec spec;
   spec.ram_bytes = 128ULL * 1024 * 1024;
-  auto loaded = HostedBlockDev::load(store_path_);
+  auto loaded = load_backed_device(store_path_);
   if (!loaded.has_value()) return false;
 
   StdoutSilencer silencer(quiet_boot_);
@@ -216,13 +228,18 @@ bool ShellSession::execute_command(std::string_view command_view) {
 
   CanonStore store(*guest->storage.device);
 
-  if (words.size() == 2 && words[0] == "store" && words[1] == "put") {
-    const auto payload = state_.transcript_text.empty() ? std::string("TSH PHASE5 READY")
-                                                        : state_.transcript_text;
+  if (words.size() >= 3 && words[0] == "store" && words[1] == "put") {
+    const auto payload = command.substr(std::string("store put ").size());
     auto ref = store.put(make_text_block(payload));
-    if (!ref.has_value()) return false;
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "canon store put failed"});
+      return refresh_render();
+    }
     history_ref_ = *ref;
-    if (!store.flush()) return false;
+    if (!store.flush()) {
+      state_.command_records.push_back({command, "canon flush failed"});
+      return refresh_render();
+    }
     state_.command_records.push_back({command, "canon durable ok"});
     return refresh_render();
   }
@@ -232,14 +249,19 @@ bool ShellSession::execute_command(std::string_view command_view) {
     if (history_ref_.has_value()) {
       const auto recovered = store.rebuild_index();
       const auto history = store.get(*history_ref_);
-      if (history.has_value()) result = "reboot recovered " + std::to_string(recovered);
+      if (history.has_value()) {
+        result = "reboot recovered " + std::to_string(recovered);
+      } else {
+        result = "reboot history missing";
+      }
     }
     state_.recovered_entries = store.rebuild_index();
     state_.command_records.push_back({command, result});
     return refresh_render();
   }
 
-  return false;
+  state_.command_records.push_back({command, "unknown command"});
+  return refresh_render();
 }
 
 std::optional<ShellSessionState> build_scripted_shell_session(bool quiet_boot) {

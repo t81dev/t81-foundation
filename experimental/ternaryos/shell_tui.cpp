@@ -33,7 +33,7 @@ std::vector<std::string> split_lines(const std::string& text) {
 }
 
 Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
-                           std::size_t selected_command,
+                           const std::string& command_buffer,
                            const std::string& status_line) {
   Elements transcript;
   for (const auto& line : state.transcript_lines) {
@@ -51,14 +51,8 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
   };
 
   Elements commands;
-  for (std::size_t i = 0; i < state.available_commands.size(); ++i) {
-    auto command = text(state.available_commands[i]);
-    if (i == selected_command) {
-      command = command | bold | color(Color::Black) | bgcolor(Color::Magenta);
-    } else {
-      command = command | color(Color::Magenta);
-    }
-    commands.push_back(command);
+  for (const auto& command : state.available_commands) {
+    commands.push_back(text(command) | color(Color::Magenta));
   }
 
   Elements framebuffer;
@@ -68,10 +62,18 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
 
   auto header = hbox({
       text(" Axion Shell ") | bold | color(Color::Black) | bgcolor(Color::Cyan),
-      text("  Phase 5 builtins TUI ") | color(Color::White),
+      text("  Phase 5 typed shell TUI ") | color(Color::White),
       filler(),
-      text(" arrows/jk move  enter run  q quit ") | color(Color::GrayDark),
+      text(" type command  enter run  backspace edit  q quit ") | color(Color::GrayDark),
   });
+
+  auto input_panel = window(
+      text(" Command ") | bold | color(Color::Cyan),
+      hbox({
+          text("tsh> ") | color(Color::Cyan),
+          text(command_buffer.empty() ? "<type a command>" : command_buffer) |
+              color(command_buffer.empty() ? Color::GrayDark : Color::White),
+      }));
 
   auto transcript_panel = window(
       text(" Transcript ") | bold | color(Color::Cyan),
@@ -99,6 +101,7 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
              hbox({
                  transcript_panel | flex,
                  vbox({
+                     input_panel | size(HEIGHT, LESS_THAN, 3),
                      status_panel | flex,
                      commands_panel | size(HEIGHT, LESS_THAN, 9),
                  }) | size(WIDTH, GREATER_THAN, 34),
@@ -119,7 +122,7 @@ int main(int argc, char** argv) {
 
   if (argc > 1 && std::string(argv[1]) == "--snapshot") {
     auto screen = Screen::Create(Dimension::Fixed(100), Dimension::Fixed(30));
-    Render(screen, shell_tui_document(*scripted, 0, "snapshot replay"));
+    Render(screen, shell_tui_document(*scripted, "help", "snapshot replay"));
     std::printf("%s", screen.ToString().c_str());
     return 0;
   }
@@ -130,36 +133,46 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  std::size_t selected_command = 0;
+  std::string command_buffer = "help";
   std::string status_line = "ready";
 
   auto renderer = Renderer([&] {
-    return shell_tui_document(session->state(), selected_command, status_line);
+    return shell_tui_document(session->state(), command_buffer, status_line);
   });
   auto screen = ScreenInteractive::Fullscreen();
   auto app = CatchEvent(renderer, [&](Event event) {
-    const auto command_count = session->state().available_commands.size();
     if (event == Event::Character('q') || event == Event::Escape) {
       screen.ExitLoopClosure()();
       return true;
     }
-    if (command_count == 0) return false;
-    if (event == Event::ArrowUp || event == Event::Character('k')) {
-      selected_command =
-          selected_command == 0 ? command_count - 1 : selected_command - 1;
+    if (event == Event::Backspace) {
+      if (!command_buffer.empty()) command_buffer.pop_back();
       return true;
     }
-    if (event == Event::ArrowDown || event == Event::Character('j')) {
-      selected_command = (selected_command + 1) % command_count;
-      return true;
-    }
-    if (event == Event::Return || event == Event::Character(' ')) {
-      const auto& command = session->state().available_commands[selected_command];
-      if (session->execute_command(command)) {
-        status_line = "executed: " + command;
+    if (event == Event::Return) {
+      const auto submitted = command_buffer;
+      if (session->execute_command(submitted)) {
+        status_line = submitted.empty() ? "executed: <empty>" : "executed: " + submitted;
       } else {
-        status_line = "execution failed: " + command;
+        status_line = submitted.empty() ? "execution failed: <empty>"
+                                        : "execution failed: " + submitted;
       }
+      command_buffer.clear();
+      return true;
+    }
+    if (event.is_character()) {
+      const auto chars = event.character();
+      if (chars.size() == 1 && chars[0] >= 32 && chars[0] != 127) {
+        command_buffer += chars;
+        return true;
+      }
+    }
+    if (event == Event::ArrowUp) {
+      command_buffer = "history";
+      return true;
+    }
+    if (event == Event::ArrowDown) {
+      command_buffer = "profile";
       return true;
     }
     return false;

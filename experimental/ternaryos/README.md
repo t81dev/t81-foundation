@@ -12,7 +12,7 @@
 
 Prototype implementation of Axion, the current working name for the ternary-native
 OS kernel on the T81VM runtime. Phases 1 through 3 are complete, Phase 4
-device-driver work is in progress, and Phase 5 now has a first built-in shell/TUI
+device-driver work is in progress, and Phase 5 now has a first typed shell/TUI
 path on top of the hosted guest-bootstrap path.
 
 For now, internal paths, namespaces, CMake targets, and test names still use
@@ -71,6 +71,7 @@ demo.cpp               Phase 4 hosted presentation demo
 shell_session.hpp/.cpp Phase 5 shell session backend over guest bootstrap
 shell_demo.cpp         Phase 5 verbose shell backend proof
 shell_tui.cpp          Phase 5 FTXUI shell frontend with snapshot mode
+shell_session_test.cpp Phase 5 shell command / durable-history test
 
 tests/
   hal_boot_test.cpp          Phase 1 — 84 assertions
@@ -88,7 +89,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 737/737 assertions, 7/7 tests pass
+# Expected: 754/754 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -124,7 +125,7 @@ What it proves today:
 
 - the shell path boots through the same VirtualBox guest bootstrap seam as the
   Phase 4 demo
-- one scripted shell transcript is persisted through CanonStore over the
+- one scripted typed-command transcript is persisted through CanonStore over the
   AHCI-shaped storage binding
 - that transcript survives reboot and is recovered before rendering
 - the shell page is rendered through the VMSVGA-backed ternary framebuffer
@@ -152,11 +153,13 @@ What the TUI adds:
 - a minimal built-in command model behind the transcript:
   - `help`
   - `profile`
-  - `store put`
+  - `store put <text>`
   - `history`
-- a live selection/execution loop in the interactive TUI:
-  - `Up` / `Down` or `j` / `k` selects a built-in
-  - `Enter` or `Space` executes it into the transcript
+- a live typed-input loop in the interactive TUI:
+  - printable characters append to the command buffer
+  - `Backspace` edits
+  - `Enter` executes into the transcript
+  - `Up` / `Down` preload `history` / `profile` as quick shortcuts
 
 What it is not yet:
 
@@ -165,9 +168,10 @@ What it is not yet:
 
 Local hosted proof as of the current branch:
 
-- all 7 TernOS test binaries pass
+- all 8 TernOS test binaries pass
 - `t81_ternaryos_device_driver_test` is `342/342`
-- total TernOS assertions are `737`
+- `t81_ternaryos_shell_session_test` is `17/17`
+- total TernOS assertions are `754`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback
