@@ -72,6 +72,10 @@ ARM diagnostic result:
   same shell backend
 - local QEMU guest probes now also recover `startup-report.txt`, exposing a
   consolidated backend-generated shell/session/history/store/ref proof surface
+- local QEMU guest probes now also recover `startup-phase4.txt`, exposing a
+  pure Phase 4 device-layer proof surface derived from the real guest bootstrap:
+  CanonStore recovery through `virtualbox-ahci`, one VMSVGA present, and one
+  E1000 round-trip
 - local VirtualBox ARM remains non-observable for EFI execution and is now only
   a secondary diagnostic lane
 - conclusion: the remaining blind spot is the local VirtualBox ARM path, not

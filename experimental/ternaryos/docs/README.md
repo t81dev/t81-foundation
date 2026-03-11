@@ -341,6 +341,8 @@ Outputs:
   - backend-generated `show ref <canonref>` snapshot embedded into the ARM EFI stub
 - `build/ternaryos/qemu_armv8_guest/startup-report.txt`
   - consolidated backend-generated shell/session/history/store/ref proof surface embedded into the ARM EFI stub
+- `build/ternaryos/qemu_armv8_guest/startup-phase4.txt`
+  - consolidated backend-generated Phase 4 storage/display/network proof surface embedded into the ARM EFI stub
 
 Current status:
 
@@ -356,6 +358,16 @@ Current status:
 - the current `boot-report.txt` confirms the staged ARM guest reaches the Axion handoff stub with `platform_id=virtualbox-armv8:ARMv8Virtual/developer-lane` and `hal_main_result=0`
 - the QEMU serial log now also includes a visible boot banner, `Axion ARMv8 EFI stub`, so the developer lane has a direct live boot signal as well as file-based proof
 - the current QEMU lane also recovers backend-generated `startup-shell.txt`, `startup-session.txt`, `startup-history.txt`, `startup-store.txt`, `startup-ref.txt`, and `startup-report.txt`, so the staged ARM guest is now exposing real shell/session/store state rather than only handwritten boot metadata
+- the current QEMU lane also recovers backend-generated `startup-phase4.txt`, so the staged ARM guest now exposes a pure Phase 4 device-layer proof in addition to the shell/runtime artifacts
+- the current `startup-phase4.txt` proves guest-bootstrap behavior from the actual Phase 4 seam:
+  - `storage_binding=virtualbox-ahci`
+  - `canonstore_recovered_entries=1`
+  - `canonstore_lookup=ok`
+  - `display_binding=virtualbox-vmsvga`
+  - `display_present_count=1`
+  - `network_binding=virtualbox-e1000`
+  - `network_tx_frames=1`
+  - `network_rx_frames=1`
 - the current `startup-status.txt` exposes guest-visible Axion state from the staged ARM guest:
   - `os_name=Axion`
   - `phase=5`

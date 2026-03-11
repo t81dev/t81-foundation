@@ -83,7 +83,7 @@ The practical near-term execution path is no longer "hosted prototype -> immedia
 Validation lanes:
 
 1. **Primary acceptance lane:** an `x86_64` VirtualBox host that can boot-validate the official guest target.
-2. **Primary local developer lane:** QEMU AArch64 + EDK2 on Apple Silicon, used for observable EFI execution and early guest bring-up; current local probes now reach the staged `BOOTAA64.EFI` developer-lane guest image directly.
+2. **Primary local developer lane:** QEMU AArch64 + EDK2 on Apple Silicon, used for observable EFI execution and early guest bring-up; current local probes now reach the staged `BOOTAA64.EFI` developer-lane guest image directly and recover a Phase 4 startup artifact derived from the real guest bootstrap path.
 3. **Secondary diagnostic lane:** ARMv8/Apple Silicon VirtualBox hosts used for artifact generation, host-capability checks, and narrow VirtualBox-specific boot-pipeline investigation only.
    That diagnostic lane now reaches compiled EFI-stub objects, a developer-lane `BOOTAA64.EFI`, packaged guest artifacts, and a headless boot probe that confirms VBox EFI can see the staged AHCI disk even though it is still not the acceptance target.
 

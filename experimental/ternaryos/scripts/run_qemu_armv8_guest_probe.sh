@@ -35,11 +35,12 @@ startup_history_copy="$output_dir/startup-history.txt"
 startup_store_copy="$output_dir/startup-store.txt"
 startup_ref_copy="$output_dir/startup-ref.txt"
 startup_report_copy="$output_dir/startup-report.txt"
+startup_phase4_copy="$output_dir/startup-phase4.txt"
 boot_banner_seen=0
 
 /bin/cp "$arm_image" "$probe_image"
 /bin/cp "$edk2_vars_template" "$vars_copy"
-/bin/rm -f "$serial_log" "$pid_file" "$summary_file" "$boot_report_copy" "$startup_status_copy" "$startup_shell_copy" "$startup_session_copy" "$startup_history_copy" "$startup_store_copy" "$startup_ref_copy" "$startup_report_copy"
+/bin/rm -f "$serial_log" "$pid_file" "$summary_file" "$boot_report_copy" "$startup_status_copy" "$startup_shell_copy" "$startup_session_copy" "$startup_history_copy" "$startup_store_copy" "$startup_ref_copy" "$startup_report_copy" "$startup_phase4_copy"
 
 qemu_pid=""
 disk_dev=""
@@ -99,6 +100,7 @@ startup_history_path="$mount_point/TERNOS/startup-history.txt"
 startup_store_path="$mount_point/TERNOS/startup-store.txt"
 startup_ref_path="$mount_point/TERNOS/startup-ref.txt"
 startup_report_path="$mount_point/TERNOS/startup-report.txt"
+startup_phase4_path="$mount_point/TERNOS/startup-phase4.txt"
 
 startup_seen=0
 ctrl_seen=0
@@ -111,6 +113,7 @@ startup_history_seen=0
 startup_store_seen=0
 startup_ref_seen=0
 startup_report_seen=0
+startup_phase4_seen=0
 
 [[ -f "$startup_marker_path" ]] && startup_seen=1
 [[ -f "$ctrl_marker_path" ]] && ctrl_seen=1
@@ -146,6 +149,10 @@ fi
 if [[ -f "$startup_report_path" ]]; then
   /bin/cp "$startup_report_path" "$startup_report_copy"
   startup_report_seen=1
+fi
+if [[ -f "$startup_phase4_path" ]]; then
+  /bin/cp "$startup_phase4_path" "$startup_phase4_copy"
+  startup_phase4_seen=1
 fi
 
 boot_path_inference="unknown"
@@ -190,6 +197,8 @@ startup_ref_seen=$startup_ref_seen
 startup_ref_copy=$startup_ref_copy
 startup_report_seen=$startup_report_seen
 startup_report_copy=$startup_report_copy
+startup_phase4_seen=$startup_phase4_seen
+startup_phase4_copy=$startup_phase4_copy
 boot_banner_seen=$boot_banner_seen
 boot_path_inference=$boot_path_inference
 EOF
@@ -197,8 +206,8 @@ EOF
 /usr/bin/hdiutil detach "$disk_dev" >/dev/null 2>&1 || true
 disk_dev=""
 
-if [[ "$efi_seen" -ne 1 || "$boot_report_seen" -ne 1 || "$startup_status_seen" -ne 1 || "$startup_shell_seen" -ne 1 || "$startup_session_seen" -ne 1 || "$startup_history_seen" -ne 1 || "$startup_store_seen" -ne 1 || "$startup_ref_seen" -ne 1 || "$startup_report_seen" -ne 1 || "$boot_banner_seen" -ne 1 ]]; then
-  echo "QEMU ARMv8 guest probe did not observe the staged BOOTAA64.EFI marker, startup status, startup shell, startup session, startup history, startup store, startup ref, startup report, boot report, and serial banner" >&2
+if [[ "$efi_seen" -ne 1 || "$boot_report_seen" -ne 1 || "$startup_status_seen" -ne 1 || "$startup_shell_seen" -ne 1 || "$startup_session_seen" -ne 1 || "$startup_history_seen" -ne 1 || "$startup_store_seen" -ne 1 || "$startup_ref_seen" -ne 1 || "$startup_report_seen" -ne 1 || "$startup_phase4_seen" -ne 1 || "$boot_banner_seen" -ne 1 ]]; then
+  echo "QEMU ARMv8 guest probe did not observe the staged BOOTAA64.EFI marker, startup status, startup shell, startup session, startup history, startup store, startup ref, startup report, startup phase4 report, boot report, and serial banner" >&2
   /bin/cat "$summary_file" >&2
   exit 1
 fi
@@ -229,6 +238,26 @@ do
     echo "QEMU ARMv8 guest probe found startup status, but expected field was missing: $expected" >&2
     /bin/cat "$summary_file" >&2
     /bin/cat "$startup_status_copy" >&2
+    exit 1
+  fi
+done
+
+for expected in \
+  '^AXION_PHASE4_STARTUP$' \
+  '^storage_binding=virtualbox-ahci$' \
+  '^canonstore_recovered_entries=1$' \
+  '^canonstore_lookup=ok$' \
+  '^display_binding=virtualbox-vmsvga$' \
+  '^display_present_count=1$' \
+  '^network_binding=virtualbox-e1000$' \
+  '^network_tx_frames=1$' \
+  '^network_rx_frames=1$' \
+  '^network_roundtrip_words=2$'
+do
+  if ! /usr/bin/grep -q "$expected" "$startup_phase4_copy"; then
+    echo "QEMU ARMv8 guest probe found startup phase4 report, but expected field was missing: $expected" >&2
+    /bin/cat "$summary_file" >&2
+    /bin/cat "$startup_phase4_copy" >&2
     exit 1
   fi
 done
