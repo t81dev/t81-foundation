@@ -11,7 +11,7 @@
 
 Prototype implementation of TernOS — a ternary-native OS kernel for the T81VM
 runtime. Phases 1 through 3 are complete, Phase 4 device-driver work is in
-progress, and Phase 5 now has a first scripted shell/TUI demo on top of the
+progress, and Phase 5 now has a first scripted shell/TUI path on top of the
 hosted guest-bootstrap path.
 
 ## Structure
@@ -58,7 +58,9 @@ dev/
   net_packet.hpp       Ternary Ethernet packet wrapper + binary frame codec
 
 demo.cpp               Phase 4 hosted presentation demo
-shell_demo.cpp         Phase 5 scripted shell/TUI demo over guest bootstrap
+shell_session.hpp/.cpp Phase 5 scripted shell session backend over guest bootstrap
+shell_demo.cpp         Phase 5 verbose shell backend proof
+shell_tui.cpp          Phase 5 FTXUI shell frontend with snapshot mode
 
 tests/
   hal_boot_test.cpp          Phase 1 — 84 assertions
@@ -116,6 +118,27 @@ What it proves today:
   AHCI-shaped storage binding
 - that transcript survives reboot and is recovered before rendering
 - the shell page is rendered through the VMSVGA-backed ternary framebuffer
+
+## Shell TUI
+
+To run the first FTXUI-based TernOS shell frontend:
+
+```sh
+cmake --build build --target t81_ternaryos_shell_tui
+./build/t81_ternaryos_shell_tui
+```
+
+For a noninteractive snapshot render:
+
+```sh
+./build/t81_ternaryos_shell_tui --snapshot
+```
+
+What the TUI adds:
+
+- a proper terminal UI surface using the same FTXUI stack as the rest of the repo
+- a transcript pane, session/status pane, and framebuffer preview in one screen
+- a deterministic snapshot mode suitable for review and later test automation
 
 What it is not yet:
 

@@ -1,7 +1,7 @@
 # TernOS Implementation Progress
 
 **Last updated:** 2026-03-10
-**Commit:** `62cd149a`
+**Commit:** `257359ad`
 **Branch:** `main`
 
 Reference docs:
@@ -153,13 +153,16 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | File | Purpose | Tests |
 | :--- | :--- | :---: |
-| `shell_demo.cpp` | First scripted shell/TUI scaffold: boots through the VirtualBox guest-bootstrap path, persists one shell transcript through CanonStore, reboots, recovers it, and renders the resulting screen through the VMSVGA-backed ternary framebuffer | — |
+| `shell_session.hpp/.cpp` | Shared Phase 5 scripted shell-session backend: boots through the VirtualBox guest-bootstrap path, persists one shell transcript through CanonStore, reboots, recovers it, and exposes deterministic transcript/framebuffer state to frontends | — |
+| `shell_demo.cpp` | Verbose Phase 5 backend proof: prints the scripted shell session and framebuffer evidence directly to stdout | — |
+| `shell_tui.cpp` | First FTXUI-based TernOS shell frontend with transcript pane, session pane, framebuffer preview, and `--snapshot` render mode | — |
 
 #### Design notes
 
 - Phase 5 is now started, but only as a deterministic hosted scaffold.
 - The current shell path is intentionally narrow: it is not interactive, does not execute TISC userland yet, and does not introduce a syscall surface.
 - Its value is architectural: user-facing output now rides the same guest-bootstrap storage and display seams already proven in Phase 4.
+- The shell UI now uses the repo's established FTXUI stack instead of a one-off terminal surface, and `--snapshot` gives it a noninteractive review/debug mode.
 - The next real Phase 5 milestone should be replacing the scripted transcript with a minimal command model rather than adding more presentation-only screens.
 
 ---

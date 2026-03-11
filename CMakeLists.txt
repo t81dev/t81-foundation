@@ -578,13 +578,32 @@ if(T81_ENABLE_TERNARYOS)
   target_link_libraries(t81_ternaryos_hal PUBLIC t81_core t81_axion)
   target_compile_features(t81_ternaryos_hal PUBLIC ${T81_CXX_STD_FEATURE})
 
+  add_library(t81_ternaryos_shell STATIC
+    experimental/ternaryos/shell_session.cpp)
+  target_include_directories(t81_ternaryos_shell PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+  target_link_libraries(t81_ternaryos_shell PUBLIC t81_ternaryos_hal)
+  target_compile_features(t81_ternaryos_shell PUBLIC ${T81_CXX_STD_FEATURE})
+
   add_executable(t81_ternaryos_demo
     experimental/ternaryos/demo.cpp)
   target_link_libraries(t81_ternaryos_demo PRIVATE t81_ternaryos_hal)
 
   add_executable(t81_ternaryos_shell_demo
     experimental/ternaryos/shell_demo.cpp)
-  target_link_libraries(t81_ternaryos_shell_demo PRIVATE t81_ternaryos_hal)
+  target_link_libraries(t81_ternaryos_shell_demo PRIVATE t81_ternaryos_shell)
+
+  if(T81_BUILD_TUI)
+    add_executable(t81_ternaryos_shell_tui
+      experimental/ternaryos/shell_tui.cpp)
+    target_link_libraries(t81_ternaryos_shell_tui PRIVATE
+      t81_ternaryos_shell
+      ftxui::screen
+      ftxui::dom
+      ftxui::component)
+    target_compile_features(t81_ternaryos_shell_tui PRIVATE ${T81_CXX_STD_FEATURE})
+  endif()
 
   set(T81_TERNARYOS_GUEST_ARTIFACT_DEPS t81_ternaryos_demo)
   set(T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_demo)
