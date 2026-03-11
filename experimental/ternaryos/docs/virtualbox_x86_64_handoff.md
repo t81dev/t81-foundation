@@ -37,8 +37,8 @@ Current local verification snapshot:
 
 - `ctest --test-dir build -R ternaryos -V` passes all 8 tests
 - `t81_ternaryos_device_driver_test` = `342/342`
-- `t81_ternaryos_shell_session_test` = `100/100`
-- total TernOS assertions = `837`
+- `t81_ternaryos_shell_session_test` = `114/114`
+- total TernOS assertions = `851`
 
 So the external `x86_64` job is narrowly focused:
 

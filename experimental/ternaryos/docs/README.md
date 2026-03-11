@@ -102,7 +102,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 837/837 assertions, 8/8 tests pass
+# Expected: 851/851 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -169,17 +169,20 @@ What the TUI adds:
   - `show profile`
   - `session status`
   - `session checkpoint`
+  - `session export`
   - `session show durable`
   - `show session`
   - `session refs`
   - `store put <text>`
   - `store put ref <ref>`
+  - `store cp <ref>`
   - `store ls`
   - `store get <ref>`
   - `show ref <canonref>`
   - `store rm <ref>`
   - `history`
   - `history show session`
+  - `history show object <ref>`
   - `history show durable`
   - `clear`
 - a live typed-input loop in the interactive TUI:
@@ -194,6 +197,7 @@ What the TUI adds:
 - the shell now has explicit durable-state inspection commands:
   - `session refs` for the shell-tracked durable ref set
   - `session checkpoint` for persisting the current transcript as a canonical object
+  - `session export` for promoting the current transcript to the durable history anchor
   - `history show durable` for the current durable history anchor
   - `session show durable` for the current durable anchor/ref view
 - the shell now has an explicit session-history inspection command:
@@ -204,6 +208,9 @@ What the TUI adds:
   - `show ref <canonref>` for direct canonical-object lookup
 - the shell now has its first object-native write/composition surface:
   - `store put ref <ref>` for canonical object composition
+  - `store cp <ref>` for direct canonical object copy
+- the shell now has an object-history inspection surface:
+  - `history show object <ref>` for durable object lookup without changing the active anchor
 
 What it is not yet:
 
@@ -215,8 +222,8 @@ Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
 - `t81_ternaryos_device_driver_test` is `342/342`
-- `t81_ternaryos_shell_session_test` is `100/100`
-- total TernOS assertions are `837`
+- `t81_ternaryos_shell_session_test` is `114/114`
+- total TernOS assertions are `851`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback

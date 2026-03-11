@@ -30,11 +30,12 @@ namespace t81::ternaryos {
 
 namespace {
 
-constexpr std::array<const char*, 18> kBuiltinCommands = {
+constexpr std::array<const char*, 21> kBuiltinCommands = {
     "help",
     "profile",
     "session status",
     "session checkpoint",
+    "session export",
     "session show durable",
     "session refs",
     "show profile",
@@ -42,11 +43,13 @@ constexpr std::array<const char*, 18> kBuiltinCommands = {
     "show ref <canonref>",
     "store put <text>",
     "store put ref <ref>",
+    "store cp <ref>",
     "store ls",
     "store get <ref>",
     "store rm <ref>",
     "history",
     "history show session",
+    "history show object <ref>",
     "history show durable",
     "clear",
 };
@@ -293,7 +296,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words[0] == "help") {
     state_.command_records.push_back(
         {command,
-         "builtins help profile session status session checkpoint session show durable session refs show profile show session show ref <canonref> store put <text> store put ref <ref> store ls store get <ref> store rm <ref> history history show session history show durable clear"});
+         "builtins help profile session status session checkpoint session export session show durable session refs show profile show session show ref <canonref> store put <text> store put ref <ref> store cp <ref> store ls store get <ref> store rm <ref> history history show session history show object <ref> history show durable clear"});
     return refresh_render();
   }
 
@@ -391,6 +394,23 @@ bool ShellSession::execute_command(std::string_view command_view) {
     return refresh_render();
   }
 
+  if (words.size() == 2 && words[0] == "session" && words[1] == "export") {
+    state_.recovered_entries = store.rebuild_index();
+    auto ref = store.put(make_text_block(state_.transcript_text));
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "session export failed"});
+      return refresh_render();
+    }
+    history_ref_ = *ref;
+    if (!canon_ref_known(stored_refs_, *ref)) stored_refs_.push_back(*ref);
+    if (!store.flush()) {
+      state_.command_records.push_back({command, "session export flush failed"});
+      return refresh_render();
+    }
+    state_.command_records.push_back({command, "session export ok " + canon_ref_text(*ref)});
+    return refresh_render();
+  }
+
   if (words.size() == 4 && words[0] == "store" && words[1] == "put" && words[2] == "ref") {
     state_.recovered_entries = store.rebuild_index();
     const auto ref = parse_canon_ref_text(words[3]);
@@ -418,6 +438,34 @@ bool ShellSession::execute_command(std::string_view command_view) {
     }
     state_.command_records.push_back(
         {command, "canon durable ref ok " + canon_ref_text(*copied_ref)});
+    return refresh_render();
+  }
+
+  if (words.size() == 3 && words[0] == "store" && words[1] == "cp") {
+    state_.recovered_entries = store.rebuild_index();
+    const auto ref = parse_canon_ref_text(words[2]);
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "store cp invalid ref"});
+      return refresh_render();
+    }
+
+    const auto source = store.get(*ref);
+    if (!source.has_value()) {
+      state_.command_records.push_back({command, "store cp missing"});
+      return refresh_render();
+    }
+
+    auto copied_ref = store.put(*source);
+    if (!copied_ref.has_value()) {
+      state_.command_records.push_back({command, "store cp failed"});
+      return refresh_render();
+    }
+    if (!canon_ref_known(stored_refs_, *copied_ref)) stored_refs_.push_back(*copied_ref);
+    if (!store.flush()) {
+      state_.command_records.push_back({command, "store cp flush failed"});
+      return refresh_render();
+    }
+    state_.command_records.push_back({command, "store cp ok " + canon_ref_text(*copied_ref)});
     return refresh_render();
   }
 
@@ -530,6 +578,25 @@ bool ShellSession::execute_command(std::string_view command_view) {
         out << '\n' << record.command;
       }
       state_.command_records.push_back({command, out.str()});
+      return refresh_render();
+    }
+
+    if (words.size() == 4 && words[1] == "show" && words[2] == "object") {
+      const auto ref = parse_canon_ref_text(words[3]);
+      if (!ref.has_value()) {
+        state_.command_records.push_back({command, "history object invalid ref"});
+        return refresh_render();
+      }
+
+      state_.recovered_entries = store.rebuild_index();
+      const auto block = store.get(*ref);
+      if (!block.has_value()) {
+        state_.command_records.push_back({command, "history object missing"});
+        return refresh_render();
+      }
+
+      state_.command_records.push_back(
+          {command, "history object " + canon_ref_text(*ref) + "\n" + decode_text_block(*block)});
       return refresh_render();
     }
 

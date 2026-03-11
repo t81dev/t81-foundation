@@ -186,15 +186,18 @@ history
 history show session
 session status
 session checkpoint
+session export
 session show durable
 show session
 session refs
 store put <text>
 store put ref <ref>
+store cp <ref>
 store ls
 store get <ref>
 show ref <canonref>
 store rm <ref>
+history show object <ref>
 history show durable
 clear
 ```
@@ -222,8 +225,11 @@ Current direction:
 show ref <canonref>
 show session
 show profile
+session export
 store put text "<payload>"
+store cp <ref>
 store get ref <canonref>
+history show object <ref>
 ```
 
 This keeps the grammar readable while making objects explicit.
