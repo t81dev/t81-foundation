@@ -183,6 +183,15 @@ The thirteenth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves that retained blocked-side backlog depth stays
   stable after backlog drain
 
+The fourteenth pager-groundwork slice is now also complete:
+
+- runtime and fault diagnostics now retain the last activated address space and
+  its activation ordinal after the worker goes idle
+- postmortem pager-worker summaries can now correlate the final worker
+  activation with the later blocker/blocked relationship summaries
+- HAL/kernel coverage now proves that retained activation identity and ordinal
+  stay stable after backlog drain
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable

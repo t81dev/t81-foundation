@@ -984,6 +984,10 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
               : std::nullopt,
       .pager_worker_handoffs_received = state.pager_worker.handoffs_received,
       .pager_worker_activations = state.pager_worker.activations,
+      .pager_worker_last_activated_address_space_id =
+          state.pager_worker.last_activated_address_space_id,
+      .pager_worker_last_activation_cycle =
+          state.pager_worker.last_activation_cycle,
       .pager_worker_stall_cycles = state.pager_worker.stall_cycles,
       .pager_worker_backlog_blocked_cycles =
           state.pager_worker.backlog_blocked_cycles,
@@ -1417,6 +1421,9 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
         state.pager_worker.inbox.pop_front();
         ++state.pager_worker.activations;
         ++state.counters.pager_worker_activations;
+        state.pager_worker.last_activated_address_space_id =
+            state.pager_worker.active_work->handoff.address_space_id;
+        state.pager_worker.last_activation_cycle = state.pager_worker.activations;
       }
       if (state.pager_worker.active_work.has_value()) {
         const auto active_address_space_id =
@@ -1592,6 +1599,10 @@ KernelServiceResult axion_kernel_service_request(
           .pager_faults_coalesced = state.counters.pager_faults_coalesced,
           .pager_worker_handoffs_received = state.pager_worker.handoffs_received,
           .pager_worker_activations = state.pager_worker.activations,
+          .pager_worker_last_activated_address_space_id =
+              state.pager_worker.last_activated_address_space_id,
+          .pager_worker_last_activation_cycle =
+              state.pager_worker.last_activation_cycle,
           .pager_worker_stall_cycles = state.pager_worker.stall_cycles,
           .pager_worker_backlog_blocked_cycles =
               state.pager_worker.backlog_blocked_cycles,

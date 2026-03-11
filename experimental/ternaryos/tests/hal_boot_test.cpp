@@ -1309,6 +1309,11 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status leaves one queued work item after first activation");
     check(runtime_after_first_activation.runtime->pager_worker_activations == 1,
           "runtime status counts one worker activation after first activation");
+    check(runtime_after_first_activation.runtime->pager_worker_last_activated_address_space_id ==
+              first_address_space_id,
+          "runtime status tracks the first activated address space");
+    check(runtime_after_first_activation.runtime->pager_worker_last_activation_cycle == 1,
+          "runtime status tracks the first activation ordinal");
     check(runtime_after_first_activation.runtime->pager_worker_stall_cycles == 1,
           "runtime status counts one worker stall cycle while the first item remains unresolved");
     check(runtime_after_first_activation.runtime->pager_worker_backlog_blocked_cycles == 1,
@@ -1373,6 +1378,11 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status drains the worker inbox by the second activation");
     check(runtime_after_second_activation.runtime->pager_worker_activations == 2,
           "runtime status counts two worker activations after backlog drain");
+    check(runtime_after_second_activation.runtime->pager_worker_last_activated_address_space_id ==
+              second_address_space_id,
+          "runtime status tracks the second activated address space");
+    check(runtime_after_second_activation.runtime->pager_worker_last_activation_cycle == 2,
+          "runtime status tracks the second activation ordinal");
   }
   auto runtime_after_second_resolution = axion_kernel_service_request(
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
@@ -1391,6 +1401,11 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status retains inbox watermark after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_activations == 2,
           "runtime status retains worker activation count after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_last_activated_address_space_id ==
+              second_address_space_id,
+          "runtime status retains the last activated address space after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_last_activation_cycle == 2,
+          "runtime status retains the last activation ordinal after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_stall_cycles == 1,
           "runtime status retains the worker stall count after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_backlog_blocked_cycles == 1,
@@ -1435,6 +1450,11 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary retains inbox watermark after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_activations == 2,
           "fault summary counts two worker activations after backlog drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_last_activated_address_space_id ==
+              second_address_space_id,
+          "fault summary retains the last activated address space after backlog drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_last_activation_cycle == 2,
+          "fault summary retains the last activation ordinal after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_stall_cycles == 1,
           "fault summary counts one worker stall cycle after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_backlog_blocked_cycles == 1,
