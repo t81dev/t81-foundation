@@ -2332,6 +2332,92 @@ static void test_kernel_service_runtime_layer() {
             KernelServiceActionRejection::ServiceNotSuspended,
         "duplicate resume reports not-suspended rejection");
 
+  t81::ternaryos::sched::TiscContext supervisor_peer_ctx;
+  supervisor_peer_ctx.label = "service-supervisor-peer";
+  supervisor_peer_ctx.registers[0] = 1203;
+  auto supervisor_peer_tid = axion_kernel_spawn_thread_under_supervisor(
+      *state, supervisor_peer_ctx, *supervisor_id);
+  check(supervisor_peer_tid.has_value(),
+        "supervisor peer thread spawns under existing supervisor");
+  if (!supervisor_peer_tid) {
+    return;
+  }
+
+  const auto* supervisor_peer_runtime = state->find_thread_runtime(*supervisor_peer_tid);
+  check(supervisor_peer_runtime != nullptr, "supervisor peer runtime exists");
+  if (!supervisor_peer_runtime) {
+    return;
+  }
+  check(supervisor_peer_runtime->process_group_id != owner_runtime->process_group_id,
+        "supervisor peer owns a distinct process group");
+  auto peer_supervisor_id =
+      state->find_process_group_supervisor(supervisor_peer_runtime->process_group_id);
+  check(peer_supervisor_id.has_value(), "supervisor peer group resolves to a supervisor");
+  if (!peer_supervisor_id) {
+    return;
+  }
+  check(*peer_supervisor_id == *supervisor_id,
+        "supervisor peer group shares the same supervisor");
+
+  auto supervisor_suspend = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::SuspendService,
+          .requesting_process_group_id = supervisor_peer_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(supervisor_suspend.status == KernelServiceStatus::Ok,
+        "same-supervisor peer group can suspend a managed service");
+  check(supervisor_suspend.rejection == KernelServiceActionRejection::None,
+        "same-supervisor suspend clears rejection");
+  if (supervisor_suspend.service) {
+    check(supervisor_suspend.service->suspended,
+          "same-supervisor suspend updates managed service state");
+  }
+
+  t81::ternaryos::sched::TiscContext foreign_ctx;
+  foreign_ctx.label = "service-foreign-peer";
+  foreign_ctx.registers[0] = 1204;
+  auto foreign_tid = axion_kernel_spawn_thread(*state, foreign_ctx);
+  check(foreign_tid.has_value(), "foreign supervisor thread spawns");
+  if (!foreign_tid) {
+    return;
+  }
+  const auto* foreign_runtime = state->find_thread_runtime(*foreign_tid);
+  check(foreign_runtime != nullptr, "foreign runtime exists");
+  if (!foreign_runtime) {
+    return;
+  }
+
+  auto foreign_resume = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::ResumeService,
+          .requesting_process_group_id = foreign_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(foreign_resume.status == KernelServiceStatus::InvalidRequest,
+        "foreign supervisor group cannot resume another supervisor's service");
+  check(foreign_resume.rejection ==
+            KernelServiceActionRejection::ServiceSupervisorMismatch,
+        "foreign supervisor resume reports supervisor mismatch");
+
+  auto supervisor_resume = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::ResumeService,
+          .requesting_process_group_id = supervisor_peer_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(supervisor_resume.status == KernelServiceStatus::Ok,
+        "same-supervisor peer group can resume a managed service");
+  check(supervisor_resume.rejection == KernelServiceActionRejection::None,
+        "same-supervisor resume clears rejection");
+  if (supervisor_resume.service) {
+    check(!supervisor_resume.service->suspended,
+          "same-supervisor resume clears managed service suspension");
+  }
+
   t81::ternaryos::sched::TiscContext fault_ctx;
   fault_ctx.label = "service-faulted";
   fault_ctx.registers[0] = 1202;
@@ -2343,6 +2429,8 @@ static void test_kernel_service_runtime_layer() {
   }
 
   check(axion_kernel_step(*state), "service runtime dispatches owner thread");
+  check(axion_kernel_step(*state), "service runtime dispatches supervisor peer thread");
+  check(axion_kernel_step(*state), "service runtime dispatches foreign peer thread");
   check(axion_kernel_step(*state), "service runtime dispatches sibling fault thread");
   check(state->scheduler.current_tid() == *fault_tid,
         "service runtime fault thread becomes current");

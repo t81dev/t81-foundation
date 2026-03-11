@@ -502,6 +502,11 @@ std::optional<sched::Tid> axion_kernel_spawn_thread_in_group(
     sched::TiscContext ctx,
     ProcessGroupId process_group_id) noexcept;
 
+std::optional<sched::Tid> axion_kernel_spawn_thread_under_supervisor(
+    KernelRuntimeState& state,
+    sched::TiscContext ctx,
+    SupervisorId supervisor_id) noexcept;
+
 bool axion_kernel_tick(KernelRuntimeState& state) noexcept;
 
 bool axion_kernel_step(KernelRuntimeState& state) noexcept;

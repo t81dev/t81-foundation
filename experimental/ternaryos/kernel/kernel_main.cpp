@@ -689,6 +689,37 @@ std::optional<sched::Tid> axion_kernel_spawn_thread_in_group(
   return tid;
 }
 
+std::optional<sched::Tid> axion_kernel_spawn_thread_under_supervisor(
+    KernelRuntimeState& state,
+    sched::TiscContext ctx,
+    SupervisorId supervisor_id) noexcept {
+  if (!state.find_supervisor(supervisor_id)) {
+    return std::nullopt;
+  }
+  auto* group = create_process_group(state);
+  if (!group) {
+    return std::nullopt;
+  }
+  auto tid = state.scheduler.spawn(std::move(ctx));
+  if (!tid.has_value()) {
+    state.process_groups.erase(group->id);
+    return std::nullopt;
+  }
+  state.ipc_bus.register_thread(*tid);
+  state.thread_runtime.emplace(*tid,
+                               KernelRuntimeState::ThreadRuntimeState{
+                                   .tid = *tid,
+                                   .process_group_id = group->id,
+                               });
+  assign_thread_to_group(state, *tid, group->id);
+  if (!assign_group_to_supervisor(state, group->id, supervisor_id)) {
+    state.thread_runtime.erase(*tid);
+    state.process_groups.erase(group->id);
+    return std::nullopt;
+  }
+  return tid;
+}
+
 bool axion_kernel_tick(KernelRuntimeState& state) noexcept {
   ++state.counters.scheduler_ticks;
   const bool switched = state.scheduler.tick(state.cpu_context);
@@ -1239,19 +1270,18 @@ KernelServiceActionResult axion_kernel_service_action(
         result.rejection = KernelServiceActionRejection::MissingService;
         return result;
       }
-      if (service_state->process_group_id != *action.requesting_process_group_id) {
-        result.status = KernelServiceStatus::InvalidRequest;
-        result.rejection = KernelServiceActionRejection::ServiceProcessGroupMismatch;
-        return result;
-      }
-      const auto supervisor_id =
+      const auto requester_supervisor_id =
           state.find_process_group_supervisor(*action.requesting_process_group_id);
-      if (!supervisor_id.has_value()) {
+      if (!requester_supervisor_id.has_value()) {
         result.status = KernelServiceStatus::InvalidRequest;
         result.rejection = KernelServiceActionRejection::MissingSupervisor;
         return result;
       }
-      if (service_state->supervisor_id != *supervisor_id) {
+      const auto supervisor_id =
+          state.find_process_group_supervisor(service_state->process_group_id);
+      if (!supervisor_id.has_value() ||
+          service_state->supervisor_id != *supervisor_id ||
+          *requester_supervisor_id != *supervisor_id) {
         result.status = KernelServiceStatus::InvalidRequest;
         result.rejection = KernelServiceActionRejection::ServiceSupervisorMismatch;
         return result;

@@ -44,9 +44,10 @@ semantics are now explicit across that contract, and stable audit/device detail
 views are exposed through it. A first service-runtime layer now exists above
 that boundary, with deterministic service registration, deterministic service
 unregister, deterministic service suspend/resume, stable service detail, and
-richer supervisor-owned inventory. The next steps are to keep that lifecycle
-contract stable while continuing to move the runtime toward fuller kernel
-behavior.
+richer supervisor-owned inventory. Same-supervisor process groups can now drive
+those suspend/resume transitions over managed services through the same stable
+contract. The next steps are to keep that lifecycle contract stable while
+continuing to move the runtime toward fuller kernel behavior.
 
 That near-term kernel slice is now tracked explicitly in:
 

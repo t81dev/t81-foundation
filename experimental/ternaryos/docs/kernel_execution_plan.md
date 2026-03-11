@@ -66,6 +66,7 @@ The current service layer now covers:
 - deterministic service registration
 - deterministic service unregister
 - deterministic service suspend / resume
+- same-supervisor suspend / resume control over managed services
 
 ### 3. Only add new actions if a stable service runtime truly needs them
 
