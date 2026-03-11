@@ -51,7 +51,9 @@ stable contract, exposing unhealthy-state diagnostics and deterministic
 unavailable-service rejection. Successful service lifecycle transitions now
 also flow into the deterministic audit stream through the existing audit
 summary surface. Supervisor-owned service inventory now also retains the latest
-managed-service lifecycle transition metadata. The next steps are to keep that lifecycle
+managed-service lifecycle transition metadata. Compact supervisor status now
+also exposes managed-service lifecycle counts and latest-transition metadata.
+The next steps are to keep that lifecycle
 contract stable while continuing to move the runtime toward fuller kernel
 behavior.
 

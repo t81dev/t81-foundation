@@ -34,9 +34,9 @@ The next kernel slice is now tracked explicitly in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1634`
+- total assertions: `1659`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `722/722`
+- `t81_ternaryos_hal_boot_test`: `747/747`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -66,6 +66,7 @@ Kernel integration proof now also includes:
 - explicit service health transitions now exist through that same stable action surface, exposing unhealthy-state diagnostics and deterministic unavailable-service rejection
 - successful service lifecycle transitions are now visible through the same deterministic audit summary surface
 - supervisor-owned inventory now also retains the latest managed-service lifecycle transition metadata
+- compact supervisor status now also exposes managed-service lifecycle counts and latest-transition metadata
 - the next kernel slice is to keep this service-runtime layer stable and only add another narrow lifecycle action if it is truly needed, not a broad ABI or syscall surface
 
 Phase 4 storage proof now covers:

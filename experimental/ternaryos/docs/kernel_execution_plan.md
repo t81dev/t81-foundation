@@ -72,6 +72,7 @@ The current service layer now covers:
   surface
 - supervisor inventory visibility for the latest managed-service lifecycle
   transition
+- compact supervisor-status visibility for managed-service lifecycle state
 
 ### 3. Only add new actions if a stable service runtime truly needs them
 

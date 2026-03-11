@@ -2216,6 +2216,32 @@ static void test_kernel_service_runtime_layer() {
     check(register_service.supervisor_services->total_service_requests == 0,
           "supervisor inventory starts with zero service requests");
   }
+  auto supervisor_status_after_register = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::SupervisorStatus,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .supervisor_id = *supervisor_id,
+      });
+  check(supervisor_status_after_register.status == KernelServiceStatus::Ok,
+        "healthy group can request supervisor status after service registration");
+  check(supervisor_status_after_register.rejection == KernelServiceRequestRejection::None,
+        "supervisor status after registration clears rejection");
+  check(supervisor_status_after_register.supervisor.has_value(),
+        "supervisor status after registration returns a supervisor view");
+  if (supervisor_status_after_register.supervisor) {
+    check(supervisor_status_after_register.supervisor->managed_service_count == 1,
+          "supervisor status reports one managed service after registration");
+    check(supervisor_status_after_register.supervisor->blocked_service_count == 0,
+          "supervisor status starts with zero blocked services");
+    check(supervisor_status_after_register.supervisor->service_lifecycle_transitions == 1,
+          "supervisor status tracks one lifecycle transition after registration");
+    check(supervisor_status_after_register.supervisor->last_service_transition_id == service_id,
+          "supervisor status tracks the last transitioned service after registration");
+    check(supervisor_status_after_register.supervisor->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceRegistered,
+          "supervisor status tracks registration as the latest lifecycle event");
+  }
   if (!service_id) {
     return;
   }
@@ -2528,6 +2554,34 @@ static void test_kernel_service_runtime_layer() {
     check(peer_health.supervisor_services->last_service_transition_sequence.has_value(),
           "supervisor inventory exposes the latest lifecycle audit sequence");
   }
+  auto supervisor_status_after_heal = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::SupervisorStatus,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .supervisor_id = *supervisor_id,
+      });
+  check(supervisor_status_after_heal.status == KernelServiceStatus::Ok,
+        "healthy group can request supervisor status after service heal");
+  check(supervisor_status_after_heal.rejection == KernelServiceRequestRejection::None,
+        "supervisor status after heal clears rejection");
+  check(supervisor_status_after_heal.supervisor.has_value(),
+        "supervisor status after heal returns a supervisor view");
+  if (supervisor_status_after_heal.supervisor) {
+    check(supervisor_status_after_heal.supervisor->managed_service_count == 1,
+          "supervisor status retains one managed service after heal");
+    check(supervisor_status_after_heal.supervisor->suspended_service_count == 0,
+          "supervisor status reports zero suspended services after heal");
+    check(supervisor_status_after_heal.supervisor->unhealthy_service_count == 0,
+          "supervisor status reports zero unhealthy services after heal");
+    check(supervisor_status_after_heal.supervisor->service_lifecycle_transitions == 7,
+          "supervisor status aggregates lifecycle transitions across managed service control");
+    check(supervisor_status_after_heal.supervisor->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceMarkedHealthy,
+          "supervisor status tracks heal as the latest lifecycle event");
+    check(supervisor_status_after_heal.supervisor->last_service_transition_sequence.has_value(),
+          "supervisor status exposes the latest lifecycle audit sequence");
+  }
 
   auto audit_summary = axion_kernel_service_request(
       *state,
@@ -2714,6 +2768,32 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory tracks unregister as the latest lifecycle event");
     check(unregister_service.supervisor_services->last_service_transition_sequence.has_value(),
           "supervisor inventory retains the latest lifecycle audit sequence after unregister");
+  }
+  auto supervisor_status_after_unregister = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::SupervisorStatus,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .supervisor_id = *supervisor_id,
+      });
+  check(supervisor_status_after_unregister.status == KernelServiceStatus::Ok,
+        "healthy group can request supervisor status after unregister");
+  check(supervisor_status_after_unregister.rejection == KernelServiceRequestRejection::None,
+        "supervisor status after unregister clears rejection");
+  check(supervisor_status_after_unregister.supervisor.has_value(),
+        "supervisor status after unregister returns a supervisor view");
+  if (supervisor_status_after_unregister.supervisor) {
+    check(supervisor_status_after_unregister.supervisor->managed_service_count == 0,
+          "supervisor status reports zero managed services after unregister");
+    check(supervisor_status_after_unregister.supervisor->service_lifecycle_transitions == 8,
+          "supervisor status retains lifecycle transition count after unregister");
+    check(supervisor_status_after_unregister.supervisor->last_service_transition_id == service_id,
+          "supervisor status retains the last transitioned service after unregister");
+    check(supervisor_status_after_unregister.supervisor->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceUnregistered,
+          "supervisor status tracks unregister as the latest lifecycle event");
+    check(supervisor_status_after_unregister.supervisor->last_service_transition_sequence.has_value(),
+          "supervisor status retains the latest lifecycle audit sequence after unregister");
   }
   check(!state->audit_log.empty(), "service lifecycle actions produce audit records");
   if (!state->audit_log.empty()) {

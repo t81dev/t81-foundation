@@ -165,6 +165,10 @@ bool mark_service_unhealthy(KernelRuntimeState& state,
   return true;
 }
 
+KernelSupervisorServiceInventoryView build_supervisor_services_view(
+    const KernelRuntimeState& state,
+    SupervisorId supervisor_id);
+
 bool queue_supervisor_pending_group(KernelRuntimeState& state,
                                     ProcessGroupId process_group_id,
                                     sched::Tid subject_tid,
@@ -365,21 +369,32 @@ KernelProcessGroupStatusView make_process_group_view(const KernelRuntimeState& s
 KernelSupervisorStatusView make_supervisor_view(const KernelRuntimeState& state,
                                                 SupervisorId supervisor_id) {
   const auto* supervisor_state = state.find_supervisor(supervisor_id);
+  const auto service_inventory = build_supervisor_services_view(state, supervisor_id);
   return KernelSupervisorStatusView{
       .id = supervisor_state ? supervisor_state->id : supervisor_id,
       .managed_group_count =
           supervisor_state ? supervisor_state->managed_groups.size() : 0,
       .managed_faulted_group_count =
           supervisor_state ? count_faulted_groups(state, *supervisor_state) : 0,
+      .managed_service_count = service_inventory.service_count,
+      .blocked_service_count = service_inventory.blocked_service_count,
+      .suspended_service_count = service_inventory.suspended_service_count,
+      .unhealthy_service_count = service_inventory.unhealthy_service_count,
       .pending_group_count =
           supervisor_state ? supervisor_state->pending_groups.size() : 0,
       .fault_notifications =
           supervisor_state ? supervisor_state->fault_notifications : 0,
       .acknowledgements = supervisor_state ? supervisor_state->acknowledgements : 0,
+      .service_lifecycle_transitions =
+          supervisor_state ? supervisor_state->service_lifecycle_transitions : 0,
       .last_pending_group =
           (!supervisor_state || supervisor_state->pending_groups.empty())
               ? std::nullopt
               : std::optional<ProcessGroupId>{supervisor_state->pending_groups.back()},
+      .last_service_transition_id = service_inventory.last_service_transition_id,
+      .last_service_transition_kind = service_inventory.last_service_transition_kind,
+      .last_service_transition_sequence =
+          service_inventory.last_service_transition_sequence,
   };
 }
 
