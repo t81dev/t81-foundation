@@ -187,6 +187,7 @@ store put <text>
 store ls
 store get <ref>
 store rm <ref>
+clear
 ```
 
 Rules:
@@ -199,10 +200,9 @@ Rules:
 ### Near-Term Additions
 
 ```text
-session status
-clear
-store rm <ref>
 store put ref <ref>
+session refs
+history show durable
 ```
 
 ### Later Object-Native Direction
@@ -263,9 +263,9 @@ automation shell, Axion should feel like a canonical state shell.
 2. Keep the current built-ins and make them parse from a command line.
 3. Add shell-focused tests for parse and transcript behavior.
 4. Add `store ls` and `store get <ref>`.
-5. Add `session status` and `store rm <ref>`.
+5. Add `session status`, `store rm <ref>`, and `clear`.
 6. Introduce quoted payload parsing and explicit parse errors.
-7. Introduce clearer durable-history semantics.
+7. Split shell-local transcript state from durable store state more explicitly.
 8. Only then expand toward richer session/process/userland features.
 
 ## Acceptance For The Next Milestone
@@ -280,9 +280,9 @@ The next shell milestone should be considered complete when:
 
 This milestone is now complete. The next shell milestone should add:
 
-- `clear` and other transcript-local session actions
-- clearer separation between session transcript and durable store state
+- more explicit durable-history inspection commands
 - richer store mutation and inspection beyond append-only `store put`
+- session-local actions beyond `clear`
 - groundwork for a broader object-oriented command surface
 
 ## Summary

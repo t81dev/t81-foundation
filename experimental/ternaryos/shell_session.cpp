@@ -30,7 +30,7 @@ namespace t81::ternaryos {
 
 namespace {
 
-constexpr std::array<const char*, 8> kBuiltinCommands = {
+constexpr std::array<const char*, 9> kBuiltinCommands = {
     "help",
     "profile",
     "session status",
@@ -39,6 +39,7 @@ constexpr std::array<const char*, 8> kBuiltinCommands = {
     "store get <ref>",
     "store rm <ref>",
     "history",
+    "clear",
 };
 
 struct ShellStep {
@@ -148,6 +149,7 @@ bool canon_ref_known(const std::vector<t81::canonfs::CanonRef>& refs,
 std::vector<std::string> render_transcript_lines(const std::vector<ShellStep>& steps) {
   std::vector<std::string> lines;
   lines.push_back("TSH PHASE5 READY");
+  lines.push_back("SESSION TRANSCRIPT");
   for (const auto& step : steps) {
     lines.push_back("tsh> " + step.command);
     lines.push_back(upper_ascii(step.result));
@@ -238,6 +240,13 @@ bool ShellSession::refresh_render() {
   if (!guest.has_value()) return false;
   if (hal_main(guest->boot_context) != 0) return false;
 
+  CanonStore store(*guest->storage.device);
+  state_.recovered_entries = store.rebuild_index();
+  state_.session_command_count = state_.command_records.size();
+  state_.durable_ref_count = stored_refs_.size();
+  state_.durable_anchor_present =
+      history_ref_.has_value() && store.contains(*history_ref_);
+
   auto lines = render_transcript_lines([&] {
     std::vector<ShellStep> steps;
     for (const auto& record : state_.command_records) {
@@ -275,7 +284,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words[0] == "help") {
     state_.command_records.push_back(
         {command,
-         "builtins help profile session status store put <text> store ls store get <ref> store rm <ref> history"});
+         "builtins help profile session status store put <text> store ls store get <ref> store rm <ref> history clear"});
     return refresh_render();
   }
 
@@ -290,7 +299,8 @@ bool ShellSession::execute_command(std::string_view command_view) {
         << "storage " << state_.storage_binding_name << '\n'
         << "display " << state_.display_binding_name << '\n'
         << "commands " << state_.command_records.size() << '\n'
-        << "refs " << stored_refs_.size() << '\n'
+        << "durable refs " << stored_refs_.size() << '\n'
+        << "durable anchor " << (history_ref_.has_value() ? "tracked" : "none") << '\n'
         << "recovered " << state_.recovered_entries << '\n'
         << "glyphs " << state_.rendered_glyphs;
     state_.command_records.push_back({command, out.str()});
@@ -403,6 +413,12 @@ bool ShellSession::execute_command(std::string_view command_view) {
     }
     state_.recovered_entries = store.rebuild_index();
     state_.command_records.push_back({command, result});
+    return refresh_render();
+  }
+
+  if (words[0] == "clear") {
+    state_.command_records.clear();
+    state_.command_records.push_back({command, "session transcript cleared"});
     return refresh_render();
   }
 

@@ -45,6 +45,11 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
       text("Profile: " + state.profile_summary) | color(Color::Green),
       text("Storage: " + state.storage_binding_name),
       text("Display: " + state.display_binding_name),
+      text("Session Commands: " + std::to_string(state.session_command_count)),
+      text("Durable Refs: " + std::to_string(state.durable_ref_count)),
+      text(std::string("Durable Anchor: ") +
+           (state.durable_anchor_present ? "present" : "missing")) |
+          color(state.durable_anchor_present ? Color::Green : Color::Yellow),
       text("Recovered: " + std::to_string(state.recovered_entries) + " block(s)"),
       text("Glyphs: " + std::to_string(state.rendered_glyphs)),
       text("Backend: guest-bootstrap + CanonStore + VMSVGA") | color(Color::Yellow),

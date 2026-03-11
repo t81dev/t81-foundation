@@ -159,11 +159,16 @@ What the TUI adds:
   - `store get <ref>`
   - `store rm <ref>`
   - `history`
+  - `clear`
 - a live typed-input loop in the interactive TUI:
   - printable characters append to the command buffer
   - `Backspace` edits
   - `Enter` executes into the transcript
   - `Up` / `Down` preload `history` / `profile` as quick shortcuts
+- the session pane now separates shell-local state from durable CanonStore state:
+  - session command count
+  - durable ref count
+  - durable anchor presence
 
 What it is not yet:
 
@@ -175,8 +180,8 @@ Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
 - `t81_ternaryos_device_driver_test` is `342/342`
-- `t81_ternaryos_shell_session_test` is `34/34`
-- total TernOS assertions are `771`
+- `t81_ternaryos_shell_session_test` is `48/48`
+- total TernOS assertions are `785`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback

@@ -16,16 +16,19 @@ struct ShellCommandRecord {
 };
 
 struct ShellSessionState {
-  std::string              profile_summary;
-  std::string              storage_binding_name;
-  std::string              display_binding_name;
-  std::size_t              recovered_entries{0};
-  std::size_t              rendered_glyphs{0};
-  std::vector<std::string> available_commands;
+  std::string                   profile_summary;
+  std::string                   storage_binding_name;
+  std::string                   display_binding_name;
+  std::size_t                   recovered_entries{0};
+  std::size_t                   rendered_glyphs{0};
+  std::size_t                   session_command_count{0};
+  std::size_t                   durable_ref_count{0};
+  bool                          durable_anchor_present{false};
+  std::vector<std::string>      available_commands;
   std::vector<ShellCommandRecord> command_records;
-  std::vector<std::string> transcript_lines;
-  std::string              transcript_text;
-  std::string              framebuffer_ascii;
+  std::vector<std::string>      transcript_lines;
+  std::string                   transcript_text;
+  std::string                   framebuffer_ascii;
 };
 
 std::vector<std::string> default_shell_command_sequence();

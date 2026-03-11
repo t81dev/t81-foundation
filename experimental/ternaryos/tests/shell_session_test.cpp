@@ -36,11 +36,14 @@ static void test_scripted_shell_session() {
   check(state.has_value(), "scripted shell session builds");
   if (!state.has_value()) return;
 
-  check(state->available_commands.size() == 8, "eight builtins are exposed");
+  check(state->available_commands.size() == 9, "nine builtins are exposed");
   check(state->command_records.size() == 6, "scripted session records six commands");
   check(state->command_records[2].result.starts_with("session profile "),
         "scripted session status reports shell state");
   check(state->recovered_entries == 1, "history recovers one durable entry");
+  check(state->session_command_count == 6, "scripted session tracks session command count");
+  check(state->durable_ref_count == 1, "scripted session tracks one durable ref");
+  check(state->durable_anchor_present, "scripted session reports durable anchor present");
   check(state->command_records[3].result.starts_with("canon durable ok "),
         "scripted store put emits a CanonRef");
   check(state->command_records[4].result.starts_with("store refs 1"),
@@ -72,30 +75,52 @@ static void test_typed_shell_commands() {
   check(session->execute_command("store put \"unterminated"), "parse errors still refresh state");
   check(session->execute_command("bogus"), "unknown command still refreshes state");
 
-  const auto& state = session->state();
-  check(state.command_records.size() == 10, "interactive session records ten commands");
-  check(state.command_records[1].result.starts_with("session profile "),
+  const auto& state_before_clear = session->state();
+  check(state_before_clear.command_records.size() == 10, "interactive session records ten commands");
+  check(state_before_clear.command_records[1].result.starts_with("session profile "),
         "session status reports profile and shell metadata");
-  check(state.command_records[2].command == "store put \"typed shell payload\"",
+  check(state_before_clear.command_records[2].command == "store put \"typed shell payload\"",
         "typed parser preserves quoted store put command");
-  check(state.command_records[2].result.starts_with("canon durable ok "),
+  check(state_before_clear.command_records[2].result.starts_with("canon durable ok "),
         "store put reports durable success plus CanonRef");
-  check(state.command_records[3].result.starts_with("store refs 1"),
+  check(state_before_clear.command_records[3].result.starts_with("store refs 1"),
         "store ls reports one tracked ref");
-  check(state.command_records[3].result.find(stored_ref) != std::string::npos,
+  check(state_before_clear.command_records[3].result.find(stored_ref) != std::string::npos,
         "store ls exposes the stored CanonRef");
-  check(state.command_records[4].result == "store get typed shell payload",
+  check(state_before_clear.command_records[4].result == "store get typed shell payload",
         "store get decodes stored payload");
-  check(state.command_records[5].result == "store rm ok " + stored_ref,
+  check(state_before_clear.command_records[5].result == "store rm ok " + stored_ref,
         "store rm reports durable removal");
-  check(state.command_records[6].result == "store get missing",
+  check(state_before_clear.command_records[6].result == "store get missing",
         "removed ref is no longer readable");
-  check(state.command_records[7].result == "reboot history missing",
+  check(state_before_clear.command_records[7].result == "reboot history missing",
         "history reports missing durable anchor after removal");
-  check(state.command_records[8].result == "parse error: unmatched quote",
+  check(state_before_clear.command_records[8].result == "parse error: unmatched quote",
         "unmatched quote is surfaced as a parse error");
-  check(state.command_records[9].result == "unknown command", "unknown command is surfaced");
-  check(state.recovered_entries == 0, "interactive history refresh tracks current recovered_entries");
+  check(state_before_clear.command_records[9].result == "unknown command", "unknown command is surfaced");
+  check(state_before_clear.recovered_entries == 0, "interactive history refresh tracks current recovered_entries");
+  check(state_before_clear.session_command_count == 10,
+        "interactive state tracks session command count before clear");
+  check(state_before_clear.durable_ref_count == 0,
+        "interactive state tracks zero durable refs after store rm");
+  check(!state_before_clear.durable_anchor_present,
+        "interactive state reports durable anchor missing after store rm");
+
+  check(session->execute_command("clear"), "clear executes");
+  check(session->execute_command("session status"), "session status executes after clear");
+
+  const auto& state_after_clear = session->state();
+  check(state_after_clear.command_records.size() == 2, "clear resets transcript to the new session window");
+  check(state_after_clear.command_records[0].result == "session transcript cleared",
+        "clear reports transcript reset");
+  check(state_after_clear.command_records[1].result.find("commands 1") != std::string::npos,
+        "post-clear session status sees one prior session command");
+  check(state_after_clear.session_command_count == 2,
+        "post-clear state tracks new session command window");
+  check(state_after_clear.transcript_text.find("UNKNOWN COMMAND") == std::string::npos,
+        "cleared transcript no longer shows pre-clear shell history");
+  check(state_after_clear.transcript_text.find("SESSION TRANSCRIPT") != std::string::npos,
+        "transcript keeps the session header after clear");
 }
 
 int main() {
