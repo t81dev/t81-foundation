@@ -30,15 +30,17 @@ namespace t81::ternaryos {
 
 namespace {
 
-constexpr std::array<const char*, 9> kBuiltinCommands = {
+constexpr std::array<const char*, 11> kBuiltinCommands = {
     "help",
     "profile",
     "session status",
+    "session refs",
     "store put <text>",
     "store ls",
     "store get <ref>",
     "store rm <ref>",
     "history",
+    "history show durable",
     "clear",
 };
 
@@ -284,7 +286,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words[0] == "help") {
     state_.command_records.push_back(
         {command,
-         "builtins help profile session status store put <text> store ls store get <ref> store rm <ref> history clear"});
+         "builtins help profile session status session refs store put <text> store ls store get <ref> store rm <ref> history history show durable clear"});
     return refresh_render();
   }
 
@@ -304,6 +306,20 @@ bool ShellSession::execute_command(std::string_view command_view) {
         << "recovered " << state_.recovered_entries << '\n'
         << "glyphs " << state_.rendered_glyphs;
     state_.command_records.push_back({command, out.str()});
+    return refresh_render();
+  }
+
+  if (words.size() == 2 && words[0] == "session" && words[1] == "refs") {
+    if (stored_refs_.empty()) {
+      state_.command_records.push_back({command, "session refs 0"});
+      return refresh_render();
+    }
+
+    std::string result = "session refs " + std::to_string(stored_refs_.size());
+    for (const auto& ref : stored_refs_) {
+      result += "\n" + canon_ref_text(ref);
+    }
+    state_.command_records.push_back({command, result});
     return refresh_render();
   }
 
@@ -401,6 +417,26 @@ bool ShellSession::execute_command(std::string_view command_view) {
   }
 
   if (words[0] == "history") {
+    if (words.size() == 3 && words[1] == "show" && words[2] == "durable") {
+      state_.recovered_entries = store.rebuild_index();
+      if (!history_ref_.has_value()) {
+        state_.command_records.push_back({command, "history durable none"});
+        return refresh_render();
+      }
+
+      const auto history = store.get(*history_ref_);
+      if (!history.has_value()) {
+        state_.command_records.push_back({command, "history durable missing"});
+        return refresh_render();
+      }
+
+      state_.command_records.push_back(
+          {command,
+           "history durable " + canon_ref_text(*history_ref_) + "\n" +
+               decode_text_block(*history)});
+      return refresh_render();
+    }
+
     std::string result = "reboot recovered 0";
     if (history_ref_.has_value()) {
       const auto recovered = store.rebuild_index();

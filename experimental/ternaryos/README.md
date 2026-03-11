@@ -159,7 +159,9 @@ What the TUI adds:
   - `store get <ref>`
   - `store rm <ref>`
   - `history`
+  - `history show durable`
   - `clear`
+  - `session refs`
 - a live typed-input loop in the interactive TUI:
   - printable characters append to the command buffer
   - `Backspace` edits
@@ -169,6 +171,9 @@ What the TUI adds:
   - session command count
   - durable ref count
   - durable anchor presence
+- the shell now has explicit durable-state inspection commands:
+  - `session refs` for the shell-tracked durable ref set
+  - `history show durable` for the current durable history anchor
 
 What it is not yet:
 
@@ -180,8 +185,8 @@ Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
 - `t81_ternaryos_device_driver_test` is `342/342`
-- `t81_ternaryos_shell_session_test` is `48/48`
-- total TernOS assertions are `785`
+- `t81_ternaryos_shell_session_test` is `60/60`
+- total TernOS assertions are `797`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback
