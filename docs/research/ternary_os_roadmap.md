@@ -2,6 +2,12 @@
 
 This document captures the current implementation state, completed milestones, remaining work, and exit criteria for evolving the T81 Foundation stack into a standalone ternary operating system, currently named Axion.
 
+Naming split for this roadmap:
+- `T81 Foundation` remains the umbrella project/ecosystem
+- `T81VM` remains the ternary runtime/execution substrate
+- `Axion` is the operating-system name
+- subsystem names like `CanonFS` and `TISC` remain unchanged
+
 ## 1. Current Position
 
 The T81 Foundation provides a determinism-first, ternary-native computing stack (`T81`) that achieves native ternary scaling properties (base-3 / base-81) simulated over standard hardware. Today, Axion runs as a hosted prototype over standard binary platforms, but the standalone operating-system stack is no longer purely aspirational: the boot/HAL layer, ternary MMU prototype, and scheduler/IPC foundation are implemented and tested.
@@ -235,6 +241,6 @@ That gate turns the current in-memory TernOS substrate into a minimally persiste
 
 ## 7. Conclusion
 
-The most mathematically complex components — TISC ISA, compiler toolchain, CanonHash-81, Reed-Solomon parity, and the Axion policy engine — are already shipped and Beta-stable. On the TernOS path specifically, the foundational OS substrate is now in place: hosted boot/HAL, ternary paging, deterministic scheduling, context switching, and CanonRef-safe IPC are implemented and tested.
+The most mathematically complex components — TISC ISA, compiler toolchain, CanonHash-81, Reed-Solomon parity, and the Axion policy engine — are already shipped and Beta-stable. On the Axion path specifically, the foundational OS substrate is now in place: hosted boot/HAL, ternary paging, deterministic scheduling, context switching, and CanonRef-safe IPC are implemented and tested.
 
-The critical path has moved. The next milestone is no longer an abstract "driver layer" in isolation; it is a **VirtualBox-bootable TernOS guest** with reboot-persistent CanonFS validation. That makes the remaining work concrete: close the VM boot path, bind Phase 4 wrappers to VirtualBox-visible devices, and preserve portability so later promotion to other hypervisors or bare metal remains viable.
+The critical path has moved. The next milestone is no longer an abstract "driver layer" in isolation; it is a **VirtualBox-bootable Axion guest** with reboot-persistent CanonFS validation. That makes the remaining work concrete: close the VM boot path, bind Phase 4 wrappers to VirtualBox-visible devices, and preserve portability so later promotion to other hypervisors or bare metal remains viable.

@@ -6,6 +6,11 @@ Axion Phases 1 through 3 are implemented and passing. Phase 4 is implemented
 as a VirtualBox-first hosted simulation path with guest-owned storage, network,
 and display seams:
 
+Naming note:
+- `Axion` is the OS name
+- `T81 Foundation` remains the umbrella project name
+- `T81VM`, `CanonFS`, and `TISC` remain subsystem/runtime names
+
 - storage: `AHCI`-shaped binding over `IBlockDevice`
 - network: `E1000`-shaped binding over ternary packet/frame translation
 - display: `VMSVGA`-shaped binding over the ternary framebuffer + TTF renderer

@@ -17,6 +17,12 @@ path on top of the hosted guest-bootstrap path.
 For now, internal paths, namespaces, CMake targets, and test names still use
 `ternaryos` while the external/project-facing name shifts to `Axion`.
 
+Naming rule for now:
+- `T81 Foundation` is the umbrella project/ecosystem
+- `T81VM` is the ternary runtime/execution substrate
+- `Axion` is the operating system
+- existing subsystem names like `CanonFS` and `TISC` stay as-is
+
 ## Structure
 
 ```

@@ -3,6 +3,12 @@
 Working name note: the project-facing OS name is now `Axion`, while internal
 paths, namespaces, and build/test identifiers still use `ternaryos`.
 
+Current naming split:
+- `T81 Foundation` = umbrella project/ecosystem
+- `T81VM` = ternary runtime/execution substrate
+- `Axion` = operating system
+- `CanonFS` / `TISC` remain subsystem names
+
 **Last updated:** 2026-03-10
 **Commit:** `257359ad`
 **Branch:** `main`
