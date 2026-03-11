@@ -315,14 +315,37 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
   return KernelFaultSummaryView{
       .recorded_faults = state.fault_count(),
       .pending_faults = state.pending_fault_count(),
+      .delivered_faults = static_cast<std::size_t>(state.counters.faults_delivered),
+      .routed_thread_faults =
+          static_cast<std::size_t>(state.counters.faults_routed_to_threads),
+      .quarantined_threads =
+          static_cast<std::size_t>(state.counters.thread_quarantines),
       .audit_events = state.audit_count(),
       .last_delivered_fault = state.last_delivered_fault,
       .last_audit_event = state.last_audit_event,
   };
 }
 
+KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) {
+  KernelAuditSummaryView view{
+      .audit_events = state.audit_count(),
+      .fault_deliveries = state.counters.faults_delivered,
+      .thread_quarantines = state.counters.thread_quarantines,
+      .process_group_fault_entries = state.counters.process_group_fault_entries,
+      .supervisor_notifications = state.counters.supervisor_fault_notifications,
+      .thread_acknowledgements = state.counters.thread_fault_acknowledgements,
+      .process_group_acknowledgements = state.counters.process_group_acknowledgements,
+      .supervisor_acknowledgements = state.counters.supervisor_acknowledgements,
+      .thread_recoveries = state.counters.thread_fault_recoveries,
+  };
+  for (const auto& record : state.audit_log) {
+    view.recent_events.push_back(record);
+  }
+  return view;
+}
+
 KernelDeviceSummaryView make_device_summary_view(const KernelRuntimeState& state) {
-  return KernelDeviceSummaryView{
+  KernelDeviceSummaryView view{
       .has_device_arbitration = state.device_arbitration.has_value(),
       .device_count = state.device_arbitration ? state.device_arbitration->devices.size() : 0,
       .claimed_device_count = count_claimed_devices(state),
@@ -330,6 +353,17 @@ KernelDeviceSummaryView make_device_summary_view(const KernelRuntimeState& state
       .has_network = state.device_arbitration ? state.device_arbitration->has_network : false,
       .has_display = state.device_arbitration ? state.device_arbitration->has_display : false,
   };
+  if (state.device_arbitration) {
+    for (const auto& device : state.device_arbitration->devices) {
+      view.devices.push_back(KernelDeviceOwnershipView{
+          .name = device.name,
+          .claimed = device.owner_tid.has_value(),
+          .owner_tid = device.owner_tid,
+          .irq = device.irq,
+      });
+    }
+  }
+  return view;
 }
 
 std::optional<KernelServiceStatus> validate_requesting_group(
@@ -696,6 +730,20 @@ KernelServiceResult axion_kernel_service_request(
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceRequestRejection::None;
       result.fault_summary = make_fault_summary_view(state);
+      return result;
+    }
+    case KernelServiceRequestKind::AuditSummary: {
+      if (auto denied = validate_requesting_group(state, request); denied.has_value()) {
+        result.status = *denied;
+        result.rejection =
+            denied == KernelServiceStatus::NotFound
+                ? KernelServiceRequestRejection::MissingRequestingGroup
+                : KernelServiceRequestRejection::FaultedRequestingGroup;
+        return result;
+      }
+      result.status = KernelServiceStatus::Ok;
+      result.rejection = KernelServiceRequestRejection::None;
+      result.audit_summary = make_audit_summary_view(state);
       return result;
     }
     case KernelServiceRequestKind::DeviceSummary: {

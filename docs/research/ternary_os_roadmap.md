@@ -40,9 +40,10 @@ recovery/report flows are now exposed through the same service boundary,
 including deterministic pending-group, acknowledgement, and recovered-group
 views. Deterministic device claim/release requests now exist through that same
 boundary as the second narrow action. Request-side and action-side rejection
-semantics are now explicit across that contract. The next steps are to keep the
-service-facing diagnostics stable while continuing to converge the runtime
-toward fuller kernel behavior.
+semantics are now explicit across that contract, and stable audit/device detail
+views are exposed through it. The next steps are to keep that service-facing
+contract stable while continuing to converge the runtime toward fuller kernel
+behavior.
 
 That near-term kernel slice is now tracked explicitly in:
 

@@ -219,6 +219,7 @@ enum class KernelServiceRequestKind : uint8_t {
   SupervisorStatus,
   SupervisorRecoveryStatus,
   FaultSummary,
+  AuditSummary,
   DeviceSummary,
 };
 
@@ -308,9 +309,32 @@ struct KernelSupervisorRecoveryStatusView {
 struct KernelFaultSummaryView {
   std::size_t recorded_faults{0};
   std::size_t pending_faults{0};
+  std::size_t delivered_faults{0};
+  std::size_t routed_thread_faults{0};
+  std::size_t quarantined_threads{0};
   std::size_t audit_events{0};
   std::optional<KernelFaultRecord> last_delivered_fault{};
   std::optional<KernelAuditRecord> last_audit_event{};
+};
+
+struct KernelAuditSummaryView {
+  std::size_t audit_events{0};
+  uint64_t fault_deliveries{0};
+  uint64_t thread_quarantines{0};
+  uint64_t process_group_fault_entries{0};
+  uint64_t supervisor_notifications{0};
+  uint64_t thread_acknowledgements{0};
+  uint64_t process_group_acknowledgements{0};
+  uint64_t supervisor_acknowledgements{0};
+  uint64_t thread_recoveries{0};
+  std::vector<KernelAuditRecord> recent_events;
+};
+
+struct KernelDeviceOwnershipView {
+  std::string name;
+  bool claimed{false};
+  std::optional<sched::Tid> owner_tid{};
+  uint8_t irq{0};
 };
 
 struct KernelDeviceSummaryView {
@@ -320,6 +344,7 @@ struct KernelDeviceSummaryView {
   bool has_storage{false};
   bool has_network{false};
   bool has_display{false};
+  std::vector<KernelDeviceOwnershipView> devices;
 };
 
 struct KernelServiceRequest {
@@ -337,6 +362,7 @@ struct KernelServiceResult {
   std::optional<KernelSupervisorStatusView> supervisor{};
   std::optional<KernelSupervisorRecoveryStatusView> supervisor_recovery{};
   std::optional<KernelFaultSummaryView> fault_summary{};
+  std::optional<KernelAuditSummaryView> audit_summary{};
   std::optional<KernelDeviceSummaryView> device_summary{};
 };
 
@@ -357,6 +383,7 @@ struct KernelServiceActionResult {
   std::optional<KernelSupervisorStatusView> supervisor{};
   std::optional<KernelSupervisorRecoveryStatusView> supervisor_recovery{};
   std::optional<KernelFaultSummaryView> fault_summary{};
+  std::optional<KernelAuditSummaryView> audit_summary{};
   std::optional<KernelDeviceSummaryView> device_summary{};
 };
 

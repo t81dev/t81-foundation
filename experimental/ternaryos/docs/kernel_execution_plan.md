@@ -26,10 +26,13 @@ Implemented:
 - deterministic request behavior for healthy vs faulted groups
 - stable service-facing diagnostics for group, supervisor, fault, and device
   state
+- stable service-facing audit summaries and per-device ownership detail views
 - first service-facing runtime action: supervisor fault-group acknowledgement
 - supervisor-facing recovery/report flows through the current contract
 - second narrow service-facing action: deterministic device claim/release
   requests through the same contract
+- explicit request/action rejection semantics and stable diagnostic views across
+  the current contract
 
 Not yet implemented:
 
@@ -39,17 +42,19 @@ Not yet implemented:
 
 ## Next Sequence
 
-### 1. Contract hardening
+### 1. Contract stabilization
 
-Once one action path exists, harden the contract instead of widening it:
+Now that the second narrow action and stable diagnostics exist, keep the
+contract stable before widening it further:
 
 - keep request/result types stable
 - keep request outcomes deterministic
 - avoid leaking kernel internals directly into services
+- preserve audit-summary and per-device ownership detail semantics
 
 ### 2. Additional narrow actions only if needed
 
-Only after the current contract is hardened should another narrow action be
+Only after the current contract is stable should another narrow action be
 considered.
 
 Likely candidates:
@@ -76,17 +81,17 @@ The current kernel slice is complete when:
 1. a service-facing request/result contract exists in `kernel/`
 2. the contract reads kernel-owned runtime state deterministically
 3. faulted and healthy groups are distinguished explicitly
-4. stable service-facing diagnostics exist for group, supervisor, fault, and
-   device state
+4. stable service-facing diagnostics exist for group, supervisor, fault, device,
+   audit, and per-device ownership state
 5. HAL/kernel tests prove the request path and its interaction with fault state
 6. one narrow service-facing action exists above the contract
 7. supervisor-facing recovery/report flows are exposed through the same contract
 8. a second narrow action is implemented without widening the contract shape
-9. RFC-00B3 can shift to contract hardening as the next step
+9. RFC-00B3 can shift to contract stabilization as the next step
 
 ## Recommended Order
 
-1. harden the existing request/action/result shapes
+1. stabilize the existing request/action/result shapes
 2. keep HAL/kernel acceptance coverage ahead of any new action growth
 3. update RFC-00B3 and status/docs
 4. only then widen the service-facing surface again

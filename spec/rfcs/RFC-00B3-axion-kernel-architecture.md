@@ -252,12 +252,14 @@ also now implemented:
 - supervisor fault-group acknowledgement through the same service boundary
 - supervisor-facing recovery/report status through the same contract
 - deterministic device claim/release requests through the same contract
+- stable audit-summary and per-device ownership detail views through the same
+  contract
 
 The next implementation slice after it is:
 
-1. harden the contract before widening it further
-2. keep recovery/report and device-action semantics stable as the service surface grows
-3. add another narrow action only if the hardened contract still needs it
+1. keep the contract stable before widening it further
+2. preserve recovery/report, audit, and device-action semantics as the service surface grows
+3. add another narrow action only if the stabilized contract still needs it
 
 That hardening step specifically means:
 

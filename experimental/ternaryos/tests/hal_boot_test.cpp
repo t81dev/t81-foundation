@@ -1321,8 +1321,26 @@ static void test_kernel_service_runtime_views() {
           "fault summary starts with zero recorded faults");
     check(fault_result.fault_summary->pending_faults == 0,
           "fault summary starts with zero pending faults");
+    check(fault_result.fault_summary->delivered_faults == 0,
+          "fault summary starts with zero delivered faults");
+    check(fault_result.fault_summary->routed_thread_faults == 0,
+          "fault summary starts with zero routed thread faults");
     check(!fault_result.fault_summary->last_audit_event.has_value(),
           "fault summary starts without audit events");
+  }
+
+  auto audit_result = axion_kernel_service_request(
+      *vbox_state, KernelServiceRequest{.kind = KernelServiceRequestKind::AuditSummary});
+  check(audit_result.status == KernelServiceStatus::Ok,
+        "audit summary request succeeds");
+  check(audit_result.rejection == KernelServiceRequestRejection::None,
+        "successful audit summary clears request rejection");
+  check(audit_result.audit_summary.has_value(), "audit summary view is returned");
+  if (audit_result.audit_summary) {
+    check(audit_result.audit_summary->audit_events == 0,
+          "audit summary starts with zero audit events");
+    check(audit_result.audit_summary->recent_events.empty(),
+          "audit summary starts with zero recent events");
   }
 }
 
@@ -1479,6 +1497,18 @@ static void test_kernel_service_group_fault_visibility() {
   check(denied_faults.rejection ==
             KernelServiceRequestRejection::FaultedRequestingGroup,
         "faulted fault-summary request reports FaultedRequestingGroup rejection");
+
+  auto denied_audit = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::AuditSummary,
+          .requesting_process_group_id = faulted_group_id,
+      });
+  check(denied_audit.status == KernelServiceStatus::FaultedGroup,
+        "faulted group cannot request audit summary");
+  check(denied_audit.rejection ==
+            KernelServiceRequestRejection::FaultedRequestingGroup,
+        "faulted audit request reports FaultedRequestingGroup rejection");
 
   auto healthy_runtime_result = axion_kernel_service_request(
       *state,
@@ -1973,6 +2003,135 @@ static void test_kernel_service_device_actions() {
         "missing device arbitration reports explicit rejection");
 }
 
+static void test_kernel_service_diagnostic_details() {
+  std::printf("\n[AC-34] Axion kernel service contract exposes stable audit and device detail views\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto vbox_ctx = make_virtualbox_boot_context(VBoxBootSpec{});
+  auto state = axion_kernel_bootstrap(vbox_ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for service diagnostics");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext owner_ctx;
+  owner_ctx.label = "diag-owner";
+  owner_ctx.registers[0] = 1101;
+  auto owner_tid = axion_kernel_spawn_thread(*state, owner_ctx);
+  check(owner_tid.has_value(), "diagnostic owner thread spawns");
+  if (!owner_tid) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext faulted_ctx;
+  faulted_ctx.label = "diag-faulted";
+  faulted_ctx.registers[0] = 1102;
+  auto faulted_tid = axion_kernel_spawn_thread(*state, faulted_ctx);
+  check(faulted_tid.has_value(), "diagnostic faulted thread spawns");
+  if (!faulted_tid) {
+    return;
+  }
+
+  const auto* owner_runtime = state->find_thread_runtime(*owner_tid);
+  const auto* faulted_runtime = state->find_thread_runtime(*faulted_tid);
+  check(owner_runtime != nullptr, "diagnostic owner runtime exists");
+  check(faulted_runtime != nullptr, "diagnostic faulted runtime exists");
+  if (!owner_runtime || !faulted_runtime) {
+    return;
+  }
+
+  auto claim = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::ClaimDevice,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .device_name = std::string{"ahci"},
+      });
+  check(claim.status == KernelServiceStatus::Ok,
+        "diagnostic owner can claim ahci");
+
+  check(axion_kernel_step(*state), "diagnostic loop dispatches owner");
+  check(axion_kernel_step(*state), "diagnostic loop dispatches faulted thread");
+  check(state->scheduler.current_tid() == *faulted_tid,
+        "diagnostic faulted thread becomes current");
+  auto fault = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(251, 0), mmu::MmuAccessMode::Read);
+  check(fault.fault.has_value(), "diagnostic fault is recorded");
+  check(axion_kernel_step(*state), "diagnostic loop delivers fault");
+
+  auto audit = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::AuditSummary,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+      });
+  check(audit.status == KernelServiceStatus::Ok,
+        "healthy group can request audit summary");
+  check(audit.rejection == KernelServiceRequestRejection::None,
+        "successful audit detail clears request rejection");
+  check(audit.audit_summary.has_value(), "audit summary detail is returned");
+  if (audit.audit_summary) {
+    check(audit.audit_summary->fault_deliveries == 1,
+          "audit summary reports one fault delivery");
+    check(audit.audit_summary->thread_quarantines == 1,
+          "audit summary reports one thread quarantine");
+    check(audit.audit_summary->process_group_fault_entries == 1,
+          "audit summary reports one process-group fault entry");
+    check(audit.audit_summary->supervisor_notifications == 1,
+          "audit summary reports one supervisor notification");
+    check(audit.audit_summary->recent_events.size() >= 4,
+          "audit summary exposes recent audit events");
+    if (audit.audit_summary->recent_events.size() >= 4) {
+      check(audit.audit_summary->recent_events[0].kind ==
+                KernelAuditEventKind::FaultDelivered,
+            "audit summary starts with fault delivery");
+      check(audit.audit_summary->recent_events[1].kind ==
+                KernelAuditEventKind::ProcessGroupFaultEntered,
+            "audit summary reports process-group fault entry");
+      check(audit.audit_summary->recent_events[2].kind ==
+                KernelAuditEventKind::SupervisorFaultNotified,
+            "audit summary reports supervisor notification");
+      check(audit.audit_summary->recent_events[3].kind ==
+                KernelAuditEventKind::ThreadQuarantined,
+            "audit summary reports thread quarantine");
+    }
+  }
+
+  auto devices = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::DeviceSummary,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+      });
+  check(devices.status == KernelServiceStatus::Ok,
+        "healthy group can request detailed device summary");
+  check(devices.rejection == KernelServiceRequestRejection::None,
+        "successful device detail clears request rejection");
+  check(devices.device_summary.has_value(), "device summary detail is returned");
+  if (devices.device_summary) {
+    check(devices.device_summary->devices.size() == 5,
+          "device summary detail exposes five devices");
+    bool saw_claimed_ahci = false;
+    bool saw_unclaimed_e1000 = false;
+    for (const auto& device : devices.device_summary->devices) {
+      if (device.name == "ahci") {
+        saw_claimed_ahci = true;
+        check(device.claimed, "device summary marks ahci claimed");
+        check(device.owner_tid == owner_tid, "device summary preserves ahci owner tid");
+        check(device.irq == 19, "device summary preserves ahci irq");
+      } else if (device.name == "e1000") {
+        saw_unclaimed_e1000 = true;
+        check(!device.claimed, "device summary keeps e1000 unclaimed");
+        check(!device.owner_tid.has_value(),
+              "device summary keeps unclaimed e1000 owner empty");
+      }
+    }
+    check(saw_claimed_ahci, "device summary includes claimed ahci");
+    check(saw_unclaimed_e1000, "device summary includes unclaimed e1000");
+  }
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -2013,6 +2172,7 @@ int main() {
   test_kernel_service_fault_ack_action();
   test_kernel_service_supervisor_recovery_status();
   test_kernel_service_device_actions();
+  test_kernel_service_diagnostic_details();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;
