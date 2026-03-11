@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../hal/hal.hpp"
+#include "../hal/virtualbox_platform.hpp"
 #include "../ipc/canon_message.hpp"
 #include "../mmu/page_table.hpp"
 #include "../mmu/ternary_page_alloc.hpp"
@@ -20,6 +21,22 @@ struct KernelFaultRecord {
   mmu::MmuFault fault{mmu::MmuFault::None};
 };
 
+struct KernelDeviceRecord {
+  std::string name;
+  hal::VBoxBusKind bus{hal::VBoxBusKind::Mmio};
+  uint64_t base{0};
+  uint64_t span_bytes{0};
+  uint8_t irq{0};
+};
+
+struct KernelDeviceArbitrationState {
+  std::string profile_summary;
+  std::vector<KernelDeviceRecord> devices;
+  bool has_storage{false};
+  bool has_network{false};
+  bool has_display{false};
+};
+
 struct KernelRuntimeState {
   std::string platform_id;
   std::size_t memory_region_count{0};
@@ -29,6 +46,7 @@ struct KernelRuntimeState {
   mmu::PageTable page_table;
   sched::Scheduler scheduler;
   ipc::MessageBus ipc_bus;
+  std::optional<KernelDeviceArbitrationState> device_arbitration;
   std::deque<KernelFaultRecord> fault_log;
 
   KernelRuntimeState(std::string platform_id_in,
@@ -46,6 +64,7 @@ struct KernelRuntimeState {
   static constexpr std::size_t kMaxFaultLog = 27;
 
   std::size_t fault_count() const noexcept { return fault_log.size(); }
+  bool has_device_arbitration() const noexcept { return device_arbitration.has_value(); }
 };
 
 struct KernelAccessReport {

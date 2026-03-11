@@ -128,7 +128,8 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - OQ-5 (Axion determinism under pre-emption) is still open — governance audit trail not yet extended for async interleaving.
 - RFC-00B3 now defines the active integration path: the first kernel-owned runtime entry exists, and the kernel now consumes checked MMU translation through a kernel-facing fault/reporting path instead of leaving the runtime bootstrap as a thin handoff.
 - The first persistent kernel runtime state object now exists: allocator, page table, scheduler, IPC bus, and fault log are now owned by kernel runtime state seeded from `BootContext`.
-- The next kernel step is to attach minimal device arbitration state to that same owned boundary.
+- Minimal device arbitration state for the first supported VirtualBox storage/display/network profile is now attached to that same owned boundary.
+- The next kernel step is to connect deterministic thread dispatch and CanonRef-safe IPC behavior through the owned kernel runtime state instead of only owning the bare subsystem objects.
 
 **Phase 3 test total: 193 / 193**
 
@@ -206,7 +207,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 115 | 1 |
+| `t81_ternaryos_hal_boot_test` | 127 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -214,7 +215,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **1062** | |
+| **Total** | **1074** | |
 
 Run all TernOS tests:
 

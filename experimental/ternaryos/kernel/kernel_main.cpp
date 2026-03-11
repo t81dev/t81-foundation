@@ -4,6 +4,39 @@ namespace t81::ternaryos::kernel {
 
 namespace {
 
+constexpr std::string_view kVBoxPlatformPrefix = "virtualbox-x86_64:";
+
+std::optional<KernelDeviceArbitrationState> bootstrap_device_arbitration(
+    const std::string& platform_id) {
+  if (!platform_id.starts_with(kVBoxPlatformPrefix)) {
+    return std::nullopt;
+  }
+
+  const hal::VBoxProfile profile{};
+  const auto profile_summary = hal::virtualbox_profile_summary(profile);
+  const std::string expected_platform_id =
+      std::string(kVBoxPlatformPrefix) + profile_summary;
+  if (platform_id != expected_platform_id) {
+    return std::nullopt;
+  }
+
+  KernelDeviceArbitrationState state;
+  state.profile_summary = profile_summary;
+  for (const auto& dev : hal::virtualbox_device_map(profile)) {
+    state.devices.push_back(KernelDeviceRecord{
+        .name = dev.name,
+        .bus = dev.bus,
+        .base = dev.base,
+        .span_bytes = dev.span_bytes,
+        .irq = dev.irq,
+    });
+    state.has_storage = state.has_storage || state.devices.back().name == "ahci";
+    state.has_network = state.has_network || state.devices.back().name == "e1000";
+    state.has_display = state.has_display || state.devices.back().name == "vmsvga";
+  }
+  return state;
+}
+
 void record_fault(KernelRuntimeState& state,
                   uint64_t tva,
                   mmu::MmuAccessMode mode,
@@ -48,6 +81,7 @@ std::optional<KernelRuntimeState> axion_kernel_bootstrap(
       mmu::TernaryPageAllocator(ctx.memory_map),
   };
   state.ipc_bus.register_thread(KernelRuntimeState::kKernelTid);
+  state.device_arbitration = bootstrap_device_arbitration(ctx.platform_id);
   return state;
 }
 

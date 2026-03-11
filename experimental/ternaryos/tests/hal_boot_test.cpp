@@ -429,6 +429,8 @@ static void test_kernel_runtime_bootstrap() {
           "kernel runtime registers the kernel IPC inbox");
     check(state->ipc_bus.pending(KernelRuntimeState::kKernelTid) == 0,
           "kernel IPC inbox starts empty");
+    check(!state->has_device_arbitration(),
+          "generic hosted test context does not install device arbitration");
     check(state->fault_count() == 0, "kernel runtime starts with an empty fault log");
   }
   check(axion_kernel_main(ctx) == 0, "axion_kernel_main returns 0 for valid context");
@@ -494,6 +496,44 @@ static void test_kernel_fault_reporting() {
         "kernel fault log preserves the last classified fault");
 }
 
+static void test_kernel_device_arbitration() {
+  std::printf("\n[AC-19] Axion kernel runtime installs minimal device arbitration\n");
+
+  VBoxBootSpec spec;
+  spec.ram_bytes = 128ULL * 1024 * 1024;
+  auto ctx = make_virtualbox_boot_context(spec);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for VirtualBox device arbitration");
+  if (!state) {
+    return;
+  }
+
+  check(state->has_device_arbitration(),
+        "VirtualBox runtime installs device arbitration state");
+  if (!state->device_arbitration) {
+    return;
+  }
+
+  check(state->device_arbitration->profile_summary == "VBoxEFI/AHCI/E1000/VMSVGA/HPET+IOAPIC",
+        "device arbitration preserves the first-target profile summary");
+  check(state->device_arbitration->devices.size() == 5,
+        "device arbitration tracks the five primary VirtualBox devices");
+  check(state->device_arbitration->has_storage,
+        "device arbitration exposes storage ownership");
+  check(state->device_arbitration->has_network,
+        "device arbitration exposes network ownership");
+  check(state->device_arbitration->has_display,
+        "device arbitration exposes display ownership");
+  check(state->device_arbitration->devices[2].name == "ahci",
+        "device arbitration preserves AHCI ordering");
+  check(state->device_arbitration->devices[2].irq == 19,
+        "device arbitration preserves AHCI IRQ");
+  check(state->device_arbitration->devices[3].name == "e1000",
+        "device arbitration preserves E1000 ordering");
+  check(state->device_arbitration->devices[4].name == "vmsvga",
+        "device arbitration preserves VMSVGA ordering");
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -519,6 +559,7 @@ int main() {
   test_virtualbox_display_binding();
   test_kernel_runtime_bootstrap();
   test_kernel_fault_reporting();
+  test_kernel_device_arbitration();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

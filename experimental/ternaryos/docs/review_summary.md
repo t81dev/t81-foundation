@@ -30,9 +30,9 @@ The official promotion target remains:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1062`
+- total assertions: `1074`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `115/115`
+- `t81_ternaryos_hal_boot_test`: `127/127`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -43,6 +43,8 @@ Kernel integration proof now also includes:
   `Unmapped`, and `PermissionDenied` classification
 - a persistent kernel runtime state seeded from `BootContext`, now owning the
   allocator, page table, scheduler substrate, IPC bus, and fault log
+- minimal device arbitration for the supported VBox EFI/AHCI/E1000/VMSVGA
+  profile attached to that same runtime boundary
 
 Phase 4 storage proof now covers:
 

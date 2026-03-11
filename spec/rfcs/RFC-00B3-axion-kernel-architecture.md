@@ -280,9 +280,9 @@ This RFC does not retarget the project away from that profile.
 ## 6. Implementation Plan
 
 1. extend the new kernel-owned entry routine beyond bootstrap summary state
-2. attach minimal device arbitration state to the same boundary
-3. connect deterministic thread dispatch to the owned kernel runtime state
-4. prove CanonRef-safe IPC remains functional across the kernel-owned runtime
+2. connect deterministic thread dispatch to the owned kernel runtime state
+3. prove CanonRef-safe IPC remains functional across the kernel-owned runtime
+4. move the current minimal device seams from ownership to active arbitration
 5. only then expand syscall/userland semantics further
 
 ## 7. Open Questions
@@ -300,5 +300,5 @@ This RFC does not retarget the project away from that profile.
 - [x] Fault records distinguish `InvalidTva`, `Unmapped`, and `PermissionDenied`.
 - [ ] The scheduler can continue running deterministic thread dispatch after kernel entry initialization.
 - [ ] CanonRef-safe IPC remains functional across the kernel-integrated runtime path.
-- [ ] Device arbitration state is initialized for the first supported storage/display/network profile.
+- [x] Device arbitration state is initialized for the first supported storage/display/network profile.
 - [ ] Hosted and QEMU developer lanes continue to pass after kernel entry integration.
