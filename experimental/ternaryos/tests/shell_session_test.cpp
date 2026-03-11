@@ -36,7 +36,7 @@ static void test_scripted_shell_session() {
   check(state.has_value(), "scripted shell session builds");
   if (!state.has_value()) return;
 
-  check(state->available_commands.size() == 28, "twenty-eight builtins are exposed");
+  check(state->available_commands.size() == 31, "thirty-one builtins are exposed");
   check(state->command_records.size() == 6, "scripted session records six commands");
   check(state->command_records[2].result.starts_with("session profile "),
         "scripted session status reports shell state");
@@ -347,12 +347,57 @@ static void test_named_shell_refs() {
         "store put ref @label reports durable success");
 }
 
+static void test_named_shell_objects() {
+  std::printf("\n[S5] named shell objects\n");
+
+  auto session = t81::ternaryos::ShellSession::create(true);
+  check(session.has_value(), "named-object session creates");
+  if (!session.has_value()) return;
+
+  check(session->execute_command("store put script \"show profile|history\""),
+        "store put script executes for named-object flow");
+  const auto script_ref =
+      suffix_after(session->state().command_records[0].result, "canon script ok ");
+  check(!script_ref.empty(), "named-object flow gets a script CanonRef");
+
+  check(session->execute_command(std::string("object pin script bootstrap ") + script_ref),
+        "object pin <kind> <name> <ref> executes");
+  check(session->execute_command("object ls"), "object ls executes");
+  check(session->execute_command("object show bootstrap"), "object show <name> executes");
+  check(session->execute_command("session run @bootstrap"), "session run resolves pinned object alias");
+
+  const auto& state = session->state();
+  check(state.named_object_count == 1, "state tracks one named object");
+  check(state.named_objects.size() == 1, "state exposes named object list");
+  check(state.named_objects[0].kind == "script", "named object kind is retained");
+  check(state.named_objects[0].name == "bootstrap", "named object name is retained");
+  check(state.named_objects[0].ref.hash.h.to_string() == script_ref,
+        "named object points at the script CanonRef");
+  check(state.named_ref_count == 1, "named object installs a matching alias");
+  check(state.named_refs[0].label == "bootstrap", "named object alias label matches name");
+  check(state.command_records[1].result == "object pin ok script bootstrap " + script_ref,
+        "object pin reports success");
+  check(state.command_records[2].result.starts_with("object refs 1"),
+        "object ls reports one object");
+  check(state.command_records[2].result.find("script bootstrap " + script_ref) != std::string::npos,
+        "object ls exposes kind, name, and ref");
+  check(state.command_records[3].result == "object show bootstrap\nkind script\nref " + script_ref,
+        "object show reports kind and CanonRef");
+  check(state.command_records[4].command == "show profile",
+        "session run @bootstrap replays first script command");
+  check(state.command_records[5].command == "history",
+        "session run @bootstrap replays second script command");
+  check(state.command_records[6].result == "session run ok " + script_ref + " lines 2",
+        "session run @bootstrap reports successful execution");
+}
+
 int main() {
   std::printf("== Axion Shell Session Test ==\n");
   test_scripted_shell_session();
   test_typed_shell_commands();
   test_shell_script_objects();
   test_named_shell_refs();
+  test_named_shell_objects();
 
   std::printf("\nSummary: %d passed, %d failed\n", g_pass, g_fail);
   return g_fail == 0 ? 0 : 1;

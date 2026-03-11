@@ -20,6 +20,12 @@ struct ShellNamedRef {
   t81::canonfs::CanonRef    ref;
 };
 
+struct ShellNamedObject {
+  std::string               kind;
+  std::string               name;
+  t81::canonfs::CanonRef    ref;
+};
+
 struct ShellSessionState {
   std::string                   profile_summary;
   std::string                   storage_binding_name;
@@ -29,10 +35,12 @@ struct ShellSessionState {
   std::size_t                   session_command_count{0};
   std::size_t                   durable_ref_count{0};
   std::size_t                   named_ref_count{0};
+  std::size_t                   named_object_count{0};
   bool                          durable_anchor_present{false};
   std::vector<std::string>      available_commands;
   std::vector<ShellCommandRecord> command_records;
   std::vector<ShellNamedRef>    named_refs;
+  std::vector<ShellNamedObject> named_objects;
   std::vector<std::string>      transcript_lines;
   std::string                   transcript_text;
   std::string                   framebuffer_ascii;
@@ -60,6 +68,7 @@ private:
   std::optional<t81::canonfs::CanonRef> history_ref_;
   std::vector<t81::canonfs::CanonRef> stored_refs_;
   std::vector<ShellNamedRef> named_refs_;
+  std::vector<ShellNamedObject> named_objects_;
   std::vector<std::string> imported_transcript_lines_;
   bool script_run_active_{false};
 };

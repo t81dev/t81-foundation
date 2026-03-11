@@ -192,6 +192,9 @@ session diff <ref>
 session run <ref>
 name set <label> <ref>
 name ls
+object pin <kind> <name> <ref>
+object ls
+object show <name>
 session show durable
 show session
 session refs
@@ -245,6 +248,8 @@ store put text "<payload>"
 store cp <ref>
 store get ref <canonref>
 show ref @label
+object pin script bootstrap <ref>
+session run @bootstrap
 history show object <ref>
 history use <ref>
 ```
@@ -297,10 +302,11 @@ automation shell, Axion should feel like a canonical state shell.
 4. Add `store ls` and `store get <ref>`.
 5. Add `session status`, `session checkpoint`, `session refs`, `store rm <ref>`, `history show durable`, and `clear`.
 6. Add session-local named refs so object-native commands can use stable aliases (`name set`, `name ls`, `@label`).
-7. Introduce quoted payload parsing and explicit parse errors.
-8. Split shell-local transcript state from durable store state more explicitly.
-9. Add the first object-native read commands: `show session` and `show ref <canonref>`.
-10. Only then expand toward richer session/process/userland features.
+7. Add typed pinned objects so the shell can manage named object roles above raw aliases (`object pin`, `object ls`, `object show`).
+8. Introduce quoted payload parsing and explicit parse errors.
+9. Split shell-local transcript state from durable store state more explicitly.
+10. Add the first object-native read commands: `show session` and `show ref <canonref>`.
+11. Only then expand toward richer session/process/userland features.
 
 ## Acceptance For The Next Milestone
 

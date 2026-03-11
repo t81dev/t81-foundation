@@ -30,11 +30,14 @@ namespace t81::ternaryos {
 
 namespace {
 
-constexpr std::array<const char*, 28> kBuiltinCommands = {
+constexpr std::array<const char*, 31> kBuiltinCommands = {
     "help",
     "profile",
     "name set <label> <ref>",
     "name ls",
+    "object pin <kind> <name> <ref>",
+    "object ls",
+    "object show <name>",
     "session status",
     "session checkpoint",
     "session export",
@@ -235,6 +238,10 @@ bool valid_name_label(std::string_view label) {
   return true;
 }
 
+bool valid_object_kind(std::string_view kind) {
+  return kind == "payload" || kind == "script" || kind == "transcript" || kind == "history";
+}
+
 std::optional<t81::canonfs::CanonRef> resolve_named_or_raw_ref(
     std::string_view text,
     const std::vector<ShellNamedRef>& named_refs) {
@@ -246,6 +253,20 @@ std::optional<t81::canonfs::CanonRef> resolve_named_or_raw_ref(
     return std::nullopt;
   }
   return parse_canon_ref_text(text);
+}
+
+void upsert_named_ref(std::vector<ShellNamedRef>& named_refs,
+                      std::string_view label,
+                      const t81::canonfs::CanonRef& ref) {
+  auto existing =
+      std::find_if(named_refs.begin(), named_refs.end(), [&](const auto& named) {
+        return named.label == label;
+      });
+  if (existing == named_refs.end()) {
+    named_refs.push_back({std::string(label), ref});
+  } else {
+    existing->ref = ref;
+  }
 }
 
 std::vector<std::string> render_transcript_lines(const std::vector<ShellStep>& steps,
@@ -358,9 +379,11 @@ bool ShellSession::refresh_render() {
   state_.session_command_count = state_.command_records.size();
   state_.durable_ref_count = stored_refs_.size();
   state_.named_ref_count = named_refs_.size();
+  state_.named_object_count = named_objects_.size();
   state_.durable_anchor_present =
       history_ref_.has_value() && store.contains(*history_ref_);
   state_.named_refs = named_refs_;
+  state_.named_objects = named_objects_;
 
   auto lines = render_transcript_lines([&] {
     std::vector<ShellStep> steps;
@@ -399,7 +422,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words[0] == "help") {
     state_.command_records.push_back(
         {command,
-         "builtins help profile name set <label> <ref> name ls session status session checkpoint session export session import <ref> session diff <ref> session run <ref> session show durable session refs show profile show session show ref <canonref> store put <text> store put script <line>|<line>|...> store put ref <ref> store cp <ref> store ls store get <ref> store rm <ref> history history show session history show object <ref> history use <ref> history show durable clear"});
+         "builtins help profile name set <label> <ref> name ls object pin <kind> <name> <ref> object ls object show <name> session status session checkpoint session export session import <ref> session diff <ref> session run <ref> session show durable session refs show profile show session show ref <canonref> store put <text> store put script <line>|<line>|...> store put ref <ref> store cp <ref> store ls store get <ref> store rm <ref> history history show session history show object <ref> history use <ref> history show durable clear"});
     return refresh_render();
   }
 
@@ -419,15 +442,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
       return refresh_render();
     }
 
-    auto existing =
-        std::find_if(named_refs_.begin(), named_refs_.end(), [&](const auto& named) {
-          return named.label == words[2];
-        });
-    if (existing == named_refs_.end()) {
-      named_refs_.push_back({words[2], *ref});
-    } else {
-      existing->ref = *ref;
-    }
+    upsert_named_ref(named_refs_, words[2], *ref);
     state_.command_records.push_back(
         {command, "name set ok " + words[2] + " " + canon_ref_text(*ref)});
     return refresh_render();
@@ -444,6 +459,67 @@ bool ShellSession::execute_command(std::string_view command_view) {
       result += "\n" + named.label + " " + canon_ref_text(named.ref);
     }
     state_.command_records.push_back({command, result});
+    return refresh_render();
+  }
+
+  if (words.size() == 5 && words[0] == "object" && words[1] == "pin") {
+    if (!valid_object_kind(words[2])) {
+      state_.command_records.push_back({command, "object pin invalid kind"});
+      return refresh_render();
+    }
+    if (!valid_name_label(words[3])) {
+      state_.command_records.push_back({command, "object pin invalid name"});
+      return refresh_render();
+    }
+    const auto ref = resolve_named_or_raw_ref(words[4], named_refs_);
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "object pin invalid ref"});
+      return refresh_render();
+    }
+
+    auto existing = std::find_if(named_objects_.begin(),
+                                 named_objects_.end(),
+                                 [&](const auto& object) { return object.name == words[3]; });
+    if (existing == named_objects_.end()) {
+      named_objects_.push_back({words[2], words[3], *ref});
+    } else {
+      existing->kind = words[2];
+      existing->ref = *ref;
+    }
+    upsert_named_ref(named_refs_, words[3], *ref);
+    state_.command_records.push_back(
+        {command,
+         "object pin ok " + words[2] + " " + words[3] + " " + canon_ref_text(*ref)});
+    return refresh_render();
+  }
+
+  if (words.size() == 2 && words[0] == "object" && words[1] == "ls") {
+    if (named_objects_.empty()) {
+      state_.command_records.push_back({command, "object refs 0"});
+      return refresh_render();
+    }
+
+    std::string result = "object refs " + std::to_string(named_objects_.size());
+    for (const auto& object : named_objects_) {
+      result += "\n" + object.kind + " " + object.name + " " + canon_ref_text(object.ref);
+    }
+    state_.command_records.push_back({command, result});
+    return refresh_render();
+  }
+
+  if (words.size() == 3 && words[0] == "object" && words[1] == "show") {
+    auto object = std::find_if(named_objects_.begin(),
+                               named_objects_.end(),
+                               [&](const auto& candidate) { return candidate.name == words[2]; });
+    if (object == named_objects_.end()) {
+      state_.command_records.push_back({command, "object show missing"});
+      return refresh_render();
+    }
+
+    state_.command_records.push_back(
+        {command,
+         "object show " + object->name + "\nkind " + object->kind + "\nref " +
+             canon_ref_text(object->ref)});
     return refresh_render();
   }
 
@@ -820,6 +896,12 @@ bool ShellSession::execute_command(std::string_view command_view) {
                                        return named.ref.hash == ref->hash;
                                      }),
                       named_refs_.end());
+    named_objects_.erase(std::remove_if(named_objects_.begin(),
+                                        named_objects_.end(),
+                                        [&](const auto& object) {
+                                          return object.ref.hash == ref->hash;
+                                        }),
+                         named_objects_.end());
     state_.recovered_entries = store.rebuild_index();
     state_.command_records.push_back({command, "store rm ok " + canon_ref_text(*ref)});
     return refresh_render();
