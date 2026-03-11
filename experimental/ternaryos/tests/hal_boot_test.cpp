@@ -699,6 +699,74 @@ static void test_kernel_loop_fault_delivery() {
   check(!state->last_delivered_fault.has_value(), "idle loop step clears delivered-fault slot");
 }
 
+static void test_kernel_fault_process_boundary() {
+  std::printf("\n[AC-23] Axion kernel loop routes faults into thread runtime state\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for thread fault routing");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext thread_a;
+  thread_a.label = "fault-a";
+  thread_a.registers[0] = 91;
+  t81::ternaryos::sched::TiscContext thread_b;
+  thread_b.label = "fault-b";
+  thread_b.registers[0] = 123;
+
+  auto tid_a = axion_kernel_spawn_thread(*state, thread_a);
+  auto tid_b = axion_kernel_spawn_thread(*state, thread_b);
+  check(tid_a.has_value(), "fault-routing runtime spawns thread A");
+  check(tid_b.has_value(), "fault-routing runtime spawns thread B");
+  if (!tid_a || !tid_b) {
+    return;
+  }
+
+  check(axion_kernel_step(*state), "first kernel step dispatches thread A");
+  check(state->scheduler.current_tid() == *tid_a, "thread A is current before access fault");
+
+  const auto fault_report = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(27, 0), mmu::MmuAccessMode::Read);
+  check(fault_report.fault.has_value(), "unmapped read records a fault for the running thread");
+  if (fault_report.fault) {
+    check(fault_report.fault->subject_tid == *tid_a,
+          "fault record tags the current running thread");
+  }
+  check(state->pending_fault_count() == 1, "fault-routing runtime queues the pending fault");
+
+  check(axion_kernel_step(*state), "second kernel step delivers fault and continues runtime");
+  check(state->pending_fault_count() == 0, "delivered fault drains from pending queue");
+  check(state->counters.faults_routed_to_threads == 1,
+        "runtime counts faults routed to thread boundary");
+  check(state->counters.thread_quarantines == 1,
+        "runtime counts quarantined faulting threads");
+  check(state->scheduler.current_tid() == *tid_b,
+        "scheduler advances to thread B after quarantining thread A");
+
+  const auto* runtime_a = state->find_thread_runtime(*tid_a);
+  const auto* runtime_b = state->find_thread_runtime(*tid_b);
+  check(runtime_a != nullptr, "thread A runtime state exists");
+  check(runtime_b != nullptr, "thread B runtime state exists");
+  if (runtime_a) {
+    check(runtime_a->quarantined, "faulting thread is quarantined");
+    check(runtime_a->fault_inbox.size() == 1, "faulting thread inbox receives delivered fault");
+    if (!runtime_a->fault_inbox.empty()) {
+      check(runtime_a->fault_inbox.front().fault == mmu::MmuFault::Unmapped,
+            "thread inbox preserves delivered fault classification");
+      check(runtime_a->fault_inbox.front().subject_tid == *tid_a,
+            "thread inbox preserves delivered fault subject");
+    }
+  }
+  if (runtime_b) {
+    check(!runtime_b->quarantined, "non-faulting thread remains runnable");
+    check(runtime_b->fault_inbox.empty(), "non-faulting thread inbox remains empty");
+  }
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -728,6 +796,7 @@ int main() {
   test_kernel_runtime_scheduler_and_ipc();
   test_kernel_loop_and_active_device_arbitration();
   test_kernel_loop_fault_delivery();
+  test_kernel_fault_process_boundary();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

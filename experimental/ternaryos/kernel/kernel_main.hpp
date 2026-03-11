@@ -12,6 +12,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 
 namespace t81::ternaryos::kernel {
 
@@ -20,6 +21,7 @@ struct KernelFaultRecord {
   uint64_t tva{0};
   mmu::MmuAccessMode access_mode{mmu::MmuAccessMode::Read};
   mmu::MmuFault fault{mmu::MmuFault::None};
+  sched::Tid subject_tid{0};
 };
 
 struct KernelDeviceRecord {
@@ -40,6 +42,12 @@ struct KernelDeviceArbitrationState {
 };
 
 struct KernelRuntimeState {
+  struct ThreadRuntimeState {
+    sched::Tid tid{0};
+    bool quarantined{false};
+    std::deque<KernelFaultRecord> fault_inbox;
+  };
+
   struct Counters {
     uint64_t loop_iterations{0};
     uint64_t scheduler_ticks{0};
@@ -48,6 +56,8 @@ struct KernelRuntimeState {
     uint64_t ipc_messages_received{0};
     uint64_t faults_recorded{0};
     uint64_t faults_delivered{0};
+    uint64_t faults_routed_to_threads{0};
+    uint64_t thread_quarantines{0};
   };
 
   std::string platform_id;
@@ -61,6 +71,7 @@ struct KernelRuntimeState {
   std::optional<KernelDeviceArbitrationState> device_arbitration;
   std::deque<KernelFaultRecord> fault_log;
   std::deque<KernelFaultRecord> pending_faults;
+  std::unordered_map<sched::Tid, ThreadRuntimeState> thread_runtime;
   t81::vm::ThreadContext cpu_context{};
   Counters counters{};
   std::optional<KernelFaultRecord> last_delivered_fault{};
@@ -82,6 +93,11 @@ struct KernelRuntimeState {
   std::size_t fault_count() const noexcept { return fault_log.size(); }
   std::size_t pending_fault_count() const noexcept { return pending_faults.size(); }
   bool has_device_arbitration() const noexcept { return device_arbitration.has_value(); }
+
+  const ThreadRuntimeState* find_thread_runtime(sched::Tid tid) const noexcept {
+    auto it = thread_runtime.find(tid);
+    return it == thread_runtime.end() ? nullptr : &it->second;
+  }
 };
 
 struct KernelAccessReport {

@@ -41,11 +41,13 @@ void record_fault(KernelRuntimeState& state,
                   uint64_t tva,
                   mmu::MmuAccessMode mode,
                   mmu::MmuFault fault) {
+  const sched::Tid subject_tid = state.scheduler.current_tid();
   KernelFaultRecord record{
       .platform_id = state.platform_id,
       .tva = tva,
       .access_mode = mode,
       .fault = fault,
+      .subject_tid = subject_tid,
   };
   if (state.fault_log.size() >= KernelRuntimeState::kMaxFaultLog) {
     state.fault_log.pop_front();
@@ -96,6 +98,9 @@ std::optional<KernelRuntimeState> axion_kernel_bootstrap(
       mmu::TernaryPageAllocator(ctx.memory_map),
   };
   state.ipc_bus.register_thread(KernelRuntimeState::kKernelTid);
+  state.thread_runtime.emplace(
+      KernelRuntimeState::kKernelTid,
+      KernelRuntimeState::ThreadRuntimeState{.tid = KernelRuntimeState::kKernelTid});
   state.device_arbitration = bootstrap_device_arbitration(ctx.platform_id);
   return state;
 }
@@ -116,7 +121,8 @@ KernelAccessReport axion_kernel_check_access(
           .platform_id = state.platform_id,
           .tva = tva,
           .access_mode = mode,
-          .fault = result.fault,
+      .fault = result.fault,
+          .subject_tid = state.scheduler.current_tid(),
       },
   };
 }
@@ -127,6 +133,7 @@ std::optional<sched::Tid> axion_kernel_spawn_thread(
   auto tid = state.scheduler.spawn(std::move(ctx));
   if (tid.has_value()) {
     state.ipc_bus.register_thread(*tid);
+    state.thread_runtime.emplace(*tid, KernelRuntimeState::ThreadRuntimeState{.tid = *tid});
   }
   return tid;
 }
@@ -142,12 +149,39 @@ bool axion_kernel_tick(KernelRuntimeState& state) noexcept {
 
 bool axion_kernel_step(KernelRuntimeState& state) noexcept {
   ++state.counters.loop_iterations;
+  bool handled_by_policy = false;
   if (!state.pending_faults.empty()) {
     state.last_delivered_fault = state.pending_faults.front();
     state.pending_faults.pop_front();
     ++state.counters.faults_delivered;
+
+    const sched::Tid subject_tid = state.last_delivered_fault->subject_tid;
+    auto* thread_state = [&]() -> KernelRuntimeState::ThreadRuntimeState* {
+      auto it = state.thread_runtime.find(subject_tid);
+      return it == state.thread_runtime.end() ? nullptr : &it->second;
+    }();
+    if (thread_state) {
+      thread_state->fault_inbox.push_back(*state.last_delivered_fault);
+      ++state.counters.faults_routed_to_threads;
+
+      if (subject_tid != KernelRuntimeState::kKernelTid && !thread_state->quarantined) {
+        thread_state->quarantined = true;
+        ++state.counters.thread_quarantines;
+        const bool was_running = state.scheduler.current_tid() == subject_tid;
+        if (state.scheduler.sleep(subject_tid, state.cpu_context)) {
+          handled_by_policy = was_running;
+          ++state.counters.scheduler_ticks;
+          if (was_running) {
+            ++state.counters.scheduler_switches;
+          }
+        }
+      }
+    }
   } else {
     state.last_delivered_fault.reset();
+  }
+  if (handled_by_policy) {
+    return true;
   }
   return axion_kernel_tick(state);
 }
