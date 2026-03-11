@@ -27,10 +27,11 @@ vars_copy="$output_dir/edk2-aarch64-vars.fd"
 serial_log="$output_dir/qemu-armv8-guest-serial.log"
 pid_file="$output_dir/qemu-armv8-guest.pid"
 summary_file="$output_dir/qemu-armv8-guest-summary.txt"
+boot_report_copy="$output_dir/boot-report.txt"
 
 /bin/cp "$arm_image" "$probe_image"
 /bin/cp "$edk2_vars_template" "$vars_copy"
-/bin/rm -f "$serial_log" "$pid_file" "$summary_file"
+/bin/rm -f "$serial_log" "$pid_file" "$summary_file" "$boot_report_copy"
 
 qemu_pid=""
 disk_dev=""
@@ -82,14 +83,20 @@ fi
 startup_marker_path="$mount_point/TERNOS/startup-ran.txt"
 ctrl_marker_path="$mount_point/TERNOS/efi-ctrl-ran.txt"
 efi_marker_path="$mount_point/TERNOS/efi-ran.txt"
+boot_report_path="$mount_point/TERNOS/boot-report.txt"
 
 startup_seen=0
 ctrl_seen=0
 efi_seen=0
+boot_report_seen=0
 
 [[ -f "$startup_marker_path" ]] && startup_seen=1
 [[ -f "$ctrl_marker_path" ]] && ctrl_seen=1
 [[ -f "$efi_marker_path" ]] && efi_seen=1
+if [[ -f "$boot_report_path" ]]; then
+  /bin/cp "$boot_report_path" "$boot_report_copy"
+  boot_report_seen=1
+fi
 
 boot_path_inference="unknown"
 if [[ "$efi_seen" -eq 1 && "$startup_seen" -eq 0 && "$ctrl_seen" -eq 0 ]]; then
@@ -114,15 +121,31 @@ control_marker_seen=$ctrl_seen
 control_marker_path=$ctrl_marker_path
 efi_marker_seen=$efi_seen
 efi_marker_path=$efi_marker_path
+boot_report_seen=$boot_report_seen
+boot_report_copy=$boot_report_copy
 boot_path_inference=$boot_path_inference
 EOF
 
 /usr/bin/hdiutil detach "$disk_dev" >/dev/null 2>&1 || true
 disk_dev=""
 
-if [[ "$efi_seen" -ne 1 ]]; then
-  echo "QEMU ARMv8 guest probe did not observe the staged BOOTAA64.EFI marker" >&2
+if [[ "$efi_seen" -ne 1 || "$boot_report_seen" -ne 1 ]]; then
+  echo "QEMU ARMv8 guest probe did not observe the staged BOOTAA64.EFI marker and boot report" >&2
   /bin/cat "$summary_file" >&2
+  exit 1
+fi
+
+if ! /usr/bin/grep -q '^platform_id=virtualbox-armv8:ARMv8Virtual/developer-lane$' "$boot_report_copy"; then
+  echo "QEMU ARMv8 guest probe found boot report, but platform_id did not match" >&2
+  /bin/cat "$summary_file" >&2
+  /bin/cat "$boot_report_copy" >&2
+  exit 1
+fi
+
+if ! /usr/bin/grep -q '^hal_main_result=0$' "$boot_report_copy"; then
+  echo "QEMU ARMv8 guest probe found boot report, but hal_main_result was not 0" >&2
+  /bin/cat "$summary_file" >&2
+  /bin/cat "$boot_report_copy" >&2
   exit 1
 fi
 

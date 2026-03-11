@@ -47,7 +47,8 @@ ARM diagnostic result:
   the primary local developer lane
 - local QEMU AArch64 can also boot-probe the staged ARM guest image and inspect
   its execution markers directly; current probes show the staged image reaches
-  `BOOTAA64.EFI` without needing shell fallback
+  `BOOTAA64.EFI` without needing shell fallback and writes a boot report with
+  `hal_main_result=0`
 - local VirtualBox ARM remains non-observable for EFI execution and is now only
   a secondary diagnostic lane
 - conclusion: the remaining blind spot is the local VirtualBox ARM path, not

@@ -171,10 +171,97 @@ static const EFI_GUID kEfiLoadedImageProtocolGuid = {
 static const EFI_GUID kEfiSimpleFileSystemProtocolGuid = {
     0x964E5B22, 0x6459, 0x11D2, {0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B}};
 static const CHAR16 kMarkerPath[] = L"\\TERNOS\\efi-ran.txt";
+static const CHAR16 kReportPath[] = L"\\TERNOS\\boot-report.txt";
 static const char kMarkerText[] = "TERNOS_ARMV8_EFI_EXECUTED\n";
 
-static EFI_STATUS write_execution_marker(EFI_HANDLE image_handle,
-                                         EFI_SYSTEM_TABLE* system_table) {
+static unsigned long ascii_length(const char* text) {
+  unsigned long count = 0;
+  while (text[count] != 0) {
+    ++count;
+  }
+  return count;
+}
+
+static void append_char(char* buffer, unsigned long capacity, unsigned long* cursor, char value) {
+  if (*cursor + 1 >= capacity) {
+    return;
+  }
+  buffer[*cursor] = value;
+  *cursor += 1;
+  buffer[*cursor] = 0;
+}
+
+static void append_cstr(char* buffer,
+                        unsigned long capacity,
+                        unsigned long* cursor,
+                        const char* text) {
+  unsigned long i = 0;
+  while (text[i] != 0) {
+    append_char(buffer, capacity, cursor, text[i]);
+    ++i;
+  }
+}
+
+static void append_u64_hex(char* buffer,
+                           unsigned long capacity,
+                           unsigned long* cursor,
+                           uint64_t value) {
+  static const char kHexDigits[] = "0123456789ABCDEF";
+  int               shift = 60;
+
+  append_cstr(buffer, capacity, cursor, "0x");
+  while (shift >= 0) {
+    const uint64_t nibble = (value >> shift) & 0xFULL;
+    append_char(buffer, capacity, cursor, kHexDigits[nibble]);
+    shift -= 4;
+  }
+}
+
+static void append_u64_dec(char* buffer,
+                           unsigned long capacity,
+                           unsigned long* cursor,
+                           uint64_t value) {
+  char digits[32];
+  unsigned long index = 0;
+
+  if (value == 0) {
+    append_char(buffer, capacity, cursor, '0');
+    return;
+  }
+
+  while (value > 0 && index < sizeof(digits)) {
+    digits[index++] = (char)('0' + (value % 10ULL));
+    value /= 10ULL;
+  }
+
+  while (index > 0) {
+    append_char(buffer, capacity, cursor, digits[--index]);
+  }
+}
+
+static void append_int_dec(char* buffer,
+                           unsigned long capacity,
+                           unsigned long* cursor,
+                           int value) {
+  if (value < 0) {
+    append_char(buffer, capacity, cursor, '-');
+    append_u64_dec(buffer, capacity, cursor, (uint64_t)(-(int64_t)value));
+    return;
+  }
+
+  append_u64_dec(buffer, capacity, cursor, (uint64_t)value);
+}
+
+static void append_bool(char* buffer,
+                        unsigned long capacity,
+                        unsigned long* cursor,
+                        bool value) {
+  append_cstr(buffer, capacity, cursor, value ? "true" : "false");
+}
+
+static EFI_STATUS open_root_volume(EFI_HANDLE image_handle,
+                                   EFI_SYSTEM_TABLE* system_table,
+                                   EFI_FILE_PROTOCOL** root_out) {
   if (system_table == 0 || system_table->BootServices == 0 ||
       system_table->BootServices->HandleProtocol == 0) {
     return EFI_LOAD_ERROR;
@@ -200,20 +287,77 @@ static EFI_STATUS write_execution_marker(EFI_HANDLE image_handle,
     return EFI_LOAD_ERROR;
   }
 
+  *root_out = root;
+  return EFI_SUCCESS;
+}
+
+static EFI_STATUS write_root_file(EFI_FILE_PROTOCOL* root,
+                                  const CHAR16* path,
+                                  const char* text,
+                                  unsigned long text_len) {
+  EFI_STATUS status = EFI_LOAD_ERROR;
+  if (root == 0 || root->Open == 0 || root->Close == 0) {
+    return EFI_LOAD_ERROR;
+  }
+
   EFI_FILE_PROTOCOL* file = 0;
   status = root->Open(root,
                       &file,
-                      (CHAR16*)kMarkerPath,
+                      (CHAR16*)path,
                       EFI_OPEN_MODE_READ | EFI_OPEN_MODE_WRITE | EFI_OPEN_MODE_CREATE,
                       0);
   if (status != EFI_SUCCESS || file == 0 || file->Write == 0 || file->Close == 0) {
-    root->Close(root);
     return EFI_WRITE_PROTECTED;
   }
 
-  UINTN bytes = sizeof(kMarkerText) - 1;
-  status = file->Write(file, &bytes, (void*)kMarkerText);
+  UINTN bytes = text_len;
+  status = file->Write(file, &bytes, (void*)text);
   file->Close(file);
+  return status;
+}
+
+static EFI_STATUS write_execution_marker(EFI_HANDLE image_handle,
+                                         EFI_SYSTEM_TABLE* system_table) {
+  EFI_FILE_PROTOCOL* root = 0;
+  EFI_STATUS         status = open_root_volume(image_handle, system_table, &root);
+  if (status != EFI_SUCCESS) {
+    return status;
+  }
+
+  status = write_root_file(root, kMarkerPath, kMarkerText, sizeof(kMarkerText) - 1);
+  root->Close(root);
+  return status;
+}
+
+static EFI_STATUS write_boot_report(EFI_HANDLE image_handle,
+                                    EFI_SYSTEM_TABLE* system_table,
+                                    const TernaryOsBootContext* ctx,
+                                    int hal_result) {
+  char report[768];
+  unsigned long cursor = 0;
+  EFI_FILE_PROTOCOL* root = 0;
+  EFI_STATUS status = open_root_volume(image_handle, system_table, &root);
+  if (status != EFI_SUCCESS) {
+    return status;
+  }
+
+  report[0] = 0;
+  append_cstr(report, sizeof(report), &cursor, "AXION_ARMV8_BOOT_REPORT\n");
+  append_cstr(report, sizeof(report), &cursor, "platform_id=");
+  append_cstr(report, sizeof(report), &cursor, ctx->platform_id);
+  append_cstr(report, sizeof(report), &cursor, "\nmemory_map_len=");
+  append_u64_dec(report, sizeof(report), &cursor, ctx->memory_map_len);
+  append_cstr(report, sizeof(report), &cursor, "\nkernel_load_address=");
+  append_u64_hex(report, sizeof(report), &cursor, ctx->kernel_load_address);
+  append_cstr(report, sizeof(report), &cursor, "\nstack_top=");
+  append_u64_hex(report, sizeof(report), &cursor, ctx->stack_top);
+  append_cstr(report, sizeof(report), &cursor, "\nethics_boot_required=");
+  append_bool(report, sizeof(report), &cursor, ctx->ethics_boot_required);
+  append_cstr(report, sizeof(report), &cursor, "\nhal_main_result=");
+  append_int_dec(report, sizeof(report), &cursor, hal_result);
+  append_cstr(report, sizeof(report), &cursor, "\n");
+
+  status = write_root_file(root, kReportPath, report, ascii_length(report));
   root->Close(root);
   return status;
 }
@@ -232,5 +376,11 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_tab
     return marker_status;
   }
 
-  return ternaryos_hal_main_c(&ctx) == 0 ? EFI_SUCCESS : EFI_LOAD_ERROR;
+  const int hal_result = ternaryos_hal_main_c(&ctx);
+  const EFI_STATUS report_status = write_boot_report(image_handle, system_table, &ctx, hal_result);
+  if (report_status != EFI_SUCCESS) {
+    return report_status;
+  }
+
+  return hal_result == 0 ? EFI_SUCCESS : EFI_LOAD_ERROR;
 }
