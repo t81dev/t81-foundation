@@ -26,11 +26,12 @@ That RFC defines the current path after subsystem bring-up: the first
 kernel-owned runtime entry now exists, checked MMU translation is now consumed
 through a kernel-facing fault/reporting path, and the first persistent kernel
 runtime state object now owns allocator, MMU, scheduler substrate, IPC bus,
-fault-log state. Minimal device arbitration for the supported VirtualBox
-storage/display/network profile is now attached to that same owned boundary.
-The next steps are to grow that runtime into a fuller deterministic kernel loop,
-attach richer runtime accounting to it, and move device handling from owned
-state toward more active arbitration.
+fault-log state. Active device arbitration for the supported VirtualBox
+storage/display/network profile is now attached to that same owned boundary,
+and the runtime now exposes a deterministic kernel-step loop with basic runtime
+accounting. The next steps are to attach richer fault delivery and runtime
+accounting to that loop and keep converging the runtime toward fuller kernel
+behavior.
 
 The roadmap is now centered on promotion of those layers from `experimental/` into mainline, plus delivery of the Phase 4 driver layer needed for a reboot-persistent CanonFS system. The concrete promotion environment is a **VirtualBox-first virtual machine target**: Axion should graduate from hosted process simulation into a bootable guest image that runs under VirtualBox before any real-hardware push.
 

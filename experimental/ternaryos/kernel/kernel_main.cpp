@@ -52,6 +52,18 @@ void record_fault(KernelRuntimeState& state,
   });
 }
 
+KernelDeviceRecord* find_device(KernelRuntimeState& state, std::string_view device_name) {
+  if (!state.device_arbitration) {
+    return nullptr;
+  }
+  for (auto& device : state.device_arbitration->devices) {
+    if (device.name == device_name) {
+      return &device;
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 std::optional<KernelRuntimeState> axion_kernel_bootstrap(
@@ -117,19 +129,62 @@ std::optional<sched::Tid> axion_kernel_spawn_thread(
 }
 
 bool axion_kernel_tick(KernelRuntimeState& state) noexcept {
-  return state.scheduler.tick(state.cpu_context);
+  ++state.counters.scheduler_ticks;
+  const bool switched = state.scheduler.tick(state.cpu_context);
+  if (switched) {
+    ++state.counters.scheduler_switches;
+  }
+  return switched;
+}
+
+bool axion_kernel_step(KernelRuntimeState& state) noexcept {
+  ++state.counters.loop_iterations;
+  return axion_kernel_tick(state);
 }
 
 bool axion_kernel_ipc_send(KernelRuntimeState& state,
                            sched::Tid dst,
                            ipc::CanonMessage msg) noexcept {
-  return state.ipc_bus.ipc_send(dst, std::move(msg));
+  const bool sent = state.ipc_bus.ipc_send(dst, std::move(msg));
+  if (sent) {
+    ++state.counters.ipc_messages_sent;
+  }
+  return sent;
 }
 
 std::optional<ipc::CanonMessage> axion_kernel_ipc_recv(
     KernelRuntimeState& state,
     sched::Tid tid) noexcept {
-  return state.ipc_bus.ipc_recv(tid);
+  auto msg = state.ipc_bus.ipc_recv(tid);
+  if (msg.has_value()) {
+    ++state.counters.ipc_messages_received;
+  }
+  return msg;
+}
+
+bool axion_kernel_claim_device(KernelRuntimeState& state,
+                               std::string_view device_name,
+                               sched::Tid owner) noexcept {
+  auto* device = find_device(state, device_name);
+  if (!device) {
+    return false;
+  }
+  if (device->owner_tid.has_value() && *device->owner_tid != owner) {
+    return false;
+  }
+  device->owner_tid = owner;
+  return true;
+}
+
+bool axion_kernel_release_device(KernelRuntimeState& state,
+                                 std::string_view device_name,
+                                 sched::Tid owner) noexcept {
+  auto* device = find_device(state, device_name);
+  if (!device || !device->owner_tid.has_value() || *device->owner_tid != owner) {
+    return false;
+  }
+  device->owner_tid.reset();
+  return true;
 }
 
 int axion_kernel_main(const hal::BootContext& ctx) noexcept {

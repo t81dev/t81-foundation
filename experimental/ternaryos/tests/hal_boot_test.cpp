@@ -589,6 +589,68 @@ static void test_kernel_runtime_scheduler_and_ipc() {
     check(recv->tag == "kernel-msg", "received message preserves tag");
   }
   check(state->ipc_bus.pending(*tid_b) == 0, "thread B inbox drains after receive");
+  check(state->counters.scheduler_ticks == 2, "runtime-owned scheduler counts ticks");
+  check(state->counters.scheduler_switches == 2, "runtime-owned scheduler counts switches");
+  check(state->counters.ipc_messages_sent == 1, "runtime-owned IPC counts sent messages");
+  check(state->counters.ipc_messages_received == 1, "runtime-owned IPC counts received messages");
+}
+
+static void test_kernel_loop_and_active_device_arbitration() {
+  std::printf("\n[AC-21] Axion kernel loop and active device arbitration\n");
+
+  VBoxBootSpec spec;
+  spec.ram_bytes = 128ULL * 1024 * 1024;
+  auto ctx = make_virtualbox_boot_context(spec);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for loop/arbitration test");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext thread_a;
+  thread_a.label = "loop-a";
+  thread_a.registers[0] = 31;
+  t81::ternaryos::sched::TiscContext thread_b;
+  thread_b.label = "loop-b";
+  thread_b.registers[0] = 47;
+
+  auto tid_a = axion_kernel_spawn_thread(*state, thread_a);
+  auto tid_b = axion_kernel_spawn_thread(*state, thread_b);
+  check(tid_a.has_value(), "loop runtime spawns thread A");
+  check(tid_b.has_value(), "loop runtime spawns thread B");
+  if (!tid_a || !tid_b) {
+    return;
+  }
+
+  check(axion_kernel_step(*state), "first kernel step dispatches a thread");
+  check(state->counters.loop_iterations == 1, "kernel step counts loop iterations");
+  check(state->scheduler.current_tid() == *tid_a, "first kernel step selects thread A");
+  check(axion_kernel_step(*state), "second kernel step advances the runtime");
+  check(state->counters.loop_iterations == 2, "second kernel step increments loop iterations");
+  check(state->scheduler.current_tid() == *tid_b, "second kernel step selects thread B");
+
+  check(axion_kernel_claim_device(*state, "ahci", *tid_a),
+        "first thread claims AHCI device");
+  check(!axion_kernel_claim_device(*state, "ahci", *tid_b),
+        "second thread cannot steal claimed AHCI device");
+  check(axion_kernel_claim_device(*state, "ahci", *tid_a),
+        "same owner can idempotently re-claim AHCI device");
+  check(axion_kernel_release_device(*state, "ahci", *tid_b) == false,
+        "non-owner cannot release AHCI device");
+  check(axion_kernel_release_device(*state, "ahci", *tid_a),
+        "owner releases AHCI device");
+  check(axion_kernel_claim_device(*state, "ahci", *tid_b),
+        "second thread can claim AHCI after release");
+
+  bool saw_ahci_owner_b = false;
+  if (state->device_arbitration) {
+    for (const auto& device : state->device_arbitration->devices) {
+      if (device.name == "ahci" && device.owner_tid == *tid_b) {
+        saw_ahci_owner_b = true;
+      }
+    }
+  }
+  check(saw_ahci_owner_b, "device arbitration records active AHCI owner");
 }
 
 // ─── main ────────────────────────────────────────────────────────────────────
@@ -618,6 +680,7 @@ int main() {
   test_kernel_fault_reporting();
   test_kernel_device_arbitration();
   test_kernel_runtime_scheduler_and_ipc();
+  test_kernel_loop_and_active_device_arbitration();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

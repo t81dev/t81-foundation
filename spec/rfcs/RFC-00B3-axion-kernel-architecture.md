@@ -23,7 +23,7 @@ kernel core owns:
 - memory translation and access-fault classification
 - thread scheduling and context switching
 - CanonRef-safe IPC
-- minimal device arbitration for the first supported platform profile
+- active device arbitration for the first supported platform profile
 - governance and audit hooks at kernel boundaries
 
 Everything else remains outside the kernel core unless explicitly pulled in by
@@ -279,11 +279,10 @@ This RFC does not retarget the project away from that profile.
 
 ## 6. Implementation Plan
 
-1. extend the new kernel-owned entry routine into a fuller deterministic kernel loop
-2. move the current minimal device seams from ownership to active arbitration
-3. attach richer fault delivery and runtime accounting to the same kernel state
-4. only then expand syscall/userland semantics further
-5. defer pager/lazy-allocation work until the kernel loop consumes the current fault model
+1. attach richer fault delivery and runtime accounting to the current deterministic kernel loop
+2. extend active device arbitration beyond simple claim/release ownership
+3. only then expand syscall/userland semantics further
+4. defer pager/lazy-allocation work until the kernel loop consumes the current fault model
 
 ## 7. Open Questions
 
@@ -301,4 +300,6 @@ This RFC does not retarget the project away from that profile.
 - [x] The scheduler can continue running deterministic thread dispatch after kernel entry initialization.
 - [x] CanonRef-safe IPC remains functional across the kernel-integrated runtime path.
 - [x] Device arbitration state is initialized for the first supported storage/display/network profile.
+- [x] The kernel runtime can progress through a deterministic loop step with runtime counters.
+- [x] Active device claim/release arbitration works for the first supported profile.
 - [x] Hosted and QEMU developer lanes continue to pass after kernel entry integration.

@@ -11,6 +11,7 @@
 #include <deque>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace t81::ternaryos::kernel {
 
@@ -27,6 +28,7 @@ struct KernelDeviceRecord {
   uint64_t base{0};
   uint64_t span_bytes{0};
   uint8_t irq{0};
+  std::optional<sched::Tid> owner_tid{};
 };
 
 struct KernelDeviceArbitrationState {
@@ -38,6 +40,14 @@ struct KernelDeviceArbitrationState {
 };
 
 struct KernelRuntimeState {
+  struct Counters {
+    uint64_t loop_iterations{0};
+    uint64_t scheduler_ticks{0};
+    uint64_t scheduler_switches{0};
+    uint64_t ipc_messages_sent{0};
+    uint64_t ipc_messages_received{0};
+  };
+
   std::string platform_id;
   std::size_t memory_region_count{0};
   uint64_t    total_ternary_pages{0};
@@ -49,6 +59,7 @@ struct KernelRuntimeState {
   std::optional<KernelDeviceArbitrationState> device_arbitration;
   std::deque<KernelFaultRecord> fault_log;
   t81::vm::ThreadContext cpu_context{};
+  Counters counters{};
 
   KernelRuntimeState(std::string platform_id_in,
                      std::size_t memory_region_count_in,
@@ -87,6 +98,8 @@ std::optional<sched::Tid> axion_kernel_spawn_thread(
 
 bool axion_kernel_tick(KernelRuntimeState& state) noexcept;
 
+bool axion_kernel_step(KernelRuntimeState& state) noexcept;
+
 bool axion_kernel_ipc_send(KernelRuntimeState& state,
                            sched::Tid dst,
                            ipc::CanonMessage msg) noexcept;
@@ -94,6 +107,14 @@ bool axion_kernel_ipc_send(KernelRuntimeState& state,
 std::optional<ipc::CanonMessage> axion_kernel_ipc_recv(
     KernelRuntimeState& state,
     sched::Tid tid) noexcept;
+
+bool axion_kernel_claim_device(KernelRuntimeState& state,
+                               std::string_view device_name,
+                               sched::Tid owner) noexcept;
+
+bool axion_kernel_release_device(KernelRuntimeState& state,
+                                 std::string_view device_name,
+                                 sched::Tid owner) noexcept;
 
 int axion_kernel_main(const hal::BootContext& ctx) noexcept;
 

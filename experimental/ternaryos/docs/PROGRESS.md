@@ -12,7 +12,7 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-11
-**Commit:** `54a74427` onward; kernel handoff work continues past this checkpoint
+**Commit:** `c2908822` onward; kernel handoff work continues past this checkpoint
 **Branch:** `main`
 
 Reference docs:
@@ -40,7 +40,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 | `hal/hal_main.cpp` | Ethics-first boot — validates `BootContext`, evaluates Θ₁–Θ₉, and hands off to the first kernel-owned runtime entry | 9 |
 | `hal/interrupt_table.cpp` | Shadow binary dispatch table; `register_interrupt_handler`, `dispatch_interrupt`, `fire_simulated_interrupt` | (above) |
 | `hal/hosted_stub.cpp` | macOS/Linux UEFI stub simulation; synthetic memory map; calls `hal_main` | (above) |
-| `kernel/kernel_main.hpp/.cpp` | First Axion kernel-owned runtime entry/bootstrap over validated `BootContext`; computes runtime state, records MMU faults, drives deterministic scheduler dispatch, routes CanonRef-safe IPC, and rejects invalid handoff contexts | 25 |
+| `kernel/kernel_main.hpp/.cpp` | First Axion kernel-owned runtime entry/bootstrap over validated `BootContext`; computes runtime state, records MMU faults, drives deterministic scheduler dispatch, routes CanonRef-safe IPC, provides a deterministic kernel-step loop with counters, performs active device claims/releases, and rejects invalid handoff contexts | 45 |
 | `hal/virtualbox_platform.hpp/.cpp` | First-target VirtualBox promotion scaffold: VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC profile validation, device-map descriptors, timer-tick simulation, and `BootContext` construction | 43 |
 | `hal/virtualbox_guest_devices.hpp/.cpp` | VirtualBox guest-device binding seam: maps the first supported HAL storage, network, and display profile onto AHCI/E1000/VMSVGA-shaped Phase 4 adapters, rejects unsupported NVMe/PCNet/VGA promotion paths, and bootstraps the first guest profile as a reusable runtime bundle | 39 |
 | `hal/virtualbox_efi_stub.c` | Freestanding VBox EFI guest stub source: constructs the first guest `BootContext` via the C ABI bridge and serves as the source for the staged `BOOTX64.obj` artifact | — |
@@ -128,8 +128,9 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - OQ-5 (Axion determinism under pre-emption) is still open — governance audit trail not yet extended for async interleaving.
 - RFC-00B3 now defines the active integration path: the first kernel-owned runtime entry exists, and the kernel now consumes checked MMU translation through a kernel-facing fault/reporting path instead of leaving the runtime bootstrap as a thin handoff.
 - The first persistent kernel runtime state object now exists: allocator, page table, scheduler, IPC bus, and fault log are now owned by kernel runtime state seeded from `BootContext`.
-- Minimal device arbitration state for the first supported VirtualBox storage/display/network profile is now attached to that same owned boundary.
-- The next kernel step is to move from runtime-owned scheduler/IPC behavior to a fuller deterministic kernel loop and more active device arbitration on the same runtime boundary.
+- Active device arbitration for the first supported VirtualBox storage/display/network profile is now attached to that same owned boundary.
+- The kernel runtime now also exposes a deterministic loop step plus runtime counters for scheduler and IPC activity.
+- The next kernel step is to attach richer fault delivery and runtime accounting to that loop instead of only recording faults and ownership state.
 
 **Phase 3 test total: 193 / 193**
 
@@ -207,7 +208,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 146 | 1 |
+| `t81_ternaryos_hal_boot_test` | 166 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -215,7 +216,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **1093** | |
+| **Total** | **1113** | |
 
 Run all TernOS tests:
 
