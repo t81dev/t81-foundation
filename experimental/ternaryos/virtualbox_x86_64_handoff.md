@@ -15,6 +15,10 @@ Validate the official promotion lane:
 This is not the same as the local Apple Silicon ARMv8 developer lane. That lane
 is only for artifact generation and negative-result boot-path debugging.
 
+For a short reviewer-oriented overview, pair this runbook with:
+
+- [review_summary.md](review_summary.md)
+
 ## What Is Already Proven Locally
 
 Before handing this to an external `x86_64` validator, these parts are already
