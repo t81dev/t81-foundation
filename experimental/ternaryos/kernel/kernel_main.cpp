@@ -37,6 +37,48 @@ std::optional<KernelDeviceArbitrationState> bootstrap_device_arbitration(
   return state;
 }
 
+void record_audit_event(KernelRuntimeState& state,
+                        KernelAuditEventKind kind,
+                        sched::Tid subject_tid,
+                        ProcessGroupId process_group_id,
+                        mmu::MmuFault fault = mmu::MmuFault::None) {
+  KernelAuditRecord record{
+      .kind = kind,
+      .subject_tid = subject_tid,
+      .process_group_id = process_group_id,
+      .fault = fault,
+      .sequence = state.next_audit_sequence++,
+  };
+  if (state.audit_log.size() >= KernelRuntimeState::kMaxAuditLog) {
+    state.audit_log.pop_front();
+  }
+  state.audit_log.push_back(record);
+  state.last_audit_event = record;
+  ++state.counters.audit_events_recorded;
+  if (auto* group = state.find_process_group_mut(process_group_id)) {
+    ++group->counters.audit_events;
+  }
+}
+
+KernelRuntimeState::ProcessGroupState* create_process_group(KernelRuntimeState& state) {
+  const ProcessGroupId id = state.next_process_group_id++;
+  auto [it, inserted] = state.process_groups.emplace(
+      id, KernelRuntimeState::ProcessGroupState{.id = id});
+  return inserted ? &it->second : nullptr;
+}
+
+KernelRuntimeState::ProcessGroupState* assign_thread_to_group(
+    KernelRuntimeState& state, sched::Tid tid, ProcessGroupId process_group_id) {
+  auto* thread_state = state.find_thread_runtime_mut(tid);
+  auto* group_state = state.find_process_group_mut(process_group_id);
+  if (!thread_state || !group_state) {
+    return nullptr;
+  }
+  thread_state->process_group_id = process_group_id;
+  group_state->member_tids.push_back(tid);
+  return group_state;
+}
+
 void record_fault(KernelRuntimeState& state,
                   uint64_t tva,
                   mmu::MmuAccessMode mode,
@@ -55,6 +97,30 @@ void record_fault(KernelRuntimeState& state,
   state.fault_log.push_back(record);
   state.pending_faults.push_back(record);
   ++state.counters.faults_recorded;
+}
+
+bool maybe_recover_thread(KernelRuntimeState& state,
+                          KernelRuntimeState::ThreadRuntimeState& thread_state) {
+  if (!thread_state.quarantined || !thread_state.fault_inbox.empty()) {
+    return false;
+  }
+  auto* group_state = state.find_process_group_mut(thread_state.process_group_id);
+  if (!group_state || group_state->acknowledgement_pending ||
+      group_state->pending_fault_count != 0) {
+    return false;
+  }
+  thread_state.quarantined = false;
+  if (!state.scheduler.wake(thread_state.tid)) {
+    return false;
+  }
+  ++state.counters.thread_fault_recoveries;
+  ++state.counters.process_group_recoveries;
+  ++group_state->counters.recoveries;
+  record_audit_event(state,
+                     KernelAuditEventKind::ThreadRecovered,
+                     thread_state.tid,
+                     group_state->id);
+  return true;
 }
 
 KernelDeviceRecord* find_device(KernelRuntimeState& state, std::string_view device_name) {
@@ -100,7 +166,16 @@ std::optional<KernelRuntimeState> axion_kernel_bootstrap(
   state.ipc_bus.register_thread(KernelRuntimeState::kKernelTid);
   state.thread_runtime.emplace(
       KernelRuntimeState::kKernelTid,
-      KernelRuntimeState::ThreadRuntimeState{.tid = KernelRuntimeState::kKernelTid});
+      KernelRuntimeState::ThreadRuntimeState{
+          .tid = KernelRuntimeState::kKernelTid,
+          .process_group_id = KernelRuntimeState::kKernelProcessGroup,
+      });
+  state.process_groups.emplace(
+      KernelRuntimeState::kKernelProcessGroup,
+      KernelRuntimeState::ProcessGroupState{
+          .id = KernelRuntimeState::kKernelProcessGroup,
+          .member_tids = {KernelRuntimeState::kKernelTid},
+      });
   state.device_arbitration = bootstrap_device_arbitration(ctx.platform_id);
   return state;
 }
@@ -130,10 +205,41 @@ KernelAccessReport axion_kernel_check_access(
 std::optional<sched::Tid> axion_kernel_spawn_thread(
     KernelRuntimeState& state,
     sched::TiscContext ctx) noexcept {
+  auto* group = create_process_group(state);
+  if (!group) {
+    return std::nullopt;
+  }
   auto tid = state.scheduler.spawn(std::move(ctx));
   if (tid.has_value()) {
     state.ipc_bus.register_thread(*tid);
-    state.thread_runtime.emplace(*tid, KernelRuntimeState::ThreadRuntimeState{.tid = *tid});
+    state.thread_runtime.emplace(*tid,
+                                 KernelRuntimeState::ThreadRuntimeState{
+                                     .tid = *tid,
+                                     .process_group_id = group->id,
+                                 });
+    assign_thread_to_group(state, *tid, group->id);
+  } else {
+    state.process_groups.erase(group->id);
+  }
+  return tid;
+}
+
+std::optional<sched::Tid> axion_kernel_spawn_thread_in_group(
+    KernelRuntimeState& state,
+    sched::TiscContext ctx,
+    ProcessGroupId process_group_id) noexcept {
+  if (!state.find_process_group(process_group_id)) {
+    return std::nullopt;
+  }
+  auto tid = state.scheduler.spawn(std::move(ctx));
+  if (tid.has_value()) {
+    state.ipc_bus.register_thread(*tid);
+    state.thread_runtime.emplace(*tid,
+                                 KernelRuntimeState::ThreadRuntimeState{
+                                     .tid = *tid,
+                                     .process_group_id = process_group_id,
+                                 });
+    assign_thread_to_group(state, *tid, process_group_id);
   }
   return tid;
 }
@@ -163,10 +269,38 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
     if (thread_state) {
       thread_state->fault_inbox.push_back(*state.last_delivered_fault);
       ++state.counters.faults_routed_to_threads;
+      record_audit_event(state,
+                         KernelAuditEventKind::FaultDelivered,
+                         subject_tid,
+                         thread_state->process_group_id,
+                         state.last_delivered_fault->fault);
+
+      auto* group_state = state.find_process_group_mut(thread_state->process_group_id);
+      if (group_state) {
+        const bool entering_fault_state = !group_state->faulted;
+        group_state->faulted = true;
+        group_state->blocked = true;
+        group_state->acknowledgement_pending = true;
+        ++group_state->pending_fault_count;
+        ++group_state->counters.fault_entries;
+        ++state.counters.process_group_fault_entries;
+        if (entering_fault_state) {
+          record_audit_event(state,
+                             KernelAuditEventKind::ProcessGroupFaultEntered,
+                             subject_tid,
+                             group_state->id,
+                             state.last_delivered_fault->fault);
+        }
+      }
 
       if (subject_tid != KernelRuntimeState::kKernelTid && !thread_state->quarantined) {
         thread_state->quarantined = true;
         ++state.counters.thread_quarantines;
+        record_audit_event(state,
+                           KernelAuditEventKind::ThreadQuarantined,
+                           subject_tid,
+                           thread_state->process_group_id,
+                           state.last_delivered_fault->fault);
         const bool was_running = state.scheduler.current_tid() == subject_tid;
         if (state.scheduler.sleep(subject_tid, state.cpu_context)) {
           handled_by_policy = was_running;
@@ -240,11 +374,50 @@ bool axion_kernel_ack_thread_fault(KernelRuntimeState& state,
 
   thread_state->fault_inbox.pop_front();
   ++state.counters.thread_fault_acknowledgements;
+  record_audit_event(state,
+                     KernelAuditEventKind::ThreadFaultAcknowledged,
+                     tid,
+                     thread_state->process_group_id);
 
-  if (thread_state->fault_inbox.empty() && thread_state->quarantined) {
-    thread_state->quarantined = false;
-    if (state.scheduler.wake(tid)) {
-      ++state.counters.thread_fault_recoveries;
+  if (thread_state->fault_inbox.empty()) {
+    auto* group_state = state.find_process_group_mut(thread_state->process_group_id);
+    if (group_state && group_state->pending_fault_count > 0) {
+      --group_state->pending_fault_count;
+      if (group_state->pending_fault_count == 0 && !group_state->acknowledgement_pending) {
+        group_state->faulted = false;
+        group_state->blocked = false;
+      }
+    }
+    maybe_recover_thread(state, *thread_state);
+  }
+  return true;
+}
+
+bool axion_kernel_ack_process_group_fault(KernelRuntimeState& state,
+                                          ProcessGroupId process_group_id) noexcept {
+  auto* group_state = state.find_process_group_mut(process_group_id);
+  if (!group_state || !group_state->faulted || !group_state->acknowledgement_pending) {
+    return false;
+  }
+
+  group_state->acknowledgement_pending = false;
+  ++state.counters.process_group_acknowledgements;
+  ++group_state->counters.acknowledgements;
+  record_audit_event(state,
+                     KernelAuditEventKind::ProcessGroupAcknowledged,
+                     KernelRuntimeState::kKernelTid,
+                     process_group_id);
+
+  if (group_state->pending_fault_count == 0) {
+    group_state->faulted = false;
+    group_state->blocked = false;
+  }
+
+  bool recovered_any = false;
+  for (auto tid : group_state->member_tids) {
+    auto* thread_state = state.find_thread_runtime_mut(tid);
+    if (thread_state) {
+      recovered_any = maybe_recover_thread(state, *thread_state) || recovered_any;
     }
   }
   return true;

@@ -13,8 +13,11 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <vector>
 
 namespace t81::ternaryos::kernel {
+
+using ProcessGroupId = uint32_t;
 
 struct KernelFaultRecord {
   std::string platform_id;
@@ -22,6 +25,23 @@ struct KernelFaultRecord {
   mmu::MmuAccessMode access_mode{mmu::MmuAccessMode::Read};
   mmu::MmuFault fault{mmu::MmuFault::None};
   sched::Tid subject_tid{0};
+};
+
+enum class KernelAuditEventKind : uint8_t {
+  FaultDelivered = 0,
+  ThreadQuarantined,
+  ProcessGroupFaultEntered,
+  ThreadFaultAcknowledged,
+  ProcessGroupAcknowledged,
+  ThreadRecovered,
+};
+
+struct KernelAuditRecord {
+  KernelAuditEventKind kind{KernelAuditEventKind::FaultDelivered};
+  sched::Tid subject_tid{0};
+  ProcessGroupId process_group_id{0};
+  mmu::MmuFault fault{mmu::MmuFault::None};
+  uint64_t sequence{0};
 };
 
 struct KernelDeviceRecord {
@@ -44,8 +64,26 @@ struct KernelDeviceArbitrationState {
 struct KernelRuntimeState {
   struct ThreadRuntimeState {
     sched::Tid tid{0};
+    ProcessGroupId process_group_id{0};
     bool quarantined{false};
     std::deque<KernelFaultRecord> fault_inbox;
+  };
+
+  struct ProcessGroupAuditCounters {
+    uint64_t audit_events{0};
+    uint64_t fault_entries{0};
+    uint64_t acknowledgements{0};
+    uint64_t recoveries{0};
+  };
+
+  struct ProcessGroupState {
+    ProcessGroupId id{0};
+    std::vector<sched::Tid> member_tids;
+    bool faulted{false};
+    bool blocked{false};
+    bool acknowledgement_pending{false};
+    std::size_t pending_fault_count{0};
+    ProcessGroupAuditCounters counters{};
   };
 
   struct Counters {
@@ -60,6 +98,10 @@ struct KernelRuntimeState {
     uint64_t thread_quarantines{0};
     uint64_t thread_fault_acknowledgements{0};
     uint64_t thread_fault_recoveries{0};
+    uint64_t process_group_fault_entries{0};
+    uint64_t process_group_acknowledgements{0};
+    uint64_t process_group_recoveries{0};
+    uint64_t audit_events_recorded{0};
   };
 
   std::string platform_id;
@@ -73,10 +115,15 @@ struct KernelRuntimeState {
   std::optional<KernelDeviceArbitrationState> device_arbitration;
   std::deque<KernelFaultRecord> fault_log;
   std::deque<KernelFaultRecord> pending_faults;
+  std::deque<KernelAuditRecord> audit_log;
   std::unordered_map<sched::Tid, ThreadRuntimeState> thread_runtime;
+  std::unordered_map<ProcessGroupId, ProcessGroupState> process_groups;
   t81::vm::ThreadContext cpu_context{};
   Counters counters{};
   std::optional<KernelFaultRecord> last_delivered_fault{};
+  std::optional<KernelAuditRecord> last_audit_event{};
+  ProcessGroupId next_process_group_id{1};
+  uint64_t next_audit_sequence{1};
 
   KernelRuntimeState(std::string platform_id_in,
                      std::size_t memory_region_count_in,
@@ -90,10 +137,14 @@ struct KernelRuntimeState {
         allocator(std::move(allocator_in)) {}
 
   static constexpr sched::Tid kKernelTid = 0;
+  static constexpr ProcessGroupId kKernelProcessGroup = 0;
   static constexpr std::size_t kMaxFaultLog = 27;
+  static constexpr std::size_t kMaxAuditLog = 81;
 
   std::size_t fault_count() const noexcept { return fault_log.size(); }
   std::size_t pending_fault_count() const noexcept { return pending_faults.size(); }
+  std::size_t audit_count() const noexcept { return audit_log.size(); }
+  std::size_t process_group_count() const noexcept { return process_groups.size(); }
   bool has_device_arbitration() const noexcept { return device_arbitration.has_value(); }
 
   const ThreadRuntimeState* find_thread_runtime(sched::Tid tid) const noexcept {
@@ -104,6 +155,16 @@ struct KernelRuntimeState {
   ThreadRuntimeState* find_thread_runtime_mut(sched::Tid tid) noexcept {
     auto it = thread_runtime.find(tid);
     return it == thread_runtime.end() ? nullptr : &it->second;
+  }
+
+  const ProcessGroupState* find_process_group(ProcessGroupId id) const noexcept {
+    auto it = process_groups.find(id);
+    return it == process_groups.end() ? nullptr : &it->second;
+  }
+
+  ProcessGroupState* find_process_group_mut(ProcessGroupId id) noexcept {
+    auto it = process_groups.find(id);
+    return it == process_groups.end() ? nullptr : &it->second;
   }
 };
 
@@ -123,6 +184,11 @@ KernelAccessReport axion_kernel_check_access(
 std::optional<sched::Tid> axion_kernel_spawn_thread(
     KernelRuntimeState& state,
     sched::TiscContext ctx) noexcept;
+
+std::optional<sched::Tid> axion_kernel_spawn_thread_in_group(
+    KernelRuntimeState& state,
+    sched::TiscContext ctx,
+    ProcessGroupId process_group_id) noexcept;
 
 bool axion_kernel_tick(KernelRuntimeState& state) noexcept;
 
@@ -146,6 +212,9 @@ bool axion_kernel_release_device(KernelRuntimeState& state,
 
 bool axion_kernel_ack_thread_fault(KernelRuntimeState& state,
                                    sched::Tid tid) noexcept;
+
+bool axion_kernel_ack_process_group_fault(KernelRuntimeState& state,
+                                          ProcessGroupId process_group_id) noexcept;
 
 int axion_kernel_main(const hal::BootContext& ctx) noexcept;
 

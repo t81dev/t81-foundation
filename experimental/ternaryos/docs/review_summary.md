@@ -30,9 +30,9 @@ The official promotion target remains:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1173`
+- total assertions: `1178`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `226/226`
+- `t81_ternaryos_hal_boot_test`: `302/302`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -50,7 +50,8 @@ Kernel integration proof now also includes:
 - a deterministic kernel-step loop with runtime counters and active AHCI claim/release behavior
 - deterministic FIFO fault delivery from the kernel loop over recorded MMU faults
 - delivered MMU faults now route into per-thread runtime state, quarantining the faulting thread and preserving a thread-local fault inbox
-- fault acknowledgements can now recover quarantined threads deterministically
+- the owning process group now enters a blocked fault state and must be explicitly acknowledged before a drained thread inbox can recover
+- audit-only governance events are now recorded deterministically for fault delivery, quarantine, process-group fault entry, acknowledgement, and recovery
 
 Phase 4 storage proof now covers:
 
@@ -161,5 +162,5 @@ kernel path is now:
 
 - keep the external `x86_64` VirtualBox validation ask open
 - use RFC-00B3 as the implementation path for kernel integration after `hal_main`
-- build the next kernel-facing step on top of the new runtime handoff: MMU fault
-  reporting and kernel-visible fault records
+- build the next kernel-facing step on top of the new runtime handoff: a small
+  supervisor/service-facing layer above the new process-group boundary

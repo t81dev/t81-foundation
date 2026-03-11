@@ -429,9 +429,17 @@ static void test_kernel_runtime_bootstrap() {
           "kernel runtime registers the kernel IPC inbox");
     check(state->ipc_bus.pending(KernelRuntimeState::kKernelTid) == 0,
           "kernel IPC inbox starts empty");
+    check(state->process_group_count() == 1, "kernel runtime starts with one kernel process group");
+    const auto* kernel_runtime = state->find_thread_runtime(KernelRuntimeState::kKernelTid);
+    check(kernel_runtime != nullptr, "kernel thread runtime state exists");
+    if (kernel_runtime) {
+      check(kernel_runtime->process_group_id == KernelRuntimeState::kKernelProcessGroup,
+            "kernel thread belongs to the kernel process group");
+    }
     check(!state->has_device_arbitration(),
           "generic hosted test context does not install device arbitration");
     check(state->fault_count() == 0, "kernel runtime starts with an empty fault log");
+    check(state->audit_count() == 0, "kernel runtime starts with an empty audit log");
   }
   check(axion_kernel_main(ctx) == 0, "axion_kernel_main returns 0 for valid context");
 }
@@ -558,6 +566,18 @@ static void test_kernel_runtime_scheduler_and_ipc() {
   check(tid_b.has_value(), "kernel runtime spawns thread B");
   if (!tid_a || !tid_b) {
     return;
+  }
+  const auto* runtime_a = state->find_thread_runtime(*tid_a);
+  const auto* runtime_b = state->find_thread_runtime(*tid_b);
+  check(runtime_a != nullptr, "thread A runtime state exists");
+  check(runtime_b != nullptr, "thread B runtime state exists");
+  if (runtime_a && runtime_b) {
+    check(runtime_a->process_group_id != runtime_b->process_group_id,
+          "threads spawned independently receive distinct process groups");
+    check(state->find_process_group(runtime_a->process_group_id) != nullptr,
+          "thread A process group exists");
+    check(state->find_process_group(runtime_b->process_group_id) != nullptr,
+          "thread B process group exists");
   }
 
   check(state->scheduler.thread_count() == 2, "runtime-owned scheduler tracks two threads");
@@ -817,16 +837,221 @@ static void test_kernel_fault_acknowledgement_and_recovery() {
         "faulting thread acknowledgement succeeds");
   check(state->counters.thread_fault_acknowledgements == 1,
         "runtime counts fault acknowledgements");
-  check(state->counters.thread_fault_recoveries == 1,
-        "runtime counts recovered quarantined threads");
+  check(state->counters.thread_fault_recoveries == 0,
+        "thread acknowledgement alone does not recover the quarantined thread");
 
   runtime_a = state->find_thread_runtime(*tid_a);
   check(runtime_a->fault_inbox.empty(), "acknowledgement drains thread A fault inbox");
-  check(!runtime_a->quarantined, "thread A leaves quarantine after acknowledgement");
+  check(runtime_a->quarantined,
+        "thread A remains quarantined until its process group is acknowledged");
+  check(axion_kernel_ack_process_group_fault(*state, runtime_a->process_group_id),
+        "faulted process group acknowledgement succeeds after thread inbox drains");
+  check(state->counters.process_group_acknowledgements == 1,
+        "runtime counts process-group acknowledgements in the recovery path");
+  check(state->counters.thread_fault_recoveries == 1,
+        "group acknowledgement triggers deterministic thread recovery");
+
+  runtime_a = state->find_thread_runtime(*tid_a);
+  check(!runtime_a->quarantined, "thread A leaves quarantine after group acknowledgement");
 
   check(axion_kernel_step(*state), "post-acknowledgement step continues runtime");
   check(state->scheduler.current_tid() == *tid_a,
         "thread A becomes runnable again after acknowledgement");
+}
+
+static void test_kernel_process_group_fault_gate() {
+  std::printf("\n[AC-25] Axion kernel process-group fault gate requires explicit group acknowledgement\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for process-group fault gate");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext leader;
+  leader.label = "group-leader";
+  leader.registers[0] = 401;
+  auto leader_tid = axion_kernel_spawn_thread(*state, leader);
+  check(leader_tid.has_value(), "group leader spawns successfully");
+  if (!leader_tid) {
+    return;
+  }
+
+  const auto* leader_runtime = state->find_thread_runtime(*leader_tid);
+  check(leader_runtime != nullptr, "leader runtime state exists");
+  if (!leader_runtime) {
+    return;
+  }
+  const auto group_id = leader_runtime->process_group_id;
+
+  t81::ternaryos::sched::TiscContext sibling;
+  sibling.label = "group-sibling";
+  sibling.registers[0] = 402;
+  auto sibling_tid = axion_kernel_spawn_thread_in_group(*state, sibling, group_id);
+  check(sibling_tid.has_value(), "sibling thread spawns into existing process group");
+
+  t81::ternaryos::sched::TiscContext outsider;
+  outsider.label = "other-group";
+  outsider.registers[0] = 403;
+  auto outsider_tid = axion_kernel_spawn_thread(*state, outsider);
+  check(outsider_tid.has_value(), "outsider thread spawns with its own process group");
+  if (!sibling_tid || !outsider_tid) {
+    return;
+  }
+
+  const auto* group_before_fault = state->find_process_group(group_id);
+  check(group_before_fault != nullptr, "shared process group exists");
+  if (group_before_fault) {
+    check(group_before_fault->member_tids.size() == 2,
+          "shared process group tracks deterministic membership");
+  }
+
+  check(axion_kernel_step(*state), "first group step dispatches the leader");
+  check(state->scheduler.current_tid() == *leader_tid, "leader is current before group fault");
+
+  auto fault_report = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(39, 0), mmu::MmuAccessMode::Read);
+  check(fault_report.fault.has_value(), "group fault records for running leader");
+  check(axion_kernel_step(*state), "second group step delivers the fault");
+
+  leader_runtime = state->find_thread_runtime(*leader_tid);
+  const auto* sibling_runtime = state->find_thread_runtime(*sibling_tid);
+  const auto* outsider_runtime = state->find_thread_runtime(*outsider_tid);
+  const auto* faulted_group = state->find_process_group(group_id);
+  check(leader_runtime != nullptr, "leader runtime state is still present");
+  check(sibling_runtime != nullptr, "sibling runtime state is still present");
+  check(outsider_runtime != nullptr, "outsider runtime state is still present");
+  check(faulted_group != nullptr, "faulted process group state exists");
+  if (!leader_runtime || !sibling_runtime || !outsider_runtime || !faulted_group) {
+    return;
+  }
+
+  check(leader_runtime->quarantined, "faulting thread is quarantined");
+  check(!sibling_runtime->quarantined, "same-group sibling is not auto-quarantined");
+  check(!outsider_runtime->quarantined, "other-group thread remains runnable");
+  check(faulted_group->faulted, "faulted process group enters fault state");
+  check(faulted_group->blocked, "faulted process group enters blocked state");
+  check(faulted_group->acknowledgement_pending,
+        "faulted process group requires explicit acknowledgement");
+  check(faulted_group->pending_fault_count == 1,
+        "faulted process group counts one pending fault");
+  check(state->counters.process_group_fault_entries == 1,
+        "runtime counts process-group fault entries");
+
+  check(!axion_kernel_ack_thread_fault(*state, *outsider_tid),
+        "other-group thread cannot acknowledge an empty fault inbox");
+  check(axion_kernel_ack_thread_fault(*state, *leader_tid),
+        "faulting thread acknowledgement drains its thread inbox");
+  leader_runtime = state->find_thread_runtime(*leader_tid);
+  check(leader_runtime->quarantined,
+        "thread remains quarantined until its group is acknowledged");
+  check(!axion_kernel_ack_process_group_fault(*state, outsider_runtime->process_group_id),
+        "unfaulted process group cannot be acknowledged");
+  check(axion_kernel_ack_process_group_fault(*state, group_id),
+        "faulted process group acknowledgement succeeds");
+
+  const auto* recovered_group = state->find_process_group(group_id);
+  check(recovered_group != nullptr, "recovered process group state exists");
+  if (recovered_group) {
+    check(!recovered_group->faulted, "group fault state clears after acknowledgement");
+    check(!recovered_group->blocked, "group blocked state clears after acknowledgement");
+    check(!recovered_group->acknowledgement_pending,
+          "group acknowledgement gate clears after acknowledgement");
+    check(recovered_group->pending_fault_count == 0,
+          "group pending fault count drains after thread and group acknowledgement");
+  }
+
+  leader_runtime = state->find_thread_runtime(*leader_tid);
+  check(leader_runtime != nullptr, "leader runtime state remains visible after recovery");
+  if (!leader_runtime) {
+    return;
+  }
+  check(!leader_runtime->quarantined, "leader leaves quarantine after group acknowledgement");
+  check(state->counters.process_group_acknowledgements == 1,
+        "runtime counts process-group acknowledgements");
+  check(state->counters.process_group_recoveries == 1,
+        "runtime counts process-group-mediated thread recoveries");
+
+  check(axion_kernel_step(*state), "post-group-ack step continues the runtime");
+  check(state->scheduler.current_tid() == *sibling_tid ||
+            state->scheduler.current_tid() == *leader_tid ||
+            state->scheduler.current_tid() == *outsider_tid,
+        "same-group runtime remains schedulable after recovery");
+}
+
+static void test_kernel_process_group_audit_log() {
+  std::printf("\n[AC-26] Axion kernel emits deterministic process-group audit events\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for process-group audit log");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext thread;
+  thread.label = "audit-thread";
+  thread.registers[0] = 501;
+  auto tid = axion_kernel_spawn_thread(*state, thread);
+  check(tid.has_value(), "audit thread spawns successfully");
+  if (!tid) {
+    return;
+  }
+
+  const auto* runtime = state->find_thread_runtime(*tid);
+  check(runtime != nullptr, "audit thread runtime state exists");
+  if (!runtime) {
+    return;
+  }
+  const auto group_id = runtime->process_group_id;
+
+  check(axion_kernel_step(*state), "audit step dispatches the faulting thread");
+  auto fault_report = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(45, 0), mmu::MmuAccessMode::Read);
+  check(fault_report.fault.has_value(), "audit path records a fault");
+  check(axion_kernel_step(*state), "audit step delivers the fault");
+  check(axion_kernel_ack_thread_fault(*state, *tid),
+        "thread acknowledgement succeeds for audit test");
+  check(axion_kernel_ack_process_group_fault(*state, group_id),
+        "group acknowledgement succeeds for audit test");
+
+  check(state->audit_count() >= 6, "audit log records the expected governance events");
+  check(state->counters.audit_events_recorded >= 6,
+        "runtime counts recorded audit events");
+  check(state->last_audit_event.has_value(), "runtime exposes the latest audit event");
+
+  std::vector<KernelAuditEventKind> observed;
+  for (const auto& entry : state->audit_log) {
+    if (entry.subject_tid == *tid || entry.process_group_id == group_id) {
+      observed.push_back(entry.kind);
+    }
+  }
+  check(observed.size() >= 6, "audit log exposes at least six relevant events");
+  if (observed.size() >= 6) {
+    check(observed[0] == KernelAuditEventKind::FaultDelivered,
+          "audit event[0] is fault delivered");
+    check(observed[1] == KernelAuditEventKind::ProcessGroupFaultEntered,
+          "audit event[1] is process-group fault entry");
+    check(observed[2] == KernelAuditEventKind::ThreadQuarantined,
+          "audit event[2] is thread quarantined");
+    check(observed[3] == KernelAuditEventKind::ThreadFaultAcknowledged,
+          "audit event[3] is thread acknowledgement");
+    check(observed[4] == KernelAuditEventKind::ProcessGroupAcknowledged,
+          "audit event[4] is process-group acknowledgement");
+    check(observed[5] == KernelAuditEventKind::ThreadRecovered,
+          "audit event[5] is thread recovery");
+  }
+
+  uint64_t last_sequence = 0;
+  for (const auto& entry : state->audit_log) {
+    check(entry.sequence > last_sequence, "audit event sequences are strictly increasing");
+    last_sequence = entry.sequence;
+  }
 }
 
 // ─── main ────────────────────────────────────────────────────────────────────
@@ -860,6 +1085,8 @@ int main() {
   test_kernel_loop_fault_delivery();
   test_kernel_fault_process_boundary();
   test_kernel_fault_acknowledgement_and_recovery();
+  test_kernel_process_group_fault_gate();
+  test_kernel_process_group_audit_log();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

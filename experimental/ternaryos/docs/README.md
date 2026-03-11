@@ -64,8 +64,8 @@ hal/
 
 kernel/
   kernel_main.hpp/.cpp First Axion kernel-owned runtime entry/bootstrap;
-                       runtime-owned allocator/MMU/scheduler/IPC/device state
-                       plus deterministic scheduler + IPC execution helpers
+                       runtime-owned allocator/MMU/scheduler/IPC/device state,
+                       process-group fault policy, and audit-only governance hooks
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,
@@ -102,7 +102,7 @@ shell/
 
 tests/
   shell_session_test.cpp     Phase 5 shell command / durable-history test
-  hal_boot_test.cpp          Phase 1 — 146 assertions
+  hal_boot_test.cpp          Phase 1 / kernel integration — 302 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
   mmu_test.cpp               Phase 2 — 87 assertions
@@ -117,7 +117,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1173/1173 assertions, 8/8 tests pass
+# Expected: 1178/1178 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -145,7 +145,8 @@ The demo shows a VirtualBox-first hosted simulation path:
 - the kernel runtime now exposes a deterministic `axion_kernel_step(...)` loop surface with runtime counters
 - the kernel loop now delivers recorded MMU faults deterministically through a pending-fault queue
 - the kernel loop now routes delivered faults into per-thread runtime state, quarantining the faulting thread and preserving a thread-local fault inbox
-- faulting threads can now acknowledge delivered faults and recover deterministically back into the runnable set
+- faulting threads can now acknowledge delivered faults, but recovery is now gated by a kernel-owned process-group acknowledgement path
+- the kernel now records audit-only governance events for fault delivery, quarantine, process-group fault entry, acknowledgement, and recovery
 - TTF renders ASCII text into the VirtualBox VMSVGA-backed ternary framebuffer.
 - TernaryEthernetPacket round-trips through the VirtualBox E1000 scaffold.
 
@@ -277,11 +278,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `226/226`
+- `t81_ternaryos_hal_boot_test` is `302/302`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1173`
+- total TernOS assertions are `1178`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback
@@ -304,7 +305,9 @@ Local hosted proof as of the current branch:
   - runtime counters for loop, scheduler, and IPC activity
   - queued fault delivery with deterministic first-in-first-out loop consumption
   - thread-local fault routing and deterministic fault-thread quarantine
-  - explicit fault acknowledgement and deterministic thread recovery
+  - process-group fault policy with explicit group acknowledgement gates
+  - audit-only governance events recorded in deterministic sequence
+  - deterministic thread recovery only after both thread and process-group acknowledgement
 
 ## VirtualBox Artifact
 

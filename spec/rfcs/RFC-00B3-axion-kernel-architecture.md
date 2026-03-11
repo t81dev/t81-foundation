@@ -180,7 +180,7 @@ The kernel must treat these as explicit events, not just null translations.
 The next kernel-facing implementation milestone after this RFC is:
 
 - a page-fault reporting path that consumes `mmu_translate_checked()`
-- explicit fault records that can be surfaced to the scheduler/process layer
+- explicit fault records that can be surfaced to the scheduler/process-group layer
 
 This is the first required bridge from MMU structure to kernel control flow.
 
@@ -205,11 +205,21 @@ first kernel runtime may continue to schedule TISC thread contexts directly.
 
 #### 3.6.3 Process model
 
-Process/group semantics are deferred until:
+Axion now has a small process-group policy layer over the thread model:
 
-- fault delivery exists
-- memory ownership semantics are clearer
-- syscall/service boundaries are defined
+- each spawned thread belongs to exactly one kernel-owned process group
+- delivered MMU faults route into per-thread inboxes and mark the owning group
+  faulted/blocked
+- explicit process-group acknowledgement gates recovery after a thread inbox is
+  drained
+- deterministic audit records are emitted for fault delivery, quarantine,
+  group-fault entry, acknowledgement, and recovery
+
+Richer supervisor/service policy remains deferred until:
+
+- service boundaries are defined
+- a kernel-visible supervisor object exists
+- capability and syscall rules are ready to be specified
 
 ---
 
@@ -279,16 +289,16 @@ This RFC does not retarget the project away from that profile.
 
 ## 6. Implementation Plan
 
-1. extend the current thread-local fault boundary into a small process-group or supervisor policy layer
+1. define the first kernel-visible supervisor/service layer above the current process-group boundary
 2. extend active device arbitration beyond simple claim/release ownership
 3. only then expand syscall/userland semantics further
 4. defer pager/lazy-allocation work until the loop-owned fault path feeds a richer runtime consumer
 
 ## 7. Open Questions
 
-- What should the first concrete kernel-runtime state object contain?
 - Should device arbitration state live inside the first kernel state object or in a separate kernel-owned service registry?
-- When should thread-first scheduling grow into a fuller process model?
+- How much authority should the first supervisor/service layer have beyond the current audit-only process-group gate?
+- When should thread-first scheduling grow into a fuller process/service model?
 - How should later capability checks attach to CanonRef and device operations without destabilizing the current seams?
 
 ## 8. Acceptance Criteria
@@ -303,6 +313,7 @@ This RFC does not retarget the project away from that profile.
 - [x] The kernel runtime can progress through a deterministic loop step with runtime counters.
 - [x] Active device claim/release arbitration works for the first supported profile.
 - [x] Recorded MMU faults are delivered through the kernel loop in deterministic FIFO order.
-- [x] Delivered MMU faults feed a minimal runtime policy/process boundary that preserves thread-local fault state.
-- [x] Fault acknowledgements can recover quarantined threads deterministically.
+- [x] Delivered MMU faults feed a process-group runtime policy boundary that preserves thread-local fault state.
+- [x] Process-group acknowledgement gates thread recovery deterministically.
+- [x] Audit-only governance records are emitted deterministically for fault delivery, quarantine, acknowledgement, and recovery.
 - [x] Hosted and QEMU developer lanes continue to pass after kernel entry integration.
