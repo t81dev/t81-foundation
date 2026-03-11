@@ -1,6 +1,6 @@
 # RFC-00B1: Ternary MMU — Virtual Address Translation
 
-**Status:** Draft
+**Status:** Implemented
 **Date:** 2026-03-10
 **Author:** @t81dev
 **Depends on:** RFC-00B0 (HAL), `experimental/ternaryos/mmu/ternary_page_alloc`
@@ -54,16 +54,22 @@ Phase 2. RFC-00B2 (if needed) will extend VPN width.
 
 ## 3. Page Table
 
-### 3.1 Phase 2: Flat hash map
+### 3.1 Implemented structure: 20-trit radix walk
 
-A `std::unordered_map<uint64_t, uint64_t>` mapping VPN → physical page base.
-This is sufficient for the Phase 2 hosted prototype and unit-test validation.
+The current `PageTable` is a ternary radix tree over the 20-trit VPN. Each
+level consumes one VPN trit and branches over `{0,1,2}`. After 20 steps, the
+leaf stores:
 
-### 3.2 Phase 3+: Radix trie (deferred)
+- `phys_base`
+- `owner_pid`
 
-A 3-ary trie (branching factor 3) with 10-trit levels matches the natural
-ternary page granularity. Deferred to Phase 3; the flat map's API is a strict
-subset so migration is non-breaking.
+This makes the page-table shape match the ternary virtual-address model while
+preserving the same external MMU API.
+
+### 3.2 Diagnostics surface
+
+The implementation still exposes a read-only flat VPN cache for diagnostics and
+compatibility, but the radix tree is the canonical translation structure.
 
 ---
 
@@ -97,4 +103,7 @@ bool mmu_unmap(PageTable& pt, TernaryPageAllocator& alloc, uint64_t tva);
 - [ ] `mmu_translate` returns nullopt for unmapped TVA.
 - [ ] `mmu_unmap` frees the physical page (page allocator free count increases).
 - [ ] Double-map of same VPN returns false.
-- [ ] All existing 80 TernOS tests continue to pass.
+- [ ] Sparse far-apart VPNs translate correctly through the radix walk.
+- [ ] Unmapping one VPN prunes its empty radix branch without affecting siblings.
+- [ ] `page_table_dump()` exposes radix structural diagnostics.
+- [ ] All existing TernOS tests continue to pass.

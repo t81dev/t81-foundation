@@ -59,7 +59,7 @@ mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,
                        kPageSize=59049, kMaxTva=3^30-1, trit utilities
   ternary_page_alloc.hpp/.cpp  Physical page allocator (balanced-ternary PageState)
-  page_table.hpp/.cpp  Flat VPN→physical page map; mmu_map/translate/unmap
+  page_table.hpp/.cpp  20-trit ternary radix page table; mmu_map/translate/unmap
 
 sched/
   tisc_context.hpp     TiscContext: full TISC thread snapshot for pre-emption
@@ -90,7 +90,7 @@ tests/
   hal_boot_test.cpp          Phase 1 — 84 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
-  mmu_test.cpp               Phase 2 — 47 assertions
+  mmu_test.cpp               Phase 2 — 60 assertions
   scheduler_test.cpp         Phase 3 — 120 assertions
   ipc_test.cpp               Phase 3 — 73 assertions
   device_driver_test.cpp     Phase 4 — 342 assertions

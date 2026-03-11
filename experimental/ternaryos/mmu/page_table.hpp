@@ -2,7 +2,7 @@
 
 // experimental/ternaryos/mmu/page_table.hpp
 //
-// Ternary MMU — Phase 2 flat page table and translate/map/unmap API.
+// Ternary MMU — ternary radix page table and translate/map/unmap API.
 // RFC-00B1 §3, §4.
 
 #include <cstdint>
