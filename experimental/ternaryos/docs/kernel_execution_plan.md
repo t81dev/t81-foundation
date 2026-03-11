@@ -120,6 +120,15 @@ The sixth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves FIFO backlog handling across two queued
   address spaces without widening the pager surface
 
+The seventh pager-groundwork slice is now also complete:
+
+- runtime and fault diagnostics now retain pager-worker stall cycles when an
+  active unresolved item prevents immediate progress
+- backlog-blocked cycles now distinguish the narrower case where FIFO ordering
+  is explicitly holding queued work behind that stalled active item
+- HAL/kernel coverage now proves those stall/backlog-blocked counters advance
+  deterministically under FIFO backlog pressure
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
@@ -134,7 +143,7 @@ The next real kernel work is now:
 - pager integration
 - richer kernel-owned pager work after the first worker model
 - explicit transition handling for prioritization or richer scheduling policy
-  across multiple queued address spaces
+  once the new FIFO stall/backlog-blocked behavior is no longer sufficient
 - stable diagnostics proving pager worker behavior remains deterministic under
   deeper load
 

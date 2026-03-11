@@ -342,6 +342,9 @@ Local hosted proof as of the current branch:
 - runtime and fault diagnostics now also retain pager backlog/load high-water
   marks plus worker activation counts, and HAL coverage proves FIFO handling
   across two queued address spaces
+- runtime and fault diagnostics now also retain worker stall cycles and the
+  narrower backlog-blocked subset when FIFO ordering holds queued work behind
+  an unresolved active item
 - the first narrow service-facing action now exists through that same boundary:
   supervisor fault-group acknowledgement
 - supervisor-facing recovery/report flows are now exposed through that same boundary:

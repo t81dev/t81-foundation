@@ -1309,6 +1309,10 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status leaves one queued work item after first activation");
     check(runtime_after_first_activation.runtime->pager_worker_activations == 1,
           "runtime status counts one worker activation after first activation");
+    check(runtime_after_first_activation.runtime->pager_worker_stall_cycles == 1,
+          "runtime status counts one worker stall cycle while the first item remains unresolved");
+    check(runtime_after_first_activation.runtime->pager_worker_backlog_blocked_cycles == 1,
+          "runtime status counts one backlog-blocked cycle while FIFO preserves the first item");
     check(runtime_after_first_activation.runtime->pager_resolutions == 0,
           "runtime status does not resolve the second address space out of order");
   }
@@ -1369,6 +1373,10 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status retains inbox watermark after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_activations == 2,
           "runtime status retains worker activation count after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_stall_cycles == 1,
+          "runtime status retains the worker stall count after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_backlog_blocked_cycles == 1,
+          "runtime status retains the backlog-blocked count after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_resolutions_completed == 2,
           "runtime status counts two completed worker resolutions after backlog drain");
   }
@@ -1391,6 +1399,10 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary retains inbox watermark after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_activations == 2,
           "fault summary counts two worker activations after backlog drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_stall_cycles == 1,
+          "fault summary counts one worker stall cycle after backlog drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_backlog_blocked_cycles == 1,
+          "fault summary counts one backlog-blocked cycle after backlog drain");
   }
 }
 
