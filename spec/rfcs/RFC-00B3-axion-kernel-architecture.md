@@ -341,9 +341,10 @@ across two queued address spaces. Those diagnostics now also retain worker
 stall cycles plus the narrower backlog-blocked subset when FIFO ordering holds
 queued work behind an unresolved active item. They now also retain the even
 narrower ready-backlog case when queued work is already mappable behind that
-stalled active item. The next kernel slice is to keep that pager surface
-private while expanding backlog/load scheduling behavior before any public
-pager ABI or syscall design.
+stalled active item, including current ready-backlog depth and its retained
+high-water mark. The next kernel slice is to keep that pager surface private
+while expanding backlog/load scheduling behavior before any public pager ABI
+or syscall design.
 
 The working execution note for this slice is:
 

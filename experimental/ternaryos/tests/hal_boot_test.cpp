@@ -1315,6 +1315,10 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status counts one backlog-blocked cycle while FIFO preserves the first item");
     check(runtime_after_first_activation.runtime->pager_worker_ready_backlog_cycles == 1,
           "runtime status counts one ready-behind-active backlog cycle under FIFO stall");
+    check(runtime_after_first_activation.runtime->pager_worker_ready_backlog_count == 1,
+          "runtime status reports one ready queued address space behind the stalled active item");
+    check(runtime_after_first_activation.runtime->pager_worker_ready_backlog_high_watermark == 1,
+          "runtime status records the ready-backlog high watermark under FIFO stall");
     check(runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_address_space_id ==
               second_address_space_id,
           "runtime status tracks the ready queued address space blocked behind the active item");
@@ -1384,6 +1388,10 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status retains the backlog-blocked count after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_ready_backlog_cycles == 1,
           "runtime status retains the ready-backlog count after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_ready_backlog_count == 0,
+          "runtime status clears current ready-backlog depth after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_ready_backlog_high_watermark == 1,
+          "runtime status retains the ready-backlog high watermark after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_address_space_id ==
               second_address_space_id,
           "runtime status retains the last ready queued address space after backlog drain");
@@ -1415,6 +1423,10 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary counts one backlog-blocked cycle after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_ready_backlog_cycles == 1,
           "fault summary counts one ready-backlog cycle after backlog drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_ready_backlog_count == 0,
+          "fault summary clears current ready-backlog depth after backlog drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_ready_backlog_high_watermark == 1,
+          "fault summary retains the ready-backlog high watermark after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_last_ready_backlog_address_space_id ==
               second_address_space_id,
           "fault summary tracks the last ready queued address space after backlog drain");

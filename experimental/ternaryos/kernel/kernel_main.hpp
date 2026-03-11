@@ -168,6 +168,7 @@ struct KernelRuntimeState {
     std::deque<KernelPagerWorkItem> inbox;
     std::optional<KernelPagerWorkItem> active_work{};
     std::size_t inbox_high_watermark{0};
+    std::size_t ready_backlog_high_watermark{0};
     uint64_t handoffs_received{0};
     uint64_t activations{0};
     uint64_t stall_cycles{0};
@@ -438,6 +439,8 @@ struct KernelRuntimeStatusView {
   std::size_t pending_pager_handoff_high_watermark{0};
   std::size_t pager_worker_inbox_count{0};
   std::size_t pager_worker_inbox_high_watermark{0};
+  std::size_t pager_worker_ready_backlog_count{0};
+  std::size_t pager_worker_ready_backlog_high_watermark{0};
   bool pager_worker_busy{false};
   std::optional<AddressSpaceId> pager_worker_active_address_space_id{};
   uint64_t loop_iterations{0};
@@ -627,6 +630,8 @@ struct KernelFaultSummaryView {
   std::size_t pending_pager_handoff_high_watermark{0};
   std::size_t pager_worker_inbox_count{0};
   std::size_t pager_worker_inbox_high_watermark{0};
+  std::size_t pager_worker_ready_backlog_count{0};
+  std::size_t pager_worker_ready_backlog_high_watermark{0};
   bool pager_worker_busy{false};
   std::optional<AddressSpaceId> pager_worker_active_address_space_id{};
   uint64_t pager_handoffs_dispatched{0};

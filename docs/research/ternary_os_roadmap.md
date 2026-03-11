@@ -87,7 +87,8 @@ are to keep that lifecycle contract stable while moving the kernel toward
 richer kernel-owned pager-worker scheduling behavior; FIFO stall cycles and
 the narrower backlog-blocked subset are now explicit diagnostics in that path,
 along with the ready-behind-active subset when queued work is already
-mappable, before later pager integration.
+mappable, plus current ready-backlog depth and its retained high-water mark,
+before later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 

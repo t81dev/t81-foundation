@@ -319,6 +319,28 @@ std::size_t count_pending_pager_handoff_address_spaces(const KernelRuntimeState&
                        });
 }
 
+std::size_t count_ready_pager_backlog_address_spaces(
+    const KernelRuntimeState& state) {
+  if (!state.pager_worker.active_work.has_value()) {
+    return 0;
+  }
+  return static_cast<std::size_t>(std::count_if(
+      state.pager_worker.inbox.begin(),
+      state.pager_worker.inbox.end(),
+      [&](const auto& work_item) {
+        const auto* address_space =
+            state.find_address_space(work_item.handoff.address_space_id);
+        if (!address_space || !address_space->last_pager_fault.has_value()) {
+          return false;
+        }
+        const auto translation = mmu::mmu_translate_checked(
+            state.page_table,
+            address_space->last_pager_fault->tva,
+            address_space->last_pager_fault->access_mode);
+        return translation.fault == mmu::MmuFault::None;
+      }));
+}
+
 std::size_t count_managed_pager_needed_address_spaces(
     const KernelRuntimeState& state,
     const KernelRuntimeState::SupervisorState& supervisor) {
@@ -916,6 +938,8 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
 KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) {
   const auto latest_service_transition = latest_service_transition_view(state);
   const auto latest_pager_fault = latest_pager_fault_view(state);
+  const auto ready_pager_backlog_count =
+      count_ready_pager_backlog_address_spaces(state);
   return KernelFaultSummaryView{
       .recorded_faults = state.fault_count(),
       .pending_faults = state.pending_fault_count(),
@@ -949,6 +973,9 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .last_pager_resolution = state.last_pager_resolution,
       .pager_worker_inbox_count = state.pager_worker.inbox.size(),
       .pager_worker_inbox_high_watermark = state.pager_worker.inbox_high_watermark,
+      .pager_worker_ready_backlog_count = ready_pager_backlog_count,
+      .pager_worker_ready_backlog_high_watermark =
+          state.pager_worker.ready_backlog_high_watermark,
       .pager_worker_busy = state.pager_worker.active_work.has_value(),
       .pager_worker_active_address_space_id =
           state.pager_worker.active_work.has_value()
@@ -1402,6 +1429,7 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
             if (!state.pager_worker.inbox.empty()) {
               ++state.pager_worker.backlog_blocked_cycles;
               ++state.counters.pager_worker_backlog_blocked_cycles;
+              std::size_t ready_backlog_count = 0;
               for (const auto& work_item : state.pager_worker.inbox) {
                 auto* queued_address_space =
                     state.find_address_space_mut(work_item.handoff.address_space_id);
@@ -1414,13 +1442,16 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
                     queued_address_space->last_pager_fault->tva,
                     queued_address_space->last_pager_fault->access_mode);
                 if (queued_translation.fault == mmu::MmuFault::None) {
+                  ++ready_backlog_count;
                   ++state.pager_worker.ready_backlog_cycles;
                   ++state.counters.pager_worker_ready_backlog_cycles;
                   state.pager_worker.last_ready_backlog_address_space_id =
                       work_item.handoff.address_space_id;
-                  break;
                 }
               }
+              state.pager_worker.ready_backlog_high_watermark =
+                  std::max(state.pager_worker.ready_backlog_high_watermark,
+                           ready_backlog_count);
             }
           }
         }
@@ -1510,6 +1541,8 @@ KernelServiceResult axion_kernel_service_request(
       }
       const auto service_summary = runtime_service_summary(state);
       const auto latest_service_transition = latest_service_transition_view(state);
+      const auto ready_pager_backlog_count =
+          count_ready_pager_backlog_address_spaces(state);
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceRequestRejection::None;
       result.runtime = KernelRuntimeStatusView{
@@ -1525,6 +1558,9 @@ KernelServiceResult axion_kernel_service_request(
           .pager_worker_inbox_count = state.pager_worker.inbox.size(),
           .pager_worker_inbox_high_watermark =
               state.pager_worker.inbox_high_watermark,
+          .pager_worker_ready_backlog_count = ready_pager_backlog_count,
+          .pager_worker_ready_backlog_high_watermark =
+              state.pager_worker.ready_backlog_high_watermark,
           .pager_worker_busy = state.pager_worker.active_work.has_value(),
           .pager_worker_active_address_space_id =
               state.pager_worker.active_work.has_value()
