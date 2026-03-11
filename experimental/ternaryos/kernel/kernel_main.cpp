@@ -223,6 +223,69 @@ std::size_t count_claimed_devices(const KernelRuntimeState& state) {
   return claimed;
 }
 
+KernelProcessGroupStatusView make_process_group_view(const KernelRuntimeState& state,
+                                                     ProcessGroupId process_group_id) {
+  const auto* group_state = state.find_process_group(process_group_id);
+  return KernelProcessGroupStatusView{
+      .id = group_state ? group_state->id : process_group_id,
+      .member_count = group_state ? group_state->member_tids.size() : 0,
+      .quarantined_thread_count =
+          group_state ? count_quarantined_threads(state, process_group_id) : 0,
+      .faulted = group_state ? group_state->faulted : false,
+      .blocked = group_state ? group_state->blocked : false,
+      .acknowledgement_pending =
+          group_state ? group_state->acknowledgement_pending : false,
+      .pending_fault_count = group_state ? group_state->pending_fault_count : 0,
+      .audit_events = group_state ? group_state->counters.audit_events : 0,
+      .fault_entries = group_state ? group_state->counters.fault_entries : 0,
+      .acknowledgements = group_state ? group_state->counters.acknowledgements : 0,
+      .recoveries = group_state ? group_state->counters.recoveries : 0,
+      .supervisor_id = state.find_process_group_supervisor(process_group_id),
+  };
+}
+
+KernelSupervisorStatusView make_supervisor_view(const KernelRuntimeState& state,
+                                                SupervisorId supervisor_id) {
+  const auto* supervisor_state = state.find_supervisor(supervisor_id);
+  return KernelSupervisorStatusView{
+      .id = supervisor_state ? supervisor_state->id : supervisor_id,
+      .managed_group_count =
+          supervisor_state ? supervisor_state->managed_groups.size() : 0,
+      .managed_faulted_group_count =
+          supervisor_state ? count_faulted_groups(state, *supervisor_state) : 0,
+      .pending_group_count =
+          supervisor_state ? supervisor_state->pending_groups.size() : 0,
+      .fault_notifications =
+          supervisor_state ? supervisor_state->fault_notifications : 0,
+      .acknowledgements = supervisor_state ? supervisor_state->acknowledgements : 0,
+      .last_pending_group =
+          (!supervisor_state || supervisor_state->pending_groups.empty())
+              ? std::nullopt
+              : std::optional<ProcessGroupId>{supervisor_state->pending_groups.back()},
+  };
+}
+
+KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) {
+  return KernelFaultSummaryView{
+      .recorded_faults = state.fault_count(),
+      .pending_faults = state.pending_fault_count(),
+      .audit_events = state.audit_count(),
+      .last_delivered_fault = state.last_delivered_fault,
+      .last_audit_event = state.last_audit_event,
+  };
+}
+
+KernelDeviceSummaryView make_device_summary_view(const KernelRuntimeState& state) {
+  return KernelDeviceSummaryView{
+      .has_device_arbitration = state.device_arbitration.has_value(),
+      .device_count = state.device_arbitration ? state.device_arbitration->devices.size() : 0,
+      .claimed_device_count = count_claimed_devices(state),
+      .has_storage = state.device_arbitration ? state.device_arbitration->has_storage : false,
+      .has_network = state.device_arbitration ? state.device_arbitration->has_network : false,
+      .has_display = state.device_arbitration ? state.device_arbitration->has_display : false,
+  };
+}
+
 std::optional<KernelServiceStatus> validate_requesting_group(
     const KernelRuntimeState& state,
     const KernelServiceRequest& request) {
@@ -230,6 +293,22 @@ std::optional<KernelServiceStatus> validate_requesting_group(
     return std::nullopt;
   }
   const auto* requesting_group = state.find_process_group(*request.requesting_process_group_id);
+  if (!requesting_group) {
+    return KernelServiceStatus::NotFound;
+  }
+  if (requesting_group->faulted) {
+    return KernelServiceStatus::FaultedGroup;
+  }
+  return std::nullopt;
+}
+
+std::optional<KernelServiceStatus> validate_requesting_group(
+    const KernelRuntimeState& state,
+    const KernelServiceAction& action) {
+  if (!action.requesting_process_group_id.has_value()) {
+    return std::nullopt;
+  }
+  const auto* requesting_group = state.find_process_group(*action.requesting_process_group_id);
   if (!requesting_group) {
     return KernelServiceStatus::NotFound;
   }
@@ -497,20 +576,7 @@ KernelServiceResult axion_kernel_service_request(
       }
       result.status = group_state->faulted ? KernelServiceStatus::FaultedGroup
                                            : KernelServiceStatus::Ok;
-      result.process_group = KernelProcessGroupStatusView{
-          .id = group_state->id,
-          .member_count = group_state->member_tids.size(),
-          .quarantined_thread_count = count_quarantined_threads(state, group_state->id),
-          .faulted = group_state->faulted,
-          .blocked = group_state->blocked,
-          .acknowledgement_pending = group_state->acknowledgement_pending,
-          .pending_fault_count = group_state->pending_fault_count,
-          .audit_events = group_state->counters.audit_events,
-          .fault_entries = group_state->counters.fault_entries,
-          .acknowledgements = group_state->counters.acknowledgements,
-          .recoveries = group_state->counters.recoveries,
-          .supervisor_id = state.find_process_group_supervisor(group_state->id),
-      };
+      result.process_group = make_process_group_view(state, group_state->id);
       return result;
     }
     case KernelServiceRequestKind::SupervisorStatus: {
@@ -528,18 +594,7 @@ KernelServiceResult axion_kernel_service_request(
         return result;
       }
       result.status = KernelServiceStatus::Ok;
-      result.supervisor = KernelSupervisorStatusView{
-          .id = supervisor_state->id,
-          .managed_group_count = supervisor_state->managed_groups.size(),
-          .managed_faulted_group_count = count_faulted_groups(state, *supervisor_state),
-          .pending_group_count = supervisor_state->pending_groups.size(),
-          .fault_notifications = supervisor_state->fault_notifications,
-          .acknowledgements = supervisor_state->acknowledgements,
-          .last_pending_group = supervisor_state->pending_groups.empty()
-                                    ? std::nullopt
-                                    : std::optional<ProcessGroupId>{
-                                          supervisor_state->pending_groups.back()},
-      };
+      result.supervisor = make_supervisor_view(state, supervisor_state->id);
       return result;
     }
     case KernelServiceRequestKind::FaultSummary: {
@@ -548,13 +603,7 @@ KernelServiceResult axion_kernel_service_request(
         return result;
       }
       result.status = KernelServiceStatus::Ok;
-      result.fault_summary = KernelFaultSummaryView{
-          .recorded_faults = state.fault_count(),
-          .pending_faults = state.pending_fault_count(),
-          .audit_events = state.audit_count(),
-          .last_delivered_fault = state.last_delivered_fault,
-          .last_audit_event = state.last_audit_event,
-      };
+      result.fault_summary = make_fault_summary_view(state);
       return result;
     }
     case KernelServiceRequestKind::DeviceSummary: {
@@ -567,14 +616,44 @@ KernelServiceResult axion_kernel_service_request(
         return result;
       }
       result.status = KernelServiceStatus::Ok;
-      result.device_summary = KernelDeviceSummaryView{
-          .has_device_arbitration = true,
-          .device_count = state.device_arbitration->devices.size(),
-          .claimed_device_count = count_claimed_devices(state),
-          .has_storage = state.device_arbitration->has_storage,
-          .has_network = state.device_arbitration->has_network,
-          .has_display = state.device_arbitration->has_display,
-      };
+      result.device_summary = make_device_summary_view(state);
+      return result;
+    }
+  }
+  result.status = KernelServiceStatus::InvalidRequest;
+  return result;
+}
+
+KernelServiceActionResult axion_kernel_service_action(
+    KernelRuntimeState& state,
+    const KernelServiceAction& action) noexcept {
+  KernelServiceActionResult result;
+  switch (action.kind) {
+    case KernelServiceActionKind::AcknowledgeSupervisorFaultGroup: {
+      if (auto denied = validate_requesting_group(state, action); denied.has_value()) {
+        result.status = *denied;
+        return result;
+      }
+      if (!action.supervisor_id.has_value() || !action.process_group_id.has_value()) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        return result;
+      }
+      if (!state.find_supervisor(*action.supervisor_id) ||
+          !state.find_process_group(*action.process_group_id)) {
+        result.status = KernelServiceStatus::NotFound;
+        return result;
+      }
+      if (!axion_kernel_ack_supervisor_group_fault(
+              state, *action.supervisor_id, *action.process_group_id)) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        return result;
+      }
+      result.status = KernelServiceStatus::Ok;
+      result.action_performed = true;
+      result.process_group =
+          make_process_group_view(state, *action.process_group_id);
+      result.supervisor = make_supervisor_view(state, *action.supervisor_id);
+      result.fault_summary = make_fault_summary_view(state);
       return result;
     }
   }

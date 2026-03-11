@@ -36,7 +36,7 @@ quarantined deterministically, the owning process group enters a blocked fault
 state, explicit group acknowledgement gates recovery, and audit-only governance
 events are recorded in deterministic order. That boundary now includes a small
 audit-only supervisor layer above the process-group gate. The next steps are to
-define one narrow service-facing runtime action on top of that boundary while
+define supervisor-facing recovery/report flows on top of that boundary while
 continuing to converge the runtime toward fuller kernel behavior.
 
 That near-term kernel slice is now tracked explicitly in:

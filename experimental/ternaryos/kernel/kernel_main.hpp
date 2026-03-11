@@ -226,6 +226,10 @@ enum class KernelServiceStatus : uint8_t {
   NoDeviceArbitration,
 };
 
+enum class KernelServiceActionKind : uint8_t {
+  AcknowledgeSupervisorFaultGroup = 0,
+};
+
 struct KernelRuntimeStatusView {
   std::string platform_id;
   std::size_t memory_region_count{0};
@@ -294,6 +298,22 @@ struct KernelServiceResult {
   std::optional<KernelDeviceSummaryView> device_summary{};
 };
 
+struct KernelServiceAction {
+  KernelServiceActionKind kind{
+      KernelServiceActionKind::AcknowledgeSupervisorFaultGroup};
+  std::optional<ProcessGroupId> requesting_process_group_id{};
+  std::optional<ProcessGroupId> process_group_id{};
+  std::optional<SupervisorId> supervisor_id{};
+};
+
+struct KernelServiceActionResult {
+  KernelServiceStatus status{KernelServiceStatus::InvalidRequest};
+  bool action_performed{false};
+  std::optional<KernelProcessGroupStatusView> process_group{};
+  std::optional<KernelSupervisorStatusView> supervisor{};
+  std::optional<KernelFaultSummaryView> fault_summary{};
+};
+
 std::optional<KernelRuntimeState> axion_kernel_bootstrap(
     const hal::BootContext& ctx) noexcept;
 
@@ -326,6 +346,10 @@ std::optional<ipc::CanonMessage> axion_kernel_ipc_recv(
 KernelServiceResult axion_kernel_service_request(
     const KernelRuntimeState& state,
     const KernelServiceRequest& request) noexcept;
+
+KernelServiceActionResult axion_kernel_service_action(
+    KernelRuntimeState& state,
+    const KernelServiceAction& action) noexcept;
 
 bool axion_kernel_claim_device(KernelRuntimeState& state,
                                std::string_view device_name,

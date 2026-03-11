@@ -26,6 +26,7 @@ Implemented:
 - deterministic request behavior for healthy vs faulted groups
 - stable service-facing diagnostics for group, supervisor, fault, and device
   state
+- first service-facing runtime action: supervisor fault-group acknowledgement
 
 Not yet implemented:
 
@@ -35,17 +36,7 @@ Not yet implemented:
 
 ## Next Sequence
 
-### 1. Service-facing runtime actions
-
-After the read-mostly contract is stable, add one narrow action layer above it.
-
-Initial candidates:
-
-- explicit fault acknowledgement through the service boundary
-- deterministic device claim/release requests
-- supervisor-visible rejection for requests from faulted groups
-
-### 2. Supervisor-facing recovery/report flows
+### 1. Supervisor-facing recovery/report flows
 
 After one narrow action exists, expose the smallest supervisor-facing
 recovery/report sequence above it.
@@ -55,6 +46,17 @@ Initial candidates:
 - request-visible fault acknowledgement results
 - deterministic recovery status after acknowledgement
 - supervisor-visible pending-group drains
+
+### 2. Additional narrow actions
+
+Only after supervisor-facing recovery/report flows are stable, add one more
+narrow action.
+
+Likely candidates:
+
+- deterministic device claim requests
+- deterministic device release requests
+- supervisor-visible action rejection for faulted groups
 
 ### 3. Contract hardening
 
@@ -85,11 +87,12 @@ The current kernel slice is complete when:
 4. stable service-facing diagnostics exist for group, supervisor, fault, and
    device state
 5. HAL/kernel tests prove the request path and its interaction with fault state
-6. RFC-00B3 can mark the contract and diagnostics as implemented
+6. one narrow service-facing action exists above the contract
+7. RFC-00B3 can mark the action layer as started
 
 ## Recommended Order
 
-1. add one narrow service-facing runtime action
-2. add HAL/kernel acceptance coverage for that action
+1. expose supervisor-facing recovery/report flows through the current contract
+2. add HAL/kernel acceptance coverage for those flows
 3. update RFC-00B3 and status/docs
-4. only then consider supervisor-facing recovery/report flows
+4. only then add another narrow action

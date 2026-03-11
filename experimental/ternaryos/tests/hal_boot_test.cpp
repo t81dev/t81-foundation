@@ -1515,6 +1515,130 @@ static void test_kernel_service_group_fault_visibility() {
         "missing requesting process group returns NotFound");
 }
 
+static void test_kernel_service_fault_ack_action() {
+  std::printf("\n[AC-31] Axion kernel service contract supports supervisor fault acknowledgement\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for service fault acknowledgement");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext worker_ctx;
+  worker_ctx.label = "service-ack-worker";
+  worker_ctx.registers[0] = 801;
+  auto worker_tid = axion_kernel_spawn_thread(*state, worker_ctx);
+  check(worker_tid.has_value(), "worker thread spawns");
+  if (!worker_tid) {
+    return;
+  }
+
+  const auto* worker_runtime = state->find_thread_runtime(*worker_tid);
+  check(worker_runtime != nullptr, "worker runtime exists");
+  if (!worker_runtime) {
+    return;
+  }
+  const auto group_id = worker_runtime->process_group_id;
+  auto supervisor_id = state->find_process_group_supervisor(group_id);
+  check(supervisor_id.has_value(), "worker process group resolves to a supervisor");
+  if (!supervisor_id) {
+    return;
+  }
+
+  check(axion_kernel_step(*state), "service action dispatches worker thread");
+  check(state->scheduler.current_tid() == *worker_tid, "worker thread runs first");
+  auto access_result = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(71, 0), mmu::MmuAccessMode::Read);
+  check(access_result.fault.has_value(), "worker thread records MMU fault");
+  check(axion_kernel_step(*state), "service action delivers the fault");
+
+  auto premature_action = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
+          .supervisor_id = *supervisor_id,
+          .process_group_id = group_id,
+      });
+  check(premature_action.status == KernelServiceStatus::InvalidRequest,
+        "service action rejects supervisor acknowledgement before thread inbox drain");
+
+  check(axion_kernel_ack_thread_fault(*state, *worker_tid),
+        "thread-local acknowledgement drains the worker inbox");
+
+  auto missing_supervisor = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
+          .supervisor_id = 999999,
+          .process_group_id = group_id,
+      });
+  check(missing_supervisor.status == KernelServiceStatus::NotFound,
+        "service action returns NotFound for missing supervisor");
+
+  auto missing_requester = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
+          .requesting_process_group_id = 999999,
+          .supervisor_id = *supervisor_id,
+          .process_group_id = group_id,
+      });
+  check(missing_requester.status == KernelServiceStatus::NotFound,
+        "service action returns NotFound for missing requesting group");
+
+  auto ack_action = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
+          .supervisor_id = *supervisor_id,
+          .process_group_id = group_id,
+      });
+  check(ack_action.status == KernelServiceStatus::Ok,
+        "service action acknowledges the supervisor fault gate");
+  check(ack_action.action_performed, "service action reports work performed");
+  check(ack_action.process_group.has_value(), "service action returns updated group view");
+  check(ack_action.supervisor.has_value(), "service action returns updated supervisor view");
+  check(ack_action.fault_summary.has_value(), "service action returns updated fault summary");
+
+  if (ack_action.process_group) {
+    check(!ack_action.process_group->faulted, "updated group view is no longer faulted");
+    check(!ack_action.process_group->blocked, "updated group view is no longer blocked");
+    check(!ack_action.process_group->acknowledgement_pending,
+          "updated group view clears acknowledgement pending");
+    check(ack_action.process_group->recoveries == 1,
+          "updated group view reports one recovery");
+  }
+
+  if (ack_action.supervisor) {
+    check(ack_action.supervisor->pending_group_count == 0,
+          "updated supervisor view clears pending groups");
+    check(ack_action.supervisor->acknowledgements == 1,
+          "updated supervisor view reports one acknowledgement");
+  }
+
+  if (ack_action.fault_summary) {
+    check(ack_action.fault_summary->last_audit_event.has_value(),
+          "updated fault summary reports a last audit event");
+    if (ack_action.fault_summary->last_audit_event) {
+      check(ack_action.fault_summary->last_audit_event->kind ==
+                KernelAuditEventKind::ThreadRecovered,
+            "service action drives recovery as the last audit event");
+    }
+  }
+
+  auto post_action_group = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::ProcessGroupStatus,
+          .process_group_id = group_id,
+      });
+  check(post_action_group.status == KernelServiceStatus::Ok,
+        "group request returns Ok after service acknowledgement");
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -1552,6 +1676,7 @@ int main() {
   test_kernel_supervisor_acknowledgement_flow();
   test_kernel_service_runtime_views();
   test_kernel_service_group_fault_visibility();
+  test_kernel_service_fault_ack_action();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

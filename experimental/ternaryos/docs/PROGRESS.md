@@ -133,7 +133,8 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - The kernel runtime now also exposes a deterministic loop step plus runtime counters for scheduler and IPC activity.
 - The loop-owned fault delivery path now feeds a real kernel policy boundary: delivered faults are routed into per-thread runtime state, the faulting thread is quarantined deterministically, the owning process group enters a blocked fault state, explicit group acknowledgement gates recovery, and audit-only governance events are recorded in deterministic order.
 - The first service-facing runtime contract above the supervisor/process-group boundary is now implemented, including deterministic healthy/faulted-group behavior and stable diagnostics.
-- The next kernel slice is now one narrow service-facing runtime action above that contract, as tracked in `kernel_execution_plan.md`.
+- The first narrow service-facing runtime action is now implemented too: supervisor fault-group acknowledgement through the same contract.
+- The next kernel slice is now supervisor-facing recovery/report flows on top of that action, as tracked in `kernel_execution_plan.md`.
 
 **Phase 3 test total: 193 / 193**
 
@@ -219,7 +220,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **1297** | |
+| **Total** | **1323** | |
 
 Run all TernOS tests:
 

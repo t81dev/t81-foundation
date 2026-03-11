@@ -246,13 +246,15 @@ The current FIFO inbox model is acceptable as the first kernel IPC substrate.
 
 The first service-facing runtime request/result contract is now implemented,
 including deterministic behavior for healthy vs faulted groups and stable
-diagnostics above kernel-owned state.
+diagnostics above kernel-owned state. The first narrow service-facing action is
+also now implemented:
+
+- supervisor fault-group acknowledgement through the same service boundary
 
 The next implementation slice after it is:
 
-1. add narrow service-facing runtime actions without introducing syscall or
-   capability semantics
-2. expose supervisor-facing recovery/report flows through the same contract
+1. expose supervisor-facing recovery/report flows through the same contract
+2. add another narrow action only if needed
 3. harden the contract before widening it further
 
 The working execution note for this slice is:

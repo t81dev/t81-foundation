@@ -36,11 +36,11 @@ verified in hosted simulation on the current branch:
 Current local verification snapshot:
 
 - `ctest --test-dir build -R ternaryos -V` passes all 8 tests
-- `t81_ternaryos_hal_boot_test` = `421/421`
+- `t81_ternaryos_hal_boot_test` = `447/447`
 - `t81_ternaryos_device_driver_test` = `342/342`
 - `t81_ternaryos_shell_session_test` = `183/183`
 - `t81_ternaryos_mmu_test` = `87/87`
-- total TernOS assertions = `1297`
+- total TernOS assertions = `1323`
 
 So the external `x86_64` job is narrowly focused:
 
