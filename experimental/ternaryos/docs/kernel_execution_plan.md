@@ -28,34 +28,35 @@ Implemented:
   state
 - first service-facing runtime action: supervisor fault-group acknowledgement
 - supervisor-facing recovery/report flows through the current contract
+- second narrow service-facing action: deterministic device claim/release
+  requests through the same contract
 
 Not yet implemented:
 
-- a second narrow action above the current service boundary
 - capability or syscall semantics
 - process address-space ownership
 - pager integration
 
 ## Next Sequence
 
-### 1. Additional narrow actions
-
-Now that supervisor-facing recovery/report flows are stable, add one more
-narrow action above the current boundary.
-
-Likely candidates:
-
-- deterministic device claim requests
-- deterministic device release requests
-- supervisor-visible action rejection for faulted groups
-
-### 2. Contract hardening
+### 1. Contract hardening
 
 Once one action path exists, harden the contract instead of widening it:
 
 - keep request/result types stable
 - keep request outcomes deterministic
 - avoid leaking kernel internals directly into services
+
+### 2. Additional narrow actions only if needed
+
+Only after the current contract is hardened should another narrow action be
+considered.
+
+Likely candidates:
+
+- supervisor-visible device arbitration summaries tied to action results
+- explicit action rejection reasons if the current `InvalidRequest` bucket
+  becomes too coarse
 
 ## Non-Goals For This Slice
 
@@ -80,11 +81,12 @@ The current kernel slice is complete when:
 5. HAL/kernel tests prove the request path and its interaction with fault state
 6. one narrow service-facing action exists above the contract
 7. supervisor-facing recovery/report flows are exposed through the same contract
-8. RFC-00B3 can mark the recovery/report layer as started
+8. a second narrow action is implemented without widening the contract shape
+9. RFC-00B3 can shift to contract hardening as the next step
 
 ## Recommended Order
 
-1. add one more narrow action through the stable contract
-2. add HAL/kernel acceptance coverage for that action
+1. harden the existing request/action/result shapes
+2. keep HAL/kernel acceptance coverage ahead of any new action growth
 3. update RFC-00B3 and status/docs
 4. only then widen the service-facing surface again

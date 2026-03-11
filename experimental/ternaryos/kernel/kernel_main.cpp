@@ -223,6 +223,16 @@ std::size_t count_claimed_devices(const KernelRuntimeState& state) {
   return claimed;
 }
 
+std::optional<sched::Tid> primary_tid_for_group(const KernelRuntimeState& state,
+                                                ProcessGroupId process_group_id) {
+  const auto* group_state = state.find_process_group(process_group_id);
+  if (!group_state || group_state->member_tids.empty()) {
+    return std::nullopt;
+  }
+  return *std::min_element(group_state->member_tids.begin(),
+                           group_state->member_tids.end());
+}
+
 KernelProcessGroupStatusView make_process_group_view(const KernelRuntimeState& state,
                                                      ProcessGroupId process_group_id) {
   const auto* group_state = state.find_process_group(process_group_id);
@@ -696,6 +706,50 @@ KernelServiceActionResult axion_kernel_service_action(
       result.supervisor_recovery =
           make_supervisor_recovery_view(state, *action.supervisor_id);
       result.fault_summary = make_fault_summary_view(state);
+      return result;
+    }
+    case KernelServiceActionKind::ClaimDevice:
+    case KernelServiceActionKind::ReleaseDevice: {
+      if (auto denied = validate_requesting_group(state, action); denied.has_value()) {
+        result.status = *denied;
+        return result;
+      }
+      if (!state.device_arbitration.has_value()) {
+        result.status = KernelServiceStatus::NoDeviceArbitration;
+        return result;
+      }
+      if (!action.requesting_process_group_id.has_value() ||
+          !action.device_name.has_value()) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        return result;
+      }
+      const auto* group_state =
+          state.find_process_group(*action.requesting_process_group_id);
+      if (!group_state) {
+        result.status = KernelServiceStatus::NotFound;
+        return result;
+      }
+      const auto owner_tid =
+          primary_tid_for_group(state, *action.requesting_process_group_id);
+      if (!owner_tid.has_value()) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        return result;
+      }
+
+      const bool ok =
+          action.kind == KernelServiceActionKind::ClaimDevice
+              ? axion_kernel_claim_device(state, *action.device_name, *owner_tid)
+              : axion_kernel_release_device(state, *action.device_name, *owner_tid);
+      if (!ok) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        return result;
+      }
+
+      result.status = KernelServiceStatus::Ok;
+      result.action_performed = true;
+      result.process_group =
+          make_process_group_view(state, *action.requesting_process_group_id);
+      result.device_summary = make_device_summary_view(state);
       return result;
     }
   }

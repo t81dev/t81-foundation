@@ -1761,6 +1761,118 @@ static void test_kernel_service_supervisor_recovery_status() {
   }
 }
 
+static void test_kernel_service_device_actions() {
+  std::printf("\n[AC-33] Axion kernel service contract supports deterministic device actions\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto vbox_ctx = make_virtualbox_boot_context(VBoxBootSpec{});
+  auto state = axion_kernel_bootstrap(vbox_ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for device actions");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext owner_ctx;
+  owner_ctx.label = "device-owner";
+  owner_ctx.registers[0] = 1001;
+  auto owner_tid = axion_kernel_spawn_thread(*state, owner_ctx);
+  check(owner_tid.has_value(), "owner thread spawns for device actions");
+  if (!owner_tid) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext contender_ctx;
+  contender_ctx.label = "device-contender";
+  contender_ctx.registers[0] = 1002;
+  auto contender_tid = axion_kernel_spawn_thread(*state, contender_ctx);
+  check(contender_tid.has_value(), "contender thread spawns for device actions");
+  if (!contender_tid) {
+    return;
+  }
+
+  const auto* owner_runtime = state->find_thread_runtime(*owner_tid);
+  const auto* contender_runtime = state->find_thread_runtime(*contender_tid);
+  check(owner_runtime != nullptr, "owner runtime exists");
+  check(contender_runtime != nullptr, "contender runtime exists");
+  if (!owner_runtime || !contender_runtime) {
+    return;
+  }
+  const auto owner_group = owner_runtime->process_group_id;
+  const auto contender_group = contender_runtime->process_group_id;
+
+  auto preclaim = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::ClaimDevice,
+          .requesting_process_group_id = owner_group,
+          .device_name = std::string{"ahci"},
+      });
+  check(preclaim.status == KernelServiceStatus::Ok,
+        "healthy owner group can claim a device");
+  check(preclaim.action_performed, "claim action reports work performed");
+  check(preclaim.device_summary.has_value(), "claim action returns device summary");
+  if (preclaim.device_summary) {
+    check(preclaim.device_summary->claimed_device_count == 1,
+          "device summary reports one claimed device after claim");
+  }
+
+  auto conflicting_claim = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::ClaimDevice,
+          .requesting_process_group_id = contender_group,
+          .device_name = std::string{"ahci"},
+      });
+  check(conflicting_claim.status == KernelServiceStatus::InvalidRequest,
+        "another healthy group cannot steal a claimed device");
+
+  check(axion_kernel_step(*state), "device action path dispatches owner thread");
+  check(axion_kernel_step(*state), "device action path dispatches contender thread");
+  check(state->scheduler.current_tid() == *contender_tid,
+        "contender thread becomes current before fault");
+  auto fault_result = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(211, 0), mmu::MmuAccessMode::Read);
+  check(fault_result.fault.has_value(), "contender thread records MMU fault");
+  check(axion_kernel_step(*state), "device action path delivers contender fault");
+
+  auto faulted_claim = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::ClaimDevice,
+          .requesting_process_group_id = contender_group,
+          .device_name = std::string{"e1000"},
+      });
+  check(faulted_claim.status == KernelServiceStatus::FaultedGroup,
+        "faulted group cannot claim a device through the service boundary");
+
+  auto bad_release = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::ReleaseDevice,
+          .requesting_process_group_id = contender_group,
+          .device_name = std::string{"ahci"},
+      });
+  check(bad_release.status == KernelServiceStatus::FaultedGroup,
+        "faulted group cannot release a device through the service boundary");
+
+  auto release = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::ReleaseDevice,
+          .requesting_process_group_id = owner_group,
+          .device_name = std::string{"ahci"},
+      });
+  check(release.status == KernelServiceStatus::Ok,
+        "owning healthy group can release a device");
+  check(release.action_performed, "release action reports work performed");
+  check(release.device_summary.has_value(), "release action returns device summary");
+  if (release.device_summary) {
+    check(release.device_summary->claimed_device_count == 0,
+          "device summary reports zero claimed devices after release");
+  }
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -1800,6 +1912,7 @@ int main() {
   test_kernel_service_group_fault_visibility();
   test_kernel_service_fault_ack_action();
   test_kernel_service_supervisor_recovery_status();
+  test_kernel_service_device_actions();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

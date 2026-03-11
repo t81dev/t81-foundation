@@ -232,6 +232,8 @@ enum class KernelServiceStatus : uint8_t {
 
 enum class KernelServiceActionKind : uint8_t {
   AcknowledgeSupervisorFaultGroup = 0,
+  ClaimDevice,
+  ReleaseDevice,
 };
 
 struct KernelRuntimeStatusView {
@@ -319,6 +321,7 @@ struct KernelServiceAction {
   std::optional<ProcessGroupId> requesting_process_group_id{};
   std::optional<ProcessGroupId> process_group_id{};
   std::optional<SupervisorId> supervisor_id{};
+  std::optional<std::string> device_name{};
 };
 
 struct KernelServiceActionResult {
@@ -328,6 +331,7 @@ struct KernelServiceActionResult {
   std::optional<KernelSupervisorStatusView> supervisor{};
   std::optional<KernelSupervisorRecoveryStatusView> supervisor_recovery{};
   std::optional<KernelFaultSummaryView> fault_summary{};
+  std::optional<KernelDeviceSummaryView> device_summary{};
 };
 
 std::optional<KernelRuntimeState> axion_kernel_bootstrap(

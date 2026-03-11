@@ -34,9 +34,9 @@ The next kernel slice is now tracked explicitly in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1354`
+- total assertions: `1375`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `478/478`
+- `t81_ternaryos_hal_boot_test`: `499/499`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -57,6 +57,7 @@ Kernel integration proof now also includes:
 - the owning process group now enters a blocked fault state and must be explicitly acknowledged before a drained thread inbox can recover
 - audit-only governance events are now recorded deterministically for fault delivery, quarantine, process-group fault entry, acknowledgement, and recovery
 - supervisor-facing recovery/report status is now exposed through the same service boundary, including pending-group state, acknowledgement counts, recovered-group counts, and deterministic last-acknowledged/last-recovered group tracking
+- deterministic device claim/release requests now exist through that same service boundary, with healthy groups allowed to arbitrate devices and faulted groups rejected consistently
 
 Phase 4 storage proof now covers:
 
@@ -167,6 +168,5 @@ kernel path is now:
 
 - keep the external `x86_64` VirtualBox validation ask open
 - use RFC-00B3 as the implementation path for kernel integration after `hal_main`
-- build the next kernel-facing step on top of the new service-facing runtime
-  contract, first action, and recovery/report layer: add one more narrow
-  action without widening the boundary too quickly
+- harden the existing service-facing runtime contract before adding more
+  actions or widening the boundary further

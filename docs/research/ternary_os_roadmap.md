@@ -38,8 +38,10 @@ events are recorded in deterministic order. That boundary now includes a small
 audit-only supervisor layer above the process-group gate. Supervisor-facing
 recovery/report flows are now exposed through the same service boundary,
 including deterministic pending-group, acknowledgement, and recovered-group
-views. The next steps are to add one more narrow service-facing action while
-continuing to converge the runtime toward fuller kernel behavior.
+views. Deterministic device claim/release requests now exist through that same
+boundary as the second narrow action. The next steps are to harden the current
+service contract while continuing to converge the runtime toward fuller kernel
+behavior.
 
 That near-term kernel slice is now tracked explicitly in:
 

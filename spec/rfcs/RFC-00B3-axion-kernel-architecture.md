@@ -251,12 +251,13 @@ also now implemented:
 
 - supervisor fault-group acknowledgement through the same service boundary
 - supervisor-facing recovery/report status through the same contract
+- deterministic device claim/release requests through the same contract
 
 The next implementation slice after it is:
 
-1. add another narrow action only if needed
-2. harden the contract before widening it further
-3. keep recovery/report semantics stable as the service surface grows
+1. harden the contract before widening it further
+2. keep recovery/report and device-action semantics stable as the service surface grows
+3. add another narrow action only if the hardened contract still needs it
 
 The working execution note for this slice is:
 
