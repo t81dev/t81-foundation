@@ -2132,6 +2132,162 @@ static void test_kernel_service_diagnostic_details() {
   }
 }
 
+static void test_kernel_service_runtime_layer() {
+  std::printf("\n[AC-35] Axion kernel service runtime layer\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto state = axion_kernel_bootstrap(make_virtualbox_boot_context(VBoxBootSpec{}));
+  check(state.has_value(), "kernel bootstrap succeeds for service runtime layer");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext owner_ctx;
+  owner_ctx.label = "service-owner";
+  owner_ctx.registers[0] = 1201;
+  auto owner_tid = axion_kernel_spawn_thread(*state, owner_ctx);
+  check(owner_tid.has_value(), "service owner thread spawns");
+  if (!owner_tid) {
+    return;
+  }
+
+  const auto* owner_runtime = state->find_thread_runtime(*owner_tid);
+  check(owner_runtime != nullptr, "service owner runtime exists");
+  if (!owner_runtime) {
+    return;
+  }
+
+  const auto supervisor_id =
+      state->find_process_group_supervisor(owner_runtime->process_group_id);
+  check(supervisor_id.has_value(), "service owner group resolves to a supervisor");
+  if (!supervisor_id) {
+    return;
+  }
+
+  auto register_service = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::RegisterService,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .service_name = std::string{"svc.alpha"},
+      });
+  check(register_service.status == KernelServiceStatus::Ok,
+        "healthy group can register a service");
+  check(register_service.rejection == KernelServiceActionRejection::None,
+        "successful service registration clears rejection");
+  check(register_service.action_performed,
+        "service registration reports work performed");
+  check(register_service.service.has_value(),
+        "service registration returns service status");
+  check(register_service.supervisor_services.has_value(),
+        "service registration returns supervisor inventory");
+
+  std::optional<ServiceId> service_id{};
+  if (register_service.service) {
+    service_id = register_service.service->id;
+    check(register_service.service->name == "svc.alpha",
+          "registered service preserves name");
+    check(register_service.service->supervisor_id == *supervisor_id,
+          "registered service preserves supervisor");
+    check(register_service.service->process_group_id == owner_runtime->process_group_id,
+          "registered service preserves backing process group");
+    check(register_service.service->registered,
+          "registered service reports registered state");
+    check(!register_service.service->blocked,
+          "registered service starts unblocked");
+  }
+  if (register_service.supervisor_services) {
+    check(register_service.supervisor_services->service_count == 1,
+          "supervisor inventory reports one service after registration");
+    check(register_service.supervisor_services->service_ids.size() == 1,
+          "supervisor inventory exposes one service id");
+  }
+  if (!service_id) {
+    return;
+  }
+
+  auto duplicate_service = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::RegisterService,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .service_name = std::string{"svc.beta"},
+      });
+  check(duplicate_service.status == KernelServiceStatus::InvalidRequest,
+        "duplicate service registration is rejected");
+  check(duplicate_service.rejection == KernelServiceActionRejection::DuplicateService,
+        "duplicate service registration reports duplicate service rejection");
+
+  auto service_view = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::ServiceStatus,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(service_view.status == KernelServiceStatus::Ok,
+        "healthy group can request service status");
+  check(service_view.rejection == KernelServiceRequestRejection::None,
+        "healthy service request clears rejection");
+  check(service_view.service.has_value(), "service status request returns service view");
+  if (service_view.service) {
+    check(service_view.service->requests >= 1,
+          "service view tracks request count");
+    check(service_view.service->rejected_requests == 0,
+          "healthy service request does not increment rejected count");
+  }
+
+  t81::ternaryos::sched::TiscContext fault_ctx;
+  fault_ctx.label = "service-faulted";
+  fault_ctx.registers[0] = 1202;
+  auto fault_tid = axion_kernel_spawn_thread_in_group(
+      *state, fault_ctx, owner_runtime->process_group_id);
+  check(fault_tid.has_value(), "service fault thread spawns in same group");
+  if (!fault_tid) {
+    return;
+  }
+
+  check(axion_kernel_step(*state), "service runtime dispatches owner thread");
+  check(axion_kernel_step(*state), "service runtime dispatches sibling fault thread");
+  check(state->scheduler.current_tid() == *fault_tid,
+        "service runtime fault thread becomes current");
+  auto fault = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(401, 0), mmu::MmuAccessMode::Read);
+  check(fault.fault.has_value(), "service runtime records sibling fault");
+  check(axion_kernel_step(*state), "service runtime delivers sibling fault");
+
+  auto blocked_service = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::ServiceStatus,
+          .service_id = *service_id,
+      });
+  check(blocked_service.status == KernelServiceStatus::FaultedGroup,
+        "blocked service request is rejected deterministically");
+  check(blocked_service.rejection == KernelServiceRequestRejection::FaultedRequestingGroup,
+        "blocked service request reports faulted-group rejection");
+
+  auto supervisor_inventory = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::SupervisorServiceInventory,
+          .supervisor_id = *supervisor_id,
+      });
+  check(supervisor_inventory.status == KernelServiceStatus::Ok,
+        "supervisor inventory request succeeds");
+  check(supervisor_inventory.rejection == KernelServiceRequestRejection::None,
+        "supervisor inventory request clears rejection");
+  check(supervisor_inventory.supervisor_services.has_value(),
+        "supervisor inventory returns service view");
+  if (supervisor_inventory.supervisor_services) {
+    check(supervisor_inventory.supervisor_services->service_count == 1,
+          "supervisor inventory retains one service while blocked");
+    check(supervisor_inventory.supervisor_services->service_ids.size() == 1,
+          "supervisor inventory retains service id while blocked");
+  }
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -2173,6 +2329,7 @@ int main() {
   test_kernel_service_supervisor_recovery_status();
   test_kernel_service_device_actions();
   test_kernel_service_diagnostic_details();
+  test_kernel_service_runtime_layer();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

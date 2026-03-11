@@ -35,55 +35,41 @@ Implemented:
   the current contract
 - the stable service-facing contract is now ready to back a small service
   runtime layer
-
-Not yet implemented:
-
-- kernel-owned service registration/liveness state
+- kernel-owned service registration/liveness state for the first service layer
 - supervisor-owned service inventory
 - service-facing request routing above raw process-group ids
 - service blocked/faulted state at the service layer
+- first narrow service-facing service action: deterministic service registration
+
+Not yet implemented:
+
+- richer stable service diagnostics above the current service layer
+- a second narrow service action for service lifecycle control
 - capability or syscall semantics
 - process address-space ownership
 - pager integration
 
 ## Next Sequence
 
-### 1. Service runtime object model
+### 1. Service diagnostics stabilization
 
-Add the smallest kernel-owned service model above the current boundary:
+Keep the first service layer narrow and make its views stable:
 
-- service ids
-- supervisor ownership
-- backing process-group membership
-- service liveness / blocked state
-- deterministic service counters
+- registered service summaries
+- supervisor-owned service inventory
+- blocked/faulted service visibility
+- service request/rejection counters
 
-### 2. Supervisor-mediated service requests
+### 2. One additional narrow service action
 
-Move from raw process-group-oriented service usage toward a service-facing
-contract:
+If the stabilized service model still needs one more action, keep it narrow:
 
-- healthy services can query runtime state through their supervisor
-- faulted/blocked services are rejected deterministically
-- supervisors can inspect service state without bypassing kernel policy
-
-### 3. Stable service diagnostics
-
-Expose narrow structured views for:
-
-- registered services
-- owning supervisors
-- service blocked/faulted state
-- recent audit-visible service transitions
-
-### 4. One narrow service action
-
-After the service model exists, add only one action through it.
-
-Preferred candidates:
-
-- service register / unregister
+- service unregister
 - service suspend / resume
+
+### 3. Keep the service contract stable
+
+Do not widen the surface into syscalls, capabilities, or a process ABI yet.
 
 ## Non-Goals For This Slice
 
@@ -102,21 +88,17 @@ Do not add:
 
 The next kernel slice is complete when:
 
-1. a kernel-owned service runtime object model exists in `kernel/`
-2. each service has deterministic supervisor ownership and backing process-group
-   linkage
-3. service-facing requests distinguish healthy vs blocked/faulted services
-4. stable service-facing diagnostics exist for service, supervisor, fault,
+1. stable service-facing diagnostics exist for service, supervisor, fault,
    audit, and device ownership state
-5. HAL/kernel tests prove service registration/state visibility and blocked
+2. HAL/kernel tests prove service registration/state visibility and blocked
    behavior
-6. one narrow service-facing action exists above the service runtime contract
-7. RFC-00B3 can shift to service-runtime convergence as the next step
+3. one additional narrow service action exists only if the current service
+   layer needs it
+4. RFC-00B3 can shift to service-runtime stabilization as the next step
 
 ## Recommended Order
 
-1. define service runtime state without changing unrelated subsystems
-2. route service requests through supervisors and process-group ownership
-3. expose stable service diagnostics
-4. add one narrow service action
-5. update RFC-00B3 and status/docs
+1. stabilize the service-facing diagnostics
+2. add one narrow service action only if needed
+3. keep HAL/kernel acceptance coverage ahead of any new surface growth
+4. update RFC-00B3 and status/docs

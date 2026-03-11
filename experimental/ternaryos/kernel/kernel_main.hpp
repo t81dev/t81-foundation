@@ -19,6 +19,7 @@ namespace t81::ternaryos::kernel {
 
 using ProcessGroupId = uint32_t;
 using SupervisorId = uint32_t;
+using ServiceId = uint32_t;
 
 struct KernelFaultRecord {
   std::string platform_id;
@@ -92,12 +93,25 @@ struct KernelRuntimeState {
   struct SupervisorState {
     SupervisorId id{0};
     std::vector<ProcessGroupId> managed_groups;
+    std::vector<ServiceId> managed_services;
     std::deque<ProcessGroupId> pending_groups;
     uint64_t fault_notifications{0};
     uint64_t acknowledgements{0};
     uint64_t recovered_groups{0};
     std::optional<ProcessGroupId> last_acknowledged_group{};
     std::optional<ProcessGroupId> last_recovered_group{};
+  };
+
+  struct ServiceState {
+    ServiceId id{0};
+    std::string name;
+    SupervisorId supervisor_id{0};
+    ProcessGroupId process_group_id{0};
+    bool blocked{false};
+    bool registered{false};
+    uint64_t requests{0};
+    uint64_t rejected_requests{0};
+    uint64_t state_transitions{0};
   };
 
   struct Counters {
@@ -136,12 +150,15 @@ struct KernelRuntimeState {
   std::unordered_map<ProcessGroupId, ProcessGroupState> process_groups;
   std::unordered_map<SupervisorId, SupervisorState> supervisors;
   std::unordered_map<ProcessGroupId, SupervisorId> process_group_supervisors;
+  std::unordered_map<ServiceId, ServiceState> services;
+  std::unordered_map<ProcessGroupId, ServiceId> process_group_services;
   t81::vm::ThreadContext cpu_context{};
   Counters counters{};
   std::optional<KernelFaultRecord> last_delivered_fault{};
   std::optional<KernelAuditRecord> last_audit_event{};
   ProcessGroupId next_process_group_id{1};
   SupervisorId next_supervisor_id{1};
+  ServiceId next_service_id{1};
   uint64_t next_audit_sequence{1};
 
   KernelRuntimeState(std::string platform_id_in,
@@ -166,6 +183,7 @@ struct KernelRuntimeState {
   std::size_t audit_count() const noexcept { return audit_log.size(); }
   std::size_t process_group_count() const noexcept { return process_groups.size(); }
   std::size_t supervisor_count() const noexcept { return supervisors.size(); }
+  std::size_t service_count() const noexcept { return services.size(); }
   bool has_device_arbitration() const noexcept { return device_arbitration.has_value(); }
 
   const ThreadRuntimeState* find_thread_runtime(sched::Tid tid) const noexcept {
@@ -198,10 +216,29 @@ struct KernelRuntimeState {
     return it == supervisors.end() ? nullptr : &it->second;
   }
 
+  const ServiceState* find_service(ServiceId id) const noexcept {
+    auto it = services.find(id);
+    return it == services.end() ? nullptr : &it->second;
+  }
+
+  ServiceState* find_service_mut(ServiceId id) noexcept {
+    auto it = services.find(id);
+    return it == services.end() ? nullptr : &it->second;
+  }
+
   std::optional<SupervisorId> find_process_group_supervisor(
       ProcessGroupId process_group_id) const noexcept {
     auto it = process_group_supervisors.find(process_group_id);
     if (it == process_group_supervisors.end()) {
+      return std::nullopt;
+    }
+    return it->second;
+  }
+
+  std::optional<ServiceId> find_process_group_service(
+      ProcessGroupId process_group_id) const noexcept {
+    auto it = process_group_services.find(process_group_id);
+    if (it == process_group_services.end()) {
       return std::nullopt;
     }
     return it->second;
@@ -218,6 +255,8 @@ enum class KernelServiceRequestKind : uint8_t {
   ProcessGroupStatus,
   SupervisorStatus,
   SupervisorRecoveryStatus,
+  ServiceStatus,
+  SupervisorServiceInventory,
   FaultSummary,
   AuditSummary,
   DeviceSummary,
@@ -236,6 +275,7 @@ enum class KernelServiceRequestRejection : uint8_t {
   MissingRequestingGroup,
   MissingProcessGroup,
   MissingSupervisor,
+  MissingService,
   FaultedRequestingGroup,
   MissingDeviceArbitration,
 };
@@ -244,6 +284,7 @@ enum class KernelServiceActionKind : uint8_t {
   AcknowledgeSupervisorFaultGroup = 0,
   ClaimDevice,
   ReleaseDevice,
+  RegisterService,
 };
 
 enum class KernelServiceActionRejection : uint8_t {
@@ -251,7 +292,11 @@ enum class KernelServiceActionRejection : uint8_t {
   MissingRequestingGroup,
   MissingProcessGroup,
   MissingSupervisor,
+  MissingService,
+  DuplicateService,
+  ServiceSupervisorMismatch,
   MissingDeviceName,
+  MissingServiceName,
   MissingDeviceArbitration,
   FaultedRequestingGroup,
   NoPrimaryThread,
@@ -306,6 +351,24 @@ struct KernelSupervisorRecoveryStatusView {
   std::optional<ProcessGroupId> last_recovered_group{};
 };
 
+struct KernelServiceStatusView {
+  ServiceId id{0};
+  std::string name;
+  SupervisorId supervisor_id{0};
+  ProcessGroupId process_group_id{0};
+  bool blocked{false};
+  bool registered{false};
+  uint64_t requests{0};
+  uint64_t rejected_requests{0};
+  uint64_t state_transitions{0};
+};
+
+struct KernelSupervisorServiceInventoryView {
+  SupervisorId supervisor_id{0};
+  std::size_t service_count{0};
+  std::vector<ServiceId> service_ids;
+};
+
 struct KernelFaultSummaryView {
   std::size_t recorded_faults{0};
   std::size_t pending_faults{0};
@@ -352,6 +415,7 @@ struct KernelServiceRequest {
   std::optional<ProcessGroupId> requesting_process_group_id{};
   std::optional<ProcessGroupId> process_group_id{};
   std::optional<SupervisorId> supervisor_id{};
+  std::optional<ServiceId> service_id{};
 };
 
 struct KernelServiceResult {
@@ -361,6 +425,8 @@ struct KernelServiceResult {
   std::optional<KernelProcessGroupStatusView> process_group{};
   std::optional<KernelSupervisorStatusView> supervisor{};
   std::optional<KernelSupervisorRecoveryStatusView> supervisor_recovery{};
+  std::optional<KernelServiceStatusView> service{};
+  std::optional<KernelSupervisorServiceInventoryView> supervisor_services{};
   std::optional<KernelFaultSummaryView> fault_summary{};
   std::optional<KernelAuditSummaryView> audit_summary{};
   std::optional<KernelDeviceSummaryView> device_summary{};
@@ -372,6 +438,8 @@ struct KernelServiceAction {
   std::optional<ProcessGroupId> requesting_process_group_id{};
   std::optional<ProcessGroupId> process_group_id{};
   std::optional<SupervisorId> supervisor_id{};
+  std::optional<ServiceId> service_id{};
+  std::optional<std::string> service_name{};
   std::optional<std::string> device_name{};
 };
 
@@ -382,6 +450,8 @@ struct KernelServiceActionResult {
   std::optional<KernelProcessGroupStatusView> process_group{};
   std::optional<KernelSupervisorStatusView> supervisor{};
   std::optional<KernelSupervisorRecoveryStatusView> supervisor_recovery{};
+  std::optional<KernelServiceStatusView> service{};
+  std::optional<KernelSupervisorServiceInventoryView> supervisor_services{};
   std::optional<KernelFaultSummaryView> fault_summary{};
   std::optional<KernelAuditSummaryView> audit_summary{};
   std::optional<KernelDeviceSummaryView> device_summary{};

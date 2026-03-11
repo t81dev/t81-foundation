@@ -257,13 +257,12 @@ also now implemented:
 
 The next implementation slice after it is:
 
-1. define a small kernel-owned service runtime model above the current
+1. stabilize the new kernel-owned service runtime model above the current
    supervisor/process-group boundary
-2. route service-facing requests through that model with deterministic blocked
-   vs healthy behavior
-3. expose stable service diagnostics before widening the action surface again
+2. preserve deterministic blocked-vs-healthy service behavior
+3. add at most one more narrow service action before any broader boundary growth
 
-That convergence step specifically means:
+That stabilization step specifically means:
 
 - keep the existing request/result shapes stable where possible
 - preserve deterministic request outcomes for healthy vs blocked services
@@ -272,10 +271,9 @@ That convergence step specifically means:
 - avoid widening the contract with unrelated runtime verbs before the service
   model is settled
 
-That request/action rejection hardening is now implemented for the current
-contract surface. The next step is to turn that stable boundary into a small
-service-runtime layer and only then consider any further action or boundary
-growth.
+That service-runtime convergence step is now implemented for the current
+contract surface. The next step is to stabilize the service layer and only then
+consider any further action or boundary growth.
 
 The working execution note for this slice is:
 
