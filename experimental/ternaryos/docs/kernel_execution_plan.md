@@ -79,6 +79,14 @@ The first pager-groundwork slice is now also complete:
   pager-needed address-space state and fault counts without widening the
   service contract
 
+The second pager-groundwork slice is now also complete:
+
+- pager-needed address spaces now enter a deterministic internal handoff queue
+- the kernel loop now dispatches one internal pager handoff at a time without
+  widening into a pager ABI
+- stable diagnostics now distinguish pager-needed state from handoff-pending
+  and handoff-dispatched state
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
@@ -86,15 +94,16 @@ The first pager-groundwork slice is now also complete:
 Do not widen the existing service surface further unless a concrete runtime
 need appears.
 
-### 2. Keep pager state internal while adding handoff semantics
+### 2. Keep pager state internal while preparing resolution semantics
 
 The next real kernel work is now:
 
 - pager integration
-- the fault-to-pager handoff needed before any syscall or capability design
-- explicit transition handling for pager-needed address spaces or groups
-- stable diagnostics proving when pager-needed state is still pending versus
-  resolved
+- internal pager resolution or drain semantics after handoff
+- explicit transition handling for handed-off pager-needed address spaces or
+  groups
+- stable diagnostics proving when pager-needed state remains unresolved versus
+  completed
 
 ### 3. Keep the pager surface internal first
 
@@ -128,13 +137,14 @@ The current pager-groundwork slice is complete when:
    pager ABI surface
 
 That acceptance bar is now met. The next slice should preserve that state while
-introducing the internal handoff or drain semantics needed before any external
-pager interface exists.
+introducing the internal resolution or drain semantics needed before any
+external pager interface exists.
 
 ## Recommended Order
 
 1. preserve the current service-runtime contract without widening it casually
 2. preserve the new pager-needed runtime state on address spaces
-3. add internal pager handoff or drain semantics without widening the contract
-4. expose only stable diagnostics for that handoff state first
+3. add internal pager resolution or drain semantics without widening the
+   contract
+4. expose only stable diagnostics for that post-handoff state first
 5. only then evaluate pager-facing ABI shape or syscall/capability design

@@ -74,9 +74,11 @@ Delivered `Unmapped` faults now also mark the owning address space as
 pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit policy
 faults. That lifecycle convergence slice is now complete for the current
 contract, the first process-memory ownership slice is in place, and the first
-pager-groundwork slice is in place as well. The next steps are to keep that
-lifecycle contract stable while moving the kernel toward internal
-fault-to-pager handoff semantics and later pager integration.
+pager-groundwork slice is in place as well. Pager-needed address spaces now
+also enter a deterministic internal handoff queue, and diagnostics distinguish
+handoff-pending from handoff-dispatched state. The next steps are to keep that
+lifecycle contract stable while moving the kernel toward internal pager
+resolution semantics and later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 

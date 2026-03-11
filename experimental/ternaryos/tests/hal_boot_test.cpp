@@ -815,10 +815,14 @@ static void test_kernel_pager_fault_state() {
   if (runtime_status.runtime) {
     check(runtime_status.runtime->pager_needed_address_space_count == 1,
           "runtime status reports one pager-needed address space");
+    check(runtime_status.runtime->pending_pager_handoff_count == 1,
+          "runtime status reports one pending pager handoff before dispatch");
     check(runtime_status.runtime->pager_eligible_faults == 1,
           "runtime status counts one pager-eligible fault");
     check(runtime_status.runtime->policy_faults == 1,
           "runtime status counts one policy fault");
+    check(runtime_status.runtime->pager_handoffs_dispatched == 0,
+          "runtime status starts with zero dispatched pager handoffs");
   }
 
   auto pager_group_status = axion_kernel_service_request(
@@ -836,10 +840,14 @@ static void test_kernel_pager_fault_state() {
           "pager-needed process group preserves backing address space");
     check(pager_group_status.process_group->pager_needed,
           "pager-needed process group view reports pager-needed state");
+    check(pager_group_status.process_group->pager_handoff_pending,
+          "pager-needed process group view reports pending pager handoff");
     check(pager_group_status.process_group->pending_pager_fault_count == 1,
           "pager-needed process group view counts one pending pager fault");
     check(pager_group_status.process_group->pager_faults == 1,
           "pager-needed process group view counts one pager fault");
+    check(pager_group_status.process_group->pager_handoffs == 0,
+          "pager-needed process group view starts with zero dispatched handoffs");
     check(pager_group_status.process_group->last_pager_fault.has_value(),
           "pager-needed process group view exposes the last pager fault");
     if (pager_group_status.process_group->last_pager_fault) {
@@ -862,6 +870,8 @@ static void test_kernel_pager_fault_state() {
   if (policy_group_status.process_group) {
     check(!policy_group_status.process_group->pager_needed,
           "policy-fault process group does not report pager-needed state");
+    check(!policy_group_status.process_group->pager_handoff_pending,
+          "policy-fault process group reports no pager handoff pending");
     check(policy_group_status.process_group->pending_pager_fault_count == 0,
           "policy-fault process group reports zero pending pager faults");
     check(policy_group_status.process_group->pager_faults == 0,
@@ -883,6 +893,10 @@ static void test_kernel_pager_fault_state() {
           "fault summary counts one policy fault");
     check(fault_summary.fault_summary->pager_needed_address_spaces == 1,
           "fault summary reports one pager-needed address space");
+    check(fault_summary.fault_summary->pending_pager_handoffs == 1,
+          "fault summary reports one pending pager handoff before dispatch");
+    check(fault_summary.fault_summary->pager_handoffs_dispatched == 0,
+          "fault summary starts with zero dispatched pager handoffs");
     check(fault_summary.fault_summary->last_pager_address_space_id ==
               pager_address_space_id,
           "fault summary tracks the latest pager-needed address space");
@@ -899,6 +913,66 @@ static void test_kernel_pager_fault_state() {
       check(fault_summary.fault_summary->last_delivered_fault->fault ==
                 mmu::MmuFault::PermissionDenied,
             "fault summary keeps latest delivered policy fault separate from pager state");
+    }
+    check(!fault_summary.fault_summary->last_pager_handoff.has_value(),
+          "fault summary starts without a dispatched pager handoff record");
+  }
+
+  (void)axion_kernel_step(*state);
+  check(true, "later kernel step dispatches one pending internal pager handoff");
+
+  auto runtime_status_after_handoff = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_status_after_handoff.status == KernelServiceStatus::Ok,
+        "runtime status succeeds after pager handoff dispatch");
+  check(runtime_status_after_handoff.runtime.has_value(),
+        "runtime status returns pager handoff detail");
+  if (runtime_status_after_handoff.runtime) {
+    check(runtime_status_after_handoff.runtime->pager_needed_address_space_count == 1,
+          "runtime status retains pager-needed address space after handoff");
+    check(runtime_status_after_handoff.runtime->pending_pager_handoff_count == 0,
+          "runtime status clears pending pager handoff after dispatch");
+    check(runtime_status_after_handoff.runtime->pager_handoffs_dispatched == 1,
+          "runtime status counts one dispatched pager handoff");
+  }
+
+  auto pager_group_after_handoff = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::ProcessGroupStatus,
+          .process_group_id = pager_group_id,
+      });
+  check(pager_group_after_handoff.process_group.has_value(),
+        "pager-needed process group view remains available after handoff");
+  if (pager_group_after_handoff.process_group) {
+    check(!pager_group_after_handoff.process_group->pager_handoff_pending,
+          "pager-needed process group clears pending handoff after dispatch");
+    check(pager_group_after_handoff.process_group->pager_handoffs == 1,
+          "pager-needed process group counts one dispatched handoff");
+    check(pager_group_after_handoff.process_group->pager_needed,
+          "pager-needed process group remains pager-needed after handoff");
+  }
+
+  auto fault_summary_after_handoff = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_summary_after_handoff.status == KernelServiceStatus::Ok,
+        "fault summary succeeds after pager handoff dispatch");
+  check(fault_summary_after_handoff.fault_summary.has_value(),
+        "fault summary returns pager handoff state");
+  if (fault_summary_after_handoff.fault_summary) {
+    check(fault_summary_after_handoff.fault_summary->pending_pager_handoffs == 0,
+          "fault summary clears pending pager handoff count after dispatch");
+    check(fault_summary_after_handoff.fault_summary->pager_handoffs_dispatched == 1,
+          "fault summary counts one dispatched pager handoff");
+    check(fault_summary_after_handoff.fault_summary->last_pager_handoff.has_value(),
+          "fault summary exposes the latest dispatched pager handoff");
+    if (fault_summary_after_handoff.fault_summary->last_pager_handoff) {
+      check(fault_summary_after_handoff.fault_summary->last_pager_handoff->address_space_id ==
+                *pager_address_space_id,
+            "fault summary tracks the handed-off pager address space");
+      check(fault_summary_after_handoff.fault_summary->last_pager_handoff->fault.fault ==
+                mmu::MmuFault::Unmapped,
+            "fault summary preserves unmapped classification in handoff record");
     }
   }
 }
@@ -2550,8 +2624,12 @@ static void test_kernel_service_runtime_layer() {
           "service view reports one owned mapped page");
     check(!service_view.service->pager_needed,
           "healthy service view reports no pager-needed state");
+    check(!service_view.service->pager_handoff_pending,
+          "healthy service view reports no pending pager handoff");
     check(service_view.service->pending_pager_fault_count == 0,
           "healthy service view reports zero pending pager faults");
+    check(service_view.service->pager_handoffs == 0,
+          "healthy service view reports zero pager handoffs");
     check(service_view.service->primary_tid == *owner_tid,
           "service view exposes primary group thread");
     check(!service_view.service->faulted_group,
@@ -3130,10 +3208,14 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory entry reports blocked service");
     check(supervisor_inventory.supervisor_services->services.front().pager_needed,
           "blocked supervisor inventory entry reports pager-needed state");
+    check(supervisor_inventory.supervisor_services->services.front().pager_handoff_pending,
+          "blocked supervisor inventory entry reports pending pager handoff");
     check(supervisor_inventory.supervisor_services->services.front().pending_pager_fault_count == 1,
           "blocked supervisor inventory entry counts one pending pager fault");
     check(supervisor_inventory.supervisor_services->services.front().pager_faults == 1,
           "blocked supervisor inventory entry counts one pager fault");
+    check(supervisor_inventory.supervisor_services->services.front().pager_handoffs == 0,
+          "blocked supervisor inventory entry has not dispatched a pager handoff yet");
     check(supervisor_inventory.supervisor_services->services.front().last_pager_fault.has_value(),
           "blocked supervisor inventory entry exposes the pager fault record");
     check(supervisor_inventory.supervisor_services->services.front().last_transition_kind ==

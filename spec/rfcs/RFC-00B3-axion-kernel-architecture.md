@@ -322,9 +322,13 @@ faults mark the owning address space as pager-needed, while
 `PermissionDenied` and `InvalidTva` faults remain explicit policy failures.
 That pager-needed state is visible through the existing runtime,
 process-group, service, supervisor, and fault diagnostics without widening the
-contract. The next kernel slice is to keep that pager surface private while
-adding the internal fault-to-pager handoff semantics needed before any public
-pager ABI or syscall design.
+contract. That internal pager surface now also has a deterministic loop-owned
+handoff queue: pager-needed address spaces are handed off one at a time
+through kernel-owned runtime state, and diagnostics distinguish handoff-pending
+from handoff-dispatched state without adding a public pager ABI. The next
+kernel slice is to keep that pager surface private while adding the internal
+resolution semantics needed after handoff and before any public pager ABI or
+syscall design.
 
 The working execution note for this slice is:
 
