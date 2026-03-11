@@ -64,11 +64,6 @@ static BootContext make_valid_ctx(bool ethics = false) {
   return ctx;
 }
 
-static t81::ternaryos::mmu::TernaryPageAllocator make_kernel_alloc(
-    const BootContext& ctx) {
-  return t81::ternaryos::mmu::TernaryPageAllocator(ctx.memory_map);
-}
-
 // ─── Test cases ──────────────────────────────────────────────────────────────
 
 static void test_valid_context_no_ethics() {
@@ -426,6 +421,15 @@ static void test_kernel_runtime_bootstrap() {
     check(state->total_ternary_pages == ctx.memory_map[0].ternary_page_count(),
           "kernel runtime reports ternary page count");
     check(state->has_writable_memory, "kernel runtime records writable memory");
+    check(state->allocator.total_pages() == ctx.memory_map[0].ternary_page_count(),
+          "kernel runtime initializes allocator from BootContext");
+    check(state->page_table.empty(), "kernel runtime starts with an empty page table");
+    check(state->scheduler.thread_count() == 0, "kernel runtime starts with an empty scheduler");
+    check(state->ipc_bus.is_registered(KernelRuntimeState::kKernelTid),
+          "kernel runtime registers the kernel IPC inbox");
+    check(state->ipc_bus.pending(KernelRuntimeState::kKernelTid) == 0,
+          "kernel IPC inbox starts empty");
+    check(state->fault_count() == 0, "kernel runtime starts with an empty fault log");
   }
   check(axion_kernel_main(ctx) == 0, "axion_kernel_main returns 0 for valid context");
 }
@@ -442,21 +446,19 @@ static void test_kernel_fault_reporting() {
     return;
   }
 
-  auto alloc = make_kernel_alloc(ctx);
-  mmu::PageTable pt;
-
   const auto mapped_tva = mmu::tva_from_vpn_offset(2, 7);
-  check(mmu::mmu_map(pt, alloc, mapped_tva, /*owner_pid=*/1,
+  check(mmu::mmu_map(state->page_table, state->allocator, mapped_tva, /*owner_pid=*/1,
                      {.readable = true, .writable = false, .executable = false}),
         "readonly mapping succeeds for kernel fault reporting");
 
   const auto read_ok =
-      axion_kernel_check_access(*state, pt, mapped_tva, mmu::MmuAccessMode::Read);
+      axion_kernel_check_access(*state, mapped_tva, mmu::MmuAccessMode::Read);
   check(read_ok.phys_addr.has_value(), "kernel access report returns physical address for valid read");
   check(!read_ok.fault.has_value(), "kernel access report omits fault on valid read");
+  check(state->fault_count() == 0, "valid read does not grow the kernel fault log");
 
   const auto write_fault =
-      axion_kernel_check_access(*state, pt, mapped_tva, mmu::MmuAccessMode::Write);
+      axion_kernel_check_access(*state, mapped_tva, mmu::MmuAccessMode::Write);
   check(!write_fault.phys_addr.has_value(), "kernel access report suppresses physical address on denied write");
   check(write_fault.fault.has_value(), "kernel access report emits a fault record on denied write");
   if (write_fault.fault) {
@@ -467,24 +469,29 @@ static void test_kernel_fault_reporting() {
     check(write_fault.fault->fault == mmu::MmuFault::PermissionDenied,
           "fault record classifies permission denial");
   }
+  check(state->fault_count() == 1, "denied write is recorded in the kernel fault log");
 
   const auto unmapped_tva = mmu::tva_from_vpn_offset(9, 0);
   const auto unmapped_fault =
-      axion_kernel_check_access(*state, pt, unmapped_tva, mmu::MmuAccessMode::Read);
+      axion_kernel_check_access(*state, unmapped_tva, mmu::MmuAccessMode::Read);
   check(unmapped_fault.fault.has_value(), "kernel access report emits fault for unmapped access");
   if (unmapped_fault.fault) {
     check(unmapped_fault.fault->fault == mmu::MmuFault::Unmapped,
           "fault record classifies unmapped access");
   }
+  check(state->fault_count() == 2, "unmapped access is recorded in the kernel fault log");
 
   const auto invalid_fault =
-      axion_kernel_check_access(*state, pt, mmu::kMaxTva + 1,
+      axion_kernel_check_access(*state, mmu::kMaxTva + 1,
                                 mmu::MmuAccessMode::Execute);
   check(invalid_fault.fault.has_value(), "kernel access report emits fault for invalid TVA");
   if (invalid_fault.fault) {
     check(invalid_fault.fault->fault == mmu::MmuFault::InvalidTva,
           "fault record classifies invalid TVA");
   }
+  check(state->fault_count() == 3, "invalid TVA is recorded in the kernel fault log");
+  check(state->fault_log.back().fault == mmu::MmuFault::InvalidTva,
+        "kernel fault log preserves the last classified fault");
 }
 
 // ─── main ────────────────────────────────────────────────────────────────────

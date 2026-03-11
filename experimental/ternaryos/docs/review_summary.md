@@ -30,9 +30,9 @@ The official promotion target remains:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1051`
+- total assertions: `1062`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `104/104`
+- `t81_ternaryos_hal_boot_test`: `115/115`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -41,6 +41,8 @@ Kernel integration proof now also includes:
 - a real `hal_main -> axion_kernel_main(...)` handoff
 - kernel-visible MMU fault reporting with deterministic `InvalidTva`,
   `Unmapped`, and `PermissionDenied` classification
+- a persistent kernel runtime state seeded from `BootContext`, now owning the
+  allocator, page table, scheduler substrate, IPC bus, and fault log
 
 Phase 4 storage proof now covers:
 

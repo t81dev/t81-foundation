@@ -24,9 +24,10 @@ Kernel integration direction is now tracked explicitly in
 [RFC-00B3: Axion Kernel Architecture](../../spec/rfcs/RFC-00B3-axion-kernel-architecture.md).
 That RFC defines the current path after subsystem bring-up: the first
 kernel-owned runtime entry now exists, checked MMU translation is now consumed
-through a kernel-facing fault/reporting path, and the next steps are to
-converge scheduler, IPC, and minimal device arbitration into a fuller kernel
-runtime state object.
+through a kernel-facing fault/reporting path, and the first persistent kernel
+runtime state object now owns allocator, MMU, scheduler substrate, IPC bus,
+and fault-log state. The next steps are to attach minimal device arbitration
+to that owned boundary and keep converging the runtime into a fuller kernel.
 
 The roadmap is now centered on promotion of those layers from `experimental/` into mainline, plus delivery of the Phase 4 driver layer needed for a reboot-persistent CanonFS system. The concrete promotion environment is a **VirtualBox-first virtual machine target**: Axion should graduate from hosted process simulation into a bootable guest image that runs under VirtualBox before any real-hardware push.
 

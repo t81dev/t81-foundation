@@ -115,7 +115,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1051/1051 assertions, 8/8 tests pass
+# Expected: 1062/1062 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -137,6 +137,7 @@ The demo shows a VirtualBox-first hosted simulation path:
 - interrupted flushes preserve only the last durable state until a retry succeeds
 - the first kernel-owned runtime handoff now runs after HAL validation and ethics-first boot
 - the radix MMU now classifies invalid-TVA, unmapped, and permission-denied access faults
+- the kernel runtime now owns allocator, page table, scheduler, IPC bus, and fault log state from `BootContext`
 - TTF renders ASCII text into the VirtualBox VMSVGA-backed ternary framebuffer.
 - TernaryEthernetPacket round-trips through the VirtualBox E1000 scaffold.
 
@@ -268,11 +269,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `104/104`
+- `t81_ternaryos_hal_boot_test` is `115/115`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1051`
+- total TernOS assertions are `1062`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback
@@ -282,6 +283,11 @@ Local hosted proof as of the current branch:
 - kernel-facing fault coverage now includes:
   - checked MMU translation consumed through the first kernel-owned runtime path
   - deterministic `InvalidTva`, `Unmapped`, and `PermissionDenied` fault records
+- kernel-runtime ownership now includes:
+  - allocator seeded from `BootContext`
+  - runtime-owned page table
+  - runtime-owned scheduler and IPC bus
+  - persistent kernel fault log
 
 ## VirtualBox Artifact
 
