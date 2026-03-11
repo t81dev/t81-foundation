@@ -3,7 +3,7 @@
 // experimental/ternaryos/hal/hal.hpp
 //
 // Hardware Abstraction Layer public interface for TernOS Phase 1.
-// Implements the contract defined in docs/rfcs/RFC-00B0-hal-spec.md.
+// Implements the contract defined in spec/rfcs/RFC-00B0-hal-spec.md.
 //
 // NOTE: This is an experimental prototype. When Phase 1 acceptance criteria
 // are met this header will be promoted to include/t81/hal/hal.hpp.

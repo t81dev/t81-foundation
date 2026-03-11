@@ -6,10 +6,10 @@
 **x86_64 Handoff:** [virtualbox_x86_64_handoff.md](virtualbox_x86_64_handoff.md)
 **Shell Design:** [axion_shell_design.md](axion_shell_design.md)
 **Roadmap:** [docs/research/ternary_os_roadmap.md](../../../docs/research/ternary_os_roadmap.md)
-**RFC-00B0 (HAL):** [docs/rfcs/RFC-00B0-hal-spec.md](../../../docs/rfcs/RFC-00B0-hal-spec.md)
-**RFC-00B1 (MMU):** [docs/rfcs/RFC-00B1-ternary-mmu.md](../../../docs/rfcs/RFC-00B1-ternary-mmu.md)
-**RFC-00B2 (Drivers):** [docs/rfcs/RFC-00B2-device-drivers.md](../../../docs/rfcs/RFC-00B2-device-drivers.md)
-**RFC-00B3 (Kernel):** [docs/rfcs/RFC-00B3-axion-kernel-architecture.md](../../../docs/rfcs/RFC-00B3-axion-kernel-architecture.md)
+**RFC-00B0 (HAL):** [spec/rfcs/RFC-00B0-hal-spec.md](../../../spec/rfcs/RFC-00B0-hal-spec.md)
+**RFC-00B1 (MMU):** [spec/rfcs/RFC-00B1-ternary-mmu.md](../../../spec/rfcs/RFC-00B1-ternary-mmu.md)
+**RFC-00B2 (Drivers):** [spec/rfcs/RFC-00B2-device-drivers.md](../../../spec/rfcs/RFC-00B2-device-drivers.md)
+**RFC-00B3 (Kernel):** [spec/rfcs/RFC-00B3-axion-kernel-architecture.md](../../../spec/rfcs/RFC-00B3-axion-kernel-architecture.md)
 
 Prototype implementation of Axion, the current working name for the ternary-native
 OS kernel on the T81VM runtime. Phases 1 through 3 are complete, Phase 4

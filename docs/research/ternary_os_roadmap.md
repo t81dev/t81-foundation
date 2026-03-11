@@ -21,7 +21,7 @@ As of **2026-03-10**, the project has completed:
 - **Phase 3:** Kernel scheduling and IPC
 
 Kernel integration direction is now tracked explicitly in
-[RFC-00B3: Axion Kernel Architecture](../rfcs/RFC-00B3-axion-kernel-architecture.md).
+[RFC-00B3: Axion Kernel Architecture](../../spec/rfcs/RFC-00B3-axion-kernel-architecture.md).
 That RFC defines the next path after subsystem bring-up: converge HAL handoff,
 MMU fault handling, scheduler, IPC, and minimal device arbitration into a
 kernel-owned runtime entry.
@@ -118,7 +118,7 @@ The first bootable guest should deliberately target this conservative profile ra
 **Gate:** v1.5 hosted equivalent satisfied; VirtualBox guest promotion is the next concrete target, with bare-metal UEFI still deferred.
 
 - **Binary-to-Ternary Bootstrap:** A minimalist Type-1 hypervisor guest or UEFI bootloader that initializes hardware (CPU, memory, storage, network) and transfers full control to `T81VM` with no host OS residual.
-- **Hardware Abstraction Layer (HAL):** Translates binary CPU interrupts, I/O port signals, and physical memory addresses into canonical TISC representations. See [RFC-00B0: HAL Specification](../rfcs/RFC-00B0-hal-spec.md) for the scoping decision between unikernel, Type-1 hypervisor, and raw UEFI approaches.
+- **Hardware Abstraction Layer (HAL):** Translates binary CPU interrupts, I/O port signals, and physical memory addresses into canonical TISC representations. See [RFC-00B0: HAL Specification](../../spec/rfcs/RFC-00B0-hal-spec.md) for the scoping decision between unikernel, Type-1 hypervisor, and raw UEFI approaches.
 
 Implemented outcome:
 
