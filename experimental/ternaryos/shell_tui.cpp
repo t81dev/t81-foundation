@@ -67,7 +67,7 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
   }
 
   auto header = hbox({
-      text(" TernOS Shell ") | bold | color(Color::Black) | bgcolor(Color::Cyan),
+      text(" Axion Shell ") | bold | color(Color::Black) | bgcolor(Color::Cyan),
       text("  Phase 5 builtins TUI ") | color(Color::White),
       filler(),
       text(" arrows/jk move  enter run  q quit ") | color(Color::GrayDark),

@@ -1,8 +1,8 @@
-# TernOS Phase 4 Review Summary
+# Axion Phase 4 Review Summary
 
 ## Current State
 
-TernOS Phases 1 through 3 are implemented and passing. Phase 4 is implemented
+Axion Phases 1 through 3 are implemented and passing. Phase 4 is implemented
 as a VirtualBox-first hosted simulation path with guest-owned storage, network,
 and display seams:
 

@@ -1,6 +1,6 @@
-# TernOS VirtualBox x86_64 Handoff
+# Axion VirtualBox x86_64 Handoff
 
-This runbook packages the current TernOS VirtualBox-first promotion state for a
+This runbook packages the current Axion VirtualBox-first promotion state for a
 person who has access to an `x86_64` VirtualBox host.
 
 ## Goal

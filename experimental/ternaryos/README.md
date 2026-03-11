@@ -9,10 +9,13 @@
 **RFC-00B1 (MMU):** [docs/rfcs/RFC-00B1-ternary-mmu.md](../../docs/rfcs/RFC-00B1-ternary-mmu.md)
 **RFC-00B2 (Drivers):** [docs/rfcs/RFC-00B2-device-drivers.md](../../docs/rfcs/RFC-00B2-device-drivers.md)
 
-Prototype implementation of TernOS — a ternary-native OS kernel for the T81VM
-runtime. Phases 1 through 3 are complete, Phase 4 device-driver work is in
-progress, and Phase 5 now has a first built-in shell/TUI path on top of the
-hosted guest-bootstrap path.
+Prototype implementation of Axion, the current working name for the ternary-native
+OS kernel on the T81VM runtime. Phases 1 through 3 are complete, Phase 4
+device-driver work is in progress, and Phase 5 now has a first built-in shell/TUI
+path on top of the hosted guest-bootstrap path.
+
+For now, internal paths, namespaces, CMake targets, and test names still use
+`ternaryos` while the external/project-facing name shifts to `Axion`.
 
 ## Structure
 
@@ -121,7 +124,7 @@ What it proves today:
 
 ## Shell TUI
 
-To run the first FTXUI-based TernOS shell frontend:
+To run the first FTXUI-based Axion shell frontend:
 
 ```sh
 cmake --build build --target t81_ternaryos_shell_tui

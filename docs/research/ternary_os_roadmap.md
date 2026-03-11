@@ -1,10 +1,10 @@
-# Ternary Operating System: Implementation Roadmap
+# Axion: Implementation Roadmap
 
-This document captures the current implementation state, completed milestones, remaining work, and exit criteria for evolving the T81 Foundation stack into a standalone Ternary Operating System (TernOS).
+This document captures the current implementation state, completed milestones, remaining work, and exit criteria for evolving the T81 Foundation stack into a standalone ternary operating system, currently named Axion.
 
 ## 1. Current Position
 
-The T81 Foundation provides a determinism-first, ternary-native computing stack (`T81`) that achieves native ternary scaling properties (base-3 / base-81) simulated over standard hardware. Today, TernOS runs as a hosted prototype over standard binary platforms, but the standalone operating-system stack is no longer purely aspirational: the boot/HAL layer, ternary MMU prototype, and scheduler/IPC foundation are implemented and tested.
+The T81 Foundation provides a determinism-first, ternary-native computing stack (`T81`) that achieves native ternary scaling properties (base-3 / base-81) simulated over standard hardware. Today, Axion runs as a hosted prototype over standard binary platforms, but the standalone operating-system stack is no longer purely aspirational: the boot/HAL layer, ternary MMU prototype, and scheduler/IPC foundation are implemented and tested.
 
 As of **2026-03-10**, the project has completed:
 
@@ -12,7 +12,7 @@ As of **2026-03-10**, the project has completed:
 - **Phase 2:** Ternary MMU prototype
 - **Phase 3:** Kernel scheduling and IPC
 
-The roadmap is now centered on promotion of those layers from `experimental/` into mainline, plus delivery of the Phase 4 driver layer needed for a reboot-persistent CanonFS system. The concrete promotion environment is a **VirtualBox-first virtual machine target**: TernOS should graduate from hosted process simulation into a bootable guest image that runs under VirtualBox before any real-hardware push.
+The roadmap is now centered on promotion of those layers from `experimental/` into mainline, plus delivery of the Phase 4 driver layer needed for a reboot-persistent CanonFS system. The concrete promotion environment is a **VirtualBox-first virtual machine target**: Axion should graduate from hosted process simulation into a bootable guest image that runs under VirtualBox before any real-hardware push.
 
 ---
 

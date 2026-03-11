@@ -5,7 +5,7 @@
 #include <cstdio>
 
 int main() {
-  std::puts("=== TernOS Phase 5 Shell Demo ===");
+  std::puts("=== Axion Phase 5 Shell Demo ===");
 
   const auto state = t81::ternaryos::build_scripted_shell_session(false);
   if (!state.has_value()) {

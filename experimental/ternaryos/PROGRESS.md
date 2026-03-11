@@ -1,4 +1,7 @@
-# TernOS Implementation Progress
+# Axion Implementation Progress
+
+Working name note: the project-facing OS name is now `Axion`, while internal
+paths, namespaces, and build/test identifiers still use `ternaryos`.
 
 **Last updated:** 2026-03-10
 **Commit:** `257359ad`
