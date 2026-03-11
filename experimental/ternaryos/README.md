@@ -170,6 +170,7 @@ Current status:
 - on this Apple Silicon host, `VBoxManage list systemproperties` currently reports `Supported platform architectures: ARMv8`, so the `x86_64` guest target cannot be boot-validated locally
 - the ARMv8 developer lane now goes one step further locally: VirtualBox firmware can boot headless, open the staged VDI through AHCI, and emit a captured `VBox.log`
 - with `lld` installed, the ARMv8 lane now emits a real `BOOTAA64.EFI`, but it is still a developer-lane shim rather than the true C++ HAL bridge
+- a separate control `BOOTAA64_CTRL.EFI` now exists for the ARMv8 lane and is staged ahead of the shim-backed app in `STARTUP.NSH`; current local probes still show no `startup-ran.txt`, `efi-ctrl-ran.txt`, or `efi-ran.txt` markers, which strongly suggests the local blocker is VirtualBox ARM EFI execution/boot selection rather than the TernOS HAL bridge
 
 ## Validation Lanes
 

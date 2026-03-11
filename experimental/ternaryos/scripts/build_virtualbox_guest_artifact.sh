@@ -13,6 +13,7 @@ demo_bin="$build_dir/t81_ternaryos_demo"
 efi_obj="$build_dir/ternaryos/virtualbox/BOOTX64.obj"
 armv8_efi_obj="$build_dir/ternaryos/virtualbox_armv8/BOOTAA64.obj"
 armv8_efi_bin="$build_dir/ternaryos/virtualbox_armv8/BOOTAA64.EFI"
+armv8_efi_ctrl_bin="$build_dir/ternaryos/virtualbox_armv8/BOOTAA64_CTRL.EFI"
 
 if [[ ! -x "$demo_bin" ]]; then
   echo "missing demo binary: $demo_bin" >&2
@@ -91,8 +92,10 @@ echo TernOS VirtualBox guest artifact > fs0:\TERNOS\startup-ran.txt
 echo shell-started >> fs0:\TERNOS\startup-ran.txt
 echo Inspect \TERNOS\profile.txt and \TERNOS\demo-output.txt for details. >> fs0:\TERNOS\startup-ran.txt
 fs0:
+\EFI\BOOT\BOOTAA64_CTRL.EFI
 \EFI\BOOT\BOOTAA64.EFI
 \EFI\BOOT\bootaa64.efi
+BOOTAA64_CTRL.EFI
 BOOTAA64.EFI
 bootaa64.efi
 EOF
@@ -110,6 +113,11 @@ if [[ "$guest_arch" == "armv8" && -f "$armv8_efi_bin" ]]; then
   cp "$armv8_efi_bin" "$staging_dir/EFI/BOOT/bootaa64.efi"
   perl -0pi -e 's/artifact_status=staged-not-bootable/artifact_status=efi-boot-candidate/' "$staging_dir/TERNOS/profile.txt"
   perl -0pi -e 's/boot_gap=missing-real-bootaa64-efi/boot_gap=developer-lane-shim-efi-present/' "$staging_dir/TERNOS/profile.txt"
+fi
+
+if [[ "$guest_arch" == "armv8" && -f "$armv8_efi_ctrl_bin" ]]; then
+  cp "$armv8_efi_ctrl_bin" "$staging_dir/EFI/BOOT/BOOTAA64_CTRL.EFI"
+  perl -0pi -e 's/boot_gap=developer-lane-shim-efi-present/boot_gap=developer-lane-control-and-shim-efi-present/' "$staging_dir/TERNOS/profile.txt"
 fi
 
 image_path="$output_dir/${artifact_base}.img"
