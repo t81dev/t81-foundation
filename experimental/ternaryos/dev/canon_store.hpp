@@ -41,6 +41,11 @@ public:
   /// Returns nullopt if the device is full or flush fails.
   std::optional<t81::canonfs::CanonRef> put(const t81::canonfs::CanonBlock& block);
 
+  /// Remove a stored block by CanonRef.
+  /// Zeroes the underlying data block so fallback rebuild scans do not
+  /// rediscover the removed payload later.
+  bool remove(const t81::canonfs::CanonRef& ref);
+
   // ── Read path ───────────────────────────────────────────────────────────────
 
   /// Retrieve a block by CanonRef.

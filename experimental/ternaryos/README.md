@@ -153,9 +153,11 @@ What the TUI adds:
 - a minimal built-in command model behind the transcript:
   - `help`
   - `profile`
+  - `session status`
   - `store put <text>`
   - `store ls`
   - `store get <ref>`
+  - `store rm <ref>`
   - `history`
 - a live typed-input loop in the interactive TUI:
   - printable characters append to the command buffer
@@ -173,8 +175,8 @@ Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
 - `t81_ternaryos_device_driver_test` is `342/342`
-- `t81_ternaryos_shell_session_test` is `27/27`
-- total TernOS assertions are `764`
+- `t81_ternaryos_shell_session_test` is `34/34`
+- total TernOS assertions are `771`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback

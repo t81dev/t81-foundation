@@ -89,6 +89,16 @@ std::optional<t81::canonfs::CanonRef> CanonStore::put(
   return t81::canonfs::CanonRef{h};
 }
 
+bool CanonStore::remove(const t81::canonfs::CanonRef& ref) {
+  auto it = index_.find(ref.hash);
+  if (it == index_.end()) return false;
+
+  BlockData zero{};
+  if (!dev_.write_block(it->second, zero)) return false;
+  index_.erase(it);
+  return true;
+}
+
 // ─── get ─────────────────────────────────────────────────────────────────────
 
 std::optional<t81::canonfs::CanonBlock> CanonStore::get(

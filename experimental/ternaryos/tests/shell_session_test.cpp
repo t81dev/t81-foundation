@@ -36,12 +36,14 @@ static void test_scripted_shell_session() {
   check(state.has_value(), "scripted shell session builds");
   if (!state.has_value()) return;
 
-  check(state->available_commands.size() == 6, "six builtins are exposed");
-  check(state->command_records.size() == 5, "scripted session records five commands");
+  check(state->available_commands.size() == 8, "eight builtins are exposed");
+  check(state->command_records.size() == 6, "scripted session records six commands");
+  check(state->command_records[2].result.starts_with("session profile "),
+        "scripted session status reports shell state");
   check(state->recovered_entries == 1, "history recovers one durable entry");
-  check(state->command_records[2].result.starts_with("canon durable ok "),
+  check(state->command_records[3].result.starts_with("canon durable ok "),
         "scripted store put emits a CanonRef");
-  check(state->command_records[3].result.starts_with("store refs 1"),
+  check(state->command_records[4].result.starts_with("store refs 1"),
         "scripted store ls sees one durable ref");
   check(state->transcript_text.find("REBOOT RECOVERED 1") != std::string::npos,
         "transcript records durable history recovery");
@@ -57,32 +59,43 @@ static void test_typed_shell_commands() {
   if (!session.has_value()) return;
 
   check(session->execute_command("help"), "help executes");
+  check(session->execute_command("session status"), "session status executes");
   check(session->execute_command("store put \"typed shell payload\""), "quoted store put <text> executes");
-  const auto stored_ref = suffix_after(session->state().command_records[1].result, "canon durable ok ");
+  const auto stored_ref = suffix_after(session->state().command_records[2].result, "canon durable ok ");
   check(!stored_ref.empty(), "store put result includes a CanonRef");
   check(session->execute_command("store ls"), "store ls executes");
   check(session->execute_command(std::string("store get ") + stored_ref), "store get <ref> executes");
+  check(session->execute_command(std::string("store rm ") + stored_ref), "store rm <ref> executes");
+  check(session->execute_command(std::string("store get ") + stored_ref),
+        "store get reports missing after store rm");
   check(session->execute_command("history"), "history executes");
   check(session->execute_command("store put \"unterminated"), "parse errors still refresh state");
   check(session->execute_command("bogus"), "unknown command still refreshes state");
 
   const auto& state = session->state();
-  check(state.command_records.size() == 7, "interactive session records seven commands");
-  check(state.command_records[1].command == "store put \"typed shell payload\"",
+  check(state.command_records.size() == 10, "interactive session records ten commands");
+  check(state.command_records[1].result.starts_with("session profile "),
+        "session status reports profile and shell metadata");
+  check(state.command_records[2].command == "store put \"typed shell payload\"",
         "typed parser preserves quoted store put command");
-  check(state.command_records[1].result.starts_with("canon durable ok "),
+  check(state.command_records[2].result.starts_with("canon durable ok "),
         "store put reports durable success plus CanonRef");
-  check(state.command_records[2].result.starts_with("store refs 1"),
+  check(state.command_records[3].result.starts_with("store refs 1"),
         "store ls reports one tracked ref");
-  check(state.command_records[2].result.find(stored_ref) != std::string::npos,
+  check(state.command_records[3].result.find(stored_ref) != std::string::npos,
         "store ls exposes the stored CanonRef");
-  check(state.command_records[3].result == "store get typed shell payload",
+  check(state.command_records[4].result == "store get typed shell payload",
         "store get decodes stored payload");
-  check(state.command_records[4].result == "reboot recovered 1", "history reports durable recovery");
-  check(state.command_records[5].result == "parse error: unmatched quote",
+  check(state.command_records[5].result == "store rm ok " + stored_ref,
+        "store rm reports durable removal");
+  check(state.command_records[6].result == "store get missing",
+        "removed ref is no longer readable");
+  check(state.command_records[7].result == "reboot history missing",
+        "history reports missing durable anchor after removal");
+  check(state.command_records[8].result == "parse error: unmatched quote",
         "unmatched quote is surfaced as a parse error");
-  check(state.command_records[6].result == "unknown command", "unknown command is surfaced");
-  check(state.recovered_entries == 1, "interactive history refresh sets recovered_entries");
+  check(state.command_records[9].result == "unknown command", "unknown command is surfaced");
+  check(state.recovered_entries == 0, "interactive history refresh tracks current recovered_entries");
 }
 
 int main() {

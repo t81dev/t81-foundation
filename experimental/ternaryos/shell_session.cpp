@@ -30,12 +30,14 @@ namespace t81::ternaryos {
 
 namespace {
 
-constexpr std::array<const char*, 6> kBuiltinCommands = {
+constexpr std::array<const char*, 8> kBuiltinCommands = {
     "help",
     "profile",
+    "session status",
     "store put <text>",
     "store ls",
     "store get <ref>",
+    "store rm <ref>",
     "history",
 };
 
@@ -195,6 +197,7 @@ std::vector<std::string> default_shell_command_sequence() {
   return {
       "help",
       "profile",
+      "session status",
       "store put \"phase5 durable transcript\"",
       "store ls",
       "history",
@@ -271,12 +274,26 @@ bool ShellSession::execute_command(std::string_view command_view) {
 
   if (words[0] == "help") {
     state_.command_records.push_back(
-        {command, "builtins help profile store put <text> store ls store get <ref> history"});
+        {command,
+         "builtins help profile session status store put <text> store ls store get <ref> store rm <ref> history"});
     return refresh_render();
   }
 
   if (words[0] == "profile") {
     state_.command_records.push_back({command, state_.profile_summary});
+    return refresh_render();
+  }
+
+  if (words.size() == 2 && words[0] == "session" && words[1] == "status") {
+    std::ostringstream out;
+    out << "session profile " << state_.profile_summary << '\n'
+        << "storage " << state_.storage_binding_name << '\n'
+        << "display " << state_.display_binding_name << '\n'
+        << "commands " << state_.command_records.size() << '\n'
+        << "refs " << stored_refs_.size() << '\n'
+        << "recovered " << state_.recovered_entries << '\n'
+        << "glyphs " << state_.rendered_glyphs;
+    state_.command_records.push_back({command, out.str()});
     return refresh_render();
   }
 
@@ -342,6 +359,34 @@ bool ShellSession::execute_command(std::string_view command_view) {
     }
 
     state_.command_records.push_back({command, "store get " + decode_text_block(*block)});
+    return refresh_render();
+  }
+
+  if (words.size() == 3 && words[0] == "store" && words[1] == "rm") {
+    const auto ref = parse_canon_ref_text(words[2]);
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "store rm invalid ref"});
+      return refresh_render();
+    }
+
+    state_.recovered_entries = store.rebuild_index();
+    if (!store.remove(*ref)) {
+      state_.command_records.push_back({command, "store rm missing"});
+      return refresh_render();
+    }
+    if (!store.flush()) {
+      state_.command_records.push_back({command, "store rm flush failed"});
+      return refresh_render();
+    }
+
+    stored_refs_.erase(std::remove_if(stored_refs_.begin(),
+                                      stored_refs_.end(),
+                                      [&](const auto& candidate) {
+                                        return candidate.hash == ref->hash;
+                                      }),
+                       stored_refs_.end());
+    state_.recovered_entries = store.rebuild_index();
+    state_.command_records.push_back({command, "store rm ok " + canon_ref_text(*ref)});
     return refresh_render();
   }
 
