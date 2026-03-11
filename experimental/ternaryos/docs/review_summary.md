@@ -104,6 +104,8 @@ Kernel integration proof now also includes:
   when queued work is already mappable behind that stalled active item
 - runtime and fault diagnostics now also expose current ready-backlog depth and
   its retained high-water mark under that same FIFO pressure
+- runtime and fault diagnostics now also retain the stalled active address
+  space alongside the ready queued address space it was blocking
 - the supervisor/service-runtime convergence slice is now complete for the
   current contract surface
 - the first process-memory ownership slice is now complete as well
@@ -114,8 +116,8 @@ Kernel integration proof now also includes:
 - the next kernel slice is to keep this service-runtime layer stable and move
   into richer kernel-owned pager-worker scheduling behavior after handoff,
   resolution, duplicate-fault coalescing, backlog-load diagnostics, and FIFO
-  stall accounting, plus ready-behind-active depth diagnostics, not a broad
-  ABI or syscall surface
+  stall accounting, plus ready-behind-active depth diagnostics and retained
+  blocker/blocked identities, not a broad ABI or syscall surface
 
 Phase 4 storage proof now covers:
 

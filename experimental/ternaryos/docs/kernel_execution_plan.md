@@ -147,6 +147,15 @@ The ninth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves ready-backlog depth rises and drains
   deterministically under the existing FIFO worker model
 
+The tenth pager-groundwork slice is now also complete:
+
+- runtime and fault diagnostics now retain the last stalled active address
+  space alongside the last ready queued address space observed behind it
+- postmortem pager-worker summaries can now explain both sides of the blocked
+  FIFO relationship after the queue has already drained
+- HAL/kernel coverage now proves those retained blocker/blocked identities stay
+  deterministic after backlog drain
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
