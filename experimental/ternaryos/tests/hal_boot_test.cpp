@@ -1843,8 +1843,8 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "runtime status keeps the worker idle on a repeated parked cycle");
     check(runtime_after_second_park.runtime->pager_worker_inbox_count == 2,
           "runtime status keeps both queued items during a repeated parked cycle");
-    check(runtime_after_second_park.runtime->pager_worker_ready_bypass_deferrals == 2,
-          "runtime status counts a second ready-bypass deferral while parked");
+    check(runtime_after_second_park.runtime->pager_worker_ready_bypass_deferrals == 1,
+          "runtime status keeps one ready-bypass deferral for the same parked episode");
     check(runtime_after_second_park.runtime->pager_worker_parked_cycles == 2,
           "runtime status counts a second parked worker cycle");
     check(runtime_after_second_park.runtime->pager_worker_last_parked_blocked_address_space_id ==
@@ -1889,8 +1889,8 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "fault summary counts all three pager resolutions under the capped policy");
     check(fault_after_final_resolution.fault_summary->pager_worker_ready_bypass_activations == 1,
           "fault summary retains one ready-bypass activation under the capped policy");
-    check(fault_after_final_resolution.fault_summary->pager_worker_ready_bypass_deferrals == 2,
-          "fault summary retains two ready-bypass deferrals under the parked capped policy");
+    check(fault_after_final_resolution.fault_summary->pager_worker_ready_bypass_deferrals == 1,
+          "fault summary retains one ready-bypass deferral for the parked capped episode");
     check(fault_after_final_resolution.fault_summary->pager_worker_parked_cycles == 2,
           "fault summary retains two parked worker cycles under the parked capped policy");
     check(fault_after_final_resolution.fault_summary

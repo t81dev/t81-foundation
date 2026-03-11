@@ -182,6 +182,7 @@ struct KernelRuntimeState {
   std::optional<AddressSpaceId> last_ready_bypass_deferred_ready_address_space_id{};
   std::optional<uint64_t> last_ready_bypass_deferred_cycle{};
   uint64_t parked_cycles{0};
+  std::optional<AddressSpaceId> parked_blocked_address_space_id{};
   std::optional<AddressSpaceId> last_parked_blocked_address_space_id{};
   std::optional<AddressSpaceId> last_parked_ready_address_space_id{};
   std::optional<uint64_t> last_parked_cycle{};

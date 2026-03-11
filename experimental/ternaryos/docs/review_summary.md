@@ -85,6 +85,8 @@ Kernel integration proof now also includes:
   unresolved head into a redundant stall cycle
 - repeated parked cycles are now retained explicitly with the latest blocked
   head, ready queued item, and ready-count seen while the worker stays parked
+- ready-bypass deferrals now count one parked episode for that blocked head,
+  while parked-cycle counters capture how long the worker remained parked
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

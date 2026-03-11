@@ -1510,22 +1510,32 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
                   state.pager_worker.ready_bypass_activations;
               selected_index = *ready_index;
             } else {
-              ++state.pager_worker.ready_bypass_deferrals;
-              ++state.counters.pager_worker_ready_bypass_deferrals;
-              state.pager_worker
-                  .last_ready_bypass_deferred_blocked_address_space_id =
+              const auto blocked_address_space_id =
                   state.pager_worker.inbox.front().handoff.address_space_id;
-              state.pager_worker
-                  .last_ready_bypass_deferred_ready_address_space_id =
+              const auto ready_address_space_id =
                   state.pager_worker.inbox[*ready_index].handoff.address_space_id;
-              state.pager_worker.last_ready_bypass_deferred_cycle =
-                  state.pager_worker.ready_bypass_deferrals;
+              if (!state.pager_worker.parked_blocked_address_space_id.has_value() ||
+                  *state.pager_worker.parked_blocked_address_space_id !=
+                      blocked_address_space_id) {
+                ++state.pager_worker.ready_bypass_deferrals;
+                ++state.counters.pager_worker_ready_bypass_deferrals;
+                state.pager_worker.parked_blocked_address_space_id =
+                    blocked_address_space_id;
+                state.pager_worker
+                    .last_ready_bypass_deferred_blocked_address_space_id =
+                    blocked_address_space_id;
+                state.pager_worker
+                    .last_ready_bypass_deferred_ready_address_space_id =
+                    ready_address_space_id;
+                state.pager_worker.last_ready_bypass_deferred_cycle =
+                    state.pager_worker.ready_bypass_deferrals;
+              }
               ++state.pager_worker.parked_cycles;
               ++state.counters.pager_worker_parked_cycles;
               state.pager_worker.last_parked_blocked_address_space_id =
-                  state.pager_worker.inbox.front().handoff.address_space_id;
+                  blocked_address_space_id;
               state.pager_worker.last_parked_ready_address_space_id =
-                  state.pager_worker.inbox[*ready_index].handoff.address_space_id;
+                  ready_address_space_id;
               state.pager_worker.last_parked_cycle =
                   state.pager_worker.parked_cycles;
               std::size_t ready_count = 0;
@@ -1540,6 +1550,7 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
           }
         }
         if (activate_selected_work) {
+          state.pager_worker.parked_blocked_address_space_id.reset();
           state.pager_worker.active_work = state.pager_worker.inbox[selected_index];
           state.pager_worker.inbox.erase(state.pager_worker.inbox.begin() +
                                          static_cast<std::ptrdiff_t>(selected_index));

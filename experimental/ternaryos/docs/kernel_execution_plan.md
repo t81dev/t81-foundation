@@ -268,6 +268,15 @@ The twenty-second pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves repeated parked cycles accumulate cleanly
   before the blocked head becomes mappable and backlog drain resumes
 
+The twenty-third pager-groundwork slice is now also complete:
+
+- ready-bypass deferrals now count parked episodes for one blocked head rather
+  than incrementing every parked worker cycle
+- parked-worker cycles continue to accumulate independently so the kernel can
+  separate "how many times parking started" from "how long the worker waited"
+- HAL/kernel coverage now proves repeated parked idle cycles preserve one
+  deferral record while parked-cycle duration continues to advance
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable

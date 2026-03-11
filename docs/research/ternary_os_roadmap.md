@@ -101,7 +101,8 @@ address/ordinal while work remains in the inbox, plus a bounded deterministic
 ready-bypass selection rule when the worker is idle and the FIFO head is still
 unresolved, followed by parked deferral once that single bypass has been used,
 plus retained parked-cycle diagnostics while that blocked head remains
-unresolved, before later pager integration.
+unresolved, with deferral counts now tracking parked episodes instead of every
+parked loop tick, before later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 
