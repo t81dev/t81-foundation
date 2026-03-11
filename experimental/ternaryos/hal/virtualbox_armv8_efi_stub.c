@@ -5,6 +5,7 @@
 // so Apple Silicon hosts can exercise the EFI handoff path as far as possible.
 
 #include "hal_c_abi.h"
+#include "axion_startup_shell.h"
 
 #include <stdint.h>
 
@@ -432,23 +433,16 @@ static EFI_STATUS write_startup_status(EFI_HANDLE image_handle,
 
 static EFI_STATUS write_startup_shell(EFI_HANDLE image_handle,
                                       EFI_SYSTEM_TABLE* system_table) {
-  char shell_report[1024];
-  unsigned long cursor = 0;
   EFI_FILE_PROTOCOL* root = 0;
   EFI_STATUS status = open_root_volume(image_handle, system_table, &root);
   if (status != EFI_SUCCESS) {
     return status;
   }
 
-  shell_report[0] = 0;
-  append_cstr(shell_report, sizeof(shell_report), &cursor, "AXION_STARTUP_SHELL\n");
-  append_cstr(shell_report, sizeof(shell_report), &cursor, "prompt=axion> \n");
-  append_cstr(shell_report, sizeof(shell_report), &cursor, "mode=typed-builtins\n");
-  append_cstr(shell_report, sizeof(shell_report), &cursor, "commands=help,profile,session status,show session,session refs,store put <text>,store ls,store get <ref>,show ref <canonref>,store rm <ref>,history,history show durable,clear\n");
-  append_cstr(shell_report, sizeof(shell_report), &cursor, "history_anchor=durable\n");
-  append_cstr(shell_report, sizeof(shell_report), &cursor, "session_view=local+durable\n");
-
-  status = write_root_file(root, kStartupShellPath, shell_report, ascii_length(shell_report));
+  status = write_root_file(root,
+                           kStartupShellPath,
+                           kGeneratedStartupShell,
+                           ascii_length(kGeneratedStartupShell));
   root->Close(root);
   return status;
 }

@@ -594,6 +594,10 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/shell_demo.cpp)
   target_link_libraries(t81_ternaryos_shell_demo PRIVATE t81_ternaryos_shell)
 
+  add_executable(t81_ternaryos_shell_startup_snapshot
+    experimental/ternaryos/shell_startup_snapshot.cpp)
+  target_link_libraries(t81_ternaryos_shell_startup_snapshot PRIVATE t81_ternaryos_shell)
+
   if(T81_BUILD_TUI)
     add_executable(t81_ternaryos_shell_tui
       experimental/ternaryos/shell_tui.cpp)
@@ -616,6 +620,8 @@ if(T81_ENABLE_TERNARYOS)
     set(T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/BOOTAA64_shim.obj)
     set(T81_TERNARYOS_ARMV8_EFI ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/BOOTAA64.EFI)
     set(T81_TERNARYOS_ARMV8_EFI_CTRL ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/BOOTAA64_CTRL.EFI)
+    set(T81_TERNARYOS_ARMV8_STARTUP_SHELL_TXT ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/startup-shell-generated.txt)
+    set(T81_TERNARYOS_ARMV8_STARTUP_SHELL_HDR ${CMAKE_BINARY_DIR}/ternaryos/generated/axion_startup_shell.h)
     add_custom_command(
       OUTPUT ${T81_TERNARYOS_EFI_OBJ}
       COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
@@ -637,6 +643,18 @@ if(T81_ENABLE_TERNARYOS)
     list(APPEND T81_TERNARYOS_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_efi_obj)
 
     add_custom_command(
+      OUTPUT ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_TXT} ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_HDR}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/generated
+      COMMAND $<TARGET_FILE:t81_ternaryos_shell_startup_snapshot>
+              ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_HDR}
+      DEPENDS t81_ternaryos_shell_startup_snapshot)
+    add_custom_target(t81_ternaryos_shell_startup_snapshot_artifact
+      DEPENDS ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_TXT} ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_HDR})
+    list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_shell_startup_snapshot_artifact)
+
+    add_custom_command(
       OUTPUT ${T81_TERNARYOS_ARMV8_EFI_OBJ}
       COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
       COMMAND ${T81_LLVM_CLANG}
@@ -648,10 +666,12 @@ if(T81_ENABLE_TERNARYOS)
               -c
               ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_armv8_efi_stub.c
               -I${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos
+              -I${CMAKE_BINARY_DIR}/ternaryos/generated
               -o ${T81_TERNARYOS_ARMV8_EFI_OBJ}
       DEPENDS
               ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_armv8_efi_stub.c
-              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/hal_c_abi.h)
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/hal_c_abi.h
+              ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_HDR})
     add_custom_target(t81_ternaryos_virtualbox_armv8_efi_obj
       DEPENDS ${T81_TERNARYOS_ARMV8_EFI_OBJ})
     list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_obj)

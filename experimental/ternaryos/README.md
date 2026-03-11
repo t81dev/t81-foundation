@@ -71,6 +71,7 @@ demo.cpp               Phase 4 hosted presentation demo
 shell_session.hpp/.cpp Phase 5 shell session backend over guest bootstrap
 shell_demo.cpp         Phase 5 verbose shell backend proof
 shell_tui.cpp          Phase 5 FTXUI shell frontend with snapshot mode
+shell_startup_snapshot.cpp Build-time shell snapshot generator for ARM EFI
 shell_session_test.cpp Phase 5 shell command / durable-history test
 
 tests/
@@ -295,6 +296,7 @@ Outputs:
 - `build/ternaryos/qemu_armv8_guest/boot-report.txt`
 - `build/ternaryos/qemu_armv8_guest/startup-status.txt`
 - `build/ternaryos/qemu_armv8_guest/startup-shell.txt`
+  - generated from the real Axion shell backend at build time, then embedded into the ARM EFI stub
 
 Current status:
 
@@ -316,7 +318,7 @@ Current status:
   - `storage_binding=virtualbox-ahci`
   - `display_binding=virtualbox-vmsvga`
   - `network_binding=virtualbox-e1000`
-- the current `startup-shell.txt` exposes the staged Axion shell surface under QEMU:
+- the current `startup-shell.txt` exposes the staged Axion shell surface under QEMU and is generated from the real shell backend at build time:
   - `prompt=axion>`
   - `mode=typed-builtins`
   - `history_anchor=durable`
