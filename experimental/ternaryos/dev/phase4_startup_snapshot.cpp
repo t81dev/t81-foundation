@@ -38,8 +38,12 @@ std::optional<std::string> build_phase4_report() {
   VBoxBootSpec spec;
   spec.ram_bytes = 128ULL * 1024ULL * 1024ULL;
 
-  const auto stored_block = make_block(0x51);
-  std::optional<t81::canonfs::CanonRef> stored_ref;
+  const auto first_block = make_block(0x51);
+  const auto second_block = make_block(0x52);
+  const auto third_block = make_block(0x53);
+  std::optional<t81::canonfs::CanonRef> first_ref;
+  std::optional<t81::canonfs::CanonRef> second_ref;
+  std::optional<t81::canonfs::CanonRef> third_ref;
 
   {
     HostedBlockDev backing(32, "phase4-startup-ahci");
@@ -50,8 +54,12 @@ std::optional<std::string> build_phase4_report() {
     if (hal_main(guest->boot_context) != 0) return std::nullopt;
 
     CanonStore store(*guest->storage.device);
-    stored_ref = store.put(stored_block);
-    if (!stored_ref.has_value()) return std::nullopt;
+    first_ref = store.put(first_block);
+    second_ref = store.put(second_block);
+    third_ref = store.put(third_block);
+    if (!first_ref.has_value() || !second_ref.has_value() || !third_ref.has_value()) {
+      return std::nullopt;
+    }
     if (!store.flush()) return std::nullopt;
   }
 
@@ -64,7 +72,21 @@ std::optional<std::string> build_phase4_report() {
 
   CanonStore store(*guest->storage.device);
   const std::size_t recovered_entries = store.rebuild_index();
-  const auto recovered_block = store.get(*stored_ref);
+  const auto recovered_first = store.get(*first_ref);
+  const auto recovered_second = store.get(*second_ref);
+  const auto recovered_third = store.get(*third_ref);
+
+  auto loaded_second_cycle = HostedBlockDev::load(backing_path);
+  if (!loaded_second_cycle.has_value()) return std::nullopt;
+  auto guest_second_cycle = bootstrap_virtualbox_guest(spec, *loaded_second_cycle);
+  if (!guest_second_cycle.has_value()) return std::nullopt;
+  if (hal_main(guest_second_cycle->boot_context) != 0) return std::nullopt;
+
+  CanonStore second_cycle_store(*guest_second_cycle->storage.device);
+  const std::size_t second_cycle_entries = second_cycle_store.rebuild_index();
+  const auto second_cycle_first = second_cycle_store.get(*first_ref);
+  const auto second_cycle_second = second_cycle_store.get(*second_ref);
+  const auto second_cycle_third = second_cycle_store.get(*third_ref);
 
   auto& display = *guest->display.device;
   auto& framebuffer = display.framebuffer();
@@ -100,8 +122,17 @@ std::optional<std::string> build_phase4_report() {
   report << "storage_flush_ops=" << ahci->flush_ops() << "\n";
   report << "ahci_irq=" << static_cast<unsigned>(ahci->ahci_info().irq) << "\n";
   report << "canonstore_recovered_entries=" << recovered_entries << "\n";
-  report << "canonstore_lookup=" << (recovered_block.has_value() ? "ok" : "missing") << "\n";
-  report << "canonref=" << stored_ref->hash.h.to_string() << "\n";
+  report << "canonstore_second_cycle_entries=" << second_cycle_entries << "\n";
+  report << "canonstore_inventory_count=3\n";
+  report << "canonstore_lookup_first=" << (recovered_first.has_value() ? "ok" : "missing") << "\n";
+  report << "canonstore_lookup_second=" << (recovered_second.has_value() ? "ok" : "missing") << "\n";
+  report << "canonstore_lookup_third=" << (recovered_third.has_value() ? "ok" : "missing") << "\n";
+  report << "canonstore_second_cycle_first=" << (second_cycle_first.has_value() ? "ok" : "missing") << "\n";
+  report << "canonstore_second_cycle_second=" << (second_cycle_second.has_value() ? "ok" : "missing") << "\n";
+  report << "canonstore_second_cycle_third=" << (second_cycle_third.has_value() ? "ok" : "missing") << "\n";
+  report << "canonref_first=" << first_ref->hash.h.to_string() << "\n";
+  report << "canonref_second=" << second_ref->hash.h.to_string() << "\n";
+  report << "canonref_third=" << third_ref->hash.h.to_string() << "\n";
   report << "display_binding=" << guest->display.binding_name << "\n";
   report << "display_present_count=" << display.present_count() << "\n";
   report << "display_rendered_glyphs=" << rendered_glyphs << "\n";
