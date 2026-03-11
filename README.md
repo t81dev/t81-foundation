@@ -64,9 +64,29 @@ graph LR
 | :--- | :--- | :--- | :--- |
 | **`TISC` ISA** | **The Instruction Set Structure** | **Frozen** | The stable serialization format and operations contract for data routing, structural flow, and mathematical operations. |
 | **`T81VM`** | **The Reference Runtime Path** | **Beta** | A custom virtual machine executing `TISC`. Mathematically bounds execution down to the trit (base-3). |
-| **`Axion`** | **The Kernel Policy Engine** | **Beta** | A dynamic constraint framework executing directly within the VM dispatch loop, allowing absolute enforcement over recursion, operations, and ethics limits. |
+| **`Axion`** | **The Experimental Ternary-Native OS** | **Alpha** | The current working name for the operating system built on the T81 stack. Today it combines HAL, storage, shell, and policy-governed runtime seams, with local bring-up proven in hosted mode and QEMU AArch64. |
 | **`CanonFS`**| **The Identity Filesystem** | **Beta** | Files exist as hash-addressed `.tisc` byte arrays, providing flawless structural verification and tampering prevention. |
 | **`T81Lang`**| **The Language Frontend** | **Beta** | An ergonomic wrapper compiling strictly into `TISC`, exposing strongly-typed tensor behaviors, options, and numeric safety. |
+
+## Axion
+
+`Axion` is the current working name for the experimental ternary-native OS inside
+the T81 Foundation stack. It is not the umbrella project name; `T81 Foundation`
+remains the broader ecosystem, while `Axion` names the operating system built on
+top of `T81VM`, `CanonFS`, and the existing runtime/policy model.
+
+Current label:
+- `Axion v0.1.0-alpha`
+
+Current local proof includes:
+- hosted Phase 4 storage, display, and network seams
+- an early Phase 5 Axion Shell with typed built-ins
+- QEMU AArch64 EFI bring-up with observable boot/report artifacts
+
+See:
+- [Axion README](experimental/ternaryos/docs/README.md)
+- [Axion Review Summary](experimental/ternaryos/docs/review_summary.md)
+- [Axion Shell Design](experimental/ternaryos/docs/axion_shell_design.md)
 
 
 ## 👀 Writing T81Lang
