@@ -344,9 +344,11 @@ narrower ready-backlog case when queued work is already mappable behind that
 stalled active item, including current ready-backlog depth and its retained
 high-water mark. Those summaries now also retain the stalled active address
 space alongside the ready queued address space it was holding behind FIFO, plus
-the ordinal of the latest stall event that produced that relationship. The next
-kernel slice is to keep that pager surface private while expanding
-backlog/load scheduling behavior before any public pager ABI or syscall design.
+the ordinal of the latest stall event that produced that relationship. The
+retained blocked-side state also carries the exact stall ordinal that exposed
+the ready queued address space. The next kernel slice is to keep that pager
+surface private while expanding backlog/load scheduling behavior before any
+public pager ABI or syscall design.
 
 The working execution note for this slice is:
 

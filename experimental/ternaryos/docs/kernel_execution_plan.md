@@ -165,6 +165,15 @@ The eleventh pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves that retained stall ordinal stays stable after
   the worker goes idle
 
+The twelfth pager-groundwork slice is now also complete:
+
+- runtime and fault diagnostics now retain the stall ordinal associated with
+  the last ready queued address space observed behind a stalled active item
+- postmortem pager-worker summaries can now correlate the retained blocked
+  address directly to the specific deterministic stall event that exposed it
+- HAL/kernel coverage now proves that retained blocked-address stall ordinal
+  stays stable after backlog drain
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable

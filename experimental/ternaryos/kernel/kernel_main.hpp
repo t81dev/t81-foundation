@@ -180,6 +180,7 @@ struct KernelRuntimeState {
     std::optional<AddressSpaceId> last_stalled_address_space_id{};
     std::optional<uint64_t> last_stall_cycle{};
     std::optional<AddressSpaceId> last_ready_backlog_address_space_id{};
+    std::optional<uint64_t> last_ready_backlog_cycle{};
   };
 
   struct Counters {
@@ -463,6 +464,7 @@ struct KernelRuntimeStatusView {
   std::optional<AddressSpaceId> pager_worker_last_stalled_address_space_id{};
   std::optional<uint64_t> pager_worker_last_stall_cycle{};
   std::optional<AddressSpaceId> pager_worker_last_ready_backlog_address_space_id{};
+  std::optional<uint64_t> pager_worker_last_ready_backlog_cycle{};
   std::size_t managed_service_count{0};
   std::size_t blocked_service_count{0};
   std::size_t suspended_service_count{0};
@@ -650,6 +652,7 @@ struct KernelFaultSummaryView {
   std::optional<AddressSpaceId> pager_worker_last_stalled_address_space_id{};
   std::optional<uint64_t> pager_worker_last_stall_cycle{};
   std::optional<AddressSpaceId> pager_worker_last_ready_backlog_address_space_id{};
+  std::optional<uint64_t> pager_worker_last_ready_backlog_cycle{};
   uint64_t service_lifecycle_transitions{0};
   std::optional<KernelFaultRecord> last_delivered_fault{};
   std::optional<AddressSpaceId> last_pager_address_space_id{};

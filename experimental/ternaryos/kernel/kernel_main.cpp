@@ -996,6 +996,8 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .pager_worker_last_stall_cycle = state.pager_worker.last_stall_cycle,
       .pager_worker_last_ready_backlog_address_space_id =
           state.pager_worker.last_ready_backlog_address_space_id,
+      .pager_worker_last_ready_backlog_cycle =
+          state.pager_worker.last_ready_backlog_cycle,
       .last_audit_event = state.last_audit_event,
       .last_service_transition_id = latest_service_transition.service_id,
       .last_service_transition_kind = latest_service_transition.kind,
@@ -1452,6 +1454,8 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
                   ++state.counters.pager_worker_ready_backlog_cycles;
                   state.pager_worker.last_ready_backlog_address_space_id =
                       work_item.handoff.address_space_id;
+                  state.pager_worker.last_ready_backlog_cycle =
+                      state.pager_worker.stall_cycles;
                 }
               }
               state.pager_worker.ready_backlog_high_watermark =
@@ -1595,6 +1599,8 @@ KernelServiceResult axion_kernel_service_request(
           .pager_worker_last_stall_cycle = state.pager_worker.last_stall_cycle,
           .pager_worker_last_ready_backlog_address_space_id =
               state.pager_worker.last_ready_backlog_address_space_id,
+          .pager_worker_last_ready_backlog_cycle =
+              state.pager_worker.last_ready_backlog_cycle,
           .managed_service_count = service_summary.managed_service_count,
           .blocked_service_count = service_summary.blocked_service_count,
           .suspended_service_count = service_summary.suspended_service_count,
