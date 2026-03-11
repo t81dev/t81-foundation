@@ -46,6 +46,25 @@ std::string make_startup_session_text(const t81::ternaryos::ShellSessionState& s
   return stream.str();
 }
 
+std::optional<std::string> make_startup_history_text() {
+  auto session = t81::ternaryos::ShellSession::create(true);
+  if (!session.has_value()) return std::nullopt;
+
+  for (const auto& command : t81::ternaryos::default_shell_command_sequence()) {
+    if (!session->execute_command(command)) return std::nullopt;
+  }
+  if (!session->execute_command("history show durable")) return std::nullopt;
+
+  const auto& state = session->state();
+  if (state.command_records.empty()) return std::nullopt;
+
+  std::ostringstream stream;
+  stream << "AXION_STARTUP_HISTORY\n";
+  stream << "command=history show durable\n";
+  stream << "result=" << state.command_records.back().result << "\n";
+  return stream.str();
+}
+
 std::string c_string_literal(std::string_view text) {
   std::ostringstream stream;
   stream << "\"";
@@ -85,8 +104,8 @@ bool write_file(const std::string& path, const std::string& contents) {
 }  // namespace
 
 int main(int argc, char** argv) {
-  if (argc != 5) {
-    std::fputs("usage: shell_startup_snapshot <shell-text> <shell-header> <session-text> <session-header>\n", stderr);
+  if (argc != 7) {
+    std::fputs("usage: shell_startup_snapshot <shell-text> <shell-header> <session-text> <session-header> <history-text> <history-header>\n", stderr);
     return 2;
   }
 
@@ -106,6 +125,15 @@ int main(int argc, char** argv) {
       "#pragma once\n"
       "static const char kGeneratedStartupSession[] = " +
       c_string_literal(session_text) + ";\n";
+  const auto history_text = make_startup_history_text();
+  if (!history_text.has_value()) {
+    std::fputs("failed to build startup history text\n", stderr);
+    return 1;
+  }
+  const std::string history_header =
+      "#pragma once\n"
+      "static const char kGeneratedStartupHistory[] = " +
+      c_string_literal(*history_text) + ";\n";
 
   if (!write_file(argv[1], shell_text)) {
     std::fputs("failed to write startup shell text\n", stderr);
@@ -121,6 +149,14 @@ int main(int argc, char** argv) {
   }
   if (!write_file(argv[4], session_header)) {
     std::fputs("failed to write startup session header\n", stderr);
+    return 1;
+  }
+  if (!write_file(argv[5], *history_text)) {
+    std::fputs("failed to write startup history text\n", stderr);
+    return 1;
+  }
+  if (!write_file(argv[6], history_header)) {
+    std::fputs("failed to write startup history header\n", stderr);
     return 1;
   }
   return 0;

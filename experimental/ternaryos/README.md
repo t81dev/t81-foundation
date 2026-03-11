@@ -299,6 +299,8 @@ Outputs:
   - generated from the real Axion shell backend at build time, then embedded into the ARM EFI stub
 - `build/ternaryos/qemu_armv8_guest/startup-session.txt`
   - backend-generated `show session` snapshot embedded into the ARM EFI stub
+- `build/ternaryos/qemu_armv8_guest/startup-history.txt`
+  - backend-generated durable-history snapshot embedded into the ARM EFI stub
 
 Current status:
 
@@ -331,6 +333,9 @@ Current status:
   - `session_command_count=6`
   - `durable_ref_count=1`
   - `durable_anchor=present`
+- the current `startup-history.txt` exposes a backend-generated durable-history view under QEMU:
+  - `command=history show durable`
+  - a durable CanonRef-backed history result from the real shell backend
 
 For an external reviewer, the current evidence split is:
 

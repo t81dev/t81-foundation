@@ -60,6 +60,8 @@ ARM diagnostic result:
 - local QEMU guest probes now also recover `startup-session.txt`, exposing a
   backend-generated `show session` snapshot with the active profile and durable
   state counts
+- local QEMU guest probes now also recover `startup-history.txt`, exposing a
+  backend-generated durable-history view derived from the real Axion shell backend
 - local VirtualBox ARM remains non-observable for EFI execution and is now only
   a secondary diagnostic lane
 - conclusion: the remaining blind spot is the local VirtualBox ARM path, not
