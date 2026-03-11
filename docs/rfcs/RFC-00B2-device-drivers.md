@@ -100,7 +100,10 @@ Overflow blocks are read in ascending tail order:
 ### 3.3  Durability contract
 
 `CanonStore::flush()` writes the in-memory index to LBA 0, then calls `IBlockDevice::flush()`.
-After flush, a new `CanonStore` opened on the same device can `rebuild_index()` and recover all blocks.
+After a successful flush, a new `CanonStore` opened on the same device can
+`rebuild_index()` and recover all blocks.
+If `flush()` fails, the durability contract is conservative: only the last
+previously successful flush is guaranteed to survive a reboot.
 If the header is missing, torn, or advertises an impossible entry count,
 `rebuild_index()` falls back to scanning the data region and recomputing hashes.
 

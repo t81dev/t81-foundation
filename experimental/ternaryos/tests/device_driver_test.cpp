@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <cstring>
 #include <filesystem>
+#include <optional>
 #include <string>
 
 using namespace t81::ternaryos::dev;
@@ -39,6 +40,40 @@ static t81::canonfs::CanonBlock make_block(uint8_t fill) {
   b.trytes.fill(fill);
   return b;
 }
+
+class FaultInjectingBlockDev final : public IBlockDevice {
+public:
+  explicit FaultInjectingBlockDev(HostedBlockDev& backing)
+      : backing_(backing) {}
+
+  void fail_write_on(std::optional<uint64_t> lba) { fail_write_lba_ = lba; }
+  void fail_flush_once() { fail_flush_once_ = true; }
+
+  BlockDeviceInfo info() const noexcept override { return backing_.info(); }
+  uint64_t block_count() const noexcept override { return backing_.block_count(); }
+
+  bool read_block(uint64_t lba, BlockData& out) const override {
+    return backing_.read_block(lba, out);
+  }
+
+  bool write_block(uint64_t lba, const BlockData& data) override {
+    if (fail_write_lba_ && *fail_write_lba_ == lba) return false;
+    return backing_.write_block(lba, data);
+  }
+
+  bool flush() override {
+    if (fail_flush_once_) {
+      fail_flush_once_ = false;
+      return false;
+    }
+    return backing_.flush();
+  }
+
+private:
+  HostedBlockDev&           backing_;
+  std::optional<uint64_t>   fail_write_lba_;
+  bool                      fail_flush_once_{false};
+};
 
 // ─── AC-D1: HostedBlockDev read/write round-trip ─────────────────────────────
 
@@ -640,6 +675,123 @@ static void test_virtualbox_guest_torn_header_recovery() {
   std::filesystem::remove(path);
 }
 
+// ─── AC-D3f: Guest bootstrap interrupted flush preserves last durable state ─
+
+static void test_virtualbox_guest_interrupted_flush_recovery() {
+  std::printf("\n[D3f] VirtualBox guest interrupted flush preserves durable state\n");
+
+  const std::string path = "/tmp/ternos_test_vbox_guest_interrupted_flush.blk";
+  VBoxBootSpec spec;
+  spec.ram_bytes = 128ULL * 1024 * 1024;
+
+  auto durable_a = make_block(0x91);
+  auto durable_b = make_block(0x92);
+  auto pending_c = make_block(0x93);
+  t81::canonfs::CanonRef ref_a, ref_b, ref_c;
+
+  {
+    HostedBlockDev backing(32, "vbox-guest-interrupted-flush");
+    backing.set_backing_file(path);
+
+    auto guest = bootstrap_virtualbox_guest(spec, backing);
+    check(guest.has_value(), "bootstrap_virtualbox_guest succeeds for durable baseline");
+    if (!guest) {
+      std::filesystem::remove(path);
+      return;
+    }
+
+    CanonStore store(*guest->storage.device);
+    auto a = store.put(durable_a);
+    auto b = store.put(durable_b);
+    check(a.has_value(), "first durable block stores successfully");
+    check(b.has_value(), "second durable block stores successfully");
+    if (!a || !b) {
+      std::filesystem::remove(path);
+      return;
+    }
+    ref_a = *a;
+    ref_b = *b;
+    check(store.flush(), "baseline guest flush succeeds");
+  }
+
+  auto loaded = HostedBlockDev::load(path);
+  check(loaded.has_value(), "device reloads for interrupted flush injection");
+  if (!loaded) {
+    std::filesystem::remove(path);
+    return;
+  }
+  loaded->set_backing_file(path);
+
+  FaultInjectingBlockDev fault_dev(*loaded);
+  auto guest = bootstrap_virtualbox_guest(spec, fault_dev);
+  check(guest.has_value(), "bootstrap_virtualbox_guest succeeds over fault-injecting device");
+  if (!guest) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  CanonStore store(*guest->storage.device);
+  check(store.rebuild_index() == 2, "fault-injecting guest rebuilds the durable baseline");
+  auto c = store.put(pending_c);
+  check(c.has_value(), "pending block stores in memory before interrupted flush");
+  if (!c) {
+    std::filesystem::remove(path);
+    return;
+  }
+  ref_c = *c;
+
+  fault_dev.fail_flush_once();
+  check(!store.flush(), "interrupted guest flush returns false");
+
+  auto reloaded_after_failure = HostedBlockDev::load(path);
+  check(reloaded_after_failure.has_value(), "device reloads after interrupted flush");
+  if (!reloaded_after_failure) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  auto guest_after_failure = bootstrap_virtualbox_guest(spec, *reloaded_after_failure);
+  check(guest_after_failure.has_value(), "bootstrap_virtualbox_guest succeeds after interrupted flush");
+  if (!guest_after_failure) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  CanonStore recovered_after_failure(*guest_after_failure->storage.device);
+  check(recovered_after_failure.rebuild_index() == 2,
+        "rebuild_index sees only the last durable state after interrupted flush");
+  check(recovered_after_failure.get(ref_a).has_value(),
+        "first durable CanonRef survives interrupted flush");
+  check(recovered_after_failure.get(ref_b).has_value(),
+        "second durable CanonRef survives interrupted flush");
+  check(!recovered_after_failure.get(ref_c).has_value(),
+        "non-durable CanonRef is absent after interrupted flush");
+
+  check(store.flush(), "retry flush succeeds after transient failure");
+
+  auto reloaded_after_retry = HostedBlockDev::load(path);
+  check(reloaded_after_retry.has_value(), "device reloads after retry flush");
+  if (!reloaded_after_retry) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  auto guest_after_retry = bootstrap_virtualbox_guest(spec, *reloaded_after_retry);
+  check(guest_after_retry.has_value(), "bootstrap_virtualbox_guest succeeds after retry flush");
+  if (!guest_after_retry) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  CanonStore recovered_after_retry(*guest_after_retry->storage.device);
+  check(recovered_after_retry.rebuild_index() == 3,
+        "rebuild_index includes the pending block after a successful retry");
+  check(recovered_after_retry.get(ref_c).has_value(),
+        "pending CanonRef becomes durable after retry flush");
+
+  std::filesystem::remove(path);
+}
+
 // ─── AC-D7: hash verification on corrupted block ─────────────────────────────
 
 static void test_canon_store_corruption_detection() {
@@ -863,6 +1015,7 @@ int main() {
   test_virtualbox_guest_rebuild_after_corruption();
   test_virtualbox_guest_capacity_reboot();
   test_virtualbox_guest_torn_header_recovery();
+  test_virtualbox_guest_interrupted_flush_recovery();
   test_canon_store_corruption_detection();
   test_framebuffer();
   test_ttf_rendering();

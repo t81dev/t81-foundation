@@ -124,7 +124,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `dev/ttf.hpp/.cpp` | Minimal Ternary Text Format codec + framebuffer text renderer for ASCII terminal output | 12 |
 | `dev/net_packet.hpp` | Ternary Ethernet packet wrapper with payload validation, canonical content hash, and binary frame encode/decode | 18 |
 | `demo.cpp` | Presentation demo: VirtualBox guest bootstrap over hosted storage binding, reboot-persistent CanonStore, TTF framebuffer output, and Ethernet frame round-trip | — |
-| `tests/device_driver_test.cpp` | Phase 4 acceptance tests AC-D1 through AC-D8 plus VirtualBox AHCI/E1000/VMSVGA adapter scaffolds, hosted TTF rendering, Ethernet frame translation checks, repeated guest-bootstrap reboot persistence, recovery after index-header and payload corruption, multi-block CanonStore persistence beyond the 17-entry root-header threshold, and torn-header fallback recovery | 322 |
+| `tests/device_driver_test.cpp` | Phase 4 acceptance tests AC-D1 through AC-D8 plus VirtualBox AHCI/E1000/VMSVGA adapter scaffolds, hosted TTF rendering, Ethernet frame translation checks, repeated guest-bootstrap reboot persistence, recovery after index-header and payload corruption, multi-block CanonStore persistence beyond the 17-entry root-header threshold, torn-header fallback recovery, and interrupted-flush durability through the guest path | 342 |
 
 #### Design notes
 
@@ -142,9 +142,10 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 - The old 17-entry single-block threshold is no longer the effective store limit: the hosted suite now pushes CanonStore through multiple metadata blocks behind the VirtualBox bootstrap, flushes, reboots, rebuilds, and verifies every stored CanonRef survives intact.
 - Interrupted persistence is covered more directly now: when the header keeps its magic but advertises an impossible entry count, the guest-bootstrap path rejects the torn index and still recovers every intact payload block by rescanning the AHCI-backed data region.
 - Threshold crossing is covered directly too: the suite now proves CanonStore can persist and rebuild entries that spill past the root header into tail-resident overflow metadata blocks without changing the guest-bootstrap seam.
+- Guest-path durability semantics are now explicit under transient failure: if `flush()` fails after new blocks are written in memory, reboot still exposes only the last durable state, and a later successful retry makes the pending CanonRef durable.
 - Real NVMe/ethernet hardware adapters remain open.
 
-**Phase 4 test total: 322 / 322**
+**Phase 4 test total: 342 / 342**
 
 ---
 
@@ -165,8 +166,8 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_mmu_test` | 47 | 2 |
 | `t81_ternaryos_scheduler_test` | 120 | 3 |
 | `t81_ternaryos_ipc_test` | 73 | 3 |
-| `t81_ternaryos_device_driver_test` | 322 | 4 |
-| **Total** | **717** | |
+| `t81_ternaryos_device_driver_test` | 342 | 4 |
+| **Total** | **737** | |
 
 Run all TernOS tests:
 
