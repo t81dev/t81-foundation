@@ -338,6 +338,14 @@ struct KernelRuntimeStatusView {
   uint64_t scheduler_ticks{0};
   uint64_t ipc_messages_sent{0};
   uint64_t ipc_messages_received{0};
+  std::size_t managed_service_count{0};
+  std::size_t blocked_service_count{0};
+  std::size_t suspended_service_count{0};
+  std::size_t unhealthy_service_count{0};
+  uint64_t service_lifecycle_transitions{0};
+  std::optional<ServiceId> last_service_transition_id{};
+  std::optional<KernelAuditEventKind> last_service_transition_kind{};
+  std::optional<uint64_t> last_service_transition_sequence{};
 };
 
 struct KernelProcessGroupStatusView {

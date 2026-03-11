@@ -1270,6 +1270,12 @@ static void test_kernel_service_runtime_views() {
           "runtime status reports deterministic memory-map count");
     check(runtime_result.runtime->platform_id == hosted_ctx.platform_id,
           "runtime status reports platform id");
+    check(runtime_result.runtime->managed_service_count == 0,
+          "runtime status starts with zero managed services");
+    check(runtime_result.runtime->service_lifecycle_transitions == 0,
+          "runtime status starts with zero service lifecycle transitions");
+    check(!runtime_result.runtime->last_service_transition_kind.has_value(),
+          "runtime status starts without service transition metadata");
   }
 
   auto hosted_device_result = axion_kernel_service_request(
@@ -2656,6 +2662,38 @@ static void test_kernel_service_runtime_layer() {
           "fault summary exposes the latest service lifecycle audit sequence after heal");
   }
 
+  auto runtime_status_after_heal = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::RuntimeStatus,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+      });
+  check(runtime_status_after_heal.status == KernelServiceStatus::Ok,
+        "healthy group can request runtime status after service heal");
+  check(runtime_status_after_heal.rejection == KernelServiceRequestRejection::None,
+        "runtime status after heal clears rejection");
+  check(runtime_status_after_heal.runtime.has_value(),
+        "runtime status after heal returns a runtime view");
+  if (runtime_status_after_heal.runtime) {
+    check(runtime_status_after_heal.runtime->managed_service_count == 1,
+          "runtime status reports one managed service after heal");
+    check(runtime_status_after_heal.runtime->blocked_service_count == 0,
+          "runtime status reports zero blocked services after heal");
+    check(runtime_status_after_heal.runtime->suspended_service_count == 0,
+          "runtime status reports zero suspended services after heal");
+    check(runtime_status_after_heal.runtime->unhealthy_service_count == 0,
+          "runtime status reports zero unhealthy services after heal");
+    check(runtime_status_after_heal.runtime->service_lifecycle_transitions == 7,
+          "runtime status aggregates service lifecycle transitions after heal");
+    check(runtime_status_after_heal.runtime->last_service_transition_id == service_id,
+          "runtime status tracks the last transitioned service after heal");
+    check(runtime_status_after_heal.runtime->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceMarkedHealthy,
+          "runtime status tracks heal as the latest service lifecycle event");
+    check(runtime_status_after_heal.runtime->last_service_transition_sequence.has_value(),
+          "runtime status exposes the latest service lifecycle audit sequence after heal");
+  }
+
   auto audit_summary = axion_kernel_service_request(
       *state,
       KernelServiceRequest{
@@ -2918,6 +2956,31 @@ static void test_kernel_service_runtime_layer() {
           "fault summary tracks unregister as the latest service lifecycle event");
     check(fault_summary_after_unregister.fault_summary->last_service_transition_sequence.has_value(),
           "fault summary retains the latest service lifecycle audit sequence after unregister");
+  }
+  auto runtime_status_after_unregister = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::RuntimeStatus,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+      });
+  check(runtime_status_after_unregister.status == KernelServiceStatus::Ok,
+        "healthy group can request runtime status after unregister");
+  check(runtime_status_after_unregister.rejection == KernelServiceRequestRejection::None,
+        "runtime status after unregister clears rejection");
+  check(runtime_status_after_unregister.runtime.has_value(),
+        "runtime status after unregister returns a runtime view");
+  if (runtime_status_after_unregister.runtime) {
+    check(runtime_status_after_unregister.runtime->managed_service_count == 0,
+          "runtime status reports zero managed services after unregister");
+    check(runtime_status_after_unregister.runtime->service_lifecycle_transitions == 8,
+          "runtime status retains lifecycle transition count after unregister");
+    check(runtime_status_after_unregister.runtime->last_service_transition_id == service_id,
+          "runtime status retains the last transitioned service after unregister");
+    check(runtime_status_after_unregister.runtime->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceUnregistered,
+          "runtime status tracks unregister as the latest service lifecycle event");
+    check(runtime_status_after_unregister.runtime->last_service_transition_sequence.has_value(),
+          "runtime status retains the latest service lifecycle audit sequence after unregister");
   }
   check(!state->audit_log.empty(), "service lifecycle actions produce audit records");
   if (!state->audit_log.empty()) {

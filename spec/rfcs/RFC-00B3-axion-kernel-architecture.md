@@ -293,6 +293,9 @@ state.
 The fault-summary view now also carries the latest managed-service lifecycle
 metadata so fault-side polling can stay aligned with the same convergence
 surface.
+The runtime-status view now also carries aggregate managed-service lifecycle
+metadata so the top-level runtime summary stays aligned with the same stable
+service state.
 The next step is to keep that layer stable and only then consider any further
 lifecycle action or boundary growth.
 

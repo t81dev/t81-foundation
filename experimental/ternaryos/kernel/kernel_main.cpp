@@ -192,6 +192,38 @@ LatestServiceTransitionView latest_service_transition_view(
   return latest;
 }
 
+struct RuntimeServiceSummary {
+  std::size_t managed_service_count{0};
+  std::size_t blocked_service_count{0};
+  std::size_t suspended_service_count{0};
+  std::size_t unhealthy_service_count{0};
+  uint64_t service_lifecycle_transitions{0};
+};
+
+RuntimeServiceSummary runtime_service_summary(const KernelRuntimeState& state) {
+  RuntimeServiceSummary summary;
+  for (const auto& [_, service_state] : state.services) {
+    if (!service_state.registered) {
+      continue;
+    }
+    ++summary.managed_service_count;
+    if (service_state.blocked) {
+      ++summary.blocked_service_count;
+    }
+    if (service_state.suspended) {
+      ++summary.suspended_service_count;
+    }
+    if (service_state.unhealthy) {
+      ++summary.unhealthy_service_count;
+    }
+  }
+  for (const auto& [_, supervisor_state] : state.supervisors) {
+    summary.service_lifecycle_transitions +=
+        supervisor_state.service_lifecycle_transitions;
+  }
+  return summary;
+}
+
 bool queue_supervisor_pending_group(KernelRuntimeState& state,
                                     ProcessGroupId process_group_id,
                                     sched::Tid subject_tid,
@@ -952,6 +984,8 @@ KernelServiceResult axion_kernel_service_request(
                 : KernelServiceRequestRejection::FaultedRequestingGroup;
         return result;
       }
+      const auto service_summary = runtime_service_summary(state);
+      const auto latest_service_transition = latest_service_transition_view(state);
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceRequestRejection::None;
       result.runtime = KernelRuntimeStatusView{
@@ -962,6 +996,14 @@ KernelServiceResult axion_kernel_service_request(
           .scheduler_ticks = state.counters.scheduler_ticks,
           .ipc_messages_sent = state.counters.ipc_messages_sent,
           .ipc_messages_received = state.counters.ipc_messages_received,
+          .managed_service_count = service_summary.managed_service_count,
+          .blocked_service_count = service_summary.blocked_service_count,
+          .suspended_service_count = service_summary.suspended_service_count,
+          .unhealthy_service_count = service_summary.unhealthy_service_count,
+          .service_lifecycle_transitions = service_summary.service_lifecycle_transitions,
+          .last_service_transition_id = latest_service_transition.service_id,
+          .last_service_transition_kind = latest_service_transition.kind,
+          .last_service_transition_sequence = latest_service_transition.sequence,
       };
       return result;
     }
