@@ -1,7 +1,7 @@
 # TernOS Implementation Progress
 
 **Last updated:** 2026-03-10
-**Commit:** `working tree`
+**Commit:** `07b67c23`
 **Branch:** `main`
 
 Reference docs:
@@ -9,6 +9,7 @@ Reference docs:
 - RFC-00B0 (HAL): [docs/rfcs/RFC-00B0-hal-spec.md](../../docs/rfcs/RFC-00B0-hal-spec.md)
 - RFC-00B1 (MMU): [docs/rfcs/RFC-00B1-ternary-mmu.md](../../docs/rfcs/RFC-00B1-ternary-mmu.md)
 - RFC-00B2 (Drivers): [docs/rfcs/RFC-00B2-device-drivers.md](../../docs/rfcs/RFC-00B2-device-drivers.md)
+- x86_64 handoff: [virtualbox_x86_64_handoff.md](virtualbox_x86_64_handoff.md)
 
 ---
 
@@ -52,6 +53,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - With `lld` installed locally, the ARMv8 developer lane can now emit a real `BOOTAA64.EFI`; however, that image is still linked through a developer-lane shim rather than the true C++ HAL bridge.
 - The ARMv8 artifact layout has been tightened for local debugging: the staged disk now places `STARTUP.NSH` at both `/STARTUP.NSH` and `/EFI/BOOT/STARTUP.NSH`, and the shell script attempts to leave a `TERNOS/startup-ran.txt` marker before chaining to `BOOTAA64.EFI`.
 - Even with that stronger shell fallback, current Apple Silicon VirtualBox runs still show no execution evidence: the VM attaches the VDI correctly, but local probes still produce an empty UART log and no `startup-ran.txt` or `efi-ran.txt` markers on the post-boot disk.
+- Program decision: stop escalating local ARMv8 boot-layout experiments and prepare the official `x86_64` acceptance lane as a handoff package instead; the runbook for that external validation path is now checked in.
 
 **Phase 1 test total: 155 / 155**
 

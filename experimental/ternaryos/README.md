@@ -2,6 +2,7 @@
 
 **Status:** Experimental — non-DCP, not governance-gated.
 **Progress:** [PROGRESS.md](PROGRESS.md) ← start here
+**x86_64 Handoff:** [virtualbox_x86_64_handoff.md](virtualbox_x86_64_handoff.md)
 **Roadmap:** [docs/research/ternary_os_roadmap.md](../../docs/research/ternary_os_roadmap.md)
 **RFC-00B0 (HAL):** [docs/rfcs/RFC-00B0-hal-spec.md](../../docs/rfcs/RFC-00B0-hal-spec.md)
 **RFC-00B1 (MMU):** [docs/rfcs/RFC-00B1-ternary-mmu.md](../../docs/rfcs/RFC-00B1-ternary-mmu.md)
@@ -169,6 +170,10 @@ Program rule:
 - do not retarget the roadmap to `ARMv8`
 - use the local ARMv8 host to keep artifact/tooling work moving
 - reserve final VirtualBox guest boot proof for an `x86_64`-capable host
+
+If no local `x86_64` host is available, use the handoff runbook:
+
+- [virtualbox_x86_64_handoff.md](virtualbox_x86_64_handoff.md)
 
 ## Promotion Path
 
