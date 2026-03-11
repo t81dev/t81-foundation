@@ -17,6 +17,9 @@ Naming note:
 - network: `E1000`-shaped binding over ternary packet/frame translation
 - display: `VMSVGA`-shaped binding over the ternary framebuffer + TTF renderer
 
+The next kernel-integration path is now explicit in
+[RFC-00B3: Axion Kernel Architecture](../../../docs/rfcs/RFC-00B3-axion-kernel-architecture.md).
+
 The official promotion target remains:
 
 - `x86_64`
@@ -135,6 +138,8 @@ Expected bundle contents:
 
 ## Program Recommendation
 
-Do not add more local implementation until the `x86_64` VirtualBox result comes
-back. The highest-value next step is external validation, not more local
-feature work.
+Do not treat subsystem growth as the only path forward. The current local
+kernel path is now:
+
+- keep the external `x86_64` VirtualBox validation ask open
+- use RFC-00B3 as the implementation path for kernel integration after `hal_main`

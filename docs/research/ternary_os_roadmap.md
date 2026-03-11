@@ -20,6 +20,12 @@ As of **2026-03-10**, the project has completed:
 - **Phase 2:** Ternary MMU prototype
 - **Phase 3:** Kernel scheduling and IPC
 
+Kernel integration direction is now tracked explicitly in
+[RFC-00B3: Axion Kernel Architecture](../rfcs/RFC-00B3-axion-kernel-architecture.md).
+That RFC defines the next path after subsystem bring-up: converge HAL handoff,
+MMU fault handling, scheduler, IPC, and minimal device arbitration into a
+kernel-owned runtime entry.
+
 The roadmap is now centered on promotion of those layers from `experimental/` into mainline, plus delivery of the Phase 4 driver layer needed for a reboot-persistent CanonFS system. The concrete promotion environment is a **VirtualBox-first virtual machine target**: Axion should graduate from hosted process simulation into a bootable guest image that runs under VirtualBox before any real-hardware push.
 
 ---
@@ -141,6 +147,8 @@ Implemented outcome:
 - RFC-00B1 defines a 30-trit TVA layout with a 10-trit page offset and 20-trit VPN.
 - `TernaryPageAllocator` manages physical pages using balanced-ternary page states.
 - The current MMU now uses a 20-trit ternary radix page table behind the stable `mmu_*` API.
+- The current MMU also classifies `InvalidTva`, `Unmapped`, and `PermissionDenied`
+  faults through a checked translation path.
 
 ### Phase 3 — Kernel Scheduling & IPC
 
@@ -156,6 +164,9 @@ Implemented outcome:
 - The run queue preserves deterministic insertion-order round-robin behavior across 81 slots.
 - `Scheduler::tick()` performs save/preempt/select/restore and returns `true` only for genuine thread switches.
 - IPC is implemented as CanonRef-safe FIFO inboxes with per-recipient depth caps.
+- RFC-00B3 now defines the next required integration step: move these Phase 1-3
+  subsystems under a kernel-owned entry/runtime instead of letting them remain
+  adjacent prototypes.
 
 ### Phase 4 — Device Drivers & I/O
 

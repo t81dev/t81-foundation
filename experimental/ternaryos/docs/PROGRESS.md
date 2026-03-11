@@ -12,7 +12,7 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-11
-**Commit:** `40a1843e`
+**Commit:** `0b8ab5d8`
 **Branch:** `main`
 
 Reference docs:
@@ -20,6 +20,7 @@ Reference docs:
 - RFC-00B0 (HAL): [docs/rfcs/RFC-00B0-hal-spec.md](../../../docs/rfcs/RFC-00B0-hal-spec.md)
 - RFC-00B1 (MMU): [docs/rfcs/RFC-00B1-ternary-mmu.md](../../../docs/rfcs/RFC-00B1-ternary-mmu.md)
 - RFC-00B2 (Drivers): [docs/rfcs/RFC-00B2-device-drivers.md](../../../docs/rfcs/RFC-00B2-device-drivers.md)
+- RFC-00B3 (Kernel): [docs/rfcs/RFC-00B3-axion-kernel-architecture.md](../../../docs/rfcs/RFC-00B3-axion-kernel-architecture.md)
 - x86_64 handoff: [virtualbox_x86_64_handoff.md](virtualbox_x86_64_handoff.md)
 - Axion shell design: [axion_shell_design.md](axion_shell_design.md)
 
@@ -123,6 +124,7 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - Round-robin is deterministic: `rr_index_` advances through `slots_` in insertion order; 81-slot cap mirrors Hanoi scheduler.
 - `CanonRef` handles (not raw pointers) cross IPC boundaries, preserving CanonFS audit trail invariants.
 - OQ-5 (Axion determinism under pre-emption) is still open — governance audit trail not yet extended for async interleaving.
+- RFC-00B3 now defines the next integration step: HAL, MMU fault handling, scheduler, IPC, and device arbitration should converge on a kernel-owned runtime entry instead of remaining adjacent subsystem proofs.
 
 **Phase 3 test total: 193 / 193**
 

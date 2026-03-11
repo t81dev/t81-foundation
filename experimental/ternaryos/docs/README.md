@@ -9,11 +9,16 @@
 **RFC-00B0 (HAL):** [docs/rfcs/RFC-00B0-hal-spec.md](../../../docs/rfcs/RFC-00B0-hal-spec.md)
 **RFC-00B1 (MMU):** [docs/rfcs/RFC-00B1-ternary-mmu.md](../../../docs/rfcs/RFC-00B1-ternary-mmu.md)
 **RFC-00B2 (Drivers):** [docs/rfcs/RFC-00B2-device-drivers.md](../../../docs/rfcs/RFC-00B2-device-drivers.md)
+**RFC-00B3 (Kernel):** [docs/rfcs/RFC-00B3-axion-kernel-architecture.md](../../../docs/rfcs/RFC-00B3-axion-kernel-architecture.md)
 
 Prototype implementation of Axion, the current working name for the ternary-native
 OS kernel on the T81VM runtime. Phases 1 through 3 are complete, Phase 4
 device-driver work is in progress, and Phase 5 now has a first typed shell/TUI
 path on top of the hosted guest-bootstrap path.
+
+Kernel integration direction is now tracked explicitly in RFC-00B3. That RFC is
+the current path for turning the existing HAL/MMU/scheduler/IPC subsystems into
+one kernel-owned runtime unit instead of letting them grow organically.
 
 Current working release label: `Axion v0.1.0-alpha`
 
