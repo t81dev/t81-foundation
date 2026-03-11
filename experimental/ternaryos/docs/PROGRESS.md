@@ -168,11 +168,11 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | File | Purpose | Tests |
 | :--- | :--- | :---: |
-| `shell/shell_session.hpp/.cpp` | Shared Phase 5 shell-session backend: executes a minimal typed shell command model (`help`, `profile`, `show profile`, `session status`, `session show durable`, `show session`, `session refs`, `store put <text>`, `store put ref <ref>`, `store ls`, `store get <ref>`, `show ref <canonref>`, `store rm <ref>`, `history`, `history show session`, `history show durable`, `clear`) through the VirtualBox guest-bootstrap path, persists shell history through CanonStore, reboots, recovers it, and exposes deterministic transcript/framebuffer state to frontends | — |
+| `shell/shell_session.hpp/.cpp` | Shared Phase 5 shell-session backend: executes a minimal typed shell command model (`help`, `profile`, `show profile`, `session status`, `session checkpoint`, `session show durable`, `show session`, `session refs`, `store put <text>`, `store put ref <ref>`, `store ls`, `store get <ref>`, `show ref <canonref>`, `store rm <ref>`, `history`, `history show session`, `history show durable`, `clear`) through the VirtualBox guest-bootstrap path, persists shell history through CanonStore, reboots, recovers it, and exposes deterministic transcript/framebuffer state to frontends | — |
 | `apps/shell_demo.cpp` | Verbose Phase 5 backend proof: prints the built-in shell session and framebuffer evidence directly to stdout | — |
 | `apps/shell_tui.cpp` | First FTXUI-based TernOS shell frontend with transcript pane, command buffer, session pane, builtins pane, framebuffer preview, interactive typed command execution, and `--snapshot` render mode | — |
 | `shell/shell_startup_snapshot.cpp` | Build-time Axion shell snapshot generator: runs the real Phase 5 shell backend, emits compact startup-shell, startup-session, startup-history, startup-store, startup-ref, and startup-report artifacts, and produces the generated headers embedded by the ARM EFI developer-lane stub | — |
-| `tests/shell_session_test.cpp` | Phase 5 shell acceptance test: scripted durable-history path plus interactive typed-command execution, object-native profile/session inspection, durable-anchor inspection, quoted payload parsing, canonical object composition via `store put ref <ref>`, session-history inspection, store ref listing, store ref retrieval, durable ref removal, explicit durable-history inspection, transcript clearing, and parse-error handling through the guest-bootstrap seam | 91 |
+| `tests/shell_session_test.cpp` | Phase 5 shell acceptance test: scripted durable-history path plus interactive typed-command execution, object-native profile/session inspection, session-checkpoint persistence, durable-anchor inspection, quoted payload parsing, canonical object composition via `store put ref <ref>`, session-history inspection, store ref listing, store ref retrieval, durable ref removal, explicit durable-history inspection, transcript clearing, and parse-error handling through the guest-bootstrap seam | 100 |
 | `docs/axion_shell_design.md` | Phase 5 shell design note: positioning, grammar, screen model, and milestone sequence for evolving the current built-in shell into a real Axion shell | — |
 
 #### Design notes
@@ -181,7 +181,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 - The current shell path is intentionally narrow: it now supports interactive typed command execution in the TUI, but it still does not execute TISC userland and does not introduce a syscall surface.
 - Its value is architectural: user-facing output now rides the same guest-bootstrap storage and display seams already proven in Phase 4.
 - The shell UI now uses the repo's established FTXUI stack instead of a one-off terminal surface, and `--snapshot` still gives it a deterministic review/debug mode.
-- The old fixed transcript is gone: the current shell transcript now comes from command handlers for `help`, `profile`, `show profile`, `session status`, `session show durable`, `show session`, `session refs`, `store put <text>`, `store put ref <ref>`, `store ls`, `store get <ref>`, `show ref <canonref>`, `store rm <ref>`, `history`, `history show session`, `history show durable`, and `clear`.
+- The old fixed transcript is gone: the current shell transcript now comes from command handlers for `help`, `profile`, `show profile`, `session status`, `session checkpoint`, `session show durable`, `show session`, `session refs`, `store put <text>`, `store put ref <ref>`, `store ls`, `store get <ref>`, `show ref <canonref>`, `store rm <ref>`, `history`, `history show session`, `history show durable`, and `clear`.
 - The live TUI now accepts typed commands directly, including quoted `store put` payloads, and the shell test target now covers scripted durability, interactive typed command execution, session-state reporting, object-native session/ref inspection, shell-local durable ref inspection, explicit durable-history inspection, store ref inspection/removal, transcript clearing, and parser errors.
 - The shell state now distinguishes the local session window from durable CanonStore state instead of treating them as one undifferentiated history stream, and the command surface now reflects that split explicitly.
 - The shell now has its first object-native read/write grammar: `show profile`, `show session`, `show ref <canonref>`, `session show durable`, `history show session`, and `store put ref <ref>`.
@@ -200,8 +200,8 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_scheduler_test` | 120 | 3 |
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
-| `t81_ternaryos_shell_session_test` | 91 | 5 |
-| **Total** | **828** | |
+| `t81_ternaryos_shell_session_test` | 100 | 5 |
+| **Total** | **837** | |
 
 Run all TernOS tests:
 

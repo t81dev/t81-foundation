@@ -26,9 +26,10 @@ The official promotion target remains:
 
 Hosted proof is strong on the current branch:
 
-- all 7 TernOS test binaries pass
-- total assertions: `737`
+- all 8 TernOS test binaries pass
+- total assertions: `837`
 - `t81_ternaryos_device_driver_test`: `342/342`
+- `t81_ternaryos_shell_session_test`: `100/100`
 
 Phase 4 storage proof now covers:
 

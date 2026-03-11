@@ -102,7 +102,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 754/754 assertions, 8/8 tests pass
+# Expected: 837/837 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -168,6 +168,7 @@ What the TUI adds:
   - `profile`
   - `show profile`
   - `session status`
+  - `session checkpoint`
   - `session show durable`
   - `show session`
   - `session refs`
@@ -192,6 +193,7 @@ What the TUI adds:
   - durable anchor presence
 - the shell now has explicit durable-state inspection commands:
   - `session refs` for the shell-tracked durable ref set
+  - `session checkpoint` for persisting the current transcript as a canonical object
   - `history show durable` for the current durable history anchor
   - `session show durable` for the current durable anchor/ref view
 - the shell now has an explicit session-history inspection command:
@@ -213,8 +215,8 @@ Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
 - `t81_ternaryos_device_driver_test` is `342/342`
-- `t81_ternaryos_shell_session_test` is `91/91`
-- total TernOS assertions are `828`
+- `t81_ternaryos_shell_session_test` is `100/100`
+- total TernOS assertions are `837`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback

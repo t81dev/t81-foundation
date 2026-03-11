@@ -185,6 +185,7 @@ show profile
 history
 history show session
 session status
+session checkpoint
 session show durable
 show session
 session refs
@@ -271,7 +272,7 @@ automation shell, Axion should feel like a canonical state shell.
 2. Keep the current built-ins and make them parse from a command line.
 3. Add shell-focused tests for parse and transcript behavior.
 4. Add `store ls` and `store get <ref>`.
-5. Add `session status`, `session refs`, `store rm <ref>`, `history show durable`, and `clear`.
+5. Add `session status`, `session checkpoint`, `session refs`, `store rm <ref>`, `history show durable`, and `clear`.
 6. Introduce quoted payload parsing and explicit parse errors.
 7. Split shell-local transcript state from durable store state more explicitly.
 8. Add the first object-native read commands: `show session` and `show ref <canonref>`.

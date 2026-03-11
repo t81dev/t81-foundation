@@ -30,10 +30,11 @@ namespace t81::ternaryos {
 
 namespace {
 
-constexpr std::array<const char*, 17> kBuiltinCommands = {
+constexpr std::array<const char*, 18> kBuiltinCommands = {
     "help",
     "profile",
     "session status",
+    "session checkpoint",
     "session show durable",
     "session refs",
     "show profile",
@@ -292,7 +293,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words[0] == "help") {
     state_.command_records.push_back(
         {command,
-         "builtins help profile session status session show durable session refs show profile show session show ref <canonref> store put <text> store put ref <ref> store ls store get <ref> store rm <ref> history history show session history show durable clear"});
+         "builtins help profile session status session checkpoint session show durable session refs show profile show session show ref <canonref> store put <text> store put ref <ref> store ls store get <ref> store rm <ref> history history show session history show durable clear"});
     return refresh_render();
   }
 
@@ -373,14 +374,31 @@ bool ShellSession::execute_command(std::string_view command_view) {
 
   CanonStore store(*guest->storage.device);
 
+  if (words.size() == 2 && words[0] == "session" && words[1] == "checkpoint") {
+    state_.recovered_entries = store.rebuild_index();
+    auto ref = store.put(make_text_block(state_.transcript_text));
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "session checkpoint failed"});
+      return refresh_render();
+    }
+    if (!canon_ref_known(stored_refs_, *ref)) stored_refs_.push_back(*ref);
+    if (!store.flush()) {
+      state_.command_records.push_back({command, "session checkpoint flush failed"});
+      return refresh_render();
+    }
+    state_.command_records.push_back(
+        {command, "session checkpoint ok " + canon_ref_text(*ref)});
+    return refresh_render();
+  }
+
   if (words.size() == 4 && words[0] == "store" && words[1] == "put" && words[2] == "ref") {
+    state_.recovered_entries = store.rebuild_index();
     const auto ref = parse_canon_ref_text(words[3]);
     if (!ref.has_value()) {
       state_.command_records.push_back({command, "store put ref invalid ref"});
       return refresh_render();
     }
 
-    state_.recovered_entries = store.rebuild_index();
     const auto source = store.get(*ref);
     if (!source.has_value()) {
       state_.command_records.push_back({command, "store put ref missing"});
@@ -404,6 +422,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   }
 
   if (words.size() >= 3 && words[0] == "store" && words[1] == "put") {
+    state_.recovered_entries = store.rebuild_index();
     std::string payload = words[2];
     for (std::size_t i = 3; i < words.size(); ++i) {
       payload += " " + words[i];
