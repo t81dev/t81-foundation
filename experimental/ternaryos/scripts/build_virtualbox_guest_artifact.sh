@@ -86,12 +86,18 @@ artifact_status=$artifact_status
 boot_gap=$boot_gap
 EOF
 
-cat > "$staging_dir/EFI/BOOT/STARTUP.NSH" <<'EOF'
-echo TernOS VirtualBox guest artifact
-echo This disk stages the first guest profile and captured demo evidence.
-echo The final EFI application is not linked yet.
-echo Inspect \TERNOS\profile.txt and \TERNOS\demo-output.txt for details.
+cat > "$staging_dir/STARTUP.NSH" <<'EOF'
+echo TernOS VirtualBox guest artifact > fs0:\TERNOS\startup-ran.txt
+echo shell-started >> fs0:\TERNOS\startup-ran.txt
+echo Inspect \TERNOS\profile.txt and \TERNOS\demo-output.txt for details. >> fs0:\TERNOS\startup-ran.txt
+fs0:
+\EFI\BOOT\BOOTAA64.EFI
+\EFI\BOOT\bootaa64.efi
+BOOTAA64.EFI
+bootaa64.efi
 EOF
+
+cp "$staging_dir/STARTUP.NSH" "$staging_dir/EFI/BOOT/STARTUP.NSH"
 
 if [[ "$guest_arch" == "x86_64" && -f "$efi_obj" ]]; then
   cp "$efi_obj" "$staging_dir/EFI/BOOT/BOOTX64.OBJ"
@@ -101,6 +107,7 @@ fi
 
 if [[ "$guest_arch" == "armv8" && -f "$armv8_efi_bin" ]]; then
   cp "$armv8_efi_bin" "$staging_dir/EFI/BOOT/BOOTAA64.EFI"
+  cp "$armv8_efi_bin" "$staging_dir/EFI/BOOT/bootaa64.efi"
   perl -0pi -e 's/artifact_status=staged-not-bootable/artifact_status=efi-boot-candidate/' "$staging_dir/TERNOS/profile.txt"
   perl -0pi -e 's/boot_gap=missing-real-bootaa64-efi/boot_gap=developer-lane-shim-efi-present/' "$staging_dir/TERNOS/profile.txt"
 fi
