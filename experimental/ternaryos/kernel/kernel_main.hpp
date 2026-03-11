@@ -466,6 +466,8 @@ struct KernelRuntimeStatusView {
   uint64_t pager_worker_backlog_blocked_cycles{0};
   uint64_t pager_worker_ready_backlog_cycles{0};
   uint64_t pager_worker_resolutions_completed{0};
+  std::optional<AddressSpaceId> pager_worker_last_completed_address_space_id{};
+  std::optional<uint64_t> pager_worker_last_completed_resolution_sequence{};
   std::optional<AddressSpaceId> pager_worker_last_stalled_address_space_id{};
   std::optional<uint64_t> pager_worker_last_stall_cycle{};
   std::optional<AddressSpaceId> pager_worker_last_ready_backlog_address_space_id{};
@@ -657,6 +659,8 @@ struct KernelFaultSummaryView {
   uint64_t pager_worker_backlog_blocked_cycles{0};
   uint64_t pager_worker_ready_backlog_cycles{0};
   uint64_t pager_worker_resolutions_completed{0};
+  std::optional<AddressSpaceId> pager_worker_last_completed_address_space_id{};
+  std::optional<uint64_t> pager_worker_last_completed_resolution_sequence{};
   std::optional<AddressSpaceId> pager_worker_last_stalled_address_space_id{};
   std::optional<uint64_t> pager_worker_last_stall_cycle{};
   std::optional<AddressSpaceId> pager_worker_last_ready_backlog_address_space_id{};

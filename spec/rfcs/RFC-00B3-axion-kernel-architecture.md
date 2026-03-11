@@ -349,6 +349,8 @@ retained blocked-side state also carries the exact stall ordinal that exposed
 the ready queued address space, plus the ready-backlog depth observed at that
 same deterministic stall event. Those summaries now also retain the last
 activated address space and its activation ordinal after the worker goes idle.
+They now also retain the last completed pager-worker address space and its
+resolution ordinal after the worker goes idle.
 The next kernel slice is to keep that pager surface private while expanding
 backlog/load scheduling behavior before any public pager ABI or syscall design.
 

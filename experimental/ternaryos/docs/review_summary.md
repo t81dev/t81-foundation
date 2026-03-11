@@ -114,6 +114,8 @@ Kernel integration proof now also includes:
   observed at that same stall event
 - runtime and fault diagnostics now also retain the last activated address
   space and activation ordinal after the worker goes idle
+- runtime and fault diagnostics now also retain the last completed
+  pager-worker address space and resolution ordinal after the worker goes idle
 - the supervisor/service-runtime convergence slice is now complete for the
   current contract surface
 - the first process-memory ownership slice is now complete as well

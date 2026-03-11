@@ -71,7 +71,10 @@ kernel/
                        and a narrow service runtime lifecycle with deterministic
                        register/unregister/suspend/resume actions plus
                        audit-visible lifecycle transitions and supervisor
-                       inventory/supervisor-status/recovery/fault/runtime/audit/device/service lifecycle metadata
+                       inventory/supervisor-status/recovery/fault/runtime/audit/device/service lifecycle metadata,
+                       explicit kernel-owned address-space state, and an
+                       internal pager worker with retained backlog/load,
+                       blocker/blocked, activation, and completion diagnostics
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,

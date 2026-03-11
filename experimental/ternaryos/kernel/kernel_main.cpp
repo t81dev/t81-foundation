@@ -995,6 +995,10 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
           state.pager_worker.ready_backlog_cycles,
       .pager_worker_resolutions_completed =
           state.pager_worker.resolutions_completed,
+      .pager_worker_last_completed_address_space_id =
+          state.pager_worker.last_completed_address_space_id,
+      .pager_worker_last_completed_resolution_sequence =
+          state.pager_worker.last_completed_resolution_sequence,
       .pager_worker_last_stalled_address_space_id =
           state.pager_worker.last_stalled_address_space_id,
       .pager_worker_last_stall_cycle = state.pager_worker.last_stall_cycle,
@@ -1610,6 +1614,10 @@ KernelServiceResult axion_kernel_service_request(
               state.pager_worker.ready_backlog_cycles,
           .pager_worker_resolutions_completed =
               state.pager_worker.resolutions_completed,
+          .pager_worker_last_completed_address_space_id =
+              state.pager_worker.last_completed_address_space_id,
+          .pager_worker_last_completed_resolution_sequence =
+              state.pager_worker.last_completed_resolution_sequence,
           .pager_worker_last_stalled_address_space_id =
               state.pager_worker.last_stalled_address_space_id,
           .pager_worker_last_stall_cycle = state.pager_worker.last_stall_cycle,

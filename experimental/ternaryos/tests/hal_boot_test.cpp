@@ -1353,6 +1353,13 @@ static void test_kernel_pager_worker_backlog() {
   if (fault_after_first_resolution.fault_summary) {
     check(fault_after_first_resolution.fault_summary->pager_resolutions == 1,
           "fault summary counts the first pager backlog resolution");
+    check(fault_after_first_resolution.fault_summary
+              ->pager_worker_last_completed_address_space_id ==
+              first_address_space_id,
+          "fault summary tracks the first completed pager-worker address space");
+    check(fault_after_first_resolution.fault_summary
+              ->pager_worker_last_completed_resolution_sequence == 1,
+          "fault summary tracks the first completed pager-worker resolution ordinal");
     check(fault_after_first_resolution.fault_summary->last_pager_resolution.has_value(),
           "fault summary exposes the first backlog resolution record");
     if (fault_after_first_resolution.fault_summary->last_pager_resolution) {
@@ -1430,6 +1437,13 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status retains the ready-backlog depth for the last ready queued address");
     check(runtime_after_second_resolution.runtime->pager_worker_resolutions_completed == 2,
           "runtime status counts two completed worker resolutions after backlog drain");
+    check(runtime_after_second_resolution.runtime
+              ->pager_worker_last_completed_address_space_id ==
+              second_address_space_id,
+          "runtime status retains the last completed pager-worker address after backlog drain");
+    check(runtime_after_second_resolution.runtime
+              ->pager_worker_last_completed_resolution_sequence == 2,
+          "runtime status retains the last completed pager-worker resolution ordinal");
   }
 
   auto fault_after_second_resolution = axion_kernel_service_request(
@@ -1477,6 +1491,13 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary retains the stall ordinal for the last ready queued address space");
     check(fault_after_second_resolution.fault_summary->pager_worker_last_ready_backlog_count == 1,
           "fault summary retains the ready-backlog depth for the last ready queued address");
+    check(fault_after_second_resolution.fault_summary
+              ->pager_worker_last_completed_address_space_id ==
+              second_address_space_id,
+          "fault summary retains the last completed pager-worker address after backlog drain");
+    check(fault_after_second_resolution.fault_summary
+              ->pager_worker_last_completed_resolution_sequence == 2,
+          "fault summary retains the last completed pager-worker resolution ordinal");
   }
 }
 

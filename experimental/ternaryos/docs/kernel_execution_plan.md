@@ -192,6 +192,15 @@ The fourteenth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves that retained activation identity and ordinal
   stay stable after backlog drain
 
+The fifteenth pager-groundwork slice is now also complete:
+
+- runtime and fault diagnostics now retain the last completed pager-worker
+  address space and its resolution ordinal after the worker goes idle
+- postmortem pager-worker summaries can now correlate completion history
+  directly with the retained activation and stall/backlog relationship fields
+- HAL/kernel coverage now proves that retained completion identity and ordinal
+  advance deterministically through FIFO backlog drain
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
