@@ -89,8 +89,22 @@ The demo shows a VirtualBox-first hosted simulation path:
 - the HAL boots a first-target VirtualBox guest profile
 - the guest profile binds its first storage, network, and display devices through AHCI, E1000, and VMSVGA wrappers
 - CanonStore persists a CanonBlock across a simulated reboot through that binding
+- CanonStore metadata now scales past the root 17-entry header and still rebuilds correctly after reboot
+- interrupted flushes preserve only the last durable state until a retry succeeds
 - TTF renders ASCII text into the VirtualBox VMSVGA-backed ternary framebuffer.
 - TernaryEthernetPacket round-trips through the VirtualBox E1000 scaffold.
+
+Local hosted proof as of the current branch:
+
+- all 7 TernOS test binaries pass
+- `t81_ternaryos_device_driver_test` is `342/342`
+- total TernOS assertions are `737`
+- guest-bootstrap storage coverage now includes:
+  - repeated reboot persistence
+  - header corruption fallback
+  - torn-header fallback
+  - multi-block CanonStore metadata persistence
+  - interrupted-flush durability semantics
 
 ## VirtualBox Artifact
 
@@ -187,6 +201,11 @@ Current status:
 - with `lld` installed, the ARMv8 lane now emits a real `BOOTAA64.EFI`, but it is still a developer-lane shim rather than the true C++ HAL bridge
 - a separate control `BOOTAA64_CTRL.EFI` now exists for the ARMv8 lane and is staged ahead of the shim-backed app in `STARTUP.NSH`; current local probes still show no `startup-ran.txt`, `efi-ctrl-ran.txt`, or `efi-ran.txt` markers, which strongly suggests the local blocker is VirtualBox ARM EFI execution/boot selection rather than the TernOS HAL bridge
 - that VirtualBox-specific conclusion is now stronger because the same ARM image executes under local QEMU AArch64 + EDK2 and leaves `TERNOS/efi-ran.txt`; the current blind spot is therefore the local VirtualBox ARM path, not the basic ARM EFI control artifact
+
+For an external reviewer, the current evidence split is:
+
+- locally proven: hosted HAL + guest-bootstrap storage/network/display path + CanonStore persistence/recovery/durability semantics
+- locally unproven: official `x86_64` VirtualBox guest boot execution
 
 ## Validation Lanes
 

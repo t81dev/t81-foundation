@@ -15,6 +15,31 @@ Validate the official promotion lane:
 This is not the same as the local Apple Silicon ARMv8 developer lane. That lane
 is only for artifact generation and negative-result boot-path debugging.
 
+## What Is Already Proven Locally
+
+Before handing this to an external `x86_64` validator, these parts are already
+verified in hosted simulation on the current branch:
+
+- HAL boot scaffolding and VirtualBox guest bootstrap
+- AHCI/E1000/VMSVGA guest bindings
+- CanonStore reboot persistence through the guest storage path
+- CanonStore recovery after header corruption and torn-header metadata
+- CanonStore metadata scaling past the 17-entry root-header threshold
+- CanonStore interrupted-flush durability semantics
+- TTF framebuffer rendering and ternary Ethernet frame translation
+
+Current local verification snapshot:
+
+- `ctest --test-dir build -R ternaryos -V` passes all 7 tests
+- `t81_ternaryos_device_driver_test` = `342/342`
+- total TernOS assertions = `737`
+
+So the external `x86_64` job is narrowly focused:
+
+- prove the official VirtualBox guest lane boots and exposes the staged path
+
+It is not a request to rediscover whether the hosted Phase 4 logic works.
+
 ## Deliverables From This Repo
 
 Build the guest artifact from the repo root:
@@ -102,6 +127,10 @@ The broader roadmap gate remains stricter:
 
 - a bootable VirtualBox guest executes the current TernOS stack far enough to
   support the Phase 4 persistence path
+
+For clarity, the most useful first success is not full OS functionality. It is
+simply one deterministic sign that the `x86_64` VBox EFI lane runs the staged
+payload at all.
 
 ## What To Report Back
 
