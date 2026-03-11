@@ -259,6 +259,15 @@ The twenty-first pager-groundwork slice is now also complete:
   avoids redundant stall cycles, and resumes progress once the blocked head is
   finally mappable
 
+The twenty-second pager-groundwork slice is now also complete:
+
+- parked capped-deferral state now accumulates deterministic parked-worker
+  cycles while the blocked head remains unresolved
+- runtime and fault diagnostics now retain the latest parked blocked/ready
+  pair plus the ready-item count observed during that parked cycle
+- HAL/kernel coverage now proves repeated parked cycles accumulate cleanly
+  before the blocked head becomes mappable and backlog drain resumes
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable

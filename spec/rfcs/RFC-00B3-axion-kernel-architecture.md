@@ -363,7 +363,9 @@ blocked head first, but the same blocked head may be bypassed at most once
 until it resolves; diagnostics retain both the latest blocked/promoted bypass
 pair and the latest blocked/deferred pair for that bounded rule. After that
 cap fires, the worker now remains parked until the blocked head becomes ready
-instead of activating the same unresolved head into another deterministic stall.
+instead of activating the same unresolved head into another deterministic stall;
+parked cycles are now retained explicitly alongside the latest blocked/ready
+pair observed during that parked state.
 The next kernel slice is to keep that pager surface private while expanding
 backlog/load scheduling behavior before any public pager ABI or syscall design.
 

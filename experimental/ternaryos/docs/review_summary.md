@@ -83,6 +83,8 @@ Kernel integration proof now also includes:
   deferred behind it until that head resolves
 - once that cap fires, the worker now parks instead of activating the same
   unresolved head into a redundant stall cycle
+- repeated parked cycles are now retained explicitly with the latest blocked
+  head, ready queued item, and ready-count seen while the worker stays parked
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures
