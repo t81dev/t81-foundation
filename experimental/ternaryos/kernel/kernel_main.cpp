@@ -625,6 +625,7 @@ KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) 
 }
 
 KernelDeviceSummaryView make_device_summary_view(const KernelRuntimeState& state) {
+  const auto latest_service_transition = latest_service_transition_view(state);
   KernelDeviceSummaryView view{
       .has_device_arbitration = state.device_arbitration.has_value(),
       .device_count = state.device_arbitration ? state.device_arbitration->devices.size() : 0,
@@ -632,6 +633,10 @@ KernelDeviceSummaryView make_device_summary_view(const KernelRuntimeState& state
       .has_storage = state.device_arbitration ? state.device_arbitration->has_storage : false,
       .has_network = state.device_arbitration ? state.device_arbitration->has_network : false,
       .has_display = state.device_arbitration ? state.device_arbitration->has_display : false,
+      .service_lifecycle_transitions = runtime_service_summary(state).service_lifecycle_transitions,
+      .last_service_transition_id = latest_service_transition.service_id,
+      .last_service_transition_kind = latest_service_transition.kind,
+      .last_service_transition_sequence = latest_service_transition.sequence,
   };
   if (state.device_arbitration) {
     for (const auto& device : state.device_arbitration->devices) {

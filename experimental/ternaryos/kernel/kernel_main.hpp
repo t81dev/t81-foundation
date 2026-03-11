@@ -491,6 +491,10 @@ struct KernelDeviceSummaryView {
   bool has_storage{false};
   bool has_network{false};
   bool has_display{false};
+  uint64_t service_lifecycle_transitions{0};
+  std::optional<ServiceId> last_service_transition_id{};
+  std::optional<KernelAuditEventKind> last_service_transition_kind{};
+  std::optional<uint64_t> last_service_transition_sequence{};
   std::vector<KernelDeviceOwnershipView> devices;
 };
 

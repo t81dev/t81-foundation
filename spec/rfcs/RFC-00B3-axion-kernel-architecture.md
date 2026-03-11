@@ -299,6 +299,9 @@ service state.
 The audit-summary view now also carries explicit managed-service lifecycle
 metadata so audit polling no longer needs to infer that state only from recent
 events.
+The device-summary view now also carries managed-service lifecycle metadata so
+device polling stays aligned with the same service-runtime convergence
+surface.
 The next step is to keep that layer stable and only then consider any further
 lifecycle action or boundary growth.
 

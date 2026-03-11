@@ -1313,6 +1313,10 @@ static void test_kernel_service_runtime_views() {
           "device summary reports display");
     check(device_result.device_summary->claimed_device_count == 0,
           "device summary starts with zero claimed devices");
+    check(device_result.device_summary->service_lifecycle_transitions == 0,
+          "device summary starts with zero service lifecycle transitions");
+    check(!device_result.device_summary->last_service_transition_kind.has_value(),
+          "device summary starts without service transition metadata");
   }
 
   auto fault_result = axion_kernel_service_request(
@@ -2698,6 +2702,30 @@ static void test_kernel_service_runtime_layer() {
           "runtime status exposes the latest service lifecycle audit sequence after heal");
   }
 
+  auto device_summary_after_heal = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::DeviceSummary,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+      });
+  check(device_summary_after_heal.status == KernelServiceStatus::Ok,
+        "healthy group can request device summary after service heal");
+  check(device_summary_after_heal.rejection == KernelServiceRequestRejection::None,
+        "device summary after heal clears rejection");
+  check(device_summary_after_heal.device_summary.has_value(),
+        "device summary after heal returns a device view");
+  if (device_summary_after_heal.device_summary) {
+    check(device_summary_after_heal.device_summary->service_lifecycle_transitions == 7,
+          "device summary aggregates service lifecycle transitions after heal");
+    check(device_summary_after_heal.device_summary->last_service_transition_id == service_id,
+          "device summary tracks the last transitioned service after heal");
+    check(device_summary_after_heal.device_summary->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceMarkedHealthy,
+          "device summary tracks heal as the latest service lifecycle event");
+    check(device_summary_after_heal.device_summary->last_service_transition_sequence.has_value(),
+          "device summary exposes the latest service lifecycle audit sequence after heal");
+  }
+
   auto audit_summary = axion_kernel_service_request(
       *state,
       KernelServiceRequest{
@@ -3018,6 +3046,30 @@ static void test_kernel_service_runtime_layer() {
     check(audit_summary_after_unregister.audit_summary->last_service_transition_sequence
               .has_value(),
           "audit summary retains the latest service lifecycle audit sequence after unregister");
+  }
+  auto device_summary_after_unregister = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::DeviceSummary,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+      });
+  check(device_summary_after_unregister.status == KernelServiceStatus::Ok,
+        "healthy group can request device summary after unregister");
+  check(device_summary_after_unregister.rejection == KernelServiceRequestRejection::None,
+        "device summary after unregister clears rejection");
+  check(device_summary_after_unregister.device_summary.has_value(),
+        "device summary after unregister returns a device view");
+  if (device_summary_after_unregister.device_summary) {
+    check(device_summary_after_unregister.device_summary->service_lifecycle_transitions == 8,
+          "device summary retains lifecycle transition count after unregister");
+    check(device_summary_after_unregister.device_summary->last_service_transition_id == service_id,
+          "device summary retains the last transitioned service after unregister");
+    check(device_summary_after_unregister.device_summary->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceUnregistered,
+          "device summary tracks unregister as the latest service lifecycle event");
+    check(device_summary_after_unregister.device_summary->last_service_transition_sequence
+              .has_value(),
+          "device summary retains the latest service lifecycle audit sequence after unregister");
   }
   check(!state->audit_log.empty(), "service lifecycle actions produce audit records");
   if (!state->audit_log.empty()) {
