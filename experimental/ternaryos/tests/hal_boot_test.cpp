@@ -1601,6 +1601,256 @@ static void test_kernel_pager_worker_backlog() {
   }
 }
 
+static void test_kernel_pager_worker_ready_bypass_cap() {
+  std::printf(
+      "\n[AC-22d] Axion pager worker caps repeated ready bypass for one blocked head\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for ready-bypass cap");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext first_thread;
+  first_thread.label = "pager-cap-a";
+  first_thread.registers[0] = 111;
+
+  t81::ternaryos::sched::TiscContext second_thread;
+  second_thread.label = "pager-cap-b";
+  second_thread.registers[0] = 222;
+
+  t81::ternaryos::sched::TiscContext third_thread;
+  third_thread.label = "pager-cap-c";
+  third_thread.registers[0] = 333;
+
+  auto first_tid = axion_kernel_spawn_thread(*state, first_thread);
+  auto second_tid = axion_kernel_spawn_thread(*state, second_thread);
+  auto third_tid = axion_kernel_spawn_thread(*state, third_thread);
+  check(first_tid.has_value(), "first cap thread spawns successfully");
+  check(second_tid.has_value(), "second cap thread spawns successfully");
+  check(third_tid.has_value(), "third cap thread spawns successfully");
+  if (!first_tid || !second_tid || !third_tid) {
+    return;
+  }
+
+  const auto* first_runtime = state->find_thread_runtime(*first_tid);
+  const auto* second_runtime = state->find_thread_runtime(*second_tid);
+  const auto* third_runtime = state->find_thread_runtime(*third_tid);
+  check(first_runtime != nullptr, "first cap runtime state exists");
+  check(second_runtime != nullptr, "second cap runtime state exists");
+  check(third_runtime != nullptr, "third cap runtime state exists");
+  if (!first_runtime || !second_runtime || !third_runtime) {
+    return;
+  }
+
+  const auto first_address_space_id =
+      state->find_process_group_address_space(first_runtime->process_group_id);
+  const auto second_address_space_id =
+      state->find_process_group_address_space(second_runtime->process_group_id);
+  const auto third_address_space_id =
+      state->find_process_group_address_space(third_runtime->process_group_id);
+  check(first_address_space_id.has_value(),
+        "first cap process group resolves to an address space");
+  check(second_address_space_id.has_value(),
+        "second cap process group resolves to an address space");
+  check(third_address_space_id.has_value(),
+        "third cap process group resolves to an address space");
+  if (!first_address_space_id || !second_address_space_id ||
+      !third_address_space_id) {
+    return;
+  }
+
+  const auto first_tva = mmu::tva_from_vpn_offset(80, 0);
+  const auto second_tva = mmu::tva_from_vpn_offset(81, 0);
+  const auto third_tva = mmu::tva_from_vpn_offset(82, 0);
+  state->pending_faults.push_back(KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva = first_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault = mmu::MmuFault::Unmapped,
+      .subject_tid = *first_tid,
+  });
+  state->pending_faults.push_back(KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva = second_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault = mmu::MmuFault::Unmapped,
+      .subject_tid = *second_tid,
+  });
+  state->pending_faults.push_back(KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva = third_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault = mmu::MmuFault::Unmapped,
+      .subject_tid = *third_tid,
+  });
+
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     second_tva,
+                     *second_address_space_id),
+        "second cap address space accepts its mapping before first activation");
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     third_tva,
+                     *third_address_space_id),
+        "third cap address space accepts its mapping before first activation");
+
+  (void)axion_kernel_step(*state);
+  auto runtime_after_first_bypass = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_after_first_bypass.runtime.has_value(),
+        "runtime status exposes first bounded ready bypass");
+  if (runtime_after_first_bypass.runtime) {
+    check(runtime_after_first_bypass.runtime->pager_resolutions == 1,
+          "runtime status resolves one promoted ready item on first bypass");
+    check(runtime_after_first_bypass.runtime->pager_worker_ready_bypass_activations == 1,
+          "runtime status counts one ready-bypass activation before cap");
+    check(runtime_after_first_bypass.runtime->pager_worker_ready_bypass_deferrals == 0,
+          "runtime status starts with zero ready-bypass deferrals");
+    check(runtime_after_first_bypass.runtime
+              ->pager_worker_last_ready_bypass_blocked_address_space_id ==
+              first_address_space_id,
+          "runtime status tracks the blocked head used for the first bypass");
+    check(runtime_after_first_bypass.runtime
+              ->pager_worker_last_ready_bypass_promoted_address_space_id ==
+              second_address_space_id,
+          "runtime status tracks the promoted ready item used for the first bypass");
+    check(runtime_after_first_bypass.runtime->pager_worker_inbox_count == 2,
+          "runtime status retains the blocked head and third item after first bypass");
+    check(runtime_after_first_bypass.runtime
+              ->pager_worker_next_queued_address_space_id ==
+              first_address_space_id,
+          "runtime status keeps the blocked head at the queue front after first bypass");
+  }
+
+  (void)axion_kernel_step(*state);
+  auto runtime_after_capped_activation = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_after_capped_activation.runtime.has_value(),
+        "runtime status exposes capped activation after first bypass");
+  if (runtime_after_capped_activation.runtime) {
+    check(runtime_after_capped_activation.runtime->pager_worker_busy,
+          "runtime status reports busy worker when the blocked head must run");
+    check(runtime_after_capped_activation.runtime->pager_worker_active_address_space_id ==
+              first_address_space_id,
+          "runtime status activates the blocked head once repeated bypass is capped");
+    check(runtime_after_capped_activation.runtime->pager_worker_active_handoff_sequence == 1,
+          "runtime status preserves the blocked head handoff ordinal under cap");
+    check(runtime_after_capped_activation.runtime->pager_worker_inbox_count == 1,
+          "runtime status leaves the third item queued behind the blocked head under cap");
+    check(runtime_after_capped_activation.runtime
+              ->pager_worker_next_queued_address_space_id ==
+              third_address_space_id,
+          "runtime status keeps the third ready item queued behind the blocked head under cap");
+    check(runtime_after_capped_activation.runtime
+              ->pager_worker_next_queued_handoff_sequence == 3,
+          "runtime status preserves the third handoff ordinal behind the blocked head under cap");
+    check(runtime_after_capped_activation.runtime->pager_worker_ready_bypass_activations == 1,
+          "runtime status does not permit a second ready bypass for the same head");
+    check(runtime_after_capped_activation.runtime->pager_worker_ready_bypass_deferrals == 1,
+          "runtime status counts one ready-bypass deferral after the cap fires");
+    check(runtime_after_capped_activation.runtime
+              ->pager_worker_last_ready_bypass_deferred_blocked_address_space_id ==
+              first_address_space_id,
+          "runtime status tracks the blocked head for the deferred bypass");
+    check(runtime_after_capped_activation.runtime
+              ->pager_worker_last_ready_bypass_deferred_ready_address_space_id ==
+              third_address_space_id,
+          "runtime status tracks the still-ready queued item deferred by the cap");
+    check(runtime_after_capped_activation.runtime
+              ->pager_worker_last_ready_bypass_deferred_cycle == 1,
+          "runtime status tracks the first ready-bypass deferral ordinal");
+    check(runtime_after_capped_activation.runtime->pager_worker_stall_cycles == 1,
+          "runtime status counts one stall after the cap forces the blocked head active");
+    check(runtime_after_capped_activation.runtime->pager_worker_backlog_blocked_cycles == 1,
+          "runtime status counts one backlog-blocked cycle after capped activation");
+    check(runtime_after_capped_activation.runtime->pager_worker_ready_backlog_cycles == 1,
+          "runtime status counts one ready-behind-active cycle after capped activation");
+    check(runtime_after_capped_activation.runtime->pager_worker_last_ready_backlog_address_space_id ==
+              third_address_space_id,
+          "runtime status tracks the third ready item behind the capped blocked head");
+  }
+
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     first_tva,
+                     *first_address_space_id),
+        "first cap address space accepts its mapping before draining the blocked head");
+
+  (void)axion_kernel_step(*state);
+  auto runtime_after_head_resolution = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_after_head_resolution.runtime.has_value(),
+        "runtime status exposes blocked-head resolution after cap");
+  if (runtime_after_head_resolution.runtime) {
+    check(runtime_after_head_resolution.runtime->pager_resolutions == 2,
+          "runtime status resolves the blocked head second after the cap");
+    check(!runtime_after_head_resolution.runtime->pager_worker_busy,
+          "runtime status returns worker to idle after blocked-head resolution");
+    check(runtime_after_head_resolution.runtime->pager_worker_inbox_count == 1,
+          "runtime status keeps the third item queued after blocked-head resolution");
+    check(runtime_after_head_resolution.runtime
+              ->pager_worker_next_queued_address_space_id ==
+              third_address_space_id,
+          "runtime status exposes the third item at the queue head after blocked-head resolution");
+  }
+
+  (void)axion_kernel_step(*state);
+  auto fault_after_final_resolution = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_after_final_resolution.fault_summary.has_value(),
+        "fault summary exposes final capped-backlog resolution");
+  if (fault_after_final_resolution.fault_summary) {
+    check(fault_after_final_resolution.fault_summary->pager_resolutions == 3,
+          "fault summary counts all three pager resolutions under the capped policy");
+    check(fault_after_final_resolution.fault_summary->pager_worker_ready_bypass_activations == 1,
+          "fault summary retains one ready-bypass activation under the capped policy");
+    check(fault_after_final_resolution.fault_summary->pager_worker_ready_bypass_deferrals == 1,
+          "fault summary retains one ready-bypass deferral under the capped policy");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_ready_bypass_blocked_address_space_id ==
+              first_address_space_id,
+          "fault summary retains the blocked head used for the ready bypass");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_ready_bypass_promoted_address_space_id ==
+              second_address_space_id,
+          "fault summary retains the promoted ready item used for the bypass");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_ready_bypass_deferred_blocked_address_space_id ==
+              first_address_space_id,
+          "fault summary retains the blocked head used for the deferral");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_ready_bypass_deferred_ready_address_space_id ==
+              third_address_space_id,
+          "fault summary retains the deferred third ready item");
+    check(fault_after_final_resolution.fault_summary->pager_worker_last_activated_address_space_id ==
+              third_address_space_id,
+          "fault summary retains the third item as the final activation after the head drains");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_completed_address_space_id ==
+              third_address_space_id,
+          "fault summary retains the third item as the final completion after the head drains");
+    check(fault_after_final_resolution.fault_summary->pager_worker_stall_cycles == 1,
+          "fault summary retains one stall under the capped policy");
+    check(fault_after_final_resolution.fault_summary->pager_worker_backlog_blocked_cycles == 1,
+          "fault summary retains one backlog-blocked cycle under the capped policy");
+    check(fault_after_final_resolution.fault_summary->pager_worker_ready_backlog_cycles == 1,
+          "fault summary retains one ready-backlog cycle under the capped policy");
+  }
+}
+
 static void test_kernel_fault_process_boundary() {
   std::printf("\n[AC-23] Axion kernel loop routes faults into thread runtime state\n");
 
@@ -4126,6 +4376,7 @@ int main() {
   test_kernel_loop_fault_delivery();
   test_kernel_pager_fault_state();
   test_kernel_pager_worker_backlog();
+  test_kernel_pager_worker_ready_bypass_cap();
   test_kernel_fault_process_boundary();
   test_kernel_fault_acknowledgement_and_recovery();
   test_kernel_process_group_fault_gate();

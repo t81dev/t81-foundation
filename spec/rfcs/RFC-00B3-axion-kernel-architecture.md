@@ -359,7 +359,9 @@ They now also expose the next queued pager-worker address space and handoff
 ordinal at the head of the FIFO inbox.
 When the worker is idle and the FIFO head is still unresolved, the kernel now
 also selects the earliest already-ready queued item instead of activating the
-blocked head first; diagnostics retain the latest blocked/promoted bypass pair.
+blocked head first, but the same blocked head may be bypassed at most once
+until it resolves; diagnostics retain both the latest blocked/promoted bypass
+pair and the latest blocked/deferred pair for that bounded rule.
 The next kernel slice is to keep that pager surface private while expanding
 backlog/load scheduling behavior before any public pager ABI or syscall design.
 

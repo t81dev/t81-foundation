@@ -74,7 +74,7 @@ kernel/
                        inventory/supervisor-status/recovery/fault/runtime/audit/device/service lifecycle metadata,
                        explicit kernel-owned address-space state, and an
                        internal pager worker with retained backlog/load,
-                       receipt, active-work, queued-head, ready-bypass,
+                       receipt, active-work, queued-head, bounded ready-bypass,
                        blocker/blocked, activation, and completion diagnostics
 
 mmu/

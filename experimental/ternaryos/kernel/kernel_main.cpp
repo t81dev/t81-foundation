@@ -1035,6 +1035,14 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
           state.pager_worker.last_ready_bypass_promoted_address_space_id,
       .pager_worker_last_ready_bypass_cycle =
           state.pager_worker.last_ready_bypass_cycle,
+      .pager_worker_ready_bypass_deferrals =
+          state.pager_worker.ready_bypass_deferrals,
+      .pager_worker_last_ready_bypass_deferred_blocked_address_space_id =
+          state.pager_worker.last_ready_bypass_deferred_blocked_address_space_id,
+      .pager_worker_last_ready_bypass_deferred_ready_address_space_id =
+          state.pager_worker.last_ready_bypass_deferred_ready_address_space_id,
+      .pager_worker_last_ready_bypass_deferred_cycle =
+          state.pager_worker.last_ready_bypass_deferred_cycle,
       .pager_worker_activations = state.pager_worker.activations,
       .pager_worker_last_activated_address_space_id =
           state.pager_worker.last_activated_address_space_id,
@@ -1481,15 +1489,29 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
           if (const auto ready_index = find_first_ready_pager_work_index(
                   state, state.pager_worker.inbox);
               ready_index.has_value() && *ready_index > 0) {
-            ++state.pager_worker.ready_bypass_activations;
-            ++state.counters.pager_worker_ready_bypass_activations;
-            state.pager_worker.last_ready_bypass_blocked_address_space_id =
-                state.pager_worker.inbox.front().handoff.address_space_id;
-            state.pager_worker.last_ready_bypass_promoted_address_space_id =
-                state.pager_worker.inbox[*ready_index].handoff.address_space_id;
-            state.pager_worker.last_ready_bypass_cycle =
-                state.pager_worker.ready_bypass_activations;
-            selected_index = *ready_index;
+            if (state.pager_worker.inbox.front().ready_bypass_count == 0) {
+              ++state.pager_worker.ready_bypass_activations;
+              ++state.counters.pager_worker_ready_bypass_activations;
+              ++state.pager_worker.inbox.front().ready_bypass_count;
+              state.pager_worker.last_ready_bypass_blocked_address_space_id =
+                  state.pager_worker.inbox.front().handoff.address_space_id;
+              state.pager_worker.last_ready_bypass_promoted_address_space_id =
+                  state.pager_worker.inbox[*ready_index].handoff.address_space_id;
+              state.pager_worker.last_ready_bypass_cycle =
+                  state.pager_worker.ready_bypass_activations;
+              selected_index = *ready_index;
+            } else {
+              ++state.pager_worker.ready_bypass_deferrals;
+              ++state.counters.pager_worker_ready_bypass_deferrals;
+              state.pager_worker
+                  .last_ready_bypass_deferred_blocked_address_space_id =
+                  state.pager_worker.inbox.front().handoff.address_space_id;
+              state.pager_worker
+                  .last_ready_bypass_deferred_ready_address_space_id =
+                  state.pager_worker.inbox[*ready_index].handoff.address_space_id;
+              state.pager_worker.last_ready_bypass_deferred_cycle =
+                  state.pager_worker.ready_bypass_deferrals;
+            }
           }
         }
         state.pager_worker.active_work = state.pager_worker.inbox[selected_index];
@@ -1701,6 +1723,14 @@ KernelServiceResult axion_kernel_service_request(
               state.pager_worker.last_ready_bypass_promoted_address_space_id,
           .pager_worker_last_ready_bypass_cycle =
               state.pager_worker.last_ready_bypass_cycle,
+          .pager_worker_ready_bypass_deferrals =
+              state.pager_worker.ready_bypass_deferrals,
+          .pager_worker_last_ready_bypass_deferred_blocked_address_space_id =
+              state.pager_worker.last_ready_bypass_deferred_blocked_address_space_id,
+          .pager_worker_last_ready_bypass_deferred_ready_address_space_id =
+              state.pager_worker.last_ready_bypass_deferred_ready_address_space_id,
+          .pager_worker_last_ready_bypass_deferred_cycle =
+              state.pager_worker.last_ready_bypass_deferred_cycle,
           .pager_worker_activations = state.pager_worker.activations,
           .pager_worker_last_activated_address_space_id =
               state.pager_worker.last_activated_address_space_id,

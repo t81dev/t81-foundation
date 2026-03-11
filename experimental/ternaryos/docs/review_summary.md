@@ -78,6 +78,9 @@ Kernel integration proof now also includes:
 - process groups now also bind to explicit kernel-owned address spaces
 - runtime, process-group, supervisor, and service diagnostics now also expose
   address-space ownership plus mapped-page counts
+- the internal pager worker now applies a bounded ready-bypass rule: one
+  unresolved FIFO head can be bypassed once, and later ready items are then
+  deferred behind it until that head resolves
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

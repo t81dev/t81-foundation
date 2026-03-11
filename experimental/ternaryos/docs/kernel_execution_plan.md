@@ -238,6 +238,16 @@ The nineteenth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves that this first deterministic ready-bypass
   rule advances progress without widening the pager surface
 
+The twentieth pager-groundwork slice is now also complete:
+
+- the same blocked FIFO head can now be bypassed at most once while it remains
+  unresolved, after which later ready items are deferred behind it
+- runtime and fault diagnostics now expose ready-bypass deferral counts plus
+  the latest blocked head and deferred ready address space for that bounded
+  bypass rule
+- HAL/kernel coverage now proves that repeated ready items do not starve one
+  unresolved blocked head under the internal pager-worker policy
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
@@ -251,8 +261,9 @@ The next real kernel work is now:
 
 - pager integration
 - richer kernel-owned pager work after the first worker model
-- explicit transition handling for scheduling beyond the new ready-bypass
-  activation rule once the current worker diagnostics are no longer sufficient
+- explicit transition handling for scheduling beyond the new bounded
+  ready-bypass rule once the current worker diagnostics are no longer
+  sufficient
 - stable diagnostics proving pager worker behavior remains deterministic under
   deeper load
 

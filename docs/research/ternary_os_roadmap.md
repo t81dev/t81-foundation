@@ -97,7 +97,7 @@ address space and activation ordinal after the worker goes idle, plus the last
 completed address space and resolution ordinal after the worker goes idle, and
 the last received address space and handoff ordinal after the inbox drains,
 plus the active handoff ordinal while work remains in flight and the queued-head
-address/ordinal while work remains in the inbox, plus a first deterministic
+address/ordinal while work remains in the inbox, plus a bounded deterministic
 ready-bypass selection rule when the worker is idle and the FIFO head is still
 unresolved, before later pager integration.
 

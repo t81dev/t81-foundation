@@ -46,6 +46,7 @@ struct KernelPagerResolutionRecord {
 
 struct KernelPagerWorkItem {
   KernelPagerHandoffRecord handoff{};
+  uint64_t ready_bypass_count{0};
 };
 
 enum class KernelAuditEventKind : uint8_t {
@@ -176,6 +177,10 @@ struct KernelRuntimeState {
   std::optional<AddressSpaceId> last_ready_bypass_blocked_address_space_id{};
   std::optional<AddressSpaceId> last_ready_bypass_promoted_address_space_id{};
   std::optional<uint64_t> last_ready_bypass_cycle{};
+  uint64_t ready_bypass_deferrals{0};
+  std::optional<AddressSpaceId> last_ready_bypass_deferred_blocked_address_space_id{};
+  std::optional<AddressSpaceId> last_ready_bypass_deferred_ready_address_space_id{};
+  std::optional<uint64_t> last_ready_bypass_deferred_cycle{};
   uint64_t activations{0};
     std::optional<AddressSpaceId> last_activated_address_space_id{};
     std::optional<uint64_t> last_activation_cycle{};
@@ -217,6 +222,7 @@ struct KernelRuntimeState {
     uint64_t pager_faults_coalesced{0};
     uint64_t pager_worker_activations{0};
     uint64_t pager_worker_ready_bypass_activations{0};
+    uint64_t pager_worker_ready_bypass_deferrals{0};
     uint64_t pager_worker_stall_cycles{0};
     uint64_t pager_worker_backlog_blocked_cycles{0};
     uint64_t pager_worker_ready_backlog_cycles{0};
@@ -475,6 +481,10 @@ struct KernelRuntimeStatusView {
   std::optional<AddressSpaceId> pager_worker_last_ready_bypass_blocked_address_space_id{};
   std::optional<AddressSpaceId> pager_worker_last_ready_bypass_promoted_address_space_id{};
   std::optional<uint64_t> pager_worker_last_ready_bypass_cycle{};
+  uint64_t pager_worker_ready_bypass_deferrals{0};
+  std::optional<AddressSpaceId> pager_worker_last_ready_bypass_deferred_blocked_address_space_id{};
+  std::optional<AddressSpaceId> pager_worker_last_ready_bypass_deferred_ready_address_space_id{};
+  std::optional<uint64_t> pager_worker_last_ready_bypass_deferred_cycle{};
   uint64_t pager_worker_activations{0};
   std::optional<AddressSpaceId> pager_worker_last_activated_address_space_id{};
   std::optional<uint64_t> pager_worker_last_activation_cycle{};
@@ -677,6 +687,10 @@ struct KernelFaultSummaryView {
   std::optional<AddressSpaceId> pager_worker_last_ready_bypass_blocked_address_space_id{};
   std::optional<AddressSpaceId> pager_worker_last_ready_bypass_promoted_address_space_id{};
   std::optional<uint64_t> pager_worker_last_ready_bypass_cycle{};
+  uint64_t pager_worker_ready_bypass_deferrals{0};
+  std::optional<AddressSpaceId> pager_worker_last_ready_bypass_deferred_blocked_address_space_id{};
+  std::optional<AddressSpaceId> pager_worker_last_ready_bypass_deferred_ready_address_space_id{};
+  std::optional<uint64_t> pager_worker_last_ready_bypass_deferred_cycle{};
   uint64_t pager_worker_activations{0};
   std::optional<AddressSpaceId> pager_worker_last_activated_address_space_id{};
   std::optional<uint64_t> pager_worker_last_activation_cycle{};
