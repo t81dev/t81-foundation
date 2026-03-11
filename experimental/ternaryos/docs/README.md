@@ -104,7 +104,7 @@ shell/
 
 tests/
   shell_session_test.cpp     Phase 5 shell command / durable-history test
-  hal_boot_test.cpp          Phase 1 / kernel integration — 302 assertions
+  hal_boot_test.cpp          Phase 1 / kernel integration — 529 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
   mmu_test.cpp               Phase 2 — 87 assertions
@@ -119,7 +119,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1389/1389 assertions, 8/8 tests pass
+# Expected: 1405/1405 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -280,11 +280,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `513/513`
+- `t81_ternaryos_hal_boot_test` is `529/529`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1389`
+- total TernOS assertions are `1405`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state
@@ -296,8 +296,10 @@ Local hosted proof as of the current branch:
 - a second narrow service-facing action now exists through that same boundary:
   deterministic device claim/release requests with healthy-vs-faulted group
   enforcement
-- the next kernel slice is now contract hardening for the stable service boundary,
-  tracked explicitly in:
+- the current kernel slice is now contract hardening for the stable service
+  boundary, and request/action rejection semantics are now explicit across that
+  contract. The next step is stable service-facing diagnostics, tracked
+  explicitly in:
   - `docs/kernel_execution_plan.md`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence

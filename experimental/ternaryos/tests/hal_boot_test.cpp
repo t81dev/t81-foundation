@@ -1262,6 +1262,8 @@ static void test_kernel_service_runtime_views() {
       *hosted_state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
   check(runtime_result.status == KernelServiceStatus::Ok,
         "runtime status request succeeds");
+  check(runtime_result.rejection == KernelServiceRequestRejection::None,
+        "successful runtime status clears request rejection");
   check(runtime_result.runtime.has_value(), "runtime status view is returned");
   if (runtime_result.runtime) {
     check(runtime_result.runtime->memory_region_count == hosted_ctx.memory_map.size(),
@@ -1274,6 +1276,9 @@ static void test_kernel_service_runtime_views() {
       *hosted_state, KernelServiceRequest{.kind = KernelServiceRequestKind::DeviceSummary});
   check(hosted_device_result.status == KernelServiceStatus::NoDeviceArbitration,
         "hosted generic context reports no device arbitration");
+  check(hosted_device_result.rejection ==
+            KernelServiceRequestRejection::MissingDeviceArbitration,
+        "hosted generic device summary reports MissingDeviceArbitration rejection");
 
   auto vbox_ctx = make_virtualbox_boot_context(VBoxBootSpec{});
   auto vbox_state = axion_kernel_bootstrap(vbox_ctx);
@@ -1286,6 +1291,8 @@ static void test_kernel_service_runtime_views() {
       *vbox_state, KernelServiceRequest{.kind = KernelServiceRequestKind::DeviceSummary});
   check(device_result.status == KernelServiceStatus::Ok,
         "VirtualBox device summary request succeeds");
+  check(device_result.rejection == KernelServiceRequestRejection::None,
+        "successful device summary clears request rejection");
   check(device_result.device_summary.has_value(), "device summary view is returned");
   if (device_result.device_summary) {
     check(device_result.device_summary->has_device_arbitration,
@@ -1306,6 +1313,8 @@ static void test_kernel_service_runtime_views() {
       *vbox_state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
   check(fault_result.status == KernelServiceStatus::Ok,
         "fault summary request succeeds");
+  check(fault_result.rejection == KernelServiceRequestRejection::None,
+        "successful fault summary clears request rejection");
   check(fault_result.fault_summary.has_value(), "fault summary view is returned");
   if (fault_result.fault_summary) {
     check(fault_result.fault_summary->recorded_faults == 0,
@@ -1381,6 +1390,8 @@ static void test_kernel_service_group_fault_visibility() {
       });
   check(faulted_group.status == KernelServiceStatus::FaultedGroup,
         "faulted group request returns FaultedGroup status");
+  check(faulted_group.rejection == KernelServiceRequestRejection::None,
+        "faulted subject group status still returns a concrete group view");
   check(faulted_group.process_group.has_value(), "faulted group view is returned");
   if (faulted_group.process_group) {
     check(faulted_group.process_group->member_count == 1,
@@ -1429,6 +1440,8 @@ static void test_kernel_service_group_fault_visibility() {
       });
   check(supervisor_result.status == KernelServiceStatus::Ok,
         "supervisor status request succeeds");
+  check(supervisor_result.rejection == KernelServiceRequestRejection::None,
+        "successful supervisor status clears request rejection");
   check(supervisor_result.supervisor.has_value(), "supervisor status view is returned");
   if (supervisor_result.supervisor) {
     check(supervisor_result.supervisor->managed_group_count == 1,
@@ -1451,6 +1464,9 @@ static void test_kernel_service_group_fault_visibility() {
       });
   check(denied_runtime.status == KernelServiceStatus::FaultedGroup,
         "faulted group cannot request runtime status");
+  check(denied_runtime.rejection ==
+            KernelServiceRequestRejection::FaultedRequestingGroup,
+        "faulted runtime request reports FaultedRequestingGroup rejection");
 
   auto denied_faults = axion_kernel_service_request(
       *state,
@@ -1460,6 +1476,9 @@ static void test_kernel_service_group_fault_visibility() {
       });
   check(denied_faults.status == KernelServiceStatus::FaultedGroup,
         "faulted group cannot request fault summary");
+  check(denied_faults.rejection ==
+            KernelServiceRequestRejection::FaultedRequestingGroup,
+        "faulted fault-summary request reports FaultedRequestingGroup rejection");
 
   auto healthy_runtime_result = axion_kernel_service_request(
       *state,
@@ -1469,6 +1488,8 @@ static void test_kernel_service_group_fault_visibility() {
       });
   check(healthy_runtime_result.status == KernelServiceStatus::Ok,
         "healthy group can request runtime status");
+  check(healthy_runtime_result.rejection == KernelServiceRequestRejection::None,
+        "healthy runtime request clears request rejection");
 
   auto healthy_faults = axion_kernel_service_request(
       *state,
@@ -1478,6 +1499,8 @@ static void test_kernel_service_group_fault_visibility() {
       });
   check(healthy_faults.status == KernelServiceStatus::Ok,
         "healthy group can request fault summary");
+  check(healthy_faults.rejection == KernelServiceRequestRejection::None,
+        "healthy fault-summary request clears request rejection");
   check(healthy_faults.fault_summary.has_value(),
         "healthy group receives fault summary view");
   if (healthy_faults.fault_summary) {
@@ -1504,6 +1527,8 @@ static void test_kernel_service_group_fault_visibility() {
       });
   check(missing_group.status == KernelServiceStatus::NotFound,
         "missing process group returns NotFound");
+  check(missing_group.rejection == KernelServiceRequestRejection::MissingProcessGroup,
+        "missing process group reports MissingProcessGroup rejection");
 
   auto missing_requester = axion_kernel_service_request(
       *state,
@@ -1513,6 +1538,20 @@ static void test_kernel_service_group_fault_visibility() {
       });
   check(missing_requester.status == KernelServiceStatus::NotFound,
         "missing requesting process group returns NotFound");
+  check(missing_requester.rejection ==
+            KernelServiceRequestRejection::MissingRequestingGroup,
+        "missing requesting process group reports MissingRequestingGroup rejection");
+
+  auto missing_supervisor_request = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::SupervisorStatus,
+      });
+  check(missing_supervisor_request.status == KernelServiceStatus::InvalidRequest,
+        "missing supervisor request returns InvalidRequest");
+  check(missing_supervisor_request.rejection ==
+            KernelServiceRequestRejection::MissingSupervisor,
+        "missing supervisor request reports MissingSupervisor rejection");
 }
 
 static void test_kernel_service_fault_ack_action() {
@@ -1698,6 +1737,8 @@ static void test_kernel_service_supervisor_recovery_status() {
       });
   check(pre_ack.status == KernelServiceStatus::Ok,
         "supervisor recovery status succeeds before acknowledgement");
+  check(pre_ack.rejection == KernelServiceRequestRejection::None,
+        "successful supervisor recovery request clears request rejection");
   check(pre_ack.supervisor_recovery.has_value(),
         "supervisor recovery status view is returned");
   if (pre_ack.supervisor_recovery) {
@@ -1756,6 +1797,8 @@ static void test_kernel_service_supervisor_recovery_status() {
       });
   check(post_ack.status == KernelServiceStatus::Ok,
         "supervisor recovery status succeeds after recovery");
+  check(post_ack.rejection == KernelServiceRequestRejection::None,
+        "post-recovery supervisor request clears request rejection");
   check(post_ack.supervisor_recovery.has_value(),
         "post-recovery supervisor recovery status view is returned");
   if (post_ack.supervisor_recovery) {

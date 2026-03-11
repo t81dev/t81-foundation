@@ -39,9 +39,10 @@ audit-only supervisor layer above the process-group gate. Supervisor-facing
 recovery/report flows are now exposed through the same service boundary,
 including deterministic pending-group, acknowledgement, and recovered-group
 views. Deterministic device claim/release requests now exist through that same
-boundary as the second narrow action. The next steps are to harden the current
-service contract, especially its rejection semantics, while continuing to
-converge the runtime toward fuller kernel behavior.
+boundary as the second narrow action. Request-side and action-side rejection
+semantics are now explicit across that contract. The next steps are to keep the
+service-facing diagnostics stable while continuing to converge the runtime
+toward fuller kernel behavior.
 
 That near-term kernel slice is now tracked explicitly in:
 

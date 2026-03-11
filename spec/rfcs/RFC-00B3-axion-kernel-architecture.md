@@ -266,6 +266,10 @@ That hardening step specifically means:
 - avoid widening the contract with unrelated runtime verbs before the current
   request/action model is settled
 
+That request/action rejection hardening is now implemented for the current
+contract surface. The next step is to keep the diagnostic views stable and only
+then consider any further action or boundary growth.
+
 The working execution note for this slice is:
 
 - `experimental/ternaryos/docs/kernel_execution_plan.md`

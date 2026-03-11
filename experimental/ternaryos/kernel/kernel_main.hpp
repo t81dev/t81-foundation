@@ -230,6 +230,15 @@ enum class KernelServiceStatus : uint8_t {
   NoDeviceArbitration,
 };
 
+enum class KernelServiceRequestRejection : uint8_t {
+  None = 0,
+  MissingRequestingGroup,
+  MissingProcessGroup,
+  MissingSupervisor,
+  FaultedRequestingGroup,
+  MissingDeviceArbitration,
+};
+
 enum class KernelServiceActionKind : uint8_t {
   AcknowledgeSupervisorFaultGroup = 0,
   ClaimDevice,
@@ -322,6 +331,7 @@ struct KernelServiceRequest {
 
 struct KernelServiceResult {
   KernelServiceStatus status{KernelServiceStatus::InvalidRequest};
+  KernelServiceRequestRejection rejection{KernelServiceRequestRejection::None};
   std::optional<KernelRuntimeStatusView> runtime{};
   std::optional<KernelProcessGroupStatusView> process_group{};
   std::optional<KernelSupervisorStatusView> supervisor{};
