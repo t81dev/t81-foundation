@@ -20,9 +20,17 @@ binary physical addresses into a trit-addressed virtual space.
 
 ---
 
-## 2. Address Space Design
+## 2. Motivation
 
-### 2.1 Ternary Virtual Address (TVA)
+The Axion memory model must stop pretending a flat binary page map is "ternary
+enough." TVA layout, radix structure, and explicit fault semantics are required
+so the MMU can become a real kernel subsystem rather than just a test helper.
+
+## 3. Proposal
+
+### 3.1 Address Space Design
+
+#### 3.1.1 Ternary Virtual Address (TVA)
 
 A TVA is a `uint64_t` interpreted as an unsigned base-3 number. Its structure:
 
@@ -38,7 +46,7 @@ A TVA is a `uint64_t` interpreted as an unsigned base-3 number. Its structure:
 - **Encoding:** `tva = vpn * kPageSize + offset`, where `kPageSize = 59,049`.
   This is valid because 3³⁰ = 205,891,132,094,649 < 2⁴⁸, fitting in `uint64_t`.
 
-### 2.2 Addressing the binary↔ternary gap
+#### 3.1.2 Addressing the binary↔ternary gap
 
 48-bit binary physical addresses do **not** divide cleanly into trit boundaries
 (2⁴⁸ = 281,474,976,710,656; 3³⁰ = 205,891,132,094,649 < 2⁴⁸).
@@ -55,9 +63,9 @@ Phase 2. RFC-00B2 (if needed) will extend VPN width.
 
 ---
 
-## 3. Page Table
+### 3.2 Page Table
 
-### 3.1 Implemented structure: 20-trit radix walk
+#### 3.2.1 Implemented structure: 20-trit radix walk
 
 The current `PageTable` is a ternary radix tree over the 20-trit VPN. Each
 level consumes one VPN trit and branches over `{0,1,2}`. After 20 steps, the
@@ -72,14 +80,14 @@ leaf stores:
 This makes the page-table shape match the ternary virtual-address model while
 preserving the same external MMU API.
 
-### 3.2 Diagnostics surface
+#### 3.2.2 Diagnostics surface
 
 The implementation still exposes a read-only flat VPN cache for diagnostics and
 compatibility, but the radix tree is the canonical translation structure.
 
 ---
 
-## 4. MMU API
+### 3.3 MMU API
 
 ```cpp
 namespace t81::ternaryos::mmu {
@@ -125,7 +133,34 @@ std::string page_table_trace(const PageTable& pt, uint64_t tva);
 
 ---
 
-## 5. Acceptance Criteria
+## 4. Determinism / Safety Considerations
+
+- TVA decoding and radix traversal must be deterministic for identical input addresses.
+- Fault classification must distinguish malformed addresses from absent mappings and permission failures.
+- Permission bits are part of the trusted memory boundary and should be surfaced in diagnostics.
+- The MMU must remain compatible with the deterministic scheduler and later fault-reporting path.
+
+## 5. Compatibility
+
+- The stable `mmu_map` / `mmu_translate` / `mmu_unmap` API remains intact.
+- `mmu_translate_checked()` extends the surface without breaking existing callers.
+- The read-only flat VPN cache remains available for diagnostics while the radix tree is canonical.
+
+## 6. Implementation Plan
+
+1. Keep TVA helpers and allocator semantics stable.
+2. Use the radix walk as the canonical translation structure.
+3. Preserve compatibility through the existing MMU API.
+4. Extend translation with checked access modes and fault reporting.
+5. Feed this model into the later kernel fault/reporting path.
+
+## 7. Open Questions
+
+- Should a future wider TVA design replace the current 30-trit "narrow virtual" space?
+- Should permission state eventually grow beyond simple read/write/execute bits?
+- How much of the diagnostics surface should remain API-stable once the kernel fault path exists?
+
+## 8. Acceptance Criteria
 
 - [ ] `tva_from_vpn_offset(vpn, offset)` and `tva_vpn(tva)` / `tva_offset(tva)` are inverse operations.
 - [ ] `mmu_map` + `mmu_translate` round-trip: translate(map(tva)) returns a valid physical address.

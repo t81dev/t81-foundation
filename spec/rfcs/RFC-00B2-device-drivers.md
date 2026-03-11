@@ -11,7 +11,21 @@
 
 ---
 
-## 1  Scope
+## 1. Summary
+
+This RFC defines the first device-layer boundary for Axion Phase 4: storage,
+display, text rendering, and network translation at the ternary/binary seam.
+
+## 2. Motivation
+
+Axion cannot reach a reboot-persistent system without a concrete device model.
+The Phase 4 requirement is not full hardware realism yet; it is a narrow,
+deterministic device boundary that supports CanonStore durability, display
+proofs, and packet/frame translation.
+
+## 3. Proposal
+
+### 3.1 Scope
 
 This RFC defines the device driver interfaces for TernOS Phase 4:
 
@@ -25,9 +39,9 @@ This RFC defines the device driver interfaces for TernOS Phase 4:
 
 ---
 
-## 2  Block Device Model
+### 3.2 Block Device Model
 
-### 2.1  Block size
+#### 3.2.1 Block size
 
 One logical block equals one `CanonBlock` = **729 trytes** (3⁶).
 This aligns ternary-block boundaries with the CanonFS fundamental unit.
@@ -37,7 +51,7 @@ Byte layout: [ tryte[0] .. tryte[728] ]  (1 byte per tryte, values 0..2)
 Block size: 729 bytes
 ```
 
-### 2.2  `IBlockDevice` interface
+#### 3.2.2 `IBlockDevice` interface
 
 ```cpp
 class IBlockDevice {
@@ -54,14 +68,14 @@ public:
 - `write_block` succeeds if `lba < block_count()`.
 - `flush` durably persists all written blocks (fsync equivalent).
 
-### 2.3  `HostedBlockDev` (Phase 4 simulation)
+#### 3.2.3 `HostedBlockDev` (Phase 4 simulation)
 
 In-memory `std::vector` of blocks; `save(path)` / `load(path)` for reboot simulation.
 All blocks are zero-initialised on construction.
 
 ---
 
-## 3  CanonFS Store
+### 3.3 CanonFS Store
 
 `CanonStore` wraps an `IBlockDevice` with a content-addressed write-once store.
 
@@ -71,14 +85,14 @@ get(ref)    → look up LBA in index → read_block → verify hash → return b
 rebuild()   → scan all allocated LBAs, re-hash, repopulate index
 ```
 
-### 3.1  Index
+#### 3.3.1 Index
 
 In-memory `std::map<CanonHash, uint64_t>` (hash → LBA).
 LBA 0 is reserved for the root index header (see §3.2).
 Data blocks start at LBA 1. If the root header overflows, additional index
 blocks are reserved contiguously from the tail of the device downward.
 
-### 3.2  Index persistence (LBA 0 header block)
+#### 3.3.2 Index persistence (LBA 0 header block)
 
 ```
 Bytes  0–3   : magic  "CST1"  (4 bytes)
@@ -101,7 +115,7 @@ Bytes 688–728: reserved / zero
 Overflow blocks are read in ascending tail order:
 `block_count - overflow_block_count` through `block_count - 1`.
 
-### 3.3  Durability contract
+#### 3.3.3 Durability contract
 
 `CanonStore::flush()` writes the in-memory index to LBA 0, then calls `IBlockDevice::flush()`.
 After a successful flush, a new `CanonStore` opened on the same device can
@@ -113,7 +127,7 @@ If the header is missing, torn, or advertises an impossible entry count,
 
 ---
 
-## 4  Ternary Framebuffer
+### 3.4 Ternary Framebuffer
 
 A 2-D array of `TritPixel { int8_t value; }` with values in `{-1, 0, +1}`.
 
@@ -130,7 +144,7 @@ Phase 4 output target: `hal_log()`.  No hardware MMIO in hosted simulation.
 
 ---
 
-## 5  Ternary Text Format (TTF)
+### 3.5 Ternary Text Format (TTF)
 
 Phase 4 includes a minimal hosted-simulation text path for rendering ASCII into
 the ternary framebuffer.
@@ -149,7 +163,7 @@ std::size_t             ttf_render_text(TernaryFramebuffer&, uint32_t x, uint32_
 
 ---
 
-## 6  Ternary Ethernet Packet
+### 3.6 Ternary Ethernet Packet
 
 Compatibility layer bridging binary Ethernet (IEEE 802.3) to ternary payloads.
 
@@ -177,7 +191,35 @@ Each payload byte stores one ternary digit encoded as `{0,1,2}` for
 
 ---
 
-## 7  Acceptance Criteria
+## 4. Determinism / Safety Considerations
+
+- CanonStore durability must remain conservative under failed flush conditions.
+- Rebuild behavior must prefer recoverable deterministic scans over silent corruption acceptance.
+- Packet/frame conversion must reject malformed ternary payload encodings.
+- Device wrappers should remain narrow and avoid importing host-specific policy into upper layers.
+
+## 5. Compatibility
+
+- Hosted device wrappers remain the current executable path.
+- VirtualBox-shaped bindings are additive and do not yet claim full hardware parity.
+- The API is intentionally shaped so later AHCI/E1000/VMSVGA-facing implementations can replace hosted wrappers without changing upper layers.
+
+## 6. Implementation Plan
+
+1. Keep `IBlockDevice` as the root storage seam.
+2. Use CanonStore as the first durable content-addressed storage layer.
+3. Prove framebuffer and TTF output through the existing guest/display seam.
+4. Prove packet/frame translation through the existing guest/network seam.
+5. Promote from hosted wrappers to real device-facing adapters later.
+
+## 7. Open Questions
+
+- When should NVMe supersede AHCI as the preferred storage profile?
+- How much display functionality should remain in the kernel-facing layer versus higher presentation services?
+- What compaction/rewrite strategy should CanonStore use for long-lived overflow metadata?
+- When should the hosted wrappers be considered insufficient for the Phase 4 promotion story?
+
+## 8. Acceptance Criteria
 
 | ID | Criterion |
 | :-- | :--- |

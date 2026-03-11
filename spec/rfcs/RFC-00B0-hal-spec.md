@@ -20,7 +20,7 @@ This RFC defines the scope, interface contract, and implementation strategy for 
 
 ---
 
-## 2. Problem Statement
+## 2. Motivation
 
 The T81VM currently executes as a hosted process on a binary OS (Linux/macOS). Promotion beyond hosted execution requires:
 
@@ -32,7 +32,9 @@ The roadmap now narrows the immediate target: before bare metal, TernOS should b
 
 ---
 
-## 3. Decision: Execution Model
+## 3. Proposal
+
+### 3.1 Execution Model
 
 Three candidate approaches are evaluated below. The decision is no longer "pick one forever before any implementation" because hosted HAL work already exists. Instead, this RFC must choose the **first non-hosted promotion path** for the current prototype.
 
@@ -45,7 +47,7 @@ Three candidate approaches are evaluated below. The decision is no longer "pick 
 
 **Recommendation:** Option B (VirtualBox Guest) as the first non-hosted promotion target. It gives the project a bootable, reproducible x86_64 image that others can run locally, while still exercising a real VM hardware boundary. Option A (UEFI Application) remains a plausible later path for hardware-near promotion, and Option D (Unikernel) remains a longer-term production-oriented direction.
 
-### 3.1 Selected first-target VirtualBox device profile
+### 3.2 Selected first-target VirtualBox device profile
 
 The first supported guest profile should be intentionally narrow:
 
@@ -67,7 +69,7 @@ This profile is chosen because the upstream VirtualBox source tree already carri
 
 `DevNVMe.cpp` exists and should remain a Phase 4 follow-on once AHCI-backed persistence is stable.
 
-### 3.2 Promotion strategy
+### 3.3 Promotion strategy
 
 The intended sequence is:
 
@@ -77,11 +79,11 @@ The intended sequence is:
 
 ---
 
-## 4. HAL Interface Contract
+### 3.4 HAL Interface Contract
 
 The HAL exposes the following surface to the T81VM. All types are in the `t81::hal` namespace.
 
-### 4.1 Memory Map
+#### 3.4.1 Memory Map
 
 ```cpp
 namespace t81::hal {
@@ -102,7 +104,7 @@ std::vector<MemoryRegion> enumerate_memory();
 
 Ternary address mapping: each `MemoryRegion` is subsequently carved into ternary pages (3¹⁰ = 59,049 tryte pages) by the Ternary MMU layer (Phase 2). The HAL does not perform this translation — it exposes raw physical layout only.
 
-### 4.2 Interrupt Dispatch
+#### 3.4.2 Interrupt Dispatch
 
 TISC has no interrupt or trap-return opcode in the frozen ISA. The HAL handles this via a **shadow binary dispatch table** — a small C++ trampoline registered at boot that catches hardware interrupts, translates them to a canonical `AxionTrap` event, and injects them into the Axion policy engine for enforcement before forwarding to the VM.
 
@@ -132,7 +134,7 @@ void register_interrupt_handler(InterruptSource, InterruptHandler);
 
 This design preserves ISA immutability: the interrupt path never touches TISC opcodes directly.
 
-### 4.3 I/O Port Abstraction
+#### 3.4.3 I/O Port Abstraction
 
 ```cpp
 namespace t81::hal {
@@ -147,7 +149,7 @@ void     io_write16(uint16_t port, uint16_t val);
 } // namespace t81::hal
 ```
 
-### 4.4 Boot Handoff
+#### 3.4.4 Boot Handoff
 
 ```cpp
 namespace t81::hal {
@@ -171,7 +173,7 @@ struct BootContext {
 
 ---
 
-## 5. Binary ↔ Ternary Address Translation (Deferred)
+### 3.5 Binary ↔ Ternary Address Translation (Deferred)
 
 The precise mapping of 48-bit x86_64 virtual addresses to trit-addressed TISC space is **out of scope for this RFC** and is deferred to a follow-on RFC (RFC-00B1: Ternary MMU). The HAL's `enumerate_memory()` output feeds directly into that design. Key open questions:
 
@@ -181,7 +183,29 @@ The precise mapping of 48-bit x86_64 virtual addresses to trit-addressed TISC sp
 
 ---
 
-## 6. Files / Deliverables
+## 4. Determinism / Safety Considerations
+
+- The HAL must not mutate the frozen TISC ISA or smuggle interrupt semantics
+  into user-visible opcodes.
+- Interrupt delivery remains deterministic only if the binary trap boundary is
+  normalized through the shadow dispatch table before any TISC-visible action.
+- Ethics-first boot remains mandatory below userland and is part of the trusted
+  HAL-to-kernel boundary.
+- The first-target VirtualBox profile is intentionally narrow so that platform
+  variability does not masquerade as kernel variability.
+
+## 5. Compatibility
+
+- Hosted HAL remains supported as the current executable proof path.
+- VirtualBox guest promotion is additive and must not break hosted tests.
+- This RFC does not require changing higher layers when later portability work
+  targets UEFI, QEMU, or bare metal.
+- The binary-to-ternary address mapping contract is intentionally deferred to
+  RFC-00B1.
+
+## 6. Implementation Plan
+
+### 6.1 Deliverables
 
 | File | Purpose |
 | :--- | :--- |
@@ -195,7 +219,22 @@ The precise mapping of 48-bit x86_64 virtual addresses to trit-addressed TISC sp
 
 ---
 
-## 7. Acceptance Criteria
+### 6.2 Milestones
+
+1. Keep the hosted HAL path green while the guest-oriented scaffolding evolves.
+2. Produce a repeatable guest boot entry path and `BootContext` construction.
+3. Plumb VM-visible memory/interrupt/device surfaces through HAL contracts.
+4. Hand off to the kernel/runtime path without reintroducing host-process-only assumptions.
+
+## 7. Open Questions
+
+1. **Guest boot format:** What is the cleanest build artifact for VBox EFI boot in this project: raw disk image, ISO, or another VirtualBox-friendly package?
+2. **AHCI first vs. NVMe first:** Upstream VirtualBox exposes both, but should TernOS intentionally defer NVMe until AHCI-backed CanonFS persistence is stable?
+3. **Display depth:** Is a minimal VGA/VMSVGA text-capable output sufficient for the first guest, or is any accelerated SVGA functionality required at all?
+4. **CI strategy:** Is a headless VirtualBox run acceptable for CI, or should the first automation target still be QEMU with VirtualBox reserved for developer/demo validation?
+5. **Portability boundary:** How do we keep VirtualBox-specific details isolated so later UEFI, QEMU, or bare-metal promotion does not require an HAL contract redesign?
+
+## 8. Acceptance Criteria
 
 - [ ] `t81_hal` library compiles cleanly under AppleClang 17, Clang 18, GCC 14.
 - [ ] `hal_boot_test` passes: `BootContext` with `ethics_boot_required = true` triggers Θ₁–Θ₉ evaluation before any TISC dispatch.
@@ -203,13 +242,3 @@ The precise mapping of 48-bit x86_64 virtual addresses to trit-addressed TISC sp
 - [ ] Guest-visible memory map, HPET/IOAPIC interrupt path, and AHCI storage surface are plumbed through HAL interfaces rather than synthetic in-process stubs.
 - [ ] The first supported guest profile is documented as VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC on x86_64.
 - [ ] All existing TernOS tests continue to pass (HAL promotion is additive; no ISA or Axion changes).
-
----
-
-## 8. Open Questions
-
-1. **Guest boot format:** What is the cleanest build artifact for VBox EFI boot in this project: raw disk image, ISO, or another VirtualBox-friendly package?
-2. **AHCI first vs. NVMe first:** Upstream VirtualBox exposes both, but should TernOS intentionally defer NVMe until AHCI-backed CanonFS persistence is stable?
-3. **Display depth:** Is a minimal VGA/VMSVGA text-capable output sufficient for the first guest, or is any accelerated SVGA functionality required at all?
-4. **CI strategy:** Is a headless VirtualBox run acceptable for CI, or should the first automation target still be QEMU with VirtualBox reserved for developer/demo validation?
-5. **Portability boundary:** How do we keep VirtualBox-specific details isolated so later UEFI, QEMU, or bare-metal promotion does not require an HAL contract redesign?

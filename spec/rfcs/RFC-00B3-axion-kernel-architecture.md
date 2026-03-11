@@ -34,7 +34,16 @@ defines the concrete boundary that the current codebase should converge toward.
 
 ---
 
-## 2. Goals
+## 2. Motivation
+
+The current Axion tree has real kernel subsystems, but they still behave too
+much like adjacent prototypes. HAL, MMU, scheduler, IPC, and device seams need
+an explicit runtime boundary so the next work is kernel integration rather than
+more disconnected subsystem growth.
+
+## 3. Proposal
+
+### 3.1 Goals
 
 - Define what "the Axion kernel" means in the current implementation.
 - Specify the boundary between kernel core and higher-level services.
@@ -42,9 +51,7 @@ defines the concrete boundary that the current codebase should converge toward.
 - Use the new MMU permission/fault model as a kernel integration point.
 - Provide acceptance criteria that can drive the next implementation passes.
 
----
-
-## 3. Non-Goals
+### 3.2 Non-Goals
 
 - POSIX compatibility
 - Unix process semantics
@@ -57,9 +64,9 @@ this phase.
 
 ---
 
-## 4. Kernel Boundary
+### 3.3 Kernel Boundary
 
-### 4.1 Kernel Core
+#### 3.3.1 Kernel Core
 
 The Axion kernel core currently includes these subsystems:
 
@@ -72,7 +79,7 @@ The Axion kernel core currently includes these subsystems:
 - CanonRef-safe IPC bus
 - minimal device-arbitration seams for the first supported platform profile
 
-### 4.2 Outside Kernel Core
+#### 3.3.2 Outside Kernel Core
 
 The following remain above the kernel boundary for now:
 
@@ -82,7 +89,7 @@ The following remain above the kernel boundary for now:
 - demo applications and review artifacts
 - richer storage/network/display presentation layers
 
-### 4.3 Device Responsibility Split
+#### 3.3.3 Device Responsibility Split
 
 The kernel core may own minimal arbitration and capability checks for device
 access, but not the full policy-rich user-facing presentation of those devices.
@@ -98,9 +105,9 @@ account for them.
 
 ---
 
-## 5. Boot and Control Flow
+### 3.4 Boot and Control Flow
 
-### 5.1 Current flow
+#### 3.4.1 Current flow
 
 The current implemented flow is:
 
@@ -108,7 +115,7 @@ The current implemented flow is:
 2. `hal_main` validates context and performs ethics-first boot
 3. HAL currently stubs the T81VM/kernel handoff
 
-### 5.2 Target kernel flow
+#### 3.4.2 Target kernel flow
 
 The next integration target is:
 
@@ -123,7 +130,7 @@ The next integration target is:
    - device arbitration state for the current platform profile
 5. kernel enters a deterministic main loop or dispatch loop
 
-### 5.3 Required kernel-owned entrypoint
+#### 3.4.3 Required kernel-owned entrypoint
 
 This RFC introduces the architectural requirement for a kernel-owned entry
 function, conceptually:
@@ -137,9 +144,9 @@ handoff target rather than leaving `hal_main` as the terminal stub.
 
 ---
 
-## 6. Memory and Fault Model
+### 3.5 Memory and Fault Model
 
-### 6.1 Virtual memory structure
+#### 3.5.1 Virtual memory structure
 
 Axion uses the RFC-00B1 TVA model:
 
@@ -147,7 +154,7 @@ Axion uses the RFC-00B1 TVA model:
 - 20-trit VPN
 - 20-level ternary radix walk
 
-### 6.2 Page-table leaf semantics
+#### 3.5.2 Page-table leaf semantics
 
 Each mapping leaf carries:
 
@@ -157,7 +164,7 @@ Each mapping leaf carries:
 - `writable`
 - `executable`
 
-### 6.3 Fault model
+#### 3.5.3 Fault model
 
 Kernel-integrated MMU behavior must distinguish:
 
@@ -167,7 +174,7 @@ Kernel-integrated MMU behavior must distinguish:
 
 The kernel must treat these as explicit events, not just null translations.
 
-### 6.4 Next integration step
+#### 3.5.4 Next integration step
 
 The next kernel-facing implementation milestone after this RFC is:
 
@@ -178,9 +185,9 @@ This is the first required bridge from MMU structure to kernel control flow.
 
 ---
 
-## 7. Execution Model
+### 3.6 Execution Model
 
-### 7.1 Scheduling
+#### 3.6.1 Scheduling
 
 The kernel scheduling model remains deterministic:
 
@@ -188,14 +195,14 @@ The kernel scheduling model remains deterministic:
 - explicit save/preempt/select/restore cycle
 - no heuristic time-slice policy in this phase
 
-### 7.2 Thread model
+#### 3.6.2 Thread model
 
 Axion is thread-first for now.
 
 This RFC does not require a full process table before kernel integration. The
 first kernel runtime may continue to schedule TISC thread contexts directly.
 
-### 7.3 Process model
+#### 3.6.3 Process model
 
 Process/group semantics are deferred until:
 
@@ -205,7 +212,7 @@ Process/group semantics are deferred until:
 
 ---
 
-## 8. IPC and Object Identity
+### 3.7 IPC and Object Identity
 
 IPC remains CanonRef-first.
 
@@ -219,7 +226,7 @@ The current FIFO inbox model is acceptable as the first kernel IPC substrate.
 
 ---
 
-## 9. Governance Boundary
+### 3.8 Governance Boundary
 
 Governance remains part of kernel responsibility at the boundary, not merely a
 shell or service-layer concern.
@@ -235,7 +242,7 @@ responsibility for the kernel core.
 
 ---
 
-## 10. Initial Platform Scope
+### 3.9 Initial Platform Scope
 
 The kernel integration target remains aligned with the current practical lanes:
 
@@ -254,7 +261,37 @@ This RFC does not retarget the project away from that profile.
 
 ---
 
-## 11. Acceptance Criteria
+## 4. Determinism / Safety Considerations
+
+- Kernel entry must preserve the ethics-first boot boundary below userland.
+- MMU faults must be explicit and deterministic, not implicit misses.
+- Scheduler behavior must remain insertion-order deterministic during integration.
+- CanonRef-based IPC must remain the only object-transfer path across kernel-visible message boundaries.
+- Device arbitration must stay narrow so platform-specific drift does not leak into userland contracts.
+
+## 5. Compatibility
+
+- Hosted and QEMU developer lanes remain valid while kernel entry integration evolves.
+- The existing subsystem APIs should be preserved where possible during the first kernel-runtime pass.
+- This RFC does not force an immediate process/syscall redesign.
+- The first supported platform profile remains VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC.
+
+## 6. Implementation Plan
+
+1. introduce a kernel-owned entry routine after `hal_main`
+2. add a kernel-facing page-fault/reporting path
+3. define the first kernel runtime state object
+4. connect scheduler and IPC initialization to that state
+5. only then expand syscall/userland semantics further
+
+## 7. Open Questions
+
+- What should the first concrete kernel-runtime state object contain?
+- Should device arbitration state live inside the first kernel state object or in a separate kernel-owned service registry?
+- When should thread-first scheduling grow into a fuller process model?
+- How should later capability checks attach to CanonRef and device operations without destabilizing the current seams?
+
+## 8. Acceptance Criteria
 
 - [ ] `hal_main` hands off to a kernel-owned entry routine instead of ending at a stub.
 - [ ] Kernel entry initializes the allocator, MMU, scheduler, and IPC substrate from `BootContext`.
@@ -264,18 +301,3 @@ This RFC does not retarget the project away from that profile.
 - [ ] CanonRef-safe IPC remains functional across the kernel-integrated runtime path.
 - [ ] Device arbitration state is initialized for the first supported storage/display/network profile.
 - [ ] Hosted and QEMU developer lanes continue to pass after kernel entry integration.
-
----
-
-## 12. Recommended Next Steps
-
-Implementation should proceed in this order:
-
-1. introduce a kernel-owned entry routine after `hal_main`
-2. add a kernel-facing page-fault/reporting path
-3. define the first kernel runtime state object
-4. connect scheduler and IPC initialization to that state
-5. only then expand syscall/userland semantics further
-
-This keeps the current subsystem work coherent and avoids shell/userland growth
-outrunning the kernel boundary again.
