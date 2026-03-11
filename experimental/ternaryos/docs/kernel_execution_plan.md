@@ -72,6 +72,8 @@ The current service layer now covers:
   surface
 - supervisor inventory visibility for the latest managed-service lifecycle
   transition
+- per-entry supervisor inventory visibility for each managed service's latest
+  lifecycle transition
 - compact supervisor-status visibility for managed-service lifecycle state
 - supervisor-recovery visibility for managed-service lifecycle state
 - fault-summary visibility for managed-service lifecycle state

@@ -2238,6 +2238,14 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory exposes one service id");
     check(register_service.supervisor_services->services.size() == 1,
           "supervisor inventory exposes one service entry");
+    check(register_service.supervisor_services->services.front().state_transitions == 0,
+          "supervisor inventory entry starts with zero state mutations after registration");
+    check(register_service.supervisor_services->services.front().last_transition_kind ==
+              KernelAuditEventKind::ServiceRegistered,
+          "supervisor inventory entry tracks registration as the latest lifecycle event");
+    check(register_service.supervisor_services->services.front()
+              .last_transition_sequence.has_value(),
+          "supervisor inventory entry exposes the registration audit sequence");
     check(register_service.supervisor_services->blocked_service_count == 0,
           "supervisor inventory starts with zero blocked services");
     check(register_service.supervisor_services->service_lifecycle_transitions == 1,
@@ -2354,6 +2362,11 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory reports one suspended service");
     check(suspend_service.supervisor_services->services.front().suspended,
           "supervisor inventory entry reports suspended service");
+    check(suspend_service.supervisor_services->services.front().state_transitions == 1,
+          "supervisor inventory entry increments state mutations after suspend");
+    check(suspend_service.supervisor_services->services.front().last_transition_kind ==
+              KernelAuditEventKind::ServiceSuspended,
+          "supervisor inventory entry tracks suspend as the latest lifecycle event");
     check(suspend_service.supervisor_services->service_lifecycle_transitions == 2,
           "supervisor inventory increments lifecycle transition count after suspend");
     check(suspend_service.supervisor_services->last_service_transition_kind ==
@@ -2522,6 +2535,9 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory reports one unhealthy service");
     check(mark_unhealthy.supervisor_services->services.front().unhealthy,
           "supervisor inventory entry reports unhealthy service");
+    check(mark_unhealthy.supervisor_services->services.front().last_transition_kind ==
+              KernelAuditEventKind::ServiceMarkedUnhealthy,
+          "supervisor inventory entry tracks unhealthy as the latest lifecycle event");
     check(mark_unhealthy.supervisor_services->service_lifecycle_transitions == 6,
           "supervisor inventory aggregates lifecycle transitions across same-supervisor control");
     check(mark_unhealthy.supervisor_services->last_service_transition_kind ==
@@ -2590,6 +2606,11 @@ static void test_kernel_service_runtime_layer() {
   if (peer_health.supervisor_services) {
     check(peer_health.supervisor_services->unhealthy_service_count == 0,
           "supervisor inventory clears unhealthy count after heal");
+    check(peer_health.supervisor_services->services.front().last_transition_kind ==
+              KernelAuditEventKind::ServiceMarkedHealthy,
+          "supervisor inventory entry tracks heal as the latest lifecycle event");
+    check(peer_health.supervisor_services->services.front().last_transition_sequence.has_value(),
+          "supervisor inventory entry exposes the latest lifecycle audit sequence");
     check(peer_health.supervisor_services->service_lifecycle_transitions == 7,
           "supervisor inventory increments lifecycle transitions after heal");
     check(peer_health.supervisor_services->last_service_transition_kind ==
@@ -2868,6 +2889,12 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory aggregates rejected service requests");
     check(supervisor_inventory.supervisor_services->services.front().blocked,
           "supervisor inventory entry reports blocked service");
+    check(supervisor_inventory.supervisor_services->services.front().last_transition_kind ==
+              KernelAuditEventKind::ServiceMarkedHealthy,
+          "blocked supervisor inventory entry retains the latest lifecycle event");
+    check(supervisor_inventory.supervisor_services->services.front()
+              .last_transition_sequence.has_value(),
+          "blocked supervisor inventory entry retains the latest lifecycle audit sequence");
   }
 
   auto bad_unregister = axion_kernel_service_action(

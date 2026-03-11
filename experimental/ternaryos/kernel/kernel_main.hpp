@@ -431,6 +431,9 @@ struct KernelSupervisorServiceEntryView {
   bool registered{false};
   uint64_t requests{0};
   uint64_t rejected_requests{0};
+  uint64_t state_transitions{0};
+  std::optional<KernelAuditEventKind> last_transition_kind{};
+  std::optional<uint64_t> last_transition_sequence{};
 };
 
 struct KernelSupervisorServiceInventoryView {

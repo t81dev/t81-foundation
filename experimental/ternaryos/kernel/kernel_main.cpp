@@ -566,6 +566,9 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
         .registered = service_state->registered,
         .requests = service_state->requests,
         .rejected_requests = service_state->rejected_requests,
+        .state_transitions = service_state->state_transitions,
+        .last_transition_kind = service_state->last_transition_kind,
+        .last_transition_sequence = service_state->last_transition_sequence,
     });
     if (service_state->blocked) {
       ++view.blocked_service_count;

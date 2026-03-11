@@ -123,7 +123,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1757/1757 assertions, 8/8 tests pass
+# Expected: 1767/1767 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -284,11 +284,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `845/845`
+- `t81_ternaryos_hal_boot_test` is `855/855`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1757`
+- total TernOS assertions are `1767`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state
@@ -304,6 +304,8 @@ Local hosted proof as of the current branch:
   deterministic audit-summary surface
 - supervisor-owned inventory now also retains the latest managed-service
   lifecycle transition metadata
+- supervisor-owned inventory entries now also retain each managed service's
+  latest lifecycle kind and sequence
 - compact supervisor status now also exposes managed-service lifecycle counts
   and latest-transition metadata
 - supervisor recovery status now also exposes managed-service lifecycle counts
