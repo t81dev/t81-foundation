@@ -767,6 +767,68 @@ static void test_kernel_fault_process_boundary() {
   }
 }
 
+static void test_kernel_fault_acknowledgement_and_recovery() {
+  std::printf("\n[AC-24] Axion kernel acknowledges and recovers quarantined threads\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for fault acknowledgement");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext thread_a;
+  thread_a.label = "recover-a";
+  thread_a.registers[0] = 301;
+  t81::ternaryos::sched::TiscContext thread_b;
+  thread_b.label = "recover-b";
+  thread_b.registers[0] = 302;
+
+  auto tid_a = axion_kernel_spawn_thread(*state, thread_a);
+  auto tid_b = axion_kernel_spawn_thread(*state, thread_b);
+  check(tid_a.has_value(), "recovery runtime spawns thread A");
+  check(tid_b.has_value(), "recovery runtime spawns thread B");
+  if (!tid_a || !tid_b) {
+    return;
+  }
+
+  check(axion_kernel_step(*state), "first recovery step dispatches thread A");
+  check(state->scheduler.current_tid() == *tid_a, "thread A is current before recovery fault");
+  auto fault_report = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(33, 0), mmu::MmuAccessMode::Read);
+  check(fault_report.fault.has_value(), "recovery path records a thread fault");
+  check(axion_kernel_step(*state), "second recovery step delivers and quarantines thread A");
+
+  const auto* runtime_a = state->find_thread_runtime(*tid_a);
+  check(runtime_a != nullptr, "recovery path exposes thread A runtime state");
+  if (!runtime_a) {
+    return;
+  }
+  check(runtime_a->quarantined, "thread A is quarantined before acknowledgement");
+  check(runtime_a->fault_inbox.size() == 1, "thread A inbox has one pending fault");
+  check(state->scheduler.current_tid() == *tid_b,
+        "thread B is current while thread A is quarantined");
+
+  check(!axion_kernel_ack_thread_fault(*state, *tid_b),
+        "non-faulting thread cannot acknowledge an empty fault inbox");
+  check(axion_kernel_ack_thread_fault(*state, *tid_a),
+        "faulting thread acknowledgement succeeds");
+  check(state->counters.thread_fault_acknowledgements == 1,
+        "runtime counts fault acknowledgements");
+  check(state->counters.thread_fault_recoveries == 1,
+        "runtime counts recovered quarantined threads");
+
+  runtime_a = state->find_thread_runtime(*tid_a);
+  check(runtime_a->fault_inbox.empty(), "acknowledgement drains thread A fault inbox");
+  check(!runtime_a->quarantined, "thread A leaves quarantine after acknowledgement");
+
+  check(axion_kernel_step(*state), "post-acknowledgement step continues runtime");
+  check(state->scheduler.current_tid() == *tid_a,
+        "thread A becomes runnable again after acknowledgement");
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -797,6 +859,7 @@ int main() {
   test_kernel_loop_and_active_device_arbitration();
   test_kernel_loop_fault_delivery();
   test_kernel_fault_process_boundary();
+  test_kernel_fault_acknowledgement_and_recovery();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

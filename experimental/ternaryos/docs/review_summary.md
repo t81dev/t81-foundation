@@ -30,9 +30,9 @@ The official promotion target remains:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1154`
+- total assertions: `1173`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `207/207`
+- `t81_ternaryos_hal_boot_test`: `226/226`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -50,6 +50,7 @@ Kernel integration proof now also includes:
 - a deterministic kernel-step loop with runtime counters and active AHCI claim/release behavior
 - deterministic FIFO fault delivery from the kernel loop over recorded MMU faults
 - delivered MMU faults now route into per-thread runtime state, quarantining the faulting thread and preserving a thread-local fault inbox
+- fault acknowledgements can now recover quarantined threads deterministically
 
 Phase 4 storage proof now covers:
 

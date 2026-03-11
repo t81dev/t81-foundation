@@ -58,6 +58,8 @@ struct KernelRuntimeState {
     uint64_t faults_delivered{0};
     uint64_t faults_routed_to_threads{0};
     uint64_t thread_quarantines{0};
+    uint64_t thread_fault_acknowledgements{0};
+    uint64_t thread_fault_recoveries{0};
   };
 
   std::string platform_id;
@@ -95,6 +97,11 @@ struct KernelRuntimeState {
   bool has_device_arbitration() const noexcept { return device_arbitration.has_value(); }
 
   const ThreadRuntimeState* find_thread_runtime(sched::Tid tid) const noexcept {
+    auto it = thread_runtime.find(tid);
+    return it == thread_runtime.end() ? nullptr : &it->second;
+  }
+
+  ThreadRuntimeState* find_thread_runtime_mut(sched::Tid tid) noexcept {
     auto it = thread_runtime.find(tid);
     return it == thread_runtime.end() ? nullptr : &it->second;
   }
@@ -136,6 +143,9 @@ bool axion_kernel_claim_device(KernelRuntimeState& state,
 bool axion_kernel_release_device(KernelRuntimeState& state,
                                  std::string_view device_name,
                                  sched::Tid owner) noexcept;
+
+bool axion_kernel_ack_thread_fault(KernelRuntimeState& state,
+                                   sched::Tid tid) noexcept;
 
 int axion_kernel_main(const hal::BootContext& ctx) noexcept;
 

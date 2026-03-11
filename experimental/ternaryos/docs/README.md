@@ -117,7 +117,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1154/1154 assertions, 8/8 tests pass
+# Expected: 1173/1173 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -145,6 +145,7 @@ The demo shows a VirtualBox-first hosted simulation path:
 - the kernel runtime now exposes a deterministic `axion_kernel_step(...)` loop surface with runtime counters
 - the kernel loop now delivers recorded MMU faults deterministically through a pending-fault queue
 - the kernel loop now routes delivered faults into per-thread runtime state, quarantining the faulting thread and preserving a thread-local fault inbox
+- faulting threads can now acknowledge delivered faults and recover deterministically back into the runnable set
 - TTF renders ASCII text into the VirtualBox VMSVGA-backed ternary framebuffer.
 - TernaryEthernetPacket round-trips through the VirtualBox E1000 scaffold.
 
@@ -276,11 +277,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `207/207`
+- `t81_ternaryos_hal_boot_test` is `226/226`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1154`
+- total TernOS assertions are `1173`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback
@@ -303,6 +304,7 @@ Local hosted proof as of the current branch:
   - runtime counters for loop, scheduler, and IPC activity
   - queued fault delivery with deterministic first-in-first-out loop consumption
   - thread-local fault routing and deterministic fault-thread quarantine
+  - explicit fault acknowledgement and deterministic thread recovery
 
 ## VirtualBox Artifact
 

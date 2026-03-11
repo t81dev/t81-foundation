@@ -231,6 +231,25 @@ bool axion_kernel_release_device(KernelRuntimeState& state,
   return true;
 }
 
+bool axion_kernel_ack_thread_fault(KernelRuntimeState& state,
+                                   sched::Tid tid) noexcept {
+  auto* thread_state = state.find_thread_runtime_mut(tid);
+  if (!thread_state || thread_state->fault_inbox.empty()) {
+    return false;
+  }
+
+  thread_state->fault_inbox.pop_front();
+  ++state.counters.thread_fault_acknowledgements;
+
+  if (thread_state->fault_inbox.empty() && thread_state->quarantined) {
+    thread_state->quarantined = false;
+    if (state.scheduler.wake(tid)) {
+      ++state.counters.thread_fault_recoveries;
+    }
+  }
+  return true;
+}
+
 int axion_kernel_main(const hal::BootContext& ctx) noexcept {
   return axion_kernel_bootstrap(ctx).has_value() ? 0 : 1;
 }
