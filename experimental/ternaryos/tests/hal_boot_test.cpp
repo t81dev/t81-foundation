@@ -944,6 +944,8 @@ static void test_kernel_pager_fault_state() {
           "runtime status counts one dispatched pager handoff");
     check(runtime_status_after_handoff.runtime->pager_resolutions == 0,
           "runtime status starts with zero pager resolutions after handoff");
+    check(runtime_status_after_handoff.runtime->pager_faults_coalesced == 0,
+          "runtime status starts with zero coalesced pager faults after first handoff");
     check(runtime_status_after_handoff.runtime->pager_worker_handoffs_received == 1,
           "runtime status counts one handoff received by pager worker");
   }
@@ -959,12 +961,16 @@ static void test_kernel_pager_fault_state() {
   if (pager_group_after_handoff.process_group) {
     check(!pager_group_after_handoff.process_group->pager_handoff_pending,
           "pager-needed process group clears pending handoff after dispatch");
+    check(pager_group_after_handoff.process_group->pager_worker_owned,
+          "pager-needed process group reports worker-owned pager state after handoff");
     check(pager_group_after_handoff.process_group->pager_handoffs == 1,
           "pager-needed process group counts one dispatched handoff");
     check(pager_group_after_handoff.process_group->pager_needed,
           "pager-needed process group remains pager-needed after handoff");
     check(pager_group_after_handoff.process_group->pager_resolutions == 0,
           "pager-needed process group starts with zero resolutions after handoff");
+    check(pager_group_after_handoff.process_group->pager_faults_coalesced == 0,
+          "pager-needed process group starts with zero coalesced faults after handoff");
   }
 
   auto fault_summary_after_handoff = axion_kernel_service_request(
@@ -992,11 +998,39 @@ static void test_kernel_pager_fault_state() {
           "fault summary starts without a pager resolution record");
   }
 
+  state->pending_faults.push_back(KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva = mmu::tva_from_vpn_offset(61, 0),
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault = mmu::MmuFault::Unmapped,
+      .subject_tid = *pager_tid,
+  });
+  check(true, "same unresolved address space can fault again while worker owns it");
+  (void)axion_kernel_step(*state);
+
+  auto runtime_status_after_coalesce = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_status_after_coalesce.status == KernelServiceStatus::Ok,
+        "runtime status succeeds after coalesced pager fault");
+  check(runtime_status_after_coalesce.runtime.has_value(),
+        "runtime status exposes coalesced pager fault state");
+  if (runtime_status_after_coalesce.runtime) {
+    check(runtime_status_after_coalesce.runtime->pending_pager_handoff_count == 0,
+          "runtime status keeps pending pager handoff count clear after coalescing");
+    check(runtime_status_after_coalesce.runtime->pager_worker_inbox_count == 1,
+          "runtime status retains one queued worker item during coalescing");
+    check(runtime_status_after_coalesce.runtime->pager_handoffs_dispatched == 1,
+          "runtime status does not dispatch a duplicate pager handoff");
+    check(runtime_status_after_coalesce.runtime->pager_faults_coalesced == 1,
+          "runtime status counts one coalesced pager fault");
+  }
+
   check(mmu::mmu_map(state->page_table,
                      state->allocator,
                      mmu::tva_from_vpn_offset(61, 0),
                      *pager_address_space_id),
         "pager-needed address space accepts a mapping for the missing page");
+  (void)axion_kernel_step(*state);
   (void)axion_kernel_step(*state);
 
   auto runtime_status_after_resolution = axion_kernel_service_request(
@@ -1020,6 +1054,8 @@ static void test_kernel_pager_fault_state() {
           "runtime status retains pager worker handoff count after resolution");
     check(runtime_status_after_resolution.runtime->pager_worker_resolutions_completed == 1,
           "runtime status counts one completed pager worker resolution");
+    check(runtime_status_after_resolution.runtime->pager_faults_coalesced == 1,
+          "runtime status retains coalesced pager fault count after resolution");
   }
 
   auto pager_group_after_resolution = axion_kernel_service_request(
@@ -1035,10 +1071,14 @@ static void test_kernel_pager_fault_state() {
           "process group clears pager-needed state after resolution");
     check(!pager_group_after_resolution.process_group->pager_handoff_pending,
           "process group keeps handoff pending cleared after resolution");
+    check(!pager_group_after_resolution.process_group->pager_worker_owned,
+          "process group clears worker-owned pager state after resolution");
     check(pager_group_after_resolution.process_group->pager_handoffs == 1,
           "process group retains dispatched handoff count after resolution");
     check(pager_group_after_resolution.process_group->pager_resolutions == 1,
           "process group counts one pager resolution");
+    check(pager_group_after_resolution.process_group->pager_faults_coalesced == 1,
+          "process group retains one coalesced pager fault after resolution");
   }
 
   auto fault_summary_after_resolution = axion_kernel_service_request(
@@ -1072,13 +1112,19 @@ static void test_kernel_pager_fault_state() {
           "fault summary counts one pager worker handoff after first resolution");
     check(fault_summary_after_resolution.fault_summary->pager_worker_resolutions_completed == 1,
           "fault summary counts one pager worker resolution after first resolution");
+    check(fault_summary_after_resolution.fault_summary->pager_faults_coalesced == 1,
+          "fault summary counts one coalesced pager fault after first resolution");
   }
 
   const auto repeat_tva = mmu::tva_from_vpn_offset(63, 0);
-  auto repeat_fault =
-      axion_kernel_check_access(*state, repeat_tva, mmu::MmuAccessMode::Read);
-  check(repeat_fault.fault.has_value(),
-        "same address space can enter a second pager-needed cycle");
+  state->pending_faults.push_back(KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva = repeat_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault = mmu::MmuFault::Unmapped,
+      .subject_tid = *pager_tid,
+  });
+  check(true, "same address space can enter a second pager-needed cycle");
   (void)axion_kernel_step(*state);
   check(true, "second pager cycle fault is delivered");
   auto runtime_status_repeat_fault = axion_kernel_service_request(
@@ -1097,6 +1143,7 @@ static void test_kernel_pager_fault_state() {
                      repeat_tva,
                      *pager_address_space_id),
         "same address space accepts a second missing-page mapping");
+  (void)axion_kernel_step(*state);
   (void)axion_kernel_step(*state);
   (void)axion_kernel_step(*state);
   auto fault_summary_after_repeat = axion_kernel_service_request(
@@ -2764,12 +2811,16 @@ static void test_kernel_service_runtime_layer() {
           "healthy service view reports no pager-needed state");
     check(!service_view.service->pager_handoff_pending,
           "healthy service view reports no pending pager handoff");
+    check(!service_view.service->pager_worker_owned,
+          "healthy service view reports no worker-owned pager state");
     check(service_view.service->pending_pager_fault_count == 0,
           "healthy service view reports zero pending pager faults");
     check(service_view.service->pager_handoffs == 0,
           "healthy service view reports zero pager handoffs");
     check(service_view.service->pager_resolutions == 0,
           "healthy service view reports zero pager resolutions");
+    check(service_view.service->pager_faults_coalesced == 0,
+          "healthy service view reports zero coalesced pager faults");
     check(service_view.service->primary_tid == *owner_tid,
           "service view exposes primary group thread");
     check(!service_view.service->faulted_group,
@@ -3350,12 +3401,16 @@ static void test_kernel_service_runtime_layer() {
           "blocked supervisor inventory entry reports pager-needed state");
     check(supervisor_inventory.supervisor_services->services.front().pager_handoff_pending,
           "blocked supervisor inventory entry reports pending pager handoff");
+    check(!supervisor_inventory.supervisor_services->services.front().pager_worker_owned,
+          "blocked supervisor inventory entry is not yet worker-owned before handoff dispatch");
     check(supervisor_inventory.supervisor_services->services.front().pending_pager_fault_count == 1,
           "blocked supervisor inventory entry counts one pending pager fault");
     check(supervisor_inventory.supervisor_services->services.front().pager_faults == 1,
           "blocked supervisor inventory entry counts one pager fault");
     check(supervisor_inventory.supervisor_services->services.front().pager_handoffs == 0,
           "blocked supervisor inventory entry has not dispatched a pager handoff yet");
+    check(supervisor_inventory.supervisor_services->services.front().pager_faults_coalesced == 0,
+          "blocked supervisor inventory entry has not coalesced pager faults yet");
     check(supervisor_inventory.supervisor_services->services.front().last_pager_fault.has_value(),
           "blocked supervisor inventory entry exposes the pager fault record");
     check(supervisor_inventory.supervisor_services->services.front().last_transition_kind ==

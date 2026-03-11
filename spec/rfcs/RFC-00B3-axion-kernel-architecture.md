@@ -331,9 +331,12 @@ deterministically one address space at a time, so diagnostics can distinguish
 pager-needed, handed-off, and resolved state. A first real kernel-owned pager
 worker now also exists, with a FIFO inbox and one active work item, so
 repeated pager-needed cycles can flow through a concrete internal consumer
-without adding a public pager ABI. The next kernel slice is to keep that pager
-surface private while expanding pager-worker behavior before any public pager
-ABI or syscall design.
+without adding a public pager ABI. Repeated unresolved faults on a
+worker-owned address space now coalesce instead of creating duplicate pager
+work items, and diagnostics expose worker-owned state plus coalesced
+pager-fault counts without widening the contract. The next kernel slice is to
+keep that pager surface private while expanding backlog/load behavior before
+any public pager ABI or syscall design.
 
 The working execution note for this slice is:
 

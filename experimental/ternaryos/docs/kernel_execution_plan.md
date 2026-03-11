@@ -105,6 +105,13 @@ The fourth pager-groundwork slice is now also complete:
 - repeated pager-needed cycles on one address space now remain deterministic
   through handoff and resolution
 
+The fifth pager-groundwork slice is now also complete:
+
+- repeated unresolved faults on a worker-owned address space now coalesce
+  instead of creating duplicate pager work items
+- stable diagnostics now expose worker-owned state and coalesced pager-fault
+  counts across runtime, process-group, service, supervisor, and fault views
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
@@ -118,8 +125,8 @@ The next real kernel work is now:
 
 - pager integration
 - richer kernel-owned pager work after the first worker model
-- explicit transition handling for backlog, prioritization, or multiple active
-  pager work items
+- explicit transition handling for backlog, prioritization, or multiple queued
+  address spaces
 - stable diagnostics proving pager worker behavior remains deterministic under
   deeper load
 

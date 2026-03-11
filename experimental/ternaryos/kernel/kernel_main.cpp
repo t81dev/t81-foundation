@@ -287,7 +287,10 @@ void record_pager_fault_state(KernelRuntimeState& state,
     return;
   }
   address_space->pager_needed = true;
-  if (!address_space->pager_handoff_pending) {
+  if (address_space->pager_handoff_pending || address_space->pager_worker_owned) {
+    ++address_space->pager_faults_coalesced;
+    ++state.counters.pager_faults_coalesced;
+  } else {
     address_space->pager_handoff_pending = true;
     state.pending_pager_handoffs.push_back(*address_space_id);
     ++state.counters.pager_handoffs_queued;
@@ -609,11 +612,14 @@ KernelProcessGroupStatusView make_process_group_view(const KernelRuntimeState& s
       .pager_needed = address_space ? address_space->pager_needed : false,
       .pager_handoff_pending =
           address_space ? address_space->pager_handoff_pending : false,
+      .pager_worker_owned = address_space ? address_space->pager_worker_owned : false,
       .pending_pager_fault_count =
           address_space ? address_space->pending_pager_fault_count : 0,
       .pager_faults = address_space ? address_space->pager_faults : 0,
       .pager_handoffs = address_space ? address_space->pager_handoffs : 0,
       .pager_resolutions = address_space ? address_space->pager_resolutions : 0,
+      .pager_faults_coalesced =
+          address_space ? address_space->pager_faults_coalesced : 0,
       .last_pager_fault =
           address_space ? address_space->last_pager_fault : std::nullopt,
       .member_count = group_state ? group_state->member_tids.size() : 0,
@@ -754,11 +760,14 @@ KernelServiceStatusView make_service_view(const KernelRuntimeState& state,
       .pager_needed = address_space ? address_space->pager_needed : false,
       .pager_handoff_pending =
           address_space ? address_space->pager_handoff_pending : false,
+      .pager_worker_owned = address_space ? address_space->pager_worker_owned : false,
       .pending_pager_fault_count =
           address_space ? address_space->pending_pager_fault_count : 0,
       .pager_faults = address_space ? address_space->pager_faults : 0,
       .pager_handoffs = address_space ? address_space->pager_handoffs : 0,
       .pager_resolutions = address_space ? address_space->pager_resolutions : 0,
+      .pager_faults_coalesced =
+          address_space ? address_space->pager_faults_coalesced : 0,
       .last_pager_fault =
           address_space ? address_space->last_pager_fault : std::nullopt,
       .primary_tid =
@@ -840,6 +849,11 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
               find_group_address_space_state(state, service_state->process_group_id);
           return address_space ? address_space->pager_handoff_pending : false;
         }(),
+        .pager_worker_owned = [&]() -> bool {
+          const auto* address_space =
+              find_group_address_space_state(state, service_state->process_group_id);
+          return address_space ? address_space->pager_worker_owned : false;
+        }(),
         .pending_pager_fault_count = [&]() -> std::size_t {
           const auto* address_space =
               find_group_address_space_state(state, service_state->process_group_id);
@@ -859,6 +873,11 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
           const auto* address_space =
               find_group_address_space_state(state, service_state->process_group_id);
           return address_space ? address_space->pager_resolutions : 0;
+        }(),
+        .pager_faults_coalesced = [&]() -> uint64_t {
+          const auto* address_space =
+              find_group_address_space_state(state, service_state->process_group_id);
+          return address_space ? address_space->pager_faults_coalesced : 0;
         }(),
         .last_pager_fault = [&]() -> std::optional<KernelFaultRecord> {
           const auto* address_space =
@@ -909,6 +928,7 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .pending_pager_handoffs = count_pending_pager_handoff_address_spaces(state),
       .pager_handoffs_dispatched = state.counters.pager_handoffs_dispatched,
       .pager_resolutions = state.counters.pager_resolutions,
+      .pager_faults_coalesced = state.counters.pager_faults_coalesced,
       .service_lifecycle_transitions =
           [&state]() {
             uint64_t total = 0;
@@ -1335,6 +1355,7 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
         };
         state.pager_worker.inbox.push_back(
             KernelPagerWorkItem{.handoff = *state.last_pager_handoff});
+        address_space->pager_worker_owned = true;
         ++state.pager_worker.handoffs_received;
         ++state.counters.pager_handoffs_dispatched;
       }
@@ -1366,6 +1387,7 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
           continue;
         }
         address_space->pager_needed = false;
+        address_space->pager_worker_owned = false;
         address_space->pending_pager_fault_count = 0;
         ++address_space->pager_resolutions;
         address_space->last_pager_resolution_sequence =
@@ -1453,6 +1475,7 @@ KernelServiceResult axion_kernel_service_request(
           .policy_faults = state.counters.policy_faults,
           .pager_handoffs_dispatched = state.counters.pager_handoffs_dispatched,
           .pager_resolutions = state.counters.pager_resolutions,
+          .pager_faults_coalesced = state.counters.pager_faults_coalesced,
           .pager_worker_handoffs_received = state.pager_worker.handoffs_received,
           .pager_worker_resolutions_completed =
               state.pager_worker.resolutions_completed,

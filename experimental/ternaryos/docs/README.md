@@ -336,6 +336,9 @@ Local hosted proof as of the current branch:
   through the same diagnostics
 - a first internal pager worker now exists as a kernel-owned FIFO consumer for
   pager handoffs, with deterministic repeated cycles on one address space
+- repeated unresolved faults on a worker-owned address space now coalesce
+  instead of creating duplicate pager work items, and diagnostics expose that
+  worker-owned/coalesced state without widening the contract
 - the first narrow service-facing action now exists through that same boundary:
   supervisor fault-group acknowledgement
 - supervisor-facing recovery/report flows are now exposed through that same boundary:

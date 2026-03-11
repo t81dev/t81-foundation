@@ -78,9 +78,11 @@ pager-groundwork slice is in place as well. Pager-needed address spaces now
 also enter a deterministic internal handoff queue, and diagnostics distinguish
 handoff-pending from handoff-dispatched state. Once the missing mapping
 appears, the kernel loop now also resolves one handed-off pager-needed address
-space at a time and exposes that resolved state deterministically. The next
-steps are to keep that lifecycle contract stable while moving the kernel
-toward richer kernel-owned pager-worker behavior and later pager integration.
+space at a time and exposes that resolved state deterministically. Repeated
+unresolved faults on a worker-owned address space now also coalesce instead of
+creating duplicate pager work items. The next steps are to keep that
+lifecycle contract stable while moving the kernel toward richer kernel-owned
+pager-worker backlog/load behavior and later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 
