@@ -118,7 +118,7 @@ The current implemented flow is:
 
 #### 3.4.2 Target kernel flow
 
-The next integration target is:
+The current integration target is:
 
 1. firmware/host stub constructs `BootContext`
 2. `hal_main` validates context and performs ethics-first boot
@@ -129,7 +129,10 @@ The next integration target is:
    - scheduler state
    - IPC state
    - device arbitration state for the current platform profile
+   - process-group and supervisor fault-policy state
 5. kernel enters a deterministic main loop or dispatch loop
+6. service-facing runtime requests read kernel-owned state through a narrow
+   deterministic request/result contract
 
 #### 3.4.3 Required kernel-owned entrypoint
 
@@ -239,13 +242,14 @@ The current FIFO inbox model is acceptable as the first kernel IPC substrate.
 
 ### 3.7.1 Immediate Execution Plan
 
-The next implementation slice after the current supervisor/process-group fault
-boundary is a short explicit sequence:
+The first service-facing runtime request/result contract is now implemented.
+The next implementation slice after it is a short explicit sequence:
 
-1. define the first service-facing runtime request/result contract
-2. define deterministic request behavior for healthy vs faulted groups
-3. expose stable diagnostics above kernel-owned state without leaking kernel
+1. define deterministic request behavior for healthy vs faulted groups
+2. expose stable diagnostics above kernel-owned state without leaking kernel
    internals directly
+3. add narrow service-facing runtime actions without introducing syscall or
+   capability semantics
 
 The working execution note for this slice is:
 

@@ -41,7 +41,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 | `hal/hal_main.cpp` | Ethics-first boot — validates `BootContext`, evaluates Θ₁–Θ₉, and hands off to the first kernel-owned runtime entry | 9 |
 | `hal/interrupt_table.cpp` | Shadow binary dispatch table; `register_interrupt_handler`, `dispatch_interrupt`, `fire_simulated_interrupt` | (above) |
 | `hal/hosted_stub.cpp` | macOS/Linux UEFI stub simulation; synthetic memory map; calls `hal_main` | (above) |
-| `kernel/kernel_main.hpp/.cpp` | First Axion kernel-owned runtime entry/bootstrap over validated `BootContext`; computes runtime state, records MMU faults, queues and delivers faults through the loop, routes delivered faults into per-thread runtime state, quarantines faulting threads deterministically, gates recovery through kernel-owned process-group policy, emits audit-only governance events, drives deterministic scheduler dispatch, routes CanonRef-safe IPC, provides a deterministic kernel-step loop with counters, performs active device claims/releases, and rejects invalid handoff contexts | 127 |
+| `kernel/kernel_main.hpp/.cpp` | First Axion kernel-owned runtime entry/bootstrap over validated `BootContext`; computes runtime state, records MMU faults, queues and delivers faults through the loop, routes delivered faults into per-thread runtime state, quarantines faulting threads deterministically, gates recovery through kernel-owned process-group policy, emits audit-only governance events, drives deterministic scheduler dispatch, routes CanonRef-safe IPC, provides a deterministic kernel-step loop with counters, performs active device claims/releases, rejects invalid handoff contexts, and now exposes a service-facing request/result contract for runtime, process-group, supervisor, fault, and device summaries | 127 |
 | `hal/virtualbox_platform.hpp/.cpp` | First-target VirtualBox promotion scaffold: VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC profile validation, device-map descriptors, timer-tick simulation, and `BootContext` construction | 43 |
 | `hal/virtualbox_guest_devices.hpp/.cpp` | VirtualBox guest-device binding seam: maps the first supported HAL storage, network, and display profile onto AHCI/E1000/VMSVGA-shaped Phase 4 adapters, rejects unsupported NVMe/PCNet/VGA promotion paths, and bootstraps the first guest profile as a reusable runtime bundle | 39 |
 | `hal/virtualbox_efi_stub.c` | Freestanding VBox EFI guest stub source: constructs the first guest `BootContext` via the C ABI bridge and serves as the source for the staged `BOOTX64.obj` artifact | — |
@@ -132,8 +132,8 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - Active device arbitration for the first supported VirtualBox storage/display/network profile is now attached to that same owned boundary.
 - The kernel runtime now also exposes a deterministic loop step plus runtime counters for scheduler and IPC activity.
 - The loop-owned fault delivery path now feeds a real kernel policy boundary: delivered faults are routed into per-thread runtime state, the faulting thread is quarantined deterministically, the owning process group enters a blocked fault state, explicit group acknowledgement gates recovery, and audit-only governance events are recorded in deterministic order.
-- The supervisor layer above the process-group boundary is now implemented; the next kernel step is the first service-facing runtime contract above that boundary rather than another kernel-internal fault expansion.
-- That next slice is now written down explicitly in `kernel_execution_plan.md` so the kernel request contract can follow a fixed sequence.
+- The first service-facing runtime contract above the supervisor/process-group boundary is now implemented.
+- The next kernel slice is now request ownership/fault interaction rules plus stable diagnostics, as tracked in `kernel_execution_plan.md`.
 
 **Phase 3 test total: 193 / 193**
 
@@ -219,7 +219,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **1230** | |
+| **Total** | **1276** | |
 
 Run all TernOS tests:
 

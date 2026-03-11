@@ -410,6 +410,97 @@ std::optional<ipc::CanonMessage> axion_kernel_ipc_recv(
   return msg;
 }
 
+KernelServiceResult axion_kernel_service_request(
+    const KernelRuntimeState& state,
+    const KernelServiceRequest& request) noexcept {
+  KernelServiceResult result;
+  switch (request.kind) {
+    case KernelServiceRequestKind::RuntimeStatus: {
+      result.status = KernelServiceStatus::Ok;
+      result.runtime = KernelRuntimeStatusView{
+          .platform_id = state.platform_id,
+          .memory_region_count = state.memory_region_count,
+          .total_ternary_pages = state.total_ternary_pages,
+          .loop_iterations = state.counters.loop_iterations,
+          .scheduler_ticks = state.counters.scheduler_ticks,
+          .ipc_messages_sent = state.counters.ipc_messages_sent,
+          .ipc_messages_received = state.counters.ipc_messages_received,
+      };
+      return result;
+    }
+    case KernelServiceRequestKind::ProcessGroupStatus: {
+      if (!request.process_group_id.has_value()) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        return result;
+      }
+      const auto* group_state = state.find_process_group(*request.process_group_id);
+      if (!group_state) {
+        result.status = KernelServiceStatus::NotFound;
+        return result;
+      }
+      result.status = group_state->faulted ? KernelServiceStatus::FaultedGroup
+                                           : KernelServiceStatus::Ok;
+      result.process_group = KernelProcessGroupStatusView{
+          .id = group_state->id,
+          .member_count = group_state->member_tids.size(),
+          .faulted = group_state->faulted,
+          .blocked = group_state->blocked,
+          .acknowledgement_pending = group_state->acknowledgement_pending,
+          .pending_fault_count = group_state->pending_fault_count,
+          .supervisor_id = state.find_process_group_supervisor(group_state->id),
+      };
+      return result;
+    }
+    case KernelServiceRequestKind::SupervisorStatus: {
+      if (!request.supervisor_id.has_value()) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        return result;
+      }
+      const auto* supervisor_state = state.find_supervisor(*request.supervisor_id);
+      if (!supervisor_state) {
+        result.status = KernelServiceStatus::NotFound;
+        return result;
+      }
+      result.status = KernelServiceStatus::Ok;
+      result.supervisor = KernelSupervisorStatusView{
+          .id = supervisor_state->id,
+          .managed_group_count = supervisor_state->managed_groups.size(),
+          .pending_group_count = supervisor_state->pending_groups.size(),
+          .fault_notifications = supervisor_state->fault_notifications,
+          .acknowledgements = supervisor_state->acknowledgements,
+      };
+      return result;
+    }
+    case KernelServiceRequestKind::FaultSummary: {
+      result.status = KernelServiceStatus::Ok;
+      result.fault_summary = KernelFaultSummaryView{
+          .recorded_faults = state.fault_count(),
+          .pending_faults = state.pending_fault_count(),
+          .audit_events = state.audit_count(),
+          .last_delivered_fault = state.last_delivered_fault,
+      };
+      return result;
+    }
+    case KernelServiceRequestKind::DeviceSummary: {
+      if (!state.device_arbitration.has_value()) {
+        result.status = KernelServiceStatus::NoDeviceArbitration;
+        return result;
+      }
+      result.status = KernelServiceStatus::Ok;
+      result.device_summary = KernelDeviceSummaryView{
+          .has_device_arbitration = true,
+          .device_count = state.device_arbitration->devices.size(),
+          .has_storage = state.device_arbitration->has_storage,
+          .has_network = state.device_arbitration->has_network,
+          .has_display = state.device_arbitration->has_display,
+      };
+      return result;
+    }
+  }
+  result.status = KernelServiceStatus::InvalidRequest;
+  return result;
+}
+
 bool axion_kernel_claim_device(KernelRuntimeState& state,
                                std::string_view device_name,
                                sched::Tid owner) noexcept {

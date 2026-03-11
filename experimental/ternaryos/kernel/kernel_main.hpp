@@ -210,6 +210,80 @@ struct KernelAccessReport {
   std::optional<KernelFaultRecord> fault{};
 };
 
+enum class KernelServiceRequestKind : uint8_t {
+  RuntimeStatus = 0,
+  ProcessGroupStatus,
+  SupervisorStatus,
+  FaultSummary,
+  DeviceSummary,
+};
+
+enum class KernelServiceStatus : uint8_t {
+  Ok = 0,
+  InvalidRequest,
+  NotFound,
+  FaultedGroup,
+  NoDeviceArbitration,
+};
+
+struct KernelRuntimeStatusView {
+  std::string platform_id;
+  std::size_t memory_region_count{0};
+  uint64_t total_ternary_pages{0};
+  uint64_t loop_iterations{0};
+  uint64_t scheduler_ticks{0};
+  uint64_t ipc_messages_sent{0};
+  uint64_t ipc_messages_received{0};
+};
+
+struct KernelProcessGroupStatusView {
+  ProcessGroupId id{0};
+  std::size_t member_count{0};
+  bool faulted{false};
+  bool blocked{false};
+  bool acknowledgement_pending{false};
+  std::size_t pending_fault_count{0};
+  std::optional<SupervisorId> supervisor_id{};
+};
+
+struct KernelSupervisorStatusView {
+  SupervisorId id{0};
+  std::size_t managed_group_count{0};
+  std::size_t pending_group_count{0};
+  uint64_t fault_notifications{0};
+  uint64_t acknowledgements{0};
+};
+
+struct KernelFaultSummaryView {
+  std::size_t recorded_faults{0};
+  std::size_t pending_faults{0};
+  std::size_t audit_events{0};
+  std::optional<KernelFaultRecord> last_delivered_fault{};
+};
+
+struct KernelDeviceSummaryView {
+  bool has_device_arbitration{false};
+  std::size_t device_count{0};
+  bool has_storage{false};
+  bool has_network{false};
+  bool has_display{false};
+};
+
+struct KernelServiceRequest {
+  KernelServiceRequestKind kind{KernelServiceRequestKind::RuntimeStatus};
+  std::optional<ProcessGroupId> process_group_id{};
+  std::optional<SupervisorId> supervisor_id{};
+};
+
+struct KernelServiceResult {
+  KernelServiceStatus status{KernelServiceStatus::InvalidRequest};
+  std::optional<KernelRuntimeStatusView> runtime{};
+  std::optional<KernelProcessGroupStatusView> process_group{};
+  std::optional<KernelSupervisorStatusView> supervisor{};
+  std::optional<KernelFaultSummaryView> fault_summary{};
+  std::optional<KernelDeviceSummaryView> device_summary{};
+};
+
 std::optional<KernelRuntimeState> axion_kernel_bootstrap(
     const hal::BootContext& ctx) noexcept;
 
@@ -238,6 +312,10 @@ bool axion_kernel_ipc_send(KernelRuntimeState& state,
 std::optional<ipc::CanonMessage> axion_kernel_ipc_recv(
     KernelRuntimeState& state,
     sched::Tid tid) noexcept;
+
+KernelServiceResult axion_kernel_service_request(
+    const KernelRuntimeState& state,
+    const KernelServiceRequest& request) noexcept;
 
 bool axion_kernel_claim_device(KernelRuntimeState& state,
                                std::string_view device_name,

@@ -1248,6 +1248,191 @@ static void test_kernel_supervisor_acknowledgement_flow() {
   }
 }
 
+static void test_kernel_service_runtime_views() {
+  std::printf("\n[AC-29] Axion kernel service contract exposes deterministic runtime views\n");
+
+  auto hosted_ctx = make_valid_ctx(/*ethics=*/false);
+  auto hosted_state = axion_kernel_bootstrap(hosted_ctx);
+  check(hosted_state.has_value(), "kernel bootstrap succeeds for service runtime views");
+  if (!hosted_state) {
+    return;
+  }
+
+  auto runtime_result = axion_kernel_service_request(
+      *hosted_state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_result.status == KernelServiceStatus::Ok,
+        "runtime status request succeeds");
+  check(runtime_result.runtime.has_value(), "runtime status view is returned");
+  if (runtime_result.runtime) {
+    check(runtime_result.runtime->memory_region_count == hosted_ctx.memory_map.size(),
+          "runtime status reports deterministic memory-map count");
+    check(runtime_result.runtime->platform_id == hosted_ctx.platform_id,
+          "runtime status reports platform id");
+  }
+
+  auto hosted_device_result = axion_kernel_service_request(
+      *hosted_state, KernelServiceRequest{.kind = KernelServiceRequestKind::DeviceSummary});
+  check(hosted_device_result.status == KernelServiceStatus::NoDeviceArbitration,
+        "hosted generic context reports no device arbitration");
+
+  auto vbox_ctx = make_virtualbox_boot_context(VBoxBootSpec{});
+  auto vbox_state = axion_kernel_bootstrap(vbox_ctx);
+  check(vbox_state.has_value(), "kernel bootstrap succeeds for VirtualBox service runtime views");
+  if (!vbox_state) {
+    return;
+  }
+
+  auto device_result = axion_kernel_service_request(
+      *vbox_state, KernelServiceRequest{.kind = KernelServiceRequestKind::DeviceSummary});
+  check(device_result.status == KernelServiceStatus::Ok,
+        "VirtualBox device summary request succeeds");
+  check(device_result.device_summary.has_value(), "device summary view is returned");
+  if (device_result.device_summary) {
+    check(device_result.device_summary->has_device_arbitration,
+          "device summary reports arbitration present");
+    check(device_result.device_summary->device_count == 5,
+          "device summary reports five supported devices");
+    check(device_result.device_summary->has_storage,
+          "device summary reports storage");
+    check(device_result.device_summary->has_network,
+          "device summary reports network");
+    check(device_result.device_summary->has_display,
+          "device summary reports display");
+  }
+
+  auto fault_result = axion_kernel_service_request(
+      *vbox_state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_result.status == KernelServiceStatus::Ok,
+        "fault summary request succeeds");
+  check(fault_result.fault_summary.has_value(), "fault summary view is returned");
+  if (fault_result.fault_summary) {
+    check(fault_result.fault_summary->recorded_faults == 0,
+          "fault summary starts with zero recorded faults");
+    check(fault_result.fault_summary->pending_faults == 0,
+          "fault summary starts with zero pending faults");
+  }
+}
+
+static void test_kernel_service_group_fault_visibility() {
+  std::printf("\n[AC-30] Axion kernel service contract distinguishes healthy and faulted groups\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for service fault visibility");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext faulted_ctx;
+  faulted_ctx.label = "service-faulted";
+  faulted_ctx.registers[0] = 701;
+  auto faulted_tid = axion_kernel_spawn_thread(*state, faulted_ctx);
+  check(faulted_tid.has_value(), "faulted thread spawns");
+
+  t81::ternaryos::sched::TiscContext healthy_ctx;
+  healthy_ctx.label = "service-healthy";
+  healthy_ctx.registers[0] = 702;
+  auto healthy_tid = axion_kernel_spawn_thread(*state, healthy_ctx);
+  check(healthy_tid.has_value(), "healthy thread spawns");
+  if (!faulted_tid || !healthy_tid) {
+    return;
+  }
+
+  const auto* faulted_runtime = state->find_thread_runtime(*faulted_tid);
+  const auto* healthy_runtime = state->find_thread_runtime(*healthy_tid);
+  check(faulted_runtime != nullptr, "faulted runtime exists");
+  check(healthy_runtime != nullptr, "healthy runtime exists");
+  if (!faulted_runtime || !healthy_runtime) {
+    return;
+  }
+  const auto faulted_group_id = faulted_runtime->process_group_id;
+  const auto healthy_group_id = healthy_runtime->process_group_id;
+  auto healthy_before = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::ProcessGroupStatus,
+          .process_group_id = healthy_group_id,
+      });
+  check(healthy_before.status == KernelServiceStatus::Ok,
+        "healthy group request is OK before any fault");
+  check(healthy_before.process_group.has_value(), "healthy group view is returned");
+  if (healthy_before.process_group) {
+    check(!healthy_before.process_group->faulted, "healthy group starts not faulted");
+  }
+
+  check(axion_kernel_step(*state), "service fault visibility dispatches faulted thread");
+  check(state->scheduler.current_tid() == *faulted_tid, "faulted thread runs first");
+  auto access_result = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(63, 0), mmu::MmuAccessMode::Read);
+  check(access_result.fault.has_value(), "faulted thread records MMU fault");
+  check(axion_kernel_step(*state), "service fault visibility delivers the fault");
+
+  auto faulted_group = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::ProcessGroupStatus,
+          .process_group_id = faulted_group_id,
+      });
+  check(faulted_group.status == KernelServiceStatus::FaultedGroup,
+        "faulted group request returns FaultedGroup status");
+  check(faulted_group.process_group.has_value(), "faulted group view is returned");
+  if (faulted_group.process_group) {
+    check(faulted_group.process_group->faulted, "faulted group view reports faulted");
+    check(faulted_group.process_group->blocked, "faulted group view reports blocked");
+    check(faulted_group.process_group->acknowledgement_pending,
+          "faulted group view reports acknowledgement pending");
+    check(faulted_group.process_group->pending_fault_count == 1,
+          "faulted group view reports one pending fault");
+    check(faulted_group.process_group->supervisor_id.has_value(),
+          "faulted group view reports supervisor ownership");
+  }
+
+  auto healthy_after = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::ProcessGroupStatus,
+          .process_group_id = healthy_group_id,
+      });
+  check(healthy_after.status == KernelServiceStatus::Ok,
+        "unaffected group request remains OK");
+  check(healthy_after.process_group.has_value(), "healthy group view remains available");
+  if (healthy_after.process_group) {
+    check(!healthy_after.process_group->faulted, "unaffected group remains healthy");
+  }
+
+  auto supervisor_id = state->find_process_group_supervisor(faulted_group_id);
+  check(supervisor_id.has_value(), "faulted group resolves to supervisor");
+  if (!supervisor_id) {
+    return;
+  }
+  auto supervisor_result = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::SupervisorStatus,
+          .supervisor_id = *supervisor_id,
+      });
+  check(supervisor_result.status == KernelServiceStatus::Ok,
+        "supervisor status request succeeds");
+  check(supervisor_result.supervisor.has_value(), "supervisor status view is returned");
+  if (supervisor_result.supervisor) {
+    check(supervisor_result.supervisor->pending_group_count == 1,
+          "supervisor view reports one pending group");
+    check(supervisor_result.supervisor->fault_notifications == 1,
+          "supervisor view reports one fault notification");
+  }
+
+  auto missing_group = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::ProcessGroupStatus,
+          .process_group_id = 999999,
+      });
+  check(missing_group.status == KernelServiceStatus::NotFound,
+        "missing process group returns NotFound");
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -1283,6 +1468,8 @@ int main() {
   test_kernel_process_group_audit_log();
   test_kernel_supervisor_fault_boundary();
   test_kernel_supervisor_acknowledgement_flow();
+  test_kernel_service_runtime_views();
+  test_kernel_service_group_fault_visibility();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;
