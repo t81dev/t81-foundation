@@ -120,8 +120,15 @@ std::optional<std::string> build_phase4_report() {
   auto& display = *guest->display.device;
   auto& framebuffer = display.framebuffer();
   framebuffer = TernaryFramebuffer(20, 8);
-  const std::size_t rendered_glyphs = ttf_render_text(framebuffer, 0, 0, "AXION\nP4");
+  const std::size_t first_rendered_glyphs = ttf_render_text(framebuffer, 0, 0, "AXION\nP4");
   if (!display.present()) return std::nullopt;
+  const std::size_t first_ascii_size = display.last_present_ascii().size();
+  const auto first_ascii = display.last_present_ascii();
+  display.clear(TritPixel{0});
+  const std::size_t second_rendered_glyphs = ttf_render_text(framebuffer, 0, 0, "AXION\nQEMU");
+  if (!display.present()) return std::nullopt;
+  const std::size_t second_ascii_size = display.last_present_ascii().size();
+  const bool display_changed = first_ascii != display.last_present_ascii();
 
   std::vector<std::vector<int8_t>> payloads{
       {1, 0, -1, -1, 1, 0},
@@ -179,8 +186,11 @@ std::optional<std::string> build_phase4_report() {
   report << "canonref_last=" << refs.back().hash.h.to_string() << "\n";
   report << "display_binding=" << guest->display.binding_name << "\n";
   report << "display_present_count=" << display.present_count() << "\n";
-  report << "display_rendered_glyphs=" << rendered_glyphs << "\n";
-  report << "display_ascii_size=" << display.last_present_ascii().size() << "\n";
+  report << "display_first_rendered_glyphs=" << first_rendered_glyphs << "\n";
+  report << "display_second_rendered_glyphs=" << second_rendered_glyphs << "\n";
+  report << "display_first_ascii_size=" << first_ascii_size << "\n";
+  report << "display_second_ascii_size=" << second_ascii_size << "\n";
+  report << "display_changed=" << (display_changed ? "true" : "false") << "\n";
   report << "network_binding=" << guest->network.binding_name << "\n";
   report << "network_tx_frames=" << guest->network.device->tx_frames() << "\n";
   report << "network_rx_frames=" << guest->network.device->rx_frames() << "\n";

@@ -255,7 +255,10 @@ for expected in \
   '^canonstore_second_cycle_ok=20$' \
   '^canonstore_torn_header_ok=20$' \
   '^display_binding=virtualbox-vmsvga$' \
-  '^display_present_count=1$' \
+  '^display_present_count=2$' \
+  '^display_first_rendered_glyphs=7$' \
+  '^display_second_rendered_glyphs=9$' \
+  '^display_changed=true$' \
   '^network_binding=virtualbox-e1000$' \
   '^network_tx_frames=3$' \
   '^network_rx_frames=3$' \
