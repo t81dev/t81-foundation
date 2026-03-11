@@ -281,6 +281,9 @@ lifecycle control over managed services. That same layer now also carries
 explicit service health transitions with stable unhealthy-state diagnostics.
 Successful service lifecycle transitions are also now visible through the same
 stable audit-summary surface.
+Supervisor-owned service inventory now also retains the latest managed-service
+lifecycle transition metadata so supervisors can observe convergence without a
+broader control surface.
 The next step is to keep that layer stable and only then consider any further
 lifecycle action or boundary growth.
 

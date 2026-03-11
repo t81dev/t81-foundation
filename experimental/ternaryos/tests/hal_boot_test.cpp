@@ -2206,6 +2206,13 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory exposes one service entry");
     check(register_service.supervisor_services->blocked_service_count == 0,
           "supervisor inventory starts with zero blocked services");
+    check(register_service.supervisor_services->service_lifecycle_transitions == 1,
+          "supervisor inventory tracks one lifecycle transition after registration");
+    check(register_service.supervisor_services->last_service_transition_id == service_id,
+          "supervisor inventory tracks the last transitioned service after registration");
+    check(register_service.supervisor_services->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceRegistered,
+          "supervisor inventory tracks registration as the last lifecycle event");
     check(register_service.supervisor_services->total_service_requests == 0,
           "supervisor inventory starts with zero service requests");
   }
@@ -2282,6 +2289,11 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory reports one suspended service");
     check(suspend_service.supervisor_services->services.front().suspended,
           "supervisor inventory entry reports suspended service");
+    check(suspend_service.supervisor_services->service_lifecycle_transitions == 2,
+          "supervisor inventory increments lifecycle transition count after suspend");
+    check(suspend_service.supervisor_services->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceSuspended,
+          "supervisor inventory tracks suspend as the last lifecycle event");
   }
 
   auto duplicate_suspend = axion_kernel_service_action(
@@ -2317,6 +2329,11 @@ static void test_kernel_service_runtime_layer() {
   if (resume_service.supervisor_services) {
     check(resume_service.supervisor_services->suspended_service_count == 0,
           "supervisor inventory clears suspended service count after resume");
+    check(resume_service.supervisor_services->service_lifecycle_transitions == 3,
+          "supervisor inventory increments lifecycle transition count after resume");
+    check(resume_service.supervisor_services->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceResumed,
+          "supervisor inventory tracks resume as the last lifecycle event");
   }
 
   auto duplicate_resume = axion_kernel_service_action(
@@ -2440,6 +2457,11 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory reports one unhealthy service");
     check(mark_unhealthy.supervisor_services->services.front().unhealthy,
           "supervisor inventory entry reports unhealthy service");
+    check(mark_unhealthy.supervisor_services->service_lifecycle_transitions == 6,
+          "supervisor inventory aggregates lifecycle transitions across same-supervisor control");
+    check(mark_unhealthy.supervisor_services->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceMarkedUnhealthy,
+          "supervisor inventory tracks unhealthy transition as the latest event");
   }
 
   auto unhealthy_request = axion_kernel_service_request(
@@ -2498,6 +2520,13 @@ static void test_kernel_service_runtime_layer() {
   if (peer_health.supervisor_services) {
     check(peer_health.supervisor_services->unhealthy_service_count == 0,
           "supervisor inventory clears unhealthy count after heal");
+    check(peer_health.supervisor_services->service_lifecycle_transitions == 7,
+          "supervisor inventory increments lifecycle transitions after heal");
+    check(peer_health.supervisor_services->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceMarkedHealthy,
+          "supervisor inventory tracks heal as the latest lifecycle event");
+    check(peer_health.supervisor_services->last_service_transition_sequence.has_value(),
+          "supervisor inventory exposes the latest lifecycle audit sequence");
   }
 
   auto audit_summary = axion_kernel_service_request(
@@ -2676,6 +2705,15 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory has no suspended services after unregister");
     check(unregister_service.supervisor_services->services.empty(),
           "supervisor inventory removes service entries after unregister");
+    check(unregister_service.supervisor_services->service_lifecycle_transitions == 8,
+          "supervisor inventory retains total lifecycle transition count after unregister");
+    check(unregister_service.supervisor_services->last_service_transition_id == service_id,
+          "supervisor inventory retains the last transitioned service after unregister");
+    check(unregister_service.supervisor_services->last_service_transition_kind ==
+              KernelAuditEventKind::ServiceUnregistered,
+          "supervisor inventory tracks unregister as the latest lifecycle event");
+    check(unregister_service.supervisor_services->last_service_transition_sequence.has_value(),
+          "supervisor inventory retains the latest lifecycle audit sequence after unregister");
   }
   check(!state->audit_log.empty(), "service lifecycle actions produce audit records");
   if (!state->audit_log.empty()) {

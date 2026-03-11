@@ -104,8 +104,12 @@ struct KernelRuntimeState {
     uint64_t fault_notifications{0};
     uint64_t acknowledgements{0};
     uint64_t recovered_groups{0};
+    uint64_t service_lifecycle_transitions{0};
     std::optional<ProcessGroupId> last_acknowledged_group{};
     std::optional<ProcessGroupId> last_recovered_group{};
+    std::optional<ServiceId> last_service_transition_id{};
+    std::optional<KernelAuditEventKind> last_service_transition_kind{};
+    std::optional<uint64_t> last_service_transition_sequence{};
   };
 
   struct ServiceState {
@@ -407,8 +411,12 @@ struct KernelSupervisorServiceInventoryView {
   std::size_t blocked_service_count{0};
   std::size_t suspended_service_count{0};
   std::size_t unhealthy_service_count{0};
+  uint64_t service_lifecycle_transitions{0};
   uint64_t total_service_requests{0};
   uint64_t total_service_rejections{0};
+  std::optional<ServiceId> last_service_transition_id{};
+  std::optional<KernelAuditEventKind> last_service_transition_kind{};
+  std::optional<uint64_t> last_service_transition_sequence{};
   std::vector<ServiceId> service_ids;
   std::vector<KernelSupervisorServiceEntryView> services;
 };

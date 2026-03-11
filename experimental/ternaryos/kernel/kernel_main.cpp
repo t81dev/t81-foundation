@@ -310,6 +310,22 @@ void record_service_audit_event(KernelRuntimeState& state,
       state, kind, subject_tid, process_group_id, mmu::MmuFault::None);
 }
 
+void record_supervisor_service_transition(KernelRuntimeState& state,
+                                          ServiceId service_id,
+                                          SupervisorId supervisor_id,
+                                          ProcessGroupId process_group_id,
+                                          KernelAuditEventKind kind) {
+  record_service_audit_event(state, kind, process_group_id);
+  auto* supervisor_state = state.find_supervisor_mut(supervisor_id);
+  if (!supervisor_state || !state.last_audit_event.has_value()) {
+    return;
+  }
+  ++supervisor_state->service_lifecycle_transitions;
+  supervisor_state->last_service_transition_id = service_id;
+  supervisor_state->last_service_transition_kind = kind;
+  supervisor_state->last_service_transition_sequence = state.last_audit_event->sequence;
+}
+
 bool group_has_pending_thread_faults(const KernelRuntimeState& state,
                                      ProcessGroupId process_group_id) {
   const auto* group_state = state.find_process_group(process_group_id);
@@ -422,6 +438,15 @@ KernelSupervisorServiceInventoryView make_supervisor_services_view(
   return KernelSupervisorServiceInventoryView{
       .supervisor_id = supervisor_state ? supervisor_state->id : supervisor_id,
       .service_count = supervisor_state ? supervisor_state->managed_services.size() : 0,
+      .service_lifecycle_transitions =
+          supervisor_state ? supervisor_state->service_lifecycle_transitions : 0,
+      .last_service_transition_id =
+          supervisor_state ? supervisor_state->last_service_transition_id : std::nullopt,
+      .last_service_transition_kind =
+          supervisor_state ? supervisor_state->last_service_transition_kind : std::nullopt,
+      .last_service_transition_sequence = supervisor_state
+                                              ? supervisor_state->last_service_transition_sequence
+                                              : std::nullopt,
       .service_ids = {},
       .services = {},
   };
@@ -1205,8 +1230,11 @@ KernelServiceActionResult axion_kernel_service_action(
         result.rejection = KernelServiceActionRejection::DuplicateService;
         return result;
       }
-      record_service_audit_event(
-          state, KernelAuditEventKind::ServiceRegistered, service_state->process_group_id);
+      record_supervisor_service_transition(state,
+                                           service_state->id,
+                                           *supervisor_id,
+                                           service_state->process_group_id,
+                                           KernelAuditEventKind::ServiceRegistered);
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceActionRejection::None;
       result.action_performed = true;
@@ -1270,8 +1298,11 @@ KernelServiceActionResult axion_kernel_service_action(
                         service_state->id),
             supervisor_state->managed_services.end());
       }
-      record_service_audit_event(
-          state, KernelAuditEventKind::ServiceUnregistered, service_state->process_group_id);
+      record_supervisor_service_transition(state,
+                                           service_state->id,
+                                           *supervisor_id,
+                                           service_state->process_group_id,
+                                           KernelAuditEventKind::ServiceUnregistered);
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceActionRejection::None;
       result.action_performed = true;
@@ -1331,10 +1362,12 @@ KernelServiceActionResult axion_kernel_service_action(
                                : KernelServiceActionRejection::ServiceNotSuspended;
         return result;
       }
-      record_service_audit_event(state,
-                                 suspend ? KernelAuditEventKind::ServiceSuspended
-                                         : KernelAuditEventKind::ServiceResumed,
-                                 service_state->process_group_id);
+      record_supervisor_service_transition(state,
+                                           service_state->id,
+                                           *supervisor_id,
+                                           service_state->process_group_id,
+                                           suspend ? KernelAuditEventKind::ServiceSuspended
+                                                   : KernelAuditEventKind::ServiceResumed);
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceActionRejection::None;
       result.action_performed = true;
@@ -1394,10 +1427,12 @@ KernelServiceActionResult axion_kernel_service_action(
                                : KernelServiceActionRejection::ServiceAlreadyHealthy;
         return result;
       }
-      record_service_audit_event(state,
-                                 unhealthy ? KernelAuditEventKind::ServiceMarkedUnhealthy
-                                           : KernelAuditEventKind::ServiceMarkedHealthy,
-                                 service_state->process_group_id);
+      record_supervisor_service_transition(state,
+                                           service_state->id,
+                                           *supervisor_id,
+                                           service_state->process_group_id,
+                                           unhealthy ? KernelAuditEventKind::ServiceMarkedUnhealthy
+                                                     : KernelAuditEventKind::ServiceMarkedHealthy);
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceActionRejection::None;
       result.action_performed = true;

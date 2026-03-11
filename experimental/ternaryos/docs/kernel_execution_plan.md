@@ -70,6 +70,8 @@ The current service layer now covers:
 - explicit service health transitions with stable unhealthy-state diagnostics
 - audit-visible service lifecycle transitions through the existing audit summary
   surface
+- supervisor inventory visibility for the latest managed-service lifecycle
+  transition
 
 ### 3. Only add new actions if a stable service runtime truly needs them
 
