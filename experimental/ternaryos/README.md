@@ -107,6 +107,18 @@ Outputs:
 - `build/ternaryos/virtualbox/staging/TERNOS/profile.txt`
 - `build/ternaryos/virtualbox/staging/TERNOS/demo-output.txt`
 
+To package the official `x86_64` handoff bundle for an external validator:
+
+```sh
+cmake --build build --target t81_ternaryos_virtualbox_x86_64_handoff
+```
+
+Outputs:
+
+- `build/ternaryos/handoff/ternos_virtualbox_x86_64_handoff/`
+- `build/ternaryos/handoff/ternos_virtualbox_x86_64_handoff.tar.gz`
+- `build/ternaryos/handoff/ternos_virtualbox_x86_64_handoff.tar.gz.sha256`
+
 To generate the temporary ARMv8 developer-lane artifact for Apple Silicon
 VirtualBox hosts:
 
