@@ -15,6 +15,8 @@ OS kernel on the T81VM runtime. Phases 1 through 3 are complete, Phase 4
 device-driver work is in progress, and Phase 5 now has a first typed shell/TUI
 path on top of the hosted guest-bootstrap path.
 
+Current working release label: `Axion v0.1.0-alpha`
+
 For now, internal paths, namespaces, CMake targets, and test names still use
 `ternaryos` while the external/project-facing name shifts to `Axion`.
 

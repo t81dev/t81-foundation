@@ -2,6 +2,8 @@
 
 This document captures the current implementation state, completed milestones, remaining work, and exit criteria for evolving the T81 Foundation stack into a standalone ternary operating system, currently named Axion.
 
+Current working release label: `Axion v0.1.0-alpha`
+
 Naming split for this roadmap:
 - `T81 Foundation` remains the umbrella project/ecosystem
 - `T81VM` remains the ternary runtime/execution substrate

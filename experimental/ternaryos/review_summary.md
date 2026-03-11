@@ -2,6 +2,8 @@
 
 ## Current State
 
+Working release label: `Axion v0.1.0-alpha`
+
 Axion Phases 1 through 3 are implemented and passing. Phase 4 is implemented
 as a VirtualBox-first hosted simulation path with guest-owned storage, network,
 and display seams:

@@ -33,7 +33,7 @@ void print_hash_prefix(const t81::canonfs::CanonRef& ref) {
 }  // namespace
 
 int main() {
-  std::puts("=== Axion Phase 4 Hosted + VirtualBox Demo ===");
+  std::puts("=== Axion v0.1.0-alpha Phase 4 Hosted + VirtualBox Demo ===");
 
   const std::string path = "/tmp/ternos_demo_store.blk";
 

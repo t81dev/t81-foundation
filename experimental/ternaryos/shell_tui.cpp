@@ -67,7 +67,7 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
 
   auto header = hbox({
       text(" Axion Shell ") | bold | color(Color::Black) | bgcolor(Color::Cyan),
-      text("  Phase 5 typed shell TUI ") | color(Color::White),
+      text("  v0.1.0-alpha  Phase 5 typed shell TUI ") | color(Color::White),
       filler(),
       text(" type command  enter run  backspace edit  q quit ") | color(Color::GrayDark),
   });

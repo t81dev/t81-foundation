@@ -1,5 +1,7 @@
 # Axion Implementation Progress
 
+Current working release label: `Axion v0.1.0-alpha`
+
 Working name note: the project-facing OS name is now `Axion`, while internal
 paths, namespaces, and build/test identifiers still use `ternaryos`.
 
