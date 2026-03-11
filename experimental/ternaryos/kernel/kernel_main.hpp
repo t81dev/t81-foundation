@@ -44,6 +44,10 @@ struct KernelPagerResolutionRecord {
   uint64_t sequence{0};
 };
 
+struct KernelPagerWorkItem {
+  KernelPagerHandoffRecord handoff{};
+};
+
 enum class KernelAuditEventKind : uint8_t {
   FaultDelivered = 0,
   ThreadQuarantined,
@@ -158,6 +162,15 @@ struct KernelRuntimeState {
     std::optional<uint64_t> last_transition_sequence{};
   };
 
+  struct PagerWorkerState {
+    std::deque<KernelPagerWorkItem> inbox;
+    std::optional<KernelPagerWorkItem> active_work{};
+    uint64_t handoffs_received{0};
+    uint64_t resolutions_completed{0};
+    std::optional<AddressSpaceId> last_completed_address_space_id{};
+    std::optional<uint64_t> last_completed_resolution_sequence{};
+  };
+
   struct Counters {
     uint64_t loop_iterations{0};
     uint64_t scheduler_ticks{0};
@@ -204,6 +217,7 @@ struct KernelRuntimeState {
   std::unordered_map<ProcessGroupId, AddressSpaceId> process_group_address_spaces;
   std::unordered_map<ServiceId, ServiceState> services;
   std::unordered_map<ProcessGroupId, ServiceId> process_group_services;
+  PagerWorkerState pager_worker{};
   t81::vm::ThreadContext cpu_context{};
   Counters counters{};
   std::optional<KernelFaultRecord> last_delivered_fault{};
@@ -407,6 +421,9 @@ struct KernelRuntimeStatusView {
   std::size_t mapped_pages{0};
   std::size_t pager_needed_address_space_count{0};
   std::size_t pending_pager_handoff_count{0};
+  std::size_t pager_worker_inbox_count{0};
+  bool pager_worker_busy{false};
+  std::optional<AddressSpaceId> pager_worker_active_address_space_id{};
   uint64_t loop_iterations{0};
   uint64_t scheduler_ticks{0};
   uint64_t ipc_messages_sent{0};
@@ -415,6 +432,8 @@ struct KernelRuntimeStatusView {
   uint64_t policy_faults{0};
   uint64_t pager_handoffs_dispatched{0};
   uint64_t pager_resolutions{0};
+  uint64_t pager_worker_handoffs_received{0};
+  uint64_t pager_worker_resolutions_completed{0};
   std::size_t managed_service_count{0};
   std::size_t blocked_service_count{0};
   std::size_t suspended_service_count{0};
@@ -577,8 +596,13 @@ struct KernelFaultSummaryView {
   uint64_t policy_faults{0};
   std::size_t pager_needed_address_spaces{0};
   std::size_t pending_pager_handoffs{0};
+  std::size_t pager_worker_inbox_count{0};
+  bool pager_worker_busy{false};
+  std::optional<AddressSpaceId> pager_worker_active_address_space_id{};
   uint64_t pager_handoffs_dispatched{0};
   uint64_t pager_resolutions{0};
+  uint64_t pager_worker_handoffs_received{0};
+  uint64_t pager_worker_resolutions_completed{0};
   uint64_t service_lifecycle_transitions{0};
   std::optional<KernelFaultRecord> last_delivered_fault{};
   std::optional<AddressSpaceId> last_pager_address_space_id{};

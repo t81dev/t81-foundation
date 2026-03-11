@@ -817,6 +817,10 @@ static void test_kernel_pager_fault_state() {
           "runtime status reports one pager-needed address space");
     check(runtime_status.runtime->pending_pager_handoff_count == 1,
           "runtime status reports one pending pager handoff before dispatch");
+    check(runtime_status.runtime->pager_worker_inbox_count == 0,
+          "runtime status starts with empty pager worker inbox");
+    check(!runtime_status.runtime->pager_worker_busy,
+          "runtime status starts with idle pager worker");
     check(runtime_status.runtime->pager_eligible_faults == 1,
           "runtime status counts one pager-eligible fault");
     check(runtime_status.runtime->policy_faults == 1,
@@ -932,10 +936,16 @@ static void test_kernel_pager_fault_state() {
           "runtime status retains pager-needed address space after handoff");
     check(runtime_status_after_handoff.runtime->pending_pager_handoff_count == 0,
           "runtime status clears pending pager handoff after dispatch");
+    check(runtime_status_after_handoff.runtime->pager_worker_inbox_count == 1,
+          "runtime status queues one handoff into pager worker inbox");
+    check(!runtime_status_after_handoff.runtime->pager_worker_busy,
+          "runtime status keeps pager worker idle until the next worker step");
     check(runtime_status_after_handoff.runtime->pager_handoffs_dispatched == 1,
           "runtime status counts one dispatched pager handoff");
     check(runtime_status_after_handoff.runtime->pager_resolutions == 0,
           "runtime status starts with zero pager resolutions after handoff");
+    check(runtime_status_after_handoff.runtime->pager_worker_handoffs_received == 1,
+          "runtime status counts one handoff received by pager worker");
   }
 
   auto pager_group_after_handoff = axion_kernel_service_request(
@@ -1002,6 +1012,14 @@ static void test_kernel_pager_fault_state() {
           "runtime status retains dispatched pager handoff count after resolution");
     check(runtime_status_after_resolution.runtime->pager_resolutions == 1,
           "runtime status counts one pager resolution");
+    check(runtime_status_after_resolution.runtime->pager_worker_inbox_count == 0,
+          "runtime status keeps pager worker inbox empty after resolution");
+    check(!runtime_status_after_resolution.runtime->pager_worker_busy,
+          "runtime status reports idle pager worker after resolution");
+    check(runtime_status_after_resolution.runtime->pager_worker_handoffs_received == 1,
+          "runtime status retains pager worker handoff count after resolution");
+    check(runtime_status_after_resolution.runtime->pager_worker_resolutions_completed == 1,
+          "runtime status counts one completed pager worker resolution");
   }
 
   auto pager_group_after_resolution = axion_kernel_service_request(
@@ -1048,6 +1066,52 @@ static void test_kernel_pager_fault_state() {
                 mmu::MmuFault::Unmapped,
             "fault summary preserves the resolved fault classification");
     }
+    check(!fault_summary_after_resolution.fault_summary->pager_worker_busy,
+          "fault summary reports idle pager worker after resolution");
+    check(fault_summary_after_resolution.fault_summary->pager_worker_handoffs_received == 1,
+          "fault summary counts one pager worker handoff after first resolution");
+    check(fault_summary_after_resolution.fault_summary->pager_worker_resolutions_completed == 1,
+          "fault summary counts one pager worker resolution after first resolution");
+  }
+
+  const auto repeat_tva = mmu::tva_from_vpn_offset(63, 0);
+  auto repeat_fault =
+      axion_kernel_check_access(*state, repeat_tva, mmu::MmuAccessMode::Read);
+  check(repeat_fault.fault.has_value(),
+        "same address space can enter a second pager-needed cycle");
+  (void)axion_kernel_step(*state);
+  check(true, "second pager cycle fault is delivered");
+  auto runtime_status_repeat_fault = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_status_repeat_fault.runtime.has_value(),
+        "runtime status exposes repeat pager-needed cycle");
+  if (runtime_status_repeat_fault.runtime) {
+    check(runtime_status_repeat_fault.runtime->pager_needed_address_space_count == 1,
+          "runtime status reports one pager-needed address space in repeat cycle");
+    check(runtime_status_repeat_fault.runtime->pending_pager_handoff_count == 1,
+          "runtime status reports pending handoff in repeat cycle");
+  }
+  (void)axion_kernel_step(*state);
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     repeat_tva,
+                     *pager_address_space_id),
+        "same address space accepts a second missing-page mapping");
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+  auto fault_summary_after_repeat = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_summary_after_repeat.fault_summary.has_value(),
+        "fault summary exposes repeated pager worker cycle");
+  if (fault_summary_after_repeat.fault_summary) {
+    check(fault_summary_after_repeat.fault_summary->pager_handoffs_dispatched == 2,
+          "fault summary counts two dispatched pager handoffs after repeat cycle");
+    check(fault_summary_after_repeat.fault_summary->pager_resolutions == 2,
+          "fault summary counts two pager resolutions after repeat cycle");
+    check(fault_summary_after_repeat.fault_summary->pager_worker_handoffs_received == 2,
+          "fault summary counts two pager worker handoffs after repeat cycle");
+    check(fault_summary_after_repeat.fault_summary->pager_worker_resolutions_completed == 2,
+          "fault summary counts two pager worker resolutions after repeat cycle");
   }
 }
 

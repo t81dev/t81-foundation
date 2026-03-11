@@ -123,7 +123,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1892/1892 assertions, 8/8 tests pass
+# Expected: 1915/1915 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -284,11 +284,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `980/980`
+- `t81_ternaryos_hal_boot_test` is `1003/1003`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1892`
+- total TernOS assertions are `1915`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state
@@ -334,6 +334,8 @@ Local hosted proof as of the current branch:
 - once the missing mapping appears, the kernel loop now resolves one
   handed-off pager-needed address space at a time and exposes resolved state
   through the same diagnostics
+- a first internal pager worker now exists as a kernel-owned FIFO consumer for
+  pager handoffs, with deterministic repeated cycles on one address space
 - the first narrow service-facing action now exists through that same boundary:
   supervisor fault-group acknowledgement
 - supervisor-facing recovery/report flows are now exposed through that same boundary:
@@ -350,8 +352,8 @@ Local hosted proof as of the current branch:
   service request routing, stable service detail, richer supervisor inventory,
   and deterministic lifecycle behavior now exist above the stable
   supervisor/process-group contract. The next step is to keep that contract
-  stable and continue downward into a real kernel-owned pager consumer on top
-  of the new pager-needed, handoff-tracked, and resolution-tracked
+  stable and continue downward into richer pager-worker behavior on top of the
+  new pager-needed, handoff-tracked, resolution-tracked, and worker-consumed
   address-space state, tracked explicitly in:
   - `docs/kernel_execution_plan.md`
 - guest-bootstrap storage coverage now includes:

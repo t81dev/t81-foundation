@@ -328,9 +328,12 @@ through kernel-owned runtime state, and diagnostics distinguish handoff-pending
 from handoff-dispatched state without adding a public pager ABI. Once the
 missing mapping appears, that same kernel loop now clears pager-needed state
 deterministically one address space at a time, so diagnostics can distinguish
-pager-needed, handed-off, and resolved state. The next kernel slice is to keep
-that pager surface private while adding the first real kernel-owned pager
-consumer semantics before any public pager ABI or syscall design.
+pager-needed, handed-off, and resolved state. A first real kernel-owned pager
+worker now also exists, with a FIFO inbox and one active work item, so
+repeated pager-needed cycles can flow through a concrete internal consumer
+without adding a public pager ABI. The next kernel slice is to keep that pager
+surface private while expanding pager-worker behavior before any public pager
+ABI or syscall design.
 
 The working execution note for this slice is:
 

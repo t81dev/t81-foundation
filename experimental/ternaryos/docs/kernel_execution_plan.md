@@ -96,6 +96,15 @@ The third pager-groundwork slice is now also complete:
 - stable diagnostics now distinguish pager-needed, handoff-dispatched, and
   resolved state
 
+The fourth pager-groundwork slice is now also complete:
+
+- the kernel now has a real internal pager worker with a FIFO inbox and one
+  active work item
+- dispatched pager handoffs now flow into that worker rather than existing
+  only as summary counters
+- repeated pager-needed cycles on one address space now remain deterministic
+  through handoff and resolution
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
@@ -103,16 +112,16 @@ The third pager-groundwork slice is now also complete:
 Do not widen the existing service surface further unless a concrete runtime
 need appears.
 
-### 2. Keep pager state internal while preparing a real pager consumer
+### 2. Keep pager state internal while preparing richer pager work
 
 The next real kernel work is now:
 
 - pager integration
-- a concrete kernel-owned pager consumer or worker model after resolution
-- explicit transition handling for repeated pager-needed cycles on one address
-  space
-- stable diagnostics proving repeated handoff and resolution cycles remain
-  deterministic
+- richer kernel-owned pager work after the first worker model
+- explicit transition handling for backlog, prioritization, or multiple active
+  pager work items
+- stable diagnostics proving pager worker behavior remains deterministic under
+  deeper load
 
 ### 3. Keep the pager surface internal first
 
@@ -146,14 +155,13 @@ The current pager-groundwork slice is complete when:
    pager ABI surface
 
 That acceptance bar is now met. The next slice should preserve that state while
-introducing the first real kernel-owned pager consumer semantics needed before
-any external pager interface exists.
+expanding pager-worker behavior carefully before any external pager interface
+exists.
 
 ## Recommended Order
 
 1. preserve the current service-runtime contract without widening it casually
 2. preserve the new pager-needed runtime state on address spaces
-3. add the first real internal pager consumer semantics without widening the
-   contract
-4. expose only stable diagnostics for repeated handoff and resolution state
+3. add richer internal pager-worker behavior without widening the contract
+4. expose only stable diagnostics for that worker state first
 5. only then evaluate pager-facing ABI shape or syscall/capability design

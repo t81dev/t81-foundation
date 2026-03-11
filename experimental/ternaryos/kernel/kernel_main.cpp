@@ -922,6 +922,16 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .last_pager_fault = latest_pager_fault.fault,
       .last_pager_handoff = state.last_pager_handoff,
       .last_pager_resolution = state.last_pager_resolution,
+      .pager_worker_inbox_count = state.pager_worker.inbox.size(),
+      .pager_worker_busy = state.pager_worker.active_work.has_value(),
+      .pager_worker_active_address_space_id =
+          state.pager_worker.active_work.has_value()
+              ? std::optional<AddressSpaceId>{
+                    state.pager_worker.active_work->handoff.address_space_id}
+              : std::nullopt,
+      .pager_worker_handoffs_received = state.pager_worker.handoffs_received,
+      .pager_worker_resolutions_completed =
+          state.pager_worker.resolutions_completed,
       .last_audit_event = state.last_audit_event,
       .last_service_transition_id = latest_service_transition.service_id,
       .last_service_transition_kind = latest_service_transition.kind,
@@ -1323,9 +1333,17 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
             .fault = *address_space->last_pager_fault,
             .sequence = *address_space->last_pager_handoff_sequence,
         };
+        state.pager_worker.inbox.push_back(
+            KernelPagerWorkItem{.handoff = *state.last_pager_handoff});
+        ++state.pager_worker.handoffs_received;
         ++state.counters.pager_handoffs_dispatched;
       }
     } else {
+      if (!state.pager_worker.active_work.has_value() &&
+          !state.pager_worker.inbox.empty()) {
+        state.pager_worker.active_work = state.pager_worker.inbox.front();
+        state.pager_worker.inbox.pop_front();
+      }
       for (AddressSpaceId address_space_id = 0;
            address_space_id < state.next_address_space_id;
            ++address_space_id) {
@@ -1342,6 +1360,11 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
         if (translation.fault != mmu::MmuFault::None) {
           continue;
         }
+        if (!state.pager_worker.active_work.has_value() ||
+            state.pager_worker.active_work->handoff.address_space_id !=
+                address_space_id) {
+          continue;
+        }
         address_space->pager_needed = false;
         address_space->pending_pager_fault_count = 0;
         ++address_space->pager_resolutions;
@@ -1353,6 +1376,11 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
             .fault = *address_space->last_pager_fault,
             .sequence = *address_space->last_pager_resolution_sequence,
         };
+        state.pager_worker.active_work.reset();
+        ++state.pager_worker.resolutions_completed;
+        state.pager_worker.last_completed_address_space_id = address_space_id;
+        state.pager_worker.last_completed_resolution_sequence =
+            address_space->last_pager_resolution_sequence;
         ++state.counters.pager_resolutions;
         break;
       }
@@ -1410,6 +1438,13 @@ KernelServiceResult axion_kernel_service_request(
           .mapped_pages = state.page_table.size(),
           .pager_needed_address_space_count = count_pager_needed_address_spaces(state),
           .pending_pager_handoff_count = count_pending_pager_handoff_address_spaces(state),
+          .pager_worker_inbox_count = state.pager_worker.inbox.size(),
+          .pager_worker_busy = state.pager_worker.active_work.has_value(),
+          .pager_worker_active_address_space_id =
+              state.pager_worker.active_work.has_value()
+                  ? std::optional<AddressSpaceId>{
+                        state.pager_worker.active_work->handoff.address_space_id}
+                  : std::nullopt,
           .loop_iterations = state.counters.loop_iterations,
           .scheduler_ticks = state.counters.scheduler_ticks,
           .ipc_messages_sent = state.counters.ipc_messages_sent,
@@ -1418,6 +1453,9 @@ KernelServiceResult axion_kernel_service_request(
           .policy_faults = state.counters.policy_faults,
           .pager_handoffs_dispatched = state.counters.pager_handoffs_dispatched,
           .pager_resolutions = state.counters.pager_resolutions,
+          .pager_worker_handoffs_received = state.pager_worker.handoffs_received,
+          .pager_worker_resolutions_completed =
+              state.pager_worker.resolutions_completed,
           .managed_service_count = service_summary.managed_service_count,
           .blocked_service_count = service_summary.blocked_service_count,
           .suspended_service_count = service_summary.suspended_service_count,

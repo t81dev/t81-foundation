@@ -34,9 +34,9 @@ The next kernel slice is now tracked explicitly in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1892`
+- total assertions: `1915`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `980/980`
+- `t81_ternaryos_hal_boot_test`: `1003/1003`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -89,15 +89,18 @@ Kernel integration proof now also includes:
 - once the missing mapping appears, the kernel loop now resolves one
   handed-off pager-needed address space at a time and diagnostics expose that
   resolved state
+- a first kernel-owned pager worker now also exists, with a FIFO inbox and one
+  active work item for deterministic repeated pager cycles
 - the supervisor/service-runtime convergence slice is now complete for the
   current contract surface
 - the first process-memory ownership slice is now complete as well
 - the first pager-groundwork slice is now complete as well
 - the second pager-groundwork slice is now complete as well
 - the third pager-groundwork slice is now complete as well
+- the fourth pager-groundwork slice is now complete as well
 - the next kernel slice is to keep this service-runtime layer stable and move
-  into a real kernel-owned pager consumer after handoff and resolution, not a
-  broad ABI or syscall surface
+  into richer kernel-owned pager-worker behavior after handoff and resolution,
+  not a broad ABI or syscall surface
 
 Phase 4 storage proof now covers:
 
