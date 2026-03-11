@@ -118,7 +118,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `dev/ttf.hpp/.cpp` | Minimal Ternary Text Format codec + framebuffer text renderer for ASCII terminal output | 12 |
 | `dev/net_packet.hpp` | Ternary Ethernet packet wrapper with payload validation, canonical content hash, and binary frame encode/decode | 18 |
 | `demo.cpp` | Presentation demo: VirtualBox guest bootstrap over hosted storage binding, reboot-persistent CanonStore, TTF framebuffer output, and Ethernet frame round-trip | — |
-| `tests/device_driver_test.cpp` | Phase 4 acceptance tests AC-D1 through AC-D8 plus VirtualBox AHCI/E1000/VMSVGA adapter scaffolds, hosted TTF rendering, and Ethernet frame translation checks | 151 |
+| `tests/device_driver_test.cpp` | Phase 4 acceptance tests AC-D1 through AC-D8 plus VirtualBox AHCI/E1000/VMSVGA adapter scaffolds, hosted TTF rendering, Ethernet frame translation checks, and a repeated guest-bootstrap reboot persistence path | 165 |
 
 #### Design notes
 
@@ -131,9 +131,10 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 - E1000 is now represented as a first-target VirtualBox NIC scaffold, and the HAL-side VirtualBox profile can bind its guest network path through that adapter while still using hosted loopback queues underneath.
 - VMSVGA is now represented as a first-target VirtualBox display scaffold, and the HAL-side VirtualBox profile can bind its framebuffer output through that adapter while still presenting to an ASCII capture in hosted simulation.
 - The demo path now boots through the VirtualBox guest bootstrap for storage, display, and network, showing the same hosted story through the VM-targeted HAL/device seam rather than through manually assembled hosted device objects.
+- The Phase 4 persistence proof is now stronger than a raw `CanonStore` reboot cycle alone: the device-driver suite also verifies that the same CanonRef survives across two hosted reboot cycles when storage is reached through the VirtualBox guest bootstrap and AHCI-shaped binding.
 - Real NVMe/ethernet hardware adapters remain open.
 
-**Phase 4 test total: 151 / 151**
+**Phase 4 test total: 165 / 165**
 
 ---
 
@@ -154,8 +155,8 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_mmu_test` | 47 | 2 |
 | `t81_ternaryos_scheduler_test` | 120 | 3 |
 | `t81_ternaryos_ipc_test` | 73 | 3 |
-| `t81_ternaryos_device_driver_test` | 151 | 4 |
-| **Total** | **546** | |
+| `t81_ternaryos_device_driver_test` | 165 | 4 |
+| **Total** | **560** | |
 
 Run all TernOS tests:
 

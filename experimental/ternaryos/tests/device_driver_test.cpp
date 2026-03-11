@@ -12,6 +12,7 @@
 #include "../dev/framebuffer.hpp"
 #include "../dev/net_packet.hpp"
 #include "../dev/ttf.hpp"
+#include "../hal/virtualbox_guest_devices.hpp"
 
 #include <cassert>
 #include <cstdio>
@@ -20,6 +21,7 @@
 #include <string>
 
 using namespace t81::ternaryos::dev;
+using namespace t81::ternaryos::hal;
 
 static int g_pass = 0;
 static int g_fail = 0;
@@ -305,6 +307,88 @@ static void test_canon_store_reboot() {
   std::filesystem::remove(path);
 }
 
+// ─── AC-D3b: VirtualBox guest bootstrap persistence path ───────────────────
+
+static void test_virtualbox_guest_reboot_persistence() {
+  std::printf("\n[D3b] VirtualBox guest bootstrap persistence path\n");
+
+  const std::string path = "/tmp/ternos_test_vbox_guest_reboot.blk";
+  VBoxBootSpec spec;
+  spec.ram_bytes = 128ULL * 1024 * 1024;
+
+  auto block = make_block(0x44);
+  t81::canonfs::CanonRef stored_ref;
+
+  {
+    HostedBlockDev backing(32, "vbox-guest-reboot");
+    backing.set_backing_file(path);
+
+    auto guest = bootstrap_virtualbox_guest(spec, backing);
+    check(guest.has_value(), "bootstrap_virtualbox_guest succeeds before reboot");
+    if (!guest) {
+      std::filesystem::remove(path);
+      return;
+    }
+
+    CanonStore store(*guest->storage.device);
+    auto ref = store.put(block);
+    check(ref.has_value(), "guest storage stores a CanonBlock");
+    if (!ref) {
+      std::filesystem::remove(path);
+      return;
+    }
+    stored_ref = *ref;
+    check(store.flush(), "guest storage flush succeeds");
+  }
+
+  auto loaded1 = HostedBlockDev::load(path);
+  check(loaded1.has_value(), "device reloads after first reboot");
+  if (!loaded1) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  auto guest1 = bootstrap_virtualbox_guest(spec, *loaded1);
+  check(guest1.has_value(), "bootstrap_virtualbox_guest succeeds after first reboot");
+  if (!guest1) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  CanonStore recovered1(*guest1->storage.device);
+  check(recovered1.rebuild_index() == 1, "rebuild_index finds one stored block");
+  auto block1 = recovered1.get(stored_ref);
+  check(block1.has_value(), "stored CanonRef survives first guest reboot");
+  if (block1) {
+    check(block1->trytes == block.trytes, "stored block payload intact after first reboot");
+  }
+  check(recovered1.flush(), "recovered guest storage flush succeeds");
+
+  auto loaded2 = HostedBlockDev::load(path);
+  check(loaded2.has_value(), "device reloads after second reboot");
+  if (!loaded2) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  auto guest2 = bootstrap_virtualbox_guest(spec, *loaded2);
+  check(guest2.has_value(), "bootstrap_virtualbox_guest succeeds after second reboot");
+  if (!guest2) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  CanonStore recovered2(*guest2->storage.device);
+  check(recovered2.rebuild_index() == 1, "rebuild_index remains stable after second reboot");
+  auto block2 = recovered2.get(stored_ref);
+  check(block2.has_value(), "stored CanonRef survives second guest reboot");
+  if (block2) {
+    check(block2->trytes == block.trytes, "stored block payload intact after second reboot");
+  }
+
+  std::filesystem::remove(path);
+}
+
 // ─── AC-D7: hash verification on corrupted block ─────────────────────────────
 
 static void test_canon_store_corruption_detection() {
@@ -517,6 +601,7 @@ int main() {
   test_canon_store_put();
   test_canon_store_get_unknown();
   test_canon_store_reboot();
+  test_virtualbox_guest_reboot_persistence();
   test_canon_store_corruption_detection();
   test_framebuffer();
   test_ttf_rendering();
