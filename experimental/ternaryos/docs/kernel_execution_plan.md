@@ -78,6 +78,7 @@ The current service layer now covers:
 - runtime-status visibility for managed-service lifecycle state
 - audit-summary visibility for managed-service lifecycle state
 - device-summary visibility for managed-service lifecycle state
+- service-status visibility for the latest managed-service lifecycle transition
 
 ### 3. Only add new actions if a stable service runtime truly needs them
 

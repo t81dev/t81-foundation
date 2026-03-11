@@ -302,6 +302,9 @@ events.
 The device-summary view now also carries managed-service lifecycle metadata so
 device polling stays aligned with the same service-runtime convergence
 surface.
+The service-status view now also carries explicit last-transition metadata so a
+service can observe its own latest lifecycle state without consulting broader
+supervisor summaries.
 The next step is to keep that layer stable and only then consider any further
 lifecycle action or boundary growth.
 

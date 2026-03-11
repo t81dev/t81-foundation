@@ -2319,6 +2319,11 @@ static void test_kernel_service_runtime_layer() {
           "service view tracks request count");
     check(service_view.service->rejected_requests == 0,
           "healthy service request does not increment rejected count");
+    check(service_view.service->last_transition_kind ==
+              KernelAuditEventKind::ServiceRegistered,
+          "freshly registered service view tracks registration as the latest lifecycle event");
+    check(service_view.service->last_transition_sequence.has_value(),
+          "freshly registered service view exposes the registration audit sequence");
   }
 
   auto suspend_service = axion_kernel_service_action(
@@ -2576,6 +2581,11 @@ static void test_kernel_service_runtime_layer() {
   if (peer_health.service) {
     check(!peer_health.service->unhealthy,
           "same-supervisor heal clears unhealthy lifecycle state");
+    check(peer_health.service->last_transition_kind ==
+              KernelAuditEventKind::ServiceMarkedHealthy,
+          "service view tracks heal as the latest lifecycle event");
+    check(peer_health.service->last_transition_sequence.has_value(),
+          "service view exposes the latest lifecycle audit sequence after heal");
   }
   if (peer_health.supervisor_services) {
     check(peer_health.supervisor_services->unhealthy_service_count == 0,
@@ -2903,6 +2913,11 @@ static void test_kernel_service_runtime_layer() {
           "unregistered service is no longer suspended");
     check(unregister_service.service->state_transitions >= 2,
           "unregistered service increments lifecycle transitions");
+    check(unregister_service.service->last_transition_kind ==
+              KernelAuditEventKind::ServiceUnregistered,
+          "service view tracks unregister as the latest lifecycle event");
+    check(unregister_service.service->last_transition_sequence.has_value(),
+          "service view retains the latest lifecycle audit sequence after unregister");
   }
   if (unregister_service.supervisor_services) {
     check(unregister_service.supervisor_services->service_count == 0,

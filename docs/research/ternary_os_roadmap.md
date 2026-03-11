@@ -63,6 +63,8 @@ Audit summary now also exposes managed-service lifecycle counts and
 latest-transition metadata.
 Device summary now also exposes managed-service lifecycle counts and
 latest-transition metadata.
+Service status now also exposes the latest service lifecycle kind and
+sequence.
 The next steps are to keep that lifecycle
 contract stable while continuing to move the runtime toward fuller kernel
 behavior.

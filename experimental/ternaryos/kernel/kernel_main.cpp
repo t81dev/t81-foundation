@@ -375,6 +375,11 @@ void record_supervisor_service_transition(KernelRuntimeState& state,
                                           ProcessGroupId process_group_id,
                                           KernelAuditEventKind kind) {
   record_service_audit_event(state, kind, process_group_id);
+  auto* service_state = state.find_service_mut(service_id);
+  if (service_state && state.last_audit_event.has_value()) {
+    service_state->last_transition_kind = kind;
+    service_state->last_transition_sequence = state.last_audit_event->sequence;
+  }
   auto* supervisor_state = state.find_supervisor_mut(supervisor_id);
   if (!supervisor_state || !state.last_audit_event.has_value()) {
     return;
@@ -509,6 +514,10 @@ KernelServiceStatusView make_service_view(const KernelRuntimeState& state,
       .requests = service_state ? service_state->requests : 0,
       .rejected_requests = service_state ? service_state->rejected_requests : 0,
       .state_transitions = service_state ? service_state->state_transitions : 0,
+      .last_transition_kind =
+          service_state ? service_state->last_transition_kind : std::nullopt,
+      .last_transition_sequence =
+          service_state ? service_state->last_transition_sequence : std::nullopt,
   };
 }
 
