@@ -32,6 +32,20 @@ std::string make_startup_shell_text(const t81::ternaryos::ShellSessionState& sta
   return stream.str();
 }
 
+std::string make_startup_session_text(const t81::ternaryos::ShellSessionState& state) {
+  std::ostringstream stream;
+  stream << "AXION_STARTUP_SESSION\n";
+  stream << "profile=" << state.profile_summary << "\n";
+  stream << "storage=" << state.storage_binding_name << "\n";
+  stream << "display=" << state.display_binding_name << "\n";
+  stream << "recovered_entries=" << state.recovered_entries << "\n";
+  stream << "rendered_glyphs=" << state.rendered_glyphs << "\n";
+  stream << "session_command_count=" << state.session_command_count << "\n";
+  stream << "durable_ref_count=" << state.durable_ref_count << "\n";
+  stream << "durable_anchor=" << (state.durable_anchor_present ? "present" : "missing") << "\n";
+  return stream.str();
+}
+
 std::string c_string_literal(std::string_view text) {
   std::ostringstream stream;
   stream << "\"";
@@ -71,8 +85,8 @@ bool write_file(const std::string& path, const std::string& contents) {
 }  // namespace
 
 int main(int argc, char** argv) {
-  if (argc != 3) {
-    std::fputs("usage: shell_startup_snapshot <output-text> <output-header>\n", stderr);
+  if (argc != 5) {
+    std::fputs("usage: shell_startup_snapshot <shell-text> <shell-header> <session-text> <session-header>\n", stderr);
     return 2;
   }
 
@@ -82,18 +96,31 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  const std::string text = make_startup_shell_text(*state);
-  const std::string header =
+  const std::string shell_text = make_startup_shell_text(*state);
+  const std::string shell_header =
       "#pragma once\n"
       "static const char kGeneratedStartupShell[] = " +
-      c_string_literal(text) + ";\n";
+      c_string_literal(shell_text) + ";\n";
+  const std::string session_text = make_startup_session_text(*state);
+  const std::string session_header =
+      "#pragma once\n"
+      "static const char kGeneratedStartupSession[] = " +
+      c_string_literal(session_text) + ";\n";
 
-  if (!write_file(argv[1], text)) {
+  if (!write_file(argv[1], shell_text)) {
     std::fputs("failed to write startup shell text\n", stderr);
     return 1;
   }
-  if (!write_file(argv[2], header)) {
+  if (!write_file(argv[2], shell_header)) {
     std::fputs("failed to write startup shell header\n", stderr);
+    return 1;
+  }
+  if (!write_file(argv[3], session_text)) {
+    std::fputs("failed to write startup session text\n", stderr);
+    return 1;
+  }
+  if (!write_file(argv[4], session_header)) {
+    std::fputs("failed to write startup session header\n", stderr);
     return 1;
   }
   return 0;

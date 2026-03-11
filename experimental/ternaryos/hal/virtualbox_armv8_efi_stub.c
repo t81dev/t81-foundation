@@ -6,6 +6,7 @@
 
 #include "hal_c_abi.h"
 #include "axion_startup_shell.h"
+#include "axion_startup_session.h"
 
 #include <stdint.h>
 
@@ -181,6 +182,7 @@ static const CHAR16 kMarkerPath[] = L"\\TERNOS\\efi-ran.txt";
 static const CHAR16 kReportPath[] = L"\\TERNOS\\boot-report.txt";
 static const CHAR16 kStartupStatusPath[] = L"\\TERNOS\\startup-status.txt";
 static const CHAR16 kStartupShellPath[] = L"\\TERNOS\\startup-shell.txt";
+static const CHAR16 kStartupSessionPath[] = L"\\TERNOS\\startup-session.txt";
 static const char kMarkerText[] = "TERNOS_ARMV8_EFI_EXECUTED\n";
 static const char kBootBanner[] = "Axion ARMv8 EFI stub\r\n";
 
@@ -447,6 +449,22 @@ static EFI_STATUS write_startup_shell(EFI_HANDLE image_handle,
   return status;
 }
 
+static EFI_STATUS write_startup_session(EFI_HANDLE image_handle,
+                                        EFI_SYSTEM_TABLE* system_table) {
+  EFI_FILE_PROTOCOL* root = 0;
+  EFI_STATUS status = open_root_volume(image_handle, system_table, &root);
+  if (status != EFI_SUCCESS) {
+    return status;
+  }
+
+  status = write_root_file(root,
+                           kStartupSessionPath,
+                           kGeneratedStartupSession,
+                           ascii_length(kGeneratedStartupSession));
+  root->Close(root);
+  return status;
+}
+
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
   TernaryOsBootContext ctx;
   ctx.memory_map = kArmv8VirtualBoxMemoryMap;
@@ -471,6 +489,10 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_tab
   const EFI_STATUS startup_shell = write_startup_shell(image_handle, system_table);
   if (startup_shell != EFI_SUCCESS) {
     return startup_shell;
+  }
+  const EFI_STATUS startup_session = write_startup_session(image_handle, system_table);
+  if (startup_session != EFI_SUCCESS) {
+    return startup_session;
   }
   const EFI_STATUS report_status = write_boot_report(image_handle, system_table, &ctx, hal_result);
   if (report_status != EFI_SUCCESS) {

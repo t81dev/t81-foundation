@@ -297,6 +297,8 @@ Outputs:
 - `build/ternaryos/qemu_armv8_guest/startup-status.txt`
 - `build/ternaryos/qemu_armv8_guest/startup-shell.txt`
   - generated from the real Axion shell backend at build time, then embedded into the ARM EFI stub
+- `build/ternaryos/qemu_armv8_guest/startup-session.txt`
+  - backend-generated `show session` snapshot embedded into the ARM EFI stub
 
 Current status:
 
@@ -324,6 +326,11 @@ Current status:
   - `history_anchor=durable`
   - `session_view=local+durable`
   - command surface including `show session`, `show ref <canonref>`, and `history show durable`
+- the current `startup-session.txt` exposes backend-generated shell session state under QEMU:
+  - `profile=VBoxEFI/AHCI/E1000/VMSVGA/HPET+IOAPIC`
+  - `session_command_count=6`
+  - `durable_ref_count=1`
+  - `durable_anchor=present`
 
 For an external reviewer, the current evidence split is:
 
