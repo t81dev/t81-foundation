@@ -124,7 +124,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `dev/ttf.hpp/.cpp` | Minimal Ternary Text Format codec + framebuffer text renderer for ASCII terminal output | 12 |
 | `dev/net_packet.hpp` | Ternary Ethernet packet wrapper with payload validation, canonical content hash, and binary frame encode/decode | 18 |
 | `demo.cpp` | Presentation demo: VirtualBox guest bootstrap over hosted storage binding, reboot-persistent CanonStore, TTF framebuffer output, and Ethernet frame round-trip | — |
-| `tests/device_driver_test.cpp` | Phase 4 acceptance tests AC-D1 through AC-D8 plus VirtualBox AHCI/E1000/VMSVGA adapter scaffolds, hosted TTF rendering, Ethernet frame translation checks, a repeated guest-bootstrap reboot persistence path, and guest-bootstrap rebuild recovery after index-header and payload corruption | 184 |
+| `tests/device_driver_test.cpp` | Phase 4 acceptance tests AC-D1 through AC-D8 plus VirtualBox AHCI/E1000/VMSVGA adapter scaffolds, hosted TTF rendering, Ethernet frame translation checks, repeated guest-bootstrap reboot persistence, recovery after index-header and payload corruption, and full-cap persistence at the current 17-entry Phase 4 metadata limit | 241 |
 
 #### Design notes
 
@@ -139,9 +139,10 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 - The demo path now boots through the VirtualBox guest bootstrap for storage, display, and network, showing the same hosted story through the VM-targeted HAL/device seam rather than through manually assembled hosted device objects.
 - The Phase 4 persistence proof is now stronger than a raw `CanonStore` reboot cycle alone: the device-driver suite also verifies that the same CanonRef survives across two hosted reboot cycles when storage is reached through the VirtualBox guest bootstrap and AHCI-shaped binding.
 - The hosted recovery story is stronger too: when the persisted CanonStore header is damaged and one payload block is corrupted, the guest-bootstrap path now proves `rebuild_index()` falls back to scanning AHCI-backed payload blocks, preserves the intact CanonRef, and rejects the stale pre-corruption CanonRef for the damaged payload.
+- The current Phase 4 cap is now exercised end to end through the guest path as well: the hosted suite fills all 17 CanonStore index entries behind the VirtualBox bootstrap, flushes, reboots, rebuilds, and verifies every capped CanonRef survives intact.
 - Real NVMe/ethernet hardware adapters remain open.
 
-**Phase 4 test total: 184 / 184**
+**Phase 4 test total: 241 / 241**
 
 ---
 
@@ -162,8 +163,8 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_mmu_test` | 47 | 2 |
 | `t81_ternaryos_scheduler_test` | 120 | 3 |
 | `t81_ternaryos_ipc_test` | 73 | 3 |
-| `t81_ternaryos_device_driver_test` | 184 | 4 |
-| **Total** | **579** | |
+| `t81_ternaryos_device_driver_test` | 241 | 4 |
+| **Total** | **636** | |
 
 Run all TernOS tests:
 

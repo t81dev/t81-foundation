@@ -480,6 +480,76 @@ static void test_virtualbox_guest_rebuild_after_corruption() {
   std::filesystem::remove(path);
 }
 
+// ─── AC-D3d: Guest bootstrap persistence at Phase 4 index cap ──────────────
+
+static void test_virtualbox_guest_capacity_reboot() {
+  std::printf("\n[D3d] VirtualBox guest persistence at Phase 4 index cap\n");
+
+  const std::string path = "/tmp/ternos_test_vbox_guest_capacity.blk";
+  VBoxBootSpec spec;
+  spec.ram_bytes = 128ULL * 1024 * 1024;
+
+  std::array<t81::canonfs::CanonBlock, CanonStore::kMaxIndexEntries> blocks{};
+  std::array<t81::canonfs::CanonRef, CanonStore::kMaxIndexEntries> refs{};
+
+  {
+    HostedBlockDev backing(48, "vbox-guest-capacity");
+    backing.set_backing_file(path);
+
+    auto guest = bootstrap_virtualbox_guest(spec, backing);
+    check(guest.has_value(), "bootstrap_virtualbox_guest succeeds at capacity setup");
+    if (!guest) {
+      std::filesystem::remove(path);
+      return;
+    }
+
+    CanonStore store(*guest->storage.device);
+    for (std::size_t i = 0; i < CanonStore::kMaxIndexEntries; ++i) {
+      blocks[i] = make_block(static_cast<uint8_t>(i + 1));
+      auto ref = store.put(blocks[i]);
+      check(ref.has_value(), "guest store accepts block within Phase 4 cap");
+      if (!ref) {
+        std::filesystem::remove(path);
+        return;
+      }
+      refs[i] = *ref;
+    }
+
+    check(store.size() == CanonStore::kMaxIndexEntries,
+          "guest store reaches Phase 4 index cap");
+    check(store.flush(), "guest storage flush succeeds at capacity");
+  }
+
+  auto loaded = HostedBlockDev::load(path);
+  check(loaded.has_value(), "device reloads after capacity reboot");
+  if (!loaded) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  auto guest = bootstrap_virtualbox_guest(spec, *loaded);
+  check(guest.has_value(), "bootstrap_virtualbox_guest succeeds after capacity reboot");
+  if (!guest) {
+    std::filesystem::remove(path);
+    return;
+  }
+
+  CanonStore rebuilt(*guest->storage.device);
+  check(rebuilt.rebuild_index() == CanonStore::kMaxIndexEntries,
+        "rebuild_index recovers every capped entry");
+
+  for (std::size_t i = 0; i < CanonStore::kMaxIndexEntries; ++i) {
+    auto block = rebuilt.get(refs[i]);
+    check(block.has_value(), "recovered capped CanonRef remains readable");
+    if (block) {
+      check(block->trytes == blocks[i].trytes,
+            "recovered capped payload remains exact");
+    }
+  }
+
+  std::filesystem::remove(path);
+}
+
 // ─── AC-D7: hash verification on corrupted block ─────────────────────────────
 
 static void test_canon_store_corruption_detection() {
@@ -694,6 +764,7 @@ int main() {
   test_canon_store_reboot();
   test_virtualbox_guest_reboot_persistence();
   test_virtualbox_guest_rebuild_after_corruption();
+  test_virtualbox_guest_capacity_reboot();
   test_canon_store_corruption_detection();
   test_framebuffer();
   test_ttf_rendering();
