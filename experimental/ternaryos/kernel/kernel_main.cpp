@@ -983,6 +983,10 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
                     state.pager_worker.active_work->handoff.address_space_id}
               : std::nullopt,
       .pager_worker_handoffs_received = state.pager_worker.handoffs_received,
+      .pager_worker_last_received_address_space_id =
+          state.pager_worker.last_received_address_space_id,
+      .pager_worker_last_received_handoff_sequence =
+          state.pager_worker.last_received_handoff_sequence,
       .pager_worker_activations = state.pager_worker.activations,
       .pager_worker_last_activated_address_space_id =
           state.pager_worker.last_activated_address_space_id,
@@ -1416,6 +1420,9 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
                      state.pager_worker.inbox.size());
         address_space->pager_worker_owned = true;
         ++state.pager_worker.handoffs_received;
+        state.pager_worker.last_received_address_space_id = address_space_id;
+        state.pager_worker.last_received_handoff_sequence =
+            address_space->last_pager_handoff_sequence;
         ++state.counters.pager_handoffs_dispatched;
       }
     } else {
@@ -1602,6 +1609,10 @@ KernelServiceResult axion_kernel_service_request(
           .pager_resolutions = state.counters.pager_resolutions,
           .pager_faults_coalesced = state.counters.pager_faults_coalesced,
           .pager_worker_handoffs_received = state.pager_worker.handoffs_received,
+          .pager_worker_last_received_address_space_id =
+              state.pager_worker.last_received_address_space_id,
+          .pager_worker_last_received_handoff_sequence =
+              state.pager_worker.last_received_handoff_sequence,
           .pager_worker_activations = state.pager_worker.activations,
           .pager_worker_last_activated_address_space_id =
               state.pager_worker.last_activated_address_space_id,

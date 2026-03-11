@@ -201,6 +201,15 @@ The fifteenth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves that retained completion identity and ordinal
   advance deterministically through FIFO backlog drain
 
+The sixteenth pager-groundwork slice is now also complete:
+
+- runtime and fault diagnostics now retain the last received pager-worker
+  address space and its handoff ordinal after the inbox drains
+- postmortem pager-worker summaries can now correlate intake history directly
+  with the retained activation, stall/backlog, and completion fields
+- HAL/kernel coverage now proves that retained receipt identity and ordinal
+  advance deterministically through FIFO backlog dispatch and drain
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable

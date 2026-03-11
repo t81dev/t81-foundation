@@ -351,6 +351,8 @@ same deterministic stall event. Those summaries now also retain the last
 activated address space and its activation ordinal after the worker goes idle.
 They now also retain the last completed pager-worker address space and its
 resolution ordinal after the worker goes idle.
+They now also retain the last received pager-worker address space and its
+handoff ordinal after the inbox drains.
 The next kernel slice is to keep that pager surface private while expanding
 backlog/load scheduling behavior before any public pager ABI or syscall design.
 

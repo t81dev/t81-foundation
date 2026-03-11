@@ -94,7 +94,8 @@ stall event that produced that relationship, plus the exact retained stall
 ordinal for the blocked ready queued address space and the ready-backlog depth
 observed at that same event; the kernel now also retains the last activated
 address space and activation ordinal after the worker goes idle, plus the last
-completed address space and resolution ordinal after the worker goes idle,
+completed address space and resolution ordinal after the worker goes idle, and
+the last received address space and handoff ordinal after the inbox drains,
 before later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:

@@ -1260,6 +1260,13 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary queues one work item after first backlog dispatch");
     check(fault_after_first_dispatch.fault_summary->pager_worker_inbox_high_watermark == 1,
           "fault summary records one-item worker inbox watermark initially");
+    check(fault_after_first_dispatch.fault_summary
+              ->pager_worker_last_received_address_space_id ==
+              first_address_space_id,
+          "fault summary tracks the first received pager-worker address space");
+    check(fault_after_first_dispatch.fault_summary
+              ->pager_worker_last_received_handoff_sequence == 1,
+          "fault summary tracks the first received pager-worker handoff ordinal");
     check(fault_after_first_dispatch.fault_summary->last_pager_handoff.has_value(),
           "fault summary exposes first backlog handoff");
     if (fault_after_first_dispatch.fault_summary->last_pager_handoff) {
@@ -1287,6 +1294,13 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status counts two dispatched pager handoffs under backlog");
     check(runtime_after_second_dispatch.runtime->pager_worker_handoffs_received == 2,
           "runtime status counts two handoffs received by the worker under backlog");
+    check(runtime_after_second_dispatch.runtime
+              ->pager_worker_last_received_address_space_id ==
+              second_address_space_id,
+          "runtime status tracks the last received pager-worker address under backlog");
+    check(runtime_after_second_dispatch.runtime
+              ->pager_worker_last_received_handoff_sequence == 2,
+          "runtime status tracks the last received pager-worker handoff ordinal");
   }
 
   check(mmu::mmu_map(state->page_table,
@@ -1438,6 +1452,13 @@ static void test_kernel_pager_worker_backlog() {
     check(runtime_after_second_resolution.runtime->pager_worker_resolutions_completed == 2,
           "runtime status counts two completed worker resolutions after backlog drain");
     check(runtime_after_second_resolution.runtime
+              ->pager_worker_last_received_address_space_id ==
+              second_address_space_id,
+          "runtime status retains the last received pager-worker address after backlog drain");
+    check(runtime_after_second_resolution.runtime
+              ->pager_worker_last_received_handoff_sequence == 2,
+          "runtime status retains the last received pager-worker handoff ordinal");
+    check(runtime_after_second_resolution.runtime
               ->pager_worker_last_completed_address_space_id ==
               second_address_space_id,
           "runtime status retains the last completed pager-worker address after backlog drain");
@@ -1491,6 +1512,13 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary retains the stall ordinal for the last ready queued address space");
     check(fault_after_second_resolution.fault_summary->pager_worker_last_ready_backlog_count == 1,
           "fault summary retains the ready-backlog depth for the last ready queued address");
+    check(fault_after_second_resolution.fault_summary
+              ->pager_worker_last_received_address_space_id ==
+              second_address_space_id,
+          "fault summary retains the last received pager-worker address after backlog drain");
+    check(fault_after_second_resolution.fault_summary
+              ->pager_worker_last_received_handoff_sequence == 2,
+          "fault summary retains the last received pager-worker handoff ordinal");
     check(fault_after_second_resolution.fault_summary
               ->pager_worker_last_completed_address_space_id ==
               second_address_space_id,
