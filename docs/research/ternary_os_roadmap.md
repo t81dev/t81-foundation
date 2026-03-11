@@ -39,6 +39,10 @@ audit-only supervisor layer above the process-group gate. The next steps are to
 define the first service-facing runtime contract on top of that boundary while
 continuing to converge the runtime toward fuller kernel behavior.
 
+That near-term kernel slice is now tracked explicitly in:
+
+- `experimental/ternaryos/docs/kernel_execution_plan.md`
+
 The roadmap is now centered on promotion of those layers from `experimental/` into mainline, plus delivery of the Phase 4 driver layer needed for a reboot-persistent CanonFS system. The concrete promotion environment is a **VirtualBox-first virtual machine target**: Axion should graduate from hosted process simulation into a bootable guest image that runs under VirtualBox before any real-hardware push.
 
 ---

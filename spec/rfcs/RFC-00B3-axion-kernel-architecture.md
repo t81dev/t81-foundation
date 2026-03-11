@@ -237,6 +237,22 @@ The current FIFO inbox model is acceptable as the first kernel IPC substrate.
 
 ---
 
+### 3.7.1 Immediate Execution Plan
+
+The next implementation slice after the current supervisor/process-group fault
+boundary is a short explicit sequence:
+
+1. define the first service-facing runtime request/result contract
+2. define deterministic request behavior for healthy vs faulted groups
+3. expose stable diagnostics above kernel-owned state without leaking kernel
+   internals directly
+
+The working execution note for this slice is:
+
+- `experimental/ternaryos/docs/kernel_execution_plan.md`
+
+---
+
 ### 3.8 Governance Boundary
 
 Governance remains part of kernel responsibility at the boundary, not merely a

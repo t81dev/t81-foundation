@@ -25,6 +25,10 @@ The official promotion target remains:
 - `x86_64`
 - `VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC`
 
+The next kernel slice is now tracked explicitly in:
+
+- [kernel_execution_plan.md](kernel_execution_plan.md)
+
 ## What Is Proven Locally
 
 Hosted proof is strong on the current branch:

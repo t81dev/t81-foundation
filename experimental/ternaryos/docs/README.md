@@ -5,6 +5,7 @@
 **Review Summary:** [review_summary.md](review_summary.md)
 **x86_64 Handoff:** [virtualbox_x86_64_handoff.md](virtualbox_x86_64_handoff.md)
 **Shell Design:** [axion_shell_design.md](axion_shell_design.md)
+**Kernel Plan:** [kernel_execution_plan.md](kernel_execution_plan.md)
 **Roadmap:** [docs/research/ternary_os_roadmap.md](../../../docs/research/ternary_os_roadmap.md)
 **RFC-00B0 (HAL):** [spec/rfcs/RFC-00B0-hal-spec.md](../../../spec/rfcs/RFC-00B0-hal-spec.md)
 **RFC-00B1 (MMU):** [spec/rfcs/RFC-00B1-ternary-mmu.md](../../../spec/rfcs/RFC-00B1-ternary-mmu.md)
@@ -46,6 +47,7 @@ docs/
   PROGRESS.md           Phase-by-phase implementation log
   review_summary.md     Reviewer-facing current-state summary
   axion_shell_design.md Phase 5 shell design note
+  kernel_execution_plan.md Short next-step kernel execution plan
   virtualbox_x86_64_handoff.md External x86_64 VirtualBox runbook
 
 hal/
@@ -283,6 +285,8 @@ Local hosted proof as of the current branch:
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
 - total TernOS assertions are `1230`
+- the next kernel slice is now tracked explicitly in:
+  - `docs/kernel_execution_plan.md`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback

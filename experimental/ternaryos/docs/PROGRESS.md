@@ -23,6 +23,7 @@ Reference docs:
 - RFC-00B3 (Kernel): [spec/rfcs/RFC-00B3-axion-kernel-architecture.md](../../../spec/rfcs/RFC-00B3-axion-kernel-architecture.md)
 - x86_64 handoff: [virtualbox_x86_64_handoff.md](virtualbox_x86_64_handoff.md)
 - Axion shell design: [axion_shell_design.md](axion_shell_design.md)
+- Kernel execution plan: [kernel_execution_plan.md](kernel_execution_plan.md)
 
 ---
 
@@ -132,6 +133,7 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - The kernel runtime now also exposes a deterministic loop step plus runtime counters for scheduler and IPC activity.
 - The loop-owned fault delivery path now feeds a real kernel policy boundary: delivered faults are routed into per-thread runtime state, the faulting thread is quarantined deterministically, the owning process group enters a blocked fault state, explicit group acknowledgement gates recovery, and audit-only governance events are recorded in deterministic order.
 - The supervisor layer above the process-group boundary is now implemented; the next kernel step is the first service-facing runtime contract above that boundary rather than another kernel-internal fault expansion.
+- That next slice is now written down explicitly in `kernel_execution_plan.md` so the kernel request contract can follow a fixed sequence.
 
 **Phase 3 test total: 193 / 193**
 
