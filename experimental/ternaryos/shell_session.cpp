@@ -30,11 +30,13 @@ namespace t81::ternaryos {
 
 namespace {
 
-constexpr std::array<const char*, 11> kBuiltinCommands = {
+constexpr std::array<const char*, 13> kBuiltinCommands = {
     "help",
     "profile",
     "session status",
     "session refs",
+    "show session",
+    "show ref <canonref>",
     "store put <text>",
     "store ls",
     "store get <ref>",
@@ -286,7 +288,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words[0] == "help") {
     state_.command_records.push_back(
         {command,
-         "builtins help profile session status session refs store put <text> store ls store get <ref> store rm <ref> history history show durable clear"});
+         "builtins help profile session status session refs show session show ref <canonref> store put <text> store ls store get <ref> store rm <ref> history history show durable clear"});
     return refresh_render();
   }
 
@@ -305,6 +307,20 @@ bool ShellSession::execute_command(std::string_view command_view) {
         << "durable anchor " << (history_ref_.has_value() ? "tracked" : "none") << '\n'
         << "recovered " << state_.recovered_entries << '\n'
         << "glyphs " << state_.rendered_glyphs;
+    state_.command_records.push_back({command, out.str()});
+    return refresh_render();
+  }
+
+  if (words.size() == 2 && words[0] == "show" && words[1] == "session") {
+    std::ostringstream out;
+    out << "show session" << '\n'
+        << "profile " << state_.profile_summary << '\n'
+        << "storage " << state_.storage_binding_name << '\n'
+        << "display " << state_.display_binding_name << '\n'
+        << "session commands " << state_.session_command_count << '\n'
+        << "durable refs " << state_.durable_ref_count << '\n'
+        << "durable anchor " << (state_.durable_anchor_present ? "present" : "missing") << '\n'
+        << "recovered " << state_.recovered_entries;
     state_.command_records.push_back({command, out.str()});
     return refresh_render();
   }
@@ -385,6 +401,25 @@ bool ShellSession::execute_command(std::string_view command_view) {
     }
 
     state_.command_records.push_back({command, "store get " + decode_text_block(*block)});
+    return refresh_render();
+  }
+
+  if (words.size() == 3 && words[0] == "show" && words[1] == "ref") {
+    const auto ref = parse_canon_ref_text(words[2]);
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "show ref invalid ref"});
+      return refresh_render();
+    }
+
+    state_.recovered_entries = store.rebuild_index();
+    const auto block = store.get(*ref);
+    if (!block.has_value()) {
+      state_.command_records.push_back({command, "show ref missing"});
+      return refresh_render();
+    }
+
+    state_.command_records.push_back(
+        {command, "show ref " + canon_ref_text(*ref) + "\n" + decode_text_block(*block)});
     return refresh_render();
   }
 

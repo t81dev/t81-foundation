@@ -154,9 +154,11 @@ What the TUI adds:
   - `help`
   - `profile`
   - `session status`
+  - `show session`
   - `store put <text>`
   - `store ls`
   - `store get <ref>`
+  - `show ref <canonref>`
   - `store rm <ref>`
   - `history`
   - `history show durable`
@@ -174,6 +176,9 @@ What the TUI adds:
 - the shell now has explicit durable-state inspection commands:
   - `session refs` for the shell-tracked durable ref set
   - `history show durable` for the current durable history anchor
+- the shell now has its first object-native read surface:
+  - `show session` for a structured session object view
+  - `show ref <canonref>` for direct canonical-object lookup
 
 What it is not yet:
 
@@ -185,8 +190,8 @@ Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
 - `t81_ternaryos_device_driver_test` is `342/342`
-- `t81_ternaryos_shell_session_test` is `60/60`
-- total TernOS assertions are `797`
+- `t81_ternaryos_shell_session_test` is `69/69`
+- total TernOS assertions are `806`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback

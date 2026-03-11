@@ -183,10 +183,12 @@ help
 profile
 history
 session status
+show session
 session refs
 store put <text>
 store ls
 store get <ref>
+show ref <canonref>
 store rm <ref>
 history show durable
 clear
@@ -205,11 +207,12 @@ Rules:
 store put ref <ref>
 session show durable
 history show session
+show profile
 ```
 
 ### Later Object-Native Direction
 
-Possible direction:
+Current direction:
 
 ```text
 show ref <canonref>
@@ -268,7 +271,8 @@ automation shell, Axion should feel like a canonical state shell.
 5. Add `session status`, `session refs`, `store rm <ref>`, `history show durable`, and `clear`.
 6. Introduce quoted payload parsing and explicit parse errors.
 7. Split shell-local transcript state from durable store state more explicitly.
-8. Only then expand toward richer session/process/userland features.
+8. Add the first object-native read commands: `show session` and `show ref <canonref>`.
+9. Only then expand toward richer session/process/userland features.
 
 ## Acceptance For The Next Milestone
 
@@ -282,9 +286,9 @@ The next shell milestone should be considered complete when:
 
 This milestone is now complete. The next shell milestone should add:
 
-- richer session-scoped inspection commands
-- richer store mutation and inspection beyond append-only `store put`
-- session-local actions beyond `clear`
+- richer object composition and write grammar
+- a clearer session-oriented history surface
+- more direct profile/object inspection
 - groundwork for a broader object-oriented command surface
 
 ## Summary
