@@ -1797,6 +1797,12 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "runtime status does not count a parked resumption before the blocked head becomes ready");
     check(!runtime_after_capped_activation.runtime->pager_worker_last_parked_resumed_ready_count.has_value(),
           "runtime status has no resumed ready-backlog count before the blocked head resumes");
+    check(!runtime_after_capped_activation.runtime
+               ->pager_worker_last_parked_resumed_ready_address_space_id.has_value(),
+          "runtime status has no resumed trailing ready item before the blocked head resumes");
+    check(!runtime_after_capped_activation.runtime
+               ->pager_worker_last_parked_resumed_ready_handoff_sequence.has_value(),
+          "runtime status has no resumed trailing ready ordinal before the blocked head resumes");
     check(runtime_after_capped_activation.runtime
               ->pager_worker_last_parked_blocked_address_space_id ==
               first_address_space_id,
@@ -1839,6 +1845,12 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "fault summary does not count a parked resumption while the head is still parked");
     check(!fault_after_capped_deferral.fault_summary->pager_worker_last_parked_resumed_ready_count.has_value(),
           "fault summary has no resumed ready-backlog count while the head is still parked");
+    check(!fault_after_capped_deferral.fault_summary
+               ->pager_worker_last_parked_resumed_ready_address_space_id.has_value(),
+          "fault summary has no resumed trailing ready item while the head is still parked");
+    check(!fault_after_capped_deferral.fault_summary
+               ->pager_worker_last_parked_resumed_ready_handoff_sequence.has_value(),
+          "fault summary has no resumed trailing ready ordinal while the head is still parked");
     check(fault_after_capped_deferral.fault_summary->pager_worker_parked_ready_count == 1,
           "fault summary reports one ready item behind the parked blocked head");
     check(fault_after_capped_deferral.fault_summary->pager_worker_parked_ready_high_watermark == 1,
@@ -1869,6 +1881,12 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "runtime status still reports no parked resumption on repeated parked cycles");
     check(!runtime_after_second_park.runtime->pager_worker_last_parked_resumed_ready_count.has_value(),
           "runtime status still has no resumed ready-backlog count on repeated parked cycles");
+    check(!runtime_after_second_park.runtime
+               ->pager_worker_last_parked_resumed_ready_address_space_id.has_value(),
+          "runtime status still has no resumed trailing ready item on repeated parked cycles");
+    check(!runtime_after_second_park.runtime
+               ->pager_worker_last_parked_resumed_ready_handoff_sequence.has_value(),
+          "runtime status still has no resumed trailing ready ordinal on repeated parked cycles");
     check(runtime_after_second_park.runtime->pager_worker_parked_ready_count == 1,
           "runtime status keeps one ready item behind the blocked head on repeated parked cycles");
     check(runtime_after_second_park.runtime->pager_worker_parked_ready_high_watermark == 1,
@@ -1913,6 +1931,13 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "runtime status tracks the first parked resumption ordinal");
     check(runtime_after_head_resolution.runtime->pager_worker_last_parked_resumed_ready_count == 1,
           "runtime status tracks one ready item still queued behind the resumed head");
+    check(runtime_after_head_resolution.runtime
+              ->pager_worker_last_parked_resumed_ready_address_space_id ==
+              third_address_space_id,
+          "runtime status tracks the trailing ready item still queued behind the resumed head");
+    check(runtime_after_head_resolution.runtime
+              ->pager_worker_last_parked_resumed_ready_handoff_sequence == 3,
+          "runtime status tracks the trailing ready item handoff ordinal at parked resumption");
   }
 
   (void)axion_kernel_step(*state);
@@ -1969,6 +1994,13 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "fault summary retains the parked resumption ordinal");
     check(fault_after_final_resolution.fault_summary->pager_worker_last_parked_resumed_ready_count == 1,
           "fault summary retains one ready item queued behind the resumed head");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_parked_resumed_ready_address_space_id ==
+              third_address_space_id,
+          "fault summary retains the trailing ready item behind the resumed head");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_parked_resumed_ready_handoff_sequence == 3,
+          "fault summary retains the trailing ready item handoff ordinal at parked resumption");
     check(fault_after_final_resolution.fault_summary->pager_worker_last_activated_address_space_id ==
               third_address_space_id,
           "fault summary retains the third item as the final activation after the head drains");
