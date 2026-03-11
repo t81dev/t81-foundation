@@ -273,9 +273,10 @@ That stabilization step specifically means:
 
 That service-runtime convergence step is now implemented for the current
 contract surface. The service layer now includes deterministic registration,
-stable service detail and supervisor inventory views, and deterministic service
-unregister. The next step is to keep that layer stable and only then consider
-any further lifecycle action or boundary growth.
+stable service detail and supervisor inventory views, deterministic service
+unregister, and deterministic service suspend/resume. The next step is to keep
+that layer stable and only then consider any further lifecycle action or
+boundary growth.
 
 The working execution note for this slice is:
 

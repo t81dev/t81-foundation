@@ -2242,6 +2242,8 @@ static void test_kernel_service_runtime_layer() {
           "service view exposes primary group thread");
     check(!service_view.service->faulted_group,
           "healthy service view reports non-faulted group");
+    check(!service_view.service->suspended,
+          "healthy service view reports non-suspended lifecycle state");
     check(service_view.service->quarantined_thread_count == 0,
           "healthy service view reports zero quarantined threads");
     check(service_view.service->pending_fault_count == 0,
@@ -2251,6 +2253,84 @@ static void test_kernel_service_runtime_layer() {
     check(service_view.service->rejected_requests == 0,
           "healthy service request does not increment rejected count");
   }
+
+  auto suspend_service = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::SuspendService,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(suspend_service.status == KernelServiceStatus::Ok,
+        "healthy owner group can suspend its service");
+  check(suspend_service.rejection == KernelServiceActionRejection::None,
+        "successful suspend clears rejection");
+  check(suspend_service.action_performed,
+        "service suspend reports work performed");
+  check(suspend_service.service.has_value(),
+        "service suspend returns service status");
+  check(suspend_service.supervisor_services.has_value(),
+        "service suspend returns supervisor inventory");
+  if (suspend_service.service) {
+    check(suspend_service.service->suspended,
+          "suspended service reports suspended lifecycle state");
+    check(suspend_service.service->state_transitions >= 1,
+          "service suspend increments lifecycle transitions");
+  }
+  if (suspend_service.supervisor_services) {
+    check(suspend_service.supervisor_services->suspended_service_count == 1,
+          "supervisor inventory reports one suspended service");
+    check(suspend_service.supervisor_services->services.front().suspended,
+          "supervisor inventory entry reports suspended service");
+  }
+
+  auto duplicate_suspend = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::SuspendService,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(duplicate_suspend.status == KernelServiceStatus::InvalidRequest,
+        "duplicate suspend is rejected");
+  check(duplicate_suspend.rejection ==
+            KernelServiceActionRejection::ServiceAlreadySuspended,
+        "duplicate suspend reports already-suspended rejection");
+
+  auto resume_service = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::ResumeService,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(resume_service.status == KernelServiceStatus::Ok,
+        "healthy owner group can resume its service");
+  check(resume_service.rejection == KernelServiceActionRejection::None,
+        "successful resume clears rejection");
+  check(resume_service.action_performed,
+        "service resume reports work performed");
+  if (resume_service.service) {
+    check(!resume_service.service->suspended,
+          "resumed service clears suspended lifecycle state");
+  }
+  if (resume_service.supervisor_services) {
+    check(resume_service.supervisor_services->suspended_service_count == 0,
+          "supervisor inventory clears suspended service count after resume");
+  }
+
+  auto duplicate_resume = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::ResumeService,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(duplicate_resume.status == KernelServiceStatus::InvalidRequest,
+        "duplicate resume is rejected");
+  check(duplicate_resume.rejection ==
+            KernelServiceActionRejection::ServiceNotSuspended,
+        "duplicate resume reports not-suspended rejection");
 
   t81::ternaryos::sched::TiscContext fault_ctx;
   fault_ctx.label = "service-faulted";
@@ -2303,6 +2383,8 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory retains service entry while blocked");
     check(supervisor_inventory.supervisor_services->blocked_service_count == 1,
           "supervisor inventory reports one blocked service");
+    check(supervisor_inventory.supervisor_services->suspended_service_count == 0,
+          "supervisor inventory does not conflate blocked and suspended services");
     check(supervisor_inventory.supervisor_services->total_service_requests >= 1,
           "supervisor inventory aggregates service requests");
     check(supervisor_inventory.supervisor_services->total_service_rejections >= 1,
@@ -2350,12 +2432,16 @@ static void test_kernel_service_runtime_layer() {
           "unregistered service reports unregistered state");
     check(!unregister_service.service->blocked,
           "unregistered service is no longer blocked");
+    check(!unregister_service.service->suspended,
+          "unregistered service is no longer suspended");
     check(unregister_service.service->state_transitions >= 2,
           "unregistered service increments lifecycle transitions");
   }
   if (unregister_service.supervisor_services) {
     check(unregister_service.supervisor_services->service_count == 0,
           "supervisor inventory empties after unregister");
+    check(unregister_service.supervisor_services->suspended_service_count == 0,
+          "supervisor inventory has no suspended services after unregister");
     check(unregister_service.supervisor_services->services.empty(),
           "supervisor inventory removes service entries after unregister");
   }

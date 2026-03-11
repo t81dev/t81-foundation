@@ -43,9 +43,10 @@ boundary as the second narrow action. Request-side and action-side rejection
 semantics are now explicit across that contract, and stable audit/device detail
 views are exposed through it. A first service-runtime layer now exists above
 that boundary, with deterministic service registration, deterministic service
-unregister, stable service detail, and richer supervisor-owned inventory. The
-next steps are to keep that lifecycle contract stable while continuing to move
-the runtime toward fuller kernel behavior.
+unregister, deterministic service suspend/resume, stable service detail, and
+richer supervisor-owned inventory. The next steps are to keep that lifecycle
+contract stable while continuing to move the runtime toward fuller kernel
+behavior.
 
 That near-term kernel slice is now tracked explicitly in:
 

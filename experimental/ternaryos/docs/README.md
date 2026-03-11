@@ -67,7 +67,9 @@ hal/
 kernel/
   kernel_main.hpp/.cpp First Axion kernel-owned runtime entry/bootstrap;
                        runtime-owned allocator/MMU/scheduler/IPC/device state,
-                       process-group fault policy, and audit-only governance hooks
+                       process-group fault policy, audit-only governance hooks,
+                       and a narrow service runtime lifecycle with deterministic
+                       register/unregister/suspend/resume actions
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,
@@ -104,7 +106,7 @@ shell/
 
 tests/
   shell_session_test.cpp     Phase 5 shell command / durable-history test
-  hal_boot_test.cpp          Phase 1 / kernel integration — 572 assertions
+  hal_boot_test.cpp          Phase 1 / kernel integration — 658 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
   mmu_test.cpp               Phase 2 — 87 assertions
@@ -119,7 +121,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1548/1548 assertions, 8/8 tests pass
+# Expected: 1570/1570 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -280,17 +282,17 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `636/636`
+- `t81_ternaryos_hal_boot_test` is `658/658`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1548`
+- total TernOS assertions are `1570`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state
 - stable service-facing audit summaries and per-device ownership details now exist through that same boundary
 - a kernel-owned service runtime layer now exists above the supervisor/process-group boundary:
-  service ids, supervisor ownership, backing process-group linkage, blocked state,
+  service ids, supervisor ownership, backing process-group linkage, blocked/suspended state,
   stable service detail, lifecycle counters, and richer supervisor-owned service inventory
 - the first narrow service-facing action now exists through that same boundary:
   supervisor fault-group acknowledgement

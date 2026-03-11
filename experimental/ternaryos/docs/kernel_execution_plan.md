@@ -65,12 +65,12 @@ The current service layer now covers:
 - service request/rejection counters
 - deterministic service registration
 - deterministic service unregister
+- deterministic service suspend / resume
 
 ### 3. Only add new actions if a stable service runtime truly needs them
 
 Any further action should remain narrow and lifecycle-oriented:
 
-- service suspend / resume
 - explicit service health transition
 
 ## Non-Goals For This Slice
