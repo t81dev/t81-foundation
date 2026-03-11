@@ -363,7 +363,9 @@ Current status:
   - `storage_binding=virtualbox-ahci`
   - `canonstore_recovered_entries=3`
   - `canonstore_second_cycle_entries=3`
+  - `canonstore_torn_header_entries=3`
   - all three stored CanonRefs resolve successfully across both guest cycles
+  - all three stored CanonRefs resolve successfully after a torn-header fallback rebuild
   - `display_binding=virtualbox-vmsvga`
   - `display_present_count=1`
   - `network_binding=virtualbox-e1000`

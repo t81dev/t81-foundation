@@ -7,6 +7,7 @@
 #include "virtualbox_ahci_dev.hpp"
 
 #include <cstdio>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <optional>
@@ -88,6 +89,29 @@ std::optional<std::string> build_phase4_report() {
   const auto second_cycle_second = second_cycle_store.get(*second_ref);
   const auto second_cycle_third = second_cycle_store.get(*third_ref);
 
+  auto damaged = HostedBlockDev::load(backing_path);
+  if (!damaged.has_value()) return std::nullopt;
+  BlockData header{};
+  if (!damaged->read_block(0, header)) return std::nullopt;
+  uint32_t impossible_count =
+      static_cast<uint32_t>(CanonStore::kMaxIndexEntries + 5);
+  std::memcpy(header.data() + 4, &impossible_count, sizeof(impossible_count));
+  std::memset(header.data() + 8 + 40, 0xEE, 16);
+  if (!damaged->write_block(0, header)) return std::nullopt;
+  if (!damaged->save(backing_path)) return std::nullopt;
+
+  auto loaded_torn = HostedBlockDev::load(backing_path);
+  if (!loaded_torn.has_value()) return std::nullopt;
+  auto guest_torn = bootstrap_virtualbox_guest(spec, *loaded_torn);
+  if (!guest_torn.has_value()) return std::nullopt;
+  if (hal_main(guest_torn->boot_context) != 0) return std::nullopt;
+
+  CanonStore torn_store(*guest_torn->storage.device);
+  const std::size_t torn_entries = torn_store.rebuild_index();
+  const auto torn_first = torn_store.get(*first_ref);
+  const auto torn_second = torn_store.get(*second_ref);
+  const auto torn_third = torn_store.get(*third_ref);
+
   auto& display = *guest->display.device;
   auto& framebuffer = display.framebuffer();
   framebuffer = TernaryFramebuffer(20, 8);
@@ -123,6 +147,7 @@ std::optional<std::string> build_phase4_report() {
   report << "ahci_irq=" << static_cast<unsigned>(ahci->ahci_info().irq) << "\n";
   report << "canonstore_recovered_entries=" << recovered_entries << "\n";
   report << "canonstore_second_cycle_entries=" << second_cycle_entries << "\n";
+  report << "canonstore_torn_header_entries=" << torn_entries << "\n";
   report << "canonstore_inventory_count=3\n";
   report << "canonstore_lookup_first=" << (recovered_first.has_value() ? "ok" : "missing") << "\n";
   report << "canonstore_lookup_second=" << (recovered_second.has_value() ? "ok" : "missing") << "\n";
@@ -130,6 +155,9 @@ std::optional<std::string> build_phase4_report() {
   report << "canonstore_second_cycle_first=" << (second_cycle_first.has_value() ? "ok" : "missing") << "\n";
   report << "canonstore_second_cycle_second=" << (second_cycle_second.has_value() ? "ok" : "missing") << "\n";
   report << "canonstore_second_cycle_third=" << (second_cycle_third.has_value() ? "ok" : "missing") << "\n";
+  report << "canonstore_torn_header_first=" << (torn_first.has_value() ? "ok" : "missing") << "\n";
+  report << "canonstore_torn_header_second=" << (torn_second.has_value() ? "ok" : "missing") << "\n";
+  report << "canonstore_torn_header_third=" << (torn_third.has_value() ? "ok" : "missing") << "\n";
   report << "canonref_first=" << first_ref->hash.h.to_string() << "\n";
   report << "canonref_second=" << second_ref->hash.h.to_string() << "\n";
   report << "canonref_third=" << third_ref->hash.h.to_string() << "\n";
