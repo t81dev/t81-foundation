@@ -30,7 +30,7 @@ namespace t81::ternaryos {
 
 namespace {
 
-constexpr std::array<const char*, 21> kBuiltinCommands = {
+constexpr std::array<const char*, 22> kBuiltinCommands = {
     "help",
     "profile",
     "session status",
@@ -50,6 +50,7 @@ constexpr std::array<const char*, 21> kBuiltinCommands = {
     "history",
     "history show session",
     "history show object <ref>",
+    "history use <ref>",
     "history show durable",
     "clear",
 };
@@ -296,7 +297,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words[0] == "help") {
     state_.command_records.push_back(
         {command,
-         "builtins help profile session status session checkpoint session export session show durable session refs show profile show session show ref <canonref> store put <text> store put ref <ref> store cp <ref> store ls store get <ref> store rm <ref> history history show session history show object <ref> history show durable clear"});
+         "builtins help profile session status session checkpoint session export session show durable session refs show profile show session show ref <canonref> store put <text> store put ref <ref> store cp <ref> store ls store get <ref> store rm <ref> history history show session history show object <ref> history use <ref> history show durable clear"});
     return refresh_render();
   }
 
@@ -597,6 +598,26 @@ bool ShellSession::execute_command(std::string_view command_view) {
 
       state_.command_records.push_back(
           {command, "history object " + canon_ref_text(*ref) + "\n" + decode_text_block(*block)});
+      return refresh_render();
+    }
+
+    if (words.size() == 3 && words[1] == "use") {
+      const auto ref = parse_canon_ref_text(words[2]);
+      if (!ref.has_value()) {
+        state_.command_records.push_back({command, "history use invalid ref"});
+        return refresh_render();
+      }
+
+      state_.recovered_entries = store.rebuild_index();
+      const auto block = store.get(*ref);
+      if (!block.has_value()) {
+        state_.command_records.push_back({command, "history use missing"});
+        return refresh_render();
+      }
+
+      history_ref_ = *ref;
+      if (!canon_ref_known(stored_refs_, *ref)) stored_refs_.push_back(*ref);
+      state_.command_records.push_back({command, "history use ok " + canon_ref_text(*ref)});
       return refresh_render();
     }
 

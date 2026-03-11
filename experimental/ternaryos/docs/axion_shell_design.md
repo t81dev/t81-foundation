@@ -198,6 +198,7 @@ store get <ref>
 show ref <canonref>
 store rm <ref>
 history show object <ref>
+history use <ref>
 history show durable
 clear
 ```
@@ -215,6 +216,7 @@ Rules:
 store cp <ref>
 history show object <ref>
 session export
+history use <ref>
 ```
 
 ### Later Object-Native Direction
@@ -230,6 +232,7 @@ store put text "<payload>"
 store cp <ref>
 store get ref <canonref>
 history show object <ref>
+history use <ref>
 ```
 
 This keeps the grammar readable while making objects explicit.

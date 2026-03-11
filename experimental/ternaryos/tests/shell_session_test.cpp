@@ -36,7 +36,7 @@ static void test_scripted_shell_session() {
   check(state.has_value(), "scripted shell session builds");
   if (!state.has_value()) return;
 
-  check(state->available_commands.size() == 21, "twenty-one builtins are exposed");
+  check(state->available_commands.size() == 22, "twenty-two builtins are exposed");
   check(state->command_records.size() == 6, "scripted session records six commands");
   check(state->command_records[2].result.starts_with("session profile "),
         "scripted session status reports shell state");
@@ -101,11 +101,15 @@ static void test_typed_shell_commands() {
         "show ref reports missing after store rm");
   check(session->execute_command("history"), "history executes");
   check(session->execute_command("history show durable"), "history show durable reports missing after removal");
+  check(session->execute_command(std::string("history use ") + checkpoint_ref),
+        "history use <ref> executes");
+  check(session->execute_command("history show durable"),
+        "history show durable executes after history use");
   check(session->execute_command("store put \"unterminated"), "parse errors still refresh state");
   check(session->execute_command("bogus"), "unknown command still refreshes state");
 
   const auto& state_before_clear = session->state();
-  check(state_before_clear.command_records.size() == 26, "interactive session records twenty-six commands");
+  check(state_before_clear.command_records.size() == 28, "interactive session records twenty-eight commands");
   check(state_before_clear.command_records[1].result.starts_with("session profile "),
         "session status reports profile and shell metadata");
   check(state_before_clear.command_records[2].result == "show profile\n" + state_before_clear.profile_summary,
@@ -188,16 +192,22 @@ static void test_typed_shell_commands() {
         "history reports missing durable anchor after removal");
   check(state_before_clear.command_records[23].result == "history durable missing",
         "history show durable reports missing anchor after removal");
-  check(state_before_clear.command_records[24].result == "parse error: unmatched quote",
+  check(state_before_clear.command_records[24].result == "history use ok " + checkpoint_ref,
+        "history use rebinds the durable anchor to the checkpoint");
+  check(state_before_clear.command_records[25].result.starts_with("history durable " + checkpoint_ref),
+        "history show durable exposes rebound checkpoint anchor");
+  check(state_before_clear.command_records[25].result.find("SESSION TRANSCRIPT") != std::string::npos,
+        "history show durable exposes rebound checkpoint transcript");
+  check(state_before_clear.command_records[26].result == "parse error: unmatched quote",
         "unmatched quote is surfaced as a parse error");
-  check(state_before_clear.command_records[25].result == "unknown command", "unknown command is surfaced");
+  check(state_before_clear.command_records[27].result == "unknown command", "unknown command is surfaced");
   check(state_before_clear.recovered_entries == 1, "interactive history refresh tracks current recovered_entries");
-  check(state_before_clear.session_command_count == 26,
+  check(state_before_clear.session_command_count == 28,
         "interactive state tracks session command count before clear");
   check(state_before_clear.durable_ref_count == 1,
         "interactive state tracks checkpoint ref after store rm");
-  check(!state_before_clear.durable_anchor_present,
-        "interactive state reports durable anchor missing after store rm");
+  check(state_before_clear.durable_anchor_present,
+        "interactive state reports rebound durable anchor present");
 
   check(session->execute_command("clear"), "clear executes");
   check(session->execute_command("session status"), "session status executes after clear");
@@ -220,16 +230,20 @@ static void test_typed_shell_commands() {
         "post-clear show session reflects the new session window");
   check(state_after_clear.command_records[4].result.find("refs 1") != std::string::npos,
         "post-clear session show durable sees retained checkpoint ref");
-  check(state_after_clear.command_records[4].result.find("anchor missing") != std::string::npos,
-        "post-clear session show durable sees missing anchor");
+  check(state_after_clear.command_records[4].result.find("anchor present") != std::string::npos,
+        "post-clear session show durable sees rebound anchor");
+  check(state_after_clear.command_records[4].result.find(checkpoint_ref) != std::string::npos,
+        "post-clear session show durable exposes rebound checkpoint ref");
   check(state_after_clear.command_records[5].result.starts_with("session refs 1"),
         "post-clear session refs shows retained checkpoint ref");
   check(state_after_clear.command_records[5].result.find(checkpoint_ref) != std::string::npos,
         "post-clear session refs exposes the checkpoint ref");
   check(state_after_clear.command_records[6].result.starts_with("history session 6"),
         "post-clear history show session reflects the new session window");
-  check(state_after_clear.command_records[7].result == "history durable missing",
-        "post-clear history show durable still sees missing durable anchor");
+  check(state_after_clear.command_records[7].result.starts_with("history durable " + checkpoint_ref),
+        "post-clear history show durable sees rebound checkpoint anchor");
+  check(state_after_clear.command_records[7].result.find("SESSION TRANSCRIPT") != std::string::npos,
+        "post-clear history show durable exposes rebound checkpoint transcript");
   check(state_after_clear.session_command_count == 8,
         "post-clear state tracks new session command window");
   check(state_after_clear.transcript_text.find("UNKNOWN COMMAND") == std::string::npos,

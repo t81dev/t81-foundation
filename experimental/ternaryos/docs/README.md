@@ -102,7 +102,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 851/851 assertions, 8/8 tests pass
+# Expected: 858/858 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -183,6 +183,7 @@ What the TUI adds:
   - `history`
   - `history show session`
   - `history show object <ref>`
+  - `history use <ref>`
   - `history show durable`
   - `clear`
 - a live typed-input loop in the interactive TUI:
@@ -211,6 +212,8 @@ What the TUI adds:
   - `store cp <ref>` for direct canonical object copy
 - the shell now has an object-history inspection surface:
   - `history show object <ref>` for durable object lookup without changing the active anchor
+- the shell now has an explicit durable-anchor rebinding surface:
+  - `history use <ref>` for adopting an existing canonical object as the active durable history anchor
 
 What it is not yet:
 
@@ -222,8 +225,8 @@ Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
 - `t81_ternaryos_device_driver_test` is `342/342`
-- `t81_ternaryos_shell_session_test` is `114/114`
-- total TernOS assertions are `851`
+- `t81_ternaryos_shell_session_test` is `121/121`
+- total TernOS assertions are `858`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback
