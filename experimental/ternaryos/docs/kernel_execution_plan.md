@@ -219,6 +219,15 @@ The seventeenth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves that active handoff ordinal tracks FIFO work
   in flight without changing scheduling policy
 
+The eighteenth pager-groundwork slice is now also complete:
+
+- runtime and fault diagnostics now expose the next queued pager-worker
+  address space and handoff ordinal at the head of the FIFO inbox
+- live worker summaries can now describe both the active item and the next
+  queued item without changing worker scheduling policy
+- HAL/kernel coverage now proves that queued-head provenance advances and
+  drains deterministically through FIFO backlog execution
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable

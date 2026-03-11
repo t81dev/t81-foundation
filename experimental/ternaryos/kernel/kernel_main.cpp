@@ -987,6 +987,16 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
               ? std::optional<uint64_t>{
                     state.pager_worker.active_work->handoff.sequence}
               : std::nullopt,
+      .pager_worker_next_queued_address_space_id =
+          !state.pager_worker.inbox.empty()
+              ? std::optional<AddressSpaceId>{
+                    state.pager_worker.inbox.front().handoff.address_space_id}
+              : std::nullopt,
+      .pager_worker_next_queued_handoff_sequence =
+          !state.pager_worker.inbox.empty()
+              ? std::optional<uint64_t>{
+                    state.pager_worker.inbox.front().handoff.sequence}
+              : std::nullopt,
       .pager_worker_handoffs_received = state.pager_worker.handoffs_received,
       .pager_worker_last_received_address_space_id =
           state.pager_worker.last_received_address_space_id,
@@ -1608,6 +1618,16 @@ KernelServiceResult axion_kernel_service_request(
               state.pager_worker.active_work.has_value()
                   ? std::optional<uint64_t>{
                         state.pager_worker.active_work->handoff.sequence}
+                  : std::nullopt,
+          .pager_worker_next_queued_address_space_id =
+              !state.pager_worker.inbox.empty()
+                  ? std::optional<AddressSpaceId>{
+                        state.pager_worker.inbox.front().handoff.address_space_id}
+                  : std::nullopt,
+          .pager_worker_next_queued_handoff_sequence =
+              !state.pager_worker.inbox.empty()
+                  ? std::optional<uint64_t>{
+                        state.pager_worker.inbox.front().handoff.sequence}
                   : std::nullopt,
           .loop_iterations = state.counters.loop_iterations,
           .scheduler_ticks = state.counters.scheduler_ticks,

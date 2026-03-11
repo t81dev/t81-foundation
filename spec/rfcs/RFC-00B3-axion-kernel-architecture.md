@@ -355,6 +355,8 @@ They now also retain the last received pager-worker address space and its
 handoff ordinal after the inbox drains.
 They now also expose the active pager-worker handoff ordinal while work is in
 flight and clear it again once the worker goes idle.
+They now also expose the next queued pager-worker address space and handoff
+ordinal at the head of the FIFO inbox.
 The next kernel slice is to keep that pager surface private while expanding
 backlog/load scheduling behavior before any public pager ABI or syscall design.
 

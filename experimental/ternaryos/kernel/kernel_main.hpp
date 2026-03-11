@@ -452,6 +452,8 @@ struct KernelRuntimeStatusView {
   bool pager_worker_busy{false};
   std::optional<AddressSpaceId> pager_worker_active_address_space_id{};
   std::optional<uint64_t> pager_worker_active_handoff_sequence{};
+  std::optional<AddressSpaceId> pager_worker_next_queued_address_space_id{};
+  std::optional<uint64_t> pager_worker_next_queued_handoff_sequence{};
   uint64_t loop_iterations{0};
   uint64_t scheduler_ticks{0};
   uint64_t ipc_messages_sent{0};
@@ -654,6 +656,8 @@ struct KernelFaultSummaryView {
   bool pager_worker_busy{false};
   std::optional<AddressSpaceId> pager_worker_active_address_space_id{};
   std::optional<uint64_t> pager_worker_active_handoff_sequence{};
+  std::optional<AddressSpaceId> pager_worker_next_queued_address_space_id{};
+  std::optional<uint64_t> pager_worker_next_queued_handoff_sequence{};
   uint64_t pager_handoffs_dispatched{0};
   uint64_t pager_resolutions{0};
   uint64_t pager_faults_coalesced{0};
