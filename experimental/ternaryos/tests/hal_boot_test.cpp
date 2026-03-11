@@ -934,6 +934,8 @@ static void test_kernel_pager_fault_state() {
           "runtime status clears pending pager handoff after dispatch");
     check(runtime_status_after_handoff.runtime->pager_handoffs_dispatched == 1,
           "runtime status counts one dispatched pager handoff");
+    check(runtime_status_after_handoff.runtime->pager_resolutions == 0,
+          "runtime status starts with zero pager resolutions after handoff");
   }
 
   auto pager_group_after_handoff = axion_kernel_service_request(
@@ -951,6 +953,8 @@ static void test_kernel_pager_fault_state() {
           "pager-needed process group counts one dispatched handoff");
     check(pager_group_after_handoff.process_group->pager_needed,
           "pager-needed process group remains pager-needed after handoff");
+    check(pager_group_after_handoff.process_group->pager_resolutions == 0,
+          "pager-needed process group starts with zero resolutions after handoff");
   }
 
   auto fault_summary_after_handoff = axion_kernel_service_request(
@@ -973,6 +977,76 @@ static void test_kernel_pager_fault_state() {
       check(fault_summary_after_handoff.fault_summary->last_pager_handoff->fault.fault ==
                 mmu::MmuFault::Unmapped,
             "fault summary preserves unmapped classification in handoff record");
+    }
+    check(!fault_summary_after_handoff.fault_summary->last_pager_resolution.has_value(),
+          "fault summary starts without a pager resolution record");
+  }
+
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     mmu::tva_from_vpn_offset(61, 0),
+                     *pager_address_space_id),
+        "pager-needed address space accepts a mapping for the missing page");
+  (void)axion_kernel_step(*state);
+
+  auto runtime_status_after_resolution = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_status_after_resolution.status == KernelServiceStatus::Ok,
+        "runtime status succeeds after pager resolution");
+  check(runtime_status_after_resolution.runtime.has_value(),
+        "runtime status returns pager resolution detail");
+  if (runtime_status_after_resolution.runtime) {
+    check(runtime_status_after_resolution.runtime->pager_needed_address_space_count == 0,
+          "runtime status clears pager-needed address-space count after resolution");
+    check(runtime_status_after_resolution.runtime->pager_handoffs_dispatched == 1,
+          "runtime status retains dispatched pager handoff count after resolution");
+    check(runtime_status_after_resolution.runtime->pager_resolutions == 1,
+          "runtime status counts one pager resolution");
+  }
+
+  auto pager_group_after_resolution = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::ProcessGroupStatus,
+          .process_group_id = pager_group_id,
+      });
+  check(pager_group_after_resolution.process_group.has_value(),
+        "pager-needed process group view remains available after resolution");
+  if (pager_group_after_resolution.process_group) {
+    check(!pager_group_after_resolution.process_group->pager_needed,
+          "process group clears pager-needed state after resolution");
+    check(!pager_group_after_resolution.process_group->pager_handoff_pending,
+          "process group keeps handoff pending cleared after resolution");
+    check(pager_group_after_resolution.process_group->pager_handoffs == 1,
+          "process group retains dispatched handoff count after resolution");
+    check(pager_group_after_resolution.process_group->pager_resolutions == 1,
+          "process group counts one pager resolution");
+  }
+
+  auto fault_summary_after_resolution = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_summary_after_resolution.status == KernelServiceStatus::Ok,
+        "fault summary succeeds after pager resolution");
+  check(fault_summary_after_resolution.fault_summary.has_value(),
+        "fault summary returns pager resolution state");
+  if (fault_summary_after_resolution.fault_summary) {
+    check(fault_summary_after_resolution.fault_summary->pager_needed_address_spaces == 0,
+          "fault summary clears pager-needed address-space count after resolution");
+    check(fault_summary_after_resolution.fault_summary->pending_pager_handoffs == 0,
+          "fault summary keeps pending handoff count clear after resolution");
+    check(fault_summary_after_resolution.fault_summary->pager_handoffs_dispatched == 1,
+          "fault summary retains dispatched handoff count after resolution");
+    check(fault_summary_after_resolution.fault_summary->pager_resolutions == 1,
+          "fault summary counts one pager resolution");
+    check(fault_summary_after_resolution.fault_summary->last_pager_resolution.has_value(),
+          "fault summary exposes the latest pager resolution");
+    if (fault_summary_after_resolution.fault_summary->last_pager_resolution) {
+      check(fault_summary_after_resolution.fault_summary->last_pager_resolution->address_space_id ==
+                *pager_address_space_id,
+            "fault summary tracks the resolved address space");
+      check(fault_summary_after_resolution.fault_summary->last_pager_resolution->fault.fault ==
+                mmu::MmuFault::Unmapped,
+            "fault summary preserves the resolved fault classification");
     }
   }
 }
@@ -2630,6 +2704,8 @@ static void test_kernel_service_runtime_layer() {
           "healthy service view reports zero pending pager faults");
     check(service_view.service->pager_handoffs == 0,
           "healthy service view reports zero pager handoffs");
+    check(service_view.service->pager_resolutions == 0,
+          "healthy service view reports zero pager resolutions");
     check(service_view.service->primary_tid == *owner_tid,
           "service view exposes primary group thread");
     check(!service_view.service->faulted_group,

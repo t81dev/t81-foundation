@@ -123,7 +123,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1868/1868 assertions, 8/8 tests pass
+# Expected: 1892/1892 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -284,11 +284,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `956/956`
+- `t81_ternaryos_hal_boot_test` is `980/980`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1868`
+- total TernOS assertions are `1892`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state
@@ -331,6 +331,9 @@ Local hosted proof as of the current branch:
 - pager-needed address spaces now also enter a deterministic internal handoff
   queue, and kernel diagnostics distinguish handoff-pending from
   handoff-dispatched state without adding a public pager ABI
+- once the missing mapping appears, the kernel loop now resolves one
+  handed-off pager-needed address space at a time and exposes resolved state
+  through the same diagnostics
 - the first narrow service-facing action now exists through that same boundary:
   supervisor fault-group acknowledgement
 - supervisor-facing recovery/report flows are now exposed through that same boundary:
@@ -347,9 +350,9 @@ Local hosted proof as of the current branch:
   service request routing, stable service detail, richer supervisor inventory,
   and deterministic lifecycle behavior now exist above the stable
   supervisor/process-group contract. The next step is to keep that contract
-  stable and continue downward into internal pager-resolution semantics on top
-  of the new pager-needed and handoff-tracked address-space state, tracked
-  explicitly in:
+  stable and continue downward into a real kernel-owned pager consumer on top
+  of the new pager-needed, handoff-tracked, and resolution-tracked
+  address-space state, tracked explicitly in:
   - `docs/kernel_execution_plan.md`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence

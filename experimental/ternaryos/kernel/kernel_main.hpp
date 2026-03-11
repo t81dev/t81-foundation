@@ -37,6 +37,13 @@ struct KernelPagerHandoffRecord {
   uint64_t sequence{0};
 };
 
+struct KernelPagerResolutionRecord {
+  AddressSpaceId address_space_id{0};
+  ProcessGroupId process_group_id{0};
+  KernelFaultRecord fault{};
+  uint64_t sequence{0};
+};
+
 enum class KernelAuditEventKind : uint8_t {
   FaultDelivered = 0,
   ThreadQuarantined,
@@ -128,9 +135,11 @@ struct KernelRuntimeState {
     std::size_t pending_pager_fault_count{0};
     uint64_t pager_faults{0};
     uint64_t pager_handoffs{0};
+    uint64_t pager_resolutions{0};
     std::optional<KernelFaultRecord> last_pager_fault{};
     std::optional<uint64_t> last_pager_fault_sequence{};
     std::optional<uint64_t> last_pager_handoff_sequence{};
+    std::optional<uint64_t> last_pager_resolution_sequence{};
   };
 
   struct ServiceState {
@@ -170,6 +179,7 @@ struct KernelRuntimeState {
     uint64_t policy_faults{0};
     uint64_t pager_handoffs_queued{0};
     uint64_t pager_handoffs_dispatched{0};
+    uint64_t pager_resolutions{0};
     uint64_t audit_events_recorded{0};
   };
 
@@ -198,12 +208,14 @@ struct KernelRuntimeState {
   Counters counters{};
   std::optional<KernelFaultRecord> last_delivered_fault{};
   std::optional<KernelPagerHandoffRecord> last_pager_handoff{};
+  std::optional<KernelPagerResolutionRecord> last_pager_resolution{};
   std::optional<KernelAuditRecord> last_audit_event{};
   ProcessGroupId next_process_group_id{1};
   SupervisorId next_supervisor_id{1};
   ServiceId next_service_id{1};
   AddressSpaceId next_address_space_id{1};
   uint64_t next_pager_handoff_sequence{1};
+  uint64_t next_pager_resolution_sequence{1};
   uint64_t next_audit_sequence{1};
 
   KernelRuntimeState(std::string platform_id_in,
@@ -402,6 +414,7 @@ struct KernelRuntimeStatusView {
   uint64_t pager_eligible_faults{0};
   uint64_t policy_faults{0};
   uint64_t pager_handoffs_dispatched{0};
+  uint64_t pager_resolutions{0};
   std::size_t managed_service_count{0};
   std::size_t blocked_service_count{0};
   std::size_t suspended_service_count{0};
@@ -421,6 +434,7 @@ struct KernelProcessGroupStatusView {
   std::size_t pending_pager_fault_count{0};
   uint64_t pager_faults{0};
   uint64_t pager_handoffs{0};
+  uint64_t pager_resolutions{0};
   std::optional<KernelFaultRecord> last_pager_fault{};
   std::size_t member_count{0};
   std::size_t quarantined_thread_count{0};
@@ -443,6 +457,7 @@ struct KernelSupervisorStatusView {
   std::size_t pager_needed_address_space_count{0};
   std::size_t pending_pager_fault_count{0};
   std::size_t pending_pager_handoff_count{0};
+  uint64_t pager_resolutions{0};
   std::size_t managed_faulted_group_count{0};
   std::size_t managed_service_count{0};
   std::size_t blocked_service_count{0};
@@ -466,6 +481,7 @@ struct KernelSupervisorRecoveryStatusView {
   std::size_t pager_needed_address_space_count{0};
   std::size_t pending_pager_fault_count{0};
   std::size_t pending_pager_handoff_count{0};
+  uint64_t pager_resolutions{0};
   std::size_t managed_service_count{0};
   std::size_t blocked_service_count{0};
   std::size_t suspended_service_count{0};
@@ -493,6 +509,7 @@ struct KernelServiceStatusView {
   std::size_t pending_pager_fault_count{0};
   uint64_t pager_faults{0};
   uint64_t pager_handoffs{0};
+  uint64_t pager_resolutions{0};
   std::optional<KernelFaultRecord> last_pager_fault{};
   std::optional<sched::Tid> primary_tid{};
   bool blocked{false};
@@ -520,6 +537,7 @@ struct KernelSupervisorServiceEntryView {
   std::size_t pending_pager_fault_count{0};
   uint64_t pager_faults{0};
   uint64_t pager_handoffs{0};
+  uint64_t pager_resolutions{0};
   std::optional<KernelFaultRecord> last_pager_fault{};
   bool blocked{false};
   bool suspended{false};
@@ -560,11 +578,13 @@ struct KernelFaultSummaryView {
   std::size_t pager_needed_address_spaces{0};
   std::size_t pending_pager_handoffs{0};
   uint64_t pager_handoffs_dispatched{0};
+  uint64_t pager_resolutions{0};
   uint64_t service_lifecycle_transitions{0};
   std::optional<KernelFaultRecord> last_delivered_fault{};
   std::optional<AddressSpaceId> last_pager_address_space_id{};
   std::optional<KernelFaultRecord> last_pager_fault{};
   std::optional<KernelPagerHandoffRecord> last_pager_handoff{};
+  std::optional<KernelPagerResolutionRecord> last_pager_resolution{};
   std::optional<KernelAuditRecord> last_audit_event{};
   std::optional<ServiceId> last_service_transition_id{};
   std::optional<KernelAuditEventKind> last_service_transition_kind{};
