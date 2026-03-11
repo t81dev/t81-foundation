@@ -28,10 +28,11 @@ through a kernel-facing fault/reporting path, and the first persistent kernel
 runtime state object now owns allocator, MMU, scheduler substrate, IPC bus,
 fault-log state. Active device arbitration for the supported VirtualBox
 storage/display/network profile is now attached to that same owned boundary,
-and the runtime now exposes a deterministic kernel-step loop with basic runtime
-accounting. The next steps are to attach richer fault delivery and runtime
-accounting to that loop and keep converging the runtime toward fuller kernel
-behavior.
+the runtime now exposes a deterministic kernel-step loop with runtime
+accounting, and recorded MMU faults are now delivered through that loop in FIFO
+order. The next steps are to feed that loop-owned fault path into a fuller
+runtime policy/process boundary and keep converging the runtime toward fuller
+kernel behavior.
 
 The roadmap is now centered on promotion of those layers from `experimental/` into mainline, plus delivery of the Phase 4 driver layer needed for a reboot-persistent CanonFS system. The concrete promotion environment is a **VirtualBox-first virtual machine target**: Axion should graduate from hosted process simulation into a bootable guest image that runs under VirtualBox before any real-hardware push.
 

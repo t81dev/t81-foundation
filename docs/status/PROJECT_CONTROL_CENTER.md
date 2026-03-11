@@ -50,7 +50,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | T81VM | Low | FW-02 closure landed; BG-07 closure landed; 3 OOB reg-index bugs fixed (SymLoad, ReflCap, ReflJustify); binary_io OOM-on-corrupt-input hardened |
 | T81Lang | **RESOLVED** | Frontend refactor complete: typed AST, unified builtin registry, IRGen to .cpp; 336/336 test coverage |
 | Axion Governance Kernel | Low | AX-M5..M7 evidence landed; awaiting Beta review cycle |
-| Axion OS Kernel | Medium | Experimental RFC-00B3 path active; kernel-owned handoff, MMU fault reporting, persistent runtime state, active device arbitration, runtime-owned scheduler/IPC execution, and a deterministic kernel step loop are implemented; next milestone is richer fault delivery and runtime accounting on that loop |
+| Axion OS Kernel | Medium | Experimental RFC-00B3 path active; kernel-owned handoff, MMU fault reporting, persistent runtime state, active device arbitration, runtime-owned scheduler/IPC execution, deterministic kernel loop, and FIFO fault delivery are implemented; next milestone is wiring that loop-owned fault path into a fuller runtime policy/process boundary |
 | T81Graph | Low | Lang-side serialization wired; determinism coverage in place |
 | Experimental | — | Non-DCP by definition |
 

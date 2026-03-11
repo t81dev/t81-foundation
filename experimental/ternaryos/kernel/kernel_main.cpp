@@ -41,15 +41,18 @@ void record_fault(KernelRuntimeState& state,
                   uint64_t tva,
                   mmu::MmuAccessMode mode,
                   mmu::MmuFault fault) {
-  if (state.fault_log.size() >= KernelRuntimeState::kMaxFaultLog) {
-    state.fault_log.pop_front();
-  }
-  state.fault_log.push_back(KernelFaultRecord{
+  KernelFaultRecord record{
       .platform_id = state.platform_id,
       .tva = tva,
       .access_mode = mode,
       .fault = fault,
-  });
+  };
+  if (state.fault_log.size() >= KernelRuntimeState::kMaxFaultLog) {
+    state.fault_log.pop_front();
+  }
+  state.fault_log.push_back(record);
+  state.pending_faults.push_back(record);
+  ++state.counters.faults_recorded;
 }
 
 KernelDeviceRecord* find_device(KernelRuntimeState& state, std::string_view device_name) {
@@ -139,6 +142,13 @@ bool axion_kernel_tick(KernelRuntimeState& state) noexcept {
 
 bool axion_kernel_step(KernelRuntimeState& state) noexcept {
   ++state.counters.loop_iterations;
+  if (!state.pending_faults.empty()) {
+    state.last_delivered_fault = state.pending_faults.front();
+    state.pending_faults.pop_front();
+    ++state.counters.faults_delivered;
+  } else {
+    state.last_delivered_fault.reset();
+  }
   return axion_kernel_tick(state);
 }
 

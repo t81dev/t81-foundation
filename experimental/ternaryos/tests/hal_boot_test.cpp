@@ -653,6 +653,52 @@ static void test_kernel_loop_and_active_device_arbitration() {
   check(saw_ahci_owner_b, "device arbitration records active AHCI owner");
 }
 
+static void test_kernel_loop_fault_delivery() {
+  std::printf("\n[AC-22] Axion kernel loop delivers recorded faults deterministically\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for loop fault delivery");
+  if (!state) {
+    return;
+  }
+
+  auto first_fault =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(11, 0), mmu::MmuAccessMode::Read);
+  auto second_fault =
+      axion_kernel_check_access(*state, mmu::kMaxTva + 1, mmu::MmuAccessMode::Execute);
+  check(first_fault.fault.has_value(), "unmapped access records first pending fault");
+  check(second_fault.fault.has_value(), "invalid TVA records second pending fault");
+  check(state->fault_count() == 2, "fault log records both faults");
+  check(state->pending_fault_count() == 2, "pending fault queue tracks both faults");
+  check(state->counters.faults_recorded == 2, "runtime counts recorded faults");
+
+  check(!axion_kernel_step(*state), "kernel step can deliver pending fault without runnable threads");
+  check(state->counters.loop_iterations == 1, "fault-delivery step increments loop count");
+  check(state->pending_fault_count() == 1, "first loop step drains one pending fault");
+  check(state->counters.faults_delivered == 1, "runtime counts delivered faults");
+  check(state->last_delivered_fault.has_value(), "loop step exposes delivered fault");
+  if (state->last_delivered_fault) {
+    check(state->last_delivered_fault->fault == mmu::MmuFault::Unmapped,
+          "first delivered fault preserves insertion order");
+  }
+
+  check(!axion_kernel_step(*state), "second loop step delivers next pending fault");
+  check(state->counters.loop_iterations == 2, "second fault-delivery step increments loop count");
+  check(state->pending_fault_count() == 0, "second loop step drains remaining pending fault");
+  check(state->counters.faults_delivered == 2, "runtime counts both delivered faults");
+  check(state->last_delivered_fault.has_value(), "second delivered fault is exposed");
+  if (state->last_delivered_fault) {
+    check(state->last_delivered_fault->fault == mmu::MmuFault::InvalidTva,
+          "second delivered fault preserves insertion order");
+  }
+
+  check(!axion_kernel_step(*state), "idle loop step runs with no pending faults");
+  check(!state->last_delivered_fault.has_value(), "idle loop step clears delivered-fault slot");
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -681,6 +727,7 @@ int main() {
   test_kernel_device_arbitration();
   test_kernel_runtime_scheduler_and_ipc();
   test_kernel_loop_and_active_device_arbitration();
+  test_kernel_loop_fault_delivery();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

@@ -279,10 +279,10 @@ This RFC does not retarget the project away from that profile.
 
 ## 6. Implementation Plan
 
-1. attach richer fault delivery and runtime accounting to the current deterministic kernel loop
+1. attach the current loop-owned fault delivery path to a fuller runtime policy/process boundary
 2. extend active device arbitration beyond simple claim/release ownership
 3. only then expand syscall/userland semantics further
-4. defer pager/lazy-allocation work until the kernel loop consumes the current fault model
+4. defer pager/lazy-allocation work until the loop-owned fault path feeds a real runtime consumer
 
 ## 7. Open Questions
 
@@ -302,4 +302,5 @@ This RFC does not retarget the project away from that profile.
 - [x] Device arbitration state is initialized for the first supported storage/display/network profile.
 - [x] The kernel runtime can progress through a deterministic loop step with runtime counters.
 - [x] Active device claim/release arbitration works for the first supported profile.
+- [x] Recorded MMU faults are delivered through the kernel loop in deterministic FIFO order.
 - [x] Hosted and QEMU developer lanes continue to pass after kernel entry integration.

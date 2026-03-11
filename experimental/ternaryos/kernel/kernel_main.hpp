@@ -46,6 +46,8 @@ struct KernelRuntimeState {
     uint64_t scheduler_switches{0};
     uint64_t ipc_messages_sent{0};
     uint64_t ipc_messages_received{0};
+    uint64_t faults_recorded{0};
+    uint64_t faults_delivered{0};
   };
 
   std::string platform_id;
@@ -58,8 +60,10 @@ struct KernelRuntimeState {
   ipc::MessageBus ipc_bus;
   std::optional<KernelDeviceArbitrationState> device_arbitration;
   std::deque<KernelFaultRecord> fault_log;
+  std::deque<KernelFaultRecord> pending_faults;
   t81::vm::ThreadContext cpu_context{};
   Counters counters{};
+  std::optional<KernelFaultRecord> last_delivered_fault{};
 
   KernelRuntimeState(std::string platform_id_in,
                      std::size_t memory_region_count_in,
@@ -76,6 +80,7 @@ struct KernelRuntimeState {
   static constexpr std::size_t kMaxFaultLog = 27;
 
   std::size_t fault_count() const noexcept { return fault_log.size(); }
+  std::size_t pending_fault_count() const noexcept { return pending_faults.size(); }
   bool has_device_arbitration() const noexcept { return device_arbitration.has_value(); }
 };
 

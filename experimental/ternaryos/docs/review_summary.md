@@ -30,9 +30,9 @@ The official promotion target remains:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1113`
+- total assertions: `1133`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `166/166`
+- `t81_ternaryos_hal_boot_test`: `186/186`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -48,6 +48,7 @@ Kernel integration proof now also includes:
 - deterministic scheduler dispatch and CanonRef-safe IPC execution flowing
   through that same runtime-owned kernel state
 - a deterministic kernel-step loop with runtime counters and active AHCI claim/release behavior
+- deterministic FIFO fault delivery from the kernel loop over recorded MMU faults
 
 Phase 4 storage proof now covers:
 
