@@ -239,19 +239,26 @@ struct KernelRuntimeStatusView {
 struct KernelProcessGroupStatusView {
   ProcessGroupId id{0};
   std::size_t member_count{0};
+  std::size_t quarantined_thread_count{0};
   bool faulted{false};
   bool blocked{false};
   bool acknowledgement_pending{false};
   std::size_t pending_fault_count{0};
+  uint64_t audit_events{0};
+  uint64_t fault_entries{0};
+  uint64_t acknowledgements{0};
+  uint64_t recoveries{0};
   std::optional<SupervisorId> supervisor_id{};
 };
 
 struct KernelSupervisorStatusView {
   SupervisorId id{0};
   std::size_t managed_group_count{0};
+  std::size_t managed_faulted_group_count{0};
   std::size_t pending_group_count{0};
   uint64_t fault_notifications{0};
   uint64_t acknowledgements{0};
+  std::optional<ProcessGroupId> last_pending_group{};
 };
 
 struct KernelFaultSummaryView {
@@ -259,11 +266,13 @@ struct KernelFaultSummaryView {
   std::size_t pending_faults{0};
   std::size_t audit_events{0};
   std::optional<KernelFaultRecord> last_delivered_fault{};
+  std::optional<KernelAuditRecord> last_audit_event{};
 };
 
 struct KernelDeviceSummaryView {
   bool has_device_arbitration{false};
   std::size_t device_count{0};
+  std::size_t claimed_device_count{0};
   bool has_storage{false};
   bool has_network{false};
   bool has_display{false};
@@ -271,6 +280,7 @@ struct KernelDeviceSummaryView {
 
 struct KernelServiceRequest {
   KernelServiceRequestKind kind{KernelServiceRequestKind::RuntimeStatus};
+  std::optional<ProcessGroupId> requesting_process_group_id{};
   std::optional<ProcessGroupId> process_group_id{};
   std::optional<SupervisorId> supervisor_id{};
 };

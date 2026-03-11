@@ -178,14 +178,16 @@ Kernel-integrated MMU behavior must distinguish:
 
 The kernel must treat these as explicit events, not just null translations.
 
-#### 3.5.4 Next integration step
+#### 3.5.4 Current integration result
 
-The next kernel-facing implementation milestone after this RFC is:
+The MMU is now consumed through the kernel runtime:
 
-- a page-fault reporting path that consumes `mmu_translate_checked()`
-- explicit fault records that can be surfaced to the scheduler/process-group layer
+- checked translation produces explicit fault records
+- those records are queued and delivered through the deterministic kernel loop
+- delivered faults route into per-thread and process-group policy state
 
-This is the first required bridge from MMU structure to kernel control flow.
+This is the first implemented bridge from MMU structure to kernel control
+flow.
 
 ---
 
@@ -242,14 +244,16 @@ The current FIFO inbox model is acceptable as the first kernel IPC substrate.
 
 ### 3.7.1 Immediate Execution Plan
 
-The first service-facing runtime request/result contract is now implemented.
-The next implementation slice after it is a short explicit sequence:
+The first service-facing runtime request/result contract is now implemented,
+including deterministic behavior for healthy vs faulted groups and stable
+diagnostics above kernel-owned state.
 
-1. define deterministic request behavior for healthy vs faulted groups
-2. expose stable diagnostics above kernel-owned state without leaking kernel
-   internals directly
-3. add narrow service-facing runtime actions without introducing syscall or
+The next implementation slice after it is:
+
+1. add narrow service-facing runtime actions without introducing syscall or
    capability semantics
+2. expose supervisor-facing recovery/report flows through the same contract
+3. harden the contract before widening it further
 
 The working execution note for this slice is:
 

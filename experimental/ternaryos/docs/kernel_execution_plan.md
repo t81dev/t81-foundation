@@ -23,6 +23,9 @@ Implemented:
 - audit-only supervisor layer above the process-group boundary
 - first service-facing kernel request/result contract for runtime, process
   groups, supervisors, faults, and device arbitration state
+- deterministic request behavior for healthy vs faulted groups
+- stable service-facing diagnostics for group, supervisor, fault, and device
+  state
 
 Not yet implemented:
 
@@ -32,31 +35,7 @@ Not yet implemented:
 
 ## Next Sequence
 
-### 1. Request ownership and fault interaction rules
-
-Specify how requests behave when groups are healthy versus faulted.
-
-Required outcomes:
-
-- requests remain deterministic
-- faulted groups are classified explicitly
-- supervisor acknowledgement remains the recovery gate
-- no hidden retries or automatic restart behavior
-
-### 2. Service-facing diagnostics
-
-Expose enough stable diagnostics for a service layer to consume kernel state
-without reading kernel internals directly.
-
-Examples:
-
-- runtime counters
-- fault backlog summary
-- process-group state summary
-- supervisor pending-group summary
-- device arbitration summary
-
-### 3. Service-facing runtime actions
+### 1. Service-facing runtime actions
 
 After the read-mostly contract is stable, add one narrow action layer above it.
 
@@ -65,6 +44,25 @@ Initial candidates:
 - explicit fault acknowledgement through the service boundary
 - deterministic device claim/release requests
 - supervisor-visible rejection for requests from faulted groups
+
+### 2. Supervisor-facing recovery/report flows
+
+After one narrow action exists, expose the smallest supervisor-facing
+recovery/report sequence above it.
+
+Initial candidates:
+
+- request-visible fault acknowledgement results
+- deterministic recovery status after acknowledgement
+- supervisor-visible pending-group drains
+
+### 3. Contract hardening
+
+Once one action path exists, harden the contract instead of widening it:
+
+- keep request/result types stable
+- keep request outcomes deterministic
+- avoid leaking kernel internals directly into services
 
 ## Non-Goals For This Slice
 
@@ -79,20 +77,19 @@ Do not add:
 
 ## Acceptance Criteria
 
-The next kernel slice is complete when:
+The current kernel slice is complete when:
 
 1. a service-facing request/result contract exists in `kernel/`
 2. the contract reads kernel-owned runtime state deterministically
 3. faulted and healthy groups are distinguished explicitly
-4. HAL/kernel tests prove the request path and its interaction with fault state
-5. RFC-00B3 can mark the first service-facing contract as implemented
-6. the next slice remains a narrow service boundary, not a syscall/process
-   redesign
+4. stable service-facing diagnostics exist for group, supervisor, fault, and
+   device state
+5. HAL/kernel tests prove the request path and its interaction with fault state
+6. RFC-00B3 can mark the contract and diagnostics as implemented
 
 ## Recommended Order
 
-1. tighten request behavior for healthy vs faulted groups
-2. expand diagnostics only where needed by the service boundary
-3. add HAL/kernel acceptance coverage for request/fault interaction
-4. update RFC-00B3 and status/docs
-5. only then add narrow service-facing actions
+1. add one narrow service-facing runtime action
+2. add HAL/kernel acceptance coverage for that action
+3. update RFC-00B3 and status/docs
+4. only then consider supervisor-facing recovery/report flows

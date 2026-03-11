@@ -34,9 +34,9 @@ The next kernel slice is now tracked explicitly in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1276`
+- total assertions: `1297`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `400/400`
+- `t81_ternaryos_hal_boot_test`: `421/421`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -167,5 +167,5 @@ kernel path is now:
 - keep the external `x86_64` VirtualBox validation ask open
 - use RFC-00B3 as the implementation path for kernel integration after `hal_main`
 - build the next kernel-facing step on top of the new service-facing runtime
-  contract: tighten request behavior for healthy vs faulted groups and expand
-  stable diagnostics above the supervisor/process-group boundary
+  contract: add one narrow service-facing runtime action above the current
+  supervisor/process-group boundary

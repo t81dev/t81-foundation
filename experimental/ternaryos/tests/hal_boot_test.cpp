@@ -1298,6 +1298,8 @@ static void test_kernel_service_runtime_views() {
           "device summary reports network");
     check(device_result.device_summary->has_display,
           "device summary reports display");
+    check(device_result.device_summary->claimed_device_count == 0,
+          "device summary starts with zero claimed devices");
   }
 
   auto fault_result = axion_kernel_service_request(
@@ -1310,6 +1312,8 @@ static void test_kernel_service_runtime_views() {
           "fault summary starts with zero recorded faults");
     check(fault_result.fault_summary->pending_faults == 0,
           "fault summary starts with zero pending faults");
+    check(!fault_result.fault_summary->last_audit_event.has_value(),
+          "fault summary starts without audit events");
   }
 }
 
@@ -1379,12 +1383,20 @@ static void test_kernel_service_group_fault_visibility() {
         "faulted group request returns FaultedGroup status");
   check(faulted_group.process_group.has_value(), "faulted group view is returned");
   if (faulted_group.process_group) {
+    check(faulted_group.process_group->member_count == 1,
+          "faulted group view reports one member");
+    check(faulted_group.process_group->quarantined_thread_count == 1,
+          "faulted group view reports one quarantined thread");
     check(faulted_group.process_group->faulted, "faulted group view reports faulted");
     check(faulted_group.process_group->blocked, "faulted group view reports blocked");
     check(faulted_group.process_group->acknowledgement_pending,
           "faulted group view reports acknowledgement pending");
     check(faulted_group.process_group->pending_fault_count == 1,
           "faulted group view reports one pending fault");
+    check(faulted_group.process_group->audit_events >= 2,
+          "faulted group view reports audit activity");
+    check(faulted_group.process_group->fault_entries == 1,
+          "faulted group view reports one fault entry");
     check(faulted_group.process_group->supervisor_id.has_value(),
           "faulted group view reports supervisor ownership");
   }
@@ -1400,6 +1412,8 @@ static void test_kernel_service_group_fault_visibility() {
   check(healthy_after.process_group.has_value(), "healthy group view remains available");
   if (healthy_after.process_group) {
     check(!healthy_after.process_group->faulted, "unaffected group remains healthy");
+    check(healthy_after.process_group->quarantined_thread_count == 0,
+          "unaffected group has no quarantined threads");
   }
 
   auto supervisor_id = state->find_process_group_supervisor(faulted_group_id);
@@ -1417,10 +1431,69 @@ static void test_kernel_service_group_fault_visibility() {
         "supervisor status request succeeds");
   check(supervisor_result.supervisor.has_value(), "supervisor status view is returned");
   if (supervisor_result.supervisor) {
+    check(supervisor_result.supervisor->managed_group_count == 1,
+          "supervisor view reports one managed group");
+    check(supervisor_result.supervisor->managed_faulted_group_count == 1,
+          "supervisor view reports one faulted group");
     check(supervisor_result.supervisor->pending_group_count == 1,
           "supervisor view reports one pending group");
     check(supervisor_result.supervisor->fault_notifications == 1,
           "supervisor view reports one fault notification");
+    check(supervisor_result.supervisor->last_pending_group == faulted_group_id,
+          "supervisor view reports the faulted group as last pending");
+  }
+
+  auto denied_runtime = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::RuntimeStatus,
+          .requesting_process_group_id = faulted_group_id,
+      });
+  check(denied_runtime.status == KernelServiceStatus::FaultedGroup,
+        "faulted group cannot request runtime status");
+
+  auto denied_faults = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::FaultSummary,
+          .requesting_process_group_id = faulted_group_id,
+      });
+  check(denied_faults.status == KernelServiceStatus::FaultedGroup,
+        "faulted group cannot request fault summary");
+
+  auto healthy_runtime_result = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::RuntimeStatus,
+          .requesting_process_group_id = healthy_group_id,
+      });
+  check(healthy_runtime_result.status == KernelServiceStatus::Ok,
+        "healthy group can request runtime status");
+
+  auto healthy_faults = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::FaultSummary,
+          .requesting_process_group_id = healthy_group_id,
+      });
+  check(healthy_faults.status == KernelServiceStatus::Ok,
+        "healthy group can request fault summary");
+  check(healthy_faults.fault_summary.has_value(),
+        "healthy group receives fault summary view");
+  if (healthy_faults.fault_summary) {
+    check(healthy_faults.fault_summary->recorded_faults == 1,
+          "fault summary reports one recorded fault");
+    check(healthy_faults.fault_summary->pending_faults == 0,
+          "fault summary reports no pending faults after delivery");
+    check(healthy_faults.fault_summary->audit_events >= 4,
+          "fault summary reports audit count");
+    check(healthy_faults.fault_summary->last_audit_event.has_value(),
+          "fault summary reports last audit event");
+    if (healthy_faults.fault_summary->last_audit_event) {
+      check(healthy_faults.fault_summary->last_audit_event->kind ==
+                KernelAuditEventKind::ThreadQuarantined,
+            "fault summary last audit event is thread quarantine");
+    }
   }
 
   auto missing_group = axion_kernel_service_request(
@@ -1431,6 +1504,15 @@ static void test_kernel_service_group_fault_visibility() {
       });
   check(missing_group.status == KernelServiceStatus::NotFound,
         "missing process group returns NotFound");
+
+  auto missing_requester = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::RuntimeStatus,
+          .requesting_process_group_id = 999999,
+      });
+  check(missing_requester.status == KernelServiceStatus::NotFound,
+        "missing requesting process group returns NotFound");
 }
 
 // ─── main ────────────────────────────────────────────────────────────────────
