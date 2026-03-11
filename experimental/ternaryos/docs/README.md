@@ -351,6 +351,8 @@ Local hosted proof as of the current branch:
   its retained high-water mark under that same FIFO pressure
 - runtime and fault diagnostics now also retain the stalled active address
   space alongside the ready queued address space it was blocking
+- runtime and fault diagnostics now also retain the ordinal of the latest stall
+  event that produced that blocker/blocked relationship
 - the first narrow service-facing action now exists through that same boundary:
   supervisor fault-group acknowledgement
 - supervisor-facing recovery/report flows are now exposed through that same boundary:

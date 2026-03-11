@@ -1322,6 +1322,8 @@ static void test_kernel_pager_worker_backlog() {
     check(runtime_after_first_activation.runtime->pager_worker_last_stalled_address_space_id ==
               first_address_space_id,
           "runtime status tracks the stalled active address space behind the ready backlog");
+    check(runtime_after_first_activation.runtime->pager_worker_last_stall_cycle == 1,
+          "runtime status tracks the ordinal of the latest pager worker stall");
     check(runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_address_space_id ==
               second_address_space_id,
           "runtime status tracks the ready queued address space blocked behind the active item");
@@ -1398,6 +1400,8 @@ static void test_kernel_pager_worker_backlog() {
     check(runtime_after_second_resolution.runtime->pager_worker_last_stalled_address_space_id ==
               first_address_space_id,
           "runtime status retains the last stalled active address space after backlog drain");
+    check(runtime_after_second_resolution.runtime->pager_worker_last_stall_cycle == 1,
+          "runtime status retains the last pager worker stall ordinal after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_address_space_id ==
               second_address_space_id,
           "runtime status retains the last ready queued address space after backlog drain");
@@ -1436,6 +1440,8 @@ static void test_kernel_pager_worker_backlog() {
     check(fault_after_second_resolution.fault_summary->pager_worker_last_stalled_address_space_id ==
               first_address_space_id,
           "fault summary tracks the last stalled active address space after backlog drain");
+    check(fault_after_second_resolution.fault_summary->pager_worker_last_stall_cycle == 1,
+          "fault summary retains the last pager worker stall ordinal after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_last_ready_backlog_address_space_id ==
               second_address_space_id,
           "fault summary tracks the last ready queued address space after backlog drain");

@@ -89,7 +89,8 @@ the narrower backlog-blocked subset are now explicit diagnostics in that path,
 along with the ready-behind-active subset when queued work is already
 mappable, plus current ready-backlog depth and its retained high-water mark;
 the kernel now also retains the stalled active address space alongside the
-ready queued address space it was blocking, before later pager integration.
+ready queued address space it was blocking, plus the ordinal of the latest
+stall event that produced that relationship, before later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 

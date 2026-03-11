@@ -156,6 +156,15 @@ The tenth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves those retained blocker/blocked identities stay
   deterministic after backlog drain
 
+The eleventh pager-groundwork slice is now also complete:
+
+- runtime and fault diagnostics now retain the ordinal of the latest pager
+  worker stall alongside the retained blocker/blocked identities
+- postmortem pager-worker summaries can now correlate the blocker/blocked pair
+  to a specific deterministic stall event after backlog drain
+- HAL/kernel coverage now proves that retained stall ordinal stays stable after
+  the worker goes idle
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable

@@ -106,6 +106,8 @@ Kernel integration proof now also includes:
   its retained high-water mark under that same FIFO pressure
 - runtime and fault diagnostics now also retain the stalled active address
   space alongside the ready queued address space it was blocking
+- runtime and fault diagnostics now also retain the ordinal of the latest
+  stall event that produced that blocker/blocked relationship
 - the supervisor/service-runtime convergence slice is now complete for the
   current contract surface
 - the first process-memory ownership slice is now complete as well
@@ -117,7 +119,8 @@ Kernel integration proof now also includes:
   into richer kernel-owned pager-worker scheduling behavior after handoff,
   resolution, duplicate-fault coalescing, backlog-load diagnostics, and FIFO
   stall accounting, plus ready-behind-active depth diagnostics and retained
-  blocker/blocked identities, not a broad ABI or syscall surface
+  blocker/blocked identities with retained stall ordinals, not a broad ABI or
+  syscall surface
 
 Phase 4 storage proof now covers:
 
