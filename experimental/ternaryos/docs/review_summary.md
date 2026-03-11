@@ -34,9 +34,9 @@ The next kernel slice is now tracked explicitly in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1605`
+- total assertions: `1618`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `693/693`
+- `t81_ternaryos_hal_boot_test`: `706/706`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -64,6 +64,7 @@ Kernel integration proof now also includes:
 - that service-runtime layer now also includes deterministic service suspend/resume with stable suspended-state diagnostics in service detail and supervisor inventory views
 - same-supervisor process groups can now suspend/resume managed services through the same stable action surface without widening into a new ABI
 - explicit service health transitions now exist through that same stable action surface, exposing unhealthy-state diagnostics and deterministic unavailable-service rejection
+- successful service lifecycle transitions are now visible through the same deterministic audit summary surface
 - the next kernel slice is to keep this service-runtime layer stable and only add another narrow lifecycle action if it is truly needed, not a broad ABI or syscall surface
 
 Phase 4 storage proof now covers:

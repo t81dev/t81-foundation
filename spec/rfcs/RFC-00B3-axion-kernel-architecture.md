@@ -254,6 +254,8 @@ also now implemented:
 - deterministic device claim/release requests through the same contract
 - stable audit-summary and per-device ownership detail views through the same
   contract
+- successful service lifecycle transitions now flow into that same
+  deterministic audit stream without widening the runtime contract
 
 The next implementation slice after it is:
 
@@ -277,6 +279,8 @@ stable service detail and supervisor inventory views, deterministic service
 unregister, deterministic service suspend/resume, and same-supervisor service
 lifecycle control over managed services. That same layer now also carries
 explicit service health transitions with stable unhealthy-state diagnostics.
+Successful service lifecycle transitions are also now visible through the same
+stable audit-summary surface.
 The next step is to keep that layer stable and only then consider any further
 lifecycle action or boundary growth.
 

@@ -301,6 +301,15 @@ std::optional<sched::Tid> primary_tid_for_group(const KernelRuntimeState& state,
                            group_state->member_tids.end());
 }
 
+void record_service_audit_event(KernelRuntimeState& state,
+                                KernelAuditEventKind kind,
+                                ProcessGroupId process_group_id) {
+  const auto subject_tid =
+      primary_tid_for_group(state, process_group_id).value_or(KernelRuntimeState::kKernelTid);
+  record_audit_event(
+      state, kind, subject_tid, process_group_id, mmu::MmuFault::None);
+}
+
 bool group_has_pending_thread_faults(const KernelRuntimeState& state,
                                      ProcessGroupId process_group_id) {
   const auto* group_state = state.find_process_group(process_group_id);
@@ -1196,6 +1205,8 @@ KernelServiceActionResult axion_kernel_service_action(
         result.rejection = KernelServiceActionRejection::DuplicateService;
         return result;
       }
+      record_service_audit_event(
+          state, KernelAuditEventKind::ServiceRegistered, service_state->process_group_id);
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceActionRejection::None;
       result.action_performed = true;
@@ -1259,6 +1270,8 @@ KernelServiceActionResult axion_kernel_service_action(
                         service_state->id),
             supervisor_state->managed_services.end());
       }
+      record_service_audit_event(
+          state, KernelAuditEventKind::ServiceUnregistered, service_state->process_group_id);
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceActionRejection::None;
       result.action_performed = true;
@@ -1318,6 +1331,10 @@ KernelServiceActionResult axion_kernel_service_action(
                                : KernelServiceActionRejection::ServiceNotSuspended;
         return result;
       }
+      record_service_audit_event(state,
+                                 suspend ? KernelAuditEventKind::ServiceSuspended
+                                         : KernelAuditEventKind::ServiceResumed,
+                                 service_state->process_group_id);
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceActionRejection::None;
       result.action_performed = true;
@@ -1377,6 +1394,10 @@ KernelServiceActionResult axion_kernel_service_action(
                                : KernelServiceActionRejection::ServiceAlreadyHealthy;
         return result;
       }
+      record_service_audit_event(state,
+                                 unhealthy ? KernelAuditEventKind::ServiceMarkedUnhealthy
+                                           : KernelAuditEventKind::ServiceMarkedHealthy,
+                                 service_state->process_group_id);
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceActionRejection::None;
       result.action_performed = true;

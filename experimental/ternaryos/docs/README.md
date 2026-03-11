@@ -69,7 +69,8 @@ kernel/
                        runtime-owned allocator/MMU/scheduler/IPC/device state,
                        process-group fault policy, audit-only governance hooks,
                        and a narrow service runtime lifecycle with deterministic
-                       register/unregister/suspend/resume actions
+                       register/unregister/suspend/resume actions plus
+                       audit-visible lifecycle transitions
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,
@@ -121,7 +122,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1605/1605 assertions, 8/8 tests pass
+# Expected: 1618/1618 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -282,11 +283,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `693/693`
+- `t81_ternaryos_hal_boot_test` is `706/706`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1605`
+- total TernOS assertions are `1618`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state
@@ -298,6 +299,8 @@ Local hosted proof as of the current branch:
   stable service action surface
 - explicit service health transitions now exist through that same boundary, with stable
   unhealthy-state diagnostics and deterministic unavailable-service rejection
+- successful service lifecycle transitions are now visible through that same
+  deterministic audit-summary surface
 - the first narrow service-facing action now exists through that same boundary:
   supervisor fault-group acknowledgement
 - supervisor-facing recovery/report flows are now exposed through that same boundary:

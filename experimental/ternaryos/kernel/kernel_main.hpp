@@ -38,6 +38,12 @@ enum class KernelAuditEventKind : uint8_t {
   ProcessGroupAcknowledged,
   SupervisorGroupAcknowledged,
   ThreadRecovered,
+  ServiceRegistered,
+  ServiceUnregistered,
+  ServiceSuspended,
+  ServiceResumed,
+  ServiceMarkedUnhealthy,
+  ServiceMarkedHealthy,
 };
 
 struct KernelAuditRecord {

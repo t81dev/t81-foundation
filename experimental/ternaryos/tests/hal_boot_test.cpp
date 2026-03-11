@@ -2500,6 +2500,55 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory clears unhealthy count after heal");
   }
 
+  auto audit_summary = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::AuditSummary,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+      });
+  check(audit_summary.status == KernelServiceStatus::Ok,
+        "healthy group can request audit summary after service lifecycle actions");
+  check(audit_summary.rejection == KernelServiceRequestRejection::None,
+        "audit summary request clears rejection");
+  check(audit_summary.audit_summary.has_value(),
+        "audit summary request returns audit detail");
+  if (audit_summary.audit_summary) {
+    std::vector<KernelAuditEventKind> service_lifecycle_events;
+    for (const auto& entry : audit_summary.audit_summary->recent_events) {
+      switch (entry.kind) {
+        case KernelAuditEventKind::ServiceRegistered:
+        case KernelAuditEventKind::ServiceUnregistered:
+        case KernelAuditEventKind::ServiceSuspended:
+        case KernelAuditEventKind::ServiceResumed:
+        case KernelAuditEventKind::ServiceMarkedUnhealthy:
+        case KernelAuditEventKind::ServiceMarkedHealthy:
+          service_lifecycle_events.push_back(entry.kind);
+          break;
+        default:
+          break;
+      }
+    }
+    check(service_lifecycle_events.size() == 7,
+          "audit summary captures seven successful service lifecycle transitions before unregister");
+    if (service_lifecycle_events.size() == 7) {
+      check(service_lifecycle_events[0] == KernelAuditEventKind::ServiceRegistered,
+            "audit summary records service registration first");
+      check(service_lifecycle_events[1] == KernelAuditEventKind::ServiceSuspended,
+            "audit summary records owner-initiated service suspension");
+      check(service_lifecycle_events[2] == KernelAuditEventKind::ServiceResumed,
+            "audit summary records owner-initiated service resume");
+      check(service_lifecycle_events[3] == KernelAuditEventKind::ServiceSuspended,
+            "audit summary records same-supervisor suspension");
+      check(service_lifecycle_events[4] == KernelAuditEventKind::ServiceResumed,
+            "audit summary records same-supervisor resume");
+      check(service_lifecycle_events[5] ==
+                KernelAuditEventKind::ServiceMarkedUnhealthy,
+            "audit summary records unhealthy transition");
+      check(service_lifecycle_events[6] == KernelAuditEventKind::ServiceMarkedHealthy,
+            "audit summary records healthy transition");
+    }
+  }
+
   auto duplicate_healthy = axion_kernel_service_action(
       *state,
       KernelServiceAction{
@@ -2627,6 +2676,11 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory has no suspended services after unregister");
     check(unregister_service.supervisor_services->services.empty(),
           "supervisor inventory removes service entries after unregister");
+  }
+  check(!state->audit_log.empty(), "service lifecycle actions produce audit records");
+  if (!state->audit_log.empty()) {
+    check(state->audit_log.back().kind == KernelAuditEventKind::ServiceUnregistered,
+          "service unregister records the final lifecycle audit event");
   }
 
   auto missing_service_view = axion_kernel_service_request(

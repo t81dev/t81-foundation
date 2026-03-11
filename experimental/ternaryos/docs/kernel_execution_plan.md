@@ -68,6 +68,8 @@ The current service layer now covers:
 - deterministic service suspend / resume
 - same-supervisor suspend / resume control over managed services
 - explicit service health transitions with stable unhealthy-state diagnostics
+- audit-visible service lifecycle transitions through the existing audit summary
+  surface
 
 ### 3. Only add new actions if a stable service runtime truly needs them
 
