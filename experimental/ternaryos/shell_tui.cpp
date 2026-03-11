@@ -48,6 +48,11 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state) {
       text("Backend: guest-bootstrap + CanonStore + VMSVGA") | color(Color::Yellow),
   };
 
+  Elements commands;
+  for (const auto& command : state.available_commands) {
+    commands.push_back(text(command) | color(Color::Magenta));
+  }
+
   Elements framebuffer;
   for (const auto& line : split_lines(state.framebuffer_ascii)) {
     framebuffer.push_back(text(line) | color(Color::GrayLight));
@@ -68,6 +73,10 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state) {
       text(" Session ") | bold | color(Color::Green),
       vbox(std::move(status)) | flex);
 
+  auto commands_panel = window(
+      text(" Builtins ") | bold | color(Color::Magenta),
+      vbox(std::move(commands)) | flex);
+
   auto framebuffer_panel = window(
       text(" Framebuffer Preview ") | bold | color(Color::Yellow),
       vbox(std::move(framebuffer)) | flex);
@@ -77,7 +86,10 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state) {
              separator(),
              hbox({
                  transcript_panel | flex,
-                 status_panel | size(WIDTH, GREATER_THAN, 34),
+                 vbox({
+                     status_panel | flex,
+                     commands_panel | size(HEIGHT, LESS_THAN, 9),
+                 }) | size(WIDTH, GREATER_THAN, 34),
              }) | flex,
              framebuffer_panel | size(HEIGHT, LESS_THAN, 12),
          }) |

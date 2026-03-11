@@ -180,8 +180,8 @@ Current starting point:
 
 - A first scripted shell/TUI demo now exists over the hosted VirtualBox guest-bootstrap path.
 - That shell path now also has an FTXUI frontend using the repo's standard TUI stack, with a deterministic snapshot mode for review and future automation.
-- It persists one shell transcript through CanonStore, reboots, recovers that transcript, and renders a shell page through the VMSVGA-backed ternary framebuffer.
-- It is intentionally not yet interactive and does not claim TISC userland execution; it only establishes the first user-facing seam on top of the Phase 4 storage/display path.
+- It now executes a minimal built-in shell model (`help`, `profile`, `store put`, `history`), persists shell history through CanonStore, reboots, recovers that history, and renders the resulting shell page through the VMSVGA-backed ternary framebuffer.
+- It is intentionally not yet interactive and does not claim TISC userland execution; it establishes the first user-facing seam on top of the Phase 4 storage/display path without pretending the full shell exists yet.
 
 ---
 

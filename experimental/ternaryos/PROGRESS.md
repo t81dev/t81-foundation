@@ -153,7 +153,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | File | Purpose | Tests |
 | :--- | :--- | :---: |
-| `shell_session.hpp/.cpp` | Shared Phase 5 scripted shell-session backend: boots through the VirtualBox guest-bootstrap path, persists one shell transcript through CanonStore, reboots, recovers it, and exposes deterministic transcript/framebuffer state to frontends | — |
+| `shell_session.hpp/.cpp` | Shared Phase 5 shell-session backend: executes a minimal built-in shell command model (`help`, `profile`, `store put`, `history`) through the VirtualBox guest-bootstrap path, persists shell history through CanonStore, reboots, recovers it, and exposes deterministic transcript/framebuffer state to frontends | — |
 | `shell_demo.cpp` | Verbose Phase 5 backend proof: prints the scripted shell session and framebuffer evidence directly to stdout | — |
 | `shell_tui.cpp` | First FTXUI-based TernOS shell frontend with transcript pane, session pane, framebuffer preview, and `--snapshot` render mode | — |
 
@@ -163,7 +163,8 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 - The current shell path is intentionally narrow: it is not interactive, does not execute TISC userland yet, and does not introduce a syscall surface.
 - Its value is architectural: user-facing output now rides the same guest-bootstrap storage and display seams already proven in Phase 4.
 - The shell UI now uses the repo's established FTXUI stack instead of a one-off terminal surface, and `--snapshot` gives it a noninteractive review/debug mode.
-- The next real Phase 5 milestone should be replacing the scripted transcript with a minimal command model rather than adding more presentation-only screens.
+- The old fixed transcript is gone: the current shell transcript now comes from built-in command handlers for `help`, `profile`, `store put`, and `history`.
+- The next real Phase 5 milestone should be adding interactive command selection/execution on top of that small built-in model rather than adding more presentation-only screens.
 
 ---
 

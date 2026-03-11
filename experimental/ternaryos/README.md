@@ -139,12 +139,17 @@ What the TUI adds:
 - a proper terminal UI surface using the same FTXUI stack as the rest of the repo
 - a transcript pane, session/status pane, and framebuffer preview in one screen
 - a deterministic snapshot mode suitable for review and later test automation
+- a minimal built-in command model behind the transcript:
+  - `help`
+  - `profile`
+  - `store put`
+  - `history`
 
 What it is not yet:
 
 - interactive
 - TISC userland code
-- a real command parser or process manager
+- a general command parser or process manager
 
 Local hosted proof as of the current branch:
 
