@@ -18,7 +18,9 @@ path on top of the hosted guest-bootstrap path.
 
 Kernel integration direction is now tracked explicitly in RFC-00B3. That RFC is
 the current path for turning the existing HAL/MMU/scheduler/IPC subsystems into
-one kernel-owned runtime unit instead of letting them grow organically.
+one kernel-owned runtime unit instead of letting them grow organically. The
+first kernel-owned handoff path now exists: `hal_main` transfers control to
+`axion_kernel_main(...)`, and the HAL suite verifies that runtime bootstrap.
 
 Current working release label: `Axion v0.1.0-alpha`
 
@@ -50,7 +52,7 @@ hal/
   hal.hpp              HAL public interface (MemoryRegion, HardwareInterrupt,
                        BootContext, hal_main)
   hal_c_abi.h/.cpp     C ABI bridge for freestanding guest stubs
-  hal_main.cpp         Ethics-first boot (Θ₁–Θ₉ via Axion) → T81VM handoff
+  hal_main.cpp         Ethics-first boot (Θ₁–Θ₉ via Axion) → kernel-owned handoff
   interrupt_table.cpp  Shadow binary interrupt dispatch table
   hosted_stub.cpp      Hosted (macOS/Linux) simulation — stand-in for UEFI stub
   virtualbox_platform.hpp/.cpp  First-target VirtualBox VM profile scaffold
@@ -59,6 +61,9 @@ hal/
   virtualbox_armv8_efi_stub.c  Freestanding VBox EFI stub source for BOOTAA64 handoff
   virtualbox_armv8_efi_control.c  Minimal ARMv8 EFI control app for execution probes
   virtualbox_armv8_efi_shim.c  Temporary ARMv8 developer-lane EFI link shim
+
+kernel/
+  kernel_main.hpp/.cpp First Axion kernel-owned runtime entry/bootstrap
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,
@@ -95,7 +100,7 @@ shell/
 
 tests/
   shell_session_test.cpp     Phase 5 shell command / durable-history test
-  hal_boot_test.cpp          Phase 1 — 84 assertions
+  hal_boot_test.cpp          Phase 1 — 90 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
   mmu_test.cpp               Phase 2 — 87 assertions
@@ -110,7 +115,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1031/1031 assertions, 8/8 tests pass
+# Expected: 1037/1037 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -130,6 +135,7 @@ The demo shows a VirtualBox-first hosted simulation path:
 - CanonStore persists a CanonBlock across a simulated reboot through that binding
 - CanonStore metadata now scales past the root 17-entry header and still rebuilds correctly after reboot
 - interrupted flushes preserve only the last durable state until a retry succeeds
+- the first kernel-owned runtime handoff now runs after HAL validation and ethics-first boot
 - the radix MMU now classifies invalid-TVA, unmapped, and permission-denied access faults
 - TTF renders ASCII text into the VirtualBox VMSVGA-backed ternary framebuffer.
 - TernaryEthernetPacket round-trips through the VirtualBox E1000 scaffold.
@@ -262,10 +268,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
+- `t81_ternaryos_hal_boot_test` is `90/90`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
-- `t81_ternaryos_mmu_test` is `72/72`
-- total TernOS assertions are `1016`
+- `t81_ternaryos_mmu_test` is `87/87`
+- total TernOS assertions are `1037`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback

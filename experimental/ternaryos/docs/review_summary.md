@@ -30,9 +30,11 @@ The official promotion target remains:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `858`
+- total assertions: `1037`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_shell_session_test`: `121/121`
+- `t81_ternaryos_hal_boot_test`: `90/90`
+- `t81_ternaryos_shell_session_test`: `183/183`
+- `t81_ternaryos_mmu_test`: `87/87`
 
 Phase 4 storage proof now covers:
 
@@ -143,3 +145,5 @@ kernel path is now:
 
 - keep the external `x86_64` VirtualBox validation ask open
 - use RFC-00B3 as the implementation path for kernel integration after `hal_main`
+- build the next kernel-facing step on top of the new runtime handoff: MMU fault
+  reporting and kernel-visible fault records

@@ -12,7 +12,7 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-11
-**Commit:** `0b8ab5d8`
+**Commit:** `0b8ab5d8` onward; kernel handoff work continues past this checkpoint
 **Branch:** `main`
 
 Reference docs:
@@ -37,9 +37,10 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 | :--- | :--- | :---: |
 | `hal/hal.hpp` | Public interface: `MemoryRegion`, `HardwareInterrupt`, `BootContext`, `hal_main`, I/O stubs | — |
 | `hal/hal_c_abi.h/.cpp` | C-compatible HAL handoff bridge so freestanding guest stubs can construct a boot context without C++ STL dependencies | 2 |
-| `hal/hal_main.cpp` | Ethics-first boot — validates `BootContext`, evaluates Θ₁–Θ₉, stubs T81VM handoff | 9 |
+| `hal/hal_main.cpp` | Ethics-first boot — validates `BootContext`, evaluates Θ₁–Θ₉, and hands off to the first kernel-owned runtime entry | 9 |
 | `hal/interrupt_table.cpp` | Shadow binary dispatch table; `register_interrupt_handler`, `dispatch_interrupt`, `fire_simulated_interrupt` | (above) |
 | `hal/hosted_stub.cpp` | macOS/Linux UEFI stub simulation; synthetic memory map; calls `hal_main` | (above) |
+| `kernel/kernel_main.hpp/.cpp` | First Axion kernel-owned runtime entry/bootstrap over validated `BootContext`; computes basic runtime state and rejects invalid handoff contexts | 6 |
 | `hal/virtualbox_platform.hpp/.cpp` | First-target VirtualBox promotion scaffold: VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC profile validation, device-map descriptors, timer-tick simulation, and `BootContext` construction | 43 |
 | `hal/virtualbox_guest_devices.hpp/.cpp` | VirtualBox guest-device binding seam: maps the first supported HAL storage, network, and display profile onto AHCI/E1000/VMSVGA-shaped Phase 4 adapters, rejects unsupported NVMe/PCNet/VGA promotion paths, and bootstraps the first guest profile as a reusable runtime bundle | 39 |
 | `hal/virtualbox_efi_stub.c` | Freestanding VBox EFI guest stub source: constructs the first guest `BootContext` via the C ABI bridge and serves as the source for the staged `BOOTX64.obj` artifact | — |
@@ -61,6 +62,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 #### Design notes
 
 - Hosted HAL remains the executable path today, but Phase 1 promotion is now encoded as a concrete VirtualBox x86_64 hardware profile rather than a generic future boot target.
+- The first RFC-00B3 kernel-integration step is now implemented: `hal_main` no longer terminates at a stub and instead hands off to `axion_kernel_main(...)`, which builds the first kernel runtime state from the validated `BootContext`.
 - The first supported VM profile is intentionally narrow: VBox EFI firmware, AHCI storage, E1000 networking, VMSVGA display, and HPET/IOAPIC timing.
 - NVMe remains visible in the upstream VirtualBox source tree but is explicitly deferred behind AHCI for the first persistence gate.
 - A reproducible VirtualBox disk-artifact target now exists (`t81_ternaryos_virtualbox_guest_artifact`) and stages metadata, demo evidence, and a compiled `BOOTX64.obj` stub object; final `.efi` linking remains the blocking gap.
@@ -78,7 +80,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - Program decision: stop escalating local ARMv8 VirtualBox boot-layout experiments, use QEMU AArch64 as the primary local EFI/debug lane, and prepare the official `x86_64` acceptance lane as a handoff package instead; the runbook for that external validation path is now checked in.
 - That handoff path is now reproducible as a single build target: the `x86_64` VirtualBox artifact, profile summary, demo transcript, and runbook can be packaged into a tarball for external validation on a real `x86_64` host.
 
-**Phase 1 test total: 155 / 155**
+**Phase 1 test total: 161 / 161**
 
 ---
 
@@ -124,7 +126,7 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - Round-robin is deterministic: `rr_index_` advances through `slots_` in insertion order; 81-slot cap mirrors Hanoi scheduler.
 - `CanonRef` handles (not raw pointers) cross IPC boundaries, preserving CanonFS audit trail invariants.
 - OQ-5 (Axion determinism under pre-emption) is still open — governance audit trail not yet extended for async interleaving.
-- RFC-00B3 now defines the next integration step: HAL, MMU fault handling, scheduler, IPC, and device arbitration should converge on a kernel-owned runtime entry instead of remaining adjacent subsystem proofs.
+- RFC-00B3 now defines the active integration path: the first kernel-owned runtime entry exists, and the next step is to consume MMU faults through a kernel-facing fault/reporting path instead of leaving the runtime bootstrap as a thin handoff.
 
 **Phase 3 test total: 193 / 193**
 
@@ -202,7 +204,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 84 | 1 |
+| `t81_ternaryos_hal_boot_test` | 90 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -210,7 +212,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **1031** | |
+| **Total** | **1037** | |
 
 Run all TernOS tests:
 

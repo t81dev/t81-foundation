@@ -556,6 +556,7 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/hal/hosted_stub.cpp
     experimental/ternaryos/hal/virtualbox_platform.cpp
     experimental/ternaryos/hal/virtualbox_guest_devices.cpp
+    experimental/ternaryos/kernel/kernel_main.cpp
     experimental/ternaryos/dev/hosted_block_dev.cpp
     experimental/ternaryos/dev/virtualbox_ahci_dev.cpp
     experimental/ternaryos/dev/virtualbox_e1000_dev.cpp

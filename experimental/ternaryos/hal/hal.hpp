@@ -118,7 +118,7 @@ struct BootContext {
  *   1. Validate BootContext (at least one writable MemoryRegion).
  *   2. If ethics_boot_required: evaluate Θ₁–Θ₉ via t81::axion::check_ethics.
  *      Any Deny verdict aborts with a non-zero exit code.
- *   3. Hand off to T81VM (stubbed in Phase 1; wired in Phase 2+).
+ *   3. Hand off to the Axion kernel-owned runtime entry.
  *
  * Returns 0 on success, non-zero on failure (ethics rejection, bad context, …).
  * On real bare-metal this will be [[noreturn]]; the hosted build returns for

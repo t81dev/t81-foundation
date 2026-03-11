@@ -15,6 +15,7 @@
 #include "../hal/hal_c_abi.h"
 #include "../hal/virtualbox_guest_devices.hpp"
 #include "../hal/virtualbox_platform.hpp"
+#include "../kernel/kernel_main.hpp"
 #include "../dev/hosted_block_dev.hpp"
 
 #include <atomic>
@@ -29,6 +30,7 @@ void fire_simulated_interrupt(InterruptSource source, uint64_t payload);
 }
 
 using namespace t81::ternaryos::hal;
+using namespace t81::ternaryos::kernel;
 
 static int g_pass = 0;
 static int g_fail = 0;
@@ -406,6 +408,22 @@ static void test_virtualbox_display_binding() {
         "VGA binding is not created yet");
 }
 
+static void test_kernel_runtime_bootstrap() {
+  std::printf("\n[AC-17] Axion kernel-owned runtime bootstrap\n");
+
+  auto ctx = make_valid_ctx(/*ethics=*/true);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap accepts valid BootContext");
+  if (state) {
+    check(state->platform_id == "test", "kernel runtime preserves platform_id");
+    check(state->memory_region_count == 1, "kernel runtime counts memory regions");
+    check(state->total_ternary_pages == ctx.memory_map[0].ternary_page_count(),
+          "kernel runtime reports ternary page count");
+    check(state->has_writable_memory, "kernel runtime records writable memory");
+  }
+  check(axion_kernel_main(ctx) == 0, "axion_kernel_main returns 0 for valid context");
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -429,6 +447,7 @@ int main() {
   test_virtualbox_guest_bootstrap();
   test_virtualbox_network_binding();
   test_virtualbox_display_binding();
+  test_kernel_runtime_bootstrap();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

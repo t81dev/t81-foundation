@@ -7,6 +7,7 @@
 
 #include <iostream>
 
+#include "../kernel/kernel_main.hpp"
 #include "t81/axion/ethics.hpp"
 
 namespace t81::ternaryos::hal {
@@ -79,11 +80,8 @@ int hal_main(const BootContext& ctx) {
     hal_log("ethics gate: SKIPPED (ethics_boot_required=false — test mode only).");
   }
 
-  // ── Step 3: Hand off to T81VM ─────────────────────────────────────────────
-  // Phase 1 stub: VM handoff is not yet wired. In Phase 2+ this becomes:
-  //   t81::vm::VMState state = t81::vm::init(ctx.memory_map, ctx.kernel_load_address);
-  //   return t81::vm::run(state);
-  hal_log("T81VM handoff: [STUB — Phase 1] boot sequence complete.");
+  // ── Step 3: Hand off to Axion kernel runtime ──────────────────────────────
+  hal_log("Axion kernel handoff: entering kernel-owned runtime.");
   hal_log("  kernel_load_address = 0x" +
           [&]() {
             char buf[17];
@@ -98,8 +96,13 @@ int hal_main(const BootContext& ctx) {
                           static_cast<unsigned long long>(ctx.stack_top));
             return std::string(buf);
           }());
-
-  return 0;
+  const int kernel_rc = t81::ternaryos::kernel::axion_kernel_main(ctx);
+  if (kernel_rc != 0) {
+    hal_log("FATAL: Axion kernel runtime rejected boot context.");
+    return kernel_rc;
+  }
+  hal_log("Axion kernel handoff: runtime bootstrap complete.");
+  return kernel_rc;
 }
 
 }  // namespace t81::ternaryos::hal

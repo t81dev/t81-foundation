@@ -113,7 +113,8 @@ The current implemented flow is:
 
 1. firmware/host stub constructs `BootContext`
 2. `hal_main` validates context and performs ethics-first boot
-3. HAL currently stubs the T81VM/kernel handoff
+3. `hal_main` transfers control to `axion_kernel_main(...)`
+4. kernel runtime bootstrap validates and summarizes initial kernel state
 
 #### 3.4.2 Target kernel flow
 
@@ -133,7 +134,7 @@ The next integration target is:
 #### 3.4.3 Required kernel-owned entrypoint
 
 This RFC introduces the architectural requirement for a kernel-owned entry
-function, conceptually:
+function. The first implementation now exists, conceptually:
 
 ```cpp
 int axion_kernel_main(const hal::BootContext& boot);
@@ -278,9 +279,9 @@ This RFC does not retarget the project away from that profile.
 
 ## 6. Implementation Plan
 
-1. introduce a kernel-owned entry routine after `hal_main`
+1. extend the new kernel-owned entry routine beyond bootstrap summary state
 2. add a kernel-facing page-fault/reporting path
-3. define the first kernel runtime state object
+3. define the first persistent kernel runtime state object
 4. connect scheduler and IPC initialization to that state
 5. only then expand syscall/userland semantics further
 
@@ -293,7 +294,7 @@ This RFC does not retarget the project away from that profile.
 
 ## 8. Acceptance Criteria
 
-- [ ] `hal_main` hands off to a kernel-owned entry routine instead of ending at a stub.
+- [x] `hal_main` hands off to a kernel-owned entry routine instead of ending at a stub.
 - [ ] Kernel entry initializes the allocator, MMU, scheduler, and IPC substrate from `BootContext`.
 - [ ] Checked MMU translation is consumed by a kernel-facing fault/reporting path.
 - [ ] Fault records distinguish `InvalidTva`, `Unmapped`, and `PermissionDenied`.

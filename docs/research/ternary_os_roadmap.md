@@ -14,7 +14,7 @@ Naming split for this roadmap:
 
 The T81 Foundation provides a determinism-first, ternary-native computing stack (`T81`) that achieves native ternary scaling properties (base-3 / base-81) simulated over standard hardware. Today, Axion runs as a hosted prototype over standard binary platforms, but the standalone operating-system stack is no longer purely aspirational: the boot/HAL layer, ternary MMU prototype, and scheduler/IPC foundation are implemented and tested.
 
-As of **2026-03-10**, the project has completed:
+As of **2026-03-11**, the project has completed:
 
 - **Phase 1:** Bootloader & HAL hosted simulation
 - **Phase 2:** Ternary MMU prototype
@@ -22,9 +22,10 @@ As of **2026-03-10**, the project has completed:
 
 Kernel integration direction is now tracked explicitly in
 [RFC-00B3: Axion Kernel Architecture](../../spec/rfcs/RFC-00B3-axion-kernel-architecture.md).
-That RFC defines the next path after subsystem bring-up: converge HAL handoff,
-MMU fault handling, scheduler, IPC, and minimal device arbitration into a
-kernel-owned runtime entry.
+That RFC defines the current path after subsystem bring-up: the first
+kernel-owned runtime entry now exists, and the next steps are to converge MMU
+fault handling, scheduler, IPC, and minimal device arbitration into a fuller
+kernel runtime.
 
 The roadmap is now centered on promotion of those layers from `experimental/` into mainline, plus delivery of the Phase 4 driver layer needed for a reboot-persistent CanonFS system. The concrete promotion environment is a **VirtualBox-first virtual machine target**: Axion should graduate from hosted process simulation into a bootable guest image that runs under VirtualBox before any real-hardware push.
 
@@ -122,9 +123,10 @@ The first bootable guest should deliberately target this conservative profile ra
 
 Implemented outcome:
 
-- `hal_main` validates `BootContext`, performs ethics-first boot checks, and stubs T81VM handoff.
+- `hal_main` validates `BootContext`, performs ethics-first boot checks, and now hands off to the first Axion kernel-owned runtime entry.
 - A hosted macOS/Linux boot stub provides a synthetic memory map and invokes the HAL entrypoint.
 - Shadow binary interrupt dispatch is implemented without modifying the frozen TISC ISA.
+- `axion_kernel_main(...)` now exists as the first kernel-owned runtime handoff target and bootstraps basic runtime state from `BootContext`.
 
 VirtualBox promotion deliverables:
 
@@ -164,9 +166,10 @@ Implemented outcome:
 - The run queue preserves deterministic insertion-order round-robin behavior across 81 slots.
 - `Scheduler::tick()` performs save/preempt/select/restore and returns `true` only for genuine thread switches.
 - IPC is implemented as CanonRef-safe FIFO inboxes with per-recipient depth caps.
-- RFC-00B3 now defines the next required integration step: move these Phase 1-3
-  subsystems under a kernel-owned entry/runtime instead of letting them remain
-  adjacent prototypes.
+- RFC-00B3 now defines the active kernel path after the first implemented
+  handoff: move beyond the thin runtime bootstrap and start routing MMU faults,
+  scheduler state, IPC, and device arbitration through a kernel-owned state
+  object.
 
 ### Phase 4 — Device Drivers & I/O
 
