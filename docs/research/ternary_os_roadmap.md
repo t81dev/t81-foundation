@@ -61,7 +61,7 @@ The foundational computational, storage, and process primitives already exist in
 | :--- | :--- | :--- |
 | HAL interface + hosted boot stub | `experimental/ternaryos/hal/` | Complete for Phase 1 hosted gate |
 | Ternary page allocator | `experimental/ternaryos/mmu/ternary_page_alloc.*` | Complete |
-| TVA + flat page table MMU | `experimental/ternaryos/mmu/` | Complete for Phase 2 |
+| TVA + ternary radix page table MMU | `experimental/ternaryos/mmu/` | Complete for Phase 2 |
 | TISC context switch machinery | `experimental/ternaryos/sched/context_switch.*` | Complete |
 | 81-slot run queue + scheduler | `experimental/ternaryos/sched/` | Complete for Phase 3 |
 | CanonRef-based IPC bus | `experimental/ternaryos/ipc/` | Complete |
@@ -140,7 +140,7 @@ Implemented outcome:
 
 - RFC-00B1 defines a 30-trit TVA layout with a 10-trit page offset and 20-trit VPN.
 - `TernaryPageAllocator` manages physical pages using balanced-ternary page states.
-- The current MMU uses a flat `VPN -> PageTableEntry` map; the radix-trie follow-up is deferred.
+- The current MMU now uses a 20-trit ternary radix page table behind the stable `mmu_*` API.
 
 ### Phase 3 — Kernel Scheduling & IPC
 
@@ -199,7 +199,7 @@ Current starting point:
 | Phase | Milestone | Key Deliverable | Gate Condition | Target |
 | :---: | :--- | :--- | :--- | :--- |
 | 1 | HAL RFC + Bootloader PoC | Hosted HAL, boot validation, interrupt shim | TISC `NOP`/`HALT` executes with no host OS-equivalent supervisor path | v1.5 |
-| 2 | Ternary MMU | TVA model, page allocator, flat page table | T81VM allocates from ternary page boundaries | v1.6 |
+| 2 | Ternary MMU | TVA model, page allocator, ternary radix page table | T81VM allocates from ternary page boundaries | v1.6 |
 | 3 | Pre-emptive Scheduler | 81-slot run queue, context-switch, IPC | Two concurrent TISC threads run deterministically | v1.7 |
 | 4 | Driver Layer | VirtualBox guest storage + framebuffer + network wrappers | CanonFS read/write survives a reboot cycle inside a VirtualBox guest | v2.0 |
 | 5 | Userland | Ternary shell + network stack | Interactive TISC session over bare metal | v2.x |
@@ -236,9 +236,8 @@ That gate turns the current in-memory TernOS substrate into a minimally persiste
 2. **The physical/virtual address gap is resolved only for the current prototype:** RFC-00B1 adopts a "narrow virtual" TVA design. If future requirements exceed the current 30-trit/205 TB space, a wider VPN design will be needed.
 3. **TISC interrupt semantics remain a long-term architectural constraint:** The frozen ISA still has no trap-return opcode; the shadow dispatch table is sufficient for the prototype but may constrain richer interrupt handling in later phases.
 4. **Determinism under pre-emption is not fully closed:** Scheduling is deterministic today, but Axion governance has not yet been fully extended to model async interleavings.
-5. **The Phase 2 radix-trie page table is deferred:** The flat hash-map MMU is adequate for the current milestone but is not the final structure.
-6. **Driver correctness becomes the next systems risk:** AHCI/E1000/VMSVGA-facing wrappers must preserve canonical ternary representations at the VirtualBox guest boundary without leaking binary host assumptions upward.
-7. **VirtualBox coupling must stay tactical:** the VM target should accelerate promotion, not become a permanent architectural dependency. The HAL and driver contracts must remain portable to QEMU, other hypervisors, and eventual bare metal.
+5. **Driver correctness becomes the next systems risk:** AHCI/E1000/VMSVGA-facing wrappers must preserve canonical ternary representations at the VirtualBox guest boundary without leaking binary host assumptions upward.
+6. **VirtualBox coupling must stay tactical:** the VM target should accelerate promotion, not become a permanent architectural dependency. The HAL and driver contracts must remain portable to QEMU, other hypervisors, and eventual bare metal.
 
 ---
 

@@ -84,12 +84,12 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 ### Phase 2 — Ternary MMU ✅ COMPLETE
 
 **Gate condition (v1.6):** T81VM allocates from ternary page boundaries.
-Status: flat page table implemented and tested; 3-ary radix trie deferred to Phase 3.
+Status: ternary radix page table implemented and tested behind the stable MMU API.
 
 | File | Purpose | Tests |
 | :--- | :--- | :---: |
 | `mmu/tva.hpp` | `TernaryVirtualAddress` as `uint64_t` base-3 number; `kPageSize=59049` (3¹⁰), `kMaxVpn=3²⁰−1`, `kMaxTva=3³⁰−1`; `tva_vpn`, `tva_offset`, `tva_from_vpn_offset`, `tva_valid`, `trit_at`, `trit_weight`, `tva_to_string` | 22 |
-| `mmu/page_table.hpp/.cpp` | Flat `VPN → PageTableEntry` hash map; `mmu_map` (alloc + insert), `mmu_translate` (lookup + offset), `mmu_unmap` (erase + free), `page_table_dump` | 25 |
+| `mmu/page_table.hpp/.cpp` | 20-trit ternary radix page table with a 3-way branch per trit; `mmu_map` (alloc + insert), `mmu_translate` (walk + offset), `mmu_unmap` (erase + prune), `page_table_dump` | 38 |
 
 **Address space design (RFC-00B1 §2):**
 - Page offset: lower 10 trits → 3¹⁰ = 59,049 positions within a page
@@ -198,12 +198,12 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_hal_boot_test` | 84 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
-| `t81_ternaryos_mmu_test` | 47 | 2 |
+| `t81_ternaryos_mmu_test` | 60 | 2 |
 | `t81_ternaryos_scheduler_test` | 120 | 3 |
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **920** | |
+| **Total** | **1004** | |
 
 Run all TernOS tests:
 
@@ -224,7 +224,6 @@ ctest --test-dir build -R ternaryos -V
 | OQ-3 | CI target now leans toward QEMU for local ARM automation, with VirtualBox reserved for acceptance/demo validation and host-specific diagnostics | Phase 1 promotion |
 | OQ-4 | TISC interrupt semantics — frozen ISA has no trap-return opcode; shadow dispatch table is the current workaround | Phase 4 |
 | OQ-5 | Axion determinism under pre-emption — governance model must be extended for async context switches | Phase 3 |
-| OQ-6 | Phase 3 radix-trie page table (3-ary, 10-trit levels) — not yet designed | Phase 3 |
 | OQ-7 | Real AHCI / E1000 / VMSVGA-facing adapters are not implemented; Phase 4 currently satisfies the gate only in hosted simulation despite the new guest-artifact packaging target | Phase 4 promotion |
 | OQ-8 | CanonStore now scales past the root header via tail-resident overflow metadata blocks, but compaction/rewrite strategy for long-lived stores is still deferred | Phase 4 scaling |
 | OQ-9 | VirtualBox should remain a tactical promotion target, not a permanent HAL dependency; portability boundaries must stay explicit | Cross-phase portability |

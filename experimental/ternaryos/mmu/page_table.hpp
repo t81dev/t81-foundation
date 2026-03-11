@@ -6,6 +6,8 @@
 // RFC-00B1 §3, §4.
 
 #include <cstdint>
+#include <array>
+#include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -18,11 +20,11 @@ namespace t81::ternaryos::mmu {
 // ─── Page Table ──────────────────────────────────────────────────────────────
 
 /**
- * @brief Phase 2 page table: flat VPN → physical page base map.
+ * @brief Phase 3 page table: ternary radix tree over the 20-trit VPN.
  *
- * Each entry records the physical page base address and the owning PID.
- * Phase 3 will replace this with a 3-ary radix trie; the mmu_* API is
- * unchanged so callers need not be updated.
+ * Each entry records the physical page base address and the owning PID. The
+ * public MMU API is unchanged; callers still map/translate/unmap using TVAs.
+ * A flat VPN cache is retained only for diagnostics and compatibility.
  */
 struct PageTableEntry {
   uint64_t phys_base{0};   ///< Physical byte address of the mapped page
@@ -41,11 +43,26 @@ public:
   }
 
 private:
+  static constexpr unsigned kVpnTrits = 20;
+
   friend bool mmu_map(PageTable&, TernaryPageAllocator&,
                       uint64_t, uint32_t);
   friend std::optional<uint64_t> mmu_translate(const PageTable&, uint64_t);
   friend bool mmu_unmap(PageTable&, TernaryPageAllocator&, uint64_t);
+  friend std::string page_table_dump(const PageTable&);
 
+  struct Node {
+    std::array<std::unique_ptr<Node>, 3> children{};
+    std::optional<PageTableEntry> entry{};
+  };
+
+  static uint8_t vpn_trit_at(uint64_t vpn, unsigned depth) noexcept;
+  Node* ensure_leaf(uint64_t vpn);
+  const Node* find_leaf(uint64_t vpn) const noexcept;
+  static bool prune_leaf(Node* node, uint64_t vpn, unsigned depth);
+  static std::size_t count_nodes(const Node* node);
+
+  std::unique_ptr<Node> root_;
   std::unordered_map<uint64_t, PageTableEntry> entries_;  // keyed by VPN
 };
 

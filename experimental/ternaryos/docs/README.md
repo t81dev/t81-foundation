@@ -255,7 +255,8 @@ Local hosted proof as of the current branch:
 - all 8 TernOS test binaries pass
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
-- total TernOS assertions are `920`
+- `t81_ternaryos_mmu_test` is `60/60`
+- total TernOS assertions are `1004`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback

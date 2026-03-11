@@ -212,7 +212,51 @@ static void test_page_table_dump() {
   mmu_map(pt, alloc, tva_from_vpn_offset(10, 0), /*pid=*/7);
   auto s = page_table_dump(pt);
   check(!s.empty(), "dump is non-empty");
+  check(s.find("radix_nodes=") != std::string::npos,
+        "dump includes radix node count");
   std::printf("       %s", s.c_str());
+}
+
+static void test_sparse_radix_mappings() {
+  std::printf("\n[M15] Sparse VPNs share radix structure without collision\n");
+  auto alloc = make_alloc(8);
+  PageTable pt;
+
+  const uint64_t near_vpn = 1;
+  const uint64_t far_vpn = kMaxVpn - 1;
+  check(mmu_map(pt, alloc, tva_from_vpn_offset(near_vpn, 0), /*pid=*/11),
+        "map near VPN succeeds");
+  check(mmu_map(pt, alloc, tva_from_vpn_offset(far_vpn, 0), /*pid=*/12),
+        "map far VPN succeeds");
+
+  const auto near_phys = mmu_translate(pt, tva_from_vpn_offset(near_vpn, 42));
+  const auto far_phys = mmu_translate(pt, tva_from_vpn_offset(far_vpn, 42));
+  check(near_phys.has_value(), "near VPN translates");
+  check(far_phys.has_value(),  "far VPN translates");
+  if (near_phys && far_phys) {
+    check(*near_phys != *far_phys, "sparse VPNs map to distinct physical pages");
+    check(*near_phys % kPageSize == 42, "near VPN preserves offset");
+    check(*far_phys % kPageSize == 42,  "far VPN preserves offset");
+  }
+}
+
+static void test_unmap_prunes_without_affecting_siblings() {
+  std::printf("\n[M16] Unmap prunes radix path without harming siblings\n");
+  auto alloc = make_alloc(8);
+  PageTable pt;
+
+  const uint64_t vpn_a = 3;
+  const uint64_t vpn_b = 4;
+  check(mmu_map(pt, alloc, tva_from_vpn_offset(vpn_a, 0), /*pid=*/21),
+        "map first sibling VPN succeeds");
+  check(mmu_map(pt, alloc, tva_from_vpn_offset(vpn_b, 0), /*pid=*/22),
+        "map second sibling VPN succeeds");
+  check(mmu_unmap(pt, alloc, tva_from_vpn_offset(vpn_a, 0)),
+        "unmap first sibling succeeds");
+  check(!mmu_translate(pt, tva_from_vpn_offset(vpn_a, 0)).has_value(),
+        "unmapped sibling no longer translates");
+  check(mmu_translate(pt, tva_from_vpn_offset(vpn_b, 17)).has_value(),
+        "remaining sibling still translates");
 }
 
 // ─── main ────────────────────────────────────────────────────────────────────
@@ -234,6 +278,8 @@ int main() {
   test_unmap_nonexistent();
   test_multiple_mappings();
   test_page_table_dump();
+  test_sparse_radix_mappings();
+  test_unmap_prunes_without_affecting_siblings();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;
