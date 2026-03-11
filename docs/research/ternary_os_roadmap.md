@@ -46,8 +46,11 @@ that boundary, with deterministic service registration, deterministic service
 unregister, deterministic service suspend/resume, stable service detail, and
 richer supervisor-owned inventory. Same-supervisor process groups can now drive
 those suspend/resume transitions over managed services through the same stable
-contract. The next steps are to keep that lifecycle contract stable while
-continuing to move the runtime toward fuller kernel behavior.
+contract. Explicit service health transitions now also exist through that same
+stable contract, exposing unhealthy-state diagnostics and deterministic
+unavailable-service rejection. The next steps are to keep that lifecycle
+contract stable while continuing to move the runtime toward fuller kernel
+behavior.
 
 That near-term kernel slice is now tracked explicitly in:
 

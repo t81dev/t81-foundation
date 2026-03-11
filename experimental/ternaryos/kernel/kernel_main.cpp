@@ -152,6 +152,19 @@ bool mark_service_suspended(KernelRuntimeState& state,
   return true;
 }
 
+bool mark_service_unhealthy(KernelRuntimeState& state,
+                            ServiceId service_id,
+                            bool unhealthy) {
+  auto* service_state = state.find_service_mut(service_id);
+  if (!service_state || !service_state->registered ||
+      service_state->unhealthy == unhealthy) {
+    return false;
+  }
+  service_state->unhealthy = unhealthy;
+  ++service_state->state_transitions;
+  return true;
+}
+
 bool queue_supervisor_pending_group(KernelRuntimeState& state,
                                     ProcessGroupId process_group_id,
                                     sched::Tid subject_tid,
@@ -381,6 +394,7 @@ KernelServiceStatusView make_service_view(const KernelRuntimeState& state,
                         : std::nullopt,
       .blocked = service_state ? service_state->blocked : false,
       .suspended = service_state ? service_state->suspended : false,
+      .unhealthy = service_state ? service_state->unhealthy : false,
       .registered = service_state ? service_state->registered : false,
       .faulted_group = group_state ? group_state->faulted : false,
       .quarantined_thread_count =
@@ -424,6 +438,7 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
         .process_group_id = service_state->process_group_id,
         .blocked = service_state->blocked,
         .suspended = service_state->suspended,
+        .unhealthy = service_state->unhealthy,
         .registered = service_state->registered,
         .requests = service_state->requests,
         .rejected_requests = service_state->rejected_requests,
@@ -433,6 +448,9 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
     }
     if (service_state->suspended) {
       ++view.suspended_service_count;
+    }
+    if (service_state->unhealthy) {
+      ++view.unhealthy_service_count;
     }
     view.total_service_requests += service_state->requests;
     view.total_service_rejections += service_state->rejected_requests;
@@ -558,6 +576,12 @@ const KernelRuntimeState::ServiceState* validate_service_request(
     ++service_state->rejected_requests;
     result.status = KernelServiceStatus::FaultedGroup;
     result.rejection = KernelServiceRequestRejection::FaultedRequestingGroup;
+    return nullptr;
+  }
+  if (service_state->unhealthy) {
+    ++service_state->rejected_requests;
+    result.status = KernelServiceStatus::ServiceUnavailable;
+    result.rejection = KernelServiceRequestRejection::UnhealthyService;
     return nullptr;
   }
   return service_state;
@@ -1292,6 +1316,65 @@ KernelServiceActionResult axion_kernel_service_action(
         result.rejection = suspend
                                ? KernelServiceActionRejection::ServiceAlreadySuspended
                                : KernelServiceActionRejection::ServiceNotSuspended;
+        return result;
+      }
+      result.status = KernelServiceStatus::Ok;
+      result.rejection = KernelServiceActionRejection::None;
+      result.action_performed = true;
+      result.process_group =
+          make_process_group_view(state, *action.requesting_process_group_id);
+      result.service = make_service_view(state, *action.service_id);
+      result.supervisor_services =
+          build_supervisor_services_view(state, *supervisor_id);
+      return result;
+    }
+    case KernelServiceActionKind::MarkServiceUnhealthy:
+    case KernelServiceActionKind::MarkServiceHealthy: {
+      if (auto denied = validate_requesting_group(state, action); denied.has_value()) {
+        result.status = *denied;
+        result.rejection = denied == KernelServiceStatus::NotFound
+                               ? KernelServiceActionRejection::MissingRequestingGroup
+                               : KernelServiceActionRejection::FaultedRequestingGroup;
+        return result;
+      }
+      if (!action.requesting_process_group_id.has_value()) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = KernelServiceActionRejection::MissingRequestingGroup;
+        return result;
+      }
+      if (!action.service_id.has_value()) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = KernelServiceActionRejection::MissingService;
+        return result;
+      }
+      auto* service_state = state.find_service_mut(*action.service_id);
+      if (!service_state || !service_state->registered) {
+        result.status = KernelServiceStatus::NotFound;
+        result.rejection = KernelServiceActionRejection::MissingService;
+        return result;
+      }
+      const auto requester_supervisor_id =
+          state.find_process_group_supervisor(*action.requesting_process_group_id);
+      if (!requester_supervisor_id.has_value()) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = KernelServiceActionRejection::MissingSupervisor;
+        return result;
+      }
+      const auto supervisor_id =
+          state.find_process_group_supervisor(service_state->process_group_id);
+      if (!supervisor_id.has_value() ||
+          service_state->supervisor_id != *supervisor_id ||
+          *requester_supervisor_id != *supervisor_id) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = KernelServiceActionRejection::ServiceSupervisorMismatch;
+        return result;
+      }
+      const bool unhealthy = action.kind == KernelServiceActionKind::MarkServiceUnhealthy;
+      if (!mark_service_unhealthy(state, *action.service_id, unhealthy)) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = unhealthy
+                               ? KernelServiceActionRejection::ServiceAlreadyUnhealthy
+                               : KernelServiceActionRejection::ServiceAlreadyHealthy;
         return result;
       }
       result.status = KernelServiceStatus::Ok;

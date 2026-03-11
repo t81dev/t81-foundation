@@ -275,8 +275,10 @@ That service-runtime convergence step is now implemented for the current
 contract surface. The service layer now includes deterministic registration,
 stable service detail and supervisor inventory views, deterministic service
 unregister, deterministic service suspend/resume, and same-supervisor service
-lifecycle control over managed services. The next step is to keep that layer
-stable and only then consider any further lifecycle action or boundary growth.
+lifecycle control over managed services. That same layer now also carries
+explicit service health transitions with stable unhealthy-state diagnostics.
+The next step is to keep that layer stable and only then consider any further
+lifecycle action or boundary growth.
 
 The working execution note for this slice is:
 

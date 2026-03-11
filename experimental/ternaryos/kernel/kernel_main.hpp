@@ -109,6 +109,7 @@ struct KernelRuntimeState {
     ProcessGroupId process_group_id{0};
     bool blocked{false};
     bool suspended{false};
+    bool unhealthy{false};
     bool registered{false};
     uint64_t requests{0};
     uint64_t rejected_requests{0};
@@ -268,6 +269,7 @@ enum class KernelServiceStatus : uint8_t {
   InvalidRequest,
   NotFound,
   FaultedGroup,
+  ServiceUnavailable,
   NoDeviceArbitration,
 };
 
@@ -278,6 +280,7 @@ enum class KernelServiceRequestRejection : uint8_t {
   MissingSupervisor,
   MissingService,
   FaultedRequestingGroup,
+  UnhealthyService,
   MissingDeviceArbitration,
 };
 
@@ -289,6 +292,8 @@ enum class KernelServiceActionKind : uint8_t {
   UnregisterService,
   SuspendService,
   ResumeService,
+  MarkServiceUnhealthy,
+  MarkServiceHealthy,
 };
 
 enum class KernelServiceActionRejection : uint8_t {
@@ -302,6 +307,8 @@ enum class KernelServiceActionRejection : uint8_t {
   ServiceProcessGroupMismatch,
   ServiceAlreadySuspended,
   ServiceNotSuspended,
+  ServiceAlreadyUnhealthy,
+  ServiceAlreadyHealthy,
   MissingDeviceName,
   MissingServiceName,
   MissingDeviceArbitration,
@@ -366,6 +373,7 @@ struct KernelServiceStatusView {
   std::optional<sched::Tid> primary_tid{};
   bool blocked{false};
   bool suspended{false};
+  bool unhealthy{false};
   bool registered{false};
   bool faulted_group{false};
   std::size_t quarantined_thread_count{0};
@@ -381,6 +389,7 @@ struct KernelSupervisorServiceEntryView {
   ProcessGroupId process_group_id{0};
   bool blocked{false};
   bool suspended{false};
+  bool unhealthy{false};
   bool registered{false};
   uint64_t requests{0};
   uint64_t rejected_requests{0};
@@ -391,6 +400,7 @@ struct KernelSupervisorServiceInventoryView {
   std::size_t service_count{0};
   std::size_t blocked_service_count{0};
   std::size_t suspended_service_count{0};
+  std::size_t unhealthy_service_count{0};
   uint64_t total_service_requests{0};
   uint64_t total_service_rejections{0};
   std::vector<ServiceId> service_ids;

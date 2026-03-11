@@ -2418,6 +2418,101 @@ static void test_kernel_service_runtime_layer() {
           "same-supervisor resume clears managed service suspension");
   }
 
+  auto mark_unhealthy = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::MarkServiceUnhealthy,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(mark_unhealthy.status == KernelServiceStatus::Ok,
+        "healthy owner group can mark its service unhealthy");
+  check(mark_unhealthy.rejection == KernelServiceActionRejection::None,
+        "mark-unhealthy clears rejection");
+  if (mark_unhealthy.service) {
+    check(mark_unhealthy.service->unhealthy,
+          "service view exposes unhealthy lifecycle state");
+    check(!mark_unhealthy.service->faulted_group,
+          "service unhealthy transition does not imply a faulted group");
+  }
+  if (mark_unhealthy.supervisor_services) {
+    check(mark_unhealthy.supervisor_services->unhealthy_service_count == 1,
+          "supervisor inventory reports one unhealthy service");
+    check(mark_unhealthy.supervisor_services->services.front().unhealthy,
+          "supervisor inventory entry reports unhealthy service");
+  }
+
+  auto unhealthy_request = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::ServiceStatus,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(unhealthy_request.status == KernelServiceStatus::ServiceUnavailable,
+        "unhealthy service request is rejected as unavailable");
+  check(unhealthy_request.rejection == KernelServiceRequestRejection::UnhealthyService,
+        "unhealthy service request reports explicit unhealthy rejection");
+
+  auto duplicate_unhealthy = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::MarkServiceUnhealthy,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(duplicate_unhealthy.status == KernelServiceStatus::InvalidRequest,
+        "duplicate unhealthy transition is rejected");
+  check(duplicate_unhealthy.rejection ==
+            KernelServiceActionRejection::ServiceAlreadyUnhealthy,
+        "duplicate unhealthy transition reports already-unhealthy rejection");
+
+  auto foreign_health = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::MarkServiceHealthy,
+          .requesting_process_group_id = foreign_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(foreign_health.status == KernelServiceStatus::InvalidRequest,
+        "foreign supervisor group cannot heal another supervisor's service");
+  check(foreign_health.rejection ==
+            KernelServiceActionRejection::ServiceSupervisorMismatch,
+        "foreign health transition reports supervisor mismatch");
+
+  auto peer_health = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::MarkServiceHealthy,
+          .requesting_process_group_id = supervisor_peer_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(peer_health.status == KernelServiceStatus::Ok,
+        "same-supervisor peer group can heal a managed service");
+  check(peer_health.rejection == KernelServiceActionRejection::None,
+        "same-supervisor heal clears rejection");
+  if (peer_health.service) {
+    check(!peer_health.service->unhealthy,
+          "same-supervisor heal clears unhealthy lifecycle state");
+  }
+  if (peer_health.supervisor_services) {
+    check(peer_health.supervisor_services->unhealthy_service_count == 0,
+          "supervisor inventory clears unhealthy count after heal");
+  }
+
+  auto duplicate_healthy = axion_kernel_service_action(
+      *state,
+      KernelServiceAction{
+          .kind = KernelServiceActionKind::MarkServiceHealthy,
+          .requesting_process_group_id = owner_runtime->process_group_id,
+          .service_id = *service_id,
+      });
+  check(duplicate_healthy.status == KernelServiceStatus::InvalidRequest,
+        "duplicate healthy transition is rejected");
+  check(duplicate_healthy.rejection ==
+            KernelServiceActionRejection::ServiceAlreadyHealthy,
+        "duplicate healthy transition reports already-healthy rejection");
+
   t81::ternaryos::sched::TiscContext fault_ctx;
   fault_ctx.label = "service-faulted";
   fault_ctx.registers[0] = 1202;

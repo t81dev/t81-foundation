@@ -106,7 +106,7 @@ shell/
 
 tests/
   shell_session_test.cpp     Phase 5 shell command / durable-history test
-  hal_boot_test.cpp          Phase 1 / kernel integration — 675 assertions
+  hal_boot_test.cpp          Phase 1 / kernel integration — 693 assertions
   ternary_page_alloc_test.cpp Phase 1 — 28 assertions
   context_switch_test.cpp    Phase 1 — 43 assertions
   mmu_test.cpp               Phase 2 — 87 assertions
@@ -121,7 +121,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1587/1587 assertions, 8/8 tests pass
+# Expected: 1605/1605 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -282,11 +282,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `675/675`
+- `t81_ternaryos_hal_boot_test` is `693/693`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1587`
+- total TernOS assertions are `1605`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state
@@ -296,6 +296,8 @@ Local hosted proof as of the current branch:
   stable service detail, lifecycle counters, and richer supervisor-owned service inventory
 - same-supervisor process groups can now suspend/resume managed services through that same
   stable service action surface
+- explicit service health transitions now exist through that same boundary, with stable
+  unhealthy-state diagnostics and deterministic unavailable-service rejection
 - the first narrow service-facing action now exists through that same boundary:
   supervisor fault-group acknowledgement
 - supervisor-facing recovery/report flows are now exposed through that same boundary:

@@ -67,12 +67,11 @@ The current service layer now covers:
 - deterministic service unregister
 - deterministic service suspend / resume
 - same-supervisor suspend / resume control over managed services
+- explicit service health transitions with stable unhealthy-state diagnostics
 
 ### 3. Only add new actions if a stable service runtime truly needs them
 
-Any further action should remain narrow and lifecycle-oriented:
-
-- explicit service health transition
+Any further action should remain narrow and lifecycle-oriented.
 
 ## Non-Goals For This Slice
 
