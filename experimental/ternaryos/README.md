@@ -303,6 +303,8 @@ Outputs:
   - backend-generated durable-history snapshot embedded into the ARM EFI stub
 - `build/ternaryos/qemu_armv8_guest/startup-store.txt`
   - backend-generated `store ls` inventory snapshot embedded into the ARM EFI stub
+- `build/ternaryos/qemu_armv8_guest/startup-ref.txt`
+  - backend-generated `show ref <canonref>` snapshot embedded into the ARM EFI stub
 
 Current status:
 
@@ -317,7 +319,7 @@ Current status:
 - the QEMU lane is now usable for actual staged guest bring-up too: it can boot the staged ARM guest image, capture serial output, and inspect the mutated probe image; current local probes show `efi-ran.txt`, `boot-report.txt`, and `boot_path_inference=default-bootaa64-efi`, so QEMU is reaching the staged `BOOTAA64.EFI` directly rather than via shell fallback
 - the current `boot-report.txt` confirms the staged ARM guest reaches the Axion handoff stub with `platform_id=virtualbox-armv8:ARMv8Virtual/developer-lane` and `hal_main_result=0`
 - the QEMU serial log now also includes a visible boot banner, `Axion ARMv8 EFI stub`, so the developer lane has a direct live boot signal as well as file-based proof
-- the current QEMU lane also recovers backend-generated `startup-shell.txt`, `startup-session.txt`, `startup-history.txt`, and `startup-store.txt`, so the staged ARM guest is now exposing real shell/session/store state rather than only handwritten boot metadata
+- the current QEMU lane also recovers backend-generated `startup-shell.txt`, `startup-session.txt`, `startup-history.txt`, `startup-store.txt`, and `startup-ref.txt`, so the staged ARM guest is now exposing real shell/session/store state rather than only handwritten boot metadata
 - the current `startup-status.txt` exposes guest-visible Axion state from the staged ARM guest:
   - `os_name=Axion`
   - `phase=5`

@@ -84,6 +84,36 @@ std::optional<std::string> make_startup_store_text() {
   return stream.str();
 }
 
+std::optional<std::string> make_startup_ref_text() {
+  auto session = t81::ternaryos::ShellSession::create(true);
+  if (!session.has_value()) return std::nullopt;
+
+  for (const auto& command : t81::ternaryos::default_shell_command_sequence()) {
+    if (!session->execute_command(command)) return std::nullopt;
+  }
+  if (!session->execute_command("store ls")) return std::nullopt;
+
+  const auto& store_state = session->state();
+  if (store_state.command_records.empty()) return std::nullopt;
+
+  std::istringstream refs(store_state.command_records.back().result);
+  std::string header;
+  std::string ref_text;
+  std::getline(refs, header);
+  std::getline(refs, ref_text);
+  if (ref_text.empty()) return std::nullopt;
+
+  if (!session->execute_command("show ref " + ref_text)) return std::nullopt;
+  const auto& ref_state = session->state();
+  if (ref_state.command_records.empty()) return std::nullopt;
+
+  std::ostringstream stream;
+  stream << "AXION_STARTUP_REF\n";
+  stream << "command=show ref " << ref_text << "\n";
+  stream << "result=" << ref_state.command_records.back().result << "\n";
+  return stream.str();
+}
+
 std::string c_string_literal(std::string_view text) {
   std::ostringstream stream;
   stream << "\"";
@@ -123,8 +153,8 @@ bool write_file(const std::string& path, const std::string& contents) {
 }  // namespace
 
 int main(int argc, char** argv) {
-  if (argc != 9) {
-    std::fputs("usage: shell_startup_snapshot <shell-text> <shell-header> <session-text> <session-header> <history-text> <history-header> <store-text> <store-header>\n", stderr);
+  if (argc != 11) {
+    std::fputs("usage: shell_startup_snapshot <shell-text> <shell-header> <session-text> <session-header> <history-text> <history-header> <store-text> <store-header> <ref-text> <ref-header>\n", stderr);
     return 2;
   }
 
@@ -162,6 +192,15 @@ int main(int argc, char** argv) {
       "#pragma once\n"
       "static const char kGeneratedStartupStore[] = " +
       c_string_literal(*store_text) + ";\n";
+  const auto ref_text = make_startup_ref_text();
+  if (!ref_text.has_value()) {
+    std::fputs("failed to build startup ref text\n", stderr);
+    return 1;
+  }
+  const std::string ref_header =
+      "#pragma once\n"
+      "static const char kGeneratedStartupRef[] = " +
+      c_string_literal(*ref_text) + ";\n";
 
   if (!write_file(argv[1], shell_text)) {
     std::fputs("failed to write startup shell text\n", stderr);
@@ -193,6 +232,14 @@ int main(int argc, char** argv) {
   }
   if (!write_file(argv[8], store_header)) {
     std::fputs("failed to write startup store header\n", stderr);
+    return 1;
+  }
+  if (!write_file(argv[9], *ref_text)) {
+    std::fputs("failed to write startup ref text\n", stderr);
+    return 1;
+  }
+  if (!write_file(argv[10], ref_header)) {
+    std::fputs("failed to write startup ref header\n", stderr);
     return 1;
   }
   return 0;

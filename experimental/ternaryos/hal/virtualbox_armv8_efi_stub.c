@@ -9,6 +9,7 @@
 #include "axion_startup_shell.h"
 #include "axion_startup_session.h"
 #include "axion_startup_store.h"
+#include "axion_startup_ref.h"
 
 #include <stdint.h>
 
@@ -187,6 +188,7 @@ static const CHAR16 kStartupShellPath[] = L"\\TERNOS\\startup-shell.txt";
 static const CHAR16 kStartupSessionPath[] = L"\\TERNOS\\startup-session.txt";
 static const CHAR16 kStartupHistoryPath[] = L"\\TERNOS\\startup-history.txt";
 static const CHAR16 kStartupStorePath[] = L"\\TERNOS\\startup-store.txt";
+static const CHAR16 kStartupRefPath[] = L"\\TERNOS\\startup-ref.txt";
 static const char kMarkerText[] = "TERNOS_ARMV8_EFI_EXECUTED\n";
 static const char kBootBanner[] = "Axion ARMv8 EFI stub\r\n";
 
@@ -501,6 +503,22 @@ static EFI_STATUS write_startup_store(EFI_HANDLE image_handle,
   return status;
 }
 
+static EFI_STATUS write_startup_ref(EFI_HANDLE image_handle,
+                                    EFI_SYSTEM_TABLE* system_table) {
+  EFI_FILE_PROTOCOL* root = 0;
+  EFI_STATUS status = open_root_volume(image_handle, system_table, &root);
+  if (status != EFI_SUCCESS) {
+    return status;
+  }
+
+  status = write_root_file(root,
+                           kStartupRefPath,
+                           kGeneratedStartupRef,
+                           ascii_length(kGeneratedStartupRef));
+  root->Close(root);
+  return status;
+}
+
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
   TernaryOsBootContext ctx;
   ctx.memory_map = kArmv8VirtualBoxMemoryMap;
@@ -537,6 +555,10 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_tab
   const EFI_STATUS startup_store = write_startup_store(image_handle, system_table);
   if (startup_store != EFI_SUCCESS) {
     return startup_store;
+  }
+  const EFI_STATUS startup_ref = write_startup_ref(image_handle, system_table);
+  if (startup_ref != EFI_SUCCESS) {
+    return startup_ref;
   }
   const EFI_STATUS report_status = write_boot_report(image_handle, system_table, &ctx, hal_result);
   if (report_status != EFI_SUCCESS) {

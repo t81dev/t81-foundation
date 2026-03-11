@@ -33,11 +33,12 @@ startup_shell_copy="$output_dir/startup-shell.txt"
 startup_session_copy="$output_dir/startup-session.txt"
 startup_history_copy="$output_dir/startup-history.txt"
 startup_store_copy="$output_dir/startup-store.txt"
+startup_ref_copy="$output_dir/startup-ref.txt"
 boot_banner_seen=0
 
 /bin/cp "$arm_image" "$probe_image"
 /bin/cp "$edk2_vars_template" "$vars_copy"
-/bin/rm -f "$serial_log" "$pid_file" "$summary_file" "$boot_report_copy" "$startup_status_copy" "$startup_shell_copy" "$startup_session_copy" "$startup_history_copy" "$startup_store_copy"
+/bin/rm -f "$serial_log" "$pid_file" "$summary_file" "$boot_report_copy" "$startup_status_copy" "$startup_shell_copy" "$startup_session_copy" "$startup_history_copy" "$startup_store_copy" "$startup_ref_copy"
 
 qemu_pid=""
 disk_dev=""
@@ -95,6 +96,7 @@ startup_shell_path="$mount_point/TERNOS/startup-shell.txt"
 startup_session_path="$mount_point/TERNOS/startup-session.txt"
 startup_history_path="$mount_point/TERNOS/startup-history.txt"
 startup_store_path="$mount_point/TERNOS/startup-store.txt"
+startup_ref_path="$mount_point/TERNOS/startup-ref.txt"
 
 startup_seen=0
 ctrl_seen=0
@@ -105,6 +107,7 @@ startup_shell_seen=0
 startup_session_seen=0
 startup_history_seen=0
 startup_store_seen=0
+startup_ref_seen=0
 
 [[ -f "$startup_marker_path" ]] && startup_seen=1
 [[ -f "$ctrl_marker_path" ]] && ctrl_seen=1
@@ -132,6 +135,10 @@ fi
 if [[ -f "$startup_store_path" ]]; then
   /bin/cp "$startup_store_path" "$startup_store_copy"
   startup_store_seen=1
+fi
+if [[ -f "$startup_ref_path" ]]; then
+  /bin/cp "$startup_ref_path" "$startup_ref_copy"
+  startup_ref_seen=1
 fi
 
 boot_path_inference="unknown"
@@ -172,6 +179,8 @@ startup_history_seen=$startup_history_seen
 startup_history_copy=$startup_history_copy
 startup_store_seen=$startup_store_seen
 startup_store_copy=$startup_store_copy
+startup_ref_seen=$startup_ref_seen
+startup_ref_copy=$startup_ref_copy
 boot_banner_seen=$boot_banner_seen
 boot_path_inference=$boot_path_inference
 EOF
@@ -179,8 +188,8 @@ EOF
 /usr/bin/hdiutil detach "$disk_dev" >/dev/null 2>&1 || true
 disk_dev=""
 
-if [[ "$efi_seen" -ne 1 || "$boot_report_seen" -ne 1 || "$startup_status_seen" -ne 1 || "$startup_shell_seen" -ne 1 || "$startup_session_seen" -ne 1 || "$startup_history_seen" -ne 1 || "$startup_store_seen" -ne 1 || "$boot_banner_seen" -ne 1 ]]; then
-  echo "QEMU ARMv8 guest probe did not observe the staged BOOTAA64.EFI marker, startup status, startup shell, startup session, startup history, startup store, boot report, and serial banner" >&2
+if [[ "$efi_seen" -ne 1 || "$boot_report_seen" -ne 1 || "$startup_status_seen" -ne 1 || "$startup_shell_seen" -ne 1 || "$startup_session_seen" -ne 1 || "$startup_history_seen" -ne 1 || "$startup_store_seen" -ne 1 || "$startup_ref_seen" -ne 1 || "$boot_banner_seen" -ne 1 ]]; then
+  echo "QEMU ARMv8 guest probe did not observe the staged BOOTAA64.EFI marker, startup status, startup shell, startup session, startup history, startup store, startup ref, boot report, and serial banner" >&2
   /bin/cat "$summary_file" >&2
   exit 1
 fi
@@ -296,6 +305,32 @@ if ! /usr/bin/grep -q '^result=store refs 1' "$startup_store_copy"; then
   echo "QEMU ARMv8 guest probe found startup store, but store refs summary was malformed" >&2
   /bin/cat "$summary_file" >&2
   /bin/cat "$startup_store_copy" >&2
+  exit 1
+fi
+
+for expected in \
+  'AXION_STARTUP_REF' \
+  'result=show ref '
+do
+  if ! /usr/bin/grep -F -q "$expected" "$startup_ref_copy"; then
+    echo "QEMU ARMv8 guest probe found startup ref, but expected field was missing: $expected" >&2
+    /bin/cat "$summary_file" >&2
+    /bin/cat "$startup_ref_copy" >&2
+    exit 1
+  fi
+done
+
+if ! /usr/bin/grep -q '^command=show ref ' "$startup_ref_copy"; then
+  echo "QEMU ARMv8 guest probe found startup ref, but command line was malformed" >&2
+  /bin/cat "$summary_file" >&2
+  /bin/cat "$startup_ref_copy" >&2
+  exit 1
+fi
+
+if ! /usr/bin/grep -q '^phase5 durable transcript$' "$startup_ref_copy"; then
+  echo "QEMU ARMv8 guest probe found startup ref, but durable payload text was missing" >&2
+  /bin/cat "$summary_file" >&2
+  /bin/cat "$startup_ref_copy" >&2
   exit 1
 fi
 
