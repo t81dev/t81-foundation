@@ -277,6 +277,15 @@ The twenty-third pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves repeated parked idle cycles preserve one
   deferral record while parked-cycle duration continues to advance
 
+The twenty-fourth pager-groundwork slice is now also complete:
+
+- runtime and fault diagnostics now expose live parked-ready backlog count and
+  a retained high-water mark distinct from ready-behind-active backlog state
+- parked-worker summaries can now distinguish "worker idle with blocked head"
+  from "worker idle with ready work trapped behind a parked head"
+- HAL/kernel coverage now proves parked-ready backlog accounting advances while
+  the worker stays parked and clears once the blocked head drains
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable

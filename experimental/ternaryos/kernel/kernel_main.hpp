@@ -182,6 +182,7 @@ struct KernelRuntimeState {
   std::optional<AddressSpaceId> last_ready_bypass_deferred_ready_address_space_id{};
   std::optional<uint64_t> last_ready_bypass_deferred_cycle{};
   uint64_t parked_cycles{0};
+  std::size_t parked_ready_high_watermark{0};
   std::optional<AddressSpaceId> parked_blocked_address_space_id{};
   std::optional<AddressSpaceId> last_parked_blocked_address_space_id{};
   std::optional<AddressSpaceId> last_parked_ready_address_space_id{};
@@ -467,6 +468,8 @@ struct KernelRuntimeStatusView {
   std::size_t pager_worker_inbox_high_watermark{0};
   std::size_t pager_worker_ready_backlog_count{0};
   std::size_t pager_worker_ready_backlog_high_watermark{0};
+  std::size_t pager_worker_parked_ready_count{0};
+  std::size_t pager_worker_parked_ready_high_watermark{0};
   bool pager_worker_busy{false};
   std::optional<AddressSpaceId> pager_worker_active_address_space_id{};
   std::optional<uint64_t> pager_worker_active_handoff_sequence{};
@@ -684,6 +687,8 @@ struct KernelFaultSummaryView {
   std::size_t pager_worker_inbox_high_watermark{0};
   std::size_t pager_worker_ready_backlog_count{0};
   std::size_t pager_worker_ready_backlog_high_watermark{0};
+  std::size_t pager_worker_parked_ready_count{0};
+  std::size_t pager_worker_parked_ready_high_watermark{0};
   bool pager_worker_busy{false};
   std::optional<AddressSpaceId> pager_worker_active_address_space_id{};
   std::optional<uint64_t> pager_worker_active_handoff_sequence{};

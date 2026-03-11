@@ -366,7 +366,9 @@ cap fires, the worker now remains parked until the blocked head becomes ready
 instead of activating the same unresolved head into another deterministic stall;
 parked cycles are now retained explicitly alongside the latest blocked/ready
 pair observed during that parked state, while deferral counts track parked
-episodes rather than every idle parked loop tick.
+episodes rather than every idle parked loop tick. Live parked-ready backlog
+count and its retained high-water mark are now tracked separately from
+ready-behind-active backlog state.
 The next kernel slice is to keep that pager surface private while expanding
 backlog/load scheduling behavior before any public pager ABI or syscall design.
 

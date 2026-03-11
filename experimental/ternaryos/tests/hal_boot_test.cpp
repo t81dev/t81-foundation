@@ -1759,6 +1759,12 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
     check(runtime_after_capped_activation.runtime
               ->pager_worker_ready_backlog_count == 0,
           "runtime status reports no ready-behind-active backlog while the worker remains parked");
+    check(runtime_after_capped_activation.runtime
+              ->pager_worker_parked_ready_count == 1,
+          "runtime status reports one ready item behind the parked blocked head");
+    check(runtime_after_capped_activation.runtime
+              ->pager_worker_parked_ready_high_watermark == 1,
+          "runtime status raises parked-ready backlog watermark on first parked cycle");
     check(runtime_after_capped_activation.runtime->pager_resolutions == 1,
           "runtime status does not resolve additional work while the blocked head remains parked");
     check(runtime_after_capped_activation.runtime->pager_worker_activations == 1,
@@ -1825,6 +1831,10 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "fault summary counts one ready-bypass deferral after the cap parks the worker");
     check(fault_after_capped_deferral.fault_summary->pager_worker_parked_cycles == 1,
           "fault summary counts one parked worker cycle after the cap parks the worker");
+    check(fault_after_capped_deferral.fault_summary->pager_worker_parked_ready_count == 1,
+          "fault summary reports one ready item behind the parked blocked head");
+    check(fault_after_capped_deferral.fault_summary->pager_worker_parked_ready_high_watermark == 1,
+          "fault summary raises parked-ready backlog watermark on first parked cycle");
     check(fault_after_capped_deferral.fault_summary->pager_worker_stall_cycles == 0,
           "fault summary does not count a stall while the worker stays parked");
     check(fault_after_capped_deferral.fault_summary->pager_worker_backlog_blocked_cycles == 0,
@@ -1847,6 +1857,10 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "runtime status keeps one ready-bypass deferral for the same parked episode");
     check(runtime_after_second_park.runtime->pager_worker_parked_cycles == 2,
           "runtime status counts a second parked worker cycle");
+    check(runtime_after_second_park.runtime->pager_worker_parked_ready_count == 1,
+          "runtime status keeps one ready item behind the blocked head on repeated parked cycles");
+    check(runtime_after_second_park.runtime->pager_worker_parked_ready_high_watermark == 1,
+          "runtime status retains parked-ready backlog watermark across repeated parked cycles");
     check(runtime_after_second_park.runtime->pager_worker_last_parked_blocked_address_space_id ==
               first_address_space_id,
           "runtime status preserves the blocked head across repeated parked cycles");
@@ -1893,6 +1907,10 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "fault summary retains one ready-bypass deferral for the parked capped episode");
     check(fault_after_final_resolution.fault_summary->pager_worker_parked_cycles == 2,
           "fault summary retains two parked worker cycles under the parked capped policy");
+    check(fault_after_final_resolution.fault_summary->pager_worker_parked_ready_count == 0,
+          "fault summary clears live parked-ready backlog after the parked head drains");
+    check(fault_after_final_resolution.fault_summary->pager_worker_parked_ready_high_watermark == 1,
+          "fault summary retains parked-ready backlog watermark after drain");
     check(fault_after_final_resolution.fault_summary
               ->pager_worker_last_ready_bypass_blocked_address_space_id ==
               first_address_space_id,

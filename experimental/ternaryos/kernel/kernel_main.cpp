@@ -338,7 +338,31 @@ std::size_t count_ready_pager_backlog_address_spaces(
             address_space->last_pager_fault->tva,
             address_space->last_pager_fault->access_mode);
         return translation.fault == mmu::MmuFault::None;
-      }));
+  }));
+}
+
+std::size_t count_parked_ready_pager_backlog_address_spaces(
+    const KernelRuntimeState& state) {
+  if (state.pager_worker.active_work.has_value() ||
+      !state.pager_worker.parked_blocked_address_space_id.has_value()) {
+    return 0;
+  }
+  std::size_t ready_count = 0;
+  for (const auto& work_item : state.pager_worker.inbox) {
+    const auto* address_space =
+        state.find_address_space(work_item.handoff.address_space_id);
+    if (!address_space || !address_space->last_pager_fault.has_value()) {
+      continue;
+    }
+    const auto translation = mmu::mmu_translate_checked(
+        state.page_table,
+        address_space->last_pager_fault->tva,
+        address_space->last_pager_fault->access_mode);
+    if (translation.fault == mmu::MmuFault::None) {
+      ++ready_count;
+    }
+  }
+  return ready_count;
 }
 
 bool is_pager_work_item_ready(const KernelRuntimeState& state,
@@ -965,6 +989,8 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
   const auto latest_pager_fault = latest_pager_fault_view(state);
   const auto ready_pager_backlog_count =
       count_ready_pager_backlog_address_spaces(state);
+  const auto parked_ready_pager_backlog_count =
+      count_parked_ready_pager_backlog_address_spaces(state);
   return KernelFaultSummaryView{
       .recorded_faults = state.fault_count(),
       .pending_faults = state.pending_fault_count(),
@@ -1001,6 +1027,9 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .pager_worker_ready_backlog_count = ready_pager_backlog_count,
       .pager_worker_ready_backlog_high_watermark =
           state.pager_worker.ready_backlog_high_watermark,
+      .pager_worker_parked_ready_count = parked_ready_pager_backlog_count,
+      .pager_worker_parked_ready_high_watermark =
+          state.pager_worker.parked_ready_high_watermark,
       .pager_worker_busy = state.pager_worker.active_work.has_value(),
       .pager_worker_active_address_space_id =
           state.pager_worker.active_work.has_value()
@@ -1544,6 +1573,9 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
                   ++ready_count;
                 }
               }
+              state.pager_worker.parked_ready_high_watermark =
+                  std::max(state.pager_worker.parked_ready_high_watermark,
+                           ready_count);
               state.pager_worker.last_parked_ready_count = ready_count;
               activate_selected_work = false;
             }
@@ -1700,6 +1732,8 @@ KernelServiceResult axion_kernel_service_request(
       const auto latest_service_transition = latest_service_transition_view(state);
       const auto ready_pager_backlog_count =
           count_ready_pager_backlog_address_spaces(state);
+      const auto parked_ready_pager_backlog_count =
+          count_parked_ready_pager_backlog_address_spaces(state);
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceRequestRejection::None;
       result.runtime = KernelRuntimeStatusView{
@@ -1718,6 +1752,9 @@ KernelServiceResult axion_kernel_service_request(
           .pager_worker_ready_backlog_count = ready_pager_backlog_count,
           .pager_worker_ready_backlog_high_watermark =
               state.pager_worker.ready_backlog_high_watermark,
+          .pager_worker_parked_ready_count = parked_ready_pager_backlog_count,
+          .pager_worker_parked_ready_high_watermark =
+              state.pager_worker.parked_ready_high_watermark,
           .pager_worker_busy = state.pager_worker.active_work.has_value(),
           .pager_worker_active_address_space_id =
               state.pager_worker.active_work.has_value()
