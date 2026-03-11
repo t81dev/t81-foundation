@@ -179,6 +179,7 @@ static const EFI_GUID kEfiSimpleFileSystemProtocolGuid = {
 static const CHAR16 kMarkerPath[] = L"\\TERNOS\\efi-ran.txt";
 static const CHAR16 kReportPath[] = L"\\TERNOS\\boot-report.txt";
 static const CHAR16 kStartupStatusPath[] = L"\\TERNOS\\startup-status.txt";
+static const CHAR16 kStartupShellPath[] = L"\\TERNOS\\startup-shell.txt";
 static const char kMarkerText[] = "TERNOS_ARMV8_EFI_EXECUTED\n";
 static const char kBootBanner[] = "Axion ARMv8 EFI stub\r\n";
 
@@ -429,6 +430,29 @@ static EFI_STATUS write_startup_status(EFI_HANDLE image_handle,
   return status;
 }
 
+static EFI_STATUS write_startup_shell(EFI_HANDLE image_handle,
+                                      EFI_SYSTEM_TABLE* system_table) {
+  char shell_report[1024];
+  unsigned long cursor = 0;
+  EFI_FILE_PROTOCOL* root = 0;
+  EFI_STATUS status = open_root_volume(image_handle, system_table, &root);
+  if (status != EFI_SUCCESS) {
+    return status;
+  }
+
+  shell_report[0] = 0;
+  append_cstr(shell_report, sizeof(shell_report), &cursor, "AXION_STARTUP_SHELL\n");
+  append_cstr(shell_report, sizeof(shell_report), &cursor, "prompt=axion> \n");
+  append_cstr(shell_report, sizeof(shell_report), &cursor, "mode=typed-builtins\n");
+  append_cstr(shell_report, sizeof(shell_report), &cursor, "commands=help,profile,session status,show session,session refs,store put <text>,store ls,store get <ref>,show ref <canonref>,store rm <ref>,history,history show durable,clear\n");
+  append_cstr(shell_report, sizeof(shell_report), &cursor, "history_anchor=durable\n");
+  append_cstr(shell_report, sizeof(shell_report), &cursor, "session_view=local+durable\n");
+
+  status = write_root_file(root, kStartupShellPath, shell_report, ascii_length(shell_report));
+  root->Close(root);
+  return status;
+}
+
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_table) {
   TernaryOsBootContext ctx;
   ctx.memory_map = kArmv8VirtualBoxMemoryMap;
@@ -449,6 +473,10 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* system_tab
   const EFI_STATUS startup_status = write_startup_status(image_handle, system_table, &ctx);
   if (startup_status != EFI_SUCCESS) {
     return startup_status;
+  }
+  const EFI_STATUS startup_shell = write_startup_shell(image_handle, system_table);
+  if (startup_shell != EFI_SUCCESS) {
+    return startup_shell;
   }
   const EFI_STATUS report_status = write_boot_report(image_handle, system_table, &ctx, hal_result);
   if (report_status != EFI_SUCCESS) {

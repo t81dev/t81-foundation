@@ -54,6 +54,9 @@ ARM diagnostic result:
 - local QEMU guest probes now also recover `startup-status.txt`, exposing
   guest-visible Axion state and confirming the current staged bindings for
   shell, storage, display, and network
+- local QEMU guest probes now also recover `startup-shell.txt`, exposing the
+  staged Axion shell prompt, durable-history stance, and current typed-builtin
+  command surface
 - local VirtualBox ARM remains non-observable for EFI execution and is now only
   a secondary diagnostic lane
 - conclusion: the remaining blind spot is the local VirtualBox ARM path, not

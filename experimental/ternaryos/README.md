@@ -294,6 +294,7 @@ Outputs:
 - `build/ternaryos/qemu_armv8_guest/qemu-armv8-guest-probe.img`
 - `build/ternaryos/qemu_armv8_guest/boot-report.txt`
 - `build/ternaryos/qemu_armv8_guest/startup-status.txt`
+- `build/ternaryos/qemu_armv8_guest/startup-shell.txt`
 
 Current status:
 
@@ -315,6 +316,12 @@ Current status:
   - `storage_binding=virtualbox-ahci`
   - `display_binding=virtualbox-vmsvga`
   - `network_binding=virtualbox-e1000`
+- the current `startup-shell.txt` exposes the staged Axion shell surface under QEMU:
+  - `prompt=axion>`
+  - `mode=typed-builtins`
+  - `history_anchor=durable`
+  - `session_view=local+durable`
+  - command surface including `show session`, `show ref <canonref>`, and `history show durable`
 
 For an external reviewer, the current evidence split is:
 
