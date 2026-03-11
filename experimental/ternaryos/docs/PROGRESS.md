@@ -126,7 +126,8 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - Round-robin is deterministic: `rr_index_` advances through `slots_` in insertion order; 81-slot cap mirrors Hanoi scheduler.
 - `CanonRef` handles (not raw pointers) cross IPC boundaries, preserving CanonFS audit trail invariants.
 - OQ-5 (Axion determinism under pre-emption) is still open — governance audit trail not yet extended for async interleaving.
-- RFC-00B3 now defines the active integration path: the first kernel-owned runtime entry exists, and the next step is to consume MMU faults through a kernel-facing fault/reporting path instead of leaving the runtime bootstrap as a thin handoff.
+- RFC-00B3 now defines the active integration path: the first kernel-owned runtime entry exists, and the kernel now consumes checked MMU translation through a kernel-facing fault/reporting path instead of leaving the runtime bootstrap as a thin handoff.
+- The next kernel step is to define the first persistent kernel runtime state object so scheduler, IPC, and device arbitration can converge on one owned state boundary.
 
 **Phase 3 test total: 193 / 193**
 
@@ -204,7 +205,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 90 | 1 |
+| `t81_ternaryos_hal_boot_test` | 104 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -212,7 +213,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **1037** | |
+| **Total** | **1051** | |
 
 Run all TernOS tests:
 

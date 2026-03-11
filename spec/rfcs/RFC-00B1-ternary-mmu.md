@@ -152,13 +152,13 @@ std::string page_table_trace(const PageTable& pt, uint64_t tva);
 2. Use the radix walk as the canonical translation structure.
 3. Preserve compatibility through the existing MMU API.
 4. Extend translation with checked access modes and fault reporting.
-5. Feed this model into the later kernel fault/reporting path.
+5. Use this model in the first kernel-owned fault/reporting path, then extend it into fuller runtime and process integration.
 
 ## 7. Open Questions
 
 - Should a future wider TVA design replace the current 30-trit "narrow virtual" space?
 - Should permission state eventually grow beyond simple read/write/execute bits?
-- How much of the diagnostics surface should remain API-stable once the kernel fault path exists?
+- How much of the diagnostics surface should remain API-stable now that the first kernel fault path exists?
 
 ## 8. Acceptance Criteria
 

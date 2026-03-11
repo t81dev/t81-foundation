@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../hal/hal.hpp"
+#include "../mmu/page_table.hpp"
 
 #include <cstdint>
 #include <optional>
@@ -15,8 +16,26 @@ struct KernelRuntimeState {
   bool        has_writable_memory{false};
 };
 
+struct KernelFaultRecord {
+  std::string platform_id;
+  uint64_t tva{0};
+  mmu::MmuAccessMode access_mode{mmu::MmuAccessMode::Read};
+  mmu::MmuFault fault{mmu::MmuFault::None};
+};
+
+struct KernelAccessReport {
+  std::optional<uint64_t> phys_addr{};
+  std::optional<KernelFaultRecord> fault{};
+};
+
 std::optional<KernelRuntimeState> axion_kernel_bootstrap(
     const hal::BootContext& ctx) noexcept;
+
+KernelAccessReport axion_kernel_check_access(
+    const KernelRuntimeState& state,
+    const mmu::PageTable& page_table,
+    uint64_t tva,
+    mmu::MmuAccessMode mode) noexcept;
 
 int axion_kernel_main(const hal::BootContext& ctx) noexcept;
 

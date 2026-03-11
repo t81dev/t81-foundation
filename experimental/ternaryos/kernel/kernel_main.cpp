@@ -24,6 +24,27 @@ std::optional<KernelRuntimeState> axion_kernel_bootstrap(
   return state;
 }
 
+KernelAccessReport axion_kernel_check_access(
+    const KernelRuntimeState& state,
+    const mmu::PageTable& page_table,
+    uint64_t tva,
+    mmu::MmuAccessMode mode) noexcept {
+  const auto result = mmu::mmu_translate_checked(page_table, tva, mode);
+  if (result.fault == mmu::MmuFault::None) {
+    return {.phys_addr = result.phys_addr, .fault = std::nullopt};
+  }
+
+  return {
+      .phys_addr = std::nullopt,
+      .fault = KernelFaultRecord{
+          .platform_id = state.platform_id,
+          .tva = tva,
+          .access_mode = mode,
+          .fault = result.fault,
+      },
+  };
+}
+
 int axion_kernel_main(const hal::BootContext& ctx) noexcept {
   return axion_kernel_bootstrap(ctx).has_value() ? 0 : 1;
 }

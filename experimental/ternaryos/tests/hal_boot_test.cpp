@@ -17,6 +17,7 @@
 #include "../hal/virtualbox_platform.hpp"
 #include "../kernel/kernel_main.hpp"
 #include "../dev/hosted_block_dev.hpp"
+#include "../mmu/page_table.hpp"
 
 #include <atomic>
 #include <cassert>
@@ -61,6 +62,11 @@ static BootContext make_valid_ctx(bool ethics = false) {
   ctx.ethics_boot_required = ethics;
   ctx.platform_id          = "test";
   return ctx;
+}
+
+static t81::ternaryos::mmu::TernaryPageAllocator make_kernel_alloc(
+    const BootContext& ctx) {
+  return t81::ternaryos::mmu::TernaryPageAllocator(ctx.memory_map);
 }
 
 // ─── Test cases ──────────────────────────────────────────────────────────────
@@ -424,6 +430,63 @@ static void test_kernel_runtime_bootstrap() {
   check(axion_kernel_main(ctx) == 0, "axion_kernel_main returns 0 for valid context");
 }
 
+static void test_kernel_fault_reporting() {
+  std::printf("\n[AC-18] Axion kernel fault reporting consumes MMU faults\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for fault-reporting setup");
+  if (!state) {
+    return;
+  }
+
+  auto alloc = make_kernel_alloc(ctx);
+  mmu::PageTable pt;
+
+  const auto mapped_tva = mmu::tva_from_vpn_offset(2, 7);
+  check(mmu::mmu_map(pt, alloc, mapped_tva, /*owner_pid=*/1,
+                     {.readable = true, .writable = false, .executable = false}),
+        "readonly mapping succeeds for kernel fault reporting");
+
+  const auto read_ok =
+      axion_kernel_check_access(*state, pt, mapped_tva, mmu::MmuAccessMode::Read);
+  check(read_ok.phys_addr.has_value(), "kernel access report returns physical address for valid read");
+  check(!read_ok.fault.has_value(), "kernel access report omits fault on valid read");
+
+  const auto write_fault =
+      axion_kernel_check_access(*state, pt, mapped_tva, mmu::MmuAccessMode::Write);
+  check(!write_fault.phys_addr.has_value(), "kernel access report suppresses physical address on denied write");
+  check(write_fault.fault.has_value(), "kernel access report emits a fault record on denied write");
+  if (write_fault.fault) {
+    check(write_fault.fault->platform_id == "test", "fault record preserves platform id");
+    check(write_fault.fault->tva == mapped_tva, "fault record preserves TVA");
+    check(write_fault.fault->access_mode == mmu::MmuAccessMode::Write,
+          "fault record preserves access mode");
+    check(write_fault.fault->fault == mmu::MmuFault::PermissionDenied,
+          "fault record classifies permission denial");
+  }
+
+  const auto unmapped_tva = mmu::tva_from_vpn_offset(9, 0);
+  const auto unmapped_fault =
+      axion_kernel_check_access(*state, pt, unmapped_tva, mmu::MmuAccessMode::Read);
+  check(unmapped_fault.fault.has_value(), "kernel access report emits fault for unmapped access");
+  if (unmapped_fault.fault) {
+    check(unmapped_fault.fault->fault == mmu::MmuFault::Unmapped,
+          "fault record classifies unmapped access");
+  }
+
+  const auto invalid_fault =
+      axion_kernel_check_access(*state, pt, mmu::kMaxTva + 1,
+                                mmu::MmuAccessMode::Execute);
+  check(invalid_fault.fault.has_value(), "kernel access report emits fault for invalid TVA");
+  if (invalid_fault.fault) {
+    check(invalid_fault.fault->fault == mmu::MmuFault::InvalidTva,
+          "fault record classifies invalid TVA");
+  }
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -448,6 +511,7 @@ int main() {
   test_virtualbox_network_binding();
   test_virtualbox_display_binding();
   test_kernel_runtime_bootstrap();
+  test_kernel_fault_reporting();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return (g_fail == 0) ? 0 : 1;

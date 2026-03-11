@@ -280,9 +280,9 @@ This RFC does not retarget the project away from that profile.
 ## 6. Implementation Plan
 
 1. extend the new kernel-owned entry routine beyond bootstrap summary state
-2. add a kernel-facing page-fault/reporting path
-3. define the first persistent kernel runtime state object
-4. connect scheduler and IPC initialization to that state
+2. define the first persistent kernel runtime state object
+3. connect scheduler and IPC initialization to that state
+4. attach minimal device arbitration state to the same boundary
 5. only then expand syscall/userland semantics further
 
 ## 7. Open Questions
@@ -296,8 +296,8 @@ This RFC does not retarget the project away from that profile.
 
 - [x] `hal_main` hands off to a kernel-owned entry routine instead of ending at a stub.
 - [ ] Kernel entry initializes the allocator, MMU, scheduler, and IPC substrate from `BootContext`.
-- [ ] Checked MMU translation is consumed by a kernel-facing fault/reporting path.
-- [ ] Fault records distinguish `InvalidTva`, `Unmapped`, and `PermissionDenied`.
+- [x] Checked MMU translation is consumed by a kernel-facing fault/reporting path.
+- [x] Fault records distinguish `InvalidTva`, `Unmapped`, and `PermissionDenied`.
 - [ ] The scheduler can continue running deterministic thread dispatch after kernel entry initialization.
 - [ ] CanonRef-safe IPC remains functional across the kernel-integrated runtime path.
 - [ ] Device arbitration state is initialized for the first supported storage/display/network profile.
