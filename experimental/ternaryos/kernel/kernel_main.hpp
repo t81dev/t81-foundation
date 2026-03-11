@@ -116,6 +116,11 @@ struct KernelRuntimeState {
   struct AddressSpaceState {
     AddressSpaceId id{0};
     ProcessGroupId process_group_id{0};
+    bool pager_needed{false};
+    std::size_t pending_pager_fault_count{0};
+    uint64_t pager_faults{0};
+    std::optional<KernelFaultRecord> last_pager_fault{};
+    std::optional<uint64_t> last_pager_fault_sequence{};
   };
 
   struct ServiceState {
@@ -151,6 +156,8 @@ struct KernelRuntimeState {
     uint64_t process_group_recoveries{0};
     uint64_t supervisor_fault_notifications{0};
     uint64_t supervisor_acknowledgements{0};
+    uint64_t pager_eligible_faults{0};
+    uint64_t policy_faults{0};
     uint64_t audit_events_recorded{0};
   };
 
@@ -368,10 +375,13 @@ struct KernelRuntimeStatusView {
   uint64_t total_ternary_pages{0};
   std::size_t address_space_count{0};
   std::size_t mapped_pages{0};
+  std::size_t pager_needed_address_space_count{0};
   uint64_t loop_iterations{0};
   uint64_t scheduler_ticks{0};
   uint64_t ipc_messages_sent{0};
   uint64_t ipc_messages_received{0};
+  uint64_t pager_eligible_faults{0};
+  uint64_t policy_faults{0};
   std::size_t managed_service_count{0};
   std::size_t blocked_service_count{0};
   std::size_t suspended_service_count{0};
@@ -386,6 +396,10 @@ struct KernelProcessGroupStatusView {
   ProcessGroupId id{0};
   std::optional<AddressSpaceId> address_space_id{};
   std::size_t owned_page_count{0};
+  bool pager_needed{false};
+  std::size_t pending_pager_fault_count{0};
+  uint64_t pager_faults{0};
+  std::optional<KernelFaultRecord> last_pager_fault{};
   std::size_t member_count{0};
   std::size_t quarantined_thread_count{0};
   bool faulted{false};
@@ -404,6 +418,8 @@ struct KernelSupervisorStatusView {
   std::size_t managed_group_count{0};
   std::size_t managed_address_space_count{0};
   std::size_t managed_mapped_page_count{0};
+  std::size_t pager_needed_address_space_count{0};
+  std::size_t pending_pager_fault_count{0};
   std::size_t managed_faulted_group_count{0};
   std::size_t managed_service_count{0};
   std::size_t blocked_service_count{0};
@@ -424,6 +440,8 @@ struct KernelSupervisorRecoveryStatusView {
   std::size_t pending_group_count{0};
   std::size_t managed_address_space_count{0};
   std::size_t managed_mapped_page_count{0};
+  std::size_t pager_needed_address_space_count{0};
+  std::size_t pending_pager_fault_count{0};
   std::size_t managed_service_count{0};
   std::size_t blocked_service_count{0};
   std::size_t suspended_service_count{0};
@@ -446,6 +464,10 @@ struct KernelServiceStatusView {
   ProcessGroupId process_group_id{0};
   std::optional<AddressSpaceId> address_space_id{};
   std::size_t owned_page_count{0};
+  bool pager_needed{false};
+  std::size_t pending_pager_fault_count{0};
+  uint64_t pager_faults{0};
+  std::optional<KernelFaultRecord> last_pager_fault{};
   std::optional<sched::Tid> primary_tid{};
   bool blocked{false};
   bool suspended{false};
@@ -467,6 +489,10 @@ struct KernelSupervisorServiceEntryView {
   ProcessGroupId process_group_id{0};
   std::optional<AddressSpaceId> address_space_id{};
   std::size_t owned_page_count{0};
+  bool pager_needed{false};
+  std::size_t pending_pager_fault_count{0};
+  uint64_t pager_faults{0};
+  std::optional<KernelFaultRecord> last_pager_fault{};
   bool blocked{false};
   bool suspended{false};
   bool unhealthy{false};
@@ -501,8 +527,13 @@ struct KernelFaultSummaryView {
   std::size_t routed_thread_faults{0};
   std::size_t quarantined_threads{0};
   std::size_t audit_events{0};
+  uint64_t pager_eligible_faults{0};
+  uint64_t policy_faults{0};
+  std::size_t pager_needed_address_spaces{0};
   uint64_t service_lifecycle_transitions{0};
   std::optional<KernelFaultRecord> last_delivered_fault{};
+  std::optional<AddressSpaceId> last_pager_address_space_id{};
+  std::optional<KernelFaultRecord> last_pager_fault{};
   std::optional<KernelAuditRecord> last_audit_event{};
   std::optional<ServiceId> last_service_transition_id{};
   std::optional<KernelAuditEventKind> last_service_transition_kind{};

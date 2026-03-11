@@ -70,10 +70,13 @@ lifecycle kind and sequence.
 Process groups now also bind to explicit kernel-owned address spaces, and the
 stable runtime/process-group/supervisor/service diagnostics expose
 address-space ownership plus mapped-page counts.
-That lifecycle convergence slice is now complete for the current contract,
-and the first process-memory ownership slice is in place. The next steps are
-to keep that lifecycle contract stable while moving the kernel toward
-internal pager-owned fault state and later pager integration.
+Delivered `Unmapped` faults now also mark the owning address space as
+pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit policy
+faults. That lifecycle convergence slice is now complete for the current
+contract, the first process-memory ownership slice is in place, and the first
+pager-groundwork slice is in place as well. The next steps are to keep that
+lifecycle contract stable while moving the kernel toward internal
+fault-to-pager handoff semantics and later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 

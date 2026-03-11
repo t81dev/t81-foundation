@@ -123,7 +123,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1789/1789 assertions, 8/8 tests pass
+# Expected: 1839/1839 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -284,11 +284,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `877/877`
+- `t81_ternaryos_hal_boot_test` is `927/927`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1789`
+- total TernOS assertions are `1839`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state
@@ -323,6 +323,11 @@ Local hosted proof as of the current branch:
 - process groups now also bind to explicit kernel-owned address spaces
 - runtime, process-group, supervisor, and service diagnostics now also expose
   address-space ownership plus mapped-page counts
+- delivered `Unmapped` faults now also mark the owning address space as
+  pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
+  policy faults
+- runtime, process-group, service, supervisor, and fault diagnostics now also
+  expose pager-needed address-space state without widening the public contract
 - the first narrow service-facing action now exists through that same boundary:
   supervisor fault-group acknowledgement
 - supervisor-facing recovery/report flows are now exposed through that same boundary:
@@ -339,8 +344,8 @@ Local hosted proof as of the current branch:
   service request routing, stable service detail, richer supervisor inventory,
   and deterministic lifecycle behavior now exist above the stable
   supervisor/process-group contract. The next step is to keep that contract
-  stable and continue downward into internal pager-owned fault state and
-  fault-to-pager handoff semantics, tracked explicitly in:
+  stable and continue downward into internal fault-to-pager handoff semantics
+  on top of the new pager-needed address-space state, tracked explicitly in:
   - `docs/kernel_execution_plan.md`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence

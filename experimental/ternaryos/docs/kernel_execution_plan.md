@@ -69,6 +69,16 @@ The first process-memory ownership slice is also complete:
 - page-table ownership now attaches to a stable runtime object before pager
   work begins
 
+The first pager-groundwork slice is now also complete:
+
+- delivered `Unmapped` faults now mark the owning address space as
+  pager-needed
+- delivered `PermissionDenied` and `InvalidTva` faults remain explicit policy
+  failures instead of being conflated with pager work
+- runtime, process-group, service, supervisor, and fault diagnostics now expose
+  pager-needed address-space state and fault counts without widening the
+  service contract
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
@@ -76,14 +86,15 @@ The first process-memory ownership slice is also complete:
 Do not widen the existing service surface further unless a concrete runtime
 need appears.
 
-### 2. Add pager-owned fault state below the service layer
+### 2. Keep pager state internal while adding handoff semantics
 
 The next real kernel work is now:
 
 - pager integration
 - the fault-to-pager handoff needed before any syscall or capability design
-- explicit runtime state for pager-needed address spaces or groups
-- stable diagnostics proving when faults remain policy failures vs pager work
+- explicit transition handling for pager-needed address spaces or groups
+- stable diagnostics proving when pager-needed state is still pending versus
+  resolved
 
 ### 3. Keep the pager surface internal first
 
@@ -106,7 +117,7 @@ Do not add:
 
 ## Acceptance Criteria
 
-The pager-groundwork slice is complete when:
+The current pager-groundwork slice is complete when:
 
 1. explicit kernel-owned runtime state exists for address-space pager handling
 2. HAL/kernel tests prove deterministic pager-needed diagnostics without
@@ -116,10 +127,14 @@ The pager-groundwork slice is complete when:
 4. the public service contract remains narrower than a syscall, capability, or
    pager ABI surface
 
+That acceptance bar is now met. The next slice should preserve that state while
+introducing the internal handoff or drain semantics needed before any external
+pager interface exists.
+
 ## Recommended Order
 
 1. preserve the current service-runtime contract without widening it casually
-2. add pager-needed runtime state to address spaces and/or process groups
-3. classify MMU faults into pager-eligible vs unrecoverable kernel policy
-4. expose only stable diagnostics for that state first
+2. preserve the new pager-needed runtime state on address spaces
+3. add internal pager handoff or drain semantics without widening the contract
+4. expose only stable diagnostics for that handoff state first
 5. only then evaluate pager-facing ABI shape or syscall/capability design

@@ -317,9 +317,14 @@ groups now bind to explicit kernel-owned address-space objects, and the stable
 diagnostic views expose address-space ownership plus mapped-page counts. That
 gives pager work a concrete runtime object to target without widening the
 public service contract.
-The next kernel slice is to introduce internal pager-owned fault state on top
-of those address-space objects, keeping the pager surface private until the
-fault-to-pager handoff is stable and deterministic.
+The first pager-groundwork slice is now in place too: delivered `Unmapped`
+faults mark the owning address space as pager-needed, while
+`PermissionDenied` and `InvalidTva` faults remain explicit policy failures.
+That pager-needed state is visible through the existing runtime,
+process-group, service, supervisor, and fault diagnostics without widening the
+contract. The next kernel slice is to keep that pager surface private while
+adding the internal fault-to-pager handoff semantics needed before any public
+pager ABI or syscall design.
 
 The working execution note for this slice is:
 

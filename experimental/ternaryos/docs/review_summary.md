@@ -34,9 +34,9 @@ The next kernel slice is now tracked explicitly in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1789`
+- total assertions: `1839`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `877/877`
+- `t81_ternaryos_hal_boot_test`: `927/927`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -78,12 +78,18 @@ Kernel integration proof now also includes:
 - process groups now also bind to explicit kernel-owned address spaces
 - runtime, process-group, supervisor, and service diagnostics now also expose
   address-space ownership plus mapped-page counts
+- delivered `Unmapped` faults now also mark the owning address space as
+  pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
+  policy failures
+- runtime, process-group, service, supervisor, and fault diagnostics now also
+  expose pager-needed address-space state and fault counts
 - the supervisor/service-runtime convergence slice is now complete for the
   current contract surface
 - the first process-memory ownership slice is now complete as well
+- the first pager-groundwork slice is now complete as well
 - the next kernel slice is to keep this service-runtime layer stable and move
-  into internal pager-owned fault state and fault-to-pager handoff work, not a
-  broad ABI or syscall surface
+  into internal fault-to-pager handoff work, not a broad ABI or syscall
+  surface
 
 Phase 4 storage proof now covers:
 

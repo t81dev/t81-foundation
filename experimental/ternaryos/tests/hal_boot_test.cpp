@@ -734,6 +734,175 @@ static void test_kernel_loop_fault_delivery() {
   check(!state->last_delivered_fault.has_value(), "idle loop step clears delivered-fault slot");
 }
 
+static void test_kernel_pager_fault_state() {
+  std::printf("\n[AC-22b] Axion kernel classifies pager-needed versus policy faults\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for pager fault-state test");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext pager_thread;
+  pager_thread.label = "pager-fault";
+  pager_thread.registers[0] = 211;
+  t81::ternaryos::sched::TiscContext policy_thread;
+  policy_thread.label = "policy-fault";
+  policy_thread.registers[0] = 212;
+
+  auto pager_tid = axion_kernel_spawn_thread(*state, pager_thread);
+  auto policy_tid = axion_kernel_spawn_thread(*state, policy_thread);
+  check(pager_tid.has_value(), "pager-fault thread spawns successfully");
+  check(policy_tid.has_value(), "policy-fault thread spawns successfully");
+  if (!pager_tid || !policy_tid) {
+    return;
+  }
+
+  const auto* pager_runtime = state->find_thread_runtime(*pager_tid);
+  const auto* policy_runtime = state->find_thread_runtime(*policy_tid);
+  check(pager_runtime != nullptr, "pager-fault runtime state exists");
+  check(policy_runtime != nullptr, "policy-fault runtime state exists");
+  if (!pager_runtime || !policy_runtime) {
+    return;
+  }
+
+  const auto pager_group_id = pager_runtime->process_group_id;
+  const auto policy_group_id = policy_runtime->process_group_id;
+  const auto pager_address_space_id =
+      state->find_process_group_address_space(pager_group_id);
+  const auto policy_address_space_id =
+      state->find_process_group_address_space(policy_group_id);
+  check(pager_address_space_id.has_value(),
+        "pager-fault group resolves to an address space");
+  check(policy_address_space_id.has_value(),
+        "policy-fault group resolves to an address space");
+  if (!pager_address_space_id || !policy_address_space_id) {
+    return;
+  }
+
+  const auto readonly_tva = mmu::tva_from_vpn_offset(62, 0);
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     readonly_tva,
+                     *policy_address_space_id,
+                     {.readable = true, .writable = false, .executable = false}),
+        "policy-fault address space accepts a readonly mapping");
+
+  check(axion_kernel_step(*state), "pager fault-state step dispatches pager thread");
+  check(state->scheduler.current_tid() == *pager_tid,
+        "pager-fault thread becomes current first");
+  auto pager_fault = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(61, 0), mmu::MmuAccessMode::Read);
+  check(pager_fault.fault.has_value(), "unmapped read records a pager-eligible fault");
+  check(axion_kernel_step(*state), "pager fault-state step delivers pager-needed fault");
+  check(state->scheduler.current_tid() == *policy_tid,
+        "policy thread becomes current after pager thread quarantine");
+
+  auto policy_fault =
+      axion_kernel_check_access(*state, readonly_tva, mmu::MmuAccessMode::Write);
+  check(policy_fault.fault.has_value(), "readonly write records a policy fault");
+  check(axion_kernel_step(*state), "pager fault-state step delivers policy fault");
+
+  auto runtime_status = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_status.status == KernelServiceStatus::Ok,
+        "runtime status succeeds after mixed fault classification");
+  check(runtime_status.runtime.has_value(),
+        "runtime status returns pager fault-state view");
+  if (runtime_status.runtime) {
+    check(runtime_status.runtime->pager_needed_address_space_count == 1,
+          "runtime status reports one pager-needed address space");
+    check(runtime_status.runtime->pager_eligible_faults == 1,
+          "runtime status counts one pager-eligible fault");
+    check(runtime_status.runtime->policy_faults == 1,
+          "runtime status counts one policy fault");
+  }
+
+  auto pager_group_status = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::ProcessGroupStatus,
+          .process_group_id = pager_group_id,
+      });
+  check(pager_group_status.status == KernelServiceStatus::FaultedGroup,
+        "pager-needed process group remains faulted until acknowledgement");
+  check(pager_group_status.process_group.has_value(),
+        "pager-needed process group view is returned");
+  if (pager_group_status.process_group) {
+    check(pager_group_status.process_group->address_space_id == pager_address_space_id,
+          "pager-needed process group preserves backing address space");
+    check(pager_group_status.process_group->pager_needed,
+          "pager-needed process group view reports pager-needed state");
+    check(pager_group_status.process_group->pending_pager_fault_count == 1,
+          "pager-needed process group view counts one pending pager fault");
+    check(pager_group_status.process_group->pager_faults == 1,
+          "pager-needed process group view counts one pager fault");
+    check(pager_group_status.process_group->last_pager_fault.has_value(),
+          "pager-needed process group view exposes the last pager fault");
+    if (pager_group_status.process_group->last_pager_fault) {
+      check(pager_group_status.process_group->last_pager_fault->fault ==
+                mmu::MmuFault::Unmapped,
+            "pager-needed process group view preserves unmapped classification");
+    }
+  }
+
+  auto policy_group_status = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::ProcessGroupStatus,
+          .process_group_id = policy_group_id,
+      });
+  check(policy_group_status.status == KernelServiceStatus::FaultedGroup,
+        "policy-fault process group also enters the fault boundary");
+  check(policy_group_status.process_group.has_value(),
+        "policy-fault process group view is returned");
+  if (policy_group_status.process_group) {
+    check(!policy_group_status.process_group->pager_needed,
+          "policy-fault process group does not report pager-needed state");
+    check(policy_group_status.process_group->pending_pager_fault_count == 0,
+          "policy-fault process group reports zero pending pager faults");
+    check(policy_group_status.process_group->pager_faults == 0,
+          "policy-fault process group reports zero pager faults");
+    check(!policy_group_status.process_group->last_pager_fault.has_value(),
+          "policy-fault process group exposes no pager fault record");
+  }
+
+  auto fault_summary = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_summary.status == KernelServiceStatus::Ok,
+        "fault summary succeeds after mixed fault classification");
+  check(fault_summary.fault_summary.has_value(),
+        "fault summary returns mixed fault-state detail");
+  if (fault_summary.fault_summary) {
+    check(fault_summary.fault_summary->pager_eligible_faults == 1,
+          "fault summary counts one pager-eligible fault");
+    check(fault_summary.fault_summary->policy_faults == 1,
+          "fault summary counts one policy fault");
+    check(fault_summary.fault_summary->pager_needed_address_spaces == 1,
+          "fault summary reports one pager-needed address space");
+    check(fault_summary.fault_summary->last_pager_address_space_id ==
+              pager_address_space_id,
+          "fault summary tracks the latest pager-needed address space");
+    check(fault_summary.fault_summary->last_pager_fault.has_value(),
+          "fault summary exposes the latest pager-needed fault");
+    if (fault_summary.fault_summary->last_pager_fault) {
+      check(fault_summary.fault_summary->last_pager_fault->fault ==
+                mmu::MmuFault::Unmapped,
+            "fault summary preserves unmapped pager-needed classification");
+    }
+    check(fault_summary.fault_summary->last_delivered_fault.has_value(),
+          "fault summary still exposes the latest delivered fault");
+    if (fault_summary.fault_summary->last_delivered_fault) {
+      check(fault_summary.fault_summary->last_delivered_fault->fault ==
+                mmu::MmuFault::PermissionDenied,
+            "fault summary keeps latest delivered policy fault separate from pager state");
+    }
+  }
+}
+
 static void test_kernel_fault_process_boundary() {
   std::printf("\n[AC-23] Axion kernel loop routes faults into thread runtime state\n");
 
@@ -2379,6 +2548,10 @@ static void test_kernel_service_runtime_layer() {
           "service view preserves backing address-space ownership");
     check(service_view.service->owned_page_count == 1,
           "service view reports one owned mapped page");
+    check(!service_view.service->pager_needed,
+          "healthy service view reports no pager-needed state");
+    check(service_view.service->pending_pager_fault_count == 0,
+          "healthy service view reports zero pending pager faults");
     check(service_view.service->primary_tid == *owner_tid,
           "service view exposes primary group thread");
     check(!service_view.service->faulted_group,
@@ -2955,6 +3128,14 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory aggregates rejected service requests");
     check(supervisor_inventory.supervisor_services->services.front().blocked,
           "supervisor inventory entry reports blocked service");
+    check(supervisor_inventory.supervisor_services->services.front().pager_needed,
+          "blocked supervisor inventory entry reports pager-needed state");
+    check(supervisor_inventory.supervisor_services->services.front().pending_pager_fault_count == 1,
+          "blocked supervisor inventory entry counts one pending pager fault");
+    check(supervisor_inventory.supervisor_services->services.front().pager_faults == 1,
+          "blocked supervisor inventory entry counts one pager fault");
+    check(supervisor_inventory.supervisor_services->services.front().last_pager_fault.has_value(),
+          "blocked supervisor inventory entry exposes the pager fault record");
     check(supervisor_inventory.supervisor_services->services.front().last_transition_kind ==
               KernelAuditEventKind::ServiceMarkedHealthy,
           "blocked supervisor inventory entry retains the latest lifecycle event");
@@ -3227,6 +3408,7 @@ int main() {
   test_kernel_runtime_scheduler_and_ipc();
   test_kernel_loop_and_active_device_arbitration();
   test_kernel_loop_fault_delivery();
+  test_kernel_pager_fault_state();
   test_kernel_fault_process_boundary();
   test_kernel_fault_acknowledgement_and_recovery();
   test_kernel_process_group_fault_gate();

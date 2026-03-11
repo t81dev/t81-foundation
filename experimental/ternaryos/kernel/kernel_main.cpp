@@ -259,6 +259,96 @@ std::size_t count_mapped_pages_for_address_space(const KernelRuntimeState& state
       [&](const auto& entry) { return entry.second.owner_pid == address_space_id; });
 }
 
+bool is_pager_eligible_fault(mmu::MmuFault fault) {
+  return fault == mmu::MmuFault::Unmapped;
+}
+
+const KernelRuntimeState::AddressSpaceState* find_group_address_space_state(
+    const KernelRuntimeState& state,
+    ProcessGroupId process_group_id) {
+  const auto address_space_id = state.find_process_group_address_space(process_group_id);
+  if (!address_space_id.has_value()) {
+    return nullptr;
+  }
+  return state.find_address_space(*address_space_id);
+}
+
+void record_pager_fault_state(KernelRuntimeState& state,
+                              ProcessGroupId process_group_id,
+                              const KernelFaultRecord& fault_record) {
+  const auto address_space_id = state.find_process_group_address_space(process_group_id);
+  if (!address_space_id.has_value() || !is_pager_eligible_fault(fault_record.fault)) {
+    ++state.counters.policy_faults;
+    return;
+  }
+  auto* address_space = state.find_address_space_mut(*address_space_id);
+  if (!address_space) {
+    ++state.counters.policy_faults;
+    return;
+  }
+  address_space->pager_needed = true;
+  ++address_space->pending_pager_fault_count;
+  ++address_space->pager_faults;
+  address_space->last_pager_fault = fault_record;
+  address_space->last_pager_fault_sequence = state.counters.faults_delivered;
+  ++state.counters.pager_eligible_faults;
+}
+
+std::size_t count_pager_needed_address_spaces(const KernelRuntimeState& state) {
+  return std::count_if(state.address_spaces.begin(),
+                       state.address_spaces.end(),
+                       [](const auto& entry) { return entry.second.pager_needed; });
+}
+
+std::size_t count_managed_pager_needed_address_spaces(
+    const KernelRuntimeState& state,
+    const KernelRuntimeState::SupervisorState& supervisor) {
+  std::size_t count = 0;
+  for (auto group_id : supervisor.managed_groups) {
+    const auto* address_space = find_group_address_space_state(state, group_id);
+    if (address_space && address_space->pager_needed) {
+      ++count;
+    }
+  }
+  return count;
+}
+
+std::size_t count_managed_pending_pager_faults(
+    const KernelRuntimeState& state,
+    const KernelRuntimeState::SupervisorState& supervisor) {
+  std::size_t count = 0;
+  for (auto group_id : supervisor.managed_groups) {
+    const auto* address_space = find_group_address_space_state(state, group_id);
+    if (address_space) {
+      count += address_space->pending_pager_fault_count;
+    }
+  }
+  return count;
+}
+
+struct LatestPagerFaultView {
+  std::optional<AddressSpaceId> address_space_id{};
+  std::optional<KernelFaultRecord> fault{};
+};
+
+LatestPagerFaultView latest_pager_fault_view(const KernelRuntimeState& state) {
+  LatestPagerFaultView latest;
+  std::optional<uint64_t> latest_sequence{};
+  for (const auto& [address_space_id, address_space] : state.address_spaces) {
+    if (!address_space.last_pager_fault.has_value() ||
+        !address_space.last_pager_fault_sequence.has_value()) {
+      continue;
+    }
+    if (!latest_sequence.has_value() ||
+        *address_space.last_pager_fault_sequence > *latest_sequence) {
+      latest.address_space_id = address_space_id;
+      latest.fault = address_space.last_pager_fault;
+      latest_sequence = address_space.last_pager_fault_sequence;
+    }
+  }
+  return latest;
+}
+
 std::size_t count_managed_address_spaces(const KernelRuntimeState& state,
                                          const KernelRuntimeState::SupervisorState& supervisor) {
   std::size_t count = 0;
@@ -468,12 +558,21 @@ KernelProcessGroupStatusView make_process_group_view(const KernelRuntimeState& s
                                                      ProcessGroupId process_group_id) {
   const auto* group_state = state.find_process_group(process_group_id);
   const auto address_space_id = state.find_process_group_address_space(process_group_id);
+  const auto* address_space = address_space_id.has_value()
+                                  ? state.find_address_space(*address_space_id)
+                                  : nullptr;
   return KernelProcessGroupStatusView{
       .id = group_state ? group_state->id : process_group_id,
       .address_space_id = address_space_id,
       .owned_page_count = address_space_id.has_value()
                               ? count_mapped_pages_for_address_space(state, *address_space_id)
                               : 0,
+      .pager_needed = address_space ? address_space->pager_needed : false,
+      .pending_pager_fault_count =
+          address_space ? address_space->pending_pager_fault_count : 0,
+      .pager_faults = address_space ? address_space->pager_faults : 0,
+      .last_pager_fault =
+          address_space ? address_space->last_pager_fault : std::nullopt,
       .member_count = group_state ? group_state->member_tids.size() : 0,
       .quarantined_thread_count =
           group_state ? count_quarantined_threads(state, process_group_id) : 0,
@@ -502,6 +601,13 @@ KernelSupervisorStatusView make_supervisor_view(const KernelRuntimeState& state,
           supervisor_state ? count_managed_address_spaces(state, *supervisor_state) : 0,
       .managed_mapped_page_count =
           supervisor_state ? count_managed_mapped_pages(state, *supervisor_state) : 0,
+      .pager_needed_address_space_count =
+          supervisor_state
+              ? count_managed_pager_needed_address_spaces(state, *supervisor_state)
+              : 0,
+      .pending_pager_fault_count =
+          supervisor_state ? count_managed_pending_pager_faults(state, *supervisor_state)
+                           : 0,
       .managed_faulted_group_count =
           supervisor_state ? count_faulted_groups(state, *supervisor_state) : 0,
       .managed_service_count = service_inventory.service_count,
@@ -539,6 +645,13 @@ KernelSupervisorRecoveryStatusView make_supervisor_recovery_view(
           supervisor_state ? count_managed_address_spaces(state, *supervisor_state) : 0,
       .managed_mapped_page_count =
           supervisor_state ? count_managed_mapped_pages(state, *supervisor_state) : 0,
+      .pager_needed_address_space_count =
+          supervisor_state
+              ? count_managed_pager_needed_address_spaces(state, *supervisor_state)
+              : 0,
+      .pending_pager_fault_count =
+          supervisor_state ? count_managed_pending_pager_faults(state, *supervisor_state)
+                           : 0,
       .managed_service_count = service_inventory.service_count,
       .blocked_service_count = service_inventory.blocked_service_count,
       .suspended_service_count = service_inventory.suspended_service_count,
@@ -571,6 +684,9 @@ KernelServiceStatusView make_service_view(const KernelRuntimeState& state,
                                     ? state.find_process_group_address_space(
                                           service_state->process_group_id)
                                     : std::nullopt;
+  const auto* address_space = address_space_id.has_value()
+                                  ? state.find_address_space(*address_space_id)
+                                  : nullptr;
   return KernelServiceStatusView{
       .id = service_state ? service_state->id : service_id,
       .name = service_state ? service_state->name : std::string{},
@@ -580,6 +696,12 @@ KernelServiceStatusView make_service_view(const KernelRuntimeState& state,
       .owned_page_count = address_space_id.has_value()
                               ? count_mapped_pages_for_address_space(state, *address_space_id)
                               : 0,
+      .pager_needed = address_space ? address_space->pager_needed : false,
+      .pending_pager_fault_count =
+          address_space ? address_space->pending_pager_fault_count : 0,
+      .pager_faults = address_space ? address_space->pager_faults : 0,
+      .last_pager_fault =
+          address_space ? address_space->last_pager_fault : std::nullopt,
       .primary_tid =
           service_state ? primary_tid_for_group(state, service_state->process_group_id)
                         : std::nullopt,
@@ -649,6 +771,26 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
                      ? count_mapped_pages_for_address_space(state, *address_space_id)
                      : 0;
         }(),
+        .pager_needed = [&]() -> bool {
+          const auto* address_space =
+              find_group_address_space_state(state, service_state->process_group_id);
+          return address_space ? address_space->pager_needed : false;
+        }(),
+        .pending_pager_fault_count = [&]() -> std::size_t {
+          const auto* address_space =
+              find_group_address_space_state(state, service_state->process_group_id);
+          return address_space ? address_space->pending_pager_fault_count : 0;
+        }(),
+        .pager_faults = [&]() -> uint64_t {
+          const auto* address_space =
+              find_group_address_space_state(state, service_state->process_group_id);
+          return address_space ? address_space->pager_faults : 0;
+        }(),
+        .last_pager_fault = [&]() -> std::optional<KernelFaultRecord> {
+          const auto* address_space =
+              find_group_address_space_state(state, service_state->process_group_id);
+          return address_space ? address_space->last_pager_fault : std::nullopt;
+        }(),
         .blocked = service_state->blocked,
         .suspended = service_state->suspended,
         .unhealthy = service_state->unhealthy,
@@ -677,6 +819,7 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
 
 KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) {
   const auto latest_service_transition = latest_service_transition_view(state);
+  const auto latest_pager_fault = latest_pager_fault_view(state);
   return KernelFaultSummaryView{
       .recorded_faults = state.fault_count(),
       .pending_faults = state.pending_fault_count(),
@@ -686,6 +829,9 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .quarantined_threads =
           static_cast<std::size_t>(state.counters.thread_quarantines),
       .audit_events = state.audit_count(),
+      .pager_eligible_faults = state.counters.pager_eligible_faults,
+      .policy_faults = state.counters.policy_faults,
+      .pager_needed_address_spaces = count_pager_needed_address_spaces(state),
       .service_lifecycle_transitions =
           [&state]() {
             uint64_t total = 0;
@@ -695,6 +841,8 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
             return total;
           }(),
       .last_delivered_fault = state.last_delivered_fault,
+      .last_pager_address_space_id = latest_pager_fault.address_space_id,
+      .last_pager_fault = latest_pager_fault.fault,
       .last_audit_event = state.last_audit_event,
       .last_service_transition_id = latest_service_transition.service_id,
       .last_service_transition_kind = latest_service_transition.kind,
@@ -1041,6 +1189,7 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
 
       auto* group_state = state.find_process_group_mut(thread_state->process_group_id);
       if (group_state) {
+        record_pager_fault_state(state, group_state->id, *state.last_delivered_fault);
         const bool entering_fault_state = !group_state->faulted;
         group_state->faulted = true;
         group_state->blocked = true;
@@ -1131,10 +1280,13 @@ KernelServiceResult axion_kernel_service_request(
           .total_ternary_pages = state.total_ternary_pages,
           .address_space_count = state.address_space_count(),
           .mapped_pages = state.page_table.size(),
+          .pager_needed_address_space_count = count_pager_needed_address_spaces(state),
           .loop_iterations = state.counters.loop_iterations,
           .scheduler_ticks = state.counters.scheduler_ticks,
           .ipc_messages_sent = state.counters.ipc_messages_sent,
           .ipc_messages_received = state.counters.ipc_messages_received,
+          .pager_eligible_faults = state.counters.pager_eligible_faults,
+          .policy_faults = state.counters.policy_faults,
           .managed_service_count = service_summary.managed_service_count,
           .blocked_service_count = service_summary.blocked_service_count,
           .suspended_service_count = service_summary.suspended_service_count,
