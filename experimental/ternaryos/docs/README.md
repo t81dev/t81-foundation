@@ -75,7 +75,8 @@ kernel/
                        explicit kernel-owned address-space state, and an
                        internal pager worker with retained backlog/load,
                        receipt, active-work, queued-head, bounded ready-bypass,
-                       blocker/blocked, activation, and completion diagnostics
+                       parked capped deferral, blocker/blocked, activation,
+                       and completion diagnostics
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,

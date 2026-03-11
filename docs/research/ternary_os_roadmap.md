@@ -99,7 +99,8 @@ the last received address space and handoff ordinal after the inbox drains,
 plus the active handoff ordinal while work remains in flight and the queued-head
 address/ordinal while work remains in the inbox, plus a bounded deterministic
 ready-bypass selection rule when the worker is idle and the FIFO head is still
-unresolved, before later pager integration.
+unresolved, followed by parked deferral once that single bypass has been used,
+before later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 

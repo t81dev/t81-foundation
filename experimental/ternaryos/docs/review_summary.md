@@ -81,6 +81,8 @@ Kernel integration proof now also includes:
 - the internal pager worker now applies a bounded ready-bypass rule: one
   unresolved FIFO head can be bypassed once, and later ready items are then
   deferred behind it until that head resolves
+- once that cap fires, the worker now parks instead of activating the same
+  unresolved head into a redundant stall cycle
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

@@ -248,6 +248,17 @@ The twentieth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves that repeated ready items do not starve one
   unresolved blocked head under the internal pager-worker policy
 
+The twenty-first pager-groundwork slice is now also complete:
+
+- once that bounded ready-bypass cap has fired, the worker now remains parked
+  instead of activating the blocked unresolved head just to record another
+  deterministic stall
+- the bounded deferral path now preserves the blocked head at the queue front
+  until it becomes ready, while later ready items remain queued behind it
+- HAL/kernel coverage now proves that capped deferral parks the worker,
+  avoids redundant stall cycles, and resumes progress once the blocked head is
+  finally mappable
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
@@ -262,7 +273,7 @@ The next real kernel work is now:
 - pager integration
 - richer kernel-owned pager work after the first worker model
 - explicit transition handling for scheduling beyond the new bounded
-  ready-bypass rule once the current worker diagnostics are no longer
+  ready-bypass parking rule once the current worker diagnostics are no longer
   sufficient
 - stable diagnostics proving pager worker behavior remains deterministic under
   deeper load

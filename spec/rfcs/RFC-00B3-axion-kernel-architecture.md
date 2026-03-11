@@ -361,7 +361,9 @@ When the worker is idle and the FIFO head is still unresolved, the kernel now
 also selects the earliest already-ready queued item instead of activating the
 blocked head first, but the same blocked head may be bypassed at most once
 until it resolves; diagnostics retain both the latest blocked/promoted bypass
-pair and the latest blocked/deferred pair for that bounded rule.
+pair and the latest blocked/deferred pair for that bounded rule. After that
+cap fires, the worker now remains parked until the blocked head becomes ready
+instead of activating the same unresolved head into another deterministic stall.
 The next kernel slice is to keep that pager surface private while expanding
 backlog/load scheduling behavior before any public pager ABI or syscall design.
 

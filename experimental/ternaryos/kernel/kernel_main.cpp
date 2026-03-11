@@ -1485,6 +1485,7 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
       if (!state.pager_worker.active_work.has_value() &&
           !state.pager_worker.inbox.empty()) {
         std::size_t selected_index = 0;
+        bool activate_selected_work = true;
         if (!is_pager_work_item_ready(state, state.pager_worker.inbox.front())) {
           if (const auto ready_index = find_first_ready_pager_work_index(
                   state, state.pager_worker.inbox);
@@ -1511,17 +1512,20 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
                   state.pager_worker.inbox[*ready_index].handoff.address_space_id;
               state.pager_worker.last_ready_bypass_deferred_cycle =
                   state.pager_worker.ready_bypass_deferrals;
+              activate_selected_work = false;
             }
           }
         }
-        state.pager_worker.active_work = state.pager_worker.inbox[selected_index];
-        state.pager_worker.inbox.erase(state.pager_worker.inbox.begin() +
-                                       static_cast<std::ptrdiff_t>(selected_index));
-        ++state.pager_worker.activations;
-        ++state.counters.pager_worker_activations;
-        state.pager_worker.last_activated_address_space_id =
-            state.pager_worker.active_work->handoff.address_space_id;
-        state.pager_worker.last_activation_cycle = state.pager_worker.activations;
+        if (activate_selected_work) {
+          state.pager_worker.active_work = state.pager_worker.inbox[selected_index];
+          state.pager_worker.inbox.erase(state.pager_worker.inbox.begin() +
+                                         static_cast<std::ptrdiff_t>(selected_index));
+          ++state.pager_worker.activations;
+          ++state.counters.pager_worker_activations;
+          state.pager_worker.last_activated_address_space_id =
+              state.pager_worker.active_work->handoff.address_space_id;
+          state.pager_worker.last_activation_cycle = state.pager_worker.activations;
+        }
       }
       if (state.pager_worker.active_work.has_value()) {
         const auto active_address_space_id =

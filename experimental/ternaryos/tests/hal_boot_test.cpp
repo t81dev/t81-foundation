@@ -1739,24 +1739,37 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
   auto runtime_after_capped_activation = axion_kernel_service_request(
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
   check(runtime_after_capped_activation.runtime.has_value(),
-        "runtime status exposes capped activation after first bypass");
+        "runtime status exposes capped deferral after first bypass");
   if (runtime_after_capped_activation.runtime) {
-    check(runtime_after_capped_activation.runtime->pager_worker_busy,
-          "runtime status reports busy worker when the blocked head must run");
-    check(runtime_after_capped_activation.runtime->pager_worker_active_address_space_id ==
-              first_address_space_id,
-          "runtime status activates the blocked head once repeated bypass is capped");
-    check(runtime_after_capped_activation.runtime->pager_worker_active_handoff_sequence == 1,
-          "runtime status preserves the blocked head handoff ordinal under cap");
-    check(runtime_after_capped_activation.runtime->pager_worker_inbox_count == 1,
-          "runtime status leaves the third item queued behind the blocked head under cap");
+    check(!runtime_after_capped_activation.runtime->pager_worker_busy,
+          "runtime status keeps the worker idle once repeated bypass is capped");
+    check(!runtime_after_capped_activation.runtime->pager_worker_active_address_space_id.has_value(),
+          "runtime status clears active work when the cap defers activation");
+    check(!runtime_after_capped_activation.runtime->pager_worker_active_handoff_sequence.has_value(),
+          "runtime status clears active handoff provenance when the cap parks the worker");
+    check(runtime_after_capped_activation.runtime->pager_worker_inbox_count == 2,
+          "runtime status leaves both the blocked head and third item queued under the cap");
     check(runtime_after_capped_activation.runtime
               ->pager_worker_next_queued_address_space_id ==
-              third_address_space_id,
-          "runtime status keeps the third ready item queued behind the blocked head under cap");
+              first_address_space_id,
+          "runtime status keeps the blocked head at the queue front when the cap parks the worker");
     check(runtime_after_capped_activation.runtime
-              ->pager_worker_next_queued_handoff_sequence == 3,
-          "runtime status preserves the third handoff ordinal behind the blocked head under cap");
+              ->pager_worker_next_queued_handoff_sequence == 1,
+          "runtime status preserves the blocked head handoff ordinal at the queue front under cap");
+    check(runtime_after_capped_activation.runtime
+              ->pager_worker_ready_backlog_count == 0,
+          "runtime status reports no ready-behind-active backlog while the worker remains parked");
+    check(runtime_after_capped_activation.runtime->pager_resolutions == 1,
+          "runtime status does not resolve additional work while the blocked head remains parked");
+    check(runtime_after_capped_activation.runtime->pager_worker_activations == 1,
+          "runtime status does not add a second activation while the blocked head remains parked");
+    check(runtime_after_capped_activation.runtime->pager_worker_handoffs_received == 3,
+          "runtime status retains three received handoffs while the worker is parked");
+    check(runtime_after_capped_activation.runtime->pager_worker_last_received_address_space_id ==
+              third_address_space_id,
+          "runtime status retains the third item as the latest received handoff while parked");
+    check(runtime_after_capped_activation.runtime->pager_worker_last_received_handoff_sequence == 3,
+          "runtime status retains the third handoff ordinal while parked");
     check(runtime_after_capped_activation.runtime->pager_worker_ready_bypass_activations == 1,
           "runtime status does not permit a second ready bypass for the same head");
     check(runtime_after_capped_activation.runtime->pager_worker_ready_bypass_deferrals == 1,
@@ -1772,15 +1785,36 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
     check(runtime_after_capped_activation.runtime
               ->pager_worker_last_ready_bypass_deferred_cycle == 1,
           "runtime status tracks the first ready-bypass deferral ordinal");
-    check(runtime_after_capped_activation.runtime->pager_worker_stall_cycles == 1,
-          "runtime status counts one stall after the cap forces the blocked head active");
-    check(runtime_after_capped_activation.runtime->pager_worker_backlog_blocked_cycles == 1,
-          "runtime status counts one backlog-blocked cycle after capped activation");
-    check(runtime_after_capped_activation.runtime->pager_worker_ready_backlog_cycles == 1,
-          "runtime status counts one ready-behind-active cycle after capped activation");
-    check(runtime_after_capped_activation.runtime->pager_worker_last_ready_backlog_address_space_id ==
-              third_address_space_id,
-          "runtime status tracks the third ready item behind the capped blocked head");
+    check(runtime_after_capped_activation.runtime->pager_worker_stall_cycles == 0,
+          "runtime status does not add a stall when the cap parks the worker");
+    check(runtime_after_capped_activation.runtime->pager_worker_backlog_blocked_cycles == 0,
+          "runtime status does not add a backlog-blocked cycle when the worker stays parked");
+    check(runtime_after_capped_activation.runtime->pager_worker_ready_backlog_cycles == 0,
+          "runtime status does not add a ready-behind-active cycle when no work is active");
+  }
+
+  auto fault_after_capped_deferral = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_after_capped_deferral.fault_summary.has_value(),
+        "fault summary exposes parked worker state after capped deferral");
+  if (fault_after_capped_deferral.fault_summary) {
+    check(!fault_after_capped_deferral.fault_summary->pager_worker_busy,
+          "fault summary reports idle worker while the blocked head is parked");
+    check(fault_after_capped_deferral.fault_summary->pager_worker_inbox_count == 2,
+          "fault summary retains both queued items while the blocked head is parked");
+    check(fault_after_capped_deferral.fault_summary
+              ->pager_worker_next_queued_address_space_id ==
+              first_address_space_id,
+          "fault summary keeps the blocked head at the queue front while parked");
+    check(fault_after_capped_deferral.fault_summary
+              ->pager_worker_ready_bypass_deferrals == 1,
+          "fault summary counts one ready-bypass deferral after the cap parks the worker");
+    check(fault_after_capped_deferral.fault_summary->pager_worker_stall_cycles == 0,
+          "fault summary does not count a stall while the worker stays parked");
+    check(fault_after_capped_deferral.fault_summary->pager_worker_backlog_blocked_cycles == 0,
+          "fault summary does not count blocked backlog while no work is active");
+    check(fault_after_capped_deferral.fault_summary->pager_worker_ready_backlog_cycles == 0,
+          "fault summary does not count ready-behind-active backlog while parked");
   }
 
   check(mmu::mmu_map(state->page_table,
@@ -1793,18 +1827,14 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
   auto runtime_after_head_resolution = axion_kernel_service_request(
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
   check(runtime_after_head_resolution.runtime.has_value(),
-        "runtime status exposes blocked-head resolution after cap");
+        "runtime status exposes blocked-head resolution after parked cap");
   if (runtime_after_head_resolution.runtime) {
     check(runtime_after_head_resolution.runtime->pager_resolutions == 2,
-          "runtime status resolves the blocked head second after the cap");
+          "runtime status resolves the blocked head second after the parked cap");
     check(!runtime_after_head_resolution.runtime->pager_worker_busy,
           "runtime status returns worker to idle after blocked-head resolution");
     check(runtime_after_head_resolution.runtime->pager_worker_inbox_count == 1,
           "runtime status keeps the third item queued after blocked-head resolution");
-    check(runtime_after_head_resolution.runtime
-              ->pager_worker_next_queued_address_space_id ==
-              third_address_space_id,
-          "runtime status exposes the third item at the queue head after blocked-head resolution");
   }
 
   (void)axion_kernel_step(*state);
@@ -1842,12 +1872,12 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
               ->pager_worker_last_completed_address_space_id ==
               third_address_space_id,
           "fault summary retains the third item as the final completion after the head drains");
-    check(fault_after_final_resolution.fault_summary->pager_worker_stall_cycles == 1,
-          "fault summary retains one stall under the capped policy");
-    check(fault_after_final_resolution.fault_summary->pager_worker_backlog_blocked_cycles == 1,
-          "fault summary retains one backlog-blocked cycle under the capped policy");
-    check(fault_after_final_resolution.fault_summary->pager_worker_ready_backlog_cycles == 1,
-          "fault summary retains one ready-backlog cycle under the capped policy");
+    check(fault_after_final_resolution.fault_summary->pager_worker_stall_cycles == 0,
+          "fault summary retains zero stalls under the parked capped policy");
+    check(fault_after_final_resolution.fault_summary->pager_worker_backlog_blocked_cycles == 0,
+          "fault summary retains zero backlog-blocked cycles under the parked capped policy");
+    check(fault_after_final_resolution.fault_summary->pager_worker_ready_backlog_cycles == 0,
+          "fault summary retains zero ready-backlog cycles under the parked capped policy");
   }
 }
 
