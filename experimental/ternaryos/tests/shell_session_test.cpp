@@ -36,7 +36,7 @@ static void test_scripted_shell_session() {
   check(state.has_value(), "scripted shell session builds");
   if (!state.has_value()) return;
 
-  check(state->available_commands.size() == 26, "twenty-six builtins are exposed");
+  check(state->available_commands.size() == 28, "twenty-eight builtins are exposed");
   check(state->command_records.size() == 6, "scripted session records six commands");
   check(state->command_records[2].result.starts_with("session profile "),
         "scripted session status reports shell state");
@@ -305,11 +305,54 @@ static void test_shell_script_objects() {
         "script run reports summary with executed line count");
 }
 
+static void test_named_shell_refs() {
+  std::printf("\n[S4] named shell refs\n");
+
+  auto session = t81::ternaryos::ShellSession::create(true);
+  check(session.has_value(), "named-ref session creates");
+  if (!session.has_value()) return;
+
+  check(session->execute_command("store put \"named payload\""),
+        "store put executes for named-ref flow");
+  const auto stored_ref =
+      suffix_after(session->state().command_records[0].result, "canon durable ok ");
+  check(!stored_ref.empty(), "named-ref flow gets a CanonRef");
+
+  check(session->execute_command(std::string("name set payload ") + stored_ref),
+        "name set <label> <ref> executes");
+  check(session->execute_command("name ls"), "name ls executes");
+  check(session->execute_command("show ref @payload"), "show ref resolves @label");
+  check(session->execute_command("store get @payload"), "store get resolves @label");
+  check(session->execute_command("store put ref @payload"), "store put ref resolves @label");
+
+  const auto& state = session->state();
+  check(state.named_ref_count == 1, "state tracks one named ref");
+  check(state.named_refs.size() == 1, "state exposes named ref list");
+  check(state.named_refs[0].label == "payload", "named ref label is retained");
+  check(state.named_refs[0].ref.hash.h.to_string() == stored_ref,
+        "named ref points at stored CanonRef");
+  check(state.command_records[1].result == "name set ok payload " + stored_ref,
+        "name set reports success");
+  check(state.command_records[2].result.starts_with("name refs 1"),
+        "name ls reports one named ref");
+  check(state.command_records[2].result.find("payload " + stored_ref) != std::string::npos,
+        "name ls exposes label and ref");
+  check(state.command_records[3].result.starts_with("show ref " + stored_ref),
+        "show ref @label resolves to the stored CanonRef");
+  check(state.command_records[3].result.find("named payload") != std::string::npos,
+        "show ref @label exposes payload text");
+  check(state.command_records[4].result == "store get named payload",
+        "store get @label returns payload");
+  check(state.command_records[5].result.starts_with("canon durable ref ok "),
+        "store put ref @label reports durable success");
+}
+
 int main() {
   std::printf("== Axion Shell Session Test ==\n");
   test_scripted_shell_session();
   test_typed_shell_commands();
   test_shell_script_objects();
+  test_named_shell_refs();
 
   std::printf("\nSummary: %d passed, %d failed\n", g_pass, g_fail);
   return g_fail == 0 ? 0 : 1;

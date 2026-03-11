@@ -166,6 +166,8 @@ What the TUI adds:
 - a minimal built-in command model behind the transcript:
   - `help`
   - `profile`
+  - `name set <label> <ref>`
+  - `name ls`
   - `show profile`
   - `session status`
   - `session checkpoint`
@@ -201,6 +203,8 @@ What the TUI adds:
   - durable anchor presence
 - the shell now has explicit durable-state inspection commands:
   - `session refs` for the shell-tracked durable ref set
+  - `name set <label> <ref>` for assigning a stable session-local alias to a CanonRef
+  - `name ls` for listing those aliases
   - `session checkpoint` for persisting the current transcript as a canonical object
   - `session export` for promoting the current transcript to the durable history anchor
   - `session import <ref>` for restoring a persisted transcript object into the active shell window
@@ -218,6 +222,13 @@ What the TUI adds:
 - the shell now has its first object-native write/composition surface:
   - `store put ref <ref>` for canonical object composition
   - `store cp <ref>` for direct canonical object copy
+- all CanonRef-taking commands now accept `@label` aliases created with `name set`:
+  - `show ref @label`
+  - `store get @label`
+  - `store put ref @label`
+  - `session import @label`
+  - `session diff @label`
+  - `session run @label`
 - the shell now has an object-history inspection surface:
   - `history show object <ref>` for durable object lookup without changing the active anchor
 - the shell now has an explicit durable-anchor rebinding surface:
@@ -233,8 +244,8 @@ Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
 - `t81_ternaryos_device_driver_test` is `342/342`
-- `t81_ternaryos_shell_session_test` is `121/121`
-- total TernOS assertions are `858`
+- `t81_ternaryos_shell_session_test` is `162/162`
+- total TernOS assertions are `899`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback

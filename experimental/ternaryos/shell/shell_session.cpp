@@ -30,9 +30,11 @@ namespace t81::ternaryos {
 
 namespace {
 
-constexpr std::array<const char*, 26> kBuiltinCommands = {
+constexpr std::array<const char*, 28> kBuiltinCommands = {
     "help",
     "profile",
+    "name set <label> <ref>",
+    "name ls",
     "session status",
     "session checkpoint",
     "session export",
@@ -224,6 +226,28 @@ bool canon_ref_known(const std::vector<t81::canonfs::CanonRef>& refs,
   return false;
 }
 
+bool valid_name_label(std::string_view label) {
+  if (label.empty()) return false;
+  for (char ch : label) {
+    if (std::isalnum(static_cast<unsigned char>(ch)) || ch == '-' || ch == '_') continue;
+    return false;
+  }
+  return true;
+}
+
+std::optional<t81::canonfs::CanonRef> resolve_named_or_raw_ref(
+    std::string_view text,
+    const std::vector<ShellNamedRef>& named_refs) {
+  if (text.starts_with('@')) {
+    const auto label = text.substr(1);
+    for (const auto& named : named_refs) {
+      if (named.label == label) return named.ref;
+    }
+    return std::nullopt;
+  }
+  return parse_canon_ref_text(text);
+}
+
 std::vector<std::string> render_transcript_lines(const std::vector<ShellStep>& steps,
                                                  const std::vector<std::string>& imported_lines) {
   if (!imported_lines.empty()) {
@@ -333,8 +357,10 @@ bool ShellSession::refresh_render() {
   state_.recovered_entries = store.rebuild_index();
   state_.session_command_count = state_.command_records.size();
   state_.durable_ref_count = stored_refs_.size();
+  state_.named_ref_count = named_refs_.size();
   state_.durable_anchor_present =
       history_ref_.has_value() && store.contains(*history_ref_);
+  state_.named_refs = named_refs_;
 
   auto lines = render_transcript_lines([&] {
     std::vector<ShellStep> steps;
@@ -373,12 +399,51 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words[0] == "help") {
     state_.command_records.push_back(
         {command,
-         "builtins help profile session status session checkpoint session export session import <ref> session diff <ref> session run <ref> session show durable session refs show profile show session show ref <canonref> store put <text> store put script <line>|<line>|...> store put ref <ref> store cp <ref> store ls store get <ref> store rm <ref> history history show session history show object <ref> history use <ref> history show durable clear"});
+         "builtins help profile name set <label> <ref> name ls session status session checkpoint session export session import <ref> session diff <ref> session run <ref> session show durable session refs show profile show session show ref <canonref> store put <text> store put script <line>|<line>|...> store put ref <ref> store cp <ref> store ls store get <ref> store rm <ref> history history show session history show object <ref> history use <ref> history show durable clear"});
     return refresh_render();
   }
 
   if (words[0] == "profile") {
     state_.command_records.push_back({command, state_.profile_summary});
+    return refresh_render();
+  }
+
+  if (words.size() == 4 && words[0] == "name" && words[1] == "set") {
+    if (!valid_name_label(words[2])) {
+      state_.command_records.push_back({command, "name set invalid label"});
+      return refresh_render();
+    }
+    const auto ref = resolve_named_or_raw_ref(words[3], named_refs_);
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "name set invalid ref"});
+      return refresh_render();
+    }
+
+    auto existing =
+        std::find_if(named_refs_.begin(), named_refs_.end(), [&](const auto& named) {
+          return named.label == words[2];
+        });
+    if (existing == named_refs_.end()) {
+      named_refs_.push_back({words[2], *ref});
+    } else {
+      existing->ref = *ref;
+    }
+    state_.command_records.push_back(
+        {command, "name set ok " + words[2] + " " + canon_ref_text(*ref)});
+    return refresh_render();
+  }
+
+  if (words.size() == 2 && words[0] == "name" && words[1] == "ls") {
+    if (named_refs_.empty()) {
+      state_.command_records.push_back({command, "name refs 0"});
+      return refresh_render();
+    }
+
+    std::string result = "name refs " + std::to_string(named_refs_.size());
+    for (const auto& named : named_refs_) {
+      result += "\n" + named.label + " " + canon_ref_text(named.ref);
+    }
+    state_.command_records.push_back({command, result});
     return refresh_render();
   }
 
@@ -489,7 +554,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   }
 
   if (words.size() == 3 && words[0] == "session" && words[1] == "import") {
-    const auto ref = parse_canon_ref_text(words[2]);
+    const auto ref = resolve_named_or_raw_ref(words[2], named_refs_);
     if (!ref.has_value()) {
       state_.command_records.push_back({command, "session import invalid ref"});
       return refresh_render();
@@ -508,7 +573,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   }
 
   if (words.size() == 3 && words[0] == "session" && words[1] == "diff") {
-    const auto ref = parse_canon_ref_text(words[2]);
+    const auto ref = resolve_named_or_raw_ref(words[2], named_refs_);
     if (!ref.has_value()) {
       state_.command_records.push_back({command, "session diff invalid ref"});
       return refresh_render();
@@ -532,7 +597,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
       return refresh_render();
     }
 
-    const auto ref = parse_canon_ref_text(words[2]);
+    const auto ref = resolve_named_or_raw_ref(words[2], named_refs_);
     if (!ref.has_value()) {
       state_.command_records.push_back({command, "session run invalid ref"});
       return refresh_render();
@@ -576,7 +641,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
 
   if (words.size() == 4 && words[0] == "store" && words[1] == "put" && words[2] == "ref") {
     state_.recovered_entries = store.rebuild_index();
-    const auto ref = parse_canon_ref_text(words[3]);
+    const auto ref = resolve_named_or_raw_ref(words[3], named_refs_);
     if (!ref.has_value()) {
       state_.command_records.push_back({command, "store put ref invalid ref"});
       return refresh_render();
@@ -606,7 +671,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
 
   if (words.size() == 3 && words[0] == "store" && words[1] == "cp") {
     state_.recovered_entries = store.rebuild_index();
-    const auto ref = parse_canon_ref_text(words[2]);
+    const auto ref = resolve_named_or_raw_ref(words[2], named_refs_);
     if (!ref.has_value()) {
       state_.command_records.push_back({command, "store cp invalid ref"});
       return refresh_render();
@@ -690,7 +755,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   }
 
   if (words.size() == 3 && words[0] == "store" && words[1] == "get") {
-    const auto ref = parse_canon_ref_text(words[2]);
+    const auto ref = resolve_named_or_raw_ref(words[2], named_refs_);
     if (!ref.has_value()) {
       state_.command_records.push_back({command, "store get invalid ref"});
       return refresh_render();
@@ -708,7 +773,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   }
 
   if (words.size() == 3 && words[0] == "show" && words[1] == "ref") {
-    const auto ref = parse_canon_ref_text(words[2]);
+    const auto ref = resolve_named_or_raw_ref(words[2], named_refs_);
     if (!ref.has_value()) {
       state_.command_records.push_back({command, "show ref invalid ref"});
       return refresh_render();
@@ -727,7 +792,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
   }
 
   if (words.size() == 3 && words[0] == "store" && words[1] == "rm") {
-    const auto ref = parse_canon_ref_text(words[2]);
+    const auto ref = resolve_named_or_raw_ref(words[2], named_refs_);
     if (!ref.has_value()) {
       state_.command_records.push_back({command, "store rm invalid ref"});
       return refresh_render();
@@ -749,6 +814,12 @@ bool ShellSession::execute_command(std::string_view command_view) {
                                         return candidate.hash == ref->hash;
                                       }),
                        stored_refs_.end());
+    named_refs_.erase(std::remove_if(named_refs_.begin(),
+                                     named_refs_.end(),
+                                     [&](const auto& named) {
+                                       return named.ref.hash == ref->hash;
+                                     }),
+                      named_refs_.end());
     state_.recovered_entries = store.rebuild_index();
     state_.command_records.push_back({command, "store rm ok " + canon_ref_text(*ref)});
     return refresh_render();
@@ -766,7 +837,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
     }
 
     if (words.size() == 4 && words[1] == "show" && words[2] == "object") {
-      const auto ref = parse_canon_ref_text(words[3]);
+      const auto ref = resolve_named_or_raw_ref(words[3], named_refs_);
       if (!ref.has_value()) {
         state_.command_records.push_back({command, "history object invalid ref"});
         return refresh_render();
@@ -785,7 +856,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
     }
 
     if (words.size() == 3 && words[1] == "use") {
-      const auto ref = parse_canon_ref_text(words[2]);
+      const auto ref = resolve_named_or_raw_ref(words[2], named_refs_);
       if (!ref.has_value()) {
         state_.command_records.push_back({command, "history use invalid ref"});
         return refresh_render();
