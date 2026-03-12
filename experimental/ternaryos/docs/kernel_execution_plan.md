@@ -453,6 +453,9 @@ retention too: expose whether the newest interrupt-related audit event was
 The next record-level provenance slice after that is intake audit retention on
 `KernelInterruptRecord` itself: pending and delivered interrupt records should
 carry their own `InterruptRecorded` audit sequence directly.
+The next record-level slice after that is delivery audit retention on
+`KernelInterruptRecord` too: delivered interrupt records should carry their own
+`InterruptDelivered` audit sequence directly.
 
 ## Recommended Order
 

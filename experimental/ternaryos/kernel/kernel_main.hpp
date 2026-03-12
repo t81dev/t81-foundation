@@ -36,6 +36,7 @@ struct KernelInterruptRecord {
   uint64_t payload{0};
   uint64_t sequence{0};
   uint64_t recorded_audit_sequence{0};
+  uint64_t delivered_audit_sequence{0};
 };
 
 struct KernelInterruptSourceCounters {

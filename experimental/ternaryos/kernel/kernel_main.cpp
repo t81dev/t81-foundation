@@ -1766,6 +1766,10 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
           state.last_audit_event.has_value()
               ? std::optional<uint64_t>{state.last_audit_event->sequence}
               : std::nullopt;
+      if (state.last_audit_event.has_value()) {
+        state.last_delivered_interrupt->delivered_audit_sequence =
+            state.last_audit_event->sequence;
+      }
       state.last_interrupt_audit_kind = KernelAuditEventKind::InterruptDelivered;
       handled_by_policy = true;
     } else if (!state.pending_pager_handoffs.empty()) {

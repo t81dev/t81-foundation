@@ -804,6 +804,8 @@ static void test_kernel_interrupt_event_delivery() {
           "first delivered interrupt preserves intake sequence");
     check(state->last_delivered_interrupt->recorded_audit_sequence != 0,
           "first delivered interrupt preserves its intake audit sequence");
+    check(state->last_delivered_interrupt->delivered_audit_sequence != 0,
+          "first delivered interrupt preserves its delivery audit sequence");
   }
 
   auto fault =
@@ -841,6 +843,9 @@ static void test_kernel_interrupt_event_delivery() {
     check(state->last_delivered_interrupt->recorded_audit_sequence ==
               *state->last_recorded_interrupt_audit_sequence,
           "second delivered interrupt preserves its intake audit sequence");
+    check(state->last_delivered_interrupt->delivered_audit_sequence ==
+              *state->last_interrupt_audit_sequence,
+          "second delivered interrupt preserves its delivery audit sequence");
   }
 
   auto runtime_status = axion_kernel_service_request(
@@ -896,6 +901,9 @@ static void test_kernel_interrupt_event_delivery() {
       check(runtime_status.runtime->last_delivered_interrupt->source ==
                 InterruptSource::Storage,
             "runtime status retains the latest delivered interrupt source");
+      check(runtime_status.runtime->last_delivered_interrupt->delivered_audit_sequence ==
+                *runtime_status.runtime->last_interrupt_audit_sequence,
+            "runtime status retains latest delivered interrupt delivery audit sequence");
     }
   }
 
@@ -997,11 +1005,16 @@ static void test_kernel_interrupt_event_delivery() {
       check(audit_summary.audit_summary->recent_events.back().kind ==
                 KernelAuditEventKind::InterruptDelivered,
             "audit summary records interrupt delivery as the latest audit event");
-      if (audit_summary.audit_summary->last_interrupt_audit_sequence) {
-        check(*audit_summary.audit_summary->last_interrupt_audit_sequence ==
-                  audit_summary.audit_summary->recent_events.back().sequence,
-              "audit summary retains audit sequence of the latest interrupt delivery");
+    if (audit_summary.audit_summary->last_interrupt_audit_sequence) {
+      check(*audit_summary.audit_summary->last_interrupt_audit_sequence ==
+                audit_summary.audit_summary->recent_events.back().sequence,
+            "audit summary retains audit sequence of the latest interrupt delivery");
+      if (audit_summary.audit_summary->last_delivered_interrupt) {
+        check(audit_summary.audit_summary->last_delivered_interrupt->delivered_audit_sequence ==
+                  *audit_summary.audit_summary->last_interrupt_audit_sequence,
+              "audit summary retains latest delivered interrupt delivery audit sequence");
       }
+    }
     }
   }
 
@@ -1133,6 +1146,8 @@ static void test_kernel_interrupt_event_delivery() {
               "audit summary preserves FIFO head interrupt source");
         check(queued_audit_summary.audit_summary->next_pending_interrupt->recorded_audit_sequence != 0,
               "audit summary preserves FIFO head interrupt intake audit sequence");
+        check(queued_audit_summary.audit_summary->next_pending_interrupt->delivered_audit_sequence == 0,
+              "audit summary preserves FIFO head interrupt as not yet delivered");
       }
       check(queued_audit_summary.audit_summary->last_pending_interrupt.has_value(),
             "audit summary exposes tail pending interrupt before delivery");
@@ -1143,6 +1158,8 @@ static void test_kernel_interrupt_event_delivery() {
         check(queued_audit_summary.audit_summary->last_pending_interrupt->recorded_audit_sequence ==
                   *queued_audit_summary.audit_summary->last_recorded_interrupt_audit_sequence,
               "audit summary preserves FIFO tail interrupt intake audit sequence");
+        check(queued_audit_summary.audit_summary->last_pending_interrupt->delivered_audit_sequence == 0,
+              "audit summary preserves FIFO tail interrupt as not yet delivered");
       }
       check(queued_audit_summary.audit_summary->recent_events.size() == 2,
             "audit summary retains interrupt intake audit events before delivery");
