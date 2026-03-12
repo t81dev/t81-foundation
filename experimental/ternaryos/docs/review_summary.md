@@ -278,6 +278,7 @@ Expected bundle contents:
 - handoff validation helper
 - recovered-artifacts template directory
 - handoff runbook
+- local synthetic handoff-validator fixture
 
 ## What To Report Back
 

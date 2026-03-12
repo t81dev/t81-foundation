@@ -456,6 +456,8 @@ Outputs:
   comparison of guest-produced `boot-report.txt` / `startup-status.txt`
 - bundle also includes a `recovered-artifacts/` template directory so the
   external host has a standard place to return recovered boot outputs
+- a local `t81_ternaryos_virtualbox_x86_64_handoff_fixture` target now proves
+  the packaged `x86_64` handoff validator against a valid synthetic artifact set
 
 To generate the temporary ARMv8 developer-lane artifact for Apple Silicon
 VirtualBox hosts:

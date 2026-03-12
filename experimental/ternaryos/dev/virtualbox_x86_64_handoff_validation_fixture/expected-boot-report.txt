@@ -1,0 +1,8 @@
+AXION_EXPECTED_BOOT_REPORT
+platform_id=virtualbox-x86_64:VBoxEFI/AHCI/E1000/VMSVGA/HPET+IOAPIC/acceptance-lane
+kernel_boot_ready_slice=complete
+boot_progress_state=ready
+boot_progress_pending=false
+boot_progress_blocked=false
+boot_progress_source=kernel-boot-critical-policy
+boot_validation_lane=virtualbox-x86_64-handoff

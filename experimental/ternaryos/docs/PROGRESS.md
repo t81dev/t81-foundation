@@ -86,6 +86,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - The official `x86_64` handoff package now also carries `expected-boot-report.txt` and `expected-startup-status.txt`, aligning the acceptance lane with the same boot-progress contract already enforced in the ARM/QEMU developer lane.
 - The handoff bundle now also carries `validate_virtualbox_x86_64_handoff.sh`, so an external `x86_64` reviewer can validate recovered guest boot artifacts against that contract directly.
 - The handoff bundle now also carries a `recovered-artifacts/` template so the external `x86_64` reviewer returns boot-report/startup-status evidence in one standard layout.
+- A synthetic `x86_64` handoff fixture now exercises that validator locally, so the acceptance-lane helper is no longer only documented and shipped; it is also verified against a valid recovered-artifact layout in-tree.
 
 **Phase 1 test total: 161 / 161**
 
