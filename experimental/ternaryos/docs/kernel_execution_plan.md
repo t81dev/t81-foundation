@@ -435,6 +435,9 @@ order or adding controller policy.
 The next provenance slice after that is stable interrupt-audit correlation:
 retain the latest interrupt-delivery audit sequence directly in the interrupt
 summary surfaces instead of forcing callers to infer it from the recent log.
+The next alignment slice after that is live interrupt queue state in
+`AuditSummary`: retain pending interrupt counts, pending source composition,
+and FIFO head/tail visibility there too so the stable summaries stay aligned.
 
 ## Recommended Order
 

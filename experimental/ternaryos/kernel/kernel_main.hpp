@@ -912,9 +912,14 @@ struct KernelFaultSummaryView {
 struct KernelAuditSummaryView {
   std::size_t audit_events{0};
   uint64_t fault_deliveries{0};
+  std::size_t pending_interrupt_count{0};
+  std::size_t pending_interrupt_high_watermark{0};
+  KernelInterruptSourceCounters pending_interrupt_sources{};
   uint64_t interrupt_deliveries{0};
   KernelInterruptSourceCounters interrupt_sources_recorded{};
   KernelInterruptSourceCounters interrupt_sources_delivered{};
+  std::optional<KernelInterruptRecord> next_pending_interrupt{};
+  std::optional<KernelInterruptRecord> last_pending_interrupt{};
   uint64_t thread_quarantines{0};
   uint64_t process_group_fault_entries{0};
   uint64_t supervisor_notifications{0};

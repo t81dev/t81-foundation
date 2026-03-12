@@ -926,6 +926,14 @@ static void test_kernel_interrupt_event_delivery() {
   check(audit_summary.audit_summary.has_value(),
         "audit summary returns interrupt audit details");
   if (audit_summary.audit_summary) {
+    check(audit_summary.audit_summary->pending_interrupt_count == 0,
+          "audit summary reports no pending interrupts after delivery");
+    check(audit_summary.audit_summary->pending_interrupt_high_watermark == 2,
+          "audit summary retains interrupt queue high-water mark");
+    check(audit_summary.audit_summary->pending_interrupt_sources.timer == 0,
+          "audit summary reports no pending timer interrupts after delivery");
+    check(audit_summary.audit_summary->pending_interrupt_sources.storage == 0,
+          "audit summary reports no pending storage interrupts after delivery");
     check(audit_summary.audit_summary->interrupt_deliveries == 2,
           "audit summary reports interrupt delivery count");
     check(audit_summary.audit_summary->interrupt_sources_recorded.timer == 1,
@@ -942,6 +950,10 @@ static void test_kernel_interrupt_event_delivery() {
           "audit summary retains the latest recorded interrupt");
     check(audit_summary.audit_summary->last_delivered_interrupt.has_value(),
           "audit summary exposes the latest delivered interrupt");
+    check(!audit_summary.audit_summary->next_pending_interrupt.has_value(),
+          "audit summary clears next pending interrupt after delivery");
+    check(!audit_summary.audit_summary->last_pending_interrupt.has_value(),
+          "audit summary clears tail pending interrupt after delivery");
     check(!audit_summary.audit_summary->recent_events.empty(),
           "audit summary retains recent interrupt audit events");
     if (!audit_summary.audit_summary->recent_events.empty()) {
@@ -1041,6 +1053,36 @@ static void test_kernel_interrupt_event_delivery() {
         check(queued_fault_summary.fault_summary->last_pending_interrupt->source ==
                   InterruptSource::Network,
               "fault summary preserves FIFO tail interrupt source");
+      }
+    }
+    auto queued_audit_summary = axion_kernel_service_request(
+        *queued_state, KernelServiceRequest{.kind = KernelServiceRequestKind::AuditSummary});
+    check(queued_audit_summary.status == KernelServiceStatus::Ok,
+          "audit summary succeeds with queued interrupts");
+    check(queued_audit_summary.audit_summary.has_value(),
+          "audit summary returns queued interrupt composition");
+    if (queued_audit_summary.audit_summary) {
+      check(queued_audit_summary.audit_summary->pending_interrupt_count == 2,
+            "audit summary reports queued interrupt count before delivery");
+      check(queued_audit_summary.audit_summary->pending_interrupt_high_watermark == 2,
+            "audit summary retains queued interrupt high-water mark before delivery");
+      check(queued_audit_summary.audit_summary->pending_interrupt_sources.keyboard == 1,
+            "audit summary reports one pending keyboard interrupt before delivery");
+      check(queued_audit_summary.audit_summary->pending_interrupt_sources.network == 1,
+            "audit summary reports one pending network interrupt before delivery");
+      check(queued_audit_summary.audit_summary->next_pending_interrupt.has_value(),
+            "audit summary exposes head pending interrupt before delivery");
+      if (queued_audit_summary.audit_summary->next_pending_interrupt) {
+        check(queued_audit_summary.audit_summary->next_pending_interrupt->source ==
+                  InterruptSource::Keyboard,
+              "audit summary preserves FIFO head interrupt source");
+      }
+      check(queued_audit_summary.audit_summary->last_pending_interrupt.has_value(),
+            "audit summary exposes tail pending interrupt before delivery");
+      if (queued_audit_summary.audit_summary->last_pending_interrupt) {
+        check(queued_audit_summary.audit_summary->last_pending_interrupt->source ==
+                  InterruptSource::Network,
+              "audit summary preserves FIFO tail interrupt source");
       }
     }
   }

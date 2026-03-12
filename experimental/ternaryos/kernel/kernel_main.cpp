@@ -1320,12 +1320,24 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
 
 KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) {
   const auto latest_service_transition = latest_service_transition_view(state);
+  const auto pending_interrupt_sources = count_pending_interrupt_sources(state);
   KernelAuditSummaryView view{
       .audit_events = state.audit_count(),
       .fault_deliveries = state.counters.faults_delivered,
+      .pending_interrupt_count = state.pending_interrupt_count(),
+      .pending_interrupt_high_watermark = state.pending_interrupt_high_watermark,
+      .pending_interrupt_sources = pending_interrupt_sources,
       .interrupt_deliveries = state.counters.interrupts_delivered,
       .interrupt_sources_recorded = state.counters.interrupt_sources_recorded,
       .interrupt_sources_delivered = state.counters.interrupt_sources_delivered,
+      .next_pending_interrupt =
+          !state.pending_interrupts.empty()
+              ? std::optional<KernelInterruptRecord>{state.pending_interrupts.front()}
+              : std::nullopt,
+      .last_pending_interrupt =
+          !state.pending_interrupts.empty()
+              ? std::optional<KernelInterruptRecord>{state.pending_interrupts.back()}
+              : std::nullopt,
       .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
       .thread_quarantines = state.counters.thread_quarantines,
       .process_group_fault_entries = state.counters.process_group_fault_entries,
