@@ -2362,6 +2362,178 @@ static void test_kernel_pager_worker_terminal_parked_head() {
   }
 }
 
+static void test_kernel_boot_critical_pager_resolution() {
+  std::printf(
+      "\n[AC-22f] Axion kernel auto-resolves boot-critical pager work\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for boot-critical pager policy");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext first_thread;
+  first_thread.label = "pager-boot-critical-a";
+  first_thread.registers[0] = 111;
+
+  t81::ternaryos::sched::TiscContext second_thread;
+  second_thread.label = "pager-boot-critical-b";
+  second_thread.registers[0] = 222;
+
+  t81::ternaryos::sched::TiscContext third_thread;
+  third_thread.label = "pager-boot-critical-c";
+  third_thread.registers[0] = 333;
+
+  auto first_tid = axion_kernel_spawn_thread(*state, first_thread);
+  auto second_tid = axion_kernel_spawn_thread(*state, second_thread);
+  auto third_tid = axion_kernel_spawn_thread(*state, third_thread);
+  check(first_tid.has_value(), "first boot-critical thread spawns successfully");
+  check(second_tid.has_value(), "second boot-critical thread spawns successfully");
+  check(third_tid.has_value(), "third boot-critical thread spawns successfully");
+  if (!first_tid || !second_tid || !third_tid) {
+    return;
+  }
+
+  const auto* first_runtime = state->find_thread_runtime(*first_tid);
+  const auto* second_runtime = state->find_thread_runtime(*second_tid);
+  const auto* third_runtime = state->find_thread_runtime(*third_tid);
+  check(first_runtime != nullptr, "first boot-critical runtime state exists");
+  check(second_runtime != nullptr, "second boot-critical runtime state exists");
+  check(third_runtime != nullptr, "third boot-critical runtime state exists");
+  if (!first_runtime || !second_runtime || !third_runtime) {
+    return;
+  }
+
+  const auto first_address_space_id =
+      state->find_process_group_address_space(first_runtime->process_group_id);
+  const auto second_address_space_id =
+      state->find_process_group_address_space(second_runtime->process_group_id);
+  const auto third_address_space_id =
+      state->find_process_group_address_space(third_runtime->process_group_id);
+  check(first_address_space_id.has_value(),
+        "first boot-critical process group resolves to an address space");
+  check(second_address_space_id.has_value(),
+        "second boot-critical process group resolves to an address space");
+  check(third_address_space_id.has_value(),
+        "third boot-critical process group resolves to an address space");
+  if (!first_address_space_id || !second_address_space_id ||
+      !third_address_space_id) {
+    return;
+  }
+
+  check(axion_kernel_set_address_space_boot_critical(
+            *state, *first_address_space_id, true),
+        "kernel marks the blocked head address space boot-critical");
+
+  const auto first_tva = mmu::tva_from_vpn_offset(93, 0);
+  const auto second_tva = mmu::tva_from_vpn_offset(94, 0);
+  const auto third_tva = mmu::tva_from_vpn_offset(95, 0);
+  state->pending_faults.push_back(KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva = first_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault = mmu::MmuFault::Unmapped,
+      .subject_tid = *first_tid,
+  });
+  state->pending_faults.push_back(KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva = second_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault = mmu::MmuFault::Unmapped,
+      .subject_tid = *second_tid,
+  });
+  state->pending_faults.push_back(KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva = third_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault = mmu::MmuFault::Unmapped,
+      .subject_tid = *third_tid,
+  });
+
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     second_tva,
+                     *second_address_space_id),
+        "second boot-critical address space accepts its mapping before worker activation");
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     third_tva,
+                     *third_address_space_id),
+        "third boot-critical address space accepts its mapping before worker activation");
+
+  (void)axion_kernel_step(*state);
+  auto runtime_after_boot_critical_resolution = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_after_boot_critical_resolution.runtime.has_value(),
+        "runtime status exposes boot-critical auto-resolution");
+  if (runtime_after_boot_critical_resolution.runtime) {
+    check(runtime_after_boot_critical_resolution.runtime
+              ->boot_critical_address_space_count == 1,
+          "runtime status counts one boot-critical address space");
+    check(runtime_after_boot_critical_resolution.runtime->pager_resolutions == 1,
+          "runtime status resolves the boot-critical blocked head first");
+    check(runtime_after_boot_critical_resolution.runtime
+              ->pager_worker_ready_bypass_activations == 0,
+          "runtime status does not ready-bypass the boot-critical blocked head");
+    check(runtime_after_boot_critical_resolution.runtime
+              ->pager_worker_terminal_failures == 0,
+          "runtime status does not terminalize the boot-critical blocked head");
+    check(runtime_after_boot_critical_resolution.runtime
+              ->pager_worker_boot_critical_resolutions == 1,
+          "runtime status counts one boot-critical pager resolution");
+    check(runtime_after_boot_critical_resolution.runtime
+              ->pager_worker_last_boot_critical_address_space_id ==
+              first_address_space_id,
+          "runtime status tracks the boot-critical resolved address space");
+    check(runtime_after_boot_critical_resolution.runtime
+              ->pager_worker_last_boot_critical_handoff_sequence == 1,
+          "runtime status tracks the boot-critical handoff ordinal");
+    check(runtime_after_boot_critical_resolution.runtime
+              ->pager_worker_last_boot_critical_resolution_sequence == 1,
+          "runtime status tracks the boot-critical resolution ordinal");
+    check(runtime_after_boot_critical_resolution.runtime
+              ->pager_worker_last_completed_address_space_id ==
+              first_address_space_id,
+          "runtime status completes the boot-critical blocked head first");
+    check(runtime_after_boot_critical_resolution.runtime
+              ->pager_worker_inbox_count == 2,
+          "runtime status leaves the remaining queued work after boot-critical resolution");
+  }
+
+  auto fault_after_boot_critical_resolution = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_after_boot_critical_resolution.fault_summary.has_value(),
+        "fault summary exposes boot-critical auto-resolution");
+  if (fault_after_boot_critical_resolution.fault_summary) {
+    check(fault_after_boot_critical_resolution.fault_summary
+              ->boot_critical_address_spaces == 1,
+          "fault summary counts one boot-critical address space");
+    check(fault_after_boot_critical_resolution.fault_summary
+              ->pager_worker_boot_critical_resolutions == 1,
+          "fault summary counts one boot-critical pager resolution");
+    check(fault_after_boot_critical_resolution.fault_summary
+              ->pager_worker_last_boot_critical_address_space_id ==
+              first_address_space_id,
+          "fault summary tracks the boot-critical resolved address space");
+    check(fault_after_boot_critical_resolution.fault_summary
+              ->pager_worker_last_boot_critical_handoff_sequence == 1,
+          "fault summary tracks the boot-critical handoff ordinal");
+    check(fault_after_boot_critical_resolution.fault_summary
+              ->pager_worker_last_boot_critical_resolution_sequence == 1,
+          "fault summary tracks the boot-critical resolution ordinal");
+  }
+}
+
 static void test_kernel_fault_process_boundary() {
   std::printf("\n[AC-23] Axion kernel loop routes faults into thread runtime state\n");
 
@@ -4889,6 +5061,7 @@ int main() {
   test_kernel_pager_worker_backlog();
   test_kernel_pager_worker_ready_bypass_cap();
   test_kernel_pager_worker_terminal_parked_head();
+  test_kernel_boot_critical_pager_resolution();
   test_kernel_fault_process_boundary();
   test_kernel_fault_acknowledgement_and_recovery();
   test_kernel_process_group_fault_gate();

@@ -108,6 +108,9 @@ Kernel integration proof now also includes:
 - a once-bypassed parked head now also becomes terminal after a fixed number
   of repeated parked cycles, is removed from the worker queue, and remains
   explicitly visible through retained terminal-failure diagnostics
+- explicitly marked boot-critical address spaces now auto-map their missing
+  page through a kernel-owned policy path, resolving the blocked head first
+  and retaining that boot-critical resolution in runtime/fault diagnostics
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

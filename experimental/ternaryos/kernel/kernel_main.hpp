@@ -138,6 +138,7 @@ struct KernelRuntimeState {
   struct AddressSpaceState {
     AddressSpaceId id{0};
     ProcessGroupId process_group_id{0};
+    bool boot_critical{false};
     bool pager_needed{false};
     bool pager_handoff_pending{false};
     bool pager_worker_owned{false};
@@ -148,6 +149,7 @@ struct KernelRuntimeState {
     uint64_t pager_resolutions{0};
     uint64_t pager_faults_coalesced{0};
     uint64_t pager_terminal_failures{0};
+    uint64_t pager_boot_critical_resolutions{0};
     std::optional<KernelFaultRecord> last_pager_fault{};
     std::optional<uint64_t> last_pager_fault_sequence{};
     std::optional<uint64_t> last_pager_handoff_sequence{};
@@ -234,6 +236,10 @@ struct KernelRuntimeState {
   std::optional<AddressSpaceId> last_terminal_address_space_id{};
   std::optional<uint64_t> last_terminal_handoff_sequence{};
   std::optional<uint64_t> last_terminal_cycle{};
+  uint64_t boot_critical_resolutions{0};
+  std::optional<AddressSpaceId> last_boot_critical_address_space_id{};
+  std::optional<uint64_t> last_boot_critical_handoff_sequence{};
+  std::optional<uint64_t> last_boot_critical_resolution_sequence{};
   };
 
   struct Counters {
@@ -271,6 +277,7 @@ struct KernelRuntimeState {
     uint64_t pager_worker_backlog_blocked_cycles{0};
     uint64_t pager_worker_ready_backlog_cycles{0};
     uint64_t pager_worker_terminal_failures{0};
+    uint64_t pager_worker_boot_critical_resolutions{0};
     uint64_t audit_events_recorded{0};
   };
 
@@ -499,6 +506,7 @@ struct KernelRuntimeStatusView {
   uint64_t total_ternary_pages{0};
   std::size_t address_space_count{0};
   std::size_t mapped_pages{0};
+  std::size_t boot_critical_address_space_count{0};
   std::size_t pager_needed_address_space_count{0};
   std::size_t pager_terminal_address_space_count{0};
   std::size_t pending_pager_handoff_count{0};
@@ -579,6 +587,10 @@ struct KernelRuntimeStatusView {
   std::optional<AddressSpaceId> pager_worker_last_terminal_address_space_id{};
   std::optional<uint64_t> pager_worker_last_terminal_handoff_sequence{};
   std::optional<uint64_t> pager_worker_last_terminal_cycle{};
+  uint64_t pager_worker_boot_critical_resolutions{0};
+  std::optional<AddressSpaceId> pager_worker_last_boot_critical_address_space_id{};
+  std::optional<uint64_t> pager_worker_last_boot_critical_handoff_sequence{};
+  std::optional<uint64_t> pager_worker_last_boot_critical_resolution_sequence{};
   std::size_t managed_service_count{0};
   std::size_t blocked_service_count{0};
   std::size_t suspended_service_count{0};
@@ -745,6 +757,7 @@ struct KernelFaultSummaryView {
   std::size_t audit_events{0};
   uint64_t pager_eligible_faults{0};
   uint64_t policy_faults{0};
+  std::size_t boot_critical_address_spaces{0};
   std::size_t pager_needed_address_spaces{0};
   std::size_t pager_terminal_address_spaces{0};
   std::size_t pending_pager_handoffs{0};
@@ -819,6 +832,10 @@ struct KernelFaultSummaryView {
   std::optional<AddressSpaceId> pager_worker_last_terminal_address_space_id{};
   std::optional<uint64_t> pager_worker_last_terminal_handoff_sequence{};
   std::optional<uint64_t> pager_worker_last_terminal_cycle{};
+  uint64_t pager_worker_boot_critical_resolutions{0};
+  std::optional<AddressSpaceId> pager_worker_last_boot_critical_address_space_id{};
+  std::optional<uint64_t> pager_worker_last_boot_critical_handoff_sequence{};
+  std::optional<uint64_t> pager_worker_last_boot_critical_resolution_sequence{};
   uint64_t service_lifecycle_transitions{0};
   std::optional<KernelFaultRecord> last_delivered_fault{};
   std::optional<AddressSpaceId> last_pager_address_space_id{};
@@ -937,6 +954,9 @@ std::optional<sched::Tid> axion_kernel_spawn_thread_under_supervisor(
     KernelRuntimeState& state,
     sched::TiscContext ctx,
     SupervisorId supervisor_id) noexcept;
+bool axion_kernel_set_address_space_boot_critical(KernelRuntimeState& state,
+                                                  AddressSpaceId address_space_id,
+                                                  bool boot_critical) noexcept;
 
 bool axion_kernel_tick(KernelRuntimeState& state) noexcept;
 

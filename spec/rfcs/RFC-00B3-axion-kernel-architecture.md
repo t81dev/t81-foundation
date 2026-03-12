@@ -381,9 +381,12 @@ that queued successor is now retained through its own resolution as well.
 If that once-bypassed parked head remains unresolved for a fixed number of
 repeated parked cycles, the kernel now terminalizes it, removes it from the
 worker queue, and retains explicit terminal-failure diagnostics instead of
-retrying indefinitely. The next kernel slice is to keep that pager surface
-private while adding a narrow boot-critical pager-resolution policy before any
-public pager ABI or syscall design.
+retrying indefinitely. Explicitly marked boot-critical address spaces now also
+auto-map their missing page through a kernel-owned policy path, resolving that
+blocked head before any ready-bypass or parked-terminal rule fires and
+retaining explicit boot-critical resolution diagnostics. The next kernel slice
+is to keep that pager surface private while adding explicit boot-progress/fail
+reporting before any public pager ABI or syscall design.
 
 The working execution note for this slice is:
 

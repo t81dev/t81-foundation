@@ -320,6 +320,47 @@ std::size_t count_pager_terminal_address_spaces(const KernelRuntimeState& state)
                        [](const auto& entry) { return entry.second.pager_terminal; });
 }
 
+std::size_t count_boot_critical_address_spaces(const KernelRuntimeState& state) {
+  return std::count_if(state.address_spaces.begin(),
+                       state.address_spaces.end(),
+                       [](const auto& entry) { return entry.second.boot_critical; });
+}
+
+mmu::PagePermissions boot_critical_permissions_for_fault(
+    mmu::MmuAccessMode access_mode) {
+  switch (access_mode) {
+    case mmu::MmuAccessMode::Read:
+      return {.readable = true, .writable = false, .executable = false};
+    case mmu::MmuAccessMode::Write:
+      return {.readable = true, .writable = true, .executable = false};
+    case mmu::MmuAccessMode::Execute:
+      return {.readable = true, .writable = false, .executable = true};
+  }
+  return {};
+}
+
+bool try_boot_critical_pager_map(KernelRuntimeState& state,
+                                 AddressSpaceId address_space_id) {
+  auto* address_space = state.find_address_space_mut(address_space_id);
+  if (!address_space || !address_space->boot_critical ||
+      !address_space->last_pager_fault.has_value()) {
+    return false;
+  }
+  const auto translation = mmu::mmu_translate_checked(
+      state.page_table,
+      address_space->last_pager_fault->tva,
+      address_space->last_pager_fault->access_mode);
+  if (translation.fault != mmu::MmuFault::Unmapped) {
+    return false;
+  }
+  return mmu::mmu_map(state.page_table,
+                      state.allocator,
+                      address_space->last_pager_fault->tva,
+                      address_space_id,
+                      boot_critical_permissions_for_fault(
+                          address_space->last_pager_fault->access_mode));
+}
+
 std::size_t count_pending_pager_handoff_address_spaces(const KernelRuntimeState& state) {
   return std::count_if(state.address_spaces.begin(),
                        state.address_spaces.end(),
@@ -1011,6 +1052,7 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .audit_events = state.audit_count(),
       .pager_eligible_faults = state.counters.pager_eligible_faults,
       .policy_faults = state.counters.policy_faults,
+      .boot_critical_address_spaces = count_boot_critical_address_spaces(state),
       .pager_needed_address_spaces = count_pager_needed_address_spaces(state),
       .pager_terminal_address_spaces = count_pager_terminal_address_spaces(state),
       .pending_pager_handoffs = count_pending_pager_handoff_address_spaces(state),
@@ -1165,6 +1207,14 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
           state.pager_worker.last_terminal_handoff_sequence,
       .pager_worker_last_terminal_cycle =
           state.pager_worker.last_terminal_cycle,
+      .pager_worker_boot_critical_resolutions =
+          state.pager_worker.boot_critical_resolutions,
+      .pager_worker_last_boot_critical_address_space_id =
+          state.pager_worker.last_boot_critical_address_space_id,
+      .pager_worker_last_boot_critical_handoff_sequence =
+          state.pager_worker.last_boot_critical_handoff_sequence,
+      .pager_worker_last_boot_critical_resolution_sequence =
+          state.pager_worker.last_boot_critical_resolution_sequence,
       .last_audit_event = state.last_audit_event,
       .last_service_transition_id = latest_service_transition.service_id,
       .last_service_transition_kind = latest_service_transition.kind,
@@ -1478,6 +1528,17 @@ std::optional<sched::Tid> axion_kernel_spawn_thread_under_supervisor(
   return tid;
 }
 
+bool axion_kernel_set_address_space_boot_critical(KernelRuntimeState& state,
+                                                  AddressSpaceId address_space_id,
+                                                  bool boot_critical) noexcept {
+  auto* address_space = state.find_address_space_mut(address_space_id);
+  if (!address_space) {
+    return false;
+  }
+  address_space->boot_critical = boot_critical;
+  return true;
+}
+
 bool axion_kernel_tick(KernelRuntimeState& state) noexcept {
   ++state.counters.scheduler_ticks;
   const bool switched = state.scheduler.tick(state.cpu_context);
@@ -1583,6 +1644,10 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
           !state.pager_worker.inbox.empty()) {
         std::size_t selected_index = 0;
         bool activate_selected_work = true;
+        if (!is_pager_work_item_ready(state, state.pager_worker.inbox.front())) {
+          (void)try_boot_critical_pager_map(
+              state, state.pager_worker.inbox.front().handoff.address_space_id);
+        }
         if (!is_pager_work_item_ready(state, state.pager_worker.inbox.front())) {
           if (const auto ready_index = find_first_ready_pager_work_index(
                   state, state.pager_worker.inbox);
@@ -1745,6 +1810,7 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
         if (active_address_space && active_address_space->pager_needed &&
             !active_address_space->pager_handoff_pending &&
             active_address_space->last_pager_fault.has_value()) {
+          (void)try_boot_critical_pager_map(state, active_address_space_id);
           const auto active_translation = mmu::mmu_translate_checked(
               state.page_table,
               active_address_space->last_pager_fault->tva,
@@ -1855,6 +1921,16 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
           state.pager_worker.last_parked_resolution_follow_on_resolution_sequence =
               address_space->last_pager_resolution_sequence;
         }
+        if (address_space->boot_critical) {
+          ++address_space->pager_boot_critical_resolutions;
+          ++state.pager_worker.boot_critical_resolutions;
+          ++state.counters.pager_worker_boot_critical_resolutions;
+          state.pager_worker.last_boot_critical_address_space_id = address_space_id;
+          state.pager_worker.last_boot_critical_handoff_sequence =
+              state.pager_worker.active_work->handoff.sequence;
+          state.pager_worker.last_boot_critical_resolution_sequence =
+              address_space->last_pager_resolution_sequence;
+        }
         state.pager_worker.active_work.reset();
         ++state.pager_worker.resolutions_completed;
         state.pager_worker.last_completed_address_space_id = address_space_id;
@@ -1919,6 +1995,8 @@ KernelServiceResult axion_kernel_service_request(
           .total_ternary_pages = state.total_ternary_pages,
           .address_space_count = state.address_space_count(),
           .mapped_pages = state.page_table.size(),
+          .boot_critical_address_space_count =
+              count_boot_critical_address_spaces(state),
           .pager_needed_address_space_count = count_pager_needed_address_spaces(state),
           .pager_terminal_address_space_count =
               count_pager_terminal_address_spaces(state),
@@ -2073,6 +2151,14 @@ KernelServiceResult axion_kernel_service_request(
               state.pager_worker.last_terminal_handoff_sequence,
           .pager_worker_last_terminal_cycle =
               state.pager_worker.last_terminal_cycle,
+          .pager_worker_boot_critical_resolutions =
+              state.pager_worker.boot_critical_resolutions,
+          .pager_worker_last_boot_critical_address_space_id =
+              state.pager_worker.last_boot_critical_address_space_id,
+          .pager_worker_last_boot_critical_handoff_sequence =
+              state.pager_worker.last_boot_critical_handoff_sequence,
+          .pager_worker_last_boot_critical_resolution_sequence =
+              state.pager_worker.last_boot_critical_resolution_sequence,
           .managed_service_count = service_summary.managed_service_count,
           .blocked_service_count = service_summary.blocked_service_count,
           .suspended_service_count = service_summary.suspended_service_count,

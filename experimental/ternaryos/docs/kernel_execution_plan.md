@@ -367,17 +367,16 @@ The thirty-second pager-groundwork slice is now also complete:
 Do not widen the existing service surface further unless a concrete runtime
 need appears.
 
-### 2. Keep pager state internal while preparing boot-critical pager work
+### 2. Keep pager state internal while preparing boot-progress reporting
 
 The next real kernel work is now:
 
 - pager integration
-- a narrow kernel-owned boot-critical pager-resolution policy on top of the
-  first worker model
-- explicit terminal handling for unresolved parked heads so the boot lane can
-  fail closed instead of remaining indefinitely diagnosable
-- stable diagnostics proving the kernel distinguishes resumable pager work from
-  terminal boot-blocking pager work without widening the public contract
+- explicit boot-progress/fail reporting above the new boot-critical pager
+  policy
+- stable diagnostics proving the kernel distinguishes resumable boot-critical
+  progress from terminal boot-blocking pager work without widening the public
+  contract
 
 ### 3. Keep the pager surface internal first
 
@@ -411,14 +410,15 @@ The current pager-groundwork slice is complete when:
    pager ABI surface
 
 That acceptance bar is now met. The next slice should preserve that state while
-adding a minimal boot-critical pager-resolution policy before any external
-pager interface exists.
+adding explicit boot-progress/fail reporting before any external pager
+interface exists.
 
 ## Recommended Order
 
 1. preserve the current service-runtime contract without widening it casually
 2. preserve the new pager-needed runtime state on address spaces
 3. preserve the new terminal-failure rule for unresolved parked heads
-4. add a narrow internal boot-critical pager-resolution policy without widening
-   the contract
-5. only then evaluate pager-facing ABI shape or syscall/capability design
+4. preserve the new internal boot-critical pager-resolution policy without
+   widening the contract
+5. add explicit boot-progress/fail reporting for that internal policy
+6. only then evaluate pager-facing ABI shape or syscall/capability design
