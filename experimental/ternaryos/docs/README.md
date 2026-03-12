@@ -452,6 +452,8 @@ Outputs:
 - bundle includes `expected-boot-report.txt` and `expected-startup-status.txt`
   so the external `x86_64` host can validate the same boot-progress contract
   now used by the ARM/QEMU developer lane
+- bundle also includes `validate_virtualbox_x86_64_handoff.sh` for direct
+  comparison of guest-produced `boot-report.txt` / `startup-status.txt`
 
 To generate the temporary ARMv8 developer-lane artifact for Apple Silicon
 VirtualBox hosts:

@@ -49,7 +49,8 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 | `hal/virtualbox_armv8_efi_control.c` | Ultra-minimal ARMv8 VBox EFI control application for the secondary developer lane; writes a standalone execution marker without touching the HAL bridge so Apple Silicon VirtualBox can be tested for "any EFI app runs at all" | — |
 | `hal/virtualbox_armv8_efi_shim.c` | Temporary ARMv8 developer-lane EFI link shim: provides a freestanding `ternaryos_hal_main_c` stub so Apple Silicon hosts can emit a real `BOOTAA64.EFI` without claiming the true C++ HAL bridge is linked into PE/COFF yet | — |
 | `scripts/build_virtualbox_guest_artifact.sh` | Reproducible VirtualBox guest-artifact pipeline: emits both the primary `x86_64` artifact lane and a temporary ARMv8 developer-lane artifact, stages `BOOTX64.obj` / `BOOTAA64.obj`, links a developer-lane `BOOTAA64.EFI`, and now places `STARTUP.NSH` at both the filesystem root and `EFI/BOOT` for ARM boot-path probing | — |
-| `scripts/package_virtualbox_x86_64_handoff.sh` | Packages the official `x86_64` VirtualBox handoff lane into a portable bundle with the guest artifact, profile summary, expected boot-progress contract files, demo output, and runbook for an external validator | — |
+| `scripts/package_virtualbox_x86_64_handoff.sh` | Packages the official `x86_64` VirtualBox handoff lane into a portable bundle with the guest artifact, profile summary, expected boot-progress contract files, a comparison helper, demo output, and runbook for an external validator | — |
+| `scripts/validate_virtualbox_x86_64_handoff.sh` | Compares guest-produced `boot-report.txt` / `startup-status.txt` against the packaged `x86_64` acceptance-lane contract files inside the handoff bundle | — |
 | `scripts/check_virtualbox_host.sh` | Host-capability check for local VirtualBox validation: reports whether the current machine can run the roadmap’s `x86_64` guest target or the temporary ARMv8 developer lane | — |
 | `scripts/check_efi_link_toolchain.sh` | EFI-link capability check: records whether the current host has a PE/COFF linker (`lld-link` / `ld.lld`) available to turn staged EFI stub objects into final `.efi` applications | — |
 | `scripts/probe_virtualbox_armv8_vm.sh` | Headless ARMv8 VirtualBox boot probe: registers a temporary VM, attaches the staged developer-lane VDI, boots VBox EFI, captures `VBox.log`, and confirms firmware-visible AHCI disk attachment before cleanup | — |
@@ -83,6 +84,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - Program decision: stop escalating local ARMv8 VirtualBox boot-layout experiments, use QEMU AArch64 as the primary local EFI/debug lane, and prepare the official `x86_64` acceptance lane as a handoff package instead; the runbook for that external validation path is now checked in.
 - That handoff path is now reproducible as a single build target: the `x86_64` VirtualBox artifact, profile summary, demo transcript, and runbook can be packaged into a tarball for external validation on a real `x86_64` host.
 - The official `x86_64` handoff package now also carries `expected-boot-report.txt` and `expected-startup-status.txt`, aligning the acceptance lane with the same boot-progress contract already enforced in the ARM/QEMU developer lane.
+- The handoff bundle now also carries `validate_virtualbox_x86_64_handoff.sh`, so an external `x86_64` reviewer can validate recovered guest boot artifacts against that contract directly.
 
 **Phase 1 test total: 161 / 161**
 

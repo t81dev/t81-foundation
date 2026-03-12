@@ -136,6 +136,20 @@ The first useful `x86_64` result is any one of:
   directly against `expected-boot-report.txt` / `expected-startup-status.txt`
   from the handoff bundle
 
+If the host run produces both files, use the bundled helper:
+
+```sh
+./validate_virtualbox_x86_64_handoff.sh \
+  expected-boot-report.txt \
+  expected-startup-status.txt \
+  /path/to/recovered-artifacts
+```
+
+The artifact directory passed to the helper should contain:
+
+- `boot-report.txt`
+- `startup-status.txt`
+
 The broader roadmap gate remains stricter:
 
 - a bootable VirtualBox guest executes the current TernOS stack far enough to

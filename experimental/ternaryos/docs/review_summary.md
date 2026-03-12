@@ -275,6 +275,7 @@ Expected bundle contents:
 - profile summary
 - expected boot-progress contract files
 - demo transcript
+- handoff validation helper
 - handoff runbook
 
 ## What To Report Back
