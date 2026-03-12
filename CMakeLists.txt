@@ -894,6 +894,18 @@ if(T81_ENABLE_TERNARYOS)
     DEPENDS t81_ternaryos_virtualbox_armv8_dev_artifact
     USES_TERMINAL)
 
+  add_custom_target(t81_ternaryos_qemu_armv8_guest_probe_blocked_fixture
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest_blocked_fixture
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/dev/qemu_armv8_guest_probe_blocked_fixture
+            ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest_blocked_fixture
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/validate_qemu_armv8_guest_reports.sh
+            ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest_blocked_fixture
+            blocked
+            qemu-armv8-guest-probe-fixture
+    USES_TERMINAL)
+
   if(T81_BUILD_TESTS)
     add_executable(t81_ternaryos_hal_boot_test
       experimental/ternaryos/tests/hal_boot_test.cpp)

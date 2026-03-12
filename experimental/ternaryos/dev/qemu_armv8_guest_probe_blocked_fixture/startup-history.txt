@@ -1,0 +1,4 @@
+AXION_STARTUP_HISTORY
+command=history show durable
+result=history durable fixture-durable-ref
+phase5 durable transcript

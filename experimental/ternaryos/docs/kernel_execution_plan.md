@@ -10,9 +10,10 @@ It remains intentionally small. It exists so the next kernel work follows an
 explicit sequence instead of growing organically.
 
 The current post-kernel phase is now external validation expansion: preserve
-the closed internal boot-ready slice, and widen guest-visible proof so the
-staged boot lane validates explicit boot-progress state through richer guest
-artifacts rather than only summary booleans.
+the closed internal boot-ready slice, widen guest-visible proof so the staged
+boot lane validates explicit boot-progress state through richer guest
+artifacts rather than only summary booleans, and keep ready and blocked
+boot-progress outcomes on one deterministic external validation contract.
 
 ## Current Kernel Position
 

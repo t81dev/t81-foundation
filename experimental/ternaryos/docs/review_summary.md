@@ -229,6 +229,9 @@ ARM diagnostic result:
   metadata past the 17-entry root-header threshold, successful torn-header
   recovery for the same 20 objects, through `virtualbox-ahci`, a mutable
   three-present VMSVGA cycle, and a two-batch five-frame E1000 workload
+- the same guest-report contract now also has a synthetic blocked-state
+  validation fixture, proving the external lane distinguishes ready boot
+  progress from blocked boot progress instead of only checking the success case
 - local VirtualBox ARM remains non-observable for EFI execution and is now only
   a secondary diagnostic lane
 - conclusion: the remaining blind spot is the local VirtualBox ARM path, not

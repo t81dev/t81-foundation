@@ -1,0 +1,4 @@
+AXION_STARTUP_STORE
+command=store ls
+result=store refs 1
+fixture-durable-ref

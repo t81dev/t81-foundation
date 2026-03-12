@@ -529,6 +529,8 @@ Outputs:
   - consolidated backend-generated shell/session/history/store/ref proof surface embedded into the ARM EFI stub
 - `build/ternaryos/qemu_armv8_guest/startup-phase4.txt`
   - consolidated backend-generated Phase 4 storage/display/network proof surface embedded into the ARM EFI stub
+- `build/ternaryos/qemu_armv8_guest_blocked_fixture/`
+  - synthetic blocked boot-progress fixture used to prove the shared guest-report validator distinguishes blocked boot state from the ready live probe
 
 Current status:
 
