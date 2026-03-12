@@ -560,6 +560,7 @@ struct KernelRuntimeStatusView {
   uint64_t ipc_messages_received{0};
   std::size_t pending_interrupt_count{0};
   std::size_t pending_interrupt_high_watermark{0};
+  KernelInterruptSourceCounters pending_interrupt_sources{};
   uint64_t interrupts_recorded{0};
   uint64_t interrupts_delivered{0};
   KernelInterruptSourceCounters interrupt_sources_recorded{};
@@ -794,6 +795,7 @@ struct KernelFaultSummaryView {
   std::size_t pending_faults{0};
   std::size_t pending_interrupts{0};
   std::size_t pending_interrupt_high_watermark{0};
+  KernelInterruptSourceCounters pending_interrupt_sources{};
   std::size_t delivered_faults{0};
   uint64_t interrupts_recorded{0};
   uint64_t interrupts_delivered{0};

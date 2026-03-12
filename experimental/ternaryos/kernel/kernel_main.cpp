@@ -27,6 +27,15 @@ void increment_interrupt_source_counter(KernelInterruptSourceCounters& counters,
   }
 }
 
+KernelInterruptSourceCounters count_pending_interrupt_sources(
+    const KernelRuntimeState& state) {
+  KernelInterruptSourceCounters counters;
+  for (const auto& interrupt : state.pending_interrupts) {
+    increment_interrupt_source_counter(counters, interrupt.source);
+  }
+  return counters;
+}
+
 constexpr std::string_view kVBoxPlatformPrefix = "virtualbox-x86_64:";
 
 std::optional<KernelDeviceArbitrationState> bootstrap_device_arbitration(
@@ -1095,6 +1104,7 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
 KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) {
   const auto latest_service_transition = latest_service_transition_view(state);
   const auto latest_pager_fault = latest_pager_fault_view(state);
+  const auto pending_interrupt_sources = count_pending_interrupt_sources(state);
   const auto ready_pager_backlog_count =
       count_ready_pager_backlog_address_spaces(state);
   const auto parked_ready_pager_backlog_count =
@@ -1108,6 +1118,7 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .pending_faults = state.pending_fault_count(),
       .pending_interrupts = state.pending_interrupt_count(),
       .pending_interrupt_high_watermark = state.pending_interrupt_high_watermark,
+      .pending_interrupt_sources = pending_interrupt_sources,
       .delivered_faults = static_cast<std::size_t>(state.counters.faults_delivered),
       .interrupts_recorded = state.counters.interrupts_recorded,
       .interrupts_delivered = state.counters.interrupts_delivered,
@@ -2087,6 +2098,7 @@ KernelServiceResult axion_kernel_service_request(
       }
       const auto service_summary = runtime_service_summary(state);
       const auto latest_service_transition = latest_service_transition_view(state);
+      const auto pending_interrupt_sources = count_pending_interrupt_sources(state);
       const auto ready_pager_backlog_count =
           count_ready_pager_backlog_address_spaces(state);
       const auto parked_ready_pager_backlog_count =
@@ -2151,6 +2163,7 @@ KernelServiceResult axion_kernel_service_request(
           .ipc_messages_received = state.counters.ipc_messages_received,
           .pending_interrupt_count = state.pending_interrupt_count(),
           .pending_interrupt_high_watermark = state.pending_interrupt_high_watermark,
+          .pending_interrupt_sources = pending_interrupt_sources,
           .interrupts_recorded = state.counters.interrupts_recorded,
           .interrupts_delivered = state.counters.interrupts_delivered,
           .interrupt_sources_recorded = state.counters.interrupt_sources_recorded,

@@ -125,6 +125,8 @@ Kernel integration proof now also includes:
   stable summaries
 - deterministic source accounting is now retained too for the current
   interrupt classes, without introducing priority or controller policy
+- pending interrupt queue composition is now visible too through stable
+  runtime/fault summaries, still without priority or masking semantics
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

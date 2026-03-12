@@ -426,6 +426,9 @@ next queued interrupt without adding controller policy.
 After that, the next narrow slice is deterministic source accounting for the
 existing interrupt classes, still without priority, masking, or controller
 ownership policy.
+The next useful queue-facing slice after that is pending source composition:
+how many queued interrupts exist per current source class, still with FIFO
+ordering and no priority policy.
 
 ## Recommended Order
 

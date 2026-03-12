@@ -766,6 +766,8 @@ static void test_kernel_interrupt_event_delivery() {
         "pending interrupt queue tracks both recorded interrupts");
   check(state->pending_interrupt_high_watermark == 2,
         "interrupt queue retains pending high-water mark");
+  check(state->pending_interrupts.front().source == InterruptSource::Timer,
+        "interrupt queue head starts with timer source");
   check(state->counters.interrupts_recorded == 2,
         "runtime counts recorded interrupts");
   check(state->counters.interrupt_sources_recorded.timer == 1,
@@ -844,6 +846,10 @@ static void test_kernel_interrupt_event_delivery() {
           "runtime status reports no pending interrupts after delivery");
     check(runtime_status.runtime->pending_interrupt_high_watermark == 2,
           "runtime status retains interrupt queue high-water mark");
+    check(runtime_status.runtime->pending_interrupt_sources.timer == 0,
+          "runtime status reports no pending timer interrupts after delivery");
+    check(runtime_status.runtime->pending_interrupt_sources.storage == 0,
+          "runtime status reports no pending storage interrupts after delivery");
     check(runtime_status.runtime->interrupts_recorded == 2,
           "runtime status reports recorded interrupt count");
     check(runtime_status.runtime->interrupts_delivered == 2,
@@ -885,6 +891,10 @@ static void test_kernel_interrupt_event_delivery() {
           "fault summary reports no pending interrupts after delivery");
     check(fault_summary.fault_summary->pending_interrupt_high_watermark == 2,
           "fault summary retains interrupt queue high-water mark");
+    check(fault_summary.fault_summary->pending_interrupt_sources.timer == 0,
+          "fault summary reports no pending timer interrupts after delivery");
+    check(fault_summary.fault_summary->pending_interrupt_sources.storage == 0,
+          "fault summary reports no pending storage interrupts after delivery");
     check(fault_summary.fault_summary->interrupts_recorded == 2,
           "fault summary reports recorded interrupt count");
     check(fault_summary.fault_summary->interrupts_delivered == 2,
@@ -963,6 +973,10 @@ static void test_kernel_interrupt_event_delivery() {
     if (queued_runtime.runtime) {
       check(queued_runtime.runtime->pending_interrupt_count == 2,
             "runtime status reports queued interrupt count before delivery");
+      check(queued_runtime.runtime->pending_interrupt_sources.keyboard == 1,
+            "runtime status reports one pending keyboard interrupt before delivery");
+      check(queued_runtime.runtime->pending_interrupt_sources.network == 1,
+            "runtime status reports one pending network interrupt before delivery");
       check(queued_runtime.runtime->interrupt_sources_recorded.keyboard == 1,
             "runtime status reports recorded keyboard interrupt count before delivery");
       check(queued_runtime.runtime->interrupt_sources_recorded.network == 1,
@@ -985,6 +999,20 @@ static void test_kernel_interrupt_event_delivery() {
                   InterruptSource::Network,
               "runtime status preserves latest recorded interrupt before delivery");
       }
+    }
+    auto queued_fault_summary = axion_kernel_service_request(
+        *queued_state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+    check(queued_fault_summary.status == KernelServiceStatus::Ok,
+          "fault summary succeeds with queued interrupts");
+    check(queued_fault_summary.fault_summary.has_value(),
+          "fault summary returns queued interrupt composition");
+    if (queued_fault_summary.fault_summary) {
+      check(queued_fault_summary.fault_summary->pending_interrupts == 2,
+            "fault summary reports queued interrupt count before delivery");
+      check(queued_fault_summary.fault_summary->pending_interrupt_sources.keyboard == 1,
+            "fault summary reports one pending keyboard interrupt before delivery");
+      check(queued_fault_summary.fault_summary->pending_interrupt_sources.network == 1,
+            "fault summary reports one pending network interrupt before delivery");
     }
   }
 }
