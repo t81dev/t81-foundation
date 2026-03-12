@@ -11,17 +11,20 @@
 **RFC-00B1 (MMU):** [spec/rfcs/RFC-00B1-ternary-mmu.md](../../../spec/rfcs/RFC-00B1-ternary-mmu.md)
 **RFC-00B2 (Drivers):** [spec/rfcs/RFC-00B2-device-drivers.md](../../../spec/rfcs/RFC-00B2-device-drivers.md)
 **RFC-00B3 (Kernel):** [spec/rfcs/RFC-00B3-axion-kernel-architecture.md](../../../spec/rfcs/RFC-00B3-axion-kernel-architecture.md)
+**RFC-00B5 (Interrupts):** [spec/rfcs/RFC-00B5-governed-event-interrupt-model.md](../../../spec/rfcs/RFC-00B5-governed-event-interrupt-model.md)
 
 Prototype implementation of Axion, the current working name for the ternary-native
 OS kernel on the T81VM runtime. Phases 1 through 3 are complete, Phase 4
 device-driver work is in progress, and Phase 5 now has a first typed shell/TUI
 path on top of the hosted guest-bootstrap path.
 
-Kernel integration direction is now tracked explicitly in RFC-00B3. That RFC is
-the current path for turning the existing HAL/MMU/scheduler/IPC subsystems into
-one kernel-owned runtime unit instead of letting them grow organically. The
-first kernel-owned handoff path now exists: `hal_main` transfers control to
-`axion_kernel_main(...)`, and the HAL suite verifies that runtime bootstrap.
+Kernel integration direction is now tracked explicitly in RFC-00B3, while
+governed interrupt semantics are now tracked in RFC-00B5. Together, those RFCs
+define the current path for turning the existing HAL/MMU/scheduler/IPC
+subsystems into one kernel-owned runtime unit instead of letting them grow
+organically. The first kernel-owned handoff path now exists: `hal_main`
+transfers control to `axion_kernel_main(...)`, and the HAL suite verifies that
+runtime bootstrap.
 
 Current working release label: `Axion v0.1.0-alpha`
 
@@ -55,7 +58,8 @@ hal/
                        BootContext, hal_main)
   hal_c_abi.h/.cpp     C ABI bridge for freestanding guest stubs
   hal_main.cpp         Ethics-first boot (Θ₁–Θ₉ via Axion) → kernel-owned handoff
-  interrupt_table.cpp  Shadow binary interrupt dispatch table
+  interrupt_table.cpp  Shadow binary interrupt dispatch table; current
+                       governed interrupt bridge tracked by RFC-00B5
   hosted_stub.cpp      Hosted (macOS/Linux) simulation — stand-in for UEFI stub
   virtualbox_platform.hpp/.cpp  First-target VirtualBox VM profile scaffold
   virtualbox_guest_devices.hpp/.cpp  VirtualBox profile-to-device binding helpers
