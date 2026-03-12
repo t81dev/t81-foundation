@@ -161,6 +161,7 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - Delivered interrupt records now retain delivery provenance too: `KernelInterruptRecord` values carry their own `InterruptDelivered` audit sequence once the loop dispatches them.
 - Stable latest delivery correlation now exists too: runtime, fault, and audit summaries retain the latest `InterruptDelivered` audit sequence directly even after newer intake events occur.
 - Latest interrupt audit target retention now exists too: runtime, fault, and audit summaries expose which interrupt sequence the newest interrupt-related audit event refers to.
+- Latest interrupt audit source retention now exists too: runtime, fault, and audit summaries expose the interrupt source class targeted by the newest interrupt-related audit event.
 - The first service-facing runtime contract above the supervisor/process-group boundary is now implemented, including deterministic healthy/faulted-group behavior and stable diagnostics.
 - The first narrow service-facing runtime action is now implemented too: supervisor fault-group acknowledgement through the same contract.
 - Supervisor-facing recovery/report flows are now implemented on top of that action: the service boundary exposes deterministic pending-group, acknowledgement, and recovered-group state for each supervisor.

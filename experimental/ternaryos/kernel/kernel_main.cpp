@@ -653,6 +653,7 @@ void record_interrupt(KernelRuntimeState& state,
           ? std::optional<uint64_t>{state.last_audit_event->sequence}
           : std::nullopt;
   state.last_interrupt_audit_kind = KernelAuditEventKind::InterruptRecorded;
+  state.last_interrupt_audit_source = interrupt.source;
   state.last_interrupt_audit_interrupt_sequence = state.next_interrupt_sequence;
   state.pending_interrupts.push_back(KernelInterruptRecord{
       .source = interrupt.source,
@@ -1180,6 +1181,7 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .last_delivered_interrupt_audit_sequence =
           state.last_delivered_interrupt_audit_sequence,
       .last_interrupt_audit_kind = state.last_interrupt_audit_kind,
+      .last_interrupt_audit_source = state.last_interrupt_audit_source,
       .last_interrupt_audit_interrupt_sequence =
           state.last_interrupt_audit_interrupt_sequence,
       .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
@@ -1363,6 +1365,7 @@ KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) 
       .last_delivered_interrupt_audit_sequence =
           state.last_delivered_interrupt_audit_sequence,
       .last_interrupt_audit_kind = state.last_interrupt_audit_kind,
+      .last_interrupt_audit_source = state.last_interrupt_audit_source,
       .last_interrupt_audit_interrupt_sequence =
           state.last_interrupt_audit_interrupt_sequence,
       .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
@@ -1785,6 +1788,7 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
                     state.last_delivered_interrupt->delivered_audit_sequence}
               : std::nullopt;
       state.last_interrupt_audit_kind = KernelAuditEventKind::InterruptDelivered;
+      state.last_interrupt_audit_source = state.last_delivered_interrupt->source;
       state.last_interrupt_audit_interrupt_sequence =
           state.last_delivered_interrupt->sequence;
       handled_by_policy = true;
@@ -2242,6 +2246,7 @@ KernelServiceResult axion_kernel_service_request(
           .last_delivered_interrupt_audit_sequence =
               state.last_delivered_interrupt_audit_sequence,
           .last_interrupt_audit_kind = state.last_interrupt_audit_kind,
+          .last_interrupt_audit_source = state.last_interrupt_audit_source,
           .last_interrupt_audit_interrupt_sequence =
               state.last_interrupt_audit_interrupt_sequence,
           .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,

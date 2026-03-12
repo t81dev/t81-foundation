@@ -462,6 +462,9 @@ later intake changes the newest interrupt-audit kind.
 The next metadata slice after that is latest interrupt audit target retention:
 stable interrupt summaries should expose which interrupt sequence the latest
 interrupt-related audit event refers to, not only its kind and audit sequence.
+The next metadata slice after that is latest interrupt audit source retention:
+stable interrupt summaries should expose the interrupt source class targeted by
+the latest interrupt-related audit event too.
 
 ## Recommended Order
 
