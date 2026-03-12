@@ -12,7 +12,7 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-12
-**Commit:** `24618fe8` onward; boot validation and local x86_64 EFI diagnostics continue past this checkpoint
+**Commit:** `64912e4e` onward; interrupt summary convergence now continues past this checkpoint
 **Branch:** `main`
 
 Reference docs:
@@ -146,7 +146,7 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - Active device arbitration for the first supported VirtualBox storage/display/network profile is now attached to that same owned boundary.
 - The kernel runtime now also exposes a deterministic loop step plus runtime counters for scheduler and IPC activity.
 - The loop-owned fault delivery path now feeds a real kernel policy boundary: delivered faults are routed into per-thread runtime state, the faulting thread is quarantined deterministically, the owning process group enters a blocked fault state, explicit group acknowledgement gates recovery, and audit-only governance events are recorded in deterministic order.
-- The first RFC-00B5 interrupt-convergence slice is now implemented too: kernel-owned interrupt events can be recorded explicitly, delivered deterministically through the kernel loop after faults and before pager work, and surfaced through stable runtime/fault/audit diagnostics.
+- The RFC-00B5 interrupt summary-convergence slice is now implemented too: kernel-owned interrupt events can be recorded explicitly, delivered deterministically through the kernel loop after faults and before pager work, and surfaced through stable runtime/fault/audit diagnostics with queue-state visibility, per-source accounting, latest interrupt-audit metadata, and record-level intake/delivery audit provenance.
 - Interrupt queue observability now exists on top of that first slice too: the runtime retains latest interrupt intake provenance, pending-interrupt high-water mark, and FIFO head visibility through stable runtime/fault/audit summaries.
 - Deterministic source accounting now exists too for the current interrupt classes: timer, storage, network, keyboard, and unknown record/deliver counts flow through the same stable runtime/fault/audit summaries.
 - Pending interrupt queue composition is now exposed too: runtime and fault summaries retain queued counts for the current interrupt source classes while preserving FIFO semantics.
@@ -246,7 +246,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 1424 | 1 |
+| `t81_ternaryos_hal_boot_test` | 1635 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -254,7 +254,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **2300** | |
+| **Total** | **2511** | |
 
 Run all TernOS tests:
 

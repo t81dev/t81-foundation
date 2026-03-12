@@ -140,7 +140,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 2300/2300 assertions, 8/8 tests pass
+# Expected: 2511/2511 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -301,11 +301,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `1424/1424`
+- `t81_ternaryos_hal_boot_test` is `1635/1635`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `2300`
+- total TernOS assertions are `2511`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state
@@ -398,10 +398,12 @@ Local hosted proof as of the current branch:
   closes the current internal boot-ready kernel slice. The next step is
   external boot-lane validation, tracked explicitly in:
   - `docs/kernel_execution_plan.md`
-- the first RFC-00B5 interrupt-convergence slice now exists too: the kernel
-  can intake explicit interrupt events, deliver them deterministically through
-  `axion_kernel_step(...)`, and expose interrupt counts through the stable
-  runtime/fault/audit summaries without widening the service ABI
+- the RFC-00B5 interrupt summary-convergence slice is now complete too: the
+  kernel can intake explicit interrupt events, deliver them deterministically
+  through `axion_kernel_step(...)`, and expose queue state, per-source
+  accounting, latest interrupt-audit metadata, and record-level intake/delivery
+  provenance through the stable runtime/fault/audit summaries without widening
+  the service ABI
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback

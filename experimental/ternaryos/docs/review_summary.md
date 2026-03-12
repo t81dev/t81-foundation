@@ -34,9 +34,9 @@ The next kernel slice is now tracked explicitly in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `2300`
+- total assertions: `2511`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `1424/1424`
+- `t81_ternaryos_hal_boot_test`: `1635/1635`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -117,9 +117,11 @@ Kernel integration proof now also includes:
 - that closes the current internal boot-ready kernel slice; the next move is
   outward to external boot-lane validation rather than more internal pager
   surface growth
-- the first RFC-00B5 kernel interrupt slice now exists as well: explicit
-  interrupt event intake, deterministic loop delivery after faults, and stable
-  runtime/fault/audit counters without a public interrupt ABI
+- the RFC-00B5 interrupt summary-convergence slice is now complete as well:
+  explicit interrupt event intake, deterministic loop delivery after faults,
+  stable runtime/fault/audit queue visibility, per-source accounting, latest
+  interrupt-audit metadata, and record-level intake/delivery provenance now
+  exist without a public interrupt ABI
 - interrupt queue observability is now retained too: latest recorded interrupt,
   pending-queue high-water mark, and FIFO-head visibility through the same
   stable summaries
@@ -222,13 +224,10 @@ Kernel integration proof now also includes:
 - the second pager-groundwork slice is now complete as well
 - the third pager-groundwork slice is now complete as well
 - the fourth pager-groundwork slice is now complete as well
-- the next kernel slice is to keep this service-runtime layer stable and move
-  into richer kernel-owned pager-worker scheduling behavior after handoff,
-  resolution, duplicate-fault coalescing, backlog-load diagnostics, and FIFO
-  stall accounting, plus ready-behind-active depth diagnostics and retained
-  blocker/blocked identities with retained stall ordinals, retained
-  blocked-side depth, and retained activation identities, not a broad ABI or
-  syscall surface
+- the next interrupt-facing kernel slice is no longer another summary field;
+  it is actual RFC-00B5 policy and handler behavior on top of the now-closed
+  interrupt summary-convergence surface, still without a broad ABI or syscall
+  surface
 
 Phase 4 storage proof now covers:
 

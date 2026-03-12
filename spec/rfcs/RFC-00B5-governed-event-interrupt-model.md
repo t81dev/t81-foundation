@@ -1,6 +1,6 @@
 # RFC-00B5: Governed Event Interrupt Model
 
-**Status:** draft
+**Status:** accepted
 **Type:** standards-track
 **Applies-To:** Axion HAL interrupt translation, kernel event delivery, TISC ISA interrupt and trap model
 **Created:** 2026-03-12
@@ -218,10 +218,11 @@ its own interrupt model rather than promising x86 or ARM kernel behavior.
 1. Promote the interrupt model from experimental note to official RFC.
 2. Update TernOS status docs so interrupt semantics are tracked against this RFC
    rather than as a generic open question.
-3. Keep current implementation work focused on boot and external validation
-   until interrupt integration becomes an active kernel milestone again.
-4. When interrupt work resumes, require new kernel or HAL slices to converge on
-   the governed event model instead of introducing ad hoc trap-return behavior.
+3. Converge the first interrupt-summary surfaces on that governed event model:
+   intake, delivery, queue state, source accounting, and audit provenance.
+4. When interrupt work continues beyond that convergence slice, require new
+   kernel or HAL behavior to follow the governed event model instead of
+   introducing ad hoc trap-return behavior.
 
 ## 7. Open Questions
 
@@ -233,17 +234,9 @@ its own interrupt model rather than promising x86 or ARM kernel behavior.
 
 ## 8. Acceptance Criteria
 
-This RFC can move from `draft` to `accepted` when:
-
-- the repo treats this document as the authoritative interrupt-model reference
-- TernOS status docs reference RFC-00B5 instead of describing the model only as
-  an unresolved workaround
-- no active implementation plan assumes a required trap-return opcode for the
-  current Axion kernel direction
-
 This RFC can move from `accepted` to `integrated` when:
 
 - HAL and kernel interrupt handling are documented normatively against this
   event model
-- any remaining interrupt-related open questions are narrowed to policy and
-  prioritization, not basic continuation semantics
+- any remaining interrupt-related open questions are narrowed to policy,
+  prioritization, and handler behavior, not basic continuation semantics

@@ -417,60 +417,27 @@ That acceptance bar is now met, and the current boot-ready slice is now
 closed. The next slice should preserve that state while moving outward to
 external boot evidence before any external pager interface exists.
 
-The first interrupt-convergence slice under RFC-00B5 can proceed in parallel
-without widening the service contract: kernel-owned interrupt event intake,
-deterministic loop delivery, and stable runtime/fault/audit diagnostics.
-The next narrow interrupt slice is queue observability: retained intake
-provenance, pending-queue high-water marks, and stable visibility into the
-next queued interrupt without adding controller policy.
-After that, the next narrow slice is deterministic source accounting for the
-existing interrupt classes, still without priority, masking, or controller
-ownership policy.
-The next useful queue-facing slice after that is pending source composition:
-how many queued interrupts exist per current source class, still with FIFO
-ordering and no priority policy.
-The next queue-facing slice after that is explicit queue-bound visibility:
-stable head/tail pending interrupt reporting, still without changing delivery
-order or adding controller policy.
-The next provenance slice after that is stable interrupt-audit correlation:
-retain the latest interrupt-delivery audit sequence directly in the interrupt
-summary surfaces instead of forcing callers to infer it from the recent log.
-The next alignment slice after that is live interrupt queue state in
-`AuditSummary`: retain pending interrupt counts, pending source composition,
-and FIFO head/tail visibility there too so the stable summaries stay aligned.
-The next accounting slice after that is total recorded-interrupt alignment in
-`AuditSummary`: expose the same aggregate recorded count already carried by the
-runtime and fault summaries.
-The next interrupt-audit slice after that is intake visibility too: record
-`InterruptRecorded` audit events when the kernel accepts interrupt inputs so
-both intake and delivery become traceable under RFC-00B5.
-The next provenance slice after that is stable interrupt-intake audit
-correlation too: retain the latest `InterruptRecorded` audit sequence directly
-in the interrupt summary surfaces instead of forcing callers to scan the log.
-The next interrupt-audit slice after that is latest interrupt audit kind
-retention too: expose whether the newest interrupt-related audit event was
-`InterruptRecorded` or `InterruptDelivered` without requiring log inspection.
-The next record-level provenance slice after that is intake audit retention on
-`KernelInterruptRecord` itself: pending and delivered interrupt records should
-carry their own `InterruptRecorded` audit sequence directly.
-The next record-level slice after that is delivery audit retention on
-`KernelInterruptRecord` too: delivered interrupt records should carry their own
-`InterruptDelivered` audit sequence directly.
-The next summary-level slice after that is stable latest delivery correlation
-too: retain the latest `InterruptDelivered` audit sequence directly even after
-later intake changes the newest interrupt-audit kind.
-The next metadata slice after that is latest interrupt audit target retention:
-stable interrupt summaries should expose which interrupt sequence the latest
-interrupt-related audit event refers to, not only its kind and audit sequence.
-The next metadata slice after that is latest interrupt audit source retention:
-stable interrupt summaries should expose the interrupt source class targeted by
-the latest interrupt-related audit event too.
-The next metadata slice after that is latest interrupt audit payload retention:
-stable interrupt summaries should expose the payload carried by the latest
-interrupt-related audit event too.
-The next metadata slice after that is latest interrupt audit timestamp
-retention: stable interrupt summaries should expose the timestamp carried by
-the latest interrupt-related audit event too.
+The interrupt summary-convergence slice under RFC-00B5 is now complete without
+widening the service contract:
+
+- kernel-owned interrupt event intake exists
+- deterministic loop delivery exists
+- stable runtime, fault, and audit summaries now expose queue state,
+  per-source accounting, and latest interrupt-audit metadata
+- `KernelInterruptRecord` now retains both intake and delivery audit
+  provenance directly
+- HAL/kernel coverage proves that interrupt summary surfaces stay
+  self-describing without log reconstruction
+
+The next interrupt milestone is no longer another summary field. It is the
+first real interrupt-policy slice under RFC-00B5:
+
+- explicit handler and continuation semantics for delivered interrupt events
+- timer and device-source behavior on top of the current governed event queue
+- policy choices such as prioritization, masking, or rate governance only when
+  justified by concrete kernel behavior
+- no trap-return opcode, userspace interrupt ABI, or controller-specific ABI
+  widening
 
 ## Recommended Order
 
@@ -482,5 +449,9 @@ the latest interrupt-related audit event too.
 5. preserve the new explicit boot-progress/fail reporting for that internal
    policy
 6. preserve the now-closed boot-ready slice and its status/RFC framing
-7. move next to external boot-lane validation
-8. only then evaluate pager-facing ABI shape or syscall/capability design
+7. preserve the now-complete interrupt summary-convergence surface under
+   RFC-00B5
+8. if interrupt work continues, move next to actual interrupt policy and
+   handler semantics instead of more summary growth
+9. otherwise keep focus on external boot-lane validation and later
+   syscall/capability design only after that proof point
