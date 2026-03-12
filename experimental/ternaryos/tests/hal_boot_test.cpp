@@ -2018,8 +2018,21 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
     check(runtime_after_follow_on_activation.runtime
               ->pager_worker_last_parked_resolution_follow_on_activation_cycle == 3,
           "runtime status tracks the follow-on activation ordinal after parked resolution");
+    check(runtime_after_follow_on_activation.runtime->pager_worker_parked_resolution_follow_on_resolutions == 1,
+          "runtime status counts one parked-resolution follow-on resolution once the queued item drains");
+    check(runtime_after_follow_on_activation.runtime
+              ->pager_worker_last_parked_resolution_follow_on_resolved_address_space_id ==
+              third_address_space_id,
+          "runtime status tracks the queued item as the parked-resolution follow-on resolved address");
+    check(runtime_after_follow_on_activation.runtime
+              ->pager_worker_last_parked_resolution_follow_on_resolved_handoff_sequence == 3,
+          "runtime status tracks the queued item handoff ordinal at follow-on resolution");
+    check(runtime_after_follow_on_activation.runtime
+              ->pager_worker_last_parked_resolution_follow_on_resolution_sequence == 3,
+          "runtime status tracks the follow-on resolution ordinal");
   }
 
+  (void)axion_kernel_step(*state);
   auto fault_after_final_resolution = axion_kernel_service_request(
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
   check(fault_after_final_resolution.fault_summary.has_value(),
@@ -2029,6 +2042,8 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "fault summary counts all three pager resolutions under the capped policy");
     check(fault_after_final_resolution.fault_summary->pager_worker_parked_resolution_follow_on_activations == 1,
           "fault summary retains one parked-resolution follow-on activation");
+    check(fault_after_final_resolution.fault_summary->pager_worker_parked_resolution_follow_on_resolutions == 1,
+          "fault summary retains one parked-resolution follow-on resolution");
     check(fault_after_final_resolution.fault_summary
               ->pager_worker_last_parked_resolution_follow_on_address_space_id ==
               third_address_space_id,
@@ -2039,6 +2054,16 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
     check(fault_after_final_resolution.fault_summary
               ->pager_worker_last_parked_resolution_follow_on_activation_cycle == 3,
           "fault summary retains the follow-on activation ordinal after parked resolution");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_parked_resolution_follow_on_resolved_address_space_id ==
+              third_address_space_id,
+          "fault summary retains the queued item as the parked-resolution follow-on resolved address");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_parked_resolution_follow_on_resolved_handoff_sequence == 3,
+          "fault summary retains the queued item handoff ordinal at follow-on resolution");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_parked_resolution_follow_on_resolution_sequence == 3,
+          "fault summary retains the follow-on resolution ordinal");
     check(fault_after_final_resolution.fault_summary->pager_worker_ready_bypass_activations == 1,
           "fault summary retains one ready-bypass activation under the capped policy");
     check(fault_after_final_resolution.fault_summary->pager_worker_ready_bypass_deferrals == 1,

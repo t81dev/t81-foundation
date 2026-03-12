@@ -80,8 +80,9 @@ kernel/
                        backlog, parked-resume handoff, parked-resumed-head
                        handoff, parked-resolved-head,
                        parked-resolved remaining-work,
-                       parked-resolution follow-on, blocker/blocked,
-                       activation, and completion diagnostics
+                       parked-resolution follow-on,
+                       parked-resolution successor completion,
+                       blocker/blocked, activation, and completion diagnostics
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,

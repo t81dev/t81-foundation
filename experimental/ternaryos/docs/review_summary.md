@@ -103,6 +103,8 @@ Kernel integration proof now also includes:
   behind that head at the instant it drained
 - the first activation after a parked-head resolution is now retained
   explicitly, linking the drained head to its deterministic queued successor
+- that queued successor is now also retained through completion, closing the
+  parked-path transition chain from drained head to successor resolution
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

@@ -108,8 +108,8 @@ head becomes ready again, including how much ready work still remained queued
 behind it at resumption time, which queued handoff it was, and the resumed
 blocked head's own handoff ordinal, plus when that resumed blocked head later
 resolves and what queued work still remained behind it at that point, plus the
-first deterministic queued activation that follows that parked resolution,
-before later pager integration.
+first deterministic queued activation that follows that parked resolution, and
+that successor's own deterministic completion, before later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 

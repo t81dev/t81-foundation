@@ -376,7 +376,8 @@ with the latest queued address space and handoff ordinal retained there. The
 resumed blocked head's own handoff ordinal is now retained too, and the kernel
 also retains when that resumed blocked head later resolves, including the
 queued work that remained behind it at that resolution point. The first
-activation that follows that parked-head resolution is now retained too.
+activation that follows that parked-head resolution is now retained too, and
+that queued successor is now retained through its own resolution as well.
 The next kernel slice is to keep that pager surface private while expanding
 backlog/load scheduling behavior before any public pager ABI or syscall design.
 

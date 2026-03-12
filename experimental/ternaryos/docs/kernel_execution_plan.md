@@ -351,6 +351,15 @@ The thirty-first pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves the trailing queued item activates as the
   first follow-on step after the parked head resolves
 
+The thirty-second pager-groundwork slice is now also complete:
+
+- the queued successor activated after a parked-head resolution is now also
+  retained through its own deterministic completion
+- runtime and fault diagnostics can now link "parked head resolved" to
+  "queued successor activated" to "queued successor resolved"
+- HAL/kernel coverage now proves the queued successor resolves as the final
+  deterministic step after the parked path drains
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable
