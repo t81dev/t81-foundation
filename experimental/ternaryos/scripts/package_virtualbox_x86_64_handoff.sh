@@ -19,6 +19,8 @@ required_files=(
   "$artifact_dir/ternos_virtualbox_guest.img"
   "$artifact_dir/ternos_virtualbox_guest.vdi"
   "$artifact_dir/staging/TERNOS/profile.txt"
+  "$artifact_dir/staging/TERNOS/expected-boot-report.txt"
+  "$artifact_dir/staging/TERNOS/expected-startup-status.txt"
   "$artifact_dir/staging/TERNOS/demo-output.txt"
   "$script_dir/../docs/virtualbox_x86_64_handoff.md"
 )
@@ -44,6 +46,8 @@ done
 /bin/cp "$artifact_dir/ternos_virtualbox_guest.img" "$bundle_dir/"
 /bin/cp "$artifact_dir/ternos_virtualbox_guest.vdi" "$bundle_dir/"
 /bin/cp "$artifact_dir/staging/TERNOS/profile.txt" "$bundle_dir/"
+/bin/cp "$artifact_dir/staging/TERNOS/expected-boot-report.txt" "$bundle_dir/"
+/bin/cp "$artifact_dir/staging/TERNOS/expected-startup-status.txt" "$bundle_dir/"
 /bin/cp "$artifact_dir/staging/TERNOS/demo-output.txt" "$bundle_dir/"
 /bin/cp "$script_dir/../docs/virtualbox_x86_64_handoff.md" "$bundle_dir/"
 
@@ -57,10 +61,14 @@ done
   print -r -- '- ternos_virtualbox_guest.vdi'
   print -r -- '- ternos_virtualbox_guest.img'
   print -r -- '- profile.txt'
+  print -r -- '- expected-boot-report.txt'
+  print -r -- '- expected-startup-status.txt'
   print -r -- '- demo-output.txt'
   print -r -- '- virtualbox_x86_64_handoff.md'
   print -r -- ''
   print -r -- 'Use the Markdown runbook as the authoritative execution guide.'
+  print -r -- 'Compare any guest-produced boot-report/startup-status artifacts'
+  print -r -- 'against the expected-* contract files in this bundle.'
 } > "$bundle_dir/README.txt"
 
 /usr/bin/tar -C "$output_dir" -czf "$archive_path" "$bundle_name"

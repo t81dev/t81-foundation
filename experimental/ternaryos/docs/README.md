@@ -434,6 +434,8 @@ Outputs:
 - `build/ternaryos/virtualbox/ternos_virtualbox_guest.vdi`
 - `build/ternaryos/virtualbox/BOOTX64.obj`
 - `build/ternaryos/virtualbox/staging/TERNOS/profile.txt`
+- `build/ternaryos/virtualbox/staging/TERNOS/expected-boot-report.txt`
+- `build/ternaryos/virtualbox/staging/TERNOS/expected-startup-status.txt`
 - `build/ternaryos/virtualbox/staging/TERNOS/demo-output.txt`
 
 To package the official `x86_64` handoff bundle for an external validator:
@@ -447,6 +449,9 @@ Outputs:
 - `build/ternaryos/handoff/ternos_virtualbox_x86_64_handoff/`
 - `build/ternaryos/handoff/ternos_virtualbox_x86_64_handoff.tar.gz`
 - `build/ternaryos/handoff/ternos_virtualbox_x86_64_handoff.tar.gz.sha256`
+- bundle includes `expected-boot-report.txt` and `expected-startup-status.txt`
+  so the external `x86_64` host can validate the same boot-progress contract
+  now used by the ARM/QEMU developer lane
 
 To generate the temporary ARMv8 developer-lane artifact for Apple Silicon
 VirtualBox hosts:

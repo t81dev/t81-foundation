@@ -273,6 +273,7 @@ Expected bundle contents:
 - guest `.vdi`
 - raw guest image
 - profile summary
+- expected boot-progress contract files
 - demo transcript
 - handoff runbook
 

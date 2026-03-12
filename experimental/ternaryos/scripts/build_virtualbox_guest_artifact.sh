@@ -87,6 +87,43 @@ artifact_status=$artifact_status
 boot_gap=$boot_gap
 EOF
 
+case "$guest_arch" in
+  x86_64)
+    expected_platform_id="virtualbox-x86_64:VBoxEFI/AHCI/E1000/VMSVGA/HPET+IOAPIC/acceptance-lane"
+    expected_boot_validation_lane="virtualbox-x86_64-handoff"
+    ;;
+  armv8)
+    expected_platform_id="virtualbox-armv8:ARMv8Virtual/developer-lane"
+    expected_boot_validation_lane="qemu-armv8-guest-probe"
+    ;;
+esac
+
+cat > "$staging_dir/TERNOS/expected-boot-report.txt" <<EOF
+AXION_EXPECTED_BOOT_REPORT
+platform_id=$expected_platform_id
+kernel_boot_ready_slice=complete
+boot_progress_state=ready
+boot_progress_pending=false
+boot_progress_blocked=false
+boot_progress_source=kernel-boot-critical-policy
+boot_validation_lane=$expected_boot_validation_lane
+EOF
+
+cat > "$staging_dir/TERNOS/expected-startup-status.txt" <<EOF
+AXION_EXPECTED_STARTUP_STATUS
+os_name=Axion
+platform_id=$expected_platform_id
+phase=5
+shell_mode=typed-builtins
+kernel_boot_ready_slice=complete
+boot_progress_pending=false
+boot_progress_blocked=false
+boot_validation_lane=$expected_boot_validation_lane
+storage_binding=virtualbox-ahci
+display_binding=virtualbox-vmsvga
+network_binding=virtualbox-e1000
+EOF
+
 cat > "$staging_dir/STARTUP.NSH" <<'EOF'
 echo TernOS VirtualBox guest artifact > fs0:\TERNOS\startup-ran.txt
 echo shell-started >> fs0:\TERNOS\startup-ran.txt

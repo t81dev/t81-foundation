@@ -63,6 +63,8 @@ Expected outputs:
 - `build/ternaryos/virtualbox/ternos_virtualbox_guest.vdi`
 - `build/ternaryos/virtualbox/BOOTX64.obj`
 - `build/ternaryos/virtualbox/staging/TERNOS/profile.txt`
+- `build/ternaryos/virtualbox/staging/TERNOS/expected-boot-report.txt`
+- `build/ternaryos/virtualbox/staging/TERNOS/expected-startup-status.txt`
 - `build/ternaryos/virtualbox/staging/TERNOS/demo-output.txt`
 
 Current important limitation:
@@ -130,6 +132,9 @@ The first useful `x86_64` result is any one of:
 - EFI shell can see the staged filesystem
 - the guest reaches the current HAL handoff stub
 - the guest emits a deterministic marker that the staged payload ran
+- any guest-produced `boot-report.txt` / `startup-status.txt` can be compared
+  directly against `expected-boot-report.txt` / `expected-startup-status.txt`
+  from the handoff bundle
 
 The broader roadmap gate remains stricter:
 
