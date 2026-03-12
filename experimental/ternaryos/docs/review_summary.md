@@ -34,9 +34,9 @@ The next kernel slice is now tracked explicitly in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `1915`
+- total assertions: `2300`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `1003/1003`
+- `t81_ternaryos_hal_boot_test`: `1424/1424`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -232,10 +232,13 @@ ARM diagnostic result:
 - the same guest-report contract now also has a synthetic blocked-state
   validation fixture, proving the external lane distinguishes ready boot
   progress from blocked boot progress instead of only checking the success case
+- local QEMU x86_64 + EDK2 now also boots the staged `x86_64` guest image,
+  recovers `efi-ran.txt`, `boot-report.txt`, and `startup-status.txt`, and
+  passes the shipped `x86_64` handoff validator against those recovered files
 - local VirtualBox ARM remains non-observable for EFI execution and is now only
   a secondary diagnostic lane
-- conclusion: the remaining blind spot is the local VirtualBox ARM path, not
-  the basic ARM EFI artifact shape
+- conclusion: the remaining blind spot is the real external `x86_64` VirtualBox
+  path, not the basic EFI artifact shape
 
 ## What Is Not Yet Proven
 

@@ -36,11 +36,11 @@ verified in hosted simulation on the current branch:
 Current local verification snapshot:
 
 - `ctest --test-dir build -R ternaryos -V` passes all 8 tests
-- `t81_ternaryos_hal_boot_test` = `636/636`
+- `t81_ternaryos_hal_boot_test` = `1424/1424`
 - `t81_ternaryos_device_driver_test` = `342/342`
 - `t81_ternaryos_shell_session_test` = `183/183`
 - `t81_ternaryos_mmu_test` = `87/87`
-- total TernOS assertions = `1548`
+- total TernOS assertions = `2300`
 
 So the external `x86_64` job is narrowly focused:
 
@@ -62,6 +62,7 @@ Expected outputs:
 - `build/ternaryos/virtualbox/ternos_virtualbox_guest.img`
 - `build/ternaryos/virtualbox/ternos_virtualbox_guest.vdi`
 - `build/ternaryos/virtualbox/BOOTX64.obj`
+- `build/ternaryos/virtualbox/BOOTX64.EFI`
 - `build/ternaryos/virtualbox/staging/TERNOS/profile.txt`
 - `build/ternaryos/virtualbox/staging/TERNOS/expected-boot-report.txt`
 - `build/ternaryos/virtualbox/staging/TERNOS/expected-startup-status.txt`
@@ -69,9 +70,10 @@ Expected outputs:
 
 Current important limitation:
 
-- `BOOTX64.EFI` is not produced yet on the official lane
-- the packaged `x86_64` artifact is therefore still a staging/handoff artifact,
-  not a completed guest boot proof
+- local QEMU x86_64 now proves the staged `BOOTX64.EFI` candidate executes and
+  emits the expected boot contract files
+- that is still not the official acceptance proof, because the real milestone
+  remains external `x86_64` VirtualBox host execution
 
 ## Expected Validation Host
 

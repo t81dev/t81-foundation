@@ -11,8 +11,8 @@ Current naming split:
 - `Axion` = operating system
 - `CanonFS` / `TISC` remain subsystem names
 
-**Last updated:** 2026-03-11
-**Commit:** `e2b44490` onward; kernel service-boundary work continues past this checkpoint
+**Last updated:** 2026-03-12
+**Commit:** `24618fe8` onward; boot validation and local x86_64 EFI diagnostics continue past this checkpoint
 **Branch:** `main`
 
 Reference docs:
@@ -45,11 +45,11 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 | `kernel/kernel_main.hpp/.cpp` | First Axion kernel-owned runtime entry/bootstrap over validated `BootContext`; computes runtime state, records MMU faults, queues and delivers faults through the loop, routes delivered faults into per-thread runtime state, quarantines faulting threads deterministically, gates recovery through kernel-owned process-group policy, emits audit-only governance events, drives deterministic scheduler dispatch, routes CanonRef-safe IPC, provides a deterministic kernel-step loop with counters, performs active device claims/releases, rejects invalid handoff contexts, exposes a service-facing request/result contract with deterministic healthy/faulted-group behavior plus stable diagnostics for runtime, process-group, supervisor, fault, device, audit, and per-device ownership summaries, and now carries a kernel-owned service runtime layer with service ids, supervisor ownership, backing process-group linkage, blocked/suspended/unhealthy state, stable service detail, lifecycle counters, richer supervisor-owned service inventory, deterministic register/unregister/suspend/resume/health actions, audit-visible lifecycle transitions, retained supervisor inventory metadata for the latest managed-service lifecycle transition, per-entry supervisor inventory transition metadata, compact supervisor-status lifecycle metadata, aligned supervisor-recovery lifecycle metadata, aligned fault-summary lifecycle metadata, aligned runtime-status lifecycle metadata, aligned audit-summary lifecycle metadata, aligned device-summary lifecycle metadata, aligned service-status transition metadata, explicit kernel-owned address-space ownership diagnostics bound to process groups, internal pager-needed fault-state diagnostics that distinguish `Unmapped` faults from policy faults, deterministic internal pager-handoff state that distinguishes pending from dispatched handoffs, deterministic internal pager-resolution state once the missing mapping appears, and a first real kernel-owned pager worker with FIFO consumption, deterministic repeated cycles, coalesced duplicate unresolved faults on worker-owned address spaces, retained backlog/load high-water diagnostics, explicit FIFO stall/backlog-blocked counters, explicit ready-behind-active backlog diagnostics, ready-backlog depth/high-water tracking, retained receipt identities/ordinals, active-work handoff ordinals, queued-head identities/ordinals, deterministic bounded ready-bypass activation on idle worker selection, retained ready-bypass deferral diagnostics, parked capped deferral once a blocked head has already used its one bypass, retained parked-cycle and parked-episode diagnostics, live parked-ready backlog diagnostics, retained parked-resumption diagnostics, retained parked-resume backlog diagnostics, retained parked-resume handoff diagnostics, retained parked-resumed-head handoff diagnostics, retained parked-resolved-head diagnostics, retained parked-resolved remaining-work diagnostics, retained parked-resolution follow-on diagnostics, retained parked-resolution successor completion diagnostics, retained blocker/blocked address-space identities, retained stall ordinals, retained blocked-side stall ordinals, retained blocked-side backlog depth, retained activation identities/ordinals, retained completion identities/ordinals, a deterministic terminal parked-head failure policy with retained terminal diagnostics, a kernel-owned boot-critical pager auto-resolution policy with retained resolution diagnostics, and explicit boot-progress/fail runtime reporting | 127 |
 | `hal/virtualbox_platform.hpp/.cpp` | First-target VirtualBox promotion scaffold: VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC profile validation, device-map descriptors, timer-tick simulation, and `BootContext` construction | 43 |
 | `hal/virtualbox_guest_devices.hpp/.cpp` | VirtualBox guest-device binding seam: maps the first supported HAL storage, network, and display profile onto AHCI/E1000/VMSVGA-shaped Phase 4 adapters, rejects unsupported NVMe/PCNet/VGA promotion paths, and bootstraps the first guest profile as a reusable runtime bundle | 39 |
-| `hal/virtualbox_efi_stub.c` | Freestanding VBox EFI guest stub source: constructs the first guest `BootContext` via the C ABI bridge and serves as the source for the staged `BOOTX64.obj` artifact | — |
+| `hal/virtualbox_efi_stub.c` | Freestanding VBox EFI guest stub source: constructs the first guest `BootContext` via the C ABI bridge, emits the narrow boot-report/startup-status contract, and serves as the source for the staged `BOOTX64.obj` plus local diagnostic `BOOTX64.EFI` artifact | — |
 | `hal/virtualbox_armv8_efi_stub.c` | Freestanding ARMv8 VBox EFI guest stub source for the secondary developer lane; constructs an ARMv8 `BootContext` via the same C ABI bridge, emits the live serial banner and boot report, and now embeds a backend-generated Axion shell startup snapshot into the staged guest artifact | — |
 | `hal/virtualbox_armv8_efi_control.c` | Ultra-minimal ARMv8 VBox EFI control application for the secondary developer lane; writes a standalone execution marker without touching the HAL bridge so Apple Silicon VirtualBox can be tested for "any EFI app runs at all" | — |
 | `hal/virtualbox_armv8_efi_shim.c` | Temporary ARMv8 developer-lane EFI link shim: provides a freestanding `ternaryos_hal_main_c` stub so Apple Silicon hosts can emit a real `BOOTAA64.EFI` without claiming the true C++ HAL bridge is linked into PE/COFF yet | — |
-| `scripts/build_virtualbox_guest_artifact.sh` | Reproducible VirtualBox guest-artifact pipeline: emits both the primary `x86_64` artifact lane and a temporary ARMv8 developer-lane artifact, stages `BOOTX64.obj` / `BOOTAA64.obj`, links a developer-lane `BOOTAA64.EFI`, and now places `STARTUP.NSH` at both the filesystem root and `EFI/BOOT` for ARM boot-path probing | — |
+| `scripts/build_virtualbox_guest_artifact.sh` | Reproducible VirtualBox guest-artifact pipeline: emits both the primary `x86_64` artifact lane and a temporary ARMv8 developer-lane artifact, stages `BOOTX64.obj` / `BOOTAA64.obj`, links a local diagnostic `BOOTX64.EFI` plus the developer-lane `BOOTAA64.EFI`, and places `STARTUP.NSH` at both the filesystem root and `EFI/BOOT` for probe fallback | — |
 | `scripts/package_virtualbox_x86_64_handoff.sh` | Packages the official `x86_64` VirtualBox handoff lane into a portable bundle with the guest artifact, profile summary, expected boot-progress contract files, a comparison helper, demo output, and runbook for an external validator | — |
 | `scripts/validate_virtualbox_x86_64_handoff.sh` | Compares guest-produced `boot-report.txt` / `startup-status.txt` against the packaged `x86_64` acceptance-lane contract files inside the handoff bundle | — |
 | `scripts/check_virtualbox_host.sh` | Host-capability check for local VirtualBox validation: reports whether the current machine can run the roadmap’s `x86_64` guest target or the temporary ARMv8 developer lane | — |
@@ -57,6 +57,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 | `scripts/probe_virtualbox_armv8_vm.sh` | Headless ARMv8 VirtualBox boot probe: registers a temporary VM, attaches the staged developer-lane VDI, boots VBox EFI, captures `VBox.log`, and confirms firmware-visible AHCI disk attachment before cleanup | — |
 | `scripts/run_qemu_armv8_efi_control.sh` | QEMU AArch64 EFI control probe: boots the ARM developer-lane raw image under EDK2, captures serial output, and verifies whether the staged control EFI leaves its execution marker | — |
 | `scripts/run_qemu_armv8_guest_probe.sh` | QEMU AArch64 guest bring-up probe: boots the staged ARM guest image under EDK2, requires the serial banner, and inspects the mutated probe image for `efi-ran.txt`, `boot-report.txt`, and the staged startup artifacts, including the consolidated Phase 4 device-layer report | — |
+| `scripts/run_qemu_x86_64_guest_probe.sh` | QEMU x86_64 guest bring-up probe: boots the staged `x86_64` guest image under EDK2, requires `efi-ran.txt`, `boot-report.txt`, and `startup-status.txt`, and reuses the shipped `x86_64` handoff validator against the recovered contract files | — |
 | `scripts/validate_qemu_armv8_guest_reports.sh` | Shared guest-report validator used by the live QEMU ARM guest probe and a synthetic blocked-state fixture so ready and blocked boot-progress expectations stay on one external contract | — |
 | `dev/phase4_startup_snapshot.cpp` | Build-time Phase 4 startup snapshot generator: runs the real VirtualBox guest bootstrap, proves CanonStore recovery plus VMSVGA present and E1000 round-trip through the hosted device seam, and emits the generated `startup-phase4` artifact/header embedded by the ARM EFI developer-lane stub | — |
 | `mmu/ternary_page_alloc.hpp/.cpp` | Physical page allocator; balanced-ternary `PageState` {Free=-1, Reserved=0, Allocated=+1}; `alloc_page`, `alloc_contiguous`, `free_page` | 28 |
@@ -69,7 +70,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - The first RFC-00B3 kernel-integration step is now implemented: `hal_main` no longer terminates at a stub and instead hands off to `axion_kernel_main(...)`, which builds the first kernel runtime state from the validated `BootContext`.
 - The first supported VM profile is intentionally narrow: VBox EFI firmware, AHCI storage, E1000 networking, VMSVGA display, and HPET/IOAPIC timing.
 - NVMe remains visible in the upstream VirtualBox source tree but is explicitly deferred behind AHCI for the first persistence gate.
-- A reproducible VirtualBox disk-artifact target now exists (`t81_ternaryos_virtualbox_guest_artifact`) and stages metadata, demo evidence, and a compiled `BOOTX64.obj` stub object; final `.efi` linking remains the blocking gap.
+- A reproducible VirtualBox disk-artifact target now exists (`t81_ternaryos_virtualbox_guest_artifact`) and stages metadata, demo evidence, a compiled `BOOTX64.obj` stub object, and a local diagnostic `BOOTX64.EFI` candidate for the `x86_64` lane.
 - Local boot validation is blocked on this Apple Silicon development host because `VBoxManage list systemproperties` currently reports `Supported platform architectures: ARMv8`, while the roadmap target remains `x86_64`.
 - Program split is now explicit: `x86_64` VirtualBox remains the acceptance lane, QEMU AArch64 is the primary local developer lane for observable EFI execution, and ARMv8 VirtualBox is a secondary diagnostic lane for artifact generation and narrow host-specific investigation.
 - A temporary ARMv8 developer-lane artifact now exists to keep local VirtualBox iteration moving on Apple Silicon without redefining the official promotion target, and it now includes a compiled `BOOTAA64.obj` EFI-stub object.
@@ -92,6 +93,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - A packaged-bundle smoke helper plus `t81_ternaryos_virtualbox_x86_64_handoff_bundle_smoke` target now prove the shipped handoff bundle is internally self-consistent using a bundled smoke fixture.
 - A packaged-bundle negative smoke helper plus `t81_ternaryos_virtualbox_x86_64_handoff_bundle_negative_smoke` now also prove the shipped handoff bundle rejects a bundled mismatch fixture with an explicit validation failure.
 - That closes the current local external-validation packaging lane. The next milestone is external `x86_64` VirtualBox execution and return of real recovered boot artifacts against the shipped contract.
+- A new local QEMU x86_64 EFI probe now boots the staged `x86_64` guest image, recovers `efi-ran.txt`, `boot-report.txt`, and `startup-status.txt`, and passes the existing `x86_64` handoff validator unchanged. That gives the official `x86_64` artifact a real local execution lane without claiming VirtualBox acceptance proof.
 
 **Phase 1 test total: 161 / 161**
 
@@ -226,7 +228,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 1003 | 1 |
+| `t81_ternaryos_hal_boot_test` | 1424 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -234,7 +236,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **1638** | |
+| **Total** | **2300** | |
 
 Run all TernOS tests:
 

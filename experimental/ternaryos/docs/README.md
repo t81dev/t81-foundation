@@ -140,7 +140,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 1915/1915 assertions, 8/8 tests pass
+# Expected: 2300/2300 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -301,11 +301,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `1003/1003`
+- `t81_ternaryos_hal_boot_test` is `1424/1424`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `1915`
+- total TernOS assertions are `2300`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state
@@ -437,6 +437,7 @@ Outputs:
 - `build/ternaryos/virtualbox/ternos_virtualbox_guest.img`
 - `build/ternaryos/virtualbox/ternos_virtualbox_guest.vdi`
 - `build/ternaryos/virtualbox/BOOTX64.obj`
+- `build/ternaryos/virtualbox/BOOTX64.EFI`
 - `build/ternaryos/virtualbox/staging/TERNOS/profile.txt`
 - `build/ternaryos/virtualbox/staging/TERNOS/expected-boot-report.txt`
 - `build/ternaryos/virtualbox/staging/TERNOS/expected-startup-status.txt`
@@ -470,6 +471,24 @@ Outputs:
   target now proves the packaged bundle also rejects a mismatched smoke fixture
 - that closes the local `x86_64` handoff packaging lane; the next step is a real
   external `x86_64` VirtualBox host run returning recovered boot artifacts
+
+To boot-probe the staged `x86_64` guest image under a local QEMU EFI
+diagnostic lane:
+
+```sh
+cmake --build build --target t81_ternaryos_qemu_x86_64_guest_probe
+```
+
+Outputs:
+
+- `build/ternaryos/qemu_x86_64_guest/qemu-x86_64-guest-summary.txt`
+- `build/ternaryos/qemu_x86_64_guest/qemu-x86_64-guest-serial.log`
+- `build/ternaryos/qemu_x86_64_guest/qemu-x86_64-guest-probe.img`
+- `build/ternaryos/qemu_x86_64_guest/efi-ran.txt`
+- `build/ternaryos/qemu_x86_64_guest/boot-report.txt`
+- `build/ternaryos/qemu_x86_64_guest/startup-status.txt`
+- `build/ternaryos/qemu_x86_64_guest/expected-boot-report.txt`
+- `build/ternaryos/qemu_x86_64_guest/expected-startup-status.txt`
 
 To generate the temporary ARMv8 developer-lane artifact for Apple Silicon
 VirtualBox hosts:
@@ -558,9 +577,10 @@ Outputs:
 Current status:
 
 - the image is FAT-formatted and VirtualBox-ready as a disk artifact
-- it stages the current guest profile, captured demo evidence, and a compiled `BOOTX64.obj` stub object
-- it is not EFI-bootable yet; final PE/COFF `.efi` linking is still missing, so `BOOTX64.EFI` is not produced yet
+- it stages the current guest profile, captured demo evidence, a compiled `BOOTX64.obj` stub object, and a local diagnostic `BOOTX64.EFI` candidate
 - on this Apple Silicon host, `VBoxManage list systemproperties` currently reports `Supported platform architectures: ARMv8`, so the `x86_64` guest target cannot be boot-validated locally
+- local QEMU x86_64 + EDK2 can now execute the staged `BOOTX64.EFI` candidate, recover `efi-ran.txt`, `boot-report.txt`, and `startup-status.txt`, and pass the shipped `validate_virtualbox_x86_64_handoff.sh` contract helper unchanged
+- that local QEMU x86_64 lane is diagnostic only: it reduces uncertainty before external handoff, but it does not replace the real `x86_64` VirtualBox acceptance lane
 - the ARMv8 developer lane now goes one step further locally: VirtualBox firmware can boot headless, open the staged VDI through AHCI, and emit a captured `VBox.log`
 - with `lld` installed, the ARMv8 lane now emits a real `BOOTAA64.EFI`, but it is still a developer-lane shim rather than the true C++ HAL bridge
 - a separate control `BOOTAA64_CTRL.EFI` now exists for the ARMv8 lane and is staged ahead of the shim-backed app in `STARTUP.NSH`; current local probes still show no `startup-ran.txt`, `efi-ctrl-ran.txt`, or `efi-ran.txt` markers, which strongly suggests the local blocker is VirtualBox ARM EFI execution/boot selection rather than the TernOS HAL bridge

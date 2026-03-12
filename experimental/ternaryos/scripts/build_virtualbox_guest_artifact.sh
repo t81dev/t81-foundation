@@ -11,6 +11,7 @@ output_dir=$2
 guest_arch=$3
 demo_bin="$build_dir/t81_ternaryos_demo"
 efi_obj="$build_dir/ternaryos/virtualbox/BOOTX64.obj"
+x86_efi_bin="$build_dir/ternaryos/virtualbox/BOOTX64.EFI"
 armv8_efi_obj="$build_dir/ternaryos/virtualbox_armv8/BOOTAA64.obj"
 armv8_efi_bin="$build_dir/ternaryos/virtualbox_armv8/BOOTAA64.EFI"
 armv8_efi_ctrl_bin="$build_dir/ternaryos/virtualbox_armv8/BOOTAA64_CTRL.EFI"
@@ -74,7 +75,8 @@ current hosted simulation path. It contains:
 
 ${readme_note}
 
-Important: this artifact is not yet a true EFI-bootable guest image.
+Important: this artifact may include a local diagnostic EFI candidate, but the
+official acceptance proof still requires an external x86_64 VirtualBox host.
 EOF
 
 cat > "$staging_dir/TERNOS/profile.txt" <<EOF
@@ -129,6 +131,10 @@ echo TernOS VirtualBox guest artifact > fs0:\TERNOS\startup-ran.txt
 echo shell-started >> fs0:\TERNOS\startup-ran.txt
 echo Inspect \TERNOS\profile.txt and \TERNOS\demo-output.txt for details. >> fs0:\TERNOS\startup-ran.txt
 fs0:
+\EFI\BOOT\BOOTX64.EFI
+\EFI\BOOT\bootx64.efi
+BOOTX64.EFI
+bootx64.efi
 \EFI\BOOT\BOOTAA64_CTRL.EFI
 \EFI\BOOT\BOOTAA64.EFI
 \EFI\BOOT\bootaa64.efi
@@ -143,6 +149,13 @@ if [[ "$guest_arch" == "x86_64" && -f "$efi_obj" ]]; then
   cp "$efi_obj" "$staging_dir/EFI/BOOT/BOOTX64.OBJ"
 elif [[ "$guest_arch" == "armv8" && -f "$armv8_efi_obj" ]]; then
   cp "$armv8_efi_obj" "$staging_dir/EFI/BOOT/BOOTAA64.OBJ"
+fi
+
+if [[ "$guest_arch" == "x86_64" && -f "$x86_efi_bin" ]]; then
+  cp "$x86_efi_bin" "$staging_dir/EFI/BOOT/BOOTX64.EFI"
+  cp "$x86_efi_bin" "$staging_dir/EFI/BOOT/bootx64.efi"
+  perl -0pi -e 's/artifact_status=staged-not-bootable/artifact_status=efi-boot-candidate/' "$staging_dir/TERNOS/profile.txt"
+  perl -0pi -e 's/boot_gap=missing-real-bootx64-efi/boot_gap=local-qemu-diagnostic-shim-efi-present/' "$staging_dir/TERNOS/profile.txt"
 fi
 
 if [[ "$guest_arch" == "armv8" && -f "$armv8_efi_bin" ]]; then
