@@ -447,6 +447,9 @@ both intake and delivery become traceable under RFC-00B5.
 The next provenance slice after that is stable interrupt-intake audit
 correlation too: retain the latest `InterruptRecorded` audit sequence directly
 in the interrupt summary surfaces instead of forcing callers to scan the log.
+The next interrupt-audit slice after that is latest interrupt audit kind
+retention too: expose whether the newest interrupt-related audit event was
+`InterruptRecorded` or `InterruptDelivered` without requiring log inspection.
 
 ## Recommended Order
 

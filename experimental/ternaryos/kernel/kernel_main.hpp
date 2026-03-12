@@ -333,6 +333,7 @@ struct KernelRuntimeState {
   std::optional<KernelInterruptRecord> last_recorded_interrupt{};
   std::optional<KernelInterruptRecord> last_delivered_interrupt{};
   std::optional<uint64_t> last_recorded_interrupt_audit_sequence{};
+  std::optional<KernelAuditEventKind> last_interrupt_audit_kind{};
   std::optional<uint64_t> last_interrupt_audit_sequence{};
   std::optional<KernelPagerHandoffRecord> last_pager_handoff{};
   std::optional<KernelPagerResolutionRecord> last_pager_resolution{};
@@ -571,6 +572,7 @@ struct KernelRuntimeStatusView {
   std::optional<KernelInterruptRecord> next_pending_interrupt{};
   std::optional<KernelInterruptRecord> last_pending_interrupt{};
   std::optional<uint64_t> last_recorded_interrupt_audit_sequence{};
+  std::optional<KernelAuditEventKind> last_interrupt_audit_kind{};
   std::optional<uint64_t> last_interrupt_audit_sequence{};
   std::optional<KernelInterruptRecord> last_recorded_interrupt{};
   std::optional<KernelInterruptRecord> last_delivered_interrupt{};
@@ -900,6 +902,7 @@ struct KernelFaultSummaryView {
   std::optional<KernelInterruptRecord> next_pending_interrupt{};
   std::optional<KernelInterruptRecord> last_pending_interrupt{};
   std::optional<uint64_t> last_recorded_interrupt_audit_sequence{};
+  std::optional<KernelAuditEventKind> last_interrupt_audit_kind{};
   std::optional<uint64_t> last_interrupt_audit_sequence{};
   std::optional<KernelInterruptRecord> last_recorded_interrupt{};
   std::optional<KernelInterruptRecord> last_delivered_interrupt{};
@@ -926,6 +929,7 @@ struct KernelAuditSummaryView {
   std::optional<KernelInterruptRecord> next_pending_interrupt{};
   std::optional<KernelInterruptRecord> last_pending_interrupt{};
   std::optional<uint64_t> last_recorded_interrupt_audit_sequence{};
+  std::optional<KernelAuditEventKind> last_interrupt_audit_kind{};
   uint64_t thread_quarantines{0};
   uint64_t process_group_fault_entries{0};
   uint64_t supervisor_notifications{0};

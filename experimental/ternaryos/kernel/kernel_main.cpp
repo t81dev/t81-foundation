@@ -664,6 +664,7 @@ void record_interrupt(KernelRuntimeState& state,
       state.last_audit_event.has_value()
           ? std::optional<uint64_t>{state.last_audit_event->sequence}
           : std::nullopt;
+  state.last_interrupt_audit_kind = KernelAuditEventKind::InterruptRecorded;
 }
 
 bool maybe_recover_thread(KernelRuntimeState& state,
@@ -1173,6 +1174,7 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
               : std::nullopt,
       .last_recorded_interrupt_audit_sequence =
           state.last_recorded_interrupt_audit_sequence,
+      .last_interrupt_audit_kind = state.last_interrupt_audit_kind,
       .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
       .last_recorded_interrupt = state.last_recorded_interrupt,
       .last_delivered_interrupt = state.last_delivered_interrupt,
@@ -1351,6 +1353,7 @@ KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) 
               : std::nullopt,
       .last_recorded_interrupt_audit_sequence =
           state.last_recorded_interrupt_audit_sequence,
+      .last_interrupt_audit_kind = state.last_interrupt_audit_kind,
       .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
       .thread_quarantines = state.counters.thread_quarantines,
       .process_group_fault_entries = state.counters.process_group_fault_entries,
@@ -1761,6 +1764,7 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
           state.last_audit_event.has_value()
               ? std::optional<uint64_t>{state.last_audit_event->sequence}
               : std::nullopt;
+      state.last_interrupt_audit_kind = KernelAuditEventKind::InterruptDelivered;
       handled_by_policy = true;
     } else if (!state.pending_pager_handoffs.empty()) {
       const auto address_space_id = state.pending_pager_handoffs.front();
@@ -2213,6 +2217,7 @@ KernelServiceResult axion_kernel_service_request(
                   : std::nullopt,
           .last_recorded_interrupt_audit_sequence =
               state.last_recorded_interrupt_audit_sequence,
+          .last_interrupt_audit_kind = state.last_interrupt_audit_kind,
           .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
           .last_recorded_interrupt = state.last_recorded_interrupt,
           .last_delivered_interrupt = state.last_delivered_interrupt,

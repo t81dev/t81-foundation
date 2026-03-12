@@ -145,6 +145,9 @@ Kernel integration proof now also includes:
 - stable interrupt-intake audit correlation is now retained too through the
   same summaries, so the latest recorded interrupt can be matched to its audit
   sequence without scanning the recent log
+- latest interrupt audit kind is now retained too through those summaries, so
+  callers can tell whether the newest interrupt-related audit event was intake
+  or delivery without scanning the log
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures
