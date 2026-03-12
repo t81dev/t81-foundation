@@ -82,7 +82,8 @@ kernel/
                        parked-resolved remaining-work,
                        parked-resolution follow-on,
                        parked-resolution successor completion,
-                       blocker/blocked, activation, and completion diagnostics
+                       blocker/blocked, activation, completion, and terminal
+                       parked-head diagnostics
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,
@@ -386,9 +387,10 @@ Local hosted proof as of the current branch:
   service request routing, stable service detail, richer supervisor inventory,
   and deterministic lifecycle behavior now exist above the stable
   supervisor/process-group contract. The next step is to keep that contract
-  stable and continue downward into richer pager-worker behavior on top of the
-  new pager-needed, handoff-tracked, resolution-tracked, and worker-consumed
-  address-space state, tracked explicitly in:
+  stable and continue downward into a narrow boot-critical pager-resolution
+  policy on top of the new pager-needed, handoff-tracked, resolution-tracked,
+  worker-consumed, and terminal-failed address-space state, tracked
+  explicitly in:
   - `docs/kernel_execution_plan.md`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence

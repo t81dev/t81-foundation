@@ -287,7 +287,10 @@ void record_pager_fault_state(KernelRuntimeState& state,
     return;
   }
   address_space->pager_needed = true;
-  if (address_space->pager_handoff_pending || address_space->pager_worker_owned) {
+  if (address_space->pager_terminal) {
+    address_space->pager_handoff_pending = false;
+    address_space->pager_worker_owned = false;
+  } else if (address_space->pager_handoff_pending || address_space->pager_worker_owned) {
     ++address_space->pager_faults_coalesced;
     ++state.counters.pager_faults_coalesced;
   } else {
@@ -309,6 +312,12 @@ std::size_t count_pager_needed_address_spaces(const KernelRuntimeState& state) {
   return std::count_if(state.address_spaces.begin(),
                        state.address_spaces.end(),
                        [](const auto& entry) { return entry.second.pager_needed; });
+}
+
+std::size_t count_pager_terminal_address_spaces(const KernelRuntimeState& state) {
+  return std::count_if(state.address_spaces.begin(),
+                       state.address_spaces.end(),
+                       [](const auto& entry) { return entry.second.pager_terminal; });
 }
 
 std::size_t count_pending_pager_handoff_address_spaces(const KernelRuntimeState& state) {
@@ -1003,6 +1012,7 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .pager_eligible_faults = state.counters.pager_eligible_faults,
       .policy_faults = state.counters.policy_faults,
       .pager_needed_address_spaces = count_pager_needed_address_spaces(state),
+      .pager_terminal_address_spaces = count_pager_terminal_address_spaces(state),
       .pending_pager_handoffs = count_pending_pager_handoff_address_spaces(state),
       .pending_pager_handoff_high_watermark =
           state.pending_pager_handoff_high_watermark,
@@ -1148,6 +1158,13 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
           state.pager_worker.last_ready_backlog_cycle,
       .pager_worker_last_ready_backlog_count =
           state.pager_worker.last_ready_backlog_count,
+      .pager_worker_terminal_failures = state.pager_worker.terminal_failures,
+      .pager_worker_last_terminal_address_space_id =
+          state.pager_worker.last_terminal_address_space_id,
+      .pager_worker_last_terminal_handoff_sequence =
+          state.pager_worker.last_terminal_handoff_sequence,
+      .pager_worker_last_terminal_cycle =
+          state.pager_worker.last_terminal_cycle,
       .last_audit_event = state.last_audit_event,
       .last_service_transition_id = latest_service_transition.service_id,
       .last_service_transition_kind = latest_service_transition.kind,
@@ -1604,6 +1621,7 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
               }
               ++state.pager_worker.parked_cycles;
               ++state.counters.pager_worker_parked_cycles;
+              ++state.pager_worker.inbox.front().parked_cycle_count;
               state.pager_worker.last_parked_blocked_address_space_id =
                   blocked_address_space_id;
               state.pager_worker.last_parked_ready_address_space_id =
@@ -1620,6 +1638,29 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
                   std::max(state.pager_worker.parked_ready_high_watermark,
                            ready_count);
               state.pager_worker.last_parked_ready_count = ready_count;
+              if (state.pager_worker.inbox.front().parked_cycle_count >=
+                  KernelRuntimeState::kPagerWorkerParkedCycleLimit) {
+                auto terminal_work_item = state.pager_worker.inbox.front();
+                state.pager_worker.parked_blocked_address_space_id.reset();
+                state.pager_worker.inbox.pop_front();
+                ++state.pager_worker.terminal_failures;
+                ++state.counters.pager_worker_terminal_failures;
+                state.pager_worker.last_terminal_address_space_id =
+                    terminal_work_item.handoff.address_space_id;
+                state.pager_worker.last_terminal_handoff_sequence =
+                    terminal_work_item.handoff.sequence;
+                state.pager_worker.last_terminal_cycle =
+                    state.pager_worker.terminal_failures;
+                if (auto* terminal_address_space = state.find_address_space_mut(
+                        terminal_work_item.handoff.address_space_id)) {
+                  terminal_address_space->pager_handoff_pending = false;
+                  terminal_address_space->pager_worker_owned = false;
+                  terminal_address_space->pager_terminal = true;
+                  ++terminal_address_space->pager_terminal_failures;
+                  terminal_address_space->last_pager_terminal_sequence =
+                      state.pager_worker.last_terminal_cycle;
+                }
+              }
               activate_selected_work = false;
             }
           }
@@ -1771,6 +1812,7 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
         }
         address_space->pager_needed = false;
         address_space->pager_worker_owned = false;
+        address_space->pager_terminal = false;
         address_space->pending_pager_fault_count = 0;
         ++address_space->pager_resolutions;
         address_space->last_pager_resolution_sequence =
@@ -1878,6 +1920,8 @@ KernelServiceResult axion_kernel_service_request(
           .address_space_count = state.address_space_count(),
           .mapped_pages = state.page_table.size(),
           .pager_needed_address_space_count = count_pager_needed_address_spaces(state),
+          .pager_terminal_address_space_count =
+              count_pager_terminal_address_spaces(state),
           .pending_pager_handoff_count = count_pending_pager_handoff_address_spaces(state),
           .pending_pager_handoff_high_watermark =
               state.pending_pager_handoff_high_watermark,
@@ -2022,6 +2066,13 @@ KernelServiceResult axion_kernel_service_request(
               state.pager_worker.last_ready_backlog_cycle,
           .pager_worker_last_ready_backlog_count =
               state.pager_worker.last_ready_backlog_count,
+          .pager_worker_terminal_failures = state.pager_worker.terminal_failures,
+          .pager_worker_last_terminal_address_space_id =
+              state.pager_worker.last_terminal_address_space_id,
+          .pager_worker_last_terminal_handoff_sequence =
+              state.pager_worker.last_terminal_handoff_sequence,
+          .pager_worker_last_terminal_cycle =
+              state.pager_worker.last_terminal_cycle,
           .managed_service_count = service_summary.managed_service_count,
           .blocked_service_count = service_summary.blocked_service_count,
           .suspended_service_count = service_summary.suspended_service_count,

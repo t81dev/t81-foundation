@@ -109,7 +109,11 @@ behind it at resumption time, which queued handoff it was, and the resumed
 blocked head's own handoff ordinal, plus when that resumed blocked head later
 resolves and what queued work still remained behind it at that point, plus the
 first deterministic queued activation that follows that parked resolution, and
-that successor's own deterministic completion, before later pager integration.
+that successor's own deterministic completion. A once-bypassed parked head now
+also becomes terminal after a fixed number of repeated parked cycles, is
+removed from the worker queue, and remains visible through retained terminal
+diagnostics. The next step is a narrow kernel-owned boot-critical
+pager-resolution policy before any later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 

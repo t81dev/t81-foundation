@@ -378,8 +378,12 @@ also retains when that resumed blocked head later resolves, including the
 queued work that remained behind it at that resolution point. The first
 activation that follows that parked-head resolution is now retained too, and
 that queued successor is now retained through its own resolution as well.
-The next kernel slice is to keep that pager surface private while expanding
-backlog/load scheduling behavior before any public pager ABI or syscall design.
+If that once-bypassed parked head remains unresolved for a fixed number of
+repeated parked cycles, the kernel now terminalizes it, removes it from the
+worker queue, and retains explicit terminal-failure diagnostics instead of
+retrying indefinitely. The next kernel slice is to keep that pager surface
+private while adding a narrow boot-critical pager-resolution policy before any
+public pager ABI or syscall design.
 
 The working execution note for this slice is:
 

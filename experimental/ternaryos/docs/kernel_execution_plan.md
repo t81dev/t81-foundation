@@ -367,17 +367,17 @@ The thirty-second pager-groundwork slice is now also complete:
 Do not widen the existing service surface further unless a concrete runtime
 need appears.
 
-### 2. Keep pager state internal while preparing richer pager work
+### 2. Keep pager state internal while preparing boot-critical pager work
 
 The next real kernel work is now:
 
 - pager integration
-- richer kernel-owned pager work after the first worker model
-- explicit transition handling for scheduling beyond the new bounded
-  ready-bypass parking rule once the current worker diagnostics are no longer
-  sufficient
-- stable diagnostics proving pager worker behavior remains deterministic under
-  deeper load
+- a narrow kernel-owned boot-critical pager-resolution policy on top of the
+  first worker model
+- explicit terminal handling for unresolved parked heads so the boot lane can
+  fail closed instead of remaining indefinitely diagnosable
+- stable diagnostics proving the kernel distinguishes resumable pager work from
+  terminal boot-blocking pager work without widening the public contract
 
 ### 3. Keep the pager surface internal first
 
@@ -411,13 +411,14 @@ The current pager-groundwork slice is complete when:
    pager ABI surface
 
 That acceptance bar is now met. The next slice should preserve that state while
-expanding pager-worker behavior carefully before any external pager interface
-exists.
+adding a minimal boot-critical pager-resolution policy before any external
+pager interface exists.
 
 ## Recommended Order
 
 1. preserve the current service-runtime contract without widening it casually
 2. preserve the new pager-needed runtime state on address spaces
-3. add richer internal pager-worker behavior without widening the contract
-4. expose only stable diagnostics for that worker state first
+3. preserve the new terminal-failure rule for unresolved parked heads
+4. add a narrow internal boot-critical pager-resolution policy without widening
+   the contract
 5. only then evaluate pager-facing ABI shape or syscall/capability design

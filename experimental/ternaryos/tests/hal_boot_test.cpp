@@ -2158,6 +2158,210 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
   }
 }
 
+static void test_kernel_pager_worker_terminal_parked_head() {
+  std::printf(
+      "\n[AC-22e] Axion pager worker terminalizes an unresolved parked head\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for parked terminal policy");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext first_thread;
+  first_thread.label = "pager-terminal-a";
+  first_thread.registers[0] = 111;
+
+  t81::ternaryos::sched::TiscContext second_thread;
+  second_thread.label = "pager-terminal-b";
+  second_thread.registers[0] = 222;
+
+  t81::ternaryos::sched::TiscContext third_thread;
+  third_thread.label = "pager-terminal-c";
+  third_thread.registers[0] = 333;
+
+  auto first_tid = axion_kernel_spawn_thread(*state, first_thread);
+  auto second_tid = axion_kernel_spawn_thread(*state, second_thread);
+  auto third_tid = axion_kernel_spawn_thread(*state, third_thread);
+  check(first_tid.has_value(), "first terminal thread spawns successfully");
+  check(second_tid.has_value(), "second terminal thread spawns successfully");
+  check(third_tid.has_value(), "third terminal thread spawns successfully");
+  if (!first_tid || !second_tid || !third_tid) {
+    return;
+  }
+
+  const auto* first_runtime = state->find_thread_runtime(*first_tid);
+  const auto* second_runtime = state->find_thread_runtime(*second_tid);
+  const auto* third_runtime = state->find_thread_runtime(*third_tid);
+  check(first_runtime != nullptr, "first terminal runtime state exists");
+  check(second_runtime != nullptr, "second terminal runtime state exists");
+  check(third_runtime != nullptr, "third terminal runtime state exists");
+  if (!first_runtime || !second_runtime || !third_runtime) {
+    return;
+  }
+
+  const auto first_address_space_id =
+      state->find_process_group_address_space(first_runtime->process_group_id);
+  const auto second_address_space_id =
+      state->find_process_group_address_space(second_runtime->process_group_id);
+  const auto third_address_space_id =
+      state->find_process_group_address_space(third_runtime->process_group_id);
+  check(first_address_space_id.has_value(),
+        "first terminal process group resolves to an address space");
+  check(second_address_space_id.has_value(),
+        "second terminal process group resolves to an address space");
+  check(third_address_space_id.has_value(),
+        "third terminal process group resolves to an address space");
+  if (!first_address_space_id || !second_address_space_id ||
+      !third_address_space_id) {
+    return;
+  }
+
+  const auto first_tva = mmu::tva_from_vpn_offset(90, 0);
+  const auto second_tva = mmu::tva_from_vpn_offset(91, 0);
+  const auto third_tva = mmu::tva_from_vpn_offset(92, 0);
+  state->pending_faults.push_back(KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva = first_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault = mmu::MmuFault::Unmapped,
+      .subject_tid = *first_tid,
+  });
+  state->pending_faults.push_back(KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva = second_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault = mmu::MmuFault::Unmapped,
+      .subject_tid = *second_tid,
+  });
+  state->pending_faults.push_back(KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva = third_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault = mmu::MmuFault::Unmapped,
+      .subject_tid = *third_tid,
+  });
+
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     second_tva,
+                     *second_address_space_id),
+        "second terminal address space accepts its mapping before bypass");
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     third_tva,
+                     *third_address_space_id),
+        "third terminal address space accepts its mapping before terminal policy");
+
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+
+  auto runtime_after_terminal = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_after_terminal.runtime.has_value(),
+        "runtime status exposes terminal parked-head policy");
+  if (runtime_after_terminal.runtime) {
+    check(!runtime_after_terminal.runtime->pager_worker_busy,
+          "runtime status keeps the worker idle after terminalizing the blocked head");
+    check(runtime_after_terminal.runtime->pager_resolutions == 1,
+          "runtime status resolves only the promoted ready item before terminalizing the blocked head");
+    check(runtime_after_terminal.runtime->pager_needed_address_space_count == 2,
+          "runtime status keeps the terminal head and trailing ready item pager-needed before final drain");
+    check(runtime_after_terminal.runtime->pager_terminal_address_space_count == 1,
+          "runtime status counts one terminal pager address space");
+    check(runtime_after_terminal.runtime->pager_worker_inbox_count == 1,
+          "runtime status removes the terminal head from the pager-worker inbox");
+    check(runtime_after_terminal.runtime->pager_worker_next_queued_address_space_id ==
+              third_address_space_id,
+          "runtime status leaves the trailing ready item at the queue front after terminalizing the head");
+    check(runtime_after_terminal.runtime->pager_worker_next_queued_handoff_sequence == 3,
+          "runtime status preserves the trailing ready item handoff ordinal after terminalizing the head");
+    check(runtime_after_terminal.runtime->pager_worker_parked_cycles == 3,
+          "runtime status counts three parked cycles before the terminal rule fires");
+    check(runtime_after_terminal.runtime->pager_worker_ready_bypass_deferrals == 1,
+          "runtime status keeps one deferral episode before terminalizing the head");
+    check(runtime_after_terminal.runtime->pager_worker_terminal_failures == 1,
+          "runtime status counts one terminal parked-head failure");
+    check(runtime_after_terminal.runtime->pager_worker_last_terminal_address_space_id ==
+              first_address_space_id,
+          "runtime status tracks the terminalized blocked head");
+    check(runtime_after_terminal.runtime->pager_worker_last_terminal_handoff_sequence == 1,
+          "runtime status tracks the blocked-head handoff ordinal at terminalization");
+    check(runtime_after_terminal.runtime->pager_worker_last_terminal_cycle == 1,
+          "runtime status tracks the first terminal failure ordinal");
+  }
+
+  auto fault_after_terminal = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_after_terminal.fault_summary.has_value(),
+        "fault summary exposes terminal parked-head policy");
+  if (fault_after_terminal.fault_summary) {
+    check(fault_after_terminal.fault_summary->pager_terminal_address_spaces == 1,
+          "fault summary counts one terminal pager address space");
+    check(fault_after_terminal.fault_summary->pager_worker_inbox_count == 1,
+          "fault summary removes the terminal head from the worker inbox");
+    check(fault_after_terminal.fault_summary->pager_worker_terminal_failures == 1,
+          "fault summary counts one terminal parked-head failure");
+    check(fault_after_terminal.fault_summary->pager_worker_last_terminal_address_space_id ==
+              first_address_space_id,
+          "fault summary retains the terminalized blocked head");
+    check(fault_after_terminal.fault_summary->pager_worker_last_terminal_handoff_sequence ==
+              1,
+          "fault summary retains the blocked-head handoff ordinal at terminalization");
+    check(fault_after_terminal.fault_summary->pager_worker_last_terminal_cycle == 1,
+          "fault summary retains the terminal failure ordinal");
+  }
+
+  (void)axion_kernel_step(*state);
+  auto runtime_after_trailing_resolution = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_after_trailing_resolution.runtime.has_value(),
+        "runtime status exposes trailing ready work after terminalizing the head");
+  if (runtime_after_trailing_resolution.runtime) {
+    check(runtime_after_trailing_resolution.runtime->pager_resolutions == 2,
+          "runtime status resolves the trailing ready item after terminalizing the blocked head");
+    check(runtime_after_trailing_resolution.runtime->pager_terminal_address_space_count == 1,
+          "runtime status retains the terminal address space after the trailing item drains");
+    check(runtime_after_trailing_resolution.runtime->pager_needed_address_space_count == 1,
+          "runtime status leaves only the terminal address space pager-needed after the trailing item drains");
+    check(runtime_after_trailing_resolution.runtime->pager_worker_inbox_count == 0,
+          "runtime status drains the worker inbox after the trailing item resolves");
+  }
+
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     first_tva,
+                     *first_address_space_id),
+        "terminalized head still accepts a later mapping");
+  (void)axion_kernel_step(*state);
+  auto runtime_after_terminal_mapping = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_after_terminal_mapping.runtime.has_value(),
+        "runtime status retains terminal state after the blocked head is mapped later");
+  if (runtime_after_terminal_mapping.runtime) {
+    check(runtime_after_terminal_mapping.runtime->pager_resolutions == 2,
+          "runtime status does not auto-resolve a terminalized head after a later mapping");
+    check(runtime_after_terminal_mapping.runtime->pager_terminal_address_space_count == 1,
+          "runtime status retains one terminal address space after a later mapping");
+    check(runtime_after_terminal_mapping.runtime->pager_worker_terminal_failures == 1,
+          "runtime status retains one terminal failure after a later mapping");
+    check(runtime_after_terminal_mapping.runtime->pager_worker_inbox_count == 0,
+          "runtime status keeps the worker inbox empty after the terminalized head is mapped later");
+  }
+}
+
 static void test_kernel_fault_process_boundary() {
   std::printf("\n[AC-23] Axion kernel loop routes faults into thread runtime state\n");
 
@@ -4684,6 +4888,7 @@ int main() {
   test_kernel_pager_fault_state();
   test_kernel_pager_worker_backlog();
   test_kernel_pager_worker_ready_bypass_cap();
+  test_kernel_pager_worker_terminal_parked_head();
   test_kernel_fault_process_boundary();
   test_kernel_fault_acknowledgement_and_recovery();
   test_kernel_process_group_fault_gate();
