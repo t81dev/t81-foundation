@@ -203,6 +203,10 @@ struct KernelRuntimeState {
   std::optional<std::size_t> last_parked_resolved_remaining_inbox_count{};
   std::optional<AddressSpaceId> last_parked_resolved_remaining_address_space_id{};
   std::optional<uint64_t> last_parked_resolved_remaining_handoff_sequence{};
+  uint64_t parked_resolution_follow_on_activations{0};
+  std::optional<AddressSpaceId> last_parked_resolution_follow_on_address_space_id{};
+  std::optional<uint64_t> last_parked_resolution_follow_on_handoff_sequence{};
+  std::optional<uint64_t> last_parked_resolution_follow_on_activation_cycle{};
   uint64_t activations{0};
     std::optional<AddressSpaceId> last_activated_address_space_id{};
     std::optional<uint64_t> last_activation_cycle{};
@@ -248,6 +252,7 @@ struct KernelRuntimeState {
     uint64_t pager_worker_parked_cycles{0};
     uint64_t pager_worker_parked_resumptions{0};
     uint64_t pager_worker_parked_resolved_heads{0};
+    uint64_t pager_worker_parked_resolution_follow_on_activations{0};
     uint64_t pager_worker_stall_cycles{0};
     uint64_t pager_worker_backlog_blocked_cycles{0};
     uint64_t pager_worker_ready_backlog_cycles{0};
@@ -531,6 +536,10 @@ struct KernelRuntimeStatusView {
   std::optional<std::size_t> pager_worker_last_parked_resolved_remaining_inbox_count{};
   std::optional<AddressSpaceId> pager_worker_last_parked_resolved_remaining_address_space_id{};
   std::optional<uint64_t> pager_worker_last_parked_resolved_remaining_handoff_sequence{};
+  uint64_t pager_worker_parked_resolution_follow_on_activations{0};
+  std::optional<AddressSpaceId> pager_worker_last_parked_resolution_follow_on_address_space_id{};
+  std::optional<uint64_t> pager_worker_last_parked_resolution_follow_on_handoff_sequence{};
+  std::optional<uint64_t> pager_worker_last_parked_resolution_follow_on_activation_cycle{};
   uint64_t pager_worker_activations{0};
   std::optional<AddressSpaceId> pager_worker_last_activated_address_space_id{};
   std::optional<uint64_t> pager_worker_last_activation_cycle{};
@@ -758,6 +767,10 @@ struct KernelFaultSummaryView {
   std::optional<std::size_t> pager_worker_last_parked_resolved_remaining_inbox_count{};
   std::optional<AddressSpaceId> pager_worker_last_parked_resolved_remaining_address_space_id{};
   std::optional<uint64_t> pager_worker_last_parked_resolved_remaining_handoff_sequence{};
+  uint64_t pager_worker_parked_resolution_follow_on_activations{0};
+  std::optional<AddressSpaceId> pager_worker_last_parked_resolution_follow_on_address_space_id{};
+  std::optional<uint64_t> pager_worker_last_parked_resolution_follow_on_handoff_sequence{};
+  std::optional<uint64_t> pager_worker_last_parked_resolution_follow_on_activation_cycle{};
   uint64_t pager_worker_activations{0};
   std::optional<AddressSpaceId> pager_worker_last_activated_address_space_id{};
   std::optional<uint64_t> pager_worker_last_activation_cycle{};

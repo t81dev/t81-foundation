@@ -79,7 +79,8 @@ kernel/
                        parked-ready backlog, parked-resumption, parked-resume
                        backlog, parked-resume handoff, parked-resumed-head
                        handoff, parked-resolved-head,
-                       parked-resolved remaining-work, blocker/blocked,
+                       parked-resolved remaining-work,
+                       parked-resolution follow-on, blocker/blocked,
                        activation, and completion diagnostics
 
 mmu/

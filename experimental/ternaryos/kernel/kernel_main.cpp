@@ -1107,6 +1107,14 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
           state.pager_worker.last_parked_resolved_remaining_address_space_id,
       .pager_worker_last_parked_resolved_remaining_handoff_sequence =
           state.pager_worker.last_parked_resolved_remaining_handoff_sequence,
+      .pager_worker_parked_resolution_follow_on_activations =
+          state.pager_worker.parked_resolution_follow_on_activations,
+      .pager_worker_last_parked_resolution_follow_on_address_space_id =
+          state.pager_worker.last_parked_resolution_follow_on_address_space_id,
+      .pager_worker_last_parked_resolution_follow_on_handoff_sequence =
+          state.pager_worker.last_parked_resolution_follow_on_handoff_sequence,
+      .pager_worker_last_parked_resolution_follow_on_activation_cycle =
+          state.pager_worker.last_parked_resolution_follow_on_activation_cycle,
       .pager_worker_activations = state.pager_worker.activations,
       .pager_worker_last_activated_address_space_id =
           state.pager_worker.last_activated_address_space_id,
@@ -1609,6 +1617,14 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
           }
         }
         if (activate_selected_work) {
+          const bool is_parked_resolution_follow_on =
+              selected_index == 0 &&
+              state.pager_worker.last_parked_resolved_remaining_address_space_id.has_value() &&
+              state.pager_worker.last_parked_resolved_remaining_handoff_sequence.has_value() &&
+              state.pager_worker.inbox[selected_index].handoff.address_space_id ==
+                  *state.pager_worker.last_parked_resolved_remaining_address_space_id &&
+              state.pager_worker.inbox[selected_index].handoff.sequence ==
+                  *state.pager_worker.last_parked_resolved_remaining_handoff_sequence;
           if (selected_index == 0 &&
               state.pager_worker.parked_blocked_address_space_id.has_value() &&
               *state.pager_worker.parked_blocked_address_space_id ==
@@ -1658,6 +1674,16 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
           state.pager_worker.last_activated_address_space_id =
               state.pager_worker.active_work->handoff.address_space_id;
           state.pager_worker.last_activation_cycle = state.pager_worker.activations;
+          if (is_parked_resolution_follow_on) {
+            ++state.pager_worker.parked_resolution_follow_on_activations;
+            ++state.counters.pager_worker_parked_resolution_follow_on_activations;
+            state.pager_worker.last_parked_resolution_follow_on_address_space_id =
+                state.pager_worker.active_work->handoff.address_space_id;
+            state.pager_worker.last_parked_resolution_follow_on_handoff_sequence =
+                state.pager_worker.active_work->handoff.sequence;
+            state.pager_worker.last_parked_resolution_follow_on_activation_cycle =
+                state.pager_worker.activations;
+          }
         }
       }
       if (state.pager_worker.active_work.has_value()) {
@@ -1932,6 +1958,14 @@ KernelServiceResult axion_kernel_service_request(
               state.pager_worker.last_parked_resolved_remaining_address_space_id,
           .pager_worker_last_parked_resolved_remaining_handoff_sequence =
               state.pager_worker.last_parked_resolved_remaining_handoff_sequence,
+          .pager_worker_parked_resolution_follow_on_activations =
+              state.pager_worker.parked_resolution_follow_on_activations,
+          .pager_worker_last_parked_resolution_follow_on_address_space_id =
+              state.pager_worker.last_parked_resolution_follow_on_address_space_id,
+          .pager_worker_last_parked_resolution_follow_on_handoff_sequence =
+              state.pager_worker.last_parked_resolution_follow_on_handoff_sequence,
+          .pager_worker_last_parked_resolution_follow_on_activation_cycle =
+              state.pager_worker.last_parked_resolution_follow_on_activation_cycle,
           .pager_worker_activations = state.pager_worker.activations,
           .pager_worker_last_activated_address_space_id =
               state.pager_worker.last_activated_address_space_id,

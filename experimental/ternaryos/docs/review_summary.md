@@ -101,6 +101,8 @@ Kernel integration proof now also includes:
   resolves, including its handoff and resolution ordinals
 - parked-head resolution now also retains the queued work still remaining
   behind that head at the instant it drained
+- the first activation after a parked-head resolution is now retained
+  explicitly, linking the drained head to its deterministic queued successor
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures
