@@ -69,6 +69,7 @@ struct KernelPagerWorkItem {
 
 enum class KernelAuditEventKind : uint8_t {
   FaultDelivered = 0,
+  InterruptRecorded,
   InterruptDelivered,
   ThreadQuarantined,
   ProcessGroupFaultEntered,

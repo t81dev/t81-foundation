@@ -139,6 +139,9 @@ Kernel integration proof now also includes:
 - audit-summary interrupt accounting is now aligned too: the aggregate
   recorded interrupt count is exposed there alongside delivered counts and
   per-source counters
+- interrupt intake is now audit-visible too: `InterruptRecorded` events are
+  emitted when inputs enter the kernel-owned FIFO, not only when they are
+  later delivered
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

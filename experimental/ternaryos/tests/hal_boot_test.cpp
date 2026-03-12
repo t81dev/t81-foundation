@@ -1074,6 +1074,8 @@ static void test_kernel_interrupt_event_delivery() {
             "audit summary reports one pending network interrupt before delivery");
       check(queued_audit_summary.audit_summary->interrupts_recorded == 2,
             "audit summary reports recorded interrupt count before delivery");
+      check(queued_audit_summary.audit_summary->audit_events == 2,
+            "audit summary records both interrupt intake audit events before delivery");
       check(queued_audit_summary.audit_summary->next_pending_interrupt.has_value(),
             "audit summary exposes head pending interrupt before delivery");
       if (queued_audit_summary.audit_summary->next_pending_interrupt) {
@@ -1087,6 +1089,13 @@ static void test_kernel_interrupt_event_delivery() {
         check(queued_audit_summary.audit_summary->last_pending_interrupt->source ==
                   InterruptSource::Network,
               "audit summary preserves FIFO tail interrupt source");
+      }
+      check(queued_audit_summary.audit_summary->recent_events.size() == 2,
+            "audit summary retains interrupt intake audit events before delivery");
+      if (!queued_audit_summary.audit_summary->recent_events.empty()) {
+        check(queued_audit_summary.audit_summary->recent_events.back().kind ==
+                  KernelAuditEventKind::InterruptRecorded,
+              "audit summary records interrupt intake as the latest audit event before delivery");
       }
     }
   }

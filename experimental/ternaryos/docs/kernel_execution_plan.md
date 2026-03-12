@@ -441,6 +441,9 @@ and FIFO head/tail visibility there too so the stable summaries stay aligned.
 The next accounting slice after that is total recorded-interrupt alignment in
 `AuditSummary`: expose the same aggregate recorded count already carried by the
 runtime and fault summaries.
+The next interrupt-audit slice after that is intake visibility too: record
+`InterruptRecorded` audit events when the kernel accepts interrupt inputs so
+both intake and delivery become traceable under RFC-00B5.
 
 ## Recommended Order
 

@@ -656,6 +656,10 @@ void record_interrupt(KernelRuntimeState& state,
   ++state.counters.interrupts_recorded;
   increment_interrupt_source_counter(state.counters.interrupt_sources_recorded,
                                      interrupt.source);
+  record_audit_event(state,
+                     KernelAuditEventKind::InterruptRecorded,
+                     KernelRuntimeState::kKernelTid,
+                     KernelRuntimeState::kKernelProcessGroup);
 }
 
 bool maybe_recover_thread(KernelRuntimeState& state,
