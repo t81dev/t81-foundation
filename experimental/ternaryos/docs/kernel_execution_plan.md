@@ -456,6 +456,9 @@ carry their own `InterruptRecorded` audit sequence directly.
 The next record-level slice after that is delivery audit retention on
 `KernelInterruptRecord` too: delivered interrupt records should carry their own
 `InterruptDelivered` audit sequence directly.
+The next summary-level slice after that is stable latest delivery correlation
+too: retain the latest `InterruptDelivered` audit sequence directly even after
+later intake changes the newest interrupt-audit kind.
 
 ## Recommended Order
 

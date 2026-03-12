@@ -883,6 +883,8 @@ static void test_kernel_interrupt_event_delivery() {
           "runtime status exposes the latest delivered interrupt");
     check(runtime_status.runtime->last_recorded_interrupt_audit_sequence.has_value(),
           "runtime status retains latest recorded interrupt audit sequence");
+    check(runtime_status.runtime->last_delivered_interrupt_audit_sequence.has_value(),
+          "runtime status retains latest delivered interrupt audit sequence");
     check(runtime_status.runtime->last_interrupt_audit_kind.has_value(),
           "runtime status retains latest interrupt audit kind");
     check(runtime_status.runtime->last_interrupt_audit_sequence.has_value(),
@@ -904,6 +906,9 @@ static void test_kernel_interrupt_event_delivery() {
       check(runtime_status.runtime->last_delivered_interrupt->delivered_audit_sequence ==
                 *runtime_status.runtime->last_interrupt_audit_sequence,
             "runtime status retains latest delivered interrupt delivery audit sequence");
+      check(runtime_status.runtime->last_delivered_interrupt->delivered_audit_sequence ==
+                *runtime_status.runtime->last_delivered_interrupt_audit_sequence,
+            "runtime status retains stable delivered interrupt audit sequence");
     }
   }
 
@@ -942,6 +947,8 @@ static void test_kernel_interrupt_event_delivery() {
           "fault summary exposes the latest delivered interrupt");
     check(fault_summary.fault_summary->last_recorded_interrupt_audit_sequence.has_value(),
           "fault summary retains latest recorded interrupt audit sequence");
+    check(fault_summary.fault_summary->last_delivered_interrupt_audit_sequence.has_value(),
+          "fault summary retains latest delivered interrupt audit sequence");
     check(fault_summary.fault_summary->last_interrupt_audit_kind.has_value(),
           "fault summary retains latest interrupt audit kind");
     check(fault_summary.fault_summary->last_interrupt_audit_sequence.has_value(),
@@ -986,6 +993,8 @@ static void test_kernel_interrupt_event_delivery() {
           "audit summary retains latest interrupt audit kind");
     check(audit_summary.audit_summary->last_recorded_interrupt_audit_sequence.has_value(),
           "audit summary retains latest recorded interrupt audit sequence");
+    check(audit_summary.audit_summary->last_delivered_interrupt_audit_sequence.has_value(),
+          "audit summary retains latest delivered interrupt audit sequence");
     if (audit_summary.audit_summary->last_interrupt_audit_kind) {
       check(*audit_summary.audit_summary->last_interrupt_audit_kind ==
                 KernelAuditEventKind::InterruptDelivered,
@@ -1013,8 +1022,43 @@ static void test_kernel_interrupt_event_delivery() {
         check(audit_summary.audit_summary->last_delivered_interrupt->delivered_audit_sequence ==
                   *audit_summary.audit_summary->last_interrupt_audit_sequence,
               "audit summary retains latest delivered interrupt delivery audit sequence");
+        check(audit_summary.audit_summary->last_delivered_interrupt->delivered_audit_sequence ==
+                  *audit_summary.audit_summary->last_delivered_interrupt_audit_sequence,
+              "audit summary retains stable delivered interrupt audit sequence");
       }
     }
+    }
+  }
+
+  check(axion_kernel_record_interrupt(
+            *state,
+            HardwareInterrupt{
+                .source = InterruptSource::Keyboard,
+                .timestamp_ns = 250,
+                .payload = 55,
+            }),
+        "kernel records post-delivery interrupt event");
+  auto post_record_runtime = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(post_record_runtime.status == KernelServiceStatus::Ok,
+        "runtime status succeeds after post-delivery interrupt intake");
+  check(post_record_runtime.runtime.has_value(),
+        "runtime status returns post-delivery interrupt details");
+  if (post_record_runtime.runtime) {
+    check(post_record_runtime.runtime->last_interrupt_audit_kind.has_value(),
+          "runtime status retains latest interrupt audit kind after post-delivery intake");
+    if (post_record_runtime.runtime->last_interrupt_audit_kind) {
+      check(*post_record_runtime.runtime->last_interrupt_audit_kind ==
+                KernelAuditEventKind::InterruptRecorded,
+            "runtime status flips latest interrupt audit kind to intake after new interrupt");
+    }
+    check(post_record_runtime.runtime->last_delivered_interrupt_audit_sequence.has_value(),
+          "runtime status retains stable delivered interrupt audit sequence after new intake");
+    if (post_record_runtime.runtime->last_delivered_interrupt &&
+        post_record_runtime.runtime->last_delivered_interrupt_audit_sequence) {
+      check(post_record_runtime.runtime->last_delivered_interrupt->delivered_audit_sequence ==
+                *post_record_runtime.runtime->last_delivered_interrupt_audit_sequence,
+            "runtime status preserves delivered interrupt audit sequence after new intake");
     }
   }
 

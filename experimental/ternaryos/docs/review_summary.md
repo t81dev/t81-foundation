@@ -154,6 +154,9 @@ Kernel integration proof now also includes:
 - delivered interrupt records now retain their own delivery provenance too, so
   dispatched entries can also be matched directly to their
   `InterruptDelivered` audit sequence
+- stable latest delivery correlation is now retained too through the summaries,
+  so later interrupt intake does not erase direct access to the latest
+  `InterruptDelivered` audit sequence
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures
