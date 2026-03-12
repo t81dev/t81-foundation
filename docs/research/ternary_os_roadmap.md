@@ -114,8 +114,9 @@ also becomes terminal after a fixed number of repeated parked cycles, is
 removed from the worker queue, and remains visible through retained terminal
 diagnostics. Explicitly marked boot-critical address spaces now also
 auto-resolve their missing page through a kernel-owned policy path before
-later pager integration. The next step is explicit boot-progress/fail
-reporting for that internal policy.
+later pager integration. Runtime and fault summaries now also expose explicit
+boot-progress/fail state for that internal policy. The next step is phase
+closure for the current boot-ready slice.
 
 That near-term kernel slice is now tracked explicitly in:
 

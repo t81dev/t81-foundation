@@ -367,16 +367,15 @@ The thirty-second pager-groundwork slice is now also complete:
 Do not widen the existing service surface further unless a concrete runtime
 need appears.
 
-### 2. Keep pager state internal while preparing boot-progress reporting
+### 2. Keep pager state internal while closing the boot-ready slice
 
 The next real kernel work is now:
 
 - pager integration
-- explicit boot-progress/fail reporting above the new boot-critical pager
-  policy
-- stable diagnostics proving the kernel distinguishes resumable boot-critical
-  progress from terminal boot-blocking pager work without widening the public
-  contract
+- phase closure and boot-ready slice signoff on top of the new boot-critical
+  pager policy
+- stable verification proving the kernel now exposes direct boot-progress/fail
+  state without widening the public contract
 
 ### 3. Keep the pager surface internal first
 
@@ -410,8 +409,8 @@ The current pager-groundwork slice is complete when:
    pager ABI surface
 
 That acceptance bar is now met. The next slice should preserve that state while
-adding explicit boot-progress/fail reporting before any external pager
-interface exists.
+closing the current boot-ready slice before any external pager interface
+exists.
 
 ## Recommended Order
 
@@ -420,5 +419,7 @@ interface exists.
 3. preserve the new terminal-failure rule for unresolved parked heads
 4. preserve the new internal boot-critical pager-resolution policy without
    widening the contract
-5. add explicit boot-progress/fail reporting for that internal policy
-6. only then evaluate pager-facing ABI shape or syscall/capability design
+5. preserve the new explicit boot-progress/fail reporting for that internal
+   policy
+6. close the current boot-ready slice and update status docs/RFC framing
+7. only then evaluate pager-facing ABI shape or syscall/capability design

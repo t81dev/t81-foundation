@@ -2324,6 +2324,45 @@ static void test_kernel_pager_worker_terminal_parked_head() {
           "fault summary retains the terminal failure ordinal");
   }
 
+  check(axion_kernel_set_address_space_boot_critical(
+            *state, *first_address_space_id, true),
+        "kernel can mark a terminalized head boot-critical for reporting");
+  auto runtime_after_boot_block = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_after_boot_block.runtime.has_value(),
+        "runtime status exposes boot-blocked terminal head state");
+  if (runtime_after_boot_block.runtime) {
+    check(runtime_after_boot_block.runtime->boot_critical_address_space_count == 1,
+          "runtime status counts one boot-critical address space in blocked state");
+    check(runtime_after_boot_block.runtime->boot_critical_pager_needed_count == 0,
+          "runtime status reports no pending boot progress once the head is terminal");
+    check(runtime_after_boot_block.runtime->boot_critical_terminal_count == 1,
+          "runtime status reports one boot-critical terminal head");
+    check(!runtime_after_boot_block.runtime->boot_progress_pending,
+          "runtime status clears boot progress pending when only terminal boot-critical state remains");
+    check(runtime_after_boot_block.runtime->boot_progress_blocked,
+          "runtime status reports boot progress blocked for a terminal boot-critical head");
+  }
+
+  auto fault_after_boot_block = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_after_boot_block.fault_summary.has_value(),
+        "fault summary exposes boot-blocked terminal head state");
+  if (fault_after_boot_block.fault_summary) {
+    check(fault_after_boot_block.fault_summary->boot_critical_address_spaces == 1,
+          "fault summary counts one boot-critical address space in blocked state");
+    check(fault_after_boot_block.fault_summary
+              ->boot_critical_pager_needed_address_spaces == 0,
+          "fault summary reports no pending boot progress once the head is terminal");
+    check(fault_after_boot_block.fault_summary
+              ->boot_critical_terminal_address_spaces == 1,
+          "fault summary reports one boot-critical terminal head");
+    check(!fault_after_boot_block.fault_summary->boot_progress_pending,
+          "fault summary clears boot progress pending when only terminal boot-critical state remains");
+    check(fault_after_boot_block.fault_summary->boot_progress_blocked,
+          "fault summary reports boot progress blocked for a terminal boot-critical head");
+  }
+
   (void)axion_kernel_step(*state);
   auto runtime_after_trailing_resolution = axion_kernel_service_request(
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
@@ -2471,6 +2510,26 @@ static void test_kernel_boot_critical_pager_resolution() {
                      *third_address_space_id),
         "third boot-critical address space accepts its mapping before worker activation");
 
+  auto runtime_before_boot_critical_resolution = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_before_boot_critical_resolution.runtime.has_value(),
+        "runtime status exposes pending boot-critical progress before auto-resolution");
+  if (runtime_before_boot_critical_resolution.runtime) {
+    check(runtime_before_boot_critical_resolution.runtime
+              ->boot_critical_address_space_count == 1,
+          "runtime status counts one boot-critical address space before auto-resolution");
+    check(runtime_before_boot_critical_resolution.runtime
+              ->boot_critical_pager_needed_count == 1,
+          "runtime status reports one pending boot-critical address space before auto-resolution");
+    check(runtime_before_boot_critical_resolution.runtime
+              ->boot_critical_terminal_count == 0,
+          "runtime status reports no boot-critical terminal state before auto-resolution");
+    check(runtime_before_boot_critical_resolution.runtime->boot_progress_pending,
+          "runtime status reports boot progress pending before auto-resolution");
+    check(!runtime_before_boot_critical_resolution.runtime->boot_progress_blocked,
+          "runtime status keeps boot progress unblocked before auto-resolution");
+  }
+
   (void)axion_kernel_step(*state);
   auto runtime_after_boot_critical_resolution = axion_kernel_service_request(
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
@@ -2480,6 +2539,16 @@ static void test_kernel_boot_critical_pager_resolution() {
     check(runtime_after_boot_critical_resolution.runtime
               ->boot_critical_address_space_count == 1,
           "runtime status counts one boot-critical address space");
+    check(runtime_after_boot_critical_resolution.runtime
+              ->boot_critical_pager_needed_count == 0,
+          "runtime status clears pending boot progress after boot-critical resolution");
+    check(runtime_after_boot_critical_resolution.runtime
+              ->boot_critical_terminal_count == 0,
+          "runtime status reports no boot-critical terminal state after boot-critical resolution");
+    check(!runtime_after_boot_critical_resolution.runtime->boot_progress_pending,
+          "runtime status clears boot progress pending after boot-critical resolution");
+    check(!runtime_after_boot_critical_resolution.runtime->boot_progress_blocked,
+          "runtime status keeps boot progress unblocked after boot-critical resolution");
     check(runtime_after_boot_critical_resolution.runtime->pager_resolutions == 1,
           "runtime status resolves the boot-critical blocked head first");
     check(runtime_after_boot_critical_resolution.runtime
@@ -2518,6 +2587,16 @@ static void test_kernel_boot_critical_pager_resolution() {
     check(fault_after_boot_critical_resolution.fault_summary
               ->boot_critical_address_spaces == 1,
           "fault summary counts one boot-critical address space");
+    check(fault_after_boot_critical_resolution.fault_summary
+              ->boot_critical_pager_needed_address_spaces == 0,
+          "fault summary clears pending boot progress after boot-critical resolution");
+    check(fault_after_boot_critical_resolution.fault_summary
+              ->boot_critical_terminal_address_spaces == 0,
+          "fault summary reports no boot-critical terminal state after boot-critical resolution");
+    check(!fault_after_boot_critical_resolution.fault_summary->boot_progress_pending,
+          "fault summary clears boot progress pending after boot-critical resolution");
+    check(!fault_after_boot_critical_resolution.fault_summary->boot_progress_blocked,
+          "fault summary keeps boot progress unblocked after boot-critical resolution");
     check(fault_after_boot_critical_resolution.fault_summary
               ->pager_worker_boot_critical_resolutions == 1,
           "fault summary counts one boot-critical pager resolution");

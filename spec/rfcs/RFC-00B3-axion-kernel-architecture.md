@@ -384,9 +384,12 @@ worker queue, and retains explicit terminal-failure diagnostics instead of
 retrying indefinitely. Explicitly marked boot-critical address spaces now also
 auto-map their missing page through a kernel-owned policy path, resolving that
 blocked head before any ready-bypass or parked-terminal rule fires and
-retaining explicit boot-critical resolution diagnostics. The next kernel slice
-is to keep that pager surface private while adding explicit boot-progress/fail
-reporting before any public pager ABI or syscall design.
+retaining explicit boot-critical resolution diagnostics. Runtime and fault
+summaries now also expose explicit boot-progress/fail state for that internal
+policy through boot-critical pending counts, boot-critical terminal counts,
+and direct pending/blocked booleans. The next kernel slice is to keep that
+pager surface private while closing the current boot-ready slice before any
+public pager ABI or syscall design.
 
 The working execution note for this slice is:
 

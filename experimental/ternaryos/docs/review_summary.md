@@ -111,6 +111,9 @@ Kernel integration proof now also includes:
 - explicitly marked boot-critical address spaces now auto-map their missing
   page through a kernel-owned policy path, resolving the blocked head first
   and retaining that boot-critical resolution in runtime/fault diagnostics
+- runtime and fault summaries now also expose explicit boot-progress/fail state:
+  boot-critical pending counts, boot-critical terminal counts, and direct
+  pending/blocked booleans for the current boot lane
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

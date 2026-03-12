@@ -507,6 +507,10 @@ struct KernelRuntimeStatusView {
   std::size_t address_space_count{0};
   std::size_t mapped_pages{0};
   std::size_t boot_critical_address_space_count{0};
+  std::size_t boot_critical_pager_needed_count{0};
+  std::size_t boot_critical_terminal_count{0};
+  bool boot_progress_pending{false};
+  bool boot_progress_blocked{false};
   std::size_t pager_needed_address_space_count{0};
   std::size_t pager_terminal_address_space_count{0};
   std::size_t pending_pager_handoff_count{0};
@@ -758,6 +762,10 @@ struct KernelFaultSummaryView {
   uint64_t pager_eligible_faults{0};
   uint64_t policy_faults{0};
   std::size_t boot_critical_address_spaces{0};
+  std::size_t boot_critical_pager_needed_address_spaces{0};
+  std::size_t boot_critical_terminal_address_spaces{0};
+  bool boot_progress_pending{false};
+  bool boot_progress_blocked{false};
   std::size_t pager_needed_address_spaces{0};
   std::size_t pager_terminal_address_spaces{0};
   std::size_t pending_pager_handoffs{0};

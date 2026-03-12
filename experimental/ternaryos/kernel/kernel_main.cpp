@@ -326,6 +326,27 @@ std::size_t count_boot_critical_address_spaces(const KernelRuntimeState& state) 
                        [](const auto& entry) { return entry.second.boot_critical; });
 }
 
+std::size_t count_boot_critical_pager_needed_address_spaces(
+    const KernelRuntimeState& state) {
+  return std::count_if(state.address_spaces.begin(),
+                       state.address_spaces.end(),
+                       [](const auto& entry) {
+                         return entry.second.boot_critical &&
+                                entry.second.pager_needed &&
+                                !entry.second.pager_terminal;
+                       });
+}
+
+std::size_t count_boot_critical_terminal_address_spaces(
+    const KernelRuntimeState& state) {
+  return std::count_if(state.address_spaces.begin(),
+                       state.address_spaces.end(),
+                       [](const auto& entry) {
+                         return entry.second.boot_critical &&
+                                entry.second.pager_terminal;
+                       });
+}
+
 mmu::PagePermissions boot_critical_permissions_for_fault(
     mmu::MmuAccessMode access_mode) {
   switch (access_mode) {
@@ -1041,6 +1062,10 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       count_ready_pager_backlog_address_spaces(state);
   const auto parked_ready_pager_backlog_count =
       count_parked_ready_pager_backlog_address_spaces(state);
+  const auto boot_critical_pager_needed_count =
+      count_boot_critical_pager_needed_address_spaces(state);
+  const auto boot_critical_terminal_count =
+      count_boot_critical_terminal_address_spaces(state);
   return KernelFaultSummaryView{
       .recorded_faults = state.fault_count(),
       .pending_faults = state.pending_fault_count(),
@@ -1053,6 +1078,12 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .pager_eligible_faults = state.counters.pager_eligible_faults,
       .policy_faults = state.counters.policy_faults,
       .boot_critical_address_spaces = count_boot_critical_address_spaces(state),
+      .boot_critical_pager_needed_address_spaces =
+          boot_critical_pager_needed_count,
+      .boot_critical_terminal_address_spaces =
+          boot_critical_terminal_count,
+      .boot_progress_pending = boot_critical_pager_needed_count > 0,
+      .boot_progress_blocked = boot_critical_terminal_count > 0,
       .pager_needed_address_spaces = count_pager_needed_address_spaces(state),
       .pager_terminal_address_spaces = count_pager_terminal_address_spaces(state),
       .pending_pager_handoffs = count_pending_pager_handoff_address_spaces(state),
@@ -1987,6 +2018,10 @@ KernelServiceResult axion_kernel_service_request(
           count_ready_pager_backlog_address_spaces(state);
       const auto parked_ready_pager_backlog_count =
           count_parked_ready_pager_backlog_address_spaces(state);
+      const auto boot_critical_pager_needed_count =
+          count_boot_critical_pager_needed_address_spaces(state);
+      const auto boot_critical_terminal_count =
+          count_boot_critical_terminal_address_spaces(state);
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceRequestRejection::None;
       result.runtime = KernelRuntimeStatusView{
@@ -1997,6 +2032,10 @@ KernelServiceResult axion_kernel_service_request(
           .mapped_pages = state.page_table.size(),
           .boot_critical_address_space_count =
               count_boot_critical_address_spaces(state),
+          .boot_critical_pager_needed_count = boot_critical_pager_needed_count,
+          .boot_critical_terminal_count = boot_critical_terminal_count,
+          .boot_progress_pending = boot_critical_pager_needed_count > 0,
+          .boot_progress_blocked = boot_critical_terminal_count > 0,
           .pager_needed_address_space_count = count_pager_needed_address_spaces(state),
           .pager_terminal_address_space_count =
               count_pager_terminal_address_spaces(state),
