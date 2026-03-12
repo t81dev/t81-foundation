@@ -281,6 +281,7 @@ Expected bundle contents:
 - local synthetic handoff-validator fixture
 - local synthetic negative handoff-validator fixture
 - packaged bundle smoke-check helper and fixture
+- packaged bundle negative smoke-check helper and fixture
 
 ## What To Report Back
 

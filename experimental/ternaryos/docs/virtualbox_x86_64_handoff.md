@@ -165,6 +165,16 @@ For a local bundle smoke-check on the producing machine, run:
 That bundled smoke helper validates the packaged helper against the packaged
 `bundle-smoke/` fixture without requiring an external host run.
 
+For a local negative smoke-check on the producing machine, run:
+
+```sh
+./expect_packaged_virtualbox_x86_64_handoff_bundle_failure.sh .
+```
+
+That bundled negative smoke helper proves the packaged bundle rejects the
+packaged `bundle-negative-smoke/` mismatch fixture with an explicit validation
+failure.
+
 The broader roadmap gate remains stricter:
 
 - a bootable VirtualBox guest executes the current TernOS stack far enough to

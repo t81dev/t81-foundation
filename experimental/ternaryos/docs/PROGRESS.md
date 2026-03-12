@@ -89,6 +89,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - A synthetic `x86_64` handoff fixture now exercises that validator locally, so the acceptance-lane helper is no longer only documented and shipped; it is also verified against a valid recovered-artifact layout in-tree.
 - A second synthetic `x86_64` handoff negative fixture now proves the same helper rejects mismatched boot-progress state with an explicit validation-mismatch failure.
 - A packaged-bundle smoke helper plus `t81_ternaryos_virtualbox_x86_64_handoff_bundle_smoke` target now prove the shipped handoff bundle is internally self-consistent using a bundled smoke fixture.
+- A packaged-bundle negative smoke helper plus `t81_ternaryos_virtualbox_x86_64_handoff_bundle_negative_smoke` now also prove the shipped handoff bundle rejects a bundled mismatch fixture with an explicit validation failure.
 
 **Phase 1 test total: 161 / 161**
 

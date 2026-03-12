@@ -462,6 +462,8 @@ Outputs:
   proves the validator rejects a mismatched boot-progress artifact set
 - a local `t81_ternaryos_virtualbox_x86_64_handoff_bundle_smoke` target now
   proves the packaged handoff bundle is internally self-consistent
+- a local `t81_ternaryos_virtualbox_x86_64_handoff_bundle_negative_smoke`
+  target now proves the packaged bundle also rejects a mismatched smoke fixture
 
 To generate the temporary ARMv8 developer-lane artifact for Apple Silicon
 VirtualBox hosts:
