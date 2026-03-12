@@ -887,12 +887,16 @@ static void test_kernel_interrupt_event_delivery() {
           "runtime status retains latest delivered interrupt audit sequence");
     check(runtime_status.runtime->last_interrupt_audit_kind.has_value(),
           "runtime status retains latest interrupt audit kind");
+    check(runtime_status.runtime->last_interrupt_audit_interrupt_sequence.has_value(),
+          "runtime status retains latest interrupt audit interrupt sequence");
     check(runtime_status.runtime->last_interrupt_audit_sequence.has_value(),
           "runtime status retains latest interrupt audit sequence");
     if (runtime_status.runtime->last_interrupt_audit_kind) {
       check(*runtime_status.runtime->last_interrupt_audit_kind ==
                 KernelAuditEventKind::InterruptDelivered,
             "runtime status tracks interrupt delivery as latest interrupt audit kind");
+      check(*runtime_status.runtime->last_interrupt_audit_interrupt_sequence == 2,
+            "runtime status tracks delivered interrupt sequence as latest interrupt audit target");
     }
     if (runtime_status.runtime->last_recorded_interrupt) {
       check(runtime_status.runtime->last_recorded_interrupt->source ==
@@ -951,12 +955,16 @@ static void test_kernel_interrupt_event_delivery() {
           "fault summary retains latest delivered interrupt audit sequence");
     check(fault_summary.fault_summary->last_interrupt_audit_kind.has_value(),
           "fault summary retains latest interrupt audit kind");
+    check(fault_summary.fault_summary->last_interrupt_audit_interrupt_sequence.has_value(),
+          "fault summary retains latest interrupt audit interrupt sequence");
     check(fault_summary.fault_summary->last_interrupt_audit_sequence.has_value(),
           "fault summary retains latest interrupt audit sequence");
     if (fault_summary.fault_summary->last_interrupt_audit_kind) {
       check(*fault_summary.fault_summary->last_interrupt_audit_kind ==
                 KernelAuditEventKind::InterruptDelivered,
             "fault summary tracks interrupt delivery as latest interrupt audit kind");
+      check(*fault_summary.fault_summary->last_interrupt_audit_interrupt_sequence == 2,
+            "fault summary tracks delivered interrupt sequence as latest interrupt audit target");
     }
   }
 
@@ -991,6 +999,8 @@ static void test_kernel_interrupt_event_delivery() {
           "audit summary retains latest interrupt audit sequence");
     check(audit_summary.audit_summary->last_interrupt_audit_kind.has_value(),
           "audit summary retains latest interrupt audit kind");
+    check(audit_summary.audit_summary->last_interrupt_audit_interrupt_sequence.has_value(),
+          "audit summary retains latest interrupt audit interrupt sequence");
     check(audit_summary.audit_summary->last_recorded_interrupt_audit_sequence.has_value(),
           "audit summary retains latest recorded interrupt audit sequence");
     check(audit_summary.audit_summary->last_delivered_interrupt_audit_sequence.has_value(),
@@ -999,6 +1009,8 @@ static void test_kernel_interrupt_event_delivery() {
       check(*audit_summary.audit_summary->last_interrupt_audit_kind ==
                 KernelAuditEventKind::InterruptDelivered,
             "audit summary tracks interrupt delivery as latest interrupt audit kind");
+      check(*audit_summary.audit_summary->last_interrupt_audit_interrupt_sequence == 2,
+            "audit summary tracks delivered interrupt sequence as latest interrupt audit target");
     }
     check(audit_summary.audit_summary->last_recorded_interrupt.has_value(),
           "audit summary retains the latest recorded interrupt");
@@ -1047,10 +1059,14 @@ static void test_kernel_interrupt_event_delivery() {
   if (post_record_runtime.runtime) {
     check(post_record_runtime.runtime->last_interrupt_audit_kind.has_value(),
           "runtime status retains latest interrupt audit kind after post-delivery intake");
+    check(post_record_runtime.runtime->last_interrupt_audit_interrupt_sequence.has_value(),
+          "runtime status retains latest interrupt audit interrupt sequence after post-delivery intake");
     if (post_record_runtime.runtime->last_interrupt_audit_kind) {
       check(*post_record_runtime.runtime->last_interrupt_audit_kind ==
                 KernelAuditEventKind::InterruptRecorded,
             "runtime status flips latest interrupt audit kind to intake after new interrupt");
+      check(*post_record_runtime.runtime->last_interrupt_audit_interrupt_sequence == 3,
+            "runtime status flips latest interrupt audit target to the new interrupt");
     }
     check(post_record_runtime.runtime->last_delivered_interrupt_audit_sequence.has_value(),
           "runtime status retains stable delivered interrupt audit sequence after new intake");
@@ -1182,6 +1198,8 @@ static void test_kernel_interrupt_event_delivery() {
             "audit summary retains latest recorded interrupt audit sequence before delivery");
       check(queued_audit_summary.audit_summary->last_interrupt_audit_kind.has_value(),
             "audit summary retains latest interrupt audit kind before delivery");
+      check(queued_audit_summary.audit_summary->last_interrupt_audit_interrupt_sequence.has_value(),
+            "audit summary retains latest interrupt audit interrupt sequence before delivery");
       check(queued_audit_summary.audit_summary->next_pending_interrupt.has_value(),
             "audit summary exposes head pending interrupt before delivery");
       if (queued_audit_summary.audit_summary->next_pending_interrupt) {
@@ -1215,6 +1233,8 @@ static void test_kernel_interrupt_event_delivery() {
           check(*queued_audit_summary.audit_summary->last_interrupt_audit_kind ==
                     KernelAuditEventKind::InterruptRecorded,
                 "audit summary tracks interrupt intake as latest interrupt audit kind before delivery");
+          check(*queued_audit_summary.audit_summary->last_interrupt_audit_interrupt_sequence == 2,
+                "audit summary tracks latest recorded interrupt sequence before delivery");
         }
         if (queued_audit_summary.audit_summary->last_recorded_interrupt_audit_sequence) {
           check(*queued_audit_summary.audit_summary->last_recorded_interrupt_audit_sequence ==

@@ -653,6 +653,7 @@ void record_interrupt(KernelRuntimeState& state,
           ? std::optional<uint64_t>{state.last_audit_event->sequence}
           : std::nullopt;
   state.last_interrupt_audit_kind = KernelAuditEventKind::InterruptRecorded;
+  state.last_interrupt_audit_interrupt_sequence = state.next_interrupt_sequence;
   state.pending_interrupts.push_back(KernelInterruptRecord{
       .source = interrupt.source,
       .timestamp_ns = interrupt.timestamp_ns,
@@ -1179,6 +1180,8 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .last_delivered_interrupt_audit_sequence =
           state.last_delivered_interrupt_audit_sequence,
       .last_interrupt_audit_kind = state.last_interrupt_audit_kind,
+      .last_interrupt_audit_interrupt_sequence =
+          state.last_interrupt_audit_interrupt_sequence,
       .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
       .last_recorded_interrupt = state.last_recorded_interrupt,
       .last_delivered_interrupt = state.last_delivered_interrupt,
@@ -1360,6 +1363,8 @@ KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) 
       .last_delivered_interrupt_audit_sequence =
           state.last_delivered_interrupt_audit_sequence,
       .last_interrupt_audit_kind = state.last_interrupt_audit_kind,
+      .last_interrupt_audit_interrupt_sequence =
+          state.last_interrupt_audit_interrupt_sequence,
       .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
       .thread_quarantines = state.counters.thread_quarantines,
       .process_group_fault_entries = state.counters.process_group_fault_entries,
@@ -1780,6 +1785,8 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
                     state.last_delivered_interrupt->delivered_audit_sequence}
               : std::nullopt;
       state.last_interrupt_audit_kind = KernelAuditEventKind::InterruptDelivered;
+      state.last_interrupt_audit_interrupt_sequence =
+          state.last_delivered_interrupt->sequence;
       handled_by_policy = true;
     } else if (!state.pending_pager_handoffs.empty()) {
       const auto address_space_id = state.pending_pager_handoffs.front();
@@ -2230,11 +2237,13 @@ KernelServiceResult axion_kernel_service_request(
               !state.pending_interrupts.empty()
                   ? std::optional<KernelInterruptRecord>{state.pending_interrupts.back()}
                   : std::nullopt,
-      .last_recorded_interrupt_audit_sequence =
-          state.last_recorded_interrupt_audit_sequence,
-      .last_delivered_interrupt_audit_sequence =
-          state.last_delivered_interrupt_audit_sequence,
-      .last_interrupt_audit_kind = state.last_interrupt_audit_kind,
+          .last_recorded_interrupt_audit_sequence =
+              state.last_recorded_interrupt_audit_sequence,
+          .last_delivered_interrupt_audit_sequence =
+              state.last_delivered_interrupt_audit_sequence,
+          .last_interrupt_audit_kind = state.last_interrupt_audit_kind,
+          .last_interrupt_audit_interrupt_sequence =
+              state.last_interrupt_audit_interrupt_sequence,
           .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
           .last_recorded_interrupt = state.last_recorded_interrupt,
           .last_delivered_interrupt = state.last_delivered_interrupt,

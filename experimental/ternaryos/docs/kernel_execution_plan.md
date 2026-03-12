@@ -459,6 +459,9 @@ The next record-level slice after that is delivery audit retention on
 The next summary-level slice after that is stable latest delivery correlation
 too: retain the latest `InterruptDelivered` audit sequence directly even after
 later intake changes the newest interrupt-audit kind.
+The next metadata slice after that is latest interrupt audit target retention:
+stable interrupt summaries should expose which interrupt sequence the latest
+interrupt-related audit event refers to, not only its kind and audit sequence.
 
 ## Recommended Order
 
