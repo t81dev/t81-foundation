@@ -390,8 +390,9 @@ Local hosted proof as of the current branch:
   supervisor/process-group contract. The next step is to keep that contract
   stable and now carries explicit boot-progress/fail reporting on top of the
   new pager-needed, handoff-tracked, resolution-tracked, worker-consumed,
-  terminal-failed, and boot-critical auto-resolved address-space state,
-  tracked explicitly in:
+  terminal-failed, and boot-critical auto-resolved address-space state. That
+  closes the current internal boot-ready kernel slice. The next step is
+  external boot-lane validation, tracked explicitly in:
   - `docs/kernel_execution_plan.md`
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence

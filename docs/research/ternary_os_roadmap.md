@@ -115,8 +115,9 @@ removed from the worker queue, and remains visible through retained terminal
 diagnostics. Explicitly marked boot-critical address spaces now also
 auto-resolve their missing page through a kernel-owned policy path before
 later pager integration. Runtime and fault summaries now also expose explicit
-boot-progress/fail state for that internal policy. The next step is phase
-closure for the current boot-ready slice.
+boot-progress/fail state for that internal policy. That closes the current
+internal boot-ready kernel slice. The next step is external boot-lane
+validation.
 
 That near-term kernel slice is now tracked explicitly in:
 

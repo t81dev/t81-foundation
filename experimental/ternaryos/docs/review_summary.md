@@ -114,6 +114,9 @@ Kernel integration proof now also includes:
 - runtime and fault summaries now also expose explicit boot-progress/fail state:
   boot-critical pending counts, boot-critical terminal counts, and direct
   pending/blocked booleans for the current boot lane
+- that closes the current internal boot-ready kernel slice; the next move is
+  outward to external boot-lane validation rather than more internal pager
+  surface growth
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures
