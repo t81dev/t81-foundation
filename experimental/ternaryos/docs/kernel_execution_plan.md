@@ -450,6 +450,9 @@ in the interrupt summary surfaces instead of forcing callers to scan the log.
 The next interrupt-audit slice after that is latest interrupt audit kind
 retention too: expose whether the newest interrupt-related audit event was
 `InterruptRecorded` or `InterruptDelivered` without requiring log inspection.
+The next record-level provenance slice after that is intake audit retention on
+`KernelInterruptRecord` itself: pending and delivered interrupt records should
+carry their own `InterruptRecorded` audit sequence directly.
 
 ## Recommended Order
 

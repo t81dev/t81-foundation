@@ -781,6 +781,9 @@ static void test_kernel_interrupt_event_delivery() {
           "interrupt intake retains the latest recorded source");
     check(state->last_recorded_interrupt->sequence == 2,
           "interrupt intake retains the latest recorded sequence");
+    check(state->last_recorded_interrupt->recorded_audit_sequence ==
+              *state->last_recorded_interrupt_audit_sequence,
+          "interrupt intake retains the latest recorded audit sequence on the record");
   }
 
   check(axion_kernel_step(*state), "interrupt step delivers the first pending interrupt");
@@ -799,6 +802,8 @@ static void test_kernel_interrupt_event_delivery() {
           "first delivered interrupt preserves payload");
     check(state->last_delivered_interrupt->sequence == 1,
           "first delivered interrupt preserves intake sequence");
+    check(state->last_delivered_interrupt->recorded_audit_sequence != 0,
+          "first delivered interrupt preserves its intake audit sequence");
   }
 
   auto fault =
@@ -833,6 +838,9 @@ static void test_kernel_interrupt_event_delivery() {
           "second delivered interrupt preserves payload");
     check(state->last_delivered_interrupt->sequence == 2,
           "second delivered interrupt preserves intake sequence");
+    check(state->last_delivered_interrupt->recorded_audit_sequence ==
+              *state->last_recorded_interrupt_audit_sequence,
+          "second delivered interrupt preserves its intake audit sequence");
   }
 
   auto runtime_status = axion_kernel_service_request(
@@ -1043,6 +1051,8 @@ static void test_kernel_interrupt_event_delivery() {
               "runtime status preserves FIFO head interrupt source");
         check(queued_runtime.runtime->next_pending_interrupt->sequence == 1,
               "runtime status preserves FIFO head interrupt sequence");
+        check(queued_runtime.runtime->next_pending_interrupt->recorded_audit_sequence != 0,
+              "runtime status preserves FIFO head interrupt intake audit sequence");
       }
       check(queued_runtime.runtime->last_pending_interrupt.has_value(),
             "runtime status exposes tail pending interrupt before delivery");
@@ -1052,6 +1062,9 @@ static void test_kernel_interrupt_event_delivery() {
               "runtime status preserves FIFO tail interrupt source");
         check(queued_runtime.runtime->last_pending_interrupt->sequence == 2,
               "runtime status preserves FIFO tail interrupt sequence");
+        check(queued_runtime.runtime->last_pending_interrupt->recorded_audit_sequence ==
+                  *queued_runtime.runtime->last_recorded_interrupt_audit_sequence,
+              "runtime status preserves FIFO tail interrupt intake audit sequence");
       }
       check(queued_runtime.runtime->last_recorded_interrupt.has_value(),
             "runtime status retains latest recorded interrupt before delivery");
@@ -1059,6 +1072,9 @@ static void test_kernel_interrupt_event_delivery() {
         check(queued_runtime.runtime->last_recorded_interrupt->source ==
                   InterruptSource::Network,
               "runtime status preserves latest recorded interrupt before delivery");
+        check(queued_runtime.runtime->last_recorded_interrupt->recorded_audit_sequence ==
+                  *queued_runtime.runtime->last_recorded_interrupt_audit_sequence,
+              "runtime status preserves latest recorded interrupt intake audit sequence");
       }
     }
     auto queued_fault_summary = axion_kernel_service_request(
@@ -1082,6 +1098,8 @@ static void test_kernel_interrupt_event_delivery() {
         check(queued_fault_summary.fault_summary->last_pending_interrupt->source ==
                   InterruptSource::Network,
               "fault summary preserves FIFO tail interrupt source");
+        check(queued_fault_summary.fault_summary->last_pending_interrupt->recorded_audit_sequence != 0,
+              "fault summary preserves FIFO tail interrupt intake audit sequence");
       }
     }
     auto queued_audit_summary = axion_kernel_service_request(
@@ -1113,6 +1131,8 @@ static void test_kernel_interrupt_event_delivery() {
         check(queued_audit_summary.audit_summary->next_pending_interrupt->source ==
                   InterruptSource::Keyboard,
               "audit summary preserves FIFO head interrupt source");
+        check(queued_audit_summary.audit_summary->next_pending_interrupt->recorded_audit_sequence != 0,
+              "audit summary preserves FIFO head interrupt intake audit sequence");
       }
       check(queued_audit_summary.audit_summary->last_pending_interrupt.has_value(),
             "audit summary exposes tail pending interrupt before delivery");
@@ -1120,6 +1140,9 @@ static void test_kernel_interrupt_event_delivery() {
         check(queued_audit_summary.audit_summary->last_pending_interrupt->source ==
                   InterruptSource::Network,
               "audit summary preserves FIFO tail interrupt source");
+        check(queued_audit_summary.audit_summary->last_pending_interrupt->recorded_audit_sequence ==
+                  *queued_audit_summary.audit_summary->last_recorded_interrupt_audit_sequence,
+              "audit summary preserves FIFO tail interrupt intake audit sequence");
       }
       check(queued_audit_summary.audit_summary->recent_events.size() == 2,
             "audit summary retains interrupt intake audit events before delivery");

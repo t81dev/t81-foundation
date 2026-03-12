@@ -644,18 +644,6 @@ void record_fault(KernelRuntimeState& state,
 
 void record_interrupt(KernelRuntimeState& state,
                       const hal::HardwareInterrupt& interrupt) {
-  state.pending_interrupts.push_back(KernelInterruptRecord{
-      .source = interrupt.source,
-      .timestamp_ns = interrupt.timestamp_ns,
-      .payload = interrupt.payload,
-      .sequence = state.next_interrupt_sequence++,
-  });
-  state.pending_interrupt_high_watermark =
-      std::max(state.pending_interrupt_high_watermark, state.pending_interrupts.size());
-  state.last_recorded_interrupt = state.pending_interrupts.back();
-  ++state.counters.interrupts_recorded;
-  increment_interrupt_source_counter(state.counters.interrupt_sources_recorded,
-                                     interrupt.source);
   record_audit_event(state,
                      KernelAuditEventKind::InterruptRecorded,
                      KernelRuntimeState::kKernelTid,
@@ -665,6 +653,20 @@ void record_interrupt(KernelRuntimeState& state,
           ? std::optional<uint64_t>{state.last_audit_event->sequence}
           : std::nullopt;
   state.last_interrupt_audit_kind = KernelAuditEventKind::InterruptRecorded;
+  state.pending_interrupts.push_back(KernelInterruptRecord{
+      .source = interrupt.source,
+      .timestamp_ns = interrupt.timestamp_ns,
+      .payload = interrupt.payload,
+      .sequence = state.next_interrupt_sequence++,
+      .recorded_audit_sequence =
+          state.last_recorded_interrupt_audit_sequence.value_or(0),
+  });
+  state.pending_interrupt_high_watermark =
+      std::max(state.pending_interrupt_high_watermark, state.pending_interrupts.size());
+  state.last_recorded_interrupt = state.pending_interrupts.back();
+  ++state.counters.interrupts_recorded;
+  increment_interrupt_source_counter(state.counters.interrupt_sources_recorded,
+                                     interrupt.source);
 }
 
 bool maybe_recover_thread(KernelRuntimeState& state,
