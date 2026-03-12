@@ -1,0 +1,13 @@
+AXION_ARMV8_BOOT_REPORT
+platform_id=virtualbox-x86_64:VBoxEFI/AHCI/E1000/VMSVGA/HPET+IOAPIC/acceptance-lane
+memory_map_len=3
+kernel_load_address=0x0000000048000000
+stack_top=0x0000000047FFF000
+ethics_boot_required=true
+hal_main_result=0
+kernel_boot_ready_slice=complete
+boot_progress_state=ready
+boot_progress_pending=false
+boot_progress_blocked=false
+boot_progress_source=kernel-boot-critical-policy
+boot_validation_lane=virtualbox-x86_64-handoff

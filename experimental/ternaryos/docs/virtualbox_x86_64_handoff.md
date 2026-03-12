@@ -156,6 +156,15 @@ Recommended additions in the same directory:
 - `VBox.log`
 - `notes.txt`
 
+For a local bundle smoke-check on the producing machine, run:
+
+```sh
+./validate_packaged_virtualbox_x86_64_handoff_bundle.sh .
+```
+
+That bundled smoke helper validates the packaged helper against the packaged
+`bundle-smoke/` fixture without requiring an external host run.
+
 The broader roadmap gate remains stricter:
 
 - a bootable VirtualBox guest executes the current TernOS stack far enough to

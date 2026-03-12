@@ -833,6 +833,13 @@ if(T81_ENABLE_TERNARYOS)
             ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/docs/virtualbox_x86_64_handoff.md
     USES_TERMINAL)
 
+  add_custom_target(t81_ternaryos_virtualbox_x86_64_handoff_bundle_smoke
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/validate_packaged_virtualbox_x86_64_handoff_bundle.sh
+            ${CMAKE_BINARY_DIR}/ternaryos/handoff/ternos_virtualbox_x86_64_handoff
+    DEPENDS t81_ternaryos_virtualbox_x86_64_handoff
+    USES_TERMINAL)
+
   add_custom_target(t81_ternaryos_virtualbox_armv8_dev_artifact
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
     COMMAND /bin/zsh
