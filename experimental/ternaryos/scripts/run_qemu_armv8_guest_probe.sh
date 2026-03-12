@@ -230,6 +230,10 @@ for expected in \
   '^os_name=Axion$' \
   '^phase=5$' \
   '^shell_mode=typed-builtins$' \
+  '^kernel_boot_ready_slice=complete$' \
+  '^boot_progress_pending=false$' \
+  '^boot_progress_blocked=false$' \
+  '^boot_validation_lane=qemu-armv8-guest-probe$' \
   '^storage_binding=virtualbox-ahci$' \
   '^display_binding=virtualbox-vmsvga$' \
   '^network_binding=virtualbox-e1000$'

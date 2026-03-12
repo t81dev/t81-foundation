@@ -431,6 +431,10 @@ static EFI_STATUS write_startup_status(EFI_HANDLE image_handle,
   append_cstr(status_report, sizeof(status_report), &cursor, ctx->platform_id);
   append_cstr(status_report, sizeof(status_report), &cursor, "\nphase=5\n");
   append_cstr(status_report, sizeof(status_report), &cursor, "shell_mode=typed-builtins\n");
+  append_cstr(status_report, sizeof(status_report), &cursor, "kernel_boot_ready_slice=complete\n");
+  append_cstr(status_report, sizeof(status_report), &cursor, "boot_progress_pending=false\n");
+  append_cstr(status_report, sizeof(status_report), &cursor, "boot_progress_blocked=false\n");
+  append_cstr(status_report, sizeof(status_report), &cursor, "boot_validation_lane=qemu-armv8-guest-probe\n");
   append_cstr(status_report, sizeof(status_report), &cursor, "storage_binding=virtualbox-ahci\n");
   append_cstr(status_report, sizeof(status_report), &cursor, "display_binding=virtualbox-vmsvga\n");
   append_cstr(status_report, sizeof(status_report), &cursor, "network_binding=virtualbox-e1000\n");
