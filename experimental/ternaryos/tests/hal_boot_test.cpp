@@ -934,6 +934,8 @@ static void test_kernel_interrupt_event_delivery() {
           "audit summary reports no pending timer interrupts after delivery");
     check(audit_summary.audit_summary->pending_interrupt_sources.storage == 0,
           "audit summary reports no pending storage interrupts after delivery");
+    check(audit_summary.audit_summary->interrupts_recorded == 2,
+          "audit summary reports recorded interrupt count");
     check(audit_summary.audit_summary->interrupt_deliveries == 2,
           "audit summary reports interrupt delivery count");
     check(audit_summary.audit_summary->interrupt_sources_recorded.timer == 1,
@@ -1070,6 +1072,8 @@ static void test_kernel_interrupt_event_delivery() {
             "audit summary reports one pending keyboard interrupt before delivery");
       check(queued_audit_summary.audit_summary->pending_interrupt_sources.network == 1,
             "audit summary reports one pending network interrupt before delivery");
+      check(queued_audit_summary.audit_summary->interrupts_recorded == 2,
+            "audit summary reports recorded interrupt count before delivery");
       check(queued_audit_summary.audit_summary->next_pending_interrupt.has_value(),
             "audit summary exposes head pending interrupt before delivery");
       if (queued_audit_summary.audit_summary->next_pending_interrupt) {

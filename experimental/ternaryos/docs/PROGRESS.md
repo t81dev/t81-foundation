@@ -153,6 +153,7 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - Pending interrupt queue bounds are now exposed too: runtime and fault summaries retain both head and tail pending interrupt visibility while preserving the same FIFO event model.
 - Stable interrupt-audit correlation now exists too: runtime, fault, and audit summaries retain the latest interrupt-delivery audit sequence directly.
 - Audit-summary interrupt queue alignment now exists too: audit summaries retain pending interrupt counts, pending source composition, and FIFO head/tail visibility alongside interrupt history.
+- Audit-summary interrupt accounting is now aligned too: audit summaries expose the aggregate recorded interrupt count alongside delivered counts and per-source counters.
 - The first service-facing runtime contract above the supervisor/process-group boundary is now implemented, including deterministic healthy/faulted-group behavior and stable diagnostics.
 - The first narrow service-facing runtime action is now implemented too: supervisor fault-group acknowledgement through the same contract.
 - Supervisor-facing recovery/report flows are now implemented on top of that action: the service boundary exposes deterministic pending-group, acknowledgement, and recovered-group state for each supervisor.

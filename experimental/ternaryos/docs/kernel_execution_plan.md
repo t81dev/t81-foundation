@@ -438,6 +438,9 @@ summary surfaces instead of forcing callers to infer it from the recent log.
 The next alignment slice after that is live interrupt queue state in
 `AuditSummary`: retain pending interrupt counts, pending source composition,
 and FIFO head/tail visibility there too so the stable summaries stay aligned.
+The next accounting slice after that is total recorded-interrupt alignment in
+`AuditSummary`: expose the same aggregate recorded count already carried by the
+runtime and fault summaries.
 
 ## Recommended Order
 

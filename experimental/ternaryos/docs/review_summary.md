@@ -136,6 +136,9 @@ Kernel integration proof now also includes:
 - audit-summary interrupt queue alignment is now retained too: pending
   interrupt count, pending source composition, and FIFO head/tail visibility
   are exposed there alongside interrupt history
+- audit-summary interrupt accounting is now aligned too: the aggregate
+  recorded interrupt count is exposed there alongside delivered counts and
+  per-source counters
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

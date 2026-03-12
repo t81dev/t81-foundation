@@ -915,6 +915,7 @@ struct KernelAuditSummaryView {
   std::size_t pending_interrupt_count{0};
   std::size_t pending_interrupt_high_watermark{0};
   KernelInterruptSourceCounters pending_interrupt_sources{};
+  uint64_t interrupts_recorded{0};
   uint64_t interrupt_deliveries{0};
   KernelInterruptSourceCounters interrupt_sources_recorded{};
   KernelInterruptSourceCounters interrupt_sources_delivered{};

@@ -1327,6 +1327,7 @@ KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) 
       .pending_interrupt_count = state.pending_interrupt_count(),
       .pending_interrupt_high_watermark = state.pending_interrupt_high_watermark,
       .pending_interrupt_sources = pending_interrupt_sources,
+      .interrupts_recorded = state.counters.interrupts_recorded,
       .interrupt_deliveries = state.counters.interrupts_delivered,
       .interrupt_sources_recorded = state.counters.interrupt_sources_recorded,
       .interrupt_sources_delivered = state.counters.interrupt_sources_delivered,
