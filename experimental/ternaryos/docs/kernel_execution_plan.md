@@ -333,6 +333,15 @@ The twenty-ninth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves the blocked head records one deterministic
   parked-head resolution when it drains after resumption
 
+The thirtieth pager-groundwork slice is now also complete:
+
+- parked-head resolution diagnostics now also retain the queued work that
+  remained behind the resolved head at the instant it drained
+- runtime and fault diagnostics can now distinguish "parked head resolved"
+  from "parked head resolved while queued work still remained behind it"
+- HAL/kernel coverage now proves the parked head resolves with one queued item
+  still remaining behind it
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable

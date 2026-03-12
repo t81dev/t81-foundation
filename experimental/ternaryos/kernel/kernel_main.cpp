@@ -1101,6 +1101,12 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
           state.pager_worker.last_parked_resolved_handoff_sequence,
       .pager_worker_last_parked_resolved_resolution_sequence =
           state.pager_worker.last_parked_resolved_resolution_sequence,
+      .pager_worker_last_parked_resolved_remaining_inbox_count =
+          state.pager_worker.last_parked_resolved_remaining_inbox_count,
+      .pager_worker_last_parked_resolved_remaining_address_space_id =
+          state.pager_worker.last_parked_resolved_remaining_address_space_id,
+      .pager_worker_last_parked_resolved_remaining_handoff_sequence =
+          state.pager_worker.last_parked_resolved_remaining_handoff_sequence,
       .pager_worker_activations = state.pager_worker.activations,
       .pager_worker_last_activated_address_space_id =
           state.pager_worker.last_activated_address_space_id,
@@ -1740,6 +1746,7 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
             .sequence = *address_space->last_pager_resolution_sequence,
         };
         if (state.pager_worker.active_work->resumed_from_parked) {
+          const std::size_t remaining_inbox_count = state.pager_worker.inbox.size();
           ++state.pager_worker.parked_resolved_heads;
           ++state.counters.pager_worker_parked_resolved_heads;
           state.pager_worker.last_parked_resolved_address_space_id = address_space_id;
@@ -1747,6 +1754,18 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
               state.pager_worker.active_work->handoff.sequence;
           state.pager_worker.last_parked_resolved_resolution_sequence =
               address_space->last_pager_resolution_sequence;
+          state.pager_worker.last_parked_resolved_remaining_inbox_count =
+              remaining_inbox_count;
+          state.pager_worker.last_parked_resolved_remaining_address_space_id =
+              !state.pager_worker.inbox.empty()
+                  ? std::optional<AddressSpaceId>{
+                        state.pager_worker.inbox.front().handoff.address_space_id}
+                  : std::nullopt;
+          state.pager_worker.last_parked_resolved_remaining_handoff_sequence =
+              !state.pager_worker.inbox.empty()
+                  ? std::optional<uint64_t>{
+                        state.pager_worker.inbox.front().handoff.sequence}
+                  : std::nullopt;
         }
         state.pager_worker.active_work.reset();
         ++state.pager_worker.resolutions_completed;
@@ -1907,6 +1926,12 @@ KernelServiceResult axion_kernel_service_request(
               state.pager_worker.last_parked_resolved_handoff_sequence,
           .pager_worker_last_parked_resolved_resolution_sequence =
               state.pager_worker.last_parked_resolved_resolution_sequence,
+          .pager_worker_last_parked_resolved_remaining_inbox_count =
+              state.pager_worker.last_parked_resolved_remaining_inbox_count,
+          .pager_worker_last_parked_resolved_remaining_address_space_id =
+              state.pager_worker.last_parked_resolved_remaining_address_space_id,
+          .pager_worker_last_parked_resolved_remaining_handoff_sequence =
+              state.pager_worker.last_parked_resolved_remaining_handoff_sequence,
           .pager_worker_activations = state.pager_worker.activations,
           .pager_worker_last_activated_address_space_id =
               state.pager_worker.last_activated_address_space_id,

@@ -78,7 +78,8 @@ kernel/
                        parked capped deferral, parked-cycle, parked-episode,
                        parked-ready backlog, parked-resumption, parked-resume
                        backlog, parked-resume handoff, parked-resumed-head
-                       handoff, parked-resolved-head, blocker/blocked,
+                       handoff, parked-resolved-head,
+                       parked-resolved remaining-work, blocker/blocked,
                        activation, and completion diagnostics
 
 mmu/

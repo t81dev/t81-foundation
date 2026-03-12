@@ -200,6 +200,9 @@ struct KernelRuntimeState {
   std::optional<AddressSpaceId> last_parked_resolved_address_space_id{};
   std::optional<uint64_t> last_parked_resolved_handoff_sequence{};
   std::optional<uint64_t> last_parked_resolved_resolution_sequence{};
+  std::optional<std::size_t> last_parked_resolved_remaining_inbox_count{};
+  std::optional<AddressSpaceId> last_parked_resolved_remaining_address_space_id{};
+  std::optional<uint64_t> last_parked_resolved_remaining_handoff_sequence{};
   uint64_t activations{0};
     std::optional<AddressSpaceId> last_activated_address_space_id{};
     std::optional<uint64_t> last_activation_cycle{};
@@ -525,6 +528,9 @@ struct KernelRuntimeStatusView {
   std::optional<AddressSpaceId> pager_worker_last_parked_resolved_address_space_id{};
   std::optional<uint64_t> pager_worker_last_parked_resolved_handoff_sequence{};
   std::optional<uint64_t> pager_worker_last_parked_resolved_resolution_sequence{};
+  std::optional<std::size_t> pager_worker_last_parked_resolved_remaining_inbox_count{};
+  std::optional<AddressSpaceId> pager_worker_last_parked_resolved_remaining_address_space_id{};
+  std::optional<uint64_t> pager_worker_last_parked_resolved_remaining_handoff_sequence{};
   uint64_t pager_worker_activations{0};
   std::optional<AddressSpaceId> pager_worker_last_activated_address_space_id{};
   std::optional<uint64_t> pager_worker_last_activation_cycle{};
@@ -749,6 +755,9 @@ struct KernelFaultSummaryView {
   std::optional<AddressSpaceId> pager_worker_last_parked_resolved_address_space_id{};
   std::optional<uint64_t> pager_worker_last_parked_resolved_handoff_sequence{};
   std::optional<uint64_t> pager_worker_last_parked_resolved_resolution_sequence{};
+  std::optional<std::size_t> pager_worker_last_parked_resolved_remaining_inbox_count{};
+  std::optional<AddressSpaceId> pager_worker_last_parked_resolved_remaining_address_space_id{};
+  std::optional<uint64_t> pager_worker_last_parked_resolved_remaining_handoff_sequence{};
   uint64_t pager_worker_activations{0};
   std::optional<AddressSpaceId> pager_worker_last_activated_address_space_id{};
   std::optional<uint64_t> pager_worker_last_activation_cycle{};

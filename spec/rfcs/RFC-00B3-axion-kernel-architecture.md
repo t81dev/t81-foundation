@@ -374,7 +374,8 @@ their latest resumed blocked-head identity and resumption ordinal, plus the
 count of still-ready queued work that remained behind that resumed head, along
 with the latest queued address space and handoff ordinal retained there. The
 resumed blocked head's own handoff ordinal is now retained too, and the kernel
-also retains when that resumed blocked head later resolves.
+also retains when that resumed blocked head later resolves, including the
+queued work that remained behind it at that resolution point.
 The next kernel slice is to keep that pager surface private while expanding
 backlog/load scheduling behavior before any public pager ABI or syscall design.
 

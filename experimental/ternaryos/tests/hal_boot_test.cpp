@@ -1803,6 +1803,9 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
                ->pager_worker_last_parked_resolved_address_space_id.has_value(),
           "runtime status has no parked-head resolution address before the blocked head resumes");
     check(!runtime_after_capped_activation.runtime
+               ->pager_worker_last_parked_resolved_remaining_inbox_count.has_value(),
+          "runtime status has no parked-head remaining inbox count before the blocked head resumes");
+    check(!runtime_after_capped_activation.runtime
                ->pager_worker_last_parked_resumed_handoff_sequence.has_value(),
           "runtime status has no resumed blocked-head handoff ordinal before the blocked head resumes");
     check(!runtime_after_capped_activation.runtime
@@ -1859,6 +1862,9 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
                ->pager_worker_last_parked_resolved_address_space_id.has_value(),
           "fault summary has no parked-head resolution address while the head is still parked");
     check(!fault_after_capped_deferral.fault_summary
+               ->pager_worker_last_parked_resolved_remaining_inbox_count.has_value(),
+          "fault summary has no parked-head remaining inbox count while the head is still parked");
+    check(!fault_after_capped_deferral.fault_summary
                ->pager_worker_last_parked_resumed_handoff_sequence.has_value(),
           "fault summary has no resumed blocked-head handoff ordinal while the head is still parked");
     check(!fault_after_capped_deferral.fault_summary
@@ -1902,6 +1908,9 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
     check(!runtime_after_second_park.runtime
                ->pager_worker_last_parked_resolved_address_space_id.has_value(),
           "runtime status still has no parked-head resolution address on repeated parked cycles");
+    check(!runtime_after_second_park.runtime
+               ->pager_worker_last_parked_resolved_remaining_inbox_count.has_value(),
+          "runtime status still has no parked-head remaining inbox count on repeated parked cycles");
     check(!runtime_after_second_park.runtime
                ->pager_worker_last_parked_resumed_handoff_sequence.has_value(),
           "runtime status still has no resumed blocked-head handoff ordinal on repeated parked cycles");
@@ -1977,6 +1986,16 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
     check(runtime_after_head_resolution.runtime
               ->pager_worker_last_parked_resolved_resolution_sequence == 2,
           "runtime status tracks the blocked head resolution ordinal after parked resumption");
+    check(runtime_after_head_resolution.runtime
+              ->pager_worker_last_parked_resolved_remaining_inbox_count == 1,
+          "runtime status tracks one queued item remaining after the parked head resolves");
+    check(runtime_after_head_resolution.runtime
+              ->pager_worker_last_parked_resolved_remaining_address_space_id ==
+              third_address_space_id,
+          "runtime status tracks the queued item remaining after the parked head resolves");
+    check(runtime_after_head_resolution.runtime
+              ->pager_worker_last_parked_resolved_remaining_handoff_sequence == 3,
+          "runtime status tracks the remaining queued item handoff ordinal after parked resolution");
   }
 
   (void)axion_kernel_step(*state);
@@ -2055,6 +2074,16 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
     check(fault_after_final_resolution.fault_summary
               ->pager_worker_last_parked_resolved_resolution_sequence == 2,
           "fault summary retains the blocked head resolution ordinal after parked resumption");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_parked_resolved_remaining_inbox_count == 1,
+          "fault summary retains one queued item remaining after the parked head resolves");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_parked_resolved_remaining_address_space_id ==
+              third_address_space_id,
+          "fault summary retains the queued item remaining after the parked head resolves");
+    check(fault_after_final_resolution.fault_summary
+              ->pager_worker_last_parked_resolved_remaining_handoff_sequence == 3,
+          "fault summary retains the remaining queued item handoff ordinal after parked resolution");
     check(fault_after_final_resolution.fault_summary->pager_worker_last_activated_address_space_id ==
               third_address_space_id,
           "fault summary retains the third item as the final activation after the head drains");
