@@ -9,11 +9,12 @@ implemented stable supervisor/process-group service boundary from
 It remains intentionally small. It exists so the next kernel work follows an
 explicit sequence instead of growing organically.
 
-The current post-kernel phase is now external validation expansion: preserve
-the closed internal boot-ready slice, widen guest-visible proof so the staged
-boot lane validates explicit boot-progress state through richer guest
-artifacts rather than only summary booleans, and keep ready and blocked
-boot-progress outcomes on one deterministic external validation contract.
+The current post-kernel packaging phase is now complete: the staged ARM/QEMU
+lane validates explicit boot-progress state, and the `x86_64` handoff bundle
+now carries aligned contract files, helper scripts, recovered-artifact
+templates, positive/negative local fixtures, and packaged smoke-checks. The
+next milestone is no longer more local packaging work; it is actual external
+`x86_64` VirtualBox host execution and evidence return against that contract.
 
 ## Current Kernel Position
 

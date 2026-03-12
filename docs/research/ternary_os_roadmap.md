@@ -116,12 +116,15 @@ diagnostics. Explicitly marked boot-critical address spaces now also
 auto-resolve their missing page through a kernel-owned policy path before
 later pager integration. Runtime and fault summaries now also expose explicit
 boot-progress/fail state for that internal policy. That closes the current
-internal boot-ready kernel slice. External boot-lane validation is now active
-as well: the staged ARM developer-lane guest exports explicit boot-ready and
-boot-progress state through `startup-status.txt`, and the QEMU ARMv8 guest
-probe now validates those fields end to end. The next step is to widen that
-evidence from staged guest-probe validation into fuller external boot-lane
-coverage.
+internal boot-ready kernel slice. The local external boot-lane packaging lane
+is now active and effectively complete as well: the staged ARM developer-lane
+guest exports explicit boot-ready and boot-progress state through
+`startup-status.txt`, the QEMU ARMv8 guest probe validates those fields end to
+end, and the `x86_64` handoff package now carries aligned contract files,
+recovered-artifact templates, shipped validators, and positive/negative smoke
+checks. The next step is no longer more local packaging work; it is actual
+external `x86_64` VirtualBox host execution and evidence return against that
+contract.
 
 That near-term kernel slice is now tracked explicitly in:
 

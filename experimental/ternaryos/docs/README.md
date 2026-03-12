@@ -464,6 +464,8 @@ Outputs:
   proves the packaged handoff bundle is internally self-consistent
 - a local `t81_ternaryos_virtualbox_x86_64_handoff_bundle_negative_smoke`
   target now proves the packaged bundle also rejects a mismatched smoke fixture
+- that closes the local `x86_64` handoff packaging lane; the next step is a real
+  external `x86_64` VirtualBox host run returning recovered boot artifacts
 
 To generate the temporary ARMv8 developer-lane artifact for Apple Silicon
 VirtualBox hosts:
