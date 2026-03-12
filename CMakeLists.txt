@@ -918,6 +918,19 @@ if(T81_ENABLE_TERNARYOS)
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_fixture/recovered-artifacts
     USES_TERMINAL)
 
+  add_custom_target(t81_ternaryos_virtualbox_x86_64_handoff_negative_fixture
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/dev/virtualbox_x86_64_handoff_validation_negative_fixture
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/expect_virtualbox_x86_64_handoff_failure.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/validate_virtualbox_x86_64_handoff.sh
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture/expected-boot-report.txt
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture/expected-startup-status.txt
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture/recovered-artifacts
+    USES_TERMINAL)
+
   if(T81_BUILD_TESTS)
     add_executable(t81_ternaryos_hal_boot_test
       experimental/ternaryos/tests/hal_boot_test.cpp)

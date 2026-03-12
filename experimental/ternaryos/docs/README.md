@@ -458,6 +458,8 @@ Outputs:
   external host has a standard place to return recovered boot outputs
 - a local `t81_ternaryos_virtualbox_x86_64_handoff_fixture` target now proves
   the packaged `x86_64` handoff validator against a valid synthetic artifact set
+- a local `t81_ternaryos_virtualbox_x86_64_handoff_negative_fixture` target now
+  proves the validator rejects a mismatched boot-progress artifact set
 
 To generate the temporary ARMv8 developer-lane artifact for Apple Silicon
 VirtualBox hosts:

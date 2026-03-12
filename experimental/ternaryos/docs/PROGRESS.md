@@ -87,6 +87,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - The handoff bundle now also carries `validate_virtualbox_x86_64_handoff.sh`, so an external `x86_64` reviewer can validate recovered guest boot artifacts against that contract directly.
 - The handoff bundle now also carries a `recovered-artifacts/` template so the external `x86_64` reviewer returns boot-report/startup-status evidence in one standard layout.
 - A synthetic `x86_64` handoff fixture now exercises that validator locally, so the acceptance-lane helper is no longer only documented and shipped; it is also verified against a valid recovered-artifact layout in-tree.
+- A second synthetic `x86_64` handoff negative fixture now proves the same helper rejects mismatched boot-progress state with an explicit validation-mismatch failure.
 
 **Phase 1 test total: 161 / 161**
 

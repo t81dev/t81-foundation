@@ -279,6 +279,7 @@ Expected bundle contents:
 - recovered-artifacts template directory
 - handoff runbook
 - local synthetic handoff-validator fixture
+- local synthetic negative handoff-validator fixture
 
 ## What To Report Back
 
