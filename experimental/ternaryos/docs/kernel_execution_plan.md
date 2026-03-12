@@ -432,6 +432,9 @@ ordering and no priority policy.
 The next queue-facing slice after that is explicit queue-bound visibility:
 stable head/tail pending interrupt reporting, still without changing delivery
 order or adding controller policy.
+The next provenance slice after that is stable interrupt-audit correlation:
+retain the latest interrupt-delivery audit sequence directly in the interrupt
+summary surfaces instead of forcing callers to infer it from the recent log.
 
 ## Recommended Order
 

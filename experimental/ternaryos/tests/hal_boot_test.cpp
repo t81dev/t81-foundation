@@ -868,6 +868,8 @@ static void test_kernel_interrupt_event_delivery() {
           "runtime status retains latest recorded interrupt");
     check(runtime_status.runtime->last_delivered_interrupt.has_value(),
           "runtime status exposes the latest delivered interrupt");
+    check(runtime_status.runtime->last_interrupt_audit_sequence.has_value(),
+          "runtime status retains latest interrupt audit sequence");
     if (runtime_status.runtime->last_recorded_interrupt) {
       check(runtime_status.runtime->last_recorded_interrupt->source ==
                 InterruptSource::Storage,
@@ -913,6 +915,8 @@ static void test_kernel_interrupt_event_delivery() {
           "fault summary retains latest recorded interrupt");
     check(fault_summary.fault_summary->last_delivered_interrupt.has_value(),
           "fault summary exposes the latest delivered interrupt");
+    check(fault_summary.fault_summary->last_interrupt_audit_sequence.has_value(),
+          "fault summary retains latest interrupt audit sequence");
   }
 
   auto audit_summary = axion_kernel_service_request(
@@ -932,6 +936,8 @@ static void test_kernel_interrupt_event_delivery() {
           "audit summary reports delivered timer interrupt count");
     check(audit_summary.audit_summary->interrupt_sources_delivered.storage == 1,
           "audit summary reports delivered storage interrupt count");
+    check(audit_summary.audit_summary->last_interrupt_audit_sequence.has_value(),
+          "audit summary retains latest interrupt audit sequence");
     check(audit_summary.audit_summary->last_recorded_interrupt.has_value(),
           "audit summary retains the latest recorded interrupt");
     check(audit_summary.audit_summary->last_delivered_interrupt.has_value(),
@@ -942,6 +948,11 @@ static void test_kernel_interrupt_event_delivery() {
       check(audit_summary.audit_summary->recent_events.back().kind ==
                 KernelAuditEventKind::InterruptDelivered,
             "audit summary records interrupt delivery as the latest audit event");
+      if (audit_summary.audit_summary->last_interrupt_audit_sequence) {
+        check(*audit_summary.audit_summary->last_interrupt_audit_sequence ==
+                  audit_summary.audit_summary->recent_events.back().sequence,
+              "audit summary retains audit sequence of the latest interrupt delivery");
+      }
     }
   }
 

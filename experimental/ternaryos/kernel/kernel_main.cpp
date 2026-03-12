@@ -1163,6 +1163,7 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
           !state.pending_interrupts.empty()
               ? std::optional<KernelInterruptRecord>{state.pending_interrupts.back()}
               : std::nullopt,
+      .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
       .last_recorded_interrupt = state.last_recorded_interrupt,
       .last_delivered_interrupt = state.last_delivered_interrupt,
       .last_pager_address_space_id = latest_pager_fault.address_space_id,
@@ -1325,6 +1326,7 @@ KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) 
       .interrupt_deliveries = state.counters.interrupts_delivered,
       .interrupt_sources_recorded = state.counters.interrupt_sources_recorded,
       .interrupt_sources_delivered = state.counters.interrupt_sources_delivered,
+      .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
       .thread_quarantines = state.counters.thread_quarantines,
       .process_group_fault_entries = state.counters.process_group_fault_entries,
       .supervisor_notifications = state.counters.supervisor_fault_notifications,
@@ -1730,6 +1732,10 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
                          KernelAuditEventKind::InterruptDelivered,
                          KernelRuntimeState::kKernelTid,
                          KernelRuntimeState::kKernelProcessGroup);
+      state.last_interrupt_audit_sequence =
+          state.last_audit_event.has_value()
+              ? std::optional<uint64_t>{state.last_audit_event->sequence}
+              : std::nullopt;
       handled_by_policy = true;
     } else if (!state.pending_pager_handoffs.empty()) {
       const auto address_space_id = state.pending_pager_handoffs.front();
@@ -2180,6 +2186,7 @@ KernelServiceResult axion_kernel_service_request(
               !state.pending_interrupts.empty()
                   ? std::optional<KernelInterruptRecord>{state.pending_interrupts.back()}
                   : std::nullopt,
+          .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
           .last_recorded_interrupt = state.last_recorded_interrupt,
           .last_delivered_interrupt = state.last_delivered_interrupt,
           .pager_eligible_faults = state.counters.pager_eligible_faults,

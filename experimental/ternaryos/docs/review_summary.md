@@ -130,6 +130,9 @@ Kernel integration proof now also includes:
 - pending interrupt queue bounds are now visible too through the same stable
   summaries: both FIFO head and FIFO tail can be inspected without policy
   widening
+- stable interrupt-audit correlation is now retained too through those
+  summaries, so the latest interrupt delivery can be matched to its audit
+  sequence without scanning the recent log
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures
