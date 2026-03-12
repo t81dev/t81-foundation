@@ -454,6 +454,8 @@ Outputs:
   now used by the ARM/QEMU developer lane
 - bundle also includes `validate_virtualbox_x86_64_handoff.sh` for direct
   comparison of guest-produced `boot-report.txt` / `startup-status.txt`
+- bundle also includes a `recovered-artifacts/` template directory so the
+  external host has a standard place to return recovered boot outputs
 
 To generate the temporary ARMv8 developer-lane artifact for Apple Silicon
 VirtualBox hosts:

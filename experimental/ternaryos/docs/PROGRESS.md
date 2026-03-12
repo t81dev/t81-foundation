@@ -85,6 +85,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 - That handoff path is now reproducible as a single build target: the `x86_64` VirtualBox artifact, profile summary, demo transcript, and runbook can be packaged into a tarball for external validation on a real `x86_64` host.
 - The official `x86_64` handoff package now also carries `expected-boot-report.txt` and `expected-startup-status.txt`, aligning the acceptance lane with the same boot-progress contract already enforced in the ARM/QEMU developer lane.
 - The handoff bundle now also carries `validate_virtualbox_x86_64_handoff.sh`, so an external `x86_64` reviewer can validate recovered guest boot artifacts against that contract directly.
+- The handoff bundle now also carries a `recovered-artifacts/` template so the external `x86_64` reviewer returns boot-report/startup-status evidence in one standard layout.
 
 **Phase 1 test total: 161 / 161**
 

@@ -142,13 +142,19 @@ If the host run produces both files, use the bundled helper:
 ./validate_virtualbox_x86_64_handoff.sh \
   expected-boot-report.txt \
   expected-startup-status.txt \
-  /path/to/recovered-artifacts
+  recovered-artifacts
 ```
 
-The artifact directory passed to the helper should contain:
+The bundle already includes a `recovered-artifacts/` template directory. Put
+the recovered host outputs there before running the helper. It should contain:
 
 - `boot-report.txt`
 - `startup-status.txt`
+
+Recommended additions in the same directory:
+
+- `VBox.log`
+- `notes.txt`
 
 The broader roadmap gate remains stricter:
 

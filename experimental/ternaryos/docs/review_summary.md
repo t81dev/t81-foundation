@@ -276,6 +276,7 @@ Expected bundle contents:
 - expected boot-progress contract files
 - demo transcript
 - handoff validation helper
+- recovered-artifacts template directory
 - handoff runbook
 
 ## What To Report Back

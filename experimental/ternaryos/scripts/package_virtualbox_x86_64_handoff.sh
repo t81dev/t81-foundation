@@ -23,6 +23,7 @@ required_files=(
   "$artifact_dir/staging/TERNOS/expected-startup-status.txt"
   "$artifact_dir/staging/TERNOS/demo-output.txt"
   "$script_dir/validate_virtualbox_x86_64_handoff.sh"
+  "$script_dir/../dev/virtualbox_x86_64_handoff_recovered_artifacts/README.txt"
   "$script_dir/../docs/virtualbox_x86_64_handoff.md"
 )
 
@@ -51,6 +52,7 @@ done
 /bin/cp "$artifact_dir/staging/TERNOS/expected-startup-status.txt" "$bundle_dir/"
 /bin/cp "$artifact_dir/staging/TERNOS/demo-output.txt" "$bundle_dir/"
 /bin/cp "$script_dir/validate_virtualbox_x86_64_handoff.sh" "$bundle_dir/"
+/bin/cp -R "$script_dir/../dev/virtualbox_x86_64_handoff_recovered_artifacts" "$bundle_dir/recovered-artifacts"
 /bin/cp "$script_dir/../docs/virtualbox_x86_64_handoff.md" "$bundle_dir/"
 
 {
@@ -67,6 +69,7 @@ done
   print -r -- '- expected-startup-status.txt'
   print -r -- '- demo-output.txt'
   print -r -- '- validate_virtualbox_x86_64_handoff.sh'
+  print -r -- '- recovered-artifacts/'
   print -r -- '- virtualbox_x86_64_handoff.md'
   print -r -- ''
   print -r -- 'Use the Markdown runbook as the authoritative execution guide.'

@@ -16,6 +16,7 @@ startup_status_path="$artifact_dir/startup-status.txt"
 for path in "$expected_boot_report" "$expected_startup_status" "$boot_report_path" "$startup_status_path"; do
   if [[ ! -f "$path" ]]; then
     echo "missing required handoff validation file: $path" >&2
+    echo "artifact dir should usually be the bundle's recovered-artifacts/ folder populated with host outputs" >&2
     exit 1
   fi
 done
