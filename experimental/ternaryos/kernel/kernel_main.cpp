@@ -1093,6 +1093,14 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
           state.pager_worker.last_parked_resumed_ready_address_space_id,
       .pager_worker_last_parked_resumed_ready_handoff_sequence =
           state.pager_worker.last_parked_resumed_ready_handoff_sequence,
+      .pager_worker_parked_resolved_heads =
+          state.pager_worker.parked_resolved_heads,
+      .pager_worker_last_parked_resolved_address_space_id =
+          state.pager_worker.last_parked_resolved_address_space_id,
+      .pager_worker_last_parked_resolved_handoff_sequence =
+          state.pager_worker.last_parked_resolved_handoff_sequence,
+      .pager_worker_last_parked_resolved_resolution_sequence =
+          state.pager_worker.last_parked_resolved_resolution_sequence,
       .pager_worker_activations = state.pager_worker.activations,
       .pager_worker_last_activated_address_space_id =
           state.pager_worker.last_activated_address_space_id,
@@ -1629,6 +1637,14 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
           }
           state.pager_worker.parked_blocked_address_space_id.reset();
           state.pager_worker.active_work = state.pager_worker.inbox[selected_index];
+          state.pager_worker.active_work->resumed_from_parked =
+              selected_index == 0 &&
+              state.pager_worker.last_parked_resumed_address_space_id.has_value() &&
+              state.pager_worker.last_parked_resumed_handoff_sequence.has_value() &&
+              state.pager_worker.active_work->handoff.address_space_id ==
+                  *state.pager_worker.last_parked_resumed_address_space_id &&
+              state.pager_worker.active_work->handoff.sequence ==
+                  *state.pager_worker.last_parked_resumed_handoff_sequence;
           state.pager_worker.inbox.erase(state.pager_worker.inbox.begin() +
                                          static_cast<std::ptrdiff_t>(selected_index));
           ++state.pager_worker.activations;
@@ -1723,6 +1739,15 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
             .fault = *address_space->last_pager_fault,
             .sequence = *address_space->last_pager_resolution_sequence,
         };
+        if (state.pager_worker.active_work->resumed_from_parked) {
+          ++state.pager_worker.parked_resolved_heads;
+          ++state.counters.pager_worker_parked_resolved_heads;
+          state.pager_worker.last_parked_resolved_address_space_id = address_space_id;
+          state.pager_worker.last_parked_resolved_handoff_sequence =
+              state.pager_worker.active_work->handoff.sequence;
+          state.pager_worker.last_parked_resolved_resolution_sequence =
+              address_space->last_pager_resolution_sequence;
+        }
         state.pager_worker.active_work.reset();
         ++state.pager_worker.resolutions_completed;
         state.pager_worker.last_completed_address_space_id = address_space_id;
@@ -1874,6 +1899,14 @@ KernelServiceResult axion_kernel_service_request(
               state.pager_worker.last_parked_resumed_ready_address_space_id,
           .pager_worker_last_parked_resumed_ready_handoff_sequence =
               state.pager_worker.last_parked_resumed_ready_handoff_sequence,
+          .pager_worker_parked_resolved_heads =
+              state.pager_worker.parked_resolved_heads,
+          .pager_worker_last_parked_resolved_address_space_id =
+              state.pager_worker.last_parked_resolved_address_space_id,
+          .pager_worker_last_parked_resolved_handoff_sequence =
+              state.pager_worker.last_parked_resolved_handoff_sequence,
+          .pager_worker_last_parked_resolved_resolution_sequence =
+              state.pager_worker.last_parked_resolved_resolution_sequence,
           .pager_worker_activations = state.pager_worker.activations,
           .pager_worker_last_activated_address_space_id =
               state.pager_worker.last_activated_address_space_id,

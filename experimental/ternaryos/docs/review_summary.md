@@ -97,6 +97,8 @@ Kernel integration proof now also includes:
   ready behind that resumed blocked head
 - parked resumptions now also retain the resumed blocked head's own handoff
   ordinal, so the full two-sided resumption snapshot is explicit
+- the parked path now also retains when that resumed blocked head actually
+  resolves, including its handoff and resolution ordinals
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

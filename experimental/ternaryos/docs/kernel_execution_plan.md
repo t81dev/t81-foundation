@@ -323,6 +323,16 @@ The twenty-eighth pager-groundwork slice is now also complete:
 - HAL/kernel coverage now proves the resumed head retains its original first
   handoff ordinal at parked resumption time
 
+The twenty-ninth pager-groundwork slice is now also complete:
+
+- parked-resumption flow now also retains when that resumed blocked head
+  actually resolves, including its address space, handoff ordinal, and
+  resolution ordinal
+- runtime and fault diagnostics can now distinguish "resumed from parked state"
+  from "completed after parked resumption"
+- HAL/kernel coverage now proves the blocked head records one deterministic
+  parked-head resolution when it drains after resumption
+
 ## Next Sequence
 
 ### 1. Keep the service contract stable

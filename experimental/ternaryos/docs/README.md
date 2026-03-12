@@ -78,8 +78,8 @@ kernel/
                        parked capped deferral, parked-cycle, parked-episode,
                        parked-ready backlog, parked-resumption, parked-resume
                        backlog, parked-resume handoff, parked-resumed-head
-                       handoff, blocker/blocked, activation, and completion
-                       diagnostics
+                       handoff, parked-resolved-head, blocker/blocked,
+                       activation, and completion diagnostics
 
 mmu/
   tva.hpp              Ternary Virtual Address: base-3 uint64_t, VPN + offset,

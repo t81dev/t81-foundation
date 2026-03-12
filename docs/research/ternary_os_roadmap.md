@@ -106,7 +106,8 @@ parked loop tick, plus live parked-ready backlog diagnostics while that head
 still blocks the worker, plus explicit parked-resumption diagnostics once that
 head becomes ready again, including how much ready work still remained queued
 behind it at resumption time, which queued handoff it was, and the resumed
-blocked head's own handoff ordinal, before later pager integration.
+blocked head's own handoff ordinal, plus when that resumed blocked head later
+resolves, before later pager integration.
 
 That near-term kernel slice is now tracked explicitly in:
 
