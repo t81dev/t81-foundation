@@ -37,6 +37,14 @@ struct KernelInterruptRecord {
   uint64_t sequence{0};
 };
 
+struct KernelInterruptSourceCounters {
+  uint64_t timer{0};
+  uint64_t storage{0};
+  uint64_t network{0};
+  uint64_t keyboard{0};
+  uint64_t unknown{0};
+};
+
 struct KernelPagerHandoffRecord {
   AddressSpaceId address_space_id{0};
   ProcessGroupId process_group_id{0};
@@ -258,6 +266,8 @@ struct KernelRuntimeState {
     uint64_t ipc_messages_received{0};
     uint64_t interrupts_recorded{0};
     uint64_t interrupts_delivered{0};
+    KernelInterruptSourceCounters interrupt_sources_recorded{};
+    KernelInterruptSourceCounters interrupt_sources_delivered{};
     uint64_t faults_recorded{0};
     uint64_t faults_delivered{0};
     uint64_t faults_routed_to_threads{0};
@@ -552,6 +562,8 @@ struct KernelRuntimeStatusView {
   std::size_t pending_interrupt_high_watermark{0};
   uint64_t interrupts_recorded{0};
   uint64_t interrupts_delivered{0};
+  KernelInterruptSourceCounters interrupt_sources_recorded{};
+  KernelInterruptSourceCounters interrupt_sources_delivered{};
   std::optional<KernelInterruptRecord> next_pending_interrupt{};
   std::optional<KernelInterruptRecord> last_recorded_interrupt{};
   std::optional<KernelInterruptRecord> last_delivered_interrupt{};
@@ -785,6 +797,8 @@ struct KernelFaultSummaryView {
   std::size_t delivered_faults{0};
   uint64_t interrupts_recorded{0};
   uint64_t interrupts_delivered{0};
+  KernelInterruptSourceCounters interrupt_sources_recorded{};
+  KernelInterruptSourceCounters interrupt_sources_delivered{};
   std::size_t routed_thread_faults{0};
   std::size_t quarantined_threads{0};
   std::size_t audit_events{0};
@@ -892,6 +906,8 @@ struct KernelAuditSummaryView {
   std::size_t audit_events{0};
   uint64_t fault_deliveries{0};
   uint64_t interrupt_deliveries{0};
+  KernelInterruptSourceCounters interrupt_sources_recorded{};
+  KernelInterruptSourceCounters interrupt_sources_delivered{};
   uint64_t thread_quarantines{0};
   uint64_t process_group_fault_entries{0};
   uint64_t supervisor_notifications{0};

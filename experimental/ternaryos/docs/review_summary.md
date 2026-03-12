@@ -123,6 +123,8 @@ Kernel integration proof now also includes:
 - interrupt queue observability is now retained too: latest recorded interrupt,
   pending-queue high-water mark, and FIFO-head visibility through the same
   stable summaries
+- deterministic source accounting is now retained too for the current
+  interrupt classes, without introducing priority or controller policy
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

@@ -6,6 +6,27 @@ namespace t81::ternaryos::kernel {
 
 namespace {
 
+void increment_interrupt_source_counter(KernelInterruptSourceCounters& counters,
+                                        hal::InterruptSource source) {
+  switch (source) {
+    case hal::InterruptSource::Timer:
+      ++counters.timer;
+      break;
+    case hal::InterruptSource::Storage:
+      ++counters.storage;
+      break;
+    case hal::InterruptSource::Network:
+      ++counters.network;
+      break;
+    case hal::InterruptSource::Keyboard:
+      ++counters.keyboard;
+      break;
+    case hal::InterruptSource::Unknown:
+      ++counters.unknown;
+      break;
+  }
+}
+
 constexpr std::string_view kVBoxPlatformPrefix = "virtualbox-x86_64:";
 
 std::optional<KernelDeviceArbitrationState> bootstrap_device_arbitration(
@@ -624,6 +645,8 @@ void record_interrupt(KernelRuntimeState& state,
       std::max(state.pending_interrupt_high_watermark, state.pending_interrupts.size());
   state.last_recorded_interrupt = state.pending_interrupts.back();
   ++state.counters.interrupts_recorded;
+  increment_interrupt_source_counter(state.counters.interrupt_sources_recorded,
+                                     interrupt.source);
 }
 
 bool maybe_recover_thread(KernelRuntimeState& state,
@@ -1088,6 +1111,8 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .delivered_faults = static_cast<std::size_t>(state.counters.faults_delivered),
       .interrupts_recorded = state.counters.interrupts_recorded,
       .interrupts_delivered = state.counters.interrupts_delivered,
+      .interrupt_sources_recorded = state.counters.interrupt_sources_recorded,
+      .interrupt_sources_delivered = state.counters.interrupt_sources_delivered,
       .routed_thread_faults =
           static_cast<std::size_t>(state.counters.faults_routed_to_threads),
       .quarantined_threads =
@@ -1283,6 +1308,8 @@ KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) 
       .audit_events = state.audit_count(),
       .fault_deliveries = state.counters.faults_delivered,
       .interrupt_deliveries = state.counters.interrupts_delivered,
+      .interrupt_sources_recorded = state.counters.interrupt_sources_recorded,
+      .interrupt_sources_delivered = state.counters.interrupt_sources_delivered,
       .thread_quarantines = state.counters.thread_quarantines,
       .process_group_fault_entries = state.counters.process_group_fault_entries,
       .supervisor_notifications = state.counters.supervisor_fault_notifications,
@@ -1681,6 +1708,9 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
       state.last_delivered_interrupt = state.pending_interrupts.front();
       state.pending_interrupts.pop_front();
       ++state.counters.interrupts_delivered;
+      increment_interrupt_source_counter(
+          state.counters.interrupt_sources_delivered,
+          state.last_delivered_interrupt->source);
       record_audit_event(state,
                          KernelAuditEventKind::InterruptDelivered,
                          KernelRuntimeState::kKernelTid,
@@ -2123,6 +2153,8 @@ KernelServiceResult axion_kernel_service_request(
           .pending_interrupt_high_watermark = state.pending_interrupt_high_watermark,
           .interrupts_recorded = state.counters.interrupts_recorded,
           .interrupts_delivered = state.counters.interrupts_delivered,
+          .interrupt_sources_recorded = state.counters.interrupt_sources_recorded,
+          .interrupt_sources_delivered = state.counters.interrupt_sources_delivered,
           .next_pending_interrupt =
               !state.pending_interrupts.empty()
                   ? std::optional<KernelInterruptRecord>{state.pending_interrupts.front()}

@@ -768,6 +768,10 @@ static void test_kernel_interrupt_event_delivery() {
         "interrupt queue retains pending high-water mark");
   check(state->counters.interrupts_recorded == 2,
         "runtime counts recorded interrupts");
+  check(state->counters.interrupt_sources_recorded.timer == 1,
+        "runtime counts one recorded timer interrupt");
+  check(state->counters.interrupt_sources_recorded.storage == 1,
+        "runtime counts one recorded storage interrupt");
   check(state->last_recorded_interrupt.has_value(),
         "interrupt intake retains latest recorded interrupt");
   if (state->last_recorded_interrupt) {
@@ -782,6 +786,8 @@ static void test_kernel_interrupt_event_delivery() {
         "interrupt step drains one pending interrupt");
   check(state->counters.interrupts_delivered == 1,
         "runtime counts first delivered interrupt");
+  check(state->counters.interrupt_sources_delivered.timer == 1,
+        "runtime counts one delivered timer interrupt");
   check(state->last_delivered_interrupt.has_value(),
         "interrupt step exposes the delivered interrupt");
   if (state->last_delivered_interrupt) {
@@ -814,6 +820,8 @@ static void test_kernel_interrupt_event_delivery() {
         "second interrupt step drains the remaining pending interrupt");
   check(state->counters.interrupts_delivered == 2,
         "runtime counts both delivered interrupts");
+  check(state->counters.interrupt_sources_delivered.storage == 1,
+        "runtime counts one delivered storage interrupt");
   check(state->last_delivered_interrupt.has_value(),
         "second interrupt step exposes the remaining delivered interrupt");
   if (state->last_delivered_interrupt) {
@@ -840,6 +848,14 @@ static void test_kernel_interrupt_event_delivery() {
           "runtime status reports recorded interrupt count");
     check(runtime_status.runtime->interrupts_delivered == 2,
           "runtime status reports delivered interrupt count");
+    check(runtime_status.runtime->interrupt_sources_recorded.timer == 1,
+          "runtime status reports recorded timer interrupt count");
+    check(runtime_status.runtime->interrupt_sources_recorded.storage == 1,
+          "runtime status reports recorded storage interrupt count");
+    check(runtime_status.runtime->interrupt_sources_delivered.timer == 1,
+          "runtime status reports delivered timer interrupt count");
+    check(runtime_status.runtime->interrupt_sources_delivered.storage == 1,
+          "runtime status reports delivered storage interrupt count");
     check(!runtime_status.runtime->next_pending_interrupt.has_value(),
           "runtime status clears next pending interrupt after delivery");
     check(runtime_status.runtime->last_recorded_interrupt.has_value(),
@@ -873,6 +889,14 @@ static void test_kernel_interrupt_event_delivery() {
           "fault summary reports recorded interrupt count");
     check(fault_summary.fault_summary->interrupts_delivered == 2,
           "fault summary reports delivered interrupt count");
+    check(fault_summary.fault_summary->interrupt_sources_recorded.timer == 1,
+          "fault summary reports recorded timer interrupt count");
+    check(fault_summary.fault_summary->interrupt_sources_recorded.storage == 1,
+          "fault summary reports recorded storage interrupt count");
+    check(fault_summary.fault_summary->interrupt_sources_delivered.timer == 1,
+          "fault summary reports delivered timer interrupt count");
+    check(fault_summary.fault_summary->interrupt_sources_delivered.storage == 1,
+          "fault summary reports delivered storage interrupt count");
     check(!fault_summary.fault_summary->next_pending_interrupt.has_value(),
           "fault summary clears next pending interrupt after delivery");
     check(fault_summary.fault_summary->last_recorded_interrupt.has_value(),
@@ -890,6 +914,14 @@ static void test_kernel_interrupt_event_delivery() {
   if (audit_summary.audit_summary) {
     check(audit_summary.audit_summary->interrupt_deliveries == 2,
           "audit summary reports interrupt delivery count");
+    check(audit_summary.audit_summary->interrupt_sources_recorded.timer == 1,
+          "audit summary reports recorded timer interrupt count");
+    check(audit_summary.audit_summary->interrupt_sources_recorded.storage == 1,
+          "audit summary reports recorded storage interrupt count");
+    check(audit_summary.audit_summary->interrupt_sources_delivered.timer == 1,
+          "audit summary reports delivered timer interrupt count");
+    check(audit_summary.audit_summary->interrupt_sources_delivered.storage == 1,
+          "audit summary reports delivered storage interrupt count");
     check(audit_summary.audit_summary->last_recorded_interrupt.has_value(),
           "audit summary retains the latest recorded interrupt");
     check(audit_summary.audit_summary->last_delivered_interrupt.has_value(),
@@ -931,6 +963,12 @@ static void test_kernel_interrupt_event_delivery() {
     if (queued_runtime.runtime) {
       check(queued_runtime.runtime->pending_interrupt_count == 2,
             "runtime status reports queued interrupt count before delivery");
+      check(queued_runtime.runtime->interrupt_sources_recorded.keyboard == 1,
+            "runtime status reports recorded keyboard interrupt count before delivery");
+      check(queued_runtime.runtime->interrupt_sources_recorded.network == 1,
+            "runtime status reports recorded network interrupt count before delivery");
+      check(queued_runtime.runtime->interrupt_sources_delivered.keyboard == 0,
+            "runtime status reports zero delivered keyboard interrupts before delivery");
       check(queued_runtime.runtime->next_pending_interrupt.has_value(),
             "runtime status exposes next pending interrupt before delivery");
       if (queued_runtime.runtime->next_pending_interrupt) {

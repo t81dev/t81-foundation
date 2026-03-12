@@ -423,6 +423,9 @@ deterministic loop delivery, and stable runtime/fault/audit diagnostics.
 The next narrow interrupt slice is queue observability: retained intake
 provenance, pending-queue high-water marks, and stable visibility into the
 next queued interrupt without adding controller policy.
+After that, the next narrow slice is deterministic source accounting for the
+existing interrupt classes, still without priority, masking, or controller
+ownership policy.
 
 ## Recommended Order
 
