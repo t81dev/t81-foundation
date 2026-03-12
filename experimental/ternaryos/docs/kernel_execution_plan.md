@@ -429,6 +429,9 @@ ownership policy.
 The next useful queue-facing slice after that is pending source composition:
 how many queued interrupts exist per current source class, still with FIFO
 ordering and no priority policy.
+The next queue-facing slice after that is explicit queue-bound visibility:
+stable head/tail pending interrupt reporting, still without changing delivery
+order or adding controller policy.
 
 ## Recommended Order
 

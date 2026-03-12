@@ -1159,6 +1159,10 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
           !state.pending_interrupts.empty()
               ? std::optional<KernelInterruptRecord>{state.pending_interrupts.front()}
               : std::nullopt,
+      .last_pending_interrupt =
+          !state.pending_interrupts.empty()
+              ? std::optional<KernelInterruptRecord>{state.pending_interrupts.back()}
+              : std::nullopt,
       .last_recorded_interrupt = state.last_recorded_interrupt,
       .last_delivered_interrupt = state.last_delivered_interrupt,
       .last_pager_address_space_id = latest_pager_fault.address_space_id,
@@ -2171,6 +2175,10 @@ KernelServiceResult axion_kernel_service_request(
           .next_pending_interrupt =
               !state.pending_interrupts.empty()
                   ? std::optional<KernelInterruptRecord>{state.pending_interrupts.front()}
+                  : std::nullopt,
+          .last_pending_interrupt =
+              !state.pending_interrupts.empty()
+                  ? std::optional<KernelInterruptRecord>{state.pending_interrupts.back()}
                   : std::nullopt,
           .last_recorded_interrupt = state.last_recorded_interrupt,
           .last_delivered_interrupt = state.last_delivered_interrupt,

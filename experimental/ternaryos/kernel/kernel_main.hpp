@@ -566,6 +566,7 @@ struct KernelRuntimeStatusView {
   KernelInterruptSourceCounters interrupt_sources_recorded{};
   KernelInterruptSourceCounters interrupt_sources_delivered{};
   std::optional<KernelInterruptRecord> next_pending_interrupt{};
+  std::optional<KernelInterruptRecord> last_pending_interrupt{};
   std::optional<KernelInterruptRecord> last_recorded_interrupt{};
   std::optional<KernelInterruptRecord> last_delivered_interrupt{};
   uint64_t pager_eligible_faults{0};
@@ -892,6 +893,7 @@ struct KernelFaultSummaryView {
   uint64_t service_lifecycle_transitions{0};
   std::optional<KernelFaultRecord> last_delivered_fault{};
   std::optional<KernelInterruptRecord> next_pending_interrupt{};
+  std::optional<KernelInterruptRecord> last_pending_interrupt{};
   std::optional<KernelInterruptRecord> last_recorded_interrupt{};
   std::optional<KernelInterruptRecord> last_delivered_interrupt{};
   std::optional<AddressSpaceId> last_pager_address_space_id{};

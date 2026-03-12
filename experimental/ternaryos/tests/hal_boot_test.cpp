@@ -992,6 +992,15 @@ static void test_kernel_interrupt_event_delivery() {
         check(queued_runtime.runtime->next_pending_interrupt->sequence == 1,
               "runtime status preserves FIFO head interrupt sequence");
       }
+      check(queued_runtime.runtime->last_pending_interrupt.has_value(),
+            "runtime status exposes tail pending interrupt before delivery");
+      if (queued_runtime.runtime->last_pending_interrupt) {
+        check(queued_runtime.runtime->last_pending_interrupt->source ==
+                  InterruptSource::Network,
+              "runtime status preserves FIFO tail interrupt source");
+        check(queued_runtime.runtime->last_pending_interrupt->sequence == 2,
+              "runtime status preserves FIFO tail interrupt sequence");
+      }
       check(queued_runtime.runtime->last_recorded_interrupt.has_value(),
             "runtime status retains latest recorded interrupt before delivery");
       if (queued_runtime.runtime->last_recorded_interrupt) {
@@ -1013,6 +1022,15 @@ static void test_kernel_interrupt_event_delivery() {
             "fault summary reports one pending keyboard interrupt before delivery");
       check(queued_fault_summary.fault_summary->pending_interrupt_sources.network == 1,
             "fault summary reports one pending network interrupt before delivery");
+      check(queued_fault_summary.fault_summary->next_pending_interrupt.has_value(),
+            "fault summary exposes head pending interrupt before delivery");
+      check(queued_fault_summary.fault_summary->last_pending_interrupt.has_value(),
+            "fault summary exposes tail pending interrupt before delivery");
+      if (queued_fault_summary.fault_summary->last_pending_interrupt) {
+        check(queued_fault_summary.fault_summary->last_pending_interrupt->source ==
+                  InterruptSource::Network,
+              "fault summary preserves FIFO tail interrupt source");
+      }
     }
   }
 }

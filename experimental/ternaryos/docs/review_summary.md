@@ -127,6 +127,9 @@ Kernel integration proof now also includes:
   interrupt classes, without introducing priority or controller policy
 - pending interrupt queue composition is now visible too through stable
   runtime/fault summaries, still without priority or masking semantics
+- pending interrupt queue bounds are now visible too through the same stable
+  summaries: both FIFO head and FIFO tail can be inspected without policy
+  widening
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures
