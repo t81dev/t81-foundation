@@ -146,6 +146,7 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - Active device arbitration for the first supported VirtualBox storage/display/network profile is now attached to that same owned boundary.
 - The kernel runtime now also exposes a deterministic loop step plus runtime counters for scheduler and IPC activity.
 - The loop-owned fault delivery path now feeds a real kernel policy boundary: delivered faults are routed into per-thread runtime state, the faulting thread is quarantined deterministically, the owning process group enters a blocked fault state, explicit group acknowledgement gates recovery, and audit-only governance events are recorded in deterministic order.
+- The first RFC-00B5 interrupt-convergence slice is now implemented too: kernel-owned interrupt events can be recorded explicitly, delivered deterministically through the kernel loop after faults and before pager work, and surfaced through stable runtime/fault/audit diagnostics.
 - The first service-facing runtime contract above the supervisor/process-group boundary is now implemented, including deterministic healthy/faulted-group behavior and stable diagnostics.
 - The first narrow service-facing runtime action is now implemented too: supervisor fault-group acknowledgement through the same contract.
 - Supervisor-facing recovery/report flows are now implemented on top of that action: the service boundary exposes deterministic pending-group, acknowledgement, and recovered-group state for each supervisor.

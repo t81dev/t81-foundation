@@ -734,6 +734,147 @@ static void test_kernel_loop_fault_delivery() {
   check(!state->last_delivered_fault.has_value(), "idle loop step clears delivered-fault slot");
 }
 
+static void test_kernel_interrupt_event_delivery() {
+  std::printf("\n[AC-22a] Axion kernel records and delivers interrupt events deterministically\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for interrupt delivery");
+  if (!state) {
+    return;
+  }
+
+  check(axion_kernel_record_interrupt(
+            *state,
+            HardwareInterrupt{
+                .source = InterruptSource::Timer,
+                .timestamp_ns = 100,
+                .payload = 11,
+            }),
+        "kernel records first interrupt event");
+  check(axion_kernel_record_interrupt(
+            *state,
+            HardwareInterrupt{
+                .source = InterruptSource::Storage,
+                .timestamp_ns = 200,
+                .payload = 22,
+            }),
+        "kernel records second interrupt event");
+  check(state->pending_interrupt_count() == 2,
+        "pending interrupt queue tracks both recorded interrupts");
+  check(state->counters.interrupts_recorded == 2,
+        "runtime counts recorded interrupts");
+
+  check(axion_kernel_step(*state), "interrupt step delivers the first pending interrupt");
+  check(state->pending_interrupt_count() == 1,
+        "interrupt step drains one pending interrupt");
+  check(state->counters.interrupts_delivered == 1,
+        "runtime counts first delivered interrupt");
+  check(state->last_delivered_interrupt.has_value(),
+        "interrupt step exposes the delivered interrupt");
+  if (state->last_delivered_interrupt) {
+    check(state->last_delivered_interrupt->source == InterruptSource::Timer,
+          "first delivered interrupt preserves FIFO source order");
+    check(state->last_delivered_interrupt->payload == 11,
+          "first delivered interrupt preserves payload");
+    check(state->last_delivered_interrupt->sequence == 1,
+          "first delivered interrupt preserves intake sequence");
+  }
+
+  auto fault =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(23, 0), mmu::MmuAccessMode::Read);
+  check(fault.fault.has_value(), "unmapped access records a fault alongside pending interrupts");
+  check(state->pending_fault_count() == 1, "fault queue records the interrupt-priority test fault");
+  check(state->pending_interrupt_count() == 1,
+        "interrupt queue remains pending before fault-priority step");
+
+  check(!axion_kernel_step(*state), "fault step keeps fault priority over pending interrupts");
+  check(state->pending_fault_count() == 0, "fault-priority step drains the pending fault first");
+  check(state->pending_interrupt_count() == 1,
+        "fault-priority step leaves the pending interrupt queued");
+  check(!state->last_delivered_interrupt.has_value(),
+        "fault-priority step clears stale delivered-interrupt state");
+  check(state->counters.interrupts_delivered == 1,
+        "fault-priority step does not advance interrupt deliveries");
+
+  check(axion_kernel_step(*state), "next interrupt step delivers the remaining pending interrupt");
+  check(state->pending_interrupt_count() == 0,
+        "second interrupt step drains the remaining pending interrupt");
+  check(state->counters.interrupts_delivered == 2,
+        "runtime counts both delivered interrupts");
+  check(state->last_delivered_interrupt.has_value(),
+        "second interrupt step exposes the remaining delivered interrupt");
+  if (state->last_delivered_interrupt) {
+    check(state->last_delivered_interrupt->source == InterruptSource::Storage,
+          "second delivered interrupt preserves FIFO source order");
+    check(state->last_delivered_interrupt->payload == 22,
+          "second delivered interrupt preserves payload");
+    check(state->last_delivered_interrupt->sequence == 2,
+          "second delivered interrupt preserves intake sequence");
+  }
+
+  auto runtime_status = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_status.status == KernelServiceStatus::Ok,
+        "runtime status succeeds after interrupt delivery");
+  check(runtime_status.runtime.has_value(),
+        "runtime status returns interrupt delivery details");
+  if (runtime_status.runtime) {
+    check(runtime_status.runtime->pending_interrupt_count == 0,
+          "runtime status reports no pending interrupts after delivery");
+    check(runtime_status.runtime->interrupts_recorded == 2,
+          "runtime status reports recorded interrupt count");
+    check(runtime_status.runtime->interrupts_delivered == 2,
+          "runtime status reports delivered interrupt count");
+    check(runtime_status.runtime->last_delivered_interrupt.has_value(),
+          "runtime status exposes the latest delivered interrupt");
+    if (runtime_status.runtime->last_delivered_interrupt) {
+      check(runtime_status.runtime->last_delivered_interrupt->source ==
+                InterruptSource::Storage,
+            "runtime status retains the latest delivered interrupt source");
+    }
+  }
+
+  auto fault_summary = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
+  check(fault_summary.status == KernelServiceStatus::Ok,
+        "fault summary succeeds after interrupt delivery");
+  check(fault_summary.fault_summary.has_value(),
+        "fault summary returns interrupt delivery details");
+  if (fault_summary.fault_summary) {
+    check(fault_summary.fault_summary->pending_interrupts == 0,
+          "fault summary reports no pending interrupts after delivery");
+    check(fault_summary.fault_summary->interrupts_recorded == 2,
+          "fault summary reports recorded interrupt count");
+    check(fault_summary.fault_summary->interrupts_delivered == 2,
+          "fault summary reports delivered interrupt count");
+    check(fault_summary.fault_summary->last_delivered_interrupt.has_value(),
+          "fault summary exposes the latest delivered interrupt");
+  }
+
+  auto audit_summary = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::AuditSummary});
+  check(audit_summary.status == KernelServiceStatus::Ok,
+        "audit summary succeeds after interrupt delivery");
+  check(audit_summary.audit_summary.has_value(),
+        "audit summary returns interrupt audit details");
+  if (audit_summary.audit_summary) {
+    check(audit_summary.audit_summary->interrupt_deliveries == 2,
+          "audit summary reports interrupt delivery count");
+    check(audit_summary.audit_summary->last_delivered_interrupt.has_value(),
+          "audit summary exposes the latest delivered interrupt");
+    check(!audit_summary.audit_summary->recent_events.empty(),
+          "audit summary retains recent interrupt audit events");
+    if (!audit_summary.audit_summary->recent_events.empty()) {
+      check(audit_summary.audit_summary->recent_events.back().kind ==
+                KernelAuditEventKind::InterruptDelivered,
+            "audit summary records interrupt delivery as the latest audit event");
+    }
+  }
+}
+
 static void test_kernel_pager_fault_state() {
   std::printf("\n[AC-22b] Axion kernel classifies pager-needed versus policy faults\n");
 
@@ -5136,6 +5277,7 @@ int main() {
   test_kernel_runtime_scheduler_and_ipc();
   test_kernel_loop_and_active_device_arbitration();
   test_kernel_loop_fault_delivery();
+  test_kernel_interrupt_event_delivery();
   test_kernel_pager_fault_state();
   test_kernel_pager_worker_backlog();
   test_kernel_pager_worker_ready_bypass_cap();

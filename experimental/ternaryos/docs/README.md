@@ -398,6 +398,10 @@ Local hosted proof as of the current branch:
   closes the current internal boot-ready kernel slice. The next step is
   external boot-lane validation, tracked explicitly in:
   - `docs/kernel_execution_plan.md`
+- the first RFC-00B5 interrupt-convergence slice now exists too: the kernel
+  can intake explicit interrupt events, deliver them deterministically through
+  `axion_kernel_step(...)`, and expose interrupt counts through the stable
+  runtime/fault/audit summaries without widening the service ABI
 - guest-bootstrap storage coverage now includes:
   - repeated reboot persistence
   - header corruption fallback

@@ -612,6 +612,17 @@ void record_fault(KernelRuntimeState& state,
   ++state.counters.faults_recorded;
 }
 
+void record_interrupt(KernelRuntimeState& state,
+                      const hal::HardwareInterrupt& interrupt) {
+  state.pending_interrupts.push_back(KernelInterruptRecord{
+      .source = interrupt.source,
+      .timestamp_ns = interrupt.timestamp_ns,
+      .payload = interrupt.payload,
+      .sequence = state.next_interrupt_sequence++,
+  });
+  ++state.counters.interrupts_recorded;
+}
+
 bool maybe_recover_thread(KernelRuntimeState& state,
                           KernelRuntimeState::ThreadRuntimeState& thread_state) {
   if (!thread_state.quarantined || !thread_state.fault_inbox.empty()) {
@@ -1069,7 +1080,10 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
   return KernelFaultSummaryView{
       .recorded_faults = state.fault_count(),
       .pending_faults = state.pending_fault_count(),
+      .pending_interrupts = state.pending_interrupt_count(),
       .delivered_faults = static_cast<std::size_t>(state.counters.faults_delivered),
+      .interrupts_recorded = state.counters.interrupts_recorded,
+      .interrupts_delivered = state.counters.interrupts_delivered,
       .routed_thread_faults =
           static_cast<std::size_t>(state.counters.faults_routed_to_threads),
       .quarantined_threads =
@@ -1101,6 +1115,7 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
             return total;
           }(),
       .last_delivered_fault = state.last_delivered_fault,
+      .last_delivered_interrupt = state.last_delivered_interrupt,
       .last_pager_address_space_id = latest_pager_fault.address_space_id,
       .last_pager_fault = latest_pager_fault.fault,
       .last_pager_handoff = state.last_pager_handoff,
@@ -1258,6 +1273,7 @@ KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) 
   KernelAuditSummaryView view{
       .audit_events = state.audit_count(),
       .fault_deliveries = state.counters.faults_delivered,
+      .interrupt_deliveries = state.counters.interrupts_delivered,
       .thread_quarantines = state.counters.thread_quarantines,
       .process_group_fault_entries = state.counters.process_group_fault_entries,
       .supervisor_notifications = state.counters.supervisor_fault_notifications,
@@ -1266,6 +1282,7 @@ KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) 
       .supervisor_acknowledgements = state.counters.supervisor_acknowledgements,
       .thread_recoveries = state.counters.thread_fault_recoveries,
       .service_lifecycle_transitions = runtime_service_summary(state).service_lifecycle_transitions,
+      .last_delivered_interrupt = state.last_delivered_interrupt,
       .last_service_transition_id = latest_service_transition.service_id,
       .last_service_transition_kind = latest_service_transition.kind,
       .last_service_transition_sequence = latest_service_transition.sequence,
@@ -1459,6 +1476,12 @@ KernelAccessReport axion_kernel_check_access(
   };
 }
 
+bool axion_kernel_record_interrupt(KernelRuntimeState& state,
+                                   const hal::HardwareInterrupt& interrupt) noexcept {
+  record_interrupt(state, interrupt);
+  return true;
+}
+
 std::optional<sched::Tid> axion_kernel_spawn_thread(
     KernelRuntimeState& state,
     sched::TiscContext ctx) noexcept {
@@ -1582,6 +1605,7 @@ bool axion_kernel_tick(KernelRuntimeState& state) noexcept {
 bool axion_kernel_step(KernelRuntimeState& state) noexcept {
   ++state.counters.loop_iterations;
   bool handled_by_policy = false;
+  state.last_delivered_interrupt.reset();
   if (!state.pending_faults.empty()) {
     state.last_delivered_fault = state.pending_faults.front();
     state.pending_faults.pop_front();
@@ -1643,7 +1667,16 @@ bool axion_kernel_step(KernelRuntimeState& state) noexcept {
     }
   } else {
     state.last_delivered_fault.reset();
-    if (!state.pending_pager_handoffs.empty()) {
+    if (!state.pending_interrupts.empty()) {
+      state.last_delivered_interrupt = state.pending_interrupts.front();
+      state.pending_interrupts.pop_front();
+      ++state.counters.interrupts_delivered;
+      record_audit_event(state,
+                         KernelAuditEventKind::InterruptDelivered,
+                         KernelRuntimeState::kKernelTid,
+                         KernelRuntimeState::kKernelProcessGroup);
+      handled_by_policy = true;
+    } else if (!state.pending_pager_handoffs.empty()) {
       const auto address_space_id = state.pending_pager_handoffs.front();
       state.pending_pager_handoffs.pop_front();
       auto* address_space = state.find_address_space_mut(address_space_id);
@@ -2076,6 +2109,10 @@ KernelServiceResult axion_kernel_service_request(
           .scheduler_ticks = state.counters.scheduler_ticks,
           .ipc_messages_sent = state.counters.ipc_messages_sent,
           .ipc_messages_received = state.counters.ipc_messages_received,
+          .pending_interrupt_count = state.pending_interrupt_count(),
+          .interrupts_recorded = state.counters.interrupts_recorded,
+          .interrupts_delivered = state.counters.interrupts_delivered,
+          .last_delivered_interrupt = state.last_delivered_interrupt,
           .pager_eligible_faults = state.counters.pager_eligible_faults,
           .policy_faults = state.counters.policy_faults,
           .pager_handoffs_dispatched = state.counters.pager_handoffs_dispatched,

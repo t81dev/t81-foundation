@@ -392,6 +392,11 @@ boot-ready kernel slice. The next kernel work is to preserve that private
 pager surface while moving outward to external boot validation before any
 public pager ABI or syscall design.
 
+That does not block narrow RFC-00B5 convergence inside the existing kernel
+boundary: explicit interrupt events may now enter kernel-owned runtime state
+and be delivered through the deterministic loop without widening the public
+service contract.
+
 The working execution note for this slice is:
 
 - `experimental/ternaryos/docs/kernel_execution_plan.md`

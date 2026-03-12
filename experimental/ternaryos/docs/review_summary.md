@@ -117,6 +117,9 @@ Kernel integration proof now also includes:
 - that closes the current internal boot-ready kernel slice; the next move is
   outward to external boot-lane validation rather than more internal pager
   surface growth
+- the first RFC-00B5 kernel interrupt slice now exists as well: explicit
+  interrupt event intake, deterministic loop delivery after faults, and stable
+  runtime/fault/audit counters without a public interrupt ABI
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

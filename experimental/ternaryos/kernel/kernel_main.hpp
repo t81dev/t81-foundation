@@ -30,6 +30,13 @@ struct KernelFaultRecord {
   sched::Tid subject_tid{0};
 };
 
+struct KernelInterruptRecord {
+  hal::InterruptSource source{hal::InterruptSource::Unknown};
+  uint64_t timestamp_ns{0};
+  uint64_t payload{0};
+  uint64_t sequence{0};
+};
+
 struct KernelPagerHandoffRecord {
   AddressSpaceId address_space_id{0};
   ProcessGroupId process_group_id{0};
@@ -54,6 +61,7 @@ struct KernelPagerWorkItem {
 
 enum class KernelAuditEventKind : uint8_t {
   FaultDelivered = 0,
+  InterruptDelivered,
   ThreadQuarantined,
   ProcessGroupFaultEntered,
   SupervisorFaultNotified,
@@ -248,6 +256,8 @@ struct KernelRuntimeState {
     uint64_t scheduler_switches{0};
     uint64_t ipc_messages_sent{0};
     uint64_t ipc_messages_received{0};
+    uint64_t interrupts_recorded{0};
+    uint64_t interrupts_delivered{0};
     uint64_t faults_recorded{0};
     uint64_t faults_delivered{0};
     uint64_t faults_routed_to_threads{0};
@@ -292,6 +302,7 @@ struct KernelRuntimeState {
   std::optional<KernelDeviceArbitrationState> device_arbitration;
   std::deque<KernelFaultRecord> fault_log;
   std::deque<KernelFaultRecord> pending_faults;
+  std::deque<KernelInterruptRecord> pending_interrupts;
   std::deque<AddressSpaceId> pending_pager_handoffs;
   std::size_t pending_pager_handoff_high_watermark{0};
   std::deque<KernelAuditRecord> audit_log;
@@ -307,6 +318,7 @@ struct KernelRuntimeState {
   t81::vm::ThreadContext cpu_context{};
   Counters counters{};
   std::optional<KernelFaultRecord> last_delivered_fault{};
+  std::optional<KernelInterruptRecord> last_delivered_interrupt{};
   std::optional<KernelPagerHandoffRecord> last_pager_handoff{};
   std::optional<KernelPagerResolutionRecord> last_pager_resolution{};
   std::optional<KernelAuditRecord> last_audit_event{};
@@ -314,6 +326,7 @@ struct KernelRuntimeState {
   SupervisorId next_supervisor_id{1};
   ServiceId next_service_id{1};
   AddressSpaceId next_address_space_id{1};
+  uint64_t next_interrupt_sequence{1};
   uint64_t next_pager_handoff_sequence{1};
   uint64_t next_pager_resolution_sequence{1};
   uint64_t next_audit_sequence{1};
@@ -339,6 +352,9 @@ struct KernelRuntimeState {
 
   std::size_t fault_count() const noexcept { return fault_log.size(); }
   std::size_t pending_fault_count() const noexcept { return pending_faults.size(); }
+  std::size_t pending_interrupt_count() const noexcept {
+    return pending_interrupts.size();
+  }
   std::size_t audit_count() const noexcept { return audit_log.size(); }
   std::size_t process_group_count() const noexcept { return process_groups.size(); }
   std::size_t supervisor_count() const noexcept { return supervisors.size(); }
@@ -530,6 +546,10 @@ struct KernelRuntimeStatusView {
   uint64_t scheduler_ticks{0};
   uint64_t ipc_messages_sent{0};
   uint64_t ipc_messages_received{0};
+  std::size_t pending_interrupt_count{0};
+  uint64_t interrupts_recorded{0};
+  uint64_t interrupts_delivered{0};
+  std::optional<KernelInterruptRecord> last_delivered_interrupt{};
   uint64_t pager_eligible_faults{0};
   uint64_t policy_faults{0};
   uint64_t pager_handoffs_dispatched{0};
@@ -755,7 +775,10 @@ struct KernelSupervisorServiceInventoryView {
 struct KernelFaultSummaryView {
   std::size_t recorded_faults{0};
   std::size_t pending_faults{0};
+  std::size_t pending_interrupts{0};
   std::size_t delivered_faults{0};
+  uint64_t interrupts_recorded{0};
+  uint64_t interrupts_delivered{0};
   std::size_t routed_thread_faults{0};
   std::size_t quarantined_threads{0};
   std::size_t audit_events{0};
@@ -846,6 +869,7 @@ struct KernelFaultSummaryView {
   std::optional<uint64_t> pager_worker_last_boot_critical_resolution_sequence{};
   uint64_t service_lifecycle_transitions{0};
   std::optional<KernelFaultRecord> last_delivered_fault{};
+  std::optional<KernelInterruptRecord> last_delivered_interrupt{};
   std::optional<AddressSpaceId> last_pager_address_space_id{};
   std::optional<KernelFaultRecord> last_pager_fault{};
   std::optional<KernelPagerHandoffRecord> last_pager_handoff{};
@@ -859,6 +883,7 @@ struct KernelFaultSummaryView {
 struct KernelAuditSummaryView {
   std::size_t audit_events{0};
   uint64_t fault_deliveries{0};
+  uint64_t interrupt_deliveries{0};
   uint64_t thread_quarantines{0};
   uint64_t process_group_fault_entries{0};
   uint64_t supervisor_notifications{0};
@@ -867,6 +892,7 @@ struct KernelAuditSummaryView {
   uint64_t supervisor_acknowledgements{0};
   uint64_t thread_recoveries{0};
   uint64_t service_lifecycle_transitions{0};
+  std::optional<KernelInterruptRecord> last_delivered_interrupt{};
   std::optional<ServiceId> last_service_transition_id{};
   std::optional<KernelAuditEventKind> last_service_transition_kind{};
   std::optional<uint64_t> last_service_transition_sequence{};
@@ -965,6 +991,10 @@ std::optional<sched::Tid> axion_kernel_spawn_thread_under_supervisor(
 bool axion_kernel_set_address_space_boot_critical(KernelRuntimeState& state,
                                                   AddressSpaceId address_space_id,
                                                   bool boot_critical) noexcept;
+
+bool axion_kernel_record_interrupt(
+    KernelRuntimeState& state,
+    const hal::HardwareInterrupt& interrupt) noexcept;
 
 bool axion_kernel_tick(KernelRuntimeState& state) noexcept;
 

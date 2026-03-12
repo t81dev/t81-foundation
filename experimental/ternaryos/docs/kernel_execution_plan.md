@@ -417,6 +417,10 @@ That acceptance bar is now met, and the current boot-ready slice is now
 closed. The next slice should preserve that state while moving outward to
 external boot evidence before any external pager interface exists.
 
+The first interrupt-convergence slice under RFC-00B5 can proceed in parallel
+without widening the service contract: kernel-owned interrupt event intake,
+deterministic loop delivery, and stable runtime/fault/audit diagnostics.
+
 ## Recommended Order
 
 1. preserve the current service-runtime contract without widening it casually
