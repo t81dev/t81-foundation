@@ -163,6 +163,7 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - Latest interrupt audit target retention now exists too: runtime, fault, and audit summaries expose which interrupt sequence the newest interrupt-related audit event refers to.
 - Latest interrupt audit source retention now exists too: runtime, fault, and audit summaries expose the interrupt source class targeted by the newest interrupt-related audit event.
 - Latest interrupt audit payload retention now exists too: runtime, fault, and audit summaries expose the payload carried by the newest interrupt-related audit event.
+- Latest interrupt audit timestamp retention now exists too: runtime, fault, and audit summaries expose the timestamp carried by the newest interrupt-related audit event.
 - The first service-facing runtime contract above the supervisor/process-group boundary is now implemented, including deterministic healthy/faulted-group behavior and stable diagnostics.
 - The first narrow service-facing runtime action is now implemented too: supervisor fault-group acknowledgement through the same contract.
 - Supervisor-facing recovery/report flows are now implemented on top of that action: the service boundary exposes deterministic pending-group, acknowledgement, and recovered-group state for each supervisor.

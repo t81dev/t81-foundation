@@ -468,6 +468,9 @@ the latest interrupt-related audit event too.
 The next metadata slice after that is latest interrupt audit payload retention:
 stable interrupt summaries should expose the payload carried by the latest
 interrupt-related audit event too.
+The next metadata slice after that is latest interrupt audit timestamp
+retention: stable interrupt summaries should expose the timestamp carried by
+the latest interrupt-related audit event too.
 
 ## Recommended Order
 

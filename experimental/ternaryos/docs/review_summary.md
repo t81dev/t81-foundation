@@ -165,6 +165,9 @@ Kernel integration proof now also includes:
   audit event
 - latest interrupt audit payload retention is now present too, so the summaries
   expose the payload carried by the newest interrupt-related audit event
+- latest interrupt audit timestamp retention is now present too, so the
+  summaries expose the timestamp carried by the newest interrupt-related audit
+  event
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures
