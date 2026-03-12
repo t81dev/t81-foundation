@@ -1,5 +1,8 @@
 #pragma once
 
+#include "kernel_abi.hpp"
+#include "kernel_base.hpp"
+
 #include "../hal/hal.hpp"
 #include "../hal/virtualbox_platform.hpp"
 #include "../ipc/canon_message.hpp"
@@ -16,19 +19,6 @@
 #include <vector>
 
 namespace t81::ternaryos::kernel {
-
-using ProcessGroupId = uint32_t;
-using SupervisorId = uint32_t;
-using ServiceId = uint32_t;
-using AddressSpaceId = uint32_t;
-
-struct KernelFaultRecord {
-  std::string platform_id;
-  uint64_t tva{0};
-  mmu::MmuAccessMode access_mode{mmu::MmuAccessMode::Read};
-  mmu::MmuFault fault{mmu::MmuFault::None};
-  sched::Tid subject_tid{0};
-};
 
 struct KernelInterruptRecord {
   hal::InterruptSource source{hal::InterruptSource::Unknown};
@@ -86,6 +76,8 @@ enum class KernelAuditEventKind : uint8_t {
   ServiceResumed,
   ServiceMarkedUnhealthy,
   ServiceMarkedHealthy,
+  CapabilityGranted,
+  CapabilityRevoked,
 };
 
 struct KernelAuditRecord {
@@ -131,6 +123,7 @@ struct KernelRuntimeState {
   struct ProcessGroupState {
     ProcessGroupId id{0};
     std::vector<sched::Tid> member_tids;
+    std::vector<KernelCapabilityRecord> capabilities;
     bool faulted{false};
     bool blocked{false};
     bool acknowledgement_pending{false};
@@ -147,11 +140,15 @@ struct KernelRuntimeState {
     uint64_t acknowledgements{0};
     uint64_t recovered_groups{0};
     uint64_t service_lifecycle_transitions{0};
+    uint64_t capability_transitions{0};
     std::optional<ProcessGroupId> last_acknowledged_group{};
     std::optional<ProcessGroupId> last_recovered_group{};
     std::optional<ServiceId> last_service_transition_id{};
     std::optional<KernelAuditEventKind> last_service_transition_kind{};
     std::optional<uint64_t> last_service_transition_sequence{};
+    std::optional<ProcessGroupId> last_capability_transition_group_id{};
+    std::optional<KernelAuditEventKind> last_capability_transition_kind{};
+    std::optional<uint64_t> last_capability_transition_sequence{};
   };
 
   struct AddressSpaceState {
@@ -478,6 +475,7 @@ enum class KernelServiceRequestKind : uint8_t {
   SupervisorRecoveryStatus,
   ServiceStatus,
   SupervisorServiceInventory,
+  SupervisorCapabilityInventory,
   FaultSummary,
   AuditSummary,
   DeviceSummary,
@@ -801,13 +799,33 @@ struct KernelSupervisorServiceInventoryView {
   std::size_t suspended_service_count{0};
   std::size_t unhealthy_service_count{0};
   uint64_t service_lifecycle_transitions{0};
+  uint64_t capability_transitions{0};
   uint64_t total_service_requests{0};
   uint64_t total_service_rejections{0};
   std::optional<ServiceId> last_service_transition_id{};
   std::optional<KernelAuditEventKind> last_service_transition_kind{};
   std::optional<uint64_t> last_service_transition_sequence{};
+  std::optional<ProcessGroupId> last_capability_transition_group_id{};
+  std::optional<KernelAuditEventKind> last_capability_transition_kind{};
+  std::optional<uint64_t> last_capability_transition_sequence{};
   std::vector<ServiceId> service_ids;
   std::vector<KernelSupervisorServiceEntryView> services;
+};
+
+struct KernelSupervisorCapabilityEntryView {
+  ProcessGroupId process_group_id{0};
+  std::size_t capability_count{0};
+  std::vector<KernelCapabilityRecord> capabilities;
+};
+
+struct KernelSupervisorCapabilityInventoryView {
+  SupervisorId supervisor_id{0};
+  std::size_t process_group_count{0};
+  uint64_t capability_transitions{0};
+  std::optional<ProcessGroupId> last_capability_transition_group_id{};
+  std::optional<KernelAuditEventKind> last_capability_transition_kind{};
+  std::optional<uint64_t> last_capability_transition_sequence{};
+  std::vector<KernelSupervisorCapabilityEntryView> process_groups;
 };
 
 struct KernelFaultSummaryView {
@@ -1007,6 +1025,7 @@ struct KernelServiceResult {
   std::optional<KernelSupervisorRecoveryStatusView> supervisor_recovery{};
   std::optional<KernelServiceStatusView> service{};
   std::optional<KernelSupervisorServiceInventoryView> supervisor_services{};
+  std::optional<KernelSupervisorCapabilityInventoryView> supervisor_capabilities{};
   std::optional<KernelFaultSummaryView> fault_summary{};
   std::optional<KernelAuditSummaryView> audit_summary{};
   std::optional<KernelDeviceSummaryView> device_summary{};
@@ -1037,8 +1056,51 @@ struct KernelServiceActionResult {
   std::optional<KernelDeviceSummaryView> device_summary{};
 };
 
+void record_audit_event(KernelRuntimeState& state,
+                        KernelAuditEventKind kind,
+                        sched::Tid subject_tid,
+                        ProcessGroupId process_group_id,
+                        mmu::MmuFault fault = mmu::MmuFault::None);
+
+KernelRuntimeStatusView make_runtime_view(const KernelRuntimeState& state);
+
+KernelProcessGroupStatusView make_process_group_view(const KernelRuntimeState& state,
+                                                     ProcessGroupId process_group_id);
+
+KernelSupervisorStatusView make_supervisor_view(const KernelRuntimeState& state,
+                                                SupervisorId supervisor_id);
+
+KernelSupervisorRecoveryStatusView make_supervisor_recovery_view(
+    const KernelRuntimeState& state,
+    SupervisorId supervisor_id);
+
+KernelServiceStatusView make_service_view(const KernelRuntimeState& state,
+                                          ServiceId service_id);
+
+KernelSupervisorServiceInventoryView build_supervisor_services_view(
+    const KernelRuntimeState& state,
+    SupervisorId supervisor_id);
+KernelSupervisorCapabilityInventoryView build_supervisor_capabilities_view(
+    const KernelRuntimeState& state,
+    SupervisorId supervisor_id);
+
+KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state);
+
+KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state);
+
+KernelDeviceSummaryView make_device_summary_view(const KernelRuntimeState& state);
+
 std::optional<KernelRuntimeState> axion_kernel_bootstrap(
     const hal::BootContext& ctx) noexcept;
+
+void record_fault(KernelRuntimeState& state,
+                  uint64_t tva,
+                  mmu::MmuAccessMode mode,
+                  mmu::MmuFault fault);
+
+void record_pager_fault_state(KernelRuntimeState& state,
+                              ProcessGroupId process_group_id,
+                              const KernelFaultRecord& fault_record);
 
 KernelAccessReport axion_kernel_check_access(
     KernelRuntimeState& state,
@@ -1068,6 +1130,12 @@ bool axion_kernel_record_interrupt(
 
 bool axion_kernel_tick(KernelRuntimeState& state) noexcept;
 
+bool axion_kernel_deliver_pending_fault(KernelRuntimeState& state) noexcept;
+
+bool axion_kernel_deliver_pending_interrupt(KernelRuntimeState& state) noexcept;
+
+bool axion_kernel_run_pager_policy(KernelRuntimeState& state) noexcept;
+
 bool axion_kernel_step(KernelRuntimeState& state) noexcept;
 
 bool axion_kernel_ipc_send(KernelRuntimeState& state,
@@ -1093,6 +1161,26 @@ bool axion_kernel_claim_device(KernelRuntimeState& state,
 bool axion_kernel_release_device(KernelRuntimeState& state,
                                  std::string_view device_name,
                                  sched::Tid owner) noexcept;
+bool axion_kernel_process_groups_share_supervisor(
+    const KernelRuntimeState& state,
+    ProcessGroupId lhs_process_group_id,
+    ProcessGroupId rhs_process_group_id) noexcept;
+bool axion_kernel_supervisor_matches_process_group(
+    const KernelRuntimeState& state,
+    SupervisorId supervisor_id,
+    ProcessGroupId process_group_id) noexcept;
+bool axion_kernel_grant_process_group_capability(
+    KernelRuntimeState& state,
+    ProcessGroupId process_group_id,
+    const KernelCapabilityRecord& capability) noexcept;
+bool axion_kernel_revoke_process_group_capability(
+    KernelRuntimeState& state,
+    ProcessGroupId process_group_id,
+    KernelCapabilityKind capability_kind,
+    std::optional<ProcessGroupId> process_group_scope = std::nullopt) noexcept;
+std::vector<KernelCapabilityRecord> axion_kernel_list_process_group_capabilities(
+    const KernelRuntimeState& state,
+    ProcessGroupId process_group_id) noexcept;
 
 bool axion_kernel_ack_thread_fault(KernelRuntimeState& state,
                                    sched::Tid tid) noexcept;

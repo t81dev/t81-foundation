@@ -19,6 +19,7 @@
 #include "../dev/hosted_block_dev.hpp"
 #include "../mmu/page_table.hpp"
 
+#include <algorithm>
 #include <atomic>
 #include <cassert>
 #include <cstdio>
@@ -5684,6 +5685,421 @@ static void test_kernel_service_runtime_layer() {
         "service status reports missing service after unregister");
 }
 
+static void test_kernel_minimal_abi_calls() {
+  std::printf("\n[AC-21b] Axion minimal kernel-call ABI\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for minimal ABI calls");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext thread_a;
+  thread_a.registers[0] = 111;
+  auto tid_a = axion_kernel_spawn_thread(*state, thread_a);
+  check(tid_a.has_value(), "minimal ABI spawns thread A");
+  if (!tid_a) {
+    return;
+  }
+
+  const auto* runtime_a = state->find_thread_runtime(*tid_a);
+  check(runtime_a != nullptr, "minimal ABI exposes thread A runtime");
+  if (!runtime_a) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext thread_b;
+  thread_b.registers[0] = 222;
+  auto tid_b = axion_kernel_spawn_thread_in_group(*state, thread_b, runtime_a->process_group_id);
+  check(tid_b.has_value(), "minimal ABI spawns thread B in thread A process group");
+  if (!tid_b) {
+    return;
+  }
+
+  check(axion_kernel_tick(*state), "minimal ABI first tick dispatches thread A");
+  check(state->scheduler.current_tid() == *tid_a, "thread A is current before ABI calls");
+
+  t81::ternaryos::ipc::CanonMessage msg;
+  msg.ref.hash.h.bytes.fill(0x4D);
+  msg.payload = 729;
+  msg.tag = "abi-msg";
+  auto send_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SendMessage,
+          .ipc_dst = *tid_b,
+          .message = msg,
+      });
+  check(send_result.status == KernelCallStatus::Ok,
+        "minimal ABI send returns Ok");
+  check(send_result.rejection == KernelCallRejection::None,
+        "minimal ABI send clears rejection");
+  check(send_result.action_performed, "minimal ABI send reports work performed");
+  check(state->ipc_bus.pending(*tid_b) == 1, "minimal ABI send queues one message for thread B");
+
+  auto yield_result =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::Yield});
+  check(yield_result.status == KernelCallStatus::Ok,
+        "minimal ABI yield returns Ok");
+  check(yield_result.yielded, "minimal ABI yield reports scheduler progress");
+  check(state->scheduler.current_tid() == *tid_b,
+        "minimal ABI yield switches to thread B");
+
+  auto receive_result =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
+  check(receive_result.status == KernelCallStatus::Ok,
+        "minimal ABI receive returns Ok");
+  check(receive_result.rejection == KernelCallRejection::None,
+        "minimal ABI receive clears rejection");
+  check(receive_result.message.has_value(),
+        "minimal ABI receive returns a message");
+  if (receive_result.message) {
+    check(receive_result.message->sender == *tid_a,
+          "minimal ABI receive preserves sender tid");
+    check(receive_result.message->payload == 729,
+          "minimal ABI receive preserves payload");
+    check(receive_result.message->tag == "abi-msg",
+          "minimal ABI receive preserves tag");
+  }
+
+  auto fault_report = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(44, 0), mmu::MmuAccessMode::Read);
+  check(fault_report.fault.has_value(), "minimal ABI path records an unmapped fault");
+  check(axion_kernel_step(*state), "minimal ABI fault step delivers the fault and continues runtime");
+  check(state->scheduler.current_tid() == *tid_a,
+        "thread A becomes current while thread B is quarantined");
+
+  auto read_fault = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::ReadFaultInbox,
+          .target_tid = *tid_b,
+      });
+  check(read_fault.status == KernelCallStatus::Ok,
+        "minimal ABI can read a sibling fault inbox within the same process group");
+  check(read_fault.fault.has_value(),
+        "minimal ABI fault read returns a fault record");
+  if (read_fault.fault) {
+    check(read_fault.fault->subject_tid == *tid_b,
+          "minimal ABI fault read preserves the faulting tid");
+    check(read_fault.fault->fault == mmu::MmuFault::Unmapped,
+          "minimal ABI fault read preserves fault classification");
+  }
+
+  auto ack_fault = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::AcknowledgeThreadFault,
+          .target_tid = *tid_b,
+      });
+  check(ack_fault.status == KernelCallStatus::Ok,
+        "minimal ABI fault acknowledgement returns Ok");
+  check(ack_fault.action_performed,
+        "minimal ABI fault acknowledgement reports work performed");
+
+  auto read_fault_again = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::ReadFaultInbox,
+          .target_tid = *tid_b,
+      });
+  check(read_fault_again.status == KernelCallStatus::RetryLater,
+        "minimal ABI fault read reports empty inbox after acknowledgement");
+  check(read_fault_again.rejection == KernelCallRejection::FaultInboxEmpty,
+        "minimal ABI empty fault inbox returns deterministic rejection");
+  check(axion_kernel_ack_process_group_fault(*state, runtime_a->process_group_id),
+        "minimal ABI can clear the process-group fault gate before capability denial checks");
+
+  auto queried_caps = axion_kernel_call(
+      *state, KernelCallRequest{.kind = KernelCallKind::QueryCapabilities});
+  check(queried_caps.status == KernelCallStatus::Ok,
+        "minimal ABI can query caller process-group capabilities");
+  check(!queried_caps.capabilities.empty(),
+        "minimal ABI capability query returns default capabilities");
+  check(std::any_of(queried_caps.capabilities.begin(),
+                    queried_caps.capabilities.end(),
+                    [](const auto& capability) {
+                      return capability.kind == KernelCapabilityKind::IpcSend;
+                    }),
+        "minimal ABI capability query includes IPC send by default");
+
+  check(axion_kernel_revoke_process_group_capability(
+            *state, runtime_a->process_group_id, KernelCapabilityKind::IpcSend),
+        "minimal ABI can revoke a process-group capability through kernel helpers");
+  auto denied_send = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SendMessage,
+          .ipc_dst = *tid_b,
+          .message = msg,
+      });
+  check(denied_send.status == KernelCallStatus::CapabilityDenied,
+        "minimal ABI denies send without IPC capability");
+  check(denied_send.rejection == KernelCallRejection::MissingCapability,
+        "minimal ABI capability denial is explicit");
+
+  auto queried_after_revoke = axion_kernel_call(
+      *state, KernelCallRequest{.kind = KernelCallKind::QueryCapabilities});
+  check(queried_after_revoke.status == KernelCallStatus::Ok,
+        "minimal ABI capability query still succeeds after revocation");
+  check(std::none_of(queried_after_revoke.capabilities.begin(),
+                     queried_after_revoke.capabilities.end(),
+                     [](const auto& capability) {
+                       return capability.kind == KernelCapabilityKind::IpcSend;
+                     }),
+        "minimal ABI capability query reflects revocation");
+
+  check(axion_kernel_grant_process_group_capability(
+            *state,
+            runtime_a->process_group_id,
+            KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcSend}),
+        "minimal ABI can re-grant a revoked process-group capability");
+  auto queried_after_grant = axion_kernel_call(
+      *state, KernelCallRequest{.kind = KernelCallKind::QueryCapabilities});
+  check(std::any_of(queried_after_grant.capabilities.begin(),
+                    queried_after_grant.capabilities.end(),
+                    [](const auto& capability) {
+                      return capability.kind == KernelCapabilityKind::IpcSend;
+                    }),
+        "minimal ABI capability query reflects re-grant");
+
+  auto restored_send = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SendMessage,
+          .ipc_dst = *tid_b,
+          .message = msg,
+      });
+  check(restored_send.status == KernelCallStatus::Ok,
+        "minimal ABI send succeeds again after re-grant");
+}
+
+static void test_kernel_capability_management_abi() {
+  std::printf("\n[AC-21c] Axion capability management ABI is supervisor-scoped\n");
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for capability management ABI");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext leader;
+  leader.registers[0] = 313;
+  auto leader_tid = axion_kernel_spawn_thread(*state, leader);
+  check(leader_tid.has_value(), "capability management spawns leader thread");
+  if (!leader_tid) {
+    return;
+  }
+
+  const auto* leader_runtime = state->find_thread_runtime(*leader_tid);
+  check(leader_runtime != nullptr, "leader runtime is available");
+  if (!leader_runtime) {
+    return;
+  }
+
+  const auto leader_supervisor =
+      state->find_process_group_supervisor(leader_runtime->process_group_id);
+  check(leader_supervisor.has_value(), "leader process group resolves to a supervisor");
+  if (!leader_supervisor) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext sibling;
+  sibling.registers[0] = 414;
+  auto sibling_tid =
+      axion_kernel_spawn_thread_under_supervisor(*state, sibling, *leader_supervisor);
+  check(sibling_tid.has_value(), "capability management spawns sibling under same supervisor");
+  if (!sibling_tid) {
+    return;
+  }
+
+  const auto* sibling_runtime = state->find_thread_runtime(*sibling_tid);
+  check(sibling_runtime != nullptr, "sibling runtime is available");
+  if (!sibling_runtime) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext outsider;
+  outsider.registers[0] = 515;
+  auto outsider_tid = axion_kernel_spawn_thread(*state, outsider);
+  check(outsider_tid.has_value(), "capability management spawns outsider thread");
+  if (!outsider_tid) {
+    return;
+  }
+
+  const auto* outsider_runtime = state->find_thread_runtime(*outsider_tid);
+  check(outsider_runtime != nullptr, "outsider runtime is available");
+  if (!outsider_runtime) {
+    return;
+  }
+
+  check(axion_kernel_tick(*state), "capability management dispatches leader thread");
+  check(state->scheduler.current_tid() == *leader_tid,
+        "leader thread is current for capability management calls");
+
+  auto revoke_same_supervisor = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RevokeCapability,
+          .process_group_id = sibling_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
+      });
+  check(revoke_same_supervisor.status == KernelCallStatus::Ok,
+        "same-supervisor capability revoke returns Ok");
+  check(revoke_same_supervisor.action_performed,
+        "same-supervisor capability revoke reports work performed");
+  check(std::none_of(revoke_same_supervisor.capabilities.begin(),
+                     revoke_same_supervisor.capabilities.end(),
+                     [](const auto& capability) {
+                       return capability.kind == KernelCapabilityKind::IpcReceive;
+                     }),
+        "same-supervisor revoke result reflects removed capability");
+
+  auto grant_same_supervisor = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::GrantCapability,
+          .process_group_id = sibling_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
+      });
+  check(grant_same_supervisor.status == KernelCallStatus::Ok,
+        "same-supervisor capability grant returns Ok");
+  check(std::any_of(grant_same_supervisor.capabilities.begin(),
+                    grant_same_supervisor.capabilities.end(),
+                    [](const auto& capability) {
+                      return capability.kind == KernelCapabilityKind::IpcReceive;
+                    }),
+        "same-supervisor grant result reflects restored capability");
+
+  auto query_same_supervisor = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryCapabilities,
+          .process_group_id = sibling_runtime->process_group_id,
+      });
+  check(query_same_supervisor.status == KernelCallStatus::Ok,
+        "same-supervisor capability query returns Ok");
+  check(std::any_of(query_same_supervisor.capabilities.begin(),
+                    query_same_supervisor.capabilities.end(),
+                    [](const auto& capability) {
+                      return capability.kind == KernelCapabilityKind::IpcReceive;
+                    }),
+        "same-supervisor capability query returns sibling capabilities");
+
+  auto supervisor_inventory = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::SupervisorCapabilityInventory,
+          .requesting_process_group_id = leader_runtime->process_group_id,
+          .supervisor_id = *leader_supervisor,
+      });
+  check(supervisor_inventory.status == KernelServiceStatus::Ok,
+        "supervisor inventory request succeeds after capability transitions");
+  check(supervisor_inventory.supervisor_capabilities.has_value(),
+        "supervisor inventory view is returned after capability transitions");
+  if (supervisor_inventory.supervisor_capabilities) {
+    check(supervisor_inventory.supervisor_capabilities->process_group_count == 2,
+          "capability inventory reports both managed process groups");
+    check(supervisor_inventory.supervisor_capabilities->process_groups.size() == 2,
+          "capability inventory returns entries for both managed process groups");
+    check(supervisor_inventory.supervisor_capabilities->capability_transitions == 2,
+          "supervisor inventory counts one revoke and one grant transition");
+    check(supervisor_inventory.supervisor_capabilities->last_capability_transition_group_id ==
+              sibling_runtime->process_group_id,
+          "supervisor inventory tracks the last capability transition group");
+    check(supervisor_inventory.supervisor_capabilities->last_capability_transition_kind ==
+              KernelAuditEventKind::CapabilityGranted,
+          "supervisor inventory tracks the last capability transition kind");
+    check(supervisor_inventory.supervisor_capabilities->last_capability_transition_sequence
+              .has_value(),
+          "supervisor inventory exposes the last capability transition sequence");
+    const auto sibling_entry = std::find_if(
+        supervisor_inventory.supervisor_capabilities->process_groups.begin(),
+        supervisor_inventory.supervisor_capabilities->process_groups.end(),
+        [&](const auto& entry) {
+          return entry.process_group_id == sibling_runtime->process_group_id;
+        });
+    check(sibling_entry !=
+              supervisor_inventory.supervisor_capabilities->process_groups.end(),
+          "capability inventory includes the sibling process group");
+    if (sibling_entry !=
+        supervisor_inventory.supervisor_capabilities->process_groups.end()) {
+      check(std::any_of(sibling_entry->capabilities.begin(),
+                        sibling_entry->capabilities.end(),
+                        [](const auto& capability) {
+                          return capability.kind == KernelCapabilityKind::IpcReceive;
+                        }),
+            "capability inventory reflects the restored sibling capability set");
+    }
+  }
+
+  auto revoke_foreign_group = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RevokeCapability,
+          .process_group_id = outsider_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
+      });
+  check(revoke_foreign_group.status == KernelCallStatus::PolicyDenied,
+        "foreign-supervisor capability revoke is denied");
+  check(revoke_foreign_group.rejection == KernelCallRejection::SupervisorMismatch,
+        "foreign-supervisor revoke reports supervisor mismatch");
+
+  auto query_foreign_group = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryCapabilities,
+          .process_group_id = outsider_runtime->process_group_id,
+      });
+  check(query_foreign_group.status == KernelCallStatus::PolicyDenied,
+        "foreign-supervisor capability query is denied");
+  check(query_foreign_group.rejection == KernelCallRejection::SupervisorMismatch,
+        "foreign-supervisor capability query reports supervisor mismatch");
+
+  auto outsider_caps = axion_kernel_list_process_group_capabilities(
+      *state, outsider_runtime->process_group_id);
+  check(std::any_of(outsider_caps.begin(),
+                    outsider_caps.end(),
+                    [](const auto& capability) {
+                      return capability.kind == KernelCapabilityKind::IpcReceive;
+                    }),
+        "foreign-supervisor denial leaves outsider capabilities unchanged");
+
+  auto denied_foreign_inventory = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::SupervisorCapabilityInventory,
+          .requesting_process_group_id = leader_runtime->process_group_id,
+          .supervisor_id = *state->find_process_group_supervisor(
+              outsider_runtime->process_group_id),
+      });
+  check(denied_foreign_inventory.status == KernelServiceStatus::InvalidRequest,
+        "capability inventory denies cross-supervisor requests");
+  check(denied_foreign_inventory.rejection ==
+            KernelServiceRequestRejection::MissingSupervisor,
+        "cross-supervisor capability inventory reports supervisor mismatch via request rejection");
+
+  std::vector<KernelAuditEventKind> capability_events;
+  for (const auto& entry : state->audit_log) {
+    if (entry.kind == KernelAuditEventKind::CapabilityGranted ||
+        entry.kind == KernelAuditEventKind::CapabilityRevoked) {
+      capability_events.push_back(entry.kind);
+    }
+  }
+  check(capability_events.size() == 2,
+        "audit log records one capability revoke and one capability grant");
+  if (capability_events.size() == 2) {
+    check(capability_events[0] == KernelAuditEventKind::CapabilityRevoked,
+          "audit log records capability revoke first");
+    check(capability_events[1] == KernelAuditEventKind::CapabilityGranted,
+          "audit log records capability grant second");
+  }
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -5712,6 +6128,8 @@ int main() {
   test_kernel_device_arbitration();
   test_kernel_runtime_scheduler_and_ipc();
   test_kernel_loop_and_active_device_arbitration();
+  test_kernel_minimal_abi_calls();
+  test_kernel_capability_management_abi();
   test_kernel_loop_fault_delivery();
   test_kernel_interrupt_event_delivery();
   test_kernel_pager_fault_state();

@@ -3,14 +3,17 @@
 **Status:** Experimental — non-DCP, not governance-gated.
 **Progress:** [PROGRESS.md](PROGRESS.md) ← start here
 **Review Summary:** [review_summary.md](review_summary.md)
+**Architecture Audit:** [kernel_architecture_audit.md](kernel_architecture_audit.md)
 **x86_64 Handoff:** [virtualbox_x86_64_handoff.md](virtualbox_x86_64_handoff.md)
 **Shell Design:** [axion_shell_design.md](axion_shell_design.md)
 **Kernel Plan:** [kernel_execution_plan.md](kernel_execution_plan.md)
+**Engineering Plan:** [kernel_engineering_follow_on_plan.md](kernel_engineering_follow_on_plan.md)
 **Roadmap:** [docs/research/ternary_os_roadmap.md](../../../docs/research/ternary_os_roadmap.md)
 **RFC-00B0 (HAL):** [spec/rfcs/RFC-00B0-hal-spec.md](../../../spec/rfcs/RFC-00B0-hal-spec.md)
 **RFC-00B1 (MMU):** [spec/rfcs/RFC-00B1-ternary-mmu.md](../../../spec/rfcs/RFC-00B1-ternary-mmu.md)
 **RFC-00B2 (Drivers):** [spec/rfcs/RFC-00B2-device-drivers.md](../../../spec/rfcs/RFC-00B2-device-drivers.md)
 **RFC-00B3 (Kernel):** [spec/rfcs/RFC-00B3-axion-kernel-architecture.md](../../../spec/rfcs/RFC-00B3-axion-kernel-architecture.md)
+**RFC-00B6 (Kernel ABI):** [spec/rfcs/RFC-00B6-minimal-syscall-capability-boundary.md](../../../spec/rfcs/RFC-00B6-minimal-syscall-capability-boundary.md)
 **RFC-00B5 (Interrupts):** [spec/rfcs/RFC-00B5-governed-event-interrupt-model.md](../../../spec/rfcs/RFC-00B5-governed-event-interrupt-model.md)
 
 Prototype implementation of Axion, the current working name for the ternary-native
@@ -25,6 +28,12 @@ subsystems into one kernel-owned runtime unit instead of letting them grow
 organically. The first kernel-owned handoff path now exists: `hal_main`
 transfers control to `axion_kernel_main(...)`, and the HAL suite verifies that
 runtime bootstrap.
+
+The kernel implementation is no longer centered in one translation unit. The
+runtime coordinator now lives in `kernel_runtime.cpp`, while faults,
+interrupts, pager policy, lifecycle/bootstrap, service queries/actions, views,
+and shared runtime utilities have been split into dedicated implementation
+files. `kernel_main.hpp` remains the shared runtime contract for those units.
 
 Current working release label: `Axion v0.1.0-alpha`
 
@@ -49,8 +58,10 @@ docs/
   README.md             Entry point, structure, build/run guidance
   PROGRESS.md           Phase-by-phase implementation log
   review_summary.md     Reviewer-facing current-state summary
+  kernel_architecture_audit.md Formal architectural audit and maturity assessment
   axion_shell_design.md Phase 5 shell design note
   kernel_execution_plan.md Short next-step kernel execution plan
+  kernel_engineering_follow_on_plan.md Next-step refactor and delivery plan from the audit
   virtualbox_x86_64_handoff.md External x86_64 VirtualBox runbook
 
 hal/
@@ -69,7 +80,7 @@ hal/
   virtualbox_armv8_efi_shim.c  Temporary ARMv8 developer-lane EFI link shim
 
 kernel/
-  kernel_main.hpp/.cpp First Axion kernel-owned runtime entry/bootstrap;
+  kernel_main.hpp + kernel_runtime.cpp First Axion kernel-owned runtime entry/bootstrap;
                        runtime-owned allocator/MMU/scheduler/IPC/device state,
                        process-group fault policy, audit-only governance hooks,
                        and a narrow service runtime lifecycle with deterministic

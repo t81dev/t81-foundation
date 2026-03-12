@@ -29,6 +29,11 @@ The next kernel slice is now tracked explicitly in:
 
 - [kernel_execution_plan.md](kernel_execution_plan.md)
 
+The broader structural assessment and follow-on refactor plan now live in:
+
+- [kernel_architecture_audit.md](kernel_architecture_audit.md)
+- [kernel_engineering_follow_on_plan.md](kernel_engineering_follow_on_plan.md)
+
 ## What Is Proven Locally
 
 Hosted proof is strong on the current branch:
