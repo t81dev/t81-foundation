@@ -303,6 +303,7 @@ struct KernelRuntimeState {
   std::deque<KernelFaultRecord> fault_log;
   std::deque<KernelFaultRecord> pending_faults;
   std::deque<KernelInterruptRecord> pending_interrupts;
+  std::size_t pending_interrupt_high_watermark{0};
   std::deque<AddressSpaceId> pending_pager_handoffs;
   std::size_t pending_pager_handoff_high_watermark{0};
   std::deque<KernelAuditRecord> audit_log;
@@ -318,6 +319,7 @@ struct KernelRuntimeState {
   t81::vm::ThreadContext cpu_context{};
   Counters counters{};
   std::optional<KernelFaultRecord> last_delivered_fault{};
+  std::optional<KernelInterruptRecord> last_recorded_interrupt{};
   std::optional<KernelInterruptRecord> last_delivered_interrupt{};
   std::optional<KernelPagerHandoffRecord> last_pager_handoff{};
   std::optional<KernelPagerResolutionRecord> last_pager_resolution{};
@@ -547,8 +549,11 @@ struct KernelRuntimeStatusView {
   uint64_t ipc_messages_sent{0};
   uint64_t ipc_messages_received{0};
   std::size_t pending_interrupt_count{0};
+  std::size_t pending_interrupt_high_watermark{0};
   uint64_t interrupts_recorded{0};
   uint64_t interrupts_delivered{0};
+  std::optional<KernelInterruptRecord> next_pending_interrupt{};
+  std::optional<KernelInterruptRecord> last_recorded_interrupt{};
   std::optional<KernelInterruptRecord> last_delivered_interrupt{};
   uint64_t pager_eligible_faults{0};
   uint64_t policy_faults{0};
@@ -776,6 +781,7 @@ struct KernelFaultSummaryView {
   std::size_t recorded_faults{0};
   std::size_t pending_faults{0};
   std::size_t pending_interrupts{0};
+  std::size_t pending_interrupt_high_watermark{0};
   std::size_t delivered_faults{0};
   uint64_t interrupts_recorded{0};
   uint64_t interrupts_delivered{0};
@@ -869,6 +875,8 @@ struct KernelFaultSummaryView {
   std::optional<uint64_t> pager_worker_last_boot_critical_resolution_sequence{};
   uint64_t service_lifecycle_transitions{0};
   std::optional<KernelFaultRecord> last_delivered_fault{};
+  std::optional<KernelInterruptRecord> next_pending_interrupt{};
+  std::optional<KernelInterruptRecord> last_recorded_interrupt{};
   std::optional<KernelInterruptRecord> last_delivered_interrupt{};
   std::optional<AddressSpaceId> last_pager_address_space_id{};
   std::optional<KernelFaultRecord> last_pager_fault{};
@@ -892,6 +900,7 @@ struct KernelAuditSummaryView {
   uint64_t supervisor_acknowledgements{0};
   uint64_t thread_recoveries{0};
   uint64_t service_lifecycle_transitions{0};
+  std::optional<KernelInterruptRecord> last_recorded_interrupt{};
   std::optional<KernelInterruptRecord> last_delivered_interrupt{};
   std::optional<ServiceId> last_service_transition_id{};
   std::optional<KernelAuditEventKind> last_service_transition_kind{};

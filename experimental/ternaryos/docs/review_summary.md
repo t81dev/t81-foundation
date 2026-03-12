@@ -120,6 +120,9 @@ Kernel integration proof now also includes:
 - the first RFC-00B5 kernel interrupt slice now exists as well: explicit
   interrupt event intake, deterministic loop delivery after faults, and stable
   runtime/fault/audit counters without a public interrupt ABI
+- interrupt queue observability is now retained too: latest recorded interrupt,
+  pending-queue high-water mark, and FIFO-head visibility through the same
+  stable summaries
 - delivered `Unmapped` faults now also mark the owning address space as
   pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
   policy failures

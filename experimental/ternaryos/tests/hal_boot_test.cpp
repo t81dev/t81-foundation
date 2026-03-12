@@ -764,8 +764,18 @@ static void test_kernel_interrupt_event_delivery() {
         "kernel records second interrupt event");
   check(state->pending_interrupt_count() == 2,
         "pending interrupt queue tracks both recorded interrupts");
+  check(state->pending_interrupt_high_watermark == 2,
+        "interrupt queue retains pending high-water mark");
   check(state->counters.interrupts_recorded == 2,
         "runtime counts recorded interrupts");
+  check(state->last_recorded_interrupt.has_value(),
+        "interrupt intake retains latest recorded interrupt");
+  if (state->last_recorded_interrupt) {
+    check(state->last_recorded_interrupt->source == InterruptSource::Storage,
+          "interrupt intake retains the latest recorded source");
+    check(state->last_recorded_interrupt->sequence == 2,
+          "interrupt intake retains the latest recorded sequence");
+  }
 
   check(axion_kernel_step(*state), "interrupt step delivers the first pending interrupt");
   check(state->pending_interrupt_count() == 1,
@@ -824,12 +834,23 @@ static void test_kernel_interrupt_event_delivery() {
   if (runtime_status.runtime) {
     check(runtime_status.runtime->pending_interrupt_count == 0,
           "runtime status reports no pending interrupts after delivery");
+    check(runtime_status.runtime->pending_interrupt_high_watermark == 2,
+          "runtime status retains interrupt queue high-water mark");
     check(runtime_status.runtime->interrupts_recorded == 2,
           "runtime status reports recorded interrupt count");
     check(runtime_status.runtime->interrupts_delivered == 2,
           "runtime status reports delivered interrupt count");
+    check(!runtime_status.runtime->next_pending_interrupt.has_value(),
+          "runtime status clears next pending interrupt after delivery");
+    check(runtime_status.runtime->last_recorded_interrupt.has_value(),
+          "runtime status retains latest recorded interrupt");
     check(runtime_status.runtime->last_delivered_interrupt.has_value(),
           "runtime status exposes the latest delivered interrupt");
+    if (runtime_status.runtime->last_recorded_interrupt) {
+      check(runtime_status.runtime->last_recorded_interrupt->source ==
+                InterruptSource::Storage,
+            "runtime status retains the latest recorded interrupt source");
+    }
     if (runtime_status.runtime->last_delivered_interrupt) {
       check(runtime_status.runtime->last_delivered_interrupt->source ==
                 InterruptSource::Storage,
@@ -846,10 +867,16 @@ static void test_kernel_interrupt_event_delivery() {
   if (fault_summary.fault_summary) {
     check(fault_summary.fault_summary->pending_interrupts == 0,
           "fault summary reports no pending interrupts after delivery");
+    check(fault_summary.fault_summary->pending_interrupt_high_watermark == 2,
+          "fault summary retains interrupt queue high-water mark");
     check(fault_summary.fault_summary->interrupts_recorded == 2,
           "fault summary reports recorded interrupt count");
     check(fault_summary.fault_summary->interrupts_delivered == 2,
           "fault summary reports delivered interrupt count");
+    check(!fault_summary.fault_summary->next_pending_interrupt.has_value(),
+          "fault summary clears next pending interrupt after delivery");
+    check(fault_summary.fault_summary->last_recorded_interrupt.has_value(),
+          "fault summary retains latest recorded interrupt");
     check(fault_summary.fault_summary->last_delivered_interrupt.has_value(),
           "fault summary exposes the latest delivered interrupt");
   }
@@ -863,6 +890,8 @@ static void test_kernel_interrupt_event_delivery() {
   if (audit_summary.audit_summary) {
     check(audit_summary.audit_summary->interrupt_deliveries == 2,
           "audit summary reports interrupt delivery count");
+    check(audit_summary.audit_summary->last_recorded_interrupt.has_value(),
+          "audit summary retains the latest recorded interrupt");
     check(audit_summary.audit_summary->last_delivered_interrupt.has_value(),
           "audit summary exposes the latest delivered interrupt");
     check(!audit_summary.audit_summary->recent_events.empty(),
@@ -871,6 +900,53 @@ static void test_kernel_interrupt_event_delivery() {
       check(audit_summary.audit_summary->recent_events.back().kind ==
                 KernelAuditEventKind::InterruptDelivered,
             "audit summary records interrupt delivery as the latest audit event");
+    }
+  }
+
+  auto queued_state = axion_kernel_bootstrap(ctx);
+  check(queued_state.has_value(), "kernel bootstrap succeeds for queued interrupt visibility");
+  if (queued_state) {
+    check(axion_kernel_record_interrupt(
+              *queued_state,
+              HardwareInterrupt{
+                  .source = InterruptSource::Keyboard,
+                  .timestamp_ns = 300,
+                  .payload = 33,
+              }),
+          "queued interrupt visibility records first interrupt");
+    check(axion_kernel_record_interrupt(
+              *queued_state,
+              HardwareInterrupt{
+                  .source = InterruptSource::Network,
+                  .timestamp_ns = 400,
+                  .payload = 44,
+              }),
+          "queued interrupt visibility records second interrupt");
+    auto queued_runtime = axion_kernel_service_request(
+        *queued_state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+    check(queued_runtime.status == KernelServiceStatus::Ok,
+          "runtime status succeeds with queued interrupts");
+    check(queued_runtime.runtime.has_value(),
+          "runtime status returns queued interrupt visibility");
+    if (queued_runtime.runtime) {
+      check(queued_runtime.runtime->pending_interrupt_count == 2,
+            "runtime status reports queued interrupt count before delivery");
+      check(queued_runtime.runtime->next_pending_interrupt.has_value(),
+            "runtime status exposes next pending interrupt before delivery");
+      if (queued_runtime.runtime->next_pending_interrupt) {
+        check(queued_runtime.runtime->next_pending_interrupt->source ==
+                  InterruptSource::Keyboard,
+              "runtime status preserves FIFO head interrupt source");
+        check(queued_runtime.runtime->next_pending_interrupt->sequence == 1,
+              "runtime status preserves FIFO head interrupt sequence");
+      }
+      check(queued_runtime.runtime->last_recorded_interrupt.has_value(),
+            "runtime status retains latest recorded interrupt before delivery");
+      if (queued_runtime.runtime->last_recorded_interrupt) {
+        check(queued_runtime.runtime->last_recorded_interrupt->source ==
+                  InterruptSource::Network,
+              "runtime status preserves latest recorded interrupt before delivery");
+      }
     }
   }
 }

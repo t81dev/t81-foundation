@@ -420,6 +420,9 @@ external boot evidence before any external pager interface exists.
 The first interrupt-convergence slice under RFC-00B5 can proceed in parallel
 without widening the service contract: kernel-owned interrupt event intake,
 deterministic loop delivery, and stable runtime/fault/audit diagnostics.
+The next narrow interrupt slice is queue observability: retained intake
+provenance, pending-queue high-water marks, and stable visibility into the
+next queued interrupt without adding controller policy.
 
 ## Recommended Order
 

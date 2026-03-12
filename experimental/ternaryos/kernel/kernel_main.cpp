@@ -620,6 +620,9 @@ void record_interrupt(KernelRuntimeState& state,
       .payload = interrupt.payload,
       .sequence = state.next_interrupt_sequence++,
   });
+  state.pending_interrupt_high_watermark =
+      std::max(state.pending_interrupt_high_watermark, state.pending_interrupts.size());
+  state.last_recorded_interrupt = state.pending_interrupts.back();
   ++state.counters.interrupts_recorded;
 }
 
@@ -1081,6 +1084,7 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .recorded_faults = state.fault_count(),
       .pending_faults = state.pending_fault_count(),
       .pending_interrupts = state.pending_interrupt_count(),
+      .pending_interrupt_high_watermark = state.pending_interrupt_high_watermark,
       .delivered_faults = static_cast<std::size_t>(state.counters.faults_delivered),
       .interrupts_recorded = state.counters.interrupts_recorded,
       .interrupts_delivered = state.counters.interrupts_delivered,
@@ -1115,6 +1119,11 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
             return total;
           }(),
       .last_delivered_fault = state.last_delivered_fault,
+      .next_pending_interrupt =
+          !state.pending_interrupts.empty()
+              ? std::optional<KernelInterruptRecord>{state.pending_interrupts.front()}
+              : std::nullopt,
+      .last_recorded_interrupt = state.last_recorded_interrupt,
       .last_delivered_interrupt = state.last_delivered_interrupt,
       .last_pager_address_space_id = latest_pager_fault.address_space_id,
       .last_pager_fault = latest_pager_fault.fault,
@@ -1282,6 +1291,7 @@ KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) 
       .supervisor_acknowledgements = state.counters.supervisor_acknowledgements,
       .thread_recoveries = state.counters.thread_fault_recoveries,
       .service_lifecycle_transitions = runtime_service_summary(state).service_lifecycle_transitions,
+      .last_recorded_interrupt = state.last_recorded_interrupt,
       .last_delivered_interrupt = state.last_delivered_interrupt,
       .last_service_transition_id = latest_service_transition.service_id,
       .last_service_transition_kind = latest_service_transition.kind,
@@ -2110,8 +2120,14 @@ KernelServiceResult axion_kernel_service_request(
           .ipc_messages_sent = state.counters.ipc_messages_sent,
           .ipc_messages_received = state.counters.ipc_messages_received,
           .pending_interrupt_count = state.pending_interrupt_count(),
+          .pending_interrupt_high_watermark = state.pending_interrupt_high_watermark,
           .interrupts_recorded = state.counters.interrupts_recorded,
           .interrupts_delivered = state.counters.interrupts_delivered,
+          .next_pending_interrupt =
+              !state.pending_interrupts.empty()
+                  ? std::optional<KernelInterruptRecord>{state.pending_interrupts.front()}
+                  : std::nullopt,
+          .last_recorded_interrupt = state.last_recorded_interrupt,
           .last_delivered_interrupt = state.last_delivered_interrupt,
           .pager_eligible_faults = state.counters.pager_eligible_faults,
           .policy_faults = state.counters.policy_faults,
