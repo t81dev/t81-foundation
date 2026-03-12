@@ -868,6 +868,8 @@ static void test_kernel_interrupt_event_delivery() {
           "runtime status retains latest recorded interrupt");
     check(runtime_status.runtime->last_delivered_interrupt.has_value(),
           "runtime status exposes the latest delivered interrupt");
+    check(runtime_status.runtime->last_recorded_interrupt_audit_sequence.has_value(),
+          "runtime status retains latest recorded interrupt audit sequence");
     check(runtime_status.runtime->last_interrupt_audit_sequence.has_value(),
           "runtime status retains latest interrupt audit sequence");
     if (runtime_status.runtime->last_recorded_interrupt) {
@@ -915,6 +917,8 @@ static void test_kernel_interrupt_event_delivery() {
           "fault summary retains latest recorded interrupt");
     check(fault_summary.fault_summary->last_delivered_interrupt.has_value(),
           "fault summary exposes the latest delivered interrupt");
+    check(fault_summary.fault_summary->last_recorded_interrupt_audit_sequence.has_value(),
+          "fault summary retains latest recorded interrupt audit sequence");
     check(fault_summary.fault_summary->last_interrupt_audit_sequence.has_value(),
           "fault summary retains latest interrupt audit sequence");
   }
@@ -948,6 +952,8 @@ static void test_kernel_interrupt_event_delivery() {
           "audit summary reports delivered storage interrupt count");
     check(audit_summary.audit_summary->last_interrupt_audit_sequence.has_value(),
           "audit summary retains latest interrupt audit sequence");
+    check(audit_summary.audit_summary->last_recorded_interrupt_audit_sequence.has_value(),
+          "audit summary retains latest recorded interrupt audit sequence");
     check(audit_summary.audit_summary->last_recorded_interrupt.has_value(),
           "audit summary retains the latest recorded interrupt");
     check(audit_summary.audit_summary->last_delivered_interrupt.has_value(),
@@ -1076,6 +1082,8 @@ static void test_kernel_interrupt_event_delivery() {
             "audit summary reports recorded interrupt count before delivery");
       check(queued_audit_summary.audit_summary->audit_events == 2,
             "audit summary records both interrupt intake audit events before delivery");
+      check(queued_audit_summary.audit_summary->last_recorded_interrupt_audit_sequence.has_value(),
+            "audit summary retains latest recorded interrupt audit sequence before delivery");
       check(queued_audit_summary.audit_summary->next_pending_interrupt.has_value(),
             "audit summary exposes head pending interrupt before delivery");
       if (queued_audit_summary.audit_summary->next_pending_interrupt) {
@@ -1096,6 +1104,11 @@ static void test_kernel_interrupt_event_delivery() {
         check(queued_audit_summary.audit_summary->recent_events.back().kind ==
                   KernelAuditEventKind::InterruptRecorded,
               "audit summary records interrupt intake as the latest audit event before delivery");
+        if (queued_audit_summary.audit_summary->last_recorded_interrupt_audit_sequence) {
+          check(*queued_audit_summary.audit_summary->last_recorded_interrupt_audit_sequence ==
+                    queued_audit_summary.audit_summary->recent_events.back().sequence,
+                "audit summary retains audit sequence of the latest interrupt intake");
+        }
       }
     }
   }

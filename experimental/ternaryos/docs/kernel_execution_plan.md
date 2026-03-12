@@ -444,6 +444,9 @@ runtime and fault summaries.
 The next interrupt-audit slice after that is intake visibility too: record
 `InterruptRecorded` audit events when the kernel accepts interrupt inputs so
 both intake and delivery become traceable under RFC-00B5.
+The next provenance slice after that is stable interrupt-intake audit
+correlation too: retain the latest `InterruptRecorded` audit sequence directly
+in the interrupt summary surfaces instead of forcing callers to scan the log.
 
 ## Recommended Order
 
