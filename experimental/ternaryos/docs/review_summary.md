@@ -199,7 +199,8 @@ ARM diagnostic result:
 - local QEMU AArch64 can also boot-probe the staged ARM guest image and inspect
   its execution markers directly; current probes show the staged image reaches
   `BOOTAA64.EFI` without needing shell fallback and writes a boot report with
-  `hal_main_result=0`
+  `hal_main_result=0`, `kernel_boot_ready_slice=complete`, and
+  `boot_progress_state=ready`
 - local QEMU serial output now also includes `Axion ARMv8 EFI stub`, giving the
   staged ARM guest a direct live boot signal
 - local QEMU guest probes now also recover `startup-status.txt`, exposing

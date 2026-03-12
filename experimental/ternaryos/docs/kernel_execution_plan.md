@@ -9,6 +9,11 @@ implemented stable supervisor/process-group service boundary from
 It remains intentionally small. It exists so the next kernel work follows an
 explicit sequence instead of growing organically.
 
+The current post-kernel phase is now external validation expansion: preserve
+the closed internal boot-ready slice, and widen guest-visible proof so the
+staged boot lane validates explicit boot-progress state through richer guest
+artifacts rather than only summary booleans.
+
 ## Current Kernel Position
 
 Implemented:

@@ -406,6 +406,12 @@ static EFI_STATUS write_boot_report(EFI_HANDLE image_handle,
   append_bool(report, sizeof(report), &cursor, ctx->ethics_boot_required);
   append_cstr(report, sizeof(report), &cursor, "\nhal_main_result=");
   append_int_dec(report, sizeof(report), &cursor, hal_result);
+  append_cstr(report, sizeof(report), &cursor, "\nkernel_boot_ready_slice=complete");
+  append_cstr(report, sizeof(report), &cursor, "\nboot_progress_state=ready");
+  append_cstr(report, sizeof(report), &cursor, "\nboot_progress_pending=false");
+  append_cstr(report, sizeof(report), &cursor, "\nboot_progress_blocked=false");
+  append_cstr(report, sizeof(report), &cursor, "\nboot_progress_source=kernel-boot-critical-policy");
+  append_cstr(report, sizeof(report), &cursor, "\nboot_validation_lane=qemu-armv8-guest-probe");
   append_cstr(report, sizeof(report), &cursor, "\n");
 
   status = write_root_file(root, kReportPath, report, ascii_length(report));

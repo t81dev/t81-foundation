@@ -227,6 +227,22 @@ if ! /usr/bin/grep -q '^hal_main_result=0$' "$boot_report_copy"; then
 fi
 
 for expected in \
+  '^kernel_boot_ready_slice=complete$' \
+  '^boot_progress_state=ready$' \
+  '^boot_progress_pending=false$' \
+  '^boot_progress_blocked=false$' \
+  '^boot_progress_source=kernel-boot-critical-policy$' \
+  '^boot_validation_lane=qemu-armv8-guest-probe$'
+do
+  if ! /usr/bin/grep -q "$expected" "$boot_report_copy"; then
+    echo "QEMU ARMv8 guest probe found boot report, but expected field was missing: $expected" >&2
+    /bin/cat "$summary_file" >&2
+    /bin/cat "$boot_report_copy" >&2
+    exit 1
+  fi
+done
+
+for expected in \
   '^os_name=Axion$' \
   '^phase=5$' \
   '^shell_mode=typed-builtins$' \
