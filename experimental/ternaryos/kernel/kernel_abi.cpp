@@ -674,24 +674,23 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
           denied.has_value()) {
         return *denied;
       }
-      if (!request.supervisor_id.has_value()) {
-        result.status = KernelCallStatus::InvalidRequest;
-        result.rejection = KernelCallRejection::MissingSupervisor;
-        return result;
-      }
-      if (!state.find_supervisor(*request.supervisor_id)) {
+      const auto caller_supervisor_id =
+          state.find_process_group_supervisor(caller.process_group_id);
+      const auto target_supervisor_id =
+          request.supervisor_id.value_or(caller_supervisor_id.value_or(0));
+      if (target_supervisor_id == 0 || !state.find_supervisor(target_supervisor_id)) {
         result.status = KernelCallStatus::NotFound;
         result.rejection = KernelCallRejection::MissingSupervisor;
         return result;
       }
       if (!axion_kernel_supervisor_matches_process_group(
-              state, *request.supervisor_id, caller.process_group_id)) {
+              state, target_supervisor_id, caller.process_group_id)) {
         result.status = KernelCallStatus::PolicyDenied;
         result.rejection = KernelCallRejection::SupervisorMismatch;
         return result;
       }
       const auto spawned_tid = axion_kernel_spawn_thread_under_supervisor(
-          state, make_spawn_context(request.spawn_descriptor), *request.supervisor_id);
+          state, make_spawn_context(request.spawn_descriptor), target_supervisor_id);
       if (!spawned_tid.has_value()) {
         result.status = KernelCallStatus::Conflict;
         result.rejection = KernelCallRejection::ServiceActionRejected;
@@ -701,7 +700,7 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.rejection = KernelCallRejection::None;
       result.action_performed = true;
       result.spawned_tid = *spawned_tid;
-      result.supervisor_id = *request.supervisor_id;
+      result.supervisor_id = target_supervisor_id;
       return result;
     }
     case KernelCallKind::GetThreadIdentity: {

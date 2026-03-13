@@ -7055,7 +7055,6 @@ static void test_kernel_abi_wire_call_boundary() {
     const auto supervisor_spawn_request = axion_kernel_encode_wire_request(
         KernelCallRequest{
             .kind = KernelCallKind::SpawnThreadUnderSupervisor,
-            .supervisor_id = decoded_identity->supervisor_id,
             .spawn_descriptor = KernelThreadSpawnDescriptor{
                 .pc = 36,
                 .sp = 72,
@@ -7079,6 +7078,8 @@ static void test_kernel_abi_wire_call_boundary() {
             "wire ABI supervisor-scoped spawn returns Ok");
       check(decoded_supervisor_spawn->action_performed,
             "wire ABI supervisor-scoped spawn reports work performed");
+      check(decoded_supervisor_spawn->supervisor_id == decoded_identity->supervisor_id,
+            "wire ABI supervisor-scoped spawn derives the caller supervisor");
       check(decoded_supervisor_spawn->spawned_tid.has_value(),
             "wire ABI supervisor-scoped spawn returns a spawned tid");
       check(decoded_supervisor_spawn->spawned_tid &&
@@ -7412,7 +7413,6 @@ static void test_kernel_call_c_bridge() {
     const auto supervisor_spawn_request = axion_kernel_encode_wire_request(
         KernelCallRequest{
             .kind = KernelCallKind::SpawnThreadUnderSupervisor,
-            .supervisor_id = decoded_identity->supervisor_id,
             .spawn_descriptor = KernelThreadSpawnDescriptor{
                 .pc = 63,
                 .sp = 126,
@@ -7438,6 +7438,8 @@ static void test_kernel_call_c_bridge() {
             "C kernel-call bridge supervisor-scoped spawn returns Ok");
       check(decoded_supervisor_spawn->action_performed,
             "C kernel-call bridge supervisor-scoped spawn reports work performed");
+      check(decoded_supervisor_spawn->supervisor_id == decoded_identity->supervisor_id,
+            "C kernel-call bridge supervisor-scoped spawn derives the caller supervisor");
       check(decoded_supervisor_spawn->spawned_tid.has_value(),
             "C kernel-call bridge supervisor-scoped spawn returns a spawned tid");
       check(decoded_supervisor_spawn->spawned_tid &&
@@ -7823,7 +7825,6 @@ static void test_kernel_execution_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::SpawnThreadUnderSupervisor,
-          .supervisor_id = identity.supervisor_id,
           .spawn_descriptor = KernelThreadSpawnDescriptor{
               .pc = 45,
               .sp = 108,
@@ -7839,6 +7840,8 @@ static void test_kernel_execution_abi_calls() {
         "execution ABI same-supervisor spawn clears rejection");
   check(supervisor_spawn.action_performed,
         "execution ABI same-supervisor spawn reports work performed");
+  check(supervisor_spawn.supervisor_id == identity.supervisor_id,
+        "execution ABI same-supervisor spawn derives the caller supervisor");
   check(supervisor_spawn.spawned_tid.has_value(),
         "execution ABI same-supervisor spawn returns a spawned tid");
   if (supervisor_spawn.spawned_tid) {
