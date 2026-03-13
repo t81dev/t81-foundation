@@ -192,6 +192,11 @@ Reason:
 
 - these are the minimum operations needed to stop relying on internal-only
   scheduler/demo control paths
+- current implementation detail:
+  both spawn calls now accept a compact initial thread descriptor carrying
+  `pc`, `sp`, `register0`, `label`, and halted/active state, and that
+  descriptor is preserved across the typed ABI, fixed-size wire blocks, and
+  exported hosted C bridge
 
 #### 5.3.2 IPC
 

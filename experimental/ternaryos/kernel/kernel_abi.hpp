@@ -36,6 +36,15 @@ struct KernelDelegationSummaryEntry {
   std::size_t delegated_capability_count{0};
 };
 
+struct KernelThreadSpawnDescriptor {
+  std::size_t pc{0};
+  std::size_t sp{0};
+  std::int64_t register0{0};
+  bool halted{false};
+  bool active{true};
+  std::string label;
+};
+
 enum class KernelCallKind : uint8_t {
   Yield = 0,
   SpawnThreadInCallerGroup,
@@ -121,6 +130,7 @@ struct KernelCallRequest {
   std::optional<sched::Tid> ipc_dst{};
   std::optional<ipc::CanonMessage> message{};
   std::optional<KernelCapabilityRecord> capability{};
+  std::optional<KernelThreadSpawnDescriptor> spawn_descriptor{};
   std::optional<ServiceId> service_id{};
   std::optional<std::string> service_name{};
 };

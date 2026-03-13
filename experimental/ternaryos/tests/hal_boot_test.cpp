@@ -6781,6 +6781,14 @@ static void test_kernel_abi_wire_blocks() {
           .delegated_by_process_group_id = 61,
           .delegated_by_supervisor_id = 67,
       },
+      .spawn_descriptor = KernelThreadSpawnDescriptor{
+          .pc = 73,
+          .sp = 79,
+          .register0 = 83,
+          .halted = true,
+          .active = false,
+          .label = "wire-spawn",
+      },
       .service_id = 71,
       .service_name = "wire-service",
   };
@@ -6806,6 +6814,26 @@ static void test_kernel_abi_wire_blocks() {
               decoded_request->capability->delegated_by_supervisor_id ==
                   request.capability->delegated_by_supervisor_id,
           "kernel ABI wire request preserves capability provenance");
+    check(decoded_request->spawn_descriptor.has_value(),
+          "kernel ABI wire request preserves spawn descriptor");
+    if (decoded_request->spawn_descriptor) {
+      check(decoded_request->spawn_descriptor->pc == request.spawn_descriptor->pc,
+            "kernel ABI wire request preserves spawn pc");
+      check(decoded_request->spawn_descriptor->sp == request.spawn_descriptor->sp,
+            "kernel ABI wire request preserves spawn sp");
+      check(decoded_request->spawn_descriptor->register0 ==
+                request.spawn_descriptor->register0,
+            "kernel ABI wire request preserves spawn register0");
+      check(decoded_request->spawn_descriptor->halted ==
+                request.spawn_descriptor->halted,
+            "kernel ABI wire request preserves spawn halted state");
+      check(decoded_request->spawn_descriptor->active ==
+                request.spawn_descriptor->active,
+            "kernel ABI wire request preserves spawn active state");
+      check(decoded_request->spawn_descriptor->label ==
+                request.spawn_descriptor->label,
+            "kernel ABI wire request preserves spawn label");
+    }
     check(decoded_request->service_name == request.service_name,
           "kernel ABI wire request preserves service name");
   }
@@ -6951,7 +6979,15 @@ static void test_kernel_abi_wire_call_boundary() {
   }
 
   const auto spawn_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{.kind = KernelCallKind::SpawnThreadInCallerGroup});
+      KernelCallRequest{
+          .kind = KernelCallKind::SpawnThreadInCallerGroup,
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 12,
+              .sp = 24,
+              .register0 = 333,
+              .label = "wire-group-spawn",
+          },
+      });
   KernelCallWireResponseBlock spawn_response;
   check(axion_kernel_call_wire(*state, &spawn_request, &spawn_response),
         "wire ABI call boundary accepts a spawn-thread request block");
@@ -6967,6 +7003,22 @@ static void test_kernel_abi_wire_call_boundary() {
     check(decoded_spawn->spawned_tid &&
               state->find_thread_runtime(*decoded_spawn->spawned_tid) != nullptr,
           "wire ABI spawn creates the returned thread");
+    if (decoded_spawn->spawned_tid) {
+      const auto* spawned_context =
+          state->scheduler.run_queue().find(*decoded_spawn->spawned_tid);
+      check(spawned_context != nullptr,
+            "wire ABI spawn preserves the requested scheduler context");
+      if (spawned_context) {
+        check(spawned_context->pc == 12,
+              "wire ABI spawn applies the requested pc");
+        check(spawned_context->sp == 24,
+              "wire ABI spawn applies the requested sp");
+        check(spawned_context->registers[0] == 333,
+              "wire ABI spawn applies the requested register0");
+        check(spawned_context->label == "wire-group-spawn",
+              "wire ABI spawn applies the requested label");
+      }
+    }
   }
 
   if (decoded_identity && decoded_identity->supervisor_id) {
@@ -6974,6 +7026,14 @@ static void test_kernel_abi_wire_call_boundary() {
         KernelCallRequest{
             .kind = KernelCallKind::SpawnThreadUnderSupervisor,
             .supervisor_id = decoded_identity->supervisor_id,
+            .spawn_descriptor = KernelThreadSpawnDescriptor{
+                .pc = 36,
+                .sp = 72,
+                .register0 = 444,
+                .halted = true,
+                .active = false,
+                .label = "wire-supervisor-spawn",
+            },
         });
     KernelCallWireResponseBlock supervisor_spawn_response;
     check(axion_kernel_call_wire(*state,
@@ -6994,6 +7054,26 @@ static void test_kernel_abi_wire_call_boundary() {
       check(decoded_supervisor_spawn->spawned_tid &&
                 state->find_thread_runtime(*decoded_supervisor_spawn->spawned_tid) != nullptr,
             "wire ABI supervisor-scoped spawn creates the returned thread");
+      if (decoded_supervisor_spawn->spawned_tid) {
+        const auto* spawned_context =
+            state->scheduler.run_queue().find(*decoded_supervisor_spawn->spawned_tid);
+        check(spawned_context != nullptr,
+              "wire ABI supervisor-scoped spawn preserves the requested scheduler context");
+        if (spawned_context) {
+          check(spawned_context->pc == 36,
+                "wire ABI supervisor-scoped spawn applies the requested pc");
+          check(spawned_context->sp == 72,
+                "wire ABI supervisor-scoped spawn applies the requested sp");
+          check(spawned_context->registers[0] == 444,
+                "wire ABI supervisor-scoped spawn applies the requested register0");
+          check(spawned_context->halted,
+                "wire ABI supervisor-scoped spawn applies the requested halted state");
+          check(!spawned_context->active,
+                "wire ABI supervisor-scoped spawn applies the requested active state");
+          check(spawned_context->label == "wire-supervisor-spawn",
+                "wire ABI supervisor-scoped spawn applies the requested label");
+        }
+      }
     }
   }
 
@@ -7229,7 +7309,15 @@ static void test_kernel_call_c_bridge() {
   }
 
   const auto spawn_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{.kind = KernelCallKind::SpawnThreadInCallerGroup});
+      KernelCallRequest{
+          .kind = KernelCallKind::SpawnThreadInCallerGroup,
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 18,
+              .sp = 54,
+              .register0 = 515,
+              .label = "c-group-spawn",
+          },
+      });
   KernelCallWireResponseBlock spawn_response;
   check(ternaryos_kernel_call_c(&*state,
                                 &spawn_request,
@@ -7249,6 +7337,22 @@ static void test_kernel_call_c_bridge() {
     check(decoded_spawn->spawned_tid &&
               state->find_thread_runtime(*decoded_spawn->spawned_tid) != nullptr,
           "C kernel-call bridge spawn creates the returned thread");
+    if (decoded_spawn->spawned_tid) {
+      const auto* spawned_context =
+          state->scheduler.run_queue().find(*decoded_spawn->spawned_tid);
+      check(spawned_context != nullptr,
+            "C kernel-call bridge spawn preserves the requested scheduler context");
+      if (spawned_context) {
+        check(spawned_context->pc == 18,
+              "C kernel-call bridge spawn applies the requested pc");
+        check(spawned_context->sp == 54,
+              "C kernel-call bridge spawn applies the requested sp");
+        check(spawned_context->registers[0] == 515,
+              "C kernel-call bridge spawn applies the requested register0");
+        check(spawned_context->label == "c-group-spawn",
+              "C kernel-call bridge spawn applies the requested label");
+      }
+    }
   }
 
   if (decoded_identity && decoded_identity->supervisor_id) {
@@ -7256,6 +7360,14 @@ static void test_kernel_call_c_bridge() {
         KernelCallRequest{
             .kind = KernelCallKind::SpawnThreadUnderSupervisor,
             .supervisor_id = decoded_identity->supervisor_id,
+            .spawn_descriptor = KernelThreadSpawnDescriptor{
+                .pc = 63,
+                .sp = 126,
+                .register0 = 616,
+                .halted = true,
+                .active = false,
+                .label = "c-supervisor-spawn",
+            },
         });
     KernelCallWireResponseBlock supervisor_spawn_response;
     check(ternaryos_kernel_call_c(&*state,
@@ -7278,6 +7390,26 @@ static void test_kernel_call_c_bridge() {
       check(decoded_supervisor_spawn->spawned_tid &&
                 state->find_thread_runtime(*decoded_supervisor_spawn->spawned_tid) != nullptr,
             "C kernel-call bridge supervisor-scoped spawn creates the returned thread");
+      if (decoded_supervisor_spawn->spawned_tid) {
+        const auto* spawned_context =
+            state->scheduler.run_queue().find(*decoded_supervisor_spawn->spawned_tid);
+        check(spawned_context != nullptr,
+              "C kernel-call bridge supervisor-scoped spawn preserves the requested scheduler context");
+        if (spawned_context) {
+          check(spawned_context->pc == 63,
+                "C kernel-call bridge supervisor-scoped spawn applies the requested pc");
+          check(spawned_context->sp == 126,
+                "C kernel-call bridge supervisor-scoped spawn applies the requested sp");
+          check(spawned_context->registers[0] == 616,
+                "C kernel-call bridge supervisor-scoped spawn applies the requested register0");
+          check(spawned_context->halted,
+                "C kernel-call bridge supervisor-scoped spawn applies the requested halted state");
+          check(!spawned_context->active,
+                "C kernel-call bridge supervisor-scoped spawn applies the requested active state");
+          check(spawned_context->label == "c-supervisor-spawn",
+                "C kernel-call bridge supervisor-scoped spawn applies the requested label");
+        }
+      }
     }
   }
 
@@ -7444,7 +7576,16 @@ static void test_kernel_execution_abi_calls() {
         "execution ABI identity returns caller address space");
 
   auto spawn_result = axion_kernel_call(
-      *state, KernelCallRequest{.kind = KernelCallKind::SpawnThreadInCallerGroup});
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SpawnThreadInCallerGroup,
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 27,
+              .sp = 81,
+              .register0 = 404,
+              .label = "abi-spawn-in-group",
+          },
+      });
   check(spawn_result.status == KernelCallStatus::Ok,
         "execution ABI spawn returns Ok");
   check(spawn_result.rejection == KernelCallRejection::None,
@@ -7462,6 +7603,20 @@ static void test_kernel_execution_abi_calls() {
           "execution ABI spawn keeps the new thread in the caller process group");
     check(state->ipc_bus.is_registered(*spawn_result.spawned_tid),
           "execution ABI spawn registers the new thread inbox");
+    const auto* spawned_context =
+        state->scheduler.run_queue().find(*spawn_result.spawned_tid);
+    check(spawned_context != nullptr,
+          "execution ABI spawn preserves a scheduler context");
+    if (spawned_context) {
+      check(spawned_context->pc == 27,
+            "execution ABI spawn applies the requested pc");
+      check(spawned_context->sp == 81,
+            "execution ABI spawn applies the requested sp");
+      check(spawned_context->registers[0] == 404,
+            "execution ABI spawn applies the requested register0");
+      check(spawned_context->label == "abi-spawn-in-group",
+            "execution ABI spawn applies the requested label");
+    }
   }
 
   auto supervisor_spawn = axion_kernel_call(
@@ -7469,6 +7624,14 @@ static void test_kernel_execution_abi_calls() {
       KernelCallRequest{
           .kind = KernelCallKind::SpawnThreadUnderSupervisor,
           .supervisor_id = identity.supervisor_id,
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 45,
+              .sp = 108,
+              .register0 = 505,
+              .halted = true,
+              .active = false,
+              .label = "abi-supervisor-spawn",
+          },
       });
   check(supervisor_spawn.status == KernelCallStatus::Ok,
         "execution ABI same-supervisor spawn returns Ok");
@@ -7488,6 +7651,24 @@ static void test_kernel_execution_abi_calls() {
       check(state->find_process_group_supervisor(spawned_runtime->process_group_id) ==
                 identity.supervisor_id,
             "execution ABI same-supervisor spawn keeps the requested supervisor");
+    }
+    const auto* spawned_context =
+        state->scheduler.run_queue().find(*supervisor_spawn.spawned_tid);
+    check(spawned_context != nullptr,
+          "execution ABI same-supervisor spawn preserves a scheduler context");
+    if (spawned_context) {
+      check(spawned_context->pc == 45,
+            "execution ABI same-supervisor spawn applies the requested pc");
+      check(spawned_context->sp == 108,
+            "execution ABI same-supervisor spawn applies the requested sp");
+      check(spawned_context->registers[0] == 505,
+            "execution ABI same-supervisor spawn applies the requested register0");
+      check(spawned_context->halted,
+            "execution ABI same-supervisor spawn applies the requested halted state");
+      check(!spawned_context->active,
+            "execution ABI same-supervisor spawn applies the requested active state");
+      check(spawned_context->label == "abi-supervisor-spawn",
+            "execution ABI same-supervisor spawn applies the requested label");
     }
   }
 

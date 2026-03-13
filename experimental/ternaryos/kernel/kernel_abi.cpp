@@ -6,6 +6,21 @@ namespace t81::ternaryos::kernel {
 
 namespace {
 
+sched::TiscContext make_spawn_context(
+    const std::optional<KernelThreadSpawnDescriptor>& descriptor) {
+  sched::TiscContext ctx{};
+  if (!descriptor.has_value()) {
+    return ctx;
+  }
+  ctx.pc = descriptor->pc;
+  ctx.sp = descriptor->sp;
+  ctx.registers[0] = descriptor->register0;
+  ctx.halted = descriptor->halted;
+  ctx.active = descriptor->active;
+  ctx.label = descriptor->label;
+  return ctx;
+}
+
 struct CallerContext {
   sched::Tid tid{0};
   ProcessGroupId process_group_id{0};
@@ -614,7 +629,7 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
         return *denied;
       }
       const auto spawned_tid = axion_kernel_spawn_thread_in_group(
-          state, sched::TiscContext{}, caller.process_group_id);
+          state, make_spawn_context(request.spawn_descriptor), caller.process_group_id);
       if (!spawned_tid.has_value()) {
         result.status = KernelCallStatus::Conflict;
         result.rejection = KernelCallRejection::ServiceActionRejected;
@@ -648,7 +663,7 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
         return result;
       }
       const auto spawned_tid = axion_kernel_spawn_thread_under_supervisor(
-          state, sched::TiscContext{}, *request.supervisor_id);
+          state, make_spawn_context(request.spawn_descriptor), *request.supervisor_id);
       if (!spawned_tid.has_value()) {
         result.status = KernelCallStatus::Conflict;
         result.rejection = KernelCallRejection::ServiceActionRejected;

@@ -43,6 +43,9 @@ boot-critical address-space control, guarded runtime/fault summary queries,
 kernel-issued capability record IDs, supervisor capability transition
 history, sequence-based capability revocation, and explicit provenance
 distinguishing kernel-seeded capabilities from supervisor-delegated grants.
+Spawn requests now also accept a compact initial thread descriptor
+(`pc`/`sp`/`register0`/`label` plus halted/active state) instead of always
+default-constructing blank scheduler contexts.
 Delegated capability control now also includes bulk revocation and direct
 delegated-capability queries by delegator provenance, plus compact supervisor
 delegation summaries. That typed ABI now also has a real canonical transport

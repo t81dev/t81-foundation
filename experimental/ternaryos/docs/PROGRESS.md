@@ -29,6 +29,10 @@ Recent architecture milestone:
   inspection, capability management, service
   lifecycle control, process-group memory inspection, boot-critical
   address-space control, and guarded runtime/fault summary queries.
+- Execution control now carries an explicit spawn descriptor too, so
+  `SpawnThreadInCallerGroup` and `SpawnThreadUnderSupervisor` can seed
+  `pc`, `sp`, `register0`, `label`, and halted/active state through the
+  typed ABI, wire blocks, and exported C bridge.
 - Capability management on that ABI is now stronger than the initial slice:
   capability records have kernel-issued stable IDs, supervisors can inspect
   bounded recent capability-transition history, and revocation can target an

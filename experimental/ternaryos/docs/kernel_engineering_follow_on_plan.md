@@ -80,6 +80,8 @@ Implemented kernel-call slice:
 - `Yield`
 - `SpawnThreadInCallerGroup`
 - `SpawnThreadUnderSupervisor`
+- Both spawn paths now support a compact initial thread descriptor on the
+  typed ABI and transport layers instead of only blank default contexts.
 - `GetThreadIdentity`
 - `ExitThread`
 - `SendMessage`

@@ -14,6 +14,7 @@ inline constexpr uint32_t kKernelAbiWireResponseMagic = 0x4B415250;  // KARP
 inline constexpr uint16_t kKernelAbiWireVersion = 1;
 inline constexpr std::size_t kKernelAbiWireTagBytes = 32;
 inline constexpr std::size_t kKernelAbiWireServiceNameBytes = 32;
+inline constexpr std::size_t kKernelAbiWireThreadLabelBytes = 32;
 inline constexpr std::size_t kKernelAbiWireCapabilitySlots = 4;
 inline constexpr std::size_t kKernelAbiWireCanonRefBytes = 32;
 
@@ -29,25 +30,26 @@ enum KernelCallWireFlags : uint64_t {
   kWireHasCapability = 1ull << 8,
   kWireHasServiceId = 1ull << 9,
   kWireHasServiceName = 1ull << 10,
-  kWireMessageHasTag = 1ull << 11,
-  kWireResponseHasMessage = 1ull << 12,
-  kWireResponseHasFault = 1ull << 13,
-  kWireResponseHasServiceId = 1ull << 14,
-  kWireResponseHasServiceName = 1ull << 15,
-  kWireResponseHasSupervisorId = 1ull << 16,
-  kWireResponseHasAddressSpaceId = 1ull << 17,
-  kWireResponseHasTargetProcessGroupId = 1ull << 18,
-  kWireCapabilityHasProcessGroupScope = 1ull << 19,
-  kWireCapabilityKernelSeeded = 1ull << 20,
-  kWireCapabilityHasDelegatedByProcessGroupId = 1ull << 21,
-  kWireCapabilityHasDelegatedBySupervisorId = 1ull << 22,
-  kWireResponseHasCallerTid = 1ull << 23,
-  kWireResponseHasCallerProcessGroupId = 1ull << 24,
-  kWireResponseHasSupervisorLastPendingGroup = 1ull << 25,
-  kWireResponseHasSupervisorLastAcknowledgedGroup = 1ull << 26,
-  kWireResponseHasSupervisorLastRecoveredGroup = 1ull << 27,
-  kWireResponseThreadExited = 1ull << 28,
-  kWireResponseHasSpawnedTid = 1ull << 29,
+  kWireHasSpawnDescriptor = 1ull << 11,
+  kWireMessageHasTag = 1ull << 12,
+  kWireResponseHasMessage = 1ull << 13,
+  kWireResponseHasFault = 1ull << 14,
+  kWireResponseHasServiceId = 1ull << 15,
+  kWireResponseHasServiceName = 1ull << 16,
+  kWireResponseHasSupervisorId = 1ull << 17,
+  kWireResponseHasAddressSpaceId = 1ull << 18,
+  kWireResponseHasTargetProcessGroupId = 1ull << 19,
+  kWireCapabilityHasProcessGroupScope = 1ull << 20,
+  kWireCapabilityKernelSeeded = 1ull << 21,
+  kWireCapabilityHasDelegatedByProcessGroupId = 1ull << 22,
+  kWireCapabilityHasDelegatedBySupervisorId = 1ull << 23,
+  kWireResponseHasCallerTid = 1ull << 24,
+  kWireResponseHasCallerProcessGroupId = 1ull << 25,
+  kWireResponseHasSupervisorLastPendingGroup = 1ull << 26,
+  kWireResponseHasSupervisorLastAcknowledgedGroup = 1ull << 27,
+  kWireResponseHasSupervisorLastRecoveredGroup = 1ull << 28,
+  kWireResponseThreadExited = 1ull << 29,
+  kWireResponseHasSpawnedTid = 1ull << 30,
 };
 
 struct KernelCallWireHeader {
@@ -99,9 +101,16 @@ struct KernelCallWireRequestBlock {
   std::array<uint8_t, 7> reserved1{};
   uint32_t ipc_dst{0};
   uint32_t service_id{0};
+  uint64_t spawn_pc{0};
+  uint64_t spawn_sp{0};
+  int64_t spawn_register0{0};
+  uint8_t spawn_halted{0};
+  uint8_t spawn_active{1};
+  std::array<uint8_t, 6> reserved2{};
   KernelCallWireMessage message{};
   KernelCallWireCapabilityRecord capability{};
   std::array<char, kKernelAbiWireServiceNameBytes> service_name{};
+  std::array<char, kKernelAbiWireThreadLabelBytes> spawn_label{};
 };
 
 struct KernelCallWireResponseBlock {

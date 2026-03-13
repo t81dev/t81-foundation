@@ -176,6 +176,17 @@ KernelCallWireRequestBlock axion_kernel_encode_wire_request(
     block.flags |= kWireHasCapability;
     block.capability = encode_capability(*request.capability);
   }
+  if (request.spawn_descriptor.has_value()) {
+    block.flags |= kWireHasSpawnDescriptor;
+    block.spawn_pc = request.spawn_descriptor->pc;
+    block.spawn_sp = request.spawn_descriptor->sp;
+    block.spawn_register0 = request.spawn_descriptor->register0;
+    block.spawn_halted = request.spawn_descriptor->halted ? 1 : 0;
+    block.spawn_active = request.spawn_descriptor->active ? 1 : 0;
+    encode_fixed_string(request.spawn_descriptor->label,
+                        block.spawn_label.data(),
+                        block.spawn_label.size());
+  }
   if (request.service_id.has_value()) {
     block.flags |= kWireHasServiceId;
     block.service_id = *request.service_id;
@@ -222,6 +233,16 @@ std::optional<KernelCallRequest> axion_kernel_decode_wire_request(
   }
   if (block.flags & kWireHasCapability) {
     request.capability = decode_capability(block.capability);
+  }
+  if (block.flags & kWireHasSpawnDescriptor) {
+    request.spawn_descriptor = KernelThreadSpawnDescriptor{
+        .pc = static_cast<std::size_t>(block.spawn_pc),
+        .sp = static_cast<std::size_t>(block.spawn_sp),
+        .register0 = block.spawn_register0,
+        .halted = block.spawn_halted != 0,
+        .active = block.spawn_active != 0,
+        .label = decode_fixed_string(block.spawn_label.data(), block.spawn_label.size()),
+    };
   }
   if (block.flags & kWireHasServiceId) {
     request.service_id = block.service_id;
