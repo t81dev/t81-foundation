@@ -5970,11 +5970,10 @@ static void test_kernel_minimal_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::SetAddressSpaceBootCritical,
-          .address_space_id = *address_space_a,
           .boot_critical = true,
       });
   check(enable_boot_critical.status == KernelCallStatus::Ok,
-        "minimal ABI can enable boot-critical status for the caller address space");
+        "minimal ABI can enable boot-critical status for the caller-derived address space");
   check(enable_boot_critical.action_performed,
         "minimal ABI boot-critical toggle reports work performed");
   check(enable_boot_critical.address_space_id == address_space_a,
@@ -6028,24 +6027,36 @@ static void test_kernel_minimal_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::SetAddressSpaceBootCritical,
-          .address_space_id = *address_space_a,
           .boot_critical = false,
       });
   check(disable_boot_critical.status == KernelCallStatus::Ok,
-        "minimal ABI can disable boot-critical status for the caller address space");
+        "minimal ABI can disable boot-critical status for the caller-derived address space");
   check(!disable_boot_critical.address_space_boot_critical,
         "minimal ABI boot-critical toggle returns disabled state");
 
-  auto missing_boot_critical_target = axion_kernel_call(
+  auto implicit_boot_critical_target = axion_kernel_call(
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::SetAddressSpaceBootCritical,
           .boot_critical = true,
       });
-  check(missing_boot_critical_target.status == KernelCallStatus::InvalidRequest,
-        "minimal ABI boot-critical toggle rejects a missing address-space target");
-  check(missing_boot_critical_target.rejection == KernelCallRejection::MissingAddressSpace,
-        "minimal ABI boot-critical toggle reports MissingAddressSpace for missing target");
+  check(implicit_boot_critical_target.status == KernelCallStatus::Ok,
+        "minimal ABI boot-critical toggle derives the caller address space when omitted");
+  check(implicit_boot_critical_target.address_space_id == address_space_a,
+        "minimal ABI implicit boot-critical toggle returns the caller address space id");
+  check(implicit_boot_critical_target.address_space_boot_critical,
+        "minimal ABI implicit boot-critical toggle enables boot-critical state");
+
+  auto clear_implicit_boot_critical_target = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SetAddressSpaceBootCritical,
+          .boot_critical = false,
+      });
+  check(clear_implicit_boot_critical_target.status == KernelCallStatus::Ok,
+        "minimal ABI can clear implicitly targeted boot-critical state");
+  check(!clear_implicit_boot_critical_target.address_space_boot_critical,
+        "minimal ABI implicit boot-critical clear returns disabled state");
 
   auto missing_boot_critical_value = axion_kernel_call(
       *state,

@@ -370,21 +370,23 @@ std::optional<KernelCallResult> resolve_owned_address_space(
     const CallerContext& caller,
     const KernelCallRequest& request,
     KernelRuntimeState::AddressSpaceState*& address_space) {
-  if (!request.address_space_id.has_value()) {
+  const auto caller_address_space_id =
+      state.find_process_group_address_space(caller.process_group_id);
+  const auto target_address_space_id =
+      request.address_space_id.value_or(caller_address_space_id.value_or(0));
+  if (target_address_space_id == 0) {
     KernelCallResult result = init_result(caller);
-    result.status = KernelCallStatus::InvalidRequest;
+    result.status = KernelCallStatus::NotFound;
     result.rejection = KernelCallRejection::MissingAddressSpace;
     return result;
   }
-  address_space = state.find_address_space_mut(*request.address_space_id);
+  address_space = state.find_address_space_mut(target_address_space_id);
   if (!address_space) {
     KernelCallResult result = init_result(caller);
     result.status = KernelCallStatus::NotFound;
     result.rejection = KernelCallRejection::MissingAddressSpace;
     return result;
   }
-  const auto caller_address_space_id =
-      state.find_process_group_address_space(caller.process_group_id);
   if (!caller_address_space_id.has_value() || *caller_address_space_id != address_space->id) {
     KernelCallResult result = init_result(caller);
     result.status = KernelCallStatus::PolicyDenied;
