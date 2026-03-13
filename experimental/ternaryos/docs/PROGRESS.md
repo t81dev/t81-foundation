@@ -33,6 +33,9 @@ Recent architecture milestone:
   `SpawnThreadInCallerGroup` and `SpawnThreadUnderSupervisor` can seed
   `pc`, `sp`, `register0`, `label`, and halted/active state through the
   typed ABI, wire blocks, and exported C bridge.
+- Execution inspection now includes `QueryThreadExecutionState`, with
+  caller-local and same-supervisor thread-context reads exposed through the
+  typed ABI, wire transport, and hosted C bridge.
 - Capability management on that ABI is now stronger than the initial slice:
   capability records have kernel-issued stable IDs, supervisors can inspect
   bounded recent capability-transition history, and revocation can target an

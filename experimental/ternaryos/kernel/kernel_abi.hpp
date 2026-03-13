@@ -50,6 +50,7 @@ enum class KernelCallKind : uint8_t {
   SpawnThreadInCallerGroup,
   SpawnThreadUnderSupervisor,
   GetThreadIdentity,
+  QueryThreadExecutionState,
   ExitThread,
   SendMessage,
   ReceiveMessage,
@@ -142,6 +143,7 @@ struct KernelCallResult {
   bool yielded{false};
   bool thread_exited{false};
   std::optional<sched::Tid> spawned_tid{};
+  std::optional<sched::Tid> queried_tid{};
   std::optional<sched::Tid> caller_tid{};
   std::optional<ProcessGroupId> caller_process_group_id{};
   std::optional<ipc::CanonMessage> message{};
@@ -156,6 +158,13 @@ struct KernelCallResult {
   std::optional<SupervisorId> supervisor_id{};
   std::optional<AddressSpaceId> address_space_id{};
   std::optional<ProcessGroupId> target_process_group_id{};
+  std::size_t thread_pc{0};
+  std::size_t thread_sp{0};
+  std::int64_t thread_register0{0};
+  bool thread_active{false};
+  bool thread_halted{false};
+  bool thread_running{false};
+  std::string thread_label;
   std::size_t process_group_owned_page_count{0};
   std::size_t process_group_pending_fault_count{0};
   bool process_group_pager_needed{false};

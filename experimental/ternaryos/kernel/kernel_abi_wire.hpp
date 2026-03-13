@@ -50,6 +50,7 @@ enum KernelCallWireFlags : uint64_t {
   kWireResponseHasSupervisorLastRecoveredGroup = 1ull << 28,
   kWireResponseThreadExited = 1ull << 29,
   kWireResponseHasSpawnedTid = 1ull << 30,
+  kWireResponseHasQueriedTid = 1ull << 31,
 };
 
 struct KernelCallWireHeader {
@@ -130,6 +131,7 @@ struct KernelCallWireResponseBlock {
   uint8_t service_blocked{0};
   std::array<uint8_t, 2> reserved0{};
   uint32_t spawned_tid{0};
+  uint32_t queried_tid{0};
   uint32_t caller_tid{0};
   uint32_t caller_process_group_id{0};
   uint32_t supervisor_id{0};
@@ -138,7 +140,10 @@ struct KernelCallWireResponseBlock {
   uint32_t service_id{0};
   uint32_t capability_count{0};
   uint32_t delegation_entry_count{0};
-  uint32_t reserved1{0};
+  uint32_t thread_state_bits{0};
+  uint64_t thread_pc{0};
+  uint64_t thread_sp{0};
+  int64_t thread_register0{0};
   uint64_t process_group_owned_page_count{0};
   uint64_t process_group_pending_fault_count{0};
   uint64_t runtime_mapped_pages{0};
@@ -168,6 +173,7 @@ struct KernelCallWireResponseBlock {
   KernelCallWireFault fault{};
   std::array<KernelCallWireCapabilityRecord, kKernelAbiWireCapabilitySlots> capabilities{};
   std::array<char, kKernelAbiWireServiceNameBytes> service_name{};
+  std::array<char, kKernelAbiWireThreadLabelBytes> thread_label{};
 };
 
 bool axion_kernel_validate_wire_request_block(

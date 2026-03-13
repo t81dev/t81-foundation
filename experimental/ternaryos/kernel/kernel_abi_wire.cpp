@@ -268,10 +268,21 @@ KernelCallWireResponseBlock axion_kernel_encode_wire_response(
     block.flags |= kWireResponseHasSpawnedTid;
     block.spawned_tid = *result.spawned_tid;
   }
+  if (result.queried_tid.has_value()) {
+    block.flags |= kWireResponseHasQueriedTid;
+    block.queried_tid = *result.queried_tid;
+  }
   block.service_registered = result.service_registered ? 1 : 0;
   block.service_suspended = result.service_suspended ? 1 : 0;
   block.service_unhealthy = result.service_unhealthy ? 1 : 0;
   block.service_blocked = result.service_blocked ? 1 : 0;
+  block.thread_state_bits =
+      (result.thread_active ? 0x1u : 0u) |
+      (result.thread_halted ? 0x2u : 0u) |
+      (result.thread_running ? 0x4u : 0u);
+  block.thread_pc = result.thread_pc;
+  block.thread_sp = result.thread_sp;
+  block.thread_register0 = result.thread_register0;
   if (result.caller_tid.has_value()) {
     block.flags |= kWireResponseHasCallerTid;
     block.caller_tid = *result.caller_tid;
@@ -296,6 +307,10 @@ KernelCallWireResponseBlock axion_kernel_encode_wire_response(
     block.flags |= kWireResponseHasServiceName;
     encode_fixed_string(
         *result.service_name, block.service_name.data(), block.service_name.size());
+  }
+  if (!result.thread_label.empty()) {
+    encode_fixed_string(
+        result.thread_label, block.thread_label.data(), block.thread_label.size());
   }
   if (result.supervisor_id.has_value()) {
     block.flags |= kWireResponseHasSupervisorId;
@@ -403,6 +418,9 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
   if (block.flags & kWireResponseHasSpawnedTid) {
     result.spawned_tid = block.spawned_tid;
   }
+  if (block.flags & kWireResponseHasQueriedTid) {
+    result.queried_tid = block.queried_tid;
+  }
   if (block.flags & kWireResponseHasCallerTid) {
     result.caller_tid = block.caller_tid;
   }
@@ -431,6 +449,14 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
   if (block.flags & kWireResponseHasTargetProcessGroupId) {
     result.target_process_group_id = block.target_process_group_id;
   }
+  result.thread_pc = static_cast<std::size_t>(block.thread_pc);
+  result.thread_sp = static_cast<std::size_t>(block.thread_sp);
+  result.thread_register0 = block.thread_register0;
+  result.thread_active = (block.thread_state_bits & 0x1u) != 0;
+  result.thread_halted = (block.thread_state_bits & 0x2u) != 0;
+  result.thread_running = (block.thread_state_bits & 0x4u) != 0;
+  result.thread_label =
+      decode_fixed_string(block.thread_label.data(), block.thread_label.size());
   if (block.flags & kWireResponseHasSupervisorLastPendingGroup) {
     result.supervisor_last_pending_group = block.supervisor_last_pending_group;
   }

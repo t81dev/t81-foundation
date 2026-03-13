@@ -148,6 +148,32 @@ std::optional<KernelCallResult> resolve_fault_target(
   return std::nullopt;
 }
 
+std::optional<KernelCallResult> resolve_thread_query_target(
+    KernelRuntimeState& state,
+    const CallerContext& caller,
+    const KernelCallRequest& request,
+    KernelRuntimeState::ThreadRuntimeState*& target_thread_state,
+    const sched::TiscContext*& target_context) {
+  const auto target_tid = request.target_tid.value_or(caller.tid);
+  target_thread_state = state.find_thread_runtime_mut(target_tid);
+  target_context = state.scheduler.run_queue().find(target_tid);
+  if (!target_thread_state || !target_context) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::NotFound;
+    result.rejection = KernelCallRejection::MissingTargetThread;
+    return result;
+  }
+  if (target_thread_state->process_group_id != caller.process_group_id &&
+      !axion_kernel_process_groups_share_supervisor(
+          state, caller.process_group_id, target_thread_state->process_group_id)) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::PolicyDenied;
+    result.rejection = KernelCallRejection::ForeignSupervisorScope;
+    return result;
+  }
+  return std::nullopt;
+}
+
 std::optional<KernelCallResult> resolve_capability_target_group(
     KernelRuntimeState& state,
     const CallerContext& caller,
@@ -681,6 +707,31 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.rejection = KernelCallRejection::None;
       result.supervisor_id = state.find_process_group_supervisor(caller.process_group_id);
       result.address_space_id = state.find_process_group_address_space(caller.process_group_id);
+      return result;
+    }
+    case KernelCallKind::QueryThreadExecutionState: {
+      KernelRuntimeState::ThreadRuntimeState* target_thread_state = nullptr;
+      const sched::TiscContext* target_context = nullptr;
+      if (auto denied = resolve_thread_query_target(
+              state, caller, request, target_thread_state, target_context);
+          denied.has_value()) {
+        return *denied;
+      }
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.queried_tid = target_context->tid;
+      result.target_process_group_id = target_thread_state->process_group_id;
+      result.supervisor_id =
+          state.find_process_group_supervisor(target_thread_state->process_group_id);
+      result.address_space_id =
+          state.find_process_group_address_space(target_thread_state->process_group_id);
+      result.thread_pc = target_context->pc;
+      result.thread_sp = target_context->sp;
+      result.thread_register0 = target_context->registers[0];
+      result.thread_active = target_context->active;
+      result.thread_halted = target_context->halted;
+      result.thread_running = target_context->state == sched::ThreadState::Running;
+      result.thread_label = target_context->label;
       return result;
     }
     case KernelCallKind::ExitThread: {

@@ -82,6 +82,8 @@ Implemented kernel-call slice:
 - `SpawnThreadUnderSupervisor`
 - Both spawn paths now support a compact initial thread descriptor on the
   typed ABI and transport layers instead of only blank default contexts.
+- `QueryThreadExecutionState` now provides the matching read-side execution
+  inspection path for caller-local and same-supervisor target threads.
 - `GetThreadIdentity`
 - `ExitThread`
 - `SendMessage`

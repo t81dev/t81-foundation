@@ -185,6 +185,7 @@ Implemented today through the typed and wire ABI:
 - `Yield`
 - `SpawnThreadInCallerGroup`
 - `SpawnThreadUnderSupervisor`
+- `QueryThreadExecutionState`
 - `ExitThread`
 - `GetThreadIdentity`
 
@@ -197,6 +198,10 @@ Reason:
   `pc`, `sp`, `register0`, `label`, and halted/active state, and that
   descriptor is preserved across the typed ABI, fixed-size wire blocks, and
   exported hosted C bridge
+- current implementation detail:
+  `QueryThreadExecutionState` returns the seeded execution context for the
+  caller or a same-supervisor target thread, including `pc`, `sp`,
+  `register0`, `label`, and running/halted/active state
 
 #### 5.3.2 IPC
 

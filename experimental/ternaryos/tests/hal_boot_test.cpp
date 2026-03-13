@@ -6978,6 +6978,25 @@ static void test_kernel_abi_wire_call_boundary() {
           "wire ABI identity returns caller address space");
   }
 
+  const auto thread_state_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::QueryThreadExecutionState});
+  KernelCallWireResponseBlock thread_state_response;
+  check(axion_kernel_call_wire(*state, &thread_state_request, &thread_state_response),
+        "wire ABI call boundary accepts a thread-state request block");
+  const auto decoded_thread_state =
+      axion_kernel_decode_wire_response(thread_state_response);
+  check(decoded_thread_state.has_value(), "wire ABI thread-state response decodes");
+  if (decoded_thread_state) {
+    check(decoded_thread_state->status == KernelCallStatus::Ok,
+          "wire ABI thread-state query returns Ok");
+    check(decoded_thread_state->queried_tid == *tid_a,
+          "wire ABI thread-state query returns the running tid");
+    check(decoded_thread_state->thread_register0 == 811,
+          "wire ABI thread-state query returns register0");
+    check(decoded_thread_state->thread_running,
+          "wire ABI thread-state query reports running state");
+  }
+
   const auto spawn_request = axion_kernel_encode_wire_request(
       KernelCallRequest{
           .kind = KernelCallKind::SpawnThreadInCallerGroup,
@@ -7308,6 +7327,29 @@ static void test_kernel_call_c_bridge() {
           "C kernel-call bridge identity returns caller address space");
   }
 
+  const auto thread_state_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::QueryThreadExecutionState});
+  KernelCallWireResponseBlock thread_state_response;
+  check(ternaryos_kernel_call_c(&*state,
+                                &thread_state_request,
+                                sizeof(thread_state_request),
+                                &thread_state_response,
+                                sizeof(thread_state_response)) == 0,
+        "C kernel-call bridge accepts a thread-state request");
+  const auto decoded_thread_state =
+      axion_kernel_decode_wire_response(thread_state_response);
+  check(decoded_thread_state.has_value(), "C kernel-call bridge thread-state response decodes");
+  if (decoded_thread_state) {
+    check(decoded_thread_state->status == KernelCallStatus::Ok,
+          "C kernel-call bridge thread-state query returns Ok");
+    check(decoded_thread_state->queried_tid == *sender_tid,
+          "C kernel-call bridge thread-state query returns the running tid");
+    check(decoded_thread_state->thread_register0 == 1001,
+          "C kernel-call bridge thread-state query returns register0");
+    check(decoded_thread_state->thread_running,
+          "C kernel-call bridge thread-state query reports running state");
+  }
+
   const auto spawn_request = axion_kernel_encode_wire_request(
       KernelCallRequest{
           .kind = KernelCallKind::SpawnThreadInCallerGroup,
@@ -7575,6 +7617,19 @@ static void test_kernel_execution_abi_calls() {
   check(identity.address_space_id.has_value(),
         "execution ABI identity returns caller address space");
 
+  auto self_execution = axion_kernel_call(
+      *state, KernelCallRequest{.kind = KernelCallKind::QueryThreadExecutionState});
+  check(self_execution.status == KernelCallStatus::Ok,
+        "execution ABI thread-state query returns Ok");
+  check(self_execution.rejection == KernelCallRejection::None,
+        "execution ABI thread-state query clears rejection");
+  check(self_execution.queried_tid == tid_a,
+        "execution ABI thread-state query returns caller tid");
+  check(self_execution.thread_register0 == 1101,
+        "execution ABI thread-state query returns register0");
+  check(self_execution.thread_running,
+        "execution ABI thread-state query reports the current thread as running");
+
   auto spawn_result = axion_kernel_call(
       *state,
       KernelCallRequest{
@@ -7670,6 +7725,18 @@ static void test_kernel_execution_abi_calls() {
       check(spawned_context->label == "abi-supervisor-spawn",
             "execution ABI same-supervisor spawn applies the requested label");
     }
+    auto supervisor_query = axion_kernel_call(
+        *state,
+        KernelCallRequest{
+            .kind = KernelCallKind::QueryThreadExecutionState,
+            .target_tid = supervisor_spawn.spawned_tid,
+        });
+    check(supervisor_query.status == KernelCallStatus::Ok,
+          "execution ABI same-supervisor thread-state query returns Ok");
+    check(supervisor_query.queried_tid == supervisor_spawn.spawned_tid,
+          "execution ABI same-supervisor thread-state query returns target tid");
+    check(supervisor_query.thread_label == "abi-supervisor-spawn",
+          "execution ABI same-supervisor thread-state query returns target label");
   }
 
   t81::ternaryos::sched::TiscContext outsider;
@@ -7685,6 +7752,16 @@ static void test_kernel_execution_abi_calls() {
     check(outsider_supervisor.has_value(),
           "execution ABI resolves outsider supervisor");
     if (outsider_supervisor) {
+      auto denied_query = axion_kernel_call(
+          *state,
+          KernelCallRequest{
+              .kind = KernelCallKind::QueryThreadExecutionState,
+              .target_tid = outsider_tid,
+          });
+      check(denied_query.status == KernelCallStatus::PolicyDenied,
+            "execution ABI denies foreign-supervisor thread-state query");
+      check(denied_query.rejection == KernelCallRejection::ForeignSupervisorScope,
+            "execution ABI foreign-supervisor thread-state query reports foreign scope");
       auto denied_spawn = axion_kernel_call(
           *state,
           KernelCallRequest{
