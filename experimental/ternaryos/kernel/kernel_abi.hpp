@@ -37,6 +37,8 @@ struct KernelDelegationSummaryEntry {
 
 enum class KernelCallKind : uint8_t {
   Yield = 0,
+  GetThreadIdentity,
+  ExitThread,
   SendMessage,
   ReceiveMessage,
   ReadFaultInbox,
@@ -125,6 +127,7 @@ struct KernelCallResult {
   KernelCallRejection rejection{KernelCallRejection::None};
   bool action_performed{false};
   bool yielded{false};
+  bool thread_exited{false};
   std::optional<sched::Tid> caller_tid{};
   std::optional<ProcessGroupId> caller_process_group_id{};
   std::optional<ipc::CanonMessage> message{};

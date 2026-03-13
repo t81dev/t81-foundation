@@ -7205,6 +7205,66 @@ static void test_kernel_call_c_bridge() {
         "C kernel-call bridge rejects null kernel state");
 }
 
+static void test_kernel_execution_abi_calls() {
+  std::printf("\n[AC-21m] Axion execution ABI exposes thread identity and exit\n");
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for execution ABI calls");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext thread_a;
+  thread_a.registers[0] = 1101;
+  auto tid_a = axion_kernel_spawn_thread(*state, thread_a);
+  check(tid_a.has_value(), "execution ABI spawns thread A");
+
+  t81::ternaryos::sched::TiscContext thread_b;
+  thread_b.registers[0] = 1102;
+  auto tid_b = axion_kernel_spawn_thread(*state, thread_b);
+  check(tid_b.has_value(), "execution ABI spawns thread B");
+  if (!tid_a || !tid_b) {
+    return;
+  }
+
+  check(axion_kernel_tick(*state), "execution ABI dispatches thread A");
+  check(state->scheduler.current_tid() == *tid_a,
+        "execution ABI makes thread A current before identity query");
+
+  auto identity = axion_kernel_call(
+      *state, KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
+  check(identity.status == KernelCallStatus::Ok,
+        "execution ABI identity returns Ok");
+  check(identity.rejection == KernelCallRejection::None,
+        "execution ABI identity clears rejection");
+  check(identity.caller_tid == tid_a,
+        "execution ABI identity returns caller tid");
+  check(identity.caller_process_group_id.has_value(),
+        "execution ABI identity returns caller process group");
+  check(identity.supervisor_id.has_value(),
+        "execution ABI identity returns caller supervisor");
+  check(identity.address_space_id.has_value(),
+        "execution ABI identity returns caller address space");
+
+  auto exit_result = axion_kernel_call(
+      *state, KernelCallRequest{.kind = KernelCallKind::ExitThread});
+  check(exit_result.status == KernelCallStatus::Ok,
+        "execution ABI exit returns Ok");
+  check(exit_result.rejection == KernelCallRejection::None,
+        "execution ABI exit clears rejection");
+  check(exit_result.action_performed,
+        "execution ABI exit reports work performed");
+  check(exit_result.thread_exited,
+        "execution ABI exit reports thread exit");
+  check(state->find_thread_runtime(*tid_a) == nullptr,
+        "execution ABI removes exited thread runtime");
+  check(!state->ipc_bus.is_registered(*tid_a),
+        "execution ABI deregisters exited thread inbox");
+  check(state->scheduler.current_tid() == *tid_b,
+        "execution ABI advances to the remaining runnable thread");
+}
+
 static void test_kernel_c_lifecycle_bridge() {
   std::printf("\n[AC-21l] Axion C kernel lifecycle bridge bootstraps and destroys opaque state\n");
 
@@ -8169,6 +8229,7 @@ int main() {
   test_kernel_abi_wire_byte_boundary();
   test_kernel_call_c_bridge();
   test_kernel_c_lifecycle_bridge();
+  test_kernel_execution_abi_calls();
   test_kernel_capability_management_abi();
   test_kernel_service_abi_calls();
   test_kernel_capability_transition_sequence_revoke_abi();

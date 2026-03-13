@@ -149,6 +149,33 @@ std::optional<KernelServiceStatus> axion_kernel_validate_requesting_group(
   return std::nullopt;
 }
 
+bool axion_kernel_terminate_thread(KernelRuntimeState& state,
+                                   sched::Tid tid) noexcept {
+  auto* thread_state = state.find_thread_runtime_mut(tid);
+  if (!thread_state) {
+    return false;
+  }
+
+  const bool was_current = state.scheduler.current_tid() == tid;
+  if (was_current && state.scheduler.thread_count() > 1) {
+    (void)axion_kernel_tick(state);
+  }
+
+  if (!state.scheduler.terminate(tid)) {
+    return false;
+  }
+  state.ipc_bus.deregister_thread(tid);
+
+  if (auto* group_state = state.find_process_group_mut(thread_state->process_group_id)) {
+    group_state->member_tids.erase(
+        std::remove(group_state->member_tids.begin(), group_state->member_tids.end(), tid),
+        group_state->member_tids.end());
+  }
+
+  state.thread_runtime.erase(tid);
+  return true;
+}
+
 KernelServiceRequestRejection axion_kernel_requesting_group_request_rejection(
     KernelServiceStatus status) noexcept {
   return status == KernelServiceStatus::NotFound

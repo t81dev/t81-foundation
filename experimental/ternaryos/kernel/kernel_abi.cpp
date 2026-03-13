@@ -608,6 +608,25 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
 
   KernelCallResult result = init_result(caller);
   switch (request.kind) {
+    case KernelCallKind::GetThreadIdentity: {
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.supervisor_id = state.find_process_group_supervisor(caller.process_group_id);
+      result.address_space_id = state.find_process_group_address_space(caller.process_group_id);
+      return result;
+    }
+    case KernelCallKind::ExitThread: {
+      if (!axion_kernel_terminate_thread(state, caller.tid)) {
+        result.status = KernelCallStatus::Conflict;
+        result.rejection = KernelCallRejection::MissingCallerThread;
+        return result;
+      }
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.thread_exited = true;
+      return result;
+    }
     case KernelCallKind::Yield: {
       if (auto denied = require_capability(caller, KernelCapabilityKind::Yield);
           denied.has_value()) {

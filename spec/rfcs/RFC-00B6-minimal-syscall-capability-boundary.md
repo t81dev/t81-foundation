@@ -149,6 +149,8 @@ The first ABI revision should support only these request families.
 Implemented today through the typed and wire ABI:
 
 - `Yield`
+- `GetThreadIdentity`
+- `ExitThread`
 - `SendMessage`
 - `ReceiveMessage`
 - `ReadFaultInbox`

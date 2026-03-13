@@ -85,6 +85,8 @@ bool axion_kernel_ipc_send(KernelRuntimeState& state,
 std::optional<ipc::CanonMessage> axion_kernel_ipc_recv(
     KernelRuntimeState& state,
     sched::Tid tid) noexcept;
+bool axion_kernel_terminate_thread(KernelRuntimeState& state,
+                                   sched::Tid tid) noexcept;
 
 bool axion_kernel_claim_device(KernelRuntimeState& state,
                                std::string_view device_name,

@@ -36,16 +36,17 @@ and shared runtime utilities have been split into dedicated implementation
 files. `kernel_main.hpp` remains the shared runtime contract for those units.
 
 RFC-00B6 is now partially implemented rather than only proposed. The current
-typed `axion_kernel_call(...)` ABI covers IPC, fault inbox/recovery,
-supervisor recovery and inspection, capability management, service lifecycle
-control, process-group memory inspection, boot-critical address-space control,
-guarded runtime/fault summary queries, kernel-issued capability record IDs,
-supervisor capability transition history, sequence-based capability
-revocation, and explicit provenance distinguishing kernel-seeded capabilities
-from supervisor-delegated grants. Delegated capability control now also
-includes bulk revocation and direct delegated-capability queries by delegator
-provenance, plus compact supervisor delegation summaries. That typed ABI now
-also has a real canonical transport layer:
+typed `axion_kernel_call(...)` ABI covers thread identity/termination, IPC,
+fault inbox/recovery, supervisor recovery and inspection, capability
+management, service lifecycle control, process-group memory inspection,
+boot-critical address-space control, guarded runtime/fault summary queries,
+kernel-issued capability record IDs, supervisor capability transition
+history, sequence-based capability revocation, and explicit provenance
+distinguishing kernel-seeded capabilities from supervisor-delegated grants.
+Delegated capability control now also includes bulk revocation and direct
+delegated-capability queries by delegator provenance, plus compact supervisor
+delegation summaries. That typed ABI now also has a real canonical transport
+layer:
 - `kernel_abi_wire.hpp/.cpp` define fixed-size request/response wire blocks
 - `axion_kernel_call_wire(...)` dispatches those blocks
 - `axion_kernel_call_wire_bytes(...)` provides the raw byte-span bridge

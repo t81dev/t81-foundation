@@ -46,6 +46,7 @@ enum KernelCallWireFlags : uint64_t {
   kWireResponseHasSupervisorLastPendingGroup = 1ull << 25,
   kWireResponseHasSupervisorLastAcknowledgedGroup = 1ull << 26,
   kWireResponseHasSupervisorLastRecoveredGroup = 1ull << 27,
+  kWireResponseThreadExited = 1ull << 28,
 };
 
 struct KernelCallWireHeader {
