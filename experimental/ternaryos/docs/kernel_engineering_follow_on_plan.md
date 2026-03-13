@@ -147,7 +147,8 @@ discipline:
 Status:
 
 - complete for typed service views and typed ABI result mapping
-- still not carried through the fixed-size wire response format
+- complete for fixed-size wire response and hosted C bridge register/query
+  results
 
 ## Recommended Execution Order
 

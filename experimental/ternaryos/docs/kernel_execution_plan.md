@@ -55,7 +55,8 @@ Not yet implemented:
 
 - real hardware trap/syscall entry
 - executable loading
-- service entry-descriptor visibility through wire/C query results
+- service entry-descriptor visibility through supervisor-scoped inventory
+  results over wire/C
 
 ## Completed Groundwork
 

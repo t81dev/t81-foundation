@@ -126,10 +126,11 @@ struct KernelCallWireResponseBlock {
   uint8_t action_performed{0};
   uint8_t yielded{0};
   uint8_t service_registered{0};
+  uint8_t service_has_entry_descriptor{0};
   uint8_t service_suspended{0};
   uint8_t service_unhealthy{0};
   uint8_t service_blocked{0};
-  std::array<uint8_t, 2> reserved0{};
+  std::array<uint8_t, 1> reserved0{};
   uint32_t spawned_tid{0};
   uint32_t queried_tid{0};
   uint32_t caller_tid{0};
@@ -141,6 +142,12 @@ struct KernelCallWireResponseBlock {
   uint32_t capability_count{0};
   uint32_t delegation_entry_count{0};
   uint32_t thread_state_bits{0};
+  uint64_t service_entry_pc{0};
+  uint64_t service_entry_sp{0};
+  int64_t service_entry_register0{0};
+  uint8_t service_entry_halted{0};
+  uint8_t service_entry_active{1};
+  std::array<uint8_t, 6> reserved1{};
   uint64_t thread_pc{0};
   uint64_t thread_sp{0};
   int64_t thread_register0{0};
@@ -173,6 +180,7 @@ struct KernelCallWireResponseBlock {
   KernelCallWireFault fault{};
   std::array<KernelCallWireCapabilityRecord, kKernelAbiWireCapabilitySlots> capabilities{};
   std::array<char, kKernelAbiWireServiceNameBytes> service_name{};
+  std::array<char, kKernelAbiWireThreadLabelBytes> service_entry_label{};
   std::array<char, kKernelAbiWireThreadLabelBytes> thread_label{};
 };
 

@@ -226,9 +226,9 @@ Reason:
   services can now retain an entry descriptor at service-registration time for
   later execution through `SpawnThreadForService`
 - current implementation detail:
-  the typed service/status control plane now exposes stored service entry
-  descriptors, but the fixed-size wire response format does not yet serialize
-  that service-entry payload
+  stored service entry descriptors are now exposed through the typed
+  service/status control plane and through fixed-size wire / hosted C
+  service register/query responses
 - current implementation detail:
   `QueryThreadExecutionState` returns the seeded execution context for the
   caller or a same-supervisor target thread, including `pc`, `sp`,

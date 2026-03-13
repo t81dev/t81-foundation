@@ -273,9 +273,20 @@ KernelCallWireResponseBlock axion_kernel_encode_wire_response(
     block.queried_tid = *result.queried_tid;
   }
   block.service_registered = result.service_registered ? 1 : 0;
+  block.service_has_entry_descriptor = result.service_has_entry_descriptor ? 1 : 0;
   block.service_suspended = result.service_suspended ? 1 : 0;
   block.service_unhealthy = result.service_unhealthy ? 1 : 0;
   block.service_blocked = result.service_blocked ? 1 : 0;
+  if (result.service_entry_descriptor.has_value()) {
+    block.service_entry_pc = result.service_entry_descriptor->pc;
+    block.service_entry_sp = result.service_entry_descriptor->sp;
+    block.service_entry_register0 = result.service_entry_descriptor->register0;
+    block.service_entry_halted = result.service_entry_descriptor->halted ? 1 : 0;
+    block.service_entry_active = result.service_entry_descriptor->active ? 1 : 0;
+    encode_fixed_string(result.service_entry_descriptor->label,
+                        block.service_entry_label.data(),
+                        block.service_entry_label.size());
+  }
   block.thread_state_bits =
       (result.thread_active ? 0x1u : 0u) |
       (result.thread_halted ? 0x2u : 0u) |
@@ -386,6 +397,7 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
       .action_performed = block.action_performed != 0,
       .yielded = block.yielded != 0,
       .service_registered = block.service_registered != 0,
+      .service_has_entry_descriptor = block.service_has_entry_descriptor != 0,
       .service_suspended = block.service_suspended != 0,
       .service_unhealthy = block.service_unhealthy != 0,
       .service_blocked = block.service_blocked != 0,
@@ -414,6 +426,17 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
       .supervisor_delegation_entry_count = block.supervisor_delegation_entry_count,
       .supervisor_delegated_capability_count = block.supervisor_delegated_capability_count,
   };
+  if (result.service_has_entry_descriptor) {
+    result.service_entry_descriptor = KernelThreadSpawnDescriptor{
+        .pc = static_cast<std::size_t>(block.service_entry_pc),
+        .sp = static_cast<std::size_t>(block.service_entry_sp),
+        .register0 = block.service_entry_register0,
+        .halted = block.service_entry_halted != 0,
+        .active = block.service_entry_active != 0,
+        .label = decode_fixed_string(block.service_entry_label.data(),
+                                     block.service_entry_label.size()),
+    };
+  }
   result.thread_exited = (block.flags & kWireResponseThreadExited) != 0;
   if (block.flags & kWireResponseHasSpawnedTid) {
     result.spawned_tid = block.spawned_tid;

@@ -7231,9 +7231,58 @@ static void test_kernel_abi_wire_call_boundary() {
           "wire ABI service registration with entry descriptor returns Ok");
     check(decoded_register_service->service_id.has_value(),
           "wire ABI service registration with entry descriptor returns a service id");
+    check(decoded_register_service->service_has_entry_descriptor,
+          "wire ABI service registration reports stored service entry descriptor");
+    check(decoded_register_service->service_entry_descriptor.has_value(),
+          "wire ABI service registration exposes stored service entry descriptor");
+    if (decoded_register_service->service_entry_descriptor) {
+      check(decoded_register_service->service_entry_descriptor->pc == 18,
+            "wire ABI service registration entry descriptor preserves pc");
+      check(decoded_register_service->service_entry_descriptor->sp == 54,
+            "wire ABI service registration entry descriptor preserves sp");
+      check(decoded_register_service->service_entry_descriptor->register0 == 818,
+            "wire ABI service registration entry descriptor preserves register0");
+      check(decoded_register_service->service_entry_descriptor->label ==
+                "wire-service-entry",
+            "wire ABI service registration entry descriptor preserves label");
+    }
   }
 
   if (decoded_register_service && decoded_register_service->service_id) {
+    const auto query_service_request = axion_kernel_encode_wire_request(
+        KernelCallRequest{
+            .kind = KernelCallKind::QueryServiceStatus,
+            .service_id = *decoded_register_service->service_id,
+        });
+    KernelCallWireResponseBlock query_service_response;
+    check(axion_kernel_call_wire(*state,
+                                 &query_service_request,
+                                 &query_service_response),
+          "wire ABI call boundary accepts a service-status query request");
+    const auto decoded_query_service =
+        axion_kernel_decode_wire_response(query_service_response);
+    check(decoded_query_service.has_value(),
+          "wire ABI service-status query response decodes");
+    if (decoded_query_service) {
+      check(decoded_query_service->status == KernelCallStatus::Ok,
+            "wire ABI service-status query returns Ok");
+      check(decoded_query_service->service_has_entry_descriptor,
+            "wire ABI service-status query reports stored service entry descriptor");
+      check(decoded_query_service->service_entry_descriptor.has_value(),
+            "wire ABI service-status query exposes stored service entry descriptor");
+      if (decoded_query_service->service_entry_descriptor) {
+        check(decoded_query_service->service_entry_descriptor->pc == 18,
+              "wire ABI service-status query entry descriptor preserves pc");
+        check(decoded_query_service->service_entry_descriptor->sp == 54,
+              "wire ABI service-status query entry descriptor preserves sp");
+        check(decoded_query_service->service_entry_descriptor->register0 == 818,
+              "wire ABI service-status query entry descriptor preserves register0");
+        check(decoded_query_service->service_entry_descriptor->label ==
+                  "wire-service-entry",
+              "wire ABI service-status query entry descriptor preserves label");
+      }
+    }
+
     const auto spawn_for_service_request = axion_kernel_encode_wire_request(
         KernelCallRequest{
             .kind = KernelCallKind::SpawnThreadForService,
@@ -7723,9 +7772,60 @@ static void test_kernel_call_c_bridge() {
           "C kernel-call bridge service registration with entry descriptor returns Ok");
     check(decoded_register_service->service_id.has_value(),
           "C kernel-call bridge service registration with entry descriptor returns a service id");
+    check(decoded_register_service->service_has_entry_descriptor,
+          "C kernel-call bridge service registration reports stored service entry descriptor");
+    check(decoded_register_service->service_entry_descriptor.has_value(),
+          "C kernel-call bridge service registration exposes stored service entry descriptor");
+    if (decoded_register_service->service_entry_descriptor) {
+      check(decoded_register_service->service_entry_descriptor->pc == 24,
+            "C kernel-call bridge service registration entry descriptor preserves pc");
+      check(decoded_register_service->service_entry_descriptor->sp == 72,
+            "C kernel-call bridge service registration entry descriptor preserves sp");
+      check(decoded_register_service->service_entry_descriptor->register0 == 929,
+            "C kernel-call bridge service registration entry descriptor preserves register0");
+      check(decoded_register_service->service_entry_descriptor->label ==
+                "c-service-entry",
+            "C kernel-call bridge service registration entry descriptor preserves label");
+    }
   }
 
   if (decoded_register_service && decoded_register_service->service_id) {
+    const auto query_service_request = axion_kernel_encode_wire_request(
+        KernelCallRequest{
+            .kind = KernelCallKind::QueryServiceStatus,
+            .service_id = *decoded_register_service->service_id,
+        });
+    KernelCallWireResponseBlock query_service_response;
+    check(ternaryos_kernel_call_c(&*state,
+                                  &query_service_request,
+                                  sizeof(query_service_request),
+                                  &query_service_response,
+                                  sizeof(query_service_response)) == 0,
+          "C kernel-call bridge accepts a service-status query request");
+    const auto decoded_query_service =
+        axion_kernel_decode_wire_response(query_service_response);
+    check(decoded_query_service.has_value(),
+          "C kernel-call bridge service-status query decodes");
+    if (decoded_query_service) {
+      check(decoded_query_service->status == KernelCallStatus::Ok,
+            "C kernel-call bridge service-status query returns Ok");
+      check(decoded_query_service->service_has_entry_descriptor,
+            "C kernel-call bridge service-status query reports stored service entry descriptor");
+      check(decoded_query_service->service_entry_descriptor.has_value(),
+            "C kernel-call bridge service-status query exposes stored service entry descriptor");
+      if (decoded_query_service->service_entry_descriptor) {
+        check(decoded_query_service->service_entry_descriptor->pc == 24,
+              "C kernel-call bridge service-status query entry descriptor preserves pc");
+        check(decoded_query_service->service_entry_descriptor->sp == 72,
+              "C kernel-call bridge service-status query entry descriptor preserves sp");
+        check(decoded_query_service->service_entry_descriptor->register0 == 929,
+              "C kernel-call bridge service-status query entry descriptor preserves register0");
+        check(decoded_query_service->service_entry_descriptor->label ==
+                  "c-service-entry",
+              "C kernel-call bridge service-status query entry descriptor preserves label");
+      }
+    }
+
     const auto spawn_for_service_request = axion_kernel_encode_wire_request(
         KernelCallRequest{
             .kind = KernelCallKind::SpawnThreadForService,

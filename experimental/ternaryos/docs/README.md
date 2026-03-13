@@ -49,7 +49,9 @@ Spawn requests now also accept a compact initial thread descriptor
 default-constructing blank scheduler contexts, and services can now retain
 that descriptor during `RegisterService` for later execution through
 `SpawnThreadForService`. Service status and supervisor service-inventory views
-now also expose that stored entry descriptor in the typed control plane.
+now also expose that stored entry descriptor in the typed control plane, and
+service register/query responses now carry it through the fixed-size wire and
+hosted C ABI paths too.
 Execution reads now also include `QueryThreadExecutionState`, which exposes the
 seeded scheduler context for the caller or a same-supervisor target thread.
 Delegated capability control now also includes bulk revocation and direct
