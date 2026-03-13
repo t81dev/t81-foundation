@@ -6,6 +6,7 @@
 #include "kernel_service_contract.hpp"
 
 #include "../hal/hal.hpp"
+#include "../hal/virtualbox_guest_devices.hpp"
 #include "../ipc/canon_message.hpp"
 #include "../mmu/ternary_page_alloc.hpp"
 #include "../dev/block_device.hpp"
@@ -115,6 +116,9 @@ bool axion_kernel_release_device(KernelRuntimeState& state,
 bool axion_kernel_bind_published_executable_store(
     KernelRuntimeState& state,
     std::unique_ptr<t81::ternaryos::dev::IBlockDevice> device) noexcept;
+bool axion_kernel_bind_published_executable_store_from_virtualbox_guest(
+    KernelRuntimeState& state,
+    t81::ternaryos::hal::VBoxGuestBootstrap& guest) noexcept;
 bool axion_kernel_bind_published_executable_canonfs(
     KernelRuntimeState& state,
     std::unique_ptr<t81::canonfs::Driver> driver) noexcept;

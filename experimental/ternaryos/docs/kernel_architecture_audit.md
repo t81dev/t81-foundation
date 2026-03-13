@@ -429,6 +429,7 @@ Execution control is also broader:
 - bindable kernel-owned `CanonStore`-backed published executable repository
 - persistent CanonFS-backed executable resolution by `CanonRef`
 - hosted auto-attach of a persistent CanonFS executable source via `T81_CANONFS_ROOT`
+- adoption of VirtualBox guest storage as the published executable store
 - service-owned thread entry spawn
 - thread identity and execution-state inspection
 
@@ -506,7 +507,7 @@ Observed result:
 
 - `8/8` test binaries passed
 - boot test coverage has continued to expand substantially; current local boot
-  suite result is `2706 passed, 0 failed`
+  suite result is `2730 passed, 0 failed`
 
 Covered suites:
 

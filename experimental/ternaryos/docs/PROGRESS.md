@@ -53,6 +53,9 @@ Recent architecture milestone:
   directly from a persistent CanonFS root when one is bound into the kernel.
 - In the hosted lane, `axion_kernel_bootstrap(...)` now auto-attaches that
   CanonFS executable source when `T81_CANONFS_ROOT` is set.
+- Axion can now also adopt the VirtualBox guest storage binding directly as
+  the published executable store, so the executable object lane can persist
+  across a fresh guest bootstrap over the same backing image.
 - Wire and hosted C executable-object results now also carry the stored
   executable entry descriptor, not just the CanonRef key.
 - Services can now retain an optional thread entry descriptor during
@@ -348,7 +351,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 2706 | 1 |
+| `t81_ternaryos_hal_boot_test` | 2730 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -356,7 +359,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **3582** | |
+| **Total** | **3606** | |
 
 Run all TernOS tests:
 

@@ -9597,6 +9597,138 @@ static void test_kernel_execution_abi_calls() {
     std::filesystem::remove_all(canonfs_env_root, ec);
   }
 
+  constexpr const char* kVboxExecStorePath =
+      "/tmp/axion-vbox-executable-store-test.blk";
+  std::remove(kVboxExecStorePath);
+  {
+    VBoxBootSpec spec;
+    t81::ternaryos::dev::HostedBlockDev backing(128, "vbox-exec-store");
+    backing.set_backing_file(kVboxExecStorePath);
+    auto guest = bootstrap_virtualbox_guest(spec, backing);
+    check(guest.has_value(),
+          "execution ABI can bootstrap a VirtualBox guest for executable storage");
+    if (guest) {
+      auto vbox_state = axion_kernel_bootstrap(guest->boot_context);
+      check(vbox_state.has_value(),
+            "execution ABI can bootstrap a kernel from VirtualBox guest boot context");
+      if (vbox_state) {
+        check(axion_kernel_bind_published_executable_store_from_virtualbox_guest(
+                  *vbox_state, *guest),
+              "execution ABI can adopt VirtualBox guest storage as the executable store");
+
+        t81::ternaryos::sched::TiscContext vbox_thread;
+        vbox_thread.registers[0] = 9107;
+        auto vbox_tid = axion_kernel_spawn_thread(*vbox_state, vbox_thread);
+        check(vbox_tid.has_value(),
+              "execution ABI VirtualBox executable-store kernel spawns a caller thread");
+        if (vbox_tid) {
+          check(axion_kernel_tick(*vbox_state),
+                "execution ABI VirtualBox executable-store kernel dispatches the caller thread");
+          auto vbox_identity = axion_kernel_call(
+              *vbox_state, KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
+          check(vbox_identity.status == KernelCallStatus::Ok,
+                "execution ABI VirtualBox executable-store identity query returns Ok");
+          if (vbox_identity.address_space_id) {
+            const auto vbox_descriptor = KernelThreadSpawnDescriptor{
+                .pc = 181,
+                .sp = 363,
+                .register0 = 8181,
+                .label = "vbox-store-entry",
+            };
+            const auto vbox_block = executable_block_for(vbox_descriptor);
+            const auto vbox_ref = t81::canonfs::CanonRef{vbox_block.hash()};
+            const auto vbox_tva =
+                t81::ternaryos::mmu::tva_from_vpn_offset(126, 0);
+            check(t81::ternaryos::mmu::mmu_map(
+                      vbox_state->page_table,
+                      vbox_state->allocator,
+                      vbox_tva,
+                      *vbox_identity.address_space_id,
+                      {.readable = true, .writable = true, .executable = false}),
+                  "execution ABI VirtualBox executable-store kernel maps executable image page");
+            const auto vbox_bytes = vbox_block.to_bytes();
+            check(axion_kernel_write_address_space_bytes(
+                      *vbox_state,
+                      *vbox_identity.address_space_id,
+                      vbox_tva,
+                      vbox_bytes.data(),
+                      vbox_bytes.size()),
+                  "execution ABI VirtualBox executable-store kernel writes executable image");
+            auto vbox_publish_result = axion_kernel_call(
+                *vbox_state,
+                KernelCallRequest{
+                    .kind = KernelCallKind::PublishExecutableObjectFromTva,
+                    .object_ref = vbox_ref,
+                    .object_tva = vbox_tva,
+                });
+            check(vbox_publish_result.status == KernelCallStatus::Ok,
+                  "execution ABI publishes executable objects through VirtualBox guest storage");
+            check(vbox_publish_result.executable_published,
+                  "execution ABI VirtualBox guest-storage publish reports published state");
+
+            auto loaded_backing =
+                t81::ternaryos::dev::HostedBlockDev::load(kVboxExecStorePath);
+            check(loaded_backing.has_value(),
+                  "execution ABI can reload the VirtualBox executable-store backing image");
+            if (loaded_backing) {
+              VBoxBootSpec reload_spec;
+              auto reload_guest = bootstrap_virtualbox_guest(reload_spec, *loaded_backing);
+              check(reload_guest.has_value(),
+                    "execution ABI can bootstrap a fresh VirtualBox guest over the reloaded store image");
+              if (reload_guest) {
+                auto reload_state = axion_kernel_bootstrap(reload_guest->boot_context);
+                check(reload_state.has_value(),
+                      "execution ABI can bootstrap a fresh kernel from the reloaded VirtualBox guest");
+                if (reload_state) {
+                  check(axion_kernel_bind_published_executable_store_from_virtualbox_guest(
+                            *reload_state, *reload_guest),
+                        "execution ABI can adopt reloaded VirtualBox guest storage as the executable store");
+                  t81::ternaryos::sched::TiscContext reload_thread;
+                  reload_thread.registers[0] = 9108;
+                  auto reload_tid =
+                      axion_kernel_spawn_thread(*reload_state, reload_thread);
+                  check(reload_tid.has_value(),
+                        "execution ABI fresh VirtualBox executable-store kernel spawns a caller thread");
+                  if (reload_tid) {
+                    check(axion_kernel_tick(*reload_state),
+                          "execution ABI fresh VirtualBox executable-store kernel dispatches the caller thread");
+                    auto reload_register_result = axion_kernel_call(
+                        *reload_state,
+                        KernelCallRequest{
+                            .kind = KernelCallKind::RegisterExecutableObject,
+                            .object_ref = vbox_ref,
+                        });
+                    check(reload_register_result.status == KernelCallStatus::Ok,
+                          "execution ABI can register an executable from reloaded VirtualBox guest storage");
+                    check(reload_register_result.executable_registered,
+                          "execution ABI VirtualBox guest-storage registration reports executable state");
+                    check(canon_ref_matches(reload_register_result.object_ref, vbox_ref),
+                          "execution ABI VirtualBox guest-storage registration preserves object ref");
+                    check(reload_register_result.executable_entry_descriptor.has_value(),
+                          "execution ABI VirtualBox guest-storage registration exposes descriptor");
+                    if (reload_register_result.executable_entry_descriptor) {
+                      check(reload_register_result.executable_entry_descriptor->pc == 181,
+                            "execution ABI VirtualBox guest-storage registration preserves pc");
+                      check(reload_register_result.executable_entry_descriptor->sp == 363,
+                            "execution ABI VirtualBox guest-storage registration preserves sp");
+                      check(
+                          reload_register_result.executable_entry_descriptor->register0 == 8181,
+                          "execution ABI VirtualBox guest-storage registration preserves register0");
+                      check(reload_register_result.executable_entry_descriptor->label ==
+                                "vbox-store-entry",
+                            "execution ABI VirtualBox guest-storage registration preserves label");
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  std::remove(kVboxExecStorePath);
+
   auto missing_executable_image_tva = axion_kernel_call(
       *state,
       KernelCallRequest{

@@ -143,6 +143,16 @@ bool axion_kernel_bind_published_executable_store(
   return true;
 }
 
+bool axion_kernel_bind_published_executable_store_from_virtualbox_guest(
+    KernelRuntimeState& state,
+    t81::ternaryos::hal::VBoxGuestBootstrap& guest) noexcept {
+  if (!guest.storage.device) {
+    return false;
+  }
+  return axion_kernel_bind_published_executable_store(
+      state, std::move(guest.storage.device));
+}
+
 bool axion_kernel_bind_published_executable_canonfs(
     KernelRuntimeState& state,
     std::unique_ptr<t81::canonfs::Driver> driver) noexcept {

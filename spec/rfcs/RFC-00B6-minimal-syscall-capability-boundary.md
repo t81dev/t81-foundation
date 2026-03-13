@@ -240,6 +240,10 @@ Reason:
   hosted Axion bootstrap now auto-attaches that kernel-owned CanonFS driver
   from `T81_CANONFS_ROOT` when the environment variable is present
 - current implementation detail:
+  the kernel can also adopt the VirtualBox guest storage binding as its
+  published executable store, so `PublishExecutableObjectFromTva` and
+  `RegisterExecutableObject` can round-trip across a fresh guest bootstrap
+- current implementation detail:
   both spawn calls now accept a compact initial thread descriptor carrying
   `pc`, `sp`, `register0`, `label`, and halted/active state, and that
   descriptor is preserved across the typed ABI, fixed-size wire blocks, and

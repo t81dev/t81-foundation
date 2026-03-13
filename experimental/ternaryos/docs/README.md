@@ -79,6 +79,9 @@ longer depends only on the block-device-backed repository path.
 In the hosted lane, Axion now follows the same `T81_CANONFS_ROOT` convention
 used elsewhere in the repo and auto-attaches that persistent CanonFS source at
 kernel bootstrap when the environment variable is set.
+Axion can now also adopt the VirtualBox guest storage binding directly as its
+published executable store, so executable publication and later registration by
+`CanonRef` can round-trip through the guest AHCI-shaped storage path too.
 Services can now also bind to one of those registered executable objects by
 CanonRef during `RegisterService`, and the service register/query/spawn paths
 now report that same backing executable object identity.
@@ -235,7 +238,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 3582/3582 assertions, 8/8 tests pass
+# Expected: 3606/3606 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -396,11 +399,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `2706/2706`
+- `t81_ternaryos_hal_boot_test` is `2730/2730`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `3582`
+- total TernOS assertions are `3606`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state
