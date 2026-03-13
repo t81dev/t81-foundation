@@ -1,10 +1,10 @@
 **Executive Summary**
 This document is retained as a legacy high-level implementation report. The current authoritative technical assessment is [kernel_architecture_audit.md](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/docs/kernel_architecture_audit.md).
 
-The kernel is now a strong architectural prototype with a decomposed runtime, not a monolithic single-file implementation. The implemented core proves a coherent hosted boot-to-kernel path, a ternary MMU model, deterministic scheduling, bounded IPC, a kernel-owned fault pipeline, a typed/wire/C/TVA ABI transport stack, named, executable-object, mapped-memory executable acquisition, and service-owned thread entry execution, service-to-executable-object binding by CanonRef, device arbitration, and a narrow supervisor/service control plane.
+The kernel is now a strong architectural prototype with a decomposed runtime, not a monolithic single-file implementation. The implemented core proves a coherent hosted boot-to-kernel path, a ternary MMU model, deterministic scheduling, bounded IPC, a kernel-owned fault pipeline, a typed/wire/C/TVA ABI transport stack, named, executable-object, mapped-memory executable acquisition, a kernel-owned published executable repository, and service-owned thread entry execution, service-to-executable-object binding by CanonRef, device arbitration, and a narrow supervisor/service control plane.
 
 Overall maturity: `advanced architectural prototype`
-Estimated completion toward a fully operational kernel: `47%`
+Estimated completion toward a fully operational kernel: `50%`
 
 **Architecture Profile**
 - **Kernel structure**: Boot enters via [hal_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/hal/hal_main.cpp#L30), validates `BootContext`, runs the ethics gate, then hands off to `axion_kernel_main()`. Runtime coordination now lives in [kernel_runtime.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_runtime.cpp), with lifecycle/bootstrap in [kernel_lifecycle.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_lifecycle.cpp) and other responsibilities split into subsystem files.
@@ -38,10 +38,10 @@ Estimated completion toward a fully operational kernel: `47%`
 **Readiness Assessment**
 - Hosted architectural prototype: `75%`
 - VirtualBox-targeted guest kernel proof: `55%`
-- Fully operational kernel: `47%`
+- Fully operational kernel: `50%`
 
 **Critical Roadmap To Operational Kernel**
-1. Promote registration-time and caller-memory validated `CanonExec` objects into a real CanonFS-backed fetch/load path instead of only storing the acquired image.
+1. Promote registration-time, caller-memory, and published-repository validated `CanonExec` objects into a real CanonFS-backed fetch/load path instead of only storing the acquired image.
 2. Replace simulated interrupt handling with real controller semantics for the target platform and make timer IRQ drive scheduling.
 3. Introduce a real process/task model: executable loading, address-space ownership rules, teardown, and resource accounting.
 4. Keep hardening the syscall/capability boundary from its current typed/wire/C/TVA form into a real user/kernel ABI.

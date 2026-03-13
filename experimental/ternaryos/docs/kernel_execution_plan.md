@@ -26,6 +26,8 @@ backing executable identity. Registration now validates a canonical
 free-form descriptor registry. Executable objects can now also be registered
 from mapped caller memory through `RegisterExecutableObjectFromTva`. The next
 execution milestone is fetching and loading those executable objects from real
+object storage instead of only from registration-time input, caller memory, or
+the current kernel-owned published-object repository.
 object storage instead of only from registration-time or caller-memory input.
 
 ## Current Kernel Position
@@ -68,7 +70,8 @@ Not yet implemented:
 - real hardware trap/syscall entry
 - executable loading
 - CanonFS-backed executable object acquisition beyond the current
-  registration-time and caller-memory `CanonExec` validation paths
+  registration-time, caller-memory, and published-repository `CanonExec`
+  validation paths
 
 ## Completed Groundwork
 

@@ -254,6 +254,7 @@ struct KernelRuntimeState {
   std::unordered_map<ProcessGroupId, AddressSpaceId> process_group_address_spaces;
   std::unordered_map<ServiceId, ServiceState> services;
   std::unordered_map<ProcessGroupId, ServiceId> process_group_services;
+  std::unordered_map<std::string, t81::canonfs::CanonBlock> published_executable_objects;
   PagerWorkerState pager_worker{};
   t81::vm::ThreadContext cpu_context{};
   Counters counters{};

@@ -19,7 +19,7 @@ the places that matter most: VM behavior, interrupts, and real device I/O.
 
 Overall maturity: `advanced architectural prototype`
 
-Estimated completion toward a fully operational kernel: `47%`
+Estimated completion toward a fully operational kernel: `50%`
 
 ## Method
 
@@ -426,6 +426,7 @@ Execution control is also broader:
 - CanonRef-backed executable object registration/query/spawn
 - canonical `CanonExec` block validation during executable registration
 - mapped-memory executable acquisition through `RegisterExecutableObjectFromTva`
+- kernel-owned published executable repository
 - service-owned thread entry spawn
 - thread identity and execution-state inspection
 
@@ -503,7 +504,7 @@ Observed result:
 
 - `8/8` test binaries passed
 - boot test coverage has continued to expand substantially; current local boot
-  suite result is `2613 passed, 0 failed`
+  suite result is `2644 passed, 0 failed`
 
 Covered suites:
 
@@ -622,14 +623,14 @@ Category estimates:
 - device layer: `30%`
 - userland readiness: `15%`
 
-Overall completion estimate toward a fully operational kernel: `47%`
+Overall completion estimate toward a fully operational kernel: `50%`
 
 ## Roadmap to a Fully Operational Kernel
 
-1. Promote executable objects from registration-time and caller-memory
-   validated `CanonExec` blocks into a real CanonFS-backed fetch/load path,
-   and preserve that loaded-object model through service binding instead of
-   only storing acquisition-time state.
+1. Promote executable objects from registration-time, caller-memory, and
+   published-repository validated `CanonExec` blocks into a real
+   CanonFS-backed fetch/load path, and preserve that loaded-object model
+   through service binding instead of only storing acquisition-time state.
 2. Promote address spaces into true execution units with separate page-table
    ownership.
 3. Implement real interrupt/trap handling for the target platform.

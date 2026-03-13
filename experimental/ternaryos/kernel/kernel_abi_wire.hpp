@@ -150,6 +150,7 @@ struct KernelCallWireResponseBlock {
   uint64_t flags{0};
   uint8_t action_performed{0};
   uint8_t yielded{0};
+  uint8_t executable_published{0};
   uint8_t executable_registered{0};
   uint8_t executable_has_entry_descriptor{0};
   uint8_t service_registered{0};

@@ -246,6 +246,13 @@ std::optional<KernelCallResult> load_executable_descriptor(
   return std::nullopt;
 }
 
+const t81::canonfs::CanonBlock* find_published_executable_block(
+    const KernelRuntimeState& state,
+    const t81::canonfs::CanonRef& object_ref) {
+  const auto it = state.published_executable_objects.find(executable_key(object_ref));
+  return it == state.published_executable_objects.end() ? nullptr : &it->second;
+}
+
 std::optional<KernelCallResult> load_executable_block_from_tva(
     KernelRuntimeState& state,
     const CallerContext& caller,
@@ -868,43 +875,94 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
         result.rejection = KernelCallRejection::MissingExecutableRef;
         return result;
       }
-      if (!request.spawn_descriptor.has_value()) {
-        result.status = KernelCallStatus::InvalidRequest;
-        result.rejection = KernelCallRejection::MissingEntryDescriptor;
-        return result;
-      }
-      const auto executable_block =
-          axion_kernel_encode_executable_block(*request.spawn_descriptor);
-      if (!executable_block.has_value()) {
-        result.status = KernelCallStatus::InvalidRequest;
-        result.rejection = KernelCallRejection::InvalidExecutableObject;
-        return result;
-      }
-      const t81::canonfs::CanonRef encoded_ref{executable_block->hash()};
-      if (encoded_ref.hash != request.object_ref->hash) {
-        result.status = KernelCallStatus::InvalidRequest;
-        result.rejection = KernelCallRejection::InvalidExecutableObject;
-        return result;
-      }
-      const auto loaded_descriptor =
-          axion_kernel_decode_executable_block(*executable_block);
-      if (!loaded_descriptor.has_value()) {
-        result.status = KernelCallStatus::InvalidRequest;
-        result.rejection = KernelCallRejection::InvalidExecutableObject;
-        return result;
+      t81::canonfs::CanonBlock executable_block{};
+      KernelThreadSpawnDescriptor loaded_descriptor;
+      if (request.spawn_descriptor.has_value()) {
+        const auto encoded_block =
+            axion_kernel_encode_executable_block(*request.spawn_descriptor);
+        if (!encoded_block.has_value()) {
+          result.status = KernelCallStatus::InvalidRequest;
+          result.rejection = KernelCallRejection::InvalidExecutableObject;
+          return result;
+        }
+        const t81::canonfs::CanonRef encoded_ref{encoded_block->hash()};
+        if (encoded_ref.hash != request.object_ref->hash) {
+          result.status = KernelCallStatus::InvalidRequest;
+          result.rejection = KernelCallRejection::InvalidExecutableObject;
+          return result;
+        }
+        const auto decoded_descriptor =
+            axion_kernel_decode_executable_block(*encoded_block);
+        if (!decoded_descriptor.has_value()) {
+          result.status = KernelCallStatus::InvalidRequest;
+          result.rejection = KernelCallRejection::InvalidExecutableObject;
+          return result;
+        }
+        executable_block = *encoded_block;
+        loaded_descriptor = *decoded_descriptor;
+      } else {
+        const auto* published_block =
+            find_published_executable_block(state, *request.object_ref);
+        if (!published_block) {
+          result.status = KernelCallStatus::NotFound;
+          result.rejection = KernelCallRejection::MissingExecutableRegistration;
+          return result;
+        }
+        const auto decoded_descriptor =
+            axion_kernel_decode_executable_block(*published_block);
+        if (!decoded_descriptor.has_value()) {
+          result.status = KernelCallStatus::InvalidRequest;
+          result.rejection = KernelCallRejection::InvalidExecutableObject;
+          return result;
+        }
+        executable_block = *published_block;
+        loaded_descriptor = *decoded_descriptor;
       }
       caller.group_state->executable_records[executable_key(*request.object_ref)] =
           KernelRuntimeState::ExecutableRecord{
               .object_ref = *request.object_ref,
-              .image_block = *executable_block,
-              .entry_descriptor = *loaded_descriptor,
+              .image_block = executable_block,
+              .entry_descriptor = loaded_descriptor,
           };
       result.status = KernelCallStatus::Ok;
       result.rejection = KernelCallRejection::None;
       result.action_performed = true;
       result.executable_registered = true;
       result.object_ref = request.object_ref;
-      result.executable_entry_descriptor = *loaded_descriptor;
+      result.executable_entry_descriptor = loaded_descriptor;
+      return result;
+    }
+    case KernelCallKind::PublishExecutableObjectFromTva: {
+      if (auto denied = require_capability(caller, KernelCapabilityKind::ThreadSpawn);
+          denied.has_value()) {
+        return *denied;
+      }
+      if (!request.object_ref.has_value()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingExecutableRef;
+        return result;
+      }
+      t81::canonfs::CanonBlock executable_block{};
+      KernelThreadSpawnDescriptor loaded_descriptor;
+      if (auto invalid = load_executable_block_from_tva(
+              state, caller, request, executable_block, loaded_descriptor);
+          invalid.has_value()) {
+        return *invalid;
+      }
+      const t81::canonfs::CanonRef encoded_ref{executable_block.hash()};
+      if (encoded_ref.hash != request.object_ref->hash) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::InvalidExecutableObject;
+        return result;
+      }
+      state.published_executable_objects[executable_key(*request.object_ref)] =
+          executable_block;
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.executable_published = true;
+      result.object_ref = request.object_ref;
+      result.executable_entry_descriptor = loaded_descriptor;
       return result;
     }
     case KernelCallKind::RegisterExecutableObjectFromTva: {

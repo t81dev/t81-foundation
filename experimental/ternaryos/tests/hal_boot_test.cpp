@@ -8601,6 +8601,114 @@ static void test_kernel_call_tva_c_bridge() {
     }
   }
 
+  const auto published_executable_descriptor = KernelThreadSpawnDescriptor{
+      .pc = 211,
+      .sp = 422,
+      .register0 = 2201,
+      .label = "tva-published-entry",
+  };
+  const auto published_executable_block =
+      executable_block_for(published_executable_descriptor);
+  const auto published_executable_ref =
+      t81::canonfs::CanonRef{published_executable_block.hash()};
+  const uint64_t published_executable_tva =
+      t81::ternaryos::mmu::tva_from_vpn_offset(88, 0);
+  check(t81::ternaryos::mmu::mmu_map(
+            state->page_table,
+            state->allocator,
+            published_executable_tva,
+            *caller_address_space,
+            {.readable = true, .writable = true, .executable = false}),
+        "TVA kernel-call bridge maps published executable image page");
+  const auto published_executable_bytes = published_executable_block.to_bytes();
+  check(axion_kernel_write_address_space_bytes(
+            *state,
+            *caller_address_space,
+            published_executable_tva,
+            published_executable_bytes.data(),
+            published_executable_bytes.size()),
+        "TVA kernel-call bridge writes published executable image into mapped memory");
+  const auto publish_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::PublishExecutableObjectFromTva,
+          .object_ref = published_executable_ref,
+          .object_tva = published_executable_tva,
+      });
+  check(axion_kernel_write_address_space_bytes(
+            *state,
+            *caller_address_space,
+            request_tva,
+            reinterpret_cast<const std::byte*>(&publish_request),
+            sizeof(publish_request)),
+        "TVA kernel-call bridge writes executable publish request block");
+  check(ternaryos_kernel_call_tva_c(&*state,
+                                    request_tva,
+                                    response_tva) == 0,
+        "TVA kernel-call bridge publishes executable objects from mapped memory");
+  check(axion_kernel_read_address_space_bytes(
+            *state,
+            *caller_address_space,
+            response_tva,
+            reinterpret_cast<std::byte*>(&response_block),
+            sizeof(response_block)),
+        "TVA kernel-call bridge reads executable publish response block");
+  const auto decoded_publish_executable =
+      axion_kernel_decode_wire_response(response_block);
+  check(decoded_publish_executable.has_value(),
+        "TVA kernel-call bridge executable publish response decodes");
+  if (decoded_publish_executable) {
+    check(decoded_publish_executable->status == KernelCallStatus::Ok,
+          "TVA kernel-call bridge executable publish returns Ok");
+    check(decoded_publish_executable->executable_published,
+          "TVA kernel-call bridge executable publish reports published state");
+  }
+  const auto register_published_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterExecutableObject,
+          .object_ref = published_executable_ref,
+      });
+  check(axion_kernel_write_address_space_bytes(
+            *state,
+            *caller_address_space,
+            request_tva,
+            reinterpret_cast<const std::byte*>(&register_published_request),
+            sizeof(register_published_request)),
+        "TVA kernel-call bridge writes published-executable registration request block");
+  check(ternaryos_kernel_call_tva_c(&*state,
+                                    request_tva,
+                                    response_tva) == 0,
+        "TVA kernel-call bridge registers executables from the published repository");
+  check(axion_kernel_read_address_space_bytes(
+            *state,
+            *caller_address_space,
+            response_tva,
+            reinterpret_cast<std::byte*>(&response_block),
+            sizeof(response_block)),
+        "TVA kernel-call bridge reads published-executable registration response block");
+  const auto decoded_register_published =
+      axion_kernel_decode_wire_response(response_block);
+  check(decoded_register_published.has_value(),
+        "TVA kernel-call bridge published-executable registration response decodes");
+  if (decoded_register_published) {
+    check(decoded_register_published->status == KernelCallStatus::Ok,
+          "TVA kernel-call bridge published-executable registration returns Ok");
+    check(decoded_register_published->executable_registered,
+          "TVA kernel-call bridge published-executable registration reports executable state");
+    check(decoded_register_published->executable_entry_descriptor.has_value(),
+          "TVA kernel-call bridge published-executable registration exposes descriptor");
+    if (decoded_register_published->executable_entry_descriptor) {
+      check(decoded_register_published->executable_entry_descriptor->pc == 211,
+            "TVA kernel-call bridge published-executable registration preserves pc");
+      check(decoded_register_published->executable_entry_descriptor->sp == 422,
+            "TVA kernel-call bridge published-executable registration preserves sp");
+      check(decoded_register_published->executable_entry_descriptor->register0 == 2201,
+            "TVA kernel-call bridge published-executable registration preserves register0");
+      check(decoded_register_published->executable_entry_descriptor->label ==
+                "tva-published-entry",
+            "TVA kernel-call bridge published-executable registration preserves label");
+    }
+  }
+
   const uint64_t unmapped_response_tva =
       t81::ternaryos::mmu::tva_from_vpn_offset(83, 0);
   check(ternaryos_kernel_call_tva_c(&*state,
@@ -9045,6 +9153,70 @@ static void test_kernel_execution_abi_calls() {
         "execution ABI executable registration from TVA preserves object ref");
   check(register_executable_from_tva.executable_entry_descriptor.has_value(),
         "execution ABI executable registration from TVA exposes descriptor");
+  const auto published_executable_descriptor = KernelThreadSpawnDescriptor{
+      .pc = 141,
+      .sp = 282,
+      .register0 = 4242,
+      .label = "published-executable-entry",
+  };
+  const auto published_executable_block =
+      executable_block_for(published_executable_descriptor);
+  const auto published_executable_ref =
+      t81::canonfs::CanonRef{published_executable_block.hash()};
+  const auto published_executable_tva =
+      t81::ternaryos::mmu::tva_from_vpn_offset(92, 0);
+  check(t81::ternaryos::mmu::mmu_map(
+            state->page_table,
+            state->allocator,
+            published_executable_tva,
+            *identity.address_space_id,
+            {.readable = true, .writable = true, .executable = false}),
+        "execution ABI maps published executable image page");
+  const auto published_executable_bytes = published_executable_block.to_bytes();
+  check(axion_kernel_write_address_space_bytes(
+            *state,
+            *identity.address_space_id,
+            published_executable_tva,
+            published_executable_bytes.data(),
+            published_executable_bytes.size()),
+        "execution ABI writes published executable image into mapped memory");
+  auto publish_executable = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::PublishExecutableObjectFromTva,
+          .object_ref = published_executable_ref,
+          .object_tva = published_executable_tva,
+      });
+  check(publish_executable.status == KernelCallStatus::Ok,
+        "execution ABI executable publish from TVA returns Ok");
+  check(publish_executable.executable_published,
+        "execution ABI executable publish from TVA reports published state");
+  auto register_published_executable = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterExecutableObject,
+          .object_ref = published_executable_ref,
+      });
+  check(register_published_executable.status == KernelCallStatus::Ok,
+        "execution ABI executable registration from published repository returns Ok");
+  check(register_published_executable.executable_registered,
+        "execution ABI executable registration from published repository reports executable state");
+  check(canon_ref_matches(register_published_executable.object_ref,
+                          published_executable_ref),
+        "execution ABI executable registration from published repository preserves object ref");
+  check(register_published_executable.executable_entry_descriptor.has_value(),
+        "execution ABI executable registration from published repository exposes descriptor");
+  if (register_published_executable.executable_entry_descriptor) {
+    check(register_published_executable.executable_entry_descriptor->pc == 141,
+          "execution ABI executable registration from published repository preserves pc");
+    check(register_published_executable.executable_entry_descriptor->sp == 282,
+          "execution ABI executable registration from published repository preserves sp");
+    check(register_published_executable.executable_entry_descriptor->register0 == 4242,
+          "execution ABI executable registration from published repository preserves register0");
+    check(register_published_executable.executable_entry_descriptor->label ==
+              "published-executable-entry",
+          "execution ABI executable registration from published repository preserves label");
+  }
 
   auto missing_executable_image_tva = axion_kernel_call(
       *state,

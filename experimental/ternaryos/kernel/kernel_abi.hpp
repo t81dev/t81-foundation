@@ -64,6 +64,7 @@ enum class KernelCallKind : uint8_t {
   SpawnThreadUnderSupervisor,
   RegisterThreadEntryDescriptor,
   RegisterExecutableObject,
+  PublishExecutableObjectFromTva,
   RegisterExecutableObjectFromTva,
   QueryExecutableObject,
   SpawnThreadFromExecutableObject,
@@ -183,6 +184,7 @@ struct KernelCallResult {
   std::optional<t81::canonfs::CanonRef> object_ref{};
   std::vector<KernelCapabilityRecord> capabilities;
   bool executable_registered{false};
+  bool executable_published{false};
   std::optional<KernelThreadSpawnDescriptor> executable_entry_descriptor{};
   std::optional<ServiceId> service_id{};
   std::optional<std::string> service_name{};

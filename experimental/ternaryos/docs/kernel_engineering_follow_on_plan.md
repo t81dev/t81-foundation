@@ -101,6 +101,8 @@ Implemented kernel-call slice:
   against the supplied `CanonRef`
 - executable objects can now also be registered from mapped caller memory via
   `RegisterExecutableObjectFromTva`
+- validated executable images can now also be published into a kernel-owned
+  repository and registered later by `CanonRef`
 - services can now bind to those registered executable objects by CanonRef,
   and the service register/query/spawn paths preserve that backing
   executable identity
@@ -167,9 +169,10 @@ Status:
 
 Next likely step:
 
-- shift from registration-time and caller-memory `CanonExec` acquisition plus
-  service binding to real executable object fetch/load behavior, or continue
-  only if a clearly missing supervisory write path remains
+- shift from registration-time, caller-memory, and published-repository
+  `CanonExec` acquisition plus service binding to real executable object
+  fetch/load behavior, or continue only if a clearly missing supervisory
+  write path remains
 
 ## Recommended Execution Order
 

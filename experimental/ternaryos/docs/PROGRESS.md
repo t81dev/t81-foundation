@@ -12,7 +12,7 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-13
-**Commit:** `8d5a77f5` onward; RFC-00B6 ABI transport/execution work now includes mapped-memory executable acquisition
+**Commit:** `de07d14d` onward; RFC-00B6 ABI transport/execution work now includes a kernel-owned published executable repository
 **Branch:** `main`
 
 Recent architecture milestone:
@@ -44,6 +44,8 @@ Recent architecture milestone:
 - Executable objects can now also be registered from mapped caller memory
   through `RegisterExecutableObjectFromTva`, so the kernel can ingest a real
   `CanonExec` block over the address-space boundary.
+- Those validated executable images can now also be published into a
+  kernel-owned repository and later registered by `CanonRef` alone.
 - Wire and hosted C executable-object results now also carry the stored
   executable entry descriptor, not just the CanonRef key.
 - Services can now retain an optional thread entry descriptor during
@@ -339,7 +341,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 2613 | 1 |
+| `t81_ternaryos_hal_boot_test` | 2644 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -347,7 +349,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **3489** | |
+| **Total** | **3520** | |
 
 Run all TernOS tests:
 

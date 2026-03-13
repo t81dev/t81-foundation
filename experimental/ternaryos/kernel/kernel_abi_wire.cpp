@@ -341,6 +341,7 @@ KernelCallWireResponseBlock axion_kernel_encode_wire_response(
   block.rejection = static_cast<uint32_t>(result.rejection);
   block.action_performed = result.action_performed ? 1 : 0;
   block.yielded = result.yielded ? 1 : 0;
+  block.executable_published = result.executable_published ? 1 : 0;
   block.executable_registered = result.executable_registered ? 1 : 0;
   block.executable_has_entry_descriptor =
       result.executable_entry_descriptor.has_value() ? 1 : 0;
@@ -509,6 +510,7 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
       .rejection = static_cast<KernelCallRejection>(block.rejection),
       .action_performed = block.action_performed != 0,
       .yielded = block.yielded != 0,
+      .executable_published = block.executable_published != 0,
       .executable_registered = block.executable_registered != 0,
       .service_registered = block.service_registered != 0,
       .service_has_entry_descriptor = block.service_has_entry_descriptor != 0,
