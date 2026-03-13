@@ -236,9 +236,14 @@ Reason:
   `SpawnThreadForService`
 - current implementation detail:
   the executable-object path is intentionally still narrow: registration binds
-  a CanonRef identity to a stored spawn descriptor, query returns that stored
-  execution descriptor, and spawn reuses it through the typed, fixed-size
-  wire, and hosted C ABI paths
+  a CanonRef identity to a canonical `CanonExec` block derived from the
+  supplied spawn descriptor, query returns the validated execution
+  descriptor, and spawn reuses it through the typed, fixed-size wire, and
+  hosted C ABI paths
+- current implementation detail:
+  executable registration now validates object identity instead of accepting
+  arbitrary placeholder `CanonRef` values, but object acquisition is still
+  registration-time input rather than CanonFS-backed loading
 - current implementation detail:
   executable-object register/query/spawn responses on the fixed-size wire and
   hosted C layers now carry that stored execution descriptor too, not only

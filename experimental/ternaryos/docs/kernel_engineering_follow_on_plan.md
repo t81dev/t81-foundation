@@ -97,6 +97,8 @@ Implemented kernel-call slice:
 - `SpawnThreadForService`
 - named thread entries are now reusable across ABI entry modes
 - CanonRef-backed executable objects are now reusable across ABI entry modes
+- executable-object registration now validates a canonical `CanonExec` block
+  against the supplied `CanonRef`
 - services can now bind to those registered executable objects by CanonRef,
   and the service register/query/spawn paths preserve that backing
   executable identity
@@ -148,8 +150,8 @@ discipline:
   anonymous capability bits
 - keep the new wire and C-bridge layers narrow so follow-on syscall work
   extends one boundary instead of reopening parallel entry paths
-- preserve the new executable-object lane as a narrow descriptor-backed
-  registry until a real object loader replaces it
+- preserve the new executable-object lane as a validated `CanonExec`
+  registration path until a real object fetch/load path replaces it
 
 Status:
 
@@ -163,8 +165,8 @@ Status:
 
 Next likely step:
 
-- shift from descriptor-backed executable registration and service binding to
-  real executable object loading/validation, or continue only if a clearly
+- shift from registration-time `CanonExec` validation and service binding to
+  real executable object fetch/load behavior, or continue only if a clearly
   missing supervisory write path remains
 
 ## Recommended Execution Order

@@ -21,9 +21,11 @@ descriptors: process groups can register CanonRef-backed executable objects and
 spawn from them through the typed, wire, and hosted C ABI layers. Services can
 also bind to those registered executable objects by CanonRef during
 `RegisterService`, and service register/query/spawn paths now preserve that
-backing executable identity. This is still a descriptor-backed registry, not a
-true loader, so the next execution milestone is object validation and loading
-rather than more registry growth.
+backing executable identity. Registration now validates a canonical
+`CanonExec` block against the supplied `CanonRef`, so this is no longer only a
+free-form descriptor registry. The next execution milestone is fetching and
+loading those executable objects from real object storage instead of only from
+registration-time input.
 
 ## Current Kernel Position
 
@@ -64,8 +66,8 @@ Not yet implemented:
 
 - real hardware trap/syscall entry
 - executable loading
-- validated executable object loading beyond the current descriptor-backed
-  CanonRef registry
+- CanonFS- or address-space-backed executable object acquisition beyond the
+  current registration-time `CanonExec` validation path
 
 ## Completed Groundwork
 

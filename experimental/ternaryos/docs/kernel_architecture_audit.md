@@ -424,6 +424,7 @@ Execution control is also broader:
 - same-supervisor spawn
 - named thread entry registration/spawn
 - CanonRef-backed executable object registration/query/spawn
+- canonical `CanonExec` block validation during executable registration
 - service-owned thread entry spawn
 - thread identity and execution-state inspection
 
@@ -624,9 +625,9 @@ Overall completion estimate toward a fully operational kernel: `47%`
 
 ## Roadmap to a Fully Operational Kernel
 
-1. Promote executable objects from CanonRef-indexed descriptor records into a
-   validated loading path, and preserve that loaded-object model through
-   service binding instead of only storing descriptors.
+1. Promote executable objects from registration-time validated `CanonExec`
+   blocks into a real fetch/load path, and preserve that loaded-object model
+   through service binding instead of only storing registration-time state.
 2. Promote address spaces into true execution units with separate page-table
    ownership.
 3. Implement real interrupt/trap handling for the target platform.

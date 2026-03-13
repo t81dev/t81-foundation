@@ -16,6 +16,7 @@
 #include "../hal/virtualbox_guest_devices.hpp"
 #include "../hal/virtualbox_platform.hpp"
 #include "../kernel/kernel_main.hpp"
+#include "../kernel/kernel_executable.hpp"
 #include "../kernel/kernel_abi_wire.hpp"
 #include "../dev/hosted_block_dev.hpp"
 #include "../mmu/page_table.hpp"
@@ -52,6 +53,13 @@ static bool check(bool cond, const char* label) {
 static bool canon_ref_matches(const std::optional<t81::canonfs::CanonRef>& actual,
                               const t81::canonfs::CanonRef& expected) {
   return actual.has_value() && actual->hash.h.bytes == expected.hash.h.bytes;
+}
+
+static t81::canonfs::CanonRef executable_ref_for(
+    const KernelThreadSpawnDescriptor& descriptor) {
+  auto block = axion_kernel_encode_executable_block(descriptor);
+  assert(block.has_value());
+  return t81::canonfs::CanonRef{block->hash()};
 }
 
 // ─── Helper: minimal valid BootContext ───────────────────────────────────────
@@ -7211,18 +7219,18 @@ static void test_kernel_abi_wire_call_boundary() {
     }
   }
 
-  t81::canonfs::CanonRef wire_executable_ref;
-  wire_executable_ref.hash.h.bytes.fill(0x45);
+  const auto wire_executable_descriptor = KernelThreadSpawnDescriptor{
+      .pc = 19,
+      .sp = 57,
+      .register0 = 616,
+      .label = "wire-executable-entry",
+  };
+  const auto wire_executable_ref = executable_ref_for(wire_executable_descriptor);
   const auto register_executable_request = axion_kernel_encode_wire_request(
       KernelCallRequest{
           .kind = KernelCallKind::RegisterExecutableObject,
           .object_ref = wire_executable_ref,
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
-              .pc = 19,
-              .sp = 57,
-              .register0 = 616,
-              .label = "wire-executable-entry",
-          },
+          .spawn_descriptor = wire_executable_descriptor,
       });
   KernelCallWireResponseBlock register_executable_response;
   check(axion_kernel_call_wire(*state,
@@ -7962,18 +7970,18 @@ static void test_kernel_call_c_bridge() {
     }
   }
 
-  t81::canonfs::CanonRef c_executable_ref;
-  c_executable_ref.hash.h.bytes.fill(0x46);
+  const auto c_executable_descriptor = KernelThreadSpawnDescriptor{
+      .pc = 24,
+      .sp = 72,
+      .register0 = 818,
+      .label = "c-executable-entry",
+  };
+  const auto c_executable_ref = executable_ref_for(c_executable_descriptor);
   const auto register_executable_request = axion_kernel_encode_wire_request(
       KernelCallRequest{
           .kind = KernelCallKind::RegisterExecutableObject,
           .object_ref = c_executable_ref,
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
-              .pc = 24,
-              .sp = 72,
-              .register0 = 818,
-              .label = "c-executable-entry",
-          },
+          .spawn_descriptor = c_executable_descriptor,
       });
   KernelCallWireResponseBlock register_executable_response;
   check(ternaryos_kernel_call_c(&*state,
@@ -8792,19 +8800,19 @@ static void test_kernel_execution_abi_calls() {
     }
   }
 
-  t81::canonfs::CanonRef executable_ref;
-  executable_ref.hash.h.bytes.fill(0x44);
+  const auto executable_descriptor = KernelThreadSpawnDescriptor{
+      .pc = 33,
+      .sp = 99,
+      .register0 = 707,
+      .label = "abi-executable-entry",
+  };
+  const auto executable_ref = executable_ref_for(executable_descriptor);
   auto register_executable = axion_kernel_call(
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::RegisterExecutableObject,
           .object_ref = executable_ref,
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
-              .pc = 33,
-              .sp = 99,
-              .register0 = 707,
-              .label = "abi-executable-entry",
-          },
+          .spawn_descriptor = executable_descriptor,
       });
   check(register_executable.status == KernelCallStatus::Ok,
         "execution ABI executable registration returns Ok");
@@ -8906,6 +8914,21 @@ static void test_kernel_execution_abi_calls() {
         "execution ABI executable registration rejects missing object refs");
   check(missing_executable_ref.rejection == KernelCallRejection::MissingExecutableRef,
         "execution ABI missing executable ref reports the correct rejection");
+
+  auto forged_executable_ref = executable_ref;
+  forged_executable_ref.hash.h.bytes[0] ^= 0x01u;
+  auto forged_registration = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterExecutableObject,
+          .object_ref = forged_executable_ref,
+          .spawn_descriptor = executable_descriptor,
+      });
+  check(forged_registration.status == KernelCallStatus::InvalidRequest,
+        "execution ABI executable registration rejects forged object refs");
+  check(forged_registration.rejection ==
+            KernelCallRejection::InvalidExecutableObject,
+        "execution ABI forged executable ref reports executable validation failure");
 
   t81::canonfs::CanonRef missing_registration_ref;
   missing_registration_ref.hash.h.bytes.fill(0x47);
@@ -9125,19 +9148,20 @@ static void test_kernel_service_abi_calls() {
   check(state->scheduler.current_tid() == *owner_tid,
         "owner thread is current before service ABI calls");
 
-  t81::canonfs::CanonRef service_executable_ref;
-  service_executable_ref.hash.h.bytes.fill(0x48);
+  const auto service_executable_descriptor = KernelThreadSpawnDescriptor{
+      .pc = 57,
+      .sp = 171,
+      .register0 = 808,
+      .label = "svc-abi-entry",
+  };
+  const auto service_executable_ref =
+      executable_ref_for(service_executable_descriptor);
   auto register_executable = axion_kernel_call(
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::RegisterExecutableObject,
           .object_ref = service_executable_ref,
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
-              .pc = 57,
-              .sp = 171,
-              .register0 = 808,
-              .label = "svc-abi-entry",
-          },
+          .spawn_descriptor = service_executable_descriptor,
       });
   check(register_executable.status == KernelCallStatus::Ok,
         "service ABI executable registration returns Ok");

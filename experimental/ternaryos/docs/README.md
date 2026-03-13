@@ -60,6 +60,9 @@ stored spawn descriptor, query that executable state later, and spawn new
 threads from it through the same typed, wire, and hosted C ABI layers. Wire
 and hosted C executable register/query/spawn responses now also carry that
 stored executable entry descriptor, not only the CanonRef identity.
+Executable registration now validates a canonical `CanonExec` block against
+the supplied `CanonRef`, so executable records are no longer only synthetic
+hash/descriptor pairs.
 Services can now also bind to one of those registered executable objects by
 CanonRef during `RegisterService`, and the service register/query/spawn paths
 now report that same backing executable object identity.

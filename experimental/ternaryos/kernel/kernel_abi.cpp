@@ -1,5 +1,6 @@
 #include "kernel_abi.hpp"
 
+#include "kernel_executable.hpp"
 #include "kernel_main.hpp"
 
 namespace t81::ternaryos::kernel {
@@ -226,6 +227,22 @@ std::optional<KernelCallResult> resolve_executable_record(
     return result;
   }
   executable_record = &it->second;
+  return std::nullopt;
+}
+
+std::optional<KernelCallResult> load_executable_descriptor(
+    const CallerContext& caller,
+    const KernelRuntimeState::ExecutableRecord& executable_record,
+    KernelThreadSpawnDescriptor& descriptor) {
+  const auto decoded =
+      axion_kernel_decode_executable_block(executable_record.image_block);
+  if (!decoded.has_value()) {
+    auto result = init_result(caller);
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::InvalidExecutableObject;
+    return result;
+  }
+  descriptor = *decoded;
   return std::nullopt;
 }
 
@@ -795,17 +812,38 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
         result.rejection = KernelCallRejection::MissingEntryDescriptor;
         return result;
       }
+      const auto executable_block =
+          axion_kernel_encode_executable_block(*request.spawn_descriptor);
+      if (!executable_block.has_value()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::InvalidExecutableObject;
+        return result;
+      }
+      const t81::canonfs::CanonRef encoded_ref{executable_block->hash()};
+      if (encoded_ref.hash != request.object_ref->hash) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::InvalidExecutableObject;
+        return result;
+      }
+      const auto loaded_descriptor =
+          axion_kernel_decode_executable_block(*executable_block);
+      if (!loaded_descriptor.has_value()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::InvalidExecutableObject;
+        return result;
+      }
       caller.group_state->executable_records[executable_key(*request.object_ref)] =
           KernelRuntimeState::ExecutableRecord{
               .object_ref = *request.object_ref,
-              .entry_descriptor = *request.spawn_descriptor,
+              .image_block = *executable_block,
+              .entry_descriptor = *loaded_descriptor,
           };
       result.status = KernelCallStatus::Ok;
       result.rejection = KernelCallRejection::None;
       result.action_performed = true;
       result.executable_registered = true;
       result.object_ref = request.object_ref;
-      result.executable_entry_descriptor = request.spawn_descriptor;
+      result.executable_entry_descriptor = *loaded_descriptor;
       return result;
     }
     case KernelCallKind::QueryExecutableObject: {
@@ -818,11 +856,17 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
           invalid.has_value()) {
         return *invalid;
       }
+      KernelThreadSpawnDescriptor loaded_descriptor;
+      if (auto invalid =
+              load_executable_descriptor(caller, *executable_record, loaded_descriptor);
+          invalid.has_value()) {
+        return *invalid;
+      }
       result.status = KernelCallStatus::Ok;
       result.rejection = KernelCallRejection::None;
       result.executable_registered = true;
       result.object_ref = executable_record->object_ref;
-      result.executable_entry_descriptor = executable_record->entry_descriptor;
+      result.executable_entry_descriptor = loaded_descriptor;
       return result;
     }
     case KernelCallKind::SpawnThreadFromExecutableObject: {
@@ -835,10 +879,15 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
           invalid.has_value()) {
         return *invalid;
       }
+      KernelThreadSpawnDescriptor loaded_descriptor;
+      if (auto invalid =
+              load_executable_descriptor(caller, *executable_record, loaded_descriptor);
+          invalid.has_value()) {
+        return *invalid;
+      }
       const auto spawned_tid = axion_kernel_spawn_thread_in_group(
           state,
-          make_spawn_context(std::optional<KernelThreadSpawnDescriptor>{
-              executable_record->entry_descriptor}),
+          make_spawn_context(loaded_descriptor),
           caller.process_group_id);
       if (!spawned_tid.has_value()) {
         result.status = KernelCallStatus::Conflict;
@@ -850,7 +899,7 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.action_performed = true;
       result.executable_registered = true;
       result.object_ref = executable_record->object_ref;
-      result.executable_entry_descriptor = executable_record->entry_descriptor;
+      result.executable_entry_descriptor = loaded_descriptor;
       result.spawned_tid = *spawned_tid;
       return result;
     }

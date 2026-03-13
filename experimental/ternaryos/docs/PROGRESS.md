@@ -12,7 +12,7 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-13
-**Commit:** `1550f57e` onward; RFC-00B6 ABI transport/execution work now includes service-owned status reads and CanonRef-backed executable-object spawn
+**Commit:** `3ad05bb7` onward; RFC-00B6 ABI transport/execution work now includes service/executable-object binding and canonical executable-object validation
 **Branch:** `main`
 
 Recent architecture milestone:
@@ -38,6 +38,9 @@ Recent architecture milestone:
 - Process groups now also have CanonRef-backed executable records through
   `RegisterExecutableObject`, `QueryExecutableObject`, and
   `SpawnThreadFromExecutableObject`.
+- Executable registration now validates a canonical `CanonExec` block against
+  the supplied `CanonRef`, so those records are no longer only placeholder
+  hash/descriptor pairs.
 - Wire and hosted C executable-object results now also carry the stored
   executable entry descriptor, not just the CanonRef key.
 - Services can now retain an optional thread entry descriptor during

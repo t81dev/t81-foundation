@@ -22,6 +22,7 @@ namespace t81::ternaryos::kernel {
 struct KernelRuntimeState {
   struct ExecutableRecord {
     t81::canonfs::CanonRef object_ref{};
+    t81::canonfs::CanonBlock image_block{};
     KernelThreadSpawnDescriptor entry_descriptor{};
   };
 

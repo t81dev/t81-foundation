@@ -560,6 +560,7 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/kernel/kernel_actions.cpp
     experimental/ternaryos/kernel/kernel_abi.cpp
     experimental/ternaryos/kernel/kernel_abi_wire.cpp
+    experimental/ternaryos/kernel/kernel_executable.cpp
     experimental/ternaryos/kernel/kernel_faults.cpp
     experimental/ternaryos/kernel/kernel_interrupts.cpp
     experimental/ternaryos/kernel/kernel_lifecycle.cpp

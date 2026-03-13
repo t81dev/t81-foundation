@@ -147,6 +147,9 @@ Kernel integration proof now also includes:
 - process groups can now also register CanonRef-backed executable objects,
   query them later, and spawn threads from them through typed, wire, and
   hosted C ABI entry modes
+- executable registration now validates a canonical `CanonExec` block against
+  the supplied `CanonRef`, so executable objects are no longer only synthetic
+  ref/descriptor records
 - those executable-object wire and hosted C responses now also carry the
   stored executable entry descriptor, not only the CanonRef
 - services can now bind to those registered executable objects by CanonRef,

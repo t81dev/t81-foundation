@@ -133,6 +133,7 @@ enum class KernelCallRejection : uint8_t {
   MissingEntryRegistration,
   MissingExecutableRef,
   MissingExecutableRegistration,
+  InvalidExecutableObject,
   MissingBootCriticalValue,
   InvalidCapabilityRecordId,
   MissingCapabilityTransition,
