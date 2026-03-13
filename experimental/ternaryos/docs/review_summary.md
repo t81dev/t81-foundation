@@ -39,9 +39,9 @@ The broader structural assessment and follow-on refactor plan now live in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `2511`
+- total assertions: `3242`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `1635/1635`
+- `t81_ternaryos_hal_boot_test`: `2366/2366`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -140,6 +140,10 @@ Kernel integration proof now also includes:
 - stable interrupt-audit correlation is now retained too through those
   summaries, so the latest interrupt delivery can be matched to its audit
   sequence without scanning the recent log
+- the typed, wire, TVA-backed, and hosted C ABI layers now support named
+  thread entry registration/spawn and service-owned thread entry spawn
+- `RegisterService` can now retain a service-owned entry descriptor, and
+  `SpawnThreadForService` can execute it inside the owning process group
 - audit-summary interrupt queue alignment is now retained too: pending
   interrupt count, pending source composition, and FIFO head/tail visibility
   are exposed there alongside interrupt history

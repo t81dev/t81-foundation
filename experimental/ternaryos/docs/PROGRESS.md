@@ -12,7 +12,7 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-13
-**Commit:** `453cbdcd` onward; RFC-00B6 ABI hardening now continues past this checkpoint
+**Commit:** `4359ee1e` onward; RFC-00B6 ABI transport and execution work now includes service-owned thread entry spawn
 **Branch:** `main`
 
 Recent architecture milestone:
@@ -33,6 +33,11 @@ Recent architecture milestone:
   `SpawnThreadInCallerGroup` and `SpawnThreadUnderSupervisor` can seed
   `pc`, `sp`, `register0`, `label`, and halted/active state through the
   typed ABI, wire blocks, and exported C bridge.
+- Process groups now also have reusable named thread entries through
+  `RegisterThreadEntryDescriptor` and `SpawnThreadFromEntryDescriptor`.
+- Services can now retain an optional thread entry descriptor during
+  `RegisterService`, and `SpawnThreadForService` can execute that stored
+  descriptor in the owning process group.
 - Execution inspection now includes `QueryThreadExecutionState`, with
   caller-local and same-supervisor thread-context reads exposed through the
   typed ABI, wire transport, and hosted C bridge.
@@ -307,7 +312,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 1635 | 1 |
+| `t81_ternaryos_hal_boot_test` | 2366 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -315,7 +320,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **2511** | |
+| **Total** | **3242** | |
 
 Run all TernOS tests:
 

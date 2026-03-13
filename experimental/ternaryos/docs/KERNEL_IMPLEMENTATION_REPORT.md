@@ -1,13 +1,15 @@
 **Executive Summary**
-The kernel is a strong architectural prototype, not a fully operational OS kernel. The implemented core proves a coherent hosted boot-to-kernel path, a ternary MMU model, deterministic scheduling, bounded IPC, a kernel-owned fault pipeline, device arbitration, and a narrow supervisor/service control plane. The center of gravity is a single monolithic runtime file, [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L1502), which successfully integrates the system but also shows where subsystem boundaries are still conceptual rather than independently mature.
+This document is retained as a legacy high-level implementation report. The current authoritative technical assessment is [kernel_architecture_audit.md](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/docs/kernel_architecture_audit.md).
 
-Overall maturity: `advanced prototype / architectural proof`
-Estimated completion toward a fully operational kernel: `35%`
+The kernel is now a strong architectural prototype with a decomposed runtime, not a monolithic single-file implementation. The implemented core proves a coherent hosted boot-to-kernel path, a ternary MMU model, deterministic scheduling, bounded IPC, a kernel-owned fault pipeline, a typed/wire/C ABI transport stack, named and service-owned thread entry execution, device arbitration, and a narrow supervisor/service control plane.
+
+Overall maturity: `advanced architectural prototype`
+Estimated completion toward a fully operational kernel: `47%`
 
 **Architecture Profile**
-- **Kernel structure**: Boot enters via [hal_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/hal/hal_main.cpp#L30), validates `BootContext`, runs the ethics gate, then hands off to `axion_kernel_main()`. The kernel bootstrap in [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L1502) constructs allocator, page table, scheduler, IPC bus, kernel thread/group/supervisor/address-space state, and optional VirtualBox-shaped device arbitration. This is coherent, but the runtime is monolithic and not decomposed into separable managers.
-- **Subsystem boundaries**: MMU, scheduler, IPC, HAL, and device adapters each have small dedicated units, but policy, lifecycle, faulting, pager logic, service routing, diagnostics, and arbitration all collapse into [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp). Architectural ownership is clear; implementation boundaries are weak.
-- **Runtime execution flow**: `axion_kernel_step()` in [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L1709) prioritizes faults, then interrupts, then pager handoffs/worker progression, then falls back to scheduler tick. This gives a deterministic event loop with explicit priority ordering. It is a solid prototype execution model, but still a simulation loop, not a hardware-driven kernel dispatch model.
+- **Kernel structure**: Boot enters via [hal_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/hal/hal_main.cpp#L30), validates `BootContext`, runs the ethics gate, then hands off to `axion_kernel_main()`. Runtime coordination now lives in [kernel_runtime.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_runtime.cpp), with lifecycle/bootstrap in [kernel_lifecycle.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_lifecycle.cpp) and other responsibilities split into subsystem files.
+- **Subsystem boundaries**: MMU, scheduler, IPC, HAL, devices, faults, interrupts, pager policy, lifecycle, queries/actions, views, and shared runtime utilities now have explicit implementation seams. Architectural ownership is materially clearer than it was in the monolith-era report.
+- **Runtime execution flow**: `axion_kernel_step()` now runs from [kernel_runtime.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_runtime.cpp), prioritizing faults, then interrupts, then pager handoffs/worker progression, then scheduler tick. The loop remains deterministic and still reflects a hosted prototype execution model rather than a hardware-driven kernel dispatch engine.
 
 **Subsystem Audit**
 - **HAL / boot**: Completeness is moderate. [hal_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/hal/hal_main.cpp#L30) and [interrupt_table.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/hal/interrupt_table.cpp#L51) implement validation, ethics gating, simulated interrupt dispatch, and handoff. The VirtualBox profile and guest bootstrap in [virtualbox_platform.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/hal/virtualbox_platform.cpp) and [virtualbox_guest_devices.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/hal/virtualbox_guest_devices.cpp) are explicit and testable. Readiness is low for real deployment because I/O port access is stubbed, interrupts are software-dispatched, and real non-hosted boot is mostly scaffold.
@@ -35,8 +37,8 @@ Estimated completion toward a fully operational kernel: `35%`
 
 **Readiness Assessment**
 - Hosted architectural prototype: `75%`
-- VirtualBox-targeted guest kernel proof: `45%`
-- Fully operational kernel: `35%`
+- VirtualBox-targeted guest kernel proof: `55%`
+- Fully operational kernel: `47%`
 
 **Critical Roadmap To Operational Kernel**
 1. Split `kernel_main` into explicit managers: boot/runtime, fault manager, pager, supervisor/service registry, interrupt manager, device arbitration.

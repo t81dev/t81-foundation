@@ -167,7 +167,11 @@ Implemented today through the typed and wire ABI:
 - `Yield`
 - `SpawnThreadInCallerGroup`
 - `SpawnThreadUnderSupervisor`
+- `RegisterThreadEntryDescriptor`
+- `SpawnThreadFromEntryDescriptor`
+- `SpawnThreadForService`
 - `GetThreadIdentity`
+- `QueryThreadExecutionState`
 - `ExitThread`
 - `SendMessage`
 - `ReceiveMessage`
@@ -201,6 +205,9 @@ Implemented today through the typed and wire ABI:
 - `Yield`
 - `SpawnThreadInCallerGroup`
 - `SpawnThreadUnderSupervisor`
+- `RegisterThreadEntryDescriptor`
+- `SpawnThreadFromEntryDescriptor`
+- `SpawnThreadForService`
 - `QueryThreadExecutionState`
 - `ExitThread`
 - `GetThreadIdentity`
@@ -214,6 +221,10 @@ Reason:
   `pc`, `sp`, `register0`, `label`, and halted/active state, and that
   descriptor is preserved across the typed ABI, fixed-size wire blocks, and
   exported hosted C bridge
+- current implementation detail:
+  process groups can now register named reusable thread entry descriptors, and
+  services can now retain an entry descriptor at service-registration time for
+  later execution through `SpawnThreadForService`
 - current implementation detail:
   `QueryThreadExecutionState` returns the seeded execution context for the
   caller or a same-supervisor target thread, including `pc`, `sp`,

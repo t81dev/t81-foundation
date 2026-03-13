@@ -37,7 +37,8 @@ files. `kernel_main.hpp` remains the shared runtime contract for those units.
 
 RFC-00B6 is now partially implemented rather than only proposed. The current
 typed `axion_kernel_call(...)` ABI covers thread identity/spawn/termination,
-same-supervisor execution control, IPC, fault inbox/recovery, capability
+same-supervisor execution control, named thread entry registration/spawn,
+service-owned thread entry spawn, IPC, fault inbox/recovery, capability
 management, service lifecycle control, process-group memory inspection,
 boot-critical address-space control, guarded runtime/fault summary queries,
 kernel-issued capability record IDs, supervisor capability transition
@@ -45,7 +46,9 @@ history, sequence-based capability revocation, and explicit provenance
 distinguishing kernel-seeded capabilities from supervisor-delegated grants.
 Spawn requests now also accept a compact initial thread descriptor
 (`pc`/`sp`/`register0`/`label` plus halted/active state) instead of always
-default-constructing blank scheduler contexts.
+default-constructing blank scheduler contexts, and services can now retain
+that descriptor during `RegisterService` for later execution through
+`SpawnThreadForService`.
 Execution reads now also include `QueryThreadExecutionState`, which exposes the
 seeded scheduler context for the caller or a same-supervisor target thread.
 Delegated capability control now also includes bulk revocation and direct
@@ -119,8 +122,9 @@ docs/
   virtualbox_armv8_efi_shim.c  Temporary ARMv8 developer-lane EFI link shim
 
 kernel/
-  kernel_abi.hpp/.cpp  Typed kernel-call ABI, capability checks, and service/
-                       supervisor dispatch
+  kernel_abi.hpp/.cpp  Typed kernel-call ABI, capability checks, service/
+                       supervisor dispatch, named entry registration/spawn,
+                       and service-owned entry execution
   kernel_abi_wire.hpp/.cpp Fixed-size canonical request/response blocks,
                        wire encode/decode, pointer-style wire dispatch,
                        and raw byte-span ABI bridge
@@ -195,7 +199,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 2511/2511 assertions, 8/8 tests pass
+# Expected: 3242/3242 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -356,11 +360,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `1635/1635`
+- `t81_ternaryos_hal_boot_test` is `2366/2366`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `2511`
+- total TernOS assertions are `3242`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state

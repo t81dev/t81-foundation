@@ -87,8 +87,14 @@ Implemented kernel-call slice:
 - `Yield`
 - `SpawnThreadInCallerGroup`
 - `SpawnThreadUnderSupervisor`
+- `RegisterThreadEntryDescriptor`
+- `SpawnThreadFromEntryDescriptor`
 - Both spawn paths now support a compact initial thread descriptor on the
   typed ABI and transport layers instead of only blank default contexts.
+- `SpawnThreadForService`
+- named thread entries are now reusable across ABI entry modes
+- services can now retain an entry descriptor at registration time for later
+  execution inside the owning process group
 - `QueryThreadExecutionState` now provides the matching read-side execution
   inspection path for caller-local and same-supervisor target threads.
 - `GetThreadIdentity`
@@ -135,6 +141,8 @@ discipline:
   anonymous capability bits
 - keep the new wire and C-bridge layers narrow so follow-on syscall work
   extends one boundary instead of reopening parallel entry paths
+- expose service entry-descriptor state through the service query/view layer so
+  executable service state is inspectable, not only runnable
 
 ## Recommended Execution Order
 

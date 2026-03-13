@@ -53,8 +53,9 @@ Implemented:
 
 Not yet implemented:
 
-- capability or syscall semantics
-- pager integration
+- real hardware trap/syscall entry
+- executable loading
+- service entry-descriptor visibility through service queries/views
 
 ## Completed Groundwork
 

@@ -19,7 +19,7 @@ the places that matter most: VM behavior, interrupts, and real device I/O.
 
 Overall maturity: `advanced architectural prototype`
 
-Estimated completion toward a fully operational kernel: `45%`
+Estimated completion toward a fully operational kernel: `47%`
 
 ## Method
 
@@ -109,6 +109,8 @@ What is proven:
 
 - the kernel owns runtime state immediately after HAL handoff
 - the initial kernel control-plane objects are internally consistent
+- services can now retain executable entry descriptors and spawn from that
+  retained service-owned state through the ABI path
 
 What is not yet present:
 
@@ -356,6 +358,7 @@ What is now present beyond the previous audit:
 - typed capability-enforced kernel ABI
 - supervisor-scoped capability inventory and delegation summaries
 - service lifecycle control through typed, wire, and C ABI paths
+- service-owned entry descriptors plus `SpawnThreadForService`
 
 Assessment:
 
@@ -400,6 +403,38 @@ Assessment:
 - completeness: `2/5`
 - coherence: `4/5`
 - readiness: `1/5`
+
+## ABI and Execution Boundary
+
+The kernel ABI has moved materially since the previous audit. It now includes:
+
+- typed dispatch: `axion_kernel_call(...)`
+- fixed-size wire transport: `axion_kernel_call_wire(...)`
+- raw byte bridge: `axion_kernel_call_wire_bytes(...)`
+- mapped TVA bridge: `axion_kernel_call_wire_tva(...)`
+- exported hosted C lifecycle and call entrypoints:
+  `ternaryos_kernel_bootstrap_c(...)`,
+  `ternaryos_kernel_destroy_c(...)`,
+  `ternaryos_kernel_call_c(...)`,
+  `ternaryos_kernel_call_tva_c(...)`
+
+Execution control is also broader:
+
+- caller-group spawn
+- same-supervisor spawn
+- named thread entry registration/spawn
+- service-owned thread entry spawn
+- thread identity and execution-state inspection
+
+The mapped-TVA bridge is now the clearest sign of architectural progress. It
+still is not a real trap/syscall boundary, but it does enforce caller-derived
+address-space scope and explicit request/response span validation.
+
+Assessment:
+
+- completeness: `4/5`
+- coherence: `4/5`
+- readiness: `3/5`
 
 ## Persistence and Storage
 
@@ -465,7 +500,7 @@ Observed result:
 
 - `8/8` test binaries passed
 - boot test coverage has continued to expand substantially; current local boot
-  suite result is `2264 passed, 0 failed`
+  suite result is `2366 passed, 0 failed`
 
 Covered suites:
 
@@ -584,12 +619,12 @@ Category estimates:
 - device layer: `30%`
 - userland readiness: `15%`
 
-Overall completion estimate toward a fully operational kernel: `45%`
+Overall completion estimate toward a fully operational kernel: `47%`
 
 ## Roadmap to a Fully Operational Kernel
 
-1. Tighten the new ABI boundary so caller address-space ownership is derived
-   from runtime execution context instead of being passed in by hosted helpers.
+1. Expose service-owned entry descriptor state through the service query/view
+   layer so executable service state is visible, not only runnable.
 2. Promote address spaces into true execution units with separate page-table
    ownership.
 3. Implement real interrupt/trap handling for the target platform.
