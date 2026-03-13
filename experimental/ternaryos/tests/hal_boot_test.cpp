@@ -25,6 +25,7 @@
 #include <atomic>
 #include <cassert>
 #include <cstdio>
+#include <memory>
 #include <string>
 
 // Declared in hosted_stub.cpp
@@ -9217,6 +9218,130 @@ static void test_kernel_execution_abi_calls() {
               "published-executable-entry",
           "execution ABI executable registration from published repository preserves label");
   }
+
+  constexpr const char* kPublishedExecStorePath =
+      "/tmp/axion-published-executable-store-test.blk";
+  std::remove(kPublishedExecStorePath);
+
+  auto publishing_state = axion_kernel_bootstrap(ctx);
+  check(publishing_state.has_value(),
+        "execution ABI can bootstrap a publisher kernel for external executable storage");
+  if (publishing_state) {
+    auto external_store =
+        std::make_unique<t81::ternaryos::dev::HostedBlockDev>(128, "published-exec-store");
+    external_store->set_backing_file(kPublishedExecStorePath);
+    check(axion_kernel_bind_published_executable_store(*publishing_state,
+                                                       std::move(external_store)),
+          "execution ABI can bind an external published-executable store");
+
+    t81::ternaryos::sched::TiscContext publishing_thread;
+    publishing_thread.registers[0] = 9101;
+    auto publishing_tid = axion_kernel_spawn_thread(*publishing_state, publishing_thread);
+    check(publishing_tid.has_value(),
+          "execution ABI publisher kernel spawns a caller thread");
+    if (publishing_tid) {
+      check(axion_kernel_tick(*publishing_state),
+            "execution ABI publisher kernel dispatches the caller thread");
+      auto publishing_identity = axion_kernel_call(
+          *publishing_state, KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
+      check(publishing_identity.status == KernelCallStatus::Ok,
+            "execution ABI publisher identity query returns Ok");
+      if (publishing_identity.address_space_id) {
+        const auto external_published_descriptor = KernelThreadSpawnDescriptor{
+            .pc = 151,
+            .sp = 303,
+            .register0 = 5151,
+            .label = "external-published-entry",
+        };
+        const auto external_published_block =
+            executable_block_for(external_published_descriptor);
+        const auto external_published_ref =
+            t81::canonfs::CanonRef{external_published_block.hash()};
+        const auto external_published_tva =
+            t81::ternaryos::mmu::tva_from_vpn_offset(123, 0);
+        check(t81::ternaryos::mmu::mmu_map(
+                  publishing_state->page_table,
+                  publishing_state->allocator,
+                  external_published_tva,
+                  *publishing_identity.address_space_id,
+                  {.readable = true, .writable = true, .executable = false}),
+              "execution ABI publisher kernel maps external published executable page");
+        const auto external_published_bytes = external_published_block.to_bytes();
+        check(axion_kernel_write_address_space_bytes(
+                  *publishing_state,
+                  *publishing_identity.address_space_id,
+                  external_published_tva,
+                  external_published_bytes.data(),
+                  external_published_bytes.size()),
+              "execution ABI publisher kernel writes external published executable image");
+        auto external_publish_result = axion_kernel_call(
+            *publishing_state,
+            KernelCallRequest{
+                .kind = KernelCallKind::PublishExecutableObjectFromTva,
+                .object_ref = external_published_ref,
+                .object_tva = external_published_tva,
+            });
+        check(external_publish_result.status == KernelCallStatus::Ok,
+              "execution ABI publishes executable objects into an external store");
+        check(external_publish_result.executable_published,
+              "execution ABI external-store publish reports published state");
+
+        auto reloaded_store =
+            t81::ternaryos::dev::HostedBlockDev::load(kPublishedExecStorePath);
+        check(reloaded_store.has_value(),
+              "execution ABI can reload the external published-executable store");
+
+        auto registration_state = axion_kernel_bootstrap(ctx);
+        check(registration_state.has_value(),
+              "execution ABI can bootstrap a registration kernel for external executable storage");
+        if (registration_state && reloaded_store) {
+          auto registration_store =
+              std::make_unique<t81::ternaryos::dev::HostedBlockDev>(std::move(*reloaded_store));
+          check(axion_kernel_bind_published_executable_store(*registration_state,
+                                                             std::move(registration_store)),
+                "execution ABI can bind a reloaded external published-executable store");
+
+          t81::ternaryos::sched::TiscContext registration_thread;
+          registration_thread.registers[0] = 9102;
+          auto registration_tid =
+              axion_kernel_spawn_thread(*registration_state, registration_thread);
+          check(registration_tid.has_value(),
+                "execution ABI registration kernel spawns a caller thread");
+          if (registration_tid) {
+            check(axion_kernel_tick(*registration_state),
+                  "execution ABI registration kernel dispatches the caller thread");
+            auto external_register_result = axion_kernel_call(
+                *registration_state,
+                KernelCallRequest{
+                    .kind = KernelCallKind::RegisterExecutableObject,
+                    .object_ref = external_published_ref,
+                });
+            check(external_register_result.status == KernelCallStatus::Ok,
+                  "execution ABI can register an executable from reloaded external storage");
+            check(external_register_result.executable_registered,
+                  "execution ABI external-store registration reports executable state");
+            check(canon_ref_matches(external_register_result.object_ref,
+                                    external_published_ref),
+                  "execution ABI external-store registration preserves object ref");
+            check(external_register_result.executable_entry_descriptor.has_value(),
+                  "execution ABI external-store registration exposes descriptor");
+            if (external_register_result.executable_entry_descriptor) {
+              check(external_register_result.executable_entry_descriptor->pc == 151,
+                    "execution ABI external-store registration preserves pc");
+              check(external_register_result.executable_entry_descriptor->sp == 303,
+                    "execution ABI external-store registration preserves sp");
+              check(external_register_result.executable_entry_descriptor->register0 == 5151,
+                    "execution ABI external-store registration preserves register0");
+              check(external_register_result.executable_entry_descriptor->label ==
+                        "external-published-entry",
+                    "execution ABI external-store registration preserves label");
+            }
+          }
+        }
+      }
+    }
+  }
+  std::remove(kPublishedExecStorePath);
 
   auto missing_executable_image_tva = axion_kernel_call(
       *state,

@@ -4,6 +4,7 @@
 #include "kernel_base.hpp"
 #include "kernel_runtime_support.hpp"
 
+#include "../dev/block_device.hpp"
 #include "../dev/hosted_block_dev.hpp"
 #include "../ipc/canon_message.hpp"
 #include "../mmu/page_table.hpp"
@@ -13,6 +14,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
+#include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -255,7 +257,7 @@ struct KernelRuntimeState {
   std::unordered_map<ProcessGroupId, AddressSpaceId> process_group_address_spaces;
   std::unordered_map<ServiceId, ServiceState> services;
   std::unordered_map<ProcessGroupId, ServiceId> process_group_services;
-  std::optional<t81::ternaryos::dev::HostedBlockDev> published_executable_store_device;
+  std::unique_ptr<t81::ternaryos::dev::IBlockDevice> published_executable_store_device;
   PagerWorkerState pager_worker{};
   t81::vm::ThreadContext cpu_context{};
   Counters counters{};
@@ -294,7 +296,8 @@ struct KernelRuntimeState {
         has_writable_memory(has_writable_memory_in),
         allocator(std::move(allocator_in)),
         published_executable_store_device(
-            t81::ternaryos::dev::HostedBlockDev(256, "kernel-exec-store")) {}
+            std::make_unique<t81::ternaryos::dev::HostedBlockDev>(
+                256, "kernel-exec-store")) {}
 
   static constexpr sched::Tid kKernelTid = 0;
   static constexpr ProcessGroupId kKernelProcessGroup = 0;

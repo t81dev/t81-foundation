@@ -250,7 +250,7 @@ std::optional<KernelCallResult> load_executable_descriptor(
 std::optional<t81::canonfs::CanonBlock> load_published_executable_block(
     KernelRuntimeState& state,
     const t81::canonfs::CanonRef& object_ref) {
-  if (!state.published_executable_store_device.has_value()) {
+  if (!state.published_executable_store_device) {
     return std::nullopt;
   }
   t81::ternaryos::dev::CanonStore store(*state.published_executable_store_device);
@@ -261,7 +261,7 @@ std::optional<t81::canonfs::CanonBlock> load_published_executable_block(
 bool publish_executable_block(KernelRuntimeState& state,
                               const t81::canonfs::CanonRef& object_ref,
                               const t81::canonfs::CanonBlock& block) {
-  if (!state.published_executable_store_device.has_value()) {
+  if (!state.published_executable_store_device) {
     return false;
   }
   t81::ternaryos::dev::CanonStore store(*state.published_executable_store_device);

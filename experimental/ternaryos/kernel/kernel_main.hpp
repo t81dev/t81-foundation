@@ -8,6 +8,7 @@
 #include "../hal/hal.hpp"
 #include "../ipc/canon_message.hpp"
 #include "../mmu/ternary_page_alloc.hpp"
+#include "../dev/block_device.hpp"
 
 #include <cstdint>
 #include <deque>
@@ -110,6 +111,9 @@ bool axion_kernel_claim_device(KernelRuntimeState& state,
 bool axion_kernel_release_device(KernelRuntimeState& state,
                                  std::string_view device_name,
                                  sched::Tid owner) noexcept;
+bool axion_kernel_bind_published_executable_store(
+    KernelRuntimeState& state,
+    std::unique_ptr<t81::ternaryos::dev::IBlockDevice> device) noexcept;
 std::optional<sched::Tid> axion_kernel_primary_tid_for_group(
     const KernelRuntimeState& state,
     ProcessGroupId process_group_id) noexcept;

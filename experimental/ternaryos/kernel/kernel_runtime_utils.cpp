@@ -133,6 +133,16 @@ bool axion_kernel_release_device(KernelRuntimeState& state,
   return true;
 }
 
+bool axion_kernel_bind_published_executable_store(
+    KernelRuntimeState& state,
+    std::unique_ptr<t81::ternaryos::dev::IBlockDevice> device) noexcept {
+  if (!device) {
+    return false;
+  }
+  state.published_executable_store_device = std::move(device);
+  return true;
+}
+
 std::optional<KernelServiceStatus> axion_kernel_validate_requesting_group(
     const KernelRuntimeState& state,
     std::optional<ProcessGroupId> requesting_process_group_id) noexcept {

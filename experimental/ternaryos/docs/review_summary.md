@@ -153,9 +153,11 @@ Kernel integration proof now also includes:
 - executable objects can now also be registered from mapped caller memory,
   giving the ABI its first real executable acquisition path over the caller
   address-space boundary
-- the kernel now also has a `CanonStore`-backed published executable
-  repository, so later executable registration can resolve a validated image
-  by `CanonRef` without requiring the caller to keep the source bytes live
+- the kernel now also has a bindable `CanonStore`-backed published
+  executable repository, so later executable registration can resolve a
+  validated image by `CanonRef` without requiring the caller to keep the
+  source bytes live, and a fresh kernel can reload that repository from the
+  same external block-device image
 - those executable-object wire and hosted C responses now also carry the
   stored executable entry descriptor, not only the CanonRef
 - services can now bind to those registered executable objects by CanonRef,

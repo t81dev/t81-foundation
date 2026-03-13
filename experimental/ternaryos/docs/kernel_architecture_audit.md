@@ -426,7 +426,7 @@ Execution control is also broader:
 - CanonRef-backed executable object registration/query/spawn
 - canonical `CanonExec` block validation during executable registration
 - mapped-memory executable acquisition through `RegisterExecutableObjectFromTva`
-- kernel-owned `CanonStore`-backed published executable repository
+- bindable kernel-owned `CanonStore`-backed published executable repository
 - service-owned thread entry spawn
 - thread identity and execution-state inspection
 

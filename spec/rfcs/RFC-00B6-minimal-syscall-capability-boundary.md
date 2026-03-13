@@ -228,6 +228,10 @@ Reason:
 
 - these are the minimum operations needed to stop relying on internal-only
   scheduler/demo control paths
+- `PublishExecutableObjectFromTva` currently feeds a kernel-owned
+  `CanonStore`-backed repository that can also be rebound to an external
+  block-device image, so `RegisterExecutableObject` can resolve a validated
+  executable by `CanonRef` across a fresh hosted kernel instance
 - current implementation detail:
   both spawn calls now accept a compact initial thread descriptor carrying
   `pc`, `sp`, `register0`, `label`, and halted/active state, and that

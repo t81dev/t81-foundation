@@ -12,7 +12,7 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-13
-**Commit:** `b4a87d8c` onward; RFC-00B6 ABI transport/execution work now includes a `CanonStore`-backed published executable repository
+**Commit:** `6a87fb46` onward; RFC-00B6 ABI transport/execution work now includes a bindable `CanonStore`-backed published executable repository
 **Branch:** `main`
 
 Recent architecture milestone:
@@ -46,6 +46,9 @@ Recent architecture milestone:
   `CanonExec` block over the address-space boundary.
 - Those validated executable images can now also be published into a
   kernel-owned repository and later registered by `CanonRef` alone.
+- That published-executable repository is now bindable to an external
+  `IBlockDevice`, so a fresh kernel can reload and register published
+  executables from the same stored backing image.
 - Wire and hosted C executable-object results now also carry the stored
   executable entry descriptor, not just the CanonRef key.
 - Services can now retain an optional thread entry descriptor during

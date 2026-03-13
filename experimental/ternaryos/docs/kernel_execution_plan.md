@@ -24,11 +24,12 @@ also bind to those registered executable objects by CanonRef during
 backing executable identity. Registration now validates a canonical
 `CanonExec` block against the supplied `CanonRef`, so this is no longer only a
 free-form descriptor registry. Executable objects can now also be registered
-from mapped caller memory through `RegisterExecutableObjectFromTva`. The next
-execution milestone is fetching and loading those executable objects from real
-object storage instead of only from registration-time input, caller memory, or
-the current kernel-owned published-object repository.
-object storage instead of only from registration-time or caller-memory input.
+from mapped caller memory through `RegisterExecutableObjectFromTva`. The
+published-object repository is now also bindable to an external block-device
+image, so a fresh kernel can reload published executables by `CanonRef`. The
+next execution milestone is fetching and loading those executable objects from
+real CanonFS-backed object storage instead of only from registration-time
+input, caller memory, or the current bindable published-object repository.
 
 ## Current Kernel Position
 

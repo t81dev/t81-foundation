@@ -69,9 +69,10 @@ Executable objects can now also be registered from mapped caller memory
 through `RegisterExecutableObjectFromTva`, so the kernel can ingest a real
 `CanonExec` block over the address-space boundary.
 The kernel can now also retain published executable objects in a kernel-owned
-`CanonStore`-backed repository and register them later by `CanonRef` alone,
-which is the first step away from purely live caller-memory acquisition and
-toward a real CanonFS-backed fetch/load path.
+`CanonStore`-backed repository and register them later by `CanonRef` alone.
+That repository is now bindable to an external `IBlockDevice`, so the
+published-object lane can persist across a fresh kernel bootstrap instead of
+remaining only private in-memory runtime state.
 Services can now also bind to one of those registered executable objects by
 CanonRef during `RegisterService`, and the service register/query/spawn paths
 now report that same backing executable object identity.
