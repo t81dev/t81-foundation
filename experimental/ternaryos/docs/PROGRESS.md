@@ -46,6 +46,8 @@ Recent architecture milestone:
 - `QuerySupervisorServiceInventory` is now live on the typed ABI and carried
   through fixed-size wire and hosted C responses, including bounded service
   entries with stored service entry descriptors.
+- Wire and hosted C coverage now explicitly verifies supervisor-scoped service
+  inventory preserves service names and stored entry descriptors.
 - Execution inspection now includes `QueryThreadExecutionState`, with
   caller-local and same-supervisor thread-context reads exposed through the
   typed ABI, wire transport, and hosted C bridge.
@@ -320,7 +322,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 2366 | 1 |
+| `t81_ternaryos_hal_boot_test` | 2418 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -328,7 +330,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **3242** | |
+| **Total** | **3294** | |
 
 Run all TernOS tests:
 

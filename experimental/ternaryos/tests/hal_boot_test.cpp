@@ -7274,10 +7274,22 @@ static void test_kernel_abi_wire_call_boundary() {
             decoded_query_supervisor_services->supervisor_services.front();
         check(service_entry.id == *decoded_register_service->service_id,
               "wire ABI supervisor service-inventory preserves service id");
+        check(service_entry.name == "wire.svc.entry",
+              "wire ABI supervisor service-inventory preserves service name");
         check(service_entry.has_entry_descriptor,
               "wire ABI supervisor service-inventory reports service entry descriptor");
         check(service_entry.entry_descriptor.has_value(),
               "wire ABI supervisor service-inventory exposes service entry descriptor");
+        if (service_entry.entry_descriptor) {
+          check(service_entry.entry_descriptor->pc == 18,
+                "wire ABI supervisor service-inventory entry descriptor preserves pc");
+          check(service_entry.entry_descriptor->sp == 54,
+                "wire ABI supervisor service-inventory entry descriptor preserves sp");
+          check(service_entry.entry_descriptor->register0 == 818,
+                "wire ABI supervisor service-inventory entry descriptor preserves register0");
+          check(service_entry.entry_descriptor->label == "wire-service-entry",
+                "wire ABI supervisor service-inventory entry descriptor preserves label");
+        }
       }
     }
 
@@ -7849,10 +7861,22 @@ static void test_kernel_call_c_bridge() {
             decoded_query_supervisor_services->supervisor_services.front();
         check(service_entry.id == *decoded_register_service->service_id,
               "C kernel-call bridge supervisor service-inventory preserves service id");
+        check(service_entry.name == "c.svc.entry",
+              "C kernel-call bridge supervisor service-inventory preserves service name");
         check(service_entry.has_entry_descriptor,
               "C kernel-call bridge supervisor service-inventory reports service entry descriptor");
         check(service_entry.entry_descriptor.has_value(),
               "C kernel-call bridge supervisor service-inventory exposes service entry descriptor");
+        if (service_entry.entry_descriptor) {
+          check(service_entry.entry_descriptor->pc == 24,
+                "C kernel-call bridge supervisor service-inventory entry descriptor preserves pc");
+          check(service_entry.entry_descriptor->sp == 72,
+                "C kernel-call bridge supervisor service-inventory entry descriptor preserves sp");
+          check(service_entry.entry_descriptor->register0 == 929,
+                "C kernel-call bridge supervisor service-inventory entry descriptor preserves register0");
+          check(service_entry.entry_descriptor->label == "c-service-entry",
+                "C kernel-call bridge supervisor service-inventory entry descriptor preserves label");
+        }
       }
     }
 

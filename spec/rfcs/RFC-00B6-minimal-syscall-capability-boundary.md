@@ -235,6 +235,9 @@ Reason:
   carried through fixed-size wire / hosted C responses as a bounded set of
   compact service entries
 - current implementation detail:
+  wire and hosted C coverage now verifies that those bounded supervisor
+  service entries preserve service names and stored entry descriptors
+- current implementation detail:
   `QueryThreadExecutionState` returns the seeded execution context for the
   caller or a same-supervisor target thread, including `pc`, `sp`,
   `register0`, `label`, and running/halted/active state

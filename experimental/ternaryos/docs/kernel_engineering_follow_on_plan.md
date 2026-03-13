@@ -152,6 +152,11 @@ Status:
 - complete for supervisor-scoped service inventory over typed, wire, and
   hosted C ABI paths
 
+Next likely control-plane step:
+
+- add a targeted supervisor service lookup/read path so callers do not need to
+  scan the bounded inventory response when they already know a `service_id`
+
 ## Recommended Execution Order
 
 ### Slice 1: Documentation Wiring
