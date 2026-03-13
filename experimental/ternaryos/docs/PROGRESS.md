@@ -38,6 +38,8 @@ Recent architecture milestone:
 - Process groups now also have CanonRef-backed executable records through
   `RegisterExecutableObject`, `QueryExecutableObject`, and
   `SpawnThreadFromExecutableObject`.
+- Wire and hosted C executable-object results now also carry the stored
+  executable entry descriptor, not just the CanonRef key.
 - Services can now retain an optional thread entry descriptor during
   `RegisterService`, and `SpawnThreadForService` can execute that stored
   descriptor in the owning process group.
@@ -328,7 +330,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 2549 | 1 |
+| `t81_ternaryos_hal_boot_test` | 2577 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -336,7 +338,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **3425** | |
+| **Total** | **3453** | |
 
 Run all TernOS tests:
 

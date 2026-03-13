@@ -334,6 +334,9 @@ KernelCallWireResponseBlock axion_kernel_encode_wire_response(
   block.rejection = static_cast<uint32_t>(result.rejection);
   block.action_performed = result.action_performed ? 1 : 0;
   block.yielded = result.yielded ? 1 : 0;
+  block.executable_registered = result.executable_registered ? 1 : 0;
+  block.executable_has_entry_descriptor =
+      result.executable_entry_descriptor.has_value() ? 1 : 0;
   if (result.thread_exited) {
     block.flags |= kWireResponseThreadExited;
   }
@@ -386,6 +389,19 @@ KernelCallWireResponseBlock axion_kernel_encode_wire_response(
   if (result.object_ref.has_value()) {
     block.flags |= kWireResponseHasObjectRef;
     block.object_ref = encode_object_ref(*result.object_ref);
+  }
+  if (result.executable_entry_descriptor.has_value()) {
+    block.executable_entry_pc = result.executable_entry_descriptor->pc;
+    block.executable_entry_sp = result.executable_entry_descriptor->sp;
+    block.executable_entry_register0 =
+        result.executable_entry_descriptor->register0;
+    block.executable_entry_halted =
+        result.executable_entry_descriptor->halted ? 1 : 0;
+    block.executable_entry_active =
+        result.executable_entry_descriptor->active ? 1 : 0;
+    encode_fixed_string(result.executable_entry_descriptor->label,
+                        block.executable_entry_label.data(),
+                        block.executable_entry_label.size());
   }
   if (result.service_id.has_value()) {
     block.flags |= kWireResponseHasServiceId;
@@ -486,6 +502,7 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
       .rejection = static_cast<KernelCallRejection>(block.rejection),
       .action_performed = block.action_performed != 0,
       .yielded = block.yielded != 0,
+      .executable_registered = block.executable_registered != 0,
       .service_registered = block.service_registered != 0,
       .service_has_entry_descriptor = block.service_has_entry_descriptor != 0,
       .service_suspended = block.service_suspended != 0,
@@ -522,6 +539,17 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
       .supervisor_service_lifecycle_transitions =
           block.supervisor_service_lifecycle_transitions,
   };
+  if (block.executable_has_entry_descriptor != 0) {
+    result.executable_entry_descriptor = KernelThreadSpawnDescriptor{
+        .pc = static_cast<std::size_t>(block.executable_entry_pc),
+        .sp = static_cast<std::size_t>(block.executable_entry_sp),
+        .register0 = block.executable_entry_register0,
+        .halted = block.executable_entry_halted != 0,
+        .active = block.executable_entry_active != 0,
+        .label = decode_fixed_string(block.executable_entry_label.data(),
+                                     block.executable_entry_label.size()),
+    };
+  }
   if (result.service_has_entry_descriptor) {
     result.service_entry_descriptor = KernelThreadSpawnDescriptor{
         .pc = static_cast<std::size_t>(block.service_entry_pc),

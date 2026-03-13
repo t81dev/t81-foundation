@@ -7238,8 +7238,23 @@ static void test_kernel_abi_wire_call_boundary() {
           "wire ABI executable registration returns Ok");
     check(decoded_register_executable->action_performed,
           "wire ABI executable registration reports work performed");
+    check(decoded_register_executable->executable_registered,
+          "wire ABI executable registration reports executable state");
     check(canon_ref_matches(decoded_register_executable->object_ref, wire_executable_ref),
           "wire ABI executable registration preserves object ref");
+    check(decoded_register_executable->executable_entry_descriptor.has_value(),
+          "wire ABI executable registration exposes the stored descriptor");
+    if (decoded_register_executable->executable_entry_descriptor) {
+      check(decoded_register_executable->executable_entry_descriptor->pc == 19,
+            "wire ABI executable registration preserves pc");
+      check(decoded_register_executable->executable_entry_descriptor->sp == 57,
+            "wire ABI executable registration preserves sp");
+      check(decoded_register_executable->executable_entry_descriptor->register0 == 616,
+            "wire ABI executable registration preserves register0");
+      check(decoded_register_executable->executable_entry_descriptor->label ==
+                "wire-executable-entry",
+            "wire ABI executable registration preserves label");
+    }
   }
 
   const auto query_executable_request = axion_kernel_encode_wire_request(
@@ -7259,8 +7274,23 @@ static void test_kernel_abi_wire_call_boundary() {
   if (decoded_query_executable) {
     check(decoded_query_executable->status == KernelCallStatus::Ok,
           "wire ABI executable query returns Ok");
+    check(decoded_query_executable->executable_registered,
+          "wire ABI executable query reports executable state");
     check(canon_ref_matches(decoded_query_executable->object_ref, wire_executable_ref),
           "wire ABI executable query preserves object ref");
+    check(decoded_query_executable->executable_entry_descriptor.has_value(),
+          "wire ABI executable query exposes the stored descriptor");
+    if (decoded_query_executable->executable_entry_descriptor) {
+      check(decoded_query_executable->executable_entry_descriptor->pc == 19,
+            "wire ABI executable query preserves pc");
+      check(decoded_query_executable->executable_entry_descriptor->sp == 57,
+            "wire ABI executable query preserves sp");
+      check(decoded_query_executable->executable_entry_descriptor->register0 == 616,
+            "wire ABI executable query preserves register0");
+      check(decoded_query_executable->executable_entry_descriptor->label ==
+                "wire-executable-entry",
+            "wire ABI executable query preserves label");
+    }
   }
 
   const auto spawn_from_executable_request = axion_kernel_encode_wire_request(
@@ -7280,8 +7310,12 @@ static void test_kernel_abi_wire_call_boundary() {
   if (decoded_spawn_from_executable) {
     check(decoded_spawn_from_executable->status == KernelCallStatus::Ok,
           "wire ABI executable-object spawn returns Ok");
+    check(decoded_spawn_from_executable->executable_registered,
+          "wire ABI executable-object spawn reports executable state");
     check(canon_ref_matches(decoded_spawn_from_executable->object_ref, wire_executable_ref),
           "wire ABI executable-object spawn preserves object ref");
+    check(decoded_spawn_from_executable->executable_entry_descriptor.has_value(),
+          "wire ABI executable-object spawn exposes the stored descriptor");
     check(decoded_spawn_from_executable->spawned_tid.has_value(),
           "wire ABI executable-object spawn returns a spawned tid");
     if (decoded_spawn_from_executable->spawned_tid) {
@@ -7954,8 +7988,23 @@ static void test_kernel_call_c_bridge() {
   if (decoded_register_executable) {
     check(decoded_register_executable->status == KernelCallStatus::Ok,
           "C kernel-call bridge executable registration returns Ok");
+    check(decoded_register_executable->executable_registered,
+          "C kernel-call bridge executable registration reports executable state");
     check(canon_ref_matches(decoded_register_executable->object_ref, c_executable_ref),
           "C kernel-call bridge executable registration preserves object ref");
+    check(decoded_register_executable->executable_entry_descriptor.has_value(),
+          "C kernel-call bridge executable registration exposes the stored descriptor");
+    if (decoded_register_executable->executable_entry_descriptor) {
+      check(decoded_register_executable->executable_entry_descriptor->pc == 24,
+            "C kernel-call bridge executable registration preserves pc");
+      check(decoded_register_executable->executable_entry_descriptor->sp == 72,
+            "C kernel-call bridge executable registration preserves sp");
+      check(decoded_register_executable->executable_entry_descriptor->register0 == 818,
+            "C kernel-call bridge executable registration preserves register0");
+      check(decoded_register_executable->executable_entry_descriptor->label ==
+                "c-executable-entry",
+            "C kernel-call bridge executable registration preserves label");
+    }
   }
 
   const auto query_executable_request = axion_kernel_encode_wire_request(
@@ -7977,8 +8026,23 @@ static void test_kernel_call_c_bridge() {
   if (decoded_query_executable) {
     check(decoded_query_executable->status == KernelCallStatus::Ok,
           "C kernel-call bridge executable query returns Ok");
+    check(decoded_query_executable->executable_registered,
+          "C kernel-call bridge executable query reports executable state");
     check(canon_ref_matches(decoded_query_executable->object_ref, c_executable_ref),
           "C kernel-call bridge executable query preserves object ref");
+    check(decoded_query_executable->executable_entry_descriptor.has_value(),
+          "C kernel-call bridge executable query exposes the stored descriptor");
+    if (decoded_query_executable->executable_entry_descriptor) {
+      check(decoded_query_executable->executable_entry_descriptor->pc == 24,
+            "C kernel-call bridge executable query preserves pc");
+      check(decoded_query_executable->executable_entry_descriptor->sp == 72,
+            "C kernel-call bridge executable query preserves sp");
+      check(decoded_query_executable->executable_entry_descriptor->register0 == 818,
+            "C kernel-call bridge executable query preserves register0");
+      check(decoded_query_executable->executable_entry_descriptor->label ==
+                "c-executable-entry",
+            "C kernel-call bridge executable query preserves label");
+    }
   }
 
   const auto spawn_from_executable_request = axion_kernel_encode_wire_request(
@@ -8000,8 +8064,12 @@ static void test_kernel_call_c_bridge() {
   if (decoded_spawn_from_executable) {
     check(decoded_spawn_from_executable->status == KernelCallStatus::Ok,
           "C kernel-call bridge executable-object spawn returns Ok");
+    check(decoded_spawn_from_executable->executable_registered,
+          "C kernel-call bridge executable-object spawn reports executable state");
     check(canon_ref_matches(decoded_spawn_from_executable->object_ref, c_executable_ref),
           "C kernel-call bridge executable-object spawn preserves object ref");
+    check(decoded_spawn_from_executable->executable_entry_descriptor.has_value(),
+          "C kernel-call bridge executable-object spawn exposes the stored descriptor");
     check(decoded_spawn_from_executable->spawned_tid.has_value(),
           "C kernel-call bridge executable-object spawn returns a spawned tid");
     if (decoded_spawn_from_executable->spawned_tid) {

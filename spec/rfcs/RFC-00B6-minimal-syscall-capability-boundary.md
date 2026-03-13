@@ -240,6 +240,10 @@ Reason:
   execution descriptor, and spawn reuses it through the typed, fixed-size
   wire, and hosted C ABI paths
 - current implementation detail:
+  executable-object register/query/spawn responses on the fixed-size wire and
+  hosted C layers now carry that stored execution descriptor too, not only
+  the CanonRef identity
+- current implementation detail:
   stored service entry descriptors are now exposed through the typed
   service/status control plane and through fixed-size wire / hosted C
   service register/query responses

@@ -148,6 +148,8 @@ struct KernelCallWireResponseBlock {
   uint64_t flags{0};
   uint8_t action_performed{0};
   uint8_t yielded{0};
+  uint8_t executable_registered{0};
+  uint8_t executable_has_entry_descriptor{0};
   uint8_t service_registered{0};
   uint8_t service_has_entry_descriptor{0};
   uint8_t service_suspended{0};
@@ -165,6 +167,12 @@ struct KernelCallWireResponseBlock {
   uint32_t capability_count{0};
   uint32_t delegation_entry_count{0};
   uint32_t thread_state_bits{0};
+  uint64_t executable_entry_pc{0};
+  uint64_t executable_entry_sp{0};
+  int64_t executable_entry_register0{0};
+  uint8_t executable_entry_halted{0};
+  uint8_t executable_entry_active{1};
+  std::array<uint8_t, 6> reserved_exec{};
   uint64_t service_entry_pc{0};
   uint64_t service_entry_sp{0};
   int64_t service_entry_register0{0};
@@ -210,6 +218,7 @@ struct KernelCallWireResponseBlock {
   std::array<KernelCallWireCapabilityRecord, kKernelAbiWireCapabilitySlots> capabilities{};
   std::array<KernelCallWireServiceEntry, kKernelAbiWireServiceSlots> services{};
   std::array<char, kKernelAbiWireServiceNameBytes> service_name{};
+  std::array<char, kKernelAbiWireThreadLabelBytes> executable_entry_label{};
   std::array<char, kKernelAbiWireThreadLabelBytes> service_entry_label{};
   std::array<char, kKernelAbiWireThreadLabelBytes> thread_label{};
 };

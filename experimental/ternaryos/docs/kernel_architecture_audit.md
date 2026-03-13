@@ -501,7 +501,7 @@ Observed result:
 
 - `8/8` test binaries passed
 - boot test coverage has continued to expand substantially; current local boot
-  suite result is `2549 passed, 0 failed`
+  suite result is `2577 passed, 0 failed`
 
 Covered suites:
 
