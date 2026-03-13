@@ -829,6 +829,13 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
           [&](const auto& transition) {
             return transition.process_group_id != *request.process_group_id;
           });
+      if (request.capability.has_value() && request.capability->record_id != 0) {
+        std::erase_if(
+            mapped.supervisor_capability_transition_history,
+            [&](const auto& transition) {
+              return transition.record_id != request.capability->record_id;
+            });
+      }
       return mapped;
     }
     case KernelCallKind::QueryCapabilities: {
@@ -909,7 +916,11 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
         return result;
       }
       if (!axion_kernel_grant_process_group_capability(
-              state, target_group_state->id, *request.capability)) {
+              state,
+              target_group_state->id,
+              caller.process_group_id,
+              state.find_process_group_supervisor(caller.process_group_id),
+              *request.capability)) {
         result.status = KernelCallStatus::Conflict;
         return result;
       }

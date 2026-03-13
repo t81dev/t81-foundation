@@ -104,6 +104,9 @@ discipline:
 - preserve the kernel-owned capability-management model now that capability
   records, supervisor transition history, and sequence-based revocation are all
   live on the ABI
+- preserve the newer provenance rules as well: kernel-seeded and delegated
+  capabilities now carry different semantics and should not collapse back into
+  anonymous capability bits
 
 ## Recommended Execution Order
 

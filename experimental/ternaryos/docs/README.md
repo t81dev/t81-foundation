@@ -40,8 +40,9 @@ typed `axion_kernel_call(...)` ABI covers IPC, fault inbox/recovery,
 supervisor recovery and inspection, capability management, service lifecycle
 control, process-group memory inspection, boot-critical address-space control,
 guarded runtime/fault summary queries, kernel-issued capability record IDs,
-supervisor capability transition history, and sequence-based capability
-revocation.
+supervisor capability transition history, sequence-based capability
+revocation, and explicit provenance distinguishing kernel-seeded capabilities
+from supervisor-delegated grants.
 
 Current working release label: `Axion v0.1.0-alpha`
 

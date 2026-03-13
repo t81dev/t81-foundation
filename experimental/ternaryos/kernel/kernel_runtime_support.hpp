@@ -87,6 +87,9 @@ struct KernelCapabilityTransitionRecord {
   CapabilityRecordId record_id{0};
   KernelAuditEventKind kind{KernelAuditEventKind::CapabilityGranted};
   uint64_t sequence{0};
+  bool kernel_seeded{false};
+  std::optional<ProcessGroupId> delegated_by_process_group_id{};
+  std::optional<SupervisorId> delegated_by_supervisor_id{};
 };
 
 struct KernelDeviceRecord {

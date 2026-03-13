@@ -213,6 +213,16 @@ The currently implemented prototype exposes a narrower typed capability set:
 Those capabilities are represented as kernel-issued `KernelCapabilityRecord`
 values with stable `record_id` identities bound to process groups.
 
+The current implementation also distinguishes:
+
+- kernel-seeded capabilities granted during process-group creation
+- delegated capabilities granted later by a same-supervisor caller
+
+Delegated capabilities retain delegator provenance on the record itself:
+
+- `delegated_by_process_group_id`
+- `delegated_by_supervisor_id`
+
 ### 5.5 Capability Rules
 
 The first ABI revision should enforce these rules:
@@ -226,6 +236,9 @@ The first ABI revision should enforce these rules:
   half-revoked state
 - capability record identity is kernel-owned: callers may query and revoke by
   `record_id`, but may not forge grant-time record identities
+- capability provenance is explicit: the ABI distinguishes kernel-seeded
+  capabilities from delegated capabilities and preserves delegator identity
+  for delegated grants
 - supervisors may inspect bounded recent capability-transition history for the
   process groups they own and may target revocation using an observed
   transition sequence
@@ -364,9 +377,14 @@ Current policy rules already enforced in code:
   is faulted so recovery paths do not self-deadlock
 - capability records receive stable kernel-issued identifiers and are queryable
   by `record_id`
+- capability records expose whether they are kernel-seeded or delegated, and
+  delegated capabilities retain delegator process-group and supervisor
+  provenance
 - supervisor capability inventory exposes bounded recent capability-transition
   history, and the ABI exposes that same history directly through
   `QueryCapabilityTransitionHistory`
+- supervisor capability-transition history retains the same provenance so
+  grants can be inspected without diffing inventory snapshots
 - `RevokeCapability` may resolve its target through a previously observed
   capability-transition sequence instead of requiring an immediate inventory
   re-scan

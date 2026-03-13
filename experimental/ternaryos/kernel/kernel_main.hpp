@@ -114,6 +114,8 @@ bool axion_kernel_supervisor_matches_process_group(
 bool axion_kernel_grant_process_group_capability(
     KernelRuntimeState& state,
     ProcessGroupId process_group_id,
+    std::optional<ProcessGroupId> delegated_by_process_group_id,
+    std::optional<SupervisorId> delegated_by_supervisor_id,
     const KernelCapabilityRecord& capability) noexcept;
 bool axion_kernel_revoke_process_group_capability(
     KernelRuntimeState& state,

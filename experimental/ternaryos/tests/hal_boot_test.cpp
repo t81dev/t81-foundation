@@ -5846,6 +5846,14 @@ static void test_kernel_minimal_abi_calls() {
                       return capability.kind == KernelCapabilityKind::IpcSend;
                     }),
         "minimal ABI capability query includes IPC send by default");
+  check(std::all_of(queried_caps.capabilities.begin(),
+                    queried_caps.capabilities.end(),
+                    [](const auto& capability) {
+                      return capability.kernel_seeded &&
+                             !capability.delegated_by_process_group_id.has_value() &&
+                             !capability.delegated_by_supervisor_id.has_value();
+                    }),
+        "minimal ABI default capabilities are marked as kernel-seeded");
   const auto ipc_send_record = std::find_if(
       queried_caps.capabilities.begin(),
       queried_caps.capabilities.end(),
@@ -5902,6 +5910,8 @@ static void test_kernel_minimal_abi_calls() {
   check(axion_kernel_grant_process_group_capability(
             *state,
             runtime_a->process_group_id,
+            std::nullopt,
+            std::nullopt,
             KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcSend}),
         "minimal ABI can re-grant a revoked process-group capability");
   auto queried_after_grant = axion_kernel_call(
@@ -6229,6 +6239,15 @@ static void test_kernel_capability_management_abi() {
                    });
   check(granted_sibling_ipc_receive != grant_same_supervisor.capabilities.end(),
         "same-supervisor grant result exposes the restored IPC receive record");
+  if (granted_sibling_ipc_receive != grant_same_supervisor.capabilities.end()) {
+    check(!granted_sibling_ipc_receive->kernel_seeded,
+          "same-supervisor grant result marks delegated capability as non-kernel-seeded");
+    check(granted_sibling_ipc_receive->delegated_by_process_group_id ==
+              leader_runtime->process_group_id,
+          "same-supervisor grant result records the delegating process group");
+    check(granted_sibling_ipc_receive->delegated_by_supervisor_id == leader_supervisor,
+          "same-supervisor grant result records the delegating supervisor");
+  }
 
   auto invalid_grant_record_id = axion_kernel_call(
       *state,
@@ -6264,6 +6283,16 @@ static void test_kernel_capability_management_abi() {
                     query_same_supervisor.capabilities.end(),
                     [](const auto& capability) { return capability.record_id != 0; }),
         "same-supervisor capability query returns kernel-issued record ids");
+  check(std::any_of(query_same_supervisor.capabilities.begin(),
+                    query_same_supervisor.capabilities.end(),
+                    [&](const auto& capability) {
+                      return capability.kind == KernelCapabilityKind::IpcReceive &&
+                             !capability.kernel_seeded &&
+                             capability.delegated_by_process_group_id ==
+                                 leader_runtime->process_group_id &&
+                             capability.delegated_by_supervisor_id == leader_supervisor;
+                    }),
+        "same-supervisor capability query preserves delegation provenance");
   auto query_revoked_same_supervisor_record = axion_kernel_call(
       *state,
       KernelCallRequest{
@@ -6295,6 +6324,12 @@ static void test_kernel_capability_management_abi() {
   check(query_same_supervisor_record.capabilities.front().record_id ==
             granted_sibling_ipc_receive->record_id,
         "same-supervisor capability-record query returns the requested record id");
+  check(query_same_supervisor_record.capabilities.front().delegated_by_process_group_id ==
+            leader_runtime->process_group_id,
+        "same-supervisor capability-record query returns the delegating process group");
+  check(query_same_supervisor_record.capabilities.front().delegated_by_supervisor_id ==
+            leader_supervisor,
+        "same-supervisor capability-record query returns the delegating supervisor");
 
   auto same_supervisor_memory = axion_kernel_call(
       *state,
@@ -6343,6 +6378,14 @@ static void test_kernel_capability_management_abi() {
   check(abi_supervisor_inventory.supervisor_capability_transition_history.back().record_id ==
             granted_sibling_ipc_receive->record_id,
         "capability inventory ABI history preserves the granted record id");
+  check(!abi_supervisor_inventory.supervisor_capability_transition_history.back().kernel_seeded,
+        "capability inventory ABI history marks delegated grants as non-kernel-seeded");
+  check(abi_supervisor_inventory.supervisor_capability_transition_history.back()
+            .delegated_by_process_group_id == leader_runtime->process_group_id,
+        "capability inventory ABI history preserves the delegating process group");
+  check(abi_supervisor_inventory.supervisor_capability_transition_history.back()
+            .delegated_by_supervisor_id == leader_supervisor,
+        "capability inventory ABI history preserves the delegating supervisor");
   auto abi_transition_history = axion_kernel_call(
       *state,
       KernelCallRequest{
@@ -6363,6 +6406,49 @@ static void test_kernel_capability_management_abi() {
   check(abi_transition_history.supervisor_capability_transition_history.back().record_id ==
             granted_sibling_ipc_receive->record_id,
         "capability transition history ABI query returns the granted record last");
+  auto abi_granted_record_history = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryCapabilityTransitionHistory,
+          .supervisor_id = *leader_supervisor,
+          .process_group_id = sibling_runtime->process_group_id,
+          .capability =
+              KernelCapabilityRecord{.record_id = granted_sibling_ipc_receive->record_id},
+      });
+  check(abi_granted_record_history.status == KernelCallStatus::Ok,
+        "capability transition history can filter by granted capability record id");
+  check(abi_granted_record_history.supervisor_capability_transition_history.size() == 1,
+        "capability transition history record filter returns one matching transition");
+  check(abi_granted_record_history.supervisor_capability_transition_history.front().record_id ==
+            granted_sibling_ipc_receive->record_id,
+        "capability transition history record filter returns the requested record id");
+  check(abi_granted_record_history.supervisor_capability_transition_history.front().kind ==
+            KernelAuditEventKind::CapabilityGranted,
+        "capability transition history record filter preserves the grant transition kind");
+  check(abi_granted_record_history.supervisor_capability_transition_history.front()
+            .delegated_by_process_group_id == leader_runtime->process_group_id,
+        "capability transition history record filter preserves delegating process group");
+  check(abi_granted_record_history.supervisor_capability_transition_history.front()
+            .delegated_by_supervisor_id == leader_supervisor,
+        "capability transition history record filter preserves delegating supervisor");
+  auto abi_revoked_record_history = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryCapabilityTransitionHistory,
+          .supervisor_id = *leader_supervisor,
+          .process_group_id = sibling_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{.record_id = sibling_ipc_receive->record_id},
+      });
+  check(abi_revoked_record_history.status == KernelCallStatus::Ok,
+        "capability transition history can filter by revoked capability record id");
+  check(abi_revoked_record_history.supervisor_capability_transition_history.size() == 1,
+        "capability transition history revoked-record filter returns one matching transition");
+  check(abi_revoked_record_history.supervisor_capability_transition_history.front().record_id ==
+            sibling_ipc_receive->record_id,
+        "capability transition history revoked-record filter returns the revoked record id");
+  check(abi_revoked_record_history.supervisor_capability_transition_history.front().kind ==
+            KernelAuditEventKind::CapabilityRevoked,
+        "capability transition history revoked-record filter preserves the revoke transition kind");
   check(std::any_of(abi_supervisor_inventory.capabilities.begin(),
                     abi_supervisor_inventory.capabilities.end(),
                     [](const auto& capability) {
@@ -6413,6 +6499,15 @@ static void test_kernel_capability_management_abi() {
     check(supervisor_inventory.supervisor_capabilities->recent_capability_transitions.back()
               .record_id == granted_sibling_ipc_receive->record_id,
           "supervisor inventory history preserves the granted capability record id");
+    check(!supervisor_inventory.supervisor_capabilities->recent_capability_transitions.back()
+               .kernel_seeded,
+          "supervisor inventory history marks delegated grants as non-kernel-seeded");
+    check(supervisor_inventory.supervisor_capabilities->recent_capability_transitions.back()
+              .delegated_by_process_group_id == leader_runtime->process_group_id,
+          "supervisor inventory history preserves the delegating process group");
+    check(supervisor_inventory.supervisor_capabilities->recent_capability_transitions.back()
+              .delegated_by_supervisor_id == leader_supervisor,
+          "supervisor inventory history preserves the delegating supervisor");
     const auto sibling_entry = std::find_if(
         supervisor_inventory.supervisor_capabilities->process_groups.begin(),
         supervisor_inventory.supervisor_capabilities->process_groups.end(),
@@ -6426,10 +6521,15 @@ static void test_kernel_capability_management_abi() {
         supervisor_inventory.supervisor_capabilities->process_groups.end()) {
       check(std::any_of(sibling_entry->capabilities.begin(),
                         sibling_entry->capabilities.end(),
-                        [](const auto& capability) {
-                          return capability.kind == KernelCapabilityKind::IpcReceive;
+                        [&](const auto& capability) {
+                          return capability.kind == KernelCapabilityKind::IpcReceive &&
+                                 !capability.kernel_seeded &&
+                                 capability.delegated_by_process_group_id ==
+                                     leader_runtime->process_group_id &&
+                                 capability.delegated_by_supervisor_id ==
+                                     leader_supervisor;
                         }),
-            "capability inventory reflects the restored sibling capability set");
+            "capability inventory reflects the restored sibling capability provenance");
     }
   }
 
@@ -6501,6 +6601,20 @@ static void test_kernel_capability_management_abi() {
   check(query_foreign_transition_history.rejection ==
             KernelCallRejection::SupervisorMismatch,
         "foreign-supervisor capability transition history query reports supervisor mismatch");
+  auto query_foreign_record_history = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryCapabilityTransitionHistory,
+          .supervisor_id = *leader_supervisor,
+          .process_group_id = outsider_runtime->process_group_id,
+          .capability =
+              KernelCapabilityRecord{.record_id = granted_sibling_ipc_receive->record_id},
+      });
+  check(query_foreign_record_history.status == KernelCallStatus::PolicyDenied,
+        "foreign-supervisor capability transition history record filter is denied");
+  check(query_foreign_record_history.rejection ==
+            KernelCallRejection::SupervisorMismatch,
+        "foreign-supervisor capability transition history record filter reports supervisor mismatch");
 
   auto outsider_caps = axion_kernel_list_process_group_capabilities(
       *state, outsider_runtime->process_group_id);

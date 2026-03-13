@@ -23,6 +23,9 @@ struct KernelCapabilityRecord {
   CapabilityRecordId record_id{0};
   KernelCapabilityKind kind{KernelCapabilityKind::Yield};
   std::optional<ProcessGroupId> process_group_scope{};
+  bool kernel_seeded{false};
+  std::optional<ProcessGroupId> delegated_by_process_group_id{};
+  std::optional<SupervisorId> delegated_by_supervisor_id{};
 };
 
 enum class KernelCallKind : uint8_t {

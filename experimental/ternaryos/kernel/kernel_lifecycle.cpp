@@ -17,24 +17,29 @@ std::vector<KernelCapabilityRecord> default_process_group_capabilities(
       KernelCapabilityRecord{
           .record_id = next_capability_record_id(state),
           .kind = KernelCapabilityKind::Yield,
+          .kernel_seeded = true,
       },
       KernelCapabilityRecord{
           .record_id = next_capability_record_id(state),
           .kind = KernelCapabilityKind::IpcSend,
+          .kernel_seeded = true,
       },
       KernelCapabilityRecord{
           .record_id = next_capability_record_id(state),
           .kind = KernelCapabilityKind::IpcReceive,
+          .kernel_seeded = true,
       },
       KernelCapabilityRecord{
           .record_id = next_capability_record_id(state),
           .kind = KernelCapabilityKind::FaultObserve,
           .process_group_scope = process_group_id,
+          .kernel_seeded = true,
       },
       KernelCapabilityRecord{
           .record_id = next_capability_record_id(state),
           .kind = KernelCapabilityKind::FaultAcknowledge,
           .process_group_scope = process_group_id,
+          .kernel_seeded = true,
       },
   };
 }

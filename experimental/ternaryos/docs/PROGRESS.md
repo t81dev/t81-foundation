@@ -33,6 +33,10 @@ Recent architecture milestone:
   bounded recent capability-transition history, and revocation can target an
   observed transition sequence instead of only a freshly scanned capability
   list.
+- Capability provenance is now explicit as well: default process-group
+  capabilities are marked as kernel-seeded, later same-supervisor grants are
+  marked as delegated, and delegator process-group/supervisor identity now
+  flows through capability queries, inventory views, and transition history.
 - ABI rejection taxonomy is now more explicit as well. Address-space ownership,
   missing boot-critical control values, and foreign supervisory read scope now
   produce dedicated rejections instead of collapsing into generic policy

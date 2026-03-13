@@ -38,7 +38,7 @@ KernelCapabilityRecord issued_capability_record(
 void record_capability_transition(KernelRuntimeState& state,
                                   ProcessGroupId process_group_id,
                                   KernelAuditEventKind kind,
-                                  CapabilityRecordId record_id) {
+                                  const KernelCapabilityRecord& capability) {
   const auto subject_tid =
       axion_kernel_primary_tid_for_group(state, process_group_id)
           .value_or(KernelRuntimeState::kKernelTid);
@@ -53,7 +53,7 @@ void record_capability_transition(KernelRuntimeState& state,
   }
   ++supervisor_state->capability_transitions;
   supervisor_state->last_capability_transition_group_id = process_group_id;
-  supervisor_state->last_capability_transition_record_id = record_id;
+  supervisor_state->last_capability_transition_record_id = capability.record_id;
   supervisor_state->last_capability_transition_kind = kind;
   supervisor_state->last_capability_transition_sequence =
       state.last_audit_event->sequence;
@@ -64,9 +64,12 @@ void record_capability_transition(KernelRuntimeState& state,
   supervisor_state->recent_capability_transitions.push_back(
       KernelCapabilityTransitionRecord{
           .process_group_id = process_group_id,
-          .record_id = record_id,
+          .record_id = capability.record_id,
           .kind = kind,
           .sequence = state.last_audit_event->sequence,
+          .kernel_seeded = capability.kernel_seeded,
+          .delegated_by_process_group_id = capability.delegated_by_process_group_id,
+          .delegated_by_supervisor_id = capability.delegated_by_supervisor_id,
       });
 }
 
@@ -183,6 +186,8 @@ bool axion_kernel_supervisor_matches_process_group(
 bool axion_kernel_grant_process_group_capability(
     KernelRuntimeState& state,
     ProcessGroupId process_group_id,
+    std::optional<ProcessGroupId> delegated_by_process_group_id,
+    std::optional<SupervisorId> delegated_by_supervisor_id,
     const KernelCapabilityRecord& capability) noexcept {
   auto* group = state.find_process_group_mut(process_group_id);
   if (!group) {
@@ -193,13 +198,17 @@ bool axion_kernel_grant_process_group_capability(
       return true;
     }
   }
-  const auto issued = issued_capability_record(state, capability);
+  auto granted = capability;
+  granted.kernel_seeded = false;
+  granted.delegated_by_process_group_id = delegated_by_process_group_id;
+  granted.delegated_by_supervisor_id = delegated_by_supervisor_id;
+  const auto issued = issued_capability_record(state, granted);
   group->capabilities.push_back(issued);
   record_capability_transition(
       state,
       process_group_id,
       KernelAuditEventKind::CapabilityGranted,
-      issued.record_id);
+      issued);
   return true;
 }
 
@@ -213,27 +222,49 @@ bool axion_kernel_revoke_process_group_capability(
   if (!group) {
     return false;
   }
+  std::vector<KernelCapabilityRecord> removed_capabilities;
   const auto old_size = group->capabilities.size();
   group->capabilities.erase(
       std::remove_if(group->capabilities.begin(),
                      group->capabilities.end(),
                      [&](const auto& capability) {
+                       bool matches = false;
                        if (capability_record_id.has_value()) {
-                         return capability.record_id == *capability_record_id;
+                         matches = capability.record_id == *capability_record_id;
+                       } else {
+                         matches = capability_matches(capability,
+                                                     capability_kind,
+                                                     process_group_scope);
                        }
-                       return capability_matches(capability,
-                                                 capability_kind,
-                                                 process_group_scope);
+                       if (matches) {
+                         removed_capabilities.push_back(capability);
+                       }
+                       return matches;
                      }),
       group->capabilities.end());
   const bool changed = group->capabilities.size() != old_size;
   if (changed) {
-    const auto transition_record_id = capability_record_id.value_or(0);
+    KernelCapabilityRecord transition_capability{
+        .record_id = capability_record_id.value_or(0),
+        .kind = capability_kind,
+        .process_group_scope = process_group_scope,
+    };
+    if (capability_record_id.has_value()) {
+      const auto removed = std::find_if(
+          removed_capabilities.begin(),
+          removed_capabilities.end(),
+          [&](const auto& capability) {
+            return capability.record_id == *capability_record_id;
+          });
+      if (removed != removed_capabilities.end()) {
+        transition_capability = *removed;
+      }
+    }
     record_capability_transition(
         state,
         process_group_id,
         KernelAuditEventKind::CapabilityRevoked,
-        transition_record_id);
+        transition_capability);
   }
   return changed;
 }
