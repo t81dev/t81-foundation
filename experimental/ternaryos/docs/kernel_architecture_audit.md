@@ -501,7 +501,7 @@ Observed result:
 
 - `8/8` test binaries passed
 - boot test coverage has continued to expand substantially; current local boot
-  suite result is `2577 passed, 0 failed`
+  suite result is `2589 passed, 0 failed`
 
 Covered suites:
 
@@ -624,8 +624,9 @@ Overall completion estimate toward a fully operational kernel: `47%`
 
 ## Roadmap to a Fully Operational Kernel
 
-1. Expose service-owned entry descriptor state through the service query/view
-   layer so executable service state is visible, not only runnable.
+1. Promote executable objects from CanonRef-indexed descriptor records into a
+   validated loading path, and preserve that loaded-object model through
+   service binding instead of only storing descriptors.
 2. Promote address spaces into true execution units with separate page-table
    ownership.
 3. Implement real interrupt/trap handling for the target platform.

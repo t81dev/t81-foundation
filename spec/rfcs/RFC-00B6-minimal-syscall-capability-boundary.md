@@ -244,6 +244,10 @@ Reason:
   hosted C layers now carry that stored execution descriptor too, not only
   the CanonRef identity
 - current implementation detail:
+  `RegisterService` can now also bind a service to one of those registered
+  executable objects by CanonRef, and the service register/query/spawn paths
+  preserve that backing executable identity
+- current implementation detail:
   stored service entry descriptors are now exposed through the typed
   service/status control plane and through fixed-size wire / hosted C
   service register/query responses

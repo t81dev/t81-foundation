@@ -40,6 +40,8 @@ KernelRuntimeState::ServiceState* create_service(KernelRuntimeState& state,
                                                  std::string name,
                                                  ProcessGroupId process_group_id,
                                                  SupervisorId supervisor_id,
+                                                 std::optional<t81::canonfs::CanonRef>
+                                                     object_ref = std::nullopt,
                                                  std::optional<KernelThreadSpawnDescriptor>
                                                      entry_descriptor = std::nullopt) {
   const ServiceId id = state.next_service_id++;
@@ -50,6 +52,7 @@ KernelRuntimeState::ServiceState* create_service(KernelRuntimeState& state,
           .name = std::move(name),
           .supervisor_id = supervisor_id,
           .process_group_id = process_group_id,
+          .object_ref = std::move(object_ref),
           .entry_descriptor = std::move(entry_descriptor),
           .registered = true,
       });
@@ -265,6 +268,7 @@ KernelServiceActionResult axion_kernel_service_action(
           *action.service_name,
           *action.requesting_process_group_id,
           *supervisor_id,
+          action.object_ref,
           action.spawn_descriptor);
       if (!service_state) {
         result.status = KernelServiceStatus::InvalidRequest;

@@ -97,6 +97,9 @@ Implemented kernel-call slice:
 - `SpawnThreadForService`
 - named thread entries are now reusable across ABI entry modes
 - CanonRef-backed executable objects are now reusable across ABI entry modes
+- services can now bind to those registered executable objects by CanonRef,
+  and the service register/query/spawn paths preserve that backing
+  executable identity
 - services can now retain an entry descriptor at registration time for later
   execution inside the owning process group
 - `QueryThreadExecutionState` now provides the matching read-side execution
@@ -160,9 +163,9 @@ Status:
 
 Next likely step:
 
-- shift from descriptor-backed executable registration to real executable
-  object loading/validation, or continue only if a clearly missing
-  supervisory write path remains
+- shift from descriptor-backed executable registration and service binding to
+  real executable object loading/validation, or continue only if a clearly
+  missing supervisory write path remains
 
 ## Recommended Execution Order
 

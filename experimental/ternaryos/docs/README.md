@@ -60,6 +60,9 @@ stored spawn descriptor, query that executable state later, and spawn new
 threads from it through the same typed, wire, and hosted C ABI layers. Wire
 and hosted C executable register/query/spawn responses now also carry that
 stored executable entry descriptor, not only the CanonRef identity.
+Services can now also bind to one of those registered executable objects by
+CanonRef during `RegisterService`, and the service register/query/spawn paths
+now report that same backing executable object identity.
 Supervisors can now also inspect one managed service directly through a
 dedicated service-status query path, even when the ordinary service query is
 deferred by unhealthy state.
@@ -213,7 +216,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 3453/3453 assertions, 8/8 tests pass
+# Expected: 3465/3465 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -374,11 +377,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `2577/2577`
+- `t81_ternaryos_hal_boot_test` is `2589/2589`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `3453`
+- total TernOS assertions are `3465`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state

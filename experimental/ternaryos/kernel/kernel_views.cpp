@@ -763,6 +763,7 @@ KernelServiceStatusView make_service_view(const KernelRuntimeState& state,
       .name = service_state ? service_state->name : std::string{},
       .supervisor_id = service_state ? service_state->supervisor_id : 0,
       .process_group_id = service_state ? service_state->process_group_id : 0,
+      .object_ref = service_state ? service_state->object_ref : std::nullopt,
       .has_entry_descriptor =
           service_state && service_state->entry_descriptor.has_value(),
       .entry_descriptor =
@@ -824,6 +825,7 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
         .id = service_state->id,
         .name = service_state->name,
         .process_group_id = service_state->process_group_id,
+        .object_ref = service_state->object_ref,
         .has_entry_descriptor = service_state->entry_descriptor.has_value(),
         .entry_descriptor = service_state->entry_descriptor,
         .address_space_id =

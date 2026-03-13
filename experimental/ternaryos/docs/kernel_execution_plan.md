@@ -18,9 +18,12 @@ next milestone is no longer more local packaging work; it is actual external
 
 The newest execution-control slice now goes one step further than named entry
 descriptors: process groups can register CanonRef-backed executable objects and
-spawn from them through the typed, wire, and hosted C ABI layers. This is
-still a descriptor-backed registry, not a true loader, so the next execution
-milestone is object validation and loading rather than more registry growth.
+spawn from them through the typed, wire, and hosted C ABI layers. Services can
+also bind to those registered executable objects by CanonRef during
+`RegisterService`, and service register/query/spawn paths now preserve that
+backing executable identity. This is still a descriptor-backed registry, not a
+true loader, so the next execution milestone is object validation and loading
+rather than more registry growth.
 
 ## Current Kernel Position
 

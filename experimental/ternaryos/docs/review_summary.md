@@ -39,9 +39,9 @@ The broader structural assessment and follow-on refactor plan now live in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `3453`
+- total assertions: `3465`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `2577/2577`
+- `t81_ternaryos_hal_boot_test`: `2589/2589`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -149,6 +149,9 @@ Kernel integration proof now also includes:
   hosted C ABI entry modes
 - those executable-object wire and hosted C responses now also carry the
   stored executable entry descriptor, not only the CanonRef
+- services can now bind to those registered executable objects by CanonRef,
+  and the service register/query/spawn ABI paths now preserve that backing
+  executable identity
 - audit-summary interrupt queue alignment is now retained too: pending
   interrupt count, pending source composition, and FIFO head/tail visibility
   are exposed there alongside interrupt history

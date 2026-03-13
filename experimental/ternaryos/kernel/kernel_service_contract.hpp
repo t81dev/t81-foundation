@@ -84,6 +84,7 @@ enum class KernelServiceActionRejection : uint8_t {
   DeviceNotOwned,
   SupervisorGatePendingThreadFault,
   SupervisorGroupNotPending,
+  MissingExecutableRegistration,
 };
 
 struct KernelRuntimeStatusView {
@@ -289,6 +290,7 @@ struct KernelServiceStatusView {
   std::string name;
   SupervisorId supervisor_id{0};
   ProcessGroupId process_group_id{0};
+  std::optional<t81::canonfs::CanonRef> object_ref{};
   bool has_entry_descriptor{false};
   std::optional<KernelThreadSpawnDescriptor> entry_descriptor{};
   std::optional<AddressSpaceId> address_space_id{};
@@ -321,6 +323,7 @@ struct KernelSupervisorServiceEntryView {
   ServiceId id{0};
   std::string name;
   ProcessGroupId process_group_id{0};
+  std::optional<t81::canonfs::CanonRef> object_ref{};
   bool has_entry_descriptor{false};
   std::optional<KernelThreadSpawnDescriptor> entry_descriptor{};
   std::optional<AddressSpaceId> address_space_id{};
@@ -612,6 +615,7 @@ struct KernelServiceAction {
   std::optional<SupervisorId> supervisor_id{};
   std::optional<ServiceId> service_id{};
   std::optional<std::string> service_name{};
+  std::optional<t81::canonfs::CanonRef> object_ref{};
   std::optional<KernelThreadSpawnDescriptor> spawn_descriptor{};
   std::optional<std::string> device_name{};
 };

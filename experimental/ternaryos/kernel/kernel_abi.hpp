@@ -49,6 +49,7 @@ struct KernelSupervisorServiceSummaryEntry {
   ServiceId id{0};
   std::string name;
   ProcessGroupId process_group_id{0};
+  std::optional<t81::canonfs::CanonRef> object_ref{};
   bool registered{false};
   bool blocked{false};
   bool suspended{false};

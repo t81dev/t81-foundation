@@ -7339,13 +7339,8 @@ static void test_kernel_abi_wire_call_boundary() {
   const auto register_service_request = axion_kernel_encode_wire_request(
       KernelCallRequest{
           .kind = KernelCallKind::RegisterService,
-          .service_name = "wire.svc.entry",
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
-              .pc = 18,
-              .sp = 54,
-              .register0 = 818,
-              .label = "wire-service-entry",
-          },
+          .service_name = "wire.svc.exec",
+          .object_ref = wire_executable_ref,
       });
   KernelCallWireResponseBlock register_service_response;
   check(axion_kernel_call_wire(*state,
@@ -7365,15 +7360,17 @@ static void test_kernel_abi_wire_call_boundary() {
           "wire ABI service registration reports stored service entry descriptor");
     check(decoded_register_service->service_entry_descriptor.has_value(),
           "wire ABI service registration exposes stored service entry descriptor");
+    check(canon_ref_matches(decoded_register_service->object_ref, wire_executable_ref),
+          "wire ABI service registration preserves executable object ref");
     if (decoded_register_service->service_entry_descriptor) {
-      check(decoded_register_service->service_entry_descriptor->pc == 18,
+      check(decoded_register_service->service_entry_descriptor->pc == 19,
             "wire ABI service registration entry descriptor preserves pc");
-      check(decoded_register_service->service_entry_descriptor->sp == 54,
+      check(decoded_register_service->service_entry_descriptor->sp == 57,
             "wire ABI service registration entry descriptor preserves sp");
-      check(decoded_register_service->service_entry_descriptor->register0 == 818,
+      check(decoded_register_service->service_entry_descriptor->register0 == 616,
             "wire ABI service registration entry descriptor preserves register0");
       check(decoded_register_service->service_entry_descriptor->label ==
-                "wire-service-entry",
+                "wire-executable-entry",
             "wire ABI service registration entry descriptor preserves label");
     }
   }
@@ -7404,20 +7401,20 @@ static void test_kernel_abi_wire_call_boundary() {
             decoded_query_supervisor_services->supervisor_services.front();
         check(service_entry.id == *decoded_register_service->service_id,
               "wire ABI supervisor service-inventory preserves service id");
-        check(service_entry.name == "wire.svc.entry",
+        check(service_entry.name == "wire.svc.exec",
               "wire ABI supervisor service-inventory preserves service name");
         check(service_entry.has_entry_descriptor,
               "wire ABI supervisor service-inventory reports service entry descriptor");
         check(service_entry.entry_descriptor.has_value(),
               "wire ABI supervisor service-inventory exposes service entry descriptor");
         if (service_entry.entry_descriptor) {
-          check(service_entry.entry_descriptor->pc == 18,
+          check(service_entry.entry_descriptor->pc == 19,
                 "wire ABI supervisor service-inventory entry descriptor preserves pc");
-          check(service_entry.entry_descriptor->sp == 54,
+          check(service_entry.entry_descriptor->sp == 57,
                 "wire ABI supervisor service-inventory entry descriptor preserves sp");
-          check(service_entry.entry_descriptor->register0 == 818,
+          check(service_entry.entry_descriptor->register0 == 616,
                 "wire ABI supervisor service-inventory entry descriptor preserves register0");
-          check(service_entry.entry_descriptor->label == "wire-service-entry",
+          check(service_entry.entry_descriptor->label == "wire-executable-entry",
                 "wire ABI supervisor service-inventory entry descriptor preserves label");
         }
       }
@@ -7440,19 +7437,21 @@ static void test_kernel_abi_wire_call_boundary() {
     if (decoded_query_service) {
       check(decoded_query_service->status == KernelCallStatus::Ok,
             "wire ABI service-status query returns Ok");
+      check(canon_ref_matches(decoded_query_service->object_ref, wire_executable_ref),
+            "wire ABI service-status query preserves executable object ref");
       check(decoded_query_service->service_has_entry_descriptor,
             "wire ABI service-status query reports stored service entry descriptor");
       check(decoded_query_service->service_entry_descriptor.has_value(),
             "wire ABI service-status query exposes stored service entry descriptor");
       if (decoded_query_service->service_entry_descriptor) {
-        check(decoded_query_service->service_entry_descriptor->pc == 18,
+        check(decoded_query_service->service_entry_descriptor->pc == 19,
               "wire ABI service-status query entry descriptor preserves pc");
-        check(decoded_query_service->service_entry_descriptor->sp == 54,
+        check(decoded_query_service->service_entry_descriptor->sp == 57,
               "wire ABI service-status query entry descriptor preserves sp");
-        check(decoded_query_service->service_entry_descriptor->register0 == 818,
+        check(decoded_query_service->service_entry_descriptor->register0 == 616,
               "wire ABI service-status query entry descriptor preserves register0");
         check(decoded_query_service->service_entry_descriptor->label ==
-                  "wire-service-entry",
+                  "wire-executable-entry",
               "wire ABI service-status query entry descriptor preserves label");
       }
     }
@@ -7493,6 +7492,8 @@ static void test_kernel_abi_wire_call_boundary() {
     if (decoded_query_supervisor_service) {
       check(decoded_query_supervisor_service->status == KernelCallStatus::Ok,
             "wire ABI supervisor service-status returns Ok");
+      check(canon_ref_matches(decoded_query_supervisor_service->object_ref, wire_executable_ref),
+            "wire ABI supervisor service-status preserves executable object ref");
       check(decoded_query_supervisor_service->service_unhealthy,
             "wire ABI supervisor service-status preserves unhealthy state");
       check(decoded_query_supervisor_service->service_has_entry_descriptor,
@@ -7524,13 +7525,13 @@ static void test_kernel_abi_wire_call_boundary() {
         check(spawned_context != nullptr,
               "wire ABI service-owned spawn creates the returned thread");
         if (spawned_context) {
-          check(spawned_context->pc == 18,
+          check(spawned_context->pc == 19,
                 "wire ABI service-owned spawn applies the registered pc");
-          check(spawned_context->sp == 54,
+          check(spawned_context->sp == 57,
                 "wire ABI service-owned spawn applies the registered sp");
-          check(spawned_context->registers[0] == 818,
+          check(spawned_context->registers[0] == 616,
                 "wire ABI service-owned spawn applies the registered register0");
-          check(spawned_context->label == "wire-service-entry",
+          check(spawned_context->label == "wire-executable-entry",
                 "wire ABI service-owned spawn applies the registered label");
         }
       }
@@ -8093,13 +8094,8 @@ static void test_kernel_call_c_bridge() {
   const auto register_service_request = axion_kernel_encode_wire_request(
       KernelCallRequest{
           .kind = KernelCallKind::RegisterService,
-          .service_name = "c.svc.entry",
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
-              .pc = 24,
-              .sp = 72,
-              .register0 = 929,
-              .label = "c-service-entry",
-          },
+          .service_name = "c.svc.exec",
+          .object_ref = c_executable_ref,
       });
   KernelCallWireResponseBlock register_service_response;
   check(ternaryos_kernel_call_c(&*state,
@@ -8121,15 +8117,17 @@ static void test_kernel_call_c_bridge() {
           "C kernel-call bridge service registration reports stored service entry descriptor");
     check(decoded_register_service->service_entry_descriptor.has_value(),
           "C kernel-call bridge service registration exposes stored service entry descriptor");
+    check(canon_ref_matches(decoded_register_service->object_ref, c_executable_ref),
+          "C kernel-call bridge service registration preserves executable object ref");
     if (decoded_register_service->service_entry_descriptor) {
       check(decoded_register_service->service_entry_descriptor->pc == 24,
             "C kernel-call bridge service registration entry descriptor preserves pc");
       check(decoded_register_service->service_entry_descriptor->sp == 72,
             "C kernel-call bridge service registration entry descriptor preserves sp");
-      check(decoded_register_service->service_entry_descriptor->register0 == 929,
+      check(decoded_register_service->service_entry_descriptor->register0 == 818,
             "C kernel-call bridge service registration entry descriptor preserves register0");
       check(decoded_register_service->service_entry_descriptor->label ==
-                "c-service-entry",
+                "c-executable-entry",
             "C kernel-call bridge service registration entry descriptor preserves label");
     }
   }
@@ -8162,7 +8160,7 @@ static void test_kernel_call_c_bridge() {
             decoded_query_supervisor_services->supervisor_services.front();
         check(service_entry.id == *decoded_register_service->service_id,
               "C kernel-call bridge supervisor service-inventory preserves service id");
-        check(service_entry.name == "c.svc.entry",
+        check(service_entry.name == "c.svc.exec",
               "C kernel-call bridge supervisor service-inventory preserves service name");
         check(service_entry.has_entry_descriptor,
               "C kernel-call bridge supervisor service-inventory reports service entry descriptor");
@@ -8173,9 +8171,9 @@ static void test_kernel_call_c_bridge() {
                 "C kernel-call bridge supervisor service-inventory entry descriptor preserves pc");
           check(service_entry.entry_descriptor->sp == 72,
                 "C kernel-call bridge supervisor service-inventory entry descriptor preserves sp");
-          check(service_entry.entry_descriptor->register0 == 929,
+          check(service_entry.entry_descriptor->register0 == 818,
                 "C kernel-call bridge supervisor service-inventory entry descriptor preserves register0");
-          check(service_entry.entry_descriptor->label == "c-service-entry",
+          check(service_entry.entry_descriptor->label == "c-executable-entry",
                 "C kernel-call bridge supervisor service-inventory entry descriptor preserves label");
         }
       }
@@ -8200,6 +8198,8 @@ static void test_kernel_call_c_bridge() {
     if (decoded_query_service) {
       check(decoded_query_service->status == KernelCallStatus::Ok,
             "C kernel-call bridge service-status query returns Ok");
+      check(canon_ref_matches(decoded_query_service->object_ref, c_executable_ref),
+            "C kernel-call bridge service-status query preserves executable object ref");
       check(decoded_query_service->service_has_entry_descriptor,
             "C kernel-call bridge service-status query reports stored service entry descriptor");
       check(decoded_query_service->service_entry_descriptor.has_value(),
@@ -8209,10 +8209,10 @@ static void test_kernel_call_c_bridge() {
               "C kernel-call bridge service-status query entry descriptor preserves pc");
         check(decoded_query_service->service_entry_descriptor->sp == 72,
               "C kernel-call bridge service-status query entry descriptor preserves sp");
-        check(decoded_query_service->service_entry_descriptor->register0 == 929,
+        check(decoded_query_service->service_entry_descriptor->register0 == 818,
               "C kernel-call bridge service-status query entry descriptor preserves register0");
         check(decoded_query_service->service_entry_descriptor->label ==
-                  "c-service-entry",
+                  "c-executable-entry",
               "C kernel-call bridge service-status query entry descriptor preserves label");
       }
     }
@@ -8257,6 +8257,8 @@ static void test_kernel_call_c_bridge() {
     if (decoded_query_supervisor_service) {
       check(decoded_query_supervisor_service->status == KernelCallStatus::Ok,
             "C kernel-call bridge supervisor service-status returns Ok");
+      check(canon_ref_matches(decoded_query_supervisor_service->object_ref, c_executable_ref),
+            "C kernel-call bridge supervisor service-status preserves executable object ref");
       check(decoded_query_supervisor_service->service_unhealthy,
             "C kernel-call bridge supervisor service-status preserves unhealthy state");
       check(decoded_query_supervisor_service->service_has_entry_descriptor,
@@ -8294,9 +8296,9 @@ static void test_kernel_call_c_bridge() {
                 "C kernel-call bridge service-owned spawn applies the registered pc");
           check(spawned_context->sp == 72,
                 "C kernel-call bridge service-owned spawn applies the registered sp");
-          check(spawned_context->registers[0] == 929,
+          check(spawned_context->registers[0] == 818,
                 "C kernel-call bridge service-owned spawn applies the registered register0");
-          check(spawned_context->label == "c-service-entry",
+          check(spawned_context->label == "c-executable-entry",
                 "C kernel-call bridge service-owned spawn applies the registered label");
         }
       }
@@ -9123,17 +9125,29 @@ static void test_kernel_service_abi_calls() {
   check(state->scheduler.current_tid() == *owner_tid,
         "owner thread is current before service ABI calls");
 
-  auto register_service = axion_kernel_call(
+  t81::canonfs::CanonRef service_executable_ref;
+  service_executable_ref.hash.h.bytes.fill(0x48);
+  auto register_executable = axion_kernel_call(
       *state,
       KernelCallRequest{
-          .kind = KernelCallKind::RegisterService,
-          .service_name = std::string{"svc.abi"},
+          .kind = KernelCallKind::RegisterExecutableObject,
+          .object_ref = service_executable_ref,
           .spawn_descriptor = KernelThreadSpawnDescriptor{
               .pc = 57,
               .sp = 171,
               .register0 = 808,
               .label = "svc-abi-entry",
           },
+      });
+  check(register_executable.status == KernelCallStatus::Ok,
+        "service ABI executable registration returns Ok");
+
+  auto register_service = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterService,
+          .service_name = std::string{"svc.abi"},
+          .object_ref = service_executable_ref,
       });
   check(register_service.status == KernelCallStatus::Ok,
         "service ABI register returns Ok");
@@ -9145,6 +9159,8 @@ static void test_kernel_service_abi_calls() {
         "service ABI register returns the registered name");
   check(register_service.service_registered,
         "service ABI register reports registered service state");
+  check(canon_ref_matches(register_service.object_ref, service_executable_ref),
+        "service ABI register preserves executable object ref");
   check(register_service.service_has_entry_descriptor,
         "service ABI register reports stored service entry-descriptor presence");
   check(register_service.service_entry_descriptor.has_value(),
@@ -9173,6 +9189,8 @@ static void test_kernel_service_abi_calls() {
       });
   check(spawn_for_service.status == KernelCallStatus::Ok,
         "service ABI spawn-for-service returns Ok");
+  check(canon_ref_matches(spawn_for_service.object_ref, service_executable_ref),
+        "service ABI spawn-for-service preserves executable object ref");
   check(spawn_for_service.spawned_tid.has_value(),
         "service ABI spawn-for-service returns a spawned tid");
   if (spawn_for_service.spawned_tid) {
@@ -9206,6 +9224,8 @@ static void test_kernel_service_abi_calls() {
         "service ABI query returns the registered name");
   check(query_service.service_registered,
         "service ABI query reports registered service state");
+  check(canon_ref_matches(query_service.object_ref, service_executable_ref),
+        "service ABI query preserves executable object ref");
   check(query_service.service_has_entry_descriptor,
         "service ABI query reports stored service entry-descriptor presence");
   check(query_service.service_entry_descriptor.has_value(),
@@ -9232,6 +9252,8 @@ static void test_kernel_service_abi_calls() {
           "service ABI supervisor inventory preserves service id");
     check(service_entry.name == "svc.abi",
           "service ABI supervisor inventory preserves service name");
+    check(canon_ref_matches(service_entry.object_ref, service_executable_ref),
+          "service ABI supervisor inventory preserves executable object ref");
     check(service_entry.has_entry_descriptor,
           "service ABI supervisor inventory reports service entry descriptor");
     check(service_entry.entry_descriptor.has_value(),
@@ -9352,6 +9374,8 @@ static void test_kernel_service_abi_calls() {
         "supervisor service-status ABI query can inspect an unhealthy managed service");
   check(query_supervisor_service_unhealthy.service_id == register_service.service_id,
         "supervisor service-status ABI query returns the target service id");
+  check(canon_ref_matches(query_supervisor_service_unhealthy.object_ref, service_executable_ref),
+        "supervisor service-status ABI query preserves executable object ref");
   check(query_supervisor_service_unhealthy.service_unhealthy,
         "supervisor service-status ABI query preserves unhealthy service state");
   check(query_supervisor_service_unhealthy.service_has_entry_descriptor,

@@ -43,6 +43,9 @@ Recent architecture milestone:
 - Services can now retain an optional thread entry descriptor during
   `RegisterService`, and `SpawnThreadForService` can execute that stored
   descriptor in the owning process group.
+- Services can now also bind to a previously registered executable object by
+  CanonRef during `RegisterService`, and service register/query/spawn results
+  now preserve that backing executable object identity.
 - Service status and supervisor service-inventory views now also expose that
   stored service entry descriptor, and the typed ABI mirrors that state on
   `RegisterService` / `QueryServiceStatus`.
@@ -330,7 +333,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 2577 | 1 |
+| `t81_ternaryos_hal_boot_test` | 2589 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -338,7 +341,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **3453** | |
+| **Total** | **3465** | |
 
 Run all TernOS tests:
 

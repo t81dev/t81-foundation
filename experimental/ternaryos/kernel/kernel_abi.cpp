@@ -376,6 +376,16 @@ std::optional<SupervisorId> resolve_effective_supervisor_id(
       state.find_process_group_supervisor(caller.process_group_id).value_or(0));
 }
 
+bool spawn_descriptors_match(const KernelThreadSpawnDescriptor& lhs,
+                             const KernelThreadSpawnDescriptor& rhs) noexcept {
+  return lhs.pc == rhs.pc &&
+         lhs.sp == rhs.sp &&
+         lhs.register0 == rhs.register0 &&
+         lhs.halted == rhs.halted &&
+         lhs.active == rhs.active &&
+         lhs.label == rhs.label;
+}
+
 KernelCallResult map_service_action_result(const CallerContext& caller,
                                            const KernelServiceActionResult& action_result);
 
@@ -435,6 +445,23 @@ KernelCallResult dispatch_service_register(const CallerContext& caller,
     result.rejection = KernelCallRejection::MissingServiceName;
     return result;
   }
+  std::optional<KernelThreadSpawnDescriptor> effective_spawn_descriptor =
+      request.spawn_descriptor;
+  if (request.object_ref.has_value()) {
+    const KernelRuntimeState::ExecutableRecord* executable_record = nullptr;
+    if (auto invalid = resolve_executable_record(caller, request, executable_record);
+        invalid.has_value()) {
+      return *invalid;
+    }
+    if (effective_spawn_descriptor.has_value() &&
+        !spawn_descriptors_match(*effective_spawn_descriptor,
+                                 executable_record->entry_descriptor)) {
+      result.status = KernelCallStatus::InvalidRequest;
+      result.rejection = KernelCallRejection::ServiceActionRejected;
+      return result;
+    }
+    effective_spawn_descriptor = executable_record->entry_descriptor;
+  }
   return map_service_action_result(
       caller,
       axion_kernel_service_action(
@@ -443,7 +470,8 @@ KernelCallResult dispatch_service_register(const CallerContext& caller,
               .kind = KernelServiceActionKind::RegisterService,
               .requesting_process_group_id = caller.process_group_id,
               .service_name = *request.service_name,
-              .spawn_descriptor = request.spawn_descriptor,
+              .object_ref = request.object_ref,
+              .spawn_descriptor = effective_spawn_descriptor,
           }));
 }
 
@@ -546,6 +574,7 @@ KernelCallResult map_service_action_result(const CallerContext& caller,
   if (action_result.service.has_value()) {
     result.service_id = action_result.service->id;
     result.service_name = action_result.service->name;
+    result.object_ref = action_result.service->object_ref;
     result.service_entry_descriptor = action_result.service->entry_descriptor;
   }
   switch (action_result.status) {
@@ -559,10 +588,13 @@ KernelCallResult map_service_action_result(const CallerContext& caller,
       break;
     case KernelServiceStatus::InvalidRequest:
       result.status = KernelCallStatus::InvalidRequest;
-      result.rejection = action_result.rejection ==
-                                 KernelServiceActionRejection::MissingServiceName
-                             ? KernelCallRejection::MissingServiceName
-                             : KernelCallRejection::ServiceActionRejected;
+      result.rejection =
+          action_result.rejection == KernelServiceActionRejection::MissingServiceName
+              ? KernelCallRejection::MissingServiceName
+          : action_result.rejection ==
+                    KernelServiceActionRejection::MissingExecutableRegistration
+              ? KernelCallRejection::MissingExecutableRegistration
+              : KernelCallRejection::ServiceActionRejected;
       break;
     case KernelServiceStatus::FaultedGroup:
       result.status = KernelCallStatus::FaultedCaller;
@@ -595,6 +627,7 @@ KernelCallResult map_service_request_result(const CallerContext& caller,
   if (request_result.service.has_value()) {
     result.service_id = request_result.service->id;
     result.service_name = request_result.service->name;
+    result.object_ref = request_result.service->object_ref;
     result.service_registered = request_result.service->registered;
     result.service_has_entry_descriptor =
         request_result.service->has_entry_descriptor;
@@ -665,6 +698,7 @@ KernelCallResult map_service_request_result(const CallerContext& caller,
           .id = service.id,
           .name = service.name,
           .process_group_id = service.process_group_id,
+          .object_ref = service.object_ref,
           .registered = service.registered,
           .blocked = service.blocked,
           .suspended = service.suspended,
@@ -900,6 +934,7 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.spawned_tid = *spawned_tid;
       result.service_id = service_state->id;
       result.service_name = service_state->name;
+      result.object_ref = service_state->object_ref;
       return result;
     }
     case KernelCallKind::SpawnThreadInCallerGroup: {
