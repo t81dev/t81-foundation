@@ -39,7 +39,9 @@ void record_supervisor_service_transition(KernelRuntimeState& state,
 KernelRuntimeState::ServiceState* create_service(KernelRuntimeState& state,
                                                  std::string name,
                                                  ProcessGroupId process_group_id,
-                                                 SupervisorId supervisor_id) {
+                                                 SupervisorId supervisor_id,
+                                                 std::optional<KernelThreadSpawnDescriptor>
+                                                     entry_descriptor = std::nullopt) {
   const ServiceId id = state.next_service_id++;
   auto [it, inserted] = state.services.emplace(
       id,
@@ -48,6 +50,7 @@ KernelRuntimeState::ServiceState* create_service(KernelRuntimeState& state,
           .name = std::move(name),
           .supervisor_id = supervisor_id,
           .process_group_id = process_group_id,
+          .entry_descriptor = std::move(entry_descriptor),
           .registered = true,
       });
   if (!inserted) {
@@ -258,7 +261,11 @@ KernelServiceActionResult axion_kernel_service_action(
         return result;
       }
       auto* service_state = create_service(
-          state, *action.service_name, *action.requesting_process_group_id, *supervisor_id);
+          state,
+          *action.service_name,
+          *action.requesting_process_group_id,
+          *supervisor_id,
+          action.spawn_descriptor);
       if (!service_state) {
         result.status = KernelServiceStatus::InvalidRequest;
         result.rejection = KernelServiceActionRejection::DuplicateService;

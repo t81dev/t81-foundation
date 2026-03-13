@@ -417,6 +417,7 @@ KernelCallResult dispatch_service_register(const CallerContext& caller,
               .kind = KernelServiceActionKind::RegisterService,
               .requesting_process_group_id = caller.process_group_id,
               .service_name = *request.service_name,
+              .spawn_descriptor = request.spawn_descriptor,
           }));
 }
 
@@ -453,6 +454,31 @@ KernelCallResult dispatch_service_action_with_id(const CallerContext& caller,
               .requesting_process_group_id = caller.process_group_id,
               .service_id = *request.service_id,
           }));
+}
+
+std::optional<KernelCallResult> resolve_owned_service(
+    KernelRuntimeState& state,
+    const CallerContext& caller,
+    const KernelCallRequest& request,
+    KernelRuntimeState::ServiceState*& service_state) {
+  auto result = init_result(caller);
+  if (!request.service_id.has_value()) {
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::MissingService;
+    return result;
+  }
+  service_state = state.find_service_mut(*request.service_id);
+  if (!service_state || !service_state->registered) {
+    result.status = KernelCallStatus::NotFound;
+    result.rejection = KernelCallRejection::MissingService;
+    return result;
+  }
+  if (service_state->process_group_id != caller.process_group_id) {
+    result.status = KernelCallStatus::PolicyDenied;
+    result.rejection = KernelCallRejection::ServiceActionRejected;
+    return result;
+  }
+  return std::nullopt;
 }
 
 KernelCallResult dispatch_supervisor_request(const CallerContext& caller,
@@ -706,6 +732,36 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.action_performed = true;
       result.spawned_tid = *spawned_tid;
       result.service_name = request.service_name;
+      return result;
+    }
+    case KernelCallKind::SpawnThreadForService: {
+      if (auto denied = require_capability(caller, KernelCapabilityKind::ThreadSpawn);
+          denied.has_value()) {
+        return *denied;
+      }
+      KernelRuntimeState::ServiceState* service_state = nullptr;
+      if (auto invalid = resolve_owned_service(state, caller, request, service_state);
+          invalid.has_value()) {
+        return *invalid;
+      }
+      if (!service_state->entry_descriptor.has_value()) {
+        result.status = KernelCallStatus::NotFound;
+        result.rejection = KernelCallRejection::MissingEntryRegistration;
+        return result;
+      }
+      const auto spawned_tid = axion_kernel_spawn_thread_in_group(
+          state, make_spawn_context(service_state->entry_descriptor), caller.process_group_id);
+      if (!spawned_tid.has_value()) {
+        result.status = KernelCallStatus::Conflict;
+        result.rejection = KernelCallRejection::ServiceActionRejected;
+        return result;
+      }
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.spawned_tid = *spawned_tid;
+      result.service_id = service_state->id;
+      result.service_name = service_state->name;
       return result;
     }
     case KernelCallKind::SpawnThreadInCallerGroup: {

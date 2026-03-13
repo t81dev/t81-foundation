@@ -97,6 +97,7 @@ struct KernelRuntimeState {
     std::string name;
     SupervisorId supervisor_id{0};
     ProcessGroupId process_group_id{0};
+    std::optional<KernelThreadSpawnDescriptor> entry_descriptor{};
     bool blocked{false};
     bool suspended{false};
     bool unhealthy{false};

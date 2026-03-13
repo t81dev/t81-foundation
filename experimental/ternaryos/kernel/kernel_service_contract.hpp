@@ -607,6 +607,7 @@ struct KernelServiceAction {
   std::optional<SupervisorId> supervisor_id{};
   std::optional<ServiceId> service_id{};
   std::optional<std::string> service_name{};
+  std::optional<KernelThreadSpawnDescriptor> spawn_descriptor{};
   std::optional<std::string> device_name{};
 };
 

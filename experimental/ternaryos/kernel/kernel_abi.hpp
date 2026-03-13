@@ -75,6 +75,7 @@ enum class KernelCallKind : uint8_t {
   RevokeCapability,
   RevokeDelegatedCapabilities,
   RegisterService,
+  SpawnThreadForService,
   QueryServiceStatus,
   SuspendService,
   ResumeService,

@@ -7168,6 +7168,72 @@ static void test_kernel_abi_wire_call_boundary() {
     }
   }
 
+  const auto register_service_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterService,
+          .service_name = "wire.svc.entry",
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 18,
+              .sp = 54,
+              .register0 = 818,
+              .label = "wire-service-entry",
+          },
+      });
+  KernelCallWireResponseBlock register_service_response;
+  check(axion_kernel_call_wire(*state,
+                               &register_service_request,
+                               &register_service_response),
+        "wire ABI call boundary accepts a service registration with entry descriptor");
+  const auto decoded_register_service =
+      axion_kernel_decode_wire_response(register_service_response);
+  check(decoded_register_service.has_value(),
+        "wire ABI service registration with entry descriptor decodes");
+  if (decoded_register_service) {
+    check(decoded_register_service->status == KernelCallStatus::Ok,
+          "wire ABI service registration with entry descriptor returns Ok");
+    check(decoded_register_service->service_id.has_value(),
+          "wire ABI service registration with entry descriptor returns a service id");
+  }
+
+  if (decoded_register_service && decoded_register_service->service_id) {
+    const auto spawn_for_service_request = axion_kernel_encode_wire_request(
+        KernelCallRequest{
+            .kind = KernelCallKind::SpawnThreadForService,
+            .service_id = *decoded_register_service->service_id,
+        });
+    KernelCallWireResponseBlock spawn_for_service_response;
+    check(axion_kernel_call_wire(*state,
+                                 &spawn_for_service_request,
+                                 &spawn_for_service_response),
+          "wire ABI call boundary accepts a service-owned spawn request");
+    const auto decoded_spawn_for_service =
+        axion_kernel_decode_wire_response(spawn_for_service_response);
+    check(decoded_spawn_for_service.has_value(),
+          "wire ABI service-owned spawn response decodes");
+    if (decoded_spawn_for_service) {
+      check(decoded_spawn_for_service->status == KernelCallStatus::Ok,
+            "wire ABI service-owned spawn returns Ok");
+      check(decoded_spawn_for_service->spawned_tid.has_value(),
+            "wire ABI service-owned spawn returns a spawned tid");
+      if (decoded_spawn_for_service->spawned_tid) {
+        const auto* spawned_context =
+            state->scheduler.run_queue().find(*decoded_spawn_for_service->spawned_tid);
+        check(spawned_context != nullptr,
+              "wire ABI service-owned spawn creates the returned thread");
+        if (spawned_context) {
+          check(spawned_context->pc == 18,
+                "wire ABI service-owned spawn applies the registered pc");
+          check(spawned_context->sp == 54,
+                "wire ABI service-owned spawn applies the registered sp");
+          check(spawned_context->registers[0] == 818,
+                "wire ABI service-owned spawn applies the registered register0");
+          check(spawned_context->label == "wire-service-entry",
+                "wire ABI service-owned spawn applies the registered label");
+        }
+      }
+    }
+  }
+
   t81::canonfs::CanonRef send_ref;
   send_ref.hash.h.bytes.fill(0x31);
 
@@ -7588,6 +7654,76 @@ static void test_kernel_call_c_bridge() {
               "C kernel-call bridge named-entry spawn applies the registered register0");
         check(spawned_context->label == "c-entry-label",
               "C kernel-call bridge named-entry spawn applies the registered label");
+      }
+    }
+  }
+
+  const auto register_service_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterService,
+          .service_name = "c.svc.entry",
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 24,
+              .sp = 72,
+              .register0 = 929,
+              .label = "c-service-entry",
+          },
+      });
+  KernelCallWireResponseBlock register_service_response;
+  check(ternaryos_kernel_call_c(&*state,
+                                &register_service_request,
+                                sizeof(register_service_request),
+                                &register_service_response,
+                                sizeof(register_service_response)) == 0,
+        "C kernel-call bridge accepts a service registration with entry descriptor");
+  const auto decoded_register_service =
+      axion_kernel_decode_wire_response(register_service_response);
+  check(decoded_register_service.has_value(),
+        "C kernel-call bridge service registration with entry descriptor decodes");
+  if (decoded_register_service) {
+    check(decoded_register_service->status == KernelCallStatus::Ok,
+          "C kernel-call bridge service registration with entry descriptor returns Ok");
+    check(decoded_register_service->service_id.has_value(),
+          "C kernel-call bridge service registration with entry descriptor returns a service id");
+  }
+
+  if (decoded_register_service && decoded_register_service->service_id) {
+    const auto spawn_for_service_request = axion_kernel_encode_wire_request(
+        KernelCallRequest{
+            .kind = KernelCallKind::SpawnThreadForService,
+            .service_id = *decoded_register_service->service_id,
+        });
+    KernelCallWireResponseBlock spawn_for_service_response;
+    check(ternaryos_kernel_call_c(&*state,
+                                  &spawn_for_service_request,
+                                  sizeof(spawn_for_service_request),
+                                  &spawn_for_service_response,
+                                  sizeof(spawn_for_service_response)) == 0,
+          "C kernel-call bridge accepts a service-owned spawn request");
+    const auto decoded_spawn_for_service =
+        axion_kernel_decode_wire_response(spawn_for_service_response);
+    check(decoded_spawn_for_service.has_value(),
+          "C kernel-call bridge service-owned spawn decodes");
+    if (decoded_spawn_for_service) {
+      check(decoded_spawn_for_service->status == KernelCallStatus::Ok,
+            "C kernel-call bridge service-owned spawn returns Ok");
+      check(decoded_spawn_for_service->spawned_tid.has_value(),
+            "C kernel-call bridge service-owned spawn returns a spawned tid");
+      if (decoded_spawn_for_service->spawned_tid) {
+        const auto* spawned_context =
+            state->scheduler.run_queue().find(*decoded_spawn_for_service->spawned_tid);
+        check(spawned_context != nullptr,
+              "C kernel-call bridge service-owned spawn creates the returned thread");
+        if (spawned_context) {
+          check(spawned_context->pc == 24,
+                "C kernel-call bridge service-owned spawn applies the registered pc");
+          check(spawned_context->sp == 72,
+                "C kernel-call bridge service-owned spawn applies the registered sp");
+          check(spawned_context->registers[0] == 929,
+                "C kernel-call bridge service-owned spawn applies the registered register0");
+          check(spawned_context->label == "c-service-entry",
+                "C kernel-call bridge service-owned spawn applies the registered label");
+        }
       }
     }
   }
@@ -8288,6 +8424,12 @@ static void test_kernel_service_abi_calls() {
       KernelCallRequest{
           .kind = KernelCallKind::RegisterService,
           .service_name = std::string{"svc.abi"},
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 57,
+              .sp = 171,
+              .register0 = 808,
+              .label = "svc-abi-entry",
+          },
       });
   check(register_service.status == KernelCallStatus::Ok,
         "service ABI register returns Ok");
@@ -8299,8 +8441,37 @@ static void test_kernel_service_abi_calls() {
         "service ABI register returns the registered name");
   check(register_service.service_registered,
         "service ABI register reports registered service state");
+  check(register_service.service_name == std::optional<std::string>{"svc.abi"},
+        "service ABI register preserves service name");
   if (!register_service.service_id) {
     return;
+  }
+
+  auto spawn_for_service = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SpawnThreadForService,
+          .service_id = *register_service.service_id,
+      });
+  check(spawn_for_service.status == KernelCallStatus::Ok,
+        "service ABI spawn-for-service returns Ok");
+  check(spawn_for_service.spawned_tid.has_value(),
+        "service ABI spawn-for-service returns a spawned tid");
+  if (spawn_for_service.spawned_tid) {
+    const auto* spawned_context =
+        state->scheduler.run_queue().find(*spawn_for_service.spawned_tid);
+    check(spawned_context != nullptr,
+          "service ABI spawn-for-service creates the returned thread");
+    if (spawned_context) {
+      check(spawned_context->pc == 57,
+            "service ABI spawn-for-service applies the registered pc");
+      check(spawned_context->sp == 171,
+            "service ABI spawn-for-service applies the registered sp");
+      check(spawned_context->registers[0] == 808,
+            "service ABI spawn-for-service applies the registered register0");
+      check(spawned_context->label == "svc-abi-entry",
+            "service ABI spawn-for-service applies the registered label");
+    }
   }
 
   auto query_service = axion_kernel_call(
