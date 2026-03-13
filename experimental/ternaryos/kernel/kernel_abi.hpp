@@ -106,6 +106,7 @@ enum class KernelCallRejection : uint8_t {
   MissingCapability,
   MissingTargetProcessGroup,
   MissingAddressSpace,
+  InvalidAddressSpaceSpan,
   MissingBootCriticalValue,
   InvalidCapabilityRecordId,
   MissingCapabilityTransition,

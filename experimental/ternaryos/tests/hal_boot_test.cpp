@@ -7700,8 +7700,36 @@ static void test_kernel_call_tva_c_bridge() {
         "TVA kernel-call bridge can seed unreadable request storage through kernel ownership");
   check(ternaryos_kernel_call_tva_c(&*state,
                                     unreadable_request_tva,
-                                    response_tva) != 0,
-        "TVA kernel-call bridge rejects unreadable request pages");
+                                    response_tva) == 0,
+        "TVA kernel-call bridge returns a structured response for unreadable request pages");
+  KernelCallWireResponseBlock unreadable_response_block;
+  check(axion_kernel_read_address_space_bytes(
+            *state,
+            *caller_address_space,
+            response_tva,
+            reinterpret_cast<std::byte*>(&unreadable_response_block),
+            sizeof(unreadable_response_block)),
+        "TVA kernel-call bridge reads unreadable-request response block");
+  const auto decoded_unreadable_response =
+      axion_kernel_decode_wire_response(unreadable_response_block);
+  check(decoded_unreadable_response.has_value(),
+        "TVA kernel-call bridge unreadable-request response decodes");
+  if (decoded_unreadable_response) {
+    check(decoded_unreadable_response->status == KernelCallStatus::InvalidRequest,
+          "TVA kernel-call bridge unreadable request reports InvalidRequest");
+    check(decoded_unreadable_response->rejection ==
+              KernelCallRejection::InvalidAddressSpaceSpan,
+          "TVA kernel-call bridge unreadable request reports InvalidAddressSpaceSpan");
+    check(decoded_unreadable_response->fault.has_value(),
+          "TVA kernel-call bridge unreadable request returns a fault record");
+    if (decoded_unreadable_response->fault) {
+      check(decoded_unreadable_response->fault->tva == unreadable_request_tva,
+            "TVA kernel-call bridge unreadable request fault preserves request TVA");
+      check(decoded_unreadable_response->fault->fault ==
+                t81::ternaryos::mmu::MmuFault::PermissionDenied,
+            "TVA kernel-call bridge unreadable request fault reports permission denial");
+    }
+  }
 
   const uint64_t readonly_response_tva =
       t81::ternaryos::mmu::tva_from_vpn_offset(86, 0);
@@ -7748,8 +7776,36 @@ static void test_kernel_call_tva_c_bridge() {
             "TVA kernel-call bridge writes request block into outsider memory");
       check(ternaryos_kernel_call_tva_c(&*state,
                                         foreign_request_tva,
-                                        response_tva) != 0,
-            "TVA kernel-call bridge rejects foreign address-space request pages");
+                                        response_tva) == 0,
+            "TVA kernel-call bridge returns a structured response for foreign request pages");
+      KernelCallWireResponseBlock foreign_response_block;
+      check(axion_kernel_read_address_space_bytes(
+                *state,
+                *caller_address_space,
+                response_tva,
+                reinterpret_cast<std::byte*>(&foreign_response_block),
+                sizeof(foreign_response_block)),
+            "TVA kernel-call bridge reads foreign-request response block");
+      const auto decoded_foreign_response =
+          axion_kernel_decode_wire_response(foreign_response_block);
+      check(decoded_foreign_response.has_value(),
+            "TVA kernel-call bridge foreign-request response decodes");
+      if (decoded_foreign_response) {
+        check(decoded_foreign_response->status == KernelCallStatus::InvalidRequest,
+              "TVA kernel-call bridge foreign request reports InvalidRequest");
+        check(decoded_foreign_response->rejection ==
+                  KernelCallRejection::InvalidAddressSpaceSpan,
+              "TVA kernel-call bridge foreign request reports InvalidAddressSpaceSpan");
+        check(decoded_foreign_response->fault.has_value(),
+              "TVA kernel-call bridge foreign request returns a fault record");
+        if (decoded_foreign_response->fault) {
+          check(decoded_foreign_response->fault->tva == foreign_request_tva,
+                "TVA kernel-call bridge foreign request fault preserves request TVA");
+          check(decoded_foreign_response->fault->fault ==
+                    t81::ternaryos::mmu::MmuFault::PermissionDenied,
+                "TVA kernel-call bridge foreign request fault reports permission denial");
+        }
+      }
     }
   }
   check(ternaryos_kernel_call_tva_c(nullptr,

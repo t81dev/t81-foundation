@@ -495,10 +495,62 @@ std::optional<AddressSpaceId> resolve_current_caller_address_space(
   return state.find_process_group_address_space(caller_runtime->process_group_id);
 }
 
+std::optional<KernelFaultRecord> resolve_address_space_span_fault(
+    const KernelRuntimeState& state,
+    AddressSpaceId address_space_id,
+    uint64_t tva,
+    std::size_t size,
+    mmu::MmuAccessMode mode) {
+  if (!mmu::tva_valid(tva) ||
+      (size > 0 && (!mmu::tva_valid(tva + size - 1) || tva + size - 1 < tva))) {
+    return KernelFaultRecord{
+        .platform_id = state.platform_id,
+        .tva = tva,
+        .access_mode = mode,
+        .fault = mmu::MmuFault::InvalidTva,
+        .subject_tid = state.scheduler.current_tid(),
+    };
+  }
+  for (std::size_t i = 0; i < size; ++i) {
+    const auto current_tva = tva + i;
+    const auto translation =
+        mmu::mmu_translate_checked(state.page_table, current_tva, mode);
+    if (translation.fault != mmu::MmuFault::None) {
+      return KernelFaultRecord{
+          .platform_id = state.platform_id,
+          .tva = current_tva,
+          .access_mode = mode,
+          .fault = translation.fault,
+          .subject_tid = state.scheduler.current_tid(),
+      };
+    }
+    const auto it = state.page_table.entries().find(mmu::tva_vpn(current_tva));
+    if (it == state.page_table.entries().end() || it->second.owner_pid != address_space_id) {
+      return KernelFaultRecord{
+          .platform_id = state.platform_id,
+          .tva = current_tva,
+          .access_mode = mode,
+          .fault = mmu::MmuFault::PermissionDenied,
+          .subject_tid = state.scheduler.current_tid(),
+      };
+    }
+  }
+  return std::nullopt;
+}
+
 KernelCallWireResponseBlock make_invalid_wire_response() noexcept {
   return axion_kernel_encode_wire_response(KernelCallResult{
       .status = KernelCallStatus::InvalidRequest,
       .rejection = KernelCallRejection::None,
+  });
+}
+
+KernelCallWireResponseBlock make_invalid_span_wire_response(
+    const KernelFaultRecord& fault) noexcept {
+  return axion_kernel_encode_wire_response(KernelCallResult{
+      .status = KernelCallStatus::InvalidRequest,
+      .rejection = KernelCallRejection::InvalidAddressSpaceSpan,
+      .fault = fault,
   });
 }
 
@@ -557,15 +609,31 @@ bool axion_kernel_call_wire_tva(KernelRuntimeState& state,
   }
   if (!axion_kernel_validate_address_space_span(state,
                                                 *caller_address_space_id,
-                                                request_tva,
-                                                sizeof(KernelCallWireRequestBlock),
-                                                mmu::MmuAccessMode::Read) ||
-      !axion_kernel_validate_address_space_span(state,
-                                                *caller_address_space_id,
                                                 response_tva,
                                                 sizeof(KernelCallWireResponseBlock),
                                                 mmu::MmuAccessMode::Write)) {
     return false;
+  }
+  if (!axion_kernel_validate_address_space_span(state,
+                                                *caller_address_space_id,
+                                                request_tva,
+                                                sizeof(KernelCallWireRequestBlock),
+                                                mmu::MmuAccessMode::Read)) {
+    const auto fault = resolve_address_space_span_fault(state,
+                                                        *caller_address_space_id,
+                                                        request_tva,
+                                                        sizeof(KernelCallWireRequestBlock),
+                                                        mmu::MmuAccessMode::Read);
+    if (!fault.has_value()) {
+      return false;
+    }
+    const auto response_block = make_invalid_span_wire_response(*fault);
+    return axion_kernel_write_address_space_bytes(
+        state,
+        *caller_address_space_id,
+        response_tva,
+        reinterpret_cast<const std::byte*>(&response_block),
+        sizeof(response_block));
   }
   KernelCallWireRequestBlock request_block;
   if (!axion_kernel_read_address_space_bytes(state,
