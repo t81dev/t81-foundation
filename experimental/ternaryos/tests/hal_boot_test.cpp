@@ -6969,6 +6969,34 @@ static void test_kernel_abi_wire_call_boundary() {
           "wire ABI spawn creates the returned thread");
   }
 
+  if (decoded_identity && decoded_identity->supervisor_id) {
+    const auto supervisor_spawn_request = axion_kernel_encode_wire_request(
+        KernelCallRequest{
+            .kind = KernelCallKind::SpawnThreadUnderSupervisor,
+            .supervisor_id = decoded_identity->supervisor_id,
+        });
+    KernelCallWireResponseBlock supervisor_spawn_response;
+    check(axion_kernel_call_wire(*state,
+                                 &supervisor_spawn_request,
+                                 &supervisor_spawn_response),
+          "wire ABI call boundary accepts a supervisor-scoped spawn request");
+    const auto decoded_supervisor_spawn =
+        axion_kernel_decode_wire_response(supervisor_spawn_response);
+    check(decoded_supervisor_spawn.has_value(),
+          "wire ABI supervisor-scoped spawn response decodes");
+    if (decoded_supervisor_spawn) {
+      check(decoded_supervisor_spawn->status == KernelCallStatus::Ok,
+            "wire ABI supervisor-scoped spawn returns Ok");
+      check(decoded_supervisor_spawn->action_performed,
+            "wire ABI supervisor-scoped spawn reports work performed");
+      check(decoded_supervisor_spawn->spawned_tid.has_value(),
+            "wire ABI supervisor-scoped spawn returns a spawned tid");
+      check(decoded_supervisor_spawn->spawned_tid &&
+                state->find_thread_runtime(*decoded_supervisor_spawn->spawned_tid) != nullptr,
+            "wire ABI supervisor-scoped spawn creates the returned thread");
+    }
+  }
+
   t81::canonfs::CanonRef send_ref;
   send_ref.hash.h.bytes.fill(0x31);
 
@@ -7221,6 +7249,36 @@ static void test_kernel_call_c_bridge() {
     check(decoded_spawn->spawned_tid &&
               state->find_thread_runtime(*decoded_spawn->spawned_tid) != nullptr,
           "C kernel-call bridge spawn creates the returned thread");
+  }
+
+  if (decoded_identity && decoded_identity->supervisor_id) {
+    const auto supervisor_spawn_request = axion_kernel_encode_wire_request(
+        KernelCallRequest{
+            .kind = KernelCallKind::SpawnThreadUnderSupervisor,
+            .supervisor_id = decoded_identity->supervisor_id,
+        });
+    KernelCallWireResponseBlock supervisor_spawn_response;
+    check(ternaryos_kernel_call_c(&*state,
+                                  &supervisor_spawn_request,
+                                  sizeof(supervisor_spawn_request),
+                                  &supervisor_spawn_response,
+                                  sizeof(supervisor_spawn_response)) == 0,
+          "C kernel-call bridge accepts a supervisor-scoped spawn request");
+    const auto decoded_supervisor_spawn =
+        axion_kernel_decode_wire_response(supervisor_spawn_response);
+    check(decoded_supervisor_spawn.has_value(),
+          "C kernel-call bridge supervisor-scoped spawn response decodes");
+    if (decoded_supervisor_spawn) {
+      check(decoded_supervisor_spawn->status == KernelCallStatus::Ok,
+            "C kernel-call bridge supervisor-scoped spawn returns Ok");
+      check(decoded_supervisor_spawn->action_performed,
+            "C kernel-call bridge supervisor-scoped spawn reports work performed");
+      check(decoded_supervisor_spawn->spawned_tid.has_value(),
+            "C kernel-call bridge supervisor-scoped spawn returns a spawned tid");
+      check(decoded_supervisor_spawn->spawned_tid &&
+                state->find_thread_runtime(*decoded_supervisor_spawn->spawned_tid) != nullptr,
+            "C kernel-call bridge supervisor-scoped spawn creates the returned thread");
+    }
   }
 
   t81::canonfs::CanonRef send_ref;
