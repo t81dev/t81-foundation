@@ -6950,6 +6950,25 @@ static void test_kernel_abi_wire_call_boundary() {
           "wire ABI identity returns caller address space");
   }
 
+  const auto spawn_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::SpawnThreadInCallerGroup});
+  KernelCallWireResponseBlock spawn_response;
+  check(axion_kernel_call_wire(*state, &spawn_request, &spawn_response),
+        "wire ABI call boundary accepts a spawn-thread request block");
+  const auto decoded_spawn = axion_kernel_decode_wire_response(spawn_response);
+  check(decoded_spawn.has_value(), "wire ABI spawn response decodes");
+  if (decoded_spawn) {
+    check(decoded_spawn->status == KernelCallStatus::Ok,
+          "wire ABI spawn returns Ok");
+    check(decoded_spawn->action_performed,
+          "wire ABI spawn reports work performed");
+    check(decoded_spawn->spawned_tid.has_value(),
+          "wire ABI spawn returns a spawned tid");
+    check(decoded_spawn->spawned_tid &&
+              state->find_thread_runtime(*decoded_spawn->spawned_tid) != nullptr,
+          "wire ABI spawn creates the returned thread");
+  }
+
   t81::canonfs::CanonRef send_ref;
   send_ref.hash.h.bytes.fill(0x31);
 
@@ -7033,8 +7052,10 @@ static void test_kernel_abi_wire_call_boundary() {
         "wire ABI exit removes the exited thread runtime");
   check(!state->ipc_bus.is_registered(*tid_b),
         "wire ABI exit deregisters the exited thread inbox");
-  check(state->scheduler.current_tid() == *tid_a,
-        "wire ABI exit advances to the remaining runnable thread");
+  check(state->scheduler.current_tid() != *tid_b,
+        "wire ABI exit advances away from the exited thread");
+  check(state->find_thread_runtime(state->scheduler.current_tid()) != nullptr,
+        "wire ABI exit leaves a valid runnable thread current");
 
   auto invalid_request = send_request;
   invalid_request.header.magic = 0;
@@ -7179,6 +7200,29 @@ static void test_kernel_call_c_bridge() {
           "C kernel-call bridge identity returns caller address space");
   }
 
+  const auto spawn_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::SpawnThreadInCallerGroup});
+  KernelCallWireResponseBlock spawn_response;
+  check(ternaryos_kernel_call_c(&*state,
+                                &spawn_request,
+                                sizeof(spawn_request),
+                                &spawn_response,
+                                sizeof(spawn_response)) == 0,
+        "C kernel-call bridge accepts a spawn-thread request");
+  const auto decoded_spawn = axion_kernel_decode_wire_response(spawn_response);
+  check(decoded_spawn.has_value(), "C kernel-call bridge spawn response decodes");
+  if (decoded_spawn) {
+    check(decoded_spawn->status == KernelCallStatus::Ok,
+          "C kernel-call bridge spawn returns Ok");
+    check(decoded_spawn->action_performed,
+          "C kernel-call bridge spawn reports work performed");
+    check(decoded_spawn->spawned_tid.has_value(),
+          "C kernel-call bridge spawn returns a spawned tid");
+    check(decoded_spawn->spawned_tid &&
+              state->find_thread_runtime(*decoded_spawn->spawned_tid) != nullptr,
+          "C kernel-call bridge spawn creates the returned thread");
+  }
+
   t81::canonfs::CanonRef send_ref;
   send_ref.hash.h.bytes.fill(0x33);
   const auto send_request = axion_kernel_encode_wire_request(
@@ -7263,8 +7307,10 @@ static void test_kernel_call_c_bridge() {
         "C kernel-call bridge exit removes the exited thread runtime");
   check(!state->ipc_bus.is_registered(*receiver_tid),
         "C kernel-call bridge exit deregisters the exited thread inbox");
-  check(state->scheduler.current_tid() == *sender_tid,
-        "C kernel-call bridge exit advances to the remaining runnable thread");
+  check(state->scheduler.current_tid() != *receiver_tid,
+        "C kernel-call bridge exit advances away from the exited thread");
+  check(state->find_thread_runtime(state->scheduler.current_tid()) != nullptr,
+        "C kernel-call bridge exit leaves a valid runnable thread current");
 
   KernelCallWireResponseBlock short_request_response;
   check(ternaryos_kernel_call_c(&*state,
