@@ -5992,12 +5992,12 @@ static void test_kernel_minimal_abi_calls() {
           "runtime status reflects one boot-critical address space after ABI toggle");
   }
 
-  auto missing_runtime_supervisor = axion_kernel_call(
+  auto implicit_runtime_supervisor = axion_kernel_call(
       *state, KernelCallRequest{.kind = KernelCallKind::QueryRuntimeStatus});
-  check(missing_runtime_supervisor.status == KernelCallStatus::InvalidRequest,
-        "minimal ABI runtime status query rejects a missing supervisor");
-  check(missing_runtime_supervisor.rejection == KernelCallRejection::MissingSupervisor,
-        "minimal ABI runtime status query reports MissingSupervisor");
+  check(implicit_runtime_supervisor.status == KernelCallStatus::Ok,
+        "minimal ABI runtime status query derives the caller supervisor");
+  check(implicit_runtime_supervisor.supervisor_id == supervisor_a,
+        "minimal ABI runtime status query returns the caller supervisor");
 
   auto runtime_status_abi = axion_kernel_call(
       *state,

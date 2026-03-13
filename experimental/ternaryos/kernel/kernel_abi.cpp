@@ -322,26 +322,32 @@ std::optional<KernelCallResult> validate_global_summary_query(
   if (caller.process_group_id == KernelRuntimeState::kKernelProcessGroup) {
     return std::nullopt;
   }
-  if (!request.supervisor_id.has_value()) {
-    KernelCallResult result = init_result(caller);
-    result.status = KernelCallStatus::InvalidRequest;
-    result.rejection = KernelCallRejection::MissingSupervisor;
-    return result;
-  }
-  if (!state.find_supervisor(*request.supervisor_id)) {
+  const auto caller_supervisor_id =
+      state.find_process_group_supervisor(caller.process_group_id);
+  const auto target_supervisor_id =
+      request.supervisor_id.value_or(caller_supervisor_id.value_or(0));
+  if (target_supervisor_id == 0 || !state.find_supervisor(target_supervisor_id)) {
     KernelCallResult result = init_result(caller);
     result.status = KernelCallStatus::NotFound;
     result.rejection = KernelCallRejection::MissingSupervisor;
     return result;
   }
   if (!axion_kernel_supervisor_matches_process_group(
-          state, *request.supervisor_id, caller.process_group_id)) {
+          state, target_supervisor_id, caller.process_group_id)) {
     KernelCallResult result = init_result(caller);
     result.status = KernelCallStatus::PolicyDenied;
     result.rejection = KernelCallRejection::ForeignSupervisorScope;
     return result;
   }
   return std::nullopt;
+}
+
+std::optional<SupervisorId> resolve_effective_supervisor_id(
+    const KernelRuntimeState& state,
+    const CallerContext& caller,
+    const KernelCallRequest& request) {
+  return request.supervisor_id.value_or(
+      state.find_process_group_supervisor(caller.process_group_id).value_or(0));
 }
 
 KernelCallResult map_service_action_result(const CallerContext& caller,
@@ -915,7 +921,7 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
           invalid.has_value()) {
         return *invalid;
       }
-      return map_service_request_result(
+      auto mapped = map_service_request_result(
           caller,
           axion_kernel_service_request(
               state,
@@ -923,13 +929,17 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
                   .kind = KernelServiceRequestKind::RuntimeStatus,
                   .requesting_process_group_id = caller.process_group_id,
               }));
+      if (caller.process_group_id != KernelRuntimeState::kKernelProcessGroup) {
+        mapped.supervisor_id = resolve_effective_supervisor_id(state, caller, request);
+      }
+      return mapped;
     }
     case KernelCallKind::QueryFaultSummary: {
       if (auto invalid = validate_global_summary_query(state, caller, request);
           invalid.has_value()) {
         return *invalid;
       }
-      return map_service_request_result(
+      auto mapped = map_service_request_result(
           caller,
           axion_kernel_service_request(
               state,
@@ -937,6 +947,10 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
                   .kind = KernelServiceRequestKind::FaultSummary,
                   .requesting_process_group_id = caller.process_group_id,
               }));
+      if (caller.process_group_id != KernelRuntimeState::kKernelProcessGroup) {
+        mapped.supervisor_id = resolve_effective_supervisor_id(state, caller, request);
+      }
+      return mapped;
     }
     case KernelCallKind::QuerySupervisorStatus: {
       return dispatch_supervisor_request(
@@ -952,8 +966,9 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       if (mapped.status != KernelCallStatus::Ok || !request.process_group_id.has_value()) {
         return mapped;
       }
+      const auto target_supervisor_id = resolve_effective_supervisor_id(state, caller, request);
       if (!axion_kernel_supervisor_matches_process_group(
-              state, *request.supervisor_id, *request.process_group_id)) {
+              state, *target_supervisor_id, *request.process_group_id)) {
         mapped.status = KernelCallStatus::PolicyDenied;
         mapped.rejection = KernelCallRejection::SupervisorMismatch;
         mapped.capabilities.clear();
