@@ -63,6 +63,11 @@ std::optional<sched::Tid> axion_kernel_spawn_thread_under_supervisor(
 bool axion_kernel_set_address_space_boot_critical(KernelRuntimeState& state,
                                                   AddressSpaceId address_space_id,
                                                   bool boot_critical) noexcept;
+bool axion_kernel_validate_address_space_span(const KernelRuntimeState& state,
+                                              AddressSpaceId address_space_id,
+                                              uint64_t tva,
+                                              std::size_t size,
+                                              mmu::MmuAccessMode mode) noexcept;
 bool axion_kernel_write_address_space_bytes(KernelRuntimeState& state,
                                             AddressSpaceId address_space_id,
                                             uint64_t tva,

@@ -555,6 +555,18 @@ bool axion_kernel_call_wire_tva(KernelRuntimeState& state,
   if (!caller_address_space_id.has_value()) {
     return false;
   }
+  if (!axion_kernel_validate_address_space_span(state,
+                                                *caller_address_space_id,
+                                                request_tva,
+                                                sizeof(KernelCallWireRequestBlock),
+                                                mmu::MmuAccessMode::Read) ||
+      !axion_kernel_validate_address_space_span(state,
+                                                *caller_address_space_id,
+                                                response_tva,
+                                                sizeof(KernelCallWireResponseBlock),
+                                                mmu::MmuAccessMode::Write)) {
+    return false;
+  }
   KernelCallWireRequestBlock request_block;
   if (!axion_kernel_read_address_space_bytes(state,
                                              *caller_address_space_id,

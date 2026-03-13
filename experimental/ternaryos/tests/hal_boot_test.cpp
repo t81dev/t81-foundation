@@ -7682,6 +7682,40 @@ static void test_kernel_call_tva_c_bridge() {
                                     request_tva,
                                     unmapped_response_tva) != 0,
         "TVA kernel-call bridge rejects unmapped response pages");
+  const uint64_t unreadable_request_tva =
+      t81::ternaryos::mmu::tva_from_vpn_offset(85, 0);
+  check(t81::ternaryos::mmu::mmu_map(
+            state->page_table,
+            state->allocator,
+            unreadable_request_tva,
+            *caller_address_space,
+            {.readable = false, .writable = true, .executable = false}),
+        "TVA kernel-call bridge maps unreadable request page");
+  check(axion_kernel_write_address_space_bytes(
+            *state,
+            *caller_address_space,
+            unreadable_request_tva,
+            reinterpret_cast<const std::byte*>(&request_block),
+            sizeof(request_block)),
+        "TVA kernel-call bridge can seed unreadable request storage through kernel ownership");
+  check(ternaryos_kernel_call_tva_c(&*state,
+                                    unreadable_request_tva,
+                                    response_tva) != 0,
+        "TVA kernel-call bridge rejects unreadable request pages");
+
+  const uint64_t readonly_response_tva =
+      t81::ternaryos::mmu::tva_from_vpn_offset(86, 0);
+  check(t81::ternaryos::mmu::mmu_map(
+            state->page_table,
+            state->allocator,
+            readonly_response_tva,
+            *caller_address_space,
+            {.readable = true, .writable = false, .executable = false}),
+        "TVA kernel-call bridge maps read-only response page");
+  check(ternaryos_kernel_call_tva_c(&*state,
+                                    request_tva,
+                                    readonly_response_tva) != 0,
+        "TVA kernel-call bridge rejects non-writable response pages");
 
   t81::ternaryos::sched::TiscContext outsider_ctx;
   outsider_ctx.registers[0] = 1302;

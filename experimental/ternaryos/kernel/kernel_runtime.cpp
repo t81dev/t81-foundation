@@ -104,6 +104,29 @@ bool axion_kernel_set_address_space_boot_critical(KernelRuntimeState& state,
   return true;
 }
 
+bool axion_kernel_validate_address_space_span(const KernelRuntimeState& state,
+                                              AddressSpaceId address_space_id,
+                                              uint64_t tva,
+                                              std::size_t size,
+                                              mmu::MmuAccessMode mode) noexcept {
+  if (!mmu::tva_valid(tva) ||
+      (size > 0 && (!mmu::tva_valid(tva + size - 1) || tva + size - 1 < tva))) {
+    return false;
+  }
+  for (std::size_t i = 0; i < size; ++i) {
+    const auto translation =
+        mmu::mmu_translate_checked(state.page_table, tva + i, mode);
+    if (translation.fault != mmu::MmuFault::None || !translation.phys_addr.has_value()) {
+      return false;
+    }
+    const auto it = state.page_table.entries().find(mmu::tva_vpn(tva + i));
+    if (it == state.page_table.entries().end() || it->second.owner_pid != address_space_id) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool axion_kernel_write_address_space_bytes(KernelRuntimeState& state,
                                             AddressSpaceId address_space_id,
                                             uint64_t tva,
@@ -113,20 +136,15 @@ bool axion_kernel_write_address_space_bytes(KernelRuntimeState& state,
       (size > 0 && (!mmu::tva_valid(tva + size - 1) || tva + size - 1 < tva))) {
     return false;
   }
+  if (!axion_kernel_validate_address_space_span(
+          state, address_space_id, tva, size, mmu::MmuAccessMode::Write)) {
+    return false;
+  }
   for (std::size_t i = 0; i < size; ++i) {
     const auto translation =
         mmu::mmu_translate_checked(state.page_table, tva + i, mmu::MmuAccessMode::Write);
-    if (translation.fault != mmu::MmuFault::None || !translation.phys_addr.has_value()) {
-      return false;
-    }
     const auto phys_addr = *translation.phys_addr;
     const auto phys_base = phys_addr - (phys_addr % mmu::kPageSize);
-    const auto* entry = state.page_table.entries().contains(mmu::tva_vpn(tva + i))
-                            ? &state.page_table.entries().at(mmu::tva_vpn(tva + i))
-                            : nullptr;
-    if (!entry || entry->owner_pid != address_space_id) {
-      return false;
-    }
     auto* page = mutable_physical_page_storage(state, phys_base);
     (*page)[static_cast<std::size_t>(phys_addr - phys_base)] = data[i];
   }
@@ -142,20 +160,15 @@ bool axion_kernel_read_address_space_bytes(const KernelRuntimeState& state,
       (size > 0 && (!mmu::tva_valid(tva + size - 1) || tva + size - 1 < tva))) {
     return false;
   }
+  if (!axion_kernel_validate_address_space_span(
+          state, address_space_id, tva, size, mmu::MmuAccessMode::Read)) {
+    return false;
+  }
   for (std::size_t i = 0; i < size; ++i) {
     const auto translation =
         mmu::mmu_translate_checked(state.page_table, tva + i, mmu::MmuAccessMode::Read);
-    if (translation.fault != mmu::MmuFault::None || !translation.phys_addr.has_value()) {
-      return false;
-    }
     const auto phys_addr = *translation.phys_addr;
     const auto phys_base = phys_addr - (phys_addr % mmu::kPageSize);
-    const auto* entry = state.page_table.entries().contains(mmu::tva_vpn(tva + i))
-                            ? &state.page_table.entries().at(mmu::tva_vpn(tva + i))
-                            : nullptr;
-    if (!entry || entry->owner_pid != address_space_id) {
-      return false;
-    }
     const auto* page = physical_page_storage(state, phys_base);
     data[i] = page ? (*page)[static_cast<std::size_t>(phys_addr - phys_base)] : std::byte{0};
   }
