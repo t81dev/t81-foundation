@@ -6293,6 +6293,23 @@ static void test_kernel_capability_management_abi() {
                              capability.delegated_by_supervisor_id == leader_supervisor;
                     }),
         "same-supervisor capability query preserves delegation provenance");
+  auto query_same_supervisor_delegated = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryDelegatedCapabilities,
+          .process_group_id = sibling_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{
+              .delegated_by_process_group_id = leader_runtime->process_group_id,
+              .delegated_by_supervisor_id = leader_supervisor,
+          },
+      });
+  check(query_same_supervisor_delegated.status == KernelCallStatus::Ok,
+        "same-supervisor delegated-capability query returns Ok");
+  check(query_same_supervisor_delegated.capabilities.size() == 1,
+        "same-supervisor delegated-capability query returns the delegated sibling capability");
+  check(query_same_supervisor_delegated.capabilities.front().record_id ==
+            granted_sibling_ipc_receive->record_id,
+        "same-supervisor delegated-capability query returns the delegated record id");
   auto query_revoked_same_supervisor_record = axion_kernel_call(
       *state,
       KernelCallRequest{
@@ -6566,6 +6583,18 @@ static void test_kernel_capability_management_abi() {
         "foreign-supervisor capability-record query is denied");
   check(query_foreign_record.rejection == KernelCallRejection::SupervisorMismatch,
         "foreign-supervisor capability-record query reports supervisor mismatch");
+  auto query_missing_delegation_scope = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryDelegatedCapabilities,
+          .process_group_id = sibling_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{},
+      });
+  check(query_missing_delegation_scope.status == KernelCallStatus::InvalidRequest,
+        "delegated-capability query rejects a missing delegation scope");
+  check(query_missing_delegation_scope.rejection ==
+            KernelCallRejection::MissingDelegationScope,
+        "delegated-capability query reports MissingDelegationScope");
 
   auto query_foreign_memory = axion_kernel_call(
       *state,
@@ -6601,6 +6630,20 @@ static void test_kernel_capability_management_abi() {
   check(query_foreign_transition_history.rejection ==
             KernelCallRejection::SupervisorMismatch,
         "foreign-supervisor capability transition history query reports supervisor mismatch");
+  auto query_foreign_delegated = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryDelegatedCapabilities,
+          .process_group_id = outsider_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{
+              .delegated_by_process_group_id = leader_runtime->process_group_id,
+              .delegated_by_supervisor_id = leader_supervisor,
+          },
+      });
+  check(query_foreign_delegated.status == KernelCallStatus::PolicyDenied,
+        "foreign-supervisor delegated-capability query is denied");
+  check(query_foreign_delegated.rejection == KernelCallRejection::SupervisorMismatch,
+        "foreign-supervisor delegated-capability query reports supervisor mismatch");
   auto query_foreign_record_history = axion_kernel_call(
       *state,
       KernelCallRequest{
@@ -7173,6 +7216,20 @@ static void test_kernel_capability_delegation_bulk_revoke_abi() {
                                capability.delegated_by_supervisor_id == leader_supervisor;
                       }) == 2,
         "delegated bulk revoke setup creates two delegated sibling capabilities");
+  auto query_delegated_only = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryDelegatedCapabilities,
+          .process_group_id = sibling_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{
+              .delegated_by_process_group_id = leader_runtime->process_group_id,
+              .delegated_by_supervisor_id = leader_supervisor,
+          },
+      });
+  check(query_delegated_only.status == KernelCallStatus::Ok,
+        "delegated bulk revoke can query delegated capabilities directly");
+  check(query_delegated_only.capabilities.size() == 2,
+        "delegated-capability query returns the two delegated sibling capabilities");
 
   auto missing_scope = axion_kernel_call(
       *state,
@@ -7220,6 +7277,20 @@ static void test_kernel_capability_delegation_bulk_revoke_abi() {
                               capability.kind == KernelCapabilityKind::IpcReceive;
                      }),
         "delegated bulk revoke removes both delegated IPC capabilities");
+  auto query_delegated_after_bulk_revoke = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryDelegatedCapabilities,
+          .process_group_id = sibling_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{
+              .delegated_by_process_group_id = leader_runtime->process_group_id,
+              .delegated_by_supervisor_id = leader_supervisor,
+          },
+      });
+  check(query_delegated_after_bulk_revoke.status == KernelCallStatus::Ok,
+        "delegated-capability query still succeeds after bulk revoke");
+  check(query_delegated_after_bulk_revoke.capabilities.empty(),
+        "delegated-capability query returns no delegated capabilities after bulk revoke");
 
   auto foreign_bulk_revoke = axion_kernel_call(
       *state,
@@ -7235,6 +7306,20 @@ static void test_kernel_capability_delegation_bulk_revoke_abi() {
         "foreign delegated bulk revoke is denied");
   check(foreign_bulk_revoke.rejection == KernelCallRejection::SupervisorMismatch,
         "foreign delegated bulk revoke reports supervisor mismatch");
+  auto foreign_delegated_query = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryDelegatedCapabilities,
+          .process_group_id = outsider_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{
+              .delegated_by_process_group_id = leader_runtime->process_group_id,
+              .delegated_by_supervisor_id = leader_supervisor,
+          },
+      });
+  check(foreign_delegated_query.status == KernelCallStatus::PolicyDenied,
+        "foreign delegated-capability query is denied");
+  check(foreign_delegated_query.rejection == KernelCallRejection::SupervisorMismatch,
+        "foreign delegated-capability query reports supervisor mismatch");
 }
 
 static void test_kernel_supervisor_recovery_abi_calls() {

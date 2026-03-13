@@ -859,6 +859,52 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
           axion_kernel_list_process_group_capabilities(state, caller.process_group_id);
       return result;
     }
+    case KernelCallKind::QueryDelegatedCapabilities: {
+      if (!request.capability.has_value() ||
+          (!request.capability->delegated_by_process_group_id.has_value() &&
+           !request.capability->delegated_by_supervisor_id.has_value())) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingDelegationScope;
+        return result;
+      }
+      const KernelRuntimeState::ProcessGroupState* target_group_state = nullptr;
+      if (request.process_group_id.has_value() &&
+          *request.process_group_id != caller.process_group_id) {
+        KernelRuntimeState::ProcessGroupState* target_group_state_mut = nullptr;
+        if (auto invalid = resolve_capability_target_group(
+                state, caller, request, target_group_state_mut);
+            invalid.has_value()) {
+          return *invalid;
+        }
+        target_group_state = target_group_state_mut;
+      } else {
+        target_group_state = state.find_process_group(caller.process_group_id);
+      }
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      if (!target_group_state) {
+        return result;
+      }
+      const auto capabilities =
+          axion_kernel_list_process_group_capabilities(state, target_group_state->id);
+      for (const auto& capability : capabilities) {
+        if (capability.kernel_seeded) {
+          continue;
+        }
+        if (request.capability->delegated_by_process_group_id.has_value() &&
+            capability.delegated_by_process_group_id !=
+                request.capability->delegated_by_process_group_id) {
+          continue;
+        }
+        if (request.capability->delegated_by_supervisor_id.has_value() &&
+            capability.delegated_by_supervisor_id !=
+                request.capability->delegated_by_supervisor_id) {
+          continue;
+        }
+        result.capabilities.push_back(capability);
+      }
+      return result;
+    }
     case KernelCallKind::QueryCapabilityRecord: {
       if (!request.capability.has_value() || request.capability->record_id == 0) {
         result.status = KernelCallStatus::InvalidRequest;

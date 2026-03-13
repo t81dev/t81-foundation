@@ -43,7 +43,8 @@ guarded runtime/fault summary queries, kernel-issued capability record IDs,
 supervisor capability transition history, sequence-based capability
 revocation, and explicit provenance distinguishing kernel-seeded capabilities
 from supervisor-delegated grants. Delegated capability control now also
-includes bulk revocation by delegator provenance.
+includes bulk revocation and direct delegated-capability queries by delegator
+provenance.
 
 Current working release label: `Axion v0.1.0-alpha`
 

@@ -40,6 +40,9 @@ Recent architecture milestone:
 - Delegated capability control is now broader too: supervisors can revoke
   delegated capabilities in bulk by delegator provenance without disturbing
   kernel-seeded capabilities in the target process group.
+- Delegated capability reads now match that control surface: supervisors can
+  query only the capabilities delegated by a specific delegator
+  process-group/supervisor pair instead of diffing full capability inventories.
 - ABI rejection taxonomy is now more explicit as well. Address-space ownership,
   missing boot-critical control values, and foreign supervisory read scope now
   produce dedicated rejections instead of collapsing into generic policy

@@ -359,6 +359,7 @@ Implemented request kinds:
 - `QuerySupervisorCapabilityInventory`
 - `QueryCapabilityTransitionHistory`
 - `QueryCapabilities`
+- `QueryDelegatedCapabilities`
 - `QueryCapabilityRecord`
 - `GrantCapability`
 - `RevokeCapability`
@@ -388,6 +389,8 @@ Current policy rules already enforced in code:
 - supervisor capability inventory exposes bounded recent capability-transition
   history, and the ABI exposes that same history directly through
   `QueryCapabilityTransitionHistory`
+- delegated capabilities are directly queryable by delegator
+  process-group/supervisor provenance through `QueryDelegatedCapabilities`
 - supervisor capability-transition history retains the same provenance so
   grants can be inspected without diffing inventory snapshots
 - `RevokeCapability` may resolve its target through a previously observed

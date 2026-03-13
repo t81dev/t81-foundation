@@ -44,6 +44,7 @@ enum class KernelCallKind : uint8_t {
   QuerySupervisorCapabilityInventory,
   QueryCapabilityTransitionHistory,
   QueryCapabilities,
+  QueryDelegatedCapabilities,
   QueryCapabilityRecord,
   GrantCapability,
   RevokeCapability,

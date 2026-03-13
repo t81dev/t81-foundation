@@ -84,6 +84,7 @@ Implemented kernel-call slice:
 - `QuerySupervisorCapabilityInventory`
 - `QueryCapabilityTransitionHistory`
 - `QueryCapabilities`
+- `QueryDelegatedCapabilities`
 - `QueryCapabilityRecord`
 - `GrantCapability`
 - `RevokeCapability`
