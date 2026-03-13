@@ -96,6 +96,20 @@ ipc::CanonMessage decode_message(const KernelCallWireMessage& message) {
   };
 }
 
+t81::canonfs::CanonRef decode_object_ref(
+    const std::array<uint8_t, kKernelAbiWireCanonRefBytes>& bytes) noexcept {
+  t81::canonfs::CanonRef ref;
+  std::copy(bytes.begin(), bytes.end(), ref.hash.h.bytes.begin());
+  return ref;
+}
+
+std::array<uint8_t, kKernelAbiWireCanonRefBytes> encode_object_ref(
+    const t81::canonfs::CanonRef& ref) noexcept {
+  std::array<uint8_t, kKernelAbiWireCanonRefBytes> bytes{};
+  std::copy(ref.hash.h.bytes.begin(), ref.hash.h.bytes.end(), bytes.begin());
+  return bytes;
+}
+
 KernelCallWireFault encode_fault(const KernelFaultRecord& fault) noexcept {
   KernelCallWireFault wire{
       .tva = fault.tva,
@@ -224,6 +238,10 @@ KernelCallWireRequestBlock axion_kernel_encode_wire_request(
     }
     block.message = encode_message(*request.message);
   }
+  if (request.object_ref.has_value()) {
+    block.flags |= kWireHasObjectRef;
+    block.object_ref = encode_object_ref(*request.object_ref);
+  }
   if (request.capability.has_value()) {
     block.flags |= kWireHasCapability;
     block.capability = encode_capability(*request.capability);
@@ -282,6 +300,9 @@ std::optional<KernelCallRequest> axion_kernel_decode_wire_request(
   }
   if (block.flags & kWireHasMessage) {
     request.message = decode_message(block.message);
+  }
+  if (block.flags & kWireHasObjectRef) {
+    request.object_ref = decode_object_ref(block.object_ref);
   }
   if (block.flags & kWireHasCapability) {
     request.capability = decode_capability(block.capability);
@@ -361,6 +382,10 @@ KernelCallWireResponseBlock axion_kernel_encode_wire_response(
   if (result.fault.has_value()) {
     block.flags |= kWireResponseHasFault;
     block.fault = encode_fault(*result.fault);
+  }
+  if (result.object_ref.has_value()) {
+    block.flags |= kWireResponseHasObjectRef;
+    block.object_ref = encode_object_ref(*result.object_ref);
   }
   if (result.service_id.has_value()) {
     block.flags |= kWireResponseHasServiceId;
@@ -526,6 +551,9 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
   }
   if (block.flags & kWireResponseHasFault) {
     result.fault = decode_fault(block.fault);
+  }
+  if (block.flags & kWireResponseHasObjectRef) {
+    result.object_ref = decode_object_ref(block.object_ref);
   }
   if (block.flags & kWireResponseHasServiceId) {
     result.service_id = block.service_id;

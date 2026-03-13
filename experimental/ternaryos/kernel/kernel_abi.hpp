@@ -62,6 +62,9 @@ enum class KernelCallKind : uint8_t {
   SpawnThreadInCallerGroup,
   SpawnThreadUnderSupervisor,
   RegisterThreadEntryDescriptor,
+  RegisterExecutableObject,
+  QueryExecutableObject,
+  SpawnThreadFromExecutableObject,
   SpawnThreadFromEntryDescriptor,
   GetThreadIdentity,
   QueryThreadExecutionState,
@@ -127,6 +130,8 @@ enum class KernelCallRejection : uint8_t {
   MissingEntryName,
   MissingEntryDescriptor,
   MissingEntryRegistration,
+  MissingExecutableRef,
+  MissingExecutableRegistration,
   MissingBootCriticalValue,
   InvalidCapabilityRecordId,
   MissingCapabilityTransition,
@@ -151,6 +156,7 @@ struct KernelCallRequest {
   std::optional<bool> boot_critical{};
   std::optional<sched::Tid> ipc_dst{};
   std::optional<ipc::CanonMessage> message{};
+  std::optional<t81::canonfs::CanonRef> object_ref{};
   std::optional<KernelCapabilityRecord> capability{};
   std::optional<KernelThreadSpawnDescriptor> spawn_descriptor{};
   std::optional<ServiceId> service_id{};
@@ -169,7 +175,10 @@ struct KernelCallResult {
   std::optional<ProcessGroupId> caller_process_group_id{};
   std::optional<ipc::CanonMessage> message{};
   std::optional<KernelFaultRecord> fault{};
+  std::optional<t81::canonfs::CanonRef> object_ref{};
   std::vector<KernelCapabilityRecord> capabilities;
+  bool executable_registered{false};
+  std::optional<KernelThreadSpawnDescriptor> executable_entry_descriptor{};
   std::optional<ServiceId> service_id{};
   std::optional<std::string> service_name{};
   bool service_registered{false};

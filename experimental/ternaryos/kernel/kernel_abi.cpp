@@ -6,6 +6,11 @@ namespace t81::ternaryos::kernel {
 
 namespace {
 
+std::string executable_key(const t81::canonfs::CanonRef& ref) {
+  return std::string(reinterpret_cast<const char*>(ref.hash.h.bytes.data()),
+                     ref.hash.h.bytes.size());
+}
+
 sched::TiscContext make_spawn_context(
     const std::optional<KernelThreadSpawnDescriptor>& descriptor) {
   sched::TiscContext ctx{};
@@ -200,6 +205,27 @@ std::optional<KernelCallResult> resolve_capability_target_group(
     result.rejection = KernelCallRejection::SupervisorMismatch;
     return result;
   }
+  return std::nullopt;
+}
+
+std::optional<KernelCallResult> resolve_executable_record(
+    const CallerContext& caller,
+    const KernelCallRequest& request,
+    const KernelRuntimeState::ExecutableRecord*& executable_record) {
+  auto result = init_result(caller);
+  if (!request.object_ref.has_value()) {
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::MissingExecutableRef;
+    return result;
+  }
+  const auto it =
+      caller.group_state->executable_records.find(executable_key(*request.object_ref));
+  if (it == caller.group_state->executable_records.end()) {
+    result.status = KernelCallStatus::NotFound;
+    result.rejection = KernelCallRejection::MissingExecutableRegistration;
+    return result;
+  }
+  executable_record = &it->second;
   return std::nullopt;
 }
 
@@ -498,6 +524,7 @@ KernelCallResult dispatch_supervisor_request(const CallerContext& caller,
               .requesting_process_group_id = caller.process_group_id,
               .supervisor_id = request.supervisor_id.value_or(
                   state.find_process_group_supervisor(caller.process_group_id).value_or(0)),
+              .service_id = request.service_id.value_or(0),
           }));
 }
 
@@ -719,6 +746,80 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
 
   KernelCallResult result = init_result(caller);
   switch (request.kind) {
+    case KernelCallKind::RegisterExecutableObject: {
+      if (auto denied = require_capability(caller, KernelCapabilityKind::ThreadSpawn);
+          denied.has_value()) {
+        return *denied;
+      }
+      if (!request.object_ref.has_value()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingExecutableRef;
+        return result;
+      }
+      if (!request.spawn_descriptor.has_value()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingEntryDescriptor;
+        return result;
+      }
+      caller.group_state->executable_records[executable_key(*request.object_ref)] =
+          KernelRuntimeState::ExecutableRecord{
+              .object_ref = *request.object_ref,
+              .entry_descriptor = *request.spawn_descriptor,
+          };
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.executable_registered = true;
+      result.object_ref = request.object_ref;
+      result.executable_entry_descriptor = request.spawn_descriptor;
+      return result;
+    }
+    case KernelCallKind::QueryExecutableObject: {
+      if (auto denied = require_capability(caller, KernelCapabilityKind::ThreadSpawn);
+          denied.has_value()) {
+        return *denied;
+      }
+      const KernelRuntimeState::ExecutableRecord* executable_record = nullptr;
+      if (auto invalid = resolve_executable_record(caller, request, executable_record);
+          invalid.has_value()) {
+        return *invalid;
+      }
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.executable_registered = true;
+      result.object_ref = executable_record->object_ref;
+      result.executable_entry_descriptor = executable_record->entry_descriptor;
+      return result;
+    }
+    case KernelCallKind::SpawnThreadFromExecutableObject: {
+      if (auto denied = require_capability(caller, KernelCapabilityKind::ThreadSpawn);
+          denied.has_value()) {
+        return *denied;
+      }
+      const KernelRuntimeState::ExecutableRecord* executable_record = nullptr;
+      if (auto invalid = resolve_executable_record(caller, request, executable_record);
+          invalid.has_value()) {
+        return *invalid;
+      }
+      const auto spawned_tid = axion_kernel_spawn_thread_in_group(
+          state,
+          make_spawn_context(std::optional<KernelThreadSpawnDescriptor>{
+              executable_record->entry_descriptor}),
+          caller.process_group_id);
+      if (!spawned_tid.has_value()) {
+        result.status = KernelCallStatus::Conflict;
+        result.rejection = KernelCallRejection::ServiceActionRejected;
+        return result;
+      }
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.executable_registered = true;
+      result.object_ref = executable_record->object_ref;
+      result.executable_entry_descriptor = executable_record->entry_descriptor;
+      result.spawned_tid = *spawned_tid;
+      return result;
+    }
     case KernelCallKind::RegisterThreadEntryDescriptor: {
       if (auto denied = require_capability(caller, KernelCapabilityKind::ThreadSpawn);
           denied.has_value()) {

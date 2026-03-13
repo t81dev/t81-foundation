@@ -168,6 +168,9 @@ Implemented today through the typed and wire ABI:
 - `SpawnThreadInCallerGroup`
 - `SpawnThreadUnderSupervisor`
 - `RegisterThreadEntryDescriptor`
+- `RegisterExecutableObject`
+- `QueryExecutableObject`
+- `SpawnThreadFromExecutableObject`
 - `SpawnThreadFromEntryDescriptor`
 - `SpawnThreadForService`
 - `GetThreadIdentity`
@@ -208,6 +211,9 @@ Implemented today through the typed and wire ABI:
 - `SpawnThreadInCallerGroup`
 - `SpawnThreadUnderSupervisor`
 - `RegisterThreadEntryDescriptor`
+- `RegisterExecutableObject`
+- `QueryExecutableObject`
+- `SpawnThreadFromExecutableObject`
 - `SpawnThreadFromEntryDescriptor`
 - `SpawnThreadForService`
 - `QueryThreadExecutionState`
@@ -224,9 +230,15 @@ Reason:
   descriptor is preserved across the typed ABI, fixed-size wire blocks, and
   exported hosted C bridge
 - current implementation detail:
-  process groups can now register named reusable thread entry descriptors, and
-  services can now retain an entry descriptor at service-registration time for
-  later execution through `SpawnThreadForService`
+  process groups can now register named reusable thread entry descriptors,
+  CanonRef-backed executable objects, and services can now retain an entry
+  descriptor at service-registration time for later execution through
+  `SpawnThreadForService`
+- current implementation detail:
+  the executable-object path is intentionally still narrow: registration binds
+  a CanonRef identity to a stored spawn descriptor, query returns that stored
+  execution descriptor, and spawn reuses it through the typed, fixed-size
+  wire, and hosted C ABI paths
 - current implementation detail:
   stored service entry descriptors are now exposed through the typed
   service/status control plane and through fixed-size wire / hosted C

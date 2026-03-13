@@ -16,6 +16,12 @@ templates, positive/negative local fixtures, and packaged smoke-checks. The
 next milestone is no longer more local packaging work; it is actual external
 `x86_64` VirtualBox host execution and evidence return against that contract.
 
+The newest execution-control slice now goes one step further than named entry
+descriptors: process groups can register CanonRef-backed executable objects and
+spawn from them through the typed, wire, and hosted C ABI layers. This is
+still a descriptor-backed registry, not a true loader, so the next execution
+milestone is object validation and loading rather than more registry growth.
+
 ## Current Kernel Position
 
 Implemented:
@@ -55,8 +61,8 @@ Not yet implemented:
 
 - real hardware trap/syscall entry
 - executable loading
-- service activation/loading backed by executable objects rather than only
-  stored spawn descriptors
+- validated executable object loading beyond the current descriptor-backed
+  CanonRef registry
 
 ## Completed Groundwork
 

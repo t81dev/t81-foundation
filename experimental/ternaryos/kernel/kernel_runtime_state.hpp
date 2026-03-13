@@ -20,6 +20,11 @@
 namespace t81::ternaryos::kernel {
 
 struct KernelRuntimeState {
+  struct ExecutableRecord {
+    t81::canonfs::CanonRef object_ref{};
+    KernelThreadSpawnDescriptor entry_descriptor{};
+  };
+
   struct ThreadRuntimeState {
     sched::Tid tid{0};
     ProcessGroupId process_group_id{0};
@@ -39,6 +44,7 @@ struct KernelRuntimeState {
     std::vector<sched::Tid> member_tids;
     std::vector<KernelCapabilityRecord> capabilities;
     std::unordered_map<std::string, KernelThreadSpawnDescriptor> entry_descriptors;
+    std::unordered_map<std::string, ExecutableRecord> executable_records;
     bool faulted{false};
     bool blocked{false};
     bool acknowledgement_pending{false};

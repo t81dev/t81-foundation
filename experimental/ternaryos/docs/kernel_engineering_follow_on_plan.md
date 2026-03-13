@@ -88,11 +88,15 @@ Implemented kernel-call slice:
 - `SpawnThreadInCallerGroup`
 - `SpawnThreadUnderSupervisor`
 - `RegisterThreadEntryDescriptor`
+- `RegisterExecutableObject`
+- `QueryExecutableObject`
+- `SpawnThreadFromExecutableObject`
 - `SpawnThreadFromEntryDescriptor`
 - Both spawn paths now support a compact initial thread descriptor on the
   typed ABI and transport layers instead of only blank default contexts.
 - `SpawnThreadForService`
 - named thread entries are now reusable across ABI entry modes
+- CanonRef-backed executable objects are now reusable across ABI entry modes
 - services can now retain an entry descriptor at registration time for later
   execution inside the owning process group
 - `QueryThreadExecutionState` now provides the matching read-side execution
@@ -141,8 +145,8 @@ discipline:
   anonymous capability bits
 - keep the new wire and C-bridge layers narrow so follow-on syscall work
   extends one boundary instead of reopening parallel entry paths
-- expose service entry-descriptor state through the service query/view layer so
-  executable service state is inspectable, not only runnable
+- preserve the new executable-object lane as a narrow descriptor-backed
+  registry until a real object loader replaces it
 
 Status:
 
@@ -151,15 +155,13 @@ Status:
   results
 - complete for supervisor-scoped service inventory over typed, wire, and
   hosted C ABI paths
+- complete for CanonRef-backed executable-object register/query/spawn over
+  typed, fixed-size wire, and hosted C ABI paths
 
-Next likely control-plane step:
+Next likely step:
 
-- complete for targeted supervisor service lookup/read by `service_id`
-
-Next likely control-plane step:
-
-- decide whether the service control plane has enough observational surface and
-  shift to executable loading, or continue only if a clearly missing
+- shift from descriptor-backed executable registration to real executable
+  object loading/validation, or continue only if a clearly missing
   supervisory write path remains
 
 ## Recommended Execution Order

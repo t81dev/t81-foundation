@@ -423,6 +423,7 @@ Execution control is also broader:
 - caller-group spawn
 - same-supervisor spawn
 - named thread entry registration/spawn
+- CanonRef-backed executable object registration/query/spawn
 - service-owned thread entry spawn
 - thread identity and execution-state inspection
 
@@ -500,7 +501,7 @@ Observed result:
 
 - `8/8` test binaries passed
 - boot test coverage has continued to expand substantially; current local boot
-  suite result is `2366 passed, 0 failed`
+  suite result is `2549 passed, 0 failed`
 
 Covered suites:
 

@@ -49,6 +49,11 @@ static bool check(bool cond, const char* label) {
   return cond;
 }
 
+static bool canon_ref_matches(const std::optional<t81::canonfs::CanonRef>& actual,
+                              const t81::canonfs::CanonRef& expected) {
+  return actual.has_value() && actual->hash.h.bytes == expected.hash.h.bytes;
+}
+
 // ─── Helper: minimal valid BootContext ───────────────────────────────────────
 
 static BootContext make_valid_ctx(bool ethics = false) {
@@ -7206,6 +7211,97 @@ static void test_kernel_abi_wire_call_boundary() {
     }
   }
 
+  t81::canonfs::CanonRef wire_executable_ref;
+  wire_executable_ref.hash.h.bytes.fill(0x45);
+  const auto register_executable_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterExecutableObject,
+          .object_ref = wire_executable_ref,
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 19,
+              .sp = 57,
+              .register0 = 616,
+              .label = "wire-executable-entry",
+          },
+      });
+  KernelCallWireResponseBlock register_executable_response;
+  check(axion_kernel_call_wire(*state,
+                               &register_executable_request,
+                               &register_executable_response),
+        "wire ABI call boundary accepts an executable registration request");
+  const auto decoded_register_executable =
+      axion_kernel_decode_wire_response(register_executable_response);
+  check(decoded_register_executable.has_value(),
+        "wire ABI executable registration response decodes");
+  if (decoded_register_executable) {
+    check(decoded_register_executable->status == KernelCallStatus::Ok,
+          "wire ABI executable registration returns Ok");
+    check(decoded_register_executable->action_performed,
+          "wire ABI executable registration reports work performed");
+    check(canon_ref_matches(decoded_register_executable->object_ref, wire_executable_ref),
+          "wire ABI executable registration preserves object ref");
+  }
+
+  const auto query_executable_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryExecutableObject,
+          .object_ref = wire_executable_ref,
+      });
+  KernelCallWireResponseBlock query_executable_response;
+  check(axion_kernel_call_wire(*state,
+                               &query_executable_request,
+                               &query_executable_response),
+        "wire ABI call boundary accepts an executable query request");
+  const auto decoded_query_executable =
+      axion_kernel_decode_wire_response(query_executable_response);
+  check(decoded_query_executable.has_value(),
+        "wire ABI executable query response decodes");
+  if (decoded_query_executable) {
+    check(decoded_query_executable->status == KernelCallStatus::Ok,
+          "wire ABI executable query returns Ok");
+    check(canon_ref_matches(decoded_query_executable->object_ref, wire_executable_ref),
+          "wire ABI executable query preserves object ref");
+  }
+
+  const auto spawn_from_executable_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::SpawnThreadFromExecutableObject,
+          .object_ref = wire_executable_ref,
+      });
+  KernelCallWireResponseBlock spawn_from_executable_response;
+  check(axion_kernel_call_wire(*state,
+                               &spawn_from_executable_request,
+                               &spawn_from_executable_response),
+        "wire ABI call boundary accepts an executable-object spawn request");
+  const auto decoded_spawn_from_executable =
+      axion_kernel_decode_wire_response(spawn_from_executable_response);
+  check(decoded_spawn_from_executable.has_value(),
+        "wire ABI executable-object spawn response decodes");
+  if (decoded_spawn_from_executable) {
+    check(decoded_spawn_from_executable->status == KernelCallStatus::Ok,
+          "wire ABI executable-object spawn returns Ok");
+    check(canon_ref_matches(decoded_spawn_from_executable->object_ref, wire_executable_ref),
+          "wire ABI executable-object spawn preserves object ref");
+    check(decoded_spawn_from_executable->spawned_tid.has_value(),
+          "wire ABI executable-object spawn returns a spawned tid");
+    if (decoded_spawn_from_executable->spawned_tid) {
+      const auto* spawned_context =
+          state->scheduler.run_queue().find(*decoded_spawn_from_executable->spawned_tid);
+      check(spawned_context != nullptr,
+            "wire ABI executable-object spawn creates the returned thread");
+      if (spawned_context) {
+        check(spawned_context->pc == 19,
+              "wire ABI executable-object spawn applies the registered pc");
+        check(spawned_context->sp == 57,
+              "wire ABI executable-object spawn applies the registered sp");
+        check(spawned_context->registers[0] == 616,
+              "wire ABI executable-object spawn applies the registered register0");
+        check(spawned_context->label == "wire-executable-entry",
+              "wire ABI executable-object spawn applies the registered label");
+      }
+    }
+  }
+
   const auto register_service_request = axion_kernel_encode_wire_request(
       KernelCallRequest{
           .kind = KernelCallKind::RegisterService,
@@ -7827,6 +7923,101 @@ static void test_kernel_call_c_bridge() {
               "C kernel-call bridge named-entry spawn applies the registered register0");
         check(spawned_context->label == "c-entry-label",
               "C kernel-call bridge named-entry spawn applies the registered label");
+      }
+    }
+  }
+
+  t81::canonfs::CanonRef c_executable_ref;
+  c_executable_ref.hash.h.bytes.fill(0x46);
+  const auto register_executable_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterExecutableObject,
+          .object_ref = c_executable_ref,
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 24,
+              .sp = 72,
+              .register0 = 818,
+              .label = "c-executable-entry",
+          },
+      });
+  KernelCallWireResponseBlock register_executable_response;
+  check(ternaryos_kernel_call_c(&*state,
+                                &register_executable_request,
+                                sizeof(register_executable_request),
+                                &register_executable_response,
+                                sizeof(register_executable_response)) == 0,
+        "C kernel-call bridge accepts an executable registration request");
+  const auto decoded_register_executable =
+      axion_kernel_decode_wire_response(register_executable_response);
+  check(decoded_register_executable.has_value(),
+        "C kernel-call bridge executable registration response decodes");
+  if (decoded_register_executable) {
+    check(decoded_register_executable->status == KernelCallStatus::Ok,
+          "C kernel-call bridge executable registration returns Ok");
+    check(canon_ref_matches(decoded_register_executable->object_ref, c_executable_ref),
+          "C kernel-call bridge executable registration preserves object ref");
+  }
+
+  const auto query_executable_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryExecutableObject,
+          .object_ref = c_executable_ref,
+      });
+  KernelCallWireResponseBlock query_executable_response;
+  check(ternaryos_kernel_call_c(&*state,
+                                &query_executable_request,
+                                sizeof(query_executable_request),
+                                &query_executable_response,
+                                sizeof(query_executable_response)) == 0,
+        "C kernel-call bridge accepts an executable query request");
+  const auto decoded_query_executable =
+      axion_kernel_decode_wire_response(query_executable_response);
+  check(decoded_query_executable.has_value(),
+        "C kernel-call bridge executable query response decodes");
+  if (decoded_query_executable) {
+    check(decoded_query_executable->status == KernelCallStatus::Ok,
+          "C kernel-call bridge executable query returns Ok");
+    check(canon_ref_matches(decoded_query_executable->object_ref, c_executable_ref),
+          "C kernel-call bridge executable query preserves object ref");
+  }
+
+  const auto spawn_from_executable_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::SpawnThreadFromExecutableObject,
+          .object_ref = c_executable_ref,
+      });
+  KernelCallWireResponseBlock spawn_from_executable_response;
+  check(ternaryos_kernel_call_c(&*state,
+                                &spawn_from_executable_request,
+                                sizeof(spawn_from_executable_request),
+                                &spawn_from_executable_response,
+                                sizeof(spawn_from_executable_response)) == 0,
+        "C kernel-call bridge accepts an executable-object spawn request");
+  const auto decoded_spawn_from_executable =
+      axion_kernel_decode_wire_response(spawn_from_executable_response);
+  check(decoded_spawn_from_executable.has_value(),
+        "C kernel-call bridge executable-object spawn response decodes");
+  if (decoded_spawn_from_executable) {
+    check(decoded_spawn_from_executable->status == KernelCallStatus::Ok,
+          "C kernel-call bridge executable-object spawn returns Ok");
+    check(canon_ref_matches(decoded_spawn_from_executable->object_ref, c_executable_ref),
+          "C kernel-call bridge executable-object spawn preserves object ref");
+    check(decoded_spawn_from_executable->spawned_tid.has_value(),
+          "C kernel-call bridge executable-object spawn returns a spawned tid");
+    if (decoded_spawn_from_executable->spawned_tid) {
+      const auto* spawned_context =
+          state->scheduler.run_queue().find(*decoded_spawn_from_executable->spawned_tid);
+      check(spawned_context != nullptr,
+            "C kernel-call bridge executable-object spawn creates the returned thread");
+      if (spawned_context) {
+        check(spawned_context->pc == 24,
+              "C kernel-call bridge executable-object spawn applies the registered pc");
+        check(spawned_context->sp == 72,
+              "C kernel-call bridge executable-object spawn applies the registered sp");
+        check(spawned_context->registers[0] == 818,
+              "C kernel-call bridge executable-object spawn applies the registered register0");
+        check(spawned_context->label == "c-executable-entry",
+              "C kernel-call bridge executable-object spawn applies the registered label");
       }
     }
   }
@@ -8531,6 +8722,135 @@ static void test_kernel_execution_abi_calls() {
     }
   }
 
+  t81::canonfs::CanonRef executable_ref;
+  executable_ref.hash.h.bytes.fill(0x44);
+  auto register_executable = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterExecutableObject,
+          .object_ref = executable_ref,
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 33,
+              .sp = 99,
+              .register0 = 707,
+              .label = "abi-executable-entry",
+          },
+      });
+  check(register_executable.status == KernelCallStatus::Ok,
+        "execution ABI executable registration returns Ok");
+  check(register_executable.rejection == KernelCallRejection::None,
+        "execution ABI executable registration clears rejection");
+  check(register_executable.action_performed,
+        "execution ABI executable registration reports work performed");
+  check(register_executable.executable_registered,
+        "execution ABI executable registration reports executable state");
+  check(canon_ref_matches(register_executable.object_ref, executable_ref),
+        "execution ABI executable registration preserves object ref");
+  check(register_executable.executable_entry_descriptor.has_value(),
+        "execution ABI executable registration exposes the stored descriptor");
+  if (register_executable.executable_entry_descriptor) {
+    check(register_executable.executable_entry_descriptor->pc == 33,
+          "execution ABI executable registration preserves pc");
+    check(register_executable.executable_entry_descriptor->sp == 99,
+          "execution ABI executable registration preserves sp");
+    check(register_executable.executable_entry_descriptor->register0 == 707,
+          "execution ABI executable registration preserves register0");
+    check(register_executable.executable_entry_descriptor->label ==
+              "abi-executable-entry",
+          "execution ABI executable registration preserves label");
+  }
+
+  auto query_executable = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryExecutableObject,
+          .object_ref = executable_ref,
+      });
+  check(query_executable.status == KernelCallStatus::Ok,
+        "execution ABI executable query returns Ok");
+  check(query_executable.rejection == KernelCallRejection::None,
+        "execution ABI executable query clears rejection");
+  check(query_executable.executable_registered,
+        "execution ABI executable query reports registered executable state");
+  check(canon_ref_matches(query_executable.object_ref, executable_ref),
+        "execution ABI executable query preserves object ref");
+  check(query_executable.executable_entry_descriptor.has_value(),
+        "execution ABI executable query exposes the stored descriptor");
+  if (query_executable.executable_entry_descriptor) {
+    check(query_executable.executable_entry_descriptor->pc == 33,
+          "execution ABI executable query preserves pc");
+    check(query_executable.executable_entry_descriptor->sp == 99,
+          "execution ABI executable query preserves sp");
+    check(query_executable.executable_entry_descriptor->register0 == 707,
+          "execution ABI executable query preserves register0");
+    check(query_executable.executable_entry_descriptor->label ==
+              "abi-executable-entry",
+          "execution ABI executable query preserves label");
+  }
+
+  auto spawn_from_executable = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SpawnThreadFromExecutableObject,
+          .object_ref = executable_ref,
+      });
+  check(spawn_from_executable.status == KernelCallStatus::Ok,
+        "execution ABI executable-object spawn returns Ok");
+  check(spawn_from_executable.rejection == KernelCallRejection::None,
+        "execution ABI executable-object spawn clears rejection");
+  check(spawn_from_executable.action_performed,
+        "execution ABI executable-object spawn reports work performed");
+  check(canon_ref_matches(spawn_from_executable.object_ref, executable_ref),
+        "execution ABI executable-object spawn preserves object ref");
+  check(spawn_from_executable.spawned_tid.has_value(),
+        "execution ABI executable-object spawn returns a spawned tid");
+  if (spawn_from_executable.spawned_tid) {
+    const auto* spawned_context =
+        state->scheduler.run_queue().find(*spawn_from_executable.spawned_tid);
+    check(spawned_context != nullptr,
+          "execution ABI executable-object spawn preserves a scheduler context");
+    if (spawned_context) {
+      check(spawned_context->pc == 33,
+            "execution ABI executable-object spawn applies the registered pc");
+      check(spawned_context->sp == 99,
+            "execution ABI executable-object spawn applies the registered sp");
+      check(spawned_context->registers[0] == 707,
+            "execution ABI executable-object spawn applies the registered register0");
+      check(spawned_context->label == "abi-executable-entry",
+            "execution ABI executable-object spawn applies the registered label");
+    }
+  }
+
+  auto missing_executable_ref = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterExecutableObject,
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 1,
+              .sp = 2,
+              .register0 = 3,
+              .label = "missing-ref",
+          },
+      });
+  check(missing_executable_ref.status == KernelCallStatus::InvalidRequest,
+        "execution ABI executable registration rejects missing object refs");
+  check(missing_executable_ref.rejection == KernelCallRejection::MissingExecutableRef,
+        "execution ABI missing executable ref reports the correct rejection");
+
+  t81::canonfs::CanonRef missing_registration_ref;
+  missing_registration_ref.hash.h.bytes.fill(0x47);
+  auto missing_registration = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryExecutableObject,
+          .object_ref = missing_registration_ref,
+      });
+  check(missing_registration.status == KernelCallStatus::NotFound,
+        "execution ABI executable query rejects missing registrations");
+  check(missing_registration.rejection ==
+            KernelCallRejection::MissingExecutableRegistration,
+        "execution ABI missing executable registration reports the correct rejection");
+
   auto supervisor_spawn = axion_kernel_call(
       *state,
       KernelCallRequest{
@@ -9030,9 +9350,10 @@ static void test_kernel_service_abi_calls() {
           .supervisor_id =
               state->find_process_group_supervisor(owner_runtime->process_group_id),
       });
-  check(foreign_supervisor_service_query.status == KernelCallStatus::InvalidRequest,
+  check(foreign_supervisor_service_query.status == KernelCallStatus::PolicyDenied,
         "foreign supervisor managed-service query is rejected");
-  check(foreign_supervisor_service_query.rejection == KernelCallRejection::ServiceRequestRejected,
+  check(foreign_supervisor_service_query.rejection ==
+            KernelCallRejection::ForeignSupervisorScope,
         "foreign supervisor managed-service query reports deterministic request rejection");
 
   auto foreign_inventory_query = axion_kernel_call(

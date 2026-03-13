@@ -38,8 +38,9 @@ files. `kernel_main.hpp` remains the shared runtime contract for those units.
 RFC-00B6 is now partially implemented rather than only proposed. The current
 typed `axion_kernel_call(...)` ABI covers thread identity/spawn/termination,
 same-supervisor execution control, named thread entry registration/spawn,
-service-owned thread entry spawn, IPC, fault inbox/recovery, capability
-management, service lifecycle control, process-group memory inspection,
+CanonRef-backed executable object registration/query/spawn, service-owned
+thread entry spawn, IPC, fault inbox/recovery, capability management, service
+lifecycle control, process-group memory inspection,
 boot-critical address-space control, guarded runtime/fault summary queries,
 kernel-issued capability record IDs, supervisor capability transition
 history, sequence-based capability revocation, and explicit provenance
@@ -54,6 +55,9 @@ service register/query responses now carry it through the fixed-size wire and
 hosted C ABI paths too. Supervisor-scoped service inventory is now also
 reachable through the typed, wire, and hosted C ABI layers, with bounded
 service entries that preserve stored service entry-descriptor state.
+Process groups can now also register CanonRef-keyed executable objects with a
+stored spawn descriptor, query that executable state later, and spawn new
+threads from it through the same typed, wire, and hosted C ABI layers.
 Supervisors can now also inspect one managed service directly through a
 dedicated service-status query path, even when the ordinary service query is
 deferred by unhealthy state.
@@ -207,7 +211,7 @@ tests/
 cmake -B build -DT81_ENABLE_TERNARYOS=ON -DT81_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build -R ternaryos -V
-# Expected: 3294/3294 assertions, 8/8 tests pass
+# Expected: 3425/3425 assertions, 8/8 tests pass
 ```
 
 ## Demo
@@ -368,11 +372,11 @@ What it is not yet:
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
-- `t81_ternaryos_hal_boot_test` is `2418/2418`
+- `t81_ternaryos_hal_boot_test` is `2549/2549`
 - `t81_ternaryos_device_driver_test` is `342/342`
 - `t81_ternaryos_shell_session_test` is `183/183`
 - `t81_ternaryos_mmu_test` is `87/87`
-- total TernOS assertions are `3294`
+- total TernOS assertions are `3425`
 - the first service-facing kernel request/result contract is now implemented
 - healthy vs faulted groups now get deterministic request outcomes through that boundary
 - stable service-facing diagnostics now exist for group, supervisor, fault, and device state
