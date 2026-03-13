@@ -1,7 +1,7 @@
 **Executive Summary**
 This document is retained as a legacy high-level implementation report. The current authoritative technical assessment is [kernel_architecture_audit.md](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/docs/kernel_architecture_audit.md).
 
-The kernel is now a strong architectural prototype with a decomposed runtime, not a monolithic single-file implementation. The implemented core proves a coherent hosted boot-to-kernel path, a ternary MMU model, deterministic scheduling, bounded IPC, a kernel-owned fault pipeline, a typed/wire/C/TVA ABI transport stack, named, executable-object, and service-owned thread entry execution, service-to-executable-object binding by CanonRef, device arbitration, and a narrow supervisor/service control plane.
+The kernel is now a strong architectural prototype with a decomposed runtime, not a monolithic single-file implementation. The implemented core proves a coherent hosted boot-to-kernel path, a ternary MMU model, deterministic scheduling, bounded IPC, a kernel-owned fault pipeline, a typed/wire/C/TVA ABI transport stack, named, executable-object, mapped-memory executable acquisition, and service-owned thread entry execution, service-to-executable-object binding by CanonRef, device arbitration, and a narrow supervisor/service control plane.
 
 Overall maturity: `advanced architectural prototype`
 Estimated completion toward a fully operational kernel: `47%`
@@ -41,7 +41,7 @@ Estimated completion toward a fully operational kernel: `47%`
 - Fully operational kernel: `47%`
 
 **Critical Roadmap To Operational Kernel**
-1. Promote registration-time validated `CanonExec` objects into a real fetch/load path instead of only storing the validated registration image.
+1. Promote registration-time and caller-memory validated `CanonExec` objects into a real CanonFS-backed fetch/load path instead of only storing the acquired image.
 2. Replace simulated interrupt handling with real controller semantics for the target platform and make timer IRQ drive scheduling.
 3. Introduce a real process/task model: executable loading, address-space ownership rules, teardown, and resource accounting.
 4. Keep hardening the syscall/capability boundary from its current typed/wire/C/TVA form into a real user/kernel ABI.

@@ -23,9 +23,10 @@ also bind to those registered executable objects by CanonRef during
 `RegisterService`, and service register/query/spawn paths now preserve that
 backing executable identity. Registration now validates a canonical
 `CanonExec` block against the supplied `CanonRef`, so this is no longer only a
-free-form descriptor registry. The next execution milestone is fetching and
-loading those executable objects from real object storage instead of only from
-registration-time input.
+free-form descriptor registry. Executable objects can now also be registered
+from mapped caller memory through `RegisterExecutableObjectFromTva`. The next
+execution milestone is fetching and loading those executable objects from real
+object storage instead of only from registration-time or caller-memory input.
 
 ## Current Kernel Position
 
@@ -66,8 +67,8 @@ Not yet implemented:
 
 - real hardware trap/syscall entry
 - executable loading
-- CanonFS- or address-space-backed executable object acquisition beyond the
-  current registration-time `CanonExec` validation path
+- CanonFS-backed executable object acquisition beyond the current
+  registration-time and caller-memory `CanonExec` validation paths
 
 ## Completed Groundwork
 

@@ -246,6 +246,67 @@ std::optional<KernelCallResult> load_executable_descriptor(
   return std::nullopt;
 }
 
+std::optional<KernelCallResult> load_executable_block_from_tva(
+    KernelRuntimeState& state,
+    const CallerContext& caller,
+    const KernelCallRequest& request,
+    t81::canonfs::CanonBlock& block,
+    KernelThreadSpawnDescriptor& descriptor) {
+  if (!request.object_tva.has_value()) {
+    auto result = init_result(caller);
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::MissingExecutableImageTva;
+    return result;
+  }
+  const auto address_space_id =
+      state.find_process_group_address_space(caller.process_group_id);
+  if (!address_space_id.has_value()) {
+    auto result = init_result(caller);
+    result.status = KernelCallStatus::NotFound;
+    result.rejection = KernelCallRejection::MissingAddressSpace;
+    return result;
+  }
+  if (!axion_kernel_validate_address_space_span(state,
+                                                *address_space_id,
+                                                *request.object_tva,
+                                                t81::canonfs::CanonBlock::kTryteCount,
+                                                mmu::MmuAccessMode::Read)) {
+    auto result = init_result(caller);
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::InvalidAddressSpaceSpan;
+    return result;
+  }
+  std::array<std::byte, t81::canonfs::CanonBlock::kTryteCount> raw{};
+  if (!axion_kernel_read_address_space_bytes(state,
+                                             *address_space_id,
+                                             *request.object_tva,
+                                             raw.data(),
+                                             raw.size())) {
+    auto result = init_result(caller);
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::InvalidAddressSpaceSpan;
+    return result;
+  }
+  const auto decoded_block = t81::canonfs::CanonBlock::from_bytes(raw);
+  if (!decoded_block.has_value()) {
+    auto result = init_result(caller);
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::InvalidExecutableObject;
+    return result;
+  }
+  const auto decoded_descriptor =
+      axion_kernel_decode_executable_block(*decoded_block);
+  if (!decoded_descriptor.has_value()) {
+    auto result = init_result(caller);
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::InvalidExecutableObject;
+    return result;
+  }
+  block = *decoded_block;
+  descriptor = *decoded_descriptor;
+  return std::nullopt;
+}
+
 const KernelCapabilityRecord* find_capability_record(
     const KernelRuntimeState::ProcessGroupState& group_state,
     CapabilityRecordId record_id) {
@@ -844,6 +905,43 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.executable_registered = true;
       result.object_ref = request.object_ref;
       result.executable_entry_descriptor = *loaded_descriptor;
+      return result;
+    }
+    case KernelCallKind::RegisterExecutableObjectFromTva: {
+      if (auto denied = require_capability(caller, KernelCapabilityKind::ThreadSpawn);
+          denied.has_value()) {
+        return *denied;
+      }
+      if (!request.object_ref.has_value()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingExecutableRef;
+        return result;
+      }
+      t81::canonfs::CanonBlock executable_block{};
+      KernelThreadSpawnDescriptor loaded_descriptor;
+      if (auto invalid = load_executable_block_from_tva(
+              state, caller, request, executable_block, loaded_descriptor);
+          invalid.has_value()) {
+        return *invalid;
+      }
+      const t81::canonfs::CanonRef encoded_ref{executable_block.hash()};
+      if (encoded_ref.hash != request.object_ref->hash) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::InvalidExecutableObject;
+        return result;
+      }
+      caller.group_state->executable_records[executable_key(*request.object_ref)] =
+          KernelRuntimeState::ExecutableRecord{
+              .object_ref = *request.object_ref,
+              .image_block = executable_block,
+              .entry_descriptor = loaded_descriptor,
+          };
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.executable_registered = true;
+      result.object_ref = request.object_ref;
+      result.executable_entry_descriptor = loaded_descriptor;
       return result;
     }
     case KernelCallKind::QueryExecutableObject: {

@@ -39,9 +39,9 @@ The broader structural assessment and follow-on refactor plan now live in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `3465`
+- total assertions: `3489`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `2589/2589`
+- `t81_ternaryos_hal_boot_test`: `2613/2613`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -150,6 +150,9 @@ Kernel integration proof now also includes:
 - executable registration now validates a canonical `CanonExec` block against
   the supplied `CanonRef`, so executable objects are no longer only synthetic
   ref/descriptor records
+- executable objects can now also be registered from mapped caller memory,
+  giving the ABI its first real executable acquisition path over the caller
+  address-space boundary
 - those executable-object wire and hosted C responses now also carry the
   stored executable entry descriptor, not only the CanonRef
 - services can now bind to those registered executable objects by CanonRef,

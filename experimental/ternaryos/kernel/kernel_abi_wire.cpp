@@ -219,6 +219,10 @@ KernelCallWireRequestBlock axion_kernel_encode_wire_request(
     block.flags |= kWireHasAddressSpaceId;
     block.address_space_id = *request.address_space_id;
   }
+  if (request.object_tva.has_value()) {
+    block.flags |= kWireHasObjectTva;
+    block.object_tva = *request.object_tva;
+  }
   if (request.capability_transition_sequence.has_value()) {
     block.flags |= kWireHasCapabilityTransitionSequence;
     block.capability_transition_sequence = *request.capability_transition_sequence;
@@ -288,6 +292,9 @@ std::optional<KernelCallRequest> axion_kernel_decode_wire_request(
   }
   if (block.flags & kWireHasAddressSpaceId) {
     request.address_space_id = block.address_space_id;
+  }
+  if (block.flags & kWireHasObjectTva) {
+    request.object_tva = block.object_tva;
   }
   if (block.flags & kWireHasCapabilityTransitionSequence) {
     request.capability_transition_sequence = block.capability_transition_sequence;

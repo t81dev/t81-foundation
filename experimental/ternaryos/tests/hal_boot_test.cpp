@@ -62,6 +62,13 @@ static t81::canonfs::CanonRef executable_ref_for(
   return t81::canonfs::CanonRef{block->hash()};
 }
 
+static t81::canonfs::CanonBlock executable_block_for(
+    const KernelThreadSpawnDescriptor& descriptor) {
+  auto block = axion_kernel_encode_executable_block(descriptor);
+  assert(block.has_value());
+  return *block;
+}
+
 // ─── Helper: minimal valid BootContext ───────────────────────────────────────
 
 static BootContext make_valid_ctx(bool ethics = false) {
@@ -8519,6 +8526,81 @@ static void test_kernel_call_tva_c_bridge() {
           "TVA kernel-call bridge query reports running state");
   }
 
+  const auto executable_descriptor = KernelThreadSpawnDescriptor{
+      .pc = 201,
+      .sp = 402,
+      .register0 = 1201,
+      .label = "tva-executable-entry",
+  };
+  const auto executable_block = executable_block_for(executable_descriptor);
+  const auto executable_ref = t81::canonfs::CanonRef{executable_block.hash()};
+  const uint64_t executable_tva = t81::ternaryos::mmu::tva_from_vpn_offset(87, 0);
+  check(t81::ternaryos::mmu::mmu_map(
+            state->page_table,
+            state->allocator,
+            executable_tva,
+            *caller_address_space,
+            {.readable = true, .writable = true, .executable = false}),
+        "TVA kernel-call bridge maps executable image page");
+  const auto executable_bytes = executable_block.to_bytes();
+  check(axion_kernel_write_address_space_bytes(
+            *state,
+            *caller_address_space,
+            executable_tva,
+            executable_bytes.data(),
+            executable_bytes.size()),
+        "TVA kernel-call bridge writes executable image into mapped memory");
+
+  const auto register_executable_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterExecutableObjectFromTva,
+          .object_ref = executable_ref,
+          .object_tva = executable_tva,
+      });
+  check(axion_kernel_write_address_space_bytes(
+            *state,
+            *caller_address_space,
+            request_tva,
+            reinterpret_cast<const std::byte*>(&register_executable_request),
+            sizeof(register_executable_request)),
+        "TVA kernel-call bridge writes executable registration request block");
+  check(ternaryos_kernel_call_tva_c(&*state,
+                                    request_tva,
+                                    response_tva) == 0,
+        "TVA kernel-call bridge registers executable objects from mapped memory");
+  check(axion_kernel_read_address_space_bytes(
+            *state,
+            *caller_address_space,
+            response_tva,
+            reinterpret_cast<std::byte*>(&response_block),
+            sizeof(response_block)),
+        "TVA kernel-call bridge reads executable registration response block");
+  const auto decoded_register_executable =
+      axion_kernel_decode_wire_response(response_block);
+  check(decoded_register_executable.has_value(),
+        "TVA kernel-call bridge executable registration response decodes");
+  if (decoded_register_executable) {
+    check(decoded_register_executable->status == KernelCallStatus::Ok,
+          "TVA kernel-call bridge executable registration returns Ok");
+    check(decoded_register_executable->executable_registered,
+          "TVA kernel-call bridge executable registration reports executable state");
+    check(canon_ref_matches(decoded_register_executable->object_ref, executable_ref),
+          "TVA kernel-call bridge executable registration preserves object ref");
+    check(decoded_register_executable->executable_entry_descriptor.has_value(),
+          "TVA kernel-call bridge executable registration exposes descriptor");
+    if (decoded_register_executable->executable_entry_descriptor) {
+      check(decoded_register_executable->executable_entry_descriptor->pc == 201,
+            "TVA kernel-call bridge executable registration preserves pc");
+      check(decoded_register_executable->executable_entry_descriptor->sp == 402,
+            "TVA kernel-call bridge executable registration preserves sp");
+      check(decoded_register_executable->executable_entry_descriptor->register0 == 1201,
+            "TVA kernel-call bridge executable registration preserves register0");
+      check(decoded_register_executable->executable_entry_descriptor->label ==
+                "tva-executable-entry",
+            "TVA kernel-call bridge executable registration preserves label");
+    }
+  }
+
   const uint64_t unmapped_response_tva =
       t81::ternaryos::mmu::tva_from_vpn_offset(83, 0);
   check(ternaryos_kernel_call_tva_c(&*state,
@@ -8929,6 +9011,52 @@ static void test_kernel_execution_abi_calls() {
   check(forged_registration.rejection ==
             KernelCallRejection::InvalidExecutableObject,
         "execution ABI forged executable ref reports executable validation failure");
+
+  const auto executable_block = executable_block_for(executable_descriptor);
+  const auto executable_image_tva = t81::ternaryos::mmu::tva_from_vpn_offset(91, 0);
+  check(t81::ternaryos::mmu::mmu_map(
+            state->page_table,
+            state->allocator,
+            executable_image_tva,
+            *identity.address_space_id,
+            {.readable = true, .writable = true, .executable = false}),
+        "execution ABI maps executable image page");
+  const auto executable_bytes = executable_block.to_bytes();
+  check(axion_kernel_write_address_space_bytes(
+            *state,
+            *identity.address_space_id,
+            executable_image_tva,
+            executable_bytes.data(),
+            executable_bytes.size()),
+        "execution ABI writes executable image into mapped memory");
+  const auto executable_ref_from_tva = t81::canonfs::CanonRef{executable_block.hash()};
+  auto register_executable_from_tva = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterExecutableObjectFromTva,
+          .object_ref = executable_ref_from_tva,
+          .object_tva = executable_image_tva,
+      });
+  check(register_executable_from_tva.status == KernelCallStatus::Ok,
+        "execution ABI executable registration from TVA returns Ok");
+  check(register_executable_from_tva.executable_registered,
+        "execution ABI executable registration from TVA reports executable state");
+  check(canon_ref_matches(register_executable_from_tva.object_ref, executable_ref_from_tva),
+        "execution ABI executable registration from TVA preserves object ref");
+  check(register_executable_from_tva.executable_entry_descriptor.has_value(),
+        "execution ABI executable registration from TVA exposes descriptor");
+
+  auto missing_executable_image_tva = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterExecutableObjectFromTva,
+          .object_ref = executable_ref_from_tva,
+      });
+  check(missing_executable_image_tva.status == KernelCallStatus::InvalidRequest,
+        "execution ABI executable registration from TVA rejects missing image TVAs");
+  check(missing_executable_image_tva.rejection ==
+            KernelCallRejection::MissingExecutableImageTva,
+        "execution ABI missing executable image TVA reports the correct rejection");
 
   t81::canonfs::CanonRef missing_registration_ref;
   missing_registration_ref.hash.h.bytes.fill(0x47);

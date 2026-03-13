@@ -169,6 +169,7 @@ Implemented today through the typed and wire ABI:
 - `SpawnThreadUnderSupervisor`
 - `RegisterThreadEntryDescriptor`
 - `RegisterExecutableObject`
+- `RegisterExecutableObjectFromTva`
 - `QueryExecutableObject`
 - `SpawnThreadFromExecutableObject`
 - `SpawnThreadFromEntryDescriptor`
@@ -212,6 +213,7 @@ Implemented today through the typed and wire ABI:
 - `SpawnThreadUnderSupervisor`
 - `RegisterThreadEntryDescriptor`
 - `RegisterExecutableObject`
+- `RegisterExecutableObjectFromTva`
 - `QueryExecutableObject`
 - `SpawnThreadFromExecutableObject`
 - `SpawnThreadFromEntryDescriptor`
@@ -243,7 +245,8 @@ Reason:
 - current implementation detail:
   executable registration now validates object identity instead of accepting
   arbitrary placeholder `CanonRef` values, but object acquisition is still
-  registration-time input rather than CanonFS-backed loading
+  limited to registration-time input or mapped caller memory rather than
+  CanonFS-backed loading
 - current implementation detail:
   executable-object register/query/spawn responses on the fixed-size wire and
   hosted C layers now carry that stored execution descriptor too, not only

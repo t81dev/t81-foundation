@@ -64,6 +64,7 @@ enum class KernelCallKind : uint8_t {
   SpawnThreadUnderSupervisor,
   RegisterThreadEntryDescriptor,
   RegisterExecutableObject,
+  RegisterExecutableObjectFromTva,
   QueryExecutableObject,
   SpawnThreadFromExecutableObject,
   SpawnThreadFromEntryDescriptor,
@@ -132,6 +133,7 @@ enum class KernelCallRejection : uint8_t {
   MissingEntryDescriptor,
   MissingEntryRegistration,
   MissingExecutableRef,
+  MissingExecutableImageTva,
   MissingExecutableRegistration,
   InvalidExecutableObject,
   MissingBootCriticalValue,
@@ -154,6 +156,7 @@ struct KernelCallRequest {
   std::optional<ProcessGroupId> process_group_id{};
   std::optional<SupervisorId> supervisor_id{};
   std::optional<AddressSpaceId> address_space_id{};
+  std::optional<uint64_t> object_tva{};
   std::optional<uint64_t> capability_transition_sequence{};
   std::optional<bool> boot_critical{};
   std::optional<sched::Tid> ipc_dst{};

@@ -99,6 +99,8 @@ Implemented kernel-call slice:
 - CanonRef-backed executable objects are now reusable across ABI entry modes
 - executable-object registration now validates a canonical `CanonExec` block
   against the supplied `CanonRef`
+- executable objects can now also be registered from mapped caller memory via
+  `RegisterExecutableObjectFromTva`
 - services can now bind to those registered executable objects by CanonRef,
   and the service register/query/spawn paths preserve that backing
   executable identity
@@ -165,9 +167,9 @@ Status:
 
 Next likely step:
 
-- shift from registration-time `CanonExec` validation and service binding to
-  real executable object fetch/load behavior, or continue only if a clearly
-  missing supervisory write path remains
+- shift from registration-time and caller-memory `CanonExec` acquisition plus
+  service binding to real executable object fetch/load behavior, or continue
+  only if a clearly missing supervisory write path remains
 
 ## Recommended Execution Order
 
