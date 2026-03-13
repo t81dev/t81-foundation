@@ -25,9 +25,20 @@ bool capability_matches(const KernelCapabilityRecord& capability,
          capability.process_group_scope == process_group_scope;
 }
 
+KernelCapabilityRecord issued_capability_record(
+    KernelRuntimeState& state,
+    const KernelCapabilityRecord& capability) {
+  auto issued = capability;
+  if (issued.record_id == 0) {
+    issued.record_id = state.next_capability_record_id++;
+  }
+  return issued;
+}
+
 void record_capability_transition(KernelRuntimeState& state,
                                   ProcessGroupId process_group_id,
-                                  KernelAuditEventKind kind) {
+                                  KernelAuditEventKind kind,
+                                  CapabilityRecordId record_id) {
   const auto subject_tid =
       axion_kernel_primary_tid_for_group(state, process_group_id)
           .value_or(KernelRuntimeState::kKernelTid);
@@ -42,9 +53,21 @@ void record_capability_transition(KernelRuntimeState& state,
   }
   ++supervisor_state->capability_transitions;
   supervisor_state->last_capability_transition_group_id = process_group_id;
+  supervisor_state->last_capability_transition_record_id = record_id;
   supervisor_state->last_capability_transition_kind = kind;
   supervisor_state->last_capability_transition_sequence =
       state.last_audit_event->sequence;
+  if (supervisor_state->recent_capability_transitions.size() >=
+      KernelRuntimeState::SupervisorState::kMaxCapabilityTransitionHistory) {
+    supervisor_state->recent_capability_transitions.pop_front();
+  }
+  supervisor_state->recent_capability_transitions.push_back(
+      KernelCapabilityTransitionRecord{
+          .process_group_id = process_group_id,
+          .record_id = record_id,
+          .kind = kind,
+          .sequence = state.last_audit_event->sequence,
+      });
 }
 
 }  // namespace
@@ -170,15 +193,20 @@ bool axion_kernel_grant_process_group_capability(
       return true;
     }
   }
-  group->capabilities.push_back(capability);
+  const auto issued = issued_capability_record(state, capability);
+  group->capabilities.push_back(issued);
   record_capability_transition(
-      state, process_group_id, KernelAuditEventKind::CapabilityGranted);
+      state,
+      process_group_id,
+      KernelAuditEventKind::CapabilityGranted,
+      issued.record_id);
   return true;
 }
 
 bool axion_kernel_revoke_process_group_capability(
     KernelRuntimeState& state,
     ProcessGroupId process_group_id,
+    std::optional<CapabilityRecordId> capability_record_id,
     KernelCapabilityKind capability_kind,
     std::optional<ProcessGroupId> process_group_scope) noexcept {
   auto* group = state.find_process_group_mut(process_group_id);
@@ -190,6 +218,9 @@ bool axion_kernel_revoke_process_group_capability(
       std::remove_if(group->capabilities.begin(),
                      group->capabilities.end(),
                      [&](const auto& capability) {
+                       if (capability_record_id.has_value()) {
+                         return capability.record_id == *capability_record_id;
+                       }
                        return capability_matches(capability,
                                                  capability_kind,
                                                  process_group_scope);
@@ -197,8 +228,12 @@ bool axion_kernel_revoke_process_group_capability(
       group->capabilities.end());
   const bool changed = group->capabilities.size() != old_size;
   if (changed) {
+    const auto transition_record_id = capability_record_id.value_or(0);
     record_capability_transition(
-        state, process_group_id, KernelAuditEventKind::CapabilityRevoked);
+        state,
+        process_group_id,
+        KernelAuditEventKind::CapabilityRevoked,
+        transition_record_id);
   }
   return changed;
 }

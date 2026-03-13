@@ -118,6 +118,7 @@ bool axion_kernel_grant_process_group_capability(
 bool axion_kernel_revoke_process_group_capability(
     KernelRuntimeState& state,
     ProcessGroupId process_group_id,
+    std::optional<CapabilityRecordId> capability_record_id,
     KernelCapabilityKind capability_kind,
     std::optional<ProcessGroupId> process_group_scope = std::nullopt) noexcept;
 std::vector<KernelCapabilityRecord> axion_kernel_list_process_group_capabilities(

@@ -28,6 +28,11 @@ Recent architecture milestone:
   inspection, capability management, service lifecycle control, process-group
   memory inspection, boot-critical address-space control, and guarded
   runtime/fault summary queries.
+- Capability management on that ABI is now stronger than the initial slice:
+  capability records have kernel-issued stable IDs, supervisors can inspect
+  bounded recent capability-transition history, and revocation can target an
+  observed transition sequence instead of only a freshly scanned capability
+  list.
 - ABI rejection taxonomy is now more explicit as well. Address-space ownership,
   missing boot-critical control values, and foreign supervisory read scope now
   produce dedicated rejections instead of collapsing into generic policy

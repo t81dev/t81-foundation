@@ -45,10 +45,13 @@ struct KernelRuntimeState {
   };
 
   struct SupervisorState {
+    static constexpr std::size_t kMaxCapabilityTransitionHistory = 8;
+
     SupervisorId id{0};
     std::vector<ProcessGroupId> managed_groups;
     std::vector<ServiceId> managed_services;
     std::deque<ProcessGroupId> pending_groups;
+    std::deque<KernelCapabilityTransitionRecord> recent_capability_transitions;
     uint64_t fault_notifications{0};
     uint64_t acknowledgements{0};
     uint64_t recovered_groups{0};
@@ -60,6 +63,7 @@ struct KernelRuntimeState {
     std::optional<KernelAuditEventKind> last_service_transition_kind{};
     std::optional<uint64_t> last_service_transition_sequence{};
     std::optional<ProcessGroupId> last_capability_transition_group_id{};
+    std::optional<CapabilityRecordId> last_capability_transition_record_id{};
     std::optional<KernelAuditEventKind> last_capability_transition_kind{};
     std::optional<uint64_t> last_capability_transition_sequence{};
   };
@@ -259,6 +263,7 @@ struct KernelRuntimeState {
   SupervisorId next_supervisor_id{1};
   ServiceId next_service_id{1};
   AddressSpaceId next_address_space_id{1};
+  CapabilityRecordId next_capability_record_id{1};
   uint64_t next_interrupt_sequence{1};
   uint64_t next_pager_handoff_sequence{1};
   uint64_t next_pager_resolution_sequence{1};

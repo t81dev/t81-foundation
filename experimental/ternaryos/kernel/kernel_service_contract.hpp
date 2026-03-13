@@ -353,8 +353,10 @@ struct KernelSupervisorServiceInventoryView {
   std::optional<KernelAuditEventKind> last_service_transition_kind{};
   std::optional<uint64_t> last_service_transition_sequence{};
   std::optional<ProcessGroupId> last_capability_transition_group_id{};
+  std::optional<CapabilityRecordId> last_capability_transition_record_id{};
   std::optional<KernelAuditEventKind> last_capability_transition_kind{};
   std::optional<uint64_t> last_capability_transition_sequence{};
+  std::vector<KernelCapabilityTransitionRecord> recent_capability_transitions;
   std::vector<ServiceId> service_ids;
   std::vector<KernelSupervisorServiceEntryView> services;
 };
@@ -370,8 +372,10 @@ struct KernelSupervisorCapabilityInventoryView {
   std::size_t process_group_count{0};
   uint64_t capability_transitions{0};
   std::optional<ProcessGroupId> last_capability_transition_group_id{};
+  std::optional<CapabilityRecordId> last_capability_transition_record_id{};
   std::optional<KernelAuditEventKind> last_capability_transition_kind{};
   std::optional<uint64_t> last_capability_transition_sequence{};
+  std::vector<KernelCapabilityTransitionRecord> recent_capability_transitions;
   std::vector<KernelSupervisorCapabilityEntryView> process_groups;
 };
 

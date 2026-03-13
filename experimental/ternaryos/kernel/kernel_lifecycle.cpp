@@ -6,17 +6,33 @@ namespace {
 
 constexpr std::string_view kVBoxPlatformPrefix = "virtualbox-x86_64:";
 
+CapabilityRecordId next_capability_record_id(KernelRuntimeState& state) {
+  return state.next_capability_record_id++;
+}
+
 std::vector<KernelCapabilityRecord> default_process_group_capabilities(
+    KernelRuntimeState& state,
     ProcessGroupId process_group_id) {
   return {
-      KernelCapabilityRecord{.kind = KernelCapabilityKind::Yield},
-      KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcSend},
-      KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
       KernelCapabilityRecord{
+          .record_id = next_capability_record_id(state),
+          .kind = KernelCapabilityKind::Yield,
+      },
+      KernelCapabilityRecord{
+          .record_id = next_capability_record_id(state),
+          .kind = KernelCapabilityKind::IpcSend,
+      },
+      KernelCapabilityRecord{
+          .record_id = next_capability_record_id(state),
+          .kind = KernelCapabilityKind::IpcReceive,
+      },
+      KernelCapabilityRecord{
+          .record_id = next_capability_record_id(state),
           .kind = KernelCapabilityKind::FaultObserve,
           .process_group_scope = process_group_id,
       },
       KernelCapabilityRecord{
+          .record_id = next_capability_record_id(state),
           .kind = KernelCapabilityKind::FaultAcknowledge,
           .process_group_scope = process_group_id,
       },
@@ -60,7 +76,7 @@ KernelRuntimeState::ProcessGroupState* create_process_group(KernelRuntimeState& 
       id,
       KernelRuntimeState::ProcessGroupState{
           .id = id,
-          .capabilities = default_process_group_capabilities(id),
+          .capabilities = default_process_group_capabilities(state, id),
       });
   return inserted ? &it->second : nullptr;
 }
@@ -164,6 +180,7 @@ std::optional<KernelRuntimeState> axion_kernel_bootstrap(
           .id = KernelRuntimeState::kKernelProcessGroup,
           .member_tids = {KernelRuntimeState::kKernelTid},
           .capabilities = default_process_group_capabilities(
+              state,
               KernelRuntimeState::kKernelProcessGroup),
       });
   state.address_spaces.emplace(

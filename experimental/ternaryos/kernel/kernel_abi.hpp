@@ -1,6 +1,7 @@
 #pragma once
 
 #include "kernel_base.hpp"
+#include "kernel_runtime_support.hpp"
 #include "../ipc/canon_message.hpp"
 
 #include <optional>
@@ -19,6 +20,7 @@ enum class KernelCapabilityKind : uint8_t {
 };
 
 struct KernelCapabilityRecord {
+  CapabilityRecordId record_id{0};
   KernelCapabilityKind kind{KernelCapabilityKind::Yield};
   std::optional<ProcessGroupId> process_group_scope{};
 };
@@ -37,7 +39,9 @@ enum class KernelCallKind : uint8_t {
   QuerySupervisorStatus,
   QuerySupervisorRecoveryStatus,
   QuerySupervisorCapabilityInventory,
+  QueryCapabilityTransitionHistory,
   QueryCapabilities,
+  QueryCapabilityRecord,
   GrantCapability,
   RevokeCapability,
   RegisterService,
@@ -75,6 +79,8 @@ enum class KernelCallRejection : uint8_t {
   MissingTargetProcessGroup,
   MissingAddressSpace,
   MissingBootCriticalValue,
+  InvalidCapabilityRecordId,
+  MissingCapabilityTransition,
   MissingSupervisor,
   SupervisorMismatch,
   ForeignSupervisorScope,
@@ -91,6 +97,7 @@ struct KernelCallRequest {
   std::optional<ProcessGroupId> process_group_id{};
   std::optional<SupervisorId> supervisor_id{};
   std::optional<AddressSpaceId> address_space_id{};
+  std::optional<uint64_t> capability_transition_sequence{};
   std::optional<bool> boot_critical{};
   std::optional<sched::Tid> ipc_dst{};
   std::optional<ipc::CanonMessage> message{};
@@ -146,6 +153,8 @@ struct KernelCallResult {
   std::size_t supervisor_capability_process_group_count{0};
   uint64_t supervisor_capability_transitions{0};
   std::optional<ProcessGroupId> supervisor_last_capability_transition_group_id{};
+  std::optional<CapabilityRecordId> supervisor_last_capability_transition_record_id{};
+  std::vector<KernelCapabilityTransitionRecord> supervisor_capability_transition_history;
 };
 
 KernelCallResult axion_kernel_call(KernelRuntimeState& state,

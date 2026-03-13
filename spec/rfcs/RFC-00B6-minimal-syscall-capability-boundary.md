@@ -202,6 +202,17 @@ The first capability classes should be:
 - `CapDeviceClaim(device_name)`
 - `CapDeviceObserve(device_name)`
 
+The currently implemented prototype exposes a narrower typed capability set:
+
+- `Yield`
+- `IpcSend`
+- `IpcReceive`
+- `FaultObserve`
+- `FaultAcknowledge`
+
+Those capabilities are represented as kernel-issued `KernelCapabilityRecord`
+values with stable `record_id` identities bound to process groups.
+
 ### 5.5 Capability Rules
 
 The first ABI revision should enforce these rules:
@@ -213,6 +224,11 @@ The first ABI revision should enforce these rules:
   remains usable
 - capabilities are monotonic during a kernel step: a request cannot observe
   half-revoked state
+- capability record identity is kernel-owned: callers may query and revoke by
+  `record_id`, but may not forge grant-time record identities
+- supervisors may inspect bounded recent capability-transition history for the
+  process groups they own and may target revocation using an observed
+  transition sequence
 
 ### 5.6 Request Rejection Model
 
@@ -247,6 +263,8 @@ this shape and should be treated as the baseline for follow-on requests:
 - `MissingTargetProcessGroup`
 - `MissingAddressSpace`
 - `MissingBootCriticalValue`
+- `InvalidCapabilityRecordId`
+- `MissingCapabilityTransition`
 - `MissingSupervisor`
 - `SupervisorMismatch`
 - `ForeignSupervisorScope`
@@ -265,6 +283,11 @@ These rejections are not all equivalent and should stay distinct:
   outside its supervisory scope
 - `ForeignAddressSpace` is used for owner-bound address-space control requests
   such as boot-critical toggling
+- `InvalidCapabilityRecordId` is used for malformed capability record queries
+  and forged grant-time capability record identities
+- `MissingCapabilityTransition` is used for sequence-based capability control
+  requests that refer to a transition not present in retained supervisor
+  capability history
 
 This distinction matters because it keeps diagnostics precise and prevents the
 ABI from collapsing unrelated policy failures into one generic denial bucket.
@@ -317,7 +340,9 @@ Implemented request kinds:
 - `QuerySupervisorStatus`
 - `QuerySupervisorRecoveryStatus`
 - `QuerySupervisorCapabilityInventory`
+- `QueryCapabilityTransitionHistory`
 - `QueryCapabilities`
+- `QueryCapabilityRecord`
 - `GrantCapability`
 - `RevokeCapability`
 - `RegisterService`
@@ -337,6 +362,14 @@ Current policy rules already enforced in code:
   address spaces explicitly
 - fault observation and acknowledgement remain available while the caller group
   is faulted so recovery paths do not self-deadlock
+- capability records receive stable kernel-issued identifiers and are queryable
+  by `record_id`
+- supervisor capability inventory exposes bounded recent capability-transition
+  history, and the ABI exposes that same history directly through
+  `QueryCapabilityTransitionHistory`
+- `RevokeCapability` may resolve its target through a previously observed
+  capability-transition sequence instead of requiring an immediate inventory
+  re-scan
 
 This means the RFC is no longer purely aspirational. It now defines the next
 expansion stages on top of an implemented ABI core.

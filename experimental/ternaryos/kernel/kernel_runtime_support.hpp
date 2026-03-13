@@ -1,6 +1,5 @@
 #pragma once
 
-#include "kernel_abi.hpp"
 #include "kernel_base.hpp"
 
 #include "../hal/hal.hpp"
@@ -80,6 +79,13 @@ struct KernelAuditRecord {
   sched::Tid subject_tid{0};
   ProcessGroupId process_group_id{0};
   mmu::MmuFault fault{mmu::MmuFault::None};
+  uint64_t sequence{0};
+};
+
+struct KernelCapabilityTransitionRecord {
+  ProcessGroupId process_group_id{0};
+  CapabilityRecordId record_id{0};
+  KernelAuditEventKind kind{KernelAuditEventKind::CapabilityGranted};
   uint64_t sequence{0};
 };
 

@@ -82,7 +82,9 @@ Implemented kernel-call slice:
 - `QuerySupervisorStatus`
 - `QuerySupervisorRecoveryStatus`
 - `QuerySupervisorCapabilityInventory`
+- `QueryCapabilityTransitionHistory`
 - `QueryCapabilities`
+- `QueryCapabilityRecord`
 - `GrantCapability`
 - `RevokeCapability`
 - `RegisterService`
@@ -99,6 +101,9 @@ discipline:
 - keep supervisor scope rules consistent across read and control paths
 - avoid reopening internal-only control shortcuts now that a typed ABI path
   exists
+- preserve the kernel-owned capability-management model now that capability
+  records, supervisor transition history, and sequence-based revocation are all
+  live on the ABI
 
 ## Recommended Execution Order
 

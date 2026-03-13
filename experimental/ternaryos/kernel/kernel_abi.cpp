@@ -162,6 +162,28 @@ std::optional<KernelCallResult> resolve_capability_target_group(
   return std::nullopt;
 }
 
+const KernelCapabilityRecord* find_capability_record(
+    const KernelRuntimeState::ProcessGroupState& group_state,
+    CapabilityRecordId record_id) {
+  for (const auto& capability : group_state.capabilities) {
+    if (capability.record_id == record_id) {
+      return &capability;
+    }
+  }
+  return nullptr;
+}
+
+const KernelCapabilityTransitionRecord* find_capability_transition(
+    const KernelRuntimeState::SupervisorState& supervisor_state,
+    uint64_t sequence) {
+  for (const auto& transition : supervisor_state.recent_capability_transitions) {
+    if (transition.sequence == sequence) {
+      return &transition;
+    }
+  }
+  return nullptr;
+}
+
 std::optional<KernelCallResult> resolve_memory_target_group(
     KernelRuntimeState& state,
     const CallerContext& caller,
@@ -277,7 +299,7 @@ std::optional<KernelCallResult> validate_global_summary_query(
           state, *request.supervisor_id, caller.process_group_id)) {
     KernelCallResult result = init_result(caller);
     result.status = KernelCallStatus::PolicyDenied;
-    result.rejection = KernelCallRejection::SupervisorMismatch;
+    result.rejection = KernelCallRejection::ForeignSupervisorScope;
     return result;
   }
   return std::nullopt;
@@ -509,6 +531,10 @@ KernelCallResult map_service_request_result(const CallerContext& caller,
         request_result.supervisor_capabilities->capability_transitions;
     result.supervisor_last_capability_transition_group_id =
         request_result.supervisor_capabilities->last_capability_transition_group_id;
+    result.supervisor_last_capability_transition_record_id =
+        request_result.supervisor_capabilities->last_capability_transition_record_id;
+    result.supervisor_capability_transition_history =
+        request_result.supervisor_capabilities->recent_capability_transitions;
   }
   if (request_result.fault_summary.has_value()) {
     result.fault_summary_recorded_faults =
@@ -782,6 +808,29 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
           axion_kernel_list_process_group_capabilities(state, *request.process_group_id);
       return mapped;
     }
+    case KernelCallKind::QueryCapabilityTransitionHistory: {
+      auto mapped = dispatch_supervisor_request(
+          caller, state, request, KernelServiceRequestKind::SupervisorCapabilityInventory);
+      if (mapped.status != KernelCallStatus::Ok) {
+        return mapped;
+      }
+      if (!request.process_group_id.has_value()) {
+        return mapped;
+      }
+      if (!axion_kernel_supervisor_matches_process_group(
+              state, *request.supervisor_id, *request.process_group_id)) {
+        mapped.status = KernelCallStatus::PolicyDenied;
+        mapped.rejection = KernelCallRejection::SupervisorMismatch;
+        mapped.supervisor_capability_transition_history.clear();
+        return mapped;
+      }
+      std::erase_if(
+          mapped.supervisor_capability_transition_history,
+          [&](const auto& transition) {
+            return transition.process_group_id != *request.process_group_id;
+          });
+      return mapped;
+    }
     case KernelCallKind::QueryCapabilities: {
       if (request.process_group_id.has_value() &&
           *request.process_group_id != caller.process_group_id) {
@@ -803,6 +852,46 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
           axion_kernel_list_process_group_capabilities(state, caller.process_group_id);
       return result;
     }
+    case KernelCallKind::QueryCapabilityRecord: {
+      if (!request.capability.has_value() || request.capability->record_id == 0) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::InvalidCapabilityRecordId;
+        return result;
+      }
+      if (request.process_group_id.has_value() &&
+          *request.process_group_id != caller.process_group_id) {
+        KernelRuntimeState::ProcessGroupState* target_group_state = nullptr;
+        if (auto invalid = resolve_capability_target_group(
+                state, caller, request, target_group_state);
+            invalid.has_value()) {
+          return *invalid;
+        }
+        const auto* capability =
+            find_capability_record(*target_group_state, request.capability->record_id);
+        if (!capability) {
+          result.status = KernelCallStatus::NotFound;
+          result.rejection = KernelCallRejection::MissingCapability;
+          return result;
+        }
+        result.status = KernelCallStatus::Ok;
+        result.rejection = KernelCallRejection::None;
+        result.capabilities = {*capability};
+        return result;
+      }
+      const auto* caller_group = state.find_process_group(caller.process_group_id);
+      const auto* capability =
+          caller_group ? find_capability_record(*caller_group, request.capability->record_id)
+                       : nullptr;
+      if (!capability) {
+        result.status = KernelCallStatus::NotFound;
+        result.rejection = KernelCallRejection::MissingCapability;
+        return result;
+      }
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.capabilities = {*capability};
+      return result;
+    }
     case KernelCallKind::GrantCapability: {
       KernelRuntimeState::ProcessGroupState* target_group_state = nullptr;
       if (auto invalid = resolve_capability_target_group(
@@ -812,6 +901,11 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       }
       if (!request.capability.has_value()) {
         result.status = KernelCallStatus::InvalidRequest;
+        return result;
+      }
+      if (request.capability->record_id != 0) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::InvalidCapabilityRecordId;
         return result;
       }
       if (!axion_kernel_grant_process_group_capability(
@@ -837,9 +931,33 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
         result.status = KernelCallStatus::InvalidRequest;
         return result;
       }
+      auto capability_record_id =
+          request.capability->record_id == 0
+              ? std::optional<CapabilityRecordId>{}
+              : std::optional<CapabilityRecordId>{request.capability->record_id};
+      if (!capability_record_id.has_value() &&
+          request.capability_transition_sequence.has_value()) {
+        const auto supervisor_id =
+            state.find_process_group_supervisor(target_group_state->id);
+        const auto* supervisor_state =
+            supervisor_id ? state.find_supervisor(*supervisor_id) : nullptr;
+        const auto* transition =
+            supervisor_state
+                ? find_capability_transition(*supervisor_state,
+                                             *request.capability_transition_sequence)
+                : nullptr;
+        if (!transition ||
+            transition->process_group_id != target_group_state->id) {
+          result.status = KernelCallStatus::NotFound;
+          result.rejection = KernelCallRejection::MissingCapabilityTransition;
+          return result;
+        }
+        capability_record_id = transition->record_id;
+      }
       if (!axion_kernel_revoke_process_group_capability(
               state,
               target_group_state->id,
+              capability_record_id,
               request.capability->kind,
               request.capability->process_group_scope)) {
         result.status = KernelCallStatus::Conflict;

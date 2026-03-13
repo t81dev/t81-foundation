@@ -12,6 +12,7 @@ using ProcessGroupId = uint32_t;
 using SupervisorId = uint32_t;
 using ServiceId = uint32_t;
 using AddressSpaceId = uint32_t;
+using CapabilityRecordId = uint64_t;
 
 struct KernelFaultRecord {
   std::string platform_id;

@@ -359,12 +359,20 @@ KernelSupervisorServiceInventoryView make_supervisor_services_view(
       .last_capability_transition_group_id =
           supervisor_state ? supervisor_state->last_capability_transition_group_id
                            : std::nullopt,
+      .last_capability_transition_record_id =
+          supervisor_state ? supervisor_state->last_capability_transition_record_id
+                           : std::nullopt,
       .last_capability_transition_kind =
           supervisor_state ? supervisor_state->last_capability_transition_kind
                            : std::nullopt,
       .last_capability_transition_sequence =
           supervisor_state ? supervisor_state->last_capability_transition_sequence
                            : std::nullopt,
+      .recent_capability_transitions =
+          supervisor_state ? std::vector<KernelCapabilityTransitionRecord>(
+                                 supervisor_state->recent_capability_transitions.begin(),
+                                 supervisor_state->recent_capability_transitions.end())
+                           : std::vector<KernelCapabilityTransitionRecord>{},
       .service_ids = {},
       .services = {},
   };
@@ -904,12 +912,20 @@ KernelSupervisorCapabilityInventoryView build_supervisor_capabilities_view(
       .last_capability_transition_group_id =
           supervisor_state ? supervisor_state->last_capability_transition_group_id
                            : std::nullopt,
+      .last_capability_transition_record_id =
+          supervisor_state ? supervisor_state->last_capability_transition_record_id
+                           : std::nullopt,
       .last_capability_transition_kind =
           supervisor_state ? supervisor_state->last_capability_transition_kind
                            : std::nullopt,
       .last_capability_transition_sequence =
           supervisor_state ? supervisor_state->last_capability_transition_sequence
                            : std::nullopt,
+      .recent_capability_transitions =
+          supervisor_state ? std::vector<KernelCapabilityTransitionRecord>(
+                                 supervisor_state->recent_capability_transitions.begin(),
+                                 supervisor_state->recent_capability_transitions.end())
+                           : std::vector<KernelCapabilityTransitionRecord>{},
       .process_groups = {},
   };
   if (!supervisor_state) {

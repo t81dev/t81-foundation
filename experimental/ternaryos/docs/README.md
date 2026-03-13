@@ -39,7 +39,9 @@ RFC-00B6 is now partially implemented rather than only proposed. The current
 typed `axion_kernel_call(...)` ABI covers IPC, fault inbox/recovery,
 supervisor recovery and inspection, capability management, service lifecycle
 control, process-group memory inspection, boot-critical address-space control,
-and guarded runtime/fault summary queries.
+guarded runtime/fault summary queries, kernel-issued capability record IDs,
+supervisor capability transition history, and sequence-based capability
+revocation.
 
 Current working release label: `Axion v0.1.0-alpha`
 
