@@ -6930,6 +6930,26 @@ static void test_kernel_abi_wire_call_boundary() {
   check(state->scheduler.current_tid() == *tid_a,
         "wire ABI sets thread A current before send");
 
+  const auto identity_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
+  KernelCallWireResponseBlock identity_response;
+  check(axion_kernel_call_wire(*state, &identity_request, &identity_response),
+        "wire ABI call boundary accepts a thread-identity request block");
+  const auto decoded_identity = axion_kernel_decode_wire_response(identity_response);
+  check(decoded_identity.has_value(), "wire ABI identity response decodes");
+  if (decoded_identity) {
+    check(decoded_identity->status == KernelCallStatus::Ok,
+          "wire ABI identity returns Ok");
+    check(decoded_identity->caller_tid == *tid_a,
+          "wire ABI identity returns the running caller tid");
+    check(decoded_identity->caller_process_group_id.has_value(),
+          "wire ABI identity returns caller process group");
+    check(decoded_identity->supervisor_id.has_value(),
+          "wire ABI identity returns caller supervisor");
+    check(decoded_identity->address_space_id.has_value(),
+          "wire ABI identity returns caller address space");
+  }
+
   t81::canonfs::CanonRef send_ref;
   send_ref.hash.h.bytes.fill(0x31);
 
@@ -6993,6 +7013,28 @@ static void test_kernel_abi_wire_call_boundary() {
               decoded_receive->message->tag == "wire-call-send",
           "wire ABI receive preserves tag");
   }
+
+  const auto exit_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::ExitThread});
+  KernelCallWireResponseBlock exit_response;
+  check(axion_kernel_call_wire(*state, &exit_request, &exit_response),
+        "wire ABI call boundary accepts an exit-thread request block");
+  const auto decoded_exit = axion_kernel_decode_wire_response(exit_response);
+  check(decoded_exit.has_value(), "wire ABI exit response decodes");
+  if (decoded_exit) {
+    check(decoded_exit->status == KernelCallStatus::Ok,
+          "wire ABI exit returns Ok");
+    check(decoded_exit->action_performed,
+          "wire ABI exit reports work performed");
+    check(decoded_exit->thread_exited,
+          "wire ABI exit reports thread exit");
+  }
+  check(state->find_thread_runtime(*tid_b) == nullptr,
+        "wire ABI exit removes the exited thread runtime");
+  check(!state->ipc_bus.is_registered(*tid_b),
+        "wire ABI exit deregisters the exited thread inbox");
+  check(state->scheduler.current_tid() == *tid_a,
+        "wire ABI exit advances to the remaining runnable thread");
 
   auto invalid_request = send_request;
   invalid_request.header.magic = 0;
@@ -7113,6 +7155,30 @@ static void test_kernel_call_c_bridge() {
 
   check(axion_kernel_tick(*state), "C kernel-call bridge dispatches sender");
 
+  const auto identity_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
+  KernelCallWireResponseBlock identity_response;
+  check(ternaryos_kernel_call_c(&*state,
+                                &identity_request,
+                                sizeof(identity_request),
+                                &identity_response,
+                                sizeof(identity_response)) == 0,
+        "C kernel-call bridge accepts a thread-identity request");
+  const auto decoded_identity = axion_kernel_decode_wire_response(identity_response);
+  check(decoded_identity.has_value(), "C kernel-call bridge identity response decodes");
+  if (decoded_identity) {
+    check(decoded_identity->status == KernelCallStatus::Ok,
+          "C kernel-call bridge identity returns Ok");
+    check(decoded_identity->caller_tid == *sender_tid,
+          "C kernel-call bridge identity returns the running caller tid");
+    check(decoded_identity->caller_process_group_id.has_value(),
+          "C kernel-call bridge identity returns caller process group");
+    check(decoded_identity->supervisor_id.has_value(),
+          "C kernel-call bridge identity returns caller supervisor");
+    check(decoded_identity->address_space_id.has_value(),
+          "C kernel-call bridge identity returns caller address space");
+  }
+
   t81::canonfs::CanonRef send_ref;
   send_ref.hash.h.bytes.fill(0x33);
   const auto send_request = axion_kernel_encode_wire_request(
@@ -7173,6 +7239,32 @@ static void test_kernel_call_c_bridge() {
               decoded_receive->message->tag == "c-kernel-call",
           "C kernel-call bridge preserves tag");
   }
+
+  const auto exit_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::ExitThread});
+  KernelCallWireResponseBlock exit_response;
+  check(ternaryos_kernel_call_c(&*state,
+                                &exit_request,
+                                sizeof(exit_request),
+                                &exit_response,
+                                sizeof(exit_response)) == 0,
+        "C kernel-call bridge accepts an exit-thread request");
+  const auto decoded_exit = axion_kernel_decode_wire_response(exit_response);
+  check(decoded_exit.has_value(), "C kernel-call bridge exit response decodes");
+  if (decoded_exit) {
+    check(decoded_exit->status == KernelCallStatus::Ok,
+          "C kernel-call bridge exit returns Ok");
+    check(decoded_exit->action_performed,
+          "C kernel-call bridge exit reports work performed");
+    check(decoded_exit->thread_exited,
+          "C kernel-call bridge exit reports thread exit");
+  }
+  check(state->find_thread_runtime(*receiver_tid) == nullptr,
+        "C kernel-call bridge exit removes the exited thread runtime");
+  check(!state->ipc_bus.is_registered(*receiver_tid),
+        "C kernel-call bridge exit deregisters the exited thread inbox");
+  check(state->scheduler.current_tid() == *sender_tid,
+        "C kernel-call bridge exit advances to the remaining runnable thread");
 
   KernelCallWireResponseBlock short_request_response;
   check(ternaryos_kernel_call_c(&*state,
