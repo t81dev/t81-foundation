@@ -4,22 +4,6 @@ namespace t81::ternaryos::kernel {
 
 namespace {
 
-std::optional<KernelServiceStatus> validate_requesting_group(
-    const KernelRuntimeState& state,
-    const KernelServiceRequest& request) {
-  if (!request.requesting_process_group_id.has_value()) {
-    return std::nullopt;
-  }
-  const auto* requesting_group = state.find_process_group(*request.requesting_process_group_id);
-  if (!requesting_group) {
-    return KernelServiceStatus::NotFound;
-  }
-  if (requesting_group->faulted) {
-    return KernelServiceStatus::FaultedGroup;
-  }
-  return std::nullopt;
-}
-
 const KernelRuntimeState::ServiceState* validate_service_request(
     KernelRuntimeState& state,
     KernelServiceResult& result,
@@ -62,6 +46,34 @@ const KernelRuntimeState::ServiceState* validate_service_request(
   return service_state;
 }
 
+const KernelRuntimeState::SupervisorState* resolve_supervisor_request(
+    const KernelRuntimeState& state,
+    KernelServiceResult& result,
+    const KernelServiceRequest& request,
+    bool enforce_requesting_group_match) {
+  if (!request.supervisor_id.has_value()) {
+    result.status = KernelServiceStatus::InvalidRequest;
+    result.rejection = KernelServiceRequestRejection::MissingSupervisor;
+    return nullptr;
+  }
+  const auto* supervisor_state = state.find_supervisor(*request.supervisor_id);
+  if (!supervisor_state) {
+    result.status = KernelServiceStatus::NotFound;
+    result.rejection = KernelServiceRequestRejection::MissingSupervisor;
+    return nullptr;
+  }
+  if (enforce_requesting_group_match && request.requesting_process_group_id.has_value() &&
+      !axion_kernel_supervisor_matches_process_group(
+          state,
+          supervisor_state->id,
+          *request.requesting_process_group_id)) {
+    result.status = KernelServiceStatus::InvalidRequest;
+    result.rejection = KernelServiceRequestRejection::MissingSupervisor;
+    return nullptr;
+  }
+  return supervisor_state;
+}
+
 }  // namespace
 
 KernelServiceResult axion_kernel_service_request(
@@ -70,12 +82,11 @@ KernelServiceResult axion_kernel_service_request(
   KernelServiceResult result;
   switch (request.kind) {
     case KernelServiceRequestKind::RuntimeStatus: {
-      if (auto denied = validate_requesting_group(state, request); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, request.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection =
-            denied == KernelServiceStatus::NotFound
-                ? KernelServiceRequestRejection::MissingRequestingGroup
-                : KernelServiceRequestRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_request_rejection(*denied);
         return result;
       }
       result.status = KernelServiceStatus::Ok;
@@ -102,23 +113,16 @@ KernelServiceResult axion_kernel_service_request(
       return result;
     }
     case KernelServiceRequestKind::SupervisorStatus: {
-      if (auto denied = validate_requesting_group(state, request); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, request.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection =
-            denied == KernelServiceStatus::NotFound
-                ? KernelServiceRequestRejection::MissingRequestingGroup
-                : KernelServiceRequestRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_request_rejection(*denied);
         return result;
       }
-      if (!request.supervisor_id.has_value()) {
-        result.status = KernelServiceStatus::InvalidRequest;
-        result.rejection = KernelServiceRequestRejection::MissingSupervisor;
-        return result;
-      }
-      const auto* supervisor_state = state.find_supervisor(*request.supervisor_id);
+      const auto* supervisor_state =
+          resolve_supervisor_request(state, result, request, false);
       if (!supervisor_state) {
-        result.status = KernelServiceStatus::NotFound;
-        result.rejection = KernelServiceRequestRejection::MissingSupervisor;
         return result;
       }
       result.status = KernelServiceStatus::Ok;
@@ -127,23 +131,16 @@ KernelServiceResult axion_kernel_service_request(
       return result;
     }
     case KernelServiceRequestKind::SupervisorRecoveryStatus: {
-      if (auto denied = validate_requesting_group(state, request); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, request.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection =
-            denied == KernelServiceStatus::NotFound
-                ? KernelServiceRequestRejection::MissingRequestingGroup
-                : KernelServiceRequestRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_request_rejection(*denied);
         return result;
       }
-      if (!request.supervisor_id.has_value()) {
-        result.status = KernelServiceStatus::InvalidRequest;
-        result.rejection = KernelServiceRequestRejection::MissingSupervisor;
-        return result;
-      }
-      const auto* supervisor_state = state.find_supervisor(*request.supervisor_id);
+      const auto* supervisor_state =
+          resolve_supervisor_request(state, result, request, false);
       if (!supervisor_state) {
-        result.status = KernelServiceStatus::NotFound;
-        result.rejection = KernelServiceRequestRejection::MissingSupervisor;
         return result;
       }
       result.status = KernelServiceStatus::Ok;
@@ -153,12 +150,11 @@ KernelServiceResult axion_kernel_service_request(
       return result;
     }
     case KernelServiceRequestKind::ServiceStatus: {
-      if (auto denied = validate_requesting_group(state, request); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, request.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection =
-            denied == KernelServiceStatus::NotFound
-                ? KernelServiceRequestRejection::MissingRequestingGroup
-                : KernelServiceRequestRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_request_rejection(*denied);
         return result;
       }
       const auto* service_state = validate_service_request(
@@ -172,34 +168,17 @@ KernelServiceResult axion_kernel_service_request(
       return result;
     }
     case KernelServiceRequestKind::SupervisorServiceInventory: {
-      if (auto denied = validate_requesting_group(state, request); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, request.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection =
-            denied == KernelServiceStatus::NotFound
-                ? KernelServiceRequestRejection::MissingRequestingGroup
-                : KernelServiceRequestRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_request_rejection(*denied);
         return result;
       }
-      if (!request.supervisor_id.has_value()) {
-        result.status = KernelServiceStatus::InvalidRequest;
-        result.rejection = KernelServiceRequestRejection::MissingSupervisor;
-        return result;
-      }
-      const auto* supervisor_state = state.find_supervisor(*request.supervisor_id);
+      const auto* supervisor_state =
+          resolve_supervisor_request(state, result, request, true);
       if (!supervisor_state) {
-        result.status = KernelServiceStatus::NotFound;
-        result.rejection = KernelServiceRequestRejection::MissingSupervisor;
         return result;
-      }
-      if (request.requesting_process_group_id.has_value()) {
-        if (!axion_kernel_supervisor_matches_process_group(
-                state,
-                supervisor_state->id,
-                *request.requesting_process_group_id)) {
-          result.status = KernelServiceStatus::InvalidRequest;
-          result.rejection = KernelServiceRequestRejection::MissingSupervisor;
-          return result;
-        }
       }
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceRequestRejection::None;
@@ -208,34 +187,17 @@ KernelServiceResult axion_kernel_service_request(
       return result;
     }
     case KernelServiceRequestKind::SupervisorCapabilityInventory: {
-      if (auto denied = validate_requesting_group(state, request); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, request.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection =
-            denied == KernelServiceStatus::NotFound
-                ? KernelServiceRequestRejection::MissingRequestingGroup
-                : KernelServiceRequestRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_request_rejection(*denied);
         return result;
       }
-      if (!request.supervisor_id.has_value()) {
-        result.status = KernelServiceStatus::InvalidRequest;
-        result.rejection = KernelServiceRequestRejection::MissingSupervisor;
-        return result;
-      }
-      const auto* supervisor_state = state.find_supervisor(*request.supervisor_id);
+      const auto* supervisor_state =
+          resolve_supervisor_request(state, result, request, true);
       if (!supervisor_state) {
-        result.status = KernelServiceStatus::NotFound;
-        result.rejection = KernelServiceRequestRejection::MissingSupervisor;
         return result;
-      }
-      if (request.requesting_process_group_id.has_value()) {
-        if (!axion_kernel_supervisor_matches_process_group(
-                state,
-                supervisor_state->id,
-                *request.requesting_process_group_id)) {
-          result.status = KernelServiceStatus::InvalidRequest;
-          result.rejection = KernelServiceRequestRejection::MissingSupervisor;
-          return result;
-        }
       }
       result.status = KernelServiceStatus::Ok;
       result.rejection = KernelServiceRequestRejection::None;
@@ -244,12 +206,11 @@ KernelServiceResult axion_kernel_service_request(
       return result;
     }
     case KernelServiceRequestKind::FaultSummary: {
-      if (auto denied = validate_requesting_group(state, request); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, request.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection =
-            denied == KernelServiceStatus::NotFound
-                ? KernelServiceRequestRejection::MissingRequestingGroup
-                : KernelServiceRequestRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_request_rejection(*denied);
         return result;
       }
       result.status = KernelServiceStatus::Ok;
@@ -258,12 +219,11 @@ KernelServiceResult axion_kernel_service_request(
       return result;
     }
     case KernelServiceRequestKind::AuditSummary: {
-      if (auto denied = validate_requesting_group(state, request); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, request.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection =
-            denied == KernelServiceStatus::NotFound
-                ? KernelServiceRequestRejection::MissingRequestingGroup
-                : KernelServiceRequestRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_request_rejection(*denied);
         return result;
       }
       result.status = KernelServiceStatus::Ok;
@@ -272,12 +232,11 @@ KernelServiceResult axion_kernel_service_request(
       return result;
     }
     case KernelServiceRequestKind::DeviceSummary: {
-      if (auto denied = validate_requesting_group(state, request); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, request.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection =
-            denied == KernelServiceStatus::NotFound
-                ? KernelServiceRequestRejection::MissingRequestingGroup
-                : KernelServiceRequestRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_request_rejection(*denied);
         return result;
       }
       if (!state.device_arbitration.has_value()) {

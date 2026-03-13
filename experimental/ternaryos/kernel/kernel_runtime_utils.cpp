@@ -6,15 +6,6 @@ namespace t81::ternaryos::kernel {
 
 namespace {
 
-std::optional<sched::Tid> primary_tid_for_group(const KernelRuntimeState& state,
-                                                ProcessGroupId process_group_id) {
-  const auto* group = state.find_process_group(process_group_id);
-  if (!group || group->member_tids.empty()) {
-    return std::nullopt;
-  }
-  return *std::min_element(group->member_tids.begin(), group->member_tids.end());
-}
-
 KernelDeviceRecord* find_device(KernelRuntimeState& state, std::string_view device_name) {
   if (!state.device_arbitration) {
     return nullptr;
@@ -38,7 +29,8 @@ void record_capability_transition(KernelRuntimeState& state,
                                   ProcessGroupId process_group_id,
                                   KernelAuditEventKind kind) {
   const auto subject_tid =
-      primary_tid_for_group(state, process_group_id).value_or(KernelRuntimeState::kKernelTid);
+      axion_kernel_primary_tid_for_group(state, process_group_id)
+          .value_or(KernelRuntimeState::kKernelTid);
   record_audit_event(state, kind, subject_tid, process_group_id, mmu::MmuFault::None);
   const auto supervisor_id = state.find_process_group_supervisor(process_group_id);
   if (!supervisor_id.has_value() || !state.last_audit_event.has_value()) {
@@ -56,6 +48,16 @@ void record_capability_transition(KernelRuntimeState& state,
 }
 
 }  // namespace
+
+std::optional<sched::Tid> axion_kernel_primary_tid_for_group(
+    const KernelRuntimeState& state,
+    ProcessGroupId process_group_id) noexcept {
+  const auto* group = state.find_process_group(process_group_id);
+  if (!group || group->member_tids.empty()) {
+    return std::nullopt;
+  }
+  return *std::min_element(group->member_tids.begin(), group->member_tids.end());
+}
 
 void record_audit_event(KernelRuntimeState& state,
                         KernelAuditEventKind kind,
@@ -103,6 +105,36 @@ bool axion_kernel_release_device(KernelRuntimeState& state,
   }
   device->owner_tid.reset();
   return true;
+}
+
+std::optional<KernelServiceStatus> axion_kernel_validate_requesting_group(
+    const KernelRuntimeState& state,
+    std::optional<ProcessGroupId> requesting_process_group_id) noexcept {
+  if (!requesting_process_group_id.has_value()) {
+    return std::nullopt;
+  }
+  const auto* requesting_group = state.find_process_group(*requesting_process_group_id);
+  if (!requesting_group) {
+    return KernelServiceStatus::NotFound;
+  }
+  if (requesting_group->faulted) {
+    return KernelServiceStatus::FaultedGroup;
+  }
+  return std::nullopt;
+}
+
+KernelServiceRequestRejection axion_kernel_requesting_group_request_rejection(
+    KernelServiceStatus status) noexcept {
+  return status == KernelServiceStatus::NotFound
+             ? KernelServiceRequestRejection::MissingRequestingGroup
+             : KernelServiceRequestRejection::FaultedRequestingGroup;
+}
+
+KernelServiceActionRejection axion_kernel_requesting_group_action_rejection(
+    KernelServiceStatus status) noexcept {
+  return status == KernelServiceStatus::NotFound
+             ? KernelServiceActionRejection::MissingRequestingGroup
+             : KernelServiceActionRejection::FaultedRequestingGroup;
 }
 
 bool axion_kernel_process_groups_share_supervisor(

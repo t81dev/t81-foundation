@@ -6,62 +6,13 @@ namespace t81::ternaryos::kernel {
 
 namespace {
 
-void record_action_audit_event(KernelRuntimeState& state,
-                               KernelAuditEventKind kind,
-                               sched::Tid subject_tid,
-                               ProcessGroupId process_group_id,
-                               mmu::MmuFault fault = mmu::MmuFault::None) {
-  KernelAuditRecord record{
-      .kind = kind,
-      .subject_tid = subject_tid,
-      .process_group_id = process_group_id,
-      .fault = fault,
-      .sequence = state.next_audit_sequence++,
-  };
-  if (state.audit_log.size() >= KernelRuntimeState::kMaxAuditLog) {
-    state.audit_log.pop_front();
-  }
-  state.audit_log.push_back(record);
-  state.last_audit_event = record;
-  ++state.counters.audit_events_recorded;
-  if (auto* group = state.find_process_group_mut(process_group_id)) {
-    ++group->counters.audit_events;
-  }
-}
-
-std::optional<KernelServiceStatus> validate_requesting_group(
-    const KernelRuntimeState& state,
-    const KernelServiceAction& action) {
-  if (!action.requesting_process_group_id.has_value()) {
-    return std::nullopt;
-  }
-  const auto* requesting_group = state.find_process_group(*action.requesting_process_group_id);
-  if (!requesting_group) {
-    return KernelServiceStatus::NotFound;
-  }
-  if (requesting_group->faulted) {
-    return KernelServiceStatus::FaultedGroup;
-  }
-  return std::nullopt;
-}
-
-std::optional<sched::Tid> primary_tid_for_group(const KernelRuntimeState& state,
-                                                ProcessGroupId process_group_id) {
-  const auto* group_state = state.find_process_group(process_group_id);
-  if (!group_state || group_state->member_tids.empty()) {
-    return std::nullopt;
-  }
-  return *std::min_element(group_state->member_tids.begin(),
-                           group_state->member_tids.end());
-}
-
 void record_service_audit_event(KernelRuntimeState& state,
                                 KernelAuditEventKind kind,
                                 ProcessGroupId process_group_id) {
   const auto subject_tid =
-      primary_tid_for_group(state, process_group_id).value_or(KernelRuntimeState::kKernelTid);
-  record_action_audit_event(
-      state, kind, subject_tid, process_group_id, mmu::MmuFault::None);
+      axion_kernel_primary_tid_for_group(state, process_group_id)
+          .value_or(KernelRuntimeState::kKernelTid);
+  record_audit_event(state, kind, subject_tid, process_group_id, mmu::MmuFault::None);
 }
 
 void record_supervisor_service_transition(KernelRuntimeState& state,
@@ -158,11 +109,11 @@ KernelServiceActionResult axion_kernel_service_action(
   KernelServiceActionResult result;
   switch (action.kind) {
     case KernelServiceActionKind::AcknowledgeSupervisorFaultGroup: {
-      if (auto denied = validate_requesting_group(state, action); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, action.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection = denied == KernelServiceStatus::NotFound
-                               ? KernelServiceActionRejection::MissingRequestingGroup
-                               : KernelServiceActionRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_action_rejection(*denied);
         return result;
       }
       if (!action.supervisor_id.has_value() || !action.process_group_id.has_value()) {
@@ -204,11 +155,11 @@ KernelServiceActionResult axion_kernel_service_action(
     }
     case KernelServiceActionKind::ClaimDevice:
     case KernelServiceActionKind::ReleaseDevice: {
-      if (auto denied = validate_requesting_group(state, action); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, action.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection = denied == KernelServiceStatus::NotFound
-                               ? KernelServiceActionRejection::MissingRequestingGroup
-                               : KernelServiceActionRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_action_rejection(*denied);
         return result;
       }
       if (!state.device_arbitration.has_value()) {
@@ -232,7 +183,7 @@ KernelServiceActionResult axion_kernel_service_action(
         return result;
       }
       const auto owner_tid =
-          primary_tid_for_group(state, *action.requesting_process_group_id);
+          axion_kernel_primary_tid_for_group(state, *action.requesting_process_group_id);
       if (!owner_tid.has_value()) {
         result.status = KernelServiceStatus::InvalidRequest;
         result.rejection = KernelServiceActionRejection::NoPrimaryThread;
@@ -261,11 +212,11 @@ KernelServiceActionResult axion_kernel_service_action(
       return result;
     }
     case KernelServiceActionKind::RegisterService: {
-      if (auto denied = validate_requesting_group(state, action); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, action.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection = denied == KernelServiceStatus::NotFound
-                               ? KernelServiceActionRejection::MissingRequestingGroup
-                               : KernelServiceActionRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_action_rejection(*denied);
         return result;
       }
       if (!action.requesting_process_group_id.has_value()) {
@@ -318,11 +269,11 @@ KernelServiceActionResult axion_kernel_service_action(
       return result;
     }
     case KernelServiceActionKind::UnregisterService: {
-      if (auto denied = validate_requesting_group(state, action); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, action.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection = denied == KernelServiceStatus::NotFound
-                               ? KernelServiceActionRejection::MissingRequestingGroup
-                               : KernelServiceActionRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_action_rejection(*denied);
         return result;
       }
       if (!action.requesting_process_group_id.has_value()) {
@@ -387,11 +338,11 @@ KernelServiceActionResult axion_kernel_service_action(
     }
     case KernelServiceActionKind::SuspendService:
     case KernelServiceActionKind::ResumeService: {
-      if (auto denied = validate_requesting_group(state, action); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, action.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection = denied == KernelServiceStatus::NotFound
-                               ? KernelServiceActionRejection::MissingRequestingGroup
-                               : KernelServiceActionRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_action_rejection(*denied);
         return result;
       }
       if (!action.requesting_process_group_id.has_value()) {
@@ -452,11 +403,11 @@ KernelServiceActionResult axion_kernel_service_action(
     }
     case KernelServiceActionKind::MarkServiceUnhealthy:
     case KernelServiceActionKind::MarkServiceHealthy: {
-      if (auto denied = validate_requesting_group(state, action); denied.has_value()) {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, action.requesting_process_group_id);
+          denied.has_value()) {
         result.status = *denied;
-        result.rejection = denied == KernelServiceStatus::NotFound
-                               ? KernelServiceActionRejection::MissingRequestingGroup
-                               : KernelServiceActionRejection::FaultedRequestingGroup;
+        result.rejection = axion_kernel_requesting_group_action_rejection(*denied);
         return result;
       }
       if (!action.requesting_process_group_id.has_value()) {

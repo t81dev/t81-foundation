@@ -338,16 +338,6 @@ std::size_t count_claimed_devices(const KernelRuntimeState& state) {
   return claimed;
 }
 
-std::optional<sched::Tid> primary_tid_for_group(const KernelRuntimeState& state,
-                                                ProcessGroupId process_group_id) {
-  const auto* group_state = state.find_process_group(process_group_id);
-  if (!group_state || group_state->member_tids.empty()) {
-    return std::nullopt;
-  }
-  return *std::min_element(group_state->member_tids.begin(),
-                           group_state->member_tids.end());
-}
-
 KernelSupervisorServiceInventoryView make_supervisor_services_view(
     const KernelRuntimeState& state,
     SupervisorId supervisor_id) {
@@ -782,9 +772,10 @@ KernelServiceStatusView make_service_view(const KernelRuntimeState& state,
           address_space ? address_space->pager_faults_coalesced : 0,
       .last_pager_fault =
           address_space ? address_space->last_pager_fault : std::nullopt,
-      .primary_tid =
-          service_state ? primary_tid_for_group(state, service_state->process_group_id)
-                        : std::nullopt,
+        .primary_tid =
+          service_state
+              ? axion_kernel_primary_tid_for_group(state, service_state->process_group_id)
+              : std::nullopt,
       .blocked = service_state ? service_state->blocked : false,
       .suspended = service_state ? service_state->suspended : false,
       .unhealthy = service_state ? service_state->unhealthy : false,
