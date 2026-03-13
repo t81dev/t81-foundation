@@ -72,6 +72,8 @@ Current status:
   - `ternaryos_kernel_destroy_c(...)`
   - `ternaryos_kernel_call_c(...)`
   - `ternaryos_kernel_call_tva_c(...)`
+- The mapped-TVA bridge now resolves the caller address space from runtime
+  execution context instead of taking an explicit address-space id.
 
 ## ABI Status
 

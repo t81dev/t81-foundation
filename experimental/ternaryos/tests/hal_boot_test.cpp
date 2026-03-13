@@ -7636,7 +7636,6 @@ static void test_kernel_call_tva_c_bridge() {
         "TVA kernel-call bridge writes request block into mapped memory");
 
   check(ternaryos_kernel_call_tva_c(&*state,
-                                    *caller_address_space,
                                     request_tva,
                                     response_tva) == 0,
         "TVA kernel-call bridge dispatches mapped request and response blocks");
@@ -7665,12 +7664,46 @@ static void test_kernel_call_tva_c_bridge() {
   const uint64_t unmapped_response_tva =
       t81::ternaryos::mmu::tva_from_vpn_offset(83, 0);
   check(ternaryos_kernel_call_tva_c(&*state,
-                                    *caller_address_space,
                                     request_tva,
                                     unmapped_response_tva) != 0,
         "TVA kernel-call bridge rejects unmapped response pages");
+
+  t81::ternaryos::sched::TiscContext outsider_ctx;
+  outsider_ctx.registers[0] = 1302;
+  auto outsider_tid = axion_kernel_spawn_thread(*state, outsider_ctx);
+  check(outsider_tid.has_value(), "TVA kernel-call bridge spawns outsider");
+  if (outsider_tid) {
+    const auto* outsider_runtime = state->find_thread_runtime(*outsider_tid);
+    const auto outsider_address_space =
+        outsider_runtime
+            ? state->find_process_group_address_space(outsider_runtime->process_group_id)
+            : std::nullopt;
+    check(outsider_address_space.has_value(),
+          "TVA kernel-call bridge resolves outsider address space");
+    if (outsider_address_space) {
+      check(t81::ternaryos::mmu::mmu_map(
+                state->page_table,
+                state->allocator,
+                t81::ternaryos::mmu::tva_from_vpn_offset(84, 0),
+                *outsider_address_space,
+                {.readable = true, .writable = true, .executable = false}),
+            "TVA kernel-call bridge maps outsider request page");
+      const auto foreign_request_tva =
+          t81::ternaryos::mmu::tva_from_vpn_offset(84, 0);
+      check(axion_kernel_write_address_space_bytes(
+                *state,
+                *outsider_address_space,
+                foreign_request_tva,
+                reinterpret_cast<const std::byte*>(&request_block),
+                sizeof(request_block)),
+            "TVA kernel-call bridge writes request block into outsider memory");
+      check(ternaryos_kernel_call_tva_c(&*state,
+                                        foreign_request_tva,
+                                        response_tva) != 0,
+            "TVA kernel-call bridge rejects foreign address-space request pages");
+    }
+  }
   check(ternaryos_kernel_call_tva_c(nullptr,
-                                    *caller_address_space,
                                     request_tva,
                                     response_tva) != 0,
         "TVA kernel-call bridge rejects null kernel state");

@@ -146,6 +146,9 @@ Current implementation note:
 - the current mapped-memory bridge is intentionally narrow: it copies those
   fixed wire blocks through mapped TVA pages backed by a kernel-owned hosted
   page store, not a full userspace object model
+- the current mapped-memory bridge now derives the caller address space from
+  the running thread/runtime context rather than trusting a caller-supplied
+  address-space identifier
 
 ### 5.3 Minimum Request Families
 

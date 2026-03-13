@@ -482,6 +482,19 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
 
 namespace {
 
+std::optional<AddressSpaceId> resolve_current_caller_address_space(
+    const KernelRuntimeState& state) {
+  const auto caller_tid = state.scheduler.current_tid();
+  if (caller_tid == 0) {
+    return std::nullopt;
+  }
+  const auto* caller_runtime = state.find_thread_runtime(caller_tid);
+  if (!caller_runtime) {
+    return std::nullopt;
+  }
+  return state.find_process_group_address_space(caller_runtime->process_group_id);
+}
+
 KernelCallWireResponseBlock make_invalid_wire_response() noexcept {
   return axion_kernel_encode_wire_response(KernelCallResult{
       .status = KernelCallStatus::InvalidRequest,
@@ -536,12 +549,15 @@ bool axion_kernel_call_wire_bytes(KernelRuntimeState& state,
 }
 
 bool axion_kernel_call_wire_tva(KernelRuntimeState& state,
-                                AddressSpaceId address_space_id,
                                 uint64_t request_tva,
                                 uint64_t response_tva) noexcept {
+  const auto caller_address_space_id = resolve_current_caller_address_space(state);
+  if (!caller_address_space_id.has_value()) {
+    return false;
+  }
   KernelCallWireRequestBlock request_block;
   if (!axion_kernel_read_address_space_bytes(state,
-                                             address_space_id,
+                                             *caller_address_space_id,
                                              request_tva,
                                              reinterpret_cast<std::byte*>(&request_block),
                                              sizeof(request_block))) {
@@ -555,7 +571,7 @@ bool axion_kernel_call_wire_tva(KernelRuntimeState& state,
 
   return axion_kernel_write_address_space_bytes(
       state,
-      address_space_id,
+      *caller_address_space_id,
       response_tva,
       reinterpret_cast<const std::byte*>(&response_block),
       sizeof(response_block));

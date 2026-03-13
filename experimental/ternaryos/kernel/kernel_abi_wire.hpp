@@ -200,7 +200,6 @@ bool axion_kernel_call_wire_bytes(KernelRuntimeState& state,
                                   void* response_bytes,
                                   std::size_t response_size) noexcept;
 bool axion_kernel_call_wire_tva(KernelRuntimeState& state,
-                                AddressSpaceId address_space_id,
                                 uint64_t request_tva,
                                 uint64_t response_tva) noexcept;
 

@@ -77,7 +77,6 @@ extern "C" int ternaryos_kernel_call_c(void* kernel_state,
 }
 
 extern "C" int ternaryos_kernel_call_tva_c(void* kernel_state,
-                                           uint32_t address_space_id,
                                            uint64_t request_tva,
                                            uint64_t response_tva) {
   if (kernel_state == nullptr) {
@@ -86,7 +85,7 @@ extern "C" int ternaryos_kernel_call_tva_c(void* kernel_state,
   auto* state =
       static_cast<t81::ternaryos::kernel::KernelRuntimeState*>(kernel_state);
   return t81::ternaryos::kernel::axion_kernel_call_wire_tva(
-             *state, address_space_id, request_tva, response_tva)
+             *state, request_tva, response_tva)
              ? 0
              : -1;
 }

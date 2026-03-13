@@ -63,6 +63,9 @@ Recent architecture milestone:
   pointer-style wire dispatch, a raw byte-span bridge, a mapped-TVA bridge,
   and exported hosted C entrypoints `ternaryos_kernel_call_c(...)` and
   `ternaryos_kernel_call_tva_c(...)`.
+- The mapped-TVA bridge is now slightly less trusted-host oriented: it no
+  longer takes an explicit address-space id from the caller and instead
+  derives the current caller address space from kernel runtime state.
 - That exported hosted ABI now also has opaque runtime-handle lifecycle:
   `ternaryos_kernel_bootstrap_c(...)` and `ternaryos_kernel_destroy_c(...)`.
 
