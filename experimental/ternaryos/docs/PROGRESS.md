@@ -12,7 +12,7 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-13
-**Commit:** `a764e9c4` onward; RFC-00B6 ABI transport/execution work now includes a bindable `CanonStore`-backed published executable repository plus a persistent CanonFS executable source
+**Commit:** `cb32fe1a` onward; RFC-00B6 ABI transport/execution work now includes a bindable `CanonStore`-backed published executable repository plus persistent CanonFS executable resolution and hosted auto-attach policy
 **Branch:** `main`
 
 Recent architecture milestone:
@@ -51,6 +51,8 @@ Recent architecture milestone:
   executables from the same stored backing image.
 - `RegisterExecutableObject` can now also resolve published executable objects
   directly from a persistent CanonFS root when one is bound into the kernel.
+- In the hosted lane, `axion_kernel_bootstrap(...)` now auto-attaches that
+  CanonFS executable source when `T81_CANONFS_ROOT` is set.
 - Wire and hosted C executable-object results now also carry the stored
   executable entry descriptor, not just the CanonRef key.
 - Services can now retain an optional thread entry descriptor during
@@ -346,7 +348,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 2687 | 1 |
+| `t81_ternaryos_hal_boot_test` | 2706 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -354,7 +356,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **3563** | |
+| **Total** | **3582** | |
 
 Run all TernOS tests:
 

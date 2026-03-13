@@ -1,5 +1,8 @@
 #include "kernel_main.hpp"
 
+#include <cstdlib>
+#include <filesystem>
+
 namespace t81::ternaryos::kernel {
 
 namespace {
@@ -78,6 +81,17 @@ std::optional<KernelDeviceArbitrationState> bootstrap_device_arbitration(
     state.has_display = state.has_display || state.devices.back().name == "vmsvga";
   }
   return state;
+}
+
+std::unique_ptr<t81::canonfs::Driver> bootstrap_published_executable_canonfs() {
+  const char* raw = std::getenv("T81_CANONFS_ROOT");
+  if (!raw || raw[0] == '\0') {
+    return nullptr;
+  }
+  std::filesystem::path canon_root(raw);
+  std::error_code ec;
+  std::filesystem::create_directories(canon_root, ec);
+  return t81::canonfs::make_persistent_driver(canon_root);
 }
 
 KernelRuntimeState::ProcessGroupState* create_process_group(KernelRuntimeState& state) {
@@ -178,6 +192,7 @@ std::optional<KernelRuntimeState> axion_kernel_bootstrap(
       mmu::TernaryPageAllocator(ctx.memory_map),
   };
   state.ipc_bus.register_thread(KernelRuntimeState::kKernelTid);
+  state.published_executable_canonfs = bootstrap_published_executable_canonfs();
   state.thread_runtime.emplace(
       KernelRuntimeState::kKernelTid,
       KernelRuntimeState::ThreadRuntimeState{

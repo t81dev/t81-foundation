@@ -237,6 +237,9 @@ Reason:
   `CanonRef` from a persistent CanonFS root when a kernel-owned CanonFS
   driver is bound
 - current implementation detail:
+  hosted Axion bootstrap now auto-attaches that kernel-owned CanonFS driver
+  from `T81_CANONFS_ROOT` when the environment variable is present
+- current implementation detail:
   both spawn calls now accept a compact initial thread descriptor carrying
   `pc`, `sp`, `register0`, `label`, and halted/active state, and that
   descriptor is preserved across the typed ABI, fixed-size wire blocks, and
