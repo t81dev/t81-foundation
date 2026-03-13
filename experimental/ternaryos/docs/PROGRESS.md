@@ -54,6 +54,8 @@ Recent architecture milestone:
   `KernelCallWireRequestBlock` / `KernelCallWireResponseBlock` transport,
   pointer-style wire dispatch, a raw byte-span bridge, and an exported hosted
   C entrypoint `ternaryos_kernel_call_c(...)`.
+- That exported hosted ABI now also has opaque runtime-handle lifecycle:
+  `ternaryos_kernel_bootstrap_c(...)` and `ternaryos_kernel_destroy_c(...)`.
 
 Reference docs:
 - Roadmap: [docs/research/ternary_os_roadmap.md](../../../docs/research/ternary_os_roadmap.md)
@@ -81,7 +83,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 | File | Purpose | Tests |
 | :--- | :--- | :---: |
 | `hal/hal.hpp` | Public interface: `MemoryRegion`, `HardwareInterrupt`, `BootContext`, `hal_main`, I/O stubs | — |
-| `hal/hal_c_abi.h/.cpp` | C-compatible HAL handoff bridge so freestanding guest stubs can construct a boot context without C++ STL dependencies, plus the first exported hosted `ternaryos_kernel_call_c(...)` ABI bridge | 13 |
+| `hal/hal_c_abi.h/.cpp` | C-compatible HAL handoff bridge so freestanding guest stubs can construct a boot context without C++ STL dependencies, plus exported hosted kernel lifecycle (`ternaryos_kernel_bootstrap_c(...)` / `ternaryos_kernel_destroy_c(...)`) and `ternaryos_kernel_call_c(...)` ABI bridges | 19 |
 | `hal/hal_main.cpp` | Ethics-first boot — validates `BootContext`, evaluates Θ₁–Θ₉, and hands off to the first kernel-owned runtime entry | 9 |
 | `hal/interrupt_table.cpp` | Shadow binary dispatch table; `register_interrupt_handler`, `dispatch_interrupt`, `fire_simulated_interrupt`; governed interrupt model now tracked by RFC-00B5 | (above) |
 | `hal/hosted_stub.cpp` | macOS/Linux UEFI stub simulation; synthetic memory map; calls `hal_main` | (above) |

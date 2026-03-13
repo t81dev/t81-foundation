@@ -102,6 +102,8 @@ The current implementation now covers three nested layers of that boundary:
   - `axion_kernel_call_wire(...)`
 - a raw byte-span bridge and exported hosted C entrypoint:
   - `axion_kernel_call_wire_bytes(...)`
+  - `ternaryos_kernel_bootstrap_c(...)`
+  - `ternaryos_kernel_destroy_c(...)`
   - `ternaryos_kernel_call_c(...)`
 
 ### 5.2 Kernel Entry Shape
@@ -127,6 +129,13 @@ is not.
 Current implementation note:
 
 - the logical entrypoint is now represented concretely by
+  `ternaryos_kernel_bootstrap_c(const TernaryOsBootContext* ctx)`
+  `→ opaque kernel_state handle`
+  `→ ternaryos_kernel_call_c(...)`
+  `→ ternaryos_kernel_destroy_c(void* kernel_state)`
+- the current hosted C bridge therefore owns an explicit runtime-handle
+  lifecycle in addition to the raw request/response call
+- the logical entrypoint is still represented concretely by
   `ternaryos_kernel_call_c(void* kernel_state, const void* request_bytes,
   size_t request_size, void* response_bytes, size_t response_size)`
 - this is still a hosted/runtime bridge, not a final hardware trap path

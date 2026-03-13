@@ -31,6 +31,8 @@ typedef struct TernaryOsBootContext {
 } TernaryOsBootContext;
 
 int ternaryos_hal_main_c(const TernaryOsBootContext* ctx);
+void* ternaryos_kernel_bootstrap_c(const TernaryOsBootContext* ctx);
+void ternaryos_kernel_destroy_c(void* kernel_state);
 int ternaryos_kernel_call_c(void* kernel_state,
                             const void* request_bytes,
                             size_t request_size,

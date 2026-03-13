@@ -7205,6 +7205,54 @@ static void test_kernel_call_c_bridge() {
         "C kernel-call bridge rejects null kernel state");
 }
 
+static void test_kernel_c_lifecycle_bridge() {
+  std::printf("\n[AC-21l] Axion C kernel lifecycle bridge bootstraps and destroys opaque state\n");
+
+  const auto ctx_cpp = make_valid_ctx(/*ethics=*/false);
+  TernaryOsMemoryRegion regions[1];
+  regions[0] = TernaryOsMemoryRegion{
+      .base_phys = ctx_cpp.memory_map[0].base_phys,
+      .size_bytes = ctx_cpp.memory_map[0].size_bytes,
+      .writable = ctx_cpp.memory_map[0].writable,
+      .executable = ctx_cpp.memory_map[0].executable,
+  };
+  TernaryOsBootContext ctx{
+      .memory_map = regions,
+      .memory_map_len = 1,
+      .kernel_load_address = ctx_cpp.kernel_load_address,
+      .stack_top = ctx_cpp.stack_top,
+      .ethics_boot_required = ctx_cpp.ethics_boot_required,
+      .platform_id = ctx_cpp.platform_id.c_str(),
+  };
+
+  void* kernel_state = ternaryos_kernel_bootstrap_c(&ctx);
+  check(kernel_state != nullptr, "C kernel lifecycle bridge returns an opaque kernel handle");
+  if (!kernel_state) {
+    return;
+  }
+
+  KernelCallWireResponseBlock runtime_response;
+  const auto runtime_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::QueryRuntimeStatus});
+  check(ternaryos_kernel_call_c(kernel_state,
+                                &runtime_request,
+                                sizeof(runtime_request),
+                                &runtime_response,
+                                sizeof(runtime_response)) == 0,
+        "C kernel lifecycle handle can service a wire runtime request");
+  const auto decoded_runtime = axion_kernel_decode_wire_response(runtime_response);
+  check(decoded_runtime.has_value(), "C kernel lifecycle runtime response decodes");
+  if (decoded_runtime) {
+    check(decoded_runtime->status == KernelCallStatus::Ok,
+          "C kernel lifecycle runtime request returns Ok");
+  }
+
+  ternaryos_kernel_destroy_c(kernel_state);
+
+  check(ternaryos_kernel_bootstrap_c(nullptr) == nullptr,
+        "C kernel lifecycle bridge rejects null boot contexts");
+}
+
 static void test_kernel_service_abi_calls() {
   std::printf("\n[AC-21d] Axion service control plane is reachable through kernel-call ABI\n");
 
@@ -8120,6 +8168,7 @@ int main() {
   test_kernel_abi_wire_call_boundary();
   test_kernel_abi_wire_byte_boundary();
   test_kernel_call_c_bridge();
+  test_kernel_c_lifecycle_bridge();
   test_kernel_capability_management_abi();
   test_kernel_service_abi_calls();
   test_kernel_capability_transition_sequence_revoke_abi();

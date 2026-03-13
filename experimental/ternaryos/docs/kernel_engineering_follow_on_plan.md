@@ -66,6 +66,8 @@ Current status:
   - `axion_kernel_call(...)`
   - `axion_kernel_call_wire(...)`
   - `axion_kernel_call_wire_bytes(...)`
+  - `ternaryos_kernel_bootstrap_c(...)`
+  - `ternaryos_kernel_destroy_c(...)`
   - `ternaryos_kernel_call_c(...)`
 
 ## ABI Status

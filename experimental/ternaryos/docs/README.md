@@ -49,6 +49,8 @@ also has a real canonical transport layer:
 - `kernel_abi_wire.hpp/.cpp` define fixed-size request/response wire blocks
 - `axion_kernel_call_wire(...)` dispatches those blocks
 - `axion_kernel_call_wire_bytes(...)` provides the raw byte-span bridge
+- `ternaryos_kernel_bootstrap_c(...)` / `ternaryos_kernel_destroy_c(...)`
+  provide opaque C runtime-handle lifecycle
 - `ternaryos_kernel_call_c(...)` exports the first hosted C-style
   `kernel_call(req, len, resp, len)` entrypoint
 
@@ -85,7 +87,8 @@ docs/
   hal.hpp              HAL public interface (MemoryRegion, HardwareInterrupt,
                        BootContext, hal_main)
   hal_c_abi.h/.cpp     C ABI bridge for freestanding guest stubs and the
-                       first exported hosted `kernel_call` bridge
+                       first exported hosted kernel lifecycle + `kernel_call`
+                       bridge
   hal_main.cpp         Ethics-first boot (Θ₁–Θ₉ via Axion) → kernel-owned handoff
   interrupt_table.cpp  Shadow binary interrupt dispatch table; current
                        governed interrupt bridge tracked by RFC-00B5

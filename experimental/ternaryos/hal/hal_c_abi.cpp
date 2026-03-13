@@ -4,6 +4,7 @@
 
 #include "hal.hpp"
 #include "../kernel/kernel_abi_wire.hpp"
+#include "../kernel/kernel_main.hpp"
 
 namespace t81::ternaryos::hal {
 namespace {
@@ -39,6 +40,24 @@ extern "C" int ternaryos_hal_main_c(const TernaryOsBootContext* ctx) {
   }
   return t81::ternaryos::hal::hal_main(
       t81::ternaryos::hal::from_c_boot_context(*ctx));
+}
+
+extern "C" void* ternaryos_kernel_bootstrap_c(const TernaryOsBootContext* ctx) {
+  if (ctx == nullptr || (ctx->memory_map_len > 0 && ctx->memory_map == nullptr)) {
+    return nullptr;
+  }
+
+  auto state = t81::ternaryos::kernel::axion_kernel_bootstrap(
+      t81::ternaryos::hal::from_c_boot_context(*ctx));
+  if (!state.has_value()) {
+    return nullptr;
+  }
+
+  return new t81::ternaryos::kernel::KernelRuntimeState(std::move(*state));
+}
+
+extern "C" void ternaryos_kernel_destroy_c(void* kernel_state) {
+  delete static_cast<t81::ternaryos::kernel::KernelRuntimeState*>(kernel_state);
 }
 
 extern "C" int ternaryos_kernel_call_c(void* kernel_state,
