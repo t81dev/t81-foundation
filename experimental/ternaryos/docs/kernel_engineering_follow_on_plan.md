@@ -74,6 +74,9 @@ Current status:
   - `ternaryos_kernel_call_tva_c(...)`
 - The mapped-TVA bridge now resolves the caller address space from runtime
   execution context instead of taking an explicit address-space id.
+- The mapped-TVA bridge now also validates request/read and response/write
+  spans explicitly, and it can return structured `InvalidAddressSpaceSpan`
+  request faults when the response span remains writable.
 
 ## ABI Status
 

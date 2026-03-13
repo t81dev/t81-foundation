@@ -149,6 +149,14 @@ Current implementation note:
 - the current mapped-memory bridge now derives the caller address space from
   the running thread/runtime context rather than trusting a caller-supplied
   address-space identifier
+- the current mapped-memory bridge now also validates request and response
+  spans explicitly before dispatch
+- invalid request spans now return a structured wire response with
+  `KernelCallStatus::InvalidRequest`,
+  `KernelCallRejection::InvalidAddressSpaceSpan`, and a retained MMU fault
+  record when the response span is still writable
+- invalid response spans still fail the bridge outright because the kernel has
+  no safe place to write a structured error block in that case
 
 ### 5.3 Minimum Request Families
 

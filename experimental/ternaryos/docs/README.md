@@ -65,6 +65,12 @@ layer:
 - `ternaryos_kernel_call_tva_c(...)` exports the first hosted mapped-address
   bridge over that transport, with caller address-space resolution derived
   from runtime execution context
+- the mapped-TVA bridge now preflights request/read and response/write spans
+  explicitly before dispatch
+- invalid request spans now return a structured wire response with
+  `InvalidAddressSpaceSpan` plus an MMU fault record when the response span is
+  valid
+- invalid response spans still fail the bridge outright
 
 Current working release label: `Axion v0.1.0-alpha`
 

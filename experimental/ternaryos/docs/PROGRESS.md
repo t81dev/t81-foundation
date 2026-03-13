@@ -66,6 +66,10 @@ Recent architecture milestone:
 - The mapped-TVA bridge is now slightly less trusted-host oriented: it no
   longer takes an explicit address-space id from the caller and instead
   derives the current caller address space from kernel runtime state.
+- That mapped-TVA bridge now also performs explicit span validation before
+  dispatch. Invalid request spans return structured ABI faults when the
+  response span is still writable, while invalid response spans remain hard
+  bridge failures.
 - That exported hosted ABI now also has opaque runtime-handle lifecycle:
   `ternaryos_kernel_bootstrap_c(...)` and `ternaryos_kernel_destroy_c(...)`.
 
