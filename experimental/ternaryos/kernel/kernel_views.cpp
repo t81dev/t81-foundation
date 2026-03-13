@@ -763,6 +763,10 @@ KernelServiceStatusView make_service_view(const KernelRuntimeState& state,
       .name = service_state ? service_state->name : std::string{},
       .supervisor_id = service_state ? service_state->supervisor_id : 0,
       .process_group_id = service_state ? service_state->process_group_id : 0,
+      .has_entry_descriptor =
+          service_state && service_state->entry_descriptor.has_value(),
+      .entry_descriptor =
+          service_state ? service_state->entry_descriptor : std::nullopt,
       .address_space_id = address_space_id,
       .owned_page_count = address_space_id.has_value()
                               ? count_mapped_pages_for_address_space(state, *address_space_id)
@@ -820,6 +824,8 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
         .id = service_state->id,
         .name = service_state->name,
         .process_group_id = service_state->process_group_id,
+        .has_entry_descriptor = service_state->entry_descriptor.has_value(),
+        .entry_descriptor = service_state->entry_descriptor,
         .address_space_id =
             state.find_process_group_address_space(service_state->process_group_id),
         .owned_page_count = [&]() -> std::size_t {

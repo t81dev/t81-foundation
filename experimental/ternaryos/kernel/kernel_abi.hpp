@@ -159,9 +159,11 @@ struct KernelCallResult {
   std::optional<ServiceId> service_id{};
   std::optional<std::string> service_name{};
   bool service_registered{false};
+  bool service_has_entry_descriptor{false};
   bool service_suspended{false};
   bool service_unhealthy{false};
   bool service_blocked{false};
+  std::optional<KernelThreadSpawnDescriptor> service_entry_descriptor{};
   std::optional<SupervisorId> supervisor_id{};
   std::optional<AddressSpaceId> address_space_id{};
   std::optional<ProcessGroupId> target_process_group_id{};

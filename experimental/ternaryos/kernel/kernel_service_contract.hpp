@@ -288,6 +288,8 @@ struct KernelServiceStatusView {
   std::string name;
   SupervisorId supervisor_id{0};
   ProcessGroupId process_group_id{0};
+  bool has_entry_descriptor{false};
+  std::optional<KernelThreadSpawnDescriptor> entry_descriptor{};
   std::optional<AddressSpaceId> address_space_id{};
   std::size_t owned_page_count{0};
   bool pager_needed{false};
@@ -318,6 +320,8 @@ struct KernelSupervisorServiceEntryView {
   ServiceId id{0};
   std::string name;
   ProcessGroupId process_group_id{0};
+  bool has_entry_descriptor{false};
+  std::optional<KernelThreadSpawnDescriptor> entry_descriptor{};
   std::optional<AddressSpaceId> address_space_id{};
   std::size_t owned_page_count{0};
   bool pager_needed{false};

@@ -507,6 +507,9 @@ KernelCallResult map_service_action_result(const CallerContext& caller,
   result.action_performed = action_result.action_performed;
   result.service_registered =
       action_result.service.has_value() && action_result.service->registered;
+  result.service_has_entry_descriptor =
+      action_result.service.has_value() &&
+      action_result.service->has_entry_descriptor;
   result.service_suspended =
       action_result.service.has_value() && action_result.service->suspended;
   result.service_unhealthy =
@@ -516,6 +519,7 @@ KernelCallResult map_service_action_result(const CallerContext& caller,
   if (action_result.service.has_value()) {
     result.service_id = action_result.service->id;
     result.service_name = action_result.service->name;
+    result.service_entry_descriptor = action_result.service->entry_descriptor;
   }
   switch (action_result.status) {
     case KernelServiceStatus::Ok:
@@ -565,6 +569,9 @@ KernelCallResult map_service_request_result(const CallerContext& caller,
     result.service_id = request_result.service->id;
     result.service_name = request_result.service->name;
     result.service_registered = request_result.service->registered;
+    result.service_has_entry_descriptor =
+        request_result.service->has_entry_descriptor;
+    result.service_entry_descriptor = request_result.service->entry_descriptor;
     result.service_suspended = request_result.service->suspended;
     result.service_unhealthy = request_result.service->unhealthy;
     result.service_blocked = request_result.service->blocked;

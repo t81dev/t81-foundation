@@ -4712,6 +4712,12 @@ static void test_kernel_service_runtime_layer() {
           .kind = KernelServiceActionKind::RegisterService,
           .requesting_process_group_id = owner_runtime->process_group_id,
           .service_name = std::string{"svc.alpha"},
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 90,
+              .sp = 270,
+              .register0 = 909,
+              .label = "svc-alpha-entry",
+          },
       });
   check(register_service.status == KernelServiceStatus::Ok,
         "healthy group can register a service");
@@ -4741,6 +4747,20 @@ static void test_kernel_service_runtime_layer() {
           "registered service reports registered state");
     check(!register_service.service->blocked,
           "registered service starts unblocked");
+    check(register_service.service->has_entry_descriptor,
+          "registered service reports stored entry-descriptor presence");
+    check(register_service.service->entry_descriptor.has_value(),
+          "registered service exposes stored entry descriptor");
+    if (register_service.service->entry_descriptor) {
+      check(register_service.service->entry_descriptor->pc == 90,
+            "registered service entry descriptor preserves pc");
+      check(register_service.service->entry_descriptor->sp == 270,
+            "registered service entry descriptor preserves sp");
+      check(register_service.service->entry_descriptor->register0 == 909,
+            "registered service entry descriptor preserves register0");
+      check(register_service.service->entry_descriptor->label == "svc-alpha-entry",
+            "registered service entry descriptor preserves label");
+    }
   }
   if (register_service.supervisor_services) {
     check(register_service.supervisor_services->service_count == 1,
@@ -4754,6 +4774,10 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory entry preserves the backing address space");
     check(register_service.supervisor_services->services.front().owned_page_count == 1,
           "supervisor inventory entry reports one owned mapped page");
+    check(register_service.supervisor_services->services.front().has_entry_descriptor,
+          "supervisor inventory entry reports stored entry-descriptor presence");
+    check(register_service.supervisor_services->services.front().entry_descriptor.has_value(),
+          "supervisor inventory entry exposes stored entry descriptor");
     check(register_service.supervisor_services->services.front().state_transitions == 0,
           "supervisor inventory entry starts with zero state mutations after registration");
     check(register_service.supervisor_services->services.front().last_transition_kind ==
@@ -4833,6 +4857,20 @@ static void test_kernel_service_runtime_layer() {
         "healthy service request clears rejection");
   check(service_view.service.has_value(), "service status request returns service view");
   if (service_view.service) {
+    check(service_view.service->has_entry_descriptor,
+          "service view reports stored entry-descriptor presence");
+    check(service_view.service->entry_descriptor.has_value(),
+          "service view exposes stored entry descriptor");
+    if (service_view.service->entry_descriptor) {
+      check(service_view.service->entry_descriptor->pc == 90,
+            "service view entry descriptor preserves pc");
+      check(service_view.service->entry_descriptor->sp == 270,
+            "service view entry descriptor preserves sp");
+      check(service_view.service->entry_descriptor->register0 == 909,
+            "service view entry descriptor preserves register0");
+      check(service_view.service->entry_descriptor->label == "svc-alpha-entry",
+            "service view entry descriptor preserves label");
+    }
     check(service_view.service->address_space_id == owner_address_space_id,
           "service view preserves backing address-space ownership");
     check(service_view.service->owned_page_count == 1,
@@ -8441,6 +8479,20 @@ static void test_kernel_service_abi_calls() {
         "service ABI register returns the registered name");
   check(register_service.service_registered,
         "service ABI register reports registered service state");
+  check(register_service.service_has_entry_descriptor,
+        "service ABI register reports stored service entry-descriptor presence");
+  check(register_service.service_entry_descriptor.has_value(),
+        "service ABI register exposes stored service entry descriptor");
+  if (register_service.service_entry_descriptor) {
+    check(register_service.service_entry_descriptor->pc == 57,
+          "service ABI register entry descriptor preserves pc");
+    check(register_service.service_entry_descriptor->sp == 171,
+          "service ABI register entry descriptor preserves sp");
+    check(register_service.service_entry_descriptor->register0 == 808,
+          "service ABI register entry descriptor preserves register0");
+    check(register_service.service_entry_descriptor->label == "svc-abi-entry",
+          "service ABI register entry descriptor preserves label");
+  }
   check(register_service.service_name == std::optional<std::string>{"svc.abi"},
         "service ABI register preserves service name");
   if (!register_service.service_id) {
@@ -8488,6 +8540,10 @@ static void test_kernel_service_abi_calls() {
         "service ABI query returns the registered name");
   check(query_service.service_registered,
         "service ABI query reports registered service state");
+  check(query_service.service_has_entry_descriptor,
+        "service ABI query reports stored service entry-descriptor presence");
+  check(query_service.service_entry_descriptor.has_value(),
+        "service ABI query exposes stored service entry descriptor");
   check(!query_service.service_suspended,
         "service ABI query reports non-suspended service state");
   check(!query_service.service_unhealthy,

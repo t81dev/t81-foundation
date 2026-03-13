@@ -144,6 +144,11 @@ discipline:
 - expose service entry-descriptor state through the service query/view layer so
   executable service state is inspectable, not only runnable
 
+Status:
+
+- complete for typed service views and typed ABI result mapping
+- still not carried through the fixed-size wire response format
+
 ## Recommended Execution Order
 
 ### Slice 1: Documentation Wiring

@@ -38,6 +38,9 @@ Recent architecture milestone:
 - Services can now retain an optional thread entry descriptor during
   `RegisterService`, and `SpawnThreadForService` can execute that stored
   descriptor in the owning process group.
+- Service status and supervisor service-inventory views now also expose that
+  stored service entry descriptor, and the typed ABI mirrors that state on
+  `RegisterService` / `QueryServiceStatus`.
 - Execution inspection now includes `QueryThreadExecutionState`, with
   caller-local and same-supervisor thread-context reads exposed through the
   typed ABI, wire transport, and hosted C bridge.
