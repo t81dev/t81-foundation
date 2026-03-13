@@ -12,7 +12,7 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-13
-**Commit:** `de07d14d` onward; RFC-00B6 ABI transport/execution work now includes a kernel-owned published executable repository
+**Commit:** `b4a87d8c` onward; RFC-00B6 ABI transport/execution work now includes a `CanonStore`-backed published executable repository
 **Branch:** `main`
 
 Recent architecture milestone:

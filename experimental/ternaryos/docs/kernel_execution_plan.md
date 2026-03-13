@@ -70,8 +70,8 @@ Not yet implemented:
 - real hardware trap/syscall entry
 - executable loading
 - CanonFS-backed executable object acquisition beyond the current
-  registration-time, caller-memory, and published-repository `CanonExec`
-  validation paths
+  registration-time, caller-memory, and `CanonStore`-backed published-repository
+  `CanonExec` validation paths
 
 ## Completed Groundwork
 

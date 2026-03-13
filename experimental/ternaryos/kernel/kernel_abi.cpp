@@ -2,6 +2,7 @@
 
 #include "kernel_executable.hpp"
 #include "kernel_main.hpp"
+#include "../dev/canon_store.hpp"
 
 namespace t81::ternaryos::kernel {
 
@@ -246,11 +247,30 @@ std::optional<KernelCallResult> load_executable_descriptor(
   return std::nullopt;
 }
 
-const t81::canonfs::CanonBlock* find_published_executable_block(
-    const KernelRuntimeState& state,
+std::optional<t81::canonfs::CanonBlock> load_published_executable_block(
+    KernelRuntimeState& state,
     const t81::canonfs::CanonRef& object_ref) {
-  const auto it = state.published_executable_objects.find(executable_key(object_ref));
-  return it == state.published_executable_objects.end() ? nullptr : &it->second;
+  if (!state.published_executable_store_device.has_value()) {
+    return std::nullopt;
+  }
+  t81::ternaryos::dev::CanonStore store(*state.published_executable_store_device);
+  store.rebuild_index();
+  return store.get(object_ref);
+}
+
+bool publish_executable_block(KernelRuntimeState& state,
+                              const t81::canonfs::CanonRef& object_ref,
+                              const t81::canonfs::CanonBlock& block) {
+  if (!state.published_executable_store_device.has_value()) {
+    return false;
+  }
+  t81::ternaryos::dev::CanonStore store(*state.published_executable_store_device);
+  store.rebuild_index();
+  const auto stored_ref = store.put(block);
+  if (!stored_ref.has_value() || stored_ref->hash != object_ref.hash) {
+    return false;
+  }
+  return store.flush();
 }
 
 std::optional<KernelCallResult> load_executable_block_from_tva(
@@ -901,9 +921,9 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
         executable_block = *encoded_block;
         loaded_descriptor = *decoded_descriptor;
       } else {
-        const auto* published_block =
-            find_published_executable_block(state, *request.object_ref);
-        if (!published_block) {
+        const auto published_block =
+            load_published_executable_block(state, *request.object_ref);
+        if (!published_block.has_value()) {
           result.status = KernelCallStatus::NotFound;
           result.rejection = KernelCallRejection::MissingExecutableRegistration;
           return result;
@@ -955,8 +975,11 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
         result.rejection = KernelCallRejection::InvalidExecutableObject;
         return result;
       }
-      state.published_executable_objects[executable_key(*request.object_ref)] =
-          executable_block;
+      if (!publish_executable_block(state, *request.object_ref, executable_block)) {
+        result.status = KernelCallStatus::Conflict;
+        result.rejection = KernelCallRejection::InvalidExecutableObject;
+        return result;
+      }
       result.status = KernelCallStatus::Ok;
       result.rejection = KernelCallRejection::None;
       result.action_performed = true;

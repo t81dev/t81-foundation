@@ -169,7 +169,7 @@ Status:
 
 Next likely step:
 
-- shift from registration-time, caller-memory, and published-repository
+- shift from registration-time, caller-memory, and `CanonStore`-backed published-repository
   `CanonExec` acquisition plus service binding to real executable object
   fetch/load behavior, or continue only if a clearly missing supervisory
   write path remains

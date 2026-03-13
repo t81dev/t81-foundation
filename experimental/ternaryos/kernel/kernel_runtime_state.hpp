@@ -4,6 +4,7 @@
 #include "kernel_base.hpp"
 #include "kernel_runtime_support.hpp"
 
+#include "../dev/hosted_block_dev.hpp"
 #include "../ipc/canon_message.hpp"
 #include "../mmu/page_table.hpp"
 #include "../mmu/ternary_page_alloc.hpp"
@@ -254,7 +255,7 @@ struct KernelRuntimeState {
   std::unordered_map<ProcessGroupId, AddressSpaceId> process_group_address_spaces;
   std::unordered_map<ServiceId, ServiceState> services;
   std::unordered_map<ProcessGroupId, ServiceId> process_group_services;
-  std::unordered_map<std::string, t81::canonfs::CanonBlock> published_executable_objects;
+  std::optional<t81::ternaryos::dev::HostedBlockDev> published_executable_store_device;
   PagerWorkerState pager_worker{};
   t81::vm::ThreadContext cpu_context{};
   Counters counters{};
@@ -291,7 +292,9 @@ struct KernelRuntimeState {
         memory_region_count(memory_region_count_in),
         total_ternary_pages(total_ternary_pages_in),
         has_writable_memory(has_writable_memory_in),
-        allocator(std::move(allocator_in)) {}
+        allocator(std::move(allocator_in)),
+        published_executable_store_device(
+            t81::ternaryos::dev::HostedBlockDev(256, "kernel-exec-store")) {}
 
   static constexpr sched::Tid kKernelTid = 0;
   static constexpr ProcessGroupId kKernelProcessGroup = 0;
