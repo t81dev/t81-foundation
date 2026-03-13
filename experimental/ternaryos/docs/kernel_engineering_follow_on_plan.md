@@ -1,6 +1,6 @@
 # Axion Kernel Engineering Follow-On Plan
 
-Date: 2026-03-12
+Date: 2026-03-13
 Basis: [kernel_architecture_audit.md](kernel_architecture_audit.md)
 
 ## Purpose
@@ -55,6 +55,50 @@ Current status:
 - achieved for the implementation split
 - remaining work is consolidation, documentation alignment, and deciding
   whether to split the shared header surface
+- the first ABI hardening lane is now materially implemented under RFC-00B6,
+  including typed kernel-call dispatch, process-group-scoped capabilities,
+  supervisor-scoped capability mutation, service lifecycle control, supervisor
+  recovery control and inspection, process-group memory inspection,
+  boot-critical address-space control, and explicit rejection taxonomy for
+  missing supervisor, foreign supervisor scope, foreign address space, and
+  missing boot-critical control values
+
+## ABI Status
+
+RFC-00B6 is no longer only a planning document.
+
+Implemented kernel-call slice:
+
+- `Yield`
+- `SendMessage`
+- `ReceiveMessage`
+- `ReadFaultInbox`
+- `AcknowledgeThreadFault`
+- `AcknowledgeSupervisorFaultGroup`
+- `QueryProcessGroupMemory`
+- `SetAddressSpaceBootCritical`
+- `QueryRuntimeStatus`
+- `QueryFaultSummary`
+- `QuerySupervisorStatus`
+- `QuerySupervisorRecoveryStatus`
+- `QuerySupervisorCapabilityInventory`
+- `QueryCapabilities`
+- `GrantCapability`
+- `RevokeCapability`
+- `RegisterService`
+- `QueryServiceStatus`
+- `SuspendService`
+- `ResumeService`
+- `MarkServiceUnhealthy`
+- `MarkServiceHealthy`
+
+Current follow-on priority is no longer ABI existence. It is ABI scope
+discipline:
+
+- keep rejection taxonomy precise
+- keep supervisor scope rules consistent across read and control paths
+- avoid reopening internal-only control shortcuts now that a typed ABI path
+  exists
 
 ## Recommended Execution Order
 

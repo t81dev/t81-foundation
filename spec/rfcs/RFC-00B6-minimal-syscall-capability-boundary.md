@@ -4,7 +4,7 @@
 **Type:** standards-track
 **Applies-To:** Axion kernel ABI, kernel/user boundary, capability checks, service-facing execution contract
 **Created:** 2026-03-12
-**Updated:** 2026-03-12
+**Updated:** 2026-03-13
 **Author:** @t81dev
 **Depends on:** RFC-00B1 (MMU), RFC-00B3 (Axion Kernel Architecture), RFC-00B4 (Axion Userland Service Contract), RFC-00B5 (Governed Event Interrupt Model)
 **Blocks:** first real userland execution path, non-demo service runtime, executable/kernel ABI convergence
@@ -229,6 +229,46 @@ Every request must return one of:
 
 The boundary must reject deterministically and without partial side effects.
 
+The ABI should also expose explicit rejection reasons for the most common
+policy and validation failures. The currently implemented slice already uses
+this shape and should be treated as the baseline for follow-on requests:
+
+- `MissingCallerThread`
+- `MissingCallerProcessGroup`
+- `FaultedCaller`
+- `MissingDestinationThread`
+- `MissingMessage`
+- `IpcSendFailed`
+- `IpcReceiveEmpty`
+- `MissingTargetThread`
+- `CrossProcessGroupTarget`
+- `FaultInboxEmpty`
+- `MissingCapability`
+- `MissingTargetProcessGroup`
+- `MissingAddressSpace`
+- `MissingBootCriticalValue`
+- `MissingSupervisor`
+- `SupervisorMismatch`
+- `ForeignSupervisorScope`
+- `ForeignAddressSpace`
+- `MissingServiceName`
+- `MissingService`
+- `ServiceRequestRejected`
+- `ServiceActionRejected`
+
+These rejections are not all equivalent and should stay distinct:
+
+- `SupervisorMismatch` is used for supervisor-targeted control operations where
+  the caller is attempting to act on the wrong supervisor domain
+- `ForeignSupervisorScope` is used for read-oriented ABI queries where the
+  caller is attempting to inspect runtime, fault, or process-group state
+  outside its supervisory scope
+- `ForeignAddressSpace` is used for owner-bound address-space control requests
+  such as boot-critical toggling
+
+This distinction matters because it keeps diagnostics precise and prevents the
+ABI from collapsing unrelated policy failures into one generic denial bucket.
+
 ### 5.7 Memory Ownership Boundary
 
 This RFC makes one architectural restriction explicit:
@@ -257,6 +297,49 @@ That means supervisor-only actions must be implemented as ordinary request
 families plus stronger capability checks.
 
 ### 5.9 Mapping from Current Kernel APIs
+
+The current kernel ABI implementation already covers an initial vertical slice.
+It is still in-kernel and typed, not yet a raw user-pointer boundary, but it
+is the concrete migration path this RFC is describing.
+
+Implemented request kinds:
+
+- `Yield`
+- `SendMessage`
+- `ReceiveMessage`
+- `ReadFaultInbox`
+- `AcknowledgeThreadFault`
+- `AcknowledgeSupervisorFaultGroup`
+- `QueryProcessGroupMemory`
+- `SetAddressSpaceBootCritical`
+- `QueryRuntimeStatus`
+- `QueryFaultSummary`
+- `QuerySupervisorStatus`
+- `QuerySupervisorRecoveryStatus`
+- `QuerySupervisorCapabilityInventory`
+- `QueryCapabilities`
+- `GrantCapability`
+- `RevokeCapability`
+- `RegisterService`
+- `QueryServiceStatus`
+- `SuspendService`
+- `ResumeService`
+- `MarkServiceUnhealthy`
+- `MarkServiceHealthy`
+
+Current policy rules already enforced in code:
+
+- process-group memory queries are limited to the caller's own group or a
+  same-supervisor target
+- runtime and fault summary queries require a matching `supervisor_id` for
+  non-kernel callers
+- address-space boot-critical control is owner-bound and rejects foreign
+  address spaces explicitly
+- fault observation and acknowledgement remain available while the caller group
+  is faulted so recovery paths do not self-deadlock
+
+This means the RFC is no longer purely aspirational. It now defines the next
+expansion stages on top of an implemented ABI core.
 
 The current internal surfaces map onto the future ABI as follows:
 

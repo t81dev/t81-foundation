@@ -4,6 +4,7 @@
 #include "../ipc/canon_message.hpp"
 
 #include <optional>
+#include <string>
 
 namespace t81::ternaryos::kernel {
 
@@ -28,9 +29,23 @@ enum class KernelCallKind : uint8_t {
   ReceiveMessage,
   ReadFaultInbox,
   AcknowledgeThreadFault,
+  AcknowledgeSupervisorFaultGroup,
+  QueryProcessGroupMemory,
+  SetAddressSpaceBootCritical,
+  QueryRuntimeStatus,
+  QueryFaultSummary,
+  QuerySupervisorStatus,
+  QuerySupervisorRecoveryStatus,
+  QuerySupervisorCapabilityInventory,
   QueryCapabilities,
   GrantCapability,
   RevokeCapability,
+  RegisterService,
+  QueryServiceStatus,
+  SuspendService,
+  ResumeService,
+  MarkServiceUnhealthy,
+  MarkServiceHealthy,
 };
 
 enum class KernelCallStatus : uint8_t {
@@ -58,16 +73,30 @@ enum class KernelCallRejection : uint8_t {
   FaultInboxEmpty,
   MissingCapability,
   MissingTargetProcessGroup,
+  MissingAddressSpace,
+  MissingBootCriticalValue,
+  MissingSupervisor,
   SupervisorMismatch,
+  ForeignSupervisorScope,
+  ForeignAddressSpace,
+  MissingServiceName,
+  MissingService,
+  ServiceRequestRejected,
+  ServiceActionRejected,
 };
 
 struct KernelCallRequest {
   KernelCallKind kind{KernelCallKind::Yield};
   std::optional<sched::Tid> target_tid{};
   std::optional<ProcessGroupId> process_group_id{};
+  std::optional<SupervisorId> supervisor_id{};
+  std::optional<AddressSpaceId> address_space_id{};
+  std::optional<bool> boot_critical{};
   std::optional<sched::Tid> ipc_dst{};
   std::optional<ipc::CanonMessage> message{};
   std::optional<KernelCapabilityRecord> capability{};
+  std::optional<ServiceId> service_id{};
+  std::optional<std::string> service_name{};
 };
 
 struct KernelCallResult {
@@ -80,6 +109,43 @@ struct KernelCallResult {
   std::optional<ipc::CanonMessage> message{};
   std::optional<KernelFaultRecord> fault{};
   std::vector<KernelCapabilityRecord> capabilities;
+  std::optional<ServiceId> service_id{};
+  std::optional<std::string> service_name{};
+  bool service_registered{false};
+  bool service_suspended{false};
+  bool service_unhealthy{false};
+  bool service_blocked{false};
+  std::optional<SupervisorId> supervisor_id{};
+  std::optional<AddressSpaceId> address_space_id{};
+  std::optional<ProcessGroupId> target_process_group_id{};
+  std::size_t process_group_owned_page_count{0};
+  std::size_t process_group_pending_fault_count{0};
+  bool process_group_pager_needed{false};
+  bool process_group_faulted{false};
+  bool process_group_blocked{false};
+  bool process_group_acknowledgement_pending{false};
+  bool address_space_boot_critical{false};
+  std::size_t runtime_boot_critical_address_space_count{0};
+  std::size_t runtime_boot_critical_pager_needed_count{0};
+  std::size_t runtime_boot_critical_terminal_count{0};
+  std::size_t runtime_mapped_pages{0};
+  std::size_t fault_summary_recorded_faults{0};
+  std::size_t fault_summary_pending_faults{0};
+  std::size_t fault_summary_delivered_faults{0};
+  std::size_t fault_summary_routed_thread_faults{0};
+  std::size_t fault_summary_quarantined_threads{0};
+  std::size_t supervisor_managed_group_count{0};
+  std::size_t supervisor_managed_faulted_group_count{0};
+  std::size_t supervisor_pending_group_count{0};
+  uint64_t supervisor_fault_notifications{0};
+  uint64_t supervisor_acknowledgements{0};
+  uint64_t supervisor_recovered_groups{0};
+  std::optional<ProcessGroupId> supervisor_last_pending_group{};
+  std::optional<ProcessGroupId> supervisor_last_acknowledged_group{};
+  std::optional<ProcessGroupId> supervisor_last_recovered_group{};
+  std::size_t supervisor_capability_process_group_count{0};
+  uint64_t supervisor_capability_transitions{0};
+  std::optional<ProcessGroupId> supervisor_last_capability_transition_group_id{};
 };
 
 KernelCallResult axion_kernel_call(KernelRuntimeState& state,

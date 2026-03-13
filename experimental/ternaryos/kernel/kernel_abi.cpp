@@ -34,6 +34,7 @@ std::optional<CallerContext> find_caller_context(KernelRuntimeState& state) {
 bool request_allowed_while_faulted(KernelCallKind kind) {
   return kind == KernelCallKind::ReadFaultInbox ||
          kind == KernelCallKind::AcknowledgeThreadFault ||
+         kind == KernelCallKind::QueryProcessGroupMemory ||
          kind == KernelCallKind::QueryCapabilities;
 }
 
@@ -161,6 +162,398 @@ std::optional<KernelCallResult> resolve_capability_target_group(
   return std::nullopt;
 }
 
+std::optional<KernelCallResult> resolve_memory_target_group(
+    KernelRuntimeState& state,
+    const CallerContext& caller,
+    const KernelCallRequest& request,
+    const KernelRuntimeState::ProcessGroupState*& target_group_state) {
+  const auto target_group_id = request.process_group_id.value_or(caller.process_group_id);
+  target_group_state = state.find_process_group(target_group_id);
+  if (!target_group_state) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::NotFound;
+    result.rejection = KernelCallRejection::MissingTargetProcessGroup;
+    return result;
+  }
+  if (target_group_id != caller.process_group_id &&
+      !axion_kernel_process_groups_share_supervisor(
+          state, caller.process_group_id, target_group_id)) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::PolicyDenied;
+    result.rejection = KernelCallRejection::ForeignSupervisorScope;
+    return result;
+  }
+  return std::nullopt;
+}
+
+std::optional<KernelCallResult> resolve_supervisor_fault_target(
+    KernelRuntimeState& state,
+    const CallerContext& caller,
+    const KernelCallRequest& request,
+    KernelRuntimeState::ProcessGroupState*& target_group_state) {
+  if (!request.supervisor_id.has_value()) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::MissingSupervisor;
+    return result;
+  }
+  if (!request.process_group_id.has_value()) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::MissingTargetProcessGroup;
+    return result;
+  }
+  if (!state.find_supervisor(*request.supervisor_id)) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::NotFound;
+    result.rejection = KernelCallRejection::MissingSupervisor;
+    return result;
+  }
+  target_group_state = state.find_process_group_mut(*request.process_group_id);
+  if (!target_group_state) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::NotFound;
+    result.rejection = KernelCallRejection::MissingTargetProcessGroup;
+    return result;
+  }
+  if (!axion_kernel_supervisor_matches_process_group(
+          state, *request.supervisor_id, target_group_state->id) ||
+      !axion_kernel_process_groups_share_supervisor(
+          state, caller.process_group_id, target_group_state->id)) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::PolicyDenied;
+    result.rejection = KernelCallRejection::SupervisorMismatch;
+    return result;
+  }
+  return std::nullopt;
+}
+
+std::optional<KernelCallResult> validate_supervisor_query(
+    KernelRuntimeState& state,
+    const CallerContext& caller,
+    const KernelCallRequest& request) {
+  if (!request.supervisor_id.has_value()) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::MissingSupervisor;
+    return result;
+  }
+  if (!state.find_supervisor(*request.supervisor_id)) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::NotFound;
+    result.rejection = KernelCallRejection::MissingSupervisor;
+    return result;
+  }
+  if (!axion_kernel_supervisor_matches_process_group(
+          state, *request.supervisor_id, caller.process_group_id)) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::PolicyDenied;
+    result.rejection = KernelCallRejection::ForeignSupervisorScope;
+    return result;
+  }
+  return std::nullopt;
+}
+
+std::optional<KernelCallResult> validate_global_summary_query(
+    KernelRuntimeState& state,
+    const CallerContext& caller,
+    const KernelCallRequest& request) {
+  if (caller.process_group_id == KernelRuntimeState::kKernelProcessGroup) {
+    return std::nullopt;
+  }
+  if (!request.supervisor_id.has_value()) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::MissingSupervisor;
+    return result;
+  }
+  if (!state.find_supervisor(*request.supervisor_id)) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::NotFound;
+    result.rejection = KernelCallRejection::MissingSupervisor;
+    return result;
+  }
+  if (!axion_kernel_supervisor_matches_process_group(
+          state, *request.supervisor_id, caller.process_group_id)) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::PolicyDenied;
+    result.rejection = KernelCallRejection::SupervisorMismatch;
+    return result;
+  }
+  return std::nullopt;
+}
+
+KernelCallResult map_service_action_result(const CallerContext& caller,
+                                           const KernelServiceActionResult& action_result);
+
+KernelCallResult map_service_request_result(const CallerContext& caller,
+                                            const KernelServiceResult& request_result);
+
+void populate_process_group_result(KernelCallResult& result,
+                                   const KernelProcessGroupStatusView& process_group) {
+  result.target_process_group_id = process_group.id;
+  result.address_space_id = process_group.address_space_id;
+  result.process_group_owned_page_count = process_group.owned_page_count;
+  result.process_group_pending_fault_count = process_group.pending_fault_count;
+  result.process_group_pager_needed = process_group.pager_needed;
+  result.process_group_faulted = process_group.faulted;
+  result.process_group_blocked = process_group.blocked;
+  result.process_group_acknowledgement_pending =
+      process_group.acknowledgement_pending;
+}
+
+std::optional<KernelCallResult> resolve_owned_address_space(
+    KernelRuntimeState& state,
+    const CallerContext& caller,
+    const KernelCallRequest& request,
+    KernelRuntimeState::AddressSpaceState*& address_space) {
+  if (!request.address_space_id.has_value()) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::MissingAddressSpace;
+    return result;
+  }
+  address_space = state.find_address_space_mut(*request.address_space_id);
+  if (!address_space) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::NotFound;
+    result.rejection = KernelCallRejection::MissingAddressSpace;
+    return result;
+  }
+  const auto caller_address_space_id =
+      state.find_process_group_address_space(caller.process_group_id);
+  if (!caller_address_space_id.has_value() || *caller_address_space_id != address_space->id) {
+    KernelCallResult result = init_result(caller);
+    result.status = KernelCallStatus::PolicyDenied;
+    result.rejection = KernelCallRejection::ForeignAddressSpace;
+    return result;
+  }
+  return std::nullopt;
+}
+
+KernelCallResult dispatch_service_register(const CallerContext& caller,
+                                           KernelRuntimeState& state,
+                                           const KernelCallRequest& request) {
+  auto result = init_result(caller);
+  if (!request.service_name.has_value() || request.service_name->empty()) {
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::MissingServiceName;
+    return result;
+  }
+  return map_service_action_result(
+      caller,
+      axion_kernel_service_action(
+          state,
+          KernelServiceAction{
+              .kind = KernelServiceActionKind::RegisterService,
+              .requesting_process_group_id = caller.process_group_id,
+              .service_name = *request.service_name,
+          }));
+}
+
+KernelCallResult dispatch_service_request(const CallerContext& caller,
+                                          KernelRuntimeState& state,
+                                          ServiceId service_id) {
+  return map_service_request_result(
+      caller,
+      axion_kernel_service_request(
+          state,
+          KernelServiceRequest{
+              .kind = KernelServiceRequestKind::ServiceStatus,
+              .requesting_process_group_id = caller.process_group_id,
+              .service_id = service_id,
+          }));
+}
+
+KernelCallResult dispatch_service_action_with_id(const CallerContext& caller,
+                                                 KernelRuntimeState& state,
+                                                 const KernelCallRequest& request,
+                                                 KernelServiceActionKind kind) {
+  auto result = init_result(caller);
+  if (!request.service_id.has_value()) {
+    result.status = KernelCallStatus::InvalidRequest;
+    result.rejection = KernelCallRejection::MissingService;
+    return result;
+  }
+  return map_service_action_result(
+      caller,
+      axion_kernel_service_action(
+          state,
+          KernelServiceAction{
+              .kind = kind,
+              .requesting_process_group_id = caller.process_group_id,
+              .service_id = *request.service_id,
+          }));
+}
+
+KernelCallResult dispatch_supervisor_request(const CallerContext& caller,
+                                             KernelRuntimeState& state,
+                                             const KernelCallRequest& request,
+                                             KernelServiceRequestKind kind) {
+  if (auto invalid = validate_supervisor_query(state, caller, request);
+      invalid.has_value()) {
+    return *invalid;
+  }
+  return map_service_request_result(
+      caller,
+      axion_kernel_service_request(
+          state,
+          KernelServiceRequest{
+              .kind = kind,
+              .requesting_process_group_id = caller.process_group_id,
+              .supervisor_id = *request.supervisor_id,
+          }));
+}
+
+KernelCallResult map_service_action_result(const CallerContext& caller,
+                                           const KernelServiceActionResult& action_result) {
+  KernelCallResult result = init_result(caller);
+  result.action_performed = action_result.action_performed;
+  result.service_registered =
+      action_result.service.has_value() && action_result.service->registered;
+  result.service_suspended =
+      action_result.service.has_value() && action_result.service->suspended;
+  result.service_unhealthy =
+      action_result.service.has_value() && action_result.service->unhealthy;
+  result.service_blocked =
+      action_result.service.has_value() && action_result.service->blocked;
+  if (action_result.service.has_value()) {
+    result.service_id = action_result.service->id;
+    result.service_name = action_result.service->name;
+  }
+  switch (action_result.status) {
+    case KernelServiceStatus::Ok:
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      break;
+    case KernelServiceStatus::NotFound:
+      result.status = KernelCallStatus::NotFound;
+      result.rejection = KernelCallRejection::MissingService;
+      break;
+    case KernelServiceStatus::InvalidRequest:
+      result.status = KernelCallStatus::InvalidRequest;
+      result.rejection = action_result.rejection ==
+                                 KernelServiceActionRejection::MissingServiceName
+                             ? KernelCallRejection::MissingServiceName
+                             : KernelCallRejection::ServiceActionRejected;
+      break;
+    case KernelServiceStatus::FaultedGroup:
+      result.status = KernelCallStatus::FaultedCaller;
+      result.rejection = KernelCallRejection::FaultedCaller;
+      break;
+    case KernelServiceStatus::ServiceUnavailable:
+      result.status = KernelCallStatus::RetryLater;
+      result.rejection = KernelCallRejection::ServiceActionRejected;
+      break;
+    case KernelServiceStatus::NoDeviceArbitration:
+      result.status = KernelCallStatus::PolicyDenied;
+      result.rejection = KernelCallRejection::ServiceActionRejected;
+      break;
+  }
+  return result;
+}
+
+KernelCallResult map_service_request_result(const CallerContext& caller,
+                                            const KernelServiceResult& request_result) {
+  KernelCallResult result = init_result(caller);
+  if (request_result.runtime.has_value()) {
+    result.runtime_mapped_pages = request_result.runtime->mapped_pages;
+    result.runtime_boot_critical_address_space_count =
+        request_result.runtime->boot_critical_address_space_count;
+    result.runtime_boot_critical_pager_needed_count =
+        request_result.runtime->boot_critical_pager_needed_count;
+    result.runtime_boot_critical_terminal_count =
+        request_result.runtime->boot_critical_terminal_count;
+  }
+  if (request_result.service.has_value()) {
+    result.service_id = request_result.service->id;
+    result.service_name = request_result.service->name;
+    result.service_registered = request_result.service->registered;
+    result.service_suspended = request_result.service->suspended;
+    result.service_unhealthy = request_result.service->unhealthy;
+    result.service_blocked = request_result.service->blocked;
+  }
+  if (request_result.supervisor_recovery.has_value()) {
+    result.supervisor_id = request_result.supervisor_recovery->id;
+    result.supervisor_pending_group_count =
+        request_result.supervisor_recovery->pending_group_count;
+    result.supervisor_acknowledgements =
+        request_result.supervisor_recovery->acknowledgements;
+    result.supervisor_recovered_groups =
+        request_result.supervisor_recovery->recovered_groups;
+    result.supervisor_last_acknowledged_group =
+        request_result.supervisor_recovery->last_acknowledged_group;
+    result.supervisor_last_recovered_group =
+        request_result.supervisor_recovery->last_recovered_group;
+  }
+  if (request_result.supervisor.has_value()) {
+    result.supervisor_id = request_result.supervisor->id;
+    result.supervisor_managed_group_count =
+        request_result.supervisor->managed_group_count;
+    result.supervisor_managed_faulted_group_count =
+        request_result.supervisor->managed_faulted_group_count;
+    result.supervisor_pending_group_count =
+        request_result.supervisor->pending_group_count;
+    result.supervisor_fault_notifications =
+        request_result.supervisor->fault_notifications;
+    result.supervisor_acknowledgements =
+        request_result.supervisor->acknowledgements;
+    result.supervisor_last_pending_group =
+        request_result.supervisor->last_pending_group;
+  }
+  if (request_result.supervisor_capabilities.has_value()) {
+    result.supervisor_id = request_result.supervisor_capabilities->supervisor_id;
+    result.supervisor_capability_process_group_count =
+        request_result.supervisor_capabilities->process_group_count;
+    result.supervisor_capability_transitions =
+        request_result.supervisor_capabilities->capability_transitions;
+    result.supervisor_last_capability_transition_group_id =
+        request_result.supervisor_capabilities->last_capability_transition_group_id;
+  }
+  if (request_result.fault_summary.has_value()) {
+    result.fault_summary_recorded_faults =
+        request_result.fault_summary->recorded_faults;
+    result.fault_summary_pending_faults =
+        request_result.fault_summary->pending_faults;
+    result.fault_summary_delivered_faults =
+        request_result.fault_summary->delivered_faults;
+    result.fault_summary_routed_thread_faults =
+        request_result.fault_summary->routed_thread_faults;
+    result.fault_summary_quarantined_threads =
+        request_result.fault_summary->quarantined_threads;
+  }
+  switch (request_result.status) {
+    case KernelServiceStatus::Ok:
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      break;
+    case KernelServiceStatus::NotFound:
+      result.status = KernelCallStatus::NotFound;
+      result.rejection = KernelCallRejection::MissingService;
+      break;
+    case KernelServiceStatus::InvalidRequest:
+      result.status = KernelCallStatus::InvalidRequest;
+      result.rejection = request_result.rejection ==
+                                 KernelServiceRequestRejection::MissingService
+                             ? KernelCallRejection::MissingService
+                             : KernelCallRejection::ServiceRequestRejected;
+      break;
+    case KernelServiceStatus::FaultedGroup:
+      result.status = KernelCallStatus::FaultedCaller;
+      result.rejection = KernelCallRejection::FaultedCaller;
+      break;
+    case KernelServiceStatus::ServiceUnavailable:
+      result.status = KernelCallStatus::RetryLater;
+      result.rejection = KernelCallRejection::ServiceRequestRejected;
+      break;
+    case KernelServiceStatus::NoDeviceArbitration:
+      result.status = KernelCallStatus::PolicyDenied;
+      result.rejection = KernelCallRejection::ServiceRequestRejected;
+      break;
+  }
+  return result;
+}
+
 }  // namespace
 
 KernelCallResult axion_kernel_call(KernelRuntimeState& state,
@@ -278,6 +671,117 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.action_performed = true;
       return result;
     }
+    case KernelCallKind::AcknowledgeSupervisorFaultGroup: {
+      KernelRuntimeState::ProcessGroupState* target_group_state = nullptr;
+      if (auto invalid =
+              resolve_supervisor_fault_target(state, caller, request, target_group_state);
+          invalid.has_value()) {
+        return *invalid;
+      }
+      return map_service_action_result(
+          caller,
+          axion_kernel_service_action(
+              state,
+              KernelServiceAction{
+                  .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
+                  .requesting_process_group_id = caller.process_group_id,
+                  .supervisor_id = *request.supervisor_id,
+                  .process_group_id = target_group_state->id,
+              }));
+    }
+    case KernelCallKind::QueryProcessGroupMemory: {
+      const KernelRuntimeState::ProcessGroupState* group_state = nullptr;
+      if (auto invalid =
+              resolve_memory_target_group(state, caller, request, group_state);
+          invalid.has_value()) {
+        return *invalid;
+      }
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      populate_process_group_result(result, make_process_group_view(state, group_state->id));
+      if (result.address_space_id.has_value()) {
+        if (const auto* address_space = state.find_address_space(*result.address_space_id)) {
+          result.address_space_boot_critical = address_space->boot_critical;
+        }
+      }
+      return result;
+    }
+    case KernelCallKind::SetAddressSpaceBootCritical: {
+      KernelRuntimeState::AddressSpaceState* address_space = nullptr;
+      if (auto invalid = resolve_owned_address_space(state, caller, request, address_space);
+          invalid.has_value()) {
+        return *invalid;
+      }
+      if (!request.boot_critical.has_value()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingBootCriticalValue;
+        return result;
+      }
+      if (!axion_kernel_set_address_space_boot_critical(
+              state, address_space->id, *request.boot_critical)) {
+        result.status = KernelCallStatus::Conflict;
+        return result;
+      }
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.address_space_id = address_space->id;
+      result.address_space_boot_critical = address_space->boot_critical;
+      return result;
+    }
+    case KernelCallKind::QueryRuntimeStatus: {
+      if (auto invalid = validate_global_summary_query(state, caller, request);
+          invalid.has_value()) {
+        return *invalid;
+      }
+      return map_service_request_result(
+          caller,
+          axion_kernel_service_request(
+              state,
+              KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::RuntimeStatus,
+                  .requesting_process_group_id = caller.process_group_id,
+              }));
+    }
+    case KernelCallKind::QueryFaultSummary: {
+      if (auto invalid = validate_global_summary_query(state, caller, request);
+          invalid.has_value()) {
+        return *invalid;
+      }
+      return map_service_request_result(
+          caller,
+          axion_kernel_service_request(
+              state,
+              KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::FaultSummary,
+                  .requesting_process_group_id = caller.process_group_id,
+              }));
+    }
+    case KernelCallKind::QuerySupervisorStatus: {
+      return dispatch_supervisor_request(
+          caller, state, request, KernelServiceRequestKind::SupervisorStatus);
+    }
+    case KernelCallKind::QuerySupervisorRecoveryStatus: {
+      return dispatch_supervisor_request(
+          caller, state, request, KernelServiceRequestKind::SupervisorRecoveryStatus);
+    }
+    case KernelCallKind::QuerySupervisorCapabilityInventory: {
+      auto mapped = dispatch_supervisor_request(
+          caller, state, request, KernelServiceRequestKind::SupervisorCapabilityInventory);
+      if (mapped.status != KernelCallStatus::Ok || !request.process_group_id.has_value()) {
+        return mapped;
+      }
+      if (!axion_kernel_supervisor_matches_process_group(
+              state, *request.supervisor_id, *request.process_group_id)) {
+        mapped.status = KernelCallStatus::PolicyDenied;
+        mapped.rejection = KernelCallRejection::SupervisorMismatch;
+        mapped.capabilities.clear();
+        return mapped;
+      }
+      mapped.capabilities =
+          axion_kernel_list_process_group_capabilities(state, *request.process_group_id);
+      return mapped;
+    }
     case KernelCallKind::QueryCapabilities: {
       if (request.process_group_id.has_value() &&
           *request.process_group_id != caller.process_group_id) {
@@ -347,6 +851,37 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.capabilities =
           axion_kernel_list_process_group_capabilities(state, target_group_state->id);
       return result;
+    }
+    case KernelCallKind::RegisterService: {
+      return dispatch_service_register(caller, state, request);
+    }
+    case KernelCallKind::QueryServiceStatus: {
+      if (!request.service_id.has_value()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingService;
+        return result;
+      }
+      return dispatch_service_request(caller, state, *request.service_id);
+    }
+    case KernelCallKind::SuspendService:
+    case KernelCallKind::ResumeService: {
+      return dispatch_service_action_with_id(
+          caller,
+          state,
+          request,
+          request.kind == KernelCallKind::SuspendService
+              ? KernelServiceActionKind::SuspendService
+              : KernelServiceActionKind::ResumeService);
+    }
+    case KernelCallKind::MarkServiceUnhealthy:
+    case KernelCallKind::MarkServiceHealthy: {
+      return dispatch_service_action_with_id(
+          caller,
+          state,
+          request,
+          request.kind == KernelCallKind::MarkServiceUnhealthy
+              ? KernelServiceActionKind::MarkServiceUnhealthy
+              : KernelServiceActionKind::MarkServiceHealthy);
     }
   }
 

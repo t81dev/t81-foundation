@@ -133,6 +133,17 @@ KernelServiceActionResult axion_kernel_service_action(
         result.rejection = KernelServiceActionRejection::MissingProcessGroup;
         return result;
       }
+      if (action.requesting_process_group_id.has_value() &&
+          (!axion_kernel_supervisor_matches_process_group(
+               state, *action.supervisor_id, *action.requesting_process_group_id) ||
+           !axion_kernel_process_groups_share_supervisor(
+               state,
+               *action.requesting_process_group_id,
+               *action.process_group_id))) {
+        result.status = KernelServiceStatus::InvalidRequest;
+        result.rejection = KernelServiceActionRejection::ServiceSupervisorMismatch;
+        return result;
+      }
       if (!axion_kernel_ack_supervisor_group_fault(
               state, *action.supervisor_id, *action.process_group_id)) {
         result.status = KernelServiceStatus::InvalidRequest;

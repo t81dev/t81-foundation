@@ -11,8 +11,8 @@ Current naming split:
 - `Axion` = operating system
 - `CanonFS` / `TISC` remain subsystem names
 
-**Last updated:** 2026-03-12
-**Commit:** `64912e4e` onward; interrupt summary convergence now continues past this checkpoint
+**Last updated:** 2026-03-13
+**Commit:** `453cbdcd` onward; RFC-00B6 ABI hardening now continues past this checkpoint
 **Branch:** `main`
 
 Recent architecture milestone:
@@ -23,6 +23,15 @@ Recent architecture milestone:
   `kernel_runtime_utils.cpp`.
 - `kernel_main.hpp` remains intentionally shared for now; header splitting is
   deferred until the runtime-state/API boundary is narrower.
+- RFC-00B6 is now partially implemented in code: the typed `axion_kernel_call`
+  boundary covers IPC, fault inbox/recovery, supervisor recovery and
+  inspection, capability management, service lifecycle control, process-group
+  memory inspection, boot-critical address-space control, and guarded
+  runtime/fault summary queries.
+- ABI rejection taxonomy is now more explicit as well. Address-space ownership,
+  missing boot-critical control values, and foreign supervisory read scope now
+  produce dedicated rejections instead of collapsing into generic policy
+  denials.
 
 Reference docs:
 - Roadmap: [docs/research/ternary_os_roadmap.md](../../../docs/research/ternary_os_roadmap.md)

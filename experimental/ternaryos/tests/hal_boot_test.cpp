@@ -5710,6 +5710,23 @@ static void test_kernel_minimal_abi_calls() {
   if (!runtime_a) {
     return;
   }
+  const auto address_space_a =
+      state->find_process_group_address_space(runtime_a->process_group_id);
+  check(address_space_a.has_value(), "minimal ABI resolves thread A address space");
+  if (!address_space_a) {
+    return;
+  }
+  const auto supervisor_a =
+      state->find_process_group_supervisor(runtime_a->process_group_id);
+  check(supervisor_a.has_value(), "minimal ABI resolves thread A supervisor");
+  if (!supervisor_a) {
+    return;
+  }
+  check(mmu::mmu_map(state->page_table,
+                     state->allocator,
+                     mmu::tva_from_vpn_offset(141, 0),
+                     *address_space_a),
+        "minimal ABI maps one owned page for thread A process group");
 
   t81::ternaryos::sched::TiscContext thread_b;
   thread_b.registers[0] = 222;
@@ -5875,6 +5892,175 @@ static void test_kernel_minimal_abi_calls() {
       });
   check(restored_send.status == KernelCallStatus::Ok,
         "minimal ABI send succeeds again after re-grant");
+
+  auto memory_status = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryProcessGroupMemory,
+          .process_group_id = runtime_a->process_group_id,
+      });
+  check(memory_status.status == KernelCallStatus::Ok,
+        "minimal ABI process-group memory query returns Ok");
+  check(memory_status.target_process_group_id == runtime_a->process_group_id,
+        "minimal ABI memory query returns the requested process group id");
+  check(memory_status.address_space_id == address_space_a,
+        "minimal ABI memory query returns the process group address space id");
+  check(memory_status.process_group_owned_page_count == 1,
+        "minimal ABI memory query reports one owned mapped page");
+  check(memory_status.process_group_pending_fault_count == 0,
+        "minimal ABI memory query reports no pending process-group faults after recovery");
+  check(!memory_status.process_group_faulted,
+        "minimal ABI memory query reports recovered non-faulted state");
+  check(!memory_status.process_group_blocked,
+        "minimal ABI memory query reports unblocked state");
+  check(!memory_status.process_group_acknowledgement_pending,
+        "minimal ABI memory query reports no pending group acknowledgement");
+  check(!memory_status.address_space_boot_critical,
+        "minimal ABI memory query reports non-boot-critical address space by default");
+
+  auto enable_boot_critical = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SetAddressSpaceBootCritical,
+          .address_space_id = *address_space_a,
+          .boot_critical = true,
+      });
+  check(enable_boot_critical.status == KernelCallStatus::Ok,
+        "minimal ABI can enable boot-critical status for the caller address space");
+  check(enable_boot_critical.action_performed,
+        "minimal ABI boot-critical toggle reports work performed");
+  check(enable_boot_critical.address_space_id == address_space_a,
+        "minimal ABI boot-critical toggle returns the target address space id");
+  check(enable_boot_critical.address_space_boot_critical,
+        "minimal ABI boot-critical toggle returns enabled state");
+
+  auto runtime_after_enable = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_after_enable.status == KernelServiceStatus::Ok,
+        "runtime status remains available after ABI boot-critical toggle");
+  check(runtime_after_enable.runtime.has_value(),
+        "runtime status view is returned after ABI boot-critical toggle");
+  if (runtime_after_enable.runtime) {
+    check(runtime_after_enable.runtime->boot_critical_address_space_count == 1,
+          "runtime status reflects one boot-critical address space after ABI toggle");
+  }
+
+  auto missing_runtime_supervisor = axion_kernel_call(
+      *state, KernelCallRequest{.kind = KernelCallKind::QueryRuntimeStatus});
+  check(missing_runtime_supervisor.status == KernelCallStatus::InvalidRequest,
+        "minimal ABI runtime status query rejects a missing supervisor");
+  check(missing_runtime_supervisor.rejection == KernelCallRejection::MissingSupervisor,
+        "minimal ABI runtime status query reports MissingSupervisor");
+
+  auto runtime_status_abi = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryRuntimeStatus,
+          .supervisor_id = *supervisor_a,
+      });
+  check(runtime_status_abi.status == KernelCallStatus::Ok,
+        "minimal ABI runtime status query returns Ok");
+  check(runtime_status_abi.runtime_boot_critical_address_space_count == 1,
+        "minimal ABI runtime status reports one boot-critical address space");
+  check(runtime_status_abi.runtime_mapped_pages == 1,
+        "minimal ABI runtime status reports one mapped page");
+
+  auto memory_status_after_enable = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryProcessGroupMemory,
+          .process_group_id = runtime_a->process_group_id,
+      });
+  check(memory_status_after_enable.status == KernelCallStatus::Ok,
+        "minimal ABI memory query still succeeds after boot-critical toggle");
+  check(memory_status_after_enable.address_space_boot_critical,
+        "minimal ABI memory query reflects enabled boot-critical state");
+
+  auto disable_boot_critical = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SetAddressSpaceBootCritical,
+          .address_space_id = *address_space_a,
+          .boot_critical = false,
+      });
+  check(disable_boot_critical.status == KernelCallStatus::Ok,
+        "minimal ABI can disable boot-critical status for the caller address space");
+  check(!disable_boot_critical.address_space_boot_critical,
+        "minimal ABI boot-critical toggle returns disabled state");
+
+  auto missing_boot_critical_target = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SetAddressSpaceBootCritical,
+          .boot_critical = true,
+      });
+  check(missing_boot_critical_target.status == KernelCallStatus::InvalidRequest,
+        "minimal ABI boot-critical toggle rejects a missing address-space target");
+  check(missing_boot_critical_target.rejection == KernelCallRejection::MissingAddressSpace,
+        "minimal ABI boot-critical toggle reports MissingAddressSpace for missing target");
+
+  auto missing_boot_critical_value = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SetAddressSpaceBootCritical,
+          .address_space_id = *address_space_a,
+      });
+  check(missing_boot_critical_value.status == KernelCallStatus::InvalidRequest,
+        "minimal ABI boot-critical toggle rejects a missing boot-critical value");
+  check(missing_boot_critical_value.rejection ==
+            KernelCallRejection::MissingBootCriticalValue,
+        "minimal ABI boot-critical toggle reports MissingBootCriticalValue explicitly");
+
+  t81::ternaryos::sched::TiscContext outsider;
+  outsider.registers[0] = 333;
+  auto outsider_tid = axion_kernel_spawn_thread(*state, outsider);
+  check(outsider_tid.has_value(), "minimal ABI spawns outsider thread");
+  if (!outsider_tid) {
+    return;
+  }
+  const auto* outsider_runtime = state->find_thread_runtime(*outsider_tid);
+  check(outsider_runtime != nullptr, "minimal ABI exposes outsider runtime");
+  if (!outsider_runtime) {
+    return;
+  }
+  const auto outsider_address_space =
+      state->find_process_group_address_space(outsider_runtime->process_group_id);
+  check(outsider_address_space.has_value(),
+        "minimal ABI resolves outsider address space");
+  if (!outsider_address_space) {
+    return;
+  }
+
+  auto foreign_boot_critical_target = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SetAddressSpaceBootCritical,
+          .address_space_id = *outsider_address_space,
+          .boot_critical = true,
+      });
+  check(foreign_boot_critical_target.status == KernelCallStatus::PolicyDenied,
+        "minimal ABI boot-critical toggle rejects a foreign address space");
+  check(foreign_boot_critical_target.rejection == KernelCallRejection::ForeignAddressSpace,
+        "minimal ABI boot-critical toggle reports ForeignAddressSpace for foreign ownership");
+
+  auto fault_summary_abi = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryFaultSummary,
+          .supervisor_id = *supervisor_a,
+      });
+  check(fault_summary_abi.status == KernelCallStatus::Ok,
+        "minimal ABI fault summary query returns Ok");
+  check(fault_summary_abi.fault_summary_recorded_faults == 1,
+        "minimal ABI fault summary reports one recorded fault");
+  check(fault_summary_abi.fault_summary_pending_faults == 0,
+        "minimal ABI fault summary reports zero pending faults after delivery");
+  check(fault_summary_abi.fault_summary_delivered_faults == 1,
+        "minimal ABI fault summary reports one delivered fault");
+  check(fault_summary_abi.fault_summary_routed_thread_faults == 1,
+        "minimal ABI fault summary reports one routed thread fault");
+  check(fault_summary_abi.fault_summary_quarantined_threads == 1,
+        "minimal ABI fault summary reports one quarantined thread in history");
 }
 
 static void test_kernel_capability_management_abi() {
@@ -5990,6 +6176,43 @@ static void test_kernel_capability_management_abi() {
                     }),
         "same-supervisor capability query returns sibling capabilities");
 
+  auto same_supervisor_memory = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryProcessGroupMemory,
+          .process_group_id = sibling_runtime->process_group_id,
+      });
+  check(same_supervisor_memory.status == KernelCallStatus::Ok,
+        "same-supervisor process-group memory query returns Ok");
+  check(same_supervisor_memory.target_process_group_id ==
+            sibling_runtime->process_group_id,
+        "same-supervisor process-group memory query returns the sibling group id");
+  check(same_supervisor_memory.address_space_id.has_value(),
+        "same-supervisor process-group memory query returns an address space");
+
+  auto abi_supervisor_inventory = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorCapabilityInventory,
+          .supervisor_id = *leader_supervisor,
+          .process_group_id = sibling_runtime->process_group_id,
+      });
+  check(abi_supervisor_inventory.status == KernelCallStatus::Ok,
+        "same-supervisor capability inventory ABI query returns Ok");
+  check(abi_supervisor_inventory.supervisor_capability_process_group_count == 2,
+        "capability inventory ABI reports both managed process groups");
+  check(abi_supervisor_inventory.supervisor_capability_transitions == 2,
+        "capability inventory ABI reports one revoke and one grant transition");
+  check(abi_supervisor_inventory.supervisor_last_capability_transition_group_id ==
+            sibling_runtime->process_group_id,
+        "capability inventory ABI tracks the last transition group");
+  check(std::any_of(abi_supervisor_inventory.capabilities.begin(),
+                    abi_supervisor_inventory.capabilities.end(),
+                    [](const auto& capability) {
+                      return capability.kind == KernelCapabilityKind::IpcReceive;
+                    }),
+        "capability inventory ABI returns scoped capabilities for the requested group");
+
   auto supervisor_inventory = axion_kernel_service_request(
       *state,
       KernelServiceRequest{
@@ -6060,6 +6283,29 @@ static void test_kernel_capability_management_abi() {
   check(query_foreign_group.rejection == KernelCallRejection::SupervisorMismatch,
         "foreign-supervisor capability query reports supervisor mismatch");
 
+  auto query_foreign_memory = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryProcessGroupMemory,
+          .process_group_id = outsider_runtime->process_group_id,
+      });
+  check(query_foreign_memory.status == KernelCallStatus::PolicyDenied,
+        "foreign-supervisor process-group memory query is denied");
+  check(query_foreign_memory.rejection == KernelCallRejection::ForeignSupervisorScope,
+        "foreign-supervisor process-group memory query reports foreign supervisor scope");
+
+  auto query_foreign_inventory = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorCapabilityInventory,
+          .supervisor_id = *leader_supervisor,
+          .process_group_id = outsider_runtime->process_group_id,
+      });
+  check(query_foreign_inventory.status == KernelCallStatus::PolicyDenied,
+        "foreign-supervisor capability inventory ABI query is denied");
+  check(query_foreign_inventory.rejection == KernelCallRejection::SupervisorMismatch,
+        "foreign-supervisor capability inventory ABI query reports supervisor mismatch");
+
   auto outsider_caps = axion_kernel_list_process_group_capabilities(
       *state, outsider_runtime->process_group_id);
   check(std::any_of(outsider_caps.begin(),
@@ -6100,6 +6346,464 @@ static void test_kernel_capability_management_abi() {
   }
 }
 
+static void test_kernel_service_abi_calls() {
+  std::printf("\n[AC-21d] Axion service control plane is reachable through kernel-call ABI\n");
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for service ABI calls");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext owner;
+  owner.registers[0] = 616;
+  auto owner_tid = axion_kernel_spawn_thread(*state, owner);
+  check(owner_tid.has_value(), "service ABI spawns owner thread");
+  if (!owner_tid) {
+    return;
+  }
+
+  const auto* owner_runtime = state->find_thread_runtime(*owner_tid);
+  check(owner_runtime != nullptr, "service ABI owner runtime is available");
+  if (!owner_runtime) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext foreign;
+  foreign.registers[0] = 717;
+  auto foreign_tid = axion_kernel_spawn_thread(*state, foreign);
+  check(foreign_tid.has_value(), "service ABI spawns foreign thread");
+  if (!foreign_tid) {
+    return;
+  }
+
+  check(axion_kernel_tick(*state), "service ABI first tick dispatches owner thread");
+  check(state->scheduler.current_tid() == *owner_tid,
+        "owner thread is current before service ABI calls");
+
+  auto register_service = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterService,
+          .service_name = std::string{"svc.abi"},
+      });
+  check(register_service.status == KernelCallStatus::Ok,
+        "service ABI register returns Ok");
+  check(register_service.action_performed,
+        "service ABI register reports work performed");
+  check(register_service.service_id.has_value(),
+        "service ABI register returns a service id");
+  check(register_service.service_name == std::optional<std::string>{"svc.abi"},
+        "service ABI register returns the registered name");
+  check(register_service.service_registered,
+        "service ABI register reports registered service state");
+  if (!register_service.service_id) {
+    return;
+  }
+
+  auto query_service = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryServiceStatus,
+          .service_id = *register_service.service_id,
+      });
+  check(query_service.status == KernelCallStatus::Ok,
+        "service ABI query returns Ok");
+  check(query_service.service_id == register_service.service_id,
+        "service ABI query returns the same service id");
+  check(query_service.service_name == std::optional<std::string>{"svc.abi"},
+        "service ABI query returns the registered name");
+  check(query_service.service_registered,
+        "service ABI query reports registered service state");
+  check(!query_service.service_suspended,
+        "service ABI query reports non-suspended service state");
+  check(!query_service.service_unhealthy,
+        "service ABI query reports healthy service state");
+
+  auto suspend_service = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SuspendService,
+          .service_id = *register_service.service_id,
+      });
+  check(suspend_service.status == KernelCallStatus::Ok,
+        "service ABI suspend returns Ok");
+  check(suspend_service.action_performed,
+        "service ABI suspend reports work performed");
+  check(suspend_service.service_suspended,
+        "service ABI suspend reports suspended service state");
+
+  auto duplicate_suspend = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SuspendService,
+          .service_id = *register_service.service_id,
+      });
+  check(duplicate_suspend.status == KernelCallStatus::InvalidRequest,
+        "service ABI duplicate suspend is rejected");
+  check(duplicate_suspend.rejection == KernelCallRejection::ServiceActionRejected,
+        "service ABI duplicate suspend reports deterministic action rejection");
+
+  auto resume_service = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::ResumeService,
+          .service_id = *register_service.service_id,
+      });
+  check(resume_service.status == KernelCallStatus::Ok,
+        "service ABI resume returns Ok");
+  check(resume_service.action_performed,
+        "service ABI resume reports work performed");
+  check(!resume_service.service_suspended,
+        "service ABI resume clears suspended service state");
+
+  auto duplicate_resume = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::ResumeService,
+          .service_id = *register_service.service_id,
+      });
+  check(duplicate_resume.status == KernelCallStatus::InvalidRequest,
+        "service ABI duplicate resume is rejected");
+  check(duplicate_resume.rejection == KernelCallRejection::ServiceActionRejected,
+        "service ABI duplicate resume reports deterministic action rejection");
+
+  auto query_service_after_resume = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryServiceStatus,
+          .service_id = *register_service.service_id,
+      });
+  check(query_service_after_resume.status == KernelCallStatus::Ok,
+        "service ABI query after resume returns Ok");
+  check(!query_service_after_resume.service_suspended,
+        "service ABI query after resume reports non-suspended service state");
+
+  auto mark_unhealthy = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::MarkServiceUnhealthy,
+          .service_id = *register_service.service_id,
+      });
+  check(mark_unhealthy.status == KernelCallStatus::Ok,
+        "service ABI mark-unhealthy returns Ok");
+  check(mark_unhealthy.action_performed,
+        "service ABI mark-unhealthy reports work performed");
+  check(mark_unhealthy.service_unhealthy,
+        "service ABI mark-unhealthy reports unhealthy service state");
+
+  auto duplicate_unhealthy = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::MarkServiceUnhealthy,
+          .service_id = *register_service.service_id,
+      });
+  check(duplicate_unhealthy.status == KernelCallStatus::InvalidRequest,
+        "service ABI duplicate unhealthy transition is rejected");
+  check(duplicate_unhealthy.rejection == KernelCallRejection::ServiceActionRejected,
+        "service ABI duplicate unhealthy transition reports deterministic action rejection");
+
+  auto query_service_unhealthy = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryServiceStatus,
+          .service_id = *register_service.service_id,
+      });
+  check(query_service_unhealthy.status == KernelCallStatus::RetryLater,
+        "service ABI query reports retry-later for unhealthy service");
+  check(query_service_unhealthy.rejection == KernelCallRejection::ServiceRequestRejected,
+        "service ABI unhealthy query reports deterministic request rejection");
+
+  auto mark_healthy = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::MarkServiceHealthy,
+          .service_id = *register_service.service_id,
+      });
+  check(mark_healthy.status == KernelCallStatus::Ok,
+        "service ABI mark-healthy returns Ok");
+  check(mark_healthy.action_performed,
+        "service ABI mark-healthy reports work performed");
+  check(!mark_healthy.service_unhealthy,
+        "service ABI mark-healthy clears unhealthy service state");
+
+  auto duplicate_healthy = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::MarkServiceHealthy,
+          .service_id = *register_service.service_id,
+      });
+  check(duplicate_healthy.status == KernelCallStatus::InvalidRequest,
+        "service ABI duplicate healthy transition is rejected");
+  check(duplicate_healthy.rejection == KernelCallRejection::ServiceActionRejected,
+        "service ABI duplicate healthy transition reports deterministic action rejection");
+
+  auto query_service_healthy = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryServiceStatus,
+          .service_id = *register_service.service_id,
+      });
+  check(query_service_healthy.status == KernelCallStatus::Ok,
+        "service ABI query returns Ok after heal");
+  check(!query_service_healthy.service_unhealthy,
+        "service ABI query after heal reports healthy service state");
+
+  auto yield_to_foreign =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::Yield});
+  check(yield_to_foreign.status == KernelCallStatus::Ok,
+        "service ABI yield to foreign returns Ok");
+  check(state->scheduler.current_tid() == *foreign_tid,
+        "foreign thread becomes current before foreign service query");
+
+  auto foreign_query = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryServiceStatus,
+          .service_id = *register_service.service_id,
+      });
+  check(foreign_query.status == KernelCallStatus::InvalidRequest,
+        "foreign supervisor service query is rejected");
+  check(foreign_query.rejection == KernelCallRejection::ServiceRequestRejected,
+        "foreign supervisor service query reports deterministic request rejection");
+}
+
+static void test_kernel_supervisor_recovery_abi_calls() {
+  std::printf(
+      "\n[AC-21e] Axion supervisor recovery is reachable through kernel-call ABI\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for supervisor recovery ABI");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext owner;
+  owner.registers[0] = 818;
+  auto owner_tid = axion_kernel_spawn_thread(*state, owner);
+  check(owner_tid.has_value(), "supervisor recovery ABI spawns owner thread");
+  if (!owner_tid) {
+    return;
+  }
+
+  const auto* owner_runtime = state->find_thread_runtime(*owner_tid);
+  check(owner_runtime != nullptr, "supervisor recovery ABI owner runtime is available");
+  if (!owner_runtime) {
+    return;
+  }
+  const auto owner_supervisor =
+      state->find_process_group_supervisor(owner_runtime->process_group_id);
+  check(owner_supervisor.has_value(), "owner group resolves to a supervisor");
+  if (!owner_supervisor) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext peer;
+  peer.registers[0] = 919;
+  auto peer_tid =
+      axion_kernel_spawn_thread_under_supervisor(*state, peer, *owner_supervisor);
+  check(peer_tid.has_value(), "supervisor recovery ABI spawns same-supervisor peer");
+  if (!peer_tid) {
+    return;
+  }
+
+  const auto* peer_runtime = state->find_thread_runtime(*peer_tid);
+  check(peer_runtime != nullptr, "supervisor recovery ABI peer runtime is available");
+  if (!peer_runtime) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext foreign;
+  foreign.registers[0] = 1020;
+  auto foreign_tid = axion_kernel_spawn_thread(*state, foreign);
+  check(foreign_tid.has_value(), "supervisor recovery ABI spawns foreign thread");
+  if (!foreign_tid) {
+    return;
+  }
+
+  check(axion_kernel_tick(*state), "supervisor recovery ABI dispatches owner thread");
+  check(state->scheduler.current_tid() == *owner_tid,
+        "owner thread is current before fault injection");
+
+  auto fault_report = axion_kernel_check_access(
+      *state, mmu::tva_from_vpn_offset(203, 0), mmu::MmuAccessMode::Read);
+  check(fault_report.fault.has_value(), "supervisor recovery ABI records a fault");
+  check(axion_kernel_step(*state), "supervisor recovery ABI delivers the fault");
+  check(state->scheduler.current_tid() == *peer_tid,
+        "same-supervisor peer becomes current after owner quarantine");
+
+  check(axion_kernel_ack_thread_fault(*state, *owner_tid),
+        "thread fault acknowledgement drains the owner inbox before supervisor recovery");
+
+  auto recovery_status_before_ack = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorRecoveryStatus,
+          .supervisor_id = *owner_supervisor,
+      });
+  check(recovery_status_before_ack.status == KernelCallStatus::Ok,
+        "supervisor recovery ABI status query returns Ok before acknowledgement");
+  check(recovery_status_before_ack.supervisor_pending_group_count == 1,
+        "supervisor recovery ABI status reports one pending group before acknowledgement");
+  check(recovery_status_before_ack.supervisor_acknowledgements == 0,
+        "supervisor recovery ABI status reports zero acknowledgements before recovery");
+  check(recovery_status_before_ack.supervisor_recovered_groups == 0,
+        "supervisor recovery ABI status reports zero recovered groups before recovery");
+  check(!recovery_status_before_ack.supervisor_last_acknowledged_group.has_value(),
+        "supervisor recovery ABI status has no last acknowledged group before recovery");
+
+  auto supervisor_status_before_ack = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorStatus,
+          .supervisor_id = *owner_supervisor,
+      });
+  check(supervisor_status_before_ack.status == KernelCallStatus::Ok,
+        "supervisor status ABI query returns Ok before acknowledgement");
+  check(supervisor_status_before_ack.supervisor_managed_group_count == 2,
+        "supervisor status ABI reports both managed groups");
+  check(supervisor_status_before_ack.supervisor_managed_faulted_group_count == 1,
+        "supervisor status ABI reports one faulted group before recovery");
+  check(supervisor_status_before_ack.supervisor_pending_group_count == 1,
+        "supervisor status ABI reports one pending group before recovery");
+  check(supervisor_status_before_ack.supervisor_fault_notifications == 1,
+        "supervisor status ABI reports one fault notification before recovery");
+  check(supervisor_status_before_ack.supervisor_last_pending_group ==
+            owner_runtime->process_group_id,
+        "supervisor status ABI tracks the pending faulted group");
+
+  auto recover_group = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::AcknowledgeSupervisorFaultGroup,
+          .supervisor_id = *owner_supervisor,
+          .process_group_id = owner_runtime->process_group_id,
+      });
+  check(recover_group.status == KernelCallStatus::Ok,
+        "supervisor recovery ABI acknowledgement returns Ok");
+  check(recover_group.action_performed,
+        "supervisor recovery ABI acknowledgement reports work performed");
+
+  const auto* recovered_group = state->find_process_group(owner_runtime->process_group_id);
+  const auto* recovered_owner = state->find_thread_runtime(*owner_tid);
+  check(recovered_group != nullptr, "recovered process group remains visible");
+  check(recovered_owner != nullptr, "recovered owner thread remains visible");
+  if (!recovered_group || !recovered_owner) {
+    return;
+  }
+
+  check(!recovered_group->faulted, "supervisor recovery ABI clears group fault state");
+  check(!recovered_group->acknowledgement_pending,
+        "supervisor recovery ABI clears group acknowledgement gate");
+  check(!recovered_owner->quarantined,
+        "supervisor recovery ABI recovers the quarantined owner thread");
+
+  auto recovery_status_after_ack = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorRecoveryStatus,
+          .supervisor_id = *owner_supervisor,
+      });
+  check(recovery_status_after_ack.status == KernelCallStatus::Ok,
+        "supervisor recovery ABI status query returns Ok after acknowledgement");
+  check(recovery_status_after_ack.supervisor_pending_group_count == 0,
+        "supervisor recovery ABI status clears pending groups after acknowledgement");
+  check(recovery_status_after_ack.supervisor_acknowledgements == 1,
+        "supervisor recovery ABI status reports one acknowledgement after recovery");
+  check(recovery_status_after_ack.supervisor_recovered_groups == 1,
+        "supervisor recovery ABI status reports one recovered group after recovery");
+  check(recovery_status_after_ack.supervisor_last_acknowledged_group.has_value() &&
+            *recovery_status_after_ack.supervisor_last_acknowledged_group ==
+                owner_runtime->process_group_id,
+        "supervisor recovery ABI status tracks the last acknowledged group");
+  check(recovery_status_after_ack.supervisor_last_recovered_group.has_value() &&
+            *recovery_status_after_ack.supervisor_last_recovered_group ==
+                owner_runtime->process_group_id,
+        "supervisor recovery ABI status tracks the last recovered group");
+
+  auto supervisor_status_after_ack = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorStatus,
+          .supervisor_id = *owner_supervisor,
+      });
+  check(supervisor_status_after_ack.status == KernelCallStatus::Ok,
+        "supervisor status ABI query returns Ok after acknowledgement");
+  check(supervisor_status_after_ack.supervisor_managed_faulted_group_count == 0,
+        "supervisor status ABI clears faulted-group count after recovery");
+  check(supervisor_status_after_ack.supervisor_pending_group_count == 0,
+        "supervisor status ABI clears pending groups after recovery");
+  check(supervisor_status_after_ack.supervisor_acknowledgements == 1,
+        "supervisor status ABI reports one acknowledgement after recovery");
+
+  for (int attempt = 0; attempt < 4 && state->scheduler.current_tid() != *foreign_tid;
+       ++attempt) {
+    check(axion_kernel_tick(*state), "supervisor recovery ABI advances to foreign thread");
+  }
+  check(state->scheduler.current_tid() == *foreign_tid,
+        "foreign thread becomes current before foreign recovery attempt");
+
+  auto foreign_recovery = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::AcknowledgeSupervisorFaultGroup,
+          .supervisor_id = *owner_supervisor,
+          .process_group_id = owner_runtime->process_group_id,
+      });
+  check(foreign_recovery.status == KernelCallStatus::PolicyDenied,
+        "foreign supervisor recovery ABI call is denied");
+  check(foreign_recovery.rejection == KernelCallRejection::SupervisorMismatch,
+        "foreign supervisor recovery ABI reports supervisor mismatch");
+
+  auto foreign_recovery_status = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorRecoveryStatus,
+          .supervisor_id = *owner_supervisor,
+      });
+  check(foreign_recovery_status.status == KernelCallStatus::PolicyDenied,
+        "foreign supervisor recovery ABI status query is denied");
+  check(foreign_recovery_status.rejection == KernelCallRejection::SupervisorMismatch,
+        "foreign supervisor recovery ABI status query reports supervisor mismatch");
+
+  auto foreign_supervisor_status = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorStatus,
+          .supervisor_id = *owner_supervisor,
+      });
+  check(foreign_supervisor_status.status == KernelCallStatus::PolicyDenied,
+        "foreign supervisor status ABI query is denied");
+  check(foreign_supervisor_status.rejection == KernelCallRejection::SupervisorMismatch,
+        "foreign supervisor status ABI query reports supervisor mismatch");
+
+  auto foreign_runtime_summary = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryRuntimeStatus,
+          .supervisor_id = *owner_supervisor,
+      });
+  check(foreign_runtime_summary.status == KernelCallStatus::PolicyDenied,
+        "foreign runtime summary ABI query is denied");
+  check(foreign_runtime_summary.rejection == KernelCallRejection::ForeignSupervisorScope,
+        "foreign runtime summary ABI query reports foreign supervisor scope");
+
+  auto foreign_fault_summary = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryFaultSummary,
+          .supervisor_id = *owner_supervisor,
+      });
+  check(foreign_fault_summary.status == KernelCallStatus::PolicyDenied,
+        "foreign fault summary ABI query is denied");
+  check(foreign_fault_summary.rejection == KernelCallRejection::ForeignSupervisorScope,
+        "foreign fault summary ABI query reports foreign supervisor scope");
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -6130,6 +6834,8 @@ int main() {
   test_kernel_loop_and_active_device_arbitration();
   test_kernel_minimal_abi_calls();
   test_kernel_capability_management_abi();
+  test_kernel_service_abi_calls();
+  test_kernel_supervisor_recovery_abi_calls();
   test_kernel_loop_fault_delivery();
   test_kernel_interrupt_event_delivery();
   test_kernel_pager_fault_state();

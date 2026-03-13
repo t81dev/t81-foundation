@@ -35,6 +35,12 @@ interrupts, pager policy, lifecycle/bootstrap, service queries/actions, views,
 and shared runtime utilities have been split into dedicated implementation
 files. `kernel_main.hpp` remains the shared runtime contract for those units.
 
+RFC-00B6 is now partially implemented rather than only proposed. The current
+typed `axion_kernel_call(...)` ABI covers IPC, fault inbox/recovery,
+supervisor recovery and inspection, capability management, service lifecycle
+control, process-group memory inspection, boot-critical address-space control,
+and guarded runtime/fault summary queries.
+
 Current working release label: `Axion v0.1.0-alpha`
 
 For now, internal paths, namespaces, CMake targets, and test names still use
