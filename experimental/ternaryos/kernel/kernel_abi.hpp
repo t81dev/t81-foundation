@@ -45,6 +45,18 @@ struct KernelThreadSpawnDescriptor {
   std::string label;
 };
 
+struct KernelSupervisorServiceSummaryEntry {
+  ServiceId id{0};
+  std::string name;
+  ProcessGroupId process_group_id{0};
+  bool registered{false};
+  bool blocked{false};
+  bool suspended{false};
+  bool unhealthy{false};
+  bool has_entry_descriptor{false};
+  std::optional<KernelThreadSpawnDescriptor> entry_descriptor{};
+};
+
 enum class KernelCallKind : uint8_t {
   Yield = 0,
   SpawnThreadInCallerGroup,
@@ -65,6 +77,7 @@ enum class KernelCallKind : uint8_t {
   QueryFaultSummary,
   QuerySupervisorStatus,
   QuerySupervisorRecoveryStatus,
+  QuerySupervisorServiceInventory,
   QuerySupervisorCapabilityInventory,
   QuerySupervisorDelegationSummary,
   QueryCapabilityTransitionHistory,
@@ -200,10 +213,16 @@ struct KernelCallResult {
   std::optional<ProcessGroupId> supervisor_last_acknowledged_group{};
   std::optional<ProcessGroupId> supervisor_last_recovered_group{};
   std::size_t supervisor_capability_process_group_count{0};
+  std::size_t supervisor_service_count{0};
+  std::size_t supervisor_blocked_service_count{0};
+  std::size_t supervisor_suspended_service_count{0};
+  std::size_t supervisor_unhealthy_service_count{0};
   uint64_t supervisor_capability_transitions{0};
+  uint64_t supervisor_service_lifecycle_transitions{0};
   std::optional<ProcessGroupId> supervisor_last_capability_transition_group_id{};
   std::optional<CapabilityRecordId> supervisor_last_capability_transition_record_id{};
   std::vector<KernelCapabilityTransitionRecord> supervisor_capability_transition_history;
+  std::vector<KernelSupervisorServiceSummaryEntry> supervisor_services;
   std::size_t supervisor_delegation_process_group_count{0};
   std::size_t supervisor_delegation_entry_count{0};
   std::size_t supervisor_delegated_capability_count{0};

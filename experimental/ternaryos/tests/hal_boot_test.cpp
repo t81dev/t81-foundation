@@ -7249,6 +7249,38 @@ static void test_kernel_abi_wire_call_boundary() {
   }
 
   if (decoded_register_service && decoded_register_service->service_id) {
+    const auto query_supervisor_services_request = axion_kernel_encode_wire_request(
+        KernelCallRequest{
+            .kind = KernelCallKind::QuerySupervisorServiceInventory,
+        });
+    KernelCallWireResponseBlock query_supervisor_services_response;
+    check(axion_kernel_call_wire(*state,
+                                 &query_supervisor_services_request,
+                                 &query_supervisor_services_response),
+          "wire ABI call boundary accepts a supervisor service-inventory request");
+    const auto decoded_query_supervisor_services =
+        axion_kernel_decode_wire_response(query_supervisor_services_response);
+    check(decoded_query_supervisor_services.has_value(),
+          "wire ABI supervisor service-inventory response decodes");
+    if (decoded_query_supervisor_services) {
+      check(decoded_query_supervisor_services->status == KernelCallStatus::Ok,
+            "wire ABI supervisor service-inventory returns Ok");
+      check(decoded_query_supervisor_services->supervisor_service_count == 1,
+            "wire ABI supervisor service-inventory reports one service");
+      check(decoded_query_supervisor_services->supervisor_services.size() == 1,
+            "wire ABI supervisor service-inventory returns one service entry");
+      if (!decoded_query_supervisor_services->supervisor_services.empty()) {
+        const auto& service_entry =
+            decoded_query_supervisor_services->supervisor_services.front();
+        check(service_entry.id == *decoded_register_service->service_id,
+              "wire ABI supervisor service-inventory preserves service id");
+        check(service_entry.has_entry_descriptor,
+              "wire ABI supervisor service-inventory reports service entry descriptor");
+        check(service_entry.entry_descriptor.has_value(),
+              "wire ABI supervisor service-inventory exposes service entry descriptor");
+      }
+    }
+
     const auto query_service_request = axion_kernel_encode_wire_request(
         KernelCallRequest{
             .kind = KernelCallKind::QueryServiceStatus,
@@ -7790,6 +7822,40 @@ static void test_kernel_call_c_bridge() {
   }
 
   if (decoded_register_service && decoded_register_service->service_id) {
+    const auto query_supervisor_services_request = axion_kernel_encode_wire_request(
+        KernelCallRequest{
+            .kind = KernelCallKind::QuerySupervisorServiceInventory,
+        });
+    KernelCallWireResponseBlock query_supervisor_services_response;
+    check(ternaryos_kernel_call_c(&*state,
+                                  &query_supervisor_services_request,
+                                  sizeof(query_supervisor_services_request),
+                                  &query_supervisor_services_response,
+                                  sizeof(query_supervisor_services_response)) == 0,
+          "C kernel-call bridge accepts a supervisor service-inventory request");
+    const auto decoded_query_supervisor_services =
+        axion_kernel_decode_wire_response(query_supervisor_services_response);
+    check(decoded_query_supervisor_services.has_value(),
+          "C kernel-call bridge supervisor service-inventory decodes");
+    if (decoded_query_supervisor_services) {
+      check(decoded_query_supervisor_services->status == KernelCallStatus::Ok,
+            "C kernel-call bridge supervisor service-inventory returns Ok");
+      check(decoded_query_supervisor_services->supervisor_service_count == 1,
+            "C kernel-call bridge supervisor service-inventory reports one service");
+      check(decoded_query_supervisor_services->supervisor_services.size() == 1,
+            "C kernel-call bridge supervisor service-inventory returns one service entry");
+      if (!decoded_query_supervisor_services->supervisor_services.empty()) {
+        const auto& service_entry =
+            decoded_query_supervisor_services->supervisor_services.front();
+        check(service_entry.id == *decoded_register_service->service_id,
+              "C kernel-call bridge supervisor service-inventory preserves service id");
+        check(service_entry.has_entry_descriptor,
+              "C kernel-call bridge supervisor service-inventory reports service entry descriptor");
+        check(service_entry.entry_descriptor.has_value(),
+              "C kernel-call bridge supervisor service-inventory exposes service entry descriptor");
+      }
+    }
+
     const auto query_service_request = axion_kernel_encode_wire_request(
         KernelCallRequest{
             .kind = KernelCallKind::QueryServiceStatus,
@@ -8649,6 +8715,39 @@ static void test_kernel_service_abi_calls() {
   check(!query_service.service_unhealthy,
         "service ABI query reports healthy service state");
 
+  auto query_supervisor_services = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorServiceInventory,
+      });
+  check(query_supervisor_services.status == KernelCallStatus::Ok,
+        "service ABI supervisor inventory query returns Ok");
+  check(query_supervisor_services.supervisor_service_count == 1,
+        "service ABI supervisor inventory reports one service");
+  check(query_supervisor_services.supervisor_services.size() == 1,
+        "service ABI supervisor inventory returns one service entry");
+  if (!query_supervisor_services.supervisor_services.empty()) {
+    const auto& service_entry = query_supervisor_services.supervisor_services.front();
+    check(service_entry.id == *register_service.service_id,
+          "service ABI supervisor inventory preserves service id");
+    check(service_entry.name == "svc.abi",
+          "service ABI supervisor inventory preserves service name");
+    check(service_entry.has_entry_descriptor,
+          "service ABI supervisor inventory reports service entry descriptor");
+    check(service_entry.entry_descriptor.has_value(),
+          "service ABI supervisor inventory exposes service entry descriptor");
+    if (service_entry.entry_descriptor) {
+      check(service_entry.entry_descriptor->pc == 57,
+            "service ABI supervisor inventory entry descriptor preserves pc");
+      check(service_entry.entry_descriptor->sp == 171,
+            "service ABI supervisor inventory entry descriptor preserves sp");
+      check(service_entry.entry_descriptor->register0 == 808,
+            "service ABI supervisor inventory entry descriptor preserves register0");
+      check(service_entry.entry_descriptor->label == "svc-abi-entry",
+            "service ABI supervisor inventory entry descriptor preserves label");
+    }
+  }
+
   auto suspend_service = axion_kernel_call(
       *state,
       KernelCallRequest{
@@ -8795,6 +8894,18 @@ static void test_kernel_service_abi_calls() {
         "foreign supervisor service query is rejected");
   check(foreign_query.rejection == KernelCallRejection::ServiceRequestRejected,
         "foreign supervisor service query reports deterministic request rejection");
+
+  auto foreign_inventory_query = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorServiceInventory,
+          .supervisor_id =
+              state->find_process_group_supervisor(owner_runtime->process_group_id),
+      });
+  check(foreign_inventory_query.status == KernelCallStatus::PolicyDenied,
+        "foreign supervisor service inventory query is denied");
+  check(foreign_inventory_query.rejection == KernelCallRejection::ForeignSupervisorScope,
+        "foreign supervisor service inventory query reports foreign supervisor scope");
 }
 
 static void test_kernel_capability_transition_sequence_revoke_abi() {

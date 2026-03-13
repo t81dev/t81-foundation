@@ -149,6 +149,8 @@ Status:
 - complete for typed service views and typed ABI result mapping
 - complete for fixed-size wire response and hosted C bridge register/query
   results
+- complete for supervisor-scoped service inventory over typed, wire, and
+  hosted C ABI paths
 
 ## Recommended Execution Order
 

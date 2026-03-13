@@ -617,6 +617,36 @@ KernelCallResult map_service_request_result(const CallerContext& caller,
     result.supervisor_capability_transition_history =
         request_result.supervisor_capabilities->recent_capability_transitions;
   }
+  if (request_result.supervisor_services.has_value()) {
+    result.supervisor_id = request_result.supervisor_services->supervisor_id;
+    result.supervisor_service_count =
+        request_result.supervisor_services->service_count;
+    result.supervisor_blocked_service_count =
+        request_result.supervisor_services->blocked_service_count;
+    result.supervisor_suspended_service_count =
+        request_result.supervisor_services->suspended_service_count;
+    result.supervisor_unhealthy_service_count =
+        request_result.supervisor_services->unhealthy_service_count;
+    result.supervisor_service_lifecycle_transitions =
+        request_result.supervisor_services->service_lifecycle_transitions;
+    result.supervisor_services.clear();
+    result.supervisor_services.reserve(
+        request_result.supervisor_services->services.size());
+    for (const auto& service :
+         request_result.supervisor_services->services) {
+      result.supervisor_services.push_back(KernelSupervisorServiceSummaryEntry{
+          .id = service.id,
+          .name = service.name,
+          .process_group_id = service.process_group_id,
+          .registered = service.registered,
+          .blocked = service.blocked,
+          .suspended = service.suspended,
+          .unhealthy = service.unhealthy,
+          .has_entry_descriptor = service.has_entry_descriptor,
+          .entry_descriptor = service.entry_descriptor,
+      });
+    }
+  }
   if (request_result.supervisor_delegations.has_value()) {
     result.supervisor_id = request_result.supervisor_delegations->supervisor_id;
     result.supervisor_delegation_process_group_count =
@@ -1074,6 +1104,10 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
     case KernelCallKind::QuerySupervisorRecoveryStatus: {
       return dispatch_supervisor_request(
           caller, state, request, KernelServiceRequestKind::SupervisorRecoveryStatus);
+    }
+    case KernelCallKind::QuerySupervisorServiceInventory: {
+      return dispatch_supervisor_request(
+          caller, state, request, KernelServiceRequestKind::SupervisorServiceInventory);
     }
     case KernelCallKind::QuerySupervisorCapabilityInventory: {
       auto mapped = dispatch_supervisor_request(

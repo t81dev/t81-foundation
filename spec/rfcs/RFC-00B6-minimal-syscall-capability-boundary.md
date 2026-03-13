@@ -184,6 +184,7 @@ Implemented today through the typed and wire ABI:
 - `QueryFaultSummary`
 - `QuerySupervisorStatus`
 - `QuerySupervisorRecoveryStatus`
+- `QuerySupervisorServiceInventory`
 - `QuerySupervisorCapabilityInventory`
 - `QuerySupervisorDelegationSummary`
 - `QueryCapabilityTransitionHistory`
@@ -229,6 +230,10 @@ Reason:
   stored service entry descriptors are now exposed through the typed
   service/status control plane and through fixed-size wire / hosted C
   service register/query responses
+- current implementation detail:
+  supervisor-scoped service inventory is now exposed through the typed ABI and
+  carried through fixed-size wire / hosted C responses as a bounded set of
+  compact service entries
 - current implementation detail:
   `QueryThreadExecutionState` returns the seeded execution context for the
   caller or a same-supervisor target thread, including `pc`, `sp`,

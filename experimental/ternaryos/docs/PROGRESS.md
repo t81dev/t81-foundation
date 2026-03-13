@@ -43,6 +43,9 @@ Recent architecture milestone:
   `RegisterService` / `QueryServiceStatus`.
 - Fixed-size wire responses and the hosted C bridge now also carry stored
   service entry descriptors on service register/query results.
+- `QuerySupervisorServiceInventory` is now live on the typed ABI and carried
+  through fixed-size wire and hosted C responses, including bounded service
+  entries with stored service entry descriptors.
 - Execution inspection now includes `QueryThreadExecutionState`, with
   caller-local and same-supervisor thread-context reads exposed through the
   typed ABI, wire transport, and hosted C bridge.

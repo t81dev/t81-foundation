@@ -84,6 +84,25 @@ struct KernelCallWireFault {
   std::array<char, kKernelAbiWireTagBytes> platform_id{};
 };
 
+struct KernelCallWireServiceEntry {
+  uint32_t id{0};
+  uint32_t process_group_id{0};
+  uint8_t registered{0};
+  uint8_t blocked{0};
+  uint8_t suspended{0};
+  uint8_t unhealthy{0};
+  uint8_t has_entry_descriptor{0};
+  std::array<uint8_t, 3> reserved{};
+  uint64_t entry_pc{0};
+  uint64_t entry_sp{0};
+  int64_t entry_register0{0};
+  uint8_t entry_halted{0};
+  uint8_t entry_active{1};
+  std::array<uint8_t, 6> reserved2{};
+  std::array<char, kKernelAbiWireServiceNameBytes> name{};
+  std::array<char, kKernelAbiWireThreadLabelBytes> entry_label{};
+};
+
 struct KernelCallWireRequestBlock {
   KernelCallWireHeader header{
       kKernelAbiWireRequestMagic,
@@ -168,6 +187,10 @@ struct KernelCallWireResponseBlock {
   uint32_t supervisor_managed_group_count{0};
   uint32_t supervisor_managed_faulted_group_count{0};
   uint32_t supervisor_pending_group_count{0};
+  uint32_t supervisor_service_count{0};
+  uint32_t supervisor_blocked_service_count{0};
+  uint32_t supervisor_suspended_service_count{0};
+  uint32_t supervisor_unhealthy_service_count{0};
   uint32_t supervisor_capability_process_group_count{0};
   uint32_t supervisor_delegation_process_group_count{0};
   uint32_t supervisor_delegation_entry_count{0};
@@ -176,9 +199,11 @@ struct KernelCallWireResponseBlock {
   uint32_t supervisor_last_recovered_group{0};
   uint32_t supervisor_last_capability_transition_group_id{0};
   uint64_t supervisor_last_capability_transition_record_id{0};
+  uint64_t supervisor_service_lifecycle_transitions{0};
   KernelCallWireMessage message{};
   KernelCallWireFault fault{};
   std::array<KernelCallWireCapabilityRecord, kKernelAbiWireCapabilitySlots> capabilities{};
+  std::array<KernelCallWireServiceEntry, kKernelAbiWireCapabilitySlots> services{};
   std::array<char, kKernelAbiWireServiceNameBytes> service_name{};
   std::array<char, kKernelAbiWireThreadLabelBytes> service_entry_label{};
   std::array<char, kKernelAbiWireThreadLabelBytes> thread_label{};
