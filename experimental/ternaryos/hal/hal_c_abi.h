@@ -38,6 +38,10 @@ int ternaryos_kernel_call_c(void* kernel_state,
                             size_t request_size,
                             void* response_bytes,
                             size_t response_size);
+int ternaryos_kernel_call_tva_c(void* kernel_state,
+                                uint32_t address_space_id,
+                                uint64_t request_tva,
+                                uint64_t response_tva);
 
 #ifdef __cplusplus
 }  // extern "C"

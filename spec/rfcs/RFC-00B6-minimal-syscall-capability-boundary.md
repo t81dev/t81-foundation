@@ -102,9 +102,11 @@ The current implementation now covers three nested layers of that boundary:
   - `axion_kernel_call_wire(...)`
 - a raw byte-span bridge and exported hosted C entrypoint:
   - `axion_kernel_call_wire_bytes(...)`
+  - `axion_kernel_call_wire_tva(...)`
   - `ternaryos_kernel_bootstrap_c(...)`
   - `ternaryos_kernel_destroy_c(...)`
   - `ternaryos_kernel_call_c(...)`
+  - `ternaryos_kernel_call_tva_c(...)`
 
 ### 5.2 Kernel Entry Shape
 
@@ -141,6 +143,9 @@ Current implementation note:
 - this is still a hosted/runtime bridge, not a final hardware trap path
 - request and response payloads currently use fixed-size wire blocks rather
   than variable-length user memory objects
+- the current mapped-memory bridge is intentionally narrow: it copies those
+  fixed wire blocks through mapped TVA pages backed by a kernel-owned hosted
+  page store, not a full userspace object model
 
 ### 5.3 Minimum Request Families
 

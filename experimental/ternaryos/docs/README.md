@@ -55,10 +55,14 @@ layer:
 - `kernel_abi_wire.hpp/.cpp` define fixed-size request/response wire blocks
 - `axion_kernel_call_wire(...)` dispatches those blocks
 - `axion_kernel_call_wire_bytes(...)` provides the raw byte-span bridge
+- `axion_kernel_call_wire_tva(...)` now dispatches those same fixed blocks
+  through mapped TVA request/response pages owned by an address space
 - `ternaryos_kernel_bootstrap_c(...)` / `ternaryos_kernel_destroy_c(...)`
   provide opaque C runtime-handle lifecycle
 - `ternaryos_kernel_call_c(...)` exports the first hosted C-style
   `kernel_call(req, len, resp, len)` entrypoint
+- `ternaryos_kernel_call_tva_c(...)` exports the first hosted mapped-address
+  bridge over that transport
 
 Current working release label: `Axion v0.1.0-alpha`
 

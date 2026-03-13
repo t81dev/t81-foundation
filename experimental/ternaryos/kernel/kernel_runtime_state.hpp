@@ -9,6 +9,7 @@
 #include "../mmu/ternary_page_alloc.hpp"
 #include "../sched/scheduler.hpp"
 
+#include <cstddef>
 #include <cstdint>
 #include <deque>
 #include <optional>
@@ -238,6 +239,7 @@ struct KernelRuntimeState {
   std::unordered_map<ProcessGroupId, ProcessGroupState> process_groups;
   std::unordered_map<SupervisorId, SupervisorState> supervisors;
   std::unordered_map<AddressSpaceId, AddressSpaceState> address_spaces;
+  std::unordered_map<uint64_t, std::vector<std::byte>> physical_page_storage;
   std::unordered_map<ProcessGroupId, SupervisorId> process_group_supervisors;
   std::unordered_map<ProcessGroupId, AddressSpaceId> process_group_address_spaces;
   std::unordered_map<ServiceId, ServiceState> services;

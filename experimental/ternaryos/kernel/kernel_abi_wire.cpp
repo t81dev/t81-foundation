@@ -535,4 +535,30 @@ bool axion_kernel_call_wire_bytes(KernelRuntimeState& state,
   return axion_kernel_call_wire(state, &request_block, response_block);
 }
 
+bool axion_kernel_call_wire_tva(KernelRuntimeState& state,
+                                AddressSpaceId address_space_id,
+                                uint64_t request_tva,
+                                uint64_t response_tva) noexcept {
+  KernelCallWireRequestBlock request_block;
+  if (!axion_kernel_read_address_space_bytes(state,
+                                             address_space_id,
+                                             request_tva,
+                                             reinterpret_cast<std::byte*>(&request_block),
+                                             sizeof(request_block))) {
+    return false;
+  }
+
+  KernelCallWireResponseBlock response_block;
+  if (!axion_kernel_call_wire(state, &request_block, &response_block)) {
+    return false;
+  }
+
+  return axion_kernel_write_address_space_bytes(
+      state,
+      address_space_id,
+      response_tva,
+      reinterpret_cast<const std::byte*>(&response_block),
+      sizeof(response_block));
+}
+
 }  // namespace t81::ternaryos::kernel

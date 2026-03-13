@@ -1,6 +1,7 @@
 #include "kernel_main.hpp"
 
 #include <algorithm>
+#include <cstring>
 
 namespace t81::ternaryos::kernel {
 
@@ -45,6 +46,23 @@ void record_pager_fault_state_impl(KernelRuntimeState& state,
   ++state.counters.pager_eligible_faults;
 }
 
+std::vector<std::byte>* mutable_physical_page_storage(
+    KernelRuntimeState& state,
+    uint64_t phys_base) {
+  auto [it, inserted] = state.physical_page_storage.try_emplace(phys_base);
+  if (inserted) {
+    it->second.resize(static_cast<std::size_t>(mmu::kPageSize));
+  }
+  return &it->second;
+}
+
+const std::vector<std::byte>* physical_page_storage(
+    const KernelRuntimeState& state,
+    uint64_t phys_base) {
+  auto it = state.physical_page_storage.find(phys_base);
+  return it == state.physical_page_storage.end() ? nullptr : &it->second;
+}
+
 }  // namespace
 
 void record_pager_fault_state(KernelRuntimeState& state,
@@ -83,6 +101,64 @@ bool axion_kernel_set_address_space_boot_critical(KernelRuntimeState& state,
     return false;
   }
   address_space->boot_critical = boot_critical;
+  return true;
+}
+
+bool axion_kernel_write_address_space_bytes(KernelRuntimeState& state,
+                                            AddressSpaceId address_space_id,
+                                            uint64_t tva,
+                                            const std::byte* data,
+                                            std::size_t size) noexcept {
+  if ((size > 0 && data == nullptr) || !mmu::tva_valid(tva) ||
+      (size > 0 && (!mmu::tva_valid(tva + size - 1) || tva + size - 1 < tva))) {
+    return false;
+  }
+  for (std::size_t i = 0; i < size; ++i) {
+    const auto translation =
+        mmu::mmu_translate_checked(state.page_table, tva + i, mmu::MmuAccessMode::Write);
+    if (translation.fault != mmu::MmuFault::None || !translation.phys_addr.has_value()) {
+      return false;
+    }
+    const auto phys_addr = *translation.phys_addr;
+    const auto phys_base = phys_addr - (phys_addr % mmu::kPageSize);
+    const auto* entry = state.page_table.entries().contains(mmu::tva_vpn(tva + i))
+                            ? &state.page_table.entries().at(mmu::tva_vpn(tva + i))
+                            : nullptr;
+    if (!entry || entry->owner_pid != address_space_id) {
+      return false;
+    }
+    auto* page = mutable_physical_page_storage(state, phys_base);
+    (*page)[static_cast<std::size_t>(phys_addr - phys_base)] = data[i];
+  }
+  return true;
+}
+
+bool axion_kernel_read_address_space_bytes(const KernelRuntimeState& state,
+                                           AddressSpaceId address_space_id,
+                                           uint64_t tva,
+                                           std::byte* data,
+                                           std::size_t size) noexcept {
+  if ((size > 0 && data == nullptr) || !mmu::tva_valid(tva) ||
+      (size > 0 && (!mmu::tva_valid(tva + size - 1) || tva + size - 1 < tva))) {
+    return false;
+  }
+  for (std::size_t i = 0; i < size; ++i) {
+    const auto translation =
+        mmu::mmu_translate_checked(state.page_table, tva + i, mmu::MmuAccessMode::Read);
+    if (translation.fault != mmu::MmuFault::None || !translation.phys_addr.has_value()) {
+      return false;
+    }
+    const auto phys_addr = *translation.phys_addr;
+    const auto phys_base = phys_addr - (phys_addr % mmu::kPageSize);
+    const auto* entry = state.page_table.entries().contains(mmu::tva_vpn(tva + i))
+                            ? &state.page_table.entries().at(mmu::tva_vpn(tva + i))
+                            : nullptr;
+    if (!entry || entry->owner_pid != address_space_id) {
+      return false;
+    }
+    const auto* page = physical_page_storage(state, phys_base);
+    data[i] = page ? (*page)[static_cast<std::size_t>(phys_addr - phys_base)] : std::byte{0};
+  }
   return true;
 }
 

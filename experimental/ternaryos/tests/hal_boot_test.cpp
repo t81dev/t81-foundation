@@ -7575,6 +7575,107 @@ static void test_kernel_call_c_bridge() {
         "C kernel-call bridge rejects null kernel state");
 }
 
+static void test_kernel_call_tva_c_bridge() {
+  std::printf("\n[AC-21n] Axion TVA kernel-call bridge dispatches mapped wire blocks\n");
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for TVA kernel-call bridge");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext caller_ctx;
+  caller_ctx.registers[0] = 1301;
+  auto caller_tid = axion_kernel_spawn_thread(*state, caller_ctx);
+  check(caller_tid.has_value(), "TVA kernel-call bridge spawns caller");
+  if (!caller_tid) {
+    return;
+  }
+
+  check(axion_kernel_tick(*state), "TVA kernel-call bridge dispatches caller");
+  check(state->scheduler.current_tid() == *caller_tid,
+        "TVA kernel-call bridge makes caller current");
+
+  const auto* caller_runtime = state->find_thread_runtime(*caller_tid);
+  const auto caller_address_space =
+      caller_runtime
+          ? state->find_process_group_address_space(caller_runtime->process_group_id)
+          : std::nullopt;
+  check(caller_address_space.has_value(),
+        "TVA kernel-call bridge resolves caller address space");
+  if (!caller_address_space) {
+    return;
+  }
+
+  const uint64_t request_tva = t81::ternaryos::mmu::tva_from_vpn_offset(81, 0);
+  const uint64_t response_tva = t81::ternaryos::mmu::tva_from_vpn_offset(82, 0);
+  check(t81::ternaryos::mmu::mmu_map(
+            state->page_table,
+            state->allocator,
+            request_tva,
+            *caller_address_space,
+            {.readable = true, .writable = true, .executable = false}),
+        "TVA kernel-call bridge maps request page");
+  check(t81::ternaryos::mmu::mmu_map(
+            state->page_table,
+            state->allocator,
+            response_tva,
+            *caller_address_space,
+            {.readable = true, .writable = true, .executable = false}),
+        "TVA kernel-call bridge maps response page");
+
+  const auto request_block = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::QueryThreadExecutionState});
+  check(axion_kernel_write_address_space_bytes(
+            *state,
+            *caller_address_space,
+            request_tva,
+            reinterpret_cast<const std::byte*>(&request_block),
+            sizeof(request_block)),
+        "TVA kernel-call bridge writes request block into mapped memory");
+
+  check(ternaryos_kernel_call_tva_c(&*state,
+                                    *caller_address_space,
+                                    request_tva,
+                                    response_tva) == 0,
+        "TVA kernel-call bridge dispatches mapped request and response blocks");
+
+  KernelCallWireResponseBlock response_block;
+  check(axion_kernel_read_address_space_bytes(
+            *state,
+            *caller_address_space,
+            response_tva,
+            reinterpret_cast<std::byte*>(&response_block),
+            sizeof(response_block)),
+        "TVA kernel-call bridge reads response block from mapped memory");
+  const auto decoded_response = axion_kernel_decode_wire_response(response_block);
+  check(decoded_response.has_value(), "TVA kernel-call bridge response decodes");
+  if (decoded_response) {
+    check(decoded_response->status == KernelCallStatus::Ok,
+          "TVA kernel-call bridge query returns Ok");
+    check(decoded_response->queried_tid == *caller_tid,
+          "TVA kernel-call bridge query returns the running tid");
+    check(decoded_response->thread_register0 == 1301,
+          "TVA kernel-call bridge query returns register0");
+    check(decoded_response->thread_running,
+          "TVA kernel-call bridge query reports running state");
+  }
+
+  const uint64_t unmapped_response_tva =
+      t81::ternaryos::mmu::tva_from_vpn_offset(83, 0);
+  check(ternaryos_kernel_call_tva_c(&*state,
+                                    *caller_address_space,
+                                    request_tva,
+                                    unmapped_response_tva) != 0,
+        "TVA kernel-call bridge rejects unmapped response pages");
+  check(ternaryos_kernel_call_tva_c(nullptr,
+                                    *caller_address_space,
+                                    request_tva,
+                                    response_tva) != 0,
+        "TVA kernel-call bridge rejects null kernel state");
+}
+
 static void test_kernel_execution_abi_calls() {
   std::printf("\n[AC-21m] Axion execution ABI exposes thread identity and exit\n");
 
@@ -8756,6 +8857,7 @@ int main() {
   test_kernel_abi_wire_call_boundary();
   test_kernel_abi_wire_byte_boundary();
   test_kernel_call_c_bridge();
+  test_kernel_call_tva_c_bridge();
   test_kernel_c_lifecycle_bridge();
   test_kernel_execution_abi_calls();
   test_kernel_capability_management_abi();

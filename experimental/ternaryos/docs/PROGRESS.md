@@ -60,8 +60,9 @@ Recent architecture milestone:
   denials.
 - The ABI now also has a canonical transport layer: fixed-size
   `KernelCallWireRequestBlock` / `KernelCallWireResponseBlock` transport,
-  pointer-style wire dispatch, a raw byte-span bridge, and an exported hosted
-  C entrypoint `ternaryos_kernel_call_c(...)`.
+  pointer-style wire dispatch, a raw byte-span bridge, a mapped-TVA bridge,
+  and exported hosted C entrypoints `ternaryos_kernel_call_c(...)` and
+  `ternaryos_kernel_call_tva_c(...)`.
 - That exported hosted ABI now also has opaque runtime-handle lifecycle:
   `ternaryos_kernel_bootstrap_c(...)` and `ternaryos_kernel_destroy_c(...)`.
 
