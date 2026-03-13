@@ -87,6 +87,7 @@ Implemented kernel-call slice:
 - `QueryCapabilityRecord`
 - `GrantCapability`
 - `RevokeCapability`
+- `RevokeDelegatedCapabilities`
 - `RegisterService`
 - `QueryServiceStatus`
 - `SuspendService`

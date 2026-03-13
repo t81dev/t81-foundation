@@ -123,6 +123,11 @@ bool axion_kernel_revoke_process_group_capability(
     std::optional<CapabilityRecordId> capability_record_id,
     KernelCapabilityKind capability_kind,
     std::optional<ProcessGroupId> process_group_scope = std::nullopt) noexcept;
+bool axion_kernel_revoke_delegated_process_group_capabilities(
+    KernelRuntimeState& state,
+    ProcessGroupId process_group_id,
+    std::optional<ProcessGroupId> delegated_by_process_group_id,
+    std::optional<SupervisorId> delegated_by_supervisor_id) noexcept;
 std::vector<KernelCapabilityRecord> axion_kernel_list_process_group_capabilities(
     const KernelRuntimeState& state,
     ProcessGroupId process_group_id) noexcept;

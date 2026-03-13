@@ -981,6 +981,35 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
           axion_kernel_list_process_group_capabilities(state, target_group_state->id);
       return result;
     }
+    case KernelCallKind::RevokeDelegatedCapabilities: {
+      KernelRuntimeState::ProcessGroupState* target_group_state = nullptr;
+      if (auto invalid = resolve_capability_target_group(
+              state, caller, request, target_group_state);
+          invalid.has_value()) {
+        return *invalid;
+      }
+      if (!request.capability.has_value() ||
+          (!request.capability->delegated_by_process_group_id.has_value() &&
+           !request.capability->delegated_by_supervisor_id.has_value())) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingDelegationScope;
+        return result;
+      }
+      if (!axion_kernel_revoke_delegated_process_group_capabilities(
+              state,
+              target_group_state->id,
+              request.capability->delegated_by_process_group_id,
+              request.capability->delegated_by_supervisor_id)) {
+        result.status = KernelCallStatus::Conflict;
+        return result;
+      }
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.capabilities =
+          axion_kernel_list_process_group_capabilities(state, target_group_state->id);
+      return result;
+    }
     case KernelCallKind::RegisterService: {
       return dispatch_service_register(caller, state, request);
     }

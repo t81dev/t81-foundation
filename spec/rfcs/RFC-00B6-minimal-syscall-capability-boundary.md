@@ -278,6 +278,7 @@ this shape and should be treated as the baseline for follow-on requests:
 - `MissingBootCriticalValue`
 - `InvalidCapabilityRecordId`
 - `MissingCapabilityTransition`
+- `MissingDelegationScope`
 - `MissingSupervisor`
 - `SupervisorMismatch`
 - `ForeignSupervisorScope`
@@ -301,6 +302,9 @@ These rejections are not all equivalent and should stay distinct:
 - `MissingCapabilityTransition` is used for sequence-based capability control
   requests that refer to a transition not present in retained supervisor
   capability history
+- `MissingDelegationScope` is used for bulk delegated-capability revocation
+  requests that omit the delegator provenance needed to define the revocation
+  set
 
 This distinction matters because it keeps diagnostics precise and prevents the
 ABI from collapsing unrelated policy failures into one generic denial bucket.
@@ -358,6 +362,7 @@ Implemented request kinds:
 - `QueryCapabilityRecord`
 - `GrantCapability`
 - `RevokeCapability`
+- `RevokeDelegatedCapabilities`
 - `RegisterService`
 - `QueryServiceStatus`
 - `SuspendService`
@@ -388,6 +393,9 @@ Current policy rules already enforced in code:
 - `RevokeCapability` may resolve its target through a previously observed
   capability-transition sequence instead of requiring an immediate inventory
   re-scan
+- `RevokeDelegatedCapabilities` may remove all delegated capabilities from a
+  managed process group matching a specific delegator process-group/supervisor
+  provenance, while preserving kernel-seeded capabilities
 
 This means the RFC is no longer purely aspirational. It now defines the next
 expansion stages on top of an implemented ABI core.

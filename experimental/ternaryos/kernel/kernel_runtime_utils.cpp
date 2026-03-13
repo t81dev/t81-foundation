@@ -269,6 +269,51 @@ bool axion_kernel_revoke_process_group_capability(
   return changed;
 }
 
+bool axion_kernel_revoke_delegated_process_group_capabilities(
+    KernelRuntimeState& state,
+    ProcessGroupId process_group_id,
+    std::optional<ProcessGroupId> delegated_by_process_group_id,
+    std::optional<SupervisorId> delegated_by_supervisor_id) noexcept {
+  auto* group = state.find_process_group_mut(process_group_id);
+  if (!group) {
+    return false;
+  }
+  std::vector<KernelCapabilityRecord> removed_capabilities;
+  const auto old_size = group->capabilities.size();
+  group->capabilities.erase(
+      std::remove_if(group->capabilities.begin(),
+                     group->capabilities.end(),
+                     [&](const auto& capability) {
+                       if (capability.kernel_seeded) {
+                         return false;
+                       }
+                       if (delegated_by_process_group_id.has_value() &&
+                           capability.delegated_by_process_group_id !=
+                               delegated_by_process_group_id) {
+                         return false;
+                       }
+                       if (delegated_by_supervisor_id.has_value() &&
+                           capability.delegated_by_supervisor_id !=
+                               delegated_by_supervisor_id) {
+                         return false;
+                       }
+                       removed_capabilities.push_back(capability);
+                       return true;
+                     }),
+      group->capabilities.end());
+  if (group->capabilities.size() == old_size) {
+    return false;
+  }
+  for (const auto& capability : removed_capabilities) {
+    record_capability_transition(
+        state,
+        process_group_id,
+        KernelAuditEventKind::CapabilityRevoked,
+        capability);
+  }
+  return true;
+}
+
 std::vector<KernelCapabilityRecord> axion_kernel_list_process_group_capabilities(
     const KernelRuntimeState& state,
     ProcessGroupId process_group_id) noexcept {

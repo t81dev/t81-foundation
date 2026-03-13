@@ -7029,6 +7029,214 @@ static void test_kernel_capability_transition_sequence_revoke_abi() {
         "foreign transition-sequence revoke reports supervisor mismatch");
 }
 
+static void test_kernel_capability_delegation_bulk_revoke_abi() {
+  std::printf(
+      "\n[AC-21g] Axion capability revocation can target delegated provenance in bulk\n");
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for delegated bulk revoke ABI");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext leader;
+  leader.label = "bulk-leader";
+  leader.registers[0] = 70;
+  auto leader_tid = axion_kernel_spawn_thread(*state, leader);
+  check(leader_tid.has_value(), "delegated bulk revoke spawns leader thread");
+  if (!leader_tid) {
+    return;
+  }
+  const auto* leader_runtime = state->find_thread_runtime(*leader_tid);
+  check(leader_runtime != nullptr, "leader runtime is available for delegated bulk revoke");
+  if (!leader_runtime) {
+    return;
+  }
+  const auto leader_supervisor =
+      state->find_process_group_supervisor(leader_runtime->process_group_id);
+  check(leader_supervisor.has_value(),
+        "leader process group resolves to a supervisor for delegated bulk revoke");
+  if (!leader_supervisor) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext sibling;
+  sibling.label = "bulk-sibling";
+  sibling.registers[0] = 71;
+  auto sibling_tid =
+      axion_kernel_spawn_thread_under_supervisor(*state, sibling, *leader_supervisor);
+  check(sibling_tid.has_value(), "delegated bulk revoke spawns sibling thread");
+  if (!sibling_tid) {
+    return;
+  }
+  const auto* sibling_runtime = state->find_thread_runtime(*sibling_tid);
+  check(sibling_runtime != nullptr, "sibling runtime is available for delegated bulk revoke");
+  if (!sibling_runtime) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext outsider;
+  outsider.label = "bulk-outsider";
+  outsider.registers[0] = 72;
+  auto outsider_tid = axion_kernel_spawn_thread(*state, outsider);
+  check(outsider_tid.has_value(), "delegated bulk revoke spawns outsider thread");
+  if (!outsider_tid) {
+    return;
+  }
+  const auto* outsider_runtime = state->find_thread_runtime(*outsider_tid);
+  check(outsider_runtime != nullptr, "outsider runtime is available for delegated bulk revoke");
+  if (!outsider_runtime) {
+    return;
+  }
+
+  check(axion_kernel_tick(*state), "delegated bulk revoke dispatches leader thread");
+  check(state->scheduler.current_tid() == *leader_tid,
+        "leader thread is current for delegated bulk revoke calls");
+
+  const auto initial_caps = axion_kernel_list_process_group_capabilities(
+      *state, sibling_runtime->process_group_id);
+  const auto initial_ipc_send =
+      std::find_if(initial_caps.begin(), initial_caps.end(), [](const auto& capability) {
+        return capability.kind == KernelCapabilityKind::IpcSend;
+      });
+  const auto initial_ipc_receive =
+      std::find_if(initial_caps.begin(), initial_caps.end(), [](const auto& capability) {
+        return capability.kind == KernelCapabilityKind::IpcReceive;
+      });
+  check(initial_ipc_send != initial_caps.end(),
+        "delegated bulk revoke setup exposes the initial IPC send record");
+  check(initial_ipc_receive != initial_caps.end(),
+        "delegated bulk revoke setup exposes the initial IPC receive record");
+  if (initial_ipc_send == initial_caps.end() || initial_ipc_receive == initial_caps.end()) {
+    return;
+  }
+
+  auto revoke_ipc_send = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RevokeCapability,
+          .process_group_id = sibling_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{
+              .record_id = initial_ipc_send->record_id,
+              .kind = KernelCapabilityKind::IpcSend,
+          },
+      });
+  check(revoke_ipc_send.status == KernelCallStatus::Ok,
+        "delegated bulk revoke setup can revoke IPC send");
+  auto revoke_ipc_receive = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RevokeCapability,
+          .process_group_id = sibling_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{
+              .record_id = initial_ipc_receive->record_id,
+              .kind = KernelCapabilityKind::IpcReceive,
+          },
+      });
+  check(revoke_ipc_receive.status == KernelCallStatus::Ok,
+        "delegated bulk revoke setup can revoke IPC receive");
+
+  auto grant_ipc_send = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::GrantCapability,
+          .process_group_id = sibling_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcSend},
+      });
+  check(grant_ipc_send.status == KernelCallStatus::Ok,
+        "delegated bulk revoke setup can re-grant IPC send");
+  auto grant_ipc_receive = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::GrantCapability,
+          .process_group_id = sibling_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
+      });
+  check(grant_ipc_receive.status == KernelCallStatus::Ok,
+        "delegated bulk revoke setup can re-grant IPC receive");
+
+  auto query_delegated = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QueryCapabilities,
+          .process_group_id = sibling_runtime->process_group_id,
+      });
+  check(query_delegated.status == KernelCallStatus::Ok,
+        "delegated bulk revoke can query sibling capabilities before bulk revoke");
+  check(std::count_if(query_delegated.capabilities.begin(),
+                      query_delegated.capabilities.end(),
+                      [&](const auto& capability) {
+                        return !capability.kernel_seeded &&
+                               capability.delegated_by_process_group_id ==
+                                   leader_runtime->process_group_id &&
+                               capability.delegated_by_supervisor_id == leader_supervisor;
+                      }) == 2,
+        "delegated bulk revoke setup creates two delegated sibling capabilities");
+
+  auto missing_scope = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RevokeDelegatedCapabilities,
+          .process_group_id = sibling_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{},
+      });
+  check(missing_scope.status == KernelCallStatus::InvalidRequest,
+        "delegated bulk revoke rejects a missing delegation scope");
+  check(missing_scope.rejection == KernelCallRejection::MissingDelegationScope,
+        "delegated bulk revoke reports MissingDelegationScope");
+
+  auto bulk_revoke = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RevokeDelegatedCapabilities,
+          .process_group_id = sibling_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{
+              .delegated_by_process_group_id = leader_runtime->process_group_id,
+              .delegated_by_supervisor_id = leader_supervisor,
+          },
+      });
+  check(bulk_revoke.status == KernelCallStatus::Ok,
+        "delegated bulk revoke returns Ok");
+  check(bulk_revoke.action_performed,
+        "delegated bulk revoke reports work performed");
+  check(std::none_of(bulk_revoke.capabilities.begin(),
+                     bulk_revoke.capabilities.end(),
+                     [](const auto& capability) {
+                       return !capability.kernel_seeded;
+                     }),
+        "delegated bulk revoke removes delegated capabilities from the target group");
+  check(std::any_of(bulk_revoke.capabilities.begin(),
+                    bulk_revoke.capabilities.end(),
+                    [](const auto& capability) {
+                      return capability.kernel_seeded &&
+                             capability.kind == KernelCapabilityKind::Yield;
+                    }),
+        "delegated bulk revoke preserves kernel-seeded capabilities");
+  check(std::none_of(bulk_revoke.capabilities.begin(),
+                     bulk_revoke.capabilities.end(),
+                     [](const auto& capability) {
+                       return capability.kind == KernelCapabilityKind::IpcSend ||
+                              capability.kind == KernelCapabilityKind::IpcReceive;
+                     }),
+        "delegated bulk revoke removes both delegated IPC capabilities");
+
+  auto foreign_bulk_revoke = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RevokeDelegatedCapabilities,
+          .process_group_id = outsider_runtime->process_group_id,
+          .capability = KernelCapabilityRecord{
+              .delegated_by_process_group_id = leader_runtime->process_group_id,
+              .delegated_by_supervisor_id = leader_supervisor,
+          },
+      });
+  check(foreign_bulk_revoke.status == KernelCallStatus::PolicyDenied,
+        "foreign delegated bulk revoke is denied");
+  check(foreign_bulk_revoke.rejection == KernelCallRejection::SupervisorMismatch,
+        "foreign delegated bulk revoke reports supervisor mismatch");
+}
+
 static void test_kernel_supervisor_recovery_abi_calls() {
   std::printf(
       "\n[AC-21e] Axion supervisor recovery is reachable through kernel-call ABI\n");
@@ -7296,6 +7504,7 @@ int main() {
   test_kernel_capability_management_abi();
   test_kernel_service_abi_calls();
   test_kernel_capability_transition_sequence_revoke_abi();
+  test_kernel_capability_delegation_bulk_revoke_abi();
   test_kernel_supervisor_recovery_abi_calls();
   test_kernel_loop_fault_delivery();
   test_kernel_interrupt_event_delivery();
