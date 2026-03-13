@@ -39,9 +39,9 @@ The broader structural assessment and follow-on refactor plan now live in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `3520`
+- total assertions: `3563`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `2644/2644`
+- `t81_ternaryos_hal_boot_test`: `2687/2687`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_mmu_test`: `87/87`
 
@@ -158,6 +158,9 @@ Kernel integration proof now also includes:
   validated image by `CanonRef` without requiring the caller to keep the
   source bytes live, and a fresh kernel can reload that repository from the
   same external block-device image
+- the kernel can now also resolve those published executable objects directly
+  from a persistent CanonFS root when one is bound, which is the first real
+  CanonFS-backed executable fetch path in the kernel
 - those executable-object wire and hosted C responses now also carry the
   stored executable entry descriptor, not only the CanonRef
 - services can now bind to those registered executable objects by CanonRef,

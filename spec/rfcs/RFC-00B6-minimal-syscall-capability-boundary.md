@@ -233,6 +233,10 @@ Reason:
   block-device image, so `RegisterExecutableObject` can resolve a validated
   executable by `CanonRef` across a fresh hosted kernel instance
 - current implementation detail:
+  `RegisterExecutableObject` can also resolve that same executable by
+  `CanonRef` from a persistent CanonFS root when a kernel-owned CanonFS
+  driver is bound
+- current implementation detail:
   both spawn calls now accept a compact initial thread descriptor carrying
   `pc`, `sp`, `register0`, `label`, and halted/active state, and that
   descriptor is preserved across the typed ABI, fixed-size wire blocks, and

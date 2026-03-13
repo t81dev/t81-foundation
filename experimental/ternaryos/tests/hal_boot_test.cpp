@@ -25,6 +25,7 @@
 #include <atomic>
 #include <cassert>
 #include <cstdio>
+#include <filesystem>
 #include <memory>
 #include <string>
 
@@ -9342,6 +9343,128 @@ static void test_kernel_execution_abi_calls() {
     }
   }
   std::remove(kPublishedExecStorePath);
+
+  const auto canonfs_root =
+      std::filesystem::temp_directory_path() / "axion-exec-canonfs-test";
+  {
+    std::error_code ec;
+    std::filesystem::remove_all(canonfs_root, ec);
+  }
+
+  auto canonfs_publishing_state = axion_kernel_bootstrap(ctx);
+  check(canonfs_publishing_state.has_value(),
+        "execution ABI can bootstrap a CanonFS publisher kernel");
+  if (canonfs_publishing_state) {
+    check(axion_kernel_bind_published_executable_canonfs(
+              *canonfs_publishing_state,
+              t81::canonfs::make_persistent_driver(canonfs_root)),
+          "execution ABI can bind a persistent CanonFS executable source");
+
+    t81::ternaryos::sched::TiscContext canonfs_thread;
+    canonfs_thread.registers[0] = 9103;
+    auto canonfs_tid =
+        axion_kernel_spawn_thread(*canonfs_publishing_state, canonfs_thread);
+    check(canonfs_tid.has_value(),
+          "execution ABI CanonFS publisher kernel spawns a caller thread");
+    if (canonfs_tid) {
+      check(axion_kernel_tick(*canonfs_publishing_state),
+            "execution ABI CanonFS publisher kernel dispatches the caller thread");
+      auto canonfs_identity = axion_kernel_call(
+          *canonfs_publishing_state,
+          KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
+      check(canonfs_identity.status == KernelCallStatus::Ok,
+            "execution ABI CanonFS publisher identity query returns Ok");
+      if (canonfs_identity.address_space_id) {
+        const auto canonfs_descriptor = KernelThreadSpawnDescriptor{
+            .pc = 161,
+            .sp = 323,
+            .register0 = 6161,
+            .label = "canonfs-published-entry",
+        };
+        const auto canonfs_block = executable_block_for(canonfs_descriptor);
+        const auto canonfs_ref = t81::canonfs::CanonRef{canonfs_block.hash()};
+        const auto canonfs_tva =
+            t81::ternaryos::mmu::tva_from_vpn_offset(124, 0);
+        check(t81::ternaryos::mmu::mmu_map(
+                  canonfs_publishing_state->page_table,
+                  canonfs_publishing_state->allocator,
+                  canonfs_tva,
+                  *canonfs_identity.address_space_id,
+                  {.readable = true, .writable = true, .executable = false}),
+              "execution ABI CanonFS publisher kernel maps executable image page");
+        const auto canonfs_bytes = canonfs_block.to_bytes();
+        check(axion_kernel_write_address_space_bytes(
+                  *canonfs_publishing_state,
+                  *canonfs_identity.address_space_id,
+                  canonfs_tva,
+                  canonfs_bytes.data(),
+                  canonfs_bytes.size()),
+              "execution ABI CanonFS publisher kernel writes executable image");
+        auto canonfs_publish_result = axion_kernel_call(
+            *canonfs_publishing_state,
+            KernelCallRequest{
+                .kind = KernelCallKind::PublishExecutableObjectFromTva,
+                .object_ref = canonfs_ref,
+                .object_tva = canonfs_tva,
+            });
+        check(canonfs_publish_result.status == KernelCallStatus::Ok,
+              "execution ABI publishes executable objects into persistent CanonFS");
+        check(canonfs_publish_result.executable_published,
+              "execution ABI CanonFS publish reports published state");
+
+        auto canonfs_registration_state = axion_kernel_bootstrap(ctx);
+        check(canonfs_registration_state.has_value(),
+              "execution ABI can bootstrap a CanonFS registration kernel");
+        if (canonfs_registration_state) {
+          check(axion_kernel_bind_published_executable_canonfs(
+                    *canonfs_registration_state,
+                    t81::canonfs::make_persistent_driver(canonfs_root)),
+                "execution ABI can bind a reloaded persistent CanonFS executable source");
+
+          t81::ternaryos::sched::TiscContext canonfs_registration_thread;
+          canonfs_registration_thread.registers[0] = 9104;
+          auto canonfs_registration_tid = axion_kernel_spawn_thread(
+              *canonfs_registration_state, canonfs_registration_thread);
+          check(canonfs_registration_tid.has_value(),
+                "execution ABI CanonFS registration kernel spawns a caller thread");
+          if (canonfs_registration_tid) {
+            check(axion_kernel_tick(*canonfs_registration_state),
+                  "execution ABI CanonFS registration kernel dispatches the caller thread");
+            auto canonfs_register_result = axion_kernel_call(
+                *canonfs_registration_state,
+                KernelCallRequest{
+                    .kind = KernelCallKind::RegisterExecutableObject,
+                    .object_ref = canonfs_ref,
+                });
+            check(canonfs_register_result.status == KernelCallStatus::Ok,
+                  "execution ABI can register an executable directly from persistent CanonFS");
+            check(canonfs_register_result.executable_registered,
+                  "execution ABI CanonFS registration reports executable state");
+            check(canon_ref_matches(canonfs_register_result.object_ref, canonfs_ref),
+                  "execution ABI CanonFS registration preserves object ref");
+            check(canonfs_register_result.executable_entry_descriptor.has_value(),
+                  "execution ABI CanonFS registration exposes descriptor");
+            if (canonfs_register_result.executable_entry_descriptor) {
+              check(canonfs_register_result.executable_entry_descriptor->pc == 161,
+                    "execution ABI CanonFS registration preserves pc");
+              check(canonfs_register_result.executable_entry_descriptor->sp == 323,
+                    "execution ABI CanonFS registration preserves sp");
+              check(
+                  canonfs_register_result.executable_entry_descriptor->register0 == 6161,
+                  "execution ABI CanonFS registration preserves register0");
+              check(canonfs_register_result.executable_entry_descriptor->label ==
+                        "canonfs-published-entry",
+                    "execution ABI CanonFS registration preserves label");
+            }
+          }
+        }
+      }
+    }
+  }
+  {
+    std::error_code ec;
+    std::filesystem::remove_all(canonfs_root, ec);
+  }
 
   auto missing_executable_image_tva = axion_kernel_call(
       *state,

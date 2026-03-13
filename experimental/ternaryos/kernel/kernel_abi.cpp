@@ -250,6 +250,13 @@ std::optional<KernelCallResult> load_executable_descriptor(
 std::optional<t81::canonfs::CanonBlock> load_published_executable_block(
     KernelRuntimeState& state,
     const t81::canonfs::CanonRef& object_ref) {
+  if (state.published_executable_canonfs) {
+    auto read_result = state.published_executable_canonfs->read_object_bytes(object_ref);
+    if (read_result.has_value()) {
+      return t81::canonfs::CanonBlock::from_bytes(
+          std::span<const std::byte>(read_result->data(), read_result->size()));
+    }
+  }
   if (!state.published_executable_store_device) {
     return std::nullopt;
   }
@@ -261,6 +268,16 @@ std::optional<t81::canonfs::CanonBlock> load_published_executable_block(
 bool publish_executable_block(KernelRuntimeState& state,
                               const t81::canonfs::CanonRef& object_ref,
                               const t81::canonfs::CanonBlock& block) {
+  if (state.published_executable_canonfs) {
+    const auto block_bytes = block.to_bytes();
+    auto write_result = state.published_executable_canonfs->write_object(
+        t81::canonfs::ObjectType::CanonExec,
+        std::span<const std::byte>(block_bytes.data(), block_bytes.size()));
+    if (!write_result.has_value() || write_result->hash != object_ref.hash) {
+      return false;
+    }
+    return true;
+  }
   if (!state.published_executable_store_device) {
     return false;
   }

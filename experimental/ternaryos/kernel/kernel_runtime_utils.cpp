@@ -143,6 +143,16 @@ bool axion_kernel_bind_published_executable_store(
   return true;
 }
 
+bool axion_kernel_bind_published_executable_canonfs(
+    KernelRuntimeState& state,
+    std::unique_ptr<t81::canonfs::Driver> driver) noexcept {
+  if (!driver) {
+    return false;
+  }
+  state.published_executable_canonfs = std::move(driver);
+  return true;
+}
+
 std::optional<KernelServiceStatus> axion_kernel_validate_requesting_group(
     const KernelRuntimeState& state,
     std::optional<ProcessGroupId> requesting_process_group_id) noexcept {

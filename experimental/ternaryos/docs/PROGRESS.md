@@ -12,7 +12,7 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-13
-**Commit:** `6a87fb46` onward; RFC-00B6 ABI transport/execution work now includes a bindable `CanonStore`-backed published executable repository
+**Commit:** `a764e9c4` onward; RFC-00B6 ABI transport/execution work now includes a bindable `CanonStore`-backed published executable repository plus a persistent CanonFS executable source
 **Branch:** `main`
 
 Recent architecture milestone:
@@ -49,6 +49,8 @@ Recent architecture milestone:
 - That published-executable repository is now bindable to an external
   `IBlockDevice`, so a fresh kernel can reload and register published
   executables from the same stored backing image.
+- `RegisterExecutableObject` can now also resolve published executable objects
+  directly from a persistent CanonFS root when one is bound into the kernel.
 - Wire and hosted C executable-object results now also carry the stored
   executable entry descriptor, not just the CanonRef key.
 - Services can now retain an optional thread entry descriptor during
@@ -344,7 +346,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 2644 | 1 |
+| `t81_ternaryos_hal_boot_test` | 2687 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -352,7 +354,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **3520** | |
+| **Total** | **3563** | |
 
 Run all TernOS tests:
 

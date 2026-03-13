@@ -9,6 +9,7 @@
 #include "../ipc/canon_message.hpp"
 #include "../mmu/ternary_page_alloc.hpp"
 #include "../dev/block_device.hpp"
+#include "t81/canonfs/canon_driver.hpp"
 
 #include <cstdint>
 #include <deque>
@@ -114,6 +115,9 @@ bool axion_kernel_release_device(KernelRuntimeState& state,
 bool axion_kernel_bind_published_executable_store(
     KernelRuntimeState& state,
     std::unique_ptr<t81::ternaryos::dev::IBlockDevice> device) noexcept;
+bool axion_kernel_bind_published_executable_canonfs(
+    KernelRuntimeState& state,
+    std::unique_ptr<t81::canonfs::Driver> driver) noexcept;
 std::optional<sched::Tid> axion_kernel_primary_tid_for_group(
     const KernelRuntimeState& state,
     ProcessGroupId process_group_id) noexcept;

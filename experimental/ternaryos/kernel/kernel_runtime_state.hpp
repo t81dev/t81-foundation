@@ -10,6 +10,7 @@
 #include "../mmu/page_table.hpp"
 #include "../mmu/ternary_page_alloc.hpp"
 #include "../sched/scheduler.hpp"
+#include "t81/canonfs/canon_driver.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -258,6 +259,7 @@ struct KernelRuntimeState {
   std::unordered_map<ServiceId, ServiceState> services;
   std::unordered_map<ProcessGroupId, ServiceId> process_group_services;
   std::unique_ptr<t81::ternaryos::dev::IBlockDevice> published_executable_store_device;
+  std::unique_ptr<t81::canonfs::Driver> published_executable_canonfs;
   PagerWorkerState pager_worker{};
   t81::vm::ThreadContext cpu_context{};
   Counters counters{};

@@ -27,6 +27,8 @@ free-form descriptor registry. Executable objects can now also be registered
 from mapped caller memory through `RegisterExecutableObjectFromTva`. The
 published-object repository is now also bindable to an external block-device
 image, so a fresh kernel can reload published executables by `CanonRef`. The
+kernel can now also bind a persistent CanonFS root and resolve executable
+objects by `CanonRef` through that driver. The
 next execution milestone is fetching and loading those executable objects from
 real CanonFS-backed object storage instead of only from registration-time
 input, caller memory, or the current bindable published-object repository.

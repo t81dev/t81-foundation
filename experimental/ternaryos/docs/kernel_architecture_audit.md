@@ -427,6 +427,7 @@ Execution control is also broader:
 - canonical `CanonExec` block validation during executable registration
 - mapped-memory executable acquisition through `RegisterExecutableObjectFromTva`
 - bindable kernel-owned `CanonStore`-backed published executable repository
+- persistent CanonFS-backed executable resolution by `CanonRef`
 - service-owned thread entry spawn
 - thread identity and execution-state inspection
 
@@ -504,7 +505,7 @@ Observed result:
 
 - `8/8` test binaries passed
 - boot test coverage has continued to expand substantially; current local boot
-  suite result is `2644 passed, 0 failed`
+  suite result is `2687 passed, 0 failed`
 
 Covered suites:
 
