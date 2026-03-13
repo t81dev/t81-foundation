@@ -21,6 +21,7 @@ enum class KernelServiceRequestKind : uint8_t {
   SupervisorStatus,
   SupervisorRecoveryStatus,
   ServiceStatus,
+  SupervisorServiceStatus,
   SupervisorServiceInventory,
   SupervisorCapabilityInventory,
   SupervisorDelegationSummary,

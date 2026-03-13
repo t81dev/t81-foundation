@@ -7327,6 +7327,48 @@ static void test_kernel_abi_wire_call_boundary() {
       }
     }
 
+    const auto mark_unhealthy_request = axion_kernel_encode_wire_request(
+        KernelCallRequest{
+            .kind = KernelCallKind::MarkServiceUnhealthy,
+            .service_id = *decoded_register_service->service_id,
+        });
+    KernelCallWireResponseBlock mark_unhealthy_response;
+    check(axion_kernel_call_wire(*state,
+                                 &mark_unhealthy_request,
+                                 &mark_unhealthy_response),
+          "wire ABI call boundary accepts a mark-unhealthy request");
+    const auto decoded_mark_unhealthy =
+        axion_kernel_decode_wire_response(mark_unhealthy_response);
+    check(decoded_mark_unhealthy.has_value(),
+          "wire ABI mark-unhealthy response decodes");
+    if (decoded_mark_unhealthy) {
+      check(decoded_mark_unhealthy->status == KernelCallStatus::Ok,
+            "wire ABI mark-unhealthy returns Ok");
+    }
+
+    const auto query_supervisor_service_request = axion_kernel_encode_wire_request(
+        KernelCallRequest{
+            .kind = KernelCallKind::QuerySupervisorServiceStatus,
+            .service_id = *decoded_register_service->service_id,
+        });
+    KernelCallWireResponseBlock query_supervisor_service_response;
+    check(axion_kernel_call_wire(*state,
+                                 &query_supervisor_service_request,
+                                 &query_supervisor_service_response),
+          "wire ABI call boundary accepts a supervisor service-status request");
+    const auto decoded_query_supervisor_service =
+        axion_kernel_decode_wire_response(query_supervisor_service_response);
+    check(decoded_query_supervisor_service.has_value(),
+          "wire ABI supervisor service-status response decodes");
+    if (decoded_query_supervisor_service) {
+      check(decoded_query_supervisor_service->status == KernelCallStatus::Ok,
+            "wire ABI supervisor service-status returns Ok");
+      check(decoded_query_supervisor_service->service_unhealthy,
+            "wire ABI supervisor service-status preserves unhealthy state");
+      check(decoded_query_supervisor_service->service_has_entry_descriptor,
+            "wire ABI supervisor service-status preserves entry-descriptor presence");
+    }
+
     const auto spawn_for_service_request = axion_kernel_encode_wire_request(
         KernelCallRequest{
             .kind = KernelCallKind::SpawnThreadForService,
@@ -7914,6 +7956,52 @@ static void test_kernel_call_c_bridge() {
                   "c-service-entry",
               "C kernel-call bridge service-status query entry descriptor preserves label");
       }
+    }
+
+    const auto mark_unhealthy_request = axion_kernel_encode_wire_request(
+        KernelCallRequest{
+            .kind = KernelCallKind::MarkServiceUnhealthy,
+            .service_id = *decoded_register_service->service_id,
+        });
+    KernelCallWireResponseBlock mark_unhealthy_response;
+    check(ternaryos_kernel_call_c(&*state,
+                                  &mark_unhealthy_request,
+                                  sizeof(mark_unhealthy_request),
+                                  &mark_unhealthy_response,
+                                  sizeof(mark_unhealthy_response)) == 0,
+          "C kernel-call bridge accepts a mark-unhealthy request");
+    const auto decoded_mark_unhealthy =
+        axion_kernel_decode_wire_response(mark_unhealthy_response);
+    check(decoded_mark_unhealthy.has_value(),
+          "C kernel-call bridge mark-unhealthy response decodes");
+    if (decoded_mark_unhealthy) {
+      check(decoded_mark_unhealthy->status == KernelCallStatus::Ok,
+            "C kernel-call bridge mark-unhealthy returns Ok");
+    }
+
+    const auto query_supervisor_service_request = axion_kernel_encode_wire_request(
+        KernelCallRequest{
+            .kind = KernelCallKind::QuerySupervisorServiceStatus,
+            .service_id = *decoded_register_service->service_id,
+        });
+    KernelCallWireResponseBlock query_supervisor_service_response;
+    check(ternaryos_kernel_call_c(&*state,
+                                  &query_supervisor_service_request,
+                                  sizeof(query_supervisor_service_request),
+                                  &query_supervisor_service_response,
+                                  sizeof(query_supervisor_service_response)) == 0,
+          "C kernel-call bridge accepts a supervisor service-status request");
+    const auto decoded_query_supervisor_service =
+        axion_kernel_decode_wire_response(query_supervisor_service_response);
+    check(decoded_query_supervisor_service.has_value(),
+          "C kernel-call bridge supervisor service-status response decodes");
+    if (decoded_query_supervisor_service) {
+      check(decoded_query_supervisor_service->status == KernelCallStatus::Ok,
+            "C kernel-call bridge supervisor service-status returns Ok");
+      check(decoded_query_supervisor_service->service_unhealthy,
+            "C kernel-call bridge supervisor service-status preserves unhealthy state");
+      check(decoded_query_supervisor_service->service_has_entry_descriptor,
+            "C kernel-call bridge supervisor service-status preserves entry-descriptor presence");
     }
 
     const auto spawn_for_service_request = axion_kernel_encode_wire_request(
@@ -8866,6 +8954,21 @@ static void test_kernel_service_abi_calls() {
   check(query_service_unhealthy.rejection == KernelCallRejection::ServiceRequestRejected,
         "service ABI unhealthy query reports deterministic request rejection");
 
+  auto query_supervisor_service_unhealthy = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorServiceStatus,
+          .service_id = *register_service.service_id,
+      });
+  check(query_supervisor_service_unhealthy.status == KernelCallStatus::Ok,
+        "supervisor service-status ABI query can inspect an unhealthy managed service");
+  check(query_supervisor_service_unhealthy.service_id == register_service.service_id,
+        "supervisor service-status ABI query returns the target service id");
+  check(query_supervisor_service_unhealthy.service_unhealthy,
+        "supervisor service-status ABI query preserves unhealthy service state");
+  check(query_supervisor_service_unhealthy.service_has_entry_descriptor,
+        "supervisor service-status ABI query preserves entry-descriptor presence");
+
   auto mark_healthy = axion_kernel_call(
       *state,
       KernelCallRequest{
@@ -8918,6 +9021,19 @@ static void test_kernel_service_abi_calls() {
         "foreign supervisor service query is rejected");
   check(foreign_query.rejection == KernelCallRejection::ServiceRequestRejected,
         "foreign supervisor service query reports deterministic request rejection");
+
+  auto foreign_supervisor_service_query = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorServiceStatus,
+          .service_id = *register_service.service_id,
+          .supervisor_id =
+              state->find_process_group_supervisor(owner_runtime->process_group_id),
+      });
+  check(foreign_supervisor_service_query.status == KernelCallStatus::InvalidRequest,
+        "foreign supervisor managed-service query is rejected");
+  check(foreign_supervisor_service_query.rejection == KernelCallRejection::ServiceRequestRejected,
+        "foreign supervisor managed-service query reports deterministic request rejection");
 
   auto foreign_inventory_query = axion_kernel_call(
       *state,

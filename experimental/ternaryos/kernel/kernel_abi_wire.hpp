@@ -16,6 +16,7 @@ inline constexpr std::size_t kKernelAbiWireTagBytes = 32;
 inline constexpr std::size_t kKernelAbiWireServiceNameBytes = 32;
 inline constexpr std::size_t kKernelAbiWireThreadLabelBytes = 32;
 inline constexpr std::size_t kKernelAbiWireCapabilitySlots = 4;
+inline constexpr std::size_t kKernelAbiWireServiceSlots = 2;
 inline constexpr std::size_t kKernelAbiWireCanonRefBytes = 32;
 
 enum KernelCallWireFlags : uint64_t {
@@ -203,7 +204,7 @@ struct KernelCallWireResponseBlock {
   KernelCallWireMessage message{};
   KernelCallWireFault fault{};
   std::array<KernelCallWireCapabilityRecord, kKernelAbiWireCapabilitySlots> capabilities{};
-  std::array<KernelCallWireServiceEntry, kKernelAbiWireCapabilitySlots> services{};
+  std::array<KernelCallWireServiceEntry, kKernelAbiWireServiceSlots> services{};
   std::array<char, kKernelAbiWireServiceNameBytes> service_name{};
   std::array<char, kKernelAbiWireThreadLabelBytes> service_entry_label{};
   std::array<char, kKernelAbiWireThreadLabelBytes> thread_label{};

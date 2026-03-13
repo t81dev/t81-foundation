@@ -55,8 +55,8 @@ Not yet implemented:
 
 - real hardware trap/syscall entry
 - executable loading
-- service entry-descriptor visibility through richer cross-service supervisory
-  diagnostics beyond the current bounded inventory response
+- service activation/loading backed by executable objects rather than only
+  stored spawn descriptors
 
 ## Completed Groundwork
 

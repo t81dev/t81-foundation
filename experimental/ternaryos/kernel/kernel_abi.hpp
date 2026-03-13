@@ -77,6 +77,7 @@ enum class KernelCallKind : uint8_t {
   QueryFaultSummary,
   QuerySupervisorStatus,
   QuerySupervisorRecoveryStatus,
+  QuerySupervisorServiceStatus,
   QuerySupervisorServiceInventory,
   QuerySupervisorCapabilityInventory,
   QuerySupervisorDelegationSummary,

@@ -1105,6 +1105,10 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       return dispatch_supervisor_request(
           caller, state, request, KernelServiceRequestKind::SupervisorRecoveryStatus);
     }
+    case KernelCallKind::QuerySupervisorServiceStatus: {
+      return dispatch_supervisor_request(
+          caller, state, request, KernelServiceRequestKind::SupervisorServiceStatus);
+    }
     case KernelCallKind::QuerySupervisorServiceInventory: {
       return dispatch_supervisor_request(
           caller, state, request, KernelServiceRequestKind::SupervisorServiceInventory);

@@ -154,8 +154,13 @@ Status:
 
 Next likely control-plane step:
 
-- add a targeted supervisor service lookup/read path so callers do not need to
-  scan the bounded inventory response when they already know a `service_id`
+- complete for targeted supervisor service lookup/read by `service_id`
+
+Next likely control-plane step:
+
+- decide whether the service control plane has enough observational surface and
+  shift to executable loading, or continue only if a clearly missing
+  supervisory write path remains
 
 ## Recommended Execution Order
 

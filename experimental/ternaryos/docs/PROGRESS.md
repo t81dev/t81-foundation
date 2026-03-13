@@ -48,6 +48,9 @@ Recent architecture milestone:
   entries with stored service entry descriptors.
 - Wire and hosted C coverage now explicitly verifies supervisor-scoped service
   inventory preserves service names and stored entry descriptors.
+- `QuerySupervisorServiceStatus` is now live too. It provides a supervisor-
+  scoped single-service inspection path that can still read managed service
+  state when the ordinary service-status query is deferred by unhealthy state.
 - Execution inspection now includes `QueryThreadExecutionState`, with
   caller-local and same-supervisor thread-context reads exposed through the
   typed ABI, wire transport, and hosted C bridge.

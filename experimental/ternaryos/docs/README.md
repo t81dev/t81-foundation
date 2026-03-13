@@ -54,6 +54,9 @@ service register/query responses now carry it through the fixed-size wire and
 hosted C ABI paths too. Supervisor-scoped service inventory is now also
 reachable through the typed, wire, and hosted C ABI layers, with bounded
 service entries that preserve stored service entry-descriptor state.
+Supervisors can now also inspect one managed service directly through a
+dedicated service-status query path, even when the ordinary service query is
+deferred by unhealthy state.
 Execution reads now also include `QueryThreadExecutionState`, which exposes the
 seeded scheduler context for the caller or a same-supervisor target thread.
 Delegated capability control now also includes bulk revocation and direct

@@ -184,6 +184,7 @@ Implemented today through the typed and wire ABI:
 - `QueryFaultSummary`
 - `QuerySupervisorStatus`
 - `QuerySupervisorRecoveryStatus`
+- `QuerySupervisorServiceStatus`
 - `QuerySupervisorServiceInventory`
 - `QuerySupervisorCapabilityInventory`
 - `QuerySupervisorDelegationSummary`
@@ -237,6 +238,10 @@ Reason:
 - current implementation detail:
   wire and hosted C coverage now verifies that those bounded supervisor
   service entries preserve service names and stored entry descriptors
+- current implementation detail:
+  supervisors can now query a single managed service directly through a
+  dedicated service-status path, including when ordinary service status is
+  deferred by unhealthy state
 - current implementation detail:
   `QueryThreadExecutionState` returns the seeded execution context for the
   caller or a same-supervisor target thread, including `pc`, `sp`,

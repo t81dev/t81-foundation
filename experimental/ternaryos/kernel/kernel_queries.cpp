@@ -74,6 +74,34 @@ const KernelRuntimeState::SupervisorState* resolve_supervisor_request(
   return supervisor_state;
 }
 
+const KernelRuntimeState::ServiceState* resolve_supervisor_service_request(
+    const KernelRuntimeState& state,
+    KernelServiceResult& result,
+    const KernelServiceRequest& request) {
+  const auto* supervisor_state =
+      resolve_supervisor_request(state, result, request, true);
+  if (!supervisor_state) {
+    return nullptr;
+  }
+  if (!request.service_id.has_value()) {
+    result.status = KernelServiceStatus::InvalidRequest;
+    result.rejection = KernelServiceRequestRejection::MissingService;
+    return nullptr;
+  }
+  const auto* service_state = state.find_service(*request.service_id);
+  if (!service_state || !service_state->registered) {
+    result.status = KernelServiceStatus::NotFound;
+    result.rejection = KernelServiceRequestRejection::MissingService;
+    return nullptr;
+  }
+  if (service_state->supervisor_id != supervisor_state->id) {
+    result.status = KernelServiceStatus::InvalidRequest;
+    result.rejection = KernelServiceRequestRejection::MissingSupervisor;
+    return nullptr;
+  }
+  return service_state;
+}
+
 }  // namespace
 
 KernelServiceResult axion_kernel_service_request(
@@ -159,6 +187,24 @@ KernelServiceResult axion_kernel_service_request(
       }
       const auto* service_state = validate_service_request(
           const_cast<KernelRuntimeState&>(state), result, request);
+      if (!service_state) {
+        return result;
+      }
+      result.status = KernelServiceStatus::Ok;
+      result.rejection = KernelServiceRequestRejection::None;
+      result.service = make_service_view(state, service_state->id);
+      return result;
+    }
+    case KernelServiceRequestKind::SupervisorServiceStatus: {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, request.requesting_process_group_id);
+          denied.has_value()) {
+        result.status = *denied;
+        result.rejection = axion_kernel_requesting_group_request_rejection(*denied);
+        return result;
+      }
+      const auto* service_state =
+          resolve_supervisor_service_request(state, result, request);
       if (!service_state) {
         return result;
       }
