@@ -31,6 +31,11 @@ typedef struct TernaryOsBootContext {
 } TernaryOsBootContext;
 
 int ternaryos_hal_main_c(const TernaryOsBootContext* ctx);
+int ternaryos_kernel_call_c(void* kernel_state,
+                            const void* request_bytes,
+                            size_t request_size,
+                            void* response_bytes,
+                            size_t response_size);
 
 #ifdef __cplusplus
 }  // extern "C"

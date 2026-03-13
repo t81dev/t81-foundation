@@ -44,7 +44,13 @@ supervisor capability transition history, sequence-based capability
 revocation, and explicit provenance distinguishing kernel-seeded capabilities
 from supervisor-delegated grants. Delegated capability control now also
 includes bulk revocation and direct delegated-capability queries by delegator
-provenance, plus compact supervisor delegation summaries.
+provenance, plus compact supervisor delegation summaries. That typed ABI now
+also has a real canonical transport layer:
+- `kernel_abi_wire.hpp/.cpp` define fixed-size request/response wire blocks
+- `axion_kernel_call_wire(...)` dispatches those blocks
+- `axion_kernel_call_wire_bytes(...)` provides the raw byte-span bridge
+- `ternaryos_kernel_call_c(...)` exports the first hosted C-style
+  `kernel_call(req, len, resp, len)` entrypoint
 
 Current working release label: `Axion v0.1.0-alpha`
 
@@ -75,10 +81,11 @@ docs/
   kernel_engineering_follow_on_plan.md Next-step refactor and delivery plan from the audit
   virtualbox_x86_64_handoff.md External x86_64 VirtualBox runbook
 
-hal/
+  hal/
   hal.hpp              HAL public interface (MemoryRegion, HardwareInterrupt,
                        BootContext, hal_main)
-  hal_c_abi.h/.cpp     C ABI bridge for freestanding guest stubs
+  hal_c_abi.h/.cpp     C ABI bridge for freestanding guest stubs and the
+                       first exported hosted `kernel_call` bridge
   hal_main.cpp         Ethics-first boot (Θ₁–Θ₉ via Axion) → kernel-owned handoff
   interrupt_table.cpp  Shadow binary interrupt dispatch table; current
                        governed interrupt bridge tracked by RFC-00B5
@@ -91,6 +98,11 @@ hal/
   virtualbox_armv8_efi_shim.c  Temporary ARMv8 developer-lane EFI link shim
 
 kernel/
+  kernel_abi.hpp/.cpp  Typed kernel-call ABI, capability checks, and service/
+                       supervisor dispatch
+  kernel_abi_wire.hpp/.cpp Fixed-size canonical request/response blocks,
+                       wire encode/decode, pointer-style wire dispatch,
+                       and raw byte-span ABI bridge
   kernel_main.hpp + kernel_runtime.cpp First Axion kernel-owned runtime entry/bootstrap;
                        runtime-owned allocator/MMU/scheduler/IPC/device state,
                        process-group fault policy, audit-only governance hooks,

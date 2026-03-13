@@ -50,6 +50,10 @@ Recent architecture milestone:
   missing boot-critical control values, and foreign supervisory read scope now
   produce dedicated rejections instead of collapsing into generic policy
   denials.
+- The ABI now also has a canonical transport layer: fixed-size
+  `KernelCallWireRequestBlock` / `KernelCallWireResponseBlock` transport,
+  pointer-style wire dispatch, a raw byte-span bridge, and an exported hosted
+  C entrypoint `ternaryos_kernel_call_c(...)`.
 
 Reference docs:
 - Roadmap: [docs/research/ternary_os_roadmap.md](../../../docs/research/ternary_os_roadmap.md)
@@ -77,7 +81,7 @@ Status: hosted simulation passing; VirtualBox guest promotion is now the first c
 | File | Purpose | Tests |
 | :--- | :--- | :---: |
 | `hal/hal.hpp` | Public interface: `MemoryRegion`, `HardwareInterrupt`, `BootContext`, `hal_main`, I/O stubs | — |
-| `hal/hal_c_abi.h/.cpp` | C-compatible HAL handoff bridge so freestanding guest stubs can construct a boot context without C++ STL dependencies | 2 |
+| `hal/hal_c_abi.h/.cpp` | C-compatible HAL handoff bridge so freestanding guest stubs can construct a boot context without C++ STL dependencies, plus the first exported hosted `ternaryos_kernel_call_c(...)` ABI bridge | 13 |
 | `hal/hal_main.cpp` | Ethics-first boot — validates `BootContext`, evaluates Θ₁–Θ₉, and hands off to the first kernel-owned runtime entry | 9 |
 | `hal/interrupt_table.cpp` | Shadow binary dispatch table; `register_interrupt_handler`, `dispatch_interrupt`, `fire_simulated_interrupt`; governed interrupt model now tracked by RFC-00B5 | (above) |
 | `hal/hosted_stub.cpp` | macOS/Linux UEFI stub simulation; synthetic memory map; calls `hal_main` | (above) |
@@ -330,3 +334,5 @@ When any layer is ready to graduate from `experimental/` to the mainline:
 - [ ] CMake option removed; target added to default build
 - [ ] Axion policy extended if new syscall surface introduced
 - [ ] Spec impact assessed (ISA freeze must not be broken)
+| `kernel/kernel_abi.hpp/.cpp` | Typed `axion_kernel_call(...)` boundary, capability enforcement, service/supervisor ABI dispatch, and rejection taxonomy | 206 |
+| `kernel/kernel_abi_wire.hpp/.cpp` | Fixed-size canonical request/response wire blocks, wire encode/decode, pointer-style wire dispatch, and raw byte-span ABI bridge | 45 |

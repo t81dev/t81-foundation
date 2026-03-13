@@ -93,6 +93,17 @@ Conceptually:
 This keeps the public ABI narrow while allowing request kinds to evolve inside
 typed payloads.
 
+The current implementation now covers three nested layers of that boundary:
+
+- a typed in-kernel dispatcher: `axion_kernel_call(...)`
+- a fixed-size canonical wire block layer:
+  - `KernelCallWireRequestBlock`
+  - `KernelCallWireResponseBlock`
+  - `axion_kernel_call_wire(...)`
+- a raw byte-span bridge and exported hosted C entrypoint:
+  - `axion_kernel_call_wire_bytes(...)`
+  - `ternaryos_kernel_call_c(...)`
+
 ### 5.2 Kernel Entry Shape
 
 This RFC does not require a finalized instruction encoding, but it does require
@@ -113,9 +124,48 @@ The kernel may later map this logical operation onto a TISC opcode, a governed
 event, or a narrow trap shim. That encoding choice is deferred. The ABI shape
 is not.
 
+Current implementation note:
+
+- the logical entrypoint is now represented concretely by
+  `ternaryos_kernel_call_c(void* kernel_state, const void* request_bytes,
+  size_t request_size, void* response_bytes, size_t response_size)`
+- this is still a hosted/runtime bridge, not a final hardware trap path
+- request and response payloads currently use fixed-size wire blocks rather
+  than variable-length user memory objects
+
 ### 5.3 Minimum Request Families
 
 The first ABI revision should support only these request families.
+
+Implemented today through the typed and wire ABI:
+
+- `Yield`
+- `SendMessage`
+- `ReceiveMessage`
+- `ReadFaultInbox`
+- `AcknowledgeThreadFault`
+- `AcknowledgeSupervisorFaultGroup`
+- `QueryProcessGroupMemory`
+- `SetAddressSpaceBootCritical`
+- `QueryRuntimeStatus`
+- `QueryFaultSummary`
+- `QuerySupervisorStatus`
+- `QuerySupervisorRecoveryStatus`
+- `QuerySupervisorCapabilityInventory`
+- `QuerySupervisorDelegationSummary`
+- `QueryCapabilityTransitionHistory`
+- `QueryCapabilities`
+- `QueryDelegatedCapabilities`
+- `QueryCapabilityRecord`
+- `GrantCapability`
+- `RevokeCapability`
+- `RevokeDelegatedCapabilities`
+- `RegisterService`
+- `QueryServiceStatus`
+- `SuspendService`
+- `ResumeService`
+- `MarkServiceUnhealthy`
+- `MarkServiceHealthy`
 
 #### 5.3.1 Thread / Execution
 

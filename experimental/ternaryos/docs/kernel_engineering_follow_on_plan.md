@@ -62,6 +62,11 @@ Current status:
   boot-critical address-space control, and explicit rejection taxonomy for
   missing supervisor, foreign supervisor scope, foreign address space, and
   missing boot-critical control values
+- the canonical transport path is now present too:
+  - `axion_kernel_call(...)`
+  - `axion_kernel_call_wire(...)`
+  - `axion_kernel_call_wire_bytes(...)`
+  - `ternaryos_kernel_call_c(...)`
 
 ## ABI Status
 
@@ -110,6 +115,8 @@ discipline:
 - preserve the newer provenance rules as well: kernel-seeded and delegated
   capabilities now carry different semantics and should not collapse back into
   anonymous capability bits
+- keep the new wire and C-bridge layers narrow so follow-on syscall work
+  extends one boundary instead of reopening parallel entry paths
 
 ## Recommended Execution Order
 

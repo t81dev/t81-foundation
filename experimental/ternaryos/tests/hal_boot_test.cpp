@@ -16,6 +16,7 @@
 #include "../hal/virtualbox_guest_devices.hpp"
 #include "../hal/virtualbox_platform.hpp"
 #include "../kernel/kernel_main.hpp"
+#include "../kernel/kernel_abi_wire.hpp"
 #include "../dev/hosted_block_dev.hpp"
 #include "../mmu/page_table.hpp"
 
@@ -6746,6 +6747,464 @@ static void test_kernel_capability_management_abi() {
   }
 }
 
+static void test_kernel_abi_wire_blocks() {
+  std::printf("\n[AC-21h] Axion kernel ABI wire blocks round-trip canonical fields\n");
+
+  static_assert(sizeof(KernelCallWireRequestBlock) <= 512,
+                "request wire block should remain compact");
+  static_assert(sizeof(KernelCallWireResponseBlock) <= 1024,
+                "response wire block should remain compact");
+
+  t81::canonfs::CanonRef request_ref;
+  request_ref.hash.h.bytes.fill(0x30);
+
+  KernelCallRequest request{
+      .kind = KernelCallKind::SendMessage,
+      .target_tid = 17,
+      .process_group_id = 23,
+      .supervisor_id = 29,
+      .address_space_id = 31,
+      .capability_transition_sequence = 37,
+      .boot_critical = true,
+      .ipc_dst = 41,
+      .message = t81::ternaryos::ipc::CanonMessage{
+          .sender = 43,
+          .ref = request_ref,
+          .payload = 47,
+          .tag = "wire-send",
+      },
+      .capability = KernelCapabilityRecord{
+          .record_id = 53,
+          .kind = KernelCapabilityKind::IpcSend,
+          .process_group_scope = 59,
+          .kernel_seeded = false,
+          .delegated_by_process_group_id = 61,
+          .delegated_by_supervisor_id = 67,
+      },
+      .service_id = 71,
+      .service_name = "wire-service",
+  };
+
+  const auto request_block = axion_kernel_encode_wire_request(request);
+  check(axion_kernel_validate_wire_request_block(request_block),
+        "kernel ABI wire request block validates");
+  const auto decoded_request = axion_kernel_decode_wire_request(request_block);
+  check(decoded_request.has_value(), "kernel ABI wire request block decodes");
+  if (decoded_request) {
+    check(decoded_request->kind == request.kind,
+          "kernel ABI wire request preserves call kind");
+    check(decoded_request->ipc_dst == request.ipc_dst,
+          "kernel ABI wire request preserves IPC destination");
+    check(decoded_request->message.has_value() &&
+              decoded_request->message->tag == request.message->tag &&
+              decoded_request->message->payload == request.message->payload,
+          "kernel ABI wire request preserves message payload and tag");
+    check(decoded_request->capability.has_value() &&
+              decoded_request->capability->record_id == request.capability->record_id &&
+              decoded_request->capability->delegated_by_process_group_id ==
+                  request.capability->delegated_by_process_group_id &&
+              decoded_request->capability->delegated_by_supervisor_id ==
+                  request.capability->delegated_by_supervisor_id,
+          "kernel ABI wire request preserves capability provenance");
+    check(decoded_request->service_name == request.service_name,
+          "kernel ABI wire request preserves service name");
+  }
+
+  KernelCallResult response{
+      .status = KernelCallStatus::Ok,
+      .rejection = KernelCallRejection::None,
+      .action_performed = true,
+      .yielded = false,
+      .caller_tid = 73,
+      .caller_process_group_id = 79,
+      .message = request.message,
+      .service_id = 83,
+      .service_name = "wire-service-response",
+      .service_registered = true,
+      .supervisor_id = 89,
+      .address_space_id = 97,
+      .target_process_group_id = 101,
+      .process_group_owned_page_count = 3,
+      .process_group_pending_fault_count = 1,
+      .runtime_mapped_pages = 5,
+      .runtime_boot_critical_address_space_count = 2,
+      .fault_summary_recorded_faults = 7,
+      .fault_summary_pending_faults = 11,
+      .fault_summary_delivered_faults = 13,
+      .fault_summary_routed_thread_faults = 17,
+      .fault_summary_quarantined_threads = 19,
+      .supervisor_managed_group_count = 2,
+      .supervisor_managed_faulted_group_count = 1,
+      .supervisor_pending_group_count = 1,
+      .supervisor_fault_notifications = 23,
+      .supervisor_acknowledgements = 29,
+      .supervisor_recovered_groups = 31,
+      .supervisor_last_pending_group = 37,
+      .supervisor_last_acknowledged_group = 41,
+      .supervisor_last_recovered_group = 43,
+      .supervisor_capability_process_group_count = 2,
+      .supervisor_capability_transitions = 47,
+      .supervisor_last_capability_transition_group_id = 53,
+      .supervisor_last_capability_transition_record_id = 59,
+      .capabilities = {
+          KernelCapabilityRecord{
+              .record_id = 61,
+              .kind = KernelCapabilityKind::IpcReceive,
+              .kernel_seeded = false,
+              .delegated_by_process_group_id = 67,
+              .delegated_by_supervisor_id = 71,
+          },
+          KernelCapabilityRecord{
+              .record_id = 73,
+              .kind = KernelCapabilityKind::FaultObserve,
+              .process_group_scope = 79,
+              .kernel_seeded = true,
+          },
+      },
+      .supervisor_delegation_process_group_count = 2,
+      .supervisor_delegation_entry_count = 1,
+      .supervisor_delegated_capability_count = 1,
+  };
+
+  const auto response_block = axion_kernel_encode_wire_response(response);
+  check(axion_kernel_validate_wire_response_block(response_block),
+        "kernel ABI wire response block validates");
+  const auto decoded_response = axion_kernel_decode_wire_response(response_block);
+  check(decoded_response.has_value(), "kernel ABI wire response block decodes");
+  if (decoded_response) {
+    check(decoded_response->status == response.status,
+          "kernel ABI wire response preserves status");
+    check(decoded_response->caller_tid == response.caller_tid,
+          "kernel ABI wire response preserves caller tid");
+    check(decoded_response->message.has_value() &&
+              decoded_response->message->tag == response.message->tag,
+          "kernel ABI wire response preserves message tag");
+    check(decoded_response->capabilities.size() == 2,
+          "kernel ABI wire response preserves capability slot count");
+    check(decoded_response->capabilities.front().delegated_by_process_group_id ==
+              response.capabilities.front().delegated_by_process_group_id,
+          "kernel ABI wire response preserves delegated capability provenance");
+    check(decoded_response->supervisor_capability_transitions ==
+              response.supervisor_capability_transitions,
+          "kernel ABI wire response preserves supervisor capability transition count");
+    check(decoded_response->supervisor_delegated_capability_count ==
+              response.supervisor_delegated_capability_count,
+          "kernel ABI wire response preserves delegated capability count");
+  }
+
+  auto invalid_request_block = request_block;
+  invalid_request_block.header.magic = 0;
+  check(!axion_kernel_validate_wire_request_block(invalid_request_block),
+        "kernel ABI wire request validation rejects bad magic");
+
+  auto invalid_response_block = response_block;
+  invalid_response_block.header.version = 0;
+  check(!axion_kernel_validate_wire_response_block(invalid_response_block),
+        "kernel ABI wire response validation rejects bad version");
+}
+
+static void test_kernel_abi_wire_call_boundary() {
+  std::printf("\n[AC-21i] Axion wire ABI call boundary dispatches typed kernel calls\n");
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for wire ABI calls");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext thread_a;
+  thread_a.registers[0] = 811;
+  auto tid_a = axion_kernel_spawn_thread(*state, thread_a);
+  check(tid_a.has_value(), "wire ABI spawns thread A");
+
+  t81::ternaryos::sched::TiscContext thread_b;
+  thread_b.registers[0] = 812;
+  auto tid_b = axion_kernel_spawn_thread(*state, thread_b);
+  check(tid_b.has_value(), "wire ABI spawns thread B");
+  if (!tid_a || !tid_b) {
+    return;
+  }
+
+  check(axion_kernel_tick(*state), "wire ABI dispatches thread A");
+  check(state->scheduler.current_tid() == *tid_a,
+        "wire ABI sets thread A current before send");
+
+  t81::canonfs::CanonRef send_ref;
+  send_ref.hash.h.bytes.fill(0x31);
+
+  KernelCallWireRequestBlock send_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::SendMessage,
+          .ipc_dst = *tid_b,
+          .message = t81::ternaryos::ipc::CanonMessage{
+              .sender = 0,
+              .ref = send_ref,
+              .payload = 913,
+              .tag = "wire-call-send",
+          },
+      });
+  KernelCallWireResponseBlock send_response;
+  check(axion_kernel_call_wire(*state, &send_request, &send_response),
+        "wire ABI call boundary accepts a valid send request block");
+  check(axion_kernel_validate_wire_response_block(send_response),
+        "wire ABI call boundary returns a valid response block");
+  const auto decoded_send = axion_kernel_decode_wire_response(send_response);
+  check(decoded_send.has_value(), "wire ABI send response decodes");
+  if (decoded_send) {
+    check(decoded_send->status == KernelCallStatus::Ok,
+          "wire ABI send returns Ok");
+    check(decoded_send->action_performed,
+          "wire ABI send reports work performed");
+  }
+
+  const auto yield_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::Yield});
+  KernelCallWireResponseBlock yield_response;
+  check(axion_kernel_call_wire(*state, &yield_request, &yield_response),
+        "wire ABI call boundary accepts a yield request block");
+  const auto decoded_yield = axion_kernel_decode_wire_response(yield_response);
+  check(decoded_yield.has_value(), "wire ABI yield response decodes");
+  if (decoded_yield) {
+    check(decoded_yield->status == KernelCallStatus::Ok,
+          "wire ABI yield returns Ok");
+    check(decoded_yield->yielded, "wire ABI yield reports scheduler progress");
+  }
+  check(state->scheduler.current_tid() == *tid_b,
+        "wire ABI yield advances to thread B");
+
+  const auto receive_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
+  KernelCallWireResponseBlock receive_response;
+  check(axion_kernel_call_wire(*state, &receive_request, &receive_response),
+        "wire ABI call boundary accepts a receive request block");
+  const auto decoded_receive = axion_kernel_decode_wire_response(receive_response);
+  check(decoded_receive.has_value(), "wire ABI receive response decodes");
+  if (decoded_receive) {
+    check(decoded_receive->status == KernelCallStatus::Ok,
+          "wire ABI receive returns Ok");
+    check(decoded_receive->message.has_value(),
+          "wire ABI receive returns a message");
+    check(decoded_receive->message && decoded_receive->message->sender == *tid_a,
+          "wire ABI receive preserves sender tid");
+    check(decoded_receive->message && decoded_receive->message->payload == 913,
+          "wire ABI receive preserves payload");
+    check(decoded_receive->message &&
+              decoded_receive->message->tag == "wire-call-send",
+          "wire ABI receive preserves tag");
+  }
+
+  auto invalid_request = send_request;
+  invalid_request.header.magic = 0;
+  KernelCallWireResponseBlock invalid_response;
+  check(axion_kernel_call_wire(*state, &invalid_request, &invalid_response),
+        "wire ABI call boundary returns a response for invalid request blocks");
+  const auto decoded_invalid = axion_kernel_decode_wire_response(invalid_response);
+  check(decoded_invalid.has_value(), "wire ABI invalid-request response decodes");
+  if (decoded_invalid) {
+    check(decoded_invalid->status == KernelCallStatus::InvalidRequest,
+          "wire ABI invalid request returns InvalidRequest");
+  }
+
+  check(!axion_kernel_call_wire(*state, &send_request, nullptr),
+        "wire ABI call boundary rejects a null response block");
+}
+
+static void test_kernel_abi_wire_byte_boundary() {
+  std::printf("\n[AC-21j] Axion wire ABI byte boundary validates raw request and response blocks\n");
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for wire ABI byte boundary");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext thread_a;
+  thread_a.registers[0] = 913;
+  auto tid_a = axion_kernel_spawn_thread(*state, thread_a);
+  check(tid_a.has_value(), "wire ABI byte boundary spawns thread A");
+
+  t81::ternaryos::sched::TiscContext thread_b;
+  thread_b.registers[0] = 914;
+  auto tid_b = axion_kernel_spawn_thread(*state, thread_b);
+  check(tid_b.has_value(), "wire ABI byte boundary spawns thread B");
+  if (!tid_a || !tid_b) {
+    return;
+  }
+
+  check(axion_kernel_tick(*state), "wire ABI byte boundary dispatches thread A");
+
+  t81::canonfs::CanonRef send_ref;
+  send_ref.hash.h.bytes.fill(0x32);
+  const auto send_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::SendMessage,
+          .ipc_dst = *tid_b,
+          .message = t81::ternaryos::ipc::CanonMessage{
+              .sender = 0,
+              .ref = send_ref,
+              .payload = 271,
+              .tag = "wire-byte-send",
+          },
+      });
+
+  KernelCallWireResponseBlock send_response;
+  check(axion_kernel_call_wire_bytes(*state,
+                                     &send_request,
+                                     sizeof(send_request),
+                                     &send_response,
+                                     sizeof(send_response)),
+        "wire ABI byte boundary accepts a full request block");
+  const auto decoded_send = axion_kernel_decode_wire_response(send_response);
+  check(decoded_send.has_value(), "wire ABI byte boundary send response decodes");
+  if (decoded_send) {
+    check(decoded_send->status == KernelCallStatus::Ok,
+          "wire ABI byte boundary send returns Ok");
+  }
+
+  KernelCallWireResponseBlock short_request_response;
+  check(axion_kernel_call_wire_bytes(*state,
+                                     &send_request,
+                                     sizeof(KernelCallWireHeader),
+                                     &short_request_response,
+                                     sizeof(short_request_response)),
+        "wire ABI byte boundary returns a response for short request buffers");
+  const auto decoded_short_request =
+      axion_kernel_decode_wire_response(short_request_response);
+  check(decoded_short_request.has_value(),
+        "wire ABI byte boundary short-request response decodes");
+  if (decoded_short_request) {
+    check(decoded_short_request->status == KernelCallStatus::InvalidRequest,
+          "wire ABI byte boundary short request returns InvalidRequest");
+  }
+
+  std::array<std::byte, sizeof(KernelCallWireResponseBlock) - 1> short_response_buffer{};
+  check(!axion_kernel_call_wire_bytes(*state,
+                                      &send_request,
+                                      sizeof(send_request),
+                                      short_response_buffer.data(),
+                                      short_response_buffer.size()),
+        "wire ABI byte boundary rejects short response buffers");
+}
+
+static void test_kernel_call_c_bridge() {
+  std::printf("\n[AC-21k] Axion C kernel-call bridge forwards raw wire requests\n");
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for C kernel-call bridge");
+  if (!state) {
+    return;
+  }
+
+  t81::ternaryos::sched::TiscContext sender_ctx;
+  sender_ctx.registers[0] = 1001;
+  auto sender_tid = axion_kernel_spawn_thread(*state, sender_ctx);
+  check(sender_tid.has_value(), "C kernel-call bridge spawns sender");
+
+  t81::ternaryos::sched::TiscContext receiver_ctx;
+  receiver_ctx.registers[0] = 1002;
+  auto receiver_tid = axion_kernel_spawn_thread(*state, receiver_ctx);
+  check(receiver_tid.has_value(), "C kernel-call bridge spawns receiver");
+  if (!sender_tid || !receiver_tid) {
+    return;
+  }
+
+  check(axion_kernel_tick(*state), "C kernel-call bridge dispatches sender");
+
+  t81::canonfs::CanonRef send_ref;
+  send_ref.hash.h.bytes.fill(0x33);
+  const auto send_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::SendMessage,
+          .ipc_dst = *receiver_tid,
+          .message = t81::ternaryos::ipc::CanonMessage{
+              .sender = 0,
+              .ref = send_ref,
+              .payload = 451,
+              .tag = "c-kernel-call",
+          },
+      });
+  KernelCallWireResponseBlock send_response;
+  check(ternaryos_kernel_call_c(&*state,
+                                &send_request,
+                                sizeof(send_request),
+                                &send_response,
+                                sizeof(send_response)) == 0,
+        "C kernel-call bridge accepts a valid wire request");
+  const auto decoded_send = axion_kernel_decode_wire_response(send_response);
+  check(decoded_send.has_value(), "C kernel-call bridge response decodes");
+  if (decoded_send) {
+    check(decoded_send->status == KernelCallStatus::Ok,
+          "C kernel-call bridge returns Ok for send");
+  }
+
+  const auto yield_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::Yield});
+  KernelCallWireResponseBlock yield_response;
+  check(ternaryos_kernel_call_c(&*state,
+                                &yield_request,
+                                sizeof(yield_request),
+                                &yield_response,
+                                sizeof(yield_response)) == 0,
+        "C kernel-call bridge accepts a yield request");
+  check(state->scheduler.current_tid() == *receiver_tid,
+        "C kernel-call bridge yield advances to receiver");
+
+  const auto receive_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
+  KernelCallWireResponseBlock receive_response;
+  check(ternaryos_kernel_call_c(&*state,
+                                &receive_request,
+                                sizeof(receive_request),
+                                &receive_response,
+                                sizeof(receive_response)) == 0,
+        "C kernel-call bridge accepts a receive request");
+  const auto decoded_receive = axion_kernel_decode_wire_response(receive_response);
+  check(decoded_receive.has_value(), "C kernel-call bridge receive response decodes");
+  if (decoded_receive) {
+    check(decoded_receive->status == KernelCallStatus::Ok,
+          "C kernel-call bridge receive returns Ok");
+    check(decoded_receive->message.has_value() &&
+              decoded_receive->message->payload == 451,
+          "C kernel-call bridge preserves payload");
+    check(decoded_receive->message &&
+              decoded_receive->message->tag == "c-kernel-call",
+          "C kernel-call bridge preserves tag");
+  }
+
+  KernelCallWireResponseBlock short_request_response;
+  check(ternaryos_kernel_call_c(&*state,
+                                &send_request,
+                                sizeof(KernelCallWireHeader),
+                                &short_request_response,
+                                sizeof(short_request_response)) == 0,
+        "C kernel-call bridge returns InvalidRequest for short request buffers");
+  const auto decoded_short_request =
+      axion_kernel_decode_wire_response(short_request_response);
+  check(decoded_short_request.has_value(),
+        "C kernel-call bridge short-request response decodes");
+  if (decoded_short_request) {
+    check(decoded_short_request->status == KernelCallStatus::InvalidRequest,
+          "C kernel-call bridge short request returns InvalidRequest");
+  }
+
+  std::array<std::byte, sizeof(KernelCallWireResponseBlock) - 1> short_response_buffer{};
+  check(ternaryos_kernel_call_c(&*state,
+                                &send_request,
+                                sizeof(send_request),
+                                short_response_buffer.data(),
+                                short_response_buffer.size()) != 0,
+        "C kernel-call bridge rejects short response buffers");
+  check(ternaryos_kernel_call_c(nullptr,
+                                &send_request,
+                                sizeof(send_request),
+                                &send_response,
+                                sizeof(send_response)) != 0,
+        "C kernel-call bridge rejects null kernel state");
+}
+
 static void test_kernel_service_abi_calls() {
   std::printf("\n[AC-21d] Axion service control plane is reachable through kernel-call ABI\n");
 
@@ -7657,6 +8116,10 @@ int main() {
   test_kernel_runtime_scheduler_and_ipc();
   test_kernel_loop_and_active_device_arbitration();
   test_kernel_minimal_abi_calls();
+  test_kernel_abi_wire_blocks();
+  test_kernel_abi_wire_call_boundary();
+  test_kernel_abi_wire_byte_boundary();
+  test_kernel_call_c_bridge();
   test_kernel_capability_management_abi();
   test_kernel_service_abi_calls();
   test_kernel_capability_transition_sequence_revoke_abi();

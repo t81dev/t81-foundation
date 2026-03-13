@@ -3,6 +3,7 @@
 #include "hal_c_abi.h"
 
 #include "hal.hpp"
+#include "../kernel/kernel_abi_wire.hpp"
 
 namespace t81::ternaryos::hal {
 namespace {
@@ -38,4 +39,20 @@ extern "C" int ternaryos_hal_main_c(const TernaryOsBootContext* ctx) {
   }
   return t81::ternaryos::hal::hal_main(
       t81::ternaryos::hal::from_c_boot_context(*ctx));
+}
+
+extern "C" int ternaryos_kernel_call_c(void* kernel_state,
+                                       const void* request_bytes,
+                                       size_t request_size,
+                                       void* response_bytes,
+                                       size_t response_size) {
+  if (kernel_state == nullptr) {
+    return -1;
+  }
+  auto* state =
+      static_cast<t81::ternaryos::kernel::KernelRuntimeState*>(kernel_state);
+  return t81::ternaryos::kernel::axion_kernel_call_wire_bytes(
+             *state, request_bytes, request_size, response_bytes, response_size)
+             ? 0
+             : -1;
 }
