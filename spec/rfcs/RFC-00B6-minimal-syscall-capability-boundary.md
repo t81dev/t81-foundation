@@ -150,6 +150,7 @@ Implemented today through the typed and wire ABI:
 
 - `Yield`
 - `SpawnThreadInCallerGroup`
+- `SpawnThreadUnderSupervisor`
 - `GetThreadIdentity`
 - `ExitThread`
 - `SendMessage`
@@ -183,6 +184,7 @@ Implemented today through the typed and wire ABI:
 
 - `Yield`
 - `SpawnThreadInCallerGroup`
+- `SpawnThreadUnderSupervisor`
 - `ExitThread`
 - `GetThreadIdentity`
 

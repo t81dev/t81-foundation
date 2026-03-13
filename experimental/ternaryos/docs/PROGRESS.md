@@ -24,8 +24,9 @@ Recent architecture milestone:
 - `kernel_main.hpp` remains intentionally shared for now; header splitting is
   deferred until the runtime-state/API boundary is narrower.
 - RFC-00B6 is now partially implemented in code: the typed `axion_kernel_call`
-  boundary covers thread identity/spawn/termination, IPC, fault inbox/recovery,
-  supervisor recovery and inspection, capability management, service
+  boundary covers thread identity/spawn/termination, same-supervisor
+  execution control, IPC, fault inbox/recovery, supervisor recovery and
+  inspection, capability management, service
   lifecycle control, process-group memory inspection, boot-critical
   address-space control, and guarded runtime/fault summary queries.
 - Capability management on that ABI is now stronger than the initial slice:

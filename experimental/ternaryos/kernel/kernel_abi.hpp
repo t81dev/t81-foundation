@@ -39,6 +39,7 @@ struct KernelDelegationSummaryEntry {
 enum class KernelCallKind : uint8_t {
   Yield = 0,
   SpawnThreadInCallerGroup,
+  SpawnThreadUnderSupervisor,
   GetThreadIdentity,
   ExitThread,
   SendMessage,

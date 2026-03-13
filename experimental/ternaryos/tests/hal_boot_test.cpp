@@ -7406,6 +7406,59 @@ static void test_kernel_execution_abi_calls() {
           "execution ABI spawn registers the new thread inbox");
   }
 
+  auto supervisor_spawn = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SpawnThreadUnderSupervisor,
+          .supervisor_id = identity.supervisor_id,
+      });
+  check(supervisor_spawn.status == KernelCallStatus::Ok,
+        "execution ABI same-supervisor spawn returns Ok");
+  check(supervisor_spawn.rejection == KernelCallRejection::None,
+        "execution ABI same-supervisor spawn clears rejection");
+  check(supervisor_spawn.action_performed,
+        "execution ABI same-supervisor spawn reports work performed");
+  check(supervisor_spawn.spawned_tid.has_value(),
+        "execution ABI same-supervisor spawn returns a spawned tid");
+  if (supervisor_spawn.spawned_tid) {
+    auto* spawned_runtime = state->find_thread_runtime(*supervisor_spawn.spawned_tid);
+    check(spawned_runtime != nullptr,
+          "execution ABI same-supervisor spawn creates thread runtime");
+    if (spawned_runtime) {
+      check(spawned_runtime->process_group_id != *identity.caller_process_group_id,
+            "execution ABI same-supervisor spawn creates a distinct process group");
+      check(state->find_process_group_supervisor(spawned_runtime->process_group_id) ==
+                identity.supervisor_id,
+            "execution ABI same-supervisor spawn keeps the requested supervisor");
+    }
+  }
+
+  t81::ternaryos::sched::TiscContext outsider;
+  outsider.registers[0] = 1103;
+  auto outsider_tid = axion_kernel_spawn_thread(*state, outsider);
+  check(outsider_tid.has_value(), "execution ABI spawns outsider thread");
+  if (outsider_tid) {
+    auto* outsider_runtime = state->find_thread_runtime(*outsider_tid);
+    auto outsider_supervisor = outsider_runtime
+                                   ? state->find_process_group_supervisor(
+                                         outsider_runtime->process_group_id)
+                                   : std::nullopt;
+    check(outsider_supervisor.has_value(),
+          "execution ABI resolves outsider supervisor");
+    if (outsider_supervisor) {
+      auto denied_spawn = axion_kernel_call(
+          *state,
+          KernelCallRequest{
+              .kind = KernelCallKind::SpawnThreadUnderSupervisor,
+              .supervisor_id = outsider_supervisor,
+          });
+      check(denied_spawn.status == KernelCallStatus::PolicyDenied,
+            "execution ABI denies foreign-supervisor spawn");
+      check(denied_spawn.rejection == KernelCallRejection::SupervisorMismatch,
+            "execution ABI foreign-supervisor spawn reports supervisor mismatch");
+    }
+  }
+
   auto exit_result = axion_kernel_call(
       *state, KernelCallRequest{.kind = KernelCallKind::ExitThread});
   check(exit_result.status == KernelCallStatus::Ok,

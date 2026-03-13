@@ -57,11 +57,12 @@ Current status:
   whether to split the shared header surface
 - the first ABI hardening lane is now materially implemented under RFC-00B6,
   including typed kernel-call dispatch, thread identity/spawn/termination,
-  process-group-scoped capabilities, supervisor-scoped capability mutation,
-  service lifecycle control, supervisor recovery control and inspection,
-  process-group memory inspection, boot-critical address-space control, and
-  explicit rejection taxonomy for missing supervisor, foreign supervisor
-  scope, foreign address space, and missing boot-critical control values
+  same-supervisor execution control, process-group-scoped capabilities,
+  supervisor-scoped capability mutation, service lifecycle control,
+  supervisor recovery control and inspection, process-group memory
+  inspection, boot-critical address-space control, and explicit rejection
+  taxonomy for missing supervisor, foreign supervisor scope, foreign address
+  space, and missing boot-critical control values
 - the canonical transport path is now present too:
   - `axion_kernel_call(...)`
   - `axion_kernel_call_wire(...)`
@@ -78,6 +79,7 @@ Implemented kernel-call slice:
 
 - `Yield`
 - `SpawnThreadInCallerGroup`
+- `SpawnThreadUnderSupervisor`
 - `GetThreadIdentity`
 - `ExitThread`
 - `SendMessage`
