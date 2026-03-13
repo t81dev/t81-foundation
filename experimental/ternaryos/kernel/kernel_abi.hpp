@@ -28,6 +28,13 @@ struct KernelCapabilityRecord {
   std::optional<SupervisorId> delegated_by_supervisor_id{};
 };
 
+struct KernelDelegationSummaryEntry {
+  ProcessGroupId target_process_group_id{0};
+  ProcessGroupId delegated_by_process_group_id{0};
+  SupervisorId delegated_by_supervisor_id{0};
+  std::size_t delegated_capability_count{0};
+};
+
 enum class KernelCallKind : uint8_t {
   Yield = 0,
   SendMessage,
@@ -42,6 +49,7 @@ enum class KernelCallKind : uint8_t {
   QuerySupervisorStatus,
   QuerySupervisorRecoveryStatus,
   QuerySupervisorCapabilityInventory,
+  QuerySupervisorDelegationSummary,
   QueryCapabilityTransitionHistory,
   QueryCapabilities,
   QueryDelegatedCapabilities,
@@ -161,6 +169,10 @@ struct KernelCallResult {
   std::optional<ProcessGroupId> supervisor_last_capability_transition_group_id{};
   std::optional<CapabilityRecordId> supervisor_last_capability_transition_record_id{};
   std::vector<KernelCapabilityTransitionRecord> supervisor_capability_transition_history;
+  std::size_t supervisor_delegation_process_group_count{0};
+  std::size_t supervisor_delegation_entry_count{0};
+  std::size_t supervisor_delegated_capability_count{0};
+  std::vector<KernelDelegationSummaryEntry> supervisor_delegation_entries;
 };
 
 KernelCallResult axion_kernel_call(KernelRuntimeState& state,

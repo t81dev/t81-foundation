@@ -357,6 +357,7 @@ Implemented request kinds:
 - `QuerySupervisorStatus`
 - `QuerySupervisorRecoveryStatus`
 - `QuerySupervisorCapabilityInventory`
+- `QuerySupervisorDelegationSummary`
 - `QueryCapabilityTransitionHistory`
 - `QueryCapabilities`
 - `QueryDelegatedCapabilities`
@@ -391,6 +392,9 @@ Current policy rules already enforced in code:
   `QueryCapabilityTransitionHistory`
 - delegated capabilities are directly queryable by delegator
   process-group/supervisor provenance through `QueryDelegatedCapabilities`
+- supervisors can also query compact delegation summary counts through
+  `QuerySupervisorDelegationSummary`, grouped by target process group and
+  delegator provenance
 - supervisor capability-transition history retains the same provenance so
   grants can be inspected without diffing inventory snapshots
 - `RevokeCapability` may resolve its target through a previously observed

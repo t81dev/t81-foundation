@@ -943,6 +943,57 @@ KernelSupervisorCapabilityInventoryView build_supervisor_capabilities_view(
   return view;
 }
 
+KernelSupervisorDelegationSummaryView build_supervisor_delegation_summary_view(
+    const KernelRuntimeState& state,
+    SupervisorId supervisor_id) {
+  const auto* supervisor_state = state.find_supervisor(supervisor_id);
+  KernelSupervisorDelegationSummaryView view{
+      .supervisor_id = supervisor_state ? supervisor_state->id : supervisor_id,
+      .process_group_count = supervisor_state ? supervisor_state->managed_groups.size() : 0,
+      .delegation_entry_count = 0,
+      .delegated_capability_count = 0,
+      .entries = {},
+  };
+  if (!supervisor_state) {
+    return view;
+  }
+
+  for (auto process_group_id : supervisor_state->managed_groups) {
+    const auto capabilities =
+        axion_kernel_list_process_group_capabilities(state, process_group_id);
+    for (const auto& capability : capabilities) {
+      if (capability.kernel_seeded ||
+          !capability.delegated_by_process_group_id.has_value() ||
+          !capability.delegated_by_supervisor_id.has_value()) {
+        continue;
+      }
+      auto existing = std::find_if(
+          view.entries.begin(),
+          view.entries.end(),
+          [&](const auto& entry) {
+            return entry.target_process_group_id == process_group_id &&
+                   entry.delegated_by_process_group_id ==
+                       *capability.delegated_by_process_group_id &&
+                   entry.delegated_by_supervisor_id ==
+                       *capability.delegated_by_supervisor_id;
+          });
+      if (existing == view.entries.end()) {
+        view.entries.push_back(KernelSupervisorDelegationSummaryEntryView{
+            .target_process_group_id = process_group_id,
+            .delegated_by_process_group_id = *capability.delegated_by_process_group_id,
+            .delegated_by_supervisor_id = *capability.delegated_by_supervisor_id,
+            .delegated_capability_count = 1,
+        });
+      } else {
+        ++existing->delegated_capability_count;
+      }
+      ++view.delegated_capability_count;
+    }
+  }
+  view.delegation_entry_count = view.entries.size();
+  return view;
+}
+
 KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) {
   const auto latest_service_transition = latest_service_transition_view(state);
   const auto latest_pager_fault = latest_pager_fault_view(state);

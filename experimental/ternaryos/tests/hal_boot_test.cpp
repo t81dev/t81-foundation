@@ -6476,6 +6476,33 @@ static void test_kernel_capability_management_abi() {
                     abi_supervisor_inventory.capabilities.end(),
                     [](const auto& capability) { return capability.record_id != 0; }),
         "capability inventory ABI returns kernel-issued record ids");
+  auto abi_delegation_summary = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorDelegationSummary,
+          .supervisor_id = *leader_supervisor,
+      });
+  check(abi_delegation_summary.status == KernelCallStatus::Ok,
+        "supervisor delegation summary ABI query returns Ok");
+  check(abi_delegation_summary.supervisor_delegation_process_group_count == 2,
+        "supervisor delegation summary reports both managed process groups");
+  check(abi_delegation_summary.supervisor_delegation_entry_count == 1,
+        "supervisor delegation summary reports one delegated entry");
+  check(abi_delegation_summary.supervisor_delegated_capability_count == 1,
+        "supervisor delegation summary reports one delegated capability");
+  check(abi_delegation_summary.supervisor_delegation_entries.size() == 1,
+        "supervisor delegation summary returns one entry");
+  if (!abi_delegation_summary.supervisor_delegation_entries.empty()) {
+    check(abi_delegation_summary.supervisor_delegation_entries.front()
+              .target_process_group_id == sibling_runtime->process_group_id,
+          "supervisor delegation summary entry targets the sibling process group");
+    check(abi_delegation_summary.supervisor_delegation_entries.front()
+              .delegated_by_process_group_id == leader_runtime->process_group_id,
+          "supervisor delegation summary entry records the delegating process group");
+    check(abi_delegation_summary.supervisor_delegation_entries.front()
+              .delegated_capability_count == 1,
+          "supervisor delegation summary entry counts one delegated capability");
+  }
 
   auto supervisor_inventory = axion_kernel_service_request(
       *state,
@@ -6548,6 +6575,26 @@ static void test_kernel_capability_management_abi() {
                         }),
             "capability inventory reflects the restored sibling capability provenance");
     }
+  }
+  auto supervisor_delegation_summary = axion_kernel_service_request(
+      *state,
+      KernelServiceRequest{
+          .kind = KernelServiceRequestKind::SupervisorDelegationSummary,
+          .requesting_process_group_id = leader_runtime->process_group_id,
+          .supervisor_id = *leader_supervisor,
+      });
+  check(supervisor_delegation_summary.status == KernelServiceStatus::Ok,
+        "supervisor delegation summary request succeeds");
+  check(supervisor_delegation_summary.supervisor_delegations.has_value(),
+        "supervisor delegation summary view is returned");
+  if (supervisor_delegation_summary.supervisor_delegations) {
+    check(supervisor_delegation_summary.supervisor_delegations->process_group_count == 2,
+          "service delegation summary reports both managed process groups");
+    check(supervisor_delegation_summary.supervisor_delegations->delegation_entry_count == 1,
+          "service delegation summary reports one delegated entry");
+    check(supervisor_delegation_summary.supervisor_delegations->delegated_capability_count ==
+              1,
+          "service delegation summary reports one delegated capability");
   }
 
   auto revoke_foreign_group = axion_kernel_call(
@@ -7230,6 +7277,18 @@ static void test_kernel_capability_delegation_bulk_revoke_abi() {
         "delegated bulk revoke can query delegated capabilities directly");
   check(query_delegated_only.capabilities.size() == 2,
         "delegated-capability query returns the two delegated sibling capabilities");
+  auto delegation_summary_before_revoke = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorDelegationSummary,
+          .supervisor_id = *leader_supervisor,
+      });
+  check(delegation_summary_before_revoke.status == KernelCallStatus::Ok,
+        "delegated bulk revoke can query supervisor delegation summary before bulk revoke");
+  check(delegation_summary_before_revoke.supervisor_delegation_entry_count == 1,
+        "delegation summary reports one target/delegator pair before bulk revoke");
+  check(delegation_summary_before_revoke.supervisor_delegated_capability_count == 2,
+        "delegation summary reports two delegated capabilities before bulk revoke");
 
   auto missing_scope = axion_kernel_call(
       *state,
@@ -7291,6 +7350,18 @@ static void test_kernel_capability_delegation_bulk_revoke_abi() {
         "delegated-capability query still succeeds after bulk revoke");
   check(query_delegated_after_bulk_revoke.capabilities.empty(),
         "delegated-capability query returns no delegated capabilities after bulk revoke");
+  auto delegation_summary_after_revoke = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::QuerySupervisorDelegationSummary,
+          .supervisor_id = *leader_supervisor,
+      });
+  check(delegation_summary_after_revoke.status == KernelCallStatus::Ok,
+        "delegation summary query still succeeds after bulk revoke");
+  check(delegation_summary_after_revoke.supervisor_delegation_entry_count == 0,
+        "delegation summary has no delegated entries after bulk revoke");
+  check(delegation_summary_after_revoke.supervisor_delegated_capability_count == 0,
+        "delegation summary has no delegated capabilities after bulk revoke");
 
   auto foreign_bulk_revoke = axion_kernel_call(
       *state,

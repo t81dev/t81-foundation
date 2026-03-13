@@ -44,7 +44,7 @@ supervisor capability transition history, sequence-based capability
 revocation, and explicit provenance distinguishing kernel-seeded capabilities
 from supervisor-delegated grants. Delegated capability control now also
 includes bulk revocation and direct delegated-capability queries by delegator
-provenance.
+provenance, plus compact supervisor delegation summaries.
 
 Current working release label: `Axion v0.1.0-alpha`
 

@@ -205,6 +205,25 @@ KernelServiceResult axion_kernel_service_request(
           build_supervisor_capabilities_view(state, supervisor_state->id);
       return result;
     }
+    case KernelServiceRequestKind::SupervisorDelegationSummary: {
+      if (auto denied = axion_kernel_validate_requesting_group(
+              state, request.requesting_process_group_id);
+          denied.has_value()) {
+        result.status = *denied;
+        result.rejection = axion_kernel_requesting_group_request_rejection(*denied);
+        return result;
+      }
+      const auto* supervisor_state =
+          resolve_supervisor_request(state, result, request, true);
+      if (!supervisor_state) {
+        return result;
+      }
+      result.status = KernelServiceStatus::Ok;
+      result.rejection = KernelServiceRequestRejection::None;
+      result.supervisor_delegations =
+          build_supervisor_delegation_summary_view(state, supervisor_state->id);
+      return result;
+    }
     case KernelServiceRequestKind::FaultSummary: {
       if (auto denied = axion_kernel_validate_requesting_group(
               state, request.requesting_process_group_id);

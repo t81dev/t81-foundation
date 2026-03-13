@@ -43,6 +43,9 @@ Recent architecture milestone:
 - Delegated capability reads now match that control surface: supervisors can
   query only the capabilities delegated by a specific delegator
   process-group/supervisor pair instead of diffing full capability inventories.
+- Supervisors now also have a compact delegation-summary view with counts by
+  target process group and delegator provenance, so broad delegation state is
+  inspectable without scanning individual capability records.
 - ABI rejection taxonomy is now more explicit as well. Address-space ownership,
   missing boot-critical control values, and foreign supervisory read scope now
   produce dedicated rejections instead of collapsing into generic policy

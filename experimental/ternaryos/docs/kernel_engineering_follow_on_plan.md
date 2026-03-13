@@ -82,6 +82,7 @@ Implemented kernel-call slice:
 - `QuerySupervisorStatus`
 - `QuerySupervisorRecoveryStatus`
 - `QuerySupervisorCapabilityInventory`
+- `QuerySupervisorDelegationSummary`
 - `QueryCapabilityTransitionHistory`
 - `QueryCapabilities`
 - `QueryDelegatedCapabilities`

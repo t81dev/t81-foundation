@@ -536,6 +536,23 @@ KernelCallResult map_service_request_result(const CallerContext& caller,
     result.supervisor_capability_transition_history =
         request_result.supervisor_capabilities->recent_capability_transitions;
   }
+  if (request_result.supervisor_delegations.has_value()) {
+    result.supervisor_id = request_result.supervisor_delegations->supervisor_id;
+    result.supervisor_delegation_process_group_count =
+        request_result.supervisor_delegations->process_group_count;
+    result.supervisor_delegation_entry_count =
+        request_result.supervisor_delegations->delegation_entry_count;
+    result.supervisor_delegated_capability_count =
+        request_result.supervisor_delegations->delegated_capability_count;
+    for (const auto& entry : request_result.supervisor_delegations->entries) {
+      result.supervisor_delegation_entries.push_back(KernelDelegationSummaryEntry{
+          .target_process_group_id = entry.target_process_group_id,
+          .delegated_by_process_group_id = entry.delegated_by_process_group_id,
+          .delegated_by_supervisor_id = entry.delegated_by_supervisor_id,
+          .delegated_capability_count = entry.delegated_capability_count,
+      });
+    }
+  }
   if (request_result.fault_summary.has_value()) {
     result.fault_summary_recorded_faults =
         request_result.fault_summary->recorded_faults;
@@ -807,6 +824,10 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       mapped.capabilities =
           axion_kernel_list_process_group_capabilities(state, *request.process_group_id);
       return mapped;
+    }
+    case KernelCallKind::QuerySupervisorDelegationSummary: {
+      return dispatch_supervisor_request(
+          caller, state, request, KernelServiceRequestKind::SupervisorDelegationSummary);
     }
     case KernelCallKind::QueryCapabilityTransitionHistory: {
       auto mapped = dispatch_supervisor_request(

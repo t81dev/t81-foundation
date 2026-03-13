@@ -23,6 +23,7 @@ enum class KernelServiceRequestKind : uint8_t {
   ServiceStatus,
   SupervisorServiceInventory,
   SupervisorCapabilityInventory,
+  SupervisorDelegationSummary,
   FaultSummary,
   AuditSummary,
   DeviceSummary,
@@ -379,6 +380,21 @@ struct KernelSupervisorCapabilityInventoryView {
   std::vector<KernelSupervisorCapabilityEntryView> process_groups;
 };
 
+struct KernelSupervisorDelegationSummaryEntryView {
+  ProcessGroupId target_process_group_id{0};
+  ProcessGroupId delegated_by_process_group_id{0};
+  SupervisorId delegated_by_supervisor_id{0};
+  std::size_t delegated_capability_count{0};
+};
+
+struct KernelSupervisorDelegationSummaryView {
+  SupervisorId supervisor_id{0};
+  std::size_t process_group_count{0};
+  std::size_t delegation_entry_count{0};
+  std::size_t delegated_capability_count{0};
+  std::vector<KernelSupervisorDelegationSummaryEntryView> entries;
+};
+
 struct KernelFaultSummaryView {
   std::size_t recorded_faults{0};
   std::size_t pending_faults{0};
@@ -577,6 +593,7 @@ struct KernelServiceResult {
   std::optional<KernelServiceStatusView> service{};
   std::optional<KernelSupervisorServiceInventoryView> supervisor_services{};
   std::optional<KernelSupervisorCapabilityInventoryView> supervisor_capabilities{};
+  std::optional<KernelSupervisorDelegationSummaryView> supervisor_delegations{};
   std::optional<KernelFaultSummaryView> fault_summary{};
   std::optional<KernelAuditSummaryView> audit_summary{};
   std::optional<KernelDeviceSummaryView> device_summary{};
@@ -621,6 +638,9 @@ KernelSupervisorServiceInventoryView build_supervisor_services_view(
     const KernelRuntimeState& state,
     SupervisorId supervisor_id);
 KernelSupervisorCapabilityInventoryView build_supervisor_capabilities_view(
+    const KernelRuntimeState& state,
+    SupervisorId supervisor_id);
+KernelSupervisorDelegationSummaryView build_supervisor_delegation_summary_view(
     const KernelRuntimeState& state,
     SupervisorId supervisor_id);
 KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state);
