@@ -1,23 +1,25 @@
 # Axion Kernel Architecture Audit
 
-Date: 2026-03-12
+Date: 2026-03-13
 Scope: `experimental/ternaryos`
-Audit basis: repository source inspection plus local `ctest --test-dir build -R ternaryos -V`
+Audit basis: repository source inspection plus local `ctest --test-dir build -R ternaryos --output-on-failure`
 
 ## Executive Summary
 
 Axion is an advanced architectural prototype, not yet a fully operational
 kernel. The current implementation proves a coherent hosted boot-to-kernel
 path, a ternary MMU model, deterministic scheduling, bounded IPC, a
-kernel-owned fault pipeline, a narrow supervisor/service control plane, and
-VirtualBox-shaped device interaction seams. The strongest theme is explicit
-runtime ownership. The largest architectural weakness is over-centralization:
-policy, pager logic, service control, fault routing, and diagnostics are all
-concentrated in one kernel runtime translation unit.
+kernel-owned fault pipeline, a narrower but now real typed/wire/C ABI layer,
+a supervisor/service control plane, and VirtualBox-shaped device interaction
+seams. The strongest theme is still explicit runtime ownership, but the
+largest structural weakness from the previous audit has been reduced: the old
+kernel monolith has now been decomposed into subsystem-oriented runtime units.
+The main remaining weakness is that execution remains hosted and synthetic in
+the places that matter most: VM behavior, interrupts, and real device I/O.
 
 Overall maturity: `advanced architectural prototype`
 
-Estimated completion toward a fully operational kernel: `35%`
+Estimated completion toward a fully operational kernel: `45%`
 
 ## Method
 
@@ -29,7 +31,7 @@ This audit was based on:
 - local verification via:
 
 ```sh
-ctest --test-dir build -R ternaryos -V
+ctest --test-dir build -R ternaryos --output-on-failure
 ```
 
 Observed local verification result:
@@ -47,17 +49,23 @@ The boot chain is simple and explicit:
 Key implementation anchors:
 
 - HAL entry: [hal_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/hal/hal_main.cpp#L30)
-- Kernel bootstrap: [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L1502)
-- Kernel entry: [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L3080)
+- Kernel bootstrap/runtime coordinator:
+  [kernel_runtime.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_runtime.cpp)
+- Kernel lifecycle/bootstrap:
+  [kernel_lifecycle.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_lifecycle.cpp)
+- Kernel entry surface:
+  [kernel_main.hpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.hpp)
 
-Architecturally, the kernel is a centralized runtime kernel with helper
-subsystems, not a strongly layered implementation. HAL, MMU, scheduler, IPC,
-and device wrappers have reasonably clean seams. The kernel core does not.
+Architecturally, the kernel is still a centralized runtime kernel with helper
+subsystems, not a strongly layered implementation. But the implementation is
+no longer concentrated in one translation unit. HAL, MMU, scheduler, IPC,
+faults, interrupts, pager policy, service control, views, and lifecycle now
+have distinct implementation seams.
 
 ## Kernel Structure
 
 `KernelRuntimeState` in
-[kernel_main.hpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.hpp#L116)
+[kernel_runtime_state.hpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_runtime_state.hpp)
 owns:
 
 - allocator
@@ -66,18 +74,21 @@ owns:
 - IPC bus
 - device arbitration
 - thread/process-group/supervisor/address-space/service state
+- page-backed hosted physical storage for mapped pages
 - fault, interrupt, pager, and audit queues
 - extensive counters and retained diagnostics
 
 This is coherent for an early kernel because ownership is explicit. The main
-cost is that the implementation boundary is weak. The current structure is
-effectively one large runtime object plus a policy engine.
+cost is that the runtime-state contract is still broad. The implementation
+boundary is materially better than it was in the previous audit: the system is
+now a large runtime object plus multiple policy/control units rather than one
+dominant policy file.
 
 Assessment:
 
 - completeness: `3/5`
-- coherence: `3/5`
-- readiness: `2/5`
+- coherence: `4/5`
+- readiness: `3/5`
 
 ## Bootstrap and Initialization
 
@@ -89,9 +100,10 @@ Assessment:
 - registers kernel IPC
 - optionally installs VirtualBox-shaped device arbitration from `platform_id`
 
-Reference:
+References:
 
-- [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L1502)
+- [kernel_lifecycle.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_lifecycle.cpp)
+- [kernel_runtime.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_runtime.cpp)
 
 What is proven:
 
@@ -108,14 +120,14 @@ What is not yet present:
 
 Assessment:
 
-- completeness: `3/5`
+- completeness: `4/5`
 - coherence: `4/5`
-- readiness: `2/5`
+- readiness: `3/5`
 
 ## Runtime Execution Flow
 
 The runtime loop in
-[kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L1709)
+[kernel_runtime.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_runtime.cpp)
 uses a fixed priority order:
 
 1. pending faults
@@ -132,7 +144,7 @@ interrupt/timer-driven kernel execution model.
 
 Assessment:
 
-- completeness: `3/5`
+- completeness: `4/5`
 - coherence: `4/5`
 - readiness: `2/5`
 
@@ -162,7 +174,7 @@ The memory subsystem has three clear pieces:
 ### Pager Status
 
 The pager logic in
-[kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L1806)
+[kernel_pager.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_pager.cpp)
 is sophisticated as a deterministic fault-work queue. It includes:
 
 - fault coalescing
@@ -174,13 +186,16 @@ is sophisticated as a deterministic fault-work queue. It includes:
 
 But this is still not a full VM subsystem. The pager is primarily a kernel
 fault orchestration mechanism whose resolution condition is effectively that a
-mapping exists.
+mapping exists. The current audit should, however, give credit for one real
+step beyond the previous state: mapped pages now have a hosted byte store
+behind them, which is enough to support a fixed-block mapped TVA syscall
+transport.
 
 Assessment:
 
 - completeness: `3/5`
 - coherence: `4/5`
-- readiness: `2/5`
+- readiness: `3/5`
 
 ## Scheduling
 
@@ -229,14 +244,17 @@ Main gaps:
 - no blocking semantics
 - no reply correlation
 - no endpoint namespace
-- no capability control
 - no advanced flow control beyond queue depth rejection
+
+The previous audit’s “no capability control” finding is no longer accurate.
+IPC and other control paths now sit behind an explicit capability model in the
+typed ABI.
 
 Assessment:
 
 - completeness: `2/5`
 - coherence: `4/5`
-- readiness: `1/5`
+- readiness: `2/5`
 
 ## Fault Handling and Recovery
 
@@ -245,11 +263,11 @@ This is one of the strongest subsystems in the kernel.
 References:
 
 - fault delivery/quarantine/group blocking:
-  [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L1713)
+  [kernel_faults.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_faults.cpp)
 - thread/process-group acknowledgement:
-  [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L2971)
+  [kernel_faults.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_faults.cpp)
 - supervisor acknowledgement:
-  [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L3030)
+  [kernel_actions.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_actions.cpp)
 
 Behavior proven in code:
 
@@ -279,8 +297,7 @@ The interrupt layer currently consists of:
 - hosted synthetic boot use:
   [hosted_stub.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/hal/hosted_stub.cpp)
 - kernel interrupt recording/delivery:
-  [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L1583),
-  [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L1774)
+  [kernel_interrupts.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_interrupts.cpp)
 
 What exists:
 
@@ -305,15 +322,19 @@ Assessment:
 
 ## Service Infrastructure
 
-The service layer is a kernel management/control plane, not yet a service
-execution substrate.
+The service layer is still a kernel management/control plane, not yet a
+service execution substrate. But it is now reachable through a coherent typed
+ABI, fixed-size wire blocks, byte bridges, a mapped-TVA bridge, and hosted C
+entrypoints rather than only internal helper calls.
 
 References:
 
 - request surface:
-  [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L2161)
+  [kernel_queries.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_queries.cpp)
 - action surface:
-  [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L2578)
+  [kernel_actions.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_actions.cpp)
+- ABI dispatch:
+  [kernel_abi.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_abi.cpp)
 
 What exists:
 
@@ -327,15 +348,20 @@ What is missing:
 
 - service execution model
 - kernel IPC-backed service routing
-- capability/syscall ABI
 - boot-time activation policy
 - persistence beyond current runtime metadata
 
+What is now present beyond the previous audit:
+
+- typed capability-enforced kernel ABI
+- supervisor-scoped capability inventory and delegation summaries
+- service lifecycle control through typed, wire, and C ABI paths
+
 Assessment:
 
-- completeness: `3/5`
+- completeness: `4/5`
 - coherence: `4/5`
-- readiness: `2/5`
+- readiness: `3/5`
 
 ## Device Interaction Layers
 
@@ -438,6 +464,8 @@ ctest --test-dir build -R ternaryos -V
 Observed result:
 
 - `8/8` test binaries passed
+- boot test coverage has continued to expand substantially; current local boot
+  suite result is `2264 passed, 0 failed`
 
 Covered suites:
 
@@ -458,35 +486,38 @@ execution.
 
 | Subsystem | Completeness | Coherence | Readiness | Notes |
 | --- | ---: | ---: | ---: | --- |
-| HAL / boot | 3/5 | 4/5 | 2/5 | Validated hosted handoff, explicit VBox profile, mostly stubbed beyond prototype |
-| Kernel core structure | 3/5 | 3/5 | 2/5 | Clear ownership, monolithic implementation |
-| Runtime execution flow | 3/5 | 4/5 | 2/5 | Deterministic loop, not real interrupt/timer-driven dispatch |
-| Memory management | 3/5 | 4/5 | 2/5 | Real core pieces, incomplete VM |
+| HAL / boot | 3/5 | 4/5 | 2/5 | Validated hosted handoff, explicit VBox profile, still mostly hosted beyond prototype |
+| Kernel core structure | 4/5 | 4/5 | 3/5 | Clear ownership, runtime split into subsystem-oriented units |
+| Runtime execution flow | 4/5 | 4/5 | 2/5 | Deterministic loop with cleaner boundaries, still not real interrupt/timer-driven dispatch |
+| Memory management | 3/5 | 4/5 | 3/5 | Real allocator/page table plus hosted page-backed byte store, still incomplete VM |
 | Scheduling | 2/5 | 4/5 | 2/5 | Clean substrate, minimal features |
-| IPC | 2/5 | 4/5 | 1/5 | Narrow mailbox primitive |
+| IPC | 2/5 | 4/5 | 2/5 | Narrow mailbox primitive, now capability-enforced through ABI |
 | Fault / recovery | 4/5 | 5/5 | 3/5 | Strongest subsystem |
 | Interrupts | 2/5 | 3/5 | 1/5 | Simulated controller model |
-| Service infrastructure | 3/5 | 4/5 | 2/5 | Control plane present, runtime absent |
+| Service infrastructure | 4/5 | 4/5 | 3/5 | Control plane present and now ABI-reachable, runtime still absent |
 | Device interaction | 2/5 | 4/5 | 1/5 | Device-shaped hosted wrappers |
 | Persistence / storage | 4/5 | 4/5 | 3/5 | CanonStore is substantial |
 | Shell / user-facing stack | 3/5 | 4/5 | 1/5 | Effective demo, not userland |
 
 ## Risk Register
 
-### R1. Kernel monolith
+### R1. Broad shared runtime contract
 
 - evidence:
-  [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L1502)
+  [kernel_runtime_state.hpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_runtime_state.hpp)
 - impact: high
 - likelihood: high
-- issue: too much policy and too many retained state concerns live in one file
-- consequence: scaling and maintenance risk
-- mitigation: extract runtime, pager, interrupt, fault, service, and diagnostics managers
+- issue: the implementation monolith has been reduced, but the shared runtime
+  state/header surface is still large and couples many subsystems tightly
+- consequence: scaling and ownership clarity risk
+- mitigation: continue narrowing subsystem contracts and reduce cross-unit
+  dependency on the full runtime state
 
 ### R2. Diagnostics ahead of substrate
 
 - evidence:
-  [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L2161)
+  [kernel_queries.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_queries.cpp),
+  [kernel_views.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_views.cpp)
 - impact: medium-high
 - likelihood: high
 - issue: there is more detailed status plumbing than low-level execution capability
@@ -496,7 +527,7 @@ execution.
 ### R3. Synthetic pager model
 
 - evidence:
-  [kernel_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.cpp#L1806)
+  [kernel_pager.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_pager.cpp)
 - impact: high
 - likelihood: high
 - issue: pager logic is advanced as queue policy but incomplete as VM implementation
@@ -525,13 +556,16 @@ execution.
 - consequence: large promotion gap remains between passing tests and real guest execution
 - mitigation: fully implement one hardware lane end-to-end
 
-### R6. No syscall/capability boundary
+### R6. ABI boundary still hosted and fixed-block scoped
 
 - impact: high
-- likelihood: certain
-- issue: service actions are not a syscall ABI
-- consequence: userland evolution path is blocked
-- mitigation: define the minimum kernel ABI and capability model
+- likelihood: high
+- issue: a real ABI now exists, but the current transport is still hosted and
+  fixed-block scoped rather than a full userspace syscall/object model
+- consequence: userland evolution is now unblocked conceptually, but not yet
+  backed by a complete memory/object/process boundary
+- mitigation: derive caller address spaces from execution context, then evolve
+  fixed wire blocks toward real userspace object handling
 
 ## Maturity Assessment
 
@@ -540,41 +574,43 @@ Overall maturity: `advanced architectural prototype`
 Category estimates:
 
 - boot and HAL scaffolding: `60%`
-- kernel runtime ownership: `55%`
-- memory management: `45%`
+- kernel runtime ownership: `70%`
+- memory management: `50%`
 - scheduling: `40%`
-- IPC: `30%`
+- IPC: `35%`
 - fault and recovery: `65%`
 - interrupts: `25%`
-- service infrastructure: `35%`
+- service infrastructure: `50%`
 - device layer: `30%`
 - userland readiness: `15%`
 
-Overall completion estimate toward a fully operational kernel: `35%`
+Overall completion estimate toward a fully operational kernel: `45%`
 
 ## Roadmap to a Fully Operational Kernel
 
-1. Refactor `kernel_runtime.cpp` into subsystem managers without widening behavior.
+1. Tighten the new ABI boundary so caller address-space ownership is derived
+   from runtime execution context instead of being passed in by hosted helpers.
 2. Promote address spaces into true execution units with separate page-table
    ownership.
 3. Implement real interrupt/trap handling for the target platform.
-4. Define the minimum syscall/capability ABI.
-5. Add a real task/process lifecycle: load, exec, exit, teardown.
-6. Convert the pager from fault-workflow policy into a real VM subsystem with
+4. Add a real task/process lifecycle: load, exec, exit, teardown.
+5. Convert the pager from fault-workflow policy into a real VM subsystem with
    backing objects and reclaim.
-7. Fully implement one real target driver rather than widening hosted wrappers.
-8. Add kernel synchronization and wait primitives.
-9. Move the shell and higher-level services onto the real process/service/ABI
+6. Fully implement one real target driver rather than widening hosted wrappers.
+7. Add kernel synchronization and wait primitives.
+8. Move the shell and higher-level services onto the real process/service/ABI
    boundary.
-10. Validate external target execution and use that evidence to drive the next
+9. Validate external target execution and use that evidence to drive the next
     hardening cycle.
 
 ## Final Judgment
 
 Axion is no longer a conceptual kernel sketch. It has a real vertical slice,
-strong deterministic observability, meaningful subsystem implementations, and
-good test evidence for the currently implemented scope. The remaining distance
-to a fully operational kernel is still substantial, and most of that distance
-is foundational rather than incremental. The next productive step is not more
-surface-area growth inside the monolith. It is disciplined subsystem
-extraction, real ABI definition, and real target bring-up.
+cleaner subsystem decomposition than the previous audit, a meaningful
+capability-aware ABI stack, and stronger execution-control coverage than a
+pure hosted demo usually has. The remaining distance to a fully operational
+kernel is still substantial, but the project has moved from “define the ABI”
+to “harden and operationalize the ABI.” The next productive step is no longer
+more internal control-plane widening. It is hardening the mapped address-space
+boundary, real target interrupt/device bring-up, and a genuine executable
+process model.
