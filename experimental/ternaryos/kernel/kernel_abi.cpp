@@ -656,6 +656,58 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
 
   KernelCallResult result = init_result(caller);
   switch (request.kind) {
+    case KernelCallKind::RegisterThreadEntryDescriptor: {
+      if (auto denied = require_capability(caller, KernelCapabilityKind::ThreadSpawn);
+          denied.has_value()) {
+        return *denied;
+      }
+      if (!request.service_name.has_value() || request.service_name->empty()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingEntryName;
+        return result;
+      }
+      if (!request.spawn_descriptor.has_value()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingEntryDescriptor;
+        return result;
+      }
+      caller.group_state->entry_descriptors[*request.service_name] = *request.spawn_descriptor;
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.service_name = request.service_name;
+      return result;
+    }
+    case KernelCallKind::SpawnThreadFromEntryDescriptor: {
+      if (auto denied = require_capability(caller, KernelCapabilityKind::ThreadSpawn);
+          denied.has_value()) {
+        return *denied;
+      }
+      if (!request.service_name.has_value() || request.service_name->empty()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingEntryName;
+        return result;
+      }
+      const auto it = caller.group_state->entry_descriptors.find(*request.service_name);
+      if (it == caller.group_state->entry_descriptors.end()) {
+        result.status = KernelCallStatus::NotFound;
+        result.rejection = KernelCallRejection::MissingEntryRegistration;
+        return result;
+      }
+      const auto spawned_tid = axion_kernel_spawn_thread_in_group(
+          state, make_spawn_context(it->second), caller.process_group_id);
+      if (!spawned_tid.has_value()) {
+        result.status = KernelCallStatus::Conflict;
+        result.rejection = KernelCallRejection::ServiceActionRejected;
+        return result;
+      }
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.spawned_tid = *spawned_tid;
+      result.service_name = request.service_name;
+      return result;
+    }
     case KernelCallKind::SpawnThreadInCallerGroup: {
       if (auto denied = require_capability(caller, KernelCapabilityKind::ThreadSpawn);
           denied.has_value()) {

@@ -38,6 +38,7 @@ struct KernelRuntimeState {
     ProcessGroupId id{0};
     std::vector<sched::Tid> member_tids;
     std::vector<KernelCapabilityRecord> capabilities;
+    std::unordered_map<std::string, KernelThreadSpawnDescriptor> entry_descriptors;
     bool faulted{false};
     bool blocked{false};
     bool acknowledgement_pending{false};

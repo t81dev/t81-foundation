@@ -7110,6 +7110,64 @@ static void test_kernel_abi_wire_call_boundary() {
     }
   }
 
+  const auto register_entry_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterThreadEntryDescriptor,
+          .service_name = "wire-entry",
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 15,
+              .sp = 45,
+              .register0 = 515,
+              .label = "wire-entry-label",
+          },
+      });
+  KernelCallWireResponseBlock register_entry_response;
+  check(axion_kernel_call_wire(*state, &register_entry_request, &register_entry_response),
+        "wire ABI call boundary accepts an entry registration request");
+  const auto decoded_register_entry =
+      axion_kernel_decode_wire_response(register_entry_response);
+  check(decoded_register_entry.has_value(), "wire ABI entry registration response decodes");
+  if (decoded_register_entry) {
+    check(decoded_register_entry->status == KernelCallStatus::Ok,
+          "wire ABI entry registration returns Ok");
+    check(decoded_register_entry->action_performed,
+          "wire ABI entry registration reports work performed");
+  }
+
+  const auto spawn_from_entry_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::SpawnThreadFromEntryDescriptor,
+          .service_name = "wire-entry",
+      });
+  KernelCallWireResponseBlock spawn_from_entry_response;
+  check(axion_kernel_call_wire(*state, &spawn_from_entry_request, &spawn_from_entry_response),
+        "wire ABI call boundary accepts a named-entry spawn request");
+  const auto decoded_spawn_from_entry =
+      axion_kernel_decode_wire_response(spawn_from_entry_response);
+  check(decoded_spawn_from_entry.has_value(), "wire ABI named-entry spawn response decodes");
+  if (decoded_spawn_from_entry) {
+    check(decoded_spawn_from_entry->status == KernelCallStatus::Ok,
+          "wire ABI named-entry spawn returns Ok");
+    check(decoded_spawn_from_entry->spawned_tid.has_value(),
+          "wire ABI named-entry spawn returns a spawned tid");
+    if (decoded_spawn_from_entry->spawned_tid) {
+      const auto* spawned_context =
+          state->scheduler.run_queue().find(*decoded_spawn_from_entry->spawned_tid);
+      check(spawned_context != nullptr,
+            "wire ABI named-entry spawn creates the returned thread");
+      if (spawned_context) {
+        check(spawned_context->pc == 15,
+              "wire ABI named-entry spawn applies the registered pc");
+        check(spawned_context->sp == 45,
+              "wire ABI named-entry spawn applies the registered sp");
+        check(spawned_context->registers[0] == 515,
+              "wire ABI named-entry spawn applies the registered register0");
+        check(spawned_context->label == "wire-entry-label",
+              "wire ABI named-entry spawn applies the registered label");
+      }
+    }
+  }
+
   t81::canonfs::CanonRef send_ref;
   send_ref.hash.h.bytes.fill(0x31);
 
@@ -7466,6 +7524,70 @@ static void test_kernel_call_c_bridge() {
           check(spawned_context->label == "c-supervisor-spawn",
                 "C kernel-call bridge supervisor-scoped spawn applies the requested label");
         }
+      }
+    }
+  }
+
+  const auto register_entry_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterThreadEntryDescriptor,
+          .service_name = "c-entry",
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 21,
+              .sp = 63,
+              .register0 = 717,
+              .label = "c-entry-label",
+          },
+      });
+  KernelCallWireResponseBlock register_entry_response;
+  check(ternaryos_kernel_call_c(&*state,
+                                &register_entry_request,
+                                sizeof(register_entry_request),
+                                &register_entry_response,
+                                sizeof(register_entry_response)) == 0,
+        "C kernel-call bridge accepts an entry registration request");
+  const auto decoded_register_entry =
+      axion_kernel_decode_wire_response(register_entry_response);
+  check(decoded_register_entry.has_value(), "C kernel-call bridge entry registration decodes");
+  if (decoded_register_entry) {
+    check(decoded_register_entry->status == KernelCallStatus::Ok,
+          "C kernel-call bridge entry registration returns Ok");
+  }
+
+  const auto spawn_from_entry_request = axion_kernel_encode_wire_request(
+      KernelCallRequest{
+          .kind = KernelCallKind::SpawnThreadFromEntryDescriptor,
+          .service_name = "c-entry",
+      });
+  KernelCallWireResponseBlock spawn_from_entry_response;
+  check(ternaryos_kernel_call_c(&*state,
+                                &spawn_from_entry_request,
+                                sizeof(spawn_from_entry_request),
+                                &spawn_from_entry_response,
+                                sizeof(spawn_from_entry_response)) == 0,
+        "C kernel-call bridge accepts a named-entry spawn request");
+  const auto decoded_spawn_from_entry =
+      axion_kernel_decode_wire_response(spawn_from_entry_response);
+  check(decoded_spawn_from_entry.has_value(), "C kernel-call bridge named-entry spawn decodes");
+  if (decoded_spawn_from_entry) {
+    check(decoded_spawn_from_entry->status == KernelCallStatus::Ok,
+          "C kernel-call bridge named-entry spawn returns Ok");
+    check(decoded_spawn_from_entry->spawned_tid.has_value(),
+          "C kernel-call bridge named-entry spawn returns a spawned tid");
+    if (decoded_spawn_from_entry->spawned_tid) {
+      const auto* spawned_context =
+          state->scheduler.run_queue().find(*decoded_spawn_from_entry->spawned_tid);
+      check(spawned_context != nullptr,
+            "C kernel-call bridge named-entry spawn creates the returned thread");
+      if (spawned_context) {
+        check(spawned_context->pc == 21,
+              "C kernel-call bridge named-entry spawn applies the registered pc");
+        check(spawned_context->sp == 63,
+              "C kernel-call bridge named-entry spawn applies the registered sp");
+        check(spawned_context->registers[0] == 717,
+              "C kernel-call bridge named-entry spawn applies the registered register0");
+        check(spawned_context->label == "c-entry-label",
+              "C kernel-call bridge named-entry spawn applies the registered label");
       }
     }
   }
@@ -7910,6 +8032,50 @@ static void test_kernel_execution_abi_calls() {
             "execution ABI spawn applies the requested register0");
       check(spawned_context->label == "abi-spawn-in-group",
             "execution ABI spawn applies the requested label");
+    }
+  }
+
+  auto register_entry = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::RegisterThreadEntryDescriptor,
+          .service_name = "abi-entry",
+          .spawn_descriptor = KernelThreadSpawnDescriptor{
+              .pc = 31,
+              .sp = 93,
+              .register0 = 606,
+              .label = "abi-entry-label",
+          },
+      });
+  check(register_entry.status == KernelCallStatus::Ok,
+        "execution ABI entry registration returns Ok");
+  check(register_entry.action_performed,
+        "execution ABI entry registration reports work performed");
+
+  auto spawn_from_entry = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind = KernelCallKind::SpawnThreadFromEntryDescriptor,
+          .service_name = "abi-entry",
+      });
+  check(spawn_from_entry.status == KernelCallStatus::Ok,
+        "execution ABI named-entry spawn returns Ok");
+  check(spawn_from_entry.spawned_tid.has_value(),
+        "execution ABI named-entry spawn returns a spawned tid");
+  if (spawn_from_entry.spawned_tid) {
+    const auto* spawned_context =
+        state->scheduler.run_queue().find(*spawn_from_entry.spawned_tid);
+    check(spawned_context != nullptr,
+          "execution ABI named-entry spawn preserves a scheduler context");
+    if (spawned_context) {
+      check(spawned_context->pc == 31,
+            "execution ABI named-entry spawn applies the registered pc");
+      check(spawned_context->sp == 93,
+            "execution ABI named-entry spawn applies the registered sp");
+      check(spawned_context->registers[0] == 606,
+            "execution ABI named-entry spawn applies the registered register0");
+      check(spawned_context->label == "abi-entry-label",
+            "execution ABI named-entry spawn applies the registered label");
     }
   }
 
