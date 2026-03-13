@@ -7339,6 +7339,27 @@ static void test_kernel_execution_abi_calls() {
   check(identity.address_space_id.has_value(),
         "execution ABI identity returns caller address space");
 
+  auto spawn_result = axion_kernel_call(
+      *state, KernelCallRequest{.kind = KernelCallKind::SpawnThreadInCallerGroup});
+  check(spawn_result.status == KernelCallStatus::Ok,
+        "execution ABI spawn returns Ok");
+  check(spawn_result.rejection == KernelCallRejection::None,
+        "execution ABI spawn clears rejection");
+  check(spawn_result.action_performed,
+        "execution ABI spawn reports work performed");
+  check(spawn_result.spawned_tid.has_value(),
+        "execution ABI spawn returns a spawned tid");
+  if (spawn_result.spawned_tid) {
+    auto* spawned_runtime = state->find_thread_runtime(*spawn_result.spawned_tid);
+    check(spawned_runtime != nullptr,
+          "execution ABI spawn creates thread runtime");
+    check(spawned_runtime &&
+              spawned_runtime->process_group_id == *identity.caller_process_group_id,
+          "execution ABI spawn keeps the new thread in the caller process group");
+    check(state->ipc_bus.is_registered(*spawn_result.spawned_tid),
+          "execution ABI spawn registers the new thread inbox");
+  }
+
   auto exit_result = axion_kernel_call(
       *state, KernelCallRequest{.kind = KernelCallKind::ExitThread});
   check(exit_result.status == KernelCallStatus::Ok,

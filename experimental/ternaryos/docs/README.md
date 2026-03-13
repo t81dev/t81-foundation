@@ -36,7 +36,7 @@ and shared runtime utilities have been split into dedicated implementation
 files. `kernel_main.hpp` remains the shared runtime contract for those units.
 
 RFC-00B6 is now partially implemented rather than only proposed. The current
-typed `axion_kernel_call(...)` ABI covers thread identity/termination, IPC,
+typed `axion_kernel_call(...)` ABI covers thread identity/spawn/termination, IPC,
 fault inbox/recovery, supervisor recovery and inspection, capability
 management, service lifecycle control, process-group memory inspection,
 boot-critical address-space control, guarded runtime/fault summary queries,

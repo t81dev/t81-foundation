@@ -13,6 +13,7 @@ struct KernelRuntimeState;
 
 enum class KernelCapabilityKind : uint8_t {
   Yield = 0,
+  ThreadSpawn,
   IpcSend,
   IpcReceive,
   FaultObserve,
@@ -37,6 +38,7 @@ struct KernelDelegationSummaryEntry {
 
 enum class KernelCallKind : uint8_t {
   Yield = 0,
+  SpawnThreadInCallerGroup,
   GetThreadIdentity,
   ExitThread,
   SendMessage,
@@ -128,6 +130,7 @@ struct KernelCallResult {
   bool action_performed{false};
   bool yielded{false};
   bool thread_exited{false};
+  std::optional<sched::Tid> spawned_tid{};
   std::optional<sched::Tid> caller_tid{};
   std::optional<ProcessGroupId> caller_process_group_id{};
   std::optional<ipc::CanonMessage> message{};

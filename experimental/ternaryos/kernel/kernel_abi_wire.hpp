@@ -47,6 +47,7 @@ enum KernelCallWireFlags : uint64_t {
   kWireResponseHasSupervisorLastAcknowledgedGroup = 1ull << 26,
   kWireResponseHasSupervisorLastRecoveredGroup = 1ull << 27,
   kWireResponseThreadExited = 1ull << 28,
+  kWireResponseHasSpawnedTid = 1ull << 29,
 };
 
 struct KernelCallWireHeader {
@@ -119,6 +120,7 @@ struct KernelCallWireResponseBlock {
   uint8_t service_unhealthy{0};
   uint8_t service_blocked{0};
   std::array<uint8_t, 2> reserved0{};
+  uint32_t spawned_tid{0};
   uint32_t caller_tid{0};
   uint32_t caller_process_group_id{0};
   uint32_t supervisor_id{0};

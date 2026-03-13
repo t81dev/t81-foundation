@@ -608,6 +608,24 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
 
   KernelCallResult result = init_result(caller);
   switch (request.kind) {
+    case KernelCallKind::SpawnThreadInCallerGroup: {
+      if (auto denied = require_capability(caller, KernelCapabilityKind::ThreadSpawn);
+          denied.has_value()) {
+        return *denied;
+      }
+      const auto spawned_tid = axion_kernel_spawn_thread_in_group(
+          state, sched::TiscContext{}, caller.process_group_id);
+      if (!spawned_tid.has_value()) {
+        result.status = KernelCallStatus::Conflict;
+        result.rejection = KernelCallRejection::ServiceActionRejected;
+        return result;
+      }
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.spawned_tid = *spawned_tid;
+      return result;
+    }
     case KernelCallKind::GetThreadIdentity: {
       result.status = KernelCallStatus::Ok;
       result.rejection = KernelCallRejection::None;

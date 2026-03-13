@@ -21,6 +21,11 @@ std::vector<KernelCapabilityRecord> default_process_group_capabilities(
       },
       KernelCapabilityRecord{
           .record_id = next_capability_record_id(state),
+          .kind = KernelCapabilityKind::ThreadSpawn,
+          .kernel_seeded = true,
+      },
+      KernelCapabilityRecord{
+          .record_id = next_capability_record_id(state),
           .kind = KernelCapabilityKind::IpcSend,
           .kernel_seeded = true,
       },

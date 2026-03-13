@@ -56,7 +56,7 @@ Current status:
 - remaining work is consolidation, documentation alignment, and deciding
   whether to split the shared header surface
 - the first ABI hardening lane is now materially implemented under RFC-00B6,
-  including typed kernel-call dispatch, thread identity/termination,
+  including typed kernel-call dispatch, thread identity/spawn/termination,
   process-group-scoped capabilities, supervisor-scoped capability mutation,
   service lifecycle control, supervisor recovery control and inspection,
   process-group memory inspection, boot-critical address-space control, and
@@ -77,6 +77,7 @@ RFC-00B6 is no longer only a planning document.
 Implemented kernel-call slice:
 
 - `Yield`
+- `SpawnThreadInCallerGroup`
 - `GetThreadIdentity`
 - `ExitThread`
 - `SendMessage`

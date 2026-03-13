@@ -243,6 +243,10 @@ KernelCallWireResponseBlock axion_kernel_encode_wire_response(
   if (result.thread_exited) {
     block.flags |= kWireResponseThreadExited;
   }
+  if (result.spawned_tid.has_value()) {
+    block.flags |= kWireResponseHasSpawnedTid;
+    block.spawned_tid = *result.spawned_tid;
+  }
   block.service_registered = result.service_registered ? 1 : 0;
   block.service_suspended = result.service_suspended ? 1 : 0;
   block.service_unhealthy = result.service_unhealthy ? 1 : 0;
@@ -375,6 +379,9 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
       .supervisor_delegated_capability_count = block.supervisor_delegated_capability_count,
   };
   result.thread_exited = (block.flags & kWireResponseThreadExited) != 0;
+  if (block.flags & kWireResponseHasSpawnedTid) {
+    result.spawned_tid = block.spawned_tid;
+  }
   if (block.flags & kWireResponseHasCallerTid) {
     result.caller_tid = block.caller_tid;
   }

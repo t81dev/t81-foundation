@@ -149,6 +149,7 @@ The first ABI revision should support only these request families.
 Implemented today through the typed and wire ABI:
 
 - `Yield`
+- `SpawnThreadInCallerGroup`
 - `GetThreadIdentity`
 - `ExitThread`
 - `SendMessage`
@@ -181,6 +182,7 @@ Implemented today through the typed and wire ABI:
 #### 5.3.1 Thread / Execution
 
 - `Yield`
+- `SpawnThreadInCallerGroup`
 - `ExitThread`
 - `GetThreadIdentity`
 
