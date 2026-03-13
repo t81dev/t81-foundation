@@ -6378,11 +6378,12 @@ static void test_kernel_capability_management_abi() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QuerySupervisorCapabilityInventory,
-          .supervisor_id = *leader_supervisor,
           .process_group_id = sibling_runtime->process_group_id,
       });
   check(abi_supervisor_inventory.status == KernelCallStatus::Ok,
         "same-supervisor capability inventory ABI query returns Ok");
+  check(abi_supervisor_inventory.supervisor_id == leader_supervisor,
+        "capability inventory ABI query derives the caller supervisor");
   check(abi_supervisor_inventory.supervisor_capability_process_group_count == 2,
         "capability inventory ABI reports both managed process groups");
   check(abi_supervisor_inventory.supervisor_capability_transitions == 2,
@@ -6492,10 +6493,11 @@ static void test_kernel_capability_management_abi() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QuerySupervisorDelegationSummary,
-          .supervisor_id = *leader_supervisor,
       });
   check(abi_delegation_summary.status == KernelCallStatus::Ok,
         "supervisor delegation summary ABI query returns Ok");
+  check(abi_delegation_summary.supervisor_id == leader_supervisor,
+        "supervisor delegation summary ABI query derives the caller supervisor");
   check(abi_delegation_summary.supervisor_delegation_process_group_count == 2,
         "supervisor delegation summary reports both managed process groups");
   check(abi_delegation_summary.supervisor_delegation_entry_count == 1,
@@ -8710,10 +8712,11 @@ static void test_kernel_supervisor_recovery_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QuerySupervisorRecoveryStatus,
-          .supervisor_id = *owner_supervisor,
       });
   check(recovery_status_before_ack.status == KernelCallStatus::Ok,
         "supervisor recovery ABI status query returns Ok before acknowledgement");
+  check(recovery_status_before_ack.supervisor_id == owner_supervisor,
+        "supervisor recovery ABI status query derives the caller supervisor");
   check(recovery_status_before_ack.supervisor_pending_group_count == 1,
         "supervisor recovery ABI status reports one pending group before acknowledgement");
   check(recovery_status_before_ack.supervisor_acknowledgements == 0,
@@ -8727,10 +8730,11 @@ static void test_kernel_supervisor_recovery_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QuerySupervisorStatus,
-          .supervisor_id = *owner_supervisor,
       });
   check(supervisor_status_before_ack.status == KernelCallStatus::Ok,
         "supervisor status ABI query returns Ok before acknowledgement");
+  check(supervisor_status_before_ack.supervisor_id == owner_supervisor,
+        "supervisor status ABI query derives the caller supervisor");
   check(supervisor_status_before_ack.supervisor_managed_group_count == 2,
         "supervisor status ABI reports both managed groups");
   check(supervisor_status_before_ack.supervisor_managed_faulted_group_count == 1,
@@ -8773,7 +8777,6 @@ static void test_kernel_supervisor_recovery_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QuerySupervisorRecoveryStatus,
-          .supervisor_id = *owner_supervisor,
       });
   check(recovery_status_after_ack.status == KernelCallStatus::Ok,
         "supervisor recovery ABI status query returns Ok after acknowledgement");
@@ -8796,7 +8799,6 @@ static void test_kernel_supervisor_recovery_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QuerySupervisorStatus,
-          .supervisor_id = *owner_supervisor,
       });
   check(supervisor_status_after_ack.status == KernelCallStatus::Ok,
         "supervisor status ABI query returns Ok after acknowledgement");

@@ -295,20 +295,18 @@ std::optional<KernelCallResult> validate_supervisor_query(
     KernelRuntimeState& state,
     const CallerContext& caller,
     const KernelCallRequest& request) {
-  if (!request.supervisor_id.has_value()) {
-    KernelCallResult result = init_result(caller);
-    result.status = KernelCallStatus::InvalidRequest;
-    result.rejection = KernelCallRejection::MissingSupervisor;
-    return result;
-  }
-  if (!state.find_supervisor(*request.supervisor_id)) {
+  const auto caller_supervisor_id =
+      state.find_process_group_supervisor(caller.process_group_id);
+  const auto target_supervisor_id =
+      request.supervisor_id.value_or(caller_supervisor_id.value_or(0));
+  if (target_supervisor_id == 0 || !state.find_supervisor(target_supervisor_id)) {
     KernelCallResult result = init_result(caller);
     result.status = KernelCallStatus::NotFound;
     result.rejection = KernelCallRejection::MissingSupervisor;
     return result;
   }
   if (!axion_kernel_supervisor_matches_process_group(
-          state, *request.supervisor_id, caller.process_group_id)) {
+          state, target_supervisor_id, caller.process_group_id)) {
     KernelCallResult result = init_result(caller);
     result.status = KernelCallStatus::PolicyDenied;
     result.rejection = KernelCallRejection::ForeignSupervisorScope;
@@ -466,7 +464,8 @@ KernelCallResult dispatch_supervisor_request(const CallerContext& caller,
           KernelServiceRequest{
               .kind = kind,
               .requesting_process_group_id = caller.process_group_id,
-              .supervisor_id = *request.supervisor_id,
+              .supervisor_id = request.supervisor_id.value_or(
+                  state.find_process_group_supervisor(caller.process_group_id).value_or(0)),
           }));
 }
 
