@@ -53,7 +53,7 @@ This index tracks RFC status and intended disposition.
 | RFC-00B2 | Device Driver Architecture | accepted | Phase 4 storage/display/network boundary and guest-device model |
 | RFC-00B3 | Axion Kernel Architecture | draft | Kernel boundary and integration path after subsystem bring-up |
 | RFC-00B4 | Userland Service Contract | accepted | Stable service/runtime request and result boundary before syscall and ABI widening |
-| RFC-00B5 | Governed Event Interrupt Model | draft | Formalizes event-driven interrupt handling and no trap-return opcode requirement for the current Axion path |
+| RFC-00B5 | Governed Event Interrupt Model | accepted | Formalizes event-driven interrupt handling and no trap-return opcode requirement for the current Axion path |
 ## Experimental RFCs (A-series)
 
 | RFC | Title | Status | Notes |

@@ -1,10 +1,10 @@
 # CI Gate Status
 
 Status: Active
-Last Updated: 2026-03-07
+Last Updated: 2026-03-14
 Owner: @t81dev
-Reference Candidate: `b566bff8` (origin/main, 2026-03-07)
-Current Main Head: `b566bff8` (origin/main, 2026-03-07; CI workflow canonical restore + lychee/timeout/path fixes; 325/325 tests)
+Reference Candidate: `b566bff8` (origin/main, 2026-03-14)
+Current Main Head: `b566bff8` (origin/main, 2026-03-14; CI workflow canonical restore + lychee/timeout/path fixes; 338/338 tests)
 
 ## Purpose
 
@@ -75,14 +75,14 @@ tracked here and must be addressed unless explicitly deferred.
 | `product / dcp integrity (informational)` | `ci.yml` | success ✅ | |
 | `build` (GitHub Pages / Jekyll) | `documentation.yml` | **failure ⚠️** | **Mitigating** — root `_config.yml` third_party exclusion patch queued; awaiting next run |
 
-## Operational Notes (2026-03-07)
+## Operational Notes (2026-03-14)
 
 - **PR #448 merged** — Restored canonical `ci.yml` from `restore-to-main-293223a8` with three targeted fixes:
   - lychee pinned to v0.18.1; `--root-dir` set to absolute `${{ github.workspace }}`; `github.com/ggerganov/*` excluded (GitHub rate-limits CI runners); `docs/policies/AGENTS.md` removed from inputs (covered by glob)
   - CLI manual path corrected: `docs/guides/cli-user-manual.md` → `docs/user-guide/reference/cli-user-manual.md`
   - `timeout-minutes` added to all jobs that were missing them (prevents Homebrew/runner hangs blocking the queue)
 - **New gates in canonical workflow**: `gate / determinism repeatability`, `cross-compile / linux-armv9 / gcc`, nightly experimental gates (`oneapi-sycl-sanity`, `ascend-cann-sanity`)
-- **`T81String::serialize_canonical()` added** (PR #446 / `bda2f089`) — fixed `CanonHash<T81String>` falling to raw-bytes SSO-buffer fallback, causing non-deterministic hashes; resolved `t81_determinism_containers_test` failure; test count now 325/325
+- **`T81String::serialize_canonical()` added** (PR #446 / `bda2f089`) — fixed `CanonHash<T81String>` falling to raw-bytes SSO-buffer fallback, causing non-deterministic hashes; resolved `t81_determinism_containers_test` failure; test count now 338/338
 
 ## Operational Notes (2026-03-06)
 
@@ -110,7 +110,7 @@ tracked here and must be addressed unless explicitly deferred.
 | **Resolution Path** | Root `_config.yml` now excludes `third_party/`; verify on next Pages/Jekyll run |
 | **Blocking Release** | No |
 
-### 2026-03-07 CI Incident — Resolved
+### 2026-03-14 CI Incident — Resolved
 
 | Field | Value |
 | :--- | :--- |
@@ -118,7 +118,7 @@ tracked here and must be addressed unless explicitly deferred.
 | **Observed Symptoms** | (1) lychee v0.23.0 tokio channel panic (exit 101, `SendError`); (2) `--root-dir .` rejected as non-absolute path in lychee v0.18.1; (3) `docs/policies/AGENTS.md` treated as URL; (4) GitHub 429 rate-limit on `github.com/ggerganov/*` links; (5) CLI docs steps failing with `missing CLI manual: docs/guides/cli-user-manual.md`; (6) `t81_determinism_containers_test` failing — `CanonHash<T81String>` falling to SSO raw-bytes hash; (7) macOS x86_64 GCC benchmark job hanging 26+ min on `brew install` |
 | **Root Causes** | lychee version not pinned (defaulted to v0.23.0 which has a tokio panic bug); relative `--root-dir`; CLI manual moved but path not updated; `T81String` had no `serialize_canonical()`, causing non-deterministic hash via uninitialized SSO bytes; no `timeout-minutes` on benchmark and other jobs |
 | **Fixes Applied** | `bda2f089` (T81String::serialize_canonical() + CI fixes); PR #448 (canonical ci.yml restore with lychee v0.18.1 pin, absolute root-dir, ggerganov exclude, correct CLI path, all job timeouts) |
-| **Validation** | PR #448 merged to main as `b566bff8`; 325/325 tests passing |
+| **Validation** | PR #448 merged to main as `b566bff8`; 338/338 tests passing |
 
 ### 2026-03-05 CI Incident — Resolved
 
@@ -129,7 +129,7 @@ tracked here and must be addressed unless explicitly deferred.
 | **Primary Root Cause** | Corrupted `include/t81/support/expected.hpp` fallback implementation (malformed class body) |
 | **Secondary Root Cause** | `format.yml` checkout depth too shallow for `HEAD^..HEAD` diff on push |
 | **Fixes Applied** | `57f1a96c` (restore `expected.hpp` fallback), `b20934be` (`format.yml` `fetch-depth: 2`) |
-| **Validation** | Local clean build + `ctest` 285/285 pass; `T81 Foundation CI` success on run `22722029938`; `CodeQL` success on run `22722029925` |
+| **Validation** | Local clean build + `ctest` 338/338 pass; `T81 Foundation CI` success on run `22722029938`; `CodeQL` success on run `22722029925` |
 
 ## Benchmark Guardrail Signal
 

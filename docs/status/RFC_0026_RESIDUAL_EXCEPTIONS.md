@@ -1,6 +1,6 @@
 # RFC-0026 Residual Strict-Core Exceptions
 
-Last Updated: 2026-03-08
+Last Updated: 2026-03-14
 Owner: @t81dev
 Purpose: record the remaining non-strict or host-float surfaces after the
 phase-1 AI opcode classification cleanup, and separate true RFC-0026 closure

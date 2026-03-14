@@ -1,6 +1,6 @@
 # AI CLI Milestone Evidence
 
-Last Updated: 2026-03-07
+Last Updated: 2026-03-14
 Owner: @t81dev
 Scope: Build and runtime evidence for AI-facing CLI milestones
 
@@ -43,7 +43,7 @@ ctest are not accepted as milestone closures.
 | `canonfs_axion_trace_test` | Pass ✅ | CanonFS + Axion policy trace binding |
 | `t81_determinism_containers_test` | Pass ✅ | `T81String::serialize_canonical()` fixes CanonHash non-determinism |
 
-Test count: **325/325** (100% pass rate as of `b566bff8`)
+Test count: **338/338** (100% pass rate as of `b566bff8`)
 
 ---
 

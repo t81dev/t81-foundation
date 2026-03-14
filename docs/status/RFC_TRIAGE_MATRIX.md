@@ -1,6 +1,6 @@
 # RFC Triage Matrix
 
-Last Updated: 2026-03-09
+Last Updated: 2026-03-14
 Owner: @t81dev
 Purpose: distinguish release-critical RFC closure from backlog RFC tracking.
 

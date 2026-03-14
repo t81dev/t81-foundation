@@ -495,7 +495,7 @@ Local hosted proof as of the current branch:
   terminal-failed, and boot-critical auto-resolved address-space state. That
   closes the current internal boot-ready kernel slice. The next step is
   external boot-lane validation, tracked explicitly in:
-  - `docs/kernel_execution_plan.md`
+  - `experimental/ternaryos/docs/kernel_execution_plan.md`
 - the RFC-00B5 interrupt summary-convergence slice is now complete too: the
   kernel can intake explicit interrupt events, deliver them deterministically
   through `axion_kernel_step(...)`, and expose queue state, per-source

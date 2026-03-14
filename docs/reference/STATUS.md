@@ -2,7 +2,7 @@
 
 > **Source of Truth:** This document defines the **current operational state** of the project (what is true today). For future plans, see [../process/roadmaps-plans/ROADMAP.md](../process/roadmaps-plans/ROADMAP.md). For version history, see [CHANGELOG.md](CHANGELOG.md).
 
-**Last Updated:** March 6, 2026
+**Last Updated:** March 14, 2026
 **Status:** Active development (governance-controlled core with mixed maturity)
 
 ## 1. Snapshot
@@ -72,7 +72,6 @@ ctest --test-dir build --output-on-failure -j1
 
 - Architecture: `../architecture/OVERVIEW.md`
 - Control center: `../status/PROJECT_CONTROL_CENTER.md`
-- Operational status: `../status/SYSTEM_STATUS.md`
 - Implementation matrix: `../status/IMPLEMENTATION_MATRIX.md`
 - Conformance analysis: `../explanation/ANALYSIS.md`
 - Near-term tasks: `../status/TASKS.md`

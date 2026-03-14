@@ -69,7 +69,7 @@ graph LR
 | :--- | :--- | :--- | :--- |
 | **`TISC` ISA** | **The Instruction Set Structure** | **Frozen** | The stable serialization format and operations contract for data routing, structural flow, and mathematical operations. |
 | **`T81VM`** | **The Reference Runtime Path** | **Beta** | A custom virtual machine executing `TISC`. Mathematically bounds execution down to the trit (base-3). |
-| **`Axion`** | **The Experimental Ternary-Native OS** | **Alpha** | The current working name for the operating system built on the T81 stack. Today it combines HAL, storage, shell, and policy-governed runtime seams, with local bring-up proven in hosted mode and QEMU AArch64. |
+| **`Axion`** | **The Experimental Ternary-Native OS** | **Beta** | The current working name for the operating system built on the T81 stack. Today it combines HAL, storage, shell, and policy-governed runtime seams, with local bring-up proven in hosted mode and QEMU AArch64. |
 | **`CanonFS`**| **The Identity Filesystem** | **Beta** | Files exist as hash-addressed `.tisc` byte arrays, providing flawless structural verification and tampering prevention. |
 | **`T81Lang`**| **The Language Frontend** | **Beta** | An ergonomic wrapper compiling strictly into `TISC`, exposing strongly-typed tensor behaviors, options, and numeric safety. |
 

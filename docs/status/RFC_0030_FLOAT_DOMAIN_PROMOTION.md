@@ -1,6 +1,6 @@
 # RFC-0030 Float-Domain Promotion Note
 
-Last Updated: 2026-03-08
+Last Updated: 2026-03-14
 Owner: @t81dev
 Purpose: define the next design target for deterministic tensor math after the
 phase-1 AI opcode closure work.
