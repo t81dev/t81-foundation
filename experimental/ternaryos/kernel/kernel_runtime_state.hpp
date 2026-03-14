@@ -85,6 +85,10 @@ struct KernelRuntimeState {
   struct AddressSpaceState {
     AddressSpaceId id{0};
     ProcessGroupId process_group_id{0};
+    /// True for the kernel address space (id==kKernelAddressSpace).
+    /// Kernel-owned spaces may map TVAs anywhere in the 3^30 virtual space.
+    /// User-owned spaces are restricted to VPN < kKernelSpaceVpnBase (RFC-00B1 §3.1).
+    bool kernel_owned{false};
     bool boot_critical{false};
     bool pager_needed{false};
     bool pager_handoff_pending{false};
@@ -238,6 +242,8 @@ struct KernelRuntimeState {
     uint64_t ipc_blocks{0};    ///< threads that slept on empty inbox (RFC-00B6 §5.3.2)
     uint64_t ipc_wakes{0};     ///< threads woken by a successful SendMessage
     uint64_t device_wakes{0};  ///< threads woken by a device interrupt (RFC-00B5 §3.3)
+    uint64_t syscall_trap_dispatches{0};  ///< SVC traps dispatched through axion_kernel_call_wire_tva() (RFC-00B6 §5.2)
+    uint64_t kernel_space_rejections{0};  ///< user AS span attempts into kernel TVA space (RFC-00B1 §3.1 / RFC-00B6 §5.7)
   };
 
   std::string platform_id;

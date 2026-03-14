@@ -477,11 +477,40 @@ The first real interrupt-policy slice under RFC-00B5 is now complete:
   physical storage holds block bytes → spawned PC matches → re-spawn reuses
   existing page.
 
+**Slice 4 — Syscall trap wiring is now complete:**
+
+- New `kernel_trap_shim.hpp` / `kernel_trap_shim.cpp` model the hosted
+  AArch64 `svc` exception entry path.
+- `SvcTrapFrame {request_tva, response_tva, svc_imm}` carries the context
+  a real exception handler would save from `x0`, `x1`, and the SVC immediate.
+- `axion_kernel_handle_svc_trap()` enforces svc_imm == 0 (single Axion
+  entry convention per RFC-00B6 §5.2) and delegates to
+  `axion_kernel_call_wire_tva()` — no new dispatch logic is invented.
+- `syscall_trap_dispatches` counter added to `Counters` and exposed through
+  `KernelRuntimeStatusView`.
+- `[AC-22k]` (28 assertions): svc_imm=0 dispatch round-trip, response wire
+  block decoded, svc_imm=7 rejection, counter monotonicity, status view.
+
 The next milestone on the critical path toward a bootable kernel:
 
-**Slice 4 — Syscall trap wiring**: ARM `svc` exception vector → typed ABI
-boundary.  Slices 1A–3 are now complete; this is the next milestone on the
-critical path toward a bootable kernel.
+**Slice 5 — User-mode address space isolation is now complete:**
+
+- `kKernelSpaceVpnBase = 3^19` added to `mmu/tva.hpp` with `tva_in_user_space()`
+  and `tva_in_kernel_space()` predicates.
+- `AddressSpaceState` gains `kernel_owned` flag; bootstrap sets it on
+  `kKernelAddressSpace`.
+- `axion_kernel_validate_address_space_span()` rejects user-owned AS for any
+  TVA with VPN >= `kKernelSpaceVpnBase`.
+- `kernel_space_rejections` counter incremented in write and wire-TVA paths;
+  exposed through `KernelRuntimeStatusView`.
+- `[AC-22l]` (28 assertions): flags, TVA predicates, validate/write rejection,
+  user-space TVA accepted, wire-TVA error response, runtime view.
+
+The next milestone on the critical path toward a bootable kernel:
+
+**Slice 6 — QEMU AArch64 EDK2 guest image bootstrap**: produce a minimal
+bootable image that invokes `hal_main()` inside QEMU without a host OS
+process boundary.
 
 ## Recommended Order
 
@@ -501,4 +530,6 @@ critical path toward a bootable kernel.
 9. **[DONE]** Slice 1A — real executable section load into mapped address space
 10. **[DONE]** Slice 2 — blocking IPC: thread sleep/wake on inbox
 11. **[DONE]** Slice 3 — device-wake: Storage/Network interrupt wakes device-waiting threads
-12. Slice 4 — syscall trap wiring: ARM `svc` exception vector → typed ABI boundary
+12. **[DONE]** Slice 4 — syscall trap wiring: ARM `svc` exception vector → typed ABI boundary
+13. **[DONE]** Slice 5 — user-mode address space isolation (kernel vs. user TVA split)
+14. Slice 6 — QEMU AArch64 EDK2 guest image bootstrap

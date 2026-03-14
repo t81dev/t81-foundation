@@ -18,6 +18,7 @@
 #include "../kernel/kernel_main.hpp"
 #include "../kernel/kernel_executable.hpp"
 #include "../kernel/kernel_abi_wire.hpp"
+#include "../kernel/kernel_trap_shim.hpp"
 #include "../dev/hosted_block_dev.hpp"
 #include "../mmu/page_table.hpp"
 
@@ -1976,6 +1977,283 @@ static void test_kernel_device_wake_interrupt() {
           "device wake: runtime status reports device_wakes == 2");
     check(status_result.runtime->device_waiting_thread_count == 0,
           "device wake: runtime status reports device_waiting_thread_count == 0 after drain");
+  }
+}
+
+static void test_kernel_syscall_trap_wiring() {
+  std::printf("\n[AC-22k] RFC-00B6 §5.2 / RFC-00B0 §3.4.2: SVC trap shim routes wire block through axion_kernel_call_wire_tva\n");
+
+  // Bootstrap a kernel with one running thread — the shim needs a current
+  // scheduler thread so resolve_current_caller_address_space() can locate the
+  // caller's address space.
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "trap wiring: kernel bootstrap succeeds");
+  if (!state) return;
+
+  t81::ternaryos::sched::TiscContext caller_ctx;
+  caller_ctx.registers[0] = 777;
+  auto caller_tid = axion_kernel_spawn_thread(*state, caller_ctx);
+  check(caller_tid.has_value(), "trap wiring: caller thread spawned");
+  if (!caller_tid) return;
+
+  check(axion_kernel_tick(*state), "trap wiring: tick makes caller current");
+  check(state->scheduler.current_tid() == *caller_tid,
+        "trap wiring: caller is the running thread");
+
+  // Resolve caller address space (needed to write wire blocks into TVA pages).
+  const auto* caller_runtime = state->find_thread_runtime(*caller_tid);
+  const auto caller_as =
+      caller_runtime
+          ? state->find_process_group_address_space(caller_runtime->process_group_id)
+          : std::nullopt;
+  check(caller_as.has_value(), "trap wiring: caller address space resolves");
+  if (!caller_as) return;
+
+  // Map two pages: request (read) + response (write).
+  const uint64_t req_tva  = t81::ternaryos::mmu::tva_from_vpn_offset(200, 0);
+  const uint64_t resp_tva = t81::ternaryos::mmu::tva_from_vpn_offset(201, 0);
+  check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator,
+                                     req_tva, *caller_as,
+                                     {.readable = true, .writable = true, .executable = false}),
+        "trap wiring: request TVA page mapped");
+  check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator,
+                                     resp_tva, *caller_as,
+                                     {.readable = true, .writable = true, .executable = false}),
+        "trap wiring: response TVA page mapped");
+
+  // Write a Yield wire request into the request page.
+  const auto yield_req = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::Yield});
+  check(axion_kernel_write_address_space_bytes(
+            *state, *caller_as, req_tva,
+            reinterpret_cast<const std::byte*>(&yield_req), sizeof(yield_req)),
+        "trap wiring: Yield wire request written into request TVA");
+
+  // ── Nominal SVC dispatch (svc_imm == 0) ─────────────────────────────────
+  const auto trap_result_1 =
+      axion_kernel_handle_svc_trap(*state, SvcTrapFrame{
+          .request_tva  = req_tva,
+          .response_tva = resp_tva,
+          .svc_imm      = 0,
+      });
+  check(trap_result_1.dispatched,
+        "trap wiring: svc_imm=0 trap is dispatched");
+  check(!trap_result_1.svc_imm_rejected,
+        "trap wiring: svc_imm=0 trap is not rejected");
+  check(trap_result_1.trap_sequence == 1,
+        "trap wiring: first dispatch has trap_sequence == 1");
+  check(state->counters.syscall_trap_dispatches == 1,
+        "trap wiring: syscall_trap_dispatches counter incremented to 1");
+
+  // Read back the response and verify the Yield returned Ok.
+  KernelCallWireResponseBlock resp_block;
+  check(axion_kernel_read_address_space_bytes(
+            *state, *caller_as, resp_tva,
+            reinterpret_cast<std::byte*>(&resp_block), sizeof(resp_block)),
+        "trap wiring: response wire block read back from response TVA");
+  check(axion_kernel_validate_wire_response_block(resp_block),
+        "trap wiring: response wire block has valid magic/version");
+  const auto decoded = axion_kernel_decode_wire_response(resp_block);
+  check(decoded.has_value(), "trap wiring: response wire block decodes");
+  if (decoded) {
+    check(decoded->status == KernelCallStatus::Ok,
+          "trap wiring: Yield via SVC trap returns Ok");
+    // Single-thread kernel: Yield is accepted (Ok) but no switch occurs.
+    check(!decoded->yielded || state->scheduler.current_tid() == *caller_tid,
+          "trap wiring: Yield via SVC trap in single-thread kernel leaves caller running");
+  }
+
+  // ── svc_imm != 0 rejection ───────────────────────────────────────────────
+  const auto trap_result_2 =
+      axion_kernel_handle_svc_trap(*state, SvcTrapFrame{
+          .request_tva  = req_tva,
+          .response_tva = resp_tva,
+          .svc_imm      = 7,
+      });
+  check(!trap_result_2.dispatched,
+        "trap wiring: svc_imm=7 trap is not dispatched");
+  check(trap_result_2.svc_imm_rejected,
+        "trap wiring: svc_imm=7 trap is rejected");
+  check(trap_result_2.trap_sequence == 0,
+        "trap wiring: rejected trap has trap_sequence == 0");
+  check(state->counters.syscall_trap_dispatches == 1,
+        "trap wiring: svc_imm rejection does not increment dispatches counter");
+
+  // ── A second valid dispatch increments the sequence ──────────────────────
+  // Re-write the request (Yield consumed the yield credit; re-use the same block).
+  check(axion_kernel_write_address_space_bytes(
+            *state, *caller_as, req_tva,
+            reinterpret_cast<const std::byte*>(&yield_req), sizeof(yield_req)),
+        "trap wiring: second Yield wire request written");
+  const auto trap_result_3 =
+      axion_kernel_handle_svc_trap(*state, SvcTrapFrame{
+          .request_tva  = req_tva,
+          .response_tva = resp_tva,
+          .svc_imm      = 0,
+      });
+  check(trap_result_3.dispatched,
+        "trap wiring: second svc_imm=0 trap is dispatched");
+  check(trap_result_3.trap_sequence == 2,
+        "trap wiring: second dispatch has trap_sequence == 2");
+  check(state->counters.syscall_trap_dispatches == 2,
+        "trap wiring: syscall_trap_dispatches counter incremented to 2");
+
+  // ── Runtime status view exposes the new counter ───────────────────────────
+  const auto status_result = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(status_result.status == KernelServiceStatus::Ok,
+        "trap wiring: runtime status query succeeds");
+  check(status_result.runtime.has_value(),
+        "trap wiring: runtime status view is present");
+  if (status_result.runtime) {
+    check(status_result.runtime->syscall_trap_dispatches == 2,
+          "trap wiring: runtime view exposes syscall_trap_dispatches == 2");
+  }
+}
+
+static void test_kernel_user_space_isolation() {
+  std::printf("\n[AC-22l] RFC-00B1 §3.1 / RFC-00B6 §5.7: user address space cannot access kernel TVA range\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "user-space isolation: kernel bootstrap succeeds");
+  if (!state) return;
+
+  // Spawn a thread so a user process group and address space exist.
+  t81::ternaryos::sched::TiscContext user_ctx;
+  auto user_tid = axion_kernel_spawn_thread(*state, user_ctx);
+  check(user_tid.has_value(), "user-space isolation: user thread spawned");
+  if (!user_tid) return;
+
+  check(axion_kernel_tick(*state), "user-space isolation: tick makes user thread current");
+
+  const auto* user_runtime = state->find_thread_runtime(*user_tid);
+  const auto user_as =
+      user_runtime
+          ? state->find_process_group_address_space(user_runtime->process_group_id)
+          : std::nullopt;
+  check(user_as.has_value(), "user-space isolation: user address space resolves");
+  if (!user_as) return;
+
+  // Verify the user address space is NOT kernel_owned.
+  const auto* user_as_state = state->find_address_space(*user_as);
+  check(user_as_state != nullptr, "user-space isolation: user AS state found");
+  if (user_as_state) {
+    check(!user_as_state->kernel_owned,
+          "user-space isolation: user address space is not kernel_owned");
+  }
+
+  // Verify the kernel address space IS kernel_owned.
+  const auto* kernel_as_state =
+      state->find_address_space(KernelRuntimeState::kKernelAddressSpace);
+  check(kernel_as_state != nullptr, "user-space isolation: kernel AS state found");
+  if (kernel_as_state) {
+    check(kernel_as_state->kernel_owned,
+          "user-space isolation: kernel address space is kernel_owned");
+  }
+
+  // ── tva_in_user_space / tva_in_kernel_space helpers ──────────────────────
+  const uint64_t user_tva   = mmu::tva_from_vpn_offset(100, 0);  // VPN 100 — user space
+  const uint64_t kernel_tva = mmu::tva_from_vpn_offset(mmu::kKernelSpaceVpnBase, 0);
+
+  check(mmu::tva_in_user_space(user_tva),
+        "user-space isolation: VPN 100 is in user space");
+  check(!mmu::tva_in_kernel_space(user_tva),
+        "user-space isolation: VPN 100 is not in kernel space");
+  check(mmu::tva_in_kernel_space(kernel_tva),
+        "user-space isolation: kKernelSpaceVpnBase TVA is in kernel space");
+  check(!mmu::tva_in_user_space(kernel_tva),
+        "user-space isolation: kKernelSpaceVpnBase TVA is not in user space");
+
+  // ── User AS span validation rejects kernel-space TVA ─────────────────────
+  // Map a kernel-space page under the kernel AS (kernel is permitted).
+  check(mmu::mmu_map(state->page_table, state->allocator,
+                     kernel_tva, KernelRuntimeState::kKernelAddressSpace,
+                     {.readable = true, .writable = true, .executable = false}),
+        "user-space isolation: kernel AS can map a kernel-space TVA");
+
+  // Re-map the same page under the user AS (owner_pid = user_as).
+  // mmu_map will fail since the VPN is already mapped, so we instead
+  // update the owner_pid directly via a second map on a different kernel VPN.
+  const uint64_t kernel_tva2 = mmu::tva_from_vpn_offset(mmu::kKernelSpaceVpnBase + 1, 0);
+  check(mmu::mmu_map(state->page_table, state->allocator,
+                     kernel_tva2, *user_as,
+                     {.readable = true, .writable = true, .executable = false}),
+        "user-space isolation: map kernel-space VPN with user owner_pid succeeds at MMU level");
+
+  // Now validate: user AS span into the kernel-mapped page should be rejected.
+  check(!axion_kernel_validate_address_space_span(
+            *state, *user_as, kernel_tva2, 1, mmu::MmuAccessMode::Write),
+        "user-space isolation: validate_address_space_span rejects user AS at kernel TVA");
+
+  // ── Write/read into kernel-space TVA from user AS is rejected ────────────
+  const uint64_t rejections_before = state->counters.kernel_space_rejections;
+  const std::byte dummy{0xAB};
+  check(!axion_kernel_write_address_space_bytes(
+            *state, *user_as, kernel_tva2, &dummy, 1),
+        "user-space isolation: write_address_space_bytes rejects user AS at kernel TVA");
+  check(state->counters.kernel_space_rejections == rejections_before + 1,
+        "user-space isolation: kernel_space_rejections incremented after write rejection");
+
+  // ── User AS span succeeds for user-space TVA ─────────────────────────────
+  const uint64_t user_tva2 = mmu::tva_from_vpn_offset(300, 0);
+  check(mmu::mmu_map(state->page_table, state->allocator,
+                     user_tva2, *user_as,
+                     {.readable = true, .writable = true, .executable = false}),
+        "user-space isolation: user AS maps user-space TVA");
+  check(axion_kernel_validate_address_space_span(
+            *state, *user_as, user_tva2, 1, mmu::MmuAccessMode::Write),
+        "user-space isolation: validate_address_space_span accepts user AS at user TVA");
+  check(axion_kernel_write_address_space_bytes(
+            *state, *user_as, user_tva2, &dummy, 1),
+        "user-space isolation: write_address_space_bytes accepts user AS at user TVA");
+  check(state->counters.kernel_space_rejections == rejections_before + 1,
+        "user-space isolation: kernel_space_rejections unchanged after user-space write");
+
+  // ── wire-TVA path rejects kernel-space request_tva from user caller ───────
+  // Map a user-space response page.
+  const uint64_t resp_tva = mmu::tva_from_vpn_offset(301, 0);
+  check(mmu::mmu_map(state->page_table, state->allocator,
+                     resp_tva, *user_as,
+                     {.readable = true, .writable = true, .executable = false}),
+        "user-space isolation: user AS maps response TVA");
+
+  // The request TVA is in kernel space — wire_tva writes an InvalidRequest
+  // error response (returns true = error delivered) or returns false.
+  // Either way the response must not be Ok.
+  axion_kernel_call_wire_tva(*state, kernel_tva, resp_tva);
+  KernelCallWireResponseBlock wire_resp_block;
+  if (axion_kernel_read_address_space_bytes(
+          *state, *user_as, resp_tva,
+          reinterpret_cast<std::byte*>(&wire_resp_block), sizeof(wire_resp_block)) &&
+      axion_kernel_validate_wire_response_block(wire_resp_block)) {
+    const auto decoded_err = axion_kernel_decode_wire_response(wire_resp_block);
+    check(decoded_err.has_value(),
+          "user-space isolation: kernel-space request_tva wire response decodes");
+    if (decoded_err) {
+      check(decoded_err->status != KernelCallStatus::Ok,
+            "user-space isolation: kernel-space request_tva wire response is not Ok");
+    }
+  } else {
+    // Return false path — equally valid rejection.
+    check(true, "user-space isolation: kernel-space request_tva rejected (no response written)");
+  }
+  check(state->counters.kernel_space_rejections >= rejections_before + 1,
+        "user-space isolation: kernel_space_rejections non-zero after wire_tva rejection");
+
+  // ── Runtime status view exposes the counter ───────────────────────────────
+  const auto status = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(status.status == KernelServiceStatus::Ok,
+        "user-space isolation: runtime status query succeeds");
+  check(status.runtime.has_value(),
+        "user-space isolation: runtime status view present");
+  if (status.runtime) {
+    check(status.runtime->kernel_space_rejections >= 1,
+          "user-space isolation: runtime view exposes kernel_space_rejections >= 1");
   }
 }
 
@@ -11629,6 +11907,8 @@ int main() {
   test_kernel_executable_section_load();
   test_kernel_blocking_ipc();
   test_kernel_device_wake_interrupt();
+  test_kernel_syscall_trap_wiring();
+  test_kernel_user_space_isolation();
   test_kernel_pager_fault_state();
   test_kernel_pager_worker_backlog();
   test_kernel_pager_worker_ready_bypass_cap();

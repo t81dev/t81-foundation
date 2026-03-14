@@ -13,11 +13,36 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-14
-**Commit:** Slice 3 — Device-wake interrupts (`WaitForDevice`, Storage/Network wake)
+**Commit:** Slice 5 — User-mode address space isolation (kernel/user TVA split)
 **Branch:** `main`
 
 Recent architecture milestone:
 
+- **Slice 5 — User-mode address space isolation** is now implemented (RFC-00B1 §3.1 / RFC-00B6 §5.7).
+  `kKernelSpaceVpnBase = 3^19 = 1,162,261,467` splits the 20-trit VPN space: VPN 0..3^19−1
+  is user space; VPN 3^19..3^20−1 is kernel-only.  New inline helpers `tva_in_user_space()`
+  and `tva_in_kernel_space()` added to `mmu/tva.hpp`.  `AddressSpaceState` gains
+  `kernel_owned` flag, set to `true` only for `kKernelAddressSpace` at bootstrap.
+  `axion_kernel_validate_address_space_span()` rejects any user-owned AS that tries to
+  span a kernel-space TVA.  `axion_kernel_write_address_space_bytes()` and the
+  wire-TVA path increment `counters.kernel_space_rejections` on such rejections.
+  New field exposed through `KernelRuntimeStatusView`.
+  `[AC-22l]` (28 assertions): `kernel_owned` flags, TVA helper predicates, validate/write
+  rejection for kernel-space TVA, user-space TVA accepted, wire-TVA structured error
+  response, runtime view exposes `kernel_space_rejections`.
+- **Slice 4 — Syscall trap wiring** is now implemented (RFC-00B6 §5.2 / RFC-00B0 §3.4.2).
+  New files `kernel_trap_shim.hpp` / `kernel_trap_shim.cpp` model the ARM `svc`
+  exception entry path in the hosted simulation.  `SvcTrapFrame {request_tva,
+  response_tva, svc_imm}` carries the context a real AArch64 exception handler
+  would save from `x0`, `x1`, and the SVC immediate field.
+  `axion_kernel_handle_svc_trap()` enforces the Axion convention (svc_imm == 0
+  is the single unified kernel-call entry) and delegates to the existing
+  `axion_kernel_call_wire_tva()` path — no new ABI logic is invented.  A
+  new `syscall_trap_dispatches` counter in `Counters` (and exposed through
+  `KernelRuntimeStatusView`) tracks dispatch volume.  `[AC-22k]` (28 assertions):
+  svc_imm=0 dispatch round-trip via Yield, response wire block valid + decoded,
+  svc_imm=7 rejection, counter monotonicity across two dispatches, runtime
+  status view exposes `syscall_trap_dispatches`.
 - **Slice 3 — Device-wake interrupts** is now implemented (RFC-00B5 §3.3).
   A new `KernelCallKind::WaitForDevice` handler parks the calling thread in
   `device_waiting_tids[source]` via `scheduler.sleep()`.  When a Storage or

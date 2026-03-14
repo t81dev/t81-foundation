@@ -55,6 +55,33 @@ inline constexpr bool tva_valid(uint64_t tva) noexcept {
   return tva <= kMaxTva;
 }
 
+// ─── Kernel / user address space split (RFC-00B1 §3.1 / RFC-00B6 §5.7) ───────
+//
+// The 20-trit VPN space is divided at 3^19 (the most-significant trit boundary):
+//
+//   User space:   VPN   0 .. 3^19 − 1  (trit-19 = 0)
+//   Kernel space: VPN 3^19 .. 3^20 − 1 (trit-19 = 1 or 2)
+//
+// User-mode callers (process-group address spaces) may only map and access
+// TVAs below kKernelSpaceVpnBase.  The kernel address space (id=0) may map
+// anywhere in the full 3^30 virtual space.
+
+/// First VPN in the kernel half: 3^19 = 1,162,261,467.
+inline constexpr uint64_t kKernelSpaceVpnBase = 1162261467ULL;  // 3^19
+
+/// Exclusive upper bound for user-space VPNs (equal to kKernelSpaceVpnBase).
+inline constexpr uint64_t kUserSpaceVpnLimit  = 1162261467ULL;  // 3^19
+
+/// True if a TVA falls within user-accessible virtual space (VPN < 3^19).
+inline constexpr bool tva_in_user_space(uint64_t tva) noexcept {
+  return tva_vpn(tva) < kUserSpaceVpnLimit;
+}
+
+/// True if a TVA falls within kernel-only virtual space (VPN >= 3^19).
+inline constexpr bool tva_in_kernel_space(uint64_t tva) noexcept {
+  return tva_vpn(tva) >= kKernelSpaceVpnBase;
+}
+
 // ─── Ternary digit utilities ──────────────────────────────────────────────────
 
 /// Return the k-th trit (base-3 digit) of val, starting from trit 0 (least

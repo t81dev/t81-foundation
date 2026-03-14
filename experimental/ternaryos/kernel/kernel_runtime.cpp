@@ -113,6 +113,16 @@ bool axion_kernel_validate_address_space_span(const KernelRuntimeState& state,
       (size > 0 && (!mmu::tva_valid(tva + size - 1) || tva + size - 1 < tva))) {
     return false;
   }
+  // RFC-00B1 §3.1 / RFC-00B6 §5.7: user-owned address spaces may not access
+  // TVAs in kernel space (VPN >= kKernelSpaceVpnBase).  The kernel address
+  // space (kernel_owned == true) is unrestricted.
+  const auto* as = state.find_address_space(address_space_id);
+  if (as && !as->kernel_owned) {
+    const uint64_t end_tva = (size > 0) ? (tva + size - 1) : tva;
+    if (mmu::tva_in_kernel_space(tva) || mmu::tva_in_kernel_space(end_tva)) {
+      return false;
+    }
+  }
   for (std::size_t i = 0; i < size; ++i) {
     const auto translation =
         mmu::mmu_translate_checked(state.page_table, tva + i, mode);
@@ -138,6 +148,14 @@ bool axion_kernel_write_address_space_bytes(KernelRuntimeState& state,
   }
   if (!axion_kernel_validate_address_space_span(
           state, address_space_id, tva, size, mmu::MmuAccessMode::Write)) {
+    // Increment kernel_space_rejections when the failure is due to user AS
+    // attempting to access kernel-space TVAs (RFC-00B1 §3.1).
+    const auto* as = state.find_address_space(address_space_id);
+    if (as && !as->kernel_owned && size > 0 &&
+        (mmu::tva_in_kernel_space(tva) ||
+         mmu::tva_in_kernel_space(tva + size - 1))) {
+      ++state.counters.kernel_space_rejections;
+    }
     return false;
   }
   for (std::size_t i = 0; i < size; ++i) {

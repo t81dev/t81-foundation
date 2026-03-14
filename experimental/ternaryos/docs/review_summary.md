@@ -40,8 +40,8 @@ The broader structural assessment and follow-on refactor plan now live in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `3751`
-- `t81_ternaryos_hal_boot_test`: `2875/2875`
+- total assertions: `3807`
+- `t81_ternaryos_hal_boot_test`: `2931/2931`
 - `t81_ternaryos_device_driver_test`: `342/342`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_scheduler_test`: `120/120`

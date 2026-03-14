@@ -776,6 +776,10 @@ bool axion_kernel_call_wire_tva(KernelRuntimeState& state,
                                                 response_tva,
                                                 sizeof(KernelCallWireResponseBlock),
                                                 mmu::MmuAccessMode::Write)) {
+    const auto* as = state.find_address_space(*caller_address_space_id);
+    if (as && !as->kernel_owned && mmu::tva_in_kernel_space(response_tva)) {
+      ++state.counters.kernel_space_rejections;
+    }
     return false;
   }
   if (!axion_kernel_validate_address_space_span(state,

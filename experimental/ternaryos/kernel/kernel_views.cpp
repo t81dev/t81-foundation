@@ -487,6 +487,8 @@ KernelRuntimeStatusView make_runtime_view(const KernelRuntimeState& state) {
         for (const auto& [k, s] : state.device_waiting_tids) n += s.size();
         return n;
       }(),
+      .syscall_trap_dispatches = state.counters.syscall_trap_dispatches,
+      .kernel_space_rejections = state.counters.kernel_space_rejections,
       .pager_eligible_faults = state.counters.pager_eligible_faults,
       .policy_faults = state.counters.policy_faults,
       .pager_handoffs_dispatched = state.counters.pager_handoffs_dispatched,

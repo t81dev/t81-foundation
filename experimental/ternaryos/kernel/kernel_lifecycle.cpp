@@ -213,6 +213,7 @@ std::optional<KernelRuntimeState> axion_kernel_bootstrap(
       KernelRuntimeState::AddressSpaceState{
           .id = KernelRuntimeState::kKernelAddressSpace,
           .process_group_id = KernelRuntimeState::kKernelProcessGroup,
+          .kernel_owned = true,  // RFC-00B1 §3.1: kernel AS may map the full TVA space
       });
   state.supervisors.emplace(
       KernelRuntimeState::kKernelSupervisor,
