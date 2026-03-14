@@ -1438,6 +1438,60 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.thread_sleeping = true;
       return result;
     }
+    case KernelCallKind::RequestPageMapping: {
+      // RFC-00B7 §3.2 — pager service supplies a page mapping for a pager-needed address space.
+      // Caller must hold PagerService capability.  The mapping is installed at
+      // last_pager_fault->tva with permissions derived from the fault access mode.
+      // The pager worker detects the mapping on its next tick via is_pager_work_item_ready()
+      // and calls resolve_completed_pager_work() to clear pager_needed.
+      if (auto denied =
+              require_capability(caller, KernelCapabilityKind::PagerService);
+          denied.has_value()) {
+        return *denied;
+      }
+      if (!request.address_space_id.has_value()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingAddressSpace;
+        return result;
+      }
+      const auto as_id = *request.address_space_id;
+      auto* as_state = state.find_address_space_mut(as_id);
+      if (!as_state) {
+        result.status = KernelCallStatus::NotFound;
+        result.rejection = KernelCallRejection::MissingAddressSpace;
+        return result;
+      }
+      if (!as_state->pager_needed) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::AddressSpaceNotPagerNeeded;
+        return result;
+      }
+      if (!as_state->last_pager_fault.has_value()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingPagerFault;
+        return result;
+      }
+      const mmu::PagePermissions perms = [&]() -> mmu::PagePermissions {
+        switch (as_state->last_pager_fault->access_mode) {
+          case mmu::MmuAccessMode::Read:
+            return {.readable = true, .writable = false, .executable = false};
+          case mmu::MmuAccessMode::Write:
+            return {.readable = true, .writable = true, .executable = false};
+          case mmu::MmuAccessMode::Execute:
+            return {.readable = true, .writable = false, .executable = true};
+        }
+        return {};
+      }();
+      mmu::mmu_map(state.page_table, state.allocator,
+                   as_state->last_pager_fault->tva, as_id, perms);
+      ++state.counters.pager_service_mappings;
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.pager_mapping_supplied = true;
+      result.address_space_id = as_id;
+      return result;
+    }
     case KernelCallKind::ReadFaultInbox: {
       KernelRuntimeState::ThreadRuntimeState* target_thread_state = nullptr;
       if (auto invalid =

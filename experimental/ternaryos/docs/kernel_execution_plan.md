@@ -532,6 +532,24 @@ The next milestone on the critical path toward a bootable kernel:
 
 The next milestone toward the bootable kernel:
 
+**Slice 9 — first public pager service ABI is now complete:**
+
+- `KernelCapabilityKind::PagerService` is a new capability kind that authorises a service
+  thread to supply page mappings on behalf of faulted address spaces (RFC-00B7 §3.2).
+  Not seeded by default — must be explicitly granted via `GrantCapability`.
+- `KernelCallKind::RequestPageMapping` is the new ABI call.  The caller supplies an
+  `address_space_id`; the kernel validates PagerService capability, verifies `pager_needed`,
+  looks up `last_pager_fault`, calls `mmu_map()` at `last_pager_fault->tva` with permissions
+  derived from `access_mode`, and returns `pager_mapping_supplied = true`.
+- On the next `axion_kernel_step()` tick the pager worker detects the mapping via
+  `is_pager_work_item_ready()` and clears `pager_needed` through the existing
+  `resolve_completed_pager_work()` path — no new pager-worker code required.
+- New `KernelCallRejection` variants: `AddressSpaceNotPagerNeeded`, `MissingPagerFault`.
+- New counter: `Counters::pager_service_mappings` (exposed via `KernelRuntimeStatusView`).
+- `[AC-22o]` (34 assertions): victim fault → pager stall → grant PagerService → rejection
+  paths (no AS, bad AS, not pager_needed) → success → TVA mapped → worker resolves →
+  pager_needed cleared → second call rejected → runtime view counter.
+
 **Slice 8 — AArch64 exception vector table is now complete:**
 
 - `aarch64_exception_vectors.S` provides the full 2 KiB-aligned VBAR_EL1 table
@@ -591,3 +609,4 @@ The next milestone toward the bootable kernel:
 14. **[DONE]** Slice 6 — QEMU AArch64 EDK2 guest image bootstrap
 15. **[DONE]** Slice 7 — CanonFS-backed executable object acquisition
 16. **[DONE]** Slice 8 — AArch64 exception vector table (VBAR_EL1 entry, frame layout, bridge)
+17. **[DONE]** Slice 9 — first public pager service ABI (RequestPageMapping + PagerService capability)

@@ -19,6 +19,7 @@ enum class KernelCapabilityKind : uint8_t {
   IpcReceive,
   FaultObserve,
   FaultAcknowledge,
+  PagerService,  ///< Authorises a service thread to supply page mappings via RequestPageMapping (RFC-00B7 §3.1)
 };
 
 struct KernelCapabilityRecord {
@@ -106,6 +107,8 @@ enum class KernelCallKind : uint8_t {
   BlockOnIpcReceive,
   // RFC-00B5 §3.3 — park calling thread until a device interrupt arrives
   WaitForDevice,
+  // RFC-00B7 §3.2 — pager service supplies a page mapping for a pager-needed AS
+  RequestPageMapping,
 };
 
 enum class KernelCallStatus : uint8_t {
@@ -154,6 +157,8 @@ enum class KernelCallRejection : uint8_t {
   MissingService,
   ServiceRequestRejected,
   ServiceActionRejected,
+  AddressSpaceNotPagerNeeded,  ///< RequestPageMapping: target AS is not in pager_needed state (RFC-00B7 §3.2)
+  MissingPagerFault,           ///< RequestPageMapping: target AS has no recorded last_pager_fault (RFC-00B7 §3.2)
 };
 
 struct KernelCallRequest {
@@ -196,6 +201,7 @@ struct KernelCallResult {
   std::optional<ServiceId> service_id{};
   std::optional<std::string> service_name{};
   bool service_registered{false};
+  bool pager_mapping_supplied{false};  ///< set by RequestPageMapping on success (RFC-00B7 §3.2)
   bool service_has_entry_descriptor{false};
   bool service_suspended{false};
   bool service_unhealthy{false};

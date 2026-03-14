@@ -2504,6 +2504,218 @@ static void test_kernel_canonfs_fetch_spawn() {
   }
 }
 
+static void test_kernel_pager_service_abi() {
+  std::printf("\n[AC-22o] RFC-00B7 §3.2: RequestPageMapping ABI — PagerService thread supplies a page mapping\n");
+
+  namespace mmu    = t81::ternaryos::mmu;
+  namespace sched  = t81::ternaryos::sched;
+  namespace kernel = t81::ternaryos::kernel;
+
+  auto ctx   = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "pager-service: kernel bootstrap succeeds");
+  if (!state) {
+    return;
+  }
+
+  // ── Spawn victim thread (will hit an unmapped fault) ──────────────────────
+  sched::TiscContext victim_ctx;
+  victim_ctx.label        = "victim";
+  victim_ctx.registers[0] = 300;
+  auto victim_tid = axion_kernel_spawn_thread(*state, victim_ctx);
+  check(victim_tid.has_value(), "pager-service: victim thread spawns");
+  if (!victim_tid) {
+    return;
+  }
+  const auto* victim_runtime = state->find_thread_runtime(*victim_tid);
+  check(victim_runtime != nullptr, "pager-service: victim runtime state exists");
+  if (!victim_runtime) {
+    return;
+  }
+  const auto victim_pg_id = victim_runtime->process_group_id;
+  const auto victim_as_id = state->find_process_group_address_space(victim_pg_id);
+  check(victim_as_id.has_value(), "pager-service: victim address space resolved");
+  if (!victim_as_id) {
+    return;
+  }
+
+  // ── Spawn pager-service thread ─────────────────────────────────────────────
+  sched::TiscContext svc_ctx;
+  svc_ctx.label        = "pager-svc";
+  svc_ctx.registers[0] = 301;
+  auto svc_tid = axion_kernel_spawn_thread(*state, svc_ctx);
+  check(svc_tid.has_value(), "pager-service: service thread spawns");
+  if (!svc_tid) {
+    return;
+  }
+  const auto* svc_runtime = state->find_thread_runtime(*svc_tid);
+  check(svc_runtime != nullptr, "pager-service: service runtime state exists");
+  if (!svc_runtime) {
+    return;
+  }
+  const auto svc_pg_id = svc_runtime->process_group_id;
+
+  // ── Grant PagerService capability to the service process group ────────────
+  check(axion_kernel_grant_process_group_capability(
+            *state,
+            svc_pg_id,
+            std::nullopt,
+            std::nullopt,
+            kernel::KernelCapabilityRecord{
+                .kind = kernel::KernelCapabilityKind::PagerService}),
+        "pager-service: PagerService capability granted to service group");
+
+  // ── Trigger an unmapped read fault in the victim address space ────────────
+  const auto fault_tva = mmu::tva_from_vpn_offset(71, 0);
+  state->pending_faults.push_back(kernel::KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva         = fault_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault       = mmu::MmuFault::Unmapped,
+      .subject_tid = *victim_tid,
+  });
+
+  // ── Run steps: fault delivery → quarantine → handoff → pager worker ───────
+  // Step 1: scheduler runs victim, fault is delivered and victim is quarantined
+  (void)axion_kernel_step(*state);
+  // Steps 2-3: pager handoff is dispatched, pager worker picks up work item
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+
+  // Pager worker should now be stalling (nobody has mapped the TVA yet)
+  const auto* victim_as = state->find_address_space(*victim_as_id);
+  check(victim_as != nullptr, "pager-service: victim address space state exists");
+  check(victim_as && victim_as->pager_needed,
+        "pager-service: victim address space is pager_needed after fault");
+  check(victim_as && victim_as->last_pager_fault.has_value(),
+        "pager-service: victim address space records last_pager_fault");
+  if (victim_as && victim_as->last_pager_fault) {
+    check(victim_as->last_pager_fault->tva == fault_tva,
+          "pager-service: last_pager_fault TVA matches the unmapped address");
+  }
+  check(state->counters.pager_service_mappings == 0,
+        "pager-service: pager_service_mappings starts at zero");
+
+  // ── Rejection: no PagerService capability ────────────────────────────────
+  // Advance scheduler to victim — victim is quarantined so scheduler moves to svc thread.
+  // But first, let's verify the rejection path using the victim's group (no PagerService).
+  // Make the scheduler current = victim_tid by forcing scheduler state temporarily.
+  // The simplest approach: call axion_kernel_call with the svc thread active.
+  // We need the svc thread to be the scheduler's current TID.
+  // Run another step to advance to the svc thread.
+  (void)axion_kernel_step(*state);
+
+  // After quarantine, scheduler should advance to svc thread.
+  // Verify rejection with a third (non-PagerService) thread.
+  sched::TiscContext noperm_ctx;
+  noperm_ctx.label        = "no-perm";
+  noperm_ctx.registers[0] = 302;
+  auto noperm_tid = axion_kernel_spawn_thread(*state, noperm_ctx);
+  check(noperm_tid.has_value(), "pager-service: no-perm thread spawns");
+
+  // Call from the current thread (svc thread is current after victim quarantine).
+  // First verify that RequestPageMapping without address_space_id returns InvalidRequest.
+  auto no_as_result = axion_kernel_call(
+      *state,
+      kernel::KernelCallRequest{.kind = kernel::KernelCallKind::RequestPageMapping});
+  check(no_as_result.status == kernel::KernelCallStatus::InvalidRequest,
+        "pager-service: RequestPageMapping without address_space_id returns InvalidRequest");
+  check(no_as_result.rejection == kernel::KernelCallRejection::MissingAddressSpace,
+        "pager-service: RequestPageMapping without address_space_id → MissingAddressSpace");
+
+  // Non-existent address space → NotFound
+  auto bad_as_result = axion_kernel_call(
+      *state,
+      kernel::KernelCallRequest{
+          .kind             = kernel::KernelCallKind::RequestPageMapping,
+          .address_space_id = static_cast<kernel::AddressSpaceId>(9999),
+      });
+  check(bad_as_result.status == kernel::KernelCallStatus::NotFound,
+        "pager-service: RequestPageMapping with nonexistent AS → NotFound");
+  check(bad_as_result.rejection == kernel::KernelCallRejection::MissingAddressSpace,
+        "pager-service: RequestPageMapping with nonexistent AS → MissingAddressSpace rejection");
+
+  // AS exists but is not pager_needed (svc thread's own AS) → AddressSpaceNotPagerNeeded
+  const auto svc_as_id = state->find_process_group_address_space(svc_pg_id);
+  check(svc_as_id.has_value(), "pager-service: service address space resolved for rejection test");
+  if (svc_as_id) {
+    auto not_needed_result = axion_kernel_call(
+        *state,
+        kernel::KernelCallRequest{
+            .kind             = kernel::KernelCallKind::RequestPageMapping,
+            .address_space_id = *svc_as_id,
+        });
+    check(not_needed_result.status == kernel::KernelCallStatus::InvalidRequest,
+          "pager-service: RequestPageMapping on non-pager-needed AS → InvalidRequest");
+    check(not_needed_result.rejection ==
+              kernel::KernelCallRejection::AddressSpaceNotPagerNeeded,
+          "pager-service: RequestPageMapping on non-pager-needed AS → AddressSpaceNotPagerNeeded");
+  }
+
+  // ── Success path: svc thread (current) supplies the page mapping ──────────
+  auto map_result = axion_kernel_call(
+      *state,
+      kernel::KernelCallRequest{
+          .kind             = kernel::KernelCallKind::RequestPageMapping,
+          .address_space_id = *victim_as_id,
+      });
+  check(map_result.status == kernel::KernelCallStatus::Ok,
+        "pager-service: RequestPageMapping returns Ok");
+  check(map_result.action_performed,
+        "pager-service: RequestPageMapping sets action_performed");
+  check(map_result.pager_mapping_supplied,
+        "pager-service: RequestPageMapping sets pager_mapping_supplied");
+  check(map_result.address_space_id == *victim_as_id,
+        "pager-service: RequestPageMapping echoes the address space id");
+  check(state->counters.pager_service_mappings == 1,
+        "pager-service: pager_service_mappings advances to 1 after first mapping");
+
+  // TVA should now be mapped
+  const auto translation = mmu::mmu_translate_checked(
+      state->page_table, fault_tva, mmu::MmuAccessMode::Read);
+  check(translation.fault == mmu::MmuFault::None,
+        "pager-service: fault TVA is mapped after RequestPageMapping");
+
+  // ── Pager worker detects mapping on next tick and resolves the work item ──
+  const auto resolutions_before = state->counters.pager_resolutions;
+  (void)axion_kernel_step(*state);
+  check(state->counters.pager_resolutions >= resolutions_before + 1,
+        "pager-service: pager_resolutions advances after mapping supplied");
+
+  // Address space should no longer be pager_needed
+  const auto* victim_as_after = state->find_address_space(*victim_as_id);
+  check(victim_as_after && !victim_as_after->pager_needed,
+        "pager-service: victim address space pager_needed cleared after resolution");
+
+  // ── Second call on same (now-resolved) AS → AddressSpaceNotPagerNeeded ───
+  auto second_result = axion_kernel_call(
+      *state,
+      kernel::KernelCallRequest{
+          .kind             = kernel::KernelCallKind::RequestPageMapping,
+          .address_space_id = *victim_as_id,
+      });
+  check(second_result.status == kernel::KernelCallStatus::InvalidRequest,
+        "pager-service: second RequestPageMapping on resolved AS → InvalidRequest");
+  check(second_result.rejection ==
+            kernel::KernelCallRejection::AddressSpaceNotPagerNeeded,
+        "pager-service: second RequestPageMapping on resolved AS → AddressSpaceNotPagerNeeded");
+  // Counter must not advance for the rejected call
+  check(state->counters.pager_service_mappings == 1,
+        "pager-service: pager_service_mappings stays at 1 after rejected second call");
+
+  // ── Runtime status view exposes pager_service_mappings ───────────────────
+  const auto status = axion_kernel_service_request(
+      *state,
+      kernel::KernelServiceRequest{.kind = kernel::KernelServiceRequestKind::RuntimeStatus});
+  check(status.status == kernel::KernelServiceStatus::Ok,
+        "pager-service: runtime status query succeeds");
+  check(status.runtime.has_value(), "pager-service: runtime status view present");
+  if (status.runtime) {
+    check(status.runtime->pager_service_mappings == 1,
+          "pager-service: runtime status view exposes pager_service_mappings == 1");
+  }
+}
+
 static void test_kernel_pager_fault_state() {
   std::printf("\n[AC-22b] Axion kernel classifies pager-needed versus policy faults\n");
 
@@ -12158,6 +12370,7 @@ int main() {
   test_kernel_user_space_isolation();
   test_kernel_aarch64_trap_entry();
   test_kernel_canonfs_fetch_spawn();
+  test_kernel_pager_service_abi();
   test_kernel_pager_fault_state();
   test_kernel_pager_worker_backlog();
   test_kernel_pager_worker_ready_bypass_cap();

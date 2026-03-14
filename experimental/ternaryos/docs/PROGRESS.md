@@ -13,10 +13,27 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-14
-**Commit:** Slice 8 — AArch64 exception vector table
+**Commit:** Slice 9 — first public pager service ABI
 **Branch:** `main`
 
 Recent architecture milestone:
+
+- **Slice 9 — first public pager service ABI** is now complete (RFC-00B7 §3.2).
+  Introduces `KernelCapabilityKind::PagerService` (new capability kind) and
+  `KernelCallKind::RequestPageMapping` (new ABI call).  A thread holding `PagerService`
+  capability calls `RequestPageMapping{address_space_id=X}` to supply a page mapping for a
+  pager-needed address space.  The kernel validates: (1) `PagerService` capability present,
+  (2) `address_space_id` provided and exists, (3) `pager_needed == true`, (4)
+  `last_pager_fault` recorded.  On success `mmu_map()` is called at `last_pager_fault->tva`
+  with permissions derived from `last_pager_fault->access_mode`; `pager_service_mappings`
+  counter increments; result carries `pager_mapping_supplied = true`.  On the next
+  `axion_kernel_step()` tick the pager worker detects the mapping via `is_pager_work_item_ready()`
+  and calls `resolve_completed_pager_work()` to clear `pager_needed` — no new pager-worker code
+  required.  New rejection variants: `AddressSpaceNotPagerNeeded`, `MissingPagerFault`.  Counter
+  `pager_service_mappings` exposed via `KernelRuntimeStatusView`.  `[AC-22o]` (34 assertions):
+  victim fault → pager stall → grant PagerService → rejection paths (no AS, bad AS, not
+  pager_needed) → success → TVA mapped → worker resolves → pager_needed cleared → second call
+  rejected → runtime view.  3016 `hal_boot_test` assertions pass (was 2982 after Slice 8).
 
 - **Slice 8 — AArch64 exception vector table** is now complete (RFC-00B6 §5.2 / ARM DDI 0487).
   `aarch64_exception_vectors.S` provides a correct 2 KiB-aligned VBAR_EL1 exception vector table

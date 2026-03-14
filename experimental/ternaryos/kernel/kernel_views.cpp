@@ -490,6 +490,7 @@ KernelRuntimeStatusView make_runtime_view(const KernelRuntimeState& state) {
       .syscall_trap_dispatches = state.counters.syscall_trap_dispatches,
       .kernel_space_rejections = state.counters.kernel_space_rejections,
       .canonfs_fetch_spawns = state.counters.canonfs_fetch_spawns,
+      .pager_service_mappings = state.counters.pager_service_mappings,
       .pager_eligible_faults = state.counters.pager_eligible_faults,
       .policy_faults = state.counters.policy_faults,
       .pager_handoffs_dispatched = state.counters.pager_handoffs_dispatched,
