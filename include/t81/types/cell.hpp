@@ -45,15 +45,19 @@ public:
     bool negative = v < 0;
     if (negative) v = -v;
 
-    for (int i = 0; v != 0 && i < TRITS; ++i) {
+    for (int i = 0; i < TRITS; ++i) {
       int rem = v % 3;
       if (rem == 2) {
         c.t_[i] = Trit::M;
         v = v / 3 + 1;
+      } else if (rem == 1) {
+        c.t_[i] = Trit::P;
+        v /= 3;
       } else {
-        c.t_[i] = static_cast<Trit>(rem - 1);  // 0→Z, 1→P
+        c.t_[i] = Trit::Z;
         v /= 3;
       }
+      if (v == 0) break;
     }
     if (negative) c = -c;
     return c;
@@ -79,25 +83,28 @@ public:
   [[nodiscard]] constexpr Cell operator+(const Cell& o) const {
     Cell r;
     int carry = 0;
-    for (int i = 0; i < TRITS; ++i) {
-      int sum = static_cast<int>(t_[i]) + static_cast<int>(o.t_[i]) + carry;
-      if (sum == 3) {
-        r.t_[i] = Trit::P;
-        carry = 1;
-      } else if (sum == -3) {
-        r.t_[i] = Trit::M;
-        carry = -1;
-      } else if (sum == 2) {
-        r.t_[i] = Trit::M;
-        carry = 1;
-      } else if (sum == -2) {
-        r.t_[i] = Trit::P;
-        carry = -1;
-      } else {
-        r.t_[i] = static_cast<Trit>(sum);
-        carry = 0;
-      }
-    }
+
+    // Unrolled 5-trit addition to avoid loop overhead and facilitate optimization
+    auto add_trit = [&](int i, int& c) {
+        int sum = static_cast<int>(t_[i]) + static_cast<int>(o.t_[i]) + c;
+        if (sum > 1) {
+            r.t_[i] = static_cast<Trit>(sum - 3);
+            c = 1;
+        } else if (sum < -1) {
+            r.t_[i] = static_cast<Trit>(sum + 3);
+            c = -1;
+        } else {
+            r.t_[i] = static_cast<Trit>(sum);
+            c = 0;
+        }
+    };
+
+    add_trit(0, carry);
+    add_trit(1, carry);
+    add_trit(2, carry);
+    add_trit(3, carry);
+    add_trit(4, carry);
+
     if (carry) throw std::overflow_error("Cell addition overflow");
     return r;
   }
@@ -123,37 +130,28 @@ public:
   // ———————— Left shift (multiply by power of 3) ————————
   [[nodiscard]] constexpr Cell operator<<(int n) const {
     if (n < 0) throw std::domain_error("Negative shift");
-    if (n >= TRITS) throw std::overflow_error("Shift overflow");
+    if (n == 0) return *this;
+    if (n >= TRITS) {
+        // Only allow shift if result is 0
+        for (int i = 0; i < TRITS; ++i) {
+            if (t_[i] != Trit::Z) throw std::overflow_error("Shift overflow (non-zero trit lost)");
+        }
+        return Cell();
+    }
     Cell shifted;
-    // Check for overflow before shifting
-    // Ensure loop runs only if TRITS > n, avoiding negative index issues in logic
-    if (n > 0) {
-      for (int i = TRITS - n; i < TRITS; ++i) {
+    for (int i = TRITS - n; i < TRITS; ++i) {
         if (t_[i] != Trit::Z) throw std::overflow_error("Shift overflow (non-zero trit lost)");
-      }
     }
     for (int i = 0; i < TRITS - n; ++i) shifted.t_[i + n] = t_[i];
-    // lower n trits remain Z → no need to clear
     return shifted;
   }
 
   // ———————— Division (restoring division, exact when divisible) ————————
   [[nodiscard]] constexpr Cell operator/(const Cell& divisor) const {
-    if (divisor == Cell::from_int(0)) throw std::domain_error("Division by zero");
-    Cell quotient;
-    Cell remainder = *this;
-    Cell abs_div = divisor.to_int() < 0 ? -divisor : divisor;
-
-    // Simple long division — works because range is tiny (243 states)
-    for (int i = TRITS - 1; i >= 0; --i) {
-      Cell candidate = abs_div << i;
-      if (candidate.to_int() <= std::abs(remainder.to_int())) {
-        quotient = quotient + (Cell::from_int(1) << i);
-        remainder = remainder - (divisor.to_int() < 0 ? -candidate : candidate);
-      }
-    }
-    if ((this->to_int() < 0) != (divisor.to_int() < 0)) quotient = -quotient;
-    return quotient;
+    int64_t a = this->to_int();
+    int64_t b = divisor.to_int();
+    if (b == 0) throw std::domain_error("Division by zero");
+    return Cell::from_int(a / b);
   }
 
   // ———————— Modulo ————————
@@ -178,16 +176,25 @@ public:
   [[nodiscard]] constexpr bool operator==(const Cell& o) const noexcept { return t_ == o.t_; }
   [[nodiscard]] constexpr bool operator!=(const Cell& o) const noexcept { return !(*this == o); }
   [[nodiscard]] constexpr bool operator<(const Cell& o) const noexcept {
-    return to_int() < o.to_int();
+    // Little-endian: t_[4] is most significant
+    for (int i = TRITS - 1; i >= 0; --i) {
+        if (t_[i] < o.t_[i]) return true;
+        if (t_[i] > o.t_[i]) return false;
+    }
+    return false;
   }
   [[nodiscard]] constexpr bool operator<=(const Cell& o) const noexcept {
-    return to_int() <= o.to_int();
+    for (int i = TRITS - 1; i >= 0; --i) {
+        if (t_[i] < o.t_[i]) return true;
+        if (t_[i] > o.t_[i]) return false;
+    }
+    return true;
   }
   [[nodiscard]] constexpr bool operator>(const Cell& o) const noexcept {
-    return to_int() > o.to_int();
+    return o < *this;
   }
   [[nodiscard]] constexpr bool operator>=(const Cell& o) const noexcept {
-    return to_int() >= o.to_int();
+    return o <= *this;
   }
 
   // ———————— Constants ————————

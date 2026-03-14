@@ -40,7 +40,7 @@ T81_NOINLINE inline bool add_overflow_i64(int64_t a, int64_t b, int64_t* out) {
 static void BM_overflow_ternary_auto(benchmark::State& state) {
     // Build max value — but force it to be runtime, not compile-time
     Cell max_val = Cell::from_int(0);
-    for (int i = 0; i < 40; ++i) {
+    for (int i = 0; i < 4; ++i) {
         max_val = max_val * Cell::from_int(3) + Cell::from_int(1);
     }
 
@@ -62,9 +62,9 @@ static void BM_overflow_ternary_auto(benchmark::State& state) {
     benchmark::DoNotOptimize(detected);
     state.SetItemsProcessed(state.iterations() * kBatch);
     state.counters["Detected"] = static_cast<double>(detected);
-    state.SetLabel("work: ops/iter=" + std::to_string(kBatch));
+    state.SetLabel("comparison=semantic-tax; work: ops/iter=" + std::to_string(kBatch));
 }
-BENCHMARK(BM_overflow_ternary_auto)->MinTime(0.1);
+BENCHMARK(BM_overflow_ternary_auto)->MinTime(0.1)->Repetitions(3);
 
 static void BM_overflow_ternary_auto_Binary(benchmark::State& state) {
     volatile int64_t max_val = std::numeric_limits<int64_t>::max();
@@ -84,9 +84,9 @@ static void BM_overflow_ternary_auto_Binary(benchmark::State& state) {
     benchmark::DoNotOptimize(detected);
     state.SetItemsProcessed(state.iterations() * kBatch);
     state.counters["Detected"] = static_cast<double>(detected);
-    state.SetLabel("work: ops/iter=" + std::to_string(kBatch));
+    state.SetLabel("comparison=semantic-tax; work: ops/iter=" + std::to_string(kBatch));
 }
-BENCHMARK(BM_overflow_ternary_auto_Binary)->MinTime(0.1);
+BENCHMARK(BM_overflow_ternary_auto_Binary)->MinTime(0.1)->Repetitions(3);
 
 static void BM_overflow_binary_silent(benchmark::State& state) {
     volatile uint64_t max_val = std::numeric_limits<uint64_t>::max();
@@ -99,9 +99,9 @@ static void BM_overflow_binary_silent(benchmark::State& state) {
     }
     benchmark::DoNotOptimize(sink);
     state.SetItemsProcessed(state.iterations() * kBatch);
-    state.SetLabel("work: ops/iter=" + std::to_string(kBatch));
+    state.SetLabel("comparison=baseline-silent; work: ops/iter=" + std::to_string(kBatch));
 }
-BENCHMARK(BM_overflow_binary_silent)->MinTime(0.1);
+BENCHMARK(BM_overflow_binary_silent)->MinTime(0.1)->Repetitions(3);
 
 static void BM_overflow_binary_checked(benchmark::State& state) {
     volatile int64_t max_val = std::numeric_limits<int64_t>::max();
@@ -121,27 +121,31 @@ static void BM_overflow_binary_checked(benchmark::State& state) {
     benchmark::DoNotOptimize(detected);
     state.SetItemsProcessed(state.iterations() * kBatch);
     state.counters["Detected"] = static_cast<double>(detected);
-    state.SetLabel("work: ops/iter=" + std::to_string(kBatch));
+    state.SetLabel("comparison=apples-to-apples; work: ops/iter=" + std::to_string(kBatch));
 }
-BENCHMARK(BM_overflow_binary_checked)->MinTime(0.1);
+BENCHMARK(BM_overflow_binary_checked)->MinTime(0.1)->Repetitions(3);
 
 static void BM_overflow_binary_checked_T81(benchmark::State& state) {
+    // We want to measure the overhead of checking for overflow vs. the silent version.
+    // In T81, Cell addition ALWAYS checks and throws.
+    // This benchmark should reflect real work: adding 1 to max_val.
     Cell max_val = Cell::from_int(Cell::MAX);
+    benchmark::DoNotOptimize(&max_val);
     int64_t detected = 0;
     state.counters["work_per_iter"] = static_cast<double>(kBatch);
     for (auto _ : state) {
         for (int i = 0; i < kBatch; ++i) {
-            if (max_val == Cell::from_int(Cell::MAX)) {
-                detected++;
-            } else {
+            try {
                 Cell result = max_val + Cell::from_int(1);
                 benchmark::DoNotOptimize(result);
+            } catch (const std::overflow_error&) {
+                detected++;
             }
         }
     }
     benchmark::DoNotOptimize(detected);
     state.SetItemsProcessed(state.iterations() * kBatch);
     state.counters["Detected"] = static_cast<double>(detected);
-    state.SetLabel("work: ops/iter=" + std::to_string(kBatch));
+    state.SetLabel("comparison=apples-to-apples; work: ops/iter=" + std::to_string(kBatch));
 }
-BENCHMARK(BM_overflow_binary_checked_T81)->MinTime(0.1);
+BENCHMARK(BM_overflow_binary_checked_T81)->Name("BM_overflow_binary_checked/T81")->MinTime(0.1)->Repetitions(3);

@@ -30,22 +30,22 @@ static void BM_RoundtripAccuracy_T81Cell(benchmark::State& state) {
             }
         }
     }
-    state.counters["Lossless%"] = (static_cast<double>(lossless_conversions) / (state.iterations() * DATA_SIZE)) * 100.0;
+    state.counters["Accuracy%"] = (static_cast<double>(lossless_conversions) / (state.iterations() * DATA_SIZE)) * 100.0;
     state.SetItemsProcessed(state.iterations() * DATA_SIZE);
-    state.SetLabel("int64_t -> Cell -> int64_t; work: ops/iter=" + std::to_string(DATA_SIZE));
+    state.SetLabel("comparison=semantic-tax; work: ops/iter=" + std::to_string(DATA_SIZE));
 }
-BENCHMARK(BM_RoundtripAccuracy_T81Cell);
+BENCHMARK(BM_RoundtripAccuracy_T81Cell)->Repetitions(3);
 
 static void BM_RoundtripAccuracy_Int64(benchmark::State& state) {
     setup_roundtrip();
     state.counters["work_per_iter"] = static_cast<double>(DATA_SIZE);
     for (auto _ : state) {
         for (const auto& val : source_data) {
-            volatile int64_t temp = val;
+            int64_t temp = val;
             benchmark::DoNotOptimize(temp);
         }
     }
     state.SetItemsProcessed(state.iterations() * DATA_SIZE);
-    state.SetLabel("No sign-bit tax; work: ops/iter=" + std::to_string(DATA_SIZE));
+    state.SetLabel("comparison=semantic-tax; work: ops/iter=" + std::to_string(DATA_SIZE));
 }
-BENCHMARK(BM_RoundtripAccuracy_Int64);
+BENCHMARK(BM_RoundtripAccuracy_Int64)->Repetitions(3);
