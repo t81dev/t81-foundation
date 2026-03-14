@@ -2257,6 +2257,149 @@ static void test_kernel_user_space_isolation() {
   }
 }
 
+static void test_kernel_canonfs_fetch_spawn() {
+  std::printf("\n[AC-22m] RFC-00B2 §3.1: SpawnThreadFromExecutableObject fetches CanonExec from CanonFS without prior registration\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  // Bootstrap a kernel with one running thread so the ABI has a current caller.
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "canonfs-fetch-spawn: kernel bootstrap succeeds");
+  if (!state) return;
+
+  t81::ternaryos::sched::TiscContext boot_thread;
+  boot_thread.label = "canonfs-fetch-boot";
+  boot_thread.registers[0] = 51;
+  auto boot_tid = axion_kernel_spawn_thread(*state, boot_thread);
+  check(boot_tid.has_value(), "canonfs-fetch-spawn: boot thread spawns");
+  if (!boot_tid) return;
+  check(axion_kernel_tick(*state), "canonfs-fetch-spawn: boot thread becomes current");
+
+  // Build a CanonExec block and write it directly to an in-memory CanonFS driver.
+  // No RegisterExecutableObject call — Slice 7 should let Spawn fetch on demand.
+  const uint64_t entry_pc = mmu::tva_from_vpn_offset(5, 0);  // VPN 5, offset 0
+  const KernelThreadSpawnDescriptor fetch_descriptor{
+      .pc        = static_cast<std::size_t>(entry_pc),
+      .sp        = 0,
+      .register0 = 555,
+      .label     = "canonfs-fetch-entry",
+  };
+  const auto fetch_ref   = executable_ref_for(fetch_descriptor);
+  const auto fetch_block = executable_block_for(fetch_descriptor);
+
+  // Write the block to the driver before binding it to the kernel.
+  auto driver = t81::canonfs::make_in_memory_driver();
+  check(driver != nullptr, "canonfs-fetch-spawn: in-memory driver created");
+  if (!driver) return;
+  {
+    const auto block_bytes = fetch_block.to_bytes();
+    auto write_result = driver->write_object(
+        t81::canonfs::ObjectType::CanonExec,
+        std::span<const std::byte>(block_bytes.data(), block_bytes.size()));
+    check(write_result.has_value(),
+          "canonfs-fetch-spawn: write_object succeeds on in-memory driver");
+    if (!write_result) return;
+    check(write_result->hash.h.bytes == fetch_ref.hash.h.bytes,
+          "canonfs-fetch-spawn: written CanonRef hash matches block hash");
+  }
+
+  // Bind the populated driver to the kernel.
+  check(axion_kernel_bind_published_executable_canonfs(*state, std::move(driver)),
+        "canonfs-fetch-spawn: CanonFS driver bound to kernel");
+
+  // ── Spawn without prior RegisterExecutableObject ──────────────────────────
+  const std::size_t pages_before = state->page_table.size();
+  const uint64_t fetch_spawns_before = state->counters.canonfs_fetch_spawns;
+
+  auto spawn_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind       = KernelCallKind::SpawnThreadFromExecutableObject,
+          .object_ref = fetch_ref,
+      });
+  check(spawn_result.status == KernelCallStatus::Ok,
+        "canonfs-fetch-spawn: spawn returns Ok without prior registration");
+  check(spawn_result.rejection == KernelCallRejection::None,
+        "canonfs-fetch-spawn: spawn clears rejection");
+  check(spawn_result.action_performed,
+        "canonfs-fetch-spawn: spawn reports action performed");
+  check(spawn_result.spawned_tid.has_value(),
+        "canonfs-fetch-spawn: spawn returns a spawned TID");
+  if (!spawn_result.spawned_tid) return;
+
+  // Counter must have advanced by exactly one.
+  check(state->counters.canonfs_fetch_spawns == fetch_spawns_before + 1,
+        "canonfs-fetch-spawn: canonfs_fetch_spawns incremented after first fetch");
+
+  // Page must have been mapped by the section loader.
+  check(state->page_table.size() == pages_before + 1,
+        "canonfs-fetch-spawn: one new page mapped after CanonFS-fetch spawn");
+  check(mmu::mmu_translate(state->page_table, entry_pc).has_value(),
+        "canonfs-fetch-spawn: entry TVA translates after spawn");
+
+  // Spawned thread has the correct PC.
+  const auto* spawned_ctx =
+      state->scheduler.run_queue().find(*spawn_result.spawned_tid);
+  check(spawned_ctx != nullptr,
+        "canonfs-fetch-spawn: spawned thread appears in scheduler");
+  if (spawned_ctx) {
+    check(spawned_ctx->pc == static_cast<std::size_t>(entry_pc),
+          "canonfs-fetch-spawn: spawned PC equals entry TVA");
+    check(spawned_ctx->label == "canonfs-fetch-entry",
+          "canonfs-fetch-spawn: spawned label preserved");
+  }
+
+  // ── Re-spawn the same ref — already-mapped page reused, counter advances ──
+  const std::size_t pages_after_first = state->page_table.size();
+  auto respawn_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind       = KernelCallKind::SpawnThreadFromExecutableObject,
+          .object_ref = fetch_ref,
+      });
+  check(respawn_result.status == KernelCallStatus::Ok,
+        "canonfs-fetch-spawn: re-spawn from CanonFS returns Ok");
+  check(respawn_result.spawned_tid.has_value(),
+        "canonfs-fetch-spawn: re-spawn returns a TID");
+  check(state->counters.canonfs_fetch_spawns == fetch_spawns_before + 2,
+        "canonfs-fetch-spawn: canonfs_fetch_spawns reaches 2 after second fetch");
+  // Section loader reuses the already-mapped page — no new page allocated.
+  check(state->page_table.size() == pages_after_first,
+        "canonfs-fetch-spawn: re-spawn reuses existing mapped page");
+
+  // ── Spawn a CanonRef not present in CanonFS — must fail cleanly ───────────
+  const KernelThreadSpawnDescriptor missing_descriptor{
+      .pc = mmu::tva_from_vpn_offset(99, 0), .label = "missing-entry"};
+  const auto missing_ref = executable_ref_for(missing_descriptor);
+
+  auto missing_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind       = KernelCallKind::SpawnThreadFromExecutableObject,
+          .object_ref = missing_ref,
+      });
+  check(missing_result.status != KernelCallStatus::Ok,
+        "canonfs-fetch-spawn: spawn with unknown CanonRef fails");
+  check(missing_result.rejection == KernelCallRejection::MissingExecutableRegistration,
+        "canonfs-fetch-spawn: unknown CanonRef returns MissingExecutableRegistration");
+  // Counter must not have advanced for the failed lookup.
+  check(state->counters.canonfs_fetch_spawns == fetch_spawns_before + 2,
+        "canonfs-fetch-spawn: canonfs_fetch_spawns unchanged after failed lookup");
+
+  // ── Runtime status view exposes the counter ───────────────────────────────
+  const auto status = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(status.status == KernelServiceStatus::Ok,
+        "canonfs-fetch-spawn: runtime status query succeeds");
+  check(status.runtime.has_value(),
+        "canonfs-fetch-spawn: runtime status view present");
+  if (status.runtime) {
+    check(status.runtime->canonfs_fetch_spawns == fetch_spawns_before + 2,
+          "canonfs-fetch-spawn: runtime view exposes canonfs_fetch_spawns == 2");
+  }
+}
+
 static void test_kernel_pager_fault_state() {
   std::printf("\n[AC-22b] Axion kernel classifies pager-needed versus policy faults\n");
 
@@ -11909,6 +12052,7 @@ int main() {
   test_kernel_device_wake_interrupt();
   test_kernel_syscall_trap_wiring();
   test_kernel_user_space_isolation();
+  test_kernel_canonfs_fetch_spawn();
   test_kernel_pager_fault_state();
   test_kernel_pager_worker_backlog();
   test_kernel_pager_worker_ready_bypass_cap();

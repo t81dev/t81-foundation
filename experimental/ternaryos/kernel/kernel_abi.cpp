@@ -1072,9 +1072,32 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
         return *denied;
       }
       const KernelRuntimeState::ExecutableRecord* executable_record = nullptr;
+      // Temporary storage for a record fetched directly from CanonFS (Slice 7).
+      // Lives for the duration of this case so executable_record can point into it.
+      std::optional<KernelRuntimeState::ExecutableRecord> canonfs_record{};
       if (auto invalid = resolve_executable_record(caller, request, executable_record);
           invalid.has_value()) {
-        return *invalid;
+        // On a registry miss, attempt a direct CanonFS fetch before giving up.
+        // This is the Slice 7 path: SpawnThreadFromExecutableObject no longer
+        // requires a prior RegisterExecutableObject call when a bound CanonFS
+        // driver holds the CanonExec block (RFC-00B2 §3.1).
+        if (invalid->rejection == KernelCallRejection::MissingExecutableRegistration &&
+            request.object_ref.has_value()) {
+          auto fetched_block =
+              load_published_executable_block(state, *request.object_ref);
+          if (fetched_block.has_value()) {
+            canonfs_record = KernelRuntimeState::ExecutableRecord{
+                .object_ref  = *request.object_ref,
+                .image_block = *fetched_block,
+            };
+            executable_record = &*canonfs_record;
+            state.counters.canonfs_fetch_spawns++;
+          } else {
+            return *invalid;
+          }
+        } else {
+          return *invalid;
+        }
       }
       KernelThreadSpawnDescriptor loaded_descriptor;
       if (auto invalid =

@@ -532,6 +532,22 @@ The next milestone on the critical path toward a bootable kernel:
 
 The next milestone toward the bootable kernel:
 
+**Slice 7 — CanonFS-backed executable object acquisition is now complete:**
+
+- `SpawnThreadFromExecutableObject` now resolves a `CanonRef` directly from the
+  bound `published_executable_canonfs` driver when it is absent from the
+  in-memory registry — the first CanonFS-first spawn path (RFC-00B2 §3.1).
+- On a registry miss the kernel calls `load_published_executable_block()`,
+  decodes the returned `CanonExec` block, builds a temporary `ExecutableRecord`,
+  and proceeds through the existing section-loader and thread-spawn path.
+- `counters.canonfs_fetch_spawns` and `KernelRuntimeStatusView.canonfs_fetch_spawns`
+  track spawns that took the CanonFS fetch path.
+- A `CanonRef` absent from both registry and CanonFS still returns
+  `MissingExecutableRegistration` — no silent fallback.
+- `[AC-22m]` (27 assertions) proves: in-memory driver write → spawn without
+  registration → Ok + page mapped + correct PC/label → re-spawn reuses page →
+  unknown ref fails → runtime view exposes counter.
+
 ## Recommended Order
 
 1. preserve the current service-runtime contract without widening it casually
@@ -553,3 +569,4 @@ The next milestone toward the bootable kernel:
 12. **[DONE]** Slice 4 — syscall trap wiring: ARM `svc` exception vector → typed ABI boundary
 13. **[DONE]** Slice 5 — user-mode address space isolation (kernel vs. user TVA split)
 14. **[DONE]** Slice 6 — QEMU AArch64 EDK2 guest image bootstrap
+15. **[DONE]** Slice 7 — CanonFS-backed executable object acquisition

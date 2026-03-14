@@ -148,6 +148,7 @@ struct KernelRuntimeStatusView {
   std::size_t device_waiting_thread_count{0}; ///< threads currently waiting on any device source
   uint64_t syscall_trap_dispatches{0}; ///< SVC traps dispatched through wire-TVA path (RFC-00B6 §5.2)
   uint64_t kernel_space_rejections{0}; ///< user AS span attempts into kernel TVA space (RFC-00B1 §3.1)
+  uint64_t canonfs_fetch_spawns{0};    ///< spawns resolved from CanonFS without prior in-memory registration (RFC-00B2 §3.1)
   uint64_t pager_eligible_faults{0};
   uint64_t policy_faults{0};
   uint64_t pager_handoffs_dispatched{0};

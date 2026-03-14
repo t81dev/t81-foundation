@@ -13,10 +13,25 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-14
-**Commit:** Slice 6 — QEMU AArch64 EDK2 guest image bootstrap
+**Commit:** Slice 7 — CanonFS-backed executable object acquisition
 **Branch:** `main`
 
 Recent architecture milestone:
+
+- **Slice 7 — CanonFS-backed executable object acquisition** is now complete (RFC-00B2 §3.1).
+  `SpawnThreadFromExecutableObject` now fetches a `CanonExec` block directly from the bound
+  `published_executable_canonfs` driver when the requested `CanonRef` is not present in the
+  in-memory registry — no prior `RegisterExecutableObject` call required.  On a registry miss the
+  kernel calls `load_published_executable_block()` (CanonFS primary → CanonStore fallback),
+  decodes the block, builds a temporary `ExecutableRecord`, increments
+  `counters.canonfs_fetch_spawns`, then proceeds through the existing section-loader and thread-spawn
+  path unchanged.  A missing `CanonRef` (not in registry and not in CanonFS) still returns
+  `MissingExecutableRegistration`.  New counter `canonfs_fetch_spawns` is exposed through
+  `KernelRuntimeStatusView`.  `[AC-22m]` (27 assertions): in-memory driver populated, spawn without
+  registration returns Ok, counter reaches 1, page mapped, spawned PC/label correct, re-spawn
+  reuses existing page and counter reaches 2, unknown CanonRef returns
+  `MissingExecutableRegistration`, runtime status view exposes `canonfs_fetch_spawns == 2`.
+  2958 `hal_boot_test` assertions pass (was 2931 after Slice 6).
 
 - **Slice 6 — QEMU AArch64 EDK2 guest image bootstrap** is now complete (RFC-00B3 §3.9).
   A freestanding `BOOTAA64.EFI` (compiled with `--target=aarch64-pc-windows-msvc -ffreestanding
