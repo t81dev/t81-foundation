@@ -1,3 +1,12 @@
+<p align="center">
+  <img src="assets/banner.png" alt="T81 Foundation — Deterministic Ternary Architecture" width="100%">
+</p>
+
+[English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
+
+<!-- T81-SPEED-START -->
+<!-- T81-SPEED-END -->
+
 # T81 Foundation: Ternary-Native Computing Stack
 
 ![Project Status](https://img.shields.io/badge/status-Active_Engineering-gold)
