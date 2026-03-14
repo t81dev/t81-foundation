@@ -1393,6 +1393,28 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.thread_sleeping = true;
       return result;
     }
+    case KernelCallKind::WaitForDevice: {
+      // RFC-00B5 §3.3 — device-wake: park the calling thread in the per-source
+      // wait set.  When a matching Storage or Network interrupt is delivered,
+      // the kernel will send a synthetic IPC message and call scheduler.wake().
+      if (!request.device_source.has_value()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::None;
+        return result;
+      }
+      const uint8_t src_key = static_cast<uint8_t>(*request.device_source);
+      // Park the calling thread.
+      if (!state.scheduler.sleep(caller.tid, state.cpu_context)) {
+        result.status = KernelCallStatus::RetryLater;
+        return result;
+      }
+      state.device_waiting_tids[src_key].insert(caller.tid);
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.thread_sleeping = true;
+      return result;
+    }
     case KernelCallKind::ReadFaultInbox: {
       KernelRuntimeState::ThreadRuntimeState* target_thread_state = nullptr;
       if (auto invalid =

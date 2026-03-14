@@ -40,8 +40,8 @@ The broader structural assessment and follow-on refactor plan now live in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `3709`
-- `t81_ternaryos_hal_boot_test`: `2833/2833`
+- total assertions: `3751`
+- `t81_ternaryos_hal_boot_test`: `2875/2875`
 - `t81_ternaryos_device_driver_test`: `342/342`
 - `t81_ternaryos_shell_session_test`: `183/183`
 - `t81_ternaryos_scheduler_test`: `120/120`
@@ -187,6 +187,12 @@ Kernel integration proof now also includes:
   present) returns immediately without sleeping; runtime status view exposes
   `ipc_blocks`, `ipc_wakes`, `ipc_blocked_thread_count` (`[AC-22i]`,
   45 assertions)
+- **Slice 3** — device-wake interrupts are now proven: `WaitForDevice(source)`
+  parks a thread in `device_waiting_tids[source]`; Storage and Network interrupt
+  delivery sends a synthetic `CanonMessage` (tag `"device-wake"`, payload =
+  interrupt sequence) and wakes each waiting thread; Keyboard remains
+  accounting-only; runtime status view exposes `device_wakes` and
+  `device_waiting_thread_count` (`[AC-22j]`, 43 assertions)
 - audit-summary interrupt queue alignment is now retained too: pending
   interrupt count, pending source composition, and FIFO head/tail visibility
   are exposed there alongside interrupt history

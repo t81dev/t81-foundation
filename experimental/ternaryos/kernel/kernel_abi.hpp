@@ -2,6 +2,7 @@
 
 #include "kernel_base.hpp"
 #include "kernel_runtime_support.hpp"
+#include "../hal/hal.hpp"
 #include "../ipc/canon_message.hpp"
 
 #include <optional>
@@ -103,6 +104,8 @@ enum class KernelCallKind : uint8_t {
   MarkServiceHealthy,
   // RFC-00B6 §5.3.2 — blocking IPC receive (RFC-00B5 §3.6 continuation model)
   BlockOnIpcReceive,
+  // RFC-00B5 §3.3 — park calling thread until a device interrupt arrives
+  WaitForDevice,
 };
 
 enum class KernelCallStatus : uint8_t {
@@ -164,6 +167,7 @@ struct KernelCallRequest {
   std::optional<bool> boot_critical{};
   std::optional<sched::Tid> ipc_dst{};
   std::optional<ipc::CanonMessage> message{};
+  std::optional<hal::InterruptSource> device_source{};  ///< WaitForDevice target source
   std::optional<t81::canonfs::CanonRef> object_ref{};
   std::optional<KernelCapabilityRecord> capability{};
   std::optional<KernelThreadSpawnDescriptor> spawn_descriptor{};

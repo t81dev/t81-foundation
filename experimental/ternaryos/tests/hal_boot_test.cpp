@@ -1799,6 +1799,186 @@ static void test_kernel_blocking_ipc() {
   }
 }
 
+static void test_kernel_device_wake_interrupt() {
+  std::printf(
+      "\n[AC-22j] RFC-00B5 §3.3: WaitForDevice parks thread; Storage/Network "
+      "interrupt wakes it\n");
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "device wake: kernel bootstrap succeeds");
+  if (!state) return;
+
+  // Spawn a waiter thread and a sender thread.
+  t81::ternaryos::sched::TiscContext waiter_ctx{};
+  waiter_ctx.label = "device-waiter";
+  t81::ternaryos::sched::TiscContext other_ctx{};
+  other_ctx.label = "other-thread";
+
+  auto waiter_tid = axion_kernel_spawn_thread(*state, waiter_ctx);
+  auto other_tid  = axion_kernel_spawn_thread(*state, other_ctx);
+  check(waiter_tid.has_value(), "device wake: waiter thread spawns");
+  check(other_tid.has_value(),  "device wake: other thread spawns");
+  if (!waiter_tid || !other_tid) return;
+
+  // Pre-condition counters.
+  check(state->counters.device_wakes == 0,
+        "device wake: device_wakes zero before any wait");
+  check(state->device_waiting_tids.empty() ||
+        [&]() {
+          for (auto& [k,s] : state->device_waiting_tids) if (!s.empty()) return false;
+          return true;
+        }(),
+        "device wake: no device-waiting threads before WaitForDevice");
+
+  // ── Tick to waiter; call WaitForDevice(Storage) ──────────────────────────
+  check(axion_kernel_tick(*state), "device wake: tick makes waiter current");
+  check(state->scheduler.current_tid() == *waiter_tid,
+        "device wake: waiter is current thread");
+
+  auto wait_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind          = KernelCallKind::WaitForDevice,
+          .device_source = InterruptSource::Storage,
+      });
+  check(wait_result.status == KernelCallStatus::Ok,
+        "device wake: WaitForDevice returns Ok");
+  check(wait_result.action_performed,
+        "device wake: WaitForDevice reports action performed");
+  check(wait_result.thread_sleeping,
+        "device wake: WaitForDevice sets thread_sleeping");
+
+  // Waiter must now be sleeping.
+  const uint8_t storage_key =
+      static_cast<uint8_t>(InterruptSource::Storage);
+  check(state->device_waiting_tids.count(storage_key) > 0 &&
+        state->device_waiting_tids.at(storage_key).count(*waiter_tid) > 0,
+        "device wake: waiter recorded in device_waiting_tids[Storage]");
+  check(state->scheduler.run_queue().sleeping_count() == 1,
+        "device wake: scheduler shows one sleeping thread");
+  check(state->scheduler.current_tid() == *other_tid,
+        "device wake: other thread is current after waiter parks");
+
+  // ── Fire a Storage interrupt ──────────────────────────────────────────────
+  HardwareInterrupt storage_irq{
+      .source       = InterruptSource::Storage,
+      .payload      = 0xAB,
+      .timestamp_ns = 1000,
+  };
+  check(axion_kernel_record_interrupt(*state, storage_irq),
+        "device wake: Storage interrupt recorded");
+  check(state->pending_interrupts.size() == 1,
+        "device wake: one interrupt pending after record");
+
+  check(axion_kernel_deliver_pending_interrupt(*state),
+        "device wake: deliver_pending_interrupt returns true");
+
+  // Waiter must now be awake.
+  check(state->counters.device_wakes == 1,
+        "device wake: device_wakes == 1 after Storage interrupt delivery");
+  check(state->device_waiting_tids.at(storage_key).empty(),
+        "device wake: device_waiting_tids[Storage] cleared after wake");
+  check(state->scheduler.run_queue().sleeping_count() == 0,
+        "device wake: no sleeping threads after wake");
+
+  // ── Tick to waiter; ReceiveMessage gets the synthetic device-wake message ─
+  check(axion_kernel_tick(*state), "device wake: tick switches to waiter");
+  check(state->scheduler.current_tid() == *waiter_tid,
+        "device wake: waiter is current after tick");
+
+  auto recv_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
+  check(recv_result.status == KernelCallStatus::Ok,
+        "device wake: ReceiveMessage on woken waiter returns Ok");
+  check(recv_result.message.has_value(),
+        "device wake: ReceiveMessage delivers the synthetic device-wake message");
+  if (recv_result.message) {
+    check(recv_result.message->sender == KernelRuntimeState::kKernelTid,
+          "device wake: message sender is kKernelTid");
+    check(recv_result.message->tag == "device-wake",
+          "device wake: message tag is 'device-wake'");
+    check(recv_result.message->payload == state->last_delivered_interrupt->sequence,
+          "device wake: message payload == interrupt sequence");
+  }
+
+  // ── Network interrupt also wakes a waiting thread ─────────────────────────
+  t81::ternaryos::sched::TiscContext net_waiter_ctx{};
+  net_waiter_ctx.label = "net-waiter";
+  auto net_waiter_tid = axion_kernel_spawn_thread(*state, net_waiter_ctx);
+  check(net_waiter_tid.has_value(), "device wake (net): net-waiter spawns");
+  if (!net_waiter_tid) return;
+
+  // Tick to net-waiter.
+  // Run ticks until net-waiter is current.
+  for (int i = 0; i < 4; ++i) {
+    if (state->scheduler.current_tid() == *net_waiter_tid) break;
+    axion_kernel_tick(*state);
+  }
+  check(state->scheduler.current_tid() == *net_waiter_tid,
+        "device wake (net): net-waiter is current");
+
+  auto net_wait = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind          = KernelCallKind::WaitForDevice,
+          .device_source = InterruptSource::Network,
+      });
+  check(net_wait.status == KernelCallStatus::Ok,
+        "device wake (net): WaitForDevice(Network) returns Ok");
+  check(net_wait.thread_sleeping,
+        "device wake (net): WaitForDevice(Network) parks thread");
+
+  const uint8_t network_key =
+      static_cast<uint8_t>(InterruptSource::Network);
+  check(state->device_waiting_tids.count(network_key) > 0 &&
+        state->device_waiting_tids.at(network_key).count(*net_waiter_tid) > 0,
+        "device wake (net): net-waiter in device_waiting_tids[Network]");
+
+  HardwareInterrupt net_irq{
+      .source       = InterruptSource::Network,
+      .payload      = 0xCD,
+      .timestamp_ns = 2000,
+  };
+  check(axion_kernel_record_interrupt(*state, net_irq),
+        "device wake (net): Network interrupt recorded");
+  check(axion_kernel_deliver_pending_interrupt(*state),
+        "device wake (net): deliver_pending_interrupt returns true");
+  check(state->counters.device_wakes == 2,
+        "device wake (net): device_wakes == 2 after Network interrupt delivery");
+  check(state->device_waiting_tids.at(network_key).empty(),
+        "device wake (net): device_waiting_tids[Network] cleared");
+
+  // ── Keyboard interrupt does NOT wake waiting threads (accounting only) ────
+  const uint64_t wakes_before_keyboard = state->counters.device_wakes;
+  HardwareInterrupt kbd_irq{
+      .source       = InterruptSource::Keyboard,
+      .payload      = 0x41,
+      .timestamp_ns = 3000,
+  };
+  check(axion_kernel_record_interrupt(*state, kbd_irq),
+        "device wake (kbd): Keyboard interrupt recorded");
+  check(axion_kernel_deliver_pending_interrupt(*state),
+        "device wake (kbd): deliver_pending_interrupt returns true");
+  check(state->counters.device_wakes == wakes_before_keyboard,
+        "device wake (kbd): device_wakes unchanged for Keyboard interrupt");
+
+  // ── Runtime status view exposes device_wakes and device_waiting_thread_count
+  auto status_result = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(status_result.status == KernelServiceStatus::Ok,
+        "device wake: runtime status query succeeds");
+  check(status_result.runtime.has_value(),
+        "device wake: runtime status view present");
+  if (status_result.runtime) {
+    check(status_result.runtime->device_wakes == 2,
+          "device wake: runtime status reports device_wakes == 2");
+    check(status_result.runtime->device_waiting_thread_count == 0,
+          "device wake: runtime status reports device_waiting_thread_count == 0 after drain");
+  }
+}
+
 static void test_kernel_pager_fault_state() {
   std::printf("\n[AC-22b] Axion kernel classifies pager-needed versus policy faults\n");
 
@@ -11448,6 +11628,7 @@ int main() {
   test_kernel_timer_interrupt_preemption();
   test_kernel_executable_section_load();
   test_kernel_blocking_ipc();
+  test_kernel_device_wake_interrupt();
   test_kernel_pager_fault_state();
   test_kernel_pager_worker_backlog();
   test_kernel_pager_worker_ready_bypass_cap();

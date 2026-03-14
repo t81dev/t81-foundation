@@ -479,10 +479,9 @@ The first real interrupt-policy slice under RFC-00B5 is now complete:
 
 The next milestone on the critical path toward a bootable kernel:
 
-**Slice 3 — Device-wake interrupts**: Storage/Network interrupt delivery
-wakes device-waiting threads.  Slice 2 blocking primitives are now stable and
-serve as the prerequisite for this work.  Slice 4 follows with syscall trap
-wiring: ARM `svc` exception vector → typed ABI boundary.
+**Slice 4 — Syscall trap wiring**: ARM `svc` exception vector → typed ABI
+boundary.  Slices 1A–3 are now complete; this is the next milestone on the
+critical path toward a bootable kernel.
 
 ## Recommended Order
 
@@ -501,5 +500,5 @@ wiring: ARM `svc` exception vector → typed ABI boundary.
    exist
 9. **[DONE]** Slice 1A — real executable section load into mapped address space
 10. **[DONE]** Slice 2 — blocking IPC: thread sleep/wake on inbox
-11. Slice 3 — device-wake: Storage/Network interrupt wakes device-waiting threads
+11. **[DONE]** Slice 3 — device-wake: Storage/Network interrupt wakes device-waiting threads
 12. Slice 4 — syscall trap wiring: ARM `svc` exception vector → typed ABI boundary

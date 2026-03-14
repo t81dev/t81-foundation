@@ -1,6 +1,7 @@
 #include "kernel_main.hpp"
 
 #include <algorithm>
+#include <cstdint>
 
 namespace t81::ternaryos::kernel {
 
@@ -117,7 +118,31 @@ bool axion_kernel_deliver_pending_interrupt(KernelRuntimeState& state) noexcept 
       break;
     }
     case hal::InterruptSource::Storage:
-    case hal::InterruptSource::Network:
+    case hal::InterruptSource::Network: {
+      ++state.counters.device_interrupts_handled;
+      // RFC-00B5 §3.3 — wake any threads parked via WaitForDevice for this source.
+      const uint8_t src_key =
+          static_cast<uint8_t>(state.last_delivered_interrupt->source);
+      auto it = state.device_waiting_tids.find(src_key);
+      if (it != state.device_waiting_tids.end() && !it->second.empty()) {
+        // Deliver a synthetic IPC message to each waiting thread then wake it.
+        const t81::canonfs::CanonRef zero_ref{};
+        for (const sched::Tid wtid : it->second) {
+          axion_kernel_ipc_send(
+              state, wtid,
+              ipc::CanonMessage{
+                  .sender  = KernelRuntimeState::kKernelTid,
+                  .ref     = zero_ref,
+                  .payload = state.last_delivered_interrupt->sequence,
+                  .tag     = "device-wake",
+              });
+          state.scheduler.wake(wtid);
+          ++state.counters.device_wakes;
+        }
+        it->second.clear();
+      }
+      break;
+    }
     case hal::InterruptSource::Keyboard:
       ++state.counters.device_interrupts_handled;
       break;

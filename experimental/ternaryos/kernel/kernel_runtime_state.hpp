@@ -235,8 +235,9 @@ struct KernelRuntimeState {
     uint64_t timer_interrupts_handled{0};
     uint64_t timer_preempts{0};
     uint64_t device_interrupts_handled{0};
-    uint64_t ipc_blocks{0};   ///< threads that slept on empty inbox (RFC-00B6 §5.3.2)
-    uint64_t ipc_wakes{0};    ///< threads woken by a successful SendMessage
+    uint64_t ipc_blocks{0};    ///< threads that slept on empty inbox (RFC-00B6 §5.3.2)
+    uint64_t ipc_wakes{0};     ///< threads woken by a successful SendMessage
+    uint64_t device_wakes{0};  ///< threads woken by a device interrupt (RFC-00B5 §3.3)
   };
 
   std::string platform_id;
@@ -266,6 +267,8 @@ struct KernelRuntimeState {
   std::unordered_map<ProcessGroupId, ServiceId> process_group_services;
   /// Threads currently sleeping on an empty IPC inbox (RFC-00B6 §5.3.2 blocking receive).
   std::unordered_set<sched::Tid> ipc_blocked_tids;
+  /// Threads parked waiting for a device interrupt (RFC-00B5 §3.3), keyed by source.
+  std::unordered_map<uint8_t, std::unordered_set<sched::Tid>> device_waiting_tids;
 
   std::unique_ptr<t81::ternaryos::dev::IBlockDevice> published_executable_store_device;
   std::unique_ptr<t81::canonfs::Driver> published_executable_canonfs;

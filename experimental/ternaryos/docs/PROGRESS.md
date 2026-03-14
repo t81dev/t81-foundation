@@ -6,18 +6,30 @@ Working name note: the project-facing OS name is now `Axion`, while internal
 paths, namespaces, and build/test identifiers still use `ternaryos`.
 
 Current naming split:
+
 - `T81 Foundation` = umbrella project/ecosystem
 - `T81VM` = ternary runtime/execution substrate
 - `Axion` = operating system
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-14
-**Commit:** Slice 2 — Blocking IPC (`BlockOnIpcReceive`, wake-on-send)
+**Commit:** Slice 3 — Device-wake interrupts (`WaitForDevice`, Storage/Network wake)
 **Branch:** `main`
 
 Recent architecture milestone:
 
-- **Slice 2 — Blocking IPC** is now implemented (RFC-00B6 §5.3.2 / RFC-00B5 §3.6).
+- **Slice 3 — Device-wake interrupts** is now implemented (RFC-00B5 §3.3).
+  A new `KernelCallKind::WaitForDevice` handler parks the calling thread in
+  `device_waiting_tids[source]` via `scheduler.sleep()`.  When a Storage or
+  Network interrupt is delivered by `axion_kernel_deliver_pending_interrupt`,
+  the kernel sends a synthetic `CanonMessage` (sender=kKernelTid,
+  tag=`"device-wake"`, payload=interrupt sequence) to each waiting thread and
+  calls `scheduler.wake()`.  Keyboard remains accounting-only.
+  `device_wakes` counter and `device_waiting_thread_count` view field are
+  exposed through `KernelRuntimeStatusView`.
+  `[AC-22j]` (43 assertions): Storage park/wake/message round-trip, Network
+  park/wake, Keyboard no-wake, runtime status view coverage.
+- **Slice 2 — Blocking IPC** is now also complete (RFC-00B6 §5.3.2 / RFC-00B5 §3.6).
   A new `KernelCallKind::BlockOnIpcReceive` handler in `kernel_abi.cpp` parks
   the calling thread on an empty inbox via `scheduler.sleep()`, records its TID
   in the new `ipc_blocked_tids` unordered_set in `KernelRuntimeState`, and
@@ -39,7 +51,7 @@ Recent architecture milestone:
   `load_canon_exec_sections()` maps the CanonExec image block into the kernel
   page table with read+execute permissions; `SpawnThreadFromExecutableObject`
   calls it before spawning.  `[AC-22h]` (24 assertions) proves the section
-  load path.  Total ternaryos assertions: **3709**.
+  load path.  Total ternaryos assertions: **3751**.
 - Previous milestone: RFC-00B5 first interrupt policy slice — Timer interrupt
   delivery forces `axion_kernel_tick()` for preemptive scheduling.  New
   counters `timer_interrupts_handled`, `timer_preempts`,
@@ -48,6 +60,7 @@ Recent architecture milestone:
   Test `[AC-22g]` (35 assertions).
 
 Previous architecture milestone:
+
 - The original kernel monolith has now been decomposed into subsystem-oriented
   units: `kernel_runtime.cpp`, `kernel_views.cpp`, `kernel_queries.cpp`,
   `kernel_actions.cpp`, `kernel_faults.cpp`, `kernel_interrupts.cpp`,

@@ -142,8 +142,10 @@ struct KernelRuntimeStatusView {
   std::optional<uint64_t> last_timer_preempt_cycle{};
   std::optional<uint64_t> last_timer_preempt_sequence{};
   uint64_t ipc_blocks{0};             ///< threads that slept on empty inbox
-  uint64_t ipc_wakes{0};              ///< threads woken by SendMessage
+  uint64_t ipc_wakes{0};             ///< threads woken by SendMessage
   std::size_t ipc_blocked_thread_count{0}; ///< threads currently sleeping on IPC inbox
+  uint64_t device_wakes{0};          ///< threads woken by a device interrupt (RFC-00B5 §3.3)
+  std::size_t device_waiting_thread_count{0}; ///< threads currently waiting on any device source
   uint64_t pager_eligible_faults{0};
   uint64_t policy_faults{0};
   uint64_t pager_handoffs_dispatched{0};

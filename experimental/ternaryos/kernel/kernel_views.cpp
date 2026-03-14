@@ -481,6 +481,12 @@ KernelRuntimeStatusView make_runtime_view(const KernelRuntimeState& state) {
       .ipc_blocks = state.counters.ipc_blocks,
       .ipc_wakes = state.counters.ipc_wakes,
       .ipc_blocked_thread_count = state.ipc_blocked_tids.size(),
+      .device_wakes = state.counters.device_wakes,
+      .device_waiting_thread_count = [&state]() -> std::size_t {
+        std::size_t n = 0;
+        for (const auto& [k, s] : state.device_waiting_tids) n += s.size();
+        return n;
+      }(),
       .pager_eligible_faults = state.counters.pager_eligible_faults,
       .policy_faults = state.counters.policy_faults,
       .pager_handoffs_dispatched = state.counters.pager_handoffs_dispatched,
