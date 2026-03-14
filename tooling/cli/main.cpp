@@ -1431,29 +1431,10 @@ More command groups:
 }
 
 bool print_help_topic(std::string_view topic, const char* prog) {
-  if (topic == "compile") {
-    print_help_compile();
-    return true;
-  }
-  if (topic == "run") {
-    print_help_run();
-    return true;
-  }
-  if (topic == "profile") {
-    print_help_profile();
-    return true;
-  }
-  if (topic == "disasm") {
-    print_help_disasm();
-    return true;
-  }
-  if (topic == "debug") {
-    print_help_debug();
-    return true;
-  }
-  if (topic == "check" || topic == "lint") {
-    print_help_check();
-    return true;
+  // Removed topics: return false so caller can emit recommendation/error.
+  if (topic == "compile" || topic == "run" || topic == "profile" ||
+      topic == "disasm" || topic == "debug" || topic == "check" || topic == "lint") {
+    return false;
   }
   if (topic == "code") {
     print_help_code();
@@ -8598,8 +8579,11 @@ int main(int argc, char* argv[]) {
     }
   }
   try {
+    std::string entered_command;
+    if (argc > 1) {
+      entered_command = argv[1];
+    }
     auto args = parse_args(argc, argv);
-    const std::string entered_command = args.command;
 
     if (entered_command != "help" && entered_command != "version") {
       auto removed = removed_alias_recommendation(entered_command);
@@ -8722,10 +8706,32 @@ int main(int argc, char* argv[]) {
 
     } else if (args.command == "run") {
       if (ext == ".t81") {
-        TempTiscFile temp(args.input.stem().string());
-        int rc = t81::cli::compile(args.input, temp.path, {}, {}, weights_model_ptr);
-        if (rc != 0) return rc;
-        return t81::cli::run_tisc(temp.path, args.policy, args.trace, args.trace_output);
+        fs::path tisc_path;
+        std::optional<TempTiscFile> temp;
+
+        bool project_mode = (entered_command == "project");
+        bool skip_compile = false;
+
+        if (project_mode && args.input == "main.t81") {
+          fs::path local_tisc = "main.tisc";
+          if (fs::exists(local_tisc)) {
+            auto t81_time = fs::last_write_time(args.input);
+            auto tisc_time = fs::last_write_time(local_tisc);
+            if (tisc_time >= t81_time) {
+              tisc_path = local_tisc;
+              skip_compile = true;
+            }
+          }
+        }
+
+        if (!skip_compile) {
+          temp.emplace(args.input.stem().string());
+          int rc = t81::cli::compile(args.input, temp->path, {}, {}, weights_model_ptr);
+          if (rc != 0) return rc;
+          tisc_path = temp->path;
+        }
+
+        return t81::cli::run_tisc(tisc_path, args.policy, args.trace, args.trace_output);
       } else if (ext == ".tisc") {
         return t81::cli::run_tisc(args.input, args.policy, args.trace, args.trace_output);
       } else {

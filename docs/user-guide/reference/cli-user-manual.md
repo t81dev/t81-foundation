@@ -38,8 +38,8 @@ it is not part of the stable public automation contract.
 Support boundary:
 
 - Domain-first command families such as `code`, `project`, `env`, `canonfs`,
-  `determinism`, `vm`, `tisc`, `ir`, `weights`, `policy`, `axion`, and `trace`
-  are the primary supported operator surface.
+  `determinism`, `vm`, `tisc`, `ir`, `weights`, `policy`, `axion`, `trace`,
+  `studio`, `agent`, and `ui` are the primary supported operator surface.
 - `internal ...` commands are available, but they are operations-focused or
   experimental and should not be treated as beginner or long-term product UX.
 - `llama-run` is explicitly experimental and non-DCP.
@@ -170,6 +170,7 @@ t81 code test [options] [-- <ctest args...>]
 t81 code disasm <file.tisc>
 t81 code debug <file.t81|file.tisc> [--policy <policy.apl>] [--weights-model <model.t81w>]
 t81 code repl [--weights-model <model.t81w>] [--policy <policy.apl>]
+t81 repl [--weights-model <model.t81w>] [--policy <policy.apl>]
 t81 canonfs put-file <file> [--canonfs-root <path>]
 t81 canonfs put-tensor <file> [--canonfs-root <path>]
 t81 canonfs ls [--json] [--canonfs-root <path>]
@@ -214,15 +215,27 @@ t81 ir show <file.t81>
 t81 ir dump <file.t81>
 t81 ir validate <file.t81> [--json]
 t81 ir export <file.t81> [--json] [-o <file>]
+t81 c <subcommand> [args]
+t81 c compile <input.c> [-o <output>] [options]
 t81 c compile <file.c> [-o <file.mlir>] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
+t81 rust <subcommand> [args]
+t81 rust compile <input.rs> [-o <output>] [options]
 t81 rust compile <file.rs> [-o <file.mlir>] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
+t81 python <subcommand> [args]
+t81 python compile <input.py> [-o <output>] [options]
+t81 llvm <subcommand> [args]
+t81 llvm compile <input.tisc|input.t81> -o <output> [options]
 t81 llvm compile <file.t81|file.tisc> [-o <file.ll|file.bc>] [--bitcode] [--no-comments]
+t81 mlir <subcommand> [args]
+t81 mlir <subcommand> <input> [-o <output>] [options]
 t81 mlir compile <file.t81|file.tisc> [-o <file.mlir>] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
 t81 mlir lower <file.mlir> [-o <file.ll>]
 t81 mlir pipeline <file.t81|file.tisc> [-o <file.ll>] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
+t81 tier <info|check|gate> [args]
 t81 tier info [--json]
 t81 tier check <file.tisc> [--json]
 t81 tier gate <file.tisc> --max-tier <n> [--json]
+t81 tensor <subcommand> [args]
 t81 tensor canonize <file>
 t81 tensor hash <file> [--json]
 t81 tensor inspect <model.t81w> [--json]
@@ -253,6 +266,9 @@ t81 trace stats <trace.txt> [--json]
 t81 trace filter <trace.txt> [--opcode <name>] [--trap <name>] [--pc-start <n>] [--pc-end <n>] [--json]
 t81 trace canonicalize <trace.txt> [-o <file>]
 t81 trace export <trace.txt> [--format <json|csv>] [-o <file>]
+t81 studio
+t81 agent [--resume <f>] [--session <f>]
+t81 ui
 t81 project init <project_name>
 t81 project build [file.t81]
 t81 project run [file.t81] [--policy <p>]

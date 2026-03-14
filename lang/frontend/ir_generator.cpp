@@ -43,11 +43,13 @@ tisc::ir::IntermediateProgram IRGenerator::generate(const std::vector<std::uniqu
     auto addr_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
     load.opcode = tisc::ir::Opcode::LOADI;
     load.operands = {addr_reg.reg, main_it->second};
+    load.primitive = tisc::ir::PrimitiveKind::Integer;
     emit(load);
 
     tisc::ir::Instruction call;
     call.opcode = tisc::ir::Opcode::CALL;
     call.operands = {tisc::ir::Register{0}, addr_reg.reg};
+    call.primitive = tisc::ir::PrimitiveKind::Integer;
     emit(call);
 
     // Pop main result only for non-void main
@@ -56,6 +58,7 @@ tisc::ir::IntermediateProgram IRGenerator::generate(const std::vector<std::uniqu
       tisc::ir::Instruction pop;
       pop.opcode = tisc::ir::Opcode::POP;
       pop.operands = {dest.reg};
+      pop.primitive = tisc::ir::PrimitiveKind::Integer;
       emit(pop);
     }
   }
@@ -340,6 +343,7 @@ std::any IRGenerator::visit(const FunctionStmt& stmt) {
   tisc::ir::Instruction pop_ret;
   pop_ret.opcode = tisc::ir::Opcode::POP;
   pop_ret.operands = {ret_reg.reg};
+  pop_ret.primitive = tisc::ir::PrimitiveKind::Integer;
   emit(pop_ret);
 
   // Pop arguments in reverse order
@@ -348,6 +352,7 @@ std::any IRGenerator::visit(const FunctionStmt& stmt) {
     tisc::ir::Instruction pop;
     pop.opcode = tisc::ir::Opcode::POP;
     pop.operands = {reg.reg};
+    pop.primitive = tisc::ir::PrimitiveKind::Integer;
     emit(pop);
     bind_variable(std::string(it->name.lexeme), reg);
   }
@@ -3968,6 +3973,7 @@ std::any IRGenerator::visit(const CallExpr& expr) {
           tisc::ir::Instruction push;
           push.opcode = tisc::ir::Opcode::PUSH;
           push.operands = {val.reg};
+          push.primitive = val.primitive;
           emit(push);
         }
 
@@ -3976,27 +3982,35 @@ std::any IRGenerator::visit(const CallExpr& expr) {
         tisc::ir::Instruction load;
         load.opcode = tisc::ir::Opcode::LOADI;
         load.operands = {addr.reg, label_it->second};
+        load.primitive = tisc::ir::PrimitiveKind::Integer;
         emit(load);
 
         // CALL
         tisc::ir::Instruction call;
         call.opcode = tisc::ir::Opcode::CALL;
         call.operands = {tisc::ir::Register{0}, addr.reg};
+        call.primitive = tisc::ir::PrimitiveKind::Integer;
         emit(call);
 
         // Pop result if not void
         bool returns_void = false;
+        tisc::ir::PrimitiveKind result_kind = tisc::ir::PrimitiveKind::Integer;
         if (_semantic) {
           const Type* type = _semantic->type_of(&expr);
-          if (type && type->kind == Type::Kind::Void) {
-            returns_void = true;
+          if (type) {
+            if (type->kind == Type::Kind::Void) {
+              returns_void = true;
+            } else {
+              result_kind = categorize_primitive(type);
+            }
           }
         }
         if (!returns_void) {
-          auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+          auto dest = allocate_typed_register(result_kind);
           tisc::ir::Instruction pop;
           pop.opcode = tisc::ir::Opcode::POP;
           pop.operands = {dest.reg};
+          pop.primitive = result_kind;
           emit(pop);
           record_result(&expr, dest);
         }
@@ -4822,7 +4836,11 @@ std::any IRGenerator::visit(const VectorLiteralExpr& expr) {
     return {};
   }
 
-  if (!_semantic) return {};
+  if (!_semantic) {
+    auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+    record_result(&expr, dest);
+    return {};
+  }
   const auto* data = _semantic->vector_literal_data(&expr);
   if (!data) {
     // Dynamic vector construction - FIXED: Check if this is T81Vector[T, N]
@@ -5136,11 +5154,15 @@ void IRGenerator::emit_jump(tisc::ir::Label target) {
 }
 
 void IRGenerator::emit_jump_if_zero(tisc::ir::Label target, const IRGenerator::TypedRegister& cond) {
-  emit(tisc::ir::Instruction{tisc::ir::Opcode::JZ, {target, cond.reg}});
+  auto instr = tisc::ir::Instruction{tisc::ir::Opcode::JZ, {target, cond.reg}};
+  instr.primitive = cond.primitive;
+  emit(instr);
 }
 
 void IRGenerator::emit_jump_if_not_zero(tisc::ir::Label target, const IRGenerator::TypedRegister& cond) {
-  emit(tisc::ir::Instruction{tisc::ir::Opcode::JNZ, {target, cond.reg}});
+  auto instr = tisc::ir::Instruction{tisc::ir::Opcode::JNZ, {target, cond.reg}};
+  instr.primitive = cond.primitive;
+  emit(instr);
 }
 
 void IRGenerator::emit_option_is_some(const IRGenerator::TypedRegister& dest, const IRGenerator::TypedRegister& source) {
