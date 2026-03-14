@@ -508,9 +508,29 @@ The next milestone on the critical path toward a bootable kernel:
 
 The next milestone on the critical path toward a bootable kernel:
 
-**Slice 6 — QEMU AArch64 EDK2 guest image bootstrap**: produce a minimal
-bootable image that invokes `hal_main()` inside QEMU without a host OS
-process boundary.
+**Slice 6 — QEMU AArch64 EDK2 guest image bootstrap is now complete:**
+
+- `qemu_slice6_startup_snapshot.cpp` bootstraps the kernel with the QEMU
+  virt memory layout, exercises Slices 4+5, queries the runtime status view,
+  and generates `qemu_slice6_startup.h` at build time.
+- `qemu_armv8_efi_stub.c` is a freestanding AArch64 PE/COFF EFI application
+  compiled with `-ffreestanding -nostdlib` and linked with LLD.  At UEFI
+  runtime it emits a serial banner, writes `TERNOS/efi-slice6-ran.txt` and
+  `TERNOS/slice6-boot-report.txt` to the FAT32 boot volume, then calls the
+  kernel shim.
+- `build_qemu_slice6_artifact.sh` produces a 64 MB GUID-partitioned FAT32
+  raw image (`qemu_slice6_guest.img`) suitable for QEMU virtio block without
+  a VDI conversion step.
+- `run_qemu_armv8_slice6_probe.sh` boots the image under QEMU `virt` +
+  EDK2 AArch64 firmware, mounts the FAT32 partition, and validates the
+  boot report via `validate_qemu_armv8_slice6_reports.sh`.
+- CMake target `t81_ternaryos_qemu_armv8_slice6_probe` covers the full
+  snapshot → compile → link → image → boot → validate pipeline.
+- Confirmed in QEMU: `slice4_svc_trap_wiring=complete`,
+  `slice5_user_isolation=complete`, `kernel_space_rejections=1`,
+  `efi_marker_seen=1`, `boot_banner_seen=1`, all validation checks pass.
+
+The next milestone toward the bootable kernel:
 
 ## Recommended Order
 
@@ -532,4 +552,4 @@ process boundary.
 11. **[DONE]** Slice 3 — device-wake: Storage/Network interrupt wakes device-waiting threads
 12. **[DONE]** Slice 4 — syscall trap wiring: ARM `svc` exception vector → typed ABI boundary
 13. **[DONE]** Slice 5 — user-mode address space isolation (kernel vs. user TVA split)
-14. Slice 6 — QEMU AArch64 EDK2 guest image bootstrap
+14. **[DONE]** Slice 6 — QEMU AArch64 EDK2 guest image bootstrap

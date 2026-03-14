@@ -20,8 +20,6 @@
 #include "kernel_abi_wire.hpp"
 #include "kernel_runtime_state.hpp"
 
-#include <cstring>
-
 namespace t81::ternaryos::kernel {
 
 SvcTrapResult axion_kernel_handle_svc_trap(KernelRuntimeState& state,
@@ -29,30 +27,20 @@ SvcTrapResult axion_kernel_handle_svc_trap(KernelRuntimeState& state,
   SvcTrapResult result{};
 
   // RFC-00B6 §5.2 — Axion convention: svc_imm must be 0 (single unified entry).
-  // Any other immediate is an unknown trap kind; reject without dispatch.
+  // Any non-zero immediate is an unknown trap kind; reject without dispatch.
+  // The caller observes svc_imm_rejected=true and dispatched=false. Writing a
+  // structured response is deferred until the address-space resolver is
+  // promoted to a public header (RFC encoding choice is explicitly deferred).
   if (frame.svc_imm != 0) {
     result.svc_imm_rejected = true;
-    // Attempt to write a structured wire error response so the caller can
-    // inspect the rejection rather than hanging on an uninitialised buffer.
-    // If the response TVA is unmapped we silently skip the write — the caller
-    // will observe a stale/zero response, which is safe.
-    const auto caller_as = resolve_current_caller_address_space(state);
-    if (caller_as.has_value()) {
-      KernelCallResult err_result{};
-      err_result.status    = KernelCallStatus::InvalidRequest;
-      err_result.rejection = KernelCallRejection::None;
-      const auto response_block = axion_kernel_encode_wire_response(err_result);
-      axion_kernel_write_address_space_bytes(
-          state,
-          *caller_as,
-          frame.response_tva,
-          reinterpret_cast<const std::byte*>(&response_block),
-          sizeof(response_block));
-    }
     return result;
   }
 
-  // Delegate through the existing wire-TVA path (RFC-00B6 §5.2 entry shape).
+  // Delegate through the existing wire-TVA path (RFC-00B6 §5.2 entry shape):
+  //   request_tva  → read  KernelCallWireRequestBlock  from physical_page_storage
+  //   response_tva → write KernelCallWireResponseBlock into physical_page_storage
+  // Span validation, address-space resolution, and structured error responses
+  // for invalid TVAs are all handled inside axion_kernel_call_wire_tva().
   const bool ok =
       axion_kernel_call_wire_tva(state, frame.request_tva, frame.response_tva);
 

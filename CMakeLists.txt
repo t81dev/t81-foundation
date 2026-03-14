@@ -565,6 +565,7 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/kernel/kernel_interrupts.cpp
     experimental/ternaryos/kernel/kernel_loader.cpp
     experimental/ternaryos/kernel/kernel_lifecycle.cpp
+    experimental/ternaryos/kernel/kernel_trap_shim.cpp
     experimental/ternaryos/kernel/kernel_pager.cpp
     experimental/ternaryos/kernel/kernel_queries.cpp
     experimental/ternaryos/kernel/kernel_runtime_utils.cpp
@@ -614,6 +615,10 @@ if(T81_ENABLE_TERNARYOS)
   add_executable(t81_ternaryos_phase4_startup_snapshot
     experimental/ternaryos/dev/phase4_startup_snapshot.cpp)
   target_link_libraries(t81_ternaryos_phase4_startup_snapshot PRIVATE t81_ternaryos_hal)
+
+  add_executable(t81_ternaryos_qemu_slice6_snapshot
+    experimental/ternaryos/dev/qemu_slice6_startup_snapshot.cpp)
+  target_link_libraries(t81_ternaryos_qemu_slice6_snapshot PRIVATE t81_ternaryos_hal)
 
   if(T81_BUILD_TUI)
     add_executable(t81_ternaryos_shell_tui
@@ -812,6 +817,53 @@ if(T81_ENABLE_TERNARYOS)
       DEPENDS ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ})
     list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_shim_obj)
 
+    # ── Slice 6: QEMU AArch64 EDK2 guest image ────────────────────────────────
+    set(T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64.obj)
+    set(T81_TERNARYOS_QEMU_SLICE6_EFI
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64.EFI)
+    set(T81_TERNARYOS_QEMU_SLICE6_STARTUP_TXT
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/slice6-startup-generated.txt)
+    set(T81_TERNARYOS_QEMU_SLICE6_STARTUP_HDR
+        ${CMAKE_BINARY_DIR}/ternaryos/generated/qemu_slice6_startup.h)
+
+    add_custom_command(
+      OUTPUT  ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_TXT}
+              ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_HDR}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/generated
+      COMMAND $<TARGET_FILE:t81_ternaryos_qemu_slice6_snapshot>
+              ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_TXT}
+              ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_HDR}
+      DEPENDS t81_ternaryos_qemu_slice6_snapshot)
+    add_custom_target(t81_ternaryos_qemu_slice6_snapshot_data
+      DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_TXT}
+              ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_HDR})
+
+    add_custom_command(
+      OUTPUT  ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fshort-wchar
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/qemu_armv8_efi_stub.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos
+              -I${CMAKE_BINARY_DIR}/ternaryos/generated
+              -o ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/qemu_armv8_efi_stub.c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/hal_c_abi.h
+              ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_HDR})
+    add_custom_target(t81_ternaryos_qemu_slice6_efi_obj
+      DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ})
+
     if(T81_LLD_LINK)
       add_custom_command(
         OUTPUT ${T81_TERNARYOS_X86_64_EFI}
@@ -861,6 +913,24 @@ if(T81_ENABLE_TERNARYOS)
       add_custom_target(t81_ternaryos_virtualbox_armv8_efi_control
         DEPENDS ${T81_TERNARYOS_ARMV8_EFI_CTRL})
       list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_control)
+
+      # Slice 6: link QEMU slice6 BOOTAA64.EFI (stub + shim, arm64 PE/COFF)
+      add_custom_command(
+        OUTPUT ${T81_TERNARYOS_QEMU_SLICE6_EFI}
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+                ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+        COMMAND ${T81_LLD_LINK}
+                /subsystem:efi_application
+                /entry:efi_main
+                /machine:arm64
+                /nodefaultlib
+                /out:${T81_TERNARYOS_QEMU_SLICE6_EFI}
+                ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
+                ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ}
+        DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
+                ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ})
+      add_custom_target(t81_ternaryos_qemu_slice6_efi
+        DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI})
     endif()
   endif()
 
@@ -966,6 +1036,26 @@ if(T81_ENABLE_TERNARYOS)
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox/ternos_virtualbox_guest.img
             ${CMAKE_BINARY_DIR}/ternaryos/qemu_x86_64_guest
     DEPENDS t81_ternaryos_virtualbox_guest_artifact
+    USES_TERMINAL)
+
+  # ── Slice 6: QEMU AArch64 EDK2 disk image + probe ─────────────────────────
+  add_custom_target(t81_ternaryos_qemu_slice6_dev_artifact
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/build_qemu_slice6_artifact.sh
+            ${CMAKE_BINARY_DIR}
+            ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+    DEPENDS t81_ternaryos_qemu_slice6_efi
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_qemu_armv8_slice6_probe
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_slice6_probe
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/run_qemu_armv8_slice6_probe.sh
+            ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/qemu_slice6_guest.img
+            ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_slice6_probe
+            8
+    DEPENDS t81_ternaryos_qemu_slice6_dev_artifact
     USES_TERMINAL)
 
   add_custom_target(t81_ternaryos_qemu_armv8_guest_probe_blocked_fixture

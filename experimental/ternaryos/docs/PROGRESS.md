@@ -13,10 +13,30 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-14
-**Commit:** Slice 5 — User-mode address space isolation (kernel/user TVA split)
+**Commit:** Slice 6 — QEMU AArch64 EDK2 guest image bootstrap
 **Branch:** `main`
 
 Recent architecture milestone:
+
+- **Slice 6 — QEMU AArch64 EDK2 guest image bootstrap** is now complete (RFC-00B3 §3.9).
+  A freestanding `BOOTAA64.EFI` (compiled with `--target=aarch64-pc-windows-msvc -ffreestanding
+  -nostdlib`, linked with LLD) boots the QEMU `virt` machine under EDK2 AArch64 firmware without
+  a host OS process boundary.  At UEFI runtime the stub: (1) emits a serial banner detectable in
+  the QEMU serial log; (2) writes `TERNOS/efi-slice6-ran.txt` (execution marker) and
+  `TERNOS/slice6-boot-report.txt` (Slice 4+5 readiness data) to the FAT32 boot volume; (3)
+  calls `ternaryos_hal_main_c()` via the thin hosted shim.  The report content is generated at
+  build time by `qemu_slice6_startup_snapshot` which: bootstraps the Axion kernel with the
+  QEMU virt memory layout, exercises `axion_kernel_handle_svc_trap()` with `svc_imm=7` (Slice 4
+  rejection confirmed), spawns a user thread and attempts a kernel-space TVA write from user AS
+  (Slice 5 isolation confirmed; `kernel_space_rejections=1`), queries
+  `axion_kernel_service_request(RuntimeStatus)` (runtime status view confirmed), and writes
+  `qemu_slice6_startup.h`.  The probe script (`run_qemu_armv8_slice6_probe.sh`) boots QEMU,
+  mounts the FAT32 image, extracts artefacts, and calls `validate_qemu_armv8_slice6_reports.sh`
+  which verifies: `slice4_svc_trap_wiring=complete`, `slice5_user_isolation=complete`,
+  `runtime_status_ok=true`, `kernel_boot_ready_slice=slice6-efi-boot`,
+  `boot_validation_lane=qemu-armv8-slice6-probe`.  CMake target
+  `t81_ternaryos_qemu_armv8_slice6_probe` covers the full build-to-boot-to-validate pipeline.
+  All existing 2931 `hal_boot_test` assertions remain passing.
 
 - **Slice 5 — User-mode address space isolation** is now implemented (RFC-00B1 §3.1 / RFC-00B6 §5.7).
   `kKernelSpaceVpnBase = 3^19 = 1,162,261,467` splits the 20-trit VPN space: VPN 0..3^19−1
