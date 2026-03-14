@@ -1,127 +1,161 @@
-# T81 Foundation
-
 <p align="center">
-  <img src="assets/banner.png" alt="T81 Foundation Banner" width="100%">
+  <img src="assets/banner.png" alt="T81 Foundation — Deterministic Ternary Architecture" width="100%">
 </p>
 
+# T81: A Deterministic Ternary Architecture
+
 <p align="center">
-  <a href="https://github.com/t81dev/t81-foundation/releases/latest">
-    <img src="https://img.shields.io/github/v/release/t81dev/t81-foundation?style=for-the-badge&label=Latest%20Release">
-  </a>
-  <a href="https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml">
-    <img src="https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI">
-  </a>
-  <a href="./LICENSE">
-    <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge">
-  </a>
-  <img src="https://img.shields.io/badge/Language-C%2B%2B23-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white">
+  <a href="https://github.com/t81dev/t81-foundation/releases/latest"><img src="https://img.shields.io/github/v/release/t81dev/t81-foundation?style=for-the-badge&label=Latest%20Release" alt="Latest Release"></a>
+  <a href="https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI" alt="CI"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License: MIT"></a>
+  <img src="https://img.shields.io/badge/Language-C%2B%2B23-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="Language: C++23">
 </p>
 
-### A deterministic ternary computing architecture for verifiable systems and governed AI.
+[English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
+
+<!-- T81-SPEED-START -->
+<!-- T81-SPEED-END -->
+
+T81 Foundation is a **determinism-first, ternary-native computing stack** engineered for exact mathematical reproducibility, cryptographically canonical data handling, and active runtime policy governance.
+
+We provide a vertical stack designed for researchers, systems programmers, and safety-critical environments where non-determinism, undefined behaviors, and unspoken rules are unacceptable. At our core is a base-81 ternary (`T81`) paradigm that achieves native ternary scaling properties while utilizing SWAR vectorization for extreme throughput on standard binary computing hardware.
+
+
+System Framing for Systems Engineers
+
+From a systems engineering perspective, T81 can be viewed as an experiment in co-designing three traditionally independent layers: the instruction set, the execution runtime, and the policy enforcement boundary. Most modern stacks treat these as loosely coupled components—hardware defines the ISA, operating systems manage execution, and policy enforcement occurs largely outside the runtime through external controls. T81 instead attempts to align these layers under a single deterministic contract: canonical data representations define numeric semantics, the ISA defines total and auditable instruction behavior, the virtual machine enforces deterministic execution surfaces, and the Axion governance kernel provides enforceable runtime policy evaluation. The result is a substrate where determinism, identity, and governance are treated as properties of the execution environment itself rather than as higher-level conventions.
 
 ---
 
-## What is T81?
+### 🚀 [Quickstart: Compile & Install Instructions](docs/user-guide/quickstart/INSTALL.md)
 
-**T81 Foundation** is a deterministic ternary computing architecture designed to explore how balanced ternary mathematics, canonical data identity, and runtime governance can form the basis of a verifiable computing environment.
+---
 
-The project provides a vertically integrated stack that simulates a **base-81 ternary computation model** efficiently on conventional binary hardware using SWAR (SIMD within a Register) vectorization techniques. It is engineered for environments where bit-level reproducibility across architectures is a hard requirement.
+## 🏛️ Ecosystem Architecture
 
-## Key Principles
-
-- **Deterministic Execution**: Guaranteed bit-identical results across all supported hardware and compilers.
-- **Canonical Data Identity**: Content-addressed bytecode and data structures ensure the integrity of the entire execution trace.
-- **Ternary Logic**: Leverages balanced ternary (-1, 0, +1) for efficient mathematical representation and symmetric logic.
-- **Runtime Governance**: Direct integration of policy enforcement within the execution boundary via the Axion kernel.
-
-## Architecture Overview
-
-The T81 stack provides a clear separation between high-level logic and deterministic hardware simulation.
+Most modern technology stacks treat determinism, auditability, and guardrails as secondary abstractions layered on top of chaotic systems. **T81 reverses this approach.** Every layer executes explicitly against canonical representations guarded by the Axion kernel engine.
 
 ```mermaid
-graph TD
-    App[Application] --> Lang[T81Lang]
-    Lang --> ISA[TISC ISA]
-    ISA --> VM[T81VM]
-    VM --> Gov[Axion Governance]
-    Gov --> Storage[CanonFS]
+%%{init: {'theme': 'dark', 'themeVariables': { 'fontFamily': 'inter' }}}%%
+graph LR
+    subgraph Frontend [Frontend Developer Surface]
+        Lang(T81Lang / TUI) --> Compiler[T81 CLI Compiler]
+        Api(C++ Public API)
+    end
+    
+    subgraph ISA [Normative Machine Contract]
+        TISC[TISC ISA Bytecode]
+        Compiler -->|Lowers to| TISC
+        Api -.->|Generates| TISC
+    end
+
+    subgraph Runtime [Governed Execution]
+        TISC -->|Executes on| T81VM(T81VM Interpreter)
+        Axion{Axion Policy Engine} <-.->|Guards & Traces| T81VM
+    end
+
+    subgraph Data [Identity & Persistence]
+        T81VM -->|Persists Data| CanonFS[(CanonFS Storage)]
+    end
+
+    style TISC fill:#003366,stroke:#0055aa,color:#fff
+    style Axion fill:#4a1c1c,stroke:#aa3333,color:#fff
+    style CanonFS fill:#114411,stroke:#228822,color:#fff
 ```
 
-## Core Components
+### 🧩 The Core Pillars
 
-| Component | Description | Maturity |
-| :--- | :--- | :--- |
-| **TISC** | Ternary Instruction Set Computer: Frozen ISA specification. | **Frozen** |
-| **T81VM** | Deterministic Virtual Machine: Reference execution implementation. | **Beta** |
-| **CanonFS** | Identity Filesystem: Content-addressed storage for bytecode. | **Beta** |
-| **Axion** | Policy-governed OS: Experimental runtime governance kernel. | **Alpha** |
-| **T81Lang** | High-level Language: Ergonomic frontend for TISC bytecode. | **Beta** |
+| System | Role | Maturity | Design Paradigm |
+| :--- | :--- | :--- | :--- |
+| **`TISC` ISA** | **The Instruction Set Structure** | **Frozen** | The stable serialization format and operations contract for data routing, structural flow, and mathematical operations. |
+| **`T81VM`** | **The Reference Runtime Path** | **Beta** | A custom virtual machine executing `TISC`. Mathematically bounds execution down to the trit (base-3). |
+| **`Axion`** | **The Experimental Ternary-Native OS** | **Beta** | The current working name for the operating system built on the T81 stack. Today it combines HAL, storage, shell, and policy-governed runtime seams, with local bring-up proven in hosted mode and QEMU AArch64. |
+| **`CanonFS`**| **The Identity Filesystem** | **Beta** | Files exist as hash-addressed `.tisc` byte arrays, providing flawless structural verification and tampering prevention. |
+| **`T81Lang`**| **The Language Frontend** | **Beta** | An ergonomic wrapper compiling strictly into `TISC`, exposing strongly-typed tensor behaviors, options, and numeric safety. |
 
-## Quick Start
+## Axion
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/t81dev/t81-foundation.git
-cd t81-foundation
-```
+`Axion` is the current working name for the experimental ternary-native OS inside
+the T81 Foundation stack. It is not the umbrella project name; `T81 Foundation`
+remains the broader ecosystem, while `Axion` names the operating system built on
+top of `T81VM`, `CanonFS`, and the existing runtime/policy model.
 
-### 2. Build with CMake
-```bash
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build
-```
+Current label:
+- `Axion v0.1.0-alpha`
 
-### 3. Run Determinism Verification Gate
-```bash
-ctest --test-dir build --output-on-failure
-python3 scripts/ci/t81lang_repro_gate.py \
-  --t81-bin build/t81 \
-  --fixtures-dir tests/fixtures/t81lang_determinism \
-  --hash-out build/hash.txt \
-  --expected-hash-file tests/fixtures/t81lang_determinism/t81lang_repro_hash.txt
-```
+Current local proof includes:
+- hosted Phase 4 storage, display, and network seams
+- an early Phase 5 Axion Shell with typed built-ins
+- QEMU AArch64 EFI bring-up with observable boot/report artifacts
 
-## Example Program
+See:
+- [Axion README](experimental/ternaryos/docs/README.md)
+- [Axion Review Summary](experimental/ternaryos/docs/review_summary.md)
+- [Axion Shell Design](experimental/ternaryos/docs/axion_shell_design.md)
 
-T81Lang provides a C-family syntax with native support for ternary types and deterministic arithmetic.
+
+## 👀 Writing T81Lang
+
+T81Lang is our modern facade to the TISC ISA. It natively handles tensors, canonical types, and mathematical abstractions. Here is a brief look at `Option` and `Result` pattern matching inside the language:
 
 ```t81
-// Balanced ternary arithmetic verification
-fn main() -> i32 {
-    let a = 1;
-    let b = 1;
-    let c = a + b; // Result is 2 in base-10, represented natively in T81
-
-    if (c == 2) {
-        print("Ternary verification: 1 + 1 = 2");
+// Define an infallible parser fallback
+func parse_safe(opt_input: Option<Int32>) -> Int32 {
+    match opt_input {
+        Some(v) => { v * 2 }
+        None => { 0 }
     }
+}
 
-    return 0;
+// Ensure error traces are explicitly managed
+func calculate_checked(val: Int32) -> Result<Int32, String> {
+    if val < 0 {
+        return Err("Value cannot be negative under this policy")
+    }
+    return Ok(val * 81)
 }
 ```
 
-## Documentation Map
+## 🛠️ Leveraging the C++ API
 
-Detailed documentation is available in the following directories:
+If you are building your own tools, inference engines, or deterministic subsystems, T81 operates beautifully inside downstream CMake projects.
 
-- [`spec/`](./spec/): Formal specifications for TISC, T81VM, and CanonFS.
-- [`docs/architecture/`](./docs/architecture/): Deep dives into the system design.
-- [`docs/status/`](./docs/status/): Real-time implementation and drift dashboards.
-- [`docs/governance/`](./docs/governance/): Policy frameworks and Axion specifications.
-- [`book/`](./book/): The "T81 Book" — a comprehensive guide to the ecosystem.
+```cpp
+#include <iostream>
+#include <t81/types/T81Int.hpp>
+#include <t81/types/bigint.hpp>
 
-## Project Status
+int main() {
+    // Exact canonical representation in base-81
+    t81::T81Int<9> canonical_val(42);
+    std::cout << "Canonical Trace: " << canonical_val.to_int64() << "\n";
+    
+    // Arbitrary precision with guaranteed bit-exact math limits
+    t81::core::types::T81BigInt big("2145326462463276537653242");
+    std::cout << big.to_string() << "\n";
+}
+```
 
-T81 uses a strict maturity model for its components:
-- **Frozen**: Specification is locked; changes require a formal RFC and major version bump.
-- **Beta**: Feature-complete but undergoing stabilization and performance tuning.
-- **Alpha**: Functional prototype with evolving APIs.
-- **Experimental**: Research-phase explorations.
+## 🧭 Documentation Map
 
-## Contributing
+All normative systems behavior is written spec-first. 
+- **[Installation Guide](docs/user-guide/quickstart/INSTALL.md)**
+- **[Architectural Overview](docs/architecture/OVERVIEW.md)**
+- **[Project Status & Control Center](docs/status/PROJECT_CONTROL_CENTER.md)**
+- **[CLI Reference Manual](docs/user-guide/reference/cli-user-manual.md)**
+- **[Formal Specifications Tree](spec/)**
+- **[The T81 Book (Long-Form Monograph)](book/book-en/README.md)**
 
-T81 follows a **spec-first contribution model**. All architectural changes must begin with an RFC in the `docs/rfcs` directory and must pass all determinism gates before being merged. See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
+## 🤝 Open Contribution & Governance
 
-## License
+We embrace open participation, provided it adheres to our philosophy:
+1. **Spec-First Authority:** The `/spec` directory dictates the C++ implementation.
+2. **Determinism-First:** Any modification to the `Deterministic Core Profile` (DCP) must mathematically preserve parity across all CPU targets.
+3. **Bounded Safety:** Experimental features and Cognitive Tier models must not permeate bounded, canonical execution planes.
 
-T81 Foundation is released under the [MIT License](./LICENSE).
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`SECURITY.md`](SECURITY.md) to report vulnerabilities or propose protocol enhancements.
+
+---
+*T81 Foundation is released as Open Source under the [MIT License](LICENSE).*
+
+> **Note:** All determinism guarantees are strictly bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).
