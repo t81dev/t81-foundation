@@ -628,3 +628,31 @@ The next milestone toward the bootable kernel:
 16. **[DONE]** Slice 8 — AArch64 exception vector table (VBAR_EL1 entry, frame layout, bridge)
 17. **[DONE]** Slice 9 — first public pager service ABI (RequestPageMapping + PagerService capability)
 18. **[DONE]** Slice 10 — WaitForPagerHandoff blocking call (park/wake + IPC notification)
+19. **[DONE]** Slice 11 — ResumePageFaultedThread (complete fault→handoff→service→resume lifecycle)
+
+**RFC-00B7 (Pager Service ABI) is now written and accepted.**  All three pager
+service ABI calls are normatively specified in
+`spec/rfcs/RFC-00B7-pager-service-abi.md` with full acceptance criteria
+aligned to `[AC-22o]`, `[AC-22p]`, `[AC-22q]`.
+
+**RFC-00B3 (Axion Kernel Architecture) is now accepted.**  All §8 acceptance
+criteria were already met; the two major open questions (capability model,
+device arbitration registry) are resolved.
+
+The pager service ABI is complete.  The next critical-path milestone is the
+first real EL0→EL1 SVC roundtrip in QEMU — a user-mode thread executing
+`svc #0`, the exception vector firing, and `axion_kernel_handle_svc_trap_aarch64()`
+routing the call back through the typed ABI.  That validates the
+kernel/user boundary end-to-end and unblocks both DPE implementation
+(RFC-DPE-0001 trigger) and external boot-lane acceptance validation.
+
+**Slice 12 — First EL0→EL1 SVC Roundtrip (next):**
+
+- A minimal AArch64 EL0 user-mode stub drops to EL0 via `eret` and issues
+  `svc #0` with a `Yield` request block at a known TVA.
+- The EL1 SVC handler (`axion_svc_entry` / `axion_kernel_handle_svc_trap_aarch64()`)
+  fires, routes the call, and returns `Ok`.
+- A kernel-side observer confirms the syscall completed deterministically.
+- This is the first time a thread at EL0 privilege level successfully
+  exercises `axion_kernel_call_wire_tva()` through real hardware privilege
+  separation rather than through a hosted stub.

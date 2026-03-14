@@ -1,10 +1,10 @@
 # RFC-00B3: Axion Kernel Architecture
 
-**Status:** draft
+**Status:** accepted
 **Type:** standards-track
 **Applies-To:** Axion kernel core, kernel/runtime boundary, HAL-to-kernel handoff
 **Created:** 2026-03-11
-**Updated:** 2026-03-11
+**Updated:** 2026-03-14
 **Author:** @t81dev
 **Depends on:** RFC-00B0 (HAL), RFC-00B1 (MMU), RFC-00B2 (Drivers)
 **Blocks:** Axion kernel integration after Phases 1-4 subsystem bring-up
@@ -462,10 +462,10 @@ This RFC does not retarget the project away from that profile.
 
 ## 7. Open Questions
 
-- Should device arbitration state live inside the first kernel state object or in a separate kernel-owned service registry?
-- How much authority should the first supervisor/service layer have beyond the current audit-only process-group gate?
-- When should thread-first scheduling grow into a fuller process/service model?
-- How should later capability checks attach to CanonRef and device operations without destabilizing the current seams?
+- ~~Should device arbitration state live inside the first kernel state object or in a separate kernel-owned service registry?~~ Resolved: kernel-owned service registry with capability-checked arbitration actions.
+- ~~How much authority should the first supervisor/service layer have beyond the current audit-only process-group gate?~~ Resolved: explicit `KernelCapabilityKind` capability model (RFC-00B6 §5.4); capability grants are kernel-seeded or delegated, scoped to process groups.
+- When should thread-first scheduling grow into a fuller process/service model? Deferred to post-EL0/EL1 SVC roundtrip validation.
+- How should later capability checks attach to CanonRef and device operations without destabilizing the current seams? Deferred; current seams are stable under RFC-00B6 §5.4 and RFC-00B7 §3.1.
 
 ## 8. Acceptance Criteria
 
