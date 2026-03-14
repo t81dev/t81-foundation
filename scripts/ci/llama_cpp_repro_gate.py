@@ -29,6 +29,7 @@ def run_once(
 ) -> str:
     cmd = [
         str(t81_bin),
+        "internal",
         "llama-run",
         model,
         prompt,

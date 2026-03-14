@@ -1,6 +1,6 @@
 #include "t81/isa/base81_view.hpp"
 #include <sstream>
-#include <string_view>
+#include <charconv>
 #include "t81/codec/trit_packing.hpp"
 #include "t81/types/T81Int.hpp"
 
