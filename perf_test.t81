@@ -1,0 +1,7 @@
+fn main() -> i32 {
+  // Performance baseline test
+  let x: T81BigInt = 123456789t81;
+  let y: T81BigInt = 987654321t81;
+  let result = x + y;
+  return 0;
+}

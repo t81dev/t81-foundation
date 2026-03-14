@@ -24,9 +24,9 @@ The project is currently in a transition phase from ISA stabilization to higher-
 | Component | Completion | Status | Key Focus |
 | :--- | :--- | :--- | :--- |
 | **TISC ISA** | 100% | ❄️ Frozen | v1.1.0 Bit-identity stable |
-| **Axion Kernel** | 95% | ✅ Mature | Partial coverage alignment |
-| **T81VM** | 85% | 🛠️ Active | Monolith decomposition |
-| **T81Lang** | 70% | 🧪 Beta | Spec/Implementation drift prevention |
+| **Axion** | 95% | ✅ Beta | Alpha→Beta promotion ready |
+| **T81VM** | 85% | 🧪 Beta | Monolith decomposition |
+| **T81Lang** | 70% | 🧪 Beta | Spec finalized, Normative pending |
 | **Standard Library** | 60% | 🚧 Alpha | API stabilization (March Promotion) |
 | **AI Subsystem** | 50% | 🔬 Exp. | Deterministic evidence protocol |
 | **Ternary OS** | 20% | 💡 Proto. | Bare-metal HAL development |

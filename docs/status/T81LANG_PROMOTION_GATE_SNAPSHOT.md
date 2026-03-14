@@ -1,6 +1,6 @@
 # T81Lang Promotion Gate Snapshot
 
-Generated (UTC): 2026-03-14 16:37:16Z
+Generated (UTC): 2026-03-14 19:11:22Z
 Generator: `scripts/governance/t81lang_promotion_gate_snapshot.py`
 
 ## Gate Criteria Status
@@ -53,21 +53,21 @@ Test project /Users/t81dev/Code/t81-foundation/build
     Start  16: t81lang_conformance_edge_semantics_test
 1/7 Test  #16: t81lang_conformance_edge_semantics_test ...........   Passed    0.01 sec
     Start 101: t81lang_conformance_baseline_test
-2/7 Test #101: t81lang_conformance_baseline_test .................   Passed    0.01 sec
+2/7 Test #101: t81lang_conformance_baseline_test .................   Passed    0.02 sec
     Start 195: t81_semantic_analyzer_match_test
-3/7 Test #195: t81_semantic_analyzer_match_test ..................   Passed    0.00 sec
+3/7 Test #195: t81_semantic_analyzer_match_test ..................   Passed    0.02 sec
     Start 200: t81_semantic_analyzer_loop_test
-4/7 Test #200: t81_semantic_analyzer_loop_test ...................   Passed    0.01 sec
+4/7 Test #200: t81_semantic_analyzer_loop_test ...................   Passed    0.02 sec
     Start 202: t81_semantic_analyzer_diagnostic_location_test
-5/7 Test #202: t81_semantic_analyzer_diagnostic_location_test ....   Passed    0.00 sec
+5/7 Test #202: t81_semantic_analyzer_diagnostic_location_test ....   Passed    0.02 sec
     Start 203: t81_semantic_analyzer_cascade_suppression_test
 6/7 Test #203: t81_semantic_analyzer_cascade_suppression_test ....   Passed    0.00 sec
     Start 204: t81_semantic_analyzer_diagnostic_precision_test
-7/7 Test #204: t81_semantic_analyzer_diagnostic_precision_test ...   Passed    0.00 sec
+7/7 Test #204: t81_semantic_analyzer_diagnostic_precision_test ...   Passed    0.02 sec
 
 100% tests passed, 0 tests failed out of 7
 
-Total Test time (real) =   0.05 sec
+Total Test time (real) =   0.12 sec
 ```
 
 ### Compile Determinism Slice
@@ -80,13 +80,13 @@ Test project /Users/t81dev/Code/t81-foundation/build
     Start 216: e2e_compile_determinism_test
 1/3 Test #216: e2e_compile_determinism_test ............   Passed    0.02 sec
     Start 218: e2e_ast_ir_canonical_determinism_test
-2/3 Test #218: e2e_ast_ir_canonical_determinism_test ...   Passed    0.01 sec
+2/3 Test #218: e2e_ast_ir_canonical_determinism_test ...   Passed    0.05 sec
     Start 219: e2e_enum_metadata_determinism_test
 3/3 Test #219: e2e_enum_metadata_determinism_test ......   Passed    0.01 sec
 
 100% tests passed, 0 tests failed out of 3
 
-Total Test time (real) =   0.04 sec
+Total Test time (real) =   0.09 sec
 ```
 
 ### Axion Metadata Slice

@@ -20,7 +20,7 @@ ______________________________________________________________________
 Version 1.2 — Draft
 
 Status: Draft\
-Last Revised: 2026-03-01\
+Last Revised: 2026-03-14\
 Applies to: TISC, T81VM, Axion, Data Types
 
 T81Lang is the **high-level, deterministic, ternary-native programming language** of the T81 Ecosystem.\
