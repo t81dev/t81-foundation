@@ -1,7 +1,0 @@
-// T81 Foundation Project: myproj
-// Created by t81 init
-
-let x = 81;
-let y = 100;
-let sum = x + y;
-sum;
