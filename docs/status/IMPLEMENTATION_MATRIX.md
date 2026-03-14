@@ -1,7 +1,7 @@
 # Implementation Matrix
 
 Status: Active
-Last Updated: 2026-03-11
+Last Updated: 2026-03-14
 Owner: @t81dev
 
 Alignment truth. One row per subsystem. No narrative.
@@ -16,8 +16,8 @@ Authority remains: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Data Types** | `spec/t81-data-types.md` | **Frozen** | Implemented | **Verified** | High | Low | 2026-03-06 | @t81dev | N/A (maintain) | Frozen DCP surface. Audit 2026-02-27: `Cell` signed-overflow UB fixed, `T81Float` signed-zero canonicalized, `T81Map`/`T81Set` enforcement hardened. Documentation reorganization completed 2026-03-06. |
 | **TISC ISA** | `spec/tisc-spec.md` | **Frozen** | Implemented | **Verified** | High | Low | 2026-03-06 | @t81dev | N/A (maintain) | Frozen DCP surface. Freeze integrity enforced by `check_tisc_freeze_integrity.py`. Documentation reorganization completed 2026-03-06. |
-| **T81VM** | `spec/t81vm-spec.md` | Beta | Beta | Beta | Medium | Low | 2026-03-08 | @t81dev | 2026-04-15 | Non-JIT path DCP-verified. FW-02 closure landed: Axion opcode pre-dispatch moved outside main VM switch. RFC-0026 phase-1 extended: all six opcodes have runtime semantics. TLOADHASH null-canonfs SEGFAULT fixed (2026-03-08): null-guard with hash-format validation; `set_canonfs_root()` API added to `IVirtualMachine`; DecodeFault/BoundsFault taxonomy enforced. 332/332 tests passing. |
-| **T81Lang** | `spec/t81lang-spec.md` | Draft | **Beta** | Beta (impl) / Draft (spec) | Medium | Low | 2026-03-08 | @t81dev | 2026-05-15 | BG-06/BG-07/BG-08/BG-09 closed. Frontend refactor complete (2026-03-08): typed AST (`Expr::resolved_type`), unified builtin registry (`kBuiltinTable`, 130 entries), IRGen extracted to `ir_generator.cpp`; SA dispatch ordering fixed (table-driven fallback after custom handlers). 332/332 tests passing. |
+| **T81VM** | `spec/t81vm-spec.md` | Beta | Beta | Beta | Medium | Low | 2026-03-14 | @t81dev | 2026-04-15 | Non-JIT path DCP-verified. FW-02 closure landed: Axion opcode pre-dispatch moved outside main VM switch. RFC-0026 phase-1 extended: all six opcodes have runtime semantics. TLOADHASH null-canonfs SEGFAULT fixed (2026-03-08): null-guard with hash-format validation; `set_canonfs_root()` API added to `IVirtualMachine`; DecodeFault/BoundsFault taxonomy enforced. 338/338 tests passing. |
+| **T81Lang** | `spec/t81lang-spec.md` | Draft | **Beta** | Beta (impl) / Draft (spec) | Medium | Low | 2026-03-14 | @t81dev | 2026-05-15 | BG-06/BG-07/BG-08/BG-09 closed. Frontend refactor complete (2026-03-08): typed AST (`Expr::resolved_type`), unified builtin registry (`kBuiltinTable`, 130 entries), IRGen extracted to `ir_generator.cpp`; SA dispatch ordering fixed (table-driven fallback after custom handlers). 338/338 tests passing. |
 | **Axion Governance Kernel** | `spec/axion-kernel.md` | Draft | **Beta** | Beta | Medium | Medium | 2026-03-10 | @t81dev | 2026-04-30 | §1.6/1.9 implemented (bounded). AX-M5..M7 evidence closures landed; pending Beta candidacy review cycle. §2.5 remains deferred. Documentation reorganization completed 2026-03-06. |
 | **Axion OS Kernel** | `spec/rfcs/RFC-00B3-axion-kernel-architecture.md` | Draft | **Alpha** | Experimental | Medium | Medium | 2026-03-11 | @t81dev | 2026-05-15 | Experimental ternary-native OS kernel path in `experimental/ternaryos/`. HAL/MMU/scheduler/IPC/device seams implemented; first kernel-owned handoff from `hal_main` to `axion_kernel_main(...)` now verified; next milestone is kernel-facing page-fault reporting on top of checked MMU translation. |
 | **T81Graph** | Surface inventory (non-normative) | Draft | Draft | Experimental | Medium | Medium | 2026-03-06 | @t81dev | 2026-05-15 | VM opcode lowering and lang-side serialization wiring complete with determinism coverage. Surface remains governed non-DCP until promotion. Documentation reorganization completed 2026-03-06. |

@@ -1,6 +1,6 @@
 # Drift Decomposition
 
-Last Updated: 2026-03-11
+Last Updated: 2026-03-14
 Owner: @t81dev
 
 Explicit mapping of: **Spec claim → Implementation reality → Closure plan**
@@ -43,7 +43,7 @@ No narrative. Each row is a falsifiable statement.
 
 ---
 
-## Summary Counts (2026-03-06)
+## Summary Counts (2026-03-14)
 
 | State | Count |
 | :--- | :--- |

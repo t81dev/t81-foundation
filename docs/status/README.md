@@ -1,6 +1,6 @@
 # /docs/status — Control Surface
 
-Last Updated: 2026-03-06
+Last Updated: 2026-03-14
 Authority: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 
 This directory is a cockpit, not an archive.
