@@ -3131,6 +3131,186 @@ static void test_kernel_resume_page_faulted_thread() {
   }
 }
 
+static void test_kernel_el0_svc_roundtrip() {
+  std::printf("\n[AC-22r] RFC-00B6 §5.2 / RFC-00B5 §3.6: EL0→EL1 SVC roundtrip through AArch64 bridge with non-kernel-owned user thread\n");
+
+  // This test proves the full AArch64 SVC entry chain for a genuine user
+  // thread (kernel_owned == false, address space not kKernelAddressSpace):
+  //   axion_kernel_handle_svc_trap_aarch64()
+  //     → axion_kernel_svc_frame_from_aarch64()
+  //       → axion_kernel_handle_svc_trap()
+  //         → axion_kernel_call_wire_tva()
+  //
+  // [AC-22k] proves the hosted shim with a kernel-group thread.
+  // [AC-22n] proves AArch64TrapFrame layout + SVC #7 rejection (no success path).
+  // This test ([AC-22r]) proves the success dispatch path through the bridge
+  // with a non-kernel-owned user thread and verifies the response round-trip.
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  // ── Bootstrap ────────────────────────────────────────────────────────────
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "el0-svc-roundtrip: kernel bootstrap succeeds");
+  if (!state) return;
+
+  // Spawn a user thread. axion_kernel_spawn_thread assigns a non-kernel-owned
+  // address space (kernel_owned == false) for all threads not in the kernel
+  // process group — which is the default for freshly spawned threads.
+  t81::ternaryos::sched::TiscContext user_ctx;
+  user_ctx.label = "el0-user";
+  user_ctx.registers[0] = 999;
+  auto user_tid = axion_kernel_spawn_thread(*state, user_ctx);
+  check(user_tid.has_value(), "el0-svc-roundtrip: user thread spawns");
+  if (!user_tid) return;
+
+  // Tick so the user thread becomes the current scheduler thread.  The SVC
+  // dispatch path calls resolve_current_caller_address_space() which reads
+  // state.scheduler.current_tid() to locate the caller's address space.
+  check(axion_kernel_tick(*state),
+        "el0-svc-roundtrip: user thread becomes current via tick");
+  check(state->scheduler.current_tid() == *user_tid,
+        "el0-svc-roundtrip: user thread is the running thread");
+
+  // Resolve the user thread's address space so we can map pages into it.
+  const auto* user_runtime = state->find_thread_runtime(*user_tid);
+  check(user_runtime != nullptr, "el0-svc-roundtrip: user thread runtime state found");
+  if (!user_runtime) return;
+  const auto user_as = state->find_process_group_address_space(user_runtime->process_group_id);
+  check(user_as.has_value(), "el0-svc-roundtrip: user address space resolves");
+  if (!user_as) return;
+
+  // ── Map request + response pages in user address space ──────────────────
+  // Use VPNs below kKernelSpaceVpnBase so the kernel-space guard in
+  // axion_kernel_call_wire_tva() does not trigger.
+  const uint64_t req_tva  = mmu::tva_from_vpn_offset(200, 0);
+  const uint64_t resp_tva = mmu::tva_from_vpn_offset(201, 0);
+
+  check(mmu::mmu_map(state->page_table, state->allocator,
+                     req_tva, *user_as,
+                     {.readable = true, .writable = true, .executable = false}),
+        "el0-svc-roundtrip: request TVA page mapped");
+  check(mmu::mmu_map(state->page_table, state->allocator,
+                     resp_tva, *user_as,
+                     {.readable = true, .writable = true, .executable = false}),
+        "el0-svc-roundtrip: response TVA page mapped");
+
+  // ── Arm the AArch64 dispatch global ──────────────────────────────────────
+  hal::axion_kernel_set_kernel_state_for_trap_dispatch(&*state);
+  check(true, "el0-svc-roundtrip: kernel state registered for AArch64 dispatch");
+
+  // install_exception_vectors is a documented no-op on the host; must not crash.
+  hal::axion_kernel_install_exception_vectors();
+  check(true, "el0-svc-roundtrip: install_exception_vectors() callable (no-op on host)");
+
+  // ── Dispatch 1: Yield via SVC #0 through AArch64 bridge ─────────────────
+  const auto yield_req = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::Yield});
+  check(axion_kernel_write_address_space_bytes(
+            *state, *user_as, req_tva,
+            reinterpret_cast<const std::byte*>(&yield_req), sizeof(yield_req)),
+        "el0-svc-roundtrip: Yield wire request written into request TVA");
+
+  // Build an AArch64TrapFrame for SVC #0 with x0 = req_tva, x1 = resp_tva.
+  // ESR_EL1: EC = 0x15 (bits [31:26]), ISS = svc_imm (bits [15:0])
+  //   SVC #0 → esr_el1 = 0x56000000  (EC=0x15, IL=1, ISS=0)
+  hal::AArch64TrapFrame frame1{};
+  frame1.x[0]    = req_tva;
+  frame1.x[1]    = resp_tva;
+  frame1.esr_el1 = 0x56000000u;  // SVC #0
+
+  const uint64_t dispatches_before = state->counters.syscall_trap_dispatches;
+  hal::axion_kernel_handle_svc_trap_aarch64(&frame1);
+  check(state->counters.syscall_trap_dispatches == dispatches_before + 1,
+        "el0-svc-roundtrip: Yield via AArch64 bridge increments syscall_trap_dispatches");
+
+  // Read back and decode the wire response.
+  KernelCallWireResponseBlock resp1{};
+  check(axion_kernel_read_address_space_bytes(
+            *state, *user_as, resp_tva,
+            reinterpret_cast<std::byte*>(&resp1), sizeof(resp1)),
+        "el0-svc-roundtrip: Yield response wire block readable from resp TVA");
+  check(axion_kernel_validate_wire_response_block(resp1),
+        "el0-svc-roundtrip: Yield response wire block has valid magic/version");
+  const auto yield_decoded = axion_kernel_decode_wire_response(resp1);
+  check(yield_decoded.has_value(),
+        "el0-svc-roundtrip: Yield response wire block decodes");
+  if (yield_decoded) {
+    check(yield_decoded->status == KernelCallStatus::Ok,
+          "el0-svc-roundtrip: Yield via AArch64 bridge returns Ok");
+  }
+
+  // ── Dispatch 2: GetThreadIdentity via SVC #0 through AArch64 bridge ──────
+  const auto identity_req = axion_kernel_encode_wire_request(
+      KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
+  check(axion_kernel_write_address_space_bytes(
+            *state, *user_as, req_tva,
+            reinterpret_cast<const std::byte*>(&identity_req), sizeof(identity_req)),
+        "el0-svc-roundtrip: GetThreadIdentity wire request written into request TVA");
+
+  hal::AArch64TrapFrame frame2{};
+  frame2.x[0]    = req_tva;
+  frame2.x[1]    = resp_tva;
+  frame2.esr_el1 = 0x56000000u;  // SVC #0
+
+  hal::axion_kernel_handle_svc_trap_aarch64(&frame2);
+  check(state->counters.syscall_trap_dispatches == dispatches_before + 2,
+        "el0-svc-roundtrip: GetThreadIdentity via AArch64 bridge increments dispatch counter to 2");
+
+  KernelCallWireResponseBlock resp2{};
+  check(axion_kernel_read_address_space_bytes(
+            *state, *user_as, resp_tva,
+            reinterpret_cast<std::byte*>(&resp2), sizeof(resp2)),
+        "el0-svc-roundtrip: GetThreadIdentity response wire block readable");
+  check(axion_kernel_validate_wire_response_block(resp2),
+        "el0-svc-roundtrip: GetThreadIdentity response has valid magic/version");
+  const auto identity_decoded = axion_kernel_decode_wire_response(resp2);
+  check(identity_decoded.has_value(),
+        "el0-svc-roundtrip: GetThreadIdentity response decodes");
+  if (identity_decoded) {
+    check(identity_decoded->status == KernelCallStatus::Ok,
+          "el0-svc-roundtrip: GetThreadIdentity via AArch64 bridge returns Ok");
+    check(identity_decoded->caller_tid == *user_tid,
+          "el0-svc-roundtrip: GetThreadIdentity returns the user thread TID");
+  }
+
+  // ── Rejection: SVC #7 through AArch64 bridge ─────────────────────────────
+  // axion_kernel_handle_svc_trap rejects svc_imm != 0 before calling
+  // axion_kernel_call_wire_tva(); the dispatch counter must not advance.
+  const uint64_t dispatches_at_rejection = state->counters.syscall_trap_dispatches;
+  hal::AArch64TrapFrame frame_svc7{};
+  frame_svc7.x[0]    = req_tva;
+  frame_svc7.x[1]    = resp_tva;
+  frame_svc7.esr_el1 = 0x56000007u;  // SVC #7
+  hal::axion_kernel_handle_svc_trap_aarch64(&frame_svc7);
+  check(state->counters.syscall_trap_dispatches == dispatches_at_rejection,
+        "el0-svc-roundtrip: SVC #7 via AArch64 bridge does not increment dispatch counter");
+
+  // ── Disarm and verify graceful no-op ─────────────────────────────────────
+  hal::axion_kernel_set_kernel_state_for_trap_dispatch(nullptr);
+  hal::AArch64TrapFrame frame_after{};
+  frame_after.x[0]    = req_tva;
+  frame_after.x[1]    = resp_tva;
+  frame_after.esr_el1 = 0x56000000u;
+  hal::axion_kernel_handle_svc_trap_aarch64(&frame_after);
+  check(state->counters.syscall_trap_dispatches == dispatches_at_rejection,
+        "el0-svc-roundtrip: dispatch after disarm is a no-op (counter unchanged)");
+
+  // ── Runtime status view ───────────────────────────────────────────────────
+  hal::axion_kernel_set_kernel_state_for_trap_dispatch(&*state);
+  const auto status_result = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(status_result.status == KernelServiceStatus::Ok,
+        "el0-svc-roundtrip: runtime status query succeeds");
+  check(status_result.runtime.has_value(),
+        "el0-svc-roundtrip: runtime status view present");
+  if (status_result.runtime) {
+    check(status_result.runtime->syscall_trap_dispatches == 2,
+          "el0-svc-roundtrip: runtime view exposes syscall_trap_dispatches == 2");
+  }
+  hal::axion_kernel_set_kernel_state_for_trap_dispatch(nullptr);
+}
+
 static void test_kernel_pager_fault_state() {
   std::printf("\n[AC-22b] Axion kernel classifies pager-needed versus policy faults\n");
 
