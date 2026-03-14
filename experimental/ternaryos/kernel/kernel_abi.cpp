@@ -1492,6 +1492,27 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.address_space_id = as_id;
       return result;
     }
+    case KernelCallKind::WaitForPagerHandoff: {
+      // RFC-00B7 §3.3 — park the calling PagerService thread until the next pager
+      // handoff is dispatched.  dispatch_pending_pager_handoff() (kernel_pager.cpp)
+      // sends a synthetic IPC message carrying the address_space_id as payload and
+      // calls scheduler.wake() for every thread in pager_handoff_waiting_tids.
+      if (auto denied =
+              require_capability(caller, KernelCapabilityKind::PagerService);
+          denied.has_value()) {
+        return *denied;
+      }
+      if (!state.scheduler.sleep(caller.tid, state.cpu_context)) {
+        result.status = KernelCallStatus::RetryLater;
+        return result;
+      }
+      state.pager_handoff_waiting_tids.insert(caller.tid);
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.thread_sleeping = true;
+      return result;
+    }
     case KernelCallKind::ReadFaultInbox: {
       KernelRuntimeState::ThreadRuntimeState* target_thread_state = nullptr;
       if (auto invalid =

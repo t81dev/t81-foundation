@@ -246,6 +246,7 @@ struct KernelRuntimeState {
     uint64_t kernel_space_rejections{0};  ///< user AS span attempts into kernel TVA space (RFC-00B1 §3.1 / RFC-00B6 §5.7)
     uint64_t canonfs_fetch_spawns{0};     ///< spawns that fetched CanonExec directly from CanonFS without prior registration (RFC-00B2 §3.1)
     uint64_t pager_service_mappings{0};   ///< page mappings supplied via RequestPageMapping by a PagerService-capable thread (RFC-00B7 §3.2)
+    uint64_t pager_handoff_wakes{0};      ///< PagerService threads woken by a pager handoff dispatch (RFC-00B7 §3.3)
   };
 
   std::string platform_id;
@@ -277,6 +278,8 @@ struct KernelRuntimeState {
   std::unordered_set<sched::Tid> ipc_blocked_tids;
   /// Threads parked waiting for a device interrupt (RFC-00B5 §3.3), keyed by source.
   std::unordered_map<uint8_t, std::unordered_set<sched::Tid>> device_waiting_tids;
+  /// Threads parked via WaitForPagerHandoff (RFC-00B7 §3.3); woken when a pager handoff is dispatched.
+  std::unordered_set<sched::Tid> pager_handoff_waiting_tids;
 
   std::unique_ptr<t81::ternaryos::dev::IBlockDevice> published_executable_store_device;
   std::unique_ptr<t81::canonfs::Driver> published_executable_canonfs;

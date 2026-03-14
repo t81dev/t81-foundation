@@ -94,6 +94,25 @@ bool dispatch_pending_pager_handoff(KernelRuntimeState& state) {
   state.pager_worker.last_received_handoff_sequence =
       address_space->last_pager_handoff_sequence;
   ++state.counters.pager_handoffs_dispatched;
+  // RFC-00B7 §3.3 — wake any PagerService threads parked via WaitForPagerHandoff.
+  // Deliver a synthetic IPC message carrying the faulted address_space_id as payload
+  // so the woken thread can call RequestPageMapping without an extra status query.
+  if (!state.pager_handoff_waiting_tids.empty()) {
+    const t81::canonfs::CanonRef zero_ref{};
+    for (const sched::Tid wtid : state.pager_handoff_waiting_tids) {
+      axion_kernel_ipc_send(
+          state, wtid,
+          ipc::CanonMessage{
+              .sender  = KernelRuntimeState::kKernelTid,
+              .ref     = zero_ref,
+              .payload = static_cast<uint64_t>(address_space_id),
+              .tag     = "pager-handoff-wake",
+          });
+      state.scheduler.wake(wtid);
+      ++state.counters.pager_handoff_wakes;
+    }
+    state.pager_handoff_waiting_tids.clear();
+  }
   return true;
 }
 

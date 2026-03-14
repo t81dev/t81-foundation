@@ -2716,6 +2716,210 @@ static void test_kernel_pager_service_abi() {
   }
 }
 
+static void test_kernel_wait_for_pager_handoff() {
+  std::printf("\n[AC-22p] RFC-00B7 §3.3: WaitForPagerHandoff parks PagerService thread; handoff dispatch wakes it\n");
+
+  namespace mmu    = t81::ternaryos::mmu;
+  namespace sched  = t81::ternaryos::sched;
+  namespace kernel = t81::ternaryos::kernel;
+
+  auto ctx   = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "wait-for-pager-handoff: kernel bootstrap succeeds");
+  if (!state) {
+    return;
+  }
+
+  // ── Spawn victim thread ──────────────────────────────────────────────────
+  sched::TiscContext victim_ctx;
+  victim_ctx.label        = "handoff-victim";
+  victim_ctx.registers[0] = 400;
+  auto victim_tid = axion_kernel_spawn_thread(*state, victim_ctx);
+  check(victim_tid.has_value(), "wait-for-pager-handoff: victim thread spawns");
+  if (!victim_tid) {
+    return;
+  }
+  const auto* victim_runtime = state->find_thread_runtime(*victim_tid);
+  if (!victim_runtime) {
+    return;
+  }
+  const auto victim_pg_id = victim_runtime->process_group_id;
+  const auto victim_as_id = state->find_process_group_address_space(victim_pg_id);
+  check(victim_as_id.has_value(), "wait-for-pager-handoff: victim address space resolved");
+  if (!victim_as_id) {
+    return;
+  }
+
+  // ── Spawn pager-service thread ────────────────────────────────────────────
+  sched::TiscContext svc_ctx;
+  svc_ctx.label        = "handoff-svc";
+  svc_ctx.registers[0] = 401;
+  auto svc_tid = axion_kernel_spawn_thread(*state, svc_ctx);
+  check(svc_tid.has_value(), "wait-for-pager-handoff: service thread spawns");
+  if (!svc_tid) {
+    return;
+  }
+  const auto* svc_runtime = state->find_thread_runtime(*svc_tid);
+  if (!svc_runtime) {
+    return;
+  }
+  const auto svc_pg_id = svc_runtime->process_group_id;
+
+  // Grant PagerService capability
+  check(axion_kernel_grant_process_group_capability(
+            *state,
+            svc_pg_id,
+            std::nullopt,
+            std::nullopt,
+            kernel::KernelCapabilityRecord{
+                .kind = kernel::KernelCapabilityKind::PagerService}),
+        "wait-for-pager-handoff: PagerService capability granted");
+
+  // ── Rejection: WaitForPagerHandoff without PagerService capability ────────
+  // Use a third thread (no PagerService) as the scheduler's current to test
+  // the capability rejection. Spawn it, run a step to put it in the queue,
+  // then verify the call from the victim's group is denied.
+  // (Simplest: call from victim_tid directly — victim has no PagerService cap.)
+  // To make victim_tid current we run a step first.
+  (void)axion_kernel_step(*state);  // victim_tid becomes current
+  check(state->scheduler.current_tid() == *victim_tid,
+        "wait-for-pager-handoff: victim thread is current for rejection test");
+  auto no_cap_result = axion_kernel_call(
+      *state,
+      kernel::KernelCallRequest{.kind = kernel::KernelCallKind::WaitForPagerHandoff});
+  check(no_cap_result.status == kernel::KernelCallStatus::CapabilityDenied,
+        "wait-for-pager-handoff: WaitForPagerHandoff without PagerService → CapabilityDenied");
+  check(no_cap_result.rejection == kernel::KernelCallRejection::MissingCapability,
+        "wait-for-pager-handoff: WaitForPagerHandoff without PagerService → MissingCapability");
+
+  // ── Park the svc thread via WaitForPagerHandoff ───────────────────────────
+  // Advance scheduler to svc_tid
+  (void)axion_kernel_step(*state);  // svc_tid becomes current
+
+  check(state->scheduler.current_tid() == *svc_tid,
+        "wait-for-pager-handoff: service thread is current for park call");
+
+  auto park_result = axion_kernel_call(
+      *state,
+      kernel::KernelCallRequest{.kind = kernel::KernelCallKind::WaitForPagerHandoff});
+  check(park_result.status == kernel::KernelCallStatus::Ok,
+        "wait-for-pager-handoff: WaitForPagerHandoff returns Ok");
+  check(park_result.thread_sleeping,
+        "wait-for-pager-handoff: WaitForPagerHandoff sets thread_sleeping");
+  check(park_result.action_performed,
+        "wait-for-pager-handoff: WaitForPagerHandoff sets action_performed");
+  check(state->pager_handoff_waiting_tids.count(*svc_tid) == 1,
+        "wait-for-pager-handoff: svc_tid is in pager_handoff_waiting_tids");
+  check(state->counters.pager_handoff_wakes == 0,
+        "wait-for-pager-handoff: pager_handoff_wakes starts at zero");
+
+  // Runtime view reflects the parked thread
+  {
+    const auto sv = axion_kernel_service_request(
+        *state,
+        kernel::KernelServiceRequest{
+            .kind = kernel::KernelServiceRequestKind::RuntimeStatus});
+    check(sv.status == kernel::KernelServiceStatus::Ok,
+          "wait-for-pager-handoff: runtime status query succeeds while thread parked");
+    if (sv.runtime) {
+      check(sv.runtime->pager_handoff_waiting_thread_count == 1,
+            "wait-for-pager-handoff: runtime view shows 1 parked handoff-waiting thread");
+      check(sv.runtime->pager_handoff_wakes == 0,
+            "wait-for-pager-handoff: runtime view shows 0 wakes before handoff");
+    }
+  }
+
+  // ── Trigger an unmapped fault in the victim AS to generate a pager handoff ─
+  const auto fault_tva = mmu::tva_from_vpn_offset(81, 0);
+  state->pending_faults.push_back(kernel::KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva         = fault_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault       = mmu::MmuFault::Unmapped,
+      .subject_tid = *victim_tid,
+  });
+
+  // Steps:
+  //   tick 1 — deliver fault to victim → quarantine victim
+  //   tick 2 — dispatch pager handoff → pager worker inbox → wake svc_tid
+  //   tick 3 — pager worker activates work item (stalls, no mapping yet)
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+
+  // After tick 2 the handoff is dispatched; svc_tid should be woken
+  check(state->counters.pager_handoff_wakes == 1,
+        "wait-for-pager-handoff: pager_handoff_wakes reaches 1 after handoff dispatch");
+  check(state->pager_handoff_waiting_tids.empty(),
+        "wait-for-pager-handoff: pager_handoff_waiting_tids cleared after wake");
+
+  // svc_tid should have received an IPC message carrying the address_space_id
+  // Verify by reading the inbox of the svc_tid via ReceiveMessage
+  // First advance scheduler to svc_tid (it was woken)
+  (void)axion_kernel_step(*state);
+
+  // svc_tid is now current; call ReceiveMessage to read the handoff notification
+  auto recv_result = axion_kernel_call(
+      *state,
+      kernel::KernelCallRequest{.kind = kernel::KernelCallKind::ReceiveMessage});
+  check(recv_result.status == kernel::KernelCallStatus::Ok,
+        "wait-for-pager-handoff: svc thread receives pager-handoff-wake IPC");
+  check(recv_result.message.has_value(),
+        "wait-for-pager-handoff: pager-handoff-wake IPC message present");
+  if (recv_result.message) {
+    check(recv_result.message->tag == "pager-handoff-wake",
+          "wait-for-pager-handoff: IPC message tag is pager-handoff-wake");
+    check(recv_result.message->payload == static_cast<uint64_t>(*victim_as_id),
+          "wait-for-pager-handoff: IPC payload carries the victim address_space_id");
+  }
+
+  // ── svc thread calls RequestPageMapping using the IPC-delivered AS id ─────
+  const auto notified_as_id =
+      recv_result.message
+          ? static_cast<kernel::AddressSpaceId>(recv_result.message->payload)
+          : *victim_as_id;
+
+  auto map_result = axion_kernel_call(
+      *state,
+      kernel::KernelCallRequest{
+          .kind             = kernel::KernelCallKind::RequestPageMapping,
+          .address_space_id = notified_as_id,
+      });
+  check(map_result.status == kernel::KernelCallStatus::Ok,
+        "wait-for-pager-handoff: RequestPageMapping succeeds after wake");
+  check(map_result.pager_mapping_supplied,
+        "wait-for-pager-handoff: pager_mapping_supplied set after wake");
+  check(state->counters.pager_service_mappings == 1,
+        "wait-for-pager-handoff: pager_service_mappings reaches 1");
+
+  // ── Pager worker detects mapping and resolves on next tick ────────────────
+  const auto resolutions_before = state->counters.pager_resolutions;
+  (void)axion_kernel_step(*state);
+  check(state->counters.pager_resolutions >= resolutions_before + 1,
+        "wait-for-pager-handoff: pager_resolutions advances after svc-supplied mapping");
+
+  const auto* victim_as_after = state->find_address_space(*victim_as_id);
+  check(victim_as_after && !victim_as_after->pager_needed,
+        "wait-for-pager-handoff: victim address space pager_needed cleared");
+
+  // ── Runtime status view reflects final counter state ─────────────────────
+  {
+    const auto sv = axion_kernel_service_request(
+        *state,
+        kernel::KernelServiceRequest{
+            .kind = kernel::KernelServiceRequestKind::RuntimeStatus});
+    check(sv.status == kernel::KernelServiceStatus::Ok,
+          "wait-for-pager-handoff: final runtime status query succeeds");
+    if (sv.runtime) {
+      check(sv.runtime->pager_handoff_wakes == 1,
+            "wait-for-pager-handoff: runtime view exposes pager_handoff_wakes == 1");
+      check(sv.runtime->pager_handoff_waiting_thread_count == 0,
+            "wait-for-pager-handoff: runtime view shows 0 waiting threads after wake");
+      check(sv.runtime->pager_service_mappings == 1,
+            "wait-for-pager-handoff: runtime view exposes pager_service_mappings == 1");
+    }
+  }
+}
+
 static void test_kernel_pager_fault_state() {
   std::printf("\n[AC-22b] Axion kernel classifies pager-needed versus policy faults\n");
 
@@ -12371,6 +12575,7 @@ int main() {
   test_kernel_aarch64_trap_entry();
   test_kernel_canonfs_fetch_spawn();
   test_kernel_pager_service_abi();
+  test_kernel_wait_for_pager_handoff();
   test_kernel_pager_fault_state();
   test_kernel_pager_worker_backlog();
   test_kernel_pager_worker_ready_bypass_cap();

@@ -532,6 +532,23 @@ The next milestone on the critical path toward a bootable kernel:
 
 The next milestone toward the bootable kernel:
 
+**Slice 10 — WaitForPagerHandoff blocking call is now complete:**
+
+- `KernelCallKind::WaitForPagerHandoff` parks a `PagerService`-capable thread via
+  `scheduler.sleep()` and registers its TID in
+  `KernelRuntimeState::pager_handoff_waiting_tids` (RFC-00B7 §3.3).
+- `dispatch_pending_pager_handoff()` in `kernel_pager.cpp` wakes all waiting threads when
+  a handoff is dispatched: delivers a synthetic IPC message with
+  `tag = "pager-handoff-wake"` and `payload = address_space_id`, calls `scheduler.wake()`,
+  clears the set, and increments `pager_handoff_wakes`.
+- The woken service thread reads the IPC message to learn which AS needs a mapping, then
+  calls `RequestPageMapping` directly — no extra status query required.
+- New fields: `Counters::pager_handoff_wakes`, `pager_handoff_waiting_thread_count` in
+  `KernelRuntimeStatusView`.
+- `[AC-22p]` (32 assertions): capability rejection → park → runtime view 1 waiting thread
+  → fault triggers handoff dispatch → svc woken → IPC carries AS id → RequestPageMapping
+  → pager_needed cleared → runtime view final state.
+
 **Slice 9 — first public pager service ABI is now complete:**
 
 - `KernelCapabilityKind::PagerService` is a new capability kind that authorises a service
@@ -610,3 +627,4 @@ The next milestone toward the bootable kernel:
 15. **[DONE]** Slice 7 — CanonFS-backed executable object acquisition
 16. **[DONE]** Slice 8 — AArch64 exception vector table (VBAR_EL1 entry, frame layout, bridge)
 17. **[DONE]** Slice 9 — first public pager service ABI (RequestPageMapping + PagerService capability)
+18. **[DONE]** Slice 10 — WaitForPagerHandoff blocking call (park/wake + IPC notification)

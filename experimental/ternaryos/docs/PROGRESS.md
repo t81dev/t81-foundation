@@ -13,10 +13,24 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-14
-**Commit:** Slice 9 — first public pager service ABI
+**Commit:** Slice 10 — WaitForPagerHandoff blocking call
 **Branch:** `main`
 
 Recent architecture milestone:
+
+- **Slice 10 — WaitForPagerHandoff blocking call** is now complete (RFC-00B7 §3.3).
+  Closes the pager service model started by Slice 9.  `KernelCallKind::WaitForPagerHandoff`
+  parks a `PagerService`-capable thread via `scheduler.sleep()` and registers it in
+  `KernelRuntimeState::pager_handoff_waiting_tids`.  `dispatch_pending_pager_handoff()`
+  (in `kernel_pager.cpp`) wakes all waiting threads when a handoff is dispatched: each
+  receives a synthetic IPC message with `tag = "pager-handoff-wake"` and
+  `payload = address_space_id`, so the service thread can call `RequestPageMapping`
+  directly without an extra status query.  New counter `pager_handoff_wakes` and
+  `pager_handoff_waiting_thread_count` are exposed via `KernelRuntimeStatusView`.
+  `[AC-22p]` (32 assertions): capability rejection → park → runtime view shows 1 waiting
+  thread → fault triggers handoff dispatch → svc thread woken → IPC message carries AS id
+  → RequestPageMapping → pager_needed cleared → runtime view reflects final state.
+  3048 `hal_boot_test` assertions pass (was 3016 after Slice 9).
 
 - **Slice 9 — first public pager service ABI** is now complete (RFC-00B7 §3.2).
   Introduces `KernelCapabilityKind::PagerService` (new capability kind) and

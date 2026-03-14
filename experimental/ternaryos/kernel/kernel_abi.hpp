@@ -109,6 +109,8 @@ enum class KernelCallKind : uint8_t {
   WaitForDevice,
   // RFC-00B7 §3.2 — pager service supplies a page mapping for a pager-needed AS
   RequestPageMapping,
+  // RFC-00B7 §3.3 — park calling PagerService thread until a pager handoff is dispatched
+  WaitForPagerHandoff,
 };
 
 enum class KernelCallStatus : uint8_t {
