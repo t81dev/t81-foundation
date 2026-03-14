@@ -8,6 +8,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-03-14
+
+### Added
+- **Axion Kernel Runtime**: Complete kernel runtime layer with service contracts, device arbitration, and fault management
+- **RFC-00B4**: Axion userland service contract specification defining ABI, service boundaries, and lifecycle management
+- **QEMU ARMv8 EFI Support**: Full ARMv8 EFI boot support with startup reports and artifact generation
+- **Enhanced Axion Shell**: Object-native reads, durable inspection commands, session management, and typed input
+- **Radix Page Table**: Implementation of Axion MMU with radix table diagnostics and permission faults
+- **Executive Storage**: CanonFS-backed executable storage with auto-attachment and external repository binding
+- **VirtualBox Support**: x86_64 VirtualBox HAL scaffolding with VMSVGA and E1000 guest bindings
+- **Service Lifecycle**: Complete service suspend/resume lifecycle with health transitions and recovery reports
+- **IPC Messaging**: Message-passing IPC with kernel runtime scheduler and device arbitration
+- **Diagnostics**: Comprehensive kernel service diagnostics, fault reporting, and recovery status tracking
+
+### Changed
+- **Axion Naming**: Officially adopted "Axion" as the working name for the ternary-native OS
+- **RFC Organization**: Moved Axion RFCs into the spec tree with normalized metadata
+- **Experimental Layout**: Reorganized Axion experimental directory structure for better navigation
+- **Documentation**: Updated root README to expose Axion v0.1.0-alpha status and architecture
+
+### Fixed
+- **Pager Work**: Coalesced duplicate pager work and added comprehensive backlog tracking
+- **Memory Management**: Fixed allocation pathologies in T81BigInt division operations
+- **Shell Stability**: Stabilized kernel service runtime and tightened request semantics
+
+### Build/CI
+- **Phase 4 Proofs**: Strengthened QEMU display, network, persistence, and recovery proofs
+- **Testing**: Added comprehensive Axion kernel, shell, and MMU test coverage
+
 ## [1.3.2] - 2026-03-08
 
 ### Added
