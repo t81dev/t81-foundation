@@ -54,6 +54,15 @@ This index tracks RFC status and intended disposition.
 | RFC-00B3 | Axion Kernel Architecture | draft | Kernel boundary and integration path after subsystem bring-up |
 | RFC-00B4 | Userland Service Contract | accepted | Stable service/runtime request and result boundary before syscall and ABI widening |
 | RFC-00B5 | Governed Event Interrupt Model | accepted | Formalizes event-driven interrupt handling and no trap-return opcode requirement for the current Axion path |
+
+## DPE RFCs (Deterministic Parallel Execution series)
+
+| RFC | Title | Status | Notes |
+| :--- | :--- | :--- | :--- |
+| RFC-DPE-0001 | Deterministic Parallel Execution — Vision and Motivation | accepted | Informational; vocabulary and principles for the DPE series |
+| RFC-DPE-0002 | TISC Task Graph Primitives | draft | Task descriptor format, delta buffering, dependency edges; no TISC ISA changes required |
+| RFC-DPE-0003 | Epoch Execution and Canonical Commit | draft | Commit ordering rule, conflict resolution, pager interaction, CanonHash81 verification, epoch abort |
+
 ## Experimental RFCs (A-series)
 
 | RFC | Title | Status | Notes |
