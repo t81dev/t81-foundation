@@ -19,6 +19,7 @@
 #include "../kernel/kernel_executable.hpp"
 #include "../kernel/kernel_abi_wire.hpp"
 #include "../kernel/kernel_trap_shim.hpp"
+#include "../hal/aarch64_trap_entry.hpp"
 #include "../dev/hosted_block_dev.hpp"
 #include "../mmu/page_table.hpp"
 
@@ -2255,6 +2256,109 @@ static void test_kernel_user_space_isolation() {
     check(status.runtime->kernel_space_rejections >= 1,
           "user-space isolation: runtime view exposes kernel_space_rejections >= 1");
   }
+}
+
+static void test_kernel_aarch64_trap_entry() {
+  std::printf("\n[AC-22n] RFC-00B6 §5.2 / AArch64: exception vector table struct layout and SVC bridge\n");
+
+  namespace hal = t81::ternaryos::hal;
+
+  // ── AArch64TrapFrame layout ───────────────────────────────────────────────
+  // These runtime checks mirror the static_asserts in aarch64_trap_entry.hpp
+  // and confirm the layout in both debug and release builds.
+  check(sizeof(hal::AArch64TrapFrame) == 35 * 8,
+        "aarch64-trap-entry: AArch64TrapFrame is 35 * 8 = 280 bytes");
+  check(offsetof(hal::AArch64TrapFrame, x) == 0,
+        "aarch64-trap-entry: x array starts at offset 0");
+  check(offsetof(hal::AArch64TrapFrame, x[30]) == 30 * 8,
+        "aarch64-trap-entry: x[30] (lr) is at offset 30 * 8 = 240");
+  check(offsetof(hal::AArch64TrapFrame, sp_el0) == 31 * 8,
+        "aarch64-trap-entry: sp_el0 is at offset 31 * 8 = 248");
+  check(offsetof(hal::AArch64TrapFrame, elr_el1) == 32 * 8,
+        "aarch64-trap-entry: elr_el1 is at offset 32 * 8 = 256");
+  check(offsetof(hal::AArch64TrapFrame, spsr_el1) == 33 * 8,
+        "aarch64-trap-entry: spsr_el1 is at offset 33 * 8 = 264");
+  check(offsetof(hal::AArch64TrapFrame, esr_el1) == 34 * 8,
+        "aarch64-trap-entry: esr_el1 is at offset 34 * 8 = 272");
+
+  // ── ESR_EL1 decoding helpers ──────────────────────────────────────────────
+  // ESR_EL1 for SVC #0 from AArch64: EC=0x15, ISS=0x000000 → 0x5600_0000
+  check(hal::aarch64_svc_imm_from_esr(0x56000000u) == 0,
+        "aarch64-trap-entry: SVC #0 immediate extracted from ESR");
+  check(hal::aarch64_ec_from_esr(0x56000000u) == hal::kAArch64EcSvc64,
+        "aarch64-trap-entry: EC for SVC #0 is kAArch64EcSvc64 (0x15)");
+  // ESR_EL1 for SVC #7: EC=0x15, ISS=0x000007 → 0x5600_0007
+  check(hal::aarch64_svc_imm_from_esr(0x56000007u) == 7,
+        "aarch64-trap-entry: SVC #7 immediate extracted from ESR");
+  // Maximum 16-bit SVC immediate.
+  check(hal::aarch64_svc_imm_from_esr(0x5600FFFFu) == 0xFFFFu,
+        "aarch64-trap-entry: SVC #0xFFFF maximum immediate extracted");
+  // High bits of ESR (EC + reserved) must not pollute the SVC immediate.
+  check(hal::aarch64_svc_imm_from_esr(0xDEAD0042u) == 0x0042u,
+        "aarch64-trap-entry: high ESR bits do not pollute SVC immediate");
+
+  // ── SvcTrapFrame bridge ───────────────────────────────────────────────────
+  hal::AArch64TrapFrame raw{};
+  raw.x[0]    = 0xAA00000000001000ULL;  // request_tva
+  raw.x[1]    = 0xAA00000000002000ULL;  // response_tva
+  raw.esr_el1 = 0x56000000u;           // SVC #0
+
+  auto svc_frame0 = hal::axion_kernel_svc_frame_from_aarch64(raw);
+  check(svc_frame0.request_tva == 0xAA00000000001000ULL,
+        "aarch64-trap-entry: bridge maps x0 to request_tva");
+  check(svc_frame0.response_tva == 0xAA00000000002000ULL,
+        "aarch64-trap-entry: bridge maps x1 to response_tva");
+  check(svc_frame0.svc_imm == 0,
+        "aarch64-trap-entry: bridge extracts SVC #0 from ESR");
+
+  raw.esr_el1 = 0x56000007u;  // SVC #7
+  auto svc_frame7 = hal::axion_kernel_svc_frame_from_aarch64(raw);
+  check(svc_frame7.svc_imm == 7,
+        "aarch64-trap-entry: bridge extracts SVC #7 from ESR");
+
+  // ── axion_kernel_install_exception_vectors() ─────────────────────────────
+  // On the host this is a documented no-op; calling it must not crash.
+  hal::axion_kernel_install_exception_vectors();
+  check(true, "aarch64-trap-entry: install_exception_vectors() is callable (no-op on host)");
+
+  // ── axion_kernel_handle_svc_trap_aarch64() safety ────────────────────────
+  // Null frame with no registered state must not crash.
+  hal::axion_kernel_set_kernel_state_for_trap_dispatch(nullptr);
+  hal::axion_kernel_handle_svc_trap_aarch64(nullptr);
+  check(true, "aarch64-trap-entry: null frame + null state is safe (no-op)");
+
+  // Null frame with registered state must not crash.
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "aarch64-trap-entry: kernel bootstrap for dispatch test");
+  if (!state) return;
+  hal::axion_kernel_set_kernel_state_for_trap_dispatch(&*state);
+  hal::axion_kernel_handle_svc_trap_aarch64(nullptr);
+  check(true, "aarch64-trap-entry: null frame with registered state is safe (no-op)");
+
+  // ── Dispatch via bridge: SVC #7 rejection path ───────────────────────────
+  // Spawn a thread so the kernel has a current caller context.
+  t81::ternaryos::sched::TiscContext boot_thread;
+  boot_thread.label = "aarch64-trap-boot";
+  auto boot_tid = axion_kernel_spawn_thread(*state, boot_thread);
+  check(boot_tid.has_value(), "aarch64-trap-entry: boot thread spawns");
+  if (!boot_tid) return;
+  check(axion_kernel_tick(*state), "aarch64-trap-entry: boot thread becomes current");
+
+  const uint64_t dispatches_before = state->counters.syscall_trap_dispatches;
+
+  // SVC #7 uses the rejection path — dispatch counter must not advance.
+  hal::AArch64TrapFrame reject_frame{};
+  reject_frame.x[0]    = 0;
+  reject_frame.x[1]    = 0;
+  reject_frame.esr_el1 = 0x56000007u;  // SVC #7
+  hal::axion_kernel_handle_svc_trap_aarch64(&reject_frame);
+  check(state->counters.syscall_trap_dispatches == dispatches_before,
+        "aarch64-trap-entry: SVC #7 rejection path leaves dispatch counter unchanged");
+
+  // ── Disarm and clean up ───────────────────────────────────────────────────
+  hal::axion_kernel_set_kernel_state_for_trap_dispatch(nullptr);
+  check(true, "aarch64-trap-entry: global state disarmed cleanly");
 }
 
 static void test_kernel_canonfs_fetch_spawn() {
@@ -12052,6 +12156,7 @@ int main() {
   test_kernel_device_wake_interrupt();
   test_kernel_syscall_trap_wiring();
   test_kernel_user_space_isolation();
+  test_kernel_aarch64_trap_entry();
   test_kernel_canonfs_fetch_spawn();
   test_kernel_pager_fault_state();
   test_kernel_pager_worker_backlog();

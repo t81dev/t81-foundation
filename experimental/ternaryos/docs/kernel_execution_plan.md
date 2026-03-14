@@ -532,6 +532,26 @@ The next milestone on the critical path toward a bootable kernel:
 
 The next milestone toward the bootable kernel:
 
+**Slice 8 — AArch64 exception vector table is now complete:**
+
+- `aarch64_exception_vectors.S` provides the full 2 KiB-aligned VBAR_EL1 table
+  (16 × 128-byte slots per ARM DDI 0487).  The only functional slot is offset
+  0x400 (Lower EL, AArch64, Synchronous — the SVC path); all others branch to
+  `axion_vec_unhandled` (deliberate infinite loop).
+- `axion_svc_entry` saves all 31 GPRs plus `sp_el0`/`elr_el1`/`spsr_el1`/
+  `esr_el1` into an `AArch64TrapFrame` (280 bytes) on the EL1 stack, calls
+  `axion_kernel_handle_svc_trap_aarch64()`, restores the frame, and executes
+  `eret`.  Layout verified by compile-time `static_assert` in
+  `aarch64_trap_entry.hpp`.
+- `axion_kernel_svc_frame_from_aarch64()` bridges the raw AArch64 frame to the
+  kernel's `SvcTrapFrame` (x0→request_tva, x1→response_tva, ESR[15:0]→svc_imm).
+- `axion_kernel_install_exception_vectors()` writes VBAR_EL1 on bare-metal
+  AArch64; documented no-op on macOS/Apple-Silicon host builds.
+- Assembly verified to compile for `aarch64-pc-windows-msvc` via CMake target
+  `t81_ternaryos_aarch64_exception_vectors_obj`.
+- `[AC-22n]` (24 assertions): struct layout, ESR helpers, bridge, null-safety,
+  install callable, SVC #7 rejection via bridge.
+
 **Slice 7 — CanonFS-backed executable object acquisition is now complete:**
 
 - `SpawnThreadFromExecutableObject` now resolves a `CanonRef` directly from the
@@ -570,3 +590,4 @@ The next milestone toward the bootable kernel:
 13. **[DONE]** Slice 5 — user-mode address space isolation (kernel vs. user TVA split)
 14. **[DONE]** Slice 6 — QEMU AArch64 EDK2 guest image bootstrap
 15. **[DONE]** Slice 7 — CanonFS-backed executable object acquisition
+16. **[DONE]** Slice 8 — AArch64 exception vector table (VBAR_EL1 entry, frame layout, bridge)

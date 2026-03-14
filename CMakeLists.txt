@@ -566,6 +566,7 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/kernel/kernel_loader.cpp
     experimental/ternaryos/kernel/kernel_lifecycle.cpp
     experimental/ternaryos/kernel/kernel_trap_shim.cpp
+    experimental/ternaryos/hal/aarch64_trap_entry.cpp
     experimental/ternaryos/kernel/kernel_pager.cpp
     experimental/ternaryos/kernel/kernel_queries.cpp
     experimental/ternaryos/kernel/kernel_runtime_utils.cpp
@@ -816,6 +817,31 @@ if(T81_ENABLE_TERNARYOS)
     add_custom_target(t81_ternaryos_virtualbox_armv8_efi_shim_obj
       DEPENDS ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ})
     list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_shim_obj)
+
+    # ── Slice 8: AArch64 exception vector table assembly ──────────────────────
+    # Compile aarch64_exception_vectors.S for the AArch64 PE/COFF target so
+    # the vector table binary is available for inclusion in EFI images.
+    # The resulting object is not linked into any EFI binary in this slice;
+    # it proves the assembly builds cleanly and can be inspected with objdump.
+    set(T81_TERNARYOS_AARCH64_VECTORS_OBJ
+        ${CMAKE_BINARY_DIR}/ternaryos/aarch64/aarch64_exception_vectors.obj)
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_AARCH64_VECTORS_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/aarch64
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/aarch64_exception_vectors.S
+              -o ${T81_TERNARYOS_AARCH64_VECTORS_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/aarch64_exception_vectors.S
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/aarch64_trap_entry.hpp)
+    add_custom_target(t81_ternaryos_aarch64_exception_vectors_obj
+      DEPENDS ${T81_TERNARYOS_AARCH64_VECTORS_OBJ})
 
     # ── Slice 6: QEMU AArch64 EDK2 guest image ────────────────────────────────
     set(T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ

@@ -13,10 +13,29 @@ Current naming split:
 - `CanonFS` / `TISC` remain subsystem names
 
 **Last updated:** 2026-03-14
-**Commit:** Slice 7 — CanonFS-backed executable object acquisition
+**Commit:** Slice 8 — AArch64 exception vector table
 **Branch:** `main`
 
 Recent architecture milestone:
+
+- **Slice 8 — AArch64 exception vector table** is now complete (RFC-00B6 §5.2 / ARM DDI 0487).
+  `aarch64_exception_vectors.S` provides a correct 2 KiB-aligned VBAR_EL1 exception vector table
+  with 16 slots (128 bytes each).  The only functional slot is offset 0x400 (Lower EL, AArch64,
+  Synchronous) which branches to `axion_svc_entry` — an out-of-table handler that saves all 31
+  general-purpose registers plus `sp_el0`, `elr_el1`, `spsr_el1`, and `esr_el1` into an
+  `AArch64TrapFrame` (280 bytes) on the EL1 stack, calls
+  `axion_kernel_handle_svc_trap_aarch64()`, restores the frame, and executes `eret`.  All other
+  exception slots branch to `axion_vec_unhandled` (deliberate infinite loop).
+  `aarch64_trap_entry.hpp` defines `AArch64TrapFrame` with compile-time `static_assert` offset
+  checks, ESR_EL1 decode helpers (`aarch64_svc_imm_from_esr`, `aarch64_ec_from_esr`), and the
+  `axion_kernel_svc_frame_from_aarch64()` bridge (x0→request_tva, x1→response_tva, ESR→svc_imm).
+  `aarch64_trap_entry.cpp` provides `axion_kernel_set_kernel_state_for_trap_dispatch()`,
+  `axion_kernel_handle_svc_trap_aarch64()` (delegates to `axion_kernel_handle_svc_trap()`), and
+  `axion_kernel_install_exception_vectors()` (writes VBAR_EL1 on bare-metal AArch64; documented
+  no-op on macOS/host builds).  Assembly verified to compile for `aarch64-pc-windows-msvc` via
+  CMake target `t81_ternaryos_aarch64_exception_vectors_obj`.  `[AC-22n]` (24 assertions): struct
+  layout, ESR decode, bridge conversion, null-safety, SVC #7 rejection via bridge, install
+  callable.  2982 `hal_boot_test` assertions pass (was 2958 after Slice 7).
 
 - **Slice 7 — CanonFS-backed executable object acquisition** is now complete (RFC-00B2 §3.1).
   `SpawnThreadFromExecutableObject` now fetches a `CanonExec` block directly from the bound
