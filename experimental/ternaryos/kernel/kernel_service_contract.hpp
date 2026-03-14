@@ -136,6 +136,14 @@ struct KernelRuntimeStatusView {
   std::optional<uint64_t> last_interrupt_audit_sequence{};
   std::optional<KernelInterruptRecord> last_recorded_interrupt{};
   std::optional<KernelInterruptRecord> last_delivered_interrupt{};
+  uint64_t timer_interrupts_handled{0};
+  uint64_t timer_preempts{0};
+  uint64_t device_interrupts_handled{0};
+  std::optional<uint64_t> last_timer_preempt_cycle{};
+  std::optional<uint64_t> last_timer_preempt_sequence{};
+  uint64_t ipc_blocks{0};             ///< threads that slept on empty inbox
+  uint64_t ipc_wakes{0};              ///< threads woken by SendMessage
+  std::size_t ipc_blocked_thread_count{0}; ///< threads currently sleeping on IPC inbox
   uint64_t pager_eligible_faults{0};
   uint64_t policy_faults{0};
   uint64_t pager_handoffs_dispatched{0};

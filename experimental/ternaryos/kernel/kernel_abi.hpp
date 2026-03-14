@@ -101,6 +101,8 @@ enum class KernelCallKind : uint8_t {
   ResumeService,
   MarkServiceUnhealthy,
   MarkServiceHealthy,
+  // RFC-00B6 §5.3.2 — blocking IPC receive (RFC-00B5 §3.6 continuation model)
+  BlockOnIpcReceive,
 };
 
 enum class KernelCallStatus : uint8_t {
@@ -175,6 +177,7 @@ struct KernelCallResult {
   bool action_performed{false};
   bool yielded{false};
   bool thread_exited{false};
+  bool thread_sleeping{false};  ///< set by BlockOnIpcReceive when caller is parked
   std::optional<sched::Tid> spawned_tid{};
   std::optional<sched::Tid> queried_tid{};
   std::optional<sched::Tid> caller_tid{};

@@ -97,6 +97,34 @@ bool axion_kernel_deliver_pending_interrupt(KernelRuntimeState& state) noexcept 
   state.last_interrupt_audit_payload = state.last_delivered_interrupt->payload;
   state.last_interrupt_audit_timestamp_ns =
       state.last_delivered_interrupt->timestamp_ns;
+
+  // RFC-00B5 §3.3 — source-specific interrupt policy dispatch.
+  // Timer: force a scheduler preemption so the kernel loop behaves as a
+  // timer-driven preemptive kernel rather than a purely cooperative one.
+  // Device sources (Storage/Network/Keyboard): placeholder accounting; real
+  // device-wake policy follows in a later slice.
+  // Unknown: no action.
+  switch (state.last_delivered_interrupt->source) {
+    case hal::InterruptSource::Timer: {
+      ++state.counters.timer_interrupts_handled;
+      const bool switched = axion_kernel_tick(state);
+      if (switched) {
+        ++state.counters.timer_preempts;
+        state.last_timer_preempt_cycle = state.counters.loop_iterations;
+        state.last_timer_preempt_sequence =
+            state.last_delivered_interrupt->sequence;
+      }
+      break;
+    }
+    case hal::InterruptSource::Storage:
+    case hal::InterruptSource::Network:
+    case hal::InterruptSource::Keyboard:
+      ++state.counters.device_interrupts_handled;
+      break;
+    case hal::InterruptSource::Unknown:
+      break;
+  }
+
   return true;
 }
 

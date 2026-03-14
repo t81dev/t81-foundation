@@ -37,6 +37,7 @@ void fire_simulated_interrupt(InterruptSource source, uint64_t payload);
 }
 
 using namespace t81::ternaryos::hal;
+using namespace t81::ternaryos::ipc;
 using namespace t81::ternaryos::kernel;
 
 static int g_pass = 0;
@@ -1349,6 +1350,452 @@ static void test_kernel_interrupt_event_delivery() {
         }
       }
     }
+  }
+}
+
+static void test_kernel_timer_interrupt_preemption() {
+  std::printf("\n[AC-22g] RFC-00B5 timer interrupt forces scheduler preemption\n");
+
+  VBoxBootSpec spec;
+  spec.ram_bytes = 128ULL * 1024 * 1024;
+  auto ctx = make_virtualbox_boot_context(spec);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kernel bootstrap succeeds for timer preemption test");
+  if (!state) {
+    return;
+  }
+
+  // Spawn two threads so the scheduler has something to switch between.
+  t81::ternaryos::sched::TiscContext thread_a;
+  thread_a.label = "timer-a";
+  thread_a.registers[0] = 100;
+  t81::ternaryos::sched::TiscContext thread_b;
+  thread_b.label = "timer-b";
+  thread_b.registers[0] = 200;
+
+  auto tid_a = axion_kernel_spawn_thread(*state, thread_a);
+  auto tid_b = axion_kernel_spawn_thread(*state, thread_b);
+  check(tid_a.has_value(), "timer preemption test spawns thread A");
+  check(tid_b.has_value(), "timer preemption test spawns thread B");
+  if (!tid_a || !tid_b) {
+    return;
+  }
+
+  check(state->counters.timer_interrupts_handled == 0,
+        "no timer interrupts handled before first delivery");
+  check(state->counters.timer_preempts == 0,
+        "no timer-driven preemptions before first delivery");
+  check(state->counters.device_interrupts_handled == 0,
+        "no device interrupts handled before first delivery");
+  check(!state->last_timer_preempt_cycle.has_value(),
+        "no timer preempt cycle retained before first delivery");
+  check(!state->last_timer_preempt_sequence.has_value(),
+        "no timer preempt sequence retained before first delivery");
+
+  // Record one Timer interrupt and one Storage interrupt.
+  check(axion_kernel_record_interrupt(
+            *state,
+            HardwareInterrupt{
+                .source = InterruptSource::Timer,
+                .timestamp_ns = 1000000,
+                .payload = 1,
+            }),
+        "timer preemption test records timer interrupt");
+  check(axion_kernel_record_interrupt(
+            *state,
+            HardwareInterrupt{
+                .source = InterruptSource::Storage,
+                .timestamp_ns = 2000000,
+                .payload = 7,
+            }),
+        "timer preemption test records storage interrupt");
+
+  // Deliver the Timer interrupt — should force a scheduler preemption.
+  const uint64_t ticks_before = state->counters.scheduler_ticks;
+  check(axion_kernel_step(*state),
+        "timer interrupt step delivers the timer interrupt");
+  check(state->counters.interrupts_delivered == 1,
+        "timer step delivers one interrupt");
+  check(state->counters.interrupt_sources_delivered.timer == 1,
+        "timer step delivers the timer interrupt source");
+  check(state->counters.timer_interrupts_handled == 1,
+        "timer interrupt delivery increments timer_interrupts_handled");
+  check(state->counters.timer_preempts == 1,
+        "timer interrupt delivery forces a scheduler preemption");
+  check(state->counters.scheduler_ticks == ticks_before + 1,
+        "timer interrupt delivery increments scheduler_ticks");
+  check(state->counters.scheduler_switches == 1,
+        "timer interrupt delivery causes a scheduler switch");
+  check(state->last_timer_preempt_cycle.has_value(),
+        "timer interrupt delivery retains last_timer_preempt_cycle");
+  check(state->last_timer_preempt_sequence.has_value(),
+        "timer interrupt delivery retains last_timer_preempt_sequence");
+  if (state->last_timer_preempt_sequence) {
+    check(*state->last_timer_preempt_sequence == 1,
+          "last_timer_preempt_sequence matches the delivered interrupt sequence");
+  }
+  check(state->counters.device_interrupts_handled == 0,
+        "timer delivery does not increment device_interrupts_handled");
+
+  // Deliver the Storage interrupt — should NOT force a scheduler preemption.
+  const uint64_t preempts_before = state->counters.timer_preempts;
+  const uint64_t ticks_before2 = state->counters.scheduler_ticks;
+  check(axion_kernel_step(*state),
+        "storage interrupt step delivers the storage interrupt");
+  check(state->counters.interrupts_delivered == 2,
+        "storage step delivers second interrupt");
+  check(state->counters.interrupt_sources_delivered.storage == 1,
+        "storage step delivers the storage interrupt source");
+  check(state->counters.device_interrupts_handled == 1,
+        "storage interrupt delivery increments device_interrupts_handled");
+  check(state->counters.timer_preempts == preempts_before,
+        "storage interrupt delivery does not increment timer_preempts");
+  check(state->counters.scheduler_ticks == ticks_before2,
+        "storage interrupt delivery does not call scheduler tick");
+
+  // Verify runtime status view exposes timer preemption state.
+  auto runtime_status = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_status.status == KernelServiceStatus::Ok,
+        "runtime status succeeds after timer preemption");
+  check(runtime_status.runtime.has_value(),
+        "runtime status returns timer preemption details");
+  if (runtime_status.runtime) {
+    check(runtime_status.runtime->timer_interrupts_handled == 1,
+          "runtime status reports timer_interrupts_handled == 1");
+    check(runtime_status.runtime->timer_preempts == 1,
+          "runtime status reports timer_preempts == 1");
+    check(runtime_status.runtime->device_interrupts_handled == 1,
+          "runtime status reports device_interrupts_handled == 1");
+    check(runtime_status.runtime->last_timer_preempt_cycle.has_value(),
+          "runtime status retains last_timer_preempt_cycle");
+    check(runtime_status.runtime->last_timer_preempt_sequence.has_value(),
+          "runtime status retains last_timer_preempt_sequence");
+    if (runtime_status.runtime->last_timer_preempt_sequence) {
+      check(*runtime_status.runtime->last_timer_preempt_sequence == 1,
+            "runtime status last_timer_preempt_sequence matches timer interrupt sequence");
+    }
+  }
+}
+
+static void test_kernel_executable_section_load() {
+  std::printf("\n[AC-22h] CanonExec section loader maps image bytes into address space\n");
+
+  namespace mmu = t81::ternaryos::mmu;
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "section-load test: kernel bootstrap succeeds");
+  if (!state) {
+    return;
+  }
+
+  // Spawn a thread so the kernel has a current caller for ABI calls.
+  t81::ternaryos::sched::TiscContext boot_thread;
+  boot_thread.label = "section-load-boot";
+  boot_thread.registers[0] = 42;
+  auto boot_tid = axion_kernel_spawn_thread(*state, boot_thread);
+  check(boot_tid.has_value(), "section-load test: boot thread spawns");
+  if (!boot_tid) {
+    return;
+  }
+  check(axion_kernel_tick(*state), "section-load test: boot thread becomes current");
+
+  // Choose a PC at the start of VPN 1 — unambiguously unmapped after bootstrap.
+  const uint64_t entry_pc = mmu::kPageSize;  // = 59049, VPN=1, offset=0
+
+  const KernelThreadSpawnDescriptor exec_descriptor{
+      .pc       = static_cast<std::size_t>(entry_pc),
+      .sp       = 0,
+      .register0 = 777,
+      .label    = "section-load-entry",
+  };
+  const auto exec_ref   = executable_ref_for(exec_descriptor);
+  const auto exec_block = executable_block_for(exec_descriptor);
+
+  // Register the CanonExec object.
+  auto reg_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind            = KernelCallKind::RegisterExecutableObject,
+          .object_ref      = exec_ref,
+          .spawn_descriptor = exec_descriptor,
+      });
+  check(reg_result.status == KernelCallStatus::Ok,
+        "section-load test: executable registration returns Ok");
+  check(reg_result.executable_registered,
+        "section-load test: executable registration reports registered");
+  if (reg_result.status != KernelCallStatus::Ok) {
+    return;
+  }
+
+  // Verify page table is empty before spawn — no pre-mapping.
+  const std::size_t pages_before = state->page_table.size();
+  check(mmu::mmu_translate(state->page_table, entry_pc) == std::nullopt,
+        "section-load test: entry TVA is not yet mapped before spawn");
+
+  // SpawnThreadFromExecutableObject — triggers section loader.
+  auto spawn_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind       = KernelCallKind::SpawnThreadFromExecutableObject,
+          .object_ref = exec_ref,
+      });
+  check(spawn_result.status == KernelCallStatus::Ok,
+        "section-load test: spawn-from-executable returns Ok");
+  check(spawn_result.rejection == KernelCallRejection::None,
+        "section-load test: spawn-from-executable clears rejection");
+  check(spawn_result.action_performed,
+        "section-load test: spawn-from-executable reports action performed");
+  check(spawn_result.spawned_tid.has_value(),
+        "section-load test: spawn-from-executable returns a spawned TID");
+  if (!spawn_result.spawned_tid) {
+    return;
+  }
+
+  // ── Spawned thread has the correct PC ──────────────────────────────────────
+  const auto* spawned_ctx =
+      state->scheduler.run_queue().find(*spawn_result.spawned_tid);
+  check(spawned_ctx != nullptr,
+        "section-load test: spawned thread appears in scheduler");
+  if (spawned_ctx) {
+    check(spawned_ctx->pc == static_cast<std::size_t>(entry_pc),
+          "section-load test: spawned PC equals entry TVA");
+    check(spawned_ctx->label == "section-load-entry",
+          "section-load test: spawned label is preserved");
+  }
+
+  // ── Page is now mapped in the page table ───────────────────────────────────
+  check(state->page_table.size() == pages_before + 1,
+        "section-load test: one new page was mapped after spawn");
+  const auto phys_opt = mmu::mmu_translate(state->page_table, entry_pc);
+  check(phys_opt.has_value(),
+        "section-load test: entry TVA translates to a physical address after spawn");
+  if (!phys_opt) {
+    return;
+  }
+  const uint64_t phys_base = *phys_opt;
+
+  // ── Physical page storage holds the section bytes ─────────────────────────
+  check(state->physical_page_storage.count(phys_base) > 0,
+        "section-load test: physical_page_storage entry created for section page");
+  if (state->physical_page_storage.count(phys_base) > 0) {
+    const auto& page_data = state->physical_page_storage.at(phys_base);
+    check(page_data.size() == mmu::kPageSize,
+          "section-load test: physical page slot has full page size");
+    // entry_pc is page-aligned (offset = 0), so block bytes start at index 0.
+    const auto expected_bytes = exec_block.to_bytes();
+    bool bytes_match = true;
+    for (std::size_t i = 0; i < expected_bytes.size() && i < page_data.size(); ++i) {
+      if (page_data[i] != static_cast<std::byte>(expected_bytes[i])) {
+        bytes_match = false;
+        break;
+      }
+    }
+    check(bytes_match,
+          "section-load test: physical page contains the CanonExec block bytes");
+  }
+
+  // ── Re-spawn the same executable — already-mapped path ────────────────────
+  auto respawn_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind       = KernelCallKind::SpawnThreadFromExecutableObject,
+          .object_ref = exec_ref,
+      });
+  check(respawn_result.status == KernelCallStatus::Ok,
+        "section-load test: re-spawn of same executable returns Ok");
+  check(respawn_result.spawned_tid.has_value(),
+        "section-load test: re-spawn returns a second spawned TID");
+  if (respawn_result.spawned_tid) {
+    const auto* respawned_ctx =
+        state->scheduler.run_queue().find(*respawn_result.spawned_tid);
+    check(respawned_ctx != nullptr,
+          "section-load test: re-spawned thread appears in scheduler");
+    if (respawned_ctx) {
+      check(respawned_ctx->pc == static_cast<std::size_t>(entry_pc),
+            "section-load test: re-spawned PC equals entry TVA on already-mapped path");
+    }
+  }
+  // Page count must not increase on re-spawn (page reused).
+  check(state->page_table.size() == pages_before + 1,
+        "section-load test: re-spawn does not map a second page");
+}
+
+static void test_kernel_blocking_ipc() {
+  std::printf("\n[AC-22i] RFC-00B6 §5.3.2 / RFC-00B5 §3.6: blocking IPC receive parks thread; SendMessage wakes it\n");
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "blocking IPC: kernel bootstrap succeeds");
+  if (!state) {
+    return;
+  }
+
+  // Spawn two threads — a receiver and a sender.
+  t81::ternaryos::sched::TiscContext receiver_ctx;
+  receiver_ctx.label = "ipc-receiver";
+  receiver_ctx.registers[0] = 10;
+  t81::ternaryos::sched::TiscContext sender_ctx;
+  sender_ctx.label = "ipc-sender";
+  sender_ctx.registers[0] = 20;
+
+  auto receiver_tid = axion_kernel_spawn_thread(*state, receiver_ctx);
+  auto sender_tid   = axion_kernel_spawn_thread(*state, sender_ctx);
+  check(receiver_tid.has_value(), "blocking IPC: receiver thread spawns");
+  check(sender_tid.has_value(),   "blocking IPC: sender thread spawns");
+  if (!receiver_tid || !sender_tid) {
+    return;
+  }
+
+  // ── Pre-condition: no blocking state yet ────────────────────────────────────
+  check(state->counters.ipc_blocks == 0,
+        "blocking IPC: ipc_blocks zero before any blocking call");
+  check(state->counters.ipc_wakes == 0,
+        "blocking IPC: ipc_wakes zero before any wake");
+  check(state->ipc_blocked_tids.empty(),
+        "blocking IPC: ipc_blocked_tids empty before any blocking call");
+  check(state->scheduler.run_queue().sleeping_count() == 0,
+        "blocking IPC: no sleeping threads before blocking call");
+
+  // ── Make receiver current and issue BlockOnIpcReceive on empty inbox ────────
+  check(axion_kernel_tick(*state), "blocking IPC: tick makes receiver current");
+  check(state->scheduler.current_tid() == *receiver_tid,
+        "blocking IPC: receiver is the current thread");
+
+  auto block_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{.kind = KernelCallKind::BlockOnIpcReceive});
+  check(block_result.status == KernelCallStatus::Ok,
+        "blocking IPC: BlockOnIpcReceive returns Ok on empty inbox");
+  check(block_result.rejection == KernelCallRejection::None,
+        "blocking IPC: BlockOnIpcReceive clears rejection on park");
+  check(block_result.action_performed,
+        "blocking IPC: BlockOnIpcReceive reports action performed");
+  check(block_result.thread_sleeping,
+        "blocking IPC: BlockOnIpcReceive sets thread_sleeping when parked");
+  check(!block_result.message.has_value(),
+        "blocking IPC: BlockOnIpcReceive does not deliver a message on park");
+
+  // ── Receiver must now be Sleeping; sender should be current ─────────────────
+  check(state->counters.ipc_blocks == 1,
+        "blocking IPC: ipc_blocks incremented after parking");
+  check(state->ipc_blocked_tids.count(*receiver_tid) > 0,
+        "blocking IPC: receiver_tid recorded in ipc_blocked_tids");
+  check(state->scheduler.run_queue().sleeping_count() == 1,
+        "blocking IPC: scheduler shows one sleeping thread after park");
+  // sleep() internally ticked to the next Ready thread (sender)
+  check(state->scheduler.current_tid() == *sender_tid,
+        "blocking IPC: sender is current after receiver parks");
+
+  // ── Sender sends a message to the sleeping receiver ─────────────────────────
+  t81::canonfs::CanonBlock payload_block{};
+  payload_block.trytes[0] = 99;
+  const t81::canonfs::CanonRef payload_ref{payload_block.hash()};
+
+  auto send_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind    = KernelCallKind::SendMessage,
+          .ipc_dst = receiver_tid,
+          .message = CanonMessage{
+              .sender  = *sender_tid,
+              .ref     = payload_ref,
+              .payload = 0xBEEF,
+              .tag     = "ipc-test",
+          },
+      });
+  check(send_result.status == KernelCallStatus::Ok,
+        "blocking IPC: SendMessage to sleeping receiver returns Ok");
+  check(send_result.action_performed,
+        "blocking IPC: SendMessage reports action performed");
+
+  // ── Receiver must now be awake ───────────────────────────────────────────────
+  check(state->counters.ipc_wakes == 1,
+        "blocking IPC: ipc_wakes incremented after sender delivers message");
+  check(state->ipc_blocked_tids.count(*receiver_tid) == 0,
+        "blocking IPC: receiver_tid removed from ipc_blocked_tids after wake");
+  check(state->scheduler.run_queue().sleeping_count() == 0,
+        "blocking IPC: no sleeping threads after wake");
+
+  // ── Tick to receiver; it should receive the message via ReceiveMessage ───────
+  check(axion_kernel_tick(*state), "blocking IPC: tick switches to receiver");
+  check(state->scheduler.current_tid() == *receiver_tid,
+        "blocking IPC: receiver is current after tick");
+
+  auto recv_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
+  check(recv_result.status == KernelCallStatus::Ok,
+        "blocking IPC: ReceiveMessage on woken receiver returns Ok");
+  check(recv_result.message.has_value(),
+        "blocking IPC: ReceiveMessage delivers the sent message");
+  if (recv_result.message) {
+    check(recv_result.message->sender == *sender_tid,
+          "blocking IPC: received message preserves sender TID");
+    check(recv_result.message->payload == 0xBEEF,
+          "blocking IPC: received message preserves payload");
+    check(recv_result.message->tag == "ipc-test",
+          "blocking IPC: received message preserves tag");
+    check(recv_result.message->ref.hash == payload_ref.hash,
+          "blocking IPC: received message preserves CanonRef");
+  }
+
+  // ── BlockOnIpcReceive fast path: message already in inbox ───────────────────
+  // Deliver another message while receiver is running, then call BlockOnIpcReceive.
+  // It must return immediately with the message (no sleep).
+  check(state->scheduler.current_tid() == *receiver_tid,
+        "blocking IPC fast-path: receiver still current");
+  // Sender must be current to send — tick back to sender first.
+  check(axion_kernel_tick(*state), "blocking IPC fast-path: tick to sender");
+  auto prefill_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind    = KernelCallKind::SendMessage,
+          .ipc_dst = receiver_tid,
+          .message = CanonMessage{
+              .sender  = *sender_tid,
+              .ref     = payload_ref,
+              .payload = 0xCAFE,
+              .tag     = "prefill",
+          },
+      });
+  check(prefill_result.status == KernelCallStatus::Ok,
+        "blocking IPC fast-path: prefill send returns Ok");
+  // Receiver was already awake so no wake should be issued.
+  check(state->counters.ipc_wakes == 1,
+        "blocking IPC fast-path: ipc_wakes stays at 1 for awake receiver");
+
+  // Tick to receiver.
+  check(axion_kernel_tick(*state), "blocking IPC fast-path: tick to receiver");
+  auto fast_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{.kind = KernelCallKind::BlockOnIpcReceive});
+  check(fast_result.status == KernelCallStatus::Ok,
+        "blocking IPC fast-path: BlockOnIpcReceive returns Ok with pending message");
+  check(!fast_result.thread_sleeping,
+        "blocking IPC fast-path: thread_sleeping is false when message was ready");
+  check(fast_result.message.has_value(),
+        "blocking IPC fast-path: message delivered immediately");
+  if (fast_result.message) {
+    check(fast_result.message->payload == 0xCAFE,
+          "blocking IPC fast-path: fast-path message preserves payload");
+  }
+
+  // ── Runtime status view exposes all three new fields ────────────────────────
+  auto runtime_status = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(runtime_status.status == KernelServiceStatus::Ok,
+        "blocking IPC: runtime status query succeeds");
+  check(runtime_status.runtime.has_value(),
+        "blocking IPC: runtime status view is present");
+  if (runtime_status.runtime) {
+    check(runtime_status.runtime->ipc_blocks == 1,
+          "blocking IPC: runtime status reports ipc_blocks == 1");
+    check(runtime_status.runtime->ipc_wakes == 1,
+          "blocking IPC: runtime status reports ipc_wakes == 1");
+    check(runtime_status.runtime->ipc_blocked_thread_count == 0,
+          "blocking IPC: runtime status reports ipc_blocked_thread_count == 0 after drain");
   }
 }
 
@@ -10998,6 +11445,9 @@ int main() {
   test_kernel_supervisor_recovery_abi_calls();
   test_kernel_loop_fault_delivery();
   test_kernel_interrupt_event_delivery();
+  test_kernel_timer_interrupt_preemption();
+  test_kernel_executable_section_load();
+  test_kernel_blocking_ipc();
   test_kernel_pager_fault_state();
   test_kernel_pager_worker_backlog();
   test_kernel_pager_worker_ready_bypass_cap();

@@ -449,15 +449,40 @@ widening the service contract:
 - HAL/kernel coverage proves that interrupt summary surfaces stay
   self-describing without log reconstruction
 
-The next interrupt milestone is no longer another summary field. It is the
-first real interrupt-policy slice under RFC-00B5:
+The first real interrupt-policy slice under RFC-00B5 is now complete:
 
-- explicit handler and continuation semantics for delivered interrupt events
-- timer and device-source behavior on top of the current governed event queue
-- policy choices such as prioritization, masking, or rate governance only when
-  justified by concrete kernel behavior
-- no trap-return opcode, userspace interrupt ABI, or controller-specific ABI
-  widening
+- Timer interrupt delivery now calls `axion_kernel_tick()` unconditionally,
+  turning the cooperative tick loop into a timer-driven preemptive kernel
+- Storage, Network, and Keyboard interrupts are accounted via
+  `device_interrupts_handled` (policy stub; no thread-wake behavior yet)
+- Unknown interrupts are recorded and discarded
+- New counters: `timer_interrupts_handled`, `timer_preempts`,
+  `device_interrupts_handled`; new retained state: `last_timer_preempt_cycle`,
+  `last_timer_preempt_sequence`
+- `KernelRuntimeStatusView` exposes all new fields
+- `[AC-22g]` (35 assertions) proves timer preemption, storage non-preemption,
+  and runtime status view coverage
+
+**Slice 1A — Real Executable Load is now complete:**
+
+- `load_canon_exec_sections()` (`kernel_loader.cpp` / `kernel_loader.hpp`)
+  allocates a ternary page at the VPN containing the entry PC, maps it with
+  read+execute permissions via `mmu_map()`, and copies CanonExec image block
+  bytes into `physical_page_storage`.
+- `SpawnThreadFromExecutableObject` now calls the section loader before
+  spawning; the spawned thread's PC is the real mapped entry TVA.
+- Re-spawn of the same executable reuses the already-mapped page (no
+  double-allocation).
+- `[AC-22h]` (24 assertions): page unmapped before spawn → mapped after →
+  physical storage holds block bytes → spawned PC matches → re-spawn reuses
+  existing page.
+
+The next milestone on the critical path toward a bootable kernel:
+
+**Slice 3 — Device-wake interrupts**: Storage/Network interrupt delivery
+wakes device-waiting threads.  Slice 2 blocking primitives are now stable and
+serve as the prerequisite for this work.  Slice 4 follows with syscall trap
+wiring: ARM `svc` exception vector → typed ABI boundary.
 
 ## Recommended Order
 
@@ -471,7 +496,10 @@ first real interrupt-policy slice under RFC-00B5:
 6. preserve the now-closed boot-ready slice and its status/RFC framing
 7. preserve the now-complete interrupt summary-convergence surface under
    RFC-00B5
-8. if interrupt work continues, move next to actual interrupt policy and
-   handler semantics instead of more summary growth
-9. otherwise keep focus on external boot-lane validation and later
-   syscall/capability design only after that proof point
+8. preserve the now-complete first interrupt-policy slice: timer-driven
+   preemption is wired; device-wake behavior follows after blocking primitives
+   exist
+9. **[DONE]** Slice 1A — real executable section load into mapped address space
+10. **[DONE]** Slice 2 — blocking IPC: thread sleep/wake on inbox
+11. Slice 3 — device-wake: Storage/Network interrupt wakes device-waiting threads
+12. Slice 4 — syscall trap wiring: ARM `svc` exception vector → typed ABI boundary

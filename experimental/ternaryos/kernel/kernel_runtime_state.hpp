@@ -19,6 +19,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace t81::ternaryos::kernel {
@@ -231,6 +232,11 @@ struct KernelRuntimeState {
     uint64_t pager_worker_terminal_failures{0};
     uint64_t pager_worker_boot_critical_resolutions{0};
     uint64_t audit_events_recorded{0};
+    uint64_t timer_interrupts_handled{0};
+    uint64_t timer_preempts{0};
+    uint64_t device_interrupts_handled{0};
+    uint64_t ipc_blocks{0};   ///< threads that slept on empty inbox (RFC-00B6 §5.3.2)
+    uint64_t ipc_wakes{0};    ///< threads woken by a successful SendMessage
   };
 
   std::string platform_id;
@@ -258,6 +264,9 @@ struct KernelRuntimeState {
   std::unordered_map<ProcessGroupId, AddressSpaceId> process_group_address_spaces;
   std::unordered_map<ServiceId, ServiceState> services;
   std::unordered_map<ProcessGroupId, ServiceId> process_group_services;
+  /// Threads currently sleeping on an empty IPC inbox (RFC-00B6 §5.3.2 blocking receive).
+  std::unordered_set<sched::Tid> ipc_blocked_tids;
+
   std::unique_ptr<t81::ternaryos::dev::IBlockDevice> published_executable_store_device;
   std::unique_ptr<t81::canonfs::Driver> published_executable_canonfs;
   PagerWorkerState pager_worker{};
@@ -274,6 +283,8 @@ struct KernelRuntimeState {
   std::optional<uint64_t> last_interrupt_audit_payload{};
   std::optional<uint64_t> last_interrupt_audit_timestamp_ns{};
   std::optional<uint64_t> last_interrupt_audit_sequence{};
+  std::optional<uint64_t> last_timer_preempt_cycle{};
+  std::optional<uint64_t> last_timer_preempt_sequence{};
   std::optional<KernelPagerHandoffRecord> last_pager_handoff{};
   std::optional<KernelPagerResolutionRecord> last_pager_resolution{};
   std::optional<KernelAuditRecord> last_audit_event{};

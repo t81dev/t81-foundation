@@ -9,6 +9,7 @@ as a VirtualBox-first hosted simulation path with guest-owned storage, network,
 and display seams:
 
 Naming note:
+
 - `Axion` is the OS name
 - `T81 Foundation` remains the umbrella project name
 - `T81VM`, `CanonFS`, and `TISC` remain subsystem/runtime names
@@ -39,11 +40,15 @@ The broader structural assessment and follow-on refactor plan now live in:
 Hosted proof is strong on the current branch:
 
 - all 8 TernOS test binaries pass
-- total assertions: `3606`
+- total assertions: `3709`
+- `t81_ternaryos_hal_boot_test`: `2833/2833`
 - `t81_ternaryos_device_driver_test`: `342/342`
-- `t81_ternaryos_hal_boot_test`: `2730/2730`
 - `t81_ternaryos_shell_session_test`: `183/183`
+- `t81_ternaryos_scheduler_test`: `120/120`
+- `t81_ternaryos_ipc_test`: `73/73`
 - `t81_ternaryos_mmu_test`: `87/87`
+- `t81_ternaryos_context_switch_test`: `43/43`
+- `t81_ternaryos_page_alloc_test`: `28/28`
 
 Kernel integration proof now also includes:
 
@@ -172,6 +177,16 @@ Kernel integration proof now also includes:
 - services can now bind to those registered executable objects by CanonRef,
   and the service register/query/spawn ABI paths now preserve that backing
   executable identity
+- **Slice 1A** — real executable section load is now proven: a spawned
+  thread's entry PC is backed by a mapped read+execute ternary page populated
+  from the CanonExec image block; re-spawn reuses the existing mapped page
+  without double-allocation (`[AC-22h]`, 24 assertions)
+- **Slice 2** — blocking IPC is now proven: `BlockOnIpcReceive` parks a
+  thread on an empty inbox via the scheduler sleep/wake API; `SendMessage`
+  wakes any IPC-blocked receiver after delivery; fast-path (message already
+  present) returns immediately without sleeping; runtime status view exposes
+  `ipc_blocks`, `ipc_wakes`, `ipc_blocked_thread_count` (`[AC-22i]`,
+  45 assertions)
 - audit-summary interrupt queue alignment is now retained too: pending
   interrupt count, pending source composition, and FIFO head/tail visibility
   are exposed there alongside interrupt history

@@ -1,6 +1,7 @@
 #include "kernel_abi.hpp"
 
 #include "kernel_executable.hpp"
+#include "kernel_loader.hpp"
 #include "kernel_main.hpp"
 #include "../dev/canon_store.hpp"
 
@@ -1081,6 +1082,20 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
           invalid.has_value()) {
         return *invalid;
       }
+      // Map CanonExec sections into the address space before spawning.
+      // On OOM the load returns nullopt; on re-spawn the already-mapped page
+      // is reused and entry_tva is returned unchanged.
+      const auto load_result = load_canon_exec_sections(
+          state,
+          caller.process_group_id,
+          executable_record->image_block,
+          static_cast<uint64_t>(loaded_descriptor.pc));
+      if (!load_result.has_value()) {
+        result.status = KernelCallStatus::Conflict;
+        result.rejection = KernelCallRejection::ServiceActionRejected;
+        return result;
+      }
+      loaded_descriptor.pc = static_cast<std::size_t>(load_result->entry_tva);
       const auto spawned_tid = axion_kernel_spawn_thread_in_group(
           state,
           make_spawn_context(loaded_descriptor),
@@ -1306,10 +1321,18 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       }
       auto msg = *request.message;
       msg.sender = caller.tid;
-      if (!axion_kernel_ipc_send(state, *request.ipc_dst, std::move(msg))) {
+      const sched::Tid dst_tid = *request.ipc_dst;
+      if (!axion_kernel_ipc_send(state, dst_tid, std::move(msg))) {
         result.status = KernelCallStatus::Conflict;
         result.rejection = KernelCallRejection::IpcSendFailed;
         return result;
+      }
+      // RFC-00B5 §3.6 / RFC-00B6 §5.3.2: if the destination is sleeping on an
+      // empty inbox (BlockOnIpcReceive parked it), wake it now.
+      if (state.ipc_blocked_tids.count(dst_tid) > 0) {
+        state.scheduler.wake(dst_tid);
+        state.ipc_blocked_tids.erase(dst_tid);
+        ++state.counters.ipc_wakes;
       }
       result.status = KernelCallStatus::Ok;
       result.rejection = KernelCallRejection::None;
@@ -1331,6 +1354,43 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.rejection = KernelCallRejection::None;
       result.action_performed = true;
       result.message = std::move(msg);
+      return result;
+    }
+    case KernelCallKind::BlockOnIpcReceive: {
+      // RFC-00B6 §5.3.2 blocking receive / RFC-00B5 §3.6 continuation model.
+      //
+      // Fast path: a message is already waiting — return it immediately.
+      // Slow path: inbox is empty — park the calling thread via the scheduler
+      // sleep/wake API so the CPU is yielded to the next Ready thread.  A
+      // future SendMessage to this TID will wake the thread and deliver the
+      // message to its inbox, after which the caller must issue ReceiveMessage
+      // to consume it.
+      if (auto denied = require_capability(caller, KernelCapabilityKind::IpcReceive);
+          denied.has_value()) {
+        return *denied;
+      }
+      // Fast path: message already present.
+      auto msg = axion_kernel_ipc_recv(state, caller.tid);
+      if (msg.has_value()) {
+        result.status = KernelCallStatus::Ok;
+        result.rejection = KernelCallRejection::None;
+        result.action_performed = true;
+        result.message = std::move(msg);
+        return result;
+      }
+      // Slow path: park the calling thread.
+      if (!state.scheduler.sleep(caller.tid, state.cpu_context)) {
+        // Fallback: sleep() failed (should not happen for a valid running thread).
+        result.status = KernelCallStatus::RetryLater;
+        result.rejection = KernelCallRejection::IpcReceiveEmpty;
+        return result;
+      }
+      state.ipc_blocked_tids.insert(caller.tid);
+      ++state.counters.ipc_blocks;
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.thread_sleeping = true;
       return result;
     }
     case KernelCallKind::ReadFaultInbox: {

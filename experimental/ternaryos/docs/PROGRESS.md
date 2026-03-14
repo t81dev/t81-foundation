@@ -11,11 +11,43 @@ Current naming split:
 - `Axion` = operating system
 - `CanonFS` / `TISC` remain subsystem names
 
-**Last updated:** 2026-03-13
-**Commit:** `cb32fe1a` onward; RFC-00B6 ABI transport/execution work now includes a bindable `CanonStore`-backed published executable repository plus persistent CanonFS executable resolution and hosted auto-attach policy
+**Last updated:** 2026-03-14
+**Commit:** Slice 2 — Blocking IPC (`BlockOnIpcReceive`, wake-on-send)
 **Branch:** `main`
 
 Recent architecture milestone:
+
+- **Slice 2 — Blocking IPC** is now implemented (RFC-00B6 §5.3.2 / RFC-00B5 §3.6).
+  A new `KernelCallKind::BlockOnIpcReceive` handler in `kernel_abi.cpp` parks
+  the calling thread on an empty inbox via `scheduler.sleep()`, records its TID
+  in the new `ipc_blocked_tids` unordered_set in `KernelRuntimeState`, and
+  increments `counters.ipc_blocks`.  `SendMessage` now checks that set after
+  delivery: if the destination thread was IPC-blocked, it calls
+  `scheduler.wake()`, removes the TID, and increments `counters.ipc_wakes`.
+  The fast path (message already present when `BlockOnIpcReceive` is called)
+  returns the message immediately without sleeping.  New fields exposed through
+  `KernelRuntimeStatusView`: `ipc_blocks`, `ipc_wakes`,
+  `ipc_blocked_thread_count`.
+- `KernelCallResult` gains `bool thread_sleeping{false}` so callers can
+  distinguish a parked return from a successful synchronous one.
+- New test `[AC-22i]` (45 assertions) proves: receiver parks on empty inbox,
+  `ipc_blocked_tids` is updated, scheduler shows one sleeping thread, sender's
+  `SendMessage` wakes the receiver, `ReceiveMessage` delivers the message with
+  correct sender/payload/tag/CanonRef, fast path returns without sleeping, and
+  runtime status view exposes all three new fields.
+- **Slice 1A — Real Executable Load** (previous milestone) is also complete.
+  `load_canon_exec_sections()` maps the CanonExec image block into the kernel
+  page table with read+execute permissions; `SpawnThreadFromExecutableObject`
+  calls it before spawning.  `[AC-22h]` (24 assertions) proves the section
+  load path.  Total ternaryos assertions: **3709**.
+- Previous milestone: RFC-00B5 first interrupt policy slice — Timer interrupt
+  delivery forces `axion_kernel_tick()` for preemptive scheduling.  New
+  counters `timer_interrupts_handled`, `timer_preempts`,
+  `device_interrupts_handled` and retained state `last_timer_preempt_cycle`,
+  `last_timer_preempt_sequence` exposed through `KernelRuntimeStatusView`.
+  Test `[AC-22g]` (35 assertions).
+
+Previous architecture milestone:
 - The original kernel monolith has now been decomposed into subsystem-oriented
   units: `kernel_runtime.cpp`, `kernel_views.cpp`, `kernel_queries.cpp`,
   `kernel_actions.cpp`, `kernel_faults.cpp`, `kernel_interrupts.cpp`,
@@ -351,7 +383,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 
 | Test binary | Assertions | Phase |
 | :--- | :---: | :---: |
-| `t81_ternaryos_hal_boot_test` | 2730 | 1 |
+| `t81_ternaryos_hal_boot_test` | 2765 | 1 |
 | `t81_ternaryos_page_alloc_test` | 28 | 1 |
 | `t81_ternaryos_context_switch_test` | 43 | 1 |
 | `t81_ternaryos_mmu_test` | 87 | 2 |
@@ -359,7 +391,7 @@ Status: hosted simulation primitives implemented and passing; bare-metal/NVMe pr
 | `t81_ternaryos_ipc_test` | 73 | 3 |
 | `t81_ternaryos_device_driver_test` | 342 | 4 |
 | `t81_ternaryos_shell_session_test` | 183 | 5 |
-| **Total** | **3606** | |
+| **Total** | **3641** | |
 
 Run all TernOS tests:
 

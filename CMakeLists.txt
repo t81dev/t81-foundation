@@ -563,6 +563,7 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/kernel/kernel_executable.cpp
     experimental/ternaryos/kernel/kernel_faults.cpp
     experimental/ternaryos/kernel/kernel_interrupts.cpp
+    experimental/ternaryos/kernel/kernel_loader.cpp
     experimental/ternaryos/kernel/kernel_lifecycle.cpp
     experimental/ternaryos/kernel/kernel_pager.cpp
     experimental/ternaryos/kernel/kernel_queries.cpp
