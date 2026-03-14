@@ -1,7 +1,7 @@
 # Project Control Center
 
 Status: Active
-Last Updated: 2026-03-12
+Last Updated: 2026-03-14
 Owner: @t81dev
 Version: 3.2.3
 
@@ -19,13 +19,13 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Dimension | Status |
 | :--- | :--- |
-| Overall | Green — **336/336 tests passing** (100% success rate) |
+| Overall | Green — **338/338 tests passing** (100% success rate) |
 | Release Readiness | **GO** — v1.4.0-Stable tagged; v1.3.2 stable released 2026-03-08 |
 | Current Main | `85a0b438` — CLI stress test + binary_io OOM hardening |
 | Open Blockers | None |
 | Frozen Core | Intact — no freeze exceptions |
 | Determinism Registry | All Verified surfaces clean |
-| Structural Integrity | **PERFECT** — 336/336 tests; CLI stress test now covers full command surface |
+| Structural Integrity | **PERFECT** — 338/338 tests; CLI stress test now covers full command surface |
 
 ---
 
@@ -48,7 +48,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | TISC ISA | None | Frozen |
 | Data Types | None | Frozen; audit closed 2026-02-27 |
 | T81VM | Low | FW-02 closure landed; BG-07 closure landed; 3 OOB reg-index bugs fixed (SymLoad, ReflCap, ReflJustify); binary_io OOM-on-corrupt-input hardened |
-| T81Lang | **RESOLVED** | Frontend refactor complete: typed AST, unified builtin registry, IRGen to .cpp; 336/336 test coverage |
+| T81Lang | **RESOLVED** | Frontend refactor complete: typed AST, unified builtin registry, IRGen to .cpp; 338/338 test coverage |
 | Axion Governance Kernel | Low | AX-M5..M7 evidence landed; awaiting Beta review cycle |
 | Axion OS Kernel | Medium | Experimental RFC-00B3 path active; kernel-owned handoff, MMU fault reporting, persistent runtime state, active device arbitration, runtime-owned scheduler/IPC execution, deterministic kernel loop, FIFO fault delivery, process-group fault policy with manual acknowledgement gate, an audit-only supervisor layer, the first service-facing runtime contract with healthy/faulted-group semantics, stable diagnostics, stable audit summaries, per-device ownership detail views, the first narrow service-facing action (supervisor fault-group acknowledgement), supervisor-facing recovery/report flows, a second narrow service-facing action for deterministic device claim/release, explicit request/action rejection semantics, and a first kernel-owned service runtime layer with deterministic service registration, deterministic service unregister, deterministic service suspend/resume, same-supervisor lifecycle control, explicit service health transitions, audit-visible service lifecycle transitions, retained supervisor inventory lifecycle metadata, per-entry supervisor inventory transition metadata, compact supervisor-status lifecycle metadata, aligned supervisor-recovery lifecycle metadata, aligned fault-summary lifecycle metadata, aligned runtime-status lifecycle metadata, aligned audit-summary lifecycle metadata, aligned device-summary lifecycle metadata, aligned service-status transition metadata, stable service detail, richer supervisor-owned inventory, explicit kernel-owned address-space ownership diagnostics, internal pager-needed fault-state diagnostics, deterministic internal pager handoff diagnostics, deterministic internal pager resolution diagnostics, and a real kernel-owned pager worker with duplicate unresolved fault coalescing, retained backlog/load diagnostics, ready-behind-active diagnostics, ready-backlog depth tracking, retained receipt identities/ordinals, active-work handoff ordinals, queued-head identities/ordinals, a bounded deterministic ready-bypass parking rule, retained ready-bypass deferral diagnostics, retained parked-cycle and parked-episode diagnostics, live parked-ready backlog diagnostics, retained parked-resumption diagnostics, retained parked-resume backlog diagnostics, retained parked-resume handoff diagnostics, retained parked-resumed-head handoff diagnostics, retained parked-resolved-head diagnostics, retained parked-resolved remaining-work diagnostics, retained parked-resolution follow-on diagnostics, retained parked-resolution successor completion diagnostics, retained blocker/blocked address-space identities, retained stall ordinals, retained blocked-side stall ordinals, retained blocked-side backlog depth, retained activation identities/ordinals, retained completion identities/ordinals, a terminal parked-head failure policy with retained terminal diagnostics, a kernel-owned boot-critical pager auto-resolution policy with retained resolution diagnostics, explicit boot-progress/fail runtime reporting, and a now-closed RFC-00B5 interrupt summary-convergence slice with kernel-owned interrupt intake, deterministic loop delivery, stable queue/accounting/audit surfaces, and record-level intake/delivery provenance are implemented; the current boot-ready kernel slice is closed, the local external boot-lane packaging phase is closed, staged ARM guest validation is in place, and a local QEMU x86_64 EFI diagnostic lane now executes the staged `BOOTX64.EFI` candidate and validates the shipped `x86_64` handoff contract. The next interrupt milestone is actual RFC-00B5 policy/handler behavior, while the external boot milestone remains actual `x86_64` VirtualBox host execution and evidence return (tracked in `experimental/ternaryos/docs/kernel_execution_plan.md`) |
 | T81Graph | Low | Lang-side serialization wired; determinism coverage in place |
@@ -77,7 +77,7 @@ Full register: `ACTIVE_RISKS.md`
 | FW-01 — dependency firewall waiver retirement | @t81dev | **Closed 2026-03-05** |
 | SEC-01 — Fuzz infrastructure (fuzz_parser, fuzz_vm) + 3 OOB VM fixes | @t81dev | **Closed 2026-03-10** |
 | SEC-02 — binary_io OOM-on-corrupt-input (read_checked_size guard) | @t81dev | **Closed 2026-03-10** |
-| QA-01 — CLI stress test covering full command surface (336th test) | @t81dev | **Closed 2026-03-10** |
+| QA-01 — CLI stress test covering full command surface (338th test) | @t81dev | **Closed 2026-03-10** |
 
 Full backlog: `HARDENING_BACKLOG.md`
 

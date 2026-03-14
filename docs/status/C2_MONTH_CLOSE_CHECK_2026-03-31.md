@@ -1,6 +1,6 @@
 # C2 Month-Close Check Report (2026-03-31 Runbook)
 
-Generated (UTC): 2026-03-10 17:31:15Z
+Generated (UTC): 2026-03-14 03:49:10Z
 Generator: `scripts/governance/c2_month_close_check.py`
 Overall: PASS
 
@@ -14,14 +14,14 @@ Overall: PASS
 
 ## Derived Fields
 
-- Promotion snapshot timestamp: 2026-03-10 17:31:15Z
+- Promotion snapshot timestamp: 2026-03-14 03:49:10Z
 
 ## Command Outputs
 
 ### Governance hygiene check
 
 - Status: PASS
-- Command: `/opt/homebrew/opt/python@3.14/bin/python3.14 scripts/governance/check_docs_governance_hygiene.py`
+- Command: `/home/jules/.pyenv/versions/3.12.13/bin/python3 scripts/governance/check_docs_governance_hygiene.py`
 
 ```text
 governance hygiene check PASSED
@@ -35,7 +35,7 @@ governance hygiene check PASSED
 ### Promotion gate snapshot refresh
 
 - Status: PASS
-- Command: `/opt/homebrew/opt/python@3.14/bin/python3.14 scripts/governance/t81lang_promotion_gate_snapshot.py`
+- Command: `/home/jules/.pyenv/versions/3.12.13/bin/python3 scripts/governance/t81lang_promotion_gate_snapshot.py`
 
 ```text
 Wrote snapshot: docs/status/T81LANG_PROMOTION_GATE_SNAPSHOT.md

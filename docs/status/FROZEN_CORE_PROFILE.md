@@ -1,7 +1,7 @@
 # Frozen Core Profile
 
 Status: Constitutional — Do Not Edit Without Major Version Bump
-Last Updated: 2026-02-28
+Last Updated: 2026-03-14
 Authority: `spec/tisc-spec.md` > `docs/product/DETERMINISTIC_CORE_PROFILE.md` > this document
 
 ## What This Document Is
