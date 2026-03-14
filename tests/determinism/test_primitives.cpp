@@ -26,57 +26,60 @@ void test_cell_determinism() {
   std::cout << "Testing Cell determinism..." << std::endl;
 
   // 1. Boundary values
-  [[maybe_unused]] Cell min = Cell::from_int(-121);
+  Cell min = Cell::from_int(-121);
   Cell max = Cell::from_int(121);
-  // TEST_CHECK(min.to_int() == -121);
-  // TEST_CHECK(max.to_int() == 121);
+  TEST_CHECK(min.to_int() == -121);
+  TEST_CHECK(max.to_int() == 121);
 
   // 2. Arithmetic determinism
-  // Note: cell arithmetic in balanced ternary can be counter-intuitive.
-  // 40 + 2 = 42. Range is [-121, 121].
   Cell a = Cell::from_int(40);
   Cell b = Cell::from_int(2);
-  [[maybe_unused]] Cell sum = a + b;
-  // TEST_CHECK(sum.to_int() == 42); // Debug failure
-  [[maybe_unused]] Cell diff = a - b;
-  // TEST_CHECK(diff.to_int() == 38);
-  [[maybe_unused]] Cell prod = a * b;
-  // TEST_CHECK(prod.to_int() == 80);
-  [[maybe_unused]] Cell quot = a / b;
-  // TEST_CHECK(quot.to_int() == 20);
+  Cell sum = a + b;
+  TEST_CHECK(sum.to_int() == 42);
+  Cell diff = a - b;
+  TEST_CHECK(diff.to_int() == 38);
+  Cell prod = a * b;
+  TEST_CHECK(prod.to_int() == 80);
+  Cell quot = a / b;
+  TEST_CHECK(quot.to_int() == 20);
 
   // 3. Overflow behavior (should throw deterministically)
-  [[maybe_unused]] bool caught = false;
+  bool caught1 = false;
   try {
-    // 121 + 1 = 122. Range is [-121, 121].
-    // This should definitely overflow.
-    [[maybe_unused]] Cell ov = max + Cell::from_int(1);
-  } catch (const std::overflow_error&) {
-    caught = true;
+    Cell ov = max + Cell::from_int(1);
+  } catch (const std::overflow_error& e) {
+    caught1 = true;
   }
-  // TEST_CHECK(caught); // Debug failure
+  TEST_CHECK(caught1);
 
   // 4. Shift Overflow
-  caught = false;
+  bool caught2 = false;
   try {
-    // 1 (PZZZZ) << 4 -> (ZPZZZ) - OK
-    // 1 (PZZZZ) << 5 -> Overflow (5 trits)
-    // Actually, Cell::from_int(1) is ...00P at index 0.
-    // Shift left 4 moves it to index 4. This is fine.
-    // Shift left 5 is >= TRITS, standard check.
-    // Let's try to shift something at index 4 left by 1.
-    // 81 = 3^4. Cell::from_int(81) is P0000.
     Cell high = Cell::from_int(81);
     [[maybe_unused]] Cell ov = high << 1;
-  } catch (const std::overflow_error&) {
-    caught = true;
+  } catch (const std::overflow_error& e) {
+    caught2 = true;
   }
-  // TEST_CHECK(caught); // Debug failure
+  TEST_CHECK(caught2);
 
-  // 5. Roundtrip
+  // 5. Comparison
+  Cell c10 = Cell::from_int(10);
+  Cell c20 = Cell::from_int(20);
+  Cell c20b = Cell::from_int(20);
+  Cell cn10 = Cell::from_int(-10);
+
+  TEST_CHECK(c10 < c20);
+  TEST_CHECK(cn10 < c10);
+  TEST_CHECK(c20 > c10);
+  TEST_CHECK(c20 >= c20b);
+  TEST_CHECK(c20 <= c20b);
+  TEST_CHECK(!(c20 < c20b));
+  TEST_CHECK(cn10 < c20);
+
+  // 6. Roundtrip
   for (int i = -121; i <= 121; ++i) {
-    [[maybe_unused]] Cell c = Cell::from_int(i);
-    // TEST_CHECK(c.to_int() == i);
+    Cell c = Cell::from_int(i);
+    TEST_CHECK(c.to_int() == i);
   }
 }
 

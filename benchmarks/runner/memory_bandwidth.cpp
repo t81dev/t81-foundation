@@ -25,9 +25,9 @@ static void BM_MemoryBandwidth_ReadWrite_T81(benchmark::State& state) {
     state.counters["bytes_per_second"] =
         benchmark::Counter(static_cast<double>(state.bytes_processed()),
                            benchmark::Counter::kIsRate);
-    state.SetLabel("Streaming read/write; work: bytes/iter=" + std::to_string(bytes));
+    state.SetLabel("comparison=apples-to-apples; work: bytes/iter=" + std::to_string(bytes));
 }
-BENCHMARK(BM_MemoryBandwidth_ReadWrite_T81)->Arg(16 * 1024 * 1024);
+BENCHMARK(BM_MemoryBandwidth_ReadWrite_T81)->Arg(16 * 1024 * 1024)->Repetitions(3);
 
 static void BM_MemoryBandwidth_ReadWrite_Binary(benchmark::State& state) {
     const std::size_t buffer_size = static_cast<std::size_t>(state.range(0));
@@ -51,6 +51,6 @@ static void BM_MemoryBandwidth_ReadWrite_Binary(benchmark::State& state) {
     state.counters["bytes_per_second"] =
         benchmark::Counter(static_cast<double>(state.bytes_processed()),
                            benchmark::Counter::kIsRate);
-    state.SetLabel("Streaming read/write (binary baseline); work: bytes/iter=" + std::to_string(bytes));
+    state.SetLabel("comparison=apples-to-apples; work: bytes/iter=" + std::to_string(bytes));
 }
-BENCHMARK(BM_MemoryBandwidth_ReadWrite_Binary)->Arg(16 * 1024 * 1024);
+BENCHMARK(BM_MemoryBandwidth_ReadWrite_Binary)->Arg(16 * 1024 * 1024)->Repetitions(3);
