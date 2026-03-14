@@ -557,6 +557,9 @@ public:
     void ReportRuns(const std::vector<Run>& reports) override {
         std::lock_guard<std::mutex> guard(final_results_mutex);
         for (const auto& run : reports) {
+            if (run.run_type != benchmark::BenchmarkReporter::Run::RT_Iteration) {
+                continue;
+            }
             std::string run_name = run.benchmark_name();
             std::string family = run_name;
             std::string suffix;

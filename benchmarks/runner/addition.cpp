@@ -70,7 +70,7 @@ static void BM_Add_1024_bit_binary_carry_propagate(benchmark::State& state) {
   RunBinaryCarry<kBinaryLimbs>(state, 0xC0FFEE);
 }
 BENCHMARK(BM_Add_1024_bit_binary_carry_propagate)
-    ->Name("BM_Add_1024_bit/binary_carry_propagate");
+    ->Name("BM_Add_1024_bit/binary_carry_propagate")->Repetitions(3);
 
 static void BM_Add_1024_bit_binary_checked(benchmark::State& state) {
   alignas(64) std::array<uint64_t, kBinaryLimbs> a{};
@@ -93,28 +93,28 @@ static void BM_Add_1024_bit_binary_checked(benchmark::State& state) {
   }
   state.SetItemsProcessed(state.iterations());
   state.counters["work_per_iter"] = 1.0;
-  state.SetLabel("work: ops/iter=1 (one whole-width add)");
+  state.SetLabel("comparison=apples-to-apples; work: ops/iter=1 (one whole-width add)");
 }
 BENCHMARK(BM_Add_1024_bit_binary_checked)
-    ->Name("BM_Add_1024_bit/binary_checked");
+    ->Name("BM_Add_1024_bit/binary_checked")->Repetitions(3);
 
 static void BM_Add_2048_bit_binary_carry_propagate(benchmark::State& state) {
   RunBinaryCarry<32>(state, 0xBEEFBEEF);
 }
 BENCHMARK(BM_Add_2048_bit_binary_carry_propagate)
-    ->Name("BM_Add_2048_bit/binary_carry_propagate");
+    ->Name("BM_Add_2048_bit/binary_carry_propagate")->Repetitions(3);
 
 static void BM_Add_4096_bit_binary_carry_propagate(benchmark::State& state) {
   RunBinaryCarry<64>(state, 0xFEEDFACE);
 }
 BENCHMARK(BM_Add_4096_bit_binary_carry_propagate)
-    ->Name("BM_Add_4096_bit/binary_carry_propagate");
+    ->Name("BM_Add_4096_bit/binary_carry_propagate")->Repetitions(3);
 
 static void BM_Add_8192_bit_binary_carry_propagate(benchmark::State& state) {
   RunBinaryCarry<128>(state, 0xDEADBEEF);
 }
 BENCHMARK(BM_Add_8192_bit_binary_carry_propagate)
-    ->Name("BM_Add_8192_bit/binary_carry_propagate");
+    ->Name("BM_Add_8192_bit/binary_carry_propagate")->Repetitions(3);
 
 static void BM_Add_1024_bit_ternary_koggestone(benchmark::State& state) {
   std::mt19937_64 rng(0xC0FFEE);
@@ -129,10 +129,10 @@ static void BM_Add_1024_bit_ternary_koggestone(benchmark::State& state) {
   }
   state.SetItemsProcessed(state.iterations());
   state.counters["work_per_iter"] = 1.0;
-  state.SetLabel("work: ops/iter=1 (one whole-width add)");
+  state.SetLabel("comparison=apples-to-apples; work: ops/iter=1 (one whole-width add)");
 }
 BENCHMARK(BM_Add_1024_bit_ternary_koggestone)
-    ->Name("BM_Add_1024_bit/ternary_koggestone");
+    ->Name("BM_Add_1024_bit/ternary_koggestone")->Repetitions(3);
 
 static void BM_Add_4096_bit_ternary_koggestone(benchmark::State& state) {
   std::mt19937_64 rng(0xAFFE5ED);
@@ -147,10 +147,10 @@ static void BM_Add_4096_bit_ternary_koggestone(benchmark::State& state) {
   }
   state.SetItemsProcessed(state.iterations());
   state.counters["work_per_iter"] = 1.0;
-  state.SetLabel("work: ops/iter=1 (one whole-width add)");
+  state.SetLabel("comparison=apples-to-apples; work: ops/iter=1 (one whole-width add)");
 }
 BENCHMARK(BM_Add_4096_bit_ternary_koggestone)
-    ->Name("BM_Add_4096_bit/ternary_koggestone");
+    ->Name("BM_Add_4096_bit/ternary_koggestone")->Repetitions(3);
 
 static void BM_Add_2048_bit_ternary_koggestone(benchmark::State& state) {
   std::mt19937_64 rng(0x1337BEEF);
@@ -165,10 +165,10 @@ static void BM_Add_2048_bit_ternary_koggestone(benchmark::State& state) {
   }
   state.SetItemsProcessed(state.iterations());
   state.counters["work_per_iter"] = 1.0;
-  state.SetLabel("work: ops/iter=1 (one whole-width add)");
+  state.SetLabel("comparison=apples-to-apples; work: ops/iter=1 (one whole-width add)");
 }
 BENCHMARK(BM_Add_2048_bit_ternary_koggestone)
-    ->Name("BM_Add_2048_bit/ternary_koggestone");
+    ->Name("BM_Add_2048_bit/ternary_koggestone")->Repetitions(3);
 
 static void BM_Add_8192_bit_ternary_koggestone(benchmark::State& state) {
   constexpr size_t kChunks = 4;
@@ -197,10 +197,10 @@ static void BM_Add_8192_bit_ternary_koggestone(benchmark::State& state) {
   }
   state.SetItemsProcessed(state.iterations());
   state.counters["work_per_iter"] = 1.0;
-  state.SetLabel("work: ops/iter=1 (one whole-width add)");
+  state.SetLabel("comparison=apples-to-apples; work: ops/iter=1 (one whole-width add)");
 }
 BENCHMARK(BM_Add_8192_bit_ternary_koggestone)
-    ->Name("BM_Add_8192_bit/ternary_koggestone");
+    ->Name("BM_Add_8192_bit/ternary_koggestone")->Repetitions(3);
 
 static void BM_Add_16384_bit_ternary_koggestone(benchmark::State& state) {
   constexpr size_t kChunks = 8;
@@ -229,13 +229,13 @@ static void BM_Add_16384_bit_ternary_koggestone(benchmark::State& state) {
   }
   state.SetItemsProcessed(state.iterations());
   state.counters["work_per_iter"] = 1.0;
-  state.SetLabel("work: ops/iter=1 (one whole-width add)");
+  state.SetLabel("comparison=apples-to-apples; work: ops/iter=1 (one whole-width add)");
 }
 BENCHMARK(BM_Add_16384_bit_ternary_koggestone)
-    ->Name("BM_Add_16384_bit/ternary_koggestone");
+    ->Name("BM_Add_16384_bit/ternary_koggestone")->Repetitions(3);
 
 static void BM_Add_16384_bit_binary_carry_propagate(benchmark::State& state) {
  RunBinaryCarry<256>(state, 0xC0DE1234);
 }
 BENCHMARK(BM_Add_16384_bit_binary_carry_propagate)
-    ->Name("BM_Add_16384_bit/binary_carry_propagate");
+    ->Name("BM_Add_16384_bit/binary_carry_propagate")->Repetitions(3);

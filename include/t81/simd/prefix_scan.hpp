@@ -30,21 +30,36 @@ inline ByteCarryMap Compose(const ByteCarryMap& left, const ByteCarryMap& right)
 
 inline ByteCarryMap MakeByteCarryMap(uint8_t lhs_byte, uint8_t rhs_byte) {
   ByteCarryMap map;
+
+  auto decode = [](uint8_t pattern) -> int8_t {
+    if (pattern == 0u) return -1;
+    if (pattern == 1u) return 0;
+    return +1;
+  };
+
+  const int8_t a0 = decode(lhs_byte & 0x3u);
+  const int8_t b0 = decode(rhs_byte & 0x3u);
+  const AddEntry& e0 = LookupAddEntry(a0, b0);
+
+  const int8_t a1 = decode((lhs_byte >> 2) & 0x3u);
+  const int8_t b1 = decode((rhs_byte >> 2) & 0x3u);
+  const AddEntry& e1 = LookupAddEntry(a1, b1);
+
+  const int8_t a2 = decode((lhs_byte >> 4) & 0x3u);
+  const int8_t b2 = decode((rhs_byte >> 4) & 0x3u);
+  const AddEntry& e2 = LookupAddEntry(a2, b2);
+
+  const int8_t a3 = decode((lhs_byte >> 6) & 0x3u);
+  const int8_t b3 = decode((rhs_byte >> 6) & 0x3u);
+  const AddEntry& e3 = LookupAddEntry(a3, b3);
+
   for (int idx = 0; idx < 3; ++idx) {
-    int8_t carry = static_cast<int8_t>(idx - 1);
-    for (int trit = 0; trit < 4; ++trit) {
-      const int shift = trit * 2;
-      const auto decode = [](uint8_t pattern) -> int8_t {
-        if (pattern == 0u) return -1;
-        if (pattern == 1u) return 0;
-        return +1;
-      };
-      const int8_t a = decode((lhs_byte >> shift) & 0x3u);
-      const int8_t b = decode((rhs_byte >> shift) & 0x3u);
-      const AddEntry& entry = LookupAddEntry(a, b);
-      carry = entry.carry[IndexForCarry(carry)];
-    }
-    map.carry_out[idx] = carry;
+    int8_t c = static_cast<int8_t>(idx - 1);
+    c = e0.carry[c + 1];
+    c = e1.carry[c + 1];
+    c = e2.carry[c + 1];
+    c = e3.carry[c + 1];
+    map.carry_out[idx] = c;
   }
   return map;
 }

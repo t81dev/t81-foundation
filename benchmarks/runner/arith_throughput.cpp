@@ -44,19 +44,23 @@ static void BM_ArithThroughput_T81Cell(benchmark::State& state) {
     for (auto _ : state) {
         for (size_t i = 0; i < DATA_SIZE; ++i) {
             try {
-                benchmark::DoNotOptimize(t81_data_a[i] + t81_data_b[i]);
-                benchmark::DoNotOptimize(t81_data_a[i] - t81_data_b[i]);
-                benchmark::DoNotOptimize(t81_data_a[i] * t81_data_b[i]);
-                benchmark::DoNotOptimize(t81_data_a[i] / t81_data_b[i]);
+                auto sum = t81_data_a[i] + t81_data_b[i];
+                auto diff = t81_data_a[i] - t81_data_b[i];
+                auto prod = t81_data_a[i] * t81_data_b[i];
+                auto quot = t81_data_a[i] / t81_data_b[i];
+                benchmark::DoNotOptimize(sum);
+                benchmark::DoNotOptimize(diff);
+                benchmark::DoNotOptimize(prod);
+                benchmark::DoNotOptimize(quot);
             } catch (const std::exception&) {
                 continue;
             }
         }
     }
     state.SetItemsProcessed(state.iterations() * DATA_SIZE * 4);
-    state.SetLabel("Cell vs int64_t (+-*/); work: ops/iter=40000");
+    state.SetLabel("comparison=apples-to-apples; work: ops/iter=40000");
 }
-BENCHMARK(BM_ArithThroughput_T81Cell);
+BENCHMARK(BM_ArithThroughput_T81Cell)->Repetitions(3);
 
 static void BM_ArithThroughput_Int64(benchmark::State& state) {
     setup();
@@ -68,13 +72,17 @@ static void BM_ArithThroughput_Int64(benchmark::State& state) {
     state.counters["divs_per_iter"] = static_cast<double>(DATA_SIZE);
     for (auto _ : state) {
         for (size_t i = 0; i < DATA_SIZE; ++i) {
-            benchmark::DoNotOptimize(int64_data_a[i] + int64_data_b[i]);
-            benchmark::DoNotOptimize(int64_data_a[i] - int64_data_b[i]);
-            benchmark::DoNotOptimize(int64_data_a[i] * int64_data_b[i]);
-            benchmark::DoNotOptimize(int64_data_a[i] / int64_data_b[i]);
+            auto sum = int64_data_a[i] + int64_data_b[i];
+            auto diff = int64_data_a[i] - int64_data_b[i];
+            auto prod = int64_data_a[i] * int64_data_b[i];
+            auto quot = int64_data_a[i] / int64_data_b[i];
+            benchmark::DoNotOptimize(sum);
+            benchmark::DoNotOptimize(diff);
+            benchmark::DoNotOptimize(prod);
+            benchmark::DoNotOptimize(quot);
         }
     }
     state.SetItemsProcessed(state.iterations() * DATA_SIZE * 4);
-    state.SetLabel("Cell vs int64_t (+-*/); work: ops/iter=40000");
+    state.SetLabel("comparison=apples-to-apples; work: ops/iter=40000");
 }
-BENCHMARK(BM_ArithThroughput_Int64);
+BENCHMARK(BM_ArithThroughput_Int64)->Repetitions(3);
