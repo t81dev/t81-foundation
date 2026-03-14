@@ -20,6 +20,9 @@ T81 Foundation is a **determinism-first, ternary-native computing stack** engine
 
 We provide a vertical stack designed for researchers, systems programmers, and safety-critical environments where non-determinism, undefined behaviors, and unspoken rules are unacceptable. At our core is a base-81 ternary (`T81`) paradigm that achieves native ternary scaling properties while utilizing SWAR vectorization for extreme throughput on standard binary computing hardware.
 
+System Framing for Systems Engineers
+From a systems engineering perspective, T81 can be viewed as an experiment in co-designing three traditionally independent layers: the instruction set, the execution runtime, and the policy enforcement boundary. Most modern stacks treat these as loosely coupled components—hardware defines the ISA, operating systems manage execution, and policy enforcement occurs largely outside the runtime through external controls. T81 instead attempts to align these layers under a single deterministic contract: canonical data representations define numeric semantics, the ISA defines total and auditable instruction behavior, the virtual machine enforces deterministic execution surfaces, and the Axion governance kernel provides enforceable runtime policy evaluation. The result is a substrate where determinism, identity, and governance are treated as properties of the execution environment itself rather than as higher-level conventions.
+
 ---
 
 ### 🚀 [Quickstart: Compile & Install Instructions](docs/user-guide/quickstart/INSTALL.md)
