@@ -164,6 +164,14 @@ std::vector<KernelCapabilityRecord> axion_kernel_list_process_group_capabilities
 bool axion_kernel_ack_thread_fault(KernelRuntimeState& state,
                                    sched::Tid tid) noexcept;
 
+/// Resume a thread that was quarantined due to a pager fault after the PagerService
+/// thread has supplied a mapping via RequestPageMapping.  Validates the fault TVA is
+/// now mapped, drains the fault from the thread's inbox, and un-quarantines the thread.
+/// Returns false if the thread is not quarantined, has no pager fault, or the TVA is
+/// not yet mapped.  (RFC-00B7 §3.4)
+bool axion_kernel_resume_pager_faulted_thread(KernelRuntimeState& state,
+                                              sched::Tid tid) noexcept;
+
 bool axion_kernel_ack_process_group_fault(KernelRuntimeState& state,
                                           ProcessGroupId process_group_id) noexcept;
 

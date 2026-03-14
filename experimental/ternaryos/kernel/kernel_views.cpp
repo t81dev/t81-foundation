@@ -492,6 +492,7 @@ KernelRuntimeStatusView make_runtime_view(const KernelRuntimeState& state) {
       .canonfs_fetch_spawns = state.counters.canonfs_fetch_spawns,
       .pager_service_mappings = state.counters.pager_service_mappings,
       .pager_handoff_wakes = state.counters.pager_handoff_wakes,
+      .pager_service_resumptions = state.counters.pager_service_resumptions,
       .pager_handoff_waiting_thread_count = state.pager_handoff_waiting_tids.size(),
       .pager_eligible_faults = state.counters.pager_eligible_faults,
       .policy_faults = state.counters.policy_faults,

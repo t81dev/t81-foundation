@@ -2920,6 +2920,217 @@ static void test_kernel_wait_for_pager_handoff() {
   }
 }
 
+static void test_kernel_resume_page_faulted_thread() {
+  std::printf("\n[AC-22q] RFC-00B7 §3.4: ResumePageFaultedThread un-quarantines victim thread after TVA is mapped\n");
+
+  namespace mmu    = t81::ternaryos::mmu;
+  namespace sched  = t81::ternaryos::sched;
+  namespace kernel = t81::ternaryos::kernel;
+
+  auto ctx   = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "resume-pager-faulted: kernel bootstrap succeeds");
+  if (!state) {
+    return;
+  }
+
+  // ── Spawn victim thread ───────────────────────────────────────────────────
+  sched::TiscContext victim_ctx;
+  victim_ctx.label        = "victim";
+  victim_ctx.registers[0] = 400;
+  auto victim_tid = axion_kernel_spawn_thread(*state, victim_ctx);
+  check(victim_tid.has_value(), "resume-pager-faulted: victim thread spawns");
+  if (!victim_tid) {
+    return;
+  }
+  const auto* victim_runtime = state->find_thread_runtime(*victim_tid);
+  check(victim_runtime != nullptr, "resume-pager-faulted: victim runtime state exists");
+  if (!victim_runtime) {
+    return;
+  }
+  const auto victim_pg_id = victim_runtime->process_group_id;
+  const auto victim_as_id = state->find_process_group_address_space(victim_pg_id);
+  check(victim_as_id.has_value(), "resume-pager-faulted: victim address space resolved");
+  if (!victim_as_id) {
+    return;
+  }
+
+  // ── Spawn pager-service thread ────────────────────────────────────────────
+  sched::TiscContext svc_ctx;
+  svc_ctx.label        = "pager-svc";
+  svc_ctx.registers[0] = 401;
+  auto svc_tid = axion_kernel_spawn_thread(*state, svc_ctx);
+  check(svc_tid.has_value(), "resume-pager-faulted: service thread spawns");
+  if (!svc_tid) {
+    return;
+  }
+  const auto* svc_runtime = state->find_thread_runtime(*svc_tid);
+  check(svc_runtime != nullptr, "resume-pager-faulted: service runtime state exists");
+  if (!svc_runtime) {
+    return;
+  }
+  const auto svc_pg_id = svc_runtime->process_group_id;
+
+  // Grant PagerService capability to the service process group.
+  check(axion_kernel_grant_process_group_capability(
+            *state,
+            svc_pg_id,
+            std::nullopt,
+            std::nullopt,
+            kernel::KernelCapabilityRecord{
+                .kind = kernel::KernelCapabilityKind::PagerService}),
+        "resume-pager-faulted: PagerService capability granted");
+
+  // ── Inject an Unmapped fault for the victim thread ────────────────────────
+  const auto fault_tva = mmu::tva_from_vpn_offset(91, 0);
+  state->pending_faults.push_back(kernel::KernelFaultRecord{
+      .platform_id = state->platform_id,
+      .tva         = fault_tva,
+      .access_mode = mmu::MmuAccessMode::Read,
+      .fault       = mmu::MmuFault::Unmapped,
+      .subject_tid = *victim_tid,
+  });
+
+  // ── Run steps: fault delivery → quarantine → handoff dispatch ────────────
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+  (void)axion_kernel_step(*state);
+
+  // Victim must be quarantined with the fault in its inbox.
+  const auto* victim_rt_after_fault = state->find_thread_runtime(*victim_tid);
+  check(victim_rt_after_fault && victim_rt_after_fault->quarantined,
+        "resume-pager-faulted: victim thread is quarantined after unmapped fault");
+  check(victim_rt_after_fault && !victim_rt_after_fault->fault_inbox.empty(),
+        "resume-pager-faulted: victim fault inbox is non-empty after fault delivery");
+
+  // ── Rejection: ResumePageFaultedThread without target_tid ────────────────
+  // Advance scheduler to svc thread (victim is quarantined).
+  (void)axion_kernel_step(*state);
+  auto no_tid_result = axion_kernel_call(
+      *state,
+      kernel::KernelCallRequest{.kind = kernel::KernelCallKind::ResumePageFaultedThread});
+  check(no_tid_result.status == kernel::KernelCallStatus::InvalidRequest,
+        "resume-pager-faulted: ResumePageFaultedThread without target_tid → InvalidRequest");
+  check(no_tid_result.rejection == kernel::KernelCallRejection::MissingTargetThread,
+        "resume-pager-faulted: ResumePageFaultedThread without target_tid → MissingTargetThread");
+
+  // ── Rejection: nonexistent target_tid ────────────────────────────────────
+  auto bad_tid_result = axion_kernel_call(
+      *state,
+      kernel::KernelCallRequest{
+          .kind       = kernel::KernelCallKind::ResumePageFaultedThread,
+          .target_tid = static_cast<sched::Tid>(9999),
+      });
+  check(bad_tid_result.status == kernel::KernelCallStatus::NotFound,
+        "resume-pager-faulted: ResumePageFaultedThread with nonexistent tid → NotFound");
+  check(bad_tid_result.rejection == kernel::KernelCallRejection::MissingTargetThread,
+        "resume-pager-faulted: ResumePageFaultedThread with nonexistent tid → MissingTargetThread");
+
+  // ── Rejection: TVA not yet mapped (RequestPageMapping not called yet) ─────
+  auto not_mapped_result = axion_kernel_call(
+      *state,
+      kernel::KernelCallRequest{
+          .kind       = kernel::KernelCallKind::ResumePageFaultedThread,
+          .target_tid = *victim_tid,
+      });
+  check(not_mapped_result.status == kernel::KernelCallStatus::InvalidRequest,
+        "resume-pager-faulted: ResumePageFaultedThread before mapping → InvalidRequest");
+  check(not_mapped_result.rejection == kernel::KernelCallRejection::PagerFaultNotResolved,
+        "resume-pager-faulted: ResumePageFaultedThread before mapping → PagerFaultNotResolved");
+  check(!not_mapped_result.pager_thread_resumed,
+        "resume-pager-faulted: pager_thread_resumed not set on rejected call");
+
+  // Victim must still be quarantined after the rejected resume attempt.
+  const auto* victim_rt_still_quarantined = state->find_thread_runtime(*victim_tid);
+  check(victim_rt_still_quarantined && victim_rt_still_quarantined->quarantined,
+        "resume-pager-faulted: victim remains quarantined after rejected resume");
+
+  // ── Map the TVA via RequestPageMapping ────────────────────────────────────
+  auto map_result = axion_kernel_call(
+      *state,
+      kernel::KernelCallRequest{
+          .kind             = kernel::KernelCallKind::RequestPageMapping,
+          .address_space_id = *victim_as_id,
+      });
+  check(map_result.status == kernel::KernelCallStatus::Ok,
+        "resume-pager-faulted: RequestPageMapping succeeds");
+  check(map_result.pager_mapping_supplied,
+        "resume-pager-faulted: pager_mapping_supplied set after RequestPageMapping");
+
+  // TVA should be mapped now.
+  const auto translation = mmu::mmu_translate_checked(
+      state->page_table, fault_tva, mmu::MmuAccessMode::Read);
+  check(translation.fault == mmu::MmuFault::None,
+        "resume-pager-faulted: fault TVA is mapped after RequestPageMapping");
+
+  // ── Success path: ResumePageFaultedThread un-quarantines victim ───────────
+  const auto resumptions_before = state->counters.pager_service_resumptions;
+  const auto recoveries_before  = state->counters.thread_fault_recoveries;
+  auto resume_result = axion_kernel_call(
+      *state,
+      kernel::KernelCallRequest{
+          .kind       = kernel::KernelCallKind::ResumePageFaultedThread,
+          .target_tid = *victim_tid,
+      });
+  check(resume_result.status == kernel::KernelCallStatus::Ok,
+        "resume-pager-faulted: ResumePageFaultedThread returns Ok");
+  check(resume_result.action_performed,
+        "resume-pager-faulted: ResumePageFaultedThread sets action_performed");
+  check(resume_result.pager_thread_resumed,
+        "resume-pager-faulted: ResumePageFaultedThread sets pager_thread_resumed");
+  check(resume_result.rejection == kernel::KernelCallRejection::None,
+        "resume-pager-faulted: ResumePageFaultedThread rejection is None");
+
+  // Victim thread must now be un-quarantined and fault inbox empty.
+  const auto* victim_rt_after_resume = state->find_thread_runtime(*victim_tid);
+  check(victim_rt_after_resume && !victim_rt_after_resume->quarantined,
+        "resume-pager-faulted: victim thread is no longer quarantined after resume");
+  check(victim_rt_after_resume && victim_rt_after_resume->fault_inbox.empty(),
+        "resume-pager-faulted: victim fault inbox is empty after resume");
+
+  // Counters advance.
+  check(state->counters.pager_service_resumptions == resumptions_before + 1,
+        "resume-pager-faulted: pager_service_resumptions advances by 1");
+  check(state->counters.thread_fault_recoveries >= recoveries_before,
+        "resume-pager-faulted: thread_fault_recoveries non-decreasing after resume");
+  check(state->counters.thread_fault_acknowledgements >= 1,
+        "resume-pager-faulted: thread_fault_acknowledgements advances");
+
+  // ── Second ResumePageFaultedThread on non-quarantined thread → TargetNotQuarantined ──
+  auto second_resume = axion_kernel_call(
+      *state,
+      kernel::KernelCallRequest{
+          .kind       = kernel::KernelCallKind::ResumePageFaultedThread,
+          .target_tid = *victim_tid,
+      });
+  check(second_resume.status == kernel::KernelCallStatus::InvalidRequest,
+        "resume-pager-faulted: second ResumePageFaultedThread on non-quarantined thread → InvalidRequest");
+  check(second_resume.rejection == kernel::KernelCallRejection::TargetNotQuarantined,
+        "resume-pager-faulted: second ResumePageFaultedThread → TargetNotQuarantined");
+  check(!second_resume.pager_thread_resumed,
+        "resume-pager-faulted: pager_thread_resumed not set on second rejected call");
+
+  // Counter must not advance for the rejected second call.
+  check(state->counters.pager_service_resumptions == resumptions_before + 1,
+        "resume-pager-faulted: pager_service_resumptions stays at 1 after rejected second call");
+
+  // ── Runtime status view exposes pager_service_resumptions ────────────────
+  {
+    const auto sv = axion_kernel_service_request(
+        *state,
+        kernel::KernelServiceRequest{
+            .kind = kernel::KernelServiceRequestKind::RuntimeStatus});
+    check(sv.status == kernel::KernelServiceStatus::Ok,
+          "resume-pager-faulted: runtime status query succeeds");
+    if (sv.runtime) {
+      check(sv.runtime->pager_service_resumptions == 1,
+            "resume-pager-faulted: runtime view exposes pager_service_resumptions == 1");
+      check(sv.runtime->pager_service_mappings == 1,
+            "resume-pager-faulted: runtime view exposes pager_service_mappings == 1");
+    }
+  }
+}
+
 static void test_kernel_pager_fault_state() {
   std::printf("\n[AC-22b] Axion kernel classifies pager-needed versus policy faults\n");
 
@@ -12576,6 +12787,7 @@ int main() {
   test_kernel_canonfs_fetch_spawn();
   test_kernel_pager_service_abi();
   test_kernel_wait_for_pager_handoff();
+  test_kernel_resume_page_faulted_thread();
   test_kernel_pager_fault_state();
   test_kernel_pager_worker_backlog();
   test_kernel_pager_worker_ready_bypass_cap();

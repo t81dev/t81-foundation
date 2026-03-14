@@ -245,8 +245,9 @@ struct KernelRuntimeState {
     uint64_t syscall_trap_dispatches{0};  ///< SVC traps dispatched through axion_kernel_call_wire_tva() (RFC-00B6 §5.2)
     uint64_t kernel_space_rejections{0};  ///< user AS span attempts into kernel TVA space (RFC-00B1 §3.1 / RFC-00B6 §5.7)
     uint64_t canonfs_fetch_spawns{0};     ///< spawns that fetched CanonExec directly from CanonFS without prior registration (RFC-00B2 §3.1)
-    uint64_t pager_service_mappings{0};   ///< page mappings supplied via RequestPageMapping by a PagerService-capable thread (RFC-00B7 §3.2)
-    uint64_t pager_handoff_wakes{0};      ///< PagerService threads woken by a pager handoff dispatch (RFC-00B7 §3.3)
+    uint64_t pager_service_mappings{0};    ///< page mappings supplied via RequestPageMapping by a PagerService-capable thread (RFC-00B7 §3.2)
+    uint64_t pager_handoff_wakes{0};       ///< PagerService threads woken by a pager handoff dispatch (RFC-00B7 §3.3)
+    uint64_t pager_service_resumptions{0}; ///< victim threads un-quarantined via ResumePageFaultedThread (RFC-00B7 §3.4)
   };
 
   std::string platform_id;

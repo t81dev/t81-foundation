@@ -192,6 +192,56 @@ bool axion_kernel_ack_thread_fault(KernelRuntimeState& state,
   return true;
 }
 
+bool axion_kernel_resume_pager_faulted_thread(KernelRuntimeState& state,
+                                              sched::Tid tid) noexcept {
+  // RFC-00B7 §3.4 — complete the fault→handoff→service→resume lifecycle.
+  // The PagerService thread calls this after RequestPageMapping to assert the
+  // fault TVA is now mapped and the victim thread can safely resume.
+  auto* thread_state = state.find_thread_runtime_mut(tid);
+  if (!thread_state || !thread_state->quarantined ||
+      thread_state->fault_inbox.empty()) {
+    return false;
+  }
+
+  // Validate front fault is a pager-resolvable (Unmapped) fault.
+  const KernelFaultRecord& fault = thread_state->fault_inbox.front();
+  if (fault.fault != mmu::MmuFault::Unmapped) {
+    return false;
+  }
+
+  // Verify the faulting TVA is now mapped — i.e. RequestPageMapping was called.
+  const auto phys = mmu::mmu_translate(state.page_table, fault.tva);
+  if (!phys.has_value()) {
+    return false;
+  }
+
+  // Drain the pager fault from the thread inbox.
+  thread_state->fault_inbox.pop_front();
+  ++state.counters.thread_fault_acknowledgements;
+  ++state.counters.pager_service_resumptions;
+  record_audit_event(state,
+                     KernelAuditEventKind::ThreadFaultAcknowledged,
+                     tid,
+                     thread_state->process_group_id);
+
+  if (thread_state->fault_inbox.empty()) {
+    auto* group_state = state.find_process_group_mut(thread_state->process_group_id);
+    if (group_state && group_state->pending_fault_count > 0) {
+      --group_state->pending_fault_count;
+    }
+    // Pager fault resolution is self-contained: the PagerService thread acts as the
+    // complete acknowledger.  Clear acknowledgement_pending when no other faults remain,
+    // so the thread can be recovered without requiring a separate supervisor ACK.
+    if (group_state && group_state->pending_fault_count == 0) {
+      group_state->acknowledgement_pending = false;
+      group_state->faulted = false;
+      group_state->blocked = false;
+    }
+    maybe_recover_thread(state, *thread_state);
+  }
+  return true;
+}
+
 bool axion_kernel_ack_process_group_fault(KernelRuntimeState& state,
                                           ProcessGroupId process_group_id) noexcept {
   auto* group_state = state.find_process_group_mut(process_group_id);

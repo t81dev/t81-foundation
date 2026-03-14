@@ -111,6 +111,8 @@ enum class KernelCallKind : uint8_t {
   RequestPageMapping,
   // RFC-00B7 §3.3 — park calling PagerService thread until a pager handoff is dispatched
   WaitForPagerHandoff,
+  // RFC-00B7 §3.4 — un-quarantine a pager-faulted thread after its TVA is mapped
+  ResumePageFaultedThread,
 };
 
 enum class KernelCallStatus : uint8_t {
@@ -161,6 +163,8 @@ enum class KernelCallRejection : uint8_t {
   ServiceActionRejected,
   AddressSpaceNotPagerNeeded,  ///< RequestPageMapping: target AS is not in pager_needed state (RFC-00B7 §3.2)
   MissingPagerFault,           ///< RequestPageMapping: target AS has no recorded last_pager_fault (RFC-00B7 §3.2)
+  TargetNotQuarantined,        ///< ResumePageFaultedThread: target thread is not quarantined or has no pager fault (RFC-00B7 §3.4)
+  PagerFaultNotResolved,       ///< ResumePageFaultedThread: fault TVA is not yet mapped in the page table (RFC-00B7 §3.4)
 };
 
 struct KernelCallRequest {
@@ -204,6 +208,7 @@ struct KernelCallResult {
   std::optional<std::string> service_name{};
   bool service_registered{false};
   bool pager_mapping_supplied{false};  ///< set by RequestPageMapping on success (RFC-00B7 §3.2)
+  bool pager_thread_resumed{false};    ///< set by ResumePageFaultedThread when victim thread is un-quarantined (RFC-00B7 §3.4)
   bool service_has_entry_descriptor{false};
   bool service_suspended{false};
   bool service_unhealthy{false};

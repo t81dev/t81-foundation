@@ -1513,6 +1513,47 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.thread_sleeping = true;
       return result;
     }
+    case KernelCallKind::ResumePageFaultedThread: {
+      // RFC-00B7 §3.4 — complete the fault→handoff→service→resume lifecycle.
+      // Caller must hold PagerService capability.  request.target_tid must identify
+      // a quarantined thread whose front fault is Unmapped and whose fault TVA is
+      // now present in the page table (i.e. RequestPageMapping was already called).
+      if (auto denied =
+              require_capability(caller, KernelCapabilityKind::PagerService);
+          denied.has_value()) {
+        return *denied;
+      }
+      if (!request.target_tid.has_value()) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingTargetThread;
+        return result;
+      }
+      const auto target_tid = *request.target_tid;
+      const auto* target_thread_state = state.find_thread_runtime(target_tid);
+      if (!target_thread_state) {
+        result.status = KernelCallStatus::NotFound;
+        result.rejection = KernelCallRejection::MissingTargetThread;
+        return result;
+      }
+      if (!target_thread_state->quarantined ||
+          target_thread_state->fault_inbox.empty() ||
+          target_thread_state->fault_inbox.front().fault != mmu::MmuFault::Unmapped) {
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::TargetNotQuarantined;
+        return result;
+      }
+      if (!axion_kernel_resume_pager_faulted_thread(state, target_tid)) {
+        // resume_pager_faulted_thread can fail if the TVA is not yet mapped.
+        result.status = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::PagerFaultNotResolved;
+        return result;
+      }
+      result.status = KernelCallStatus::Ok;
+      result.rejection = KernelCallRejection::None;
+      result.action_performed = true;
+      result.pager_thread_resumed = true;
+      return result;
+    }
     case KernelCallKind::ReadFaultInbox: {
       KernelRuntimeState::ThreadRuntimeState* target_thread_state = nullptr;
       if (auto invalid =
