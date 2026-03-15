@@ -3085,6 +3085,11 @@ add_test(NAME t81_graph_algorithms_test COMMAND t81_graph_algorithms_test)
   target_link_libraries(test_deterministic_float_boundaries PRIVATE t81_core)
   add_test(NAME test_deterministic_float_boundaries COMMAND test_deterministic_float_boundaries)
 
+  # RFC-0030: Deterministic Math Subsystem acceptance test
+  add_executable(test_t81float_soft_math tests/cpp/test_t81float_soft_math.cpp)
+  target_link_libraries(test_t81float_soft_math PRIVATE t81_core)
+  add_test(NAME test_t81float_soft_math COMMAND test_t81float_soft_math)
+
   add_executable(test_map_determinism tests/cpp/test_map_determinism.cpp)
   target_link_libraries(test_map_determinism PRIVATE t81_core)
   add_test(NAME test_map_determinism COMMAND test_map_determinism)
