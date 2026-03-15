@@ -110,7 +110,7 @@ else()
 endif()
 
 if(MSVC)
-    add_compile_options(/wd4244 /wd4307 /wd4018 /wd4101 /wd4189)
+    add_compile_options(/wd4244 /wd4307 /wd4018 /wd4101 /wd4189 /wd4996)
 endif()
 
 if(NOT MSVC)

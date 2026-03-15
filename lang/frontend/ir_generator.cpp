@@ -4847,8 +4847,7 @@ std::any IRGenerator::visit(const VectorLiteralExpr& expr) {
     // T81Vector[T, N] should always be treated as a tensor, not string vector
     // regardless of whether elements are constants or variables
     
-    const Type* vector_type = typed_expr(&expr);
-    const bool is_t81_vector = vector_type && 
+    const bool is_t81_vector = vector_type &&
                                  vector_type->kind == Type::Kind::Vector &&
                                  !vector_type->params.empty() &&
                                  vector_type->params[0].kind != Type::Kind::String;
