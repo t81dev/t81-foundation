@@ -112,6 +112,7 @@ build_test/
 build_fuzz/
 build_temp/
 build_ternos/
+build_dpe/
 .deps/
 .cache/
 .t81_canonfs/

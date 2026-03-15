@@ -1166,6 +1166,33 @@ if(T81_ENABLE_TERNARYOS)
 endif()
 
 # =============================================================================
+# Experimental DPE — Deterministic Parallel Execution (RFC-DPE-0002+)
+# Enable with -DT81_ENABLE_DPE=ON
+# =============================================================================
+option(T81_ENABLE_DPE "Enable experimental DPE task graph primitives (RFC-DPE-0002)" OFF)
+
+if(T81_ENABLE_DPE)
+  message(STATUS "[t81] T81_ENABLE_DPE=ON — building experimental DPE task graph")
+
+  add_library(t81_dpe STATIC
+    experimental/dpe/task_graph.cpp
+  )
+  target_include_directories(t81_dpe PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  )
+  target_link_libraries(t81_dpe PUBLIC t81_core)
+  target_compile_features(t81_dpe PUBLIC ${T81_CXX_STD_FEATURE})
+
+  if(T81_BUILD_TESTS)
+    add_executable(t81_dpe_task_graph_test
+      experimental/dpe/tests/task_graph_test.cpp)
+    target_link_libraries(t81_dpe_task_graph_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_task_graph_test COMMAND t81_dpe_task_graph_test)
+  endif()
+endif()
+
+# =============================================================================
 # CLI & Examples
 # =============================================================================
 add_library(t81_tool_cli STATIC
