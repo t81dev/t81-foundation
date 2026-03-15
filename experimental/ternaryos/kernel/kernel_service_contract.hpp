@@ -240,6 +240,8 @@ struct KernelRuntimeStatusView {
   uint64_t epoch_audit_aborts{0};
   std::optional<KernelAuditEventKind> last_epoch_audit_kind{};
   std::optional<uint64_t>            last_epoch_audit_sequence{};
+  // DPE epoch history ring (RFC-DPE-0009) — snapshot of last ≤8 committed epochs.
+  std::vector<KernelRuntimeState::EpochHistoryRecord> epoch_history{};
 };
 
 struct KernelProcessGroupStatusView {

@@ -195,15 +195,28 @@ struct KernelRuntimeState {
     std::optional<uint64_t> last_boot_critical_resolution_sequence{};
   };
 
+  /// One entry in the committed epoch history ring (RFC-DPE-0009).
+  struct EpochHistoryRecord {
+    uint64_t               epoch_id{0};
+    t81::hash::CanonHash81 epoch_hash{};
+    std::size_t            task_count{0};         ///< epoch.tasks.size()
+    std::size_t            level_count{0};        ///< topological levels executed
+    std::size_t            total_delta_records{0};///< sum of per-task DeltaRecord counts
+    uint64_t               commit_sequence{0};    ///< == epochs_committed after increment
+  };
+
   /// Per-epoch runtime accounting (RFC-DPE-0003 §7).
   /// Populated by axion_kernel_submit_epoch() when T81_ENABLE_DPE is active.
   struct EpochRuntimeState {
+    static constexpr std::size_t kEpochHistoryCapacity = 8;
     uint64_t epochs_submitted{0};
     uint64_t epochs_committed{0};
     uint64_t epochs_aborted{0};
     uint64_t epoch_task_executions{0};
-    std::optional<uint64_t>                   last_committed_epoch_id{};
-    std::optional<t81::hash::CanonHash81>     last_committed_epoch_hash{};
+    std::optional<uint64_t>               last_committed_epoch_id{};
+    std::optional<t81::hash::CanonHash81> last_committed_epoch_hash{};
+    // RFC-DPE-0009: fixed-capacity ring of committed epoch records.
+    std::deque<EpochHistoryRecord>        epoch_history{};
   };
 
   struct Counters {

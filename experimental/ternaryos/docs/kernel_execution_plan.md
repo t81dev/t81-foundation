@@ -689,6 +689,20 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 - CMake: `task_runner.cpp` added to `t81_dpe` sources; `t81_vm` added to link deps.
 - Suite: 17 passed, 0 failed.
 
+**Slice 25 — RFC-DPE-0009: Epoch History Ring [DONE]:**
+
+- `EpochHistoryRecord` added to `KernelRuntimeState` (epoch_id, epoch_hash, task_count, level_count, total_delta_records, commit_sequence).
+- `EpochRuntimeState`: `kEpochHistoryCapacity = 8`, `std::deque<EpochHistoryRecord> epoch_history{}`.
+- `kernel_epoch.cpp`: on commit, push new record; pop_front when over capacity. `total_delta_records` computed by summing `delta_sets[i].records.size()` across all tasks.
+- `KernelRuntimeStatusView`: `std::vector<EpochHistoryRecord> epoch_history{}` populated as deque snapshot.
+- `t81_ternaryos_epoch_history_test`: 18 assertions across 6 test functions.
+- `[DPE-10-01]`: first entry has correct epoch_id, task/level counts, hash, commit_sequence.
+- `[DPE-10-02]`: ring grows to N for N ≤ 8; oldest-first ordering.
+- `[DPE-10-03]`: 9th commit evicts oldest entry; size stays at 8.
+- `[DPE-10-04]`: aborted (task-fault) epoch does not add to ring.
+- `[DPE-10-05]`: commit_sequence monotonically increasing across all ring entries.
+- `[DPE-10-06]`: KernelRuntimeStatusView snapshot matches state ring exactly.
+
 **Slice 24 — RFC-DPE-0008: Epoch Audit Events [DONE]:**
 
 - `EpochSubmitted`, `EpochCommitted`, `EpochAborted` added to `KernelAuditEventKind`.

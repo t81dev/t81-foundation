@@ -637,6 +637,9 @@ KernelRuntimeStatusView make_runtime_view(const KernelRuntimeState& state) {
       .epoch_audit_aborts      = state.counters.epoch_audit_aborts,
       .last_epoch_audit_kind     = state.last_epoch_audit_kind,
       .last_epoch_audit_sequence = state.last_epoch_audit_sequence,
+      // DPE epoch history ring (RFC-DPE-0009)
+      .epoch_history = {state.epoch.epoch_history.begin(),
+                        state.epoch.epoch_history.end()},
   };
 }
 

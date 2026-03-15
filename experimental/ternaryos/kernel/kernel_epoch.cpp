@@ -262,6 +262,26 @@ KernelEpochResult axion_kernel_submit_epoch(
   state.counters.epoch_commits++;
   state.epoch.last_committed_epoch_id   = epoch.epoch_id;
   state.epoch.last_committed_epoch_hash = commit.epoch_hash;
+
+  // RFC-DPE-0009: push entry into the fixed-capacity epoch history ring.
+  {
+    std::size_t total_delta = 0;
+    for (const auto& ds : delta_sets) { total_delta += ds.records.size(); }
+
+    KernelRuntimeState::EpochHistoryRecord rec;
+    rec.epoch_id            = epoch.epoch_id;
+    rec.epoch_hash          = commit.epoch_hash;
+    rec.task_count          = epoch.tasks.size();
+    rec.level_count         = levels.size();
+    rec.total_delta_records = total_delta;
+    rec.commit_sequence     = state.epoch.epochs_committed;  // already incremented
+
+    state.epoch.epoch_history.push_back(std::move(rec));
+    if (state.epoch.epoch_history.size() > KernelRuntimeState::EpochRuntimeState::kEpochHistoryCapacity) {
+      state.epoch.epoch_history.pop_front();
+    }
+  }
+
   // RFC-DPE-0008 §3.2: emit EpochCommitted audit event.
   emit_epoch_audit(state, KernelAuditEventKind::EpochCommitted);
 
