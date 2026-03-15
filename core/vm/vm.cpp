@@ -485,6 +485,12 @@ public:
           case JitTrace::ExitKind::PolicyDeny:
             reason << "policy-deny";
             break;
+          case JitTrace::ExitKind::AxionBoundary:
+            // RFC-0028 §5: Axion-gated opcode (AxRead/AxSet/AxVerify/AxReport).
+            // The trace exits cleanly; the interpreter resumes and evaluates
+            // the Axion boundary natively via policy_engine.cpp.
+            reason << "axion-boundary";
+            break;
         }
         exit_event.reason = reason.str();
       }
@@ -502,6 +508,15 @@ public:
 
       if (exec_result.exit_kind == JitTrace::ExitKind::PolicyDeny) {
         return std::expected<void, Trap>(t81::unexpect, Trap::SecurityFault);
+      }
+
+      // RFC-0028 §5: AxionBoundary — the trace stopped before an Axion opcode.
+      // Resume interpreter at the current PC (already set by the OSR bailout);
+      // the Axion opcode will be evaluated natively on the next step() iteration.
+      // Do NOT invalidate the trace — it is still valid for re-entry after the
+      // Axion boundary is resolved.
+      if (exec_result.exit_kind == JitTrace::ExitKind::AxionBoundary) {
+        return {};
       }
 
       if (exec_result.exit_kind != JitTrace::ExitKind::GuardDeopt) {

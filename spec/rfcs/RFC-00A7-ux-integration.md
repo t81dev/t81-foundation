@@ -1,7 +1,7 @@
 # RFC-00A7: UX Integration for AI in T81 (CLI + Observability + Workflows)
 
 Version 0.1 — Standards Track\
-Status: Draft\
+Status: Superseded\
 Author: T81 Foundation Architecture Team\
 Applies to: CLI Tools, Developer Experience, Observability Systems
 
@@ -497,21 +497,22 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-## Implementation Status Note (2026-03-15)
+## Supersession Note (2026-03-15)
 
-**Status: NOT IMPLEMENTED — specification only.**
+**Status: Superseded by RFC-0033 (Dual TUI Frontends) + existing CLI infrastructure.**
 
-None of the `t81 ai <category> <action>` CLI commands specified in this RFC exist
-in the current CLI (`tooling/cli/main.cpp`). The CLI has `t81 weights quantize` as
-the sole AI-adjacent operation; no `ai model`, `ai inference`, `ai verify-determinism`,
-`ai observability`, `ai workflow`, `ai shell`, `ai debug`, or `ai profile` sub-commands
-are implemented.
+The interactive AI UX surface specified in this RFC is realized through:
 
-Dependent features also absent: no observability dashboard, no YAML workflow runner,
-no VS Code extension (`t81.ai.*`), no `~/.t81/ai-config.yaml` loader.
+- `t81 agent` (RFC-0033 Phase 3) — persistent session, 14 slash commands (`/compile`, `/run`,
+  `/check`, `/hash`, `/infer`, `/axion`, `/policy`, `/allow`, `/trits`, `/tier`, `/save`,
+  `/write`, `/open`, `/clear`), trit-probability bar, context side-panel; covers the
+  interactive inference, policy, and determinism workflow described in §2–3.
+- `t81 studio` (RFC-0033 Phase 2) — CanonFS Browser, Determinism Dashboard, Axion Policy
+  Inspector, Trace Visualizer, REPL, Command Palette; covers the observability surface in §3.
+- Existing `t81` CLI — `t81 weights quantize` (quantization), `t81 run`, `t81 check`,
+  `t81 hash`; covers core AI-adjacent operations.
 
-This RFC remains Draft. It describes the target UX surface for AI-native tooling and
-serves as the specification basis for future CLI expansion. Graduation to Accepted
-requires the full acceptance criteria in §"Acceptance Criteria" to be met:
-all specified CLI commands implemented, observability dashboard operational,
-workflow automation functional, and IDE integration shipped.
+The `t81 ai <category> <action>` command hierarchy proposed here is not implemented
+and is not on the forward roadmap; the TUI agent interface is the accepted delivery.
+The YAML workflow runner, VS Code extension, and observability dashboard (§4–5) are
+deferred future work tracked as non-blocking follow-ons in RFC-0033 §Future Work.

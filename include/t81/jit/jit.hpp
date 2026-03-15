@@ -3,6 +3,7 @@
 #include <functional>
 #include <vector>
 #include "t81/isa/program.hpp"
+#include "t81/tracing/canonhash.hpp"
 #include "t81/vm/state.hpp"
 
 namespace t81::vm {
@@ -21,6 +22,10 @@ public:
     Branch,
     GuardDeopt,
     PolicyDeny,
+    /// RFC-0028 §5: Axion-gated opcode encountered (AxRead/AxSet/AxVerify/AxReport).
+    /// The trace terminates cleanly; the interpreter resumes and evaluates the
+    /// Axion boundary natively via policy_engine.cpp.
+    AxionBoundary,
   };
 
   struct ExecResult {
@@ -31,6 +36,14 @@ public:
   virtual ~JitTrace() = default;
   virtual ExecResult execute(State& state, const PolicyHook& policy_hook = {}) = 0;
   virtual std::size_t size() const = 0;
+
+  /// RFC-0028 §2: Canonical identity of this trace.
+  /// Computed from CanonHash81(serialised TISC instruction sequence).
+  /// Zero-valued if the trace was not compiled via JitCompiler::compile().
+  const t81::hash::CanonHash81& trace_hash() const noexcept { return trace_hash_; }
+
+protected:
+  t81::hash::CanonHash81 trace_hash_{};
 };
 
 /**

@@ -1,6 +1,9 @@
 #include "t81/tensor/llama.hpp"
 #include "t81/tensor/matmul.hpp"
 #include "t81/jit/jit.hpp"
+#include "t81/tracing/canonhash.hpp"
+
+#include <cstring>
 
 namespace t81::vm {
 
@@ -834,6 +837,21 @@ public:
           result.exit_kind = ExitKind::Branch;
           break;
         }
+        // ── RFC-0028 §5: Axion boundary opcodes ──────────────────────────────
+        // These are trace-terminating side-exits (OSR bailout). The interpreter
+        // resumes and evaluates the Axion policy natively via policy_engine.cpp.
+        // Exit kind is AxionBoundary, not GuardDeopt, so callers can distinguish
+        // policy-gated exits from guard failures on regular instructions.
+        case t81::tisc::Opcode::AxRead:
+        case t81::tisc::Opcode::AxSet:
+        case t81::tisc::Opcode::AxVerify:
+        case t81::tisc::Opcode::AxReport:
+          if (result.instructions_executed > 0) {
+            ctx.pc += (result.instructions_executed - 1);
+          }
+          result.exit_kind = ExitKind::AxionBoundary;
+          return result;
+
         default:
           stop_trace = true;
           guard_deopt = true;
@@ -866,6 +884,8 @@ public:
     result.exit_kind = ExitKind::Completed;
     return result;
   }
+
+  void set_trace_hash(t81::hash::CanonHash81 h) noexcept { trace_hash_ = h; }
 
 private:
   std::vector<t81::tisc::Insn> insns_;
@@ -957,7 +977,35 @@ void JitCompiler::record_instruction(const t81::tisc::Insn& insn) {
 std::unique_ptr<JitTrace> JitCompiler::compile() {
   tracing_ = false;
   if (trace_buffer_.empty()) return nullptr;
-  return std::make_unique<ThreadedJitTrace>(std::move(trace_buffer_));
+
+  // ── RFC-0028 §2: Canonical Trace Identity ────────────────────────────────
+  // Serialise the instruction sequence to a byte vector using a canonical
+  // little-endian layout: for each Insn, write opcode (2 bytes), a (4 bytes),
+  // b (8 bytes), c (4 bytes) — 18 bytes per instruction, no padding.
+  // Hash with CanonHash81 (SHA3-512 truncated to 256 bits).
+  {
+    constexpr std::size_t kInsnBytes = 2 + 4 + 8 + 4;  // opcode+a+b+c
+    std::vector<std::uint8_t> serial;
+    serial.reserve(trace_buffer_.size() * kInsnBytes);
+
+    for (const auto& insn : trace_buffer_) {
+      const auto op = static_cast<std::uint16_t>(insn.opcode);
+      const auto a  = static_cast<std::int32_t>(insn.a);
+      const auto b  = static_cast<std::int64_t>(insn.b);
+      const auto c  = static_cast<std::int32_t>(insn.c);
+
+      std::uint8_t buf[kInsnBytes];
+      std::memcpy(buf + 0, &op, 2);
+      std::memcpy(buf + 2, &a,  4);
+      std::memcpy(buf + 6, &b,  8);
+      std::memcpy(buf + 14, &c, 4);
+      serial.insert(serial.end(), buf, buf + kInsnBytes);
+    }
+
+    auto trace = std::make_unique<ThreadedJitTrace>(std::move(trace_buffer_));
+    trace->set_trace_hash(t81::hash::hash_bytes(serial));
+    return trace;
+  }
 }
 
 }  // namespace t81::vm

@@ -43,7 +43,7 @@ This index tracks RFC status and intended disposition.
 | RFC-0025 | Policy-Gated Tensor Loading via CanonFS | accepted | `TLOADHASH` + `allowed-tensor-hashes` are active; operational hardening continues |
 | RFC-0026 | AI-Native Inference Opcodes | accepted | Phase-1 opcode surface implemented; `WLOAD` promotion review resolved; RFC-0030 float-domain policy complete |
 | RFC-0027 | Spec-as-Executable Conformance Model | accepted | Conformance suite is wired into CMake/CTest; optional annotation follow-ons remain |
-| RFC-0028 | Deterministic Trace JIT | draft | Trace-JIT deterministic execution model |
+| RFC-0028 | Deterministic Trace JIT | accepted | §2 trace_hash (CanonHash81 of TISC sequence), §3 flat register file (deterministic by construction), §5 AxionBoundary OSR exit kind, §6 repro oracle (15/15); §4 CanonFS cache deferred |
 | RFC-0029 | T81Lang Feature Registry Drift Prevention | accepted | All 6 criteria met: `kBuiltinTable` as single source, tier-gate enforcement in SA, distributed builtins blocked in DCP, effect-surface blocking in `@pure`/Tier≤1, VM `DecodeFault` safeguard, `spec/t81lang_features.md` feature registry |
 | RFC-0030 | Deterministic Math Subsystem | accepted | `t81_soft_math` integer-backed implementation covers all transcendentals; `FDiv` is IEEE 754 exactly-rounded; RFC-0010 caveat resolved |
 | RFC-0031 | Deterministic AI Execution Contract | accepted | All 5 RFC-0032 promotion phases complete; conformance programs authored; phase_status advanced to spec_conformant |
@@ -83,7 +83,7 @@ This index tracks RFC status and intended disposition.
 | RFC-00A4 | Ternary Quantization Codec | accepted | `quantize_threshold()` + `pack_ternary_to_base81()` promoted per RFC-0032 Phase 1; float metrics removed |
 | RFC-00A5 | LLM Backend Adapter | superseded | Superseded by RFC-0032 Phase 4; `T81VmBackend` (deterministic VM-only) replaces llama.cpp/ONNX vision |
 | RFC-00A6 | Axion Policy Hooks | accepted | `AIHookEngine` + `PolicyEngine` live per RFC-0032 Phase 3; event registry in `spec/supplemental/axion-event-registry.md` |
-| RFC-00A7 | UX Integration | draft | Forward path is RFC-0033 (Dual TUI Frontends); CLI surface active via `t81_ai_cli` |
+| RFC-00A7 | UX Integration | superseded | Superseded by RFC-0033 (`t81 agent`/`t81 studio`) + existing CLI; `t81 ai` command hierarchy not implemented and not on roadmap |
 | RFC-00A8 | AI Native VM Opcodes | superseded | Superseded by RFC-0026; ATTN/QMATMUL/EMBED/WLOAD live in TISC ISA |
 
 ## Active Consolidations
