@@ -585,6 +585,7 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/hal/hosted_stub.cpp
     experimental/ternaryos/hal/virtualbox_platform.cpp
     experimental/ternaryos/hal/virtualbox_guest_devices.cpp
+    experimental/ternaryos/hal/qemu_platform.cpp
     experimental/ternaryos/kernel/kernel_runtime.cpp
     experimental/ternaryos/kernel/kernel_actions.cpp
     experimental/ternaryos/kernel/kernel_abi.cpp
@@ -608,6 +609,8 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/dev/canon_store.cpp
     experimental/ternaryos/dev/framebuffer.cpp
     experimental/ternaryos/dev/ttf.cpp
+    experimental/ternaryos/dev/pl011_uart.cpp
+    experimental/ternaryos/dev/gicv3.cpp
     experimental/ternaryos/mmu/ternary_page_alloc.cpp
     experimental/ternaryos/mmu/page_table.cpp
     experimental/ternaryos/sched/context_switch.cpp
