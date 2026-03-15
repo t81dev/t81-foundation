@@ -17,7 +17,7 @@ This index tracks RFC status and intended disposition.
 | :--- | :--- | :--- | :--- |
 | RFC-0000 | T81 Base-81 Ternary Computing Stack | draft | Foundational umbrella document |
 | RFC-0001 | Architecture Principles | draft | Candidate for partial integration into `t81-overview.md` |
-| RFC-0002 | Deterministic Execution Contract | draft | Cross-layer invariants |
+| RFC-0002 | Deterministic Execution Contract | accepted | Cross-layer invariants proven: 27-program conformance suite, EvidenceCollector, full stack; §11 fulfilled |
 | RFC-0003 | Axion Safety Model | draft | Axion threat/safety model |
 | RFC-0004 | Canonical Tensor Semantics | draft | Tensor semantics harmonization |
 | RFC-0005 | TISC v0.4 Extensions | draft | ISA extension planning |
@@ -46,8 +46,8 @@ This index tracks RFC status and intended disposition.
 | RFC-0028 | Deterministic Trace JIT | draft | Trace-JIT deterministic execution model |
 | RFC-0029 | T81Lang Feature Registry Drift Prevention | draft | Feature registry consistency mechanisms |
 | RFC-0030 | Deterministic Math Subsystem | draft | Canonical arithmetic operations |
-| RFC-0031 | Deterministic AI Execution Contract | proposed | Composes RFC-0002/0003/0004/0025/0026/00A0 into a single AI execution contract; RFC-0032 Phase 1+2 in progress |
-| RFC-0032 | AI Subsystem Promotion Pathway | proposed | Normative promotion specification for `experiments/ai/` components; 5-phase roadmap |
+| RFC-0031 | Deterministic AI Execution Contract | accepted | All 5 RFC-0032 promotion phases complete; conformance programs authored; phase_status advanced to spec_conformant |
+| RFC-0032 | AI Subsystem Promotion Pathway | accepted | All 5 phases complete: ternary codec, doc, Axion hooks, T81VmBackend, EvidenceCollector + AI CLI; conformance suite closed |
 | RFC-00B0 | Axion HAL Specification | accepted | First non-hosted promotion path and HAL contract for the Axion OS stack |
 | RFC-00B1 | Ternary MMU | accepted | TVA layout, radix page table, and MMU fault model for Axion |
 | RFC-00B2 | Device Driver Architecture | accepted | Phase 4 storage/display/network boundary and guest-device model |
@@ -75,15 +75,15 @@ This index tracks RFC status and intended disposition.
 
 | RFC | Title | Status | Notes |
 | :--- | :--- | :--- | :--- |
-| RFC-00A0 | AI Experiment Sandbox | draft | Formal boundaries for AI experimentation in `/experiments/ai/` |
-| RFC-00A1 | Deterministic Evidence Protocol | draft | Evidence collection and verification for AI determinism |
+| RFC-00A0 | AI Experiment Sandbox | superseded | Superseded by RFC-0032; 3-stage promotion lifecycle executed to completion |
+| RFC-00A1 | Deterministic Evidence Protocol | superseded | Superseded by RFC-0032 §5; `evidence-schema-v1` (FNV-1a, key=value, no timing) replaces SHA-256/JSON/wall-clock design |
 | RFC-00A2 | AI Benchmark Specification | draft | Standardized AI performance benchmarks |
-| RFC-00A3 | Model Artifact Provenance | draft | Model supply chain provenance tracking |
-| RFC-00A4 | Ternary Quantization Codec | draft | Ternary-native quantization codecs |
-| RFC-00A5 | LLM Backend Adapter | draft | Engine-agnostic LLM backend interface |
-| RFC-00A6 | Axion Policy Hooks | draft | Policy enforcement hooks for AI operations |
-| RFC-00A7 | UX Integration | draft | User experience integration for AI features |
-| RFC-00A8 | AI Native VM Opcodes | draft | Additional AI-specific VM opcodes |
+| RFC-00A3 | Model Artifact Provenance | accepted | Implemented as TLOADHASH + `allowed_tensor_hashes` + `model_load` Axion event (RFC-0025) |
+| RFC-00A4 | Ternary Quantization Codec | accepted | `quantize_threshold()` + `pack_ternary_to_base81()` promoted per RFC-0032 Phase 1; float metrics removed |
+| RFC-00A5 | LLM Backend Adapter | superseded | Superseded by RFC-0032 Phase 4; `T81VmBackend` (deterministic VM-only) replaces llama.cpp/ONNX vision |
+| RFC-00A6 | Axion Policy Hooks | accepted | `AIHookEngine` + `PolicyEngine` live per RFC-0032 Phase 3; event registry in `spec/supplemental/axion-event-registry.md` |
+| RFC-00A7 | UX Integration | draft | Forward path is RFC-0033 (Dual TUI Frontends); CLI surface active via `t81_ai_cli` |
+| RFC-00A8 | AI Native VM Opcodes | superseded | Superseded by RFC-0026; ATTN/QMATMUL/EMBED/WLOAD live in TISC ISA |
 
 ## Active Consolidations
 

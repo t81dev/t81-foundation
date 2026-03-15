@@ -1,9 +1,18 @@
 # RFC-00A0: AI Experiment Sandbox and Repository Boundaries
 
 Version 0.1 — Standards Track\
-Status: Draft\
+Status: Superseded\
+Superseded-By: RFC-0032\
 Author: T81 Foundation Architecture Team\
-Applies to: Repository Structure, Build System, Experimental Workflows
+Applies to: Repository Structure, Build System, Experimental Workflows\
+Updated: 2026-03-15
+
+> **Supersession note (2026-03-15):** The 3-stage promotion lifecycle defined
+> here (Experiment → Extension → Core) was executed in full by RFC-0032 across
+> five phases for all ten `experiments/ai/` components.  RFC-0032 is now
+> `accepted` and is the authoritative record of promotion gates, disposition
+> decisions, and determinism requirements for the AI subsystem.  This RFC is
+> retained for provenance only.
 
 ______________________________________________________________________
 

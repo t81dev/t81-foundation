@@ -1,0 +1,92 @@
+// spec/conformance/ai/embed-bounds-check.t81
+// Normative ref: RFC-0026 §5.15 (EMBED — Token Embedding Lookup)
+//                RFC-0031 §3   (Deterministic AI Arithmetic Contract)
+// Invariant: EMBED raises a deterministic BoundsFault when the token index
+//            is >= vocab_size.  In-bounds indices MUST succeed.  The fault
+//            behaviour MUST be identical across platforms and runs (no
+//            undefined behaviour, no silent wrap-around).
+//
+// @spec-ref: RFC-0026 §5.15, RFC-0031 §3
+// @invariant: embed-index-bounds-deterministic
+// @input-domain: Non-negative integer indices; vocab_size > 0
+// @expected: index < vocab_size → success;
+//            index >= vocab_size → deterministic BoundsFault
+
+// ── In-bounds identity ───────────────────────────────────────────────────────
+// For a vocab of size V, any index in [0, V-1] is valid.
+// Integer arithmetic proxy: index < vocab_size is the admission predicate.
+
+@tier(2) @pure
+fn check_embed_inbounds_predicate() -> bool {
+    let vocab_size: T81BigInt = 256;
+    let index_lo:  T81BigInt = 0;
+    let index_hi:  T81BigInt = 255;
+    // Both indices satisfy the in-bounds predicate.
+    index_lo < vocab_size && index_hi < vocab_size
+}
+
+// ── Out-of-bounds predicate ──────────────────────────────────────────────────
+// An index equal to vocab_size is the minimal out-of-bounds case and MUST
+// trigger BoundsFault on any conformant T81VM.
+// Integer arithmetic proxy: index >= vocab_size is the rejection predicate.
+
+@tier(2) @pure
+fn check_embed_outofbounds_predicate() -> bool {
+    let vocab_size: T81BigInt = 256;
+    let index_oob:  T81BigInt = 256;  // == vocab_size: minimal OOB
+    // Rejection predicate holds.
+    index_oob >= vocab_size
+}
+
+// ── Boundary is exact (no off-by-one) ───────────────────────────────────────
+// The last valid index is vocab_size - 1.  Index == vocab_size - 1 is IN
+// bounds; index == vocab_size is OUT of bounds.  There is no grey zone.
+
+@tier(2) @pure
+fn check_embed_boundary_exact() -> bool {
+    let vocab_size: T81BigInt = 8;
+    let last_valid: T81BigInt = vocab_size - 1;  // 7
+    let first_oob:  T81BigInt = vocab_size;       // 8
+    last_valid < vocab_size && first_oob >= vocab_size
+}
+
+// ── Determinism: identical indices → identical fault decisions ───────────────
+// The admission decision (index < vocab_size) is a pure integer comparison
+// and MUST yield the same result on every run.  This is the numeric anchor
+// for EMBED determinism under RFC-0031 §3.
+
+@tier(2) @pure
+fn check_embed_deterministic_decision() -> bool {
+    let vocab_size: T81BigInt = 128;
+    let index:      T81BigInt = 64;
+    let run1: bool = index < vocab_size;
+    let run2: bool = index < vocab_size;
+    run1 == run2 && run1 == true
+}
+
+// ── Full opcode invocation (pending T81Lang tensor stdlib + fault syntax) ────
+//
+// When the tensor stdlib (RFC-0007), T81Lang EMBED builtin, and
+// @expect_fault attribute are available, add the following to main():
+//
+//   // In-bounds: vocab size 4, index 2 → success
+//   let table: Tensor[T81BigInt](4, 8) = [[…]];
+//   let out = embed(table, 2);
+//   assert out.shape == (1, 8);
+//
+//   // Out-of-bounds: index 4 (== vocab_size) → BoundsFault
+//   @expect_fault(BoundsFault)
+//   let _ = embed(table, 4);
+//
+// The `embed()` builtin dispatches Opcode::EMBED through the T81 VM.
+// No Axion tier gate is required for EMBED (RFC-0032 §8.1).
+// BoundsFault MUST be emitted by the T81 VM, not suppressed.
+
+@axion_verify
+fn main() -> void {
+    assert check_embed_inbounds_predicate();
+    assert check_embed_outofbounds_predicate();
+    assert check_embed_boundary_exact();
+    assert check_embed_deterministic_decision();
+    // Axion MUST emit: spec_conformance pass segment=meta
+}

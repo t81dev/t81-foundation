@@ -1,10 +1,10 @@
 # RFC-0031: Deterministic AI Execution Contract
 
-**Status:** proposed
+**Status:** accepted
 **Type:** standards-track
 **Applies-To:** RFC-0002, RFC-0003, RFC-0004, RFC-0025, RFC-0026, RFC-0027, RFC-00A0
 **Created:** 2026-03-07
-**Updated:** 2026-03-07
+**Updated:** 2026-03-15
 **Supersedes:** —
 **Superseded-By:** —
 **Discussion:** —

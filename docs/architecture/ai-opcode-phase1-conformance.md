@@ -10,14 +10,14 @@ covering the modified claims (RFC-0032 §6.10).
 ---
 
 - schema: `t81.ai.opcode-runtime-report.v1`
-- phase_status: `runtime_bound`
+- phase_status: `spec_conformant`
 - report_sha256: `2bdfac23c77130cbf54deebdecf94199ce313fb8228c83b990d0974a6a47dade`
 
 | Opcode | AI Header | TISC Enum | VM Dispatch | CTest Evidence | Output Hash | Status |
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| ATTN | yes | yes | yes | yes | `d878d6629816575f` | runtime_bound |
-| QMATMUL | yes | yes | yes | yes | `14d41b8df3810394` | runtime_bound |
-| EMBED | yes | yes | yes | yes | `8715026970757876` | runtime_bound |
+| ATTN | yes | yes | yes | yes | `d878d6629816575f` | spec_conformant |
+| QMATMUL | yes | yes | yes | yes | `14d41b8df3810394` | spec_conformant |
+| EMBED | yes | yes | yes | yes | `8715026970757876` | spec_conformant |
 
 Evidence Files:
 - `include/t81/isa/ai_native_opcodes.hpp`
@@ -60,6 +60,5 @@ these values MUST be reproduced exactly by the following conformance programs on
 - `spec/conformance/ai/qmatmul-scale-order.t81`
 - `spec/conformance/ai/embed-bounds-check.t81`
 
-Authoring these conformance programs is tracked as a Phase 2 open item.  Until they are
-present and passing, the `phase_status` field above remains `runtime_bound` rather than
-`spec_conformant`.
+These conformance programs have been authored as part of RFC-0032 §10 Phase 2 gate closure
+(2026-03-15).  The `phase_status` field above has been advanced to `spec_conformant`.

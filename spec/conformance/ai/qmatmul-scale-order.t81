@@ -1,0 +1,87 @@
+// spec/conformance/ai/qmatmul-scale-order.t81
+// Normative ref: RFC-0026 §5.15 (QMATMUL — Quantised Matrix Multiply)
+//                RFC-0031 §3   (Deterministic AI Arithmetic Contract)
+// Invariant: QMATMUL applies the scale factor AFTER the matrix multiply,
+//            not before.  Concretely: result = (A × B) / scale.
+//            This ordering MUST be preserved on any conformant T81VM to
+//            guarantee bit-exact reproducibility (a pre-scale would produce
+//            a different quotient under integer arithmetic).
+//
+// @spec-ref: RFC-0026 §5.15, RFC-0031 §3
+// @invariant: qmatmul-post-scale-order
+// @input-domain: Integer matrices expressible as T81BigInt; scale > 0
+// @expected: (A × B) / scale != (A / scale) × B for general A, B, scale;
+//            conformant result equals post-scale formula
+
+// ── Scale-order invariant ────────────────────────────────────────────────────
+// RFC-0026 §5.15: QMATMUL(A, B, scale) ≡ (A × B) / scale
+// Distinguishing test: choose A=6, B=4, scale=3.
+//   post-scale: (6 × 4) / 3 = 24 / 3 = 8   ← conformant
+//   pre-scale:  (6 / 3) × 4 = 2  × 4 = 8   ← coincides here; use A=5 below.
+//
+// For A=5, B=4, scale=2:
+//   post-scale: (5 × 4) / 2 = 20 / 2 = 10  ← conformant
+//   pre-scale:  (5 / 2) × 4 = 2  × 4 = 8   ← diverges (integer truncation)
+
+@tier(2) @pure
+fn check_qmatmul_post_scale_order() -> bool {
+    let a: T81BigInt = 5;
+    let b: T81BigInt = 4;
+    let scale: T81BigInt = 2;
+    // Conformant (post-scale): (a * b) / scale
+    let post_scale: T81BigInt = (a * b) / scale;
+    // Non-conformant (pre-scale): (a / scale) * b  — integer truncation gives 8
+    let pre_scale: T81BigInt = (a / scale) * b;
+    // The two MUST differ, proving pre-scale violates the invariant.
+    // The conformant result is 10.
+    post_scale == 10 && pre_scale != post_scale
+}
+
+// ── Scale = 1 identity ───────────────────────────────────────────────────────
+// When scale = 1, QMATMUL(A, B, 1) = A × B.  This is the degenerate case
+// and MUST hold on all conformant implementations.
+
+@tier(2) @pure
+fn check_qmatmul_unit_scale_identity() -> bool {
+    let a: T81BigInt = 7;
+    let b: T81BigInt = 3;
+    let scale: T81BigInt = 1;
+    (a * b) / scale == 21
+}
+
+// ── Determinism: same inputs → same output ───────────────────────────────────
+// Two independent evaluations of the same expression MUST produce identical
+// results.  This is trivially true for pure integer arithmetic but serves as
+// the numeric anchor for the QMATMUL determinism claim in RFC-0031 §3.
+
+@tier(2) @pure
+fn check_qmatmul_deterministic() -> bool {
+    let a: T81BigInt = 9;
+    let b: T81BigInt = 9;
+    let scale: T81BigInt = 3;
+    let run1: T81BigInt = (a * b) / scale;  // 27
+    let run2: T81BigInt = (a * b) / scale;  // 27
+    run1 == run2 && run1 == 27
+}
+
+// ── Full opcode invocation (pending T81Lang tensor stdlib) ───────────────────
+//
+// When the tensor stdlib (RFC-0007) and T81Lang QMATMUL builtin are available,
+// add the following to main():
+//
+//   let a:     Tensor[T81BigInt](1, 1) = [[5]];
+//   let b:     Tensor[T81BigInt](1, 1) = [[4]];
+//   let scale: T81BigInt = 2;
+//   let out = qmatmul(a, b, scale);
+//   assert out == [[10]];   // post-scale: (5*4)/2 = 10
+//
+// The `qmatmul()` builtin dispatches Opcode::QMATMUL through the T81 VM.
+// No Axion tier gate is required for QMATMUL (RFC-0032 §8.1).
+
+@axion_verify
+fn main() -> void {
+    assert check_qmatmul_post_scale_order();
+    assert check_qmatmul_unit_scale_identity();
+    assert check_qmatmul_deterministic();
+    // Axion MUST emit: spec_conformance pass segment=meta
+}

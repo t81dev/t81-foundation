@@ -1,9 +1,17 @@
 # RFC-00A6: Axion Policy Hooks for Inference and Tooling Events
 
 Version 0.1 — Standards Track\
-Status: Draft\
+Status: Accepted\
 Author: T81 Foundation Architecture Team\
-Applies to: Axion Policy System, AI Security, Event Handling
+Applies to: Axion Policy System, AI Security, Event Handling\
+Updated: 2026-03-15
+
+> **Acceptance note (2026-03-15):** The AI-specific policy hooks defined here
+> are implemented as `AIHookEngine` + `PolicyEngine` per RFC-0032 Phase 3.
+> Canonical hook event identifiers are registered in
+> `spec/supplemental/axion-event-registry.md`.  Live APIs:
+> `include/t81/axion/ai_hooks.hpp`, `include/t81/axion/policy_engine.hpp`.
+> Gate tests: `tests/cpp/axion_ai_hooks_test.cpp` [C04-01..08].
 
 ______________________________________________________________________
 

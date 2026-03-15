@@ -1,9 +1,19 @@
 # RFC-00A1: Deterministic Evidence and Reproducibility Protocol for AI Workloads
 
 Version 0.1 — Standards Track\
-Status: Draft\
+Status: Superseded\
+Superseded-By: RFC-0032 §5 (Phase 5)\
 Author: T81 Foundation Architecture Team\
-Applies to: AI Workloads, Determinism Validation, Evidence Collection
+Applies to: AI Workloads, Determinism Validation, Evidence Collection\
+Updated: 2026-03-15
+
+> **Supersession note (2026-03-15):** The evidence protocol described here
+> (SHA-256, JSON format, wall-clock timing, Mode A/B/C statistical modes) was
+> revised to remove all non-deterministic fields during RFC-0032 Phase 5
+> promotion.  The concrete implementation is `evidence-schema-v1`: FNV-1a 64-bit
+> hashing, plain key=value text format, no timestamps, strict-determinism only.
+> See `tests/determinism/README.md` and `tests/determinism/evidence_collector.cpp`
+> for the authoritative specification and implementation.
 
 ______________________________________________________________________
 
