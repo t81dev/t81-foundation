@@ -50,19 +50,19 @@ The stack delivers:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Interfaces                                                 │
-│  t81 studio (Human TUI)   t81 agent (AI-Native TUI)  CLI   │
+│  t81 studio (Human TUI)   t81 agent (AI-Native TUI)  CLI    │
 ├─────────────────────────────────────────────────────────────┤
 │  T81Lang Compiler                                           │
-│  Lexer → Parser → Typed AST → Semantic Analyzer → IRGen    │
+│  Lexer → Parser → Typed AST → Semantic Analyzer → IRGen     │
 ├─────────────────────────────────────────────────────────────┤
 │  Axion Governance Kernel                                    │
-│  PolicyEngine · CanonFS · Audit Trail · Ethics Gate        │
+│  PolicyEngine · CanonFS · Audit Trail · Ethics Gate         │
 ├──────────────────────────────┬──────────────────────────────┤
 │  T81 Virtual Machine         │  DPE Task Graph Runtime      │
 │  TISC interpreter            │  EpochGraph · DeltaBuffer    │
 │  (deterministic)             │  (RFC-DPE-0002)              │
 ├──────────────────────────────┴──────────────────────────────┤
-│  TISC ISA  ❄️ Frozen  +  Data Types  ❄️ Frozen              │
+│  TISC ISA  ❄️ Frozen  +  Data Types  ❄️ Frozen               │
 │  Deterministic substrate — CanonHash81 bit-exact traces     │
 └─────────────────────────────────────────────────────────────┘
   Experimental: TernaryOS (Axion OS Kernel) · Cognitive Tiers
@@ -123,6 +123,14 @@ Optional build flags:
 | `T81_ENABLE_ASAN` | `OFF` | Address sanitizer |
 | `T81_ENABLE_UBSAN` | `OFF` | UB sanitizer |
 | `T81_ENABLE_LLAMA_CPP` | `OFF` | Governed llama.cpp inference adapter |
+| `T81_WARN_STRICT` | `OFF` | Strict warning scan mode (used by the `warn-strict` preset) |
+
+**Pre-push warning scan** — mirrors the `-Wswitch`, `-Wunused-variable`, and `-Wunused-function` checks enforced by Windows CI, catching issues locally in ~2 minutes instead of waiting for the full matrix:
+
+```bash
+cmake --preset warn-strict
+cmake --build build-warn-strict 2>&1 | head -40
+```
 
 ---
 
