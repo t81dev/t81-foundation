@@ -265,11 +265,49 @@ jobs:
           python3 scripts/ci/check_vm_workload_benchmark_regression.py bench-vm-workload.json
 
   ############################################################################
+  # JOB: warn-strict
+  # Fast clang warning scan that mirrors Windows CI (/W4 /WX) flags.
+  # Catches -Wswitch, -Wunused-*, -Wconversion, and -Wunused-function before
+  # the full Windows matrix runs. Failures here save ~10 min per fix cycle.
+  # To reproduce locally: cmake --preset warn-strict && cmake --build build-warn-strict
+  ############################################################################
+  warn-strict:
+    name: " warn-strict / clang / linux "
+    needs: spec-and-docs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Install clang-18
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y clang-18
+
+      - name: Configure (warn-strict preset)
+        run: |
+          cmake --preset warn-strict \
+            -DCMAKE_C_COMPILER=clang-18 \
+            -DCMAKE_CXX_COMPILER=clang++-18
+
+      - name: Build (warnings-as-errors)
+        run: cmake --build build-warn-strict --parallel $(nproc) 2>&1 | tee warn-strict.log
+
+      - name: Upload warning log on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: warn-strict-log
+          path: warn-strict.log
+
+  ############################################################################
   # JOB: build-and-test
   ############################################################################
   build-and-test:
     name: " build / ${{ matrix.platform }} / ${{ matrix.compiler }}"
-    needs: spec-and-docs
+    needs: [spec-and-docs, warn-strict]
     runs-on: ${{ matrix.runs_on }}
     timeout-minutes: 40
     strategy:
