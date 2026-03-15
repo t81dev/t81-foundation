@@ -645,16 +645,13 @@ implementation evidence below.
 | Kernel validates request and response buffers | ✓ Met | `axion_kernel_call_wire_tva()` validates both TVA spans before touching payloads; `[AC-22l]` proves user-space isolation rejects kernel-range TVAs |
 | IPC works through that path | ✓ Met | `SendMessage` / `ReceiveMessage` implemented and tested in `[AC-22k]` via the wire ABI layer |
 | Fault acknowledgement works through that path | ✓ Met | `AcknowledgeThreadFault` / `AcknowledgeSupervisorFaultGroup` implemented and tested through both typed and wire ABI |
-| Device claim/release works through that path | Deferred | `ClaimDevice` / `ReleaseDevice` are not yet `KernelCallKind` entries; device state is tracked in `KernelRuntimeState` but not yet exposed through the narrow syscall boundary.  This is an **open question** — deferred to the next ABI widening slice, not blocking acceptance. |
+| Device claim/release works through that path | ✓ Met | `ClaimDevice` / `ReleaseDevice` / `QueryDevice` added as `KernelCallKind` entries (Slice 22); dispatch wired through `axion_kernel_call()` with ownership enforcement and typed rejections (`DeviceAlreadyClaimed`, `DeviceNotOwned`, `DeviceNotFound`); proved by `[AC-22d-01..08]` in `t81_ternaryos_device_arbitration_syscall_test` |
 | Capability denial is explicit and deterministic | ✓ Met | Every `KernelCallKind` that requires a capability calls `require_capability()` before side-effecting; all denials return `KernelCallStatus::CapabilityDenied` with a typed `KernelCallRejection`; tested across `[AC-22o/p/q]` and supervisor/delegation tests |
 | Shell/demo stack can use the boundary | ✓ Met | `axion_kernel_call_wire_tva()` and the exported C bridge (`ternaryos_kernel_call_tva_c()`) are the live boundary; hosted demos and shell already route through `axion_kernel_call()` |
 
-**Open question — device claim/release via syscall path:** The device arbitration
-model exists internally (§5.9 mapping) but `ClaimDevice` / `ReleaseDevice` / `QueryDevice`
-are not yet wired as `KernelCallKind` entries.  This does not block acceptance
-because no existing test or normative caller depends on them through the narrow
-trap path.  Resolution: add as a dedicated kernel slice before any driver-facing
-userland work is started.
+**Open question resolved (Slice 22, 2026-03-14):** `ClaimDevice` / `ReleaseDevice` / `QueryDevice`
+are now `KernelCallKind` entries wired through `axion_kernel_call()`.  All §8 acceptance
+criteria are fully met with no remaining open questions.
 
 ## 10. References
 

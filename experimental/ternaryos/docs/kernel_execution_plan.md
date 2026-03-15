@@ -689,6 +689,24 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 - CMake: `task_runner.cpp` added to `t81_dpe` sources; `t81_vm` added to link deps.
 - Suite: 17 passed, 0 failed.
 
+**Slice 22 — RFC-00B6 §5.3.6: ClaimDevice / ReleaseDevice / QueryDevice as KernelCallKind [DONE]:**
+
+- `ClaimDevice`, `ReleaseDevice`, `QueryDevice` added to `KernelCallKind` enum.
+- `device_name` field added to `KernelCallRequest`.
+- `device_claimed`, `device_released`, `device_is_claimed`, `device_owner_tid` added to `KernelCallResult`.
+- `MissingDeviceName`, `DeviceNotFound`, `DeviceAlreadyClaimed`, `DeviceNotOwned` added to `KernelCallRejection`.
+- Dispatch cases in `axion_kernel_call()`: ClaimDevice enforces ownership via `owner_tid` (no separate capability token — device registry is the authority); ReleaseDevice checks caller is owner; QueryDevice is read-only.
+- `t81_ternaryos_device_arbitration_syscall_test`: 36 assertions across 9 test functions.
+- `[AC-22d-01]`: ClaimDevice on unclaimed device → Ok, device_claimed=true.
+- `[AC-22d-02]`: ClaimDevice by different thread → Conflict/DeviceAlreadyClaimed.
+- `[AC-22d-03]`: Idempotent re-claim by same owner → Ok.
+- `[AC-22d-04]`: ReleaseDevice by owner → Ok, device_released=true.
+- `[AC-22d-05]`: ReleaseDevice by non-owner → CapabilityDenied/DeviceNotOwned.
+- `[AC-22d-06]`: QueryDevice reports is_claimed=false/true and correct owner_tid.
+- `[AC-22d-07]`: Missing device_name → InvalidRequest/MissingDeviceName for all three calls.
+- `[AC-22d-08]`: Unknown device name → NotFound/DeviceNotFound for all three calls.
+- RFC-00B6 §8 open question (device claim/release via syscall path) is now **fully resolved**.
+
 **Slice 21 — RFC-DPE-0003 §10 / RFC-DPE-0006 §4: SubmitEpoch Kernel Syscall Promotion [DONE]:**
 
 - `SubmitEpoch` added to `KernelCallKind` enum (guarded by `#ifdef T81_ENABLE_DPE`).

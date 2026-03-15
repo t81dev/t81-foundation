@@ -1558,6 +1558,109 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.pager_thread_resumed = true;
       return result;
     }
+    case KernelCallKind::ClaimDevice: {
+      // RFC-00B6 §5.3.6 — acquire exclusive ownership of a named device.
+      // No capability token required: ownership is enforced by the device
+      // registry itself (owner_tid field).  Any valid caller may attempt a
+      // claim; the registry rejects if a different thread already owns it.
+      if (!request.device_name.has_value() || request.device_name->empty()) {
+        result.status    = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingDeviceName;
+        return result;
+      }
+      // Check existence first so we can distinguish NotFound vs AlreadyClaimed.
+      if (!state.device_arbitration.has_value()) {
+        result.status    = KernelCallStatus::NotFound;
+        result.rejection = KernelCallRejection::DeviceNotFound;
+        return result;
+      }
+      const std::string_view dev_name = *request.device_name;
+      KernelDeviceRecord* dev = nullptr;
+      for (auto& d : state.device_arbitration->devices) {
+        if (d.name == dev_name) { dev = &d; break; }
+      }
+      if (!dev) {
+        result.status    = KernelCallStatus::NotFound;
+        result.rejection = KernelCallRejection::DeviceNotFound;
+        return result;
+      }
+      if (dev->owner_tid.has_value() && *dev->owner_tid != caller.tid) {
+        result.status    = KernelCallStatus::Conflict;
+        result.rejection = KernelCallRejection::DeviceAlreadyClaimed;
+        return result;
+      }
+      dev->owner_tid = caller.tid;
+      result.status          = KernelCallStatus::Ok;
+      result.rejection       = KernelCallRejection::None;
+      result.action_performed = true;
+      result.device_claimed  = true;
+      return result;
+    }
+    case KernelCallKind::ReleaseDevice: {
+      // RFC-00B6 §5.3.6 — release ownership of a named device.
+      // Only the current owner may release; any other caller is rejected.
+      if (!request.device_name.has_value() || request.device_name->empty()) {
+        result.status    = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingDeviceName;
+        return result;
+      }
+      if (!state.device_arbitration.has_value()) {
+        result.status    = KernelCallStatus::NotFound;
+        result.rejection = KernelCallRejection::DeviceNotFound;
+        return result;
+      }
+      const std::string_view dev_name = *request.device_name;
+      KernelDeviceRecord* dev = nullptr;
+      for (auto& d : state.device_arbitration->devices) {
+        if (d.name == dev_name) { dev = &d; break; }
+      }
+      if (!dev) {
+        result.status    = KernelCallStatus::NotFound;
+        result.rejection = KernelCallRejection::DeviceNotFound;
+        return result;
+      }
+      if (!dev->owner_tid.has_value() || *dev->owner_tid != caller.tid) {
+        result.status    = KernelCallStatus::CapabilityDenied;
+        result.rejection = KernelCallRejection::DeviceNotOwned;
+        return result;
+      }
+      dev->owner_tid.reset();
+      result.status           = KernelCallStatus::Ok;
+      result.rejection        = KernelCallRejection::None;
+      result.action_performed = true;
+      result.device_released  = true;
+      return result;
+    }
+    case KernelCallKind::QueryDevice: {
+      // RFC-00B6 §5.3.6 — query device record and ownership status by name.
+      // Read-only; any valid caller may query any device.
+      if (!request.device_name.has_value() || request.device_name->empty()) {
+        result.status    = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingDeviceName;
+        return result;
+      }
+      if (!state.device_arbitration.has_value()) {
+        result.status    = KernelCallStatus::NotFound;
+        result.rejection = KernelCallRejection::DeviceNotFound;
+        return result;
+      }
+      const std::string_view dev_name = *request.device_name;
+      const KernelDeviceRecord* dev = nullptr;
+      for (const auto& d : state.device_arbitration->devices) {
+        if (d.name == dev_name) { dev = &d; break; }
+      }
+      if (!dev) {
+        result.status    = KernelCallStatus::NotFound;
+        result.rejection = KernelCallRejection::DeviceNotFound;
+        return result;
+      }
+      result.status           = KernelCallStatus::Ok;
+      result.rejection        = KernelCallRejection::None;
+      result.action_performed = true;
+      result.device_is_claimed = dev->owner_tid.has_value();
+      result.device_owner_tid  = dev->owner_tid;
+      return result;
+    }
 #ifdef T81_ENABLE_DPE
     case KernelCallKind::SubmitEpoch: {
       // RFC-DPE-0003 §10 / RFC-DPE-0006 §4 — submit a DPE epoch graph for

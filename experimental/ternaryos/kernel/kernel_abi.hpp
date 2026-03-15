@@ -120,6 +120,10 @@ enum class KernelCallKind : uint8_t {
   WaitForPagerHandoff,
   // RFC-00B7 §3.4 — un-quarantine a pager-faulted thread after its TVA is mapped
   ResumePageFaultedThread,
+  // RFC-00B6 §5.3.6 — device arbitration through the narrow syscall boundary
+  ClaimDevice,    ///< Acquire exclusive ownership of a named device
+  ReleaseDevice,  ///< Release ownership of a named device
+  QueryDevice,    ///< Query device record and ownership status by name
 #ifdef T81_ENABLE_DPE
   // RFC-DPE-0003 §10 / RFC-DPE-0006 — submit a DPE epoch graph for execution
   SubmitEpoch,
@@ -176,6 +180,10 @@ enum class KernelCallRejection : uint8_t {
   MissingPagerFault,           ///< RequestPageMapping: target AS has no recorded last_pager_fault (RFC-00B7 §3.2)
   TargetNotQuarantined,        ///< ResumePageFaultedThread: target thread is not quarantined or has no pager fault (RFC-00B7 §3.4)
   PagerFaultNotResolved,       ///< ResumePageFaultedThread: fault TVA is not yet mapped in the page table (RFC-00B7 §3.4)
+  MissingDeviceName,    ///< ClaimDevice/ReleaseDevice/QueryDevice: no device_name in request (RFC-00B6 §5.3.6)
+  DeviceNotFound,       ///< ClaimDevice/ReleaseDevice/QueryDevice: no device with that name in registry (RFC-00B6 §5.3.6)
+  DeviceAlreadyClaimed, ///< ClaimDevice: device is owned by a different thread (RFC-00B6 §5.3.6)
+  DeviceNotOwned,       ///< ReleaseDevice: caller does not own the device (RFC-00B6 §5.3.6)
   MissingEpochGraph,           ///< SubmitEpoch: epoch_graph not provided in request
   MissingEpochPrograms,        ///< SubmitEpoch: epoch_programs not provided in request
   EpochAcceptFailed,           ///< SubmitEpoch: accept_epoch() rejected the EpochGraph
@@ -196,6 +204,7 @@ struct KernelCallRequest {
   std::optional<sched::Tid> ipc_dst{};
   std::optional<ipc::CanonMessage> message{};
   std::optional<hal::InterruptSource> device_source{};  ///< WaitForDevice target source
+  std::optional<std::string> device_name{};             ///< ClaimDevice/ReleaseDevice/QueryDevice target (RFC-00B6 §5.3.6)
   std::optional<t81::canonfs::CanonRef> object_ref{};
   std::optional<KernelCapabilityRecord> capability{};
   std::optional<KernelThreadSpawnDescriptor> spawn_descriptor{};
@@ -230,6 +239,11 @@ struct KernelCallResult {
   bool service_registered{false};
   bool pager_mapping_supplied{false};  ///< set by RequestPageMapping on success (RFC-00B7 §3.2)
   bool pager_thread_resumed{false};    ///< set by ResumePageFaultedThread when victim thread is un-quarantined (RFC-00B7 §3.4)
+  // RFC-00B6 §5.3.6 — device arbitration results
+  bool device_claimed{false};                      ///< ClaimDevice: ownership successfully acquired
+  bool device_released{false};                     ///< ReleaseDevice: ownership successfully released
+  bool device_is_claimed{false};                   ///< QueryDevice: device currently has an owner
+  std::optional<sched::Tid> device_owner_tid{};    ///< QueryDevice: owner thread id when device_is_claimed
 #ifdef T81_ENABLE_DPE
   bool epoch_committed{false};                          ///< set by SubmitEpoch on Ok
   std::optional<t81::hash::CanonHash81> epoch_hash{};  ///< EpochHash when epoch_committed == true
