@@ -53,12 +53,6 @@ enum class TierPromotionError {
 
 using TierPromotionResult = t81::expected<t81::cog::TierStatus, TierPromotionError>;
 
-std::filesystem::path resolve_canonfs_root() {
-  if (const char* raw = std::getenv("T81_CANONFS_ROOT"); raw != nullptr && raw[0] != '\0') {
-    return std::filesystem::path(raw);
-  }
-  return std::filesystem::current_path() / ".t81_canonfs";
-}
 
 TierPromotionResult try_promote_tier(
     const t81::cog::TierStatus& status,
