@@ -36,7 +36,7 @@ int main() {
   if (!expect(ref_res2.value().hash == ref.hash, "content-addressable hash mismatch")) return 1;
 
   // Capability enforcement: publish only for ref, then access succeeds; unknown should fail.
-  CapabilityGrant grant{ref, {"userA", "pk-userA"}, CANON_PERM_READ | CANON_PERM_WRITE};
+  CapabilityGrant grant{ref, {"userA", "pk-userA"}, CANON_PERM_READ | CANON_PERM_WRITE, {}, 0, {}};
   [[maybe_unused]] auto cap_res = driver->publish_capability(grant);
   if (!expect(cap_res.has_value(), "publish_capability failed")) return 1;
   [[maybe_unused]] auto read_authed = driver->read_object_bytes(ref);

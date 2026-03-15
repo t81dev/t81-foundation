@@ -398,8 +398,8 @@ public:
     return ss.str();
   }
 
-  std::any visit(const SetLiteralExpr& expr) override { return std::string("set"); }
-  std::any visit(const MapLiteralExpr& expr) override { return std::string("map"); }
+  std::any visit(const SetLiteralExpr& /*expr*/) override { return std::string("set"); }
+  std::any visit(const MapLiteralExpr& /*expr*/) override { return std::string("map"); }
 
 private:
   std::string parenthesize(std::string_view name, const std::vector<const Expr*>& exprs) {

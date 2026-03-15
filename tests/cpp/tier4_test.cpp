@@ -26,7 +26,7 @@ int main() {
   std::cout << "Testing recursive self-improvement safety...\n";
   
   // Test valid improvement
-  bool improvement_result = loop.attempt_recursive_improvement("self_optimization");
+  [[maybe_unused]] bool improvement_result = loop.attempt_recursive_improvement("self_optimization");
   assert(improvement_result);
   assert(loop.get_model().confidence > 1.0f);
   

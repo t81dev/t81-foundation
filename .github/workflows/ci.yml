@@ -266,9 +266,10 @@ jobs:
 
   ############################################################################
   # JOB: warn-strict
-  # Fast clang warning scan that mirrors Windows CI (/W4 /WX) flags.
-  # Catches -Wswitch, -Wunused-*, -Wconversion, and -Wunused-function before
-  # the full Windows matrix runs. Failures here save ~10 min per fix cycle.
+  # Fast clang warning scan that mirrors the Windows CI (/WX) warning classes
+  # that have historically caused failures: -Wswitch (unhandled enum values),
+  # -Wunused-variable, and -Wunused-function. Failures here save ~10 min per
+  # fix cycle vs waiting for the full Windows matrix.
   # To reproduce locally: cmake --preset warn-strict && cmake --build build-warn-strict
   ############################################################################
   warn-strict:

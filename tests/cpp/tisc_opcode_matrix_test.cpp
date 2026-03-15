@@ -10,7 +10,7 @@ static void test_opcode_name_and_uniqueness() {
   for (auto op : t81::tisc::kAllOpcodes) {
     auto name = t81::tisc::opcode_name(op);
     assert(!name.empty());
-    auto [_, inserted] = names.insert(name);
+    [[maybe_unused]] auto [_, inserted] = names.insert(name);
     assert(inserted);
   }
 }

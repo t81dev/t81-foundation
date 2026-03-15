@@ -190,7 +190,8 @@ void Tier4Loop::log_reflection(const std::string& reason) const {
   // Create a dummy context for the engine to evaluate.
   // In a real VM integration, this would be part of a syscall.
   t81::axion::SyscallContext ctx;
-  ctx.trace_reasons.push_back(ss.str());
+  const std::string trace_str = ss.str();
+  ctx.trace_reasons.push_back(trace_str);
   ctx.next_opcode = t81::tisc::Opcode::Nop;
 
   if (evaluator_) {

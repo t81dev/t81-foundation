@@ -46,7 +46,7 @@ void test_cell_determinism() {
   // 3. Overflow behavior (should throw deterministically)
   bool caught1 = false;
   try {
-    Cell ov = max + Cell::from_int(1);
+    [[maybe_unused]] Cell ov = max + Cell::from_int(1);
   } catch (const std::overflow_error& e) {
     caught1 = true;
   }

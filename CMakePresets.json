@@ -52,7 +52,8 @@
         "T81_BUILD_TESTS": "ON",
         "T81_BUILD_EXAMPLES": "OFF",
         "T81_BUILD_BENCHMARKS": "OFF",
-        "CMAKE_CXX_FLAGS": "-Werror -Wall -Wextra -Wswitch -Wunused-variable -Wunused-function -Wconversion -Wno-sign-compare -Wno-deprecated-declarations -Wno-shadow -Wno-unused-parameter -Wno-missing-field-initializers"
+        "T81_WARN_STRICT": "ON",
+        "CMAKE_CXX_FLAGS": "-Werror -Wswitch -Wunused-variable -Wunused-function -Wno-deprecated-declarations"
       }
     }
   ],

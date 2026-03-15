@@ -10,7 +10,7 @@ using t81::setun::translate_program_diagnostic;
 using t81::tisc::Opcode;
 
 static void test_translate_add_two_address() {
-  auto insn = translate_line("ADD R7, R9");
+  [[maybe_unused]] auto insn = translate_line("ADD R7, R9");
   assert(insn.has_value());
   assert(insn->opcode == Opcode::Add);
   assert(insn->a == 7);
@@ -58,7 +58,7 @@ HALT
 }
 
 static void test_unsupported_mnemonic_fails_deterministically() {
-  auto insn = translate_line("MUL R1, R2");
+  [[maybe_unused]] auto insn = translate_line("MUL R1, R2");
   assert(!insn.has_value());
   assert(insn.error() == BridgeError::UnsupportedMnemonic);
 }

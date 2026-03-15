@@ -113,6 +113,13 @@ if(MSVC)
     add_compile_options(/wd4244 /wd4307 /wd4018 /wd4101 /wd4189 /wd4996 /wd4456)
 endif()
 
+# warn-strict mode: suppress -Wextra subwarnings that are not Windows CI issues.
+# These must come AFTER -Wall/-Wextra above so they take effect.
+option(T81_WARN_STRICT "Strict warning scan mode (warn-strict preset)" OFF)
+if(T81_WARN_STRICT AND NOT MSVC)
+    add_compile_options(-Wno-unused-parameter -Wno-missing-field-initializers)
+endif()
+
 if(NOT MSVC)
   set(T81_SANITIZER_FLAGS "")
   if(T81_ENABLE_ASAN)

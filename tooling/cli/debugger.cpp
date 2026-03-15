@@ -23,6 +23,8 @@ const char* tier_id_name(t81::cog::TierId tier) {
       return "Tier4";
     case t81::cog::TierId::Tier5:
       return "Tier5";
+    case t81::cog::TierId::Tier6:
+      return "Tier6";
   }
   return "Unknown";
 }
