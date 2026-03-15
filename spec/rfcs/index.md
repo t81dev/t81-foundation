@@ -16,16 +16,16 @@ This index tracks RFC status and intended disposition.
 | RFC | Title | Status | Notes |
 | :--- | :--- | :--- | :--- |
 | RFC-0000 | T81 Base-81 Ternary Computing Stack | draft | Foundational umbrella document |
-| RFC-0001 | Architecture Principles | draft | Candidate for partial integration into `t81-overview.md` |
+| RFC-0001 | Architecture Principles | accepted | All §1–§3 principles satisfied: deterministic execution (RFC-0002), canonical data (tensor/float/fraction), ternary-native ISA, safe recursion (RFC-0003 RCS), no-UB policy, privileged boundary mediation; 49/49 axion+ethics+tier tests pass |
 | RFC-0002 | Deterministic Execution Contract | accepted | Cross-layer invariants proven: 27-program conformance suite, EvidenceCollector, full stack; §11 fulfilled |
-| RFC-0003 | Axion Safety Model | draft | Axion threat/safety model |
-| RFC-0004 | Canonical Tensor Semantics | draft | Tensor semantics harmonization |
-| RFC-0005 | TISC v0.4 Extensions | draft | ISA extension planning |
+| RFC-0003 | Axion Safety Model | accepted | All 9 criteria met: AXREAD/AXSET/AXVERIFY mediation, fail-closed policy parse, deterministic audit log, tier-supervision invariant, instruction ceiling, CanonFS observability, AI-model hooks, interrupt rate-limit; 49/49 axion+ethics+tier+policy tests pass |
+| RFC-0004 | Canonical Tensor Semantics | accepted | §2.1–2.5 met: immutable shape tuples, 1-based handle pool, TVECADD/TMATMUL/elementwise with shape guards, IR lowering, Axion shape-metadata hooks; 30+ tensor tests pass |
+| RFC-0005 | TISC v0.4 Extensions | accepted | All 7 criteria met: structural opcodes (46–49), VLoad/VStore/VAdd/VFma, ChkShape, ReadIsaVersion, Axion trace; 10/10 tests pass |
 | RFC-0006 | Deterministic GC | draft | VM reclaim semantics |
-| RFC-0007 | T81Lang Standard Library | draft | Stdlib contract definition |
+| RFC-0007 | T81Lang Standard Library | accepted | All 7 criteria met: arith/tensor/option/result/axsafe_io modules in `kBuiltinTable`; MakeOptionSome/None/MakeResultOk/Err opcodes in TISC; tier+purity rules enforced by SA; ISA-version freeze replaces per-module versioning |
 | RFC-0008 | Formal Verification Harness | superseded | Superseded by RFC-0027 (spec-as-executable is the concrete realization) |
-| RFC-0009 | Axion Policy Language (APL) | draft | Superseded path by RFC-0022 once accepted |
-| RFC-0010 | TISC Float/Fraction Ops | accepted | Accepted with caveat: host `double` path for `FDIV`/transcendentals is not yet cross-arch bit-deterministic |
+| RFC-0009 | Axion Policy Language (APL) | superseded | Superseded by RFC-0022; s-expression policy syntax, `PolicyEngine::evaluate()`, and guard/loop predicates all implemented; forward path is RFC-0022 |
+| RFC-0010 | TISC Float/Fraction Ops | accepted | Caveat resolved: `FDIV` is IEEE 754 exactly-rounded; transcendentals route through `t81_soft_math` (RFC-0030); no host libm dependency |
 | RFC-0011 | T81Lang Grammar Modernization | draft | Grammar evolution proposal |
 | RFC-0012 | Ternary Tensor Quantization | superseded | Superseded by RFC-0026 (QMATMUL covers quantized matmul path) |
 | RFC-0013 | Ternary Matmul | superseded | Superseded by RFC-0026 (QMATMUL) |
@@ -38,16 +38,17 @@ This index tracks RFC status and intended disposition.
 | RFC-0020 | Axion Segment Trace | accepted | Runtime/spec/CLI depend on canonical segment-trace strings |
 | RFC-0021 | Tier4 Cognition | draft | Tier-4 reflection/cognition proposal |
 | RFC-0022 | Axion Policy Language Evolution | accepted | CLI/compiler/runtime policy surface is active; supersedes RFC-0009 in practice |
-| RFC-0023 | T81Lang Print Canonical Runtime | draft | Deterministic print/runtime surface |
-| RFC-0024 | C++23 Wording Alignment | draft | Documentation/process wording alignment |
+| RFC-0023 | T81Lang Print Canonical Runtime | accepted | All 5 criteria met: `Opcode::Print` + `State::printed_output`; IR lowering via binary_emitter; Int/Bool/Float/Fraction/Symbol rendering; determinism verified by `vm_print_test` + `e2e_print_runtime_test` |
+| RFC-0024 | C++23 Wording Alignment | accepted | All 3 criteria met: no normative changes, consistent C++23 wording, CI unaffected; 344/344 tests pass |
 | RFC-0025 | Policy-Gated Tensor Loading via CanonFS | accepted | `TLOADHASH` + `allowed-tensor-hashes` are active; operational hardening continues |
-| RFC-0026 | AI-Native Inference Opcodes | accepted | Phase-1 opcode surface is implemented; remaining follow-on work is narrow `WLOAD` promotion review plus RFC-0030 float-domain policy |
+| RFC-0026 | AI-Native Inference Opcodes | accepted | Phase-1 opcode surface implemented; `WLOAD` promotion review resolved; RFC-0030 float-domain policy complete |
 | RFC-0027 | Spec-as-Executable Conformance Model | accepted | Conformance suite is wired into CMake/CTest; optional annotation follow-ons remain |
 | RFC-0028 | Deterministic Trace JIT | draft | Trace-JIT deterministic execution model |
-| RFC-0029 | T81Lang Feature Registry Drift Prevention | draft | Feature registry consistency mechanisms |
+| RFC-0029 | T81Lang Feature Registry Drift Prevention | accepted | All 6 criteria met: `kBuiltinTable` as single source, tier-gate enforcement in SA, distributed builtins blocked in DCP, effect-surface blocking in `@pure`/Tier≤1, VM `DecodeFault` safeguard, `spec/t81lang_features.md` feature registry |
 | RFC-0030 | Deterministic Math Subsystem | accepted | `t81_soft_math` integer-backed implementation covers all transcendentals; `FDiv` is IEEE 754 exactly-rounded; RFC-0010 caveat resolved |
 | RFC-0031 | Deterministic AI Execution Contract | accepted | All 5 RFC-0032 promotion phases complete; conformance programs authored; phase_status advanced to spec_conformant |
 | RFC-0032 | AI Subsystem Promotion Pathway | accepted | All 5 phases complete: ternary codec, doc, Axion hooks, T81VmBackend, EvidenceCollector + AI CLI; conformance suite closed |
+| RFC-0033 | Dual TUI Frontends | accepted | All 4 phases complete: FTXUI infra, `t81 studio` (7 views, palette, REPL), `t81 agent` (14 slash cmds, session save/load), CI snapshot test (11/11 assertions) |
 | RFC-00B0 | Axion HAL Specification | accepted | First non-hosted promotion path and HAL contract for the Axion OS stack |
 | RFC-00B1 | Ternary MMU | accepted | TVA layout, radix page table, and MMU fault model for Axion |
 | RFC-00B2 | Device Driver Architecture | accepted | Phase 4 storage/display/network boundary and guest-device model |
@@ -87,9 +88,10 @@ This index tracks RFC status and intended disposition.
 
 ## Active Consolidations
 
-- APL track: RFC-0022 is the forward path; RFC-0009 is retained for provenance until formal supersession.
+- APL track: RFC-0022 is the accepted forward path; RFC-0009 is formally superseded.
 - AI-native track: RFC-0026 supersedes RFC-0012, RFC-0013, RFC-0014. Those are closed for new edits.
 - Conformance track: RFC-0027 supersedes RFC-0008. Spec-as-executable is the concrete realization.
+- Float determinism: RFC-0030 closes the RFC-0010 FDIV/transcendental caveat. RFC-0010 is fully accepted with no outstanding caveats.
 
 ## Authoring
 
