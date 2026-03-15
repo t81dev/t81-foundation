@@ -229,7 +229,7 @@ Tensor[T]              // dynamic-rank tensor
 ```
 
 Angle brackets `<...>` are **legacy** and must not appear in any new code or grammar.
-The C++20 compiler frontend actively rejects this syntax to enforce the modern style.
+The C++23 compiler frontend actively rejects this syntax to enforce the modern style.
 
 - Generic parameters are separated by commas when more than one is required.
 - The first parameter is always the element type.
