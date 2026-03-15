@@ -102,8 +102,8 @@ bool axion_kernel_deliver_pending_interrupt(KernelRuntimeState& state) noexcept 
   // RFC-00B5 §3.3 — source-specific interrupt policy dispatch.
   // Timer: force a scheduler preemption so the kernel loop behaves as a
   // timer-driven preemptive kernel rather than a purely cooperative one.
-  // Device sources (Storage/Network/Keyboard): placeholder accounting; real
-  // device-wake policy follows in a later slice.
+  // Storage/Network/Keyboard (Slice 26): wake any threads parked via
+  // WaitForDevice for the matching source.
   // Unknown: no action.
   switch (state.last_delivered_interrupt->source) {
     case hal::InterruptSource::Timer: {
@@ -118,7 +118,8 @@ bool axion_kernel_deliver_pending_interrupt(KernelRuntimeState& state) noexcept 
       break;
     }
     case hal::InterruptSource::Storage:
-    case hal::InterruptSource::Network: {
+    case hal::InterruptSource::Network:
+    case hal::InterruptSource::Keyboard: {
       ++state.counters.device_interrupts_handled;
       // RFC-00B5 §3.3 — wake any threads parked via WaitForDevice for this source.
       const uint8_t src_key =
@@ -138,14 +139,15 @@ bool axion_kernel_deliver_pending_interrupt(KernelRuntimeState& state) noexcept 
               });
           state.scheduler.wake(wtid);
           ++state.counters.device_wakes;
+          if (state.last_delivered_interrupt->source ==
+              hal::InterruptSource::Keyboard) {
+            ++state.counters.keyboard_wakes;
+          }
         }
         it->second.clear();
       }
       break;
     }
-    case hal::InterruptSource::Keyboard:
-      ++state.counters.device_interrupts_handled;
-      break;
     case hal::InterruptSource::Unknown:
       break;
   }

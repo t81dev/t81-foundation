@@ -12915,6 +12915,139 @@ static void test_kernel_supervisor_recovery_abi_calls() {
         "foreign fault summary ABI query reports foreign supervisor scope");
 }
 
+static void test_kernel_keyboard_device_wake() {
+  std::printf(
+      "\n[AC-22v] RFC-00B5 §3.3 / Slice 26: WaitForDevice(Keyboard) parks "
+      "thread; Keyboard interrupt wakes it\n");
+
+  auto ctx = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "kbd wake: kernel bootstrap succeeds");
+  if (!state) return;
+
+  // Spawn a keyboard-waiter thread and an other thread.
+  t81::ternaryos::sched::TiscContext kbd_waiter_ctx{};
+  kbd_waiter_ctx.label = "kbd-waiter";
+  t81::ternaryos::sched::TiscContext other_ctx{};
+  other_ctx.label = "other-thread";
+
+  auto kbd_waiter_tid = axion_kernel_spawn_thread(*state, kbd_waiter_ctx);
+  auto other_tid      = axion_kernel_spawn_thread(*state, other_ctx);
+  check(kbd_waiter_tid.has_value(), "kbd wake: kbd-waiter thread spawns");
+  check(other_tid.has_value(),      "kbd wake: other thread spawns");
+  if (!kbd_waiter_tid || !other_tid) return;
+
+  // Pre-condition: no wakes, no keyboard_wakes.
+  check(state->counters.device_wakes == 0,   "kbd wake: device_wakes zero before wait");
+  check(state->counters.keyboard_wakes == 0, "kbd wake: keyboard_wakes zero before wait");
+
+  // Tick to kbd-waiter and call WaitForDevice(Keyboard).
+  check(axion_kernel_tick(*state), "kbd wake: tick makes kbd-waiter current");
+  check(state->scheduler.current_tid() == *kbd_waiter_tid,
+        "kbd wake: kbd-waiter is current");
+
+  auto wait_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind          = KernelCallKind::WaitForDevice,
+          .device_source = InterruptSource::Keyboard,
+      });
+  check(wait_result.status == KernelCallStatus::Ok,
+        "kbd wake: WaitForDevice(Keyboard) returns Ok");
+  check(wait_result.action_performed,
+        "kbd wake: WaitForDevice(Keyboard) reports action performed");
+  check(wait_result.thread_sleeping,
+        "kbd wake: WaitForDevice(Keyboard) sets thread_sleeping");
+
+  // kbd-waiter must be parked in device_waiting_tids[Keyboard].
+  const uint8_t kbd_key = static_cast<uint8_t>(InterruptSource::Keyboard);
+  check(state->device_waiting_tids.count(kbd_key) > 0 &&
+        state->device_waiting_tids.at(kbd_key).count(*kbd_waiter_tid) > 0,
+        "kbd wake: waiter recorded in device_waiting_tids[Keyboard]");
+  check(state->scheduler.run_queue().sleeping_count() == 1,
+        "kbd wake: scheduler shows one sleeping thread");
+  check(state->scheduler.current_tid() == *other_tid,
+        "kbd wake: other thread is current after waiter parks");
+
+  // Fire and deliver a Keyboard interrupt.
+  HardwareInterrupt kbd_irq{
+      .source       = InterruptSource::Keyboard,
+      .payload      = 0x41,  // 'A' scancode
+      .timestamp_ns = 5000,
+  };
+  check(axion_kernel_record_interrupt(*state, kbd_irq),
+        "kbd wake: Keyboard interrupt recorded");
+  check(state->pending_interrupts.size() == 1,
+        "kbd wake: one interrupt pending after record");
+
+  check(axion_kernel_deliver_pending_interrupt(*state),
+        "kbd wake: deliver_pending_interrupt returns true");
+
+  // Counters must advance.
+  check(state->counters.device_wakes == 1,
+        "kbd wake: device_wakes == 1 after Keyboard interrupt delivery");
+  check(state->counters.keyboard_wakes == 1,
+        "kbd wake: keyboard_wakes == 1 after Keyboard interrupt delivery");
+  check(state->device_waiting_tids.at(kbd_key).empty(),
+        "kbd wake: device_waiting_tids[Keyboard] cleared after wake");
+  check(state->scheduler.run_queue().sleeping_count() == 0,
+        "kbd wake: no sleeping threads after wake");
+
+  // Tick to kbd-waiter; ReceiveMessage must deliver the synthetic device-wake IPC.
+  check(axion_kernel_tick(*state), "kbd wake: tick switches to kbd-waiter");
+  check(state->scheduler.current_tid() == *kbd_waiter_tid,
+        "kbd wake: kbd-waiter is current after tick");
+
+  auto recv_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
+  check(recv_result.status == KernelCallStatus::Ok,
+        "kbd wake: ReceiveMessage on woken waiter returns Ok");
+  check(recv_result.message.has_value(),
+        "kbd wake: ReceiveMessage delivers the synthetic device-wake message");
+  if (recv_result.message) {
+    check(recv_result.message->sender == KernelRuntimeState::kKernelTid,
+          "kbd wake: message sender is kKernelTid");
+    check(recv_result.message->tag == "device-wake",
+          "kbd wake: message tag is 'device-wake'");
+    check(recv_result.message->payload == state->last_delivered_interrupt->sequence,
+          "kbd wake: message payload == interrupt sequence");
+  }
+
+  // A second Keyboard interrupt with no waiter must not change device_wakes.
+  const uint64_t wakes_before_second = state->counters.device_wakes;
+  const uint64_t kbd_wakes_before_second = state->counters.keyboard_wakes;
+  HardwareInterrupt kbd_irq2{
+      .source       = InterruptSource::Keyboard,
+      .payload      = 0x42,  // 'B' scancode
+      .timestamp_ns = 6000,
+  };
+  check(axion_kernel_record_interrupt(*state, kbd_irq2),
+        "kbd wake: second Keyboard interrupt recorded");
+  check(axion_kernel_deliver_pending_interrupt(*state),
+        "kbd wake: second Keyboard interrupt delivered");
+  check(state->counters.device_wakes == wakes_before_second,
+        "kbd wake: device_wakes unchanged for second Keyboard with no waiter");
+  check(state->counters.keyboard_wakes == kbd_wakes_before_second,
+        "kbd wake: keyboard_wakes unchanged for second Keyboard with no waiter");
+
+  // Runtime status view must expose keyboard_wakes.
+  auto status_result = axion_kernel_service_request(
+      *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
+  check(status_result.status == KernelServiceStatus::Ok,
+        "kbd wake: runtime status query succeeds");
+  check(status_result.runtime.has_value(),
+        "kbd wake: runtime status view present");
+  if (status_result.runtime) {
+    check(status_result.runtime->device_wakes == 1,
+          "kbd wake: runtime status reports device_wakes == 1");
+    check(status_result.runtime->keyboard_wakes == 1,
+          "kbd wake: runtime status reports keyboard_wakes == 1");
+    check(status_result.runtime->device_waiting_thread_count == 0,
+          "kbd wake: runtime status reports device_waiting_thread_count == 0");
+  }
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -12962,6 +13095,7 @@ int main() {
   test_kernel_executable_section_load();
   test_kernel_blocking_ipc();
   test_kernel_device_wake_interrupt();
+  test_kernel_keyboard_device_wake();
   test_kernel_syscall_trap_wiring();
   test_kernel_user_space_isolation();
   test_kernel_aarch64_trap_entry();

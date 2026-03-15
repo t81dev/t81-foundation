@@ -16,22 +16,16 @@ templates, positive/negative local fixtures, and packaged smoke-checks. The
 next milestone is no longer more local packaging work; it is actual external
 `x86_64` VirtualBox host execution and evidence return against that contract.
 
-The newest execution-control slice now goes one step further than named entry
-descriptors: process groups can register CanonRef-backed executable objects and
-spawn from them through the typed, wire, and hosted C ABI layers. Services can
-also bind to those registered executable objects by CanonRef during
-`RegisterService`, and service register/query/spawn paths now preserve that
-backing executable identity. Registration now validates a canonical
-`CanonExec` block against the supplied `CanonRef`, so this is no longer only a
-free-form descriptor registry. Executable objects can now also be registered
-from mapped caller memory through `RegisterExecutableObjectFromTva`. The
-published-object repository is now also bindable to an external block-device
-image, so a fresh kernel can reload published executables by `CanonRef`. The
-kernel can now also bind a persistent CanonFS root and resolve executable
-objects by `CanonRef` through that driver. The
-next execution milestone is fetching and loading those executable objects from
-real CanonFS-backed object storage instead of only from registration-time
-input, caller memory, or the current bindable published-object repository.
+All defined kernel slices (1A through 26) and DPE slices (13–25) are now
+complete — 3148 ternaryos tests passing.  The device-wake surface is now fully
+closed: Storage, Network, and Keyboard interrupts all wake parked threads via
+`WaitForDevice`.  CanonFS-backed executable object acquisition (Slice 7),
+EL0→EL1 SVC roundtrip (Slice 12), pager service ABI (Slices 9–11), and the
+full DPE epoch execution pipeline are all in place.
+
+The next open milestone outside the defined slices is actual `x86_64`
+VirtualBox host execution and evidence return against the packaged boot
+contract (tracked in the Boot Milestones section below).
 
 ## Current Kernel Position
 
@@ -629,6 +623,7 @@ The next milestone toward the bootable kernel:
 17. **[DONE]** Slice 9 — first public pager service ABI (RequestPageMapping + PagerService capability)
 18. **[DONE]** Slice 10 — WaitForPagerHandoff blocking call (park/wake + IPC notification)
 19. **[DONE]** Slice 11 — ResumePageFaultedThread (complete fault→handoff→service→resume lifecycle)
+20. **[DONE]** Slice 26 — Keyboard WaitForDevice: complete device-wake trinity (Storage ✅ Network ✅ Keyboard ✅)
 
 **RFC-00B7 (Pager Service ABI) is now written and accepted.**  All three pager
 service ABI calls are normatively specified in
@@ -951,3 +946,28 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 - Confirms SVC #7 rejection leaves dispatch counter unchanged.
 - Confirms post-disarm call is a no-op; validates runtime status view.
 - Suite: 3112 passed, 0 failed.
+
+**Slice 26 — Keyboard WaitForDevice (RFC-00B5 §3.3 / Slice 26) [DONE]:**
+
+- `kernel_interrupts.cpp`: Keyboard interrupt delivery now wakes any threads
+  parked via `WaitForDevice(Keyboard)`, matching the Storage/Network wake path
+  exactly.  Previously Keyboard was accounting-only.
+- `Counters::keyboard_wakes` added to `KernelRuntimeState` — tracks
+  Keyboard-specific wakes separately from the general `device_wakes` counter.
+- `KernelRuntimeStatusView::keyboard_wakes` added to `kernel_service_contract.hpp`
+  and populated in `kernel_views.cpp`.
+- `kernel_abi.cpp` `WaitForDevice` comment updated: Storage, Network, and
+  Keyboard are now all valid park sources.
+- `[AC-22v]` (36 assertions): WaitForDevice(Keyboard) → Ok, thread_sleeping →
+  Keyboard interrupt delivery → device_wakes/keyboard_wakes incremented →
+  device_waiting_tids[Keyboard] cleared → ReceiveMessage delivers synthetic
+  "device-wake" IPC with correct sender/tag/payload → second Keyboard interrupt
+  with no waiter leaves counters unchanged → runtime status view exposes both
+  `device_wakes` and `keyboard_wakes`.
+- Suite: 3148 passed, 0 failed.
+
+**RFC-DPE-0002 (TISC Task Graph Primitives) advanced `draft` → `accepted` (2026-03-15):**
+
+- All five acceptance criteria met: `[DPE-02-01..05]` proved by
+  `t81_dpe_test`, `t81_dpe_task_runner_test`, `t81_ternaryos_epoch_syscall_test`.
+- Acceptance note added to RFC-DPE-0002 with criterion-to-evidence mapping.

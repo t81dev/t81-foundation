@@ -1421,9 +1421,10 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       return result;
     }
     case KernelCallKind::WaitForDevice: {
-      // RFC-00B5 §3.3 — device-wake: park the calling thread in the per-source
-      // wait set.  When a matching Storage or Network interrupt is delivered,
-      // the kernel will send a synthetic IPC message and call scheduler.wake().
+      // RFC-00B5 §3.3 — device-wake (Slice 26): park the calling thread in the
+      // per-source wait set.  When a matching Storage, Network, or Keyboard
+      // interrupt is delivered, the kernel sends a synthetic IPC message and
+      // calls scheduler.wake().
       if (!request.device_source.has_value()) {
         result.status = KernelCallStatus::InvalidRequest;
         result.rejection = KernelCallRejection::None;

@@ -1,10 +1,10 @@
 # RFC-DPE-0002: TISC Task Graph Primitives
 
-**Status:** draft
+**Status:** accepted
 **Type:** standards-track
 **Applies-To:** T81VM runtime execution mode, CanonFS object schema, TISC execution model
 **Created:** 2026-03-14
-**Updated:** 2026-03-14
+**Updated:** 2026-03-15
 **Author:** @t81dev
 **Depends on:** RFC-DPE-0001 (vision), RFC-0002 (Deterministic Execution Contract), RFC-00B1 (Ternary MMU), RFC-00A3 (Model Artifact Provenance)
 **Blocks:** RFC-DPE-0003 (Epoch Execution and Canonical Commit)
@@ -268,3 +268,21 @@ equivalent to a normal TISC execution.
   state unchanged
 - `[DPE-02-05]` A single-task epoch with no output regions produces identical
   results to a direct TISC execution of the same program
+
+---
+
+## Acceptance Note (2026-03-15)
+
+All five acceptance criteria are met:
+
+| Criterion | Evidence |
+| :--- | :--- |
+| `[DPE-02-01]` Delta buffer accumulation | `DeltaBuffer` in `experimental/dpe/`; `OutOfRegionWrite` fault path; `t81_dpe_epoch_commit_test` |
+| `[DPE-02-02]` Cycle detection at epoch acceptance | `EpochGraph::accept()` Kahn's algorithm; `[DPE-02-02]` in `t81_dpe_test` |
+| `[DPE-02-03]` Exclusive output region conflict | `exclusive_regions` check at `accept_epoch()`; `[DPE-02-03]` in `t81_dpe_test` |
+| `[DPE-02-04]` `OutOfRegionWrite` aborts task | `DeltaBuffer::write()` fault path; `[DPE-02-04]` in `t81_dpe_test` |
+| `[DPE-02-05]` Single-task epoch ≡ direct TISC | `DpeTaskRunner::run_direct()`; `[DPE-02-05]` in `t81_dpe_task_runner_test` |
+
+The `SubmitEpoch` kernel call is implemented and tested (`t81_ternaryos_epoch_syscall_test`).
+Cycle detection is wired at acceptance time via `axion_kernel_submit_epoch()` → `accept_epoch()`.
+Open questions on page vs. word granularity and result caching are deferred to future RFCs.
