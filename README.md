@@ -36,7 +36,7 @@ The stack delivers:
 | **Data Types** | ❄️ Frozen | BigInt, Float, Complex, Map, Set — bit-stable encoding; 2026-02-27 audit clean |
 | **T81VM** | ✅ Beta | Beta |
 | **T81Lang** | ✅ Beta | Beta |
-| **Axion** | ✅ Stable | Stable promotion complete 2026-03-15; P4 Safety & P5 Privileged Instruction satisfied; AX-M6 canonical reason strings; 54/54 tests (49/49 axion + 5/5 AX-M6) |
+| **Axion Governance Kernel** | ✅ Stable | Stable promotion complete 2026-03-15; P4 Safety & P5 Privileged Instruction satisfied; AX-M6 canonical reason strings; 54/54 tests (49/49 axion + 5/5 AX-M6) |
 | **TUI Frontends** | ✅ Accepted | `t81 studio` (human operator) + `t81 agent` (AI-native); FTXUI v5.0.0; RFC-0033 accepted 2026-03-15 |
 | **T81Graph** | ✅ Beta | VM opcode lowering + lang-side serialization wired; DCP verification complete; 6/6 tests |
 | **DPE (Parallel Execution)** | 🔬 Experimental | RFC-DPE-0002 accepted; task graph, delta buffer, epoch commit, cycle detection implemented |
