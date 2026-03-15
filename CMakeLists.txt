@@ -19,6 +19,7 @@ option(T81_USE_CXX23 "Build with C++23 language mode (fallback: C++20)" ON)
 option(T81_TRITWISE_PROFILE "Enable profiling for tritwise operations" OFF)
 option(T81_STRICT_DETERMINISTIC_FLOAT "Use deterministic float math paths where available" ON)
 option(T81_ENABLE_LLAMA_CPP "Enable experimental llama.cpp adapter (non-DCP)" OFF)
+option(T81_BUILD_DIAGNOSTICS "Build off-core floating-point diagnostic tools (NOT part of the deterministic core)" OFF)
 option(T81_BUILD_TUI "Build TUI frontends: t81 studio (human) and t81 agent (AI-native) — RFC-0033" ON)
 option(T81_EXPORT_LLAMA_ADAPTER
   "Export/install t81_llama_adapter (currently unsupported with vendored llama.cpp)"
@@ -180,6 +181,22 @@ if(T81_IS_X86_64)
     set_source_files_properties(${T81_AVX2_SOURCE} PROPERTIES COMPILE_OPTIONS "-mavx2;-mfma")
   endif()
 endif()
+
+# =============================================================================
+# Promoted AI subsystem libraries (RFC-0032)
+# =============================================================================
+
+# t81_math_quantization — deterministic ternary codec (RFC-0032 Phase 1, C-01).
+# Integer-only; no float, no timing, no external deps. Safe for deterministic core.
+add_library(t81_math_quantization STATIC
+  core/math/quantization/ternary_codec.cpp
+)
+target_compile_features(t81_math_quantization PUBLIC ${T81_CXX_STD_FEATURE})
+target_include_directories(t81_math_quantization PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_link_libraries(t81_math_quantization PUBLIC t81_core)
 
 # =============================================================================
 # Other libraries
@@ -2978,6 +2995,11 @@ target_link_libraries(t81_graph_algorithms_test PRIVATE t81_core)
 add_test(NAME t81_graph_algorithms_test COMMAND t81_graph_algorithms_test)
 
   # Determinism Stress Tests
+  # RFC-0032 Phase 1 — codec determinism gate tests
+  add_executable(t81_determinism_codec_test tests/determinism/codec/ternary_codec_test.cpp)
+  target_link_libraries(t81_determinism_codec_test PRIVATE t81_math_quantization)
+  add_test(NAME t81_determinism_codec_test COMMAND t81_determinism_codec_test)
+
   add_executable(t81_determinism_primitives_test tests/determinism/test_primitives.cpp)
   target_link_libraries(t81_determinism_primitives_test PRIVATE t81_core)
   add_test(NAME t81_determinism_primitives_test COMMAND t81_determinism_primitives_test)
@@ -3001,6 +3023,13 @@ add_test(NAME t81_graph_algorithms_test COMMAND t81_graph_algorithms_test)
   add_executable(t81_determinism_new_types_test tests/determinism/test_new_types.cpp)
   target_link_libraries(t81_determinism_new_types_test PRIVATE t81_core)
   add_test(NAME t81_determinism_new_types_test COMMAND t81_determinism_new_types_test)
+
+  # RFC-0032 diagnostics (float-domain; gated; NOT part of the deterministic core)
+  if(T81_BUILD_DIAGNOSTICS)
+    add_executable(t81_codec_metrics_tool tools/diagnostics/ternary_codec_metrics.cpp)
+    target_link_libraries(t81_codec_metrics_tool PRIVATE t81_math_quantization)
+    target_compile_definitions(t81_codec_metrics_tool PRIVATE T81_BUILD_DIAGNOSTICS=1)
+  endif()
 
   # Repository Hardening Deterministic Tests
   add_executable(test_deterministic_float_boundaries tests/cpp/test_deterministic_float_boundaries.cpp)

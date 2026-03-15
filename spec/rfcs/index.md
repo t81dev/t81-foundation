@@ -46,7 +46,7 @@ This index tracks RFC status and intended disposition.
 | RFC-0028 | Deterministic Trace JIT | draft | Trace-JIT deterministic execution model |
 | RFC-0029 | T81Lang Feature Registry Drift Prevention | draft | Feature registry consistency mechanisms |
 | RFC-0030 | Deterministic Math Subsystem | draft | Canonical arithmetic operations |
-| RFC-0031 | Deterministic AI Execution Contract | draft | Composes RFC-0002/0003/0004/0025/0026/00A0 into a single AI execution contract |
+| RFC-0031 | Deterministic AI Execution Contract | proposed | Composes RFC-0002/0003/0004/0025/0026/00A0 into a single AI execution contract; RFC-0032 Phase 1+2 in progress |
 | RFC-0032 | AI Subsystem Promotion Pathway | proposed | Normative promotion specification for `experiments/ai/` components; 5-phase roadmap |
 | RFC-00B0 | Axion HAL Specification | accepted | First non-hosted promotion path and HAL contract for the Axion OS stack |
 | RFC-00B1 | Ternary MMU | accepted | TVA layout, radix page table, and MMU fault model for Axion |

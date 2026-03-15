@@ -689,6 +689,20 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 - CMake: `task_runner.cpp` added to `t81_dpe` sources; `t81_vm` added to link deps.
 - Suite: 17 passed, 0 failed.
 
+**AI Track — RFC-0031/RFC-0032 Phase 1 + Phase 2 [DONE]:**
+
+- RFC-0031 status: `draft` → `proposed` (Deterministic AI Execution Contract).
+- RFC-0032 Phase 1 (C-01 `ternary_codec`): float-domain logic excised from core.
+  - `include/t81/math/quantization/ternary_codec.hpp`: `TritValue`, `pack_ternary_to_base81`, `unpack_base81_to_ternary`, `quantize_threshold`, `dequantize`.
+  - `core/math/quantization/ternary_codec.cpp`: integer-only implementation; bit-exact across x86-64 + ARM64.
+  - `tools/diagnostics/ternary_codec_metrics.cpp`: MSE/PSNR relocated here; gated behind `T81_BUILD_DIAGNOSTICS`.
+  - `tests/determinism/codec/ternary_codec_test.cpp`: 8 acceptance criteria [C01-01..08]; covers pack bit-exactness, round-trip, partial groups, threshold boundaries, dequantize, round-trip invariant, no hidden state.
+  - `t81_math_quantization` CMake library; `T81_BUILD_DIAGNOSTICS` option; `t81_determinism_codec_test` CTest target.
+- RFC-0032 Phase 2 (C-10 `IMPLEMENTATION_REPORT.md`): promoted to `docs/architecture/ai-opcode-phase1-conformance.md`.
+  - ATTN/QMATMUL/EMBED Phase 1 baseline hashes preserved; RFC-0027/RFC-0031 cross-reference notes added.
+  - `phase_status` remains `runtime_bound` pending Phase 2 conformance programs (`attn-determinism.t81` etc.).
+- `spec/rfcs/index.md`: RFC-0031 status updated to `proposed`.
+
 **Slice 25 — RFC-DPE-0009: Epoch History Ring [DONE]:**
 
 - `EpochHistoryRecord` added to `KernelRuntimeState` (epoch_id, epoch_hash, task_count, level_count, total_delta_records, commit_sequence).
