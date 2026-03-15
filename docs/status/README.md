@@ -1,6 +1,6 @@
 # /docs/status — Control Surface
 
-Last Updated: 2026-03-14
+Last Updated: 2026-03-15
 Authority: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 
 This directory is a cockpit, not an archive.
@@ -72,7 +72,7 @@ Narrative documents, temporal plans, and time-bound reports live in `docs/record
 These were archived to `docs/records/` because they are temporal, aspirational,
 or absorbed into the documents above:
 
-| Archived | Absorbed Into |
+| Archived | Absorbed Into / Location |
 | :--- | :--- |
 | EXPERIMENTAL_SURFACE_INVENTORY.md | `EXTENSION_PROFILE.md` |
 | GOVERNED_AGI_PROMOTION_PIPELINE.md | `EXTENSION_PROFILE.md` + `GOVERNANCE_REVIEW_CADENCE.md` |
@@ -83,16 +83,25 @@ or absorbed into the documents above:
 | DETERMINISM_VERIFICATION_REPORT_LANGUAGE_SURFACE.md | `DETERMINISM_AUDIT_LOG.md` |
 | DETERMINISTIC_CORPUS_MANIFEST.md | `FROZEN_CORE_PROFILE.md §7` |
 | RELEASE_DISCIPLINE_CHECKLIST.md | `GOVERNANCE_REVIEW_CADENCE.md §1` |
-| T81LANG_PROMOTION_GATE.md | `GOVERNANCE_REVIEW_CADENCE.md §5` |
+| T81LANG_PROMOTION_GATE.md | `GOVERNANCE_REVIEW_CADENCE.md §5` → `records/status-history/` |
 | T81LANG_SURFACE_INVENTORY.md | `DRIFT_DECOMPOSITION.md` |
 | T81LANG_ENGINEERING_BACKLOG_2026-03.md | `HARDENING_BACKLOG.md` |
 | AXION_STATUS.md | `DRIFT_DECOMPOSITION.md` + `IMPLEMENTATION_MATRIX.md` |
-| EXECUTION_PLAN_2026-03.md | (completed; records only) |
-| RELEASE_READINESS_PACKET_2026-03.md | (time-bound; records/audits/) |
-| C2_MONTH_CLOSE_* | (records/status-history/) |
-| FULL_SYSTEM_ARCHITECTURAL_STRATEGIC_AUDIT_2026-03.md | (records/audits/) |
-| BEHAVIORAL_CONFORMANCE_EXPANSION_PHASE3_*.md | (records/status-history/) |
-| STDLIB_STABILIZATION_PLAN_2026-03.md | (records/status-history/) |
-| T81LANG_PROMOTION_GATE_SNAPSHOT.md | (records/status-history/) |
-| STDLIB_PROMOTION_SNAPSHOT_2026-03.md | (records/status-history/) |
-| T81LANG_IMPLEMENTATION_TASK_QUEUE_2026-03.md | (records/status-history/) |
+| EXECUTION_PLAN_2026-03.md | (completed; `records/`) |
+| RELEASE_READINESS_PACKET_2026-03.md | (time-bound; `records/audits/`) |
+| C2_MONTH_CLOSE_* | (`records/status-history/`) |
+| FULL_SYSTEM_ARCHITECTURAL_STRATEGIC_AUDIT_2026-03.md | (`records/audits/`) |
+| BEHAVIORAL_CONFORMANCE_EXPANSION_PHASE3_*.md | (`records/status-history/`) |
+| STDLIB_STABILIZATION_PLAN_2026-03.md | (`records/status-history/`) |
+| T81LANG_PROMOTION_GATE_SNAPSHOT.md | (`records/status-history/`) |
+| STDLIB_PROMOTION_SNAPSHOT_2026-03.md | (`records/status-history/`) |
+| STDLIB_PROMOTION_SNAPSHOT_2026-03-14.md | (`records/status-history/`) — supersedes 2026-03-01 snapshot |
+| T81LANG_IMPLEMENTATION_TASK_QUEUE_2026-03.md | (`records/status-history/`) |
+| T81LANG_TRACEABILITY_MATRIX.md | placeholder — `records/` |
+| AUDIT_REMEDIATION_CROSSWALK.md | placeholder — `records/` |
+| GOVERNANCE_BOUNDARIES_CLARIFICATION.md | placeholder — `records/` |
+| JIT_EQUIVALENCE_GAP.md | placeholder — `records/` |
+| AI_CLI_MILESTONE_EVIDENCE.md | milestone complete — `records/` |
+| CI_WORKFLOW_CONFIRMATION.md | absorbed into `CI_GATE_STATUS.md` — `records/` |
+| RFC_0026_RESIDUAL_EXCEPTIONS.md | point-in-time analysis — `records/status-history/` |
+| RFC_TRIAGE_MATRIX.md | triage complete; live status in `spec/rfcs/index.md` — `records/status-history/` |
