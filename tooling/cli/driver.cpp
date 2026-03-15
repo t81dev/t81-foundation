@@ -9,7 +9,7 @@
 #include "t81/python_frontend/compile.hpp"
 #include "t81/rust_frontend/compile.hpp"
 #include "debugger.hpp"
-#include "internal/tooling/logging.hpp"
+#include "../../internal/tooling/logging.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
 #include "t81/config.hpp"

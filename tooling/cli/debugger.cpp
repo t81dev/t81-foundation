@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include "internal/tooling/logging.hpp"
+#include "../../internal/tooling/logging.hpp"
 #include "t81/isa/opcodes.hpp"
 
 namespace t81::cli {

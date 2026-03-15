@@ -40,7 +40,7 @@
 #include <io.h>
 #endif
 
-#include "internal/tooling/logging.hpp"
+#include "../../internal/tooling/logging.hpp"
 #include "t81/axion/policy_validator.hpp"
 #include "t81/config.hpp"
 #include "t81/canonfs/canon_driver.hpp"
