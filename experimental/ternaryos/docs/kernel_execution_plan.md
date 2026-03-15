@@ -16,12 +16,16 @@ templates, positive/negative local fixtures, and packaged smoke-checks. The
 next milestone is no longer more local packaging work; it is actual external
 `x86_64` VirtualBox host execution and evidence return against that contract.
 
-All defined kernel slices (1A through 26) and DPE slices (13–25) are now
-complete — 3148 ternaryos tests passing.  The device-wake surface is now fully
-closed: Storage, Network, and Keyboard interrupts all wake parked threads via
-`WaitForDevice`.  CanonFS-backed executable object acquisition (Slice 7),
-EL0→EL1 SVC roundtrip (Slice 12), pager service ABI (Slices 9–11), and the
-full DPE epoch execution pipeline are all in place.
+All defined kernel slices (1A through 27) and DPE slices (13–25) are now
+complete — 3203 ternaryos tests passing.  Slice 27 adds the RFC-00B5 §3.7
+Interrupt Policy Gate: per-source rate limiting and quarantine evaluated before
+every interrupt dispatch, with full audit trail, runtime status view counters,
+and three new kernel ABI calls (SetInterruptPolicy, ClearInterruptQuarantine,
+QueryInterruptPolicy).  The device-wake surface is now fully closed: Storage,
+Network, and Keyboard interrupts all wake parked threads via `WaitForDevice`.
+CanonFS-backed executable object acquisition (Slice 7), EL0→EL1 SVC roundtrip
+(Slice 12), pager service ABI (Slices 9–11), and the full DPE epoch execution
+pipeline are all in place.
 
 The next open milestone outside the defined slices is actual `x86_64`
 VirtualBox host execution and evidence return against the packaged boot
@@ -624,6 +628,7 @@ The next milestone toward the bootable kernel:
 18. **[DONE]** Slice 10 — WaitForPagerHandoff blocking call (park/wake + IPC notification)
 19. **[DONE]** Slice 11 — ResumePageFaultedThread (complete fault→handoff→service→resume lifecycle)
 20. **[DONE]** Slice 26 — Keyboard WaitForDevice: complete device-wake trinity (Storage ✅ Network ✅ Keyboard ✅)
+21. **[DONE]** Slice 27 — Interrupt Policy Gate: per-source rate limiting + quarantine + 3 ABI calls (RFC-00B5 §3.7)
 
 **RFC-00B7 (Pager Service ABI) is now written and accepted.**  All three pager
 service ABI calls are normatively specified in
@@ -946,6 +951,37 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 - Confirms SVC #7 rejection leaves dispatch counter unchanged.
 - Confirms post-disarm call is a no-op; validates runtime status view.
 - Suite: 3112 passed, 0 failed.
+
+**Slice 27 — Interrupt Policy Gate (RFC-00B5 §3.7 / Slice 27) [DONE]:**
+
+- `kernel_interrupt_policy.hpp` / `kernel_interrupt_policy.cpp` (new): implements
+  `evaluate_interrupt_policy()` (rate-limit window + quarantine check) and
+  `record_interrupt_policy_event()` (audit only on Quarantine/Deny; Allow is silent
+  so `InterruptDelivered` remains the last audit event on the normal path).
+- `kernel_runtime_support.hpp`: `InterruptPolicyVerdict` enum (`Allow`,
+  `Quarantine`, `Deny`); `KernelInterruptRateConfig`; `KernelInterruptPolicySourceState`;
+  three new `KernelAuditEventKind` entries (`InterruptPolicyAllow`,
+  `InterruptPolicyQuarantine`, `InterruptPolicyDeny`).
+- `kernel_runtime_state.hpp`: `interrupt_policy` map keyed by `uint8_t` source;
+  `last_interrupt_policy_verdict` / `last_interrupt_policy_source` /
+  `last_interrupt_policy_sequence` optionals; three counters
+  (`interrupts_policy_allowed`, `interrupts_policy_quarantined`,
+  `interrupts_policy_denied`).
+- `kernel_abi.hpp`: `SetInterruptPolicy`, `ClearInterruptQuarantine`,
+  `QueryInterruptPolicy` in `KernelCallKind`; matching request/result fields;
+  `MissingInterruptPolicySource` and `InterruptSourceNotQuarantined` rejections.
+- `kernel_interrupts.cpp`: policy gate block wired before the source-specific
+  switch; Quarantine/Deny return early without dispatching.
+- `kernel_abi.cpp`: three new call handlers for `SetInterruptPolicy`,
+  `ClearInterruptQuarantine`, `QueryInterruptPolicy`.
+- `kernel_service_contract.hpp` + `kernel_views.cpp`: three counters and last
+  policy verdict/source/sequence exposed through `KernelRuntimeStatusView`.
+- `[AC-22w]` (44 assertions): Default→allow; SetInterruptPolicy(Storage, max=2,
+  window=100); two allowed → third triggers Quarantine (interrupt dropped,
+  device_wakes unchanged) → fourth Denied; ClearInterruptQuarantine → fifth
+  Allowed; QueryInterruptPolicy returns correct config; Timer unaffected;
+  missing-source and non-quarantined rejections; runtime view exposes all counters.
+- Suite: 3203 passed, 0 failed.
 
 **Slice 26 — Keyboard WaitForDevice (RFC-00B5 §3.3 / Slice 26) [DONE]:**
 

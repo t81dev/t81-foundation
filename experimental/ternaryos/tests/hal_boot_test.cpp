@@ -13050,6 +13050,216 @@ static void test_kernel_keyboard_device_wake() {
 
 // ─── main ────────────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────────────────────
+// [AC-22w] RFC-00B5 §3.7 / Slice 27: Interrupt Policy Gate
+//
+// Verifies:
+//   1. Default state: all interrupts allowed; policy counters zero.
+//   2. SetInterruptPolicy(Storage, max=2, window=100) applies.
+//   3. First two Storage interrupts: verdict Allow, counter increments.
+//   4. Third Storage interrupt in the same window: verdict Quarantine,
+//      source marked quarantined, interrupt NOT dispatched (device_wakes
+//      unchanged).
+//   5. Fourth Storage interrupt: verdict Deny (source quarantined).
+//   6. ClearInterruptQuarantine(Storage) un-quarantines the source.
+//   7. Fifth Storage interrupt after clearance: verdict Allow again.
+//   8. QueryInterruptPolicy returns correct quarantine flag and config.
+//   9. Timer/Network/Keyboard interrupts are unaffected by Storage policy.
+//  10. Missing source → MissingInterruptPolicySource rejection.
+//  11. ClearInterruptQuarantine on a non-quarantined source → rejection.
+//  12. Runtime status view exposes all three policy counters.
+// ─────────────────────────────────────────────────────────────────────────────
+static void test_kernel_interrupt_policy() {
+  std::printf(
+      "\n[AC-22w] RFC-00B5 §3.7 / Slice 27: interrupt policy gate "
+      "(rate-limit + quarantine)\n");
+
+  auto ctx   = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "policy: kernel bootstrap succeeds");
+  if (!state) return;
+
+  // ── 1. Default: no policy configured, counters at zero ───────────────────
+  check(state->counters.interrupts_policy_allowed     == 0, "policy: allowed zero at start");
+  check(state->counters.interrupts_policy_quarantined == 0, "policy: quarantined zero at start");
+  check(state->counters.interrupts_policy_denied      == 0, "policy: denied zero at start");
+
+  // ── 2. SetInterruptPolicy(Storage, max=2, window=100) ────────────────────
+  auto set_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind                             = KernelCallKind::SetInterruptPolicy,
+          .interrupt_policy_source          = InterruptSource::Storage,
+          .interrupt_policy_max_per_window  = 2u,
+          .interrupt_policy_window_size     = 100u,
+      });
+  check(set_result.status == KernelCallStatus::Ok,
+        "policy: SetInterruptPolicy returns Ok");
+  check(set_result.interrupt_policy_set,
+        "policy: SetInterruptPolicy sets interrupt_policy_set flag");
+
+  // ── 3. First Storage interrupt → Allow ──────────────────────────────────
+  HardwareInterrupt stor1{
+      .source = InterruptSource::Storage, .payload = 1, .timestamp_ns = 1000};
+  check(axion_kernel_record_interrupt(*state, stor1), "policy: stor1 recorded");
+  check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor1 delivered");
+  check(state->counters.interrupts_policy_allowed == 1,
+        "policy: stor1 allowed — counter=1");
+  check(state->counters.interrupts_policy_quarantined == 0,
+        "policy: no quarantine after stor1");
+  check(state->last_interrupt_policy_verdict.has_value() &&
+        *state->last_interrupt_policy_verdict == InterruptPolicyVerdict::Allow,
+        "policy: last verdict = Allow after stor1");
+  check(state->last_interrupt_policy_source.has_value() &&
+        *state->last_interrupt_policy_source == InterruptSource::Storage,
+        "policy: last policy source = Storage after stor1");
+
+  // ── Second Storage interrupt → Allow ────────────────────────────────────
+  HardwareInterrupt stor2{
+      .source = InterruptSource::Storage, .payload = 2, .timestamp_ns = 2000};
+  check(axion_kernel_record_interrupt(*state, stor2), "policy: stor2 recorded");
+  check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor2 delivered");
+  check(state->counters.interrupts_policy_allowed == 2,
+        "policy: stor2 allowed — counter=2");
+
+  // ── 4. Third Storage interrupt in same window → Quarantine ───────────────
+  const uint64_t device_wakes_before = state->counters.device_wakes;
+  HardwareInterrupt stor3{
+      .source = InterruptSource::Storage, .payload = 3, .timestamp_ns = 3000};
+  check(axion_kernel_record_interrupt(*state, stor3), "policy: stor3 recorded");
+  check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor3 delivered call ok");
+  check(state->counters.interrupts_policy_quarantined == 1,
+        "policy: stor3 triggers quarantine counter=1");
+  check(state->counters.interrupts_policy_allowed == 2,
+        "policy: allowed still 2 after quarantine");
+  check(*state->last_interrupt_policy_verdict == InterruptPolicyVerdict::Quarantine,
+        "policy: last verdict = Quarantine after stor3");
+  // Interrupt was dropped — device_wakes must be unchanged.
+  check(state->counters.device_wakes == device_wakes_before,
+        "policy: device_wakes unchanged when quarantine drops interrupt");
+  // Storage source is now quarantined.
+  const uint8_t stor_key = static_cast<uint8_t>(InterruptSource::Storage);
+  check(state->interrupt_policy.count(stor_key) > 0 &&
+        state->interrupt_policy.at(stor_key).quarantined,
+        "policy: interrupt_policy[Storage].quarantined == true after stor3");
+
+  // ── 5. Fourth Storage interrupt → Deny ───────────────────────────────────
+  HardwareInterrupt stor4{
+      .source = InterruptSource::Storage, .payload = 4, .timestamp_ns = 4000};
+  check(axion_kernel_record_interrupt(*state, stor4), "policy: stor4 recorded");
+  check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor4 delivered call ok");
+  check(state->counters.interrupts_policy_denied == 1,
+        "policy: stor4 denied counter=1");
+  check(*state->last_interrupt_policy_verdict == InterruptPolicyVerdict::Deny,
+        "policy: last verdict = Deny after stor4");
+  check(state->counters.device_wakes == device_wakes_before,
+        "policy: device_wakes still unchanged after denied interrupt");
+
+  // ── 6. ClearInterruptQuarantine(Storage) ─────────────────────────────────
+  auto clr_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind                    = KernelCallKind::ClearInterruptQuarantine,
+          .interrupt_policy_source = InterruptSource::Storage,
+      });
+  check(clr_result.status == KernelCallStatus::Ok,
+        "policy: ClearInterruptQuarantine returns Ok");
+  check(clr_result.interrupt_quarantine_cleared,
+        "policy: ClearInterruptQuarantine sets interrupt_quarantine_cleared flag");
+  check(state->interrupt_policy.count(stor_key) > 0 &&
+        !state->interrupt_policy.at(stor_key).quarantined,
+        "policy: interrupt_policy[Storage].quarantined == false after clear");
+
+  // ── 7. Fifth Storage interrupt after clearance → Allow ───────────────────
+  HardwareInterrupt stor5{
+      .source = InterruptSource::Storage, .payload = 5, .timestamp_ns = 5000};
+  check(axion_kernel_record_interrupt(*state, stor5), "policy: stor5 recorded");
+  check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor5 delivered");
+  check(state->counters.interrupts_policy_allowed == 3,
+        "policy: stor5 allowed — counter=3 after quarantine cleared");
+  check(*state->last_interrupt_policy_verdict == InterruptPolicyVerdict::Allow,
+        "policy: last verdict = Allow after quarantine cleared");
+
+  // ── 8. QueryInterruptPolicy(Storage) ─────────────────────────────────────
+  auto qry_result = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind                    = KernelCallKind::QueryInterruptPolicy,
+          .interrupt_policy_source = InterruptSource::Storage,
+      });
+  check(qry_result.status == KernelCallStatus::Ok,
+        "policy: QueryInterruptPolicy returns Ok");
+  check(!qry_result.interrupt_source_quarantined,
+        "policy: QueryInterruptPolicy: Storage not quarantined after clear");
+  check(qry_result.interrupt_policy_max_per_window.has_value() &&
+        *qry_result.interrupt_policy_max_per_window == 2u,
+        "policy: QueryInterruptPolicy: max_per_window == 2");
+  check(qry_result.interrupt_policy_window_size.has_value() &&
+        *qry_result.interrupt_policy_window_size == 100u,
+        "policy: QueryInterruptPolicy: window_size == 100");
+
+  // ── 9. Timer/Network unaffected by Storage policy ────────────────────────
+  const uint64_t allowed_before = state->counters.interrupts_policy_allowed;
+  HardwareInterrupt tmr{
+      .source = InterruptSource::Timer, .payload = 0, .timestamp_ns = 6000};
+  check(axion_kernel_record_interrupt(*state, tmr), "policy: timer recorded");
+  check(axion_kernel_deliver_pending_interrupt(*state), "policy: timer delivered");
+  check(state->counters.interrupts_policy_allowed == allowed_before + 1,
+        "policy: timer interrupt passes policy gate unaffected");
+  check(*state->last_interrupt_policy_source == InterruptSource::Timer,
+        "policy: last policy source = Timer after timer interrupt");
+
+  // ── 10. Missing source → rejection ───────────────────────────────────────
+  auto bad_set = axion_kernel_call(
+      *state,
+      KernelCallRequest{.kind = KernelCallKind::SetInterruptPolicy});
+  check(bad_set.status == KernelCallStatus::InvalidRequest,
+        "policy: SetInterruptPolicy without source → InvalidRequest");
+  check(bad_set.rejection == KernelCallRejection::MissingInterruptPolicySource,
+        "policy: SetInterruptPolicy without source → MissingInterruptPolicySource");
+
+  auto bad_clr = axion_kernel_call(
+      *state,
+      KernelCallRequest{.kind = KernelCallKind::ClearInterruptQuarantine});
+  check(bad_clr.status == KernelCallStatus::InvalidRequest,
+        "policy: ClearInterruptQuarantine without source → InvalidRequest");
+  check(bad_clr.rejection == KernelCallRejection::MissingInterruptPolicySource,
+        "policy: ClearInterruptQuarantine without source → MissingInterruptPolicySource");
+
+  auto bad_qry = axion_kernel_call(
+      *state,
+      KernelCallRequest{.kind = KernelCallKind::QueryInterruptPolicy});
+  check(bad_qry.status == KernelCallStatus::InvalidRequest,
+        "policy: QueryInterruptPolicy without source → InvalidRequest");
+  check(bad_qry.rejection == KernelCallRejection::MissingInterruptPolicySource,
+        "policy: QueryInterruptPolicy without source → MissingInterruptPolicySource");
+
+  // ── 11. ClearInterruptQuarantine on non-quarantined source → rejection ────
+  auto dup_clr = axion_kernel_call(
+      *state,
+      KernelCallRequest{
+          .kind                    = KernelCallKind::ClearInterruptQuarantine,
+          .interrupt_policy_source = InterruptSource::Network,
+      });
+  check(dup_clr.status == KernelCallStatus::InvalidRequest,
+        "policy: ClearInterruptQuarantine on non-quarantined source → InvalidRequest");
+  check(dup_clr.rejection == KernelCallRejection::InterruptSourceNotQuarantined,
+        "policy: ClearInterruptQuarantine on non-quarantined source → InterruptSourceNotQuarantined");
+
+  // ── 12. Runtime status view exposes all policy counters ──────────────────
+  const auto view = make_runtime_view(*state);
+  check(view.interrupts_policy_allowed     == state->counters.interrupts_policy_allowed,
+        "policy: view.interrupts_policy_allowed matches state");
+  check(view.interrupts_policy_quarantined == state->counters.interrupts_policy_quarantined,
+        "policy: view.interrupts_policy_quarantined matches state");
+  check(view.interrupts_policy_denied      == state->counters.interrupts_policy_denied,
+        "policy: view.interrupts_policy_denied matches state");
+  check(view.last_interrupt_policy_verdict_raw.has_value(),
+        "policy: view.last_interrupt_policy_verdict_raw is populated");
+  check(view.last_interrupt_policy_source.has_value(),
+        "policy: view.last_interrupt_policy_source is populated");
+}
+
 int main() {
   std::printf("=== TernOS HAL boot tests (RFC-00B0 §7) ===\n");
 
@@ -13096,6 +13306,7 @@ int main() {
   test_kernel_blocking_ipc();
   test_kernel_device_wake_interrupt();
   test_kernel_keyboard_device_wake();
+  test_kernel_interrupt_policy();
   test_kernel_syscall_trap_wiring();
   test_kernel_user_space_isolation();
   test_kernel_aarch64_trap_entry();

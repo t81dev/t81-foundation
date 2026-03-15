@@ -2182,6 +2182,74 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
               ? KernelServiceActionKind::MarkServiceUnhealthy
               : KernelServiceActionKind::MarkServiceHealthy);
     }
+    case KernelCallKind::SetInterruptPolicy: {
+      // RFC-00B5 §3.7 — set per-source rate-limit configuration (Slice 27).
+      // Any valid caller may configure policy; no capability required.
+      if (!request.interrupt_policy_source.has_value()) {
+        result.status    = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingInterruptPolicySource;
+        return result;
+      }
+      const uint8_t src_key = static_cast<uint8_t>(*request.interrupt_policy_source);
+      auto& src = state.interrupt_policy[src_key];
+      src.config.max_per_window =
+          request.interrupt_policy_max_per_window.value_or(0);
+      src.config.window_size =
+          request.interrupt_policy_window_size.value_or(0);
+      // Reset window accounting when policy changes.
+      src.recent_count       = 0;
+      src.window_start_cycle = state.counters.loop_iterations;
+      result.status           = KernelCallStatus::Ok;
+      result.rejection        = KernelCallRejection::None;
+      result.action_performed = true;
+      result.interrupt_policy_set = true;
+      return result;
+    }
+    case KernelCallKind::ClearInterruptQuarantine: {
+      // RFC-00B5 §3.7 — clear quarantine flag for a source (Slice 27).
+      if (!request.interrupt_policy_source.has_value()) {
+        result.status    = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingInterruptPolicySource;
+        return result;
+      }
+      const uint8_t src_key = static_cast<uint8_t>(*request.interrupt_policy_source);
+      auto it = state.interrupt_policy.find(src_key);
+      if (it == state.interrupt_policy.end() || !it->second.quarantined) {
+        result.status    = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::InterruptSourceNotQuarantined;
+        return result;
+      }
+      it->second.quarantined     = false;
+      it->second.recent_count    = 0;
+      it->second.window_start_cycle = state.counters.loop_iterations;
+      result.status                    = KernelCallStatus::Ok;
+      result.rejection                 = KernelCallRejection::None;
+      result.action_performed          = true;
+      result.interrupt_quarantine_cleared = true;
+      return result;
+    }
+    case KernelCallKind::QueryInterruptPolicy: {
+      // RFC-00B5 §3.7 — read per-source policy state (Slice 27).
+      if (!request.interrupt_policy_source.has_value()) {
+        result.status    = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingInterruptPolicySource;
+        return result;
+      }
+      const uint8_t src_key = static_cast<uint8_t>(*request.interrupt_policy_source);
+      const auto it = state.interrupt_policy.find(src_key);
+      const bool quarantined = (it != state.interrupt_policy.end()) && it->second.quarantined;
+      const uint32_t max_pw  = (it != state.interrupt_policy.end())
+                                   ? it->second.config.max_per_window : 0u;
+      const uint32_t win_sz  = (it != state.interrupt_policy.end())
+                                   ? it->second.config.window_size : 0u;
+      result.status                         = KernelCallStatus::Ok;
+      result.rejection                      = KernelCallRejection::None;
+      result.action_performed               = true;
+      result.interrupt_source_quarantined   = quarantined;
+      result.interrupt_policy_max_per_window = max_pw;
+      result.interrupt_policy_window_size    = win_sz;
+      return result;
+    }
   }
 
   result.status = KernelCallStatus::InvalidRequest;

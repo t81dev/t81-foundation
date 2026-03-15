@@ -267,6 +267,10 @@ struct KernelRuntimeState {
     uint64_t ipc_wakes{0};     ///< threads woken by a successful SendMessage
     uint64_t device_wakes{0};      ///< threads woken by any device interrupt (RFC-00B5 §3.3)
     uint64_t keyboard_wakes{0};    ///< threads woken specifically by a Keyboard interrupt (RFC-00B5 §3.3 / Slice 26)
+    // RFC-00B5 §3.7 — interrupt policy gate counters (Slice 27)
+    uint64_t interrupts_policy_allowed{0};      ///< interrupts passed by the policy gate
+    uint64_t interrupts_policy_quarantined{0};  ///< interrupts that triggered source quarantine
+    uint64_t interrupts_policy_denied{0};       ///< interrupts dropped because source was quarantined
     uint64_t syscall_trap_dispatches{0};  ///< SVC traps dispatched through axion_kernel_call_wire_tva() (RFC-00B6 §5.2)
     uint64_t kernel_space_rejections{0};  ///< user AS span attempts into kernel TVA space (RFC-00B1 §3.1 / RFC-00B6 §5.7)
     uint64_t canonfs_fetch_spawns{0};     ///< spawns that fetched CanonExec directly from CanonFS without prior registration (RFC-00B2 §3.1)
@@ -315,6 +319,8 @@ struct KernelRuntimeState {
   std::unordered_map<uint8_t, std::unordered_set<sched::Tid>> device_waiting_tids;
   /// Threads parked via WaitForPagerHandoff (RFC-00B7 §3.3); woken when a pager handoff is dispatched.
   std::unordered_set<sched::Tid> pager_handoff_waiting_tids;
+  /// RFC-00B5 §3.7 — per-source interrupt policy state (Slice 27), keyed by InterruptSource cast to uint8_t.
+  std::unordered_map<uint8_t, KernelInterruptPolicySourceState> interrupt_policy;
 
   std::unique_ptr<t81::ternaryos::dev::IBlockDevice> published_executable_store_device;
   std::unique_ptr<t81::canonfs::Driver> published_executable_canonfs;
@@ -338,6 +344,10 @@ struct KernelRuntimeState {
   std::optional<KernelPagerHandoffRecord> last_pager_handoff{};
   std::optional<KernelPagerResolutionRecord> last_pager_resolution{};
   std::optional<KernelAuditRecord> last_audit_event{};
+  // RFC-00B5 §3.7 — retained last interrupt policy verdict (Slice 27).
+  std::optional<InterruptPolicyVerdict>  last_interrupt_policy_verdict{};
+  std::optional<hal::InterruptSource>    last_interrupt_policy_source{};
+  std::optional<uint64_t>               last_interrupt_policy_sequence{};
   // RFC-DPE-0008: retained last epoch audit event kind + audit-log sequence.
   std::optional<KernelAuditEventKind> last_epoch_audit_kind{};
   std::optional<uint64_t>            last_epoch_audit_sequence{};

@@ -147,6 +147,13 @@ struct KernelRuntimeStatusView {
   std::size_t ipc_blocked_thread_count{0}; ///< threads currently sleeping on IPC inbox
   uint64_t device_wakes{0};          ///< threads woken by any device interrupt (RFC-00B5 §3.3)
   uint64_t keyboard_wakes{0};        ///< threads woken specifically by a Keyboard interrupt (RFC-00B5 §3.3 / Slice 26)
+  // RFC-00B5 §3.7 — interrupt policy gate counters (Slice 27)
+  uint64_t interrupts_policy_allowed{0};      ///< interrupts passed by the policy gate
+  uint64_t interrupts_policy_quarantined{0};  ///< interrupts that triggered source quarantine
+  uint64_t interrupts_policy_denied{0};       ///< interrupts dropped because source was quarantined
+  std::optional<uint8_t>              last_interrupt_policy_verdict_raw{};   ///< 0=Allow 1=Quarantine 2=Deny
+  std::optional<hal::InterruptSource> last_interrupt_policy_source{};
+  std::optional<uint64_t>             last_interrupt_policy_sequence{};
   std::size_t device_waiting_thread_count{0}; ///< threads currently waiting on any device source
   uint64_t syscall_trap_dispatches{0}; ///< SVC traps dispatched through wire-TVA path (RFC-00B6 §5.2)
   uint64_t kernel_space_rejections{0}; ///< user AS span attempts into kernel TVA space (RFC-00B1 §3.1)

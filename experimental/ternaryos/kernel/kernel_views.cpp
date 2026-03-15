@@ -483,6 +483,14 @@ KernelRuntimeStatusView make_runtime_view(const KernelRuntimeState& state) {
       .ipc_blocked_thread_count = state.ipc_blocked_tids.size(),
       .device_wakes = state.counters.device_wakes,
       .keyboard_wakes = state.counters.keyboard_wakes,
+      .interrupts_policy_allowed     = state.counters.interrupts_policy_allowed,
+      .interrupts_policy_quarantined = state.counters.interrupts_policy_quarantined,
+      .interrupts_policy_denied      = state.counters.interrupts_policy_denied,
+      .last_interrupt_policy_verdict_raw = state.last_interrupt_policy_verdict.has_value()
+          ? std::optional<uint8_t>{static_cast<uint8_t>(*state.last_interrupt_policy_verdict)}
+          : std::nullopt,
+      .last_interrupt_policy_source   = state.last_interrupt_policy_source,
+      .last_interrupt_policy_sequence = state.last_interrupt_policy_sequence,
       .device_waiting_thread_count = [&state]() -> std::size_t {
         std::size_t n = 0;
         for (const auto& [k, s] : state.device_waiting_tids) n += s.size();

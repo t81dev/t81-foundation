@@ -1,4 +1,5 @@
 #include "kernel_main.hpp"
+#include "kernel_interrupt_policy.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -98,6 +99,27 @@ bool axion_kernel_deliver_pending_interrupt(KernelRuntimeState& state) noexcept 
   state.last_interrupt_audit_payload = state.last_delivered_interrupt->payload;
   state.last_interrupt_audit_timestamp_ns =
       state.last_delivered_interrupt->timestamp_ns;
+
+  // RFC-00B5 §3.7 — interrupt policy gate (Slice 27).
+  // Evaluate the per-source rate-limit/quarantine policy before dispatching.
+  // Quarantine and Deny verdicts drop the interrupt; Allow falls through to
+  // the source-specific handler below.
+  {
+    const auto verdict = evaluate_interrupt_policy(
+        state, *state.last_delivered_interrupt);
+    record_interrupt_policy_event(state, verdict, *state.last_delivered_interrupt);
+    switch (verdict) {
+      case InterruptPolicyVerdict::Deny:
+        ++state.counters.interrupts_policy_denied;
+        return true;
+      case InterruptPolicyVerdict::Quarantine:
+        ++state.counters.interrupts_policy_quarantined;
+        return true;
+      case InterruptPolicyVerdict::Allow:
+        ++state.counters.interrupts_policy_allowed;
+        break;
+    }
+  }
 
   // RFC-00B5 §3.3 — source-specific interrupt policy dispatch.
   // Timer: force a scheduler preemption so the kernel loop behaves as a

@@ -31,6 +31,28 @@ struct KernelInterruptSourceCounters {
   uint64_t unknown{0};
 };
 
+/// RFC-00B5 §3.7 — verdict returned by the interrupt policy gate (Slice 27).
+enum class InterruptPolicyVerdict : uint8_t {
+  Allow,       ///< interrupt passes; dispatch normally
+  Quarantine,  ///< rate limit exceeded; dispatch this interrupt but quarantine the source
+  Deny,        ///< source is already quarantined; drop this interrupt
+};
+
+/// Per-source rate-limit configuration (Slice 27).
+/// max_per_window == 0 means no rate limit for this source.
+struct KernelInterruptRateConfig {
+  uint32_t max_per_window{0};  ///< max deliveries allowed per window; 0 = unlimited
+  uint32_t window_size{0};     ///< window length in loop_iterations; 0 = unlimited
+};
+
+/// Per-source policy runtime state maintained by the kernel (Slice 27).
+struct KernelInterruptPolicySourceState {
+  bool quarantined{false};          ///< source is quarantined; all further interrupts denied
+  uint64_t recent_count{0};         ///< deliveries seen in the current rate-limit window
+  uint64_t window_start_cycle{0};   ///< loop_iteration when the current window began
+  KernelInterruptRateConfig config{}; ///< active rate-limit configuration
+};
+
 struct KernelPagerHandoffRecord {
   AddressSpaceId address_space_id{0};
   ProcessGroupId process_group_id{0};
@@ -77,6 +99,10 @@ enum class KernelAuditEventKind : uint8_t {
   EpochSubmitted,   ///< epoch accepted by accept_epoch() and dispatched for execution (RFC-DPE-0008 §3.1)
   EpochCommitted,   ///< epoch committed successfully via commit_epoch() (RFC-DPE-0008 §3.2)
   EpochAborted,     ///< epoch aborted (TaskFault, ExclusiveConflict, or Timeout) (RFC-DPE-0008 §3.3)
+  // RFC-00B5 §3.7 — interrupt policy gate (Slice 27)
+  InterruptPolicyAllow,      ///< interrupt passed the policy gate; dispatch proceeds normally
+  InterruptPolicyQuarantine, ///< rate limit exceeded; source quarantined; this interrupt dropped
+  InterruptPolicyDeny,       ///< source is quarantined; interrupt dropped without dispatch
 };
 
 struct KernelAuditRecord {

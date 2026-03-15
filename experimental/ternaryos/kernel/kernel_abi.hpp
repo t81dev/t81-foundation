@@ -125,6 +125,10 @@ enum class KernelCallKind : uint8_t {
   ClaimDevice,    ///< Acquire exclusive ownership of a named device
   ReleaseDevice,  ///< Release ownership of a named device
   QueryDevice,    ///< Query device record and ownership status by name
+  // RFC-00B5 §3.7 — interrupt policy gate management (Slice 27)
+  SetInterruptPolicy,       ///< Set per-source rate-limit configuration
+  ClearInterruptQuarantine, ///< Clear quarantine flag for a previously quarantined source
+  QueryInterruptPolicy,     ///< Read per-source policy state (quarantined, rate config)
 #ifdef T81_ENABLE_DPE
   // RFC-DPE-0003 §10 / RFC-DPE-0006 — submit a DPE epoch graph for execution
   SubmitEpoch,
@@ -185,6 +189,8 @@ enum class KernelCallRejection : uint8_t {
   DeviceNotFound,       ///< ClaimDevice/ReleaseDevice/QueryDevice: no device with that name in registry (RFC-00B6 §5.3.6)
   DeviceAlreadyClaimed, ///< ClaimDevice: device is owned by a different thread (RFC-00B6 §5.3.6)
   DeviceNotOwned,       ///< ReleaseDevice: caller does not own the device (RFC-00B6 §5.3.6)
+  MissingInterruptPolicySource,  ///< SetInterruptPolicy/ClearInterruptQuarantine/QueryInterruptPolicy: no source field (Slice 27)
+  InterruptSourceNotQuarantined, ///< ClearInterruptQuarantine: source is not currently quarantined (Slice 27)
   MissingEpochGraph,           ///< SubmitEpoch: epoch_graph not provided in request
   MissingEpochPrograms,        ///< SubmitEpoch: epoch_programs not provided in request
   EpochAcceptFailed,           ///< SubmitEpoch: accept_epoch() rejected the EpochGraph
@@ -206,6 +212,10 @@ struct KernelCallRequest {
   std::optional<sched::Tid> ipc_dst{};
   std::optional<ipc::CanonMessage> message{};
   std::optional<hal::InterruptSource> device_source{};  ///< WaitForDevice target source
+  // RFC-00B5 §3.7 — interrupt policy gate fields (Slice 27)
+  std::optional<hal::InterruptSource> interrupt_policy_source{};        ///< SetInterruptPolicy/ClearInterruptQuarantine/QueryInterruptPolicy target
+  std::optional<uint32_t>             interrupt_policy_max_per_window{}; ///< SetInterruptPolicy: max deliveries per window (0 = unlimited)
+  std::optional<uint32_t>             interrupt_policy_window_size{};    ///< SetInterruptPolicy: window size in loop_iterations (0 = unlimited)
   std::optional<std::string> device_name{};             ///< ClaimDevice/ReleaseDevice/QueryDevice target (RFC-00B6 §5.3.6)
   std::optional<t81::canonfs::CanonRef> object_ref{};
   std::optional<KernelCapabilityRecord> capability{};
@@ -247,6 +257,12 @@ struct KernelCallResult {
   bool device_released{false};                     ///< ReleaseDevice: ownership successfully released
   bool device_is_claimed{false};                   ///< QueryDevice: device currently has an owner
   std::optional<sched::Tid> device_owner_tid{};    ///< QueryDevice: owner thread id when device_is_claimed
+  // RFC-00B5 §3.7 — interrupt policy gate results (Slice 27)
+  bool interrupt_policy_set{false};                           ///< SetInterruptPolicy: policy applied successfully
+  bool interrupt_quarantine_cleared{false};                   ///< ClearInterruptQuarantine: quarantine flag cleared
+  bool interrupt_source_quarantined{false};                   ///< QueryInterruptPolicy: source is currently quarantined
+  std::optional<uint32_t> interrupt_policy_max_per_window{};  ///< QueryInterruptPolicy: current max_per_window config
+  std::optional<uint32_t> interrupt_policy_window_size{};     ///< QueryInterruptPolicy: current window_size config
 #ifdef T81_ENABLE_DPE
   bool epoch_committed{false};                          ///< set by SubmitEpoch on Ok
   std::optional<t81::hash::CanonHash81> epoch_hash{};  ///< EpochHash when epoch_committed == true
