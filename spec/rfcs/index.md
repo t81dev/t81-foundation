@@ -54,7 +54,7 @@ This index tracks RFC status and intended disposition.
 | RFC-00B3 | Axion Kernel Architecture | accepted | All §8 acceptance criteria met; two open questions resolved (capability model, device registry) |
 | RFC-00B4 | Userland Service Contract | accepted | Stable service/runtime request and result boundary before syscall and ABI widening |
 | RFC-00B5 | Governed Event Interrupt Model | accepted | Formalizes event-driven interrupt handling and no trap-return opcode requirement for the current Axion path |
-| RFC-00B6 | Minimal Syscall and Capability Boundary | draft | Wire ABI, capability model, and userland call surface; real EL0→EL1 trap path pending |
+| RFC-00B6 | Minimal Syscall and Capability Boundary | accepted | All §8 criteria met; one open question: `ClaimDevice`/`ReleaseDevice` not yet wired as `KernelCallKind` (deferred) |
 | RFC-00B7 | Pager Service ABI | accepted | `PagerService` capability + `RequestPageMapping` / `WaitForPagerHandoff` / `ResumePageFaultedThread` fully implemented and tested |
 
 ## DPE RFCs (Deterministic Parallel Execution series)
