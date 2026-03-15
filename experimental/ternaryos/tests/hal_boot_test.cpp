@@ -3146,6 +3146,7 @@ static void test_kernel_el0_svc_roundtrip() {
   // This test ([AC-22r]) proves the success dispatch path through the bridge
   // with a non-kernel-owned user thread and verifies the response round-trip.
 
+  namespace hal = t81::ternaryos::hal;
   namespace mmu = t81::ternaryos::mmu;
 
   // ── Bootstrap ────────────────────────────────────────────────────────────
@@ -12964,6 +12965,7 @@ int main() {
   test_kernel_syscall_trap_wiring();
   test_kernel_user_space_isolation();
   test_kernel_aarch64_trap_entry();
+  test_kernel_el0_svc_roundtrip();
   test_kernel_canonfs_fetch_spawn();
   test_kernel_pager_service_abi();
   test_kernel_wait_for_pager_handoff();
