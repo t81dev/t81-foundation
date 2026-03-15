@@ -11,7 +11,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 ## Phase
 
-**Maintenance** — v1.4.0-Stable cut complete; RFC-0031/0032 accepted; AI subsystem fully promoted; Axion Beta candidacy confirmed 2026-03-15; focus on RFC-0033 TUI
+**Maintenance** — v1.4.0-Stable cut complete; RFC-0031/0032/0033 accepted; AI subsystem fully promoted; Axion Beta candidacy confirmed 2026-03-15; DPE-0002 accepted; no open blockers
 
 ---
 
@@ -35,6 +35,8 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | :--- | :--- | :--- |
 | C2 Month-Close execution | 2026-03-31 | Scheduled — preflight PASS 2026-03-10; re-confirmed 3× same day |
 | RFC-0031 + RFC-0032 closure | 2026-03-15 | **Closed** — both advanced to `accepted`; all 5 phases complete |
+| RFC-0033 TUI closure | 2026-03-15 | **Closed** — advanced to `accepted`; all 4 phases complete; `t81 studio`/`agent`/`ui` shipped; snapshot tests + binary-size gate + user guide |
+| RFC-DPE-0002 closure | 2026-03-15 | **Closed** — advanced to `accepted`; all 5 acceptance criteria met; `[DPE-02-01..05]` passing |
 | RFC-0002 DEC closure | 2026-03-15 | **Closed** — advanced to `accepted`; §11 conformance tests fulfilled |
 | AI A-series RFC final status | 2026-03-15 | **Closed** — 00A0/A1/A5/A8 superseded; 00A3/A4/A6 accepted |
 | Axion Beta candidacy review | 2026-03-15 | **Closed** — GO stamped; P4 (§1.2) + P5 (§1.6) satisfied; AX-G01 met; 49/49 tests; review record `AXION_BETA_STABILITY_REVIEW_2026-03.md` |
