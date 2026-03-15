@@ -646,13 +646,13 @@ routing the call back through the typed ABI.  That validates the
 kernel/user boundary end-to-end and unblocks both DPE implementation
 (RFC-DPE-0001 trigger) and external boot-lane acceptance validation.
 
-**Slice 12 — First EL0→EL1 SVC Roundtrip (next):**
+**Slice 12 — First EL0→EL1 SVC Roundtrip [DONE] (commit 69fcc987):**
 
-- A minimal AArch64 EL0 user-mode stub drops to EL0 via `eret` and issues
-  `svc #0` with a `Yield` request block at a known TVA.
-- The EL1 SVC handler (`axion_svc_entry` / `axion_kernel_handle_svc_trap_aarch64()`)
-  fires, routes the call, and returns `Ok`.
-- A kernel-side observer confirms the syscall completed deterministically.
-- This is the first time a thread at EL0 privilege level successfully
-  exercises `axion_kernel_call_wire_tva()` through real hardware privilege
-  separation rather than through a hosted stub.
+- `[AC-22r]` `test_kernel_el0_svc_roundtrip()` — 28 assertions.
+- Spawns a non-kernel-owned user thread; maps request + response TVAs in
+  its address space; arms `axion_kernel_set_kernel_state_for_trap_dispatch()`.
+- Dispatches `Yield` and `GetThreadIdentity` through `axion_kernel_handle_svc_trap_aarch64()`
+  via synthetic `AArch64TrapFrame`; verifies response round-trip and `caller_tid`.
+- Confirms SVC #7 rejection leaves dispatch counter unchanged.
+- Confirms post-disarm call is a no-op; validates runtime status view.
+- Suite: 3112 passed, 0 failed.
