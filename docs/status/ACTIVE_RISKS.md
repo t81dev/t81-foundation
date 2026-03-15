@@ -13,8 +13,7 @@ No prose. If a risk needs an essay, escalate it.
 | R-05 | AGI-facing surface growth outpacing promotion evidence updates | Medium | @t81dev | Surface inventory refreshed each monthly governance cadence | Monitoring |
 | R-06 | Documentation maintenance burden after reorganization | Low | @t81dev | Content-based structure reduces maintenance overhead; automated link checking in CI | Monitoring |
 | R-07 | Benchmark variability — false signal in `vm workload gate` guardrail | Low | @t81dev | Alert threshold >5% regression; review guardrail if consecutive divergence detected | Monitoring |
-| R-09 | Test failures impacting release readiness — 5 tests failing (98.5% success rate) | Medium | @t81dev | **✅ RESOLVED** - Primary failures fixed; 338/338 passing at `b566bff8`. NOTE: frontend refactor (2026-03-08) exposed 3 pre-existing TLOADHASH SEGFAULTs → 329/332; tracked as R-18. | **Closed** |
-| R-18 | 3 pre-existing TLOADHASH SEGFAULTs exposed by frontend refactor | Low | @t81dev | Not caused by recent work; scoped to null-CanonFS edge cases not hit by main code path; monitoring until root-caused and fixed | Monitoring |
+| R-09 | Test failures impacting release readiness — 5 tests failing (98.5% success rate) | Medium | @t81dev | **✅ RESOLVED** - Primary failures fixed; 344/344 passing. R-18 (TLOADHASH) also closed — stale CMake generator mismatch was root cause. | **Closed** |
 
 ## Closed Risks
 
@@ -23,6 +22,7 @@ No prose. If a risk needs an essay, escalate it.
 | **R-01** | **Determinism overclaim — external summaries omit registry boundary language** | `check_determinism_claims.py` CI gate implemented and wired to enforce registry-bounded claims; all external summaries appended with boundary link | **2026-03-10** |
 | **R-16** | **VM OOB register-index crashes** — SymLoad, ReflCap, ReflJustify accessed `register_tags[insn.b]` without `reg_ok()` guard, discovered by fuzz_vm | Added `!reg_ok(insn.b)` guard to all three dispatch cases; `85a0b438` | **2026-03-10** |
 | **R-17** | **binary_io OOM on corrupt/empty .tisc** — length-prefix read without sanity check allowed attacker-controlled allocation up to 2⁶⁴ elements (→ OOM-kill, exit 137) | `read_checked_size()` helper added; throws on EOF or count > 16M; `85a0b438` | **2026-03-10** |
+| **R-18** | **3 TLOADHASH tests failing** — `t81_vm_tloadhash_conformance_test`, `t81_vm_tloadhash_canonical_fixed_test`, `t81_vm_tloadhash_decodefault_determinism_matrix_test` appearing as SEGFAULTs in CI | Root cause was stale CMake generator mismatch (Unix Makefiles vs Ninja) in asio/googlebenchmark/ftxui subbuilds. After clearing stale subbuild caches and reconfiguring with the default Ninja preset, all 3 tests pass. Not a code defect. 344/344 passing. | **2026-03-15** |
 | **R-02** | **Axion Alpha posture delays Beta promotion** | **Resolved through successful 2026-03-10 Beta candidacy review and promotion** | **2026-03-10** |
 | R-07 | CodeQL push trigger missing on `main` — required context not populated | `ad6c2777` added push trigger to `codeql.yml` | 2026-02-26 |
 | R-09 | March release packet blocked by required-context mismatch | GO stamped on `1ec312e3`; both required contexts completed/success | 2026-02-28 |

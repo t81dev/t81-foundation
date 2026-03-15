@@ -4,7 +4,7 @@ Status: Active
 Last Updated: 2026-03-15
 Owner: @t81dev
 Reference Candidate: `b566bff8` (origin/main, 2026-03-14)
-Current Main Head: `50fff89c` (origin/main ahead by 5 commits, 2026-03-15; RFC-0031/0032 accepted + AI A-series RFC final status + axion-event-registry + 3 AI conformance programs; 329/332 core tests + 2 new AI promotion tests)
+Current Main Head: `50fff89c` (origin/main ahead by 5 commits, 2026-03-15; RFC-0031/0032 accepted + AI A-series RFC final status + axion-event-registry + 3 AI conformance programs; 344/344 tests passing after build system fix)
 
 ## Purpose
 
@@ -82,7 +82,7 @@ tracked here and must be addressed unless explicitly deferred.
 - **AI conformance suite expanded to 27 programs** — Added `spec/conformance/ai/`: `attn-determinism.t81`, `qmatmul-scale-order.t81`, `embed-bounds-check.t81`.
 - **Axion event registry created** — `spec/supplemental/axion-event-registry.md` is now the normative source for `model_load`, `attn_guard`, `qmatmul_guard`, `ai_exec_gate` identifiers.
 - **ai-opcode-phase1-conformance.md**: `phase_status` advanced to `spec_conformant`.
-- **Test count**: 329/332 core suite; 3 pre-existing TLOADHASH SEGFAULTs (see Known Failures below); unrelated to AI promotion work.
+- **Test count**: 344/344 tests passing after build system fix (stale CMake generator mismatch in asio/googlebenchmark/ftxui subbuilds cleared; Ninja reconfigure). R-18 closed.
 - **RFC-0002 accepted** — DEC §11 (Conformance Tests) fulfilled; stub replaced with concrete program references.
 - **RFC-00A series finalized** — 00A0/A1/A5/A8 superseded; 00A3/A4/A6 accepted.
 
@@ -108,16 +108,16 @@ tracked here and must be addressed unless explicitly deferred.
 
 ## Known Failures
 
-### TLOADHASH SEGFAULTs — 3 Pre-Existing, Monitoring
+### TLOADHASH Tests — Closed (2026-03-15)
 
 | Field | Value |
 | :--- | :--- |
-| **Tests affected** | 3 TLOADHASH-related tests in the core CTest suite |
-| **Symptom** | SEGFAULT on TLOADHASH null-CanonFS paths not covered by the 2026-03-08 null-guard fix |
-| **Classification** | Pre-existing — not caused by frontend refactor or AI promotion work |
-| **Impact on test count** | 329/332 passing (was 338/338 before the 3 were exposed by refactor) |
-| **Blocking Release** | No — scoped as monitoring; null-guard fix (`DEC-014`) addressed the main code path |
-| **Tracking** | See `docs/status/DECISION_LOG.md` DEC-014 |
+| **Tests affected** | `t81_vm_tloadhash_conformance_test`, `t81_vm_tloadhash_canonical_fixed_test`, `t81_vm_tloadhash_decodefault_determinism_matrix_test` |
+| **Symptom** | Tests appeared as SEGFAULTs; root cause was stale CMake generator mismatch (Unix Makefiles vs Ninja) in asio-subbuild, googlebenchmark-subbuild, and ftxui-subbuild caches |
+| **Classification** | Closed — not a code defect; build environment issue only |
+| **Resolution** | Cleared stale subbuild caches; reconfigured with default Ninja preset; all 3 tests pass. 344/344 passing. |
+| **Blocking Release** | No — resolved |
+| **Tracking** | R-18 closed in `docs/status/ACTIVE_RISKS.md` |
 
 ### Jekyll Pages Build — Mitigating
 
