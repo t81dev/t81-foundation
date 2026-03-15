@@ -3,7 +3,7 @@
 Status: Active
 Last Updated: 2026-03-15
 Owner: @t81dev
-Version: 3.2.3
+Version: 3.2.4
 
 This is the dashboard. One page. If you need detail, follow a cross-reference.
 
@@ -11,7 +11,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 ## Phase
 
-**Maintenance** — v1.4.0-Stable cut complete; RFC-0031/0032/0033 accepted; AI subsystem fully promoted; Axion Beta candidacy confirmed 2026-03-15; DPE-0002 accepted; no open blockers
+**Maintenance** — v1.4.0-Stable cut complete; RFC sweep complete (RFC-0001/0003/0004/0005/0007/0009/0023/0024/0029/0030 accepted); Windows build clean; AX-M6 canonical reason fully verified; no open blockers
 
 ---
 
@@ -19,13 +19,13 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Dimension | Status |
 | :--- | :--- |
-| Overall | Green — **344/344 tests passing (100%)** |
+| Overall | Green — **347/347 tests passing (100%)** |
 | Release Readiness | **GO** — v1.4.0-Stable tagged; v1.3.2 stable released 2026-03-08 |
-| Current Main | `50fff89c` — RFC-0031/0032 accepted; AI A-series RFC final status; axion-event-registry; 3 AI conformance programs; build system fixed (stale subbuild caches cleared, Ninja reconfigure) |
+| Current Main | `35754304` — RFC sweep (0001/0003/0004/0005/0007/0009/0023/0024/0029/0030 accepted); AX-M6 canonical reason fix; Windows MSVC build clean; spec/rfc/ duplicate removed; spec/t81lang_features.md created |
 | Open Blockers | None |
 | Frozen Core | Intact — no freeze exceptions |
 | Determinism Registry | All Verified surfaces clean |
-| Structural Integrity | **Green** — 344/344 tests passing (100%); conformance suite 27/27 programs pass |
+| Structural Integrity | **Green** — 347/347 tests passing (100%); conformance suite 27/27 programs pass |
 
 ---
 
@@ -40,6 +40,9 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | RFC-0002 DEC closure | 2026-03-15 | **Closed** — advanced to `accepted`; §11 conformance tests fulfilled |
 | AI A-series RFC final status | 2026-03-15 | **Closed** — 00A0/A1/A5/A8 superseded; 00A3/A4/A6 accepted |
 | Axion Beta candidacy review | 2026-03-15 | **Closed** — GO stamped; P4 (§1.2) + P5 (§1.6) satisfied; AX-G01 met; 49/49 tests; review record `AXION_BETA_STABILITY_REVIEW_2026-03.md` |
+| RFC sweep (0001/0003/0004/0005/0007/0009/0023/0024/0029/0030) | 2026-03-15 | **Closed** — all 10 advanced Draft → Accepted; spec/t81lang_features.md created; RFC-0028 status note added; RFC-0006/00A7 remain Draft (implementation gaps documented) |
+| AX-M6 canonical reason verification | 2026-03-15 | **Closed** — 5/5 t81_test_axion_m6_canonical_reason passing; unknown fallback + action=unknown fallback fixed |
+| Windows MSVC build | 2026-03-15 | **Closed** — C4996 (getenv), C4456 (local variable hiding), ir_generator vector_type shadow all resolved; /wd4996 /wd4456 added to MSVC suppressions |
 | T81Graph lang-side serialization (BG-09) | 2026-05-15 | **Closed** |
 | T3K spec document (T3K-S1) | 2026-04-30 | **Closed** |
 | Deputy-approval policy (GOV-01) | 2026-04-30 | **Closed** |
@@ -54,7 +57,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | Data Types | None | Frozen; audit closed 2026-02-27 |
 | T81VM | **RESOLVED** | **✅ PROMOTED TO STABLE** - TV-01..TV-06 criteria satisfied; complete spec implementation (sections 0-7); deterministic execution verified (27/27 tests); runtime stability confirmed (54/54 VM tests); Axion integration stable (2/2 spec tests); performance benchmarks established (19.12s execution); production-ready deterministic virtual machine |
 | T81Lang | **RESOLVED** | **✅ PROMOTED TO BETA** - TG-01..TG-06 gate criteria satisfied; deterministic compilation verified (21 fixtures, hash verified); semantic conformance complete (7/7 tests passing); comprehensive test coverage (36/36 tests); spec sections 0-7 fully implemented; translation staleness identified as low-priority maintenance |
-| Axion Governance Kernel | **RESOLVED** | **✅ PROMOTED TO STABLE** - Beta candidacy review PASSED 2026-03-15; P4/P5 satisfied; AX-M6 verbatim reason-string concatenation implemented; 54/54 tests passing; production-ready governance capabilities verified; §2.5 policy subsystem separation deferred to post-Stable |
+| Axion Governance Kernel | **RESOLVED** | **✅ PROMOTED TO STABLE** - Beta candidacy review PASSED 2026-03-15; P4/P5 satisfied; AX-M6 verbatim reason-string concatenation implemented and verified (5/5 canonical reason tests); 54/54 tests passing; production-ready governance capabilities verified; §2.5 policy subsystem separation deferred to post-Stable |
 | Axion OS Kernel | Medium | Experimental RFC-00B3 path active; kernel-owned handoff, MMU fault reporting, persistent runtime state, active device arbitration, runtime-owned scheduler/IPC execution, deterministic kernel loop, FIFO fault delivery, process-group fault policy with manual acknowledgement gate, an audit-only supervisor layer, the first service-facing runtime contract with healthy/faulted-group semantics, stable diagnostics, stable audit summaries, per-device ownership detail views, the first narrow service-facing action (supervisor fault-group acknowledgement), supervisor-facing recovery/report flows, a second narrow service-facing action for deterministic device claim/release, explicit request/action rejection semantics, and a first kernel-owned service runtime layer with deterministic service registration, deterministic service unregister, deterministic service suspend/resume, same-supervisor lifecycle control, explicit service health transitions, audit-visible service lifecycle transitions, retained supervisor inventory lifecycle metadata, per-entry supervisor inventory transition metadata, compact supervisor-status lifecycle metadata, aligned supervisor-recovery lifecycle metadata, aligned fault-summary lifecycle metadata, aligned runtime-status lifecycle metadata, aligned audit-summary lifecycle metadata, aligned device-summary lifecycle metadata, aligned service-status transition metadata, stable service detail, richer supervisor-owned inventory, explicit kernel-owned address-space ownership diagnostics, internal pager-needed fault-state diagnostics, deterministic internal pager handoff diagnostics, deterministic internal pager resolution diagnostics, and a real kernel-owned pager worker with duplicate unresolved fault coalescing, retained backlog/load diagnostics, ready-behind-active diagnostics, ready-backlog depth tracking, retained receipt identities/ordinals, active-work handoff ordinals, queued-head identities/ordinals, a bounded deterministic ready-bypass parking rule, retained ready-bypass deferral diagnostics, retained parked-cycle and parked-episode diagnostics, live parked-ready backlog diagnostics, retained parked-resumption diagnostics, retained parked-resume backlog diagnostics, retained parked-resume handoff diagnostics, retained parked-resumed-head handoff diagnostics, retained parked-resolved-head diagnostics, retained parked-resolved remaining-work diagnostics, retained parked-resolution follow-on diagnostics, retained parked-resolution successor completion diagnostics, retained blocker/blocked address-space identities, retained stall ordinals, retained blocked-side stall ordinals, retained blocked-side backlog depth, retained activation identities/ordinals, retained completion identities/ordinals, a terminal parked-head failure policy with retained terminal diagnostics, a kernel-owned boot-critical pager auto-resolution policy with retained resolution diagnostics, explicit boot-progress/fail runtime reporting, and a now-closed RFC-00B5 interrupt summary-convergence slice with kernel-owned interrupt intake, deterministic loop delivery, stable queue/accounting/audit surfaces, and record-level intake/delivery provenance are implemented; the current boot-ready kernel slice is closed, the local external boot-lane packaging phase is closed, staged ARM guest validation is in place, and a local QEMU x86_64 EFI diagnostic lane now executes the staged `BOOTX64.EFI` candidate and validates the shipped `x86_64` handoff contract. The next interrupt milestone is actual RFC-00B5 policy/handler behavior, while the external boot milestone remains actual `x86_64` VirtualBox host execution and evidence return (tracked in `experimental/ternaryos/docs/kernel_execution_plan.md`) |
 | T81Graph | **RESOLVED** | **✅ PROMOTED TO BETA** - All graph operations work from language level; comprehensive test suite (6/6 passing); DCP verification complete; experimental status outdated |
 | Experimental | — | Non-DCP by definition |
