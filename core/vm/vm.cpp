@@ -2046,7 +2046,7 @@ public:
         bool read_ok = true;
         for (int i = 0; i < cmd_count; ++i) {
           std::size_t base = static_cast<std::size_t>(cmd_addr + i * 4);
-          if (!mem_ok(base) || !mem_ok(base + 3)) {
+          if (!mem_ok(static_cast<int>(base)) || !mem_ok(static_cast<int>(base + 3))) {
             read_ok = false;
             break;
           }
@@ -2094,7 +2094,7 @@ public:
               }
               break;
             case RefinementCommand::Op::WriteMem:
-              if (!mem_ok(static_cast<std::size_t>(cmd.target))) {
+              if (!mem_ok(static_cast<int>(cmd.target))) {
                 trap = Trap::BoundsFault;
                 break;
               }
