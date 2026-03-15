@@ -494,3 +494,24 @@ ______________________________________________________________________
 - [Deterministic Evidence Protocol](RFC-00A1-deterministic-evidence-protocol.md)
 - [Axion Policy Hooks](RFC-00A6-axion-policy-hooks.md)
 - [LLM Backend Adapter](RFC-00A5-llm-backend-adapter.md)
+
+______________________________________________________________________
+
+## Implementation Status Note (2026-03-15)
+
+**Status: NOT IMPLEMENTED — specification only.**
+
+None of the `t81 ai <category> <action>` CLI commands specified in this RFC exist
+in the current CLI (`tooling/cli/main.cpp`). The CLI has `t81 weights quantize` as
+the sole AI-adjacent operation; no `ai model`, `ai inference`, `ai verify-determinism`,
+`ai observability`, `ai workflow`, `ai shell`, `ai debug`, or `ai profile` sub-commands
+are implemented.
+
+Dependent features also absent: no observability dashboard, no YAML workflow runner,
+no VS Code extension (`t81.ai.*`), no `~/.t81/ai-config.yaml` loader.
+
+This RFC remains Draft. It describes the target UX surface for AI-native tooling and
+serves as the specification basis for future CLI expansion. Graduation to Accepted
+requires the full acceptance criteria in §"Acceptance Criteria" to be met:
+all specified CLI commands implemented, observability dashboard operational,
+workflow automation functional, and IDE integration shipped.
