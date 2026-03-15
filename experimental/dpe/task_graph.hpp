@@ -100,12 +100,27 @@ struct EpochGraph {
 // One intercepted store to an output region (RFC-DPE-0002 §5.2).
 // Granularity: full page (page_size bytes starting at a page-aligned TVA).
 
-inline constexpr std::size_t kDpePageSize = 4096;  ///< page granularity for delta records
+inline constexpr std::size_t kDpePageSize    = 4096;  ///< page granularity for delta records
+inline constexpr std::size_t kDpeWordsPerPage = kDpePageSize / sizeof(std::int64_t);  ///< 512
+
+// ── DeltaRecord ───────────────────────────────────────────────────────────────
+//
+// One intercepted store to an output region (RFC-DPE-0002 §5.2).
+// Granularity: full page (page_size bytes starting at a page-aligned TVA).
+//
+// word_tags: per-word type annotation (one byte per int64_t word, using the
+// ValueTag enum values from t81/vm/state.hpp).  A tag of 0 (= ValueTag::Int)
+// means the corresponding 8 bytes in `value` are a raw int64_t.  A tag of
+// ValueTag::FloatHandle means the 8 bytes contain the IEEE 754 double
+// representation of the float value (not a pool handle index), enabling
+// deterministic EpochHash computation independent of handle allocation order
+// (RFC-DPE-0003 §5, [DPE-03-05]).
 
 struct DeltaRecord {
   TaskId   task_id{};
-  uint64_t tva{0};                                    ///< page-aligned TVA
-  std::array<std::byte, kDpePageSize> value{};        ///< full page content
+  uint64_t tva{0};                                         ///< page-aligned TVA
+  std::array<std::byte, kDpePageSize> value{};             ///< full page content
+  std::array<std::uint8_t, kDpeWordsPerPage> word_tags{};  ///< ValueTag per word (0 = Int)
 };
 
 // ── TaskFaultKind ─────────────────────────────────────────────────────────────

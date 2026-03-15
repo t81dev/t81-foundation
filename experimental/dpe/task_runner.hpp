@@ -29,9 +29,18 @@ namespace t81::dpe {
 // Predecessor delta pages to pre-load into VM memory before a task runs
 // (RFC-DPE-0004 §3–4).  key = word start in State::memory (= tva for
 // single-page output regions where tva == base_tva).
+//
+// DpePageSnapshot bundles page bytes with their per-word type tags so that
+// FloatHandle words can be correctly interned into the VM's float pool on
+// load rather than written as raw handle indices (RFC-DPE-0003 [DPE-03-05]).
+
+struct DpePageSnapshot {
+  std::array<std::byte,    kDpePageSize>    bytes{};
+  std::array<std::uint8_t, kDpeWordsPerPage> word_tags{};  ///< ValueTag per word (0 = Int)
+};
 
 struct DpeTaskInputSnapshot {
-  std::map<uint64_t, std::array<std::byte, kDpePageSize>> pages{};
+  std::map<uint64_t, DpePageSnapshot> pages{};
 };
 
 // ── DpeTaskResult ─────────────────────────────────────────────────────────────

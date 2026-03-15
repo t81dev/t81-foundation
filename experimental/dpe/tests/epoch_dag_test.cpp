@@ -127,7 +127,7 @@ static void test_dag_predecessor_value_flows_to_successor() {
   // ── Build input snapshot for T1 from T0's delta records ──────────────────
   DpeTaskInputSnapshot snap;
   for (const auto& rec : r0.delta_records) {
-    snap.pages.emplace(rec.tva, rec.value);
+    snap.pages.emplace(rec.tva, DpePageSnapshot{rec.value, rec.word_tags});
   }
 
   // ── Run T1 with the input snapshot ───────────────────────────────────────
@@ -202,7 +202,7 @@ static void test_dag_array_order_irrelevant() {
   // Build snapshot for T1.
   DpeTaskInputSnapshot snap;
   for (const auto& rec : r0.delta_records) {
-    snap.pages.emplace(rec.tva, rec.value);
+    snap.pages.emplace(rec.tva, DpePageSnapshot{rec.value, rec.word_tags});
   }
 
   // Run T1 with snapshot.

@@ -1,9 +1,20 @@
 // experimental/dpe/task_runner.cpp
 //
 // RFC-DPE-0002 §5 / [DPE-02-05]: DpeTaskRunner implementation.
+// RFC-DPE-0003 [DPE-03-05]: T81Float determinism in DPE tasks.
+//
+// Float handle serialization contract:
+//   - DeltaRecord words tagged ValueTag::FloatHandle (tag byte = 3) contain
+//     the IEEE 754 double representation of the float value (not the transient
+//     pool handle index).  This makes delta pages self-contained and ensures
+//     identical EpochHash across runs regardless of handle allocation order.
+//   - On snapshot load, FloatHandle-tagged words are interned into the VM's
+//     float pool via intern_float(), producing a fresh handle that is then
+//     stored with set_memory_word_tagged().
 
 #include "task_runner.hpp"
 #include "t81/vm/vm.hpp"
+#include "t81/vm/state.hpp"  // ValueTag
 
 #include <algorithm>
 #include <cstring>
@@ -27,13 +38,28 @@ DpeTaskResult DpeTaskRunner::run_direct(
   // ── Load predecessor input snapshot (RFC-DPE-0004 §3.2) ──────────────────
   // Each page in the snapshot is unpacked (little-endian int64_t words) and
   // written into VM flat memory at the corresponding word positions.
-  for (const auto& [word_start, page_bytes] : snapshot.pages) {
+  //
+  // FloatHandle-tagged words: the 8 bytes contain an IEEE 754 double (not a
+  // pool handle index).  We intern the value into the VM's float pool to get a
+  // fresh handle, then write the handle with the FloatHandle tag.
+  for (const auto& [word_start, page] : snapshot.pages) {
     for (std::size_t w = 0; w < kWordsPerPage; ++w) {
       const std::size_t byte_off = w * sizeof(std::int64_t);
       if (byte_off + sizeof(std::int64_t) > kDpePageSize) break;
-      std::int64_t word_val = 0;
-      std::memcpy(&word_val, page_bytes.data() + byte_off, sizeof(word_val));
-      vm->set_memory_word(static_cast<std::size_t>(word_start) + w, word_val);
+
+      const std::size_t dest_word = static_cast<std::size_t>(word_start) + w;
+      const auto tag = static_cast<t81::vm::ValueTag>(page.word_tags[w]);
+
+      if (tag == t81::vm::ValueTag::FloatHandle) {
+        double fval = 0.0;
+        std::memcpy(&fval, page.bytes.data() + byte_off, sizeof(fval));
+        const std::int64_t handle = vm->intern_float(fval);
+        vm->set_memory_word_tagged(dest_word, handle, t81::vm::ValueTag::FloatHandle);
+      } else {
+        std::int64_t word_val = 0;
+        std::memcpy(&word_val, page.bytes.data() + byte_off, sizeof(word_val));
+        vm->set_memory_word(dest_word, word_val);
+      }
     }
   }
 
@@ -113,12 +139,33 @@ DpeTaskResult DpeTaskRunner::run_direct(
       rec.task_id = tid;
       rec.tva     = reg.base_tva + static_cast<uint64_t>(p) * kDpePageSize;
 
-      // Pack changed page words into the byte array (little-endian int64_t).
+      // Pack changed page words into the byte array.
+      // FloatHandle words: serialize the actual double value (IEEE 754 LE) so
+      // the delta is independent of transient pool handle indices, satisfying
+      // [DPE-03-05].  All other words are packed as little-endian int64_t.
       for (std::size_t w = page_word_start; w < page_word_end; ++w) {
-        const std::size_t byte_off = (w - page_word_start) * sizeof(std::int64_t);
+        const std::size_t slot    = w - page_word_start;
+        const std::size_t byte_off = slot * sizeof(std::int64_t);
         if (byte_off + sizeof(std::int64_t) > kDpePageSize) break;
-        const std::int64_t word = post.memory[w];
-        std::memcpy(rec.value.data() + byte_off, &word, sizeof(word));
+
+        const auto tag = (w < post.memory_tags.size())
+                             ? post.memory_tags[w]
+                             : t81::vm::ValueTag::Int;
+        rec.word_tags[slot] = static_cast<std::uint8_t>(tag);
+
+        if (tag == t81::vm::ValueTag::FloatHandle) {
+          // Resolve handle to float value; write canonical double bytes.
+          const std::int64_t handle = post.memory[w];
+          double fval = 0.0;
+          if (handle > 0) {
+            const std::size_t idx = static_cast<std::size_t>(handle - 1);
+            if (idx < post.floats.size()) fval = post.floats[idx];
+          }
+          std::memcpy(rec.value.data() + byte_off, &fval, sizeof(fval));
+        } else {
+          const std::int64_t word = post.memory[w];
+          std::memcpy(rec.value.data() + byte_off, &word, sizeof(word));
+        }
       }
 
       result.delta_records.push_back(std::move(rec));

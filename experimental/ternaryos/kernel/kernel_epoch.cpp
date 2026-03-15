@@ -142,10 +142,10 @@ KernelEpochResult axion_kernel_submit_epoch(
         for (const auto& rec : dep_ds.records) {
           auto own_it = snapshot_owner.find(rec.tva);
           if (own_it == snapshot_owner.end()) {
-            lt.snapshot.pages.emplace(rec.tva, rec.value);
+            lt.snapshot.pages.emplace(rec.tva, t81::dpe::DpePageSnapshot{rec.value, rec.word_tags});
             snapshot_owner.emplace(rec.tva, dep_ds.id);
           } else if (own_it->second < dep_ds.id) {
-            lt.snapshot.pages[rec.tva] = rec.value;
+            lt.snapshot.pages[rec.tva] = t81::dpe::DpePageSnapshot{rec.value, rec.word_tags};
             own_it->second = dep_ds.id;
           }
         }

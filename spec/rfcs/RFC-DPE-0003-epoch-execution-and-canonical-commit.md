@@ -353,7 +353,7 @@ execution (§4.3).
 | `[DPE-03-02]` Last-writer-in-canonical-order | `test_last_writer_in_canonical_order_wins` — higher-TaskId task's page survives; lower-TaskId value overwritten | met |
 | `[DPE-03-03]` Abort on TaskFault | `test_epoch_aborts_on_task_fault` — `committed_pages` empty, `epoch_hash` zero, `faulting_task_id` set | met |
 | `[DPE-03-04]` EpochHash reproducibility | `test_epoch_hash_is_reproducible` — two independent DeltaBuffer sets produce identical `epoch_hash` | met |
-| `[DPE-03-05]` T81Float strict path | Deferred — depends on RFC-0030 (Deterministic Math Subsystem) | open |
+| `[DPE-03-05]` T81Float strict path | `t81_dpe_float_reduction_test` — [DPE-03-05-a..d]: FloatHandle delta words carry canonical IEEE 754 double bytes (not transient handle indices); EpochHash is stable across independent runs; float value round-trips through predecessor snapshot; same value from different pool positions produces identical delta bytes | met |
 | `[DPE-03-06]` Policy fault audit | `test_policy_denial_aborts_epoch` — `KernelEpochPolicyGate` denial → `Aborted_PolicyFault`, `EpochAbortedPolicyFault` in audit log, `policy_faults` counter incremented, `epochs_committed` unchanged | met |
 
 **Implementation scope (Slice 15):** Hosted commit engine in
@@ -361,4 +361,7 @@ execution (§4.3).
 `EpochRuntimeState` wiring (§10 items 1, 3, 5) delivered in Slice 16.
 `[DPE-03-06]` policy gate and audit wiring delivered in Slice 17
 (`kernel_epoch.hpp` / `kernel_epoch.cpp` / `kernel_runtime_support.hpp`).
-`[DPE-03-05]` remains deferred pending RFC-0030.
+`[DPE-03-05]` met: `DeltaRecord::word_tags` carries per-word `ValueTag`; FloatHandle words
+in delta pages contain canonical IEEE 754 double representation rather than transient pool
+handle indices; `intern_float()` + `set_memory_word_tagged()` restore float handles correctly
+from predecessor snapshots.  All 6/6 acceptance criteria for RFC-DPE-0003 are now met.

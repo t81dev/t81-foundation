@@ -265,7 +265,7 @@ static void test_parallel_fan_out() {
   // Build snapshot for T1 and T2 from T0's records.
   DpeTaskInputSnapshot snap;
   for (const auto& rec : r0.delta_records) {
-    snap.pages.emplace(rec.tva, rec.value);
+    snap.pages.emplace(rec.tva, DpePageSnapshot{rec.value, rec.word_tags});
   }
 
   // Execute T1 and T2 (both receive same snapshot).

@@ -1300,6 +1300,11 @@ if(T81_ENABLE_DPE)
       experimental/dpe/tests/thread_pool_test.cpp)
     target_link_libraries(t81_dpe_thread_pool_test PRIVATE t81_dpe)
     add_test(NAME t81_dpe_thread_pool_test COMMAND t81_dpe_thread_pool_test)
+
+    add_executable(t81_dpe_float_reduction_test
+      experimental/dpe/tests/dpe_float_reduction_test.cpp)
+    target_link_libraries(t81_dpe_float_reduction_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_float_reduction_test COMMAND t81_dpe_float_reduction_test)
   endif()
 endif()
 

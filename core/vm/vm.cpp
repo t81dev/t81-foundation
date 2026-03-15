@@ -6128,6 +6128,19 @@ public:
     state_.memory_tags[word_index] = ValueTag::Int;
   }
 
+  void set_memory_word_tagged(std::size_t word_index,
+                               std::int64_t value,
+                               ValueTag     tag) noexcept override {
+    if (word_index >= state_.memory.size()) return;
+    state_.memory[word_index]      = value;
+    state_.memory_tags[word_index] = tag;
+  }
+
+  std::int64_t intern_float(double value) noexcept override {
+    state_.floats.push_back(value);
+    return static_cast<std::int64_t>(state_.floats.size());  // 1-based handle
+  }
+
   void set_fault_injections(std::vector<FaultInjection> faults) override {
     state_.pending_faults = std::move(faults);
   }

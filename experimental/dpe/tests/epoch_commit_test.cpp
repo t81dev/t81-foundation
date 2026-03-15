@@ -84,8 +84,10 @@ static void test_commit_ordering_is_deterministic() {
 
   EpochGraph epoch = make_epoch(1, {t0, t1});
 
+  using BufPairs = std::vector<std::pair<TaskId, const DeltaBuffer*>>;
+
   // Run 1: submit in (T0, T1) order.
-  const auto r1 = commit_epoch(epoch, {{id0, &buf0}, {id1, &buf1}});
+  const auto r1 = commit_epoch(epoch, BufPairs{{id0, &buf0}, {id1, &buf1}});
   check(r1.ok(), "det-order: commit run 1 ok");
   check(r1.committed_pages.count(kPageA) == 1,
         "det-order: run 1 page A present");
@@ -93,7 +95,7 @@ static void test_commit_ordering_is_deterministic() {
         "det-order: run 1 page B present");
 
   // Run 2: submit in reversed (T1, T0) order.
-  const auto r2 = commit_epoch(epoch, {{id1, &buf1}, {id0, &buf0}});
+  const auto r2 = commit_epoch(epoch, BufPairs{{id1, &buf1}, {id0, &buf0}});
   check(r2.ok(), "det-order: commit run 2 ok");
 
   // Committed pages must be identical regardless of submission order.
@@ -133,8 +135,9 @@ static void test_last_writer_in_canonical_order_wins() {
   (void)buf0.write(kPageA, std::span<const std::byte>(page_for_id0));
   (void)buf1.write(kPageA, std::span<const std::byte>(page_for_id1));
 
+  using BufPairs = std::vector<std::pair<TaskId, const DeltaBuffer*>>;
   EpochGraph epoch = make_epoch(2, {t0, t1});
-  const auto r = commit_epoch(epoch, {{id0, &buf0}, {id1, &buf1}});
+  const auto r = commit_epoch(epoch, BufPairs{{id0, &buf0}, {id1, &buf1}});
 
   check(r.ok(), "last-writer: commit ok");
   check(r.committed_pages.count(kPageA) == 1, "last-writer: page A present");
@@ -168,8 +171,9 @@ static void test_epoch_aborts_on_task_fault() {
   (void)buf1.write(kPageB, std::span<const std::byte>(bad_page));  // outside declared region
   check(buf1.faulted(), "abort: buf1 is faulted after out-of-region write");
 
+  using BufPairs = std::vector<std::pair<TaskId, const DeltaBuffer*>>;
   EpochGraph epoch = make_epoch(3, {t0, t1});
-  const auto r = commit_epoch(epoch, {{id0, &buf0}, {id1, &buf1}});
+  const auto r = commit_epoch(epoch, BufPairs{{id0, &buf0}, {id1, &buf1}});
 
   check(!r.ok(), "abort: commit result is not ok");
   check(r.status == EpochCommitStatus::Aborted_TaskFault,
@@ -213,9 +217,10 @@ static void test_epoch_hash_is_reproducible() {
   (void)buf0b.write(kPageA, std::span<const std::byte>(page_aa));
   (void)buf1b.write(kPageB, std::span<const std::byte>(page_bb));
 
+  using BufPairs = std::vector<std::pair<TaskId, const DeltaBuffer*>>;
   EpochGraph epoch = make_epoch(4, {t0, t1});
-  const auto r1 = commit_epoch(epoch, {{id0, &buf0a}, {id1, &buf1a}});
-  const auto r2 = commit_epoch(epoch, {{id0, &buf0b}, {id1, &buf1b}});
+  const auto r1 = commit_epoch(epoch, BufPairs{{id0, &buf0a}, {id1, &buf1a}});
+  const auto r2 = commit_epoch(epoch, BufPairs{{id0, &buf0b}, {id1, &buf1b}});
 
   check(r1.ok(), "repro: run 1 ok");
   check(r2.ok(), "repro: run 2 ok");
@@ -246,8 +251,9 @@ static void test_epoch_hash_encodes_epoch_identity() {
   EpochGraph epoch5 = make_epoch(5, {t0});
   EpochGraph epoch6 = make_epoch(6, {t0b});
 
-  const auto r5 = commit_epoch(epoch5, {{id0,  &buf5}});
-  const auto r6 = commit_epoch(epoch6, {{id0b, &buf6}});
+  using BufPairs = std::vector<std::pair<TaskId, const DeltaBuffer*>>;
+  const auto r5 = commit_epoch(epoch5, BufPairs{{id0,  &buf5}});
+  const auto r6 = commit_epoch(epoch6, BufPairs{{id0b, &buf6}});
 
   check(r5.ok() && r6.ok(), "identity: both commits ok");
   check(r5.epoch_hash != r6.epoch_hash,
@@ -265,15 +271,16 @@ static void test_empty_delta_buffer_produces_valid_hash() {
   const TaskId id0 = compute_task_id(t0);
   DeltaBuffer buf0(t0, id0);  // empty — no writes
 
+  using BufPairs = std::vector<std::pair<TaskId, const DeltaBuffer*>>;
   EpochGraph epoch = make_epoch(7, {t0});
-  const auto r = commit_epoch(epoch, {{id0, &buf0}});
+  const auto r = commit_epoch(epoch, BufPairs{{id0, &buf0}});
 
   check(r.ok(), "empty-buf: commit ok");
   check(r.committed_pages.empty(), "empty-buf: no committed pages");
 
   // EpochHash must be deterministic even for an empty delta set.
   DeltaBuffer buf0b(t0, id0);
-  const auto r2 = commit_epoch(epoch, {{id0, &buf0b}});
+  const auto r2 = commit_epoch(epoch, BufPairs{{id0, &buf0b}});
   check(r.epoch_hash == r2.epoch_hash,
         "empty-buf: EpochHash reproducible for empty delta buffer");
 }

@@ -28,9 +28,20 @@ public:
   virtual std::expected<void, Trap> run_to_halt(std::size_t max_steps = 100000) = 0;
   virtual const State& state() const = 0;
   virtual void set_register(int idx, std::int64_t value, ValueTag tag = ValueTag::Int) = 0;
-  /// Write a single word into flat VM memory at `word_index`.
+  /// Write a single word into flat VM memory at `word_index` with ValueTag::Int.
   /// No-op if `word_index` is out of range.  Must be called after load_program().
   virtual void set_memory_word(std::size_t word_index, std::int64_t value) noexcept = 0;
+
+  /// Write a single word with an explicit ValueTag.
+  /// No-op if `word_index` is out of range.  Must be called after load_program().
+  virtual void set_memory_word_tagged(std::size_t word_index,
+                                      std::int64_t value,
+                                      ValueTag     tag) noexcept = 0;
+
+  /// Allocate a float in the VM's float handle pool and return the 1-based handle.
+  /// Used by the DPE task runner to restore FloatHandle words from delta snapshots
+  /// without coupling the snapshot format to transient pool indices.
+  virtual std::int64_t intern_float(double value) noexcept = 0;
   virtual std::int64_t load_weights_tensor(std::string_view name) = 0;
   virtual const t81::weights::NativeTensor* weights_tensor(std::int64_t handle) const = 0;
 
