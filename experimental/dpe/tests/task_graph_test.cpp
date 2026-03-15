@@ -9,7 +9,7 @@
 //   [DPE-02-03]  VM rejects exclusive output region conflicts at acceptance time
 //   [DPE-02-04]  OutOfRegionWrite fault aborts the task and leaves canonical
 //                state unchanged
-//   [DPE-02-05]  (deferred to Slice 14 — requires real TISC VM integration)
+//   [DPE-02-05]  Covered in task_runner_test.cpp (requires TISC VM integration)
 
 #include "../task_graph.hpp"
 

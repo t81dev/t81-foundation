@@ -1176,12 +1176,13 @@ if(T81_ENABLE_DPE)
 
   add_library(t81_dpe STATIC
     experimental/dpe/task_graph.cpp
+    experimental/dpe/task_runner.cpp
   )
   target_include_directories(t81_dpe PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   )
-  target_link_libraries(t81_dpe PUBLIC t81_core)
+  target_link_libraries(t81_dpe PUBLIC t81_core t81_vm)
   target_compile_features(t81_dpe PUBLIC ${T81_CXX_STD_FEATURE})
 
   if(T81_BUILD_TESTS)
@@ -1189,6 +1190,11 @@ if(T81_ENABLE_DPE)
       experimental/dpe/tests/task_graph_test.cpp)
     target_link_libraries(t81_dpe_task_graph_test PRIVATE t81_dpe)
     add_test(NAME t81_dpe_task_graph_test COMMAND t81_dpe_task_graph_test)
+
+    add_executable(t81_dpe_task_runner_test
+      experimental/dpe/tests/task_runner_test.cpp)
+    target_link_libraries(t81_dpe_task_runner_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_task_runner_test COMMAND t81_dpe_task_runner_test)
   endif()
 endif()
 

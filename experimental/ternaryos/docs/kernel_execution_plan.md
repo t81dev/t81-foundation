@@ -657,8 +657,21 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
   `OutOfRegionWrite` fault with post-fault rejection (`[DPE-02-04]`).
 - Key design: "program identity" (dep_task_ids-stripped TaskId) for epoch index —
   makes content-addressed dep references resolvable within an epoch.
-- `[DPE-02-05]` (single-task epoch ≡ direct TISC execution) deferred to Slice 14.
+- `[DPE-02-05]` (single-task epoch ≡ direct TISC execution) — see Slice 14.
 - Suite: 36 passed, 0 failed.
+
+**Slice 14 — DPE Task Runner / [DPE-02-05] [DONE]:**
+
+- `experimental/dpe/task_runner.hpp` + `task_runner.cpp`: `DpeTaskRunner::run_direct()`.
+- Executes a TISC program through a fresh `IVirtualMachine` instance; collects
+  `DeltaRecord`s for declared `output_regions` via post-execution memory diff.
+- `t81_dpe_task_runner_test`: 17 assertions across 4 test functions.
+- `[DPE-02-05]`: single-task epoch (no output regions) final registers match direct
+  VM execution exactly — both `LoadImm R5=42` and `LoadImm R1=10, R2=20, Add R3` cases.
+- `[DPE-runner-01]`: `DeltaRecord` emitted after `Store` to declared heap-region page.
+- `[DPE-runner-02]`: no `DeltaRecord` for declared output-region pages that are not written.
+- CMake: `task_runner.cpp` added to `t81_dpe` sources; `t81_vm` added to link deps.
+- Suite: 17 passed, 0 failed.
 
 **Slice 12 — First EL0→EL1 SVC Roundtrip [DONE] (commit 69fcc987):**
 
