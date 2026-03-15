@@ -209,14 +209,16 @@ struct StructuredEvent {
     }
 
     // Structured fields not populated — canonical form IS the original reason.
-    // This applies to all events routed through record_axion_event() where
-    // storage_class/event_type/reason_code are not set by the caller.
+    // This preserves specific audit details emitted by the VM (e.g.
+    // "stack frame allocated", "policy deny: axreport", "TLOADHASH canonfs_miss hash=...").
+    // Exception: when reason is also empty, emit the full unknown fallback.
     if (storage_class.empty() && event_type.empty() && reason_code.empty()) {
-      return reason;
+      if (!reason.empty()) return reason;
+      return "segment=unknown action=unknown";
     }
 
     // Construct canonical format from structured fields.
-    ss << "segment=" << storage_class;
+    ss << "segment=" << (storage_class.empty() ? "unknown" : storage_class);
 
     if (handle_id != 0) {
       ss << " addr=" << handle_id;
@@ -234,6 +236,8 @@ struct StructuredEvent {
       ss << " action=" << event_type;
     } else if (!reason_code.empty()) {
       ss << " action=" << reason_code;
+    } else {
+      ss << " action=unknown";
     }
 
     return ss.str();
