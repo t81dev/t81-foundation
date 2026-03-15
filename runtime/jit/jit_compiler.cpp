@@ -277,6 +277,11 @@ public:
             case t81::tisc::LiteralKind::ShapeHandle:
               ctx.register_tags[insn.a] = ValueTag::ShapeHandle;
               break;
+            case t81::tisc::LiteralKind::ComplexHandle:
+              // Complex literal: defer to interpreter path for now.
+              stop_trace = true;
+              guard_deopt = true;
+              break;
             case t81::tisc::LiteralKind::BigIntHandle:
               // Keep >64-bit literal semantics in interpreter path for now.
               stop_trace = true;
@@ -312,10 +317,7 @@ public:
             guard_deopt = true;
             break;
           }
-          const auto& stack = state.layout.stack;
-          // Note: using global stack layout limits in JIT for simplicity, or should access ctx
-          // limits? For now, assuming stack structure fits. Wait, JIT needs to use ctx.sp and
-          // stack_limit.
+          // Note: using ctx.sp and stack_limit for bounds check below.
           if (ctx.sp <=
               ctx.stack_limit) {  // Check underflow of free space (overflow of stack usage)
             stop_trace = true;
