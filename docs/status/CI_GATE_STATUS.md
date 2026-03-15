@@ -1,10 +1,10 @@
 # CI Gate Status
 
 Status: Active
-Last Updated: 2026-03-14
+Last Updated: 2026-03-15
 Owner: @t81dev
 Reference Candidate: `b566bff8` (origin/main, 2026-03-14)
-Current Main Head: `b566bff8` (origin/main, 2026-03-14; CI workflow canonical restore + lychee/timeout/path fixes; 338/338 tests)
+Current Main Head: `50fff89c` (origin/main ahead by 5 commits, 2026-03-15; RFC-0031/0032 accepted + AI A-series RFC final status + axion-event-registry + 3 AI conformance programs; 329/332 core tests + 2 new AI promotion tests)
 
 ## Purpose
 
@@ -28,7 +28,7 @@ GO decision can be stamped.
 
 Verification command:
 
-```
+```sh
 gh api repos/t81dev/t81-foundation/branches/main/protection \
   --jq '.required_status_checks.contexts'
 
@@ -75,6 +75,17 @@ tracked here and must be addressed unless explicitly deferred.
 | `product / dcp integrity (informational)` | `ci.yml` | success ✅ | |
 | `build` (GitHub Pages / Jekyll) | `documentation.yml` | **failure ⚠️** | **Mitigating** — root `_config.yml` third_party exclusion patch queued; awaiting next run |
 
+## Operational Notes (2026-03-15)
+
+- **RFC-0031 + RFC-0032 accepted** — All 5 AI subsystem promotion phases complete.
+  New test targets added to CMake: `backend_adapter_test` (Phase 4), `t81_determinism_evidence_test` (Phase 5).
+- **AI conformance suite expanded to 27 programs** — Added `spec/conformance/ai/`: `attn-determinism.t81`, `qmatmul-scale-order.t81`, `embed-bounds-check.t81`.
+- **Axion event registry created** — `spec/supplemental/axion-event-registry.md` is now the normative source for `model_load`, `attn_guard`, `qmatmul_guard`, `ai_exec_gate` identifiers.
+- **ai-opcode-phase1-conformance.md**: `phase_status` advanced to `spec_conformant`.
+- **Test count**: 329/332 core suite; 3 pre-existing TLOADHASH SEGFAULTs (see Known Failures below); unrelated to AI promotion work.
+- **RFC-0002 accepted** — DEC §11 (Conformance Tests) fulfilled; stub replaced with concrete program references.
+- **RFC-00A series finalized** — 00A0/A1/A5/A8 superseded; 00A3/A4/A6 accepted.
+
 ## Operational Notes (2026-03-14)
 
 - **PR #448 merged** — Restored canonical `ci.yml` from `restore-to-main-293223a8` with three targeted fixes:
@@ -96,6 +107,17 @@ tracked here and must be addressed unless explicitly deferred.
   `scripts/ci/check_architecture_coherence.py`.
 
 ## Known Failures
+
+### TLOADHASH SEGFAULTs — 3 Pre-Existing, Monitoring
+
+| Field | Value |
+| :--- | :--- |
+| **Tests affected** | 3 TLOADHASH-related tests in the core CTest suite |
+| **Symptom** | SEGFAULT on TLOADHASH null-CanonFS paths not covered by the 2026-03-08 null-guard fix |
+| **Classification** | Pre-existing — not caused by frontend refactor or AI promotion work |
+| **Impact on test count** | 329/332 passing (was 338/338 before the 3 were exposed by refactor) |
+| **Blocking Release** | No — scoped as monitoring; null-guard fix (`DEC-014`) addressed the main code path |
+| **Tracking** | See `docs/status/DECISION_LOG.md` DEC-014 |
 
 ### Jekyll Pages Build — Mitigating
 

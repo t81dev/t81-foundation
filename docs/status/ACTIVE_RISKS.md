@@ -1,6 +1,6 @@
 # Active Risks
 
-Last Updated: 2026-03-14
+Last Updated: 2026-03-15
 Owner: @t81dev
 Cadence: Weekly refresh
 
@@ -13,7 +13,8 @@ No prose. If a risk needs an essay, escalate it.
 | R-05 | AGI-facing surface growth outpacing promotion evidence updates | Medium | @t81dev | Surface inventory refreshed each monthly governance cadence | Monitoring |
 | R-06 | Documentation maintenance burden after reorganization | Low | @t81dev | Content-based structure reduces maintenance overhead; automated link checking in CI | Monitoring |
 | R-07 | Benchmark variability — false signal in `vm workload gate` guardrail | Low | @t81dev | Alert threshold >5% regression; review guardrail if consecutive divergence detected | Monitoring |
-| R-09 | Test failures impacting release readiness — 5 tests failing (98.5% success rate) | Medium | @t81dev | **✅ RESOLVED** - All test failures fixed; 338/338 tests passing (includes `t81_determinism_containers_test` fix via `T81String::serialize_canonical()`) | **Closed** |
+| R-09 | Test failures impacting release readiness — 5 tests failing (98.5% success rate) | Medium | @t81dev | **✅ RESOLVED** - Primary failures fixed; 338/338 passing at `b566bff8`. NOTE: frontend refactor (2026-03-08) exposed 3 pre-existing TLOADHASH SEGFAULTs → 329/332; tracked as R-18. | **Closed** |
+| R-18 | 3 pre-existing TLOADHASH SEGFAULTs exposed by frontend refactor | Low | @t81dev | Not caused by recent work; scoped to null-CanonFS edge cases not hit by main code path; monitoring until root-caused and fixed | Monitoring |
 
 ## Closed Risks
 

@@ -1,6 +1,6 @@
 # AI RFC Backlog
 
-Last Updated: 2026-03-14
+Last Updated: 2026-03-15
 Owner: @t81dev
 Scope: AI integration RFC implementation sequencing and compliance tracking
 
@@ -50,6 +50,22 @@ This backlog tracks active AI integration RFC work only. It is separate from str
 | AI-S4 | Policy event instrumentation | RFC-00A6 | **Completed (2026-03-05)** — deterministic AI policy-event reason-code contract gate active in CI |
 
 ---
+
+## Compliance Snapshot (2026-03-15)
+
+- RFC-0031 (Deterministic AI Execution Contract): `proposed` → **`accepted`**
+- RFC-0032 (AI Subsystem Promotion Pathway): `proposed` → **`accepted`** — all 5 phases complete
+- RFC-0002 (Deterministic Execution Contract): `draft` → **`accepted`** — §11 fulfilled
+- RFC-00A0: `draft` → **`superseded`** by RFC-0032 (3-stage lifecycle executed)
+- RFC-00A1: `draft` → **`superseded`** by RFC-0032 §5 (FNV-1a/key=value replaces SHA-256/JSON/wall-clock)
+- RFC-00A3: `draft` → **`accepted`** (TLOADHASH + `allowed_tensor_hashes` + `model_load` event)
+- RFC-00A4: `draft` → **`accepted`** (`quantize_threshold` + `pack_ternary_to_base81` promoted Phase 1)
+- RFC-00A5: `draft` → **`superseded`** by RFC-0032 Phase 4 (T81VmBackend replaces llama.cpp/ONNX)
+- RFC-00A6: `draft` → **`accepted`** (AIHookEngine + PolicyEngine + axion-event-registry live)
+- RFC-00A8: `draft` → **`superseded`** by RFC-0026 (ATTN/QMATMUL/EMBED/WLOAD in TISC)
+- ai-opcode-phase1-conformance.md: `phase_status` → `spec_conformant` (was `runtime_bound`)
+- Conformance suite: 27 programs (3 new AI programs: attn-determinism, qmatmul-scale-order, embed-bounds-check)
+- New deliverables: `spec/supplemental/axion-event-registry.md`, `core/vm/ai_backend/backend_adapter.cpp`, `tests/determinism/evidence_collector.cpp`, `tooling/cli/ai/t81_ai_cli.cpp`
 
 ## Compliance Snapshot (2026-03-08)
 
