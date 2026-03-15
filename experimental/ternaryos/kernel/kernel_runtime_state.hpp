@@ -264,6 +264,10 @@ struct KernelRuntimeState {
     uint64_t epoch_commits{0};
     uint64_t epoch_aborts{0};
     uint64_t epoch_task_executions{0};
+    // DPE epoch audit-event counters (RFC-DPE-0008) — one per lifecycle event emitted.
+    uint64_t epoch_audit_submissions{0};
+    uint64_t epoch_audit_commits{0};
+    uint64_t epoch_audit_aborts{0};
   };
 
   std::string platform_id;
@@ -320,6 +324,9 @@ struct KernelRuntimeState {
   std::optional<KernelPagerHandoffRecord> last_pager_handoff{};
   std::optional<KernelPagerResolutionRecord> last_pager_resolution{};
   std::optional<KernelAuditRecord> last_audit_event{};
+  // RFC-DPE-0008: retained last epoch audit event kind + audit-log sequence.
+  std::optional<KernelAuditEventKind> last_epoch_audit_kind{};
+  std::optional<uint64_t>            last_epoch_audit_sequence{};
   ProcessGroupId next_process_group_id{1};
   SupervisorId next_supervisor_id{1};
   ServiceId next_service_id{1};

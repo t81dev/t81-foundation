@@ -68,6 +68,7 @@ This index tracks RFC status and intended disposition.
 | RFC-DPE-0005 | Level-Parallel Epoch Execution | accepted | [DPE-05-01..04] met (Slice 19): topological_levels_epoch() + std::thread level dispatch + noexcept fallback; proved by `t81_dpe_epoch_parallel_test` |
 | RFC-DPE-0006 | Bounded Thread Pool for Epoch Execution | accepted | [DPE-06-01..04] met (Slice 20): DpeThreadPool (N workers, queue, idle-wait, shutdown) + optional pool param in axion_kernel_submit_epoch(); proved by `t81_dpe_thread_pool_test` |
 | RFC-DPE-0007 | Epoch Execution Timeout | accepted | [DPE-08-01..06] met (Slice 23): optional timeout_ms param on axion_kernel_submit_epoch(); per-level steady_clock check; Aborted_Timeout → RetryLater/EpochTimedOut at syscall boundary; proved by `t81_ternaryos_epoch_timeout_test` |
+| RFC-DPE-0008 | Epoch Audit Events | accepted | [DPE-09-01..06] met (Slice 24): EpochSubmitted/EpochCommitted/EpochAborted wired into axion_kernel_submit_epoch(); epoch_audit_submissions/commits/aborts counters + last_epoch_audit_kind/sequence retained state; proved by `t81_ternaryos_epoch_audit_test` |
 
 ## Experimental RFCs (A-series)
 

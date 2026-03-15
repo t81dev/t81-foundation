@@ -15,6 +15,37 @@
 
 namespace t81::ternaryos::kernel {
 
+// ── RFC-DPE-0008: epoch audit helper ─────────────────────────────────────────
+//
+// Emits a KernelAuditRecord for an epoch lifecycle event and updates the
+// epoch-specific audit counters + retained state in KernelRuntimeState.
+static void emit_epoch_audit(KernelRuntimeState& state,
+                             KernelAuditEventKind kind) noexcept {
+  record_audit_event(state, kind,
+                     KernelRuntimeState::kKernelTid,
+                     KernelRuntimeState::kKernelProcessGroup);
+  // Update epoch-specific counters.
+  switch (kind) {
+    case KernelAuditEventKind::EpochSubmitted:
+      ++state.counters.epoch_audit_submissions;
+      break;
+    case KernelAuditEventKind::EpochCommitted:
+      ++state.counters.epoch_audit_commits;
+      break;
+    case KernelAuditEventKind::EpochAborted:
+      ++state.counters.epoch_audit_aborts;
+      break;
+    default:
+      break;
+  }
+  // Retain last epoch audit kind + sequence (sequence is in last_audit_event
+  // after record_audit_event() updates it).
+  state.last_epoch_audit_kind = kind;
+  if (state.last_audit_event.has_value()) {
+    state.last_epoch_audit_sequence = state.last_audit_event->sequence;
+  }
+}
+
 KernelEpochResult axion_kernel_submit_epoch(
     KernelRuntimeState&                      state,
     const t81::dpe::EpochGraph&              epoch,
@@ -35,6 +66,8 @@ KernelEpochResult axion_kernel_submit_epoch(
 
   state.epoch.epochs_submitted++;
   state.counters.epoch_submissions++;
+  // RFC-DPE-0008 §3.1: emit EpochSubmitted audit event.
+  emit_epoch_audit(state, KernelAuditEventKind::EpochSubmitted);
 
   // ── §2: Execute tasks level-by-level; tasks within a level run in parallel
   //        (RFC-DPE-0005 §4).
@@ -201,6 +234,8 @@ KernelEpochResult axion_kernel_submit_epoch(
       if (elapsed >= *timeout_ms) {
         state.epoch.epochs_aborted++;
         state.counters.epoch_aborts++;
+        // RFC-DPE-0008 §3.3: emit EpochAborted audit event for timeout.
+        emit_epoch_audit(state, KernelAuditEventKind::EpochAborted);
         return KernelEpochResult{KernelEpochStatus::Aborted_Timeout};
       }
     }
@@ -212,6 +247,8 @@ KernelEpochResult axion_kernel_submit_epoch(
   if (!commit.ok()) {
     state.epoch.epochs_aborted++;
     state.counters.epoch_aborts++;
+    // RFC-DPE-0008 §3.3: emit EpochAborted audit event for task/conflict abort.
+    emit_epoch_audit(state, KernelAuditEventKind::EpochAborted);
 
     KernelEpochResult res;
     res.status = (commit.status == t81::dpe::EpochCommitStatus::Aborted_ExclusiveConflict)
@@ -225,6 +262,8 @@ KernelEpochResult axion_kernel_submit_epoch(
   state.counters.epoch_commits++;
   state.epoch.last_committed_epoch_id   = epoch.epoch_id;
   state.epoch.last_committed_epoch_hash = commit.epoch_hash;
+  // RFC-DPE-0008 §3.2: emit EpochCommitted audit event.
+  emit_epoch_audit(state, KernelAuditEventKind::EpochCommitted);
 
   return KernelEpochResult{KernelEpochStatus::Ok, commit.epoch_hash};
 }

@@ -1195,6 +1195,12 @@ if(T81_ENABLE_TERNARYOS)
         experimental/ternaryos/tests/epoch_timeout_test.cpp)
       target_link_libraries(t81_ternaryos_epoch_timeout_test PRIVATE t81_ternaryos_hal)
       add_test(NAME t81_ternaryos_epoch_timeout_test COMMAND t81_ternaryos_epoch_timeout_test)
+
+      # RFC-DPE-0008 — Epoch Audit Events tests [DPE-09]
+      add_executable(t81_ternaryos_epoch_audit_test
+        experimental/ternaryos/tests/epoch_audit_test.cpp)
+      target_link_libraries(t81_ternaryos_epoch_audit_test PRIVATE t81_ternaryos_hal)
+      add_test(NAME t81_ternaryos_epoch_audit_test COMMAND t81_ternaryos_epoch_audit_test)
     endif()
 
     # RFC-00B6 §5.3.6 — ClaimDevice/ReleaseDevice/QueryDevice KernelCallKind ABI tests [AC-22d]

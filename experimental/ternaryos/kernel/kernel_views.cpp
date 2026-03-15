@@ -631,6 +631,12 @@ KernelRuntimeStatusView make_runtime_view(const KernelRuntimeState& state) {
       .epoch_task_executions   = state.counters.epoch_task_executions,
       .last_committed_epoch_id   = state.epoch.last_committed_epoch_id,
       .last_committed_epoch_hash = state.epoch.last_committed_epoch_hash,
+      // DPE epoch audit trail (RFC-DPE-0008)
+      .epoch_audit_submissions = state.counters.epoch_audit_submissions,
+      .epoch_audit_commits     = state.counters.epoch_audit_commits,
+      .epoch_audit_aborts      = state.counters.epoch_audit_aborts,
+      .last_epoch_audit_kind     = state.last_epoch_audit_kind,
+      .last_epoch_audit_sequence = state.last_epoch_audit_sequence,
   };
 }
 

@@ -689,6 +689,24 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 - CMake: `task_runner.cpp` added to `t81_dpe` sources; `t81_vm` added to link deps.
 - Suite: 17 passed, 0 failed.
 
+**Slice 24 — RFC-DPE-0008: Epoch Audit Events [DONE]:**
+
+- `EpochSubmitted`, `EpochCommitted`, `EpochAborted` added to `KernelAuditEventKind`.
+- `emit_epoch_audit()` module-private helper: calls `record_audit_event()`, increments dedicated counter, updates `last_epoch_audit_kind`/`last_epoch_audit_sequence`.
+- `EpochSubmitted` emitted after `accept_epoch()` passes (on successful submission path only — not on `Rejected_AcceptFailed`).
+- `EpochCommitted` emitted after `commit_epoch()` succeeds and state is recorded.
+- `EpochAborted` emitted for `Aborted_TaskFault`, `Aborted_ExclusiveConflict`, `Aborted_Timeout`; policy fault retains dedicated `EpochAbortedPolicyFault`.
+- `Counters`: `epoch_audit_submissions`, `epoch_audit_commits`, `epoch_audit_aborts`.
+- `KernelRuntimeState`: `last_epoch_audit_kind`, `last_epoch_audit_sequence`.
+- `KernelRuntimeStatusView`: all five new fields exposed.
+- `t81_ternaryos_epoch_audit_test`: 15 assertions across 4 test functions.
+- `[DPE-09-01]`: successful epoch → epoch_audit_submissions=1, epoch_audit_commits=1.
+- `[DPE-09-02]`: last_epoch_audit_kind == EpochCommitted + sequence set.
+- `[DPE-09-03]`: task-fault epoch → epoch_audit_aborts=1, last_kind == EpochAborted.
+- `[DPE-09-04]`: timeout epoch → epoch_audit_aborts += 1, last_kind == EpochAborted.
+- `[DPE-09-05]`: policy-denied epoch → epoch_audit_aborts NOT incremented; last_kind != EpochAborted.
+- `[DPE-09-06]`: audit_events_recorded += 2 per lifecycle.
+
 **Slice 23 — RFC-DPE-0007: Epoch Execution Timeout [DONE]:**
 
 - `Aborted_Timeout` added to `KernelEpochStatus` enum.

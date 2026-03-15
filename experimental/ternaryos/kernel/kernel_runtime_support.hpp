@@ -73,6 +73,10 @@ enum class KernelAuditEventKind : uint8_t {
   CapabilityGranted,
   CapabilityRevoked,
   EpochAbortedPolicyFault,  ///< a task's program was denied by the epoch policy gate (RFC-DPE-0003 §6.1)
+  // RFC-DPE-0008: full epoch lifecycle audit trail
+  EpochSubmitted,   ///< epoch accepted by accept_epoch() and dispatched for execution (RFC-DPE-0008 §3.1)
+  EpochCommitted,   ///< epoch committed successfully via commit_epoch() (RFC-DPE-0008 §3.2)
+  EpochAborted,     ///< epoch aborted (TaskFault, ExclusiveConflict, or Timeout) (RFC-DPE-0008 §3.3)
 };
 
 struct KernelAuditRecord {

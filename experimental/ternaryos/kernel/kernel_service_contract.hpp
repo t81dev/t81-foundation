@@ -234,6 +234,12 @@ struct KernelRuntimeStatusView {
   uint64_t epoch_task_executions{0};
   std::optional<uint64_t> last_committed_epoch_id{};
   std::optional<t81::hash::CanonHash81> last_committed_epoch_hash{};
+  // DPE epoch audit trail (RFC-DPE-0008) — audit events emitted per lifecycle transition.
+  uint64_t epoch_audit_submissions{0};
+  uint64_t epoch_audit_commits{0};
+  uint64_t epoch_audit_aborts{0};
+  std::optional<KernelAuditEventKind> last_epoch_audit_kind{};
+  std::optional<uint64_t>            last_epoch_audit_sequence{};
 };
 
 struct KernelProcessGroupStatusView {
