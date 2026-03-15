@@ -1,5 +1,6 @@
 # ── Build artifacts ─────────────────────────────────────────
 build/
+build-warn-strict/
 cmake-build/
 out/
 bin/
@@ -126,5 +127,4 @@ generate_dummy_safetensors
 
 # ── Model Files (too large for GitHub) ───────────────────────
 models/
-build-win
-build-win
+build-win/
