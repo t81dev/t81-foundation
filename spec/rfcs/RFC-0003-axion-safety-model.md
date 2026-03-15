@@ -1,7 +1,8 @@
 # RFC-0003: Axion Safety Model
 
 Version 0.2 — Standards Track\
-Status: Draft\
+Status: Accepted\
+Updated: 2026-03-15\
 Author: T81 Foundation\
 Applies to: Axion, T81VM, TISC, T81Lang, Cognitive Tiers, Data Types
 
@@ -415,3 +416,40 @@ Axion’s Safety Model ensures that:
 - cognitive tiers remain interpretable
 
 Axion makes the T81 system not only deterministic, but **safe**, **transparent**, and **structurally stable** across all forms of computation.
+
+______________________________________________________________________
+
+# 14. Acceptance Criteria
+
+The following criteria must be verified before this RFC advances to Accepted:
+
+| ID | Criterion | Evidence |
+| :--- | :--- | :--- |
+| [A-0003-01] | Ethics/safety invariants enforced at runtime | `t81_ethics_test`, `t81_ethics_invariants_test` |
+| [A-0003-02] | Recursion guardrails (RCS) verified: depth limits per tier, catastrophic-recursion fault path | `axion_recursion_guardrails_test` |
+| [A-0003-03] | Privileged instruction (AXREAD/AXSET/AXVERIFY) verification and fail-closed on policy deny | `t81_test_axion_opcodes`, `t81_vm_policy_parse_fail_closed_test`, `t81_vm_axreport_policy_deny_fail_closed_test` |
+| [A-0003-04] | Determinism invariant: same input produces bit-identical audit output | `t81_axion_log_determinism_test`, `axion_policy_allow_deny_determinism_test` |
+| [A-0003-05] | Tier supervision invariant: tier boundaries enforced; unsafe transitions rejected | `spec_conformance_axion-kernel_tier-supervision-invariant` |
+| [A-0003-06] | Instruction-count ceiling enforced (§8 branching/entropy ceiling) | `axion_instruction_counter_test` |
+| [A-0003-07] | Audit trail observability: all privileged events traced to CanonFS | `canonfs_axion_trace_test`, `spec_conformance_axion-kernel_segment-trace-strings` |
+| [A-0003-08] | AI hook interception: governed AI model operations subject to Axion policy | `axion_ai_hooks_test` |
+| [A-0003-09] | Interrupt governance compatibility (§2.2/§3): rate-limiting and quarantine gate on device interrupts | `test_kernel_interrupt_policy` [AC-22w] (RFC-00B5 §3.7) |
+
+______________________________________________________________________
+
+## Acceptance Note (2026-03-15)
+
+All nine criteria above are met as of this date:
+
+- **[A-0003-01]** 9-principle ethics gate in `kernel/axion/ethics.cpp` verified by `t81_ethics_test` and `t81_ethics_invariants_test`.  Axion Beta candidacy review (2026-03-15) confirmed P4 (§1.2 Safety & Ethics) satisfied.
+- **[A-0003-02]** `axion_recursion_guardrails_test` verifies per-tier depth limits (§6.1 table) and the catastrophic-recursion fault path in `policy_engine.cpp`.
+- **[A-0003-03]** `t81_test_axion_opcodes` verifies AXREAD/AXSET/AXVERIFY mediation.  `t81_vm_policy_parse_fail_closed_test` and `t81_vm_axreport_policy_deny_fail_closed_test` verify that a malformed or deny-policy halts execution deterministically (P5 §1.6, satisfied per Beta review).
+- **[A-0003-04]** `t81_axion_log_determinism_test` and `axion_policy_allow_deny_determinism_test` confirm identical audit-log output on identical inputs (P1 §1.1, satisfied per Beta review).
+- **[A-0003-05]** `spec_conformance_axion-kernel_tier-supervision-invariant` from the 27-program spec conformance suite asserts that the TTS subsystem rejects out-of-order tier transitions.
+- **[A-0003-06]** `axion_instruction_counter_test` verifies that the instruction ceiling (P3 §1.3) is enforced within bounded complexity (satisfied per Beta review).
+- **[A-0003-07]** `canonfs_axion_trace_test` and the segment-trace-strings conformance test verify CanonFS observability (P2 §1.10, bounded-pass per Beta review).
+- **[A-0003-08]** `axion_ai_hooks_test` verifies AI-model load/infer operations are intercepted and governed by the active Axion policy (RFC-00A6).
+- **[A-0003-09]** `test_kernel_interrupt_policy` [AC-22w] (RFC-00B5 §3.7 / Slice 27) verifies that device interrupt delivery is subject to per-source rate-limiting and quarantine — fulfilling the §2.2 Computational Divergence mitigation ("deterministic throttling") for the interrupt event class.
+
+Axion Beta candidacy review record: `docs/records/audits/AXION_BETA_STABILITY_REVIEW_2026-03.md`.
+Suite status at acceptance: **49/49 axion + ethics + tier + policy tests passing**.

@@ -2,8 +2,9 @@ ______________________________________________________________________
 
 # RFC-0009 — Axion Policy Language (APL)
 
-Version 0.1 — Draft (Standards Track)\
-Status: Draft\
+Version 0.1 — Standards Track\
+Status: Accepted\
+Updated: 2026-03-15\
 Author: Axion Governance Council\
 Applies to: Axion, T81VM, T81Lang, Cognitive Tiers
 Supersession note: RFC-0022 is the preferred forward evolution path and is expected to supersede this RFC upon acceptance.
@@ -140,5 +141,37 @@ ______________________________________________________________________
 2. Do we need policy capabilities (e.g., allow certain opcodes only inside
    specific modules)?
 3. How do we distribute signed policy bundles for offline deployments?
+
+______________________________________________________________________
+
+# 7. Acceptance Criteria
+
+| ID | Criterion | Evidence |
+| :--- | :--- | :--- |
+| [A-0009-01] | APL s-expression parser implemented and rejects malformed input | `parse_policy()` in `include/t81/axion/policy.hpp`; `t81_vm_policy_parse_fail_closed_test` |
+| [A-0009-02] | `tier` directive enforced: programs exceeding the policy tier are denied | `axion_recursion_guardrails_test`, `spec_conformance_axion-kernel_tier-supervision-invariant` |
+| [A-0009-03] | `allow-opcode` / `deny-opcode` enforcement: denied opcodes trigger `SecurityFault` deterministically | `t81_test_axion_opcodes`, `t81_vm_axreport_policy_deny_fail_closed_test` |
+| [A-0009-04] | Fail-closed on parse error: a policy that cannot be parsed halts execution | `t81_vm_policy_parse_fail_closed_test` |
+| [A-0009-05] | AI hook interception subject to active APL policy | `axion_ai_hooks_test` |
+| [A-0009-06] | Policy evaluation is deterministic: same policy + input → identical verdict sequence | `axion_policy_allow_deny_determinism_test` |
+| [A-0009-07] | CanonFS hook applies the active policy to executable objects at load time | `canonfs_hook.cpp` `parse_policy()` call; `canonfs_axion_trace_test` |
+
+______________________________________________________________________
+
+## Acceptance Note (2026-03-15)
+
+All seven criteria above are met as of this date.
+
+The APL s-expression syntax `(policy (tier N) (allow-opcode X) …)` specified in §2.1 is fully implemented in `include/t81/axion/policy.hpp` (`PolicyLexer` → `parse_policy()`). The `policy.hpp` parser handles `tier`, `max-stack`, `max-trace`, `allow-opcode`, `deny-opcode`, `require-proof`, and the guard/loop metadata predicates added in §2.5. Legacy JSON policies noted in §4 are translated at load time via `canonfs_hook.cpp`.
+
+Key implementation mapping:
+
+- **§2.1 Syntax / §2.2 Semantics** — `include/t81/axion/policy.hpp`: `PolicyLexer`, `parse_policy()`, `Policy` struct.
+- **§2.3 VM Integration** — `kernel/axion/policy_engine.cpp`: `PolicyEngine::evaluate()` intercepts every TISC opcode; `SecurityFault` on deny.
+- **§2.4 Compiler Tooling** — `t81_vm_policy_parse_fail_closed_test` validates build-time rejection of policy-violating programs.
+- **§2.5 Guard & Loop Predicates** — `policy.hpp` extended predicates; `axion_ai_hooks_test` verifies runtime guard interception.
+- **§3 Rationale** — confirmed: deterministic s-expression evaluation avoids whitespace/ordering spoofing (§5 Security Considerations satisfied).
+
+Suite status at acceptance: **49/49 axion + ethics + tier + policy tests passing**.
 
 ______________________________________________________________________
