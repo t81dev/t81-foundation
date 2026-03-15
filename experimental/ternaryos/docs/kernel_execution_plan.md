@@ -689,6 +689,21 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 - CMake: `task_runner.cpp` added to `t81_dpe` sources; `t81_vm` added to link deps.
 - Suite: 17 passed, 0 failed.
 
+**AI Track — RFC-0032 Phase 5 [DONE]:**
+
+- C-06 (`evidence_collector.cpp`) promoted to `tests/determinism/evidence_collector.cpp`.
+  - Removed: `openssl/sha.h` → replaced with FNV-1a 64-bit (no external deps, integer-only).
+  - Removed: `std::chrono` timing fields from `ExecutionEvidence` (non-deterministic wall-clock).
+  - Removed: `nlohmann/json` → replaced with plain key=value text (`evidence-schema-v1`).
+  - `EvidenceCollector` class: `start_collection()`, `record_output()`, `record_trace()` (accepts `AIHookEngine::ai_trace()` directly), `record_metrics()`, `validate_determinism()`, `write_schema()`.
+  - `tests/determinism/README.md`: evidence-schema-v1 specification, FNV-1a algorithm, hash field table, example output.
+  - Gate tests: 15/15 passing [C06-01..06].
+- C-07 (`t81_ai_cli.cpp`) promoted to `tooling/cli/ai/t81_ai_cli.cpp`.
+  - Removed: all `std::this_thread::sleep_for()` calls, all `std::chrono` timing, `nlohmann/json`, all hardcoded mock metadata.
+  - Wired subsystems: `verify` → `load_model_via_tloadhash()` (Phase 3); `run` → `T81VmBackend::dispatch_embed()` (Phase 4); `quantize` → `quantize_threshold()` + `pack_ternary_to_base81()` (Phase 1); `policy test` → `PolicyEngine::evaluate()`; `benchmark` → dispatches all four AI opcodes via `T81VmBackend`, reports Axion verdict (no timing).
+  - Smoke verified: `benchmark` shows ATTN=axion-deny (tier<2), QMATMUL/EMBED/WLOAD=reached-vm; `verify` shows correct allow/deny trace events.
+- CMake targets: `t81_determinism_evidence_test` (CTest), `t81_ai_cli` (executable).
+
 **AI Track — RFC-0032 Phase 4 [DONE]:**
 
 - C-02 (`backend_adapter.cpp`) promoted to `core/vm/ai_backend/backend_adapter.cpp` (T81VmBackend).

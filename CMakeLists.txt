@@ -1392,6 +1392,10 @@ target_link_libraries(complex_demo PRIVATE t81_core asio)
 
 endif()
 
+# RFC-0032 Phase 5 (C-07) — promoted AI CLI tool (no sleep_for / no llama.cpp)
+add_executable(t81_ai_cli tooling/cli/ai/t81_ai_cli.cpp)
+target_link_libraries(t81_ai_cli PRIVATE t81_vm t81_axion t81_math_quantization t81_core)
+
 # =============================================================================
 # All tests — exactly as you wrote them
 # =============================================================================
@@ -2141,6 +2145,12 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   add_executable(backend_adapter_test tests/cpp/backend_adapter_test.cpp)
   target_link_libraries(backend_adapter_test PRIVATE t81_vm t81_axion t81_core)
   add_test(NAME backend_adapter_test COMMAND backend_adapter_test)
+
+  # RFC-0032 Phase 5 gate tests — EvidenceCollector (C-06)
+  add_executable(t81_determinism_evidence_test
+                 tests/determinism/evidence_collector.cpp)
+  target_link_libraries(t81_determinism_evidence_test PRIVATE t81_axion t81_core)
+  add_test(NAME t81_determinism_evidence_test COMMAND t81_determinism_evidence_test)
 
   add_executable(axion_policy_conformance_matrix_test
                  tests/cpp/axion_policy_conformance_matrix_test.cpp)
