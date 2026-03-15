@@ -184,4 +184,4 @@ The deterministic surface is defined in `docs/governance/DETERMINISM_SURFACE_REG
 
 ## License
 
-MIT License
+MIT License.
