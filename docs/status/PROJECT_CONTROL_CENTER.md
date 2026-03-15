@@ -70,7 +70,9 @@ Full decomposition: `DRIFT_DECOMPOSITION.md`
 
 | ID | Risk | Severity |
 | :--- | :--- | :--- |
-| R-01 | Determinism overclaim — registry boundary language omitted externally | High |
+| R-05 | AGI-facing surface growth outpacing promotion evidence updates | Medium |
+| R-06 | Documentation maintenance burden after reorganization | Low |
+| R-07 | Benchmark variability — false signal in `vm workload gate` guardrail | Low |
 
 Full register: `ACTIVE_RISKS.md`
 
