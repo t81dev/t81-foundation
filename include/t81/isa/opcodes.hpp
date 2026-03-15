@@ -211,6 +211,8 @@ enum class Opcode : std::uint8_t {
   VAdd,           // Elementwise add on handles: VAdd RD, RS1, RS2
   VFma,           // Fused multiply-accumulate: VFma RD, RS1, RS2  (RD = RS1*RS2 + RD)
   ReadIsaVersion, // Write ISA version constant: ReadIsaVersion RD
+  // RFC-0006 §2.3 — Deterministic GC safepoint
+  GcSafepoint,    // Explicit GC safepoint: GcSafepoint (no operands); triggers a DGC cycle
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -613,12 +615,14 @@ enum class Opcode : std::uint8_t {
       return "VFma";
     case Opcode::ReadIsaVersion:
       return "ReadIsaVersion";
+    case Opcode::GcSafepoint:
+      return "GcSafepoint";
   }
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::ReadIsaVersion) + 1> kAllOpcodes = [] {
-  std::array<Opcode, static_cast<std::size_t>(Opcode::ReadIsaVersion) + 1> values{};
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::GcSafepoint) + 1> kAllOpcodes = [] {
+  std::array<Opcode, static_cast<std::size_t>(Opcode::GcSafepoint) + 1> values{};
   for (std::size_t i = 0; i < values.size(); ++i) {
     values[i] = static_cast<Opcode>(i);
   }

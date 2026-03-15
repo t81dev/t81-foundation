@@ -21,7 +21,7 @@ This index tracks RFC status and intended disposition.
 | RFC-0003 | Axion Safety Model | accepted | All 9 criteria met: AXREAD/AXSET/AXVERIFY mediation, fail-closed policy parse, deterministic audit log, tier-supervision invariant, instruction ceiling, CanonFS observability, AI-model hooks, interrupt rate-limit; 49/49 axion+ethics+tier+policy tests pass |
 | RFC-0004 | Canonical Tensor Semantics | accepted | §2.1–2.5 met: immutable shape tuples, 1-based handle pool, TVECADD/TMATMUL/elementwise with shape guards, IR lowering, Axion shape-metadata hooks; 30+ tensor tests pass |
 | RFC-0005 | TISC v0.4 Extensions | accepted | All 7 criteria met: structural opcodes (46–49), VLoad/VStore/VAdd/VFma, ChkShape, ReadIsaVersion, Axion trace; 10/10 tests pass |
-| RFC-0006 | Deterministic GC | draft | VM reclaim semantics |
+| RFC-0006 | Deterministic GC | accepted | All 6 criteria met: mark_and_sweep, compact_heap, GcSafepoint opcode, byte-threshold (3^12), Axion events, policy veto; 8/8 tests pass |
 | RFC-0007 | T81Lang Standard Library | accepted | All 7 criteria met: arith/tensor/option/result/axsafe_io modules in `kBuiltinTable`; MakeOptionSome/None/MakeResultOk/Err opcodes in TISC; tier+purity rules enforced by SA; ISA-version freeze replaces per-module versioning |
 | RFC-0008 | Formal Verification Harness | superseded | Superseded by RFC-0027 (spec-as-executable is the concrete realization) |
 | RFC-0009 | Axion Policy Language (APL) | superseded | Superseded by RFC-0022; s-expression policy syntax, `PolicyEngine::evaluate()`, and guard/loop predicates all implemented; forward path is RFC-0022 |

@@ -2747,6 +2747,7 @@ public:
         state_.heap_frames.emplace_back(static_cast<std::int64_t>(addr),
                                         static_cast<std::int64_t>(size));
         state_.heap_ptr = addr + size;
+        heap_bytes_since_gc_ += size;  // RFC-0006 §2.3: byte-threshold accounting
         set_reg(insn.a, static_cast<std::int64_t>(addr), ValueTag::Int);
         update_flags(ctx.registers[insn.a]);
         log_memory_segment_access(insn.opcode, MemorySegmentKind::Heap, addr, size,
@@ -3787,6 +3788,14 @@ public:
         // TISC version 0.4 constant.
         set_reg(insn.a, 4, ValueTag::Int);
         update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::GcSafepoint: {
+        // RFC-0006 §2.3 — Explicit GC safepoint.
+        // Triggers a DGC cycle immediately; Axion policy may veto (SecurityFault).
+        if (auto gc_trap = run_gc_cycle_("safepoint"); gc_trap.has_value()) {
+          trap = gc_trap.value();
+        }
         break;
       }
       case t81::tisc::Opcode::VAdd: {
@@ -6064,8 +6073,14 @@ public:
       }
     }
     ++instructions_since_gc_;
-    if (instructions_since_gc_ >= kGcInterval) {
-      run_gc_cycle_("interval");
+    if (instructions_since_gc_ >= kGcInterval ||
+        heap_bytes_since_gc_   >= kGcThreshold) {
+      // RFC-0006 §2.3: fire on instruction-count interval OR byte threshold.
+      if (auto gc_trap = run_gc_cycle_(
+              heap_bytes_since_gc_ >= kGcThreshold ? "byte-threshold" : "interval");
+          gc_trap.has_value()) {
+        return t81::unexpected(gc_trap.value());
+      }
     }
 
     t81::vm::internal::sync_system_registers(state_, program_, instruction_count_,
@@ -6467,16 +6482,37 @@ private:
     return std::nullopt;
   }
 
-  void run_gc_cycle_(const char* reason) {
+  // RFC-0006 §2.3+§2.4 — Deterministic GC cycle.
+  // Returns a Trap if Axion policy vetoes the cycle (§2.4 policy veto path).
+  std::optional<Trap> run_gc_cycle_(const char* reason) {
+    const std::size_t heap_bytes_snapshot = heap_bytes_since_gc_;
     instructions_since_gc_ = 0;
+    heap_bytes_since_gc_   = 0;
+
+    // §2.4 Axion policy veto: evaluate before running the cycle.
+    // A Deny verdict halts execution with SecurityFault (GcFault path).
+    {
+      std::ostringstream payload;
+      payload << "reason=" << reason
+              << " heap_bytes=" << heap_bytes_snapshot
+              << " gc_cycle=" << (state_.gc_cycles + 1);
+      auto veto = eval_axion_call(t81::axion::reasons::kGcCycle,
+                                  static_cast<std::size_t>(state_.gc_cycles),
+                                  t81::tisc::Opcode::GcSafepoint,
+                                  payload.str());
+      if (veto.kind == t81::axion::VerdictKind::Deny) {
+        return Trap::SecurityFault;
+      }
+    }
+
     state_.gc_cycles++;
     t81::axion::Verdict verdict;
     verdict.kind = t81::axion::VerdictKind::Allow;
     std::ostringstream reason_stream;
-    // Format: 'GC cycle reason=[reason]'
     reason_stream << t81::axion::reasons::kGcCycle << " reason=" << reason;
     verdict.reason = reason_stream.str();
-    record_axion_event(t81::tisc::Opcode::Trap, static_cast<std::int32_t>(state_.gc_cycles),
+    record_axion_event(t81::tisc::Opcode::GcSafepoint,
+                       static_cast<std::int32_t>(state_.gc_cycles),
                        static_cast<std::int64_t>(state_.gc_cycles), verdict);
 
     auto reclaimed = t81::vm::internal::mark_and_sweep(state_);
@@ -6487,7 +6523,7 @@ private:
       reclaimed_reason << "GC reclaimed tensors=" << reclaimed.tensors
                        << " infinite_forms=" << reclaimed.infinite_forms;
       reclaimed_verdict.reason = reclaimed_reason.str();
-      record_axion_event(t81::tisc::Opcode::Trap, 0,
+      record_axion_event(t81::tisc::Opcode::GcSafepoint, 0,
                          static_cast<std::int64_t>(reclaimed.tensors + reclaimed.infinite_forms),
                          reclaimed_verdict);
     }
@@ -6495,6 +6531,7 @@ private:
     log_heap_compaction(state_.heap_ptr, state_.heap_frames.size());
     log_heap_relocation(state_.heap_ptr, state_.layout.heap.start, state_.heap_frames.size());
     t81::vm::internal::compact_heap(state_, state_.layout.heap.start);
+    return std::nullopt;
   }
 
   void log_heap_compaction(std::size_t heap_ptr, std::size_t heap_frames) {
@@ -6534,8 +6571,11 @@ private:
   std::unique_ptr<t81::axion::Engine> axion_engine_;
   std::unique_ptr<t81::canonfs::Driver> canonfs_driver_;
   t81::axion::DeterminismDetector* determinism_detector_{nullptr};
-  static constexpr std::size_t kGcInterval = 64;
+  static constexpr std::size_t kGcInterval  = 64;
+  /// RFC-0006 §2.3: canonical byte threshold = 3^12 = 531441 bytes.
+  static constexpr std::size_t kGcThreshold = 531441;
   std::size_t instructions_since_gc_{0};
+  std::size_t heap_bytes_since_gc_{0};
   std::size_t instruction_count_{0};
 
   // JIT components
