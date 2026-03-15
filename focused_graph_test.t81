@@ -1,0 +1,49 @@
+// Focused T81Graph test to check for DecodeFault
+fn test_t81graph_decodefault() -> i32 {
+    print("=== T81Graph DecodeFault Test ===");
+    
+    // Test Graph - This is the key one to test for DecodeFault
+    print("--- Graph Test ---");
+    var g: Vector[T81String] = std.collections.graph();
+    print("Graph created successfully");
+    
+    g = std.collections.graph_add_edge(g, "A", "B");
+    print("Added edge A->B");
+    
+    g = std.collections.graph_add_edge(g, "B", "C");
+    print("Added edge B->C");
+    
+    g = std.collections.graph_add_edge(g, "C", "A");
+    print("Added edge C->A (creating cycle)");
+    
+    // Test graph operations
+    let has_ab: bool = std.collections.graph_has_edge(g, "A", "B");
+    print("Has edge A->B: "); print(has_ab);
+    
+    let has_bc: bool = std.collections.graph_has_edge(g, "B", "C");
+    print("Has edge B->C: "); print(has_bc);
+    
+    let edge_count: i32 = std.collections.graph_edge_count(g);
+    print("Edge count: "); print(edge_count);
+    
+    let neighbors_a: Vector[T81String] = std.collections.graph_neighbors(g, "A");
+    print("Neighbors of A count: "); print(std.collections.len(neighbors_a));
+    
+    // Test graph serialization (this might trigger issues)
+    let graph_serial: T81String = std.collections.graph_canonical(g);
+    print("Graph canonical form: "); print(graph_serial);
+    
+    // Test edge removal
+    g = std.collections.graph_remove_edge(g, "B", "C");
+    print("Removed edge B->C");
+    
+    let edge_count_after: i32 = std.collections.graph_edge_count(g);
+    print("Edge count after removal: "); print(edge_count_after);
+    
+    print("--- T81Graph Tests Completed Successfully ---");
+    return 0;
+}
+
+fn main() -> i32 {
+    return test_t81graph_decodefault();
+}

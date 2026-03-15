@@ -34,11 +34,12 @@ The stack delivers:
 | :--- | :--- | :--- |
 | **TISC ISA** | ❄️ Frozen | Opcode semantics immutable under v1.x; freeze enforced by CI |
 | **Data Types** | ❄️ Frozen | BigInt, Float, Complex, Map, Set — bit-stable encoding; 2026-02-27 audit clean |
-| **T81VM** | ✅ Beta | Deterministic interpreter; Axion pre-dispatch isolation; binary_io OOM guard; 338 tests |
-| **T81Lang** | ✅ Beta | Typed AST, unified builtin registry (130 entries), IRGen extracted; 344/344 tests |
-| **Axion Governance Kernel** | ✅ Beta | Beta candidacy review PASSED 2026-03-15; P4 Safety & P5 Privileged Instruction satisfied; 49/49 tests |
+| **T81VM** | ✅ Beta | Beta |
+| **T81Lang** | ✅ Beta | Beta |
+| **axion** | ✅ Stable | Stable promotion complete 2026-03-15; P4 Safety & P5 Privileged Instruction satisfied; AX-M6 canonical reason strings; 54/54 tests (49/49 axion + 5/5 AX-M6) |
+| **Axion Governance Kernel** | ✅ Stable | Stable promotion complete 2026-03-15; P4 Safety & P5 Privileged Instruction satisfied; AX-M6 canonical reason strings; 54/54 tests (49/49 axion + 5/5 AX-M6) |
 | **TUI Frontends** | ✅ Accepted | `t81 studio` (human operator) + `t81 agent` (AI-native); FTXUI v5.0.0; RFC-0033 accepted 2026-03-15 |
-| **T81Graph** | 🔬 Experimental | VM opcode lowering + lang-side serialization wired; governed non-DCP |
+| **T81Graph** | ✅ Beta | VM opcode lowering + lang-side serialization wired; DCP verification complete; 6/6 tests |
 | **DPE (Parallel Execution)** | 🔬 Experimental | RFC-DPE-0002 accepted; task graph, delta buffer, epoch commit, cycle detection implemented |
 | **Axion OS Kernel** | 🔬 Experimental | TernaryOS: pager, scheduler, IPC, interrupt framework, QEMU x86_64 EFI lane operational |
 | **Cognitive Tiers** | 🔬 Experimental | Tiers 0–6 modelled; non-DCP; governed AGI research surface |
@@ -74,7 +75,7 @@ The stack delivers:
 
 **T81VM** — Deterministic TISC interpreter. Guarantees bit-identical output across platforms; Axion pre-dispatch isolation keeps governance hooks outside the hot execution path.
 
-**Axion Governance Kernel** — Policy engine that intercepts `AXREAD`, `AXSET`, `AXVERIFY`, and AI opcodes before any side effect. Fail-closed on policy parse failure. Beta-certified 2026-03-15 with 49/49 tests passing.
+**Axion Governance Kernel** — Policy engine that intercepts `AXREAD`, `AXSET`, `AXVERIFY`, and AI opcodes before any side effect. Fail-closed on policy parse failure. Stable-certified 2026-03-15 with 54/54 tests passing (49/49 axion + 5/5 AX-M6 canonical reason strings).
 
 **CanonFS** — Content-addressed filesystem. Stores all code objects, model weights, and runtime artifacts as immutable, hash-identified blobs. Provides provenance for determinism audits.
 
@@ -159,10 +160,11 @@ Verified platforms: **Linux x86_64**, **macOS ARM64**. Any divergence in VM trac
 | Milestone | Target | Description |
 | :--- | :--- | :--- |
 | C2 Month-Close | 2026-03-31 | Governance ledger audit; preflight PASS 2026-03-10 |
-| Axion Beta → RC review | 2026-06-30 | Close verbatim AX-M6 reason-string form + §2.5 policy subsystem separation |
+| Axion Stable promotion | ✅ **COMPLETED 2026-03-15** | AX-M6 canonical reason strings implemented; 54/54 tests passing; production-ready |
+| T81Graph Beta promotion | ✅ **COMPLETED 2026-03-15** | VM opcode lowering complete; DCP verification; 6/6 tests passing |
+| T81Lang spec promotion | 2026-05-15 | Bytecode deterministic compilation profile; full spec-section traceability |
 | RFC-00B5 interrupt policy | TBD | Actual interrupt handler behavior (policy dispatch, vector table wiring) |
 | TernaryOS bare-metal boot | TBD | x86_64 VirtualBox host execution + evidence return |
-| T81Lang spec promotion | 2026-05-15 | Bytecode deterministic compilation profile; full spec-section traceability |
 
 ---
 

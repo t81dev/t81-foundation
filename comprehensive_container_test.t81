@@ -1,0 +1,74 @@
+// Comprehensive container test to check for DecodeFault issues
+fn test_all_containers() -> i32 {
+    print("=== Comprehensive Container Test ===");
+    
+    // Test List (returns List[T81String], not Vector)
+    print("--- List Test ---");
+    let my_list: List[T81String] = std.collections.list();
+    let list2: List[T81String] = std.collections.push(my_list, "alpha");
+    let list3: List[T81String] = std.collections.push(list2, "beta");
+    print("List Size: "); print(std.collections.len(list3));
+    print("List First: "); print(std.collections.first(list3));
+    print("List Last: "); print(std.collections.last(list3));
+    
+    // Test Map
+    print("--- Map Test ---");
+    let my_map: Vector[T81String] = std.collections.map();
+    let map2: Vector[T81String] = std.collections.map_put(my_map, "key1", "value1");
+    let map3: Vector[T81String] = std.collections.map_put(map2, "key2", "value2");
+    print("Map Size: "); print(std.collections.map_size(map3));
+    print("Map has key1: "); print(std.collections.map_has(map3, "key1"));
+    let maybe_value: Option[T81String] = std.collections.map_get(map3, "key1");
+    print("Map value for key1: ");
+    if (std.option.is_some(maybe_value)) {
+        print(std.option.unwrap(maybe_value));
+    } else {
+        print("None");
+    }
+    
+    // Test Set
+    print("--- Set Test ---");
+    let my_set: Vector[T81String] = std.collections.set();
+    let set2: Vector[T81String] = std.collections.set_add(my_set, "item1");
+    let set3: Vector[T81String] = std.collections.set_add(set2, "item2");
+    print("Set Size: "); print(std.collections.set_size(set3));
+    print("Set has item1: "); print(std.collections.set_has(set3, "item1"));
+    
+    // Test Graph - This is the key one to test for DecodeFault
+    print("--- Graph Test ---");
+    let g: Vector[T81String] = std.collections.graph();
+    print("Graph created successfully");
+    
+    g = std.collections.graph_add_edge(g, "A", "B");
+    print("Added edge A->B");
+    
+    g = std.collections.graph_add_edge(g, "B", "C");
+    print("Added edge B->C");
+    
+    g = std.collections.graph_add_edge(g, "C", "A");
+    print("Added edge C->A (creating cycle)");
+    
+    // Test graph operations
+    let has_ab: bool = std.collections.graph_has_edge(g, "A", "B");
+    print("Has edge A->B: "); print(has_ab);
+    
+    let has_bc: bool = std.collections.graph_has_edge(g, "B", "C");
+    print("Has edge B->C: "); print(has_bc);
+    
+    let edge_count: i32 = std.collections.graph_edge_count(g);
+    print("Edge count: "); print(edge_count);
+    
+    let neighbors_a: Vector[T81String] = std.collections.graph_neighbors(g, "A");
+    print("Neighbors of A count: "); print(std.collections.len(neighbors_a));
+    
+    // Test graph serialization (this might trigger issues)
+    let graph_serial: T81String = std.collections.graph_canonical(g);
+    print("Graph canonical form: "); print(graph_serial);
+    
+    print("--- All Container Tests Completed Successfully ---");
+    return 0;
+}
+
+fn main() -> i32 {
+    return test_all_containers();
+}
