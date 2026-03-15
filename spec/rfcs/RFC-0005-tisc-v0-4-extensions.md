@@ -99,3 +99,23 @@ ______________________________________________________________________
    (e.g., `PARALLEL_FOR`), or does that belong in a later RFC?
 
 ______________________________________________________________________
+
+## Implementation Status Note (2026-03-15)
+
+**§2.1 Structural Opcodes — COMPLETE.**
+
+`MakeOptionSome` (opcode 46), `MakeOptionNone` (47), `MakeResultOk` (48), and `MakeResultErr` (49) are frozen in `include/t81/isa/opcodes.hpp` and handled in `core/vm/vm.cpp`. Their encodings are emitted by `core/isa/binary_emitter.cpp` and verified by `tests/cpp/tisc_opcode_family_semantics_test.cpp`, `tests/cpp/vm_state_transition_conformance_matrix_test.cpp`, and the broader VM determinism suite.
+
+**§2.2 Deterministic Vector Helpers (`VLOAD/VSTORE/VADD/VFMA`) — PENDING.**
+
+These opcodes are not yet implemented. Open question 1 (strided vs contiguous) must be resolved first.
+
+**§2.3 Tensor Shape Guards (`CHKSHAPE`) — PENDING.**
+
+Reserved for a future revision once the §2.2 vector helper design is settled.
+
+**§2.4 ISA Version Reporting (`READ_ISA_VERSION`) — PENDING.**
+
+`READ_ISA_VERSION` is specified but not yet emitted by the binary emitter or handled by the VM.
+
+This RFC remains **Draft** until §2.2–2.4 are implemented. A future revision (v0.2) will advance to Accepted once the vector helpers, shape guards, and ISA version opcode are complete. §2.1 is production-stable and the frozen opcode assignments MUST NOT change.
