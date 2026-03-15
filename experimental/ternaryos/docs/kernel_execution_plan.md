@@ -689,6 +689,21 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 - CMake: `task_runner.cpp` added to `t81_dpe` sources; `t81_vm` added to link deps.
 - Suite: 17 passed, 0 failed.
 
+**Slice 23 — RFC-DPE-0007: Epoch Execution Timeout [DONE]:**
+
+- `Aborted_Timeout` added to `KernelEpochStatus` enum.
+- `EpochTimedOut` added to `KernelCallRejection`.
+- `epoch_timeout_ms` (`std::optional<std::chrono::milliseconds>`) added to `KernelCallRequest` (guarded by `#ifdef T81_ENABLE_DPE`).
+- `axion_kernel_submit_epoch()` gains optional `timeout_ms` parameter (default `std::nullopt`); all existing callers unaffected.
+- `kernel_epoch.cpp`: `epoch_start = steady_clock::now()` captured before level loop; after each level's result collection, elapsed is checked and `Aborted_Timeout` returned if `elapsed >= *timeout_ms`.
+- `kernel_abi.cpp` `SubmitEpoch` dispatch: passes `request.epoch_timeout_ms` through to `axion_kernel_submit_epoch()`; maps `Aborted_Timeout → RetryLater/EpochTimedOut`.
+- `t81_ternaryos_epoch_timeout_test`: 9 assertions across 4 test functions.
+- `[DPE-08-01]`: nullopt timeout → Ok (baseline regression check).
+- `[DPE-08-02]`: 5 000 ms generous timeout → Ok.
+- `[DPE-08-03/04]`: 0 ms timeout → Aborted_Timeout + epochs_aborted/epoch_aborts incremented.
+- `[DPE-08-05/06]`: SubmitEpoch syscall with 0 ms → RetryLater/EpochTimedOut; epoch_committed=false.
+- RFC-DPE-0007 §7: timeout is a resource-bounding mechanism; EpochHash is never computed on timed-out epochs — replay determinism unaffected.
+
 **Slice 22 — RFC-00B6 §5.3.6: ClaimDevice / ReleaseDevice / QueryDevice as KernelCallKind [DONE]:**
 
 - `ClaimDevice`, `ReleaseDevice`, `QueryDevice` added to `KernelCallKind` enum.

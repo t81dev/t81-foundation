@@ -1682,15 +1682,18 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       const auto epoch_result = axion_kernel_submit_epoch(
           state,
           *request.epoch_graph,
-          *request.epoch_programs);
+          *request.epoch_programs,
+          /*gate=*/{},
+          /*pool=*/nullptr,
+          request.epoch_timeout_ms);
 
       switch (epoch_result.status) {
         case KernelEpochStatus::Ok:
-          result.status          = KernelCallStatus::Ok;
-          result.rejection       = KernelCallRejection::None;
+          result.status           = KernelCallStatus::Ok;
+          result.rejection        = KernelCallRejection::None;
           result.action_performed = true;
-          result.epoch_committed = true;
-          result.epoch_hash      = epoch_result.epoch_hash;
+          result.epoch_committed  = true;
+          result.epoch_hash       = epoch_result.epoch_hash;
           break;
         case KernelEpochStatus::Rejected_AcceptFailed:
           result.status    = KernelCallStatus::InvalidRequest;
@@ -1707,6 +1710,10 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
         case KernelEpochStatus::Aborted_PolicyFault:
           result.status    = KernelCallStatus::PolicyDenied;
           result.rejection = KernelCallRejection::EpochPolicyFault;
+          break;
+        case KernelEpochStatus::Aborted_Timeout:
+          result.status    = KernelCallStatus::RetryLater;
+          result.rejection = KernelCallRejection::EpochTimedOut;
           break;
       }
       return result;

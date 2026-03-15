@@ -19,6 +19,8 @@
 #include "experimental/dpe/thread_pool.hpp"
 #include "t81/isa/program.hpp"
 
+#include <chrono>
+#include <optional>
 #include <vector>
 
 namespace t81::ternaryos::kernel {
@@ -31,6 +33,7 @@ enum class KernelEpochStatus : uint8_t {
   Aborted_TaskFault,         ///< a task produced an out-of-region write or fault
   Aborted_ExclusiveConflict, ///< exclusive output region conflict at commit time
   Aborted_PolicyFault,       ///< a task's program was denied by the epoch policy gate (RFC-DPE-0003 §6.1)
+  Aborted_Timeout,           ///< epoch exceeded the per-epoch wall-clock budget (RFC-DPE-0007)
 };
 
 struct KernelEpochResult {
@@ -72,12 +75,14 @@ struct KernelEpochPolicyGate {
 // Submit an epoch graph for deterministic parallel execution.
 //
 // Parameters:
-//   state    — kernel runtime state (counters and epoch field updated in place)
-//   epoch    — the EpochGraph to execute; must satisfy accept_epoch()
-//   programs — one TISC Program per task, in the same order as epoch.tasks
-//   gate     — optional policy gate evaluated before each task (default: allow all)
-//   pool     — optional bounded thread pool (RFC-DPE-0006); when nullptr the
-//              RFC-DPE-0005 unbounded one-thread-per-task dispatch is used
+//   state      — kernel runtime state (counters and epoch field updated in place)
+//   epoch      — the EpochGraph to execute; must satisfy accept_epoch()
+//   programs   — one TISC Program per task, in the same order as epoch.tasks
+//   gate       — optional policy gate evaluated before each task (default: allow all)
+//   pool       — optional bounded thread pool (RFC-DPE-0006); when nullptr the
+//                RFC-DPE-0005 unbounded one-thread-per-task dispatch is used
+//   timeout_ms — optional wall-clock budget (RFC-DPE-0007); checked after each
+//                topological level; std::nullopt = no timeout
 //
 // On success (KernelEpochStatus::Ok):
 //   • state.epoch.epochs_committed and state.counters.epoch_commits are incremented
@@ -91,10 +96,11 @@ struct KernelEpochPolicyGate {
 //   • Aborted_PolicyFault additionally increments state.counters.policy_faults
 //     and records KernelAuditEventKind::EpochAbortedPolicyFault in the audit log
 [[nodiscard]] KernelEpochResult axion_kernel_submit_epoch(
-    KernelRuntimeState&                    state,
-    const t81::dpe::EpochGraph&            epoch,
-    const std::vector<t81::tisc::Program>& programs,
-    KernelEpochPolicyGate                  gate = {},
-    t81::dpe::DpeThreadPool*               pool = nullptr) noexcept;
+    KernelRuntimeState&                      state,
+    const t81::dpe::EpochGraph&              epoch,
+    const std::vector<t81::tisc::Program>&   programs,
+    KernelEpochPolicyGate                    gate       = {},
+    t81::dpe::DpeThreadPool*                 pool       = nullptr,
+    std::optional<std::chrono::milliseconds> timeout_ms = std::nullopt) noexcept;
 
 }  // namespace t81::ternaryos::kernel

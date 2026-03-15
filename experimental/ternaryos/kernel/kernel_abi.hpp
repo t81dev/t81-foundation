@@ -11,6 +11,7 @@
 #include "t81/isa/program.hpp"
 #endif
 
+#include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
@@ -190,6 +191,7 @@ enum class KernelCallRejection : uint8_t {
   EpochTaskFault,              ///< SubmitEpoch: a task faulted or did not halt
   EpochExclusiveConflict,      ///< SubmitEpoch: exclusive output region conflict at commit
   EpochPolicyFault,            ///< SubmitEpoch: policy gate denied a task
+  EpochTimedOut,               ///< SubmitEpoch: epoch exceeded wall-clock budget (RFC-DPE-0007)
 };
 
 struct KernelCallRequest {
@@ -211,8 +213,9 @@ struct KernelCallRequest {
   std::optional<ServiceId> service_id{};
   std::optional<std::string> service_name{};
 #ifdef T81_ENABLE_DPE
-  std::optional<t81::dpe::EpochGraph>            epoch_graph{};    ///< SubmitEpoch: epoch to execute
-  std::optional<std::vector<t81::tisc::Program>> epoch_programs{}; ///< SubmitEpoch: programs parallel to epoch.tasks
+  std::optional<t81::dpe::EpochGraph>            epoch_graph{};      ///< SubmitEpoch: epoch to execute
+  std::optional<std::vector<t81::tisc::Program>> epoch_programs{};   ///< SubmitEpoch: programs parallel to epoch.tasks
+  std::optional<std::chrono::milliseconds>       epoch_timeout_ms{}; ///< SubmitEpoch: per-epoch wall-clock budget (RFC-DPE-0007)
 #endif
 };
 

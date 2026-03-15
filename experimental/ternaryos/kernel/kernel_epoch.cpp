@@ -8,6 +8,7 @@
 #include "experimental/dpe/task_graph.hpp"
 #include "experimental/dpe/task_runner.hpp"
 
+#include <chrono>
 #include <map>
 #include <thread>
 #include <unordered_map>
@@ -15,11 +16,12 @@
 namespace t81::ternaryos::kernel {
 
 KernelEpochResult axion_kernel_submit_epoch(
-    KernelRuntimeState&                     state,
-    const t81::dpe::EpochGraph&             epoch,
-    const std::vector<t81::tisc::Program>&  programs,
-    KernelEpochPolicyGate                   gate,
-    t81::dpe::DpeThreadPool*                pool) noexcept {
+    KernelRuntimeState&                      state,
+    const t81::dpe::EpochGraph&              epoch,
+    const std::vector<t81::tisc::Program>&   programs,
+    KernelEpochPolicyGate                    gate,
+    t81::dpe::DpeThreadPool*                 pool,
+    std::optional<std::chrono::milliseconds> timeout_ms) noexcept {
 
   // ── §1: Validate epoch graph ──────────────────────────────────────────────
   const auto accept = t81::dpe::accept_epoch(epoch);
@@ -37,6 +39,9 @@ KernelEpochResult axion_kernel_submit_epoch(
   // ── §2: Execute tasks level-by-level; tasks within a level run in parallel
   //        (RFC-DPE-0005 §4).
   const auto levels = t81::dpe::topological_levels_epoch(epoch);
+
+  // RFC-DPE-0007: capture wall-clock start time for optional timeout budget.
+  const auto epoch_start = std::chrono::steady_clock::now();
 
   t81::dpe::DpeTaskRunner runner;
 
@@ -187,6 +192,17 @@ KernelEpochResult axion_kernel_submit_epoch(
       delta_sets[i].records = level_results[t].delta_records;
       state.counters.epoch_task_executions++;
       state.epoch.epoch_task_executions++;
+    }
+
+    // ── RFC-DPE-0007: per-level timeout check ────────────────────────────────
+    if (timeout_ms.has_value()) {
+      const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+          std::chrono::steady_clock::now() - epoch_start);
+      if (elapsed >= *timeout_ms) {
+        state.epoch.epochs_aborted++;
+        state.counters.epoch_aborts++;
+        return KernelEpochResult{KernelEpochStatus::Aborted_Timeout};
+      }
     }
   }
 
