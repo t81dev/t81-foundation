@@ -5,6 +5,7 @@
 #include "kernel_runtime_support.hpp"
 
 #include "../sched/scheduler.hpp"
+#include "t81/canonfs/canon_driver.hpp"
 
 #include <cstdint>
 #include <optional>
@@ -226,6 +227,13 @@ struct KernelRuntimeStatusView {
   std::optional<ServiceId> last_service_transition_id{};
   std::optional<KernelAuditEventKind> last_service_transition_kind{};
   std::optional<uint64_t> last_service_transition_sequence{};
+  // DPE epoch summary (RFC-DPE-0003 §7) — populated when T81_ENABLE_DPE is active.
+  uint64_t epoch_submissions{0};
+  uint64_t epoch_commits{0};
+  uint64_t epoch_aborts{0};
+  uint64_t epoch_task_executions{0};
+  std::optional<uint64_t> last_committed_epoch_id{};
+  std::optional<t81::hash::CanonHash81> last_committed_epoch_hash{};
 };
 
 struct KernelProcessGroupStatusView {

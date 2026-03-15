@@ -593,6 +593,16 @@ if(T81_ENABLE_TERNARYOS)
   target_link_libraries(t81_ternaryos_hal PUBLIC t81_core t81_axion)
   target_compile_features(t81_ternaryos_hal PUBLIC ${T81_CXX_STD_FEATURE})
 
+  # DPE kernel wiring — compiled into t81_ternaryos_hal only when both flags are ON.
+  if(T81_ENABLE_DPE)
+    target_sources(t81_ternaryos_hal PRIVATE
+      experimental/ternaryos/kernel/kernel_epoch.cpp)
+    target_include_directories(t81_ternaryos_hal PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+    target_link_libraries(t81_ternaryos_hal PUBLIC t81_dpe)
+    target_compile_definitions(t81_ternaryos_hal PUBLIC T81_ENABLE_DPE=1)
+  endif()
+
   add_library(t81_ternaryos_shell STATIC
     experimental/ternaryos/shell/shell_session.cpp)
   target_include_directories(t81_ternaryos_shell PUBLIC
@@ -1162,6 +1172,18 @@ if(T81_ENABLE_TERNARYOS)
       experimental/ternaryos/tests/shell_session_test.cpp)
     target_link_libraries(t81_ternaryos_shell_session_test PRIVATE t81_ternaryos_shell)
     add_test(NAME t81_ternaryos_shell_session_test COMMAND t81_ternaryos_shell_session_test)
+
+    if(T81_ENABLE_DPE)
+      add_executable(t81_ternaryos_epoch_submission_test
+        experimental/ternaryos/tests/epoch_submission_test.cpp)
+      target_link_libraries(t81_ternaryos_epoch_submission_test PRIVATE t81_ternaryos_hal)
+      add_test(NAME t81_ternaryos_epoch_submission_test COMMAND t81_ternaryos_epoch_submission_test)
+
+      add_executable(t81_ternaryos_epoch_policy_test
+        experimental/ternaryos/tests/epoch_policy_test.cpp)
+      target_link_libraries(t81_ternaryos_epoch_policy_test PRIVATE t81_ternaryos_hal)
+      add_test(NAME t81_ternaryos_epoch_policy_test COMMAND t81_ternaryos_epoch_policy_test)
+    endif()
   endif()
 endif()
 
@@ -1201,6 +1223,16 @@ if(T81_ENABLE_DPE)
       experimental/dpe/tests/epoch_commit_test.cpp)
     target_link_libraries(t81_dpe_epoch_commit_test PRIVATE t81_dpe)
     add_test(NAME t81_dpe_epoch_commit_test COMMAND t81_dpe_epoch_commit_test)
+
+    add_executable(t81_dpe_epoch_dag_test
+      experimental/dpe/tests/epoch_dag_test.cpp)
+    target_link_libraries(t81_dpe_epoch_dag_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_epoch_dag_test COMMAND t81_dpe_epoch_dag_test)
+
+    add_executable(t81_dpe_epoch_parallel_test
+      experimental/dpe/tests/epoch_parallel_test.cpp)
+    target_link_libraries(t81_dpe_epoch_parallel_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_epoch_parallel_test COMMAND t81_dpe_epoch_parallel_test)
   endif()
 endif()
 

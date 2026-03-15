@@ -51,7 +51,18 @@ struct EpochCommitResult {
   }
 };
 
-// ── commit_epoch ─────────────────────────────────────────────────────────────
+// ── TaskDeltaSet ─────────────────────────────────────────────────────────────
+//
+// Lightweight delta container produced by DpeTaskRunner::run_direct().
+// Used by axion_kernel_submit_epoch() to bridge the runner → commit pipeline
+// without requiring live DeltaBuffer objects.
+struct TaskDeltaSet {
+  TaskId id{};
+  bool   faulted{false};
+  std::vector<DeltaRecord> records{};
+};
+
+// ── commit_epoch (DeltaBuffer overload) ──────────────────────────────────────
 //
 // Executes the canonical commit algorithm for a completed epoch
 // (RFC-DPE-0003 §2–5).
@@ -73,5 +84,14 @@ struct EpochCommitResult {
 [[nodiscard]] EpochCommitResult commit_epoch(
     const EpochGraph& epoch,
     const std::vector<std::pair<TaskId, const DeltaBuffer*>>& task_buffers) noexcept;
+
+// ── commit_epoch (TaskDeltaSet overload) ─────────────────────────────────────
+//
+// Kernel-facing overload used by axion_kernel_submit_epoch().
+// Accepts pre-collected TaskDeltaSet records (from DpeTaskRunner::run_direct)
+// instead of live DeltaBuffer pointers; semantics are identical.
+[[nodiscard]] EpochCommitResult commit_epoch(
+    const EpochGraph& epoch,
+    const std::vector<TaskDeltaSet>& delta_sets) noexcept;
 
 }  // namespace t81::dpe

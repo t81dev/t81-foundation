@@ -195,6 +195,17 @@ struct KernelRuntimeState {
     std::optional<uint64_t> last_boot_critical_resolution_sequence{};
   };
 
+  /// Per-epoch runtime accounting (RFC-DPE-0003 §7).
+  /// Populated by axion_kernel_submit_epoch() when T81_ENABLE_DPE is active.
+  struct EpochRuntimeState {
+    uint64_t epochs_submitted{0};
+    uint64_t epochs_committed{0};
+    uint64_t epochs_aborted{0};
+    uint64_t epoch_task_executions{0};
+    std::optional<uint64_t>                   last_committed_epoch_id{};
+    std::optional<t81::hash::CanonHash81>     last_committed_epoch_hash{};
+  };
+
   struct Counters {
     uint64_t loop_iterations{0};
     uint64_t scheduler_ticks{0};
@@ -248,6 +259,11 @@ struct KernelRuntimeState {
     uint64_t pager_service_mappings{0};    ///< page mappings supplied via RequestPageMapping by a PagerService-capable thread (RFC-00B7 §3.2)
     uint64_t pager_handoff_wakes{0};       ///< PagerService threads woken by a pager handoff dispatch (RFC-00B7 §3.3)
     uint64_t pager_service_resumptions{0}; ///< victim threads un-quarantined via ResumePageFaultedThread (RFC-00B7 §3.4)
+    // DPE epoch counters (RFC-DPE-0003) — populated when T81_ENABLE_DPE is active.
+    uint64_t epoch_submissions{0};
+    uint64_t epoch_commits{0};
+    uint64_t epoch_aborts{0};
+    uint64_t epoch_task_executions{0};
   };
 
   std::string platform_id;
@@ -285,6 +301,7 @@ struct KernelRuntimeState {
   std::unique_ptr<t81::ternaryos::dev::IBlockDevice> published_executable_store_device;
   std::unique_ptr<t81::canonfs::Driver> published_executable_canonfs;
   PagerWorkerState pager_worker{};
+  EpochRuntimeState epoch{};
   t81::vm::ThreadContext cpu_context{};
   Counters counters{};
   std::optional<KernelFaultRecord> last_delivered_fault{};

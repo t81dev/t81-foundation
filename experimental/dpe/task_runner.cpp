@@ -16,12 +16,26 @@ static constexpr std::size_t kWordsPerPage = kDpePageSize / sizeof(std::int64_t)
 
 DpeTaskResult DpeTaskRunner::run_direct(
     const TaskDescriptor& task,
-    const t81::tisc::Program& program) noexcept {
+    const t81::tisc::Program& program,
+    const DpeTaskInputSnapshot& snapshot) noexcept {
 
   DpeTaskResult result;
 
   auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
+
+  // ── Load predecessor input snapshot (RFC-DPE-0004 §3.2) ──────────────────
+  // Each page in the snapshot is unpacked (little-endian int64_t words) and
+  // written into VM flat memory at the corresponding word positions.
+  for (const auto& [word_start, page_bytes] : snapshot.pages) {
+    for (std::size_t w = 0; w < kWordsPerPage; ++w) {
+      const std::size_t byte_off = w * sizeof(std::int64_t);
+      if (byte_off + sizeof(std::int64_t) > kDpePageSize) break;
+      std::int64_t word_val = 0;
+      std::memcpy(&word_val, page_bytes.data() + byte_off, sizeof(word_val));
+      vm->set_memory_word(static_cast<std::size_t>(word_start) + w, word_val);
+    }
+  }
 
   // ── Snapshot output regions before execution ──────────────────────────────
   // base_tva is treated as a flat word index into State::memory for the

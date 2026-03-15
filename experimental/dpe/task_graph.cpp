@@ -110,6 +110,18 @@ TaskId compute_task_id(const TaskDescriptor& task) noexcept {
   return TaskId{t81::hash::hash_bytes(std::span<const std::byte>(bytes))};
 }
 
+// ── program_identity ─────────────────────────────────────────────────────────
+//
+// Returns the TaskId of `task` with its dep_task_ids cleared (RFC-DPE-0002 §4).
+// This is the stable program identity used as the dep reference in dependent
+// tasks' dep_task_ids arrays (see RFC-DPE-0004 §2.1).
+
+TaskId program_identity(const TaskDescriptor& task) noexcept {
+  TaskDescriptor stripped = task;
+  stripped.dep_task_ids.clear();
+  return compute_task_id(stripped);
+}
+
 // ── DeltaBuffer ───────────────────────────────────────────────────────────────
 
 DeltaBuffer::DeltaBuffer(const TaskDescriptor& task, TaskId tid) noexcept
@@ -168,20 +180,6 @@ DeltaWriteResult DeltaBuffer::write(
 // ── accept_epoch ─────────────────────────────────────────────────────────────
 
 namespace {
-
-// Compute a "program identity" TaskId for cycle detection: the TaskId of the
-// task with its dep_task_ids cleared.  This makes the identity stable
-// regardless of how deps are set, which is required for dep_task_ids to
-// resolve to same-epoch tasks in the adjacency graph.
-//
-// Workflow invariant: callers build tasks without deps, record their program
-// IDs, then set dep_task_ids using those program IDs.  accept_epoch strips
-// deps before hashing so that the index matches.
-TaskId program_identity(const TaskDescriptor& task) noexcept {
-  TaskDescriptor stripped = task;
-  stripped.dep_task_ids.clear();
-  return compute_task_id(stripped);
-}
 
 // Assign a stable index 0..N-1 to each task's program identity.
 std::unordered_map<std::string, std::size_t> build_task_index(
@@ -294,6 +292,140 @@ EpochAcceptResult accept_epoch(const EpochGraph& epoch) noexcept {
   }
 
   return {EpochAcceptStatus::Ok, std::nullopt};
+}
+
+// ── topological_sort_epoch ────────────────────────────────────────────────────
+//
+// Kahn's algorithm over the program-identity dependency graph (RFC-DPE-0004 §2).
+// Tie-breaking among simultaneously-ready tasks: ascending canonical TaskId.
+// Returns an empty vector if the graph contains a cycle (should not occur
+// after a successful accept_epoch()).
+
+std::vector<std::size_t> topological_sort_epoch(
+    const EpochGraph& epoch) noexcept {
+  const std::size_t N = epoch.tasks.size();
+  if (N == 0) return {};
+
+  // Build program-identity index: prog_id_string → array index.
+  const auto idx = build_task_index(epoch);
+
+  // Pre-compute canonical TaskIds for stable tie-breaking.
+  std::vector<TaskId> task_ids(N);
+  for (std::size_t i = 0; i < N; ++i) {
+    task_ids[i] = compute_task_id(epoch.tasks[i]);
+  }
+
+  // Build adjacency list (dep_idx → successor_idx) and in-degree array.
+  // dep_task_ids hold program-identity TaskIds of predecessor tasks.
+  std::vector<std::size_t> in_degree(N, 0);
+  std::vector<std::vector<std::size_t>> adj(N);
+  for (std::size_t i = 0; i < N; ++i) {
+    for (const auto& dep : epoch.tasks[i].dep_task_ids) {
+      auto it = idx.find(dep.hash.to_string());
+      if (it == idx.end()) continue;  // external / unknown dep — skip
+      const std::size_t dep_idx = it->second;
+      adj[dep_idx].push_back(i);
+      ++in_degree[i];
+    }
+  }
+
+  // Comparator: ascending canonical TaskId.
+  const auto cmp = [&](std::size_t a, std::size_t b) {
+    return task_ids[a] < task_ids[b];
+  };
+
+  // Seed the ready set with all zero-in-degree tasks, sorted canonically.
+  std::vector<std::size_t> ready;
+  ready.reserve(N);
+  for (std::size_t i = 0; i < N; ++i) {
+    if (in_degree[i] == 0) ready.push_back(i);
+  }
+  std::sort(ready.begin(), ready.end(), cmp);
+
+  std::vector<std::size_t> order;
+  order.reserve(N);
+
+  while (!ready.empty()) {
+    // Consume the smallest task (canonical TaskId) from the front.
+    const std::size_t node = ready.front();
+    ready.erase(ready.begin());
+    order.push_back(node);
+
+    // Satisfy successors; insert newly-ready ones in sorted position.
+    for (const std::size_t nbr : adj[node]) {
+      if (--in_degree[nbr] == 0) {
+        const auto pos = std::lower_bound(ready.begin(), ready.end(), nbr, cmp);
+        ready.insert(pos, nbr);
+      }
+    }
+  }
+
+  if (order.size() != N) return {};  // cycle detected
+  return order;
+}
+
+// ── topological_levels_epoch ─────────────────────────────────────────────────
+//
+// Level-aware variant of Kahn's algorithm (RFC-DPE-0005 §3).
+// result[k] = task indices at topological level k, sorted by canonical TaskId.
+// Returns empty outer vector on cycle.
+
+std::vector<std::vector<std::size_t>> topological_levels_epoch(
+    const EpochGraph& epoch) noexcept {
+  const std::size_t N = epoch.tasks.size();
+  if (N == 0) return {};
+
+  const auto idx = build_task_index(epoch);
+
+  std::vector<TaskId> task_ids(N);
+  for (std::size_t i = 0; i < N; ++i) {
+    task_ids[i] = compute_task_id(epoch.tasks[i]);
+  }
+
+  std::vector<std::size_t> in_degree(N, 0);
+  std::vector<std::vector<std::size_t>> adj(N);
+  for (std::size_t i = 0; i < N; ++i) {
+    for (const auto& dep : epoch.tasks[i].dep_task_ids) {
+      auto it = idx.find(dep.hash.to_string());
+      if (it == idx.end()) continue;
+      const std::size_t dep_idx = it->second;
+      adj[dep_idx].push_back(i);
+      ++in_degree[i];
+    }
+  }
+
+  const auto cmp = [&](std::size_t a, std::size_t b) {
+    return task_ids[a] < task_ids[b];
+  };
+
+  // Seed level 0.
+  std::vector<std::size_t> current;
+  for (std::size_t i = 0; i < N; ++i) {
+    if (in_degree[i] == 0) current.push_back(i);
+  }
+  std::sort(current.begin(), current.end(), cmp);
+
+  std::vector<std::vector<std::size_t>> levels;
+  std::size_t processed = 0;
+
+  while (!current.empty()) {
+    processed += current.size();
+    levels.push_back(current);
+
+    std::vector<std::size_t> next;
+    for (const std::size_t node : current) {
+      for (const std::size_t nbr : adj[node]) {
+        if (--in_degree[nbr] == 0) {
+          next.push_back(nbr);
+        }
+      }
+    }
+    std::sort(next.begin(), next.end(), cmp);
+    current = std::move(next);
+  }
+
+  if (processed != N) return {};  // cycle detected
+  return levels;
 }
 
 }  // namespace t81::dpe

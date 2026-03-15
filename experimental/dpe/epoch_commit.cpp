@@ -122,4 +122,77 @@ EpochCommitResult commit_epoch(
   return result;
 }
 
+// ── commit_epoch (TaskDeltaSet overload) ─────────────────────────────────────
+
+EpochCommitResult commit_epoch(
+    const EpochGraph& epoch,
+    const std::vector<TaskDeltaSet>& delta_sets) noexcept {
+
+  EpochCommitResult result;
+
+  // ── §6.1 Abort if any task faulted ───────────────────────────────────────
+  for (const auto& ds : delta_sets) {
+    if (ds.faulted) {
+      result.status          = EpochCommitStatus::Aborted_TaskFault;
+      result.faulting_task_id = ds.id;
+      return result;
+    }
+  }
+
+  // ── §2.1 Sort tasks in canonical TaskId order (ascending) ────────────────
+  auto sorted = delta_sets;
+  std::sort(sorted.begin(), sorted.end(),
+            [](const TaskDeltaSet& a, const TaskDeltaSet& b) {
+              return a.id < b.id;
+            });
+
+  // ── §2.2 Apply deltas to staging area ────────────────────────────────────
+  for (const auto& ds : sorted) {
+    std::vector<const DeltaRecord*> sorted_recs;
+    sorted_recs.reserve(ds.records.size());
+    for (const auto& r : ds.records) sorted_recs.push_back(&r);
+    std::sort(sorted_recs.begin(), sorted_recs.end(),
+              [](const DeltaRecord* a, const DeltaRecord* b) {
+                return a->tva < b->tva;
+              });
+    for (const auto* rec : sorted_recs) {
+      result.committed_pages[rec->tva] = rec->value;
+    }
+  }
+
+  // ── §5.1 EpochHash computation ────────────────────────────────────────────
+  // Build committed_deltas_hash from TaskDeltaSets directly.
+  std::vector<std::byte> deltas_data;
+  for (const auto& ds : sorted) {
+    // TaskId ∥ delta_hash(T)
+    for (auto b : ds.id.hash.bytes) deltas_data.push_back(static_cast<std::byte>(b));
+
+    // delta_hash(T): sort records by TVA, then hash (tva ∥ value)
+    std::vector<const DeltaRecord*> sorted_recs;
+    sorted_recs.reserve(ds.records.size());
+    for (const auto& r : ds.records) sorted_recs.push_back(&r);
+    std::sort(sorted_recs.begin(), sorted_recs.end(),
+              [](const DeltaRecord* a, const DeltaRecord* b) {
+                return a->tva < b->tva;
+              });
+
+    std::vector<std::byte> rec_data;
+    rec_data.reserve(sorted_recs.size() * (8 + kDpePageSize));
+    for (const auto* r : sorted_recs) {
+      append_u64_le(rec_data, r->tva);
+      for (auto b : r->value) rec_data.push_back(b);
+    }
+    const auto dh = t81::hash::hash_bytes(std::span<const std::byte>(rec_data));
+    for (auto b : dh.bytes) deltas_data.push_back(static_cast<std::byte>(b));
+  }
+  const auto committed_deltas_hash =
+      t81::hash::hash_bytes(std::span<const std::byte>(deltas_data));
+
+  result.epoch_hash = compute_epoch_hash(
+      epoch.epoch_id, epoch.input_snapshot, committed_deltas_hash);
+
+  result.status = EpochCommitStatus::Ok;
+  return result;
+}
+
 }  // namespace t81::dpe

@@ -6017,6 +6017,12 @@ public:
     record_axion_event(t81::tisc::Opcode::Nop, idx, val_data, verdict);
   }
 
+  void set_memory_word(std::size_t word_index, std::int64_t value) noexcept override {
+    if (word_index >= state_.memory.size()) return;
+    state_.memory[word_index]      = value;
+    state_.memory_tags[word_index] = ValueTag::Int;
+  }
+
   void set_fault_injections(std::vector<FaultInjection> faults) override {
     state_.pending_faults = std::move(faults);
   }

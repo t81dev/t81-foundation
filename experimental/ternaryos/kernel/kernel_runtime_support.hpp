@@ -72,6 +72,7 @@ enum class KernelAuditEventKind : uint8_t {
   ServiceMarkedHealthy,
   CapabilityGranted,
   CapabilityRevoked,
+  EpochAbortedPolicyFault,  ///< a task's program was denied by the epoch policy gate (RFC-DPE-0003 §6.1)
 };
 
 struct KernelAuditRecord {

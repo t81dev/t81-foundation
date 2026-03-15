@@ -689,6 +689,99 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 - CMake: `task_runner.cpp` added to `t81_dpe` sources; `t81_vm` added to link deps.
 - Suite: 17 passed, 0 failed.
 
+**Slice 19 — RFC-DPE-0005: Level-Parallel Epoch Execution [DONE]:**
+
+- `topological_levels_epoch()` added to `task_graph.hpp/.cpp`: level-aware
+  Kahn's BFS producing `vector<vector<size_t>>`; each inner vector is one
+  topological level sorted by canonical TaskId (RFC-DPE-0005 §3).
+- `axion_kernel_submit_epoch()` reworked from topo-sort loop to level loop:
+  for each level, pre-flight (policy gate + snapshot construction) is
+  sequential; then one `std::thread` is launched per task; threads joined
+  before the next level begins (RFC-DPE-0005 §4).
+- Thread-creation failure caught with `...`; affected task runs inline as
+  fallback (RFC-DPE-0005 §7); `axion_kernel_submit_epoch()` remains
+  `noexcept`.
+- `t81_dpe_epoch_parallel_test`: 21 assertions across 4 test functions.
+- `[DPE-05-01]`: level assignment correct for single task, chain, independent
+  pair, and diamond.
+- `[DPE-05-02]`: two independent tasks (level 0) each produce correct
+  committed values.
+- `[DPE-05-03]`: fan-out T0→{T1,T2} — T1 and T2 each receive T0's delta
+  via input snapshot and produce correct transformed values (101, 102).
+- `[DPE-05-04]`: EpochHash identical regardless of delta_set submission
+  order — canonical commit determinism preserved under parallelism.
+- RFC-DPE-0005 is now **accepted** and fully implemented.
+
+**Slice 18 — RFC-DPE-0004: DAG-Ordered Multi-Task Epoch Execution [DONE]:**
+
+- `program_identity()` promoted from anonymous namespace to public function in
+  `task_graph.hpp/.cpp` (RFC-DPE-0004 §2.1 stable program-identity reference).
+- `topological_sort_epoch()` added to `task_graph.hpp/.cpp`: Kahn's algorithm
+  over the program-identity dependency graph; tie-breaking by ascending canonical
+  TaskId (RFC-DPE-0004 §2.2); returns empty vector on cycle.
+- `DpeTaskInputSnapshot` struct added to `task_runner.hpp`: maps `uint64_t
+  word_start → page_bytes`; populated from predecessor delta records before task
+  execution (RFC-DPE-0004 §4).
+- `DpeTaskRunner::run_direct()` updated to accept optional `DpeTaskInputSnapshot`;
+  pages are written into VM flat memory via `set_memory_word()` after
+  `load_program()` and before output-region pre-snapshot (RFC-DPE-0004 §3.2).
+- `axion_kernel_submit_epoch()` reworked: builds program-identity index, calls
+  `topological_sort_epoch()`, accumulates predecessor deltas into
+  `DpeTaskInputSnapshot` per task (higher canonical TaskId wins on TVA conflict),
+  passes snapshot into `run_direct()`.
+- `t81_dpe_epoch_dag_test`: 13 assertions across 3 test functions.
+- `[DPE-04-01]`: T0 writes 42 to page P; T1's input snapshot contains 42 before T1 runs.
+- `[DPE-04-02]`: T1 reads 42, adds 1, commits 43 — page P contains V', not V.
+- `[DPE-04-03]`: Reversed array order (T1-first, T0-second) → identical committed
+  state — execution follows DAG, not array order.
+- `[DPE-04-04]`: Independent task (no deps) unaffected; topo sort returns [0].
+- RFC-DPE-0004 is now **accepted** and fully implemented.
+
+**Slice 17 — DPE Policy Audit Wiring / [DPE-03-06] [DONE]:**
+
+- `KernelAuditEventKind::EpochAbortedPolicyFault` added to `kernel_runtime_support.hpp`.
+- `KernelEpochStatus::Aborted_PolicyFault` added to `kernel_epoch.hpp`.
+- `KernelEpochPolicyGate` struct added to `kernel_epoch.hpp`: raw function pointer
+  and `user_data`; default-constructed gate (fn == nullptr) allows all tasks.
+- `axion_kernel_submit_epoch()` gains optional `gate` parameter (default `{}`);
+  gate is evaluated before each task — denial records `EpochAbortedPolicyFault` in
+  the audit log, increments `state.counters.policy_faults`, aborts immediately.
+- Existing callers (`epoch_submission_test`) remain source-compatible (default gate).
+- `t81_ternaryos_epoch_policy_test`: 15 assertions across 4 test functions.
+- `[DPE-03-06-01]`: policy denial → `Aborted_PolicyFault`.
+- `[DPE-03-06-02]`: audit log contains `EpochAbortedPolicyFault`; `last_audit_event` set.
+- `[DPE-03-06-03]`: `counters.policy_faults` incremented.
+- `[DPE-03-06-04]`: `epochs_committed` unchanged on policy abort.
+- `[DPE-03-06-05]`: allow-all gate does not affect normal epoch execution.
+- `[DPE-03-06-06]`: first-task denial short-circuits — gate called once, not twice.
+- RFC-DPE-0003 `[DPE-03-06]` is now **met**; only `[DPE-03-05]` (T81Float strict path,
+  deferred to RFC-0030) remains open.
+
+**Slice 16 — Kernel EpochRuntimeState Wiring [DONE]:**
+
+- `EpochRuntimeState` struct added to `KernelRuntimeState` (after `pager_worker{}`):
+  `epochs_submitted`, `epochs_committed`, `epochs_aborted`, `epoch_task_executions`,
+  `last_committed_epoch_id`, `last_committed_epoch_hash`.
+- Epoch counters mirrored in `Counters` struct (for `KernelRuntimeStatusView` exposure).
+- `KernelRuntimeStatusView` extended with `epoch_submissions`, `epoch_commits`,
+  `epoch_aborts`, `epoch_task_executions`, `last_committed_epoch_id`,
+  `last_committed_epoch_hash` (RFC-DPE-0003 §7).
+- `make_runtime_view()` updated to populate epoch fields from state.
+- `TaskDeltaSet` struct + `commit_epoch(EpochGraph, vector<TaskDeltaSet>)` overload
+  added to `epoch_commit.hpp/cpp` — kernel-facing bridge from `DpeTaskRunner` to
+  commit engine without live `DeltaBuffer` objects.
+- `kernel_epoch.hpp` / `kernel_epoch.cpp`:
+  `axion_kernel_submit_epoch(KernelRuntimeState&, EpochGraph, vector<Program>)` —
+  validates via `accept_epoch()` → runs tasks via `DpeTaskRunner::run_direct()` →
+  commits via `commit_epoch(TaskDeltaSet)` → updates counters and epoch state.
+- `t81_ternaryos_epoch_submission_test`: 22 assertions across 4 test functions.
+- `[AC-22s-01/02]`: counters and last_committed_epoch_id/hash set after successful epoch.
+- `[AC-22s-03]`: `make_runtime_view()` reflects epoch counters.
+- `[AC-22s-04]`: faulted (non-halting) task aborts epoch; committed counter unchanged.
+- `[AC-22s-05]`: consecutive epochs accumulate counters correctly.
+- CMake: `kernel_epoch.cpp` added to `t81_ternaryos_hal` via `target_sources` when
+  both `T81_ENABLE_TERNARYOS=ON` and `T81_ENABLE_DPE=ON`; `t81_dpe` linked in.
+
 **Slice 12 — First EL0→EL1 SVC Roundtrip [DONE] (commit 69fcc987):**
 
 - `[AC-22r]` `test_kernel_el0_svc_roundtrip()` — 28 assertions.

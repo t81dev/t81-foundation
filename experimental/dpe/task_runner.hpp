@@ -19,9 +19,20 @@
 
 #include <array>
 #include <cstdint>
+#include <map>
 #include <vector>
 
 namespace t81::dpe {
+
+// ── DpeTaskInputSnapshot ──────────────────────────────────────────────────────
+//
+// Predecessor delta pages to pre-load into VM memory before a task runs
+// (RFC-DPE-0004 §3–4).  key = word start in State::memory (= tva for
+// single-page output regions where tva == base_tva).
+
+struct DpeTaskInputSnapshot {
+  std::map<uint64_t, std::array<std::byte, kDpePageSize>> pages{};
+};
 
 // ── DpeTaskResult ─────────────────────────────────────────────────────────────
 
@@ -46,9 +57,14 @@ public:
   /// Returns the final register file and any DeltaRecords produced by stores
   /// to declared output regions.  When output_regions is empty (the [DPE-02-05]
   /// case) delta_records will always be empty.
+  /// Execute `program` with an optional predecessor input snapshot.
+  /// When `snapshot` is non-empty each page is written into VM memory
+  /// (via set_memory_word()) after load_program() and before the
+  /// output-region pre-snapshot is taken (RFC-DPE-0004 §3.2).
   [[nodiscard]] DpeTaskResult run_direct(
       const TaskDescriptor& task,
-      const t81::tisc::Program& program) noexcept;
+      const t81::tisc::Program& program,
+      const DpeTaskInputSnapshot& snapshot = {}) noexcept;
 };
 
 }  // namespace t81::dpe

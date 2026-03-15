@@ -28,6 +28,9 @@ public:
   virtual std::expected<void, Trap> run_to_halt(std::size_t max_steps = 100000) = 0;
   virtual const State& state() const = 0;
   virtual void set_register(int idx, std::int64_t value, ValueTag tag = ValueTag::Int) = 0;
+  /// Write a single word into flat VM memory at `word_index`.
+  /// No-op if `word_index` is out of range.  Must be called after load_program().
+  virtual void set_memory_word(std::size_t word_index, std::int64_t value) noexcept = 0;
   virtual std::int64_t load_weights_tensor(std::string_view name) = 0;
   virtual const t81::weights::NativeTensor* weights_tensor(std::int64_t handle) const = 0;
 

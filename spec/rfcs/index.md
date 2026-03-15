@@ -63,7 +63,9 @@ This index tracks RFC status and intended disposition.
 | :--- | :--- | :--- | :--- |
 | RFC-DPE-0001 | Deterministic Parallel Execution — Vision and Motivation | accepted | Informational; vocabulary and principles for the DPE series |
 | RFC-DPE-0002 | TISC Task Graph Primitives | accepted | All §5 criteria met; DpeTaskRunner + [DPE-02-05] (single-task epoch ≡ direct TISC execution) proved in Slice 14 via `task_runner_test` |
-| RFC-DPE-0003 | Epoch Execution and Canonical Commit | accepted | [DPE-03-01..04] met by hosted commit engine in Slice 15; [DPE-03-05..06] deferred (RFC-0030 / kernel epoch wiring) |
+| RFC-DPE-0003 | Epoch Execution and Canonical Commit | accepted | [DPE-03-01..04] met (Slice 15); kernel wiring + [AC-22s] (Slice 16); [DPE-03-06] met via KernelEpochPolicyGate + EpochAbortedPolicyFault audit event (Slice 17); [DPE-03-05] deferred (RFC-0030) |
+| RFC-DPE-0004 | DAG-Ordered Multi-Task Epoch Execution | accepted | [DPE-04-01..04] met (Slice 18): topological_sort_epoch() + DpeTaskInputSnapshot + predecessor delta propagation; proved by `t81_dpe_epoch_dag_test` |
+| RFC-DPE-0005 | Level-Parallel Epoch Execution | accepted | [DPE-05-01..04] met (Slice 19): topological_levels_epoch() + std::thread level dispatch + noexcept fallback; proved by `t81_dpe_epoch_parallel_test` |
 
 ## Experimental RFCs (A-series)
 

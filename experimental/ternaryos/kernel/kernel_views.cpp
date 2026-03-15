@@ -624,6 +624,13 @@ KernelRuntimeStatusView make_runtime_view(const KernelRuntimeState& state) {
       .last_service_transition_id = latest_service_transition.service_id,
       .last_service_transition_kind = latest_service_transition.kind,
       .last_service_transition_sequence = latest_service_transition.sequence,
+      // DPE epoch summary (RFC-DPE-0003 §7)
+      .epoch_submissions       = state.counters.epoch_submissions,
+      .epoch_commits           = state.counters.epoch_commits,
+      .epoch_aborts            = state.counters.epoch_aborts,
+      .epoch_task_executions   = state.counters.epoch_task_executions,
+      .last_committed_epoch_id   = state.epoch.last_committed_epoch_id,
+      .last_committed_epoch_hash = state.epoch.last_committed_epoch_hash,
   };
 }
 

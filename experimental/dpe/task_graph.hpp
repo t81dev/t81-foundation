@@ -194,4 +194,30 @@ struct EpochAcceptResult {
 ///   4. no exclusive output region conflicts between tasks
 [[nodiscard]] EpochAcceptResult accept_epoch(const EpochGraph& epoch) noexcept;
 
+// ── Dependency graph utilities ─────────────────────────────────────────────────
+
+/// Returns the program-identity TaskId of a task: the TaskId computed with
+/// dep_task_ids cleared.  This is the stable identity used as the value in
+/// dep_task_ids of dependent tasks (RFC-DPE-0002 §4 workflow invariant).
+[[nodiscard]] TaskId program_identity(const TaskDescriptor& task) noexcept;
+
+/// Returns task indices in a valid topological execution order
+/// (RFC-DPE-0004 §2.1): every predecessor appears before all its successors.
+///
+/// Tie-breaking among tasks with equal in-degree is by ascending canonical
+/// TaskId (RFC-DPE-0004 §2.2).  Returns an empty vector if the epoch graph
+/// contains a cycle (should not occur after accept_epoch()).
+[[nodiscard]] std::vector<std::size_t> topological_sort_epoch(
+    const EpochGraph& epoch) noexcept;
+
+/// Partition the epoch into topological levels (RFC-DPE-0005 §3).
+/// result[k] contains the task indices at level k in ascending canonical
+/// TaskId order.  Tasks within the same level have no mutual dependency and
+/// may execute concurrently.
+///
+/// Returns an empty outer vector if the graph contains a cycle (should not
+/// occur after accept_epoch()).
+[[nodiscard]] std::vector<std::vector<std::size_t>> topological_levels_epoch(
+    const EpochGraph& epoch) noexcept;
+
 }  // namespace t81::dpe
