@@ -689,6 +689,45 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 - CMake: `task_runner.cpp` added to `t81_dpe` sources; `t81_vm` added to link deps.
 - Suite: 17 passed, 0 failed.
 
+**Slice 21 — RFC-DPE-0003 §10 / RFC-DPE-0006 §4: SubmitEpoch Kernel Syscall Promotion [DONE]:**
+
+- `SubmitEpoch` added to `KernelCallKind` enum (guarded by `#ifdef T81_ENABLE_DPE`).
+- `epoch_graph` / `epoch_programs` fields added to `KernelCallRequest` (guarded).
+- `epoch_committed` / `epoch_hash` fields added to `KernelCallResult` (guarded).
+- `MissingEpochGraph`, `MissingEpochPrograms`, `EpochAcceptFailed`, `EpochTaskFault`,
+  `EpochExclusiveConflict`, `EpochPolicyFault` added to `KernelCallRejection`.
+- `SubmitEpoch` dispatch case in `axion_kernel_call()`: validates presence of
+  `epoch_graph` and `epoch_programs`; delegates to `axion_kernel_submit_epoch()`;
+  maps `KernelEpochStatus` to `KernelCallStatus` / `KernelCallRejection`.
+- `t81_ternaryos_epoch_syscall_test`: 20 assertions across 6 test functions.
+- `[DPE-07-01]`: valid single-task epoch → Ok, epoch_committed=true, non-zero hash.
+- `[DPE-07-02]`: missing epoch_graph → MissingEpochGraph.
+- `[DPE-07-03]`: missing epoch_programs → MissingEpochPrograms.
+- `[DPE-07-04]`: non-halting task → EpochTaskFault; epoch_committed=false.
+- `[DPE-07-05]`: consecutive epochs produce distinct hashes.
+- `[DPE-07-06]`: Yield succeeds before and after SubmitEpoch (caller context stable).
+
+**Slice 20 — RFC-DPE-0006: Bounded Thread Pool [DONE]:**
+
+- `DpeThreadPool` class added to `experimental/dpe/thread_pool.hpp/.cpp`:
+  N worker threads, `std::queue` + `std::mutex` + two `condition_variable`s
+  (`cv_` for workers, `idle_cv_` for `wait_idle()`), `pending_` counter.
+- `submit()` enqueues a `std::function<void()>`, increments `pending_`, notifies
+  one worker; returns false if pool is stopped. `noexcept`.
+- `wait_idle()` blocks until `pending_ == 0`. `noexcept`.
+- `shutdown()` sets `stopped_`, notifies all workers, joins all threads.
+  Idempotent. Called by destructor.
+- `axion_kernel_submit_epoch()` gains optional `DpeThreadPool* pool` parameter
+  (default nullptr = RFC-DPE-0005 unbounded behavior, fully backwards-compatible).
+  When pool != nullptr, tasks are submitted to the pool; pool submission failure
+  falls back to inline execution.
+- `t81_dpe_thread_pool_test`: 22 assertions across 4 test functions.
+- `[DPE-06-01]`: 4 tasks, 2-worker pool — all 4 complete with correct values.
+- `[DPE-06-02]`: EpochHash with 2-worker pool == EpochHash with unbounded dispatch.
+- `[DPE-06-03]`: 1-worker pool serialises 3 tasks correctly.
+- `[DPE-06-04]`: Destructor (with and without pending tasks) no crash/hang.
+- RFC-DPE-0006 is now **accepted** and fully implemented.
+
 **Slice 19 — RFC-DPE-0005: Level-Parallel Epoch Execution [DONE]:**
 
 - `topological_levels_epoch()` added to `task_graph.hpp/.cpp`: level-aware

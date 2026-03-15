@@ -16,6 +16,7 @@
 
 #include "experimental/dpe/epoch_commit.hpp"
 #include "experimental/dpe/task_graph.hpp"
+#include "experimental/dpe/thread_pool.hpp"
 #include "t81/isa/program.hpp"
 
 #include <vector>
@@ -75,6 +76,8 @@ struct KernelEpochPolicyGate {
 //   epoch    — the EpochGraph to execute; must satisfy accept_epoch()
 //   programs — one TISC Program per task, in the same order as epoch.tasks
 //   gate     — optional policy gate evaluated before each task (default: allow all)
+//   pool     — optional bounded thread pool (RFC-DPE-0006); when nullptr the
+//              RFC-DPE-0005 unbounded one-thread-per-task dispatch is used
 //
 // On success (KernelEpochStatus::Ok):
 //   • state.epoch.epochs_committed and state.counters.epoch_commits are incremented
@@ -91,6 +94,7 @@ struct KernelEpochPolicyGate {
     KernelRuntimeState&                    state,
     const t81::dpe::EpochGraph&            epoch,
     const std::vector<t81::tisc::Program>& programs,
-    KernelEpochPolicyGate                  gate = {}) noexcept;
+    KernelEpochPolicyGate                  gate = {},
+    t81::dpe::DpeThreadPool*               pool = nullptr) noexcept;
 
 }  // namespace t81::ternaryos::kernel

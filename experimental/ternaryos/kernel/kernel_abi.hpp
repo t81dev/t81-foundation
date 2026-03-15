@@ -5,8 +5,15 @@
 #include "../hal/hal.hpp"
 #include "../ipc/canon_message.hpp"
 
+#ifdef T81_ENABLE_DPE
+#include "experimental/dpe/task_graph.hpp"
+#include "experimental/dpe/epoch_commit.hpp"
+#include "t81/isa/program.hpp"
+#endif
+
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace t81::ternaryos::kernel {
 
@@ -113,6 +120,10 @@ enum class KernelCallKind : uint8_t {
   WaitForPagerHandoff,
   // RFC-00B7 §3.4 — un-quarantine a pager-faulted thread after its TVA is mapped
   ResumePageFaultedThread,
+#ifdef T81_ENABLE_DPE
+  // RFC-DPE-0003 §10 / RFC-DPE-0006 — submit a DPE epoch graph for execution
+  SubmitEpoch,
+#endif
 };
 
 enum class KernelCallStatus : uint8_t {
@@ -165,6 +176,12 @@ enum class KernelCallRejection : uint8_t {
   MissingPagerFault,           ///< RequestPageMapping: target AS has no recorded last_pager_fault (RFC-00B7 §3.2)
   TargetNotQuarantined,        ///< ResumePageFaultedThread: target thread is not quarantined or has no pager fault (RFC-00B7 §3.4)
   PagerFaultNotResolved,       ///< ResumePageFaultedThread: fault TVA is not yet mapped in the page table (RFC-00B7 §3.4)
+  MissingEpochGraph,           ///< SubmitEpoch: epoch_graph not provided in request
+  MissingEpochPrograms,        ///< SubmitEpoch: epoch_programs not provided in request
+  EpochAcceptFailed,           ///< SubmitEpoch: accept_epoch() rejected the EpochGraph
+  EpochTaskFault,              ///< SubmitEpoch: a task faulted or did not halt
+  EpochExclusiveConflict,      ///< SubmitEpoch: exclusive output region conflict at commit
+  EpochPolicyFault,            ///< SubmitEpoch: policy gate denied a task
 };
 
 struct KernelCallRequest {
@@ -184,6 +201,10 @@ struct KernelCallRequest {
   std::optional<KernelThreadSpawnDescriptor> spawn_descriptor{};
   std::optional<ServiceId> service_id{};
   std::optional<std::string> service_name{};
+#ifdef T81_ENABLE_DPE
+  std::optional<t81::dpe::EpochGraph>            epoch_graph{};    ///< SubmitEpoch: epoch to execute
+  std::optional<std::vector<t81::tisc::Program>> epoch_programs{}; ///< SubmitEpoch: programs parallel to epoch.tasks
+#endif
 };
 
 struct KernelCallResult {
@@ -209,6 +230,10 @@ struct KernelCallResult {
   bool service_registered{false};
   bool pager_mapping_supplied{false};  ///< set by RequestPageMapping on success (RFC-00B7 §3.2)
   bool pager_thread_resumed{false};    ///< set by ResumePageFaultedThread when victim thread is un-quarantined (RFC-00B7 §3.4)
+#ifdef T81_ENABLE_DPE
+  bool epoch_committed{false};                          ///< set by SubmitEpoch on Ok
+  std::optional<t81::hash::CanonHash81> epoch_hash{};  ///< EpochHash when epoch_committed == true
+#endif
   bool service_has_entry_descriptor{false};
   bool service_suspended{false};
   bool service_unhealthy{false};

@@ -5,6 +5,10 @@
 #include "kernel_main.hpp"
 #include "../dev/canon_store.hpp"
 
+#ifdef T81_ENABLE_DPE
+#include "kernel_epoch.hpp"
+#endif
+
 namespace t81::ternaryos::kernel {
 
 namespace {
@@ -1554,6 +1558,57 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
       result.pager_thread_resumed = true;
       return result;
     }
+#ifdef T81_ENABLE_DPE
+    case KernelCallKind::SubmitEpoch: {
+      // RFC-DPE-0003 §10 / RFC-DPE-0006 §4 — submit a DPE epoch graph for
+      // deterministic parallel execution through the kernel ABI boundary.
+      //
+      // No capability check: any caller may submit an epoch (policy enforcement
+      // is the responsibility of the KernelEpochPolicyGate, not a capability).
+      if (!request.epoch_graph.has_value()) {
+        result.status    = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingEpochGraph;
+        return result;
+      }
+      if (!request.epoch_programs.has_value()) {
+        result.status    = KernelCallStatus::InvalidRequest;
+        result.rejection = KernelCallRejection::MissingEpochPrograms;
+        return result;
+      }
+
+      const auto epoch_result = axion_kernel_submit_epoch(
+          state,
+          *request.epoch_graph,
+          *request.epoch_programs);
+
+      switch (epoch_result.status) {
+        case KernelEpochStatus::Ok:
+          result.status          = KernelCallStatus::Ok;
+          result.rejection       = KernelCallRejection::None;
+          result.action_performed = true;
+          result.epoch_committed = true;
+          result.epoch_hash      = epoch_result.epoch_hash;
+          break;
+        case KernelEpochStatus::Rejected_AcceptFailed:
+          result.status    = KernelCallStatus::InvalidRequest;
+          result.rejection = KernelCallRejection::EpochAcceptFailed;
+          break;
+        case KernelEpochStatus::Aborted_TaskFault:
+          result.status    = KernelCallStatus::InvalidRequest;
+          result.rejection = KernelCallRejection::EpochTaskFault;
+          break;
+        case KernelEpochStatus::Aborted_ExclusiveConflict:
+          result.status    = KernelCallStatus::Conflict;
+          result.rejection = KernelCallRejection::EpochExclusiveConflict;
+          break;
+        case KernelEpochStatus::Aborted_PolicyFault:
+          result.status    = KernelCallStatus::PolicyDenied;
+          result.rejection = KernelCallRejection::EpochPolicyFault;
+          break;
+      }
+      return result;
+    }
+#endif
     case KernelCallKind::ReadFaultInbox: {
       KernelRuntimeState::ThreadRuntimeState* target_thread_state = nullptr;
       if (auto invalid =

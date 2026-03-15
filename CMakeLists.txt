@@ -1183,6 +1183,12 @@ if(T81_ENABLE_TERNARYOS)
         experimental/ternaryos/tests/epoch_policy_test.cpp)
       target_link_libraries(t81_ternaryos_epoch_policy_test PRIVATE t81_ternaryos_hal)
       add_test(NAME t81_ternaryos_epoch_policy_test COMMAND t81_ternaryos_epoch_policy_test)
+
+      # RFC-DPE-0003 §10 / RFC-DPE-0006 §4 — SubmitEpoch KernelCallKind ABI tests [DPE-07]
+      add_executable(t81_ternaryos_epoch_syscall_test
+        experimental/ternaryos/tests/epoch_syscall_test.cpp)
+      target_link_libraries(t81_ternaryos_epoch_syscall_test PRIVATE t81_ternaryos_hal)
+      add_test(NAME t81_ternaryos_epoch_syscall_test COMMAND t81_ternaryos_epoch_syscall_test)
     endif()
   endif()
 endif()
@@ -1200,6 +1206,7 @@ if(T81_ENABLE_DPE)
     experimental/dpe/task_graph.cpp
     experimental/dpe/task_runner.cpp
     experimental/dpe/epoch_commit.cpp
+    experimental/dpe/thread_pool.cpp
   )
   target_include_directories(t81_dpe PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -1233,6 +1240,11 @@ if(T81_ENABLE_DPE)
       experimental/dpe/tests/epoch_parallel_test.cpp)
     target_link_libraries(t81_dpe_epoch_parallel_test PRIVATE t81_dpe)
     add_test(NAME t81_dpe_epoch_parallel_test COMMAND t81_dpe_epoch_parallel_test)
+
+    add_executable(t81_dpe_thread_pool_test
+      experimental/dpe/tests/thread_pool_test.cpp)
+    target_link_libraries(t81_dpe_thread_pool_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_thread_pool_test COMMAND t81_dpe_thread_pool_test)
   endif()
 endif()
 

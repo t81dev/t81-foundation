@@ -52,8 +52,8 @@ static t81::ternaryos::hal::BootContext make_test_boot_ctx() {
   ctx.ethics_boot_required = false;
   ctx.kernel_load_address  = 0x0000'0000'0800'0000ULL;
   MemoryRegion r;
-  r.base     = 0;
-  r.length   = 0x0000'0000'1000'0000ULL;
+  r.base_phys  = 0;
+  r.size_bytes = 0x0000'0000'1000'0000ULL;
   r.writable = true;
   ctx.memory_map.push_back(r);
   return ctx;

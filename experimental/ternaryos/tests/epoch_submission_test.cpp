@@ -51,8 +51,8 @@ static t81::ternaryos::hal::BootContext make_test_boot_ctx() {
   ctx.ethics_boot_required = false;
   ctx.kernel_load_address  = 0x0000'0000'0800'0000ULL;
   MemoryRegion r;
-  r.base    = 0x0000'0000'0000'0000ULL;
-  r.length  = 0x0000'0000'1000'0000ULL;  // 256 MiB simulated
+  r.base_phys  = 0x0000'0000'0000'0000ULL;
+  r.size_bytes = 0x0000'0000'1000'0000ULL;  // 256 MiB simulated
   r.writable = true;
   ctx.memory_map.push_back(r);
   return ctx;
@@ -145,12 +145,14 @@ static void test_runtime_view_reflects_epoch_state(KernelRuntimeState& state) {
 static void test_faulted_task_aborts_epoch(KernelRuntimeState& state) {
   std::printf("\n[AC-22s-04] Task that does not halt aborts the epoch\n");
 
-  // An empty program (no instructions, not even Halt) will not halt cleanly.
-  // The DpeTaskRunner sets halted=false when the VM does not reach Halt.
+  // A program that triggers an immediate BoundsFault trap (Load from invalid
+  // address 0x7FFF). run_to_halt() exits via the trap path before setting
+  // state_.halted, so the task runner sees halted=false → faulted task.
   // axion_kernel_submit_epoch() treats !halted as faulted.
   const uint64_t epoch_id = 200;
   const auto epoch = make_trivial_epoch(epoch_id);
-  t81::tisc::Program bad_program;  // empty: no instructions
+  t81::tisc::Program bad_program;
+  bad_program.insns = {{t81::tisc::Opcode::Load, 1, 0x7FFF}};
 
   const uint64_t commits_before = state.epoch.epochs_committed;
   const uint64_t aborts_before  = state.epoch.epochs_aborted;

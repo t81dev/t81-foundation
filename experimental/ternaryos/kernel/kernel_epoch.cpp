@@ -18,7 +18,8 @@ KernelEpochResult axion_kernel_submit_epoch(
     KernelRuntimeState&                     state,
     const t81::dpe::EpochGraph&             epoch,
     const std::vector<t81::tisc::Program>&  programs,
-    KernelEpochPolicyGate                   gate) noexcept {
+    KernelEpochPolicyGate                   gate,
+    t81::dpe::DpeThreadPool*                pool) noexcept {
 
   // ── §1: Validate epoch graph ──────────────────────────────────────────────
   const auto accept = t81::dpe::accept_epoch(epoch);
@@ -119,36 +120,63 @@ KernelEpochResult axion_kernel_submit_epoch(
       return KernelEpochResult{KernelEpochStatus::Aborted_PolicyFault};
     }
 
-    // ── Parallel dispatch: one thread per prepared task ───────────────────────
-    // Each thread writes only to delta_sets[i] — no shared mutable state.
-    // Thread-creation failure falls back to inline execution (§7).
+    // ── Parallel dispatch ─────────────────────────────────────────────────────
+    // Each task writes only to its own slot in level_results — no shared state.
+    // Two modes (RFC-DPE-0006 §4):
+    //   pool != nullptr → submit to bounded DpeThreadPool + wait_idle()
+    //   pool == nullptr → one std::thread per task (RFC-DPE-0005 unbounded)
 
     const std::size_t n = prepared.size();
     std::vector<t81::dpe::DpeTaskResult> level_results(n);
 
-    std::vector<std::thread> threads;
-    threads.reserve(n);
-
-    for (std::size_t t = 0; t < n; ++t) {
-      if (prepared[t].skip) continue;
-      const std::size_t  task_idx  = prepared[t].idx;
-      const auto&        snap      = prepared[t].snapshot;
-      const auto&        task      = epoch.tasks[task_idx];
-      const auto&        prog      = programs[task_idx];
-
-      try {
-        threads.emplace_back(
-            [&runner, &task, &prog, &snap, &level_results, t]() {
-              level_results[t] = runner.run_direct(task, prog, snap);
-            });
-      } catch (...) {
-        // Fallback: run inline if thread creation fails (RFC-DPE-0005 §7).
-        level_results[t] = runner.run_direct(task, prog, snap);
+    if (pool != nullptr) {
+      // ── Bounded pool dispatch (RFC-DPE-0006) ──────────────────────────────
+      for (std::size_t t = 0; t < n; ++t) {
+        if (prepared[t].skip) continue;
+        const std::size_t task_idx = prepared[t].idx;
+        bool submitted = false;
+        try {
+          submitted = pool->submit(
+              [&runner, &epoch, &programs, &prepared, &level_results, t, task_idx]() {
+                level_results[t] = runner.run_direct(
+                    epoch.tasks[task_idx],
+                    programs[task_idx],
+                    prepared[t].snapshot);
+              });
+        } catch (...) {}
+        if (!submitted) {
+          // Fallback: pool stopped or submission failed — run inline.
+          level_results[t] = runner.run_direct(
+              epoch.tasks[task_idx], programs[task_idx], prepared[t].snapshot);
+        }
       }
-    }
+      pool->wait_idle();
+    } else {
+      // ── Unbounded one-thread-per-task dispatch (RFC-DPE-0005) ─────────────
+      std::vector<std::thread> threads;
+      threads.reserve(n);
 
-    for (auto& th : threads) {
-      if (th.joinable()) th.join();
+      for (std::size_t t = 0; t < n; ++t) {
+        if (prepared[t].skip) continue;
+        const std::size_t task_idx = prepared[t].idx;
+        try {
+          threads.emplace_back(
+              [&runner, &epoch, &programs, &prepared, &level_results, t, task_idx]() {
+                level_results[t] = runner.run_direct(
+                    epoch.tasks[task_idx],
+                    programs[task_idx],
+                    prepared[t].snapshot);
+              });
+        } catch (...) {
+          // Thread creation failed — run inline (RFC-DPE-0005 §7).
+          level_results[t] = runner.run_direct(
+              epoch.tasks[task_idx], programs[task_idx], prepared[t].snapshot);
+        }
+      }
+
+      for (auto& th : threads) {
+        if (th.joinable()) th.join();
+      }
     }
 
     // ── Collect results ───────────────────────────────────────────────────────
