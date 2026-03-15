@@ -294,6 +294,8 @@ add_library(t81_vm STATIC
   core/vm/runtime_state_helpers.cpp
   core/vm/gc_helpers.cpp
   core/vm/tensor_helpers.cpp
+  # RFC-0032 Phase 4 — promoted AI VM backend adapter (C-02)
+  core/vm/ai_backend/backend_adapter.cpp
 )
 target_include_directories(t81_vm PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -2134,6 +2136,11 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   add_executable(axion_ai_hooks_test tests/cpp/axion_ai_hooks_test.cpp)
   target_link_libraries(axion_ai_hooks_test PRIVATE t81_axion t81_core)
   add_test(NAME axion_ai_hooks_test COMMAND axion_ai_hooks_test)
+
+  # RFC-0032 Phase 4 gate tests — T81VmBackend (C-02)
+  add_executable(backend_adapter_test tests/cpp/backend_adapter_test.cpp)
+  target_link_libraries(backend_adapter_test PRIVATE t81_vm t81_axion t81_core)
+  add_test(NAME backend_adapter_test COMMAND backend_adapter_test)
 
   add_executable(axion_policy_conformance_matrix_test
                  tests/cpp/axion_policy_conformance_matrix_test.cpp)

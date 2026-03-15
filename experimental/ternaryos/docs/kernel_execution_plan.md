@@ -689,6 +689,20 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 - CMake: `task_runner.cpp` added to `t81_dpe` sources; `t81_vm` added to link deps.
 - Suite: 17 passed, 0 failed.
 
+**AI Track — RFC-0032 Phase 4 [DONE]:**
+
+- C-02 (`backend_adapter.cpp`) promoted to `core/vm/ai_backend/backend_adapter.cpp` (T81VmBackend).
+  - Removed: `LlamaCppBackend`, `OnnxRuntimeBackend`, all `std::this_thread::sleep_for()` calls, all `std::chrono` timing fields, `nlohmann/json` dependency.
+  - `include/t81/vm/ai_backend/backend_adapter.hpp`: `T81VmBackend` class + `AiDispatchResult` struct.
+  - `core/vm/ai_backend/backend_adapter.cpp`: each dispatch builds a synthetic `[<opcode>, Halt]` TISC program, creates a fresh VM with `AIHookEngine(PolicyEngine(policy_))` attached, loads program, sets register operands, runs to halt, returns result. No external inference runtime.
+  - `run_ai_opcode()`: calls `make_interpreter_vm(std::move(hook))`, then `vm->run_to_halt()`; on SecurityFault extracts deny reason from `state().axion_log`.
+- `core/vm/ai_backend/backend_adapter.cpp` added to `t81_vm` CMake sources.
+- `tests/cpp/backend_adapter_test.cpp`: 9/9 passing [C02-01..05].
+  - ATTN with Tier0 → SecurityFault (Axion tier gate fires, not llama.cpp) ✓
+  - deny_reason mentions "tier" or "attn_guard" ✓
+  - QMATMUL allowed by Axion → DecodeFault (VM reached, not SecurityFault) ✓
+  - EMBED allowed by Axion → DecodeFault (VM reached, not SecurityFault) ✓
+
 **AI Track — RFC-0032 Phase 3 [DONE]:**
 
 - C-04 (`axion_hooks.cpp`) promoted to `kernel/axion/ai_hooks.cpp` (AIHookEngine + factory).
