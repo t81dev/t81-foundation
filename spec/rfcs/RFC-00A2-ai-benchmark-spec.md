@@ -362,3 +362,34 @@ ______________________________________________________________________
 - [MLPerf Reference](https://mlcommons.org/en/benchmark/)
 - [T81 Determinism Guarantees](RFC-0002-deterministic-execution-contract.md)
 - [Deterministic Evidence Protocol](RFC-00A1-deterministic-evidence-protocol.md)
+
+______________________________________________________________________
+
+## Implementation Status Note (2026-03-15)
+
+**Status: NOT IMPLEMENTED — specification only.**
+
+None of the `t81 ai benchmark` CLI commands exist. The `t81 ai` command hierarchy
+(defined in RFC-00A7) is itself not implemented, so all CLI surfaces in this RFC
+inherit that gap.
+
+Specific implementation gaps:
+
+| Requirement | Status |
+| :--- | :--- |
+| `t81 ai benchmark` CLI commands | **NOT IMPLEMENTED** — `t81 ai` hierarchy absent |
+| JSON benchmark report format | **NOT IMPLEMENTED** — no producer or consumer |
+| Canonical metric collection (TTFT, TPOT, throughput) | **NOT IMPLEMENTED** — no AI inference runner wired to metric collection |
+| Determinism validation (`t81 ai verify-determinism`) | **NOT IMPLEMENTED** |
+| CI/CD GitHub Actions workflow | **NOT IMPLEMENTED** — no `.github/workflows/ai-benchmark.yml` |
+| Environment documentation capture | **NOT IMPLEMENTED** |
+
+**What does exist:** `T81_BUILD_BENCHMARKS` CMake flag gates VM-level
+microbenchmarks in `tests/` (instruction dispatch, hash performance). These
+are not AI workload benchmarks and do not produce the JSON report format
+specified here.
+
+**Dependency:** This RFC requires RFC-00A7's `t81 ai` CLI to be implemented
+first. Graduation path: implement RFC-00A7 CLI skeleton → wire benchmark
+subcommands → implement metric collection against the llama.cpp adapter
+(RFC-00A5) → produce JSON reports → add CI job.
