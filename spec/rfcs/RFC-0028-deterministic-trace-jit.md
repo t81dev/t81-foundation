@@ -77,6 +77,49 @@ Maintains full Axion policy visibility through synchronous state materialization
 *   **Relaxed Determinism Profiles:** Allowing the JIT to deviate from bit-exact interpreter results for performance. Explicitly rejected as it violates the foundational principles defined in RFC-0001 and RFC-0002.
 
 # References
-*   RFC-0001: Architecture Principles
-*   RFC-0002: Deterministic Execution Contract
-*   T81 VM Specification (`t81vm-spec.md`)
+
+* RFC-0001: Architecture Principles
+* RFC-0002: Deterministic Execution Contract
+* T81 VM Specification (`t81vm-spec.md`)
+
+______________________________________________________________________
+
+## Implementation Status Note (2026-03-15)
+
+**§1 Shadow Execution — PARTIAL.**
+
+`runtime/jit/jit_compiler.cpp` (961 lines) implements a `ThreadedJitTrace`
+class that dispatches TISC instructions inline and is exercised against the
+reference interpreter by `tests/cpp/jit_trace_equivalence_test.cpp` (430
+assertions). Register and memory state are compared after trace execution.
+`JITShadowMode` harness and per-exit state-equivalence assertions (§1) are
+not yet formalized as a named framework.
+
+**§2 Canonical Trace Hashing — NOT IMPLEMENTED.**
+
+No `trace_hash = hash(tisc_sequence + register_layout + stack_layout +
+policy_context)` identity layer exists.
+
+**§3 Deterministic Register Allocation — PARTIAL.**
+
+The threaded trace uses the VM's existing flat register file (R0–R242) rather
+than host registers, which provides determinism by construction, but does not
+implement the explicit `VM_Rn → host_reg_n` mapping table described in §3.
+
+**§4 CanonFS JIT Cache — NOT IMPLEMENTED.**
+
+No `canonfs/jit/<trace_hash>.jit` cache exists.
+
+**§5 Axion OSR / Side-Exit Stubs — NOT IMPLEMENTED.**
+
+Axion policy boundaries are not yet treated as trace-terminating events.
+No OSR bailout routine or deoptimization path has been implemented.
+
+**§6 `repro_oracle` CI Job — NOT IMPLEMENTED.**
+
+No dedicated interpreter-vs-JIT hash comparison CI job exists.
+
+This RFC remains **Draft** until §2, §4, §5, and §6 are implemented. The
+existing threaded JIT in `runtime/jit/` is non-DCP experimental
+infrastructure. Graduation to Stable requires the canonical trace identity
+layer, CanonFS caching, Axion OSR, and the `repro_oracle` gate.
