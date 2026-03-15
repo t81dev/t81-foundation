@@ -3,7 +3,7 @@ tags: [proposal, architecture, performance]
 
 # RFC: SIMD T81 Arithmetic – Native addition & multiplication
 
-**Status**: Proposed  
+**Status**: Accepted
 **Type**: Architecture / Performance Impact  
 **Created**: 2025-12-01  
 **Discussion**: https://github.com/t81dev/t81-foundation/discussions (TBD)
@@ -51,3 +51,24 @@ This follow-up RFC documents the **native** `t81::T81` SIMD arithmetic that now 
 ## Notes
 
 The request to mention the new `t81::T81` badge corresponds to the README “Negation” shield (7.18 Gops/s) plus the new table row describing both Classic/Native/Binary columns, fully generated whenever the benchmark runner runs. Continuous integration should rerun `./build/t81 benchmark` whenever the SIMD code changes. 
+
+## Acceptance Criteria
+
+| ID | Criterion | Status |
+| :--- | :--- | :--- |
+| [A-0018-01] | AVX2 addition: `ByteCarryMap` per byte, `PrefixScan` (Kogge-Stone), `CarryIns` applied per byte; result value-correct | met — `simd/prefix_scan.hpp` + `native.hpp operator+()`; proved by `t81_native_property_test` [P3,P5] (2 048 trials) |
+| [A-0018-02] | Scalar addition fallback: sequential carry chain; value-correct on non-AVX2 hosts | met — scalar branch in `native.hpp operator+()`; same property tests cover both paths |
+| [A-0018-03] | Multiplication: trit-by-trit convolution + `(v±1)/3` carry normalization; value-correct | met — `native.hpp operator*()`; proved by `t81_native_property_test` [P1-mul] (2 048 trials) |
+| [A-0018-04] | Subtraction: `x − y` via `x + (−y)`; bit-identical to `operator+(-rhs)` | met — `native.hpp operator-()`; proved by `t81_native_property_test` [P6] |
+| [A-0018-05] | `BM_NegationSpeed_T81Native`, `BM_LimbAdd_T81Native` benchmarks present in `benchmarks/runner/` | met — `negation_speed.cpp` + `limb_arith_throughput.cpp` |
+| [A-0018-06] | `simd::AddEntry` table covers all 9 trit-pair combinations × 3 carry-in values with correct sum and carry-out | met — `simd/add_helpers.hpp`; proved by `t81_simd_add_helpers_test` (27 assertions) |
+
+## Acceptance Note (2026-03-15)
+
+All 6 criteria met. The AVX2 carry-map prefix scan (`ByteCarryMap` + `PrefixScan` + `CarryIns`)
+is the canonical addition path on x86-64 with AVX2; the scalar carry chain is the portable
+fallback. Multiplication uses the scalar trit convolution path in both configurations.
+
+Test suite: `t81_native_property_test` [P3,P5,P6,P1-mul] + `t81_simd_add_helpers_test`
+— all assertions passing. `BM_LimbAdd_T81Native` and `BM_NegationSpeed_T81Native` are
+wired into the benchmark runner.

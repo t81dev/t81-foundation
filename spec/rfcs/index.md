@@ -31,9 +31,9 @@ This index tracks RFC status and intended disposition.
 | RFC-0013 | Ternary Matmul | superseded | Superseded by RFC-0026 (QMATMUL) |
 | RFC-0014 | Neural Primitives | superseded | Superseded by RFC-0026 (ATTN + EMBED cover the neural primitive surface) |
 | RFC-0015 | Agentic Constructs | draft | First-class agent model |
-| RFC-0016 | SIMD Limb | proposed | SIMD arithmetic proposal |
-| RFC-0017 | Introduce T81 Native | proposed | Register-native type proposal |
-| RFC-0018 | T81 Native SIMD Arithmetic | proposed | Follow-on SIMD arithmetic details |
+| RFC-0016 | SIMD Limb | superseded | Superseded by RFC-0017; `t81::simd` namespace retained for internal helpers only |
+| RFC-0017 | Introduce T81 Native | accepted | All 6 criteria met: `t81::T81` struct, negation (AVX2+scalar), addition (carry-map+prefix scan), conversion, master header, fallback guard; 43 assertions pass |
+| RFC-0018 | T81 Native SIMD Arithmetic | accepted | All 6 criteria met: AVX2 carry-map addition, scalar fallback, multiplication, subtraction, benchmarks, AddEntry table; proved by `t81_native_property_test` + `t81_simd_add_helpers_test` |
 | RFC-0019 | Axion Match Logging | accepted | Runtime/spec/CLI depend on canonical match metadata and guard-audit strings |
 | RFC-0020 | Axion Segment Trace | accepted | Runtime/spec/CLI depend on canonical segment-trace strings |
 | RFC-0021 | Tier4 Cognition | draft | Tier-4 reflection/cognition proposal |
@@ -88,6 +88,7 @@ This index tracks RFC status and intended disposition.
 
 ## Active Consolidations
 
+- SIMD track: RFC-0017 is the accepted register-native type (`t81::T81`); RFC-0016 is formally superseded. RFC-0018 documents the add/mul arithmetic implementation.
 - APL track: RFC-0022 is the accepted forward path; RFC-0009 is formally superseded.
 - AI-native track: RFC-0026 supersedes RFC-0012, RFC-0013, RFC-0014. Those are closed for new edits.
 - Conformance track: RFC-0027 supersedes RFC-0008. Spec-as-executable is the concrete realization.

@@ -2340,6 +2340,9 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   add_executable(t81_native_conversion_test tests/cpp/test_t81_native_conversion.cpp)
   target_link_libraries(t81_native_conversion_test PRIVATE t81_core)
 
+  add_executable(t81_native_property_test tests/cpp/t81_native_property_test.cpp)
+  target_link_libraries(t81_native_property_test PRIVATE t81_core)
+
   add_executable(t81_limb_bohemian_add_test tests/cpp/test_t81_limb_bohemian_add.cpp)
   target_link_libraries(t81_limb_bohemian_add_test PRIVATE t81_core)
 
@@ -2568,6 +2571,9 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_limb_mul_wide_high_test
     t81_limb_add_test
     t81_native_arith_test
+    t81_native_conversion_test
+    t81_simd_add_helpers_test
+    t81_native_property_test
     t81_bigint_v1_baseline_test
     t81_limb54_add_test
     t81_limb54_booth_mul_test
