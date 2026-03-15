@@ -646,6 +646,20 @@ routing the call back through the typed ABI.  That validates the
 kernel/user boundary end-to-end and unblocks both DPE implementation
 (RFC-DPE-0001 trigger) and external boot-lane acceptance validation.
 
+**Slice 13 — DPE Task Graph Primitives [DONE] (commit 129b5e74):**
+
+- RFC-DPE-0002 `experimental/dpe/` module: `t81_dpe` library + 36-assertion test suite.
+- `TaskDescriptor`, `EpochGraph`, `TaskId` (CanonHash81 content-addressed), `DeltaBuffer`,
+  `EpochAcceptor` — full data model and canonical serialisation.
+- Epoch acceptance: Kahn's cycle detection (`[DPE-02-02]`), exclusive-region conflict
+  check (`[DPE-02-03]`), duplicate task_seq guard.
+- DeltaBuffer: correct page-granular delta accumulation (`[DPE-02-01]`),
+  `OutOfRegionWrite` fault with post-fault rejection (`[DPE-02-04]`).
+- Key design: "program identity" (dep_task_ids-stripped TaskId) for epoch index —
+  makes content-addressed dep references resolvable within an epoch.
+- `[DPE-02-05]` (single-task epoch ≡ direct TISC execution) deferred to Slice 14.
+- Suite: 36 passed, 0 failed.
+
 **Slice 12 — First EL0→EL1 SVC Roundtrip [DONE] (commit 69fcc987):**
 
 - `[AC-22r]` `test_kernel_el0_svc_roundtrip()` — 28 assertions.

@@ -62,7 +62,7 @@ This index tracks RFC status and intended disposition.
 | RFC | Title | Status | Notes |
 | :--- | :--- | :--- | :--- |
 | RFC-DPE-0001 | Deterministic Parallel Execution — Vision and Motivation | accepted | Informational; vocabulary and principles for the DPE series |
-| RFC-DPE-0002 | TISC Task Graph Primitives | draft | Task descriptor format, delta buffering, dependency edges; no TISC ISA changes required |
+| RFC-DPE-0002 | TISC Task Graph Primitives | accepted | TaskDescriptor, EpochGraph, DeltaBuffer, epoch acceptance (cycle + exclusive-region) implemented; DPE-02-05 (VM equivalence) deferred to Slice 14 |
 | RFC-DPE-0003 | Epoch Execution and Canonical Commit | draft | Commit ordering rule, conflict resolution, pager interaction, CanonHash81 verification, epoch abort |
 
 ## Experimental RFCs (A-series)
