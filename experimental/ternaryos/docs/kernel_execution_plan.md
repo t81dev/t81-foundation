@@ -689,6 +689,18 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 - CMake: `task_runner.cpp` added to `t81_dpe` sources; `t81_vm` added to link deps.
 - Suite: 17 passed, 0 failed.
 
+**AI Track — RFC-0032 Phase 3 [DONE]:**
+
+- C-04 (`axion_hooks.cpp`) promoted to `kernel/axion/ai_hooks.cpp` (AIHookEngine + factory).
+  - `include/t81/axion/ai_hooks.hpp`: AIHookEngine, ai_reasons builders (model_load, attn_guard, qmatmul_guard, ai_exec_gate).
+  - `kernel/axion/ai_hooks.cpp`: evaluates AI opcodes, emits RFC-0032 §8.2 canonical event strings, enforces tier ≥ 2 guard for ATTN, delegates to inner PolicyEngine.
+- C-03 (`model_manager.cpp`) ad hoc hash verification replaced by `TLOADHASH` Axion gate.
+  - `include/t81/axion/ai_model_loader.hpp` + `kernel/axion/ai_model_loader.cpp`: `load_model_via_tloadhash()` constructs `SyscallContext{next_opcode=TLoadHash, payload=hash}`, calls engine.evaluate(), emits `model_load success|failure` trace event.
+- Both sources added to `t81_axion` CMake target.
+- `tests/cpp/axion_ai_hooks_test.cpp`: 17/17 passing [C03-01..04, C04-01..08].
+  - Policy-denial test (non-whitelisted hash → Deny) passes — Phase 3 gate criterion met.
+  - All §8.2 event strings (model_load, attn_guard, qmatmul_guard, ai_exec_gate) appear in trace.
+
 **AI Track — RFC-0031/RFC-0032 Phase 1 + Phase 2 [DONE]:**
 
 - RFC-0031 status: `draft` → `proposed` (Deterministic AI Execution Contract).

@@ -209,6 +209,9 @@ add_library(t81_axion STATIC
   kernel/axion/policy_engine.cpp
   kernel/axion/policy_serialization.cpp
   kernel/axion/canonfs_hook.cpp
+  # RFC-0032 Phase 3 — promoted AI governance components
+  kernel/axion/ai_hooks.cpp
+  kernel/axion/ai_model_loader.cpp
   src/axion/policy_validator.cpp
 )
 target_link_libraries(t81_axion PUBLIC t81_core)
@@ -2126,6 +2129,11 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   add_executable(axion_policy_allow_deny_determinism_test
                  tests/cpp/axion_policy_allow_deny_determinism_test.cpp)
   target_link_libraries(axion_policy_allow_deny_determinism_test PRIVATE t81_vm t81_core)
+
+  # RFC-0032 Phase 3 gate tests — AIHookEngine + AiModelLoader
+  add_executable(axion_ai_hooks_test tests/cpp/axion_ai_hooks_test.cpp)
+  target_link_libraries(axion_ai_hooks_test PRIVATE t81_axion t81_core)
+  add_test(NAME axion_ai_hooks_test COMMAND axion_ai_hooks_test)
 
   add_executable(axion_policy_conformance_matrix_test
                  tests/cpp/axion_policy_conformance_matrix_test.cpp)
