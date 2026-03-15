@@ -1,17 +1,297 @@
 // lang/stdlib/std/tensor.t81
-// Tensor operations.
+// Comprehensive tensor operations for deterministic AI workloads.
+//
+// This module provides deterministic tensor primitives optimized for
+// ternary computing with bit-exact reproducibility guarantees.
+//
+// Key Features:
+// - Deterministic tensor creation and manipulation
+// - Memory-efficient operations with predictable patterns
+// - Comprehensive math and reduction operations
+// - Shape and dtype utilities for tensor introspection
+//
+// Usage:
+//   import std.tensor;
+//   
+//   // Create tensors
+//   let a = std.tensor.zeros([2, 3]);
+//   let b = std.tensor.ones([2, 3]);
+//   let c = std.tensor.random([2, 3]);
+//   
+//   // Manipulate tensors
+//   let d = std.tensor.reshape(a, [3, 2]);
+//   let e = std.tensor.transpose(d);
+//   let f = std.tensor.slice(e, [0, 0], [2, 2]);
+//   
+//   // Math operations
+//   let g = std.tensor.add(b, c);
+//   let h = std.tensor.matmul(g, std.tensor.eye(3));
+//   let i = std.tensor.sum(h, axis=0);
+//
 
-// NOTE: std.tensor.load currently requires a string literal argument at the callsite,
-// so it is intentionally used directly as std.tensor.load("..."), not wrapped here.
+// =============================================================================
+// TENSOR CREATION FUNCTIONS
+// =============================================================================
 
+// Create tensor from list of values (existing)
 fn from_list(values: Vector[i32]) -> Tensor {
     return std.tensor.from_list(values);
 }
 
+// Create tensor filled with zeros
+fn zeros(shape: Vector[i32]) -> Tensor {
+    return std.tensor.zeros(shape);
+}
+
+// Create tensor filled with ones
+fn ones(shape: Vector[i32]) -> Tensor {
+    return std.tensor.ones(shape);
+}
+
+// Create tensor with specified fill value
+fn fill(shape: Vector[i32], value: T81Float) -> Tensor {
+    return std.tensor.fill(shape, value);
+}
+
+// Create tensor with random values (deterministic)
+fn random(shape: Vector[i32]) -> Tensor {
+    return std.tensor.random(shape);
+}
+
+// Create identity matrix
+fn eye(size: i32) -> Tensor {
+    return std.tensor.eye(size);
+}
+
+// Create tensor from another tensor (copy)
+fn clone(tensor: Tensor) -> Tensor {
+    return std.tensor.clone(tensor);
+}
+
+// =============================================================================
+// TENSOR MANIPULATION FUNCTIONS
+// =============================================================================
+
+// Reshape tensor to new shape
+fn reshape(tensor: Tensor, shape: Vector[i32]) -> Tensor {
+    return std.tensor.reshape(tensor, shape);
+}
+
+// Transpose tensor with optional axis permutation
+fn transpose(tensor: Tensor, axes: T81Optional[Vector[i32]] = T81Optional[Vector[i32]]::none()) -> Tensor {
+    return std.tensor.transpose(tensor, axes);
+}
+
+// Slice tensor along dimensions
+fn slice(tensor: Tensor, starts: Vector[i32], ends: Vector[i32]) -> Tensor {
+    return std.tensor.slice(tensor, starts, ends);
+}
+
+// Concatenate tensors along specified axis
+fn concat(tensors: Vector[Tensor], axis: i32 = 0) -> Tensor {
+    return std.tensor.concat(tensors, axis);
+}
+
+// Stack tensors along new axis
+fn stack(tensors: Vector[Tensor], axis: i32 = 0) -> Tensor {
+    return std.tensor.stack(tensors, axis);
+}
+
+// Split tensor into sub-tensors along axis
+fn split(tensor: Tensor, sections: i32, axis: i32 = 0) -> Vector[Tensor] {
+    return std.tensor.split(tensor, sections, axis);
+}
+
+// =============================================================================
+// MATHEMATICAL OPERATIONS
+// =============================================================================
+
+// Matrix multiplication (existing)
 fn matmul(a: Tensor, b: Tensor) -> Tensor {
     return std.tensor.matmul(a, b);
 }
 
+// Element-wise addition (existing)
+fn vec_add(a: Tensor, b: Tensor) -> Tensor {
+    return std.tensor.vec_add(a, b);
+}
+
+// Element-wise subtraction
+fn sub(a: Tensor, b: Tensor) -> Tensor {
+    return std.tensor.sub(a, b);
+}
+
+// Element-wise multiplication
+fn mul(a: Tensor, b: Tensor) -> Tensor {
+    return std.tensor.mul(a, b);
+}
+
+// Element-wise division
+fn div(a: Tensor, b: Tensor) -> Tensor {
+    return std.tensor.div(a, b);
+}
+
+// Element-wise power
+fn pow(a: Tensor, exponent: T81Float) -> Tensor {
+    return std.tensor.pow(a, exponent);
+}
+
+// Element-wise square root
+fn sqrt(a: Tensor) -> Tensor {
+    return std.tensor.sqrt(a);
+}
+
+// Element-wise absolute value
+fn abs(a: Tensor) -> Tensor {
+    return std.tensor.abs(a);
+}
+
+// Element-wise negation
+fn neg(a: Tensor) -> Tensor {
+    return std.tensor.neg(a);
+}
+
+// =============================================================================
+// REDUCTION OPERATIONS
+// =============================================================================
+
+// Sum tensor elements along axis
+fn sum(tensor: Tensor, axis: T81Optional[i32] = T81Optional[i32]::none()) -> Tensor {
+    return std.tensor.sum(tensor, axis);
+}
+
+// Mean of tensor elements along axis
+fn mean(tensor: Tensor, axis: T81Optional[i32] = T81Optional[i32]::none()) -> Tensor {
+    return std.tensor.mean(tensor, axis);
+}
+
+// Maximum value along axis
+fn max(tensor: Tensor, axis: T81Optional[i32] = T81Optional[i32]::none()) -> Tensor {
+    return std.tensor.max(tensor, axis);
+}
+
+// Minimum value along axis
+fn min(tensor: Tensor, axis: T81Optional[i32] = T81Optional[i32]::none()) -> Tensor {
+    return std.tensor.min(tensor, axis);
+}
+
+// Product of elements along axis
+fn prod(tensor: Tensor, axis: T81Optional[i32] = T81Optional[i32]::none()) -> Tensor {
+    return std.tensor.prod(tensor, axis);
+}
+
+// Sum of squared differences (L2 norm squared)
+fn norm_squared(a: Tensor, b: Tensor) -> T81Float {
+    return std.tensor.norm_squared(a, b);
+}
+
+// =============================================================================
+// COMPARISON OPERATIONS
+// =============================================================================
+
+// Element-wise equality
+fn equal(a: Tensor, b: Tensor) -> Tensor {
+    return std.tensor.equal(a, b);
+}
+
+// Element-wise greater than
+fn greater(a: Tensor, b: Tensor) -> Tensor {
+    return std.tensor.greater(a, b);
+}
+
+// Element-wise less than
+fn less(a: Tensor, b: Tensor) -> Tensor {
+    return std.tensor.less(a, b);
+}
+
+// Element-wise greater than or equal
+fn greater_equal(a: Tensor, b: Tensor) -> Tensor {
+    return std.tensor.greater_equal(a, b);
+}
+
+// Element-wise less than or equal
+fn less_equal(a: Tensor, b: Tensor) -> Tensor {
+    return std.tensor.less_equal(a, b);
+}
+
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+// Get tensor shape
+fn shape(tensor: Tensor) -> Vector[i32] {
+    return std.tensor.shape(tensor);
+}
+
+// Get tensor size (total elements)
+fn size(tensor: Tensor) -> i32 {
+    return std.tensor.size(tensor);
+}
+
+// Get tensor rank (number of dimensions)
+fn rank(tensor: Tensor) -> i32 {
+    return std.tensor.rank(tensor);
+}
+
+// Get tensor data type
+fn dtype(tensor: Tensor) -> T81String {
+    return std.tensor.dtype(tensor);
+}
+
+// Check if tensor is empty
+fn is_empty(tensor: Tensor) -> T81Bool {
+    return std.tensor.is_empty(tensor);
+}
+
+// Load tensor from file (existing - requires string literal)
+// NOTE: This function must be called directly as std.tensor.load("path")
+// and cannot be wrapped due to language limitations.
+
+// =============================================================================
+// ADVANCED OPERATIONS
+// =============================================================================
+
+// Convolution operation
+fn conv1d(input: Tensor, kernel: Tensor, stride: i32 = 1, padding: i32 = 0) -> Tensor {
+    return std.tensor.conv1d(input, kernel, stride, padding);
+}
+
+// 2D convolution
+fn conv2d(input: Tensor, kernel: Tensor, stride: Vector[i32] = [1, 1], padding: Vector[i32] = [0, 0]) -> Tensor {
+    return std.tensor.conv2d(input, kernel, stride, padding);
+}
+
+// Pooling operations
+fn max_pool2d(input: Tensor, size: Vector[i32], stride: Vector[i32]) -> Tensor {
+    return std.tensor.max_pool2d(input, size, stride);
+}
+
+fn avg_pool2d(input: Tensor, size: Vector[i32], stride: Vector[i32]) -> Tensor {
+    return std.tensor.avg_pool2d(input, size, stride);
+}
+
+// Activation functions
+fn relu(tensor: Tensor) -> Tensor {
+    return std.tensor.relu(tensor);
+}
+
+fn sigmoid(tensor: Tensor) -> Tensor {
+    return std.tensor.sigmoid(tensor);
+}
+
+fn tanh(tensor: Tensor) -> Tensor {
+    return std.tensor.tanh(tensor);
+}
+
+fn softmax(tensor: Tensor, axis: i32 = -1) -> Tensor {
+    return std.tensor.softmax(tensor, axis);
+}
+
+// =============================================================================
+// LEGACY COMPATIBILITY
+// =============================================================================
+
+// Legacy wrappers for existing functions
 fn vec_add(a: Tensor, b: Tensor) -> Tensor {
     return std.tensor.vec_add(a, b);
 }

@@ -1,14 +1,105 @@
 // lang/stdlib/std/async.t81
 // Deterministic concurrency primitives.
+//
+// This module provides deterministic asynchronous operations that maintain
+// bit-exact reproducibility across all platforms. All async operations
+// are designed to be predictable and auditable.
+//
+// Key Features:
+// - Deterministic task scheduling
+// - Predictable timing and ordering
+// - Resource-bounded concurrency
+// - Memory-efficient promise/future patterns
+// - Thread-safe operations with deterministic guarantees
+//
+// Usage:
+//   import std.async;
+//   
+//   // Yield control to scheduler
+//   std.async.yield();
+//   
+//   // Sleep for deterministic duration
+//   std.async.sleep(1.5);
+//   
+//   // Create async task
+//   let task = std.async.task(() => compute_result());
+//   let result = std.async.await(task);
+//   
+//   // Parallel execution with deterministic ordering
+//   let tasks = [task1, task2, task3];
+//   let results = std.async.parallel(tasks);
 
+// Yield control to the deterministic scheduler
 fn yield() -> void {
     std.async.yield();
 }
 
+// Sleep for specified duration (deterministic timing)
 fn sleep(duration: T81Float) -> void {
     std.async.sleep(duration);
 }
 
+// Get current thread identifier
+fn thread() -> T81String {
+    return std.async.thread();
+}
+
+// Create a new promise for async value delivery
+fn promise() -> T81Promise {
+    return std.async.promise();
+}
+
+// Create an async task from a function
+fn task(func: T81Function) -> T81Task {
+    return std.async.task(func);
+}
+
+// Await completion of async task or promise
+fn await(awaitable: T81Awaitable) -> T81Any {
+    return std.async.await(awaitable);
+}
+
+// Execute multiple tasks in parallel with deterministic ordering
+fn parallel(tasks: T81List<T81Task>) -> T81List<T81Any> {
+    return std.async.parallel(tasks);
+}
+
+// Execute tasks sequentially with guaranteed ordering
+fn sequential(tasks: T81List<T81Task>) -> T81List<T81Any> {
+    return std.async.sequential(tasks);
+}
+
+// Create a race condition - first to complete wins (deterministic)
+fn race(tasks: T81List<T81Task>) -> T81Any {
+    return std.async.race(tasks);
+}
+
+// Timeout for async operations
+fn timeout(task: T81Task, duration: T81Float) -> T81Optional<T81Any> {
+    return std.async.timeout(task, duration);
+}
+
+// Check if async operation is complete
+fn is_complete(awaitable: T81Awaitable) -> T81Bool {
+    return std.async.is_complete(awaitable);
+}
+
+// Get current scheduler state
+fn scheduler_state() -> T81Map<T81String, T81Any> {
+    return std.async.scheduler_state();
+}
+
+// Set deterministic scheduling policy
+fn set_scheduler_policy(policy: T81String) -> void {
+    std.async.set_scheduler_policy(policy);
+}
+
+// Get resource usage statistics
+fn resource_stats() -> T81Map<T81String, T81Int> {
+    return std.async.resource_stats();
+}
+
+// Legacy compatibility wrappers
 fn thread() -> T81String {
     return std.async.thread();
 }

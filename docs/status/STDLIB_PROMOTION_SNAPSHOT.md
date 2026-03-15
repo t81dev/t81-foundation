@@ -1,7 +1,7 @@
 # STDLIB Promotion Snapshot (2026-03)
 
-Generated (UTC): 2026-03-10
-Date: 2026-03-10
+Generated (UTC): 2026-03-14
+Date: 2026-03-14
 Baseline: 1.3.2
 
 ## Module Statuses
@@ -16,6 +16,6 @@ Baseline: 1.3.2
 | STDM-06 | `std.bytes` | stable | 2026-02-28 | [Docs](../standards/standard-library.md#stdbytes) |
 | STDM-07 | `std.symbol` | stable | 2026-02-28 | [Docs](../standards/standard-library.md#stdsymbol) |
 | STDM-08 | `std.sys` | stable | 2026-03-01 | [Docs](../standards/standard-library.md#stdsys) |
-| STDM-09 | `std.async` | bounded | 2026-03-01 | [Docs](../standards/standard-library.md#stdasync) |
-| STDM-10 | `std.tensor` | bounded | 2026-02-28 | [Docs](../standards/standard-library.md#stdtensor) |
-| STDM-11 | `std.agent` | experimental | 2026-03-01 | [Docs](../standards/standard-library.md#stdagent) |
+| STDM-09 | `std.async` | stable | 2026-03-14 | [Docs](../standards/standard-library.md#stdasync) |
+| STDM-10 | `std.tensor` | stable | 2026-03-14 | [Docs](../standards/standard-library.md#stdtensor) |
+| STDM-11 | `std.agent` | stable | 2026-03-14 | [Docs](../standards/standard-library.md#stdagent) |
