@@ -447,4 +447,55 @@ std::expected<void, t81::vm::Trap> tensor_set_checked(t81::T729DynamicTensor& te
   return {};
 }
 
+// ---------------------------------------------------------------------------
+// RFC-0005 v0.4 vector helpers
+// ---------------------------------------------------------------------------
+
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vload_checked(
+    const t81::T729DynamicTensor& src, const std::vector<int>& new_shape) {
+  // Count elements in the target shape.
+  std::size_t new_count = 1;
+  for (int d : new_shape) {
+    if (d <= 0) {
+      return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                  t81::vm::Trap::ShapeFault);
+    }
+    new_count *= static_cast<std::size_t>(d);
+  }
+  if (src.size() != new_count) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::ShapeFault);
+  }
+  // Materialise all element values and construct tensor with new shape.
+  std::vector<float> flat;
+  flat.reserve(new_count);
+  for (std::size_t i = 0; i < new_count; ++i) {
+    auto v = src.value_at(i);
+    flat.push_back(v.value_or(0.0f));
+  }
+  return t81::T729DynamicTensor(new_shape, std::move(flat));
+}
+
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vstore_checked(
+    const t81::T729DynamicTensor& src, const std::vector<int>& expected_shape) {
+  if (src.shape() != expected_shape) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::ShapeFault);
+  }
+  return tensor_identity_copy(src);
+}
+
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vfma_checked(
+    const t81::T729DynamicTensor& accumulator, const t81::T729DynamicTensor& src1,
+    const t81::T729DynamicTensor& src2) {
+  if (!tensor_elementwise_compatible(src1, src2) ||
+      !tensor_elementwise_compatible(accumulator, src1)) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::ShapeFault);
+  }
+  // result = src1 * src2 + accumulator
+  auto product = t81::ops::mul(src1, src2);
+  return t81::ops::add(accumulator, product);
+}
+
 }  // namespace t81::vm::internal

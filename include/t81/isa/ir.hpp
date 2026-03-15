@@ -198,6 +198,13 @@ enum class Opcode {
   // Axion Verification
   AXVERIFY,
 
+  // TISC v0.4 vector helpers (RFC-0005 §2.2 + §2.4)
+  VLOAD,           // VLoad RD, RS_SRC, RS_SHAPE   — reshape RS_SRC to RS_SHAPE
+  VSTORE,          // VStore RD, RS_SRC, RS_SHAPE  — shape-validated copy of RS_SRC
+  VADD,            // VAdd RD, RS1, RS2             — elementwise add on handles
+  VFMA,            // VFma RD, RS1, RS2             — RD = RS1*RS2 + RD (mul-accumulate)
+  READ_ISA_VERSION, // ReadIsaVersion RD            — RD = 4 (TISC v0.4)
+
   // Pseudo-instructions
   LABEL
 };

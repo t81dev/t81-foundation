@@ -3766,6 +3766,117 @@ public:
         update_flags(ctx.registers[insn.a]);
         break;
       }
+
+      // -----------------------------------------------------------------
+      // RFC-0005 v0.4 vector helpers
+      // -----------------------------------------------------------------
+      case t81::tisc::Opcode::ReadIsaVersion: {
+        if (!reg_ok(insn.a)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        // TISC version 0.4 constant.
+        set_reg(insn.a, 4, ValueTag::Int);
+        update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      case t81::tisc::Opcode::VAdd: {
+        // VAdd RD, RS1, RS2 — elementwise add on tensor handles.
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
+        if (auto res = promote_to_tensor(insn.c); !res) { trap = res.error(); break; }
+        auto* t1 = tensor_ptr(ctx.registers[insn.b]);
+        auto* t2 = tensor_ptr(ctx.registers[insn.c]);
+        if (!t1 || !t2) { trap = Trap::DecodeFault; break; }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "VAdd kernel execution"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b], verdict);
+        auto computed = t81::vm::internal::tensor_vec_binary_checked(*t1, *t2, /*multiply=*/false);
+        if (!computed) { trap = computed.error(); break; }
+        auto rh = alloc_tensor(std::move(*computed));
+        if (!rh) { trap = rh.error(); break; }
+        ctx.registers[insn.a] = *rh;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::VFma: {
+        // VFma RD, RS1, RS2 — RD = RS1 * RS2 + RD (fused multiply-accumulate).
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.a] != ValueTag::TensorHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
+        if (auto res = promote_to_tensor(insn.c); !res) { trap = res.error(); break; }
+        auto* accum = tensor_ptr(ctx.registers[insn.a]);
+        auto* t1    = tensor_ptr(ctx.registers[insn.b]);
+        auto* t2    = tensor_ptr(ctx.registers[insn.c]);
+        if (!accum || !t1 || !t2) { trap = Trap::DecodeFault; break; }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "VFma kernel execution"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b], verdict);
+        auto computed = t81::vm::internal::tensor_vfma_checked(*accum, *t1, *t2);
+        if (!computed) { trap = computed.error(); break; }
+        auto rh = alloc_tensor(std::move(*computed));
+        if (!rh) { trap = rh.error(); break; }
+        ctx.registers[insn.a] = *rh;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::VLoad: {
+        // VLoad RD, RS_SRC, RS_SHAPE — reshape RS_SRC tensor to the shape in RS_SHAPE.
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.c] != ValueTag::ShapeHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
+        auto* src = tensor_ptr(ctx.registers[insn.b]);
+        const auto* new_shape = shape_ptr(ctx.registers[insn.c]);
+        if (!src || !new_shape) { trap = Trap::DecodeFault; break; }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "VLoad kernel execution"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b], verdict);
+        auto computed = t81::vm::internal::tensor_vload_checked(*src, *new_shape);
+        if (!computed) { trap = computed.error(); break; }
+        auto rh = alloc_tensor(std::move(*computed));
+        if (!rh) { trap = rh.error(); break; }
+        ctx.registers[insn.a] = *rh;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::VStore: {
+        // VStore RD, RS_SRC, RS_SHAPE — shape-validated copy of RS_SRC.
+        // Faults if RS_SRC shape != RS_SHAPE; stores validated copy handle in RD.
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.c] != ValueTag::ShapeHandle) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
+        auto* src = tensor_ptr(ctx.registers[insn.b]);
+        const auto* expected_shape = shape_ptr(ctx.registers[insn.c]);
+        if (!src || !expected_shape) { trap = Trap::DecodeFault; break; }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "VStore kernel execution"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b], verdict);
+        auto computed = t81::vm::internal::tensor_vstore_checked(*src, *expected_shape);
+        if (!computed) { trap = computed.error(); break; }
+        auto rh = alloc_tensor(std::move(*computed));
+        if (!rh) { trap = rh.error(); break; }
+        ctx.registers[insn.a] = *rh;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+
       case t81::tisc::Opcode::MakeOptionSome: {
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
           trap = Trap::DecodeFault;

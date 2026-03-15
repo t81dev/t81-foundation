@@ -373,6 +373,17 @@ Opcode map_opcode(const ir::Instruction& instr) {
       return Opcode::GATHER;
     case O::SCATTER:
       return Opcode::SCATTER;
+    // RFC-0005 v0.4 vector helpers
+    case O::VLOAD:
+      return Opcode::VLoad;
+    case O::VSTORE:
+      return Opcode::VStore;
+    case O::VADD:
+      return Opcode::VAdd;
+    case O::VFMA:
+      return Opcode::VFma;
+    case O::READ_ISA_VERSION:
+      return Opcode::ReadIsaVersion;
     case O::AXVERIFY:
       return Opcode::AxVerify;
     case O::TAND:

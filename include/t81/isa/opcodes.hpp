@@ -205,6 +205,12 @@ enum class Opcode : std::uint8_t {
   GATHER,   // Sparse gather: GATHER RD, R_SRC, PACK(R_IDX, R_AXIS)
   SCATTER,  // Sparse scatter-add: SCATTER RD, R_DST, PACK(R_IDX, R_SRC)
   Int2BigInt,
+  // TISC v0.4 extensions (RFC-0005 §2.2 + §2.4) — contiguous-layout vector helpers
+  VLoad,          // Shape-aware tensor reshape: VLoad RD, RS_SRC, RS_SHAPE
+  VStore,         // Shape-validated tensor copy: VStore RD, RS_SRC, RS_SHAPE
+  VAdd,           // Elementwise add on handles: VAdd RD, RS1, RS2
+  VFma,           // Fused multiply-accumulate: VFma RD, RS1, RS2  (RD = RS1*RS2 + RD)
+  ReadIsaVersion, // Write ISA version constant: ReadIsaVersion RD
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -597,12 +603,22 @@ enum class Opcode : std::uint8_t {
       return "SCATTER";
     case Opcode::Int2BigInt:
       return "Int2BigInt";
+    case Opcode::VLoad:
+      return "VLoad";
+    case Opcode::VStore:
+      return "VStore";
+    case Opcode::VAdd:
+      return "VAdd";
+    case Opcode::VFma:
+      return "VFma";
+    case Opcode::ReadIsaVersion:
+      return "ReadIsaVersion";
   }
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::Int2BigInt) + 1> kAllOpcodes = [] {
-  std::array<Opcode, static_cast<std::size_t>(Opcode::Int2BigInt) + 1> values{};
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::ReadIsaVersion) + 1> kAllOpcodes = [] {
+  std::array<Opcode, static_cast<std::size_t>(Opcode::ReadIsaVersion) + 1> values{};
   for (std::size_t i = 0; i < values.size(); ++i) {
     values[i] = static_cast<Opcode>(i);
   }

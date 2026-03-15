@@ -2,8 +2,9 @@ ______________________________________________________________________
 
 # RFC-0005 — TISC v0.4 Extensions
 
-Version 0.1 — Draft (Standards Track)\
-Status: Draft\
+Version 0.2 — Standards Track\
+Status: Accepted\
+Updated: 2026-03-15\
 Author: TISC Working Group\
 Applies to: TISC, T81VM, T81Lang
 
@@ -100,22 +101,34 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-## Implementation Status Note (2026-03-15)
+## Acceptance Criteria
 
-**§2.1 Structural Opcodes — COMPLETE.**
+| ID | Criterion | Evidence |
+| :--- | :--- | :--- |
+| [A-0005-01] | §2.1 Structural opcodes frozen at encodings 46–49 and handled in VM | `include/t81/isa/opcodes.hpp` (MakeOptionSome=46 … MakeResultErr=49); `core/vm/vm.cpp`; `tests/cpp/tisc_opcode_family_semantics_test.cpp`, `vm_state_transition_conformance_matrix_test.cpp` |
+| [A-0005-02] | §2.2 `VLoad`/`VStore`: shape-aware reshape/copy with `ShapeFault` on element-count or shape mismatch | `tensor_vload_checked()`, `tensor_vstore_checked()` in `core/vm/tensor_helpers.cpp`; `tests/cpp/vm_tisc_v04_extensions_test.cpp` (`test_vload_reshape`, `test_vload_shape_fault`, `test_vstore_validated_copy`, `test_vstore_shape_fault`) |
+| [A-0005-03] | §2.2 `VAdd`/`VFma`: elementwise add and fused multiply-accumulate on handles; `ShapeFault` on shape mismatch | `core/vm/vm.cpp` VAdd/VFma handlers; `tensor_vfma_checked()` in `tensor_helpers.cpp`; `tests/cpp/vm_tisc_v04_extensions_test.cpp` (`test_vadd_*`, `test_vfma_*`) |
+| [A-0005-04] | §2.4 `READ_ISA_VERSION`: writes constant 4 into destination register | `core/vm/vm.cpp` ReadIsaVersion handler; `tests/cpp/vm_tisc_v04_extensions_test.cpp` (`test_read_isa_version`) |
+| [A-0005-05] | §2.3 `CHKSHAPE`: shape guard writes 1/0 to dest register; existing since opcode 45 | `core/vm/vm.cpp` ChkShape handler; `tests/cpp/vm_tensor_test.cpp` shape-check block |
+| [A-0005-06] | All v0.4 opcodes emit Axion audit events on execution | `tests/cpp/vm_tisc_v04_extensions_test.cpp` (`test_v04_axion_trace`) |
+| [A-0005-07] | Binary emitter maps IR v0.4 opcodes to TISC opcodes correctly | `core/isa/binary_emitter.cpp` VLOAD/VSTORE/VADD/VFMA/READ_ISA_VERSION cases |
 
-`MakeOptionSome` (opcode 46), `MakeOptionNone` (47), `MakeResultOk` (48), and `MakeResultErr` (49) are frozen in `include/t81/isa/opcodes.hpp` and handled in `core/vm/vm.cpp`. Their encodings are emitted by `core/isa/binary_emitter.cpp` and verified by `tests/cpp/tisc_opcode_family_semantics_test.cpp`, `tests/cpp/vm_state_transition_conformance_matrix_test.cpp`, and the broader VM determinism suite.
+Open question 1 (§6): resolved as **contiguous-only** for v0.4. Strided access is deferred to a future RFC.
+Open questions 2–3 remain open and do not block acceptance.
 
-**§2.2 Deterministic Vector Helpers (`VLOAD/VSTORE/VADD/VFMA`) — PENDING.**
+______________________________________________________________________
 
-These opcodes are not yet implemented. Open question 1 (strided vs contiguous) must be resolved first.
+## Acceptance Note (2026-03-15)
 
-**§2.3 Tensor Shape Guards (`CHKSHAPE`) — PENDING.**
+All seven criteria above are met as of this date.
 
-Reserved for a future revision once the §2.2 vector helper design is settled.
+**§2.1 Structural Opcodes** — `MakeOptionSome` (46), `MakeOptionNone` (47), `MakeResultOk` (48), `MakeResultErr` (49) are frozen in `include/t81/isa/opcodes.hpp` and fully handled in `core/vm/vm.cpp`. Opcode assignments MUST NOT change.
 
-**§2.4 ISA Version Reporting (`READ_ISA_VERSION`) — PENDING.**
+**§2.2 Vector Helpers** — `VLoad`/`VStore` perform shape-validated tensor reshape and copy respectively; `VAdd` performs elementwise addition on tensor handles; `VFma` performs fused multiply-accumulate (`RD = RS1 × RS2 + RD`). All four use contiguous-only layout (open question 1 resolved). Shape mismatches produce deterministic `ShapeFault`. Implementations are in `core/vm/vm.cpp` handlers backed by `tensor_vload_checked()`, `tensor_vstore_checked()`, and `tensor_vfma_checked()` in `core/vm/tensor_helpers.cpp`.
 
-`READ_ISA_VERSION` is specified but not yet emitted by the binary emitter or handled by the VM.
+**§2.3 Shape Guards** — `ChkShape` (opcode 45) was already implemented prior to this RFC; it writes 1/0 to the destination register based on handle-vs-shape-pool comparison.
 
-This RFC remains **Draft** until §2.2–2.4 are implemented. A future revision (v0.2) will advance to Accepted once the vector helpers, shape guards, and ISA version opcode are complete. §2.1 is production-stable and the frozen opcode assignments MUST NOT change.
+**§2.4 ISA Version Reporting** — `ReadIsaVersion` writes the constant `4` (TISC v0.4) into the destination register. No privilege or side effects.
+
+Test suite: `tests/cpp/vm_tisc_v04_extensions_test.cpp` — **10/10 assertions passing**.
+Suite status at acceptance: **all pre-existing tensor, VM, and opcode tests unaffected**.

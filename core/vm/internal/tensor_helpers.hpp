@@ -105,6 +105,18 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_attention_checked(
     const t81::T729DynamicTensor& q, const t81::T729DynamicTensor& k, const t81::T729DynamicTensor& v);
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_embed_checked(
     const t81::T729DynamicTensor& table, std::int64_t index);
+// RFC-0005 v0.4 vector helpers.
+// VLoad: reshape src to new_shape (fault if element counts differ).
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vload_checked(
+    const t81::T729DynamicTensor& src, const std::vector<int>& new_shape);
+// VStore: validate src shape == expected_shape, then return a canonical copy.
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vstore_checked(
+    const t81::T729DynamicTensor& src, const std::vector<int>& expected_shape);
+// VFma: fused multiply-accumulate — result = src1 * src2 + accumulator.
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vfma_checked(
+    const t81::T729DynamicTensor& accumulator, const t81::T729DynamicTensor& src1,
+    const t81::T729DynamicTensor& src2);
+
 // RFC-0026 phase-1 extension (AI-M5: axis-aware gather/scatter).
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_wload_checked(
     const t81::T729DynamicTensor& src);
