@@ -196,29 +196,31 @@ struct StructuredEvent {
 
   // AX-M6: Verbatim reason-string concatenation for Stable promotion
   // Returns canonical format: "segment=<name> addr=<value> action=<desc>"
+  // Falls back to the original reason string when structured fields are not
+  // populated — preserving specific audit details emitted by the VM.
   [[nodiscard]] std::string to_canonical_reason_string() const {
     std::stringstream ss;
-    
-    // Extract segment, address, and action from structured reason
-    // Expected format in reason field: "segment=<name> addr=<value> action=<desc>"
-    // If reason is already in canonical format, return as-is
-    if (reason.find("segment=") != std::string::npos && 
-        reason.find("addr=") != std::string::npos && 
+
+    // Already in canonical segment format — return verbatim.
+    if (reason.find("segment=") != std::string::npos &&
+        reason.find("addr=") != std::string::npos &&
         reason.find("action=") != std::string::npos) {
       return reason;
     }
-    
-    // Otherwise, construct canonical format from individual fields
-    if (!storage_class.empty()) {
-      ss << "segment=" << storage_class;
-    } else {
-      ss << "segment=unknown";
+
+    // Structured fields not populated — canonical form IS the original reason.
+    // This applies to all events routed through record_axion_event() where
+    // storage_class/event_type/reason_code are not set by the caller.
+    if (storage_class.empty() && event_type.empty() && reason_code.empty()) {
+      return reason;
     }
-    
+
+    // Construct canonical format from structured fields.
+    ss << "segment=" << storage_class;
+
     if (handle_id != 0) {
       ss << " addr=" << handle_id;
     } else if (!reason.empty()) {
-      // Try to extract address from reason if available
       size_t addr_pos = reason.find("addr=");
       if (addr_pos != std::string::npos) {
         size_t start = addr_pos + 5;
@@ -227,15 +229,13 @@ struct StructuredEvent {
         ss << " addr=" << reason.substr(start, end - start);
       }
     }
-    
+
     if (!event_type.empty()) {
       ss << " action=" << event_type;
     } else if (!reason_code.empty()) {
       ss << " action=" << reason_code;
-    } else {
-      ss << " action=unknown";
     }
-    
+
     return ss.str();
   }
 };
