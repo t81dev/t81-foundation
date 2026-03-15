@@ -1,6 +1,6 @@
 # RFC-DPE-0003: Epoch Execution and Canonical Commit
 
-**Status:** draft
+**Status:** accepted
 **Type:** standards-track
 **Applies-To:** T81VM runtime, Axion kernel pager model, CanonHash81, T81Float determinism
 **Created:** 2026-03-14
@@ -338,3 +338,25 @@ execution (§4.3).
   path; hash divergence from non-canonical float is detectable
 - `[DPE-03-06]` Policy fault during task execution aborts the epoch and
   records the event in the Axion audit log
+
+---
+
+## 13. Acceptance Notes (2026-03-14)
+
+`[DPE-03-01]` through `[DPE-03-04]` are proved by `t81_dpe_epoch_commit_test`
+(29 assertions).
+
+| Criterion | Evidence | Status |
+| :--- | :--- | :--- |
+| `[DPE-03-01]` Deterministic commit ordering | `test_commit_ordering_is_deterministic` — both submission orders produce identical `committed_pages` and `epoch_hash` | met |
+| `[DPE-03-02]` Last-writer-in-canonical-order | `test_last_writer_in_canonical_order_wins` — higher-TaskId task's page survives; lower-TaskId value overwritten | met |
+| `[DPE-03-03]` Abort on TaskFault | `test_epoch_aborts_on_task_fault` — `committed_pages` empty, `epoch_hash` zero, `faulting_task_id` set | met |
+| `[DPE-03-04]` EpochHash reproducibility | `test_epoch_hash_is_reproducible` — two independent DeltaBuffer sets produce identical `epoch_hash` | met |
+| `[DPE-03-05]` T81Float strict path | Deferred — depends on RFC-0030 (Deterministic Math Subsystem) | open |
+| `[DPE-03-06]` Policy fault audit | Deferred — requires Axion kernel epoch wiring (Slice 16+) | open |
+
+**Implementation scope (Slice 15):** Hosted commit engine in
+`experimental/dpe/epoch_commit.hpp` / `epoch_commit.cpp`.  Kernel-side
+`EpochRuntimeState` wiring (§10 items 1, 3, 5) is deferred to the Axion
+kernel epoch-wiring slice.  The hosted commit engine is the normative
+reference for §2–§6 semantics.

@@ -1177,6 +1177,7 @@ if(T81_ENABLE_DPE)
   add_library(t81_dpe STATIC
     experimental/dpe/task_graph.cpp
     experimental/dpe/task_runner.cpp
+    experimental/dpe/epoch_commit.cpp
   )
   target_include_directories(t81_dpe PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -1195,6 +1196,11 @@ if(T81_ENABLE_DPE)
       experimental/dpe/tests/task_runner_test.cpp)
     target_link_libraries(t81_dpe_task_runner_test PRIVATE t81_dpe)
     add_test(NAME t81_dpe_task_runner_test COMMAND t81_dpe_task_runner_test)
+
+    add_executable(t81_dpe_epoch_commit_test
+      experimental/dpe/tests/epoch_commit_test.cpp)
+    target_link_libraries(t81_dpe_epoch_commit_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_epoch_commit_test COMMAND t81_dpe_epoch_commit_test)
   endif()
 endif()
 

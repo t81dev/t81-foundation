@@ -148,6 +148,10 @@ public:
     return fault_kind_;
   }
 
+  [[nodiscard]] const TaskId& task_id() const noexcept {
+    return tid_;
+  }
+
 private:
   const TaskDescriptor& task_;
   TaskId                tid_;

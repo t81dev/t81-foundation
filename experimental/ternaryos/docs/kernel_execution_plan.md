@@ -660,6 +660,22 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 - `[DPE-02-05]` (single-task epoch ≡ direct TISC execution) — see Slice 14.
 - Suite: 36 passed, 0 failed.
 
+**Slice 15 — DPE Epoch Commit Engine / RFC-DPE-0003 [DONE]:**
+
+- `experimental/dpe/epoch_commit.hpp` + `epoch_commit.cpp`: `commit_epoch()`.
+- Canonical commit: TaskId-ascending sort → TVA-ascending delta application →
+  last-writer-in-canonical-order for non-exclusive overlapping pages.
+- `EpochHash = CanonHash81(epoch_id ∥ input_snapshot ∥ committed_deltas_hash)`.
+- Abort path: any faulted `DeltaBuffer` → `Aborted_TaskFault`, `committed_pages`
+  empty, `epoch_hash` zero-valued.
+- `t81_dpe_epoch_commit_test`: 29 assertions across 6 test functions.
+- `[DPE-03-01]`: identical committed state regardless of submission order.
+- `[DPE-03-02]`: higher-TaskId task wins for overlapping non-exclusive pages.
+- `[DPE-03-03]`: abort on `TaskFault` — canonical state unchanged.
+- `[DPE-03-04]`: `EpochHash` identical across two independent DeltaBuffer sets.
+- RFC-DPE-0003 advanced to `accepted`; [DPE-03-05..06] deferred (RFC-0030 / kernel wiring).
+- Suite: 29 passed, 0 failed.
+
 **Slice 14 — DPE Task Runner / [DPE-02-05] [DONE]:**
 
 - `experimental/dpe/task_runner.hpp` + `task_runner.cpp`: `DpeTaskRunner::run_direct()`.

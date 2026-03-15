@@ -63,7 +63,7 @@ This index tracks RFC status and intended disposition.
 | :--- | :--- | :--- | :--- |
 | RFC-DPE-0001 | Deterministic Parallel Execution — Vision and Motivation | accepted | Informational; vocabulary and principles for the DPE series |
 | RFC-DPE-0002 | TISC Task Graph Primitives | accepted | All §5 criteria met; DpeTaskRunner + [DPE-02-05] (single-task epoch ≡ direct TISC execution) proved in Slice 14 via `task_runner_test` |
-| RFC-DPE-0003 | Epoch Execution and Canonical Commit | draft | Commit ordering rule, conflict resolution, pager interaction, CanonHash81 verification, epoch abort |
+| RFC-DPE-0003 | Epoch Execution and Canonical Commit | accepted | [DPE-03-01..04] met by hosted commit engine in Slice 15; [DPE-03-05..06] deferred (RFC-0030 / kernel epoch wiring) |
 
 ## Experimental RFCs (A-series)
 
