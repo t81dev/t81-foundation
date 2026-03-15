@@ -152,6 +152,11 @@ void record_axion_event(State& state, std::size_t current_context, t81::tisc::Op
   event.value = val_data;
   event.verdict = verdict;
   event.structured.reason = verdict.reason;
+  
+  // AX-M6: Use canonical reason string format for Stable promotion
+  // Update verdict.reason to use canonical format from structured event
+  event.verdict.reason = event.structured.to_canonical_reason_string();
+  
   if (!state.contexts.empty() && current_context < state.contexts.size()) {
     event.structured.pc = state.contexts[current_context].pc;
   } else {

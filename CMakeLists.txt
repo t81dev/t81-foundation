@@ -1609,6 +1609,10 @@ if(T81_BUILD_TESTS)
   target_link_libraries(t81_test_axion_opcodes PRIVATE t81_vm t81_core)
   add_test(NAME t81_test_axion_opcodes COMMAND t81_test_axion_opcodes)
 
+  add_executable(t81_test_axion_m6_canonical_reason tests/cpp/test_axion_m6_canonical_reason.cpp)
+  target_link_libraries(t81_test_axion_m6_canonical_reason PRIVATE t81_core)
+  add_test(NAME t81_test_axion_m6_canonical_reason COMMAND t81_test_axion_m6_canonical_reason)
+
   add_executable(t81_vm_neural_opcodes_test tests/cpp/test_vm_neural_opcodes.cpp)
   target_link_libraries(t81_vm_neural_opcodes_test PRIVATE t81_vm t81_core)
   add_test(NAME t81_vm_neural_opcodes_test COMMAND t81_vm_neural_opcodes_test)

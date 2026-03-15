@@ -37,10 +37,10 @@ def main() -> int:
         if not line.startswith("|"):
             continue
         parts = [p.strip() for p in line.split("|")]
-        if len(parts) < 6:
+        if len(parts) < 4:  # Updated to handle 4-column table
             continue
-        module = parts[2].strip("`")
-        status = parts[3].strip().lower()
+        module = parts[1].strip("`")  # Module is in column 1 (0-indexed)
+        status = parts[2].strip().lower()  # Status is in column 2
         if module in EXPECTED_MODULES:
             module_rows[module] = status
 

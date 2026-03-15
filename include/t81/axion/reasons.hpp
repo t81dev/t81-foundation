@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <sstream>
 #include <string>
 #include <string_view>
 
@@ -192,6 +193,51 @@ struct StructuredEvent {
   std::string storage_class;
   std::string numeric_class;
   bool strict_core_eligible{false};
+
+  // AX-M6: Verbatim reason-string concatenation for Stable promotion
+  // Returns canonical format: "segment=<name> addr=<value> action=<desc>"
+  [[nodiscard]] std::string to_canonical_reason_string() const {
+    std::stringstream ss;
+    
+    // Extract segment, address, and action from structured reason
+    // Expected format in reason field: "segment=<name> addr=<value> action=<desc>"
+    // If reason is already in canonical format, return as-is
+    if (reason.find("segment=") != std::string::npos && 
+        reason.find("addr=") != std::string::npos && 
+        reason.find("action=") != std::string::npos) {
+      return reason;
+    }
+    
+    // Otherwise, construct canonical format from individual fields
+    if (!storage_class.empty()) {
+      ss << "segment=" << storage_class;
+    } else {
+      ss << "segment=unknown";
+    }
+    
+    if (handle_id != 0) {
+      ss << " addr=" << handle_id;
+    } else if (!reason.empty()) {
+      // Try to extract address from reason if available
+      size_t addr_pos = reason.find("addr=");
+      if (addr_pos != std::string::npos) {
+        size_t start = addr_pos + 5;
+        size_t end = reason.find(' ', start);
+        if (end == std::string::npos) end = reason.length();
+        ss << " addr=" << reason.substr(start, end - start);
+      }
+    }
+    
+    if (!event_type.empty()) {
+      ss << " action=" << event_type;
+    } else if (!reason_code.empty()) {
+      ss << " action=" << reason_code;
+    } else {
+      ss << " action=unknown";
+    }
+    
+    return ss.str();
+  }
 };
 
 }  // namespace t81::axion
