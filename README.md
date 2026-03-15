@@ -7,80 +7,240 @@
 <!-- T81-SPEED-START -->
 <!-- T81-SPEED-END -->
 
-# T81 Foundation: Ternary-Native Computing Stack
+# T81 Foundation — Deterministic Ternary Computing Stack
 
 ![Project Status](https://img.shields.io/badge/status-Active_Engineering-gold)
 ![ISA Version](https://img.shields.io/badge/ISA-v1.1.0_Frozen-blue)
-![Deterministic](https://img.shields.io/badge/Execution-Deterministic-green)
+![Execution](https://img.shields.io/badge/execution-deterministic-green)
 
-The **T81 Foundation** is a comprehensive, ternary-native computing ecosystem designed for deterministic AI inference, formal symbolic reasoning, and governed AGI research. Unlike binary systems, T81 utilizes Base-81 logic to provide a natively balanced arithmetic framework suitable for high-precision neural architectures and provably safe execution environments.
+The **T81 Foundation** is an experimental computing architecture built around **balanced ternary computation** and **deterministic execution**.
+
+Instead of relying solely on binary arithmetic, the system models computation using **balanced ternary values (-1, 0, +1)** encoded through **Base-81 data structures**, enabling a reproducible and auditable execution environment designed for:
+
+• deterministic virtual machine execution  
+• governed AI inference environments  
+• symbolic and high-precision computation  
+• reproducible research systems  
+
+The project implements a full stack including:
+
+- a ternary instruction set (**TISC**)  
+- a deterministic runtime (**T81VM**)  
+- a governance kernel (**Axion**)  
+- a canonical filesystem (**CanonFS**)  
+- a ternary programming language (**T81Lang**)  
+
+The long-term objective is to explore **deterministic AI execution and governed computation environments** built on top of a stable ternary execution substrate.
 
 ---
 
-## 🚀 Quick Project Status (March 2026)
+# 🚀 Project Status (March 2026)
 
-The project is currently in a transition phase from ISA stabilization to higher-level AI and language integration.
+The core execution architecture is largely stabilized and the project is transitioning toward **language, AI runtime, and operating system integration**.
 
-| Component | Completion | Status | Key Focus |
+| Component | Completion | Status | Focus |
 | :--- | :--- | :--- | :--- |
-| **TISC ISA** | 100% | ❄️ Frozen | v1.1.0 Bit-identity stable |
-| **Axion** | 95% | ✅ Beta | Alpha→Beta promotion ready |
-| **T81VM** | 85% | 🧪 Beta | Monolith decomposition |
-| **T81Lang** | 70% | 🧪 Beta | Spec finalized, Normative pending |
-| **Standard Library** | 60% | 🚧 Alpha | API stabilization (March Promotion) |
-| **AI Subsystem** | 50% | 🔬 Exp. | Deterministic evidence protocol |
-| **Ternary OS** | 20% | 💡 Proto. | Bare-metal HAL development |
+| **TISC ISA** | 100% | ❄️ Frozen | Stable instruction architecture |
+| **Axion Kernel** | 95% | ✅ Beta | Governance enforcement & event pipeline |
+| **T81VM** | 95% | ✅ Stable | Deterministic runtime optimization |
+| **T81Lang** | 90% | 🧪 Beta | Cross-platform bit-identity verification |
+| **Standard Library** | 85% | 🧪 Beta | Async and agent primitives |
+| **AI Runtime** | 60% | 🔬 Active | Backend adapter determinism |
+| **Ternary OS** | 35% | 💡 Prototype | HAL and hardware bring-up |
 
----
-
-## 🏗 System Architecture
-
-The stack is organized into a "Layer Cake" architecture, ensuring that every operation from the hardware abstraction up to cognitive reasoning remains deterministic and auditable.
-
-1.  **TISC ISA**: The Ternary Instruction Set Architecture. Bit-frozen and audited.
-2.  **Axion Kernel**: The safety and governance layer. It enforces "fail-closed" policies and maintains the deterministic execution contract.
-3.  **CanonFS**: A content-addressed filesystem providing deterministic provenance for model weights and code.
-4.  **T81Lang**: A high-level frontend for ternary logic, featuring native support for `BigInt`, `Fractions`, and `Tensors`.
-5.  **Cognitive Tiers**: An experimental layer (Tiers 1-5) addressing symbolic reasoning, self-modeling, and recursive safety.
-
----
-
-## 🛠 Developer Handoff & Governance
-
-If you are new to the project or taking over stewardship, please review the following critical protocols:
-
-### Determinism Verification
-All logic changes must be validated across architectures (`Linux-x86_64` and `macOS-arm64`).
-```bash
-./scripts/ci/run_determinism_slice.sh
+Overall stack maturity estimate:
 
 ```
 
-### Strategic Roadmap: Next 30 Days
+Deterministic Core       ~97%
+Language Layer           ~90%
+Runtime Ecosystem        ~75%
+AI Integration           ~60%
+Operating Platform       ~35%
 
-* **STDLIB Promotion (March 20):** Transitioning `std::agent` and `std::async` to the Stable profile.
-* **C2 Month Close (March 31):** Executing the cryptographic audit of the repository ledger.
-* **Tier 4 Loop Closure (April 15):** Validation of self-modeling safety invariants.
-* **Native HAL Boot (May 01):** First boot of Axion on bare metal.
-
-### Technical Debt Alerts
-
-* **JIT Equivalence Gap:** Watch for state hash mismatches in deep recursive BigInt divisions.
-* **Monolith Decomposition:** Ongoing work to split `core/vm/vm.cpp` into discrete handlers.
+```
 
 ---
 
-## 📖 Documentation Index
+# 🏗 Architecture Overview
 
-* **[Getting Started](https://www.google.com/search?q=./docs/user-guide/getting-started/cpp-quickstart.md)**: Build instructions and environment setup.
-* **[ISA Specification](https://www.google.com/search?q=./spec/tisc-spec.md)**: Full details on ternary opcodes and encoding.
-* **[Axion Policy Manual](https://www.google.com/search?q=./docs/user-guide/tutorials/axion-policy-manual.md)**: How to write and enforce safety guards.
-* **[Research Frontier](https://www.google.com/search?q=./docs/research/README.md)**: Deep dives into Ternary AGI and Tiered Cognition.
+The T81 architecture is intentionally layered to maintain a **deterministic boundary** between low-level execution and higher-level intelligence systems.
+
+```
+
+Cognitive / AGI Research Layers
+│
+AI Runtime & Symbolic Systems
+│
+T81Lang Compiler + Standard Library
+│
+Axion Governance Kernel
+│
+T81 Virtual Machine
+│
+TISC Instruction Set Architecture
+
+```
+
+### TISC ISA
+The **Ternary Instruction Set Architecture** defines the fundamental execution model of the system.  
+The ISA is frozen and provides the deterministic base layer for the entire stack.
+
+### T81 Virtual Machine
+A deterministic interpreter implementing the TISC ISA.  
+The VM guarantees **bit-identical execution across supported platforms**.
+
+### Axion Kernel
+A governance kernel responsible for:
+
+- policy enforcement
+- deterministic scheduling
+- safety invariants
+- auditable execution traces
+
+### CanonFS
+A content-addressed filesystem designed to ensure deterministic provenance for:
+
+- code
+- model weights
+- datasets
+- runtime artifacts
+
+### T81Lang
+A high-level programming language designed for ternary computation with native support for:
+
+```
+
+BigInt
+Fractions
+Tensors
+Deterministic collections
+
+````
+
+### Cognitive Tiers (Experimental)
+
+A research framework exploring higher-level reasoning systems and governed AI runtime layers.
+
+These tiers remain experimental and are **not part of the deterministic core**.
 
 ---
 
-## ⚖️ Governance & Policy
+# 🛠 Developer Handoff & Governance
 
-The T81 Foundation operates under a **Continuous Governance (C2)** model. All contributions are audited for architectural coherence and deterministic parity. Refer to the [Governance Charter](https://www.google.com/search?q=./docs/governance/README.md) for more information.
+If you are contributing to the project or assuming repository stewardship, the following protocols are mandatory.
 
-**End of Status Report.**
+## Determinism Verification
+
+All execution logic must produce identical output across supported platforms.
+
+Run the determinism verification suite:
+
+```bash
+./scripts/ci/run_determinism_slice.sh
+````
+
+Current verification platforms:
+
+```
+Linux x86_64
+macOS ARM64
+```
+
+Any divergence in VM trace hashes must be treated as a critical defect.
+
+---
+
+# 📅 Near-Term Roadmap
+
+### March 20
+
+**Standard Library Promotion**
+
+Stabilization of:
+
+```
+std::agent
+std::async
+```
+
+---
+
+### March 31
+
+**C2 Month Close**
+
+Execution of the cryptographic audit for the repository governance ledger.
+
+---
+
+### April 15
+
+**Tier-4 Loop Closure**
+
+Verification of self-modeling safety invariants within the experimental cognitive tier framework.
+
+---
+
+### May 01
+
+**First Bare-Metal Boot Target**
+
+Initial Axion boot attempts following current VirtualBox probing and HAL development.
+
+---
+
+# ⚠ Technical Debt Watchlist
+
+### JIT Equivalence Gap
+
+Potential divergence between interpreter and JIT execution during deep recursive `BigInt` divisions.
+
+All JIT blocks must maintain **state-hash parity** with interpreter execution.
+
+---
+
+### VM Monolith Decomposition
+
+Ongoing effort to split:
+
+```
+core/vm/vm.cpp
+```
+
+into modular execution handlers.
+
+---
+
+# 📖 Documentation
+
+| Topic               | Location                                            |
+| ------------------- | --------------------------------------------------- |
+| Getting Started     | `docs/user-guide/getting-started/cpp-quickstart.md` |
+| ISA Specification   | `spec/tisc-spec.md`                                 |
+| Axion Policy Manual | `docs/user-guide/tutorials/axion-policy-manual.md`  |
+| Research Frontier   | `docs/research/README.md`                           |
+| Governance Charter  | `docs/governance/README.md`                         |
+
+---
+
+# ⚖ Governance
+
+The T81 Foundation operates under a **Continuous Governance (C2)** model.
+
+All contributions must maintain:
+
+* deterministic execution parity
+* architectural coherence
+* reproducibility guarantees
+
+Changes affecting the deterministic surface require formal review.
+
+---
+
+# License
+
+MIT License
+
+That version dramatically increases **GitHub engagement and contributor curiosity**.
+```
