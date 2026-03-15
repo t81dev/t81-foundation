@@ -4261,7 +4261,7 @@ struct DeterminismBaselineEntry {
 bool capture_determinism_run_record(const fs::path& input, const std::optional<fs::path>& policy_path,
                                     DeterminismRunRecord& record, std::string& error_message) {
   try {
-    auto program = t81::tisc::load_program(input);
+    auto program = t81::tisc::load_program(input.string());
     if (policy_path) {
       std::ifstream ifs(*policy_path);
       if (!ifs) {
@@ -4788,7 +4788,7 @@ int run_determinism_command(const char* command_name, const Args& args) {
     bool ok = true;
     std::size_t mismatch_run = 0;
     for (std::size_t run = 0; run < multi_run_count; ++run) {
-      auto program = t81::tisc::load_program(input);
+      auto program = t81::tisc::load_program(input.string());
       if (policy_path) {
         std::ifstream ifs(*policy_path);
         if (!ifs) {
@@ -5207,7 +5207,7 @@ int run_vm_command(const Args& args) {
     return t81::cli::run_tisc(input, policy_path, true, trace_path);
   }
   if (action == "until" || action == "step" || action == "regs" || action == "stack" || action == "mem") {
-    auto program = t81::tisc::load_program(input);
+    auto program = t81::tisc::load_program(input.string());
     if (policy_path) {
       std::ifstream ifs(*policy_path);
       if (!ifs) {
@@ -5380,7 +5380,7 @@ int run_vm_command(const Args& args) {
     return ok ? 0 : 1;
   }
   if (action == "state") {
-    auto program = t81::tisc::load_program(input);
+    auto program = t81::tisc::load_program(input.string());
     if (policy_path) {
       std::ifstream ifs(*policy_path);
       if (!ifs) {
@@ -5432,7 +5432,7 @@ int run_vm_command(const Args& args) {
     return 0;
   }
   if (action == "profile" || action == "explain-trap") {
-    auto program = t81::tisc::load_program(input);
+    auto program = t81::tisc::load_program(input.string());
     if (policy_path) {
       std::ifstream ifs(*policy_path);
       if (!ifs) {
@@ -5640,7 +5640,7 @@ int run_tier_command(const Args& args) {
     error("tier " + action + " expects a .tisc input file.");
     return 1;
   }
-  auto program = t81::tisc::load_program(input);
+  auto program = t81::tisc::load_program(input.string());
   const int required_tier = required_tier_for_program(program);
 
   if (action == "check") {
@@ -5785,7 +5785,7 @@ int run_tisc_command(const Args& args) {
     return t81::cli::disasm_tisc(input);
   }
   if (action == "validate") {
-    auto program = t81::tisc::load_program(input);
+    auto program = t81::tisc::load_program(input.string());
     if (as_json) {
       std::cout << "{\n";
       std::cout << "  \"schema\": \"t81.tisc-validate.v1\",\n";
@@ -5804,7 +5804,7 @@ int run_tisc_command(const Args& args) {
     return 0;
   }
   if (action == "stats") {
-    auto program = t81::tisc::load_program(input);
+    auto program = t81::tisc::load_program(input.string());
     std::map<std::string, std::size_t> opcode_counts;
     for (const auto& insn : program.insns) {
       ++opcode_counts[std::string(t81::tisc::opcode_name(insn.opcode))];
