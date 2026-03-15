@@ -21,7 +21,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | :--- | :--- |
 | Overall | Green — **347/347 tests passing (100%)** |
 | Release Readiness | **GO** — v1.4.0-Stable tagged; v1.3.2 stable released 2026-03-08 |
-| Current Main | `35754304` — RFC sweep (0001/0003/0004/0005/0007/0009/0023/0024/0029/0030 accepted); AX-M6 canonical reason fix; Windows MSVC build clean; spec/rfc/ duplicate removed; spec/t81lang_features.md created |
+| Current Main | `2a81f118` — RFC sweep complete (0001/0003/0004/0005/0007/0009/0023/0024/0029/0030 accepted); RFC-0006/00A7 implementation gap notes added; AX-M6 canonical reason fix; Windows MSVC build clean; spec/rfc/ duplicate removed; spec/t81lang_features.md created |
 | Open Blockers | None |
 | Frozen Core | Intact — no freeze exceptions |
 | Determinism Registry | All Verified surfaces clean |
@@ -40,7 +40,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | RFC-0002 DEC closure | 2026-03-15 | **Closed** — advanced to `accepted`; §11 conformance tests fulfilled |
 | AI A-series RFC final status | 2026-03-15 | **Closed** — 00A0/A1/A5/A8 superseded; 00A3/A4/A6 accepted |
 | Axion Beta candidacy review | 2026-03-15 | **Closed** — GO stamped; P4 (§1.2) + P5 (§1.6) satisfied; AX-G01 met; 49/49 tests; review record `AXION_BETA_STABILITY_REVIEW_2026-03.md` |
-| RFC sweep (0001/0003/0004/0005/0007/0009/0023/0024/0029/0030) | 2026-03-15 | **Closed** — all 10 advanced Draft → Accepted; spec/t81lang_features.md created; RFC-0028 status note added; RFC-0006/00A7 remain Draft (implementation gaps documented) |
+| RFC sweep (0001/0003/0004/0005/0007/0009/0023/0024/0029/0030) | 2026-03-15 | **Closed** — all 10 advanced Draft → Accepted; spec/t81lang_features.md created; RFC-0028/0006/00A7 remain Draft (implementation gap notes added to all three) |
 | AX-M6 canonical reason verification | 2026-03-15 | **Closed** — 5/5 t81_test_axion_m6_canonical_reason passing; unknown fallback + action=unknown fallback fixed |
 | Windows MSVC build | 2026-03-15 | **Closed** — C4996 (getenv), C4456 (local variable hiding), ir_generator vector_type shadow all resolved; /wd4996 /wd4456 added to MSVC suppressions |
 | T81Graph lang-side serialization (BG-09) | 2026-05-15 | **Closed** |
