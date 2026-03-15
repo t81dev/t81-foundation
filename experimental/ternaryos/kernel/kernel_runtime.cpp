@@ -1,4 +1,6 @@
 #include "kernel_main.hpp"
+#include "../hal/aarch64_trap_entry.hpp"
+#include "../hal/qemu_kernel_entry.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -243,7 +245,22 @@ std::optional<ipc::CanonMessage> axion_kernel_ipc_recv(
 }
 
 int axion_kernel_main(const hal::BootContext& ctx) noexcept {
-  return axion_kernel_bootstrap(ctx).has_value() ? 0 : 1;
+  auto maybe_state = axion_kernel_bootstrap(ctx);
+  if (!maybe_state.has_value()) return 1;
+
+  // On QEMU AArch64 bare-metal: register the SVC trap dispatcher, initialise
+  // the GICv3 + ARM timer, install VBAR_EL1, and enter the hardware-driven
+  // event loop.  axion_kernel_run_loop never returns (max_steps == 0).
+  //
+  // On hosted / non-QEMU builds axion_kernel_bootstrap has already exercised
+  // the kernel internals; we return 0 immediately for testability.
+  if (ctx.platform_id.rfind("qemu-aarch64:", 0) == 0) {
+    hal::axion_kernel_set_kernel_state_for_trap_dispatch(&*maybe_state);
+    hal::qemu_hardware_init();
+    hal::qemu_kernel_run_loop(*maybe_state);
+  }
+
+  return 0;
 }
 
 }  // namespace t81::ternaryos::kernel

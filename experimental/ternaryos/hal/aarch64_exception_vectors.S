@@ -62,7 +62,7 @@ axion_vec_cur_spx_sync:
 
     .balign 128
 axion_vec_cur_spx_irq:
-    b   axion_vec_unhandled
+    b   axion_irq_entry         // GIC IRQ while kernel runs at EL1/SPx
 
     .balign 128
 axion_vec_cur_spx_fiq:
@@ -214,4 +214,58 @@ axion_svc_entry:
 
     // Deallocate frame and return from exception.
     add  sp, sp, #280
+    eret
+
+// ── IRQ entry: save caller-saved regs, call C handler, restore, ERET ─────────
+//
+// Branched to from axion_vec_cur_spx_irq (offset 0x280) when a GIC IRQ fires
+// while the kernel is running at EL1 with SP_EL1 (the normal execution mode).
+// The ARM generic timer physical PPI (INTID 30) is the primary source.
+//
+// We save only the AAPCS64 caller-saved registers (x0–x18) plus the link
+// register (x30/LR) since the C handler may clobber them.  Callee-saved
+// registers (x19–x29) are preserved by the C ABI.
+//
+// Frame layout (160 bytes):
+//   [sp +   0]  x0    [sp +   8]  x1
+//   [sp +  16]  x2    [sp +  24]  x3
+//   [sp +  32]  x4    [sp +  40]  x5
+//   [sp +  48]  x6    [sp +  56]  x7
+//   [sp +  64]  x8    [sp +  72]  x9
+//   [sp +  80]  x10   [sp +  88]  x11
+//   [sp +  96]  x12   [sp + 104]  x13
+//   [sp + 112]  x14   [sp + 120]  x15
+//   [sp + 128]  x16   [sp + 136]  x17
+//   [sp + 144]  x18   [sp + 152]  x30 (LR)
+
+    .balign 16
+    .global axion_irq_entry
+axion_irq_entry:
+    sub  sp, sp, #160
+
+    stp  x0,  x1,  [sp,   #0]
+    stp  x2,  x3,  [sp,  #16]
+    stp  x4,  x5,  [sp,  #32]
+    stp  x6,  x7,  [sp,  #48]
+    stp  x8,  x9,  [sp,  #64]
+    stp  x10, x11, [sp,  #80]
+    stp  x12, x13, [sp,  #96]
+    stp  x14, x15, [sp, #112]
+    stp  x16, x17, [sp, #128]
+    stp  x18, x30, [sp, #144]
+
+    bl   axion_irq_handler_aarch64
+
+    ldp  x18, x30, [sp, #144]
+    ldp  x16, x17, [sp, #128]
+    ldp  x14, x15, [sp, #112]
+    ldp  x12, x13, [sp,  #96]
+    ldp  x10, x11, [sp,  #80]
+    ldp  x8,  x9,  [sp,  #64]
+    ldp  x6,  x7,  [sp,  #48]
+    ldp  x4,  x5,  [sp,  #32]
+    ldp  x2,  x3,  [sp,  #16]
+    ldp  x0,  x1,  [sp,   #0]
+
+    add  sp, sp, #160
     eret

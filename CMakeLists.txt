@@ -586,6 +586,7 @@ if(T81_ENABLE_TERNARYOS)
     experimental/ternaryos/hal/virtualbox_platform.cpp
     experimental/ternaryos/hal/virtualbox_guest_devices.cpp
     experimental/ternaryos/hal/qemu_platform.cpp
+    experimental/ternaryos/hal/qemu_kernel_entry.cpp
     experimental/ternaryos/kernel/kernel_runtime.cpp
     experimental/ternaryos/kernel/kernel_actions.cpp
     experimental/ternaryos/kernel/kernel_abi.cpp
