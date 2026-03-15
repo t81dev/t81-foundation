@@ -1958,7 +1958,7 @@ int run_trace_replay(const TraceArgs& args) {
   auto program = t81::tisc::load_program(tisc_path.string());
   auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
-  vm->run_to_halt();
+  (void)vm->run_to_halt();
   const auto& current_trace = vm->state().trace;
   std::ifstream ifs(trace_path);
   if (!ifs) {
