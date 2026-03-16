@@ -7,7 +7,7 @@ project(t81 LANGUAGES C CXX)
 # ---------- Version ----------
 set(T81_VERSION_MAJOR 1)
 set(T81_VERSION_MINOR 3)
-set(T81_VERSION_PATCH 2)
+set(T81_VERSION_PATCH 3)
 set(T81_VERSION "${T81_VERSION_MAJOR}.${T81_VERSION_MINOR}.${T81_VERSION_PATCH}")
 
 # Generate version header
@@ -669,6 +669,15 @@ if(T81_ENABLE_TERNARYOS)
   target_link_libraries(t81_ternaryos_shell PUBLIC t81_ternaryos_hal)
   target_compile_features(t81_ternaryos_shell PUBLIC ${T81_CXX_STD_FEATURE})
 
+  # RFC-00B9 — TernaryOS User Environment (t81-init, session manager, t81sh)
+  add_library(t81_ternaryos_userenv STATIC
+    experimental/ternaryos/userenv/user_env.cpp)
+  target_include_directories(t81_ternaryos_userenv PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+  target_link_libraries(t81_ternaryos_userenv PUBLIC t81_ternaryos_shell)
+  target_compile_features(t81_ternaryos_userenv PUBLIC ${T81_CXX_STD_FEATURE})
+
   add_executable(t81_ternaryos_demo
     experimental/ternaryos/apps/demo.cpp)
   target_link_libraries(t81_ternaryos_demo PRIVATE t81_ternaryos_hal)
@@ -1254,6 +1263,12 @@ if(T81_ENABLE_TERNARYOS)
       experimental/ternaryos/tests/shell_session_test.cpp)
     target_link_libraries(t81_ternaryos_shell_session_test PRIVATE t81_ternaryos_shell)
     add_test(NAME t81_ternaryos_shell_session_test COMMAND t81_ternaryos_shell_session_test)
+
+    # RFC-00B9 — TernaryOS User Environment acceptance tests (AC-1 through AC-15)
+    add_executable(t81_ternaryos_user_env_test
+      experimental/ternaryos/tests/user_env_test.cpp)
+    target_link_libraries(t81_ternaryos_user_env_test PRIVATE t81_ternaryos_userenv)
+    add_test(NAME t81_ternaryos_user_env_test COMMAND t81_ternaryos_user_env_test)
 
     if(T81_ENABLE_DPE)
       add_executable(t81_ternaryos_epoch_submission_test
