@@ -9,10 +9,11 @@
 
 # T81 Foundation — Deterministic Ternary Computing Stack
 
-![Release](https://img.shields.io/badge/release-v1.4.1--Stable-blue)
-![Tests](https://img.shields.io/badge/tests-363%2F363_passing-brightgreen)
-![ISA](https://img.shields.io/badge/ISA-v1.1.0_Frozen-blue)
+![Release](https://img.shields.io/badge/release-v1.5.0--Stable-blue)
+![Tests](https://img.shields.io/badge/tests-364%2F364_passing-brightgreen)
+![ISA](https://img.shields.io/badge/ISA-v1.2.0_Frozen-blue)
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
+![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 Leveraging the theoretical efficiency of base-e computation, **T81 Foundation** is a deterministic computing stack built on **balanced ternary arithmetic** ({-1, 0, +1}) with a full-chain governance model covering instruction set, virtual machine, language compiler, and AI inference environment.
@@ -28,21 +29,24 @@ The stack delivers:
 
 ## Project Status — March 2026
 
-**Phase: Maintenance** — v1.4.1-Stable; 363/363 tests passing; all RFC drafts closed; no open blockers.
+**Phase: Active Development** — v1.5.0-Stable; 364/364 tests passing; cross-platform determinism verified on Linux x86\_64 + macOS ARM64.
 
 | Component | Maturity | Notes |
 | :--- | :--- | :--- |
-| **TISC ISA** | ❄️ Frozen | Opcode semantics immutable under v1.x; `AgentInvoke` added (RFC-0015) |
+| **TISC ISA** | ❄️ Frozen | v1.2.0; opcode semantics immutable under v1.x; 9 new opcodes in v1.2: `AgentInvoke` (RFC-0015), 6 ternary-native inference ops (RFC-0034), 3 FFI ops (RFC-00B8) |
 | **Data Types** | ❄️ Frozen | BigInt, Float, Complex, Map, Set — bit-stable encoding; 2026-02-27 audit clean |
-| **T81VM** | ✅ Stable | `AgentInvoke` dispatch with Axion audit; 363/363 tests |
-| **T81Lang** | ✅ Stable | spec v1.3 Stable; first-class `agent`/`behavior` (RFC-0015); §3.2 I/O channels defined; all sections complete |
-| **Axion Governance Kernel** | ✅ Stable | P4 Safety & P5 Privileged Instruction satisfied; AX-M6 canonical reason strings; every `AgentInvoke` emits audit event |
+| **T81VM** | ✅ Stable | Full TISC v1.2 dispatch; `AgentInvoke` + ternary-native inference + FFI opcodes; 364/364 tests |
+| **T81Lang** | ✅ Stable | spec v1.3 Stable; first-class `agent`/`behavior` (RFC-0015); `agent`/`behavior` usable as contextual identifiers; all sections complete |
+| **Axion Governance Kernel** | ✅ Stable | P4 Safety & P5 Privileged Instruction satisfied; AX-M6 canonical reason strings; every `AgentInvoke` + `TACT` activation gate emits audit event |
+| **Ternary-Native Inference** | 🔬 Experimental | RFC-0034: `TWMATMUL`, `TQUANT`, `TATTN`, `TWEMBED`, `TERNACCUM`, `TACT`; multiplication-free inference; T81WTN weight format; 5/5 conformance tests; T81Lang frontend pending RFC-0036 |
+| **Governed FFI** | 🔬 Experimental | RFC-00B8 Phase 1: `FFIDispatcher`, `FFILibraryRegistry`, 3 VM opcodes; governance pipeline + audit trail; T81Lang `foreign {}` syntax pending RFC-0036 |
 | **TUI Frontends** | ✅ Accepted | `t81 studio` (human operator) + `t81 agent` (AI-native); FTXUI v5.0.0; RFC-0033 accepted |
 | **T81Graph** | ✅ Beta | VM opcode lowering + lang-side serialization wired; DCP verification complete; 6/6 tests |
 | **DPE (Parallel Execution)** | ✅ Accepted | RFC-DPE-0001–0009 all accepted; task graph, epoch history ring, epoch audit events, timeout fully implemented |
 | **Cognitive Tiers** | ✅ Accepted | Tier4 Cognition (RFC-0021): `Tier4Loop`, `SelfModel` (81-entry ring), `RecursiveImprovementBounds`, `TierAwarePlanner`; 4 test suites pass |
 | **Benchmark Suite** | ✅ Accepted | RFC-00A2: VM throughput + CanonHash81 determinism validation (`score=1.0` across all runs); `t81 internal benchmark` |
-| **Axion OS Kernel** | 🔬 Experimental | TernaryOS: pager, scheduler, IPC, interrupt framework, QEMU x86_64 EFI lane operational; 9/9 ternaryOS tests pass |
+| **Cross-Platform Determinism CI** | ✅ Accepted | Daily GitHub Actions workflow compares T81Lang bytecode hashes across Linux x86\_64 (gcc-14) and macOS ARM64 (clang); publicly auditable evidence record |
+| **Axion OS Kernel** | 🔬 Experimental | TernaryOS: pager, scheduler, IPC, interrupt framework, QEMU x86\_64 EFI lane operational; 9/9 ternaryOS tests pass |
 
 ---
 
@@ -63,23 +67,31 @@ The stack delivers:
 │  TISC interpreter            │  EpochGraph · DeltaBuffer    │
 │  (deterministic)             │  (RFC-DPE-0002)              │
 ├──────────────────────────────┴──────────────────────────────┤
-│  TISC ISA  ❄️ Frozen  +  Data Types  ❄️ Frozen              │
+│  TISC ISA v1.2  ❄️ Frozen  +  Data Types  ❄️ Frozen         │
 │  Deterministic substrate — CanonHash81 bit-exact traces     │
+├─────────────────────────────────────────────────────────────┤
+│  Governed FFI (RFC-00B8)  ·  Ternary-Native Inference       │
+│  FFIDispatcher · FFILibraryRegistry                         │
+│  TWMATMUL · TQUANT · TATTN · TWEMBED · TERNACCUM · TACT     │
 └─────────────────────────────────────────────────────────────┘
   Experimental: TernaryOS (Axion OS Kernel) · Cognitive Tiers
 ```
 
 ### Key components
 
-**TISC ISA** — Ternary Instruction Set Architecture. Frozen under v1.x; the immutable execution contract for the entire stack.
+**TISC ISA v1.2** — Ternary Instruction Set Architecture. Frozen under v1.x; the immutable execution contract for the entire stack. v1.2 adds 9 opcodes: `AgentInvoke` (RFC-0015), six ternary-native inference ops (RFC-0034), and three governed FFI ops (RFC-00B8).
 
-**T81VM** — Deterministic TISC interpreter. Guarantees bit-identical output across platforms; Axion pre-dispatch isolation keeps governance hooks outside the hot execution path.
+**T81VM** — Deterministic TISC interpreter. Guarantees bit-identical output across platforms; Axion pre-dispatch isolation keeps governance hooks outside the hot execution path. Full TISC v1.2 dispatch including ternary-native inference and FFI.
 
-**Axion Governance Kernel** — Policy engine that intercepts `AXREAD`, `AXSET`, `AXVERIFY`, and AI opcodes before any side effect. Fail-closed on policy parse failure. Stable-certified 2026-03-15 with 54/54 tests passing (49/49 axion + 5/5 AX-M6 canonical reason strings).
+**Axion Governance Kernel** — Policy engine that intercepts `AXREAD`, `AXSET`, `AXVERIFY`, AI opcodes, and FFI calls before any side effect. Fail-closed on policy parse failure. Stable-certified 2026-03-15 with 54/54 tests passing.
 
 **CanonFS** — Content-addressed filesystem. Stores all code objects, model weights, and runtime artifacts as immutable, hash-identified blobs. Provides provenance for determinism audits.
 
-**T81Lang** — High-level language targeting TISC bytecode. Native types: `BigInt`, `Fraction`, `Float`, `Complex`, `Tensor`, `Map`, `Set`. First-class `agent { behavior }` declarations compile to `AGENT_INVOKE` with Axion audit (RFC-0015). Compiler pipeline: lexer → parser → typed AST → semantic analysis → IR generation.
+**T81Lang** — High-level language targeting TISC bytecode. Native types: `BigInt`, `Fraction`, `Float`, `Complex`, `Tensor`, `Map`, `Set`. First-class `agent { behavior }` declarations compile to `AGENT_INVOKE` with Axion audit (RFC-0015). `agent` and `behavior` are usable as contextual identifiers in all expression and binding positions. Compiler pipeline: lexer → parser → typed AST → semantic analysis → IR generation.
+
+**Ternary-Native Inference (RFC-0034)** — Six TISC opcodes for multiplication-free AI inference using balanced ternary weights {−1, 0, +1}: `TWMATMUL` (matmul), `TQUANT` (quantize to trit), `TATTN` (ternary attention), `TWEMBED` (weight embedding), `TERNACCUM` (scalar dot product), `TACT` (activation with Axion ceiling gate). T81WTN weight format. T81Lang frontend planned in RFC-0036.
+
+**Governed FFI (RFC-00B8)** — Phase 1 infrastructure for calling external code under Axion governance. `FFIDispatcher` enforces policy checks, resource quotas, and audit trails before any foreign call. `FFILibraryRegistry` tracks registered libraries by name and version hash. Three VM opcodes: `FFICall`, `FFIRegister`, `FFIPolicySet`. T81Lang `foreign {}` syntax planned in RFC-0036.
 
 **TUI Frontends** — Two complementary terminal interfaces built on FTXUI v5.0.0:
 
@@ -170,9 +182,14 @@ Verified platforms: **Linux x86_64**, **macOS ARM64**. Any divergence in VM trac
 | C2 Month-Close | 2026-03-31 | Governance ledger audit; preflight PASS 2026-03-10 |
 | Axion Stable promotion | ✅ **COMPLETED 2026-03-15** | AX-M6 canonical reason strings implemented; 54/54 tests passing; production-ready |
 | T81Graph Beta promotion | ✅ **COMPLETED 2026-03-15** | VM opcode lowering complete; DCP verification; 6/6 tests passing |
+| RFC-00B5 interrupt policy | ✅ **COMPLETED 2026-03-16** | Governed event interrupt model integrated; slices 26-28 complete |
+| RFC-0034 Ternary-Native Inference | ✅ **COMPLETED 2026-03-16** | 6 new TISC opcodes; multiplication-free inference; TACT activation-ceiling gate; 5/5 conformance tests |
+| RFC-00B8 Governed FFI (Phase 1) | ✅ **COMPLETED 2026-03-16** | FFI dispatcher + library registry; 3 VM opcodes; governance pipeline; audit trail |
+| Cross-platform determinism CI | ✅ **COMPLETED 2026-03-16** | Daily GitHub Actions workflow; Linux x86\_64 + macOS ARM64 hash comparison; public evidence record |
+| RFC-0036 T81Lang Grammar | 2026-Q2 | `foreign {}` + `@deterministic`/`@governed` annotations; connects RFC-0034 and RFC-00B8 VM work to the language frontend |
 | T81Lang spec promotion | 2026-05-15 | Bytecode deterministic compilation profile; full spec-section traceability |
-| RFC-00B5 interrupt policy | ✅ **COMPLETED 2026-03-16** | Governed event interrupt model integrated; slices 26-28 complete; 3214/3214 tests passing |
-| TernaryOS bare-metal boot | TBD | x86_64 VirtualBox host execution + evidence return |
+| Stage 2: Trace Replay Debugger | 2026-Q2 | CanonHash81 trace → deterministic replay tool; enables external verification |
+| TernaryOS bare-metal boot | TBD | x86\_64 VirtualBox host execution + evidence return |
 
 ---
 
@@ -420,17 +437,17 @@ A functioning deterministic computing stack.
 
 ---
 
-### Stage 2 — Verified Platform *(Next Step)*
+### Stage 2 — Verified Platform *(In Progress)*
 
 **Goal:** Independent validation.
 
 Key work:
 
-* third-party determinism verification
-* VM conformance test suite
-* trace replay debugger
-* deterministic benchmarking framework
-* reproducible build verification
+* ✅ third-party determinism verification — daily GitHub Actions workflow compares Linux x86\_64 and macOS ARM64 bytecode hashes; public evidence record on every commit
+* ✅ VM conformance test suite — 27 spec conformance tests + 364 total passing
+* ✅ deterministic benchmarking framework — RFC-00A2; `score=1.0` across all runs
+* trace replay debugger — planned; takes CanonHash81 trace artifact and replays it deterministically
+* reproducible build verification — partial; CanonHash81 internal; external build reproducer pending
 
 **Outcome:**
 Externally trusted deterministic runtime.
@@ -502,19 +519,19 @@ A governed deterministic computing ecosystem.
 
 ---
 
-## Critical Next Milestone
+## Critical Next Milestones
 
-The most important immediate transition:
+### Stage 2 completion — Verified Platform
 
-**Prototype → Verified Platform**
+Cross-platform determinism CI is now in place. Remaining Stage 2 work:
 
-This requires:
+- trace replay debugger — enables external parties to replay a CanonHash81 trace and verify the result independently
+- RFC-0036 T81Lang grammar — connects RFC-0034 ternary inference and RFC-00B8 FFI VM work to the language frontend
+- academic or industry collaboration — when other groups reproduce the deterministic results, the architecture moves from **project** to **platform**
 
-* external reproducibility confirmation
-* independent benchmarking
-* academic or industry collaboration
+### Stage 3 entry — Research Ecosystem
 
-When other groups can reproduce the deterministic results, the architecture moves from **project** to **platform**.
+RFC-0034 lays the technical groundwork for ternary neural network research. RFC-0036 will expose it at the language level. Post-quantum cryptography (lattice polynomial operations over {−1, 0, +1}) is the next natural Stage 3 research area after the language frontend is complete.
 
 ## License
 
