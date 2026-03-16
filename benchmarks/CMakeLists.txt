@@ -37,6 +37,7 @@ set(BENCHMARK_SUITE_SOURCES
     BM_TritwiseWorkloads.cpp
     BM_DispatchOverhead.cpp
     BM_VMSimulation.cpp
+    BM_DeterminismValidation.cpp  # RFC-00A2: determinism validation
 )
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
     list(APPEND BENCHMARK_SUITE_SOURCES BM_Base81SIMD.cpp)
