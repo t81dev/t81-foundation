@@ -391,6 +391,131 @@ You **have** produced something rarer at this stage: a coherent, runnable, gover
 
 That is what you really accomplished: you built a system where computation is treated as something that can be *proved*, *audited*, and *governed*—not merely executed.
 
+---
+
+## T81 Foundation — Maturity Ladder (Condensed Overview)
+
+A simplified progression showing how the system evolves from prototype to infrastructure.
+
+---
+
+### Stage 1 — Prototype Architecture *(Current)*
+
+**Status:** Achieved
+
+Core deterministic stack implemented.
+
+Components in place:
+
+* TISC ISA (frozen execution contract)
+* T81VM deterministic interpreter
+* Axion governance kernel
+* CanonFS content-addressed storage
+* T81Lang compiler
+* determinism verification pipeline
+* CLI and TUI operator interfaces
+
+**Outcome:**
+A functioning deterministic computing stack.
+
+---
+
+### Stage 2 — Verified Platform *(Next Step)*
+
+**Goal:** Independent validation.
+
+Key work:
+
+* third-party determinism verification
+* VM conformance test suite
+* trace replay debugger
+* deterministic benchmarking framework
+* reproducible build verification
+
+**Outcome:**
+Externally trusted deterministic runtime.
+
+---
+
+### Stage 3 — Research Ecosystem
+
+Focus shifts to applications.
+
+Primary research areas:
+
+* ternary neural networks
+* deterministic AI inference
+* signal processing libraries
+* physics simulation
+* lattice-based cryptography
+
+**Outcome:**
+Adoption by researchers and experimental compute projects.
+
+---
+
+### Stage 4 — Hardware Exploration
+
+Bridge software architecture to silicon.
+
+Development path:
+
+* FPGA ternary ALU prototypes
+* ternary register banks
+* packed-trit SIMD units
+* ISA microarchitecture validation
+
+**Outcome:**
+First ternary-aware compute hardware prototypes.
+
+---
+
+### Stage 5 — Deterministic Infrastructure
+
+Expand from runtime to infrastructure.
+
+Possible capabilities:
+
+* deterministic cloud execution
+* reproducible scientific computation
+* verifiable distributed workloads
+* CanonFS artifact networks
+
+**Outcome:**
+A global deterministic computation platform.
+
+---
+
+### Stage 6 — New Computing Paradigm
+
+Long-term possibility.
+
+Potential developments:
+
+* native ternary processors
+* hardware AI governance enforcement
+* deterministic AI execution environments
+* globally reproducible compute systems
+
+**Outcome:**
+A governed deterministic computing ecosystem.
+
+---
+
+## Critical Next Milestone
+
+The most important immediate transition:
+
+**Prototype → Verified Platform**
+
+This requires:
+
+* external reproducibility confirmation
+* independent benchmarking
+* academic or industry collaboration
+
+When other groups can reproduce the deterministic results, the architecture moves from **project** to **platform**.
+
 ## License
 
 MIT License.
