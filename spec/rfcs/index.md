@@ -49,6 +49,7 @@ This index tracks RFC status and intended disposition.
 | RFC-0031 | Deterministic AI Execution Contract | accepted | All 5 RFC-0032 promotion phases complete; conformance programs authored; phase_status advanced to spec_conformant |
 | RFC-0032 | AI Subsystem Promotion Pathway | accepted | All 5 phases complete: ternary codec, doc, Axion hooks, T81VmBackend, EvidenceCollector + AI CLI; conformance suite closed |
 | RFC-0033 | Dual TUI Frontends | accepted | All 4 phases complete: FTXUI infra, `t81 studio` (7 views, palette, REPL), `t81 agent` (14 slash cmds, session save/load), CI snapshot test (11/11 assertions) |
+| RFC-0034 | T81-Native AI Inference | proposed | Ternary-weight inference path: `.t81w/ternary` (§11.9), TWMATMUL/TQUANT/TATTN/TWEMBED/TERNACCUM/TACT opcodes (§5.17), `activation-ceiling` Axion policy, `@ternary_inference` T81Lang annotation; Q2+Q6 resolved; depends on RFC-0026/0030/0031 |
 | RFC-00B0 | Axion HAL Specification | accepted | First non-hosted promotion path and HAL contract for the Axion OS stack |
 | RFC-00B1 | Ternary MMU | accepted | TVA layout, radix page table, and MMU fault model for Axion |
 | RFC-00B2 | Device Driver Architecture | accepted | Phase 4 storage/display/network boundary and guest-device model |

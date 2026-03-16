@@ -955,6 +955,39 @@ audit event **before** the callee begins executing.
 
 ______________________________________________________________________
 
+### 5.17 Ternary-Native Inference Operations (RFC-0034)
+
+*Status: proposed — see `spec/rfcs/RFC-0034-t81-native-ai-inference.md` for
+full normative text. This section is a stub; normative encoding and semantics
+will be merged here when RFC-0034 advances to `accepted`.*
+
+All opcodes in this class operate on T81Qutrit weight handles and T81Float or
+T81BigInt activation handles. All are Tier 2+ only. All are subject to Axion
+pre-instruction shape and domain verification.
+
+Opcode byte assignments (reserved, not yet wired in `core/vm/vm.cpp`):
+
+> *Assignments TBD pending `spec/tisc/opcode-registry.md` allocation; MUST NOT
+> overlap with §5.15 range `0xBB–0xC0` or any previously assigned byte.*
+
+| Mnemonic | Operands | Description |
+| :--- | :--- | :--- |
+| `TWMATMUL` | `RD, R_ACT, R_WT` | Ternary-weight matrix multiply; T81BigInt accumulator; no FP multiply |
+| `TQUANT` | `RD, R_SRC, R_THR` | Quantize T81Float tensor to T81Qutrit using caller-supplied threshold |
+| `TATTN` | `RD, R_Q, R_K, R_V` | Attention with ternary Q/K (TWMATMUL inner product) and float V projection |
+| `TWEMBED` | `RD, R_TABLE, R_IDX` | Row-gather from T81Qutrit embedding table; output stays T81Qutrit |
+| `TERNACCUM` | `RD, R_WT, R_ACT` | Scalar 1D ternary dot-product reduction to T81BigInt |
+| `TACT` | `RD, R_SRC, R_MODE` | Named ternary activation (mode `0x01` TernaryStep, `0x02` TanhQuantized); Axion activation-ceiling gate |
+
+`TACT` `R_MODE` byte registry is maintained in `spec/tisc/opcode-registry.md`
+under a `TACT Modes` subsection. Undefined mode bytes raise `CanonFault`.
+
+Faults introduced by this class: `ActivationFault` (TACT Deny verdict).
+All other faults (`TypeFault`, `CanonFault`, `BoundsFault`, `TierFault`)
+follow §6 semantics.
+
+______________________________________________________________________
+
 ## 6. Fault Semantics
 
 All faults are **deterministic** and **Axion-visible**.

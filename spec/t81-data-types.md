@@ -630,6 +630,59 @@ rank group but requires explicit casts across group boundaries.
 
 > **Conformance programs:** [`spec/conformance/t81-data-types/widening-order.t81`](conformance/t81-data-types/widening-order.t81) · [`widening-upper-chain.t81`](conformance/t81-data-types/widening-upper-chain.t81) · [`widening-binary-interop.t81`](conformance/t81-data-types/widening-binary-interop.t81)
 
+## 11.9 Model Weight Formats (RFC-0026 / RFC-0034)
+
+Model weight files are opaque binary artifacts loaded through the `WLOAD` TISC
+opcode (RFC-0026 §5.15.3) after Axion policy gate approval. Two subtypes are
+defined; they are distinguished by a 6-byte magic prefix at offset 0 in the
+file.
+
+### T81WFQ — Float-Quantized Weight Format
+
+Magic: `T81WFQ` (bytes `54 38 31 57 46 51`).
+
+Used by RFC-0026 `WLOAD` and `QMATMUL`. Weights are stored as quantized integer
+values with an associated T81Float dequantization scale. Full format definition
+is normatively owned by RFC-0026.
+
+### T81WTN — Ternary-Native Weight Format
+
+Magic: `T81WTN` (bytes `54 38 31 57 54 4E`).
+
+*Status: proposed — normative definition in RFC-0034; this entry is a stub.*
+
+Used by RFC-0034 `TWMATMUL`, `TWEMBED`, and `TATTN`. Weights are stored as
+packed 2-bit balanced-trit values. No dequantization scale is present; the
+`scale_absent` flag in the header MUST be `true`.
+
+**Trit encoding:**
+
+```text
+00  →   0
+01  →  +1
+10  →  −1
+11  →  (reserved; WLOAD MUST raise CanonFault)
+```
+
+Weights are packed 4 trits per byte, row-major. The header includes:
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `magic` | 6 bytes | `T81WTN` — distinguishes from `T81WFQ` |
+| `rank` | u8 | tensor rank |
+| `dims[rank]` | u32[] | dimension sizes, row-major |
+| `canon_hash` | 16 bytes | CanonHash81 of packed trit payload |
+| `scale_absent` | u8 | MUST be `0x01` for ternary-native files |
+| `axion_policy_slot` | u32 | optional Axion policy handle; `0` = ambient policy |
+
+Loaders that do not recognize `T81WTN` MUST reject the file with a
+`FormatFault`. Passing a `T81WTN` handle to an opcode expecting `T81WFQ`
+(e.g., `QMATMUL`) MUST raise a `TypeFault`.
+
+The Axion `ternary-weight-domain-check` policy directive (RFC-0034 §3.3)
+controls whether the full trit payload is verified for reserved `11` encodings
+at load time (default: `true`).
+
 ______________________________________________________________________
 
 # Cross-References
