@@ -9,7 +9,7 @@
 
 # T81 Foundation — Deterministic Ternary Computing Stack
 
-![Release](https://img.shields.io/badge/release-v1.6.0--Stable-blue)
+![Release](https://img.shields.io/badge/release-v1.6.1--Stable-blue)
 ![Tests](https://img.shields.io/badge/tests-367%2F367_passing-brightgreen)
 ![ISA](https://img.shields.io/badge/ISA-v1.2.0_Frozen-blue)
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
@@ -29,7 +29,7 @@ The stack delivers:
 
 ## Project Status — March 2026
 
-**Phase: Active Development** — v1.6.0-Stable; 368/368 tests passing; cross-platform determinism verified on Linux x86\_64 + macOS ARM64.
+**Phase: Active Development** — v1.6.1-Stable; 368/368 tests passing; cross-platform determinism verified on Linux x86\_64 + macOS ARM64.
 
 | Component | Maturity | Notes |
 | :--- | :--- | :--- |
