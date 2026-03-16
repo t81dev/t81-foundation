@@ -1,9 +1,9 @@
 # Project Control Center
 
 Status: Active
-Last Updated: 2026-03-15
+Last Updated: 2026-03-16
 Owner: @t81dev
-Version: 3.2.4
+Version: 3.2.5
 
 This is the dashboard. One page. If you need detail, follow a cross-reference.
 
@@ -11,7 +11,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 ## Phase
 
-**Maintenance** — v1.4.0-Stable cut complete; RFC sweep complete (RFC-0001/0003/0004/0005/0007/0009/0023/0024/0029/0030 accepted); Windows build clean; AX-M6 canonical reason fully verified; no open blockers
+**Maintenance** — v1.4.1-Stable; RFC program 100% complete (49/49 active RFCs accepted; 11 superseded); all drafts closed; no open blockers
 
 ---
 
@@ -19,13 +19,13 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Dimension | Status |
 | :--- | :--- |
-| Overall | Green — **347/347 tests passing (100%)** |
-| Release Readiness | **GO** — v1.4.0-Stable tagged; v1.3.2 stable released 2026-03-08 |
-| Current Main | `2a81f118` — RFC sweep complete (0001/0003/0004/0005/0007/0009/0023/0024/0029/0030 accepted); RFC-0006/00A7 implementation gap notes added; AX-M6 canonical reason fix; Windows MSVC build clean; spec/rfc/ duplicate removed; spec/t81lang_features.md created |
+| Overall | Green — **363/363 tests passing (100%)** |
+| Release Readiness | **GO** — v1.4.1-Stable tagged; all RFC drafts closed 2026-03-16 |
+| Current Main | `1d80abe8` — RFC-0015 agentic constructs (agent/behavior/AGENT_INVOKE); RFC-00A2 determinism benchmarks; RFC-0011/0015/00A2 accepted; AgentInvoke §5.16 in tisc-spec; 363/363 tests |
 | Open Blockers | None |
-| Frozen Core | Intact — no freeze exceptions |
-| Determinism Registry | All Verified surfaces clean |
-| Structural Integrity | **Green** — 347/347 tests passing (100%); conformance suite 27/27 programs pass |
+| Frozen Core | Intact — AgentInvoke added as freeze exception (RFC-0015, §5.16) |
+| Determinism Registry | All Verified surfaces clean; CanonHash81 determinism_score=1.0 confirmed |
+| Structural Integrity | **Green** — 363/363 tests passing (100%); conformance suite 27/27 programs pass |
 
 ---
 
@@ -34,13 +34,16 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | Gate | Date | State |
 | :--- | :--- | :--- |
 | C2 Month-Close execution | 2026-03-31 | Scheduled — preflight PASS 2026-03-10; re-confirmed 3× same day |
+| RFC-0015 agentic constructs closure | 2026-03-16 | **Closed** — agent/behavior/AGENT_INVOKE; 9/9 AC met; 16/16 assertions; tisc-spec §5.16 added |
+| RFC-0011 grammar modernization closure | 2026-03-16 | **Closed** — 7/7 AC met; all features realized via RFC-0003/0007/0015/0029 |
+| RFC-00A2 benchmark spec closure | 2026-03-16 | **Closed** — 6/6 AC met; BM_DeterminismValidation suite; determinism_score=1.0 |
 | RFC-0031 + RFC-0032 closure | 2026-03-15 | **Closed** — both advanced to `accepted`; all 5 phases complete |
 | RFC-0033 TUI closure | 2026-03-15 | **Closed** — advanced to `accepted`; all 4 phases complete; `t81 studio`/`agent`/`ui` shipped; snapshot tests + binary-size gate + user guide |
 | RFC-DPE-0002 closure | 2026-03-15 | **Closed** — advanced to `accepted`; all 5 acceptance criteria met; `[DPE-02-01..05]` passing |
 | RFC-0002 DEC closure | 2026-03-15 | **Closed** — advanced to `accepted`; §11 conformance tests fulfilled |
 | AI A-series RFC final status | 2026-03-15 | **Closed** — 00A0/A1/A5/A8 superseded; 00A3/A4/A6 accepted |
 | Axion Beta candidacy review | 2026-03-15 | **Closed** — GO stamped; P4 (§1.2) + P5 (§1.6) satisfied; AX-G01 met; 49/49 tests; review record `AXION_BETA_STABILITY_REVIEW_2026-03.md` |
-| RFC sweep (0001/0003/0004/0005/0007/0009/0023/0024/0029/0030) | 2026-03-15 | **Closed** — all 10 advanced Draft → Accepted; spec/t81lang_features.md created; RFC-0028/0006/00A7 remain Draft (implementation gap notes added to all three) |
+| RFC sweep (0001/0003/0004/0005/0007/0009/0023/0024/0029/0030) | 2026-03-15 | **Closed** — all 10 advanced Draft → Accepted; spec/t81lang_features.md created; all remaining drafts subsequently closed 2026-03-16 |
 | AX-M6 canonical reason verification | 2026-03-15 | **Closed** — 5/5 t81_test_axion_m6_canonical_reason passing; unknown fallback + action=unknown fallback fixed |
 | Windows MSVC build | 2026-03-15 | **Closed** — C4996 (getenv), C4456 (local variable hiding), ir_generator vector_type shadow all resolved; /wd4996 /wd4456 added to MSVC suppressions |
 | T81Graph lang-side serialization (BG-09) | 2026-05-15 | **Closed** |
@@ -106,9 +109,10 @@ Full boundary: `EXTENSION_PROFILE.md`
 ## Next Decision Points
 
 1. **2026-03-31** — C2 Month-Close runbook executed and stamped in `docs/records/audits/2026-03-governance-review.md` (**Completed 2026-03-10**)
-2. **Pre-C2 / Active now** — Axion Beta candidacy evidence for P4 (§1.2 Safety & Ethics) and P5 (§1.6 Privileged Instruction); both explicitly mapped to existing verified surfaces (Owner: @t81dev, Date: 2026-03-10), fully satisfying AX-G01.
-3. **Active now** — Fuzz corpus growth: run libFuzzer for hours on `fuzz_parser` / `fuzz_vm`; commit any crash inputs
-4. **Post-C2 Release Prep** — Cut v1.4.0-Stable from v1.4.0-beta; determinism coverage for new binary_io guard path (**Completed 2026-03-10**)
+2. **2026-05-15** — T81Lang spec promotion: bytecode deterministic compilation profile; full spec-section traceability audit
+3. **TBD** — RFC-00B5 interrupt policy: actual interrupt handler behavior (policy dispatch, vector table wiring)
+4. **TBD** — TernaryOS bare-metal boot: x86_64 VirtualBox host execution + evidence return (see `experimental/ternaryos/docs/kernel_execution_plan.md`)
+5. **Active now** — Fuzz corpus growth: run libFuzzer on `fuzz_parser` / `fuzz_vm`; commit any crash inputs
 
 ---
 
