@@ -217,6 +217,15 @@ enum class Opcode : std::uint8_t {
   // Encoding: AgentInvoke RD, R_ADDR, PACK(agent_id, behavior_id)
   // Axion observes every AgentInvoke for tier-check and policy enforcement.
   AgentInvoke,
+  // RFC-0034 §5.17 — Ternary-Native Inference Operations (Tier 2+)
+  // Opcode bytes: TWMATMUL=0xC2, TQUANT=0xC3, TATTN=0xC4,
+  //               TWEMBED=0xC5, TERNACCUM=0xC6, TACT=0xC7
+  TWMATMUL,   // Ternary-weight matmul:  TWMATMUL RD, R_ACT, R_WT
+  TQUANT,     // Quantize to ternary:   TQUANT   RD, R_SRC, R_THR
+  TATTN,      // Ternary Q/K attention: TATTN    RD, R_Q, PACK(R_K, R_V)
+  TWEMBED,    // Ternary embed lookup:  TWEMBED  RD, R_TABLE, R_IDX
+  TERNACCUM,  // Ternary dot product:   TERNACCUM RD, R_WT, R_ACT
+  TACT,       // Ternary activation:    TACT     RD, R_SRC, R_MODE
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -623,12 +632,25 @@ enum class Opcode : std::uint8_t {
       return "GcSafepoint";
     case Opcode::AgentInvoke:
       return "AgentInvoke";
+    // RFC-0034 §5.17 — Ternary-Native Inference Operations
+    case Opcode::TWMATMUL:
+      return "TWMATMUL";
+    case Opcode::TQUANT:
+      return "TQUANT";
+    case Opcode::TATTN:
+      return "TATTN";
+    case Opcode::TWEMBED:
+      return "TWEMBED";
+    case Opcode::TERNACCUM:
+      return "TERNACCUM";
+    case Opcode::TACT:
+      return "TACT";
   }
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::AgentInvoke) + 1> kAllOpcodes = [] {
-  std::array<Opcode, static_cast<std::size_t>(Opcode::AgentInvoke) + 1> values{};
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::TACT) + 1> kAllOpcodes = [] {
+  std::array<Opcode, static_cast<std::size_t>(Opcode::TACT) + 1> values{};
   for (std::size_t i = 0; i < values.size(); ++i) {
     values[i] = static_cast<Opcode>(i);
   }
@@ -636,6 +658,6 @@ inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::AgentInvoke
 }();
 
 [[nodiscard]] constexpr bool is_valid_opcode(std::uint8_t raw_opcode) {
-  return raw_opcode <= static_cast<std::uint8_t>(Opcode::Int2BigInt);
+  return raw_opcode <= static_cast<std::uint8_t>(Opcode::TACT);
 }
 }  // namespace t81::tisc

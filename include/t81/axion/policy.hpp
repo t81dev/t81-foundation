@@ -89,6 +89,11 @@ struct Policy {
   std::optional<int64_t> max_symbolic_graphs;
   std::optional<int64_t> max_infinite_forms;
   std::vector<std::string> allowed_tensor_hashes;
+  // RFC-0034 §3.3 — activation-ceiling directive for TACT post-execute gate.
+  // When set, the nonzero-trit fraction of TACT output is checked against this
+  // threshold. Exceeding it triggers Quarantine (SecurityFault) or Deny
+  // (ActivationFault) depending on the verdict returned by the Axion engine.
+  std::optional<double> activation_ceiling_max_nonzero_fraction;  // range [0.0, 1.0]
   std::vector<LoopHint> loops;
   std::vector<MatchGuardRequirement> match_guards;
   std::vector<SegmentEventRequirement> segment_requirements;

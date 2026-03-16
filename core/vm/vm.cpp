@@ -18,6 +18,7 @@
 #include "t81/tensor.hpp"
 #include "t81/tensor/llama.hpp"
 #include "t81/tensor/matmul.hpp"
+#include "t81/tensor/ternary_native.hpp"
 
 #include "internal/gc_helpers.hpp"
 #include "internal/memory_segments.hpp"
@@ -5949,6 +5950,229 @@ public:
         ctx.registers[insn.a] = static_cast<std::int64_t>(shape[static_cast<std::size_t>(dim_idx)]);
         ctx.register_tags[insn.a] = ValueTag::Int;
         update_flags(ctx.registers[insn.a]);
+        break;
+      }
+      // -----------------------------------------------------------------------
+      // RFC-0034 §5.17 — Ternary-Native Inference Operations
+      // -----------------------------------------------------------------------
+      case t81::tisc::Opcode::TWMATMUL: {
+        // TWMATMUL RD, R_ACT, R_WT — ternary-weight matmul; T81BigInt accumulator.
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
+        if (auto res = promote_to_tensor(insn.c); !res) { trap = res.error(); break; }
+        auto* act_t = tensor_ptr(ctx.registers[insn.b]);
+        auto* wt_t  = tensor_ptr(ctx.registers[insn.c]);
+        if (!act_t || !wt_t) { trap = Trap::DecodeFault; break; }
+        try {
+          auto result = t81::ops::twmatmul(*act_t, *wt_t);
+          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                      "TWMATMUL ternary-weight matmul (RFC-0034)"};
+          record_axion_event(insn.opcode, static_cast<int32_t>(insn.b),
+                             ctx.registers[insn.b], verdict);
+          auto rh = alloc_tensor(std::move(result));
+          if (!rh) { trap = rh.error(); break; }
+          ctx.registers[insn.a] = *rh;
+          ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        } catch (...) {
+          trap = Trap::ShapeFault;
+        }
+        break;
+      }
+      case t81::tisc::Opcode::TQUANT: {
+        // TQUANT RD, R_SRC, R_THR — quantize T729DynamicTensor to ternary {-1,0,+1}.
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
+        auto* src_t = tensor_ptr(ctx.registers[insn.b]);
+        if (!src_t) { trap = Trap::DecodeFault; break; }
+        // R_THR is a float handle or raw int (converted to threshold).
+        float threshold = 0.5f;
+        if (ctx.register_tags[insn.c] == ValueTag::FloatHandle) {
+          auto* fp = float_ptr(ctx.registers[insn.c]);
+          if (!fp) { trap = Trap::DecodeFault; break; }
+          threshold = static_cast<float>(*fp);
+        } else {
+          threshold = static_cast<float>(ctx.registers[insn.c]);
+        }
+        try {
+          auto result = t81::ops::tquant(*src_t, threshold);
+          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                      "TQUANT ternary quantization (RFC-0034)"};
+          record_axion_event(insn.opcode, static_cast<int32_t>(insn.b),
+                             ctx.registers[insn.b], verdict);
+          auto rh = alloc_tensor(std::move(result));
+          if (!rh) { trap = rh.error(); break; }
+          ctx.registers[insn.a] = *rh;
+          ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        } catch (...) {
+          trap = Trap::TypeFault;
+        }
+        break;
+      }
+      case t81::tisc::Opcode::TATTN: {
+        // TATTN RD, R_Q, PACK(R_K, R_V) — ternary Q/K attention.
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto kv_regs = decode_ai_packed_reg_pair(insn.c);
+        if (!kv_regs.has_value()) { trap = Trap::DecodeFault; break; }
+        const int q_reg  = insn.b;
+        const int k_reg  = kv_regs->first;
+        const int v_reg  = kv_regs->second;
+        if (auto res = promote_to_tensor(q_reg);  !res) { trap = res.error(); break; }
+        if (auto res = promote_to_tensor(k_reg);  !res) { trap = res.error(); break; }
+        if (auto res = promote_to_tensor(v_reg);  !res) { trap = res.error(); break; }
+        auto* q_t = tensor_ptr(ctx.registers[q_reg]);
+        auto* k_t = tensor_ptr(ctx.registers[k_reg]);
+        auto* v_t = tensor_ptr(ctx.registers[v_reg]);
+        if (!q_t || !k_t || !v_t) { trap = Trap::DecodeFault; break; }
+        try {
+          auto result = t81::ops::tattn(*q_t, *k_t, *v_t);
+          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                      "TATTN ternary QK attention (RFC-0034)"};
+          record_axion_event(insn.opcode, static_cast<int32_t>(q_reg),
+                             ctx.registers[q_reg], verdict);
+          auto rh = alloc_tensor(std::move(result));
+          if (!rh) { trap = rh.error(); break; }
+          ctx.registers[insn.a] = *rh;
+          ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        } catch (...) {
+          trap = Trap::ShapeFault;
+        }
+        break;
+      }
+      case t81::tisc::Opcode::TWEMBED: {
+        // TWEMBED RD, R_TABLE, R_IDX — row-gather from T81Qutrit embedding table.
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.c] != ValueTag::Int) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
+        auto* table_t = tensor_ptr(ctx.registers[insn.b]);
+        if (!table_t) { trap = Trap::DecodeFault; break; }
+        const std::int64_t idx = ctx.registers[insn.c];
+        try {
+          auto result = t81::ops::twembed(*table_t, idx);
+          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                      "TWEMBED ternary embed gather (RFC-0034)"};
+          record_axion_event(insn.opcode, static_cast<int32_t>(insn.b),
+                             ctx.registers[insn.b], verdict);
+          auto rh = alloc_tensor(std::move(result));
+          if (!rh) { trap = rh.error(); break; }
+          ctx.registers[insn.a] = *rh;
+          ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        } catch (const std::out_of_range&) {
+          trap = Trap::BoundsFault;
+        } catch (...) {
+          trap = Trap::TypeFault;
+        }
+        break;
+      }
+      case t81::tisc::Opcode::TERNACCUM: {
+        // TERNACCUM RD, R_WT, R_ACT — scalar ternary dot product → T81BigInt handle.
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
+        if (auto res = promote_to_tensor(insn.c); !res) { trap = res.error(); break; }
+        auto* wt_t  = tensor_ptr(ctx.registers[insn.b]);
+        auto* act_t = tensor_ptr(ctx.registers[insn.c]);
+        if (!wt_t || !act_t) { trap = Trap::DecodeFault; break; }
+        try {
+          auto result_tensor = t81::ops::ternaccum(*wt_t, *act_t);
+          // Extract scalar BigInt from 1×1 result tensor.
+          auto vals = result_tensor.snapshot_values();
+          const std::int64_t dot = (vals.empty() ? 0 : static_cast<std::int64_t>(vals[0]));
+          t81::v1::T81BigInt bigint_result(dot);
+          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                      "TERNACCUM ternary dot product (RFC-0034)"};
+          record_axion_event(insn.opcode, static_cast<int32_t>(insn.b),
+                             ctx.registers[insn.b], verdict);
+          const std::int64_t bh = alloc_bigint(std::move(bigint_result));
+          ctx.registers[insn.a] = bh;
+          ctx.register_tags[insn.a] = ValueTag::BigIntHandle;
+        } catch (...) {
+          trap = Trap::TypeFault;
+        }
+        break;
+      }
+      case t81::tisc::Opcode::TACT: {
+        // TACT RD, R_SRC, R_MODE — ternary activation + activation-ceiling gate.
+        // §5.17.6: post-execute Axion verdict: Allow / Quarantine / Deny.
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.c] != ValueTag::Int) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
+        auto* src_t = tensor_ptr(ctx.registers[insn.b]);
+        if (!src_t) { trap = Trap::DecodeFault; break; }
+        const auto mode = static_cast<std::uint8_t>(ctx.registers[insn.c]);
+        if (mode != t81::ops::kTActModeStep && mode != t81::ops::kTActModeTanh) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        T729DynamicTensor tact_result;
+        try {
+          tact_result = t81::ops::tact(*src_t, mode);
+        } catch (...) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        // Post-execute activation-ceiling gate (RFC-0034 §5.17.6).
+        t81::axion::VerdictKind ceiling_verdict = t81::axion::VerdictKind::Allow;
+        std::string ceiling_reason = "TACT activation-ceiling: Allow";
+        if (state_.policy.has_value() &&
+            state_.policy->activation_ceiling_max_nonzero_fraction.has_value()) {
+          const double max_frac = *state_.policy->activation_ceiling_max_nonzero_fraction;
+          const auto out_vals = tact_result.snapshot_values();
+          std::size_t nonzero = 0;
+          for (float v : out_vals) { if (v != 0.0f) ++nonzero; }
+          const double frac = out_vals.empty()
+              ? 0.0
+              : static_cast<double>(nonzero) / static_cast<double>(out_vals.size());
+          if (frac > max_frac) {
+            // Default: Quarantine unless policy explicitly escalates to Deny.
+            // RFC-0034 §5.17.6: ceiling exceeded → Quarantine; Axion engine may
+            // escalate to Deny on a second violation.
+            ceiling_verdict = t81::axion::VerdictKind::Quarantine;
+            std::ostringstream oss;
+            oss << "TACT activation-ceiling: nonzero-fraction=" << frac
+                << " exceeds max=" << max_frac << " (Quarantine)";
+            ceiling_reason = oss.str();
+          }
+        }
+        t81::axion::Verdict verdict{ceiling_verdict, ceiling_reason};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b),
+                           ctx.registers[insn.b], verdict);
+        if (ceiling_verdict == t81::axion::VerdictKind::Quarantine) {
+          // Quarantine: RD not committed; PC does not advance.
+          trap = Trap::SecurityFault;
+          break;
+        }
+        if (ceiling_verdict == t81::axion::VerdictKind::Deny) {
+          trap = Trap::ActivationFault;
+          break;
+        }
+        // Allow: commit result.
+        auto rh = alloc_tensor(std::move(tact_result));
+        if (!rh) { trap = rh.error(); break; }
+        ctx.registers[insn.a] = *rh;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
         break;
       }
         default:
