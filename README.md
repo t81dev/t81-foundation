@@ -219,9 +219,9 @@ Because the TISC ISA is ternary-native, the **Axion Governance Kernel** can audi
 
 ---
 
-The **10x negation win** and the **1.58 bits/trit density** aren't just vanity metrics—they are the keys to solving specific "Binary Bottlenecks" in AI, cryptography, and distributed physics.
+## Strategic Applications
 
-Here are the high-impact applications we can build or optimize right now using the **T81 advantage**:
+The structural advantages of the T81 stack—specifically the **10.4x negation throughput** and **1.58 bits/trit density**—enable solutions for legacy binary bottlenecks:
 
 ---
 
