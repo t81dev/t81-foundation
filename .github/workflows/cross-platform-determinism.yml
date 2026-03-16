@@ -85,6 +85,19 @@ jobs:
             --workdir build/t81lang-repro \
             --hash-out build/t81lang-repro/hash.txt
 
+      # ── Trace replay gate ────────────────────────────────────────────────
+      # Compiles each fixture, runs the VM to capture a live execution trace,
+      # then replays it against the checked-in golden trace.
+      # Verifies that VM execution is bit-identical to the recorded sequence.
+      - name: Run trace replay gate
+        run: |
+          python3 scripts/ci/trace_repro_gate.py \
+            --t81-bin build/t81 \
+            --fixtures-dir tests/fixtures/t81lang_determinism \
+            --traces-dir   tests/fixtures/canonical_traces \
+            --workdir      build/trace-repro \
+            --hash-out     build/trace-repro/hash.txt
+
       # ── Determinism slice tests ──────────────────────────────────────────
       - name: Run determinism slice (ctest)
         run: |
@@ -95,17 +108,21 @@ jobs:
       - name: Annotate hash artifact
         run: |
           mkdir -p build/determinism-evidence
-          HASH=$(cat build/t81lang-repro/hash.txt | tr -d '[:space:]')
+          BYTECODE_HASH=$(cat build/t81lang-repro/hash.txt | tr -d '[:space:]')
+          TRACE_HASH=$(cat build/trace-repro/hash.txt | tr -d '[:space:]')
           printf '%s\n' \
             "platform=${{ matrix.platform }}" \
             "os=${{ matrix.os }}" \
             "cc=${{ matrix.cc }}" \
             "commit=${GITHUB_SHA}" \
             "ref=${GITHUB_REF}" \
-            "hash=${HASH}" \
+            "bytecode_hash=${BYTECODE_HASH}" \
+            "trace_hash=${TRACE_HASH}" \
             > build/determinism-evidence/metadata.txt
-          cp build/t81lang-repro/hash.txt build/determinism-evidence/hash.txt
-          echo "REPRO_HASH=${HASH}" >> "$GITHUB_ENV"
+          cp build/t81lang-repro/hash.txt build/determinism-evidence/bytecode_hash.txt
+          cp build/trace-repro/hash.txt   build/determinism-evidence/trace_hash.txt
+          echo "BYTECODE_HASH=${BYTECODE_HASH}" >> "$GITHUB_ENV"
+          echo "TRACE_HASH=${TRACE_HASH}" >> "$GITHUB_ENV"
 
       - name: Upload determinism evidence
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
@@ -139,36 +156,56 @@ jobs:
 
       - name: Compare hashes and publish summary
         run: |
-          LINUX_HASH=$(cat evidence/linux-x86_64/hash.txt | tr -d '[:space:]')
-          MACOS_HASH=$(cat evidence/macos-arm64/hash.txt   | tr -d '[:space:]')
+          LINUX_BYTECODE=$(cat evidence/linux-x86_64/bytecode_hash.txt | tr -d '[:space:]')
+          MACOS_BYTECODE=$(cat evidence/macos-arm64/bytecode_hash.txt   | tr -d '[:space:]')
+          LINUX_TRACE=$(cat evidence/linux-x86_64/trace_hash.txt | tr -d '[:space:]')
+          MACOS_TRACE=$(cat evidence/macos-arm64/trace_hash.txt   | tr -d '[:space:]')
 
-          echo "## Cross-Platform Determinism Report" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Platform | T81Lang Bytecode Hash |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| :--- | :--- |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| linux-x86_64 (ubuntu-24.04, gcc-14) | \`${LINUX_HASH}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| macos-arm64  (macos-latest, clang)  | \`${MACOS_HASH}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
+          BYTECODE_MATCH=false
+          TRACE_MATCH=false
+          [ "${LINUX_BYTECODE}" = "${MACOS_BYTECODE}" ] && BYTECODE_MATCH=true
+          [ "${LINUX_TRACE}"    = "${MACOS_TRACE}"    ] && TRACE_MATCH=true
 
-          if [ "${LINUX_HASH}" = "${MACOS_HASH}" ]; then
-            echo "✅ **PASS** — Hashes match. Bytecode is bit-identical across linux-x86_64 and macos-arm64." >> "$GITHUB_STEP_SUMMARY"
-            echo "Commit: \`${GITHUB_SHA}\`" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## Cross-Platform Determinism Report"
             echo ""
-            echo "✅ PASS: linux-x86_64 == macos-arm64"
-            echo "   hash: ${LINUX_HASH}"
+            echo "Commit: \`${GITHUB_SHA}\`"
+            echo ""
+            echo "### Bytecode Hash (T81Lang compiler output)"
+            echo ""
+            echo "| Platform | Hash |"
+            echo "| :--- | :--- |"
+            echo "| linux-x86_64 (ubuntu-24.04, gcc-14) | \`${LINUX_BYTECODE}\` |"
+            echo "| macos-arm64  (macos-latest, clang)  | \`${MACOS_BYTECODE}\` |"
+            echo ""
+            if $BYTECODE_MATCH; then
+              echo "✅ **PASS** — Bytecode is bit-identical across platforms."
+            else
+              echo "❌ **FAIL** — Bytecode diverges across platforms."
+            fi
+            echo ""
+            echo "### Trace Hash (VM execution sequence)"
+            echo ""
+            echo "| Platform | Hash |"
+            echo "| :--- | :--- |"
+            echo "| linux-x86_64 (ubuntu-24.04, gcc-14) | \`${LINUX_TRACE}\` |"
+            echo "| macos-arm64  (macos-latest, clang)  | \`${MACOS_TRACE}\` |"
+            echo ""
+            if $TRACE_MATCH; then
+              echo "✅ **PASS** — VM execution trace is bit-identical across platforms."
+            else
+              echo "❌ **FAIL** — VM execution trace diverges across platforms."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if $BYTECODE_MATCH && $TRACE_MATCH; then
+            echo "✅ PASS: bytecode and trace are bit-identical on linux-x86_64 and macos-arm64"
+            echo "   bytecode: ${LINUX_BYTECODE}"
+            echo "   trace:    ${LINUX_TRACE}"
           else
-            echo "❌ **FAIL — DETERMINISM REGRESSION DETECTED**" >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "Hash divergence across platforms is a **critical defect** per the T81 determinism contract." >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "| | Hash |" >> "$GITHUB_STEP_SUMMARY"
-            echo "| :--- | :--- |" >> "$GITHUB_STEP_SUMMARY"
-            echo "| linux-x86_64 | \`${LINUX_HASH}\` |" >> "$GITHUB_STEP_SUMMARY"
-            echo "| macos-arm64  | \`${MACOS_HASH}\` |" >> "$GITHUB_STEP_SUMMARY"
-            echo ""
-            echo "❌ FAIL: hash divergence detected"
-            echo "   linux-x86_64 : ${LINUX_HASH}"
-            echo "   macos-arm64  : ${MACOS_HASH}"
+            echo "❌ FAIL: determinism regression detected"
+            $BYTECODE_MATCH || echo "   bytecode divergence: linux=${LINUX_BYTECODE} macos=${MACOS_BYTECODE}"
+            $TRACE_MATCH    || echo "   trace divergence:    linux=${LINUX_TRACE}    macos=${MACOS_TRACE}"
             exit 1
           fi
 

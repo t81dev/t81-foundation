@@ -1,0 +1,13 @@
+PC=0 LoadImm
+PC=1 Call
+PC=4 Pop
+PC=5 LoadImm
+PC=6 LoadImm
+PC=7 Add
+PC=8 Print
+PC=9 LoadImm
+PC=10 Push
+PC=11 Push
+PC=12 Ret
+PC=2 Pop
+PC=3 Halt
