@@ -58,6 +58,8 @@ This index tracks RFC status and intended disposition.
 | RFC-00B5 | Governed Event Interrupt Model | integrated | Slices 26–28 complete: WaitForDevice, interrupt policy gate, unhandled IRQ governance (UnhandledInterruptDropped); 3214/3214 assertions; open questions narrowed to policy/prioritization |
 | RFC-00B6 | Minimal Syscall and Capability Boundary | accepted | All §8 criteria met; open question resolved (Slice 22): `ClaimDevice`/`ReleaseDevice`/`QueryDevice` wired as `KernelCallKind` entries with ownership enforcement; proved by `[AC-22d-01..08]` |
 | RFC-00B7 | Pager Service ABI | accepted | `PagerService` capability + `RequestPageMapping` / `WaitForPagerHandoff` / `ResumePageFaultedThread` fully implemented and tested |
+| RFC-00B8 | Governed Foreign Function Interface | proposed | FFICall/FFIRegister/FFIPolicySet opcodes; `foreign {}` T81Lang grammar (RFC-0036); ffi_dispatcher.cpp; 9/9 AC tests |
+| RFC-00B9 | TernaryOS User Environment Standard | proposed | `t81-init`, session model, `t81sh`, service registry, TTY contract, Axion gates (BootService/SessionCreate/ServiceSpawn/ShellExec); 15 ACs |
 
 ## DPE RFCs (Deterministic Parallel Execution series)
 
