@@ -242,12 +242,8 @@ public:
     if (!axion_engine_) {
       axion_engine_ = t81::axion::make_allow_all_engine();
     }
-    // Only attach a CanonFS driver when T81_CANONFS_ROOT is explicitly set.
-    // Without the env var the driver remains null and all canonfs_driver_ guards
-    // correctly suppress audit events (AI-M4 contract).
-    // Tests that need CanonFS should call set_canonfs_root() after construction.
-    if (const char* raw = std::getenv("T81_CANONFS_ROOT"); raw != nullptr && raw[0] != '\0') {
-      std::filesystem::path canon_root(raw);
+    // Initialize FFI subsystem
+    t81::vm::initialize_ffi_subsystem(*axion_engine_);
       std::error_code ec;
       std::filesystem::create_directories(canon_root, ec);
       canonfs_driver_ = t81::canonfs::make_persistent_driver(canon_root);
@@ -6175,6 +6171,47 @@ public:
         ctx.register_tags[insn.a] = ValueTag::TensorHandle;
         break;
       }
+      case t81::tisc::Opcode::FFICall: {
+        // Handle FFI call with governance
+        auto dispatcher = t81::vm::get_ffi_dispatcher();
+        if (!dispatcher) {
+          trap = Trap::FFINotInitialized;
+          break;
+        }
+        
+        // Extract function index, arg count, and result register
+        uint8_t function_index = static_cast<uint8_t>(insn.a);
+        uint64_t arg_count = static_cast<uint64_t>(insn.b);
+        uint64_t result_addr = static_cast<uint64_t>(insn.c);
+        
+        auto result = t81::vm::ffi_call(state_, function_index, arg_count, result_addr);
+        if (!result.success()) {
+          trap = result.trap();
+        }
+        break;
+      }
+      case t81::tisc::Opcode::FFIRegister: {
+        // Register foreign library
+        uint64_t library_name_addr = static_cast<uint64_t>(insn.a);
+        uint64_t version_hash_addr = static_cast<uint64_t>(insn.b);
+        
+        auto result = t81::vm::ffi_register(state_, library_name_addr, version_hash_addr);
+        if (!result.success()) {
+          trap = result.trap();
+        }
+        break;
+      }
+      case t81::tisc::Opcode::FFIPolicySet: {
+        // Set FFI policy
+        uint64_t policy_type = static_cast<uint64_t>(insn.a);
+        uint64_t policy_value = static_cast<uint64_t>(insn.b);
+        
+        auto result = t81::vm::ffi_policy_set(state_, policy_type, policy_value);
+        if (!result.success()) {
+          trap = result.trap();
+        }
+        break;
+      }
         default:
           trap = Trap::DecodeFault;
           break;
@@ -6415,6 +6452,14 @@ public:
     std::error_code ec;
     std::filesystem::create_directories(root, ec);
     canonfs_driver_ = t81::canonfs::make_persistent_driver(root);
+  }
+  
+  void initialize_ffi_subsystem(t81::axion::Engine& policy_engine) override {
+    t81::vm::initialize_ffi_subsystem(policy_engine);
+  }
+  
+  t81::ffi::FFIDispatcher* get_ffi_dispatcher() const override {
+    return t81::vm::get_ffi_dispatcher();
   }
 
   void set_determinism_detector(t81::axion::DeterminismDetector* detector) override {

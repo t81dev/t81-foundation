@@ -222,10 +222,18 @@ add_library(t81_axion STATIC
   src/axion/policy_validator.cpp
 )
 target_link_libraries(t81_axion PUBLIC t81_core)
-target_include_directories(t81_axion PUBLIC
+
+# =============================================================================
+# FFI Library - RFC-00B8 Governed Foreign Function Interface
+# =============================================================================
+add_library(t81_ffi STATIC
+  core/ffi/ffi_dispatcher.cpp
+)
+target_include_directories(t81_ffi PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+target_link_libraries(t81_ffi PUBLIC t81_core)
 
 add_library(t81_io STATIC src/io/tensor_loader.cpp)
 target_link_libraries(t81_io PUBLIC t81_core)
@@ -301,8 +309,10 @@ add_library(t81_vm STATIC
   core/vm/runtime_state_helpers.cpp
   core/vm/gc_helpers.cpp
   core/vm/tensor_helpers.cpp
+  core/vm/ffi_dispatcher.cpp
   # RFC-0032 Phase 4 — promoted AI VM backend adapter (C-02)
   core/vm/ai_backend/backend_adapter.cpp
+  core/ffi/ffi_dispatcher.cpp
 )
 target_include_directories(t81_vm PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -317,7 +327,7 @@ target_include_directories(t81_jit PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 target_sources(t81_vm PRIVATE $<TARGET_OBJECTS:t81_jit>)
-target_link_libraries(t81_vm PUBLIC t81_core t81_isa t81_axion)
+target_link_libraries(t81_vm PUBLIC t81_core t81_isa t81_axion t81_ffi)
 
 # =============================================================================
 # LLVM IR Backend (optional)
@@ -1566,6 +1576,10 @@ if(T81_BUILD_TESTS)
 
   add_executable(t81_vm_tloadhash_conformance_test tests/cpp/vm_tloadhash_conformance_test.cpp)
   target_link_libraries(t81_vm_tloadhash_conformance_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_ffi_basic_test tests/cpp/ffi_basic_test.cpp)
+  target_link_libraries(t81_ffi_basic_test PRIVATE t81_vm t81_ffi t81_core)
+  add_test(NAME t81_ffi_basic_test COMMAND t81_ffi_basic_test)
 
   add_executable(t81_vm_tloadhash_canonical_fixed_test
                  tests/cpp/vm_tloadhash_canonical_fixed_test.cpp)
@@ -3006,6 +3020,7 @@ include(CMakePackageConfigHelpers)
 set(T81_INSTALL_TARGETS
   t81_core
   t81_axion
+  t81_ffi
   t81_tool_model
   t81_io
   t81_c_api

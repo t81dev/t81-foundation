@@ -21,6 +21,13 @@ enum class Trap {
   CapabilityDenied,  // Raised when an operation is attempted without a valid CapabilityGrant.
   // RFC-0034 §5.17.6: TACT post-execute activation policy — Deny verdict.
   ActivationFault,   // TACT: activation-ceiling policy returned Deny; thread was already quarantined.
+  // RFC-00B8: Governed Foreign Function Interface trap types
+  FFINotInitialized, // FFI dispatcher not initialized
+  FFIRegistrationError, // Failed to register foreign library
+  FFILoadError,      // Failed to load foreign library
+  FFIPolicyDenied,  // FFI call denied by policy
+  FFITimeout,        // FFI call exceeded time quota
+  FFIMemoryExhausted, // FFI call exceeded memory quota
 };
 
 inline std::string to_string(Trap trap) {
@@ -55,6 +62,18 @@ inline std::string to_string(Trap trap) {
       return "CapabilityDenied";
     case Trap::ActivationFault:
       return "ActivationFault";
+    case Trap::FFINotInitialized:
+      return "FFINotInitialized";
+    case Trap::FFIRegistrationError:
+      return "FFIRegistrationError";
+    case Trap::FFILoadError:
+      return "FFILoadError";
+    case Trap::FFIPolicyDenied:
+      return "FFIPolicyDenied";
+    case Trap::FFITimeout:
+      return "FFITimeout";
+    case Trap::FFIMemoryExhausted:
+      return "FFIMemoryExhausted";
   }
   return "UnknownTrap";
 }

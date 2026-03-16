@@ -8,6 +8,7 @@
 #include "t81/isa/program.hpp"
 #include "t81/vm/state.hpp"
 #include "t81/vm/traps.hpp"
+#include "t81/ffi/ffi.hpp"
 
 #include <vector>
 
@@ -48,6 +49,12 @@ public:
   /// Attach a CanonFS driver rooted at the given path.
   /// Overrides T81_CANONFS_ROOT for this VM instance.
   virtual void set_canonfs_root(const std::filesystem::path& /*root*/) {}
+  
+  /// Initialize FFI subsystem with policy engine
+  virtual void initialize_ffi_subsystem(t81::axion::Engine& policy_engine) = 0;
+  
+  /// Get global FFI dispatcher
+  virtual ffi::FFIDispatcher* get_ffi_dispatcher() const = 0;
 
   /// Opt-in hook for CI harnesses: inject a DeterminismDetector to compare
   /// axion_log hash chains across successive runs (AX-M5).

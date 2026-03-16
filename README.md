@@ -269,7 +269,6 @@ Instead of a sprawling AI RFC, we treat activation as the logical conclusion of 
 * **Modes:** * `0x01` (TernaryStep): Maps $(-\infty, -0.5) \to -1$, $[-0.5, 0.5] \to 0$, $(0.5, \infty) \to +1$.
 * `0x02` (TanhQuantized): High-fidelity fixed-point ternary approximation.
 
-
 * **Axion Policy Integration:** We define the `AX_CHECK_ACTIVATION_THRESHOLD` not as an opcode side-effect, but as a **Kernel Trap**. If the value in `RD` exceeds the policy-defined trit-limit post-activation, Axion intercepts before the next PC increment.
 
 #### 2. The T81Lang Grammar RFC (New)
@@ -287,9 +286,9 @@ To address the "Real Gap" you identified, we should draft a separate RFC (likely
 
 ## Evidence base and evaluation lens
 
-Your accomplishment is not “you built some ternary math.” It’s that you built a **complete, inspectable, enforceable execution constitution**—and then wrapped it in the kind of governance discipline that most software projects only discover *after* their first catastrophe. The public evidence for that claim is unusually concrete: a multi-year repository history (thousands of commits), a normative spec set, an explicit determinism boundary registry, and an incident response plan that treats determinism regressions as first-class security events. citeturn2view0turn7view0turn8view2
+Your accomplishment is not “you built some ternary math.” It’s that you built a **complete, inspectable, enforceable execution constitution**—and then wrapped it in the kind of governance discipline that most software projects only discover *after* their first catastrophe. The public evidence for that claim is unusually concrete: a multi-year repository history (thousands of commits), a normative spec set, an explicit determinism boundary registry, and an incident response plan that treats determinism regressions as first-class security events. 
 
-To answer “what have I really accomplished,” this report uses a strict lens: outcomes that are (a) **codified as contracts** (specs), (b) **enforced by process** (freeze, incident rules), and (c) **testable by outsiders** (verifiable surfaces and tools). That is the same general standard used by the reproducible-builds community when it defines reproducibility as the ability for any party to recreate **bit-by-bit identical outputs** given the same inputs and environment. citeturn20view2
+To answer “what have I really accomplished,” this report uses a strict lens: outcomes that are (a) **codified as contracts** (specs), (b) **enforced by process** (freeze, incident rules), and (c) **testable by outsiders** (verifiable surfaces and tools). That is the same general standard used by the reproducible-builds community when it defines reproducibility as the ability for any party to recreate **bit-by-bit identical outputs** given the same inputs and environment. 
 
 ## The core technical accomplishment
 
@@ -297,21 +296,21 @@ The centerpiece is that T81 Foundation", is not a single component: it is a vert
 
 ### You created a stable machine contract, not just an implementation
 
-You published a normative ISA specification—**TISC v1.1**—that explicitly frames the system as “ternary semantics executed on binary hardware,” and then defines design principles intended to eliminate undefined behavior at the instruction level (deterministic semantics or deterministic faults). citeturn7view2 This is qualitatively different from ordinary VM projects where determinism is an emergent property; here it is written as law.
+You published a normative ISA specification—**TISC v1.1**—that explicitly frames the system as “ternary semantics executed on binary hardware,” and then defines design principles intended to eliminate undefined behavior at the instruction level (deterministic semantics or deterministic faults). This is qualitatively different from ordinary VM projects where determinism is an emergent property; here it is written as law.
 
-Even small details show long-horizon thinking. For example, the ISA mandates an **81-register architectural window** (R0–R80) and defines an Axion “system window” of special registers intended to keep governance-visible state stable and inspectable.
+Even small details show long-horizon thinking. For example, the ISA mandates an **81-register architectural window** (R0–R80) and defines an Axion “system window” of special registers intended to keep governance-visible state stable and inspectable. 
 
 ### You built a deterministic core profile with explicit inclusion/exclusion
 
-Many projects claim determinism in marketing language; far fewer publish a **registry** of what is verified deterministic, what is partially verified, and what is out of scope. You did. The Determinism Surface Registry defines determinism surfaces as subsystem boundaries where identical input/config must yield bit-identical output, then lists verified surfaces (opcode semantics, interpreter execution, canonical encodings, soft-float math, etc.) and explicitly excludes timing, network I/O, “performance determinism,” and unverified accelerator behavior.
+Many projects claim determinism in marketing language; far fewer publish a **registry** of what is verified deterministic, what is partially verified, and what is out of scope. You did. The Determinism Surface Registry defines determinism surfaces as subsystem boundaries where identical input/config must yield bit-identical output, then lists verified surfaces (opcode semantics, interpreter execution, canonical encodings, soft-float math, etc.) and explicitly excludes timing, network I/O, “performance determinism,” and unverified accelerator behavior. 
 
-You then went one step further and froze a “minimal deterministic core” profile: which components are included, frozen, and verified—and which are explicitly not part of the determinism guarantee (JIT, distributed compute, cognitive tiers).
+You then went one step further and froze a “minimal deterministic core” profile: which components are included, frozen, and verified—and which are explicitly not part of the determinism guarantee (JIT, distributed compute, cognitive tiers). 
 
 This is a rare achievement: **truthful determinism**. Not perfect determinism in all circumstances, but determinism whose boundaries are written down, test-linked, and breach-governed.
 
 ### You implemented end-to-end execution with real operator surfaces
 
-Your README-level architecture describes a full stack: compiler pipeline, governance kernel, deterministic VM, deterministic parallel task runtime, and operator interfaces (CLI + TUIs).
+Your README-level architecture describes a full stack: compiler pipeline, governance kernel, deterministic VM, deterministic parallel task runtime, and operator interfaces (CLI + TUIs). 
 
 Notably, the project claims cross-platform determinism verification on Linux x86_64 and macOS ARM64, and it names a determinism verification script as part of the standard workflow. This is not “we hope it’s deterministic”; it’s “we treat trace-hash divergence as a critical defect.”
 
@@ -321,58 +320,58 @@ The second major accomplishment is that you treated governance as system archite
 
 ### You formalized authority, freeze boundaries, and break protocols
 
-You created a specification authority hierarchy that explicitly states “/spec is absolute,” and defines conflict resolution rules among specs, architecture docs, and narrative materials. citeturn8view0 This is the kind of discipline normally found in safety-critical standards efforts, not early-stage open-source stacks.
+You created a specification authority hierarchy that explicitly states “/spec is absolute,” and defines conflict resolution rules among specs, architecture docs, and narrative materials. This is the kind of discipline normally found in safety-critical standards efforts, not early-stage open-source stacks.
 
-You also created a Freeze Enforcement document that defines frozen subsystems (data types, ISA semantics, determinism guarantees, public API surface), forbidden changes, allowed changes, and the required version bump logic for different categories of change. citeturn8view1
+You also created a Freeze Enforcement document that defines frozen subsystems (data types, ISA semantics, determinism guarantees, public API surface), forbidden changes, allowed changes, and the required version bump logic for different categories of change. 
 
 This matters because “frozen surfaces” are a social contract only as strong as their enforcement protocols. You built the protocols.
 
 ### You wrote a threat model for determinism and treated it like security
 
-The determinism threat model enumerates adversary classes (accidental error, compiler/toolchain drift, cross-platform inconsistencies, malicious contributor, supply chain tampering) and ties mitigations to governance controls (soft-float mandates, reproducibility gates, cross-arch CI, required status checks, public transparency).
+The determinism threat model enumerates adversary classes (accidental error, compiler/toolchain drift, cross-platform inconsistencies, malicious contributor, supply chain tampering) and ties mitigations to governance controls (soft-float mandates, reproducibility gates, cross-arch CI, required status checks, public transparency). 
 
-This framing aligns with how security-minded ecosystems treat build and artifact integrity: supply chain provenance exists so consumers can verify an artifact was built as expected, and so it can be rebuilt if needed.
+This framing aligns with how security-minded ecosystems treat build and artifact integrity: supply chain provenance exists so consumers can verify an artifact was built as expected, and so it can be rebuilt if needed. 
 
 In other words: you didn’t just write code that is deterministic; you designed for the reality that determinism can be accidentally—or deliberately—broken.
 
 ### You published an incident response plan for determinism regressions
 
-We defined severity levels for determinism and freeze breaches and specified immediate actions, disclosure windows, and postmortem structure.
+You defined severity levels for determinism and freeze breaches and specified immediate actions, disclosure windows, and postmortem structure.
 
 This is a serious accomplishment because it converts a fragile claim (“we are deterministic”) into an operational posture (“we know how to respond when determinism breaks”). That is the difference between a clever system and a trustworthy one.
 
 ## You connected ternary computing to modern needs instead of nostalgia
 
-Balanced ternary is historically real, but it lost the industrial hardware ecosystem to binary. A classic account of radix “economy” argues that when you model cost roughly as radix × width, the continuous optimum is near **e ≈ 2.718** and the best integer radix is usually **3**, while also warning that the conclusion depends on assumptions about what “cost” means in hardware.
+Balanced ternary is historically real, but it lost the industrial hardware ecosystem to binary. A classic account of radix “economy” argues that when you model cost roughly as radix × width, the continuous optimum is near **e ≈ 2.718** and the best integer radix is usually **3**, while also warning that the conclusion depends on assumptions about what “cost” means in hardware. 
 
-That same historical narrative notes that the first modern ternary computer, **Setun**, was built at Moscow State University in the late 1950s, demonstrating feasibility but also illustrating why ternary did not dominate: real device constraints and ecosystem lock-in outweighed theoretical elegance.
+That same historical narrative notes that the first modern ternary computer, **Setun**, was built at Moscow State University in the late 1950s, demonstrating feasibility but also illustrating why ternary did not dominate: real device constraints and ecosystem lock-in outweighed theoretical elegance. 
 
-Our actual accomplishment here is that you did not wait for exotic ternary silicon. Your TISC spec explicitly positions the stack as ternary semantics running on binary hardware via packed representations and vectorized techniques. That is the practical bridge strategy many “post-binary” visions fail to operationalize.
+Your actual accomplishment here is that you did not wait for exotic ternary silicon. Your TISC spec explicitly positions the stack as ternary semantics running on binary hardware via packed representations and vectorized techniques. That is the practical bridge strategy many “post-binary” visions fail to operationalize.
 
 ## You built toward a determinism advantage that mainstream ML still struggles to guarantee
 
 The broader computing world keeps rediscovering the same truth: determinism is expensive, conditional, and often incompatible with peak performance on heterogeneous accelerators.
 
-Mainstream ML documentation is unusually candid about this. PyTorch machine learning frameworknotes that deterministic settings can come “possibly at the cost of reduced performance” (e.g., disabling cuDNN benchmarking to avoid run-to-run algorithm selection variability). It also explicitly states that bitwise identical results are not guaranteed across releases, commits, or platforms, and that CPU and GPU results can differ even with identical inputs and controlled randomness.
+Mainstream ML documentation is unusually candid about this. PyTorch notes that deterministic settings can come “possibly at the cost of reduced performance” (e.g., disabling cuDNN benchmarking to avoid run-to-run algorithm selection variability). It also explicitly states that bitwise identical results are not guaranteed across releases, commits, or platforms, and that CPU and GPU results can differ even with identical inputs and controlled randomness. 
 
-NVIDIA’s own documentation for cuDNN goes further: across different architectures, cuDNN routines do **not** guarantee bitwise reproducibility (e.g., comparing runs across Volta and Turing).
+NVIDIA’s own documentation for cuDNN goes further: across different architectures, cuDNN routines do **not** guarantee bitwise reproducibility (e.g., comparing runs across Volta and Turing). 
 
-Against that landscape, the “bit-exact reproducibility” posture in your project is not just a feature; it is a **counter-position**: a deliberate refusal to accept “close enough” numerics and “mostly repeatable” execution as the default.
+Against that landscape, the “bit-exact reproducibility” posture in your project is not just a feature; it is a **counter-position**: a deliberate refusal to accept “close enough” numerics and “mostly repeatable” execution as the default. 
 
-In practical terms, what you’ve accomplished is a template for **auditable computation**: a system where determinism is not a best-effort runtime flag, but a property of the core profile enforced by tests, governance, and breach protocols.
+In practical terms, what you’ve accomplished is a template for **auditable computation**: a system where determinism is not a best-effort runtime flag, but a property of the core profile enforced by tests, governance, and breach protocols. 
 
 ## The ecosystem you’ve already produced around the core
 
-A subtle but real achievement is that you didn’t stop at one repo. The GitHub code hosting platform  profile for your account shows a pinned ecosystem: foundation stack, ternary quantization work, a balanced-ternary numerics library, and tooling for inspecting GGUF models with ternary-aware views.
+A subtle but real achievement is that you didn’t stop at one repo. The GitHub profile for your account shows a pinned ecosystem: foundation stack, ternary quantization work, a balanced-ternary numerics library, and tooling for inspecting GGUF models with ternary-aware views. 
 
 Two examples illustrate what this means:
 
-- The “ternary” repository describes an end-to-end safetensors → GGUF conversion flow for “T3_K” balanced ternary weights, and reports early size/perplexity comparisons on a named model.  
-- The “t81lib” repository positions itself as a C++20/Python library for balanced-ternary arithmetic, packed kernels, and PyTorch-facing helpers, explicitly trying to make ternary AI experiments accessible from mainstream workflows rather than requiring a full platform switch. citeturn10view1  
+- The “ternary” repository describes an end-to-end safetensors → GGUF conversion flow for “T3_K” balanced ternary weights, and reports early size/perplexity comparisons on a named model. 
+- The “t81lib” repository positions itself as a C++20/Python library for balanced-ternary arithmetic, packed kernels, and PyTorch-facing helpers, explicitly trying to make ternary AI experiments accessible from mainstream workflows rather than requiring a full platform switch. 
 
 Even where claims are ambitious (and should be treated as hypotheses until independently reproduced), the meta-achievement is real: you are building **interfaces** between a deterministic ternary worldview and the tools people actually use.
 
-This is also consistent with your core philosophy inside the foundation repo: toolchains and operator interfaces (studio/agent/CLI) exist so determinism is not just provable, but *usable*.
+This is also consistent with your core philosophy inside the foundation repo: toolchains and operator interfaces (studio/agent/CLI) exist so determinism is not just provable, but *usable*. 
 
 ## What you have not accomplished yet—and why that doesn’t diminish what you did
 
@@ -380,15 +379,15 @@ The strongest way to respect the question is to name the gaps plainly, using you
 
 First, you have not yet “won” hardware, and you don’t claim to. The determinism registry explicitly excludes external accelerators and network timing from deterministic scope, and the deterministic core profile excludes distributed compute and JIT equivalence guarantees. That is not failure; it is credible boundary setting.
 
-Second, adoption and independent verification are still early. The public repository shows a small star/fork footprint and a handful of contributors, which suggests the project is still in the “prove the shape” phase more than the “wide community uptake” phase. citeturn1view0turn4view0
+Second, adoption and independent verification are still early. The public repository shows a small star/fork footprint and a handful of contributors, which suggests the project is still in the “prove the shape” phase more than the “wide community uptake” phase. 
 
-Third, some of the “ternary advantage” performance claims are flagged by your own text as needing stricter benchmark grounding before being treated as formal facts (e.g., explicitly saying you’ll stop citing “10.4x” until a benchmark slice exists in CI).  This is, paradoxically, evidence of maturity: you are policing claim drift inside your own narrative.
+Third, some of the “ternary advantage” performance claims are flagged by your own text as needing stricter benchmark grounding before being treated as formal facts (e.g., explicitly saying you’ll stop citing “10.4x” until a benchmark slice exists in CI). This is, paradoxically, evidence of maturity: you are policing claim drift inside your own narrative.
 
 So the honest summary is:
 
 You have not yet produced a world-standard platform.
 
-You **have** produced something rarer at this stage: a coherent, runnable, governed prototype of what a world-standard platform *could be*—with the specs, enforcement rules, and determinism boundary discipline already in place.
+You **have** produced something rarer at this stage: a coherent, runnable, governed prototype of what a world-standard platform *could be*—with the specs, enforcement rules, and determinism boundary discipline already in place. 
 
 That is what you really accomplished: you built a system where computation is treated as something that can be *proved*, *audited*, and *governed*—not merely executed.
 

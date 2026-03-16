@@ -226,6 +226,10 @@ enum class Opcode : std::uint8_t {
   TWEMBED,    // Ternary embed lookup:  TWEMBED  RD, R_TABLE, R_IDX
   TERNACCUM,  // Ternary dot product:   TERNACCUM RD, R_WT, R_ACT
   TACT,       // Ternary activation:    TACT     RD, R_SRC, R_MODE
+  // RFC-00B8 — Governed Foreign Function Interface
+  FFICall,     // Call foreign function with governance: FFICall R_FUNC, R_ARG_COUNT, R_RESULT
+  FFIRegister, // Register foreign library: FFIRegister R_LIB_NAME, R_VERSION_HASH
+  FFIPolicySet, // Set FFI policy: FFIPolicySet R_POLICY_TYPE, R_POLICY_VALUE
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -645,12 +649,18 @@ enum class Opcode : std::uint8_t {
       return "TERNACCUM";
     case Opcode::TACT:
       return "TACT";
+    case Opcode::FFICall:
+      return "FFICall";
+    case Opcode::FFIRegister:
+      return "FFIRegister";
+    case Opcode::FFIPolicySet:
+      return "FFIPolicySet";
   }
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::TACT) + 1> kAllOpcodes = [] {
-  std::array<Opcode, static_cast<std::size_t>(Opcode::TACT) + 1> values{};
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::FFIPolicySet) + 1> kAllOpcodes = [] {
+  std::array<Opcode, static_cast<std::size_t>(Opcode::FFIPolicySet) + 1> values{};
   for (std::size_t i = 0; i < values.size(); ++i) {
     values[i] = static_cast<Opcode>(i);
   }
@@ -658,6 +668,7 @@ inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::TACT) + 1> 
 }();
 
 [[nodiscard]] constexpr bool is_valid_opcode(std::uint8_t raw_opcode) {
-  return raw_opcode <= static_cast<std::uint8_t>(Opcode::TACT);
+  return raw_opcode <= static_cast<std::uint8_t>(Opcode::FFIPolicySet);
 }
+
 }  // namespace t81::tisc
