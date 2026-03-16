@@ -70,6 +70,21 @@ struct EnumInfo {
   int id = -1;
 };
 
+/// RFC-0015 §3 — per-behavior type signature for agent semantic analysis.
+struct AgentBehaviorInfo {
+  std::string name;
+  std::vector<Type> param_types;
+  Type return_type;
+};
+
+/// RFC-0015 §3 — metadata registered for each `agent` declaration.
+struct AgentInfo {
+  std::string name;
+  std::vector<AgentBehaviorInfo> behaviors;
+  /// behavior_name → index into behaviors
+  std::unordered_map<std::string, std::size_t> behavior_map;
+};
+
 class SemanticAnalyzer : public StmtVisitor, public ExprVisitor {
   friend class IRGenerator;
 
@@ -103,6 +118,7 @@ public:
   std::any visit(const TypeDecl& stmt) override;
   std::any visit(const RecordDecl& stmt) override;
   std::any visit(const EnumDecl& stmt) override;
+  std::any visit(const AgentDecl& stmt) override;  // RFC-0015
 
   // Visitor methods for expressions
   std::any visit(const FieldAccessExpr& expr) override;
@@ -180,6 +196,9 @@ public:
   const std::unordered_map<std::string, EnumInfo>& enum_definitions() const {
     return _enum_definitions;
   }
+  const std::unordered_map<std::string, AgentInfo>& agent_definitions() const {
+    return _agent_definitions;
+  }
 
 private:
   const std::vector<std::unique_ptr<Stmt>>& _statements;
@@ -215,6 +234,7 @@ private:
   std::unordered_map<const MapLiteralExpr*, std::vector<float>> _map_literal_data;
   std::unordered_map<std::string, RecordInfo> _record_definitions;
   std::unordered_map<std::string, EnumInfo> _enum_definitions;
+  std::unordered_map<std::string, AgentInfo> _agent_definitions;  // RFC-0015
   const std::unordered_map<std::string, Type>* _current_type_env = nullptr;
 
   void analyze(const Stmt& stmt);

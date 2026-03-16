@@ -55,6 +55,7 @@ private:
       std::optional<StructuralAttributes> attributes = std::nullopt);
   std::unique_ptr<Stmt> enum_declaration(
       std::optional<StructuralAttributes> attributes = std::nullopt);
+  std::unique_ptr<Stmt> agent_declaration();  // RFC-0015
   std::unique_ptr<Stmt> statement();
   std::unique_ptr<Stmt> var_declaration();
   std::unique_ptr<Stmt> let_declaration();

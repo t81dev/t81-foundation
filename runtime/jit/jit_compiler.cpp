@@ -850,6 +850,7 @@ public:
         case t81::tisc::Opcode::AxSet:
         case t81::tisc::Opcode::AxVerify:
         case t81::tisc::Opcode::AxReport:
+        case t81::tisc::Opcode::AgentInvoke:  // RFC-0015: Axion observes every agent invocation
           if (result.instructions_executed > 0) {
             ctx.pc += (result.instructions_executed - 1);
           }

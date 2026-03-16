@@ -31,6 +31,8 @@ enum class TokenType {
   Infinite,
   Infer,
   Train,
+  Agent,
+  Behavior,
   Break,
   Continue,
   Return,

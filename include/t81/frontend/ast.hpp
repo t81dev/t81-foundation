@@ -64,6 +64,7 @@ struct LoopStmt;
 struct TypeDecl;
 struct RecordDecl;
 struct EnumDecl;
+struct AgentDecl;
 
 // --- Base Classes ---
 
@@ -135,6 +136,7 @@ public:
   virtual std::any visit(const TypeDecl& stmt) = 0;
   virtual std::any visit(const RecordDecl& stmt) = 0;
   virtual std::any visit(const EnumDecl& stmt) = 0;
+  virtual std::any visit(const AgentDecl& stmt) = 0;
 };
 
 // --- Expression Nodes ---
@@ -684,6 +686,27 @@ struct EnumDecl : Stmt {
   const std::vector<Variant> variants;
   const std::optional<std::int64_t> schema_version;
   const std::optional<std::string> module_path;
+};
+
+/// RFC-0015 §3.2 — A single named behavior within an agent declaration.
+/// Mirrors FunctionStmt but scoped to its parent AgentDecl.
+struct BehaviorDecl {
+  Token name;
+  std::vector<Parameter> params;
+  std::unique_ptr<TypeExpr> return_type;
+  std::vector<std::unique_ptr<Stmt>> body;
+};
+
+/// RFC-0015 §3.1 — Top-level agent declaration.
+/// Syntax: agent <Name> { behavior <name>(<params>) -> <type> { ... } ... }
+struct AgentDecl : Stmt {
+  AgentDecl(Token name, std::vector<BehaviorDecl> behaviors)
+      : name(name), behaviors(std::move(behaviors)) {}
+
+  std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
+
+  const Token name;
+  std::vector<BehaviorDecl> behaviors;
 };
 
 }  // namespace frontend

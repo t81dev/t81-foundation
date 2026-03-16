@@ -65,6 +65,10 @@ std::string token_type_name(TokenType type) {
       return "infinite literal";
     case TokenType::Infer:
       return "'infer'";
+    case TokenType::Agent:
+      return "'agent'";
+    case TokenType::Behavior:
+      return "'behavior'";
     case TokenType::Train:
       return "'train'";
     case TokenType::Break:
@@ -426,6 +430,7 @@ std::unique_ptr<Stmt> Parser::declaration() {
     }
     if (match({TokenType::Fn})) return function("function", std::move(function_attrs));
     if (match({TokenType::Recurse})) return recurse_declaration();
+    if (match({TokenType::Agent})) return agent_declaration();  // RFC-0015
     if (function_attrs.has_value()) {
       const Token& anchor = function_attrs->anchor.value_or(peek());
       report_error(anchor, "Function attributes may only decorate functions.");
@@ -465,6 +470,53 @@ std::unique_ptr<Stmt> Parser::recurse_declaration() {
   consume(TokenType::LBrace, "Expect '{' before body.");
   std::vector<std::unique_ptr<Stmt>> body = block();
   return std::make_unique<RecurseStmt>(keyword, name, std::move(parameters), std::move(body));
+}
+
+// RFC-0015 §3 — agent declaration.
+// agent_decl -> "agent" IDENTIFIER "{" behavior_decl* "}"
+// behavior_decl -> "behavior" IDENTIFIER "(" parameters? ")" "->" type "{" block "}"
+std::unique_ptr<Stmt> Parser::agent_declaration() {
+  Token agent_name = consume(TokenType::Identifier, "Expect agent name.");
+  consume(TokenType::LBrace, "Expect '{' after agent name.");
+
+  std::vector<BehaviorDecl> behaviors;
+  while (!check(TokenType::RBrace) && !is_at_end()) {
+    consume(TokenType::Behavior, "Expect 'behavior' inside agent body.");
+    // Allow keyword tokens (e.g. 'infer') as behavior names (contextual keywords).
+    if (!check(TokenType::Identifier) && !check(TokenType::Infer)) {
+      report_error(peek(), "Expect behavior name.");
+    }
+    Token bname = advance();
+    consume(TokenType::LParen, "Expect '(' after behavior name.");
+
+    std::vector<Parameter> params;
+    if (!check(TokenType::RParen)) {
+      do {
+        if (params.size() >= 255) {
+          report_error(peek(), "Cannot have more than 255 parameters.");
+          break;
+        }
+        Token pname = consume(TokenType::Identifier, "Expect parameter name.");
+        consume(TokenType::Colon, "Expect ':' after parameter name.");
+        params.push_back({pname, type()});
+      } while (match({TokenType::Comma}));
+    }
+    consume(TokenType::RParen, "Expect ')' after behavior parameters.");
+    consume(TokenType::Arrow, "Expect '->' before behavior return type.");
+    auto ret = type();
+    consume(TokenType::LBrace, "Expect '{' before behavior body.");
+    auto body = block();
+
+    BehaviorDecl bd;
+    bd.name = bname;
+    bd.params = std::move(params);
+    bd.return_type = std::move(ret);
+    bd.body = std::move(body);
+    behaviors.push_back(std::move(bd));
+  }
+
+  consume(TokenType::RBrace, "Expect '}' after agent body.");
+  return std::make_unique<AgentDecl>(agent_name, std::move(behaviors));
 }
 
 // Parses a function declaration.

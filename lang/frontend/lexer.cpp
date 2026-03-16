@@ -36,6 +36,8 @@ const std::unordered_map<std::string_view, TokenType> KEYWORDS = {
     {"infinite", TokenType::Infinite},
     {"infer", TokenType::Infer},
     {"train", TokenType::Train},
+    {"agent", TokenType::Agent},
+    {"behavior", TokenType::Behavior},
     {"record", TokenType::Record},
     {"enum", TokenType::Enum},
     {"break", TokenType::Break},

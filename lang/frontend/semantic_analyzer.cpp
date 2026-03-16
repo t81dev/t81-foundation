@@ -1786,6 +1786,75 @@ std::any SemanticAnalyzer::visit(const EnumDecl& stmt) {
   return {};
 }
 
+// RFC-0015 §3 — register agent and type-check all behavior signatures.
+// The body of each behavior is analyzed in its own scope so type errors
+// are reported at authoring time.  The agent name is injected into the
+// enclosing scope as a symbol of Kind::Variable with a custom type equal
+// to the agent name, so that `AgentName.behavior(...)` call-site resolution
+// in visit(CallExpr) can look it up.
+std::any SemanticAnalyzer::visit(const AgentDecl& stmt) {
+  const std::string agent_name(stmt.name.lexeme);
+  if (_agent_definitions.count(agent_name)) {
+    error(stmt.name, "Agent '" + agent_name + "' is already defined.");
+    return {};
+  }
+
+  AgentInfo info;
+  info.name = agent_name;
+
+  for (const auto& beh : stmt.behaviors) {
+    const std::string beh_name(beh.name.lexeme);
+    if (info.behavior_map.count(beh_name)) {
+      error(beh.name,
+            "Behavior '" + beh_name + "' already defined in agent '" + agent_name + "'.");
+      continue;
+    }
+
+    // Resolve parameter and return types.
+    AgentBehaviorInfo bi;
+    bi.name = beh_name;
+    for (const auto& param : beh.params) {
+      if (param.type) {
+        bi.param_types.push_back(analyze_type_expr(*param.type));
+      } else {
+        bi.param_types.push_back(Type{Type::Kind::Unknown});
+      }
+    }
+    bi.return_type = beh.return_type ? analyze_type_expr(*beh.return_type)
+                                     : Type{Type::Kind::Void};
+
+    // Analyze body in a fresh scope with parameters injected.
+    enter_scope();
+    _function_return_stack.push_back(bi.return_type);
+    _function_tier_stack.push_back(std::nullopt);
+    for (std::size_t i = 0; i < beh.params.size(); ++i) {
+      define_symbol(beh.params[i].name, SymbolKind::Variable, false);
+      if (auto* sym = resolve_symbol(beh.params[i].name)) {
+        sym->type = bi.param_types[i];
+      }
+    }
+    for (const auto& s : beh.body) {
+      if (s) analyze(*s);
+    }
+    _function_tier_stack.pop_back();
+    _function_return_stack.pop_back();
+    exit_scope();
+
+    const std::size_t idx = info.behaviors.size();
+    info.behavior_map.emplace(beh_name, idx);
+    info.behaviors.push_back(std::move(bi));
+  }
+
+  // Inject agent name as a symbol so call-site resolution can find it.
+  define_symbol(stmt.name, SymbolKind::Variable, false);
+  if (auto* sym = resolve_symbol(stmt.name)) {
+    sym->type = Type{Type::Kind::Custom, {}, agent_name};
+  }
+
+  _agent_definitions.emplace(agent_name, std::move(info));
+  return {};
+}
+
 std::any SemanticAnalyzer::visit(const AssignExpr& expr) {
   Type target_type = Type{Type::Kind::Unknown};
   bool mutable_target = false;
@@ -2072,6 +2141,29 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
       if (obj_symbol) {
         if (const auto* fa = dynamic_cast<const FieldAccessExpr*>(expr.callee.get())) {
           _expr_type_cache[fa->object.get()] = obj_symbol->type;
+        }
+      }
+      // RFC-0015: agent behavior call dispatch — `AgentName.behaviorName(args)`.
+      {
+        auto ait = _agent_definitions.find(obj_name);
+        if (ait != _agent_definitions.end()) {
+          auto bit = ait->second.behavior_map.find(method_name);
+          if (bit == ait->second.behavior_map.end()) {
+            error(call_token, "Agent '" + obj_name + "' has no behavior named '" + method_name +
+                                  "'.");
+            return make_error_type();
+          }
+          const auto& beh = ait->second.behaviors[bit->second];
+          // Type-check argument count.
+          if (arg_types.size() != beh.param_types.size()) {
+            error(call_token, "Agent '" + obj_name + "." + method_name + "' expects " +
+                                  std::to_string(beh.param_types.size()) + " argument(s), got " +
+                                  std::to_string(arg_types.size()) + ".");
+            return make_error_type();
+          }
+          Type ret = beh.return_type;
+          expr.resolved_type = ret;
+          return ret;
         }
       }
       if (obj_symbol && (obj_symbol->type.kind == Type::Kind::Tensor ||
@@ -4728,9 +4820,43 @@ std::any SemanticAnalyzer::visit(const InfiniteLiteralExpr& expr) {
 }
 
 std::any SemanticAnalyzer::visit(const InferExpr& expr) {
+  // RFC-0015 §3.2 — `infer AgentName(args)` is sugar for `AgentName.infer(args)`.
+  // Detect the pattern: expression is a CallExpr whose callee is a VariableExpr
+  // naming a declared agent that has an "infer" behavior.
+  if (auto* call = dynamic_cast<const CallExpr*>(expr.expression.get())) {
+    if (auto* var = dynamic_cast<const VariableExpr*>(call->callee.get())) {
+      const std::string agent_name(var->name.lexeme);
+      auto ait = _agent_definitions.find(agent_name);
+      if (ait != _agent_definitions.end()) {
+        // Validate the agent has an "infer" behavior.
+        auto bit = ait->second.behavior_map.find("infer");
+        if (bit == ait->second.behavior_map.end()) {
+          error(var->name,
+                "Agent '" + agent_name +
+                    "' does not have an 'infer' behavior; "
+                    "the 'infer' keyword requires an 'infer' behavior.");
+          return make_error_type();
+        }
+        // Type-check arguments.
+        const auto& beh = ait->second.behaviors[bit->second];
+        if (call->arguments.size() != beh.param_types.size()) {
+          error(call->paren,
+                "Agent '" + agent_name + ".infer' expects " +
+                    std::to_string(beh.param_types.size()) + " argument(s), got " +
+                    std::to_string(call->arguments.size()) + ".");
+          return make_error_type();
+        }
+        for (std::size_t i = 0; i < call->arguments.size(); ++i) {
+          evaluate_expression(*call->arguments[i]);
+        }
+        Type ret = beh.return_type;
+        expr.resolved_type = ret;
+        return ret;
+      }
+    }
+  }
+  // Non-agent infer expression: evaluate inner expression and assume Tensor.
   evaluate_expression(*expr.expression);
-  // infer <model(...)> likely returns a Tensor or result of the model.
-  // For now, we assume it returns a Tensor.
   return Type{Type::Kind::Tensor};
 }
 

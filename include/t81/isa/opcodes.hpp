@@ -213,6 +213,10 @@ enum class Opcode : std::uint8_t {
   ReadIsaVersion, // Write ISA version constant: ReadIsaVersion RD
   // RFC-0006 §2.3 — Deterministic GC safepoint
   GcSafepoint,    // Explicit GC safepoint: GcSafepoint (no operands); triggers a DGC cycle
+  // RFC-0015 §3.2 — Tier-tagged agent behavior invocation
+  // Encoding: AgentInvoke RD, R_ADDR, PACK(agent_id, behavior_id)
+  // Axion observes every AgentInvoke for tier-check and policy enforcement.
+  AgentInvoke,
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -617,12 +621,14 @@ enum class Opcode : std::uint8_t {
       return "ReadIsaVersion";
     case Opcode::GcSafepoint:
       return "GcSafepoint";
+    case Opcode::AgentInvoke:
+      return "AgentInvoke";
   }
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::GcSafepoint) + 1> kAllOpcodes = [] {
-  std::array<Opcode, static_cast<std::size_t>(Opcode::GcSafepoint) + 1> values{};
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::AgentInvoke) + 1> kAllOpcodes = [] {
+  std::array<Opcode, static_cast<std::size_t>(Opcode::AgentInvoke) + 1> values{};
   for (std::size_t i = 0; i < values.size(); ++i) {
     values[i] = static_cast<Opcode>(i);
   }

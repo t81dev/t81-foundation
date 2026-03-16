@@ -3798,6 +3798,73 @@ public:
         }
         break;
       }
+      case t81::tisc::Opcode::AgentInvoke: {
+        // RFC-0015 §3.2 — tier-tagged agent behavior invocation.
+        // Semantics are identical to Call but Axion observes every invocation
+        // for tier-check and policy enforcement before execution proceeds.
+        if (!reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        {
+          // Emit Axion audit event before dispatching so policy can veto.
+          t81::axion::Verdict av;
+          av.kind   = t81::axion::VerdictKind::Allow;
+          av.reason = "agent-invoke";
+          record_axion_event(insn.opcode, insn.b,
+                             static_cast<std::int64_t>(ctx.call_depth), av);
+        }
+        // Reuse Call dispatch: tier + ceiling checks + stack push + jump.
+        std::size_t next_depth = ctx.call_depth + 1;
+        while (next_depth > recursion_limit_for_tier(ctx.tier_status.current) &&
+               ctx.tier_status.current != t81::cog::TierId::Tier5) {
+          if (!ensure_min_tier(
+                  static_cast<t81::cog::TierId>(tier_rank(ctx.tier_status.current) + 1),
+                  "agent-invoke")) {
+            trap = Trap::TierFault;
+            break;
+          }
+        }
+        if (trap != Trap::None) break;
+        if (next_depth > recursion_limit_for_tier(ctx.tier_status.current)) {
+          std::ostringstream reason;
+          reason << "TierFault agent-invoke recursion depth exceeded depth=" << next_depth
+                 << " tier=" << static_cast<int>(ctx.tier_status.current)
+                 << " limit=" << recursion_limit_for_tier(ctx.tier_status.current);
+          record_tier_fault("agent-invoke-recursion-limit", reason.str(),
+                            static_cast<std::int64_t>(next_depth));
+          trap = Trap::TierFault;
+          break;
+        }
+        if (ctx.call_depth >= kHardRecursionCeiling) {
+          ++state_.contradiction_events;
+          t81::axion::Verdict recursion_verdict;
+          recursion_verdict.kind = t81::axion::VerdictKind::Deny;
+          std::ostringstream reason;
+          reason << t81::axion::reasons::kRecursionCeiling
+                 << " agent-invoke depth=" << ctx.call_depth
+                 << " limit=" << kHardRecursionCeiling;
+          recursion_verdict.reason = reason.str();
+          record_axion_event(insn.opcode, insn.b,
+                             static_cast<std::int64_t>(ctx.call_depth), recursion_verdict);
+          trap = Trap::SecurityFault;
+          break;
+        }
+        auto target = ctx.registers[insn.b];
+        if (!check_mem(insn.opcode, static_cast<int>(target), "agent-invoke", true)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (!push_stack(static_cast<std::int64_t>(ctx.pc), ValueTag::Int)) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Stack,
+                           static_cast<int>(ctx.sp), "stack agent-invoke");
+          trap = Trap::StackFault;
+          break;
+        }
+        ++ctx.call_depth;
+        ctx.pc = static_cast<std::size_t>(target);
+        break;
+      }
       case t81::tisc::Opcode::VAdd: {
         // VAdd RD, RS1, RS2 — elementwise add on tensor handles.
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {

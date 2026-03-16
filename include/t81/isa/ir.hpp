@@ -205,6 +205,9 @@ enum class Opcode {
   VFMA,            // VFma RD, RS1, RS2             — RD = RS1*RS2 + RD (mul-accumulate)
   READ_ISA_VERSION, // ReadIsaVersion RD            — RD = 4 (TISC v0.4)
 
+  // RFC-0015 §3.2 — Tier-tagged agent behavior invocation
+  AGENT_INVOKE,  // AgentInvoke RD, R_ADDR, PACK(agent_id, behavior_id)
+
   // Pseudo-instructions
   LABEL
 };
