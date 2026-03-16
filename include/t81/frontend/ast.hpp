@@ -65,6 +65,7 @@ struct TypeDecl;
 struct RecordDecl;
 struct EnumDecl;
 struct AgentDecl;
+struct ForeignDecl;
 
 // --- Base Classes ---
 
@@ -137,6 +138,7 @@ public:
   virtual std::any visit(const RecordDecl& stmt) = 0;
   virtual std::any visit(const EnumDecl& stmt) = 0;
   virtual std::any visit(const AgentDecl& stmt) = 0;
+  virtual std::any visit(const ForeignDecl& stmt) = 0;
 };
 
 // --- Expression Nodes ---
@@ -707,6 +709,27 @@ struct AgentDecl : Stmt {
 
   const Token name;
   std::vector<BehaviorDecl> behaviors;
+};
+
+/// RFC-0036 §3.1 — A single foreign function signature inside a `foreign {}` block.
+/// Syntax: fn <name>(<params>) -> <type>;
+struct ForeignFn {
+  Token name;
+  std::vector<Parameter> params;
+  std::unique_ptr<TypeExpr> return_type;
+};
+
+/// RFC-0036 §3.2 — Top-level foreign block declaration.
+/// Syntax: foreign [deterministic|governed|quarantined] { fn <name>(...) -> T; ... }
+struct ForeignDecl : Stmt {
+  ForeignDecl(Token keyword, std::string policy, std::vector<ForeignFn> functions)
+      : keyword(keyword), policy(std::move(policy)), functions(std::move(functions)) {}
+
+  std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
+
+  const Token keyword;
+  std::string policy;  // "deterministic" | "governed" | "quarantined" | ""
+  std::vector<ForeignFn> functions;
 };
 
 }  // namespace frontend

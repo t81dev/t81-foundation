@@ -208,6 +208,9 @@ enum class Opcode {
   // RFC-0015 §3.2 — Tier-tagged agent behavior invocation
   AGENT_INVOKE,  // AgentInvoke RD, R_ADDR, PACK(agent_id, behavior_id)
 
+  // RFC-0036 — Governed foreign function call
+  FFI_CALL,  // FFICall RD, arg_count  — text_literal carries the function name
+
   // Pseudo-instructions
   LABEL
 };

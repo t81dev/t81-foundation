@@ -219,7 +219,8 @@ public:
   std::any visit(const TypeDecl& stmt) override;
   std::any visit(const RecordDecl& stmt) override;
   std::any visit(const EnumDecl& stmt) override;
-  std::any visit(const AgentDecl& stmt) override;  // RFC-0015
+  std::any visit(const AgentDecl& stmt) override;    // RFC-0015
+  std::any visit(const ForeignDecl& stmt) override;  // RFC-0036
 
   // Expressions
   std::any visit(const BinaryExpr& expr) override;

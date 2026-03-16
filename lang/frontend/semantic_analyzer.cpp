@@ -1855,6 +1855,29 @@ std::any SemanticAnalyzer::visit(const AgentDecl& stmt) {
   return {};
 }
 
+// RFC-0036 §3 — Register each `foreign {}` block's function signatures so that
+// `foreign.<name>(...)` call-sites can be resolved during IR generation.
+std::any SemanticAnalyzer::visit(const ForeignDecl& stmt) {
+  for (const auto& ff : stmt.functions) {
+    const std::string fn_name(ff.name.lexeme);
+    if (_foreign_definitions.count(fn_name)) {
+      error(ff.name, "Foreign function '" + fn_name + "' is already declared.");
+      continue;
+    }
+    ForeignFnInfo info;
+    info.name = fn_name;
+    info.policy = stmt.policy;
+    for (const auto& param : ff.params) {
+      info.param_types.push_back(param.type ? analyze_type_expr(*param.type)
+                                            : Type{Type::Kind::Unknown});
+    }
+    info.return_type =
+        ff.return_type ? analyze_type_expr(*ff.return_type) : Type{Type::Kind::Void};
+    _foreign_definitions.emplace(fn_name, std::move(info));
+  }
+  return {};
+}
+
 std::any SemanticAnalyzer::visit(const AssignExpr& expr) {
   Type target_type = Type{Type::Kind::Unknown};
   bool mutable_target = false;
@@ -2142,6 +2165,23 @@ std::any SemanticAnalyzer::visit(const CallExpr& expr) {
         if (const auto* fa = dynamic_cast<const FieldAccessExpr*>(expr.callee.get())) {
           _expr_type_cache[fa->object.get()] = obj_symbol->type;
         }
+      }
+      // RFC-0036: foreign function call dispatch — `foreign.<name>(args)`.
+      if (obj_name == "foreign") {
+        auto fit = _foreign_definitions.find(method_name);
+        if (fit == _foreign_definitions.end()) {
+          error(call_token, "No foreign function named '" + method_name + "' declared.");
+          return make_error_type();
+        }
+        const auto& fi = fit->second;
+        if (arg_types.size() != fi.param_types.size()) {
+          error(call_token, "Foreign function '" + method_name + "' expects " +
+                                std::to_string(fi.param_types.size()) + " argument(s), got " +
+                                std::to_string(arg_types.size()) + ".");
+          return make_error_type();
+        }
+        expr.resolved_type = fi.return_type;
+        return fi.return_type;
       }
       // RFC-0015: agent behavior call dispatch — `AgentName.behaviorName(args)`.
       {

@@ -69,6 +69,8 @@ std::string token_type_name(TokenType type) {
       return "'agent'";
     case TokenType::Behavior:
       return "'behavior'";
+    case TokenType::Foreign:
+      return "'foreign'";
     case TokenType::Train:
       return "'train'";
     case TokenType::Break:
@@ -305,6 +307,7 @@ bool is_dot_field_segment_token(TokenType type) {
     case TokenType::Tree:
     case TokenType::Agent:
     case TokenType::Behavior:
+    case TokenType::Foreign:
       return true;
     default:
       return false;
@@ -432,7 +435,8 @@ std::unique_ptr<Stmt> Parser::declaration() {
     }
     if (match({TokenType::Fn})) return function("function", std::move(function_attrs));
     if (match({TokenType::Recurse})) return recurse_declaration();
-    if (match({TokenType::Agent})) return agent_declaration();  // RFC-0015
+    if (match({TokenType::Agent})) return agent_declaration();    // RFC-0015
+    if (match({TokenType::Foreign})) return foreign_declaration();  // RFC-0036
     if (function_attrs.has_value()) {
       const Token& anchor = function_attrs->anchor.value_or(peek());
       report_error(anchor, "Function attributes may only decorate functions.");
@@ -519,6 +523,59 @@ std::unique_ptr<Stmt> Parser::agent_declaration() {
 
   consume(TokenType::RBrace, "Expect '}' after agent body.");
   return std::make_unique<AgentDecl>(agent_name, std::move(behaviors));
+}
+
+// RFC-0036 §3 — foreign block declaration.
+// foreign_decl -> "foreign" [ IDENTIFIER ] "{" foreign_fn* "}"
+// foreign_fn   -> "fn" IDENTIFIER "(" parameters? ")" "->" type ";"
+std::unique_ptr<Stmt> Parser::foreign_declaration() {
+  Token keyword = previous();  // The 'foreign' token.
+
+  // Optional policy qualifier: deterministic | governed | quarantined
+  std::string policy;
+  if (check(TokenType::Identifier)) {
+    Token qual = peek();
+    std::string lex(qual.lexeme);
+    if (lex == "deterministic" || lex == "governed" || lex == "quarantined") {
+      advance();
+      policy = std::move(lex);
+    }
+  }
+
+  consume(TokenType::LBrace, "Expect '{' after 'foreign' (policy qualifier).");
+
+  std::vector<ForeignFn> functions;
+  while (!check(TokenType::RBrace) && !is_at_end()) {
+    consume(TokenType::Fn, "Expect 'fn' inside foreign block.");
+    Token fname = consume(TokenType::Identifier, "Expect function name after 'fn'.");
+    consume(TokenType::LParen, "Expect '(' after foreign function name.");
+
+    std::vector<Parameter> params;
+    if (!check(TokenType::RParen)) {
+      do {
+        if (params.size() >= 255) {
+          report_error(peek(), "Cannot have more than 255 parameters.");
+          break;
+        }
+        Token pname = consume(TokenType::Identifier, "Expect parameter name.");
+        consume(TokenType::Colon, "Expect ':' after parameter name.");
+        params.push_back({pname, type()});
+      } while (match({TokenType::Comma}));
+    }
+    consume(TokenType::RParen, "Expect ')' after foreign function parameters.");
+    consume(TokenType::Arrow, "Expect '->' before foreign function return type.");
+    auto ret = type();
+    consume(TokenType::Semicolon, "Expect ';' after foreign function signature.");
+
+    ForeignFn ff;
+    ff.name = fname;
+    ff.params = std::move(params);
+    ff.return_type = std::move(ret);
+    functions.push_back(std::move(ff));
+  }
+
+  consume(TokenType::RBrace, "Expect '}' after foreign block.");
+  return std::make_unique<ForeignDecl>(keyword, std::move(policy), std::move(functions));
 }
 
 // Parses a function declaration.
@@ -669,7 +726,8 @@ std::unique_ptr<Stmt> Parser::enum_declaration(std::optional<StructuralAttribute
 // var_declaration -> "var" IDENTIFIER ( ":" type )? ( "=" expression )? ";" ;
 std::unique_ptr<Stmt> Parser::var_declaration() {
   Token name;
-  if (_current.type == TokenType::Agent || _current.type == TokenType::Behavior) {
+  if (_current.type == TokenType::Agent || _current.type == TokenType::Behavior ||
+      _current.type == TokenType::Foreign) {
     name = advance();
   } else {
     name = consume(TokenType::Identifier, "Expect variable name.");
@@ -691,7 +749,8 @@ std::unique_ptr<Stmt> Parser::var_declaration() {
 std::unique_ptr<Stmt> Parser::let_declaration() {
   bool is_mutable = match({TokenType::Mut});
   Token name;
-  if (_current.type == TokenType::Agent || _current.type == TokenType::Behavior) {
+  if (_current.type == TokenType::Agent || _current.type == TokenType::Behavior ||
+      _current.type == TokenType::Foreign) {
     name = advance();
   } else {
     name = consume(TokenType::Identifier, "Expect constant name.");
@@ -1338,7 +1397,7 @@ std::unique_ptr<Expr> Parser::primary() {
     return if_expression();
   } else if (check(TokenType::LBrace)) {
     return block_expression();
-  } else if (match({TokenType::Identifier, TokenType::Agent, TokenType::Behavior})) {
+  } else if (match({TokenType::Identifier, TokenType::Agent, TokenType::Behavior, TokenType::Foreign})) {
     Token name = previous();
     Token enum_name_token;
     Token variant_token;

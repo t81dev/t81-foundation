@@ -571,6 +571,11 @@ std::any IRGenerator::visit(const AgentDecl& stmt) {
   return {};
 }
 
+// RFC-0036 §3 — ForeignDecl emits no code at declaration time; all function
+// signatures were already registered by the semantic analyzer.  IRGen only
+// acts when a `foreign.<name>(...)` call-site is visited.
+std::any IRGenerator::visit(const ForeignDecl& /*stmt*/) { return {}; }
+
 // Expressions
 std::any IRGenerator::visit(const BinaryExpr& expr) {
   if (expr.op.type == TokenType::AmpAmp || expr.op.type == TokenType::PipePipe) {
@@ -3999,6 +4004,46 @@ std::any IRGenerator::visit(const CallExpr& expr) {
       emit(instr);
       record_result(&expr, dest);
       return {};
+    }
+
+    // RFC-0036 §3 — detect foreign function call: "foreign.<name>".
+    // Must be checked before the VariableExpr gate (same reason as RFC-0015 below).
+    if (_semantic) {
+      const auto dot_pos = func_name.find('.');
+      if (dot_pos != std::string::npos) {
+        const std::string ns_part  = func_name.substr(0, dot_pos);
+        const std::string fn_part  = func_name.substr(dot_pos + 1);
+        if (ns_part == "foreign") {
+          const auto& foreign_defs = _semantic->foreign_definitions();
+          if (foreign_defs.count(fn_part)) {
+            const auto& fi = foreign_defs.at(fn_part);
+            // Push arguments onto the stack.
+            for (const auto& arg : expr.arguments) {
+              arg->accept(*this);
+              auto val = ensure_expr_result(arg.get());
+              tisc::ir::Instruction push;
+              push.opcode = tisc::ir::Opcode::PUSH;
+              push.operands = {val.reg};
+              push.primitive = val.primitive;
+              emit(push);
+            }
+            // Emit FFI_CALL RD, arg_count — text_literal carries the function name.
+            auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction ffi;
+            ffi.opcode = tisc::ir::Opcode::FFI_CALL;
+            ffi.operands = {dest.reg,
+                            tisc::ir::Immediate{static_cast<long long>(expr.arguments.size())}};
+            ffi.text_literal = fn_part;
+            ffi.primitive = tisc::ir::PrimitiveKind::Integer;
+            emit(ffi);
+            bool returns_void = (fi.return_type.kind == Type::Kind::Void);
+            if (!returns_void) {
+              record_result(&expr, dest);
+            }
+            return {};
+          }
+        }
+      }
     }
 
     // RFC-0015 §3.2 — detect agent behavior call: "AgentName.behaviorName".

@@ -33,6 +33,7 @@ enum class TokenType {
   Train,
   Agent,
   Behavior,
+  Foreign,
   Break,
   Continue,
   Return,
