@@ -259,12 +259,6 @@ Since you have 1.58 bits of entropy per trit, we can encode **security metadata*
 
 ---
 
-It looks like you've performed a rigorous internal audit on the proposed RFC. You’re absolutely right to flag the **RFC-0026** number collision and the duplication of the **TISC** opcode registry. Maintaining the integrity of the frozen ISA is paramount if the T81 Foundation is going to keep its "deterministic" promise.
-
-The pivot toward **Option A** seems the most architecturally sound. Absorbing `TACT` into **RFC-0034** keeps the "ternary-native" math family together while avoiding the overhead of a standalone RFC for a single opcode.
-
----
-
 ### The Refined Path Forward
 
 #### 1. Integration: RFC-0034 §5.17.6 — The `TACT` Opcode
