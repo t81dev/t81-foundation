@@ -1,14 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="T81 Foundation — Arquitetura Ternária Determinística" width="100%">
-</p>
-
-# T81: Uma Arquitetura Ternária Determinística
-
-<p align="center">
-  <a href="https://github.com/t81dev/t81-foundation/releases/latest"><img src="https://img.shields.io/github/v/release/t81dev/t81-foundation?style=for-the-badge&label=Latest%20Release" alt="Último Lançamento"></a>
-  <a href="https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI" alt="CI"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="Licença: MIT"></a>
-  <img src="https://img.shields.io/badge/Language-C%2B%2B23-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="Linguagem: C++23">
+  <img src="assets/banner.png" alt="T81 Foundation — Deterministic Ternary Architecture" width="100%">
 </p>
 
 [English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
@@ -16,121 +7,432 @@
 <!-- T81-SPEED-START -->
 <!-- T81-SPEED-END -->
 
-A T81 Foundation é uma pilha de computação **nativa ternária com o determinismo em primeiro lugar**, projetada para a matemática da irrevogável reprodutibilidade, tratos canônicos de informações e atuação ativamente orientada no processo regente das execuções em máquina.
+# Fundação T81 – Pilha de Computação Ternária Determinística
 
-Nós provemos uma cadeia contendo implementações sistematicamente construída em escala de prioridade voltada aos engenheiros e pesquisadores de operações em estado crítico onde o acaso ou brechas da execução computacional jamais devem se presenciar. O alicerce desta concepção habita nas propriedades do modelo matemático com escala e base de tamanho de ordem 81 (`T81`) nativo de trits implementando um processado através das vetorizações SWAR permitindo operar nos meios atuais em velocidade absoluta pelo intercurso normal binário de máquina.
+![Release](https://img.shields.io/badge/release-v1.6.0--Stable-blue)
+![Tests](https://img.shields.io/badge/tests-367%2F367_passing-brightgreen)
+![ISA](https://img.shields.io/badge/ISA-v1.2.0_Frozen-blue)
+![Execution](https://img.shields.io/badge/execution-deterministic-green)
+![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
+
+Aproveitando a eficiência teórica da computação base-e, a **T81 Foundation** é uma pilha de computação determinística baseada em **aritmética ternária balanceada** ({-1, 0, +1}) com um modelo de governança de cadeia completa que abrange conjunto de instruções, máquina virtual, compilador de linguagem e ambiente de inferência de IA.
+
+A pilha fornece:
+
+- **reprodutibilidade com bit exato** — cada caminho de execução produz um hash de rastreamento idêntico nas plataformas suportadas
+- **inferência de IA governada** — O mecanismo de política Axion intercepta e audita todas as operações privilegiadas antes dos efeitos colaterais
+- **proveniência endereçada ao conteúdo** — CanonFS registra todos os artefatos, pesos de modelo e estado de tempo de execução de forma imutável
+- **execução paralela determinística** — O modelo de gráfico de tarefa DPE (RFC-DPE-0002) permite cargas de trabalho TISC simultâneas com saídas confirmadas por época
+
+---
+
+## Status do projeto – março de 2026
+
+**Fase: Desenvolvimento Ativo** — v1.6.0-Estável; 368/368 testes aprovados; determinismo multiplataforma verificado no Linux x86\_64 + macOS ARM64.
+
+| Componente | Maturidade | Notas |
+| :--- | :--- | :--- |
+| **TISC UM** | ❄️ Congelado | v1.2.0; semântica do opcode imutável na v1.x; 12 novos opcodes desde v1.1: `AgentInvoke` (RFC-0015), 6 inferências nativas ternárias (RFC-0034), 3 FFI (RFC-00B8), 2 criptografias de rede (RFC-0038), 1 anel KEM (RFC-0039) |
+| **Tipos de dados** | ❄️ Congelado | BigInt, Float, Complex, Map, Set — codificação estável em bits; Auditoria de 27/02/2026 limpa |
+| **T81VM** | ✅ Estável | Envio completo do TISC v1.2;  `AgentInvoke` + inferência ternária nativa + FFI + criptografia de rede + opcodes NTRU-KEM; Testes 368/368 |
+| **T81Lang** | ✅ Estável | especificação v1.3 estável;  `agent`/`behavior` (RFC-0015);  `foreign {}` FFI (RFC-0036);  `std.tnn.*` TNN stdlib (RFC-0037);  `std.crypto.*` criptografia de rede + NTRU-KEM (RFC-0038/0039); suporte ao identificador contextual em todo |
+| **Núcleo de Governança Axion** | ✅ Estável | P4 Segurança e P5 Instrução Privilegiada satisfeitas; Strings de razão canônica AX-M6; cada portão de ativação `AgentInvoke` + `TACT` emite evento de auditoria |
+| **Inferência Ternário-Nativa** | ✅ Aceito | RFC-0034 + RFC-0037: `TWMATMUL`, `TQUANT`, `TATTN`, `TWEMBED`, `TERNACCUM`, `TACT`;  `std.tnn.*` T81Lang stdlib (6 componentes integrados → operações TISC); inferência sem multiplicação; Formato de peso T81WTN; 13/13 testes |
+| **Criptografia de rede** | ✅ Aceito | RFC-0038+0039: `POLYMUL`, `POLYMOD`, `TVecSub`; anel completo {+,−,×,mod} sobre Z\[x\]/(x^n+1);  `std.crypto.{polyadd,polysub,polymul,polymod,ntru_encrypt,ntru_decrypt}`; 37/37 testes |
+| **FFI governada** | ✅ Aceito | RFC-00B8 + RFC-0036: `FFIDispatcher`, `FFILibraryRegistry`, 3 códigos de operação de VM;  `foreign [policy] { fn … }` Gramática T81Lang;  `foreign.<name>(args)` → `FFI_CALL`; 9/9 testes de CA |
+| **Front-ends da TUI** | ✅ Aceito | `t81 studio` (operador humano) + `t81 agent` (nativo de IA); FTXUI v5.0.0; RFC-0033 aceito |
+| **Gráfico T81** | ✅Beta | Redução do opcode da VM + serialização do lado lang com fio; Verificação DCP concluída; 6/6 testes |
+| **DPE (Execução Paralela)** | ✅ Aceito | RFC-DPE-0001–0009 todos aceitos; gráfico de tarefas, anel de histórico de época, eventos de auditoria de época, tempo limite totalmente implementado |
+| **Níveis Cognitivos** | ✅ Aceito | Cognição Tier4 (RFC-0021): `Tier4Loop`, `SelfModel` (anel de 81 entradas), `RecursiveImprovementBounds`, `TierAwarePlanner`; 4 suítes de teste aprovadas |
+| **Suíte de referência** | ✅ Aceito | RFC-00A2: Taxa de transferência de VM + validação de determinismo CanonHash81 (`score=1.0` em todas as execuções);  `t81 internal benchmark` |
+| **CI de determinismo multiplataforma** | ✅ Aceito | O fluxo de trabalho diário do GitHub Actions compara hashes de bytecode T81Lang no Linux x86\_64 (gcc-14) e no macOS ARM64 (clang); registro de evidência publicamente auditável |
+| **Kernel do SO Axion** | 🔬 Experimental | TernaryOS: pager, agendador, IPC, estrutura de interrupção, pista QEMU x86\_64 EFI operacional; 9/9 testes ternaryOS aprovados |
 
 ---
 
-### 🚀 [Início Rápido: Instruções de Compilação & Instalação](docs/user-guide/quickstart/INSTALL.md)
+## Arquitetura
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Interfaces                                                 │
+│  t81 studio (Human TUI)   t81 agent (AI-Native TUI)  CLI    │
+├─────────────────────────────────────────────────────────────┤
+│  T81Lang Compiler                                           │
+│  Lexer → Parser → Typed AST → Semantic Analyzer → IRGen     │
+│  agent/behavior (RFC-0015)  ·  foreign {} (RFC-0036)        │
+├─────────────────────────────────────────────────────────────┤
+│  Axion Governance Kernel                                    │
+│  PolicyEngine · CanonFS · Audit Trail · Ethics Gate         │
+├──────────────────────────────┬──────────────────────────────┤
+│  T81 Virtual Machine         │  DPE Task Graph Runtime      │
+│  TISC interpreter            │  EpochGraph · DeltaBuffer    │
+│  (deterministic)             │  (RFC-DPE-0002)              │
+├──────────────────────────────┴──────────────────────────────┤
+│  TISC ISA v1.2  ❄️ Frozen  +  Data Types  ❄️ Frozen         │
+│  Deterministic substrate — CanonHash81 bit-exact traces     │
+├─────────────────────────────────────────────────────────────┤
+│  Governed FFI (RFC-00B8)  ·  Ternary-Native Inference       │
+│  FFIDispatcher · FFILibraryRegistry                         │
+│  TWMATMUL · TQUANT · TATTN · TWEMBED · TERNACCUM · TACT     │
+└─────────────────────────────────────────────────────────────┘
+  Experimental: TernaryOS (Axion OS Kernel) · Cognitive Tiers
+```
+
+### Componentes principais
+
+**TISC ISA v1.2** — Arquitetura de conjunto de instruções ternárias. Congelado na v1.x; o contrato de execução imutável para toda a pilha. v1.2 adiciona 9 opcodes: `AgentInvoke` (RFC-0015), seis operações de inferência nativas ternárias (RFC-0034) e três operações FFI governadas (RFC-00B8).
+
+**T81VM** — Interpretador TISC determinístico. Garante saída idêntica em bits em todas as plataformas; O isolamento pré-despacho do Axion mantém os ganchos de governança fora do caminho de execução a quente. Envio completo do TISC v1.2, incluindo inferência nativa ternária e FFI.
+
+**Axion Governance Kernel** — Mecanismo de política que intercepta `AXREAD` , `AXSET` , `AXVERIFY` , opcodes de IA e chamadas FFI antes de qualquer efeito colateral. Fail-closed em caso de falha na análise da política. Certificação estável 15/03/2026 com aprovação em 54/54 testes.
+
+**CanonFS** — Sistema de arquivos endereçado ao conteúdo. Armazena todos os objetos de código, pesos de modelo e artefatos de tempo de execução como blobs imutáveis ​​identificados por hash. Fornece proveniência para auditorias de determinismo.
+
+**T81Lang** — Bytecode TISC direcionado a linguagem de alto nível. Tipos nativos: `BigInt` , `Fraction` , `Float` , `Complex` , `Tensor` , `Map` , `Set` . Declarações `agent { behavior }` de primeira classe são compiladas para `AGENT_INVOKE` com auditoria Axion (RFC-0015).  Os blocos `foreign [policy] { fn … }` declaram funções externas governadas que chamam via `FFI_CALL` (RFC-0036).  `agent` , `behavior` e `foreign` são utilizáveis ​​como identificadores contextuais em todas as expressões e posições de ligação. Pipeline do compilador: lexer → analisador → AST digitado → análise semântica → geração de IR.
+
+**Inferência ternária-nativa (RFC-0034)** — Seis opcodes TISC para inferência de IA livre de multiplicação usando pesos ternários balanceados {−1, 0, +1}: `TWMATMUL` (matmul), `TQUANT` (quantizar para trit), `TATTN` (atenção ternária), `TWEMBED` (incorporação de peso), `TERNACCUM` (produto escalar escalar), `TACT` (ativação com portão de teto Axion). Formato de peso T81WTN. Interface T81Lang `foreign {}` completa via RFC-0036.
+
+**FFI governada (RFC-00B8 + RFC-0036)** — Interface de função externa governada de pilha completa. Camada VM (RFC-00B8 Fase 1): `FFIDispatcher` impõe verificações de políticas, cotas de recursos e trilhas de auditoria antes de qualquer chamada externa;  `FFILibraryRegistry` rastreia bibliotecas registradas por nome e hash de versão; três opcodes de VM ( `FFICall` , `FFIRegister` , `FFIPolicySet` ). Camada de linguagem (RFC-0036): `foreign deterministic { fn sin(x: T81Float) -> T81Float; }` declara assinaturas;  `foreign.sin(angle)` em locais de chamada diminui para `FFI_CALL` com o nome da função transportado em `text_literal` . Nove testes de aceitação são aprovados.
+
+**TUI Frontends** — Duas interfaces de terminal complementares construídas em FTXUI v5.0.0:
+
+- `t81 studio` — barra lateral de navegação, navegador CanonFS, painel Axion, visualizador de rastreamento de determinismo, paleta de comandos ( `Ctrl+P` )
+- `t81 agent` — sessão JSONL persistente, comandos de barra ( `/compile` , `/run` , `/hash` , `/allow` , `/infer` , `/trits` ,…), barra de probabilidade trit
+
+**DPE (Execução Paralela Determinística)** — Modelo de gráfico de tarefas sobre o TISC ISA congelado. As tarefas declaram entradas imutáveis ​​e regiões de saída em buffer; a VM confirma todas as gravações atomicamente no final da época. Não são necessários novos códigos de operação.
 
 ---
 
-## 🏛️ Arquitetura do Ecossistema
+## Início rápido
 
-As concepções estruturais padrões do atual desenvolvimento computacional tomam questões como segurança perante auditoria em modelo apenas figurativo implantando esses sobre caos pré-existente das máquinas. **A T81 age na contra mão disto.** Em nossa perspectiva e método cada camada deve perfeitamente aderir aos sistemas orientados pela raiz controlada diretamente em proteção vinda do motor principal do kernel e núcleo estrito da Axion.
+```bash
+# Clone and configure
+git clone https://github.com/t81dev/t81-foundation.git
+cd t81-foundation
+cmake --preset default -DCMAKE_BUILD_TYPE=Release
+cmake --build build
 
-```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'fontFamily': 'inter' }}}%%
-graph LR
-    subgraph Frontend [Superfície de Desenvolvimento]
-        Lang(T81Lang / TUI) --> Compiler[Compilador da T81 CLI]
-        Api(API Pública em C++)
-    end
-    
-    subgraph ISA [O Contrato Fundamental]
-        TISC[Bytecode de Especificações TISC]
-        Compiler -->|Resulta na Compilação de| TISC
-        Api -.->|Descreve Geração| TISC
-    end
+# Run the full test suite
+ctest --test-dir build --output-on-failure
 
-    subgraph Runtime [Execuções Regulamentadas]
-        TISC -->|Processa-se perante o| T81VM(Interpretação e Processamento na Máquina: T81VM)
-        Axion{Motor Regente Central de Políticas Fixas Axion} <-.->|Sustenta Limítrofes Controlados & Varre Operandos| T81VM
-    end
+# Launch the human operator TUI
+./build/t81 studio
 
-    subgraph Data [Estruturas Finitas e Bases Documentadas Idênticas Puras]
-        T81VM -->|Fixa e Condensa para Acesso de Diretório Seguro| CanonFS[(Registro Restritivo CanonFS)]
-    end
+# Launch the AI-native TUI
+./build/t81 agent
 
-    style TISC fill:#003366,stroke:#0055aa,color:#fff
-    style Axion fill:#4a1c1c,stroke:#aa3333,color:#fff
-    style CanonFS fill:#114411,stroke:#228822,color:#fff
+# Compile a T81Lang program
+./build/t81 code build examples/hello.t81 -o hello.tisc
+
+# Execute with Axion governance
+./build/t81 vm run hello.tisc
 ```
 
-### 🧩 Os Pilares Fundamentais
+Sinalizadores de compilação opcionais:
 
-| Sistema | O que significa? | Status de Maturidade | O que se encarrega de realizar nestes propósitos englobados? | 
-| :--- | :--- | :--- | :--- |
-| **`TISC` ISA** | **As Instruções Estáveis** | **Congelado** | Formato rigoroso na estrutura serializadora visada na rota perante condução sobre contratos estabelecidos em estrito comportamento restritivamente delineados à exatidão pura. |
-| **`T81VM`** | **Diretório Absoluto do Processo** | **Beta** | Unidade VM encarecidamente definida aos ditames rigorosos referendos matemáticos na escala dos trits em pureza base 3 nativa. |
-| **`Axion`** | **Regente Ativo Central** | **Beta** | Motor em malha virtual condicionado limitador que rege, barra operações falhas e sustenta dinâmicas sob o ciclo imediato de operação processado por meio lógico. |
-| **`CanonFS`**| **Rigor dos Ficheiros Definidos Idênticos Restritivos e Puros** | **Beta** | Composição restrita formante da conduta do mapeamento em armazenamento estático em arquivos codados imutáveis na terminação via hahs puros em arquivos em bytes `.tisc`. É restritivo inibir as possibilidades manipulativas de origens externas duvidosas. |
-| **`T81Lang`**| **Front-end Estruturado** | **Beta** | A mais pura faca orientada de interações ergonômicas. Estruturada sobre amarras e regentes em comportos exatos provendo controle de segurança absoluta matemática tipada das execuções em arranjos matriz (os processos tensoriais em ampolas restritivas do código do código de opções restritas (Option) puro referenciado). |
+| Bandeira | Padrão | Propósito |
+| :--- | :--- | :--- |
+| `T81_BUILD_TUI` | `ON` | Interfaces TUI baseadas em FTXUI |
+| `T81_BUILD_TESTS` | `ON` | Conjunto de testes completo |
+| `T81_ENABLE_ASAN` | `OFF` | Desinfetante de endereço |
+| `T81_ENABLE_UBSAN` | `OFF` | Desinfetante UB |
+| `T81_ENABLE_LLAMA_CPP` | `OFF` | Adaptador de inferência llama.cpp governado |
+| `T81_WARN_STRICT` | `OFF` | Modo de varredura de aviso estrito (usado pela predefinição `warn-strict`) |
 
+**Verificação de aviso pré-push** — espelha as verificações `-Wswitch` , `-Wunused-variable` e `-Wunused-function` aplicadas pelo Windows CI, detectando problemas localmente em aproximadamente 2 minutos em vez de esperar pela matriz completa:
 
-## 👀 Desenvolvendo Com a Ferramenta T81Lang
-
-O escopo perante todo e qualquer ambiente externo gerador de controle TISC é modelado organicamente no T81Lang, possuindo como objetivo comportamental base das exatidões absolutas das matemáticas perante dados sensíveis e arrays tensores em um modo perfeitamente natural tipificados de segurança. Exemplos base na filtragens de fluxos da raiz entre os padrões e o seu "match" interações Option e Results em amostra da arquiteturacidade estrita e limitadas contornando problemas em processos abstrativos perante as definições codificadas limpas sem distorções obscuras abaixo delineado em sua totalidade.
-
-```t81
-// Define e modela um analisador condutor limitante exato a prova de falhas na conversão da interpretação.
-func parse_safe(opt_input: Option<Int32>) -> Int32 {
-    match opt_input {
-        Some(v) => { v * 2 }
-        None => { 0 }
-    }
-}
-
-// Os caminhos trilhados à base exata na limitação sobre referências nas delimitações perante condicionalidades dos restritos de fluxos e limites impeditivos (Erros Traçados Restritos explícitos)
-func calculate_checked(val: Int32) -> Result<Int32, String> {
-    if val < 0 {
-        return Err("Limitação das diretrizes governadas base atestam como imperativo números positivos condicionados restritamente dentro desde perfil referenciado.")
-    }
-    return Ok(val * 81)
-}
+```bash
+cmake --preset warn-strict
+cmake --build build-warn-strict 2>&1 | head -40
 ```
-
-## 🛠️ Utilizando as Integrações Intermediárias da API Pública (C++)
-
-Se possuir demandas perante o uso ou geração orientada sobre ferramentas perfeitamente condicionados perante a motores limitantes orientados ao ecossistema referenciado o processamento de compilações é inteiramente viabilizado harmonicamente nos propósitos englobados perfeitamente nas premissas ditas no âmbito de integração dos perfis em uso no seu ambiente em integração direta perante os Cmake em compilação natural de um consumo seguro em seu fluxo original descendentes preexistente em implementos próprios modelados limpos conforme segue base ao formato exato e simples:
-
-```cpp
-#include <iostream>
-#include <t81/types/T81Int.hpp>
-#include <t81/types/bigint.hpp>
-
-int main() {
-    // Modelos estáticos restritivos em referência ao núcleo na matemática limite pura orientada baseada e referenciada integral nos cálculos precisos e canônicos absolutos ao alcance com a base e tamanho natural em escala 81.
-    t81::T81Int<9> canonical_val(42);
-    std::cout << "Exatidão perante representatividade da rota principal do vestuário codificação na execução exata base do registro matriz base no número estrito original é: " << canonical_val.to_int64() << "\n";
-    
-    // Provisão condutível determinística da integridade perante os bit limites matemáticos com absoluta isenção na modelação das perdas base na estrita segurança integral impeditivas restritivamente codadas.
-    t81::core::types::T81BigInt big("2145326462463276537653242");
-    std::cout << big.to_string() << "\n";
-}
-```
-
-## 🧭 Diretório Limitado Restritivo a Base Da Documentação Absoluta Normativa Geral Regrada do T81
-
-Todo modelo e operação limitantes perante exatidões de sistema procedem na restritividade principal das codificações ditadas com força e imperativo sob um sistema impeditivo limitante as regras englobadas perante a um perfil de definições formais que conduzirão o compilar nos parâmetros base orientados preexistente. O código C++ rege nos preexistentes conformes ditados nas regras englobadas na matriz ditatorial formadas nos ditames estritos normativos base perante os caminhos estritos originais nas especificações (spec) estipuladas ao limitante formal restrito.
-- **[Guia Limpo da Configuração de Inicialização, Compilação Base Rápida das Predefinições de Uso em Cmake](docs/user-guide/quickstart/INSTALL.md)**
-- **[Mapa Específico do Controle Base Restritivo e Estático Explicativo e Modelador Funcional das Definições Gerais Arquitetônicas da Engenharia Modelada Principal (Documentos Formais Arquitetônicos de Base Condutores Restritivos)](docs/architecture/OVERVIEW.md)**
-- **[O Monitor Regente Padrão Central Limitantes Condutores Modelantes da Vida Exata Limpa Base das Organizações (Diretórios do Estado Formal Padrão)](docs/status/PROJECT_CONTROL_CENTER.md)**
-- **[Repositório Manual Condicionado e Paramétrico Operativo Estrito Restrito Formalizado ao Comandos da Interação Por Console e Parâmetros dos Perfil Padrão CLI Base em Consumo](docs/user-guide/reference/cli-user-manual.md)**
-- **[A Árvore Base Completa Ditatorial Restritivamente Restrita Condicionadora de Operação C++ em Definições das Especificações](spec/)**
-- **[A Formação e Material Formador Limitante Estendido Histórico Documentado Amplo Formal Descritivo (Formação Monográfica Integral Geral Explicativa Livro Modelador Orientador)](book/book-en/README.md)**
-
-## 🤝 Predefinições De Orientação em Parâmetros Ao Compromisso Perante Ações Abertas à Auxilio De Engenharia Externa Base Orientada Das Políticas Formadoras de Uso Restritivas (Apoio Misto Aberto)
-
-Encorajamos o uso amigável na recepção aos braços voluntários integradores base do projeto ao passo que se cumpram expressamente sob rigor de amparo normativo absoluto na submissão completa às prioridades preestabelecidas limitadoras nas matrizes absolutas englobantes da base filosófica em regra exata e formadora de parâmetros baseadas na construção da engenharia preexistente:
-1. **O Rigor Orientado Pela Imperatividade Autoridade Restrita Das Exatidões ditadas Nas Especificações Perante Preexistentes Limitadoras Formais `Spec-First` (A Ditadura das Formais Base Limitante):** A orientação C++ no código da aplicação acatará rigorosamente e será determinada no princípio restrito nas obrigações impostas às determinações restritas nas imperativas regulamentações de controle perante a arquitetura de base restrita base no diretório das diretrizes formadora matriz e ditarão a implementação base no caminho inverso o Cpp em desenvolvimento ao contrário não modela as regras formadoras originais base.
-2. **Determinismo Irrevogável (A Base Exata do Todo em Imperativos Condutores Absolutos Originais Controladores na Limitação em Parametrização Limitante Exata Primordial Restritiva de Base Orientada em Modelos Padrões `Determinism-First` Restritos Base):** Operações limitantes ao caminho estritamente rigoroso condicionados à manutenção e preservações das parametrizações em exatidões nas propriedades nas especificações canônicas restritas condicionado inibindo o menor reflexo falho preexistente as variações no consumo entre o uso nas variações de ambiente dos limites da CPU base em rigor formadora das validações exatas restritas condicionantes limitando a aprova nos requisitos perante uso imperativo das execuções em base do Deterministic Core Profile. (DCP)
-3. **Limite da Restrição Estendida às Margens Das Políticas nas Governança Limpa Controlada Nas Execuções Isoladas (Condicionados Parâmetros Base de Proteções Modeladores):** Extensões exploratórias em formadora cognitivos de inteligência autônoma estão precondicionantes limitadas sob blindagem e impossibilitadas por definição e rigor absolutos na travessia perante barreiras formadoras e impedidas e preexistentes inibidas no processo limitantes nas ações a permuta do limite das restrições e exata base.
-
-Inicialize condicionado modelado a formadora base as matrizes formatadoras de operação base orientando aos pré requisitos originais formatador das ações conjuntas limitadas perante a revisão aos parâmetros originais aos descritos orientados das precondições em [`CONTRIBUTING.md`](CONTRIBUTING.md) das condicionais gerais limitadas modeladas base orientada ao comprometimento em condutas perante precondições nos requisitos restritos em documentadas preexistentes formadoras matriz base preexistentes expressamente declaradas em [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). Riscos em matriz as condutas operativas condicionadas preexistente em ações abertamente vulneráveis base modeladoras condicionadas documentadores matriz deverão por obrigação proceder conforme os restritos perante aos preexistentes englobadores modeladores condicionantes imperativos explícitos restritos modelados na documentações base matriz documentadores originais base em matriz [`SECURITY.md`](SECURITY.md).
 
 ---
-*A Distribuição Condicionada Aos Requisitos Formadores Padrão da Engenharia Base Engenharia Preexistente Orientado Dos Formadores das Políticas Pre-estabelecidas do Repositório Preexistente Da Ferramenta Base e Original T81 Foundation Em Processos e Submissões e Entregas Está Estritamente Definida Em Conformidade Orientada Ao Conjunto Preexistente Regulamentador Limitante Documentado Conforme Formativo Expresso Orientado Pelos Amparos da Matriz de Proteção Na Documentação Preexistente Englobada Sob Distribuição Originada e Base Em Parâmetros Limitados Amortizados sob O Limitador Open Source [MIT License](LICENSE).*
 
-> **Note:** All determinism guarantees are strictly bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).
+## Verificação do Determinismo
+
+Cada versão é verificada quanto à reprodutibilidade entre plataformas com bit exato.
+
+```bash
+./scripts/ci/run_determinism_slice.sh
+```
+
+Plataformas verificadas: **Linux x86_64**, **macOS ARM64**. Qualquer divergência nos hashes de rastreamento da VM é um defeito crítico.
+
+---
+
+## Documentação
+
+| Tópico | Localização |
+| :--- | :--- |
+| Primeiros passos (C++) | `docs/user-guide/getting-started/cpp-quickstart.md` |
+| Primeiros passos (IA) | `docs/user-guide/getting-started/ai-quickstart.md` |
+| Guias TUI | `docs/user-guide/how-to/tui-guide.md` |
+| Especificação ISA | `spec/tisc-spec.md` |
+| Manual de Política Axion | `docs/user-guide/tutorials/axion-policy-manual.md` |
+| Referência Stdlib T81Lang | `docs/user-guide/reference/T81LANG_STDLIB_REFERENCE.md` |
+| Visão geral da arquitetura | `docs/architecture/OVERVIEW.md` |
+| Carta de Governança | `docs/governance/README.md` |
+| Centro de Controle de Projetos | `docs/status/PROJECT_CONTROL_CENTER.md` |
+
+---
+
+## Roteiro
+
+| Marco | Alvo | Descrição |
+| :--- | :--- | :--- |
+| Fechamento Mês C2 | 31/03/2026 | Auditoria do razão de governança; comprovação PASS 2026-03-10 |
+| Promoção Axion Estável | ✅ **CONCLUÍDO EM 15/03/2026** | Strings de razão canônica AX-M6 implementadas; 54/54 testes aprovados; pronto para produção |
+| Promoção T81Graph Beta | ✅ **CONCLUÍDO EM 15/03/2026** | Redução do opcode da VM concluída; Verificação do DCP; 6/6 testes aprovados |
+| Política de interrupção RFC-00B5 | ✅ **CONCLUÍDO EM 16/03/2026** | Modelo de interrupção de evento governado integrado; fatias 26-28 completas |
+| RFC-0034 Inferência Ternária-Nativa | ✅ **CONCLUÍDO EM 16/03/2026** | 6 novos códigos de operação TISC; inferência sem multiplicação; Portão de teto com acionamento TACT; 5/5 testes de conformidade |
+| FFI governado RFC-00B8 (Fase 1) | ✅ **CONCLUÍDO EM 16/03/2026** | Despachante FFI + registro de biblioteca; 3 códigos de operação de VM; pipeline de governança; trilha de auditoria |
+| CI de determinismo multiplataforma | ✅ **CONCLUÍDO EM 16/03/2026** | Fluxo de trabalho diário de ações do GitHub; Comparação de hash Linux x86\_64 + macOS ARM64; registro de evidência pública |
+| Gramática RFC-0036 T81Lang FFI | ✅ **CONCLUÍDO EM 16/03/2026** | Sintaxe `foreign [policy] {}`;  `foreign.<name>(args)` → `FFI_CALL`; 9/9 testes de CA; conecta o trabalho de VM RFC-0034 + RFC-00B8 ao frontend T81Lang |
+| Etapa 2: plataforma verificada | ✅ **ALCANÇADO 16/03/2026** | Todas as metas de implementação concluídas; depurador de repetição de rastreamento, CI de plataforma cruzada, testes 365/365, frontend FFI - pilha reproduzível externamente |
+| RFC-0037 TNN stdlib | ✅ **CONCLUÍDO EM 16/03/2026** | `std.tnn.*` T81Lang integrados (6 funções → operações TISC RFC-0034); 13/13 provas; inferência full-stack sem multiplicação da origem para a VM |
+| Criptografia de rede RFC-0038 | ✅ **CONCLUÍDO EM 16/03/2026** | `POLYMUL`/`POLYMOD` códigos de operação TISC;  `std.crypto.polymul/polymod` integrados; polimultiplicação negacíclica sobre {−1,0,+1}; T81BigInt-exato; 13/13 testes |
+| Promoção de especificações T81Lang (v1.3) | ✅ **CONCLUÍDO EM 16/03/2026** | RFC-0036/0037/0038 promovido para especificação normativa; §5.17 não-esboçado; §5.18/5.19 adicionado; registro opcode atualizado para 205 entradas |
+| RFC-0039 NTRU-KEM | ✅ **CONCLUÍDO EM 16/03/2026** | `TVecSub` código de operação;  `std.crypto.{polyadd,polysub,ntru_encrypt,ntru_decrypt}`; Camada matemática C++ KEM; Testes 24/24; anel completo {+,−,×,mod} sobre Z\[x\]/(x^n+1) |
+| Inicialização bare-metal TernaryOS | A definir | Execução de host x86\_64 QEMU + retorno de evidência CanonFS |
+
+---
+
+## Governança
+
+A Fundação T81 opera sob um modelo de **Governança Contínua (C2)**. Todas as contribuições devem manter:
+
+- **paridade de execução determinística** — os hashes de rastreamento devem corresponder às plataformas suportadas
+- **coerência arquitetônica** — mudanças que tocam a superfície determinística exigem revisão formal
+- **garantias de reprodutibilidade** — sem ponto flutuante ou não determinismo específico da plataforma na superfície DCP
+
+A superfície determinística é definida em `docs/governance/DETERMINISM_SURFACE_REGISTRY.md` . Alterações em superfícies congeladas (TISC ISA, tipos de dados) exigem um aumento de versão principal.
+
+> **Nota de limite:** As superfícies experimentais (Cognitive Tiers, Distributed, Trace-JIT, TernaryOS, adaptador llama.cpp) são regidas por não-DCP e não devem ser apresentadas como componentes determinísticos verificados.
+
+---
+
+## A vantagem ternária
+
+Embora o hardware binário moderno seja altamente otimizado, a **T81 Foundation** aproveita as propriedades matemáticas exclusivas do **Balanced Ternary ({-1, 0, +1})** para alcançar eficiências estruturais que o binário não consegue igualar.
+
+### 1. $O(1)$ Simetria Computacional
+
+No complemento de dois binário, negar um número é uma operação assimétrica (NÃO + 1) que requer propagação de transporte. No T81, a negação é um simples trit-flip com **zero carry overhead**.
+
+* **Desempenho:** a taxa de transferência de negação T81 atinge **~46,6 G-ops/s** (via `PackedCell` ), superando o desempenho da negação binária otimizada de 64 bits em **10,4x**.
+
+### 2. Economia Radix Superior
+
+Com base no teorema de que a base mais eficiente para um sistema numérico é $e \approx 2.718$, o ternário (Base 3) é matematicamente mais eficiente que o binário (Base 2).
+
+* **Densidade de informações:** O T81 atinge uma densidade teórica de **1,58 bits por trit**. Isso se traduz em maior entropia por ciclo de clock e menor espaço de armazenamento para sistemas de coordenadas e pesos neurais em grande escala.
+
+### 3. Determinismo exato de bits
+
+As operações binárias de ponto flutuante (IEEE 754) geralmente sofrem de não determinismo de arredondamento específico da plataforma. A aritmética balanceada do T81 fornece:
+
+* **Simetria inerente:** O arredondamento é realizado por truncamento simples, pois o sistema é naturalmente centrado em torno de zero.
+* **Paridade de rastreamento:** 100% de "precisão de ida e volta" em todas as plataformas testadas (Linux x86_64, macOS ARM64) com zero divergência em hashes de rastreamento de VM.
+
+### 4. Gancho de Governança Direta
+
+Como o TISC ISA é nativo ternário, o **Axion Governance Kernel** pode auditar transições de estado com maior granularidade. As operações de inferência de IA podem ser interceptadas no “nível trit” antes que quaisquer efeitos colaterais ocorram, permitindo um modelo de segurança “fechado com falha” que é arquitetonicamente impossível na execução binária de “caixa preta” padrão.
+
+---
+
+## Aplicações Estratégicas
+
+As vantagens estruturais da pilha T81 — especificamente a **taxa de transferência de negação de 10,4x** e **1,58 bits/densidade de trit** — permitem soluções para gargalos binários legados:
+
+---
+
+## 1. Simulação de sinal e física de alta fidelidade
+
+Em binário, $0$ é um ponto inicial sem sinal, tornando o espaço "negativo" uma consideração secundária. No ternário balanceado, **zero é o ponto de equilíbrio.**
+
+* **O caso de uso:** Simulação direta de mecânica de ondas, eletromagnetismo e dinâmica de fluidos.
+* **A vantagem:** Como esses sistemas oscilam entre estados positivos e negativos, o T81 pode simular forças "Push-Pull" sem a desigualdade computacional do Complemento de Dois.
+* **Próxima etapa:** Poderíamos construir uma **biblioteca DSP nativa do TISC** onde os filtros (FIR/IIR) são otimizados para a velocidade de negação $O(1)$.
+
+## 2. Redes Neurais “Simétricas” (TNNs)
+
+A IA atual (binária/FP) desperdiça enorme energia em funções de ativação como `tanh` ou `ReLU` para criar um estado “centrado em zero” para treinamento.
+
+* **O caso de uso:** Redes Neurais Ternárias (onde os pesos são -1, 0 ou 1).
+* **A vantagem:** Como sua arquitetura é balanceada nativamente, podemos executar inferência "livre de multiplicação". Um neurônio T81 não “multiplica” entradas; ele simplesmente **vira ou bloqueia** com base no peso. Isso seria muito mais eficiente em termos energéticos do que a inferência atual baseada em GPU.
+* **Próxima etapa:** Poderíamos implementar um **Mecanismo de inferência nativo do T81** que interpreta os pesos do modelo diretamente como opcodes TISC.
+
+## 3. Primitivos criptográficos pós-quânticos
+
+Muitos algoritmos de criptografia "baseados em rede" (aqueles projetados para sobreviver a computadores quânticos) dependem de polinômios de coeficiente pequeno - geralmente centrados em torno de zero ({-1, 0, 1}).
+
+* **O caso de uso:** Criptografia NTRU ou estilo Kyber.
+* **A vantagem:** Os sistemas binários precisam "emular" esses pequenos coeficientes usando números inteiros de 8 ou 32 bits, desperdiçando 90% do espaço de bits. O T81 armazena esses valores com **desperdício zero** e processa as adições/negações polinomiais em velocidades de hardware nativas.
+* **Próxima etapa:** Podemos elaborar uma RFC para uma **Extensão de criptografia TISC** que implemente uma multiplicação polinomial otimizada para ternário.
+
+## 4. Auditorias de governança imutável (Axion)
+
+Como você tem 1,58 bits de entropia por trit, podemos codificar **metadados de segurança** diretamente na palavra de dados sem aumentar significativamente o consumo de memória.
+
+* **O caso de uso:** "Dados rotulados" no nível do hardware.
+* **A Vantagem:** Podemos usar a capacidade "extra" de uma palavra TISC para carregar uma **Etiqueta de Proveniência**. Cada vez que os dados são movidos, o Axion verifica a tag. Se um trit "privilegiado" se mover para o espaço do "usuário", o hardware poderá capturá-lo instantaneamente.
+* **Próxima etapa:** Refine o **Axion OS Kernel** para usar a "Margem Ternária" para marcação de memória em tempo real.
+
+---
+
+### O caminho refinado a seguir
+
+#### 1. Integração: RFC-0034 §5.17.6 — O Opcode `TACT`
+
+Em vez de uma extensa AI RFC, tratamos a ativação como a conclusão lógica da cadeia aritmética ternária.
+
+* **Código de operação:** `TACT RD, R_SRC, R_MODE`
+* **Modos:** * `0x01` (TernaryStep): Mapeia $(-\infty, -0.5) \to -1$, $[-0.5, 0.5] \to 0$, $(0.5, \infty) \to +1$.
+* `0x02` (TanhQuantized): Aproximação ternária de ponto fixo de alta fidelidade.
+
+* **Integração de política Axion:** Definimos o `AX_CHECK_ACTIVATION_THRESHOLD` não como um efeito colateral do opcode, mas como uma **Kernel Trap**. Se o valor em `RD` exceder o limite trit pós-ativação definido pela política, o Axion interceptará antes do próximo incremento do PC.
+
+#### 2. RFC de gramática T81Lang (novo)
+
+Para resolver a "lacuna real" que você identificou, devemos elaborar uma RFC separada (provavelmente **RFC-0036**) especificamente para o frontend do compilador. Isso mantém as preocupações **TISC** (hardware/VM) e **T81Lang** (gramática/sintaxe) isoladas, conforme o termo de abertura do projeto.
+
+#### 3. Integridade e documentação de dados
+
+* **Benchmark Grounding:** Pararei de referenciar o número "10,4x" em documentos formais até que tenhamos uma fatia `BM_Negation_TISC_vs_Binary` específica que apareça oficialmente na saída do CI.
+* **Esfrega de terminologia:** removerei "TLU Cache" e "L2 Cache" das especificações até que o repositório **ternary-fabric** defina formalmente a hierarquia de memória.
+
+---
+
+### Estágio 1 — Arquitetura do Protótipo *(Atual)*
+
+**Status:** Alcançado
+
+Pilha determinística central implementada.
+
+Componentes no lugar:
+
+* ✅ TISC ISA (contrato de execução congelado)
+* ✅ Interpretador determinístico T81VM
+* ✅ Kernel de governança Axion
+* ✅ Armazenamento endereçado a conteúdo CanonFS
+* ✅ Compilador T81Lang
+* ✅ pipeline de verificação de determinismo
+* ✅ Interfaces de operação CLI e TUI
+
+**Resultado:**
+Uma pilha de computação determinística funcional.
+
+---
+
+### Etapa 2 — Plataforma verificada *(Completa)*
+
+**Objetivo:** Validação independente.
+
+Trabalho principal:
+
+* ✅ verificação de determinismo de terceiros – o fluxo de trabalho diário do GitHub Actions compara hashes de bytecode Linux x86\_64 e macOS ARM64; registro de evidência pública em cada commit
+* ✅ Conjunto de testes de conformidade de VM — 27 testes de conformidade de especificações + 365 aprovação total
+* ✅ estrutura de benchmarking determinística — RFC-00A2;  `score=1.0` em todas as execuções
+* ✅ Frontend T81Lang FFI (RFC-0036) — A gramática `foreign {}` faz a ponte entre a camada VM e a linguagem; 9/9 testes de CA
+* ✅ depurador de repetição de rastreamento — `t81 trace replay <tisc> <golden> [--json]`; esquema `t81.trace-replay.v1`; reporta índice exato de incompatibilidade + instrução esperada/real; conectado ao CI via `scripts/ci/trace_repro_gate.py`
+* ✅ verificação de compilação reproduzível — hash de bytecode multiplataforma verificado diariamente no Linux x86\_64 (gcc-14) + macOS ARM64 (clang); Artefatos de evidências de 90 dias retidos
+
+**Resultado:**
+Tempo de execução determinístico confiável externamente.
+
+---
+
+### Etapa 3 – Ecossistema de Pesquisa
+
+O foco muda para os aplicativos.
+
+Áreas primárias de pesquisa:
+
+* redes neurais ternárias
+* inferência determinística de IA
+* bibliotecas de processamento de sinal
+* simulação de física
+* criptografia baseada em rede
+
+**Resultado:**
+Adoção por pesquisadores e projetos experimentais de computação.
+
+---
+
+### Etapa 4 — Exploração de Hardware
+
+Faça uma ponte entre a arquitetura de software e o silício.
+
+Caminho de desenvolvimento:
+
+* Protótipos ALU ternários FPGA
+* bancos de registro ternário
+* unidades SIMD compactadas
+* Validação de microarquitetura ISA
+
+**Resultado:**
+Primeiros protótipos de hardware de computação com reconhecimento ternário.
+
+---
+
+### Etapa 5 – Infraestrutura Determinística
+
+Expanda do tempo de execução para a infraestrutura.
+
+Capacidades possíveis:
+
+* execução determinística em nuvem
+* computação científica reproduzível
+* cargas de trabalho distribuídas verificáveis
+* Redes de artefatos CanonFS
+
+**Resultado:**
+Uma plataforma global de computação determinística.
+
+---
+
+### Etapa 6 – Novo Paradigma de Computação
+
+Possibilidade de longo prazo.
+
+Desenvolvimentos potenciais:
+
+* processadores ternários nativos
+* aplicação de governança de IA de hardware
+* ambientes de execução de IA determinísticos
+* sistemas de computação globalmente reproduzíveis
+
+**Resultado:**
+Um ecossistema de computação determinística governado.
+
+---
+
+## Próximos marcos críticos
+
+### Etapa 2 — Plataforma verificada *(alcançada)*
+
+Todas as metas de implementação do Estágio 2 foram concluídas:
+
+- ✅ CI de determinismo multiplataforma (Linux x86\_64 + macOS ARM64, diariamente)
+- ✅ Conformidade de VM + conjunto de testes de determinismo (365/365)
+- ✅ depurador de repetição de rastreamento ( `t81 trace replay` ; esquema `t81.trace-replay.v1` )
+- ✅ Interface T81Lang FFI (RFC-0036; `foreign {}` + `FFI_CALL`)
+
+Critério de avanço restante: **reprodução independente por uma parte externa** — quando outro grupo constrói a pilha, executa o portão do determinismo e publica hashes correspondentes, o projeto sai formalmente do Estágio 2.
+
+### Etapa 3 — Ecossistema de Pesquisa *(Ativo)*
+
+A etapa 3 foi aberta com três pistas de concreto. Todos os três agora estão completos:
+
+- ✅ **RFC-0037 TNN stdlib** — `std.tnn.*` T81Lang integrados; 6 funções inferiores às operações TISC RFC-0034; 13/13 testes
+- ✅ **RFC-0038 Lattice Crypto** — `std.crypto.polymul/polymod` ; Códigos de operação POLYMUL/POLYMOD; T81BigInt-exato; 13/13 testes
+- ✅ **Especificação T81Lang v1.3** — RFC-0036/0037/0038 promovida para especificação normativa; §5.17 não-esboçado; §5.18–5.19 adicionado
+
+- ✅ **RFC-0039 NTRU-KEM** — código de operação `TVecSub`;  `std.crypto.{polyadd,polysub,ntru_encrypt,ntru_decrypt}`;  `ntru_keygen/encrypt/decrypt` Camada matemática C++; Testes 24/24; primeira demonstração de criptografia pós-quântica ponta a ponta no substrato ternário
+
+**O Estágio 3 foi concluído.** Todas as quatro faixas (RFC-0037, RFC-0038, especificação v1.3, RFC-0039) foram lançadas em 16/03/2026.
+
+## Licença
+
+Licença MIT.
