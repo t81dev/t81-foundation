@@ -91,14 +91,15 @@ ______________________________________________________________________
 | [A-0028-01] | §1 Shadow execution: interpreter-vs-JIT register/memory equivalence verified | met — `jit_trace_equivalence_test` (430 assertions); `jit_repro_oracle_test` §6 |
 | [A-0028-02] | §2 Canonical trace hash: `CanonHash81(serialised TISC sequence)` attached to every compiled trace; stable across recompiles; discriminates different sequences | met — `JitTrace::trace_hash()`; `jit_repro_oracle_test` [§2-a..c] (6 assertions) |
 | [A-0028-03] | §3 Deterministic register allocation: no host-register nondeterminism | met — `ThreadedJitTrace` operates on the VM's flat R0–R242 register file; no host register mapping needed |
-| [A-0028-04] | §4 CanonFS JIT cache: `canonfs/jit/<trace_hash>.jit` | deferred — not blocking acceptance; tracked as follow-on |
+| [A-0028-04] | §4 CanonFS JIT cache: `canonfs/jit/<trace_hash>.jit` | met — `JitTraceCache` (jit_trace_cache.hpp/cpp); `jit_canonfs_cache_test` 19/19 |
 | [A-0028-05] | §5 Axion OSR / Side-Exit Stubs: `AxRead`/`AxSet`/`AxVerify`/`AxReport` are trace-terminating with `ExitKind::AxionBoundary`; interpreter resumes natively | met — explicit cases in `ThreadedJitTrace::execute()`; `ExitKind::AxionBoundary` in `jit.hpp`; `vm.cpp` handles resume without trace invalidation; `jit_repro_oracle_test` [§5] (5 assertions) |
 | [A-0028-06] | §6 Repro oracle: two runs of a hot program yield identical `CanonHash81(final registers)`; mutated program yields different hash | met — `jit_repro_oracle_test` [§6-a..b] (4 assertions) |
 
 ## Acceptance Note (2026-03-15)
 
-[A-0028-02], [A-0028-05], [A-0028-06] met in this revision. [A-0028-01] and [A-0028-03]
-were already met by prior work. [A-0028-04] (CanonFS cache) is deferred as non-blocking.
+[A-0028-02], [A-0028-05], [A-0028-06] met in prior revision. [A-0028-01] and [A-0028-03]
+were already met by earlier work. [A-0028-04] (CanonFS cache) completed 2026-03-15 — all
+six acceptance criteria are now met.
 
 **§2 Canonical Trace Identity** — `JitTrace` gains a `trace_hash_` field (protected,
 `t81::hash::CanonHash81`) and `trace_hash()` accessor. `JitCompiler::compile()` serialises
@@ -126,4 +127,23 @@ The exit is annotated in the Axion log as `"axion-boundary"`.
   `CanonHash81(final register file)`; a loop-count mutation produces a different hash
 
 Test suite: `jit_repro_oracle_test` — **15/15 assertions passing**.
-Remaining open item: §4 CanonFS cache (non-blocking follow-on).
+
+**§4 CanonFS JIT Cache** — `JitTraceCache` (`include/t81/jit/jit_trace_cache.hpp`,
+`runtime/jit/jit_trace_cache.cpp`):
+
+* Wraps a `canonfs::Driver` (in-memory or persistent) to store compiled traces as
+  `ObjectType::CanonJitTrace` (0x17) blobs.
+* Wire format (little-endian): 4-byte header (`"JT" version reserved`) + 4-byte count +
+  32-byte trace_hash + 19 bytes per instruction (opcode 2B + a 4B + b 8B + c 4B +
+  literal_kind 1B). `literal_kind` is preserved so `LoadImm` register-tag semantics
+  are intact after deserialisation.
+* In-memory index maps `trace_hash → CanonRef` for O(log n) lookup within a session.
+  The persistent driver retains blob content across process restarts; the index is
+  rebuilt by re-calling `store()` with the recompiled trace (idempotent — same
+  `CanonRef` is returned for identical instruction sequences).
+* Axion hook forwarded to the underlying driver: a `Write`-deny verdict makes
+  `store()` return `std::nullopt`; the trace is never indexed.
+* Integrity check on deserialisation: the recomputed `trace_hash` must match the
+  32-byte value embedded in the payload; mismatch returns `nullptr`.
+
+Test suite: `jit_canonfs_cache_test` — **19/19 assertions passing** ([§4-a..i]).

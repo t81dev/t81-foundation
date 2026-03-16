@@ -43,7 +43,7 @@ This index tracks RFC status and intended disposition.
 | RFC-0025 | Policy-Gated Tensor Loading via CanonFS | accepted | `TLOADHASH` + `allowed-tensor-hashes` are active; operational hardening continues |
 | RFC-0026 | AI-Native Inference Opcodes | accepted | Phase-1 opcode surface implemented; `WLOAD` promotion review resolved; RFC-0030 float-domain policy complete |
 | RFC-0027 | Spec-as-Executable Conformance Model | accepted | Conformance suite is wired into CMake/CTest; optional annotation follow-ons remain |
-| RFC-0028 | Deterministic Trace JIT | accepted | §2 trace_hash (CanonHash81 of TISC sequence), §3 flat register file (deterministic by construction), §5 AxionBoundary OSR exit kind, §6 repro oracle (15/15); §4 CanonFS cache deferred |
+| RFC-0028 | Deterministic Trace JIT | accepted | All 6 criteria met: §2 trace_hash, §3 flat register file, §4 CanonFS JIT cache (JitTraceCache; 19/19), §5 AxionBoundary OSR, §6 repro oracle (15/15) |
 | RFC-0029 | T81Lang Feature Registry Drift Prevention | accepted | All 6 criteria met: `kBuiltinTable` as single source, tier-gate enforcement in SA, distributed builtins blocked in DCP, effect-surface blocking in `@pure`/Tier≤1, VM `DecodeFault` safeguard, `spec/t81lang_features.md` feature registry |
 | RFC-0030 | Deterministic Math Subsystem | accepted | `t81_soft_math` integer-backed implementation covers all transcendentals; `FDiv` is IEEE 754 exactly-rounded; RFC-0010 caveat resolved |
 | RFC-0031 | Deterministic AI Execution Contract | accepted | All 5 RFC-0032 promotion phases complete; conformance programs authored; phase_status advanced to spec_conformant |
