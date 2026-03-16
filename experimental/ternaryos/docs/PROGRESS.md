@@ -12,22 +12,18 @@ Current naming split:
 - `Axion` = operating system
 - `CanonFS` / `TISC` remain subsystem names
 
-**Last updated:** 2026-03-14
-**Commit:** Slice 10 — WaitForPagerHandoff blocking call
+**Last updated:** 2026-03-16
+**Commit:** Slice 28 — RFC-00B5 integrated (UnhandledInterruptDropped)
 **Branch:** `main`
 
 Recent architecture milestone:
 
-- **Slice 10 — WaitForPagerHandoff blocking call** is now complete (RFC-00B7 §3.3).
-  Closes the pager service model started by Slice 9.  `KernelCallKind::WaitForPagerHandoff`
-  parks a `PagerService`-capable thread via `scheduler.sleep()` and registers it in
-  `KernelRuntimeState::pager_handoff_waiting_tids`.  `dispatch_pending_pager_handoff()`
-  (in `kernel_pager.cpp`) wakes all waiting threads when a handoff is dispatched: each
-  receives a synthetic IPC message with `tag = "pager-handoff-wake"` and
-  `payload = address_space_id`, so the service thread can call `RequestPageMapping`
-  directly without an extra status query.  New counter `pager_handoff_wakes` and
-  `pager_handoff_waiting_thread_count` are exposed via `KernelRuntimeStatusView`.
-  `[AC-22p]` (32 assertions): capability rejection → park → runtime view shows 1 waiting
+- **RFC-00B5 — Governed Event Interrupt Model** is now **integrated** (2026-03-16).
+  All three interrupt policy slices complete:
+  - Slice 26: `WaitForDevice` — Storage/Network/Keyboard parks thread; interrupt wakes it
+  - Slice 27: Interrupt policy gate — per-source rate-limit, quarantine, deny verdicts
+  - Slice 28: Unhandled interrupt governance — `UnhandledInterruptDropped` audit event
+  Total: 3214/3214 assertions passing; interrupt model now official architecture.
   thread → fault triggers handoff dispatch → svc thread woken → IPC message carries AS id
   → RequestPageMapping → pager_needed cleared → runtime view reflects final state.
   3048 `hal_boot_test` assertions pass (was 3016 after Slice 9).

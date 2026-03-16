@@ -171,7 +171,7 @@ Verified platforms: **Linux x86_64**, **macOS ARM64**. Any divergence in VM trac
 | Axion Stable promotion | ✅ **COMPLETED 2026-03-15** | AX-M6 canonical reason strings implemented; 54/54 tests passing; production-ready |
 | T81Graph Beta promotion | ✅ **COMPLETED 2026-03-15** | VM opcode lowering complete; DCP verification; 6/6 tests passing |
 | T81Lang spec promotion | 2026-05-15 | Bytecode deterministic compilation profile; full spec-section traceability |
-| RFC-00B5 interrupt policy | TBD | Actual interrupt handler behavior (policy dispatch, vector table wiring) |
+| RFC-00B5 interrupt policy | ✅ **COMPLETED 2026-03-16** | Governed event interrupt model integrated; slices 26-28 complete; 3214/3214 tests passing |
 | TernaryOS bare-metal boot | TBD | x86_64 VirtualBox host execution + evidence return |
 
 ---
