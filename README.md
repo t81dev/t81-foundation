@@ -10,7 +10,7 @@
 # T81 Foundation — Deterministic Ternary Computing Stack
 
 ![Release](https://img.shields.io/badge/release-v1.6.0--Stable-blue)
-![Tests](https://img.shields.io/badge/tests-364%2F364_passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-365%2F365_passing-brightgreen)
 ![ISA](https://img.shields.io/badge/ISA-v1.2.0_Frozen-blue)
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
 ![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
@@ -29,17 +29,17 @@ The stack delivers:
 
 ## Project Status — March 2026
 
-**Phase: Active Development** — v1.6.0-Stable; 364/364 tests passing; cross-platform determinism verified on Linux x86\_64 + macOS ARM64.
+**Phase: Active Development** — v1.6.0-Stable; 365/365 tests passing; cross-platform determinism verified on Linux x86\_64 + macOS ARM64.
 
 | Component | Maturity | Notes |
 | :--- | :--- | :--- |
 | **TISC ISA** | ❄️ Frozen | v1.2.0; opcode semantics immutable under v1.x; 9 new opcodes in v1.2: `AgentInvoke` (RFC-0015), 6 ternary-native inference ops (RFC-0034), 3 FFI ops (RFC-00B8) |
 | **Data Types** | ❄️ Frozen | BigInt, Float, Complex, Map, Set — bit-stable encoding; 2026-02-27 audit clean |
-| **T81VM** | ✅ Stable | Full TISC v1.2 dispatch; `AgentInvoke` + ternary-native inference + FFI opcodes; 364/364 tests |
-| **T81Lang** | ✅ Stable | spec v1.3 Stable; first-class `agent`/`behavior` (RFC-0015); `agent`/`behavior` usable as contextual identifiers; all sections complete |
+| **T81VM** | ✅ Stable | Full TISC v1.2 dispatch; `AgentInvoke` + ternary-native inference + FFI opcodes; 365/365 tests |
+| **T81Lang** | ✅ Stable | spec v1.3 Stable; first-class `agent`/`behavior` (RFC-0015); `foreign {}` FFI blocks (RFC-0036); `agent`/`behavior`/`foreign` usable as contextual identifiers; all sections complete |
 | **Axion Governance Kernel** | ✅ Stable | P4 Safety & P5 Privileged Instruction satisfied; AX-M6 canonical reason strings; every `AgentInvoke` + `TACT` activation gate emits audit event |
-| **Ternary-Native Inference** | 🔬 Experimental | RFC-0034: `TWMATMUL`, `TQUANT`, `TATTN`, `TWEMBED`, `TERNACCUM`, `TACT`; multiplication-free inference; T81WTN weight format; 5/5 conformance tests; T81Lang frontend pending RFC-0036 |
-| **Governed FFI** | 🔬 Experimental | RFC-00B8 Phase 1: `FFIDispatcher`, `FFILibraryRegistry`, 3 VM opcodes; governance pipeline + audit trail; T81Lang `foreign {}` syntax pending RFC-0036 |
+| **Ternary-Native Inference** | 🔬 Experimental | RFC-0034: `TWMATMUL`, `TQUANT`, `TATTN`, `TWEMBED`, `TERNACCUM`, `TACT`; multiplication-free inference; T81WTN weight format; 5/5 conformance tests; T81Lang `foreign {}` frontend complete (RFC-0036) |
+| **Governed FFI** | 🔬 Experimental | RFC-00B8 Phase 1 + RFC-0036: `FFIDispatcher`, `FFILibraryRegistry`, 3 VM opcodes; `foreign [policy] { fn … }` T81Lang grammar; `foreign.<name>(args)` → `FFI_CALL`; 9/9 AC tests |
 | **TUI Frontends** | ✅ Accepted | `t81 studio` (human operator) + `t81 agent` (AI-native); FTXUI v5.0.0; RFC-0033 accepted |
 | **T81Graph** | ✅ Beta | VM opcode lowering + lang-side serialization wired; DCP verification complete; 6/6 tests |
 | **DPE (Parallel Execution)** | ✅ Accepted | RFC-DPE-0001–0009 all accepted; task graph, epoch history ring, epoch audit events, timeout fully implemented |
@@ -59,6 +59,7 @@ The stack delivers:
 ├─────────────────────────────────────────────────────────────┤
 │  T81Lang Compiler                                           │
 │  Lexer → Parser → Typed AST → Semantic Analyzer → IRGen     │
+│  agent/behavior (RFC-0015)  ·  foreign {} (RFC-0036)        │
 ├─────────────────────────────────────────────────────────────┤
 │  Axion Governance Kernel                                    │
 │  PolicyEngine · CanonFS · Audit Trail · Ethics Gate         │
@@ -87,11 +88,11 @@ The stack delivers:
 
 **CanonFS** — Content-addressed filesystem. Stores all code objects, model weights, and runtime artifacts as immutable, hash-identified blobs. Provides provenance for determinism audits.
 
-**T81Lang** — High-level language targeting TISC bytecode. Native types: `BigInt`, `Fraction`, `Float`, `Complex`, `Tensor`, `Map`, `Set`. First-class `agent { behavior }` declarations compile to `AGENT_INVOKE` with Axion audit (RFC-0015). `agent` and `behavior` are usable as contextual identifiers in all expression and binding positions. Compiler pipeline: lexer → parser → typed AST → semantic analysis → IR generation.
+**T81Lang** — High-level language targeting TISC bytecode. Native types: `BigInt`, `Fraction`, `Float`, `Complex`, `Tensor`, `Map`, `Set`. First-class `agent { behavior }` declarations compile to `AGENT_INVOKE` with Axion audit (RFC-0015). `foreign [policy] { fn … }` blocks declare governed external functions that call via `FFI_CALL` (RFC-0036). `agent`, `behavior`, and `foreign` are usable as contextual identifiers in all expression and binding positions. Compiler pipeline: lexer → parser → typed AST → semantic analysis → IR generation.
 
-**Ternary-Native Inference (RFC-0034)** — Six TISC opcodes for multiplication-free AI inference using balanced ternary weights {−1, 0, +1}: `TWMATMUL` (matmul), `TQUANT` (quantize to trit), `TATTN` (ternary attention), `TWEMBED` (weight embedding), `TERNACCUM` (scalar dot product), `TACT` (activation with Axion ceiling gate). T81WTN weight format. T81Lang frontend planned in RFC-0036.
+**Ternary-Native Inference (RFC-0034)** — Six TISC opcodes for multiplication-free AI inference using balanced ternary weights {−1, 0, +1}: `TWMATMUL` (matmul), `TQUANT` (quantize to trit), `TATTN` (ternary attention), `TWEMBED` (weight embedding), `TERNACCUM` (scalar dot product), `TACT` (activation with Axion ceiling gate). T81WTN weight format. T81Lang `foreign {}` frontend complete via RFC-0036.
 
-**Governed FFI (RFC-00B8)** — Phase 1 infrastructure for calling external code under Axion governance. `FFIDispatcher` enforces policy checks, resource quotas, and audit trails before any foreign call. `FFILibraryRegistry` tracks registered libraries by name and version hash. Three VM opcodes: `FFICall`, `FFIRegister`, `FFIPolicySet`. T81Lang `foreign {}` syntax planned in RFC-0036.
+**Governed FFI (RFC-00B8 + RFC-0036)** — Full-stack governed foreign function interface. VM layer (RFC-00B8 Phase 1): `FFIDispatcher` enforces policy checks, resource quotas, and audit trails before any foreign call; `FFILibraryRegistry` tracks registered libraries by name and version hash; three VM opcodes (`FFICall`, `FFIRegister`, `FFIPolicySet`). Language layer (RFC-0036): `foreign deterministic { fn sin(x: T81Float) -> T81Float; }` declares signatures; `foreign.sin(angle)` at call sites lowers to `FFI_CALL` with the function name carried in `text_literal`. Nine acceptance tests pass.
 
 **TUI Frontends** — Two complementary terminal interfaces built on FTXUI v5.0.0:
 
@@ -186,7 +187,7 @@ Verified platforms: **Linux x86_64**, **macOS ARM64**. Any divergence in VM trac
 | RFC-0034 Ternary-Native Inference | ✅ **COMPLETED 2026-03-16** | 6 new TISC opcodes; multiplication-free inference; TACT activation-ceiling gate; 5/5 conformance tests |
 | RFC-00B8 Governed FFI (Phase 1) | ✅ **COMPLETED 2026-03-16** | FFI dispatcher + library registry; 3 VM opcodes; governance pipeline; audit trail |
 | Cross-platform determinism CI | ✅ **COMPLETED 2026-03-16** | Daily GitHub Actions workflow; Linux x86\_64 + macOS ARM64 hash comparison; public evidence record |
-| RFC-0036 T81Lang Grammar | 2026-Q2 | `foreign {}` + `@deterministic`/`@governed` annotations; connects RFC-0034 and RFC-00B8 VM work to the language frontend |
+| RFC-0036 T81Lang FFI Grammar | ✅ **COMPLETED 2026-03-16** | `foreign [policy] {}` syntax; `foreign.<name>(args)` → `FFI_CALL`; 9/9 AC tests; connects RFC-0034 + RFC-00B8 VM work to T81Lang frontend |
 | T81Lang spec promotion | 2026-05-15 | Bytecode deterministic compilation profile; full spec-section traceability |
 | Stage 2: Trace Replay Debugger | 2026-Q2 | CanonHash81 trace → deterministic replay tool; enables external verification |
 | TernaryOS bare-metal boot | TBD | x86\_64 VirtualBox host execution + evidence return |
@@ -327,8 +328,9 @@ A functioning deterministic computing stack.
 Key work:
 
 * ✅ third-party determinism verification — daily GitHub Actions workflow compares Linux x86\_64 and macOS ARM64 bytecode hashes; public evidence record on every commit
-* ✅ VM conformance test suite — 27 spec conformance tests + 364 total passing
+* ✅ VM conformance test suite — 27 spec conformance tests + 365 total passing
 * ✅ deterministic benchmarking framework — RFC-00A2; `score=1.0` across all runs
+* ✅ T81Lang FFI frontend (RFC-0036) — `foreign {}` grammar bridges VM layer to language; 9/9 AC tests
 * trace replay debugger — planned; takes CanonHash81 trace artifact and replays it deterministically
 * reproducible build verification — partial; CanonHash81 internal; external build reproducer pending
 
@@ -406,15 +408,14 @@ A governed deterministic computing ecosystem.
 
 ### Stage 2 completion — Verified Platform
 
-Cross-platform determinism CI is now in place. Remaining Stage 2 work:
+Cross-platform determinism CI is in place and RFC-0036 T81Lang FFI grammar is complete. Remaining Stage 2 work:
 
 - trace replay debugger — enables external parties to replay a CanonHash81 trace and verify the result independently
-- RFC-0036 T81Lang grammar — connects RFC-0034 ternary inference and RFC-00B8 FFI VM work to the language frontend
 - academic or industry collaboration — when other groups reproduce the deterministic results, the architecture moves from **project** to **platform**
 
 ### Stage 3 entry — Research Ecosystem
 
-RFC-0034 lays the technical groundwork for ternary neural network research. RFC-0036 will expose it at the language level. Post-quantum cryptography (lattice polynomial operations over {−1, 0, +1}) is the next natural Stage 3 research area after the language frontend is complete.
+RFC-0034 lays the technical groundwork for ternary neural network research. RFC-0036 has now exposed it at the language level via `foreign {}` blocks. Post-quantum cryptography (lattice polynomial operations over {−1, 0, +1}) is the next natural Stage 3 research area.
 
 ## License
 
