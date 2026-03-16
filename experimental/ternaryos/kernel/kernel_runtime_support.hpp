@@ -103,6 +103,8 @@ enum class KernelAuditEventKind : uint8_t {
   InterruptPolicyAllow,      ///< interrupt passed the policy gate; dispatch proceeds normally
   InterruptPolicyQuarantine, ///< rate limit exceeded; source quarantined; this interrupt dropped
   InterruptPolicyDeny,       ///< source is quarantined; interrupt dropped without dispatch
+  // RFC-00B5 §3.5 — unhandled interrupt governance (Slice 28)
+  UnhandledInterruptDropped, ///< HAL dispatched an interrupt with no registered handler; dropped and audited
 };
 
 struct KernelAuditRecord {

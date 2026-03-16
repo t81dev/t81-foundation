@@ -74,6 +74,18 @@ using InterruptHandler = std::function<void(const HardwareInterrupt&)>;
 void register_interrupt_handler(InterruptSource source, InterruptHandler handler);
 
 /**
+ * @brief Register a callback for interrupts with no registered handler.
+ *
+ * RFC-00B5 §3.5 (Slice 28): When dispatch_interrupt() finds neither a
+ * source-specific handler nor an Unknown fallback, it calls this callback
+ * instead of silently dropping the interrupt. The callback is responsible
+ * for emitting a governance audit event (e.g. UnhandledInterruptDropped).
+ *
+ * Passing nullptr disarms the callback (default: silent drop).
+ */
+void register_unhandled_interrupt_callback(InterruptHandler callback);
+
+/**
  * @brief Dispatch a HardwareInterrupt to its registered handler (if any).
  *
  * Called internally by the shadow dispatch table. Also exposed for testing.

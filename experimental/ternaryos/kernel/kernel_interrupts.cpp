@@ -68,6 +68,24 @@ bool axion_kernel_record_interrupt(KernelRuntimeState& state,
   return true;
 }
 
+void axion_kernel_record_unhandled_interrupt(
+    KernelRuntimeState& state,
+    const hal::HardwareInterrupt& interrupt) noexcept {
+  // RFC-00B5 §3.5 (Slice 28): HAL found no registered handler for this source.
+  // Emit a governance audit event and increment the unhandled counter.
+  // The interrupt is NOT added to pending_interrupts — it is dropped.
+  ++state.counters.interrupts_unhandled;
+  record_audit_event(state,
+                     KernelAuditEventKind::UnhandledInterruptDropped,
+                     KernelRuntimeState::kKernelTid,
+                     KernelRuntimeState::kKernelProcessGroup);
+  // Retain last audit metadata for test inspection.
+  state.last_interrupt_audit_kind   = KernelAuditEventKind::UnhandledInterruptDropped;
+  state.last_interrupt_audit_source = interrupt.source;
+  state.last_interrupt_audit_payload     = interrupt.payload;
+  state.last_interrupt_audit_timestamp_ns = interrupt.timestamp_ns;
+}
+
 bool axion_kernel_deliver_pending_interrupt(KernelRuntimeState& state) noexcept {
   state.last_delivered_interrupt = state.pending_interrupts.front();
   state.pending_interrupts.pop_front();

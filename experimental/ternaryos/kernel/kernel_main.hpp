@@ -86,6 +86,12 @@ bool axion_kernel_record_interrupt(
     KernelRuntimeState& state,
     const hal::HardwareInterrupt& interrupt) noexcept;
 
+/// RFC-00B5 §3.5 (Slice 28): called by the HAL unhandled-interrupt callback.
+/// Emits UnhandledInterruptDropped audit event; does NOT enqueue the interrupt.
+void axion_kernel_record_unhandled_interrupt(
+    KernelRuntimeState& state,
+    const hal::HardwareInterrupt& interrupt) noexcept;
+
 bool axion_kernel_tick(KernelRuntimeState& state) noexcept;
 
 bool axion_kernel_deliver_pending_fault(KernelRuntimeState& state) noexcept;

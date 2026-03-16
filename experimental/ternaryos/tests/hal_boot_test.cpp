@@ -13260,6 +13260,75 @@ static void test_kernel_interrupt_policy() {
         "policy: view.last_interrupt_policy_source is populated");
 }
 
+// [AC-22x] RFC-00B5 §3.5 / Slice 28: Unhandled Interrupt Governance
+//
+// Verifies that an interrupt delivered to a source with no registered handler
+// is NOT silently dropped but instead audited as UnhandledInterruptDropped.
+//
+// Steps:
+//   1. Bootstrap a fresh kernel state (no source-specific handlers registered
+//      for Network in this test context).
+//   2. Register the unhandled-interrupt callback to call
+//      axion_kernel_record_unhandled_interrupt().
+//   3. fire_simulated_interrupt(Network, payload) — no handler → callback.
+//   4. Verify interrupts_unhandled == 1.
+//   5. Verify last_interrupt_audit_kind == UnhandledInterruptDropped.
+//   6. Verify the interrupt was NOT added to pending_interrupts (dropped).
+//   7. Verify audit event sequence advanced.
+static void test_kernel_unhandled_interrupt_governance() {
+  std::printf("\n[AC-22x] RFC-00B5 §3.5 / Slice 28: unhandled interrupt "
+              "governance — UnhandledInterruptDropped audit event\n");
+
+  auto ctx   = make_valid_ctx(/*ethics=*/false);
+  auto state = axion_kernel_bootstrap(ctx);
+  check(state.has_value(), "unhandled-irq: kernel bootstrap succeeds");
+  if (!state) return;
+
+  const uint64_t audit_before = state->counters.audit_events_recorded;
+
+  // Register the unhandled-interrupt callback — mimics what qemu_kernel_run_loop
+  // does in production.
+  register_unhandled_interrupt_callback(
+      [&state](const HardwareInterrupt& hw) {
+        axion_kernel_record_unhandled_interrupt(*state, hw);
+      });
+
+  // Register Network with a null handler so that dispatch_interrupt() skips
+  // the Unknown fallback (which may be registered from an earlier test) and
+  // reaches the unhandled-interrupt callback path.
+  register_interrupt_handler(InterruptSource::Network, InterruptHandler{});
+
+  // Fire a Network interrupt — null handler registered → unhandled callback fires.
+  constexpr uint64_t kPayload = 0xDEAD'00B5ULL;
+  fire_simulated_interrupt(InterruptSource::Network, kPayload);
+
+  check(state->counters.interrupts_unhandled == 1,
+        "unhandled-irq: interrupts_unhandled counter incremented");
+  check(state->pending_interrupt_count() == 0,
+        "unhandled-irq: interrupt NOT added to pending queue (dropped)");
+  check(state->counters.interrupts_recorded == 0,
+        "unhandled-irq: interrupts_recorded unchanged (not a normal record)");
+  check(state->last_interrupt_audit_kind.has_value(),
+        "unhandled-irq: last_interrupt_audit_kind populated");
+  check(state->last_interrupt_audit_kind ==
+            KernelAuditEventKind::UnhandledInterruptDropped,
+        "unhandled-irq: audit kind == UnhandledInterruptDropped");
+  check(state->last_interrupt_audit_source.has_value(),
+        "unhandled-irq: last_interrupt_audit_source populated");
+  check(state->last_interrupt_audit_source == InterruptSource::Network,
+        "unhandled-irq: audit source == Network");
+  check(state->last_interrupt_audit_payload.has_value(),
+        "unhandled-irq: last_interrupt_audit_payload populated");
+  check(state->last_interrupt_audit_payload == kPayload,
+        "unhandled-irq: audit payload matches fired payload");
+  check(state->counters.audit_events_recorded == audit_before + 1,
+        "unhandled-irq: exactly one audit event emitted");
+
+  // Disarm the callback so it does not capture a dangling reference after
+  // this test returns.
+  register_unhandled_interrupt_callback(nullptr);
+}
+
 int main() {
   std::printf("=== TernOS HAL boot tests (RFC-00B0 §7) ===\n");
 
@@ -13307,6 +13376,7 @@ int main() {
   test_kernel_device_wake_interrupt();
   test_kernel_keyboard_device_wake();
   test_kernel_interrupt_policy();
+  test_kernel_unhandled_interrupt_governance();
   test_kernel_syscall_trap_wiring();
   test_kernel_user_space_isolation();
   test_kernel_aarch64_trap_entry();

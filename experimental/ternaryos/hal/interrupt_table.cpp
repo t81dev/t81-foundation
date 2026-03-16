@@ -34,6 +34,9 @@ struct HandlerEntry {
 std::array<HandlerEntry, kTableSize> g_table{};
 std::mutex                           g_table_mutex;
 
+// RFC-00B5 §3.5 (Slice 28): callback invoked when no handler is found.
+InterruptHandler g_unhandled_callback;
+
 std::size_t source_index(InterruptSource s) {
   return static_cast<std::size_t>(static_cast<uint8_t>(s));
 }
@@ -53,6 +56,11 @@ void register_interrupt_handler(InterruptSource source, InterruptHandler handler
   auto& entry      = g_table[source_index(source)];
   entry.fn         = std::move(handler);
   entry.registered = true;
+}
+
+void register_unhandled_interrupt_callback(InterruptHandler callback) {
+  std::lock_guard<std::mutex> lock(g_table_mutex);
+  g_unhandled_callback = std::move(callback);
 }
 
 void dispatch_interrupt(const HardwareInterrupt& irq) {
@@ -75,9 +83,19 @@ void dispatch_interrupt(const HardwareInterrupt& irq) {
     }
   }
 
-  if (fn) fn(stamped);
-  // Unhandled interrupts are silently dropped in Phase 1.
-  // Phase 2 will inject an AxionTrap event for unhandled IRQs.
+  if (fn) {
+    fn(stamped);
+    return;
+  }
+  // RFC-00B5 §3.5 (Slice 28): no handler found — invoke the unhandled
+  // interrupt callback so the kernel can emit a governance audit event.
+  InterruptHandler unhandled_fn;
+  {
+    std::lock_guard<std::mutex> lock2(g_table_mutex);
+    unhandled_fn = g_unhandled_callback;
+  }
+  if (unhandled_fn) unhandled_fn(stamped);
+  // If no unhandled callback is registered, the interrupt is silently dropped.
 }
 
 // ─── Simulated interrupt injection (for tests and hosted_stub) ───────────────

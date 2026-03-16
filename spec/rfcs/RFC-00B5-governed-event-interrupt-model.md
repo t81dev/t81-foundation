@@ -1,10 +1,10 @@
 # RFC-00B5: Governed Event Interrupt Model
 
-**Status:** accepted
+**Status:** integrated
 **Type:** standards-track
 **Applies-To:** Axion HAL interrupt translation, kernel event delivery, TISC ISA interrupt and trap model
 **Created:** 2026-03-12
-**Updated:** 2026-03-12
+**Updated:** 2026-03-16
 **Author:** @t81dev
 **Depends on:** RFC-00B0 (HAL), RFC-00B1 (MMU), RFC-00B3 (Axion Kernel Architecture)
 **Blocks:** Later interrupt and timer integration beyond the current kernel bootstrap path
@@ -224,13 +224,26 @@ its own interrupt model rather than promising x86 or ARM kernel behavior.
    kernel or HAL behavior to follow the governed event model instead of
    introducing ad hoc trap-return behavior.
 
-## 7. Open Questions
+## 7. Open Questions (Narrowed — 2026-03-16)
 
-- Should interrupt events eventually gain explicit priority classes?
-- How much interrupt nesting, if any, should be representable in kernel state?
-- Which interrupt records must become part of the stable audit surface?
-- Should later user-facing tooling observe interrupt events directly, or only
-  through summarized supervisor and audit views?
+The following questions have been narrowed to policy and prioritization concerns
+only; basic continuation semantics are no longer open:
+
+- **Priority classes**: Interrupt events may gain explicit priority ordering in a
+  future policy extension. This is a policy question, not a continuation-semantics
+  question. The event delivery path itself is stable.
+- **Interrupt nesting**: The kernel event queue already serializes delivery; nesting
+  representation in kernel state is a policy/scheduling concern for future work.
+  No new architectural mechanism is required for the current phase.
+- **Stable audit surface**: `InterruptRecorded`, `InterruptDelivered`,
+  `InterruptPolicyAllow`, `InterruptPolicyQuarantine`, `InterruptPolicyDeny`, and
+  `UnhandledInterruptDropped` are the normative audit event kinds for the interrupt
+  path. Which of these become part of the stable public audit ABI is deferred to
+  the post-Stable Axion OS promotion track.
+- **Tooling observability**: Interrupt events are currently observable via
+  `KernelRuntimeStatusView` (interrupt counters, last audit kind/source). Direct
+  user-facing tooling or summarized supervisor views are deferred to the TUI /
+  diagnostics track.
 
 ## 8. Acceptance Criteria
 
@@ -240,3 +253,31 @@ This RFC can move from `accepted` to `integrated` when:
   event model
 - any remaining interrupt-related open questions are narrowed to policy,
   prioritization, and handler behavior, not basic continuation semantics
+
+## Integration Note (2026-03-16)
+
+Both acceptance criteria are met. Status advanced to `integrated`.
+
+### Implemented surfaces (Slices 26–28)
+
+| Slice | Surface | Evidence |
+| :--- | :--- | :--- |
+| Slice 26 | `WaitForDevice` — Storage/Network/Keyboard parks thread; interrupt wakes it | [AC-22j] / [AC-22v] |
+| Slice 27 | Interrupt policy gate — per-source rate-limit, quarantine, deny verdicts; `SetInterruptPolicy` / `ClearInterruptQuarantine` / `QueryInterruptPolicy` ABI | [AC-22w] |
+| Slice 28 | Unhandled interrupt governance — `register_unhandled_interrupt_callback()`; `axion_kernel_record_unhandled_interrupt()`; `UnhandledInterruptDropped` audit event | [AC-22x] |
+
+### Normative audit event kinds for the interrupt path
+
+- `InterruptRecorded` — HAL interrupt recorded into kernel pending queue
+- `InterruptDelivered` — interrupt dequeued and dispatched
+- `InterruptPolicyAllow` — policy gate passed (emitted only on Quarantine/Deny)
+- `InterruptPolicyQuarantine` — source rate-limit exceeded; quarantined
+- `InterruptPolicyDeny` — source was quarantined; interrupt dropped
+- `UnhandledInterruptDropped` — no HAL handler registered; dropped and audited
+
+### Test coverage
+
+All interrupt-path tests are in
+`experimental/ternaryos/tests/hal_boot_test.cpp`:
+[AC-22a], [AC-22g], [AC-22i], [AC-22j], [AC-22v], [AC-22w], [AC-22x].
+3214/3214 assertions pass.

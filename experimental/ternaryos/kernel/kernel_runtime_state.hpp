@@ -271,6 +271,8 @@ struct KernelRuntimeState {
     uint64_t interrupts_policy_allowed{0};      ///< interrupts passed by the policy gate
     uint64_t interrupts_policy_quarantined{0};  ///< interrupts that triggered source quarantine
     uint64_t interrupts_policy_denied{0};       ///< interrupts dropped because source was quarantined
+    // RFC-00B5 §3.5 — unhandled interrupt governance (Slice 28)
+    uint64_t interrupts_unhandled{0};           ///< interrupts dropped because no HAL handler was registered
     uint64_t syscall_trap_dispatches{0};  ///< SVC traps dispatched through axion_kernel_call_wire_tva() (RFC-00B6 §5.2)
     uint64_t kernel_space_rejections{0};  ///< user AS span attempts into kernel TVA space (RFC-00B1 §3.1 / RFC-00B6 §5.7)
     uint64_t canonfs_fetch_spawns{0};     ///< spawns that fetched CanonExec directly from CanonFS without prior registration (RFC-00B2 §3.1)

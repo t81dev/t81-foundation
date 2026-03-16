@@ -127,6 +127,14 @@ void qemu_kernel_run_loop(kernel::KernelRuntimeState& state,
         axion_kernel_tick(state);
       });
 
+  // RFC-00B5 §3.5 (Slice 28): wire the unhandled-interrupt governance callback.
+  // Interrupts with no registered source handler are audited as
+  // UnhandledInterruptDropped rather than silently discarded.
+  register_unhandled_interrupt_callback(
+      [&state](const HardwareInterrupt& hw) {
+        axion_kernel_record_unhandled_interrupt(state, hw);
+      });
+
   const bool run_forever = (max_steps == 0);
   uint64_t steps = 0;
 
