@@ -15,7 +15,7 @@
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-**T81 Foundation** is a deterministic computing stack built on **balanced ternary arithmetic** ({-1, 0, +1}) with a full-chain governance model covering instruction set, virtual machine, language compiler, and AI inference environment.
+Leveraging the theoretical efficiency of base-e computation, **T81 Foundation** is a deterministic computing stack built on **balanced ternary arithmetic** ({-1, 0, +1}) with a full-chain governance model covering instruction set, virtual machine, language compiler, and AI inference environment.
 
 The stack delivers:
 
