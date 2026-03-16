@@ -1454,6 +1454,94 @@ std::any IRGenerator::visit(const CallExpr& expr) {
       return {};
     }
 
+    // RFC-0039 §3 — polynomial ring arithmetic
+    if (func_name == "crypto_polyadd") {
+      // std.crypto.polyadd(a, b) -> Tensor  →  TVECADD RD, RA, RB
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("std.crypto.polyadd expects 2 arguments.");
+      expr.arguments[0]->accept(*this);
+      auto ra = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto rb = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TVECADD;
+      instr.operands = {dest.reg, ra.reg, rb.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    if (func_name == "crypto_polysub") {
+      // std.crypto.polysub(a, b) -> Tensor  →  TVECSUB RD, RA, RB
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("std.crypto.polysub expects 2 arguments.");
+      expr.arguments[0]->accept(*this);
+      auto ra = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto rb = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TVECSUB;
+      instr.operands = {dest.reg, ra.reg, rb.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    // RFC-0039 §3 — NTRU-KEM builtins
+    if (func_name == "crypto_ntru_encrypt") {
+      // std.crypto.ntru_encrypt(h, msg, r, q) -> Tensor
+      // Expands to: POLYMUL t1, h, r  →  TVECADD t2, t1, msg  →  POLYMOD dest, t2, q
+      if (expr.arguments.size() != 4)
+        throw std::runtime_error("std.crypto.ntru_encrypt expects 4 arguments (h, msg, r, q).");
+      expr.arguments[0]->accept(*this);
+      auto rh = ensure_expr_result(expr.arguments[0].get());  // public key h
+      expr.arguments[1]->accept(*this);
+      auto rmsg = ensure_expr_result(expr.arguments[1].get()); // message
+      expr.arguments[2]->accept(*this);
+      auto rr = ensure_expr_result(expr.arguments[2].get());   // blinding r
+      expr.arguments[3]->accept(*this);
+      auto rq = ensure_expr_result(expr.arguments[3].get());   // modulus q
+      // t1 = h*r
+      auto t1 = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      { tisc::ir::Instruction i; i.opcode = tisc::ir::Opcode::POLYMUL;
+        i.operands = {t1.reg, rh.reg, rr.reg}; emit(i); }
+      // t2 = t1 + msg
+      auto t2 = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      { tisc::ir::Instruction i; i.opcode = tisc::ir::Opcode::TVECADD;
+        i.operands = {t2.reg, t1.reg, rmsg.reg}; emit(i); }
+      // dest = t2 mod q
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      { tisc::ir::Instruction i; i.opcode = tisc::ir::Opcode::POLYMOD;
+        i.operands = {dest.reg, t2.reg, rq.reg}; emit(i); }
+      record_result(&expr, dest);
+      return {};
+    }
+
+    if (func_name == "crypto_ntru_decrypt") {
+      // std.crypto.ntru_decrypt(f, c, p) -> Tensor
+      // Expands to: POLYMUL t1, f, c  →  POLYMOD dest, t1, p
+      if (expr.arguments.size() != 3)
+        throw std::runtime_error("std.crypto.ntru_decrypt expects 3 arguments (f, c, p).");
+      expr.arguments[0]->accept(*this);
+      auto rf = ensure_expr_result(expr.arguments[0].get());   // secret key f
+      expr.arguments[1]->accept(*this);
+      auto rc = ensure_expr_result(expr.arguments[1].get());   // ciphertext c
+      expr.arguments[2]->accept(*this);
+      auto rp = ensure_expr_result(expr.arguments[2].get());   // modulus p
+      // t1 = f*c
+      auto t1 = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      { tisc::ir::Instruction i; i.opcode = tisc::ir::Opcode::POLYMUL;
+        i.operands = {t1.reg, rf.reg, rc.reg}; emit(i); }
+      // dest = t1 mod p
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      { tisc::ir::Instruction i; i.opcode = tisc::ir::Opcode::POLYMOD;
+        i.operands = {dest.reg, t1.reg, rp.reg}; emit(i); }
+      record_result(&expr, dest);
+      return {};
+    }
+
     if (func_name == "Tensor.vec_add") {
       if (expr.arguments.size() != 2) {
         throw std::runtime_error("Tensor.vec_add expects two arguments.");

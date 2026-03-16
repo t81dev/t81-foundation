@@ -95,6 +95,8 @@ bool tensor_set_at(t81::T729DynamicTensor& tensor, std::int64_t index, float val
 
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vec_binary_checked(
     const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs, bool multiply);
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vec_sub_checked(
+    const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs);
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_transpose_checked(
     const t81::T729DynamicTensor& tensor);
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_matmul_checked(

@@ -2213,6 +2213,10 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(lattice_crypto_test tests/cpp/lattice_crypto_test.cpp)
   target_link_libraries(lattice_crypto_test PRIVATE t81_vm t81_lang_frontend t81_core)
 
+  # RFC-0039 — NTRU-KEM (TVecSub / polyadd / polysub / ntru_encrypt / ntru_decrypt)
+  add_executable(ntru_kem_test tests/cpp/ntru_kem_test.cpp)
+  target_link_libraries(ntru_kem_test PRIVATE t81_vm t81_lang_frontend t81_core)
+
   add_executable(jit_tensor_trace_equivalence_test tests/cpp/jit_tensor_trace_equivalence_test.cpp)
   target_link_libraries(jit_tensor_trace_equivalence_test PRIVATE t81_vm)
 
@@ -2727,6 +2731,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81lang_foreign_ffi_test
     tnn_stdlib_test
     lattice_crypto_test
+    ntru_kem_test
     jit_tensor_trace_equivalence_test
     vm_jit_per_instruction_policy_test
     e2e_axion_trace_test

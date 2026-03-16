@@ -29,17 +29,17 @@ The stack delivers:
 
 ## Project Status — March 2026
 
-**Phase: Active Development** — v1.6.0-Stable; 367/367 tests passing; cross-platform determinism verified on Linux x86\_64 + macOS ARM64.
+**Phase: Active Development** — v1.6.0-Stable; 368/368 tests passing; cross-platform determinism verified on Linux x86\_64 + macOS ARM64.
 
 | Component | Maturity | Notes |
 | :--- | :--- | :--- |
-| **TISC ISA** | ❄️ Frozen | v1.2.0; opcode semantics immutable under v1.x; 9 new opcodes in v1.2: `AgentInvoke` (RFC-0015), 6 ternary-native inference ops (RFC-0034), 3 FFI ops (RFC-00B8) |
+| **TISC ISA** | ❄️ Frozen | v1.2.0; opcode semantics immutable under v1.x; 12 new opcodes since v1.1: `AgentInvoke` (RFC-0015), 6 ternary-native inference (RFC-0034), 3 FFI (RFC-00B8), 2 lattice crypto (RFC-0038), 1 KEM ring (RFC-0039) |
 | **Data Types** | ❄️ Frozen | BigInt, Float, Complex, Map, Set — bit-stable encoding; 2026-02-27 audit clean |
-| **T81VM** | ✅ Stable | Full TISC v1.2 dispatch; `AgentInvoke` + ternary-native inference + FFI + lattice crypto opcodes; 367/367 tests |
-| **T81Lang** | ✅ Stable | spec v1.3 Stable; `agent`/`behavior` (RFC-0015); `foreign {}` FFI (RFC-0036); `std.tnn.*` TNN stdlib (RFC-0037); `std.crypto.*` lattice crypto (RFC-0038); contextual identifier support throughout |
+| **T81VM** | ✅ Stable | Full TISC v1.2 dispatch; `AgentInvoke` + ternary-native inference + FFI + lattice crypto + NTRU-KEM opcodes; 368/368 tests |
+| **T81Lang** | ✅ Stable | spec v1.3 Stable; `agent`/`behavior` (RFC-0015); `foreign {}` FFI (RFC-0036); `std.tnn.*` TNN stdlib (RFC-0037); `std.crypto.*` lattice crypto + NTRU-KEM (RFC-0038/0039); contextual identifier support throughout |
 | **Axion Governance Kernel** | ✅ Stable | P4 Safety & P5 Privileged Instruction satisfied; AX-M6 canonical reason strings; every `AgentInvoke` + `TACT` activation gate emits audit event |
 | **Ternary-Native Inference** | ✅ Accepted | RFC-0034 + RFC-0037: `TWMATMUL`, `TQUANT`, `TATTN`, `TWEMBED`, `TERNACCUM`, `TACT`; `std.tnn.*` T81Lang stdlib (6 builtins → TISC ops); multiplication-free inference; T81WTN weight format; 13/13 tests |
-| **Lattice Cryptography** | 🔬 Experimental | RFC-0038: `POLYMUL`, `POLYMOD` TISC opcodes; `std.crypto.polymul/polymod` T81Lang builtins; negacyclic polynomial multiply over {−1,0,+1} in Z\[x\]/(x^n+1); T81BigInt-exact; 13/13 tests |
+| **Lattice Cryptography** | ✅ Accepted | RFC-0038+0039: `POLYMUL`, `POLYMOD`, `TVecSub`; full ring {+,−,×,mod} over Z\[x\]/(x^n+1); `std.crypto.{polyadd,polysub,polymul,polymod,ntru_encrypt,ntru_decrypt}`; 37/37 tests |
 | **Governed FFI** | ✅ Accepted | RFC-00B8 + RFC-0036: `FFIDispatcher`, `FFILibraryRegistry`, 3 VM opcodes; `foreign [policy] { fn … }` T81Lang grammar; `foreign.<name>(args)` → `FFI_CALL`; 9/9 AC tests |
 | **TUI Frontends** | ✅ Accepted | `t81 studio` (human operator) + `t81 agent` (AI-native); FTXUI v5.0.0; RFC-0033 accepted |
 | **T81Graph** | ✅ Beta | VM opcode lowering + lang-side serialization wired; DCP verification complete; 6/6 tests |
@@ -193,7 +193,7 @@ Verified platforms: **Linux x86_64**, **macOS ARM64**. Any divergence in VM trac
 | RFC-0037 TNN stdlib | ✅ **COMPLETED 2026-03-16** | `std.tnn.*` T81Lang builtins (6 functions → RFC-0034 TISC ops); 13/13 tests; full-stack multiplication-free inference from source to VM |
 | RFC-0038 Lattice Crypto | ✅ **COMPLETED 2026-03-16** | `POLYMUL`/`POLYMOD` TISC opcodes; `std.crypto.polymul/polymod` builtins; negacyclic poly multiply over {−1,0,+1}; T81BigInt-exact; 13/13 tests |
 | T81Lang spec promotion (v1.3) | ✅ **COMPLETED 2026-03-16** | RFC-0036/0037/0038 promoted to normative spec; §5.17 un-stubbed; §5.18/5.19 added; opcode registry updated to 205 entries |
-| Stage 3: NTRU-KEM | 🚧 In Progress | Higher-level key encapsulation on RFC-0038 primitives: `std.crypto.keygen`, `std.crypto.encrypt`, `std.crypto.decrypt` |
+| RFC-0039 NTRU-KEM | ✅ **COMPLETED 2026-03-16** | `TVecSub` opcode; `std.crypto.{polyadd,polysub,ntru_encrypt,ntru_decrypt}`; C++ KEM math layer; 24/24 tests; full ring {+,−,×,mod} over Z\[x\]/(x^n+1) |
 | TernaryOS bare-metal boot | TBD | x86\_64 QEMU host execution + CanonFS evidence return |
 
 ---
@@ -429,7 +429,9 @@ Stage 3 opened with three concrete tracks. All three are now complete:
 - ✅ **RFC-0038 Lattice Crypto** — `std.crypto.polymul/polymod`; POLYMUL/POLYMOD opcodes; T81BigInt-exact; 13/13 tests
 - ✅ **T81Lang spec v1.3** — RFC-0036/0037/0038 promoted to normative spec; §5.17 un-stubbed; §5.18–5.19 added
 
-**Active:** RFC-0039 NTRU-KEM — higher-level key encapsulation using `std.crypto.polymul/polymod` as primitives, delivering `std.crypto.keygen`, `std.crypto.encrypt`, and `std.crypto.decrypt`. First end-to-end post-quantum cryptography demo on the ternary substrate.
+- ✅ **RFC-0039 NTRU-KEM** — `TVecSub` opcode; `std.crypto.{polyadd,polysub,ntru_encrypt,ntru_decrypt}`; `ntru_keygen/encrypt/decrypt` C++ math layer; 24/24 tests; first end-to-end post-quantum cryptography demo on the ternary substrate
+
+**Stage 3 is complete.** All four tracks (RFC-0037, RFC-0038, spec v1.3, RFC-0039) landed 2026-03-16.
 
 ## License
 

@@ -335,14 +335,22 @@ No integer multiplications — only add/sub/trit-flip. T81BigInt-exact. Tier 2+.
 | POLYMUL | 203 (0xCB) | A, B, C | Negacyclic poly multiply: `R[A] = polymul(*tensor(R[B]), *tensor(R[C]))` in `Z[x]/(x^n+1)` | Yes | core/vm/vm.cpp |
 | POLYMOD | 204 (0xCC) | A, B, C | Centered reduction mod q: every coefficient c → `((c%q)+q)%q`, shifted to `(−q/2, q/2]`; `q = R[C]` | Yes | core/vm/vm.cpp |
 
+### 2.22 NTRU-KEM Polynomial Ring Arithmetic (RFC-0039)
+
+Elementwise polynomial subtraction over tensor handles; completes the `{+, −, ×, mod}` ring surface.
+
+| Mnemonic | Numeric Encoding | Operands | Description | Deterministic | Implementation Location |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| TVecSub | 212 (0xD4) | A, B, C | Elementwise subtraction: `R[A][k] = tensor(R[B])[k] − tensor(R[C])[k]` for all k | Yes | core/vm/vm.cpp |
+
 ## 3. Reserved / Unused Opcodes
 
 - **Nop (0x00)**: No Operation.
-- **Reserved**: Opcodes 205 (0xCD) through 255 (0xFF) are reserved for future standardization.
+- **Reserved**: Opcodes 213 (0xD5) through 255 (0xFF) are reserved for future standardization.
 
 ## 4. Implementation Consistency Audit
 
-- **VM Opcode Count**: 205 defined opcodes (0x00–0xCC); includes RFC-0034, RFC-00B8, RFC-0038 additions.
-- **Header Enum Count**: 205 entries in `include/t81/isa/opcodes.hpp`.
+- **VM Opcode Count**: 206 defined opcodes (0x00–0xD4); includes RFC-0034, RFC-00B8, RFC-0038, RFC-0039 additions.
+- **Header Enum Count**: 206 entries in `include/t81/isa/opcodes.hpp`.
 - **Coverage**: All opcodes defined in `include/t81/isa/opcodes.hpp` are present in `core/vm/vm.cpp` dispatch switch.
 - **Discrepancies**: None found.

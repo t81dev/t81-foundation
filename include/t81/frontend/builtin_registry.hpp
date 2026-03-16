@@ -276,8 +276,13 @@ inline constexpr BuiltinDef kBuiltinTable[] = {
   {"std.distributed.seal",      "dist_seal",      0, Type::Kind::I32,  {}, {4}, true, BuiltinIRClass::Constructor,  tisc::ir::Opcode::DISTSEAL,  {}, false, false },
 
   // ── Crypto (RFC-0038 — Ternary Lattice Cryptography) ─────────────────────
-  {"std.crypto.polymul",  "crypto_polymul",  2, Type::Kind::Tensor, {}, {2}, false, BuiltinIRClass::Custom, kNoOpcode, {}, false, true },
-  {"std.crypto.polymod",  "crypto_polymod",  2, Type::Kind::Tensor, {}, {2}, false, BuiltinIRClass::Custom, kNoOpcode, {}, false, true },
+  {"std.crypto.polymul",       "crypto_polymul",       2, Type::Kind::Tensor, {}, {2}, false, BuiltinIRClass::Custom, kNoOpcode,                {}, false, true },
+  {"std.crypto.polymod",       "crypto_polymod",       2, Type::Kind::Tensor, {}, {2}, false, BuiltinIRClass::Custom, kNoOpcode,                {}, false, true },
+  // ── Crypto (RFC-0039 — NTRU-KEM polynomial ring arithmetic) ───────────────
+  {"std.crypto.polyadd",       "crypto_polyadd",       2, Type::Kind::Tensor, {}, {2}, false, BuiltinIRClass::Direct, tisc::ir::Opcode::TVECADD,{}, false, false},
+  {"std.crypto.polysub",       "crypto_polysub",       2, Type::Kind::Tensor, {}, {2}, false, BuiltinIRClass::Direct, tisc::ir::Opcode::TVECSUB, {}, false, false},
+  {"std.crypto.ntru_encrypt",  "crypto_ntru_encrypt",  4, Type::Kind::Tensor, {}, {2}, false, BuiltinIRClass::Custom, kNoOpcode,                {}, false, true },
+  {"std.crypto.ntru_decrypt",  "crypto_ntru_decrypt",  3, Type::Kind::Tensor, {}, {2}, false, BuiltinIRClass::Custom, kNoOpcode,                {}, false, true },
 
   // ── Low-level / Meta (bare canonical names) ───────────────────────────────
   {"read_code",           "read_code",          1, Type::Kind::I32,  {}, {}, false, BuiltinIRClass::Direct, tisc::ir::Opcode::META_READ,    {}, false, false },

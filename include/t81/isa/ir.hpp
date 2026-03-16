@@ -222,6 +222,8 @@ enum class Opcode {
   // RFC-0038 — Ternary Lattice Cryptography Primitives
   POLYMUL,  // Negacyclic poly multiply: POLYMUL RD, R_A, R_B
   POLYMOD,  // Centered reduction mod q: POLYMOD RD, R_A, R_Q
+  // RFC-0039 — NTRU-KEM polynomial ring arithmetic
+  TVECSUB,  // Elementwise tensor subtraction: TVECSUB RD, RA, RB
 
   // Pseudo-instructions
   LABEL

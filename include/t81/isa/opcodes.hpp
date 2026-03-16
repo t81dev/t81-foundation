@@ -233,6 +233,8 @@ enum class Opcode : std::uint8_t {
   // RFC-0038 — Ternary Lattice Cryptography Primitives
   POLYMUL,  // Negacyclic poly multiply in Z[x]/(x^n+1): POLYMUL RD, R_A, R_B
   POLYMOD,  // Centered coefficient reduction mod q:       POLYMOD RD, R_A, R_Q
+  // RFC-0039 — NTRU-KEM polynomial ring arithmetic
+  TVecSub,  // Elementwise tensor subtraction (poly ring): TVecSub RD, RA, RB
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -658,12 +660,18 @@ enum class Opcode : std::uint8_t {
       return "FFIRegister";
     case Opcode::FFIPolicySet:
       return "FFIPolicySet";
+    case Opcode::POLYMUL:
+      return "POLYMUL";
+    case Opcode::POLYMOD:
+      return "POLYMOD";
+    case Opcode::TVecSub:
+      return "TVecSub";
   }
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::FFIPolicySet) + 1> kAllOpcodes = [] {
-  std::array<Opcode, static_cast<std::size_t>(Opcode::FFIPolicySet) + 1> values{};
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::TVecSub) + 1> kAllOpcodes = [] {
+  std::array<Opcode, static_cast<std::size_t>(Opcode::TVecSub) + 1> values{};
   for (std::size_t i = 0; i < values.size(); ++i) {
     values[i] = static_cast<Opcode>(i);
   }
@@ -671,7 +679,7 @@ inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::FFIPolicySe
 }();
 
 [[nodiscard]] constexpr bool is_valid_opcode(std::uint8_t raw_opcode) {
-  return raw_opcode <= static_cast<std::uint8_t>(Opcode::FFIPolicySet);
+  return raw_opcode <= static_cast<std::uint8_t>(Opcode::TVecSub);
 }
 
 }  // namespace t81::tisc

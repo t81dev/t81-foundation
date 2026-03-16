@@ -4277,6 +4277,50 @@ public:
         ctx.register_tags[insn.a] = ValueTag::TensorHandle;
         break;
       }
+      case t81::tisc::Opcode::TVecSub: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.c); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor_a = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor_a == nullptr) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(ctx.registers[insn.b]), "tensor handle access");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto* tensor_b = tensor_ptr(ctx.registers[insn.c]);
+        if (tensor_b == nullptr) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(ctx.registers[insn.c]), "tensor handle access");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TVecSub kernel execution"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b],
+                           verdict);
+        auto computed = t81::vm::internal::tensor_vec_sub_checked(*tensor_a, *tensor_b);
+        if (!computed.has_value()) {
+          trap = computed.error();
+          break;
+        }
+        auto res_handle = alloc_tensor(std::move(*computed));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
       case t81::tisc::Opcode::TTranspose: {
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
           trap = Trap::DecodeFault;

@@ -321,6 +321,15 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vec_binary_checked(
   return tensor_binary_elementwise(lhs, rhs, multiply);
 }
 
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vec_sub_checked(
+    const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs) {
+  if (!tensor_elementwise_compatible(lhs, rhs)) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::ShapeFault);
+  }
+  return t81::ops::sub(lhs, rhs);
+}
+
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_transpose_checked(
     const t81::T729DynamicTensor& tensor) {
   if (!tensor_transpose_2d_compatible(tensor)) {
