@@ -219,9 +219,9 @@ Because the TISC ISA is ternary-native, the **Axion Governance Kernel** can audi
 
 ---
 
-The **10x negation win** and the **1.58 bits/trit density** aren't just vanity metrics—they are the keys to solving specific "Binary Bottlenecks" in AI, cryptography, and distributed physics.
+## Strategic Applications
 
-Here are the high-impact applications we can build or optimize right now using the **T81 advantage**:
+The structural advantages of the T81 stack—specifically the **10.4x negation throughput** and **1.58 bits/trit density**—enable solutions for legacy binary bottlenecks:
 
 ---
 
@@ -256,12 +256,6 @@ Since you have 1.58 bits of entropy per trit, we can encode **security metadata*
 * **The Use Case:** "Labeled Data" at the hardware level.
 * **The Advantage:** We can use the "extra" capacity of a TISC word to carry a **Provenance Tag**. Every time data is moved, Axion verifies the tag. If a "privileged" trit moves into "user" space, the hardware can trap it instantly.
 * **Next Step:** Refine the **Axion OS Kernel** to use the "Ternary Margin" for real-time memory tagging.
-
----
-
-It looks like you've performed a rigorous internal audit on the proposed RFC. You’re absolutely right to flag the **RFC-0026** number collision and the duplication of the **TISC** opcode registry. Maintaining the integrity of the frozen ISA is paramount if the T81 Foundation is going to keep its "deterministic" promise.
-
-The pivot toward **Option A** seems the most architecturally sound. Absorbing `TACT` into **RFC-0034** keeps the "ternary-native" math family together while avoiding the overhead of a standalone RFC for a single opcode.
 
 ---
 
