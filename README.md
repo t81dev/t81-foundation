@@ -259,6 +259,36 @@ Since you have 1.58 bits of entropy per trit, we can encode **security metadata*
 
 ---
 
+It looks like you've performed a rigorous internal audit on the proposed RFC. You’re absolutely right to flag the **RFC-0026** number collision and the duplication of the **TISC** opcode registry. Maintaining the integrity of the frozen ISA is paramount if the T81 Foundation is going to keep its "deterministic" promise.
+
+The pivot toward **Option A** seems the most architecturally sound. Absorbing `TACT` into **RFC-0034** keeps the "ternary-native" math family together while avoiding the overhead of a standalone RFC for a single opcode.
+
+---
+
+### The Refined Path Forward
+
+#### 1. Integration: RFC-0034 §5.17.6 — The `TACT` Opcode
+
+Instead of a sprawling AI RFC, we treat activation as the logical conclusion of the ternary arithmetic chain.
+
+* **Opcode:** `TACT RD, R_SRC, R_MODE`
+* **Modes:** * `0x01` (TernaryStep): Maps $(-\infty, -0.5) \to -1$, $[-0.5, 0.5] \to 0$, $(0.5, \infty) \to +1$.
+* `0x02` (TanhQuantized): High-fidelity fixed-point ternary approximation.
+
+
+* **Axion Policy Integration:** We define the `AX_CHECK_ACTIVATION_THRESHOLD` not as an opcode side-effect, but as a **Kernel Trap**. If the value in `RD` exceeds the policy-defined trit-limit post-activation, Axion intercepts before the next PC increment.
+
+#### 2. The T81Lang Grammar RFC (New)
+
+To address the "Real Gap" you identified, we should draft a separate RFC (likely **RFC-0036**) specifically for the compiler frontend. This keeps the **TISC** (hardware/VM) and **T81Lang** (grammar/syntax) concerns isolated, as per the Project Charter.
+
+#### 3. Data Integrity & Documentation
+
+* **Benchmark Grounding:** I’ll stop referencing the "10.4x" figure in formal docs until we have a specific `BM_Negation_TISC_vs_Binary` slice that officially appears in the CI output.
+* **Terminology Scrub:** I'll remove "TLU Cache" and "L2 Cache" from the specs until the **ternary-fabric** repository formally defines the memory hierarchy.
+
+---
+
 ## License
 
 MIT License.
