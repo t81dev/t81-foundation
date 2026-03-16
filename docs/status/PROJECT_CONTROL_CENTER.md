@@ -33,7 +33,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Gate | Date | State |
 | :--- | :--- | :--- |
-| C2 Month-Close execution | 2026-03-31 | Scheduled — preflight PASS 2026-03-10; re-confirmed 3× same day |
+| C2 Month-Close execution | 2026-03-31 | **Closed** — executed 2026-03-14; post-close addendum 2026-03-16; all 6 checklist items PASS; March 2026 governance window closed clean |
 | T81Lang Stable promotion | 2026-03-16 | **Closed** — spec v1.3 Stable; §3.2 I/O channels defined; TG-01 waived (non-normative translations); all TG-02..TG-06 met |
 | RFC-0015 agentic constructs closure | 2026-03-16 | **Closed** — agent/behavior/AGENT_INVOKE; 9/9 AC met; 16/16 assertions; tisc-spec §5.16 added |
 | RFC-0011 grammar modernization closure | 2026-03-16 | **Closed** — 7/7 AC met; all features realized via RFC-0003/0007/0015/0029 |

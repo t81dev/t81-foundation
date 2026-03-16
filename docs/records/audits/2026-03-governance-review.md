@@ -383,3 +383,29 @@ Required finalization steps:
 - **Determinism Fix:** AST/IR hash updated for current compilation state
 - **Governance Status:** Q1 2026 governance cycle successfully closed
 - **T81Lang Promotion:** Ready for Stable promotion track
+
+---
+
+## Post-Close Addendum (2026-03-16)
+
+Work completed after the 2026-03-14 C2 close, within the March governance window:
+
+| Item | Date | Outcome |
+| :--- | :--- | :--- |
+| RFC-0015 Agentic Constructs | 2026-03-16 | Accepted — agent/behavior/AGENT_INVOKE; 9/9 AC met; 16/16 assertions; tisc-spec §5.16 added |
+| RFC-0011 Grammar Modernization | 2026-03-16 | Accepted — 7/7 AC met; all goals realized via RFC-0003/0007/0015/0029 |
+| RFC-00A2 AI Benchmark Spec | 2026-03-16 | Accepted — 6/6 AC met; BM_DeterminismValidation suite; determinism_score=1.0 |
+| T81Lang Spec v1.3 Stable | 2026-03-16 | Promoted — §3.2 VM I/O channels defined; TG-01 waived (non-normative translations); TG-02..TG-06 all met |
+| RFC program completion | 2026-03-16 | 49/49 active RFCs accepted; 0 drafts remaining |
+| Test suite | 2026-03-16 | 363/363 passing (up from 347/347 at C2 close) |
+
+**Governance checklist re-verification (2026-03-16):**
+
+1. Authority and freeze controls: **PASS** — no freeze-boundary relaxations; TISC ISA + Data Types remain frozen; AgentInvoke recorded as freeze exception per RFC-0015 §5.16
+2. ADR and architecture governance: **PASS** — no new boundary-impacting decisions require ADR (RFC-0015 is a governed freeze exception, not a freeze violation)
+3. Determinism governance: **PASS** — verified surfaces clean; CanonHash81 determinism_score=1.0 confirmed by RFC-00A2 benchmarks; no new threat model entries required
+4. Release discipline: **PASS** — v1.4.1-Stable tagged; 363/363; no unresolved Severity 2/3 incidents
+5. Status and planning: **PASS** — PCC v3.2.5 updated; SYSTEM_STATUS.md updated; IMPLEMENTATION_MATRIX T81Lang row promoted to Stable
+6. Documentation hygiene: **PASS** — all new records under `docs/records/audits/`; no root-level artifact proliferation
+
+**Addendum outcome:** All checklist items pass. March 2026 governance window closes clean.
