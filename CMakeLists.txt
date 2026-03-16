@@ -890,6 +890,8 @@ if(T81_ENABLE_TERNARYOS)
     # ── Slice 6: QEMU AArch64 EDK2 guest image ────────────────────────────────
     set(T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ
         ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64.obj)
+    set(T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64_bare.obj)
     set(T81_TERNARYOS_QEMU_SLICE6_EFI
         ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64.EFI)
     set(T81_TERNARYOS_QEMU_SLICE6_STARTUP_TXT
@@ -933,6 +935,25 @@ if(T81_ENABLE_TERNARYOS)
               ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_HDR})
     add_custom_target(t81_ternaryos_qemu_slice6_efi_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ})
+
+    # Bare-metal kernel entry (post-ExitBootServices PL011/GIC/timer probe).
+    add_custom_command(
+      OUTPUT  ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/qemu_slice6_bare_kernel.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos
+              -o ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/qemu_slice6_bare_kernel.c)
+    add_custom_target(t81_ternaryos_qemu_slice6_bare_obj
+      DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ})
 
     if(T81_LLD_LINK)
       add_custom_command(
@@ -984,7 +1005,8 @@ if(T81_ENABLE_TERNARYOS)
         DEPENDS ${T81_TERNARYOS_ARMV8_EFI_CTRL})
       list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_control)
 
-      # Slice 6: link QEMU slice6 BOOTAA64.EFI (stub + shim, arm64 PE/COFF)
+      # Slice 6: link QEMU slice6 BOOTAA64.EFI
+      #   stub (EFI entry + ExitBootServices) + bare kernel (PL011/GIC/timer) + shim
       add_custom_command(
         OUTPUT ${T81_TERNARYOS_QEMU_SLICE6_EFI}
         COMMAND ${CMAKE_COMMAND} -E make_directory
@@ -996,8 +1018,10 @@ if(T81_ENABLE_TERNARYOS)
                 /nodefaultlib
                 /out:${T81_TERNARYOS_QEMU_SLICE6_EFI}
                 ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
                 ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ}
         DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
                 ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ})
       add_custom_target(t81_ternaryos_qemu_slice6_efi
         DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI})

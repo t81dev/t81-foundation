@@ -49,6 +49,17 @@ typedef struct {
   uint8_t  Data4[8];
 } EFI_GUID;
 
+// Minimal EFI_MEMORY_DESCRIPTOR — only the MapKey from GetMemoryMap is used;
+// the descriptor contents are intentionally ignored.
+typedef struct {
+  uint32_t Type;
+  uint32_t Pad;
+  uint64_t PhysicalStart;
+  uint64_t VirtualStart;
+  uint64_t NumberOfPages;
+  uint64_t Attribute;
+} EFI_MEMORY_DESCRIPTOR;
+
 typedef struct {
   uint64_t Signature;
   uint32_t Revision;
@@ -101,24 +112,43 @@ struct EFI_FILE_PROTOCOL {
 };
 
 struct EFI_BOOT_SERVICES {
-  EFI_TABLE_HEADER Hdr;
-  void* RaiseTPL;
-  void* RestoreTPL;
-  void* AllocatePages;
-  void* FreePages;
-  void* GetMemoryMap;
-  void* AllocatePool;
-  void* FreePool;
-  void* CreateEvent;
-  void* SetTimer;
-  void* WaitForEvent;
-  void* SignalEvent;
-  void* CloseEvent;
-  void* CheckEvent;
-  void* InstallProtocolInterface;
-  void* ReinstallProtocolInterface;
-  void* UninstallProtocolInterface;
-  EFI_STATUS(EFIAPI* HandleProtocol)(EFI_HANDLE handle, EFI_GUID* protocol, void** interface);
+  EFI_TABLE_HEADER Hdr;                        // offset   0 (24 bytes)
+  void* RaiseTPL;                              // offset  24
+  void* RestoreTPL;                            // offset  32
+  void* AllocatePages;                         // offset  40
+  void* FreePages;                             // offset  48
+  // GetMemoryMap — typed so we can retrieve the MapKey for ExitBootServices.
+  EFI_STATUS(EFIAPI* GetMemoryMap)(            // offset  56
+      UINTN* MemoryMapSize,
+      EFI_MEMORY_DESCRIPTOR* MemoryMap,
+      UINTN* MapKey,
+      UINTN* DescriptorSize,
+      uint32_t* DescriptorVersion);
+  void* AllocatePool;                          // offset  64
+  void* FreePool;                              // offset  72
+  void* CreateEvent;                           // offset  80
+  void* SetTimer;                              // offset  88
+  void* WaitForEvent;                          // offset  96
+  void* SignalEvent;                           // offset 104
+  void* CloseEvent;                            // offset 112
+  void* CheckEvent;                            // offset 120
+  void* InstallProtocolInterface;              // offset 128
+  void* ReinstallProtocolInterface;            // offset 136
+  void* UninstallProtocolInterface;            // offset 144
+  EFI_STATUS(EFIAPI* HandleProtocol)(          // offset 152
+      EFI_HANDLE handle, EFI_GUID* protocol, void** interface);
+  void* Reserved;                              // offset 160
+  void* RegisterProtocolNotify;                // offset 168
+  void* LocateHandle;                          // offset 176
+  void* LocateDevicePath;                      // offset 184
+  void* InstallConfigurationTable;             // offset 192
+  void* LoadImage;                             // offset 200
+  void* StartImage;                            // offset 208
+  void* Exit;                                  // offset 216
+  void* UnloadImage;                           // offset 224
+  EFI_STATUS(EFIAPI* ExitBootServices)(        // offset 232
+      EFI_HANDLE ImageHandle,
+      UINTN MapKey);
 };
 
 struct EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL {
@@ -258,7 +288,17 @@ static EFI_STATUS write_root_file(EFI_FILE_PROTOCOL* root,
   return s;
 }
 
-// ── EFI entry point ───────────────────────────────────────────────────────
+// ── Forward declaration of the post-ExitBootServices bare-metal entry ────────
+// Implemented in qemu_slice6_bare_kernel.c; linked into the same PE/COFF EFI.
+void qemu_bare_kernel_entry(void);
+
+// ── Memory-map scratch buffer ─────────────────────────────────────────────────
+// Used only to obtain the MapKey required by ExitBootServices.  The descriptor
+// contents are never inspected; 32 KiB is ample for a 512 MiB QEMU VM.
+#define MMAP_BUF_SIZE (32u * 1024u)
+static uint8_t s_mmap_buf[MMAP_BUF_SIZE];
+
+// ── EFI entry point ───────────────────────────────────────────────────────────
 
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* st) {
   emit_boot_banner(st);
@@ -282,7 +322,47 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE* st) {
   root->Close(root);
   if (s != EFI_SUCCESS) return s;
 
-  // Invoke the kernel bootstrap stub (thin shim; returns 0 for valid context).
+  // ── Transition to bare-metal: terminate EFI boot services ────────────────
+  //
+  // GetMemoryMap returns the current map and, crucially, the MapKey that
+  // ExitBootServices requires.  The firmware may change the map between calls,
+  // so retry once with an updated size if the first attempt returns BUFFER_TOO_SMALL.
+
+  EFI_BOOT_SERVICES* bs = st ? st->BootServices : 0;
+  if (bs && bs->GetMemoryMap && bs->ExitBootServices) {
+    UINTN mmap_size = MMAP_BUF_SIZE;
+    UINTN map_key   = 0;
+    UINTN desc_size = 0;
+    uint32_t desc_ver = 0;
+
+    s = bs->GetMemoryMap(&mmap_size,
+                         (EFI_MEMORY_DESCRIPTOR*)(void*)s_mmap_buf,
+                         &map_key, &desc_size, &desc_ver);
+    // EFI_BUFFER_TOO_SMALL = 5; retry with firmware-provided size + slack.
+    if (s == 5u) {
+      mmap_size += 2u * desc_size;   // add two descriptor slots of slack
+      if (mmap_size > MMAP_BUF_SIZE) mmap_size = MMAP_BUF_SIZE;
+      s = bs->GetMemoryMap(&mmap_size,
+                           (EFI_MEMORY_DESCRIPTOR*)(void*)s_mmap_buf,
+                           &map_key, &desc_size, &desc_ver);
+    }
+
+    if (s == EFI_SUCCESS) {
+      // ExitBootServices invalidates the EFI system table pointer.
+      // After this call, st, bs, and all EFI services are gone.
+      s = bs->ExitBootServices(image_handle, map_key);
+      if (s == EFI_SUCCESS) {
+        // ── Bare-metal execution from here ──────────────────────────────────
+        // No C runtime, no EFI, no stack protector.  Only MMIO and CPU regs.
+        qemu_bare_kernel_entry();
+        // qemu_bare_kernel_entry() never returns on AArch64 bare-metal.
+        // On hosted builds it returns immediately for testability.
+        while (1) {}
+      }
+    }
+  }
+
+  // Fallback: ExitBootServices unavailable or failed — run the hosted shim.
   TernaryOsBootContext ctx;
   ctx.memory_map       = kQemuVirtMemoryMap;
   ctx.memory_map_len   =
