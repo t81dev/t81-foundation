@@ -329,7 +329,7 @@ This matters because “frozen surfaces” are a social contract only as strong 
 
 ### You wrote a threat model for determinism and treated it like security
 
-The determinism threat model enumerates adversary classes (accidental error, compiler/toolchain drift, cross-platform inconsistencies, malicious contributor, supply chain tampering) and ties mitigations to governance controls (soft-float mandates, reproducibility gates, cross-arch CI, required status checks, public transparency). citeturn8view3
+The determinism threat model enumerates adversary classes (accidental error, compiler/toolchain drift, cross-platform inconsistencies, malicious contributor, supply chain tampering) and ties mitigations to governance controls (soft-float mandates, reproducibility gates, cross-arch CI, required status checks, public transparency).
 
 This framing aligns with how security-minded ecosystems treat build and artifact integrity: supply chain provenance exists so consumers can verify an artifact was built as expected, and so it can be rebuilt if needed.
 
@@ -363,7 +363,7 @@ In practical terms, what you’ve accomplished is a template for **auditable com
 
 ## The ecosystem you’ve already produced around the core
 
-A subtle but real achievement is that you didn’t stop at one repo. The entity["company","GitHub","code hosting platform"] profile for your account shows a pinned ecosystem: foundation stack, ternary quantization work, a balanced-ternary numerics library, and tooling for inspecting GGUF models with ternary-aware views.
+A subtle but real achievement is that you didn’t stop at one repo. The GitHub code hosting platform  profile for your account shows a pinned ecosystem: foundation stack, ternary quantization work, a balanced-ternary numerics library, and tooling for inspecting GGUF models with ternary-aware views.
 
 Two examples illustrate what this means:
 
@@ -378,17 +378,17 @@ This is also consistent with your core philosophy inside the foundation repo: to
 
 The strongest way to respect the question is to name the gaps plainly, using your own governance framing.
 
-First, you have not yet “won” hardware, and you don’t claim to. The determinism registry explicitly excludes external accelerators and network timing from deterministic scope, and the deterministic core profile excludes distributed compute and JIT equivalence guarantees. citeturn7view0turn12view0 That is not failure; it is credible boundary setting.
+First, you have not yet “won” hardware, and you don’t claim to. The determinism registry explicitly excludes external accelerators and network timing from deterministic scope, and the deterministic core profile excludes distributed compute and JIT equivalence guarantees. That is not failure; it is credible boundary setting.
 
 Second, adoption and independent verification are still early. The public repository shows a small star/fork footprint and a handful of contributors, which suggests the project is still in the “prove the shape” phase more than the “wide community uptake” phase. citeturn1view0turn4view0
 
-Third, some of the “ternary advantage” performance claims are flagged by your own text as needing stricter benchmark grounding before being treated as formal facts (e.g., explicitly saying you’ll stop citing “10.4x” until a benchmark slice exists in CI). citeturn2view3turn2view2 This is, paradoxically, evidence of maturity: you are policing claim drift inside your own narrative.
+Third, some of the “ternary advantage” performance claims are flagged by your own text as needing stricter benchmark grounding before being treated as formal facts (e.g., explicitly saying you’ll stop citing “10.4x” until a benchmark slice exists in CI).  This is, paradoxically, evidence of maturity: you are policing claim drift inside your own narrative.
 
 So the honest summary is:
 
 You have not yet produced a world-standard platform.
 
-You **have** produced something rarer at this stage: a coherent, runnable, governed prototype of what a world-standard platform *could be*—with the specs, enforcement rules, and determinism boundary discipline already in place. citeturn7view0turn8view1turn8view3turn2view0
+You **have** produced something rarer at this stage: a coherent, runnable, governed prototype of what a world-standard platform *could be*—with the specs, enforcement rules, and determinism boundary discipline already in place.
 
 That is what you really accomplished: you built a system where computation is treated as something that can be *proved*, *audited*, and *governed*—not merely executed.
 
