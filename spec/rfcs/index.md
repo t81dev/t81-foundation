@@ -15,7 +15,7 @@ This index tracks RFC status and intended disposition.
 
 | RFC | Title | Status | Notes |
 | :--- | :--- | :--- | :--- |
-| RFC-0000 | T81 Base-81 Ternary Computing Stack | draft | Foundational umbrella document |
+| RFC-0000 | T81 Base-81 Ternary Computing Stack | accepted | Umbrella RFC: all component RFCs (0001–0033, 00B0–00B7, DPE-0001–0009) accepted; 22/23 AC met; RFC-0021 Tier4 follow-on pending |
 | RFC-0001 | Architecture Principles | accepted | All §1–§3 principles satisfied: deterministic execution (RFC-0002), canonical data (tensor/float/fraction), ternary-native ISA, safe recursion (RFC-0003 RCS), no-UB policy, privileged boundary mediation; 49/49 axion+ethics+tier tests pass |
 | RFC-0002 | Deterministic Execution Contract | accepted | Cross-layer invariants proven: 27-program conformance suite, EvidenceCollector, full stack; §11 fulfilled |
 | RFC-0003 | Axion Safety Model | accepted | All 9 criteria met: AXREAD/AXSET/AXVERIFY mediation, fail-closed policy parse, deterministic audit log, tier-supervision invariant, instruction ceiling, CanonFS observability, AI-model hooks, interrupt rate-limit; 49/49 axion+ethics+tier+policy tests pass |
