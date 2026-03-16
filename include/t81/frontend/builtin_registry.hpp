@@ -275,6 +275,10 @@ inline constexpr BuiltinDef kBuiltinTable[] = {
   {"std.distributed.coherence", "dist_coherence", 0, Type::Kind::I32,  {}, {4}, true, BuiltinIRClass::Constructor,  tisc::ir::Opcode::COHERENCE, {}, false, false },
   {"std.distributed.seal",      "dist_seal",      0, Type::Kind::I32,  {}, {4}, true, BuiltinIRClass::Constructor,  tisc::ir::Opcode::DISTSEAL,  {}, false, false },
 
+  // ── Crypto (RFC-0038 — Ternary Lattice Cryptography) ─────────────────────
+  {"std.crypto.polymul",  "crypto_polymul",  2, Type::Kind::Tensor, {}, {2}, false, BuiltinIRClass::Custom, kNoOpcode, {}, false, true },
+  {"std.crypto.polymod",  "crypto_polymod",  2, Type::Kind::Tensor, {}, {2}, false, BuiltinIRClass::Custom, kNoOpcode, {}, false, true },
+
   // ── Low-level / Meta (bare canonical names) ───────────────────────────────
   {"read_code",           "read_code",          1, Type::Kind::I32,  {}, {}, false, BuiltinIRClass::Direct, tisc::ir::Opcode::META_READ,    {}, false, false },
   {"write_code",          "write_code",         2, Type::Kind::Void, {}, {}, false, BuiltinIRClass::Direct, tisc::ir::Opcode::META_WRITE,   {}, false, false },

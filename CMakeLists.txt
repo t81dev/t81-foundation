@@ -4,6 +4,19 @@ if(POLICY CMP0135)
 endif()
 project(t81 LANGUAGES C CXX)
 
+# ---------- Version ----------
+set(T81_VERSION_MAJOR 1)
+set(T81_VERSION_MINOR 3)
+set(T81_VERSION_PATCH 2)
+set(T81_VERSION "${T81_VERSION_MAJOR}.${T81_VERSION_MINOR}.${T81_VERSION_PATCH}")
+
+# Generate version header
+configure_file(
+  include/t81/config.hpp.in
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/t81/config.hpp
+  @ONLY
+)
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Options
@@ -2196,6 +2209,10 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(tnn_stdlib_test tests/cpp/tnn_stdlib_test.cpp)
   target_link_libraries(tnn_stdlib_test PRIVATE t81_vm t81_lang_frontend t81_core)
 
+  # RFC-0038 — Ternary Lattice Cryptography (POLYMUL / POLYMOD)
+  add_executable(lattice_crypto_test tests/cpp/lattice_crypto_test.cpp)
+  target_link_libraries(lattice_crypto_test PRIVATE t81_vm t81_lang_frontend t81_core)
+
   add_executable(jit_tensor_trace_equivalence_test tests/cpp/jit_tensor_trace_equivalence_test.cpp)
   target_link_libraries(jit_tensor_trace_equivalence_test PRIVATE t81_vm)
 
@@ -2709,6 +2726,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     agent_constructs_test
     t81lang_foreign_ffi_test
     tnn_stdlib_test
+    lattice_crypto_test
     jit_tensor_trace_equivalence_test
     vm_jit_per_instruction_policy_test
     e2e_axion_trace_test
@@ -3101,7 +3119,7 @@ configure_package_config_file(
 
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/T81ConfigVersion.cmake"
-  VERSION 1.3.2
+  VERSION ${T81_VERSION}
   COMPATIBILITY SameMajorVersion
 )
 
@@ -3113,7 +3131,7 @@ configure_package_config_file(
 
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/T81FoundationConfigVersion.cmake"
-  VERSION 1.3.2
+  VERSION ${T81_VERSION}
   COMPATIBILITY SameMajorVersion
 )
 

@@ -230,6 +230,9 @@ enum class Opcode : std::uint8_t {
   FFICall,     // Call foreign function with governance: FFICall R_FUNC, R_ARG_COUNT, R_RESULT
   FFIRegister, // Register foreign library: FFIRegister R_LIB_NAME, R_VERSION_HASH
   FFIPolicySet, // Set FFI policy: FFIPolicySet R_POLICY_TYPE, R_POLICY_VALUE
+  // RFC-0038 — Ternary Lattice Cryptography Primitives
+  POLYMUL,  // Negacyclic poly multiply in Z[x]/(x^n+1): POLYMUL RD, R_A, R_B
+  POLYMOD,  // Centered coefficient reduction mod q:       POLYMOD RD, R_A, R_Q
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {

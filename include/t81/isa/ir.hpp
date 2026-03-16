@@ -219,6 +219,10 @@ enum class Opcode {
   // RFC-0036 — Governed foreign function call
   FFI_CALL,  // FFICall RD, arg_count  — text_literal carries the function name
 
+  // RFC-0038 — Ternary Lattice Cryptography Primitives
+  POLYMUL,  // Negacyclic poly multiply: POLYMUL RD, R_A, R_B
+  POLYMOD,  // Centered reduction mod q: POLYMOD RD, R_A, R_Q
+
   // Pseudo-instructions
   LABEL
 };

@@ -19,6 +19,7 @@
 #include "t81/tensor/llama.hpp"
 #include "t81/tensor/matmul.hpp"
 #include "t81/tensor/ternary_native.hpp"
+#include "t81/tensor/lattice_crypto.hpp"
 
 #include "internal/ffi_bridge.hpp"
 #include "internal/gc_helpers.hpp"
@@ -6174,6 +6175,50 @@ public:
         if (!rh) { trap = rh.error(); break; }
         ctx.registers[insn.a] = *rh;
         ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::POLYMUL: {
+        // RFC-0038 §5.1 — Negacyclic polynomial multiply in Z[x]/(x^n + 1).
+        // Encoding: POLYMUL RD=insn.a, R_A=insn.b, R_B=insn.c
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault; break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
+        if (auto res = promote_to_tensor(insn.c); !res) { trap = res.error(); break; }
+        auto* ta = tensor_ptr(ctx.registers[insn.b]);
+        auto* tb = tensor_ptr(ctx.registers[insn.c]);
+        if (!ta || !tb) { trap = Trap::DecodeFault; break; }
+        try {
+          auto result = t81::ops::polymul(*ta, *tb);
+          auto rh = alloc_tensor(std::move(result));
+          if (!rh) { trap = rh.error(); break; }
+          ctx.registers[insn.a] = *rh;
+          ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        } catch (...) {
+          trap = Trap::ShapeFault;
+        }
+        break;
+      }
+      case t81::tisc::Opcode::POLYMOD: {
+        // RFC-0038 §5.2 — Centered coefficient reduction mod q.
+        // Encoding: POLYMOD RD=insn.a, R_A=insn.b, R_Q=insn.c (q from register)
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault; break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
+        auto* ta = tensor_ptr(ctx.registers[insn.b]);
+        if (!ta) { trap = Trap::DecodeFault; break; }
+        const std::int64_t q = static_cast<std::int64_t>(ctx.registers[insn.c]);
+        if (q <= 0) { trap = Trap::DecodeFault; break; }
+        try {
+          auto result = t81::ops::polymod(*ta, q);
+          auto rh = alloc_tensor(std::move(result));
+          if (!rh) { trap = rh.error(); break; }
+          ctx.registers[insn.a] = *rh;
+          ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        } catch (...) {
+          trap = Trap::ShapeFault;
+        }
         break;
       }
       case t81::tisc::Opcode::FFICall: {

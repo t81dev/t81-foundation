@@ -1417,6 +1417,43 @@ std::any IRGenerator::visit(const CallExpr& expr) {
       return {};
     }
 
+    // RFC-0038 — Ternary Lattice Cryptography
+    if (func_name == "crypto_polymul") {
+      // std.crypto.polymul(a: Tensor, b: Tensor) -> Tensor
+      // Lowers to: POLYMUL RD, R_A, R_B
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("std.crypto.polymul expects 2 arguments (a, b).");
+      expr.arguments[0]->accept(*this);
+      auto ra = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto rb = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::POLYMUL;
+      instr.operands = {dest.reg, ra.reg, rb.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    if (func_name == "crypto_polymod") {
+      // std.crypto.polymod(a: Tensor, q: i32) -> Tensor
+      // Lowers to: POLYMOD RD, R_A, R_Q
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("std.crypto.polymod expects 2 arguments (a, q).");
+      expr.arguments[0]->accept(*this);
+      auto ra = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto rq = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::POLYMOD;
+      instr.operands = {dest.reg, ra.reg, rq.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
     if (func_name == "Tensor.vec_add") {
       if (expr.arguments.size() != 2) {
         throw std::runtime_error("Tensor.vec_add expects two arguments.");
