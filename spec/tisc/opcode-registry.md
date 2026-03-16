@@ -314,12 +314,35 @@ Post-execute Axion `activation-ceiling` verdict model:
 | Quarantine | RD not committed; PC does not advance; `SecurityFault` raised |
 | Deny | RD not committed; `ActivationFault` raised |
 
+### 2.20 Governed Foreign Function Interface (RFC-0036 + RFC-00B8)
+
+Opcodes for governed calls to external (non-T81) functions. All are subject to
+`FFIDispatcher` policy enforcement, resource quotas, and Axion audit events.
+
+| Mnemonic | Numeric Encoding | Operands | Description | Deterministic | Implementation Location |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| FFICall | 200 (0xC8) | A, B, C | Call foreign function; `text_literal` carries function name; policy check before dispatch | Conditional (policy-dependent) | core/vm/vm.cpp |
+| FFIRegister | 201 (0xC9) | A, B | Register foreign library by name `R[A]` and version hash `R[B]` | Yes | core/vm/vm.cpp |
+| FFIPolicySet | 202 (0xCA) | A, B | Set per-call FFI policy type `R[A]` to value `R[B]` | Yes | core/vm/vm.cpp |
+
+### 2.21 Ternary Lattice Cryptography (RFC-0038)
+
+Negacyclic polynomial arithmetic over `{−1, 0, +1}` coefficients in `Z[x]/(x^n + 1)`.
+No integer multiplications — only add/sub/trit-flip. T81BigInt-exact. Tier 2+.
+
+| Mnemonic | Numeric Encoding | Operands | Description | Deterministic | Implementation Location |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| POLYMUL | 203 (0xCB) | A, B, C | Negacyclic poly multiply: `R[A] = polymul(*tensor(R[B]), *tensor(R[C]))` in `Z[x]/(x^n+1)` | Yes | core/vm/vm.cpp |
+| POLYMOD | 204 (0xCC) | A, B, C | Centered reduction mod q: every coefficient c → `((c%q)+q)%q`, shifted to `(−q/2, q/2]`; `q = R[C]` | Yes | core/vm/vm.cpp |
+
 ## 3. Reserved / Unused Opcodes
+
 - **Nop (0x00)**: No Operation.
-- **Reserved**: Opcodes 200 (0xC8) through 255 (0xFF) are reserved for future standardization.
+- **Reserved**: Opcodes 205 (0xCD) through 255 (0xFF) are reserved for future standardization.
 
 ## 4. Implementation Consistency Audit
-- **VM Opcode Count**: 200 defined opcodes (0–199).
-- **Header Enum Count**: 200 entries.
+
+- **VM Opcode Count**: 205 defined opcodes (0x00–0xCC); includes RFC-0034, RFC-00B8, RFC-0038 additions.
+- **Header Enum Count**: 205 entries in `include/t81/isa/opcodes.hpp`.
 - **Coverage**: All opcodes defined in `include/t81/isa/opcodes.hpp` are present in `core/vm/vm.cpp` dispatch switch.
 - **Discrepancies**: None found.
