@@ -188,8 +188,10 @@ Verified platforms: **Linux x86_64**, **macOS ARM64**. Any divergence in VM trac
 | RFC-00B8 Governed FFI (Phase 1) | ✅ **COMPLETED 2026-03-16** | FFI dispatcher + library registry; 3 VM opcodes; governance pipeline; audit trail |
 | Cross-platform determinism CI | ✅ **COMPLETED 2026-03-16** | Daily GitHub Actions workflow; Linux x86\_64 + macOS ARM64 hash comparison; public evidence record |
 | RFC-0036 T81Lang FFI Grammar | ✅ **COMPLETED 2026-03-16** | `foreign [policy] {}` syntax; `foreign.<name>(args)` → `FFI_CALL`; 9/9 AC tests; connects RFC-0034 + RFC-00B8 VM work to T81Lang frontend |
-| T81Lang spec promotion | 2026-05-15 | Bytecode deterministic compilation profile; full spec-section traceability |
-| Stage 2: Trace Replay Debugger | 2026-Q2 | CanonHash81 trace → deterministic replay tool; enables external verification |
+| Stage 2: Verified Platform | ✅ **ACHIEVED 2026-03-16** | All implementation goals complete; trace replay debugger, cross-platform CI, 365/365 tests, FFI frontend — externally reproducible stack |
+| T81Lang spec promotion | 2026-05-15 | Bytecode deterministic compilation profile; full spec-section traceability; Stage 3 track |
+| Stage 3: TNN Library | 2026-Q2 | T81Lang-level ternary neural network training/inference library on RFC-0034 ops |
+| Stage 3: Post-Quantum Crypto RFC | 2026-Q2 | TISC polynomial multiply for lattice coefficients over {−1, 0, +1}; NTRU/Kyber primitives |
 | TernaryOS bare-metal boot | TBD | x86\_64 VirtualBox host execution + evidence return |
 
 ---
@@ -321,7 +323,7 @@ A functioning deterministic computing stack.
 
 ---
 
-### Stage 2 — Verified Platform *(In Progress)*
+### Stage 2 — Verified Platform *(Complete)*
 
 **Goal:** Independent validation.
 
@@ -331,8 +333,8 @@ Key work:
 * ✅ VM conformance test suite — 27 spec conformance tests + 365 total passing
 * ✅ deterministic benchmarking framework — RFC-00A2; `score=1.0` across all runs
 * ✅ T81Lang FFI frontend (RFC-0036) — `foreign {}` grammar bridges VM layer to language; 9/9 AC tests
-* trace replay debugger — planned; takes CanonHash81 trace artifact and replays it deterministically
-* reproducible build verification — partial; CanonHash81 internal; external build reproducer pending
+* ✅ trace replay debugger — `t81 trace replay <tisc> <golden> [--json]`; schema `t81.trace-replay.v1`; reports exact mismatch index + expected/actual instruction; wired into CI via `scripts/ci/trace_repro_gate.py`
+* ✅ reproducible build verification — cross-platform bytecode hash verified daily on Linux x86\_64 (gcc-14) + macOS ARM64 (clang); 90-day evidence artifacts retained
 
 **Outcome:**
 Externally trusted deterministic runtime.
@@ -406,16 +408,24 @@ A governed deterministic computing ecosystem.
 
 ## Critical Next Milestones
 
-### Stage 2 completion — Verified Platform
+### Stage 2 — Verified Platform *(Achieved)*
 
-Cross-platform determinism CI is in place and RFC-0036 T81Lang FFI grammar is complete. Remaining Stage 2 work:
+All Stage 2 implementation goals are complete:
 
-- trace replay debugger — enables external parties to replay a CanonHash81 trace and verify the result independently
-- academic or industry collaboration — when other groups reproduce the deterministic results, the architecture moves from **project** to **platform**
+- ✅ cross-platform determinism CI (Linux x86\_64 + macOS ARM64, daily)
+- ✅ VM conformance + determinism test suite (365/365)
+- ✅ trace replay debugger (`t81 trace replay`; schema `t81.trace-replay.v1`)
+- ✅ T81Lang FFI frontend (RFC-0036; `foreign {}` + `FFI_CALL`)
+
+Remaining advancement criterion: **independent reproduction by an external party** — when another group builds the stack, runs the determinism gate, and publishes matching hashes, the project formally graduates from Stage 2.
 
 ### Stage 3 entry — Research Ecosystem
 
-RFC-0034 lays the technical groundwork for ternary neural network research. RFC-0036 has now exposed it at the language level via `foreign {}` blocks. Post-quantum cryptography (lattice polynomial operations over {−1, 0, +1}) is the next natural Stage 3 research area.
+The full-stack FFI pipeline (RFC-00B8 + RFC-0036) and ternary-native inference ops (RFC-0034) are in place. Stage 3 opens three concrete tracks:
+
+1. **Ternary Neural Networks** — a T81Lang–level TNN training/inference library built on `TWMATMUL`, `TACT`, `TERNACCUM`; exposes model weights as T81WTN blobs via `foreign deterministic { }` bindings
+2. **Post-Quantum Cryptography** — TISC polynomial multiply extension for lattice coefficients over {−1, 0, +1}; natural use case for NTRU / Kyber-style primitives
+3. **T81Lang spec promotion** — bytecode deterministic compilation profile; full spec-section traceability; target 2026-05-15
 
 ## License
 
