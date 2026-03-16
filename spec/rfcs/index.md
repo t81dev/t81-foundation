@@ -15,7 +15,7 @@ This index tracks RFC status and intended disposition.
 
 | RFC | Title | Status | Notes |
 | :--- | :--- | :--- | :--- |
-| RFC-0000 | T81 Base-81 Ternary Computing Stack | accepted | Umbrella RFC: all component RFCs (0001–0033, 00B0–00B7, DPE-0001–0009) accepted; 22/23 AC met; RFC-0021 Tier4 follow-on pending |
+| RFC-0000 | T81 Base-81 Ternary Computing Stack | accepted | Umbrella RFC: all component RFCs (0001–0033, 00B0–00B7, DPE-0001–0009) accepted; all 23/23 AC met |
 | RFC-0001 | Architecture Principles | accepted | All §1–§3 principles satisfied: deterministic execution (RFC-0002), canonical data (tensor/float/fraction), ternary-native ISA, safe recursion (RFC-0003 RCS), no-UB policy, privileged boundary mediation; 49/49 axion+ethics+tier tests pass |
 | RFC-0002 | Deterministic Execution Contract | accepted | Cross-layer invariants proven: 27-program conformance suite, EvidenceCollector, full stack; §11 fulfilled |
 | RFC-0003 | Axion Safety Model | accepted | All 9 criteria met: AXREAD/AXSET/AXVERIFY mediation, fail-closed policy parse, deterministic audit log, tier-supervision invariant, instruction ceiling, CanonFS observability, AI-model hooks, interrupt rate-limit; 49/49 axion+ethics+tier+policy tests pass |
@@ -36,7 +36,7 @@ This index tracks RFC status and intended disposition.
 | RFC-0018 | T81 Native SIMD Arithmetic | accepted | All 6 criteria met: AVX2 carry-map addition, scalar fallback, multiplication, subtraction, benchmarks, AddEntry table; proved by `t81_native_property_test` + `t81_simd_add_helpers_test` |
 | RFC-0019 | Axion Match Logging | accepted | Runtime/spec/CLI depend on canonical match metadata and guard-audit strings |
 | RFC-0020 | Axion Segment Trace | accepted | Runtime/spec/CLI depend on canonical segment-trace strings |
-| RFC-0021 | Tier4 Cognition | draft | Tier-4 reflection/cognition proposal |
+| RFC-0021 | Tier4 Cognition | accepted | All 10 criteria met: Tier4Loop observe/reflect/refine, SelfModel (81-entry ring buffer), RecursiveImprovementBounds, TierAwarePlanner, promotion heuristics, VM tier limits, Axion CheckTier enforcement; 4 test suites pass |
 | RFC-0022 | Axion Policy Language Evolution | accepted | CLI/compiler/runtime policy surface is active; supersedes RFC-0009 in practice |
 | RFC-0023 | T81Lang Print Canonical Runtime | accepted | All 5 criteria met: `Opcode::Print` + `State::printed_output`; IR lowering via binary_emitter; Int/Bool/Float/Fraction/Symbol rendering; determinism verified by `vm_print_test` + `e2e_print_runtime_test` |
 | RFC-0024 | C++23 Wording Alignment | accepted | All 3 criteria met: no normative changes, consistent C++23 wording, CI unaffected; 344/344 tests pass |

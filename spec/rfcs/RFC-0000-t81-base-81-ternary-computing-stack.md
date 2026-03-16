@@ -6,7 +6,7 @@
 **Updated:** 2026-03-15\
 **Requires:** —\
 **Supersedes:** —\
-**Discussion:** https://github.com/t81dev/t81-foundation/discussions
+**Discussion:** [github.com/t81dev/t81-foundation/discussions](https://github.com/t81dev/t81-foundation/discussions)
 
 ______________________________________________________________________
 
@@ -156,17 +156,17 @@ ______________________________________________________________________
 | [A-0000-19] | Axion OS kernel: TVA layout, radix page table, MMU fault model, device driver boundary, governed event-interrupt model, minimal syscall/capability boundary | RFC-00B0, RFC-00B1, RFC-00B2, RFC-00B3, RFC-00B5, RFC-00B6 | met |
 | [A-0000-20] | Userland service contract and pager service ABI stable before syscall widening | RFC-00B4, RFC-00B7 | met |
 | [A-0000-21] | Deterministic parallel execution (DPE): task graph primitives, epoch execution, canonical commit, DAG-ordered multi-task, level-parallel, thread pool, timeout, audit events, history ring | RFC-DPE-0001 through RFC-DPE-0009 | met |
-| [A-0000-22] | Cognition tiers (T81–T6561) architecture defined and Tier4 reflection/cognition pathway specified | RFC-0021 (draft), RFC-0031 | partially met — Tier4 RFC-0021 in draft |
+| [A-0000-22] | Cognition tiers (T81–T6561) architecture defined and Tier4 reflection/cognition pathway specified | RFC-0021, RFC-0031 | met |
 | [A-0000-23] | C++23 wording alignment: no normative changes, consistent wording, CI unaffected; 344/344 tests pass | RFC-0024 | met |
 
 ## Acceptance Note (2026-03-15)
 
 All foundational stack layers of the T81 umbrella are implemented and accepted at the component-RFC level. The 22 fully-met acceptance criteria cover: canonical data types, T81Lang compiler, TISC ISA v0.4, T81VM interpreter, Deterministic Trace-JIT, GC, Axion safety model, APL v2, CanonFS, tensor semantics, AI-native inference opcodes, deterministic AI contract, T81 Native SIMD type, deterministic math, print runtime, conformance suite, dual TUI frontends, the complete Axion OS kernel/HAL stack, userland service contract, pager ABI, and the full DPE series.
 
-The one partial criterion ([A-0000-22]) reflects that RFC-0021 (Tier4 Cognition) remains in draft — Tier4 reflection is architecturally defined and referenced by RFC-0031 but its standalone RFC has not yet reached accepted status. This is tracked as follow-on work and does not block acceptance of the umbrella.
+All 23 acceptance criteria are fully met. RFC-0021 (Tier4 Cognition) was accepted 2026-03-15, closing the previously partial criterion [A-0000-22].
 
 The two formerly unresolved questions (CanonHash-81 post-quantum parameterization and Θ-overlay formal proofs) are acknowledged as future work and are not correctness blockers.
 
 ## Decision
 
-Accept as **Accepted**. All component RFCs (RFC-0001 through RFC-0033, RFC-00B0 through RFC-00B7, RFC-DPE-0001 through RFC-DPE-0009) are accepted; the T81 stack is fully specified and implemented to the extent required for stable release. RFC-0021 (Tier4 Cognition) acceptance is tracked separately and will trigger a revision of this document when complete.
+Accept as **Accepted**. All component RFCs (RFC-0001 through RFC-0033, RFC-00B0 through RFC-00B7, RFC-DPE-0001 through RFC-DPE-0009) are accepted; all 23 acceptance criteria are met. The T81 stack is fully specified and implemented to the extent required for stable release.
