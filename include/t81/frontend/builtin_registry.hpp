@@ -196,6 +196,15 @@ inline constexpr BuiltinDef kBuiltinTable[] = {
   {"std.tensor.qmatmul",      "Tensor.qmatmul",     3, Type::Kind::Tensor, {},  {},    false, BuiltinIRClass::Custom,  kNoOpcode,                  {}, false, true  },
   {"std.tensor.dot_product",  "tensor_dot",         2, Type::Kind::I32,    {},  {2},   true,  BuiltinIRClass::Custom,  kNoOpcode,                  {}, false, true  },
 
+  // ── TNN — RFC-0037 Ternary Neural Network stdlib (lowers to RFC-0034 ops) ──
+  // All TNN ops require @tier(2) or higher (inference context).
+  {"std.tnn.matmul",  "tnn_matmul",  2, Type::Kind::Tensor, {}, {2}, false, BuiltinIRClass::Custom, kNoOpcode, {}, false, true },
+  {"std.tnn.quant",   "tnn_quant",   2, Type::Kind::Tensor, {}, {2}, false, BuiltinIRClass::Custom, kNoOpcode, {}, false, true },
+  {"std.tnn.attn",    "tnn_attn",    3, Type::Kind::Tensor, {}, {2}, false, BuiltinIRClass::Custom, kNoOpcode, {}, false, true },
+  {"std.tnn.embed",   "tnn_embed",   2, Type::Kind::Tensor, {}, {2}, false, BuiltinIRClass::Custom, kNoOpcode, {}, false, true },
+  {"std.tnn.accum",   "tnn_accum",   2, Type::Kind::Float,  {}, {2}, false, BuiltinIRClass::Custom, kNoOpcode, {}, false, true },
+  {"std.tnn.act",     "tnn_act",     2, Type::Kind::BigInt, {}, {2}, false, BuiltinIRClass::Custom, kNoOpcode, {}, false, true },
+
   // ── Text ──────────────────────────────────────────────────────────────────
   {"std.text.str_len",        "str_len",         1, Type::Kind::I32,    {}, {}, false, BuiltinIRClass::Direct,  tisc::ir::Opcode::STRLEN,        {}, false, false },
   {"std.text.str_is_empty",   "str_is_empty",    1, Type::Kind::Bool,   {}, {}, false, BuiltinIRClass::Direct,  tisc::ir::Opcode::STREMPTY,      {}, false, false },

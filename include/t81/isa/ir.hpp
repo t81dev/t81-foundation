@@ -149,6 +149,14 @@ enum class Opcode {
   TNEURAL_FWD,
   TNEURAL_BWD,
 
+  // RFC-0034 §5.17 — Ternary-Native Inference Operations (RFC-0037 T81Lang surface)
+  TWMATMUL,   // Ternary-weight matmul:  TWMATMUL RD, R_ACT, R_WT
+  TQUANT,     // Quantize to ternary:    TQUANT   RD, R_SRC, R_THR
+  TATTN,      // Ternary Q/K attention:  TATTN    RD, R_Q, PACK(R_K, R_V)
+  TWEMBED,    // Ternary embed lookup:   TWEMBED  RD, R_TABLE, R_IDX
+  TERNACCUM,  // Ternary dot product:    TERNACCUM RD, R_WT, R_ACT
+  TACT,       // Ternary activation:     TACT     RD, R_SRC, R_MODE
+
   // Bitwise
   BITAND,
   BITOR,

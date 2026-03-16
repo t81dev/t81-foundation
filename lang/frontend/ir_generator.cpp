@@ -1309,6 +1309,114 @@ std::any IRGenerator::visit(const CallExpr& expr) {
       record_result(&expr, dest);
       return {};
     }
+    // RFC-0037 §3 — TNN stdlib: lower tnn_* builtins to RFC-0034 TISC opcodes.
+
+    // tnn.matmul(activations, weights) → TWMATMUL RD, R_ACT, R_WT
+    if (func_name == "tnn_matmul") {
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("tnn.matmul expects 2 arguments (activations, weights).");
+      expr.arguments[0]->accept(*this);
+      auto act = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto wt = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TWMATMUL;
+      instr.operands = {dest.reg, act.reg, wt.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    // tnn.quant(src, threshold) → TQUANT RD, R_SRC, R_THR
+    if (func_name == "tnn_quant") {
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("tnn.quant expects 2 arguments (src, threshold).");
+      expr.arguments[0]->accept(*this);
+      auto src = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto thr = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TQUANT;
+      instr.operands = {dest.reg, src.reg, thr.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    // tnn.attn(q, k, v) → TATTN RD, R_Q, PACK(R_K, R_V)
+    if (func_name == "tnn_attn") {
+      if (expr.arguments.size() != 3)
+        throw std::runtime_error("tnn.attn expects 3 arguments (q, k, v).");
+      expr.arguments[0]->accept(*this);
+      auto q = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto k = ensure_expr_result(expr.arguments[1].get());
+      expr.arguments[2]->accept(*this);
+      auto v = ensure_expr_result(expr.arguments[2].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      const int32_t packed_kv = (k.reg.index & 0xFF) | ((v.reg.index & 0xFF) << 8);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TATTN;
+      instr.operands = {dest.reg, q.reg, tisc::ir::Immediate{packed_kv}};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    // tnn.embed(table, idx) → TWEMBED RD, R_TABLE, R_IDX
+    if (func_name == "tnn_embed") {
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("tnn.embed expects 2 arguments (table, idx).");
+      expr.arguments[0]->accept(*this);
+      auto table = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto idx = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TWEMBED;
+      instr.operands = {dest.reg, table.reg, idx.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    // tnn.accum(weights, activations) → TERNACCUM RD, R_WT, R_ACT
+    if (func_name == "tnn_accum") {
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("tnn.accum expects 2 arguments (weights, activations).");
+      expr.arguments[0]->accept(*this);
+      auto wt = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto act = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Float);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TERNACCUM;
+      instr.operands = {dest.reg, wt.reg, act.reg};
+      instr.primitive = tisc::ir::PrimitiveKind::Float;
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    // tnn.act(src, mode) → TACT RD, R_SRC, R_MODE
+    if (func_name == "tnn_act") {
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("tnn.act expects 2 arguments (src, mode).");
+      expr.arguments[0]->accept(*this);
+      auto src = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto mode = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TACT;
+      instr.operands = {dest.reg, src.reg, mode.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
     if (func_name == "Tensor.vec_add") {
       if (expr.arguments.size() != 2) {
         throw std::runtime_error("Tensor.vec_add expects two arguments.");
