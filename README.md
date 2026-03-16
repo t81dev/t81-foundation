@@ -9,8 +9,8 @@
 
 # T81 Foundation — Deterministic Ternary Computing Stack
 
-![Release](https://img.shields.io/badge/release-v1.4.0--Stable-blue)
-![Tests](https://img.shields.io/badge/tests-344%2F344_passing-brightgreen)
+![Release](https://img.shields.io/badge/release-v1.4.1--Stable-blue)
+![Tests](https://img.shields.io/badge/tests-363%2F363_passing-brightgreen)
 ![ISA](https://img.shields.io/badge/ISA-v1.1.0_Frozen-blue)
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
@@ -28,20 +28,21 @@ The stack delivers:
 
 ## Project Status — March 2026
 
-**Phase: Maintenance** — v1.4.0-Stable released; 344/344 tests passing; all RFC gates closed; no open blockers.
+**Phase: Maintenance** — v1.4.1-Stable; 363/363 tests passing; all RFC drafts closed; no open blockers.
 
 | Component | Maturity | Notes |
 | :--- | :--- | :--- |
-| **TISC ISA** | ❄️ Frozen | Opcode semantics immutable under v1.x; freeze enforced by CI |
+| **TISC ISA** | ❄️ Frozen | Opcode semantics immutable under v1.x; `AgentInvoke` added (RFC-0015) |
 | **Data Types** | ❄️ Frozen | BigInt, Float, Complex, Map, Set — bit-stable encoding; 2026-02-27 audit clean |
-| **T81VM** | ✅ Beta | Beta |
-| **T81Lang** | ✅ Beta | Beta |
-| **Axion Governance Kernel** | ✅ Stable | Stable promotion complete 2026-03-15; P4 Safety & P5 Privileged Instruction satisfied; AX-M6 canonical reason strings; 54/54 tests (49/49 axion + 5/5 AX-M6) |
-| **TUI Frontends** | ✅ Accepted | `t81 studio` (human operator) + `t81 agent` (AI-native); FTXUI v5.0.0; RFC-0033 accepted 2026-03-15 |
+| **T81VM** | ✅ Beta | `AgentInvoke` dispatch with Axion audit; 363/363 tests |
+| **T81Lang** | ✅ Beta | First-class `agent`/`behavior` declarations (RFC-0015); `infer Agent(x)` sugar; §3.5 in spec |
+| **Axion Governance Kernel** | ✅ Stable | P4 Safety & P5 Privileged Instruction satisfied; AX-M6 canonical reason strings; every `AgentInvoke` emits audit event |
+| **TUI Frontends** | ✅ Accepted | `t81 studio` (human operator) + `t81 agent` (AI-native); FTXUI v5.0.0; RFC-0033 accepted |
 | **T81Graph** | ✅ Beta | VM opcode lowering + lang-side serialization wired; DCP verification complete; 6/6 tests |
-| **DPE (Parallel Execution)** | 🔬 Experimental | RFC-DPE-0002 accepted; task graph, delta buffer, epoch commit, cycle detection implemented |
-| **Axion OS Kernel** | 🔬 Experimental | TernaryOS: pager, scheduler, IPC, interrupt framework, QEMU x86_64 EFI lane operational |
-| **Cognitive Tiers** | 🔬 Experimental | Tiers 0–6 modelled; non-DCP; governed AGI research surface |
+| **DPE (Parallel Execution)** | ✅ Accepted | RFC-DPE-0001–0009 all accepted; task graph, epoch history ring, epoch audit events, timeout fully implemented |
+| **Cognitive Tiers** | ✅ Accepted | Tier4 Cognition (RFC-0021): `Tier4Loop`, `SelfModel` (81-entry ring), `RecursiveImprovementBounds`, `TierAwarePlanner`; 4 test suites pass |
+| **Benchmark Suite** | ✅ Accepted | RFC-00A2: VM throughput + CanonHash81 determinism validation (`score=1.0` across all runs); `t81 internal benchmark` |
+| **Axion OS Kernel** | 🔬 Experimental | TernaryOS: pager, scheduler, IPC, interrupt framework, QEMU x86_64 EFI lane operational; 9/9 ternaryOS tests pass |
 
 ---
 
@@ -78,7 +79,7 @@ The stack delivers:
 
 **CanonFS** — Content-addressed filesystem. Stores all code objects, model weights, and runtime artifacts as immutable, hash-identified blobs. Provides provenance for determinism audits.
 
-**T81Lang** — High-level language targeting TISC bytecode. Native types: `BigInt`, `Fraction`, `Float`, `Complex`, `Tensor`, `Map`, `Set`. Compiler pipeline: lexer → parser → typed AST → semantic analysis → IR generation.
+**T81Lang** — High-level language targeting TISC bytecode. Native types: `BigInt`, `Fraction`, `Float`, `Complex`, `Tensor`, `Map`, `Set`. First-class `agent { behavior }` declarations compile to `AGENT_INVOKE` with Axion audit (RFC-0015). Compiler pipeline: lexer → parser → typed AST → semantic analysis → IR generation.
 
 **TUI Frontends** — Two complementary terminal interfaces built on FTXUI v5.0.0:
 
