@@ -303,6 +303,8 @@ bool is_dot_field_segment_token(TokenType type) {
     case TokenType::Map:
     case TokenType::Set:
     case TokenType::Tree:
+    case TokenType::Agent:
+    case TokenType::Behavior:
       return true;
     default:
       return false;
@@ -666,7 +668,12 @@ std::unique_ptr<Stmt> Parser::enum_declaration(std::optional<StructuralAttribute
 // Parses a variable declaration.
 // var_declaration -> "var" IDENTIFIER ( ":" type )? ( "=" expression )? ";" ;
 std::unique_ptr<Stmt> Parser::var_declaration() {
-  Token name = consume(TokenType::Identifier, "Expect variable name.");
+  Token name;
+  if (_current.type == TokenType::Agent || _current.type == TokenType::Behavior) {
+    name = advance();
+  } else {
+    name = consume(TokenType::Identifier, "Expect variable name.");
+  }
   std::unique_ptr<TypeExpr> type_expr = nullptr;
   if (match({TokenType::Colon})) {
     type_expr = type();
@@ -683,7 +690,12 @@ std::unique_ptr<Stmt> Parser::var_declaration() {
 // let_declaration -> "let" ( "mut" )? IDENTIFIER ( ":" type )? "=" expression ";" ;
 std::unique_ptr<Stmt> Parser::let_declaration() {
   bool is_mutable = match({TokenType::Mut});
-  Token name = consume(TokenType::Identifier, "Expect constant name.");
+  Token name;
+  if (_current.type == TokenType::Agent || _current.type == TokenType::Behavior) {
+    name = advance();
+  } else {
+    name = consume(TokenType::Identifier, "Expect constant name.");
+  }
   std::unique_ptr<TypeExpr> type_expr = nullptr;
   if (match({TokenType::Colon})) {
     type_expr = type();
@@ -1326,7 +1338,7 @@ std::unique_ptr<Expr> Parser::primary() {
     return if_expression();
   } else if (check(TokenType::LBrace)) {
     return block_expression();
-  } else if (match({TokenType::Identifier})) {
+  } else if (match({TokenType::Identifier, TokenType::Agent, TokenType::Behavior})) {
     Token name = previous();
     Token enum_name_token;
     Token variant_token;
