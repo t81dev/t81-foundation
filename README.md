@@ -307,13 +307,13 @@ Core deterministic stack implemented.
 
 Components in place:
 
-* TISC ISA (frozen execution contract)
-* T81VM deterministic interpreter
-* Axion governance kernel
-* CanonFS content-addressed storage
-* T81Lang compiler
-* determinism verification pipeline
-* CLI and TUI operator interfaces
+* ✅ TISC ISA (frozen execution contract)
+* ✅ T81VM deterministic interpreter
+* ✅ Axion governance kernel
+* ✅ CanonFS content-addressed storage
+* ✅ T81Lang compiler
+* ✅ determinism verification pipeline
+* ✅ CLI and TUI operator interfaces
 
 **Outcome:**
 A functioning deterministic computing stack.
