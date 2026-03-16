@@ -34,8 +34,8 @@ The stack delivers:
 | :--- | :--- | :--- |
 | **TISC ISA** | ❄️ Frozen | Opcode semantics immutable under v1.x; `AgentInvoke` added (RFC-0015) |
 | **Data Types** | ❄️ Frozen | BigInt, Float, Complex, Map, Set — bit-stable encoding; 2026-02-27 audit clean |
-| **T81VM** | ✅ Beta | `AgentInvoke` dispatch with Axion audit; 363/363 tests |
-| **T81Lang** | ✅ Beta | First-class `agent`/`behavior` declarations (RFC-0015); `infer Agent(x)` sugar; §3.5 in spec |
+| **T81VM** | ✅ Stable | `AgentInvoke` dispatch with Axion audit; 363/363 tests |
+| **T81Lang** | ✅ Stable | spec v1.3 Stable; first-class `agent`/`behavior` (RFC-0015); §3.2 I/O channels defined; all sections complete |
 | **Axion Governance Kernel** | ✅ Stable | P4 Safety & P5 Privileged Instruction satisfied; AX-M6 canonical reason strings; every `AgentInvoke` emits audit event |
 | **TUI Frontends** | ✅ Accepted | `t81 studio` (human operator) + `t81 agent` (AI-native); FTXUI v5.0.0; RFC-0033 accepted |
 | **T81Graph** | ✅ Beta | VM opcode lowering + lang-side serialization wired; DCP verification complete; 6/6 tests |

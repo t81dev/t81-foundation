@@ -17,10 +17,10 @@ ______________________________________________________________________
 
 # T81Lang Specification
 
-Version 1.2 — Draft
+Version 1.3 — Stable
 
-Status: Draft\
-Last Revised: 2026-03-14\
+Status: Stable\
+Last Revised: 2026-03-16\
 Applies to: TISC, T81VM, Axion, Data Types
 
 T81Lang is the **high-level, deterministic, ternary-native programming language** of the T81 Ecosystem.\
@@ -405,7 +405,12 @@ fn write_log(x: T81BigInt) -> Unit { ... }
 Effectful operations include:
 
 - memory mutation
-- VM I/O channels (to be defined)
+- VM I/O channels — accessed via `std.io` (`io_stream`, `io_net`) and `std.async`
+  (`async_thread`, `async_promise`) functions, all of which require Tier 2 or above.
+  Every I/O operation lowers to `AXREAD` or `AXSET` TISC opcodes and is intercepted
+  by the Axion governance kernel before any side effect is committed. The `print`
+  built-in is the sole unrestricted I/O surface; it lowers to the `PRINT` opcode and
+  requires no tier annotation.
 - Axion interactions
 - tensor heavy ops (if declared impure via cost annotations)
 
