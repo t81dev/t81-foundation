@@ -310,6 +310,7 @@ target_include_directories(t81_vm PUBLIC
 )
 add_library(t81_jit OBJECT
   runtime/jit/jit_compiler.cpp
+  runtime/jit/jit_trace_cache.cpp   # RFC-0028 §4: CanonFS-backed trace cache
 )
 target_compile_features(t81_jit PUBLIC ${T81_CXX_STD_FEATURE})
 target_include_directories(t81_jit PRIVATE
@@ -2162,6 +2163,10 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(jit_repro_oracle_test tests/cpp/jit_repro_oracle_test.cpp)
   target_link_libraries(jit_repro_oracle_test PRIVATE t81_vm t81_core)
 
+  # RFC-0028 §4: CanonFS-backed trace cache acceptance tests.
+  add_executable(jit_canonfs_cache_test tests/cpp/jit_canonfs_cache_test.cpp)
+  target_link_libraries(jit_canonfs_cache_test PRIVATE t81_vm t81_core)
+
   add_executable(vm_gc_safepoint_test tests/cpp/vm_gc_safepoint_test.cpp)
   target_link_libraries(vm_gc_safepoint_test PRIVATE t81_vm t81_core)
 
@@ -2673,6 +2678,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_jit_test
     jit_trace_equivalence_test
     jit_repro_oracle_test
+    jit_canonfs_cache_test
     vm_gc_safepoint_test
     jit_tensor_trace_equivalence_test
     vm_jit_per_instruction_policy_test

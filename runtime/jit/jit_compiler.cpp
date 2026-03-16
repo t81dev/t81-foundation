@@ -4,6 +4,7 @@
 #include "t81/tracing/canonhash.hpp"
 
 #include <cstring>
+#include <span>
 
 namespace t81::vm {
 
@@ -12,6 +13,9 @@ public:
   explicit ThreadedJitTrace(std::vector<t81::tisc::Insn> insns) : insns_(std::move(insns)) {}
 
   std::size_t size() const override { return insns_.size(); }
+
+  /// RFC-0028 §4: Expose the instruction buffer for CanonFS serialisation.
+  std::span<const t81::tisc::Insn> instructions() const override { return insns_; }
 
   ExecResult execute(State& state, const PolicyHook& policy_hook = {}) override {
     if (state.contexts.empty()) return {};
