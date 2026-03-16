@@ -26,11 +26,11 @@ This index tracks RFC status and intended disposition.
 | RFC-0008 | Formal Verification Harness | superseded | Superseded by RFC-0027 (spec-as-executable is the concrete realization) |
 | RFC-0009 | Axion Policy Language (APL) | superseded | Superseded by RFC-0022; s-expression policy syntax, `PolicyEngine::evaluate()`, and guard/loop predicates all implemented; forward path is RFC-0022 |
 | RFC-0010 | TISC Float/Fraction Ops | accepted | Caveat resolved: `FDIV` is IEEE 754 exactly-rounded; transcendentals route through `t81_soft_math` (RFC-0030); no host libm dependency |
-| RFC-0011 | T81Lang Grammar Modernization | draft | Grammar evolution proposal |
+| RFC-0011 | T81Lang Grammar Modernization | accepted | All 7 AC met: annotations, generics, expanded types, var/break/continue, record/enum, @module namespacing, legacy artifact superseded; realized via RFC-0003/0004/0007/0015/0029 (2026-03-16) |
 | RFC-0012 | Ternary Tensor Quantization | superseded | Superseded by RFC-0026 (QMATMUL covers quantized matmul path) |
 | RFC-0013 | Ternary Matmul | superseded | Superseded by RFC-0026 (QMATMUL) |
 | RFC-0014 | Neural Primitives | superseded | Superseded by RFC-0026 (ATTN + EMBED cover the neural primitive surface) |
-| RFC-0015 | Agentic Constructs | draft | First-class agent model |
+| RFC-0015 | Agentic Constructs | accepted | First-class `agent`/`behavior` declarations, `AGENT_INVOKE` opcode, Axion audit; 9/9 AC met (2026-03-15) |
 | RFC-0016 | SIMD Limb | superseded | Superseded by RFC-0017; `t81::simd` namespace retained for internal helpers only |
 | RFC-0017 | Introduce T81 Native | accepted | All 6 criteria met: `t81::T81` struct, negation (AVX2+scalar), addition (carry-map+prefix scan), conversion, master header, fallback guard; 43 assertions pass |
 | RFC-0018 | T81 Native SIMD Arithmetic | accepted | All 6 criteria met: AVX2 carry-map addition, scalar fallback, multiplication, subtraction, benchmarks, AddEntry table; proved by `t81_native_property_test` + `t81_simd_add_helpers_test` |
@@ -78,7 +78,7 @@ This index tracks RFC status and intended disposition.
 | :--- | :--- | :--- | :--- |
 | RFC-00A0 | AI Experiment Sandbox | superseded | Superseded by RFC-0032; 3-stage promotion lifecycle executed to completion |
 | RFC-00A1 | Deterministic Evidence Protocol | superseded | Superseded by RFC-0032 §5; `evidence-schema-v1` (FNV-1a, key=value, no timing) replaces SHA-256/JSON/wall-clock design |
-| RFC-00A2 | AI Benchmark Specification | draft | Standardized AI performance benchmarks |
+| RFC-00A2 | AI Benchmark Specification | accepted | 6/6 AC met: VM throughput benchmarks, CanonHash81 determinism validation (`score=1.0`), Google Benchmark JSON output, `t81 internal benchmark` CLI; `BM_DeterminismValidation.cpp` added (2026-03-16) |
 | RFC-00A3 | Model Artifact Provenance | accepted | Implemented as TLOADHASH + `allowed_tensor_hashes` + `model_load` Axion event (RFC-0025) |
 | RFC-00A4 | Ternary Quantization Codec | accepted | `quantize_threshold()` + `pack_ternary_to_base81()` promoted per RFC-0032 Phase 1; float metrics removed |
 | RFC-00A5 | LLM Backend Adapter | superseded | Superseded by RFC-0032 Phase 4; `T81VmBackend` (deterministic VM-only) replaces llama.cpp/ONNX vision |

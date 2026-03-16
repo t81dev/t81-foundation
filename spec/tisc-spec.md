@@ -601,6 +601,8 @@ All jumps are **deterministic** and MUST NOT permit self-modifying code.
   `CALL`: push `PC+1`, then `PC := R[RS]`
   `RET`: pop target into `PC`
 - **Faults**: Stack underflow / invalid return address.
+- **See also**: `AGENT_INVOKE` (§5.16) — Axion-audited variant of `CALL` for
+  T81Lang `agent` behavior invocations.
 
 ______________________________________________________________________
 
@@ -913,6 +915,43 @@ by ATTN, QMATMUL, GATHER, and SCATTER.
 > **Tests:** `tests/cpp/vm_ai_phase1_wload_canonfs_audit_test.cpp` ·
 > `tests/cpp/vm_ai_phase1_gather_axis1_test.cpp` ·
 > `tests/cpp/vm_ai_phase1_scatter_aliasing_test.cpp`
+
+______________________________________________________________________
+
+### 5.16 Agentic Constructs (RFC-0015)
+
+These instructions support T81Lang's first-class `agent` declarations.
+Every `AgentInvoke` emission MUST cause the Axion Policy Kernel to record an
+audit event **before** the callee begins executing.
+
+> *Freeze Exception addition — 2026-03-16 (RFC-0015). Opcode assigned
+> immediately after `GcSafepoint` in the enumeration.
+> Implemented in `lang/frontend/` (IRGen), `core/vm/vm.cpp`, and
+> `runtime/jit/jit_compiler.cpp` (Axion-boundary exit group).*
+
+#### AGENT_INVOKE
+
+- **Form**: `AGENT_INVOKE RD, R_ADDR`
+- **Semantics**:
+  1. The Axion kernel records an `agent_invoke` AxionEvent carrying the
+     call-site PC and the target address `R[R_ADDR]`.
+  2. The current tier ceiling is checked; if exceeded, a `TierFault` is raised
+     before any jump occurs.
+  3. `PC+1` is pushed onto the call stack (identical to `CALL`).
+  4. `PC := R[R_ADDR]`
+  5. `RD` is reserved for future metadata; MUST be 0 in conforming programs.
+- **Vs. CALL**: `AGENT_INVOKE` is semantically identical to `CALL` except for
+  the mandatory pre-dispatch Axion audit event.  Optimizers MUST NOT silently
+  lower `AGENT_INVOKE` to `CALL`.
+- **JIT boundary**: The JIT compiler MUST exit to the interpreter on
+  `AGENT_INVOKE` (Axion-boundary exit group) so the full audit sequence is
+  guaranteed.
+- **Faults**:
+  - `TierFault`: Active tier ceiling exceeded.
+  - `StackFault`: Call-stack overflow.
+  - `DecodeFault`: `R[R_ADDR]` out of program bounds.
+
+> **Tests:** `tests/cpp/agent_constructs_test.cpp` — [RFC-0015-04], [RFC-0015-05], [RFC-0015-06]
 
 ______________________________________________________________________
 

@@ -75,6 +75,7 @@ A simplified normative grammar follows.\
 program       ::= declaration*
 
 declaration   ::= fn_decl
+                | agent_decl
                 | type_decl
                 | record_decl
                 | enum_decl
@@ -85,6 +86,9 @@ declaration   ::= fn_decl
 fn_decl       ::= annotation* "fn" identifier
                   [ "[" generic_params "]" ]
                   "(" parameters ")" [ "->" type ] block
+
+agent_decl    ::= "agent" identifier "{" behavior_decl* "}"
+behavior_decl ::= "behavior" identifier "(" parameters ")" "->" type block
 
 annotation    ::= "@" identifier [ "(" annotation_args ")" ]
 annotation_args ::= annotation_arg { "," annotation_arg }
@@ -434,6 +438,51 @@ record Point {
 - `@module(path)` — declares the module namespace using a dot-separated path (e.g.,
   `geometry.shapes`). This is informational metadata; the compiler does not enforce
   module isolation from this annotation alone.
+
+### 3.5 Agent Declarations (RFC-0015)
+
+An `agent` declaration introduces a first-class agentic entity whose named `behavior`
+functions are called via `AGENT_INVOKE` rather than ordinary `CALL`.
+
+#### Syntax
+
+```t81
+agent_decl    ::= "agent" identifier "{" behavior_decl* "}"
+behavior_decl ::= "behavior" identifier "(" parameters ")" "->" type block
+```
+
+#### Semantics
+
+- An `agent` declaration MUST appear at the top level (not inside a function or block).
+- Agent names share the same namespace as functions and variables; duplicate agent names
+  are a compile-time error.
+- Each `behavior` declares a named, stateless function body within the agent.
+  Behavior names MUST be unique within an agent.
+- Behavior names that conflict with language keywords (e.g., `infer`) are permitted
+  as contextual identifiers within the `behavior` position.
+- Behaviors are called via `AgentName.behaviorName(args)` syntax.  The semantic
+  analyzer type-checks argument counts and types against the declared behavior
+  signature; the IR generator lowers the call to `AGENT_INVOKE`.
+- Every `AGENT_INVOKE` emission causes the Axion Policy Kernel to record an audit
+  event before dispatch.
+
+#### `infer` sugar
+
+```t81
+infer AgentName(args)
+```
+
+desugars to `AgentName.infer(args)` and lowers to `AGENT_INVOKE`.  If the named agent
+does not declare a behavior named `infer`, this is a compile-time error.
+
+#### Error conditions
+
+| Condition | Error |
+| --------- | ----- |
+| Duplicate agent name | Semantic error |
+| Call to undeclared behavior | Semantic error |
+| `infer Agent(…)` where agent has no `infer` behavior | Semantic error |
+| Wrong argument count at call site | Semantic error |
 
 ______________________________________________________________________
 
