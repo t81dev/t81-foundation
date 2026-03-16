@@ -62,7 +62,7 @@ The stack delivers:
 │  TISC interpreter            │  EpochGraph · DeltaBuffer    │
 │  (deterministic)             │  (RFC-DPE-0002)              │
 ├──────────────────────────────┴──────────────────────────────┤
-│  TISC ISA  ❄️ Frozen  +  Data Types  ❄️ Frozen               │
+│  TISC ISA  ❄️ Frozen  +  Data Types  ❄️ Frozen              │
 │  Deterministic substrate — CanonHash81 bit-exact traces     │
 └─────────────────────────────────────────────────────────────┘
   Experimental: TernaryOS (Axion OS Kernel) · Cognitive Tiers
