@@ -3,7 +3,7 @@
 Status: Active
 Last Updated: 2026-03-16
 Owner: @t81dev
-Version: 3.2.5
+Version: 3.2.6
 
 This is the dashboard. One page. If you need detail, follow a cross-reference.
 
@@ -21,7 +21,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | :--- | :--- |
 | Overall | Green — **363/363 tests passing (100%)** |
 | Release Readiness | **GO** — v1.4.1-Stable tagged; all RFC drafts closed 2026-03-16 |
-| Current Main | `1d80abe8` — RFC-0015 agentic constructs (agent/behavior/AGENT_INVOKE); RFC-00A2 determinism benchmarks; RFC-0011/0015/00A2 accepted; AgentInvoke §5.16 in tisc-spec; 363/363 tests |
+| Current Main | `dddf8273` — RFC-00B5 Slice 28 integrated (UnhandledInterruptDropped); RFC-00B5 → `integrated`; QEMU x86_64 EFI boot lane validated (`hal_main_result=0`, `kernel_boot_ready_slice=complete`); 3214/3214 ternaryos assertions; 363/363 core tests |
 | Open Blockers | None |
 | Frozen Core | Intact — AgentInvoke added as freeze exception (RFC-0015, §5.16) |
 | Determinism Registry | All Verified surfaces clean; CanonHash81 determinism_score=1.0 confirmed |
@@ -111,9 +111,10 @@ Full boundary: `EXTENSION_PROFILE.md`
 
 1. **2026-03-31** — C2 Month-Close runbook executed and stamped in `docs/records/audits/2026-03-governance-review.md` (**Completed 2026-03-10**)
 2. **2026-05-15** — T81Lang spec promotion: bytecode deterministic compilation profile; full spec-section traceability audit
-3. **TBD** — RFC-00B5 interrupt policy: actual interrupt handler behavior (policy dispatch, vector table wiring)
-4. **TBD** — TernaryOS bare-metal boot: x86_64 VirtualBox host execution + evidence return (see `experimental/ternaryos/docs/kernel_execution_plan.md`)
-5. **Active now** — Fuzz corpus growth: run libFuzzer on `fuzz_parser` / `fuzz_vm`; commit any crash inputs
+3. **Closed** — RFC-00B5 interrupt governance: Slice 28 `UnhandledInterruptDropped` done; RFC-00B5 → `integrated`; 3214/3214 ternaryos assertions
+4. **Closed** — TernaryOS QEMU x86_64 EFI boot lane: BOOTX64.EFI validated, all 5 contract files verified, `hal_main_result=0`, `kernel_boot_ready_slice=complete` (evidence: `TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md`)
+5. **TBD** — TernaryOS bare-metal boot: actual x86_64 VirtualBox host execution + evidence return (next external milestone; see `experimental/ternaryos/docs/kernel_execution_plan.md`)
+6. **Active now** — Fuzz corpus growth: run libFuzzer on `fuzz_parser` / `fuzz_vm`; commit any crash inputs
 
 ---
 

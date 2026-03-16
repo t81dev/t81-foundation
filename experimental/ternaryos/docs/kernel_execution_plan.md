@@ -16,8 +16,12 @@ templates, positive/negative local fixtures, and packaged smoke-checks. The
 next milestone is no longer more local packaging work; it is actual external
 `x86_64` VirtualBox host execution and evidence return against that contract.
 
-All defined kernel slices (1A through 27) and DPE slices (13–25) are now
-complete — 3203 ternaryos tests passing.  Slice 27 adds the RFC-00B5 §3.7
+All defined kernel slices (1A through 28) and DPE slices (13–25) are now
+complete — 3214 ternaryos assertions passing.  Slice 28 adds RFC-00B5 §3.5
+unhandled interrupt governance: `register_unhandled_interrupt_callback()` HAL
+API, `axion_kernel_record_unhandled_interrupt()` kernel function,
+`interrupts_unhandled` counter, and `UnhandledInterruptDropped` audit event —
+RFC-00B5 status advanced to `integrated`.  Slice 27 adds the RFC-00B5 §3.7
 Interrupt Policy Gate: per-source rate limiting and quarantine evaluated before
 every interrupt dispatch, with full audit trail, runtime status view counters,
 and three new kernel ABI calls (SetInterruptPolicy, ClearInterruptQuarantine,
@@ -27,9 +31,14 @@ CanonFS-backed executable object acquisition (Slice 7), EL0→EL1 SVC roundtrip
 (Slice 12), pager service ABI (Slices 9–11), and the full DPE epoch execution
 pipeline are all in place.
 
-The next open milestone outside the defined slices is actual `x86_64`
-VirtualBox host execution and evidence return against the packaged boot
-contract (tracked in the Boot Milestones section below).
+The QEMU x86_64 EFI boot lane has been validated: BOOTX64.EFI executed under
+QEMU TCG, all 5 contract files verified, `hal_main_result=0`,
+`kernel_boot_ready_slice=complete`, `phase=5`.  Evidence record:
+`docs/records/audits/TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md`.
+
+The next open external milestone is actual `x86_64` VirtualBox host execution
+and evidence return against the packaged boot contract (tracked in the Boot
+Milestones section below).
 
 ## Current Kernel Position
 
@@ -629,6 +638,7 @@ The next milestone toward the bootable kernel:
 19. **[DONE]** Slice 11 — ResumePageFaultedThread (complete fault→handoff→service→resume lifecycle)
 20. **[DONE]** Slice 26 — Keyboard WaitForDevice: complete device-wake trinity (Storage ✅ Network ✅ Keyboard ✅)
 21. **[DONE]** Slice 27 — Interrupt Policy Gate: per-source rate limiting + quarantine + 3 ABI calls (RFC-00B5 §3.7)
+22. **[DONE]** Slice 28 — Unhandled IRQ Governance: `register_unhandled_interrupt_callback()` + `axion_kernel_record_unhandled_interrupt()` + `UnhandledInterruptDropped` audit event + `interrupts_unhandled` counter; RFC-00B5 → `integrated` (RFC-00B5 §3.5 / [AC-22x])
 
 **RFC-00B7 (Pager Service ABI) is now written and accepted.**  All three pager
 service ABI calls are normatively specified in
@@ -1001,6 +1011,38 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
   with no waiter leaves counters unchanged → runtime status view exposes both
   `device_wakes` and `keyboard_wakes`.
 - Suite: 3148 passed, 0 failed.
+
+**Slice 28 — Unhandled IRQ Governance (RFC-00B5 §3.5) [DONE]:**
+
+- `hal/hal.hpp`: `register_unhandled_interrupt_callback(InterruptHandler)` API added.
+- `hal/interrupt_table.cpp`: `g_unhandled_callback` global; fallback in `dispatch_interrupt()`
+  invokes unhandled callback when source has no registered handler.
+- `kernel_runtime_support.hpp`: `UnhandledInterruptDropped` added to `KernelAuditEventKind`.
+- `kernel_runtime_state.hpp`: `interrupts_unhandled` counter added to `KernelRuntimeCounters`.
+- `kernel_main.hpp` + `kernel_interrupts.cpp`: `axion_kernel_record_unhandled_interrupt()`
+  declared and implemented — increments counter, emits `UnhandledInterruptDropped` audit,
+  updates `last_interrupt_audit_*` fields.
+- `hal/qemu_kernel_entry.cpp`: `register_unhandled_interrupt_callback()` wired in
+  `qemu_kernel_run_loop()` to call `axion_kernel_record_unhandled_interrupt()`.
+- `[AC-22x]` (11 assertions): registers callback; fires Network interrupt with null handler
+  registered; verifies `interrupts_unhandled=1`, audit kind=`UnhandledInterruptDropped`,
+  source=Network, `interrupts_delivered` unchanged; second fire increments to 2; callback
+  disarmed cleanly.
+- RFC-00B5 status advanced: `accepted` → `integrated`.
+- Suite: 3214 passed, 0 failed.
+
+**QEMU x86_64 EFI Boot Lane [DONE] (2026-03-16):**
+
+- BOOTX64.EFI executed under QEMU TCG (`qemu-system-x86_64`) with EDK2 OVMF firmware.
+- All 5 contract files written to guest disk and verified:
+  `efi-ran.txt`, `boot-report.txt`, `startup-status.txt`,
+  `expected-boot-report.txt`, `expected-startup-status.txt`.
+- Boot report: `hal_main_result=0`, `kernel_boot_ready_slice=complete`,
+  `boot_progress_state=ready`, `platform_id=virtualbox-x86_64:VBoxEFI/AHCI/E1000/VMSVGA/HPET+IOAPIC/acceptance-lane`.
+- Startup status: `os_name=Axion`, `phase=5`, `storage_binding=virtualbox-ahci`,
+  `display_binding=virtualbox-vmsvga`, `network_binding=virtualbox-e1000`.
+- Serial log: 7251 bytes; all expected markers seen.
+- Evidence record: `docs/records/audits/TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md`.
 
 **RFC-DPE-0002 (TISC Task Graph Primitives) advanced `draft` → `accepted` (2026-03-15):**
 
