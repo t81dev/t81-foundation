@@ -240,6 +240,16 @@ public:
     return ss.str();
   }
 
+  std::any visit(const AgentDecl& stmt) override {
+    std::stringstream ss;
+    ss << "(agent " << stmt.name.lexeme;
+    for (const auto& b : stmt.behaviors) {
+      ss << " (behavior " << b.name.lexeme << ")";
+    }
+    ss << ")";
+    return ss.str();
+  }
+
   std::any visit(const BinaryExpr& expr) override {
     return parenthesize(expr.op.lexeme, {std::any(&expr.left), std::any(&expr.right)});
   }

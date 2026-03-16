@@ -20,6 +20,7 @@
 #include "t81/tensor/matmul.hpp"
 #include "t81/tensor/ternary_native.hpp"
 
+#include "internal/ffi_bridge.hpp"
 #include "internal/gc_helpers.hpp"
 #include "internal/memory_segments.hpp"
 #include "internal/policy_trace_bridge.hpp"
@@ -242,8 +243,12 @@ public:
     if (!axion_engine_) {
       axion_engine_ = t81::axion::make_allow_all_engine();
     }
-    // Initialize FFI subsystem
-    t81::vm::initialize_ffi_subsystem(*axion_engine_);
+    // Only attach a CanonFS driver when T81_CANONFS_ROOT is explicitly set.
+    // Without the env var the driver remains null and all canonfs_driver_ guards
+    // correctly suppress audit events (AI-M4 contract).
+    // Tests that need CanonFS should call set_canonfs_root() after construction.
+    if (const char* raw = std::getenv("T81_CANONFS_ROOT"); raw != nullptr && raw[0] != '\0') {
+      std::filesystem::path canon_root(raw);
       std::error_code ec;
       std::filesystem::create_directories(canon_root, ec);
       canonfs_driver_ = t81::canonfs::make_persistent_driver(canon_root);
@@ -6185,8 +6190,8 @@ public:
         uint64_t result_addr = static_cast<uint64_t>(insn.c);
         
         auto result = t81::vm::ffi_call(state_, function_index, arg_count, result_addr);
-        if (!result.success()) {
-          trap = result.trap();
+        if (!result.has_value()) {
+          trap = result.error();
         }
         break;
       }
@@ -6194,10 +6199,10 @@ public:
         // Register foreign library
         uint64_t library_name_addr = static_cast<uint64_t>(insn.a);
         uint64_t version_hash_addr = static_cast<uint64_t>(insn.b);
-        
+
         auto result = t81::vm::ffi_register(state_, library_name_addr, version_hash_addr);
-        if (!result.success()) {
-          trap = result.trap();
+        if (!result.has_value()) {
+          trap = result.error();
         }
         break;
       }
@@ -6205,10 +6210,10 @@ public:
         // Set FFI policy
         uint64_t policy_type = static_cast<uint64_t>(insn.a);
         uint64_t policy_value = static_cast<uint64_t>(insn.b);
-        
+
         auto result = t81::vm::ffi_policy_set(state_, policy_type, policy_value);
-        if (!result.success()) {
-          trap = result.trap();
+        if (!result.has_value()) {
+          trap = result.error();
         }
         break;
       }
@@ -6458,7 +6463,7 @@ public:
     t81::vm::initialize_ffi_subsystem(policy_engine);
   }
   
-  t81::ffi::FFIDispatcher* get_ffi_dispatcher() const override {
+  ffi::FFIDispatcher* get_ffi_dispatcher() const override {
     return t81::vm::get_ffi_dispatcher();
   }
 

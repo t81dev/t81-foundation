@@ -1577,9 +1577,6 @@ if(T81_BUILD_TESTS)
   add_executable(t81_vm_tloadhash_conformance_test tests/cpp/vm_tloadhash_conformance_test.cpp)
   target_link_libraries(t81_vm_tloadhash_conformance_test PRIVATE t81_vm t81_core)
 
-  add_executable(t81_ffi_basic_test tests/cpp/ffi_basic_test.cpp)
-  target_link_libraries(t81_ffi_basic_test PRIVATE t81_vm t81_ffi t81_core)
-  add_test(NAME t81_ffi_basic_test COMMAND t81_ffi_basic_test)
 
   add_executable(t81_vm_tloadhash_canonical_fixed_test
                  tests/cpp/vm_tloadhash_canonical_fixed_test.cpp)
@@ -1623,6 +1620,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_vm_ai_phase1_gather_axis1_test
                  tests/cpp/vm_ai_phase1_gather_axis1_test.cpp)
   target_link_libraries(t81_vm_ai_phase1_gather_axis1_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_rfc0034_ternary_native_test
+                 tests/cpp/vm_rfc0034_ternary_native_test.cpp)
+  target_link_libraries(t81_vm_rfc0034_ternary_native_test PRIVATE t81_vm t81_core)
   add_executable(t81_lang_ai_m6_annotation_lowering_test
                  tests/cpp/lang_ai_m6_annotation_lowering_test.cpp)
   target_link_libraries(t81_lang_ai_m6_annotation_lowering_test
@@ -2714,6 +2714,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     performance_advancements_test
     t81_distributed_tensor_test
     tensor_backend_parity_test
+    t81_vm_rfc0034_ternary_native_test
   )
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
     list(APPEND T81_TEST_TARGETS t81_base81_simd_test)

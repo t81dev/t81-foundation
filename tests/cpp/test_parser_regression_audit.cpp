@@ -197,6 +197,7 @@ int main() {
         std::any visit(const TypeDecl&) override { return {}; }
         std::any visit(const RecordDecl&) override { return {}; }
         std::any visit(const EnumDecl&) override { return {}; }
+        std::any visit(const AgentDecl&) override { return {}; }
       };
 
       ExtractExprVisitor extractor;
