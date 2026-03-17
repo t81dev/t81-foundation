@@ -1,7 +1,6 @@
 // include/t81/axion/ai_model_loader.hpp
 //
 // TLOADHASH-gated AI model loader — RFC-0032 Phase 3 (C-03).
-// Promoted from experiments/ai/model_provenance/model_manager.cpp.
 //
 // All ad hoc hash verification has been removed. Model loading is performed
 // exclusively via the TLOADHASH TISC instruction path, mediated by the

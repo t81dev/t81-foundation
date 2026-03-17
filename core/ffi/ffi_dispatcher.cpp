@@ -23,13 +23,13 @@ t81::expected<void, std::string> FFILibraryRegistry::register_library(
 ) {
     // Validate library name and hash
     if (library_name.empty() || version_hash.empty()) {
-        return t81::unexpected("Library name and version hash cannot be empty");
+        return t81::unexpected(std::string("Library name and version hash cannot be empty"));
     }
     
     // Check for duplicate registration
     for (const auto& func : registered_functions_) {
         if (func.library_name == library_name) {
-            return t81::unexpected("Library already registered: " + library_name);
+            return t81::unexpected(std::string("Library already registered: " + library_name));
         }
     }
     
@@ -48,7 +48,7 @@ t81::expected<FFIFunction*, std::string> FFILibraryRegistry::lookup_function(
 ) {
     auto it = function_index_.find(function_name);
     if (it == function_index_.end()) {
-        return t81::unexpected("Function not found: " + function_name);
+        return t81::unexpected(std::string("Function not found: " + function_name));
     }
     
     return &registered_functions_[it->second];
@@ -183,7 +183,7 @@ t81::expected<void, std::string> FFIDispatcher::check_policy_(
     auto policy_result = policy_engine_.evaluate(syscall_context);
     
     if (policy_result.kind != axion::VerdictKind::Allow) {
-        return t81::unexpected("Policy denied: " + policy_result.reason);
+        return t81::unexpected(std::string("Policy denied: " + policy_result.reason));
     }
     
     // TODO: Check required capabilities when Engine interface supports it

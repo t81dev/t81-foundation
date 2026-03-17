@@ -17,7 +17,7 @@ ______________________________________________________________________
 
 # TISC — Ternary Instruction Set Computer
 
-Version 1.2.0 — Stable
+Version v1.9.0-Stable
 
 Status: Stable\
 Last Revised: 2026-03-01\

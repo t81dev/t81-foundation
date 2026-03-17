@@ -1,7 +1,6 @@
 // include/t81/math/quantization/ternary_codec.hpp
 //
 // Deterministic ternary quantization codec — RFC-0031 §Deterministic AI Arithmetic Contract.
-// Promoted from experiments/ai/quantization/ per RFC-0032 Phase 1 (C-01).
 //
 // All entry points are integer-only. No floating-point, no timing, no external dependencies.
 // Bit-exact across x86-64 and ARM64 for identical inputs (RFC-0002 §3).

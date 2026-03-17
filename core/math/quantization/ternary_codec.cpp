@@ -1,7 +1,6 @@
 // core/math/quantization/ternary_codec.cpp
 //
 // Deterministic ternary quantization codec — RFC-0031 §Deterministic AI Arithmetic Contract.
-// Promoted from experiments/ai/quantization/ per RFC-0032 Phase 1 (C-01).
 //
 // Float-domain metric computations (MSE, PSNR) have been removed from this translation unit.
 // They are available under T81_BUILD_DIAGNOSTICS in tools/diagnostics/ternary_codec_metrics.cpp.

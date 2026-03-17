@@ -1,7 +1,6 @@
 // kernel/axion/ai_hooks.cpp
 //
 // AI event hook engine — RFC-0032 Phase 3 (C-04).
-// Promoted from experiments/ai/policy_hooks/axion_hooks.cpp.
 //
 // Implements AIHookEngine: emits canonical Axion AI event trace strings
 // (RFC-0032 §8.2) and enforces AI-specific pre-execution guards.

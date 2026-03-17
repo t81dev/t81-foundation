@@ -1,7 +1,6 @@
 // core/vm/ai_backend/backend_adapter.cpp
 //
 // T81 VM backend adapter — RFC-0032 Phase 4 (C-02).
-// Promoted from: experiments/ai/llm_backend/backend_adapter.cpp
 //
 // Violations removed from the experimental file:
 //   • LlamaCppBackend  — all llama.cpp dispatch stubs deleted

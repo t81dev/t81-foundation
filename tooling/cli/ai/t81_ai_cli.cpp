@@ -1,7 +1,6 @@
 // tooling/cli/ai/t81_ai_cli.cpp
 //
 // T81 AI CLI commands — RFC-0032 Phase 5 (C-07).
-// Promoted from: experiments/ai/ux_tools/t81_ai_cli.cpp
 //
 // Violations removed:
 //   • std::this_thread::sleep_for() calls (non-deterministic timing stubs)

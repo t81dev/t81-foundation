@@ -28,7 +28,7 @@ public:
         uint64_t result_addr
     ) {
         if (!g_ffi_dispatcher) {
-            return std::unexpected(Trap::FFINotInitialized);
+            return t81::unexpected(Trap::FFINotInitialized);
         }
         
         // Extract function name from VM memory (simplified)
@@ -50,7 +50,7 @@ public:
         auto result = g_ffi_dispatcher->call(context);
         
         if (!result) {
-            return std::unexpected(Trap::FFIPolicyDenied);
+            return t81::unexpected(Trap::FFIPolicyDenied);
         }
         
         // Store result in VM memory at result_addr (simplified)
@@ -66,7 +66,7 @@ public:
         uint64_t version_hash_addr
     ) {
         if (!g_ffi_dispatcher) {
-            return std::unexpected(Trap::FFINotInitialized);
+            return t81::unexpected(Trap::FFINotInitialized);
         }
         
         // Extract library name and version hash from VM memory (simplified)
@@ -78,7 +78,7 @@ public:
         auto result = registry.register_library(library_name, version_hash, {});
         
         if (!result) {
-            return std::unexpected(Trap::FFIRegistrationError);
+            return t81::unexpected(Trap::FFIRegistrationError);
         }
         
         return {};
@@ -91,7 +91,7 @@ public:
         uint64_t policy_value
     ) {
         if (!g_ffi_dispatcher) {
-            return std::unexpected(Trap::FFINotInitialized);
+            return t81::unexpected(Trap::FFINotInitialized);
         }
         
         // Set resource quotas based on policy type
@@ -103,7 +103,7 @@ public:
                 g_ffi_dispatcher->set_resource_quota(1000000000, policy_value);
                 break;
             default:
-                return std::unexpected(Trap::FFIPolicyDenied);
+                return t81::unexpected(Trap::FFIPolicyDenied);
         }
         
         return {};
