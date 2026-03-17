@@ -6431,6 +6431,20 @@ std::string format_ir_operand(const t81::tisc::ir::Operand& operand) {
 std::string trap_explanation_text(t81::vm::Trap trap) {
   using Trap = t81::vm::Trap;
   switch (trap) {
+    case Trap::ActivationFault:
+      return "The VM could not activate a required component. Ensure dependencies are satisfied.";
+    case Trap::FFINotInitialized:
+      return "The VM FFI dispatcher was not initialized.";
+    case Trap::FFIRegistrationError:
+      return "An error occurred registering an FFI library or function.";
+    case Trap::FFILoadError:
+      return "An error occurred loading an FFI library.";
+    case Trap::FFIPolicyDenied:
+      return "An FFI action was denied by policy.";
+    case Trap::FFITimeout:
+      return "An FFI action timed out.";
+    case Trap::FFIMemoryExhausted:
+      return "An FFI action exhausted available memory.";
     case Trap::DecodeFault:
       return "The VM could not decode the TISC artifact. Rebuild the program and validate it with 't81 tisc validate'.";
     case Trap::TypeFault:
