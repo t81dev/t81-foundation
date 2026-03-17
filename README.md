@@ -337,7 +337,7 @@ All Stage 2 implementation goals are complete:
 * ✅ T81Lang FFI frontend (RFC-0036; foreign {} + FFI_CALL)
 * Remaining advancement criterion: independent reproduction by an external party — when another group builds the stack, runs the determinism gate, and publishes matching hashes, the project formally graduates from Stage 2.
 
-Stage 3 — Research Ecosystem (Active)
+### Stage 3 — Research Ecosystem (Active)
 
 Stage 3 opened with three concrete tracks. All three are now complete:
 

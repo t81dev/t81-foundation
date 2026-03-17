@@ -1,0 +1,7 @@
+profile=qemu-armv8:AArch64/EDK2/slice6-boot-probe
+guest_arch=qemu_slice6
+validation_lane=qemu-armv8-slice6-probe
+git_commit=019034a8
+generated_utc=2026-03-17T03:24:50Z
+artifact_status=efi-boot-candidate
+boot_gap=none

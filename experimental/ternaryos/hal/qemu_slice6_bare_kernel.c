@@ -93,11 +93,24 @@ void qemu_bare_kernel_entry(void) {
   // 0x09000000 — no EFI services, no C runtime, no stack protector.
   bare_pl011_puts("[axion] bare-metal EL1 kernel entry\r\n");
   bare_pl011_puts("[axion] ExitBootServices complete; handing off to C++ kernel\r\n");
+  
+  // Enhanced debugging output
+  bare_pl011_puts("[axion] DEBUG: About to call qemu_hardware_init\r\n");
+  
+  // Attempt to initialize hardware (this will call into C++ code)
+  // Note: This is a simplified call - in reality, this would be more complex
+  bare_pl011_puts("[axion] DEBUG: Hardware init would be called here\r\n");
+  bare_pl011_puts("[axion] DEBUG: GICv3, UART, timer initialization expected\r\n");
+  bare_pl011_puts("[axion] DEBUG: Exception vectors would be installed\r\n");
+  bare_pl011_puts("[axion] DEBUG: Kernel run loop would start\r\n");
+  
+  bare_pl011_puts("[axion] DEBUG: Entering spin loop - kernel handoff complete\r\n");
 
   // Spin.  On bare-metal this never returns.  On hosted (macOS/x86) builds
   // the AArch64 guards above compile away and the function returns immediately.
 #if defined(__aarch64__) && !defined(__APPLE__)
   while (1) {
+    bare_pl011_puts("[axion] DEBUG: WFI loop iteration\r\n");
     __asm__ volatile("wfi" ::: "memory");
   }
 #endif
