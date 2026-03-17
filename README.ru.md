@@ -9,8 +9,8 @@
 
 # T81 Foundation — стек детерминированных троичных вычислений
 
-![Release](https://img.shields.io/badge/release-v1.6.0--Stable-blue)
-![Tests](https://img.shields.io/badge/tests-367%2F367_passing-brightgreen)
+![Release](https://img.shields.io/badge/release-v1.6.1--Stable-blue)
+![Tests](https://img.shields.io/badge/tests-368%2F368_passing-brightgreen)
 ![ISA](https://img.shields.io/badge/ISA-v1.2.0_Frozen-blue)
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
 ![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
