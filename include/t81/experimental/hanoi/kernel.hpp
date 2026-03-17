@@ -27,6 +27,14 @@ public:
   virtual Result<RegionHandle> map_region(std::size_t bytes) = 0;
   virtual Result<void> parity_repair(const t81::canonfs::CanonRef& ref) = 0;
   virtual Result<void> halt() = 0;
+  
+  // ─── Command Surface (RFC-0000 §7) ─────────────────────────────────────
+  
+  virtual Result<KernelStatus> status() = 0;
+  virtual Result<OptimizationResult> optimize(const OptimizationParams& params) = 0;
+  virtual Result<SimulationResult> simulate(const SimulationParams& params) = 0;
+  virtual Result<SnapshotRef> snapshot() = 0;
+  virtual Result<void> rollback(const SnapshotRef& target) = 0;
 };
 
 // Factory for the in-memory kernel simulator.

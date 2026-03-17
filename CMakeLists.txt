@@ -1889,6 +1889,9 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(t81_hanoi_integration_test tests/cpp/hanoi_integration_test.cpp)
   target_link_libraries(t81_hanoi_integration_test PRIVATE t81_core t81_axion)
 
+  add_executable(t81_hanoi_command_surface_test tests/cpp/hanoi_command_surface_test.cpp)
+  target_link_libraries(t81_hanoi_command_surface_test PRIVATE t81_core t81_axion)
+
   add_executable(t81_vm_load_store_test tests/cpp/vm_load_store_test.cpp)
   target_link_libraries(t81_vm_load_store_test PRIVATE t81_vm t81_core)
 
@@ -2609,6 +2612,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_c_api_bigint_test
     t81_tensor_unary_test
     t81_hanoi_integration_test
+    t81_hanoi_command_surface_test
     t81_vm_load_store_test
     t81_vm_illegal_test
     t81_vm_bounds_test

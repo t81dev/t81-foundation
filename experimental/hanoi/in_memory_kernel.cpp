@@ -119,6 +119,78 @@ public:
     halted_ = true;
     return {};
   }
+  
+  // ─── Command Surface Implementation (RFC-0000 §7) ─────────────────────
+  
+  Result<KernelStatus> status() override {
+    KernelStatus status;
+    status.booted = booted_;
+    status.active_snapshots = snapshots_.size();
+    status.total_processes = active_pids_.size();
+    status.current_root_hash = current_root_.hash.h.to_string();
+    status.last_axion_verdict = boot_failed_reason_.empty() ? "Allow" : boot_failed_reason_;
+    return status;
+  }
+  
+  Result<OptimizationResult> optimize(const OptimizationParams& params) override {
+    OptimizationResult result;
+    
+    // Simple optimization simulation
+    if (params.target == "performance") {
+      result.success = true;
+      result.applied_optimization = "memory_compaction";
+      result.performance_delta = "+5.2%";
+    } else if (params.target == "memory") {
+      result.success = true;
+      result.applied_optimization = "garbage_collection";
+      result.performance_delta = "-12.8% memory";
+    } else {
+      result.success = false;
+      result.applied_optimization = "none";
+      result.performance_delta = "0%";
+    }
+    
+    return result;
+  }
+  
+  Result<SimulationResult> simulate(const SimulationParams& params) override {
+    SimulationResult result;
+    
+    // Simple simulation of operations
+    for (const auto& op : params.operations) {
+      if (result.steps_executed >= params.max_steps) {
+        break;
+      }
+      
+      result.trace.push_back("exec: " + op);
+      result.steps_executed++;
+    }
+    
+    result.completed = result.steps_executed == params.operations.size();
+    
+    // Compute final state hash (simplified)
+    std::string state_str = "steps:" + std::to_string(result.steps_executed);
+    result.final_state_hash = t81::hash::hash_string(state_str).to_string();
+    
+    return result;
+  }
+  
+  Result<SnapshotRef> snapshot() override {
+    // Create a new snapshot from current state
+    std::string snapshot_str = current_root_.hash.h.to_string() + ".snapshot." + std::to_string(next_pid_);
+    SnapshotRef new_snapshot{t81::canonfs::CanonHash{t81::hash::hash_string(snapshot_str)}};
+    snapshots_[new_snapshot.hash] = Snapshot{new_snapshot};
+    return new_snapshot;
+  }
+  
+  Result<void> rollback(const SnapshotRef& target) override {
+    if (!snapshots_.count(target.hash)) {
+      return Result<void>(t81::unexpect, Error::CanonMismatch);
+    }
+    
+    current_root_ = target;
+    return {};
+  }
 
 private:
   // RFC-0000 §4: 81-slot deterministic scheduler (3^4 = 81).
