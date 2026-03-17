@@ -435,46 +435,6 @@ Stage 3 opened with three concrete tracks. All three are now complete:
 
 ---
 
-                    T81 FOUNDATION — SWOT MATRIX
-┌───────────────────────────────┬────────────────────────────────┐
-│            STRENGTHS           │            WEAKNESSES           │
-├───────────────────────────────┼────────────────────────────────┤
-│ • Unique balanced-ternary      │ • Ecosystem built around       │
-│   computing architecture       │   binary computing             │
-│                               │                                │
-│ • Deterministic execution      │ • Very large project scope     │
-│   model across the stack       │   (ISA + VM + OS + AI)         │
-│                               │                                │
-│ • Full vertical stack          │ • Reliance on binary host      │
-│   (ISA → VM → OS → runtime)    │   emulation today              │
-│                               │                                │
-│ • Governance-aware runtime     │ • Limited developer tools      │
-│   and policy boundaries        │   and ecosystem maturity       │
-│                               │                                │
-│ • Potential AI efficiency      │ • Learning curve for ternary   │
-│   with ternary weights         │   arithmetic and new tooling   │
-└───────────────────────────────┴────────────────────────────────┘
-┌───────────────────────────────┬────────────────────────────────┐
-│           OPPORTUNITIES        │              THREATS            │
-├───────────────────────────────┼────────────────────────────────┤
-│ • Efficient AI inference       │ • Binary hardware dominance    │
-│   using ternary quantization   │                                │
-│                               │                                │
-│ • Deterministic computing      │ • Competing optimizations      │
-│   for verifiable AI systems    │   (FP8, sparsity engines)      │
-│                               │                                │
-│ • Research platform for        │ • High hardware fabrication    │
-│   alternative architectures    │   barriers for ternary chips   │
-│                               │                                │
-│ • Edge AI / embedded systems   │ • Risk of being perceived      │
-│   with smaller model weights   │   as purely experimental       │
-│                               │                                │
-│ • Specialized ternary          │ • Sustainability depends on    │
-│   accelerators or coprocessors │   long-term contributors       │
-└───────────────────────────────┴────────────────────────────────┘
-
----
-
 ## License
 
 MIT License.
