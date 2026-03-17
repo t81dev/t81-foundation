@@ -327,38 +327,26 @@ A functioning deterministic computing stack.
 
 ---
 
-### Stage 2 — Verified Platform *(Complete)*
+### Stage 2 — Verified Platform (Achieved)
 
-**Goal:** Independent validation.
+All Stage 2 implementation goals are complete:
 
-Key work:
+* ✅ cross-platform determinism CI (Linux x86_64 + macOS ARM64, daily)
+* ✅ VM conformance + determinism test suite (365/365)
+* ✅ trace replay debugger (t81 trace replay; schema t81.trace-replay.v1)
+* ✅ T81Lang FFI frontend (RFC-0036; foreign {} + FFI_CALL)
+* Remaining advancement criterion: independent reproduction by an external party — when another group builds the stack, runs the determinism gate, and publishes matching hashes, the project formally graduates from Stage 2.
 
-* ✅ third-party determinism verification — daily GitHub Actions workflow compares Linux x86\_64 and macOS ARM64 bytecode hashes; public evidence record on every commit
-* ✅ VM conformance test suite — 27 spec conformance tests + 365 total passing
-* ✅ deterministic benchmarking framework — RFC-00A2; `score=1.0` across all runs
-* ✅ T81Lang FFI frontend (RFC-0036) — `foreign {}` grammar bridges VM layer to language; 9/9 AC tests
-* ✅ trace replay debugger — `t81 trace replay <tisc> <golden> [--json]`; schema `t81.trace-replay.v1`; reports exact mismatch index + expected/actual instruction; wired into CI via `scripts/ci/trace_repro_gate.py`
-* ✅ reproducible build verification — cross-platform bytecode hash verified daily on Linux x86\_64 (gcc-14) + macOS ARM64 (clang); 90-day evidence artifacts retained
+Stage 3 — Research Ecosystem (Active)
 
-**Outcome:**
-Externally trusted deterministic runtime.
+Stage 3 opened with three concrete tracks. All three are now complete:
 
----
+* ✅ RFC-0037 TNN stdlib — std.tnn.* T81Lang builtins; 6 functions lower to RFC-0034 TISC ops; 13/13 tests
+* ✅ RFC-0038 Lattice Crypto — std.crypto.polymul/polymod; POLYMUL/POLYMOD opcodes; T81BigInt-exact; 13/13 tests
+* ✅ T81Lang spec v1.3 — RFC-0036/0037/0038 promoted to normative spec; §5.17 un-stubbed; §5.18–5.19 added
+* ✅ RFC-0039 NTRU-KEM — TVecSub opcode; std.crypto.{polyadd,polysub,ntru_encrypt,ntru_decrypt}; ntru_keygen/encrypt/decrypt C++ math layer; 24/24 tests; first end-to-end post-quantum cryptography demo on the ternary substrate
 
-### Stage 3 — Research Ecosystem
-
-Focus shifts to applications.
-
-Primary research areas:
-
-* ternary neural networks
-* deterministic AI inference
-* signal processing libraries
-* physics simulation
-* lattice-based cryptography
-
-**Outcome:**
-Adoption by researchers and experimental compute projects.
+Stage 3 is complete. All four tracks (RFC-0037, RFC-0038, spec v1.3, RFC-0039) landed 2026-03-16.
 
 ---
 
@@ -407,33 +395,6 @@ Potential developments:
 
 **Outcome:**
 A governed deterministic computing ecosystem.
-
----
-
-## Critical Next Milestones
-
-### Stage 2 — Verified Platform *(Achieved)*
-
-All Stage 2 implementation goals are complete:
-
-- ✅ cross-platform determinism CI (Linux x86\_64 + macOS ARM64, daily)
-- ✅ VM conformance + determinism test suite (365/365)
-- ✅ trace replay debugger (`t81 trace replay`; schema `t81.trace-replay.v1`)
-- ✅ T81Lang FFI frontend (RFC-0036; `foreign {}` + `FFI_CALL`)
-
-Remaining advancement criterion: **independent reproduction by an external party** — when another group builds the stack, runs the determinism gate, and publishes matching hashes, the project formally graduates from Stage 2.
-
-### Stage 3 — Research Ecosystem *(Active)*
-
-Stage 3 opened with three concrete tracks. All three are now complete:
-
-- ✅ **RFC-0037 TNN stdlib** — `std.tnn.*` T81Lang builtins; 6 functions lower to RFC-0034 TISC ops; 13/13 tests
-- ✅ **RFC-0038 Lattice Crypto** — `std.crypto.polymul/polymod`; POLYMUL/POLYMOD opcodes; T81BigInt-exact; 13/13 tests
-- ✅ **T81Lang spec v1.3** — RFC-0036/0037/0038 promoted to normative spec; §5.17 un-stubbed; §5.18–5.19 added
-
-- ✅ **RFC-0039 NTRU-KEM** — `TVecSub` opcode; `std.crypto.{polyadd,polysub,ntru_encrypt,ntru_decrypt}`; `ntru_keygen/encrypt/decrypt` C++ math layer; 24/24 tests; first end-to-end post-quantum cryptography demo on the ternary substrate
-
-**Stage 3 is complete.** All four tracks (RFC-0037, RFC-0038, spec v1.3, RFC-0039) landed 2026-03-16.
 
 ---
 
