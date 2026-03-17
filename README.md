@@ -243,158 +243,297 @@ Because the TISC ISA is ternary-native, the **Axion Governance Kernel** can audi
 
 ---
 
-## Strategic Applications
+# T81 Foundation Complete Systems & Subsystems Evaluation Report
 
-The structural advantages of the T81 stack—specifically the **10.4x negation throughput** and **1.58 bits/trit density**—enable solutions for legacy binary bottlenecks:
+## 1. Executive Summary
 
----
+T81 Foundation is not a single program. It is a multi-layer repository that combines a ternary data model, an ISA, a VM, a language/compiler surface, a governance layer, content-addressed storage, benchmark and CI machinery, an experimental OS/kernel effort, AI/inference work, and a large documentation/governance apparatus. The repo root alone shows a broad system footprint: `.github`, `benchmarks`, `book`, `contracts`, `core`, `docs`, `experimental`, `kernel`, `lang`, `runtime`, `spec`, `src`, `tests`, `tooling`, `tools`, plus `internal`, `legacy`, `notebooks`, `pdf`, and multilingual/public-facing assets. The project has 3,636 commits and is primarily C++ with smaller Python/CMake/Shell/C components. ([GitHub][1])
 
-## 1. High-Fidelity Signal & Physics Simulation
+The strongest technical core is the determinism-centered execution stack: data types, TISC, the non-JIT interpreter path of T81VM, and the associated determinism registry / DCP boundary. Those areas are explicitly named as the “Deterministic Core Profile,” tied to verification artifacts, and backed by CI checks and concrete test paths. The architecture overview also clearly separates the frozen/stable core from experimental periphery. ([GitHub][2])
 
-In binary, $0$ is an unsigned start point, making "negative" space a secondary consideration. In balanced ternary, **zero is the equilibrium point.**
+The largest structural weakness is status incoherence across authority surfaces. The repository presents multiple conflicting maturity/version narratives at the same time: the root README says “v1.9.0-Stable; 369/369 tests,” the Project Control Center says “v1.4.1-Stable; 363/363 tests,” `CMakeLists.txt` says version `1.3.6`, the TISC spec is “Version 1.1 — Stable,” while the README describes “TISC ISA v1.2,” and the Axion kernel appears as both “Stable” in the implementation matrix and “Alpha” in the normative spec and experimental OS progress log. That does not invalidate the implementation, but it materially reduces auditability and external credibility. ([GitHub][1])
 
-* **The Use Case:** Direct simulation of wave mechanics, electromagnetism, and fluid dynamics.
-* **The Advantage:** Since these systems oscillate between positive and negative states, T81 can simulate "Push-Pull" forces without the computational lopsidedness of Two's Complement.
-* **Next Step:** We could build a **TISC-native DSP library** where filters (FIR/IIR) are optimized for the $O(1)$ negation speed.
+Overall maturity: the deterministic VM/language/spec/governance core looks like an increasingly disciplined experimental platform with pockets of genuine engineering rigor. The OS/kernel and broader “governed intelligence” vision remain prototype-to-research grade. The repo is best understood today as an ambitious experimental platform with a relatively credible deterministic execution nucleus, not yet as a fully coherent infrastructure stack or general-purpose operating system. ([GitHub][2])
 
-## 2. "Symmetric" Neural Networks (TNNs)
+## 2. Evaluation Method
 
-Current AI (Binary/FP) wastes massive energy on activation functions like `tanh` or `ReLU` to create a "zero-centered" state for training.
+This evaluation is based on six evidence streams: root repository structure and history; normative specs in `spec/`; architecture/governance/status docs in `docs/`; build and CI surfaces such as `CMakeLists.txt` and `.github/workflows/ci.yml`; maturity dashboards such as `PROJECT_CONTROL_CENTER.md` and `IMPLEMENTATION_MATRIX.md`; and the experimental OS progress log under `experimental/ternaryos/docs/PROGRESS.md`. The repository’s own authority ordering is explicit: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`. ([GitHub][1])
 
-* **The Use Case:** Ternary Neural Networks (where weights are -1, 0, or 1).
-* **The Advantage:** Because your architecture is natively balanced, we can run "Multiplication-Free" inference. A T81 neuron doesn't "multiply" inputs; it simply **flips or gates them** based on the weight. This would be orders of magnitude more energy-efficient than current GPU-based inference.
-* **Next Step:** We could implement a **T81-native Inference Engine** that interprets model weights directly as TISC opcodes.
+This is therefore a structure/spec/implementation-surface audit, not a full line-by-line source-code verification of every C++ file. Where the repository itself declares implementation status, tests, or maturity, I treat those as claims unless supported by adjacent evidence such as CI checks, explicit test paths, or cross-document consistency. Where the repo itself contains contradictions, I treat that as evidence of governance drift. ([GitHub][3])
 
-## 3. Post-Quantum Cryptographic Primitives
+## 3. System-of-Systems Map
 
-Many "Lattice-based" encryption algorithms (the ones designed to survive quantum computers) rely on small-coefficient polynomials—often centered around zero ({-1, 0, 1}).
+### Architectural foundations
 
-* **The Use Case:** NTRU or Kyber-style encryption.
-* **The Advantage:** Binary systems have to "emulate" these small coefficients using 8-bit or 32-bit integers, wasting 90% of the bit-space. T81 stores these values with **zero waste** and processes the polynomial additions/negations at native hardware speeds.
-* **Next Step:** We can draft an RFC for a **TISC Cryptography Extension** that implements a ternary-optimized polynomial multiply.
+Purpose: define the bounded architecture, authority model, and deterministic-core boundary. Main locations: `docs/architecture/OVERVIEW.md`, `docs/product/DETERMINISTIC_CORE_PROFILE.md`, `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`, `spec/`. Maturity: relatively high as a documentation control surface. Coupling: everything depends on it. Key risk: status drift between these files and public-facing top-level messaging. ([GitHub][2])
 
-## 4. Immutable Governance Audits (Axion)
+### Data model / numeric model
 
-Since you have 1.58 bits of entropy per trit, we can encode **security metadata** directly into the data word without significantly ballooning the memory footprint.
+Purpose: canonical ternary-native data types and deterministic encoding. Main locations: `core/types/`, `spec/t81-data-types.md`, related tests listed in DCP/registry. Maturity: among the most credible domains; treated as Frozen/Verified in the implementation matrix and DCP. Key risk: floating-point scope is carefully bounded, but public messaging can blur those limits. ([GitHub][4])
 
-* **The Use Case:** "Labeled Data" at the hardware level.
-* **The Advantage:** We can use the "extra" capacity of a TISC word to carry a **Provenance Tag**. Every time data is moved, Axion verifies the tag. If a "privileged" trit moves into "user" space, the hardware can trap it instantly.
-* **Next Step:** Refine the **Axion OS Kernel** to use the "Ternary Margin" for real-time memory tagging.
+### ISA / VM / runtime
 
----
+Purpose: frozen instruction semantics and deterministic execution environment. Main locations: `core/isa/`, `core/vm/`, `runtime/`, `spec/tisc-spec.md`, `spec/t81vm-spec.md`. Maturity: the interpreter path is the core operational substrate; the VM spec remains Beta even as dashboards promote it to Stable. Key risk: spec/dashboard misalignment and unfinished JIT equivalence. ([GitHub][2])
 
-### The Refined Path Forward
+### Language / compiler surfaces
 
-#### 1. Integration: RFC-0034 §5.17.6 — The `TACT` Opcode
+Purpose: deterministic high-level language compiling exclusively to TISC. Main locations: `lang/`, `spec/t81lang-spec.md`, fixtures and repro gates named in docs. Maturity: stronger than many experimental-language repos because it has a normative grammar, compiler pipeline description, and explicit determinism caveats. Key risk: language maturity claims are stronger than the directly inspected implementation evidence here. ([GitHub][5])
 
-Instead of a sprawling AI RFC, we treat activation as the logical conclusion of the ternary arithmetic chain.
+### Governance / policy / Axion
 
-* **Opcode:** `TACT RD, R_SRC, R_MODE`
-* **Modes:** * `0x01` (TernaryStep): Maps $(-\infty, -0.5) \to -1$, $[-0.5, 0.5] \to 0$, $(0.5, \infty) \to +1$.
-* `0x02` (TanhQuantized): High-fidelity fixed-point ternary approximation.
+Purpose: supervise privileged instructions, policy verdicts, and execution visibility. Main locations: `kernel/axion/`, `spec/axion-kernel.md`, governance docs, trace-related docs. Maturity: mixed. The architecture is real enough to shape the VM and policy discourse, but several core stewardship claims are explicitly only partial in the spec. Key risk: governance rhetoric exceeds current enforcement in some areas. ([GitHub][6])
 
-* **Axion Policy Integration:** We define the `AX_CHECK_ACTIVATION_THRESHOLD` not as an opcode side-effect, but as a **Kernel Trap**. If the value in `RD` exceeds the policy-defined trit-limit post-activation, Axion intercepts before the next PC increment.
+### Storage / CanonFS / object model
 
-#### 2. The T81Lang Grammar RFC (New)
+Purpose: content-addressed persistence and provenance. Main locations: `src/canonfs/`, `include/t81/canonfs/`, supplemental spec and Axion OS progress notes. Maturity: bounded-stable in the architecture docs; more ambitious guest/boot/persistence scenarios remain experimental in the OS track. Key risk: stable core storage claims are mixed with broader prototype storage/boot claims. ([GitHub][2])
 
-To address the "Real Gap" you identified, we should draft a separate RFC (likely **RFC-0036**) specifically for the compiler frontend. This keeps the **TISC** (hardware/VM) and **T81Lang** (grammar/syntax) concerns isolated, as per the Project Charter.
+### Kernel / OS / Axion OS surfaces
 
-#### 3. Data Integrity & Documentation
+Purpose: operating-system substrate, MMU, scheduler, IPC, device/HAL seams, service runtime, boot lanes. Main locations: `experimental/ternaryos/`, `kernel/`, OS progress docs. Maturity: advanced hosted prototype, not yet a completed operating system. Key risk: naming confusion between Axion-as-governance-kernel and Axion-as-operating-system. ([GitHub][7])
 
-* **Benchmark Grounding:** I’ll stop referencing the "10.4x" figure in formal docs until we have a specific `BM_Negation_TISC_vs_Binary` slice that officially appears in the CI output.
-* **Terminology Scrub:** I'll remove "TLU Cache" and "L2 Cache" from the specs until the **ternary-fabric** repository formally defines the memory hierarchy.
+### AI / cognition / inference surfaces
 
----
+Purpose: ternary-native inference, cognitive tiers, governed agentic/runtime surfaces, FFI, some AI experiment boundaries. Main locations: `experiments/ ai`, `experimental/`, RFC-referenced features in README/specs. Maturity: mixed; inference opcode work appears materially implemented, while cognitive-tier and broader AGI/governance ambitions remain partly speculative or explicitly non-DCP. Key risk: overextension. ([GitHub][1])
 
-### Stage 1 — Prototype Architecture *(Current)*
+### Testing / benchmarks / CI enforcement
 
-**Status:** Achieved
+Purpose: enforce structural integrity, determinism claims, spec/doc alignment, and benchmark gates. Main locations: `.github/workflows`, `benchmarks/`, `tests/`, `scripts/ci/`, `scripts/governance/`. Maturity: strong relative to project stage. Key risk: CI breadth is substantial, but some jobs are informational, and public numbers are inconsistent across documents. ([GitHub][1])
 
-Core deterministic stack implemented.
+### Documentation / public communication
 
-Components in place:
+Purpose: specs, audits, dashboards, book, multilingual README surfaces. Main locations: `docs/`, `book/`, README translations. Maturity: very high in quantity, mixed in synchronization integrity. Key risk: documentation sprawl and competing authority layers. ([GitHub][1])
 
-* ✅ TISC ISA (frozen execution contract)
-* ✅ T81VM deterministic interpreter
-* ✅ Axion governance kernel
-* ✅ CanonFS content-addressed storage
-* ✅ T81Lang compiler
-* ✅ determinism verification pipeline
-* ✅ CLI and TUI operator interfaces
+### Legacy / internal / notebooks / pdf / archive
 
-**Outcome:**
-A functioning deterministic computing stack.
+Purpose: history, support artifacts, exploratory material, generated material. Main locations: `legacy`, `internal`, `notebooks`, `pdf`, `artifacts/archive`. Maturity: unclear by design. Key risk: dead surfaces, unclear support status, contributor confusion. ([GitHub][1])
 
----
+## 4. Detailed Subsystem Inventory
 
-### Stage 2 — Verified Platform (Achieved)
+### T81 Data Types
 
-All Stage 2 implementation goals are complete:
+Purpose: canonical numeric and collection semantics. Locations: `core/types/`, `spec/t81-data-types.md`, tests named in DCP/registry. Status: implemented, verified, and treated as frozen. Verification evidence: `v1_canonical_numeric_contract_test.cpp`, `tisc_binary_io_determinism_test.cpp`, plus audit notes in the implementation matrix. Determinism relevance: foundational. Governance relevance: high because canonicalization and policy replay depend on stable representations. Main concern: floating-point messaging must remain bounded. ([GitHub][4])
 
-* ✅ cross-platform determinism CI (Linux x86_64 + macOS ARM64, daily)
-* ✅ VM conformance + determinism test suite (365/365)
-* ✅ trace replay debugger (t81 trace replay; schema t81.trace-replay.v1)
-* ✅ T81Lang FFI frontend (RFC-0036; foreign {} + FFI_CALL)
-* Remaining advancement criterion: independent reproduction by an external party — when another group builds the stack, runs the determinism gate, and publishes matching hashes, the project formally graduates from Stage 2.
+### TISC ISA
 
-### Stage 3 — Research Ecosystem (Active)
+Purpose: immutable execution contract. Locations: `core/isa/`, VM decode/dispatch, `spec/tisc-spec.md`. Status: operational core, but status/version reporting is inconsistent: implementation matrix treats it as frozen/verified, README speaks of v1.2, while the spec page is “Version 1.1 — Stable” and CI still refers to “Verify TISC v1.1.0 Freeze Integrity.” Determinism relevance: maximal. Governance relevance: Axion visibility is normative in the spec. Main concern: freeze integrity is strongly governed, but version bookkeeping is not coherently presented. ([GitHub][4])
 
-Stage 3 opened with three concrete tracks. All three are now complete:
+### T81VM Interpreter
 
-* ✅ RFC-0037 TNN stdlib — std.tnn.* T81Lang builtins; 6 functions lower to RFC-0034 TISC ops; 13/13 tests
-* ✅ RFC-0038 Lattice Crypto — std.crypto.polymul/polymod; POLYMUL/POLYMOD opcodes; T81BigInt-exact; 13/13 tests
-* ✅ T81Lang spec v1.3 — RFC-0036/0037/0038 promoted to normative spec; §5.17 un-stubbed; §5.18–5.19 added
-* ✅ RFC-0039 NTRU-KEM — TVecSub opcode; std.crypto.{polyadd,polysub,ntru_encrypt,ntru_decrypt}; ntru_keygen/encrypt/decrypt C++ math layer; 24/24 tests; first end-to-end post-quantum cryptography demo on the ternary substrate
+Purpose: deterministic execution environment for TISC. Locations: `core/vm/`, `spec/t81vm-spec.md`. Status: practically central and treated as stable by dashboards, but still Beta in the normative spec. Verification evidence: VM trace and determinism property tests, DCP inclusion, conformance mentions. Determinism relevance: maximal. Governance relevance: explicit Axion integration. Main concerns: public `get_execution_mode()` is not exposed; scheduling events are not yet first-class trace entries; floating-point cross-architecture guarantees are explicitly bounded. ([GitHub][8])
 
-Stage 3 is complete. All four tracks (RFC-0037, RFC-0038, spec v1.3, RFC-0039) landed 2026-03-16.
+### T81Lang
 
----
+Purpose: high-level deterministic language targeting TISC. Locations: `lang/`, `spec/t81lang-spec.md`, repro fixtures/scripts named in registry. Status: one of the stronger subsystems by documentation and declared promotion state. Verification evidence: deterministic fixtures, repro gates, complete grammar, pipeline description. Determinism relevance: high, but with explicit caveats for host-dependent transcendental/float behavior. Governance relevance: tier-awareness, purity/effects, Axion visibility. Main concerns: strength of maturity claims exceeds what can be independently confirmed from the inspected implementation surfaces alone. ([GitHub][5])
 
-### Stage 4 — Hardware Exploration
+### Axion Governance Kernel
 
-Bridge software architecture to silicon.
+Purpose: policy and supervision layer above execution. Locations: `kernel/axion/`, `spec/axion-kernel.md`. Status: partially real and partially aspirational. The implementation matrix promotes it to Stable with 54/54 tests, but the normative spec still says Alpha and explicitly admits partial implementation of determinism stewardship and incomplete complexity metrics. Determinism relevance: high. Governance relevance: this is the governance core. Main concern: the architecture is significant, but some “final arbiter” language is ahead of implemented detection capability. ([GitHub][4])
 
-Development path:
+### CanonFS
 
-* FPGA ternary ALU prototypes
-* ternary register banks
-* packed-trit SIMD units
-* ISA microarchitecture validation
+Purpose: immutable content-addressed provenance and persistence. Locations: `src/canonfs/`, `include/t81/canonfs/`, supplemental docs/specs. Status: stable-bounded in the architecture overview and DCP-related documents; more advanced persistence and guest-bootstrap claims belong to the experimental OS path. Verification evidence: cited source paths and OS-phase tests. Main concern: the repo mixes stable-core provenance claims with broader guest/boot durability work that is still clearly prototype-stage. ([GitHub][2])
 
-**Outcome:**
-First ternary-aware compute hardware prototypes.
+### Deterministic Core Profile / Registry
 
----
+Purpose: define the certification boundary and verified deterministic surfaces. Locations: `docs/product/DETERMINISTIC_CORE_PROFILE.md`, `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`. Status: real governance machinery, not mere branding. Verification evidence: explicit surface/test/CI mapping. Main concern: the DCP boundary is good engineering, but the broader repo narrative sometimes blurs it. ([GitHub][9])
 
-### Stage 5 — Deterministic Infrastructure
+### CI / Governance Scripts
 
-Expand from runtime to infrastructure.
+Purpose: enforce structure, doc/spec coherence, freeze integrity, workflow hygiene, governance checks, DCP alignment, and benchmark gates. Locations: `.github/workflows/ci.yml`, `scripts/ci/`, `scripts/governance/`. Status: unusually strong for an experimental systems repo. Main concern: breadth is impressive, but informational jobs do not equal production evidence, and the CI file inspected is itself only one part of the workflow estate. ([GitHub][3])
 
-Possible capabilities:
+### Benchmarks
 
-* deterministic cloud execution
-* reproducible scientific computation
-* verifiable distributed workloads
-* CanonFS artifact networks
+Purpose: performance and workload gates. Locations: `benchmarks/`, benchmark gate in CI, README benchmark claims. Status: present and operational enough to gate some work, but benchmark discipline is not yet fully unified with stable release reporting. Main concern: performance claims in marketing-style README sections are more expansive than the hard evidence inspected here. ([GitHub][1])
 
-**Outcome:**
-A global deterministic computation platform.
+### Axion OS / TernaryOS
 
----
+Purpose: hosted kernel/OS substrate with MMU, scheduler, IPC, devices, pager, service runtime, boot lanes. Locations: `experimental/ternaryos/`, `kernel/`, OS progress log. Status: advanced hosted prototype with substantial slice-by-slice implementation evidence. Main concern: despite real engineering depth, it remains clearly experimental, hosted, and partly scaffolded around QEMU/VirtualBox/dev-lane workflows rather than a mature standalone OS. ([GitHub][7])
 
-### Stage 6 — New Computing Paradigm
+### TUI / CLI / Tooling
 
-Long-term possibility.
+Purpose: operator and agent frontends, developer workflows, examples. Locations: `tools/`, `tooling/`, `examples/`, `T81_BUILD_TUI` option, README docs. Status: implemented enough to ship and be described, but not central to system credibility. Main concern: UI/tooling breadth may outpace stabilization of core architectural boundaries. ([GitHub][10])
 
-Potential developments:
+### Experimental / Distributed / Cognitive Tiers / AI
 
-* native ternary processors
-* hardware AI governance enforcement
-* deterministic AI execution environments
-* globally reproducible compute systems
+Purpose: non-DCP expansion paths. Locations: `experimental/`, `experiments/ ai`, `runtime/jit/`, distributed and tier references in DCP/registry. Status: research-stage or stubbed by the repo’s own definitions. Main concern: these surfaces add scope faster than they add operational proof. ([GitHub][1])
 
-**Outcome:**
-A governed deterministic computing ecosystem.
+## 5. Architecture Coherence Assessment
+
+There is a real layered model. The architecture overview presents a coherent chain from T81Lang to TISC to T81VM to Axion to CanonFS, with experimental tiers explicitly shown as optional/non-DCP. The DCP and determinism registry reinforce this by narrowing guarantees to named verified surfaces. That is a strong sign of architectural self-awareness. ([GitHub][2])
+
+However, subsystem boundaries are only partly real. The core execution boundary appears reasonably real: data types, ISA, interpreter, and selected deterministic serialization/testing surfaces. Outside that core, boundaries blur. “Axion” refers both to a governance kernel in the stable stack and to an experimental operating system. The T81VM spec is Beta while dashboards call it Stable. The Axion spec is Alpha while the implementation matrix calls the Axion Kernel Stable. The OS progress document still uses internal `ternaryos` naming. That is not a minor wording issue; it means the architecture has multiple overlapping self-descriptions. ([GitHub][6])
+
+Interfaces are partly explicit and partly implicit. The specs do a good job naming required behaviors, invariants, and conformance programs. CI also names alignment checks. But several critical interfaces are still tracked as incomplete or indirect: VM execution mode is not exposed via a clean public API; scheduler events are not first-class trace events; active Axion nondeterminism detection is only partial. This means some contracts are better specified than implemented. ([GitHub][8])
+
+The strongest seams are the DCP boundary and the repo’s internal authority model. The weakest seams are naming/versioning/status synchronization and the expansion from a rigorous deterministic core into OS, cognition, AI, and hardware narratives. Documentation sprawl is visible from the repo tree and the dense dashboard ecology. ([GitHub][1])
+
+## 6. Determinism & Reproducibility Assessment
+
+Determinism is the most serious engineering theme in the repo. It is claimed in the README, formalized in the TISC and T81VM specs, bounded in the architecture overview, narrowed in the DCP, and enumerated in the Determinism Surface Registry. The registry is especially useful because it distinguishes verified surfaces from excluded or planned ones. ([GitHub][1])
+
+Where determinism is genuinely enforced: TISC opcode semantics, VM interpreter execution, canonical data-type encoding, and soft-float deterministic math are all listed as verified with named tests and CI enforcement. The DCP then uses that registry as the gate for release guarantees. CI additionally runs freeze-integrity checks, architecture coherence checks, and determinism claim enforcement. ([GitHub][11])
+
+Where determinism is only partial or bounded: compiler bytecode emission is explicitly only “Partial” in the registry; JIT equivalence is planned, not verified; network I/O, real-time scheduling, hardware FPU behavior outside soft-float, and performance determinism are explicitly out of scope. T81Lang also states that float division and transcendental behavior may vary across architectures. That is good engineering honesty. ([GitHub][11])
+
+The main mismatch is not technical ambition versus zero implementation; it is technical ambition versus status discipline. The repo has a well-designed determinism boundary, but its public-facing version/status surfaces are noisy enough to weaken confidence in release exactness. When a project is built around bit-exact reproducibility, version exactness matters too. ([GitHub][9])
+
+## 7. Governance, Safety, and Policy Layer Assessment
+
+Governance here is architectural, not purely rhetorical. Axion is present in the ISA and VM specs, in the architecture overview, in the DCP boundary, and in the implementation matrix. The repo’s CI also contains multiple governance and overclaim checks, which is stronger than a conventional README-only governance story. ([GitHub][12])
+
+That said, the spec itself shows the governance layer is not fully realized. Axion’s “determinism stewardship” is explicitly partial; active nondeterminism detection is not yet implemented. Complexity measurement is partial. The spec also notes that canonical reason-string concatenation was a tracked gap. So the governance stack is real, but not yet complete enough to justify the repo’s more sweeping “supervisory intelligence” framing without qualification. ([GitHub][6])
+
+The most convincing governance mechanism is not “ethics” language; it is bounded policy interception of privileged operations plus explicit traceability requirements. The least convincing part is the extension of governance language into cognitive-tier and advanced reasoning supervision while core detection and metric mechanisms are still incomplete. ([GitHub][6])
+
+## 8. Implementation Reality Check
+
+What appears truly working now: the deterministic core profile around data types, TISC, the interpreter path of T81VM, selected compiler reproducibility fixtures, a substantial CI/governance stack, and enough Axion integration to anchor policy-aware execution claims. The repo has concrete tests, named workflows, and explicit stable/frozen designations around that nucleus. ([GitHub][9])
+
+What appears partially working: parts of Axion’s richer stewardship model, some compiler and reproducibility surfaces, service/query surfaces in the OS effort, and benchmark/release discipline as a fully synchronized control surface. These are not absent; they are just not as complete as the most ambitious repo language suggests. ([GitHub][6])
+
+What appears scaffolded but not yet operational in the strongest sense: trace-JIT equivalence, distributed/cognitive-tier determinism, external hardware accelerators, real hardware adapters in the OS path, and broader “global deterministic computation platform” ambitions. The repo itself classifies many of these as experimental, planned, or outside DCP. ([GitHub][9])
+
+Most mature areas: deterministic core data types, ISA, interpreter, CI/governance scaffolding, and—judging by documentation maturity—the language surface. Most aspirational areas: full governance intelligence, distributed/cognitive tiers, native hardware realization, and the OS becoming a general-purpose kernel substrate. ([GitHub][4])
+
+## 9. Testing, Verification, and CI Assessment
+
+The testing/CI posture is a major strength. The inspected CI workflow includes structure verification, architecture-target checks, TISC freeze-integrity checks, AI experiment boundary checks, architecture coherence checks, workflow pinning and permissions audits, a large suite of governance checks, DCP integrity checks, governance metrics, and benchmark workload gates. This is substantially more rigorous than a typical hobby systems repo. ([GitHub][3])
+
+The repo also ties determinism claims to named tests and scripts in a way that is audit-friendly. The determinism registry and DCP list explicit paths rather than vague assurances. That is the right pattern. ([GitHub][11])
+
+Blind spots remain. Some CI jobs are informational, not hard gates. Compiler bytecode emission is only partial in the determinism registry. The VM spec itself admits missing direct query surfaces and incomplete scheduling trace visibility. Benchmark/reporting counts are inconsistent across authoritative documents. ([GitHub][3])
+
+## 10. Documentation & Spec Integrity Assessment
+
+Documentation quantity is very high and the engineering-control intent is serious. The architecture overview explicitly states authority ordering. The implementation matrix tries to reduce narrative drift to one row per subsystem. The project control center centralizes gate status. That is good governance design. ([GitHub][2])
+
+The problem is synchronization integrity. At least five major inconsistencies are visible from the inspected materials: README version/test counts versus Project Control Center versus CMake version; TISC v1.2 versus TISC spec v1.1; T81VM Beta spec versus Stable dashboard; Axion Alpha spec versus Stable implementation matrix; and Axion OS alpha/prototype messaging versus some broader stable-kernel phrasing elsewhere. These are not cosmetic. They create uncertainty about what should be treated as authoritative by a new maintainer, partner, or evaluator. ([GitHub][1])
+
+For a new technical contributor, the repo is impressive but hard to parse. The presence of `docs`, `book`, `spec`, `contracts`, `internal`, `legacy`, `pdf`, `notebooks`, multiple dashboards, and multilingual public surfaces makes it clear this is a documentation-heavy environment. Without strong synchronization, that becomes a maze. ([GitHub][1])
+
+## 11. Kernel / OS / Axion Assessment
+
+The OS work is materially deeper than a concept note. The progress log describes implemented phases for MMU, scheduling/IPC, persistence, device scaffolds, pager ABI, interrupt governance slices, and boot-lane validation. It cites thousands of assertions and a phased roadmap with concrete files and tests. This is real engineering. ([GitHub][7])
+
+But it is still best classified as an advanced hosted prototype, not a complete kernel. The progress log repeatedly describes hosted simulation paths, QEMU developer lanes, VirtualBox scaffolds, recovered-artifact handoff bundles, and open real-hardware adapter work. The architecture is advancing through staged slices and simulation-backed validation, which is respectable, but it is not the same as a mature standalone operating system. ([GitHub][7])
+
+The naming split also matters. “Axion” refers to the operating system in the progress log, while the spec defines “Axion Kernel” as the supervisory intelligence of the ecosystem. Those are related but not identical concepts. That naming collision will continue to cause confusion until the repo draws a harder semantic line. ([GitHub][7])
+
+Verdict: this is currently an advanced architectural prototype / partial OS substrate with real subsystems, not yet a general-purpose or production operating system. ([GitHub][7])
+
+## 12. Language / VM / ISA Stack Assessment
+
+TISC is the most stable conceptual anchor. It is normative, frozen-oriented, and explicitly defines deterministic execution, zero undefined behavior, Axion visibility, and compatibility with data types, VM, and language layers. ([GitHub][12])
+
+T81VM is the operational heart. The interpreter path is clearly central to the deterministic core, and the DCP excludes JIT until equivalence is proven. The spec also shows healthy honesty by naming currently incomplete surfaces rather than pretending they are done. ([GitHub][8])
+
+T81Lang is more mature than many research languages because it has a normative grammar, type/effect framing, explicit determinism notes, and a compiler pipeline. But it is also where the project’s ambition is easiest to outrun. “Stable” language status is plausible for a bounded compiler-to-TISC toolchain, but not necessarily for the full ecosystem semantics implied around tiers, agents, and governed foreign surfaces without narrower release framing. ([GitHub][5])
+
+As a stable computation substrate, the data types + TISC + non-JIT T81VM combination is the repo’s most credible technical asset. That is the part that could plausibly be treated as a serious experimental platform. ([GitHub][9])
+
+## 13. Research vs Productization Assessment
+
+Today the repo sits between “experimental platform” and “pre-product technical foundation.” It is beyond a mere research artifact because it has build systems, CI, tests, release discipline documents, conformance references, dashboards, and a bounded deterministic core. But it is not yet a developer platform or infrastructure candidate in a straightforward sense because too many outer layers are still experimental, contradictory, or governance-heavy relative to their implementation maturity. ([GitHub][3])
+
+To advance to the next stage, the repo would need one decisive shift: separate the certifiable deterministic core from the exploratory ecosystem with much harder release labeling. That means one authoritative version source, one status source, one promoted surface registry, and explicit “not part of product boundary” markings everywhere else. After that, it would need independent reproduction outside the core maintainer context and tighter proof for the language/toolchain/governance interfaces it already claims as stable. ([GitHub][9])
+
+## 14. SWOT Analysis
+
+**Strengths**
+The repo has a genuine systems architecture, not just branding. The determinism boundary is unusually explicit. CI/governance discipline is advanced. The interpreter-centered execution core appears materially real. The project also has strong documentation habits and cross-layer intent. ([GitHub][2])
+
+**Weaknesses**
+Status/version incoherence is severe. Documentation sprawl is high. Governance language sometimes outruns implementation. The OS and advanced AI/governance surfaces increase scope faster than they increase auditable certainty. Naming collisions, especially around Axion, blur architecture. ([GitHub][13])
+
+**Opportunities**
+A sharply bounded deterministic-core release could become the project’s credible wedge into research computing, reproducible execution, or language/VM experimentation. The repo already has the governance scaffolding to support that, if it stops trying to make every outer ring look equally mature. ([GitHub][9])
+
+**Threats**
+The biggest threat is credibility erosion through overclaim drift. In a project built around determinism and auditability, contradictory status surfaces are especially damaging. The second threat is maintainability collapse from breadth: kernel, language, VM, storage, AI, hardware, docs, book, dashboards, and multilingual outreach under one evolving authority graph. ([GitHub][1])
+
+## 15. Risk Register
+
+| Risk                         | Affected systems                                                               | Severity | Evidence                                                                                              | Mitigation                                                                                                                 |
+| ---------------------------- | ------------------------------------------------------------------------------ | -------: | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Status/version drift         | Whole repo                                                                     | Critical | README `v1.9.0` / 369 tests vs Control Center `v1.4.1` / 363 tests vs CMake `1.3.6`                   | Create single source of truth for version, release state, and test totals; generate downstream docs from it. ([GitHub][1]) |
+| Spec/implementation mismatch | ISA, VM, Axion                                                                 | Critical | TISC spec 1.1 vs README TISC 1.2; VM spec Beta vs dashboard Stable; Axion spec Alpha vs matrix Stable | Add automated status sync checks for spec version/state vs dashboards vs README. ([GitHub][12])                            |
+| Governance theater risk      | Axion, cognitive tiers                                                         |     High | Axion spec says determinism stewardship partial; complexity metrics partial                           | Narrow public claims to implemented hooks and verified enforcement points only. ([GitHub][6])                              |
+| Overextension                | Experimental, AI, OS, hardware                                                 |     High | DCP excludes many outer surfaces while README/roadmap spans hardware, deterministic cloud, cognition  | Freeze outer-surface marketing; publish a “core vs research” map in root docs. ([GitHub][9])                               |
+| Terminology/naming confusion | Axion, TernaryOS, kernel                                                       |     High | Progress log says Axion OS with internal `ternaryos`; spec uses Axion Kernel as supervisory layer     | Rename or prefix governance kernel vs OS kernel consistently. ([GitHub][7])                                                |
+| Experimental sprawl          | `experimental`, `experiments/ ai`, `legacy`, `internal`, notebooks/pdf/archive |     High | Large repo surface with many support/unclear-status directories                                       | Publish support-status taxonomy per directory; archive or quarantine dormant surfaces. ([GitHub][1])                       |
+| Test blind spots             | VM scheduling, compiler repro, JIT                                             |   Medium | Scheduling trace events not first-class; compiler emission partial; JIT excluded from DCP             | Promote missing trace surfaces to first-class tests before further feature expansion. ([GitHub][8])                        |
+| Maintainability risk         | Docs + code + dashboards                                                       |   Medium | Heavy documentation lattice with multiple status dashboards and authority layers                      | Generate matrices/dashboards from machine-readable metadata. ([GitHub][2])                                                 |
+| Onboarding risk              | New contributors                                                               |   Medium | Root tree breadth plus competing docs/spec/book/control-center layers                                 | Add contributor path map: “where to trust first, where not to trust yet.” ([GitHub][1])                                    |
+| Credibility risk             | External partners/funders                                                      | Critical | Deterministic/auditable brand undermined by internal inconsistency                                    | Treat synchronization defects as release-blocking defects. ([GitHub][1])                                                   |
+
+## 16. Maturity Scorecard
+
+Scores are my synthesis from the inspected specs, dashboards, CI, DCP/registry, and OS progress documents. They are evaluative judgments, not repository-provided numbers. ([GitHub][2])
+
+| Domain                       | Conceptual clarity | Implementation depth | Test evidence | Interface stability | Governance clarity | Operational readiness | Documentation integrity |
+| ---------------------------- | -----------------: | -------------------: | ------------: | ------------------: | -----------------: | --------------------: | ----------------------: |
+| Data Types                   |                  5 |                    4 |             4 |                   5 |                  4 |                     4 |                       4 |
+| TISC ISA                     |                  5 |                    4 |             4 |                   5 |                  4 |                     4 |                       3 |
+| T81VM                        |                  4 |                    4 |             4 |                   3 |                  4 |                     4 |                       3 |
+| T81Lang                      |                  4 |                    3 |             3 |                   3 |                  4 |                     3 |                       4 |
+| Axion governance             |                  4 |                    3 |             3 |                   3 |                  4 |                     3 |                       3 |
+| CanonFS                      |                  4 |                    3 |             3 |                   3 |                  3 |                     3 |                       3 |
+| CI / governance tooling      |                  4 |                    4 |             4 |                   4 |                  5 |                     4 |                       4 |
+| Axion OS / TernaryOS         |                  4 |                    3 |             4 |                   2 |                  3 |                     2 |                       3 |
+| AI / cognitive / distributed |                  3 |                    2 |             2 |                   2 |                  3 |                     1 |                       3 |
+| Docs / public comms          |                  4 |                    4 |             3 |                   2 |                  4 |                     3 |                       2 |
+
+Overall weighted maturity profile: **3.4 / 5**. That corresponds to a serious experimental platform with a credible deterministic core, but with enough outer-layer ambiguity and governance/documentation drift to block a stronger “infrastructure-ready” rating. ([GitHub][9])
+
+## 17. Strategic Recommendations
+
+### Immediate priorities (0–30 days)
+
+Unify version/status authority. Pick one canonical source for release number, spec maturity, subsystem maturity, and test totals; generate README, Control Center, Implementation Matrix, and build metadata from it. Until that is done, every “stable” claim should be treated as provisional. ([GitHub][1])
+
+Rename the two Axion concepts. One is a governance kernel/policy engine; the other is an experimental operating system. They need different user-facing names or strict prefixes. ([GitHub][6])
+
+Publish a repo support-status index by top-level directory: maintained core, maintained support, experimental, legacy, archived, internal-only. The tree is too large to leave implicit. ([GitHub][1])
+
+### Near-term priorities (1–3 months)
+
+Tighten spec-to-implementation promotion rules. A subsystem should not be called Stable in dashboards while its normative spec remains Beta/Alpha unless the repo explicitly distinguishes “implementation stable, spec pending.” Right now it does not do that cleanly. ([GitHub][8])
+
+Finish the missing observability surfaces in the VM/Axion boundary: direct execution-mode query, first-class scheduling trace events, and whatever remains of canonical reason-string and nondeterminism detection work. These are leverage points because they convert governance from philosophy into instrumentation. ([GitHub][8])
+
+Separate DCP release notes from ecosystem release notes. The core deserves a lean, certifiable release discipline. The broader ecosystem deserves a research-progress log. Mixing them blunts both. ([GitHub][9])
+
+### Medium-term priorities (3–12 months)
+
+Pursue independent external reproduction of the deterministic core, because the repo itself names that as the remaining advancement criterion for Stage 2-style verification. That would do more for credibility than another layer of dashboards. ([GitHub][1])
+
+For the OS effort, choose the next truth test: either “hosted prototype with rigorous device/boot simulation” or “real kernel substrate on a constrained target.” Right now it is progressing responsibly, but still across too many staged lanes. A narrower acceptance target would sharpen the program. ([GitHub][7])
+
+For the AI/governance perimeter, stop promoting cognitive/distributed/hardware visions as near peers of the core. Keep them in explicitly non-DCP research channels until they have the same evidence density as the VM/ISA/data-type stack. ([GitHub][9])
+
+## 18. Final Verdict
+
+T81 Foundation is most credibly, today, **a rigorous experimental deterministic-computing platform with a real VM/ISA/data-model core and an unusually elaborate governance/documentation superstructure**. ([GitHub][2])
+
+Its strongest technical asset is **the bounded deterministic core profile and the fact that the repo actually tries to tie claims to named tests, CI checks, and explicit scope exclusions**. ([GitHub][9])
+
+Its biggest structural weakness is **status incoherence across specs, dashboards, README, and build metadata**. In a normal repo that is annoying. In a repo built around determinism and auditability, it is corrosive. ([GitHub][1])
+
+The single shift that would most improve its trajectory is **to turn synchronization itself into a first-class deterministic surface**: one authority graph, one generated maturity ledger, one release truth, and a hard separation between certifiable core and exploratory frontier.
+
+[1]: https://github.com/t81dev/t81-foundation/ "GitHub - t81dev/t81-foundation: T81 is a unified, deterministic, ternary-native computational architecture designed to surpass the limitations of binary computation. · GitHub"
+[2]: https://raw.githubusercontent.com/t81dev/t81-foundation/main/docs/architecture/OVERVIEW.md "raw.githubusercontent.com"
+[3]: https://raw.githubusercontent.com/t81dev/t81-foundation/main/.github/workflows/ci.yml "raw.githubusercontent.com"
+[4]: https://raw.githubusercontent.com/t81dev/t81-foundation/main/docs/status/IMPLEMENTATION_MATRIX.md "raw.githubusercontent.com"
+[5]: https://raw.githubusercontent.com/t81dev/t81-foundation/main/spec/t81lang-spec.md "raw.githubusercontent.com"
+[6]: https://raw.githubusercontent.com/t81dev/t81-foundation/main/spec/axion-kernel.md "raw.githubusercontent.com"
+[7]: https://raw.githubusercontent.com/t81dev/t81-foundation/main/experimental/ternaryos/docs/PROGRESS.md "raw.githubusercontent.com"
+[8]: https://raw.githubusercontent.com/t81dev/t81-foundation/main/spec/t81vm-spec.md "raw.githubusercontent.com"
+[9]: https://raw.githubusercontent.com/t81dev/t81-foundation/main/docs/product/DETERMINISTIC_CORE_PROFILE.md "raw.githubusercontent.com"
+[10]: https://raw.githubusercontent.com/t81dev/t81-foundation/main/CMakeLists.txt "raw.githubusercontent.com"
+[11]: https://raw.githubusercontent.com/t81dev/t81-foundation/main/docs/governance/DETERMINISM_SURFACE_REGISTRY.md "raw.githubusercontent.com"
+[12]: https://raw.githubusercontent.com/t81dev/t81-foundation/main/spec/tisc-spec.md "raw.githubusercontent.com"
+[13]: https://raw.githubusercontent.com/t81dev/t81-foundation/main/docs/status/PROJECT_CONTROL_CENTER.md "raw.githubusercontent.com"
 
 ---
 
