@@ -340,10 +340,10 @@ Stage 3 — Research Ecosystem (Active)
 
 Stage 3 opened with three concrete tracks. All three are now complete:
 
-✅ RFC-0037 TNN stdlib — std.tnn.* T81Lang builtins; 6 functions lower to RFC-0034 TISC ops; 13/13 tests
-✅ RFC-0038 Lattice Crypto — std.crypto.polymul/polymod; POLYMUL/POLYMOD opcodes; T81BigInt-exact; 13/13 tests
-✅ T81Lang spec v1.3 — RFC-0036/0037/0038 promoted to normative spec; §5.17 un-stubbed; §5.18–5.19 added
-✅ RFC-0039 NTRU-KEM — TVecSub opcode; std.crypto.{polyadd,polysub,ntru_encrypt,ntru_decrypt}; ntru_keygen/encrypt/decrypt C++ math layer; 24/24 tests; first end-to-end post-quantum cryptography demo on the ternary substrate
+* ✅ RFC-0037 TNN stdlib — std.tnn.* T81Lang builtins; 6 functions lower to RFC-0034 TISC ops; 13/13 tests
+* ✅ RFC-0038 Lattice Crypto — std.crypto.polymul/polymod; POLYMUL/POLYMOD opcodes; T81BigInt-exact; 13/13 tests
+* ✅ T81Lang spec v1.3 — RFC-0036/0037/0038 promoted to normative spec; §5.17 un-stubbed; §5.18–5.19 added
+* ✅ RFC-0039 NTRU-KEM — TVecSub opcode; std.crypto.{polyadd,polysub,ntru_encrypt,ntru_decrypt}; ntru_keygen/encrypt/decrypt C++ math layer; 24/24 tests; first end-to-end post-quantum cryptography demo on the ternary substrate
 
 Stage 3 is complete. All four tracks (RFC-0037, RFC-0038, spec v1.3, RFC-0039) landed 2026-03-16.
 
