@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cinttypes>
 #include <cstdio>
+#include <fstream>
 #include <sstream>
 #include <stdexcept>
 #include <unordered_set>
@@ -45,6 +46,28 @@ const ServiceEntry* ServiceRegistry::find(const std::string& id) const {
   for (const auto& s : services)
     if (s.id == id) return &s;
   return nullptr;
+}
+
+bool ServiceRegistry::load_from_file(const std::string& filename) {
+  std::ifstream file(filename);
+  if (!file.is_open()) {
+    std::fprintf(stderr, "Failed to open services file: %s\n", filename.c_str());
+    return false;
+  }
+  
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  std::string json_text = buffer.str();
+  
+  try {
+    ServiceRegistry loaded = load_service_registry(json_text);
+    *this = std::move(loaded);
+    return true;
+  } catch (const std::exception& e) {
+    std::fprintf(stderr, "Failed to parse services file %s: %s\n", 
+                filename.c_str(), e.what());
+    return false;
+  }
 }
 
 std::vector<const ServiceEntry*> ServiceRegistry::required_order() const {

@@ -82,6 +82,9 @@ struct ServiceRegistry {
 
   // Returns the entry with the given id, or nullptr.
   [[nodiscard]] const ServiceEntry* find(const std::string& id) const;
+  
+  // Load service registry from JSON file (t81-services.json format)
+  bool load_from_file(const std::string& filename);
 };
 
 // ─── Registry loader ─────────────────────────────────────────────────────────
