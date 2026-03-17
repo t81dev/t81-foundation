@@ -9,8 +9,8 @@
 
 # T81 Foundation — Deterministic Ternary Computing Stack
 
-![Release](https://img.shields.io/badge/release-v1.8.0--Stable-blue)
-![Tests](https://img.shields.io/badge/tests-367%2F367_passing-brightgreen)
+![Release](https://img.shields.io/badge/release-v1.9.0--Stable-blue)
+![Tests](https://img.shields.io/badge/tests-369%2F369_passing-brightgreen)
 ![ISA](https://img.shields.io/badge/ISA-v1.2.0_Frozen-blue)
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
 ![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
@@ -29,13 +29,13 @@ The stack delivers:
 
 ## Project Status — March 2026
 
-**Phase: Active Development** — v1.8.0-Stable; 368/368 tests passing; cross-platform determinism verified on Linux x86\_64 + macOS ARM64.
+**Phase: Active Development** — v1.9.0-Stable; 369/369 tests passing; cross-platform determinism verified on Linux x86\_64 + macOS ARM64.
 
 | Component | Maturity | Notes |
 | :--- | :--- | :--- |
 | **TISC ISA** | ❄️ Frozen | v1.2.0; opcode semantics immutable under v1.x; 12 new opcodes since v1.1: `AgentInvoke` (RFC-0015), 6 ternary-native inference (RFC-0034), 3 FFI (RFC-00B8), 2 lattice crypto (RFC-0038), 1 KEM ring (RFC-0039) |
 | **Data Types** | ❄️ Frozen | BigInt, Float, Complex, Map, Set — bit-stable encoding; 2026-02-27 audit clean |
-| **T81VM** | ✅ Stable | Full TISC v1.2 dispatch; `AgentInvoke` + ternary-native inference + FFI + lattice crypto + NTRU-KEM opcodes; 368/368 tests |
+| **T81VM** | ✅ Stable | Full TISC v1.2 dispatch; `AgentInvoke` + ternary-native inference + FFI + lattice crypto + NTRU-KEM opcodes; 369/369 tests |
 | **T81Lang** | ✅ Stable | spec v1.3 Stable; `agent`/`behavior` (RFC-0015); `foreign {}` FFI (RFC-0036); `std.tnn.*` TNN stdlib (RFC-0037); `std.crypto.*` lattice crypto + NTRU-KEM (RFC-0038/0039); contextual identifier support throughout |
 | **Axion Governance Kernel** | ✅ Stable | P4 Safety & P5 Privileged Instruction satisfied; AX-M6 canonical reason strings; every `AgentInvoke` + `TACT` activation gate emits audit event |
 | **Ternary-Native Inference** | ✅ Stable | RFC-0034 + RFC-0037: `TWMATMUL`, `TQUANT`, `TATTN`, `TWEMBED`, `TERNACCUM`, `TACT`; `std.tnn.*` T81Lang stdlib (6 builtins → TISC ops); multiplication-free inference; T81WTN weight format; 13/13 tests; production-ready ternary inference operations |
@@ -48,6 +48,7 @@ The stack delivers:
 | **Benchmark Suite** | ✅ Stable | RFC-00A2: VM throughput + CanonHash81 determinism validation (`score=1.0` across all runs); `t81 internal benchmark`; production-ready performance validation |
 | **TernaryOS User Environment** | ✅ Beta | RFC-00B9: t81-init, session manager, t81sh shell; 15/15 acceptance criteria implemented; boot sequence, session lifecycle, and shell infrastructure working |
 | **Cross-Platform Determinism CI** | ✅ Stable | Daily GitHub Actions workflow compares T81Lang bytecode hashes across Linux x86\_64 (gcc-14) and macOS ARM64 (clang); publicly auditable evidence record; production-ready cross-platform determinism validation |
+| **Hanoi VM** | ✅ Alpha | RFC-0000 §4 ethics-first boot; 81-slot deterministic scheduler; snapshot management; RFC-0000 §7 command surface (status, optimize, simulate, snapshot, rollback); comprehensive test suite; Alpha-ready microkernel |
 | **Axion OS Kernel** | 🔬 Experimental | TernaryOS: pager, scheduler, IPC, interrupt framework, QEMU x86\_64 EFI lane operational; 9/9 ternaryOS tests pass |
 
 ---

@@ -3,8 +3,8 @@
 // ---------- Version ----------
 #define T81_VERSION_MAJOR 1
 #define T81_VERSION_MINOR 3
-#define T81_VERSION_PATCH 5
-#define T81_VERSION_STR "1.3.5"
+#define T81_VERSION_PATCH 6
+#define T81_VERSION_STR "1.3.6"
 
 // ---------- Feature toggles (edit as needed) ----------
 // Enable lightweight internal assertions in headers (abort on failure)
