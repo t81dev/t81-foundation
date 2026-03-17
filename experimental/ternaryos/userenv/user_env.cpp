@@ -463,7 +463,7 @@ ServiceActivationResult activate_service(const ServiceRegistry& registry,
 std::string history_entry_to_jsonl(const ShellHistoryEntry& e) {
   char buf[512];
   std::snprintf(buf, sizeof(buf),
-    R"({"epoch":%" PRIu64 R"(,"cmd":"%s","exit_code":%d,"duration_ms":%u,"axion_verdict":"%s"})",
+    "{\"epoch\":%" PRIu64 ",\"cmd\":\"%s\",\"exit_code\":%d,\"duration_ms\":%u,\"axion_verdict\":\"%s\"}",
     e.epoch, e.cmd.c_str(), e.exit_code, e.duration_ms, e.axion_verdict.c_str());
   return buf;
 }

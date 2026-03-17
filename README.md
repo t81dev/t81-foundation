@@ -47,7 +47,7 @@ The stack delivers:
 | **Cognitive Tiers** | ✅ Beta | Tier4 Cognition (RFC-0021): `Tier4Loop`, `SelfModel` (81-entry ring), `RecursiveImprovementBounds`, `TierAwarePlanner`; 4 test suites pass; experimental cognitive architecture ready for beta testing |
 | **Benchmark Suite** | ✅ Stable | RFC-00A2: VM throughput + CanonHash81 determinism validation (`score=1.0` across all runs); `t81 internal benchmark`; production-ready performance validation |
 | **TernaryOS User Environment** | ✅ Beta | RFC-00B9: t81-init, session manager, t81sh shell; 15/15 acceptance criteria implemented; boot sequence, session lifecycle, and shell infrastructure working |
-| **Cross-Platform Determinism CI** | ✅ Accepted | Daily GitHub Actions workflow compares T81Lang bytecode hashes across Linux x86\_64 (gcc-14) and macOS ARM64 (clang); publicly auditable evidence record |
+| **Cross-Platform Determinism CI** | ✅ Stable | Daily GitHub Actions workflow compares T81Lang bytecode hashes across Linux x86\_64 (gcc-14) and macOS ARM64 (clang); publicly auditable evidence record; production-ready cross-platform determinism validation |
 | **Axion OS Kernel** | 🔬 Experimental | TernaryOS: pager, scheduler, IPC, interrupt framework, QEMU x86\_64 EFI lane operational; 9/9 ternaryOS tests pass |
 
 ---
