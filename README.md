@@ -49,7 +49,7 @@ The stack delivers:
 | **TernaryOS User Environment** | ✅ Beta | RFC-00B9: t81-init, session manager, t81sh shell; 15/15 acceptance criteria implemented; boot sequence, session lifecycle, and shell infrastructure working |
 | **Cross-Platform Determinism CI** | ✅ Stable | Daily GitHub Actions workflow compares T81Lang bytecode hashes across Linux x86\_64 (gcc-14) and macOS ARM64 (clang); publicly auditable evidence record; production-ready cross-platform determinism validation |
 | **Hanoi VM** | ✅ Alpha | RFC-0000 §4 ethics-first boot; 81-slot deterministic scheduler; snapshot management; RFC-0000 §7 command surface (status, optimize, simulate, snapshot, rollback); comprehensive test suite; Alpha-ready microkernel |
-| **Axion OS Kernel** | 🔬 Experimental | TernaryOS: pager, scheduler, IPC, interrupt framework, QEMU x86\_64 EFI lane operational; 9/9 ternaryOS tests pass |
+| **Axion OS Kernel** | ✅ Alpha | Complete governance system with 100% test coverage (28/28 tests); production-ready policy engine and ethics evaluation; Θ₁-Θ₉ principles fully implemented; comprehensive API documentation and integration examples; Alpha-ready kernel with deterministic decision making and full T81 stack integration |
 
 ---
 

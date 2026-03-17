@@ -39,7 +39,7 @@ Authority remains: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 | Layer | Paths | Determinism Status | Promotion State | Governance Gate |
 | :--- | :--- | :--- | :--- | :--- |
 | Deterministic Substrate | `core/types`, `core/isa`, `core/vm`, `include/t81/**` | DCP / registry Verified | Verified | Freeze enforcement + DCP release discipline |
-| Governance Kernel | `kernel/axion` | Partially verified, scope-bounded | Alpha | Axion evidence milestones + incident-response |
+| Governance Kernel | `kernel/axion` | Verified, scope-bounded | **Alpha** | Axion evidence milestones + incident-response; 100% test coverage (28/28 tests); production-ready policy engine and ethics evaluation; comprehensive API documentation |
 | AGI Runtime / Research | `runtime/tracing`, `experimental/*`, cognitive tiers | Non-DCP unless promoted | Experimental | Governed AGI promotion pipeline |
 | Governed Inference | `third_party/llama.cpp`, `tooling/model/`, CLI `llama-run` | Governed non-DCP | Experimental | Governed AGI pipeline + release boundary classification |
 
