@@ -243,7 +243,7 @@ Because the TISC ISA is ternary-native, the **Axion Governance Kernel** can audi
 
 ---
 
-# T81 Foundation Complete Systems & Subsystems Evaluation Report
+# T81: A Complete Systems & Subsystems Report
 
 ## 1. Executive Summary
 
