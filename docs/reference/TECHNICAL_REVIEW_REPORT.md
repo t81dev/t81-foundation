@@ -44,7 +44,7 @@
 - **Ternary Math:** **Implemented**. `T81Int` handles balanced ternary arithmetic correctly.
 - **Deterministic Float:** **Partial**. Storage is canonical. Arithmetic relies on `double` for division/transcendentals, but `dmath` backend provides deterministic implementations for some functions.
 - **Graph Engine:** **Implemented**. `T81Graph` supports large graphs via heap storage.
-- **Axion Kernel:** **Implemented**. Policy engine hooks are integrated into the VM instruction loop.
+- **Axion Governance Kernel:** **Implemented**. Policy engine hooks are integrated into the VM instruction loop.
 
 ## 9. RED FLAGS & CONCERNS
 - **Float Determinism:** `T81Float` still falls back to host `double` for division and some transcendentals (e.g., `acos`). This is a known "Deferred" item but a critical one for strict determinism.

@@ -6,7 +6,7 @@
 **Created:** 2026-03-12
 **Updated:** 2026-03-16
 **Author:** @t81dev
-**Depends on:** RFC-00B0 (HAL), RFC-00B1 (MMU), RFC-00B3 (Axion Kernel Architecture)
+**Depends on:** RFC-00B0 (HAL), RFC-00B1 (MMU), RFC-00B3 (Axion Governance Kernel Architecture)
 **Blocks:** Later interrupt and timer integration beyond the current kernel bootstrap path
 
 ---

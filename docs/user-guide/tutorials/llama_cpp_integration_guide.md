@@ -263,7 +263,7 @@ cmake -S . -B build \
 ```
 T81Lang → T81VM → Governed LLM Module → T81 Native Hardware
                 ↑                    ↑
-           Axion Kernel        Ternary Processing Units
+           Axion Governance Kernel        Ternary Processing Units
                 ↓
         Deterministic Execution Trace
 ```

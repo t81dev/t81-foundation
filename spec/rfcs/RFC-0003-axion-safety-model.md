@@ -141,7 +141,7 @@ ______________________________________________________________________
 
 # 4. Enforcement Architecture
 
-Axion enforces safety through **five deterministic subsystems**, introduced in the Axion Kernel spec.\
+Axion enforces safety through **five deterministic subsystems**, introduced in the Axion Governance Kernel spec.\
 This RFC expands them with safety semantics.
 
 ______________________________________________________________________

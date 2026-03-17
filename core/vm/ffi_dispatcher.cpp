@@ -39,9 +39,10 @@ public:
         // Create FFI call context
         t81::ffi::FFICallContext context{
             .function_name = function_name,
-            .call_id = ++s_call_id_counter,
+            .function_type = t81::ffi::FFIType::Governed, // placeholder
             .caller_location = "VM_FFI_Call",
             .serialized_args = {}, // Would be populated from VM memory
+            .call_id = ++s_call_id_counter,
             .resource_cost = static_cast<uint32_t>(arg_count * 8)
         };
         

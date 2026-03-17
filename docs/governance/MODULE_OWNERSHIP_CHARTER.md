@@ -38,7 +38,7 @@ This charter applies to:
 | Core Data Types | `core/types/` | Frozen |
 | TISC ISA | `core/isa/` | Frozen |
 | T81VM | `core/vm/` | Frozen (for DCP-covered semantics) |
-| Axion Kernel | `kernel/axion/` | Controlled / Partial |
+| Axion Governance Kernel | `kernel/axion/` | Controlled / Partial |
 | Runtime Tracing | `runtime/tracing/` | Controlled |
 | Runtime JIT | `runtime/jit/` | Experimental / Non-DCP unless promoted |
 | Experimental Surfaces | `experimental/*` | Experimental |

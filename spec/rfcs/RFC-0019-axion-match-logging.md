@@ -5,7 +5,7 @@ ______________________________________________________________________
 Version 0.1 — Accepted (Standards Track)\
 Status: Accepted\
 Author: T81 Foundation Compiler Council\
-Applies to: Axion Kernel, T81VM, TISC, T81Lang
+Applies to: Axion Governance Kernel, T81VM, TISC, T81Lang
 
 ______________________________________________________________________
 

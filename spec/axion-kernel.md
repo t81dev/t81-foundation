@@ -1,6 +1,6 @@
 ______________________________________________________________________
 
-title: T81 Foundation Specification — Axion Kernel
+title: T81 Foundation Specification — Axion Governance Kernel
 nav:
 
 - [Overview](t81-overview.md)
@@ -8,22 +8,22 @@ nav:
 - [TISC Specification](tisc-spec.md)
 - [T81 Virtual Machine](t81vm-spec.md)
 - [T81Lang](t81lang-spec.md)
-- [Axion Kernel](axion-kernel.md)
+- [Axion Governance Kernel](axion-kernel.md)
 - [Cognitive Tiers](cognitive-tiers.md)
 
 ______________________________________________________________________
 
 [← Back to Spec Index](index.md)
 
-# Axion Kernel Specification
+# Axion Governance Kernel Specification
 
-Version 1.0 — Alpha
+Version 1.9.0 — Stable
 
-Status: Alpha\
+Status: Stable\
 Last Revised: 2026-03-16\
 Applies to: T81VM, TISC, T81Lang, Cognitive Tiers
 
-The **Axion Kernel** is the supervisory intelligence of the T81 Ecosystem.\
+The **Axion Governance Kernel** is the supervisory intelligence of the T81 Ecosystem.\
 It enforces:
 
 - deterministic execution invariants
@@ -47,7 +47,7 @@ Axion sits **above** all executable layers:
 ┌─────────────────────────────┐
 │     Cognitive Tiers         │
 ├─────────────────────────────┤
-│        Axion Kernel         │  ← THIS LAYER
+│        Axion Governance Kernel         │  ← THIS LAYER
 ├─────────────────────────────┤
 │ T81VM  |  TISC  |  DataTypes│
 ├─────────────────────────────┤
@@ -172,7 +172,7 @@ Axion also receives a deterministic trace of every segment transition and guarde
 
 ## 1.9 Axion API & Policy Enforcement
 
-The Axion Kernel exposes a constrained syscall surface (`AXREAD`, `AXSET`, `AXVERIFY`, `AXTRACE`, etc.) that every privileged opcode must call before performing non-deterministic or privileged actions. Each syscall supplies the opcode, the target addresses or handles, the calling snapshot, and any associated guard metadata (loop id, match metadata, enum/variant ids). The Axion Engine returns a deterministic `Verdict` (Allow/Deny) plus a canonical `reason` string. Denials immediately trigger deterministic `Axion Faults`; allows append the reason to `State::axion_log`.
+The Axion Governance Kernel exposes a constrained syscall surface (`AXREAD`, `AXSET`, `AXVERIFY`, `AXTRACE`, etc.) that every privileged opcode must call before performing non-deterministic or privileged actions. Each syscall supplies the opcode, the target addresses or handles, the calling snapshot, and any associated guard metadata (loop id, match metadata, enum/variant ids). The Axion Governance Engine returns a deterministic `Verdict` (Allow/Deny) plus a canonical `reason` string. Denials immediately trigger deterministic `Axion Faults`; allows append the reason to `State::axion_log`.
 
 Policies are encoded via the `(policy ...)` s-expression embedded in `tisc::Program.axion_policy_text`. Axion parses these forms (see `include/t81/axion/policy.hpp`) and enforces:
 

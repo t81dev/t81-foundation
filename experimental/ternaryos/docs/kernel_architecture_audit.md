@@ -1,4 +1,4 @@
-# Axion Kernel Architecture Audit
+# Axion Governance Kernel Architecture Audit
 
 Date: 2026-03-13
 Scope: `experimental/ternaryos`

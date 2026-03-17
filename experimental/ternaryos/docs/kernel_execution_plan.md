@@ -1,4 +1,4 @@
-# Axion Kernel Execution Plan
+# Axion Governance Kernel Execution Plan
 
 Current working release label: `Axion v0.1.0-alpha`
 
@@ -645,7 +645,7 @@ service ABI calls are normatively specified in
 `spec/rfcs/RFC-00B7-pager-service-abi.md` with full acceptance criteria
 aligned to `[AC-22o]`, `[AC-22p]`, `[AC-22q]`.
 
-**RFC-00B3 (Axion Kernel Architecture) is now accepted.**  All §8 acceptance
+**RFC-00B3 (Axion Governance Kernel Architecture) is now accepted.**  All §8 acceptance
 criteria were already met; the two major open questions (capability model,
 device arbitration registry) are resolved.
 

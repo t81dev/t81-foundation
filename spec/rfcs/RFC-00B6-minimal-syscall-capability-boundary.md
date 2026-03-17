@@ -6,7 +6,7 @@
 **Created:** 2026-03-12
 **Updated:** 2026-03-14
 **Author:** @t81dev
-**Depends on:** RFC-00B1 (MMU), RFC-00B3 (Axion Kernel Architecture), RFC-00B4 (Axion Userland Service Contract), RFC-00B5 (Governed Event Interrupt Model)
+**Depends on:** RFC-00B1 (MMU), RFC-00B3 (Axion Governance Kernel Architecture), RFC-00B4 (Axion Userland Service Contract), RFC-00B5 (Governed Event Interrupt Model)
 **Blocks:** first real userland execution path, non-demo service runtime, executable/kernel ABI convergence
 
 ---
@@ -657,7 +657,7 @@ criteria are fully met with no remaining open questions.
 
 - [RFC-00B7: Pager Service ABI](RFC-00B7-pager-service-abi.md)
 - [RFC-00B1: Ternary MMU](RFC-00B1-ternary-mmu.md)
-- [RFC-00B3: Axion Kernel Architecture](RFC-00B3-axion-kernel-architecture.md)
+- [RFC-00B3: Axion Governance Kernel Architecture](RFC-00B3-axion-kernel-architecture.md)
 - [RFC-00B4: Axion Userland Service Contract](RFC-00B4-userland-service-contract.md)
 - [RFC-00B5: Governed Event Interrupt Model](RFC-00B5-governed-event-interrupt-model.md)
 - [kernel_architecture_audit.md](../../experimental/ternaryos/docs/kernel_architecture_audit.md)

@@ -57,7 +57,7 @@ ______________________________________________________________________
 ## 5. Supporting Systems
 
 - **CanonFS (`t81_core`):** **Beta.** The `canonfs::Driver` API is functional. The `PersistentDriver` implements disk-backed storage with Axion hooks, ensuring auditable writes and reads. Snapshot hashes in the `InMemoryKernel` are derived deterministically. Performance optimization and scalability testing are ongoing.
-- **Axion Kernel (`t81_core`):** **Stable.** The `PolicyEngine` enforces the full set of Axion safety policies, including resource limits (instructions, recursion, stack, reflection) and trace-based requirements for loops, guards, and segment events.
+- **Axion Governance Kernel (`t81_core`):** **Stable.** The `PolicyEngine` enforces the full set of Axion safety policies, including resource limits (instructions, recursion, stack, reflection) and trace-based requirements for loops, guards, and segment events.
 - **Tooling (`t81` CLI):** **Implemented.** The `t81` command-line tool drives `compile/check/run/repl` and also includes `disasm`, `debug`, and `trace replay` paths.
 
 ______________________________________________________________________

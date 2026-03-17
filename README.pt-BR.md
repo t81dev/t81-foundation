@@ -49,7 +49,7 @@ A pilha oferece:
 | **TernaryOS User Environment** | ✅ Beta | RFC-00B9: t81-init, administrador de sessões, shell t81sh; 15/15 critérios de aceitação implementados; sequência de boot, ciclo de vida de sessão e arquitetura de shell operacionais |
 | **Cross-Platform Determinism CI** | ✅ Stable | Fluxo de trabalho diário de GitHub Actions que compara hashes de bytecode do T81Lang em Linux x86\_64 (gcc-14) e macOS ARM64 (clang); registro de evidência auditável publicamente; validação de determinismo multiplataforma pronta para produção |
 | **Hanoi VM** | ✅ Alpha | RFC-0000 §4 boot centrado em ética; escalonador determinista de 81 slots; gerenciamento de snapshots; RFC-0000 §7 superfície de comandos (status, optimize, simulate, snapshot, rollback); suite de testes completa; microkernel pronto para Alpha |
-| **Axion OS Kernel** | ✅ Alpha | Sistema completo de governança com 100% de cobertura de testes (28/28 testes); motor de políticas pronto para produção e avaliação de ética; Princípios Θ₁-Θ₉ totalmente implementados; documentação completa da API e exemplos de integração; kernel pronto para Alpha com tomada de decisões determinista e total integração com a pilha T81 |
+| **Axion OS** | ✅ Alpha | Sistema completo de governança com 100% de cobertura de testes (28/28 testes); motor de políticas pronto para produção e avaliação de ética; Princípios Θ₁-Θ₉ totalmente implementados; documentação completa da API e exemplos de integração; kernel pronto para Alpha com tomada de decisões determinista e total integração com a pilha T81 |
 
 ---
 
@@ -78,7 +78,7 @@ A pilha oferece:
 │  FFIDispatcher · FFILibraryRegistry                         │
 │  TWMATMUL · TQUANT · TATTN · TWEMBED · TERNACCUM · TACT     │
 └─────────────────────────────────────────────────────────────┘
-  Experimental: TernaryOS (Axion OS Kernel) · Cognitive Tiers
+  Experimental: TernaryOS (Axion OS) · Cognitive Tiers
 ```
 
 ### Componentes chave
@@ -416,7 +416,7 @@ A aplicação nas etapas aplicadas ao protótipo operacional referenciado nesta 
 
 Contudo ele é referenciado nesta aplicação sob bases em hospedeiros no nível QEMU, os fluxos com avaliações no ambiente simulado na hospedagem, e processos em referências na virtualização da estrutura aplicável das evidências e processos de validação de artefatos com adaptadores do formato aplicável referenciados em teste avaliativo com processos base. O estado operável independente e da aplicação final completa não é a sua métrica validada para a base operacional final. ([GitHub][7])
 
-Os recursos em colisão de nomes entre o Axion na avaliação do ambiente OS nestas páginas na integração versus o "Axion Kernel", definido como governança no nível no ambiente da supervisão, prejudicam a referência nestas especificações ou abordagens propostas que necessitariam uma divisão nestas abordagens nominais com maior clareza de contexto e uso com a coerência das especificações abordadas. ([GitHub][7])
+Os recursos em colisão de nomes entre o Axion na avaliação do ambiente OS nestas páginas na integração versus o "Axion Governance Kernel", definido como governança no nível no ambiente da supervisão, prejudicam a referência nestas especificações ou abordagens propostas que necessitariam uma divisão nestas abordagens nominais com maior clareza de contexto e uso com a coerência das especificações abordadas. ([GitHub][7])
 
 Este projeto apresenta-se assim no desenvolvimento experimental de nível prototipado na arquitetura, hospedado com uso em sustratos nestas integrações testadas como avaliadas de modo focado em uso OS. ([GitHub][7])
 
@@ -458,7 +458,7 @@ A credibilidade nestes registros devido aos conflitos nos relatórios do reposit
 | Incompatibilidade de especificação/implementação | ISA, VM, Axion | Crítica | Especificação TISC 1.1 vs README TISC 1.2; Especificação da VM Beta vs painel Stable; Especificação do Axion Alpha vs matriz Stable | Adicione verificações automáticas de sincronização de status para versão/estado de especificação vs painéis vs README. ([GitHub][12]) |
 | Risco de teatro de governança | Axion, níveis cognitivos | Alta | A especificação do Axion diz que a administração do determinismo é parcial; métricas de complexidade são parciais | Restrinja as alegações públicas a pontos de imposição e ganchos implementados e verificados apenas. ([GitHub][6]) |
 | Sobre-extensão | Experimental, IA, SO, hardware | Alta | DCP exclui muitas superfícies externas, enquanto README/roadmap abrange hardware, nuvem determinística, cognição | Congele o marketing de superfície externa; publique um mapa de "núcleo vs pesquisa" nos documentos principais. ([GitHub][9]) |
-| Confusão de terminologia/nomenclatura | Axion, TernaryOS, kernel | Alta | Log de progresso diz SO Axion com `ternaryos` interno; especificação usa Axion Kernel como camada de supervisão | Renomeie ou coloque prefixos consistentes no kernel de governança vs kernel do sistema operacional. ([GitHub][7]) |
+| Confusão de terminologia/nomenclatura | Axion, TernaryOS, kernel | Alta | Log de progresso diz SO Axion com `ternaryos` interno; especificação usa Axion Governance Kernel como camada de supervisão | Renomeie ou coloque prefixos consistentes no kernel de governança vs kernel do sistema operacional. ([GitHub][7]) |
 | Dispersão experimental | `experimental`, `experiments/ ai`, `legacy`, `internal`, notebooks/pdf/archive | Alta | Grande superfície de repositório com muitos diretórios de status de suporte incerto/inativo | Publique a taxonomia do status de suporte por diretório de nível superior: núcleo mantido, suporte mantido, experimental, legado, arquivado, apenas interno. ([GitHub][1]) |
 | Pontos cegos de teste | Agendamento de VM, reprodução do compilador, JIT | Média | Eventos de rastreamento de agendamento não são de primeira classe; emissão do compilador é parcial; JIT é excluído do DCP | Promova superfícies de rastreamento ausentes para testes de primeira classe antes de prosseguir com a expansão de recursos. ([GitHub][8]) |
 | Risco de manutenção | Documentos + código + painéis | Média | Pesada rede de documentação com vários painéis de status e camadas de autoridade | Gere matrizes/painéis a partir de metadados legíveis por máquina. ([GitHub][2]) |

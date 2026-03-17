@@ -8,7 +8,7 @@ nav:
 - [TISC Specification](tisc-spec.md)
 - [T81 Virtual Machine](t81vm-spec.md)
 - [T81Lang](t81lang-spec.md)
-- [Axion Kernel](axion-kernel.md)
+- [Axion Governance Kernel](axion-kernel.md)
 - [Cognitive Tiers](cognitive-tiers.md)
 
 ______________________________________________________________________
@@ -17,9 +17,9 @@ ______________________________________________________________________
 
 # T81 Virtual Machine Specification
 
-Version 1.1 — Beta
+Version 1.9.0 — Stable
 
-Status: Beta\
+Status: Stable\
 Last Revised: 2026-03-01\
 Applies to: TISC, T81Lang, Axion, Cognitive Tiers
 
@@ -534,7 +534,7 @@ ______________________________________________________________________
 
 ## T81Lang
 
-Current spec version: **v1.2** (updated 2026-03-01).
+Current spec version: **v1.9.0**
 
 - **Compiler → VM Pipeline** → [`t81lang-spec.md`](t81lang-spec.md#5-compilation-pipeline)
 - **Type Behavior in Execution** → [`t81lang-spec.md`](t81lang-spec.md#2-type-system)

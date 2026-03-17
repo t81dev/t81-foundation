@@ -4,7 +4,7 @@
 **Type:** standards-track
 **Authors:** T81 Foundation
 **Created:** 2026-03-16
-**Depends-on:** RFC-00B3 (Axion Kernel Architecture), RFC-00B4 (Userland Service Contract),
+**Depends-on:** RFC-00B3 (Axion Governance Kernel Architecture), RFC-00B4 (Userland Service Contract),
                RFC-00B6 (Minimal Syscall and Capability Boundary), RFC-0033 (Dual TUI Frontends)
 **Relates-to:** RFC-00B0 (HAL), RFC-00B2 (Device Drivers), RFC-00B5 (Event/Interrupt Model),
                RFC-00B7 (Pager Service ABI), RFC-00B8 (Governed FFI)
@@ -83,7 +83,7 @@ to having a POSIX kernel with no `init`, no `/etc/passwd`, and no shell.
 ├───────────────────────────────────────────────────────────────┤
 │  RFC-00B6  Syscall / Capability Boundary                       │
 │  RFC-00B7  Pager Service ABI                                   │
-│  RFC-00B3  Axion Kernel                                        │
+│  RFC-00B3  Axion Governance Kernel                                        │
 │  RFC-00B0  HAL  ·  RFC-00B1 MMU  ·  RFC-00B2 Devices          │
 └───────────────────────────────────────────────────────────────┘
 ```

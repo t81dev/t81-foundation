@@ -5,7 +5,7 @@ Last Verified (UTC): 2026-02-26
 Maturity: Mixed (`Frozen` core, `Experimental` periphery)
 
 > **Architecture File Style Guide**
-> - Terminology mapping: "TISC ISA" -> `core/isa/`; "VM Interpreter" -> `core/vm/vm.cpp`; "Axion Engine" -> `kernel/axion/`; "CanonFS" -> `src/canonfs/` + `include/t81/canonfs/`; "Experimental tiers" -> `experimental/`.
+> - Terminology mapping: "TISC ISA" -> `core/isa/`; "VM Interpreter" -> `core/vm/vm.cpp`; "Axion Governance Engine" -> `kernel/axion/`; "CanonFS" -> `src/canonfs/` + `include/t81/canonfs/`; "Experimental tiers" -> `experimental/`.
 > - Link style: repo-relative markdown links to concrete files only.
 > - Diagram conventions: GitHub-renderable Mermaid only.
 > - Maturity labels: `Frozen`, `Stable`, `Experimental`, `Stubbed`.

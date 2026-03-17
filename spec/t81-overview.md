@@ -8,7 +8,7 @@ nav:
 - [TISC Specification](tisc-spec.md)
 - [T81 Virtual Machine](t81vm-spec.md)
 - [T81Lang](t81lang-spec.md)
-- [Axion Kernel](axion-kernel.md)
+- [Axion Governance Kernel](axion-kernel.md)
 - [Cognitive Tiers](cognitive-tiers.md)
 
 ______________________________________________________________________
@@ -43,7 +43,7 @@ ______________________________________________________________________
 ## 2. Architectural Layers
 
 Cognitive Tiers — T243 → T19683
-Axion Kernel — Ethical/Optimization Layer
+Axion Governance Kernel — Ethical/Optimization Layer
 T81Lang — High-Level Deterministic Language
 TISC — Ternary ISA (Base-81)
 T81VM — Deterministic Execution Runtime
@@ -80,7 +80,7 @@ This folder contains the core normative specifications for:
 - TISC ISA
 - T81VM
 - T81Lang
-- Axion Kernel
+- Axion Governance Kernel
 - Cognitive Tiers
 
 Each doc stands alone and contributes to the cohesive whole.
@@ -113,7 +113,7 @@ Current spec version: **v1.2** (updated 2026-03-01 to match implementation).
 - **Type System** → [`t81lang-spec.md`](t81lang-spec.md#2-type-system)
 - **Purity and Effects** → [`t81lang-spec.md`](t81lang-spec.md#3-purity-and-effects)
 
-## Axion Kernel
+## Axion Governance Kernel
 
 - **Responsibilities** → [`axion-kernel.md`](axion-kernel.md#1-responsibilities)
 - **Subsystems** → [`axion-kernel.md`](axion-kernel.md#2-subsystems)

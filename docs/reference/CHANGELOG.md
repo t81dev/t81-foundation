@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [1.5.0] - 2026-03-14
 
 ### Added
-- **Axion Kernel Runtime**: Complete kernel runtime layer with service contracts, device arbitration, and fault management
+- **Axion Governance Kernel Runtime**: Complete kernel runtime layer with service contracts, device arbitration, and fault management
 - **RFC-00B4**: Axion userland service contract specification defining ABI, service boundaries, and lifecycle management
 - **QEMU ARMv8 EFI Support**: Full ARMv8 EFI boot support with startup reports and artifact generation
 - **Enhanced Axion Shell**: Object-native reads, durable inspection commands, session management, and typed input

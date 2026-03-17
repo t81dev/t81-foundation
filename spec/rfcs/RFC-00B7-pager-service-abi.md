@@ -6,7 +6,7 @@
 **Created:** 2026-03-14
 **Updated:** 2026-03-14
 **Author:** @t81dev
-**Depends on:** RFC-00B1 (Ternary MMU), RFC-00B3 (Axion Kernel Architecture), RFC-00B6 (Minimal Syscall and Capability Boundary)
+**Depends on:** RFC-00B1 (Ternary MMU), RFC-00B3 (Axion Governance Kernel Architecture), RFC-00B6 (Minimal Syscall and Capability Boundary)
 **Blocks:** first real userland pager service, DPE epoch output region pre-mapping (RFC-DPE-0003 §4)
 
 ---

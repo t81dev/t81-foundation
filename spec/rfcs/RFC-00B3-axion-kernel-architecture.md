@@ -1,4 +1,4 @@
-# RFC-00B3: Axion Kernel Architecture
+# RFC-00B3: Axion Governance Kernel Architecture
 
 **Status:** accepted
 **Type:** standards-track

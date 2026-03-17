@@ -26,7 +26,7 @@ T81Lang (pure-by-default, tier-aware)
     ↓  Lexer → Parser → Typed AST → IR Generator
 TISC Bytecode  ← Frozen ISA (v1.1, additive-only)
     ↓
-Axion Kernel   ← intercepts every privileged opcode
+Axion Governance Kernel   ← intercepts every privileged opcode
     ↓  Verdict: Allow / Deny / Warn + deterministic reason string
 T81VM Interpreter  ← DCP-verified, bit-exact reference path
     ↓
@@ -41,7 +41,7 @@ CanonHash-81 Audit Trail  ← BLAKE3 + base-81 execution fingerprints
 |---|---|---|
 | **Bit-exact determinism** | VM interpreter + DCP boundary | Identical inputs → identical outputs, cross-arch |
 | **Frozen semantics** | TISC ISA + Data Types spec | No breaking changes within major version |
-| **Policy-governed execution** | Axion Kernel | Ethics + safety checked before every privileged op |
+| **Policy-governed execution** | Axion Governance Kernel | Ethics + safety checked before every privileged op |
 | **Immutable audit trail** | CanonFS + CanonHash-81 | Cryptographic execution fingerprints, write-once |
 | **Complexity supervision** | Cognitive Tiers 0–5 | Bounded recursion, tensor rank, branch entropy |
 | **Canonical representation** | T81 Data Types | Single unique encoding per value, no ambiguity |
@@ -58,7 +58,7 @@ The foundational primitive. The VM interpreter (non-JIT) produces bit-exact outp
 
 ### 2.2 Policy-Governed Execution
 
-The Axion Kernel intercepts `AXREAD`, `AXSET`, `AXVERIFY`, and `AXTRACE` before every state mutation. Policy-as-code embeds s-expression policies directly in TISC programs, compiled to Axion bytecode. Nine immutable ethics principles (Theta-1 to Theta-9) override all user policy. Tier gating prevents execution from escalating to higher cognitive tiers without Axion approval. Verdicts carry deterministic reason strings — machine-readable, loggable, archivable.
+The Axion Governance Kernel intercepts `AXREAD`, `AXSET`, `AXVERIFY`, and `AXTRACE` before every state mutation. Policy-as-code embeds s-expression policies directly in TISC programs, compiled to Axion bytecode. Nine immutable ethics principles (Theta-1 to Theta-9) override all user policy. Tier gating prevents execution from escalating to higher cognitive tiers without Axion approval. Verdicts carry deterministic reason strings — machine-readable, loggable, archivable.
 
 **What this unlocks:** Programs that carry their own governance rules and enforce them unconditionally, even when run by an untrusted operator.
 

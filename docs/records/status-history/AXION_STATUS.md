@@ -1,4 +1,4 @@
-# Axion Kernel Status
+# Axion Governance Kernel Status
 
 Status: Active
 Last Updated: 2026-03-10

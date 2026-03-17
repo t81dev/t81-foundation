@@ -19,7 +19,7 @@ Describe how governance policy is translated into runtime enforcement and audita
 sequenceDiagram
     participant GOV as Governance Docs/Policy
     participant VM as VM Dispatch
-    participant AX as Axion Engine
+    participant AX as Axion Governance Engine
     participant LOG as Axion Event Log
 
     GOV->>VM: policy text embedded in Program

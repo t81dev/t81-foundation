@@ -1,7 +1,7 @@
 # AX-M7 Evidence: Complexity Measurement (Axion §1.3)
 
 **Evidence ID:** AX-M7-2026-03-04  
-**Specification Section:** Axion Kernel §1.3 - Complexity Measurement  
+**Specification Section:** Axion Governance Kernel §1.3 - Complexity Measurement
 **Target Date:** 2026-03-14 (Completed 2026-03-04)  
 **Status:** ✅ EVIDENCE COMPLETE
 

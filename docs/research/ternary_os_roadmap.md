@@ -21,7 +21,7 @@ As of **2026-03-11**, the project has completed:
 - **Phase 3:** Kernel scheduling and IPC
 
 Kernel integration direction is now tracked explicitly in
-[RFC-00B3: Axion Kernel Architecture](../../spec/rfcs/RFC-00B3-axion-kernel-architecture.md).
+[RFC-00B3: Axion Governance Kernel Architecture](../../spec/rfcs/RFC-00B3-axion-kernel-architecture.md).
 That RFC defines the current path after subsystem bring-up: the first
 kernel-owned runtime entry now exists, checked MMU translation is now consumed
 through a kernel-facing fault/reporting path, and the first persistent kernel

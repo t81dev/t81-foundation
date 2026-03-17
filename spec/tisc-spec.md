@@ -8,7 +8,7 @@ nav:
 - [TISC Specification](tisc-spec.md)
 - [T81 Virtual Machine](t81vm-spec.md)
 - [T81Lang](t81lang-spec.md)
-- [Axion Kernel](axion-kernel.md)
+- [Axion Governance Kernel](axion-kernel.md)
 - [Cognitive Tiers](cognitive-tiers.md)
 
 ______________________________________________________________________
@@ -17,7 +17,7 @@ ______________________________________________________________________
 
 # TISC — Ternary Instruction Set Computer
 
-Version 1.1 — Stable
+Version 1.2.0 — Stable
 
 Status: Stable\
 Last Revised: 2026-03-01\
@@ -1133,7 +1133,7 @@ ______________________________________________________________________
 
 ## T81Lang
 
-Current spec version: **v1.2** (updated 2026-03-01).
+Current spec version: **v1.9.0**
 
 - **Code Generation Targets for TISC** → [`t81lang-spec.md`](t81lang-spec.md#5-compilation-pipeline)
 - **Type System Mapping to Operands** → [`t81lang-spec.md`](t81lang-spec.md#2-type-system)

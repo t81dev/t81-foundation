@@ -8373,7 +8373,7 @@ ______________________________________________________________________
 
 # **21. Overview**
 
-The **Axion Kernel (AXK)** is the supervisory substrate responsible for:
+The **Axion Governance Kernel (AXK)** is the supervisory substrate responsible for:
 
 - constitutional enforcement
 - ethical invariants
@@ -8435,7 +8435,7 @@ All Axion actions MUST:
 
 ______________________________________________________________________
 
-# **21.2 Axion Kernel Structure**
+# **21.2 Axion Governance Kernel Structure**
 
 Formally, Axion is:
 
@@ -8728,7 +8728,7 @@ ______________________________________________________________________
 
 # **21.16 Summary**
 
-This chapter defined the Axion Kernel:
+This chapter defined the Axion Governance Kernel:
 
 - constitutional enforcement
 - ethical invariants
@@ -19174,7 +19174,7 @@ Constitutional sovereignty is absolute.
 
 ______________________________________________________________________
 
-# **47.3 The Axion Engine**
+# **47.3 The Axion Governance Engine**
 
 Axion is the **constitutional enforcer**.
 

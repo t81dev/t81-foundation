@@ -101,7 +101,7 @@ AXHALT(reason):
 sequenceDiagram
     participant ROM as ROM Stub
     participant Verify as CanonVerify
-    participant Axion as Axion Kernel
+    participant Axion as Axion Governance Kernel
     participant FS as CanonFS
     participant VM as T81VM
 

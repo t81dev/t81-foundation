@@ -8,7 +8,7 @@ nav:
 - [TISC Specification](tisc-spec.md)
 - [T81 Virtual Machine](t81vm-spec.md)
 - [T81Lang](t81lang-spec.md)
-- [Axion Kernel](axion-kernel.md)
+- [Axion Governance Kernel](axion-kernel.md)
 - [Cognitive Tiers](cognitive-tiers.md)
 
 ______________________________________________________________________
@@ -366,7 +366,7 @@ ______________________________________________________________________
 
 Cognitive Tiers MUST interoperate with:
 
-- **Axion Kernel**: tier control, metrics, faults
+- **Axion Governance Kernel**: tier control, metrics, faults
 - **T81Lang**: tier annotations, purity rules
 - **T81VM**: execution visibility, trace
 - **TISC**: instruction supervision
