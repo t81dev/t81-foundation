@@ -7,7 +7,7 @@ project(t81 LANGUAGES C CXX)
 # ---------- Version ----------
 set(T81_VERSION_MAJOR 1)
 set(T81_VERSION_MINOR 3)
-set(T81_VERSION_PATCH 3)
+set(T81_VERSION_PATCH 4)
 set(T81_VERSION "${T81_VERSION_MAJOR}.${T81_VERSION_MINOR}.${T81_VERSION_PATCH}")
 
 # Generate version header
