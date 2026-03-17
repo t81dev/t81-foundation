@@ -330,11 +330,11 @@ A functioning deterministic computing stack.
 
 All Stage 2 implementation goals are complete:
 
-✅ cross-platform determinism CI (Linux x86_64 + macOS ARM64, daily)
-✅ VM conformance + determinism test suite (365/365)
-✅ trace replay debugger (t81 trace replay; schema t81.trace-replay.v1)
-✅ T81Lang FFI frontend (RFC-0036; foreign {} + FFI_CALL)
-Remaining advancement criterion: independent reproduction by an external party — when another group builds the stack, runs the determinism gate, and publishes matching hashes, the project formally graduates from Stage 2.
+* ✅ cross-platform determinism CI (Linux x86_64 + macOS ARM64, daily)
+* ✅ VM conformance + determinism test suite (365/365)
+* ✅ trace replay debugger (t81 trace replay; schema t81.trace-replay.v1)
+* ✅ T81Lang FFI frontend (RFC-0036; foreign {} + FFI_CALL)
+* Remaining advancement criterion: independent reproduction by an external party — when another group builds the stack, runs the determinism gate, and publishes matching hashes, the project formally graduates from Stage 2.
 
 Stage 3 — Research Ecosystem (Active)
 
