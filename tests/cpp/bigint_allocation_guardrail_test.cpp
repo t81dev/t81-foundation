@@ -21,6 +21,7 @@
 
 using namespace t81::v1;
 
+namespace t81::v1 {
 class BigIntAllocationGuardrailTest {
 public:
   static long get_peak_rss_kb() {
@@ -98,8 +99,9 @@ public:
     }
   }
 };
+} // namespace t81::v1
 
 int main() {
-  BigIntAllocationGuardrailTest::run();
+  t81::v1::BigIntAllocationGuardrailTest::run();
   return 0;
 }
