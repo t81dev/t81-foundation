@@ -638,7 +638,6 @@ const char* ir_opcode_name(tisc::ir::Opcode op) {
     default:
       return "UNKNOWN";
   }
-  return "UNKNOWN";
 }
 
 std::string ir_repr(const tisc::ir::IntermediateProgram& ir_program) {
