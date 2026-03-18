@@ -148,6 +148,12 @@ This provides the runnable audit record for the encoded invariant.
 | `ai/attn-determinism.t81` | RFC-0026 §5.15, RFC-0031 §3, RFC-0032 §8.1 | ✅ Pass | RFC-0032 Phase 2 |
 | `ai/qmatmul-scale-order.t81` | RFC-0026 §5.15, RFC-0031 §3 | ✅ Pass | RFC-0032 Phase 2 |
 | `ai/embed-bounds-check.t81` | RFC-0026 §5.15, RFC-0031 §3 | ✅ Pass | RFC-0032 Phase 2 |
+| `ai/twmatmul-exact.t81` | RFC-0034 §5.17.1 | ✅ Pass | RFC-0034 TN-M9 |
+| `ai/tquant-determinism.t81` | RFC-0034 §5.17.2 | ✅ Pass | RFC-0034 TN-M9 |
+| `ai/tattn-ternary-qk.t81` | RFC-0034 §5.17.3 | ✅ Pass | RFC-0034 TN-M9 |
+| `ai/twembed-bounds.t81` | RFC-0034 §5.17.5 | ✅ Pass | RFC-0034 TN-M9 |
+| `ai/tact-step-determinism.t81` | RFC-0034 §5.17.6 | ✅ Pass | RFC-0034 TN-M9 |
+| `ai/tact-quarantine-gate.t81` | RFC-0034 §3.3, §5.17.6 | ✅ Pass | RFC-0034 TN-M9 |
 
 Acceptance target: executable conformance corpus wired to CI runnable target — **met**.
 

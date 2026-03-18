@@ -56,6 +56,27 @@ enum class TierPromotionError {
 
 using TierPromotionResult = t81::expected<t81::cog::TierStatus, TierPromotionError>;
 
+bool hash_matches_policy_entry(std::string_view expected, std::string_view actual_checksum) {
+  if (expected == actual_checksum) {
+    return true;
+  }
+  std::string prefixed = "sha3-512:";
+  prefixed.append(actual_checksum.begin(), actual_checksum.end());
+  return expected == prefixed;
+}
+
+bool is_exact_ternary_tensor(const t81::T729DynamicTensor& tensor) {
+  if (tensor.numeric_class() != t81::TensorNumericClass::ExactTrit) {
+    return false;
+  }
+  for (float value : tensor.snapshot_values()) {
+    if (value != -1.0f && value != 0.0f && value != 1.0f) {
+      return false;
+    }
+  }
+  return true;
+}
+
 
 TierPromotionResult try_promote_tier(
     const t81::cog::TierStatus& status,
@@ -589,6 +610,7 @@ public:
       this->log_bounds_fault(opcode, addr, action);
       return false;
     };
+    bool restore_pc_on_trap = false;
     auto log_trace = [this, current_pc](t81::tisc::Opcode op, Trap trap = Trap::None) {
       TraceEntry t{current_pc, op, std::nullopt};
       if (trap != Trap::None) t.trap = trap;
@@ -1817,6 +1839,24 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
+        if (ctx.register_tags[insn.b] == ValueTag::WeightsTensorHandle) {
+          const auto* native = weights_tensor(ctx.registers[insn.b]);
+          if (native == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          if (auto fast = t81::vm::internal::native_tensor_unary_exp_direct(*native);
+              fast.has_value()) {
+            auto res_handle = alloc_tensor(std::move(*fast));
+            if (!res_handle) {
+              trap = res_handle.error();
+              break;
+            }
+            ctx.registers[insn.a] = *res_handle;
+            ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+            break;
+          }
+        }
         if (auto res = promote_to_tensor(insn.b); !res) {
           trap = res.error();
           break;
@@ -2179,6 +2219,27 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
+        if (ctx.register_tags[insn.b] == ValueTag::WeightsTensorHandle) {
+          const auto* native = weights_tensor(ctx.registers[insn.b]);
+          if (native == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TSiLU kernel execution"};
+          record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), ctx.registers[insn.b],
+                             verdict);
+          if (auto fast = t81::vm::internal::native_tensor_unary_silu_direct(*native);
+              fast.has_value()) {
+            auto res_handle = alloc_tensor(std::move(*fast));
+            if (!res_handle) {
+              trap = res_handle.error();
+              break;
+            }
+            ctx.registers[insn.a] = *res_handle;
+            ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+            break;
+          }
+        }
         if (auto res = promote_to_tensor(insn.b); !res) {
           trap = res.error();
           break;
@@ -2204,6 +2265,27 @@ public:
         if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
           trap = Trap::DecodeFault;
           break;
+        }
+        if (ctx.register_tags[insn.b] == ValueTag::WeightsTensorHandle) {
+          const auto* native = weights_tensor(ctx.registers[insn.b]);
+          if (native == nullptr) {
+            trap = Trap::DecodeFault;
+            break;
+          }
+          t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TSoftmax kernel execution"};
+          record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b), ctx.registers[insn.b],
+                             verdict);
+          if (auto fast = t81::vm::internal::native_tensor_unary_softmax_direct(*native);
+              fast.has_value()) {
+            auto res_handle = alloc_tensor(std::move(*fast));
+            if (!res_handle) {
+              trap = res_handle.error();
+              break;
+            }
+            ctx.registers[insn.a] = *res_handle;
+            ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+            break;
+          }
         }
         if (auto res = promote_to_tensor(insn.b); !res) {
           trap = res.error();
@@ -2231,11 +2313,33 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
-        if (auto res = promote_to_tensor(insn.b); !res) {
+        if (auto res = promote_to_tensor(insn.c); !res) {
           trap = res.error();
           break;
         }
-        if (auto res = promote_to_tensor(insn.c); !res) {
+        if (ctx.register_tags[insn.b] == ValueTag::WeightsTensorHandle) {
+          const auto* native = weights_tensor(ctx.registers[insn.b]);
+          auto* weights_tensor_ptr = tensor_ptr(ctx.registers[insn.c]);
+          if (native != nullptr && weights_tensor_ptr != nullptr) {
+            if (auto direct = t81::vm::internal::native_tensor_rmsnorm_direct(
+                    *native, *weights_tensor_ptr);
+                direct.has_value()) {
+              t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                          "TRMSNorm kernel execution"};
+              record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b),
+                                 ctx.registers[insn.b], verdict);
+              auto res_handle = alloc_tensor(std::move(*direct));
+              if (!res_handle) {
+                trap = res_handle.error();
+                break;
+              }
+              ctx.registers[insn.a] = *res_handle;
+              ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+              break;
+            }
+          }
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
           trap = res.error();
           break;
         }
@@ -2263,6 +2367,27 @@ public:
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
           trap = Trap::DecodeFault;
           break;
+        }
+        if (ctx.register_tags[insn.b] == ValueTag::WeightsTensorHandle) {
+          const auto* native = weights_tensor(ctx.registers[insn.b]);
+          if (native != nullptr) {
+            const int pos = static_cast<int>(ctx.registers[insn.c]);
+            if (auto direct = t81::vm::internal::native_tensor_rope_direct(*native, pos);
+                direct.has_value()) {
+              t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                          "TRoPE kernel execution"};
+              record_axion_event(insn.opcode, static_cast<std::int32_t>(insn.b),
+                                 ctx.registers[insn.b], verdict);
+              auto res_handle = alloc_tensor(std::move(*direct));
+              if (!res_handle) {
+                trap = res_handle.error();
+                break;
+              }
+              ctx.registers[insn.a] = *res_handle;
+              ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+              break;
+            }
+          }
         }
         if (auto res = promote_to_tensor(insn.b); !res) {
           trap = res.error();
@@ -4352,6 +4477,89 @@ public:
         ctx.register_tags[insn.a] = ValueTag::TensorHandle;
         break;
       }
+      case t81::tisc::Opcode::TNOT_SWAR: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor == nullptr) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(ctx.registers[insn.b]), "tensor handle access");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow, "TNOT_SWAR kernel execution"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b],
+                           verdict);
+        auto computed = t81::vm::internal::tensor_swar_not_checked(*tensor);
+        if (!computed.has_value()) {
+          trap = computed.error();
+          break;
+        }
+        auto res_handle = alloc_tensor(std::move(*computed));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
+      case t81::tisc::Opcode::TAND_SWAR:
+      case t81::tisc::Opcode::TOR_SWAR: {
+        if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) {
+          trap = res.error();
+          break;
+        }
+        if (auto res = promote_to_tensor(insn.c); !res) {
+          trap = res.error();
+          break;
+        }
+        auto* tensor_a = tensor_ptr(ctx.registers[insn.b]);
+        if (tensor_a == nullptr) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(ctx.registers[insn.b]), "tensor handle access");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto* tensor_b = tensor_ptr(ctx.registers[insn.c]);
+        if (tensor_b == nullptr) {
+          log_bounds_fault(insn.opcode, MemorySegmentKind::Tensor,
+                           static_cast<int>(ctx.registers[insn.c]), "tensor handle access");
+          trap = Trap::DecodeFault;
+          break;
+        }
+        t81::axion::Verdict verdict{
+            t81::axion::VerdictKind::Allow,
+            insn.opcode == t81::tisc::Opcode::TAND_SWAR ? "TAND_SWAR kernel execution"
+                                                        : "TOR_SWAR kernel execution"};
+        record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), ctx.registers[insn.b],
+                           verdict);
+        auto computed = insn.opcode == t81::tisc::Opcode::TAND_SWAR
+                            ? t81::vm::internal::tensor_swar_and_checked(*tensor_a, *tensor_b)
+                            : t81::vm::internal::tensor_swar_or_checked(*tensor_a, *tensor_b);
+        if (!computed.has_value()) {
+          trap = computed.error();
+          break;
+        }
+        auto res_handle = alloc_tensor(std::move(*computed));
+        if (!res_handle) {
+          trap = res_handle.error();
+          break;
+        }
+        ctx.registers[insn.a] = *res_handle;
+        ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+        break;
+      }
       case t81::tisc::Opcode::TMatMul: {
         if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
           trap = Trap::DecodeFault;
@@ -5496,6 +5704,46 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
+        const auto src_tag = ctx.register_tags[insn.b];
+        const auto src_value = ctx.registers[insn.b];
+        const auto* native_src =
+            src_tag == ValueTag::WeightsTensorHandle ? weights_tensor(src_value) : nullptr;
+        if (state_.policy.has_value() && native_src != nullptr) {
+          if (!state_.policy->allowed_ternary_model_hashes.empty()) {
+            const bool hash_allowed =
+                state_.weights_model != nullptr && !state_.weights_model->checksum.empty() &&
+                std::any_of(state_.policy->allowed_ternary_model_hashes.begin(),
+                            state_.policy->allowed_ternary_model_hashes.end(),
+                            [&](const std::string& allowed) {
+                              return hash_matches_policy_entry(allowed, state_.weights_model->checksum);
+                            });
+            if (!hash_allowed) {
+              const std::string checksum =
+                  state_.weights_model != nullptr ? state_.weights_model->checksum : "";
+              t81::axion::Verdict verdict{
+                  t81::axion::VerdictKind::Deny,
+                  checksum.empty()
+                      ? "WLOAD denied (allowed-ternary-model-hashes: missing model checksum)"
+                      : "WLOAD denied (allowed-ternary-model-hashes mismatch checksum=sha3-512:" +
+                            checksum + ")"};
+              record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), src_value, verdict);
+              trap = Trap::SecurityFault;
+              break;
+            }
+          }
+          if (state_.policy->ternary_weight_domain_check) {
+            auto decoded = t81::vm::internal::decode_native_tensor(
+                *native_src, t81::vm::internal::TensorDecodeMode::StrictCanonical);
+            if (!decoded.has_value() || !is_exact_ternary_tensor(*decoded)) {
+              t81::axion::Verdict verdict{
+                  t81::axion::VerdictKind::Deny,
+                  "WLOAD denied (ternary-weight-domain-check failed)"};
+              record_axion_event(insn.opcode, static_cast<int32_t>(insn.b), src_value, verdict);
+              trap = Trap::SecurityFault;
+              break;
+            }
+          }
+        }
         if (auto res = promote_to_tensor(insn.b); !res) {
           trap = res.error();
           break;
@@ -6192,13 +6440,16 @@ public:
               ? 0.0
               : static_cast<double>(nonzero) / static_cast<double>(out_vals.size());
           if (frac > max_frac) {
-            // Default: Quarantine unless policy explicitly escalates to Deny.
-            // RFC-0034 §5.17.6: ceiling exceeded → Quarantine; Axion engine may
-            // escalate to Deny on a second violation.
-            ceiling_verdict = t81::axion::VerdictKind::Quarantine;
             std::ostringstream oss;
-            oss << "TACT activation-ceiling: nonzero-fraction=" << frac
-                << " exceeds max=" << max_frac << " (Quarantine)";
+            if (ctx.activation_quarantined) {
+              ceiling_verdict = t81::axion::VerdictKind::Deny;
+              oss << "TACT activation-ceiling: nonzero-fraction=" << frac
+                  << " exceeds max=" << max_frac << " (Deny)";
+            } else {
+              ceiling_verdict = t81::axion::VerdictKind::Quarantine;
+              oss << "TACT activation-ceiling: nonzero-fraction=" << frac
+                  << " exceeds max=" << max_frac << " (Quarantine)";
+            }
             ceiling_reason = oss.str();
           }
         }
@@ -6207,14 +6458,19 @@ public:
                            ctx.registers[insn.b], verdict);
         if (ceiling_verdict == t81::axion::VerdictKind::Quarantine) {
           // Quarantine: RD not committed; PC does not advance.
+          ctx.activation_quarantined = true;
+          restore_pc_on_trap = true;
           trap = Trap::SecurityFault;
           break;
         }
         if (ceiling_verdict == t81::axion::VerdictKind::Deny) {
+          ctx.activation_quarantined = true;
+          restore_pc_on_trap = true;
           trap = Trap::ActivationFault;
           break;
         }
         // Allow: commit result.
+        ctx.activation_quarantined = false;
         auto rh = alloc_tensor(std::move(tact_result));
         if (!rh) { trap = rh.error(); break; }
         ctx.registers[insn.a] = *rh;
@@ -6507,6 +6763,9 @@ public:
 
     t81::vm::internal::sync_system_registers(state_, program_, instruction_count_,
                                              state_.current_context);
+    if (trap != Trap::None && restore_pc_on_trap) {
+      ctx.pc = current_pc;
+    }
     log_trace(insn.opcode, trap);
     if (trap != Trap::None) {
       return t81::unexpected(trap);

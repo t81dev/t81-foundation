@@ -166,6 +166,13 @@ const std::map<std::string, std::pair<std::string, std::string>> T81_ADVANTAGES 
     {"BM_PackingDensity_Achieved", {"Achieved bits/trit", {}}},
     {"BM_PackingDensity_Practical", {"Practical size ratio", {}}},
     {"BM_LimbArithThroughput", {"48-trit Kogge-Stone addition", {}}},
+    {"BM_NativeWeightsLoad", {{}, "Governed ternary-native weights load path"}},
+    {"BM_NativeWeightsPromote", {{}, "Governed ternary-native tensor materialization path"}},
+    {"BM_NativeWeightsLoadAndExp", {{}, "Governed ternary-native exponentiation path"}},
+    {"BM_NativeWeightsLoadAndSiLU", {{}, "Governed ternary-native SiLU path"}},
+    {"BM_NativeWeightsLoadAndSoftmax", {{}, "Governed ternary-native softmax path"}},
+    {"BM_NativeWeightsLoadAndRMSNorm", {{}, "Governed ternary-native RMSNorm path"}},
+    {"BM_NativeWeightsLoadAndRoPE", {{}, "Governed ternary-native RoPE path"}},
     {"BM_NegationSpeed_T81Native", {{}, "PSHUFB-powered native negation"}},
     {"BM_LimbAdd_T81Native", {{}, "Register-native prefix addition"}}
 };
@@ -437,6 +444,15 @@ std::string BuildNotesDisplay(const BenchmarkResult& r) {
 
 static bool BinaryBaselineSemanticallyUnavoidable(const BenchmarkResult& r);
 static bool T81ClassicSemanticallyUnavoidable(const BenchmarkResult& r);
+static bool IsNativeOnlyFamily(const BenchmarkResult& r) {
+    return (r.has_t81_native_flow || !r.t81_native_result_str.empty() || !r.t81_native_note.empty()) &&
+           !(r.has_t81_flow || !r.t81_result_str.empty() || !r.t81_classic_note.empty());
+}
+static bool IsBinaryOnlyFamily(const BenchmarkResult& r) {
+    return (r.has_binary_flow || !r.binary_result_str.empty() || !r.binary_note.empty()) &&
+           !(r.has_t81_flow || !r.t81_result_str.empty() || !r.t81_classic_note.empty()) &&
+           !(r.has_t81_native_flow || !r.t81_native_result_str.empty() || !r.t81_native_note.empty());
+}
 static std::string FormatRatio(double value) {
     std::ostringstream oss;
     if (!std::isfinite(value) || value <= 0.0) return "below timer resolution";
@@ -450,7 +466,9 @@ static std::string FormatRatio(double value) {
 
 std::string BuildAnalysis(const BenchmarkResult& r) {
     std::ostringstream oss;
-    if (r.t81_classic_inconsistent || r.binary_inconsistent || r.t81_native_inconsistent) {
+    if ((r.t81_classic_inconsistent || r.binary_inconsistent || r.t81_native_inconsistent) &&
+        !(IsNativeOnlyFamily(r) && !r.has_binary_flow) &&
+        !(IsBinaryOnlyFamily(r) && !(r.has_t81_flow || r.has_t81_native_flow))) {
         oss << "DEFECT: inconsistent work definition";
         return oss.str();
     }
@@ -537,6 +555,10 @@ static bool HasInconsistentCounters(const ::benchmark::BenchmarkReporter::Run& r
     const auto items_it = run.counters.find("items_per_second");
     const auto work_it = run.counters.find("work_per_iter");
     if (items_it == run.counters.end() || work_it == run.counters.end()) return false;
+    // If the benchmark published an explicit work unit, trust that annotation and
+    // avoid the fallback latency-vs-throughput consistency heuristic. The
+    // heuristic is only useful when we have to infer work implicitly.
+    if (work_it->second > 0.0 && std::isfinite(work_it->second)) return false;
     const double items_per_second = items_it->second;
     const double work_per_iter = work_it->second;
     if (items_per_second <= 0.0 || work_per_iter <= 0.0 ||
@@ -901,9 +923,12 @@ void GenerateMarkdownReport() {
         if (!r.t81_result_str.empty()) return r.t81_result_str;
         if (r.t81_classic_skipped) return "skipped (no counters emitted)";
         if (T81ClassicSemanticallyUnavoidable(r)) return "not-applicable (semantic)";
-        const bool has_native_only = (r.has_t81_native_flow || !r.t81_native_result_str.empty() || !r.t81_native_note.empty()) &&
-                                     !(r.has_t81_flow || !r.t81_classic_note.empty());
-        if (has_native_only) return "not-applicable (native-only family)";
+        const bool has_native_only = IsNativeOnlyFamily(r);
+        if (has_native_only) {
+            if (!r.t81_native_result_str.empty()) return r.t81_native_result_str + " (native-only)";
+            if (r.t81_native_skipped) return "skipped (native-only family)";
+            return "not-applicable (native-only family)";
+        }
         return "not-implemented (missing baseline)";
     };
 
@@ -911,15 +936,19 @@ void GenerateMarkdownReport() {
         if (!r.t81_latency_str.empty()) return r.t81_latency_str;
         if (r.t81_classic_skipped) return "skipped (no counters emitted)";
         if (T81ClassicSemanticallyUnavoidable(r)) return "not-applicable (semantic)";
-        const bool has_native_only = (r.has_t81_native_flow || !r.t81_native_result_str.empty() || !r.t81_native_note.empty()) &&
-                                     !(r.has_t81_flow || !r.t81_classic_note.empty());
-        if (has_native_only) return "not-applicable (native-only family)";
+        const bool has_native_only = IsNativeOnlyFamily(r);
+        if (has_native_only) {
+            if (!r.t81_native_latency_str.empty()) return r.t81_native_latency_str + " (native-only)";
+            if (r.t81_native_skipped) return "skipped (native-only family)";
+            return "not-applicable (native-only family)";
+        }
         return "not-implemented (missing baseline)";
     };
 
     auto ResolveBinaryResultCell = [&](const BenchmarkResult& r) -> std::string {
         if (!r.binary_result_str.empty()) return r.binary_result_str;
         if (r.binary_skipped) return "skipped (no counters emitted)";
+        if (IsBinaryOnlyFamily(r)) return "not-applicable (binary-only family)";
         if (BinaryBaselineSemanticallyUnavoidable(r)) {
             return "not-applicable (semantic: no binary baseline)";
         }
@@ -929,6 +958,7 @@ void GenerateMarkdownReport() {
     auto ResolveBinaryLatencyCell = [&](const BenchmarkResult& r) -> std::string {
         if (!r.binary_latency_str.empty()) return r.binary_latency_str;
         if (r.binary_skipped) return "skipped (no counters emitted)";
+        if (IsBinaryOnlyFamily(r)) return "not-applicable (binary-only family)";
         if (BinaryBaselineSemanticallyUnavoidable(r)) {
             return "not-applicable (semantic: no binary baseline)";
         }
@@ -978,6 +1008,9 @@ void GenerateMarkdownReport() {
     };
 
     auto ResolveNativeThroughputRatioCell = [&](const BenchmarkResult& r) -> std::string {
+        if (!(r.has_binary_flow || !r.binary_result_str.empty())) {
+            if (IsNativeOnlyFamily(r)) return "not-computable (native-only family)";
+        }
         if (r.t81_native_inconsistent || r.binary_inconsistent) {
             return "DEFECT: inconsistent work definition";
         }
@@ -995,6 +1028,9 @@ void GenerateMarkdownReport() {
     };
 
     auto ResolveNativeLatencySpeedupCell = [&](const BenchmarkResult& r) -> std::string {
+        if (!(r.has_binary_flow || !r.binary_latency_str.empty())) {
+            if (IsNativeOnlyFamily(r)) return "not-computable (native-only family)";
+        }
         if (r.t81_native_inconsistent || r.binary_inconsistent) {
             return "DEFECT: inconsistent work definition";
         }
@@ -1034,6 +1070,24 @@ void GenerateMarkdownReport() {
             if (rel > 0.05) {
                 r.t81_native_inconsistent = true;
                 r.binary_inconsistent = true;
+            }
+        }
+        if (has_classic_and_binary && r.t81_work_defined && r.binary_work_defined &&
+            r.binary_work_per_iter > 0.0) {
+            const double rel =
+                std::abs(r.t81_work_per_iter - r.binary_work_per_iter) / r.binary_work_per_iter;
+            if (rel <= 0.05) {
+                r.t81_classic_inconsistent = false;
+                r.binary_inconsistent = false;
+            }
+        }
+        if (has_native_and_binary && r.t81_native_work_defined && r.binary_work_defined &&
+            r.binary_work_per_iter > 0.0) {
+            const double rel = std::abs(r.t81_native_work_per_iter - r.binary_work_per_iter) /
+                               r.binary_work_per_iter;
+            if (rel <= 0.05) {
+                r.t81_native_inconsistent = false;
+                r.binary_inconsistent = false;
             }
         }
         if (r.t81_classic_inconsistent || r.t81_native_inconsistent || r.binary_inconsistent) {

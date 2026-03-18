@@ -30,7 +30,9 @@ set(BENCHMARK_SUITE_SOURCES
     BM_LimbMul.cpp
     BM_TensorMatMul.cpp
     BM_CanonFS.cpp
+    BM_LlamaGguf.cpp
     BM_LlamaKernels.cpp
+    BM_NativeWeightsExecution.cpp
     BM_TensorPromotion.cpp
     BM_Lexer.cpp
     BM_PackedTritVector.cpp
@@ -46,6 +48,13 @@ endif()
 add_executable(benchmark_runner ${BENCHMARK_RUNNER_SOURCES} ${BENCHMARK_SUITE_SOURCES})
 
 target_link_libraries(benchmark_runner PRIVATE benchmark::benchmark t81_core t81_lang_frontend t81_isa t81_vm t81_tool_model)
+
+if(T81_ENABLE_LLAMA_CPP)
+    target_compile_definitions(benchmark_runner PRIVATE T81_HAS_LLAMA_CPP=1)
+    target_include_directories(benchmark_runner PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/llama.cpp/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/llama.cpp/ggml/include)
+endif()
 
 # Enable AVX2 on GCC/Clang *and* x86/x64 targets to keep macOS/ARM builds clean.
 if (NOT MSVC AND (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND

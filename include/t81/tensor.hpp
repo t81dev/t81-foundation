@@ -274,15 +274,32 @@ public:
     if constexpr (!std::is_same_v<T, float>) {
       throw std::logic_error("from_canonical_fixed requires float tensor storage");
     } else {
-      std::vector<float> data;
-      data.reserve(fixed.size());
-      for (const auto& value : fixed) {
-        data.push_back(host_float_from_fixed_(value));
-      }
-      T729TensorBase tensor(std::move(shape), std::move(data));
+      T729TensorBase tensor(std::move(shape));
       tensor.numeric_class_ = numeric_class;
+      tensor.data_.clear();
+      tensor.data_.shrink_to_fit();
       tensor.canonical_fixed_cache_ = std::move(fixed);
       tensor.canonical_fixed_authoritative_ = true;
+      tensor.host_cache_valid_ = false;
+      return tensor;
+    }
+  }
+
+  static T729TensorBase from_host_float_data(std::vector<int> shape, std::vector<T> data,
+                                             TensorNumericClass numeric_class =
+                                                 TensorNumericClass::HostFloat) {
+    if constexpr (!std::is_same_v<T, float>) {
+      throw std::logic_error("from_host_float_data requires float tensor storage");
+    } else {
+      if (!valid_shape_(shape)) throw std::invalid_argument("T729Tensor: invalid shape");
+      if (data.size() != size_from_shape_(shape))
+        throw std::invalid_argument("T729Tensor: data size mismatch");
+      T729TensorBase tensor;
+      tensor.shape_ = std::move(shape);
+      tensor.data_ = std::move(data);
+      tensor.numeric_class_ = numeric_class;
+      tensor.canonical_fixed_cache_.reset();
+      tensor.canonical_fixed_authoritative_ = false;
       tensor.host_cache_valid_ = true;
       return tensor;
     }

@@ -188,7 +188,8 @@ Updated entries in `spec/tisc/opcode-registry.md` §2.22:
 |------|-------|-----------|---------|-------------------------------------|
 | 212  | 0xD4  | TVecSub   | RFC-0039| Elementwise tensor subtraction       |
 
-Reserved range updated: `0xD5–0xFF`.
+Reserved range updated at RFC-0039 acceptance time: `0xD5–0xFF`.
+Current registry after RFC-0040 SWAR allocation: `0xD8–0xFF`.
 
 ---
 

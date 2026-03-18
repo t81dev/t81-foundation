@@ -1001,6 +1001,36 @@ Faults introduced by this class: `ActivationFault` (TACT Deny verdict),
 `ShapeFault` (shape mismatch in TWMATMUL/TATTN), `BoundsFault` (TWEMBED
 index out of range), `TierFault` (Tier < 2). All other faults follow §6.
 
+### 5.17A SWAR Tensor Operations (RFC-0040)
+
+*Status: **draft implementation** — 2026-03-18. Opcode bytes assigned in
+`spec/tisc/opcode-registry.md §2.23`. Implementation in `core/vm/vm.cpp`;
+stable SWAR API in `include/t81/swar/swar.hpp`.*
+
+These opcodes expose RFC-0040 SWAR kernels as explicit VM instructions over
+`T729DynamicTensor` handles whose numeric class is `ExactTrit`. They are not
+scalar-trit aliases for `TNot`, `TAnd`, or `TOr`; they are explicit packed
+tensor operations intended for deterministic small/medium exact-trit workloads.
+
+| Mnemonic | Opcode Byte | Operands | Description |
+| :--- | :--- | :--- | :--- |
+| `TNOT_SWAR` | 0xD5 (213) | `RD, R_SRC, 0` | Unary negation of an `ExactTrit` tensor via stable SWAR kernels. Output shape matches input shape. |
+| `TAND_SWAR` | 0xD6 (214) | `RD, R_LHS, R_RHS` | Elementwise ternary conjunction (`min`) of two same-shape `ExactTrit` tensors via SWAR. |
+| `TOR_SWAR` | 0xD7 (215) | `RD, R_LHS, R_RHS` | Elementwise ternary disjunction (`max`) of two same-shape `ExactTrit` tensors via SWAR. |
+
+Operational constraints:
+
+- Inputs MUST be tensor handles.
+- Inputs MUST have numeric class `ExactTrit`.
+- Binary forms MUST have shape-compatible operands.
+- Results preserve the input tensor shape and remain `ExactTrit`.
+
+Fault behavior:
+
+- `TypeFault`: operand tensor is not `ExactTrit`.
+- `ShapeFault`: binary operand shapes differ.
+- `DecodeFault`: operand is not a valid tensor handle or SWAR decode/encode fails.
+
 ### 5.18 Governed Foreign Function Interface (RFC-0036 + RFC-00B8)
 
 *Status: **accepted** — 2026-03-16. Implementation: `core/vm/vm.cpp` (FFICall,

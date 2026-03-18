@@ -1,5 +1,6 @@
 #include "t81/tensor/llama.hpp"
 #include "t81/tensor/matmul.hpp"
+#include "t81/swar/swar.hpp"
 #include "t81/jit/jit.hpp"
 #include "t81/tracing/canonhash.hpp"
 
@@ -7,6 +8,56 @@
 #include <span>
 
 namespace t81::vm {
+
+namespace {
+
+std::optional<t81::experimental::ComputeTritVector> encode_exact_trit_tensor_for_jit(
+    const t81::T729DynamicTensor& tensor) {
+  if (tensor.numeric_class() != t81::TensorNumericClass::ExactTrit) {
+    return std::nullopt;
+  }
+
+  const auto values = tensor.snapshot_values();
+  std::vector<int8_t> trits;
+  trits.reserve(values.size());
+  for (float value : values) {
+    if (value == -1.0f) {
+      trits.push_back(-1);
+    } else if (value == 0.0f) {
+      trits.push_back(0);
+    } else if (value == 1.0f) {
+      trits.push_back(1);
+    } else {
+      return std::nullopt;
+    }
+  }
+
+  auto encoded = t81::experimental::ComputeTritVector::from_trits(trits);
+  if (encoded.is_err()) {
+    return std::nullopt;
+  }
+  return encoded.value();
+}
+
+std::optional<t81::T729DynamicTensor> decode_exact_trit_tensor_for_jit(
+    const t81::experimental::ComputeTritVector& vector, const std::vector<int>& shape) {
+  auto trits = vector.to_trits();
+  if (trits.is_err()) {
+    return std::nullopt;
+  }
+
+  std::vector<float> values;
+  values.reserve(trits.value().size());
+  for (int8_t trit : trits.value()) {
+    values.push_back(static_cast<float>(trit));
+  }
+
+  t81::T729DynamicTensor tensor(shape, std::move(values));
+  tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
+  return tensor;
+}
+
+}  // namespace
 
 class ThreadedJitTrace : public JitTrace {
 public:
@@ -234,6 +285,79 @@ public:
           }
           ctx.registers[insn.a] = out;
           ctx.register_tags[insn.a] = ValueTag::Int;
+          break;
+        }
+        case t81::tisc::Opcode::TNOT_SWAR: {
+          if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto* src = tensor_ptr(ctx.registers[insn.b]);
+          if (src == nullptr) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto encoded = encode_exact_trit_tensor_for_jit(*src);
+          if (!encoded.has_value()) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto result_tensor = t81::swar::t_not_swar(*encoded);
+          if (result_tensor.is_err()) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto decoded = decode_exact_trit_tensor_for_jit(result_tensor.value(), src->shape());
+          if (!decoded.has_value()) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          ctx.registers[insn.a] = alloc_tensor(std::move(*decoded));
+          ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+          break;
+        }
+        case t81::tisc::Opcode::TAND_SWAR:
+        case t81::tisc::Opcode::TOR_SWAR: {
+          if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto* lhs = tensor_ptr(ctx.registers[insn.b]);
+          auto* rhs = tensor_ptr(ctx.registers[insn.c]);
+          if (lhs == nullptr || rhs == nullptr || lhs->shape() != rhs->shape()) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto lhs_encoded = encode_exact_trit_tensor_for_jit(*lhs);
+          auto rhs_encoded = encode_exact_trit_tensor_for_jit(*rhs);
+          if (!lhs_encoded.has_value() || !rhs_encoded.has_value()) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto result_tensor = insn.opcode == t81::tisc::Opcode::TAND_SWAR
+                                   ? t81::swar::t_and_swar(*lhs_encoded, *rhs_encoded)
+                                   : t81::swar::t_or_swar(*lhs_encoded, *rhs_encoded);
+          if (result_tensor.is_err()) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto decoded = decode_exact_trit_tensor_for_jit(result_tensor.value(), lhs->shape());
+          if (!decoded.has_value()) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          ctx.registers[insn.a] = alloc_tensor(std::move(*decoded));
+          ctx.register_tags[insn.a] = ValueTag::TensorHandle;
           break;
         }
         case t81::tisc::Opcode::LoadImm:
@@ -869,7 +993,10 @@ public:
           insn.opcode != t81::tisc::Opcode::Call && insn.opcode != t81::tisc::Opcode::Ret &&
           insn.opcode != t81::tisc::Opcode::Store && insn.opcode != t81::tisc::Opcode::Push &&
           insn.opcode != t81::tisc::Opcode::Cmp && insn.opcode != t81::tisc::Opcode::TMatMul &&
-          insn.opcode != t81::tisc::Opcode::TRMSNorm) {
+          insn.opcode != t81::tisc::Opcode::TRMSNorm &&
+          insn.opcode != t81::tisc::Opcode::TNOT_SWAR &&
+          insn.opcode != t81::tisc::Opcode::TAND_SWAR &&
+          insn.opcode != t81::tisc::Opcode::TOR_SWAR) {
         ctx.flags.zero = (ctx.registers[insn.a] == 0);
         ctx.flags.negative = (ctx.registers[insn.a] < 0);
         ctx.flags.positive = (ctx.registers[insn.a] > 0);
@@ -920,6 +1047,9 @@ void JitCompiler::record_instruction(const t81::tisc::Insn& insn) {
     case t81::tisc::Opcode::TAnd:
     case t81::tisc::Opcode::TOr:
     case t81::tisc::Opcode::TXor:
+    case t81::tisc::Opcode::TNOT_SWAR:
+    case t81::tisc::Opcode::TAND_SWAR:
+    case t81::tisc::Opcode::TOR_SWAR:
     case t81::tisc::Opcode::LoadImm:
     case t81::tisc::Opcode::Load:
     case t81::tisc::Opcode::Store:

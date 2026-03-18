@@ -246,11 +246,12 @@ Subcommands:
   quantize <input> --to-gguf <out>           Quantize SafeTensors -> T3_K GGUF
 
 Options:
-  --format <fmt>       Input format (safetensors, gguf). Default: safetensors
+  --format <fmt>       Input format (safetensors, bitnet, gguf). Default: infer from extension
   -o, --output <file>  Output file path
 
 Examples:
   t81 weights import model.safetensors -o model.t81w
+  t81 weights import bitnet_model.safetensors --format bitnet -o model.t81w
   t81 weights info model.t81w --json
   t81 weights verify model.t81w --json
   t81 weights export model.t81w --to-safetensors model.safetensors
@@ -392,12 +393,13 @@ Options:
 Notes:
   - This surface is experimental and non-DCP.
   - --policy is required and must include allowed-tensor-hashes for model authorization.
+  - Bare model names are resolved from the nearest `./model/` or `./models/` directory.
 )";
 }
 
 void print_help_compile() {
   std::cerr << R"(
-Usage: t81 code build <file.t81|file.t81w> [-o <file.tisc>] [--weights-model <model.t81w>]
+Usage: t81 code build <file.t81|file.t81w> [-o <file.tisc>] [--weights-model <model.t81w|sha3-256:hash>]
 
 Compiles T81Lang source (or T81 weight module source) into TISC bytecode.
 
@@ -408,7 +410,7 @@ Example:
 
 void print_help_run() {
   std::cerr << R"(
-Usage: t81 code run <file.t81|file.tisc> [--policy <policy.apl>] [--trace] [-o <file>] [--output <file>] [--weights-model <model.t81w>]
+Usage: t81 code run <file.t81|file.tisc> [--policy <policy.apl>] [--trace] [-o <file>] [--output <file>] [--weights-model <model.t81w|sha3-256:hash>]
 
 Compiles (if needed) and executes a program via the VM.
 `--trace-out` remains accepted for compatibility, but `-o/--output` is canonical.
@@ -420,7 +422,7 @@ Example:
 
 void print_help_profile() {
   std::cerr << R"(
-Usage: t81 code profile <file.t81|file.tisc> [--policy <policy.apl>] [--json] [--weights-model <model.t81w>]
+Usage: t81 code profile <file.t81|file.tisc> [--policy <policy.apl>] [--json] [--weights-model <model.t81w|sha3-256:hash>]
 
 Compiles (if needed) and reports VM runtime and memory metrics.
 
@@ -442,7 +444,7 @@ Example:
 
 void print_help_debug() {
   std::cerr << R"(
-Usage: t81 debug <file.t81|file.tisc> [--policy <policy.apl>] [--weights-model <model.t81w>]
+Usage: t81 debug <file.t81|file.tisc> [--policy <policy.apl>] [--weights-model <model.t81w|sha3-256:hash>]
 
 Compiles (if needed) and starts the interactive debugger.
 
@@ -465,7 +467,7 @@ Example:
 
 void print_help_repl() {
   std::cerr << R"(
-Usage: t81 repl [--weights-model <model.t81w>] [--policy <policy.apl>]
+Usage: t81 repl [--weights-model <model.t81w|sha3-256:hash>] [--policy <policy.apl>]
 
 Starts the interactive REPL.
 
@@ -1115,9 +1117,12 @@ These commands are not part of the core beginner workflow.
 
 void print_help_weights_import() {
   std::cerr << R"(
-Usage: t81 weights import <file> [-o <out>] [--format <safetensors|gguf>]
+Usage: t81 weights import <file> [-o <out>] [--format <safetensors|bitnet|gguf>]
 
 Imports model weights into native `.t81w`.
+
+Bare model names are resolved from the nearest `./model/` or `./models/`
+directory when possible.
 )";
 }
 
@@ -2285,13 +2290,12 @@ Args parse_args(int argc, char* argv[]) {
 std::shared_ptr<t81::weights::ModelFile> load_weights_model_optional(
     const std::optional<fs::path>& path) {
   if (!path) return nullptr;
-  try {
-    auto mf = t81::weights::load_t81w(*path);
-    return std::make_shared<t81::weights::ModelFile>(std::move(mf));
-  } catch (const std::exception& e) {
-    error(e.what());
-    return nullptr;
+  std::string error_message;
+  auto model = t81::cli::load_weights_model(path->string(), &error_message);
+  if (!model) {
+    error(error_message);
   }
+  return model;
 }
 
 int run_benchmark(const char* command_name, const Args& args) {
@@ -2417,6 +2421,7 @@ struct WeightsImportOptions {
   fs::path input;
   std::optional<fs::path> output;
   std::string format = "safetensors";
+  bool format_explicit = false;
 };
 
 bool has_extension_ci(const fs::path& path, std::string_view expected_ext) {
@@ -2470,6 +2475,7 @@ int run_weights_import(const Args& args) {
         return 1;
       }
       opts.format = args.command_args[idx++];
+      opts.format_explicit = true;
     } else if (token == "-o" || token == "--out" || token == "--output") {
       if (idx >= args.command_args.size()) {
         error("weights import: missing argument for " + token + ". Run 't81 help weights import'.");
@@ -2496,6 +2502,26 @@ int run_weights_import(const Args& args) {
     return 1;
   }
 
+  if (!fs::exists(opts.input)) {
+    std::string resolution_error;
+    auto resolved = t81::cli::resolve_repo_model_path(opts.input.string(),
+                                                      {".gguf", ".safetensors"},
+                                                      &resolution_error);
+    if (!resolved) {
+      error("weights import: " + resolution_error);
+      return 1;
+    }
+    opts.input = *resolved;
+  }
+
+  if (!opts.format_explicit) {
+    if (has_extension_ci(opts.input, ".gguf")) {
+      opts.format = "gguf";
+    } else if (has_extension_ci(opts.input, ".safetensors")) {
+      opts.format = "safetensors";
+    }
+  }
+
   t81::weights::ModelFile mf;
   try {
     if (opts.format == "safetensors") {
@@ -2506,6 +2532,13 @@ int run_weights_import(const Args& args) {
         return 1;
       }
       mf = t81::weights::load_safetensors(opts.input);
+    } else if (opts.format == "bitnet") {
+      if (!has_extension_ci(opts.input, ".safetensors")) {
+        error("weights import: --format bitnet requires a .safetensors input file. Run 't81 help "
+              "weights import'.");
+        return 1;
+      }
+      mf = t81::weights::load_bitnet_safetensors(opts.input);
     } else if (opts.format == "gguf") {
       if (!has_extension_ci(opts.input, ".gguf")) {
         error("weights import: --format gguf requires a .gguf input file. Run 't81 help weights "
@@ -2515,7 +2548,7 @@ int run_weights_import(const Args& args) {
       mf = t81::weights::load_gguf(opts.input);
     } else {
       error("weights import: unsupported format '" + opts.format +
-            "'. Supported: safetensors, gguf. Run 't81 help weights import'.");
+            "'. Supported: safetensors, bitnet, gguf. Run 't81 help weights import'.");
       return 1;
     }
   } catch (const std::exception& e) {
@@ -8510,6 +8543,14 @@ int run_llama_run(const Args& args) {
       return 1;
     }
     model_path = temp_model_file->path;
+  } else if (!fs::exists(model_path)) {
+    std::string resolution_error;
+    auto resolved = t81::cli::resolve_repo_model_path(positional[0], {".gguf"}, &resolution_error);
+    if (!resolved) {
+      error("llama-run: " + resolution_error);
+      return 1;
+    }
+    model_path = *resolved;
   }
 
   auto adapter = t81::experimental::LlamaCppAdapter::create(model_path, policy_text);
@@ -8903,8 +8944,7 @@ int main(int argc, char* argv[]) {
     const auto ext = args.input.extension();
     auto weights_model_ptr = std::shared_ptr<t81::weights::ModelFile>{};
     if (args.weights_model &&
-        (args.command == "compile" ||
-         ((args.command == "run" || args.command == "debug") && ext == ".t81") ||
+        (args.command == "compile" || args.command == "run" || args.command == "debug" ||
          args.command == "repl")) {
       weights_model_ptr = load_weights_model_optional(args.weights_model);
       if (!weights_model_ptr) return 1;
@@ -8964,9 +9004,11 @@ int main(int argc, char* argv[]) {
           tisc_path = temp->path;
         }
 
-        return t81::cli::run_tisc(tisc_path, args.policy, args.trace, args.trace_output);
+        return t81::cli::run_tisc(tisc_path, args.policy, args.trace, args.trace_output,
+                                  weights_model_ptr);
       } else if (ext == ".tisc") {
-        return t81::cli::run_tisc(args.input, args.policy, args.trace, args.trace_output);
+        return t81::cli::run_tisc(args.input, args.policy, args.trace, args.trace_output,
+                                  weights_model_ptr);
       } else {
         error("run expects .t81 or .tisc file");
         return 1;
@@ -8984,9 +9026,9 @@ int main(int argc, char* argv[]) {
         TempTiscFile temp(args.input.stem().string());
         int rc = t81::cli::compile(args.input, temp.path, {}, {}, weights_model_ptr);
         if (rc != 0) return rc;
-        return t81::cli::debug_tisc(temp.path, args.policy);
+        return t81::cli::debug_tisc(temp.path, args.policy, weights_model_ptr);
       } else if (ext == ".tisc") {
-        return t81::cli::debug_tisc(args.input, args.policy);
+        return t81::cli::debug_tisc(args.input, args.policy, weights_model_ptr);
       } else {
         error("debug expects .t81 or .tisc file");
         return 1;

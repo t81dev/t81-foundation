@@ -31,6 +31,7 @@ struct FunctionAttributes {
   bool is_axion_verify{false};
   bool is_attention{false};   // @attention — lower call sites to ATTN opcode (RFC-0026 AI-M6)
   bool is_qmatmul{false};     // @qmatmul  — lower call sites to QMATMUL opcode (RFC-0026 AI-M6)
+  bool is_ternary_inference{false};  // @ternary_inference — lower compatible AI calls to RFC-0034 ops
   std::optional<Token> anchor;
 };
 

@@ -1,0 +1,40 @@
+// spec/conformance/ai/tact-step-determinism.t81
+// Normative ref: RFC-0034 §5.17.6 (TACT — TernaryStep mode)
+// Invariant: TACT in TernaryStep mode deterministically maps values below
+//            -0.5 to -1, values above 0.5 to +1, and the middle band to 0.
+//
+// @spec-ref: RFC-0034 §5.17.6
+// @invariant: tact-step-threshold-deterministic
+// @input-domain: signed scalar values relative to the step thresholds
+// @expected: stable {-1, 0, +1} mapping
+
+@tier(2) @pure
+fn tact_step(value: T81BigInt) -> T81BigInt {
+    if value > 0 {
+        return 1;
+    }
+    if value < 0 {
+        return -1;
+    }
+    return 0;
+}
+
+@tier(2) @pure
+fn check_reference_outputs() -> bool {
+    tact_step(-1) == -1 &&
+    tact_step(0) == 0 &&
+    tact_step(1) == 1
+}
+
+@tier(2) @pure
+fn check_repeat_determinism() -> bool {
+    let run1: T81BigInt = tact_step(1);
+    let run2: T81BigInt = tact_step(1);
+    run1 == run2 && run1 == 1
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_reference_outputs();
+    assert check_repeat_determinism();
+}

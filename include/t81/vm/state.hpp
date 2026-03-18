@@ -234,6 +234,10 @@ struct ThreadContext {
   // Tracks (dst_handle, axis, index) tuples used in this execution frame.
   // A second SCATTER to the same tuple raises SecurityFault via Axion deny.
   std::set<std::tuple<std::int64_t, int, std::int64_t>> scatter_used;
+
+  // RFC-0034 §5.17.6: once TACT triggers a quarantine verdict, a repeated
+  // activation-ceiling violation escalates to Deny/ActivationFault.
+  bool activation_quarantined{false};
 };
 
 // Virtual machine register file per spec/t81vm-spec.md.

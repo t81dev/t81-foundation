@@ -120,7 +120,10 @@ Version: 3.1.0
 | TNot | 18 | `0x12` | A, B, C | `A: Dest, B: Src` | - | Ternary Not | Ternary NOT: `-1 -> 1`, `0 -> 0`, `1 -> -1`. | DecodeFault | Yes | Implemented | core/vm/vm.cpp |
 | TAnd | 19 | `0x13` | A, B, C | `A: Dest, B: Src1, C: Src2` | - | Ternary And | Ternary AND (Min function). | DecodeFault | Yes | Implemented | core/vm/vm.cpp |
 | TOr | 20 | `0x14` | A, B, C | `A: Dest, B: Src1, C: Src2` | - | Ternary Or | Ternary OR (Max function). | DecodeFault | Yes | Implemented | core/vm/vm.cpp |
-| TXor | 21 | `0x15` | A, B, C | `A: Dest, B: Src1, C: Src2` | - | Ternary Xor | Ternary XOR / Sum. | DecodeFault | Yes | Implemented | core/vm/vm.cpp |
+| TXor | 21 | `0x15` | A, B, C | `A: Dest, B: Src1, C: Src2` | - | Ternary Xor | Ternary difference with wrap semantics; non-commutative. | DecodeFault | Yes | Implemented | core/vm/vm.cpp |
+| TNOT_SWAR | 213 | `0xD5` | A, B, C | `A: Dest, B: Tensor` | - | SWAR Tensor Not | Unary negation over `ExactTrit` tensor handle `R[B]` using RFC-0040 SWAR kernels. Shape preserved; result remains `ExactTrit`. | DecodeFault, TypeFault | Yes | Implemented | core/vm/vm.cpp |
+| TAND_SWAR | 214 | `0xD6` | A, B, C | `A: Dest, B: Tensor1, C: Tensor2` | - | SWAR Tensor And | Elementwise ternary minimum over two `ExactTrit` tensor handles using RFC-0040 SWAR kernels. | DecodeFault, TypeFault, ShapeFault | Yes | Implemented | core/vm/vm.cpp |
+| TOR_SWAR | 215 | `0xD7` | A, B, C | `A: Dest, B: Tensor1, C: Tensor2` | - | SWAR Tensor Or | Elementwise ternary maximum over two `ExactTrit` tensor handles using RFC-0040 SWAR kernels. | DecodeFault, TypeFault, ShapeFault | Yes | Implemented | core/vm/vm.cpp |
 
 ### Axion / Policy
 
@@ -321,19 +324,19 @@ All opcodes in this class operate on TensorHandle registers and are Tier 2+ only
 | Int2BigInt | 193 | `0xC1` | A, B, C | `A: Dest, B: Src` | - | Integer to BigInt | Converts integer register `R[B]` to a BigInt handle stored in `R[A]`. | TypeFault | Yes | Implemented | core/vm/vm.cpp |
 
 ## 6. Reconciliation Summary
-- **Canonical opcode rows merged from v1 categories**: 193 (opcodes `0x01`-`0xC1` plus `0x00` NOP handled separately)
-- **Canonical rows with semantic coverage**: 194/194 (Full Parity)
+- **Canonical opcode rows merged from v1 categories**: 208 (opcodes `0x01`-`0xD7` plus `0x00` NOP handled separately)
+- **Canonical rows with semantic coverage**: 209/209 (Full Parity)
 - **Rows marked Stub/Placeholder**: 12 (documented as Functional Stubs)
 
 ### 6.2 Reserved / Unused
 - `0x00` = `NOP` (semantically documented; not listed in v1 category tables).
-- `0xC2` through `0xFF` reserved for future standardization.
+- `0xD8` through `0xFF` reserved for future standardization.
 
 ## 7. Implementation Consistency Audit (carried from v1)
-- **VM Opcode Count**: 194 defined opcodes (`0x00`-`0xC1`).
-- **Header Enum Count**: 194 entries.
+- **VM Opcode Count**: 209 defined opcodes (`0x00`-`0xD7`).
+- **Header Enum Count**: 209 entries.
 - **Coverage**: All opcodes defined in `include/t81/isa/opcodes.hpp` are present in `core/vm/vm.cpp` dispatch switch.
-- **Discrepancies**: None found (per v1 audit, extended for RFC-0026 AI opcodes).
+- **Discrepancies**: None found (extended through RFC-0040 SWAR tensor opcodes).
 
 ## 8. Deferred Extensions
 

@@ -62,7 +62,7 @@ The following TISC opcodes are defined in `opcodes.hpp` and implemented in the V
 | **Control Flow** | `Halt`, `Nop`, `Jump`, `JumpIfZero`, `JumpIfNotZero`, `JumpIfNegative`, `JumpIfPositive`, `Call`, `Ret`, `Trap` |
 | **Memory** | `LoadImm`, `Load`, `Store`, `Mov`, `Push`, `Pop` |
 | **Integer Arithmetic** | `Add`, `Sub`, `Mul`, `Div`, `Mod`, `Inc`, `Dec`, `Cmp`, `Neg` |
-| **Ternary Logic** | `TNot`, `TAnd`, `TOr`, `TXor` |
+| **Ternary Logic** | `TNot`, `TAnd`, `TOr`, `TXor`, `TNOT_SWAR`, `TAND_SWAR`, `TOR_SWAR` |
 | **Float Arithmetic** | `FAdd`, `FSub`, `FMul`, `FDiv` |
 | **Fraction Arithmetic** | `FracAdd`, `FracSub`, `FracMul`, `FracDiv` |
 | **Type Conversion** | `I2F`, `F2I`, `I2Frac`, `Frac2I` |

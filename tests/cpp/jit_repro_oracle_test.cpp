@@ -77,6 +77,52 @@ static Program make_hot_arith_variant() {
   return p;
 }
 
+static Program make_hot_swar_trace() {
+  Program p;
+  p.tensor_pool.push_back([] {
+    t81::T729DynamicTensor tensor({4}, {-1.0f, 0.0f, 1.0f, -1.0f});
+    tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
+    return tensor;
+  }());
+  p.tensor_pool.push_back([] {
+    t81::T729DynamicTensor tensor({4}, {1.0f, -1.0f, 0.0f, 1.0f});
+    tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
+    return tensor;
+  }());
+  p.insns = {
+      {Opcode::LoadImm, 1, 1, 0, LiteralKind::TensorHandle},
+      {Opcode::LoadImm, 2, 2, 0, LiteralKind::TensorHandle},
+      {Opcode::TNOT_SWAR, 3, 1, 0},
+      {Opcode::TAND_SWAR, 4, 1, 2},
+      {Opcode::TOR_SWAR, 5, 1, 2},
+      {Opcode::Halt, 0, 0, 0},
+  };
+  return p;
+}
+
+static Program make_hot_swar_trace_variant() {
+  Program p;
+  p.tensor_pool.push_back([] {
+    t81::T729DynamicTensor tensor({4}, {-1.0f, 0.0f, 1.0f, -1.0f});
+    tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
+    return tensor;
+  }());
+  p.tensor_pool.push_back([] {
+    t81::T729DynamicTensor tensor({4}, {1.0f, -1.0f, 0.0f, 1.0f});
+    tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
+    return tensor;
+  }());
+  p.insns = {
+      {Opcode::LoadImm, 1, 1, 0, LiteralKind::TensorHandle},
+      {Opcode::LoadImm, 2, 2, 0, LiteralKind::TensorHandle},
+      {Opcode::TNOT_SWAR, 3, 1, 0},
+      {Opcode::TOR_SWAR, 4, 1, 2},
+      {Opcode::TAND_SWAR, 5, 1, 2},
+      {Opcode::Halt, 0, 0, 0},
+  };
+  return p;
+}
+
 // Compile a trace from a program via JitCompiler (records until branch/stop).
 static std::unique_ptr<JitTrace> compile_trace(const Program& prog) {
   JitCompiler jc;
@@ -148,6 +194,23 @@ static void test_trace_hash_discriminating() {
         "[RFC-0028-§2-c] different programs produce different trace_hash");
 }
 
+static void test_trace_hash_swar_stable_and_discriminating() {
+  std::printf("\n[RFC-0040-§JIT] SWAR traces have stable and discriminating trace_hash\n");
+
+  const auto stable_a = compile_trace(make_hot_swar_trace());
+  const auto stable_b = compile_trace(make_hot_swar_trace());
+  const auto variant = compile_trace(make_hot_swar_trace_variant());
+
+  check(stable_a != nullptr && stable_b != nullptr && variant != nullptr,
+        "all SWAR traces compiled");
+  if (!stable_a || !stable_b || !variant) return;
+
+  check(stable_a->trace_hash() == stable_b->trace_hash(),
+        "[RFC-0040-§JIT-a] identical SWAR traces produce identical trace_hash");
+  check(stable_a->trace_hash() != variant->trace_hash(),
+        "[RFC-0040-§JIT-b] distinct SWAR traces produce different trace_hash");
+}
+
 // ── [RFC-0028-§5] AxionBoundary exit kind ────────────────────────────────────
 
 static void test_axion_boundary_exit_kind_defined() {
@@ -201,6 +264,7 @@ int main() {
   test_trace_hash_nonzero();
   test_trace_hash_stable();
   test_trace_hash_discriminating();
+  test_trace_hash_swar_stable_and_discriminating();
   test_axion_boundary_exit_kind_defined();
   test_repro_oracle_identical_runs();
   test_repro_oracle_sensitive_to_program_change();

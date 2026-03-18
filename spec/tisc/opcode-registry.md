@@ -343,14 +343,25 @@ Elementwise polynomial subtraction over tensor handles; completes the `{+, −, 
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | TVecSub | 212 (0xD4) | A, B, C | Elementwise subtraction: `R[A][k] = tensor(R[B])[k] − tensor(R[C])[k]` for all k | Yes | core/vm/vm.cpp |
 
+### 2.23 SWAR Tensor Operations (RFC-0040)
+
+Explicit SWAR dispatch over `ExactTrit` tensor handles. These opcodes are stable
+entry points for RFC-0040 semantics and bypass scalar ternary-trit execution.
+
+| Mnemonic | Numeric Encoding | Operands | Description | Deterministic | Implementation Location |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| TNOT_SWAR | 213 (0xD5) | A, B, C | Exact-trit tensor unary negation via stable SWAR kernels: `R[A] = swar_not(tensor(R[B]))` | Yes | core/vm/vm.cpp |
+| TAND_SWAR | 214 (0xD6) | A, B, C | Exact-trit tensor elementwise ternary min via SWAR: `R[A] = swar_and(tensor(R[B]), tensor(R[C]))` | Yes | core/vm/vm.cpp |
+| TOR_SWAR | 215 (0xD7) | A, B, C | Exact-trit tensor elementwise ternary max via SWAR: `R[A] = swar_or(tensor(R[B]), tensor(R[C]))` | Yes | core/vm/vm.cpp |
+
 ## 3. Reserved / Unused Opcodes
 
 - **Nop (0x00)**: No Operation.
-- **Reserved**: Opcodes 213 (0xD5) through 255 (0xFF) are reserved for future standardization.
+- **Reserved**: Opcodes 216 (0xD8) through 255 (0xFF) are reserved for future standardization.
 
 ## 4. Implementation Consistency Audit
 
-- **VM Opcode Count**: 206 defined opcodes (0x00–0xD4); includes RFC-0034, RFC-00B8, RFC-0038, RFC-0039 additions.
-- **Header Enum Count**: 206 entries in `include/t81/isa/opcodes.hpp`.
+- **VM Opcode Count**: 209 defined opcodes (0x00–0xD7); includes RFC-0034, RFC-00B8, RFC-0038, RFC-0039, RFC-0040 additions.
+- **Header Enum Count**: 209 entries in `include/t81/isa/opcodes.hpp`.
 - **Coverage**: All opcodes defined in `include/t81/isa/opcodes.hpp` are present in `core/vm/vm.cpp` dispatch switch.
 - **Discrepancies**: None found.

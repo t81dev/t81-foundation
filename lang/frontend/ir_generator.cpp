@@ -351,6 +351,7 @@ std::any IRGenerator::visit(const FunctionStmt& stmt) {
   emit_label(_function_labels[name]);
 
   enter_pattern_scope();
+  _ternary_inference_stack.push_back(stmt.is_ternary_inference);
 
   // Pop return address
   auto ret_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
@@ -431,6 +432,7 @@ std::any IRGenerator::visit(const FunctionStmt& stmt) {
   emit_simple(tisc::ir::Opcode::RET);
 
   exit_pattern_scope();
+  _ternary_inference_stack.pop_back();
   return {};
 }
 
@@ -1069,6 +1071,8 @@ std::any IRGenerator::visit(const CallExpr& expr) {
   if (auto callee_name = qualified_call_name(*expr.callee); callee_name.has_value()) {
     const std::string raw_name = *callee_name;
     std::string func_name = canonical_stdlib_call_name(raw_name);
+    const bool ternary_inference_active =
+        !_ternary_inference_stack.empty() && _ternary_inference_stack.back();
     if (func_name == "Some") {
       if (expr.arguments.empty()) {
         throw std::runtime_error("Some() requires a payload");
@@ -1263,7 +1267,8 @@ std::any IRGenerator::visit(const CallExpr& expr) {
       auto right = ensure_expr_result(expr.arguments[1].get());
       auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
       tisc::ir::Instruction instr;
-      instr.opcode = tisc::ir::Opcode::TMATMUL;
+      instr.opcode = ternary_inference_active ? tisc::ir::Opcode::TWMATMUL
+                                              : tisc::ir::Opcode::TMATMUL;
       instr.operands = {dest.reg, left.reg, right.reg};
       emit(instr);
       record_result(&expr, dest);
@@ -1283,7 +1288,8 @@ std::any IRGenerator::visit(const CallExpr& expr) {
       auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
       const int32_t packed_kv = (k_reg.reg.index & 0xFF) | ((v_reg.reg.index & 0xFF) << 8);
       tisc::ir::Instruction attn;
-      attn.opcode = tisc::ir::Opcode::ATTN;
+      attn.opcode = ternary_inference_active ? tisc::ir::Opcode::TATTN
+                                             : tisc::ir::Opcode::ATTN;
       attn.operands = {dest.reg, q_reg.reg, tisc::ir::Immediate{packed_kv}};
       emit(attn);
       record_result(&expr, dest);
@@ -6055,4 +6061,3 @@ std::optional<int> IRGenerator::resolve_variant_index(std::string_view enum_name
 }
 
 }  // namespace t81::frontend
-

@@ -1252,6 +1252,7 @@ void SemanticAnalyzer::register_function_signatures() {
     symbol->is_pure = func->is_pure;
     symbol->is_attention = func->is_attention;
     symbol->is_qmatmul = func->is_qmatmul;
+    symbol->is_ternary_inference = func->is_ternary_inference;
     symbol->generic_params.clear();
     symbol->generic_params.reserve(func->generic_params.size());
     for (const auto& generic_param : func->generic_params) {
@@ -1599,11 +1600,16 @@ std::any SemanticAnalyzer::visit(const FunctionStmt& stmt) {
     error(stmt.name, "Function parameter count mismatch between declaration and definition.");
   }
 
-  // RFC-0026 AI-M6: @attention / @qmatmul are Tier 2+ only.
-  if (stmt.is_attention || stmt.is_qmatmul) {
+  // RFC-0026 / RFC-0034 AI attributes are Tier 2+ only.
+  if (stmt.is_attention || stmt.is_qmatmul || stmt.is_ternary_inference) {
     const int effective_tier = static_cast<int>(active_tier.value_or(1));
     if (effective_tier < 2) {
-      const std::string attr_name = stmt.is_attention ? "@attention" : "@qmatmul";
+      std::string attr_name = "@attention";
+      if (stmt.is_qmatmul) {
+        attr_name = "@qmatmul";
+      } else if (stmt.is_ternary_inference) {
+        attr_name = "@ternary_inference";
+      }
       error(stmt.name, attr_name + " requires Tier 2 or higher (add @tier(2) annotation).");
     }
   }

@@ -35,6 +35,7 @@ struct SemanticSymbol {
   bool is_pure = false;      // @pure annotation: function must have no observable side effects
   bool is_attention = false; // @attention — RFC-0026 AI-M6: call sites lower to ATTN opcode
   bool is_qmatmul = false;   // @qmatmul  — RFC-0026 AI-M6: call sites lower to QMATMUL opcode
+  bool is_ternary_inference = false;  // @ternary_inference — alternate AI lowering surface
 };
 
 struct Diagnostic {

@@ -1,4 +1,5 @@
 #include "test_runtime_check.hpp"
+#include "t81/weights.hpp"
 
 #include <chrono>
 #include <cctype>
@@ -16,6 +17,26 @@
 #include <vector>
 
 namespace fs = std::filesystem;
+
+namespace {
+
+void set_env(const char* name, const std::string& value) {
+#if defined(_WIN32)
+  _putenv_s(name, value.c_str());
+#else
+  setenv(name, value.c_str(), 1);
+#endif
+}
+
+void unset_env(const char* name) {
+#if defined(_WIN32)
+  _putenv_s(name, "");
+#else
+  unsetenv(name);
+#endif
+}
+
+}  // namespace
 
 struct CommandResult {
   std::string stdout_text;
@@ -764,6 +785,54 @@ int main(int argc, char* argv[]) {
     fs::remove_all(symlink_root, ignore_ec);
     fs::remove_all(repair_root, ignore_ec);
     fs::remove_all(rollback_root, ignore_ec);
+  }
+
+  {
+    const fs::path canonfs_root = make_temp_path("t81-cli-contract-model-canonfs", "");
+    std::error_code ignore_ec;
+    fs::create_directories(canonfs_root, ignore_ec);
+    T81_TEST_CHECK(!ignore_ec);
+
+    const fs::path model_path = make_temp_path("t81-cli-contract-model", ".t81w");
+    t81::weights::NativeModel model;
+
+    t81::weights::NativeTensor mat_a;
+    mat_a.shape = {2, 2};
+    mat_a.trits = 4;
+    mat_a.data = {40};
+    model["mat_a"] = mat_a;
+
+    t81::weights::NativeTensor mat_b;
+    mat_b.shape = {2, 2};
+    mat_b.trits = 4;
+    mat_b.data = {67};
+    model["mat_b"] = mat_b;
+
+    t81::weights::save_t81w(model, model_path);
+
+    const auto put_model_result =
+        run_cli(t81_bin, {"canonfs", "put-file", model_path.string(), "--canonfs-root", canonfs_root.string()});
+    T81_TEST_CHECK(put_model_result.exit_code == 0);
+    T81_TEST_CHECK(contains(put_model_result.stdout_text, "sha3-256:"));
+    std::string model_hash = put_model_result.stdout_text;
+    while (!model_hash.empty() && std::isspace(static_cast<unsigned char>(model_hash.back()))) {
+      model_hash.pop_back();
+    }
+
+    const fs::path tensor_fixture = fs::absolute(t81_bin).parent_path().parent_path() / "tests" /
+                                    "fixtures" / "t81lang_std_tensor" / "03_matmul_weights.t81";
+    T81_TEST_CHECK(fs::exists(tensor_fixture));
+
+    set_env("T81_CANONFS_ROOT", canonfs_root.string());
+    const auto model_run_result =
+        run_cli(t81_bin, {"code", "run", tensor_fixture.string(), "--weights-model", model_hash});
+    unset_env("T81_CANONFS_ROOT");
+
+    T81_TEST_CHECK(model_run_result.exit_code == 0);
+    T81_TEST_CHECK(contains(model_run_result.stdout_text, "<tensor#1>"));
+
+    fs::remove(model_path, ignore_ec);
+    fs::remove_all(canonfs_root, ignore_ec);
   }
 
   {

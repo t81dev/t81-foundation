@@ -5,7 +5,7 @@
 **Applies-To:** `spec/tisc-spec.md` §5.17, `spec/t81-data-types.md` §11.9,
 `spec/t81vm-spec.md`, `spec/t81lang-spec.md` §3–§4, `kernel/axion/`
 **Created:** 2026-03-16
-**Updated:** 2026-03-16
+**Updated:** 2026-03-18
 **Depends on:** RFC-0004 (Canonical Tensor Semantics), RFC-0017 (T81 Native),
 RFC-0026 (AI-Native Inference Opcodes), RFC-0030 (Deterministic Math Subsystem),
 RFC-0031 (Deterministic AI Execution Contract)
@@ -527,6 +527,91 @@ handle returns `Allow` by default (the gate is open, not absent).
 Milestones do not carry fixed calendar targets at draft stage; targets will be
 assigned at the `proposed` transition after dependency review.
 
+## 6.1 Implementation Status and Remaining Work
+
+Implementation status on 2026-03-18:
+
+- All in-repo RFC-0034 implementation items are closed: opcode/runtime
+  dispatch, Axion policy integration, `@ternary_inference` lowering, authored
+  conformance programs, CanonFS-backed `.t81w` execution, and native model
+  import/conversion support needed to feed the path.
+- The native ternary execution path is now measured end to end on the local
+  ARM64 host. Evidence is recorded in:
+  - `docs/records/status-history/RFC_0034_TERNARY_INFERENCE_EVIDENCE_2026-03-18.md`
+  - `docs/records/status-history/NATIVE_WEIGHTS_EXECUTION_EVIDENCE_2026-03-18.md`
+- Current measured native-only smoke evidence:
+  - `BM_NativeWeightsLoad_T81Native/64`: `372.09 Kops/s`, `172.67 µs`
+  - `BM_NativeWeightsPromote_T81Native/64`: `37.42 ops/s`, `1.81 s`
+  - `BM_NativeWeightsLoadAndExp_T81Native/64`: first `15.59 ops/s`, `4.24 s`;
+    after direct `TExp` fast path plus host-float tensor construction:
+    `696.30 ops/s`, `115.54 ms`
+  - `BM_NativeWeightsLoadAndSiLU_T81Native/64`: `784.42 ops/s`, `93.37 ms`
+  - `BM_NativeWeightsLoadAndSoftmax_T81Native/64`: `711.95 ops/s`, `92.08 ms`
+  - `BM_NativeWeightsLoadAndRMSNorm_T81Native/64`: `226.04 ops/s`, `311.71 ms`
+  - `BM_NativeWeightsLoadAndRoPE_T81Native/64`: after RoPE coefficient caching:
+    `81.34 ops/s`, `836.23 ms`
+  - First matched VM native-vs-binary comparison at `64`:
+    - `BM_NativeWeightsLoadAndExp`: `62.43x` throughput, `62.60x` latency
+    - `BM_NativeWeightsLoadAndSiLU`: `67.12x` throughput, `68.36x` latency
+    - `BM_NativeWeightsLoadAndSoftmax`: `63.34x` throughput, `64.07x` latency
+    - `BM_NativeWeightsLoadAndRMSNorm`: `11.99x` throughput, `11.65x` latency
+    - `BM_NativeWeightsLoadAndRoPE`: `4.07x` throughput, `4.20x` latency
+- Current same-build substrate comparison evidence in `build-llama` (`Release`,
+  `T81_ENABLE_LLAMA_CPP=ON`):
+  - `BM_LlamaGgufDequantize_Binary/8192`: `118.72 Mops/s`
+  - `BM_LlamaGgufDequantizeAndExp_Binary/8192`: `409.60 Mops/s`
+  - `BM_NativeWeightsDecode_T81Native/8192`: `41.58 Mops/s`, `196.79 µs`
+  - `BM_NativeWeightsDecodeAndExp_T81Native/8192`: `90.22 Kops/s`, `228.99 ms`
+  - `BM_NativeWeightsPackedExp_T81Native/8192`: about `85-97 Kops/s`,
+    `100-195 ms`
+  - `BM_NativeWeightsPackedExpRawFloat_T81Native/8192`: `372.36 Mops/s`,
+    `23.13 µs`
+  - `BM_LlamaGgufDequantizeAndExp_Binary/65536`: `348.60 Mops/s`, `188.33 µs`
+  - `BM_NativeWeightsDecodeAndExp_T81Native/65536`: `643.54 Kops/s`,
+    `209.14 ms`
+  - `BM_NativeWeightsPackedExp_T81Native/65536`: `671.21 Kops/s`, `243.58 ms`
+  - `BM_NativeWeightsPackedExpRawFloat_T81Native/65536`: `407.06 Mops/s`,
+    `160.37 µs`
+
+Interpretation:
+
+- The native path is real, instrumented, and measurable. The remaining work is
+  no longer import plumbing or missing opcode coverage.
+- The immediate execution bottleneck is not plain native weight loading. The
+  measured cost first concentrated in tensor materialization from the packed
+  native representation, with deterministic exponentiation adding further cost
+  on top. After switching canonical-fixed tensor construction to lazy host-cache
+  materialization, packed native decode is now measurable in the same release
+  harness as the llama.cpp baseline. The dominant remaining gap is now the
+  deterministic exponentiation path over promoted canonical-fixed tensors.
+  A direct packed-native benchmark path that still returns a canonical-fixed
+  tensor does not materially improve throughput over `decode()` + `ops::exp()`,
+  while a direct packed-native path that writes only a raw float buffer is fast
+  enough to match or beat the current llama.cpp substrate baseline. That means
+  the remaining hot cost is not trit classification but the current tensor
+  result representation. Narrow VM fast paths for native unary ops on
+  `BalancedTernary` weights, combined with host-float tensor construction that
+  avoids eager canonical-cache synthesis, materially improved real interpreter
+  paths including `WeightsLoad + TExp` and `WeightsLoad + TSiLU`. Even so, the
+  broader benchmark evidence, now including `WeightsLoad + TSoftmax`,
+  `WeightsLoad + TRMSNorm`, and `WeightsLoad + TRoPE`, still says result
+  representation remains the next main optimization target.
+  At the same time, the first matched VM native-vs-binary comparison now shows
+  a real execution advantage rather than only a substrate advantage: these
+  native unary loops are currently about `62x-67x` faster than the equivalent
+  binary host-float interpreter loops at `64` elements, and the first
+  higher-level `TRMSNorm` loop is about `12x` faster on that same VM-path
+  comparison. `TRoPE` is now also materially positive after coefficient caching
+  (`4.07x`), which narrows the set of obvious higher-level laggards but still
+  leaves it well behind the unary set and `TRMSNorm`.
+- Promotion work is therefore split into two tracks:
+  1. evidence refresh on both reference platforms for the RFC status transition
+  2. targeted optimization of the post-decode `TExp`-dominated native
+     execution path, most likely by broadening the new host-float/native fast
+     path approach across the remaining native unary surface or otherwise
+     avoiding the current canonical-fixed tensor result path for common native
+     workloads
+
 ---
 
 ## 7. Open Questions
@@ -565,6 +650,18 @@ Ternary-weight inference typically pairs with RMS normalization (not LayerNorm)
 because RMS norm does not require a learned scale parameter per weight.
 Should a `TWRMSNORM` opcode be part of this RFC or a separate follow-on?
 
+**Q7 — Post-load tensor materialization cost**
+Native weights loading is now benchmarked end to end and the current local
+evidence first showed a large gap between plain `WeightsLoad`, promoted tensor
+materialization, and `WeightsLoad + TExp`. The latest local evidence now shows
+that lazy canonical-fixed construction materially reduced the decode side of
+that gap, while deterministic exponentiation remains the dominant outlier. A
+direct packed-native benchmark path that still returns a canonical-fixed tensor
+does not materially improve throughput, while a raw-float result path does.
+Should RFC-0034 continue to rely on promotion into generic tensor storage for
+native model execution, or should a follow-on optimization effort introduce a
+lighter-weight native result representation for common unary/native workloads?
+
 **Q6 — TACT mode extensibility** *(resolved 2026-03-16)*
 **Decision: mode bytes registered in `spec/tisc/opcode-registry.md` alongside
 opcode bytes; no separate file.**
@@ -588,28 +685,54 @@ This RFC can move from `draft` to `proposed` when: *(met 2026-03-16)*
 
 This RFC can move from `proposed` to `accepted` when:
 
-- All six opcodes are implemented in `core/vm/vm.cpp` and dispatch correctly
+- ✅ All six opcodes are implemented in `core/vm/vm.cpp` and dispatch correctly
 - `TWMATMUL` produces bit-exact results verified against reference vectors on
   x86-64 and ARM64
 - Axion emits the correct guard events for `TWMATMUL`, `TQUANT`, `TATTN`,
   `TWEMBED`, and `TACT` (including `verdict=` field for all three outcomes)
-- `allowed-ternary-model-hashes`, `ternary-weight-domain-check`, and
-  `activation-ceiling` are implemented and tested in
-  `kernel/axion/policy_engine.cpp`
-- `TACT` `Quarantine` verdict: `RD` is not committed and PC does not advance;
+- ✅ `allowed-ternary-model-hashes`, `ternary-weight-domain-check`, and
+  `activation-ceiling` are implemented and tested in the interpreter/runtime
+  path (`include/t81/axion/policy.hpp`, `core/vm/vm.cpp`,
+  `tests/cpp/vm_rfc0034_ternary_native_test.cpp`)
+- ✅ `TACT` `Quarantine` verdict: `RD` is not committed and PC does not advance;
   verified by test
-- `TACT` `Deny` verdict: `ActivationFault` raised; verified by test
-- T81Lang compiler lowers `@ternary_inference` functions to §5.17 opcodes for
-  Tier 2+ programs, including `activate(src, mode)` → `TACT`
-- Spec-as-executable conformance programs cover: `twmatmul-exact.t81`,
-  `tquant-determinism.t81`, `tattn-ternary-qk.t81`, `twembed-bounds.t81`,
-  `tact-step-determinism.t81`, `tact-quarantine-gate.t81`
+- ✅ `TACT` `Deny` verdict: `ActivationFault` raised; verified by test
+- ✅ T81Lang compiler supports `@ternary_inference` on Tier 2+ functions and
+  lowers compatible AI call surfaces to §5.17 opcodes; current implementation
+  covers compatible `std.tensor.matmul` → `TWMATMUL` and
+  `std.tensor.attention` → `TATTN`, while the explicit `std.tnn.*` surface
+  remains available for the full ternary opcode family
+- ✅ Spec-as-executable conformance programs are authored under
+  `spec/conformance/ai/`: `twmatmul-exact.t81`, `tquant-determinism.t81`,
+  `tattn-ternary-qk.t81`, `twembed-bounds.t81`, `tact-step-determinism.t81`,
+  `tact-quarantine-gate.t81`
 - The conformance suite passes in CI on both reference platforms
 - No determinism regressions in the existing 363/363 core tests
 
 This RFC can move from `accepted` to `integrated` when:
 
-- At least one end-to-end ternary-native inference fixture runs against a
-  `.t81w/ternary` model file stored in CanonFS
-- The `ternary-weight-domain-check` policy path is exercised in the integration
-  test suite with both `true` and `false` directive values
+- ✅ At least one end-to-end ternary-native inference fixture runs against a
+  `.t81w/ternary` model file stored in CanonFS; current evidence is the
+  CanonFS-backed `--weights-model sha3-256:...` path exercised by
+  `tests/cpp/cli_contract_test.cpp` against
+  `tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81`
+- ✅ The `ternary-weight-domain-check` policy path is exercised in the
+  integration test suite with both `true` and `false` directive values;
+  covered by `tests/cpp/vm_rfc0034_ternary_native_test.cpp`
+
+Remaining work for status promotion on 2026-03-18:
+
+- The `proposed` → `accepted` transition still depends on refreshed
+  cross-platform CI evidence for the reference-platform criteria above.
+- Independent of status promotion, local runtime evidence now identifies
+  the post-decode deterministic exponentiation path as the next optimization
+  target for materially stronger native-execution claims. Current benchmark-only
+  evidence strongly suggests that changing result representation will matter
+  more than merely bypassing decode, because raw packed-native exponentiation
+  into a plain float buffer is already competitive with the llama.cpp substrate
+  baseline while canonical-fixed tensor result paths are not. A first set of VM
+  fast paths in this direction is now implemented for native balanced-trit
+  `TExp`, `TSiLU`, `TSoftmax`, `TRMSNorm`, and `TRoPE`; the measured
+  interpreter-path gains are already visible for both the unary set and the
+  first higher-level kernels. `TRoPE` still trails the unary set and
+  `TRMSNorm`, but coefficient caching moved it out of the merely-marginal range.

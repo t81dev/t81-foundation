@@ -37,6 +37,16 @@ void account_tensor_allocation(State& state, std::size_t tensor_elements);
 
 std::optional<t81::T729DynamicTensor> decode_native_tensor(const t81::weights::NativeTensor& native,
                                                            TensorDecodeMode mode);
+std::optional<t81::T729DynamicTensor> native_tensor_unary_exp_direct(
+    const t81::weights::NativeTensor& native);
+std::optional<t81::T729DynamicTensor> native_tensor_unary_silu_direct(
+    const t81::weights::NativeTensor& native);
+std::optional<t81::T729DynamicTensor> native_tensor_unary_softmax_direct(
+    const t81::weights::NativeTensor& native);
+std::optional<t81::T729DynamicTensor> native_tensor_rmsnorm_direct(
+    const t81::weights::NativeTensor& native, const t81::T729DynamicTensor& weights);
+std::optional<t81::T729DynamicTensor> native_tensor_rope_direct(
+    const t81::weights::NativeTensor& native, int pos);
 
 std::optional<t81::weights::NativeTensor> parse_canon_tensor_object(
     const std::vector<std::byte>& bytes);
@@ -96,6 +106,12 @@ bool tensor_set_at(t81::T729DynamicTensor& tensor, std::int64_t index, float val
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vec_binary_checked(
     const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs, bool multiply);
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vec_sub_checked(
+    const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs);
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_swar_not_checked(
+    const t81::T729DynamicTensor& tensor);
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_swar_and_checked(
+    const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs);
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_swar_or_checked(
     const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs);
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_transpose_checked(
     const t81::T729DynamicTensor& tensor);

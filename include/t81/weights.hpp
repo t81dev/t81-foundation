@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include "t81/types/tensor.hpp"
 
@@ -53,11 +54,13 @@ void quantize_safetensors_to_gguf(const std::filesystem::path& input,
 
 ModelFile load_gguf(const std::filesystem::path& path);
 ModelFile load_safetensors(const std::filesystem::path& path);
+ModelFile load_bitnet_safetensors(const std::filesystem::path& path);
 
 NativeTensor import_bitnet_b158(std::span<const int8_t> src, const std::vector<uint64_t>& shape);
 
 void save_t81w(const NativeModel& model, const std::filesystem::path& path);
 ModelFile load_t81w(const std::filesystem::path& path);
+ModelFile load_t81w_bytes(std::span<const std::byte> bytes);
 
 std::string emit_t81w_module(const ModelFile& mf, const std::string& source_name);
 

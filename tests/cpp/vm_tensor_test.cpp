@@ -1,11 +1,14 @@
 #include <cmath>
+#include <memory>
 #include <vector>
 #include "test_runtime_check.hpp"
 
 #include "t81/isa/program.hpp"
 #include "t81/tensor.hpp"
 #include "t81/tensor/llama.hpp"
+#include "t81/tensor/native.hpp"
 #include "t81/vm/vm.hpp"
+#include "t81/weights.hpp"
 
 using namespace t81;
 
@@ -144,6 +147,123 @@ int main() {
   T81_TEST_CHECK(std::fabs(sqrtRes.value().data()[0] - std::sqrt(1.0f)) < 1e-4f);
   T81_TEST_CHECK(std::fabs(sqrtRes.value().data()[1] - std::sqrt(2.0f)) < 1e-4f);
   T81_TEST_CHECK(std::fabs(sqrtRes.value().data()[2] - std::sqrt(3.0f)) < 1e-4f);
+
+  // Native balanced-trit weights should take the direct TExp fast path and
+  // still expose the same tensor-level result surface.
+  [[maybe_unused]] tisc::Program native_exp_program;
+  native_exp_program.symbol_pool = {"weightsA"};
+  auto native_model = std::make_shared<t81::weights::ModelFile>();
+  t81::weights::NativeTensor native_exp_tensor;
+  native_exp_tensor.format = t81::weights::NativeFormat::BalancedTernary;
+  native_exp_tensor.shape = {2, 2};
+  native_exp_tensor.trits = 4;
+  native_exp_tensor.data = {40};  // [-1, -1, -1, -1]
+  native_model->native["weightsA"] = native_exp_tensor;
+  native_exp_program.weights_model = native_model;
+  native_exp_program.insns.push_back({tisc::Opcode::WeightsLoad, 1, 1, 0});
+  native_exp_program.insns.push_back({tisc::Opcode::TExp, 2, 1, 0});
+  native_exp_program.insns.push_back({tisc::Opcode::TSiLU, 3, 1, 0});
+  native_exp_program.insns.push_back({tisc::Opcode::TSoftmax, 4, 1, 0});
+  native_exp_program.insns.push_back({tisc::Opcode::Halt, 0, 0, 0});
+
+  [[maybe_unused]] auto native_exp_vm = vm::make_interpreter_vm();
+  native_exp_vm->load_program(native_exp_program);
+  [[maybe_unused]] auto native_exp_result = native_exp_vm->run_to_halt();
+  T81_TEST_CHECK(native_exp_result.has_value());
+  const auto native_exp_handle = native_exp_vm->state().contexts[0].registers[2];
+  const auto& native_exp_res =
+      const_cast<vm::State&>(native_exp_vm->state())
+          .tensors[static_cast<std::size_t>(native_exp_handle - 1)];
+  T81_TEST_CHECK(native_exp_res.has_value());
+  T81_TEST_CHECK(native_exp_res.value().shape() == std::vector<int>({2, 2}));
+  T81_TEST_CHECK(native_exp_res.value().numeric_class() == t81::TensorNumericClass::ExactInt);
+  T81_TEST_CHECK(std::fabs(native_exp_res.value().data()[0] - std::exp(-1.0f)) < 1e-4f);
+  T81_TEST_CHECK(std::fabs(native_exp_res.value().data()[3] - std::exp(-1.0f)) < 1e-4f);
+
+  const auto native_silu_handle = native_exp_vm->state().contexts[0].registers[3];
+  const auto& native_silu_res =
+      const_cast<vm::State&>(native_exp_vm->state())
+          .tensors[static_cast<std::size_t>(native_silu_handle - 1)];
+  T81_TEST_CHECK(native_silu_res.has_value());
+  T81_TEST_CHECK(native_silu_res.value().shape() == std::vector<int>({2, 2}));
+  T81_TEST_CHECK(native_silu_res.value().numeric_class() == t81::TensorNumericClass::ExactInt);
+  const float silu_neg_one = -1.0f / (1.0f + std::exp(1.0f));
+  T81_TEST_CHECK(std::fabs(native_silu_res.value().data()[0] - silu_neg_one) < 1e-4f);
+  T81_TEST_CHECK(std::fabs(native_silu_res.value().data()[3] - silu_neg_one) < 1e-4f);
+
+  const auto native_softmax_handle = native_exp_vm->state().contexts[0].registers[4];
+  const auto& native_softmax_res =
+      const_cast<vm::State&>(native_exp_vm->state())
+          .tensors[static_cast<std::size_t>(native_softmax_handle - 1)];
+  T81_TEST_CHECK(native_softmax_res.has_value());
+  T81_TEST_CHECK(native_softmax_res.value().shape() == std::vector<int>({2, 2}));
+  T81_TEST_CHECK(native_softmax_res.value().numeric_class() == t81::TensorNumericClass::ExactInt);
+  const float softmax_row_sum0 =
+      native_softmax_res.value().data()[0] + native_softmax_res.value().data()[1];
+  const float softmax_row_sum1 =
+      native_softmax_res.value().data()[2] + native_softmax_res.value().data()[3];
+  T81_TEST_CHECK(std::fabs(softmax_row_sum0 - 1.0f) < 1e-5f);
+  T81_TEST_CHECK(std::fabs(softmax_row_sum1 - 1.0f) < 1e-5f);
+
+  [[maybe_unused]] tisc::Program native_rmsnorm_program;
+  native_rmsnorm_program.symbol_pool = {"weightsA"};
+  native_rmsnorm_program.tensor_pool.push_back(t81::T729DynamicTensor::from_host_float_data(
+      {2}, std::vector<float>{0.5f, 1.25f}, t81::TensorNumericClass::HostFloat));
+  native_rmsnorm_program.weights_model = native_model;
+  native_rmsnorm_program.insns.push_back({tisc::Opcode::WeightsLoad, 1, 1, 0});
+  tisc::Insn native_rms_weights{tisc::Opcode::LoadImm, 2, 1, 0};
+  native_rms_weights.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+  native_rmsnorm_program.insns.push_back(native_rms_weights);
+  native_rmsnorm_program.insns.push_back({tisc::Opcode::TRMSNorm, 3, 1, 2});
+  native_rmsnorm_program.insns.push_back({tisc::Opcode::Halt, 0, 0, 0});
+
+  [[maybe_unused]] auto native_rms_vm = vm::make_interpreter_vm();
+  native_rms_vm->load_program(native_rmsnorm_program);
+  [[maybe_unused]] auto native_rms_result = native_rms_vm->run_to_halt();
+  T81_TEST_CHECK(native_rms_result.has_value());
+  const auto native_rms_handle = native_rms_vm->state().contexts[0].registers[3];
+  const auto& native_rms_res =
+      const_cast<vm::State&>(native_rms_vm->state())
+          .tensors[static_cast<std::size_t>(native_rms_handle - 1)];
+  T81_TEST_CHECK(native_rms_res.has_value());
+  T81_TEST_CHECK(native_rms_res.value().shape() == std::vector<int>({2, 2}));
+  T81_TEST_CHECK(native_rms_res.value().numeric_class() == t81::TensorNumericClass::HostFloat);
+  const auto decoded_native = t81::tensor_native::decode(
+      native_exp_tensor, t81::tensor_native::DecodeMode::StrictCanonical);
+  T81_TEST_CHECK(decoded_native.has_value());
+  const auto native_rms_expected =
+      t81::ops::rmsnorm(*decoded_native, native_rmsnorm_program.tensor_pool[0]);
+  T81_TEST_CHECK(native_rms_res.value().data().size() == native_rms_expected.data().size());
+  for (std::size_t i = 0; i < native_rms_expected.data().size(); ++i) {
+    T81_TEST_CHECK(std::fabs(native_rms_res.value().data()[i] - native_rms_expected.data()[i]) <
+                   1e-4f);
+  }
+
+  [[maybe_unused]] tisc::Program native_rope_program;
+  native_rope_program.symbol_pool = {"weightsA"};
+  native_rope_program.weights_model = native_model;
+  native_rope_program.insns.push_back({tisc::Opcode::WeightsLoad, 1, 1, 0});
+  native_rope_program.insns.push_back({tisc::Opcode::LoadImm, 2, 3, 0});
+  native_rope_program.insns.push_back({tisc::Opcode::TRoPE, 3, 1, 2});
+  native_rope_program.insns.push_back({tisc::Opcode::Halt, 0, 0, 0});
+
+  [[maybe_unused]] auto native_rope_vm = vm::make_interpreter_vm();
+  native_rope_vm->load_program(native_rope_program);
+  [[maybe_unused]] auto native_rope_result = native_rope_vm->run_to_halt();
+  T81_TEST_CHECK(native_rope_result.has_value());
+  const auto native_rope_handle = native_rope_vm->state().contexts[0].registers[3];
+  const auto& native_rope_res =
+      const_cast<vm::State&>(native_rope_vm->state())
+          .tensors[static_cast<std::size_t>(native_rope_handle - 1)];
+  T81_TEST_CHECK(native_rope_res.has_value());
+  T81_TEST_CHECK(native_rope_res.value().shape() == std::vector<int>({2, 2}));
+  T81_TEST_CHECK(native_rope_res.value().numeric_class() == t81::TensorNumericClass::ExactInt);
+  const auto native_rope_expected = t81::ops::rope(*decoded_native, 3);
+  T81_TEST_CHECK(native_rope_res.value().data().size() == native_rope_expected.data().size());
+  for (std::size_t i = 0; i < native_rope_expected.data().size(); ++i) {
+    T81_TEST_CHECK(std::fabs(native_rope_res.value().data()[i] - native_rope_expected.data()[i]) <
+                   1e-4f);
+  }
 
   // Shape checks via literal handles.
   [[maybe_unused]] tisc::Program chk;

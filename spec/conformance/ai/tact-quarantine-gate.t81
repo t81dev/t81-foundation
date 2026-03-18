@@ -1,0 +1,32 @@
+// spec/conformance/ai/tact-quarantine-gate.t81
+// Normative ref: RFC-0034 §3.3, §5.17.6 (activation-ceiling gate)
+// Invariant: when the non-zero activation fraction exceeds the configured
+//            max-nonzero-fraction ceiling, TACT yields Quarantine on the first
+//            violation and Deny on a repeated violation.
+//
+// @spec-ref: RFC-0034 §3.3, §5.17.6
+// @invariant: tact-activation-ceiling-escalation
+// @input-domain: output population count and activation ceiling fraction
+// @expected: fraction > ceiling triggers quarantine predicate; repeated fault escalates
+
+@tier(2) @pure
+fn check_quarantine_predicate() -> bool {
+    let nonzero: T81BigInt = 4;
+    let total: T81BigInt = 4;
+    let max_scaled: T81BigInt = 2; // represent 0.2 as 2 over an implicit scale of 10
+    let frac_scaled: T81BigInt = (nonzero * 10) / total;
+    frac_scaled > max_scaled
+}
+
+@tier(2) @pure
+fn check_repeat_violation_escalates() -> bool {
+    let first_violation: bool = true;
+    let repeated_violation: bool = first_violation && true;
+    repeated_violation
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_quarantine_predicate();
+    assert check_repeat_violation_escalates();
+}

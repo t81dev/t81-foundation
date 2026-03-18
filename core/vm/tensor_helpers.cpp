@@ -12,6 +12,7 @@
 #include "t81/tensor/elementwise.hpp"
 #include "t81/tensor/native.hpp"
 #include "t81/tensor/reduce.hpp"
+#include "t81/swar/swar.hpp"
 #include "t81/tensor/transpose.hpp"
 #include "t81/tensor/unary.hpp"
 #include "t81/tensor/contracts.hpp"
@@ -24,6 +25,55 @@ namespace t81::vm::internal {
 namespace {
 
 using t81::core::detail::DFixed;
+using t81::experimental::ComputeTritVector;
+
+std::expected<ComputeTritVector, t81::vm::Trap> encode_exact_trit_tensor(
+    const t81::T729DynamicTensor& tensor) {
+  if (tensor.numeric_class() != t81::TensorNumericClass::ExactTrit) {
+    return std::expected<ComputeTritVector, t81::vm::Trap>(t81::unexpect, t81::vm::Trap::TypeFault);
+  }
+
+  const auto values = tensor.snapshot_values();
+  std::vector<int8_t> trits;
+  trits.reserve(values.size());
+  for (float value : values) {
+    if (value == -1.0f) {
+      trits.push_back(-1);
+    } else if (value == 0.0f) {
+      trits.push_back(0);
+    } else if (value == 1.0f) {
+      trits.push_back(1);
+    } else {
+      return std::expected<ComputeTritVector, t81::vm::Trap>(t81::unexpect,
+                                                             t81::vm::Trap::TypeFault);
+    }
+  }
+
+  auto encoded = ComputeTritVector::from_trits(trits);
+  if (encoded.is_err()) {
+    return std::expected<ComputeTritVector, t81::vm::Trap>(t81::unexpect, t81::vm::Trap::TypeFault);
+  }
+  return encoded.value();
+}
+
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> decode_exact_trit_tensor(
+    const ComputeTritVector& vector, const std::vector<int>& shape) {
+  auto trits = vector.to_trits();
+  if (trits.is_err()) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::DecodeFault);
+  }
+
+  std::vector<float> values;
+  values.reserve(trits.value().size());
+  for (int8_t trit : trits.value()) {
+    values.push_back(static_cast<float>(trit));
+  }
+
+  t81::T729DynamicTensor tensor(shape, std::move(values));
+  tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
+  return tensor;
+}
 
 }  // namespace
 
@@ -83,6 +133,436 @@ std::optional<t81::T729DynamicTensor> decode_native_tensor(const t81::weights::N
                                ? t81::tensor_native::DecodeMode::StrictCanonical
                                : t81::tensor_native::DecodeMode::Lenient;
   return t81::tensor_native::decode(native, shared_mode);
+}
+
+std::optional<t81::T729DynamicTensor> native_tensor_unary_exp_direct(
+    const t81::weights::NativeTensor& native) {
+  using TensorFloat = t81::v1::T81Float<72, 9>;
+
+  if (native.format != t81::weights::NativeFormat::BalancedTernary) {
+    return std::nullopt;
+  }
+
+  static const float kExpNegOne = static_cast<float>(
+      t81::core::detail::exp(TensorFloat::from_double(-1.0)).to_double());
+  static const float kExpZero = 1.0f;
+  static const float kExpOne = static_cast<float>(
+      t81::core::detail::exp(TensorFloat::from_double(1.0)).to_double());
+
+  uint64_t remaining = native.trits;
+  if (remaining == 0 && !native.data.empty()) {
+    remaining = static_cast<uint64_t>(native.data.size()) * 48;
+  }
+
+  std::vector<float> out;
+  out.reserve(static_cast<std::size_t>(remaining));
+  for (uint64_t limb : native.data) {
+    const uint64_t count = std::min<uint64_t>(48, remaining);
+    std::vector<float> block(static_cast<std::size_t>(count), kExpZero);
+    uint64_t val = limb;
+    for (int i = 47; i >= 0; --i) {
+      const uint64_t digit = val % 3;
+      val /= 3;
+      if (static_cast<uint64_t>(i) >= count) {
+        continue;
+      }
+      switch (digit) {
+        case 0:
+          block[static_cast<std::size_t>(i)] = kExpNegOne;
+          break;
+        case 1:
+          block[static_cast<std::size_t>(i)] = kExpZero;
+          break;
+        case 2:
+          block[static_cast<std::size_t>(i)] = kExpOne;
+          break;
+        default:
+          return std::nullopt;
+      }
+    }
+    out.insert(out.end(), block.begin(), block.end());
+    remaining -= count;
+    if (remaining == 0) {
+      break;
+    }
+  }
+
+  std::vector<int> shape;
+  shape.reserve(native.shape.size());
+  for (auto dim : native.shape) {
+    shape.push_back(static_cast<int>(dim));
+  }
+  auto tensor = t81::T729DynamicTensor::from_host_float_data(std::move(shape), std::move(out));
+  tensor.set_numeric_class(t81::TensorNumericClass::ExactInt);
+  return tensor;
+}
+
+std::optional<t81::T729DynamicTensor> native_tensor_unary_silu_direct(
+    const t81::weights::NativeTensor& native) {
+  using TensorFloat = t81::v1::T81Float<72, 9>;
+
+  if (native.format != t81::weights::NativeFormat::BalancedTernary) {
+    return std::nullopt;
+  }
+
+  static const float kExpNegOne = static_cast<float>(
+      t81::core::detail::exp(TensorFloat::from_double(-1.0)).to_double());
+  static const float kExpPosOne = static_cast<float>(
+      t81::core::detail::exp(TensorFloat::from_double(1.0)).to_double());
+  static const float kSiluNegOne = -1.0f / (1.0f + kExpPosOne);
+  static const float kSiluZero = 0.0f;
+  static const float kSiluOne = 1.0f / (1.0f + kExpNegOne);
+
+  uint64_t remaining = native.trits;
+  if (remaining == 0 && !native.data.empty()) {
+    remaining = static_cast<uint64_t>(native.data.size()) * 48;
+  }
+
+  std::vector<float> out;
+  out.reserve(static_cast<std::size_t>(remaining));
+  for (uint64_t limb : native.data) {
+    const uint64_t count = std::min<uint64_t>(48, remaining);
+    std::vector<float> block(static_cast<std::size_t>(count), kSiluZero);
+    uint64_t val = limb;
+    for (int i = 47; i >= 0; --i) {
+      const uint64_t digit = val % 3;
+      val /= 3;
+      if (static_cast<uint64_t>(i) >= count) {
+        continue;
+      }
+      switch (digit) {
+        case 0:
+          block[static_cast<std::size_t>(i)] = kSiluNegOne;
+          break;
+        case 1:
+          block[static_cast<std::size_t>(i)] = kSiluZero;
+          break;
+        case 2:
+          block[static_cast<std::size_t>(i)] = kSiluOne;
+          break;
+        default:
+          return std::nullopt;
+      }
+    }
+    out.insert(out.end(), block.begin(), block.end());
+    remaining -= count;
+    if (remaining == 0) {
+      break;
+    }
+  }
+
+  std::vector<int> shape;
+  shape.reserve(native.shape.size());
+  for (auto dim : native.shape) {
+    shape.push_back(static_cast<int>(dim));
+  }
+  auto tensor = t81::T729DynamicTensor::from_host_float_data(std::move(shape), std::move(out));
+  tensor.set_numeric_class(t81::TensorNumericClass::ExactInt);
+  return tensor;
+}
+
+std::optional<t81::T729DynamicTensor> native_tensor_unary_softmax_direct(
+    const t81::weights::NativeTensor& native) {
+  using TensorFloat = t81::v1::T81Float<72, 9>;
+
+  if (native.format != t81::weights::NativeFormat::BalancedTernary || native.shape.empty()) {
+    return std::nullopt;
+  }
+
+  int dim = static_cast<int>(native.shape.back());
+  if (dim <= 0) {
+    return std::nullopt;
+  }
+
+  static const float kExpNegTwo = static_cast<float>(
+      t81::core::detail::exp(TensorFloat::from_double(-2.0)).to_double());
+  static const float kExpNegOne = static_cast<float>(
+      t81::core::detail::exp(TensorFloat::from_double(-1.0)).to_double());
+  static const float kExpZero = 1.0f;
+
+  uint64_t remaining = native.trits;
+  if (remaining == 0 && !native.data.empty()) {
+    remaining = static_cast<uint64_t>(native.data.size()) * 48;
+  }
+
+  std::vector<float> trits;
+  trits.reserve(static_cast<std::size_t>(remaining));
+  for (uint64_t limb : native.data) {
+    const uint64_t count = std::min<uint64_t>(48, remaining);
+    std::vector<float> block(static_cast<std::size_t>(count), 0.0f);
+    uint64_t val = limb;
+    for (int i = 47; i >= 0; --i) {
+      const uint64_t digit = val % 3;
+      val /= 3;
+      if (static_cast<uint64_t>(i) >= count) {
+        continue;
+      }
+      switch (digit) {
+        case 0:
+          block[static_cast<std::size_t>(i)] = -1.0f;
+          break;
+        case 1:
+          block[static_cast<std::size_t>(i)] = 0.0f;
+          break;
+        case 2:
+          block[static_cast<std::size_t>(i)] = 1.0f;
+          break;
+        default:
+          return std::nullopt;
+      }
+    }
+    trits.insert(trits.end(), block.begin(), block.end());
+    remaining -= count;
+    if (remaining == 0) {
+      break;
+    }
+  }
+
+  std::vector<float> out(trits);
+  for (std::size_t base = 0; base < out.size(); base += static_cast<std::size_t>(dim)) {
+    float max_val = out[base];
+    for (int j = 1; j < dim; ++j) {
+      max_val = std::max(max_val, out[base + static_cast<std::size_t>(j)]);
+    }
+    float sum = 0.0f;
+    for (int j = 0; j < dim; ++j) {
+      const float shifted = out[base + static_cast<std::size_t>(j)] - max_val;
+      float exp_val = kExpZero;
+      if (shifted <= -1.5f) {
+        exp_val = kExpNegTwo;
+      } else if (shifted <= -0.5f) {
+        exp_val = kExpNegOne;
+      }
+      out[base + static_cast<std::size_t>(j)] = exp_val;
+      sum += exp_val;
+    }
+    for (int j = 0; j < dim; ++j) {
+      out[base + static_cast<std::size_t>(j)] /= sum;
+    }
+  }
+
+  std::vector<int> shape;
+  shape.reserve(native.shape.size());
+  for (auto dim_value : native.shape) {
+    shape.push_back(static_cast<int>(dim_value));
+  }
+  auto tensor = t81::T729DynamicTensor::from_host_float_data(std::move(shape), std::move(out));
+  tensor.set_numeric_class(t81::TensorNumericClass::ExactInt);
+  return tensor;
+}
+
+std::optional<t81::T729DynamicTensor> native_tensor_rmsnorm_direct(
+    const t81::weights::NativeTensor& native, const t81::T729DynamicTensor& weights) {
+  if (native.format != t81::weights::NativeFormat::BalancedTernary || native.shape.empty() ||
+      weights.rank() != 1) {
+    return std::nullopt;
+  }
+
+  const int dim = static_cast<int>(native.shape.back());
+  if (dim <= 0 || weights.shape()[0] != dim) {
+    return std::nullopt;
+  }
+
+  std::size_t element_count = 1;
+  std::vector<int> shape;
+  shape.reserve(native.shape.size());
+  for (auto native_dim : native.shape) {
+    if (native_dim == 0) {
+      return std::nullopt;
+    }
+    shape.push_back(static_cast<int>(native_dim));
+    element_count *= static_cast<std::size_t>(native_dim);
+  }
+  if (element_count % static_cast<std::size_t>(dim) != 0) {
+    return std::nullopt;
+  }
+
+  const auto weight_values = weights.snapshot_values();
+  if (weight_values.size() != static_cast<std::size_t>(dim)) {
+    return std::nullopt;
+  }
+
+  std::vector<float> out(element_count, 0.0f);
+  uint64_t remaining = native.trits;
+  if (remaining == 0 && !native.data.empty()) {
+    remaining = static_cast<uint64_t>(native.data.size()) * 48;
+  }
+  if (remaining < element_count) {
+    return std::nullopt;
+  }
+
+  std::vector<float> row_values;
+  row_values.reserve(static_cast<std::size_t>(dim));
+  std::size_t out_index = 0;
+  for (uint64_t limb : native.data) {
+    const uint64_t count = std::min<uint64_t>(48, remaining);
+    std::vector<float> block(static_cast<std::size_t>(count), 0.0f);
+    uint64_t val = limb;
+    for (int i = 47; i >= 0; --i) {
+      const uint64_t digit = val % 3;
+      val /= 3;
+      if (static_cast<uint64_t>(i) >= count) {
+        continue;
+      }
+      switch (digit) {
+        case 0:
+          block[static_cast<std::size_t>(i)] = -1.0f;
+          break;
+        case 1:
+          block[static_cast<std::size_t>(i)] = 0.0f;
+          break;
+        case 2:
+          block[static_cast<std::size_t>(i)] = 1.0f;
+          break;
+        default:
+          return std::nullopt;
+      }
+    }
+
+    for (float trit : block) {
+      if (out_index >= element_count) {
+        break;
+      }
+      row_values.push_back(trit);
+      if (row_values.size() == static_cast<std::size_t>(dim)) {
+        int nonzero_count = 0;
+        for (float value : row_values) {
+          if (value != 0.0f) {
+            ++nonzero_count;
+          }
+        }
+        const float mean_ss =
+            static_cast<float>(nonzero_count) / static_cast<float>(dim) + 1e-6f;
+        const float inv_ss = t81::ops::detail::deterministic_inv_sqrt(mean_ss);
+        const std::size_t row_base = out_index + 1 - static_cast<std::size_t>(dim);
+        for (int j = 0; j < dim; ++j) {
+          out[row_base + static_cast<std::size_t>(j)] =
+              (row_values[static_cast<std::size_t>(j)] * inv_ss) *
+              weight_values[static_cast<std::size_t>(j)];
+        }
+        row_values.clear();
+      }
+      ++out_index;
+    }
+
+    remaining -= count;
+    if (out_index >= element_count || remaining == 0) {
+      break;
+    }
+  }
+
+  if (!row_values.empty() || out_index != element_count) {
+    return std::nullopt;
+  }
+
+  auto tensor = t81::T729DynamicTensor::from_host_float_data(std::move(shape), std::move(out));
+  tensor.set_numeric_class(weights.strict_core_eligible() ? t81::TensorNumericClass::ExactInt
+                                                          : t81::TensorNumericClass::HostFloat);
+  return tensor;
+}
+
+std::optional<t81::T729DynamicTensor> native_tensor_rope_direct(
+    const t81::weights::NativeTensor& native, int pos) {
+  using TensorFloat = t81::ops::detail::TensorFloat;
+
+  if (native.format != t81::weights::NativeFormat::BalancedTernary || native.shape.size() < 2) {
+    return std::nullopt;
+  }
+
+  const int head_dim = static_cast<int>(native.shape.back());
+  if (head_dim <= 0 || (head_dim % 2) != 0) {
+    return std::nullopt;
+  }
+
+  std::size_t element_count = 1;
+  std::vector<int> shape;
+  shape.reserve(native.shape.size());
+  for (auto native_dim : native.shape) {
+    if (native_dim == 0) {
+      return std::nullopt;
+    }
+    shape.push_back(static_cast<int>(native_dim));
+    element_count *= static_cast<std::size_t>(native_dim);
+  }
+  if (element_count % static_cast<std::size_t>(head_dim) != 0) {
+    return std::nullopt;
+  }
+
+  uint64_t remaining = native.trits;
+  if (remaining == 0 && !native.data.empty()) {
+    remaining = static_cast<uint64_t>(native.data.size()) * 48;
+  }
+  if (remaining < element_count) {
+    return std::nullopt;
+  }
+
+  std::vector<float> data;
+  data.reserve(element_count);
+  for (uint64_t limb : native.data) {
+    const uint64_t count = std::min<uint64_t>(48, remaining);
+    std::vector<float> block(static_cast<std::size_t>(count), 0.0f);
+    uint64_t val = limb;
+    for (int i = 47; i >= 0; --i) {
+      const uint64_t digit = val % 3;
+      val /= 3;
+      if (static_cast<uint64_t>(i) >= count) {
+        continue;
+      }
+      switch (digit) {
+        case 0:
+          block[static_cast<std::size_t>(i)] = -1.0f;
+          break;
+        case 1:
+          block[static_cast<std::size_t>(i)] = 0.0f;
+          break;
+        case 2:
+          block[static_cast<std::size_t>(i)] = 1.0f;
+          break;
+        default:
+          return std::nullopt;
+      }
+    }
+    data.insert(data.end(), block.begin(), block.end());
+    remaining -= count;
+    if (data.size() >= element_count || remaining == 0) {
+      break;
+    }
+  }
+  if (data.size() < element_count) {
+    return std::nullopt;
+  }
+  data.resize(element_count);
+
+  const TensorFloat freq_base = TensorFloat::from_double(10000.0);
+  const TensorFloat pos_float = TensorFloat::from_double(static_cast<double>(pos));
+  const TensorFloat head_dim_float = TensorFloat::from_double(static_cast<double>(head_dim));
+  std::vector<float> cos_terms(static_cast<std::size_t>(head_dim / 2));
+  std::vector<float> sin_terms(static_cast<std::size_t>(head_dim / 2));
+  for (int j = 0; j < head_dim; j += 2) {
+    const TensorFloat exponent = TensorFloat::from_double(static_cast<double>(j)) / head_dim_float;
+    const TensorFloat freq =
+        TensorFloat::from_double(1.0) / t81::core::detail::pow(freq_base, exponent);
+    const TensorFloat angle = pos_float * freq;
+    cos_terms[static_cast<std::size_t>(j / 2)] =
+        static_cast<float>(t81::core::detail::cos(angle).to_double());
+    sin_terms[static_cast<std::size_t>(j / 2)] =
+        static_cast<float>(t81::core::detail::sin(angle).to_double());
+  }
+
+  for (std::size_t base = 0; base < data.size(); base += static_cast<std::size_t>(head_dim)) {
+    for (int j = 0; j < head_dim; j += 2) {
+      const float f_cos = cos_terms[static_cast<std::size_t>(j / 2)];
+      const float f_sin = sin_terms[static_cast<std::size_t>(j / 2)];
+      float v0 = data[base + static_cast<std::size_t>(j)];
+      float v1 = data[base + static_cast<std::size_t>(j + 1)];
+      data[base + static_cast<std::size_t>(j)] = v0 * f_cos - v1 * f_sin;
+      data[base + static_cast<std::size_t>(j + 1)] = v0 * f_sin + v1 * f_cos;
+    }
+  }
+
+  auto tensor = t81::T729DynamicTensor::from_host_float_data(std::move(shape), std::move(data));
+  tensor.set_numeric_class(t81::TensorNumericClass::ExactInt);
+  return tensor;
 }
 
 std::optional<t81::weights::NativeTensor> parse_canon_tensor_object(
@@ -328,6 +808,69 @@ std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vec_sub_checked(
                                                                 t81::vm::Trap::ShapeFault);
   }
   return t81::ops::sub(lhs, rhs);
+}
+
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_swar_not_checked(
+    const t81::T729DynamicTensor& tensor) {
+  auto encoded = encode_exact_trit_tensor(tensor);
+  if (!encoded) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect, encoded.error());
+  }
+
+  auto result = t81::swar::t_not_swar(*encoded);
+  if (result.is_err()) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::DecodeFault);
+  }
+  return decode_exact_trit_tensor(result.value(), tensor.shape());
+}
+
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_swar_and_checked(
+    const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs) {
+  if (!tensor_elementwise_compatible(lhs, rhs)) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::ShapeFault);
+  }
+
+  auto lhs_encoded = encode_exact_trit_tensor(lhs);
+  if (!lhs_encoded) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect, lhs_encoded.error());
+  }
+  auto rhs_encoded = encode_exact_trit_tensor(rhs);
+  if (!rhs_encoded) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect, rhs_encoded.error());
+  }
+
+  auto result = t81::swar::t_and_swar(*lhs_encoded, *rhs_encoded);
+  if (result.is_err()) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::DecodeFault);
+  }
+  return decode_exact_trit_tensor(result.value(), lhs.shape());
+}
+
+std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_swar_or_checked(
+    const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs) {
+  if (!tensor_elementwise_compatible(lhs, rhs)) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::ShapeFault);
+  }
+
+  auto lhs_encoded = encode_exact_trit_tensor(lhs);
+  if (!lhs_encoded) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect, lhs_encoded.error());
+  }
+  auto rhs_encoded = encode_exact_trit_tensor(rhs);
+  if (!rhs_encoded) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect, rhs_encoded.error());
+  }
+
+  auto result = t81::swar::t_or_swar(*lhs_encoded, *rhs_encoded);
+  if (result.is_err()) {
+    return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
+                                                                t81::vm::Trap::DecodeFault);
+  }
+  return decode_exact_trit_tensor(result.value(), lhs.shape());
 }
 
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_transpose_checked(

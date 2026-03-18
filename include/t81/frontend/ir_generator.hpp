@@ -385,6 +385,7 @@ private:
   std::unordered_map<std::string, tisc::ir::Label> _function_labels;
   // RFC-0026 AI-M6: maps @attention/@qmatmul function names to their AI IR opcode.
   std::unordered_map<std::string, tisc::ir::Opcode> _ai_intrinsic_map;
+  std::vector<bool> _ternary_inference_stack;
   std::vector<std::vector<std::pair<std::string, std::optional<TypedRegister>>>> _pattern_scopes;
   std::vector<LoopInfo> _loop_infos;
   std::vector<LoopInfo> _loop_stack;

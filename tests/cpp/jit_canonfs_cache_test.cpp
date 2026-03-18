@@ -85,6 +85,37 @@ static std::unique_ptr<JitTrace> compile_insns(const std::vector<Insn>& insns) {
   return jc.compile();
 }
 
+static Program make_swar_program() {
+  Program prog;
+  prog.tensor_pool.push_back([] {
+    t81::T729DynamicTensor tensor({4}, {-1.0f, 0.0f, 1.0f, -1.0f});
+    tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
+    return tensor;
+  }());
+  prog.tensor_pool.push_back([] {
+    t81::T729DynamicTensor tensor({4}, {1.0f, -1.0f, 0.0f, 1.0f});
+    tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
+    return tensor;
+  }());
+  prog.insns = {
+      {Opcode::LoadImm, 1, 1, 0, LiteralKind::TensorHandle},
+      {Opcode::LoadImm, 2, 2, 0, LiteralKind::TensorHandle},
+      {Opcode::TNOT_SWAR, 3, 1, 0},
+      {Opcode::TAND_SWAR, 4, 1, 2},
+      {Opcode::TOR_SWAR, 5, 1, 2},
+      {Opcode::Halt, 0, 0, 0},
+  };
+  return prog;
+}
+
+static std::unique_ptr<JitTrace> compile_program(const Program& prog) {
+  JitCompiler jc;
+  jc.start_tracing(0);
+  for (const auto& insn : prog.insns)
+    jc.record_instruction(insn);
+  return jc.compile();
+}
+
 // Execute a trace on a freshly constructed VM state; return register 3.
 static std::int64_t exec_trace(JitTrace* trace, const std::vector<Insn>& insns) {
   Program prog;
@@ -99,6 +130,17 @@ static std::int64_t exec_trace(JitTrace* trace, const std::vector<Insn>& insns) 
   t81::vm::State state_copy = vm->state();
   (void)trace->execute(state_copy);
   return state_copy.contexts.at(0).registers.at(3);
+}
+
+static std::pair<std::int64_t, t81::vm::ValueTag> exec_trace_program(JitTrace* trace,
+                                                                     const Program& prog,
+                                                                     int reg) {
+  auto vm = t81::vm::make_interpreter_vm();
+  vm->load_program(prog);
+  t81::vm::State state_copy = vm->state();
+  (void)trace->execute(state_copy);
+  return {state_copy.contexts.at(0).registers.at(reg),
+          state_copy.contexts.at(0).register_tags.at(reg)};
 }
 
 // ── [RFC-0028-§4-a/b/c]: round-trip store + lookup ───────────────────────────
@@ -195,6 +237,35 @@ static void test_two_traces_independent() {
   }
   check(cache.size() == 2,
         "[RFC-0028-§4-f] cache.size() == 2 after two distinct stores");
+}
+
+static void test_swar_trace_roundtrip_in_memory() {
+  auto driver = t81::canonfs::make_in_memory_driver();
+  JitTraceCache cache(std::move(driver));
+
+  const Program prog = make_swar_program();
+  auto trace = compile_program(prog);
+  assert(trace);
+
+  const CanonHash81 h = trace->trace_hash();
+  const bool zero = std::all_of(h.bytes.begin(), h.bytes.end(),
+                                [](std::uint8_t b) { return b == 0; });
+  check(!zero, "[RFC-0040-§Cache-a] SWAR trace_hash is non-zero before store");
+
+  auto ref = cache.store(*trace);
+  check(ref.has_value(), "[RFC-0040-§Cache-a] SWAR trace store() returns valid CanonRef");
+
+  auto restored = cache.lookup(h);
+  check(restored != nullptr, "[RFC-0040-§Cache-b] SWAR trace lookup() succeeds");
+  if (restored) {
+    check(restored->trace_hash().bytes == h.bytes,
+          "[RFC-0040-§Cache-b] restored SWAR trace_hash matches original");
+
+    const auto [orig_reg, orig_tag] = exec_trace_program(trace.get(), prog, 5);
+    const auto [rest_reg, rest_tag] = exec_trace_program(restored.get(), prog, 5);
+    check(orig_reg == rest_reg && orig_tag == rest_tag,
+          "[RFC-0040-§Cache-c] restored SWAR trace preserves tensor-handle result");
+  }
 }
 
 // ── [RFC-0028-§4-g]: persistent driver durability ────────────────────────────
@@ -325,6 +396,7 @@ int main() {
   test_lookup_unknown();
   test_idempotent_store();
   test_two_traces_independent();
+  test_swar_trace_roundtrip_in_memory();
   test_persistent_driver();
   test_axion_deny_blocks_store();
   test_zero_hash_rejected();

@@ -364,6 +364,55 @@ t81::expected<t81::tisc::Insn, BridgeDiagnostic> encode_tokens(
     return insn;
   }
 
+  if (op == "TNOT_SWAR") {
+    if (tokens.size() != 3) {
+      return t81::make_unexpected(make_diag(BridgeError::InvalidOperand, line_no, source_line,
+                                            "TNOT_SWAR expects: TNOT_SWAR Rdst Rsrc", tokens[0]));
+    }
+    auto dst = parse_register(tokens[1]);
+    auto src = parse_register(tokens[2]);
+    if (!dst.has_value()) {
+      return t81::make_unexpected(
+          make_diag(dst.error(), line_no, source_line, "invalid destination register", tokens[1]));
+    }
+    if (!src.has_value()) {
+      return t81::make_unexpected(
+          make_diag(src.error(), line_no, source_line, "invalid source register", tokens[2]));
+    }
+    insn.opcode = t81::tisc::Opcode::TNOT_SWAR;
+    insn.a = dst.value();
+    insn.b = src.value();
+    return insn;
+  }
+
+  if (op == "TAND_SWAR" || op == "TOR_SWAR") {
+    if (tokens.size() != 4) {
+      return t81::make_unexpected(
+          make_diag(BridgeError::InvalidOperand, line_no, source_line,
+                    "TAND_SWAR/TOR_SWAR expect: TAND_SWAR Rdst Rlhs Rrhs", tokens[0]));
+    }
+    auto dst = parse_register(tokens[1]);
+    auto lhs = parse_register(tokens[2]);
+    auto rhs = parse_register(tokens[3]);
+    if (!dst.has_value()) {
+      return t81::make_unexpected(
+          make_diag(dst.error(), line_no, source_line, "invalid destination register", tokens[1]));
+    }
+    if (!lhs.has_value()) {
+      return t81::make_unexpected(
+          make_diag(lhs.error(), line_no, source_line, "invalid left source register", tokens[2]));
+    }
+    if (!rhs.has_value()) {
+      return t81::make_unexpected(
+          make_diag(rhs.error(), line_no, source_line, "invalid right source register", tokens[3]));
+    }
+    insn.opcode = (op == "TAND_SWAR") ? t81::tisc::Opcode::TAND_SWAR : t81::tisc::Opcode::TOR_SWAR;
+    insn.a = dst.value();
+    insn.b = lhs.value();
+    insn.c = rhs.value();
+    return insn;
+  }
+
   return t81::make_unexpected(make_diag(BridgeError::UnsupportedMnemonic, line_no, source_line,
                                         "unsupported mnemonic", tokens[0]));
 }

@@ -98,10 +98,9 @@ inline std::optional<T729DynamicTensor> decode(const weights::NativeTensor& nati
                                                    numeric_class);
   }
 
-  std::vector<float> float_data;
-  float_data.reserve(native.num_trits());
-
   if (native.format == weights::NativeFormat::T3_K) {
+    std::vector<float> float_data;
+    float_data.reserve(native.num_trits());
     const uint8_t* byte_ptr = reinterpret_cast<const uint8_t*>(native.data.data());
     const uint64_t total_trits = native.num_trits();
     for (uint64_t offset = 0; offset < total_trits; offset += 128) {
@@ -128,36 +127,59 @@ inline std::optional<T729DynamicTensor> decode(const weights::NativeTensor& nati
         }
       }
     }
+    std::vector<int> shape;
+    shape.reserve(native.shape.size());
+    for (auto dim : native.shape) {
+      shape.push_back(static_cast<int>(dim));
+    }
+    return T729DynamicTensor(std::move(shape), std::move(float_data));
   } else {
+    std::vector<DFixed> fixed_data;
+    fixed_data.reserve(native.num_trits());
+    const DFixed zero = DFixed::zero();
+    const DFixed one = DFixed::one();
+    const DFixed neg_one = -DFixed::one();
     uint64_t remaining = native.trits;
     if (remaining == 0 && !native.data.empty()) {
       remaining = native.data.size() * 48;
     }
     for (uint64_t limb : native.data) {
       const uint64_t count = std::min<uint64_t>(48, remaining);
-      std::vector<float> block(count);
+      std::vector<DFixed> block(static_cast<std::size_t>(count), zero);
       uint64_t val = limb;
       for (int i = 47; i >= 0; --i) {
         const uint64_t digit = val % 3;
         val /= 3;
         if (static_cast<uint64_t>(i) < count) {
-          block[static_cast<std::size_t>(i)] = static_cast<float>(static_cast<int>(digit) - 1);
+          switch (digit) {
+            case 0:
+              block[static_cast<std::size_t>(i)] = neg_one;
+              break;
+            case 1:
+              block[static_cast<std::size_t>(i)] = zero;
+              break;
+            case 2:
+              block[static_cast<std::size_t>(i)] = one;
+              break;
+            default:
+              return std::nullopt;
+          }
         }
       }
-      float_data.insert(float_data.end(), block.begin(), block.end());
+      fixed_data.insert(fixed_data.end(), block.begin(), block.end());
       remaining -= count;
       if (remaining == 0) {
         break;
       }
     }
+    std::vector<int> shape;
+    shape.reserve(native.shape.size());
+    for (auto dim : native.shape) {
+      shape.push_back(static_cast<int>(dim));
+    }
+    return T729DynamicTensor::from_canonical_fixed(std::move(shape), std::move(fixed_data),
+                                                   TensorNumericClass::ExactTrit);
   }
-
-  std::vector<int> shape;
-  shape.reserve(native.shape.size());
-  for (auto dim : native.shape) {
-    shape.push_back(static_cast<int>(dim));
-  }
-  return T729DynamicTensor(std::move(shape), std::move(float_data));
 }
 
 }  // namespace t81::tensor_native

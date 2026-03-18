@@ -1,5 +1,6 @@
 #include "t81/weights.hpp"
 #include "t81/crypto/sha3.hpp"
+#include "t81/model/gguf_import_bridge.hpp"
 
 #include <algorithm>
 #include <array>
@@ -217,6 +218,385 @@ uint64_t count_zero_trits(const NativeTensor& tensor) {
   }
   return zeros;
 }
+
+NativeTensor quantize_f32_to_balanced_ternary(std::span<const float> src,
+                                              const std::vector<uint64_t>& shape,
+                                              float threshold = 0.5f) {
+  std::vector<int8_t> trits;
+  trits.reserve(src.size());
+  for (float value : src) {
+    if (value < -threshold) {
+      trits.push_back(-1);
+    } else if (value > threshold) {
+      trits.push_back(1);
+    } else {
+      trits.push_back(0);
+    }
+  }
+  return pack_trits(trits, shape);
+}
+
+std::string native_gguf_profile_for_architecture(std::string_view architecture) {
+  if (architecture == "llama") {
+    return "llama-dense-v1";
+  }
+  if (architecture == "gemma") {
+    return "gemma-dense-v1";
+  }
+  if (architecture == "mistral") {
+    return "mistral-dense-v1";
+  }
+  if (architecture == "phi3") {
+    return "phi3-dense-v1";
+  }
+  if (architecture == "qwen2") {
+    return "qwen2-dense-v1";
+  }
+  return {};
+}
+
+std::string native_safetensors_profile_for_architecture(std::string_view architecture) {
+  if (architecture == "bitnet" || architecture == "bitnet-b1.58") {
+    return "bitnet-b1.58-v1";
+  }
+  return native_gguf_profile_for_architecture(architecture);
+}
+
+template <typename TensorDesc>
+bool has_named_2d_tensor(std::span<const TensorDesc> tensors, std::string_view signal) {
+  for (const auto& tensor : tensors) {
+    if (tensor.name.find(signal) == std::string::npos) {
+      continue;
+    }
+    if (tensor.shape.size() == 2 && tensor.shape[0] > 0 && tensor.shape[1] > 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+template <typename TensorDesc>
+bool profile_has_required_structure(std::string_view profile, std::span<const TensorDesc> tensors) {
+  if (profile == "llama-dense-v1" || profile == "mistral-dense-v1" || profile == "gemma-dense-v1" ||
+      profile == "phi3-dense-v1") {
+    return has_named_2d_tensor(tensors, "self_attn.q_proj");
+  }
+  if (profile == "qwen2-dense-v1") {
+    return has_named_2d_tensor(tensors, "attn.q_proj.weight");
+  }
+  return true;
+}
+
+[[maybe_unused]] bool gguf_profile_has_required_structure(
+    std::string_view profile, const std::vector<t81::model::GgufTensorDescriptor>& tensors) {
+  return profile_has_required_structure(profile, std::span<const t81::model::GgufTensorDescriptor>(tensors));
+}
+
+bool metadata_has_key(std::initializer_list<std::string_view> keys,
+                      const std::unordered_map<std::string, uint64_t>& metadata) {
+  for (std::string_view key : keys) {
+    if (metadata.contains(std::string(key))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool safetensors_metadata_has_required_scalars(std::string_view profile,
+                                               const std::unordered_map<std::string, uint64_t>& metadata) {
+  if (profile == "llama-dense-v1") {
+    return metadata_has_key({"llama.block_count", "block_count"}, metadata) &&
+           metadata_has_key({"llama.embedding_length", "embedding_length"}, metadata) &&
+           metadata_has_key({"llama.attention.head_count", "attention.head_count"}, metadata);
+  }
+  if (profile == "mistral-dense-v1") {
+    return metadata_has_key({"mistral.block_count", "block_count"}, metadata) &&
+           metadata_has_key({"mistral.embedding_length", "embedding_length"}, metadata) &&
+           metadata_has_key({"mistral.attention.head_count", "attention.head_count"}, metadata);
+  }
+  if (profile == "gemma-dense-v1") {
+    return metadata_has_key({"gemma.block_count", "block_count"}, metadata) &&
+           metadata_has_key({"gemma.embedding_length", "embedding_length"}, metadata) &&
+           metadata_has_key({"gemma.attention.head_count", "attention.head_count"}, metadata);
+  }
+  if (profile == "phi3-dense-v1") {
+    return metadata_has_key({"phi3.block_count", "block_count"}, metadata) &&
+           metadata_has_key({"phi3.embedding_length", "embedding_length"}, metadata) &&
+           metadata_has_key({"phi3.attention.head_count", "attention.head_count"}, metadata);
+  }
+  if (profile == "qwen2-dense-v1") {
+    return metadata_has_key({"qwen2.block_count", "block_count"}, metadata) &&
+           metadata_has_key({"qwen2.embedding_length", "embedding_length"}, metadata) &&
+           metadata_has_key({"qwen2.attention.head_count", "attention.head_count"}, metadata);
+  }
+  return true;
+}
+
+template <typename TensorDesc>
+std::string profile_unsupported_feature_reason(std::string_view profile,
+                                               std::span<const TensorDesc> tensors) {
+  if (!(profile == "llama-dense-v1" || profile == "mistral-dense-v1" || profile == "gemma-dense-v1" ||
+        profile == "phi3-dense-v1" || profile == "qwen2-dense-v1")) {
+    return {};
+  }
+
+  for (const auto& tensor : tensors) {
+    const std::string_view name = tensor.name;
+    if (name.find("experts") != std::string::npos || name.find("expert") != std::string::npos ||
+        name.find("router") != std::string::npos || name.find("moe") != std::string::npos) {
+      return "mixture-of-experts tensors are not supported by dense native profiles";
+    }
+    if (name.find("vision_tower") != std::string::npos || name.find("vision") != std::string::npos ||
+        name.find("mm_projector") != std::string::npos || name.find("projector") != std::string::npos ||
+        name.find("multimodal") != std::string::npos) {
+      return "multimodal/projector tensors are not supported by dense native profiles";
+    }
+  }
+  return {};
+}
+
+std::string_view json_string_or_empty(const JsonValue* value) {
+  return (value != nullptr && value->is_string) ? std::string_view(value->string_value)
+                                                : std::string_view{};
+}
+
+bool contains_ascii_case_insensitive(std::string_view haystack, std::string_view needle) {
+  if (needle.empty() || haystack.size() < needle.size()) {
+    return false;
+  }
+  for (size_t start = 0; start + needle.size() <= haystack.size(); ++start) {
+    bool match = true;
+    for (size_t i = 0; i < needle.size(); ++i) {
+      if (std::tolower(static_cast<unsigned char>(haystack[start + i])) !=
+          std::tolower(static_cast<unsigned char>(needle[i]))) {
+        match = false;
+        break;
+      }
+    }
+    if (match) {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::string detect_safetensors_profile(const JsonValue& root) {
+  const auto metadata_it = root.object_value.find("__metadata__");
+  if (metadata_it == root.object_value.end() || metadata_it->second.object_value.empty()) {
+    return "native-ternary-i8";
+  }
+
+  const auto& metadata = metadata_it->second.object_value;
+  auto metadata_string = [&](const char* key) -> const JsonValue* {
+    auto it = metadata.find(key);
+    return it != metadata.end() ? &it->second : nullptr;
+  };
+  std::array<std::string_view, 5> candidates = {
+      json_string_or_empty(metadata_string("general.architecture")),
+      json_string_or_empty(metadata_string("architecture")),
+      json_string_or_empty(metadata_string("model_type")),
+      json_string_or_empty(metadata_string("family")),
+      json_string_or_empty(metadata_string("format")),
+  };
+
+  for (std::string_view candidate : candidates) {
+    if (contains_ascii_case_insensitive(candidate, "bitnet")) {
+      return "bitnet-b1.58-v1";
+    }
+    if (auto profile = native_safetensors_profile_for_architecture(candidate); !profile.empty()) {
+      return profile;
+    }
+  }
+  return "native-ternary-i8";
+}
+
+inline float fp16_to_fp32(uint16_t h);
+
+uint64_t resolve_safetensors_data_offset(uint64_t file_size,
+                                         uint64_t header_len,
+                                         uint64_t offset,
+                                         uint64_t length) {
+  const uint64_t data_base = 8 + header_len;
+  if (offset + length <= file_size - data_base) {
+    return data_base + offset;
+  }
+  if (offset + length <= file_size) {
+    return offset;
+  }
+  throw std::runtime_error("SafeTensors: data range out of bounds");
+}
+
+std::vector<float> read_safetensors_tensor_f32(const std::vector<uint8_t>& buffer,
+                                               uint64_t header_len,
+                                               const std::string& key,
+                                               std::string_view dtype,
+                                               uint64_t offset,
+                                               uint64_t count) {
+  const uint64_t file_offset =
+      resolve_safetensors_data_offset(static_cast<uint64_t>(buffer.size()), header_len, offset,
+                                      count * (dtype == "F32" ? 4u : 2u));
+  std::vector<float> values(count);
+  if (dtype == "F32") {
+    std::memcpy(values.data(), buffer.data() + file_offset, static_cast<size_t>(count * 4));
+    return values;
+  }
+
+  std::vector<uint16_t> raw(count);
+  std::memcpy(raw.data(), buffer.data() + file_offset, static_cast<size_t>(count * 2));
+  for (uint64_t i = 0; i < count; ++i) {
+    if (dtype == "F16") {
+      values[i] = fp16_to_fp32(raw[i]);
+    } else if (dtype == "BF16") {
+      values[i] = std::bit_cast<float>(static_cast<uint32_t>(raw[i]) << 16);
+    } else {
+      throw std::runtime_error("SafeTensors tensor '" + key + "' uses unsupported dtype '" +
+                               std::string(dtype) + "'");
+    }
+  }
+  return values;
+}
+
+ModelFile load_native_ternary_safetensors_impl(const std::filesystem::path& path,
+                                               bool force_bitnet_profile,
+                                               bool allow_float_quantization) {
+  std::ifstream f(path, std::ios::binary);
+  if (!f) {
+    throw std::runtime_error("cannot open SafeTensors file");
+  }
+
+  uint64_t header_len = 0;
+  f.read(reinterpret_cast<char*>(&header_len), sizeof(header_len));
+  std::string header(header_len, '\0');
+  f.read(header.data(), header_len);
+  JsonParser parser(header);
+  JsonValue root = parser.parse();
+  if (root.object_value.empty()) {
+    throw std::runtime_error("SafeTensors: empty header");
+  }
+
+  ModelFile mf;
+  auto file_size = std::filesystem::file_size(path);
+  std::vector<uint8_t> buffer(file_size);
+  f.seekg(0);
+  f.read(reinterpret_cast<char*>(buffer.data()), static_cast<std::streamsize>(file_size));
+
+  const std::string profile = force_bitnet_profile ? "bitnet-b1.58-v1" : detect_safetensors_profile(root);
+  bool imported_native_i8 = false;
+  bool imported_float_quantized = false;
+  std::unordered_map<std::string, uint64_t> scalar_metadata;
+  struct ImportedTensorDesc {
+    std::string name;
+    std::vector<uint64_t> shape;
+  };
+  std::vector<ImportedTensorDesc> imported_tensors;
+  if (const auto metadata_it = root.object_value.find("__metadata__");
+      metadata_it != root.object_value.end() && !metadata_it->second.object_value.empty()) {
+    for (const auto& [key, value] : metadata_it->second.object_value) {
+      if (value.is_number) {
+        scalar_metadata.emplace(key, static_cast<uint64_t>(value.number_value));
+      }
+    }
+  }
+  for (const auto& [key, value] : root.object_value) {
+    if (key.rfind("__", 0) == 0) continue;
+    if (value.object_value.empty()) continue;
+
+    auto dtype_it = value.object_value.find("dtype");
+    if (dtype_it == value.object_value.end()) continue;
+    const auto& dtype = dtype_it->second;
+    if (!dtype.is_string) continue;
+
+    auto shape_it = value.object_value.find("shape");
+    if (shape_it == value.object_value.end()) continue;
+    auto shape = json_to_shape(shape_it->second);
+    uint64_t count = product_of(shape);
+
+    auto offsets_it = value.object_value.find("data_offsets");
+    auto lengths_it = value.object_value.find("data_lengths");
+    if (offsets_it == value.object_value.end() || lengths_it == value.object_value.end()) {
+      throw std::runtime_error("SafeTensors: missing offsets/lengths");
+    }
+    if (offsets_it->second.array_value.empty() || lengths_it->second.array_value.empty()) {
+      throw std::runtime_error("SafeTensors: empty offset/length arrays");
+    }
+
+    uint64_t offset = json_to_uint(offsets_it->second.array_value[0]);
+    uint64_t length = json_to_uint(lengths_it->second.array_value[0]);
+    NativeTensor native;
+    if (dtype.string_value == "I8") {
+      if (length != count) {
+        throw std::runtime_error("SafeTensors tensor '" + key +
+                                 "' must store one int8 ternary value per element");
+      }
+      const uint64_t file_offset =
+          resolve_safetensors_data_offset(static_cast<uint64_t>(buffer.size()), header_len, offset, length);
+      std::span<const int8_t> raw(reinterpret_cast<const int8_t*>(buffer.data() + file_offset),
+                                  static_cast<size_t>(length));
+      try {
+        native = import_bitnet_b158(raw, shape);
+      } catch (const std::exception&) {
+        throw std::runtime_error("SafeTensors tensor '" + key +
+                                 "' is not native ternary I8/BitNet-compatible");
+      }
+      imported_native_i8 = true;
+    } else if (allow_float_quantization &&
+               (dtype.string_value == "F16" || dtype.string_value == "BF16" || dtype.string_value == "F32")) {
+      auto values = read_safetensors_tensor_f32(buffer, header_len, key, dtype.string_value, offset, count);
+      native = quantize_f32_to_balanced_ternary(values, shape);
+      native.trits = count;
+      native.format = NativeFormat::BalancedTernary;
+      imported_float_quantized = true;
+    } else {
+      continue;
+    }
+
+    TensorInfo info;
+    info.name = key;
+    info.shape = shape;
+    info.num_trits = count;
+    info.sparsity = static_cast<double>(count_zero_trits(native)) / static_cast<double>(count);
+    mf.tensors.push_back(info);
+    mf.total_trits += count;
+    mf.total_parameters += count;
+    mf.native.emplace(key, std::move(native));
+    imported_tensors.push_back(ImportedTensorDesc{key, shape});
+  }
+
+  if (mf.native.empty()) {
+    if (allow_float_quantization) {
+      throw std::runtime_error("SafeTensors import currently supports native ternary I8 tensors and "
+                               "float tensors with dtype F16/BF16/F32");
+    }
+    throw std::runtime_error("BitNet import currently supports only native ternary I8 SafeTensors tensors");
+  }
+
+  if (profile == "bitnet-b1.58-v1") {
+    mf.format = "SafeTensors(bitnet-b1.58; profile=bitnet-b1.58-v1)";
+  } else if (profile == "llama-dense-v1" || profile == "gemma-dense-v1" ||
+             profile == "mistral-dense-v1" || profile == "phi3-dense-v1" ||
+             profile == "qwen2-dense-v1") {
+    if (!profile_has_required_structure(profile, std::span<const ImportedTensorDesc>(imported_tensors))) {
+      throw std::runtime_error("SafeTensors import metadata requested profile '" + profile +
+                               "', but required architecture tensor signals were not found with valid shapes");
+    }
+    if (!safetensors_metadata_has_required_scalars(profile, scalar_metadata)) {
+      throw std::runtime_error("SafeTensors import metadata requested profile '" + profile +
+                               "', but required scalar metadata was not found");
+    }
+    if (const std::string reason =
+            profile_unsupported_feature_reason(profile, std::span<const ImportedTensorDesc>(imported_tensors));
+        !reason.empty()) {
+      throw std::runtime_error("SafeTensors import metadata requested profile '" + profile + "', but " +
+                               reason);
+    }
+    mf.format = "SafeTensors(arch-profile=" + profile + ")";
+  } else if (imported_float_quantized && !imported_native_i8) {
+    mf.format = "SafeTensors(float-quantized; profile=native-dense-v1)";
+  } else {
+    mf.format = "SafeTensors(native-ternary-i8)";
+  }
+  return mf;
+}
 }  // namespace
 
 ModelFile build_from_header(const JsonValue& root, const std::vector<uint8_t>& buffer) {
@@ -258,64 +638,11 @@ ModelFile build_from_header(const JsonValue& root, const std::vector<uint8_t>& b
 }
 
 ModelFile load_safetensors(const std::filesystem::path& path) {
-  std::ifstream f(path, std::ios::binary);
-  if (!f) throw std::runtime_error("cannot open SafeTensors file");
-  uint64_t header_len = 0;
-  f.read(reinterpret_cast<char*>(&header_len), sizeof(header_len));
-  std::string header(header_len, '\0');
-  f.read(header.data(), header_len);
-  JsonParser parser(header);
-  JsonValue root = parser.parse();
-  if (root.object_value.empty()) {
-    throw std::runtime_error("SafeTensors: empty header");
-  }
-  ModelFile mf;
-  auto file_size = std::filesystem::file_size(path);
-  std::vector<uint8_t> buffer(file_size);
-  f.seekg(0);
-  f.read(reinterpret_cast<char*>(buffer.data()), file_size);
+  return load_native_ternary_safetensors_impl(path, false, true);
+}
 
-  for (const auto& [key, value] : root.object_value) {
-    if (key.rfind("__", 0) == 0) continue;  // skip metadata
-    if (value.object_value.empty()) continue;
-    auto dtype_it = value.object_value.find("dtype");
-    if (dtype_it == value.object_value.end()) continue;
-    const auto& dtype = dtype_it->second;
-    if (!dtype.is_string || dtype.string_value != "I8") continue;
-    auto shape_it = value.object_value.find("shape");
-    if (shape_it == value.object_value.end()) continue;
-    auto shape = json_to_shape(shape_it->second);
-    uint64_t count = product_of(shape);
-
-    auto offsets_it = value.object_value.find("data_offsets");
-    auto lengths_it = value.object_value.find("data_lengths");
-    if (offsets_it == value.object_value.end() || lengths_it == value.object_value.end()) {
-      throw std::runtime_error("SafeTensors: missing offsets/lengths");
-    }
-    if (offsets_it->second.array_value.empty() || lengths_it->second.array_value.empty()) {
-      throw std::runtime_error("SafeTensors: empty offset/length arrays");
-    }
-    uint64_t offset = json_to_uint(offsets_it->second.array_value[0]);
-    uint64_t length = json_to_uint(lengths_it->second.array_value[0]);
-    if (offset + length > buffer.size()) {
-      throw std::runtime_error("SafeTensors: data range out of bounds");
-    }
-
-    std::span<const int8_t> raw(reinterpret_cast<const int8_t*>(buffer.data() + offset),
-                                static_cast<size_t>(length));
-    auto native = import_bitnet_b158(raw, shape);
-
-    TensorInfo info;
-    info.name = key;
-    info.shape = shape;
-    info.num_trits = count;
-    mf.tensors.push_back(info);
-    mf.total_trits += count;
-    mf.total_parameters += count;
-    mf.native.emplace(key, std::move(native));
-  }
-  mf.format = "SafeTensors";
-  return mf;
+ModelFile load_bitnet_safetensors(const std::filesystem::path& path) {
+  return load_native_ternary_safetensors_impl(path, true, false);
 }
 
 NativeTensor import_bitnet_b158(std::span<const int8_t> src, const std::vector<uint64_t>& shape) {
@@ -703,6 +1030,76 @@ constexpr uint32_t kGGUFVersion = 3;
 constexpr uint32_t kGGUFAlignment = 32;
 constexpr uint32_t kGGMLTypeT3K = 99;  // Custom tensor type; requires patched ggml/llama.cpp.
 
+std::string ggml_type_name(uint32_t type) {
+  switch (type) {
+    case 0:
+      return "F32";
+    case 1:
+      return "F16";
+    case 2:
+      return "Q4_0";
+    case 3:
+      return "Q4_1";
+    case 6:
+      return "Q5_0";
+    case 7:
+      return "Q5_1";
+    case 8:
+      return "Q8_0";
+    case 9:
+      return "Q8_1";
+    case 10:
+      return "Q2_K";
+    case 11:
+      return "Q3_K";
+    case 12:
+      return "Q4_K";
+    case 13:
+      return "Q5_K";
+    case 14:
+      return "Q6_K";
+    case 15:
+      return "Q8_K";
+    case 16:
+      return "IQ2_XXS";
+    case 17:
+      return "IQ2_XS";
+    case 18:
+      return "IQ3_XXS";
+    case 19:
+      return "IQ1_S";
+    case 20:
+      return "IQ4_NL";
+    case 21:
+      return "IQ3_S";
+    case 22:
+      return "IQ2_S";
+    case 23:
+      return "IQ4_XS";
+    case kGGMLTypeT3K:
+      return "T3_K";
+    default:
+      return "TYPE_" + std::to_string(type);
+  }
+}
+
+[[maybe_unused]] std::string format_ggml_type_histogram(const std::map<uint32_t, uint64_t>& counts) {
+  if (counts.empty()) {
+    return "none";
+  }
+
+  std::ostringstream out;
+  bool first = true;
+  for (const auto& [type, count] : counts) {
+    if (!first) {
+      out << ", ";
+    }
+    first = false;
+    out << ggml_type_name(type) << "=" << count;
+  }
+  return out.str();
+}
+
 using GGUFValue = std::variant<uint32_t, std::string, std::array<uint8_t, 64>>;
 
 struct TensorPlan {
@@ -815,24 +1212,53 @@ ModelFile load_t81w(const std::filesystem::path& path) {
   std::ifstream in(path, std::ios::binary);
   if (!in) throw std::runtime_error("cannot open " + path.string());
 
-  std::string magic;
-  if (!std::getline(in, magic) || (magic != "T81W1" && magic != "T81W2")) {
+  std::vector<std::byte> bytes;
+  char ch = 0;
+  while (in.get(ch)) {
+    bytes.push_back(static_cast<std::byte>(static_cast<unsigned char>(ch)));
+  }
+  return load_t81w_bytes(bytes);
+}
+
+ModelFile load_t81w_bytes(std::span<const std::byte> bytes) {
+  const auto* raw = reinterpret_cast<const uint8_t*>(bytes.data());
+  const std::span<const uint8_t> file(raw, bytes.size());
+  auto find_newline = [&](size_t start) -> size_t {
+    for (size_t i = start; i < file.size(); ++i) {
+      if (file[i] == static_cast<uint8_t>('\n')) {
+        return i;
+      }
+    }
+    return file.size();
+  };
+
+  const size_t magic_end = find_newline(0);
+  if (magic_end == file.size()) {
     throw std::runtime_error("invalid t81w file");
   }
-  std::string checksum;
-  if (!std::getline(in, checksum) || checksum.size() != 128) {
+  const std::string magic(reinterpret_cast<const char*>(file.data()), magic_end);
+  if (magic != "T81W1" && magic != "T81W2") {
+    throw std::runtime_error("invalid t81w file");
+  }
+
+  const size_t checksum_start = magic_end + 1;
+  const size_t checksum_end = find_newline(checksum_start);
+  if (checksum_end == file.size()) {
+    throw std::runtime_error("t81w: missing or malformed checksum");
+  }
+  const std::string checksum(reinterpret_cast<const char*>(file.data() + checksum_start),
+                             checksum_end - checksum_start);
+  if (checksum.size() != 128) {
     throw std::runtime_error("t81w: missing or malformed checksum");
   }
 
-  uint64_t header_end = static_cast<uint64_t>(in.tellg());
-  const uint64_t file_size = std::filesystem::file_size(path);
+  const uint64_t header_end = static_cast<uint64_t>(checksum_end + 1);
+  const uint64_t file_size = static_cast<uint64_t>(file.size());
   if (file_size < header_end) {
     throw std::runtime_error("t81w: file truncated");
   }
 
-  std::vector<uint8_t> payload(static_cast<size_t>(file_size - header_end));
-  in.read(reinterpret_cast<char*>(payload.data()), payload.size());
-
+  const auto payload = file.subspan(static_cast<size_t>(header_end));
   const std::string computed = crypto::sha3_512_hex(payload);
   if (computed != checksum) {
     throw std::runtime_error("t81w: checksum mismatch");
@@ -970,6 +1396,7 @@ ModelFile load_gguf(const std::filesystem::path& path) {
   ModelFile mf;
   mf.format = "GGUF";
   mf.file_size = file_size;
+  std::unordered_map<std::string, uint64_t> scalar_metadata;
 
   // Read KV pairs
   for (uint64_t i = 0; i < kv_count; ++i) {
@@ -1055,6 +1482,14 @@ ModelFile load_gguf(const std::filesystem::path& path) {
         // Just skip if not what we expect
         for (uint64_t k = 0; k < len; ++k) skip_value(skip_value, et);
       }
+    } else if (type == kGGUFTypeUInt32 &&
+               (key.find(".block_count") != std::string::npos ||
+                key.find(".embedding_length") != std::string::npos ||
+                key.find(".attention.head_count") != std::string::npos || key == "block_count" ||
+                key == "embedding_length" || key == "attention.head_count")) {
+      if (ptr + 4 > end) throw std::runtime_error("GGUF: truncated uint32 value");
+      scalar_metadata.emplace(key, read_u32(ptr));
+      ptr += 4;
     } else {
       skip_value(skip_value, type);
     }
@@ -1068,6 +1503,7 @@ ModelFile load_gguf(const std::filesystem::path& path) {
   };
   std::vector<GGUFTensorHeader> headers;
   headers.reserve(tensor_count);
+  std::map<uint32_t, uint64_t> tensor_type_counts;
 
   for (uint64_t i = 0; i < tensor_count; ++i) {
     std::string name = read_string(ptr, end);
@@ -1093,11 +1529,13 @@ ModelFile load_gguf(const std::filesystem::path& path) {
     h.type = type;
     h.offset = offset;
     headers.push_back(std::move(h));
+    ++tensor_type_counts[type];
   }
 
   uint64_t header_end_offset = ptr - buffer.data();
   uint64_t data_base_offset = align_up(header_end_offset, kGGUFAlignment);
   const uint8_t* data_base = buffer.data() + data_base_offset;
+  std::size_t imported_t3k_tensors = 0;
 
   for (const auto& h : headers) {
     if (h.type != kGGMLTypeT3K) continue;
@@ -1134,6 +1572,73 @@ ModelFile load_gguf(const std::filesystem::path& path) {
     mf.tensors.push_back(info);
     mf.total_trits += num_elements;
     mf.total_parameters += num_elements;
+    ++imported_t3k_tensors;
+  }
+
+  if (!headers.empty() && imported_t3k_tensors == 0) {
+#if defined(T81_HAS_LLAMA_CPP)
+    auto bridge = t81::model::GgufImportBridge::open(path);
+    if (!bridge.has_value()) {
+      throw std::runtime_error("GGUF import could not open llama.cpp bridge: " + bridge.error());
+    }
+
+    const std::string architecture = bridge.value()->model_architecture();
+    const std::string profile = native_gguf_profile_for_architecture(architecture);
+    if (profile.empty()) {
+      throw std::runtime_error("GGUF llama.cpp bridge import does not yet support native profile for "
+                               "architecture '" +
+                               architecture + "'");
+    }
+
+    const auto tensors = bridge.value()->list_tensors();
+    if (tensors.empty()) {
+      throw std::runtime_error("GGUF import bridge returned no tensors for " + path.string());
+    }
+    if (!gguf_profile_has_required_structure(profile, tensors)) {
+      throw std::runtime_error("GGUF llama.cpp bridge import metadata requested profile '" + profile +
+                               "', but required architecture tensor signals were not found with valid shapes");
+    }
+    if (!safetensors_metadata_has_required_scalars(profile, scalar_metadata)) {
+      throw std::runtime_error("GGUF llama.cpp bridge import metadata requested profile '" + profile +
+                               "', but required scalar metadata was not found");
+    }
+    if (const std::string reason =
+            profile_unsupported_feature_reason(profile, std::span<const t81::model::GgufTensorDescriptor>(tensors));
+        !reason.empty()) {
+      throw std::runtime_error("GGUF llama.cpp bridge import metadata requested profile '" + profile +
+                               "', but " + reason);
+    }
+
+    for (const auto& tensor : tensors) {
+      auto values = bridge.value()->read_tensor_f32(tensor.name);
+      if (!values.has_value()) {
+        throw std::runtime_error("GGUF import bridge failed for tensor '" + tensor.name +
+                                 "': " + values.error());
+      }
+
+      auto native = quantize_f32_to_balanced_ternary(*values, tensor.shape);
+      native.trits = tensor.element_count;
+      native.format = NativeFormat::BalancedTernary;
+
+      TensorInfo info;
+      info.name = tensor.name;
+      info.shape = tensor.shape;
+      info.num_trits = tensor.element_count;
+
+      mf.native.emplace(tensor.name, std::move(native));
+      mf.tensors.push_back(std::move(info));
+      mf.total_trits += tensor.element_count;
+      mf.total_parameters += tensor.element_count;
+    }
+
+    mf.format = "GGUF(llama.cpp bridge; arch=" + architecture + "; profile=" + profile + ")";
+    return mf;
+#else
+    throw std::runtime_error("GGUF import currently supports only native ternary T3_K tensors; "
+                             "this GGUF does not contain any T3_K tensors. "
+                             "Found tensor types: " +
+                             format_ggml_type_histogram(tensor_type_counts));
+#endif
   }
 
   return mf;

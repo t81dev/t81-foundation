@@ -1,7 +1,7 @@
 # RFC-0040: Formalization of SWAR Operations for Deterministic Ternary Computing
 
 - **Author(s):** T81 Foundation Architecture Team
-- **Status:** Draft
+- **Status:** Proposed
 - **Created:** 2026-03-18
 - **Supersedes:** None
 
@@ -233,19 +233,39 @@ namespace t81::swar::kernel {
 - [x] Add comprehensive unit tests for all SWAR operations
 
 ### Phase 2: VM Integration (Week 3-4)  
-- [ ] Add TISC opcodes for SWAR operations
-- [ ] Update VM dispatch layer with SWAR support
+- [x] Add TISC opcodes for SWAR operations
+- [x] Update VM dispatch layer with SWAR support
 - [ ] Integrate with Axion policy boundaries
 
 ### Phase 3: JIT Integration (Week 5-6)
-- [ ] Extend Trace-JIT to emit SWAR kernels
-- [ ] Add SWAR operation caching to CanonFS
-- [ ] Implement deterministic trace hashing for SWAR
+- [x] Extend Trace-JIT to emit SWAR kernels
+- [x] Add SWAR operation caching to CanonFS
+- [x] Implement deterministic trace hashing for SWAR
 
 ### Phase 4: Documentation & Migration (Week 7-8)
-- [ ] Update T81VM specification with SWAR operations
-- [ ] Create migration guide for existing code
-- [ ] Add performance tuning guidelines
+- [x] Update T81VM specification with SWAR operations
+- [x] Create migration guide for existing code
+- [x] Add performance tuning guidelines
+
+## Current Implementation Status
+
+Implemented as of 2026-03-18:
+
+- Stable SWAR API in `include/t81/swar/swar.hpp`
+- Compatibility shim retained in `include/t81/experimental/packed_trit_vector.hpp`
+- Explicit VM opcodes `TNOT_SWAR`, `TAND_SWAR`, `TOR_SWAR`
+- Interpreter dispatch over `ExactTrit` tensor handles with shape/type faulting
+- Setun bridge mnemonics for text assembly authoring
+- Trace-JIT execution, trace hashing, and CanonFS cache roundtrip coverage
+- Axion log emission in the interpreter and SWAR policy enforcement across the JIT path
+- Normative opcode/spec documentation in `spec/tisc-spec.md` and `spec/tisc/opcode-*.md`
+- Migration guidance in `docs/process/migration/RFC_0040_SWAR_MIGRATION.md`
+- Performance guidance in `docs/explanation/performance-strategy.md`
+- Benchmark snapshot in `docs/records/status-history/RFC_0040_SWAR_EVIDENCE_2026-03-18.md`
+
+Still open:
+
+- Cross-architecture bit-exact evidence refresh on x86_64 alongside ARM64
 
 ### Future Operations Roadmap
 After core SWAR stabilization, priority extensions for ternary ML/AI workloads:
@@ -259,12 +279,12 @@ After core SWAR stabilization, priority extensions for ternary ML/AI workloads:
 
 | ID | Criterion | Status |
 | :--- | :--- | :--- |
-| [A-0040-01] | All SWAR operations produce bit-exact results across x86_64 and ARM64 | |
-| [A-0040-02] | Performance benchmarks meet or exceed current implementation | |
-| [A-0040-03] | VM integration passes full conformance test suite | |
-| [A-0040-04] | JIT integration maintains determinism invariants | |
-| [A-0040-05] | Backward compatibility maintained through deprecation cycle | |
-| [A-0040-06] | Documentation and migration guide complete | |
+| [A-0040-01] | All SWAR operations produce bit-exact results across x86_64 and ARM64 | Pending cross-architecture evidence refresh; local ARM64 backend/JIT/VM coverage is in place |
+| [A-0040-02] | Performance benchmarks meet or exceed current implementation | Met: `docs/records/status-history/RFC_0040_SWAR_EVIDENCE_2026-03-18.md` shows SWAR ahead of Phase 2A reference on ARM64 |
+| [A-0040-03] | VM integration passes full conformance test suite | Met: `t81_vm_rfc0040_swar_test`, `tisc_opcode_matrix_test`, `t81_vm_tisc_v04_extensions_test` |
+| [A-0040-04] | JIT integration maintains determinism invariants | Met: `jit_trace_equivalence_test`, `jit_repro_oracle_test`, `jit_canonfs_cache_test`, including SWAR policy enforcement coverage |
+| [A-0040-05] | Backward compatibility maintained through deprecation cycle | Met: stable API plus deprecated compatibility shim in `experimental/packed_trit_vector.hpp` |
+| [A-0040-06] | Documentation and migration guide complete | Met: spec updates plus `docs/process/migration/RFC_0040_SWAR_MIGRATION.md`, `docs/explanation/performance-strategy.md`, and the evidence snapshot |
 
 ## References
 

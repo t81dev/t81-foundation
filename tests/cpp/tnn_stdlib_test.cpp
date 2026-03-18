@@ -15,6 +15,9 @@
 //   AC-6  std.tnn.act     registered; lowers to TACT
 //   AC-7  Wrong arity is a SA error
 //   AC-8  Forward-pass composition (quant → matmul → act) emits all three ops
+//   AC-9  @ternary_inference rewrites std.tensor.matmul to TWMATMUL
+//   AC-10 @ternary_inference rewrites std.tensor.attention to TATTN
+//   AC-11 @ternary_inference requires Tier 2+
 
 #include <cassert>
 #include <cstdio>
@@ -205,6 +208,54 @@ static void test_forward_pass_composition() {
   check(has_opcode(instrs, Opcode::TACT), "[AC-8] forward pass emits TACT");
 }
 
+// ─── AC-9: @ternary_inference rewrites std.tensor.matmul ───────────────────
+
+static void test_ternary_inference_matmul_rewrite() {
+  const std::string src = R"(
+    @ternary_inference
+    @tier(2)
+    fn forward(lhs: Tensor, rhs: Tensor) -> Tensor {
+      return std.tensor.matmul(lhs, rhs);
+    }
+  )";
+  auto instrs = lower(src);
+  check(has_opcode(instrs, Opcode::TWMATMUL),
+        "[AC-9] @ternary_inference rewrites std.tensor.matmul to TWMATMUL");
+  check(!has_opcode(instrs, Opcode::TMATMUL),
+        "[AC-9] @ternary_inference suppresses TMATMUL for std.tensor.matmul");
+}
+
+// ─── AC-10: @ternary_inference rewrites std.tensor.attention ───────────────
+
+static void test_ternary_inference_attention_rewrite() {
+  const std::string src = R"(
+    @ternary_inference
+    @tier(2)
+    fn attend(q: Tensor, k: Tensor, v: Tensor) -> Tensor {
+      return std.tensor.attention(q, k, v);
+    }
+  )";
+  auto instrs = lower(src);
+  check(has_opcode(instrs, Opcode::TATTN),
+        "[AC-10] @ternary_inference rewrites std.tensor.attention to TATTN");
+  check(!has_opcode(instrs, Opcode::ATTN),
+        "[AC-10] @ternary_inference suppresses ATTN for std.tensor.attention");
+}
+
+// ─── AC-11: @ternary_inference requires Tier 2+ ────────────────────────────
+
+static void test_ternary_inference_requires_tier2() {
+  const std::string src = R"(
+    @ternary_inference
+    fn forward(lhs: Tensor, rhs: Tensor) -> Tensor {
+      return std.tensor.matmul(lhs, rhs);
+    }
+  )";
+  bool sa_err = false;
+  lower(src, &sa_err);
+  check(sa_err, "[AC-11] @ternary_inference requires Tier 2 or higher");
+}
+
 // ─── main ─────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -217,6 +268,9 @@ int main() {
   test_tnn_act();
   test_wrong_arity_is_error();
   test_forward_pass_composition();
+  test_ternary_inference_matmul_rewrite();
+  test_ternary_inference_attention_rewrite();
+  test_ternary_inference_requires_tier2();
   std::printf("\nResults: %d passed, %d failed\n", g_pass, g_fail);
   return g_fail == 0 ? 0 : 1;
 }

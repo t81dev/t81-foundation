@@ -274,6 +274,7 @@ target_include_directories(t81_c_api
 )
 
 add_library(t81_tool_model STATIC
+  tooling/model/gguf_import_bridge.cpp
   tooling/model/weights.cpp
   tooling/model/weights_t81w_emitter.cpp
 )
@@ -282,6 +283,10 @@ target_include_directories(t81_tool_model PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+if(T81_ENABLE_LLAMA_CPP)
+  target_link_libraries(t81_tool_model PRIVATE $<BUILD_INTERFACE:llama>)
+  target_compile_definitions(t81_tool_model PRIVATE T81_HAS_LLAMA_CPP=1)
+endif()
 
 if(T81_ENABLE_LLAMA_CPP)
   add_library(t81_llama_adapter STATIC
@@ -1660,6 +1665,9 @@ if(T81_BUILD_TESTS)
   add_executable(t81_vm_rfc0034_ternary_native_test
                  tests/cpp/vm_rfc0034_ternary_native_test.cpp)
   target_link_libraries(t81_vm_rfc0034_ternary_native_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_rfc0040_swar_test
+                 tests/cpp/vm_rfc0040_swar_test.cpp)
+  target_link_libraries(t81_vm_rfc0040_swar_test PRIVATE t81_vm t81_core)
   add_executable(t81_lang_ai_m6_annotation_lowering_test
                  tests/cpp/lang_ai_m6_annotation_lowering_test.cpp)
   target_link_libraries(t81_lang_ai_m6_annotation_lowering_test
@@ -1732,6 +1740,14 @@ if(T81_BUILD_TESTS)
 
   add_executable(t81_weights_load_test tests/cpp/weights_load_test.cpp)
   target_link_libraries(t81_weights_load_test PRIVATE t81_vm t81_core t81_tool_model)
+  add_executable(t81_safetensors_import_test tests/cpp/safetensors_import_test.cpp)
+  target_link_libraries(t81_safetensors_import_test PRIVATE t81_tool_model t81_core)
+  add_executable(t81_native_weights_metrics_test tests/cpp/native_weights_metrics_test.cpp)
+  target_link_libraries(t81_native_weights_metrics_test PRIVATE t81_tool_model t81_core)
+  if(T81_ENABLE_LLAMA_CPP)
+    add_executable(t81_gguf_import_bridge_test tests/cpp/gguf_import_bridge_test.cpp)
+    target_link_libraries(t81_gguf_import_bridge_test PRIVATE t81_tool_model t81_core)
+  endif()
 
   add_executable(t81_hash_stub_test tests/cpp/hash_stub_test.cpp)
   target_link_libraries(t81_hash_stub_test PRIVATE t81_core)
@@ -2136,10 +2152,14 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(t81_cli_trace_export_test tests/cpp/cli_trace_export_test.cpp)
   target_link_libraries(t81_cli_trace_export_test PRIVATE t81_tool_cli)
 
+  add_executable(t81_cli_model_resolution_test tests/cpp/cli_model_resolution_test.cpp)
+  target_link_libraries(t81_cli_model_resolution_test PRIVATE t81_tool_cli)
+
   # Skip on Windows because it relies on POSIX fork() and <sys/wait.h> which are unsupported.
   if(NOT WIN32)
     add_executable(t81_cli_contract_test tests/cpp/cli_contract_test.cpp)
     target_compile_features(t81_cli_contract_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_cli_contract_test PRIVATE t81_tool_model)
   endif()
 
   # Skip on Windows because it relies on POSIX fork() and <sys/wait.h> which are unsupported.
@@ -2656,6 +2676,8 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_canonfs_rs_repair_test
     t81_canonhash81_reference_vectors_test
     t81_weights_load_test
+    t81_safetensors_import_test
+    t81_native_weights_metrics_test
     t81_vm_trace_test
     t81_vm_determinism_property_test
     t81_vm_state_transition_invariants_test
@@ -2775,10 +2797,15 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     performance_advancements_test
     t81_distributed_tensor_test
     tensor_backend_parity_test
+    t81_cli_model_resolution_test
     t81_vm_rfc0034_ternary_native_test
+    t81_vm_rfc0040_swar_test
   )
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
     list(APPEND T81_TEST_TARGETS t81_base81_simd_test)
+  endif()
+  if(T81_ENABLE_LLAMA_CPP)
+    list(APPEND T81_TEST_TARGETS t81_gguf_import_bridge_test)
   endif()
   if(T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND MLIR_FOUND)
     list(APPEND T81_TEST_TARGETS t81_mlir_t81_dialect_memory_ops_test)

@@ -620,6 +620,7 @@ std::unique_ptr<Stmt> Parser::function(const std::string& kind,
   bool is_axion_verify = false;
   bool is_attention = false;
   bool is_qmatmul = false;
+  bool is_ternary_inference = false;
   if (attributes.has_value()) {
     if (attributes->tier.has_value()) {
       tier = attributes->tier;
@@ -628,10 +629,12 @@ std::unique_ptr<Stmt> Parser::function(const std::string& kind,
     is_axion_verify = attributes->is_axion_verify;
     is_attention = attributes->is_attention;
     is_qmatmul = attributes->is_qmatmul;
+    is_ternary_inference = attributes->is_ternary_inference;
   }
   return std::make_unique<FunctionStmt>(name, std::move(generic_params), std::move(parameters),
                                         std::move(return_type), std::move(body), tier, is_pure,
-                                        is_axion_verify, is_attention, is_qmatmul);
+                                        is_axion_verify, is_attention, is_qmatmul,
+                                        is_ternary_inference);
 }
 
 std::unique_ptr<Stmt> Parser::type_declaration() {
@@ -1802,7 +1805,8 @@ std::optional<FunctionAttributes> Parser::parse_function_attributes() {
     }
     std::string attr_candidate{lookahead.lexeme};
     if (attr_candidate != "tier" && attr_candidate != "pure" && attr_candidate != "axion_verify" &&
-        attr_candidate != "attention" && attr_candidate != "qmatmul") {
+        attr_candidate != "attention" && attr_candidate != "qmatmul" &&
+        attr_candidate != "ternary_inference") {
       break;
     }
     match({TokenType::At});
@@ -1831,6 +1835,11 @@ std::optional<FunctionAttributes> Parser::parse_function_attributes() {
         report_error(name, "Duplicate '@qmatmul' attribute.");
       }
       attrs.is_qmatmul = true;
+    } else if (attr_candidate == "ternary_inference") {
+      if (attrs.is_ternary_inference) {
+        report_error(name, "Duplicate '@ternary_inference' attribute.");
+      }
+      attrs.is_ternary_inference = true;
     } else {
       // attr_candidate == "tier"
       consume(TokenType::LParen, "Expect '(' after attribute name.");

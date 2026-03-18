@@ -7,9 +7,13 @@
 #include "t81/tensor.hpp"
 #include "t81/tensor/ternary_native.hpp"
 #include "t81/vm/vm.hpp"
+#include "t81/weights.hpp"
 
+#include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <cstdint>
+#include <memory>
 
 namespace {
 
@@ -22,6 +26,15 @@ t81::tisc::Insn load_tensor(int reg, int pool_idx) {
   t81::tisc::Insn insn{t81::tisc::Opcode::LoadImm, reg, pool_idx, 0};
   insn.literal_kind = t81::tisc::LiteralKind::TensorHandle;
   return insn;
+}
+
+std::shared_ptr<t81::weights::ModelFile> make_ternary_weights_model(
+    const t81::weights::NativeTensor& native, std::string checksum) {
+  auto model = std::make_shared<t81::weights::ModelFile>();
+  model->checksum = std::move(checksum);
+  model->format = "T81W2";
+  model->native.emplace("ternary.w", native);
+  return model;
 }
 
 }  // namespace
@@ -191,13 +204,195 @@ int test_tact_quarantine_gate() {
 
   auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(p);
+  T81_TEST_CHECK(vm->step().has_value());
+  T81_TEST_CHECK(vm->step().has_value());
+  auto res = vm->step();
+  T81_TEST_CHECK(!res.has_value());
+  T81_TEST_CHECK(res.error() == t81::vm::Trap::SecurityFault);
+  T81_TEST_CHECK(vm->state().contexts[0].pc == 2);
+  T81_TEST_CHECK(vm->state().contexts[0].register_tags[3] != t81::vm::ValueTag::TensorHandle);
+  T81_TEST_CHECK(std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(),
+                             [](const auto& ev) {
+                               return ev.opcode == t81::tisc::Opcode::TACT &&
+                                      ev.verdict.kind == t81::axion::VerdictKind::Quarantine &&
+                                      ev.verdict.reason.find("Quarantine") != std::string::npos;
+                             }));
+  return 0;
+}
+
+// ---------------------------------------------------------------------------
+// [TN-C6] TACT repeat violation escalates to Deny → ActivationFault
+// ---------------------------------------------------------------------------
+int test_tact_deny_after_quarantine() {
+  t81::tisc::Program p;
+  p.tensor_pool.push_back(t81::T729DynamicTensor({1, 4}, {1.0f, 1.0f, 1.0f, 1.0f}));
+  p.axion_policy_text = "(policy (tier 2)"
+                        "  (activation-ceiling 0.2))";
+
+  p.insns.push_back(load_tensor(1, 1));
+  p.insns.push_back(
+      {t81::tisc::Opcode::LoadImm, 2, static_cast<std::int32_t>(t81::ops::kTActModeStep), 0});
+  p.insns.push_back({t81::tisc::Opcode::TACT, 3, 1, 2});
+  p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
+
+  auto vm = t81::vm::make_interpreter_vm();
+  vm->load_program(p);
+
+  T81_TEST_CHECK(vm->step().has_value());
+  T81_TEST_CHECK(vm->step().has_value());
+  auto first = vm->step();
+  T81_TEST_CHECK(!first.has_value());
+  T81_TEST_CHECK(first.error() == t81::vm::Trap::SecurityFault);
+  T81_TEST_CHECK(vm->state().contexts[0].activation_quarantined);
+  T81_TEST_CHECK(vm->state().contexts[0].pc == 2);
+
+  auto second = vm->step();
+  T81_TEST_CHECK(!second.has_value());
+  T81_TEST_CHECK(second.error() == t81::vm::Trap::ActivationFault);
+  T81_TEST_CHECK(vm->state().contexts[0].pc == 2);
+  T81_TEST_CHECK(std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(),
+                             [](const auto& ev) {
+                               return ev.opcode == t81::tisc::Opcode::TACT &&
+                                      ev.verdict.kind == t81::axion::VerdictKind::Deny &&
+                                      ev.verdict.reason.find("Deny") != std::string::npos;
+                             }));
+  return 0;
+}
+
+// ---------------------------------------------------------------------------
+// [TN-C7] WLOAD enforces allowed-ternary-model-hashes for model-backed weights
+// ---------------------------------------------------------------------------
+int test_wload_allowed_ternary_model_hashes() {
+  t81::weights::NativeTensor native;
+  native.shape = {1, 3};
+  native.trits = 3;
+  native.format = t81::weights::NativeFormat::BalancedTernary;
+  native.data = {5};  // [-1, 0, 1]
+
+  t81::tisc::Program p;
+  p.weights_model = make_ternary_weights_model(native, "deadbeef");
+  p.symbol_pool.push_back("ternary.w");
+  p.axion_policy_text =
+      "(policy (tier 2)"
+      "  (allowed-ternary-model-hashes [\"sha3-512:deadbeef\"]))";
+
+  p.insns.push_back({t81::tisc::Opcode::WeightsLoad, 1, 1, 0});
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 0, 0});
+  p.insns.push_back({t81::tisc::Opcode::WLOAD, 3, 1, 2});
+  p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
+
+  auto vm = t81::vm::make_interpreter_vm();
+  vm->load_program(p);
   auto res = vm->run_to_halt();
-  // Without ceiling policy activated, SecurityFault may or may not fire depending
-  // on whether the policy parser supports the activation-ceiling directive yet.
-  // For now, we verify the VM runs without crashing.
-  // When ceiling parsing is wired: T81_TEST_CHECK(!res.has_value() || res.value() ==
-  // t81::vm::Trap::SecurityFault);
-  (void)res;
+  T81_TEST_CHECK(res.has_value());
+  T81_TEST_CHECK(vm->state().contexts[0].register_tags[3] == t81::vm::ValueTag::TensorHandle);
+  return 0;
+}
+
+// ---------------------------------------------------------------------------
+// [TN-C8] WLOAD denies model-backed weights whose checksum is not whitelisted
+// ---------------------------------------------------------------------------
+int test_wload_denies_non_whitelisted_ternary_model_hash() {
+  t81::weights::NativeTensor native;
+  native.shape = {1, 3};
+  native.trits = 3;
+  native.format = t81::weights::NativeFormat::BalancedTernary;
+  native.data = {5};  // [-1, 0, 1]
+
+  t81::tisc::Program p;
+  p.weights_model = make_ternary_weights_model(native, "deadbeef");
+  p.symbol_pool.push_back("ternary.w");
+  p.axion_policy_text =
+      "(policy (tier 2)"
+      "  (allowed-ternary-model-hashes [\"sha3-512:cafebabe\"]))";
+
+  p.insns.push_back({t81::tisc::Opcode::WeightsLoad, 1, 1, 0});
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 0, 0});
+  p.insns.push_back({t81::tisc::Opcode::WLOAD, 3, 1, 2});
+  p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
+
+  auto vm = t81::vm::make_interpreter_vm();
+  vm->load_program(p);
+  auto res = vm->run_to_halt();
+  T81_TEST_CHECK(!res.has_value());
+  T81_TEST_CHECK(res.error() == t81::vm::Trap::SecurityFault);
+  T81_TEST_CHECK(std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(),
+                             [](const auto& ev) {
+                               return ev.opcode == t81::tisc::Opcode::WLOAD &&
+                                      ev.verdict.kind == t81::axion::VerdictKind::Deny &&
+                                      ev.verdict.reason.find("allowed-ternary-model-hashes") !=
+                                          std::string::npos;
+                             }));
+  return 0;
+}
+
+// ---------------------------------------------------------------------------
+// [TN-C9] WLOAD ternary-weight-domain-check rejects scaled/non-exact payloads
+// ---------------------------------------------------------------------------
+int test_wload_ternary_weight_domain_check() {
+  t81::weights::NativeTensor native;
+  native.shape = {1, 128};
+  native.trits = 128;
+  native.format = t81::weights::NativeFormat::T3_K;
+  native.data.resize(27, 0);
+  auto* bytes = reinterpret_cast<std::uint8_t*>(native.data.data());
+  const float scale = 2.0f;
+  std::memcpy(bytes, &scale, sizeof(scale));
+
+  t81::tisc::Program p;
+  p.weights_model = make_ternary_weights_model(native, "feedface");
+  p.symbol_pool.push_back("ternary.w");
+  p.axion_policy_text =
+      "(policy (tier 2)"
+      "  (ternary-weight-domain-check true))";
+
+  p.insns.push_back({t81::tisc::Opcode::WeightsLoad, 1, 1, 0});
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 0, 0});
+  p.insns.push_back({t81::tisc::Opcode::WLOAD, 3, 1, 2});
+  p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
+
+  auto vm = t81::vm::make_interpreter_vm();
+  vm->load_program(p);
+  auto res = vm->run_to_halt();
+  T81_TEST_CHECK(!res.has_value());
+  T81_TEST_CHECK(res.error() == t81::vm::Trap::SecurityFault);
+  T81_TEST_CHECK(std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(),
+                             [](const auto& ev) {
+                               return ev.opcode == t81::tisc::Opcode::WLOAD &&
+                                      ev.verdict.kind == t81::axion::VerdictKind::Deny &&
+                                      ev.verdict.reason.find("ternary-weight-domain-check") !=
+                                          std::string::npos;
+                             }));
+  return 0;
+}
+
+// ---------------------------------------------------------------------------
+// [TN-C10] WLOAD ternary-weight-domain-check false permits scaled payloads
+// ---------------------------------------------------------------------------
+int test_wload_ternary_weight_domain_check_disabled() {
+  t81::weights::NativeTensor native;
+  native.shape = {1, 3};
+  native.trits = 3;
+  native.format = t81::weights::NativeFormat::BalancedTernary;
+  native.data = {5};  // [-1, 0, 1]
+
+  t81::tisc::Program p;
+  p.weights_model = make_ternary_weights_model(native, "feedface");
+  p.symbol_pool.push_back("ternary.w");
+  p.axion_policy_text =
+      "(policy (tier 2)"
+      "  (ternary-weight-domain-check false))";
+
+  p.insns.push_back({t81::tisc::Opcode::WeightsLoad, 1, 1, 0});
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 0, 0});
+  p.insns.push_back({t81::tisc::Opcode::WLOAD, 3, 1, 2});
+  p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
+
+  auto vm = t81::vm::make_interpreter_vm();
+  vm->load_program(p);
+  auto res = vm->run_to_halt();
+  T81_TEST_CHECK(res.has_value());
+  T81_TEST_CHECK(vm->state().contexts[0].register_tags[3] == t81::vm::ValueTag::TensorHandle);
   return 0;
 }
 
@@ -208,5 +403,10 @@ int main() {
   failures += test_ternaccum_bigint();
   failures += test_tact_step_determinism();
   failures += test_tact_quarantine_gate();
+  failures += test_tact_deny_after_quarantine();
+  failures += test_wload_allowed_ternary_model_hashes();
+  failures += test_wload_denies_non_whitelisted_ternary_model_hash();
+  failures += test_wload_ternary_weight_domain_check();
+  failures += test_wload_ternary_weight_domain_check_disabled();
   return failures;
 }
