@@ -143,6 +143,7 @@ struct alignas(32) T81 {
   T81 operator+(const T81& other) const noexcept {
     T81 result;
 
+#if defined(__x86_64__) && defined(__AVX2__)
     // Common byte-apply helper shared by all ISA paths.
     // Given per-byte carry-ins from PrefixScan, applies them trit-by-trit.
     auto apply_carries = [&](const std::array<int8_t, 32>& carries) {
@@ -164,7 +165,6 @@ struct alignas(32) T81 {
       }
     };
 
-#if defined(__x86_64__) && defined(__AVX2__)
     {
       const __m256i lv = _mm256_load_si256(reinterpret_cast<const __m256i*>(data.data()));
       const __m256i rv = _mm256_load_si256(reinterpret_cast<const __m256i*>(other.data.data()));
@@ -174,6 +174,27 @@ struct alignas(32) T81 {
       apply_carries(simd::CarryIns(maps));
     }
 #elif defined(__ARM_NEON)
+    // Common byte-apply helper shared by all ISA paths.
+    // Given per-byte carry-ins from PrefixScan, applies them trit-by-trit.
+    auto apply_carries = [&](const std::array<int8_t, 32>& carries) {
+      const uint8_t* lp = data.data();
+      const uint8_t* rp = other.data.data();
+      uint8_t*       dp = result.data.data();
+      for (int i = 0; i < 32; ++i) {
+        const uint8_t lb = lp[i], rb = rp[i];
+        const simd::AddEntry& e0 = simd::LookupAddEntry(DecodeTrit( lb       & 0x3u), DecodeTrit( rb       & 0x3u));
+        const simd::AddEntry& e1 = simd::LookupAddEntry(DecodeTrit((lb >> 2) & 0x3u), DecodeTrit((rb >> 2) & 0x3u));
+        const simd::AddEntry& e2 = simd::LookupAddEntry(DecodeTrit((lb >> 4) & 0x3u), DecodeTrit((rb >> 4) & 0x3u));
+        const simd::AddEntry& e3 = simd::LookupAddEntry(DecodeTrit((lb >> 6) & 0x3u), DecodeTrit((rb >> 6) & 0x3u));
+        int8_t c = carries[i];
+        const uint8_t b0 = EncodeTrit(e0.sum[c + 1]); c = e0.carry[c + 1];
+        const uint8_t b1 = EncodeTrit(e1.sum[c + 1]); c = e1.carry[c + 1];
+        const uint8_t b2 = EncodeTrit(e2.sum[c + 1]); c = e2.carry[c + 1];
+        const uint8_t b3 = EncodeTrit(e3.sum[c + 1]);
+        dp[i] = b0 | (b1 << 2) | (b2 << 4) | (b3 << 6);
+      }
+    };
+
     {
       // Use NEON to load the 32-byte operands into registers, then extract
       // for the carry-map build. PrefixScan and apply_carries are scalar.

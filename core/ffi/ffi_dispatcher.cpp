@@ -38,7 +38,6 @@ t81::expected<void, std::string> FFILibraryRegistry::register_library(
     }
     
     // Register all functions
-    size_t start_index = registered_functions_.size();
     for (const auto& func : functions) {
         function_index_[func.name] = registered_functions_.size();
         registered_functions_.push_back(func);
@@ -163,7 +162,7 @@ std::vector<FFICallResult> FFIDispatcher::get_audit_trail() const {
 
 t81::expected<void, std::string> FFIDispatcher::check_policy_(
     const FFICallContext& context,
-    const FFIFunction& function
+    [[maybe_unused]] const FFIFunction& function
 ) {
     // Create Axion syscall context
     axion::SyscallContext syscall_context{
@@ -218,6 +217,20 @@ FFICallResult FFIDispatcher::execute_call_(
                 .error_message = "Failed to load library: " + std::string(dlerror()),
                 .execution_time_ns = 0,
                 .audit_events = {"LibraryLoad"},
+                .provenance_hash = ""
+            };
+        }
+
+        // Get function pointer
+        void* func_ptr = dlsym(handle, function.name.c_str());
+        if (!func_ptr) {
+            dlclose(handle);
+            return FFICallResult{
+                .status = FFIResult::ExternalError,
+                .result = {},
+                .error_message = "Function not found in library: " + function.name,
+                .execution_time_ns = 0,
+                .audit_events = {"FunctionLookup"},
                 .provenance_hash = ""
             };
         }
@@ -322,7 +335,7 @@ void FFIDispatcher::generate_audit_events_(
 // Helper functions
 std::string FFIDispatcher::generate_cache_key_(
     const FFICallContext& context,
-    const FFIFunction& function
+    [[maybe_unused]] const FFIFunction& function
 ) {
     return context.function_name + ":" + 
            std::to_string(context.call_id) + ":" +
@@ -352,7 +365,7 @@ std::string FFIDispatcher::compute_provenance_hash_(const std::string& data) {
 
 FFICallResult FFIDispatcher::call_foreign_function_(
     void* func_ptr,
-    const FFICallContext& context,
+    [[maybe_unused]] const FFICallContext& context,
     const FFIFunction& function
 ) {
     // This is a placeholder implementation
