@@ -66,7 +66,7 @@ void run_determinism_test() {
     Program program;
     program.insns = {{Opcode::MetaReflect, 1, 0, 0}, {Opcode::Halt}};
     vm->load_program(program);
-    vm->run_to_halt(10);
+    (void)vm->run_to_halt(10);
     return vm->state();
   };
 

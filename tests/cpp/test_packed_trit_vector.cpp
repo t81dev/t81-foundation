@@ -420,19 +420,19 @@ void test_simd_vs_swar() {
     // Not
     // v1.t_not() uses SIMD dispatch (if enabled/large enough), v1.t_not_swar() forces SWAR
     auto not_simd = v1.t_not().value();
-    auto not_swar = v1.t_not_swar().value();
+    auto not_swar = t81::swar::t_not_swar(v1).value();
     assert(check_vec(not_simd.to_trits().value(), not_swar.to_trits().value()));
     assert(not_simd.data() == not_swar.data());
 
     // And
     auto and_simd = v1.t_and(v2).value();
-    auto and_swar = v1.t_and_swar(v2).value();
+    auto and_swar = t81::swar::t_and_swar(v1, v2).value();
     assert(check_vec(and_simd.to_trits().value(), and_swar.to_trits().value()));
     assert(and_simd.data() == and_swar.data());
 
     // Or
     auto or_simd = v1.t_or(v2).value();
-    auto or_swar = v1.t_or_swar(v2).value();
+    auto or_swar = t81::swar::t_or_swar(v1, v2).value();
     assert(check_vec(or_simd.to_trits().value(), or_swar.to_trits().value()));
     assert(or_simd.data() == or_swar.data());
   }
@@ -470,9 +470,9 @@ void test_neon_explicit() {
                                       v1.data().size());
 
     // Compare with SWAR
-    auto not_swar = v1.t_not_swar().value();
-    auto and_swar = v1.t_and_swar(v2).value();
-    auto or_swar = v1.t_or_swar(v2).value();
+    auto not_swar = t81::swar::t_not_swar(v1).value();
+    auto and_swar = t81::swar::t_and_swar(v1, v2).value();
+    auto or_swar = t81::swar::t_or_swar(v1, v2).value();
 
     assert(out_not == not_swar.data());
     assert(out_and == and_swar.data());

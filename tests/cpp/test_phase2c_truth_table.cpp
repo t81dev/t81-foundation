@@ -29,7 +29,7 @@ void test_phase2c_truth_table_exhaustive() {
       auto v_a = ComputeTritVector::from_trits({a}).value();
 
       auto lut_res = v_a.t_not_lut().value().to_trits().value()[0];
-      auto swar_res = v_a.t_not_swar().value().to_trits().value()[0];
+      auto swar_res = t81::swar::t_not_swar(v_a).value().to_trits().value()[0];
 
       if (ref != lut_res || ref != swar_res) {
         std::cerr << "FAIL: TNot(" << fmt_trit(a) << ") -> Ref=" << fmt_trit(ref)
@@ -46,7 +46,7 @@ void test_phase2c_truth_table_exhaustive() {
       {
         int8_t ref = PackedTritVector::scalar_and(a, b);
         auto lut_res = v_a.t_and_lut(v_b).value().to_trits().value()[0];
-        auto swar_res = v_a.t_and_swar(v_b).value().to_trits().value()[0];
+        auto swar_res = t81::swar::t_and_swar(v_a, v_b).value().to_trits().value()[0];
 
         if (ref != lut_res || ref != swar_res) {
           std::cerr << "FAIL: TAnd(" << fmt_trit(a) << ", " << fmt_trit(b)
@@ -60,7 +60,7 @@ void test_phase2c_truth_table_exhaustive() {
       {
         int8_t ref = PackedTritVector::scalar_or(a, b);
         auto lut_res = v_a.t_or_lut(v_b).value().to_trits().value()[0];
-        auto swar_res = v_a.t_or_swar(v_b).value().to_trits().value()[0];
+        auto swar_res = t81::swar::t_or_swar(v_a, v_b).value().to_trits().value()[0];
 
         if (ref != lut_res || ref != swar_res) {
           std::cerr << "FAIL: TOr(" << fmt_trit(a) << ", " << fmt_trit(b)

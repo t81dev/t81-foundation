@@ -20,20 +20,20 @@
 //   man / feedback (help topic smoke)
 //   Error boundaries: missing files, wrong extension, corrupt binary, empty input
 
+#include <fcntl.h>
+#include <signal.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <algorithm>
 #include <chrono>
 #include <cstdlib>
-#include <fcntl.h>
 #include <filesystem>
 #include <fstream>
 #include <random>
-#include <signal.h>
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <sys/wait.h>
 #include <thread>
-#include <unistd.h>
 #include <vector>
 
 #include "test_runtime_check.hpp"
@@ -94,11 +94,15 @@ static CommandResult run_cli(const fs::path& bin, const std::vector<std::string>
     // Redirect stdin from /dev/null so interactive commands (vm debug, lang debug, repl)
     // see EOF immediately and exit cleanly rather than blocking forever.
     int devnull = ::open("/dev/null", O_RDONLY);
-    if (devnull != -1) { dup2(devnull, STDIN_FILENO); ::close(devnull); }
+    if (devnull != -1) {
+      dup2(devnull, STDIN_FILENO);
+      ::close(devnull);
+    }
     FILE* out = std::fopen(out_path.c_str(), "wb");
     FILE* err = std::fopen(err_path.c_str(), "wb");
     if (!out || !err) _exit(127);
-    if (dup2(fileno(out), STDOUT_FILENO) == -1 || dup2(fileno(err), STDERR_FILENO) == -1) _exit(127);
+    if (dup2(fileno(out), STDOUT_FILENO) == -1 || dup2(fileno(err), STDERR_FILENO) == -1)
+      _exit(127);
     std::fclose(out);
     std::fclose(err);
     execv(argv_ptrs[0], argv_ptrs.data());
@@ -124,9 +128,12 @@ static CommandResult run_cli(const fs::path& bin, const std::vector<std::string>
   CommandResult r;
   r.stdout_text = read_file(out_path);
   r.stderr_text = read_file(err_path);
-  if (WIFEXITED(status))       r.exit_code = WEXITSTATUS(status);
-  else if (WIFSIGNALED(status)) r.exit_code = 128 + WTERMSIG(status);
-  else                          r.exit_code = status;
+  if (WIFEXITED(status))
+    r.exit_code = WEXITSTATUS(status);
+  else if (WIFSIGNALED(status))
+    r.exit_code = 128 + WTERMSIG(status);
+  else
+    r.exit_code = status;
 
   std::error_code ec;
   fs::remove(out_path, ec);
@@ -166,36 +173,47 @@ int main(int argc, char* argv[]) {
   T81_TEST_CHECK(fs::exists(t81_bin));
 
   // Shared temp files reused across sections
-  const fs::path hello_src   = make_temp_path("t81-stress-hello",   ".t81");
-  const fs::path arith_src   = make_temp_path("t81-stress-arith",   ".t81");
-  const fs::path bad_src     = make_temp_path("t81-stress-bad",     ".t81");
-  const fs::path hello_tisc  = make_temp_path("t81-stress-hello",   ".tisc");
-  const fs::path arith_tisc  = make_temp_path("t81-stress-arith",   ".tisc");
-  const fs::path trace_file  = make_temp_path("t81-stress",         ".trace");
-  const fs::path policy_file = make_temp_path("t81-stress",         ".apl");
+  const fs::path hello_src = make_temp_path("t81-stress-hello", ".t81");
+  const fs::path arith_src = make_temp_path("t81-stress-arith", ".t81");
+  const fs::path bad_src = make_temp_path("t81-stress-bad", ".t81");
+  const fs::path hello_tisc = make_temp_path("t81-stress-hello", ".tisc");
+  const fs::path arith_tisc = make_temp_path("t81-stress-arith", ".tisc");
+  const fs::path trace_file = make_temp_path("t81-stress", ".trace");
+  const fs::path policy_file = make_temp_path("t81-stress", ".apl");
 
-  { std::ofstream o(hello_src);   o << kHelloSrc;     }
-  { std::ofstream o(arith_src);   o << kArithSrc;     }
-  { std::ofstream o(bad_src);     o << kSyntaxErrSrc; }
-  { std::ofstream o(policy_file);
-    o << "(policy (tier 1) (allowed-tensor-hashes [\"sha3-256:test-hash\"]))\n"; }
+  {
+    std::ofstream o(hello_src);
+    o << kHelloSrc;
+  }
+  {
+    std::ofstream o(arith_src);
+    o << kArithSrc;
+  }
+  {
+    std::ofstream o(bad_src);
+    o << kSyntaxErrSrc;
+  }
+  {
+    std::ofstream o(policy_file);
+    o << "(policy (tier 1) (allowed-tensor-hashes [\"sha3-256:test-hash\"]))\n";
+  }
 
   // Build the hello binary once — many tests depend on it
   {
-    const auto r = run_cli(t81_bin, {"code", "build", hello_src.string(),
-                                     "-o", hello_tisc.string()});
+    const auto r =
+        run_cli(t81_bin, {"code", "build", hello_src.string(), "-o", hello_tisc.string()});
     T81_TEST_CHECK(r.exit_code == 0);
     T81_TEST_CHECK(fs::exists(hello_tisc));
   }
   {
-    const auto r = run_cli(t81_bin, {"code", "build", arith_src.string(),
-                                     "-o", arith_tisc.string()});
+    const auto r =
+        run_cli(t81_bin, {"code", "build", arith_src.string(), "-o", arith_tisc.string()});
     T81_TEST_CHECK(r.exit_code == 0);
   }
   // Produce a trace for the hello binary
   {
-    const auto r = run_cli(t81_bin, {"code", "run", hello_tisc.string(),
-                                     "-o", trace_file.string()});
+    const auto r =
+        run_cli(t81_bin, {"code", "run", hello_tisc.string(), "-o", trace_file.string()});
     T81_TEST_CHECK(r.exit_code == 0);
   }
 
@@ -230,20 +248,19 @@ int main(int argc, char* argv[]) {
 
   // ── §4  trace filter / stats / export ────────────────────────────────────
   {
-    const auto filter = run_cli(t81_bin, {"trace", "filter", trace_file.string(),
-                                          "--opcode", "Halt", "--json"});
+    const auto filter =
+        run_cli(t81_bin, {"trace", "filter", trace_file.string(), "--opcode", "Halt", "--json"});
     T81_TEST_CHECK(filter.exit_code == 0);
     T81_TEST_CHECK(contains(filter.stdout_text, "\"schema\": \"t81.trace-filter.v1\"") ||
-                   contains(filter.stdout_text, "PC=") ||
-                   !filter.stdout_text.empty());
+                   contains(filter.stdout_text, "PC=") || !filter.stdout_text.empty());
 
     const auto stats = run_cli(t81_bin, {"trace", "stats", trace_file.string(), "--json"});
     T81_TEST_CHECK(stats.exit_code == 0);
     T81_TEST_CHECK(contains(stats.stdout_text, "\"schema\": \"t81.trace-summary.v1\""));
 
     const fs::path exported = make_temp_path("t81-stress-trace", ".json");
-    const auto exp = run_cli(t81_bin, {"trace", "export", trace_file.string(),
-                                       "-o", exported.string(), "--format", "json"});
+    const auto exp = run_cli(t81_bin, {"trace", "export", trace_file.string(), "-o",
+                                       exported.string(), "--format", "json"});
     T81_TEST_CHECK(exp.exit_code == 0);
     std::error_code ec;
     fs::remove(exported, ec);
@@ -253,21 +270,18 @@ int main(int argc, char* argv[]) {
   {
     const auto vm_run = run_cli(t81_bin, {"vm", "run", hello_tisc.string()});
     T81_TEST_CHECK(vm_run.exit_code == 0);
-    T81_TEST_CHECK(contains(vm_run.stdout_text, "hello stress") ||
-                   vm_run.exit_code == 0);
+    T81_TEST_CHECK(contains(vm_run.stdout_text, "hello stress") || vm_run.exit_code == 0);
 
-    const auto vm_debug = run_cli(t81_bin, {"vm", "debug", hello_tisc.string(),
-                                            "--steps", "1", "--json"});
+    const auto vm_debug =
+        run_cli(t81_bin, {"vm", "debug", hello_tisc.string(), "--steps", "1", "--json"});
     T81_TEST_CHECK(vm_debug.exit_code == 0 || vm_debug.exit_code == 1);
     T81_TEST_CHECK(!vm_debug.stdout_text.empty() || !vm_debug.stderr_text.empty());
 
-    const auto vm_explain = run_cli(t81_bin, {"vm", "explain-trap",
-                                              hello_tisc.string(), "--json"});
+    const auto vm_explain = run_cli(t81_bin, {"vm", "explain-trap", hello_tisc.string(), "--json"});
     // explain-trap may return 0 (no trap) or 1 (trapped) — both are valid
     T81_TEST_CHECK(vm_explain.exit_code == 0 || vm_explain.exit_code == 1);
     T81_TEST_CHECK(contains(vm_explain.stdout_text, "\"schema\": \"t81.vm-explain-trap.v1\"") ||
-                   contains(vm_explain.stdout_text, "no trap") ||
-                   !vm_explain.stdout_text.empty());
+                   contains(vm_explain.stdout_text, "no trap") || !vm_explain.stdout_text.empty());
   }
 
   // ── §6  code lint / fmt / test / debug / disasm ──────────────────────────
@@ -285,8 +299,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(test_cmd.exit_code == 0 || test_cmd.exit_code == 1);
     T81_TEST_CHECK(test_cmd.exit_code < 128);
 
-    const auto dbg = run_cli(t81_bin, {"code", "debug", hello_tisc.string(),
-                                       "--steps", "2", "--json"});
+    const auto dbg =
+        run_cli(t81_bin, {"code", "debug", hello_tisc.string(), "--steps", "2", "--json"});
     T81_TEST_CHECK(dbg.exit_code == 0 || dbg.exit_code == 1);
     T81_TEST_CHECK(dbg.exit_code < 128);
 
@@ -310,8 +324,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(lfmt.exit_code >= 0 && lfmt.exit_code < 128);
 
     const fs::path lang_out = make_temp_path("t81-stress-lang", ".tisc");
-    const auto lbuild = run_cli(t81_bin, {"lang", "build", hello_src.string(),
-                                          "-o", lang_out.string()});
+    const auto lbuild =
+        run_cli(t81_bin, {"lang", "build", hello_src.string(), "-o", lang_out.string()});
     T81_TEST_CHECK(lbuild.exit_code == 0);
     T81_TEST_CHECK(fs::exists(lang_out));
 
@@ -323,8 +337,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(ltest.exit_code == 0 || ltest.exit_code == 1);
     T81_TEST_CHECK(ltest.exit_code < 128);
 
-    const auto ldebug = run_cli(t81_bin, {"lang", "debug", hello_src.string(),
-                                          "--steps", "2", "--json"});
+    const auto ldebug =
+        run_cli(t81_bin, {"lang", "debug", hello_src.string(), "--steps", "2", "--json"});
     T81_TEST_CHECK(ldebug.exit_code == 0 || ldebug.exit_code == 1);
     T81_TEST_CHECK(ldebug.exit_code < 128);
 
@@ -356,14 +370,14 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(stats.stdout_text, "\"schema\": \"t81.tisc-stats.v1\""));
 
     // diff identical files → no difference
-    const auto diff_same = run_cli(t81_bin, {"tisc", "diff",
-                                             hello_tisc.string(), hello_tisc.string(), "--json"});
+    const auto diff_same =
+        run_cli(t81_bin, {"tisc", "diff", hello_tisc.string(), hello_tisc.string(), "--json"});
     T81_TEST_CHECK(diff_same.exit_code == 0);
     T81_TEST_CHECK(contains(diff_same.stdout_text, "\"schema\": \"t81.tisc-diff.v1\""));
 
     // diff two different binaries → non-zero exit or diff output
-    const auto diff_diff = run_cli(t81_bin, {"tisc", "diff",
-                                             hello_tisc.string(), arith_tisc.string(), "--json"});
+    const auto diff_diff =
+        run_cli(t81_bin, {"tisc", "diff", hello_tisc.string(), arith_tisc.string(), "--json"});
     T81_TEST_CHECK(diff_diff.exit_code == 0 || diff_diff.exit_code == 1);
     T81_TEST_CHECK(contains(diff_diff.stdout_text, "\"schema\": \"t81.tisc-diff.v1\""));
   }
@@ -385,14 +399,14 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(dhash.exit_code == 0);
     T81_TEST_CHECK(contains(dhash.stdout_text, "\"schema\": \"t81.determinism-hash.v1\""));
 
-    const auto ddiff = run_cli(t81_bin, {"determinism", "diff",
-                                         hello_tisc.string(), hello_tisc.string(), "--json"});
+    const auto ddiff = run_cli(
+        t81_bin, {"determinism", "diff", hello_tisc.string(), hello_tisc.string(), "--json"});
     T81_TEST_CHECK(ddiff.exit_code == 0);
     T81_TEST_CHECK(contains(ddiff.stdout_text, "\"schema\": \"t81.determinism-diff.v1\"") ||
                    contains(ddiff.stdout_text, "identical"));
 
-    const auto multi = run_cli(t81_bin, {"determinism", "multi-run",
-                                         hello_tisc.string(), "--count", "3", "--json"});
+    const auto multi = run_cli(
+        t81_bin, {"determinism", "multi-run", hello_tisc.string(), "--count", "3", "--json"});
     T81_TEST_CHECK(multi.exit_code == 0);
     T81_TEST_CHECK(contains(multi.stdout_text, "\"schema\": \"t81.determinism-multi-run.v1\""));
   }
@@ -402,8 +416,8 @@ int main(int argc, char* argv[]) {
     const fs::path compiled_policy = make_temp_path("t81-stress-policy", ".axionb");
 
     // policy compile prints a human-readable success message (no JSON schema)
-    const auto compile = run_cli(t81_bin, {"policy", "compile", policy_file.string(),
-                                           "-o", compiled_policy.string()});
+    const auto compile = run_cli(
+        t81_bin, {"policy", "compile", policy_file.string(), "-o", compiled_policy.string()});
     T81_TEST_CHECK(compile.exit_code == 0);
     T81_TEST_CHECK(!compile.stdout_text.empty());
 
@@ -422,8 +436,7 @@ int main(int argc, char* argv[]) {
 
   // ── §12  axion simulate / audit ──────────────────────────────────────────
   {
-    const auto simulate = run_cli(t81_bin, {"axion", "simulate",
-                                            hello_tisc.string(), "--json"});
+    const auto simulate = run_cli(t81_bin, {"axion", "simulate", hello_tisc.string(), "--json"});
     T81_TEST_CHECK(simulate.exit_code == 0);
     // compact JSON may have no space after ':'
     T81_TEST_CHECK(contains(simulate.stdout_text, "\"schema\"") &&
@@ -444,8 +457,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(check.exit_code == 0);
     T81_TEST_CHECK(contains(check.stdout_text, "\"schema\": \"t81.tier-check.v1\""));
 
-    const auto gate = run_cli(t81_bin, {"tier", "gate", hello_tisc.string(),
-                                        "--max-tier", "2", "--json"});
+    const auto gate =
+        run_cli(t81_bin, {"tier", "gate", hello_tisc.string(), "--max-tier", "2", "--json"});
     T81_TEST_CHECK(gate.exit_code == 0 || gate.exit_code == 1);
     T81_TEST_CHECK(contains(gate.stdout_text, "\"schema\": \"t81.tier-gate.v1\""));
   }
@@ -488,15 +501,15 @@ int main(int argc, char* argv[]) {
     const fs::path no_file = make_temp_path("t81-stress-missing", ".t81");
 
     for (const std::vector<std::string>& cmd : {
-             std::vector<std::string>{"code", "build",   no_file.string()},
-             std::vector<std::string>{"code", "run",     no_file.string()},
-             std::vector<std::string>{"code", "check",   no_file.string()},
-             std::vector<std::string>{"code", "disasm",  no_file.string()},
-             std::vector<std::string>{"lang", "check",   no_file.string()},
-             std::vector<std::string>{"lang", "build",   no_file.string()},
-             std::vector<std::string>{"ir",   "show",    no_file.string()},
-             std::vector<std::string>{"ir",   "dump",    no_file.string()},
-             std::vector<std::string>{"vm",   "state",   no_file.string(), "--json"},
+             std::vector<std::string>{"code", "build", no_file.string()},
+             std::vector<std::string>{"code", "run", no_file.string()},
+             std::vector<std::string>{"code", "check", no_file.string()},
+             std::vector<std::string>{"code", "disasm", no_file.string()},
+             std::vector<std::string>{"lang", "check", no_file.string()},
+             std::vector<std::string>{"lang", "build", no_file.string()},
+             std::vector<std::string>{"ir", "show", no_file.string()},
+             std::vector<std::string>{"ir", "dump", no_file.string()},
+             std::vector<std::string>{"vm", "state", no_file.string(), "--json"},
          }) {
       const auto r = run_cli(t81_bin, cmd);
       T81_TEST_CHECK(r.exit_code != 0);
@@ -519,7 +532,10 @@ int main(int argc, char* argv[]) {
     // §16c  Wrong extension — commands that validate extension must reject cleanly
     {
       const fs::path wrong_ext = make_temp_path("t81-stress-wrong", ".txt");
-      { std::ofstream o(wrong_ext); o << "garbage\n"; }
+      {
+        std::ofstream o(wrong_ext);
+        o << "garbage\n";
+      }
 
       const auto r = run_cli(t81_bin, {"code", "build", wrong_ext.string()});
       T81_TEST_CHECK(r.exit_code != 0);
@@ -541,8 +557,8 @@ int main(int argc, char* argv[]) {
       }
 
       for (const std::vector<std::string>& cmd : {
-               std::vector<std::string>{"vm", "state",    corrupt.string(), "--json"},
-               std::vector<std::string>{"vm", "run",      corrupt.string()},
+               std::vector<std::string>{"vm", "state", corrupt.string(), "--json"},
+               std::vector<std::string>{"vm", "run", corrupt.string()},
                std::vector<std::string>{"tisc", "validate", corrupt.string(), "--json"},
            }) {
         const auto r = run_cli(t81_bin, cmd);
@@ -579,17 +595,16 @@ int main(int argc, char* argv[]) {
     }
 
     // §16g  No args — commands that require a subcommand must print usage, not crash
-    for (const std::string& top : {"vm", "trace", "tisc", "ir", "tier",
-                                    "lang", "policy", "axion", "canonfs",
-                                    "determinism", "weights"}) {
+    for (const std::string top : {"vm", "trace", "tisc", "ir", "tier", "lang", "policy", "axion",
+                                  "canonfs", "determinism", "weights"}) {
       const auto r = run_cli(t81_bin, {top});
       T81_TEST_CHECK(r.exit_code < 128);
       T81_TEST_CHECK(!r.stdout_text.empty() || !r.stderr_text.empty());
     }
 
     // §16h  Unrecognised subcommand — must error, not crash
-    for (const std::string& top : {"vm", "tisc", "ir", "tier", "lang",
-                                    "policy", "axion", "determinism", "weights"}) {
+    for (const std::string top :
+         {"vm", "tisc", "ir", "tier", "lang", "policy", "axion", "determinism", "weights"}) {
       const auto r = run_cli(t81_bin, {top, "does-not-exist"});
       T81_TEST_CHECK(r.exit_code != 0);
       T81_TEST_CHECK(r.exit_code < 128);
@@ -599,8 +614,8 @@ int main(int argc, char* argv[]) {
   // ── §17  Cleanup ─────────────────────────────────────────────────────────
   {
     std::error_code ec;
-    for (const fs::path& p : {hello_src, arith_src, bad_src, hello_tisc,
-                                arith_tisc, trace_file, policy_file}) {
+    for (const fs::path& p :
+         {hello_src, arith_src, bad_src, hello_tisc, arith_tisc, trace_file, policy_file}) {
       fs::remove(p, ec);
     }
   }
