@@ -1,4 +1,4 @@
-# RFC-0031: Formalization of SWAR Operations for Deterministic Ternary Computing
+# RFC-0040: Formalization of SWAR Operations for Deterministic Ternary Computing
 
 - **Author(s):** T81 Foundation Architecture Team
 - **Status:** Draft
@@ -259,12 +259,12 @@ After core SWAR stabilization, priority extensions for ternary ML/AI workloads:
 
 | ID | Criterion | Status |
 | :--- | :--- | :--- |
-| [A-0031-01] | All SWAR operations produce bit-exact results across x86_64 and ARM64 | |
-| [A-0031-02] | Performance benchmarks meet or exceed current implementation | |
-| [A-0031-03] | VM integration passes full conformance test suite | |
-| [A-0031-04] | JIT integration maintains determinism invariants | |
-| [A-0031-05] | Backward compatibility maintained through deprecation cycle | |
-| [A-0031-06] | Documentation and migration guide complete | |
+| [A-0040-01] | All SWAR operations produce bit-exact results across x86_64 and ARM64 | |
+| [A-0040-02] | Performance benchmarks meet or exceed current implementation | |
+| [A-0040-03] | VM integration passes full conformance test suite | |
+| [A-0040-04] | JIT integration maintains determinism invariants | |
+| [A-0040-05] | Backward compatibility maintained through deprecation cycle | |
+| [A-0040-06] | Documentation and migration guide complete | |
 
 ## References
 
